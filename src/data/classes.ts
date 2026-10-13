@@ -336,7 +336,8 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     model: '/assets/models/characters/Mage.glb',
     resource: 'essence',
     resourceName: 'Öz',
-    baseStats: { str: 6, dex: 8, int: 18, vit: 14, resourceRegen: 7 },
+    // PM-NE: Öz (Runic Power) is earned by hitting, not regenerated (resourceRegen 0) and decays out of combat (Combat: regenRule 'rage' branch)
+    baseStats: { str: 6, dex: 8, int: 18, vit: 14, resourceRegen: 0 },
     perLevel: { str: 0, dex: 1, int: 4, vit: 2 },
     hpPerLevel: 8,
     hpPerVit: 9,
@@ -347,9 +348,11 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
       hide: ['1H_Wand', 'Spellbook', 'Spellbook_open', 'Mage_Hat'],
     },
     basicAttack: 'necro_basic',
+    // PM-NE (plate-melee §h): the 8 class skills (Death Knight kit, Ordu Efendisi rows + shared utilities); spec rows come from SpecDef.skills.
+    // The rune pip is TALENT_PIPS.rune (SkillSystem.activePips adds it for the class): no `secondary` row here.
     skills: [
-      'necro_bone_spear', 'necro_raise_skeleton', 'necro_corpse_explosion', 'necro_bone_prison',
-      'necro_curse_decay', 'necro_blood_siphon', 'necro_bone_armor', 'necro_army_of_the_dead',
+      'necro_scourge_strike', 'necro_death_coil', 'necro_festering_strike', 'necro_deaths_advance',
+      'necro_mind_freeze', 'necro_anti_magic_shell', 'necro_icebound_fortitude', 'necro_outbreak',
     ],
     startingItems: ['staff_t1'],
     color: '#9ee07a',
@@ -378,7 +381,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
       name: 'Ceset Hasadı',
       desc: 'Düşmanlar 10 sn ceset bırakır; bir ceseti tüketmek +8 Öz verir; minion hasarı +%15.',
     },
-    regenRule: 'default',
+    regenRule: 'rage',
   },
   warlock: {
     id: 'warlock',

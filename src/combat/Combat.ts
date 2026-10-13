@@ -2302,7 +2302,8 @@ export class Combat {
       let regen = p.getStat('resourceRegen');
       if (noStats) regen = (cls.baseStats.resourceRegen ?? 0) + (cls.id === 'mage' ? 0.015 * 18 : 0);
       regen *= 1 + softStat(p, 'resourceRegenPct');
-      if (cls.id === 'barbarian') {
+      if (cls.id === 'barbarian' || cls.regenRule === 'rage') {
+        // PM-NE: the Nekromant's Öz (regenRule 'rage', Runic Power) decays out of combat like rage and has no passive regen
         // Öfke Makinesi: rage does not decay for 8 s after the last gain
         const hold = sp('n_rage_engine')?.rageDecayDelay ?? 0;
         const held = hold > 0 && !!G.skills && G.skills.now - G.skills.lastResourceGainAt < hold;

@@ -25,8 +25,12 @@ export interface PipDef {
   icon: string;               // icon name in public/assets/icons (no path, no .svg), e.g. 'buff-haste'
   /** Passive decay: -1 pip every `every` seconds after `after` seconds out of combat (Çi: after 8 s, every 4 s). */
   decay?: { after: number; every: number };
-  /** PM-00a (plate-melee §g need 1): timed regeneration, +1 per `every` seconds up to `max` (Death Knight runes: every 10 s). */
-  regen?: { every: number };
+  /**
+   * PM-00a (plate-melee §g need 1): timed regeneration, +1 per `every` seconds up to `max`.
+   * PM-NE: `parallel` = every missing pip recharges on its own `every`-second timer at the same time (Death Knight runes: 6 runes, each
+   * back 10 s after it was spent = up to 0.6 rune/s, plate-melee §8 / §9), instead of one shared timer.
+   */
+  regen?: { every: number; parallel?: boolean };
   startAt?: number;
 }
 

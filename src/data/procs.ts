@@ -23,6 +23,8 @@ import { PROC_DEFS_KIT_BARBARIAN } from './procs_kit_barbarian';
 import { PROC_DEFS_KIT_KNIGHT } from './procs_kit_knight';
 // KIT PM-PA (docs/kits/plate-melee.md §5b-§7b): paladin proc rows (shining_light, infusion_of_light, art_of_war, hammer_window).
 import { PROC_DEFS_KIT_PALADIN } from './procs_kit_paladin';
+// KIT PM-NE (docs/kits/plate-melee.md §8b / §9b): necromancer proc rows (sudden_doom, army, ...) and the Ölüm Darbesi glow rule.
+import { PROC_DEFS_KIT_NECROMANCER, GLOW_RULES_KIT_NECROMANCER } from './procs_kit_necromancer';
 
 export type ProcOverlay = 'top' | 'left' | 'right' | 'center' | 'both';
 
@@ -111,7 +113,7 @@ export function getProcDef(id: string): ProcDef | undefined {
 }
 
 // KIT PK-0: one merge line per kit file (rows are empty until PK-MAGE / PK-ROGUE / PK-WARLOCK fill them).
-registerProcDefs([...PROC_DEFS_KIT_MAGE, ...PROC_DEFS_KIT_ROGUE, ...PROC_DEFS_KIT_WARLOCK, ...PROC_DEFS_KIT_KNIGHT, ...PROC_DEFS_KIT_BARBARIAN, ...PROC_DEFS_KIT_PALADIN]);
+registerProcDefs([...PROC_DEFS_KIT_MAGE, ...PROC_DEFS_KIT_ROGUE, ...PROC_DEFS_KIT_WARLOCK, ...PROC_DEFS_KIT_KNIGHT, ...PROC_DEFS_KIT_BARBARIAN, ...PROC_DEFS_KIT_PALADIN, ...PROC_DEFS_KIT_NECROMANCER]);
 
 /** Overlay position for a proc at a given stack count (falls back to the row's `overlay`). */
 export function procOverlayFor(def: ProcDef, stacks: number): ProcOverlay {
@@ -212,7 +214,7 @@ export const GLOW_RULES: Record<GlowRuleId, GlowRule> = {
   bloodbath3: { id: 'bloodbath3', test: (s) => s.bleedingEnemies >= 3, skills: () => ['barbarian_bloodbath'] },
 };
 // KIT PK-0: kit glow rules (empty until the class packages fill them).
-Object.assign(GLOW_RULES, GLOW_RULES_KIT_MAGE, GLOW_RULES_KIT_ROGUE, GLOW_RULES_KIT_WARLOCK);
+Object.assign(GLOW_RULES, GLOW_RULES_KIT_MAGE, GLOW_RULES_KIT_ROGUE, GLOW_RULES_KIT_WARLOCK, GLOW_RULES_KIT_NECROMANCER);
 
 // ------------------------------------------------------------------------------------------------------------
 // Read-only helpers

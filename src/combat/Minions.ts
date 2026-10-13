@@ -9,6 +9,7 @@
  *   strike(m, atk, target)     a minion's hit: Combat.playerHitEnemy with the owner's stat block (plus the minion damage bonus)
  *   taunt(m, atk)              a `taunt` attack: every enemy within its radius is forced onto the minion (Combat.minionTaunt)
  *   hurt(m, amount, type)      damage in (mitigation by armorFrac); reaching 0 calls die(). Enemies reach it through Combat.hitMinion
+ *   ensurePets()               PM-NE: a spec with the special `trait_summoner { pet 1 }` (Ordu Efendisi) always has its class pet (Kemik Ghul)
  */
 import { G } from '../game/G';
 import { Minion } from '../entities/Minion';
@@ -16,7 +17,8 @@ import { MINION_ID_BASE, PARTY_ID_BASE, type DamageType, type EntityId } from '.
 import type { Player } from '../entities/Player';
 import type { Enemy } from '../entities/Enemy';
 import type { MinionAttack, MinionDef } from '../types/minions';
-import { MINION_GROUP_CAPS } from '../data/minions';
+import { CLASS_DEFAULT_MINION, MINION_GROUP_CAPS, minionDef } from '../data/minions';
+import { specSpecial } from './specs';
 import { clamp } from '../core/utils';
 
 /** GDD §1.5 rule 4: hard caps per owner and per world (on top of the group caps). */
@@ -212,6 +214,7 @@ export class Minions {
       }
       if (m.timed && m.life <= 0) this.despawn(m, 'expired');
     }
+    this.ensurePets();
     if (!w || this.respawns.length === 0) return;
     for (const r of [...this.respawns]) {
       if (this.clock < r.at) continue;
@@ -220,6 +223,21 @@ export class Minions {
       this.respawns.splice(this.respawns.indexOf(r), 1);
       this.summon(owner, r.def, { count: 1 });
     }
+  }
+
+  /**
+   * PM-NE: the pet of a pet spec (special `trait_summoner` with `pet 1`: Ordu Efendisi) is summoned whenever the local player has none
+   * alive and none is queued to come back (first login, spec change). Death and scene changes keep using the MinionDef.respawn queue.
+   */
+  private ensurePets(): void {
+    const owner = G.world?.localPlayer as Player | null | undefined;
+    if (!owner || owner.isDead || owner.removed || owner.kind !== 'player') return;
+    if (!((specSpecial(owner, 'trait_summoner')?.pet ?? 0) > 0)) return;
+    const def = minionDef(CLASS_DEFAULT_MINION[owner.classId] ?? '');
+    if (!def?.respawn) return;
+    if (this.ownedBy(owner.id, (m) => m.def.id === def.id).length > 0) return;
+    if (this.respawns.some((r) => r.ownerId === owner.id && r.def.id === def.id)) return;
+    this.summon(owner, def, { count: 1 });
   }
 
   /** Scene change: every minion leaves; pets and demons queue a free respawn (MinionDef.respawn.scene). */

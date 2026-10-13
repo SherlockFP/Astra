@@ -44,19 +44,26 @@ const testDef = (over = {}) => ({
   ok('pm00b.defs statuses resolve', !!STATUSES.shield_block && !!STATUSES.bone_armor);
 }
 
-// ---- pm00b.rune: 0 -> +1 every 10 s, capped at 6 (Death Knight)
+// ---- pm00b.rune: every spent rune is back 10 s after it was spent (parallel timers, PM-NE), capped at 6 (Death Knight)
 {
   const p = H.addPlayer('necromancer');
   G.skills.addPip(p, 'rune', 6);
   G.skills.spendPip(p, 'rune', 6);
   H.stepSec(0.5);
   ok('pm00b.rune starts at 0 after spending 6', G.skills.pipCount(p, 'rune') === 0, `n=${G.skills.pipCount(p, 'rune')}`);
-  H.stepSec(10);
-  ok('pm00b.rune +1 after 10 s', G.skills.pipCount(p, 'rune') === 1, `n=${G.skills.pipCount(p, 'rune')}`);
+  H.stepSec(9);
+  ok('pm00b.rune nothing back before 10 s', G.skills.pipCount(p, 'rune') === 0, `n=${G.skills.pipCount(p, 'rune')}`);
+  H.stepSec(1.5);
+  ok('pm00b.rune all 6 spent runes are back after 10 s (parallel timers)', G.skills.pipCount(p, 'rune') === 6, `n=${G.skills.pipCount(p, 'rune')}`);
   H.stepSec(30);
-  ok('pm00b.rune reaches 4 after 40 s', G.skills.pipCount(p, 'rune') === 4, `n=${G.skills.pipCount(p, 'rune')}`);
-  H.stepSec(80);
   ok('pm00b.rune caps at 6', G.skills.pipCount(p, 'rune') === 6, `n=${G.skills.pipCount(p, 'rune')}`);
+  G.skills.spendPip(p, 'rune', 2);
+  H.stepSec(5);
+  G.skills.spendPip(p, 'rune', 2);
+  H.stepSec(5.3);
+  ok('pm00b.rune each rune has its own timer (2 back 10 s after the first spend, 2 still recharging)', G.skills.pipCount(p, 'rune') === 4, `n=${G.skills.pipCount(p, 'rune')}`);
+  H.stepSec(5);
+  ok('pm00b.rune the second pair follows 5 s later', G.skills.pipCount(p, 'rune') === 6, `n=${G.skills.pipCount(p, 'rune')}`);
 }
 
 // ---- pm00b.recent: damage taken within 5 s equals what landed

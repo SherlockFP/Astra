@@ -309,6 +309,8 @@ export class SkillSystem {
   private masteryAt = new Map<string, number>();
   /** Passive pip decay clocks, keyed `playerId:pipId`. */
   private pipClock = new Map<string, number>();
+  /** PM-NE: recharging pips with `regen.parallel` (runes): seconds left of each missing pip's own timer, per `actorId:pipId`. */
+  private pipTimers = new Map<string, number[]>();
   /** NC35: PipDef lookups outside TALENT_PIPS (null = none) and the pips shown per `class:spec`. */
   private pipDefCache = new Map<PipId, PipDef | null>();
   private activePipCache = new Map<string, PipDef[]>();
@@ -617,6 +619,10 @@ export class SkillSystem {
   pipRegenFrac(actor: Actor, id: PipId): number {
     const every = this.pipDef(id)?.regen?.every ?? 0;
     if (every <= 0 || this.pipCount(actor, id) >= this.pipMax(actor, id)) return 0;
+    if (this.pipDef(id)?.regen?.parallel) {
+      const left = this.pipTimers.get(`${actor.id}:${id}`);
+      return left?.length ? clamp(1 - Math.min(...left) / every, 0, 1) : 0;
+    }
     return clamp((this.pipClock.get(`${actor.id}:${id}`) ?? 0) / every, 0, 1);
   }
 
@@ -660,6 +666,7 @@ export class SkillSystem {
     if (this.pipCount(actor, 'combo') > 0) this.consumeCombo(actor);
     const prefix = `${actor.id}:`;
     for (const k of [...this.pipClock.keys()]) if (k.startsWith(prefix)) this.pipClock.delete(k);
+    for (const k of [...this.pipTimers.keys()]) if (k.startsWith(prefix)) this.pipTimers.delete(k);
   }
 
   private setPip(actor: Actor, id: string, n: number, max: number): void {
@@ -1189,6 +1196,8 @@ export class SkillSystem {
     const minCp = def.params?.minCp;
     if (minCp && st.cp < minCp) { if (report) this.fail('resource'); return false; }
     if (def.pip?.min && this.pipCount(p, def.pip.id) < def.pip.min) { if (report) this.fail('resource'); return false; }
+    // PM-NE: a pip spender (runes, Holy Power) the counter cannot pay is refused at the press, not after the GCD and the swing have been spent
+    if (def.pip?.cost && !resolveProcMods(p.statuses, def.id)?.pipFree && this.pipCount(p, def.pip.id) < def.pip.cost) { if (report) this.fail('resource'); return false; }
     return true;
   }
 
@@ -1617,10 +1626,29 @@ export class SkillSystem {
     for (const [id, pd] of Object.entries(TALENT_PIPS) as [PipId, PipDef | undefined][]) {
       if (!pd?.regen) continue;
       const key = `${p.id}:${id}`;
+      if (pd.regen.parallel) { this.regenParallel(p, id, pd.max, pd.regen.every, key, dt); continue; }
       if (this.pipCount(p, id) >= pd.max) { this.pipClock.set(key, 0); continue; }
       const t = (this.pipClock.get(key) ?? 0) + dt;
       if (t < pd.regen.every) { this.pipClock.set(key, t); continue; }
       this.pipClock.set(key, t - pd.regen.every);
+      this.addPip(p, id, 1);
+    }
+  }
+
+  /**
+   * PM-NE: parallel recharge (runes). Every missing pip owns a timer of `every` seconds that starts the frame after it was spent;
+   * they all run at once, so 6 spent runes are all back 10 s later. Pips granted by other means (addPip) cancel the timer closest to done.
+   */
+  private regenParallel(p: Player, id: PipId, max: number, every: number, key: string, dt: number): void {
+    let timers = this.pipTimers.get(key);
+    if (!timers) { timers = []; this.pipTimers.set(key, timers); }
+    const missing = Math.max(0, max - this.pipCount(p, id));
+    while (timers.length < missing) timers.push(every);
+    while (timers.length > missing) timers.splice(timers.indexOf(Math.min(...timers)), 1);
+    for (let i = timers.length - 1; i >= 0; i--) {
+      timers[i] -= dt;
+      if (timers[i] > 0) continue;
+      timers.splice(i, 1);
       this.addPip(p, id, 1);
     }
   }
@@ -3437,6 +3465,7 @@ export class SkillSystem {
     const lp = this.localPlayer ?? G.player;
     if (lp) this.resetPips(lp); // NC35: pips do not survive a scene change
     this.pipClock.clear();
+    this.pipTimers.clear();
     G.procs?.reset();
     this.procWatch.reset();
     this.watchers.reset();

@@ -2,6 +2,8 @@
  * Nekromant minions (GDD_CLASSES_V2 §1.5 framework, NC24 slot). Rows are the Ordu Efendisi (necromancer_summoner) ghouls of
  * docs/kits/plate-melee.md §9b (PM-NE supersedes the NC24 skeleton list). Kit values are used as written; where the kit leaves
  * a number open it is marked below. Anims are the Skeleton_Minion rig clips (GDD §5.6 defaults).
+ * PM-NE: `necro_ghoul` is auto-summoned by Ordu Efendisi (specials trait_summoner.pet, Minions.ensurePets) and carries a `taunt`
+ * attack (NC42: MinionAI fires it when 2+ enemies in its radius are busy with someone else). Registered by data/minions.ts.
  */
 import type { MinionDef } from '../../types/minions';
 
@@ -19,6 +21,8 @@ export const NECRO_MINIONS: MinionDef[] = [
     attacks: [
       // claw every 1.8 s, 0.40 shadow, r 2.6 (kit §9b). Dark Transformation (x2, cleave) is a status read later, not modelled here.
       { id: 'necro_ghoul_claw', name: 'Pençe', kind: 'melee', range: 2.6, cooldown: 1.8, hitTime: 0.45, anim: '1H_Melee_Attack_Chop', animSpeed: 1.3, coef: 0.40, type: 'shadow' },
+      // Kışkırtma (PM-NE, not in the kit table): pulls the enemies within 7 m that are busy with someone else for 3 s (bosses 2 s). Coef 0: no damage.
+      { id: 'necro_ghoul_taunt', name: 'Kışkırtma', kind: 'taunt', range: 7, radius: 7, cooldown: 10, hitTime: 0.3, anim: 'Taunt', animSpeed: 1.2, coef: 0, type: 'shadow', params: { tauntSec: 3, minTargets: 2 } },
     ],
     aggro: 10, follow: [2, 4.5], leash: 28,
     respawn: { dead: 10, scene: 2 },

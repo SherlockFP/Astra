@@ -24,7 +24,7 @@ import type { DamageResult } from '../Combat';
 export const BEHAVIORS_KIT_PLATE: Record<string, Behavior> = {};
 
 // ---- rune pip (§g need 1): PipDef.regen, registered here because TALENT_PIPS is a shared table (`Object.assign` as statuses.ts does)
-const RUNE_PIP: PipDef = { id: 'rune', name: 'Rün', max: 6, color: '#7fd6e0', icon: 'buff-mana-regen', regen: { every: 10 } };
+const RUNE_PIP: PipDef = { id: 'rune', name: 'Rün', max: 6, color: '#7fd6e0', icon: 'buff-mana-regen', regen: { every: 10, parallel: true } };
 if (!TALENT_PIPS.rune) Object.assign(TALENT_PIPS, { rune: RUNE_PIP });
 
 /** Target of a cast without a usable soft target: the hard aim target when it is an enemy in range, else the nearest enemy in the cone. */

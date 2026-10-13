@@ -22,6 +22,8 @@ import { PROC_MODS_KIT_BARBARIAN } from '../data/procs_kit_barbarian';
 import { PROC_MODS_KIT_KNIGHT } from '../data/procs_kit_knight';
 // KIT PM-PA (docs/kits/plate-melee.md §5b-§7b): paladin proc mods (shining_light, infusion_of_light, art_of_war, hammer_window, templar_combo).
 import { PROC_MODS_KIT_PALADIN } from '../data/procs_kit_paladin';
+// KIT PM-NE (docs/kits/plate-melee.md §9b): necromancer proc mods (sudden_doom: free Ölüm Sarmalı / Salgın).
+import { PROC_MODS_KIT_NECROMANCER } from '../data/procs_kit_necromancer';
 
 export interface ProcMod {
   /** Proc status that enables this mod. Also the key of PROC_MODS. */
@@ -84,7 +86,7 @@ export function registerProcMods(rows: readonly ProcMod[]): void {
 }
 
 // KIT PK-0: one merge line for the three kit files (empty until PK-MAGE / PK-ROGUE / PK-WARLOCK).
-registerProcMods([...PROC_MODS_KIT_MAGE, ...PROC_MODS_KIT_ROGUE, ...PROC_MODS_KIT_WARLOCK, ...PROC_MODS_KIT_KNIGHT, ...PROC_MODS_KIT_BARBARIAN, ...PROC_MODS_KIT_PALADIN]);
+registerProcMods([...PROC_MODS_KIT_MAGE, ...PROC_MODS_KIT_ROGUE, ...PROC_MODS_KIT_WARLOCK, ...PROC_MODS_KIT_KNIGHT, ...PROC_MODS_KIT_BARBARIAN, ...PROC_MODS_KIT_PALADIN, ...PROC_MODS_KIT_NECROMANCER]);
 
 /** Merged effect of every active proc mod that applies to one skill. */
 export interface ResolvedProcMods {

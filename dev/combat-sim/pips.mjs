@@ -62,7 +62,7 @@ const since = (n) => changed.slice(n);
   ok('pips.chi does not decay in combat', G.skills.pipCount(p, 'chi') === 2, `chi=${G.skills.pipCount(p, 'chi')}`);
 }
 
-// ---- rune (necromancer): +1 per 10 s, max 6
+// ---- rune (necromancer): every spent rune is back 10 s after it was spent (parallel timers), max 6
 {
   const p = H.addPlayer('necromancer');
   p.pips = { rune: 0 };
@@ -71,8 +71,8 @@ const since = (n) => changed.slice(n);
   const frac = G.skills.pipRegenFrac(p, 'rune');
   ok('pips.rune recharge progress is about half after 5 s', frac > 0.4 && frac < 0.6, `frac=${frac.toFixed(2)}`);
   H.stepSec(5.3);
-  ok('pips.rune regenerates 1 per 10 s', G.skills.pipCount(p, 'rune') === 1, `rune=${G.skills.pipCount(p, 'rune')}`);
-  ok('pips.rune regen emits points 1', last('rune')?.points === 1 && last('rune')?.max === 6, JSON.stringify(last('rune')));
+  ok('pips.rune all 6 recharge in parallel within 10 s', G.skills.pipCount(p, 'rune') === 6, `rune=${G.skills.pipCount(p, 'rune')}`);
+  ok('pips.rune regen emits points 6', last('rune')?.points === 6 && last('rune')?.max === 6, JSON.stringify(last('rune')));
   G.skills.addPip(p, 'rune', 10);
   ok('pips.rune cap 6', G.skills.pipCount(p, 'rune') === 6 && G.skills.pipRegenFrac(p, 'rune') === 0);
 }

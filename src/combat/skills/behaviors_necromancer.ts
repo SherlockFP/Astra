@@ -20,7 +20,7 @@
  *                    def.statuses are COPIED from the target (dps and all) to the others; `center 1` = caster
  * death_order        orders every minion (`armyOnly 1` = group army) onto the target: focus, ring teleport,    necro_death_order
  *                    one merged strike (cmdCoef x minions), cleave to `cleaveMax` enemies at cleaveMult
- *                    once `cleaveMin` enemies stand in `cleaveRadius`; spends one vile_contagion
+ *                    once `cleaveMin` enemies stand in `cleaveRadius`; spends one vile_contagion; `gain` Öz (PM-NE)
  * empower_minions    Karanlık Dönüşüm: def.selfStatuses on the caster, the caster's `pet` minions deal          necro_dark_transformation
  *                    dmgMult x for the status duration, focus on the aimed enemy
  * summon_ring        def.minion summoned in a ring (`ringRadius`), cap-exempt via minion.ignoreCap,            necro_army_of_the_dead
@@ -413,6 +413,8 @@ const deathOrder: Behavior = {
         });
       }
     }
+    // PM-NE: the Öz gain of the row (+10, once per order; the merged minion hit goes through Combat.playerHitEnemy, not sys.strike)
+    if ((p.gain ?? 0) > 0) sys.gainResource(caster, p.gain);
     sys.vfx(def.vfx?.cast ?? 'curse_ring', at(t, 0.1), { scale: 1 });
     sys.sfx('curse_cast', caster.position);
     sys.applySelf(c, def.selfStatuses ?? []);

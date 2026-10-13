@@ -42,6 +42,8 @@ G.camera = { shake() {}, punch() {}, kickFov() {}, getBasis: () => ({ forward: n
 G.input = {
   pressed: (a) => pressedNow.has(a),
   down: (a) => held.has(a),
+  keyPressed: () => false,
+  keyDown: () => false,
   moveAxis: () => ({ x: 0, y: 0 }),
 };
 G.mplus = { onEnemyKilled() {}, onBossKilled() {}, onPlayerDeath() {} };
