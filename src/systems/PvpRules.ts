@@ -42,7 +42,7 @@ export const PVP = {
 } as const;
 
 /** Result of the hit rules: null = allowed, otherwise a short machine reason. */
-export type PvpDeny = 'zone' | 'nation' | 'dead' | 'safe' | 'self' | 'level' | 'unknown' | null;
+export type PvpDeny = 'zone' | 'nation' | 'guild' | 'dead' | 'safe' | 'self' | 'level' | 'unknown' | null;
 
 export interface PvpHitCtx {
   zoneId: string | null | undefined;

@@ -74,9 +74,9 @@ export const BOHCA_BIG_PRICE = 4000;
 export function listingFee(totalPrice: number): number {
   return totalPrice > 0 ? Math.max(1, Math.ceil(totalPrice * MARKET.LISTING_FEE)) : 0;
 }
-/** Pazar Vergisi on one sale (rounded down: a 33 gold sale is tax free). */
-export function saleTax(price: number): number {
-  return Math.max(0, Math.floor(price * MARKET.SALE_TAX));
+/** Pazar Vergisi on one sale (rounded down: a 33 gold sale is tax free). `mult` = a local tax cut (WP-14: 0.9 for the siege holder's guild). */
+export function saleTax(price: number, mult = 1): number {
+  return Math.max(0, Math.floor(price * MARKET.SALE_TAX * mult));
 }
 /** What the seller receives for one sale. */
 export function saleNet(price: number): number {

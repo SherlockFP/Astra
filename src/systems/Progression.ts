@@ -2,6 +2,7 @@ import { G } from '../game/G';
 import { emit, toast } from './notify';
 import { addSkillMastery, announceLevelRanks, masteryRank, masteryXp } from './SkillMastery';
 import { classPoints, specPoints } from './Talents';
+import { siegeXpMult } from './SiegeRules';
 import { LEVEL_CAP } from '../types/character';
 import type { ClassId } from '../types/common';
 import type { EnemyRank } from '../types/enemies';
@@ -88,7 +89,8 @@ export class Progression {
     if (!ch || amount <= 0 || !isFinite(amount)) return;
     const save = ch.save;
     if (save.level >= LEVEL_CAP) return;
-    const gained = Math.round(amount);
+    // WP-14: the winning nation's Zafer buff (+5 % XP for one hour, local)
+    const gained = Math.round(amount * siegeXpMult(save.siege?.zaferUntil));
     save.xp += gained;
     const levelsGained: number[] = [];
     while (save.level < LEVEL_CAP) {

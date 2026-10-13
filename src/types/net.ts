@@ -9,6 +9,7 @@ import type { SpecId } from './v2';
 import type { MinionSync } from './minions';
 import type { StatBlock } from './stats';
 import type { CampMsg, ChatAnn, HomeMsg } from './itemsV2';
+import type { BannerWire, BannerHolder } from '../systems/SiegeRules';
 
 /** GDD_LIFE §3.1 (L-00): chat channel of a `net:chat` line. `party` and `system` are the original two. */
 export type ChatChannel = 'party' | 'system' | 'say' | 'yell' | 'whisper' | 'global' | 'trade' | 'emote' | 'boss' | 'loot' | 'guild';
@@ -48,7 +49,11 @@ export type PvpMsg =
   /** A PvP kill (kill feed + honour). `h` = honour awarded to the killer (0 when anti-farm cut it), `s` = killer streak. */
   | { k: 'pkill'; killer: EntityId; victim: EntityId; kn: string; vn: string; ka: number; va: number; h: number; s: number; sc: [number, number] }
   /** Scoreboard rows: [entity id, name, nation, kills, deaths, honour earned this visit]. */
-  | { k: 'pboard'; rows: [EntityId, string, number, number, number, number][]; sc: [number, number] };
+  | { k: 'pboard'; rows: [EntityId, string, number, number, number, number][]; sc: [number, number] }
+  // ---- WP-14 Kale Kuşatması (systems/Siege.ts). Host -> clients, the same HOST_ONLY pvp channel. The banner state, twice a second while the window runs.
+  | ({ k: 'sg' } & BannerWire)
+  /** The window ended: `h` = the holder at the end (null: nobody), `w` = week index, `n` = winning nation (null: none). */
+  | { k: 'sgend'; w: number; h: BannerHolder | null; n: 'gok_kartal' | 'kizil_kurt' | null };
 
 /**
  * CM14 Pazar (CORE_MECHANICS §11). The three shop channels travel on the LOBBY room (net/messages.ts LobbyChannels), not the party

@@ -21,6 +21,8 @@ import { spawnVillageNpcs } from './VillageSpawner';
 import { WorldPois } from './WorldPois';
 import { WorldGather } from './WorldGather';
 import { EventCalendar, buildEventSites } from './EventCalendar';
+import { startSiege, type SiegeRuntime } from '../../systems/Siege';
+import { SIEGE_MAP_ID } from '../../data/siege';
 import { Discoveries } from './Discoveries';
 import { bindQuestMarks } from './QuestMarks';
 import { EV, nameOfDef, spawnPayloadOf, tileToWorld, WorldCtx, type Pt } from './util';
@@ -70,6 +72,8 @@ export class WorldRuntime {
   private readonly discoveries: Discoveries;
   private events: EventScope | null = null;
   private calendar: EventCalendar | null = null;
+  /** WP-14 Kale Kuşatması: the fortress runtime (Karakır only). */
+  private siege: SiegeRuntime | null = null;
   private started = false;
   private disposed = false;
   private regionTimer = 0;
@@ -118,6 +122,7 @@ export class WorldRuntime {
     // quest markers over the village quest givers (after the NPCs are spawned)
     bindQuestMarks(this.events, this.o.world);
     this.calendar = new EventCalendar(this.ctx, { metin: this.metin, bosses: this.bosses }, buildEventSites(this.ctx));
+    if (this.o.def.id === SIEGE_MAP_ID) this.siege = startSiege({ world: this.o.world, scene: this.o.scene });
     this.started = true;
     activeRuntime = this;
     this.trackRegion(true);
@@ -145,6 +150,7 @@ export class WorldRuntime {
     this.run('minis', () => this.minis.update(dt));
     this.run('chests', () => this.pois.update(dt));
     this.run('events', () => this.calendar?.update(dt));
+    this.run('siege', () => this.siege?.update(dt));
     if (G.net.isAuthority) this.run('goblins', () => this.goblinTick(dt));
     this.regionTimer -= dt;
     if (this.regionTimer <= 0) {
@@ -211,6 +217,8 @@ export class WorldRuntime {
     this.waypoints.dispose();
     this.calendar?.dispose();
     this.calendar = null;
+    this.siege?.dispose();
+    this.siege = null;
   }
 
   // ================================================================================================
