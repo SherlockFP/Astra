@@ -1,6 +1,7 @@
 import { G } from '../../../game/G';
 import { ACTION_NAMES_TR, DEFAULT_BINDINGS, codeLabel, type InputAction } from '../../../core/Input';
 import { DEFAULT_SETTINGS, type SettingsData } from '../../../core/Settings';
+import { exportSaves, openImportDialog } from '../../../core/SaveSafety';
 import { GamePanel, askConfirm, button, divider, h, row, selectBox, slider, sfx, tabs, toast, toggle, windowFrame, type TabsHandle } from './base';
 
 type NumKeys = { [K in keyof SettingsData]: SettingsData[K] extends number ? K : never }[keyof SettingsData];
@@ -422,6 +423,19 @@ export class SettingsPanel extends GamePanel {
         this.flag('autoApplyPassives', 'Pasif puanları anında uygula', 'Yalnızca puan eklediğin taslak 1,5 sn sonra kendiliğinden uygulanır; geri alma içeren taslaklar Uygula ister'),
       ),
       this.section('Çevrimiçi', row('Oyuncu Adı', name, 'Boş bırakırsan karakter adın kullanılır'), row('Dil', h('span.pg-gold', null, 'Türkçe'))),
+      this.section(
+        'Kayıt',
+        row(
+          'Karakter Kayıtları',
+          h(
+            'div',
+            { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' } },
+            button('Dışa Aktar', () => exportSaves(G.save)),
+            button('İçe Aktar', () => openImportDialog(G.save)),
+          ),
+          'Tüm karakterlerini tek JSON dosyasına kaydet; yedek dosyasını İçe Aktar ile geri yükle',
+        ),
+      ),
     );
     this.bodyEl.append(divider());
   }

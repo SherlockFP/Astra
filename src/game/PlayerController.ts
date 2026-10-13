@@ -91,6 +91,8 @@ export class PlayerController {
   private stepAcc = 0;
   private repeat: Record<SkillSlotKey, number> = { lmb: 0, rmb: 0, q: 0, e: 0, r: 0, s1: 0, s2: 0, s3: 0, m45: 0, m90: 0, m180: 0 };
   private pending: { slot: SkillSlotKey; until: number } | null = null;
+  /** controller time until which a heavyAttack press that SkillSystem could not take yet stays buffered (F4). */
+  private heavyUntil = -1;
   private dodge: { t: number; dx: number; dz: number; dust: boolean } | null = null;
   /** controller time until which a dodge press that could not start yet stays buffered (knockback, previous roll, charge almost back). */
   private dodgeBuf = -1;
@@ -179,6 +181,8 @@ export class PlayerController {
       G.events.on('boss:engaged', (e) => this.onBossEngaged(e.entityId)),
       G.events.on('boss:defeated', () => this.releaseBossLock()),
       G.events.on('boss:wipe', () => this.releaseBossLock()),
+      // CORE_MECHANICS §1.5 (solo-aware roles): StatCalc reads the party size, so a party change refolds the local stats
+      G.events.on('party:changed', () => G.character?.recomputeStats()),
     );
     if (G.input) G.input.enabled = true;
   }
@@ -809,6 +813,11 @@ export class PlayerController {
       }
     }
 
+    // F4: the heavyAttack key (Mouse4 / keyboard fallback) starts the charge. A press that SkillSystem cannot take yet (roll, basic
+    // step before its cancel window) is retried for 0.35 s, like the LMB buffer. Runs before the slot loop so LMB sees the charge.
+    if (input.pressed('heavyAttack')) this.heavyUntil = this.time + 0.35;
+    if (this.heavyUntil > this.time && canFireDuringRoll && G.skills.tryHeavyPress(p)) this.heavyUntil = -1;
+
     for (const slot of SKILL_SLOT_KEYS) {
       const act = SLOT_ACTION[slot];
       const isMouse = slot === 'lmb' || slot === 'rmb';
@@ -816,11 +825,13 @@ export class PlayerController {
       if (slot === 'rmb' && !action) continue; // classic RMB: click-vs-drag handled below
       let pressed = input.pressed(act);
       let down = input.down(act);
-      if (slot === 'lmb' && this.swallowLmb) {
+      // a heavy charge owns LMB until its release: a chain press must not cancel it (SkillSystem.isCharging)
+      if (slot === 'lmb' && (this.swallowLmb || G.skills.isCharging(p))) {
         pressed = false;
         down = false;
       }
-      // LMB: a press is a light step; holding charges the heavy (GDD_V2 §3.2) unless Settings.autoCombo re-fires the chain while held
+      // LMB: a press is a light step. Settings.autoCombo (F4 default on) re-fires the chain while held; with it off, holding LMB
+      // charges the heavy in SkillSystem (chargeDown), and the heavyAttack key (Mouse4) charges either way
       if (slot === 'lmb' && !G.settings?.data.autoCombo) down = false;
       if (this.repeat[slot] > 0) this.repeat[slot] -= dt;
       if (!pressed && !down) continue;

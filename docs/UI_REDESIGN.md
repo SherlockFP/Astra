@@ -5,6 +5,21 @@
 > **Reads / overrides:** GDD_V2 §0.4 + §2.4 + §9.7, GDD_TALENTS §5, GDD_LIFE §3, GDD_OPENWORLD §6–7, ROADMAP batch 6. Conflicts are listed in §0.4 — **this document wins for everything under `src/ui/**`**; `ARCHITECTURE.md` still wins for module ownership.
 > **Code facts below were read from the repository on 2026-10-13** (file names and line-level claims are real; numbers like "1,970 hex literals" were counted by script).
 
+> **ORCHESTRATOR OVERRIDE (2026-10-13, binding — wins over everything below):**
+> 1. **Visual language = ElvUI / modern WoW, not "Taş & Altın".** The user's latest UI request ("UI çok kötü… skill bar ve
+>    UI de böyle olsun, DPS bar da böyle") came with the ElvUI + Details! references in `docs/ref/ui/README.md` #1, #2,
+>    #4, #5, #6. So: flat dark semi-transparent panels, 1 px dark borders, compact; player frame just left of centre and
+>    target frame just right of centre (slightly below the middle) with flat bars and aura rows; action bars = a tight
+>    grid of crisp square icons with tiny keybind labels top-right, charge counts bottom-right, cooldown sweep, proc
+>    glow; Details!-style DPS/HPS meters (spec icon + class-colour bar + value); quest tracker on the right; minimap
+>    top-right; chat bottom-left. §2.6 "Alt Tahta" and §3 "Taş & Altın" are rewritten accordingly (§2 layout ideas —
+>    progressive slot reveal, density, one context tracker, visibility matrix — stay). Gold is an ACCENT only (rarity,
+>    highlights), not the frame material. A "Metin2 Klasik" HUD skin (board + gauges) may follow later as an option.
+> 2. **Bar = CORE_MECHANICS §10.1:** LMB chain + rmb, q, e, r, 1, 2, 3, G (new s4) + X/V/T majors + potions/flasks.
+> 3. **Hotkeys:** Group Finder = **I** (inventory = B only), per GDD_PVP_FINDER / MAP_UI and the user's explicit ask
+>    ("WoW'daki gibi I'ya basınca queue'lar"); guide panel = `.`. The `,` finder key in this doc is void.
+> 4. Action-bar states, proc glow, cast bars and target auras follow docs/COMBAT_WOW.md §2.12–2.15.
+
 ## Table of contents
 
 0. [Brief, goals, scope, overrides](#0-brief-goals-scope-overrides)

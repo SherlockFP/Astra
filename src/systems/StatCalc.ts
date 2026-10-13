@@ -5,6 +5,7 @@ import { SETS, UNIQUES } from '../data/uniques';
 import { getMaterial } from '../data/materials';
 import { AV_DEFTERI } from '../data/avDefteri';
 import { getSpec } from '../data/specs';
+import { G } from '../game/G';
 import { SIGNATURE_SKILLS, skillSpecsOf } from '../data/skillSpecs';
 import { parseFx } from '../data/talentTrees/fx';
 import { getTree } from '../data/talentTrees/index';
@@ -17,7 +18,7 @@ import type { CharacterSave } from '../types/character';
 import { EQUIP_SLOTS } from '../types/items';
 import type { ActiveFx, FxItem, ModEntry, TreeDef } from '../types/talents';
 import { addStats, type StatBlock, type StatId } from '../types/stats';
-import type { SpecId } from '../types/v2';
+import type { RoleId, SpecId } from '../types/v2';
 
 /**
  * Folds every stat source into the FINAL StatBlock of the local character (GDD_SYSTEMS 1.2-1.3):
@@ -51,7 +52,7 @@ export interface SpecialEntry {
 export interface StatCalcResult {
   stats: StatBlock;
   specials: Record<string, SpecialEntry>;
-  /** Product of every "moreDamage" multiplier (keystones). */
+  /** Product of every "moreDamage" multiplier (keystones, and the solo healer ×1.3 of soloRoleAdjust). */
   moreDamage: number;
   /** Equipped piece count per set id. */
   setCounts: Record<string, number>;
@@ -281,7 +282,27 @@ function registerSpecial(into: Record<string, SpecialEntry>, id: string, desc: s
   into[id] = { id, desc, params: params ?? {}, source };
 }
 
-export function computeStats(save: CharacterSave): StatCalcResult {
+// ================================================================================================ solo-aware roles
+/** Party size StatCalc uses (read on every computeStats call, so it is never stale). NetSession.peers always holds the local peer; no party or offline = 1. */
+export function localPartySize(): number {
+  return Math.max(1, G.net?.peers.size || 1);
+}
+
+/**
+ * CORE_MECHANICS §1.5 "Yalnız Kurt" (solo-aware roles). Alone (party size 1) a tank or healer ignores the NEGATIVE damage
+ * modifiers of its spec's stats (knight_protector damagePct -0.25), and a healer also deals ×1.3 more damage (`moreDamage`).
+ * A party of 2 or more gets the spec stats unchanged. The adjusted block is what the spec fold must use.
+ */
+export function soloRoleAdjust(role: RoleId | undefined, specStats: StatBlock, partySize: number): { stats: StatBlock; moreDamage: number } {
+  if (partySize > 1 || (role !== 'tank' && role !== 'healer')) return { stats: specStats, moreDamage: 1 };
+  const stats: StatBlock = { ...specStats };
+  for (const k of Object.keys(stats) as StatId[]) {
+    if (/damagePct$/i.test(k) && (stats[k] ?? 0) < 0) delete stats[k];
+  }
+  return { stats, moreDamage: role === 'healer' ? 1.3 : 1 };
+}
+
+export function computeStats(save: CharacterSave, partySize: number = localPartySize()): StatCalcResult {
   const classId = save.classId;
   const L = Math.max(1, save.level);
   const table = classTable(classId);
@@ -324,8 +345,13 @@ export function computeStats(save: CharacterSave): StatCalcResult {
   }
   // ---- spec passive (GDD_TALENTS §2.1: SpecDef.stats / specials, granted at the L10 choice)
   const specDef = save.spec ? getSpec(save.spec) : undefined;
+  let soloMore = 1;
   if (specDef) {
-    if (specDef.stats) addStats(S, specDef.stats);
+    if (specDef.stats) {
+      const solo = soloRoleAdjust(specDef.role, specDef.stats, partySize); // CORE_MECHANICS §1.5
+      addStats(S, solo.stats);
+      soloMore = solo.moreDamage;
+    }
     for (const sp of specDef.specials ?? []) registerSpecial(specials, sp.id, sp.desc, sp.params, 'talent');
   }
   // ---- talent layer: trees, web fx, masteries, jewels, skill picks (GDD_TALENTS §2.5); a failed fold keeps the rest
@@ -360,7 +386,7 @@ export function computeStats(save: CharacterSave): StatCalcResult {
   }
 
   // ---- "more" multipliers & keystone flags
-  let moreDamage = 1, moreHp = 1;
+  let moreDamage = soloMore, moreHp = 1;
   for (const sp of Object.values(specials)) {
     if (sp.params.moreDamage) moreDamage *= sp.params.moreDamage;
     if (sp.params.moreHp) moreHp *= sp.params.moreHp;

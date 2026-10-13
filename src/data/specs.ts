@@ -3,7 +3,7 @@
  *
  * Six V2 specs of the non-mage classes (knight, barbarian, rogue). The mage specs are superseded by GDD_TALENTS
  * (mage_fire / mage_frost / mage_arcane) and live in data/specs_talents.ts (merged below, owner T8).
- * Passive `stats` are folded into the player by Player.refreshStats() via foldSpecStats (combat/specs.ts).
+ * Passive `stats` are folded once by StatCalc.computeStats (with the solo-role rule, CORE_MECHANICS §1.5).
  * Skill rows of the specs live in data/skills.ts (`spec` field). Majors are in SkillDef.defaultSlot m45/m90/m180.
  *
  * `mods` only lists changes the runtime applies: `patch` (cooldown, cost, statuses) and `params.threat` / `params.threatMult`

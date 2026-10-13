@@ -37,8 +37,10 @@ export interface SettingsData {
   // GDD_V2 (WP1 contracts). Defaults below; old settings files merge over them.
   /** Heal target picking mode (GDD_V2 §1.6). */
   healTargeting: 'smart' | 'frames' | 'crosshair';
-  /** Hold LMB auto-repeats the light chain (GDD_V2 O2; default OFF = holding charges the heavy). */
+  /** Hold LMB auto-repeats the light chain (GDD_V2 O2, F4 default ON). OFF = holding LMB charges the heavy; the heavyAttack keys (Mouse4, Minus) always charge. */
   autoCombo: boolean;
+  /** Schema version of the stored settings (see SETTINGS_VERSION and the migration in Settings's constructor). */
+  settingsVersion: number;
   /** M+ nameplate forces tag (GDD_V2 §8.1). */
   showForces: boolean;
   /** Kick tracker widget (GDD_V2 §8.4). */
@@ -95,6 +97,12 @@ export interface SettingsData {
   rumble: boolean;
 }
 
+/**
+ * Settings schema version. 1 = before F4 (autoCombo defaulted to false and every save wrote it out as false).
+ * 2 = autoCombo defaults to true; stored v1 files get autoCombo flipped to true once, on load.
+ */
+export const SETTINGS_VERSION = 2;
+
 export const DEFAULT_SETTINGS: SettingsData = {
   psx: true,
   psxPixelScale: 3,
@@ -126,7 +134,8 @@ export const DEFAULT_SETTINGS: SettingsData = {
   language: 'tr',
   hudStyle: 'metin2',
   healTargeting: 'smart',
-  autoCombo: false,
+  autoCombo: true,
+  settingsVersion: SETTINGS_VERSION,
   showForces: true,
   kickTracker: true,
   showTankRoute: true,
@@ -168,7 +177,14 @@ export class Settings {
     } catch {
       stored = {};
     }
+    // F4 migration, once: a stored file older than v2 saved autoCombo as false (the old default). Flip it, keep later choices.
+    const migrate = !!stored && Object.keys(stored).length > 0 && (stored.settingsVersion ?? 1) < SETTINGS_VERSION;
     this.data = { ...DEFAULT_SETTINGS, ...stored };
+    if (migrate) {
+      this.data.autoCombo = true;
+      this.data.settingsVersion = SETTINGS_VERSION;
+      this.save();
+    }
   }
 
   get<K extends keyof SettingsData>(key: K): SettingsData[K] {
@@ -195,8 +211,8 @@ export class Settings {
   save(): void {
     try {
       localStorage.setItem(KEY, JSON.stringify(this.data));
-    } catch {
-      /* storage full / blocked */
+    } catch (e) {
+      console.warn('[settings] save failed (storage full or blocked)', e);
     }
   }
 }

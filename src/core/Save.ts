@@ -4,6 +4,12 @@ import type { SpecId } from '../types/v2';
 import { SKILLS } from '../data/skills';
 import { getSpec } from '../data/specs';
 import { migrationToast } from '../dev/migrate';
+import { CLASSES } from '../data/classes';
+import type { ClassId } from '../types/common';
+import {
+  EXPORT_FORMAT, MSG_BAD_FILE, MSG_NEWER_FILE, backupDue, backupKey, clearBackups, newCharacterId, notifyFull, notifyLost, notifyRestored,
+  notifyWriteFailed, requestPersistentStorage, rollBackup, type ImportResult,
+} from './SaveSafety';
 
 const INDEX_KEY = 'efsun.characters.v1';
 const CHAR_KEY = (id: string) => `efsun.char.${id}`;
@@ -106,8 +112,15 @@ function remapBars(save: CharacterSave, from: string, to: SpecId, majors: Partia
   delete bars[from as SpecId];
 }
 
-/** Character slots in localStorage. Pure persistence — no game logic. */
+/**
+ * Character slots in localStorage. Pure persistence — no game logic. Safety net (SaveSafety.ts): rolling `.bak1` / `.bak2`
+ * copies, recovery from a backup when the JSON is corrupt, one retry + toast on write failure, JSON export / import.
+ */
 export class Save {
+  constructor() {
+    requestPersistentStorage();
+  }
+
   listIds(): string[] {
     try {
       return JSON.parse(localStorage.getItem(INDEX_KEY) || '[]');
@@ -123,41 +136,170 @@ export class Save {
       .sort((a, b) => b.lastPlayed - a.lastPlayed);
   }
 
+  /** Missing, corrupt or unnormalisable JSON falls back to .bak1, then .bak2 (see recover). */
   load(id: string): CharacterSave | null {
     try {
       const raw = localStorage.getItem(CHAR_KEY(id));
-      if (!raw) return null;
-      const parsed: unknown = JSON.parse(raw);
-      // the spec as stored: normaliseCharacterSave runs the talent migration, which may change it (GDD_TALENTS §1.8)
-      const storedSpec = parsed && typeof parsed === 'object' ? (parsed as { spec?: unknown }).spec : undefined;
-      const save = normaliseCharacterSave(parsed);
-      if (save) queueMigrationToast(save, typeof storedSpec === 'string' ? storedSpec : undefined);
-      return save;
+      if (!raw) return this.recover(id, false);
+      const save = this.decode(raw);
+      if (save) return save;
+      console.error('[save] corrupt character', id);
     } catch (e) {
       console.error('[save] corrupt character', id, e);
-      return null;
     }
+    return this.recover(id, true);
   }
 
-  write(save: CharacterSave): boolean {
-    try {
-      save.lastPlayed = Date.now();
-      localStorage.setItem(CHAR_KEY(save.id), JSON.stringify(save));
-      const ids = this.listIds();
-      if (!ids.includes(save.id)) {
-        ids.push(save.id);
-        localStorage.setItem(INDEX_KEY, JSON.stringify(ids));
+  /**
+   * Parses one stored JSON string and normalises it (queues the talent migration toast). Null for non-object payloads;
+   * throws on invalid JSON.
+   */
+  private decode(raw: string): CharacterSave | null {
+    const parsed: unknown = JSON.parse(raw);
+    // the spec as stored: normaliseCharacterSave runs the talent migration, which may change it (GDD_TALENTS §1.8)
+    const storedSpec = parsed && typeof parsed === 'object' ? (parsed as { spec?: unknown }).spec : undefined;
+    const save = normaliseCharacterSave(parsed);
+    if (save) queueMigrationToast(save, typeof storedSpec === 'string' ? storedSpec : undefined);
+    return save;
+  }
+
+  /**
+   * Restores a character from `.bak1`, then `.bak2`. A usable backup is written back to the character key, so the
+   * character stays in the list. `corrupt` = the main JSON was unreadable (the player is told); a missing key restores silently
+   * unless no backup exists either.
+   */
+  private recover(id: string, corrupt: boolean): CharacterSave | null {
+    const key = CHAR_KEY(id);
+    for (const n of [1, 2] as const) {
+      try {
+        const raw = localStorage.getItem(backupKey(key, n));
+        const save = raw ? this.decode(raw) : null;
+        if (!save) continue;
+        save.id = id;
+        this.setRaw(key, JSON.stringify(save));
+        console.warn('[save] restored', id, 'from bak' + n);
+        notifyRestored();
+        return save;
+      } catch (e) {
+        console.warn('[save] bak' + n + ' unusable', id, e);
       }
+    }
+    if (corrupt) {
+      console.error('[save] no usable backup', id);
+      notifyLost();
+    }
+    return null;
+  }
+
+  /** localStorage.setItem that never throws. Returns false on failure (logged). */
+  private setRaw(key: string, json: string): boolean {
+    try {
+      localStorage.setItem(key, json);
       return true;
     } catch (e) {
-      console.error('[save] write failed', e);
+      console.warn('[save] write failed', key, e);
       return false;
     }
   }
 
+  /** Copies the stored JSON to `.bak1` when backupDue() says so. Failures never block the write. */
+  private backupBefore(save: CharacterSave, key: string): void {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored && backupDue(save.id, stored, save)) rollBackup(save.id, key, stored);
+    } catch (e) {
+      console.warn('[save] backup skipped', save.id, e);
+    }
+  }
+
+  private idTaken(id: string): boolean {
+    return this.listIds().includes(id) || localStorage.getItem(CHAR_KEY(id)) !== null;
+  }
+
+  /**
+   * Writes one character (sets lastPlayed). Retries once on failure, then toasts. False = not saved. A new id past
+   * MAX_CHARACTERS is refused here too, so a menu with stale stands cannot store a 7th character.
+   */
+  write(save: CharacterSave): boolean {
+    const taken = this.listIds();
+    if (!taken.includes(save.id) && taken.length >= MAX_CHARACTERS) {
+      notifyFull(MAX_CHARACTERS);
+      return false;
+    }
+    save.lastPlayed = Date.now();
+    const key = CHAR_KEY(save.id);
+    let json: string;
+    try {
+      json = JSON.stringify(save);
+    } catch (e) {
+      console.warn('[save] serialise failed', save.id, e);
+      notifyWriteFailed();
+      return false;
+    }
+    this.backupBefore(save, key);
+    let ok = this.setRaw(key, json) || this.setRaw(key, json);
+    if (ok) {
+      const ids = this.listIds();
+      if (!ids.includes(save.id)) {
+        ids.push(save.id);
+        const index = JSON.stringify(ids);
+        ok = this.setRaw(INDEX_KEY, index) || this.setRaw(INDEX_KEY, index);
+      }
+    }
+    if (!ok) notifyWriteFailed();
+    return ok;
+  }
+
   delete(id: string): void {
     localStorage.removeItem(CHAR_KEY(id));
+    clearBackups(id, CHAR_KEY(id));
     localStorage.setItem(INDEX_KEY, JSON.stringify(this.listIds().filter((x) => x !== id)));
+  }
+
+  /** Every character as one JSON document (format 'efsun-save'). Read back with importAll(). */
+  exportAll(): string {
+    return JSON.stringify({ format: EXPORT_FORMAT, version: SAVE_VERSION, exportedAt: new Date().toISOString(), chars: this.list() });
+  }
+
+  /**
+   * Reads a document made by exportAll(). Each character goes through normaliseCharacterSave. A character whose id is
+   * already used gets a new id and " (2)" on its name. Invalid characters and anything past MAX_CHARACTERS are skipped.
+   * Throws an Error with a Turkish message when the file itself is not a save export.
+   */
+  importAll(json: string): ImportResult {
+    let doc: unknown;
+    try {
+      doc = JSON.parse(json);
+    } catch (e) {
+      console.warn('[save] import: invalid JSON', e);
+      throw new Error(MSG_BAD_FILE);
+    }
+    const bundle = doc as { format?: unknown; version?: unknown; chars?: unknown } | null;
+    if (!bundle || typeof bundle !== 'object' || bundle.format !== EXPORT_FORMAT || !Array.isArray(bundle.chars)) throw new Error(MSG_BAD_FILE);
+    if (typeof bundle.version === 'number' && bundle.version > SAVE_VERSION) throw new Error(MSG_NEWER_FILE);
+    const result: ImportResult = { imported: 0, skipped: 0 };
+    let slots = this.listIds().length;
+    for (const raw of bundle.chars as unknown[]) {
+      const save = normaliseCharacterSave(raw);
+      const classOk = !!save && typeof save.classId === 'string' && Object.prototype.hasOwnProperty.call(CLASSES, save.classId as ClassId);
+      if (!save || typeof save.name !== 'string' || !save.name || !classOk || slots >= MAX_CHARACTERS) {
+        result.skipped++;
+        continue;
+      }
+      if (typeof save.id !== 'string' || !save.id) {
+        save.id = newCharacterId((id) => this.idTaken(id));
+      } else if (this.idTaken(save.id)) {
+        save.name = `${save.name} (2)`;
+        save.id = newCharacterId((id) => this.idTaken(id));
+      }
+      if (this.write(save)) {
+        result.imported++;
+        slots++;
+      } else {
+        result.skipped++;
+      }
+    }
+    return result;
   }
 
   summaries(): CharacterSummary[] {

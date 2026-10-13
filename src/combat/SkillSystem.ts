@@ -222,7 +222,7 @@ export class SkillSystem {
   freeWhirlUntil = 0;
   /** Remote players' running channels (visual replays): the owner's 'cast' {end: true} message stops them. */
   private remoteChannels = new Map<EntityId, { skillId: string; rec: { ended: boolean } }>();
-  /** Seconds the LMB has been held (local player; reset on release). Decides the charged heavy (GDD_V2 §3.2). */
+  /** Seconds the charge key has been held (heavyAttack, or LMB while autoCombo is off; reset on release). Decides the charged heavy (GDD_V2 §3.2). */
   private lmbHeld = 0;
   private zones: Zone[] = [];
   private tasks: ((dt: number) => boolean)[] = [];
@@ -1305,8 +1305,8 @@ export class SkillSystem {
   // ------------------------------------------------------------------------------------------------------
 
   private updateLocal(p: Player, st: ActorState, dt: number): void {
-    // LMB hold clock (GDD_V2 §3.2): time since the press that is still down; 0 once released
-    this.lmbHeld = G.input?.down('skill_lmb') ? this.lmbHeld + dt : 0;
+    // charge hold clock (GDD_V2 §3.2): time the charge key has been down (see chargeDown); 0 once released
+    this.lmbHeld = this.chargeDown() ? this.lmbHeld + dt : 0;
     // a charge pose can only outlive its action through a missed reset: never leave the clip frozen
     if (p.anim && p.anim.freezeUntil >= FREEZE_HOLD * 0.5 && !st.cur?.charging) p.anim.freezeUntil = 0;
     if (p.isDead) {
@@ -1322,6 +1322,7 @@ export class SkillSystem {
     this.decayPips(p, dt);
 
     if (p.statuses.stunned && (st.cur || st.aiming)) this.interrupt(p, true);
+    // F4: the heavyAttack press starts the charge in tryHeavyPress (PlayerController calls it behind its input gates)
     // (PlayerController calls interrupt() itself when a dodge roll really starts: pressing Shift without charges must not cancel swings;
     //  st.dodgeStarted is the rising edge of that roll, so nothing here keys off the raw dodge key either)
     st.dodgeStarted = p.dodgeStartedAt !== st.dodgeSeen;
@@ -1635,6 +1636,32 @@ export class SkillSystem {
     return !!G.settings?.data.autoCombo;
   }
 
+  /**
+   * The charge key is held (F4): the heavyAttack key (Mouse4) always charges. LMB charges only while autoCombo is off, because
+   * with autoCombo on holding LMB keeps chaining the light combo.
+   */
+  private chargeDown(): boolean {
+    if (!G.input) return false;
+    return G.input.down('heavyAttack') || (!this.autoCombo() && G.input.down('skill_lmb'));
+  }
+
+  /**
+   * The heavyAttack press (Mouse4 or its keyboard fallback) starts the charge from an idle or cancellable state. PlayerController
+   * calls it through its input gates and a short buffer. A finisher or riposte is never cut, and a basic step gives way only once
+   * its cancel window (chainAt) is open, so a mashed key cannot cancel a heavy before its hit lands.
+   */
+  tryHeavyPress(p: Player): boolean {
+    const st = this.state(p);
+    if (!p.canAct() || st.aiming || st.cur?.charging) return false;
+    if (st.cur && (st.cur.uninterruptible || this.now - st.cur.start < st.cur.chainAt)) return false;
+    return this.beginCharge(p, st, null);
+  }
+
+  /** A heavy charge is held or still running its release: PlayerController keeps LMB presses from cancelling it. */
+  isCharging(p: Actor): boolean {
+    return !!this.states.get(p.id)?.cur?.charging;
+  }
+
   /** Decision point of a basic step (real seconds after its start): the hold threshold, always before the step's hit frame. */
   private chargeAt(a: Action): number {
     return Math.max(0.1, Math.min(COMBAT_FEEL.chargeThreshold, a.hitAt - 0.04));
@@ -1647,13 +1674,14 @@ export class SkillSystem {
   }
 
   /**
-   * The class heavy starts: the held basic step gives way to the charge pose. The clip plays to its hold frame and freezes there
-   * (AnimController eventAt / freezeUntil). The hit comes on release (releaseCharge). Autocombo (Settings) disables charging.
+   * The class heavy starts: the held basic step gives way to the charge pose (LMB with autoCombo off), or heavyAttack (Mouse4)
+   * starts it from any press (`_basic` null). The clip plays to its hold frame and freezes there
+   * (AnimController eventAt / freezeUntil). The hit comes on release (releaseCharge).
    */
-  private beginCharge(p: Player, st: ActorState, _basic: Action): boolean {
+  private beginCharge(p: Player, st: ActorState, _basic: Action | null): boolean {
     const hv = HEAVY_BY_CLASS[p.classId];
     const def = hv ? SKILLS[hv.id] : undefined;
-    if (!hv || !def || p.isDead || p.statuses.stunned || this.autoCombo()) return false;
+    if (!hv || !def || p.isDead || p.statuses.stunned) return false;
     const aim = this.liveAim(p, st);
     this.endAction(st, 'cancel', false);
     st.combo.next = 0; // a heavy resets the LMB chain
@@ -1695,7 +1723,7 @@ export class SkillSystem {
 
   /** While charging: track the hold, announce tier 2 (0.75 s) once, pulse the glow. */
   private updateCharge(p: Player, st: ActorState, a: Action): void {
-    if (!G.input?.down('skill_lmb')) { this.releaseCharge(p, st, a); return; }
+    if (!this.chargeDown()) { this.releaseCharge(p, st, a); return; }
     a.ctx.data.holdSec = this.lmbHeld;
     const pos: [number, number, number] = [p.position.x, p.position.y + 1, p.position.z];
     if (a.tier !== 2 && this.lmbHeld >= COMBAT_FEEL.chargeTier2) {

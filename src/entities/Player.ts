@@ -8,8 +8,6 @@ import type { CharacterState } from '../systems/CharacterState';
 import type { EquipSlot, ItemInstance } from '../types/items';
 import type { StatusId } from '../types/skills';
 import type { SpecId } from '../types/v2';
-import { foldSpecStats } from '../combat/specs';
-import { specStatBlock } from '../data/specs';
 
 /** State every player broadcasts about its own avatar ~15 Hz (net glue converts to/from wire format). */
 export interface PlayerSyncState {
@@ -248,15 +246,15 @@ export class Player extends Actor {
     const ch = this.character ?? G.character;
     if (!this.isLocal || !ch) return;
     this.spec = (ch.save.spec as SpecId | undefined) ?? null;
-    this.stats = foldSpecStats({ ...ch.stats }, this.spec);
+    // StatCalc already folds the spec passive (incl. the solo-role rule) into ch.stats — never fold it twice
+    this.stats = { ...ch.stats };
     this.level = ch.level;
     this.resourceType = classResource(this.classId);
     const mods = this.statuses.getStatMods();
     const baseHp = (this.stats.maxHp ?? 0) > 0 ? (this.stats.maxHp as number) : 100 + this.level * 20;
     const baseRes = (this.stats.maxResource ?? 0) > 0 ? (this.stats.maxResource as number) : 100;
-    // the spec's maxHpPct (Koruyucu +30%, Savaş Lordu +30%) is not part of the item stats: added here
-    const specHpPct = specStatBlock(this.spec).maxHpPct ?? 0;
-    this.maxHp = Math.max(1, Math.round((baseHp + (mods.maxHp ?? 0)) * (1 + (mods.maxHpPct ?? 0) + specHpPct)));
+    // stats.maxHp is final (StatCalc applied gear/talent/spec maxHpPct); only status modifiers are added here
+    this.maxHp = Math.max(1, Math.round((baseHp + (mods.maxHp ?? 0)) * (1 + (mods.maxHpPct ?? 0))));
     this.maxResource = Math.max(1, Math.round(baseRes + (mods.maxResource ?? 0)));
     this.baseMoveSpeed = DEFAULT_MOVE_SPEED;
     if (!this.statsInit) {

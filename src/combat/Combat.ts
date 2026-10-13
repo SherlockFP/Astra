@@ -15,6 +15,7 @@ import { GUARD_BREAK_STUN, PARRY_WINDOW, GuardState, guardCost, guardProfileOf }
 import { blockChanceCap, protectorCheat, warlordRageMult } from './specs';
 import { breakLock, breakSeconds, finisherPctMaxHp, hyperArmorOf, isSwarm, parryPoise, poiseDelay, poiseMax, poiseRegenRate } from './poise';
 import { CombatMeters } from './meters';
+import { vetHit, vetPlayerDeath } from '../net/guard';
 import './statusesFeel'; // marked_crit / riposte / critbuff defs (side-effect merge into the shared registries)
 import { PARTY_ID_BASE, type DamageType, type EntityId } from '../types/common';
 import type { StatusApply, StatusId } from '../types/skills';
@@ -263,7 +264,7 @@ export class Combat {
       net.on('heal', (p) => this.onNetHeal(p));
       net.on('pstatus', (p) => this.onNetPlayerStatus(p));
       net.on('revive', (p) => this.onNetRevive(p));
-      net.on('pdeath', (p) => this.onNetPlayerDeath(p));
+      net.on('pdeath', (p, from) => this.onNetPlayerDeath(p, from));
     }
     this.combo.onTierUp = (tier) => this.comboTierFx(tier);
     G.events?.on('scene:leaving', () => this.clearScene());
@@ -2165,10 +2166,12 @@ export class Combat {
     if (!G.net.isAuthority || !G.world) return;
     const t = G.world.get<Enemy>(p.targetId);
     if (!t || t.kind !== 'enemy' || t.isDead) return;
+    // F6 host validation (net/guard.ts): known live sender, rate, reach and the amount cap (clamped); a rejected hit is dropped
+    const amount = vetHit(from, t, p.skillId, !!p.isDot, Number(p.amount) || 0);
+    if (amount === null) return;
     const sourceId = this.entityOfPeer(from);
     // a client's parry request (GDD_V2 §3.5): the host applies the poise hit
     if (p.skillId === 'parry') { this.applyParry(t, sourceId); return; }
-    const amount = clamp(Number(p.amount) || 0, 0, 5e7);
     const sk = p.skillId ? SKILLS[p.skillId] : undefined;
     const w = sk?.params?.weight;
     const weight: HitWeight = p.isDot ? 'tick' : w === 3 ? 'ultimate' : w === 2 ? 'heavy' : w === 1 ? 'finisher' : sk?.targeting === 'projectile' ? 'projectile' : 'light';
@@ -2227,11 +2230,13 @@ export class Combat {
     this.reviveLocalPlayer(p.hpFrac);
   }
 
-  private onNetPlayerDeath(p: NetChannels['pdeath']): void {
+  private onNetPlayerDeath(p: NetChannels['pdeath'], from: string): void {
     const w = G.world;
     if (!w) return;
     const pl = w.get<Player>(p.entityId);
     if (!pl || pl.kind !== 'player' || pl.isLocal) return;
+    // F6 (net/guard.ts): only the owning peer may kill or revive its player, and a repeated death is ignored (no double key penalty)
+    if (!vetPlayerDeath(from, pl, p.dead)) return;
     if (p.dead) {
       pl.hp = 0;
       pl.alive = false;

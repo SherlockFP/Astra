@@ -1,5 +1,7 @@
 import './menu.css';
 import { h } from '../../core/utils';
+import { exportSaves, openImportDialog } from '../../core/SaveSafety';
+import { G } from '../../game/G';
 import type { ClassId } from '../../types/common';
 import { CLASS_ORDER, VARIANTS, classPresentation, randomName } from './classInfo';
 
@@ -28,6 +30,8 @@ export interface MenuCallbacks {
   onServers(): void;
   onCredits(): void;
   onExit(): void;
+  /** A save file was imported (Dışa / İçe Aktar): the caller refreshes the character list and stands. Optional. */
+  onImported?(): void;
   onPickClass(id: ClassId): void;
   onPickVariant(i: number): void;
   /** Returns an error message to show (null = accepted). */
@@ -69,6 +73,7 @@ export class MenuUI {
   private stackEl = h('div.efs-panel.efs-stack');
   private playEl = h('div.efs-play');
   private footerEl = h('div.efs-footer');
+  private ioEl = h('div.efs-io');
   private playBtn!: HTMLButtonElement;
   private newBtn!: HTMLButtonElement;
   private delBtn!: HTMLButtonElement;
@@ -134,7 +139,12 @@ export class MenuUI {
     );
     this.playEl.append(h('div.who'), this.playBtn);
     this.footerEl.innerHTML = '<kbd>←</kbd><kbd>→</kbd> karakter seç &nbsp;·&nbsp; <kbd>Enter</kbd> oyna &nbsp;·&nbsp; Ateşin başındaki kahramanlara tıklayabilirsin';
-    this.selectWrap.append(this.listEl, this.stackEl, this.playEl, this.footerEl);
+    // save export / import under the character list (the same actions live in Ayarlar > Oyun > Kayıt)
+    this.ioEl.append(
+      this.btn('Dışa Aktar', () => exportSaves(G.save), 'small'),
+      this.btn('İçe Aktar', () => openImportDialog(G.save, () => this.cb.onImported?.()), 'small'),
+    );
+    this.selectWrap.append(this.listEl, this.stackEl, this.playEl, this.footerEl, this.ioEl);
   }
 
   /** Refresh the character list + play bar. */

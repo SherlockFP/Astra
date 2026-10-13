@@ -18,7 +18,9 @@ export type InputAction =
   | 'guard' | 'skill_m45' | 'skill_m90' | 'skill_m180' | 'flask1' | 'flask2' | 'flask3' | 'flask4' | 'flask5'
   | 'targetAlly' | 'partySel1' | 'partySel2' | 'partySel3' | 'partySel4' | 'partySel5' | 'paragon' | 'bestiary' | 'townPortal'
   // GDD_LIFE §0 (L-00): appended. Both stay UNBOUND ([]): the doc's KeyP is taken by `paragon`, KeyV by `skill_m90`.
-  | 'professions' | 'camShoulder';
+  | 'professions' | 'camShoulder'
+  // F4 (roadmap, combat): hold-to-charge the heavy. Shift (dodge) and Alt (freeCursor) are taken, so the side button (Mouse4) and Minus are the keys.
+  | 'heavyAttack';
 
 export const DEFAULT_BINDINGS: Record<InputAction, string[]> = {
   moveForward: ['KeyW', 'ArrowUp'],
@@ -78,6 +80,9 @@ export const DEFAULT_BINDINGS: Record<InputAction, string[]> = {
   // GDD_LIFE (L-00). Unbound pending a decision (same as bestiary): KeyP = paragon, KeyV = skill_m90 today.
   professions: [],
   camShoulder: ['KeyH'],
+  // F4: Mouse4 (side button), with Minus as the keyboard fallback for mice without a side button and for laptops. Holding LMB
+  // chains the combo when autoCombo is on. Alt (freeCursor) and Shift (dodge) are taken, so Alt+LMB and Shift+LMB do not work.
+  heavyAttack: ['Mouse4', 'Minus'],
 };
 
 export const ACTION_NAMES_TR: Record<InputAction, string> = {
@@ -91,7 +96,7 @@ export const ACTION_NAMES_TR: Record<InputAction, string> = {
   flask1: 'Şişe 1', flask2: 'Şişe 2', flask3: 'Şişe 3', flask4: 'Şişe 4', flask5: 'Şişe 5',
   targetAlly: 'Sonraki Müttefik', partySel1: 'Grup Üyesi 1 (Sen)', partySel2: 'Grup Üyesi 2', partySel3: 'Grup Üyesi 3',
   partySel4: 'Grup Üyesi 4', partySel5: 'Grup Üyesi 5', paragon: 'Kadim Levha', bestiary: 'Bestiyari', townPortal: 'Dönüş Parşömeni',
-  professions: 'Meslekler', camShoulder: 'Omuz Değiştir',
+  professions: 'Meslekler', camShoulder: 'Omuz Değiştir', heavyAttack: 'Ağır Saldırı',
 };
 
 export class Input {
@@ -217,9 +222,11 @@ export class Input {
     if (!this.isLocked()) {
       try {
         const p = (this.canvas as HTMLCanvasElement).requestPointerLock?.() as unknown;
-        if (p && typeof (p as Promise<void>).catch === 'function') (p as Promise<void>).catch(() => {});
-      } catch {
-        /* user gesture required */
+        if (p && typeof (p as Promise<void>).catch === 'function') {
+          (p as Promise<void>).catch((e) => console.warn('[input] pointer lock refused (user gesture required?)', e));
+        }
+      } catch (e) {
+        console.warn('[input] requestPointerLock failed', e);
       }
     }
   }
@@ -250,7 +257,7 @@ export function codeLabel(code: string): string {
   const map: Record<string, string> = {
     Mouse0: 'SolT', Mouse1: 'OrtaT', Mouse2: 'SağT', Space: 'Boşluk', ShiftLeft: 'Shift', ShiftRight: 'Shift', ControlLeft: 'Ctrl',
     AltLeft: 'Alt', AltRight: 'Alt', Escape: 'Esc', Enter: 'Enter', Tab: 'Tab', ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→',
-    Mouse3: 'Geri Tuşu', Mouse4: 'İleri Tuşu',
+    Mouse3: 'Geri Tuşu', Mouse4: 'İleri Tuşu', Minus: '-',
   };
   return map[code] ?? code;
 }
