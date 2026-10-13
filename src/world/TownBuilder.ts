@@ -4,7 +4,7 @@ import { RNG, hashString } from '../core/utils';
 import type { TownDef, TownProp } from '../types/dungeons';
 import { NavGrid } from './NavGrid';
 import { treadCount, treadTop } from './Heightfield';
-import { ChunkCuller, InstanceBatcher, type CullLayer } from './Instancing';
+import { ChunkCuller, InstanceBatcher, type CullLayer, type InstOpts } from './Instancing';
 import { getGfxQuality, lodPlans } from './WorldPerf';
 import { getPiece, loadPieces } from './Pieces';
 import { GlowField } from './Glow';
@@ -43,7 +43,7 @@ export const TOWN_POIS = {
   stash: { x: -24, z: 14 },
   trainingGround: { x: -38, z: 40 },
   tavern: { x: 40, z: 42 },
-  southGate: { x: 0, z: 58 },
+  southGate: { x: 0, z: 158 },
 } as const;
 
 export interface BuiltTown {
@@ -90,7 +90,7 @@ const PI = Math.PI;
 const rad = (deg: number) => (deg * PI) / 180;
 const PM = (cat: string, n: string) => `${M}itch/psx-medieval/${cat}/${n}.glb`;
 
-interface Item {
+export interface Item {
   m: string;
   x: number;
   z: number;
@@ -110,6 +110,8 @@ interface Item {
   vfx?: VfxId;
   vfxScale?: number;
   vfxColor?: number;
+  /** Builder default (not a content prop): lifted onto a terrace or stairs when it stands on one. */
+  dflt?: boolean;
   /** Skip the default if a prop with the same tag regex exists nearby in the TownDef. */
 }
 
@@ -134,14 +136,18 @@ const TAG_RE: Record<string, RegExp> = {
 };
 
 /** Town instancing chunk (metres); the same size drives the distance culler below. */
-const TOWN_CHUNK = 40;
+export const TOWN_CHUNK = 40;
 
 /**
- * Distance limits (metres from the player) for the tiny town scatter. Anything beyond is hidden by the ChunkCuller, so the
- * ~8,000 grass tufts, flowers, bushes and rocks cost nothing outside the player's neighbourhood. Trees, walls and buildings are
- * never culled (the outer forest is the horizon).
+ * Distance limits (metres from the player) of the town's layers. The ChunkCuller adds a chunk's slack (28 m) to each limit, so a limit
+ * L hides an item beyond L + 28 m. Ground cover (tufts, flowers) and bushes / rocks go first. The voxel trees and the forest draw their
+ * LOD tiers out to the fog, then nothing (tree / border: fog + 20 m). Walls, buildings and props stop at 110 m: the fog is opaque from
+ * 140 m, so nothing that far is visible anyway.
  */
-const TOWN_CULL: Partial<Record<CullLayer, number>> = { tuft: 60, flower: 60, bush: 80, rock: 100 };
+export const TOWN_CULL: Partial<Record<CullLayer, number>> = {
+  tuft: 40, flower: 40, bush: 80, rock: 100,
+  tree: 160, border: 160, prop: 110,
+};
 
 /**
  * Town tuning of the shared prop light presets (Decor.PROP_LIGHTS also feeds the dungeons): plaza lamps and braziers
@@ -371,6 +377,215 @@ const COTTAGE_SITES: [number, number, number, 1 | 2, RoofColour, boolean, boolea
   [17, 54, -90, 1, 'red', false, false],
 ];
 
+/** The placed item list of a town (pure, no scene): the builder defaults that survive the dedupe, then the content props. */
+export function townItems(def: TownDef, half: number): Item[] {
+  const keep: Item[] = [];
+  const nearTag = (it: Item): boolean => {
+    const re = it.tag ? TAG_RE[it.tag] : null;
+    for (const p of def.props) {
+      const dx = p.pos[0] - it.x, dz = p.pos[2] - it.z;
+      if (re && re.test(p.model) && Math.hypot(dx, dz) < 12) return true;
+      if (baseName(p.model) === baseName(it.m) && Math.hypot(dx, dz) < 6) return true;
+    }
+    for (const n of def.npcs) {
+      // same visual already provided by an NPC entity (portals, obelisks...)
+      if (it.tag && (it.tag === 'portal' || it.tag === 'obelisk') && Math.hypot(n.pos[0] - it.x, n.pos[2] - it.z) < 9 && baseName(n.model) === baseName(it.m)) return true;
+    }
+    return false;
+  };
+  for (const it of layout(half)) {
+    // the mythic portal arch is replaced by the portal NPCs if the content defines some
+    if (it.m === GP('mplus_portal') && def.npcs.some((n) => n.role === 'portal')) continue;
+    if (nearTag(it)) continue;
+    keep.push({ ...it, dflt: true });
+  }
+  // content props (always placed)
+  for (const p of def.props) {
+    const collide: Item['collide'] = !p.collide ? false : p.box ? p.box : p.radius ?? true;
+    keep.push({ m: p.model, x: p.pos[0], z: p.pos[2], y: p.pos[1], rot: p.rot, s: p.scale, collide, tag: 'def', color: p.tint, emissive: p.emissive, emissiveIntensity: p.emissiveIntensity, light: p.light, vfx: p.vfx, vfxScale: p.vfxScale, vfxColor: p.vfxColor });
+  }
+  return keep;
+}
+
+/** The fixed cottage sites, one group of items per site (a site is built whole or not at all). */
+export function townCottageSites(): { x: number; z: number; parts: Item[] }[] {
+  return COTTAGE_SITES.map(([x, z, rot, st, roof, stone, alt]) => ({ x, z, parts: cottageItems(x, z, rot, st, roof, stone, alt) }));
+}
+
+/** Every cottage part of the fixed sites (the builder places only the sites with room). */
+export function townCottageItems(): Item[] {
+  return townCottageSites().flatMap((s) => s.parts);
+}
+
+/** One piece of the wall ring (wallPieces). 'gate' is the south gate (the builder splits its door leaves off), rot in radians. */
+export interface WallPiece { kind: 'gate' | 'piece' | 'flag'; url: string; x: number; y: number; z: number; rot: number; scale: number | [number, number, number] }
+
+/** The wall ring of a town of half extent `h` (pure): south gate, straight pieces, north and east / west walls, wall-top flags. */
+export function wallPieces(h: number): WallPiece[] {
+  const out: WallPiece[] = [];
+  const wl = h - 2;
+  const straight = NEUT('wall_straight');
+  const add = (x: number, z: number, rot: number, sx: number): void => { out.push({ kind: 'piece', url: straight, x, y: 0, z, rot: rad(rot), scale: [sx, 6, 6] }); };
+  const span = wl - 9; // from the gate/tower edge to the tower edge
+  const n = Math.max(1, Math.round(span / 12));
+  const seg = span / n;
+  const sx = (seg / 12) * 6;
+  // south wall with an OPEN gate in the middle: the wall is instanced, the two door leaves are swung open outwards
+  out.push({ kind: 'gate', url: NEUT('wall_straight_gate'), x: 0, y: 0, z: wl, rot: 0, scale: 6 });
+  for (const sgn of [-1, 1]) for (let i = 0; i < n; i++) add(sgn * (6 + seg * (i + 0.5)), wl, 0, sx);
+  // north wall
+  for (let i = -n; i < n; i++) add((i + 0.5) * seg, -wl, 0, sx);
+  add(0, -wl, 0, 6);
+  // east / west walls (full length between towers)
+  const m = Math.max(2, Math.round((2 * wl - 18) / 12));
+  const sg = (2 * wl - 18) / m;
+  for (let i = 0; i < m; i++) {
+    const z = -wl + 9 + sg * (i + 0.5);
+    add(wl, z, 90, (sg / 12) * 6);
+    add(-wl, z, 90, (sg / 12) * 6);
+  }
+  // flags along the wall top
+  const flagY = 6.6;
+  for (let t = -wl + 14; t <= wl - 14; t += 16) {
+    const col = Math.abs(t) % 32 < 16 ? 'red' : 'blue';
+    const url = HEXP(`flag_${col}`);
+    out.push({ kind: 'flag', url, x: t, y: flagY, z: -wl, rot: 0, scale: 6 });
+    out.push({ kind: 'flag', url, x: t, y: flagY, z: wl, rot: PI, scale: 6 });
+    out.push({ kind: 'flag', url, x: wl, y: flagY, z: t, rot: -PI / 2, scale: 6 });
+    out.push({ kind: 'flag', url, x: -wl, y: flagY, z: t, rot: PI / 2, scale: 6 });
+  }
+  return out;
+}
+
+/** One scatter placement (planNature): the builder instances it; navR / occR are its nav circle and occupancy radius (0 = none). */
+export interface NatureItem { url: string; x: number; y: number; z: number; rot: number; s: number; color: THREE.Color; opts: InstOpts; navR: number; occR: number }
+/** What the nature plan asks of the built town: the free test (raised ground, props, occupancy) and the ground splat weights. */
+export interface NatureEnv { free(x: number, z: number, pad: number): boolean; weights(x: number, z: number): { cobble: number; dirt: number } }
+
+/** The town's scatter (trees, bushes, rocks, tufts, flowers, the forest and tufts outside the walls), pure: same order and draws as ever. */
+export function planNature(def: TownDef, h: number, env: NatureEnv): NatureItem[] {
+  const out: NatureItem[] = [];
+  const rng = new RNG(hashString('town-nature:' + def.id));
+  const col = (k = 0.1) => new THREE.Color(0xffffff).multiplyScalar(1 - k * 0.5 + rng.next() * k);
+  const trees = [GP('tree_oak_a'), GP('tree_oak_b'), GP('tree_pine_a'), GP('tree_pine_b'), GP('tree_autumn')];
+  const bushes = [GP('bush_a'), GP('bush_b')];
+  const rocks = [GP('rock_small'), GP('rock_medium'), GP('rock_large')];
+  const inner = h - 6;
+  const keepClear = [{ x: 0, z: 8, r: 15.5 }, { x: 0, z: -43, r: 19 }, { x: 0, z: 48, r: 8 }];
+  // The spawn and the camera's rest spot behind it (orbit camera 9 m south of the player) stay free of nature: a bush there
+  // stood between the camera and the player and hid the character. The south gate arrival (z 53) is reserved too.
+  const sp = def.spawn?.pos ?? [0, 0, 26];
+  const reserved = [{ x: sp[0], z: sp[2] + 4, r: 9 }, { x: 0, z: 53, r: 6 }];
+  const isReserved = (x: number, z: number, pad = 0): boolean => reserved.some((k) => Math.hypot(k.x - x, k.z - z) < k.r + pad);
+  // occupancy taken by this plan so far (the builder writes its occupied list only after the plan)
+  const taken: { x: number; z: number; r: number }[] = [];
+  const free = (x: number, z: number, pad: number): boolean => env.free(x, z, pad) && taken.every((o) => Math.hypot(o.x - x, o.z - z) >= o.r + pad);
+  const clear = (x: number, z: number, pad: number): boolean => {
+    if (isReserved(x, z, pad)) return false;
+    if (!free(x, z, pad)) return false;
+    const w = env.weights(x, z);
+    if (w.cobble > 0.1 || w.dirt > 0.1) return false;
+    return true;
+  };
+  // trees along the inner wall + scattered in the yards
+  const placeTree = (x: number, z: number, big: number): void => {
+    const url = rng.weighted(trees, (u) => (u.includes('oak') ? 3 : u.includes('autumn') ? 1.2 : 2));
+    const s = (0.85 + rng.next() * 0.45) * big;
+    out.push({ url, x, y: 0, z, rot: rng.range(0, PI * 2), s, color: col(0.16), opts: { cast: true, receive: true, layer: 'tree' }, navR: 0.85 * s, occR: 2.3 * s });
+    taken.push({ x, z, r: 2.3 * s });
+  };
+  let placed = 0;
+  for (let attempt = 0; attempt < 600 && placed < 56; attempt++) {
+    const side = rng.int(0, 3);
+    const t = rng.range(-inner, inner);
+    const d = rng.range(inner - 9, inner - 1.5);
+    const x = side === 0 ? t : side === 1 ? t : side === 2 ? d : -d;
+    const z = side === 0 ? -d : side === 1 ? d : t;
+    if (Math.abs(x) < 8 && z > inner - 14) continue; // keep the gate open
+    if (!clear(x, z, 3.2)) continue;
+    placeTree(x, z, 1);
+    placed++;
+  }
+  for (let attempt = 0; attempt < 500 && placed < 80; attempt++) {
+    const x = rng.range(-inner + 8, inner - 8), z = rng.range(-inner + 8, inner - 8);
+    if (keepClear.some((k) => Math.hypot(k.x - x, k.z - z) < k.r)) continue;
+    if (!clear(x, z, 4.5)) continue;
+    placeTree(x, z, 0.95);
+    placed++;
+  }
+  // bushes
+  for (let attempt = 0, n = 0; attempt < 700 && n < 70; attempt++) {
+    const x = rng.range(-inner, inner), z = rng.range(-inner, inner);
+    if (!clear(x, z, 1.6)) continue;
+    if (keepClear.some((k) => Math.hypot(k.x - x, k.z - z) < k.r - 4)) continue;
+    const s = 0.8 + rng.next() * 0.7;
+    out.push({ url: rng.pick(bushes), x, y: 0, z, rot: rng.range(0, PI * 2), s, color: col(0.2), opts: { cast: false, layer: 'bush' }, navR: 0.6 * s, occR: 1.1 * s });
+    taken.push({ x, z, r: 1.1 * s });
+    n++;
+  }
+  // rocks
+  for (let attempt = 0, n = 0; attempt < 400 && n < 26; attempt++) {
+    const x = rng.range(-inner, inner), z = rng.range(-inner, inner);
+    if (!clear(x, z, 2.2)) continue;
+    const rk = rng.pick(rocks);
+    const s = rk.includes('large') ? 0.6 + rng.next() * 0.4 : 0.9 + rng.next() * 0.8;
+    out.push({ url: rk, x, y: -0.05, z, rot: rng.range(0, PI * 2), s, color: col(0.2), opts: { cast: true, layer: 'rock' }, navR: 0.8 * s, occR: 1.5 * s });
+    taken.push({ x, z, r: 1.5 * s });
+    n++;
+  }
+  // grass tufts (inside) + flowers
+  let tuft = 0;
+  for (let attempt = 0; attempt < 20000 && tuft < 5800; attempt++) {
+    const x = rng.range(-h + 4, h - 4), z = rng.range(-h + 4, h - 4);
+    const w = env.weights(x, z);
+    if (w.cobble > 0.05 || w.dirt > 0.05) continue;
+    if (isReserved(x, z, 0.5) || !free(x, z, 0.2)) continue;
+    out.push({ url: GP('grass_tuft'), x, y: 0, z, rot: rng.range(0, PI * 2), s: 0.8 + rng.next() * 0.7, color: col(0.25), opts: { cast: false, receive: false, layer: 'tuft' }, navR: 0, occR: 0 });
+    tuft++;
+  }
+  for (let attempt = 0, n = 0; attempt < 3000 && n < 260; attempt++) {
+    // flower beds around the plaza and along the road
+    const a = rng.range(0, PI * 2);
+    const r = rng.range(16.8, 21.5);
+    const x = Math.sin(a) * r, z = 8 + Math.cos(a) * r;
+    const w = env.weights(x, z);
+    if (w.cobble > 0.05 || w.dirt > 0.05 || isReserved(x, z, 0.5) || !free(x, z, 0.4)) continue;
+    out.push({ url: GP('flowers'), x, y: 0, z, rot: rng.range(0, PI * 2), s: 0.9 + rng.next() * 0.5, color: col(0.2), opts: { cast: false, receive: false, layer: 'flower' }, navR: 0, occR: 0 });
+    n++;
+  }
+  for (let attempt = 0, n = 0; attempt < 2000 && n < 160; attempt++) {
+    const x = rng.range(-h + 6, h - 6), z = rng.range(-h + 6, h - 6);
+    const w = env.weights(x, z);
+    if (w.cobble > 0.05 || w.dirt > 0.05 || isReserved(x, z, 0.5) || !free(x, z, 0.6)) continue;
+    out.push({ url: GP('flowers'), x, y: 0, z, rot: rng.range(0, PI * 2), s: 0.8 + rng.next() * 0.5, color: col(0.3), opts: { cast: false, receive: false, layer: 'flower' }, navR: 0, occR: 0 });
+    n++;
+  }
+  // outside the walls: forest + tufts so the horizon is never empty
+  for (let attempt = 0, n = 0; attempt < 3500 && n < 420; attempt++) {
+    const x = rng.range(-h - 130, h + 130), z = rng.range(-h - 130, h + 130);
+    if (Math.abs(x) < h + 3 && Math.abs(z) < h + 3) continue;
+    if (Math.abs(x) < 6 && z > 0) continue; // road out of the south gate
+    const url = rng.pick([trees[2], trees[3], trees[2], trees[0], trees[1], trees[3]]);
+    const s = 1.1 + rng.next() * 1.0;
+    out.push({ url, x, y: 0, z, rot: rng.range(0, PI * 2), s, color: col(0.3).multiplyScalar(0.85), opts: { cast: false, receive: false, layer: 'border' }, navR: 0, occR: 0 });
+    n++;
+  }
+  for (let attempt = 0, n = 0; attempt < 6000 && n < 1800; attempt++) {
+    const x = rng.range(-h - 70, h + 70), z = rng.range(-h - 70, h + 70);
+    if (Math.abs(x) < h + 2 && Math.abs(z) < h + 2) continue;
+    out.push({ url: GP('grass_tuft'), x, y: 0, z, rot: rng.range(0, PI * 2), s: 1 + rng.next(), color: col(0.3), opts: { cast: false, receive: false, layer: 'tuft' }, navR: 0, occR: 0 });
+    n++;
+  }
+  for (let attempt = 0, n = 0; attempt < 600 && n < 40; attempt++) {
+    const x = rng.range(-h - 80, h + 80), z = rng.range(-h - 80, h + 80);
+    if (Math.abs(x) < h + 4 && Math.abs(z) < h + 4) continue;
+    const rk = rng.pick(rocks);
+    out.push({ url: rk, x, y: -0.05, z, rot: rng.range(0, PI * 2), s: 1.2 + rng.next() * 1.6, color: col(0.2), opts: { cast: false, layer: 'rock' }, navR: 0, occR: 0 });
+    n++;
+  }
+  return out;
+}
+
 function cottageUrls(): string[] {
   const out = new Set<string>();
   for (const [x, z, rot, st, roof, stone, alt] of COTTAGE_SITES) for (const it of cottageItems(x, z, rot, st, roof, stone, alt)) out.add(it.m);
@@ -490,6 +705,22 @@ class TownBuild {
     ops.push({ t: 'line', ch: 'dirt', x0: 0, z0: -26, x1: -40, z1: -40, w: 3 });
     ops.push({ t: 'line', ch: 'dirt', x0: 0, z0: -26, x1: 40, z1: -40, w: 3 });
     ops.push({ t: 'line', ch: 'dirt', x0: 0, z0: h - 2, x1: 0, z1: h + 40, w: 7 });
+    // outer districts (WP-11): the cardinal roads out to the gates, ring connectors at x = +-64, the quarter lanes at z = +-100
+    for (const sx of [-1, 1]) {
+      ops.push({ t: 'rect', ch: 'dirt', x: sx * 109, z: 0, hw: 52, hd: 5, soft: 2 });
+      ops.push({ t: 'rect', ch: 'cobble', x: sx * 109, z: 0, hw: 51, hd: 3, soft: 1 });
+      ops.push({ t: 'rect', ch: 'cobble', x: sx * 64, z: 0, hw: 3, hd: 100, soft: 1 });
+    }
+    ops.push({ t: 'rect', ch: 'dirt', x: 0, z: 109, hw: 5, hd: 52, soft: 2 });
+    ops.push({ t: 'rect', ch: 'cobble', x: 0, z: 109, hw: 3, hd: 51, soft: 1 });
+    for (const sz of [-1, 1]) {
+      ops.push({ t: 'rect', ch: 'dirt', x: 107, z: sz * 100, hw: 44, hd: 12, soft: 3, amount: 0.5 });
+      ops.push({ t: 'rect', ch: 'cobble', x: 107, z: sz * 100, hw: 43, hd: 3, soft: 1 });
+      ops.push({ t: 'rect', ch: 'cobble', x: -107, z: sz * 100, hw: 43, hd: 3, soft: 1 });
+    }
+    ops.push({ t: 'disc', ch: 'dirt', x: 0, z: 138, r: 16, soft: 3 });
+    ops.push({ t: 'disc', ch: 'dirt', x: 138, z: 0, r: 16, soft: 3 });
+    ops.push({ t: 'disc', ch: 'dirt', x: -138, z: 0, r: 16, soft: 3 });
     this.terrain = createTerrain({ half: 280, splatHalf: h + 6, splatRes: 512, seed: this.def.id, ops, cell: 10 });
     this.root.add(this.terrain.mesh);
     freezeStatic(this.terrain.mesh); // the ground never moves: skip its per-frame matrix compose
@@ -668,36 +899,15 @@ class TownBuild {
 
   async placeItems(): Promise<void> {
     const def = this.def;
-    const defaults = layout(this.half);
-    const keep: Item[] = [];
-    const nearTag = (it: Item): boolean => {
-      const re = it.tag ? TAG_RE[it.tag] : null;
-      for (const p of def.props) {
-        const dx = p.pos[0] - it.x, dz = p.pos[2] - it.z;
-        if (re && re.test(p.model) && Math.hypot(dx, dz) < 12) return true;
-        if (baseName(p.model) === baseName(it.m) && Math.hypot(dx, dz) < 6) return true;
-      }
-      for (const n of def.npcs) {
-        // same visual already provided by an NPC entity (portals, obelisks...)
-        if (it.tag && (it.tag === 'portal' || it.tag === 'obelisk') && Math.hypot(n.pos[0] - it.x, n.pos[2] - it.z) < 9 && baseName(n.model) === baseName(it.m)) return true;
-      }
-      return false;
-    };
-    for (const it of defaults) {
-      // the mythic portal arch is replaced by the portal NPCs if the content defines some
-      if (it.m === GP('mplus_portal') && def.npcs.some((n) => n.role === 'portal')) continue;
-      if (nearTag(it)) continue;
-      // The defaults are authored on flat ground (y relative to the floor). One that survives the dedupe but stands on a terrace /
-      // stairs of the TownDef is lifted onto its surface instead of being buried in it. Content props below are NOT touched: their
-      // y is absolute (the content already adds the terrace height, e.g. HALL_Y), so groundY must never be added to them.
+    // the placed list: builder defaults that survive the dedupe, then the content props (townItems)
+    const keep = townItems(def, this.half);
+    // The defaults are authored on flat ground (y relative to the floor). One that survives the dedupe but stands on a terrace /
+    // stairs of the TownDef is lifted onto its surface instead of being buried in it. Content props below are NOT touched: their
+    // y is absolute (the content already adds the terrace height, e.g. HALL_Y), so groundY must never be added to them.
+    for (const it of keep) {
+      if (!it.dflt) continue;
       const gy = this.groundY(it.x, it.z);
       if (gy > 0.01) it.y = (it.y ?? 0) + gy;
-      keep.push(it);
-    }
-    // content props (always placed)
-    for (const p of def.props) {
-      const collide: Item['collide'] = !p.collide ? false : p.box ? p.box : p.radius ?? true;
-      keep.push({ m: p.model, x: p.pos[0], z: p.pos[2], y: p.pos[1], rot: p.rot, s: p.scale, collide, tag: 'def', color: p.tint, emissive: p.emissive, emissiveIntensity: p.emissiveIntensity, light: p.light, vfx: p.vfx, vfxScale: p.vfxScale, vfxColor: p.vfxColor });
     }
     this.items = keep;
     await loadPieces(keep.map((i) => i.m));
@@ -777,7 +987,7 @@ class TownBuild {
         if (preset.halo) this.halo.add(lp, preset.color, { size: preset.halo * 0.5, flicker: preset.flicker, intensity: 0.3 });
       }
     } else {
-      this.batcher.add(it.m, it.x, y, it.z, rot, s, col, { cast: it.cast ?? sz.y * s > 0.5, receive: true });
+      this.batcher.add(it.m, it.x, y, it.z, rot, s, col, { cast: it.cast ?? sz.y * s > 1.2, receive: true, layer: 'prop' });
       if (preset) {
         const lp = new THREE.Vector3(it.x, y + preset.y * s, it.z);
         this.lights.add(lp, { color: preset.color, intensity: designToPhysical(preset.intensity), distance: preset.distance, flicker: preset.flicker });
@@ -827,45 +1037,19 @@ class TownBuild {
   // ---- walls ----
   placeWalls(): void {
     const h = this.half;
-    const wl = h - 2;
-    const straight = NEUT('wall_straight');
-    const gate = NEUT('wall_straight_gate');
     const defHasWalls = this.def.props.some((p) => TAG_RE.wall.test(p.model));
     this.fillNav(defHasWalls);
     if (defHasWalls) return;
-    const add = (m: string, x: number, z: number, rot: number, sx: number, tag = 'wall') => {
-      this.batcher.add(m, x, 0, z, rad(rot), [sx, 6, 6], new THREE.Color(0xffffff).multiplyScalar(0.92 + this.rng.next() * 0.14), { cast: true, receive: true });
-      void tag;
-    };
-    const span = wl - 9; // from the gate/tower edge to the tower edge
-    const n = Math.max(1, Math.round(span / 12));
-    const seg = span / n;
-    const sx = (seg / 12) * 6;
-    // south wall with an OPEN gate in the middle: the wall is instanced, the two door leaves are swung open outwards
-    this.batcher.add(gate, 0, 0, wl, 0, 6, null, { cast: true, receive: true, skip: /door/ });
-    this.placeGateDoors(gate, 0, wl);
-    for (const sgn of [-1, 1]) {
-      for (let i = 0; i < n; i++) add(straight, sgn * (6 + seg * (i + 0.5)), wl, 0, sx);
-    }
-    // north wall
-    for (let i = -n; i < n; i++) add(straight, (i + 0.5) * seg * 1 + 0, -wl, 0, sx);
-    add(straight, 0, -wl, 0, 6);
-    // east / west walls (full length between towers)
-    const m = Math.max(2, Math.round((2 * wl - 18) / 12));
-    const sg = (2 * wl - 18) / m;
-    for (let i = 0; i < m; i++) {
-      const z = -wl + 9 + sg * (i + 0.5);
-      add(straight, wl, z, 90, (sg / 12) * 6);
-      add(straight, -wl, z, 90, (sg / 12) * 6);
-    }
-    // flags along the wall top
-    const flagY = 6.6;
-    for (let t = -wl + 14; t <= wl - 14; t += 16) {
-      const col = Math.abs(t) % 32 < 16 ? 'red' : 'blue';
-      this.batcher.add(HEXP(`flag_${col}`), t, flagY, -wl, 0, 6, null, { cast: false });
-      this.batcher.add(HEXP(`flag_${col}`), t, flagY, wl, PI, 6, null, { cast: false });
-      this.batcher.add(HEXP(`flag_${col}`), wl, flagY, t, -PI / 2, 6, null, { cast: false });
-      this.batcher.add(HEXP(`flag_${col}`), -wl, flagY, t, PI / 2, 6, null, { cast: false });
+    const gate = NEUT('wall_straight_gate');
+    for (const w of wallPieces(h)) {
+      if (w.kind === 'gate') {
+        this.batcher.add(w.url, w.x, w.y, w.z, w.rot, w.scale, null, { cast: true, receive: true, skip: /door/, layer: 'prop' });
+        this.placeGateDoors(gate, 0, w.z);
+      } else if (w.kind === 'piece') {
+        this.batcher.add(w.url, w.x, w.y, w.z, w.rot, w.scale, new THREE.Color(0xffffff).multiplyScalar(0.92 + this.rng.next() * 0.14), { cast: true, receive: true, layer: 'prop' });
+      } else {
+        this.batcher.add(w.url, w.x, w.y, w.z, w.rot, w.scale, null, { cast: false, layer: 'prop' });
+      }
     }
   }
 
@@ -906,124 +1090,14 @@ class TownBuild {
 
   // ---- nature ----
   placeNature(): void {
-    const h = this.half;
-    const rng = new RNG(hashString('town-nature:' + this.def.id));
-    const col = (k = 0.1) => new THREE.Color(0xffffff).multiplyScalar(1 - k * 0.5 + rng.next() * k);
-    const trees = [GP('tree_oak_a'), GP('tree_oak_b'), GP('tree_pine_a'), GP('tree_pine_b'), GP('tree_autumn')];
-    const bushes = [GP('bush_a'), GP('bush_b')];
-    const rocks = [GP('rock_small'), GP('rock_medium'), GP('rock_large')];
-    const inner = h - 6;
-    const keepClear = [{ x: 0, z: 8, r: 15.5 }, { x: 0, z: -43, r: 19 }, { x: 0, z: 48, r: 8 }];
-    // The spawn and the camera's rest spot behind it (orbit camera 9 m south of the player) stay free of nature: a bush there
-    // stood between the camera and the player and hid the character. The south gate arrival (z 53) is reserved too.
-    const sp = this.def.spawn?.pos ?? [0, 0, 26];
-    const reserved = [{ x: sp[0], z: sp[2] + 4, r: 9 }, { x: 0, z: 53, r: 6 }];
-    const isReserved = (x: number, z: number, pad = 0): boolean => reserved.some((k) => Math.hypot(k.x - x, k.z - z) < k.r + pad);
-    const clear = (x: number, z: number, pad: number) => {
-      if (isReserved(x, z, pad)) return false;
-      if (!this.free(x, z, pad)) return false;
-      const w = this.terrain.weights(x, z);
-      if (w.cobble > 0.1 || w.dirt > 0.1) return false;
-      return true;
-    };
-    // trees along the inner wall + scattered in the yards
-    const placeTree = (x: number, z: number, big: number): void => {
-      const url = rng.weighted(trees, (u) => (u.includes('oak') ? 3 : u.includes('autumn') ? 1.2 : 2));
-      const s = (0.85 + rng.next() * 0.45) * big;
-      this.batcher.add(url, x, 0, z, rng.range(0, PI * 2), s, col(0.16), { cast: true, receive: true });
-      this.nav.setCircle(x, z, 0.85 * s, false);
-      this.occupied.push({ x, z, r: 2.3 * s });
-    };
-    let placed = 0;
-    for (let attempt = 0; attempt < 600 && placed < 56; attempt++) {
-      const side = rng.int(0, 3);
-      const t = rng.range(-inner, inner);
-      const d = rng.range(inner - 9, inner - 1.5);
-      const x = side === 0 ? t : side === 1 ? t : side === 2 ? d : -d;
-      const z = side === 0 ? -d : side === 1 ? d : t;
-      if (Math.abs(x) < 8 && z > inner - 14) continue; // keep the gate open
-      if (!clear(x, z, 3.2)) continue;
-      placeTree(x, z, 1);
-      placed++;
-    }
-    for (let attempt = 0; attempt < 500 && placed < 80; attempt++) {
-      const x = rng.range(-inner + 8, inner - 8), z = rng.range(-inner + 8, inner - 8);
-      if (keepClear.some((k) => Math.hypot(k.x - x, k.z - z) < k.r)) continue;
-      if (!clear(x, z, 4.5)) continue;
-      placeTree(x, z, 0.95);
-      placed++;
-    }
-    // bushes
-    for (let attempt = 0, n = 0; attempt < 700 && n < 70; attempt++) {
-      const x = rng.range(-inner, inner), z = rng.range(-inner, inner);
-      if (!clear(x, z, 1.6)) continue;
-      if (keepClear.some((k) => Math.hypot(k.x - x, k.z - z) < k.r - 4)) continue;
-      const s = 0.8 + rng.next() * 0.7;
-      this.batcher.add(rng.pick(bushes), x, 0, z, rng.range(0, PI * 2), s, col(0.2), { cast: false, layer: 'bush' });
-      this.nav.setCircle(x, z, 0.6 * s, false);
-      this.occupied.push({ x, z, r: 1.1 * s });
-      n++;
-    }
-    // rocks
-    for (let attempt = 0, n = 0; attempt < 400 && n < 26; attempt++) {
-      const x = rng.range(-inner, inner), z = rng.range(-inner, inner);
-      if (!clear(x, z, 2.2)) continue;
-      const rk = rng.pick(rocks);
-      const s = rk.includes('large') ? 0.6 + rng.next() * 0.4 : 0.9 + rng.next() * 0.8;
-      this.batcher.add(rk, x, -0.05, z, rng.range(0, PI * 2), s, col(0.2), { cast: true, layer: 'rock' });
-      this.nav.setCircle(x, z, 0.8 * s, false);
-      this.occupied.push({ x, z, r: 1.5 * s });
-      n++;
-    }
-    // grass tufts (inside) + flowers
-    let tuft = 0;
-    for (let attempt = 0; attempt < 20000 && tuft < 6500; attempt++) {
-      const x = rng.range(-h + 4, h - 4), z = rng.range(-h + 4, h - 4);
-      const w = this.terrain.weights(x, z);
-      if (w.cobble > 0.05 || w.dirt > 0.05) continue;
-      if (isReserved(x, z, 0.5) || !this.free(x, z, 0.2)) continue;
-      this.batcher.add(GP('grass_tuft'), x, 0, z, rng.range(0, PI * 2), 0.8 + rng.next() * 0.7, col(0.25), { cast: false, receive: false, layer: 'tuft' });
-      tuft++;
-    }
-    for (let attempt = 0, n = 0; attempt < 3000 && n < 260; attempt++) {
-      // flower beds around the plaza and along the road
-      const a = rng.range(0, PI * 2);
-      const r = rng.range(16.8, 21.5);
-      const x = Math.sin(a) * r, z = 8 + Math.cos(a) * r;
-      const w = this.terrain.weights(x, z);
-      if (w.cobble > 0.05 || w.dirt > 0.05 || isReserved(x, z, 0.5) || !this.free(x, z, 0.4)) continue;
-      this.batcher.add(GP('flowers'), x, 0, z, rng.range(0, PI * 2), 0.9 + rng.next() * 0.5, col(0.2), { cast: false, receive: false, layer: 'flower' });
-      n++;
-    }
-    for (let attempt = 0, n = 0; attempt < 2000 && n < 160; attempt++) {
-      const x = rng.range(-h + 6, h - 6), z = rng.range(-h + 6, h - 6);
-      const w = this.terrain.weights(x, z);
-      if (w.cobble > 0.05 || w.dirt > 0.05 || isReserved(x, z, 0.5) || !this.free(x, z, 0.6)) continue;
-      this.batcher.add(GP('flowers'), x, 0, z, rng.range(0, PI * 2), 0.8 + rng.next() * 0.5, col(0.3), { cast: false, receive: false, layer: 'flower' });
-      n++;
-    }
-    // outside the walls: forest + tufts so the horizon is never empty
-    for (let attempt = 0, n = 0; attempt < 3500 && n < 420; attempt++) {
-      const x = rng.range(-h - 130, h + 130), z = rng.range(-h - 130, h + 130);
-      if (Math.abs(x) < h + 3 && Math.abs(z) < h + 3) continue;
-      if (Math.abs(x) < 6 && z > 0) continue; // road out of the south gate
-      const url = rng.pick([trees[2], trees[3], trees[2], trees[0], trees[1], trees[3]]);
-      const s = 1.1 + rng.next() * 1.0;
-      this.batcher.add(url, x, 0, z, rng.range(0, PI * 2), s, col(0.3).multiplyScalar(0.85), { cast: false, receive: false });
-      n++;
-    }
-    for (let attempt = 0, n = 0; attempt < 6000 && n < 1800; attempt++) {
-      const x = rng.range(-h - 70, h + 70), z = rng.range(-h - 70, h + 70);
-      if (Math.abs(x) < h + 2 && Math.abs(z) < h + 2) continue;
-      this.batcher.add(GP('grass_tuft'), x, 0, z, rng.range(0, PI * 2), 1 + rng.next(), col(0.3), { cast: false, receive: false, layer: 'tuft' });
-      n++;
-    }
-    for (let attempt = 0, n = 0; attempt < 600 && n < 40; attempt++) {
-      const x = rng.range(-h - 80, h + 80), z = rng.range(-h - 80, h + 80);
-      if (Math.abs(x) < h + 4 && Math.abs(z) < h + 4) continue;
-      const rk = rng.pick(rocks);
-      this.batcher.add(rk, x, -0.05, z, rng.range(0, PI * 2), 1.2 + rng.next() * 1.6, col(0.2), { cast: false, layer: 'rock' });
-      n++;
+    const plan = planNature(this.def, this.half, {
+      free: (x, z, pad) => this.free(x, z, pad),
+      weights: (x, z) => this.terrain.weights(x, z),
+    });
+    for (const it of plan) {
+      this.batcher.add(it.url, it.x, it.y, it.z, it.rot, it.s, it.color, it.opts);
+      if (it.navR > 0) this.nav.setCircle(it.x, it.z, it.navR, false);
+      if (it.occR > 0) this.occupied.push({ x: it.x, z: it.z, r: it.occR });
     }
   }
 

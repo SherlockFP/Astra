@@ -6,7 +6,12 @@
 //   frustum    ... after three's per-mesh frustum culling, mean over 8 camera headings (60 deg fov, 16:9, third-person offset)
 //   shadow     casters re-drawn by the shadow pass (40 x 40 m ortho box, only on the shadow cadence frames)
 // Run: node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/tribudget.mjs [--zone=karakir|sisli|both] [--q=low|mid|high] [--top=12] [--budget]
-// --budget exits 1 when the Karakir spawn total (frustum + shadow + terrain) is above 400k triangles or 300 draw calls.
+// TOWN (Kuzgunkale, data/town.ts): the builder's own placed list (TownBuilder.townItems / wallPieces / planNature / townCottageSites),
+// instanced through the real InstanceBatcher and ChunkCuller with the town's LOD plans, plus the animated / emissive props, the terrain
+// grid and the horizon rings. The NPC characters are reported beside the line (NPC.ts draws them within 60 m, in view, and their shadows
+// only while in view), not inside it, as the open-world line leaves characters out. Worst of 10 sampled points against 250k triangles
+// and 400 draw calls. TOWN_AT=<point label> and TOWN_TOP=<n> print the per-model breakdown of one point (e.g. TOWN_AT=plaza TOWN_TOP=20).
+// --budget exits 1 when the Karakir spawn total is above 400k triangles or 300 draw calls, or the town's worst point is over its limits.
 import fs from 'node:fs';
 
 const root = new URL('../../src/', import.meta.url).href;
@@ -20,7 +25,7 @@ const SCAN = process.argv.includes('--scan');
 console.warn = () => undefined;
 
 const THREE = await import('three');
-const { glbToGroup, fileOf } = await import(new URL('./glbtris.mjs', import.meta.url).href);
+const { glbToGroup, fileOf, trisOfGroup } = await import(new URL('./glbtris.mjs', import.meta.url).href);
 const { TILE_SIZE: T } = await imp('types/dungeons.ts');
 const NB = await imp('world/NavBase.ts');
 const SC = await imp('world/chunks/StreamConfig.ts');
@@ -296,9 +301,207 @@ for (const [label, def, force] of ZONES) {
     }
   }
 }
+// ---- the town (Kuzgunkale): TownBuilder's pure plans, the real batcher / culler / LOD plans, sampled around the town ----------
+const TB = await imp('world/TownBuilder.ts');
+const DEC = await imp('world/Decor.ts');
+const SKY = await imp('world/Sky.ts');
+const SHB = await imp('world/ShadowFollow.ts');
+const { TOWN } = await imp('data/town.ts');
+
+const CHAR_FILE = { Knight: 'characters/Knight', Barbarian: 'characters/Barbarian', Mage: 'characters/Mage', Rogue: 'characters/Rogue', Rogue_Hooded: 'characters/Rogue_Hooded', King: 'npcs/King', Worker: 'npcs/Worker' };
+const charUrl = (m) => `/assets/models/${CHAR_FILE[m] ?? CHAR_FILE.Knight}.glb`;
+const triOfGeom = (g) => (g.index ? g.index.count : g.attributes.position.count) / 3;
+
+const groupCache = new Map();
+/** Triangles, meshes (draw calls) and size of a raw GLB: characters and individually drawn props. */
+function groupOf(url) {
+  if (!groupCache.has(url)) {
+    const f = fileOf(RM.resolveModelUrl(url, true));
+    let st = null;
+    if (fs.existsSync(f)) {
+      const g = glbToGroup(THREE, f);
+      let calls = 0;
+      g.traverse((o) => { if (o.isMesh) calls++; });
+      st = { tris: trisOfGroup(g), calls, size: new THREE.Box3().setFromObject(g).getSize(new THREE.Vector3()) };
+    }
+    groupCache.set(url, st);
+  }
+  return groupCache.get(url);
+}
+
+const NPC_DRAW_RANGE = 60; // src/entities/NPC.ts
+const TOWN_POINTS = [
+  ['spawn', 0, 26], ['plaza', 0, 8], ['north of the portal hall', 0, -40], ['north-east quarter', 100, -100], ['south-east quarter', 100, 100],
+  ['north-west quarter', -100, -100], ['south-west quarter', -100, 100], ['south gate yard', 0, 138], ['east gate yard', 138, 0], ['west gate yard', -138, 0],
+];
+
+async function measureTown() {
+  const half = Math.max(TOWN.size[0], TOWN.size[1]) / 2;
+  const placed = TB.townItems(TOWN, half);
+  const cottageSites = TB.townCottageSites().filter((c) => {
+    if (TOWN.props.some((p) => Math.hypot(p.pos[0] - c.x, p.pos[2] - c.z) < 6.4 && !/(grass|flower|tree|bush)/.test(p.model))) return false;
+    if (TOWN.npcs.some((n) => Math.hypot(n.pos[0] - c.x, n.pos[2] - c.z) < 6.4)) return false;
+    return !placed.some((p) => Math.hypot(p.x - c.x, p.z - c.z) < 4.6);
+  });
+  const items = placed.concat(cottageSites.flatMap((c) => c.parts));
+  const walls = TB.wallPieces(half);
+  // the scatter without occupancy or cobble tests: every cap is reached regardless, so the counts are the builder's own
+  const nature = TB.planNature(TOWN, half, { free: () => true, weights: () => ({ cobble: 0, dirt: 0 }) });
+  await loadPieces([...new Set([...items.map((i) => i.m), ...walls.map((w) => w.url), ...nature.map((n) => n.url)])]);
+
+  const root = new THREE.Group();
+  const batcher = new InstanceBatcher(root, TB.TOWN_CHUNK);
+  const objs = [];
+  const addObj = (url, x, y, z, s, cast = true) => {
+    const st = groupOf(url);
+    if (!st) return false;
+    objs.push({ x, cy: y + (st.size.y * s) / 2, z, r: 0.5 * Math.hypot(st.size.x, st.size.y, st.size.z) * s, tris: st.tris, calls: st.calls, cast, name: url.split('/').pop() });
+    return true;
+  };
+  let batched = 0, individual = 0;
+  for (const it of items) {
+    const piece = getPiece(it.m);
+    if (!piece) continue;
+    const s = it.s ?? 1, y = it.y ?? 0;
+    // animated gen props and emissive props are drawn as their own objects (they cannot share an instanced draw)
+    if (DEC.isAnimatedModel(it.m) || it.emissive !== undefined) { if (addObj(it.m, it.x, y, it.z, s)) individual++; continue; }
+    batcher.add(it.m, it.x, y, it.z, ((it.rot ?? 0) * Math.PI) / 180, s, it.color ?? null, { cast: it.cast ?? piece.size.y * s > 1.2, receive: true, layer: 'prop' });
+    batched++;
+  }
+  for (const w of walls) {
+    if (w.kind === 'gate') batcher.add(w.url, w.x, w.y, w.z, w.rot, w.scale, null, { cast: true, receive: true, skip: /door/, layer: 'prop' });
+    else batcher.add(w.url, w.x, w.y, w.z, w.rot, w.scale, null, { cast: w.kind !== 'flag', receive: true, layer: 'prop' });
+  }
+  for (const n of nature) batcher.add(n.url, n.x, n.y, n.z, n.rot, n.s, n.color, n.opts);
+  const missing = await batcher.build();
+
+  // NPCs: characters are skinned draws (in view only); prop-like NPCs (object) are static objects
+  const chars = [];
+  let npcCount = 0;
+  for (const n of TOWN.npcs) {
+    npcCount++;
+    if (n.object) {
+      addObj(n.object.model, n.pos[0], n.pos[1], n.pos[2], n.object.scale ?? 1);
+      for (const e of n.object.extra ?? []) addObj(e.model, n.pos[0] + e.pos[0], n.pos[1] + e.pos[1], n.pos[2] + e.pos[2], e.scale ?? 1);
+      continue;
+    }
+    const st = groupOf(charUrl(n.model));
+    if (st) chars.push({ x: n.pos[0], z: n.pos[2], tris: st.tris, calls: st.calls, model: n.model });
+  }
+
+  // horizon rings and the terrain grid (createTerrain half 280, cell 10): drawn from every point
+  let horizonTris = 0;
+  const hz = [
+    { radius: 330, minH: 38, maxH: 92, segments: 80, seed: TOWN.id + ':far', baseColor: 0x56688a, rockColor: 0x8c94ac, snowColor: 0xf6f0ee, snowLine: 0.7, haze: 0xeccfb4, hazeAmount: 0.5, slope: 0.7 },
+    { radius: 255, minH: 12, maxH: 34, segments: 64, seed: TOWN.id + ':mid', baseColor: 0x3f5f46, rockColor: 0x6a6e64, haze: 0xe4c8a8, hazeAmount: 0.45, slope: 1.1 },
+    { radius: 205, minH: 5, maxH: 15, segments: 56, seed: TOWN.id + ':near', baseColor: 0x3d6030, rockColor: 0x58603c, haze: 0xdcc29e, hazeAmount: 0.3, slope: 1.6 },
+  ];
+  const sunDir = new THREE.Vector3(...TOWN.lighting.sunDir).normalize();
+  for (const o of hz) horizonTris += triOfGeom(SKY.makeMountainRing({ ...o, sunDir: [sunDir.x, sunDir.y, sunDir.z] }).geometry);
+  const TERRAIN_TRIS = 2 * Math.pow((2 * half) / 10, 2);
+
+  const culler = new ChunkCuller(batcher, TB.TOWN_CHUNK);
+  culler.limits = TB.TOWN_CULL;
+  if (LOD) culler.plans = PERF.lodPlans(TOWN.lighting?.fogFar ?? 150, QUALITY);
+
+  const light = new THREE.DirectionalLight();
+  SHB.configureShadowBox(light, { near: 1, far: 220 });
+  const cam = new THREE.PerspectiveCamera(60, 16 / 9, 0.1, 500);
+  const fr = new THREE.Frustum(), pm = new THREE.Matrix4(), sph = new THREE.Sphere();
+  const HEAD = 8;
+  const points = [];
+  const byName = new Map();
+  const objByName = new Map();
+  const shadowByName = new Map();
+  for (const [label, x, z] of TOWN_POINTS) {
+    culler.invalidate();
+    culler.update(1, x, z);
+    // shadow pass: heading independent, the town sun's 50 m box around the point (as the open world)
+    SHB.followShadowBox(light, new THREE.Vector3(x, 0, z), sunDir, 90); // TownBuilder.setupLighting
+    light.shadow.updateMatrices(light);
+    const sfr = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(light.shadow.camera.projectionMatrix, light.shadow.camera.matrixWorldInverse));
+    const a = { scen: 0, scenCalls: 0, shad: 0, shadCalls: 0, obj: 0, objCalls: 0, objShad: 0, objShadCalls: 0, char: 0, charCalls: 0, charShad: 0, charShadCalls: 0 };
+    for (const im of batcher.meshes) {
+      if (!im.visible) continue;
+      if (!im.boundingSphere) im.computeBoundingSphere();
+      if (im.castShadow && sfr.intersectsSphere(im.boundingSphere)) { a.shad += triOfGeom(im.geometry) * im.count; a.shadCalls++; }
+      if (im.castShadow && sfr.intersectsSphere(im.boundingSphere) && label === (process.env.TOWN_AT ?? 'spawn')) { const nm = im.name.replace(/@.*/, ''); const b = shadowByName.get(nm) ?? { tris: 0, n: 0 }; b.tris += triOfGeom(im.geometry) * im.count; b.n += im.count; shadowByName.set(nm, b); }
+    }
+    for (const o of objs) {
+      sph.center.set(o.x, o.cy, o.z); sph.radius = o.r;
+      if (o.cast && sfr.intersectsSphere(sph)) { a.objShad += o.tris; a.objShadCalls += o.calls; }
+    }
+    for (const c of chars) {
+      sph.center.set(c.x, 1.1, c.z); sph.radius = 1.3;
+      // (characters cast shadows only while they are on screen: counted per heading below)
+    }
+    for (let h = 0; h < HEAD; h++) {
+      const ang = (h / HEAD) * Math.PI * 2;
+      cam.position.set(x - Math.sin(ang) * 8, 5, z - Math.cos(ang) * 8);
+      cam.lookAt(x, 1.4, z);
+      cam.updateMatrixWorld();
+      pm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
+      fr.setFromProjectionMatrix(pm);
+      for (const im of batcher.meshes) {
+        if (!im.visible) continue;
+        if (!im.boundingSphere) im.computeBoundingSphere();
+        if (fr.intersectsSphere(im.boundingSphere)) {
+          const t = (triOfGeom(im.geometry) * im.count) / HEAD;
+          a.scen += t; a.scenCalls += 1 / HEAD;
+          if (label === (process.env.TOWN_AT ?? 'spawn')) { const nm = im.name.replace(/@.*/, ''); const b = byName.get(nm) ?? { tris: 0, calls: 0, inst: 0 }; b.tris += t; b.calls += 1 / HEAD; b.inst = im.count; byName.set(nm, b); }
+        }
+      }
+      for (const o of objs) {
+        sph.center.set(o.x, o.cy, o.z); sph.radius = o.r;
+        if (fr.intersectsSphere(sph)) {
+          a.obj += o.tris / HEAD; a.objCalls += o.calls / HEAD;
+          if (label === (process.env.TOWN_AT ?? 'spawn')) { const b = objByName.get(o.name) ?? { tris: 0, n: 0 }; b.tris += o.tris / HEAD; b.n++; objByName.set(o.name, b); }
+        }
+      }
+      for (const c of chars) {
+        sph.center.set(c.x, 1.1, c.z); sph.radius = 1.3;
+        if (Math.hypot(c.x - x, c.z - z) < NPC_DRAW_RANGE && fr.intersectsSphere(sph)) {
+          a.char += c.tris / HEAD; a.charCalls += c.calls / HEAD;
+          if (sfr.intersectsSphere(sph)) { a.charShad += c.tris / HEAD; a.charShadCalls += c.calls / HEAD; } }
+      }
+    }
+    const tris = a.scen + a.shad + a.obj + a.objShad + a.char + a.charShad + TERRAIN_TRIS + horizonTris;
+    const calls = a.scenCalls + a.shadCalls + a.objCalls + a.objShadCalls + a.charCalls + a.charShadCalls + 1 + hz.length;
+    const chars3 = a.char + a.charShad, charCalls = a.charCalls + a.charShadCalls;
+    points.push({ label, x, z, tris: tris - chars3, calls: calls - charCalls, chars: chars3, charCalls, a });
+  }
+  const worst = points.reduce((w, p) => (p.tris > w.tris ? p : w));
+  if (process.env.TOWN_TOP) console.log('shadow casters: ' + [...shadowByName.entries()].sort((p, q) => q[1].tris - p[1].tris).slice(0, 12).map(([n, b]) => n + ' ' + k(b.tris) + ' (' + b.n + ')').join(', '));
+  if (process.env.TOWN_TOP) console.log('objects: ' + [...objByName.entries()].sort((p, q) => q[1].tris - p[1].tris).slice(0, 12).map(([n, b]) => `${n} ${k(b.tris)} (${b.n})`).join(', '));
+  if (process.env.TOWN_TOP) {
+    console.log('spawn: scenery by model (in-frustum tris, calls, instances):');
+    for (const [n, b] of [...byName.entries()].sort((p, q) => q[1].tris - p[1].tris).slice(0, Number(process.env.TOWN_TOP))) console.log(`    ${n.padEnd(34)} ${k(b.tris).padStart(8)} ${b.calls.toFixed(1).padStart(6)} calls  x${b.inst}`);
+    const cs = new Map();
+    for (const c of chars) { const b = cs.get(c.model) ?? { n: 0, tris: c.tris, calls: c.calls }; b.n++; cs.set(c.model, b); }
+    console.log('characters: ' + [...cs.entries()].map(([m, b]) => `${m} x${b.n} (${k(b.tris)} tris, ${b.calls} meshes)`).join(', '));
+  }
+  return { points, worst, batched, individual, missing, npcCount, chars: chars.length, walls: walls.length, nature: nature.length, items: items.length, meshes: batcher.meshes.length, terrainTris: TERRAIN_TRIS, horizonTris, half };
+}
+
+const town = await measureTown();
+{
+  const s = town.points[0].a;
+  console.log(`\n=== Kuzgunkale (${town.half * 2} m town, ${QUALITY} quality, voxel LOD ${LOD ? 'on' : 'OFF'}) ===`);
+  console.log(`placed: ${town.items} items (${town.batched} instanced, ${town.individual} own-object props), ${town.walls} wall pieces, ${town.nature} scatter, ${town.npcCount} NPCs (${town.chars} characters), ${town.meshes} instanced meshes`);
+  console.log('point                          tris    calls   scenery  shadow  objects  terrain+sky   (characters: tris / calls, not in the line)');
+  for (const p of town.points) {
+    console.log(`${p.label.padEnd(28)} ${k(p.tris).padStart(7)} ${p.calls.toFixed(0).padStart(8)} ${k(p.a.scen).padStart(9)} ${k(p.a.shad).padStart(7)} ${k(p.a.obj + p.a.objShad).padStart(8)} ${k(town.terrainTris + town.horizonTris).padStart(11)}   ${k(p.chars).padStart(6)} / ${p.charCalls.toFixed(0)}`);
+  }
+  console.log(`spawn detail: scenery ${k(s.scen)} tris / ${s.scenCalls.toFixed(0)} calls; shadow pass ${k(s.shad)} tris / ${s.shadCalls} calls; objects ${s.objCalls.toFixed(0)} calls; characters ${s.charCalls.toFixed(0)} calls in view`);
+  console.log(`town line: worst sampled point (${town.worst.label}) ${k(town.worst.tris)} tris, ${town.worst.calls.toFixed(0)} draw calls (limits 250k tris, 400 calls), characters on top ${k(town.worst.chars)} tris / ${town.worst.charCalls.toFixed(0)} calls`);
+  if (town.missing.length) console.log(`  (town models not found: ${town.missing.length})`);
+}
+
 if (BUDGET) {
   const limit = SCAN ? worst : karakirSpawn;
-  const ok = limit <= 400000;
-  console.log(`\nbudget: Karakir ${SCAN ? 'worst sampled point' : 'spawn'} ${k(limit)} tris (limit 400k) ${ok ? 'PASS' : 'FAIL'}`);
-  process.exit(ok ? 0 : 1);
+  const okK = limit <= 400000;
+  console.log(`\nbudget: Karakir ${SCAN ? 'worst sampled point' : 'spawn'} ${k(limit)} tris (limit 400k) ${okK ? 'PASS' : 'FAIL'}`);
+  const okT = town.worst.tris <= 250000 && town.worst.calls <= 400;
+  console.log(`budget: town worst point ${k(town.worst.tris)} tris (limit 250k), ${town.worst.calls.toFixed(0)} draw calls (limit 400), characters excluded ${okT ? 'PASS' : 'FAIL'}`);
+  process.exit(okK && okT ? 0 : 1);
 }
