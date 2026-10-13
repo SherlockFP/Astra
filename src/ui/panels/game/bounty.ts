@@ -4,6 +4,9 @@ import {
 } from '../../../systems/Bounties';
 import type { ItemInstance } from '../../../types/items';
 import { getMaterial } from '../../../data/materials';
+import { getDungeon } from '../../../data/dungeons';
+import { bountyDayKey } from '../../../systems/Bounties';
+import { WORLD_QUEST_ZONES, dailyDungeonToday, worldQuestBoard, type WorldQuestDef } from '../../../systems/DailyLoop';
 import { GamePanel, askConfirm, bar, button, fmtInt, h, icon, itemTile, openPanel, sfx, toast, windowFrame } from './base';
 import { emptyState } from '../../kit';
 
@@ -104,6 +107,60 @@ export class BountyPanel extends GamePanel {
     this.renderExtra(list);
   }
 
+  /** WP-10: login streak, today's daily dungeon (x2 on its first clear) and the 6 world quests of each open-world zone. */
+  private renderWorld(ex: HTMLElement): void {
+    const ch = G.character;
+    if (!ch) return;
+    let dd: { id: string; done: boolean } | null = null;
+    try {
+      dd = dailyDungeonToday();
+    } catch {
+      dd = null;
+    }
+    const streak = ch.save.daily?.streak ?? 0;
+    ex.append(
+      h(
+        'div.pg-bt-box' + (dd?.done ? '.is-done' : dd ? '.is-ready' : ''),
+        null,
+        icon('/assets/icons/ui-dungeon.svg', 'pg-bt-boxico'),
+        h(
+          'div.pg-bt-boxtxt',
+          null,
+          h('b', null, 'Günün Zindanı', dd ? h('em.pg-bt-tag', null, getDungeon(dd.id)?.name ?? dd.id) : null),
+          h('span', null, dd ? (dd.done ? 'Bugünkü ödülü aldın. Yarın yeni bir zindan seçilir.' : 'Bugün bu zindanı ilk kez temizle: ödüller x2.') : 'Bu seviyede bugünlük zindan yok.'),
+        ),
+        h('div.pg-bt-streak', null, `Giriş serisi: ${streak} gün`),
+      ),
+    );
+    const day = bountyDayKey();
+    for (const zone of WORLD_QUEST_ZONES) {
+      const name = getDungeon(zone)?.name ?? zone;
+      ex.append(h('div.pg-bt-zone', null, h('b', null, `Dünya Görevleri · ${name}`)));
+      let rows: { def: WorldQuestDef; progress: number; done: boolean }[] = [];
+      try {
+        rows = worldQuestBoard(ch.save.flags, zone, day);
+      } catch {
+        rows = [];
+      }
+      for (const r of rows) {
+        ex.append(
+          h(
+            'div.pg-bt-box' + (r.done ? '.is-done' : ''),
+            null,
+            h(
+              'div.pg-bt-boxtxt',
+              null,
+              h('b', null, r.def.title),
+              h('span', null, r.def.desc(r.def.target)),
+              bar(Math.min(1, r.progress / Math.max(1, r.def.target)), r.done ? 'linear-gradient(#7be37b,#2e8a3a)' : 'linear-gradient(#f4d27a,#b8862f)', `${fmtInt(r.progress)} / ${fmtInt(r.def.target)}`),
+            ),
+            r.done ? h('div.pg-bt-claimed', null, '✓ Tamam') : null,
+          ),
+        );
+      }
+    }
+  }
+
   private card(b: Bounty): HTMLElement {
     const complete = b.progress >= b.target;
     const frac = Math.min(1, b.progress / Math.max(1, b.target));
@@ -186,6 +243,8 @@ export class BountyPanel extends GamePanel {
         wd.claimed ? h('div.pg-bt-claimed', null, '✓ Alındı') : button('Fermanı Al', () => this.openDecree(), { variant: wd.ready ? 'primary' : 'ghost', disabled: !wd.ready }),
       ),
     );
+
+    this.renderWorld(ex);
 
     // ---- reroll
     let cost = 0;

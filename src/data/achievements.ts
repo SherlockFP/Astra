@@ -49,6 +49,10 @@ export const METRIC_KIND = {
   partyJoins: 'add',
   whispers: 'add',
   emotes: 'add',
+  // WP-10 daily loop (systems/DailyLoop.ts)
+  loginStreak: 'max',
+  worldQuests: 'add',
+  dailyDungeons: 'add',
   chats: 'add',
 } as const;
 
@@ -95,6 +99,9 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'gorev_30', cat: 'gorev', name: 'Görev Peşinde', desc: '30 görevi tamamla.', points: 10, metric: 'quests', target: 30 },
   { id: 'gorev_60', cat: 'gorev', name: 'Görev Adamı', desc: '60 görevi tamamla.', points: 25, metric: 'quests', target: 60, title: 'Görev Adamı' },
   { id: 'gorev_100', cat: 'gorev', name: 'Kadim Emir', desc: '100 görevi tamamla.', points: 25, metric: 'quests', target: 100 },
+  { id: 'gorev_gun7', cat: 'gorev', name: 'Sadık Gezgin', desc: '7 gün üst üste oyuna gir.', points: 10, metric: 'loginStreak', target: 7 },
+  { id: 'gorev_dunya30', cat: 'gorev', name: 'Dünya Görevlisi', desc: 'Dünya görevlerini 30 kez tamamla.', points: 10, metric: 'worldQuests', target: 30 },
+  { id: 'gorev_gunzindan10', cat: 'gorev', name: 'Günün Kahramanı', desc: 'Günün Zindanı\'nı 10 kez temizle.', points: 25, metric: 'dailyDungeons', target: 10, title: 'Günün Kahramanı' },
 
   // ---- Zindan (dungeon clears, distinct dungeons, boss kills)
   { id: 'zin_clear1', cat: 'zindan', name: 'İlk Zindan', desc: 'Bir zindanı temizle.', points: 5, metric: 'dungeonClears', target: 1 },
