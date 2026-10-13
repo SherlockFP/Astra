@@ -4,7 +4,8 @@
  *   node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/events.mjs     (V=1 prints every PASS)
  * Stages: det.* (same schedule on every clock / rebuilt sites) | slot.* (slot boundaries, end exclusive) | rot.* (rotation of
  *         four) | phase.* (soon 5 and 1 min, start, end; crossings split without gaps) | site.* (zones, empty lists) |
- *         run.* (runtime announcements from a fake clock, host effects, local rewards, chat lines)
+ *         run.* (runtime announcements from a fake clock, host effects, local rewards, chat lines) |
+ *         kar.* / sisli.* (the two open-world maps built from their real data: Karakır sites, rotation, determinism, runtime zone)
  * No browser, no network: the real calendar with a fake world and the harness G stubs. Exit 0 = all PASS.
  */
 import * as H from './harness.mjs';
@@ -344,6 +345,78 @@ const pre = (k) => k * SLOT_MS - 10 * 60 * 1000;
   cal.tick(now);
   cal.dispose();
   G.net = { isAuthority: false };
+}
+
+// ------------------------------------------------------------------------------------------------ open-world maps
+// the real map data (Sisli Vadi, Karakir Bozkirri) through the same buildEventSites() the runtime calls, with a stub ctx
+const { getDungeon } = await H.imp('data/dungeons/index.ts');
+const { buildEventSites } = C;
+function mapCtx(def) {
+  const ext = def.world;
+  const roomAt = (tx, tz) => def.rooms.find((r) => tx >= r.rect.x && tx < r.rect.x + r.rect.w && tz >= r.rect.z && tz < r.rect.z + r.rect.h);
+  return {
+    def, ext, seed: 1, params: { enemyLevel: 35 }, world: { enemies: [] }, aliveEnemies: () => 0,
+    regionAtTile: (tx, tz) => { const room = roomAt(tx, tz); return room ? ext.regions.find((r) => r.roomId === room.id) ?? null : null; },
+    snapTile: (tx, tz) => pt((tx + 0.5) * 4, (tz + 0.5) * 4),
+    snapWorld: (x, z) => pt(x, z),
+  };
+}
+const kDef = getDungeon('karakir_bozkiri');
+const sDef = getDungeon('sisli_vadi');
+const kSites = buildEventSites(mapCtx(kDef));
+const kSites2 = buildEventSites(mapCtx(kDef));
+const sSites = buildEventSites(mapCtx(sDef));
+const idsOf = (list) => list.map((s) => s.id).join();
+
+{
+  ok('kar.storm-in-the-four-regions', idsOf(kSites.metin_storm) === 'r7,r8,r9,r10', idsOf(kSites.metin_storm));
+  ok('kar.stone-tiers-cover-the-regions', kDef.world.metin.tiers.map((t) => t.regionId).join() === 'r7,r8,r9,r10' && kDef.world.metin.tiers.every((t) => t.level >= 30 && t.level <= 40));
+  const perRegion = kDef.world.regions.map((r) => kDef.world.metin.spots.filter((s) => s.regionId === r.id).length);
+  ok('kar.three-spots-per-region', perRegion.every((n) => n === 3) && kDef.world.metin.spots.length === 12, perRegion.join());
+  ok('kar.raid-at-the-outposts', idsOf(kSites.village_raid) === 'koy_karakir_karakolu,kamp_kervansaray' && kSites.village_raid.every((s) => s.radius > 0), idsOf(kSites.village_raid));
+  ok('kar.caravan-on-karakir-roads', kSites.goblin_caravan.length === kDef.world.roads.length && kSites.goblin_caravan.every((s) => s.id.startsWith('yol_') && s.path.length >= 2), `${kSites.goblin_caravan.length} roads`);
+  // Ulu-Boz is level-gated (minLevelToStart 38), so the world boss has no site on this map: its slots are skipped, as designed
+  ok('kar.world-boss-gated-no-site', kSites.world_boss.length === 0, `${kSites.world_boss.length} sites`);
+  ok('kar.sites-same-on-rebuild', JSON.stringify(kSites) === JSON.stringify(kSites2));
+  ok('kar.sisli-sites-stay-on-sisli', sSites.metin_storm.every((s) => sDef.world.regions.some((r) => r.id === s.id)) && !sSites.village_raid.some((s) => kSites.village_raid.some((k) => k.id === s.id)));
+  ok('sisli.all-four-events-have-sites', EVENT_IDS.every((id) => sSites[id].length > 0), EVENT_IDS.map((id) => `${id}:${sSites[id].length}`).join());
+
+  // the rotation on Karakir: 100 of 400 slots are the boss slot (no site, skipped); the other 300 run on the same hashed sites on every client
+  let dead = 0, live = 0, stable = true, zonesOk = true;
+  for (let k = 0; k < 400; k++) {
+    const occ = occurrenceAt(k, kSites);
+    if (JSON.stringify(occ) !== JSON.stringify(occurrenceAt(k, kSites2))) stable = false;
+    if (occ.site === null) { dead++; if (occ.id !== 'world_boss') zonesOk = false; } else { live++; if (!kSites[occ.id].some((s) => s.id === occ.site.id)) zonesOk = false; }
+  }
+  ok('kar.rotation-skips-only-the-boss', dead === 100 && live === 300 && zonesOk, `${dead} skipped, ${live} run`);
+  ok('kar.occurrence-stable-per-client', stable);
+
+  let seed2 = 4242;
+  const rnd2 = () => ((seed2 = (Math.imul(seed2, 1103515245) + 12345) >>> 0) / 4294967296);
+  let same = true;
+  for (let i = 0; i < 1500 && same; i++) {
+    const t = Math.floor(rnd2() * 4e12);
+    if (JSON.stringify(eventAt(t, kSites)) !== JSON.stringify(eventAt(t, kSites2)) || JSON.stringify(upcomingAfter(t, kSites2, 4)) !== JSON.stringify(upcomingAfter(t, kSites, 4))) same = false;
+  }
+  ok('kar.det-same-on-every-client', same, '1500 instants on the Karakir map');
+}
+
+{
+  // runtime: a Karakir storm announces the Karakir region as its zone, the way the Sisli one does
+  G.net = { isAuthority: false };
+  world.localPlayer = null;
+  const occK = Array.from({ length: 8 }, (_, i) => 7000 + i).map((k) => occurrenceAt(k, kSites)).find((o) => o.id === 'metin_storm');
+  let now = occK.start - 300 * 1000 - 1;
+  const cal = new EventCalendar({ world, params: { enemyLevel: 35 }, ext: { perf: {} }, seed: 1, aliveEnemies: () => 0 }, {
+    metin: { setStorm() {} },
+    bosses: { expedite() { return false; } },
+  }, kSites, () => now);
+  const before = worldEvents.length;
+  for (const t of [occK.start - 300 * 1000, occK.start - 60 * 1000, occK.start, occK.end]) { now = t; cal.tick(t); }
+  const got = worldEvents.slice(before);
+  ok('kar.run-announces-karakir-zone', got.map((p) => p.phase).join() === 'soon,soon,start,end' && got.every((p) => p.zone === occK.site.id && ['r7', 'r8', 'r9', 'r10'].includes(p.zone)), got.map((p) => `${p.phase}:${p.zone}`).join(' '));
+  ok('kar.run-banner-names-the-region', announces.some((a) => a.text.includes(occK.site.name)), occK.site.name);
+  cal.dispose();
 }
 
 ok('harness.no-errors-logged', H.errors.length === warnBefore, H.errors.slice(warnBefore).join(' | ').slice(0, 300));

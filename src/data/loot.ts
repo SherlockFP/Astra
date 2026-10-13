@@ -289,6 +289,15 @@ export const METIN_TABLES: Record<string, LootTableDef> = {
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [22, 22] }, { id: 'beceri_kitabi_2', chance: 0.28 }, { id: 'beceri_kitabi_3', chance: 0.05 }, { id: 'gem_random_3', chance: 0.35 }, { id: 'efsun_nesnesi', chance: 0.07 }, { id: 'kutsama_kagidi', chance: 0.03 }] },
   loot_metin_t6: { ...METIN_BASE, items: [4, 5], minRarity: 'rare', minRarityCount: 2, goldMult: 24,
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [30, 30] }, { id: 'beceri_kitabi_3', chance: 0.15 }, { id: 'gem_random_3', chance: 0.4 }, { id: 'gem_random_4', chance: 0.05 }, { id: 'efsun_nesnesi', chance: 0.1 }, { id: 'kutsama_kagidi', chance: 0.06 }, { id: 'oyma_kalemi', chance: 0.05 }] },
+  // Karakır Bozkırı stones (tiers 7-10): the Sisli curve continued
+  loot_metin_t7: { ...METIN_BASE, items: [3, 5], minRarity: 'rare', minRarityCount: 2, goldMult: 22,
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [24, 24] }, { id: 'beceri_kitabi_2', chance: 0.28 }, { id: 'beceri_kitabi_3', chance: 0.05 }, { id: 'gem_random_3', chance: 0.35 }, { id: 'efsun_nesnesi', chance: 0.07 }, { id: 'kutsama_kagidi', chance: 0.03 }] },
+  loot_metin_t8: { ...METIN_BASE, items: [3, 5], minRarity: 'rare', minRarityCount: 2, goldMult: 24,
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [28, 28] }, { id: 'beceri_kitabi_2', chance: 0.25 }, { id: 'beceri_kitabi_3', chance: 0.08 }, { id: 'gem_random_3', chance: 0.38 }, { id: 'gem_random_4', chance: 0.03 }, { id: 'efsun_nesnesi', chance: 0.08 }, { id: 'kutsama_kagidi', chance: 0.04 }, { id: 'oyma_kalemi', chance: 0.03 }] },
+  loot_metin_t9: { ...METIN_BASE, items: [4, 5], minRarity: 'rare', minRarityCount: 2, goldMult: 26,
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [32, 32] }, { id: 'beceri_kitabi_3', chance: 0.12 }, { id: 'gem_random_3', chance: 0.4 }, { id: 'gem_random_4', chance: 0.06 }, { id: 'efsun_nesnesi', chance: 0.1 }, { id: 'kutsama_kagidi', chance: 0.05 }, { id: 'oyma_kalemi', chance: 0.05 }] },
+  loot_metin_t10: { ...METIN_BASE, items: [4, 5], minRarity: 'rare', minRarityCount: 2, goldMult: 28,
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [36, 36] }, { id: 'beceri_kitabi_3', chance: 0.18 }, { id: 'gem_random_4', chance: 0.08 }, { id: 'efsun_nesnesi', chance: 0.12 }, { id: 'kutsama_kagidi', chance: 0.07 }, { id: 'oyma_kalemi', chance: 0.06 }, { id: 'takviye_nesnesi', chance: 0.08 }] },
 };
 
 /** Ara Patron (GDD 3.6): the miniboss rank table + Metin Kalintisi x(4 + level/3) + themed focus. */

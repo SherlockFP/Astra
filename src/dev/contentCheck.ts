@@ -1300,8 +1300,9 @@ function worldIssues(
     const [mx, mz] = tileM(s.pos);
     if (!reachable(mx, mz)) err(where, `at ${s.pos} is not reachable`);
   }
-  // a map without metin tiers (Karakır Bozkırı, metin tiers 7-9 are a follow-up) has no spots to count
-  if (w.metin.tiers.length) for (const r of w.regions) { const n = spotsIn.get(r.id) ?? 0; if (n !== 4) warn(`region ${r.id}`, `${n} metin spots (GDD: 4 per region)`); }
+  // a map without metin tiers has no spots to count; the spot count per region is the GDD's 4 (Sisli Vadi), Karakır Bozkırı has 3
+  const perRegion = def.id === 'karakir_bozkiri' ? 3 : 4;
+  if (w.metin.tiers.length) for (const r of w.regions) { const n = spotsIn.get(r.id) ?? 0; if (n !== perRegion) warn(`region ${r.id}`, `${n} metin spots (${perRegion} per region)`); }
   for (const t of w.metin.tiers) {
     const where = `metin ${t.id}`;
     if (!regionIds.has(t.regionId)) err(where, `unknown region ${t.regionId}`);
