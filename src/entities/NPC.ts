@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import '../ui/styles/world-markers.css';
 import { Entity } from './Entity';
 import type { Interactable } from './Interactable';
 import type { Player } from './Player';
@@ -296,6 +297,10 @@ export class NPC extends Entity implements Interactable {
   private label: WorldLabelHandle | null = null;
   private questMark: WorldLabelHandle | null = null;
   private questMarkKind: NpcQuestMark | null = null;
+  private questMarkSig = '';
+  /** "▼ Buraya konuş" tag under the guide highlight (§4.3). */
+  private guideTag: WorldLabelHandle | null = null;
+  private markAcc = 0;
   private bubble: WorldLabelHandle | null = null;
   private bubbleTimer = 0;
   private baseYaw: number;
@@ -443,15 +448,20 @@ export class NPC extends Entity implements Interactable {
    * '!' grey = the next quest of this giver waits for the level. null hides it. Driven by scenes/world/QuestMarks.ts.
    */
   setQuestMark(kind: NpcQuestMark | null): void {
-    if (kind === this.questMarkKind) return;
+    // UX-21: the main-story (large) marker is also worn by the guide NPC while it is the HUD's guide target (§4.3)
+    const main = kind !== null && G.ui?.hud?.guideTarget === this.def.id;
+    const sig = kind ? `${kind}|${main ? 1 : 0}` : '';
+    if (sig === this.questMarkSig) return;
+    this.questMarkSig = sig;
     this.questMarkKind = kind;
+    this.setGuideTag(main);
     if (!kind) {
       this.questMark?.setVisible(false);
       return;
     }
     const glyph = kind === 'turnin' ? '?' : '!';
-    const col = kind === 'offer' ? '#ffe14d' : kind === 'turnin' ? '#f5b82e' : '#8d939c';
-    const html = `<div class="efs-qm" style="font:900 26px/1 var(--font-head, serif);color:${col};text-shadow:0 0 6px #000,0 0 2px #000">${glyph}</div>`;
+    const cls = `qm qm--${kind}${main ? ' qm--main' : ''}`;
+    const html = `<div class="${cls}"><i class="qm-glow"></i><b class="qm-glyph">${glyph}</b></div>`;
     try {
       if (this.questMark) {
         this.questMark.setText(html);
@@ -465,6 +475,23 @@ export class NPC extends Entity implements Interactable {
       }
     } catch {
       this.questMark = null;
+    }
+  }
+
+  /** Shows / hides the guide tag (§4.3). The label is created on first use only. */
+  private setGuideTag(on: boolean): void {
+    try {
+      if (!this.guideTag) {
+        if (!on) return;
+        this.guideTag = G.ui.addWorldLabel(this.object3d, '<div class="guide-tag">▼ Buraya konuş</div>', {
+          offsetY: this.height * (this.preset.scale ?? 1) + 2.3,
+          className: 'efs-wl-wrap',
+          maxDistance: 60,
+        });
+      }
+      this.guideTag.setVisible(on);
+    } catch {
+      this.guideTag = null;
     }
   }
 
@@ -485,6 +512,14 @@ export class NPC extends Entity implements Interactable {
 
   update(dt: number): void {
     this.time += dt;
+    // the guide highlight (§4.3) can change without a quest event: re-check the marker twice a second (no-op when unchanged)
+    if (this.questMarkKind) {
+      this.markAcc += dt;
+      if (this.markAcc >= 0.5) {
+        this.markAcc = 0;
+        this.setQuestMark(this.questMarkKind);
+      }
+    }
     const t = this.time;
     const player = G.player;
     const a = this.anim;

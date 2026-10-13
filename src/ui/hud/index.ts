@@ -3,7 +3,7 @@ import type { UI, UIMode } from '../UI';
 import { div, h, setClass, setStyle } from '../widgets/dom';
 import '../styles/hud-edit.css';
 import { ActionBar } from './ActionBar';
-import { CountdownBanner, InteractPrompt, LevelUpBanner, WorldAnnounce, ZoneBanner } from './Banners';
+import { BannerQueue, CountdownBanner, InteractPrompt, LevelUpBanner, QuestBanner, WorldAnnounce, ZoneBanner } from './Banners';
 import { BossFrame } from './BossFrame';
 import { Chat } from './Chat';
 import { CombatCues } from './CombatCues';
@@ -19,7 +19,7 @@ import { AimHint, ComboPoints, DamageDirection, DodgeCharges, PerfectDodgeText, 
 import { Minimap } from './Minimap';
 import { MythicTracker } from './MythicTracker';
 import { QuestTracker } from './QuestTracker';
-import { FpsCounter, Vignette } from './Overlays';
+import { Vignette } from './Overlays';
 import { PartyFrames } from './PartyFrames';
 import { PlayerCastBar, PlayerFrame } from './PlayerFrame';
 import { PerfOverlay } from '../widgets/PerfOverlay';
@@ -29,6 +29,7 @@ import { ContextTracker } from './Tracker';
 import { FlaskRow } from './FlaskRow';
 import { ObjectiveArrow } from './ObjectiveArrow';
 import { QuestFeed } from './QuestFeed';
+import { adviceLine } from '../panels/game/guideEngine';
 import { TipCards } from './TipCards';
 import { XpStrip } from './XpStrip';
 import type { HudCtx, HudDensity, HudWidget, HudZones } from './types';
@@ -130,7 +131,7 @@ export function createHUD(ui: UI): HudApi {
   // open world: pinned quest (click = quest log), under the M+ tracker
   const quests = add(new QuestTracker());
   // one tracker column for now (UX-01 stub): it holds the M+ tracker and the quest tracker
-  const tracker = new ContextTracker(ui, mythic, quests);
+  const tracker = add(new ContextTracker(ui, mythic, quests));
   tr.appendChild(tracker.el);
 
   // ---- combo counter + route banner (UX-01: anchored in .hud-ml, 48 px / 40 %) ----
@@ -165,21 +166,17 @@ export function createHUD(ui: UI): HudApi {
   extras.appendChild(cpoints.el);
   bc.appendChild(bar.el);
 
-  // ---- bottom-right: loot feed, gold, micro menu, fps ----
+  // ---- bottom-right column (§2.10, top -> bottom): loot feed, damage meter (out of the flow while hidden), gold, micro menu ----
   const br = div('hud-br', root);
   const loot = add(new LootFeed(ui));
   br.appendChild(loot.el);
+  const meter = add(new DamageMeter(ui));
+  br.appendChild(meter.el);
   const brRow = div('br-row', br);
   const gold = add(new GoldWidget());
   brRow.appendChild(gold.el);
   const micro = add(new MicroMenu(ui));
   brRow.appendChild(micro.el);
-  const fps = add(new FpsCounter());
-  br.appendChild(fps.el);
-
-  // ---- damage meter: its own absolute box, bottom-right above the loot column (Shift+D / pill) ----
-  const meter = add(new DamageMeter(ui));
-  root.appendChild(meter.el);
 
   // ---- extra action bars (Çubuk 2 / 3) and the layout editor that can move and scale every frame above ----
   const extra = new ExtraBars(ui);
@@ -201,24 +198,20 @@ export function createHUD(ui: UI): HudApi {
     ...extra.frames,
   ];
   for (const f of editFrames) edit.register(f);
-  const editBtn = h('button', 'hud-edit-btn hud-interactive', brRow, 'Arayüzü Düzenle');
-  editBtn.type = 'button';
-  brRow.insertBefore(editBtn, brRow.firstChild);
-  editBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    api.startEdit();
-  });
-
-  // ---- UX-01 stubs: compile-only placeholders for the packages that fill them (hidden until then) ----
-  const tips = new TipCards();
+  // ---- onboarding (§4.4, §4.7): tip cards above the chat, the objective arrow over the centre ----
+  const tips = add(new TipCards(ui));
   zTip.appendChild(tips.el);
-  const arrow = new ObjectiveArrow();
+  const arrow = add(new ObjectiveArrow(ui));
   root.appendChild(arrow.el);
   const feed = new QuestFeed();
   root.appendChild(feed.el);
 
-  // ---- centre overlays ----
-  for (const w of [new ZoneBanner(), new WorldAnnounce(), new CountdownBanner(), new LevelUpBanner(), new InteractPrompt()]) {
+  // ---- centre overlays (§2.11): ranks 2-5 go through one banner queue; the queue itself is a widget ----
+  const banners = add(new BannerQueue());
+  const zoneBanner = new ZoneBanner(banners);
+  const levelBanner = new LevelUpBanner(banners);
+  const questBanner = new QuestBanner(banners);
+  for (const w of [zoneBanner, new WorldAnnounce(), new CountdownBanner(), levelBanner, questBanner, new InteractPrompt()]) {
     add(w);
     root.appendChild(w.el);
   }
@@ -277,6 +270,7 @@ export function createHUD(ui: UI): HudApi {
     zones: { tl, tc, tr, bl, bc, br, uf: zUf, xp: zXp, ml: zMl, tip: zTip },
     tracker,
     tips,
+    adviceLine,
     get guideTarget() {
       return guideTarget;
     },

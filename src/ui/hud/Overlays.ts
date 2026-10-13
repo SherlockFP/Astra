@@ -1,5 +1,5 @@
 import { G } from '../../game/G';
-import { clamp01, div, pulse, setClass, setDisplay, setStyle, setText } from '../widgets/dom';
+import { clamp01, div, pulse, setClass, setStyle } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
 
 /** Full-screen overlays: low-HP red vignette (pulsing), damage/heal flashes, loot edge flash and the death desaturation. */
@@ -59,29 +59,5 @@ export class Vignette implements HudWidget {
     this.lowAmt += (target - this.lowAmt) * Math.min(1, ctx.dt * 4);
     const pulseK = 0.65 + 0.35 * Math.sin(ctx.t * (3 + this.lowAmt * 4));
     setStyle(this.low, 'opacity', (this.lowAmt * pulseK).toFixed(3));
-  }
-}
-
-/** Small FPS/frame-time counter (settings.showFps). */
-export class FpsCounter implements HudWidget {
-  readonly el: HTMLElement;
-  private acc = 0;
-
-  constructor() {
-    this.el = div('fps');
-  }
-
-  update(ctx: HudCtx): void {
-    const on = !!G.settings?.data.showFps;
-    setDisplay(this.el, on);
-    if (!on) return;
-    this.acc += ctx.dt;
-    if (this.acc < 0.25) return;
-    this.acc = 0;
-    const fps = Math.round(G.engine.fps);
-    const calls = G.engine.renderer.info.render.calls;
-    setText(this.el, `${fps} FPS · ${fps > 0 ? (1000 / fps).toFixed(1) : '--'} ms · ${calls} çizim`);
-    setClass(this.el, 'bad', fps < 30);
-    setClass(this.el, 'warn', fps >= 30 && fps < 50);
   }
 }

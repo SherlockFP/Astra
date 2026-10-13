@@ -117,9 +117,7 @@ export class ContextTracker {
     this.panes.run.addEventListener('click', () => this.openFor('run'));
     hp.addEventListener('click', () => this.openFor('hint'));
     for (const m of ['boss', 'run', 'quest', 'hint'] as Mode[]) setDisplay(this.panes[m], m === 'hint');
-    // index.ts does not list this widget in the HUD loop, so it refreshes itself at 10 Hz (the MythicTracker and
-    // QuestTracker flags it reads are kept current by the loop)
-    setInterval(() => this.refresh(G.world), 100);
+    // refreshed by the HUD widget loop (index.ts), like every other widget: no timer of its own
   }
 
   update(ctx: HudCtx): void {

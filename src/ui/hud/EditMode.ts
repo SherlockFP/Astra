@@ -29,6 +29,8 @@ const GRID = 8;
 const SNAP_PX = 6;
 const STEP = 0.05;
 const NO_OFFSET: FrameOffset = { x: 0, y: 0, s: 1 };
+/** Size class names for the toolbar read-out (§2.2 / §2.13). */
+const DENSITY_TR: Record<string, string> = { lg: 'Geniş', md: 'Orta', sm: 'Kompakt' };
 
 interface Reg {
   id: string;
@@ -120,6 +122,9 @@ export class EditMode {
   private readonly regs = new Map<string, Reg>();
   /** Offsets currently applied to the frames (equal to the committed layout outside edit mode). */
   private draft: Record<string, FrameOffset>;
+  /** Frame picked last (click / drag), the target of "Çerçeveyi Sıfırla" (UX-13). */
+  private selId: string | null = null;
+  private densityEl: HTMLElement | null = null;
   private active = false;
   private sig = '';
   private drag: DragState | null = null;
@@ -390,6 +395,7 @@ export class EditMode {
   }
 
   private select(id: string): void {
+    this.selId = id;
     for (const reg of this.regs.values()) reg.box.classList.toggle('sel', reg.id === id);
     const reg = this.regs.get(id);
     if (reg) this.boxes.insertBefore(reg.box, this.guideV);
@@ -437,7 +443,9 @@ export class EditMode {
     this.toggle(bar, 'locked', 'Çubukları Kilitle', () => this.flip('locked'));
     h('span', 'ued-sep', bar);
     this.button(bar, 'Kaydet', 'primary', () => this.stop(true));
+    this.button(bar, 'Çerçeveyi Sıfırla', '', () => this.resetSelected());
     this.button(bar, 'Varsayılana Dön', '', () => this.resetAll());
+    this.densityEl = h('span', 'ued-density', bar);
     this.button(bar, 'İptal', 'danger', () => this.stop(false));
     return bar;
   }
@@ -474,6 +482,17 @@ export class EditMode {
     this.syncToolbar();
   }
 
+  /** Resets only the frame picked last to its default (draft only, like the global reset: Kaydet makes it permanent). */
+  private resetSelected(): void {
+    if (!this.selId) {
+      this.ui.toast('Önce bir çerçeve seç.', 'info');
+      return;
+    }
+    this.draft[this.selId] = { ...NO_OFFSET };
+    this.applyAll();
+    this.ui.toast('Çerçeve varsayılana döndü. Kalıcı olması için Kaydet.', 'info');
+  }
+
   private resetAll(): void {
     this.draft = {};
     this.applyAll();
@@ -481,6 +500,7 @@ export class EditMode {
   }
 
   private syncToolbar(): void {
+    if (this.densityEl) this.densityEl.textContent = 'Yoğunluk: ' + DENSITY_TR[this.root.dataset.density ?? 'lg'];
     const l = readLayout();
     this.setOn('grid', l.grid);
     for (const b of this.bars) this.setOn('bar:' + b.id, l.bars[b.id] === true);

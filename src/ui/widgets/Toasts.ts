@@ -3,7 +3,12 @@ import { div, esc, pulse } from './dom';
 export type ToastKind = 'info' | 'success' | 'warning' | 'error' | 'loot' | 'levelup' | 'boss';
 
 const GLYPH: Record<ToastKind, string> = { info: 'i', success: '✓', warning: '!', error: '✕', loot: '★', levelup: '▲', boss: '☠' };
-const DURATION: Record<ToastKind, number> = { info: 3200, success: 3000, warning: 3800, error: 3000, loot: 3600, levelup: 4600, boss: 4600 };
+/** §2.11: every toast lives 2.4 s (kind only changes the colour). */
+const DURATION_MS = 2400;
+/** Same text + kind within this window merges into the count (`x2`). */
+const DEDUPE_MS = 1500;
+/** At most this many toasts on screen. */
+const MAX_VISIBLE = 2;
 
 interface Toast {
   el: HTMLElement;
@@ -25,12 +30,12 @@ export class Toasts {
   show(text: string, kind: ToastKind = 'info', html?: string): void {
     const now = performance.now();
     const key = html ?? esc(text);
-    const prev = this.list.find((t) => t.text === key && t.kind === kind && now - t.born < 2600);
+    const prev = this.list.find((t) => t.text === key && t.kind === kind && now - t.born < DEDUPE_MS);
     if (prev) {
       prev.count++;
       prev.countEl.textContent = 'x' + prev.count;
       prev.countEl.style.display = '';
-      prev.until = now + DURATION[kind];
+      prev.until = now + DURATION_MS;
       prev.el.classList.remove('out');
       pulse(prev.el, 'bump');
       return;
@@ -41,9 +46,9 @@ export class Toasts {
     textEl.innerHTML = key;
     const countEl = div('toast-count', el);
     countEl.style.display = 'none';
-    const t: Toast = { el, text: key, kind, count: 1, textEl, countEl, until: now + DURATION[kind], born: now };
+    const t: Toast = { el, text: key, kind, count: 1, textEl, countEl, until: now + DURATION_MS, born: now };
     this.list.push(t);
-    while (this.list.length > 5) this.remove(this.list[0]);
+    while (this.list.length > MAX_VISIBLE) this.remove(this.list[0]);
   }
 
   private remove(t: Toast): void {

@@ -7,7 +7,7 @@ import type { NavGrid } from '../../world/NavGrid';
 import { RARITY_COLORS, type Rarity } from '../../types/common';
 import { ICON, div, setDisplay, setText, setStyle, clampN, fmtClock, h, iconEl, uiSound } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
-import { inWorldMap, questTargetMarks, tileCentreM, waypointKnown, worldExtras } from './questMarks';
+import { inWorldMap, questGiverMarks, questTargetMarks, tileCentreM, waypointKnown, worldExtras } from './questMarks';
 
 const SIZE = 192;
 const R = SIZE / 2;
@@ -72,7 +72,7 @@ export class Minimap implements HudWidget {
   private zoneSub = '';
   private lastMode = '';
   /** Open world marks (villages, discovered stones, active metin, quest targets), refreshed twice a second (world metres). */
-  private worldMarks: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' }[] = [];
+  private worldMarks: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' | 'giver'; gk?: 'offer' | 'turnin' }[] = [];
   private worldAt = -1e9;
   /** Metin spots currently standing (spot ids from world:metinChanged). */
   private metinOn = new Set<string>();
@@ -249,7 +249,7 @@ export class Minimap implements HudWidget {
 
   /** Villages, discovered stones, standing metin stones and quest targets of the open world, in world metres. */
   private refreshWorldMarks(): void {
-    const out: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' }[] = [];
+    const out: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' | 'giver'; gk?: 'offer' | 'turnin' }[] = [];
     const ext = inWorldMap() ? worldExtras() : null;
     if (ext) {
       for (const v of ext.villages) out.push({ x: tileCentreM(v.center[0]), z: tileCentreM(v.center[1]), kind: 'village' });
@@ -257,6 +257,16 @@ export class Minimap implements HudWidget {
       for (const s of ext.metin.spots) if (this.metinOn.has(s.id)) out.push({ x: tileCentreM(s.pos[0]), z: tileCentreM(s.pos[1]), kind: 'metin' });
     }
     for (const q of questTargetMarks()) out.push({ x: q.x, z: q.z, kind: 'quest' });
+    // quest givers (UX-21, §4.5): town NPCs with quests in town, village NPCs on the open world; gold ! offer, ? turn-in
+    if (!ext && G.ui?.mode === 'town') {
+      for (const n of TOWN.npcs) {
+        if (!n.quests?.length) continue;
+        const defs = G.quests?.offered(n.id) ?? [];
+        if (defs.length) out.push({ x: n.pos[0], z: n.pos[2], kind: 'giver', gk: defs.some((d) => G.quests?.state(d.id) === 'ready') ? 'turnin' : 'offer' });
+      }
+    } else if (ext) {
+      for (const g of questGiverMarks()) out.push({ x: g.x, z: g.z, kind: 'giver', gk: g.kind });
+    }
     this.worldMarks = out;
   }
 
@@ -444,6 +454,16 @@ export class Minimap implements HudWidget {
         ctx2.beginPath();
         ctx2.arc(x, y, 4.5 + 1.5 * qk, 0, Math.PI * 2);
         ctx2.stroke();
+      } else if (m.kind === 'giver') {
+        const glyph = m.gk === 'turnin' ? '?' : '!';
+        ctx2.font = 'bold 14px sans-serif';
+        ctx2.textAlign = 'center';
+        ctx2.textBaseline = 'middle';
+        ctx2.lineWidth = 3;
+        ctx2.strokeStyle = '#000';
+        ctx2.strokeText(glyph, x, y + 1);
+        ctx2.fillStyle = m.gk === 'turnin' ? '#f5b82e' : '#ffe14d';
+        ctx2.fillText(glyph, x, y + 1);
       } else if (m.kind === 'village') {
         ctx2.fillStyle = '#e8c46a';
         ctx2.strokeStyle = '#2a1a04';

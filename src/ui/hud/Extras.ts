@@ -494,3 +494,10 @@ export class TalentBadge implements HudWidget {
     );
   }
 }
+
+/** Unspent talent points over the three pools (the number the N badge shows). UX-13: read by the micro menu. */
+export function unspentTalentPoints(): number {
+  const t = G.talents;
+  const pr = G.progression;
+  return (t?.pointsFree('class') ?? 0) + (t?.pointsFree('spec') ?? 0) + (pr?.talentPointsAvailable() ?? 0);
+}

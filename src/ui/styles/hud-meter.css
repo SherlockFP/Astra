@@ -1,13 +1,11 @@
 /* =====================================================================
    hud-meter.css  (OWNER: hud module, UX-12)
    Details!-style damage / healing meter (UI_REDESIGN §2.10.1). Namespaced `dm-`.
-   Placement: until UX-13 mounts the meter into .hud-br, the rule below anchors it above the gold chip and the micro row.
+   Placement: mounted in .hud-br (UX-13, §2.10): an in-flow column item between the loot feed and the gold chip; hidden = display none.
    ===================================================================== */
 
 .dm {
-  position: absolute;
-  right: var(--gut);
-  bottom: calc(var(--gut) + 72px);
+  position: relative;
   pointer-events: none;
   font-family: var(--font-body);
   transition: opacity 400ms linear;

@@ -3,6 +3,7 @@ import { getDungeon } from '../../data/dungeons';
 import { TILE_SIZE, type DungeonDef, type WorldExtras } from '../../types/dungeons';
 import type { QuestKind, QuestObjective } from '../../types/quests';
 import type { Enemy } from '../../entities/Enemy';
+import { TOWN } from '../../data/town';
 
 /**
  * Open-world lookups shared by the HUD (tracker, minimap), the map and the quest panels: region / village / waypoint positions
@@ -23,11 +24,12 @@ export function getPinnedQuest(): string | null {
   }
 }
 export function setPinnedQuest(id: string | null): void {
+  G.events?.emit('quest:pinned', { questId: id });
   try {
     if (id) window.localStorage.setItem(PIN_KEY, id);
     else window.localStorage.removeItem(PIN_KEY);
-  } catch {
-    /* storage blocked */
+  } catch (err) {
+    console.warn('[ui] storage blocked', err);
   }
 }
 
@@ -54,8 +56,8 @@ export function worldDef(): DungeonDef | null {
     const id = G.mplus?.params?.dungeonId ?? G.mplus?.state?.dungeonId;
     const live = id ? getDungeon(id) : undefined;
     if (live?.world) return live;
-  } catch {
-    /* mplus not ready */
+  } catch (err) {
+    console.warn('[ui] mplus not ready', err);
   }
   const d = getDungeon(WORLD_ZONE_ID);
   return d?.world ? d : null;
@@ -175,8 +177,8 @@ export function questTargetMarks(): QuestMark[] {
         if (p) out.push({ ...p, questId: def.id, label: o.text, kind: o.kind });
       });
     }
-  } catch {
-    /* quest data not ready */
+  } catch (err) {
+    console.warn('[ui] quest data not ready', err);
   }
   return out;
 }
@@ -197,8 +199,139 @@ export function questGiverMarks(): QuestGiverMark[] {
         if (p) out.push({ ...p, npcId: n.id, kind });
       }
     }
-  } catch {
-    /* quest data not ready */
+  } catch (err) {
+    console.warn('[ui] quest data not ready', err);
   }
   return out;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/* Objective arrow targets (UI_REDESIGN §4.4, UX-20)                                                                   */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+/** Target of the objective arrow: where to point, what to call it, and which medallion kind to draw. */
+export interface GuideTarget extends Pt {
+  label: string;
+  kind: 'talk' | 'turnin' | 'kill' | 'explore' | 'dungeon';
+  /** Stable id: a new key restarts the arrival logic. */
+  key: string;
+}
+
+/** Centre of a town exit box `[x0, z0, x1, z1]` by exit id (the exits of TOWN, §4.4). */
+function townExitCentre(id: string): Pt | null {
+  const e = (TOWN.exits ?? []).find((x) => x.id === id);
+  if (!e) return null;
+  return { x: (e.box[0] + e.box[2]) / 2, z: (e.box[1] + e.box[3]) / 2 };
+}
+
+/** Town NPC position (TOWN.npcs, metres, x / z). */
+export function townNpcPos(id: string): Pt | null {
+  const n = TOWN.npcs.find((x) => x.id === id);
+  return n ? { x: n.pos[0], z: n.pos[2] } : null;
+}
+
+/** Name of a town NPC, or the id. */
+export function townNpcName(id: string): string {
+  return TOWN.npcs.find((x) => x.id === id)?.name ?? id;
+}
+
+/**
+ * Where an objective points for the arrow, scene-aware (§4.4). In town the open-world places are the exits: anything in
+ * Sisli Vadi points at the South Gate, Karakır objectives at the East Gate, dungeons at their portal. On the world map it is
+ * the objective's own position. Null when there is no place to point at.
+ */
+export function guideTargetPos(o: QuestObjective, inTown: boolean): (Pt & { label: string }) | null {
+  const tgt = o.target ?? '';
+  if (!inTown) {
+    const p = objectivePos(o);
+    return p ? { ...p, label: o.text } : null;
+  }
+  if (tgt.includes('karakir')) {
+    const p = townExitCentre('dogu_kapisi');
+    return p ? { ...p, label: 'Doğu Kapısı' } : null;
+  }
+  switch (o.kind) {
+    case 'talk': {
+      const n = tgt ? townNpcPos(tgt) : null;
+      if (n) return { ...n, label: townNpcName(tgt) };
+      if (tgt.startsWith('npc_g_')) {
+        const g = townExitCentre('guney_kapisi');
+        return g ? { ...g, label: 'Güney Kapısı' } : null;
+      }
+      return null;
+    }
+    case 'dungeon': {
+      const dId = tgt.split(':')[0];
+      const p = dId ? townNpcPos(`portal_${dId}`) : null;
+      return p ? { ...p, label: 'Zindan Portalı' } : null;
+    }
+    case 'explore':
+    case 'kill':
+    case 'boss':
+    case 'metin': {
+      const g = townExitCentre('guney_kapisi');
+      return g ? { ...g, label: 'Güney Kapısı' } : null;
+    }
+    default:
+      return null;
+  }
+}
+
+function objectiveKind(o: QuestObjective): GuideTarget['kind'] {
+  switch (o.kind) {
+    case 'kill':
+    case 'boss':
+    case 'metin':
+      return 'kill';
+    case 'explore':
+      return 'explore';
+    case 'dungeon':
+      return 'dungeon';
+    default:
+      return 'talk';
+  }
+}
+
+/** NPC position for the current scene (town NPC in town, the village NPC on the world map). */
+function giverPos(npcId: string, inTown: boolean): Pt | null {
+  return inTown ? townNpcPos(npcId) : npcWorldPos(npcId);
+}
+
+/**
+ * The objective arrow's target (§4.4), first hit of the priority list: (1) the pinned active quest's first open objective
+ * with a place, (2) a `ready` quest's turn-in NPC, (3) the recommended quest's giver (`recommendedGiver`, from
+ * guideEngine.recommend, or the welcome guide target `HudApi.guideTarget`). Null when there is nothing to point at.
+ */
+export function guideTarget(recommendedGiver: string | null): GuideTarget | null {
+  const inTown = G.ui?.mode === 'town';
+  const q = G.quests;
+  if (q && G.character) {
+    try {
+      const pinned = getPinnedQuest();
+      const pdef = pinned ? q.def(pinned) : undefined;
+      if (pdef && q.state(pdef.id) === 'active') {
+        const rows = q.progressRows(pdef.id);
+        for (let k = 0; k < pdef.objectives.length; k++) {
+          const o = pdef.objectives[k];
+          if (rows[k]?.done) continue;
+          const p = guideTargetPos(o, inTown);
+          if (p) return { x: p.x, z: p.z, label: p.label, kind: objectiveKind(o), key: `${pdef.id}#${k}` };
+        }
+      }
+      for (const d of q.all()) {
+        if (q.state(d.id) !== 'ready') continue;
+        const id = d.turnIn ?? d.giver;
+        const p = giverPos(id, inTown);
+        if (p) return { x: p.x, z: p.z, label: townNpcName(id), kind: 'turnin', key: `ready:${d.id}` };
+      }
+    } catch (err) {
+      console.warn('[ui] quest data not ready', err);
+    }
+  }
+  const giver = recommendedGiver ?? G.ui?.hud?.guideTarget ?? null;
+  if (giver) {
+    const p = giverPos(giver, inTown);
+    if (p) return { x: p.x, z: p.z, label: townNpcName(giver), kind: 'talk', key: `giver:${giver}` };
+  }
+  return null;
 }
