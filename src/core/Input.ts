@@ -26,7 +26,9 @@ export type InputAction =
   // CONTROLS_WOW §2.1 / §3.2 (appended): WoW auto-attack toggle and keyboard turning (default unbound in Aksiyon)
   | 'autoAttack' | 'turnLeft' | 'turnRight'
   // UI_REDESIGN §2.6.5 (UX-10, appended): Panzehir İksiri (Combat.usePotion('cleanse')) on the consumable strip
-  | 'potionCleanse';
+  | 'potionCleanse'
+  // CONTROLS_WOW fixes (appended): walk is a toggle (held Ctrl fights browser shortcuts), autorun runs forward until W / S is pressed
+  | 'walkToggle' | 'autorun';
 
 /** CONTROLS_WOW D1: the control scheme. 'wow' is the default; 'aksiyon' is the pre-WoW layout. */
 export type ControlScheme = 'wow' | 'aksiyon';
@@ -48,7 +50,9 @@ export const DEFAULT_BINDINGS: Record<InputAction, string[]> = {
   moveRight: ['KeyD', 'ArrowRight'],
   jump: ['Space'],
   dodge: ['ShiftLeft', 'ShiftRight'],
-  walk: ['ControlLeft'],
+  // Held walk is unbound by default: holding Ctrl while pressing W / S / D / F / R / P triggers browser shortcuts (Ctrl+W closes the tab).
+  // walkToggle is the default way to walk; `walk` stays rebindable for players who want a held key.
+  walk: [],
   skill_lmb: ['Mouse0'],
   skill_rmb: ['Mouse2'],
   skill_q: ['KeyQ'],
@@ -119,6 +123,10 @@ export const DEFAULT_BINDINGS: Record<InputAction, string[]> = {
   autoAttack: [],
   turnLeft: [],
   turnRight: [],
+  // Same in both schemes. Every letter and digit is taken, so these use the numpad (WoW's NumLock autorun) plus a bracket key for
+  // laptops without a numpad ('[' / ']' sit on the Turkish-Q ğ / ü keys). None of these codes has a browser default.
+  walkToggle: ['NumpadDivide', 'BracketLeft'],
+  autorun: ['NumLock', 'BracketRight'],
 };
 
 /**
@@ -172,7 +180,7 @@ export function defaultBindings(s: ControlScheme): Record<InputAction, string[]>
 }
 
 export const ACTION_NAMES_TR: Record<InputAction, string> = {
-  moveForward: 'İleri', moveBack: 'Geri', moveLeft: 'Sol', moveRight: 'Sağ', jump: 'Zıpla', dodge: 'Takla / Kaçın', walk: 'Yürü',
+  moveForward: 'İleri', moveBack: 'Geri', moveLeft: 'Sol', moveRight: 'Sağ', jump: 'Zıpla', dodge: 'Takla / Kaçın', walk: 'Yürü (basılı tut)',
   skill_lmb: 'Temel Saldırı', skill_rmb: 'Yetenek (Sağ Tık)', skill_q: 'Yetenek Q', skill_e: 'Yetenek E', skill_r: 'Yetenek R',
   skill_s1: 'Yetenek 1', skill_s2: 'Yetenek 2', skill_s3: 'Yetenek 3', potionHp: 'Can İksiri', potionMp: 'Mana İksiri', potionCleanse: 'Panzehir İksiri',
   interact: 'Etkileşim', targetNext: 'Sonraki Hedef', freeCursor: 'İmleci Serbest Bırak', toggleLock: 'Kamera Kilidi',
@@ -185,6 +193,7 @@ export const ACTION_NAMES_TR: Record<InputAction, string> = {
   professions: 'Meslekler', camShoulder: 'Omuz Değiştir', heavyAttack: 'Ağır Saldırı',
   skill_s4: 'Beceri G', groupFinder: 'Grup Bulucu', guide: 'Ne Yapmalıyım?', focusTarget: 'Odak Hedef', targetPrev: 'Önceki Hedef',
   autoAttack: 'Otomatik Saldırı', turnLeft: 'Sola Dön', turnRight: 'Sağa Dön',
+  walkToggle: 'Yürü / Koş (aç/kapat)', autorun: 'Otomatik Koşu',
 };
 
 export class Input {
@@ -210,15 +219,25 @@ export class Input {
   enabled = true;
   /** True while a game scene (town / dungeon) is active; Game.ts sets it on scene:changed. Gates F2-F5 preventDefault (F5 reloads). */
   gameScene = false;
+  /** Bumped on every window blur: consumers that track a press (WoW mouse gestures, Tab hold) reset themselves when it changes. */
+  blurSeq = 0;
   private canvas: HTMLElement;
-  private textFocus = false;
+
+  /** True while a text field has the focus (derived from document.activeElement, so it clears itself on blur / removal). */
+  private get textFocus(): boolean {
+    return isTextTarget(typeof document !== 'undefined' ? document.activeElement : null);
+  }
 
   constructor(canvas: HTMLElement) {
     this.canvas = canvas;
+    initKeyboardLayout();
     window.addEventListener('keydown', (e) => {
-      this.textFocus = isTextTarget(e.target);
-      if (this.textFocus && e.code !== 'Escape' && e.code !== 'Enter') return;
-      if (e.code === 'Tab' || e.code === 'AltLeft' || e.code === 'AltRight' || e.code === 'F1' || (e.code === 'Space' && !this.textFocus)) e.preventDefault();
+      const inText = isTextTarget(e.target) || this.textFocus;
+      // Ctrl / Cmd + letter or digit is a browser shortcut (Ctrl+R reload, S save, D bookmark, F find, P print, ...): swallow it in the game
+      // scene unless a text field is focused. Ctrl+W / T / N are reserved by the browser and cannot be stopped from a page.
+      if (this.gameScene && !inText && (e.ctrlKey || e.metaKey) && /^(Key[A-Z]|Digit[0-9])$/.test(e.code)) e.preventDefault();
+      if (inText && e.code !== 'Escape' && e.code !== 'Enter') return;
+      if (e.code === 'Tab' || e.code === 'AltLeft' || e.code === 'AltRight' || e.code === 'F1' || (e.code === 'Space' && !inText)) e.preventDefault();
       if (this.gameScene && /^F[2-5]$/.test(e.code)) e.preventDefault(); // GDD_V2 partySel2..5 (F5 would reload the page)
       if (!this.held.has(e.code)) this.justDown.add(e.code);
       this.held.add(e.code);
@@ -228,7 +247,11 @@ export class Input {
       this.justUp.add(e.code);
     });
     window.addEventListener('blur', () => {
+      // Releases the browser never delivers (alt-tab, devtools, a dialog): report them as released so released() stays consistent.
+      for (const c of this.held) this.justUp.add(c);
       this.held.clear();
+      this.justDown.clear();
+      this.blurSeq++;
     });
     window.addEventListener('mousemove', (e) => {
       const r = this.canvas.getBoundingClientRect();
@@ -356,14 +379,47 @@ export class Input {
   }
 }
 
+/**
+ * Physical code -> the character printed on the player's keyboard (Chromium's Keyboard Map API; Turkish-Q, AZERTY, ...).
+ * Filled asynchronously by initKeyboardLayout(); null/empty where the API is missing (Firefox, Safari) and in node.
+ */
+let layoutMap: Map<string, string> | null = null;
+
+/** Letters and punctuation follow the layout; digits keep their number (AZERTY's Digit1 would read '&'). */
+const LAYOUT_LABELLED = /^(Key[A-Z]|Backquote|Minus|Equal|Bracket(Left|Right)|Backslash|IntlBackslash|Semicolon|Quote|Comma|Period|Slash)$/;
+
+function initKeyboardLayout(): void {
+  try {
+    const kb = (typeof navigator !== 'undefined' ? navigator : undefined) as unknown as {
+      keyboard?: { getLayoutMap?: () => Promise<Map<string, string>>; addEventListener?: (t: string, f: () => void) => void };
+    } | undefined;
+    if (!kb?.keyboard?.getLayoutMap) return;
+    const load = () => {
+      kb.keyboard!.getLayoutMap!().then((m) => { layoutMap = m; }).catch(() => { /* unsupported / blocked: keep QWERTY names */ });
+    };
+    load();
+    kb.keyboard.addEventListener?.('layoutchange', load);
+  } catch { /* optional nicety */ }
+}
+
 export function codeLabel(code: string): string {
+  if (layoutMap && LAYOUT_LABELLED.test(code)) {
+    const ch = layoutMap.get(code);
+    if (ch && ch.length === 1) return ch.toLocaleUpperCase('tr');
+  }
   if (code.startsWith('Key')) return code.slice(3);
   if (code.startsWith('Digit')) return code.slice(5);
+  const numpad = /^Numpad(\d)$/.exec(code);
+  if (numpad) return 'Num' + numpad[1];
   const map: Record<string, string> = {
-    Mouse0: 'SolT', Mouse1: 'OrtaT', Mouse2: 'SağT', Space: 'Boşluk', ShiftLeft: 'Shift', ShiftRight: 'Shift', ControlLeft: 'Ctrl',
+    Mouse0: 'SolT', Mouse1: 'OrtaT', Mouse2: 'SağT', Space: 'Boşluk', ShiftLeft: 'Shift', ShiftRight: 'Shift', ControlLeft: 'Ctrl', ControlRight: 'Ctrl',
     AltLeft: 'Alt', AltRight: 'Alt', Escape: 'Esc', Enter: 'Enter', Tab: 'Tab', ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→',
     // Short forms: the action bar prints these at 12 px in a 44 px cell.
     Mouse3: 'Geri', Mouse4: 'İleri', Minus: '-', CapsLock: 'Caps', Period: '.', Backquote: '`', Equal: '=',
+    Backslash: '\\', Slash: '/', Comma: ',', Semicolon: ';', Quote: "'", BracketLeft: '[', BracketRight: ']', IntlBackslash: '<',
+    NumLock: 'NumLk', NumpadDivide: 'Num/', NumpadMultiply: 'Num*', NumpadSubtract: 'Num-', NumpadAdd: 'Num+', NumpadDecimal: 'Num.',
+    NumpadEnter: 'NumEnt', Backspace: 'Geri Sil', Insert: 'Ins', Delete: 'Del', PageUp: 'PgUp', PageDown: 'PgDn', MetaLeft: 'Win', MetaRight: 'Win',
+    ScrollLock: 'ScrLk', Pause: 'Pause', ContextMenu: 'Menü',
   };
   return map[code] ?? code;
 }

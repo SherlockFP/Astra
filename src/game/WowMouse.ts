@@ -243,5 +243,21 @@ export function selfTest(): string[] {
     check(!m.l.down && !m.r.down, 'reset: buttons cleared');
   }
 
+  // 9. window blur: the caller resets the machine, then the buttons read as released -> no click, no drag output
+  {
+    const m = new WowMouse();
+    frame(m, { l: true, lPressed: true, ndcX: 0.2, ndcY: 0.2, dt: 0.016 });
+    frame(m, { l: true, dt: 0.05 });
+    m.reset(); // PlayerController.onWindowBlur
+    const o = frame(m, { l: false, dt: 0.016 });
+    check(!o.clickL && !o.clickR, 'blur: a reset press must not release into a click');
+    check(!o.wantLock && !o.orbit, 'blur: no hold outputs after the reset');
+    // without the reset the same sequence WOULD click (documents why the caller must reset)
+    const n = new WowMouse();
+    frame(n, { l: true, lPressed: true, dt: 0.016 });
+    frame(n, { l: true, dt: 0.05 });
+    check(!!frame(n, { l: false, dt: 0.016 }).clickL, 'blur: control case (no reset) must click');
+  }
+
   return fails;
 }

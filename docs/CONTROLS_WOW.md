@@ -136,7 +136,7 @@ if ((stored.controlsRev ?? 0) < 1) {
 
 | Group | Binding |
 |---|---|
-| Move | W/↑ forward · S/↓ back · A/← left · D/→ right · Space jump · Shift dodge · Ctrl walk |
+| Move | W/↑ forward · S/↓ back · A/← left · D/→ right · Space jump · Shift dodge · `walkToggle` NumpadDivide / `[` (walk ↔ run) · `autorun` NumLock / `]` · `walk` (held) unbound by default (§3.4) |
 | Skills | **LMB** `skill_lmb` · **RMB** `skill_rmb` · Q `skill_q` · E `skill_e` · R `skill_r` · 1 `skill_s1` · 2 `skill_s2` · 3 `skill_s3` · G `skill_s4` |
 | Majors | X `m45` · V `m90` · T `m180` |
 | Consumables | 4 `potionHp` · 5 `potionMp` · 6 7 8 9 0 `flask1..5` |
@@ -181,7 +181,29 @@ That is 18 rows: 15 changed existing actions (9 skill slots, 2 potions, `camShou
 5. `SCHEME_ACTIONS` equals the set of actions whose arrays differ between the two tables or are new.
 6. `migrateControlsRev` on fixtures: (a) `{bindings:{skill_q:['KeyF'], inventory:['KeyZ']}}` → `schemeBindings.aksiyon.skill_q = ['KeyF']`, `bindings.inventory = ['KeyZ']`, `controlScheme = 'wow'`; (b) `{}`-with-`controlsRev:1` is untouched; (c) idempotent.
 
-Known pre-existing overlap, **not** solved here (open question Q4): `ui/hud/ExtraBars.ts:446` uses Shift/Ctrl + Digit 1–8 for the two extra bars. Shift is the dodge key and Ctrl is walk in both schemes; in WoW the digits are also main-bar skills. The extra-bar handler already `stopPropagation`s the digit in the capture phase, so the main bar does not double fire, but a Shift press still starts a dodge first.
+7. (fixes, §3.4) `walkToggle` and `autorun` are shared, bound in both schemes, on no letter / digit / mouse / modifier code and collision-free; no default binding uses Control or Meta; every default code has a `codeLabel`; Ayarlar lists every action (WoW omits `toggleLock`, `camShoulder`; Aksiyon omits `autoAttack`, `turnLeft`, `turnRight`).
+
+### 3.4 Control fixes (audit round 1)
+
+| Topic | Rule |
+|---|---|
+| Walk | Held Ctrl is no longer the default: Ctrl + W / S / D / F / R / P are browser shortcuts (Ctrl+W closes the tab and a page cannot stop it). `walkToggle` (NumpadDivide, `[`) flips walk ↔ run (toast); `walk` is still a rebindable held action (default unbound). `PlayerController.walking` = toggle or held key. |
+| Browser shortcuts | `Input` calls `preventDefault` on every Ctrl / Meta + letter or digit keydown while `gameScene` is on and no text field is focused (Ctrl+W / T / N stay browser-reserved). |
+| Autorun | `autorun` (NumLock, `]`) toggles a forward run along the facing (WoW) / camera (Aksiyon); strafing still adds in, mouse turning does not cancel it. Cancelled by a W or S press (also `moveBack` / `moveForward` arrows), by the same key, death, any frame without input (panel open), a teleport and the void respawn lock. Held S overrides it. A dodge rolls along the autorun direction. |
+| Backpedal | `BACKPEDAL_MUL = 0.643` (WoW 4.5 / 7). |
+| Air momentum (WoW) | Airborne: no braking when keys are released, 15 % of the ground acceleration while keys are held (`WOW_AIR_CONTROL`), and the key basis is frozen at take-off so mouselook / turn keys never redirect the velocity. Aksiyon keeps `AIR_CONTROL = 0.5`. |
+| Turn keys vs `faceHold` | WoW facing row 3 is a hard cast (`p.cast`) **or** the 0.55 s post-cast `faceHold` **unless** a turn key is held (arrow turns win). Hard casts still own facing. |
+| `targetPrev` / `focusTarget` | `targetPrev` (\`) is the reverse Tab cycle (from no selection: the last candidate in WoW). `focusTarget` (F8) sets the focus to the current target, pressing it on the focus (or with no target) clears it. `PlayerController.focusTarget` getter and `localFocusTargetId()` expose it; it drops when the enemy dies. No focus frame yet. |
+| Tab keeps the selection (WoW) | No candidates, or the only candidate already selected: nothing happens (no release, no sound). Aksiyon keeps its double-tap / empty-view release. |
+| Esc | Last in the chain (`UI.handleHotkeys`): chat / modal / top panel first; with none open and a hard target selected, Esc clears the target (`clearLocalHardTarget()`) and the **next** Esc opens the game menu. |
+| Cursor | `PlayerController.updateWowCursor` is the single writer of `canvas.style.cursor`; it hides the cursor only while `WowMouse.wantLock` (press became a drag: 3 px or 0.12 s, D7). `ThirdPersonCamera` no longer writes it. |
+| Text focus | `Input` derives it from `document.activeElement` (input / textarea / contenteditable), so it clears when the field blurs or is removed. |
+| Window blur | `Input` moves held codes into the released set (`released()` fires), clears `held` / `justDown` and bumps `blurSeq`. `PlayerController` sees the change, calls `WowMouse.reset()` (no click is emitted from a blur) and drops the Tab / shoulder holds. |
+| Aksiyon `skill_s4` | G now casts the s4 slot like every other slot (it was inert). |
+| Labels | `codeLabel` knows Backslash, Slash, Comma, Semicolon, Quote, brackets, numpad and navigation keys. Where `navigator.keyboard.getLayoutMap()` exists (Chromium), letters and punctuation show the character printed on the player's layout (Turkish-Q `ı`, `ğ`, `ü` …); digits always show the number. |
+| Ayarlar | Lists every rebindable action (majors, flasks, ally / party keys, quests, town portal, paragon, autorun, walk toggle, focus, previous target). Assigning a key another action already uses asks `… tuşu zaten … işlemine atanmış … Devam edilsin mi?` and only then moves it. |
+
+Known pre-existing overlap, **not** solved here (open question Q4): `ui/hud/ExtraBars.ts:446` uses Shift/Ctrl + Digit 1–8 for the two extra bars. Shift is the dodge key and Ctrl was walk in both schemes (now only if rebound); in WoW the digits are also main-bar skills. The extra-bar handler already `stopPropagation`s the digit in the capture phase, so the main bar does not double fire, but a Shift press still starts a dodge first.
 
 ## 4. WoW mouse model
 
@@ -239,7 +261,7 @@ Rules inside `update`:
 | Cursor restore | The cursor reappears where the press happened (Chrome keeps the position; the camera consumes `movementX` before and after the lock). |
 | Esc / alt-tab while locked | `handleLockChange` sees an unexpected unlock: set `mouseSuspended = true` until all buttons are up, **do not** open `gameMenu` (WoW has no permanent lock; Esc opens the menu through the `menu` action next press). Aksiyon keeps its current behaviour. |
 | Lock refused (no gesture) | Fall back to unlocked `movementX/Y` (cursor may touch the screen edge), `console.warn` once. |
-| Canvas cursor | `canvas.style.cursor = 'none'` while mouselook / orbit, else the context cursor of §4.5. Reset to `''` on dispose and on scheme change. |
+| Canvas cursor | `canvas.style.cursor = 'none'` only once the press became a drag (`WowMouse.wantLock`, D7), else the context cursor of §4.5; a click never hides it. `PlayerController` is the single writer. Reset to `''` on dispose and on scheme change. |
 | Aksiyon | `updatePointerLock` action branch unchanged: permanent lock, first click re-acquires (`swallowLmb`), `freeCursor` (Alt) frees it. |
 | Alt (`freeCursor`) in WoW | Kept: LootSystem (`:602`) and DamageMeter read it. It has no mouse effect in WoW. |
 
@@ -269,7 +291,7 @@ Updated every 0.1 s from `pickAtNdc(input.ndc)`. Assets: three 32×32 PSX-pixel 
 
 ## 5. Movement and facing (WoW)
 
-Movement basis in WoW is the **character's facing**: `forward = (sin ψ, cos ψ)`, `right = (-cos ψ, sin ψ)` with ψ = `p.yaw`. (Aksiyon keeps `cam.getBasis`.) In `stepMovement` the basis choice is the only change to the wish-direction code; the speed, backpedal (×0.78), accel/decel and nav collision code is untouched.
+Movement basis in WoW is the **character's facing**: `forward = (sin ψ, cos ψ)`, `right = (-cos ψ, sin ψ)` with ψ = `p.yaw`. (Aksiyon keeps `cam.getBasis`.) In `stepMovement` the basis choice is the only change to the wish-direction code; the speed, backpedal (×0.643), accel/decel and nav collision code is untouched.
 
 Facing priority in WoW (replaces `:519-539` when `scheme === 'wow'`, first match wins):
 
@@ -277,7 +299,7 @@ Facing priority in WoW (replaces `:519-539` when `scheme === 'wow'`, first match
 |---|---|---|---|
 | 1 | dodge roll | the roll decides | – |
 | 2 | RMB held (mouselook) | `cam.faceYaw` | 40 / 30 |
-| 3 | `faceHold > 0` or hard cast (`p.cast`) | `aimYaw` (target or aim point) | 42 / 24 |
+| 3 | hard cast (`p.cast`), or `faceHold > 0` with no turn key held | `aimYaw` (target or aim point) | 42 / 24 |
 | 4 | guarding | `cam.faceYaw` | 30 / 14 |
 | 5 | `turnLeft` / `turnRight` held | `p.yaw ± TURN_RATE · dt` directly, and `cam.rotateYaw(±TURN_RATE · dt)` (the camera turns rigidly with the character) | `TURN_RATE = 3.1` rad/s (≈ 178°/s) |
 | 6 | auto-attack armed, **idle** (no move input, no mouselook), target outside the facing cone | bearing to the target | 20 / 14 |
@@ -293,10 +315,10 @@ Facing priority in WoW (replaces `:519-539` when `scheme === 'wow'`, first match
 |---|---|
 | Selection | `hardTarget` is a **selection** (no camera lock, no forced facing). `currentTarget() = hardTarget ?? softTarget` is unchanged. |
 | Soft target | Still ray-based (`updateTargets`): cursor ray when free, centre ray while a mouse button is held. Used only when nothing is selected. Guard in `getAimRay`: if `Input.pointerOverUI` use the centre pose, so a key press while the cursor rests on the HUD does not aim at the HUD. |
-| Tab (`targetNext`) | **Press** cycles at once (`lockOnMode` is ignored in WoW; there is no Tab-hold lock). Candidates: alive, visible on screen, ≤ 40 m. Sort: **engaged with me first** (`e.aggroed`), then nearest. First press = best candidate, further presses = next, no wrap-to-null except when the list has one entry and it is already selected (release). `targetPrev` (\`) goes back. |
+| Tab (`targetNext`) | **Press** cycles at once (`lockOnMode` is ignored in WoW; there is no Tab-hold lock). Candidates: alive, visible on screen, ≤ 40 m. Sort: **engaged with me first** (`e.aggroed`), then nearest. First press = best candidate, further presses = next, no wrap-to-null: no candidates, or one entry that is already selected, keeps the selection (§3.4). `targetPrev` (\`) goes back. `focusTarget` (F8) sets / clears the focus target. |
 | Range / LOS | A selection drops only on death/removal (then: nearest in a 60° cone ≤ 8 m of the facing, else clear), distance > 45 m, or scene change. **No LOS drop timer in WoW.** (Aksiyon keeps 30 m / 2 s LOS.) |
 | Boss auto-lock | `bossAutoLock` in WoW **selects** the boss (no camera lock). |
-| Esc | Not used for clearing (Esc is the menu). LMB-click on empty ground clears. |
+| Esc | Last fallback only: with no panel / chat / modal open, Esc clears the selection; the next Esc opens the menu (§3.4). LMB-click on empty ground clears too. |
 | Friendly | `U`, `F1–F5` (`healing.ts`) unchanged. LMB click on a party member's model selects that ally via `selectPartySlot` when `pickAtNdc` returns a remote `Player` (extend `PickKind` with `'ally'`, ratio rules as enemies). |
 
 ## 7. Camera (WoW profile)

@@ -16,17 +16,19 @@ const PRESETS: { id: string; name: string; desc: string; values: Partial<Setting
 type Group = { name: string; actions: InputAction[] };
 
 /** CONTROLS_WOW §10: the key list per scheme. Aksiyon is exactly the list that exists today. */
+// Every rebindable action is listed in both schemes (tools/controls-check.mjs reads these arrays). WoW leaves out toggleLock and
+// camShoulder only: both are unbound there (the camera is the classic one).
 const GROUPS_AKSIYON: Group[] = [
-  { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'jump', 'dodge', 'walk'] },
-  { name: 'Savaş', actions: ['skill_lmb', 'heavyAttack', 'skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'skill_s4', 'guard', 'potionHp', 'potionMp', 'potionCleanse', 'targetNext', 'targetPrev', 'focusTarget', 'interact', 'revive'] },
-  { name: 'Arayüz', actions: ['inventory', 'groupFinder', 'character', 'talents', 'skills', 'map', 'party', 'mplus', 'guide', 'chat', 'menu'] },
-  { name: 'Kamera ve Diğer', actions: ['freeCursor', 'toggleLock', 'zoomIn', 'zoomOut', 'screenshot'] },
+  { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'jump', 'dodge', 'walk', 'walkToggle', 'autorun'] },
+  { name: 'Savaş', actions: ['skill_lmb', 'heavyAttack', 'skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'skill_s4', 'skill_m45', 'skill_m90', 'skill_m180', 'guard', 'potionHp', 'potionMp', 'potionCleanse', 'flask1', 'flask2', 'flask3', 'flask4', 'flask5', 'targetNext', 'targetPrev', 'focusTarget', 'targetAlly', 'partySel1', 'partySel2', 'partySel3', 'partySel4', 'partySel5', 'interact', 'revive'] },
+  { name: 'Arayüz', actions: ['inventory', 'groupFinder', 'character', 'talents', 'skills', 'map', 'party', 'quests', 'mplus', 'paragon', 'bestiary', 'professions', 'guide', 'townPortal', 'chat', 'menu'] },
+  { name: 'Kamera ve Diğer', actions: ['freeCursor', 'toggleLock', 'camShoulder', 'zoomIn', 'zoomOut', 'screenshot'] },
 ];
 
 const GROUPS_WOW: Group[] = [
-  { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'turnLeft', 'turnRight', 'jump', 'dodge', 'walk'] },
-  { name: 'Savaş', actions: ['skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'skill_s4', 'autoAttack', 'skill_lmb', 'heavyAttack', 'guard', 'potionHp', 'potionMp', 'potionCleanse', 'targetNext', 'targetPrev', 'focusTarget', 'interact', 'revive'] },
-  { name: 'Arayüz', actions: ['inventory', 'groupFinder', 'character', 'talents', 'skills', 'map', 'party', 'mplus', 'guide', 'chat', 'menu'] },
+  { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'turnLeft', 'turnRight', 'jump', 'dodge', 'walk', 'walkToggle', 'autorun'] },
+  { name: 'Savaş', actions: ['skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'skill_s4', 'skill_m45', 'skill_m90', 'skill_m180', 'autoAttack', 'skill_lmb', 'heavyAttack', 'guard', 'potionHp', 'potionMp', 'potionCleanse', 'flask1', 'flask2', 'flask3', 'flask4', 'flask5', 'targetNext', 'targetPrev', 'focusTarget', 'targetAlly', 'partySel1', 'partySel2', 'partySel3', 'partySel4', 'partySel5', 'interact', 'revive'] },
+  { name: 'Arayüz', actions: ['inventory', 'groupFinder', 'character', 'talents', 'skills', 'map', 'party', 'quests', 'mplus', 'paragon', 'bestiary', 'professions', 'guide', 'townPortal', 'chat', 'menu'] },
   { name: 'Kamera ve Diğer', actions: ['freeCursor', 'zoomIn', 'zoomOut', 'screenshot'] },
 ];
 
@@ -387,7 +389,7 @@ export class SettingsPanel extends GamePanel {
       b.addEventListener('click', () => this.startCapture(action, slot, b));
       b.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        this.setCode(action, slot, null);
+        void this.setCode(action, slot, null);
       });
       return b;
     };
@@ -420,11 +422,11 @@ export class SettingsPanel extends GamePanel {
       if (e.code === 'Escape') return this.cancelCapture();
       if (e.code === 'Backspace' || e.code === 'Delete') {
         this.cancelCapture();
-        return this.setCode(action, slot, null);
+        return void this.setCode(action, slot, null);
       }
       if (['ControlRight', 'MetaLeft', 'MetaRight', 'ContextMenu'].includes(e.code)) return;
       this.cancelCapture();
-      this.setCode(action, slot, e.code);
+      void this.setCode(action, slot, e.code);
     };
     const onMouse = (e: MouseEvent) => {
       const t = e.target as HTMLElement | null;
@@ -441,7 +443,7 @@ export class SettingsPanel extends GamePanel {
         sfx('ui_error');
         return void toast('Sol ve sağ tık WoW şemasında fare hareketlerine ayrılmıştır.', 'warning');
       }
-      this.setCode(action, slot, code);
+      void this.setCode(action, slot, code);
     };
     window.addEventListener('keydown', onKey, true);
     window.addEventListener('mousedown', onMouse, true);
@@ -476,7 +478,7 @@ export class SettingsPanel extends GamePanel {
     }
   }
 
-  private setCode(action: InputAction, slot: number, code: string | null): void {
+  private async setCode(action: InputAction, slot: number, code: string | null): Promise<void> {
     const cur = [...(G.input.bindings[action] ?? [])];
     if (code === null) {
       if (action === 'menu' && cur.filter((_, i) => i !== slot).length === 0) {
@@ -490,21 +492,44 @@ export class SettingsPanel extends GamePanel {
       this.refreshBinds();
       return;
     }
-    // steal the code from other actions (of the active scheme only)
-    const stolenFrom: InputAction[] = [];
+    // a code another action already uses (active scheme only): ask before taking it away, never steal silently
+    const clashes: InputAction[] = [];
     for (const other of Object.keys(G.input.bindings) as InputAction[]) {
       if (other === action) continue;
       const list = G.input.bindings[other];
-      if (list.includes(code)) {
-        if (other === 'menu' && list.length === 1) {
-          sfx('ui_error');
-          return void toast('Bu tuş menü için ayrılmış.', 'warning');
-        }
-        G.input.rebind(other, list.filter((c) => c !== code));
-        this.persistBinding(other);
-        stolenFrom.push(other);
+      if (!list.includes(code)) continue;
+      if (other === 'menu' && list.length === 1) {
+        sfx('ui_error');
+        return void toast('Bu tuş menü için ayrılmış.', 'warning');
+      }
+      clashes.push(other);
+    }
+    if (clashes.length) {
+      const scheme = this.scheme();
+      const names = clashes.map((a) => `"${actionName(a, scheme)}"`).join(', ');
+      const ok = await askConfirm(
+        this.el,
+        `"${codeLabel(code)}" tuşu zaten ${names} işlemine atanmış. "${actionName(action, scheme)}" için de kullanılırsa ${names} işleminden alınır. Devam edilsin mi?`,
+        'Evet, ata',
+        'Vazgeç',
+      );
+      if (!ok) {
+        sfx('ui_error');
+        this.refreshBinds();
+        return;
       }
     }
+    // the dialog was open for a while: re-read the live lists before taking the code
+    const stolenFrom: InputAction[] = [];
+    for (const other of clashes) {
+      const list = G.input.bindings[other];
+      if (!list.includes(code)) continue;
+      G.input.rebind(other, list.filter((c) => c !== code));
+      this.persistBinding(other);
+      stolenFrom.push(other);
+    }
+    cur.length = 0;
+    cur.push(...(G.input.bindings[action] ?? []));
     const list = cur.filter((c) => c !== code);
     if (slot >= list.length) list.push(code);
     else list[slot] = code;
