@@ -375,8 +375,8 @@ const idsOf = (list) => list.map((s) => s.id).join();
   ok('kar.three-spots-per-region', perRegion.every((n) => n === 3) && kDef.world.metin.spots.length === 12, perRegion.join());
   ok('kar.raid-at-the-outposts', idsOf(kSites.village_raid) === 'koy_karakir_karakolu,kamp_kervansaray' && kSites.village_raid.every((s) => s.radius > 0), idsOf(kSites.village_raid));
   ok('kar.caravan-on-karakir-roads', kSites.goblin_caravan.length === kDef.world.roads.length && kSites.goblin_caravan.every((s) => s.id.startsWith('yol_') && s.path.length >= 2), `${kSites.goblin_caravan.length} roads`);
-  // Ulu-Boz is level-gated (minLevelToStart 38), so the world boss has no site on this map: its slots are skipped, as designed
-  ok('kar.world-boss-gated-no-site', kSites.world_boss.length === 0, `${kSites.world_boss.length} sites`);
+  // Ulu-Boz is level-gated (minLevelToStart 38) but still gets a site: BossSchedule.expedite() enforces the gate at spawn time
+  ok('kar.world-boss-gated-has-site', kSites.world_boss.length === 1, `${kSites.world_boss.length} sites`);
   ok('kar.sites-same-on-rebuild', JSON.stringify(kSites) === JSON.stringify(kSites2));
   ok('kar.sisli-sites-stay-on-sisli', sSites.metin_storm.every((s) => sDef.world.regions.some((r) => r.id === s.id)) && !sSites.village_raid.some((s) => kSites.village_raid.some((k) => k.id === s.id)));
   ok('sisli.all-four-events-have-sites', EVENT_IDS.every((id) => sSites[id].length > 0), EVENT_IDS.map((id) => `${id}:${sSites[id].length}`).join());
@@ -388,7 +388,7 @@ const idsOf = (list) => list.map((s) => s.id).join();
     if (JSON.stringify(occ) !== JSON.stringify(occurrenceAt(k, kSites2))) stable = false;
     if (occ.site === null) { dead++; if (occ.id !== 'world_boss') zonesOk = false; } else { live++; if (!kSites[occ.id].some((s) => s.id === occ.site.id)) zonesOk = false; }
   }
-  ok('kar.rotation-skips-only-the-boss', dead === 100 && live === 300 && zonesOk, `${dead} skipped, ${live} run`);
+  ok('kar.rotation-runs-every-slot', dead === 0 && live === 400 && zonesOk, `${dead} skipped, ${live} run`);
   ok('kar.occurrence-stable-per-client', stable);
 
   let seed2 = 4242;
