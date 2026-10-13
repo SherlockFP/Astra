@@ -102,6 +102,9 @@ export interface NetChannels {
   // ---- GDD_LIFE (L-00). Owner: net (sends and registers). Not yet in KNOWN_CHANNELS.
   /** Open-world PvP: flag, duel, hit / ack, kill, team score (GDD_LIFE §7.5). */
   pvp: PvpMsg;
+  // ---- K8 (P-12, dungeon events). Owner: scenes (DungeonScene). Host-only: clients ask with sendRequest('dungeon.event').
+  /** One dungeon event flag changed on the host (DungeonEventStore); the host sends one per flag at run start too. */
+  dungeon_event: { name: string; on: boolean };
 }
 
 export type NetChannel = keyof NetChannels;

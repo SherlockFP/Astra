@@ -13,8 +13,11 @@ export const TILE_SIZE = 4;
 
 export interface TileRect { x: number; z: number; w: number; h: number }
 
-export type FloorStyle = 'stone' | 'stone_dark' | 'wood' | 'dirt' | 'tiles' | 'lava_rock' | 'ice' | 'temple';
-export type WallStyle = 'stone' | 'brick' | 'cave' | 'temple' | 'ice' | 'forge';
+// P-11 art kit v2 (append-only): every new id has a row in WALL_STYLES / FLOORS / DECOR of src/world/DungeonBuilder.ts
+export type FloorStyle = 'stone' | 'stone_dark' | 'wood' | 'dirt' | 'tiles' | 'lava_rock' | 'ice' | 'temple'
+  | 'moss' | 'gorm' | 'marble' | 'earthen' | 'earthen_dark' | 'nerub' | 'web_stone';
+export type WallStyle = 'stone' | 'brick' | 'cave' | 'temple' | 'ice' | 'forge'
+  | 'grove' | 'arcane' | 'library' | 'earthen' | 'nerub' | 'web_stone' | 'parapet';
 
 export interface PropPlacement {
   model: string;              // GLB/GLTF url

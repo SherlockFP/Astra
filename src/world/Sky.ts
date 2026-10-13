@@ -109,6 +109,11 @@ export class Sky {
   readonly dome: THREE.Mesh;
   readonly sunDir: THREE.Vector3;
   private mat: THREE.ShaderMaterial;
+  private readonly tgt = {
+    zenith: new THREE.Color(), mid: new THREE.Color(), horizon: new THREE.Color(),
+    sunColor: new THREE.Color(), cloudLight: new THREE.Color(), cloudShade: new THREE.Color(),
+  };
+  private tgtCover = 0.5;
 
   constructor(o: SkyOptions = GOLDEN_HOUR_SKY) {
     const geo = new THREE.SphereGeometry(o.radius ?? 380, 28, 18);
@@ -143,6 +148,36 @@ export class Sky {
   update(camera: THREE.Camera, time: number): void {
     this.dome.position.copy(camera.position);
     this.mat.uniforms.uTime.value = time;
+  }
+
+  /** Same as update() for callers without a camera (dungeon builds): the dome centres on `pos`. */
+  follow(pos: THREE.Vector3, time: number): void {
+    this.dome.position.copy(pos);
+    this.mat.uniforms.uTime.value = time;
+  }
+
+  /** Colours that step() blends towards (per-room sky, P-08: blends like fog). Stars switch at once. */
+  setTarget(o: SkyOptions): void {
+    this.tgt.zenith.setHex(o.zenith);
+    this.tgt.mid.setHex(o.mid);
+    this.tgt.horizon.setHex(o.horizon);
+    this.tgt.sunColor.setHex(o.sunColor);
+    this.tgt.cloudLight.setHex(o.cloudLight);
+    this.tgt.cloudShade.setHex(o.cloudShade);
+    this.tgtCover = o.cloudCover;
+    this.mat.uniforms.uStars.value = o.stars ? 1 : 0;
+  }
+
+  /** Moves the current colours the fraction k (0..1) of the way to the setTarget() colours. */
+  step(k: number): void {
+    const u = this.mat.uniforms;
+    (u.uZenith.value as THREE.Color).lerp(this.tgt.zenith, k);
+    (u.uMid.value as THREE.Color).lerp(this.tgt.mid, k);
+    (u.uHorizon.value as THREE.Color).lerp(this.tgt.horizon, k);
+    (u.uSunColor.value as THREE.Color).lerp(this.tgt.sunColor, k);
+    (u.uCloudLight.value as THREE.Color).lerp(this.tgt.cloudLight, k);
+    (u.uCloudShade.value as THREE.Color).lerp(this.tgt.cloudShade, k);
+    u.uCover.value += (this.tgtCover - u.uCover.value) * k;
   }
 
   /** Re-tints the dome (region atmosphere blending, GDD_OPENWORLD §8.1). Omitted fields keep their current value. */

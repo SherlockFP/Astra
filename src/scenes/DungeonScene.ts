@@ -26,6 +26,7 @@ import { World } from '../world/World';
 import { buildDungeon, dungeonAssetUrls, type BuiltDungeon, type BuiltProp, type DungeonGate } from '../world/DungeonBuilder';
 import type { Heightfield } from '../world/Heightfield';
 import { LiftSystem } from '../world/Lifts';
+import { DungeonEventStore, pickCheckpoint, resolveGate, type GateFacts } from '../systems/DungeonEvents';
 import { getDungeon } from '../data/dungeons';
 import { DUNGEON_ENEMY_ID_BASE, PARTY_ID_BASE, type EntityId } from '../types/common';
 import { TILE_SIZE, type BossPlacement, type DungeonDef, type PackDef } from '../types/dungeons';
@@ -110,6 +111,18 @@ export class DungeonScene implements GameScene {
   /** Host: has G.mplus.begin() been requested (or is the run already counting)? */
   private beginTried = false;
   private beginClock = 0;
+  /** K8 (P-12): dungeon event flags. Host authoritative, replicated by 'dungeon_event'; a fresh store per run (cleared on exit). */
+  private eventStore: DungeonEventStore | null = null;
+  /** True when some door waits on events, kills or packs: the host re-checks those gates 4 times a second. */
+  private dynamicDoors = false;
+  private killClock = 0;
+  /** K8: packs / enemy defs seen in the world, and the ones that are now all gone (latched). */
+  private seenPacks = new Set<string>();
+  private deadPacks = new Set<string>();
+  private seenDefs = new Set<string>();
+  private killedDefs = new Set<string>();
+  /** P-19 scene ticker: per-frame callbacks owned by this run (addTicker). */
+  private tickers: ((dt: number) => void)[] = [];
 
   // ================================================================================================
   async enter(p?: unknown): Promise<void> {
@@ -125,6 +138,9 @@ export class DungeonScene implements GameScene {
     }
     this.def = def;
     this.params = params;
+    this.eventStore = new DungeonEventStore(def.events);
+    this.dynamicDoors = def.doors.some((d) => d.gate === 'event_lock' || d.gate === 'kill_lock' || d.gate === 'device_lock' || (d.requires?.length ?? 0) > 0);
+    this.resetKillState();
     this.outdoor = !!def.outdoor;
     this.isWorld = !!def.world;
     initLadder();
@@ -281,7 +297,10 @@ export class DungeonScene implements GameScene {
     if (G.net.isAuthority) {
       // NOTE: SceneManager.current is still null while enter() runs (and offline this promise resolves in the very same tick), so
       // the guard is the scene's own `ready` flag, never `G.scenes.current === this` (that made offline runs never start).
-      void G.net.waitForPartyLoaded('dungeon').then(() => this.tryBegin());
+      void G.net.waitForPartyLoaded('dungeon').then(() => {
+        this.broadcastEvents();
+        this.tryBegin();
+      });
     }
   }
 
@@ -741,18 +760,103 @@ export class DungeonScene implements GameScene {
     return null;
   }
 
-  /** null = leave as is. */
+  /** K8: the run state the gate resolver reads (systems/DungeonEvents.ts). Same on every peer, from its own copies. */
+  private gateFacts(boss: BossRec | null): GateFacts {
+    const bosses = [...this.bosses.values()];
+    return {
+      flags: this.eventStore?.snapshot() ?? {},
+      deadPacks: this.deadPacks,
+      killedEnemies: this.killedDefs,
+      deadBosses: new Set(bosses.filter((b) => b.defeated).map((b) => b.placement.bossId)),
+      boss: boss ? { id: boss.placement.bossId, engaged: boss.engaged, defeated: boss.defeated } : null,
+      earlierBossAlive: !!boss && bosses.some((o) => o !== boss && o.placement.order < boss.placement.order && !o.defeated),
+      forcesDone: this.forcesDone || !!this.completed,
+    };
+  }
+
+  /** null = leave as is. One resolver for every gate kind (P-12): the door's own fields come from DoorDef, matched by its rooms. */
   private gateShouldBeOpen(g: DungeonGate): boolean | null {
-    if (g.kind === 'forces_lock') return this.forcesDone || !!this.completed;
-    const boss = this.bossOfGate(g);
-    if (!boss) return null;
-    if (g.kind === 'boss_exit') return boss.defeated;
-    if (g.kind === 'boss_lock') {
-      if (boss.engaged && !boss.defeated) return false;
-      for (const o of this.bosses.values()) if (o !== boss && o.placement.order < boss.placement.order && !o.defeated) return false;
-      return true;
+    const door = this.def.doors.find((d) => d.a === g.a && d.b === g.b);
+    return resolveGate(
+      { gate: g.kind, event: door?.event, opensOn: door?.opensOn, device: door?.device, requires: door?.requires },
+      this.gateFacts(this.bossOfGate(g)),
+    );
+  }
+
+  /** K8: host scan for kill_lock / requires. A pack or enemy def is dead once it was seen and no living member is left. */
+  private scanKills(): void {
+    const world = this.world;
+    if (!world) return;
+    const alivePacks = new Set<string>();
+    const aliveDefs = new Set<string>();
+    for (const e of world.enemies) {
+      if (e.packId) this.seenPacks.add(e.packId);
+      this.seenDefs.add(e.def.id);
+      if (e.isDead || e.removed) continue;
+      if (e.packId) alivePacks.add(e.packId);
+      aliveDefs.add(e.def.id);
     }
-    return null;
+    for (const p of this.seenPacks) if (!alivePacks.has(p)) this.deadPacks.add(p);
+    for (const d of this.seenDefs) if (!aliveDefs.has(d)) this.killedDefs.add(d);
+  }
+
+  private resetKillState(): void {
+    this.seenPacks.clear();
+    this.deadPacks.clear();
+    this.seenDefs.clear();
+    this.killedDefs.clear();
+    this.killClock = 0;
+  }
+
+  /** K8 (P-12): read a dungeon event flag (device flags are `dev:<deviceId>`). Null outside a run. */
+  get dungeonEvents(): DungeonEventStore | null {
+    return this.eventStore;
+  }
+
+  /**
+   * K8: ask for an event flag change. Any peer may ask; the host validates the name against DungeonDef.events (or a `dev:` device
+   * flag) and applies it. Offline and host runs apply it in the same tick (sendRequest dispatches locally).
+   */
+  requestEvent(name: string, on: boolean): void {
+    if (!this.eventStore) return;
+    G.net.sendRequest('dungeon.event', { name, on });
+  }
+
+  /** Host: set a flag, replicate it and re-check the gates it may open. */
+  private setEvent(name: string, on: boolean): void {
+    const store = this.eventStore;
+    if (!store || !G.net.isAuthority) return;
+    if (!store.set(name, on)) return;
+    G.net.broadcast('dungeon_event', { name, on });
+    this.syncGates();
+  }
+
+  /** Host, at run start: send every flag once so late-set clients start from the host's state. */
+  private broadcastEvents(): void {
+    if (!this.eventStore || !G.net.isAuthority) return;
+    for (const [name, on] of Object.entries(this.eventStore.snapshot())) G.net.broadcast('dungeon_event', { name, on });
+  }
+
+  /**
+   * P-19 scene ticker: a per-frame callback owned by this run (cleared on exit). Spin / bob / light shafts are driven by the
+   * builder's own prop updaters inside `built.update`, so they need no registration here.
+   */
+  addTicker(fn: (dt: number) => void): () => void {
+    this.tickers = [...this.tickers, fn];
+    return () => {
+      this.tickers = this.tickers.filter((t) => t !== fn);
+    };
+  }
+
+  /** K8: scene callbacks every frame, then (host, only when a door waits on kills, events or packs) the 4 Hz gate re-check. */
+  private tickScene(dt: number): void {
+    for (const t of this.tickers) t(dt);
+    if (!this.dynamicDoors || !G.net.isAuthority) return;
+    this.killClock -= dt;
+    if (this.killClock > 0) return;
+    this.killClock = 0.25;
+    this.scanKills();
+    this.syncGates();
   }
 
   /** Same deterministic starting state on every peer (no network traffic needed). */
@@ -852,16 +956,32 @@ export class DungeonScene implements GameScene {
       if (e.to === 'dungeon' && this.player) this.player.footstepSfx = steps;
     });
 
+    // ---- K8 (P-12): dungeon event flags. The host applies client requests (validated) and replicates every change ----
+    const store = this.eventStore;
+    if (store) {
+      this.netOff.push(
+        G.net.onRequest('dungeon.event', (d) => {
+          if (!G.net.isAuthority || typeof d.name !== 'string' || typeof d.on !== 'boolean') return;
+          if (store.accepts(d.name)) this.setEvent(d.name, d.on);
+        }),
+        G.net.on('dungeon_event', (m) => {
+          if (G.net.isAuthority || !store.accepts(m.name)) return;
+          store.set(m.name, m.on);
+        }),
+      );
+    }
+
     // ---- death -> release ----
     ev.on('player:releaseRequested', () => {
       const p = this.player;
       if (!p?.isDead) return;
       const st = G.mplus.state;
-      // Mythic+ always respawns at the dungeon start (GDD_CONTENT 0.7); other modes at the latest checkpoint
+      // Mythic+ releases at the latest checkpoint whose boss is dead, else the dungeon start (P-28; GDD_CONTENT 0.7);
+      // other modes at the latest checkpoint
       // open world: the last waypoint stone / village this character activated (WorldRuntime.respawnPoint)
       const cp = this.worldRt
         ? this.worldRt.respawnPoint()
-        : st && st.difficulty === 'mythicplus' && this.built ? { x: this.built.start.x, z: this.built.start.z, yaw: this.built.startYaw } : this.checkpoint;
+        : st && st.difficulty === 'mythicplus' && this.built ? this.mythicRelease(this.built) : this.checkpoint;
       const fix = this.built?.nav.nearestWalkable(cp.x, cp.z, 6);
       releaseLocalPlayer(this.controller, p, fix?.x ?? cp.x, fix?.z ?? cp.z, cp.yaw);
     });
@@ -905,6 +1025,20 @@ export class DungeonScene implements GameScene {
         }
       }),
     );
+  }
+
+  /**
+   * P-28: M+ release point. `extras.checkpoints[i]` belongs to the boss at position i when the bosses are sorted by placement
+   * `order`. A death releases at the latest checkpoint whose boss is dead; none dead (or no checkpoints) = the dungeon start.
+   */
+  private mythicRelease(built: BuiltDungeon): { x: number; z: number; yaw: number } {
+    const start = { x: built.start.x, z: built.start.z, yaw: built.startYaw };
+    const cps = this.def.extras?.checkpoints ?? [];
+    if (!cps.length) return start;
+    const byOrder = [...this.bosses.values()].sort((a, b) => a.placement.order - b.placement.order);
+    const i = pickCheckpoint(cps, byOrder.map((b) => b.defeated));
+    if (i < 0) return start;
+    return { x: tileToWorld(cps[i][0]), z: tileToWorld(cps[i][1]), yaw: built.startYaw };
   }
 
   /** Every peer: mark the boss, drop a Diriliş Taşı behind its exit door (except the last boss) and reopen gates on the host. */
@@ -1005,6 +1139,7 @@ export class DungeonScene implements GameScene {
     this.built?.update(dt);
     this.cam?.update(dt);
     this.updateCamps(dt);
+    this.tickScene(dt);
     this.worldRt?.update(dt);
     this.reaper.update(this.scene, dt);
     // offline safety net: the run clock must start even if the party-loaded promise was swallowed (host runs wait for it instead)
@@ -1067,6 +1202,11 @@ export class DungeonScene implements GameScene {
     this.zoneEvents?.dispose();
     this.zoneEvents = null;
     this.camps = [];
+    this.eventStore?.clear();
+    this.eventStore = null;
+    this.dynamicDoors = false;
+    this.resetKillState();
+    this.tickers = [];
     this.scene.clear();
     void SHRINES;
   }

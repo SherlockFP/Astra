@@ -252,11 +252,12 @@ export const KNOWN_CHANNELS: ReadonlySet<string> = new Set<NetChannel>([
   'minion', // GDD_CLASSES_V2 §1.5 (NC01): owner -> all, 10 Hz
   'threat', 'kick', 'spec', // GDD_V2 WP1 (threat = host -> all)
   'camp', 'home', 'pvp', // GDD_ITEMS_V2 / GDD_LIFE contracts
+  'dungeon_event', // K8 (P-12): host-authoritative dungeon event flags
 ]);
 
 /** Channels only the HOST may originate: a client's envelope on these is dropped by the host, and clients ignore relayed copies. */
 export const HOST_ONLY_CHANNELS: ReadonlySet<string> = new Set<NetChannel>([
-  'snap', 'spawn', 'dmg', 'death', 'estatus', 'ecast', 'hitshape', 'hitshape_x', 'run', 'affix', 'scene', 'threat',
+  'snap', 'spawn', 'dmg', 'death', 'estatus', 'ecast', 'hitshape', 'hitshape_x', 'run', 'affix', 'scene', 'threat', 'dungeon_event',
 ]);
 
 /**

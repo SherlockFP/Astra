@@ -12,6 +12,8 @@ import {
   type WallStyle,
 } from '../types/dungeons';
 import type { VfxId } from '../types/vfx';
+import type { SfxId } from '../types/audio';
+import { Sky, type SkyOptions } from './Sky';
 import { NavGrid, type NavHeightSource } from './NavGrid';
 import { buildHeightfield, F, VERT, type Heightfield } from './Heightfield';
 import { cliffGeometry, railGeometry, slopeGeometry, tierGeometry } from './VerticalGeo';
@@ -94,6 +96,18 @@ export interface BuiltProp {
   smash(): void;
 }
 
+/** P-07: a positional ambience emitter. The builder ticks it by distance (update); it plays through G.audio.play. */
+export interface BuiltAmbience {
+  id: SfxId;
+  x: number;
+  z: number;
+  radius: number;
+  volume: number;
+  loop: boolean;
+  every: [number, number];
+  timer: number;
+}
+
 export interface BuiltDungeon {
   root: THREE.Group;            // all static geometry (instanced where possible)
   nav: NavGrid;
@@ -141,6 +155,9 @@ export interface BuiltDungeon {
   ceilingY(x: number, z: number): number;
   /** Absolute ceiling of a room index (Infinity for legacy and openAir rooms). */
   roomTop(roomIdx: number): number;
+  // ---- shared primitives (K7: P-07 ambience) ----
+  /** Positional ambience emitters (RoomDef.ambience and PropPlacement.sfx); update() ticks them by distance. */
+  readonly ambience: BuiltAmbience[];
 }
 
 /** Tagged props that gameplay may toggle (smash, open, activate): rendered as their own objects so they can be hidden. */
@@ -195,6 +212,7 @@ const glb = (dir: string, name: string): string => `${dir}${name}.glb`;
 const D = (n: string) => glb(DUN, n);
 const H = (n: string) => glb(HAL, n);
 const G_ = (n: string) => glb(GEN, n);
+const F_ = (n: string) => glb(FUR, n);
 
 // ---------------------------------------------------------------------------
 // Style tables
@@ -240,6 +258,46 @@ const WALL_STYLES: Record<WallStyle, WallStyleDef> = {
     variants: [['wall', 60], ['wall_pillar', 10], ['wall_scaffold', 6], ['wall_cracked', 6], ['wall_window_closed', 6], ['wall_arched', 6], ['wall_broken', 2]],
     banners: ['red', 'yellow', 'brown'],
   },
+  // ---- P-11 art kit v2 (rows from the Season 1 dungeon docs where they give one; the rest are provisional) ----
+  grove: {
+    tint: 0x8a9a78,
+    variants: [['wall', 60], ['wall_cracked', 20], ['wall_broken', 10], ['wall_pillar', 10]],
+    banners: ['green', 'brown'],
+    rockBase: true,
+  },
+  arcane: {
+    tint: 0xb4a4d6,
+    variants: [['wall', 40], ['wall_arched', 22], ['wall_archedwindow_open', 12], ['wall_pillar', 12], ['wall_shelves', 8], ['wall_window_open', 4], ['wall_cracked', 2]],
+    banners: ['red', 'yellow', 'white'],
+  },
+  library: {
+    tint: 0xb8a8d0,
+    variants: [['wall_shelves', 46], ['wall_arched', 14], ['wall_pillar', 14], ['wall', 22], ['wall_archedwindow_open', 4]],
+    banners: ['red', 'yellow'],
+  },
+  earthen: {
+    tint: 0xc09878,
+    variants: [['wall', 56], ['wall_pillar', 12], ['wall_arched', 10], ['wall_cracked', 6], ['wall_window_closed', 6], ['wall_scaffold', 4], ['wall_archedwindow_open', 4], ['wall_broken', 2]],
+    banners: ['brown', 'yellow', 'red'],
+  },
+  // provisional: no table in the docs yet (dark chitin, nerubian halls)
+  nerub: {
+    tint: 0x5a5468,
+    variants: [['wall', 50], ['wall_cracked', 14], ['wall_broken', 10], ['wall_arched', 10], ['wall_pillar', 8], ['wall_window_closed', 8]],
+    banners: ['red', 'brown'],
+  },
+  // provisional: cold webbed masonry
+  web_stone: {
+    tint: 0xc8c8d8,
+    variants: [['wall', 60], ['wall_cracked', 12], ['wall_arched', 10], ['wall_pillar', 8], ['wall_broken', 6], ['wall_window_closed', 4]],
+    banners: ['white', 'blue'],
+  },
+  // provisional: plain grey parapet walls
+  parapet: {
+    tint: 0xa0a0a8,
+    variants: [['wall', 50], ['wall_scaffold', 10], ['wall_broken', 10], ['wall_window_closed', 10], ['wall_pillar', 10], ['wall_arched', 10]],
+    banners: ['blue', 'white'],
+  },
 };
 
 interface FloorStyleDef {
@@ -261,6 +319,16 @@ const FLOORS: Record<FloorStyle, FloorStyleDef> = {
   lava_rock: { large: ['floor_tile_large'], small: ['floor_tile_small'], special: ['floor_tile_small_broken_A', 'floor_tile_small_broken_B'], tint: 0x6b4640, cracks: true },
   ice: { large: ['floor_tile_large'], small: ['floor_tile_small'], special: ['floor_tile_small_broken_A', 'floor_tile_small_broken_B'], tint: 0x9ed2f0, variant: 'ice' },
   temple: { large: ['floor_tile_large'], small: ['floor_tile_small'], special: ['floor_tile_small_broken_A'], tint: 0x8c7cb0, checker: 0.8 },
+  // ---- P-11 art kit v2 ----
+  moss: { large: ['floor_dirt_large', 'floor_dirt_large', 'floor_dirt_large_rocky'], small: ['floor_dirt_small_A', 'floor_dirt_small_B', 'floor_dirt_small_C', 'floor_dirt_small_D'], special: ['floor_dirt_small_weeds'], tint: 0x7a9a68 },
+  // acid veins use the lava crack decal for now (green emissive colour is deferred)
+  gorm: { large: ['floor_dirt_large'], small: ['floor_dirt_small_A', 'floor_dirt_small_B'], special: ['floor_dirt_small_weeds'], tint: 0x9aa860, cracks: true },
+  marble: { large: ['floor_tile_large'], small: ['floor_tile_small'], special: ['floor_tile_small_broken_A'], tint: 0xa8a0c8, checker: 0.86 },
+  earthen: { large: ['floor_tile_large'], small: ['floor_tile_small'], special: ['floor_tile_small_broken_A', 'floor_tile_small_broken_B'], tint: 0x7a5a48, checker: 0.82 },
+  earthen_dark: { large: ['floor_tile_large'], small: ['floor_tile_small'], special: ['floor_tile_small_broken_A', 'floor_tile_small_broken_B'], tint: 0x5a4034, checker: 0.82 },
+  // provisional
+  nerub: { large: ['floor_tile_large'], small: ['floor_tile_small'], special: ['floor_tile_small_broken_A', 'floor_tile_small_broken_B'], tint: 0x4a4458, checker: 0.9 },
+  web_stone: { large: ['floor_tile_large'], small: ['floor_tile_small'], special: ['floor_tile_small_broken_B'], tint: 0xc8c8d8 },
 };
 
 interface DecorSet {
@@ -306,6 +374,49 @@ const DECOR: Record<WallStyle, DecorSet> = {
     small: [D('barrel_small'), D('box_small'), D('trunk_medium_A'), G_('crate_a'), D('coin_stack_medium')],
     floor: [H('bone_A'), D('coin_stack_small'), D('coin'), G_('bone_pile'), D('plate_small'), D('candle_melted')],
     hung: [D('sword_shield'), D('sword_shield_broken'), D('shelf_small_candles')],
+  },
+  // ---- P-11 art kit v2 (decor sets; provisional where the docs give none) ----
+  grove: {
+    big: [G_('rock_medium'), G_('rock_small'), D('barrel_large'), G_('bone_pile')],
+    small: [G_('rock_small'), D('box_small'), D('barrel_small')],
+    floor: [G_('rock_small'), G_('bone_pile'), H('skull')],
+    hung: [D('shelf_small_candles')],
+  },
+  arcane: {
+    big: [G_('statue_hooded'), G_('crystal_blue'), D('barrel_large')],
+    small: [D('candle_triple'), D('box_small'), D('candle_thin')],
+    floor: [D('candle_thin'), D('candle_melted'), D('plate_small')],
+    hung: [D('sword_shield_gold'), D('shelf_small_candles')],
+  },
+  library: {
+    big: [F_('shelf_B_large_decorated'), F_('cabinet_medium_decorated'), F_('table_medium_long')],
+    small: [F_('book_set'), F_('book_single'), D('candle_triple')],
+    floor: [D('candle_melted'), F_('book_single')],
+    hung: [D('shelf_small_candles')],
+  },
+  earthen: {
+    big: [G_('anvil'), D('barrel_large'), D('keg'), G_('rock_medium')],
+    small: [D('barrel_small'), G_('rock_small'), D('box_small')],
+    floor: [H('bone_A'), G_('rock_small'), D('plate_small')],
+    hung: [D('sword_shield'), D('sword_shield_broken')],
+  },
+  nerub: {
+    big: [G_('bone_pile'), D('barrel_large'), G_('rock_medium')],
+    small: [G_('bone_pile'), H('skull')],
+    floor: [H('bone_A'), H('bone_B'), H('ribcage'), G_('bone_pile')],
+    hung: [D('sword_shield_broken')],
+  },
+  web_stone: {
+    big: [G_('crate_b'), D('crates_stacked')],
+    small: [G_('crate_a'), D('box_small')],
+    floor: [H('skull'), H('bone_C')],
+    hung: [D('shelf_small_candles')],
+  },
+  parapet: {
+    big: [D('barrel_large'), G_('crate_b')],
+    small: [D('candle_triple')],
+    floor: [D('plate_small')],
+    hung: [D('sword_shield_gold')],
   },
 };
 
@@ -389,6 +500,15 @@ interface Emitter {
 
 const dirOf = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0] } as const;
 
+type GateStyle = NonNullable<DoorDef['gateStyle']>;
+
+/** Merges primitive parts into one geometry (indexed parts are made non-indexed first) and disposes the parts. */
+function mergeParts(parts: THREE.BufferGeometry[]): THREE.BufferGeometry {
+  const merged = mergeGeometries(parts.map((g) => (g.index ? g.toNonIndexed() : g)), false)!;
+  parts.forEach((g) => g.dispose());
+  return merged;
+}
+
 function weighted(rng: RNG, items: [string, number][]): string {
   let total = 0;
   for (const it of items) total += it[1];
@@ -452,6 +572,18 @@ class DungeonBuild {
   /** Open world (DungeonDef.world): decor, region atmosphere and culling. Built in build(), driven by update(). */
   worldDecor: WorldDecorHandle | null = null;
   readonly propHandles: BuiltProp[] = [];
+  // ---- K7 shared primitives ----
+  readonly ambience: BuiltAmbience[] = [];
+  readonly ambRng: RNG;
+  /** P-08 sky dome (theme sky, or a room with a sky / open air); null when the dungeon has none. */
+  skyDome: Sky | null = null;
+  /** Base sky options (theme) and the per-room targets (index = room index, -1 = outside every room). */
+  skyBase: SkyOptions | null = null;
+  skyByRoom: SkyOptions[] = [];
+  skyRoom = -2;
+  /** P-08 cloud sea below the open-air rooms (texture scrolls in update). */
+  cloudTex: THREE.Texture | null = null;
+  cloudSpeed = 0;
   fog: THREE.Fog | null = null;
   readonly fogTarget = { color: new THREE.Color(), near: 10, far: 40 };
   readonly themeFogColor = new THREE.Color();
@@ -465,6 +597,7 @@ class DungeonBuild {
     this.W = def.grid.w;
     this.H = def.grid.h;
     this.rng = new RNG(hashString(def.id));
+    this.ambRng = new RNG(hashString(def.id + ':ambience'));
     this.tint = def.theme.tint ?? 0xffffff;
     this.outdoor = !!def.outdoor;
     this.root.name = `dungeon:${def.id}`;
@@ -502,7 +635,16 @@ class DungeonBuild {
   }
   wallStyleOfRoom(idx: number): WallStyleDef {
     const r = this.room(idx);
-    return WALL_STYLES[r?.wall ?? 'stone'] ?? WALL_STYLES.stone;
+    const base = WALL_STYLES[r?.wall ?? 'stone'] ?? WALL_STYLES.stone;
+    // P-11: RoomDef.style.wallTint multiplies the style tint
+    const wt = r?.style?.wallTint;
+    return wt === undefined ? base : { ...base, tint: mulHex(base.tint, wt) };
+  }
+  /** P-11: the floor style of a room with RoomDef.style.floorTint multiplied into its tint. */
+  floorDefOf(r: RoomDef): FloorStyleDef {
+    const base = FLOORS[r.floor ?? 'stone'] ?? FLOORS.stone;
+    const ft = r.style?.floorTint;
+    return ft === undefined ? base : { ...base, tint: mulHex(base.tint, ft) };
   }
   wallStyleIdOfRoom(idx: number): WallStyle {
     return this.room(idx)?.wall ?? 'stone';
@@ -613,6 +755,8 @@ class DungeonBuild {
     this.zf = new ZoneField(this);
     if (this.hf) this.attachVerticalNav(this.hf);
     this.setupTheme();
+    if (!this.outdoor) this.buildSkyAndClouds();
+    this.placeAmbience();
     if (this.outdoor) {
       this.os = new OutdoorScenery(this);
       // open world: sky, ground and scatter are owned by WorldDecor (region palettes, tint map, sky blend)
@@ -794,6 +938,108 @@ class DungeonBuild {
     try { G.engine.renderer.localClippingEnabled = true; } catch { /* harness without engine */ }
   }
 
+  // ---- 2b. P-08 sky, moon, cloud sea (indoor and open-air builds) ----
+  buildSkyAndClouds(): void {
+    const th = this.def.theme;
+    const rooms = this.def.rooms;
+    if (th.moon) {
+      if (this.moon) {
+        this.moon.color.setHex(th.moon.color);
+        this.moon.intensity = th.moon.intensity;
+      }
+      if (th.moon.dir) this.moonDir.set(th.moon.dir[0], th.moon.dir[1], th.moon.dir[2]).normalize();
+    }
+    const wanted = !!th.sky || rooms.some((r) => !!r.sky || !!r.openAir);
+    if (wanted) {
+      // no sky authored: the dome is the fog colour family (the same recipe as the open-world sky)
+      const fog = new THREE.Color(th.fogColor);
+      const mid = fog.clone().lerp(new THREE.Color(th.hemiSky), 0.35);
+      const zenith = fog.clone().lerp(new THREE.Color(th.hemiSky), 0.7).multiplyScalar(0.85);
+      const auto: SkyOptions = {
+        zenith: zenith.getHex(), mid: mid.getHex(), horizon: fog.getHex(),
+        sunColor: th.moon?.color ?? 0xdce8b8,
+        sunDir: [this.moonDir.x, this.moonDir.y, this.moonDir.z],
+        cloudLight: fog.clone().lerp(new THREE.Color(0xffffff), 0.45).getHex(),
+        cloudShade: fog.clone().multiplyScalar(0.55).getHex(),
+        cloudCover: 0.6,
+        stars: false,
+      };
+      const base: SkyOptions = { ...auto, ...(th.sky?.fallback ?? {}), stars: th.sky?.stars ?? th.sky?.fallback?.stars ?? false };
+      this.skyBase = base;
+      this.skyByRoom = rooms.map((r) => {
+        if (!r.sky) return base;
+        return { ...base, ...(r.sky.fallback ?? {}), stars: r.sky.stars ?? r.sky.fallback?.stars ?? base.stars ?? false };
+      });
+      const dome = new Sky(base);
+      dome.setTarget(base);
+      this.root.add(dome.dome);
+      this.skyDome = dome;
+      this.skyRoom = -2;
+    }
+    const cs = th.cloudSea;
+    if (cs && rooms.some((r) => !!r.openAir)) {
+      // the same noise tile as the rock, cloned so its wrap / repeat stay private to the sea
+      const tex = surfaceTexture('rock', this.def.id + ':clouds', 64).clone();
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(6, 6);
+      tex.needsUpdate = true;
+      const size = Math.max(this.W, this.H) * T * 2.5;
+      const geo = new THREE.PlaneGeometry(size, size).rotateX(-PI / 2);
+      const mat = new THREE.MeshBasicMaterial({ map: tex, color: cs.color, transparent: true, opacity: 0.92, depthWrite: false, fog: false, toneMapped: false });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.name = 'cloud_sea';
+      mesh.position.set((this.W * T) / 2, cs.y, (this.H * T) / 2);
+      mesh.frustumCulled = false;
+      mesh.renderOrder = 1;
+      this.root.add(mesh);
+      this.disposables.push(geo, mat, tex);
+      this.cloudTex = tex;
+      this.cloudSpeed = cs.speed;
+    }
+  }
+
+  /** P-08: the dome follows the focus; its colours blend towards the room the focus stands in (like fog). */
+  tickSky(dt: number): void {
+    const dome = this.skyDome;
+    if (!dome || !this.skyBase) return;
+    dome.follow(this.focus, this.time);
+    const ri = this.tileRoom(Math.floor(this.focus.x / T), Math.floor(this.focus.z / T));
+    if (ri !== this.skyRoom) {
+      this.skyRoom = ri;
+      dome.setTarget(ri >= 0 && this.skyByRoom[ri] ? this.skyByRoom[ri]! : this.skyBase);
+    }
+    dome.step(1 - Math.exp(-dt * 1.6));
+    if (this.cloudTex && this.cloudSpeed) this.cloudTex.offset.x += this.cloudSpeed * dt * 0.02;
+  }
+
+  // ---- 2c. P-07 positional ambience ----
+  addAmbience(id: SfxId, x: number, z: number, radius: number, volume: number, loop: boolean, every?: [number, number]): void {
+    this.ambience.push({ id, x, z, radius, volume, loop, every: every ?? (loop ? [3, 5] : [8, 16]), timer: this.ambRng.range(0, 2) });
+  }
+
+  /** RoomDef.ambience: `pos` in tile coords (omitted = room centre). */
+  placeAmbience(): void {
+    this.def.rooms.forEach((r) => {
+      for (const a of r.ambience ?? []) {
+        const x = a.pos ? tc(a.pos[0]) : tc(r.rect.x + r.rect.w / 2 - 0.5);
+        const z = a.pos ? tc(a.pos[1]) : tc(r.rect.z + r.rect.h / 2 - 0.5);
+        this.addAmbience(a.id, x, z, a.radius, a.volume, !!a.loop, a.every);
+      }
+    });
+  }
+
+  /** Plays each emitter the focus is inside of, on its own random timer (positional one-shots through G.audio). */
+  tickAmbience(dt: number): void {
+    for (const a of this.ambience) {
+      if (Math.hypot(a.x - this.focus.x, a.z - this.focus.z) > a.radius) continue;
+      a.timer -= dt;
+      if (a.timer > 0) continue;
+      a.timer = this.ambRng.range(a.every[0], a.every[1]);
+      G.audio?.play(a.id, { pos: [a.x, 1.5, a.z], volume: a.volume });
+    }
+  }
+
   // ---- 3. floors ----
   placeFloors(): void {
     const { W, H, rng } = this;
@@ -804,7 +1050,7 @@ class DungeonBuild {
         const ri = this.tileRoom(tx, tz);
         if (ri < 0) continue;
         const r = this.def.rooms[ri];
-        const fs = FLOORS[r.floor ?? 'stone'] ?? FLOORS.stone;
+        const fs = this.floorDefOf(r);
         const cx = (tx + 0.5) * T, cz = (tz + 0.5) * T;
         const dark = r.ceilingDark ? 0.82 : 1;
         const checker = fs.checker && (tx + tz) % 2 === 0 ? fs.checker : 1;
@@ -1174,42 +1420,105 @@ class DungeonBuild {
     this.disposables.push(geo, mat);
   }
 
-  makeGate(o: Opening, midx: number, midz: number): DungeonGate {
-    const len = Math.hypot(o.bx - o.ax, o.bz - o.az) - 1.4;
-    const along = Math.abs(o.ux) > 0.5;
+  private gateGlowTex: THREE.Texture | null = null;
+
+  /** Vertical gradient curtain for the arcane / fel gates (the StartBarrier look). */
+  gateGlowTexture(): THREE.Texture {
+    if (!this.gateGlowTex) {
+      const cv = document.createElement('canvas');
+      cv.width = 16;
+      cv.height = 64;
+      const g = cv.getContext('2d')!;
+      const grad = g.createLinearGradient(0, 0, 0, 64);
+      grad.addColorStop(0, 'rgba(255,255,255,0.05)');
+      grad.addColorStop(0.45, 'rgba(255,255,255,0.9)');
+      grad.addColorStop(0.55, 'rgba(255,255,255,0.9)');
+      grad.addColorStop(1, 'rgba(255,255,255,0.05)');
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 16, 64);
+      this.gateGlowTex = canvasTexture(cv, { repeat: false, mipmaps: false });
+      this.disposables.push(this.gateGlowTex);
+    }
+    return this.gateGlowTex;
+  }
+
+  /**
+   * P-13: mesh and material of a gate by DoorDef.gateStyle (portcullis is the default). Local frame: the opening runs along +X,
+   * the base sits at y 0; `glow` (arcane, fel) is the halo colour. Every style is clipped at the same 3 m lintel height.
+   */
+  gateVisual(style: GateStyle, len: number, base: number): { geo: THREE.BufferGeometry; mat: THREE.Material; glow?: number } {
+    const H = 3.0;
+    const clip = new THREE.Plane(new THREE.Vector3(0, -1, 0), 2.92 + base);
+    const finish = (geo: THREE.BufferGeometry, mat: THREE.Material, glow?: number) => {
+      mat.clippingPlanes = [clip];
+      return { geo, mat, glow };
+    };
+    if (style === 'arcane' || style === 'fel') {
+      const color = style === 'arcane' ? 0x60d0ff : 0x9cff40;
+      const geo = new THREE.PlaneGeometry(Math.max(0.5, len - 0.2), H - 0.05).translate(0, 0.05 + (H - 0.05) / 2, 0);
+      const mat = new THREE.MeshBasicMaterial({
+        color, map: this.gateGlowTexture(), transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending,
+        depthWrite: false, side: THREE.DoubleSide, fog: false,
+      });
+      return finish(geo, mat, color);
+    }
+    if (style === 'stone') {
+      const geo = worldUVBox(len, H, 0.5).translate(0, H / 2 + 0.05, 0);
+      const mat = psxMaterial(surfaceTexture('brick', this.def.id + ':gate', 64), { color: new THREE.Color(mulHex(this.tint, 0xb0a8a8)), affine: false });
+      return finish(geo, mat);
+    }
+    if (style === 'web') {
+      const geo = new THREE.PlaneGeometry(len, H).translate(0, H / 2 + 0.05, 0);
+      const mat = psxMaterial(cobwebTexture(64), { color: 0xdedede, alphaTest: 0.5, side: THREE.DoubleSide, affine: false, roughness: 1 });
+      mat.emissive = new THREE.Color(0x303038);
+      return finish(geo, mat);
+    }
     const parts: THREE.BufferGeometry[] = [];
+    if (style === 'bone') {
+      const n = Math.max(2, Math.floor(len / 0.45));
+      for (let k = 0; k <= n; k++) parts.push(new THREE.CylinderGeometry(0.07, 0.09, H, 6).translate(-len / 2 + (k * len) / n, H / 2 + 0.05, 0));
+      for (const yy of [0.6, 1.6, 2.7]) parts.push(new THREE.CylinderGeometry(0.06, 0.06, len + 0.1, 6).rotateZ(PI / 2).translate(0, yy, 0));
+      const mat = psxMaterial(null, { color: 0xd8d0b8, affine: false, roughness: 0.9 });
+      return finish(mergeParts(parts), mat);
+    }
+    if (style === 'wood') {
+      const posts = Math.max(1, Math.round(len / 1.6));
+      for (let k = 0; k <= posts; k++) parts.push(new THREE.BoxGeometry(0.32, H, 0.32).translate(-len / 2 + (k * len) / posts, H / 2 + 0.05, 0));
+      for (const yy of [0.5, 1.6, 2.7]) parts.push(new THREE.BoxGeometry(len + 0.2, 0.22, 0.26).translate(0, yy, 0));
+      const mat = psxMaterial(surfaceTexture('planks', this.def.id + ':gate', 64), { color: 0xffffff, affine: false, roughness: 1 });
+      return finish(mergeParts(parts), mat);
+    }
+    // portcullis (default) and thorn: the bar grid; thorn adds a spike on every bar
     const barW = 0.16, gap = 0.55;
     const n = Math.max(2, Math.floor(len / gap));
     const step = len / n;
-    const H = 3.0;
     for (let k = 0; k <= n; k++) {
       const p = -len / 2 + k * step;
-      const g = new THREE.BoxGeometry(barW, H, barW);
-      g.translate(0, H / 2 + 0.05, 0);
-      g.translate(p, 0, 0);
-      parts.push(g);
+      parts.push(new THREE.BoxGeometry(barW, H, barW).translate(p, H / 2 + 0.05, 0));
       // spiked tips
       const tip = new THREE.ConeGeometry(barW * 0.9, 0.35, 4);
       tip.rotateX(PI);
       tip.translate(p, 0.05 - 0.14, 0);
       parts.push(tip);
+      if (style === 'thorn') parts.push(new THREE.ConeGeometry(barW * 0.8, 0.45, 4).rotateX(PI / 2).translate(p, 1.9, 0.3));
     }
-    for (const yy of [0.6, 1.5, 2.45]) {
-      const g = new THREE.BoxGeometry(len + 0.1, 0.16, 0.2);
-      g.translate(0, yy, 0);
-      parts.push(g);
-    }
-    const merged = mergeGeometries(parts.map((g) => (g.index ? g.toNonIndexed() : g)), false)!;
-    parts.forEach((g) => g.dispose());
+    for (const yy of [0.6, 1.5, 2.45]) parts.push(new THREE.BoxGeometry(len + 0.1, 0.16, 0.2).translate(0, yy, 0));
+    const geo = mergeParts(parts);
     // world-space UV for the iron texture
-    const uv = merged.attributes.uv as THREE.BufferAttribute;
+    const uv = geo.attributes.uv as THREE.BufferAttribute;
     for (let k = 0; k < uv.count; k++) uv.setXY(k, uv.getX(k) * 0.7, uv.getY(k) * 0.7);
-    const tex = surfaceTexture('iron', 'gate', 32);
+    const mat = psxMaterial(surfaceTexture('iron', 'gate', 32), { color: style === 'thorn' ? 0x9ab070 : 0xb8bcc8, roughness: 0.6, affine: false });
+    return finish(geo, mat);
+  }
+
+  makeGate(o: Opening, midx: number, midz: number): DungeonGate {
+    const len = Math.hypot(o.bx - o.ax, o.bz - o.az) - 1.4;
+    const along = Math.abs(o.ux) > 0.5;
+    const style: GateStyle = o.def.gateStyle ?? 'portcullis';
     const base = this.doorFloor(o, midx, midz);
-    const clip = new THREE.Plane(new THREE.Vector3(0, -1, 0), 2.92 + base);
-    const mat = psxMaterial(tex, { color: 0xb8bcc8, roughness: 0.6, affine: false });
-    mat.clippingPlanes = [clip];
-    const mesh = new THREE.Mesh(merged, mat);
+    const { geo, mat, glow } = this.gateVisual(style, len, base);
+    if (glow !== undefined) this.halo.add([midx, base + 1.6, midz], glow, { size: 3.2, flicker: 0.2, intensity: 0.4 });
+    const mesh = new THREE.Mesh(geo, mat);
     mesh.castShadow = shouldCastShadow(mesh);
     mesh.receiveShadow = true;
     const grp = new THREE.Group();
@@ -1219,7 +1528,7 @@ class DungeonBuild {
     grp.rotation.y = along ? 0 : PI / 2;
     this.root.add(grp);
     markFadeable(grp);
-    this.disposables.push(merged, mat);
+    this.disposables.push(geo, mat);
 
     // nav cells along the opening line
     const cells: [number, number][] = [];
@@ -1591,7 +1900,9 @@ class DungeonBuild {
     const topY = (piece?.box.max.y ?? 1) * scale;
     const animated = isAnimatedModel(p.model);
     const posed = !!p.pose;
-    const individual = !animated && (p.emissive !== undefined || p.opacity !== undefined || posed || !!p.show || p.id !== undefined || (p.tag !== undefined && INDIVIDUAL_TAGS.has(p.tag)));
+    // P-19: spin / bob need their own object (batched instances cannot move)
+    const motion = p.spin !== undefined || p.bob !== undefined;
+    const individual = !animated && (motion || p.emissive !== undefined || p.opacity !== undefined || posed || !!p.show || p.id !== undefined || (p.tag !== undefined && INDIVIDUAL_TAGS.has(p.tag)));
     const preset = propLightFor(p.model);
     const lspec = p.light
       ? { color: p.light.color, intensity: designToPhysical(p.light.intensity), distance: p.light.distance, flicker: p.light.flicker ? 0.3 : 0.05, y: p.light.y ?? topY * 0.85 }
@@ -1602,6 +1913,13 @@ class DungeonBuild {
     // footprint: keeps the seeded auto-decor off the prop, and marks nav when `collide`
     this.avoid.push({ x, z, r: posed ? 0.8 * scale + 0.5 : Math.max(sz.x, sz.z) * scale * 0.5 + 0.6 });
     if (/^torch/.test(baseName(p.model))) this.torchPts.push({ x, z });
+    // P-07 shorthand: a looping ambience anchored on this prop (radius 14 m, volume 0.6)
+    if (p.sfx) this.addAmbience(p.sfx, x, z, 14, 0.6, true);
+    // P-19 light shaft: an additive cone with drifting motes, no real light and no model
+    if (p.tag === 'lightshaft') {
+      this.addLightShaft(p, x, y, z, scale, handle);
+      return;
+    }
     // posed character statues measure their collider from the SKINNED bounds once the instance exists (see below); the fixed
     // square is only the fallback for a missing model.
     if (p.collide && !posed) {
@@ -1664,6 +1982,7 @@ class DungeonBuild {
         obj.position.set(x, y, z);
         obj.rotation.y = rot;
         obj.scale.setScalar(scale);
+        if (motion) this.attachMotion(p, obj, y);
         if (p.collide && posed) {
           // collider from the posed (frozen first frame) body: the lower 60 % of the skinned vertices, not the T-pose bind box
           const fp = posedFootprint(obj);
@@ -1682,7 +2001,7 @@ class DungeonBuild {
         if (handle) {
           handle.object = obj;
           if (handle.hidden) obj.visible = false;
-        } else {
+        } else if (!motion) {
           freezeStatic(obj);
         }
       })());
@@ -1690,6 +2009,62 @@ class DungeonBuild {
       this.batcher.add(p.model, x, y, z, rot, scale, this.col(p.tint ?? 0xffffff, 0.04), { cast: true, receive: true });
     }
     void room;
+  }
+
+  /** P-19: spin (deg/s about Y, of the `spinNode` child when named) and bob [amp, hz], ticked with the builder clock. */
+  attachMotion(p: PropPlacement, obj: THREE.Object3D, y: number): void {
+    const spinObj = (p.spinNode ? obj.getObjectByName(p.spinNode) : undefined) ?? obj;
+    const spinRate = ((p.spin ?? 0) * PI) / 180;
+    const [amp, hz] = p.bob ?? [0, 0];
+    this.addUpdater((dt, t) => {
+      if (spinRate) spinObj.rotation.y += spinRate * dt;
+      if (amp) obj.position.y = y + amp * Math.sin(2 * PI * hz * t);
+    });
+  }
+
+  /** P-19 `tag: 'lightshaft'`: an additive cone (3 x 8 m at scale 1, `tint`, `opacity` default 0.18) with drifting motes. No light. */
+  addLightShaft(p: PropPlacement, x: number, y: number, z: number, scale: number, handle: PropHandle | null): void {
+    const w = 3 * scale, h = 8 * scale;
+    const color = p.tint ?? 0xfff0c0;
+    const grp = new THREE.Group();
+    grp.name = `lightshaft:${this.def.id}`;
+    grp.position.set(x, y, z);
+    const geo = new THREE.CylinderGeometry(w * 0.18, w * 0.5, h, 16, 1, true).translate(0, h / 2, 0);
+    const mat = new THREE.MeshBasicMaterial({
+      color, transparent: true, opacity: p.opacity ?? 0.18, blending: THREE.AdditiveBlending,
+      depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false,
+    });
+    const cone = new THREE.Mesh(geo, mat);
+    cone.renderOrder = 4;
+    grp.add(cone);
+    // drifting motes inside the shaft (their own rng, so the layout rng stays the same)
+    const rng = new RNG(hashString(`${this.def.id}:motes:${x}:${z}`));
+    const N = 16;
+    const pos = new Float32Array(N * 3);
+    for (let k = 0; k < N; k++) {
+      const a = rng.range(0, PI * 2), rr = rng.range(0, w * 0.45);
+      pos[k * 3] = Math.cos(a) * rr;
+      pos[k * 3 + 1] = rng.range(0, h);
+      pos[k * 3 + 2] = Math.sin(a) * rr;
+    }
+    const mgeo = new THREE.BufferGeometry();
+    const attr = new THREE.BufferAttribute(pos, 3);
+    mgeo.setAttribute('position', attr);
+    const mmat = new THREE.PointsMaterial({
+      color, size: 0.09, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending,
+      depthWrite: false, fog: false, toneMapped: false,
+    });
+    grp.add(new THREE.Points(mgeo, mmat));
+    this.root.add(grp);
+    if (handle) handle.object = grp;
+    this.disposables.push(geo, mat, mgeo, mmat);
+    this.addUpdater((dt) => {
+      for (let k = 0; k < N; k++) {
+        const v = pos[k * 3 + 1]! + dt * 0.25;
+        pos[k * 3 + 1] = v > h ? v - h : v;
+      }
+      attr.needsUpdate = true;
+    });
   }
 
   // ---- shared helpers ----
@@ -1852,6 +2227,8 @@ class DungeonBuild {
     this.flames.update(this.time);
     for (const u of this.propUpdaters) u(dt, this.time);
     this.updateFog(dt);
+    this.tickSky(dt);
+    this.tickAmbience(dt);
     this.os?.update(dt, this.time);
     if (this.worldDecor) {
       this.worldDecor.setPlayerPos(this.focus.x, this.focus.z);
@@ -1885,7 +2262,9 @@ class DungeonBuild {
     if (!fog) return;
     const th = this.def.theme;
     const ri = this.tileRoom(Math.floor(this.focus.x / T), Math.floor(this.focus.z / T));
-    const o = ri >= 0 ? this.def.rooms[ri].fog : undefined;
+    const room = ri >= 0 ? this.def.rooms[ri] : undefined;
+    // P-11: a room's own fog wins, else its named atmosphere (DungeonDef.atmospheres); both blend in like fog
+    const o = room?.fog ?? (room?.atmosphere ? this.def.atmospheres?.[room.atmosphere] : undefined);
     const tg = this.fogTarget;
     if (o) {
       tg.color.set(o.color ?? th.fogColor);
@@ -1932,6 +2311,8 @@ class DungeonBuild {
     this.flames.dispose();
     this.worldDecor?.dispose();
     this.worldDecor = null;
+    this.skyDome?.dispose();
+    this.skyDome = null;
     this.os?.dispose();
     this.root.removeFromParent();
     this.root.traverse((o) => {
@@ -1997,6 +2378,7 @@ export async function buildDungeon(def: DungeonDef, scene: THREE.Scene): Promise
     groundY: (x, z) => b.floorAt(x, z),
     ceilingY: (x, z) => (b.hf ? b.hf.ceilingY(x, z) : Infinity),
     roomTop: (idx) => (b.hf ? (b.hf.roomTop[idx] ?? Infinity) : Infinity),
+    ambience: b.ambience,
   };
   return built;
 }
