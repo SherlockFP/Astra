@@ -44,6 +44,8 @@ export interface ClassDefX extends ClassDef {
   voice?: { pack: 'warrior' | 'mage' | 'orc'; pitch: number };
   anims?: { idle?: string; run?: string; walk?: string };
   cameraProfile?: 'melee' | 'ranged' | 'caster';
+  /** WoW auto-attack mode override (CONTROLS_WOW §8.3). Unset = derived from the basic step and cameraProfile. */
+  autoAttack?: 'melee' | 'ranged' | 'off';
   /** Class trait (GDD_CLASSES_V2 §x.1 "trait_*"). */
   trait?: { id: string; name: string; desc: string };
   /** Resource regen behaviour (GDD_CLASSES_V2 §1.2; replaces the mage/barbarian special cases in Combat). */

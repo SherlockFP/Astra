@@ -1,4 +1,9 @@
-import type { InputAction } from './Input';
+import { SCHEME_ACTIONS, type ControlScheme, type InputAction } from './Input';
+
+/** CONTROLS_WOW D1: cameraMode is derived from controlScheme (the camera keeps its internal 'action' / 'classic' names). */
+function cameraModeOf(s: ControlScheme): 'action' | 'classic' {
+  return s === 'wow' ? 'classic' : 'action';
+}
 
 export interface SettingsData {
   // graphics
@@ -127,6 +132,23 @@ export interface SettingsData {
   uiRev: number;
   /** Schema revision of the stored key bindings. Stored files below 1 are migrated once (see the constructor). */
   bindingsRev: number;
+  // CONTROLS_WOW §2.1 (append-only). Source of truth for the scheme; cameraMode is derived from it.
+  /** Control scheme (CONTROLS_WOW D1). 'wow' is the default. */
+  controlScheme: ControlScheme;
+  /** Revision of the control-scheme migration (migrateControlsRev). Stored files below 1 are migrated once. */
+  controlsRev: number;
+  /** Overrides of the scheme-specific actions (SCHEME_ACTIONS), per scheme. `bindings` keeps the shared overrides only. */
+  schemeBindings: { wow?: Partial<Record<InputAction, string[]>>; aksiyon?: Partial<Record<InputAction, string[]>> };
+  /** Wanted zoom of the WoW camera (m), 2..30. `cameraDistance` stays the Aksiyon zoom. */
+  cameraDistanceWow: number;
+  /** WoW smart pivot: the camera eases behind the character while it runs forward. */
+  cameraSmartPivot: boolean;
+  /** Casters auto-fire their LMB chain at range (CONTROLS_WOW Q1). */
+  casterAutoShot: boolean;
+  /** A melee skill that hits an enemy arms the WoW auto-attack. */
+  autoAttackFromSkills: boolean;
+  /** True once the one-time "scheme changed" hint has been shown. */
+  controlsHintShown: boolean;
 }
 
 /**
@@ -134,8 +156,10 @@ export interface SettingsData {
  * 2 = autoCombo defaults to true; stored v1 files get autoCombo flipped to true once, on load.
  * 3 = CM1 / CW-01 / UX-00 fields (combat feel, UI flags, uiRev, bindingsRev). The one-time migrations are keyed on
  *     their own revisions (uiRev, bindingsRev, settingsVersion < 2), so a v2 file runs only the ones it still needs.
+ * 4 = CONTROLS_WOW fields (controlScheme, controlsRev, schemeBindings, WoW camera and auto-attack flags).
+ *     The scheme migration is keyed on controlsRev (see migrateControlsRev).
  */
-export const SETTINGS_VERSION = 3;
+export const SETTINGS_VERSION = 4;
 
 /** Key codes of the guard and inventory defaults before CM1 / UX-00 (used only by the one-time bindings migration). */
 const LEGACY_GUARD = ['KeyG', 'Mouse3'];
@@ -162,7 +186,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   damageNumbers: true,
   // GDD_LIFE §4.11 and Appendix A.2 #2: default changed from 1 to 0.7 (GDD_SYSTEMS §8.4). Stored user values still win.
   screenShake: 0.7,
-  cameraMode: 'action',
+  cameraMode: 'classic',
   mouseSensitivity: 1,
   invertY: false,
   cameraDistance: 9,
@@ -221,7 +245,44 @@ export const DEFAULT_SETTINGS: SettingsData = {
   questArrow: true,
   uiRev: 2,
   bindingsRev: 1,
+  // CONTROLS_WOW §2.1. controlsHintShown is true for new players (no hint); the migration resets it to false.
+  controlScheme: 'wow',
+  controlsRev: 1,
+  schemeBindings: {},
+  cameraDistanceWow: 10,
+  cameraSmartPivot: true,
+  casterAutoShot: false,
+  autoAttackFromSkills: true,
+  controlsHintShown: true,
 };
+
+/**
+ * CONTROLS_WOW §2.4 (pure, DOM-free): the one-time control-scheme migration. Returns the patch to apply to a stored file, or {}.
+ * Legacy shared rebinds of scheme actions were made against the Aksiyon layout, so they move into schemeBindings.aksiyon.
+ * Idempotent: a file with controlsRev >= 1 returns {}.
+ */
+export function migrateControlsRev(stored: Partial<SettingsData>): Partial<SettingsData> {
+  if ((stored.controlsRev ?? 0) >= 1) return {};
+  const shared: Partial<Record<InputAction, string[]>> = { ...(stored.bindings ?? {}) };
+  const aks: Partial<Record<InputAction, string[]>> = { ...(stored.schemeBindings?.aksiyon ?? {}) };
+  for (const a of SCHEME_ACTIONS) {
+    const codes = shared[a];
+    if (codes) {
+      aks[a] = codes;
+      delete shared[a];
+    }
+  }
+  return {
+    bindings: shared,
+    schemeBindings: { ...(stored.schemeBindings ?? {}), aksiyon: aks },
+    // Every stored file has cameraMode written (defaults are serialised), so the old choice cannot be inferred: everybody goes to WoW.
+    controlScheme: 'wow',
+    cameraMode: 'classic',
+    cameraDistanceWow: 10,
+    controlsHintShown: false,
+    controlsRev: 1,
+  };
+}
 
 /** localStorage key of the settings object (exported so the early model resolver can read it before G.settings exists). */
 export const SETTINGS_KEY = 'efsun.settings.v1';
@@ -266,7 +327,18 @@ export class Settings {
         this.data.bindingsRev = 1;
         changed = true;
       }
+      // CONTROLS_WOW §2.4 (controlsRev 0 → 1). Runs after the bindingsRev step, so it sees the already-cleaned shared bindings.
+      const controlsPatch = migrateControlsRev({ ...stored, bindings: this.data.bindings });
+      if (Object.keys(controlsPatch).length > 0) {
+        Object.assign(this.data, controlsPatch);
+        changed = true;
+      }
     }
+    // The scheme is the source of truth: cameraMode always follows it, whatever was stored.
+    if (this.data.controlScheme !== 'wow' && this.data.controlScheme !== 'aksiyon') this.data.controlScheme = 'wow';
+    this.data.cameraMode = cameraModeOf(this.data.controlScheme);
+    this.data.schemeBindings = this.data.schemeBindings ?? {};
+    this.data.cameraDistanceWow = Number.isFinite(this.data.cameraDistanceWow) ? Math.min(30, Math.max(2, this.data.cameraDistanceWow)) : 10;
     this.data.settingsVersion = SETTINGS_VERSION;
     if (changed || (hasStored && stored.settingsVersion !== SETTINGS_VERSION)) this.save();
   }
@@ -277,6 +349,8 @@ export class Settings {
 
   set<K extends keyof SettingsData>(key: K, value: SettingsData[K]): void {
     this.data[key] = value;
+    // CONTROLS_WOW D1: cameraMode mirrors controlScheme, written in the same save (no second change event).
+    if (key === 'controlScheme') this.data.cameraMode = cameraModeOf(value as ControlScheme);
     this.save();
     for (const l of this.listeners) l(key);
   }
@@ -290,6 +364,8 @@ export class Settings {
     this.data = structuredClone(DEFAULT_SETTINGS);
     this.save();
     for (const l of this.listeners) l('psx');
+    // Bindings and scheme may have changed too: 'bindings' makes Game re-apply them (no scheme-switch side effects).
+    for (const l of this.listeners) l('bindings');
   }
 
   save(): void {

@@ -208,6 +208,7 @@ export class TownScene implements GameScene {
     // ---- camera + controller ----
     const cam = new ThirdPersonCamera(this.camera);
     cam.setTarget(player.object3d);
+    cam.setEnvironment({ outdoor: true });
     cam.yaw = syaw + Math.PI;
     // collected after the POIs are placed (hidden builder arches are no occluders); the camera never sits behind a bush, wall or house
     cam.occluders = townOccluders(built.root);

@@ -3,6 +3,7 @@ import { G } from '../game/G';
 import { clamp, yawFromDir, cosmeticRng } from '../core/utils';
 import { SKILLS, comboSteps } from '../data/skills';
 import { CLASSES, defaultSkillBar } from '../data/classes';
+import { AUTO, type AutoMode } from '../game/AutoAttack';
 import { specOf, specPatched, specSkillIds, isHeroDef, isMajorDef } from './specs';
 import { applySkillMods, modsFor, withShape } from './skillMods';
 import { applyDynamicBuff } from './StatusEffects';
@@ -177,6 +178,26 @@ interface ActorState {
   kickUntil: number;
   /** Local: sim time when the next guard counter may start (GUARD_COUNTER_CD). */
   counterReadyAt: number;
+  /** Sim time until which the auto-attack driver waits after a finisher ended (CONTROLS_WOW §8.2). Manual LMB ignores it. */
+  autoGapUntil: number;
+}
+
+/** Auto-attack view of the LMB chain for the driver and the HUD (CONTROLS_WOW §8.1). Derived, read-only. */
+export interface AutoInfo {
+  mode: AutoMode;
+  /** Metres from the target's edge: melee = next step range + slack, ranged = min(step range, rangedMax). 0 when off. */
+  reach: number;
+  /** Index of the NEXT step (0-based). */
+  step: number;
+  steps: number;
+  finisherNext: boolean;
+  /** No action in progress, or the current one is past chainAt with no buffered input, no finisher gap, not paused. */
+  ready: boolean;
+  /** Current action progress for the swing sweep (0,0 when idle). */
+  elapsed: number;
+  total: number;
+  /** Seconds of finisher gap still to wait (0 when none). */
+  gapLeft: number;
 }
 
 interface Timer { at: number; fn: () => void }
@@ -313,6 +334,101 @@ export class SkillSystem {
       return this.startAim(player, st, def, slot);
     }
     return this.tryStartSkill(player, st, def, slot, st.lastAim);
+  }
+
+  // ======================================================================================================
+  // auto-attack driver API (CONTROLS_WOW §8.1). AutoAttack.ts decides; these answer and perform.
+  // ======================================================================================================
+
+  /** Read-only view of the LMB chain for the auto-attack driver and the HUD. */
+  autoInfo(p: Player): AutoInfo {
+    const st = this.state(p);
+    const { steps, idx } = this.autoChain(p, st);
+    const mode = this.autoMode(p, steps);
+    const step = steps[idx] ?? steps[0];
+    let reach = 0;
+    if (step && mode === 'melee') reach = (step.range ?? 2.5) + AUTO.meleeSlack;
+    else if (step && mode === 'ranged') reach = Math.min(step.range ?? AUTO.rangedMax, AUTO.rangedMax);
+    const cur = st.cur;
+    return {
+      mode,
+      reach,
+      step: idx,
+      steps: steps.length,
+      finisherNext: !!step?.tags.includes('finisher'),
+      ready: this.autoReady(p, st),
+      elapsed: cur ? Math.min(this.now - cur.start, cur.endAt) : 0,
+      total: cur ? cur.endAt : 0,
+      gapLeft: Math.max(0, st.autoGapUntil - this.now),
+    };
+  }
+
+  /**
+   * One auto swing: starts the next LMB chain step iff autoInfo().ready. Never buffers and never overwrites a skill buffer.
+   * Returns true when a step started.
+   */
+  autoSwing(p: Player, aim: AimInfo): boolean {
+    if (!p.isLocal || !G.world) return false;
+    const st = this.state(p);
+    if (!this.autoReady(p, st)) return false;
+    const { parent, steps } = this.autoChain(p, st);
+    if (!parent || !steps.length) return false;
+    st.lastLmbCall = this.now;
+    if (this.trySpecialLmb(p, st)) return true;
+    if (st.cur) this.endAction(st, 'cancel', true);
+    st.lastAim = this.sanitizeAim(p, aim);
+    return this.startBasicStep(p, st, parent, steps, st.lastAim);
+  }
+
+  /** A queued skill (not the LMB chain itself) waits in the input buffer: the driver must yield to it. */
+  hasBufferedSkill(p: Player): boolean {
+    const b = this.states.get(p.id)?.buffer;
+    if (!b || !b.skillId) return false;
+    return b.skillId !== this.skillIdForSlot(p, 'lmb');
+  }
+
+  /** A ground aim is waiting for its confirm. */
+  isAiming(p: Player): boolean {
+    return !!this.states.get(p.id)?.aiming;
+  }
+
+  /** Cancel a ground aim without casting (RMB in WoW). */
+  cancelAim(p: Player): void {
+    const st = this.states.get(p.id);
+    if (st?.aiming) this.endAim(p, st, false);
+  }
+
+  private autoChain(p: Player, st: ActorState): { parent: SkillDef | null; steps: SkillDef[]; idx: number } {
+    const id = this.skillIdForSlot(p, 'lmb');
+    const base = id ? SKILLS[id] : undefined;
+    if (!base) return { parent: null, steps: [], idx: 0 };
+    const parent = this.resolveSkill(base, p);
+    if (parent.behavior !== 'combo') return { parent: null, steps: [], idx: 0 };
+    const steps = comboSteps(parent.id);
+    const reset = parent.params?.reset ?? 0.85;
+    let idx = st.combo.next;
+    if (this.now - st.combo.lastEnd > reset || idx >= steps.length) idx = 0;
+    return { parent, steps, idx };
+  }
+
+  /** CONTROLS_WOW §8.3: class override, else derived from the basic step, the camera profile and casterAutoShot. */
+  private autoMode(p: Player, steps: SkillDef[]): AutoMode {
+    const cls = CLASSES[p.classId];
+    if (cls?.autoAttack) return cls.autoAttack;
+    if (!steps.length) return 'off';
+    if (steps[0].targeting === 'melee_arc') return 'melee';
+    if (cls?.cameraProfile === 'ranged') return 'ranged';
+    return G.settings?.data.casterAutoShot ? 'ranged' : 'off';
+  }
+
+  /** Chain idle, or the current step is past its cancel point with nothing queued; never during a finisher, gap or pause. */
+  private autoReady(p: Player, st: ActorState): boolean {
+    if (p.isDead || p.statuses.stunned || p.cast || st.aiming || st.buffer) return false;
+    if (this.now < st.autoGapUntil) return false;
+    const cur = st.cur;
+    if (!cur) return true;
+    if (cur.charging || cur.airborne || cur.channel?.active || cur.def.tags.includes('finisher')) return false;
+    return this.now - cur.start >= cur.chainAt;
   }
 
   getCooldown(actor: Actor, skillId: string): CooldownInfo {
@@ -619,6 +735,7 @@ export class SkillSystem {
     st.gcdUntil = 0;
     st.buffer = null;
     st.combo.next = 0;
+    st.autoGapUntil = -99;
     st.wall = null;
     st.barrier = null;
     st.bannerT = 0;
@@ -731,7 +848,7 @@ export class SkillSystem {
         player: p, cds: new Map(), gcdUntil: 0, gcdTotal: 0, cur: null, buffer: null, combo: { next: 0, lastEnd: -99 },
         lastAim: { point: [p.position.x, 0, p.position.z + 1], dir: [Math.sin(p.yaw), 0, Math.cos(p.yaw)], targetId: null },
         lastLmbCall: -99, aiming: null, cp: 0, cpTimer: 0, wall: null, barrier: null, bannerT: 0, seen: false, lastElement: 0, dodgeSeen: p.dodgeStartedAt, dodgeStarted: false, basicCount: 0, tailClip: null,
-        airT: 0, wasAir: false, runT: 0, jumpReadyAt: 0, rollAtkFor: -99, kickUntil: 0, counterReadyAt: -99,
+        airT: 0, wasAir: false, runT: 0, jumpReadyAt: 0, rollAtkFor: -99, kickUntil: 0, counterReadyAt: -99, autoGapUntil: -99,
       };
       this.states.set(p.id, st);
       if (p.isLocal) this.restoreMajors(p, st);
@@ -1458,6 +1575,10 @@ export class SkillSystem {
     p.cast = null;
     st.cur = null;
     st.combo.lastEnd = this.now;
+    // CONTROLS_WOW §8.2: a finished finisher step opens a short gap for the auto driver (manual LMB ignores it)
+    if (reason === 'done' && a.basic && a.def.tags.includes('finisher')) {
+      st.autoGapUntil = this.now + AUTO.finisherGap / Math.max(0.4, this.speedFactor(p, a.def));
+    }
     if (reason === 'interrupt' || reason === 'cancel' || a.def.channel) this.clearActionMove(p);
     if (ch || cutAnim) {
       try { if (ch || reason !== 'done') p.anim?.cancelOneShot(ch ? 0.12 : 0.08); } catch { /* ignore */ }
@@ -1596,7 +1717,8 @@ export class SkillSystem {
     const act = `skill_${ai.slot}` as 'skill_lmb';
     const cancel = st.dodgeStarted || G.input?.pressed('jump') || p.statuses.stunned;
     if (cancel) { this.endAim(p, st, false); return; }
-    const confirm = !(G.input?.down(act)) || G.input?.pressed('skill_lmb');
+    // WoW: skill_lmb is unbound, so a left click confirms through Mouse0 directly (Aksiyon: Mouse0 is skill_lmb anyway)
+    const confirm = !(G.input?.down(act)) || G.input?.pressed('skill_lmb') || G.input?.keyPressed('Mouse0');
     if (confirm) this.confirmAim(p, st);
   }
 

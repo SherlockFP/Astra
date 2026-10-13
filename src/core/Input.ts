@@ -22,7 +22,22 @@ export type InputAction =
   // F4 (roadmap, combat): hold-to-charge the heavy. Shift (dodge) and Alt (freeCursor) are taken, so the side button (Mouse4) and Minus are the keys.
   | 'heavyAttack'
   // CORE_MECHANICS §10.1 key resolution + UI_REDESIGN Appendix A + COMBAT_WOW CW-01 (appended)
-  | 'skill_s4' | 'groupFinder' | 'guide' | 'focusTarget' | 'targetPrev';
+  | 'skill_s4' | 'groupFinder' | 'guide' | 'focusTarget' | 'targetPrev'
+  // CONTROLS_WOW §2.1 / §3.2 (appended): WoW auto-attack toggle and keyboard turning (default unbound in Aksiyon)
+  | 'autoAttack' | 'turnLeft' | 'turnRight';
+
+/** CONTROLS_WOW D1: the control scheme. 'wow' is the default; 'aksiyon' is the pre-WoW layout. */
+export type ControlScheme = 'wow' | 'aksiyon';
+
+/**
+ * CONTROLS_WOW §2.2: the actions whose default differs between the two schemes, plus the new actions.
+ * Their rebinds are stored per scheme (Settings.schemeBindings); every other action is shared (Settings.bindings).
+ */
+export const SCHEME_ACTIONS: readonly InputAction[] = [
+  'skill_lmb', 'skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'skill_s4',
+  'potionHp', 'potionMp', 'toggleLock', 'camShoulder', 'moveLeft', 'moveRight',
+  'autoAttack', 'turnLeft', 'turnRight',
+];
 
 export const DEFAULT_BINDINGS: Record<InputAction, string[]> = {
   moveForward: ['KeyW', 'ArrowUp'],
@@ -96,7 +111,61 @@ export const DEFAULT_BINDINGS: Record<InputAction, string[]> = {
   // and the backward target cycle takes Backquote (the key above Tab).
   focusTarget: ['F8'],
   targetPrev: ['Backquote'],
+  // CONTROLS_WOW §3.1: new actions are unbound in Aksiyon.
+  autoAttack: [],
+  turnLeft: [],
+  turnRight: [],
 };
+
+/**
+ * CONTROLS_WOW §3.2: the WoW diff against DEFAULT_BINDINGS (only the actions that differ, plus the new ones).
+ * Mouse0 / Mouse2 are not listed anywhere in WoW (RESERVED_MOUSE). Digits 6-0 (flasks) are the same in both schemes.
+ */
+export const SCHEME_BINDINGS: Record<ControlScheme, Partial<Record<InputAction, string[]>>> = {
+  aksiyon: {},
+  wow: {
+    skill_lmb: [],
+    skill_rmb: ['Digit1'],
+    skill_q: ['Digit2'],
+    skill_e: ['Digit3'],
+    skill_r: ['Digit4'],
+    skill_s1: ['Digit5'],
+    skill_s2: ['KeyQ'],
+    skill_s3: ['KeyE'],
+    skill_s4: ['KeyR'],
+    potionHp: ['KeyG'],
+    potionMp: ['KeyH'],
+    camShoulder: [],
+    toggleLock: [],
+    autoAttack: ['Mouse1', 'Equal'],
+    turnLeft: ['ArrowLeft'],
+    turnRight: ['ArrowRight'],
+    moveLeft: ['KeyA'],
+    moveRight: ['KeyD'],
+  },
+};
+
+/** CONTROLS_WOW §2.3: mouse buttons that are hard-wired gestures in a scheme and cannot be bound to an action. */
+export const RESERVED_MOUSE: Record<ControlScheme, string[]> = {
+  wow: ['Mouse0', 'Mouse2'],
+  aksiyon: [],
+};
+
+/** Copies `overrides` into `target` for known action ids only (unknown or non-array entries are ignored, never throw). */
+function applyOverrides(target: Record<InputAction, string[]>, overrides: Partial<Record<InputAction, string[]>> | undefined): void {
+  if (!overrides || typeof overrides !== 'object') return;
+  for (const action of Object.keys(target) as InputAction[]) {
+    const codes = overrides[action];
+    if (Array.isArray(codes)) target[action] = [...codes];
+  }
+}
+
+/** The bindings of a scheme: DEFAULT_BINDINGS merged with SCHEME_BINDINGS[s]. */
+export function defaultBindings(s: ControlScheme): Record<InputAction, string[]> {
+  const out = structuredClone(DEFAULT_BINDINGS);
+  applyOverrides(out, SCHEME_BINDINGS[s]);
+  return out;
+}
 
 export const ACTION_NAMES_TR: Record<InputAction, string> = {
   moveForward: 'İleri', moveBack: 'Geri', moveLeft: 'Sol', moveRight: 'Sağ', jump: 'Zıpla', dodge: 'Takla / Kaçın', walk: 'Yürü',
@@ -111,10 +180,13 @@ export const ACTION_NAMES_TR: Record<InputAction, string> = {
   partySel4: 'Grup Üyesi 4', partySel5: 'Grup Üyesi 5', paragon: 'Kadim Levha', bestiary: 'Bestiyari', townPortal: 'Dönüş Parşömeni',
   professions: 'Meslekler', camShoulder: 'Omuz Değiştir', heavyAttack: 'Ağır Saldırı',
   skill_s4: 'Beceri G', groupFinder: 'Grup Bulucu', guide: 'Ne Yapmalıyım?', focusTarget: 'Odak Hedef', targetPrev: 'Önceki Hedef',
+  autoAttack: 'Otomatik Saldırı', turnLeft: 'Sola Dön', turnRight: 'Sağa Dön',
 };
 
 export class Input {
-  bindings: Record<InputAction, string[]> = structuredClone(DEFAULT_BINDINGS);
+  bindings: Record<InputAction, string[]> = defaultBindings('wow');
+  /** Active control scheme. Set by applyScheme (Game.ts applies the stored one at boot). */
+  scheme: ControlScheme = 'wow';
   /** Raw codes currently held. */
   private held = new Set<string>();
   private justDown = new Set<string>();
@@ -251,6 +323,21 @@ export class Input {
   rebind(action: InputAction, codes: string[]): void {
     this.bindings[action] = codes;
   }
+  /**
+   * Rebuild `bindings` for a scheme: defaultBindings(s) < shared overrides < scheme overrides (CONTROLS_WOW §2.3).
+   * Never throws on unknown actions. Callers re-apply after any change to controlScheme / bindings / schemeBindings.
+   */
+  applyScheme(
+    s: ControlScheme,
+    shared: Partial<Record<InputAction, string[]>> | undefined,
+    perScheme: Partial<Record<InputAction, string[]>> | undefined,
+  ): void {
+    const next = defaultBindings(s);
+    applyOverrides(next, shared);
+    applyOverrides(next, perScheme);
+    this.scheme = s;
+    this.bindings = next;
+  }
   bindingLabel(action: InputAction): string {
     const c = this.bindings[action]?.[0];
     return c ? codeLabel(c) : '-';
@@ -272,7 +359,7 @@ export function codeLabel(code: string): string {
     Mouse0: 'SolT', Mouse1: 'OrtaT', Mouse2: 'SağT', Space: 'Boşluk', ShiftLeft: 'Shift', ShiftRight: 'Shift', ControlLeft: 'Ctrl',
     AltLeft: 'Alt', AltRight: 'Alt', Escape: 'Esc', Enter: 'Enter', Tab: 'Tab', ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→',
     // Short forms: the action bar prints these at 12 px in a 44 px cell.
-    Mouse3: 'Geri', Mouse4: 'İleri', Minus: '-', CapsLock: 'Caps', Period: '.', Backquote: '`',
+    Mouse3: 'Geri', Mouse4: 'İleri', Minus: '-', CapsLock: 'Caps', Period: '.', Backquote: '`', Equal: '=',
   };
   return map[code] ?? code;
 }

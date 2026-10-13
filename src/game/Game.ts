@@ -1,7 +1,7 @@
 import { G } from './G';
 import { Engine } from '../core/Engine';
 import { EventBus } from '../core/EventBus';
-import { Input, type InputAction } from '../core/Input';
+import { Input } from '../core/Input';
 import { Assets } from '../core/Assets';
 import { Settings } from '../core/Settings';
 import { Save } from '../core/Save';
@@ -63,15 +63,28 @@ export function createServices(): void {
   G.talents = new TalentSystem();
   G.mplus = new MythicPlus();
 
-  // saved key bindings
-  for (const [action, codes] of Object.entries(G.settings.data.bindings)) {
-    if (codes) G.input.rebind(action as InputAction, codes);
-  }
-  G.settings.onChange((key) => G.events.emit('settings:changed', { key: String(key) }));
+  // saved key bindings for the active control scheme (CONTROLS_WOW §2.3)
+  applyStoredBindings();
+  G.settings.onChange((key) => {
+    if (key === 'controlScheme' || key === 'bindings' || key === 'schemeBindings') applyStoredBindings();
+    G.events.emit('settings:changed', { key: String(key) });
+  });
+  // CONTROLS_WOW §2.4: one-time hint after the migration, on the first town or dungeon scene.
+  G.events.on('scene:changed', ({ to }) => {
+    if ((to !== 'town' && to !== 'dungeon') || G.settings.data.controlsHintShown) return;
+    G.settings.set('controlsHintShown', true);
+    G.ui.toast('Kontrol şeması WoW oldu. Eski düzene dönmek için Ayarlar → Kontroller → Kontrol Şeması: Aksiyon.', 'info');
+  });
   G.events.on('hitstop', ({ ms }) => G.engine.hitStop(ms));
 
   installGraphics();
   G.ui.init(uiRoot);
+}
+
+/** Rebuilds the input bindings from the stored settings: the active scheme's defaults, shared overrides, then this scheme's overrides. */
+function applyStoredBindings(): void {
+  const d = G.settings.data;
+  G.input.applyScheme(d.controlScheme, d.bindings, d.schemeBindings[d.controlScheme]);
 }
 
 /** Per-frame service updates (everything except scenes). */

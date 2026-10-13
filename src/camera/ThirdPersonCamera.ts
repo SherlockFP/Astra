@@ -12,9 +12,33 @@ export type CameraMode = 'action' | 'classic';
  */
 export type OccluderMode = 'pull' | 'fade';
 
-const MIN_DIST = 3;
-const MAX_DIST = 18;
-const MAX_PITCH = 1.38;           // ~79 deg looking down
+/**
+ * CONTROLS_WOW §7.1 camera profile per control scheme. 'action' is Aksiyon and keeps today's values exactly; 'classic' is the WoW
+ * profile. restPitch NaN = the zoom-driven rest pitch of Aksiyon (lerp 0.26..0.62). shoulder is informative only: the offset is
+ * applied through SHOULDER in place().
+ */
+export interface CamProfile {
+  zoomMin: number; zoomMaxOutdoor: number; zoomMaxIndoor: number; zoomDefault: number;
+  restPitch: number; maxPitch: number;
+  shoulder: number; lookAhead: boolean; combatZoom: boolean; lockOnFraming: boolean;
+  pitchAutoReturn: boolean; wheelPitchPull: boolean;
+}
+export const CAM_PROFILES: Record<CameraMode, CamProfile> = {
+  action: { zoomMin: 3, zoomMaxOutdoor: 18, zoomMaxIndoor: 18, zoomDefault: 9, restPitch: NaN, maxPitch: 1.38, shoulder: 0.55, lookAhead: true, combatZoom: true, lockOnFraming: true, pitchAutoReturn: true, wheelPitchPull: true },
+  classic: { zoomMin: 2, zoomMaxOutdoor: 30, zoomMaxIndoor: 18, zoomDefault: 10, restPitch: 0.349, maxPitch: 1.45, shoulder: 0, lookAhead: false, combatZoom: false, lockOnFraming: false, pitchAutoReturn: false, wheelPitchPull: false },
+};
+/** WoW: the wheel moves the zoom by at least this many metres per notch. */
+const WOW_MIN_ZOOM_STEP = 0.4;
+/** WoW: indoor zoom maximum follows its goal at this speed (m/s). */
+const ZOOM_MAX_SLEW = 4;
+/** WoW: lateral wall probes sit this far (m) either side of the camera axis. */
+const LATERAL_PROBE = 0.35;
+/** WoW: the camera stays this far (m) under a ceiling. */
+const CEIL_MARGIN = 0.35;
+/** WoW smart pivot (§7.4): dead zone (rad, 2 deg) and the speed/turn limits. */
+const SMART_DEAD = 2 * Math.PI / 180;
+const SMART_EASE = 3.0;
+const SMART_MAX_RATE = 2.2;
 const SHOULDER = 0.55;            // action-mode over-the-shoulder offset (metres, right)
 const LOOK_SENS = 0.0022;         // rad per pixel at sensitivity 1
 const MAX_SHAKES = 10;
@@ -32,6 +56,14 @@ const KICK_K = 300;
 const KICK_C = 24;
 
 interface ShakeEntry { amp: number; dur: number; t: number }
+
+/**
+ * CONTROLS_WOW settings this file reads and writes. Declared locally until core/Settings.ts (W1-A) carries the fields, so this
+ * compiles before that lands. Remove the cast once SettingsData has `cameraDistanceWow` and `cameraSmartPivot`.
+ */
+type WowCamSettings = { cameraDistanceWow?: number; cameraSmartPivot?: boolean };
+type WowSettingsWriter = { set(key: 'cameraDistanceWow', value: number): void };
+const wowData = (): WowCamSettings | undefined => G.settings?.data as unknown as WowCamSettings | undefined;
 
 // tiny smooth value noise (1D) so shakes are continuous instead of white noise
 function hash(n: number): number {
@@ -152,6 +184,10 @@ export class ThirdPersonCamera {
   private pivotReady = false;
   private zoomTarget = 9;
   private zoomCur = 9;
+  /** Effective zoom maximum (CONTROLS_WOW §7.1): 18 in Aksiyon; WoW indoor ceiling-based, slewed at 4 m/s. */
+  private zoomMaxCur = 18;
+  /** Set by scenes through setEnvironment (CONTROLS_WOW §7.2). */
+  private outdoor = false;
   private colFrac = 1;
   private colHold = 0;
   private colByProp = false;
@@ -226,8 +262,9 @@ export class ThirdPersonCamera {
     this.camera = camera;
     const d = G.settings?.data;
     if (d) {
-      this.distance = this.zoomTarget = this.zoomCur = clamp(d.cameraDistance || 9, MIN_DIST, MAX_DIST);
+      this.distance = this.zoomTarget = this.zoomCur = this.loadZoom();
     }
+    if (this.mode === 'classic') this.shoulderSide = 0;
     this.unsubs.push(
       G.events.on('camera:shake', (e) => this.shake(e.intensity, e.duration)),
       // GDD_LIFE §4.10 / §5.6: directional kick and FOV kicks from combat / player events
@@ -246,13 +283,54 @@ export class ThirdPersonCamera {
     return G.settings?.data.cameraMode === 'classic' ? 'classic' : 'action';
   }
 
+  /** The active camera profile (CONTROLS_WOW §7.1). */
+  get profile(): CamProfile {
+    return CAM_PROFILES[this.mode];
+  }
+
+  /** Scene environment (CONTROLS_WOW §7.2): outdoor lifts the WoW zoom cap to 30 m; indoors it follows the ceiling. */
+  setEnvironment(e: { outdoor: boolean }): void {
+    this.outdoor = e.outdoor;
+  }
+
+  /** Rigid yaw turn with the character (WoW turn keys, CONTROLS_WOW §7.2). */
+  rotateYaw(delta: number): void {
+    this.yaw += delta;
+  }
+
+  /**
+   * The control scheme changed: reload the zoom of the active scheme, swap the shoulder (WoW centres it, 0), and clear the smart
+   * pivot state so it restarts after the next orbit-free second.
+   */
+  onSchemeChanged(): void {
+    const classic = this.mode === 'classic';
+    this.zoomTarget = this.zoomCur = this.loadZoom();
+    this.shoulderCentred = false;
+    if (classic) {
+      if (this.shoulderSide) this.savedSide = this.shoulderSide;
+      this.shoulderSide = 0;
+      this.pitch = this.profile.restPitch;
+    } else {
+      this.shoulderSide = this.savedSide || 1;
+    }
+    this.follow.active = false;
+    this.idleOrbit = 0;
+  }
+
+  /** Zoom to start from for the active scheme: `cameraDistance` (Aksiyon) or `cameraDistanceWow` (WoW), clamped to its profile. */
+  private loadZoom(): number {
+    const p = this.profile;
+    if (this.mode === 'classic') return clamp(wowData()?.cameraDistanceWow ?? p.zoomDefault, p.zoomMin, p.zoomMaxOutdoor);
+    return clamp(G.settings?.data.cameraDistance || 9, p.zoomMin, p.zoomMaxOutdoor);
+  }
+
   setTarget(obj: THREE.Object3D | null): void {
     this.target = obj;
   }
 
   /** Ray used for aiming (through the crosshair in action mode, through the cursor in classic mode). */
   getAimRay(out = new THREE.Ray()): THREE.Ray {
-    if (this.mode === 'classic' && !this.orbiting && G.input) {
+    if (this.mode === 'classic' && !this.orbiting && G.input && !G.input.pointerOverUI) {
       this.camera.updateMatrixWorld();
       _ndc.set(G.input.ndcX, G.input.ndcY);
       _ray.setFromCamera(_ndc, this.camera);
@@ -273,7 +351,7 @@ export class ThirdPersonCamera {
     if (!this.pivotReady) return;
     const floorY = this.groundAt(this.pivot.x, this.pivot.z) + 0.45;
     const minPitch = Math.max(-0.95, Math.asin(clamp((floorY - this.pivot.y) / Math.max(1, this.zoomCur), -1, 1)));
-    this.pitch = clamp(this.pitch, minPitch, MAX_PITCH);
+    this.pitch = clamp(this.pitch, minPitch, this.profile.maxPitch);
     const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
     _fwd.set(-Math.sin(this.yaw) * cp, -sp, -Math.cos(this.yaw) * cp);
     _right.set(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
@@ -428,7 +506,8 @@ export class ThirdPersonCamera {
       this.pivot.set(t.position.x, t.position.y + this.pivotHeight + lerp(-0.25, 0.6, s), t.position.z);
       this.yaw = t.rotation.y + Math.PI;
     }
-    this.pitch = 0.42;
+    const rest = this.profile.restPitch;
+    this.pitch = Number.isNaN(rest) ? 0.42 : rest;
     this.pivotReady = !!t;
     this.colFrac = 1;
     this.colHold = 0;
@@ -456,30 +535,40 @@ export class ThirdPersonCamera {
     const s = G.settings?.data;
     if (!input) return;
 
-    // zoom
+    const wow = this.mode === 'classic';
+    const p = this.profile;
+
+    // zoom (CONTROLS_WOW §7.1: WoW steps at least 0.4 m per notch)
     const w = input.wheel;
     if (w !== 0 && !(G.ui?.wantsCursor?.() ?? false)) {
-      this.zoomTarget = clamp(this.zoomTarget * (1 + w * 0.12), MIN_DIST, MAX_DIST);
+      let next = this.zoomTarget * (1 + w * 0.12);
+      if (wow && Math.abs(next - this.zoomTarget) < WOW_MIN_ZOOM_STEP) next = this.zoomTarget + Math.sign(w) * WOW_MIN_ZOOM_STEP;
+      this.zoomTarget = clamp(next, p.zoomMin, p.zoomMaxOutdoor);
       this.zoomSaveTimer = 0.8;
       this.lastWheelAt = this.clock;
       // a wheel input drops the combat zoom bias (GDD_LIFE §4.6)
       this.combatHold = 0;
       this.combatBias = 0;
+      // a wheel move also stops the WoW smart pivot (CONTROLS_WOW §7.4)
+      if (wow) this.idleOrbit = 0;
     }
-    if (input.pressed('zoomIn')) this.zoomTarget = clamp(this.zoomTarget - 1.5, MIN_DIST, MAX_DIST);
-    if (input.pressed('zoomOut')) this.zoomTarget = clamp(this.zoomTarget + 1.5, MIN_DIST, MAX_DIST);
+    if (input.pressed('zoomIn')) this.zoomTarget = clamp(this.zoomTarget - 1.5, p.zoomMin, p.zoomMaxOutdoor);
+    if (input.pressed('zoomOut')) this.zoomTarget = clamp(this.zoomTarget + 1.5, p.zoomMin, p.zoomMaxOutdoor);
     if (this.zoomSaveTimer >= 0) {
       this.zoomSaveTimer -= dt;
       if (this.zoomSaveTimer < 0) {
         try {
-          G.settings.set('cameraDistance', Math.round(this.zoomTarget * 10) / 10);
+          const v = Math.round(this.zoomTarget * 10) / 10;
+          if (wow) (G.settings as unknown as WowSettingsWriter).set('cameraDistanceWow', v);
+          else G.settings.set('cameraDistance', v);
         } catch { /* ignore */ }
       }
     }
 
     // orbit (GDD_LIFE §4.8: sensitivity curves, precision modes, optional acceleration and smoothing)
+    // WoW orbits while LMB or RMB is held (CONTROLS_WOW §7.1); Aksiyon orbits under the pointer lock.
     const action = this.mode === 'action';
-    this.orbiting = action ? input.isLocked() : input.down('skill_rmb');
+    this.orbiting = action ? input.isLocked() : (input.keyDown('Mouse0') || input.keyDown('Mouse2'));
     let orbited = false;
     if (this.orbiting) {
       const dx = clamp(input.mouseDX, -160, 160);
@@ -509,13 +598,14 @@ export class ThirdPersonCamera {
         orbited = true;
       }
     }
-    if (orbited) this.idleOrbit = 0;
+    // WoW: any held mouse button counts as orbit input for the smart pivot (CONTROLS_WOW §7.4)
+    if (orbited || (wow && this.orbiting)) this.idleOrbit = 0;
     else this.idleOrbit += dt;
     this.idleLook = Math.min(1, this.idleLook + dt * 2.5);
     if (this.deathCam) this.yaw += 0.12 * dt; // GDD_LIFE §4.13: slow orbit while dead
 
-    // hide the cursor while RMB-orbiting in classic mode
-    const wantHide = !action && this.orbiting;
+    // hide the cursor while orbiting in classic mode; a click without drag never hides it (CONTROLS_WOW §4.3)
+    const wantHide = !action && this.orbiting && (orbited || this.hideCursor);
     if (wantHide !== this.hideCursor) {
       this.hideCursor = wantHide;
       try {
@@ -527,7 +617,7 @@ export class ThirdPersonCamera {
     const lt = this.lockOnTarget;
     const t = this.target;
     if (this.lockSuspendT > 0) this.lockSuspendT -= dt;
-    if (lt && t) {
+    if (lt && t && p.lockOnFraming) {
       if (this.orbiting && Math.abs(angleDiff(this.yaw, this.lockYawWant)) > 14 * Math.PI / 180) this.lockOverT += dt;
       else this.lockOverT = Math.max(0, this.lockOverT - dt * 2);
       if (this.lockOverT > 0.5) { this.lockSuspendT = 1.5; this.lockOverT = 0; }
@@ -551,7 +641,7 @@ export class ThirdPersonCamera {
     }
 
     // auto-follow (GDD_LIFE §4.4): swing behind the character while running forward, after 1.2 s without orbit input
-    if (s?.cameraAutoFollow && this.follow.active && !lt && !this.orbiting && this.idleOrbit >= 1.2 && (this.mode === 'classic' || !this.shiftLock)) {
+    if (!wow && s?.cameraAutoFollow && this.follow.active && !lt && !this.orbiting && this.idleOrbit >= 1.2 && !this.shiftLock) {
       const sf = clamp(this.follow.speed / 7, 0, 1);
       const d = angleDiff(this.yaw, this.follow.yaw);
       const dead = 6 * Math.PI / 180;
@@ -559,6 +649,17 @@ export class ThirdPersonCamera {
         const step = Math.sign(d) * (Math.abs(d) - dead);
         const maxStep = 0.9 * sf * dt;
         this.yaw += clamp(step, -maxStep, maxStep);
+      }
+    }
+    // WoW smart pivot (CONTROLS_WOW §7.4): while running forward with no mouse button held, ease behind the character's facing.
+    // Strafing and back-pedalling never reach here (follow.active is off for them, per §5).
+    if (wow && wowData()?.cameraSmartPivot !== false && this.follow.active && !lt && !this.orbiting && !this.deathCam && this.cine === null
+      && this.follow.speed > 1.5 && this.idleOrbit >= 0.8) {
+      const d = angleDiff(this.yaw, this.follow.yaw);
+      if (Math.abs(d) > SMART_DEAD) {
+        const sf = clamp(this.follow.speed / 7, 0.4, 1);
+        const step = (Math.abs(d) - SMART_DEAD) * (1 - Math.exp(-SMART_EASE * dt));
+        this.yaw += Math.sign(d) * Math.min(step, SMART_MAX_RATE * sf * dt);
       }
     }
     this.yaw = ((this.yaw + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
@@ -587,7 +688,7 @@ export class ThirdPersonCamera {
 
       // look-ahead (GDD_LIFE §4.1): leads toward the camera's forward half-plane, not while locked on
       let wantLX = 0, wantLZ = 0;
-      if (s?.cameraLookAhead !== false && !this.lockOnTarget && sp > 0.3) {
+      if (s?.cameraLookAhead !== false && this.profile.lookAhead && !this.lockOnTarget && sp > 0.3) {
         const amt = clamp(sp * 0.10, 0, 0.9);
         const fx = -Math.sin(this.yaw), fz = -Math.cos(this.yaw);
         const dot = (this.tgtVX / sp) * fx + (this.tgtVZ / sp) * fz;
@@ -627,7 +728,7 @@ export class ThirdPersonCamera {
       this.lockBias = damp(this.lockBias, wantBias, 1.25, dt);
 
       // combat zoom (GDD_LIFE §4.6): >= 3 aggroed enemies within 12 m => +1.5 m for 3 s after the last one
-      if (s?.cameraCombatZoom !== false) {
+      if (s?.cameraCombatZoom !== false && this.profile.combatZoom) {
         this.combatScanT -= dt;
         if (this.combatScanT <= 0) {
           this.combatScanT = 0.25;
@@ -691,26 +792,34 @@ export class ThirdPersonCamera {
     const cam = this.camera;
     const s = G.settings?.data;
 
+    const p = this.profile;
+    const wow = this.mode === 'classic';
+
+    // zoom maximum: WoW indoors follows the ceiling (CONTROLS_WOW §7.1), slewed at 4 m/s; Aksiyon stays at 18 m
+    const goalMax = this.zoomGoalMax();
+    this.zoomMaxCur = instant ? goalMax : this.zoomMaxCur + clamp(goalMax - this.zoomMaxCur, -ZOOM_MAX_SLEW * dt, ZOOM_MAX_SLEW * dt);
+
     // zoom: the target, plus combat and lock-on biases; the death cam pulls in to 5.5 m
-    this.zoomTarget = clamp(this.zoomTarget, MIN_DIST, MAX_DIST);
-    const zoomWant = this.deathCam ? 5.5 : clamp(this.zoomTarget + this.combatBias + this.lockBias, MIN_DIST, MAX_DIST);
+    this.zoomTarget = clamp(this.zoomTarget, p.zoomMin, p.zoomMaxOutdoor);
+    const zoomWant = this.deathCam ? 5.5 : clamp(this.zoomTarget + this.combatBias + this.lockBias, p.zoomMin, this.zoomMaxCur);
     this.zoomCur = instant ? zoomWant : damp(this.zoomCur, zoomWant, this.deathCam ? 2.5 : 12, dt);
     this.distance = this.zoomCur;
     const zs = smoothstep(3, 14, this.zoomCur);
 
-    // pitch: rest pitch by zoom (GDD_LIFE §4.6); pulled toward it after a wheel move, eased after 2 s without orbit when auto-following
+    // pitch: rest pitch by zoom (GDD_LIFE §4.6); pulled toward it after a wheel move, eased after 2 s without orbit when auto-following.
+    // WoW has neither (CONTROLS_WOW §7.1): its rest pitch is set on snap() and the player's pitch is kept.
     const restPitch = lerp(0.26, 0.62, zs);
     if (!instant && !this.orbiting) {
-      if (this.clock - this.lastWheelAt < 0.6) {
+      if (p.wheelPitchPull && this.clock - this.lastWheelAt < 0.6) {
         this.pitch += clamp((restPitch - this.pitch) * (1 - Math.exp(-3.5 * dt)) * 0.5, -0.035, 0.035);
-      } else if (this.follow.active && this.idleOrbit >= 2) {
+      } else if (p.pitchAutoReturn && this.follow.active && this.idleOrbit >= 2) {
         this.pitch += clamp(restPitch - this.pitch, -0.25 * dt, 0.25 * dt);
       }
     }
     // pitch limits depend on the distance so the camera never dips under the floor
     const floorY = this.groundAt(this.pivot.x, this.pivot.z) + 0.45;
     const minPitch = Math.max(-0.95, Math.asin(clamp((floorY - this.pivot.y) / Math.max(1, this.zoomCur), -1, 1)));
-    this.pitch = clamp(this.pitch, minPitch, MAX_PITCH);
+    this.pitch = clamp(this.pitch, minPitch, p.maxPitch);
 
     const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
     _fwd.set(-Math.sin(this.yaw) * cp, -sp, -Math.cos(this.yaw) * cp);
@@ -743,16 +852,30 @@ export class ThirdPersonCamera {
         }
       }
     }
+    // WoW (CONTROLS_WOW §7.3): two lateral probes at +-0.35 m so the lens does not clip a wall corner
+    if (wow && this.collide && world) {
+      const dx = _pos.x - this.pivot.x, dz = _pos.z - this.pivot.z;
+      const len = Math.hypot(dx, dz);
+      if (len > 0.01) {
+        const rx = Math.cos(this.yaw), rz = -Math.sin(this.yaw);
+        for (const side of [-LATERAL_PROBE, LATERAL_PROBE]) {
+          const f = world.nav.raycast(this.pivot.x + rx * side, this.pivot.z + rz * side, _pos.x + rx * side, _pos.z + rz * side);
+          if (f < 1) fracNav = Math.min(fracNav, clamp(f - 0.55 / len, 0.12, 1));
+        }
+      }
+    }
     // scene occluders (real geometry, so heights count): pull-in (Town), or fade the hits (dungeons / open world)
     const pull = this.occluderMode === 'pull';
     let fracProp = 1;
     if (pull && this.occluders && this.occluders.length) fracProp = this.occluderFrac(_pos);
-    const frac = Math.min(fracNav, fracProp);
+    // WoW ceilings (CONTROLS_WOW §7.3): the reactive half of the indoor zoom cap
+    const fracCeil = wow ? this.ceilingFrac(_pos) : 1;
+    const frac = Math.min(fracNav, fracProp, fracCeil);
     // pull in instantly; after the last block hold 0.15 s, then ease out (2.5/s for props, 4/s for nav walls)
     if (instant || frac < this.colFrac) {
       this.colFrac = frac;
       this.colHold = COL_HOLD;
-      this.colByProp = fracProp < fracNav;
+      this.colByProp = fracProp < fracNav && fracProp <= fracCeil;
     } else if (this.colHold > 0) {
       this.colHold -= dt;
     } else {
@@ -955,6 +1078,45 @@ export class ThirdPersonCamera {
 
   private groundAt(x: number, z: number): number {
     return G.world ? G.world.groundY(x, z) : 0;
+  }
+
+  /**
+   * Zoom maximum the effective zoom may reach (CONTROLS_WOW §7.1). Aksiyon: 18 m. WoW outdoors: 30 m. WoW indoors:
+   * clamp(1.35 x ceiling under the pivot, 6, 18), which is 18 when no ceiling is known (World.ceilingY = Infinity).
+   */
+  private zoomGoalMax(): number {
+    const p = this.profile;
+    if (this.mode !== 'classic' || this.outdoor) return p.zoomMaxOutdoor;
+    const ceil = G.world ? G.world.ceilingY(this.pivot.x, this.pivot.z) : Infinity;
+    return ceil === Infinity ? p.zoomMaxIndoor : clamp(1.35 * ceil, 6, p.zoomMaxIndoor);
+  }
+
+  /**
+   * CONTROLS_WOW §7.3: the fraction of the pivot -> wanted-camera segment that stays CEIL_MARGIN under the ceiling
+   * (sampled at 0.25 / 0.5 / 0.75 / 1, then bisected). 1 = clear. Never below 12%, like the wall fraction.
+   */
+  private ceilingFrac(pos: THREE.Vector3): number {
+    const world = G.world;
+    if (!world) return 1;
+    const px = this.pivot.x, py = this.pivot.y, pz = this.pivot.z;
+    const bad = (t: number): boolean => {
+      const x = px + (pos.x - px) * t, y = py + (pos.y - py) * t, z = pz + (pos.z - pz) * t;
+      return y > world.ceilingY(x, z) - CEIL_MARGIN;
+    };
+    let safe = 0;
+    for (const t of [0.25, 0.5, 0.75, 1]) {
+      if (bad(t)) {
+        let lo = safe, hi = t;
+        for (let i = 0; i < 6; i++) {
+          const mid = (lo + hi) * 0.5;
+          if (bad(mid)) hi = mid;
+          else lo = mid;
+        }
+        return Math.max(0.12, lo);
+      }
+      safe = t;
+    }
+    return 1;
   }
 
   /** Fraction of the pivot -> wanted-camera segment that is clear of `occluders` (1 = clear; never closer than 12% of the distance). */

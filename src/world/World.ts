@@ -161,6 +161,14 @@ export class World {
     return 0;
   }
 
+  /**
+   * Ceiling height above x,z (CONTROLS_WOW §7.2). Infinity = no ceiling (open town, unknown rooms), so the WoW camera's ceiling
+   * clamp and indoor zoom cap stay dormant. DungeonBuilder overrides it once RoomDef.ceiling exists (CORE_MECHANICS §13).
+   */
+  ceilingY(_x: number, _z: number): number {
+    return Infinity;
+  }
+
   /** Intersect a ray with the ground plane y = groundY. */
   rayToGround(ray: THREE.Ray, out = new THREE.Vector3()): THREE.Vector3 | null {
     if (Math.abs(ray.direction.y) < 1e-5) return null;

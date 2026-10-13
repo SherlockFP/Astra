@@ -248,6 +248,7 @@ export class DungeonScene implements GameScene {
     // ---- camera + controller ----
     const cam = new ThirdPersonCamera(this.camera);
     cam.setTarget(player.object3d);
+    cam.setEnvironment({ outdoor: !!def.outdoor });
     cam.yaw = startYaw + Math.PI;
     // solid scenery (walls, pillars, trees, rocks, cliffs, buildings) between the lens and the player fades out instead of
     // filling the screen; floors and grass never do (camera/OccluderFade.ts)
