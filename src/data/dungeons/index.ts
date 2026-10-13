@@ -6,6 +6,7 @@ import { GOLGE_TAPINAGI } from './golge_tapinagi';
 import { SISLI_KORU } from './sisli_koru';
 import { SISLI_VADI } from '../world/sisli_vadi';
 import { KARAKIR_BOZKIRI } from '../world/karakir';
+import { KIZIL_SINIR } from '../world/kizil_sinir';
 import { TASKASA } from './taskasa';
 import { PERI_SISLERI } from './peri_sisleri';
 import { YILDIZ_DIVANI } from './yildiz_divani';
@@ -53,8 +54,10 @@ export const OPEN_ZONES: Record<string, DungeonDef> = {
   [SISLI_KORU.id]: SISLI_KORU,
   [SISLI_VADI.id]: SISLI_VADI,
   [KARAKIR_BOZKIRI.id]: KARAKIR_BOZKIRI,
+  // WP-07: Kızıl Sınır, the 1,200 m PvP zone (data/world/kizil_sinir.ts; entered from the town's West Gate at level 35+)
+  [KIZIL_SINIR.id]: KIZIL_SINIR,
 };
-export const OPEN_ZONE_IDS: string[] = [SISLI_KORU.id, SISLI_VADI.id, KARAKIR_BOZKIRI.id];
+export const OPEN_ZONE_IDS: string[] = [SISLI_KORU.id, SISLI_VADI.id, KARAKIR_BOZKIRI.id, KIZIL_SINIR.id];
 
 /**
  * Legacy zone id -> current id. The town's South Gate (data/town.ts `guney_kapisi`) leads to 'sisli_vadi' since WP2, so the old

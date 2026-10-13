@@ -28,6 +28,7 @@ import { openWorldParams } from './world/params';
 import { bindQuestMarks } from './world/QuestMarks';
 import { mountMarket, unmountMarket } from '../world/MarketStalls';
 import { PAZAR_MEYDANI, PAZAR_USTASI_AT } from '../data/market';
+import { PVP_MIN_LEVEL, PVP_ZONE_ID } from '../data/pvpZone';
 
 type NpcDef = TownDef['npcs'][number];
 
@@ -149,9 +150,15 @@ export class TownScene implements GameScene {
     const spawnAt = p.spawnAt === 'portal' && sceneFlow.leftOpenWorld && gate ? 'south' : p.spawnAt;
     // back from Karakır Bozkırı: the East Gate is the way home
     const eastGate = sceneFlow.leftWorldId === 'karakir_bozkiri' ? TOWN.exits?.find((ex) => ex.id === 'dogu_kapisi') : undefined;
+    // back from Kızıl Sınır (PvP zone): the West Gate
+    const westGate = sceneFlow.leftWorldId === PVP_ZONE_ID ? TOWN.exits?.find((ex) => ex.id === 'bati_kapisi') : undefined;
     sceneFlow.leftOpenWorld = false;
     sceneFlow.leftWorldId = undefined;
-    if (spawnAt === 'south' && eastGate) {
+    if (spawnAt === 'south' && westGate) {
+      sx = westGate.box[2] + 5;
+      sz = (westGate.box[1] + westGate.box[3]) / 2;
+      syaw = Math.PI / 2;
+    } else if (spawnAt === 'south' && eastGate) {
       sx = eastGate.box[0] - 5;
       sz = (eastGate.box[1] + eastGate.box[3]) / 2;
       syaw = -Math.PI / 2;
@@ -413,6 +420,8 @@ export class TownScene implements GameScene {
       const questDone = ch.save.flags['q.mq_19_kuzgunkaleye_donus'] === 'done';
       if (!questDone && ch.level < 30) return 'Seviye 30 gerekli: Doğu Kapısı mühürlü (Kuzgunkale\'ye dönüş görevini bitirince de açılır).';
     }
+    // WP-07: Kızıl Sınır (PvP) needs level 35; the zone runtime sends an under-levelled party member back
+    if (to === PVP_ZONE_ID && ch.level < PVP_MIN_LEVEL) return `Seviye ${PVP_MIN_LEVEL} gerekli: Kızıl Sınır'a yalnızca kıdemli savaşçılar girebilir.`;
     if (!getDungeon(to)) return 'Bu kapı henüz açılmadı.';
     return null;
   }
@@ -441,7 +450,7 @@ export class TownScene implements GameScene {
     // open-world maps: the party appears at the map's entry, the north edge (tile 80,1 of Sisli Vadi), which is the Kuzgunkale side
     // of the valley, i.e. the world spawn of the South Gate; other zones keep the old trip
     const params: DungeonParams = isOpenWorld(to)
-      ? openWorldParams(to, { type: 'gate', id: to === 'karakir_bozkiri' ? 'dogu_kapisi' : SOUTH_GATE_ID })
+      ? openWorldParams(to, { type: 'gate', id: to === 'karakir_bozkiri' ? 'dogu_kapisi' : to === PVP_ZONE_ID ? 'bati_kapisi' : SOUTH_GATE_ID })
       : {
           dungeonId: to, difficulty: 'normal', keyLevel: 0, seed: (Math.random() * 0x7fffffff) >>> 0 || 1, affixes: [],
           enemyLevel: Math.max(lo, Math.min(hi, lvl)), partySize: Math.max(1, G.net.peers.size || 1), keyOwner: G.net.selfId,

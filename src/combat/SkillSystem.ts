@@ -28,6 +28,7 @@ import { softStat, type DamageResult, type HitSpec } from './Combat';
 import { Projectile } from '../entities/Projectile';
 import { behaviorFor, groundAt, aimSlope, isKitBehavior, selfStatusesByDispatch, type Behavior, type CastCtx } from './skills/behaviors';
 import { isBehind } from './positional';
+import { pvp } from '../systems/Pvp';
 import { setGlowExtras, type GlowExtras } from '../data/procs';
 import { sp, hasSp, combineChance, shockwave, fireWave, specHooksOf, allSpecHooks, weaponAvg, onSpend as spendSpecials } from './specials';
 import { shieldStoreAdd, shieldStoreRelease } from './skills/plateKit';
@@ -1922,6 +1923,8 @@ export class SkillSystem {
       a.fired = true;
       if (!a.paid && !this.pay(p, st, a.def, a)) { this.endAction(st, 'cancel', true); return; }
       try { a.beh.fire(a.ctx); } catch (e) { console.error('[skills] fire failed', a.def.id, e); }
+      // WP-07 Kızıl Sınır: the skill's shape against hostile-nation players (no-op outside the PvP zone)
+      try { pvp.onFired(a.ctx); } catch (e) { console.error('[skills] pvp failed', a.def.id, e); }
       // kit behaviours that do not apply their own selfStatuses get them here (generic, once per hit)
       if (selfStatusesByDispatch(a.def) && a.def.selfStatuses) this.applySelf(a.ctx, a.def.selfStatuses);
       try { this.specialsOnFire(p, st, a); } catch (e) { console.error('[skills] specials failed', a.def.id, e); }

@@ -14,6 +14,7 @@ import {
   KNOWN_CHANNELS,
   LATEST_WINS_CHANNELS,
   MAX_PARTY_SIZE,
+  MAX_ROOM_SIZE,
   NET,
   PROTOCOL_VERSION,
   clampNum,
@@ -46,6 +47,7 @@ import { LobbyManager, type NetKind } from './LobbyManager';
 import type { AnnouncementInput, ListedRoom, LobbyTransport } from './lobby';
 import { Replication } from './Replication';
 import { decodePayload, encodePayload } from './codec';
+import { canParty, nationName } from '../data/nations';
 
 export type NetRole = 'offline' | 'host' | 'client';
 export type { NetKind } from './LobbyManager';
@@ -80,6 +82,8 @@ export interface RoomInfo {
   // ---- additions (optional) ----
   hostLevel?: number;
   hostClass?: string;
+  /** WP-06: 'pvp' = a room where both nations may join (Kızıl Sınır). Absent = coop. */
+  mode?: 'coop' | 'pvp';
   affixes?: string[];
   minLevel?: number;
   /** Same protocol + game version. */
@@ -144,6 +148,7 @@ const REJECT_TEXT: Record<RejectReason, (detail?: string) => string> = {
   kicked: () => 'Bu gruptan çıkarıldın.',
   bad_data: () => 'Karakter verisi geçersiz.',
   level: (d) => `Bu oda için seviyen yetersiz (gerekli: ${d ?? '?'}).`,
+  nation: (d) => `Bu oda ${d ?? 'karşı ulusun'} odası. Yalnızca PvP odalarında iki ulus bir arada olabilir.`,
 };
 
 const MSG_INSECURE = 'Çok oyunculu mod güvenli bağlantı (https veya localhost) gerektirir. Oyunu localhost veya https adresinden aç.';
@@ -182,6 +187,8 @@ export class NetSession {
   hostId = 'local';
   roomName = '';
   maxPlayers = MAX_PARTY_SIZE;
+  /** WP-06: 'pvp' rooms may mix the two nations (up to MAX_ROOM_SIZE players); 'coop' rooms are single-nation. Host-chosen, mirrored on clients. */
+  roomMode: 'coop' | 'pvp' = 'coop';
   /** Increments on every party scene change (host-owned); stale messages are dropped. */
   sceneSeq = 0;
   readyCheck: ReadyCheckState | null = null;
@@ -345,13 +352,14 @@ export class NetSession {
       joinable: r.joinable,
       inProgress: r.ann.inProgress,
       lfg: r.ann.lfg,
+      mode: r.ann.mode,
       transport: kind,
     }));
   }
   private lastBrowseKind: NetKind | null = null;
 
   /** Open a room (you become the leader/host). Resolves to the 6-letter room code, or '' on failure (toast shown). */
-  async hostRoom(opts: { name: string; password?: string; maxPlayers?: number; transport?: NetKind; public?: boolean }): Promise<string> {
+  async hostRoom(opts: { name: string; password?: string; maxPlayers?: number; transport?: NetKind; public?: boolean; mode?: 'coop' | 'pvp' }): Promise<string> {
     if (this.role !== 'offline' || this.joinPending || this.busy) {
       this.toast('Zaten bir grubun içindesin.', 'warning');
       return '';
@@ -373,7 +381,8 @@ export class NetSession {
       this.role = 'host';
       this.roomId = code;
       this.localSlot = 0;
-      this.maxPlayers = Math.round(clampNum(opts.maxPlayers, 2, MAX_PARTY_SIZE, MAX_PARTY_SIZE));
+      this.roomMode = opts.mode === 'pvp' ? 'pvp' : 'coop';
+      this.maxPlayers = Math.round(clampNum(opts.maxPlayers, 2, this.roomMode === 'pvp' ? MAX_ROOM_SIZE : MAX_PARTY_SIZE, this.roomMode === 'pvp' ? MAX_ROOM_SIZE : MAX_PARTY_SIZE));
       this.hasPassword = !!opts.password;
       this.hostPublic = opts.public !== false;
       this.sceneSeq = 0;
@@ -876,7 +885,7 @@ export class NetSession {
     if (this.joinPending && this.role === 'offline') {
       if (msg.t === 'welcome') this.onWelcome(msg, from);
       else if (msg.t === 'reject') {
-        const reason = (['version', 'full', 'in_progress', 'kicked', 'bad_data', 'level'] as const).find((r) => r === msg.reason);
+        const reason = (['version', 'full', 'in_progress', 'kicked', 'bad_data', 'level', 'nation'] as const).find((r) => r === msg.reason);
         this.failJoin((REJECT_TEXT[reason ?? 'bad_data'])(typeof msg.detail === 'string' ? sanitizeText(msg.detail, 24) : undefined));
       }
       return;
@@ -941,6 +950,9 @@ export class NetSession {
     if (this.currentScene?.scene === 'dungeon' && !this.inOpenWorld) return reject('in_progress');
     const summary = sanitizeSummary(msg.summary);
     if (!summary) return reject('bad_data');
+    // WP-06: coop rooms are single-nation; only a `pvp` room mixes Gök Kartal and Kızıl Kurt
+    const hostNation = this.self?.summary?.nation;
+    if (!canParty(hostNation, summary.nation, this.roomMode)) return reject('nation', nationName(hostNation));
     let slot = 1;
     const used = new Set([...this.peers.values()].map((p) => p.slot));
     while (used.has(slot)) slot++;
@@ -984,7 +996,7 @@ export class NetSession {
         ready: p.ready, ls: p.loadedScene,
       });
     }
-    return { t: 'party', rev: ++this.partyRev, hostId: this.selfId, roomName: this.roomName, code: this.roomId ?? '', maxPlayers: this.maxPlayers, members };
+    return { t: 'party', rev: ++this.partyRev, hostId: this.selfId, roomName: this.roomName, code: this.roomId ?? '', maxPlayers: this.maxPlayers, ...(this.roomMode === 'pvp' ? { mode: 'pvp' as const } : {}), members };
   }
 
   /** Host: send the party state to every member (except `skip`, who just got a welcome with it). */
@@ -1065,7 +1077,7 @@ export class NetSession {
     const jp = this.joinPending;
     if (!jp) return;
     const party = sanitizeParty(msg.party);
-    const slot = Math.round(clampNum(msg.slot, 1, MAX_PARTY_SIZE - 1, 0));
+    const slot = Math.round(clampNum(msg.slot, 1, MAX_ROOM_SIZE - 1, 0));
     if (!party || slot < 1 || msg.hostId !== from) return; // ignore bogus welcomes; the timeout still guards the join
     this.joinPending = null;
     clearTimeout(jp.timer);
@@ -1077,6 +1089,7 @@ export class NetSession {
     this.localSlot = slot;
     this.roomName = sanitizeText(msg.roomName, NET.MAX_ROOM_NAME_LEN) || party.roomName;
     this.maxPlayers = party.maxPlayers;
+    this.roomMode = party.mode === 'pvp' ? 'pvp' : 'coop';
     this.sceneSeq = Math.round(clampNum(msg.sceneSeq, 0, 2 ** 31, 0));
     this.readyCheck = null;
     this.lastError = null;
@@ -1165,6 +1178,7 @@ export class NetSession {
     }
     this.roomName = party.roomName || this.roomName;
     this.maxPlayers = party.maxPlayers;
+    this.roomMode = party.mode === 'pvp' ? 'pvp' : 'coop';
     const me = this.peers.get(this.selfId);
     if (me && me.slot !== this.localSlot) {
       console.warn('[net] local slot changed by host', this.localSlot, '->', me.slot);
@@ -1415,6 +1429,7 @@ export class NetSession {
     this.role = 'offline';
     this.roomId = null;
     this.roomName = '';
+    this.roomMode = 'coop';
     this.localSlot = 0;
     this.hostId = this.selfId; // selfId stays (stable ids across sessions)
     this.sceneSeq = 0;
@@ -1475,6 +1490,7 @@ export class NetSession {
       hasPassword: this.hasPassword,
       inProgress: inDungeon && !open, // an open-world party accepts joins
       lang: 'tr',
+      ...(this.roomMode === 'pvp' ? { mode: 'pvp' as const } : {}),
       // UX-41: undefined clears a previous listing when the merged announcement is updated
       lfg: this.lfg ?? undefined,
     };

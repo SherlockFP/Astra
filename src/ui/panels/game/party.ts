@@ -57,6 +57,8 @@ export class PartyPanel extends GamePanel {
   private refreshBtn!: HTMLButtonElement;
   private maxPlayers = '4';
   private localTransport = false;
+  /** WP-06: host a `pvp` room (both nations may join, up to 8). */
+  private pvpRoom = false;
   private poll = 0;
   private lastSig = '';
   private busy = false;
@@ -81,7 +83,7 @@ export class PartyPanel extends GamePanel {
     this.nameIn = h('input.pg-input', { type: 'text', maxLength: 28, placeholder: 'Oda adı', style: { width: '100%' } }) as HTMLInputElement;
     this.pwIn = h('input.pg-input', { type: 'text', maxLength: 16, placeholder: 'Şifre (isteğe bağlı)', autocomplete: 'off', style: { width: '100%' } }) as HTMLInputElement;
     this.maxSel = selectBox<string>(
-      ['2', '3', '4', '5'].map((v) => ({ value: v, label: v })),
+      ['2', '3', '4', '5', '6', '7', '8'].map((v) => ({ value: v, label: v })), // 6-8 only in a PvP room (hostRoom clamps coop rooms to 5)
       this.maxPlayers,
       (v) => (this.maxPlayers = v),
     );
@@ -89,6 +91,7 @@ export class PartyPanel extends GamePanel {
       this.localTransport = v;
       this.restartBrowsing();
     });
+    const pvpToggle = toggle(false, (v) => (this.pvpRoom = v));
     const create = h(
       'div.pg-pt-create.pg-card',
       null,
@@ -96,6 +99,7 @@ export class PartyPanel extends GamePanel {
       this.nameIn,
       this.pwIn,
       h('div.pg-pt-crow', null, h('span', null, 'Oyuncu sayısı'), this.maxSel),
+      h('div.pg-pt-crow', null, h('span.pg-dim', { title: 'Gök Kartal ve Kızıl Kurt birlikte girebilir (en çok 8 kişi). Normal odalar tek ulusludur.' }, 'PvP odası (iki ulus, Kızıl Sınır)'), pvpToggle),
       h('div.pg-pt-crow', null, h('span.pg-dim', { title: 'Aynı bilgisayarda iki sekmeyle test için' }, 'Yerel test odası'), local),
       button('Oda Kur', () => void this.createRoom(), { variant: 'primary', icon: '/assets/icons/ui-portal.svg', cls: 'pg-pt-createbtn' }),
     );
@@ -249,7 +253,7 @@ export class PartyPanel extends GamePanel {
           h(
             'span.nm',
             null,
-            h('b', null, r.name),
+            h('b', null, r.mode === 'pvp' ? `[PvP] ${r.name}` : r.name),
             h('small', null, hostCls ? icon(hostCls.icon, 'pg-pt-hcls') : null, `${r.hostName}${r.hostLevel ? ' · Sv. ' + r.hostLevel : ''} · ${r.roomId}`),
             r.hasPassword ? icon('/assets/icons/ui-lock.svg', 'pg-pt-lock') : null,
           ),
@@ -324,7 +328,7 @@ export class PartyPanel extends GamePanel {
     this.busy = true;
     toast('Oda kuruluyor...', 'info');
     try {
-      const code = await G.net.hostRoom({ name, password: this.pwIn.value.trim() || undefined, maxPlayers: Number(this.maxPlayers), transport: this.localTransport ? 'local' : undefined });
+      const code = await G.net.hostRoom({ name, password: this.pwIn.value.trim() || undefined, maxPlayers: Number(this.maxPlayers), transport: this.localTransport ? 'local' : undefined, mode: this.pvpRoom ? 'pvp' : 'coop' });
       sfx('party_join');
       toast(code ? `Oda kuruldu! Kod: ${code}` : 'Oda kuruldu!', 'success');
     } catch (e) {

@@ -19,6 +19,7 @@ import { weaknessOf } from '../data/families';
 import { breakLock, breakSeconds, finisherPctMaxHp, hyperArmorOf, isSwarm, parryPoise, poiseDelay, poiseMax, poiseRegenRate } from './poise';
 import { CombatMeters } from './meters';
 import { vetHit, vetPlayerDeath } from '../net/guard';
+import { pvp } from '../systems/Pvp';
 import { Prd } from './prd';
 import { absorbMagicShell } from './magicShell';
 import { applyAlchemyLink } from './link';
@@ -2489,6 +2490,8 @@ export class Combat {
 
   private onNetHit(p: NetChannels['hit'], from: string): void {
     if (!G.net.isAuthority || !G.world) return;
+    // WP-07 Kızıl Sınır: a hit on another PLAYER goes to the PvP runtime (zone / nation rules, guard.vetPvpHit, forward to the victim)
+    if (pvp.onClientHit(from, p)) return;
     const t = G.world.get<Enemy>(p.targetId);
     if (!t || t.kind !== 'enemy' || t.isDead) return;
     // F6 host validation (net/guard.ts): known live sender, rate, reach and the amount cap (clamped); a rejected hit is dropped

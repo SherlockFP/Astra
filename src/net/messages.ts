@@ -22,6 +22,7 @@ import type { KeystoneData } from '../types/items';
 import type { NetChannel, ShopAnnounce, ShopBuyMsg, ShopSoldMsg } from '../types/net';
 import type { WorldSpawn } from '../scenes/scenes';
 import type { GuildChatMsg, GuildInviteMsg, GuildSyncMsg } from '../types/guild';
+import { cleanNation } from '../data/nations';
 
 export type { EntityId, Vec2, Vec3 };
 
@@ -192,6 +193,8 @@ export interface LobbyPresenceMsg {
   /** Scene / region id (identifier characters only) and an optional display name. */
   zone: string;
   zn?: string;
+  /** WP-06: nation id (absent from old clients). */
+  nat?: string;
   bye?: boolean;
   /** WP-05 Lonca (systems/Guild.ts): guild name (tag), guild id and the roster version the sender holds (`gv`, see rosterVersion). Absent = no guild. */
   g?: string;
@@ -231,7 +234,8 @@ export const LOBBY_CHANNELS = ['ann', 'unann', 'lchat', 'lpres', 'lwhis', 'shop'
  * Control channel 'ctl'
  * ============================================================================================== */
 
-export type RejectReason = 'version' | 'full' | 'in_progress' | 'kicked' | 'bad_data' | 'level';
+/** 'nation' (WP-06): the room is a coop room of the other nation (only `pvp` rooms mix nations). */
+export type RejectReason = 'version' | 'full' | 'in_progress' | 'kicked' | 'bad_data' | 'level' | 'nation';
 export type KickReason = 'leader' | 'afk' | 'version' | 'cheat' | 'desync';
 
 /** One party member as the host describes it. */
@@ -253,6 +257,8 @@ export interface PartyStateMsg {
   roomName: string;
   code: string;
   maxPlayers: number;
+  /** WP-06: room mode ('pvp' = both nations may join, up to MAX_ROOM_SIZE). Absent = coop. */
+  mode?: 'pvp';
   members: PartyMemberMsg[];
 }
 
@@ -314,6 +320,7 @@ export const KNOWN_CHANNELS: ReadonlySet<string> = new Set<NetChannel>([
 /** Channels only the HOST may originate: a client's envelope on these is dropped by the host, and clients ignore relayed copies. */
 export const HOST_ONLY_CHANNELS: ReadonlySet<string> = new Set<NetChannel>([
   'snap', 'spawn', 'dmg', 'death', 'estatus', 'ecast', 'hitshape', 'hitshape_x', 'run', 'affix', 'scene', 'threat', 'dungeon_event',
+  'pvp', // WP-07: hit delivery, capture state, scoreboard and kill feed are host-authored; clients ask through the existing `hit` channel
 ]);
 
 /**
@@ -413,6 +420,7 @@ export function sanitizeSummary(x: unknown): CharacterSummary | null {
     itemLevel: int(x.itemLevel, 0, 999, 0),
     rating: int(x.rating, 0, 10000, 0),
     variant: int(x.variant, 0, 255, 0),
+    ...(cleanNation(x.nation) ? { nation: cleanNation(x.nation) } : {}),
   };
 }
 
@@ -430,7 +438,7 @@ export function sanitizePartyMember(x: unknown): PartyMemberMsg | null {
   if (!summary || !id) return null;
   return {
     id,
-    slot: int(x.slot, 0, MAX_PARTY_SIZE - 1, 0),
+    slot: int(x.slot, 0, MAX_ROOM_SIZE - 1, 0),
     host: x.host === true,
     summary,
     ks: sanitizeKeystone(x.ks),
@@ -443,7 +451,7 @@ export function sanitizeParty(x: unknown): PartyStateMsg | null {
   if (!isObj(x) || x.t !== 'party' || !Array.isArray(x.members)) return null;
   const members: PartyMemberMsg[] = [];
   const slots = new Set<number>();
-  for (const m of x.members.slice(0, MAX_PARTY_SIZE)) {
+  for (const m of x.members.slice(0, MAX_ROOM_SIZE)) {
     const pm = sanitizePartyMember(m);
     if (pm && !slots.has(pm.slot)) {
       slots.add(pm.slot);
@@ -457,7 +465,8 @@ export function sanitizeParty(x: unknown): PartyStateMsg | null {
     hostId: ident(x.hostId, 40),
     roomName: text(x.roomName, NET.MAX_ROOM_NAME_LEN, 'Oda'),
     code: ident(x.code, 12),
-    maxPlayers: int(x.maxPlayers, 1, MAX_PARTY_SIZE, MAX_PARTY_SIZE),
+    maxPlayers: int(x.maxPlayers, 1, MAX_ROOM_SIZE, MAX_PARTY_SIZE),
+    ...(x.mode === 'pvp' ? { mode: 'pvp' as const } : {}),
     members,
   };
 }
@@ -488,7 +497,7 @@ export function sanitizeAnnouncement(x: unknown): RoomAnnouncement | null {
   if (!code) return null;
   const roomId = gameRoomId(code);
   if (x.roomId !== roomId) return null;
-  const maxPlayers = int(x.maxPlayers, 1, MAX_PARTY_SIZE, MAX_PARTY_SIZE);
+  const maxPlayers = int(x.maxPlayers, 1, MAX_ROOM_SIZE, MAX_PARTY_SIZE);
   const activity: RoomActivity = x.activity === 'dungeon' || x.activity === 'mythic' || x.activity === 'world' ? x.activity : 'town';
   const lfg = sanitizeLfg(x.lfg);
   return {
@@ -512,6 +521,7 @@ export function sanitizeAnnouncement(x: unknown): RoomAnnouncement | null {
     inProgress: x.inProgress === true,
     lang: ident(x.lang, 8) || 'tr',
     rev: int(x.rev, 0, 2 ** 31, 0),
+    ...(x.mode === 'pvp' ? { mode: 'pvp' as const } : {}),
     ...(lfg ? { lfg } : {}),
   };
 }

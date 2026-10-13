@@ -43,6 +43,8 @@ import { releaseLocalPlayer } from './respawn';
 import { propUrl, SkeletonReaper } from './SceneKit';
 import type { DungeonParams } from './scenes';
 import { attachYildizSpy } from '../data/dungeons/yildiz_divani';
+import { PVP_BASES, PVP_ZONE_ID } from '../data/pvpZone';
+import { startPvp, pvp, type PvpRuntime } from '../systems/Pvp';
 
 const tileToWorld = (c: number): number => (c + 0.5) * TILE_SIZE;
 
@@ -126,6 +128,8 @@ export class DungeonScene implements GameScene {
   private lifts: LiftSystem | null = null;
   /** Open-world map (DungeonDef.world): camps, metin, rares, bosses, villages... run in WorldRuntime (GDD_OPENWORLD §9.3). */
   private worldRt: WorldRuntime | null = null;
+  /** WP-07: the Kızıl Sınır PvP runtime (only in that zone). */
+  private pvpRt: PvpRuntime | null = null;
   private isWorld = false;
   private timeouts: ReturnType<typeof setTimeout>[] = [];
   /** Host: has G.mplus.begin() been requested (or is the run already counting)? */
@@ -305,6 +309,14 @@ export class DungeonScene implements GameScene {
     this.cam = cam;
     this.controller = new PlayerController(player, cam);
     cam.snap();
+    // WP-07: Kızıl Sınır. Every peer moves its own player to its nation's fort and runs the zone rules (hits, capture, respawn)
+    if (def.id === PVP_ZONE_ID) {
+      this.pvpRt = startPvp({
+        world, scene: this.scene, nearestWalkable: (x, z, r) => built.nav.nearestWalkable(x, z, r), teleport: (x, z, yaw) => this.controller?.teleport(x, z, yaw),
+        release: () => G.events.emit('player:releaseRequested', {}), groundY: (x, z) => world.groundY(x, z),
+      });
+      void this.spawnSecondExitPortal();
+    }
 
     // ---- events + net ----
     this.hookEvents();
@@ -1216,13 +1228,15 @@ export class DungeonScene implements GameScene {
     ev.on('player:releaseRequested', () => {
       const p = this.player;
       if (!p?.isDead) return;
+      // WP-07 Kızıl Sınır: no early release; the dead come back at their own fort when PVP.RESPAWN_SEC are up
+      if (this.pvpRt?.releaseBlocked()) return;
       const st = G.mplus.state;
       // Mythic+ releases at the latest checkpoint whose boss is dead, else the dungeon start (P-28; GDD_CONTENT 0.7);
       // other modes at the latest checkpoint
       // open world: the last waypoint stone / village this character activated (WorldRuntime.respawnPoint)
-      const cp = this.worldRt
+      const cp = pvp.respawnPoint() ?? (this.worldRt
         ? this.worldRt.respawnPoint()
-        : st && st.difficulty === 'mythicplus' && this.built ? this.mythicRelease(this.built) : this.checkpoint;
+        : st && st.difficulty === 'mythicplus' && this.built ? this.mythicRelease(this.built) : this.checkpoint);
       const fix = this.built?.nav.nearestWalkable(cp.x, cp.z, 6);
       releaseLocalPlayer(this.controller, p, fix?.x ?? cp.x, fix?.z ?? cp.z, cp.yaw);
     });
@@ -1352,6 +1366,24 @@ export class DungeonScene implements GameScene {
     return { x: px.x, z: px.z, yaw: toStart };
   }
 
+  /** WP-07: Kızıl Kurt's fort gets its own way home (the map has one exit portal, in the Gök Kartal fort). */
+  private async spawnSecondExitPortal(): Promise<void> {
+    const world = this.world, built = this.built;
+    if (!world || !built) return;
+    const b = PVP_BASES.kizil_kurt;
+    const px = built.nav.nearestWalkable(b.center[0] + 16, b.center[1] - 6, 8) ?? { x: b.center[0] + 16, z: b.center[1] - 6 };
+    const portal = new ExitPortal(world.allocLocalId(), { spawnAt: 'south', returnTo: this.params.returnTo });
+    portal.position.set(px.x, world.groundY(px.x, px.z), px.z);
+    portal.object3d.rotation.y = Math.PI;
+    try {
+      await portal.load();
+      if (this.disposed) return;
+      world.add(portal);
+    } catch (e) {
+      console.warn('[dungeon] second exit portal failed', e);
+    }
+  }
+
   private async spawnReward(payload: RunCompleted): Promise<void> {
     const world = this.world, built = this.built;
     if (!world || !built || this.rewardSpawned) return;
@@ -1407,6 +1439,7 @@ export class DungeonScene implements GameScene {
     this.updateCamps(dt);
     this.tickScene(dt);
     this.worldRt?.update(dt);
+    this.pvpRt?.update(dt);
     this.reaper.update(this.scene, dt);
     // offline safety net: the run clock must start even if the party-loaded promise was swallowed (host runs wait for it instead)
     if (!this.beginTried && !G.net.isOnline) {
@@ -1444,6 +1477,8 @@ export class DungeonScene implements GameScene {
     this.netOff = [];
     this.worldRt?.dispose();
     this.worldRt = null;
+    this.pvpRt?.dispose();
+    this.pvpRt = null;
     this.controller?.dispose();
     this.controller = null;
     this.cam?.dispose();

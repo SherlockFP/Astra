@@ -7,6 +7,7 @@ import type { TalentBuild } from './talents';
 import type { CampState, HomeSave, UpgState } from './itemsV2';
 import type { ProfessionId, ProfessionSave } from './professions';
 import type { GuildSave } from './guild';
+import type { NationId } from '../data/nations';
 
 export const BAG_SIZE = 48;
 export const STASH_SIZE = 120;
@@ -94,6 +95,23 @@ export interface CharacterSave {
   // ---- WP-05 Lonca (NETCODE.md section 16). OPTIONAL, created by systems/Guild.ts when the character founds or joins a guild.
   /** Guild membership: guild id, this character's member key pair, chat key and the latest verified signed roster. */
   guild?: GuildSave;
+  // ---- WP-06 / WP-07 Uluslar + Kızıl Sınır (data/nations.ts, systems/Pvp.ts). OPTIONAL, append-only.
+  /** Nation chosen at creation. Absent on old saves: CharacterState.ensureNation() stores the hash default of the id on first load. */
+  nation?: NationId;
+  /** PvP record of the character (owner-stored, like every personal counter). */
+  pvp?: PvpSave;
+}
+
+/** WP-07: lifetime PvP record. `honour` is the spendable Onur balance, `honourTotal` the lifetime sum (achievement metric). */
+export interface PvpSave {
+  kills: number;
+  deaths: number;
+  honour: number;
+  honourTotal: number;
+  /** Highest kill streak reached. */
+  bestStreak: number;
+  /** Capture points this character helped flip. */
+  captures: number;
 }
 
 /**
@@ -147,4 +165,6 @@ export interface CharacterSummary {
   variant: number;
   /** GDD_LIFE / UX-41 (append-only): combat role of the active spec (Tank / Şifacı / Hasarcı). Absent before a spec. */
   role?: "tank" | "healer" | "dps";
+  /** WP-06 (append-only): nation of the character (party gate, nameplate colour, PvP hostility). Absent from old clients. */
+  nation?: NationId;
 }

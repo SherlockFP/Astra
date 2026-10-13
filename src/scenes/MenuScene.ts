@@ -8,6 +8,7 @@ import { RNG, dampAngle, damp } from '../core/utils';
 import { CharacterState } from '../systems/CharacterState';
 import type { CharacterSave } from '../types/character';
 import type { ClassId } from '../types/common';
+import { nationOfSave, pickNation, type NationId } from '../data/nations';
 import { characterAssetUrls } from '../entities/CharacterModel';
 import { MenuUI, type CharRow } from '../ui/menu/MenuUI';
 import { CLASS_ORDER, classPresentation, validateName } from '../ui/menu/classInfo';
@@ -115,6 +116,8 @@ export class MenuScene implements GameScene {
   private pedToken = 0;
   private pedClass: ClassId = 'knight';
   private pedVariant = 0;
+  /** WP-06: nation picked on the creation screen (default: the one the player has fewer characters in, ties by hash). */
+  private pedNation: NationId = 'gok_kartal';
   private pedYawOffset = 0;
   private pedPop = 1;
   private pedStep = 0;
@@ -170,6 +173,7 @@ export class MenuScene implements GameScene {
       onExit: () => void this.askExit(),
       onPickClass: (id) => this.pickClass(id),
       onPickVariant: (i) => this.pickVariant(i),
+      onPickNation: (id) => this.pickNation(id),
       onSubmitCreate: (name) => this.submitCreate(name),
       onValidateName: (name) => validateName(name, this.existingNames()),
       onBackFromCreate: () => this.endCreate(),
@@ -762,6 +766,10 @@ export class MenuScene implements GameScene {
     this.ui.hidePlates();
     this.ui.resetCreateForm();
     this.pedVariant = 0;
+    const counts: Partial<Record<NationId, number>> = {};
+    for (const st of this.stands) { if (!st.save) continue; const n = nationOfSave(st.save); counts[n] = (counts[n] ?? 0) + 1; }
+    this.pedNation = pickNation(counts, String(Date.now()));
+    this.ui.setCreateNation(this.pedNation);
     this.pedYawOffset = 0;
     this.ui.setMode('create');
     this.ui.setCreateSelection(this.pedClass, this.pedVariant);
@@ -784,6 +792,11 @@ export class MenuScene implements GameScene {
     this.pedClass = id;
     this.ui?.setCreateSelection(id, this.pedVariant);
     void this.setPedestalClass(id, this.pedVariant, true);
+  }
+
+  private pickNation(id: NationId): void {
+    this.pedNation = id;
+    this.ui?.setCreateNation(id);
   }
 
   private pickVariant(i: number): void {
@@ -964,7 +977,7 @@ export class MenuScene implements GameScene {
     if (this.stands.length >= MAX_CHARACTERS) return 'Karakter yuvaları dolu.';
     let cs: CharacterState;
     try {
-      cs = CharacterState.create(name, this.pedClass, this.pedVariant);
+      cs = CharacterState.create(name, this.pedClass, this.pedVariant, this.pedNation);
     } catch (e) {
       console.error('[menu] create failed', e);
       return 'Karakter oluşturulamadı. Lütfen tekrar dene.';

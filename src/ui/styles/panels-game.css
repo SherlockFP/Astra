@@ -571,5 +571,22 @@
   .pg-map-filters { max-width: 60%; }
 }
 
+/* ---- Kızıl Sınır skor tablosu (WP-07, ui/panels/game/pvpBoard.ts): flat, square, nation colours come inline ---- */
+.pg-pvp-head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; gap: 10px; margin-bottom: 10px; }
+.pg-pvp-nation { display: flex; flex-direction: column; align-items: center; padding: 8px 10px; background: var(--pg-card); border: 1px solid #000; border-bottom: 3px solid; border-radius: 0; }
+.pg-pvp-nname { font-family: var(--font-head); font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; }
+.pg-pvp-score { font-size: 28px; font-weight: 700; line-height: 1.1; }
+.pg-pvp-vs { align-self: center; font-size: 12px; letter-spacing: 0.2em; color: var(--text-2); }
+.pg-pvp-points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+.pg-pvp-point { display: flex; flex-direction: column; gap: 3px; padding: 6px 10px; background: var(--pg-card); border: 1px solid #000; border-left: 3px solid; border-radius: 0; font-size: 12.5px; }
+.pg-pvp-table { display: flex; flex-direction: column; gap: 2px; }
+.pg-pvp-row { display: grid; grid-template-columns: 34px 1fr 70px 56px 70px; align-items: center; gap: 8px; padding: 4px 10px; background: var(--pg-card); border: 1px solid #000; border-radius: 0; font-size: 14px; }
+.pg-pvp-row > span:nth-child(n+3) { text-align: right; }
+.pg-pvp-row.is-head { background: transparent; border-color: transparent; color: var(--text-2); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
+.pg-pvp-row.is-self { box-shadow: inset 0 0 0 1px rgba(232, 196, 106, 0.7); }
+.pg-pvp-note { margin: 8px 0; text-align: center; color: #ffd36a; }
+.pg-pvp-me { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; padding: 8px 10px; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--line); border-radius: 0; font-size: 13px; }
+@media (max-width: 900px) { .pg-pvp-points { grid-template-columns: 1fr; } }
+
 /* keystone: finder banner on the Zindan Seç tab (UX-52a) */
 .pg-ks-banner { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; padding: 6px 10px; font-size: 13px; color: var(--text-2); background: rgba(0, 0, 0, 0.3); border: 1px solid var(--line); border-radius: 0; }

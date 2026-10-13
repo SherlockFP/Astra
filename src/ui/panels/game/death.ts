@@ -1,6 +1,7 @@
 import { G } from '../../../game/G';
 import { DEATH_PENALTY_SEC } from '../../../data/mythicAffixes';
 import { expandKeys } from '../../widgets/controlHints';
+import { pvp } from '../../../systems/Pvp';
 import { GamePanel, button, fmtInt, h, icon, inOpenWorld, mmss, openPanel, sfx, toast } from './base';
 
 const TIPS = [
@@ -76,7 +77,7 @@ export class DeathPanel extends GamePanel {
     this.t0 = performance.now();
     this.done = false;
     // open world (Sisli Koru): from level 10 lose 5% of the level's XP, never de-level (Progression.applyDeathPenalty)
-    if (!this.penaltyDone && inOpenWorld() && this.stillDead()) {
+    if (!this.penaltyDone && inOpenWorld() && !pvp.active && this.stillDead()) {
       this.penaltyDone = true;
       try {
         this.xpLost = G.progression.applyDeathPenalty();
@@ -129,7 +130,7 @@ export class DeathPanel extends GamePanel {
 
   /** 'Burada Diril' exists where there is no checkpoint to run back from: the town and the open world. */
   private canReviveHere(): boolean {
-    return this.inTown() || inOpenWorld();
+    return (this.inTown() || inOpenWorld()) && !pvp.active;
   }
 
   private fill(): void {
@@ -176,6 +177,17 @@ export class DeathPanel extends GamePanel {
   }
 
   protected tick(dt: number): void {
+    // WP-07 Kızıl Sınır: the release button is a countdown to the nation's graveyard (the scene releases the player itself)
+    if (pvp.active) {
+      this.labelAcc += dt;
+      if (this.labelAcc < 0.2) return;
+      this.labelAcc = 0;
+      const left = pvp.runtime?.respawnLeft() ?? 0;
+      this.releaseBtn.disabled = left > 0.05;
+      const sp = this.releaseBtn.querySelector('span');
+      if (sp) sp.textContent = left > 0.05 ? `Karargâhta dirilmene ${Math.ceil(left)} sn` : 'Ruhunu Serbest Bırak';
+      return;
+    }
     if (!this.canReviveHere()) return;
     this.labelAcc += dt;
     if (this.labelAcc < 0.25) return;
