@@ -28,13 +28,27 @@ export class CastBarEl {
   private time: HTMLElement;
   private lock: HTMLElement;
   private dispel: HTMLElement;
+  /** Tick marks (channel ticks, charge tier tick): an overlay under the labels, rebuilt only when the list changes. */
+  private ticks: HTMLElement;
+  private tickKey = '';
+  /** School glyph shown instead of the shield while a school is locked (CW-17). */
+  private glyph: HTMLElement;
+  /** Pushback flash: the lost segment (red) and its '+0.5' label; running animations are cancelled on the next flash. */
+  private pushSeg: HTMLElement | null = null;
+  private pushLbl: HTMLElement | null = null;
+  private pushAnims: Animation[] = [];
   private shown = false;
 
   constructor(cls = '') {
     this.el = div('castbar ' + cls);
     this.fill = div('cb-fill', this.el);
     div('cb-shine', this.el);
+    this.ticks = div('cb-ticks', this.el);
+    this.ticks.style.cssText = 'position:absolute;inset:0;pointer-events:none;';
     this.lock = iconEl(UNINTERRUPTIBLE_ICON, 'cb-lock', this.el);
+    this.glyph = div('cb-glyph', this.el);
+    this.glyph.style.cssText = 'position:absolute;right:5px;top:50%;transform:translateY(-50%);font:700 11px/1 var(--font-head, sans-serif);letter-spacing:0.5px;text-shadow:0 1px 0 #000;pointer-events:none;';
+    setDisplay(this.glyph, false);
     this.name = div('cb-name', this.el);
     this.time = div('cb-time', this.el);
     this.dispel = div('cb-dispel', this.el);
@@ -42,7 +56,7 @@ export class CastBarEl {
     setDisplay(this.el, false);
   }
 
-  set(name: string, frac: number, remaining: number, opts: { interruptible?: boolean; channel?: boolean; interrupted?: boolean; dispel?: string } = {}): void {
+  set(name: string, frac: number, remaining: number, opts: { interruptible?: boolean; channel?: boolean; interrupted?: boolean; dispel?: string; school?: { glyph: string; color: string } } = {}): void {
     if (!this.shown) {
       this.shown = true;
       setDisplay(this.el, true);
@@ -56,7 +70,13 @@ export class CastBarEl {
     setClass(this.el, 'locked', !interruptible && !opts.interrupted);
     setClass(this.el, 'interrupted', !!opts.interrupted);
     setClass(this.el, 'channel', !!opts.channel);
-    setDisplay(this.lock, !interruptible && !opts.interrupted);
+    const locked = !interruptible && !opts.interrupted;
+    setDisplay(this.lock, locked && !opts.school);
+    setDisplay(this.glyph, locked && !!opts.school);
+    if (opts.school) {
+      setText(this.glyph, opts.school.glyph);
+      setStyle(this.glyph, 'color', opts.school.color);
+    }
     const dispel = !opts.interrupted && opts.dispel ? opts.dispel : '';
     setDisplay(this.dispel, !!dispel);
     if (dispel) {
@@ -70,6 +90,40 @@ export class CastBarEl {
       this.shown = false;
       setDisplay(this.el, false);
     }
+  }
+
+  /** Tick marks at these fractions of the bar width (0..1). `color` is the mark colour. Same list = no DOM work. */
+  setTicks(fracs: number[], color = 'rgba(255,255,255,0.6)'): void {
+    const key = color + '|' + fracs.map((f) => f.toFixed(3)).join(',');
+    if (key === this.tickKey) return;
+    this.tickKey = key;
+    this.ticks.textContent = '';
+    for (const f of fracs) {
+      const m = div('cb-tick', this.ticks);
+      m.style.cssText = `position:absolute;top:2px;bottom:2px;width:1px;left:${(Math.max(0, Math.min(1, f)) * 100).toFixed(2)}%;background:${color};box-shadow:0 0 2px rgba(0,0,0,0.9);`;
+    }
+  }
+
+  /** Pushback (CW-17 §2.4): red segment from `fromFrac` back to `toFrac` that fades out, with a short label such as '+0.5'. */
+  flashPushback(fromFrac: number, toFrac: number, label: string): void {
+    if (!this.pushSeg || !this.pushLbl) {
+      this.pushSeg = div('cb-push', this.el);
+      this.pushSeg.style.cssText = 'position:absolute;top:0;bottom:0;pointer-events:none;opacity:0;background:linear-gradient(rgba(255,150,140,0.95),rgba(200,30,25,0.95));box-shadow:0 0 6px rgba(255,60,50,0.8);';
+      this.pushLbl = div('cb-plus', this.el);
+      this.pushLbl.style.cssText = 'position:absolute;top:50%;margin-top:-7px;font:700 12px/14px var(--font-head, sans-serif);color:#ffd0c8;text-shadow:0 1px 0 #000;pointer-events:none;white-space:nowrap;opacity:0;';
+    }
+    for (const a of this.pushAnims) a.cancel();
+    this.pushAnims = [];
+    const lo = Math.max(0, Math.min(1, Math.min(fromFrac, toFrac)));
+    const hi = Math.max(0, Math.min(1, Math.max(fromFrac, toFrac)));
+    setStyle(this.pushSeg, 'left', (lo * 100).toFixed(2) + '%');
+    setStyle(this.pushSeg, 'width', ((hi - lo) * 100).toFixed(2) + '%');
+    setStyle(this.pushLbl, 'left', (hi * 100).toFixed(2) + '%');
+    setText(this.pushLbl, label);
+    this.pushAnims.push(
+      this.pushSeg.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 600, easing: 'ease-out', fill: 'forwards' }),
+      this.pushLbl.animate([{ opacity: 1, transform: 'translateX(0)' }, { opacity: 0, transform: 'translateX(10px)' }], { duration: 900, easing: 'ease-out', fill: 'forwards' }),
+    );
   }
 }
 

@@ -83,15 +83,6 @@ export const VFX_ALIASES: Record<string, VfxAlias> = {
   forge_announce_rainbow: { id: 'upgrade_success', scale: 1.3, color: 0xff80ff, extra: [{ id: 'loot_beam', color: 0x80e0ff, duration: 1.6 }, { id: 'loot_beam', color: 0xffe080, duration: 1.6 }] },
   camp_light: { id: 'brazier_fire', scale: 1.2 },
   camp_smoke: { id: 'stealth_smoke', color: 0x9a9080, scale: 0.7 },
-  // COMBAT_WOW §4.3 CW-01 placeholders (CW-15 implements the real presets; no spawn caller yet): closest existing presets.
-  proc_burst: { id: 'fire_burst', scale: 1.0, extra: [{ id: 'buff_aura', color: 0xff9a3c, scale: 0.8 }] },
-  proc_consume: { id: 'hit_magic', color: 0xffb347, scale: 0.9 },
-  cast_hands_fire: { id: 'fire_burst', scale: 0.35 },
-  cast_hands_frost: { id: 'frost_burst', scale: 0.35 },
-  cast_hands_arcane: { id: 'arcane_burst', scale: 0.35 },
-  arcane_charge_orb: { id: 'arcane_burst', scale: 0.25 },
-  crit_ring: { id: 'shockwave', color: 0xffd23a, scale: 0.6 },
-  lockout_flash: { id: 'hit_magic', color: 0xb0c4ff, scale: 0.7 },
   // ---- K3 / P-06 season dungeon visuals: alias targets from the season docs where they name one, otherwise the closest preset.
   ambient_stardust: { id: 'ambient_dust', color: 0xc8d8ff },
   arcane_orb: { id: 'arcane_projectile', scale: 0.8 },

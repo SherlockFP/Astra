@@ -4,6 +4,7 @@ import type { Actor } from '../../entities/Actor';
 import type { Enemy } from '../../entities/Enemy';
 import type { Player } from '../../entities/Player';
 import type { EntityId } from '../../types/common';
+import { localHardTargetId } from '../../game/PlayerController';
 import type { UI } from '../UI';
 import { UNINTERRUPTIBLE_ICON, type CastTracker } from './CastBar';
 import { ICON, clamp01, clampN, div, iconEl, pulse, setClass, setDisplay, setStyle, setText } from './dom';
@@ -135,7 +136,7 @@ class Plate {
   }
 
   /** Content (name, level, HP, cast, debuffs). The position is set by place(), once the declutter has run. */
-  update(ctx: { now: number; world: number; casts: CastTracker; isTarget: boolean; playerLevel: number }): void {
+  update(ctx: { now: number; world: number; casts: CastTracker; isTarget: boolean; isSoft: boolean; playerLevel: number }): void {
     const a = this.actor;
     this.applyFlavor();
     setText(this.nameEl, a.name);
@@ -155,6 +156,7 @@ class Plate {
     }
     this.updatePoise(a);
     setClass(this.el, 'target', ctx.isTarget);
+    setClass(this.el, 'soft', ctx.isSoft);
     const cv = ctx.casts.get(a, ctx.now, ctx.world);
     if (cv && !cv.interrupted) {
       setDisplay(this.castWrap, true);
@@ -247,8 +249,13 @@ export class Nameplates {
   private tick = 0;
   private readonly laid: Laid[] = [];
   private readonly placed: Box[] = [];
+  /** Soft target ring (CW-16 §2.14): a flat ellipse at the hovered enemy's feet. */
+  private readonly ring: HTMLElement;
 
-  constructor(private ui: UI, private layer: HTMLElement) {}
+  constructor(private ui: UI, private layer: HTMLElement) {
+    this.ring = div('np-soft-ring', layer);
+    setDisplay(this.ring, false);
+  }
 
   addManual(actor: Actor, opts: { showName?: boolean; color?: string } = {}): { remove(): void } {
     this.manual.set(actor.id, opts);
@@ -269,17 +276,35 @@ export class Nameplates {
     this.plates.clear();
   }
 
+  /** Soft target ring (CW-16 §2.14): drawn at the hovered enemy's feet, hidden for the Tab-locked target or off screen. */
+  private placeRing(hover: Actor | null, hardId: EntityId | null): void {
+    const ui = this.ui;
+    if (!hover || hover.removed || hover.isDead || hover.id === hardId || !ui.projectWorld(hover.position.x, hover.position.y, hover.position.z, _p)) {
+      setDisplay(this.ring, false);
+      return;
+    }
+    if (_p.x < 0 || _p.x > ui.viewW || _p.y < 0 || _p.y > ui.viewH) {
+      setDisplay(this.ring, false);
+      return;
+    }
+    setStyle(this.ring, 'transform', `translate(${Math.round(_p.x)}px, ${Math.round(_p.y)}px) translate(-50%, -50%)`);
+    setDisplay(this.ring, true);
+  }
+
   update(now: number, casts: CastTracker, hover: Actor | null, bossEntity: EntityId | null): void {
     this.tick++;
     const ui = this.ui;
     const w = G.world;
     const me = G.player;
     if (!w || !me || !ui.camera || ui.mode === 'menu' || ui.mode === 'loading') {
+      setDisplay(this.ring, false);
       if (this.plates.size) this.clear();
       return;
     }
     const wt = w.time;
     const hardTarget = me.targetId;
+    // the Tab-locked target only: a hovered (soft) enemy is brighter and gets the ring
+    const hardId = localHardTargetId();
     type Cand = { a: Actor; d: number; always: boolean; hot: boolean };
     const cands: Cand[] = [];
     const px = me.position.x, pz = me.position.z;
@@ -331,7 +356,7 @@ export class Nameplates {
       }
       plate.seen = this.tick;
       plate.setShown(true);
-      plate.update({ now, world: wt, casts, isTarget: a.id === hardTarget || a === hover, playerLevel: me.level });
+      plate.update({ now, world: wt, casts, isTarget: a.id === hardTarget || a === hover, isSoft: a === hover && a.id !== hardId, playerLevel: me.level });
       laid.push({
         plate, d: c.d, k: Math.max(0.68, Math.min(1.05, 1.18 - c.d / 55)),
         x: _p.x, y: _p.y, exempt: c.always || c.hot, lift: 0, show: true,
@@ -384,6 +409,8 @@ export class Nameplates {
       }
       e.plate.place(e.x, e.y, e.k, e.lift, Math.max(1, (e.exempt ? 700 : 500) - Math.round(e.d * 4)));
     }
+
+    this.placeRing(hover, hardId);
 
     for (const [id, p] of this.plates) {
       if (p.seen !== this.tick) {

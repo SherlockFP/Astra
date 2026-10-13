@@ -51,15 +51,10 @@ export const SFX_ALIASES: Record<string, SfxAlias> = {
   forge_crack: { id: 'upgrade_fail', pitch: 1.2 },
   forge_shatter: { id: 'upgrade_destroy' },
   ann_chime: { id: 'ui_notify', pitch: 1.15 },
-  // COMBAT_WOW §4.3 CW-01 placeholders (CW-12 builds the real sounds): closest existing ids
-  arcane_cast: { id: 'spell_cast', pitch: 1.2 },
-  arcane_impact: { id: 'shadow_impact', pitch: 1.1 },
-  proc_gain: { id: 'ice_chime', pitch: 1.2 },
-  proc_use: { id: 'buff' },
-  cd_ready: { id: 'ui_notify', volume: 0.6 },
-  cast_pushback: { id: 'hit_blunt', volume: 0.5 },
+  // COMBAT_WOW §2.16 / CW-12: arcane_cast, arcane_impact, proc_gain, proc_use, cd_ready and cast_pushback now have manifest entries
+  // (manifest_feel.ts); only the interrupt and burst cues remain aliases of existing sounds.
   cast_interrupted: { id: 'interrupt' },
-  burst_window: { id: 'hero_horn', volume: 0.6 },
+  burst_window: { id: 'time_warp', volume: 0.5 },
   // ---- K3 / P-06 season dungeon sounds (placeholders: closest existing id; the season docs name the real file mixes)
   void_crack: { id: 'shadow_impact', pitch: 0.6 },
   lift_move: { id: 'gate_heavy', pitch: 0.8 },

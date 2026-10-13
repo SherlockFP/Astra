@@ -10,6 +10,11 @@ import { ICON, approach, clamp01, div, fmtCompact, fmtNum, iconEl, pulse, setCla
 import { StatusRow } from '../widgets/StatusRow';
 import { CastBarEl } from '../widgets/CastBar';
 import type { HudCtx, HudWidget } from './types';
+import { getSkill } from '../../data/skills';
+import { COMBAT_FEEL } from '../../combat/feel';
+import { LOCKOUT_SCHOOLS } from '../../combat/castRules';
+import type { CastState } from '../../entities/Actor';
+import type { Player } from '../../entities/Player';
 
 export const CLASS_META: Record<ClassId, { name: string; color: string }> = {
   knight: { name: 'Şövalye', color: '#7aa8ff' },
@@ -201,22 +206,77 @@ export class XpBar implements HudWidget {
   }
 }
 
-/** Player cast bar above the action bar. */
+/** LMB heavy charge (CW-17): the hold reads as a cast bar that fills to CHARGE_BAR_SEC; the tier tick sits at the tier 2 time. */
+const CHARGE_BAR_SEC = 1;
+const CHARGE_TIER_SEC = COMBAT_FEEL.chargeTier2;
+const TIER_TICK_COLOR = '#ffe27a';
+/** A queued skill ghost stays this long if the queue is not cleared (ms). */
+const QUEUE_SHOW_MS = 2000;
+/** Channel tick marks are capped (a fast channel can have many ticks). */
+const TICK_CAP = 30;
+
+/** School lock look after an interrupt (CW-08 glyphs; the colour is the school colour). */
+const SCHOOL_LOCK: Record<string, { name: string; glyph: string; color: string }> = {
+  fire: { name: 'Ateş', glyph: 'ATE', color: '#ff8a4a' },
+  frost: { name: 'Buz', glyph: 'BUZ', color: '#8fe0ff' },
+  arcane: { name: 'Arkan', glyph: 'ARK', color: '#c9a2ff' },
+  holy: { name: 'Kutsal', glyph: 'KUT', color: '#fff0a0' },
+  shadow: { name: 'Gölge', glyph: 'GÖL', color: '#b08ae0' },
+  poison: { name: 'Zehir', glyph: 'ZEH', color: '#9de86a' },
+};
+
+/** Channel tick marks as fractions of the bar: the tick interval is params.tick, else duration / ticks (as SkillSystem does). */
+export function channelTickFracs(skillId: string, duration: number): number[] {
+  const def = getSkill(skillId);
+  if (!def || duration <= 0.05) return [];
+  const every = def.params?.tick ?? (def.duration ?? def.channel ?? duration) / Math.max(1, def.ticks ?? 8);
+  if (!(every > 0.01)) return [];
+  const out: number[] = [];
+  for (let t = every; t < duration - 0.05 && out.length < TICK_CAP; t += every) out.push(t / duration);
+  return out;
+}
+
+/**
+ * Player cast bar above the action bar (CW-17): hard casts and channels with pushback (slide back + red '+0.5' flash),
+ * channel tick marks, the LMB heavy charge as a cast bar, a ghost of the queued skill, and the school lock for the
+ * lockout time after an interrupt.
+ */
 export class PlayerCastBar implements HudWidget {
   readonly el: HTMLElement;
   private bar: CastBarEl;
   private interruptedAt = 0;
   private interruptedName = '';
+  /** cast:pushback fires inside the sim, before this HUD frame reads the cast: consumed (and cleared) in update(). */
+  private pushPending: { skillId: string; add: number } | null = null;
+  /** Key of the tick marks currently shown ('' = none). */
+  private marksKey = '';
+  /** World time the LMB heavy charge started, or -1 while not charging. */
+  private chargeSince = -1;
+  private queued: { skillId: string; until: number } | null = null;
+  private ghost: HTMLElement;
+  private ghostIco: HTMLElement;
+  private ghostId: string | null = null;
 
   constructor() {
     this.el = div('pcast');
     this.bar = new CastBarEl('pcast-bar');
     this.el.appendChild(this.bar.el);
+    // queued skill ghost right of the bar; its room is reserved so the bar does not jump when a skill is queued
+    this.ghost = div('pcast-ghost', this.el);
+    this.ghost.style.cssText = 'flex:0 0 26px;width:26px;height:26px;margin:0 0 6px 6px;align-self:center;opacity:0;pointer-events:none;';
+    this.ghostIco = iconEl(null, 'pcast-ghost-ico', this.ghost);
+    this.ghostIco.style.cssText = 'width:100%;height:100%;';
     G.events.on('skill:castInterrupted', ({ casterId }) => {
       if (G.player && casterId === G.player.id) {
         this.interruptedAt = performance.now();
         this.interruptedName = G.player.cast?.name ?? '';
       }
+    });
+    G.events.on('cast:pushback', ({ skillId, add }) => {
+      if (G.player?.cast?.skillId === skillId) this.pushPending = { skillId, add };
+    });
+    G.events.on('skill:queued', ({ skillId }) => {
+      this.queued = skillId ? { skillId, until: performance.now() + QUEUE_SHOW_MS } : null;
     });
   }
 
@@ -224,17 +284,91 @@ export class PlayerCastBar implements HudWidget {
     const p = ctx.player;
     const c = p?.cast;
     const wt = ctx.world?.time ?? 0;
+    this.updateQueue(ctx.now, c?.skillId ?? null);
     if (p && c && c.duration > 0.1) {
-      const el = wt - c.start;
-      this.bar.set(c.name, Math.min(1, el / c.duration), Math.max(0, c.duration - el), { interruptible: true, channel: c.channel });
       this.interruptedAt = 0;
+      this.chargeSince = -1;
+      this.updateCast(c, wt);
     } else if (this.interruptedAt && ctx.now - this.interruptedAt < 650) {
+      this.setMarks('', () => []);
       this.bar.set(this.interruptedName, 1, 0, { interrupted: true });
-    } else if (this.updateScroll(ctx.now)) {
-      /* town scroll channel or its 'Kesildi!' flash */
+    } else if (p && this.updateCharge(wt)) {
+      /* LMB heavy charge (its tier tick is set in updateCharge) */
     } else {
-      this.bar.hide();
+      this.setMarks('', () => []);
+      if (this.updateScroll(ctx.now)) {
+        /* town scroll channel or its 'Kesildi!' flash */
+      } else if (p && this.updateLockout(p)) {
+        /* school lock after an interrupt, for the lockout time */
+      } else {
+        this.bar.hide();
+      }
     }
+    this.pushPending = null;
+  }
+
+  private updateCast(c: CastState, wt: number): void {
+    const el = wt - c.start;
+    const frac = Math.min(1, el / c.duration);
+    this.bar.set(c.name, frac, Math.max(0, c.duration - el), { interruptible: true, channel: c.channel });
+    if (c.channel) this.setMarks(`ch:${c.skillId}:${c.duration.toFixed(2)}`, () => channelTickFracs(c.skillId, c.duration));
+    else this.setMarks('', () => []);
+    const pp = this.pushPending;
+    if (pp && pp.skillId === c.skillId) {
+      // the bar before the pushback: a hard cast was shorter by `add`; a channel was longer by the cut (add < 0)
+      const before = Math.max(0.05, c.duration - pp.add);
+      const label = (pp.add > 0 ? '+' : '') + pp.add.toFixed(1);
+      if (c.channel) this.bar.flashPushback(1 - Math.min(1, el / before), 1 - frac, label);
+      else this.bar.flashPushback(Math.min(1, el / before), frac, label);
+    }
+  }
+
+  /** LMB heavy charge (SkillSystem.isCharging): the hold fills the bar to CHARGE_BAR_SEC, tier tick at CHARGE_TIER_SEC. */
+  private updateCharge(wt: number): boolean {
+    const p = G.player;
+    const charging = !!p && !!G.skills && G.skills.isCharging(p);
+    if (!charging) {
+      this.chargeSince = -1;
+      return false;
+    }
+    if (this.chargeSince < 0) this.chargeSince = wt;
+    const hold = Math.max(0, wt - this.chargeSince);
+    const tier = hold >= CHARGE_TIER_SEC;
+    this.bar.set(tier ? 'Güçlü Vuruş · Tam' : 'Güçlü Vuruş', Math.min(1, hold / CHARGE_BAR_SEC), Math.max(0, CHARGE_TIER_SEC - hold), { interruptible: true });
+    this.setMarks('charge', () => [CHARGE_TIER_SEC / CHARGE_BAR_SEC], TIER_TICK_COLOR);
+    return true;
+  }
+
+  /** School lock: the `lockout` status (magnitude = school index + 1) with its seconds left, grey bar and school glyph. */
+  private updateLockout(p: Player): boolean {
+    const st = p.statuses.list().find((s) => s.id === 'lockout');
+    if (!st || st.remaining <= 0.05) return false;
+    const meta = SCHOOL_LOCK[LOCKOUT_SCHOOLS[st.magnitude - 1] ?? ''];
+    this.bar.set(meta ? `${meta.name} kilidi` : 'Kilit', 1, st.remaining, {
+      interruptible: false,
+      school: meta ? { glyph: meta.glyph, color: meta.color } : undefined,
+    });
+    return true;
+  }
+
+  /** Tick marks, rebuilt only when their key changes. */
+  private setMarks(key: string, fracs: () => number[], color?: string): void {
+    if (key === this.marksKey) return;
+    this.marksKey = key;
+    this.bar.setTicks(key ? fracs() : [], color);
+  }
+
+  /** Queued skill ghost: shown while skill:queued holds a skill that is not casting yet (expires after QUEUE_SHOW_MS). */
+  private updateQueue(now: number, castSkill: string | null): void {
+    const q = this.queued;
+    const live = !!q && now < q.until && q.skillId !== castSkill;
+    if (q && !live) this.queued = null;
+    const id = live && q ? q.skillId : null;
+    if (id !== this.ghostId) {
+      this.ghostId = id;
+      setIconUrl(this.ghostIco, id ? getSkill(id)?.icon ?? null : null);
+    }
+    setStyle(this.ghost, 'opacity', id ? '0.9' : '0');
   }
 
   /** Dönüş Parşömeni: 3 s channel bar, then a short red 'Kesildi!' when it was cancelled (moved / hit). */
@@ -253,4 +387,3 @@ export class PlayerCastBar implements HudWidget {
     return false;
   }
 }
-

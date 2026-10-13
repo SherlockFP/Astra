@@ -3,7 +3,8 @@ import { REGIONS } from '../data/world/regions';
 import { G } from '../game/G';
 import type { MusicId, PlaySfxOpts, SfxId } from '../types/audio';
 import { AMBIENCE_MANIFEST, MUSIC_MANIFEST, SFX_MANIFEST, type SfxEntry } from './manifest';
-import { resolveSfxAlias } from './aliases';
+import { MUSIC_ALIASES, resolveSfxAlias } from './aliases';
+import { getProcDef } from '../data/procs';
 
 /**
  * WebAudio sound manager: sfx (variants, pitch variation, per-id rate limits and voice caps, distance attenuation + stereo pan
@@ -44,6 +45,24 @@ const FAR: Record<string, number> = {
 
 const TRANSIENT_MUSIC = new Set<string>(['boss', 'victory', 'defeat', 'combat']);
 
+/** COMBAT_WOW §2.16: at most 3 impact sounds (hit_* / *_impact) per 100 ms, rolling window. */
+const IMPACT_MAX = 3;
+const IMPACT_WINDOW_SEC = 0.1;
+
+/** CW-12: first-cast cue per damage school (volume 0.5 at the call site). Poison has no cast file, so it borrows shadow_cast higher. */
+const CAST_START_CUE: Record<string, { id: SfxId; pitch?: number }> = {
+  fire: { id: 'fire_cast' },
+  frost: { id: 'frost_cast' },
+  arcane: { id: 'arcane_cast' },
+  holy: { id: 'holy_cast' },
+  shadow: { id: 'shadow_cast' },
+  lightning: { id: 'lightning_cast' },
+  poison: { id: 'shadow_cast', pitch: 1.2 },
+};
+
+/** CW-12: proc gain bell pitch per overlay school (proc table in data/procs.ts). */
+const PROC_GAIN_PITCH: Record<string, number> = { fire: 0.95, frost: 1.15, arcane: 1.2, holy: 1.3, physical: 0.9, bleed: 0.85, shadow: 0.8 };
+
 /**
  * Synthesized sub-bass layer under a few feel ids (GDD_V2 §3.11 "sound layering"): [strength, f0 Hz, f1 Hz, dur s].
  * Plays only when the sample itself started (throttled or silent plays add nothing). Strength scales with the caller volume.
@@ -55,6 +74,7 @@ const SYNTH_THUMP: Record<string, [number, number, number, number]> = {
   stance_break: [0.5, 110, 34, 0.22],
   crit_finisher: [0.6, 90, 30, 0.24],
   heartbeat_loop: [0.42, 80, 42, 0.14],
+  proc_use: [0.22, 180, 60, 0.12],
 };
 
 const RX_BONE = /skelet|bone|skull|lich/i;
@@ -125,7 +145,8 @@ export class Audio {
   private lastPlay = new Map<string, number>();
   private lastVariant = new Map<string, number>();
   private frameCount = 0;
-  private impactCount = 0;
+  /** start times (audio clock) of the impact sounds played in the last IMPACT_WINDOW_SEC */
+  private impactTimes: number[] = [];
   private lastVoiceAt = -9;
   private lastOtherVoiceAt = -9;
   private lastThumpAt = -9;
@@ -451,6 +472,12 @@ export class Audio {
     }
   }
 
+  /** COMBAT_WOW §2.16: true while fewer than IMPACT_MAX impacts started inside the last IMPACT_WINDOW_SEC. Prunes old entries. */
+  private impactAllowed(t: number): boolean {
+    while (this.impactTimes.length && t - this.impactTimes[0] > IMPACT_WINDOW_SEC) this.impactTimes.shift();
+    return this.impactTimes.length < IMPACT_MAX;
+  }
+
   private playInternal(id: string, opts?: PlaySfxOpts): boolean {
     const ctx = this.ctx;
     if (!ctx || ctx.state !== 'running' || !this.sfxBus || !this.uiBus) return false;
@@ -471,11 +498,10 @@ export class Audio {
     const t0 = now();
     if (t0 - (this.lastPlay.get(id) ?? -9) < this.gapFor(id)) return false;
     const ui = UI_RX.test(id);
+    const impact = id.startsWith('hit_') || id.endsWith('_impact');
     if (!ui) {
       if (this.frameCount >= 14) return false;
-      if (id.startsWith('hit_') || id.endsWith('_impact')) {
-        if (this.impactCount >= 5) return false;
-      }
+      if (impact && !this.impactAllowed(t0)) return false;
     }
     const act = this.active.get(id) ?? 0;
     if (act >= def.mv) return false;
@@ -517,13 +543,14 @@ export class Audio {
         this.fire(id, b, vol * (def.fg?.[idx] ?? 1), rate, pan, bus, true);
       });
       this.lastPlay.set(id, t0);
+      if (impact && !ui) this.impactTimes.push(t0);
       return true;
     }
     this.lastPlay.set(id, t0);
     this.fire(id, buf, vol * (def.fg?.[idx] ?? 1), rate, pan, bus, true);
     if (!ui) {
       this.frameCount++;
-      if (id.startsWith('hit_') || id.endsWith('_impact')) this.impactCount++;
+      if (impact) this.impactTimes.push(t0);
     }
     // layer
     if (def.ly && def.ly.length) {
@@ -729,6 +756,11 @@ export class Audio {
     s.killAt = now() + f + 0.15;
   }
 
+  /** K3 / P-06: a music id without a manifest entry plays its MUSIC_ALIASES track; anything else is returned unchanged (and stays silent). */
+  private musicKey(id: MusicId): MusicId {
+    return MUSIC_MANIFEST[id] ? id : (MUSIC_ALIASES[id] ?? id);
+  }
+
   private applyMusic(): void {
     const ctx = this.ctx;
     if (!ctx || ctx.state !== 'running') return;
@@ -741,7 +773,8 @@ export class Audio {
     this.curSlot = null;
     this.curId = id;
     if (!id) return;
-    const entry = MUSIC_MANIFEST[id];
+    const key = this.musicKey(id);
+    const entry = MUSIC_MANIFEST[key];
     if (!entry) {
       this.warnOnce(`music:${id}`, `[audio] unknown music id "${id}"`);
       this.curId = null;
@@ -750,14 +783,14 @@ export class Audio {
     const slot = this.freeSlot();
     if (!slot) return;
     let idx = 0;
-    if (id === 'victory' || id === 'defeat' || id === 'menu') idx = 0;
+    if (key === 'victory' || key === 'defeat' || key === 'menu') idx = 0;
     else if (entry.t.length > 1) {
-      const last = this.lastTrack.get(id) ?? -1;
+      const last = this.lastTrack.get(key) ?? -1;
       idx = Math.floor(Math.random() * entry.t.length);
       if (idx === last) idx = (idx + 1) % entry.t.length;
     }
-    this.lastTrack.set(id, idx);
-    slot.id = id;
+    this.lastTrack.set(key, idx);
+    slot.id = key;
     slot.active = true;
     slot.busy = true;
     this.curSlot = slot;
@@ -922,7 +955,6 @@ export class Audio {
 
   update(dt: number): void {
     this.frameCount = 0;
-    this.impactCount = 0;
     const ctx = this.ctx;
     if (!ctx) return;
     const t = now();
@@ -1138,6 +1170,20 @@ export class Audio {
       this.onLocalCast(e.skillId);
     });
     ev.on('skill:fail', () => this.play('ui_error', { volume: 0.5 }));
+    // CW-12 (COMBAT_WOW §2.16): proc bell, proc pop, cooldown-ready chime, pushback tick, burst sting
+    ev.on('proc:gain', (e) => {
+      const school = getProcDef(e.id)?.school ?? '';
+      this.play('proc_gain', { pitch: PROC_GAIN_PITCH[school] ?? 1, volume: 0.8 });
+    });
+    ev.on('proc:fade', (e) => {
+      if (e.consumed) this.play('proc_use');
+    });
+    // majors at full volume; other >= 8 s cooldowns get the quieter chime
+    ev.on('skill:ready', (e) => this.play('cd_ready', { volume: e.major ? 1 : 0.5 }));
+    ev.on('cast:pushback', () => this.play('cast_pushback'));
+    ev.on('burst:window', (e) => {
+      if (e.active) this.play('burst_window', { volume: 0.8 });
+    });
     ev.on('combo:changed', ({ tier }) => {
       if (tier >= 1) this.play('ui_tab', { pitch: 1 + tier * 0.14, volume: 0.45 });
     });
@@ -1161,6 +1207,8 @@ export class Audio {
   private onLocalCast(skillId: string): void {
     const def = SKILLS[skillId];
     const pk = packFor(G.player?.classId ?? G.character?.save?.classId);
+    const cue = CAST_START_CUE[def?.damage?.type ?? ''];
+    if (cue) this.play(cue.id, { volume: 0.5, pitch: cue.pitch });
     const slot = def?.defaultSlot;
     const basic = slot === 'lmb' || /_basic/.test(skillId);
     if (pk.pack === 'mage') {
@@ -1238,7 +1286,7 @@ export class Audio {
       case 'shadow': this.playInternal('shadow_impact', { pos: p, volume: 0.9 * crit }); break;
       case 'poison': this.playInternal('poison_impact', { pos: p, volume: 0.55 * crit }); break;
       case 'holy': this.playInternal('spell_cast', { pos: p, pitch: 1.5, volume: 0.5 }); break;
-      case 'arcane': this.playInternal('spell_cast', { pos: p, pitch: 0.85, volume: 0.5 }); break;
+      case 'arcane': this.playInternal('arcane_impact', { pos: p, volume: 0.5 * crit }); break;
       default: break;
     }
     if (e.crit) {

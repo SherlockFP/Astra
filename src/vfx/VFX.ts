@@ -30,6 +30,7 @@ import { elementalPresets } from './presets_elemental';
 import { BEAM_TIERS, lootBeamFx, worldPresets } from './presets_world';
 import { featPresets } from './presets_feel';
 import { subscribeFeedback } from './feedback';
+import { subscribeWowFeedback, wowPresets } from './presets_wow';
 
 export interface VfxHandle {
   readonly alive: boolean;
@@ -45,7 +46,7 @@ export interface TelegraphHandle {
   cancel(): void;
 }
 
-const PRESETS: Record<string, Preset> = { ...combatPresets, ...elementalPresets, ...worldPresets, ...featPresets };
+const PRESETS: Record<string, Preset> = { ...combatPresets, ...elementalPresets, ...worldPresets, ...featPresets, ...wowPresets };
 
 /**
  * True when `spawn(id)` plays something: a registered preset, a projectile id, or an alias (vfx/aliases.ts) whose target exists.
@@ -753,6 +754,7 @@ export class VFX {
     if (this.subscribed || !G.events) return;
     this.subscribed = true;
     subscribeFeedback(this);
+    subscribeWowFeedback(this);
   }
 
   /** Re-parent pools to the active scene. Idempotent. Scenes call it as the FIRST line of enter(). */

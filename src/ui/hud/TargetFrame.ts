@@ -1,4 +1,5 @@
 import { G } from '../../game/G';
+import { localHardTargetId } from '../../game/PlayerController';
 import type { Actor } from '../../entities/Actor';
 import type { Enemy } from '../../entities/Enemy';
 import type { ClassId, EntityId } from '../../types/common';
@@ -8,6 +9,7 @@ import { CastBarEl } from '../widgets/CastBar';
 import { StatusRow } from '../widgets/StatusRow';
 import { Bar, classColor, classNameTr } from './PlayerFrame';
 import type { HudCtx, HudWidget } from './types';
+import '../styles/hud-target.css';
 
 const RANK_TR: Record<string, string> = { trash: '', elite: 'Seçkin', miniboss: 'Ara Patron', boss: 'Patron' };
 
@@ -55,8 +57,11 @@ export class TargetFrame implements HudWidget {
   private poise: HTMLElement;
   private poiseFill: HTMLElement;
   private cast: CastBarEl;
+  /** Aura rows (CW-16): own debuffs first and larger, other debuffs dim; enemy buffs in their own row. */
   private debuffs: StatusRow;
-  private hardId: EntityId | null = null;
+  private buffs: StatusRow;
+  /** Target-of-target label (CW-16 §2.14): whom this enemy is attacking. */
+  private totEl: HTMLElement;
   private curId: EntityId | null = null;
   private curChamp = false;
   /** Set by the HUD: the boss frame is visible for this entity (hide the duplicate target frame). */
@@ -77,16 +82,16 @@ export class TargetFrame implements HudWidget {
     this.poise = div('tf-poise', body);
     this.poiseFill = div('tf-poise-fill', this.poise);
     setDisplay(this.poise, false);
+    this.totEl = div('tf-tot', body);
+    setDisplay(this.totEl, false);
     this.cast = new CastBarEl('tf-cast');
     body.appendChild(this.cast.el);
-    this.debuffs = new StatusRow(ui, 'all', 8, 'tf-debuffs');
+    this.debuffs = new StatusRow(ui, 'debuff', 8, 'tf-debuffs', true, true);
+    this.buffs = new StatusRow(ui, 'buff', 6, 'tf-buffs', true, true);
     body.appendChild(this.debuffs.el);
+    body.appendChild(this.buffs.el);
     setDisplay(this.el, false);
-    G.events.on('target:changed', ({ targetId }) => {
-      this.hardId = targetId;
-    });
     G.events.on('scene:leaving', () => {
-      this.hardId = null;
       this.curId = null;
     });
   }
@@ -95,11 +100,14 @@ export class TargetFrame implements HudWidget {
     const w = ctx.world;
     let a: Actor | undefined;
     let soft = false;
-    const hid = this.hardId ?? ctx.player?.targetId ?? null;
+    // the Tab-locked target (PlayerController); without one, the crosshair soft target (player.targetId) shows soft
+    const hard = localHardTargetId();
+    const hid = hard ?? ctx.player?.targetId ?? null;
     if (w && hid != null) {
       const t = w.getActor(hid);
       if (t && !t.isDead && t !== ctx.player) a = t;
     }
+    if (a && hard == null) soft = true;
     if (!a && ctx.hover && !ctx.hover.isDead) {
       a = ctx.hover;
       soft = true;
@@ -108,7 +116,7 @@ export class TargetFrame implements HudWidget {
     if (!a) {
       this.curId = null;
       setDisplay(this.el, false);
-      this.debuffs.clear();
+      this.clearRows();
       return;
     }
     setDisplay(this.el, true);
@@ -119,7 +127,7 @@ export class TargetFrame implements HudWidget {
     if (this.curId !== a.id || this.curChamp !== champ) {
       this.curId = a.id;
       this.curChamp = champ;
-      this.debuffs.clear();
+      this.clearRows();
       this.el.dataset.rank = rank;
       const col = nameColor(a);
       this.el.style.setProperty('--nc', col);
@@ -140,10 +148,31 @@ export class TargetFrame implements HudWidget {
     const frac = a.maxHp > 0 ? a.hp / a.maxHp : 0;
     this.hp.set(frac, ctx.dt, `${fmtCompact(Math.max(0, a.hp))} / ${fmtCompact(a.maxHp)}  ·  ${Math.round(frac * 100)}%`);
     this.updatePoise(a);
+    this.updateTot(a, ctx);
     const cv = ctx.casts.get(a, ctx.now, ctx.world?.time ?? 0);
     if (cv) this.cast.set(cv.name, cv.frac, cv.remaining, cv);
     else this.cast.hide();
     this.debuffs.update(a);
+    this.buffs.update(a);
+  }
+
+  /** Target-of-target (CW-16 §2.14): 'Sana saldırıyor' in threat red when the enemy is on the local player, else its victim's name. */
+  private updateTot(a: Actor, ctx: HudCtx): void {
+    const id = a.kind === 'player' ? null : a.targetId;
+    const v = id != null && ctx.world ? ctx.world.getActor(id) : undefined;
+    if (!v || v.isDead || v.removed) {
+      setDisplay(this.totEl, false);
+      return;
+    }
+    const onMe = v === ctx.player;
+    setText(this.totEl, onMe ? 'Sana saldırıyor' : '→ ' + v.name);
+    setClass(this.totEl, 'threat', onMe);
+    setDisplay(this.totEl, true);
+  }
+
+  private clearRows(): void {
+    this.debuffs.clear();
+    this.buffs.clear();
   }
 
   /** Poise stripe: visible while poise builds, full and gold (+ tag) while the enemy is broken. */
@@ -160,7 +189,7 @@ export class TargetFrame implements HudWidget {
   }
 
   reset(): void {
-    this.debuffs.clear();
+    this.clearRows();
     this.curId = null;
   }
 }

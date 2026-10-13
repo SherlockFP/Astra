@@ -8,6 +8,7 @@ import { SKILL_SLOT_KEYS, type AimInfo, type SkillSlotKey } from '../types/skill
 import { cycleFriendly, friendlyTargetId, selectPartySlot } from '../combat/healing';
 import type { Player } from '../entities/Player';
 import type { Enemy } from '../entities/Enemy';
+import type { EntityId } from '../types/common';
 import type { ThirdPersonCamera } from '../camera/ThirdPersonCamera';
 import type { InputAction } from '../core/Input';
 import { WowMouse, type WowMouseOut } from './WowMouse';
@@ -91,6 +92,14 @@ function turnToward(cur: number, want: number, lambda: number, maxRate: number, 
  *  Running_Strafe_Left/Right) via player.anim.setBase.
  * OWNER: player module.
  */
+/** The live controller (set in the constructor, cleared in dispose): HUD reads its hard target through localHardTargetId(). */
+let liveController: PlayerController | null = null;
+
+/** Read-only: the local player's Tab-locked target id (null = none). Soft targets are not included. */
+export function localHardTargetId(): EntityId | null {
+  return liveController ? liveController.hardTargetId : null;
+}
+
 export class PlayerController {
   player: Player;
   cam: ThirdPersonCamera;
@@ -189,6 +198,7 @@ export class PlayerController {
   constructor(player: Player, cam: ThirdPersonCamera) {
     this.player = player;
     this.cam = cam;
+    liveController = this;
     document.addEventListener('pointerlockchange', this.onLockChange);
     this.buildMarker();
     cam.setTarget(player.object3d);
@@ -1893,8 +1903,14 @@ export class PlayerController {
   // Lifecycle
   // =====================================================================================================================
 
+  /** Read-only id of the Tab-locked (hard) target, or null. The soft target is never reported here. */
+  get hardTargetId(): EntityId | null {
+    return this.hardTarget ? this.hardTarget.id : null;
+  }
+
   dispose(): void {
     this.disposed = true;
+    if (liveController === this) liveController = null;
     const sk = G.skills as unknown as { aimProvider: (() => AimInfo) | null } | undefined;
     if (sk && sk.aimProvider === this.aimFn) sk.aimProvider = null;
     for (const off of this.unsubs) off();

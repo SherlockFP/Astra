@@ -49,4 +49,12 @@ export const SFX_FEEL_MANIFEST: Record<string, SfxEntry> = {
   tree_fall: { f: seq('sfx/world/break_wood_heavy_', 1, 5, '.ogg'), v: 1.0, pv: 0.05, mv: 1, p: 0.85, ly: seq('sfx/world/creak_', 1, 3, '.ogg'), lv: 0.6 },
   craft_done: { f: ['sfx/loot/equip_armor_light_01.wav'], v: 0.6, pv: 0.04, mv: 1, ly: ['sfx/ui/confirm_03.ogg'], lv: 0.6, np: 1 },
   chat_whisper: { f: ['sfx/ui/pluck_01.ogg', 'sfx/ui/pluck_02.ogg'], v: 0.3, pv: 0.03, mv: 2, p: 1.4, np: 1 },
+
+  // ---- COMBAT_WOW §2.16 / CW-12: school impact, proc and cooldown feedback (existing files only)
+  arcane_cast: { f: seq('sfx/magic/arcane_', 1, 4, '.ogg'), v: 0.8, pv: 0.06, mv: 2, ly: ['sfx/magic/cast_01.wav'], lv: 0.5 },
+  arcane_impact: { f: ['sfx/magic/spell_01.ogg', 'sfx/magic/spell_02.ogg'], v: 0.8, pv: 0.06, mv: 3, p: 1.1, ly: ['sfx/magic/arcane_05.ogg'], lv: 0.5 },
+  proc_gain: { f: ['sfx/magic/buff_attack_01.ogg'], v: 0.7, pv: 0.04, mv: 2, ly: ['sfx/magic/shimmer_01.mp3'], lv: 0.5, np: 1 },
+  proc_use: { f: ['sfx/magic/spell_02.ogg'], v: 0.8, pv: 0.04, mv: 2, p: 1.4, np: 1 },
+  cd_ready: { f: ['sfx/magic/shimmer_01.mp3'], v: 0.4, pv: 0.03, mv: 2, p: 1.3, np: 1 },
+  cast_pushback: { f: ['sfx/melee/hit_plate_light_04.ogg'], v: 0.5, pv: 0.05, mv: 2, p: 0.7, np: 1 },
 };
