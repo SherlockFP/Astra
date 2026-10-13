@@ -96,4 +96,6 @@ export interface CharacterSummary {
   itemLevel: number;
   rating: number;
   variant: number;
+  /** GDD_LIFE / UX-41 (append-only): combat role of the active spec (Tank / Şifacı / Hasarcı). Absent before a spec. */
+  role?: "tank" | "healer" | "dps";
 }

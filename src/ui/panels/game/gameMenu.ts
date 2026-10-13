@@ -66,10 +66,22 @@ export class GameMenuPanel extends GamePanel {
       this.btns.append(button(label, fn, { variant: v, cls: 'pg-gm-btn', icon: ico }));
     mk('Devam', () => this.requestClose(), 'primary', '/assets/icons/ui-check.svg');
     mk('Ayarlar', () => openPanel('settings'), 'normal', '/assets/icons/ui-settings.svg');
+    mk('Arayüzü Düzenle', () => this.editHud(), 'normal');
     mk('Grup / Sunucular', () => openPanel('party'), 'normal', '/assets/icons/ui-party.svg');
     if (inDungeon) mk(inOpenWorld() ? 'Şehre Dön' : 'Zindandan Ayrıl', () => void this.leaveDungeon(), 'danger', '/assets/icons/ui-exit.svg');
     mk('Karakter Seçimine Dön', () => void this.toCharSelect(), 'normal', '/assets/icons/ui-character.svg');
     mk('Jenerik', () => openPanel('credits'), 'ghost', '/assets/icons/ui-laurels.svg');
+  }
+
+  /** HUD edit mode (drag and resize the widgets). Entry point of the HUD edit button removed in UX-13. */
+  private editHud(): void {
+    this.requestClose();
+    try {
+      G.ui.hud.startEdit();
+    } catch (e) {
+      console.error('[gameMenu] HUD edit failed', e);
+      toast('Arayüz düzenleme açılamadı.', 'error');
+    }
   }
 
   private async leaveDungeon(): Promise<void> {

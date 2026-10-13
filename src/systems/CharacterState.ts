@@ -11,6 +11,7 @@ import { CLASSES } from '../data/classes';
 import { SKILLS } from '../data/skills';
 import { CLASS_START_NODE, TALENT_NODES } from '../data/talents';
 import { getMaterial, MATERIALS } from '../data/materials';
+import { specRole } from '../data/specs';
 import { ITEM_BASES } from '../data/itemBases';
 import { CLASS_WEAPONS, CLASS_OFFHANDS, CLASS_NAMES_TR } from '../data/itemBases';
 import { SAVE_VERSION, migrateTalents } from '../core/Save';
@@ -335,7 +336,7 @@ export class CharacterState {
   }
 
   summary(): CharacterSummary {
-    return { id: this.save.id, name: this.save.name, classId: this.save.classId, level: this.save.level, itemLevel: this.itemLevel(), rating: this.save.mythic.rating, variant: this.save.appearance.variant };
+    return { id: this.save.id, name: this.save.name, classId: this.save.classId, level: this.save.level, itemLevel: this.itemLevel(), rating: this.save.mythic.rating, variant: this.save.appearance.variant, role: specRole(this.save.spec) ?? "dps" };
   }
 
   // ======================================================================== inventory

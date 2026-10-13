@@ -271,10 +271,3 @@
 .efs-wl { text-align: center; white-space: nowrap; line-height: 1.15; pointer-events: none; }
 .efs-wl .n { font-family: var(--font-head); font-weight: 700; font-size: 15px; letter-spacing: .05em; text-shadow: 0 0 4px #000, 0 2px 3px #000, 0 0 10px rgba(0,0,0,.85); }
 .efs-wl .s { font-size: 13px; color: #cdb98a; text-shadow: 0 0 4px #000, 0 2px 3px #000; }
-.efs-bark {
-  position: relative; max-width: 230px; white-space: normal; text-align: center; padding: 6px 12px; font-family: var(--font-body); font-weight: 700; font-size: 14px; line-height: 1.25;
-  color: #2a1c0e; background: #f2e4bd; border: 2px solid #5a4020; border-radius: 4px; box-shadow: 0 3px 8px rgba(0,0,0,.6);
-  animation: efs-bark-in .22s ease-out both; pointer-events: none;
-}
-.efs-bark::after { content: ''; position: absolute; left: 50%; bottom: -9px; margin-left: -7px; border: 7px solid transparent; border-top-color: #5a4020; border-bottom: 0; }
-@keyframes efs-bark-in { from { opacity: 0; transform: translateY(6px) scale(.9); } to { opacity: 1; transform: none; } }

@@ -7,6 +7,7 @@ import { AnimController } from './AnimController';
 import type { World } from '../world/World';
 import type { TownDef } from '../types/dungeons';
 import type { WorldLabelHandle } from '../ui/UI';
+import type { BubbleHandle } from '../ui/widgets/Bubbles';
 import { G } from '../game/G';
 import { RNG, dampAngle, dist2D, hashString } from '../core/utils';
 import { setAccessories, tintObject } from '../scenes/CharacterVisual';
@@ -301,7 +302,7 @@ export class NPC extends Entity implements Interactable {
   /** "▼ Buraya konuş" tag under the guide highlight (§4.3). */
   private guideTag: WorldLabelHandle | null = null;
   private markAcc = 0;
-  private bubble: WorldLabelHandle | null = null;
+  private bubble: BubbleHandle | null = null;
   private bubbleTimer = 0;
   private baseYaw: number;
   private faceUntil = 0;
@@ -495,14 +496,20 @@ export class NPC extends Entity implements Interactable {
     }
   }
 
-  /** Speech bubble above the head. */
+  /**
+   * Speech bubble above the head (UX-30 §5.2): the flat npc bubble with the gold name line, 120 characters, lifetime `seconds`.
+   * Shares the BubbleLayer stacking and budget with the player bubbles (the old .efs-bark DOM is gone).
+   */
   say(text: string, seconds = 4.5): void {
     this.bubble?.remove();
     try {
-      this.bubble = G.ui.addWorldLabel(this.object3d, `<div class="efs-bark">${text}</div>`, {
+      this.bubble = G.ui.say(this.object3d, {
+        kind: 'npc',
+        text,
+        name: this.def.name,
+        color: 'var(--gold-1)',
+        seconds,
         offsetY: this.height * (this.preset.scale ?? 1) + 1.35,
-        className: 'efs-wl-wrap',
-        maxDistance: 22,
       });
       this.bubbleTimer = seconds;
     } catch {

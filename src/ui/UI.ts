@@ -7,6 +7,7 @@ import './styles/overlays.css';
 import './styles/hud-extras.css';
 import './styles/hud-metin2.css';
 import './styles/hud-meter.css';
+import './styles/hud-bubbles.css';
 import { G } from '../game/G';
 import type { ItemInstance } from '../types/items';
 import type { SkillDef } from '../types/skills';
@@ -22,6 +23,8 @@ import { Modal } from './widgets/Modal';
 import { LoadingScreen } from './widgets/Loading';
 import { TooltipLayer } from './widgets/TooltipLayer';
 import { WorldLabels } from './widgets/WorldLabels';
+import { BubbleLayer, type BubbleHandle, type BubbleOpts } from './widgets/Bubbles';
+import { ChatBubbles } from './hud/ChatBubbles';
 import { Nameplates } from './widgets/Nameplates';
 import { CastTracker } from './widgets/CastBar';
 import { itemTooltipHTML, skillTooltipHTML } from './widgets/tooltips';
@@ -110,6 +113,9 @@ export class UI {
   private modal!: Modal;
   private loading!: LoadingScreen;
   private labels!: WorldLabels;
+  /** Speech bubbles above heads (UX-30); fed by ChatBubbles (chat lines) and NPC barks. */
+  private bubbles!: BubbleLayer;
+  private chatBubbles!: ChatBubbles;
   private plates!: Nameplates;
   /** Shared enemy cast registry (nameplates, target and boss frames). */
   readonly casts = new CastTracker();
@@ -166,6 +172,8 @@ export class UI {
     this.plates = new Nameplates(this, this.worldLayer);
     this.hud = createHUD(this);
     this.hud.setVisible(false);
+    this.bubbles = new BubbleLayer(this);
+    this.chatBubbles = new ChatBubbles(this);
 
     try {
       registerPanels(this);
@@ -181,6 +189,8 @@ export class UI {
     ev.on('scene:leaving', () => {
       this.closeAll();
       this.plates.clear();
+      this.bubbles.clear();
+      this.chatBubbles.clear();
       this.modal.cancelAll();
       this.hideTooltip();
     });
@@ -203,6 +213,8 @@ export class UI {
     if (!inGame) {
       this.closeAll();
       this.plates.clear();
+      this.bubbles.clear();
+      this.chatBubbles.clear();
     }
   }
 
@@ -420,6 +432,14 @@ export class UI {
     return this.labels.add(object, html, opts);
   }
 
+  /**
+   * Speech bubble over `anchor` (UX-30 §5.2): kinds say / party / yell / npc / typing, 80-character limit (npc 120),
+   * lifetime from the text length unless `seconds` is given, at most 2 per speaker and 6 on screen.
+   */
+  say(anchor: THREE.Object3D, o: BubbleOpts): BubbleHandle {
+    return this.bubbles.say(anchor, o);
+  }
+
   /** Health bar + name above an actor (enemies, party members). Auto-removed when the actor is removed. */
   addNameplate(actor: Actor, opts?: { showName?: boolean; color?: string }): { remove(): void } {
     return this.plates.addManual(actor, opts);
@@ -581,6 +601,9 @@ export class UI {
     }
     const hud = this.hud;
     if (this.mode === 'town' || this.mode === 'dungeon') {
+      this.bubbles.setOwnHidden(hud.chat.isFocused);
+      this.chatBubbles.update();
+      this.bubbles.update(now, rdt);
       this.plates.update(now, this.casts, hud.hover, hud.bossEntityId);
       this.labels.update(now, rdt, { hoverId: hud.hover?.id ?? null, targetId: G.player?.targetId ?? null });
     }

@@ -117,6 +117,16 @@ export const gameRoomId = (code: string): string => GAME_ROOM_PREFIX + code;
 /** 'world' = an open-world map (DungeonDef.world). Display only: the game logic treats it as a dungeon scene. */
 export type RoomActivity = 'town' | 'dungeon' | 'mythic' | 'world';
 
+/** UX-41 (§6.5): what a host looks for, shown in the room browser (Gruplar tab). Append-only; absent = no listing. */
+export interface LfgListing {
+  dungeon: string;
+  diff: 'normal' | 'heroic' | 'mythic' | 'mythicplus';
+  key?: number;
+  need: { tank: number; healer: number; dps: number };
+  ilvl?: number;
+  note?: string;
+}
+
 export interface RoomAnnouncement {
   t: 'ann';
   proto: number;
@@ -147,6 +157,8 @@ export interface RoomAnnouncement {
   minIlvl?: number;
   /** GDD_LIFE §7.5 (L-00): room mode. Absent = 'coop'. 'pvp' allows up to MAX_ROOM_SIZE peers. */
   mode?: 'coop' | 'pvp';
+  /** UX-41: LFG listing of the host (Grup Ara / Gruplar). Absent = not looking for members. */
+  lfg?: LfgListing;
 }
 
 export interface RoomUnannounceMsg {
@@ -347,7 +359,9 @@ export function sanitizeSummary(x: unknown): CharacterSummary | null {
   if (!isObj(x)) return null;
   const classId = CLASS_IDS.find((c) => c === x.classId);
   if (!classId) return null;
+  const role = x.role === 'tank' || x.role === 'healer' || x.role === 'dps' ? x.role : undefined;
   return {
+    ...(role ? { role } : {}),
     id: ident(x.id, 40) || 'unknown',
     name: text(x.name, NET.MAX_NAME_LEN, 'Maceracı'),
     classId,
@@ -404,6 +418,25 @@ export function sanitizeParty(x: unknown): PartyStateMsg | null {
   };
 }
 
+/** UX-41: validates an LFG listing (ids via ident, counts clamped to 0..5, note 40 chars). Undefined when malformed. */
+export function sanitizeLfg(x: unknown): LfgListing | undefined {
+  if (!isObj(x)) return undefined;
+  const dungeon = ident(x.dungeon);
+  if (!dungeon) return undefined;
+  const diff = x.diff === 'heroic' || x.diff === 'mythic' || x.diff === 'mythicplus' ? x.diff : 'normal';
+  const need = isObj(x.need) ? x.need : {};
+  const out: LfgListing = {
+    dungeon,
+    diff,
+    need: { tank: int(need.tank, 0, 5, 0), healer: int(need.healer, 0, 5, 0), dps: int(need.dps, 0, 5, 0) },
+  };
+  if (typeof x.key === 'number') out.key = int(x.key, 1, 60, 1);
+  if (typeof x.ilvl === 'number') out.ilvl = int(x.ilvl, 0, 999, 0);
+  const note = text(x.note, 40, '');
+  if (note) out.note = note;
+  return out;
+}
+
 /** Validates a lobby announcement. Lobby peers are strangers from the internet. */
 export function sanitizeAnnouncement(x: unknown): RoomAnnouncement | null {
   if (!isObj(x) || x.t !== 'ann') return null;
@@ -413,6 +446,7 @@ export function sanitizeAnnouncement(x: unknown): RoomAnnouncement | null {
   if (x.roomId !== roomId) return null;
   const maxPlayers = int(x.maxPlayers, 1, MAX_PARTY_SIZE, MAX_PARTY_SIZE);
   const activity: RoomActivity = x.activity === 'dungeon' || x.activity === 'mythic' || x.activity === 'world' ? x.activity : 'town';
+  const lfg = sanitizeLfg(x.lfg);
   return {
     t: 'ann',
     proto: int(x.proto, 0, 1e6, 0),
@@ -434,5 +468,6 @@ export function sanitizeAnnouncement(x: unknown): RoomAnnouncement | null {
     inProgress: x.inProgress === true,
     lang: ident(x.lang, 8) || 'tr',
     rev: int(x.rev, 0, 2 ** 31, 0),
+    ...(lfg ? { lfg } : {}),
   };
 }

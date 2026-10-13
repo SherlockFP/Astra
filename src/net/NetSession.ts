@@ -24,6 +24,7 @@ import {
   makeRoomCode,
   normalizeRoomCode,
   sanitizeKeystone,
+  sanitizeLfg,
   sanitizeParty,
   sanitizeReturnTo,
   sanitizeSceneId,
@@ -32,6 +33,7 @@ import {
   sanitizeWorldSpawn,
   type CtlMsg,
   type GameChannels,
+  type LfgListing,
   type GameEnvelope,
   type PartyMemberMsg,
   type PartyStateMsg,
@@ -87,6 +89,8 @@ export interface RoomInfo {
   inProgress?: boolean;
   /** Which transport the room was announced on. */
   transport?: NetKind;
+  /** UX-41: the host's LFG listing (Gruplar tab). */
+  lfg?: LfgListing;
 }
 
 export interface ReadyCheckState {
@@ -244,6 +248,8 @@ export class NetSession {
   private readyCheckSeq = 0;
   private nextPing = 0;
   private lastSelfRefresh = 0;
+  /** UX-41: LFG listing of this host (re-announced with the room). */
+  private lfg: LfgListing | null = null;
   private charInfoTimer: ReturnType<typeof setTimeout> | null = null;
   private rttMs = 0;
   private readonly warned = new Set<string>();
@@ -275,6 +281,7 @@ export class NetSession {
       ev.on('player:levelup', () => this.scheduleCharInfo());
       ev.on('equipment:changed', () => this.scheduleCharInfo());
       ev.on('keystone:changed', () => this.scheduleCharInfo());
+      ev.on('spec:changed', () => this.scheduleCharInfo()); // UX-41: summary.role follows the active spec
     }
   }
 
@@ -327,6 +334,7 @@ export class NetSession {
       compatible: r.compatible,
       joinable: r.joinable,
       inProgress: r.ann.inProgress,
+      lfg: r.ann.lfg,
       transport: kind,
     }));
   }
@@ -702,11 +710,25 @@ export class NetSession {
     this.removePeer(peerId, 'kicked');
   }
 
-  sendChat(text: string): void {
+  /** Chat line to the party. `ch` is the send channel (party = default; say / yell are relayed with the line). */
+  sendChat(text: string, ch: 'party' | 'say' | 'yell' = 'party'): void {
     const t = sanitizeText(text, NET.MAX_CHAT_LEN);
     if (!t) return;
-    G.events?.emit('net:chat', { from: this.self?.name ?? 'Sen', text: t, channel: 'party' });
-    this.broadcast('chat', { text: t });
+    G.events?.emit('net:chat', { from: this.self?.name ?? 'Sen', text: t, channel: ch });
+    this.broadcast('chat', ch === 'party' ? { text: t } : { text: t, ch });
+  }
+
+  /** Emote (WoW-style /dance ...): the emote id travels on the chat channel; receivers play the clip and show the line. */
+  sendEmote(id: string): void {
+    const e = ident(id, 16);
+    if (!e) return;
+    this.broadcast('chat', { text: e, ch: 'emote', emote: e });
+  }
+
+  /** UX-41 (§6.5): the host's LFG listing (`null` = not looking). Re-announced with the room; read back as RoomInfo.lfg. */
+  setLfg(listing: LfgListing | null): void {
+    this.lfg = listing ? sanitizeLfg(listing) ?? null : null;
+    if (this.role === 'host') this.syncAnnounce();
   }
 
   /* ================================================================================================
@@ -1272,10 +1294,17 @@ export class NetSession {
 
   private onChat(p: NetChannels['chat'], from: string): void {
     if (!isObj(p)) return;
+    const name = this.peers.get(from)?.name ?? 'Bilinmeyen';
+    // emote: the id is the text (validated as an identifier); the receiver turns it into the line and the clip
+    if (p.ch === 'emote') {
+      const id = ident(p.emote ?? p.text, 16);
+      if (id) G.events?.emit('net:chat', { from: name, text: id, channel: 'emote' });
+      return;
+    }
     const text = sanitizeText(p.text, NET.MAX_CHAT_LEN);
     if (!text) return;
-    const name = this.peers.get(from)?.name ?? 'Bilinmeyen';
-    G.events?.emit('net:chat', { from: name, text, channel: 'party' });
+    const channel = p.ch === 'say' || p.ch === 'yell' ? p.ch : 'party';
+    G.events?.emit('net:chat', { from: name, text, channel });
   }
 
   /** Client: host moved the party. */
@@ -1436,6 +1465,8 @@ export class NetSession {
       hasPassword: this.hasPassword,
       inProgress: inDungeon && !open, // an open-world party accepts joins
       lang: 'tr',
+      // UX-41: undefined clears a previous listing when the merged announcement is updated
+      lfg: this.lfg ?? undefined,
     };
   }
 
