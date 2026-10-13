@@ -12,6 +12,7 @@ import { CLASS_META, ratingTier } from '../game/base';
 import { ItemPanel, makeTabs, openPanel } from './PanelBase';
 import { CharacterPreview } from './CharacterPreview';
 import { canPlace, moveItem, quickAction } from './actions';
+import { linkItemInChat } from '../../../systems/ChatLinks';
 import {
   ItemSlot, SLOT_ICON, bindItemTip, bindTip, describe, drag, esc, flashEl, fmt, fmtStatValue, h, isTwoHanded, sfx, statName,
 } from './common';
@@ -417,6 +418,10 @@ export class CharacterPanel extends ItemPanel {
       },
       onDouble: (e) => {
         if (s.item) quickAction({ where: 'equipment', slot }, s.item, e);
+      },
+      // WP-13: Shift+click on a worn item links it into the chat input
+      onClick: (e) => {
+        if (e.shiftKey && s.item) linkItemInChat(s.item);
       },
     });
     drag.zone(s.el, {

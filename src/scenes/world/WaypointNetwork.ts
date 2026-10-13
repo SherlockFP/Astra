@@ -21,10 +21,13 @@ const HOP_TILES = 60;
 /** No travel while the local player was hit or hit something in the last seconds (Actor.combatTimer). */
 const POST_COMBAT_LOCK_SEC = 5;
 
-/** Fare of a trip (gold): `round(10 + 1.5 * level) * hops`, hops = min(4, 1 + floor(tiles / 60)). */
+/**
+ * Fare of a trip (gold): `round(20 + 3.5 * level) * hops`, hops = min(4, 1 + floor(tiles / 60)). WP-13 (docs/MMO_PILLARS.md) raised it
+ * from `round(10 + 1.5 * level)`: the gold-flow sim (dev/combat-sim/economy.mjs) needs fees >= 60 % of faucets at level 30.
+ */
 export function waypointFare(level: number, distTiles: number): number {
   const hops = Math.min(4, 1 + Math.floor(distTiles / HOP_TILES));
-  return Math.round(10 + 1.5 * level) * hops;
+  return Math.round(20 + 3.5 * level) * hops;
 }
 
 export class WaypointNetwork {

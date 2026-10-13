@@ -31,6 +31,8 @@ export interface UpgradeResult {
   /** items module extras */
   downgraded?: boolean;
   protectedUsed?: boolean;
+  /** WP-13: a bound item failed past the break line and is Kırık now (kept in its slot, repairable). */
+  broken?: boolean;
   item?: ItemInstance;
 }
 
@@ -150,7 +152,7 @@ export function upgradeItem(uid: string, opts: { useProtection?: boolean; useBoo
   if (opts.useBook) ch.useMaterial('demirci_el_kitabi', 1);
 
   const roll = rollUpgradeOutcome(target, { failStacks: item.failStacks ?? 0, useBook: opts.useBook, useProtection: protect }, rng());
-  let destroyed = false, downgraded = false;
+  let destroyed = false, downgraded = false, broke = false;
   if (roll.success) {
     item.upgrade = target;
     item.failStacks = 0;
@@ -174,14 +176,62 @@ export function upgradeItem(uid: string, opts: { useProtection?: boolean; useBoo
       item.upgrade = Math.max(0, cur - 1);
       downgraded = true;
       refreshItemName(item);
-    } else if (roll.outcome === 'destroy') destroyed = true;
+    } else if (roll.outcome === 'destroy') {
+      if (isBoundItem(item)) {
+        // WP-13 (GDD_ITEMS_V2 O-IT5 / §2.6): a bound item is never deleted, it becomes Kırık: no stats, repairable at the Demirci.
+        broke = true;
+        item.broken = true;
+        item.upgradeBroken = cur;
+        item.upgrade = Math.max(0, cur - 3);
+        refreshItemName(item);
+        if (f.loc.where === 'equipment') ch.unequip(f.loc.slot); // a full bag keeps it worn; stats skip broken items anyway
+      } else destroyed = true;
+    }
   }
   const newLevel = destroyed ? 0 : item.upgrade ?? 0;
   if (destroyed) ch.removeItem(item.uid);
   else finishEquipChange(f.loc);
   G.events.emit('item:upgraded', { item, success: roll.success, destroyed, newLevel });
   if (roll.success) bountyEvent('upgrade', 1);
-  return { ok: true, success: roll.success, destroyed, newLevel, downgraded, protectedUsed: protect && !roll.success, item };
+  return { ok: true, success: roll.success, destroyed, newLevel, downgraded, protectedUsed: protect && !roll.success, broken: broke, item };
+}
+
+// ============================================================================ repair (Kırık)
+/** Bound items (Efsanevi / Set / Tier / named unique, or flagged `bound`) break instead of being destroyed. */
+export function isBoundItem(item: ItemInstance): boolean {
+  return !!item.bound || item.rarity === 'legendary' || item.rarity === 'set' || !!item.uniqueId;
+}
+
+/** Repair bill (GDD_ITEMS_V2 §2.6): gold = round(300 x ilvl x (1 + 0.15 x levelBeforeFail)), Ruh Taşı x(2 + floor(lvl / 4)), Büyülü Toz x5. */
+export const REPAIR = { GOLD_BASE: 300, GOLD_PER_LEVEL: 0.15, DUST: 5 } as const;
+
+export function repairCost(item: ItemInstance): { gold: number; materials: { id: string; count: number }[] } | null {
+  if (!item.broken) return null;
+  // no Kadim Toz material exists in the game: the GDD's ancient dust x5 is paid in Büyülü Toz
+  const lvl = item.upgradeBroken ?? (item.upgrade ?? 0) + 3;
+  return {
+    gold: Math.round(REPAIR.GOLD_BASE * item.itemLevel * (1 + REPAIR.GOLD_PER_LEVEL * lvl)),
+    materials: [{ id: 'ruh_tasi', count: 2 + Math.floor(lvl / 4) }, { id: 'buyulu_toz', count: REPAIR.DUST }],
+  };
+}
+
+/** Pays the repair bill and clears Kırık. The upgrade level stays where the break put it (the lost levels are not returned). */
+export function repairItem(uid: string): { ok: boolean; reason?: string } {
+  const ch = G.character;
+  if (!ch) return { ok: false, reason: 'Karakter yok.' };
+  const f = locate(uid);
+  if (!f) return { ok: false, reason: 'Eşya bulunamadı.' };
+  const cost = repairCost(f.item);
+  if (!cost) return { ok: false, reason: 'Bu eşya kırık değil.' };
+  if (ch.save.gold < cost.gold) return { ok: false, reason: 'Yeterli altının yok.' };
+  const missing = cost.materials.find((m) => ch.material(m.id) < m.count);
+  if (missing) return { ok: false, reason: `Yeterli malzeme yok: ${matName(missing.id)} ×${missing.count}` };
+  ch.spendGold(cost.gold);
+  ch.spendMaterials(cost.materials);
+  f.item.broken = false;
+  delete f.item.upgradeBroken;
+  finishEquipChange(f.loc);
+  return { ok: true };
 }
 
 // ============================================================================ efsun

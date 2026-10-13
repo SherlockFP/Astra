@@ -321,7 +321,7 @@ export function computeStats(save: CharacterSave, partySize: number = localParty
   // ---- gear
   for (const slot of EQUIP_SLOTS) {
     const it = save.equipment[slot];
-    if (!it) continue;
+    if (!it || it.broken) continue; // WP-13: a Kırık item contributes 0 stats
     addStats(S, itemStats(it, slot));
     const base = baseOf(it);
     if (base?.category === 'shield' && slot === 'offhand') hasShield = true;
