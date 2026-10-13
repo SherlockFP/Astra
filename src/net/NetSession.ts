@@ -1293,10 +1293,22 @@ export class NetSession {
     this.goScene(scene, p.params);
   }
 
+  /** Peers whose refused sceneRequest was already logged as [net-guard] (one line per peer). */
+  private readonly sceneGuardLogged = new Set<string>();
+
   /** Host: a client asks to move the party (keystone owner starts a run / exit portal). */
   private onSceneRequest(p: NetChannels['sceneRequest'], from: string): void {
     if (this.role !== 'host' || !isObj(p) || !this.peers.has(from)) return;
     const scene = sanitizeSceneId(p.scene);
+    // A key run is in progress (dungeon, not open world): only the host (party leader) may move the party. A client's request
+    // would move everyone, so it is refused. A client that wants out alone still uses the game menu (its own local leave).
+    if (this.currentScene?.scene === 'dungeon' && !this.inOpenWorld && from !== this.selfId) {
+      if (!this.sceneGuardLogged.has(from)) {
+        this.sceneGuardLogged.add(from);
+        console.warn('[net-guard]', `sceneRequest "${scene}" refused: a dungeon run is in progress, only the host moves the party`, from);
+      }
+      return;
+    }
     if (scene === 'dungeon') {
       if (this.currentScene?.scene === 'dungeon' || !isObj(p.params)) return;
       const raw = p.params;
@@ -1375,6 +1387,7 @@ export class NetSession {
     this.kicked.clear();
     this.chatTimes.clear();
     this.reqTimes.clear();
+    this.sceneGuardLogged.clear();
     this.peers.clear();
     this.peers.set(this.selfId, this.makeSelf(0, true));
     G.engine?.setBackgroundTick?.(false);

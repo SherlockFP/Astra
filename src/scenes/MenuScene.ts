@@ -3,6 +3,7 @@ import type { GameScene } from '../core/SceneManager';
 import { G } from '../game/G';
 import { psxify } from '../game/graphics';
 import { MAX_CHARACTERS } from '../core/Save';
+import { onSaveImported } from '../core/SaveSafety';
 import { RNG, dampAngle, damp } from '../core/utils';
 import { CharacterState } from '../systems/CharacterState';
 import type { CharacterSave } from '../types/character';
@@ -99,6 +100,7 @@ export class MenuScene implements GameScene {
   private dragging = false;
   private canvasEl: HTMLCanvasElement | null = null;
   private cleanup: (() => void)[] = [];
+  private unsubImported: (() => void) | null = null;
 
   // creation
   private pedestal = new THREE.Group();
@@ -165,6 +167,8 @@ export class MenuScene implements GameScene {
 
     this.camPos.set(0, 4.4, 15.5);
     G.audio.music('menu', 1.5);
+    // any screen can import (menu button, Ayarlar > Kayıt): rebuild the stands whenever a file adds characters
+    this.unsubImported = onSaveImported(() => void this.reloadStands());
     this.entered = true;
     G.net.sceneReady('menu');
   }
@@ -501,6 +505,27 @@ export class MenuScene implements GameScene {
     // most recently played is pre-selected
     const last = [...this.stands].sort((a, b) => (b.save?.lastPlayed ?? 0) - (a.save?.lastPlayed ?? 0))[0];
     if (last) this.select(last, true);
+  }
+
+  /**
+   * After an import (İçe Aktar, from any screen): rebuilds the stands from storage so the imported characters show up, and
+   * their names count as taken for existingNames(). Create mode is fine: the stands are rebuilt without touching the
+   * pedestal, and the name check and slot check read the rebuilt list on submit. Skipped while a scene switch runs (play());
+   * the next enter() reads the list from storage anyway.
+   */
+  private async reloadStands(): Promise<void> {
+    if (this.leaving) return;
+    for (const st of this.stands) {
+      this.ui?.removePlate(st.key);
+      st.visual?.dispose();
+      st.group.removeFromParent();
+      disposeOwned(st.group);
+    }
+    this.stands = [];
+    this.selected = null;
+    this.hovered = null;
+    await this.loadStands();
+    this.refreshUI();
   }
 
   private async fillStand(st: Stand): Promise<void> {
@@ -1144,6 +1169,8 @@ export class MenuScene implements GameScene {
   // ================================================================================================
 
   exit(): void {
+    this.unsubImported?.();
+    this.unsubImported = null;
     for (const c of this.cleanup) c();
     this.cleanup = [];
     this.ui?.dispose();

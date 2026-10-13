@@ -30,8 +30,6 @@ export interface MenuCallbacks {
   onServers(): void;
   onCredits(): void;
   onExit(): void;
-  /** A save file was imported (Dışa / İçe Aktar): the caller refreshes the character list and stands. Optional. */
-  onImported?(): void;
   onPickClass(id: ClassId): void;
   onPickVariant(i: number): void;
   /** Returns an error message to show (null = accepted). */
@@ -142,7 +140,7 @@ export class MenuUI {
     // save export / import under the character list (the same actions live in Ayarlar > Oyun > Kayıt)
     this.ioEl.append(
       this.btn('Dışa Aktar', () => exportSaves(G.save), 'small'),
-      this.btn('İçe Aktar', () => openImportDialog(G.save, () => this.cb.onImported?.()), 'small'),
+      this.btn('İçe Aktar', () => openImportDialog(G.save), 'small'), // the menu refreshes through onSaveImported (MenuScene)
     );
     this.selectWrap.append(this.listEl, this.stackEl, this.playEl, this.footerEl, this.ioEl);
   }

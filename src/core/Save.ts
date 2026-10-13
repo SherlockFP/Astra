@@ -4,11 +4,10 @@ import type { SpecId } from '../types/v2';
 import { SKILLS } from '../data/skills';
 import { getSpec } from '../data/specs';
 import { migrationToast } from '../dev/migrate';
-import { CLASSES } from '../data/classes';
-import type { ClassId } from '../types/common';
+import { CLASS_ORDER, validateName } from '../ui/menu/classInfo';
 import {
-  EXPORT_FORMAT, MSG_BAD_FILE, MSG_NEWER_FILE, backupDue, backupKey, clearBackups, newCharacterId, notifyFull, notifyLost, notifyRestored,
-  notifyWriteFailed, requestPersistentStorage, rollBackup, type ImportResult,
+  EXPORT_FORMAT, MSG_BAD_FILE, MSG_NEWER_FILE, backupDue, backupKey, clearBackups, isQuotaError, newCharacterId, notifyBackupRestored, notifyFull,
+  notifyLost, notifyRestored, notifyWriteFailed, requestPersistentStorage, rollBackup, type ImportResult,
 } from './SaveSafety';
 
 const INDEX_KEY = 'efsun.characters.v1';
@@ -16,6 +15,12 @@ const CHAR_KEY = (id: string) => `efsun.char.${id}`;
 export const MAX_CHARACTERS = 6;
 /** v2 = GDD_V2 optional fields; see normaliseCharacterSave(). */
 export const SAVE_VERSION = 2;
+/** Imported ids: no dots, so an id can never end in `.bak1` / `.bak2` (the backup keys). */
+const ID_RE = /^[A-Za-z0-9_-]{1,40}$/;
+/** Longest character name; validateName (ui/menu/classInfo) enforces the same limit. */
+const NAME_MAX = 14;
+/** Why an import skipped a character (shown in the toast). */
+const SKIP = { invalid: 'bozuk kayıt', classNotInMenu: 'bilinmeyen sınıf', full: 'yuva dolu', write: 'yazılamadı' } as const;
 
 /**
  * Brings a parsed save up to SAVE_VERSION: fills defaults for every GDD_V2 optional field (CharacterSave §A) so systems
@@ -113,17 +118,43 @@ function remapBars(save: CharacterSave, from: string, to: SpecId, majors: Partia
 }
 
 /**
+ * An imported character's name under validateName's rules: 2 to 14 characters, letters / digits / space / - _ ', starting
+ * with a letter, single spaces. Other characters become spaces; an unusable name becomes "Kahraman". A name already in
+ * `taken` (case-insensitive) gets " 2", " 3"... with the base cut so the result keeps the 14-character limit.
+ */
+function cleanImportedName(raw: unknown, taken: string[]): string {
+  const cleaned = (typeof raw === 'string' ? raw : '')
+    .replace(/[^A-Za-zÇĞİÖŞÜçğıöşüÂâÎîÛû0-9 '_-]+/g, ' ')
+    .replace(/^[^A-Za-zÇĞİÖŞÜçğıöşüÂâÎîÛû]+/, '')
+    .replace(/\s+/g, ' ')
+    .slice(0, NAME_MAX)
+    .trim();
+  const base = validateName(cleaned, []) === null ? cleaned : 'Kahraman';
+  const low = (s: string) => s.toLocaleLowerCase('tr');
+  const isTaken = (n: string) => taken.some((t) => low(t) === low(n));
+  let name = base;
+  for (let n = 2; isTaken(name); n++) {
+    const suffix = ` ${n}`;
+    name = base.slice(0, NAME_MAX - suffix.length).trimEnd() + suffix;
+  }
+  return name;
+}
+
+/**
  * Character slots in localStorage. Pure persistence — no game logic. Safety net (SaveSafety.ts): rolling `.bak1` / `.bak2`
- * copies, recovery from a backup when the JSON is corrupt, one retry + toast on write failure, JSON export / import.
+ * copies, recovery from a backup when the JSON is corrupt, a retry and a toast on write failure (a full storage frees
+ * backups first), JSON export / import.
  */
 export class Save {
   constructor() {
     requestPersistentStorage();
   }
 
+  /** The character index. Anything that is not an array of strings counts as no index. */
   listIds(): string[] {
     try {
-      return JSON.parse(localStorage.getItem(INDEX_KEY) || '[]');
+      const parsed: unknown = JSON.parse(localStorage.getItem(INDEX_KEY) || '[]');
+      return Array.isArray(parsed) && parsed.every((id) => typeof id === 'string') ? (parsed as string[]) : [];
     } catch {
       return [];
     }
@@ -165,8 +196,8 @@ export class Save {
 
   /**
    * Restores a character from `.bak1`, then `.bak2`. A usable backup is written back to the character key, so the
-   * character stays in the list. `corrupt` = the main JSON was unreadable (the player is told); a missing key restores silently
-   * unless no backup exists either.
+   * character stays in the list. `corrupt` = the main JSON was unreadable: the player is told it was restored, and that it
+   * is lost when no backup works (once per session). A missing key restored from a backup gets a neutral notice.
    */
   private recover(id: string, corrupt: boolean): CharacterSave | null {
     const key = CHAR_KEY(id);
@@ -178,7 +209,8 @@ export class Save {
         save.id = id;
         this.setRaw(key, JSON.stringify(save));
         console.warn('[save] restored', id, 'from bak' + n);
-        notifyRestored();
+        if (corrupt) notifyRestored();
+        else notifyBackupRestored();
         return save;
       } catch (e) {
         console.warn('[save] bak' + n + ' unusable', id, e);
@@ -186,27 +218,36 @@ export class Save {
     }
     if (corrupt) {
       console.error('[save] no usable backup', id);
-      notifyLost();
+      notifyLost(id);
     }
     return null;
   }
 
-  /** localStorage.setItem that never throws. Returns false on failure (logged). */
-  private setRaw(key: string, json: string): boolean {
+  /** localStorage.setItem that never throws: 'quota' when the storage is full, 'failed' for any other error (logged). */
+  private setRaw(key: string, json: string): 'ok' | 'quota' | 'failed' {
     try {
       localStorage.setItem(key, json);
-      return true;
+      return 'ok';
     } catch (e) {
       console.warn('[save] write failed', key, e);
-      return false;
+      return isQuotaError(e) ? 'quota' : 'failed';
     }
   }
 
-  /** Copies the stored JSON to `.bak1` when backupDue() says so. Failures never block the write. */
-  private backupBefore(save: CharacterSave, key: string): void {
+  /** localStorage.getItem that never throws. Null when the key is missing or unreadable. */
+  private readRaw(key: string): string | null {
     try {
-      const stored = localStorage.getItem(key);
-      if (stored && backupDue(save.id, stored, save)) rollBackup(save.id, key, stored);
+      return localStorage.getItem(key);
+    } catch (e) {
+      console.warn('[save] read failed', key, e);
+      return null;
+    }
+  }
+
+  /** Copies the stored JSON (read before it was overwritten) to `.bak1` when backupDue() says so. Failures never block. */
+  private backupBefore(save: CharacterSave, key: string, stored: string): void {
+    try {
+      if (backupDue(save.id, stored, save)) rollBackup(save.id, key, stored);
     } catch (e) {
       console.warn('[save] backup skipped', save.id, e);
     }
@@ -217,16 +258,64 @@ export class Save {
   }
 
   /**
-   * Writes one character (sets lastPlayed). Retries once on failure, then toasts. False = not saved. A new id past
-   * MAX_CHARACTERS is refused here too, so a menu with stale stands cannot store a 7th character.
+   * Writes the character key. A failure other than a full storage gets one retry. A full storage (QuotaExceededError)
+   * frees one backup at a time (freeBackup) and retries after each, at most 3 times. False = not written.
    */
-  write(save: CharacterSave): boolean {
+  private writeMain(id: string, key: string, json: string): boolean {
+    let res = this.setRaw(key, json);
+    if (res === 'failed') res = this.setRaw(key, json);
+    for (let retry = 0; res === 'quota' && retry < 3; retry++) {
+      if (!this.freeBackup(id, key)) break;
+      res = this.setRaw(key, json);
+    }
+    return res === 'ok';
+  }
+
+  /**
+   * Deletes one backup to make room, in this order: this character's `.bak2`, its `.bak1`, then the other characters'
+   * `.bak2` keys. False when none is left. Never throws.
+   */
+  private freeBackup(id: string, key: string): boolean {
+    try {
+      const others = this.listIds().filter((x) => x !== id).map((x) => backupKey(CHAR_KEY(x), 2));
+      for (const k of [backupKey(key, 2), backupKey(key, 1), ...others]) {
+        if (localStorage.getItem(k) === null) continue;
+        localStorage.removeItem(k);
+        console.warn('[save] storage full, removed backup', k);
+        return true;
+      }
+    } catch (e) {
+      console.warn('[save] could not free space', id, e);
+    }
+    return false;
+  }
+
+  /** Adds the id to the character index (one retry). False when the index could not be written. Never throws. */
+  private indexAdd(id: string): boolean {
+    try {
+      const ids = this.listIds();
+      if (ids.includes(id)) return true;
+      ids.push(id);
+      const index = JSON.stringify(ids);
+      return this.setRaw(INDEX_KEY, index) === 'ok' || this.setRaw(INDEX_KEY, index) === 'ok';
+    } catch (e) {
+      console.warn('[save] index update failed', id, e);
+      return false;
+    }
+  }
+
+  /**
+   * Writes one character. The main key is written first; the JSON it replaces is rolled to `.bak1` only once that write
+   * has worked. Failures toast (see writeMain). False = not saved. A new id past MAX_CHARACTERS is refused here too, so a
+   * menu with stale stands cannot store a 7th character. `keepLastPlayed` keeps the save's own timestamp (import).
+   */
+  write(save: CharacterSave, opts: { keepLastPlayed?: boolean } = {}): boolean {
     const taken = this.listIds();
     if (!taken.includes(save.id) && taken.length >= MAX_CHARACTERS) {
       notifyFull(MAX_CHARACTERS);
       return false;
     }
-    save.lastPlayed = Date.now();
+    if (!opts.keepLastPlayed) save.lastPlayed = Date.now();
     const key = CHAR_KEY(save.id);
     let json: string;
     try {
@@ -236,16 +325,13 @@ export class Save {
       notifyWriteFailed();
       return false;
     }
-    this.backupBefore(save, key);
-    let ok = this.setRaw(key, json) || this.setRaw(key, json);
-    if (ok) {
-      const ids = this.listIds();
-      if (!ids.includes(save.id)) {
-        ids.push(save.id);
-        const index = JSON.stringify(ids);
-        ok = this.setRaw(INDEX_KEY, index) || this.setRaw(INDEX_KEY, index);
-      }
+    const before = this.readRaw(key);
+    if (!this.writeMain(save.id, key, json)) {
+      notifyWriteFailed();
+      return false;
     }
+    if (before !== null) this.backupBefore(save, key, before);
+    const ok = this.indexAdd(save.id);
     if (!ok) notifyWriteFailed();
     return ok;
   }
@@ -261,10 +347,19 @@ export class Save {
     return JSON.stringify({ format: EXPORT_FORMAT, version: SAVE_VERSION, exportedAt: new Date().toISOString(), chars: this.list() });
   }
 
+  /** The exported id when it is well-formed and unused here, otherwise a new one. */
+  private freeId(id: unknown): string {
+    if (typeof id === 'string' && ID_RE.test(id) && !this.idTaken(id)) return id;
+    return newCharacterId((x) => this.idTaken(x));
+  }
+
   /**
-   * Reads a document made by exportAll(). Each character goes through normaliseCharacterSave. A character whose id is
-   * already used gets a new id and " (2)" on its name. Invalid characters and anything past MAX_CHARACTERS are skipped.
-   * Throws an Error with a Turkish message when the file itself is not a save export.
+   * Reads a document made by exportAll(). Each character goes through normaliseCharacterSave. Its id is kept when it is
+   * well-formed and unused, otherwise replaced. Its name is cleaned to the menu's rules and gets a " 2"-style suffix when
+   * already taken. Bad data, a class the character menu cannot show, and anything past MAX_CHARACTERS are skipped and
+   * counted by reason. The exported lastPlayed is kept. A character that throws while being processed is skipped as well,
+   * so the rest still import and the result always matches what was written. Throws an Error with a Turkish message when the
+   * file itself is not a save export (before anything is written).
    */
   importAll(json: string): ImportResult {
     let doc: unknown;
@@ -277,26 +372,44 @@ export class Save {
     const bundle = doc as { format?: unknown; version?: unknown; chars?: unknown } | null;
     if (!bundle || typeof bundle !== 'object' || bundle.format !== EXPORT_FORMAT || !Array.isArray(bundle.chars)) throw new Error(MSG_BAD_FILE);
     if (typeof bundle.version === 'number' && bundle.version > SAVE_VERSION) throw new Error(MSG_NEWER_FILE);
-    const result: ImportResult = { imported: 0, skipped: 0 };
+    const result: ImportResult = { imported: 0, skipped: 0, skippedBy: {} };
+    const skip = (why: string) => {
+      result.skipped++;
+      result.skippedBy[why] = (result.skippedBy[why] ?? 0) + 1;
+    };
+    const names = this.list().map((c) => c.name);
     let slots = this.listIds().length;
     for (const raw of bundle.chars as unknown[]) {
-      const save = normaliseCharacterSave(raw);
-      const classOk = !!save && typeof save.classId === 'string' && Object.prototype.hasOwnProperty.call(CLASSES, save.classId as ClassId);
-      if (!save || typeof save.name !== 'string' || !save.name || !classOk || slots >= MAX_CHARACTERS) {
-        result.skipped++;
-        continue;
-      }
-      if (typeof save.id !== 'string' || !save.id) {
-        save.id = newCharacterId((id) => this.idTaken(id));
-      } else if (this.idTaken(save.id)) {
-        save.name = `${save.name} (2)`;
-        save.id = newCharacterId((id) => this.idTaken(id));
-      }
-      if (this.write(save)) {
-        result.imported++;
-        slots++;
-      } else {
-        result.skipped++;
+      // one malformed character (e.g. flags: 5 breaks migrateTalents) must not abort the rest: a throw here would leave the
+      // characters already written unreported, and the menu list would stay stale
+      try {
+        const save = normaliseCharacterSave(raw);
+        if (!save) {
+          skip(SKIP.invalid);
+          continue;
+        }
+        if (!CLASS_ORDER.includes(save.classId)) {
+          skip(SKIP.classNotInMenu);
+          continue;
+        }
+        if (slots >= MAX_CHARACTERS) {
+          skip(SKIP.full);
+          continue;
+        }
+        const name = cleanImportedName(save.name, names);
+        save.name = name;
+        save.id = this.freeId(save.id);
+        if (!Number.isFinite(save.lastPlayed)) save.lastPlayed = Date.now();
+        if (this.write(save, { keepLastPlayed: true })) {
+          names.push(name);
+          slots++;
+          result.imported++;
+        } else {
+          skip(SKIP.write);
+        }
+      } catch (e) {
+        console.warn('[save] import: character skipped', e);
+        skip(SKIP.invalid);
       }
     }
     return result;

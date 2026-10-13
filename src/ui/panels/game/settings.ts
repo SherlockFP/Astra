@@ -15,7 +15,7 @@ const PRESETS: { id: string; name: string; desc: string; values: Partial<Setting
 
 const GROUPS: { name: string; actions: InputAction[] }[] = [
   { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'jump', 'dodge', 'walk'] },
-  { name: 'Savaş', actions: ['skill_lmb', 'skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'potionHp', 'potionMp', 'targetNext', 'interact', 'revive'] },
+  { name: 'Savaş', actions: ['skill_lmb', 'heavyAttack', 'skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'potionHp', 'potionMp', 'targetNext', 'interact', 'revive'] },
   { name: 'Arayüz', actions: ['inventory', 'character', 'talents', 'skills', 'map', 'party', 'mplus', 'chat', 'menu'] },
   { name: 'Kamera ve Diğer', actions: ['freeCursor', 'toggleLock', 'zoomIn', 'zoomOut', 'screenshot'] },
 ];
@@ -230,9 +230,10 @@ export class SettingsPanel extends GamePanel {
       this.flag('invertY', 'Y Eksenini Ters Çevir'),
       this.num('cameraDistance', 'Kamera Mesafesi', 4, 16, 0.5, (v) => `${v} m`),
     );
-    this.bodyEl.append(cam);
+    const combat = this.section('Savaş', this.flag('autoCombo', 'Basılı tutunca saldırı zinciri', 'Kapalıyken sol tık basılı tutmak ağır vuruşu şarj eder'));
+    this.bodyEl.append(cam, combat);
 
-    const binds = h('div.pg-set-sec', null, h('div.pg-h', null, 'Tuş Atamaları'));
+    const binds =h('div.pg-set-sec', null, h('div.pg-h', null, 'Tuş Atamaları'));
     binds.append(h('div.pg-set-bindhelp', null, 'Bir kutuya tıkla, sonra yeni tuşa bas. ', h('b', null, 'Esc'), ': iptal · ', h('b', null, 'Backspace'), ': temizle · Fare sağ/orta tuşu da atanabilir.'));
     for (const g of GROUPS) {
       binds.append(h('div.pg-set-bgroup', null, g.name));

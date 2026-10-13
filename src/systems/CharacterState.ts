@@ -13,7 +13,7 @@ import { CLASS_START_NODE, TALENT_NODES } from '../data/talents';
 import { getMaterial, MATERIALS } from '../data/materials';
 import { ITEM_BASES } from '../data/itemBases';
 import { CLASS_WEAPONS, CLASS_OFFHANDS, CLASS_NAMES_TR } from '../data/itemBases';
-import { migrateTalents } from '../core/Save';
+import { SAVE_VERSION, migrateTalents } from '../core/Save';
 import { migrationToast } from '../dev/migrate';
 import { emit, toast } from './notify';
 import { activeElixirs, computeStats, emptyFx, type SpecialEntry } from './StatCalc';
@@ -147,7 +147,7 @@ export class CharacterState {
   static create(name: string, classId: ClassId, variant = 0): CharacterState {
     const now = Date.now();
     const save: CharacterSave = {
-      version: 1, id: 'c' + now.toString(36) + Math.random().toString(36).slice(2, 5), name, classId, appearance: { variant }, level: 1, xp: 0, gold: 50,
+      version: SAVE_VERSION, id: 'c' + now.toString(36) + Math.random().toString(36).slice(2, 5), name, classId, appearance: { variant }, level: 1, xp: 0, gold: 50,
       createdAt: now, lastPlayed: now, playedSec: 0, equipment: {}, bag: new Array(BAG_SIZE).fill(null), stash: new Array(STASH_SIZE).fill(null),
       materials: { pot_hp_1: 5, pot_res_1: 5, scroll_town: 1 }, talents: [CLASS_START_NODE[classId]], talentRefunds: 0, skillBar: {}, skillRanks: {},
       mythic: { rating: 0, best: {}, weekly: { week: 0, runs: [] }, vaultClaimedWeek: -1, keystone: null },
