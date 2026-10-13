@@ -7,6 +7,7 @@ import { copyMeshMaterials, disposeFlashClones, mapMeshMaterials } from '../enti
 import type { ClassId } from '../types/common';
 import { disposeSkeletons, setEmissiveHighlight } from './SceneKit';
 import { VARIANTS } from '../ui/menu/classInfo';
+import { CHARACTER_ACCESSORY_NODES } from '../entities/CharacterLod';
 
 /**
  * A displayable class character (menu stands, creation pedestal). Prefers the player module's
@@ -31,12 +32,7 @@ const MODEL_FILE: Partial<Record<ClassId, string>> = {
   necromancer: 'Mage', warlock: 'Rogue_Hooded',
 };
 
-const ACCESSORY_NAMES = [
-  '1H_Sword', '2H_Sword', 'Round_Shield', 'Badge_Shield', 'Rectangle_Shield', 'Spike_Shield', '1H_Sword_Offhand', 'Knight_Helmet', 'Knight_Cape',
-  '2H_Axe', '1H_Axe', 'Mug', '1H_Axe_Offhand', 'Barbarian_Round_Shield', 'Barbarian_Hat', 'Barbarian_Cape',
-  '2H_Staff', '1H_Wand', 'Spellbook', 'Spellbook_open', 'Mage_Hat', 'Mage_Cape',
-  'Knife', 'Knife_Offhand', 'Rogue_Cape', '1H_Crossbow', '2H_Crossbow', 'Throwable',
-];
+const ACCESSORY_NAMES = CHARACTER_ACCESSORY_NODES;
 
 const DEFAULT_VISIBLE: Partial<Record<ClassId, string[]>> = {
   knight: ['1H_Sword', 'Round_Shield', 'Knight_Helmet', 'Knight_Cape'],

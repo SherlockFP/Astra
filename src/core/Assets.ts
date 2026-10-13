@@ -286,6 +286,11 @@ function isKept(o: THREE.Object3D, root: THREE.Object3D): boolean {
   return false;
 }
 
+/** The keep-name rule for one node name: a node with a keep name stays a separate object, the mesh merge never joins it. */
+export function isKeptNodeName(name: string): boolean {
+  return keepNames.has(name) || (!!name && KEEP_NAME_RE.test(name.toLowerCase()));
+}
+
 /** Nodes targeted by animation tracks ("NodeName.position" -> "NodeName"). Their objects must keep existing. */
 function animatedNodeNames(clips: THREE.AnimationClip[]): Set<string> {
   const names = new Set<string>();

@@ -8,10 +8,10 @@
 // Run: node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/tribudget.mjs [--zone=karakir|sisli|both] [--q=low|mid|high] [--top=12] [--budget]
 // TOWN (Kuzgunkale, data/town.ts): the builder's own placed list (TownBuilder.townItems / wallPieces / planNature / townCottageSites),
 // instanced through the real InstanceBatcher and ChunkCuller with the town's LOD plans, plus the animated / emissive props, the terrain
-// grid and the horizon rings. The NPC characters are reported beside the line (NPC.ts draws them within 60 m, in view, and their shadows
-// only while in view), not inside it, as the open-world line leaves characters out. Worst of 10 sampled points against 250k triangles
-// and 400 draw calls. TOWN_AT=<point label> and TOWN_TOP=<n> print the per-model breakdown of one point (e.g. TOWN_AT=plaza TOWN_TOP=20).
-// --budget exits 1 when the Karakir spawn total is above 400k triangles or 300 draw calls, or the town's worst point is over its limits.
+// grid and the horizon rings. The characters (the local player and the ambient NPCs at the tiers of CharacterLod.ts) are reported beside the line with their
+// own budget: 80k triangles and 110 draw calls at the worst sampled point, with at least 20 ambient NPCs within 40 m in view drawn as models. The town line: worst of 10 sampled points against 250k
+// triangles and 400 draw calls. TOWN_AT=<point label> and TOWN_TOP=<n> print the per-model breakdown of one point (e.g. TOWN_AT=plaza TOWN_TOP=20).
+// --budget exits 1 when the Karakir spawn total is above 400k triangles or 300 draw calls, the town's worst point is over its limits, or the characters are over 80k triangles or 110 calls, or fewer than 20 ambient NPCs within 40 m in view are drawn as models.
 import fs from 'node:fs';
 
 const root = new URL('../../src/', import.meta.url).href;
@@ -25,7 +25,7 @@ const SCAN = process.argv.includes('--scan');
 console.warn = () => undefined;
 
 const THREE = await import('three');
-const { glbToGroup, fileOf, trisOfGroup } = await import(new URL('./glbtris.mjs', import.meta.url).href);
+const { glbToGroup, fileOf, trisOfGroup, readGlb } = await import(new URL('./glbtris.mjs', import.meta.url).href);
 const { TILE_SIZE: T } = await imp('types/dungeons.ts');
 const NB = await imp('world/NavBase.ts');
 const SC = await imp('world/chunks/StreamConfig.ts');
@@ -307,9 +307,14 @@ const DEC = await imp('world/Decor.ts');
 const SKY = await imp('world/Sky.ts');
 const SHB = await imp('world/ShadowFollow.ts');
 const { TOWN } = await imp('data/town.ts');
+const NPCM = await imp('entities/NPC.ts');
+const CL = await imp('entities/CharacterLod.ts');
+const { isKeptNodeName } = await imp('core/Assets.ts');
 
-const CHAR_FILE = { Knight: 'characters/Knight', Barbarian: 'characters/Barbarian', Mage: 'characters/Mage', Rogue: 'characters/Rogue', Rogue_Hooded: 'characters/Rogue_Hooded', King: 'npcs/King', Worker: 'npcs/Worker' };
-const charUrl = (m) => `/assets/models/${CHAR_FILE[m] ?? CHAR_FILE.Knight}.glb`;
+// the characters at the tiers of CharacterLod (NPC.ts applies them): accessory nodes, the local player (CharacterVisual DEFAULT_VISIBLE.knight)
+const ACC = new Set(CL.CHARACTER_ACCESSORY_NODES);
+const PLAYER_URL = '/assets/models/characters/Knight.glb';
+const PLAYER_SHOW = ['1H_Sword', 'Round_Shield', 'Knight_Helmet', 'Knight_Cape'];
 const triOfGeom = (g) => (g.index ? g.index.count : g.attributes.position.count) / 3;
 
 const groupCache = new Map();
@@ -322,14 +327,53 @@ function groupOf(url) {
       const g = glbToGroup(THREE, f);
       let calls = 0;
       g.traverse((o) => { if (o.isMesh) calls++; });
-      st = { tris: trisOfGroup(g), calls, size: new THREE.Box3().setFromObject(g).getSize(new THREE.Vector3()) };
+      const parts = [];
+      g.traverse((o) => { if (o.isMesh) parts.push({ name: o.name, tris: triOfGeom(o.geometry) }); });
+      st = { tris: trisOfGroup(g), calls, parts, size: new THREE.Box3().setFromObject(g).getSize(new THREE.Vector3()) };
     }
     groupCache.set(url, st);
   }
   return groupCache.get(url);
 }
 
-const NPC_DRAW_RANGE = 60; // src/entities/NPC.ts
+/**
+ * One character at the tiers of CharacterLod, from the GLB's own mesh nodes with the loader's rules (Assets.mergeSameMaterialMeshes):
+ * a node with a keep name stays a separate object, the other body meshes merge into one mesh per skin and material, and the accessory
+ * nodes an NPC shows stay separate (one call each). body = the mid tier (no attachments, no blob shadow), cast = what the shadow pass
+ * re-draws (body plus shown attachments), full = the main draw (cast plus the blob). show = null: no accessory toggling.
+ */
+const partsCache = new Map();
+function partsOf(url) {
+  if (!partsCache.has(url)) {
+    const { json } = readGlb(fileOf(RM.resolveModelUrl(url, true)));
+    const parts = [];
+    json.nodes.forEach((n) => {
+      if (n.mesh === undefined) return;
+      for (const p of json.meshes[n.mesh].primitives) {
+        parts.push({ name: n.name ?? '', skin: n.skin ?? -1, mat: p.material ?? -1, tris: p.indices !== undefined ? json.accessors[p.indices].count / 3 : 0 });
+      }
+    });
+    partsCache.set(url, parts);
+  }
+  return partsCache.get(url);
+}
+function charCost(url, show) {
+  const merged = new Map(); // (skin, material) -> triangles of the one merged body mesh
+  let accTris = 0, accCalls = 0, keptTris = 0, keptCalls = 0;
+  for (const p of partsOf(url)) {
+    if (show !== null && ACC.has(p.name)) { if (show.includes(p.name)) { accTris += p.tris; accCalls++; } continue; }
+    if (isKeptNodeName(p.name)) { keptTris += p.tris; keptCalls++; continue; }
+    const key = p.skin + '|' + p.mat;
+    merged.set(key, (merged.get(key) ?? 0) + p.tris);
+  }
+  let bodyTris = 0;
+  for (const t of merged.values()) bodyTris += t;
+  const body = { tris: bodyTris + keptTris, calls: merged.size + keptCalls };
+  const cast = { tris: body.tris + accTris, calls: body.calls + accCalls };
+  const full = { tris: cast.tris + 2, calls: cast.calls + 1 }; // the blob shadow plane (G.vfx.blobShadow): the full tier only
+  return { body, cast, full };
+}
+
 const TOWN_POINTS = [
   ['spawn', 0, 26], ['plaza', 0, 8], ['north of the portal hall', 0, -40], ['north-east quarter', 100, -100], ['south-east quarter', 100, 100],
   ['north-west quarter', -100, -100], ['south-west quarter', -100, 100], ['south gate yard', 0, 138], ['east gate yard', 138, 0], ['west gate yard', -138, 0],
@@ -385,8 +429,12 @@ async function measureTown() {
       for (const e of n.object.extra ?? []) addObj(e.model, n.pos[0] + e.pos[0], n.pos[1] + e.pos[1], n.pos[2] + e.pos[2], e.scale ?? 1);
       continue;
     }
-    const st = groupOf(charUrl(n.model));
-    if (st) chars.push({ x: n.pos[0], z: n.pos[2], tris: st.tris, calls: st.calls, model: n.model });
+    // the model NPC.ts loads for this definition (resolvePreset), with the accessories it shows
+    const preset = NPCM.resolvePreset(n);
+    const url = NPCM.npcModelUrl(preset.base);
+    const kay = url.includes('/characters/');
+    const cost = charCost(url, kay ? (preset.show ?? []) : null);
+    if (cost) chars.push({ x: n.pos[0], z: n.pos[2], cost, scale: preset.scale ?? 1, exemptRange: (n.interactRange || 3.8) + 0.7, model: preset.base });
   }
 
   // horizon rings and the terrain grid (createTerrain half 280, cell 10): drawn from every point
@@ -410,6 +458,8 @@ async function measureTown() {
   const fr = new THREE.Frustum(), pm = new THREE.Matrix4(), sph = new THREE.Sphere();
   const HEAD = 8;
   const points = [];
+  const plan = PERF.charLodPlan(QUALITY);
+  const PLAYER = charCost(PLAYER_URL, PLAYER_SHOW);
   const byName = new Map();
   const objByName = new Map();
   const shadowByName = new Map();
@@ -420,7 +470,7 @@ async function measureTown() {
     SHB.followShadowBox(light, new THREE.Vector3(x, 0, z), sunDir, 90); // TownBuilder.setupLighting
     light.shadow.updateMatrices(light);
     const sfr = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(light.shadow.camera.projectionMatrix, light.shadow.camera.matrixWorldInverse));
-    const a = { scen: 0, scenCalls: 0, shad: 0, shadCalls: 0, obj: 0, objCalls: 0, objShad: 0, objShadCalls: 0, char: 0, charCalls: 0, charShad: 0, charShadCalls: 0 };
+    const a = { scen: 0, scenCalls: 0, shad: 0, shadCalls: 0, obj: 0, objCalls: 0, objShad: 0, objShadCalls: 0, char: 0, charCalls: 0, full: 0, mid: 0, bill: 0, models40: 0, near40: 0, short: 0 };
     for (const im of batcher.meshes) {
       if (!im.visible) continue;
       if (!im.boundingSphere) im.computeBoundingSphere();
@@ -430,10 +480,6 @@ async function measureTown() {
     for (const o of objs) {
       sph.center.set(o.x, o.cy, o.z); sph.radius = o.r;
       if (o.cast && sfr.intersectsSphere(sph)) { a.objShad += o.tris; a.objShadCalls += o.calls; }
-    }
-    for (const c of chars) {
-      sph.center.set(c.x, 1.1, c.z); sph.radius = 1.3;
-      // (characters cast shadows only while they are on screen: counted per heading below)
     }
     for (let h = 0; h < HEAD; h++) {
       const ang = (h / HEAD) * Math.PI * 2;
@@ -458,17 +504,35 @@ async function measureTown() {
           if (label === (process.env.TOWN_AT ?? 'spawn')) { const b = objByName.get(o.name) ?? { tris: 0, n: 0 }; b.tris += o.tris / HEAD; b.n++; objByName.set(o.name, b); }
         }
       }
+      // characters (NPC.update): the view sphere with its margin, the tiers of CharacterLod and the ambient cap, nearest first.
+      // Skinned models are never frustum culled, so the shadow pass re-draws every full-tier caster too (the shadow box is not tested)
+      const seen = [];
       for (const c of chars) {
-        sph.center.set(c.x, 1.1, c.z); sph.radius = 1.3;
-        if (Math.hypot(c.x - x, c.z - z) < NPC_DRAW_RANGE && fr.intersectsSphere(sph)) {
-          a.char += c.tris / HEAD; a.charCalls += c.calls / HEAD;
-          if (sfr.intersectsSphere(sph)) { a.charShad += c.tris / HEAD; a.charShadCalls += c.calls / HEAD; } }
+        c.dist = Math.hypot(c.x - x, c.z - z);
+        if (c.dist >= plan.hide) continue;
+        sph.center.set(c.x, 1.3 * c.scale, c.z); sph.radius = 2.6 * c.scale + NPCM.NPC_VIEW_MARGIN;
+        if (fr.intersectsSphere(sph)) seen.push(c);
       }
+      seen.sort((p, q) => p.dist - q.dist);
+      let nearer = 0, models = 0, in40 = 0;
+      for (const c of seen) {
+        const exempt = c.dist < c.exemptRange;
+        const t = CL.tierFor(c.dist, true, exempt, nearer, plan);
+        if (!exempt) nearer++;
+        if (c.dist < plan.model) in40++;
+        if (t === 'full') { a.char += (c.cost.full.tris + c.cost.cast.tris) / HEAD; a.charCalls += (c.cost.full.calls + c.cost.cast.calls) / HEAD; a.full += 1 / HEAD; models++; }
+        else if (t === 'mid') { a.char += c.cost.body.tris / HEAD; a.charCalls += c.cost.body.calls / HEAD; a.mid += 1 / HEAD; models++; }
+        else if (t === 'billboard') { a.char += 2 / HEAD; a.charCalls += 1 / HEAD; a.bill += 1 / HEAD; }
+      }
+      a.models40 += models / HEAD; a.near40 += in40 / HEAD;
+      // WP-11: at least 20 ambient NPCs within 40 m in view stay models (all of them when fewer are in view)
+      if (models < Math.min(20, in40)) a.short++;
     }
-    const tris = a.scen + a.shad + a.obj + a.objShad + a.char + a.charShad + TERRAIN_TRIS + horizonTris;
-    const calls = a.scenCalls + a.shadCalls + a.objCalls + a.objShadCalls + a.charCalls + a.charShadCalls + 1 + hz.length;
-    const chars3 = a.char + a.charShad, charCalls = a.charCalls + a.charShadCalls;
-    points.push({ label, x, z, tris: tris - chars3, calls: calls - charCalls, chars: chars3, charCalls, a });
+    // the local player: always full, and its shadow is drawn too (never culled)
+    a.char += PLAYER.full.tris + PLAYER.cast.tris; a.charCalls += PLAYER.full.calls + PLAYER.cast.calls;
+    const tris = a.scen + a.shad + a.obj + a.objShad + a.char + TERRAIN_TRIS + horizonTris;
+    const calls = a.scenCalls + a.shadCalls + a.objCalls + a.objShadCalls + a.charCalls + 1 + hz.length;
+    points.push({ label, x, z, tris: tris - a.char, calls: calls - a.charCalls, chars: a.char, charCalls: a.charCalls, a });
   }
   const worst = points.reduce((w, p) => (p.tris > w.tris ? p : w));
   if (process.env.TOWN_TOP) console.log('shadow casters: ' + [...shadowByName.entries()].sort((p, q) => q[1].tris - p[1].tris).slice(0, 12).map(([n, b]) => n + ' ' + k(b.tris) + ' (' + b.n + ')').join(', '));
@@ -477,10 +541,12 @@ async function measureTown() {
     console.log('spawn: scenery by model (in-frustum tris, calls, instances):');
     for (const [n, b] of [...byName.entries()].sort((p, q) => q[1].tris - p[1].tris).slice(0, Number(process.env.TOWN_TOP))) console.log(`    ${n.padEnd(34)} ${k(b.tris).padStart(8)} ${b.calls.toFixed(1).padStart(6)} calls  x${b.inst}`);
     const cs = new Map();
-    for (const c of chars) { const b = cs.get(c.model) ?? { n: 0, tris: c.tris, calls: c.calls }; b.n++; cs.set(c.model, b); }
+    for (const c of chars) { const b = cs.get(c.model) ?? { n: 0, tris: c.cost.full.tris, calls: c.cost.full.calls }; b.n++; cs.set(c.model, b); }
     console.log('characters: ' + [...cs.entries()].map(([m, b]) => `${m} x${b.n} (${k(b.tris)} tris, ${b.calls} meshes)`).join(', '));
   }
-  return { points, worst, batched, individual, missing, npcCount, chars: chars.length, walls: walls.length, nature: nature.length, items: items.length, meshes: batcher.meshes.length, terrainTris: TERRAIN_TRIS, horizonTris, half };
+  // ambient characters within 40 m of each sampled point, in any direction (the in-view count is in the per-heading figures)
+  const around40 = TOWN_POINTS.map(([, x, z]) => chars.filter((c) => Math.hypot(c.x - x, c.z - z) < 40).length);
+  return { points, worst, around40, batched, individual, missing, npcCount, chars: chars.length, walls: walls.length, nature: nature.length, items: items.length, meshes: batcher.meshes.length, terrainTris: TERRAIN_TRIS, horizonTris, half };
 }
 
 const town = await measureTown();
@@ -497,11 +563,24 @@ const town = await measureTown();
   if (town.missing.length) console.log(`  (town models not found: ${town.missing.length})`);
 }
 
+{
+  const plaza = town.points.find((p) => p.label === 'plaza') ?? town.points[0];
+  const cT = Math.max(...town.points.map((p) => p.chars)), cC = Math.max(...town.points.map((p) => p.charCalls));
+  console.log('characters: worst sampled point ' + k(cT) + ' tris / ' + cC.toFixed(0) + ' calls (budget 80k / 110); plaza per heading: ' +
+    plaza.a.full.toFixed(1) + ' full, ' + plaza.a.mid.toFixed(1) + ' mid, ' + plaza.a.bill.toFixed(1) + ' billboards; models within 40 m ' + plaza.a.models40.toFixed(1) + ' of ' +
+    plaza.a.near40.toFixed(1) + ' in view; within 40 m in any direction, per sampled point: ' + town.around40.join('/') + ' (' + QUALITY + ' quality)');
+}
+
 if (BUDGET) {
   const limit = SCAN ? worst : karakirSpawn;
   const okK = limit <= 400000;
   console.log(`\nbudget: Karakir ${SCAN ? 'worst sampled point' : 'spawn'} ${k(limit)} tris (limit 400k) ${okK ? 'PASS' : 'FAIL'}`);
   const okT = town.worst.tris <= 250000 && town.worst.calls <= 400;
   console.log(`budget: town worst point ${k(town.worst.tris)} tris (limit 250k), ${town.worst.calls.toFixed(0)} draw calls (limit 400), characters excluded ${okT ? 'PASS' : 'FAIL'}`);
-  process.exit(okK && okT ? 0 : 1);
+  const cT = Math.max(...town.points.map((p) => p.chars)), cC = Math.max(...town.points.map((p) => p.charCalls));
+  const okS = town.points.every((p) => p.a.short === 0);
+  const okC = cT <= 80000 && cC <= 110 && okS;
+  console.log('budget: town characters (local player + ambient NPCs, worst sampled point) ' + k(cT) + ' tris (limit 80k), ' + cC.toFixed(0) +
+    ' draw calls (limit 110), at least 20 ambient NPCs within 40 m in view drawn as models at every heading: ' + (okS ? 'yes' : 'NO') + ' ' + (okC ? 'PASS' : 'FAIL'));
+  process.exit(okK && okT && okC ? 0 : 1);
 }
