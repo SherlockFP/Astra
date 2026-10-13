@@ -12,7 +12,9 @@ import {
   type WallStyle,
 } from '../types/dungeons';
 import type { VfxId } from '../types/vfx';
-import { NavGrid } from './NavGrid';
+import { NavGrid, type NavHeightSource } from './NavGrid';
+import { buildHeightfield, F, VERT, type Heightfield } from './Heightfield';
+import { cliffGeometry, railGeometry, slopeGeometry, tierGeometry } from './VerticalGeo';
 import { InstanceBatcher } from './Instancing';
 import { getPiece, loadPieces } from './Pieces';
 import { GlowField } from './Glow';
@@ -130,6 +132,15 @@ export interface BuiltDungeon {
   readonly fog: THREE.Fog | null;
   /** Open world only (DungeonDef.world): regions, villages, region atmosphere and ambience. Null for dungeons. */
   readonly world: WorldDecorHandle | null;
+  // ---- vertical dungeons (docs/ENGINE_VERTICALITY.md §16) ----
+  /** Heightfield of a `vertical` dungeon; null for legacy and open-world builds. */
+  readonly hf: Heightfield | null;
+  /** Floor height under a world point (0 on legacy builds). */
+  groundY(x: number, z: number): number;
+  /** Absolute ceiling above a world point (Infinity on legacy builds). */
+  ceilingY(x: number, z: number): number;
+  /** Absolute ceiling of a room index (Infinity for legacy and openAir rooms). */
+  roomTop(roomIdx: number): number;
 }
 
 /** Tagged props that gameplay may toggle (smash, open, activate): rendered as their own objects so they can be hidden. */
@@ -433,6 +444,8 @@ class DungeonBuild {
   bossRingMats: THREE.MeshBasicMaterial[] = [];
   /** Floor features (lava, pits...). Created right after the grid so floors/nav see the holes. */
   zf!: ZoneField;
+  /** Heightfield of a `vertical` dungeon (null otherwise: every height-aware branch below is skipped). */
+  hf: Heightfield | null = null;
   /** Open-world mode (DungeonDef.outdoor): terrain + tree walls instead of tiles + stone walls. */
   readonly outdoor: boolean;
   os: OutdoorScenery | null = null;
@@ -495,6 +508,85 @@ class DungeonBuild {
     return this.room(idx)?.wall ?? 'stone';
   }
 
+  // ---- vertical helpers (every one returns the legacy value when hf is null) ----
+  /** Floor height under a world point: the heightfield when vertical, 0 otherwise. */
+  floorAt(x: number, z: number): number {
+    return this.hf ? this.hf.groundY(x, z) : 0;
+  }
+
+  /** Attaches the heightfield to the nav grid (floors, flags, rim pass, regions) and sets the start / exit heights. */
+  attachVerticalNav(hf: Heightfield): void {
+    this.startPos.y = hf.groundY(this.startPos.x, this.startPos.z);
+    this.exitPos.y = hf.groundY(this.exitPos.x, this.exitPos.z);
+    const src: NavHeightSource = {
+      groundY: (x, z) => hf.groundY(x, z),
+      flagsAt: (x, z) => hf.flagsAt(x, z),
+      rimAt: (x, z) => this.rimAt(x, z),
+    };
+    this.nav.attachHeights(src);
+  }
+
+  /** HeightArea.rim of the area owning a world point (last area wins, like the floor); 'rail' when no area covers it. */
+  rimAt(x: number, z: number): 'rail' | 'ledge' | 'none' {
+    const tx = x / T, tz = z / T;
+    let rim: 'rail' | 'ledge' | 'none' = 'rail';
+    for (const room of this.def.rooms)
+      for (const a of room.heightAreas ?? []) {
+        if (tx >= a.rect.x && tx < a.rect.x + a.rect.w && tz >= a.rect.z && tz < a.rect.z + a.rect.h) rim = a.rim ?? 'rail';
+      }
+    return rim;
+  }
+
+  /**
+   * Wall base and top at lattice vertex (vi, vj): base = lowest non-void floor of the four tiles around it, top = highest room
+   * top among those rooms (legacy rooms: their floor + 4 m). Legacy builds: { base: 0, top: 4 }.
+   */
+  wallBaseTop(vi: number, vj: number): { base: number; top: number } {
+    const hf = this.hf;
+    if (!hf) return { base: 0, top: VERT.CEIL_LEGACY };
+    let base = Infinity, top = -Infinity;
+    for (const [ti, tj] of [[vi - 1, vj - 1], [vi, vj - 1], [vi - 1, vj], [vi, vj]]) {
+      const ri = this.tileRoom(ti, tj);
+      if (ri < 0) continue;
+      let tileMin = Infinity, tileMax = -Infinity;
+      for (const [zi, zj] of [[2 * ti, 2 * tj], [2 * ti + 1, 2 * tj], [2 * ti, 2 * tj + 1], [2 * ti + 1, 2 * tj + 1]]) {
+        const c = zj * hf.zw + zi;
+        if (hf.flags2[c]! & F.VOID) continue;
+        tileMin = Math.min(tileMin, hf.floor2[c]!);
+        tileMax = Math.max(tileMax, hf.floor2[c]!);
+      }
+      if (!Number.isFinite(tileMin)) continue;
+      base = Math.min(base, tileMin);
+      const rt = hf.roomTop[ri]!;
+      top = Math.max(top, Number.isFinite(rt) ? rt : tileMax + VERT.CEIL_LEGACY);
+    }
+    if (!Number.isFinite(base) || !Number.isFinite(top)) return { base: 0, top: VERT.CEIL_LEGACY };
+    return { base, top: Math.max(top, base + 1) };
+  }
+
+  /** Floor height of the door opening's two sides (the higher one): lintels, gates and the posts sit on it. */
+  doorFloor(o: Opening, midx: number, midz: number): number {
+    if (!this.hf) return 0;
+    return Math.max(this.hf.groundY(midx + o.nx, midz + o.nz), this.hf.groundY(midx - o.nx, midz - o.nz));
+  }
+
+  /**
+   * Wall piece at lattice vertex (vi, vj). Vertical dungeons: N pieces stacked from the wall base to the top, each stretched
+   * by at most 25 % (N = round(H / 4)). Legacy: one piece at y = 0, scale 1 (the old call).
+   */
+  addWallPiece(url: string, vi: number, vj: number, rot: number, color: THREE.Color, opts: { cast: boolean; receive: boolean }): void {
+    if (!this.hf) {
+      this.batcher.add(url, vi * T, 0, vj * T, rot, 1, color, opts);
+      return;
+    }
+    const { base, top } = this.wallBaseTop(vi, vj);
+    const H = top - base;
+    const n = Math.max(1, Math.round(H / VERT.CEIL_LEGACY));
+    for (let k = 0; k < n; k++) {
+      this.batcher.add(url, vi * T, base + (k * H) / n, vj * T, rot, [1, H / (VERT.CEIL_LEGACY * n), 1], color, opts);
+    }
+  }
+
   /** Per-instance tint = theme tint * style tint * seeded jitter. */
   col(style: number, jitter = 0.1, extra = 1): THREE.Color {
     const c = new THREE.Color(mulHex(this.tint, style));
@@ -516,7 +608,10 @@ class DungeonBuild {
   // ---------------------------------------------------------------------
   async build(): Promise<void> {
     this.buildGrid();
+    // vertical dungeons only (buildHeightfield returns null otherwise); outdoor builds ignore the vertical fields in v1
+    this.hf = this.outdoor ? null : buildHeightfield(this.def, (i, j) => this.tileRoom(i, j));
     this.zf = new ZoneField(this);
+    if (this.hf) this.attachVerticalNav(this.hf);
     this.setupTheme();
     if (this.outdoor) {
       this.os = new OutdoorScenery(this);
@@ -530,6 +625,7 @@ class DungeonBuild {
       this.placeFloors();
       this.placeWalls();
       this.placeOpenings();
+      if (this.hf) this.buildVerticalGeometry();
     }
     // hand-placed props first: they register their footprints so the seeded auto-decor keeps clear of them
     this.placeProps();
@@ -715,6 +811,10 @@ class DungeonBuild {
         const opts = { cast: false, receive: true, variant: fs.variant };
         const holeMask = this.zf.tileMask(tx, tz);
         if (holeMask === 15) continue; // lava / pit / deck slab all over the tile
+        if (this.hf) {
+          this.placeTileFloorsVertical(tx, tz, fs, dark * checker, holeMask, r.floor ?? 'stone', lavaGlow, runes);
+          continue;
+        }
         if (holeMask !== 0) {
           // part of the tile is a hole: lay 2 m tiles around it
           for (let q = 0; q < 4; q++) {
@@ -744,6 +844,47 @@ class DungeonBuild {
     if (runes.length) this.buildFloorRunes(runes);
   }
 
+  /**
+   * Floor of one 4 m tile in a vertical dungeon (§7.1). A flat, hole-free tile gets the legacy large tile at its height; otherwise
+   * each 2 m quadrant is laid at its own cell height, skipping holes, slopes (the stairs/ramp mesh covers them) and lift pads.
+   */
+  placeTileFloorsVertical(
+    tx: number, tz: number, fs: FloorStyleDef, extra: number, holeMask: number, roomFloor: FloorStyle,
+    lavaGlow: { x: number; z: number; flip: number }[], runes: { x: number; z: number; rot: number }[],
+  ): void {
+    const hf = this.hf!, rng = this.rng;
+    const cellOfQ = (q: number): number => (2 * tz + (q < 2 ? 0 : 1)) * hf.zw + 2 * tx + (q & 1);
+    const cells = [0, 1, 2, 3].map(cellOfQ);
+    const SKIP = F.VOID | F.SLOPE | F.LIFT;
+    const flat = cells.every((c) => hf.floor2[c] === hf.floor2[cells[0]!] && !(hf.flags2[c]! & SKIP));
+    const cx = (tx + 0.5) * T, cz = (tz + 0.5) * T;
+    const opts = { cast: false, receive: true, variant: fs.variant };
+    if (holeMask === 0 && flat) {
+      const y = hf.floor2[cells[0]!]!;
+      if (fs.special.length && rng.chance(0.11)) {
+        for (let q = 0; q < 4; q++) {
+          const sx = cx + (q % 2 ? 1 : -1), sz = cz + (q < 2 ? -1 : 1);
+          const name = rng.chance(0.55) ? rng.pick(fs.special) : rng.pick(fs.small);
+          this.batcher.add(D(name), sx, y, sz, rng.int(0, 3) * (PI / 2), 1, this.col(fs.tint, 0.14, extra), opts);
+        }
+      } else {
+        const name = rng.pick(fs.large);
+        this.batcher.add(D(name), cx, y, cz, rng.int(0, 3) * (PI / 2), 1, this.col(fs.tint, 0.14, extra), opts);
+      }
+      if (fs.cracks && rng.chance(0.5)) lavaGlow.push({ x: cx, z: cz, flip: rng.int(0, 3) });
+      if (roomFloor === 'temple' && rng.chance(0.09)) runes.push({ x: cx, z: cz, rot: rng.range(0, PI * 2) });
+      return;
+    }
+    for (let q = 0; q < 4; q++) {
+      if (holeMask & (1 << q)) continue;
+      const c = cells[q]!;
+      if (hf.flags2[c]! & SKIP) continue;
+      const sx = cx + (q & 1 ? 1 : -1), sz = cz + (q < 2 ? -1 : 1);
+      const name = fs.special.length && rng.chance(0.3) ? rng.pick(fs.special) : rng.pick(fs.small);
+      this.batcher.add(D(name), sx, hf.floor2[c]!, sz, rng.int(0, 3) * (PI / 2), 1, this.col(fs.tint, 0.14, extra), opts);
+    }
+  }
+
   buildLavaCracks(list: { x: number; z: number; flip: number }[]): void {
     // dark basalt cracks lit from below: an unlit orange cutout decal + soft floor halos
     const cv = surfaceCanvas('lava', this.def.id, 64);
@@ -767,10 +908,11 @@ class DungeonBuild {
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), s = new THREE.Vector3(1, 1, 1);
     list.forEach((it, k) => {
       q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), it.flip * (PI / 2));
-      p.set(it.x, 0.075, it.z);
+      const fy = this.floorAt(it.x, it.z);
+      p.set(it.x, fy + 0.075, it.z);
       m.compose(p, q, s);
       im.setMatrixAt(k, m);
-      if (k % 3 === 0) this.halo.add([it.x, 0.35, it.z], 0xff6a20, { size: 3.8, flicker: 0.25, intensity: 0.5 });
+      if (k % 3 === 0) this.halo.add([it.x, fy + 0.35, it.z], 0xff6a20, { size: 3.8, flicker: 0.25, intensity: 0.5 });
     });
     im.frustumCulled = false;
     this.root.add(im);
@@ -801,14 +943,60 @@ class DungeonBuild {
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), s = new THREE.Vector3(1, 1, 1);
     list.forEach((it, k) => {
       q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), it.rot);
-      p.set(it.x, 0.08, it.z);
+      const fy = this.floorAt(it.x, it.z);
+      p.set(it.x, fy + 0.08, it.z);
       m.compose(p, q, s);
       im.setMatrixAt(k, m);
-      this.halo.add([it.x, 0.4, it.z], 0xb070ff, { size: 4, flicker: 0.12, intensity: 0.5 });
+      this.halo.add([it.x, fy + 0.4, it.z], 0xb070ff, { size: 4, flicker: 0.12, intensity: 0.5 });
     });
     im.frustumCulled = false;
     this.root.add(im);
     this.disposables.push(tex, geo, mat, im);
+  }
+
+  /**
+   * Stairs, ramps, rails, cliff faces and upper tiers of a vertical dungeon (§7.2, §7.4, §7.6). Each kind is one merged mesh,
+   * flagged fadeable (the occluder fade handles them); the geometry comes from the heightfield, so it matches groundY.
+   */
+  buildVerticalGeometry(): void {
+    const hf = this.hf;
+    if (!hf) return;
+    const id = this.def.id;
+    const stone = psxMaterial(surfaceTexture('cobble', id, 64), { color: new THREE.Color(mulHex(this.tint, 0xc0bcc4)), affine: false, roughness: 1, side: THREE.DoubleSide });
+    const rock = psxMaterial(surfaceTexture('rock', id, 64), { color: new THREE.Color(mulHex(this.tint, 0xb0aab4)), affine: false, roughness: 1, side: THREE.DoubleSide });
+    const planks = psxMaterial(surfaceTexture('planks', id, 64), { color: new THREE.Color(mulHex(this.tint, 0xd0b8a0)), affine: false, roughness: 1, side: THREE.DoubleSide });
+    const carpet = psxMaterial(null, { color: 0x7a1c22, affine: false, roughness: 1 });
+    const rail = psxMaterial(surfaceTexture('rock', id + ':rail', 64), { color: new THREE.Color(mulHex(this.tint, 0x8c8a98)), affine: false, roughness: 1 });
+    const glass = psxMaterial(null, { color: 0xffc070, emissive: 0xffa040, emissiveIntensity: 1.2, affine: false });
+    this.disposables.push(stone, rock, planks, carpet, rail, glass);
+    const add = (geo: THREE.BufferGeometry | null, mat: THREE.Material, name: string, fade = true): void => {
+      if (!geo) return;
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.name = name;
+      mesh.castShadow = shouldCastShadow(mesh);
+      mesh.receiveShadow = true;
+      this.root.add(mesh);
+      if (fade) markFadeable(mesh);
+      this.disposables.push(geo);
+    };
+    // stairs / ramps: room order then slope order, the same order buildHeightfield used for hf.slopes
+    let k = 0;
+    for (const room of this.def.rooms)
+      for (const s of room.slopes ?? []) {
+        const bs = hf.slopes[k++];
+        if (!bs) continue;
+        add(slopeGeometry(bs, 'body'), s.style === 'wood' ? planks : stone, `slope:${id}:${k}`);
+        if (s.style === 'carpet') add(slopeGeometry(bs, 'carpet'), carpet, `carpet:${id}:${k}`);
+      }
+    add(railGeometry(this.nav), rail, `rails:${id}`);
+    add(cliffGeometry(hf), rock, `cliffs:${id}`);
+    this.def.rooms.forEach((room, ri) => {
+      for (const t of room.tiers ?? []) {
+        const g = tierGeometry(t, room, hf, hf.roomTop[ri]!);
+        add(g.stone, stone, `tier:${id}:${t.kind}`);
+        add(g.glass, glass, `tier_glass:${id}:${t.kind}`, false);
+      }
+    });
   }
 
   // ---- 4. walls ----
@@ -831,21 +1019,21 @@ class DungeonBuild {
         const color = this.col(ws.tint, 0.12, dark);
         const cast = { cast: true, receive: true };
         const key = j * (W + 1) + i;
-        if (count === 4) this.batcher.add(D('wall_crossing'), x, 0, z, 0, 1, color, cast);
+        if (count === 4) this.addWallPiece(D('wall_crossing'), i, j, 0, color, cast);
         else if (count === 3) {
           // stub = arm opposite of the missing one
           const rot = !n ? 0 : !s ? PI : !e ? -PI / 2 : PI / 2;
-          this.batcher.add(D('wall_Tsplit'), x, 0, z, rot, 1, color, cast);
+          this.addWallPiece(D('wall_Tsplit'), i, j, rot, color, cast);
         } else if (count === 2) {
           if (e && w) this.straight(i, j, x, z, 0, ws, color, key);
           else if (n && s) this.straight(i, j, x, z, PI / 2, ws, color, key);
           else {
             const rot = e && s ? PI / 2 : w && s ? 0 : w && n ? -PI / 2 : PI;
-            this.batcher.add(D('wall_corner'), x, 0, z, rot, 1, color, cast);
+            this.addWallPiece(D('wall_corner'), i, j, rot, color, cast);
           }
         } else {
           const dx = e ? 1 : w ? -1 : 0, dz = s ? 1 : n ? -1 : 0;
-          this.batcher.add(D('wall_half_endcap'), x, 0, z, Math.atan2(dz, -dx), 1, color, cast);
+          this.addWallPiece(D('wall_half_endcap'), i, j, Math.atan2(dz, -dx), color, cast);
         }
       }
     // dead-simple "solid rock" top so a down-looking camera never sees the void
@@ -865,7 +1053,7 @@ class DungeonBuild {
       const walkSide = rot === 0 ? (this.tileRoom(i, j) >= 0 ? 1 : -1) : this.tileRoom(i, j) >= 0 ? 1 : -1; // tile (i,j) is south/east of the vertex
       r = rot === 0 ? (walkSide > 0 ? 0 : PI) : walkSide > 0 ? PI / 2 : -PI / 2;
     }
-    this.batcher.add(D(variant), x, 0, z, r, 1, color, { cast: true, receive: true });
+    this.addWallPiece(D(variant), i, j, r, color, { cast: true, receive: true });
   }
 
   /** Dark stone slab over every non-walkable tile (and a big outer plane) so the camera sees solid rock, not void. */
@@ -873,10 +1061,10 @@ class DungeonBuild {
     const { W, H } = this;
     const M = 8;
     const pos: number[] = [], uv: number[] = [], col: number[] = [], idx: number[] = [];
-    const y = 3.86;
     const rr = new RNG(hashString(this.def.id + ':rock'));
     let v = 0;
-    const quad = (x0: number, z0: number, x1: number, z1: number, shade: number) => {
+    let maxCap = 3.86;
+    const quad = (x0: number, z0: number, x1: number, z1: number, shade: number, y: number) => {
       pos.push(x0, y, z0, x1, y, z0, x1, y, z1, x0, y, z1);
       const u = 0.25;
       uv.push(x0 * u, z0 * u, x1 * u, z0 * u, x1 * u, z1 * u, x0 * u, z1 * u);
@@ -889,7 +1077,9 @@ class DungeonBuild {
         if (this.tileRoom(tx, tz) >= 0) continue;
         const near = this.nearWalkable(tx, tz, 2);
         const shade = near ? 0.55 + rr.next() * 0.25 : 0.3 + rr.next() * 0.12;
-        quad(tx * T, tz * T, (tx + 1) * T, (tz + 1) * T, shade);
+        const cap = this.rockCapY(tx, tz);
+        maxCap = Math.max(maxCap, cap);
+        quad(tx * T, tz * T, (tx + 1) * T, (tz + 1) * T, shade, cap);
       }
     // far plane ring
     const far = 400;
@@ -899,7 +1089,7 @@ class DungeonBuild {
       [-far, -M * T, -M * T, (H + M) * T],
       [(W + M) * T, -M * T, W * T + far, (H + M) * T],
     ];
-    for (const r of ring) quad(r[0], r[1], r[2], r[3], 0.3);
+    for (const r of ring) quad(r[0], r[1], r[2], r[3], 0.3, maxCap);
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
@@ -920,6 +1110,13 @@ class DungeonBuild {
     this.disposables.push(g, mat);
   }
 
+  /** Top of the rock cap over a solid tile: the ceiling of the rooms around it (§7.3), never below the legacy 3.86. */
+  rockCapY(tx: number, tz: number): number {
+    if (!this.hf) return 3.86;
+    const c = this.hf.ceilingY(tx * T + T / 2, tz * T + T / 2);
+    return Number.isFinite(c) ? Math.max(3.86, c - 0.14) : 3.86;
+  }
+
   nearWalkable(tx: number, tz: number, r: number): boolean {
     for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) if (this.tileRoom(tx + dx, tz + dz) >= 0) return true;
     return false;
@@ -936,7 +1133,8 @@ class DungeonBuild {
         const name = k % 2 === 0 ? 'pillar_decorated' : 'pillar';
         // decorated pillar has its banner on +Z: turn it toward the room side
         const rotz = Math.atan2(o.nx, o.nz); // face along the door normal
-        this.batcher.add(D(name), px, 0, pz, name === 'pillar_decorated' ? rotz : 0, 1, this.col(0xffffff, 0.08), { cast: true, receive: true });
+        const pb = this.wallBaseTop(Math.round(px / T), Math.round(pz / T)).base;
+        this.batcher.add(D(name), px, pb, pz, name === 'pillar_decorated' ? rotz : 0, 1, this.col(0xffffff, 0.08), { cast: true, receive: true });
         this.blockCircle(px, pz, 0.85);
       };
       post(o.ax, o.az, 0);
@@ -944,7 +1142,8 @@ class DungeonBuild {
       // torches on the inner faces of the posts
       for (const [px, pz, dirSign] of [[o.ax, o.az, 1], [o.bx, o.bz, -1]] as [number, number, number][]) {
         const tx = px + o.ux * dirSign * 0.78, tz = pz + o.uz * dirSign * 0.78;
-        this.addTorch(tx, 2.5, tz, Math.atan2(o.ux * dirSign, o.uz * dirSign), th.torchColor, true);
+        const pb = this.wallBaseTop(Math.round(px / T), Math.round(pz / T)).base;
+        this.addTorch(tx, pb + 2.5, tz, Math.atan2(o.ux * dirSign, o.uz * dirSign), th.torchColor, true);
       }
       // gates
       const kind = o.gate;
@@ -967,7 +1166,7 @@ class DungeonBuild {
     const geo = worldUVBox(along ? len : 1.0, 1.05, along ? 1.0 : len, 0.25);
     const mat = psxMaterial(surfaceTexture('brick', 'lintel', 64), { color: new THREE.Color(mulHex(this.tint, 0xb8b0a8)), affine: false });
     const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.set(midx, 3.45, midz);
+    mesh.position.set(midx, this.doorFloor(o, midx, midz) + 3.45, midz);
     mesh.castShadow = shouldCastShadow(mesh);
     mesh.receiveShadow = true;
     this.root.add(mesh);
@@ -1006,7 +1205,8 @@ class DungeonBuild {
     const uv = merged.attributes.uv as THREE.BufferAttribute;
     for (let k = 0; k < uv.count; k++) uv.setXY(k, uv.getX(k) * 0.7, uv.getY(k) * 0.7);
     const tex = surfaceTexture('iron', 'gate', 32);
-    const clip = new THREE.Plane(new THREE.Vector3(0, -1, 0), 2.92);
+    const base = this.doorFloor(o, midx, midz);
+    const clip = new THREE.Plane(new THREE.Vector3(0, -1, 0), 2.92 + base);
     const mat = psxMaterial(tex, { color: 0xb8bcc8, roughness: 0.6, affine: false });
     mat.clippingPlanes = [clip];
     const mesh = new THREE.Mesh(merged, mat);
@@ -1015,7 +1215,7 @@ class DungeonBuild {
     const grp = new THREE.Group();
     grp.name = `gate:${o.def.a}|${o.def.b}`;
     grp.add(mesh);
-    grp.position.set(midx, 0, midz);
+    grp.position.set(midx, base, midz);
     grp.rotation.y = along ? 0 : PI / 2;
     this.root.add(grp);
     markFadeable(grp);
@@ -1028,7 +1228,7 @@ class DungeonBuild {
     for (let c = ca + 1; c < cb; c++) cells.push(along ? [c, Math.round(o.az)] : [Math.round(o.ax), c]);
     const nav = this.nav;
     const anims = this.gateAnims;
-    const center = new THREE.Vector3(midx, 0, midz);
+    const center = new THREE.Vector3(midx, base, midz);
     const state = { open: true };
     const anim = { obj: grp, from: 0, to: 0, t: 1, dur: 0.9, done: true };
     anims.push(anim);
@@ -1037,7 +1237,7 @@ class DungeonBuild {
       if (state.open === open) return;
       state.open = open;
       anim.from = grp.position.y;
-      anim.to = open ? 2.95 : 0;
+      anim.to = open ? base + 2.95 : base;
       anim.t = 0;
       anim.done = false;
       anim.dur = open ? 1.1 : 0.55;
@@ -1049,7 +1249,7 @@ class DungeonBuild {
       } catch { /* optional */ }
     };
     // boss/forces gates start open (scenes close them); the visual starts raised
-    grp.position.y = 2.95;
+    grp.position.y = base + 2.95;
     const gate: DungeonGate = {
       open: () => play(true),
       close: () => play(false),
@@ -1086,9 +1286,20 @@ class DungeonBuild {
         // decorated pillars face the room centre
         const cx = (x + w / 2) * T, cz = (z + h / 2) * T;
         const face = Math.atan2(cx - wx, cz - wz);
-        this.batcher.add(D(decorated ? 'pillar_decorated' : 'pillar'), wx, 0, wz, decorated ? Math.round(face / (PI / 2)) * (PI / 2) : 0, 1, this.col(ws.tint, 0.08), { cast: true, receive: true });
-        this.blockCircle(wx, wz, 0.85);
-        this.avoid.push({ x: wx, z: wz, r: 1.4 });
+        // vertical rooms with a ceiling: the pillar stands on the floor and is stretched to the ceiling (§7.5), k = height / 4 m
+        let wy = 0, sxz = 1, scale: number | [number, number, number] = 1;
+        if (this.hf) {
+          wy = this.hf.groundY(wx, wz);
+          const top = this.hf.roomTop[idx]!;
+          if (Number.isFinite(top)) {
+            const k = THREE.MathUtils.clamp((top - wy) / VERT.CEIL_LEGACY, 0.75, 6);
+            sxz = THREE.MathUtils.clamp(0.9 + 0.12 * (k - 1), 1, 1.8);
+            scale = [sxz, k, sxz];
+          }
+        }
+        this.batcher.add(D(decorated ? 'pillar_decorated' : 'pillar'), wx, wy, wz, decorated ? Math.round(face / (PI / 2)) * (PI / 2) : 0, scale, this.col(ws.tint, 0.08), { cast: true, receive: true });
+        this.blockCircle(wx, wz, 0.85 * sxz);
+        this.avoid.push({ x: wx, z: wz, r: 1.4 * sxz });
       }
     });
   }
@@ -1159,12 +1370,17 @@ class DungeonBuild {
         if (!this.slotPlain(s)) continue;
         if (this.isAvoidedDoor(s.x, s.z, 3.2)) continue;
         if (minDim <= 2 && rng.chance(0.45)) continue; // corridors: fewer
-        this.addTorch(s.x + s.nx * 0.5, 2.5, s.z + s.nz * 0.5, Math.atan2(s.nx, s.nz), tcol, true);
+        const wb = this.wallBaseTop(s.i, s.j);
+        this.addTorch(s.x + s.nx * 0.5, wb.base + 2.5, s.z + s.nz * 0.5, Math.atan2(s.nx, s.nz), tcol, true);
         placed++;
+        // tall vertical walls (H >= 10 m) get a second, higher torch every third slot (§7.3)
+        if (this.hf && wb.top - wb.base >= 10 && placed % 3 === 0) {
+          this.addTorch(s.x + s.nx * 0.5, wb.base + 0.6 * (wb.top - wb.base), s.z + s.nz * 0.5, Math.atan2(s.nx, s.nz), tcol, true);
+        }
       }
       if (placed === 0 && list.length) {
         const s = list.find((q) => this.slotPlain(q)) ?? list[0];
-        this.addTorch(s.x + s.nx * 0.5, 2.5, s.z + s.nz * 0.5, Math.atan2(s.nx, s.nz), tcol, true);
+        this.addTorch(s.x + s.nx * 0.5, this.wallBaseTop(s.i, s.j).base + 2.5, s.z + s.nz * 0.5, Math.atan2(s.nx, s.nz), tcol, true);
       }
     }
     // banners & hung trophies on plain straight walls
@@ -1187,7 +1403,7 @@ class DungeonBuild {
       if (this.nearBanner(bx, bz)) continue;
       const colour = brng.pick(ws.banners);
       const kind = brng.pick(['banner_', 'banner_patternA_', 'banner_patternB_', 'banner_patternC_', 'banner_thin_', 'banner_shield_']);
-      this.batcher.add(D(`${kind}${colour}`), bx, 0, bz, Math.atan2(s.nx, s.nz), 1, this.col(0xffffff, 0.06), { cast: false, receive: true });
+      this.batcher.add(D(`${kind}${colour}`), bx, this.wallBaseTop(vi, vj).base, bz, Math.atan2(s.nx, s.nz), 1, this.col(0xffffff, 0.06), { cast: false, receive: true });
       this.bannerPts.push({ x: bx, z: bz });
     }
     // wall trophies / shelves / chains
@@ -1203,7 +1419,7 @@ class DungeonBuild {
       if (r < density * 0.07) {
         const url = hrng.pick(set.hung);
         const isShelf = url.includes('shelf_small_candles');
-        const y = isShelf ? 1.7 : 2.3;
+        const y = (isShelf ? 1.7 : 2.3) + this.wallBaseTop(s.i, s.j).base;
         this.batcher.add(url, ox, y, oz, Math.atan2(s.nx, s.nz), 1, this.col(0xffffff, 0.05), { cast: false, receive: false });
         if (isShelf) {
           this.halo.add([ox + s.nx * 0.3, y + 0.8, oz + s.nz * 0.3], 0xffb060, { size: 1.6, flicker: 0.4, intensity: 0.5 });
@@ -1211,7 +1427,7 @@ class DungeonBuild {
         }
         this.hungPts.push({ x: s.x, z: s.z });
       } else if (r < density * 0.07 + density * 0.05) {
-        this.batcher.add(G_('chains_hanging'), ox + s.nx * 0.12, 4.0, oz + s.nz * 0.12, Math.atan2(s.nx, s.nz), 1, this.col(0xffffff, 0.1), { cast: false, receive: false });
+        this.batcher.add(G_('chains_hanging'), ox + s.nx * 0.12, 4.0 + this.wallBaseTop(s.i, s.j).base, oz + s.nz * 0.12, Math.atan2(s.nx, s.nz), 1, this.col(0xffffff, 0.1), { cast: false, receive: false });
         this.hungPts.push({ x: s.x, z: s.z });
       }
     }
@@ -1246,8 +1462,9 @@ class DungeonBuild {
         const x = i * T + sx * 0.52, z = j * T + sz * 0.52;
         // one web per wall that meets in the corner
         // wall A runs along X (face normal along sz), wall B runs along Z (face normal along sx)
-        items.push({ x, y: 3.9, z: j * T + sz * 0.52, rot: sz > 0 ? 0 : PI, mirror: sx < 0 });
-        items.push({ x: i * T + sx * 0.52, y: 3.9, z, rot: sx > 0 ? PI / 2 : -PI / 2, mirror: sz > 0 });
+        const cy = this.wallBaseTop(i, j).base + 3.9;
+        items.push({ x, y: cy, z: j * T + sz * 0.52, rot: sz > 0 ? 0 : PI, mirror: sx < 0 });
+        items.push({ x: i * T + sx * 0.52, y: cy, z, rot: sx > 0 ? PI / 2 : -PI / 2, mirror: sz > 0 });
       }
     if (!items.length) return;
     const tex = cobwebTexture(64);
@@ -1343,14 +1560,15 @@ class DungeonBuild {
 
   placeDecor(url: string, x: number, z: number, rot: number, rng: RNG, color: THREE.Color, collide: boolean): void {
     const scale = 0.92 + rng.next() * 0.2;
-    this.batcher.add(url, x, 0.02, z, rot, scale, color, { cast: true, receive: true });
+    const fy = this.floorAt(x, z);
+    this.batcher.add(url, x, fy + 0.02, z, rot, scale, color, { cast: true, receive: true });
     this.decorMeta.push({ url, x, z, rot, scale, collide });
     // glowing decor
     const base = baseName(url);
-    if (base === 'candle_lit' || base === 'candle_thin_lit') this.halo.add([x, 1.1, z], 0xffb070, { size: 1.4, flicker: 0.4, intensity: 0.5 });
+    if (base === 'candle_lit' || base === 'candle_thin_lit') this.halo.add([x, fy + 1.1, z], 0xffb070, { size: 1.4, flicker: 0.4, intensity: 0.5 });
     if (base === 'crystal_blue' || base === 'crystal_purple') {
       const l = propLightFor(url)!;
-      this.halo.add([x, 1.1, z], l.color, { size: l.halo ?? 3, flicker: 0.1, intensity: 0.6 });
+      this.halo.add([x, fy + 1.1, z], l.color, { size: l.halo ?? 3, flicker: 0.1, intensity: 0.6 });
     }
   }
   decorMeta: { url: string; x: number; z: number; rot: number; scale: number; collide: boolean }[] = [];
@@ -1366,7 +1584,8 @@ class DungeonBuild {
     const x = tc(p.pos[0]), z = tc(p.pos[1]);
     const rot = ((p.rot ?? 0) * PI) / 180;
     const scale = p.scale ?? 1;
-    const y = p.y ?? 0;
+    // vertical dungeons: props stand on the floor under them (§7.6); legacy: the offset alone
+    const y = this.hf ? this.hf.groundY(x, z) + (p.y ?? 0) : p.y ?? 0;
     const piece = getPiece(p.model); // preloaded by buildDungeon (dungeonAssetUrls lists every prop model)
     const sz = piece?.size ?? new THREE.Vector3(1, 1, 1);
     const topY = (piece?.box.max.y ?? 1) * scale;
@@ -1527,11 +1746,12 @@ class DungeonBuild {
     for (const b of this.pendingBraziers) {
       this.animProps.push((async () => {
         const h = await spawnAnimatedProp(G_('brazier'));
-        h.object.position.set(b.x, 0, b.z);
+        const bf = this.floorAt(b.x, b.z);
+        h.object.position.set(b.x, bf, b.z);
         this.root.add(h.object);
         h.refreshAnchors();
         this.propUpdaters.push(h.update);
-        const lp = h.lightPos ?? new THREE.Vector3(b.x, 1.45, b.z);
+        const lp = h.lightPos ?? new THREE.Vector3(b.x, bf + 1.45, b.z);
         this.lights.add(lp, { color: b.color, intensity: designToPhysical(2.4), distance: 12, flicker: 0.3 });
         this.halo.add(lp, b.color, { size: 5, flicker: 0.3, intensity: 0.55 });
         for (const fp of h.flamePos) this.flames.add([fp.x, fp.y - 0.4, fp.z], 0xffb040, { size: 1.3, flicker: 0.45, anchor: 1 });
@@ -1773,6 +1993,10 @@ export async function buildDungeon(def: DungeonDef, scene: THREE.Scene): Promise
     propById: (id) => b.propHandles.find((q) => q.id === id),
     get fog() { return b.fog; },
     world: b.worldDecor,
+    hf: b.hf,
+    groundY: (x, z) => b.floorAt(x, z),
+    ceilingY: (x, z) => (b.hf ? b.hf.ceilingY(x, z) : Infinity),
+    roomTop: (idx) => (b.hf ? (b.hf.roomTop[idx] ?? Infinity) : Infinity),
   };
   return built;
 }

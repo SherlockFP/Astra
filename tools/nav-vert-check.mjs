@@ -15,7 +15,11 @@
  * Exit code 1 on any failure. Needs Node >= 22.18 (native TypeScript type stripping).
  */
 import * as THREE from 'three';
-import { NavGrid, NAV_F } from '../src/world/NavGrid.ts';
+import { register } from 'node:module';
+// resolve extension-less relative imports ("./Heightfield") to .ts files like the bundler does (same hook as height-check)
+const hooks = "export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if((e.code==='ERR_MODULE_NOT_FOUND'||e.code==='ERR_UNSUPPORTED_DIR_IMPORT')&&(s.startsWith('.')||s.startsWith('/'))){for(const suf of ['.ts','/index.ts']){try{return await n(s+suf,c)}catch{}}}throw e}}";
+register('data:text/javascript,' + encodeURIComponent(hooks));
+const { NavGrid, NAV_F } = await import('../src/world/NavGrid.ts');
 
 const N = 10;
 let pass = 0;

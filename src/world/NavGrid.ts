@@ -1,20 +1,16 @@
 import * as THREE from 'three';
+import { F, VERT, type Heightfield } from './Heightfield';
 
 /**
- * Structural subset of the Heightfield API (docs/ENGINE_VERTICALITY.md §4, src/world/Heightfield.ts by V1).
- * Replace with `import type { Heightfield }` once that file exists; the shape is the same.
+ * What NavGrid needs from the height model (docs/ENGINE_VERTICALITY.md §4-§5). `rimAt` is the rim policy of the HIGH side of
+ * a drop (HeightArea.rim, supplied by DungeonBuilder); absent => 'rail'.
  */
-export interface NavHeightSource {
-  groundY(x: number, z: number): number;
-  flagsAt(x: number, z: number): number;
-  /** Rim policy of the HIGH side of a drop (HeightArea.rim). Absent => 'rail'. */
+export type NavHeightSource = Pick<Heightfield, 'groundY' | 'flagsAt'> & {
   rimAt?(x: number, z: number): 'rail' | 'ledge' | 'none';
-}
+};
 
-/** Same bit values as `F` in Heightfield.ts (§4). Keep in sync until the import is possible. */
-export const NAV_F = { VOID: 1, SLOPE: 2, LOW: 4, LIFT: 8, LEDGE: 16, RAIL: 32 } as const;
-/** Subset of `VERT` (§2, Heightfield.ts). Keep in sync until the import is possible. */
-const NAV_VERT = { STEP_UP: 0.45, RAMP_PAIR: 0.85, AIR_STEP: 0.25, LOW_RAIL: 1.2 } as const;
+/** NAV_F bits = the F flags of Heightfield.ts. Re-exported under the old name for tools/nav-vert-check.mjs. */
+export { F as NAV_F };
 const EPS = 1e-3;
 
 /**
@@ -70,7 +66,7 @@ export class NavGrid {
   isWalkable(x: number, z: number): boolean {
     const c = this.cx(x), r = this.cz(z);
     if (this.cell(c, r) <= 0) return false;
-    if (this.flags && (this.flags[r * this.cols + c] & NAV_F.VOID)) return false;
+    if (this.flags && (this.flags[r * this.cols + c] & F.VOID)) return false;
     return true;
   }
 
@@ -82,14 +78,14 @@ export class NavGrid {
   private standableCell(c: number, r: number): boolean {
     if (this.cell(c, r) <= 0) return false;
     if (!this.flags) return true;
-    return !(this.flags[r * this.cols + c] & (NAV_F.VOID | NAV_F.LEDGE));
+    return !(this.flags[r * this.cols + c] & (F.VOID | F.LEDGE));
   }
 
   /** A* / region node: standable and not a lift platform (lifts never join regions). Flat grid: cell > 0. */
   private pathCell(c: number, r: number): boolean {
     if (this.cell(c, r) <= 0) return false;
     if (!this.flags) return true;
-    return !(this.flags[r * this.cols + c] & (NAV_F.VOID | NAV_F.LEDGE | NAV_F.LIFT));
+    return !(this.flags[r * this.cols + c] & (F.VOID | F.LEDGE | F.LIFT));
   }
 
   /** Mark a world-space axis-aligned rectangle. */
@@ -200,7 +196,7 @@ export class NavGrid {
   /** Open, not void/slope/lift: a cell the rim pass may act on. */
   private rimEligible(c: number, r: number): boolean {
     if (this.cell(c, r) <= 0) return false;
-    return !(this.flags![r * this.cols + c] & (NAV_F.VOID | NAV_F.SLOPE | NAV_F.LIFT));
+    return !(this.flags![r * this.cols + c] & (F.VOID | F.SLOPE | F.LIFT));
   }
 
   /** §5.3: a drop > STEP_UP to a lower open neighbour is finished by a rail (solid) or a ledge (LEDGE flag) on the high side. */
@@ -215,16 +211,16 @@ export class NavGrid {
         let drop = false;
         for (const [nc, nr] of nbrs) {
           if (!this.rimEligible(nc, nr)) continue;
-          if (floor[i] - floor[nr * this.cols + nc] > NAV_VERT.STEP_UP + EPS) { drop = true; break; }
+          if (floor[i] - floor[nr * this.cols + nc] > VERT.STEP_UP + EPS) { drop = true; break; }
         }
         if (!drop) continue;
         // a neighbouring slope whose end meets this cell within STEP_UP is where the stair/ramp attaches: no rim.
         // The slope end is sampled half a cell from this cell, on the shared edge.
         let attached = false;
         for (const [nc, nr] of nbrs) {
-          if (!this.inBounds(nc, nr) || !(flags[nr * this.cols + nc] & NAV_F.SLOPE)) continue;
+          if (!this.inBounds(nc, nr) || !(flags[nr * this.cols + nc] & F.SLOPE)) continue;
           const px = (this.centerX(c) + this.centerX(nc)) / 2, pz = (this.centerZ(r) + this.centerZ(nr)) / 2;
-          if (Math.abs(hf.groundY(px, pz) - floor[i]) <= NAV_VERT.STEP_UP + EPS) { attached = true; break; }
+          if (Math.abs(hf.groundY(px, pz) - floor[i]) <= VERT.STEP_UP + EPS) { attached = true; break; }
         }
         if (attached) continue;
         const rim = hf.rimAt ? hf.rimAt(this.centerX(c), this.centerZ(r)) : 'rail';
@@ -232,14 +228,14 @@ export class NavGrid {
         else if (rim === 'ledge') ledge.push(i);
       }
     // apply after the scan so every decision sees the pre-pass state
-    for (const i of cut) { this.cells[i] = 0; flags[i] |= NAV_F.LOW | NAV_F.RAIL; }
-    for (const i of ledge) flags[i] |= NAV_F.LEDGE;
+    for (const i of cut) { this.cells[i] = 0; flags[i] |= F.LOW | F.RAIL; }
+    for (const i of ledge) flags[i] |= F.LEDGE;
   }
 
   /** Directional step rule of §5.2 (rise from i to j). */
   private canStep(i: number, j: number): boolean {
     const floor = this.floor!, flags = this.flags!;
-    const lim = (flags[i] | flags[j]) & NAV_F.SLOPE ? NAV_VERT.RAMP_PAIR : NAV_VERT.STEP_UP;
+    const lim = (flags[i] | flags[j]) & F.SLOPE ? VERT.RAMP_PAIR : VERT.STEP_UP;
     return floor[j] - floor[i] <= lim + EPS;
   }
 
@@ -313,9 +309,9 @@ export class NavGrid {
       if (this.cell(c, r)) continue;
       if (!this.flags || !this.inBounds(c, r)) return (i - 1) / n;
       const idx = r * this.cols + c;
-      if (this.flags[idx] & NAV_F.LOW) {
+      if (this.flags[idx] & F.LOW) {
         const y = ay + (by - ay) * t;
-        if (y > this.floor![idx] + NAV_VERT.LOW_RAIL) continue;
+        if (y > this.floor![idx] + VERT.LOW_RAIL) continue;
       }
       return (i - 1) / n;
     }
@@ -337,13 +333,13 @@ export class NavGrid {
     const step = this.cellSize * 0.25;
     const n = Math.max(1, Math.ceil(len / step));
     let prevY = this.floorAt(ax, az);
-    let prevSlope = (this.flagsAt(ax, az) & NAV_F.SLOPE) !== 0;
+    let prevSlope = (this.flagsAt(ax, az) & F.SLOPE) !== 0;
     for (let i = 1; i <= n; i++) {
       const t = i / n, x = ax + dx * t, z = az + dz * t;
       if (!this.isStandable(x, z)) return false;
       const y = this.floorAt(x, z);
-      const slope = (this.flagsAt(x, z) & NAV_F.SLOPE) !== 0;
-      const lim = slope || prevSlope ? NAV_VERT.RAMP_PAIR : NAV_VERT.STEP_UP;
+      const slope = (this.flagsAt(x, z) & F.SLOPE) !== 0;
+      const lim = slope || prevSlope ? VERT.RAMP_PAIR : VERT.STEP_UP;
       if (y - prevY > lim + EPS) return false;
       prevY = y;
       prevSlope = slope;
@@ -359,7 +355,7 @@ export class NavGrid {
   resolveMove(pos: THREE.Vector3, prevX: number, prevZ: number, radius: number, feetY: number, airborne = false): boolean {
     const hit = this.resolveCircle(pos, radius);
     if (!this.floor) return hit;
-    const lim = feetY + (airborne ? NAV_VERT.AIR_STEP : NAV_VERT.STEP_UP);
+    const lim = feetY + (airborne ? VERT.AIR_STEP : VERT.STEP_UP);
     const mx = pos.x - prevX, mz = pos.z - prevZ;
     const ml = Math.hypot(mx, mz);
     const ux = ml > 1e-6 ? mx / ml : 0, uz = ml > 1e-6 ? mz / ml : 0;
