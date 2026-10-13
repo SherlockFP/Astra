@@ -362,7 +362,7 @@ stays 2 (V2 WP1 bumped it); the talent fields are optional and filled by `migrat
 | Module | Owns (talents) |
 |---|---|
 | **panels-game** | `src/ui/panels/game/talents/*` (the new N window tabs, dialogs, shared views), `src/ui/styles/panels-talents-*.css`. Panel ids unchanged (`talents`, `trainer`, `keystone`). |
-| **items** | `src/data/talentTrees/*` (tree framework, raw generated data), `src/data/{passiveWeb,passiveExtra,skillSpecs,jewels}.ts`, `src/systems/{Talents,talentStrings,SkillMastery}.ts`, `tools/gen-talent-data.mjs`, `tools/talents-check.mjs`. |
+| **items** | `src/data/talentTrees/*` (tree framework, raw generated data), `src/data/{passiveWeb,passiveExtra,skillSpecs,jewels}.ts`, `src/systems/{Talents,talentStrings,SkillMastery}.ts`, `tools/gen-talent-data.mjs`, `tools/apply-talent-patch.mjs` (applies class-package patches `docs/kits/talents_<class>.json` to `docs/GDD_TALENTS.trees.json`; run gen-talent-data after), `tools/talents-check.mjs`. |
 | **combat** | `src/combat/{skillMods,Procs,procActions,procConds}.ts`, `src/combat/specs/mage.ts`, `src/combat/skills/utilities.ts`, `src/data/skills_mage_specs.ts`, `src/data/skills_class_utils.ts`, `src/data/statuses_talents.ts`, `src/data/specs_talents.ts`. |
 | **core** | `src/types/talents.ts`, `migrateTalents` / `remapBars` in `src/core/Save.ts`, `G.talents` / `G.procs` wiring in `src/game/Game.ts`. |
 

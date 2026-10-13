@@ -1115,6 +1115,8 @@ Node reference = `tree / slot+option` (tree key as in `docs/GDD_TALENTS.trees.js
 
 126 node rows + 24 skill-specialisation rows.
 
+**PM-TAL applied (deviations from this table).** 125 node rows + 24 skill-spec rows are in `docs/GDD_TALENTS.trees.json` (patch files `docs/kits/talents_<class>.json`, `tools/apply-talent-patch.mjs`). Four fx differ so that the checker passes: `class:necromancer / s05B` stays `G necro_spirit_walk` (`necro_lichborne` has no SkillDef, open question 14); `spec:knight_blademaster / s17A` is `M knight_avatar sdur=avatar:+6` (Savaş Avatarı applies `avatar`, not `wings`); `spec:paladin_retribution / s15A` is `M paladin_avenging_wrath sdur=wrath_wings:+4` (not `crusade`); the knight `knight_charge` 2A row is `M knight_charge p.pathWidth*=1.5` (name Geniş Hücum; `rng` is a banned verb in a skill specialisation). `knight_charge` got the param `threat: 0` (the `p.threat` contract above). `tools/talents-check.mjs` now checks `p.<key>` against the target skill `params` / `SpecDef.mods` and `INTERRUPT_EXCEPTIONS` lists the three plate baseline kicks.
+
 | node | old fx | new fx | new name |
 |---|---|---|---|
 | `class:barbarian / s05A` | `G barbarian_pummel` | `G barbarian_war_cry` |  |

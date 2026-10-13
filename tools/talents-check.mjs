@@ -61,7 +61,8 @@ const { autoBuildTree } = TALENT_SYS;
 /** Status ids of the `StatusId` union (types/skills.ts). Types are erased at runtime, so the union is read from the source. */
 function statusIdsFromSource() {
   const src = fs.readFileSync(`${ROOT}/src/types/skills.ts`, 'utf8');
-  const m = /export type StatusId\s*=([\s\S]*?);/.exec(src);
+  // `//` comments inside the union contain ';' and quoted words: strip them before cutting at the closing ';'
+  const m = /export type StatusId\s*=([\s\S]*?);/.exec(src.replace(/\/\/.*$/gm, ''));
   if (!m) return [];
   return [...m[1].matchAll(/'([a-z_0-9]+)'/g)].map((x) => x[1]);
 }
@@ -244,6 +245,60 @@ function actionCapErrors(items) {
   return out;
 }
 
+// ============================================================================ param contract (PM-TAL)
+
+/** Statuses a SkillDef applies itself (statuses / selfStatuses / allyStatuses rows); `sdur=<status>` only means something for these. */
+function statusesOfSkill(def) {
+  const out = new Set();
+  for (const key of ['statuses', 'selfStatuses', 'allyStatuses', 'groundStatuses']) {
+    for (const s of def[key] ?? []) if (s && s.status) out.add(s.status);
+  }
+  return out;
+}
+
+/** Param keys a SpecDef.mods row adds to a skill (`mods: [{ skill, params }]`), per skill id. */
+const SPEC_MOD_KEYS = new Map();
+for (const spec of SPEC_ORDER) {
+  for (const m of getSpec(spec)?.mods ?? []) {
+    if (!m.params) continue;
+    const set = SPEC_MOD_KEYS.get(m.skill) ?? new Set();
+    for (const k of Object.keys(m.params)) set.add(k);
+    SPEC_MOD_KEYS.set(m.skill, set);
+  }
+}
+
+/**
+ * Param contract of docs/kits/plate-melee.md §f2: every `p.<key>` op of an `M` item must exist in the target skill's `params`,
+ * and every `sdur=<status>:+n` op must name a status the target applies (`statuses` / `selfStatuses` / `allyStatuses`).
+ * A key that only a SpecDef.mods row adds counts as present; a missing key under `+=` or `=` is a warning (it starts from 0), a missing key
+ * under `*=` is an error (0 x n is a dead row). Returns `{ errors, warns }`; an unknown skill id is reported by the parser, not here.
+ */
+function paramContractIssues(items) {
+  const errors = [];
+  const warns = [];
+  for (const it of items) {
+    if (it.k !== 'M') continue;
+    for (const target of it.target.split('+')) {
+      const def = SKILLS[target];
+      if (!def) continue;
+      for (const op of it.ops) {
+        if (op.op.startsWith('p.')) {
+          const k = op.op.slice(2);
+          const have = (def.params && k in def.params) || SPEC_MOD_KEYS.get(target)?.has(k);
+          if (!have) (op.mode === '*=' ? errors : warns).push(`${op.op}${op.mode ?? '='} is not a param of ${target}${op.mode === '*=' ? '' : ' (starts from 0)'}`);
+        } else if (op.op === 'sdur') {
+          const own = statusesOfSkill(def);
+          for (const e of String(op.v).split(',')) {
+            const sid = e.split(':')[0];
+            if (!own.has(sid)) warns.push(`sdur=${sid} on ${target}: the skill row applies ${[...own].join('/') || 'no status'}`);
+          }
+        }
+      }
+    }
+  }
+  return { errors, warns };
+}
+
 // ============================================================================ stage: trees
 
 function stageTrees() {
@@ -293,6 +348,9 @@ function stageTrees() {
         options += 1;
         const parsed = parseFx(opt.fx, FX_CTX);
         for (const e of parsed.errors) refIssue(st, where, e);
+        const contract = paramContractIssues(parsed.items);
+        for (const e of contract.errors) st.err(where, e);
+        for (const w of contract.warns) st.warn(where, w);
         const grants = grantsIn(parsed.items);
         const isGrantOnly = grants.length > 0 && !isP;
 
@@ -390,6 +448,9 @@ function stageSkillSpecs() {
 
     const parsed = parseFx(row.fx, FX_CTX);
     for (const e of parsed.errors) refIssue(st, where, e);
+    const contract = paramContractIssues(parsed.items);
+    for (const e of contract.errors) st.err(where, e);
+    for (const w of contract.warns) st.warn(where, w);
     let formVerbs = 0;
     for (const it of parsed.items) {
       if (it.k === 'S') st.err(where, 'S (stat) item is banned in a specialisation');
@@ -714,9 +775,12 @@ function stageBench() {
 // ============================================================================ stage: crossrefs
 
 // Classes whose interrupt is not the one-per-class s05 pick. KIT PK-0 adds mage_counterspell, rogue_kick and warlock_spell_lock
-// (their kick is a class utility; s05 A still grants it today). An exception class may hold only its own kick in s05.
+// (their kick is a class utility; s05 A still grants it today). PM-TAL: the plate kit makes the kick a baseline s4 button for
+// knight (knight_pummel), barbarian (barbarian_pummel) and necromancer (necro_mind_freeze). An exception class may hold only its own kick in s05.
 const INTERRUPT_EXCEPTIONS = {
-  knight: 'knight_shield_bash',
+  knight: 'knight_pummel',
+  barbarian: 'barbarian_pummel',
+  necromancer: 'necro_mind_freeze',
   mage: 'mage_counterspell',
   rogue: 'rogue_kick',
   warlock: 'warlock_spell_lock',

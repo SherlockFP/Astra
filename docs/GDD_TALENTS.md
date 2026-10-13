@@ -104,7 +104,7 @@ Columns: **Çekirdek** = granted free by level, exactly V2's schedule (L10 for t
 | # | Spec id | TR | Rol | Kimlik (one line) | Anahtar mekanik | Çekirdek (L10) | Ağaç becerileri (A düğümleri) | m45 · m90 · m180 |
 |--:|---|---|:-:|---|---|---|---|---|
 | 1 | `knight_protector` | Koruyucu | Tank | Kalkan Kaldır + Yemin Siperi ile aktif azaltma, tehdit ×3 | `trait_protector`: blok uptime ≈ %65, Son Savunma (90 sn) | `knight_provoke`, `knight_shield_block` | s05 `knight_ward_of_oath` | `knight_unbroken_bastion` · `knight_oath_aegis` · – |
-| 2 | `knight_blademaster` | Kılıç Ustası | DPS | Adalet Puanı biriktirip Karar Darbesi ile bitirir | `trait_blademaster`: Adalet 0–5 | `knight_templar_verdict` | s05 `knight_wake_of_flames` | `knight_zeal` · `knight_wings_of_judgment` · `knight_heroism_call` |
+| 2 | `knight_blademaster` | Kılıç Ustası | DPS | Adalet Puanı biriktirip Karar Darbesi ile bitirir | `trait_blademaster`: Adalet 0–5 | `knight_templar_verdict` | s05 `knight_execute` | `knight_zeal` · `knight_wings_of_judgment` · `knight_heroism_call` |
 | 3 | `barbarian_warlord` | Savaş Lordu | Tank | Öfke zırhı: hasar aldıkça güçlenir, Demir Duruş + Kan Zırhı | `trait_warlord`: −%0.25 hasar / Öfke | `barbarian_provoke`, `barbarian_iron_stance` | s05 `barbarian_blood_shield` | `barbarian_last_stand` · `barbarian_rallying_roar` · – |
 | 4 | `barbarian_butcher` | Kasap | DPS | Kanama yığınları (8) + İdam | `trait_butcher`: yığın sınırı 8, İdam < %35 | `barbarian_rend` | s05 `barbarian_execute` | `barbarian_bloodbath` · `barbarian_carnage` · `barbarian_wolf_howl` |
 | 5 | `mage_fire` **NEW** | Ateş Büyücüsü | DPS | Art arda kritiklerle Sıcak Seri kurar, yanmayı sürüye yayar | `trait_pyromancer`: 2 ateş kritiği → Sıcak Seri (8 sn, anında + bedava Alev Dalgası / Meteor / Anka) | `mage_flame_wave` | s05 `mage_phoenix_flames` | `mage_blazing_barrier` · `mage_combustion` · `mage_time_warp` |
@@ -120,8 +120,8 @@ Columns: **Çekirdek** = granted free by level, exactly V2's schedule (L10 for t
 | 15 | `paladin_protection` | Koruma | Tank | Doğruluk Kalkanı, Kutsal Güç, aura | `trait_protection`: blokta %20 +1 KG, parry yansıtır | `paladin_reckoning`, `paladin_shield_of_righteous` | s05 `paladin_blessed_hammer` | `paladin_prot_bulwark` · `paladin_prot_ardent` · – |
 | 16 | `paladin_holy` | Kutsal | Şifacı | Işık Oku, Kutsal Şok, Taşan Şifa, aura | `trait_holy`: overheal → %40 kalkan | `paladin_holy_shock`, `paladin_flash_of_light`; L12 `paladin_cleanse`; L15 `paladin_word_of_glory` | s05 `paladin_light_of_dawn` | `paladin_holy_aura_mastery` · `paladin_holy_sanctuary` · – |
 | 17 | `paladin_retribution` | Ceza | DPS | Hüküm / aura güçlendiren destek-DPS | `trait_retribution`: aura +%25 güçlü | `paladin_divine_storm` | s05 `paladin_hammer_of_wrath` | `paladin_ret_crusade` · `paladin_ret_execution` · – |
-| 18 | `necromancer_summoner` | Ordu Efendisi | DPS | Ölüler emrinde: iskelet + golem + ordu | `trait_summoner`: iskelet sınırı +2 | `necro_golem` | s05 `necro_command_army` | `necro_sm_frenzy` · `necro_sm_bone_knights` · – |
-| 19 | `necromancer_bone` | Kemik Ustası | DPS | Kemiğin hükmü: kanal + Kan Dalgası | `trait_bone`: mızrak +1 delme, Zırh 3 | `necro_bone_storm` | s05 `necro_blood_surge` | `necro_bn_bone_spirit` · `necro_bn_lich_form` · – |
+| 18 | `necromancer_summoner` | Ordu Efendisi | DPS | Ölüler emrinde: iskelet + golem + ordu | `trait_summoner`: iskelet sınırı +2 | `necro_golem` | s05 `necro_epidemic` | `necro_sm_frenzy` · `necro_sm_bone_knights` · – |
+| 19 | `necromancer_bone` | Kemik Ustası | DPS | Kemiğin hükmü: kanal + Kan Dalgası | `trait_bone`: mızrak +1 delme, Zırh 3 | `necro_bone_storm` | s05 `necro_marrowrend` | `necro_bn_bone_spirit` · `necro_bn_lich_form` · – |
 | 20 | `warlock_affliction` | Azap | DPS | Zaman senin silahın: DoT zincirleri | `trait_affliction`: DoT kritik %50 | `warlock_unstable_affliction` | s05 `warlock_seed_of_corruption` | `warlock_af_dark_soul` · `warlock_af_pandemic` · – |
 | 21 | `warlock_destruction` | Yıkım | DPS | Her şeyi yak: patlama ve Kaos | `trait_destruction`: ateş kritiği → Ruh Parçası | `warlock_immolate` | s05 `warlock_chaos_bolt` | `warlock_ds_havoc` · `warlock_ds_cataclysm` · – |
 
@@ -569,17 +569,17 @@ Palet (12 P düğümü, sırayla s01 s03 s06 s07 s08 s10 s14 s16 s19 s22 s23 s24
 | s15 | C | B | Kalkan Ustası | Kalkan Darbesi hasarı +%20, sarsması +%30. | `M knight_shield_bash dmgx=1.2 stgx=1.3` |
 | s17 | C | A | Kararlılık Akışı | Kaynak yenilenmesi +%20. | `S resourceRegenPct=.20` |
 | s17 | C | B | Kararlı Vuruş | Vuruşların %20 şansla +4 Kararlılık verir. | `T hit ch=.2 => res(4)` |
-| s18 | M | – | Kalkan Duvarı: Sabır | Kalkan Duvarı bekleme −4 sn; depoladığı hasar %50 artar. | `M knight_shield_wall cd=-4 p.store*=1.5` |
+| s18 | M | – | Kalkan Kaldır: Sabır | Kalkan Kaldır bekleme −1.5 sn; depoladığı hasar %50 artar. | `M knight_shield_block cd=-1.5 p.store*=1.5` |
 | s20 | M | – | Kahramanlık Sancağı | Büyük yetenek bekleme süreleri %6 daha hızlı azalır. | `S majorCdrPct=.06` |
-| s21 | M | – | Kutsal Toprak: Işık Alanı | Kutsal Toprak alanı +%15, hasarı +%20. | `M knight_consecration radx=1.15 dmgx=1.2` |
-| s25 | M | – | Sancak Yemini | Savaş Sancağı 3 sn uzun sürer; Kararlılık kazancı %50 artar. | `M knight_war_banner sdur=banner:+3 p.gainPerSec*=1.5` |
-| s26 | C | A | Cesaret Şarkısı | Göksel Hüküm kullanınca grup 8 sn Kutsanmış olur. | `T cast:knight_heavens_judgment => st(party,blessed,8)` |
+| s21 | M | – | Avatar Uzatma | Savaş Avatarı 3 sn daha uzun sürer. | `M knight_avatar sdur=avatar:+3` |
+| s25 | M | – | Sancak Yemini | Büyük yetenek bekleme azaltma +%4; Savaş Avatarı bekleme −%5. | `S majorCdrPct=.04 ;; M knight_avatar cdx=.95` |
+| s26 | C | A | Cesaret Şarkısı | Savaş Avatarı kullanınca grup 8 sn Kutsanmış olur. | `T cast:knight_avatar => st(party,blessed,8)` |
 | s26 | C | B | Siper Kardeşliği | Blokladığın vuruşlar 8 m içindeki müttefikleri 4 sn güçlendirir (2 sn bekleme). | `T block icd=2 => st(near(8),fortify,4)` |
-| s27 | M | – | Göksel Hüküm: Yargı Günü | Göksel Hüküm bekleme −%15, savurma +%20. | `M knight_heavens_judgment cdx=.85 kbx=1.2` |
+| s27 | M | – | Avatar: Yargı Günü | Savaş Avatarı bekleme −%15, 2 sn daha uzun sürer. | `M knight_avatar cdx=.85 sdur=avatar:+2` |
 | s28 | K | – | Yılmaz Muhafız | Maks. can +%10. Ölümcül darbede canının %20'siyle ayakta kalır, 1.5 sn dokunulmaz olursun (90 sn bekleme). | `S maxHpPct=.10 ;; T lethal icd=90 => heal(.2) ; st(self,invulnerable,1.5)` |
 | s29 | K | – | Adalet Ordusu | Hasar +%6. Kritik vuruşlar 6 sn boyunca +%4 saldırı hızı yığar (en fazla 5). | `S damagePct=.06 ;; T crit => buff(justice_army,6,{attackSpeed=.04},max=5)` |
-| s30 | K | A | Kutsal Savaşçı | Kutsal hasar +%25; Göksel Hüküm hasarı +%25. | `S holyDamagePct=.25 ;; M knight_heavens_judgment dmgx=1.25` |
-| s30 | K | B | Demir Kale | Zırh +%30, blok şansı +%5; Kalkan Duvarı %25 daha sık kullanılır. | `S armorPct=.30 blockChance=.05 ;; M knight_shield_wall cdx=.75` |
+| s30 | K | A | Savaş Efendisi | Yakın dövüş hasarı +%15; Hücum hasarı +%25. | `S meleeDamagePct=.15 ;; M knight_charge dmgx=1.25` |
+| s30 | K | B | Demir Kale | Zırh +%30, blok şansı +%5; Sarsılmaz Bastion %25 daha sık kullanılır. | `S armorPct=.30 blockChance=.05 ;; M knight_unbroken_bastion cdx=.75` |
 
 ##### `spec:knight_protector` — Koruyucu — Uzmanlık Ağacı
 
@@ -594,19 +594,19 @@ Palet (12 P düğümü, sırayla s01 s03 s06 s07 s08 s10 s14 s16 s19 s22 s23 s24
 | s09 | C | A | Blok Ustalığı | Engellenen her vuruş +2 Kararlılık verir. | `T block => res(2)` |
 | s09 | C | B | Parlak Savunma | Savuşturma penceresi +0.05 sn; başarılı savuşturma 4 sn %15 hasar azaltma verir. | `S parryWindow=.05 ;; T parry => buff(parry_guard,4,{damageReductionPct=.15})` |
 | s11 | M | – | Güçlü Yemin Siperi | Yemin Siperi emilimi +%25. | `M knight_ward_of_oath absx=1.25` |
-| s12 | M | – | Kalkan Duvarı: Yemin | Kalkan Duvarı bekleme −%15; depoladığı hasar +%25. | `M knight_shield_wall cdx=.85 p.store*=1.25` |
-| s13 | M | – | Yarma: Tehdit Taşkını | Işıltılı Yarma 5 Kararlılık ucuz; tehdit çarpanı +%20. | `M knight_radiant_cleave cost=-5 p.threatMult*=1.2` |
+| s12 | M | – | Kalkan Kaldır: Yemin | Kalkan Kaldır bekleme −%15; depoladığı hasar +%25. | `M knight_shield_block cdx=.85 p.store*=1.25` |
+| s13 | M | – | İntikam: Tehdit Taşkını | İntikam 5 Kararlılık ucuz; tehdit çarpanı +%20. | `M knight_revenge cost=-5 p.threatMult*=1.2` |
 | s15 | C | A | Demir Duvar | Engellenen vuruşlar Kalkan Darbesi bekleme süresini 0.5 sn azaltır (1 sn bekleme). | `T block icd=1 => cdr(knight_shield_bash,0.5)` |
 | s15 | C | B | Karşı Kılıç | Savuşturmadan sonra 3 sn vuruşların +%60 hasar verir. | `T parry => buff(riposte_edge,3,{damagePct=.6})` |
 | s17 | C | A | Kararlı Nöbetçi | Kaynak yenilenmesi +%20; Kalkan Kaldır maliyeti −%20. | `S resourceRegenPct=.20 ;; M knight_shield_block costx=.8` |
-| s17 | C | B | Şifa Işığı | Kutsal Toprak'ın iyileştirmesi +%50. | `M knight_consecration healx=1.5` |
+| s17 | C | B | Şifa Siperi | Yemin Siperi'nin kalkanı +%15. | `M knight_ward_of_oath absx=1.15` |
 | s18 | M | – | Kışkırtma Ustası | Kışkırtma bekleme −2 sn, menzil +8 m. | `M knight_provoke cd=-2 rng=+8` |
 | s20 | M | – | Kadim Bastion | Sarsılmaz Bastion bekleme −%15 ve 2 sn daha uzun sürer. | `M knight_unbroken_bastion cdx=.85 sdur=bastion:+2` |
-| s21 | M | – | Geniş Aegis | Yemin Aegis'i yarıçap +5 m, 2 sn daha uzun sürer. | `M knight_oath_aegis rad=+5 sdur=aegis:+2` |
+| s21 | M | – | Geniş Moral Bozma | Moral Bozma yarıçap +4 m, laneti 2 sn daha uzun sürer. | `M knight_challenge rad=+4 sdur=curse:+2` |
 | s25 | M | – | Kutsal Kalkan | Kalkan Darbesi hasarının yarısı kutsala dönüşür; hasar +%10. | `M knight_shield_bash cv=holy:.5 dmgx=1.1` |
 | s26 | C | A | Güvenli Liman | Yemin Siperi kullanınca 12 m içindeki müttefikler de Yemin Siperi alır. | `T cast:knight_ward_of_oath => st(near(12),oath_ward,8)` |
 | s26 | C | B | Yankılanan Nara | Meydan Okuma sonrası 5 sn blok miktarı +%15. | `T cast:knight_challenge => buff(echo_roar,5,{blockAmount=.15})` |
-| s27 | M | – | Hüküm: Muhafız | Göksel Hüküm +250 sabit tehdit verir, hasarı +%10. | `M knight_heavens_judgment p.threat+=250 dmgx=1.1` |
+| s27 | M | – | Hüküm: Muhafız | Hücum +250 sabit tehdit verir, hasarı +%10. | `M knight_charge p.threat+=250 dmgx=1.1` |
 | s28 | K | – | Sarsılmaz Nöbetçi | Maks. can +%8, blok şansı +%4. Blokların %15 şansla Kalkan Kaldır'ı sıfırlar (6 sn bekleme). | `S maxHpPct=.08 blockChance=.04 ;; T block ch=.15 icd=6 => rst(knight_shield_block)` |
 | s29 | K | – | Yeminli Kalkan | Savuşturma çevreye %120 kutsal patlama yapar ve +10 Kararlılık verir. | `S guardGauge=20 ;; T parry => exp(1.2,3,holy) ; res(10)` |
 | s30 | K | A | Işığın Zırhı | Zırh +%20, alınan iyileştirme +%15; Yemin Siperi +1 şarj. | `S armorPct=.20 healReceivedPct=.15 ;; M knight_ward_of_oath chg=+1` |
@@ -618,35 +618,35 @@ Palet (12 P düğümü, sırayla s01 s03 s06 s07 s08 s10 s14 s16 s19 s22 s23 s24
 
 | Slot | Tür | Seç. | Ad | Etki (TR) | fx |
 |---|:-:|:-:|---|---|---|
-| s02 | C | A | Adalet Hızlanması | Kutsal hasar +%8; temel vuruşlar %15 şansla ek +1 Adalet verir. | `S holyDamagePct=.08 ;; T hit:@basic ch=.15 => pip(adalet,1)` |
-| s02 | C | B | Hüküm Hasadı | Karar Darbesi hasarı +%15, kritik şansı +%10. | `M knight_templar_verdict dmgx=1.15 crit=+.1` |
-| s04 | M | – | Keskin Karar | Karar Darbesi sarsması +%30, menzili +0.5 m. | `M knight_templar_verdict stgx=1.3 rng=+0.5` |
-| s05 | A | – | Beceri: Kutsal Alev Dalgası | Açılan beceri: `knight_wake_of_flames` (SkillDef satırı §1) | `G knight_wake_of_flames` |
-| s09 | C | A | Alev Zırhı | Kutsal hasar +%6; Kutsal Alev Dalgası sonrası 4 sn %12 hasar azaltma. | `S holyDamagePct=.06 ;; T cast:knight_wake_of_flames => buff(flame_ward,4,{damageReductionPct=.12})` |
-| s09 | C | B | Işığın Atılışı | Hücum +1 Adalet verir. | `T cast:knight_charge => pip(adalet,1)` |
-| s11 | M | – | Geniş Alev | Alan hasarı +%8; Kutsal Alev Dalgası +2 m menzil, +%15 alan. | `S aoePct=.08 ;; M knight_wake_of_flames rng=+2 radx=1.15` |
-| s12 | M | – | Adalet Hasadı | Işıltılı Yarma hasarı +%15; fazladan her 2 hedefte +1 Adalet. | `M knight_radiant_cleave dmgx=1.15 pip=adalet:1` |
-| s13 | M | – | Hüküm Günü Çağrısı | Kritik hasarı +%10; Göksel Hüküm bekleme −%15, sarsması +%30. | `S critDamage=.10 ;; M knight_heavens_judgment cdx=.85 stgx=1.3` |
-| s15 | C | A | Gayret Ustası | Gayret 3 sn uzar; temel vuruşlar %20 şansla +1 Adalet verir. | `M knight_zeal sdur=zeal:+3 ;; T hit:@basic ch=.2 => pip(adalet,1)` |
+| s02 | C | A | Savaş Hızlanması | Yakın dövüş hasarı +%6; temel vuruşlar %15 şansla +6 Kararlılık verir. | `S meleeDamagePct=.06 ;; T hit:@basic ch=.15 => res(6)` |
+| s02 | C | B | Ölümcül Hasat | Ölümcül Darbe hasarı +%15, kritik şansı +%10. | `M knight_mortal_strike dmgx=1.15 crit=+.1` |
+| s04 | M | – | Keskin Darbe | Ölümcül Darbe sarsması +%30, menzili +0.5 m. | `M knight_mortal_strike stgx=1.3 rng=+0.5` |
+| s05 | A | – | Beceri: Cellat Vuruşu | Açılan beceri: `knight_execute` (SkillDef satırı §1) | `G knight_execute` |
+| s09 | C | A | Cellat Zırhı | Yakın dövüş hasarı +%5; Cellat Vuruşu sonrası 4 sn %12 hasar azaltma. | `S meleeDamagePct=.05 ;; T cast:knight_execute => buff(execute_ward,4,{damageReductionPct=.12})` |
+| s09 | C | B | Savaşçı Atılışı | Hücum +10 Kararlılık verir. | `T cast:knight_charge => res(10)` |
+| s11 | M | – | Geniş Girdap | Alan hasarı +%8; Çelik Girdap +%15 alan, +0.5 m menzil. | `S aoePct=.08 ;; M knight_radiant_cleave radx=1.15 rng=+0.5` |
+| s12 | M | – | Girdap Hasadı | Çelik Girdap hasarı +%15, maliyeti 5 Kararlılık düşer. | `M knight_radiant_cleave dmgx=1.15 cost=-5` |
+| s13 | M | – | Dev Ezme Çağrısı | Kritik hasarı +%10; Dev Ezme bekleme −%15, sarsması +%30. | `S critDamage=.10 ;; M knight_colossus_smash cdx=.85 stgx=1.3` |
+| s15 | C | A | Ezme Ustası | Dev Ezme etkisi 3 sn uzar; temel vuruşlar %20 şansla +6 Kararlılık verir. | `M knight_colossus_smash sdur=colossus:+3 ;; T hit:@basic ch=.2 => res(6)` |
 | s15 | C | B | Kılıç Fırtınası | Saldırı hızı +%8; temel zincir hasarı +%10. | `S attackSpeed=.08 ;; M knight_basic dmgx=1.1` |
-| s17 | C | A | Uzun Uçuş | Hüküm Kanatları 6 sn daha uzun sürer. | `M knight_wings_of_judgment sdur=wings:+6` |
-| s17 | C | B | Çabuk Adalet | Kaynak kazancı +%20; savaşta Adalet varsa 4 sn'de bir +1 kazanırsın. | `S resourceGainPct=.20 ;; T tick:4 if=pips>=1:adalet&inCombat => pip(adalet,1)` |
-| s18 | M | – | Çifte Hüküm | Kritik şansı +%1; Karar Darbesi %20 şansla yarım güçte ikinci kez vurur. | `S critChance=.01 ;; T cast:knight_templar_verdict ch=.2 => echo(knight_templar_verdict,.5,.4)` |
-| s20 | M | – | Borazancı Kardeşliği | Hüküm Kanatları ve Gayret bekleme −%10. | `M knight_wings_of_judgment+knight_zeal cdx=.9` |
-| s21 | M | – | Adalet Alanı | Kutsal Toprak alanı +%10, hasarı +%25. | `M knight_consecration dmgx=1.25 radx=1.1` |
+| s17 | C | A | Uzun Uçuş | Savaş Avatarı 6 sn daha uzun sürer. | `M knight_avatar sdur=avatar:+6` |
+| s17 | C | B | Çabuk Öfke | Kaynak kazancı +%20. | `S resourceGainPct=.20` |
+| s18 | M | – | Çifte Hüküm | Kritik şansı +%1; Ölümcül Darbe %20 şansla yarım güçte ikinci kez vurur. | `S critChance=.01 ;; T cast:knight_mortal_strike ch=.2 => echo(knight_mortal_strike,.5,.4)` |
+| s20 | M | – | Borazancı Kardeşliği | Savaş Avatarı ve Dev Ezme bekleme −%10. | `M knight_avatar+knight_colossus_smash cdx=.9` |
+| s21 | M | – | Fırtına Alanı | Bıçak Fırtınası alanı +%10, hasarı +%25. | `M knight_bladestorm dmgx=1.25 radx=1.1` |
 | s25 | M | – | Hücum Ustalığı | Yakın dövüş hasarı +%8; Hücum hasarı +%25, sarsması +%40. | `S meleeDamagePct=.08 ;; M knight_charge dmgx=1.25 stgx=1.4` |
-| s26 | C | A | Adalet Fenerı | 5 Adalet'le Karar Darbesi 10 m içindeki müttefikleri 6 sn Kutsanmış yapar. | `T cast:knight_templar_verdict if=pips>=5:adalet => st(near(10),blessed,6)` |
+| s26 | C | A | Savaş Feneri | Dev Ezme 10 m içindeki müttefikleri 6 sn Kutsanmış yapar. | `T cast:knight_colossus_smash => st(near(10),blessed,6)` |
 | s26 | C | B | Yalnız Kılıç | Yakınında (40 m) müttefik yokken +%12 hasar. | `T tick:1 if=solo => buff(lone_blade,2,{damagePct=.12})` |
-| s27 | M | – | Yargı Patlaması | 5 Adalet'le Karar Darbesi hedefin çevresinde %120 kutsal patlama yapar. | `T cast:knight_templar_verdict if=pips>=5:adalet => exp(1.2,3.5,holy)` |
-| s28 | K | – | Hüküm Zinciri | Karar Darbesi sonrası 4 sn +%5 saldırı hızı yığar (en fazla 3). | `T cast:knight_templar_verdict => buff(verdict_chain,4,{attackSpeed=.05},max=3)` |
-| s29 | K | – | Hüküm Sahibi | Kritik şansı +%4; kritik vuruşlar %25 şansla +1 Adalet verir. | `S critChance=.04 ;; T crit ch=.25 => pip(adalet,1)` |
-| s30 | K | A | Kutsal Kasırga | Karar Darbesi hasarı +%30; 5 Adalet'le kullanınca Kutsal Alev Dalgası sıfırlanır. | `M knight_templar_verdict dmgx=1.3 ;; T cast:knight_templar_verdict if=pips>=5:adalet => rst(knight_wake_of_flames)` |
-| s30 | K | B | Cellat Yemini | Canı <%35 düşmanlara +%40 hasar; öldürünce +2 Adalet. | `S executeDamagePct=.40 ;; T kill => pip(adalet,2)` |
+| s27 | M | – | Ezme Patlaması | Dev Ezme hedefin çevresinde %120 fiziksel patlama yapar. | `T cast:knight_colossus_smash => exp(1.2,3.5,physical)` |
+| s28 | K | – | Hüküm Zinciri | Ölümcül Darbe sonrası 4 sn +%5 saldırı hızı yığar (en fazla 3). | `T cast:knight_mortal_strike => buff(verdict_chain,4,{attackSpeed=.05},max=3)` |
+| s29 | K | – | Cellat Gözü | Kritik şansı +%4; kritik vuruşlar %25 şansla +5 Kararlılık verir. | `S critChance=.04 ;; T crit ch=.25 => res(5)` |
+| s30 | K | A | Ölüm Kasırgası | Ölümcül Darbe hasarı +%30; kullanınca %15 şansla Üstün Vuruş sıfırlanır. | `M knight_mortal_strike dmgx=1.3 ;; T cast:knight_mortal_strike ch=.15 => rst(knight_overpower)` |
+| s30 | K | B | Cellat Yemini | Canı <%35 düşmanlara +%40 hasar; öldürünce +10 Kararlılık. | `S executeDamagePct=.40 ;; T kill => res(10)` |
 
 
 #### 2.10.2 Barbar (`barbarian`)
 
-kaynak Öfke (`rage`) · spec: Savaş Lordu (Tank), Kasap (Hasarcı; kanama yığınları) · sınıf ağacı `s05`: **Yumruk Darbesi** (kesme) | **Korkutucu Haykırış**.
+kaynak Öfke (`rage`) · spec: Savaş Lordu (Tank), Kasap (Hasarcı; kanama yığınları) · sınıf ağacı `s05`: **Savaş Narası** | **Korkutucu Haykırış** (Yumruk Darbesi kesmesi PM-BA ile taban `s4` oldu).
 
 ##### `class:barbarian` — Barbar — Sınıf Ağacı
 
@@ -657,22 +657,22 @@ Palet (12 P düğümü, sırayla s01 s03 s06 s07 s08 s10 s14 s16 s19 s22 s23 s24
 | s02 | C | A | Vahşi Sıçrayış | Sıçrayış bekleme −2 sn; inişte 2 sn %20 hareket hızı. | `M barbarian_leap cd=-2 ;; T cast:barbarian_leap => buff(wild_leap,2,{moveSpeedPct=.2})` |
 | s02 | C | B | Çelik Ayak | Sıçrayış +1 şarj; şarjlar %30 daha yavaş dolar. | `M barbarian_leap chg=+1 cdx=1.3` |
 | s04 | M | – | Parçalayıcı Yarma | Yarma kanaması +%30 güçlü, hasarı +%10. | `M barbarian_cleave dotx=1.3 dmgx=1.1` |
-| s05 | A | A | Beceri: Yumruk Darbesi | Açılan beceri: `barbarian_pummel` (SkillDef satırı §1) | `G barbarian_pummel` |
+| s05 | A | A | Beceri: Savaş Narası | Açılan beceri: `barbarian_war_cry` (SkillDef satırı §1) | `G barbarian_war_cry` |
 | s05 | A | B | Beceri: Korkutucu Haykırış | Açılan beceri: `barbarian_intimidating_shout` (SkillDef satırı §1) | `G barbarian_intimidating_shout` |
 | s09 | C | A | Kan Kalkanı | Öfken %50'nin üzerindeyken aldığın hasar %10 azalır. | `T tick:1 if=res>.5 => buff(blood_guard,2,{damageReductionPct=.1})` |
 | s09 | C | B | Dirilen Öfke | Canın %35 altına düşünce +30 Öfke ve 5 sn %3 can çalma kazanırsın (60 sn bekleme). | `T hurt if=hp<.35 icd=60 => res(30) ; buff(revenge_leech,5,{lifeSteal=.03})` |
-| s11 | M | – | Kasırga Ustası | Kasırga yavaşlatması %50 azalır; Öfke maliyeti −%15. | `M barbarian_whirlwind costx=.85 p.moveSlow*=0.5` |
-| s12 | M | – | Savaş Narası: Yankı | Savaş Narası bekleme −3 sn; müttefik hasar bonusu %50 artar. | `M barbarian_war_cry cd=-3 p.allyMore*=1.5` |
+| s11 | M | – | Kasırga Ustası | Kasırga yavaşlatması %50 azalır; Kasırga hasarı +%10. | `M barbarian_whirlwind dmgx=1.1 p.moveSlow*=0.5` |
+| s12 | M | – | Yumruk Ustası | Yumruk Darbesi bekleme −3 sn. | `M barbarian_pummel cd=-3` |
 | s13 | M | – | Yer Sarsıntısı | Sıçrayış inişi %30 daha geniş ve 1 sn sersemletir. | `M barbarian_leap radx=1.3 st=stun:1:1` |
 | s15 | C | A | Kanlı Tırpan | Yakın dövüş vuruşları %10 şansla kanama (4 sn) uygular. | `T hit:@melee ch=.1 => st(tgt,bleed,4,.3)` |
-| s15 | C | B | Yıkıcı Güç | Yer Yaran ve Ata Fırtınası hasarı +%15, sarsması +%25. | `M barbarian_fissure+barbarian_ancestral_tempest dmgx=1.15 stgx=1.25` |
+| s15 | C | B | Yıkıcı Güç | Paralama ve Ata Fırtınası hasarı +%15, sarsması +%25. | `M barbarian_thrash+barbarian_ancestral_tempest dmgx=1.15 stgx=1.25` |
 | s17 | C | A | Öfke Pınarı | Öfke kazancı +%20. | `S resourceGainPct=.20` |
 | s17 | C | B | Soğukkanlı Öfke | Maks. Öfke +10; vuruşlar %15 şansla +3 Öfke verir. | `S maxResource=10 ;; T hit ch=.15 => res(3)` |
-| s18 | M | – | Fay Hattı | Yer Yaran bekleme −3 sn, menzil +3 m. | `M barbarian_fissure cd=-3 rng=+3` |
+| s18 | M | – | Uzun Sıçrayış | Sıçrayış bekleme −3 sn, menzil +3 m. | `M barbarian_leap cd=-3 rng=+3` |
 | s20 | M | – | Kan Çağrısı | Büyük yetenek bekleme süreleri %6 daha hızlı azalır. | `S majorCdrPct=.06` |
 | s21 | M | – | Kemik Parçalayıcı Balta | Dönen Balta kanaması +%50 güçlü; geri dönerken ikinci kez vurur. | `M barbarian_axe_throw dotx=1.5 shape=return` |
-| s25 | M | – | Hiddet Düzeni | Kan Hiddeti can maliyeti −%30, süresi +3 sn. | `M barbarian_blood_rage costx=.7 sdur=bloodrage:+3` |
-| s26 | C | A | Savaş Haykırışı | Savaş Narası'nı kullanınca 20 m içindeki müttefikler 6 sn güçlenir. | `T cast:barbarian_war_cry => st(near(20),empower,6)` |
+| s25 | M | – | Hiddet Düzeni | Kan Hiddeti bekleme −%15, süresi +3 sn. | `M barbarian_blood_rage cdx=.85 sdur=bloodrage:+3` |
+| s26 | C | A | Savaş Haykırışı | Büyük yetenek kullanınca 20 m içindeki müttefikler 6 sn güçlenir (20 sn'de bir). | `T major ch=1 icd=20 => st(near(20),empower,6)` |
 | s26 | C | B | Dayanıklı Ruh | Kontrol azaltma +%15; Kan Hiddeti kullanınca %10 can yenilenir. | `S ccReductionPct=.15 ;; T cast:barbarian_blood_rage => heal(.1)` |
 | s27 | M | – | Nesillerin Fırtınası | Ata Fırtınası bekleme −%15; çekim gücü +%30. | `M barbarian_ancestral_tempest cdx=.85 p.pull*=1.3` |
 | s28 | K | – | Sarsılmaz Kemik | Maks. can +%10. Ölümcül darbede %25 canla ayakta kalır, 6 sn Kan Hiddeti gücü kazanırsın (90 sn bekleme). | `S maxHpPct=.10 ;; T lethal icd=90 => heal(.25) ; st(self,bloodrage,6)` |
@@ -686,29 +686,29 @@ Palet (12 P düğümü, sırayla s01 s03 s06 s07 s08 s10 s14 s16 s19 s22 s23 s24
 
 | Slot | Tür | Seç. | Ad | Etki (TR) | fx |
 |---|:-:|:-:|---|---|---|
-| s02 | C | A | Demir Duruş Hızı | Demir Duruş şarjları 1.5 sn daha hızlı dolar. | `M barbarian_iron_stance cd=-1.5` |
-| s02 | C | B | Karşı Hasar | Demir Duruş karşı vuruşları +%20 hasar, +%30 sarsma verir. | `M barbarian_iron_stance dmgx=1.2 stgx=1.3` |
-| s04 | M | – | Kükreyen Tehdit | Kükreyen Kışkırtma bekleme −2 sn, menzil +8 m. | `M barbarian_provoke cd=-2 rng=+8` |
+| s02 | C | A | Demir Duruş Ustası | Demir Duruş maliyeti −%15. | `M barbarian_iron_stance costx=.85` |
+| s02 | C | B | Uzun Demir Duruş | Demir Duruş 2 sn daha uzun sürer. | `M barbarian_iron_stance sdur=iron_stance:+2` |
+| s04 | M | – | Kükreyen Tehdit | Kükreyen Balta bekleme −2 sn, menzil +8 m. | `M barbarian_axe_throw cd=-2 rng=+8` |
 | s05 | A | – | Beceri: Kan Zırhı | Açılan beceri: `barbarian_blood_shield` (SkillDef satırı §1) | `G barbarian_blood_shield` |
 | s09 | C | A | Yara Kabuğu Sertleşir | Aldığın vuruşlar %10 şansla +5 Öfke verir. | `T hurt ch=.1 => res(5)` |
 | s09 | C | B | Kanlı Direnç | Canın %50 altındayken %12 hasar azaltma kazanırsın. | `T tick:1 if=hp<.5 => buff(bloody_resolve,2,{damageReductionPct=.12})` |
-| s11 | M | – | Kalın Kan Zırhı | Kan Zırhı emilimi +%25. | `M barbarian_blood_shield absx=1.25` |
+| s11 | M | – | Kalın Kan Yenilenmesi | Kan Yenilenmesi iyileştirmesi +%25. | `M barbarian_blood_shield healx=1.25` |
 | s12 | M | – | Kemik Kırıcı | Yarma tehdit çarpanı +%30, hasarı +%10. | `M barbarian_cleave p.threatMult*=1.3 dmgx=1.1` |
-| s13 | M | – | Çelik Çember | Kasırga tehdit çarpanı +%25; Öfke maliyeti −%10. | `M barbarian_whirlwind p.threatMult*=1.25 costx=.9` |
+| s13 | M | – | Paralama Çemberi | Paralama tehdit çarpanı +%25; Paralama hasarı +%10. | `M barbarian_thrash p.threatMult*=1.25 dmgx=1.1` |
 | s15 | C | A | Öfke Zırhı Ustası | Öfken %50 üzerindeyken 2 sn'de bir yenilenen +%10 zırh ve +%1 can çalma kazanırsın. | `T tick:1 if=res>.5 => buff(rage_plate,2,{armorPct=.1,lifeSteal=.01})` |
-| s15 | C | B | Karşı Hücum | Demir Duruş karşı vuruşları hedefi 1.5 sn yavaşlatır. | `M barbarian_iron_stance st=slow:1.5:.3` |
+| s15 | C | B | Karşı Hücum | Paralama hedefi 2 sn %30 yavaşlatır. | `M barbarian_thrash st=slow:2:.3` |
 | s17 | C | A | Öfke Biriktirici | Öfke kazancı +%20. | `S resourceGainPct=.20` |
 | s17 | C | B | Kendini Onaran | Kan Zırhı kullanınca %4 can yenilenir. | `T cast:barbarian_blood_shield => heal(.04)` |
-| s18 | M | – | Meydan Nara'sı | Savaş Narası bekleme −3 sn; korku süresi +1 sn. | `M barbarian_war_cry cd=-3 sdur=fear:+1` |
+| s18 | M | – | Meydan Balta | Kükreyen Balta bekleme −1 sn; kışkırtma süresi +1 sn. | `M barbarian_axe_throw cd=-1 sdur=taunt:+1` |
 | s20 | M | – | Uzun Direniş | Son Direniş bekleme −%15, 3 sn daha uzun sürer. | `M barbarian_last_stand cdx=.85 sdur=last_stand:+3` |
-| s21 | M | – | Geniş Kükreme | Toplayıcı Kükreme +5 m yarıçap, 3 sn daha uzun sürer. | `M barbarian_rallying_roar rad=+5 sdur=rally:+3` |
+| s21 | M | – | Geniş Fırtına | Ata Fırtınası yarıçapı +2 m. | `M barbarian_ancestral_tempest rad=+2` |
 | s25 | M | – | Kale Yıkıcı | Sıçrayış +200 sabit tehdit verir. | `M barbarian_leap p.threat+=200` |
 | s26 | C | A | Sürü Koruyucusu | Demir Duruş kullanınca 10 m içindeki müttefikler 4 sn güçlenir. | `T cast:barbarian_iron_stance => st(near(10),fortify,4)` |
 | s26 | C | B | Kan Bağı | Kan Zırhı kullanınca en yaralı müttefik %5 iyileşir. | `T cast:barbarian_blood_shield => healally(.05)` |
 | s27 | M | – | Siper Fırtınası | Ata Fırtınası tehdit çarpanı +%30; sırasındaki hasar azaltma +%10. | `M barbarian_ancestral_tempest p.threatMult*=1.3 p.dr+=.1` |
 | s28 | K | – | Yılmaz Savaşçı | Maks. can +%10, zırh +%10. Ölümcül darbede %25 canla ayakta kalır, 1.5 sn dokunulmaz olursun (90 sn bekleme). | `S maxHpPct=.10 armorPct=.10 ;; T lethal icd=90 => heal(.25) ; st(self,invulnerable,1.5)` |
 | s29 | K | – | Öfke Kalkanı | Aldığın vuruşlar %20 şansla 6 sn boyunca %4 hasar azaltma yığar (en fazla 4, 1 sn bekleme). | `T hurt ch=.2 icd=1 => buff(rage_shield,6,{damageReductionPct=.04},max=4)` |
-| s30 | K | A | Savaş Efendisi | Maks. can +%12, tehdit +%15; Toplayıcı Kükreme bekleme −%20. | `S maxHpPct=.12 threatPct=.15 ;; M barbarian_rallying_roar cdx=.8` |
+| s30 | K | A | Savaş Efendisi | Maks. can +%12, tehdit +%15; Ata Kılığı bekleme −%20. | `S maxHpPct=.12 threatPct=.15 ;; M barbarian_incarnation cdx=.8` |
 | s30 | K | B | Kan Kalesi | Can çalma +%2, zırh +%15; Kan Zırhı bekleme −%30. | `S lifeSteal=.02 armorPct=.15 ;; M barbarian_blood_shield cdx=.7` |
 
 ##### `spec:barbarian_butcher` — Kasap — Uzmanlık Ağacı
@@ -717,29 +717,29 @@ Palet (12 P düğümü, sırayla s01 s03 s06 s07 s08 s10 s14 s16 s19 s22 s23 s24
 
 | Slot | Tür | Seç. | Ad | Etki (TR) | fx |
 |---|:-:|:-:|---|---|---|
-| s02 | C | A | Parçalayıcı | Parçala hasarı +%15, kanaması +%25. | `M barbarian_rend dmgx=1.15 dotx=1.25` |
+| s02 | C | A | Kan Susuzluğu Ustası | Kan Susuzluğu hasarı +%15. | `M barbarian_bloodthirst dmgx=1.15` |
 | s02 | C | B | Kan Kokusu | Kanayan düşmanlara +%10 hasar; kanama şansı +%8. | `S ailingDamagePct=.10 bleedChance=.08` |
-| s04 | M | – | İdam Hazırlığı | Parçala bekleme −1 sn, Öfke maliyeti −%10. | `M barbarian_rend cd=-1 costx=.9` |
+| s04 | M | – | Çılgınlık Hazırlığı | Çılgın Hamle Öfke maliyeti −%10. | `M barbarian_rampage costx=.9` |
 | s05 | A | – | Beceri: İdam | Açılan beceri: `barbarian_execute` (SkillDef satırı §1) | `G barbarian_execute` |
-| s09 | C | A | Kan Hırsı | Kanayan düşmana vuruşlar %15 şansla %1.5 maks. can yeniler. | `T hit ch=.15 if=tst:bleed => heal(.015)` |
+| s09 | C | A | Kan Hırsı | Kan Susuzluğu vuruşları %50 şansla %1.5 maks. can yeniler. | `T hit:barbarian_bloodthirst ch=.5 => heal(.015)` |
 | s09 | C | B | Öfke Dönüşü | Kritik vuruşlar %20 şansla +4 Öfke verir. | `T crit ch=.2 => res(4)` |
-| s11 | M | – | Cellat Baltası | İdam hasarı +%15, bekleme −1 sn. | `M barbarian_execute dmgx=1.15 cd=-1` |
-| s12 | M | – | Kanlı Girdap | Kasırga hasarı +%10 ve vuruşlarda kanama uygular. | `M barbarian_whirlwind dmgx=1.1 st=bleed:4:.3` |
-| s13 | M | – | Kanatan Yarma | Yarma kanaması +%30 güçlü, 2 sn daha uzun sürer. | `M barbarian_cleave dotx=1.3 sdur=bleed:+2` |
-| s15 | C | A | Banyo Hazırlığı | Kan Banyosu bekleme −5 sn, patlama hasarı +%20. | `M barbarian_bloodbath cd=-5 dmgx=1.2` |
+| s11 | M | – | Cellat Baltası | İdam hasarı +%15, sarsması +%20. | `M barbarian_execute dmgx=1.15 stgx=1.2` |
+| s12 | M | – | Kasırga Ustası | Kasırga hasarı +%10 ve vuruşlar hedefi 2 sn %30 yavaşlatır. | `M barbarian_whirlwind dmgx=1.1 st=slow:2:.3` |
+| s13 | M | – | Öfkeli Darbe Ustası | Öfkeli Darbe hasarı +%15. | `M barbarian_raging_blow dmgx=1.15` |
+| s15 | C | A | Banyo Hazırlığı | Kan Banyosu hasarı +%20, kanama hasarı +%40. | `M barbarian_bloodbath dmgx=1.2 dotx=1.4` |
 | s15 | C | B | Katliam | Katliam Çılgınlığı 4 sn daha uzun sürer. | `M barbarian_carnage sdur=carnage:+4` |
 | s17 | C | A | Hırlayan Öfke | Öfke kazancı +%20. | `S resourceGainPct=.20` |
-| s17 | C | B | Dönen Kemik | Dönen Balta kanaması +%40; geri dönerken vurur. | `M barbarian_axe_throw dotx=1.4 shape=return` |
-| s18 | M | – | Parçalayıcı Fay | Yer Yaran bekleme −3 sn ve kanama uygular. | `M barbarian_fissure cd=-3 st=bleed:5:.4` |
+| s17 | C | B | Çılgın Kemik | Çılgın Hamle hasarı +%10. | `M barbarian_rampage dmgx=1.1` |
+| s18 | M | – | Öfkeli Fay | Öfkeli Darbe bekleme −1 sn. | `M barbarian_raging_blow cd=-1` |
 | s20 | M | – | Sürü Çağrısı | Büyük yetenek bekleme süreleri %6 daha hızlı azalır. | `S majorCdrPct=.06` |
 | s21 | M | – | Av Sıçrayışı | Sıçrayış bekleme −2 sn, hasarı +%15. | `M barbarian_leap cd=-2 dmgx=1.15` |
 | s25 | M | – | Şiddet Düzeni | Kan Hiddeti 4 sn daha uzun sürer. | `M barbarian_blood_rage sdur=bloodrage:+4` |
 | s26 | C | A | Sürü Lideri | Kurt Narası kullanınca +40 Öfke kazanırsın. | `T cast:barbarian_wolf_howl => res(40)` |
-| s26 | C | B | Kan Dostları | Kanayan düşmanı öldürünce %20 şansla +6 Öfke ve %2 can kazanırsın. | `T kill if=tst:bleed ch=.2 => res(6) ; heal(.02)` |
-| s27 | M | – | Kan Yağmuru | Ata Fırtınası hasarı +%15 ve kanama uygular. | `M barbarian_ancestral_tempest dmgx=1.15 st=bleed:4:.4` |
+| s26 | C | B | Kan Dostları | Düşman öldürünce %20 şansla +6 Öfke ve %2 can kazanırsın. | `T kill ch=.2 => res(6) ; heal(.02)` |
+| s27 | M | – | Kan Yağmuru | Pervasızlık bekleme −%15. | `M barbarian_carnage cdx=.85` |
 | s28 | K | – | Cellat Çağrısı | Canı <%35 düşmanlara +%30 hasar. İdam bir hedefi öldürürse bekleme süresi sıfırlanır. | `S executeDamagePct=.30 ;; T kill:barbarian_execute => rst(barbarian_execute)` |
 | s29 | K | – | Kanlı Çılgınlık | Saldırı hızı +%5, kritik şansı +%2.5. | `S attackSpeed=.05 critChance=.025 ;; T crit ch=.15 => buff(frenzy_edge,4,{critDamage=.15},max=1)` |
-| s30 | K | A | Kasap Efendisi | Kanama hasarı +%30; Kan Banyosu patlaması +%20 hasar. | `S bleedDamagePct=.30 ;; M barbarian_bloodbath dmgx=1.2` |
+| s30 | K | A | Kasap Efendisi | Hasar +%5; Kan Banyosu hasarı +%20. | `S damagePct=.05 ;; M barbarian_bloodbath dmgx=1.2` |
 | s30 | K | B | Katliam Efendisi | Hasar +%8; İdam Öfke maliyeti −%50 ve hasarı +%20. | `S damagePct=.08 ;; M barbarian_execute costx=.5 dmgx=1.2` |
 
 
@@ -1225,9 +1225,9 @@ Palet (12 P düğümü, sırayla s01 s03 s06 s07 s08 s10 s14 s16 s19 s22 s23 s24
 | s15 | C | B | Kutsal Öfke | Temel vuruşlar %12 şansla +1 Kutsal Güç verir. | `T hit:@basic ch=.12 => pip(holypower,1)` |
 | s17 | C | A | İnanç Pınarı | İnanç yenilenmesi +%20. | `S resourceRegenPct=.20` |
 | s17 | C | B | Yeminli Kılıç | İnanç maliyetleri −%10; Kutsal Güç harcamak %15 şansla 1 puan geri verir. | `S costReductionPct=.10 ;; T spend:holypower ch=.15 => pip(holypower,1)` |
-| s18 | M | – | Çekiç Ustası | Adalet Çekici bekleme −5 sn, sersemletme +0.5 sn. | `M paladin_hammer_of_justice cd=-5 sdur=stun:+0.5` |
+| s18 | M | – | Azarlama Ustası | Azarlama bekleme −3 sn. | `M paladin_rebuke cd=-3` |
 | s20 | M | – | Yemin Bilgeliği | Büyük yetenek bekleme süreleri %6 daha hızlı azalır. | `S majorCdrPct=.06` |
-| s21 | M | – | Aura Ustası | Aura yarıçapı +%30. | `M paladin_aura radx=1.3` |
+| s21 | M | – | Binek Ustası | İlahi Binek bekleme −5 sn. | `M paladin_divine_steed cd=-5` |
 | s25 | M | – | Şifa Eli Ustası | Şifa Eli bekleme −%25. | `M paladin_lay_on_hands cdx=.75` |
 | s26 | C | A | Işığın Ordusu | İntikam Kanatları kullanınca grup 8 sn güçlenir. | `T cast:paladin_avenging_wrath => st(party,empower,8)` |
 | s26 | C | B | Koruyucu Melek | Şifa Eli hedefine 8 sn güçlendirme verir. | `T cast:paladin_lay_on_hands => st(ally,fortify,8)` |
@@ -1259,7 +1259,7 @@ Palet (12 P düğümü, sırayla s01 s03 s06 s07 s08 s10 s14 s16 s19 s22 s23 s24
 | s18 | M | – | Hesaplaşma Yankısı | Hesaplaşma kullanınca 10 m içindeki müttefikler 4 sn güçlenir. | `T cast:paladin_reckoning => st(near(10),fortify,4)` |
 | s20 | M | – | Kadim Siper | İlahi Siper ve Yılmaz Savunucu bekleme −%10. | `M paladin_prot_bulwark+paladin_prot_ardent cdx=.9` |
 | s21 | M | – | Uzun Siper | İlahi Siper 3 sn daha uzun sürer. | `M paladin_prot_bulwark sdur=bulwark:+3` |
-| s25 | M | – | Aura Muhafızı | Aura yarıçapı +%15. | `M paladin_aura radx=1.15` |
+| s25 | M | – | Zemin Muhafızı | Kutsal Zemin yarıçapı +%15. | `M paladin_consecration radx=1.15` |
 | s26 | C | A | Şifa Koruyucusu | İlahi Siper kullanınca en yaralı müttefik %5 iyileşir. | `T cast:paladin_prot_bulwark => healally(.05)` |
 | s26 | C | B | Yılmaz Dost | Yılmaz Savunucu kullanınca grup 5 sn güçlenir. | `T cast:paladin_prot_ardent => st(party,fortify,5)` |
 | s27 | M | – | Kanatlı Muhafız | İntikam Kanatları bekleme −%15. | `M paladin_avenging_wrath cdx=.85` |
@@ -1284,19 +1284,19 @@ Palet (12 P düğümü, sırayla s01 s03 s06 s07 s08 s10 s14 s16 s19 s22 s23 s24
 | s12 | M | – | Şok Zinciri | Kutsal Şok %25 şansla kendi bekleme süresini 2 sn azaltır. | `T cast:paladin_holy_shock ch=.25 => cdr(paladin_holy_shock,2)` |
 | s13 | M | – | Parlama Ustası | Işık Parlaması iyileştirmesi +%15, maliyeti −%10. | `M paladin_flash_of_light healx=1.15 costx=.9` |
 | s15 | C | A | Şafak Ustası | Şafak Işığı 2 hedef daha iyileştirir. | `M paladin_light_of_dawn cnt=+2` |
-| s15 | C | B | Sığınak Ustası | Tyr'ın Sığınağı 4 sn daha uzun sürer. | `M paladin_holy_sanctuary dur=+4` |
+| s15 | C | B | Çınlama Ustası | İlahi Çınlama bekleme −5 sn. | `M paladin_divine_toll cd=-5` |
 | s17 | C | A | İnanç Pınarı | İnanç yenilenmesi +%20. | `S resourceRegenPct=.20` |
 | s17 | C | B | Taşan Işık | Şifalar %10 şansla maks. İnanç'ın %5'ini iade eder. | `T heal ch=.1 => resp(.05)` |
 | s18 | M | – | Işık Oku Ustası | Işık Oku iyileştirmesi +%20. | `M paladin_holy_basic healx=1.2` |
 | s20 | M | – | Sözün Ağırlığı | Işığın Sözü hedefi 6 sn güçlendirir. | `T cast:paladin_word_of_glory => st(ally,fortify,6)` |
-| s21 | M | – | Aura Dalgası | Aura Ustalığı ve Tyr'ın Sığınağı bekleme −%10. | `M paladin_holy_aura_mastery+paladin_holy_sanctuary cdx=.9` |
+| s21 | M | – | Aura Dalgası | Aura Ustalığı ve İlahi Çınlama bekleme −%10. | `M paladin_holy_aura_mastery+paladin_divine_toll cdx=.9` |
 | s25 | M | – | Işık Çağlayanı | Işığın Sözü 1 Kutsal Güç daha ucuz olur. | `M paladin_word_of_glory pipc=holypower:-1` |
 | s26 | C | A | Fener | Şifaların %20 şansla en yaralı müttefiği ek %4 iyileştirir. | `T heal ch=.2 => healally(.04)` |
 | s26 | C | B | Grup Işığı | Aura Ustalığı kullanınca grup 6 sn yenilenme kazanır. | `T cast:paladin_holy_aura_mastery => st(party,regen,6)` |
-| s27 | M | – | Geniş Sığınak | Tyr'ın Sığınağı yarıçap +3 m, iyileştirmesi +%15. | `M paladin_holy_sanctuary rad=+3 healx=1.15` |
+| s27 | M | – | Geniş Çınlama | İlahi Çınlama iyileştirmesi +%15. | `M paladin_divine_toll healx=1.15` |
 | s28 | K | – | Işığın Ustası | Şifa gücü +%12, maks. can +%5. Ölümcül darbede %20 canla ayakta kalır, 1.5 sn dokunulmaz olursun (90 sn bekleme). | `S healingPct=.12 maxHpPct=.05 ;; T lethal icd=90 => heal(.2) ; st(self,invulnerable,1.5)` |
 | s29 | K | – | Kutsal Zihin | Şifa gücü +%8, kaynak yenilenmesi +%15. | `S healingPct=.08 resourceRegenPct=.15` |
-| s30 | K | A | Büyük Rahip | Şifa gücü +%20; Tyr'ın Sığınağı bekleme −%15. | `S healingPct=.20 ;; M paladin_holy_sanctuary cdx=.85` |
+| s30 | K | A | Büyük Rahip | Şifa gücü +%20; İlahi Çınlama bekleme −%15. | `S healingPct=.20 ;; M paladin_divine_toll cdx=.85` |
 | s30 | K | B | Şafak Kralı | Şifa gücü +%10, bekleme azaltma +%4; Aura Ustalığı bekleme −%20. | `S healingPct=.10 cdr=.04 ;; M paladin_holy_aura_mastery cdx=.8` |
 
 ##### `spec:paladin_retribution` — Ceza — Uzmanlık Ağacı
@@ -1314,21 +1314,21 @@ Palet (12 P düğümü, sırayla s01 s03 s06 s07 s08 s10 s14 s16 s19 s22 s23 s24
 | s11 | M | – | Zincir Çekiç | Gazap Çekici +1 hedefe sıçrar, hasarı +%10. | `M paladin_hammer_of_wrath cnt=+1 dmgx=1.1` |
 | s12 | M | – | Hüküm Kılıcı | Kutsal Hüküm hasarı +%15, sarsması +%25. | `M paladin_verdict dmgx=1.15 stgx=1.25` |
 | s13 | M | – | Cellat Yargısı | Yargı bekleme −1 sn, hasarı +%10. | `M paladin_judgement cd=-1 dmgx=1.1` |
-| s15 | C | A | Sefer Ustası | Haçlı Seferi 4 sn daha uzun sürer. | `M paladin_ret_crusade sdur=crusade:+4` |
+| s15 | C | A | Sefer Ustası | İntikam Kanatları 4 sn daha uzun sürer. | `M paladin_avenging_wrath sdur=wrath_wings:+4` |
 | s15 | C | B | İdam Ustası | İdam Hükmü hasarı +%20, 2 sn daha uzun sürer. | `M paladin_ret_execution dmgx=1.2 sdur=sentenced:+2` |
 | s17 | C | A | İnanç Alevi | İnanç yenilenmesi +%20. | `S resourceRegenPct=.20` |
 | s17 | C | B | Fırtına Ruhu | Kutsal Güç harcayınca %10 şansla 4 sn saldırı hızı +%12. | `T spend:holypower ch=.1 => buff(storm_spirit,4,{attackSpeed=.12})` |
 | s18 | M | – | Güçlü Haçlı | Haçlı Darbesi hasarı +%20, bekleme −0.5 sn. | `M paladin_crusader_strike dmgx=1.2 cd=-0.5` |
-| s20 | M | – | Yargı Zamanı | Haçlı Seferi ve İdam Hükmü bekleme −%10. | `M paladin_ret_crusade+paladin_ret_execution cdx=.9` |
-| s21 | M | – | Hızlı Çekiç | Adalet Çekici bekleme −4 sn. | `M paladin_hammer_of_justice cd=-4` |
-| s25 | M | – | Aura Gücü | Aura yarıçapı +%20. | `M paladin_aura radx=1.2` |
-| s26 | C | A | Yargı Ordusu | Haçlı Seferi kullanınca grup 6 sn güçlenir. | `T cast:paladin_ret_crusade => st(party,empower,6)` |
+| s20 | M | – | Yargı Zamanı | İntikam Kanatları ve İdam Hükmü bekleme −%10. | `M paladin_avenging_wrath+paladin_ret_execution cdx=.9` |
+| s21 | M | – | Hızlı Bıçak | Adalet Bıçağı bekleme −2 sn. | `M paladin_blade_of_justice cd=-2` |
+| s25 | M | – | Küller Gücü | Küllerin Uyanışı yarıçapı +%20. | `M paladin_wake_of_ashes radx=1.2` |
+| s26 | C | A | Yargı Ordusu | İntikam Kanatları kullanınca grup 6 sn güçlenir. | `T cast:paladin_avenging_wrath => st(party,empower,6)` |
 | s26 | C | B | Kılıç Kardeşliği | İdam Hükmü 10 m içindeki müttefiklere 6 sn hız verir. | `T cast:paladin_ret_execution => st(near(10),haste,6)` |
 | s27 | M | – | Kanatlı İntikam | İntikam Kanatları bekleme −%15. | `M paladin_avenging_wrath cdx=.85` |
 | s28 | K | – | Yeminli Kılıç | Yakın dövüş hasarı +%10, kritik şansı +%2. Kritik vuruşlar %20 şansla +1 Kutsal Güç verir. | `S meleeDamagePct=.10 critChance=.02 ;; T crit ch=.2 => pip(holypower,1)` |
 | s29 | K | – | Hüküm Sahibi | Saldırı hızı +%5, kritik hasarı +%15. Öldürünce +1 Kutsal Güç kazanırsın. | `S attackSpeed=.05 critDamage=.15 ;; T kill => pip(holypower,1)` |
 | s30 | K | A | Kutsal Cellat | Kutsal hasar +%25; Gazap Çekici hasarı +%25. | `S holyDamagePct=.25 ;; M paladin_hammer_of_wrath dmgx=1.25` |
-| s30 | K | B | Haçlı Efendisi | Kritik hasarı +%25, saldırı hızı +%5; Haçlı Seferi bekleme −%20. | `S critDamage=.25 attackSpeed=.05 ;; M paladin_ret_crusade cdx=.8` |
+| s30 | K | B | Haçlı Efendisi | Kritik hasarı +%25, saldırı hızı +%5; İntikam Kanatları bekleme −%20. | `S critDamage=.25 attackSpeed=.05 ;; M paladin_avenging_wrath cdx=.8` |
 
 
 #### 2.10.8 Nekromant (`necromancer`)
@@ -1341,26 +1341,26 @@ Palet (12 P düğümü, sırayla s01 s03 s06 s07 s08 s10 s14 s16 s19 s22 s23 s24
 
 | Slot | Tür | Seç. | Ad | Etki (TR) | fx |
 |---|:-:|:-:|---|---|---|
-| s02 | C | A | Mezar Hızı | Hareket hızı +%6; İskelet Çağır bekleme −0.5 sn. | `S moveSpeedPct=.06 ;; M necro_raise_skeleton cd=-0.5` |
+| s02 | C | A | Mezar Hızı | Hareket hızı +%6; Ölüm Atılışı bekleme −3 sn. | `S moveSpeedPct=.06 ;; M necro_deaths_advance cd=-3` |
 | s02 | C | B | Ruh Adımı | Hasar alınca %10 şansla 3 sn hareket hızı +%20 (6 sn bekleme). | `T hurt ch=.1 icd=6 => buff(spirit_dash,3,{moveSpeedPct=.2})` |
-| s04 | M | – | Keskin Mızrak | Kemik Mızrağı hasarı +%15, menzil +4 m. | `M necro_bone_spear dmgx=1.15 rng=+4` |
-| s05 | A | A | Beceri: Ruh Koparma | Açılan beceri: `necro_soul_snap` (SkillDef satırı §1) | `G necro_soul_snap` |
+| s04 | M | – | Keskin Mızrak | Ölüm Sarmalı hasarı +%15, menzil +4 m. | `M necro_death_coil dmgx=1.15 rng=+4` |
+| s05 | A | A | Beceri: Ölüm Kancası | Açılan beceri: `necro_deaths_grip` (SkillDef satırı §1) | `G necro_deaths_grip` |
 | s05 | A | B | Beceri: Ruh Yürüyüşü | Açılan beceri: `necro_spirit_walk` (SkillDef satırı §1) | `G necro_spirit_walk` |
-| s09 | C | A | Kemik Kalkanı | Kemik Zırhı kullanınca 10 sn maks. canının %10'u kadar kalkan kazanırsın. | `T cast:necro_bone_armor => abs(.1,10)` |
+| s09 | C | A | Kemik Kalkanı | Büyü Karşıtı Kalkan kullanınca 10 sn maks. canının %10'u kadar kalkan kazanırsın. | `T cast:necro_anti_magic_shell => abs(.1,10)` |
 | s09 | C | B | Ruh Direnci | Canın %35 altına düşünce %15 can yenilenir ve 15 m içindeki yoldaşlar 4 sn güçlenir (60 sn bekleme). | `T hurt if=hp<.35 icd=60 => heal(.15) ; st(near(15),empower,4)` |
-| s11 | M | – | Hızlı Mezar | İskelet Çağır maliyeti −%20; yoldaş canı +%10. | `M necro_raise_skeleton costx=.8 ;; S minionHpPct=.10` |
-| s12 | M | – | Geniş Patlama | Ceset Patlaması alanı +%15, hasarı +%15. | `M necro_corpse_explosion radx=1.15 dmgx=1.15` |
-| s13 | M | – | Hapishane Ustası | Kemik Hapishanesi bekleme −3 sn, kök süresi +1 sn. | `M necro_bone_prison cd=-3 sdur=root:+1` |
-| s15 | C | A | Lanet Ustası | Lanet: Çürüme alanı +%20, süresi +4 sn. | `M necro_curse_decay radx=1.2 dur=+4` |
-| s15 | C | B | Kan Rahibi | Can çalma +%0.5; Kan Emişi iyileştirmesi +%25. | `S lifeSteal=.005 ;; M necro_blood_siphon healx=1.25` |
+| s11 | M | – | Kalkan Ustası | Büyü Karşıtı Kalkan bekleme −%15; yoldaş canı +%10. | `M necro_anti_magic_shell cdx=.85 ;; S minionHpPct=.10` |
+| s12 | M | – | Geniş Salgın | Salgın alanı +%15, hasarı +%15. | `M necro_epidemic radx=1.15 dmgx=1.15` |
+| s13 | M | – | Kanca Ustası | Ölüm Kancası bekleme −5 sn. | `M necro_deaths_grip cd=-5` |
+| s15 | C | A | Lanet Ustası | Kan Kaynatma alanı +%20, süresi +4 sn. | `M necro_blood_boil radx=1.2 dur=+4` |
+| s15 | C | B | Kan Rahibi | Can çalma +%0.5; Ölüm Darbesi iyileştirmesi +%25. | `S lifeSteal=.005 ;; M necro_death_strike healx=1.25` |
 | s17 | C | A | Öz Pınarı | Öz yenilenmesi +%20. | `S resourceRegenPct=.20` |
 | s17 | C | B | Ceset Toplayıcı | Öldürmeler %25 şansla +8 Öz verir. | `T kill ch=.25 => res(8)` |
-| s18 | M | – | Lanet Ustalığı | Lanet: Çürüme hasarı +%25. | `M necro_curse_decay dmgx=1.25` |
+| s18 | M | – | Sarmal Ustalığı | Ölüm Sarmalı hasarı +%25. | `M necro_death_coil dmgx=1.25` |
 | s20 | M | – | Mezar Zamanı | Büyük yetenek bekleme süreleri %6 daha hızlı azalır. | `S majorCdrPct=.06` |
-| s21 | M | – | Uzun Emiş | Kan Emişi hasarı +%20, menzili +3 m. | `M necro_blood_siphon dmgx=1.2 rng=+3` |
-| s25 | M | – | Kemik Zırhı Ustalığı | Kemik Zırhı +2 kalkan, bekleme −5 sn. | `M necro_bone_armor p.armorStacks+=2 cd=-5` |
+| s21 | M | – | Çürüten Usta | Çürüten Darbe hasarı +%20, menzili +1 m. | `M necro_festering_strike dmgx=1.2 rng=+1` |
+| s25 | M | – | Vampirik Ustalık | Vampirik Kan 3 sn daha uzun sürer. | `M necro_vampiric_blood sdur=vampiric_blood:+3` |
 | s26 | C | A | Ölüm Ordusu | Ölüler Ordusu kullanınca grup 8 sn güçlenir. | `T cast:necro_army_of_the_dead => st(party,empower,8)` |
-| s26 | C | B | Koruyucu Kemik | Kemik Zırhı 10 m içindeki müttefikleri 4 sn güçlendirir. | `T cast:necro_bone_armor => st(near(10),fortify,4)` |
+| s26 | C | B | Koruyucu Kemik | Büyü Karşıtı Kalkan 10 m içindeki müttefikleri 4 sn güçlendirir. | `T cast:necro_anti_magic_shell => st(near(10),fortify,4)` |
 | s27 | M | – | Ordu Yankısı | Ölüler Ordusu bekleme −%15, +2 iskelet askeri çağırır. | `M necro_army_of_the_dead cdx=.85 cnt=+2` |
 | s28 | K | – | Ölümsüz Beden | Maks. can +%10. Ölümcül darbede %20 canla ayakta kalır, 1.5 sn dokunulmaz olursun (90 sn bekleme). | `S maxHpPct=.10 ;; T lethal icd=90 => heal(.2) ; st(self,invulnerable,1.5)` |
 | s29 | K | – | Mezar Ritmi | Hasar +%6. Kritik vuruşlar 5 sn boyunca +%5 büyü hızı yığar (en fazla 4). | `S damagePct=.06 ;; T crit => buff(grave_rhythm,5,{castSpeed=.05},max=4)` |
@@ -1373,30 +1373,30 @@ Palet (12 P düğümü, sırayla s01 s03 s06 s07 s08 s10 s14 s16 s19 s22 s23 s24
 
 | Slot | Tür | Seç. | Ad | Etki (TR) | fx |
 |---|:-:|:-:|---|---|---|
-| s02 | C | A | Büyük Ordu | İskelet sınırı +1 artar. | `X trait_summoner{skeletonCap=1}` |
-| s02 | C | B | Golem Çağrısı | Kemik Golemi bekleme −5 sn, hasarı +%20. | `M necro_golem cd=-5 dmgx=1.2` |
-| s04 | M | – | Golem Kayası | Kemik Golemi hasarı +%15, sarsması +%30. | `M necro_golem dmgx=1.15 stgx=1.3` |
-| s05 | A | – | Beceri: Ordu: Hücum! | Açılan beceri: `necro_command_army` (SkillDef satırı §1) | `G necro_command_army` |
+| s02 | C | A | Büyük Ordu | Küçük Ghul sınırı +1 artar. | `X trait_summoner{lesserGhoulCap=1}` |
+| s02 | C | B | Golem Çağrısı | Karanlık Dönüşüm bekleme −5 sn, hasarı +%20. | `M necro_dark_transformation cd=-5 dmgx=1.2` |
+| s04 | M | – | Keskin Kırbaç | Ölüm Kırbacı hasarı +%15, sarsması +%30. | `M necro_scourge_strike dmgx=1.15 stgx=1.3` |
+| s05 | A | – | Beceri: Salgın | Açılan beceri: `necro_epidemic` (SkillDef satırı §1) | `G necro_epidemic` |
 | s09 | C | A | Ordu Kalkanı | Aldığın hasarın %10'u daha fazla yoldaşlarına dağılır. | `X trait_summoner{damageToMinions=.10}` |
-| s09 | C | B | Ölümcül Dönüş | Ölen iskeletler %20 şansla yeniden ayağa kalkar. | `X trait_summoner{skeletonRevive=.20}` |
-| s11 | M | – | Emir Gücü | Ordu: Hücum! hasarı +%25; kışkırtma 1 sn uzar. | `M necro_command_army dmgx=1.25 sdur=taunt:+1` |
-| s12 | M | – | Hızlı Mezar | İskelet Çağır bekleme −0.5 sn, maliyeti −%20. | `M necro_raise_skeleton cd=-0.5 costx=.8` |
-| s13 | M | – | Patlayan Ordu | Ceset Patlaması hasarı +%20, alanı +%10. | `M necro_corpse_explosion dmgx=1.2 radx=1.1` |
-| s15 | C | A | Çılgınlık Ustası | Ölüm Çılgınlığı 4 sn daha uzun sürer. | `M necro_sm_frenzy sdur=frenzy_minions:+4` |
-| s15 | C | B | Şövalye Ustası | Kemik Şövalyeleri 6 sn daha uzun kalır. | `M necro_sm_bone_knights p.life+=6` |
+| s09 | C | B | Ölümcül Dönüş | Ölen ghullar %20 şansla yeniden ayağa kalkar. | `X trait_summoner{ghoulRevive=.20}` |
+| s11 | M | – | Emir Gücü | Ölüm Emri hasarı +%25. | `M necro_death_order dmgx=1.25` |
+| s12 | M | – | Hızlı Çürüme | Çürüten Darbe maliyeti −%15. | `M necro_festering_strike costx=.85` |
+| s13 | M | – | Yayılan Salgın | Salgın hasarı +%20, alanı +%10. | `M necro_epidemic dmgx=1.2 radx=1.1` |
+| s15 | C | A | Dönüşüm Ustası | Karanlık Dönüşüm 4 sn daha uzun sürer. | `M necro_dark_transformation sdur=dark_transformation:+4` |
+| s15 | C | B | Ordu Ustası | Ölüler Ordusu 6 sn daha uzun sürer. | `M necro_army_of_the_dead sdur=army:+6` |
 | s17 | C | A | Öz Pınarı | Öz yenilenmesi +%20. | `S resourceRegenPct=.20` |
 | s17 | C | B | Ruh Hasadı | Yoldaşların öldürmeleri %20 şansla +6 Öz verir. | `T kill:@minion ch=.2 => res(6)` |
-| s18 | M | – | Golem Nöbeti | Kemik Golemi bekleme −%15. | `M necro_golem cdx=.85` |
-| s20 | M | – | Ordu Zamanı | Ölüm Çılgınlığı ve Kemik Şövalyeleri bekleme −%10. | `M necro_sm_frenzy+necro_sm_bone_knights cdx=.9` |
+| s18 | M | – | Ghul Nöbeti | Karanlık Dönüşüm bekleme −%15. | `M necro_dark_transformation cdx=.85` |
+| s20 | M | – | Ordu Zamanı | Karanlık Dönüşüm ve Ölüler Ordusu bekleme −%10. | `M necro_dark_transformation+necro_army_of_the_dead cdx=.9` |
 | s21 | M | – | Ölüler Ordusu Genişler | Ölüler Ordusu +2 asker çağırır, bekleme −8 sn. | `M necro_army_of_the_dead cnt=+2 cd=-8` |
-| s25 | M | – | Lanet Gölgesi | Lanet: Çürüme alanı +%20; kullanınca 10 sn yoldaş hasarı +%10. | `M necro_curse_decay radx=1.2 ;; T cast:necro_curse_decay => buff(curse_edge,10,{minionDamagePct=.10})` |
+| s25 | M | – | Veba Gölgesi | Salgın Çıkışı alanı +%20; kullanınca 10 sn yoldaş hasarı +%10. | `M necro_outbreak radx=1.2 ;; T cast:necro_outbreak => buff(curse_edge,10,{minionDamagePct=.10})` |
 | s26 | C | A | Ölüm Çobanı | Ölüler Ordusu kullanınca grup 8 sn güçlenir. | `T cast:necro_army_of_the_dead => st(party,empower,8)` |
-| s26 | C | B | Kemik Kalkanı | Kemik Şövalyeleri 10 m içindeki müttefikleri 6 sn güçlendirir. | `T cast:necro_sm_bone_knights => st(near(10),fortify,6)` |
-| s27 | M | – | Komuta Zinciri | Ordu: Hücum! bekleme −3 sn. | `M necro_command_army cd=-3` |
+| s26 | C | B | Kemik Kalkanı | Ölüler Ordusu 10 m içindeki müttefikleri 6 sn güçlendirir. | `T cast:necro_army_of_the_dead => st(near(10),fortify,6)` |
+| s27 | M | – | Komuta Zinciri | Karanlık Dönüşüm bekleme −3 sn. | `M necro_dark_transformation cd=-3` |
 | s28 | K | – | Sonsuz Ordu | Yoldaş hasarı ve canı +%15. Ölümcül darbede %20 canla ayakta kalır, 1.5 sn dokunulmaz olursun (90 sn bekleme). | `S minionDamagePct=.15 minionHpPct=.15 ;; T lethal icd=90 => heal(.2) ; st(self,invulnerable,1.5)` |
 | s29 | K | – | Mezar Efendisi | Hasar +%6. Yoldaş öldürmeleri 6 sn boyunca +%4 yoldaş hasarı yığar (en fazla 5). | `S damagePct=.06 ;; T kill:@minion => buff(grave_master,6,{minionDamagePct=.04},max=5)` |
-| s30 | K | A | Ordu Efendisi | Yoldaş hasarı +%25, canı +%20; Kemik Golemi bekleme −%20. | `S minionDamagePct=.25 minionHpPct=.20 ;; M necro_golem cdx=.8` |
-| s30 | K | B | Ölüler Kralı | Gölge hasarı +%20, yoldaş hasarı +%15; Ordu: Hücum! hasarı +%20. | `S shadowDamagePct=.20 minionDamagePct=.15 ;; M necro_command_army dmgx=1.2` |
+| s30 | K | A | Ordu Efendisi | Yoldaş hasarı +%25, canı +%20; Ölüler Ordusu bekleme −%20. | `S minionDamagePct=.25 minionHpPct=.20 ;; M necro_army_of_the_dead cdx=.8` |
+| s30 | K | B | Ölüler Kralı | Gölge hasarı +%20, yoldaş hasarı +%15; Ölüm Emri hasarı +%20. | `S shadowDamagePct=.20 minionDamagePct=.15 ;; M necro_death_order dmgx=1.2` |
 
 ##### `spec:necromancer_bone` — Kemik Ustası — Uzmanlık Ağacı
 
@@ -1404,30 +1404,30 @@ Palet (12 P düğümü, sırayla s01 s03 s06 s07 s08 s10 s14 s16 s19 s22 s23 s24
 
 | Slot | Tür | Seç. | Ad | Etki (TR) | fx |
 |---|:-:|:-:|---|---|---|
-| s02 | C | A | Fırtına Ustası | Kemik Fırtınası maliyeti −%15, hasarı +%10. | `M necro_bone_storm costx=.85 dmgx=1.1` |
-| s02 | C | B | Mızrak Fırtınası | Savaşta 3 sn'de bir otomatik Kemik Mızrağı yankısı (%50 hasar) atılır. | `T tick:3 if=inCombat => echo(necro_bone_spear,.5,.1)` |
-| s04 | M | – | Keskin Fırtına | Kemik Fırtınası yarıçapı +1 m, süresi +1 sn. | `M necro_bone_storm rad=+1 dur=+1` |
-| s05 | A | – | Beceri: Kan Dalgası | Açılan beceri: `necro_blood_surge` (SkillDef satırı §1) | `G necro_blood_surge` |
-| s09 | C | A | Kan Kalkanı | Kan Dalgası sonrası 6 sn %12 hasar azaltma kazanırsın. | `T cast:necro_blood_surge => buff(blood_ward,6,{damageReductionPct=.12})` |
-| s09 | C | B | Kemik Zırhı | Kemik Fırtınası sırasında 4 sn %10 hasar azaltma kazanırsın. | `T cast:necro_bone_storm => buff(storm_ward,4,{damageReductionPct=.1})` |
-| s11 | M | – | Geniş Dalga | Kan Dalgası yarıçap +2 m, hasarı +%15. | `M necro_blood_surge rad=+2 dmgx=1.15` |
-| s12 | M | – | Delici Kemik | Kemik Mızrağı +1 delme yapar, hasarı +%10. | `M necro_bone_spear prc=+1 dmgx=1.1` |
-| s13 | M | – | Zincir Patlama | Ceset Patlaması hasarı +%20; zincir patlamalar %20 daha güçlü. | `M necro_corpse_explosion dmgx=1.2 p.explChainMult*=1.2` |
-| s15 | C | A | Ruh Ustası | Kemik Ruhu hasarı +%20, bekleme −5 sn. | `M necro_bn_bone_spirit dmgx=1.2 cd=-5` |
-| s15 | C | B | Lich Ustası | Lich Formu 5 sn daha uzun sürer. | `M necro_bn_lich_form sdur=lich:+5` |
+| s02 | C | A | Darbe Ustası | Ölüm Darbesi maliyeti −%15, hasarı +%10. | `M necro_death_strike costx=.85 dmgx=1.1` |
+| s02 | C | B | Kalp Yankısı | Savaşta 3 sn'de bir otomatik Kalp Darbesi yankısı (%50 hasar) atılır. | `T tick:3 if=inCombat => echo(necro_heart_strike,.5,.1)` |
+| s04 | M | – | Geniş Kaynatma | Kan Kaynatma yarıçapı +1 m. | `M necro_blood_boil rad=+1` |
+| s05 | A | – | Beceri: İlik Söken | Açılan beceri: `necro_marrowrend` (SkillDef satırı §1) | `G necro_marrowrend` |
+| s09 | C | A | Kan Kalkanı | Kan Kaynatma sonrası 6 sn %12 hasar azaltma kazanırsın. | `T cast:necro_blood_boil => buff(blood_ward,6,{damageReductionPct=.12})` |
+| s09 | C | B | Kemik Zırhı | İlik Söken sonrası 4 sn %10 hasar azaltma kazanırsın. | `T cast:necro_marrowrend => buff(storm_ward,4,{damageReductionPct=.1})` |
+| s11 | M | – | Geniş Dalga | Kan Kaynatma yarıçap +2 m, hasarı +%15. | `M necro_blood_boil rad=+2 dmgx=1.15` |
+| s12 | M | – | Delici Kalp | Kalp Darbesi hasarı +%10. | `M necro_heart_strike dmgx=1.1` |
+| s13 | M | – | Kaynayan Kan | Kan Kaynatma hasarı +%20. | `M necro_blood_boil dmgx=1.2` |
+| s15 | C | A | Orak Ustası | Hayalet Orak Dansı 3 sn daha uzun sürer, bekleme −5 sn. | `M necro_dancing_rune_weapon sdur=dancing_rune_weapon:+3 cd=-5` |
+| s15 | C | B | Kan Ustası | Vampirik Kan 5 sn daha uzun sürer. | `M necro_vampiric_blood sdur=vampiric_blood:+5` |
 | s17 | C | A | Öz Pınarı | Öz yenilenmesi +%20. | `S resourceRegenPct=.20` |
-| s17 | C | B | Kemik Hasadı | Kemik Mızrağı vuruşları %10 şansla +4 Öz verir. | `T hit:necro_bone_spear ch=.1 => res(4)` |
-| s18 | M | – | Hapishane Kemiği | Kemik Hapishanesi bekleme −3 sn, hasarı +%20. | `M necro_bone_prison cd=-3 dmgx=1.2` |
-| s20 | M | – | Kemik Zamanı | Kemik Ruhu ve Lich Formu bekleme −%10. | `M necro_bn_bone_spirit+necro_bn_lich_form cdx=.9` |
-| s21 | M | – | Emiş Ustası | Kan Emişi iyileştirmesi +%25, hasarı +%15. | `M necro_blood_siphon healx=1.25 dmgx=1.15` |
-| s25 | M | – | Çürüme Lanetı | Lanet: Çürüme hasarı +%25. | `M necro_curse_decay dmgx=1.25` |
-| s26 | C | A | Ölüm Çağrısı | Lich Formu kullanınca grup 6 sn güçlenir. | `T cast:necro_bn_lich_form => st(party,empower,6)` |
-| s26 | C | B | Koruyucu Ruh | Kemik Ruhu kullanınca %5 can yenilenir. | `T cast:necro_bn_bone_spirit => heal(.05)` |
-| s27 | M | – | Fırtına Yankısı | Kemik Fırtınası %15 şansla yarı güçte tekrar eder. | `T cast:necro_bone_storm ch=.15 => echo(necro_bone_storm,.5,.5)` |
+| s17 | C | B | Kemik Hasadı | Kalp Darbesi vuruşları %10 şansla +4 Öz verir. | `T hit:necro_heart_strike ch=.1 => res(4)` |
+| s18 | M | – | Kanca Kemiği | Ölüm Kancası bekleme −3 sn, hasarı +%20. | `M necro_deaths_grip cd=-3 dmgx=1.2` |
+| s20 | M | – | Kemik Zamanı | Hayalet Orak Dansı ve Vampirik Kan bekleme −%10. | `M necro_dancing_rune_weapon+necro_vampiric_blood cdx=.9` |
+| s21 | M | – | Darbe Emişi | Ölüm Darbesi iyileştirmesi +%25, hasarı +%15. | `M necro_death_strike healx=1.25 dmgx=1.15` |
+| s25 | M | – | İlik Lanetı | İlik Söken hasarı +%25. | `M necro_marrowrend dmgx=1.25` |
+| s26 | C | A | Ölüm Çağrısı | Hayalet Orak Dansı kullanınca grup 6 sn güçlenir. | `T cast:necro_dancing_rune_weapon => st(party,empower,6)` |
+| s26 | C | B | Koruyucu Ruh | Vampirik Kan kullanınca %5 can yenilenir. | `T cast:necro_vampiric_blood => heal(.05)` |
+| s27 | M | – | Kaynatma Yankısı | Kan Kaynatma %15 şansla yarı güçte tekrar eder. | `T cast:necro_blood_boil ch=.15 => echo(necro_blood_boil,.5,.5)` |
 | s28 | K | – | Kemik Yürek | Fiziksel hasar +%10, kritik şansı +%2. Ölümcül darbede %20 canla ayakta kalır, 1.5 sn dokunulmaz olursun (90 sn bekleme). | `S physicalDamagePct=.10 critChance=.02 ;; T lethal icd=90 => heal(.2) ; st(self,invulnerable,1.5)` |
 | s29 | K | – | Kemik Ritmi | Hasar +%6, kritik hasarı +%15. Kritik vuruşlar 5 sn boyunca +%5 büyü hızı yığar (en fazla 4). | `S damagePct=.06 critDamage=.15 ;; T crit => buff(bone_rhythm,5,{castSpeed=.05},max=4)` |
-| s30 | K | A | Kemik Hükümdarı | Fiziksel hasar +%25; Kemik Fırtınası hasarı +%25. | `S physicalDamagePct=.25 ;; M necro_bone_storm dmgx=1.25` |
-| s30 | K | B | Lich Kralı | Gölge hasarı +%20, büyü hızı +%5; Lich Formu bekleme −%20. | `S shadowDamagePct=.20 castSpeed=.05 ;; M necro_bn_lich_form cdx=.8` |
+| s30 | K | A | Kemik Hükümdarı | Fiziksel hasar +%25; Kalp Darbesi hasarı +%25. | `S physicalDamagePct=.25 ;; M necro_heart_strike dmgx=1.25` |
+| s30 | K | B | Lich Kralı | Gölge hasarı +%20, büyü hızı +%5; Hayalet Orak Dansı bekleme −%20. | `S shadowDamagePct=.20 castSpeed=.05 ;; M necro_dancing_rune_weapon cdx=.8` |
 
 
 #### 2.10.9 Warlock (`warlock`)
@@ -1823,9 +1823,9 @@ Every class has three signature skills (rmb-slot builder, a signature mid-skill,
 | Işıltılı Yarma (`knight_radiant_cleave`) | T1 | **Çifte Yarma** — Yarma 0.3 sn sonra %50 güçle ikinci kez vurur. `M knight_radiant_cleave shape=echo:.3:.5` | **Işık Yarığı** — Yarma isabet eden düşmanları 3 sn yakar. `M knight_radiant_cleave st=burn:3:.4` |
 |  | T2 | **Dönen Yarma** — Yarma önündeki koni yerine çevrendeki 360° alana vurur. `M knight_radiant_cleave shape=orbit:1` | **Çekim** — Yarma düşmanları sana doğru çeker. `M knight_radiant_cleave shape=pull:2` |
 |  | T3 | **Işık Hasadı** — Yarma bir düşmanı öldürürse bekleme süresi 2 sn azalır. `T kill:knight_radiant_cleave => cdr(knight_radiant_cleave,2)` | **Adalet Darbesi** — Yarma seçkin düşmanları %30 şansla 1.2 sn sersemletir. `T hit:knight_radiant_cleave if=elite ch=.3 => st(tgt,stun,1.2)` |
-| Kutsal Toprak (`knight_consecration`) | T1 | **Alev Zemini** — Kutsal Toprak içindeki düşmanları yakar. `M knight_consecration st=burn:3:.3` | **Işık Zemini** — Kutsal Toprak açılırken 8 m içindeki müttefikleri 6 sn Kutsanmış yapar. `T cast:knight_consecration => st(near(8),blessed,6)` |
-|  | T2 | **Kalıcı Toprak** — Kutsal Toprak seninle değil, işaret ettiğin noktada açılır. `M knight_consecration p.atCaster=0` | **Kutsal Patlama** — Kutsal Toprak açılırken çevreye %100 kutsal patlama yapar. `T cast:knight_consecration => exp(1.0,5,holy)` |
-|  | T3 | **Kutsal Kale** — Toprak açılınca 8 sn %15 hasar azaltma kazanırsın. `T cast:knight_consecration => buff(holy_fort,8,{damageReductionPct=.15})` | **Güneş Alanı** — Toprak 2 sn sonra yeniden aktifleşir. `M knight_consecration shape=echo:2:1` |
+| Hücum (`knight_charge`) | T1 | **Alev Atılışı** — Hücum hedefi 3 sn yakar. `M knight_charge st=burn:3:.3` | **Öncü Çağrısı** — Hücum ederken 8 m içindeki müttefikler 6 sn Kutsanmış olur. `T cast:knight_charge => st(near(8),blessed,6)` |
+|  | T2 | **Geniş Hücum** — Hücum yolu %50 genişler; yoldaki daha çok düşmana çarparsın. `M knight_charge p.pathWidth*=1.5` | **Kutsal Patlama** — Hücum bitince çevreye %100 kutsal patlama yapar. `T cast:knight_charge => exp(1.0,5,holy)` |
+|  | T3 | **Kutsal Kale** — Hücum sonrası 8 sn %15 hasar azaltma kazanırsın. `T cast:knight_charge => buff(holy_fort,8,{damageReductionPct=.15})` | **Yankı Hücumu** — Hücum 2 sn sonra aynı güçle bir kez daha yankılanır. `M knight_charge shape=echo:2:1` |
 
 **Barbar**
 
@@ -1915,15 +1915,15 @@ Every class has three signature skills (rmb-slot builder, a signature mid-skill,
 
 | Beceri | Kademe | Seçenek A | Seçenek B |
 |---|:-:|---|---|
-| Kemik Mızrağı (`necro_bone_spear`) | T1 | **Çürüten Mızrak** — Mızrak hedefi 3 sn Çürüme lanetiyle işaretler. `M necro_bone_spear st=curse_decay:3:1` | **Kanatan Kemik** — Mızrak hedefi 5 sn kanatır. `M necro_bone_spear st=bleed:5:.4` |
-|  | T2 | **Parçalanan Kemik** — Mızrak %40 güçte 3 kemik parçasına ayrılır. `M necro_bone_spear shape=split:3:.4` | **Geri Dönen Mızrak** — Mızrak menzil sonunda sana geri döner. `M necro_bone_spear shape=return` |
-|  | T3 | **Ruh Mızrağı** — Mızrak gölge hasarına dönüşür; isabette %2 mana iade eder. `M necro_bone_spear cv=shadow:1 ;; T hit:necro_bone_spear => resp(.02)` | **Buzul Kemik** — Mızrak buz hasarına dönüşür ve hedefi 2 yığın üşütür. `M necro_bone_spear cv=frost:1 st=chill:4:2` |
-| İskelet Çağır (`necro_raise_skeleton`) | T1 | **Zırhlı İskelet** — Çağırınca 10 m içindeki yoldaşlar 6 sn güçlendirilir. `T cast:necro_raise_skeleton => st(near(10),fortify,6)` | **Çevik İskelet** — Çağırınca 10 m içindeki yoldaşlar 6 sn hız kazanır. `T cast:necro_raise_skeleton => st(near(10),haste,6)` |
-|  | T2 | **Çifte Çağrı** — Çağrı 0.8 sn sonra bir kez daha tekrar eder. `M necro_raise_skeleton shape=echo:.8:1` | **Kemik Dalgası** — Çağırma çevreye %100 kemik patlaması yapar. `T cast:necro_raise_skeleton => exp(1.0,4,physical)` |
-|  | T3 | **Ateş İskeleti** — Çağrılan iskeletler ateş hasarı verir. `M necro_raise_skeleton cv=fire:1` | **Zehirli İskelet** — Çağrılan iskeletler zehir hasarı verir ve hedefleri zehirler. `M necro_raise_skeleton cv=poison:1 st=poison:5:.2` |
-| Ceset Patlaması (`necro_corpse_explosion`) | T1 | **Kanlı Patlama** — Patlama hedefleri 5 sn kanatır. `M necro_corpse_explosion st=bleed:5:.5` | **Çürük Patlama** — Patlama hedefleri 4 sn Çürüme lanetiyle işaretler. `M necro_corpse_explosion st=curse_decay:4:1` |
-|  | T2 | **Çift Patlama** — Patlama 0.5 sn sonra %60 güçle tekrar eder. `M necro_corpse_explosion shape=echo:.5:.6` | **Kemik Şarapneli** — Patlama %30 güçte 5 kemik parçası saçar. `M necro_corpse_explosion shape=split:5:.3` |
-|  | T3 | **Zehir Bulutu** — Patlama zehir hasarına dönüşür ve hedefleri zehirler. `M necro_corpse_explosion cv=poison:1 st=poison:6:.3` | **Ruh Patlaması** — Patlama gölge hasarına dönüşür; isabette +8 Öz verir. `M necro_corpse_explosion cv=shadow:1 ;; T hit:necro_corpse_explosion => res(8)` |
+| Ölüm Sarmalı (`necro_death_coil`) | T1 | **Çürüten Sarmal** — Sarmal hedefi 3 sn Çürüme lanetiyle işaretler. `M necro_death_coil st=curse_decay:3:1` | **Kanatan Sarmal** — Sarmal hedefi 5 sn kanatır. `M necro_death_coil st=bleed:5:.4` |
+|  | T2 | **Parçalanan Sarmal** — Sarmal %40 güçte 3 parçaya ayrılır. `M necro_death_coil shape=split:3:.4` | **Geri Dönen Sarmal** — Sarmal menzil sonunda sana geri döner. `M necro_death_coil shape=return` |
+|  | T3 | **Ruh Sarmalı** — Sarmal gölge hasarına dönüşür; isabette %2 mana iade eder. `M necro_death_coil cv=shadow:1 ;; T hit:necro_death_coil => resp(.02)` | **Buzul Sarmal** — Sarmal buz hasarına dönüşür ve hedefi 2 yığın üşütür. `M necro_death_coil cv=frost:1 st=chill:4:2` |
+| Ölüm Kırbacı (`necro_scourge_strike`) | T1 | **Zırhlı Kırbaç** — Vuruş 10 m içindeki yoldaşları 6 sn güçlendirir. `T cast:necro_scourge_strike => st(near(10),fortify,6)` | **Çevik Kırbaç** — Vuruş 10 m içindeki yoldaşlara 6 sn hız kazandırır. `T cast:necro_scourge_strike => st(near(10),haste,6)` |
+|  | T2 | **Çifte Kırbaç** — Vuruş 0.8 sn sonra bir kez daha tekrar eder. `M necro_scourge_strike shape=echo:.8:1` | **Kemik Dalgası** — Vuruş çevreye %100 fiziksel patlama yapar. `T cast:necro_scourge_strike => exp(1.0,4,physical)` |
+|  | T3 | **Ateş Kırbacı** — Vuruş ateş hasarı verir. `M necro_scourge_strike cv=fire:1` | **Zehirli Kırbaç** — Vuruş zehir hasarı verir ve hedefi zehirler. `M necro_scourge_strike cv=poison:1 st=poison:5:.2` |
+| Kan Kaynatma (`necro_blood_boil`) | T1 | **Kanlı Kaynatma** — Kaynatma hedefleri 5 sn kanatır. `M necro_blood_boil st=bleed:5:.5` | **Çürük Kaynatma** — Kaynatma hedefleri 4 sn Çürüme lanetiyle işaretler. `M necro_blood_boil st=curse_decay:4:1` |
+|  | T2 | **Çift Kaynatma** — Kaynatma 0.5 sn sonra %60 güçle tekrar eder. `M necro_blood_boil shape=echo:.5:.6` | **Kemik Şarapneli** — Kaynatma %30 güçte 5 kemik parçası saçar. `M necro_blood_boil shape=split:5:.3` |
+|  | T3 | **Zehir Bulutu** — Kaynatma zehir hasarına dönüşür ve hedefleri zehirler. `M necro_blood_boil cv=poison:1 st=poison:6:.3` | **Ruh Kaynaması** — Kaynatma gölge hasarına dönüşür; isabette +8 Öz verir. `M necro_blood_boil cv=shadow:1 ;; T hit:necro_blood_boil => res(8)` |
 
 **Warlock**
 
@@ -2149,7 +2149,7 @@ Everything is priced on the **Budget-Point (BP)** scale of GDD_LIFE §6.2 (1 BP 
 3. **Web:** `validateWeb` of §3.3 and equality with `docs/GDD_TALENTS.web.json`.
 4. **Strings:** `encode → decode` round trip and CRC rejection for all 21 specs with `autoBuild` loadouts.
 5. **Bench:** the parity numbers of §3.9 / §6.2 within ±15 % (warning) / ±25 % (error).
-6. **Cross-refs:** every `G` skill has a `SkillDef` row, every `SpecDef.treeSkills` slot is a `G` row of that spec's tree, every class tree `s05` offers two skills, and for 8 of the 9 classes exactly one of them is an interrupt (`behavior 'interrupt'`; the Şövalye's is `knight_shield_bash`).
+6. **Cross-refs:** every `G` skill has a `SkillDef` row, every `SpecDef.treeSkills` slot is a `G` row of that spec's tree, every class tree `s05` offers two skills, and for 3 of the 9 classes (Keşiş, Okçu, Paladin) exactly one of them is an interrupt (`behavior 'interrupt'`). The other six are `INTERRUPT_EXCEPTIONS`: mage / rogue / warlock keep their class-utility kick, and since the plate kit (PM-TAL) the Şövalye (`knight_pummel`), Barbar (`barbarian_pummel`) and Nekromant (`necro_mind_freeze`) have it as a baseline `s4` button (`INTERRUPT_EXCEPTIONS` in `tools/talents-check.mjs`).
 
 
 ---

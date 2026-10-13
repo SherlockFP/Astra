@@ -241,7 +241,11 @@ function skillSpecsFile({ rows, signature }) {
     `export const SKILL_SPEC_ROWS: SkillSpecRow[] = ${lit(rows)};`,
     '',
     '/** The three signature skills of each class, in §4.5 table order (the three cards of the Beceri Uzmanlıkları tab, §5.4). */',
-    `export const SIGNATURE_SKILLS: Record<ClassId, string[]> = ${lit(signature)};`,
+    // ClassId also holds demonhunter / evoker (CM1 registry rows): Record<ClassId, ...> needs their empty stubs.
+    `export const SIGNATURE_SKILLS: Record<ClassId, string[]> = ${lit(signature).replace(
+      /\n\}$/,
+      "\n  // CM1 stubs: the new classes' signature skills come with their kits (CM10 / CM12).\n  demonhunter: [],\n  evoker: [],\n}",
+    )};`,
     '',
     '/** The six options (tier 1 A, 1 B, 2 A, 2 B, 3 A, 3 B) of one signature skill; [] for an unknown skill id. */',
     'export function skillSpecsOf(skillId: string): SkillSpecRow[] {',

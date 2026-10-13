@@ -1,20 +1,20 @@
 {
   "_source": "docs/kits/plate-melee.md §f2 (paladin rows). PM-TAL applies these to docs/GDD_TALENTS.trees.json; PM-PA only states the target fx (not applied here).",
-  "_format": "node = tree / slot+option; oldFx -> newFx; newName null = keep the old Turkish name",
-  "_note": "No paladin skillSpecs rows change (paladin_crusader_strike, paladin_judgement, paladin_avengers_shield keep their rows). None of the new fx uses a p.<key>, so the param contract has nothing to check for the paladin.",
+  "_format": "node = tree / slot+option; oldFx -> newFx; newName null = keep the old Turkish name; newDesc = Turkish description regenerated from the new fx (G rows have none). Applied by tools/apply-talent-patch.mjs",
+  "_note": "No paladin skillSpecs rows change (paladin_crusader_strike, paladin_judgement, paladin_avengers_shield keep their rows). None of the new fx uses a p.<key>, so the param contract has nothing to check for the paladin. PM-TAL deviation from f2: spec:paladin_retribution / s15A uses sdur=wrath_wings (the status paladin_avenging_wrath applies) instead of sdur=crusade (a no-op).",
   "nodes": [
-    {"tree":"class:paladin","node":"s18","oldFx":"M paladin_hammer_of_justice cd=-5 sdur=stun:+0.5","newFx":"M paladin_rebuke cd=-3","newName":"Azarlama Ustası"},
-    {"tree":"class:paladin","node":"s21","oldFx":"M paladin_aura radx=1.3","newFx":"M paladin_divine_steed cd=-5","newName":"Binek Ustası"},
-    {"tree":"spec:paladin_protection","node":"s25","oldFx":"M paladin_aura radx=1.15","newFx":"M paladin_consecration radx=1.15","newName":"Zemin Muhafızı"},
-    {"tree":"spec:paladin_holy","node":"s15B","oldFx":"M paladin_holy_sanctuary dur=+4","newFx":"M paladin_divine_toll cd=-5","newName":"Çınlama Ustası"},
-    {"tree":"spec:paladin_holy","node":"s21","oldFx":"M paladin_holy_aura_mastery+paladin_holy_sanctuary cdx=.9","newFx":"M paladin_holy_aura_mastery+paladin_divine_toll cdx=.9","newName":null},
-    {"tree":"spec:paladin_holy","node":"s27","oldFx":"M paladin_holy_sanctuary rad=+3 healx=1.15","newFx":"M paladin_divine_toll healx=1.15","newName":"Geniş Çınlama"},
-    {"tree":"spec:paladin_holy","node":"s30A","oldFx":"S healingPct=.20 ;; M paladin_holy_sanctuary cdx=.85","newFx":"S healingPct=.20 ;; M paladin_divine_toll cdx=.85","newName":null},
-    {"tree":"spec:paladin_retribution","node":"s15A","oldFx":"M paladin_ret_crusade sdur=crusade:+4","newFx":"M paladin_avenging_wrath sdur=crusade:+4","newName":null},
-    {"tree":"spec:paladin_retribution","node":"s20","oldFx":"M paladin_ret_crusade+paladin_ret_execution cdx=.9","newFx":"M paladin_avenging_wrath+paladin_ret_execution cdx=.9","newName":null},
-    {"tree":"spec:paladin_retribution","node":"s21","oldFx":"M paladin_hammer_of_justice cd=-4","newFx":"M paladin_blade_of_justice cd=-2","newName":"Hızlı Bıçak"},
-    {"tree":"spec:paladin_retribution","node":"s25","oldFx":"M paladin_aura radx=1.2","newFx":"M paladin_wake_of_ashes radx=1.2","newName":"Küller Gücü"},
-    {"tree":"spec:paladin_retribution","node":"s26A","oldFx":"T cast:paladin_ret_crusade => st(party,empower,6)","newFx":"T cast:paladin_avenging_wrath => st(party,empower,6)","newName":null},
-    {"tree":"spec:paladin_retribution","node":"s30B","oldFx":"S critDamage=.25 attackSpeed=.05 ;; M paladin_ret_crusade cdx=.8","newFx":"S critDamage=.25 attackSpeed=.05 ;; M paladin_avenging_wrath cdx=.8","newName":null}
+    {"tree":"class:paladin","node":"s18","oldFx":"M paladin_hammer_of_justice cd=-5 sdur=stun:+0.5","newFx":"M paladin_rebuke cd=-3","newName":"Azarlama Ustası","newDesc":"Azarlama bekleme −3 sn."},
+    {"tree":"class:paladin","node":"s21","oldFx":"M paladin_aura radx=1.3","newFx":"M paladin_divine_steed cd=-5","newName":"Binek Ustası","newDesc":"İlahi Binek bekleme −5 sn."},
+    {"tree":"spec:paladin_protection","node":"s25","oldFx":"M paladin_aura radx=1.15","newFx":"M paladin_consecration radx=1.15","newName":"Zemin Muhafızı","newDesc":"Kutsal Zemin yarıçapı +%15."},
+    {"tree":"spec:paladin_holy","node":"s15B","oldFx":"M paladin_holy_sanctuary dur=+4","newFx":"M paladin_divine_toll cd=-5","newName":"Çınlama Ustası","newDesc":"İlahi Çınlama bekleme −5 sn."},
+    {"tree":"spec:paladin_holy","node":"s21","oldFx":"M paladin_holy_aura_mastery+paladin_holy_sanctuary cdx=.9","newFx":"M paladin_holy_aura_mastery+paladin_divine_toll cdx=.9","newName":null,"newDesc":"Aura Ustalığı ve İlahi Çınlama bekleme −%10."},
+    {"tree":"spec:paladin_holy","node":"s27","oldFx":"M paladin_holy_sanctuary rad=+3 healx=1.15","newFx":"M paladin_divine_toll healx=1.15","newName":"Geniş Çınlama","newDesc":"İlahi Çınlama iyileştirmesi +%15."},
+    {"tree":"spec:paladin_holy","node":"s30A","oldFx":"S healingPct=.20 ;; M paladin_holy_sanctuary cdx=.85","newFx":"S healingPct=.20 ;; M paladin_divine_toll cdx=.85","newName":null,"newDesc":"Şifa gücü +%20; İlahi Çınlama bekleme −%15."},
+    {"tree":"spec:paladin_retribution","node":"s15A","oldFx":"M paladin_ret_crusade sdur=crusade:+4","newFx":"M paladin_avenging_wrath sdur=wrath_wings:+4","newName":null,"newDesc":"İntikam Kanatları 4 sn daha uzun sürer."},
+    {"tree":"spec:paladin_retribution","node":"s20","oldFx":"M paladin_ret_crusade+paladin_ret_execution cdx=.9","newFx":"M paladin_avenging_wrath+paladin_ret_execution cdx=.9","newName":null,"newDesc":"İntikam Kanatları ve İdam Hükmü bekleme −%10."},
+    {"tree":"spec:paladin_retribution","node":"s21","oldFx":"M paladin_hammer_of_justice cd=-4","newFx":"M paladin_blade_of_justice cd=-2","newName":"Hızlı Bıçak","newDesc":"Adalet Bıçağı bekleme −2 sn."},
+    {"tree":"spec:paladin_retribution","node":"s25","oldFx":"M paladin_aura radx=1.2","newFx":"M paladin_wake_of_ashes radx=1.2","newName":"Küller Gücü","newDesc":"Küllerin Uyanışı yarıçapı +%20."},
+    {"tree":"spec:paladin_retribution","node":"s26A","oldFx":"T cast:paladin_ret_crusade => st(party,empower,6)","newFx":"T cast:paladin_avenging_wrath => st(party,empower,6)","newName":null,"newDesc":"İntikam Kanatları kullanınca grup 6 sn güçlenir."},
+    {"tree":"spec:paladin_retribution","node":"s30B","oldFx":"S critDamage=.25 attackSpeed=.05 ;; M paladin_ret_crusade cdx=.8","newFx":"S critDamage=.25 attackSpeed=.05 ;; M paladin_avenging_wrath cdx=.8","newName":null,"newDesc":"Kritik hasarı +%25, saldırı hızı +%5; İntikam Kanatları bekleme −%20."}
   ]
 }

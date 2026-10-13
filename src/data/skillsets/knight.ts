@@ -69,7 +69,7 @@ export function registerKnight(add: SkillAdd): void {
     cost: -20, cooldown: 20, castTime: 0, anim: 'Running_A', animSpeed: 2.0, targeting: 'dash', range: 12, duration: 0.4, hitTime: 0.4,
     damage: { coef: 1.0, type: 'physical' }, knockback: 1.5, statuses: [{ status: 'root', duration: 1 }], offGcd: true,
     tags: ['offgcd', 'melee', 'movement', 'cc'], vfx: { trail: 'charge_trail', impact: 'ground_slam' }, sfx: { cast: 'swing_heavy', impact: 'ground_slam' },
-    params: { end: 0.9, chain: 0.1, move: 0.15, stagger: 30, proc: 1, weight: 2, pathCoef: 0.6, pathWidth: 1.5, speed: 30, unstoppable: 1, fit: 0 },
+    params: { end: 0.9, chain: 0.1, move: 0.15, stagger: 30, proc: 1, weight: 2, pathCoef: 0.6, pathWidth: 1.5, speed: 30, unstoppable: 1, fit: 0, threat: 0 },
   });
 
   // ---- Kılıç Ustası (knight_blademaster, Arms) ----
