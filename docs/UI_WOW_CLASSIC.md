@@ -1,76 +1,80 @@
-# UI_WOW_CLASSIC — art direction: Blizzard default UI instead of ElvUI
+# UI art direction: retail WoW + ElvUI (correction of the "AI look")
 
-Owner feedback (2026-10-13): "UI elementler çok AI gibi, orijinal WoW'daki gibi yap."
-This replaces the ElvUI flat look of `docs/UI_REDESIGN.md` §visual style. Layout contracts, element ids, events and
-behaviour from UI_REDESIGN stay valid; only the **look and the default positions** change.
+Owner feedback (2026-10-13):
+1. "UI elementler çok AI gibi, orijinal WoW'daki gibi yap."
+2. "WoW classic değil, ElvUI UI'si gibi olacak demiştik, WoW güncel olarak."
 
-Constraints: no Blizzard textures, fonts or logos are copied or downloaded. Everything is drawn with CSS
-(gradients, borders, box-shadow, inline SVG data URIs) or our own existing assets. "In the spirit of" the default
-WoW UI, not a rip. No external asset downloads without the owner's OK.
+So the target is **a current (retail, The War Within / Midnight era) WoW screen running the ElvUI addon**. `docs/UI_REDESIGN.md`
+stays the layout/contract authority. This file says why the current execution looks AI-made and what real ElvUI looks
+like, so the skin can be corrected. (The file name is historical; there is no Classic direction.)
 
-## 1. What makes the current UI look "AI-generated" (remove all of this)
+Constraints: no Blizzard or ElvUI textures/fonts/logos copied or downloaded. CSS only, installed fonts only.
 
-- Letter-spaced ALL-CAPS headings everywhere (`KAHRAMANLAR (0/6)`, `İLK GÖREVİN`). WoW uses title case.
-- Thin 1 px gold hairlines and diamond corner ornaments on every box.
-- Uniform dark translucent "glass" boxes with the same border for every element; blur, soft glows, gradient text.
-- Rounded pills and large radii. Floating, detached mini-widgets with lots of empty padding.
-- Emoji / generic glyph icons for menus.
+## 1. Why it looks AI-generated today (remove)
 
-## 2. Visual language
+- Fantasy decoration on HUD chrome: gold hairlines, diamond corner ornaments, Cinzel serif headings, parchment/brown tints.
+  ElvUI has none of this. Fantasy fonts belong only to the logo, zone-entry banner and boss emote text.
+- Letter-spaced ALL-CAPS section headings (`KAHRAMANLAR (0/6)`, `İLK GÖREVİN`). ElvUI uses normal case.
+- Soft glows, blur (`backdrop-filter`), gradient text, drop shadows under boxes, rounded corners, generous padding,
+  floating detached widgets. ElvUI is **flat, square, tight and dense**.
+- Every element in its own separate decorative card. ElvUI groups elements on shared dark backdrops with 1 px borders.
+- Brown/amber tinted backgrounds. ElvUI backdrops are neutral grey/black.
 
-| Token | Value | Use |
+## 2. Real ElvUI look (do this)
+
+| Token | Value | Note |
 |---|---|---|
-| `--wow-yellow` | `#ffd100` | GameFontNormal: titles, labels, quest titles, button text |
-| `--wow-white` | `#ffffff` | values, body text, objectives |
-| `--wow-grey` | `#808080` | disabled, completed objectives |
-| `--wow-green` | `#1eff00` | "Kullan:" / equip lines, uncommon |
-| `--wow-hp` | `#00cc00` (player/party/friendly), hostile target bar keeps green too (WoW), name plate tinted by reaction |
-| `--wow-mana` | `#0080ff`, rage `#ff0000`, energy `#ffff00`, focus `#ff8040`, runic `#00d1ff` |
-| `--wow-xp` | `#8a3fd1` (normal) / `#2a6bd8` (rested) with 20 tick dividers |
-| `--wow-metal` | bevel stack `#5c5c5c → #2b2b2b → #0e0e0e` | frame borders |
-| `--wow-gold-trim` | `#c9a54a` / `#7d6326` | portrait rings, elite borders, window corners |
-| `--wow-tooltip-bg` | `rgba(4, 4, 20, 0.92)` with border `#9a9a9a` radius 4 px | tooltips |
-| `--wow-panel` | dark stone `#1b1712` with subtle noise (SVG feTurbulence data URI), parchment `#e9d8a8` for quest/book pages |
+| `--elv-backdrop` | `rgba(26, 26, 26, 0.8)` | default panel backdrop (`0.1, 0.1, 0.1`) |
+| `--elv-backdrop-solid` | `#1a1a1a` | unit frames, bars |
+| `--elv-border` | `#000000` 1 px | **every** frame: 1 px black border, often with a 1 px inner `#000` gap ("thin border" style) |
+| `--elv-value` | class colour or `#ffffff` | ElvUI "value colour" accents (default class colour) |
+| text | `#ffffff`, outline `1px` black (`text-shadow` 4 directions or `-webkit-text-stroke` .5 px) | |
+| font | condensed sans: `Roboto Condensed` / `PT Sans Narrow`, 11–12 px, weight 500–700, **normal case, letter-spacing 0** | ElvUI's Expressway/PT Sans Narrow role |
+| health bar | **class colour** for players (WoW RAID_CLASS_COLORS), reaction colour for NPCs (hostile `#c73b3b`, neutral `#d9c045`, friendly `#4fc94f`), dark backdrop behind the missing part | flat texture, optional very subtle top-to-bottom 6% gradient, no gloss |
+| power | mana `#0070de`, rage `#c41f3b`, energy `#fff569`, focus `#ff7d0a`, runic `#00d1ff` | retail PowerBarColor |
+| quality | poor `#9d9d9d` common `#fff` uncommon `#1eff00` rare `#0070dd` epic `#a335ee` legendary `#ff8000` | existing tokens |
+| tooltip | ElvUI backdrop + 1 px border coloured by item quality / unit reaction; health bar under unit tooltips | |
 
-Fonts (already installed): headings `Alegreya Sans` bold, **title case, letter-spacing 0**, yellow with `1px 1px 0 #000`
-shadow. Numbers / small labels `Roboto Condensed` or `PT Sans Narrow` (WoW's Arial Narrow role). `Cinzel` only for the
-logo and big zone-entry banners.
+Class colours (retail): Warrior/Şövalye `#c69b6d`, Paladin `#f48cba`, Rogue/Haydut `#fff468`, Mage/Büyücü `#3fc7eb`,
+Warlock `#8788ee`, Death Knight/Nekromant `#c41e3a`, Hunter `#aad372`, Priest `#ffffff`, Shaman `#0070dd`,
+Druid `#ff7c0a`, Monk `#00ff98`, Demon Hunter `#a330c9`, Evoker `#33937f`, Barbar: use a distinct one not taken (e.g.
+`#b5562f`). Map our class ids in `ui/widgets/classColors.ts`.
 
-Bevels, not glows: borders are 2–3 px metal with an inner highlight (`inset 0 1px 0 rgba(255,255,255,.15)`) and an outer
-dark line. Radius ≤ 3 px except round things (portraits, minimap, level badge). No `backdrop-filter`.
+Icons: square, **zoomed/cropped 8 %** (`object-fit: cover; transform: scale(1.08)` or background-size 116 %) so the
+icon's own border disappears, 1 px black border, no rounded corners. Cooldown = dark radial sweep + white condensed
+number centred (red under 3 s). Keybind top-right 10 px white outlined, out-of-range = whole icon tinted red,
+OOM = tinted blue, unusable = desaturated. Proc = retail-style yellow glow/ants (keep current).
 
-Buttons: WoW red panel button — `linear-gradient(#8b1a10, #4a0b06)`, 1 px `#000` + inner gold `#c9a54a` border,
-yellow text, pressed state darkens and shifts text 1 px. Close button: small square red X at window top-right.
-
-## 3. Default HUD layout (Classic/Wrath default, 16:9)
+## 3. Default ElvUI layout (retail, 16:9)
 
 | Element | Position | Look |
 |---|---|---|
-| Player frame | top-left | 64 px **round portrait** (class icon / 3D bust) in a gold ring on the left, level in a small round badge at the portrait's bottom-left, name (white) on a dark plate, HP bar (green, `cur / max` text), resource bar under it, combat state = red glow on the ring |
-| Target frame | right of player frame, mirrored (portrait right) | name plate tinted by reaction (red hostile, yellow neutral, green friendly); **elite = gold dragon-wing border**, rare = silver, boss = skull level badge; target-of-target small frame under it; debuffs row under the bars, player's own debuffs larger |
-| Party frames | left edge under player frame | smaller copies (40 px portraits), vertical |
-| Main action bar | bottom centre | **12 square slots** (36 px) in one long stone strip with ornamental **end caps** (our own winged-stone silhouette, SVG); keybind text top-right (white/grey, turns **red when out of range**), charges bottom-right, dark radial cooldown, icon desaturated + blue tint when OOM |
-| Extra bars | stacked directly above the main bar, same style without end caps | |
-| XP bar | full strip directly under/over the main bar | purple, rested blue, 20 ticks, text `Seviye X — a / b (%)` on hover |
-| Micro menu + bags | bottom-right, row of small square buttons + 4 bag slots + backpack | |
-| Cast bar | centre, above the action bars | yellow fill (green on success, red on interrupt), metal frame, spark, spell name centred |
-| Minimap | top-right, round, thick metal ring | zone name in yellow on a dark banner above, clock, +/- zoom and tracking buttons on the ring |
-| Buffs | left of minimap, right-aligned rows | 30 px icons, duration under the icon in yellow (`5 dk`, `12 sn`) |
-| Quest tracker | right edge under minimap | **no box**: yellow quest title, white `- 3/8 Kurt Postu` lines, grey when done |
-| Chat | bottom-left | no background until hovered; tabs ("Genel", "Savaş Kaydı", "Grup") with small tab chrome |
-| Tooltips | anchored bottom-right above micro menu (or at cursor for world units) | navy bg, grey border, white name / yellow labels / green "Kullan:" lines |
-| Nameplates | over units | thin red (hostile) / yellow / green bar, name above in white, cast bar under |
+| Action bars | bottom centre, 2–3 rows of 12 square buttons (32–36 px), 1–2 px spacing, no frame art, one shared backdrop per bar | |
+| Player frame | left of screen centre, just above the bars (≈ x 35 %, y 70 %) | wide flat bar ~240×40: class-coloured health with `cur | %` text, power bar 8 px under it, name/level text inside, **no portrait** (optional 3D portrait overlay toggle later) |
+| Target frame | mirrored, right of centre | reaction/class colour, name + level + classification (`Elit`, `Nadir`, `Boss`) as text; debuffs above it (player's own only by default), buffs; target-of-target small bar beside it |
+| Focus, party, raid | party left-middle (vertical small bars), raid grid when > 5 | |
+| Cast bar | under player frame (player), under target frame (target) — attached, same width | class colour fill, icon left, name left, time right; interruptible = class colour, not-interruptible = grey |
+| Minimap | **square**, top-right, 1 px border, zone text on top inside, clock and coords as data text under | |
+| Buffs/debuffs (player) | left of minimap, rows of 30 px square icons, duration under each in white condensed | |
+| Objective tracker | right side under minimap, no backdrop, retail colours (quest title yellow `#ffd200`, objectives white, done grey) | |
+| Chat | bottom-left panel with backdrop and tab strip on top; optional right panel (loot/combat log) bottom-right | |
+| Data texts | thin bars under the left and right chat panels: durability, gold, FPS/ping, time, bags | |
+| Micro menu / bags | hidden by default (ElvUI), reachable on data text click / keybinds; if shown: small square buttons | |
+| XP / reputation | thin bars (10 px) at the top edge of the chat panels or under the minimap | |
+| Nameplates | flat class/reaction coloured bars ~120×10, 1 px black border, name above white, level coloured by difficulty, cast bar under, debuff icons above | |
+| Tooltip | anchored bottom-right above the right data text bar | |
 
-## 4. Windows (character, bags, spellbook, quest log, talents, finder)
+## 4. Windows (character, bags, spellbook, talents, quest log, finder)
 
-Blizzard window chrome: dark stone frame with a gold trim, title text centred in yellow in the top bar, optional round
-portrait in the top-left corner overlapping the frame, red square close button top-right, tabs as **bottom tabs**
-(character / reputation / skills) with raised active tab. Quest log and books use a parchment page area. Bags: grey
-metal bag frame per bag, 37 px slots, item quality border colours (WoW colours from `tokens.css`).
+ElvUI skins every Blizzard window flat: backdrop + 1 px border, title in white condensed centred at the top, plain
+close "X" top-right (no red button art), tabs as flat buttons (active tab = lighter backdrop + value-colour bottom
+line), scrollbars thin and flat. Bags are one **combined bag** grid with 1 px-bordered slots coloured by item quality,
+search box and sort button on top, gold at the bottom. Buttons: flat `#1a1a1a` with 1 px border, hover = value-colour
+border. No parchment, no gold, no ornaments.
 
 ## 5. Rollout
 
-- W1 (HUD): tokens, player/target/party frames, action bar + XP + micro menu, cast bar, minimap, tracker, chat, tooltip.
-- W2 (windows): `ui/kit/chrome.ts` window shell, buttons, tabs, bags, character, spellbook, quest log.
-- W3: menu screens (character select / create) panels in the same language.
-Each wave keeps every element id, class used by TS code and event contract; it is a skin + default-position change.
+- W1 HUD: tokens, unit frames, cast bars, action bars, minimap, buffs, tracker, nameplates, tooltip, data texts.
+- W2 windows: `ui/kit/chrome.ts` shell, buttons, tabs, combined bag, character, spellbook, talents, quest log, chat.
+- W3 menu screens in the same language (the logo keeps its fantasy font).
+Every wave keeps element ids, classes queried by TS and event contracts: skin + default positions only.
