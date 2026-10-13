@@ -1,0 +1,22 @@
+/* HUD bottom-left chat (UX-01 split of hud.css, pure move). */
+/* ==========================================================================
+   Bottom-left chat
+   ========================================================================== */
+.hud-bl { position: absolute; left: var(--gut); bottom: var(--gut); width: 372px; pointer-events: none; }
+.chat { display: flex; flex-direction: column; gap: 4px; }
+.chat-log { max-height: 190px; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 6px 10px; pointer-events: none; scrollbar-width: thin; scrollbar-color: #6b5530 transparent; border-radius: 4px; transition: background 0.2s; }
+.chat.typing .chat-log { pointer-events: auto; background: rgba(8, 5, 3, 0.72); box-shadow: inset 0 0 0 1px rgba(155, 123, 54, 0.55); justify-content: flex-start; }
+.chat-log:empty { display: none; }
+.cl { font: 15px/1.28 var(--font-ui); color: #e8e0cc; text-shadow: var(--shade); opacity: 1; transition: opacity 0.8s; word-break: break-word; }
+.cl.old { opacity: 0; }
+.chat.typing .cl.old, .chat.open .cl.old { opacity: 1; }
+.cl.party { color: #8fc8ff; }
+.cl.system { color: #ffe08a; }
+.cl.loot { color: #d8c070; }
+.cl-from { color: var(--hud-gold-l); font-weight: 700; }
+.chat-row { display: none; align-items: center; gap: 6px; padding: 3px 6px 3px 8px; background: rgba(8, 5, 3, 0.88); border: 2px solid #050302; box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 2px 0 #000; border-radius: 4px; }
+.chat.typing .chat-row { display: flex; }
+.chat-chan { font: 700 12px var(--font-head); color: #8fc8ff; letter-spacing: 0.05em; }
+.chat-input { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: #fff; font: 15px var(--font-ui); caret-color: var(--hud-gold); pointer-events: auto; user-select: text; -webkit-user-select: text; }
+.chat-input::placeholder { color: rgba(179, 162, 132, 0.6); }
+

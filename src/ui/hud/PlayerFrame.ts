@@ -93,6 +93,9 @@ export class PlayerFrame implements HudWidget {
   private resType = '';
   readonly buffs: StatusRow;
   readonly debuffs: StatusRow;
+  /** UX-01 host slots, not attached anywhere yet: the consumables row (UX-10) and the combo pips (UX-11). */
+  readonly consHost = div('uf-cons');
+  readonly pipsHost = div('uf-pips');
 
   constructor(ui: UI) {
     this.el = div('pf');

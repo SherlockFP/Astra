@@ -27,13 +27,32 @@ import { PlayerCastBar, PlayerFrame, XpBar } from './PlayerFrame';
 import { PerfOverlay } from '../widgets/PerfOverlay';
 import { SpellOverlay } from './SpellOverlay';
 import { TargetFrame } from './TargetFrame';
-import type { HudCtx, HudWidget } from './types';
+import { ContextTracker } from './Tracker';
+import { FlaskRow } from './FlaskRow';
+import { ObjectiveArrow } from './ObjectiveArrow';
+import { QuestFeed } from './QuestFeed';
+import { TipCards } from './TipCards';
+import { XpStrip } from './XpStrip';
+import type { HudCtx, HudDensity, HudWidget, HudZones } from './types';
 
 export interface HudApi {
   update(dt: number): void;
   setVisible(v: boolean): void;
   flashEdge(color: string, strength?: number): void;
   readonly chat: Chat;
+  /** Size class of the HUD (§2.2), mirrored on the root as `data-density`. */
+  readonly density: HudDensity;
+  /** Zone containers of §2.5 (see styles/hud.css and the split zone sheets). */
+  readonly zones: HudZones;
+  /** The top-right tracker column (M+ tracker and quest tracker for now; UX-12 makes it the context tracker). */
+  readonly tracker: ContextTracker;
+  /** The tip card slot (§4.7). */
+  readonly tips: TipCards;
+  /** NPC id the guide highlights (§4.3), or null. Stored here; the world marker reads it in UX-21. */
+  readonly guideTarget: string | null;
+  setGuideTarget(npcId: string | null): void;
+  /** One-line advice for the tracker `hint` pane. Assigned by the guide module (UX-21); absent until then. */
+  adviceLine?: () => string;
   /** Entity id of the boss shown in the boss frame, if any. */
   readonly bossEntityId: number | null;
   readonly root: HTMLElement;
@@ -77,6 +96,12 @@ export function createHUD(ui: UI): HudApi {
   const vignette = add(new Vignette());
   root.appendChild(vignette.el);
 
+  // ---- zone containers (§2.5): the new ones are empty and pass-through until their widgets move in ----
+  const zUf = div('hud-uf', root);
+  const zXp = div('hud-xp', root);
+  const zMl = div('hud-ml', root);
+  const zTip = div('hud-tip', root);
+
   // ---- top-left: player, buffs, party ----
   const tl = div('hud-tl', root);
   const player = add(new PlayerFrame(ui));
@@ -103,17 +128,18 @@ export function createHUD(ui: UI): HudApi {
   const minimap = add(new Minimap());
   tr.appendChild(minimap.el);
   const mythic = add(new MythicTracker(ui));
-  tr.appendChild(mythic.el);
   // open world: pinned quest (click = quest log), under the M+ tracker
   const quests = add(new QuestTracker());
-  tr.appendChild(quests.el);
+  // one tracker column for now (UX-01 stub): it holds the M+ tracker and the quest tracker
+  const tracker = new ContextTracker(ui, mythic, quests);
+  tr.appendChild(tracker.el);
 
-  // ---- combo counter (right-middle) ----
+  // ---- combo counter + route banner (UX-01: anchored in .hud-ml, 48 px / 40 %) ----
   const combo = add(new ComboCounter());
-  root.appendChild(combo.el);
+  zMl.appendChild(combo.el);
   // combo route banner (combo:route), above the counter
   const route = add(new ComboRouteBanner());
-  root.appendChild(route.el);
+  zMl.appendChild(route.el);
 
   // ---- bottom-left: chat ----
   const chat = add(new Chat());
@@ -190,7 +216,7 @@ export function createHUD(ui: UI): HudApi {
     { id: 'target', name: 'Hedef çerçevesi', el: target.el },
     { id: 'boss', name: 'Patron çerçevesi', el: boss.el },
     { id: 'minimap', name: 'Mini harita', el: minimap.el },
-    { id: 'mplus', name: 'M+ takipçisi', el: mythic.el },
+    { id: 'tracker', name: 'Takipçi', el: tracker.el },
     { id: 'combo', name: 'Kombo sayacı', el: combo.el },
     { id: 'chat', name: 'Sohbet', el: chat.el },
     { id: 'meter', name: 'Hasar ölçer', el: meter.el },
@@ -207,6 +233,18 @@ export function createHUD(ui: UI): HudApi {
     e.stopPropagation();
     api.startEdit();
   });
+
+  // ---- UX-01 stubs: compile-only placeholders for the packages that fill them (hidden until then) ----
+  const xpStrip = new XpStrip();
+  zXp.appendChild(xpStrip.el);
+  const flasks = new FlaskRow();
+  root.appendChild(flasks.el);
+  const tips = new TipCards();
+  zTip.appendChild(tips.el);
+  const arrow = new ObjectiveArrow();
+  root.appendChild(arrow.el);
+  const feed = new QuestFeed();
+  root.appendChild(feed.el);
 
   // ---- centre overlays ----
   for (const w of [new ZoneBanner(), new WorldAnnounce(), new CountdownBanner(), new LevelUpBanner(), new InteractPrompt()]) {
@@ -239,6 +277,8 @@ export function createHUD(ui: UI): HudApi {
   let lastW = 0;
   let lastH = 0;
   let lastUser = 0;
+  let density: HudDensity = 'lg';
+  let guideTarget: string | null = null;
 
   function computeScale(force = false): void {
     const w = window.innerWidth, h = window.innerHeight;
@@ -247,7 +287,12 @@ export function createHUD(ui: UI): HudApi {
     lastW = w;
     lastH = h;
     lastUser = user;
-    scale = Math.max(0.75, Math.min(2.2, Math.min(w / 1920, h / 1080))) * user;
+    scale = Math.max(0.8, Math.min(2.2, Math.min(w / 1920, h / 1080))) * user;
+    // §2.2: the HUD width in css px decides the size class; the user's UI-size slider is part of `scale`, so it counts too
+    const hudW = w / scale;
+    density = hudW >= 1800 ? 'lg' : hudW >= 1500 ? 'md' : 'sm';
+    root.dataset.density = density;
+    setStyle(root, '--hud-w', hudW.toFixed(0));
     setStyle(root, '--hud-zoom', scale.toFixed(3));
     ui.setScale(scale);
   }
@@ -255,6 +300,18 @@ export function createHUD(ui: UI): HudApi {
   const api: HudApi = {
     root,
     chat,
+    get density() {
+      return density;
+    },
+    zones: { tl, tc, tr, bl, bc, br, uf: zUf, xp: zXp, ml: zMl, tip: zTip },
+    tracker,
+    tips,
+    get guideTarget() {
+      return guideTarget;
+    },
+    setGuideTarget(npcId: string | null) {
+      guideTarget = npcId;
+    },
     get scale() {
       return scale;
     },

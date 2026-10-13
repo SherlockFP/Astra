@@ -1,0 +1,125 @@
+/* HUD bottom cluster (UX-01 split of hud.css, pure move): orbs, action bar, WoW auto-attack cell, xp bar, player cast bar. */
+/* ==========================================================================
+   Bottom cluster
+   ========================================================================== */
+.hud-bc {
+  /* centred by margins, not translateX(-50%): a transform would shift the box, so the layout editor's scale grew it from the wrong anchor */
+  position: absolute; left: 0; right: 0; bottom: 8px; margin: 0 auto; width: fit-content;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; pointer-events: none;
+}
+.hb-cluster { display: flex; align-items: flex-end; }
+.hb-mid { display: flex; flex-direction: column; align-items: stretch; gap: 3px; margin: 0 -14px 6px; position: relative; z-index: 1; }
+
+/* ---- orbs ---- */
+.orb { position: relative; width: 156px; height: 156px; flex: none; z-index: 2; }
+.orb.hit { animation: orbhit 0.22s ease-out; }
+.orb.low { animation: orblow 0.9s ease-in-out infinite; }
+.orb.dead { filter: grayscale(1) brightness(0.55); }
+@keyframes orbhit { 0% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes orblow { 0%, 100% { filter: drop-shadow(0 0 3px rgba(255, 30, 30, 0.2)); } 50% { filter: drop-shadow(0 0 14px rgba(255, 30, 30, 0.95)); transform: scale(1.025); } }
+.orb-back { position: absolute; inset: 2px; border-radius: 50%; background: #070403; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.75), inset 0 0 22px #000; }
+.orb-canvas { position: absolute; inset: 9px; width: calc(100% - 18px); height: calc(100% - 18px); border-radius: 50%; image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: pixelated; }
+.orb-glass {
+  position: absolute; inset: 9px; border-radius: 50%; pointer-events: none;
+  background:
+    radial-gradient(ellipse 46% 26% at 33% 20%, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0) 100%),
+    radial-gradient(ellipse 30% 14% at 68% 90%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 100%),
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 56%, rgba(0, 0, 0, 0.6) 100%);
+}
+.orb-ring {
+  position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background:
+    conic-gradient(from 200deg, #5a4522, #ffe7a3 8%, #9b7b36 16%, #3a2a14 28%, #c9a24a 40%, #fff0c0 46%, #7a5a22 56%, #2a1c0e 68%, #b8923c 80%, #ffe7a3 90%, #5a4522);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 10px), #000 calc(100% - 9px), #000 calc(100% - 1px), transparent 100%);
+  mask: radial-gradient(farthest-side, transparent calc(100% - 10px), #000 calc(100% - 9px), #000 calc(100% - 1px), transparent 100%);
+  filter: drop-shadow(0 0 1px #000) drop-shadow(0 2px 0 #000);
+}
+.orb::after { content: ''; position: absolute; inset: 8px; border-radius: 50%; box-shadow: inset 0 0 0 2px #000, inset 0 0 0 3px rgba(255, 231, 163, 0.18); pointer-events: none; }
+.orb-text { position: absolute; left: 0; right: 0; bottom: 30px; text-align: center; pointer-events: none; z-index: 3; line-height: 1.05; }
+.orb-val { font: 700 13px var(--font-head); color: #fff; text-shadow: var(--shade); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.orb-lbl { font: 700 9px var(--font-head); letter-spacing: 0.24em; color: rgba(255, 255, 255, 0.62); text-shadow: var(--shade); margin-top: 1px; }
+
+/* ---- action bar ---- */
+.actionbar {
+  position: relative; display: flex; align-items: flex-end; gap: 14px; padding: 9px 26px 9px 26px;
+  background: linear-gradient(180deg, #2f2216 0%, #1a120b 55%, #0f0a06 100%);
+  border: 2px solid #050302; border-radius: 7px;
+  box-shadow: inset 0 0 0 1px var(--hud-gold-d), inset 0 1px 0 2px rgba(255, 231, 163, 0.1), inset 0 0 0 4px #150e08, inset 0 0 0 5px var(--hud-gold-dd), 0 4px 0 #000, 0 10px 22px rgba(0, 0, 0, 0.65);
+}
+.actionbar::before, .actionbar::after {
+  content: ''; position: absolute; top: 50%; width: 14px; height: 14px; transform: translateY(-50%) rotate(45deg);
+  background: linear-gradient(135deg, #ffe7a3, #8a6a2c 60%, #4a3512); border: 2px solid #050302; box-shadow: 0 0 6px rgba(232, 196, 106, 0.4);
+}
+.actionbar::before { left: -9px; }
+.actionbar::after { right: -9px; }
+.ab-group { display: flex; align-items: flex-end; gap: 7px; }
+.ab-group.potions { gap: 6px; padding-left: 14px; border-left: 2px solid rgba(155, 123, 54, 0.5); box-shadow: -1px 0 0 #000; }
+.ab-gap { width: 6px; flex: none; }
+
+.slot { position: relative; width: 56px; height: 56px; flex: none; border-radius: 4px; cursor: pointer; pointer-events: auto; }
+.slot.sz-lg { width: 66px; height: 66px; }
+.slot.sz-sm { width: 46px; height: 46px; }
+.slot.press { animation: slotpress 0.2s ease-out; }
+.slot.fail { animation: slotfail 0.26s ease-out; }
+.slot.ready { animation: slotready 0.55s ease-out; }
+@keyframes slotpress { 0% { transform: scale(0.86); } 55% { transform: scale(1.07); } 100% { transform: scale(1); } }
+@keyframes slotfail { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-3px); } 60% { transform: translateX(3px); } }
+@keyframes slotready { 0% { box-shadow: 0 0 0 0 rgba(255, 231, 163, 0.95); } 100% { box-shadow: 0 0 0 16px rgba(255, 231, 163, 0); } }
+.slot-bg { position: absolute; inset: 0; border-radius: 3px; background: radial-gradient(circle at 50% 32%, color-mix(in srgb, var(--ac, #e8c46a) 34%, #1a120c) 0%, #0c0806 80%); }
+/* empty slots (no skill bound, or an empty potion stack) are dark sunken sockets: inner shadow, faint gold rim, dim keybind */
+.slot.noskill .slot-bg, .slot.empty .slot-bg { background: radial-gradient(circle at 50% 40%, #140d08 0%, #040302 88%); box-shadow: inset 0 3px 6px #000; }
+.slot-ico { position: absolute; inset: 8px; background: linear-gradient(180deg, #ffffff 0%, var(--ac, #e8c46a) 100%); filter: drop-shadow(0 1px 0 #000) drop-shadow(0 0 5px color-mix(in srgb, var(--ac, #e8c46a) 55%, transparent)); transition: filter 0.12s; }
+.slot.sz-lg .slot-ico { inset: 9px; }
+.slot.sz-sm .slot-ico { inset: 6px; }
+.slot.potion.hp { --ac: #ff6a5a; }
+.slot.potion.mp { --ac: #6aa8ff; }
+.slot-tint { position: absolute; inset: 0; border-radius: 3px; pointer-events: none; }
+.slot.nores .slot-tint { background: rgba(20, 36, 120, 0.62); }
+.slot.nores .slot-ico { filter: grayscale(0.85) brightness(0.65); }
+.slot.oncd .slot-ico { filter: brightness(0.5) saturate(0.5); }
+.slot.empty .slot-ico { filter: grayscale(1) brightness(0.45); opacity: 0.3; }
+.slot.noskill .slot-ico { display: none; }
+.slot-cd, .slot-gcd { position: absolute; inset: 0; border-radius: 3px; pointer-events: none; --e: 0; display: none; }
+.slot-cd { background: conic-gradient(from 0deg, rgba(0, 0, 0, 0) calc(var(--e) * 1%), rgba(6, 4, 3, 0.78) 0); }
+.slot-gcd { background: conic-gradient(from 0deg, rgba(0, 0, 0, 0) calc(var(--e) * 1%), rgba(255, 240, 200, 0.2) 0); }
+.slot-cdtext { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; font: 700 20px var(--font-head); color: #fff; text-shadow: var(--shade); pointer-events: none; }
+.slot.sz-sm .slot-cdtext { font-size: 16px; }
+.slot-flash { position: absolute; inset: -3px; border-radius: 6px; pointer-events: none; opacity: 0; background: radial-gradient(circle, rgba(255, 244, 210, 0.95), rgba(255, 220, 130, 0) 72%); }
+.slot-flash.go { animation: slotflash 0.3s ease-out; }
+@keyframes slotflash { 0% { opacity: 1; transform: scale(0.8); } 100% { opacity: 0; transform: scale(1.35); } }
+.slot-frame { position: absolute; inset: 0; border-radius: 4px; pointer-events: none; border: 2px solid #050302; box-shadow: inset 0 0 0 1px #8a6b2e, inset 0 0 0 2px #2a1c0e, 0 1px 0 rgba(255, 231, 163, 0.22); }
+.slot:hover .slot-frame { box-shadow: inset 0 0 0 1px var(--hud-gold-l), inset 0 0 0 2px #3a2a14, 0 0 8px rgba(255, 231, 163, 0.45); }
+.slot.noskill .slot-frame, .slot.empty .slot-frame { border-color: #020101; box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.95), inset 0 0 0 1px rgba(155, 123, 54, 0.34), 0 1px 0 rgba(255, 231, 163, 0.1); }
+.slot.noskill:hover .slot-frame, .slot.empty:hover .slot-frame { box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.95), inset 0 0 0 1px var(--hud-gold), 0 0 6px rgba(255, 231, 163, 0.22); }
+.slot.noskill .slot-key, .slot.empty .slot-key { background: none; color: rgba(255, 231, 163, 0.42); text-shadow: none; }
+.slot.casting .slot-frame { box-shadow: inset 0 0 0 2px var(--hud-gold-l), 0 0 14px var(--ac, #ffe7a3); }
+.slot.failing .slot-frame { box-shadow: inset 0 0 0 2px #ff3a2a, 0 0 8px rgba(255, 40, 20, 0.7); }
+.slot-key { position: absolute; left: 2px; top: 1px; padding: 0 3px; font: 700 10px var(--font-head); color: var(--hud-gold-l); background: rgba(0, 0, 0, 0.72); border-radius: 2px; line-height: 13px; pointer-events: none; text-shadow: 0 1px 0 #000; }
+.slot-charges { position: absolute; right: 3px; bottom: 0; font: 700 15px var(--font-head); color: #fff; text-shadow: var(--shade); pointer-events: none; }
+.slot-charges.zero { color: #ff7a6a; }
+.slot.potion .slot-charges { font-size: 13px; }
+
+.ab-error { height: 22px; line-height: 22px; font: 700 15px var(--font-head); letter-spacing: 0.05em; color: #ff5a46; text-shadow: var(--shade); opacity: 0; white-space: nowrap; pointer-events: none; }
+.ab-error.show { animation: aberr 1.5s ease-out; }
+@keyframes aberr { 0% { opacity: 0; transform: translateY(8px); } 8% { opacity: 1; transform: translateY(0); } 70% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ---- xp bar ---- */
+.xpbar { position: relative; height: 15px; background: #070403; border: 2px solid #050302; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(155, 123, 54, 0.8), 0 2px 0 #000; overflow: hidden; pointer-events: auto; }
+.xp-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(#cf9bff 0 28%, #9a4ee0 28% 62%, #5f2899 62%); }
+.xp-glow { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0)); opacity: 0; }
+.xp-glow.go { animation: xpglow 0.7s ease-out; }
+@keyframes xpglow { 0% { opacity: 0.9; transform: translateX(-60%); } 100% { opacity: 0; transform: translateX(60%); } }
+.xp-ticks { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), rgba(0, 0, 0, 0.55) calc(10% - 1px) 10%); pointer-events: none; }
+.xp-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 700 10px var(--font-head); letter-spacing: 0.06em; color: #f3e9ff; text-shadow: var(--shade); }
+.xp-floaters { position: absolute; left: 50%; top: -8px; width: 0; height: 0; }
+.xp-float { position: absolute; left: -40px; width: 80px; text-align: center; font: 700 14px var(--font-head); color: #d9b3ff; text-shadow: var(--shade); animation: xpfloat 1.5s ease-out forwards; white-space: nowrap; }
+@keyframes xpfloat { 0% { opacity: 0; transform: translateY(6px); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-30px); } }
+
+/* ---- player cast bar ---- */
+.pcast { height: 26px; width: 340px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 4px; }
+.pcast .castbar { width: 100%; }
+
+/* CONTROLS_WOW §9: WoW auto-attack cell (lmb while skill_lmb is unbound). Swing sweep, armed frame. */
+.slot-swing { position: absolute; inset: 0; border-radius: 3px; pointer-events: none; --e: 0; display: block; background: conic-gradient(from 0deg, rgba(255, 244, 210, 0.34) calc(var(--e) * 1%), rgba(0, 0, 0, 0) 0); }
+.slot.armed .slot-frame { animation: slotarmed 0.9s ease-in-out infinite; }
+@keyframes slotarmed { 0%, 100% { box-shadow: inset 0 0 0 2px #ff5a2a, 0 0 4px rgba(255, 90, 42, 0.5); } 50% { box-shadow: inset 0 0 0 2px #ffd24a, 0 0 12px rgba(255, 210, 74, 0.9); } }

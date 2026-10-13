@@ -1,17 +1,22 @@
 /**
  * Persistent HUD layout (hud module): frame offsets and scales written by the edit mode, extra bar visibility, the grid
- * toggle and the extra-bar lock. One localStorage key. Every access is wrapped in try/catch: a blocked or corrupt store falls
- * back to the defaults and the HUD renders the same without it.
+ * toggle and the extra-bar lock. One localStorage key (v2). Every access is wrapped in try/catch: a blocked or corrupt store
+ * falls back to the defaults and the HUD renders the same without it.
  */
 
 export const SCALE_MIN = 0.6;
 export const SCALE_MAX = 1.6;
 /**
- * v2: the v1 layout could store frame offsets that put a frame (the bottom bar) outside the window, and players were stuck
- * with it. Bumping the key resets every player to the default layout once; the v1 entry is removed on the first read.
+ * v2 (§2.13): the frame anatomy changed (centre cluster, 12-slot grid, meter window), so the v1 offsets are migrated once
+ * (see `fromV1`) and the v1 key is never written or removed. Only v2 is written from here on.
  */
 const KEY = 'efsun.uiLayout.v2';
 const OLD_KEY = 'efsun.uiLayout.v1';
+
+/** v1 frames whose offsets carry over. bottom, player, buffs, target, meter and corner changed anatomy and are dropped. */
+const V1_KEPT_FRAMES = ['boss', 'minimap', 'combo', 'chat', 'loot', 'party', 'bar2', 'bar3'];
+/** v1 frame ids that were renamed in v2. */
+const V1_RENAMED_FRAMES: Record<string, string> = { mplus: 'tracker' };
 
 /**
  * Offset of one frame. `x` / `y` are fractions of the window size (screen px / innerWidth | innerHeight), so the
@@ -24,7 +29,7 @@ export interface FrameOffset {
 }
 
 export interface UiLayout {
-  v: 1;
+  v: 2;
   /** 8 px grid snapping while dragging in the layout editor. */
   grid: boolean;
   /** Extra action bars are locked: slot contents cannot be dragged out or cleared with a right click. */
@@ -38,7 +43,7 @@ export interface UiLayout {
 let cache: UiLayout | null = null;
 
 function defaults(): UiLayout {
-  return { v: 1, grid: true, locked: false, bars: {}, frames: {} };
+  return { v: 2, grid: true, locked: false, bars: {}, frames: {} };
 }
 
 function finite(v: unknown, fallback: number): number {
@@ -68,27 +73,56 @@ function sanitizeFrames(v: unknown): Record<string, FrameOffset> {
   return out;
 }
 
+function parseObject(raw: string): Record<string, unknown> | null {
+  const p: unknown = JSON.parse(raw);
+  return p && typeof p === 'object' ? (p as Record<string, unknown>) : null;
+}
+
+/** A stored v2 layout. */
+function fromV2(p: Record<string, unknown>): UiLayout {
+  const l = defaults();
+  l.grid = p.grid !== false;
+  l.locked = p.locked === true;
+  l.bars = sanitizeBars(p.bars);
+  l.frames = sanitizeFrames(p.frames);
+  return l;
+}
+
+/** One-time migration of a stored v1 layout: keeps the grid, lock and bar visibility, and the frames of V1_KEPT_FRAMES. */
+function fromV1(p: Record<string, unknown>): UiLayout {
+  const l = defaults();
+  l.grid = p.grid !== false;
+  l.locked = p.locked === true;
+  l.bars = sanitizeBars(p.bars);
+  const frames = sanitizeFrames(p.frames);
+  for (const id of V1_KEPT_FRAMES) if (frames[id]) l.frames[id] = frames[id];
+  for (const [from, to] of Object.entries(V1_RENAMED_FRAMES)) if (frames[from]) l.frames[to] = frames[from];
+  return l;
+}
+
 /**
  * The current layout (cached after the first read). Treat it as read-only: build a new object and pass it to
  * writeLayout, so the cache and the store never disagree.
  */
 export function readLayout(): UiLayout {
   if (cache) return cache;
-  const l = defaults();
+  let l = defaults();
   try {
-    localStorage.removeItem(OLD_KEY);
     const raw = localStorage.getItem(KEY);
     if (raw) {
-      const p = JSON.parse(raw) as Partial<UiLayout> | null;
-      if (p && typeof p === 'object') {
-        l.grid = p.grid !== false;
-        l.locked = p.locked === true;
-        l.bars = sanitizeBars(p.bars);
-        l.frames = sanitizeFrames(p.frames);
+      const p = parseObject(raw);
+      if (p) l = fromV2(p);
+    } else {
+      const old = localStorage.getItem(OLD_KEY);
+      const p1 = old ? parseObject(old) : null;
+      if (p1) {
+        // first run after the v2 change: migrate once and store it as v2 (the v1 entry stays as it was)
+        l = fromV1(p1);
+        writeLayout(l);
       }
     }
-  } catch {
-    /* blocked or corrupt: defaults */
+  } catch (e) {
+    console.warn('[hud] layout store unreadable, using the default layout', e);
   }
   cache = l;
   return l;
@@ -98,7 +132,7 @@ export function writeLayout(next: UiLayout): void {
   cache = next;
   try {
     localStorage.setItem(KEY, JSON.stringify(next));
-  } catch {
-    /* blocked: the layout only lasts for this session */
+  } catch (e) {
+    console.warn('[hud] layout not saved, it lasts for this session only', e);
   }
 }

@@ -30,3 +30,24 @@ export interface HudWidget {
   /** Called when the HUD layer is hidden/shown or the scene changes (drop transient state). */
   reset?(): void;
 }
+
+/** HUD size class (§2.2): lg at HUD widths >= 1800 css px, md >= 1500, sm below. Set on `.hud[data-density]`. */
+export type HudDensity = 'lg' | 'md' | 'sm';
+
+/** The zone containers of §2.5. The legacy four are the old corner / column parents; the rest are new and empty. */
+export interface HudZones {
+  readonly tl: HTMLElement;
+  readonly tc: HTMLElement;
+  readonly tr: HTMLElement;
+  readonly bl: HTMLElement;
+  readonly bc: HTMLElement;
+  readonly br: HTMLElement;
+  /** Centre-cluster stacks (player, target) hang from here. */
+  readonly uf: HTMLElement;
+  /** Bottom edge XP strip. */
+  readonly xp: HTMLElement;
+  /** Combo counter and route banner anchor. */
+  readonly ml: HTMLElement;
+  /** Tip card slot, directly above the chat. */
+  readonly tip: HTMLElement;
+}

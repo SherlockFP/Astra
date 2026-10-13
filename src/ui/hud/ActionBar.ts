@@ -374,7 +374,11 @@ export class ActionBar implements HudWidget {
   /** "N" unspent-points badge on the bar's top edge (GDD_TALENTS §5.9); absolute, so it takes no slot room. */
   private talentBadge: TalentBadge;
 
-  constructor(ui: { showTooltip(html: string, x: number, y: number): void; hideTooltip(): void }) {
+  /**
+   * `hosts` (UX-01 contract, optional until UX-10): the grid and consumables hosts that the composition flip hands in.
+   * Not used yet; the bar still builds its own groups.
+   */
+  constructor(ui: { showTooltip(html: string, x: number, y: number): void; hideTooltip(): void }, _hosts?: { grid: HTMLElement; cons: HTMLElement }) {
     this.el = div('actionbar');
     const skills = div('ab-group skills', this.el);
     const pots = div('ab-group potions', this.el);
@@ -456,7 +460,7 @@ export class ActionBar implements HudWidget {
         combo: G.skills.pipCount(p, 'combo'),
         arcane: G.skills.pipCount(p, 'arcane'),
         targetHpPct: target && target.maxHp > 0 ? target.hp / target.maxHp : null,
-        stealthed: p.statuses.has('stealth') || p.statuses.has('ambush') || p.statuses.has('dancer'),
+        stealthed: p.statuses.has('stealth') || p.statuses.has('shadow_veil_cd') || p.statuses.has('ambush') || p.statuses.has('dancer'),
         riposteOpen: p.statuses.has('riposte'),
         targetGuardBroken: !!target && target.statuses.has('guard_broken'),
         bleedingEnemies: countBleeding(ctx, p),
