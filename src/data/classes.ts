@@ -399,8 +399,8 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     },
     basicAttack: 'warlock_basic',
     skills: [
-      'warlock_shadow_bolt', 'warlock_corruption', 'warlock_agony',
-      'warlock_drain_life', 'warlock_rain_of_fire', 'warlock_summon_infernal',
+      'warlock_shadow_bolt', 'warlock_agony', 'warlock_corruption', 'warlock_demonic_circle',
+      'warlock_dark_pact', 'warlock_spell_lock', 'warlock_unending_resolve',
     ],
     startingItems: ['staff_t1'],
     color: '#c05ae0',
