@@ -9,6 +9,9 @@ import { PERI_SCRIPTS, PERI_SPAWNS } from './peri_sisleri';
 import { YILDIZ_SCRIPTS, YILDIZ_SPAWNS } from './yildiz_divani';
 import { YIGITLER_SARAYI_SCRIPTS, YIGITLER_SARAYI_SPAWNS } from './yigitler_sarayi';
 import { LES_SCRIPTS, LES_SPAWNS } from './les_uyanisi';
+import { KEFARET_SCRIPTS, KEFARET_SPAWNS } from './kefaret_salonlari';
+import { YANKI_SCRIPTS, YANKI_SPAWNS } from './yanki_agi';
+import { BUYUCU_SCRIPTS, BUYUCU_SPAWNS } from './buyucu_terasi';
 
 /** Boss id -> script (one file per dungeon). */
 export const BOSS_SCRIPTS: Record<string, BossScript> = {
@@ -22,6 +25,9 @@ export const BOSS_SCRIPTS: Record<string, BossScript> = {
   ...YILDIZ_SCRIPTS,
   ...YIGITLER_SARAYI_SCRIPTS,
   ...LES_SCRIPTS,
+  ...KEFARET_SCRIPTS,
+  ...YANKI_SCRIPTS,
+  ...BUYUCU_SCRIPTS,
 };
 
 /** Extra enemy ids each boss spawns (asset preloading). */
@@ -36,4 +42,7 @@ export const BOSS_SPAWNS: Record<string, string[]> = {
   ...YILDIZ_SPAWNS,
   ...YIGITLER_SARAYI_SPAWNS,
   ...LES_SPAWNS,
+  ...KEFARET_SPAWNS,
+  ...YANKI_SPAWNS,
+  ...BUYUCU_SPAWNS,
 };

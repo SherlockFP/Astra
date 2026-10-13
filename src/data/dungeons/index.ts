@@ -10,6 +10,9 @@ import { PERI_SISLERI } from './peri_sisleri';
 import { YILDIZ_DIVANI } from './yildiz_divani';
 import { YIGITLER_SARAYI } from './yigitler_sarayi';
 import { LES_UYANISI } from './les_uyanisi';
+import { KEFARET_SALONLARI } from './kefaret_salonlari';
+import { YANKI_AGI } from './yanki_agi';
+import { BUYUCU_TERASI } from './buyucu_terasi';
 
 /** OWNER: content module. One file per dungeon in this folder, registered here. */
 export const DUNGEONS: Record<string, DungeonDef> = {
@@ -23,6 +26,9 @@ export const DUNGEONS: Record<string, DungeonDef> = {
   [YILDIZ_DIVANI.id]: YILDIZ_DIVANI,
   [YIGITLER_SARAYI.id]: YIGITLER_SARAYI,
   [LES_UYANISI.id]: LES_UYANISI,
+  [KEFARET_SALONLARI.id]: KEFARET_SALONLARI,
+  [YANKI_AGI.id]: YANKI_AGI,
+  [BUYUCU_TERASI.id]: BUYUCU_TERASI,
 };
 /** Stable display / progression order (level 8 -> 52). */
 export const DUNGEON_IDS: string[] = [KEMIK_MAHZENI.id, KIZIL_DOKUMHANE.id, BUZUL_TAHTI.id, GOLGE_TAPINAGI.id];
@@ -31,7 +37,9 @@ export const DUNGEON_IDS: string[] = [KEMIK_MAHZENI.id, KIZIL_DOKUMHANE.id, BUZU
  * Mythic+ season pool (P-05), rotation order. Keys, portals, Group Finder and leaderboards read this via MythicPlus.dungeonPool().
  * Empty until the 8 season dungeons land; while empty, MythicPlus.dungeonPool() falls back to DUNGEON_IDS.
  */
-export const MPLUS_POOL: string[] = [TASKASA.id, PERI_SISLERI.id, YILDIZ_DIVANI.id, LES_UYANISI.id, YIGITLER_SARAYI.id]; // season 1 pool (5/8); kefaret_salonlari, yanki_agi, buyucu_terasi join as they land
+export const MPLUS_POOL: string[] = [
+  YILDIZ_DIVANI.id, YIGITLER_SARAYI.id, LES_UYANISI.id, PERI_SISLERI.id, KEFARET_SALONLARI.id, YANKI_AGI.id, TASKASA.id, BUYUCU_TERASI.id,
+]; // Mythic+ Season 1 pool (8/8)
 
 /**
  * Open-world zones expressed as DungeonDef. Deliberately NOT part of DUNGEONS / DUNGEON_IDS: those drive the keystone UI,
