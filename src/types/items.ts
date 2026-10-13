@@ -136,6 +136,8 @@ export interface ItemInstance {
   upgradeBroken?: number;
   /** Name of the crafter (GDD_LIFE §1.12 crafted items; shown in tooltips and chat snapshots). */
   craftedBy?: string;
+  /** CM14 Pazar: the item stands in the local player's open stall. Not usable / sellable / equippable / salvageable / upgradable until the shop closes (systems/Market.ts sets and clears it; stale flags are cleared on load). */
+  listed?: boolean;
 }
 
 export interface KeystoneData {

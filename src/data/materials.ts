@@ -1,5 +1,6 @@
 import type { Rarity } from '../types/common';
 import type { StatBlock } from '../types/stats';
+import { BOHCA_DEFS } from './market';
 
 export interface MaterialDef {
   id: string;
@@ -22,6 +23,8 @@ export interface MaterialDef {
   elixir?: { category: 'war' | 'guard' | 'help'; categoryName: string; durationSec: number; stats: StatBlock; noMythic?: boolean };
   /** Town portal scroll etc. */
   scroll?: boolean;
+  /** CM14 Pazar licence (Pazar Bohçası / Büyük Bohça): using it from the pouch opens the stall setup (panel `marketOpen`); the stall consumes it. */
+  market?: { slots: number };
 }
 
 export const MATERIALS: Record<string, MaterialDef> = {};
@@ -158,6 +161,11 @@ for (const type of GEM_TYPES) {
       requiredLevel: GEM_GRADE_LEVEL[g - 1], gem: { type, grade: g },
     });
   }
+}
+
+// ------------------------------------------------------------------ CM14 Pazar licences (data/market.ts BOHCA_DEFS)
+for (const b of BOHCA_DEFS) {
+  add({ id: b.id, name: b.name, desc: b.desc, icon: ic('item-bag'), rarity: b.slots > 12 ? 'rare' : 'uncommon', sellPrice: 0, buyPrice: b.price, kind: 'consumable', maxStack: 99, market: { slots: b.slots } });
 }
 
 // ------------------------------------------------------------------ helpers

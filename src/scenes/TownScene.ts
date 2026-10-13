@@ -26,6 +26,8 @@ import { isOpenWorld, sceneFlow } from './flow';
 import type { DungeonParams, TownParams } from './scenes';
 import { openWorldParams } from './world/params';
 import { bindQuestMarks } from './world/QuestMarks';
+import { mountMarket, unmountMarket } from '../world/MarketStalls';
+import { PAZAR_MEYDANI, PAZAR_USTASI_AT } from '../data/market';
 
 type NpcDef = TownDef['npcs'][number];
 
@@ -203,6 +205,8 @@ export class TownScene implements GameScene {
 
     // ---- NPCs and interactables ----
     await this.spawnPOIs(world, defs, built, usingDefaults);
+    // CM14 Pazar Meydanı: stalls, boards and the Tezgâh Ustası NPC (a failure never blocks entering the town)
+    try { mountMarket(this.scene, PAZAR_MEYDANI, { world, npc: PAZAR_USTASI_AT }); } catch (e) { console.warn('[town] market mount failed', e); }
     G.ui.showLoading(0.95, 'Kuzgunkale yükleniyor...');
 
     // ---- camera + controller ----
@@ -455,6 +459,7 @@ export class TownScene implements GameScene {
     G.world = null;
     G.player = null;
     G.camera = null;
+    unmountMarket();
     this.world?.dispose();
     this.world = null;
     this.built?.dispose();

@@ -139,6 +139,8 @@ export class CharacterState {
     if (!Array.isArray(save.bag)) save.bag = [];
     if (!Array.isArray(save.stash)) save.stash = [];
     while (save.bag.length < BAG_SIZE) save.bag.push(null);
+    // CM14 Pazar: a stall cannot survive a reload (closing the tab closes it), so no item stays locked by one
+    for (const it of save.bag) if (it?.listed) delete it.listed;
     while (save.stash.length < STASH_SIZE) save.stash.push(null);
     const start = CLASS_START_NODE[save.classId];
     if (start && !save.talents.includes(start)) save.talents.unshift(start);
@@ -364,7 +366,7 @@ export class CharacterState {
     if (base?.stackable && item.quantity) {
       const max = base.maxStack ?? 99;
       for (const slot of this.save.bag) {
-        if (slot && slot.baseId === item.baseId && (slot.quantity ?? 1) < max) {
+        if (slot && slot.baseId === item.baseId && !slot.listed && (slot.quantity ?? 1) < max) {
           const take = Math.min(max - (slot.quantity ?? 1), item.quantity);
           slot.quantity = (slot.quantity ?? 1) + take;
           item.quantity -= take;
@@ -471,6 +473,11 @@ export class CharacterState {
     const a = this.getAt(from);
     if (!a) return false;
     const b = this.getAt(to);
+    // CM14 Pazar: an item in the open stall stays in the bag (it may be re-ordered there, nothing more)
+    if ((a.listed || b?.listed) && (from.where !== 'bag' || to.where !== 'bag')) {
+      err('Tezgâhtaki eşya taşınamaz. Önce tezgâhı kapat.');
+      return false;
+    }
     // equipment destinations: validate
     if (to.where === 'equipment') {
       const chk = this.canEquip(a, to.slot);
@@ -493,7 +500,7 @@ export class CharacterState {
     }
     // stacking within the bag
     const baseA = baseOf(a);
-    if (b && baseA?.stackable && a.baseId === b.baseId && to.where !== 'equipment' && from.where !== 'equipment') {
+    if (b && baseA?.stackable && a.baseId === b.baseId && !a.listed && !b.listed && to.where !== 'equipment' && from.where !== 'equipment') {
       const max = baseA.maxStack ?? 99;
       const room = max - (b.quantity ?? 1);
       if (room > 0) {
@@ -519,6 +526,10 @@ export class CharacterState {
     const f = this.findItem(uid);
     if (!f || f.loc.where === 'equipment') return false;
     const item = f.item;
+    if (item.listed) {
+      err('Tezgâhtaki eşya kuşanılamaz. Önce tezgâhı kapat.');
+      return false;
+    }
     const slot = this.pickSlot(item);
     if (!slot) return false;
     const chk = this.canEquip(item, slot);
@@ -572,7 +583,7 @@ export class CharacterState {
   /** Sell value in gold; removes the item and pays the gold. 0 = not sold (locked / not owned). */
   sellItem(uid: string): number {
     const f = this.findItem(uid);
-    if (!f || f.loc.where === 'equipment' || f.item.locked) return 0;
+    if (!f || f.loc.where === 'equipment' || f.item.locked || f.item.listed) return 0;
     const gold = sellValue(f.item);
     this.putAt(f.loc, null);
     this.addGold(gold);
@@ -755,6 +766,11 @@ export class CharacterState {
   useConsumable(id: string): { ok: boolean; reason?: string } {
     const def = MATERIALS[id];
     if (!def || def.kind !== 'consumable') return { ok: false, reason: 'Kullanılamaz.' };
+    if (def.market) {
+      // CM14 Pazar: the licence is consumed when the stall opens, not here; using it opens the stall setup.
+      emit('ui:openPanel', { panel: 'marketOpen', data: { licence: id } });
+      return { ok: true };
+    }
     if (def.elixir) return this.useElixir(id);
     if (def.potion) {
       const ok = G.combat?.usePotion(def.potion.kind) ?? false;

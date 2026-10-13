@@ -85,6 +85,11 @@ export function vendorSells(): boolean {
 
 /** Sell one item at the open vendor. */
 export function sellItem(item: ItemInstance): boolean {
+  if (item.listed) {
+    toast('Tezgâhtaki eşya satılamaz', 'warning');
+    sfx('ui_error');
+    return false;
+  }
   if (item.locked) {
     toast('Kilitli eşya satılamaz', 'warning');
     sfx('ui_error');

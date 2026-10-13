@@ -17,12 +17,14 @@ import { WaypointsPanel } from './waypoints';
 import { FinderPanel } from './finder';
 import { GuidePanel } from './guide';
 import { WelcomePanel } from './welcome';
+import { MarketOpenPanel, MarketStallPanel, MarketSearchPanel } from './market';
 
 /**
  * OWNER: panels-game module.
  * Panel ids: talents, keystone, runSummary, mplusInfo, settings, party, map, death, gameMenu, bounty, trainer, credits,
  * questlog (quest log), dialog (quest giver, Av Defteri), waypoints (Işınlayıcı, fast travel),
- * finder (Grup Bulucu, I), guide (Ne Yapmalıyım?, .), welcome (Hoş Geldin; UX-02 stubs).
+ * finder (Grup Bulucu, I), guide (Ne Yapmalıyım?, .), welcome (Hoş Geldin; UX-02 stubs),
+ * marketOpen (Tezgâh kur / yönet + Bohça Al), marketStall (alıcı penceresi), marketSearch (Pazar Arama) - CM14 Pazar, ./market/*.
  * Besides registering the panels this module reacts to a few game events on its own:
  *   player:died (local)   -> opens 'death' after a short beat; player:revived / scene:leaving -> closes it
  *   run:started           -> remembers the M+ rating (for the summary's rating gain)
@@ -61,6 +63,9 @@ export function registerGamePanels(ui: UI): void {
     new FinderPanel(),
     new GuidePanel(),
     new WelcomePanel(),
+    new MarketOpenPanel(),
+    new MarketStallPanel(),
+    new MarketSearchPanel(),
   ];
   for (const p of panels) {
     registry.set(p.id, p);

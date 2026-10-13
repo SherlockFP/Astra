@@ -260,6 +260,16 @@ export interface GameEvents {
 
   // ---- CONTROLS_WOW §8 (W2-A, append-only). Local auto-attack state, emitted on change (HUD Oto frame, swing sweep).
   'autoattack:state': { armed: boolean; targetId: number | null };
+
+  // ---- CM14 Pazar (CORE_MECHANICS §11, append-only). Emitted by systems/Market.ts; the Pazar panels and world/MarketStalls listen.
+  /** Something in the market changed: the announced stalls ('stalls'), the local shop ('own'), the sales log ('sales') or a purchase ('tx'). */
+  'market:changed': { what: 'stalls' | 'own' | 'sales' | 'tx' };
+  /** The local stall sold an item (toast + overlay log). */
+  'market:sale': { name: string; price: number; net: number; buyer?: string };
+  /** "Göster" in Pazar Arama: a beam over the stall + a map pin. `null` clears the pin. */
+  'market:pin': { zone: string; x: number; z: number; label: string; sellerId: string } | null;
+  /** Pazarcı Modu (AFK stall mode: ~2 fps render, audio muted, sales overlay) turned on or off. */
+  'market:mode': { on: boolean };
 }
 
 export type GameEventName = keyof GameEvents;

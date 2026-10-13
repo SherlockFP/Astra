@@ -106,7 +106,9 @@ export function rollUpgradeOutcome(target: number, opts: { failStacks?: number; 
 
 function locate(uid: string) {
   const ch = G.character;
-  return ch ? ch.findItem(uid) : null;
+  const f = ch ? ch.findItem(uid) : null;
+  // CM14 Pazar: an item in the open stall is locked for every blacksmith / salvage / socket operation
+  return f && f.item.listed ? null : f;
 }
 
 function finishEquipChange(loc: { where: string; slot?: string }): void {

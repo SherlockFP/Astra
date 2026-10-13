@@ -43,7 +43,7 @@ import {
 import { netOptionsFromUrl, openGameRoom } from './index';
 import { randomId, type NetTransport, type Unsubscribe } from './transport';
 import { LobbyManager, type NetKind } from './LobbyManager';
-import type { AnnouncementInput, ListedRoom } from './lobby';
+import type { AnnouncementInput, ListedRoom, LobbyTransport } from './lobby';
 import { Replication } from './Replication';
 import { decodePayload, encodePayload } from './codec';
 
@@ -292,6 +292,16 @@ export class NetSession {
   /** Default transport: ?net=local -> 'local', otherwise 'trystero'; null for ?net=offline. */
   get defaultTransport(): NetKind | null {
     return this.urlOpts.mode === 'offline' ? null : this.urlOpts.mode === 'local' ? 'local' : 'trystero';
+  }
+
+  /**
+   * CM14 Pazar: borrow the shared lobby transport (global room, independent of the party room) for the shop channels.
+   * null offline (`?net=offline`) or when the lobby cannot open. Call `release()` when done.
+   */
+  async leaseLobby(): Promise<{ tr: LobbyTransport; release: () => void } | null> {
+    const kind = this.defaultTransport;
+    if (!kind) return null;
+    return this.lobby.lease(kind);
   }
 
   startBrowsing(opts?: { transport?: NetKind }): void {

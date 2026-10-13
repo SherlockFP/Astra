@@ -19,7 +19,7 @@ import { HOST_DYNAMIC_ID_BASE, LOCAL_ID_BASE, PARTY_ID_BASE, type ClassId, type 
 import type { SceneId } from '../types/common';
 import type { CharacterSummary } from '../types/character';
 import type { KeystoneData } from '../types/items';
-import type { NetChannel } from '../types/net';
+import type { NetChannel, ShopAnnounce, ShopBuyMsg, ShopSoldMsg } from '../types/net';
 import type { WorldSpawn } from '../scenes/scenes';
 
 export type { EntityId, Vec2, Vec3 };
@@ -186,8 +186,12 @@ export type LobbyChannels = {
   ann: RoomAnnouncement;
   unann: RoomUnannounceMsg;
   lchat: LobbyChatMsg;
+  /** CM14 Pazar: stall announcements (broadcast), buy requests (to the seller) and sale replies (to the buyer). Owner: systems/Market.ts. */
+  shop: ShopAnnounce;
+  shopBuy: ShopBuyMsg;
+  shopSold: ShopSoldMsg;
 };
-export const LOBBY_CHANNELS = ['ann', 'unann'] as const satisfies readonly (keyof LobbyChannels)[];
+export const LOBBY_CHANNELS = ['ann', 'unann', 'shop', 'shopBuy', 'shopSold'] as const satisfies readonly (keyof LobbyChannels)[];
 
 /* ================================================================================================
  * Control channel 'ctl'
@@ -263,7 +267,7 @@ export type GameChannels = {
 };
 export const GAME_CHANNELS = ['ctl', 'g'] as const satisfies readonly (keyof GameChannels)[];
 
-/** Every logical channel of types/net.ts. A `satisfies` check keeps this list complete when channels are added. */
+/** Every logical channel of types/net.ts that rides the game room. (CM14 `shop` / `shopBuy` / `shopSold` are in the NetChannels type but travel on the LOBBY room only: see LOBBY_CHANNELS, deliberately not listed here.) A `satisfies` check keeps this list complete when channels are added. */
 export const KNOWN_CHANNELS: ReadonlySet<string> = new Set<NetChannel>([
   'pstate', 'gear', 'snap', 'spawn', 'hit', 'dmg', 'death', 'estatus', 'heal', 'pstatus', 'revive', 'pdeath', 'cast', 'ecast',
   'hitshape', 'hitshape_x', 'run', 'affix', 'gate', 'scene', 'sceneRequest', 'chat', 'keystone', 'req',

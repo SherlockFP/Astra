@@ -513,3 +513,24 @@ region:left camera:kick camera:fov chat:insertLink pvp:flag pvp:duel pvp:honor`;
 4. **Input bindings:** `professions` and `camShoulder` stay unbound (see Input above).
 5. **`screenShake` default 0.7:** a deliberate behaviour change from the GDD (see Settings above).
 6. **Stubs:** `benchValue` returns 0. `BENCH_COST_CLASS`, `ENGRAVINGS`, `TILSIMS`, `DRAGON_STONES`, `CURRENCIES` and `SPECIAL_AFFIXES` are empty until their packages land.
+
+## CM14 Pazar contracts (CORE_MECHANICS §11)
+
+Metin2-style AFK player shops. Owner of the whole package: items module (logic) + panels-game (UI) + scenes (world presence).
+
+| Path | What |
+|---|---|
+| `src/data/market.ts` | rules (`MARKET`: fee 1 %, tax 3 %, 12 / 24 slots, title 32, announce 30 s, buy timeout 10 s, range 6 m, 40 text boards), spot grid (`marketSpots`, plaza 10x6 = 60, village 4x3 = 12, 2.5 m apart), `assignSpot` / `spotPriority`, licence rows (`BOHCA_DEFS`), `TEZGAH_USTASI_PRESET` + `tezgahUstasiDef` |
+| `src/systems/Market.ts` | `Market` / `getMarket()`: own stall (open / close / setPrice / delist), announce, seller-side sale, buyer-side buy, search, price history, pin. Injectable `MarketCtx` (headless check) |
+| `src/systems/MarketWire.ts` | compact snapshots + sanitisers of `shop` / `shopBuy` / `shopSold` (all input is untrusted) |
+| `src/world/MarketStalls.ts` | `mountMarket(scene, origin, { world, npc })` / `unmountMarket()`: instanced procedural stalls, seated sellers, goods, canvas-text boards (LOD 40), beam for "Göster" |
+| `src/entities/interactables/MarketStall.ts` | the F target of one stall (range 6 m) |
+| `src/ui/panels/game/market/*` | panels `marketOpen` (Tezgâh kur / yönet / Bohça Al), `marketStall` (alıcı), `marketSearch` (Pazar Arama); `pazarci.ts` = Pazarcı Modu; CSS `ui/styles/panels-market.css` |
+
+- **Net:** channels `shop` (announce, broadcast), `shopBuy` (buyer -> seller), `shopSold` (seller -> buyer) ride the global **lobby** room (`LOBBY_CHANNELS`, `LobbyChannels`), not the party room, so buyer and seller need not share an instance. The sender is `MessageMeta.from` (the lobby peer id), never a payload field. Payload types are in `types/net.ts` (`ShopAnnounce`, `ShopBuyMsg`, `ShopSoldMsg`, also in `NetChannels`, deliberately NOT in `KNOWN_CHANNELS`). `Market` leases the shared lobby transport through `G.net.leaseLobby()` (`LobbyManager.lease`, reference counted). Offline (`?net=offline`) there is no lobby; everything works locally.
+- **Trust model:** seller authoritative over the item (removes it, credits price minus tax, answers `shopSold`), buyer authoritative over the gold (reserves it, refunds on reject / 10 s timeout). txId dedup on both sides (the seller replays its cached answer to a duplicate request); a reply that arrives after the timeout is still honoured for 120 s (the gold is charged again).
+- **Spots:** `hash(sellerId) mod spots` + linear probing over the occupied set; the announcement carries the pick, a race is settled on every client by `spotPriority` (shorter probe distance, then lower id) and the loser re-picks and re-announces.
+- **Item lock:** `ItemInstance.listed?` (set on the bag items of an open stall; cleared on close and on load). Respected by `CharacterState` (sell / equip / move to stash or equipment / stack merge), `Upgrade` (`locate` -> every blacksmith, salvage and socket operation), `Vendor.sell`, `AutoSalvage.isProtected`, `panels-items/actions.sellItem`. Bound items cannot be listed (`MARKET_ALLOW_BOUND`).
+- **Save:** optional `CharacterSave.market` (`MarketSaveData`): sales log (60) + unseen count / gold (next-login summary) + lifetime totals. Licences are pouch materials `pazar_bohcasi` / `buyuk_bohca` (`MaterialDef.market`); using one from the pouch opens `marketOpen`; opening a stall consumes one.
+- **Events:** `market:changed { what }`, `market:sale`, `market:pin`, `market:mode`.
+- **Pazarcı Modu:** `ui/panels/game/market/pazarci.ts` wraps `Engine.renderFrame` on the instance (2 fps) while on, mutes `Audio.master`, shows the sales overlay; no change in `core/Engine.ts`.

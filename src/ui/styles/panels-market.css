@@ -1,0 +1,135 @@
+/* =====================================================================
+   CM14 PAZAR (docs/CORE_MECHANICS.md section 11): marketOpen / marketStall / marketSearch panels and the Pazarci Modu overlay.
+   Uses the pg shell (panels-shell-pg.css) + tokens.css; only the content lives here. Owner: panels-game module.
+   ===================================================================== */
+
+.pm-win .pg-body { display: flex; flex-direction: column; gap: var(--sp-3); }
+.pm-hint { color: var(--text-3); font-size: var(--fs-13); margin: 2px 0 8px; }
+.pm-footbtns { display: flex; gap: var(--sp-2); align-items: center; margin-left: auto; }
+.pm-foot-gold { margin-right: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); }
+
+.pm-gold { display: inline-flex; align-items: center; gap: 4px; font: 700 var(--fs-14)/1 var(--font-body); color: var(--gold-1); font-variant-numeric: tabular-nums; }
+.pm-gold.is-bad { color: var(--bad); }
+.pm-coin { width: 16px !important; height: 16px !important; }
+
+/* ---------------------------------------------------------------- tiles */
+.pm-tile { flex: none; }
+.pm-tile.is-dim { opacity: 0.4; }
+.pm-bagtile[draggable='true'] { cursor: grab; }
+.pm-bagtile[draggable='true']:hover { box-shadow: inset 0 0 0 1px var(--gold-2); }
+.pm-name { font: 700 var(--fs-14)/1.2 var(--font-body); }
+
+/* ---------------------------------------------------------------- marketOpen */
+.pm-open { display: flex; flex-direction: column; gap: var(--sp-3); flex: 1; min-height: 0; }
+.pm-cols { display: grid; grid-template-columns: 340px 1fr; gap: var(--sp-4); flex: 1; min-height: 0; }
+.pm-bag, .pm-stall, .pm-log { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.pm-bag-grid { display: grid; grid-template-columns: repeat(6, 46px); gap: 4px; overflow: auto; align-content: start; padding: 2px; scrollbar-width: thin; }
+.pm-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.pm-title, .pm-input, .pm-select, .pm-price {
+  height: 28px; padding: 0 8px; font: 400 var(--fs-15) var(--font-body); color: var(--text-1);
+  background: var(--bg-1); border: 1px solid var(--ink); border-radius: var(--r-1); box-shadow: inset 0 0 0 1px var(--line); outline: none; user-select: text;
+}
+.pm-title { flex: 1; }
+.pm-title:focus, .pm-input:focus, .pm-select:focus, .pm-price:focus { box-shadow: inset 0 0 0 1px var(--gold-3); }
+.pm-price.is-bad { box-shadow: inset 0 0 0 1px var(--bad); }
+.pm-lic { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.pm-slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; overflow: auto; align-content: start; padding: 2px; scrollbar-width: thin; }
+.pm-slots.is-big { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.pm-slot {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 120px; padding: 8px 6px;
+  background: var(--bg-3); border: 1px dashed var(--line); border-radius: var(--r-0); text-align: center;
+}
+.pm-slot.has { border-style: solid; border-color: var(--ink); box-shadow: inset 0 1px 0 var(--hi); }
+.pm-slot.is-over { border-color: var(--gold-2); background: color-mix(in srgb, var(--gold-2) 12%, var(--bg-3)); }
+.pm-slot-empty { font: 700 28px/1 var(--font-body); color: var(--text-4); }
+.pm-slot .pm-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-13); }
+.pm-slot .pm-price { width: 100%; text-align: right; }
+.pm-slot .pg-btn { height: 22px; padding: 0 8px; font-size: var(--fs-12); }
+.pm-slot .pm-tile { cursor: pointer; }
+.pm-summary {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 22px; padding: 8px 10px; flex: none;
+  background: var(--bg-3); border: 1px solid var(--ink); border-radius: var(--r-0); color: var(--text-2); font-size: var(--fs-14);
+}
+.pm-why { margin-left: auto; font-weight: 700; }
+.pm-why.is-bad { color: var(--warn); }
+.pm-why.is-ok { color: var(--ok); }
+.pm-manage-head { padding: 8px 10px; margin-bottom: 8px; background: var(--bg-3); border: 1px solid var(--ink); border-radius: var(--r-0); }
+.pm-mh-title { font: 700 var(--fs-17)/1.2 var(--font-body); color: var(--gold-1); }
+.pm-mh-sub { color: var(--text-3); font-size: var(--fs-13); margin: 2px 0 6px; }
+.pm-mh-stats { display: flex; gap: 22px; color: var(--text-2); }
+.pm-log { background: var(--bg-3); border: 1px solid var(--ink); border-radius: var(--r-0); padding: 8px 10px; overflow: auto; }
+.pm-logrow, .pm-afk-row { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 3px 0; border-bottom: 1px solid var(--line); font-size: var(--fs-14); }
+.pm-logrow .t, .pm-afk-row .t { color: var(--text-3); }
+.pm-logrow .n, .pm-afk-row .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.pm-logrow .g, .pm-afk-row .g { color: var(--gold-1); display: inline-flex; align-items: center; gap: 4px; }
+.pm-logrow .b, .pm-afk-row .b { color: var(--text-3); min-width: 70px; text-align: right; }
+.pm-licences { display: flex; flex-direction: column; gap: 10px; max-width: 640px; }
+.pm-licrow { display: flex; align-items: center; gap: 14px; padding: 10px 12px; background: var(--bg-3); border: 1px solid var(--ink); border-radius: var(--r-0); }
+.pm-licico { width: 34px !important; height: 34px !important; }
+.pm-lictxt { flex: 1; display: flex; flex-direction: column; }
+.pm-lictxt small { color: var(--text-3); font-size: var(--fs-13); }
+
+/* ---------------------------------------------------------------- marketStall */
+.pm-buy { display: flex; flex-direction: column; gap: var(--sp-3); min-height: 0; }
+.pm-seller { display: flex; align-items: center; gap: 12px; padding: 8px 10px; background: var(--bg-3); border: 1px solid var(--ink); border-radius: var(--r-0); }
+.pm-sellerico { width: 30px !important; height: 30px !important; }
+.pm-sellertxt { display: flex; flex-direction: column; }
+.pm-sellertxt small { color: var(--text-3); font-size: var(--fs-13); }
+.pm-sellernote { margin-left: auto; color: var(--text-3); font-size: var(--fs-13); text-align: right; }
+.pm-listings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; overflow: auto; align-content: start; scrollbar-width: thin; }
+.pm-card { display: flex; align-items: center; gap: 12px; padding: 8px 10px; background: var(--bg-3); border: 1px solid var(--ink); border-radius: var(--r-0); box-shadow: inset 0 1px 0 var(--hi); }
+.pm-card:hover { background: var(--bg-4); }
+.pm-card.is-off { opacity: 0.7; }
+.pm-card-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pm-card-txt .pm-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pm-card-txt small { color: var(--text-3); font-size: var(--fs-13); }
+.pm-card-buy { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.pm-price-tag { display: inline-flex; align-items: center; gap: 4px; font: 700 var(--fs-15)/1 var(--font-body); color: var(--gold-1); font-variant-numeric: tabular-nums; }
+.pm-tag, .pm-cmp { font-size: var(--fs-12); font-weight: 700; }
+.pm-tag.is-cheap, .pm-cmp.is-cheap { color: var(--ok); }
+.pm-tag.is-dear, .pm-cmp.is-dear { color: var(--bad); }
+.pm-tag.is-fair, .pm-cmp.is-fair { color: var(--text-3); }
+
+/* ---------------------------------------------------------------- marketSearch */
+.pm-search { display: flex; flex-direction: column; gap: var(--sp-2); flex: 1; min-height: 0; }
+.pm-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.pm-filters .pm-input { width: 220px; }
+.pm-filters .pm-num { width: 120px; }
+.pm-count { display: flex; justify-content: space-between; align-items: center; color: var(--text-3); font-size: var(--fs-13); }
+.pm-count-gold { display: inline-flex; align-items: center; gap: 6px; }
+.pm-results { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 4px; }
+.pm-result { display: grid; grid-template-columns: 46px minmax(0, 1.6fr) 150px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 6px 10px; background: var(--bg-3); border: 1px solid var(--ink); border-radius: var(--r-0); }
+.pm-result:hover { background: var(--bg-4); }
+.pm-result.is-own { box-shadow: inset 0 0 0 1px var(--gold-4); }
+.pm-res-name small { color: var(--text-3); font-size: var(--fs-13); }
+.pm-res-main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.pm-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.pm-chip { padding: 1px 6px; font-size: var(--fs-12); color: #7fb2ff; background: var(--bg-1); border-radius: var(--r-pill); box-shadow: inset 0 0 0 1px var(--line); }
+.pm-res-price { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
+.pm-res-seller { min-width: 0; display: flex; flex-direction: column; }
+.pm-res-seller b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pm-res-seller small { color: var(--text-3); font-size: var(--fs-13); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------------------------------------------------------------- Pazarci Modu overlay */
+.pm-afk {
+  position: absolute; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.62); color: var(--text-1); font-family: var(--font-body); cursor: pointer; user-select: none;
+}
+.pm-afk-card {
+  width: min(560px, 92vw); padding: 18px 22px; background: var(--bg-2); border: 1px solid var(--ink); border-radius: var(--r-1);
+  box-shadow: inset 0 1px 0 var(--hi), var(--sh-pop);
+}
+.pm-afk-title { font: 700 22px/1.2 var(--font-body); letter-spacing: 0.18em; color: var(--gold-1); text-align: center; }
+.pm-afk-sub { text-align: center; color: var(--text-2); margin: 4px 0 10px; }
+.pm-afk-stats { text-align: center; padding: 8px; background: var(--bg-3); border: 1px solid var(--ink); border-radius: var(--r-0); color: var(--gold-1); font-weight: 700; }
+.pm-afk-h { margin: 12px 0 4px; font: 700 var(--fs-13)/1 var(--font-body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-2); }
+.pm-afk-log { max-height: 260px; overflow: hidden; }
+.pm-afk-empty { color: var(--text-3); padding: 8px 0; font-style: italic; }
+.pm-afk-hint { margin-top: 12px; text-align: center; color: var(--text-3); font-size: var(--fs-13); }
+
+@media (max-width: 900px) {
+  .pm-cols { grid-template-columns: 1fr; }
+  .pm-listings { grid-template-columns: 1fr; }
+  .pm-result { grid-template-columns: 46px minmax(0, 1fr) auto; }
+  .pm-res-seller, .pm-res-price { display: none; }
+}

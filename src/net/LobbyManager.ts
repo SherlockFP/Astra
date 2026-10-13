@@ -180,6 +180,26 @@ export class LobbyManager {
     this.release(a.kind);
   }
 
+  /* ---------------------------------------------------------------- shared transport (CM14 Pazar) */
+
+  /**
+   * Borrow the shared lobby transport for another lobby feature (the Pazar's `shop` / `shopBuy` / `shopSold` channels). It
+   * stays open until every borrower called `release()` (reference counted with browsing and announcing). null when it cannot open.
+   */
+  async lease(kind: NetKind): Promise<{ tr: LobbyTransport; release: () => void } | null> {
+    const entry = await this.acquire(kind);
+    if (!entry) return null;
+    let released = false;
+    return {
+      tr: entry.tr,
+      release: () => {
+        if (released) return;
+        released = true;
+        this.release(kind);
+      },
+    };
+  }
+
   dispose(): void {
     this.stopBrowsing();
     this.stopAnnouncing();

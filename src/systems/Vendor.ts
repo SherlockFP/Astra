@@ -242,7 +242,7 @@ export function sell(uid: string): { ok: boolean; gold: number } {
   if (!ch) return { ok: false, gold: 0 };
   resetIfCharacterChanged();
   const f = ch.findItem(uid);
-  if (!f || f.loc.where === 'equipment' || f.item.locked) return { ok: false, gold: 0 };
+  if (!f || f.loc.where === 'equipment' || f.item.locked || f.item.listed) return { ok: false, gold: 0 };
   const item = f.item;
   const gold = ch.sellItem(uid);
   if (gold <= 0) return { ok: false, gold: 0 };

@@ -85,7 +85,37 @@ export interface CharacterSave {
   // ---- GDD_LIFE (L-00). OPTIONAL. normaliseCharacterSave() fills `{}` on load.
   /** Gathering and crafting skill per profession (GDD_LIFE §1.2 / §1.3). */
   professions?: Partial<Record<ProfessionId, ProfessionSave>>;
+  // ---- CM14 Pazar (CORE_MECHANICS §11). OPTIONAL, created on first use by systems/Market.ts.
+  /** Sales log of the player's stall (newest last, capped) plus what the player has not seen yet (next-login summary). */
+  market?: MarketSave;
 }
+
+/** CM14: one finished sale of the local player's stall. */
+export interface MarketSaleRecord {
+  /** Date.now() of the sale. */
+  t: number;
+  /** Item display name (with quantity for stacks). */
+  name: string;
+  rarity: string;
+  /** Gold the buyer paid. */
+  price: number;
+  /** Gold the seller received (price minus Pazar Vergisi). */
+  net: number;
+  /** Buyer character name when the buy message carried it. */
+  buyer?: string;
+}
+
+/** CM14: persisted market bookkeeping of one character. */
+export interface MarketSaveData {
+  sales: MarketSaleRecord[];
+  /** Sales / gold since the player last looked at the log (shown as a summary on the next login). */
+  unseenCount: number;
+  unseenGold: number;
+  /** Lifetime totals. */
+  totalSold: number;
+  totalGold: number;
+}
+export type MarketSave = MarketSaveData;
 
 /** Lightweight summary used in menus and in network handshakes. */
 export interface CharacterSummary {

@@ -7,6 +7,7 @@ import { TOWN } from '../../../data/town';
 import { CLASS_META, GamePanel, button, clampN, h, icon, sfx, windowFrame } from './base';
 import type { Enemy } from '../../../entities/Enemy';
 import { questGiverMarks, questTargetMarks, regionKnown, waypointKnown } from '../../hud/questMarks';
+import { peekMarket } from '../../../systems/Market';
 
 /* ------------------------------------------------------------------ */
 /* Exploration tracking (fog of war) — runs even while the panel is closed */
@@ -624,6 +625,28 @@ export class MapPanel extends GamePanel {
         ctx.fillStyle = '#f1e6cf';
         ctx.strokeText(npc.name, x, y - 8);
         ctx.fillText(npc.name, x, y - 8);
+      }
+    }
+
+    // CM14 Pazar: the market square and the "Göster" pin of Pazar Arama
+    const mk = peekMarket();
+    if (mk?.origin && (town || def)) {
+      const ox = toX(mk.origin.x), oy = toY(mk.origin.z);
+      this.marker(ctx, ox, oy, '#e8c46a', 'diamond', 5, t);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.font = `700 ${clampN(s * 2.4, 10, 15)}px 'Alegreya Sans', sans-serif`;
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(0,0,0,0.9)';
+      ctx.fillStyle = '#f1e6cf';
+      ctx.strokeText('Pazar', ox, oy - 8);
+      ctx.fillText('Pazar', ox, oy - 8);
+      const pin = mk.pin;
+      if (pin && pin.zone === mk.origin.zone) {
+        const px = toX(pin.x), py = toY(pin.z);
+        this.marker(ctx, px, py, '#ff5a4a', 'diamond', 9 + Math.sin(t * 5) * 1.5, t);
+        ctx.strokeText(pin.label, px, py - 12);
+        ctx.fillText(pin.label, px, py - 12);
       }
     }
 

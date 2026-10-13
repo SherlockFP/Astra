@@ -44,6 +44,35 @@ export type PvpMsg =
   | { k: 'score'; teams: [number, number] };
 
 /**
+ * CM14 Pazar (CORE_MECHANICS §11). The three shop channels travel on the LOBBY room (net/messages.ts LobbyChannels), not the party
+ * room, so buyers and sellers need not share an instance. The sender is always the transport's peer id (MessageMeta.from), never
+ * a payload field. All payloads are untrusted: systems/MarketWire.ts sanitises them.
+ */
+/** Appearance digest of a seller: class, colour variant / tint, display name and level (enough for the seated stand-in). */
+export interface ShopLook { c: ClassId; v: number; t?: number; n: string; l: number }
+/** One listed item: slot index, seller-side uid, total price (gold) for the whole stack, stack size (q, absent = 1), compact snapshot. */
+export interface ShopListingWire { s: number; u: string; p: number; q?: number; it: ItemSnapshot }
+/** Stall announcement (lobby channel `shop`), every 30 s and on every change. `open: false` withdraws the stall. */
+export interface ShopAnnounce {
+  /** Market zone: 'town' (Pazar Meydanı) or a village id. */
+  z: string;
+  title: string;
+  /** Spot index in the zone's grid (the seller's pick: hash(sellerId) mod spots + linear probing). */
+  spot: number;
+  /** Incremented by the seller on every change; older announcements are dropped. */
+  rev: number;
+  open: boolean;
+  /** 24-slot "Büyük Bohça" stall. */
+  big?: boolean;
+  look: ShopLook;
+  items: ShopListingWire[];
+}
+/** Buyer -> seller: buy listing `slot` (item `itemUid`) at `price`. `buyer` is the buyer's display name (sales log only). */
+export interface ShopBuyMsg { txId: string; sellerId: string; slot: number; itemUid: string; price: number; buyer?: string }
+/** Seller -> buyer: the answer to a ShopBuyMsg. `ok` with `item` = sold; otherwise `reason` (Turkish) tells why not. */
+export interface ShopSoldMsg { txId: string; ok: boolean; item?: ItemInstance; reason?: string }
+
+/**
  * Typed logical gameplay channels carried by NetSession (see ARCHITECTURE.md "Net channels").
  * The net module carries them inside its generic envelope (`g` channel in net/messages.ts, host-relayed star
  * topology). Gameplay code ONLY uses these via G.net.broadcast/sendToHost/sendTo/on.
@@ -105,6 +134,10 @@ export interface NetChannels {
   // ---- K8 (P-12, dungeon events). Owner: scenes (DungeonScene). Host-only: clients ask with sendRequest('dungeon.event').
   /** One dungeon event flag changed on the host (DungeonEventStore); the host sends one per flag at run start too. */
   dungeon_event: { name: string; on: boolean };
+  // ---- CM14 Pazar. Owner: systems/Market.ts (sends AND registers the receivers). Lobby-room channels (see the note above ShopLook).
+  shop: ShopAnnounce;
+  shopBuy: ShopBuyMsg;
+  shopSold: ShopSoldMsg;
 }
 
 export type NetChannel = keyof NetChannels;

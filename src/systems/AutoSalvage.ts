@@ -40,7 +40,7 @@ export function nextMode(m: AutoSalvageMode): AutoSalvageMode {
 /** Items that are never touched (§6.2): locked, unique / set / aspect, upgraded, socketed, on a track, bound Nadir+, anything Nadir+, non-equipment. */
 export function isProtected(item: ItemInstance): boolean {
   return !!(
-    item.locked || item.uniqueId || item.setId || item.aspectId || (item.upgrade ?? 0) > 0 || item.track || item.corrupted ||
+    item.locked || item.listed || item.uniqueId || item.setId || item.aspectId || (item.upgrade ?? 0) > 0 || item.track || item.corrupted ||
     item.sockets?.some((s) => !!s) || rarityIndex(item.rarity) >= rarityIndex('rare') || !isEquipmentItem(item)
   );
 }
