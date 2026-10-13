@@ -159,7 +159,7 @@ function forMaterials(root: THREE.Object3D, fn: (mat: MatLike) => void): void {
 /** Blend base colour toward `hex` (and add a little emissive so bloom catches it). */
 function applyTint(root: THREE.Object3D | null | undefined, hex: number, blend: number, emissive = 0): void {
   if (!root) return;
-  // Enemy.loadModel clones every material per entity, so recolouring in place never leaks to other enemies
+  // callers go through Affixes.whenModel, which gives the enemy its own material copies first (Enemy.ownMaterials)
   const c = new THREE.Color(hex);
   forMaterials(root, (mat) => {
     if (mat.color) {
@@ -356,9 +356,11 @@ export class Affixes {
     else this.waiting.push({ id, fn, ttl: 10 });
   }
 
+  /** Affix visuals write tint/opacity onto the model: give the enemy its own material copies first (models share
+   *  per-variant materials since perf wave 2), so one affixed enemy never recolours every enemy of its type. */
   private whenModel(e: Enemy, fn: () => void): void {
-    if (e.model) fn();
-    else this.polls.push({ test: () => !!e.model || e.removed, fn: () => { if (!e.removed) fn(); }, ttl: 10 });
+    if (e.model) { e.ownMaterials(); fn(); }
+    else this.polls.push({ test: () => !!e.model || e.removed, fn: () => { if (!e.removed) { e.ownMaterials(); fn(); } }, ttl: 10 });
   }
 
   /** Average max HP of living players (reference for shapes that may hit several players). */
