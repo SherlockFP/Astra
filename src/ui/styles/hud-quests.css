@@ -19,7 +19,7 @@
 .qt:hover { filter: brightness(1.12); }
 .qt-head {
   font: 700 15px/1.2 var(--font-body);
-  color: var(--gold-1);
+  color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -40,13 +40,13 @@
 .qt-row.done .qt-line > div:first-child { text-decoration: line-through; opacity: 0.8; }
 /* 6 px kill / collect bar, filled with a stepped (PSX) transition on every rise */
 .qt-bar { position: relative; height: 6px; background: rgba(0, 0, 0, 0.55); border: 1px solid #000; overflow: hidden; }
-.qt-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--gold-2); }
+.qt-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #fff; }
 .qt-row.done .qt-fill { background: var(--ok); }
 .qt-fill.grow { animation: qt-grow 200ms steps(6) both; }
 .qt-more { display: none; font: 400 13px/1.2 var(--font-body); color: var(--text-3); }
 
 @keyframes qt-flash {
-  0% { background: rgba(232, 196, 106, 0.32); }
+  0% { background: rgba(255, 255, 255, 0.2); }
   100% { background: transparent; }
 }
 @keyframes qt-grow {
@@ -70,14 +70,14 @@
   padding: 3px 14px;
   font: 700 15px/1.2 var(--font-body);
   color: #f1e6cf;
-  text-shadow: 0 2px 0 #000;
+  text-shadow: var(--elv-outline);
   white-space: nowrap;
-  background: rgba(10, 10, 12, 0.6);
-  border-left: 2px solid var(--gold-2);
+  background: var(--elv-backdrop);
+  border: 1px solid #000;
   animation: qf-in 200ms ease-out both;
 }
 .qf-line.done { color: var(--ok); border-left-color: var(--ok); }
-.qf-line.ready { color: var(--gold-1); }
+.qf-line.ready { color: #fff; }
 @keyframes qf-in {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: none; }

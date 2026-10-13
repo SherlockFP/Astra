@@ -242,7 +242,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   numberStyle: 'school',
   // UX-00 (UI_REDESIGN Appendix A)
   meterVisibility: 'auto',
-  barGhostSlots: false,
+  barGhostSlots: true,
   ufIcon: false,
   showStats: false,
   showMapInfo: false,
