@@ -17,6 +17,7 @@ import { AutoAttack, AUTO, type AutoTarget } from './AutoAttack';
 import { VERT } from '../world/Heightfield';
 import { FallHandler, VOID_FADE_IN, VOID_FADE_OUT, VOID_INPUT_LOCK, VOID_INVULN_SEC, type FallEnv, type Spot } from './FallHandler';
 import { MountRider } from './Mount';
+import { PetFollower } from './Pet';
 
 /** Black-out / fade-back of the void fall (§11 screen:fade; the HUD listens, unknown events are a no-op). */
 function screenFade(to: number, dur: number): void {
@@ -137,6 +138,8 @@ export class PlayerController {
   private fall = new FallHandler();
   /** WoW ground mount (game/Mount.ts): cast, ride state and the run-speed multiplier. */
   private mount: MountRider;
+  /** WP-12 cosmetic pet that follows the local character (game/Pet.ts). */
+  private pet: PetFollower;
   /** Movement input is ignored until this controller time (void respawn: fade-in + VOID_INPUT_LOCK). */
   private inputLockUntil = -1;
   private landUntil = 0;
@@ -226,6 +229,7 @@ export class PlayerController {
     this.player = player;
     this.cam = cam;
     this.mount = new MountRider(player);
+    this.pet = new PetFollower(player);
     liveController = this;
     document.addEventListener('pointerlockchange', this.onLockChange);
     this.buildMarker();
@@ -472,6 +476,7 @@ export class PlayerController {
       this.autoRunOn = false;
     }
     this.mount.update(dt, canInput, axis.x !== 0 || axis.y !== 0);
+    this.pet.update(dt);
     this.stepMovement(dt, axis, canInput, action);
     this.updateFall(dt);
 
@@ -2110,6 +2115,7 @@ export class PlayerController {
     this.setLock(null);
     this.disarmAuto();
     this.mount.dispose();
+    this.pet.dispose();
     if (G.engine?.canvas) G.engine.canvas.style.cursor = '';
   }
 }

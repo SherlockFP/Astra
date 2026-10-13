@@ -288,6 +288,8 @@ export interface GameEvents {
   // ---- WP-08 achievements (append-only). Emitted by systems/Achievements.ts once per unlock; the achievements panel listens.
   /** An achievement was unlocked by the LOCAL character (`title` = the title it grants, if any). */
   'achievement:unlocked': { id: string; name: string; points: number; title?: string };
+  /** WP-12: the summoned pet of the local character changed (null = dismissed). Game/Pet.ts rebuilds the follower. */
+  'pet:changed': { id: string | null };
 }
 
 export type GameEventName = keyof GameEvents;

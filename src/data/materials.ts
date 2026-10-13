@@ -1,6 +1,7 @@
 import type { Rarity } from '../types/common';
 import type { StatBlock } from '../types/stats';
 import { BOHCA_DEFS } from './market';
+import { PETS, petItemId } from './pets';
 
 export interface MaterialDef {
   id: string;
@@ -25,6 +26,8 @@ export interface MaterialDef {
   scroll?: boolean;
   /** CM14 Pazar licence (Pazar Bohçası / Büyük Bohça): using it from the pouch opens the stall setup (panel `marketOpen`); the stall consumes it. */
   market?: { slots: number };
+  /** WP-12: a pet teaching item (kind consumable). Using it teaches the pet once (systems/Pets.ts). */
+  teachesPet?: string;
 }
 
 export const MATERIALS: Record<string, MaterialDef> = {};
@@ -198,6 +201,12 @@ add(GATHER_MAT('herb_dragontongue', 'Ejder Dili', 'Bitki Toplama. Ateşli bir bi
 add(GATHER_MAT('herb_moonviolet', 'Ay Menekşesi', 'Bitki Toplama. Nadir bir menekşe.', ic('map-herb'), 'rare', 80));
 add(GATHER_MAT('herb_lotus', 'Kadim Nilüfer', 'Bitki Toplama. Kadim sularda açar.', ic('map-herb'), 'epic', 200));
 add(GATHER_MAT('pollen', 'Çiçek Tozu', 'Herhangi bir çiçekten düşen toz. Nadir bulgu.', ic('item-crystal-shard'), 'uncommon', 8));
+
+// ------------------------------------------------------------------ pets (WP-12, data/pets.ts)
+// One teaching item per pet: drops and event participants get it, using it from the pouch teaches the pet once.
+for (const p of PETS) {
+  add({ id: petItemId(p.id), name: `${p.name} Yumurtası`, desc: `Kullanınca ${p.name} evcil hayvanını öğretir. Bir kez kullanılır.`, icon: ic('item-trinket'), rarity: 'rare', sellPrice: 60, kind: 'consumable', maxStack: 99, teachesPet: p.id });
+}
 
 // ------------------------------------------------------------------ helpers
 /** All potion ids of a kind ('hp' | 'mp') ordered by tier. */

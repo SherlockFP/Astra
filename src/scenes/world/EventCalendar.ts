@@ -2,11 +2,13 @@ import { G } from '../../game/G';
 import { spawnEnemy } from '../../entities/EnemyFactory';
 import type { Enemy } from '../../entities/Enemy';
 import { getEnemyDef } from '../../data/enemies';
+import { getMaterial } from '../../data/materials';
 import { RNG, hashString } from '../../core/utils';
 import { TILE_SIZE } from '../../types/dungeons';
 import type { EntityId } from '../../types/common';
 import type { EventScope } from '../../core/EventBus';
 import { toast } from '../../systems/notify';
+import { eventPetItem } from '../../systems/Pets';
 import type { BossSchedule } from './BossSchedule';
 import type { MetinDirector } from './MetinDirector';
 import { distM, tileToWorld, type Pt, type WorldCtx } from './util';
@@ -365,8 +367,14 @@ export class EventCalendar {
         if (me) G.loot.dropItem(item, me.position);
       }
     }
+    // WP-12: the event's pet egg (data/pets.ts) for a small share of the participants
+    const egg = eventPetItem(occ.id, Math.random());
+    if (egg) {
+      ch.addMaterial(egg, 1);
+      toast(`Evcil hayvan yumurtası düştü: ${getMaterial(egg)?.name ?? egg}`, 'loot');
+    }
     ch.persist();
-    toast(`${def.name} ödülü: ${gold} altın, %${def.xpPct} keşif XP${dropped ? ' (envanter dolu, yere düştü)' : ''}`, 'loot');
+    toast(`${def.name} ödülü:${gold} altın, %${def.xpPct} keşif XP${dropped ? ' (envanter dolu, yere düştü)' : ''}`, 'loot');
   }
 
   private announce(c: Crossing): void {

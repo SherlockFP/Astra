@@ -71,6 +71,7 @@ export class GameMenuPanel extends GamePanel {
     mk('Zindan Bulucu', () => this.openFinder(), 'normal', '/assets/icons/ui-dungeon.svg');
     mk('Grup / Sunucular', () => openPanel('party'), 'normal', '/assets/icons/ui-party.svg');
     mk('Başarımlar', () => this.openAchievements(), 'normal', '/assets/icons/ui-laurels.svg');
+    mk('Koleksiyon', () => this.openCollection(), 'normal', '/assets/icons/ui-laurels.svg');
     mk('Meslekler', () => this.openProfessions(), 'normal', '/assets/icons/item-ore.svg');
     mk('Lonca', () => openPanel('guild'), 'normal', '/assets/icons/ui-party.svg');
     if (inDungeon) mk(inOpenWorld() ? 'Şehre Dön' : 'Zindandan Ayrıl', () => void this.leaveDungeon(), 'danger', '/assets/icons/ui-exit.svg');
@@ -98,6 +99,12 @@ export class GameMenuPanel extends GamePanel {
   private openAchievements(): void {
     this.requestClose();
     openPanel('achievements');
+  }
+
+  /** Koleksiyon (WP-12): mounts, pets and titles. */
+  private openCollection(): void {
+    this.requestClose();
+    openPanel('collection');
   }
 
   private openProfessions(): void {

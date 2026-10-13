@@ -67,6 +67,8 @@ export interface AchievementDef {
   target: number;
   /** Title shown in the title picker once unlocked. */
   title?: string;
+  /** WP-12: pet taught on unlock (data/pets.ts id). */
+  pet?: string;
 }
 
 export const ACHIEVEMENTS: AchievementDef[] = [
@@ -99,7 +101,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   // ---- Zindan (dungeon clears, distinct dungeons, boss kills)
   { id: 'zin_clear1', cat: 'zindan', name: 'İlk Zindan', desc: 'Bir zindanı temizle.', points: 5, metric: 'dungeonClears', target: 1 },
   { id: 'zin_clear5', cat: 'zindan', name: 'Zindan Temizleyici', desc: '5 zindan temizle.', points: 10, metric: 'dungeonClears', target: 5 },
-  { id: 'zin_clear25', cat: 'zindan', name: 'Zindan Kurdu', desc: '25 zindan temizle.', points: 25, metric: 'dungeonClears', target: 25, title: 'Zindan Kurdu' },
+  { id: 'zin_clear25', cat: 'zindan', name: 'Zindan Kurdu', desc: '25 zindan temizle.', points: 25, metric: 'dungeonClears', target: 25, title: 'Zindan Kurdu', pet: 'gece_baykusu' },
   { id: 'zin_distinct3', cat: 'zindan', name: 'Çok Yönlü', desc: '3 farklı zindanı temizle.', points: 5, metric: 'dungeonsSeen', target: 3 },
   { id: 'zin_distinct6', cat: 'zindan', name: 'Her Kapı', desc: '6 farklı zindanı temizle.', points: 25, metric: 'dungeonsSeen', target: 6 },
   { id: 'zin_boss1', cat: 'zindan', name: 'İlk Patron', desc: 'Bir patronu yen.', points: 5, metric: 'bossKills', target: 1 },
@@ -108,7 +110,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
 
   // ---- Mitik+ (keys, timed clears)
   { id: 'mit_clear1', cat: 'mitik', name: 'İlk Anahtar', desc: 'Bir Mitik+ anahtarını tamamla.', points: 10, metric: 'mplusClears', target: 1 },
-  { id: 'mit_clear10', cat: 'mitik', name: 'Anahtar Ustası', desc: '10 Mitik+ anahtarını tamamla.', points: 25, metric: 'mplusClears', target: 10, title: 'Anahtar Ustası' },
+  { id: 'mit_clear10', cat: 'mitik', name: 'Anahtar Ustası', desc: '10 Mitik+ anahtarını tamamla.', points: 25, metric: 'mplusClears', target: 10, title: 'Anahtar Ustası', pet: 'kuzgun' },
   { id: 'mit_key5', cat: 'mitik', name: 'Kadim Kapı', desc: 'Mitik+ 5 anahtarını tamamla.', points: 5, metric: 'mplusKey', target: 5 },
   { id: 'mit_key10', cat: 'mitik', name: 'Derinlik', desc: 'Mitik+ 10 anahtarını tamamla.', points: 10, metric: 'mplusKey', target: 10 },
   { id: 'mit_key15', cat: 'mitik', name: 'Mitik Efendi', desc: 'Mitik+ 15 anahtarını tamamla.', points: 25, metric: 'mplusKey', target: 15, title: 'Mitik Efendi' },
@@ -118,7 +120,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
 
   // ---- Savaş (kills, parries, finishers, majors, honour, combo routes)
   { id: 'sav_kill10', cat: 'savas', name: 'İlk Kan', desc: '10 düşman öldür.', points: 5, metric: 'kills', target: 10 },
-  { id: 'sav_kill1000', cat: 'savas', name: 'Savaş Ağası', desc: '1000 düşman öldür.', points: 25, metric: 'kills', target: 1000, title: 'Savaş Ağası' },
+  { id: 'sav_kill1000', cat: 'savas', name: 'Savaş Ağası', desc: '1000 düşman öldür.', points: 25, metric: 'kills', target: 1000, title: 'Savaş Ağası', pet: 'sisli_kedi' },
   { id: 'sav_parry10', cat: 'savas', name: 'Savuşturucu', desc: '10 mükemmel savuşturma yap.', points: 5, metric: 'perfectParry', target: 10 },
   { id: 'sav_parry100', cat: 'savas', name: 'Mükemmel Refleks', desc: '100 mükemmel savuşturma yap.', points: 10, metric: 'perfectParry', target: 100 },
   { id: 'sav_finish25', cat: 'savas', name: 'Kritik Yıkım', desc: '25 Kritik Vuruş bitirişi yap.', points: 10, metric: 'finishers', target: 25 },
@@ -129,7 +131,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   // ---- Toplama / Ekonomi (gold, upgrades, gathering, market, loot)
   { id: 'eko_gold1k', cat: 'ekonomi', name: 'Küçük Kese', desc: 'Toplam 1.000 altın kazan.', points: 5, metric: 'goldEarned', target: 1000 },
   { id: 'eko_gold100k', cat: 'ekonomi', name: 'Kese Dolgunu', desc: 'Toplam 100.000 altın kazan.', points: 10, metric: 'goldEarned', target: 100000 },
-  { id: 'eko_gold1m', cat: 'ekonomi', name: 'Altın Kral', desc: 'Toplam 1.000.000 altın kazan.', points: 25, metric: 'goldEarned', target: 1000000, title: 'Zengin' },
+  { id: 'eko_gold1m', cat: 'ekonomi', name: 'Altın Kral', desc: 'Toplam 1.000.000 altın kazan.', points: 25, metric: 'goldEarned', target: 1000000, title: 'Zengin', pet: 'altin_sincap' },
   { id: 'eko_up9', cat: 'ekonomi', name: 'Dokuz Kere Usta', desc: 'Bir eşyayı +9\'a yükselt.', points: 10, metric: 'upgradeMax', target: 9 },
   { id: 'eko_up12', cat: 'ekonomi', name: 'Kadim Demirci', desc: 'Bir eşyayı +12\'ye yükselt.', points: 25, metric: 'upgradeMax', target: 12, title: 'Kadim Demirci' },
   { id: 'eko_upok50', cat: 'ekonomi', name: 'Demirci Çırağı', desc: '50 başarılı yükseltme yap.', points: 10, metric: 'upgradeOk', target: 50 },

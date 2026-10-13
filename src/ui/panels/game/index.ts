@@ -19,6 +19,7 @@ import { GuidePanel } from './guide';
 import { WelcomePanel } from './welcome';
 import { MarketOpenPanel, MarketStallPanel, MarketSearchPanel } from './market';
 import { AchievementsPanel } from './achievements';
+import { CollectionPanel } from './collection';
 import { ProfessionsPanel } from './professions';
 import { GuildPanel } from './guild';
 import { PvpBoardPanel } from './pvpBoard';
@@ -72,6 +73,7 @@ export function registerGamePanels(ui: UI): void {
     new MarketStallPanel(),
     new MarketSearchPanel(),
     new AchievementsPanel(),
+    new CollectionPanel(),
     new ProfessionsPanel(),
     new GuildPanel(),
     new PvpBoardPanel(),
