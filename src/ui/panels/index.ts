@@ -1,4 +1,7 @@
 import type { UI } from '../UI';
+// Shared window shell first, so it precedes the per-panel sheets in the cascade (UI_REDESIGN UX-02).
+import '../styles/panels-shell-pg.css';
+import '../styles/panels-shell-pi.css';
 import { registerItemPanels } from './items';
 import { registerGamePanels } from './game';
 import '../styles/panels-talents-shell.css';

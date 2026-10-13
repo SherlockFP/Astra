@@ -172,7 +172,7 @@
   background: var(--bg-3); border: 1px solid var(--ink); border-radius: var(--r-1); color: var(--text-2);
   font: 700 var(--fs-14)/1 var(--font-body); cursor: pointer; transition: background var(--t-fast), color var(--t-fast); }
 .k-x:hover { background: color-mix(in srgb, var(--bad) 40%, var(--bg-3)); color: #fff; }
-.k-win > .k-tabs { flex: none; padding: 0 8px; background: var(--bg-2); }
+.k-win > .k-tabs, .k-win > .k-win-tabs, .k-win-tabs > .k-tabs { flex: none; padding: 0 8px; background: var(--bg-2); }
 .k-win > .k-body { flex: 1 1 auto; min-height: 0; padding: var(--sp-4); box-sizing: border-box; }
 .k-win > .k-foot { flex: none; display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); min-height: 36px; padding: 6px var(--sp-4);
   box-sizing: border-box; border-top: 1px solid var(--ink); }
