@@ -8,6 +8,7 @@ import { RARITY_COLORS, type Rarity } from '../../types/common';
 import { ICON, div, setDisplay, setText, setStyle, clampN, fmtClock, h, iconEl, uiSound } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
 import { inWorldMap, questGiverMarks, questTargetMarks, tileCentreM, waypointKnown, worldExtras } from './questMarks';
+import { activeEventPins } from '../../scenes/world/EventCalendar';
 
 const SIZE = 192;
 const R = SIZE / 2;
@@ -72,7 +73,7 @@ export class Minimap implements HudWidget {
   private zoneSub = '';
   private lastMode = '';
   /** Open world marks (villages, discovered stones, active metin, quest targets), refreshed twice a second (world metres). */
-  private worldMarks: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' | 'giver'; gk?: 'offer' | 'turnin' }[] = [];
+  private worldMarks: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' | 'giver' | 'event'; gk?: 'offer' | 'turnin' }[] = [];
   private worldAt = -1e9;
   /** Metin spots currently standing (spot ids from world:metinChanged). */
   private metinOn = new Set<string>();
@@ -249,7 +250,7 @@ export class Minimap implements HudWidget {
 
   /** Villages, discovered stones, standing metin stones and quest targets of the open world, in world metres. */
   private refreshWorldMarks(): void {
-    const out: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' | 'giver'; gk?: 'offer' | 'turnin' }[] = [];
+    const out: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' | 'giver' | 'event'; gk?: 'offer' | 'turnin' }[] = [];
     const ext = inWorldMap() ? worldExtras() : null;
     if (ext) {
       for (const v of ext.villages) out.push({ x: tileCentreM(v.center[0]), z: tileCentreM(v.center[1]), kind: 'village' });
@@ -257,6 +258,8 @@ export class Minimap implements HudWidget {
       for (const s of ext.metin.spots) if (this.metinOn.has(s.id)) out.push({ x: tileCentreM(s.pos[0]), z: tileCentreM(s.pos[1]), kind: 'metin' });
     }
     for (const q of questTargetMarks()) out.push({ x: q.x, z: q.z, kind: 'quest' });
+    // WP-04 world events: running or starting within 5 minutes (EventCalendar)
+    for (const p of activeEventPins()) out.push({ x: p.x, z: p.z, kind: 'event' });
     // quest givers (UX-21, §4.5): town NPCs with quests in town, village NPCs on the open world; gold ! offer, ? turn-in
     if (!ext && G.ui?.mode === 'town') {
       for (const n of TOWN.npcs) {
@@ -465,6 +468,18 @@ export class Minimap implements HudWidget {
         ctx2.strokeText(glyph, x, y + 1);
         ctx2.fillStyle = m.gk === 'turnin' ? '#f5b82e' : '#ffe14d';
         ctx2.fillText(glyph, x, y + 1);
+      } else if (m.kind === 'event') {
+        ctx2.fillStyle = '#ff9f1a';
+        ctx2.strokeStyle = '#2a1a04';
+        ctx2.lineWidth = 1;
+        ctx2.beginPath();
+        ctx2.moveTo(x, y - 5.5);
+        ctx2.lineTo(x + 4.5, y);
+        ctx2.lineTo(x, y + 5.5);
+        ctx2.lineTo(x - 4.5, y);
+        ctx2.closePath();
+        ctx2.fill();
+        ctx2.stroke();
       } else if (m.kind === 'village') {
         ctx2.fillStyle = '#e8c46a';
         ctx2.strokeStyle = '#2a1a04';

@@ -41,12 +41,16 @@ interface RegionRec {
 }
 
 const TICK = 0.5;
+/** Metin Fırtınası (world event, EventCalendar): three times the stones per region, respawn after this many seconds. */
+const STORM_MULT = 3;
+const STORM_RESPAWN_SEC = 20;
 
 export class MetinDirector {
   private readonly regions: RegionRec[] = [];
   private readonly rng: RNG;
   private timer = 0;
   private warned = false;
+  private storm = false;
 
   constructor(private readonly ctx: WorldCtx) {
     this.rng = new RNG(hashString(`${ctx.seed}:metin`));
@@ -64,6 +68,15 @@ export class MetinDirector {
     const out: Enemy[] = [];
     for (const r of this.regions) for (const s of r.stones) if (s.enemy && !s.enemy.isDead && !s.enemy.removed) out.push(s.enemy);
     return out;
+  }
+
+  /**
+   * Metin Fırtınası (EventCalendar, host): on = the regions keep up to three times their stones and a destroyed stone comes
+   * back after STORM_RESPAWN_SEC; each storm stone is tagged `ev:storm`. Off = the normal rules again (no stone is removed).
+   */
+  setStorm(on: boolean): void {
+    this.storm = on;
+    if (on) for (const r of this.regions) r.nextAt = Math.min(r.nextAt, this.ctx.world.time);
   }
 
   update(dt: number): void {
@@ -92,7 +105,7 @@ export class MetinDirector {
         this.drop(r, s);
         if (e.isDead) {
           this.ctx.ev(EV.metin(s.spot.id, 'dead'));
-          r.nextAt = now + this.respawnSec(tier, rng);
+          r.nextAt = now + (this.storm ? STORM_RESPAWN_SEC : this.respawnSec(tier, rng));
         }
         continue;
       }
@@ -105,8 +118,9 @@ export class MetinDirector {
         r.nextAt = now + this.respawnSec(tier, rng);
       }
     }
-    // 2. fill: up to `maxActive` stones per region, one spawn at a time
-    if (r.stones.length >= Math.max(1, tier.maxActive) || now < r.nextAt) return;
+    // 2. fill: up to `maxActive` stones per region (x3 during a storm), one spawn at a time
+    const cap = Math.max(1, tier.maxActive) * (this.storm ? STORM_MULT : 1);
+    if (r.stones.length >= cap || now < r.nextAt) return;
     const spot = this.pickSpot(r, rng);
     r.rolls++;
     if (!spot) {
@@ -137,7 +151,7 @@ export class MetinDirector {
     void (async () => {
       let e: Enemy | null = null;
       try {
-        e = await spawnEnemy(this.ctx.world, tier.enemyId, pos, { level: tier.level, aggro: false });
+        e = await spawnEnemy(this.ctx.world, tier.enemyId, pos, { level: tier.level, aggro: false, tag: this.storm ? 'ev:storm' : undefined });
       } catch (err) {
         console.warn(`[metin] ${tier.enemyId} failed to spawn`, err);
       }

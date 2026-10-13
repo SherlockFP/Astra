@@ -117,6 +117,8 @@ export interface GameEvents {
   'world:regionEntered': { regionId: string; name: string; first: boolean };
   'world:announce': { text: string; kind: 'metin' | 'boss' | 'rare' | 'info' };
   'world:metinChanged': { id: string; tierId: string; pos: [number, number]; active: boolean };
+  /** WP-04 event calendar (scenes/world/EventCalendar.ts): `soon` 5 and 1 min before, `start`, `end`. `at` = the scheduled start (soon, start) or the end (end); `zone` = the site id. */
+  'world:event': { id: 'metin_storm' | 'world_boss' | 'village_raid' | 'goblin_caravan'; phase: 'soon' | 'start' | 'end'; at: number; zone: string };
   'waypoint:discovered': { id: string };
   'quest:updated': { questId: string; state: 'available' | 'active' | 'ready' | 'done'; progress?: number };
 
