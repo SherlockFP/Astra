@@ -300,7 +300,7 @@ const EIRICH_COMBAT = ['eirich_void_claw', 'eirich_leap', 'eirich_grasp', 'eiric
 export const TASKASA_BOSSES: Record<string, BossDef> = index<BossDef>([
   // ---- 5.1 Otomat Seda (E.D.N.A.) ----
   bossDef({
-    id: 'boss_seda', name: 'Otomat Seda', title: 'Çekirdeğin Nöbetçisi', model: GENB('otomat_seda'), scale: 1.0, role: 'melee',
+    id: 'boss_seda', name: 'Otomat Seda', title: 'Çekirdeğin Nöbetçisi', model: GENB('lav_golemi'), scale: 0.9, tint: 0xb8c4cc, role: 'melee',
     hp: 53, dmg: 2.3, speed: 3.8, radius: 1.8, enrage: 240, arenaR: 28, poise: 800, poiseRegen: 0.08, poiseDelay: 4, loot: 'loot_tk_b1',
     anims: A_GEN, resist: { ...R_GOLEM, fire: 0.5 }, visual: { runRef: 3.8 },
     basic: cone('seda_stomp', 'Çift Basış', 5, 100, 3.2, 1.0, 'Attack', 0.67, { windup: 0.7, telegraph: true, params: { chain: 1, t2: 1.45, c2: 1.2 } }),
@@ -324,7 +324,7 @@ export const TASKASA_BOSSES: Record<string, BossDef> = index<BossDef>([
   }),
   // ---- 5.2 Kristal Golem Skarmorak ----
   bossDef({
-    id: 'boss_skarmorak', name: 'Kristal Golem Skarmorak', title: 'Çatlak Kristalinin Kölesi', model: GENB('skarmorak'), scale: 1.0,
+    id: 'boss_skarmorak', name: 'Kristal Golem Skarmorak', title: 'Çatlak Kristalinin Kölesi', model: GENB('buzul_devi'), scale: 1.0,
     tint: 0x5a9a98, emissive: 0x3fe0c8, role: 'melee',
     hp: 70, dmg: 2.4, speed: 3.6, radius: 2.0, enrage: 270, arenaR: 26, poise: 900, loot: 'loot_tk_b2',
     anims: A_GEN, resist: { ...R_GOLEM, shadow: 0.3 }, visual: { emissiveIntensity: 0.6, runRef: 3.6 },
@@ -383,7 +383,7 @@ export const TASKASA_BOSSES: Record<string, BossDef> = index<BossDef>([
   }),
   // ---- 5.4 Başsözcü Eirich (final) ----
   bossDef({
-    id: 'boss_eirich', name: 'Başsözcü Eirich', title: 'Boşluğun Son Sözcüsü', model: GENB('eirich'), scale: 1.0, tint: 0x6a5a7a, emissive: 0x7a3cff,
+    id: 'boss_eirich', name: 'Başsözcü Eirich', title: 'Boşluğun Son Sözcüsü', model: GENB('golge_rahibesi'), scale: 1.0, tint: 0x6a5a7a, emissive: 0x7a3cff,
     role: 'melee', hp: 100, dmg: 2.5, speed: 4.6, radius: 1.6, enrage: 360, arenaR: 38, poise: 1000, loot: 'loot_tk_b4',
     anims: A_GEN, resist: { ...R_VOID, physical: 0.15 }, visual: { emissiveIntensity: 0.6, runRef: 4.6 },
     basic: cone('eirich_claw', 'Boşluk Üçlüsü', 5.5, 100, 3.8, 1.0, 'Attack', 0.5,

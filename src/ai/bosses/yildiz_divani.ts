@@ -82,8 +82,18 @@ function nightwellPoisoned(): boolean {
 /** Beacon posts (tile coordinates). */
 const GERDAN_POSTS: [number, number][] = [[18.5, 39.5], [32.5, 39.5], [18.5, 49.5], [32.5, 49.5]];
 
+/**
+ * BossController.engage() sets `mode = 'idle'` after EnemyAI.acquire() has set `'chase'`, so a freshly engaged boss sits in
+ * idleTick and never reaches combatTick (no ability, no basic). onEngage runs after that reset, so the script puts the brain
+ * back into chase here. Remove once engage() keeps the acquire mode (the engine file is outside this module).
+ */
+function resumeChase(c: BossController): void {
+  if (c.e.aggroed && c.target) c.mode = 'chase';
+}
+
 const gerdan: BossScript = {
   onEngage(c) {
+    resumeChase(c);
     for (const [x, z] of GERDAN_POSTS) {
       spawnMech(c, 'proc_beacon', c.gdd(x, z), { hpMult: 3 * partyHp(c), tag: 'beacon' });
     }
@@ -286,6 +296,9 @@ const taliksa: BossScript = {
       c.spawnAdds(id, 1, { positions: [c.gdd(x, z)], aggro: false, tag: 'emissary', hpMult: hp * partyHp(c) });
     }
   },
+  onEngage(c) {
+    resumeChase(c);
+  },
   update(c, dt) {
     every(c.state, 'cov', dt, 1.0, () => covenant(c));
   },
@@ -434,6 +447,9 @@ function echoBeams(c: BossController, pts: Pt[]): void {
 }
 
 const melandros: BossScript = {
+  onEngage(c) {
+    resumeChase(c);
+  },
   onBreak(c) {
     const b = c.currentBusy;
     // a posture break cancels the Dilimleyen Kasirga channel

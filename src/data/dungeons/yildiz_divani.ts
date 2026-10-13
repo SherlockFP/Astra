@@ -359,6 +359,8 @@ D.room('ziyafet_salonu', (p, r) => {
   p.at(gp('statue_hooded'), 14.5, 25.5, { tint: WARM });
   p.at(gp('statue_hooded'), 43.5, 25.5, { tint: WARM });
   p.at(gp('crystal_purple'), 28.5, 24.5, { scale: 0.5, emissive: GOLD, light: lt(0xffc860, 1.6, 9, true, 0.8), id: 'astrolabe_glow' });
+  // wall sconces on the free wall runs (north banners and the door gaps are skipped by the wall helper)
+  p.torches(r, 's', [17, 24, 31, 40], WARM).torches(r, 'w', [21, 28], WARM);
 });
 
 // ---- bati_salonu: west library -------------------------------------------------------------------------------------
@@ -428,7 +430,7 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
   kuzey_kemeri: { ambientVfx: 'ambient_dust', lightColor: WARM, ambience: [{ id: 'crowd_murmur', radius: 12, volume: 0.12, loop: true }] },
   ev_girisi: { ambientVfx: 'ambient_dust', lightColor: WARM, fog: { color: 0x1a1430, near: 20, far: 90 } },
   rasathane: { ambientVfx: 'ambient_dust', lightColor: 0xb8c0ff, fog: { color: 0x10183c, near: 20, far: 80 } },
-  ziyafet_salonu: { ambientVfx: 'ambient_dust', lightColor: WARM, fog: { color: 0x1a1430, near: 20, far: 90 }, ambience: [{ id: 'crowd_murmur', radius: 22, volume: 0.15, loop: true }] },
+  ziyafet_salonu: { ambientVfx: 'ambient_dust', lightColor: WARM, fog: { color: 0x2a2250, near: 22, far: 90 }, ambience: [{ id: 'crowd_murmur', radius: 22, volume: 0.15, loop: true }] },
   bati_salonu: { ambientVfx: 'ambient_dust', lightColor: WARM, fog: { color: 0x1a1430, near: 20, far: 90 } },
   kule_merdiveni: { ambientVfx: 'ambient_dust', lightColor: CYAN, ambience: [{ id: 'lift_hum', radius: 6, volume: 0.3, loop: true }] },
   balkon: { ambientVfx: 'ambient_dust', lightColor: 0x9fe0ff, fog: { color: 0x0e1a48, near: 24, far: 110 } },

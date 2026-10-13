@@ -1,7 +1,7 @@
 import type { DecorTier, DoorDef, DungeonDef, DungeonTheme, HeightArea, PackDef, PropPlacement, RoomDef, SlopeDef, TileRect, ZoneDef } from '../../types/dungeons';
 import '../enemies_peri_sisleri';
 import type { PO, PackExtra } from './kit';
-import { bossAt, circleZone, dg, door, gp, hw, kn, lt, pack, pt, rectZone, room, stairs, ramp } from './kit';
+import { bossAt, chandelier, circleZone, dg, door, gp, hw, kn, lt, pack, pt, rectZone, room, stairs, ramp } from './kit';
 
 /**
  * PERI SISLERI (peri_sisleri), Season 1 Mythic+ dungeon. Design: docs/dungeons/peri_sisleri.md (sections 3, 4.6, 6, 7 of the
@@ -104,13 +104,17 @@ const ROOMS: RoomDef[] = [
     ],
   }),
   room('kok_salonu', 'Kök Salonu', 16, 21, 12, 8, 'moss', 'grove', 0.45, {
-    floorY: 4.8, ceiling: 26, fog: fog(0x15281f, 6, 34), slopes: [ST_KOK],
+    floorY: 4.8, ceiling: 26, fog: fog(0x1f3a2c, 9, 44), slopes: [ST_KOK], lightColor: 0xd6b8ff,
     heightAreas: [area('landing', 16, 27, 12, 2, 2.4)],
     tiers: [tier('ring', 12.0, 16, 21, 12, 8, { depth: 4 }), tier('colonnade', 4.8, 16, 21, 12, 8, { count: 10, spacing: 4 }), tier('windows', 16.0, 16, 21, 12, 8, { count: 8, spacing: 5 }), tier('beams', 25.0, 16, 21, 12, 8)],
     props: [
       P(gp('crystal_blue'), 18, 23, { tint: 0xb8ffe0, light: lt(0xffd060, 1.0, 5, true) }),
       P(gp('crystal_blue'), 25, 24, { tint: 0xb8ffe0, light: lt(0xffd060, 1.0, 5, true) }),
       P(kn('lily_small'), 22, 22), P(kn('lily_small'), 26, 25),
+      // high fill for the ring gallery and the beam height: floating crystals on the ring, one lantern chandelier under the beams
+      P(gp('crystal_blue'), 17, 22, { y: 12.5, scale: 0.6, tint: 0xb8ffe0, light: lt(0xb8ffe0, 1.5, 12, true, 1.0) }),
+      P(gp('crystal_blue'), 27, 28, { y: 12.5, scale: 0.6, tint: 0xb8ffe0, light: lt(0xb8ffe0, 1.5, 12, true, 1.0) }),
+      ...chandelier(22, 25, 19, { color: 0xc8ffd8 }),
     ],
   }),
   room('mantar_korusu', 'Mantar Korusu', 6, 21, 10, 8, 'moss', 'grove', 0.4, {
