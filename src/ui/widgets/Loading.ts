@@ -1,25 +1,33 @@
 import { G } from '../../game/G';
 import { ICON, div, iconEl, setStyle, setText, approach } from './dom';
+import { resolveHint, type SchemeText } from './controlHints';
 
-export const LOADING_TIPS: string[] = [
-  'Kombo yapmak için sol tıkla arka arkaya saldır; zincirin son vuruşu en ağır olandır.',
-  'Takla atarken (Shift) kısa süre hasar almazsın. Boss saldırılarından kaçmak için kullan.',
+/** Key names are `{k:action}` tokens (resolved from the live bindings when shown); scheme-dependent tips have one text per scheme. */
+export const LOADING_TIPS: SchemeText[] = [
+  {
+    aks: 'Kombo yapmak için {k:skill_lmb} ile arka arkaya saldır; zincirin son vuruşu en ağır olandır.',
+    wow: 'Bir düşmana sağ tıkla: seçilir ve otomatik saldırı zinciri kendiliğinden döner; son vuruş en ağır olandır.',
+  },
+  'Takla atarken ({k:dodge}) kısa süre hasar almazsın. Boss saldırılarından kaçmak için kullan.',
   'Yerdeki kırmızı alanlar düşman saldırılarını işaret eder. Dolmadan önce alandan çık!',
   'Seçkin düşmanlar daha çok eşya düşürür. Sürüleri toplayıp alan hasarıyla temizle.',
   'Mitik+ zindanında +2 için sürenin %80\'i, +3 için %60\'ı içinde bitirmelisin.',
   'Mitik+ koşusunda her ölüm süreye 15 saniye ekler. Dikkatli oyna!',
   'Demirci eşyalarını +15\'e kadar yükseltebilir; ama yüksek seviyelerde eşya yok olabilir.',
   'Efsun nesneleriyle eşyalarının büyülü özelliklerini yeniden belirleyebilirsin.',
-  'Yetenek ağacı (N) her seviyede puan verir. Anahtar düğümler oyun tarzını değiştirir.',
+  'Yetenek ağacı ({k:talents}) her seviyede puan verir. Anahtar düğümler oyun tarzını değiştirir.',
   'Grupla oynarken boss\'un kesilebilir büyülerini sersemletme veya susturmayla durdur.',
   'Bir eşyanın üstüne gelince kuşandığınla farkları yeşil ve kırmızı görürsün.',
-  'Can iksiri (4) ve ruh iksiri (5) kısa bir ortak bekleme süresine sahiptir.',
-  'Alt tuşuyla imleci serbest bırakıp arayüze tıklayabilirsin.',
+  'Can iksiri ({k:potionHp}) ve ruh iksiri ({k:potionMp}) kısa bir ortak bekleme süresine sahiptir.',
+  {
+    aks: '{k:freeCursor} tuşuyla imleci serbest bırakıp arayüze tıklayabilirsin.',
+    wow: 'Fare imleci serbest: sol tuşu basılı tutup sürükleyerek kamerayı, sağ tuşla sürükleyerek karakteri döndürebilirsin.',
+  },
   'Kritik ve bitirici vuruşlar daha uzun vuruş duraklaması yaratır; hissederek oyna!',
-  'Haritayı (M) açarak zindanın keşfettiğin bölümlerini görebilirsin.',
+  'Haritayı ({k:map}) açarak zindanın keşfettiğin bölümlerini görebilirsin.',
   'Mitik+ anahtarını Güç Çeşmesi\'ne yerleştirerek koşuyu başlat.',
-  'Grup kurmak için O tuşuna bas; bir sunucu aç ya da katıl. En fazla 5 kişi!',
-  'Düşen eşyaları F tuşuyla toplayabilirsin.',
+  'Grup kurmak için {k:party} tuşuna bas; bir sunucu aç ya da katıl. En fazla 5 kişi!',
+  'Düşen eşyaları {k:interact} tuşuyla toplayabilirsin.',
   'Öldüğünde ruhunu serbest bırakabilir ya da bir grup arkadaşının seni diriltmesini bekleyebilirsin.',
   'Düşman kuvvetleri yüzde 100\'e ulaşmadan son patron koşuyu bitirmez.',
 ];
@@ -110,7 +118,7 @@ export class LoadingScreen {
     this.tipEl.classList.remove('swap');
     void this.tipEl.offsetWidth;
     this.tipEl.classList.add('swap');
-    this.tipEl.innerHTML = `<b>İpucu:</b> ${LOADING_TIPS[this.tipIdx]}`;
+    this.tipEl.innerHTML = `<b>İpucu:</b> ${resolveHint(LOADING_TIPS[this.tipIdx])}`;
   }
 
   update(dt: number): void {

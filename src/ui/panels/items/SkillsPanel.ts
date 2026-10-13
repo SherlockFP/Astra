@@ -10,6 +10,7 @@ import { SIGNATURE_SKILLS, skillSpecsOf } from '../../../data/skillSpecs';
 import { ROLE_TR } from '../../../combat/specs';
 import { ItemPanel, makeTabs } from './PanelBase';
 import { bindTip, drag, esc, fmt, h, iconUrl, sfx, toast } from './common';
+import { slotKeyLabel } from '../../widgets/controlHints';
 
 const DMG_COLOR: Record<string, string> = {
   physical: '#e6e6ee', fire: '#ff7a2a', frost: '#6fd8ff', lightning: '#ffe84a', shadow: '#b060ff', poison: '#7cd23a', holy: '#ffe08a', arcane: '#ff6ad8', true: '#ffffff',
@@ -17,7 +18,6 @@ const DMG_COLOR: Record<string, string> = {
 const DMG_TR: Record<string, string> = {
   physical: 'Fiziksel', fire: 'Ateş', frost: 'Buz', lightning: 'Şimşek', shadow: 'Gölge', poison: 'Zehir', holy: 'Kutsal', arcane: 'Gizem', true: 'Saf',
 };
-const SLOT_LABEL: Record<SkillSlotKey, string> = { lmb: 'Sol Tık', rmb: 'Sağ Tık', q: 'Q', e: 'E', r: 'R', s1: '1', s2: '2', s3: '3', s4: 'G', m45: 'X', m90: 'V', m180: 'T' };
 /** The 12-slot bar in the HUD's own order (section 7.4): 9 skills, then the 3 majors. */
 const SLOT_ORDER: SkillSlotKey[] = ['lmb', 'rmb', 'q', 'e', 'r', 's1', 's2', 's3', 's4', 'm45', 'm90', 'm180'];
 /** Skill-book groups (section 7.4). */
@@ -212,7 +212,7 @@ export class SkillsPanel extends ItemPanel {
       return false;
     }
     if (!slotAllows(slot, s, this.basicId())) {
-      toast(slot === 'r' ? 'R yuvası sadece Ultimate yetenekler içindir' : slot === 'lmb' ? 'Sol tık yuvası temel saldırıya ayrılmıştır' : isUltimate(s) ? 'Ultimate yetenek sadece R yuvasına konabilir' : 'Bu yetenek bu yuvaya konamaz', 'warning');
+      toast(slot === 'r' ? 'R yuvası sadece Ultimate yetenekler içindir' : slot === 'lmb' ? `${slotKeyLabel('lmb')} yuvası temel saldırıya ayrılmıştır` : isUltimate(s) ? 'Ultimate yetenek sadece R yuvasına konabilir' : 'Bu yetenek bu yuvaya konamaz', 'warning');
       sfx('ui_error');
       return false;
     }
@@ -299,7 +299,7 @@ export class SkillsPanel extends ItemPanel {
   private makeBarSlot(key: SkillSlotKey): HTMLElement {
     const wrap = h('div', `pi-sk-slotwrap${key === 'r' ? ' ult' : ''}`);
     const slot = h('div', 'pi-slot sz-lg skill empty');
-    slot.append(h('div', 'pi-ico none'), h('span', 'pi-skill-key', SLOT_LABEL[key]));
+    slot.append(h('div', 'pi-ico none'), h('span', 'pi-skill-key', slotKeyLabel(key)));
     wrap.append(slot, h('div', 'pi-sk-slotlabel', key === 'r' ? 'Ultimate' : key === 'lmb' ? 'Temel' : ''));
     this.barSlots.set(key, slot);
     drag.bindSource(slot, {
@@ -329,7 +329,7 @@ export class SkillsPanel extends ItemPanel {
     bindTip(slot, () => {
       const id = G.character?.save.skillBar[key];
       const s = id ? SKILLS[id] : undefined;
-      if (!s) return `<div class="pi-tip-name">${SLOT_LABEL[key]} yuvası</div><div class="pi-tip-dim">${key === 'r' ? 'Sadece Ultimate yetenekler.' : key === 'lmb' ? 'Temel saldırı.' : 'Boş. Bir yetenek sürükle.'}</div>`;
+      if (!s) return `<div class="pi-tip-name">${slotKeyLabel(key)} yuvası</div><div class="pi-tip-dim">${key === 'r' ? 'Sadece Ultimate yetenekler.' : key === 'lmb' ? 'Temel saldırı.' : 'Boş. Bir yetenek sürükle.'}</div>`;
       return this.skillTip(s);
     });
     return wrap;
@@ -347,7 +347,7 @@ export class SkillsPanel extends ItemPanel {
     i.style.setProperty('--ico', `url("${iconUrl(s.icon)}")`);
     ico.append(i);
     const cur = this.slotOf(s.id);
-    if (cur) ico.append(h('span', 'pi-skill-key', SLOT_LABEL[cur]));
+    if (cur) ico.append(h('span', 'pi-skill-key', slotKeyLabel(cur)));
     if (!unlocked) ico.append(h('i', 'pi-skill-lock'));
     const txt = h('div', 'pi-skill-txt');
     const name = h('div', 'pi-skill-name', s.name);
@@ -507,6 +507,8 @@ export class SkillsPanel extends ItemPanel {
       const id = bar[key];
       const s = id ? SKILLS[id] : undefined;
       const ico = slot.querySelector('.pi-ico') as HTMLElement;
+      const keyEl = slot.querySelector('.pi-skill-key');
+      if (keyEl) keyEl.textContent = slotKeyLabel(key);
       slot.classList.toggle('empty', !s);
       if (s) {
         slot.style.setProperty('--rc', skillColor(s));
@@ -680,7 +682,7 @@ export class SkillsPanel extends ItemPanel {
     if (unlocked) this.detail.append(this.bookRow(s));
     const slotsFor = SLOT_ORDER.filter((k) => k !== 'lmb' && slotAllows(k, s, this.basicId()));
     if (unlocked && !slotsFor.length) {
-      this.detail.append(h('div', 'pi-hint', 'Temel saldırı Sol Tık yuvasına sabittir.'));
+      this.detail.append(h('div', 'pi-hint', `Temel saldırı ${slotKeyLabel('lmb')} yuvasına sabittir.`));
     } else if (unlocked) {
       const pick = h('div', 'pi-sd-pick');
       pick.append(h('span', 'pi-qtylabel', 'Yuvaya ata:'));
@@ -688,7 +690,7 @@ export class SkillsPanel extends ItemPanel {
       for (const key of SLOT_ORDER) {
         if (!slotAllows(key, s, this.basicId())) continue;
         if (key === 'lmb') continue;
-        const b = h('button', `pi-chip${cur === key ? ' on' : ''}`, SLOT_LABEL[key]);
+        const b = h('button', `pi-chip${cur === key ? ' on' : ''}`, slotKeyLabel(key));
         b.addEventListener('click', () => this.assign(s.id, key));
         pick.append(b);
       }

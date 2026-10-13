@@ -1,10 +1,11 @@
 import { G } from '../../../game/G';
 import { DEATH_PENALTY_SEC } from '../../../data/mythicAffixes';
+import { expandKeys } from '../../widgets/controlHints';
 import { GamePanel, button, fmtInt, h, icon, inOpenWorld, mmss, openPanel, sfx, toast } from './base';
 
 const TIPS = [
-  'Takla (Shift) ile düşman saldırılarından kaç. Kırmızı alanlardan uzak dur!',
-  'Can iksirlerini (4) kritik anlar için sakla.',
+  'Takla ({k:dodge}) ile düşman saldırılarından kaç. Kırmızı alanlardan uzak dur!',
+  'Can iksirlerini ({k:potionHp}) kritik anlar için sakla.',
   'Zırhın ve dirençlerin yükseldikçe Mitik+ anahtarları kolaylaşır.',
   'Bir kombo zincirini bozmadan vurursan hasar bonusu kazanırsın.',
   'Grup arkadaşın seni dirilttiğinde savaşa kısa bir dokunulmazlıkla dönersin.',
@@ -171,7 +172,7 @@ export class DeathPanel extends GamePanel {
       this.reviveEl.style.display = 'none';
     }
     this.hereBtn.style.display = this.canReviveHere() ? '' : 'none';
-    this.tipEl.textContent = 'İpucu: ' + TIPS[Math.floor(Math.random() * TIPS.length)];
+    this.tipEl.textContent = 'İpucu: ' + expandKeys(TIPS[Math.floor(Math.random() * TIPS.length)]);
   }
 
   protected tick(dt: number): void {

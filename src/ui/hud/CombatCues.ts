@@ -4,6 +4,7 @@ import type { Actor } from '../../entities/Actor';
 import type { Enemy } from '../../entities/Enemy';
 import { COMBAT_FEEL } from '../../combat/feel';
 import { clamp01, div, pulse, setClass, setStyle, setText } from '../widgets/dom';
+import { slotKeyLabel } from '../widgets/controlHints';
 import type { HudCtx, HudWidget } from './types';
 import { reticleAtCentre } from './Crosshair';
 import '../styles/hud-combat.css';
@@ -46,6 +47,7 @@ export class CombatCues implements HudWidget {
   private guardFill: SVGElement;
   private prompt: HTMLElement;
   private promptText: HTMLElement;
+  private promptKey: HTMLElement;
   private lock: HTMLElement;
   private shatterAt = -1e9;
   private kind: PromptKind = '';
@@ -66,7 +68,7 @@ export class CombatCues implements HudWidget {
       s.style.setProperty('--a', `${Math.round((i * 360) / SHARDS + ((i * 23) % 17))}deg`);
     }
     this.prompt = div('cc-prompt', this.center);
-    div('cc-key', this.prompt, '[Sol Tık]');
+    this.promptKey = div('cc-key', this.prompt, '[Sol Tık]');
     this.promptText = div('cc-ptxt', this.prompt);
     this.lock = div('cc-lock', this.el);
 
@@ -128,6 +130,8 @@ export class CombatCues implements HudWidget {
       }
     }
     this.setPrompt(kind, t, far);
+    // the key chip follows the scheme: the skill_lmb binding (Aksiyon), or "Oto" while the WoW auto-attack throws the swing
+    setText(this.promptKey, `[${slotKeyLabel('lmb')}]`);
 
     // lock-on ring: the camera only exposes `lockedOn`; the hard target is the player's current target while it is set
     let lockOn = false;

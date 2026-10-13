@@ -56,6 +56,8 @@ export class TargetFrame implements HudWidget {
   private nameEl: HTMLElement;
   private threatDot: HTMLElement;
   private totEl: HTMLElement;
+  /** Entity shown in the target-of-target slot (clicking it selects it, event target:select), or null. */
+  private totId: EntityId | null = null;
   /** Poise (Duruş) stripe under the strip; gold + the SENDELEDİ tag while the enemy is broken. */
   private poise: HTMLElement;
   private poiseFill: HTMLElement;
@@ -81,6 +83,12 @@ export class TargetFrame implements HudWidget {
     const right = div('uf-rt', this.strip.label);
     this.threatDot = div('uf-tdot', right);
     this.totEl = div('uf-tot', right);
+    this.totEl.addEventListener('mousedown', (e) => {
+      if (e.button !== 0 || this.totId === null) return;
+      e.preventDefault();
+      // PlayerController subscribes and selects the unit (the HUD never changes the selection itself)
+      G.events.emit('target:select', { entityId: this.totId });
+    });
     setDisplay(this.totEl, false);
     setDisplay(this.threatDot, false);
     // target cast bar: same box as the strip, drawn over it while the target casts (nothing moves)
@@ -163,12 +171,17 @@ export class TargetFrame implements HudWidget {
     const id = a.kind === 'player' ? null : a.targetId;
     const v = id != null && ctx.world ? ctx.world.getActor(id) : undefined;
     if (!v || v.isDead || v.removed) {
+      this.totId = null;
       setDisplay(this.totEl, false);
       setDisplay(this.threatDot, false);
       return;
     }
     const onMe = v === ctx.player;
     const isPl = v.kind === 'player';
+    // only units that can be selected (not the local player, not other players) are clickable
+    this.totId = !onMe && !isPl ? v.id : null;
+    this.totEl.classList.toggle('ui-capture', this.totId !== null);
+    this.totEl.classList.toggle('tot-click', this.totId !== null);
     setText(this.totEl, `▸ ${v.name} · ${fmtHealth(Math.max(0, v.hp))}`);
     setStyle(this.totEl, 'color', isPl ? classColor((v as unknown as { classId?: ClassId }).classId) : 'var(--react-hostile)');
     setStyle(this.threatDot, 'background', onMe ? THREAT_ME : isPl ? THREAT_OTHER : THREAT_NONE);

@@ -1,7 +1,8 @@
 import '../styles/hud-onboard.css';
 import { G } from '../../game/G';
 import type { Enemy } from '../../entities/Enemy';
-import { TIPS, tipText, type TipCtx, type TipDef } from '../../data/tips';
+import { TIPS, tipView, type TipCtx, type TipDef } from '../../data/tips';
+import { expandKeys, isWowScheme, keyLabel } from '../widgets/controlHints';
 import type { UI } from '../UI';
 import { ICON, div, h, iconEl, setDisplay, setClass, setStyle, setText, span, uiSound } from '../widgets/dom';
 import { unspentTalentPoints } from './Extras';
@@ -203,10 +204,11 @@ export class TipCards implements HudWidget {
     ch.persist();
     this.lastShownAt = performance.now();
     setText(this.title, `İpucu · ${def.title}`);
-    setText(this.text, tipText(def, c));
+    const view = tipView(def, c, { wow: isWowScheme(), expand: expandKeys, label: keyLabel });
+    setText(this.text, view.text);
     this.keys.textContent = '';
-    for (const k of def.keys) span('k-key k-key--dim', this.keys, k);
-    setDisplay(this.keys, def.keys.length > 0, 'flex');
+    for (const k of view.keys) span('k-key k-key--dim', this.keys, k);
+    setDisplay(this.keys, view.keys.length > 0, 'flex');
     this.cur = { def, left: LIFE_MS };
     this.hovered = false;
     setClass(this.card, 'paused', false);
