@@ -20,15 +20,23 @@
 .castbar.big { height: 26px; }
 
 /* ---- status icons ---- */
-.status-row { display: flex; flex-wrap: wrap; gap: 3px; pointer-events: none; }
+.status-row { display: flex; flex-wrap: wrap; gap: 1px; pointer-events: none; }
 .status-row:empty { display: none; }
-.st-icon { position: relative; width: 32px; height: 32px; background: radial-gradient(circle at 50% 30%, #2a1e14, #0a0705); border: 2px solid #3a8a3a; border-radius: 4px; pointer-events: auto; box-shadow: 0 2px 0 #000; }
-.st-icon.debuff { border-color: #b83030; }
-.st-ico { position: absolute; inset: 3px; background: linear-gradient(#e8ffe0, #7ad870); filter: drop-shadow(0 1px 0 #000); }
+/* aura icon (UX-11, §2.7 / §3.6): flat square, 1 px black border, typed debuff frame; size = the row's --au-lg unless it sets its own */
+.st-icon { position: relative; flex: none; width: var(--au-lg, 28px); height: var(--au-lg, 28px); background: var(--bg-1); border: 1px solid var(--bc, var(--ink)); pointer-events: auto; }
+.st-icon.debuff { --bc: var(--deb-none); }
+.st-icon[data-deb='magic'] { --bc: var(--deb-magic); }
+.st-icon[data-deb='curse'] { --bc: var(--deb-curse); }
+.st-icon[data-deb='disease'] { --bc: var(--deb-disease); }
+.st-icon[data-deb='poison'] { --bc: var(--deb-poison); }
+.st-ico { position: absolute; inset: 2px; background: linear-gradient(#e8ffe0, #7ad870); filter: drop-shadow(0 1px 0 #000); }
 .st-icon.debuff .st-ico { background: linear-gradient(#fff0e8, #ff6a5a); }
-.st-stack { position: absolute; right: 1px; top: -1px; font: 700 12px var(--font-head); color: #fff; text-shadow: var(--shade); }
-.st-time { position: absolute; left: 0; right: 0; bottom: -2px; text-align: center; font: 700 10px var(--font-head); color: #fff; text-shadow: var(--shade); }
+.st-stack { position: absolute; right: 1px; bottom: 0; font: 700 12px/1 var(--font-body); color: #fff; text-shadow: var(--sh-text); }
+/* the remaining time is written centred on the icon, only under 60 s (TIMER_SHOW_SEC) */
+.st-icon > .st-time { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 700 12px/1 var(--font-body); color: #fff; text-shadow: var(--sh-text); pointer-events: none; }
 .st-icon.expiring { animation: stblink 0.5s infinite alternate; }
+/* the +N chip of a full row (the rest are listed on hover) */
+.st-more { flex: none; width: 22px; height: var(--au-lg, 28px); display: flex; align-items: center; justify-content: center; font: 700 12px/1 var(--font-body); color: var(--text-2); background: var(--bg-1); border: 1px solid var(--ink); pointer-events: auto; }
 @keyframes stblink { from { opacity: 1; } to { opacity: 0.4; } }
 
 /* ==========================================================================

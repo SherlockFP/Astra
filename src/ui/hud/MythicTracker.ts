@@ -49,6 +49,7 @@ export class MythicTracker implements HudWidget {
   private forcesSub: HTMLElement;
   private forcesFloat: HTMLElement;
   private bossList: HTMLElement;
+  private bossSum: HTMLElement;
   private deathEl: HTMLElement;
   private stateEl: HTMLElement;
   private timerBlock: HTMLElement;
@@ -58,6 +59,11 @@ export class MythicTracker implements HudWidget {
   private lastBossKills = -1;
   private visible = false;
   private timeShown = 0;
+
+  /** True while the run is on screen (the context tracker's `run` mode). */
+  get shown(): boolean {
+    return this.visible;
+  }
 
   constructor(private ui: UI) {
     this.el = div('mt');
@@ -95,6 +101,8 @@ export class MythicTracker implements HudWidget {
     this.forcesSub = div('mt-fsub', forces);
     this.forcesFloat = div('mt-ffloat', forces);
 
+    // compact form for md / sm (context tracker): `Boss 2 / 3` replaces the list
+    this.bossSum = div('mt-bsum', this.el);
     this.bossList = div('mt-bosses', this.el);
     this.deathEl = div('mt-deaths hud-interactive', this.el);
     this.deathEl.addEventListener('mouseenter', (e) => {
@@ -233,6 +241,7 @@ export class MythicTracker implements HudWidget {
       });
     }
     this.lastBossKills = st.bossesKilled.length;
+    setText(this.bossSum, `Boss ${names.filter((n) => killed.has(n.id)).length} / ${names.length}`);
 
     // ---- deaths ----
     if (isKey) {

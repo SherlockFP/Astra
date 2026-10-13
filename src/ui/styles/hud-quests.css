@@ -1,49 +1,87 @@
 /* =====================================================================
    hud-quests.css  (OWNER: hud module)
-   Quest tracker (top right, under the minimap) and world announcements
-   (metin / rare / boss lines under the zone title). Namespaced `qt-` and `wa-`.
+   Quest pane of the context tracker (top right), the centre quest feed (kill steps, completions) and world
+   announcements (metin / rare / boss lines under the zone title). Namespaced `qt-`, `qf-` and `wa-`.
    ===================================================================== */
 
+/* quest pane: the card is the tracker's body, so the widget itself is flat (UI_REDESIGN §2.9) */
 .qt {
   display: none;
   position: relative;
-  width: 240px;
-  margin-top: 6px;
-  padding: 6px 9px 7px;
+  width: 100%;
+  padding: 0;
   cursor: pointer;
   pointer-events: auto;
-  color: var(--text);
+  color: var(--text-1);
   font-family: var(--font-body);
-  background: linear-gradient(rgba(20, 13, 7, 0.8), rgba(10, 7, 4, 0.72));
-  border: 1px solid #3a2a15;
-  border-radius: 3px;
-  box-shadow: inset 0 0 0 1px rgba(201, 162, 74, 0.22), 0 4px 12px rgba(0, 0, 0, 0.45);
 }
-.qt.on { display: block; }
-.qt:hover { filter: brightness(1.15); }
+.qt.on { display: flex; flex-direction: column; gap: 6px; }
+.qt:hover { filter: brightness(1.12); }
 .qt-head {
-  font: 700 13px var(--font-head);
-  letter-spacing: 0.04em;
-  color: var(--gold-bright, #e8c46a);
-  margin-bottom: 3px;
+  font: 700 15px/1.2 var(--font-body);
+  color: var(--gold-1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.qt-list { display: flex; flex-direction: column; gap: 2px; }
-.qt-row {
+.qt-list { display: flex; flex-direction: column; gap: 6px; }
+.qt-row { display: flex; flex-direction: column; gap: 3px; }
+.qt-row.flash { animation: qt-flash 600ms ease-out; }
+.qt-line {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  font-size: 13px;
-  line-height: 1.3;
-  color: #d9cba8;
+  font: 400 14px/1.3 var(--font-body);
+  color: var(--text-2);
 }
-.qt-row > div:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.qt-row > div:last-child { flex: none; font-variant-numeric: tabular-nums; color: #f1e6cf; font-weight: 700; }
-.qt-row.done { color: #7fd38f; opacity: 0.8; }
-.qt-row.done > div:first-child { text-decoration: line-through; }
-.qt-more { display: none; margin-top: 2px; font-size: 12px; color: var(--text-dim, #a8977a); }
+.qt-line > div:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qt-line > div:last-child { flex: none; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-1); }
+.qt-row.done .qt-line { color: var(--ok); }
+.qt-row.done .qt-line > div:first-child { text-decoration: line-through; opacity: 0.8; }
+/* 6 px kill / collect bar, filled with a stepped (PSX) transition on every rise */
+.qt-bar { position: relative; height: 6px; background: rgba(0, 0, 0, 0.55); border: 1px solid #000; overflow: hidden; }
+.qt-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--gold-2); }
+.qt-row.done .qt-fill { background: var(--ok); }
+.qt-fill.grow { animation: qt-grow 200ms steps(6) both; }
+.qt-more { display: none; font: 400 13px/1.2 var(--font-body); color: var(--text-3); }
+
+@keyframes qt-flash {
+  0% { background: rgba(232, 196, 106, 0.32); }
+  100% { background: transparent; }
+}
+@keyframes qt-grow {
+  from { width: var(--from, 0%); }
+  to { width: var(--to, 0%); }
+}
+
+/* centre quest feed: lines at 36 % of the screen height, newest at the bottom, 2.2 s each */
+.quest-feed {
+  position: absolute;
+  left: 50%;
+  top: 36%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+.qf-line {
+  padding: 3px 14px;
+  font: 700 15px/1.2 var(--font-body);
+  color: #f1e6cf;
+  text-shadow: 0 2px 0 #000;
+  white-space: nowrap;
+  background: rgba(10, 10, 12, 0.6);
+  border-left: 2px solid var(--gold-2);
+  animation: qf-in 200ms ease-out both;
+}
+.qf-line.done { color: var(--ok); border-left-color: var(--ok); }
+.qf-line.ready { color: var(--gold-1); }
+@keyframes qf-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
 
 /* world announcements: a stack under the zone title, newest at the bottom */
 .wa {

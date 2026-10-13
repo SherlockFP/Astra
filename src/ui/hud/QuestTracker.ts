@@ -1,12 +1,13 @@
 import '../styles/hud-quests.css';
 import { G } from '../../game/G';
-import { div, setClass, setText } from '../widgets/dom';
+import { div, pulse, setClass, setText } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
 import { getPinnedQuest } from './questMarks';
 
 /**
- * Quest tracker (GDD_OPENWORLD §6.1): the pinned active quest (or the first active one) with up to three open objectives.
- * Click opens the quest log. Under the minimap in the top-right column. Reads G.quests only; never throws.
+ * Quest pane of the context tracker (GDD_OPENWORLD §6.1, UI_REDESIGN §2.9): the pinned active quest (or the first active
+ * one) with up to three open objectives, each with a count and a 6 px bar. A rising count flashes the row and steps the
+ * bar (200 ms, steps(6)). Click opens the quest log. Reads G.quests only; never throws.
  * OWNER: hud module.
  */
 export class QuestTracker implements HudWidget {
@@ -17,6 +18,9 @@ export class QuestTracker implements HudWidget {
   private sig = '';
   private acc = 0;
   private dirty = true;
+  /** `have` of each shown row at the last rebuild (flash + bar step on a rise). */
+  private lastHave: number[] = [];
+  private lastQuest = '';
 
   constructor() {
     // ui-capture: the click opens the quest log and must not also reach the game as an attack (Input checks the class)
@@ -28,8 +32,8 @@ export class QuestTracker implements HudWidget {
     this.el.addEventListener('click', () => {
       try {
         G.ui.openPanel('questlog');
-      } catch {
-        /* ui not ready */
+      } catch (err) {
+        console.warn("[hud] quest log not open yet", err);
       }
     });
     G.events.on('quest:updated', () => {
@@ -37,12 +41,19 @@ export class QuestTracker implements HudWidget {
     });
     G.events.on('scene:leaving', () => {
       this.sig = '';
+      this.lastHave = [];
       setClass(this.el, 'on', false);
     });
   }
 
+  /** True while a quest is on screen (the context tracker's `quest` mode). */
+  get shown(): boolean {
+    return this.el.classList.contains('on');
+  }
+
   reset(): void {
     this.sig = '';
+    this.lastHave = [];
     setClass(this.el, 'on', false);
   }
 
@@ -79,15 +90,33 @@ export class QuestTracker implements HudWidget {
     this.sig = sig;
 
     setText(this.head, state === 'ready' ? `${def.name} · Teslim et` : def.name);
+    const sameQuest = def.id === this.lastQuest;
+    const prev = sameQuest ? this.lastHave : [];
+    this.lastQuest = def.id;
+    this.lastHave = [];
     this.list.textContent = '';
     const open = rows.filter((r) => !r.done);
-    for (const r of (open.length ? open : rows).slice(0, 3)) {
-      const line = div('qt-row' + (r.done ? ' done' : ''), this.list);
+    (open.length ? open : rows).slice(0, 3).forEach((r, i) => {
+      const row = div('qt-row' + (r.done ? ' done' : ''), this.list);
+      const line = div('qt-line', row);
       const t = div('', line);
       setText(t, r.text);
       const n = div('', line);
       setText(n, `${Math.min(r.have, r.need)}/${r.need}`);
-    }
+      const bar = div('qt-bar', row);
+      const fill = div('qt-fill', bar);
+      const to = r.need > 0 ? Math.min(1, r.have / r.need) * 100 : 0;
+      fill.style.setProperty('--to', `${to.toFixed(1)}%`);
+      fill.style.width = `${to.toFixed(1)}%`;
+      const before = prev[i];
+      if (before !== undefined && r.have > before) {
+        const from = r.need > 0 ? Math.min(1, before / r.need) * 100 : 0;
+        fill.style.setProperty('--from', `${from.toFixed(1)}%`);
+        fill.classList.add('grow');
+        pulse(row, 'flash');
+      }
+      this.lastHave.push(r.have);
+    });
     const extra = act.length - 1;
     setText(this.more, extra > 0 ? `+${extra} görev daha` : '');
     this.more.style.display = extra > 0 ? '' : 'none';

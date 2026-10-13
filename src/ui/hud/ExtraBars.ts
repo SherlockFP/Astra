@@ -31,7 +31,9 @@ export const EXTRA_BARS: readonly ExtraBarDef[] = [
 /** A slot's content: a skill id, or a consumable material id (potions go through G.combat.usePotion). */
 export type BarContent = { k: 'skill'; id: string } | { k: 'mat'; id: string };
 
-const SLOTS = 8;
+/** UI §2.6.6: each extra bar is 12 cells (a 3 x 12 block with the main row); cells 1-8 are keyed, 9-12 are mouse-only. */
+const SLOTS = 12;
+const KEYED = 8;
 const KEY_PREFIX = 'efsun.bars.';
 const FAIL_TEXT: Record<string, string> = {
   cooldown: 'Henüz hazır değil',
@@ -62,10 +64,8 @@ function sanitizeContent(v: unknown): BarContent | null {
 class XCell {
   readonly el: HTMLElement;
   private readonly ico: HTMLElement;
-  private readonly cd: HTMLElement;
-  private readonly gcd: HTMLElement;
+  private readonly sweep: HTMLElement;
   private readonly cdText: HTMLElement;
-  private readonly flash: HTMLElement;
   private readonly charges: HTMLElement;
   private shownKey = '';
   private prevCd = 0;
@@ -79,18 +79,13 @@ class XCell {
     private readonly bind: string,
     private readonly ui: UI,
   ) {
-    this.el = div('slot sz-md xslot noskill');
+    this.el = div('k-slot ab-btn xslot noskill');
     this.el.dataset.idx = String(idx);
-    div('slot-bg', this.el);
-    this.ico = iconEl(null, 'slot-ico', this.el);
-    div('slot-tint', this.el);
-    this.cd = div('slot-cd', this.el);
-    this.gcd = div('slot-gcd', this.el);
-    this.flash = div('slot-flash', this.el);
-    div('slot-frame', this.el);
-    this.cdText = div('slot-cdtext', this.el);
-    h('div', 'slot-key', this.el, bind);
-    this.charges = div('slot-charges', this.el);
+    this.ico = iconEl(null, 'k-art', this.el);
+    this.sweep = div('k-sweep', this.el);
+    this.cdText = div('k-cdnum', this.el);
+    if (bind) h('div', 'k-key-lbl', this.el, bind);
+    this.charges = div('k-count', this.el);
     this.el.classList.add('hud-interactive');
     this.el.addEventListener('mouseenter', (e) => {
       this.hover = true;
@@ -108,7 +103,6 @@ class XCell {
   setFlash(kind: 'press' | 'fail'): void {
     if (kind === 'press') {
       pulse(this.el, 'press');
-      pulse(this.flash, 'go');
     } else {
       pulse(this.el, 'fail');
       this.failUntil = performance.now() + 260;
@@ -181,28 +175,22 @@ class XCell {
     }
     setClass(this.el, 'noskill', !c || (c.k === 'skill' && !def));
     setClass(this.el, 'empty', c?.k === 'mat' && count <= 0);
-    setClass(this.charges, 'zero', c?.k === 'mat' && count <= 0);
-    if (c?.k === 'mat') {
-      setText(this.charges, String(count));
-      setDisplay(this.charges, true);
-    } else {
-      setText(this.charges, maxCharges > 1 ? String(charges) : '');
-      setDisplay(this.charges, maxCharges > 1);
-    }
+    // counts: > 1, or 0 on an empty consumable / a charge skill (`.is-zero`); exactly 1 shows nothing (UI §2.6.3)
+    const countN = c?.k === 'mat' ? count : charges;
+    const countOn = c?.k === 'mat' ? true : maxCharges > 1;
+    setText(this.charges, String(countN));
+    setClass(this.charges, 'is-zero', countN <= 0);
+    setDisplay(this.charges, countOn && (countN > 1 || countN <= 0));
 
     const onCd = rem > 0.05 && total > 0;
     // charge skills only dim while no charge is left
     const lockedByCd = onCd && (maxCharges <= 1 || charges <= 0);
-    if (lockedByCd) {
-      setStyle(this.cd, '--e', String(Math.round((1 - Math.min(1, rem / total)) * 100)));
-      setDisplay(this.cd, true, 'block');
-      setText(this.cdText, fmtCd(rem));
-      setDisplay(this.cdText, true, 'flex');
-    } else {
-      setDisplay(this.cdText, false);
-      setDisplay(this.cd, onCd, 'block');
-      if (onCd) setStyle(this.cd, '--e', String(Math.round((1 - Math.min(1, rem / total)) * 100)));
-    }
+    // kit.css: --p is the remaining fraction; the number shows only while the cooldown locks the cell
+    setClass(this.el, 'oncd', lockedByCd);
+    if (onCd) setStyle(this.el, '--p', Math.min(1, rem / total).toFixed(3));
+    setDisplay(this.sweep, onCd, 'block');
+    if (lockedByCd) setText(this.cdText, fmtCd(rem));
+    setDisplay(this.cdText, lockedByCd, 'flex');
     if (this.prevCd > 0.05 && rem <= 0.05 && c?.k === 'skill') pulse(this.el, 'ready');
     this.prevCd = rem;
 
@@ -210,14 +198,14 @@ class XCell {
     if (c?.k === 'skill' && def && p && G.skills) {
       const g = G.skills.getGcd(p);
       if (g.remaining > 0.02 && g.total > 0 && rem <= g.remaining + 0.02) {
-        setStyle(this.gcd, '--e', String(Math.round((1 - Math.min(1, g.remaining / g.total)) * 100)));
+        setStyle(this.el, '--p', Math.min(1, g.remaining / g.total).toFixed(3));
         gcdOn = true;
       }
     }
-    setDisplay(this.gcd, gcdOn, 'block');
+    setClass(this.el, 'slot-gcd', gcdOn);
+    if (gcdOn) setDisplay(this.sweep, true, 'block');
     setClass(this.el, 'nores', noRes);
     setClass(this.el, 'casting', casting);
-    setClass(this.el, 'oncd', lockedByCd);
     setClass(this.el, 'failing', ctx.now < this.failUntil);
   }
 }
@@ -247,9 +235,10 @@ class XBar {
       e.stopPropagation();
       owner.toggleLock();
     });
-    const row = div('xbar-row', this.el);
+    const row = div(def.id === 'bar2' ? 'ab-row r2' : 'ab-row r3', this.el);
     for (let i = 0; i < SLOTS; i++) {
-      const cell = new XCell(i, (def.mod === 'shift' ? 'S+' : 'C+') + (i + 1), ui);
+      const bind = i < KEYED ? (def.mod === 'shift' ? 'S' : 'C') + (i + 1) : '';
+      const cell = new XCell(i, bind, ui);
       row.appendChild(cell.el);
       this.cells.push(cell);
       owner.bindCell(this, cell);

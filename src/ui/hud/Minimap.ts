@@ -5,12 +5,28 @@ import type { Entity } from '../../entities/Entity';
 import type { Enemy } from '../../entities/Enemy';
 import type { NavGrid } from '../../world/NavGrid';
 import { RARITY_COLORS, type Rarity } from '../../types/common';
-import { div, setText, setStyle, clampN, h, uiSound } from '../widgets/dom';
+import { ICON, div, setDisplay, setText, setStyle, clampN, fmtClock, h, iconEl, uiSound } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
 import { inWorldMap, questTargetMarks, tileCentreM, waypointKnown, worldExtras } from './questMarks';
 
 const SIZE = 192;
 const R = SIZE / 2;
+
+const TONE_RED = '#ff6a5a';
+const TONE_YELLOW = '#ffe24a';
+const TONE_GREEN = '#7fe08a';
+const TONE_GREY = '#8a8a8a';
+
+/**
+ * Relative colour of a zone's level band for the player's level (§2.9): red = the band starts 3+ levels above the player,
+ * yellow = in band, green = the player is 3+ above the band top, grey = trivial (8+ above).
+ */
+function bandTone(p: number, [lo, hi]: [number, number]): string {
+  if (p <= lo - 3) return TONE_RED;
+  if (p >= hi + 8) return TONE_GREY;
+  if (p >= hi + 3) return TONE_GREEN;
+  return TONE_YELLOW;
+}
 
 /** A point on the minimap disc: screen position and distance from the centre (px). */
 interface ScreenPt {
@@ -60,6 +76,15 @@ export class Minimap implements HudWidget {
   private worldAt = -1e9;
   /** Metin spots currently standing (spot ids from world:metinChanged). */
   private metinOn = new Set<string>();
+  /** Level band of the open-world region last entered (`region:entered`); a dungeon run reads its own `levelRange`. */
+  private regionBand: [number, number] | null = null;
+  /** Finder state from `finder:queue`, and when it was entered (performance ms). */
+  private finderState = 'idle';
+  private finderSince = 0;
+  private eyeSec = -1;
+  private infoAcc = 1;
+  private readonly infoEl: HTMLElement;
+  private readonly eyeEl: HTMLButtonElement;
 
   constructor() {
     this.el = div('mm');
@@ -80,6 +105,18 @@ export class Minimap implements HudWidget {
     const ribbon = div('mm-ribbon', this.el);
     this.zoneEl = div('mm-zone', ribbon);
     this.subEl = div('mm-sub', ribbon);
+    // LFG eye at 7 o'clock on the ring (visible while the finder lists or has a proposal)
+    this.eyeEl = h('button', 'mm-eye hud-interactive', this.el);
+    this.eyeEl.type = 'button';
+    iconEl(ICON('ui-compass'), 'mm-eye-ico', this.eyeEl);
+    setDisplay(this.eyeEl, false);
+    this.eyeEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.openFinder();
+    });
+    // optional clock / FPS line (Settings.showMapInfo); an overlay, so it takes no layout height
+    this.infoEl = div('mm-info', this.el);
+    setDisplay(this.infoEl, false);
     this.canvas.addEventListener('wheel', (e) => {
       this.zoom(e.deltaY < 0 ? 1.15 : 0.87);
       e.preventDefault();
@@ -95,6 +132,14 @@ export class Minimap implements HudWidget {
     G.events.on('ui:zoneName', ({ title, subtitle }) => {
       this.zoneTitle = title;
       this.zoneSub = subtitle ?? '';
+    });
+    G.events.on('region:entered', ({ levelRange }) => {
+      this.regionBand = levelRange;
+    });
+    G.events.on('finder:queue', ({ state }) => {
+      this.finderState = state;
+      this.finderSince = performance.now();
+      this.eyeSec = -1;
     });
     G.events.on('scene:leaving', () => {
       this.nav = null;
@@ -215,6 +260,64 @@ export class Minimap implements HudWidget {
     this.worldMarks = out;
   }
 
+  /** Level band of the zone (`Sv. 5–10`), or null: the dungeon's `levelRange` in a run, the last region's band outdoors. */
+  private bandOf(ctx: HudCtx): [number, number] | null {
+    if (ctx.mode === 'dungeon') {
+      const id = G.mplus?.state?.dungeonId;
+      return (id ? getDungeon(id)?.levelRange : undefined) ?? null;
+    }
+    return ctx.mode === 'town' ? null : this.regionBand;
+  }
+
+  /** Ribbon second line: the level band in its relative colour, or the zone subtitle when there is no band. */
+  private updateBand(ctx: HudCtx, sub: string): void {
+    const band = this.bandOf(ctx);
+    if (!band) {
+      setText(this.subEl, sub);
+      setStyle(this.subEl, 'color', '');
+      return;
+    }
+    setText(this.subEl, `Sv. ${band[0]}–${band[1]}`);
+    setStyle(this.subEl, 'color', bandTone(G.character?.level ?? 1, band));
+  }
+
+  private updateEye(): void {
+    const on = this.finderState === 'listing' || this.finderState === 'proposal';
+    setDisplay(this.eyeEl, on);
+    if (!on) return;
+    const sec = Math.floor((performance.now() - this.finderSince) / 1000);
+    if (sec === this.eyeSec) return;
+    this.eyeSec = sec;
+    const what = this.finderState === 'proposal' ? 'teklif var' : `aranıyor ${fmtClock(sec)}`;
+    this.eyeEl.title = `Zindan Bulucu: ${what}`;
+  }
+
+  private openFinder(): void {
+    uiSound('ui_click', 0.5);
+    try {
+      G.ui.openPanel('finder');
+    } catch (err) {
+      console.warn("[hud] minimap: finder panel not open (registered by UX-40)", err);
+    }
+  }
+
+  /** Clock, plus `FPS | MS` while showFps is on (the counting of the removed FpsCounter), refreshed at 4 Hz. */
+  private updateInfo(ctx: HudCtx): void {
+    const on = !!G.settings?.data.showMapInfo;
+    setDisplay(this.infoEl, on);
+    if (!on) return;
+    this.infoAcc += ctx.dt;
+    if (this.infoAcc < 0.25) return;
+    this.infoAcc = 0;
+    let text = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    if (G.settings?.data.showFps) {
+      const fps = Math.round(G.engine.fps);
+      const ms = fps > 0 ? Math.round(1000 / fps) : '--';
+      text += ` · ${fps} FPS | ${ms} MS`;
+    }
+    setText(this.infoEl, text);
+  }
+
   update(ctx: HudCtx): void {
     const ctx2 = this.ctx;
     const w = ctx.world;
@@ -234,7 +337,9 @@ export class Minimap implements HudWidget {
       sub = '';
     }
     setText(this.zoneEl, title);
-    setText(this.subEl, sub);
+    this.updateBand(ctx, sub);
+    this.updateEye();
+    this.updateInfo(ctx);
     if (!ctx2) return;
     ctx2.clearRect(0, 0, SIZE, SIZE);
     ctx2.imageSmoothingEnabled = false;

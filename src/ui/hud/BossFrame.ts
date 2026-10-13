@@ -1,7 +1,8 @@
 import { G } from '../../game/G';
 import type { Enemy } from '../../entities/Enemy';
 import type { EntityId } from '../../types/common';
-import { ICON, div, esc, fmtClock, fmtCompact, iconEl, pulse, setClass, setDisplay, setStyle, setText } from '../widgets/dom';
+import { ICON, div, esc, fmtClock, iconEl, pulse, setClass, setDisplay, setStyle, setText } from '../widgets/dom';
+import { fmtHealth } from '../widgets/numFormat';
 import { CastBarEl } from '../widgets/CastBar';
 import { bossEnergyView } from '../../ai/bossNet';
 import { Bar } from './PlayerFrame';
@@ -39,9 +40,6 @@ export class BossFrame implements HudWidget {
 
   constructor() {
     this.el = div('bf');
-    const wing = div('bf-wing', this.el);
-    div('bf-cap l', wing);
-    div('bf-cap r', wing);
     const head = div('bf-head', this.el);
     iconEl(ICON('ui-boss'), 'bf-skull', head);
     const names = div('bf-names', head);
@@ -50,6 +48,7 @@ export class BossFrame implements HudWidget {
     this.phaseEl = div('bf-phase', head);
     const barWrap = div('bf-barwrap', this.el);
     this.hp = new Bar('hp bf-hp', barWrap);
+    this.hp.el.dataset.kind = 'hostile';
     this.notches = div('bf-notches', barWrap);
     this.pctEl = div('bf-pct', barWrap);
     this.poise = div('bf-poise', barWrap);
@@ -135,7 +134,7 @@ export class BossFrame implements HudWidget {
     setText(this.titleEl, def?.title ?? '');
     setText(this.phaseEl, this.phase ? this.phaseLabel(this.phase) : '');
     const frac = boss.maxHp > 0 ? boss.hp / boss.maxHp : 0;
-    this.hp.set(frac, ctx.dt, `${fmtCompact(Math.max(0, boss.hp))} / ${fmtCompact(boss.maxHp)}`);
+    this.hp.set(frac, ctx.dt, `${fmtHealth(Math.max(0, boss.hp))} / ${fmtHealth(boss.maxHp)}`);
     setText(this.pctEl, `${Math.max(0, frac * 100).toFixed(frac < 0.1 ? 1 : 0).replace('.', ',')}%`);
     setClass(this.el, 'defeated', defeated);
     this.updatePoise(boss);

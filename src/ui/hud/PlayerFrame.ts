@@ -1,120 +1,134 @@
 import { G } from '../../game/G';
 import { CLASSES } from '../../data/classes';
-import { getSpec } from '../../data/specs';
-import { ROLE_TR } from '../../combat/specs';
-import type { ClassId } from '../../types/common';
-import type { RoleId, SpecId } from '../../types/v2';
-import { LEVEL_CAP } from '../../types/character';
-import type { UI } from '../UI';
-import { ICON, approach, clamp01, div, fmtCompact, fmtNum, iconEl, pulse, setClass, setDisplay, setIconUrl, setStyle, setText } from '../widgets/dom';
-import { StatusRow } from '../widgets/StatusRow';
-import { CastBarEl } from '../widgets/CastBar';
-import type { HudCtx, HudWidget } from './types';
 import { getSkill } from '../../data/skills';
 import { COMBAT_FEEL } from '../../combat/feel';
 import { LOCKOUT_SCHOOLS } from '../../combat/castRules';
+import type { ClassId } from '../../types/common';
+import { LEVEL_CAP } from '../../types/character';
 import type { CastState } from '../../entities/Actor';
 import type { Player } from '../../entities/Player';
+import type { UI } from '../UI';
+import { ICON, approach, clamp01, div, fmtNum, iconEl, pulse, setClass, setDisplay, setIconUrl, setStyle, setText } from '../widgets/dom';
+import { CLASS_COLORS, classColor } from '../widgets/classColors';
+import { fmtHealth } from '../widgets/numFormat';
+import { StatusRow } from '../widgets/StatusRow';
+import { CastBarEl } from '../widgets/CastBar';
+import type { HudCtx, HudWidget } from './types';
 
+export { classColor };
+
+/** Class names and colours. The colours are the classColors.ts table (UI_REDESIGN §3.2), the single source. */
 export const CLASS_META: Record<ClassId, { name: string; color: string }> = {
-  knight: { name: 'Şövalye', color: '#7aa8ff' },
-  barbarian: { name: 'Barbar', color: '#ef6b3c' },
-  mage: { name: 'Büyücü', color: '#a58aff' },
-  rogue: { name: 'Haydut', color: '#8bd96a' },
-  monk: { name: 'Keşiş', color: '#4fd1c5' },
-  archer: { name: 'Okçu', color: '#d9a441' },
-  paladin: { name: 'Paladin', color: '#fff0b8' },
-  necromancer: { name: 'Nekromant', color: '#9ee07a' },
-  warlock: { name: 'Warlock', color: '#c05ae0' },
-  demonhunter: { name: 'İblis Avcısı', color: '#a330c9' }, // CM1 stub (WoW class colour)
-  evoker: { name: 'Ejderhasoy', color: '#33937f' },        // CM1 stub (WoW class colour)
+  knight: { name: 'Şövalye', color: CLASS_COLORS.knight },
+  barbarian: { name: 'Barbar', color: CLASS_COLORS.barbarian },
+  mage: { name: 'Büyücü', color: CLASS_COLORS.mage },
+  rogue: { name: 'Haydut', color: CLASS_COLORS.rogue },
+  monk: { name: 'Keşiş', color: CLASS_COLORS.monk },
+  archer: { name: 'Okçu', color: CLASS_COLORS.archer },
+  paladin: { name: 'Paladin', color: CLASS_COLORS.paladin },
+  necromancer: { name: 'Nekromant', color: CLASS_COLORS.necromancer },
+  warlock: { name: 'Warlock', color: CLASS_COLORS.warlock },
+  demonhunter: { name: 'İblis Avcısı', color: CLASS_COLORS.demonhunter },
+  evoker: { name: 'Ejderhasoy', color: CLASS_COLORS.evoker },
 };
 
-export function classColor(id: ClassId | undefined): string {
-  if (!id) return '#e8c46a';
-  return CLASSES[id]?.color || CLASS_META[id]?.color || '#e8c46a';
-}
 export function classNameTr(id: ClassId | undefined): string {
   if (!id) return '';
   return CLASSES[id]?.name || CLASS_META[id]?.name || id;
 }
 
-/** A thin game bar: dark inset, glossy fill, damage-lag ghost underlay and an optional centred label. */
+/** Ghost trail: a lost share holds this long (s), then drains to the fill at GHOST_LAMBDA (UI_REDESIGN §2.7). */
+const GHOST_HOLD = 0.4;
+const GHOST_LAMBDA = 6;
+
+/**
+ * A flat ElvUI bar (kit `.k-bar`): a damage-lag ghost behind the fill, a text row on top. Fill and ghost widths are
+ * whole px (`--w` / `--gw` set on the bar, read by the kit); the bar width is cached so the frame reads layout rarely.
+ */
 export class Bar {
   readonly el: HTMLElement;
   readonly fill: HTMLElement;
   readonly ghost: HTMLElement;
+  /** The `.k-text` row: a centred or left/right text (set via `set(…, text)` or appended spans). */
   readonly label: HTMLElement;
   private v = 1;
   private g = 1;
-  private lastTarget = 1;
+  private last = 1;
+  private hold = 0;
+  private w = 0;
+  private wAge = 0;
 
   constructor(cls: string, parent?: HTMLElement) {
-    this.el = div('bar ' + cls, parent);
-    this.ghost = div('bar-ghost', this.el);
-    this.fill = div('bar-fill', this.el);
-    div('bar-gloss', this.el);
-    this.label = div('bar-label', this.el);
+    this.el = div('k-bar ' + cls, parent);
+    this.ghost = div('k-ghost', this.el);
+    this.fill = div('k-fill', this.el);
+    this.label = div('k-text', this.el);
   }
 
   set(frac: number, dt: number, text?: string): void {
     const t = clamp01(frac);
-    // fill is exact; ghost trails behind when losing
-    this.v = t;
-    if (this.g < t) this.g = t;
-    else this.g = approach(this.g, t, 1.8, dt);
+    if (t < this.last - 0.0005) this.hold = GHOST_HOLD;
+    if (t >= this.g) this.g = t;
+    else if (this.hold > 0) this.hold = Math.max(0, this.hold - dt);
+    else this.g = approach(this.g, t, GHOST_LAMBDA, dt);
     if (Math.abs(this.g - t) < 0.002) this.g = t;
-    setStyle(this.fill, 'width', (this.v * 100).toFixed(2) + '%');
-    setStyle(this.ghost, 'width', (this.g * 100).toFixed(2) + '%');
+    if (t < this.last - 0.02) pulse(this.el, 'hit');
+    this.last = t;
+    this.v = t;
+    if (this.w <= 0 || this.wAge-- <= 0) {
+      this.w = this.el.clientWidth;
+      this.wAge = 30;
+    }
+    setStyle(this.el, '--w', Math.round(this.v * this.w) + 'px');
+    setStyle(this.el, '--gw', Math.round(this.g * this.w) + 'px');
     if (text !== undefined) setText(this.label, text);
-    if (t < this.lastTarget - 0.02) pulse(this.el, 'hit');
-    this.lastTarget = t;
   }
 }
 
-/** Role colours of the spec chip (GDD_TALENTS §5.7: tank blue, healer green, DPS red). */
-const ROLE_COLOR: Record<RoleId, string> = { tank: '#5aa8ff', healer: '#6fdc8c', dps: '#e0604e' };
+/** Cast host of the player frame: the overlay over the power strip. PlayerCastBar moves itself into it (see its update). */
+let playerCastHost: HTMLElement | null = null;
 
-/** Top-left player unit frame: class portrait, name, level, spec chip, HP and resource bars. */
+/**
+ * Player unit frame (UI_REDESIGN §2.7, ElvUI): one flat health bar in the class colour with `{level} {name}` left and
+ * `{hp} | {pct}%` right, the power strip under it (replaced by the cast bar while casting), buffs above the frame,
+ * pips above the buffs, consumables and typed debuffs below. Placed by its own CSS (`.uf-player`, centre cluster).
+ */
 export class PlayerFrame implements HudWidget {
   readonly el: HTMLElement;
-  private portrait: HTMLElement;
-  private portraitIco: HTMLElement;
-  private lvl: HTMLElement;
-  private nameEl: HTMLElement;
-  private clsEl: HTMLElement;
-  /** Spec chip under the name ("Ateş Büyücüsü · Hasarcı"); hidden until the level-10 spec choice. */
-  private specEl: HTMLElement;
-  private specKey: SpecId | null | undefined = undefined;
-  private specDirty = true;
   private hp: Bar;
   private res: Bar;
+  private nameT: HTMLElement;
+  private crownEl: HTMLElement;
+  private hpVal: HTMLElement;
   private classId: ClassId | null = null;
   private resType = '';
   readonly buffs: StatusRow;
   readonly debuffs: StatusRow;
-  /** UX-01 host slots, not attached anywhere yet: the consumables row (UX-10) and the combo pips (UX-11). */
+  /** UX-01 host slots: the consumables row (UX-10 ActionBar / FlaskRow mount here) and the combo / pip row above the buffs. */
   readonly consHost = div('uf-cons');
   readonly pipsHost = div('uf-pips');
 
   constructor(ui: UI) {
-    this.el = div('pf');
-    this.portrait = div('pf-portrait', this.el);
-    this.portraitIco = iconEl(null, 'pf-pico', this.portrait);
-    this.lvl = div('pf-lvl', this.portrait);
-    const body = div('pf-body', this.el);
-    const top = div('pf-top', body);
-    this.nameEl = div('pf-name', top);
-    this.clsEl = div('pf-cls', top);
-    this.specEl = div('pf-spec', body);
-    setDisplay(this.specEl, false);
-    this.hp = new Bar('hp pf-hp', body);
-    this.res = new Bar('res pf-res', body);
-    this.buffs = new StatusRow(ui, 'buff', 14, 'buffs');
-    this.debuffs = new StatusRow(ui, 'debuff', 10, 'debuffs');
-    G.events.on('spec:changed', () => {
-      this.specDirty = true;
-    });
+    this.el = div('pf uf-player');
+    const top = div('uf-top', this.el);
+    this.buffs = new StatusRow(ui, 'buff', 8, 'uf-auras pf-auras', true);
+    top.appendChild(this.buffs.el);
+    top.appendChild(this.pipsHost);
+    const main = div('uf-main', this.el);
+    const bars = div('uf-bars', main);
+    this.hp = new Bar('uf-hp', bars);
+    this.hp.el.dataset.kind = 'class';
+    this.nameT = div('uf-name', this.hp.label);
+    this.crownEl = iconEl(ICON('ui-crown'), 'uf-crown', this.hp.label);
+    setDisplay(this.crownEl, false);
+    this.hpVal = div('uf-val', this.hp.label);
+    const stripWrap = div('uf-stripwrap', bars);
+    this.res = new Bar('uf-strip', stripWrap);
+    this.res.el.dataset.kind = 'mana';
+    playerCastHost = div('uf-cast', stripWrap);
+    this.el.appendChild(this.consHost);
+    this.debuffs = new StatusRow(ui, 'debuff', 8, 'uf-debuffs pf-debuffs', true);
+    this.el.appendChild(this.debuffs.el);
   }
 
   update(ctx: HudCtx): void {
@@ -123,19 +137,25 @@ export class PlayerFrame implements HudWidget {
     if (!p) return;
     if (this.classId !== p.classId) {
       this.classId = p.classId;
-      setIconUrl(this.portraitIco, ICON('class-' + p.classId));
-      this.el.style.setProperty('--cc', classColor(p.classId));
-      setText(this.clsEl, classNameTr(p.classId));
+      setStyle(this.hp.el, '--cls', classColor(p.classId));
     }
-    this.updateSpec(ctx);
-    setText(this.nameEl, p.name);
-    setText(this.lvl, String(p.level));
-    this.hp.set(p.maxHp > 0 ? p.hp / p.maxHp : 0, ctx.dt, `${fmtCompact(Math.max(0, p.hp))} / ${fmtCompact(p.maxHp)}`);
+    const dead = p.isDead;
+    const pct = p.maxHp > 0 ? clamp01(p.hp / p.maxHp) : 0;
+    setClass(this.hp.el, 'is-low', !dead && pct < 0.3);
+    setClass(this.hp.el, 'is-dead', dead);
+    setText(this.nameT, dead ? '' : `${p.level} ${p.name}`);
+    const leader = !!G.net?.isOnline && !!G.net.peerBySlot(p.slot)?.isHost;
+    setDisplay(this.crownEl, leader && !dead);
+    const pc = p.hp > 0 ? Math.max(1, Math.ceil(pct * 100)) : 0;
+    setText(this.hpVal, dead ? 'Öldü' : `${fmtHealth(Math.max(0, p.hp))} | ${pc}%`);
+    this.hp.set(pct, ctx.dt);
     if (this.resType !== p.resourceType) {
       this.resType = p.resourceType;
       this.res.el.dataset.kind = p.resourceType;
     }
-    this.res.set(p.maxResource > 0 ? p.resource / p.maxResource : 0, ctx.dt, `${fmtCompact(Math.max(0, p.resource))} / ${fmtCompact(p.maxResource)}`);
+    const rv = Math.max(0, p.resource);
+    const rf = p.maxResource > 0 ? p.resource / p.maxResource : 0;
+    this.res.set(rf, ctx.dt, p.resourceType === 'mana' ? fmtHealth(rv) : String(Math.round(rv)));
     this.buffs.update(p);
     this.debuffs.update(p);
   }
@@ -143,23 +163,6 @@ export class PlayerFrame implements HudWidget {
   reset(): void {
     this.buffs.clear();
     this.debuffs.clear();
-  }
-
-  /** Re-renders the spec chip when the spec changed (`spec:changed`) or on the first frame; cheap otherwise. */
-  private updateSpec(ctx: HudCtx): void {
-    const key: SpecId | null = ctx.character?.save.spec ?? null;
-    if (!this.specDirty && key === this.specKey) return;
-    this.specDirty = false;
-    this.specKey = key;
-    const def = getSpec(key);
-    if (!def) {
-      setDisplay(this.specEl, false);
-      return;
-    }
-    const role = ROLE_TR[def.role];
-    setText(this.specEl, role ? `${def.name} · ${role}` : def.name);
-    this.specEl.style.setProperty('--rc', ROLE_COLOR[def.role] ?? '#e8c46a');
-    setDisplay(this.specEl, true);
   }
 }
 
@@ -284,6 +287,8 @@ export class PlayerCastBar implements HudWidget {
   }
 
   update(ctx: HudCtx): void {
+    // UX-11: the bar lives in the player frame's power-strip overlay (index.ts mounted it in .hud-bc); moved once, here
+    if (playerCastHost && this.el.parentElement !== playerCastHost) playerCastHost.appendChild(this.el);
     const p = ctx.player;
     const c = p?.cast;
     const wt = ctx.world?.time ?? 0;

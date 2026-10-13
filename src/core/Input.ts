@@ -11,7 +11,7 @@
 export type InputAction =
   | 'moveForward' | 'moveBack' | 'moveLeft' | 'moveRight' | 'jump' | 'dodge' | 'walk'
   | 'skill_lmb' | 'skill_rmb' | 'skill_q' | 'skill_e' | 'skill_r' | 'skill_s1' | 'skill_s2' | 'skill_s3'
-  | 'potionHp' | 'potionMp' | 'interact' | 'targetNext' | 'freeCursor' | 'toggleLock'
+  | 'potionHp' | 'potionMp' | 'potionCleanse' | 'interact' | 'targetNext' | 'freeCursor' | 'toggleLock'
   | 'inventory' | 'character' | 'talents' | 'skills' | 'map' | 'party' | 'chat' | 'menu' | 'mplus' | 'quests'
   | 'zoomIn' | 'zoomOut' | 'screenshot' | 'revive'
   // GDD_V2 §0.4 (WP1 contracts): appended, never renamed
@@ -24,7 +24,9 @@ export type InputAction =
   // CORE_MECHANICS §10.1 key resolution + UI_REDESIGN Appendix A + COMBAT_WOW CW-01 (appended)
   | 'skill_s4' | 'groupFinder' | 'guide' | 'focusTarget' | 'targetPrev'
   // CONTROLS_WOW §2.1 / §3.2 (appended): WoW auto-attack toggle and keyboard turning (default unbound in Aksiyon)
-  | 'autoAttack' | 'turnLeft' | 'turnRight';
+  | 'autoAttack' | 'turnLeft' | 'turnRight'
+  // UI_REDESIGN §2.6.5 (UX-10, appended): Panzehir İksiri (Combat.usePotion('cleanse')) on the consumable strip
+  | 'potionCleanse';
 
 /** CONTROLS_WOW D1: the control scheme. 'wow' is the default; 'aksiyon' is the pre-WoW layout. */
 export type ControlScheme = 'wow' | 'aksiyon';
@@ -57,6 +59,8 @@ export const DEFAULT_BINDINGS: Record<InputAction, string[]> = {
   skill_s3: ['Digit3'],
   potionHp: ['Digit4'],
   potionMp: ['Digit5'],
+  // UI_REDESIGN §2.6.5 (UX-10): Panzehir cell, after the two potions on the consumable strip
+  potionCleanse: ['Backslash'],
   interact: ['KeyF'],
   targetNext: ['Tab'],
   freeCursor: ['AltLeft', 'AltRight'],
@@ -170,7 +174,7 @@ export function defaultBindings(s: ControlScheme): Record<InputAction, string[]>
 export const ACTION_NAMES_TR: Record<InputAction, string> = {
   moveForward: 'İleri', moveBack: 'Geri', moveLeft: 'Sol', moveRight: 'Sağ', jump: 'Zıpla', dodge: 'Takla / Kaçın', walk: 'Yürü',
   skill_lmb: 'Temel Saldırı', skill_rmb: 'Yetenek (Sağ Tık)', skill_q: 'Yetenek Q', skill_e: 'Yetenek E', skill_r: 'Yetenek R',
-  skill_s1: 'Yetenek 1', skill_s2: 'Yetenek 2', skill_s3: 'Yetenek 3', potionHp: 'Can İksiri', potionMp: 'Mana İksiri',
+  skill_s1: 'Yetenek 1', skill_s2: 'Yetenek 2', skill_s3: 'Yetenek 3', potionHp: 'Can İksiri', potionMp: 'Mana İksiri', potionCleanse: 'Panzehir İksiri',
   interact: 'Etkileşim', targetNext: 'Sonraki Hedef', freeCursor: 'İmleci Serbest Bırak', toggleLock: 'Kamera Kilidi',
   inventory: 'Envanter', character: 'Karakter', talents: 'Yetenek Ağacı', skills: 'Yetenek Kitabı', map: 'Harita', party: 'Grup / Sunucular',
   chat: 'Sohbet', menu: 'Menü', mplus: 'Mitik+ Bilgisi', quests: 'Görev Defteri', zoomIn: 'Yakınlaştır', zoomOut: 'Uzaklaştır', screenshot: 'Ekran Görüntüsü', revive: 'Dirilt (basılı tut)',

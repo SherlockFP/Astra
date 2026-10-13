@@ -2,7 +2,7 @@ import type { Actor } from '../../entities/Actor';
 import type { ActiveStatus } from '../../combat/StatusEffects';
 import { G } from '../../game/G';
 import type { UI } from '../UI';
-import { div, fmtCd, iconEl, setClass, setText } from './dom';
+import { div, esc, fmtCd, iconEl, setClass, setText } from './dom';
 import { isStatusHidden, statusView, type StatusView } from './status';
 import { statusTooltipHTML } from './tooltips';
 
@@ -20,17 +20,30 @@ interface Item {
 
 /** Below this share of its duration a status is in its refresh window (CW-16: own debuffs pulse, timer turns gold). */
 export const REFRESH_FRAC = 0.3;
+/** UI_REDESIGN §2.7: the remaining time is written on the icon only under this many seconds. */
+export const TIMER_SHOW_SEC = 60;
+/** Typed debuff frame (§2.7 `--deb-*`): the debuff's school picks the border; anything else is the plain red frame. */
+const DEBUFF_TYPE: Record<string, string> = {
+  curse: 'curse', venom: 'poison', poison: 'poison', bleed: 'disease',
+  burn: 'magic', chill: 'magic', freeze: 'magic', shock: 'magic', slow: 'magic',
+};
+
+/** Target aura rows (CW-16): `own` = the local player's debuffs only, `others` = everything else (other debuffs, enemy buffs). */
+export type AuraScope = 'own' | 'others';
 
 /**
  * A reconciled row of status icons (buffs/debuffs) for an actor with stack counts, durations and tooltips.
  * `aura` (target frame, CW-16): own debuffs (sourceId = local player) sort first and get class `own`, other debuffs get `other`
  * (dimmed), timers take threshold colours (`tm-warn` in the refresh window, `tm-crit` under 3 s) and own debuffs in the
- * refresh window get class `refresh` (pulse).
+ * refresh window get class `refresh` (pulse). Without `aura` the row sorts soonest-expiring first, permanent last (§2.7).
+ * Beyond `max` icons a `+N` chip lists the rest on hover.
  */
 export class StatusRow {
   readonly el: HTMLElement;
   private items = new Map<string, Item>();
   private frame = 0;
+  private more: HTMLElement | null = null;
+  private moreNames = '';
 
   constructor(
     private ui: UI,
@@ -39,29 +52,41 @@ export class StatusRow {
     cls = '',
     private showTime = true,
     private aura = false,
+    private scope?: AuraScope,
   ) {
     this.el = div('status-row ' + cls);
   }
 
   update(actor: Actor | null): void {
     this.frame++;
+    let extra: string[] = [];
     if (actor) {
       let shown = 0;
       const me = G.player?.id;
       const list = actor.statuses.list().filter((s) => !isStatusHidden(s.id));
-      // longest first, permanent first; aura rows: the local player's own debuffs first
       list.sort((a, b) => {
         if (this.aura) {
           const oa = this.isOwnDebuff(a, me) ? 1 : 0;
           const ob = this.isOwnDebuff(b, me) ? 1 : 0;
           if (oa !== ob) return ob - oa;
         }
-        return (b.duration >= 9000 ? 1e9 : b.remaining) - (a.duration >= 9000 ? 1e9 : a.remaining);
+        const la = a.duration >= 9000 ? Infinity : a.remaining;
+        const lb = b.duration >= 9000 ? Infinity : b.remaining;
+        if (la === lb) return 0;
+        // aura rows: longest first; other rows: soonest first, permanent last
+        if (this.aura) return la > lb ? -1 : 1;
+        return la < lb ? -1 : 1;
       });
       for (const s of list) {
         const view = statusView(s.id);
         if (this.filter !== 'all' && view.kind !== this.filter) continue;
-        if (shown >= this.max) break;
+        const own = this.isOwnDebuff(s, me);
+        if (this.scope === 'own' && !own) continue;
+        if (this.scope === 'others' && own) continue;
+        if (shown >= this.max) {
+          extra.push(view.name);
+          continue;
+        }
         shown++;
         let it = this.items.get(s.id);
         if (!it) {
@@ -70,15 +95,18 @@ export class StatusRow {
           this.el.appendChild(it.el);
         }
         it.seen = this.frame;
-        // aura rows keep the sorted order on screen (icons that already exist move too)
-        if (this.aura && this.el.children[shown - 1] !== it.el) this.el.insertBefore(it.el, this.el.children[shown - 1] ?? null);
+        // rows keep the sorted order on screen (icons that already exist move too)
+        if (this.el.children[shown - 1] !== it.el) this.el.insertBefore(it.el, this.el.children[shown - 1] ?? null);
         it.rem = s.duration >= 9000 ? Infinity : s.remaining;
         it.stacks = s.stacks;
         setText(it.stack, s.stacks > 1 ? String(s.stacks) : '');
         if (this.showTime) {
-          if (it.rem === Infinity) setText(it.time, '');
-          else setText(it.time, fmtCd(it.rem));
+          setText(it.time, it.rem !== Infinity && it.rem < TIMER_SHOW_SEC ? fmtCd(it.rem) : '');
           setClass(it.el, 'expiring', it.rem < 3);
+        }
+        if (view.kind === 'debuff') {
+          const deb = DEBUFF_TYPE[s.id] ?? 'none';
+          if (it.el.dataset.deb !== deb) it.el.dataset.deb = deb;
         }
         if (this.aura) this.paintAura(it, s, view.kind === 'debuff', me);
       }
@@ -90,6 +118,31 @@ export class StatusRow {
         if (this.ui) this.ui.hideTooltipIf(it.el);
       }
     }
+    this.updateMore(extra);
+  }
+
+  /** The `+N` chip: present only while icons are hidden by `max`; always the last child of the row. */
+  private updateMore(extra: string[]): void {
+    if (extra.length === 0) {
+      if (this.more) {
+        this.more.remove();
+        this.more = null;
+      }
+      return;
+    }
+    if (!this.more) {
+      const chip = div('st-more hud-interactive');
+      this.more = chip;
+      chip.addEventListener('mouseenter', (e) => {
+        if (this.ui) this.ui.showTooltipFor(chip, `<div class="st"><div class="st-name">Diğer</div><div class="st-kind">${esc(this.moreNames)}</div></div>`, e.clientX, e.clientY);
+      });
+      chip.addEventListener('mouseleave', () => {
+        if (this.ui) this.ui.hideTooltipIf(chip);
+      });
+    }
+    this.moreNames = extra.join(', ');
+    setText(this.more, `+${extra.length}`);
+    if (this.more.parentNode !== this.el || this.el.lastElementChild !== this.more) this.el.appendChild(this.more);
   }
 
   private isOwnDebuff(s: ActiveStatus, me: number | undefined): boolean {
@@ -126,6 +179,9 @@ export class StatusRow {
   clear(): void {
     for (const it of this.items.values()) it.el.remove();
     this.items.clear();
+    if (this.more) {
+      this.more.remove();
+      this.more = null;
+    }
   }
 }
-

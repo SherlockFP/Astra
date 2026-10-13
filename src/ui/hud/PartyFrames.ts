@@ -3,38 +3,47 @@ import { PARTY_ID_BASE } from '../../types/common';
 import type { Player } from '../../entities/Player';
 import type { EntityId } from '../../types/common';
 import type { UI } from '../UI';
-import { ICON, div, esc, fmtCompact, iconEl, setClass, setDisplay, setIconUrl, setText } from '../widgets/dom';
+import { getSpec } from '../../data/specs';
+import type { RoleId } from '../../types/v2';
+import { ICON, div, esc, iconEl, setClass, setDisplay, setIconUrl, setStyle, setText } from '../widgets/dom';
+import { fmtHealth } from '../widgets/numFormat';
 import { StatusRow } from '../widgets/StatusRow';
 import { Bar, classColor, classNameTr } from './PlayerFrame';
 import type { HudCtx, HudWidget } from './types';
 
+/** Role icons of the party frame (§2.7): tank shield, healer cross, dps sword (existing icons stand in for the role glyphs). */
+const ROLE_ICON: Record<RoleId, string> = { tank: 'item-shield-round', healer: 'skill-heal', dps: 'item-sword' };
+
+/** One party member: a 34 px flat frame (class-colour health bar, 5 px power strip, role icon, leader crown, targeted outline) with its debuffs to the right. */
 class PartyFrame {
   readonly el: HTMLElement;
-  private ico: HTMLElement;
-  private lvl: HTMLElement;
-  private nameEl: HTMLElement;
-  private crown: HTMLElement;
-  private stateEl: HTMLElement;
+  private frame: HTMLElement;
   private hp: Bar;
   private res: Bar;
+  private roleIco: HTMLElement;
+  private crown: HTMLElement;
+  private nameT: HTMLElement;
+  private valT: HTMLElement;
   private debuffs: StatusRow;
   private classId = '';
+  private role: RoleId | null | undefined = undefined;
   seen = 0;
 
   constructor(readonly id: EntityId, ui: UI) {
     this.el = div('pt hud-interactive');
-    const port = div('pt-portrait', this.el);
-    this.ico = iconEl(null, 'pt-pico', port);
-    this.lvl = div('pt-lvl', port);
-    const body = div('pt-body', this.el);
-    const top = div('pt-top', body);
-    this.crown = iconEl(ICON('ui-crown'), 'pt-crown', top);
-    this.nameEl = div('pt-name', top);
-    this.stateEl = div('pt-state', top);
-    this.hp = new Bar('hp pt-hp', body);
-    this.res = new Bar('res pt-res', body);
-    this.debuffs = new StatusRow(ui, 'debuff', 5, 'pt-debuffs');
-    body.appendChild(this.debuffs.el);
+    this.frame = div('pt-frame', this.el);
+    this.hp = new Bar('uf-hp pt-hp', this.frame);
+    this.hp.el.dataset.kind = 'class';
+    const nameWrap = div('pt-name', this.hp.label);
+    this.roleIco = iconEl(null, 'pt-role', nameWrap);
+    setDisplay(this.roleIco, false);
+    this.crown = iconEl(ICON('ui-crown'), 'pt-crown', nameWrap);
+    setDisplay(this.crown, false);
+    this.nameT = div('pt-name-t', nameWrap);
+    this.valT = div('pt-val', this.hp.label);
+    this.res =new Bar('uf-strip pt-res', this.frame);
+    this.debuffs = new StatusRow(ui, 'debuff', 4, 'pt-debuffs');
+    this.el.appendChild(this.debuffs.el);
     div('pt-deadmark', this.el);
     this.el.addEventListener('mouseenter', (e) => {
       const p = G.world?.get(this.id) as Player | undefined;
@@ -45,20 +54,28 @@ class PartyFrame {
     this.el.addEventListener('mouseleave', () => ui.hideTooltipIf(this.el));
   }
 
-  update(p: Player, dt: number): void {
+  update(p: Player, dt: number, targeted: boolean): void {
     if (this.classId !== p.classId) {
       this.classId = p.classId;
-      setIconUrl(this.ico, ICON('class-' + p.classId));
-      this.el.style.setProperty('--cc', classColor(p.classId));
+      setStyle(this.hp.el, '--cls', classColor(p.classId));
     }
-    setText(this.nameEl, p.name);
-    setText(this.lvl, String(p.level));
+    const role = getSpec(p.spec)?.role ?? null;
+    if (this.role !== role) {
+      this.role = role;
+      setIconUrl(this.roleIco, role ? ICON(ROLE_ICON[role]) : null);
+      setDisplay(this.roleIco, !!role);
+    }
+    setText(this.nameT, p.name);
     const dead = p.isDead;
     setClass(this.el, 'dead', dead);
-    setText(this.stateEl, dead ? 'Öldü' : '');
+    setClass(this.frame, 'targeted', targeted);
+    setClass(this.hp.el, 'is-dead', dead);
     const peer = G.net?.peerBySlot(p.slot);
     setDisplay(this.crown, !!peer?.isHost && G.net.isOnline);
-    this.hp.set(p.maxHp > 0 ? p.hp / p.maxHp : 0, dt, dead ? '' : `${fmtCompact(Math.max(0, p.hp))}`);
+    const pct = p.maxHp > 0 ? Math.max(0, Math.min(1, p.hp / p.maxHp)) : 0;
+    setClass(this.hp.el, 'is-low', !dead && pct < 0.3);
+    setText(this.valT, dead ? 'Öldü' : fmtHealth(Math.max(0, p.hp)));
+    this.hp.set(pct, dt);
     this.res.el.dataset.kind = p.resourceType;
     this.res.set(p.maxResource > 0 ? p.resource / p.maxResource : 0, dt);
     this.debuffs.update(p);
@@ -70,7 +87,7 @@ class PartyFrame {
   }
 }
 
-/** Left-side party frames for the other players (remote Player entities) + placeholders for peers still loading. */
+/** Party frames for the other players (remote Player entities) + placeholders for peers still loading. */
 export class PartyFrames implements HudWidget {
   readonly el: HTMLElement;
   private frames = new Map<EntityId, PartyFrame>();
@@ -85,6 +102,7 @@ export class PartyFrames implements HudWidget {
     this.tick++;
     const w = ctx.world;
     if (w) {
+      const target = ctx.player?.targetId ?? null;
       for (const p of w.players) {
         if (p.isLocal) continue;
         let f = this.frames.get(p.id);
@@ -94,7 +112,7 @@ export class PartyFrames implements HudWidget {
           this.el.appendChild(f.el);
         }
         f.seen = this.tick;
-        f.update(p, ctx.dt);
+        f.update(p, ctx.dt, target === p.id);
       }
     }
     for (const [id, f] of this.frames) {
@@ -118,7 +136,7 @@ export class PartyFrames implements HudWidget {
           this.placeholders.set(peer.peerId, el);
           this.el.appendChild(el);
         }
-        const html = `<div class="pt-portrait">${peer.summary ? `<span class="ico pt-pico" style="--i:url('${ICON('class-' + peer.summary.classId)}')"></span>` : ''}</div><div class="pt-body"><div class="pt-top"><div class="pt-name">${esc(peer.name)}</div><div class="pt-state">Yükleniyor...</div></div></div>`;
+        const html = `<div class="pt-frame"><div class="pt-name"><span class="pt-name-t">${esc(peer.name)}</span></div><div class="pt-state">Yükleniyor...</div></div>`;
         if ((el as HTMLElement & { _h?: string })._h !== html) {
           (el as HTMLElement & { _h?: string })._h = html;
           el.innerHTML = html;

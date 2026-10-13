@@ -1,14 +1,20 @@
 import { G } from '../../game/G';
 import { getEnemyDef } from '../../data/enemies';
 import { formatNumber } from '../../core/utils';
+import { CLASS_ICON_PATH, specIcon } from '../../vfx/specIcons';
 import { PARTY_ID_BASE, type ClassId, type EntityId, type SceneId } from '../../types/common';
+import type { SpecId } from '../../types/v2';
 import type { UI } from '../UI';
-import { ICON, div, esc, fmtClock, h, iconEl, setClass, setStyle, setText, span, uiSound } from '../widgets/dom';
+import { CLASS_COLORS, classColor } from '../widgets/classColors';
+import { fmtMeter } from '../widgets/numFormat';
+import { ICON, div, esc, fmtClock, h, iconEl, setClass, setDisplay, setIconUrl, setStyle, setText, span, uiSound } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
 
 /**
- * Damage meter ("Dövüş Ölçer"): a WoW Details!-style party meter, right edge above the loot column, closed to the DPS pill
- * by default. Clicks: only the header and buttons are UI; the bar list passes clicks through to the game unless the cursor is free.
+ * Details!-style damage / healing meter (UI_REDESIGN §2.10.1). Two columns "DPS" and "HPS" with 18 px class-coloured rows
+ * (spec icon left, name left and per-second value right on the bar), a death mini-list, and a head with the tabs
+ * Hasar / İyileştirme / Ölümler and the segment dropdown. Visibility follows Settings.meterVisibility (auto / always / never);
+ * Shift+D toggles it for the session.
  * OWNER: hud module. It is a pure consumer of G.events (damage, heal, death, player:died, boss:*, scene:changed):
  * every peer counts the hits it sees (its own, plus the replicated ones), so nothing is sent over the net.
  * Segments: "Mevcut Dövüş" (a fight starts on the first damage after 3 s quiet and ends 3 s after the last one),
@@ -19,39 +25,33 @@ import type { HudCtx, HudWidget } from './types';
 const PARTY_LAST = PARTY_ID_BASE + 14;
 /** Seconds without damage that end a fight. */
 const COMBAT_GAP = 3;
+/** `auto` keeps the meter on for this long after the last combat hit (§2.10.1). */
+const AUTO_LINGER = 15;
+/** Fade-out before the window is removed from the layout. */
+const FADE_MS = 400;
 /** Seconds between repaints (4 Hz). */
 const RENDER_EVERY = 0.25;
 /** Finished fights kept for the segment dropdown. */
 const HISTORY_CAP = 12;
-/** Visible player rows (party is at most 5; the pool leaves room for more). */
+/** Death entries kept per segment. */
+const DEATH_CAP = 40;
+/** Rows per column: 5 in the split view, 8 in a single view. */
+const SPLIT_ROWS = 5;
 const ROWS = 8;
-const WIDTH = 320;
+/** Death rows in the pool (the deaths view shows all of them). */
+const DEATH_POOL = 8;
 const HOTKEY = 'KeyD';
-/** v2: the meter starts closed (DPS pill) at the right edge; older saved layouts (open, centre) are ignored on purpose. */
-const STORE_KEY = 'efsun.dpsMeter.v2';
-
-const CLASS_COLOR: Record<ClassId, string> = {
-  knight: '#c79c6e',
-  barbarian: '#c41f3b',
-  mage: '#3fc7eb',
-  rogue: '#fff569',
-  monk: '#4fd1c5',
-  archer: '#d9a441',
-  paladin: '#fff0b8',
-  necromancer: '#9ee07a',
-  warlock: '#c05ae0',
-  demonhunter: '#a330c9', // WoW class colour (CM1)
-  evoker: '#33937f',      // WoW class colour (CM1)
-};
+/** v3 `{ view, segment }` (the v2 pill / window position is ignored on purpose). */
+const STORE_KEY = 'efsun.dpsMeter.v3';
 const OTHER_COLOR = '#8a8a8a';
 
+/** What the window shows: the split view (DPS | HPS), one column, or the death list. */
+type View = 'split' | 'damage' | 'healing' | 'taken' | 'deaths';
+const VIEWS: View[] = ['split', 'damage', 'healing', 'taken', 'deaths'];
+
 type Mode = 'dmg' | 'heal' | 'taken' | 'deaths';
-const MODES: { id: Mode; label: string; icon: string }[] = [
-  { id: 'dmg', label: 'Hasar', icon: 'skill-sword-slash' },
-  { id: 'heal', label: 'İyileştirme', icon: 'skill-heal' },
-  { id: 'taken', label: 'Alınan Hasar', icon: 'item-shield' },
-  { id: 'deaths', label: 'Ölümler', icon: 'ui-skull' },
-];
+const MODE_LABEL: Record<Mode, string> = { dmg: 'Hasar', heal: 'İyileştirme', taken: 'Alınan Hasar', deaths: 'Ölümler' };
+const COL_TITLE: Record<Mode, string> = { dmg: 'DPS', heal: 'HPS', taken: 'Alınan/sn', deaths: 'Ölüm' };
 
 type StatField = 'dealt' | 'healed' | 'taken' | 'deaths' | 'kills';
 
@@ -63,6 +63,14 @@ interface Stat {
   taken: number;
   deaths: number;
   kills: number;
+}
+
+interface DeathEntry {
+  /** performance.now() in seconds. */
+  at: number;
+  name: string;
+  /** Name of the last enemy that hit the player (empty when unknown). */
+  by: string;
 }
 
 type SegKind = 'run' | 'combat' | 'boss';
@@ -81,6 +89,7 @@ interface Segment {
   /** run only: seconds spent in fights (closed fights plus the live one). */
   combatSec: number;
   stats: Map<EntityId, Stat>;
+  deathLog: DeathEntry[];
 }
 
 /** Dropdown selection: the live/most recent fight, the whole run, or a history segment id. */
@@ -88,23 +97,45 @@ type Sel = 'current' | 'run' | number;
 
 interface Row {
   el: HTMLElement;
-  bar: HTMLElement;
-  rk: HTMLElement;
+  ico: HTMLElement;
+  fill: HTMLElement;
   nm: HTMLElement;
   vl: HTMLElement;
-  ps: HTMLElement;
-  pc: HTMLElement;
   stat: Stat | null;
   name: string;
 }
+
+interface Col {
+  root: HTMLElement;
+  title: HTMLElement;
+  total: HTMLElement;
+  rows: Row[];
+}
+
+interface DeathRow {
+  el: HTMLElement;
+  nm: HTMLElement;
+  tm: HTMLElement;
+  by: HTMLElement;
+}
+
+interface Who {
+  name: string;
+  cls: ClassId | null;
+  spec: SpecId | null;
+}
+
+/**
+ * Dev hook (dev/hud-ext/meter.ts): fake party members that exist only for the meter, so the dev page can show five
+ * classes without a world. Empty in the game.
+ */
+export const meterDevRoster = new Map<EntityId, { id: EntityId; name: string; classId: ClassId; spec: SpecId | null }>();
 
 const isParty = (id: EntityId | null | undefined): id is EntityId =>
   typeof id === 'number' && id >= PARTY_ID_BASE && id <= PARTY_LAST;
 
 /** performance clock in seconds. */
 const clock = (): number => performance.now() / 1000;
-
-const clamp = (v: number, lo: number, hi: number): number => (v < lo ? lo : v > hi ? hi : v);
 
 function valueOf(st: Stat, mode: Mode): number {
   switch (mode) {
@@ -115,36 +146,50 @@ function valueOf(st: Stat, mode: Mode): number {
   }
 }
 
+/** The columns a view shows (null = empty column slot). */
+function columnsOf(view: View): [Mode | null, Mode | null] {
+  switch (view) {
+    case 'split': return ['dmg', 'heal'];
+    case 'damage': return ['dmg', null];
+    case 'healing': return ['heal', null];
+    case 'taken': return ['taken', null];
+    default: return [null, null];
+  }
+}
+
+/** The mode a chat summary or a tooltip refers to. */
+function primaryMode(view: View): Mode {
+  if (view === 'healing') return 'heal';
+  if (view === 'taken') return 'taken';
+  if (view === 'deaths') return 'deaths';
+  return 'dmg';
+}
+
 export class DamageMeter implements HudWidget {
   readonly el: HTMLElement;
-  private readonly pill: HTMLButtonElement;
   private readonly win: HTMLElement;
   private readonly head: HTMLElement;
-  private readonly body: HTMLElement;
+  /** Hasar, İyileştirme, Ölümler (in that order). */
   private readonly tabs: HTMLButtonElement[] = [];
   private readonly segBtn: HTMLButtonElement;
   private readonly segTxt: HTMLElement;
   private readonly menu: HTMLElement;
-  private readonly meta: HTMLElement;
-  private readonly rowsEl: HTMLElement;
-  private readonly rows: Row[] = [];
+  private readonly cols: HTMLElement;
+  private readonly colList: Col[] = [];
+  private readonly deathBox: HTMLElement;
+  private readonly deathRows: DeathRow[] = [];
   private readonly empty: HTMLElement;
-  private readonly collapseBtn: HTMLButtonElement;
-  private readonly sendBtn: HTMLButtonElement;
   /** Last value written to the bar list's capture mode (see syncCursorMode). */
   private rowsCapture = false;
 
-  private open = false;
-  /** A saved position is applied on the first update (the element is not attached yet in the constructor). */
-  private placePending = true;
-  private collapsed = false;
-  private mode: Mode = 'dmg';
+  private view: View = 'split';
   private sel: Sel = 'current';
   private menuOpen = false;
   private menuDirty = true;
-  /** Dragged position in HUD css px (null = default bottom-right anchor). */
-  private pos: { x: number; y: number } | null = null;
-  private drag: { pid: number; sx: number; sy: number; ox: number; oy: number } | null = null;
+  /** Shift+D override for this session: null = follow Settings.meterVisibility. */
+  private forced: boolean | null = null;
+  private shownNow = false;
+  private fadeTimer: ReturnType<typeof setTimeout> | undefined;
 
   private seq = 0;
   private fightNo = 0;
@@ -156,57 +201,43 @@ export class DamageMeter implements HudWidget {
   /** performance seconds of the last fight-relevant damage. */
   private lastHit = -Infinity;
   private nextRender = 0;
-  private readonly names = new Map<EntityId, { name: string; cls: ClassId | null }>();
-  /** Reused sort buffer for the repaint and the chat summary (no per-frame allocation). */
-  private readonly scratch: Stat[] = [];
+  private readonly names = new Map<EntityId, Who>();
+  /** Last enemy name that hit each player (the killer shown in the death list). */
+  private readonly lastBy = new Map<EntityId, string>();
 
   constructor(private ui: UI) {
     this.run = this.makeSeg('run', 'Tüm Koşu', null, clock());
     this.loadPrefs();
 
     this.el = div('dm');
-    this.pill = h('button', 'dm-pill hud-interactive ui-capture', this.el);
-    this.pill.type = 'button';
-    this.pill.title = 'Dövüş Ölçer (Shift+D)';
-    iconEl(ICON('ui-leaderboard'), 'dm-pico', this.pill);
-    span('dm-plbl', this.pill, 'DPS');
-
-    // Capture is per element, not per window: the header and the buttons take the mouse, the window body and the bar
-    // list pass clicks through to the game (a fight behind the meter must still be clickable).
+    setDisplay(this.el, false);
     this.win = div('dm-win', this.el);
     this.head = div('dm-head ui-capture', this.win);
-    span('dm-title', this.head, 'Dövüş Ölçer');
-    span('dm-key', this.head, 'Shift+D');
-    this.collapseBtn = h('button', 'dm-hb', this.head, '–');
-    this.collapseBtn.type = 'button';
-    this.collapseBtn.title = 'Küçült / Aç';
-    const closeBtn = h('button', 'dm-hb', this.head, '×');
-    closeBtn.type = 'button';
-    closeBtn.title = 'Kapat';
 
-    this.body = div('dm-body', this.win);
-    const tabRow = div('dm-tabs', this.body);
-    MODES.forEach((m, i) => {
-      const b = h('button', 'dm-tab', tabRow);
+    const tabDefs: { view: 'damage' | 'healing' | 'deaths'; icon: string }[] = [
+      { view: 'damage', icon: 'skill-sword-slash' },
+      { view: 'healing', icon: 'skill-heal' },
+      { view: 'deaths', icon: 'ui-skull' },
+    ];
+    const tabLabels: Record<string, string> = { damage: 'Hasar', healing: 'İyileştirme', deaths: 'Ölümler' };
+    for (const td of tabDefs) {
+      const b = h('button', 'dm-tab', this.head);
       b.type = 'button';
-      iconEl(ICON(m.icon), 'dm-tico', b);
-      span('dm-tlbl', b, m.label);
+      b.title = tabLabels[td.view];
+      iconEl(ICON(td.icon), 'dm-tico', b);
+      span('dm-tlbl', b, tabLabels[td.view]);
       b.addEventListener('click', () => {
-        this.mode = MODES[i].id;
-        this.menuOpen = false;
-        setClass(this.el, 'menu-open', false);
-        this.savePrefs();
-        this.nextRender = 0;
+        this.onTab(td.view);
         b.blur();
       });
       this.tabs.push(b);
-    });
+    }
 
-    const segWrap = div('dm-seg', this.body);
+    const segWrap = div('dm-seg', this.head);
     this.segBtn = h('button', 'dm-segbtn', segWrap);
     this.segBtn.type = 'button';
     this.segTxt = span('dm-segtxt', this.segBtn);
-    span('dm-caret', this.segBtn);
+    span('dm-caret', this.segBtn, '▾');
     this.menu = div('dm-menu ui-capture', segWrap);
     this.segBtn.addEventListener('click', () => {
       this.menuOpen = !this.menuOpen;
@@ -215,62 +246,29 @@ export class DamageMeter implements HudWidget {
       this.segBtn.blur();
     });
 
-    this.meta = div('dm-meta', this.body);
-    this.rowsEl = div('dm-rows ui-passthrough', this.body);
-    for (let i = 0; i < ROWS; i++) {
-      const el = div('dm-row off', this.rowsEl);
-      const bar = div('dm-bar', el);
-      const row: Row = {
-        el, bar,
-        rk: span('dm-rk', el),
-        nm: span('dm-nm', el),
-        vl: span('dm-vl', el),
-        ps: span('dm-ps', el),
-        pc: span('dm-pc', el),
-        stat: null,
-        name: '',
-      };
-      el.addEventListener('mouseenter', (e) => this.showRowTip(row, e));
-      el.addEventListener('mouseleave', () => this.ui.hideTooltipIf(el));
-      this.rows.push(row);
+    this.cols = div('dm-cols ui-passthrough', this.win);
+    for (let c = 0; c < 2; c++) {
+      const root = div('dm-col', this.cols);
+      const title = div('dm-title', root);
+      const tt = span('dm-tt', title);
+      const total = span('dm-tsum', title);
+      const list = div('dm-rows', root);
+      const rows: Row[] = [];
+      for (let i = 0; i < ROWS; i++) rows.push(this.makeRow(list));
+      this.colList.push({ root, title: tt, total, rows });
     }
-    this.empty = div('dm-empty', this.body, 'Henüz kayıt yok.');
 
-    this.sendBtn = h('button', 'dm-send hud-interactive', this.body, 'Sohbete Gönder');
-    this.sendBtn.type = 'button';
-    this.sendBtn.title = 'Seçili görünümün özetini grup sohbetine yaz';
-    this.sendBtn.addEventListener('click', () => {
-      this.send();
-      this.sendBtn.blur();
-    });
-
-    this.pill.addEventListener('click', () => {
-      this.setOpen(true);
-      this.pill.blur();
-    });
-    closeBtn.addEventListener('click', () => {
-      this.setOpen(false);
-      closeBtn.blur();
-    });
-    this.collapseBtn.addEventListener('click', () => {
-      this.setCollapsed(!this.collapsed);
-      this.collapseBtn.blur();
-    });
-
-    this.head.addEventListener('pointerdown', (e) => this.onDown(e));
-    this.head.addEventListener('pointermove', (e) => this.onMove(e));
-    this.head.addEventListener('pointerup', (e) => this.onUp(e));
-    this.head.addEventListener('pointercancel', (e) => this.onUp(e));
-
-    setClass(this.el, 'closed', !this.open);
-    setClass(this.el, 'collapsed', this.collapsed);
-    this.collapseBtn.textContent = this.collapsed ? '+' : '–';
-    if (this.pos) {
-      this.el.style.left = `${this.pos.x}px`;
-      this.el.style.top = `${this.pos.y}px`;
-      this.el.style.right = 'auto';
-      this.el.style.bottom = 'auto';
+    this.deathBox = div('dm-deaths', this.win);
+    for (let i = 0; i < DEATH_POOL; i++) {
+      const el = div('dm-death', this.deathBox);
+      span('dm-dk', el, '☠');
+      const nm = span('dm-dn', el);
+      const tm = span('dm-dt', el);
+      const by = span('dm-db', el);
+      setDisplay(el, false);
+      this.deathRows.push({ el, nm, tm, by });
     }
+    this.empty = div('dm-empty', this.win, 'Henüz kayıt yok. Bir düşmana vur.');
 
     const ev = G.events;
     ev.on('damage', (e) => this.onDamage(e.targetId, e.sourceId, e.amount, e.kind));
@@ -281,7 +279,10 @@ export class DamageMeter implements HudWidget {
       if (this.isPlayerId(e.killerId)) this.bump('kills', e.killerId, 1);
     });
     ev.on('player:died', (e) => {
-      if (this.isPlayerId(e.entityId)) this.bump('deaths', e.entityId, 1);
+      if (this.isPlayerId(e.entityId)) {
+        this.bump('deaths', e.entityId, 1);
+        this.recordDeath(e.entityId);
+      }
     });
     ev.on('boss:engaged', (e) => this.onBossEngaged(e.bossId));
     ev.on('boss:defeated', (e) => this.closeBoss('kill', e.bossId));
@@ -289,26 +290,56 @@ export class DamageMeter implements HudWidget {
     ev.on('scene:changed', (e) => this.onScene(e.to));
 
     window.addEventListener('keydown', (e) => this.onKey(e));
-    window.addEventListener('resize', () => {
-      if (this.pos) this.placeAt(this.pos.x, this.pos.y);
-    });
   }
 
   // ---------------------------------------------------------------------------------------------
   // HudWidget
   // ---------------------------------------------------------------------------------------------
 
-  update(_ctx: HudCtx): void {
-    if (this.placePending) {
-      this.placePending = false;
-      if (this.pos) this.placeAt(this.pos.x, this.pos.y);
-    }
+  update(ctx: HudCtx): void {
     this.syncCursorMode();
     const t = clock();
     if (this.combat && t - this.lastHit > COMBAT_GAP) this.endFight(this.lastHit + COMBAT_GAP);
-    if (!this.open || t < this.nextRender) return;
+    this.applyShown(this.wantShown(ctx, t));
+    if (!this.shownNow || t < this.nextRender) return;
     this.nextRender = t + RENDER_EVERY;
     this.render(t);
+  }
+
+  /** Visibility (§2.10.1): the Shift+D override first, then Settings.meterVisibility; `auto` = party of 2+, a dungeon, or combat in the last 15 s. */
+  private wantShown(ctx: HudCtx, t: number): boolean {
+    if (this.forced !== null) return this.forced;
+    const v = G.settings?.data.meterVisibility ?? 'auto';
+    if (v === 'always') return true;
+    if (v === 'never') return false;
+    if (ctx.mode === 'dungeon') return true;
+    if (this.partyCount() >= 2) return true;
+    return t - this.lastHit <= AUTO_LINGER;
+  }
+
+  /** Shows at once; hides after the 400 ms fade. A hidden window takes no space (display none). */
+  private applyShown(show: boolean): void {
+    if (show === this.shownNow) return;
+    this.shownNow = show;
+    clearTimeout(this.fadeTimer);
+    if (show) {
+      setClass(this.el, 'fade', false);
+      setDisplay(this.el, true);
+      return;
+    }
+    setClass(this.el, 'fade', true);
+    this.fadeTimer = setTimeout(() => {
+      if (!this.shownNow) setDisplay(this.el, false);
+    }, FADE_MS);
+  }
+
+  /** Party size as the local player sees it (the local player counts once). */
+  private partyCount(): number {
+    const ids = new Set<EntityId>();
+    const me = G.player;
+    if (me) ids.add(me.id);
+    for (const p of G.world?.players ?? []) ids.add(p.id);
+    return ids.size;
   }
 
   /**
@@ -319,8 +350,8 @@ export class DamageMeter implements HudWidget {
     const free = this.ui.wantsCursor() || !!G.input?.down('freeCursor');
     if (free === this.rowsCapture) return;
     this.rowsCapture = free;
-    setClass(this.rowsEl, 'ui-capture', free);
-    setClass(this.rowsEl, 'ui-passthrough', !free);
+    setClass(this.cols, 'ui-capture', free);
+    setClass(this.cols, 'ui-passthrough', !free);
   }
 
   // ---------------------------------------------------------------------------------------------
@@ -362,7 +393,13 @@ export class DamageMeter implements HudWidget {
     // open / extend the fight BEFORE counting, so the first hit of a fight lands in its segment
     if (dealt || enemyHit) this.touchFight(clock());
     if (dealt && src !== null) this.bump('dealt', src, amount);
-    if (tgtPlayer) this.bump('taken', targetId, amount);
+    if (tgtPlayer) {
+      this.bump('taken', targetId, amount);
+      if (enemyHit && src !== null) {
+        const ent = G.world?.get(src);
+        if (ent && 'name' in ent && typeof ent.name === 'string') this.lastBy.set(targetId, ent.name);
+      }
+    }
   }
 
   /** Adds `amount` to a player's counter in the run and in every live segment. */
@@ -370,6 +407,17 @@ export class DamageMeter implements HudWidget {
     this.statOf(this.run, id)[field] += amount;
     if (this.combat) this.statOf(this.combat, id)[field] += amount;
     if (this.boss) this.statOf(this.boss, id)[field] += amount;
+  }
+
+  /** Death entry for the run, the live fight and the live boss segment (the death list reads these). */
+  private recordDeath(id: EntityId): void {
+    const entry: DeathEntry = { at: clock(), name: this.nameOf(id).name, by: this.lastBy.get(id) ?? '' };
+    this.lastBy.delete(id);
+    for (const seg of [this.run, this.combat, this.boss]) {
+      if (!seg) continue;
+      seg.deathLog.push(entry);
+      if (seg.deathLog.length > DEATH_CAP) seg.deathLog.shift();
+    }
   }
 
   private statOf(seg: Segment, id: EntityId): Stat {
@@ -382,7 +430,7 @@ export class DamageMeter implements HudWidget {
   }
 
   private makeSeg(kind: SegKind, label: string, bossId: string | null, start: number): Segment {
-    return { id: ++this.seq, kind, label, bossId, start, end: start, active: true, result: null, combatSec: 0, stats: new Map() };
+    return { id: ++this.seq, kind, label, bossId, start, end: start, active: true, result: null, combatSec: 0, stats: new Map(), deathLog: [] };
   }
 
   // ---- fights ----
@@ -497,34 +545,35 @@ export class DamageMeter implements HudWidget {
     return seg ? this.segTitle(seg) : 'Mevcut Dövüş';
   }
 
-  private nameOf(id: EntityId): { name: string; cls: ClassId | null } {
+  private nameOf(id: EntityId): Who {
     const r = this.names.get(id);
     if (r && r.name) return r;
-    return { name: `Oyuncu ${id - PARTY_ID_BASE + 1}`, cls: r?.cls ?? null };
+    return { name: `Oyuncu ${id - PARTY_ID_BASE + 1}`, cls: r?.cls ?? null, spec: r?.spec ?? null };
   }
 
   private refreshRoster(): void {
     const w = G.world;
-    const list: { id: EntityId; name: string; classId: ClassId }[] = [];
-    if (w) for (const p of w.players) list.push(p);
+    const list = [] as { id: EntityId; name: string; classId: ClassId; spec: SpecId | null }[];
+    if (w) for (const p of w.players) list.push({ id: p.id, name: p.name, classId: p.classId, spec: p.spec ?? null });
+    for (const d of meterDevRoster.values()) if (!list.some((p) => p.id === d.id)) list.push(d);
     // the local player is always listed (its own hits must show even if the world roster lags behind)
     const me = G.player;
-    if (me && !list.some((p) => p.id === me.id)) list.push(me);
+    if (me && !list.some((p) => p.id === me.id)) list.push({ id: me.id, name: me.name, classId: me.classId, spec: me.spec ?? null });
     for (const p of list) {
       const r = this.names.get(p.id);
       if (r) {
         r.name = p.name;
         r.cls = p.classId;
-      } else this.names.set(p.id, { name: p.name, cls: p.classId });
+        r.spec = p.spec;
+      } else this.names.set(p.id, { name: p.name, cls: p.classId, spec: p.spec });
       // the run lists every party member, even those who have not done anything yet
       this.statOf(this.run, p.id);
     }
   }
 
-  /** Fills `scratch` with the segment's players sorted by the current mode, returns the total. */
-  private fillSorted(seg: Segment | null, mode: Mode): number {
-    const list = this.scratch;
-    list.length = 0;
+  /** The segment's players sorted by the mode's value, with the segment total. */
+  private rank(seg: Segment | null, mode: Mode): { list: Stat[]; total: number } {
+    const list: Stat[] = [];
     let total = 0;
     if (seg) {
       for (const st of seg.stats.values()) {
@@ -533,59 +582,141 @@ export class DamageMeter implements HudWidget {
       }
     }
     list.sort((a, b) => valueOf(b, mode) - valueOf(a, mode));
-    return total;
+    return { list, total };
+  }
+
+  /** Spec icon of a player, the class icon when the spec is unknown (remote players), or none. */
+  private iconOf(who: Who): string {
+    return specIcon(who.spec) || (who.cls ? CLASS_ICON_PATH[who.cls] : '') || '';
+  }
+
+  private colourOf(who: Who): string {
+    return who.cls && CLASS_COLORS[who.cls] ? classColor(who.cls) : OTHER_COLOR;
+  }
+
+  /** The effective view: the split view needs two columns, so the small size class shows single views only. */
+  private effectiveView(): View {
+    if (this.view === 'split' && this.ui.hud?.density === 'sm') return 'damage';
+    return this.view;
   }
 
   // ---------------------------------------------------------------------------------------------
-  // Render (4 Hz, only while open)
+  // Render (4 Hz, only while shown)
   // ---------------------------------------------------------------------------------------------
 
   private render(t: number): void {
     this.refreshRoster();
-    const mode = this.mode;
+    const view = this.effectiveView();
     const seg = this.resolve();
+    const dur = seg ? this.segDuration(seg, t) : 1;
+    const me = G.player?.id ?? -1;
 
-    for (let i = 0; i < this.tabs.length; i++) setClass(this.tabs[i], 'on', MODES[i].id === mode);
-    setText(this.segTxt, this.selLabel(seg));
+    for (let i = 0; i < this.tabs.length; i++) {
+      const on = i === 0 ? view === 'split' || view === 'damage' : i === 1 ? view === 'split' || view === 'healing' : view === 'deaths';
+      setClass(this.tabs[i], 'on', on);
+    }
+    setText(this.segTxt, seg ? `${this.selLabel(seg)} ${fmtClock(this.segDuration(seg, t))}` : this.selLabel(seg));
     if (this.menuOpen && this.menuDirty) this.buildMenu();
 
-    const total = this.fillSorted(seg, mode);
-    const list = this.scratch;
-    const dur = seg ? this.segDuration(seg, t) : 1;
-    const top = list.length > 0 ? valueOf(list[0], mode) : 0;
-    const me = G.world?.localPlayer?.id ?? -1;
+    setClass(this.win, 'single', view !== 'split');
+    setClass(this.win, 'deaths', view === 'deaths');
+    setDisplay(this.empty, !seg);
+    setDisplay(this.cols, !!seg && view !== 'deaths');
 
-    for (let i = 0; i < ROWS; i++) {
-      const row = this.rows[i];
-      const st = i < list.length ? list[i] : null;
-      setClass(row.el, 'off', !st);
-      row.stat = st;
-      if (!st) continue;
-      const v = valueOf(st, mode);
-      const who = this.nameOf(st.id);
-      row.name = who.name;
-      setText(row.rk, String(i + 1));
-      setText(row.nm, who.name);
-      setStyle(row.bar, '--bc', who.cls ? CLASS_COLOR[who.cls] : OTHER_COLOR);
-      setStyle(row.bar, 'width', top > 0 ? `${((v / top) * 100).toFixed(1)}%` : '0%');
-      if (mode === 'deaths') {
-        setText(row.vl, String(v));
-        setText(row.ps, '');
-      } else {
-        setText(row.vl, formatNumber(v));
-        setText(row.ps, `${formatNumber(v / dur)}/sn`);
+    const cols = columnsOf(view);
+    const perCol = view === 'split' ? SPLIT_ROWS : ROWS;
+    for (let c = 0; c < this.colList.length; c++) {
+      const col = this.colList[c];
+      const mode = cols[c];
+      setDisplay(col.root, mode !== null && !!seg);
+      if (mode === null || !seg) continue;
+      const { list, total } = this.rank(seg, mode);
+      // the local player is always listed: outside the shown ranks it replaces the last row, prefixed with its rank
+      const idx = list.findIndex((s) => s.id === me);
+      const self = idx >= 0 ? list[idx] : me >= 0 && this.isPlayerId(me) ? this.blankStat(me) : null;
+      if (self && idx < 0) list.push(self);
+      const selfIdx = list.indexOf(self as Stat);
+      const shown: { st: Stat; rank: number; extra: boolean }[] = list.slice(0, perCol).map((st, i) => ({ st, rank: i + 1, extra: false }));
+      if (selfIdx >= perCol && shown.length > 0) shown[shown.length - 1] = { st: list[selfIdx], rank: selfIdx + 1, extra: true };
+      const top = list.length > 0 ? valueOf(list[0], mode) : 0;
+
+      setText(col.title, COL_TITLE[mode]);
+      setText(col.total, `Σ ${fmtMeter(total)}`);
+      for (let i = 0; i < ROWS; i++) {
+        const row = col.rows[i];
+        const item = shown[i];
+        setDisplay(row.el, !!item);
+        row.stat = item?.st ?? null;
+        if (!item) continue;
+        this.paintRow(row, item, top, mode, dur, me);
       }
-      setText(row.pc, total > 0 ? `${Math.round((v / total) * 100)}%` : '0%');
-      setClass(row.el, 'me', st.id === me);
     }
 
-    setClass(this.empty, 'off', list.length > 0);
-    if (!seg) setText(this.meta, 'Dövüş yok');
-    else {
-      const lbl = seg.kind === 'run' ? 'Savaş' : 'Süre';
-      if (mode === 'deaths') setText(this.meta, `${lbl} ${fmtClock(dur)} · Toplam ${total} ölüm`);
-      else setText(this.meta, `${lbl} ${fmtClock(dur)} · Toplam ${formatNumber(total)} · ${formatNumber(total / dur)}/sn`);
+    this.renderDeaths(seg, view);
+  }
+
+  private blankStat(id: EntityId): Stat {
+    return { id, dealt: 0, healed: 0, taken: 0, deaths: 0, kills: 0 };
+  }
+
+  private paintRow(row: Row, item: { st: Stat; rank: number; extra: boolean }, top: number, mode: Mode, dur: number, me: EntityId): void {
+    const st = item.st;
+    const v = valueOf(st, mode);
+    const who = this.nameOf(st.id);
+    row.name = who.name;
+    setText(row.nm, item.extra ? `${item.rank}. Sen` : who.name);
+    setText(row.vl, fmtMeter(v / dur));
+    setStyle(row.fill, '--bc', this.colourOf(who));
+    setStyle(row.fill, 'width', top > 0 ? `${((v / top) * 100).toFixed(1)}%` : '0%');
+    setIconUrl(row.ico, this.iconOf(who));
+    setClass(row.el, 'me', st.id === me);
+    setClass(row.el, 'extra', item.extra);
+  }
+
+  /** Death mini-list (split and single views, 3 / 2 rows; none at `sm`) and the full list of the deaths view. */
+  private renderDeaths(seg: Segment | null, view: View): void {
+    const sm = this.ui.hud?.density === 'sm';
+    const limit = view === 'deaths' ? DEATH_POOL : this.ui.hud?.density === 'md' ? 2 : 3;
+    const hide = !seg || seg.deathLog.length === 0 || (view !== 'deaths' && sm);
+    setDisplay(this.deathBox, !hide);
+    if (hide || !seg) return;
+    const entries = seg.deathLog.slice(-limit).reverse();
+    for (let i = 0; i < DEATH_POOL; i++) {
+      const r = this.deathRows[i];
+      const e = entries[i];
+      setDisplay(r.el, !!e);
+      if (!e) continue;
+      setText(r.nm, e.name);
+      setText(r.tm, fmtClock(e.at - seg.start));
+      setText(r.by, e.by);
     }
+  }
+
+  private makeRow(parent: HTMLElement): Row {
+    const el = div('dm-row', parent);
+    const ico = iconEl(null, 'dm-ico', el);
+    const bar = div('dm-bar', el);
+    const fill = div('dm-fill', bar);
+    const nm = span('dm-nm', bar);
+    const vl = span('dm-vl', bar);
+    const row: Row = { el, ico, fill, nm, vl, stat: null, name: '' };
+    el.addEventListener('mouseenter', (e) => this.showRowTip(row, e));
+    el.addEventListener('mouseleave', () => this.ui.hideTooltipIf(el));
+    return row;
+  }
+
+  /** Tab click: an unlit tab opens its single view, the lit tab of a single view returns to the split view. */
+  private onTab(t: 'damage' | 'healing' | 'deaths'): void {
+    if (t === 'deaths') this.view = 'deaths';
+    else {
+      const cur = this.effectiveView();
+      if (cur === t) {
+        if (this.ui.hud?.density === 'sm') return;
+        this.view = 'split';
+      } else this.view = t;
+    }
+    this.savePrefs();
+    this.nextRender = 0;
   }
 
   private buildMenu(): void {
@@ -597,17 +728,31 @@ export class DamageMeter implements HudWidget {
       const s = this.history[i];
       this.menuItem(s.id, this.segTitle(s));
     }
+    const taken = h('button', 'dm-mi', this.menu, this.view === 'taken' ? 'Alınan Hasarı Kapat' : 'Alınan Hasar');
+    taken.type = 'button';
+    taken.addEventListener('click', () => {
+      this.view = this.view === 'taken' ? 'split' : 'taken';
+      this.afterChoice();
+    });
+    const send = h('button', 'dm-mi', this.menu, 'Sohbete Gönder');
+    send.type = 'button';
+    send.addEventListener('click', () => {
+      this.send();
+      this.afterChoice();
+    });
   }
 
   private menuItem(sel: Sel, label: string): void {
     const b = h('button', 'dm-mi', this.menu, label);
     b.type = 'button';
     setClass(b, 'on', sel === this.sel);
-    b.addEventListener('click', () => this.choose(sel));
+    b.addEventListener('click', () => {
+      this.sel = sel;
+      this.afterChoice();
+    });
   }
 
-  private choose(sel: Sel): void {
-    this.sel = sel;
+  private afterChoice(): void {
     this.menuOpen = false;
     setClass(this.el, 'menu-open', false);
     this.savePrefs();
@@ -627,13 +772,10 @@ export class DamageMeter implements HudWidget {
   // Chat summary
   // ---------------------------------------------------------------------------------------------
 
-  private summary(seg: Segment, t: number): string {
-    const mode = this.mode;
-    const md = MODES.find((m) => m.id === mode) ?? MODES[0];
+  private summary(seg: Segment, t: number, mode: Mode): string {
     const dur = this.segDuration(seg, t);
-    this.fillSorted(seg, mode);
-    const list = this.scratch;
-    const head = `Dövüş Ölçer · ${md.label} · ${this.segTitle(seg)} · ${fmtClock(dur)}: `;
+    const { list } = this.rank(seg, mode);
+    const head = `Dövüş Ölçer · ${MODE_LABEL[mode]} · ${this.segTitle(seg)} · ${fmtClock(dur)}: `;
     let text = head;
     let count = 0;
     for (let i = 0; i < list.length && count < 5; i++) {
@@ -656,7 +798,7 @@ export class DamageMeter implements HudWidget {
       this.ui.toast('Gönderilecek dövüş verisi yok.', 'info');
       return;
     }
-    const text = this.summary(seg, clock());
+    const text = this.summary(seg, clock(), primaryMode(this.effectiveView()));
     try {
       if (G.net.isOnline) G.net.sendChat(text);
       else G.events.emit('net:chat', { from: 'Sistem', text, channel: 'system' });
@@ -667,27 +809,10 @@ export class DamageMeter implements HudWidget {
   }
 
   // ---------------------------------------------------------------------------------------------
-  // Open / collapse / hotkey / drag
+  // Hotkey and persistence
   // ---------------------------------------------------------------------------------------------
 
-  private setOpen(v: boolean): void {
-    this.open = v;
-    setClass(this.el, 'closed', !v);
-    if (!v) {
-      this.menuOpen = false;
-      setClass(this.el, 'menu-open', false);
-    }
-    this.nextRender = 0;
-    this.savePrefs();
-  }
-
-  private setCollapsed(v: boolean): void {
-    this.collapsed = v;
-    setClass(this.el, 'collapsed', v);
-    this.collapseBtn.textContent = v ? '+' : '–';
-    this.savePrefs();
-  }
-
+  /** Shift+D: shows the meter when it is hidden, hides it when it is shown (for this session). */
   private onKey(e: KeyboardEvent): void {
     if (e.code !== HOTKEY || !e.shiftKey || e.ctrlKey || e.altKey || e.metaKey || e.repeat) return;
     const t = e.target as HTMLElement | null;
@@ -695,86 +820,27 @@ export class DamageMeter implements HudWidget {
     const mode = this.ui.mode;
     if (mode !== 'town' && mode !== 'dungeon') return;
     if (this.ui.hud?.chat.isFocused) return;
-    this.setOpen(!this.open);
+    this.forced = !this.shownNow;
+    this.nextRender = 0;
   }
-
-  private onDown(e: PointerEvent): void {
-    if (e.button !== 0 || (e.target as HTMLElement).closest('button')) return;
-    const s = this.ui.scale || 1;
-    const r = this.el.getBoundingClientRect();
-    this.drag = { pid: e.pointerId, sx: e.clientX, sy: e.clientY, ox: r.left / s, oy: r.top / s };
-    try {
-      this.head.setPointerCapture(e.pointerId);
-    } catch { /* capture unsupported */ }
-  }
-
-  private onMove(e: PointerEvent): void {
-    const d = this.drag;
-    if (!d || e.pointerId !== d.pid) return;
-    const s = this.ui.scale || 1;
-    this.placeAt(d.ox + (e.clientX - d.sx) / s, d.oy + (e.clientY - d.sy) / s);
-  }
-
-  private onUp(e: PointerEvent): void {
-    const d = this.drag;
-    if (!d || e.pointerId !== d.pid) return;
-    this.drag = null;
-    try {
-      this.head.releasePointerCapture(e.pointerId);
-    } catch { /* ignore */ }
-    this.savePrefs();
-  }
-
-  /** Moves the window to (x, y) in HUD css px, keeping it inside the viewport. */
-  private placeAt(x: number, y: number): void {
-    const s = this.ui.scale || 1;
-    const r = this.el.getBoundingClientRect();
-    const maxX = Math.max(0, window.innerWidth / s - r.width / s);
-    const maxY = Math.max(0, window.innerHeight / s - r.height / s);
-    const cx = clamp(x, 0, maxX);
-    const cy = clamp(y, 0, maxY);
-    this.pos = { x: cx, y: cy };
-    this.el.style.left = `${cx}px`;
-    this.el.style.top = `${cy}px`;
-    this.el.style.right = 'auto';
-    this.el.style.bottom = 'auto';
-  }
-
-  // ---------------------------------------------------------------------------------------------
-  // Persistence (per viewer, best effort)
-  // ---------------------------------------------------------------------------------------------
 
   private loadPrefs(): void {
     try {
       const raw = localStorage.getItem(STORE_KEY);
       if (!raw) return;
-      const p = JSON.parse(raw) as {
-        open?: unknown; collapsed?: unknown; mode?: unknown; sel?: unknown;
-        pos?: { x?: unknown; y?: unknown } | null;
-      };
-      if (typeof p.open === 'boolean') this.open = p.open;
-      if (typeof p.collapsed === 'boolean') this.collapsed = p.collapsed;
-      if (p.mode === 'dmg' || p.mode === 'heal' || p.mode === 'taken' || p.mode === 'deaths') this.mode = p.mode;
-      if (p.sel === 'current' || p.sel === 'run') this.sel = p.sel;
-      const x = p.pos?.x;
-      const y = p.pos?.y;
-      if (typeof x === 'number' && typeof y === 'number' && Number.isFinite(x) && Number.isFinite(y)) this.pos = { x, y };
-    } catch {
-      /* storage blocked or corrupt: keep the defaults */
+      const p = JSON.parse(raw) as { view?: unknown; segment?: unknown };
+      if (typeof p.view === 'string' && (VIEWS as string[]).includes(p.view)) this.view = p.view as View;
+      if (p.segment === 'current' || p.segment === 'run') this.sel = p.segment;
+    } catch (err) {
+      console.warn("[dps] saved meter prefs unreadable, using defaults", err);
     }
   }
 
   private savePrefs(): void {
     try {
-      localStorage.setItem(STORE_KEY, JSON.stringify({
-        open: this.open,
-        collapsed: this.collapsed,
-        mode: this.mode,
-        sel: this.sel === 'run' ? 'run' : 'current',
-        pos: this.pos,
-      }));
-    } catch {
-      /* ignore */
+      localStorage.setItem(STORE_KEY, JSON.stringify({ view: this.view, segment: this.sel === 'run' ? 'run' : 'current' }));
+    } catch (err) {
+      console.warn("[dps] meter prefs not saved", err);
     }
   }
 }

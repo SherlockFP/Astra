@@ -15,7 +15,16 @@
   filter: drop-shadow(0 0 1px #000) drop-shadow(0 2px 0 #000); }
 .mm-north { position: absolute; left: 8px; top: 8px; width: 192px; height: 192px; pointer-events: none; }
 .mm-n { position: absolute; left: calc(50% - 10px); top: -9px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font: 700 11px var(--font-head); color: var(--hud-gold-l); background: linear-gradient(#3a2a14, #140d07); border: 2px solid var(--hud-gold-d); border-radius: 50%; text-shadow: 0 1px 0 #000; }
-.mm-zoom { position: absolute; right: -4px; top: 74px; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
+.mm-zoom { position: absolute; right: -4px; top: 74px; display: flex; flex-direction: column; gap: 4px; pointer-events: none; opacity: 0; transition: opacity 0.15s linear; }
+.mm:hover .mm-zoom { opacity: 1; }
+.mm-zoom .mm-btn { pointer-events: none; }
+.mm:hover .mm-zoom .mm-btn { pointer-events: auto; }
+/* LFG eye (finder listing / proposal) at 7 o'clock on the ring; ice-blue tint */
+.mm-eye { position: absolute; left: 45px; top: 176px; width: 22px; height: 22px; padding: 0; background: linear-gradient(#1d2a33, #0a1014); border: 2px solid #050302; border-radius: 50%; box-shadow: inset 0 0 0 1px #5fb6d9, 0 2px 0 #000; cursor: pointer; pointer-events: auto; }
+.mm-eye:hover { box-shadow: inset 0 0 0 1px #bfefff, 0 2px 0 #000; }
+.mm-eye-ico { position: absolute; left: 3px; top: 3px; width: 12px; height: 12px; background: #9fe3ff; }
+/* clock / FPS line: overlay over the bottom of the disc, no layout height */
+.mm-info { position: absolute; left: 50%; bottom: 46px; transform: translateX(-50%); white-space: nowrap; font: 700 13px/1 var(--font-body); color: #f1e6cf; text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000; font-variant-numeric: tabular-nums; pointer-events: none; }
 .mm-btn { width: 24px; height: 24px; padding: 0; font: 700 16px/20px var(--font-head); color: var(--hud-gold-l); background: linear-gradient(#3a2a14, #140d07); border: 2px solid #050302; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 2px 0 #000; cursor: pointer; pointer-events: auto; }
 .mm-btn:hover { background: linear-gradient(#5a4522, #251a0d); color: #fff; }
 .mm-ribbon { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); min-width: 176px; max-width: 240px; padding: 3px 18px 4px; text-align: center; background: linear-gradient(#33251a, #140d08); border: 2px solid #050302; box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 3px 0 #000; clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); pointer-events: none; }
@@ -88,5 +97,54 @@
 .mt-dico { width: 15px; height: 15px; background: linear-gradient(#fff, #c8c8d0); }
 .mt-pen { color: #ff8a7a; }
 
-/* UX-01: one column that holds the M+ tracker and the quest tracker (ContextTracker stub, UX-12 turns it into the context tracker). */
-.trk { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; pointer-events: none; }
+/* ==========================================================================
+   Context tracker (UI_REDESIGN §2.9, UX-12): one flat plate, header with text tabs, one pane at a time
+   ========================================================================== */
+.trk { width: var(--trk-w); display: flex; flex-direction: column; color: var(--text-1); font-family: var(--font-body); pointer-events: none; }
+.trk-head { height: 28px; flex: none; display: flex; align-items: center; gap: 2px; padding: 0 4px 0 10px; border-bottom: 1px solid var(--ink); pointer-events: auto; }
+.trk-title { font: 700 13px/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); white-space: nowrap; }
+/* three tabs do not fit beside the title at md / sm: the title goes first (lg keeps it) */
+.trk-head.few .trk-title { display: none; }
+.hud[data-density='lg'] .trk-head.few .trk-title { display: inline; }
+.trk-tabs { display: flex; align-items: center; gap: 2px; margin-left: auto; min-width: 0; }
+.trk-tab { position: relative; height: 24px; display: inline-flex; align-items: center; gap: 4px; padding: 0 6px; background: transparent; border: 0; color: var(--text-3); font: 700 13px/1 var(--font-body); cursor: pointer; white-space: nowrap; }
+.trk-tab:hover { color: var(--text-1); }
+.trk-tab.on { color: var(--text-1); }
+.trk-tab.on::after { content: ''; position: absolute; left: 4px; right: 4px; bottom: 0; height: 2px; background: var(--gold-2); }
+.trk-tico { width: 13px; height: 13px; flex: none; background: currentColor; }
+.trk-hb { width: 22px; height: 22px; padding: 0; background: transparent; border: 0; color: var(--text-3); font: 700 14px/1 var(--font-body); cursor: pointer; }
+.trk-hb:hover { color: var(--text-1); }
+.trk-body { display: flex; flex-direction: column; min-height: 0; max-height: var(--trk-h); overflow: hidden; padding: 10px 12px; gap: 6px; }
+.trk.collapsed .trk-body { display: none; }
+.trk-pane { display: flex; flex-direction: column; gap: 6px; min-height: 0; pointer-events: auto; }
+.trk-pane.pane-run,
+.trk-pane.pane-hint { cursor: pointer; }
+/* the M+ and quest widgets render inside the pane: flat, full width, no own plate */
+.trk .mt { width: 100%; padding: 0; gap: 6px; background: none; border: 0; border-radius: 0; box-shadow: none; }
+.trk .mt-affix { width: 24px; height: 24px; }
+.trk .mt-aico { inset: 3px; }
+.trk .mt-bar { height: 8px; }
+.trk .mt-fbar { height: 12px; }
+.trk .mt-name { font-size: 15px; }
+.trk .mt-key { min-width: 36px; height: 36px; font-size: 18px; }
+.trk .mt-bsum { display: none; font: 700 13px/1.2 var(--font-body); color: var(--text-2); text-shadow: var(--shade); }
+/* md / sm: compact run pane (no thresholds row; the boss list becomes the `Boss 2 / 3` line) */
+.hud[data-density='md'] .trk .mt-thr,
+.hud[data-density='sm'] .trk .mt-thr { display: none; }
+.hud[data-density='md'] .trk .mt-bosses,
+.hud[data-density='sm'] .trk .mt-bosses { display: none; }
+.hud[data-density='md'] .trk .mt-bsum,
+.hud[data-density='sm'] .trk .mt-bsum { display: block; }
+.hud[data-density='sm'] .trk-tlbl { display: none; }
+/* boss pane */
+.trk-bhead { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.trk-bico { width: 16px; height: 16px; flex: none; background: #ff8a70; }
+.trk-bname { flex: 1 1 auto; min-width: 0; font: 700 15px/1.2 var(--font-body); color: var(--gold-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trk-bphase { flex: none; font: 700 13px/1 var(--font-body); color: var(--text-2); white-space: nowrap; }
+.trk-enrage { font: 700 13px/1.2 var(--font-body); color: #ff9a3a; }
+.trk-enrage.soon { color: #ff4a3a; }
+/* hint pane: "Ne yapmalıyım?" card */
+.trk-hint { display: flex; flex-direction: column; gap: 4px; }
+.trk-hint-t { font: 700 15px/1.2 var(--font-body); color: var(--gold-1); }
+.trk-hint-row { display: flex; align-items: center; gap: 8px; }
+.trk-hint-b { flex: 1 1 auto; min-width: 0; font: 400 14px/1.3 var(--font-body); color: var(--text-2); }
