@@ -9,6 +9,7 @@ import './styles/hud-metin2.css';
 import './styles/hud-meter.css';
 import './styles/hud-bubbles.css';
 import { G } from '../game/G';
+import { clearLocalHardTarget } from '../game/PlayerController';
 import type { ItemInstance } from '../types/items';
 import type { SkillDef } from '../types/skills';
 import type { Actor } from '../entities/Actor';
@@ -558,8 +559,13 @@ export class UI {
           this.escGuardUntil = performance.now() + 300; // set AFTER closing: a panel may redirect to the menu itself (death card)
         }
       } else if (G.player) {
-        this.escGuardUntil = 0; // a deliberate Esc always opens the menu
-        this.openPanel('gameMenu');
+        // final fallback: no panel, nothing else took the press. A selected (hard) target is dropped first (WoW); the next Esc opens the menu.
+        if (clearLocalHardTarget()) {
+          this.escGuardUntil = performance.now() + 300; // a browser that also releases the pointer lock on this Esc must not open the menu now
+        } else {
+          this.escGuardUntil = 0; // a deliberate Esc always opens the menu
+          this.openPanel('gameMenu');
+        }
       }
     }
     if (input.pressed('chat') && !consumed && !chat.isFocused) chat.focus();

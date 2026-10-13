@@ -26,8 +26,9 @@ function screenFade(to: number, dur: number): void {
 const ACCEL_TIME = 0.08;          // seconds to full speed
 const DECEL_TIME = 0.055;         // seconds to a stop
 const AIR_CONTROL = 0.5;
+const WOW_AIR_CONTROL = 0.15;     // WoW: the jump commits the horizontal velocity; keys only nudge it (15 % of the ground acceleration)
 const WALK_MUL = 0.45;
-const BACKPEDAL_MUL = 0.78;
+const BACKPEDAL_MUL = 0.643;      // WoW: back-pedal 4.5 / run 7
 const JUMP_V = 9.3;               // 1.5 m apex, ~0.65 s airtime
 const GRAVITY = 28.5;
 const DODGE_DIST = 5.2;
@@ -100,6 +101,19 @@ export function localHardTargetId(): EntityId | null {
   return liveController ? liveController.hardTargetId : null;
 }
 
+/** Read-only: the local player's focus target id (F8, null = none). A focus frame can read this later. */
+export function localFocusTargetId(): EntityId | null {
+  return liveController?.focusTarget?.id ?? null;
+}
+
+/**
+ * Esc fallback (UI.ts): drops the local hard target. Returns true when there was one, so the caller keeps the game menu closed for
+ * this press (the next Esc opens it).
+ */
+export function clearLocalHardTarget(): boolean {
+  return liveController ? liveController.clearHardTarget() : false;
+}
+
 export class PlayerController {
   player: Player;
   cam: ThirdPersonCamera;
@@ -124,6 +138,16 @@ export class PlayerController {
   private inputLockUntil = -1;
   private landUntil = 0;
   private faceHold = 0;
+  /** walkToggle state (walk / run toggle). */
+  private walkOn = false;
+  /** Autorun state: forward input is injected until W / S is pressed (or the player dies / a panel opens). */
+  private autoRunOn = false;
+  /** Focus target (F8). */
+  private focus: Enemy | null = null;
+  /** Input.blurSeq last seen: a change means the window lost focus, so held-press trackers must reset. */
+  private seenBlur = 0;
+  /** Frozen movement basis of the current jump / fall (WoW air momentum): the keys nudge along the take-off heading. */
+  private airBasis: { fx: number; fz: number; rx: number; rz: number } | null = null;
   private loco: Loco = 'idle';
   private dispSpeed = 0;
   private wishSpeed = 0;
@@ -310,6 +334,8 @@ export class PlayerController {
     this.fall.cancelPending();
     this.dodge = null;
     this.pending = null;
+    this.autoRunOn = false; // a teleport must not carry an autorun on into the new spot
+    this.airBasis = null;
     p.interp?.clear();
     this.cam.snap();
   }
@@ -332,6 +358,7 @@ export class PlayerController {
   clearTargets(): void {
     this.hardTarget = null;
     this.softTarget = null;
+    this.focus = null;
     this.setLock(null);
     this.emitTarget();
   }
@@ -370,6 +397,12 @@ export class PlayerController {
       this.tabDownAt = -1;
       this.shoulderDownAt = -1;
     }
+    // the window lost focus (alt-tab): the releases never arrive, so press trackers reset instead of resolving a click / Tab hold
+    if (input.blurSeq !== this.seenBlur) {
+      this.seenBlur = input.blurSeq;
+      this.onWindowBlur();
+    }
+    this.updateWalkAndAutorun(canInput);
     // mouse buttons only act on the world when the cursor is captured (action) or free over the game canvas (classic)
     const mouseOk = canInput && (action ? input.isLocked() : true);
 
@@ -413,7 +446,7 @@ export class PlayerController {
     if (canInput && input.pressed('jump')) this.tryJump();
 
     // ---------------- movement ----------------
-    let axis = canInput && !this.dodge ? input.moveAxis() : { x: 0, y: 0 };
+    let axis = canInput && !this.dodge ? this.moveAxisNow() : { x: 0, y: 0 };
     if (!action) {
       // WoW (§4.1): LMB + RMB runs forward unless S is held (A/D still strafe)
       if (canInput && this.wowOut.both && !input.down('moveBack')) axis = { x: axis.x, y: 1 };
@@ -428,7 +461,10 @@ export class PlayerController {
       this.cam.setFollow(canInput && !this.dodge && axis.y > 0.5 && Math.abs(axis.x) < 0.5 && !this.hardTarget && !p.isDead, p.yaw + Math.PI, this.dispSpeed);
     }
     // void respawn: the held key must not walk the player straight back to the edge (fade-in + 0.4 s, §11)
-    if (this.time < this.inputLockUntil) axis = { x: 0, y: 0 };
+    if (this.time < this.inputLockUntil) {
+      axis = { x: 0, y: 0 };
+      this.autoRunOn = false;
+    }
     this.stepMovement(dt, axis, canInput, action);
     this.updateFall(dt);
 
@@ -450,6 +486,53 @@ export class PlayerController {
   // =====================================================================================================================
   // Pointer lock
   // =====================================================================================================================
+
+  // =====================================================================================================================
+  // Walk toggle, autorun, window blur
+  // =====================================================================================================================
+
+  /** Movement axes with autorun applied: forward is injected unless S is held; strafing still adds in. */
+  private moveAxisNow(): { x: number; y: number } {
+    const input = G.input;
+    if (!this.autoRunOn || input.down('moveBack')) return input.moveAxis();
+    const x = (input.down('moveRight') ? 1 : 0) - (input.down('moveLeft') ? 1 : 0);
+    const len = Math.hypot(x, 1);
+    return { x: x / len, y: 1 / len };
+  }
+
+  /**
+   * walkToggle flips walk / run. autorun starts a forward run along the facing that survives mouse turning and is cancelled by a
+   * W or S press (WoW), by death and by any frame without input (a panel opens, a cutscene) so it never resumes unexpectedly.
+   */
+  private updateWalkAndAutorun(canInput: boolean): void {
+    const input = G.input;
+    if (!canInput) {
+      this.autoRunOn = false;
+      return;
+    }
+    if (input.pressed('walkToggle')) {
+      this.walkOn = !this.walkOn;
+      G.events.emit('ui:toast', { text: this.walkOn ? 'Yürüme: AÇIK' : 'Yürüme: KAPALI (koşu)', kind: 'info' });
+    }
+    if (input.pressed('autorun')) {
+      this.autoRunOn = !this.autoRunOn;
+      G.events.emit('ui:toast', { text: this.autoRunOn ? 'Otomatik koşu: AÇIK' : 'Otomatik koşu: KAPALI', kind: 'info' });
+    } else if (this.autoRunOn && (input.pressed('moveForward') || input.pressed('moveBack'))) {
+      this.autoRunOn = false;
+    }
+  }
+
+  /** Window blur: every in-flight press (mouse gesture, Tab hold, shoulder hold) is abandoned, never resolved into a click. */
+  private onWindowBlur(): void {
+    this.wowMouse.reset();
+    this.wowOut = { mouseLook: false, orbit: false, both: false, wantLock: false };
+    this.wowLockAsked = false;
+    this.tabDownAt = -1;
+    this.tabLocked = false;
+    this.shoulderDownAt = -1;
+    this.shoulderHeld = false;
+    this.dodgeBuf = -1;
+  }
 
   private updatePointerLock(dt: number, uiOpen: boolean, action: boolean): void {
     const input = G.input;
@@ -571,6 +654,15 @@ export class PlayerController {
     this.moveBasis(_f, _r);
     let wx = 0, wz = 0;
     const hasInput = steering && (axis.x !== 0 || axis.y !== 0);
+    // WoW air momentum: the jump commits its horizontal velocity, and the keys nudge along the take-off heading. Turning the
+    // character / camera mid-air (mouselook, turn keys) must not redirect the velocity, so the basis freezes at take-off.
+    const wowAir = this.wow && !this.grounded;
+    if (!wowAir) this.airBasis = null;
+    else if (!this.airBasis) this.airBasis = { fx: _f.x, fz: _f.z, rx: _r.x, rz: _r.z };
+    if (wowAir && this.airBasis) {
+      _f.set(this.airBasis.fx, 0, this.airBasis.fz);
+      _r.set(this.airBasis.rx, 0, this.airBasis.rz);
+    }
     if (hasInput) {
       wx = _f.x * axis.y + _r.x * axis.x;
       wz = _f.z * axis.y + _r.z * axis.x;
@@ -592,8 +684,9 @@ export class PlayerController {
       } else if (this.wowOut.mouseLook) {
         want = this.cam.faceYaw; // row 2: mouselook
         lambda = 40; maxRate = 30;
-      } else if (busy) {
-        want = this.aimYaw; // row 3: hard cast / hold-to-aim facing
+      } else if (!!p.cast || (this.faceHold > 0 && !(steering && turnL !== turnR))) {
+        // row 3: a hard cast keeps facing the aim point. The 0.55 s post-cast hold yields to the turn keys (arrow turns win)
+        want = this.aimYaw;
         lambda = 42; maxRate = 24;
       } else if (G.combat?.isGuarding(p)) {
         want = this.cam.faceYaw; // row 4: guard
@@ -633,7 +726,7 @@ export class PlayerController {
 
     // ---- speed ----
     let maxSpeed = p.moveSpeed();
-    if (input.down('walk')) maxSpeed *= WALK_MUL;
+    if (this.walking) maxSpeed *= WALK_MUL;
     maxSpeed *= this.actionSpeedMul();
     if (hasInput) {
       // backpedal penalty relative to facing
@@ -657,7 +750,11 @@ export class PlayerController {
       const dl = Math.hypot(dvx, dvz);
       let rate = hasInput ? accel : decel;
       if (hasInput && v.x * tx + v.z * tz < 0) rate *= 1.4;      // quick reversals
-      if (!this.grounded) rate *= AIR_CONTROL;
+      if (!this.grounded) {
+        // WoW: no braking in the air (released keys keep the momentum), a small steer while keys are held. Aksiyon keeps AIR_CONTROL.
+        if (this.wow) rate = hasInput ? accel * WOW_AIR_CONTROL : 0;
+        else rate *= AIR_CONTROL;
+      }
       const step = rate * dt;
       if (dl <= step || dl < 1e-5) {
         v.x = tx; v.z = tz;
@@ -914,7 +1011,7 @@ export class PlayerController {
     }
 
     const input = G.input;
-    const axis = input.moveAxis();
+    const axis = this.moveAxisNow();
     this.moveBasis(_f, _r);
     let dx: number, dz: number;
     const hasInput = axis.x !== 0 || axis.y !== 0;
@@ -1025,8 +1122,8 @@ export class PlayerController {
     if (this.heavyUntil > this.time && canFireDuringRoll && G.skills.tryHeavyPress(p)) this.heavyUntil = -1;
 
     for (const slot of SKILL_SLOT_KEYS) {
-      // s4 (G / skill_s4) is WoW-only here: Aksiyon's KeyG stays inert as before (orchestrator: Aksiyon unchanged)
-      const act = slot === 's4' && !this.wow ? null : SLOT_ACTION[slot];
+      // s4 (skill_s4: G in Aksiyon, R in WoW) is wired in both schemes like every other slot
+      const act = SLOT_ACTION[slot];
       if (!act) continue;
       const isMouse = slot === 'lmb' || slot === 'rmb';
       if (isMouse && !mouseOk) continue;
@@ -1081,6 +1178,9 @@ export class PlayerController {
     const world = p.world;
     if (!world) return;
     const px = p.position.x, pz = p.position.z;
+
+    // the focus target goes away with the enemy
+    if (this.focus && (this.focus.isDead || this.focus.removed || !this.focus.alive)) this.focus = null;
 
     // validate hard target
     const hard = this.hardTarget;
@@ -1158,7 +1258,8 @@ export class PlayerController {
     this.emitTarget();
   }
 
-  private cycleTarget(_action: boolean): void {
+  /** dir 1 = Tab (next), dir -1 = targetPrev (reverse cycle). */
+  private cycleTarget(_action: boolean, dir: 1 | -1 = 1): void {
     const p = this.player;
     const world = p.world;
     if (!world) return;
@@ -1176,6 +1277,8 @@ export class PlayerController {
     const now = this.time;
     const cur = this.hardTarget;
     if (!list.length) {
+      // WoW: nothing to cycle to keeps the current selection. Aksiyon keeps its release (Tab with nothing in view lets go).
+      if (wow) return;
       if (cur) this.hardTarget = null;
       this.setLock(null);
       this.emitTarget();
@@ -1186,7 +1289,7 @@ export class PlayerController {
     else list.sort((a, b) => a.x - b.x);
     let next: Enemy | null;
     if (!cur && wow) {
-      next = list[0].e; // WoW: the best candidate at once
+      next = (dir > 0 ? list[0] : list[list.length - 1]).e; // WoW: the best candidate at once (reverse starts from the far end)
     } else if (!cur) {
       // first press: the visible enemy closest to the screen centre
       let bi = 0, bd = 1e9;
@@ -1197,9 +1300,13 @@ export class PlayerController {
       next = list[bi].e;
     } else {
       const i = list.findIndex((c) => c.e === cur);
-      // Aksiyon: a double-tap releases. WoW: only a single candidate that is already selected releases (§6).
-      if ((!wow && now - this.lastTabAt < 0.25) || (list.length === 1 && i === 0)) next = null;
-      else next = list[(i + 1) % list.length].e;
+      // Aksiyon: a double-tap releases. WoW: the only enemy being the one already selected keeps the selection (no release, no sound).
+      if (!wow && now - this.lastTabAt < 0.25) next = null;
+      else if (list.length === 1 && i === 0) {
+        if (wow) return;
+        next = null;
+      } else if (i < 0) next = (dir > 0 ? list[0] : list[list.length - 1]).e;
+      else next = list[(i + dir + list.length) % list.length].e;
     }
     this.lastTabAt = now;
     this.hardTarget = next;
@@ -1246,6 +1353,10 @@ export class PlayerController {
       this.tabLocked = false;
     }
 
+    // targetPrev: the reverse Tab cycle (a plain press, in both schemes); focusTarget: set / clear the focus target
+    if (canInput && input.pressed('targetPrev')) this.cycleTarget(action, -1);
+    if (canInput && input.pressed('focusTarget')) this.toggleFocus();
+
     // shoulder key: tap = swap sides, hold 0.4 s = centre (a further tap returns to the last side)
     if (canInput && input.pressed('camShoulder')) {
       this.shoulderDownAt = this.time;
@@ -1259,6 +1370,21 @@ export class PlayerController {
       if (!this.shoulderHeld) this.cam.tapShoulder();
       this.shoulderDownAt = -1;
       this.shoulderHeld = false;
+    }
+  }
+
+  /**
+   * F8 (focusTarget): with a target selected, make it the focus (pressing it on the current focus clears it); with no target
+   * selected, clear the focus. A focus that dies / despawns is dropped in updateTargets.
+   */
+  private toggleFocus(): void {
+    const t = this.currentTarget();
+    if (t && this.focus !== t) {
+      this.focus = t;
+      G.events.emit('ui:toast', { text: `Odak hedef: ${t.name}`, kind: 'info' });
+    } else if (this.focus) {
+      this.focus = null;
+      G.events.emit('ui:toast', { text: 'Odak hedef temizlendi', kind: 'info' });
     }
   }
 
@@ -1477,12 +1603,16 @@ export class PlayerController {
     }
   }
 
-  /** §4.5: the context cursor on the canvas (refreshed every 0.1 s), none while a hold turns the camera. */
+  /**
+   * §4.5: the context cursor on the canvas (refreshed every 0.1 s). THE single writer of canvas.style.cursor while the WoW scheme
+   * runs (ThirdPersonCamera no longer touches it). Hidden only once a press became a drag (D7: 3 px or 0.12 s, WowMouse.wantLock),
+   * so a plain click never flickers the cursor.
+   */
   private updateWowCursor(dt: number, out: WowMouseOut, uiOpen: boolean): void {
     const canvas = G.engine?.canvas;
     if (!canvas) return;
     let next = '';
-    if (out.mouseLook || out.orbit) next = 'none';
+    if (out.wantLock) next = 'none';
     else if (!uiOpen && !G.input.pointerOverUI && !G.input.isLocked()) next = this.hoverCursor(dt);
     if (canvas.style.cursor !== next) canvas.style.cursor = next;
   }
@@ -1845,7 +1975,7 @@ export class PlayerController {
     else st = ang > 0 ? 'right' : 'left';
     this.loco = st;
 
-    const slow = G.input.down('walk') || this.wishSpeed < p.baseMoveSpeed * 0.52;
+    const slow = this.walking || this.wishSpeed < p.baseMoveSpeed * 0.52;
     let name: string;
     let ts: number;
     if (st === 'fwd') {
@@ -1888,7 +2018,7 @@ export class PlayerController {
       this.stepAcc = Math.min(this.stepAcc, this.strideLen * 0.45); // the first step lands soon after starting to move
       return;
     }
-    const walk = G.input.down('walk') || this.dispSpeed < p.baseMoveSpeed * 0.52;
+    const walk = this.walking || this.dispSpeed < p.baseMoveSpeed * 0.52;
     const stride = this.strideLen;
     this.stepAcc += this.dispSpeed * dt;
     if (this.stepAcc >= stride) {
@@ -1906,6 +2036,31 @@ export class PlayerController {
   /** Read-only id of the Tab-locked (hard) target, or null. The soft target is never reported here. */
   get hardTargetId(): EntityId | null {
     return this.hardTarget ? this.hardTarget.id : null;
+  }
+
+  /** Focus target (F8 / focusTarget): set or cleared by the key, independent of the hard / soft target. Null when none. */
+  get focusTarget(): Enemy | null {
+    return this.focus;
+  }
+
+  /** True while the player walks (held walk key or the walkToggle state). */
+  get walking(): boolean {
+    return this.walkOn || !!G.input?.down('walk');
+  }
+
+  /** True while autorun is on. */
+  get autorunning(): boolean {
+    return this.autoRunOn;
+  }
+
+  /** Drops the hard target. Returns false when there was none (Esc fallback in UI.ts). */
+  clearHardTarget(): boolean {
+    if (!this.hardTarget) return false;
+    this.hardTarget = null;
+    this.losLost = 0;
+    this.setLock(null);
+    this.emitTarget();
+    return true;
   }
 
   dispose(): void {

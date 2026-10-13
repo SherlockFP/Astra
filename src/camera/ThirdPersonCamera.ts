@@ -220,7 +220,6 @@ export class ThirdPersonCamera {
   private assistK = 0;
   private zoomSaveTimer = -1;
   private lastWheelAt = -99;
-  private hideCursor = false;
   private unsubs: (() => void)[] = [];
   private readonly fader = new OccluderFader();
   /** Clean (shake-free) pose used for aiming. */
@@ -606,14 +605,8 @@ export class ThirdPersonCamera {
     this.idleLook = Math.min(1, this.idleLook + dt * 2.5);
     if (this.deathCam) this.yaw += 0.12 * dt; // GDD_LIFE §4.13: slow orbit while dead
 
-    // hide the cursor while orbiting in classic mode; a click without drag never hides it (CONTROLS_WOW §4.3)
-    const wantHide = !action && this.orbiting && (orbited || this.hideCursor);
-    if (wantHide !== this.hideCursor) {
-      this.hideCursor = wantHide;
-      try {
-        G.engine.canvas.style.cursor = wantHide ? 'none' : '';
-      } catch { /* ignore */ }
-    }
+    // The canvas cursor is written by PlayerController.updateWowCursor only (hidden once a press became a drag, CONTROLS_WOW D7 / §4.3).
+    // This camera used to hide it on the first mouse movement of a press as well, which raced with that writer and flickered on clicks.
 
     // lock-on framing (GDD_LIFE §4.7): suspended for 1.5 s after an orbit > 14 deg away for more than 0.5 s
     const lt = this.lockOnTarget;
@@ -1218,11 +1211,6 @@ export class ThirdPersonCamera {
     this.fader.dispose(); // restore faded scenery before the level is disposed
     this.cine = null;
     this.lockOnTarget = null;
-    if (this.hideCursor) {
-      try {
-        G.engine.canvas.style.cursor = '';
-      } catch { /* ignore */ }
-      this.hideCursor = false;
-    }
+    // the canvas cursor is owned (and reset on dispose) by PlayerController
   }
 }

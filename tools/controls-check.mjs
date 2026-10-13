@@ -96,6 +96,56 @@ check(same(actual, expected), `SCHEME_ACTIONS mismatch. missing: [${expected.fil
 check(same(Object.keys(SCHEME_BINDINGS.aksiyon), []), 'SCHEME_BINDINGS.aksiyon must be empty (Aksiyon is the base table)');
 for (const a of Object.keys(SCHEME_BINDINGS.wow)) check(SCHEME_ACTIONS.includes(a), `SCHEME_BINDINGS.wow.${a} is not in SCHEME_ACTIONS`);
 
+// ---- control-scheme fixes: walk toggle, autorun, target keys, settings coverage, labels ----
+{
+  const { ACTION_NAMES_TR, DEFAULT_BINDINGS, codeLabel } = INPUT;
+  for (const a of ['walkToggle', 'autorun']) {
+    check(!SCHEME_ACTIONS.includes(a), `${a} must be shared (not in SCHEME_ACTIONS)`);
+    check(Array.isArray(DEFAULT_BINDINGS[a]) && DEFAULT_BINDINGS[a].length > 0, `${a} must have a default key`);
+    check(same(tables.wow[a], tables.aksiyon[a]), `${a} must bind the same keys in both schemes`);
+    check(typeof ACTION_NAMES_TR[a] === 'string' && ACTION_NAMES_TR[a].length > 0, `${a} needs a Turkish label in ACTION_NAMES_TR`);
+    for (const s of SCHEMES) {
+      for (const code of tables[s][a]) {
+        check(!/^(Key|Digit|Mouse|Control|Meta|Shift|Alt)/.test(code), `[${s}] ${a} default ${code} must not be a letter, digit, mouse or modifier key`);
+        check(maps[s].get(code)?.size === 1, `[${s}] ${a} default ${code} collides with ${[...(maps[s].get(code) ?? [])].join(', ')}`);
+      }
+    }
+  }
+  // held Ctrl / Meta must never be a default: Ctrl+W closes the tab, Ctrl+R / S / D / F / P are browser actions
+  for (const s of SCHEMES) {
+    for (const [action, codes] of Object.entries(tables[s])) {
+      for (const code of codes) check(!/^(Control|Meta)/.test(code), `[${s}] ${action} defaults to ${code}: Ctrl / Meta fight browser shortcuts`);
+    }
+    check(tables[s].targetPrev?.length === 1 && tables[s].focusTarget?.length === 1, `[${s}] targetPrev and focusTarget must each have one key`);
+  }
+  // every default key has a readable label (no raw 'Backslash' / 'NumLock' on the bar or in Ayarlar)
+  for (const s of SCHEMES) {
+    for (const [action, codes] of Object.entries(tables[s])) {
+      for (const code of codes) {
+        const label = codeLabel(code);
+        const raw = /^(Key|Digit)/.test(code);
+        check(raw || label !== code || /^F\d+$/.test(code) || ['Tab', 'Enter'].includes(code), `[${s}] ${action}: key ${code} has no label in codeLabel`);
+      }
+    }
+  }
+  check(codeLabel('Backslash') === '\\', 'codeLabel(Backslash) must be a backslash');
+
+  // Ayarlar -> Kontroller lists every rebindable action in both schemes (source scan: settings.ts pulls in the whole UI)
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(`${ROOT}/src/ui/panels/game/settings.ts`, 'utf8');
+  const listOf = (name) => {
+    const m = new RegExp(`const ${name}: Group\\[\\] = \\[([\\s\\S]*?)\\n\\];`).exec(src);
+    return new Set(m ? [...m[1].matchAll(/'([A-Za-z0-9_]+)'/g)].map((x) => x[1]).filter((id) => id in DEFAULT_BINDINGS) : []);
+  };
+  const SKIP = { wow: ['toggleLock', 'camShoulder'], aksiyon: ['autoAttack', 'turnLeft', 'turnRight'] }; // unbound in that scheme by design
+  for (const [s, name] of [['wow', 'GROUPS_WOW'], ['aksiyon', 'GROUPS_AKSIYON']]) {
+    const listed = listOf(name);
+    check(listed.size > 0, `${name} not found in settings.ts`);
+    const missing = Object.keys(DEFAULT_BINDINGS).filter((a) => !listed.has(a) && !SKIP[s].includes(a));
+    check(missing.length === 0, `[${s}] Ayarlar does not list: ${missing.join(', ')}`);
+  }
+}
+
 // §3.3.6 migrateControlsRev fixtures
 {
   const stored = { bindings: { skill_q: ['KeyF'], inventory: ['KeyZ'] } };
