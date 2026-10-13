@@ -64,7 +64,7 @@ export function registerWarlock(add: SkillAdd): void {
 
   // ---- Azap (§10a e): DoT whose stacks ramp per tick (one stack per cast here; the per-tick ramp is a hook, see report)
   add({
-    id: 'warlock_agony', classId: 'warlock', name: 'Azap', icon: I('skill-curse'), unlockLevel: 3, defaultSlot: 'e',
+    id: 'warlock_agony', classId: 'warlock', name: 'Azap', icon: I('skill-curse'), unlockLevel: 1, defaultSlot: 'e',
     desc: 'Hedefe Azap bırakırsın: 18 saniye boyunca gölge hasarı verir. Her yığın hasarı artırır (en çok 8).',
     cost: 5, cooldown: 0, castTime: 0, hitTime: 0.3, anim: 'Spellcast_Shoot', animSpeed: 1.7, targeting: 'custom', behavior: 'kit_target_spell',
     range: 35, damage: { coef: 0.25, type: 'shadow' },
@@ -83,7 +83,7 @@ export function registerWarlock(add: SkillAdd): void {
 
   // ---- İblis Çemberi (§9 s2, shared): teleport 14 m, removes roots and slows, off-GCD, CD 30
   add({
-    id: 'warlock_demonic_circle', classId: 'warlock', name: 'İblis Çemberi', icon: I('skill-shadow-step'), unlockLevel: 6, defaultSlot: 's2',
+    id: 'warlock_demonic_circle', classId: 'warlock', name: 'İblis Çemberi', icon: I('skill-shadow-step'), unlockLevel: 1, defaultSlot: 's2',
     desc: '14 metre ileri ışınlanırsın (hareket yönüne, yoksa nişana). Köklenmeyi ve yavaşlatmayı kaldırır; 6 saniye yerde bir çember bırakır.',
     cost: 0, cooldown: 30, castTime: 0, offGcd: true, anim: 'Dodge_Forward', animSpeed: 1.6, hitTime: 0.1, targeting: 'teleport', range: 14,
     tags: ['offgcd', 'movement', 'teleport'], vfx: { cast: 'curse_ring', impact: 'demon_portal' }, sfx: { cast: 'fel_cast', impact: 'blink' },

@@ -100,6 +100,18 @@ export const GUARD_COUNTER_CD = 0.6;
   GUARD_COUNTER_BY_CLASS.paladin = { ...GUARD_COUNTER_BY_CLASS.knight!, classId: 'paladin', id: 'paladin_basic_counter' };
 }
 
+// Warlock / Nekromant (WP-01): no guard, so the Mage's staff-and-tome moveset (projectile heavy and riposte, arcane KRT) under their own
+// ids, typed shadow. The tier-2 heavy keeps the staff art (wa_starfall_beam).
+{
+  const mg = HEAVY_BY_CLASS.mage!;
+  HEAVY_BY_CLASS.warlock = { ...mg, classId: 'warlock', id: 'warlock_basic_heavy', name: 'Yüklü Lanet Oku', type: 'shadow' };
+  RIPOSTE_BY_CLASS.warlock = { ...RIPOSTE_BY_CLASS.mage!, classId: 'warlock', id: 'warlock_basic_riposte', name: 'Karşı Lanet', type: 'shadow' };
+  KRT_BY_CLASS.warlock = { ...KRT_BY_CLASS.mage!, classId: 'warlock', id: 'warlock_basic_krt', type: 'shadow' };
+  HEAVY_BY_CLASS.necromancer = { ...mg, classId: 'necromancer', id: 'necro_basic_heavy', name: 'Yüklü Kemik Mızrağı', type: 'shadow' };
+  RIPOSTE_BY_CLASS.necromancer = { ...RIPOSTE_BY_CLASS.mage!, classId: 'necromancer', id: 'necro_basic_riposte', name: 'Kemik Karşılığı', type: 'shadow' };
+  KRT_BY_CLASS.necromancer = { ...KRT_BY_CLASS.mage!, classId: 'necromancer', id: 'necro_basic_krt', type: 'shadow' };
+}
+
 /** Weapon art (tier 2) ids per class (WEAPON_ARTS). */
 export function weaponArtVfx(artId: string): VfxId {
   return `weapon_art_${artId}` as VfxId;

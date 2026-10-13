@@ -531,10 +531,11 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
 export const CLASS_IDS: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue'];
 
 /**
- * Classes the character-creation screen offers: the four KayKit classes + the paladin (Knight rig, golden palette variant).
- * The other new classes join when their skills, model and items are merged (GDD_CLASSES_V2 §13.1 / NC60).
+ * Classes the character-creation screen offers: the four KayKit classes, the paladin (Knight rig, golden palette variant), the
+ * necromancer (Mage rig) and the warlock (Rogue rig), WP-01. The other new classes join when their skills, model and items are merged
+ * (GDD_CLASSES_V2 §13.1 / NC60).
  */
-export const PLAYABLE_CLASSES: readonly ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin'];
+export const PLAYABLE_CLASSES: readonly ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock'];
 export const isPlayableClass = (id: ClassId): boolean => (PLAYABLE_CLASSES as readonly string[]).includes(id);
 export const getClass = (id: ClassId): ClassDefX => CLASSES[id];
 

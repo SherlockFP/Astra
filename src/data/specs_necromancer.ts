@@ -60,7 +60,7 @@ const NECRO_SPEC_LIST: SpecDef[] = [
       'necro_deaths_advance', 'necro_anti_magic_shell', 'necro_mind_freeze',
     ],
     unlock: {
-      necro_scourge_strike: 1, necro_death_coil: 3, necro_festering_strike: 6, necro_outbreak: 10,
+      necro_scourge_strike: 1, necro_death_coil: 1, necro_festering_strike: 1, necro_outbreak: 10,
       necro_mind_freeze: 10, necro_anti_magic_shell: 15, necro_deaths_advance: 6,
     },
     treeSkills: { necro_epidemic: 's05' },

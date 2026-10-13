@@ -130,9 +130,17 @@ const PL_RUN: MoveProfile = { ...KN_RUN, classId: 'paladin', id: 'paladin_basic_
 const PL_JUMP: MoveProfile = { ...KN_JUMP, classId: 'paladin', id: 'paladin_basic_jump', name: 'Kutsal Dalış' };
 const PL_ROLL: MoveProfile = { ...KN_ROLL, classId: 'paladin', id: 'paladin_basic_roll', name: 'Yuvarlanma Darbesi' };
 
-export const RUN_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_RUN, barbarian: BB_RUN, mage: MG_RUN, rogue: RG_RUN, paladin: PL_RUN };
-export const JUMP_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_JUMP, barbarian: BB_JUMP, mage: MG_JUMP, rogue: RG_JUMP, paladin: PL_JUMP };
-export const ROLL_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_ROLL, barbarian: BB_ROLL, mage: MG_ROLL, rogue: RG_ROLL, paladin: PL_ROLL };
+// Warlock / Nekromant (WP-01): the Mage's projectile run / jump / roll under their own ids, typed shadow
+const WL_RUN: MoveProfile = { ...MG_RUN, classId: 'warlock', id: 'warlock_basic_run', name: 'Koşarak Lanet', type: 'shadow' };
+const WL_JUMP: MoveProfile = { ...MG_JUMP, classId: 'warlock', id: 'warlock_basic_jump', name: 'Süzülen Lanet', type: 'shadow' };
+const WL_ROLL: MoveProfile = { ...MG_ROLL, classId: 'warlock', id: 'warlock_basic_roll', name: 'Çapraz Lanet', type: 'shadow' };
+const NE_RUN: MoveProfile = { ...MG_RUN, classId: 'necromancer', id: 'necro_basic_run', name: 'Koşarak Kemik Fırlatma', type: 'shadow' };
+const NE_JUMP: MoveProfile = { ...MG_JUMP, classId: 'necromancer', id: 'necro_basic_jump', name: 'Süzülen Kemik Salvosu', type: 'shadow' };
+const NE_ROLL: MoveProfile = { ...MG_ROLL, classId: 'necromancer', id: 'necro_basic_roll', name: 'Çapraz Kemik', type: 'shadow' };
+
+export const RUN_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_RUN, barbarian: BB_RUN, mage: MG_RUN, rogue: RG_RUN, paladin: PL_RUN, warlock: WL_RUN, necromancer: NE_RUN };
+export const JUMP_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_JUMP, barbarian: BB_JUMP, mage: MG_JUMP, rogue: RG_JUMP, paladin: PL_JUMP, warlock: WL_JUMP, necromancer: NE_JUMP };
+export const ROLL_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_ROLL, barbarian: BB_ROLL, mage: MG_ROLL, rogue: RG_ROLL, paladin: PL_ROLL, warlock: WL_ROLL, necromancer: NE_ROLL };
 export const MOVE_BY_KIND: Record<MoveKind, Partial<Record<ClassId, MoveProfile>>> = { run: RUN_BY_CLASS, jump: JUMP_BY_CLASS, roll: ROLL_BY_CLASS };
 
 function toSkillDef(p: MoveProfile): SkillDef {
@@ -153,7 +161,7 @@ function toSkillDef(p: MoveProfile): SkillDef {
 
 /** Every move def, merged into the shared registry (remote replays look them up by id). */
 export const MOVE_SKILLS: Record<string, SkillDef> = {};
-for (const p of [KN_RUN, KN_JUMP, KN_ROLL, BB_RUN, BB_JUMP, BB_ROLL, MG_RUN, MG_JUMP, MG_ROLL, RG_RUN, RG_JUMP, RG_ROLL, PL_RUN, PL_JUMP, PL_ROLL]) {
+for (const p of [KN_RUN, KN_JUMP, KN_ROLL, BB_RUN, BB_JUMP, BB_ROLL, MG_RUN, MG_JUMP, MG_ROLL, RG_RUN, RG_JUMP, RG_ROLL, PL_RUN, PL_JUMP, PL_ROLL, WL_RUN, WL_JUMP, WL_ROLL, NE_RUN, NE_JUMP, NE_ROLL]) {
   MOVE_SKILLS[p.id] = toSkillDef(p);
 }
 Object.assign(SKILLS, MOVE_SKILLS);
