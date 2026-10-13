@@ -54,6 +54,8 @@ export interface CooldownInfo {
 export interface StrikeOpts {
   coef?: number;
   flat?: number;
+  /** Threat multiplier of this hit (defaults to the skill's `threatMult` param). */
+  threatMult?: number;
   type?: HitSpec['type'];
   tick?: boolean;
   dir?: [number, number];
@@ -273,6 +275,8 @@ export class SkillSystem {
   aimProvider: (() => AimInfo) | null = null;
   /** Seconds since the last major-cooldown save (CharacterSave.majorCd is written once per second). */
   private majorAcc = 0;
+  /** KIT PM-BA: next time a `tauntIcd` skill may taunt an enemy again, keyed `skill:enemy` (Kükreyen Balta). */
+  private tauntIcdUntil = new Map<string, number>();
   private states = new Map<EntityId, ActorState>();
   /** Sim time of the last resource gain (Öfke Makinesi: rage does not decay for a while after gaining). */
   lastResourceGainAt = -99;
@@ -1307,6 +1311,8 @@ export class SkillSystem {
       c.more *= pm.more;
       c.data.procMods = pm;
     }
+    // KIT PM-KN (Kalkan Darbesi x1.3 under shield_block): a status read at cast start, the status is not consumed
+    if (def.whileStatusMult && p.statuses.has(def.whileStatusMult.status)) c.more *= def.whileStatusMult.mult;
     const params = def.params ?? {};
     const rate = this.speedFactor(p, def);
     // GDD_LIFE §5.3: the LMB chain tempo follows the equipped weapon (FEEL.basicTempo x FEEL_WEAPON.tempo)
@@ -1442,10 +1448,13 @@ export class SkillSystem {
       }
     }
     if (pm) {
-      // the procs this cast was made under are spent now; onConsume.healPct heals once per cast
+      // the procs this cast was made under are spent now; onConsume.healPct heals once per cast, `resource` is granted once
       const heal = consumeProcMods(p.statuses, pm);
       if (heal > 0) G.combat.healPlayer(p, p, p.maxHp * heal, { quiet: true });
+      if (pm.resource > 0) this.addResource(p, pm.resource);
     }
+    // KIT PM-KN (Savaş Avatarı): the cast cleanses the listed statuses from the caster
+    for (const s of def.cleanses ?? []) p.statuses.dispel(s);
     // GDD_TALENTS T7 triggers: `cast` (every paid cast) and `major` (the m45 / m90 / m180 slots)
     G.procs?.emit('cast', { player: p, skillId: def.id, tags: def.tags, target: a?.ctx.target ?? null });
     if (isMajorDef(def)) G.procs?.emit('major', { player: p, skillId: def.id, tags: def.tags });
@@ -1661,6 +1670,19 @@ export class SkillSystem {
   private startCooldown(p: Actor, st: ActorState, def: SkillDef): void {
     const cd = this.cooldownOf(p, def);
     if (cd <= 0) return;
+    this.spendCooldown(p, st, def, cd);
+    // KIT PM-BA (Kan Susuzluğu / Kan Banyosu): a `sharedCd` group starts every member's cooldown together
+    if (def.sharedCd) {
+      for (const sib of Object.values(SKILLS)) {
+        if (sib.id !== def.id && sib.sharedCd === def.sharedCd) {
+          const sibCd = this.cooldownOf(p, sib);
+          if (sibCd > 0) this.spendCooldown(p, st, sib, sibCd);
+        }
+      }
+    }
+  }
+
+  private spendCooldown(p: Actor, st: ActorState, def: SkillDef, cd: number): void {
     const max = this.chargesOf(p, def);
     let c = st.cds.get(def.id);
     if (!c) { c = { charges: max, max, total: cd, rechargeAt: 0 }; st.cds.set(def.id, c); }
@@ -2685,8 +2707,9 @@ export class SkillSystem {
       isSpell: d.tags.includes('spell'),
       canCrit: o.canCrit,
       critBonus: (pr.critBonus ?? 0) + (mage?.critBonus ?? 0) + (pm?.critBonus ?? 0),
-      statuses: o.statuses ?? d.statuses,
+      statuses: o.tick ? (o.statuses ?? d.statuses) : this.tauntRule(d, e, o.statuses ?? d.statuses),
       knockback: o.knockback ?? (o.tick ? 0 : d.knockback),
+      threatMult: o.threatMult ?? pr.threatMult,
       tags: d.tags,
       dir: o.dir ?? this.dirTo(c.caster, e),
       pos: o.pos,
@@ -2703,6 +2726,10 @@ export class SkillSystem {
     if (o.tick && d.tags.includes('melee')) spec.tags = d.tags.filter((t) => t !== 'melee');
     if (o.noHitstop) spec.noHitstop = true;
     const res = G.combat.playerHitEnemy(c.caster, e, spec);
+    // KIT PM-BA (Kan Susuzluğu): a landed hit heals the caster `hitHealPct` of max HP
+    if (res && !o.tick && pr.hitHealPct && res.amount > 0 && !res.dodged && !res.immune && !res.parried) {
+      G.combat.healPlayer(c.caster, c.caster as Player, c.caster.maxHp * pr.hitHealPct, { quiet: true });
+    }
     // GDD_LIFE §5.9: finishing a full chain at combo tier >= 2 refunds a share of max resource, once per chain (per cast)
     if (res && pr.finisher && !c.data.comboRefund && G.combat.combo.tier >= 2 && c.caster.maxResource > 0) {
       c.data.comboRefund = true;
@@ -2714,6 +2741,20 @@ export class SkillSystem {
     const rider = c.data.rider as CleaveRider | undefined;
     if (res && rider && !o.tick && !o.noRider && res.amount > 0 && !res.dodged && !res.immune && !res.parried) this.riderCleave(c, e, rider, o);
     return res;
+  }
+
+  /**
+   * KIT PM-BA (Kükreyen Balta): a `tauntIcd` skill taunts each enemy at most once per `tauntIcd` seconds, and a boss gets the
+   * shorter `bossTaunt` duration. Non-taunt statuses always pass through.
+   */
+  private tauntRule(d: SkillDef, e: Enemy, statuses: StatusApply[] | undefined): StatusApply[] | undefined {
+    const pr = d.params ?? {};
+    if (!statuses || !pr.tauntIcd || !statuses.some((s) => s.status === 'taunt')) return statuses;
+    const key = `${d.id}:${e.id}`;
+    if (this.now < (this.tauntIcdUntil.get(key) ?? -Infinity)) return statuses.filter((s) => s.status !== 'taunt');
+    this.tauntIcdUntil.set(key, this.now + pr.tauntIcd);
+    if (e.def.rank !== 'boss' || pr.bossTaunt === undefined) return statuses;
+    return statuses.map((s) => (s.status === 'taunt' ? { ...s, duration: pr.bossTaunt } : s));
   }
 
   /** PM-00b: the cleave rider's extra strikes (nearest first, `extraTargets` of them, `extraMult` damage, no hit-stop, no riders). */
@@ -2746,6 +2787,9 @@ export class SkillSystem {
       if (c.def.tags.includes('basic')) this.gainResource(c.caster, g);
       else this.addResource(c.caster, g);
     }
+    // KIT PM-KN (Çelik Girdap): a cast that hits enough enemies applies its rider to the caster (sweeping at 3+ targets)
+    const oh = c.def.onHitsAtLeast;
+    if (oh && results.filter((r) => r.amount > 0).length >= oh.n) this.applySelf(c, [{ status: oh.status, duration: oh.dur }]);
     if (p.cp) this.addCombo(c.caster, p.cp);
     if (c.def.sfx?.impact && !c.data.impactSfx) {
       c.data.impactSfx = true;

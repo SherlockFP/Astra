@@ -19,10 +19,11 @@ export const PROC_DEFS_KIT_KNIGHT: ProcDef[] = [
 /**
  * Proc mods (§1b / §2b). Ani Ölüm: Cellat Vuruşu costs 0 and is usable at any target HP, +15 % damage, one stack per cast.
  * Savaş Efendisi: Üstün Vuruş is free and does not start its cooldown (the spent charge is not refunded: no chargeFree field yet).
- * İntikam Hazır: İntikam costs 0 and deals +25 %; its threat x2 is not modelled here.
+ * İntikam Hazır: İntikam costs 0 and deals +25 %; its threat x2 is the knight_revenge `threatMult` param (skill row, not here).
+ * Ani Ölüm consumes ONE stack per execute (both Şövalye and Barbar execute), the status keeps the rest.
  */
 export const PROC_MODS_KIT_KNIGHT: ProcMod[] = [
-  { status: 'sudden_death', skills: ['knight_execute', 'barbarian_execute'], costMult: 0, anyHp: true, more: 1.15, consume: 'cast' },
+  { status: 'sudden_death', skills: ['knight_execute', 'barbarian_execute'], costMult: 0, anyHp: true, more: 1.15, consume: 'cast', consumeOne: true },
   { status: 'battlelord', skills: ['knight_overpower'], costMult: 0, cdFree: true, consume: 'cast' },
   { status: 'revenge_ready', skills: ['knight_revenge'], costMult: 0, more: 1.25, consume: 'cast' },
 ];

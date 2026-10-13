@@ -53,6 +53,8 @@ export interface HitSpec {
   forceCrit?: boolean;
   /** Extra multiplicative damage (DAHA FAZLA) on top of statuses/combo. */
   more?: number;
+  /** Threat multiplier of this hit (KIT PM-KN: Revenge x2). Default 1. */
+  threatMult?: number;
   /** Feel class: drives hit-stop, shake, knockback class, flinch. */
   weight?: HitWeight;
   hitstop?: number;             // ms override (base, before crit/kill bonuses)
@@ -132,6 +134,8 @@ export interface ApplyDamageOpts {
   noReact?: boolean;
   tick?: boolean;
   skillId?: string;
+  /** Threat multiplier of the hit (EnemyAI.onDamaged). */
+  threatMult?: number;
 }
 
 /** One frame of accumulated game feel (see Combat.noteFeel / flushFeel). */
@@ -394,7 +398,7 @@ export class Combat {
     attacker.combatTimer = 0;
 
     let killed = false;
-    const opts: ApplyDamageOpts = { skillId: spec.skillId, dot: spec.isDot, weight, stagger, knockup: spec.knockup, pos, noReact: spec.noReact, tick: spec.tick };
+    const opts: ApplyDamageOpts = { skillId: spec.skillId, dot: spec.isDot, weight, stagger, knockup: spec.knockup, pos, noReact: spec.noReact, tick: spec.tick, threatMult: spec.threatMult };
     if (!G.net || G.net.isAuthority) {
       this.applyDamageToEnemy(target, amount, roll.crit, spec.type, attacker.id, statuses, spec.skillId, spec.knockback, dir, opts);
       killed = target.isDead;
@@ -816,7 +820,7 @@ export class Combat {
     if (amount > 0) {
       target.hp = Math.max(0, target.hp - amount);
       target.combatTimer = 0;
-      try { target.ai?.onDamaged?.(sourceId, amount); } catch (e) { console.error('[combat] ai.onDamaged failed', e); }
+      try { target.ai?.onDamaged?.(sourceId, amount, opts.threatMult); } catch (e) { console.error('[combat] ai.onDamaged failed', e); }
       G.net?.broadcast('dmg', { targetId: target.id, amount, crit, type, sourceId, hp: target.hp, dot: dot || undefined });
       if (dot) this.dotLeech(sourceId, amount);
       this.showEnemyHit(target, amount, crit, type, sourceId, dir ?? [0, 1], { ...opts, skillId: opts.skillId ?? skillId }, Math.min(amount, hpBefore));

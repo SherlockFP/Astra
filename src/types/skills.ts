@@ -102,6 +102,15 @@ export interface SkillDef {
   offGcd?: boolean;
   /** Homing turn rate in rad/s for `target_projectile` (bolts 5, Kaos Oku 4, missiles 9). */
   homing?: number;
+  // ---- PM-KN / PM-BA (plate-melee §g, append-only). Object-valued rules: `params` is numeric only, so they live here.
+  /** Non-consuming damage multiplier while `status` is up on the caster when the cast starts (Kalkan Darbesi x1.3 under shield_block). */
+  whileStatusMult?: { status: StatusId; mult: number };
+  /** Rider: a cast that hits at least `n` enemies applies `status` to the caster for `dur` s (Çelik Girdap -> sweeping at 3+). */
+  onHitsAtLeast?: { n: number; status: StatusId; dur: number };
+  /** Statuses removed from the caster when the cast is paid (Savaş Avatarı cleanses root and slow). */
+  cleanses?: StatusId[];
+  /** Cooldown group: casting one skill starts the cooldown of every skill with the same `sharedCd` (Kan Susuzluğu / Kan Banyosu). */
+  sharedCd?: string;
 }
 
 export type StatusId =

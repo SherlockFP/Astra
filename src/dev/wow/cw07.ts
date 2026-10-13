@@ -71,20 +71,21 @@ registerWowCheck({
   },
 });
 
-// Proc mods (§2.7): revenge_ready makes knight_shield_bash free, without a cooldown, and the status is spent by consume.
+// Proc mods (§2.7): revenge_ready makes knight_revenge free and +25 %, and the status is spent by consume. (PM-KN moved the
+// revenge_ready row from knight_shield_bash to knight_revenge; the shield bash gets its shield_block x1.3 from its own row.)
 registerWowCheck({
   id: 'cw07.mods',
   run: () => {
     const active = new Set<string>(['revenge_ready']);
     const view = { has: (s: string) => active.has(s), stacks: () => 0 };
-    const r = resolveProcMods(view, 'knight_shield_bash');
+    const r = resolveProcMods(view, 'knight_revenge');
     const none = resolveProcMods(view, 'knight_charge');
     const host = { ...view, remove: (s: string) => { active.delete(s); } };
     const heal = consumeProcMods(host, r);
     const again = consumeProcMods(host, r);
-    const ok = !!r && r.costMult === 0 && r.cdFree && r.more === 1.4 && none === null && heal === 0 && again === 0 && !active.has('revenge_ready');
+    const ok = !!r && r.costMult === 0 && !r.cdFree && r.more === 1.25 && none === null && heal === 0 && again === 0 && !active.has('revenge_ready');
     return ok
-      ? { ok: true, msg: 'revenge_ready: knight_shield_bash cost ×0, cdFree, more ×1.4; statüs tüketimde kalkar' }
+      ? { ok: true, msg: 'revenge_ready: knight_revenge cost ×0, more ×1.25; statüs tüketimde kalkar' }
       : { ok: false, msg: `proc mod çözümü uyuşmuyor: ${JSON.stringify(r)}` };
   },
 });

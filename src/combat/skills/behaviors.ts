@@ -1488,7 +1488,8 @@ const execute: Behavior = {
     const frac = t.hp / Math.max(1, t.maxHp);
     const cull = frac < (p.cull ?? 0.1) && (t.def.rank === 'trash' || t.def.rank === 'elite');
     const low = frac < (p.threshold ?? 0.35);
-    c.sys.strike(c, t, { coef: def.damage?.coef ?? 3.5, stagger: p.stagger ?? 25, more: cull ? 20 : low ? 1.3 : 1, weight: 'heavy' });
+    // KIT PM-KN: Cellat Vuruşu uses this behaviour with threshold 0.2, execBonus 1.25, cull 0 and refund 0 (its params)
+    c.sys.strike(c, t, { coef: def.damage?.coef ?? 3.5, stagger: p.stagger ?? 25, more: cull ? 20 : low ? (p.execBonus ?? 1.3) : 1, weight: 'heavy' });
     if (t.isDead) c.sys.addResource(caster, p.refund ?? 15);
   },
 };

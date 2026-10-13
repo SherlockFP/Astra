@@ -46,6 +46,10 @@ export interface ProcMod {
   anyHp?: boolean;
   /** Consumed on a cast of a listed skill. */
   consume: 'cast';
+  /** Consume one stack only (the status keeps its other stacks). Ani Ölüm: 2 stacks, one per Cellat / İdam. */
+  consumeOne?: boolean;
+  /** Resource gained when the proc is consumed (Kanlı Fırsat: +5 Öfke on Yarma). */
+  resource?: number;
   /** Effects applied when the proc is consumed. */
   onConsume?: { healPct?: number };
 }
@@ -94,6 +98,10 @@ export interface ResolvedProcMods {
   bonusPips: { id: PipId; n: number }[];
   /** Heal fraction of max HP granted on consume (summed). */
   healPct: number;
+  /** Sources that lose one stack on consume instead of the whole status. */
+  oneStack: StatusId[];
+  /** Resource granted on consume (summed). */
+  resource: number;
 }
 
 /**
@@ -106,7 +114,7 @@ export function resolveProcMods(p: ProcStatusView, skillId: string): ResolvedPro
     if (!mod || !p.has(mod.status) || !mod.skills.includes(skillId)) continue;
     out ??= {
       skillId, sources: [], costMult: 1, castTimeMult: 1, more: 1, critBonus: 0, forceCrit: false,
-      cdFree: false, cdReset: false, anyHp: false, bonusPips: [], healPct: 0,
+      cdFree: false, cdReset: false, anyHp: false, bonusPips: [], healPct: 0, oneStack: [], resource: 0,
     };
     out.sources.push(mod.status);
     out.costMult *= mod.costMult ?? 1;
@@ -119,6 +127,8 @@ export function resolveProcMods(p: ProcStatusView, skillId: string): ResolvedPro
     out.anyHp ||= mod.anyHp ?? false;
     if (mod.bonusPips) out.bonusPips.push(mod.bonusPips);
     out.healPct += mod.onConsume?.healPct ?? 0;
+    if (mod.consumeOne) out.oneStack.push(mod.status);
+    out.resource += mod.resource ?? 0;
   }
   return out;
 }
@@ -126,6 +136,8 @@ export function resolveProcMods(p: ProcStatusView, skillId: string): ResolvedPro
 /** The part of StatusEffects that consumption needs. */
 export interface ProcStatusHost extends ProcStatusView {
   remove(id: StatusId): void;
+  /** One stack off (StatusEffects.consumeStack). Optional: fakes without it lose the whole status. */
+  consumeStack?(id: StatusId): boolean;
 }
 
 /**
@@ -137,7 +149,8 @@ export function consumeProcMods(p: ProcStatusHost, r: ResolvedProcMods | null): 
   let consumed = 0;
   for (const id of r.sources) {
     if (!p.has(id)) continue;
-    p.remove(id);
+    if (r.oneStack.includes(id) && p.consumeStack) p.consumeStack(id);
+    else p.remove(id);
     consumed++;
   }
   return consumed > 0 ? r.healPct : 0;

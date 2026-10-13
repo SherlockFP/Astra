@@ -60,7 +60,7 @@ export function registerKnight(add: SkillAdd): void {
     id: 'knight_avatar', classId: 'knight', name: 'Savaş Avatarı', icon: I('skill-battle-shout'), unlockLevel: 20, defaultSlot: 'm90',
     desc: '20 saniye boyunca verdiğin hasar %20 artar.',
     cost: 0, cooldown: 90, castTime: 0, anim: 'Cheer', animSpeed: 1.4, hitTime: 0.3, targeting: 'self_buff', offGcd: true,
-    selfStatuses: [{ status: 'avatar', duration: 20, magnitude: 0.2 }], tags: ['major', 'offensive', 'buff'],
+    selfStatuses: [{ status: 'avatar', duration: 20, magnitude: 0.2 }], tags: ['major', 'offensive', 'buff'], cleanses: ['root', 'slow'],
     vfx: { cast: 'zeal_aura' }, sfx: { cast: 'buff' },
   });
   add({
@@ -84,9 +84,9 @@ export function registerKnight(add: SkillAdd): void {
     id: 'knight_execute', classId: 'knight', spec: 'knight_blademaster', name: 'Cellat Vuruşu', icon: I('skill-execute'), unlockLevel: 10,
     desc: 'Ağır bir darbeyle %440 fiziksel hasar verirsin; hedef canının %20\'sinin altındaysa %25 daha fazla vurursun. Ani Ölüm aktifken 25 Kararlılık harcamaz.',
     cost: 25, cooldown: 0, castTime: 0, anim: '1H_Melee_Attack_Chop', animSpeed: 0.95, hitTime: 0.45, targeting: 'target_instant', range: 3.2,
-    damage: { coef: 4.4, type: 'physical' }, tags: ['melee', 'physical', 'execute'],
+    damage: { coef: 4.4, type: 'physical' }, tags: ['melee', 'physical', 'execute'], behavior: 'execute',
     vfx: { trail: 'crit_finisher_slash', impact: 'fire_burst' }, sfx: { cast: 'swing_heavy', impact: 'heavy_hit' },
-    params: { stagger: 20, execBonus: 1.25, threshold: 0.2 },
+    params: { stagger: 20, execBonus: 1.25, threshold: 0.2, cull: 0, refund: 0 },
   });
   add({
     id: 'knight_overpower', classId: 'knight', spec: 'knight_blademaster', name: 'Üstün Vuruş', icon: I('skill-sword-slash'), unlockLevel: 10,
@@ -108,7 +108,8 @@ export function registerKnight(add: SkillAdd): void {
     desc: 'Önündeki 180 derecelik yayda her düşmana %200 fiziksel hasar verirsin. Her vurduğun düşman için 2 Kararlılık geri kazanırsın (en fazla 8 düşman). 20 Kararlılık harcarsın.',
     cost: 20, cooldown: 0, castTime: 0, anim: '2H_Melee_Attack_Spin', animSpeed: 2.0, hitTime: 0.427, targeting: 'melee_arc',
     range: 4.5, arc: 180, damage: { coef: 2.0, type: 'physical' },
-    tags: ['melee', 'physical', 'aoe'], vfx: { trail: 'slash_arc_big', impact: 'spin_slash' }, sfx: { cast: 'swing_heavy' },
+    tags: ['melee', 'physical', 'aoe'], onHitsAtLeast: { n: 3, status: 'sweeping', dur: 6 },
+    vfx: { trail: 'slash_arc_big', impact: 'spin_slash' }, sfx: { cast: 'swing_heavy' },
     params: { end: 0.75, chain: 0.08, move: 0.2, stagger: 12, proc: 1, weight: 2, slow: 0.7, root: 1, gainPerTarget: 2, gainPerTargetMax: 8 },
   });
   add({
@@ -165,7 +166,7 @@ export function registerKnight(add: SkillAdd): void {
     id: 'knight_shield_bash', classId: 'knight', name: 'Kalkan Darbesi', icon: I('skill-shield-bash'), unlockLevel: 1, defaultSlot: 'rmb',
     desc: 'Kalkanınla önündeki düşmanlara %300 silah hasarı verir ve onları geri itersin. 15 Kararlılık kazandırır.',
     cost: -15, cooldown: 9, castTime: 0, anim: 'Block_Attack', animSpeed: 1.45, hitTime: 0.427, targeting: 'melee_arc', range: 2.8, arc: 100,
-    damage: { coef: 3.0, type: 'physical' }, knockback: 2.5,
+    damage: { coef: 3.0, type: 'physical' }, knockback: 2.5, whileStatusMult: { status: 'shield_block', mult: 1.3 },
     tags: ['melee', 'shield'], vfx: { impact: 'block_spark', cast: 'shockwave' }, sfx: { cast: 'swing_heavy', impact: 'shield_bash' },
     params: { end: 0.64, chain: 0.08, move: 0.18, stagger: 25, proc: 1, weight: 2, lunge: 0.6, slow: 0.7 },
   });
@@ -175,7 +176,7 @@ export function registerKnight(add: SkillAdd): void {
     cost: 20, cooldown: 0, castTime: 0, anim: '1H_Melee_Attack_Slice_Horizontal', animSpeed: 1.3, hitTime: 0.427, targeting: 'melee_arc',
     range: 3.4, arc: 150, damage: { coef: 2.0, type: 'physical' }, tags: ['melee', 'physical', 'aoe'],
     vfx: { trail: 'slash_arc_big', impact: 'shockwave' }, sfx: { cast: 'swing_heavy', impact: 'hit_armor_plate' },
-    params: { stagger: 12, maxTargets: 5 },
+    params: { stagger: 12, maxTargets: 5, threatMult: 2 },
   });
   add({
     id: 'knight_thunder_clap', classId: 'knight', spec: 'knight_protector', name: 'Gök Gürültüsü', icon: I('skill-hammer-of-justice'), unlockLevel: 12,

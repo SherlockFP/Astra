@@ -27,8 +27,8 @@ export const PROC_DEFS_KIT_BARBARIAN: ProcDef[] = [
 ];
 
 export const PROC_MODS_KIT_BARBARIAN: ProcMod[] = [
-  // Kanlı Fırsat: the next Yarma is free of cooldown (reset) and hits for +15 %
-  { status: 'gore', skills: ['barbarian_cleave'], cdReset: true, more: 1.15, consume: 'cast' },
+  // Kanlı Fırsat: the next Yarma is free of cooldown (reset), hits for +15 % and grants +5 Öfke
+  { status: 'gore', skills: ['barbarian_cleave'], cdReset: true, more: 1.15, resource: 5, consume: 'cast' },
   { status: 'gory_maul', skills: ['barbarian_maul'], costMult: 0, consume: 'cast' },
   { status: 'gory_iron', skills: ['barbarian_iron_stance'], costMult: 0, consume: 'cast' },
 ];

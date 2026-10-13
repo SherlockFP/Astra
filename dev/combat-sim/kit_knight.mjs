@@ -1,8 +1,8 @@
 // KIT PM-KN checks (docs/kits/plate-melee.md §1, §2, f1a, f3, §g) that need no browser.
 // Run: node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/kit_knight.mjs
-// Covered: pmkn.ids, pmkn.apl, pmkn.cd, pmkn.res, pmkn.coef, pmkn.procs, pmkn.anger, pmkn.block, pmkn.gain, pmkn.mods, pmkn.dropped.
-// Not covered here (browser / SimBench): pmkn.parry (perfect parry -> revenge_ready), pmkn.ledger (60 s APL rage budget),
-// pmkn.mit (Kalkan Kaldır uptime), the sudden_death PRD trigger (spec fx not wired), hit-stop and VFX feel.
+// Covered: pmkn.ids, pmkn.apl, pmkn.cd, pmkn.res, pmkn.coef, pmkn.procs, pmkn.anger, pmkn.block, pmkn.gain, pmkn.mods, pmkn.dropped,
+//          pmkn.fx (spec fx triggers, incl. parry -> revenge_ready), pmkn.exec, pmkn.stack, pmkn.bash, pmkn.sweep, pmkn.revenge, pmkn.avatar.
+// Not covered here (browser / SimBench): pmkn.ledger (60 s APL rage budget), pmkn.mit (Kalkan Kaldır uptime), hit-stop and VFX feel.
 import * as H from './harness.mjs';
 
 const { G, SKILLS } = H;
@@ -233,6 +233,196 @@ for (const [specId, slotSkill] of [['knight_blademaster', 'knight_colossus_smash
   const inUse = retired.filter((id) => [ARMS, PROT].some((s) => Object.values(s.defaultBar).includes(id) || s.skills.includes(id)));
   ok('pmkn.dropped retired rows are in no spec list or bar', inUse.length === 0, inUse.join(','));
   ok('pmkn.dropped every retired row still resolves (saved bars, talent nodes)', retired.every((id) => !!SKILLS[id]));
+}
+
+// ---- pmkn.fix: the plate-melee gap list (spec fx triggers, execute gate, one-stack Ani Ölüm, shield_block x1.3, sweeping,
+// revenge threat / cap, Avatar cleanse). The live ProcEngine is not built by the harness: the spec rows are folded the way
+// StatCalc.collectFx folds them (parseFx -> collectProcs), so this exercises the same entries the game registers.
+const { ProcEngine, collectProcs } = await H.imp('combat/Procs.ts');
+const { parseFx } = await H.imp('data/talentTrees/fx.ts');
+const tagsOf = (id) => SKILLS[id].tags;
+
+// 1. spec fx triggers proc: Ani Ölüm (weapon chain hit), Savaş Efendisi (Ölümcül Darbe hit), İntikam Hazır (block, parry)
+{
+  ok('pmkn.fx blademaster fx parses without errors', parseFx(ARMS.fx).errors.length === 0, parseFx(ARMS.fx).errors.join(' | '));
+  ok('pmkn.fx protector fx parses without errors', parseFx(PROT.fx).errors.length === 0, parseFx(PROT.fx).errors.join(' | '));
+  const eng = new ProcEngine();
+  G.procs = eng;
+  eng.setEntries(collectProcs(parseFx(ARMS.fx).items, 'spec:knight_blademaster'));
+  const p = H.addPlayer('knight');
+  p.spec = 'knight_blademaster';
+  let sdMax = 0;
+  for (let i = 0; i < 80; i++) {
+    eng.update(3.2); // Ani Ölüm icd 3 s
+    eng.emit('hit', { player: p, skillId: 'knight_basic_1', tags: tagsOf('knight_basic_1') });
+    sdMax = Math.max(sdMax, p.statuses.stacks('sudden_death'));
+  }
+  ok('pmkn.fx Ani Ölüm procs from a weapon chain hit (10 %, PRD)', sdMax >= 1, `max stacks=${sdMax}`);
+  ok('pmkn.fx Ani Ölüm caps at 2 stacks', sdMax <= 2, `max stacks=${sdMax}`);
+  p.statuses.remove('sudden_death');
+  for (let i = 0; i < 40; i++) eng.emit('hit', { player: p, skillId: 'knight_rend', tags: tagsOf('knight_rend') });
+  ok('pmkn.fx Ani Ölüm ignores non-chain skills', !p.statuses.has('sudden_death'));
+  let bl = false;
+  for (let i = 0; i < 60 && !bl; i++) {
+    eng.update(0.3);
+    eng.emit('hit', { player: p, skillId: 'knight_mortal_strike', tags: tagsOf('knight_mortal_strike') });
+    bl = p.statuses.has('battlelord');
+  }
+  ok('pmkn.fx Savaş Efendisi procs from Ölümcül Darbe (25 %, PRD)', bl);
+  p.statuses.remove('battlelord');
+  for (let i = 0; i < 40; i++) { eng.update(0.3); eng.emit('hit', { player: p, skillId: 'knight_rend', tags: tagsOf('knight_rend') }); }
+  ok('pmkn.fx Savaş Efendisi ignores other skills', !p.statuses.has('battlelord'));
+
+  eng.setEntries(collectProcs(parseFx(PROT.fx).items, 'spec:knight_protector'));
+  p.spec = 'knight_protector';
+  p.statuses.remove('revenge_ready');
+  eng.emit('parry', { player: p });
+  ok('pmkn.fx perfect parry lights İntikam Hazır (100 %)', p.statuses.has('revenge_ready'));
+  p.statuses.remove('revenge_ready');
+  let rb = false;
+  for (let i = 0; i < 60 && !rb; i++) {
+    eng.update(1.6); // block icd 1.5 s
+    eng.emit('block', { player: p });
+    rb = p.statuses.has('revenge_ready');
+  }
+  ok('pmkn.fx block lights İntikam Hazır (30 %, PRD)', rb);
+  G.procs = undefined;
+}
+
+// 2. knight_execute: <20 % gate (lifted by sudden_death), x1.25 below the threshold, no barbarian cull
+{
+  const p = H.addPlayer('knight');
+  p.spec = 'knight_blademaster';
+  p.statuses.remove('sudden_death');
+  p.yaw = 0;
+  const e = H.addEnemy(0, 2, { hp: 1000 });
+  e.maxHp = 1000;
+  e.hp = 250;
+  H.step(2);
+  ok('pmkn.exec refused at 25 % HP without sudden_death', BEHAVIORS.execute.begin(ctxFor(p, K('knight_execute'), e)) === false);
+  p.statuses.apply('sudden_death', 12, {});
+  ok('pmkn.exec allowed at 25 % HP with sudden_death', BEHAVIORS.execute.begin(ctxFor(p, K('knight_execute'), e)) !== false);
+  p.statuses.remove('sudden_death');
+  const mores = [];
+  const orig = G.skills.strike.bind(G.skills);
+  G.skills.strike = (c, t, o = {}) => { if (c.def.id === 'knight_execute') mores.push(o.more); return orig(c, t, o); };
+  try {
+    e.hp = 150;
+    const c15 = ctxFor(p, K('knight_execute'), e);
+    if (BEHAVIORS.execute.begin(c15) !== false) BEHAVIORS.execute.fire(c15);
+    // 5 % trash: a barbarian-style cull (x20) must not apply to the knight (fresh target; the 15 % one is dead or nearly so)
+    const e2 = H.addEnemy(0, 2.3, { hp: 1000, rank: 'trash' });
+    e2.maxHp = 1000;
+    e2.hp = 50;
+    const c05 = ctxFor(p, K('knight_execute'), e2);
+    if (BEHAVIORS.execute.begin(c05) !== false) BEHAVIORS.execute.fire(c05);
+  } finally {
+    G.skills.strike = orig;
+  }
+  ok('pmkn.exec x1.25 below 20 % HP', mores.length >= 1 && near(mores[0], 1.25, 1e-9), `more=${mores.join(',')}`);
+  ok('pmkn.exec no x20 cull for the knight', mores.every((m) => near(m, 1.25, 1e-9)), `more=${mores.join(',')}`);
+}
+
+// 3. Ani Ölüm consumes ONE stack per execute (real StatusEffects), free while it lasts
+{
+  const p = H.addPlayer('knight');
+  p.spec = 'knight_blademaster';
+  p.statuses.apply('sudden_death', 12, { stacks: 2 });
+  ok('pmkn.stack sudden_death holds 2 stacks', p.statuses.stacks('sudden_death') === 2, `stacks=${p.statuses.stacks('sudden_death')}`);
+  const e = H.addEnemy(0, 2, { hp: 1e6 });
+  e.maxHp = 1e6;
+  e.hp = 150000; // 15 %: the cast hits but does not kill
+  p.yaw = 0;
+  p.resource = 100;
+  H.step(2);
+  G.character.save.skillBar.q = 'knight_execute';
+  H.setAimTarget(e);
+  const r0 = p.resource;
+  const cast1 = G.skills.tryCastSlot(p, 'q', H.aimFor(p, e));
+  ok('pmkn.stack first execute casts', cast1 === true);
+  H.stepSec(0.8); // the cost and the proc consumption are paid at the hit frame (SkillSystem.pay)
+  ok('pmkn.stack first execute costs no rage', p.resource >= r0 - 0.01, `r0=${r0} r=${p.resource}`);
+  ok('pmkn.stack first execute spends one stack (2 -> 1)', p.statuses.stacks('sudden_death') === 1, `stacks=${p.statuses.stacks('sudden_death')}`);
+  H.stepSec(1.5);
+  const cast2 = G.skills.tryCastSlot(p, 'q', H.aimFor(p, e));
+  H.stepSec(1.5);
+  H.setAimTarget(null);
+  ok('pmkn.stack second execute spends the last stack', cast2 === true && !p.statuses.has('sudden_death'), `cast2=${cast2}`);
+}
+
+// 4. Kalkan Darbesi x1.3 while shield_block is up, and the block is NOT consumed
+{
+  const bash = (withBlock) => {
+    const p = H.addPlayer('knight');
+    p.spec = 'knight_protector';
+    p.yaw = 0;
+    H.addEnemy(0, 2, { hp: 1e6 });
+    H.step(2);
+    G.character.save.skillBar.rmb = 'knight_shield_bash';
+    if (withBlock) p.statuses.apply('shield_block', 6, {});
+    const seen = [];
+    const orig = G.skills.strike.bind(G.skills);
+    G.skills.strike = (c, t, o = {}) => { if (c.def.id === 'knight_shield_bash') seen.push(c.more); return orig(c, t, o); };
+    try { H.tap('rmb'); H.stepSec(1); } finally { G.skills.strike = orig; }
+    return { seen, blockUp: p.statuses.has('shield_block') };
+  };
+  const withB = bash(true);
+  const noB = bash(false);
+  ok('pmkn.bash Kalkan Darbesi x1.3 under shield_block', withB.seen.length >= 1 && near(withB.seen[0], 1.3, 1e-9), `more=${withB.seen.join(',')}`);
+  ok('pmkn.bash the block is not consumed by the bash', withB.blockUp === true);
+  ok('pmkn.bash no multiplier without shield_block', noB.seen.length >= 1 && near(noB.seen[0], 1, 1e-9), `more=${noB.seen.join(',')}`);
+}
+
+// 5. Çelik Girdap applies sweeping when it hits >= 3 enemies (not with 2)
+{
+  const sweepAfter = (n) => {
+    const p = H.addPlayer('knight');
+    p.spec = 'knight_blademaster';
+    p.yaw = 0;
+    p.resource = 100;
+    G.character.save.skillBar.s1 = 'knight_radiant_cleave';
+    for (const [x, z] of [[0, 2], [0.6, 2.4], [-0.6, 2.4], [0.3, 3.2]].slice(0, n)) H.addEnemy(x, z, { hp: 1e6 });
+    H.step(2);
+    H.tap('s1');
+    H.stepSec(1);
+    return p.statuses.has('sweeping');
+  };
+  ok('pmkn.sweep Çelik Girdap on 2 enemies: no sweeping', sweepAfter(2) === false);
+  ok('pmkn.sweep Çelik Girdap on 3 enemies: sweeping 6 s', sweepAfter(3) === true);
+}
+
+// 6. Revenge: threat x2 on every hit, 5-target cap
+{
+  const p = H.addPlayer('knight');
+  p.spec = 'knight_protector';
+  p.yaw = 0;
+  p.resource = 100;
+  p.statuses.remove('revenge_ready');
+  G.character.save.skillBar.q = 'knight_revenge';
+  for (const [x, z] of [[0, 2], [0.5, 2.2], [-0.5, 2.2], [0.8, 2.6], [-0.8, 2.6], [0.3, 3], [-0.3, 3]]) H.addEnemy(x, z, { hp: 1e6 });
+  H.step(2);
+  const threat = [];
+  const origHit = G.combat.playerHitEnemy.bind(G.combat);
+  G.combat.playerHitEnemy = (a, t, s) => { if (s.skillId === 'knight_revenge') threat.push(s.threatMult); return origHit(a, t, s); };
+  try { H.tap('q'); H.stepSec(1); } finally { G.combat.playerHitEnemy = origHit; }
+  ok('pmkn.revenge threat x2 on each hit', threat.length > 0 && threat.every((m) => m === 2), `threat=${threat.join(',')}`);
+  ok('pmkn.revenge hits at most 5 targets', threat.length === 5, `hits=${threat.length}`);
+}
+
+// 7. Savaş Avatarı cleanses root and slow when cast
+{
+  const p = H.addPlayer('knight');
+  p.spec = 'knight_blademaster';
+  p.resource = 100;
+  p.statuses.apply('root', 2, {});
+  p.statuses.apply('slow', 2, {});
+  const pre = p.statuses.has('root') && p.statuses.has('slow');
+  G.character.save.skillBar.m90 = 'knight_avatar';
+  const cast = G.skills.tryCastSlot(p, 'm90', H.aimFor(p));
+  H.stepSec(0.8); // paid at the hit frame
+  ok('pmkn.avatar root and slow are on the caster before the cast', pre);
+  ok('pmkn.avatar cast starts', cast === true);
+  ok('pmkn.avatar cleanses root and slow, grants avatar', !p.statuses.has('root') && !p.statuses.has('slow') && p.statuses.has('avatar'));
 }
 
 console.log(fails === 0 ? '\nkit.knight (pmkn): all checks PASS' : `\nkit.knight (pmkn): ${fails} FAIL`);

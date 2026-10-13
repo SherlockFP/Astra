@@ -2,6 +2,8 @@
 // Run: node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/kit_barbarian.mjs
 // Covered: pmba.ids, pmba.bars, pmba.cd, pmba.specs, pmba.replaces, pmba.fx, pmba.rampage, pmba.cleave, pmba.iron, pmba.gory,
 //          pmba.execute, pmba.tempest, pmba.heal, pmba.growl, pmba.pummel, pmba.procs, pmba.apl.
+//          pmba.fix (execute regression, Kan Susuzluğu heal, shared Kan cooldown, Gore rage, axe boss taunt + ICD, Ezici Balta cap,
+//          Yarma threat param, Ani Ölüm one stack).
 // Not covered here (SimBench / browser): pmba.ledger (60 s APL rage income), hit-stop and VFX feel.
 import * as H from './harness.mjs';
 
@@ -331,6 +333,178 @@ const SPEC_LIST = [BUTCHER, LORD];
     && !BEHAVIORS[d.behavior] && !TARGETING_BEHAVIORS[d.behavior]).map((d) => `${d.id}:${d.behavior}`);
   ok('pmba.defs barbarian behaviours are installed', bad.length === 0, bad.join(','));
   ok('pmba.defs self_heal_pct installed', typeof BEHAVIORS.self_heal_pct?.fire === 'function');
+}
+
+// ---- pmba.fix: the barbarian gap list (Kan Susuzluğu heal, Gore rage, axe boss taunt + ICD, Ezici Balta cap, shared
+// Kan cooldown, Ani Ölüm one stack, threat param) and a regression of the shared execute behaviour (35 % gate, x1.3, x20 cull)
+const tagsOf = (id) => SKILLS[id].tags;
+const spyStrike = (id, into) => {
+  const orig = G.skills.strike.bind(G.skills);
+  G.skills.strike = (c, t, o = {}) => { if (c.def.id === id) into.push({ more: o.more, id: t.id, c }); return orig(c, t, o); };
+  return () => { G.skills.strike = orig; };
+};
+
+// 0. regression: the shared execute behaviour keeps the barbarian numbers (x1.3 under 35 %, x20 on a trash / elite under 10 %)
+{
+  const p = H.addPlayer('barbarian');
+  p.spec = 'barbarian_butcher';
+  p.yaw = 0;
+  p.statuses.remove('sudden_death');
+  const e = H.addEnemy(0, 2, { hp: 1000, rank: 'trash' });
+  e.maxHp = 1000;
+  e.hp = 300;
+  H.step(2);
+  const hits = [];
+  const restore = spyStrike('barbarian_execute', hits);
+  try {
+    const c = ctxFor(p, SKILLS.barbarian_execute, e);
+    if (BEHAVIORS.execute.begin(c) !== false) BEHAVIORS.execute.fire(c);
+  } finally { restore(); }
+  ok('pmba.exec regression x1.3 under 35 % HP', hits.length === 1 && near(hits[0].more, 1.3, 1e-9), `more=${hits.map((h) => h.more).join(',')}`);
+  const p2 = H.addPlayer('barbarian');
+  p2.spec = 'barbarian_butcher';
+  p2.yaw = 0;
+  p2.statuses.remove('sudden_death');
+  const e2 = H.addEnemy(0, 2, { hp: 1000, rank: 'trash' });
+  e2.maxHp = 1000;
+  e2.hp = 50;
+  H.step(2);
+  const hits2 = [];
+  const restore2 = spyStrike('barbarian_execute', hits2);
+  try {
+    const c = ctxFor(p2, SKILLS.barbarian_execute, e2);
+    if (BEHAVIORS.execute.begin(c) !== false) BEHAVIORS.execute.fire(c);
+  } finally { restore2(); }
+  ok('pmba.exec regression x20 cull under 10 % HP on trash', hits2.length === 1 && near(hits2[0].more, 20, 1e-9), `more=${hits2.map((h) => h.more).join(',')}`);
+}
+
+// 1. Kan Susuzluğu heals 3 % max HP per landed hit
+{
+  const p = H.addPlayer('barbarian');
+  p.spec = 'barbarian_butcher';
+  p.yaw = 0;
+  p.resource = 100;
+  H.addEnemy(0, 2, { hp: 1e6 });
+  H.step(2);
+  G.character.save.skillBar.rmb = 'barbarian_bloodthirst';
+  // count the heal calls of the hit itself (raw HP also drifts up during any barbarian action, so HP deltas are not used)
+  const heals = [];
+  const origHeal = G.combat.healPlayer.bind(G.combat);
+  G.combat.healPlayer = (s, t, a, o) => { heals.push(a); return origHeal(s, t, a, o); };
+  try { H.tap('rmb'); H.stepSec(0.8); } finally { G.combat.healPlayer = origHeal; }
+  ok('pmba.bloodthirst heals 3 % of max HP on hit (one heal of 150)', heals.length === 1 && near(heals[0], 0.03 * p.maxHp, 1e-6), `heals=${heals.map((h) => h.toFixed(2)).join(',')}`);
+  ok('pmba.bloodthirst heal param is hitHealPct 0.03', SKILLS.barbarian_bloodthirst.params.hitHealPct === 0.03 && SKILLS.barbarian_bloodthirst.params.healPct === undefined);
+}
+
+// 2. Kan Susuzluğu / Kan Banyosu share one cooldown group
+{
+  const p = H.addPlayer('barbarian');
+  p.spec = 'barbarian_butcher';
+  p.yaw = 0;
+  p.resource = 100;
+  H.addEnemy(0, 2, { hp: 1e6 });
+  H.step(2);
+  G.character.save.skillBar.rmb = 'barbarian_bloodthirst';
+  ok('pmba.shared both rows carry the group', SKILLS.barbarian_bloodthirst.sharedCd === 'blood_strike' && SKILLS.barbarian_bloodbath.sharedCd === 'blood_strike');
+  ok('pmba.shared Kan Banyosu is ready before any cast', G.skills.getCooldown(p, 'barbarian_bloodbath').remaining <= 0);
+  H.tap('rmb');
+  H.stepSec(0.8);
+  const bb = G.skills.getCooldown(p, 'barbarian_bloodbath').remaining;
+  ok('pmba.shared Kan Susuzluğu starts the Kan Banyosu cooldown (4.5 s)', bb > 3 && bb <= 4.5 + 0.01, `remaining=${bb.toFixed(2)}`);
+}
+
+// 3. Gore (Kanlı Fırsat) grants +5 rage on the Yarma that consumes it
+{
+  const yarma = (withGore) => {
+    const p = H.addPlayer('barbarian');
+    p.spec = 'barbarian_warlord';
+    p.yaw = 0;
+    H.addEnemy(0, 2, { hp: 1e6 });
+    H.step(2);
+    G.character.save.skillBar.rmb = 'barbarian_cleave';
+    if (withGore) p.statuses.apply('gore', 10, {});
+    p.resource = 0;
+    H.tap('rmb');
+    H.stepSec(0.8);
+    return p.resource;
+  };
+  const a = yarma(false);
+  const b = yarma(true);
+  ok('pmba.gore Kanlı Fırsat adds +5 rage on Yarma', near(b - a, 5, 0.01), `without=${a.toFixed(2)} with=${b.toFixed(2)}`);
+}
+
+// 4. Kükreyen Balta: boss taunt 2 s, and a 12 s taunt internal cooldown per enemy
+{
+  const p = H.addPlayer('barbarian');
+  p.spec = 'barbarian_warlord';
+  p.position.set(0, 0, 0);
+  p.yaw = 0;
+  p.resource = 0;
+  const boss = H.addEnemy(0, 12, { hp: 1e6, rank: 'boss' });
+  H.step(2);
+  G.character.save.skillBar.r = 'barbarian_axe_throw';
+  H.setAimTarget(boss);
+  p.targetId = boss.id;
+  H.tap('r');
+  H.stepSec(1.5);
+  const first = boss.statuses.get('taunt');
+  ok('pmba.axe boss taunt lasts 2 s (not 3)', !!first && near(first.duration, 2, 0.01), `duration=${first?.duration}`);
+  boss.statuses.remove('taunt');
+  H.stepSec(8);
+  H.tap('r');
+  H.stepSec(1.5);
+  ok('pmba.axe taunt is on its 12 s internal cooldown (second throw)', !boss.statuses.has('taunt'));
+  boss.statuses.remove('taunt');
+  H.stepSec(8);
+  H.tap('r');
+  H.stepSec(1.5);
+  H.setAimTarget(null);
+  p.targetId = null;
+  ok('pmba.axe taunt returns after the 12 s internal cooldown', boss.statuses.has('taunt'));
+}
+
+// 5. Ezici Balta hits at most 3 targets
+{
+  const p = H.addPlayer('barbarian');
+  p.spec = 'barbarian_warlord';
+  p.yaw = 0;
+  G.character.save.skillBar.q = 'barbarian_maul';
+  for (const [x, z] of [[0, 2], [0.5, 2.2], [-0.5, 2.2], [0.8, 2.6], [-0.8, 2.6]]) H.addEnemy(x, z, { hp: 1e6 });
+  H.step(2);
+  p.resource = 100; // rage decays out of combat: set it after the warm-up steps
+  const hits = [];
+  const restore = spyStrike('barbarian_maul', hits);
+  try { H.tap('q'); H.stepSec(1); } finally { restore(); }
+  ok('pmba.maul Ezici Balta caps at 3 targets (5 in the arc)', hits.length === 3 && new Set(hits.map((h) => h.id)).size === 3, `hits=${hits.length}`);
+}
+
+// 6. Yarma threat rides the threatMult param (1.5); Paralama and Ezici Balta 2.0
+{
+  const p = H.addPlayer('barbarian');
+  p.spec = 'barbarian_warlord';
+  p.yaw = 0;
+  p.resource = 100;
+  H.addEnemy(0, 2, { hp: 1e6 });
+  H.step(2);
+  const seen = [];
+  const origHit = G.combat.playerHitEnemy.bind(G.combat);
+  G.combat.playerHitEnemy = (a, t, s) => { if (s.skillId === 'barbarian_cleave') seen.push(s.threatMult); return origHit(a, t, s); };
+  try { G.character.save.skillBar.rmb = 'barbarian_cleave'; H.tap('rmb'); H.stepSec(0.8); } finally { G.combat.playerHitEnemy = origHit; }
+  ok('pmba.threat Yarma threatMult 1.5 reaches the hit', seen.length >= 1 && seen.every((m) => m === 1.5), `threat=${seen.join(',')}`);
+}
+
+// 7. Ani Ölüm: a barbarian execute spends one stack (real StatusEffects, the consume path of SkillSystem.pay).
+// barbarian_execute is granted by the talent node s05, so the sim does not cast it from the bar; the knight's execute covers the cast.
+{
+  const p = H.addPlayer('barbarian');
+  p.spec = 'barbarian_butcher';
+  p.statuses.apply('sudden_death', 12, { stacks: 2 });
+  const r1 = resolveProcMods(p.statuses, 'barbarian_execute');
+  ok('pmba.stack barbarian execute: sudden_death makes it free at any HP', !!r1 && r1.costMult === 0 && r1.anyHp);
+  consumeProcMods(p.statuses, r1);
+  ok('pmba.stack barbarian execute spends one sudden_death stack (2 -> 1)', p.statuses.stacks('sudden_death') === 1, `stacks=${p.statuses.stacks('sudden_death')}`);
+  consumeProcMods(p.statuses, resolveProcMods(p.statuses, 'barbarian_execute'));
+  ok('pmba.stack the last sudden_death stack goes with the next execute', !p.statuses.has('sudden_death'));
 }
 
 console.log(fails === 0 ? '\nkit.barbarian (pmba): all checks PASS' : `\nkit.barbarian (pmba): ${fails} FAIL`);

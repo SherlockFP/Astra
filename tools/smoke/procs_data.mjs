@@ -63,10 +63,11 @@ for (const mod of Object.values(PROC_MODS)) {
 }
 
 // 4. ids COMBAT_WOW names
+// art_of_justice was removed with the Paladin Protection kit (PM-KN / PM-PA): no status, no ProcDef row
 const EXPECTED_STATUSES = ['heating_up', 'hot_streak', 'brain_freeze', 'fingers_of_frost', 'winters_chill', 'clearcasting',
-  'art_of_justice', 'revenge_ready', 'sudden_death', 'wrath_return', 'opportunity', 'lockout'];
+  'revenge_ready', 'sudden_death', 'wrath_return', 'opportunity', 'lockout'];
 for (const s of EXPECTED_STATUSES) ok(STATUSES[s], `StatusDef missing for ${s}`);
-const EXPECTED_DEFS = ['heating_up', 'hot_streak', 'fingers_of_frost', 'brain_freeze', 'clearcasting', 'art_of_justice',
+const EXPECTED_DEFS = ['heating_up', 'hot_streak', 'fingers_of_frost', 'brain_freeze', 'clearcasting',
   'revenge_ready', 'sudden_death', 'wrath_return', 'opportunity'];
 for (const id of EXPECTED_DEFS) ok(PROC_DEFS.some((d) => d.id === id), `ProcDef row missing for ${id}`);
 
@@ -93,12 +94,38 @@ const idleState = {
 const glowHot = glowSkillsOf(hot, idleState);
 for (const id of ['mage_flame_wave', 'mage_meteor', 'mage_phoenix_flames']) ok(glowHot.has(id), `glowSkillsOf(hot_streak) missing ${id}`);
 
+// revenge_ready moved from knight_shield_bash to knight_revenge (PM-KN): free, +25 %, no cooldown skip
 const rev = fakePlayer([['revenge_ready', 1], ['sudden_death', 1]]);
-const r = resolveProcMods(rev, 'knight_shield_bash');
-ok(r && r.costMult === 0 && r.cdFree && r.more === 1.4 && r.sources.join() === 'revenge_ready', 'resolveProcMods: revenge_ready on shield bash');
+const r = resolveProcMods(rev, 'knight_revenge');
+ok(r && r.costMult === 0 && !r.cdFree && r.more === 1.25 && r.sources.join() === 'revenge_ready', 'resolveProcMods: revenge_ready on knight_revenge');
+ok(resolveProcMods(rev, 'knight_shield_bash') === null, 'resolveProcMods: revenge_ready no longer applies to knight_shield_bash');
 ok(resolveProcMods(rev, 'rogue_backstab') === null, 'resolveProcMods: no mod for an unrelated skill');
 ok(consumeProcMods(rev, r) === 0 && !rev.has('revenge_ready') && rev.has('sudden_death'), 'consumeProcMods removes only the consumed proc');
 ok(consumeProcMods(rev, r) === 0, 'consumeProcMods is idempotent');
+
+// sudden_death (PM-KN / PM-BA): one shared ProcMod for knight_execute and barbarian_execute, one stack per consume
+for (const id of ['knight_execute', 'barbarian_execute']) {
+  const sd = resolveProcMods(fakePlayer([['sudden_death', 2]]), id);
+  ok(sd && sd.costMult === 0 && sd.anyHp && sd.sources.join() === 'sudden_death', `sudden_death ProcMod applies to ${id}`);
+}
+{
+  const stacks = new Map([['sudden_death', 2]]);
+  const host = {
+    has: (id) => stacks.has(id),
+    stacks: (id) => stacks.get(id) ?? 0,
+    remove: (id) => { stacks.delete(id); },
+    consumeStack: (id) => { const n = stacks.get(id); if (!n) return false; if (n <= 1) stacks.delete(id); else stacks.set(id, n - 1); return true; },
+  };
+  consumeProcMods(host, resolveProcMods(host, 'knight_execute'));
+  ok(stacks.get('sudden_death') === 1, 'sudden_death: one execute consumes one stack (2 -> 1), not the whole status');
+  consumeProcMods(host, resolveProcMods(host, 'barbarian_execute'));
+  ok(!stacks.has('sudden_death'), 'sudden_death: the last stack is removed by the next execute');
+}
+// Gore (PM-BA): Kanlı Fırsat grants +5 rage when Yarma consumes it
+{
+  const gore = resolveProcMods(fakePlayer([['gore', 1]]), 'barbarian_cleave');
+  ok(gore && gore.cdReset && gore.resource === 5, 'gore: Yarma resets its cooldown and grants 5 rage');
+}
 
 const wr = fakePlayer([['wrath_return', 1]]);
 const wrr = resolveProcMods(wr, 'barbarian_cleave');

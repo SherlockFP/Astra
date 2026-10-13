@@ -196,7 +196,7 @@ export function registerBarbarian(add: SkillAdd): void {
     desc: 'Pervasızlık sırasında Kan Susuzluğu yerine geçer: %220 hasar verir ve hedefte kanamayı %25 artırır. 8 Öfke kazandırır.',
     cost: -8, cooldown: 4.5, castTime: 0, anim: '2H_Melee_Attack_Slice', animSpeed: 1.6, hitTime: 0.3, targeting: 'target_instant', range: 3.2,
     damage: { coef: 2.2, type: 'physical' }, statuses: [{ status: 'bleed', duration: 6, magnitude: 0.25 }],
-    replaces: { skill: 'barbarian_bloodthirst', whileStatus: 'carnage' },
+    replaces: { skill: 'barbarian_bloodthirst', whileStatus: 'carnage' }, sharedCd: 'blood_strike',
     tags: ['melee', 'builder', 'bleed', 'spec'], vfx: { trail: 'slash_arc_big', impact: 'hit_blood' }, sfx: { cast: 'swing_heavy', impact: 'explosion' },
     params: { end: 0.8, chain: 0.1, stagger: 12, weight: 2, proc: 1 },
   });
@@ -205,7 +205,7 @@ export function registerBarbarian(add: SkillAdd): void {
     desc: 'Bir düşmana %180 hasar verir ve canının bir kısmını geri kazanırsın. 8 Öfke kazandırır; 4,5 saniyelik bekleme süresi var. Her vuruşta %30 olasılıkla 4 saniye Kudurma kazanırsın.',
     cost: -8, cooldown: 4.5, castTime: 0, anim: '2H_Melee_Attack_Slice', animSpeed: 1.4, hitTime: 0.3, targeting: 'target_instant', range: 3.2,
     damage: { coef: 1.8, type: 'physical' }, tags: ['melee', 'builder', 'spec'], vfx: { trail: 'slash_arc', impact: 'hit_blood' }, sfx: { cast: 'swing_heavy', impact: 'hit_flesh' },
-    params: { end: 0.7, chain: 0.1, stagger: 8, weight: 1, proc: 1, healPct: 0.03 },
+    sharedCd: 'blood_strike', params: { end: 0.7, chain: 0.1, stagger: 8, weight: 1, proc: 1, hitHealPct: 0.03 },
   });
   add({
     id: 'barbarian_raging_blow', classId: 'barbarian', spec: 'barbarian_butcher', name: 'Öfkeli Darbe', icon: I('skill-double-strike'), unlockLevel: 12,

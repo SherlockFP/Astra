@@ -384,13 +384,14 @@ export class EnemyAI {
   }
 
   /** Combat calls this for every point of damage (host). Threat + wake-ups. */
-  onDamaged(sourceId: EntityId | null, amount: number): void {
+  onDamaged(sourceId: EntityId | null, amount: number, threatMult = 1): void {
     if (this.disposed || this.e.isDead || amount <= 0) return;
     const src = sourceId != null ? this.world.getActor(sourceId) : undefined;
     if (src && src.kind === 'player') {
       let mult = 1;
       if ((src as Player).classId === 'knight') mult = 2.5;
-      this.addThreat(src.id, amount * mult + 1);
+      // KIT PM-KN: a skill's threatMult (Revenge x2) scales the whole threat of the hit
+      this.addThreat(src.id, (amount * mult + 1) * threatMult);
       if (this.e.def.ai?.flee) this.onHurtFlee(amount);
       if (!this.aggroed) this.dir.pullPack(this, src);
     } else if (!this.aggroed) {
