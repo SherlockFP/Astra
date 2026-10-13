@@ -17,6 +17,10 @@ import type { StatusId } from '../types/skills';
 import { PROC_DEFS_KIT_MAGE, GLOW_RULES_KIT_MAGE } from './procs_kit_mage';
 import { PROC_DEFS_KIT_ROGUE, GLOW_RULES_KIT_ROGUE } from './procs_kit_rogue';
 import { PROC_DEFS_KIT_WARLOCK, GLOW_RULES_KIT_WARLOCK } from './procs_kit_warlock';
+// KIT PM-BA (docs/kits/plate-melee.md §3b / §4b): barbarian proc rows (gore, gory_maul, gory_iron, meat_cleaver, carnage, ursoc_form).
+import { PROC_DEFS_KIT_BARBARIAN } from './procs_kit_barbarian';
+// KIT PM-KN (docs/kits/plate-melee.md §1b / §2b): knight proc rows (sudden_death, battlelord, revenge_ready, sweeping); the legacy knight rows above are removed.
+import { PROC_DEFS_KIT_KNIGHT } from './procs_kit_knight';
 
 export type ProcOverlay = 'top' | 'left' | 'right' | 'center' | 'both';
 
@@ -72,12 +76,6 @@ const BASE_PROC_DEFS: ProcDef[] = [
     glow: ['mage_flurry'], durationHint: 12, priority: 2 }),
   proc({ id: 'clearcasting', status: 'clearcasting', name: 'Berrak Zihin', school: 'arcane', overlay: 'center',
     glow: ['mage_arcane_missiles', 'mage_arcane_barrage'], durationHint: 15, priority: 2 }),
-  proc({ id: 'art_of_justice', status: 'art_of_justice', name: 'Adalet İlhamı', school: 'holy', overlay: 'top',
-    glow: ['knight_wake_of_flames'], durationHint: 12, priority: 2 }),
-  proc({ id: 'revenge_ready', status: 'revenge_ready', name: 'İntikam Hazır', school: 'physical', overlay: 'both',
-    glow: ['knight_shield_bash'], durationHint: 6, priority: 3 }),
-  proc({ id: 'sudden_death', status: 'sudden_death', name: 'Ani Ölüm', school: 'bleed', overlay: 'top',
-    glow: ['barbarian_execute'], durationHint: 10, priority: 3 }),
   proc({ id: 'wrath_return', status: 'wrath_return', name: 'Misilleme', school: 'bleed', overlay: 'left',
     glow: ['barbarian_cleave'], durationHint: 6, priority: 2 }),
   proc({ id: 'opportunity', status: 'opportunity', name: 'Fırsat', school: 'shadow', overlay: 'right',
@@ -111,7 +109,7 @@ export function getProcDef(id: string): ProcDef | undefined {
 }
 
 // KIT PK-0: one merge line per kit file (rows are empty until PK-MAGE / PK-ROGUE / PK-WARLOCK fill them).
-registerProcDefs([...PROC_DEFS_KIT_MAGE, ...PROC_DEFS_KIT_ROGUE, ...PROC_DEFS_KIT_WARLOCK]);
+registerProcDefs([...PROC_DEFS_KIT_MAGE, ...PROC_DEFS_KIT_ROGUE, ...PROC_DEFS_KIT_WARLOCK, ...PROC_DEFS_KIT_KNIGHT, ...PROC_DEFS_KIT_BARBARIAN]);
 
 /** Overlay position for a proc at a given stack count (falls back to the row's `overlay`). */
 export function procOverlayFor(def: ProcDef, stacks: number): ProcOverlay {

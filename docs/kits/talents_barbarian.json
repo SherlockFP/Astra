@@ -1,0 +1,17 @@
+{
+  "_source": "docs/kits/plate-melee.md §f2 (barbarian rows). PM-TAL applies these to docs/GDD_TALENTS.trees.json; PM-BA only states the target fx.",
+  "_format": "node = tree / slot+option; oldFx -> newFx; newName null = keep the old Turkish name",
+  "nodes": [
+    { "tree": "class:barbarian", "node": "s05A", "oldFx": "G barbarian_pummel", "newFx": "G barbarian_war_cry", "newName": null },
+    { "tree": "class:barbarian", "node": "s11", "oldFx": "M barbarian_whirlwind costx=.85 p.moveSlow*=0.5", "newFx": "M barbarian_whirlwind dmgx=1.1 p.moveSlow*=0.5", "newName": null },
+    { "tree": "class:barbarian", "node": "s12", "oldFx": "M barbarian_war_cry cd=-3 p.allyMore*=1.5", "newFx": "M barbarian_pummel cd=-3", "newName": "Yumruk Ustası" },
+    { "tree": "class:barbarian", "node": "s15B", "oldFx": "M barbarian_fissure+barbarian_ancestral_tempest dmgx=1.15 stgx=1.25", "newFx": "M barbarian_thrash+barbarian_ancestral_tempest dmgx=1.15 stgx=1.25", "newName": null },
+    { "tree": "class:barbarian", "node": "s18", "oldFx": "M barbarian_fissure cd=-3 rng=+3", "newFx": "M barbarian_leap cd=-3 rng=+3", "newName": "Uzun Sıçrayış" },
+    { "tree": "class:barbarian", "node": "s25", "oldFx": "M barbarian_blood_rage costx=.7 sdur=bloodrage:+3", "newFx": "M barbarian_blood_rage cdx=.85 sdur=bloodrage:+3", "newName": null },
+    { "tree": "class:barbarian", "node": "s26A", "oldFx": "T cast:barbarian_war_cry => st(near(20),empower,6)", "newFx": "T major ch=1 icd=20 => st(near(20),empower,6)", "newName": null },
+    { "tree": "spec:barbarian_warlord", "node": "s02A", "oldFx": "M barbarian_iron_stance cd=-1.5", "newFx": "M barbarian_iron_stance costx=.85", "newName": "Demir Duruş Ustası" },
+    { "tree": "spec:barbarian_warlord", "node": "s02B", "oldFx": "M barbarian_iron_stance dmgx=1.2 stgx=1.3", "newFx": "M barbarian_iron_stance sdur=iron_stance:+2", "newName": "Uzun Demir Duruş" },
+    { "tree": "spec:barbarian_warlord", "node": "s04", "oldFx": "M barbarian_provoke cd=-2 rng=+8", "newFx": "M barbarian_axe_throw cd=-2 rng=+8", "newName": null },
+    { "tree": "spec:barbarian_warlord", "node": "s11", "oldFx": "M barbarian_blood_shield absx=1.25", "newFx": "M barbarian_blood_shield healx=1.25", "newName": "Kalın Kan Yenilenmesi" }
+  ]
+}

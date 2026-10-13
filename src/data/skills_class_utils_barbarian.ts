@@ -9,10 +9,10 @@ export const BARBARIAN_UTIL_ROWS: SkillDef[] = [
   // ---- Barbar ----
   row({
     id: 'barbarian_pummel', classId: 'barbarian', name: 'Yumruk Darbesi', icon: I('skill-double-strike'),
-    desc: '3 metre içindeki büyü yapan bir düşmanı yumruklarsın: büyüsü kesilir, 4 saniye boyunca aynı büyüyü yapamaz ve 0,8 saniye sersemler (boss hariç).',
-    cost: 10, cooldown: 12, targeting: 'melee_arc', range: 3, arc: 120, anim: 'Unarmed_Melee_Attack_Punch_A', animSpeed: 1.5,
+    desc: '3 metre içindeki büyü yapan bir düşmanı yumruklarsın: büyüsü kesilir, 3 saniye boyunca sessiz kalır ve 0,8 saniye sersemler (boss hariç). Her iki uzmanlıkta da 10. seviyede açılır.',
+    cost: 0, cooldown: 15, targeting: 'melee_arc', range: 3, arc: 120, anim: 'Unarmed_Melee_Attack_Punch_A', animSpeed: 1.5,
     behavior: 'interrupt', tags: ['offgcd', 'melee', 'kick'],
-    params: { silence: 0, stun: 0.8 },
+    params: { silence: 3, stun: 0.8 },
   }),
   row({
     id: 'barbarian_intimidating_shout', classId: 'barbarian', name: 'Korkutucu Haykırış', icon: I('skill-battle-shout'),

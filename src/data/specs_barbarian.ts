@@ -1,44 +1,56 @@
 /**
- * PM-00c (docs/kits/plate-melee.md §h): Barbar (barbarian) SpecDefs, moved verbatim out of data/specs.ts.
- * OWNER: PM-BA from now on (this file only). Merged into SPECS by data/specs.ts.
+ * Barbar SpecDefs. PM-BA (docs/kits/plate-melee.md §3, §4, §h PM-BA sketch, f3). OWNER: PM-BA (this file only).
+ * Merged into SPECS by data/specs.ts.
+ *
+ * Savaş Lordu = Guardian-druid-style tank loop (rage economy, Demir Duruş stacks, Kanlı Kürk procs).
+ * Kasap = Fury DPS (Enrage loop, Pervasızlık transforms, İdam).
  */
 import type { SpecDef, SpecId } from '../types/v2';
 
 const BARBARIAN_SPEC_LIST: SpecDef[] = [
   {
     id: 'barbarian_warlord', classId: 'barbarian', name: 'Savaş Lordu', role: 'tank',
-    desc: 'Öfke zırhı: hasar aldıkça güçlenir. Demir Duruş ve Kan Zırhı ile aktif savunma.',
-    stats: { maxHpPct: 0.30, armorPct: 0.35, lifeSteal: 0.02, threatPct: 1.5, damagePct: -0.25 },
-    specials: [{ id: 'warlord_rage_armor', desc: 'Her 1 Öfke puanı için aldığın hasar %0.25 azalır (en fazla %25).', params: { perPoint: 0.0025, max: 0.25 } }],
-    skills: ['barbarian_provoke', 'barbarian_iron_stance', 'barbarian_blood_shield', 'barbarian_last_stand', 'barbarian_rallying_roar'],
-    unlock: { barbarian_provoke: 10, barbarian_iron_stance: 10, barbarian_blood_shield: 15, barbarian_last_stand: 10, barbarian_rallying_roar: 20 },
-    majors: { m45: 'barbarian_last_stand', m90: 'barbarian_rallying_roar' },
+    desc: 'Öfke zırhı: hasar aldıkça güçlenir. Demir Duruş yığınları, Kan Yenilenmesi ve Ata Kılığı ile aktif savunma.',
+    stats: { maxHpPct: 0.30, armorPct: 0.35, lifeSteal: 0.02, threatPct: 1.5 },
+    specials: [
+      // f3: warlord_rage_armor max 25 % -> 15 % (per point .0025 -> .0015, Demir Duruş now stacks)
+      { id: 'warlord_rage_armor', desc: 'Her 1 Öfke puanı için aldığın hasar %0.15 azalır (en fazla %15).', params: { perPoint: 0.0015, max: 0.15 } },
+      // Ayı Gazabı (f3): Paralama and Ezici Balta damage absorbed 35 % (data; the absorb shield is not wired yet, see report)
+      { id: 'ursoc_fury', desc: 'Paralama ve Ezici Balta hasarının %35\'i kalkan olarak geri döner (en fazla maks. canın %20\'si, 8 saniye).', params: { absorb: 0.35, cap: 0.20, dur: 8 } },
+    ],
+    skills: ['barbarian_maul', 'barbarian_thrash', 'barbarian_iron_stance', 'barbarian_pummel'],
+    unlock: { barbarian_maul: 15, barbarian_thrash: 12, barbarian_iron_stance: 10, barbarian_pummel: 10 },
+    majors: { m45: 'barbarian_last_stand', m90: 'barbarian_ancestral_tempest', m180: 'barbarian_incarnation' },
     mods: [
       { skill: 'barbarian_cleave', params: { threatMult: 1.5 } },
-      { skill: 'barbarian_whirlwind', params: { threatMult: 2.0 } },
-      // Savaş Narası also taunts 3 s (fear stays 1.5 s), cooldown 16 s
-      { skill: 'barbarian_war_cry', patch: { cooldown: 16, statuses: [{ status: 'fear', duration: 1.5 }, { status: 'taunt', duration: 3 }] } },
-      { skill: 'barbarian_ancestral_tempest', params: { threatMult: 2.0 } },
+      { skill: 'barbarian_thrash', params: { threatMult: 2.0 } },
+      { skill: 'barbarian_maul', params: { threatMult: 2.0 } },
     ],
+    // treeSkills: Kan Yenilenmesi is granted by the class/spec s05 node instead of level 10 (GDD_TALENTS)
+    treeSkills: { barbarian_blood_shield: 's05' },
+    fx: 'T hurt icd=.5 => res(2) ;; T hit:barbarian_thrash ch=.15 icd=2 => st(self,gore,10) ;; T hit:barbarian_cleave ch=.15 icd=2 => st(self,gore,10) ;; T cast:barbarian_iron_stance ch=.20 => st(self,gory_maul,12) ;; T cast:barbarian_maul ch=.20 => st(self,gory_iron,12)',
     defaultBar: {
-      lmb: 'barbarian_basic', rmb: 'barbarian_cleave', q: 'barbarian_provoke', e: 'barbarian_whirlwind', s1: 'barbarian_war_cry',
-      s2: 'barbarian_iron_stance', s3: 'barbarian_blood_shield', r: 'barbarian_ancestral_tempest',
-      m45: 'barbarian_last_stand', m90: 'barbarian_rallying_roar',
+      lmb: 'barbarian_basic', rmb: 'barbarian_cleave', q: 'barbarian_maul', e: 'barbarian_iron_stance', r: 'barbarian_axe_throw',
+      s1: 'barbarian_thrash', s2: 'barbarian_leap', s3: 'barbarian_blood_shield', s4: 'barbarian_pummel',
+      m45: 'barbarian_last_stand', m90: 'barbarian_ancestral_tempest', m180: 'barbarian_incarnation',
     },
   },
   {
     id: 'barbarian_butcher', classId: 'barbarian', name: 'Kasap', role: 'dps',
-    desc: 'Kanama yığınları ve İdam. Kurt Narası sahibi.',
-    stats: { bleedDamagePct: 0.40, bleedChance: 0.15, executeDamagePct: 0.40, attackSpeed: 0.05, resourceGainPct: 0.20 },
-    specials: [{ id: 'butcher_bleed_cap', desc: 'Kanama yığın sınırı 8 olur (sınır verisi; motor 5 ile çalışır).', params: { cap: 8 } }],
-    skills: ['barbarian_rend', 'barbarian_execute', 'barbarian_bloodbath', 'barbarian_carnage', 'barbarian_wolf_howl'],
-    unlock: { barbarian_rend: 10, barbarian_execute: 15, barbarian_bloodbath: 10, barbarian_carnage: 20, barbarian_wolf_howl: 30 },
-    majors: { m45: 'barbarian_bloodbath', m90: 'barbarian_carnage', m180: 'barbarian_wolf_howl' },
+    desc: 'Enrage döngüsü, Kan Susuzluğu ve Çılgın Hamle. Pervasızlık ile Kan Banyosu ve Kemik Ezici\'ye dönüşür. Kurt Narası sahibi.',
+    stats: { executeDamagePct: 0.40, attackSpeed: 0.05, resourceGainPct: 0.20, critChance: 0.05 },
+    specials: [{ id: 'trait_anger', desc: 'Öfke Yönetimi: her 20 Öfke harcandığında majorlerin kalan bekleme süresi 1 saniye kısalır.', params: { angerPer: 20 } }],
+    skills: ['barbarian_bloodthirst', 'barbarian_rampage', 'barbarian_raging_blow', 'barbarian_pummel'],
+    unlock: { barbarian_bloodthirst: 10, barbarian_pummel: 10, barbarian_raging_blow: 12, barbarian_rampage: 15 },
+    majors: { m45: 'barbarian_avatar', m90: 'barbarian_carnage', m180: 'barbarian_wolf_howl' },
     mods: [],
+    // treeSkills: İdam is granted by the class s05 node
+    treeSkills: { barbarian_execute: 's05' },
+    fx: 'T hit:@melee ch=.10 icd=3 => st(self,sudden_death,12) ;; T cast:barbarian_bloodthirst ch=.30 icd=1 => st(self,enrage,4,.15) ;; T cast:barbarian_rampage => st(self,enrage,4,.15)',
     defaultBar: {
-      lmb: 'barbarian_basic', rmb: 'barbarian_rend', q: 'barbarian_leap', e: 'barbarian_whirlwind', s1: 'barbarian_execute',
-      s2: 'barbarian_fissure', s3: 'barbarian_axe_throw', r: 'barbarian_ancestral_tempest',
-      m45: 'barbarian_bloodbath', m90: 'barbarian_carnage', m180: 'barbarian_wolf_howl',
+      lmb: 'barbarian_basic', rmb: 'barbarian_bloodthirst', q: 'barbarian_rampage', e: 'barbarian_raging_blow', r: 'barbarian_execute',
+      s1: 'barbarian_whirlwind', s2: 'barbarian_leap', s3: 'barbarian_blood_rage', s4: 'barbarian_pummel',
+      m45: 'barbarian_avatar', m90: 'barbarian_carnage', m180: 'barbarian_wolf_howl',
     },
   },
 ];

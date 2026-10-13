@@ -16,6 +16,10 @@ import { STATUS_RULES } from '../data/statuses';
 import { PROC_MODS_KIT_MAGE } from '../data/procs_kit_mage';
 import { PROC_MODS_KIT_ROGUE } from '../data/procs_kit_rogue';
 import { PROC_MODS_KIT_WARLOCK } from '../data/procs_kit_warlock';
+// KIT PM-BA (docs/kits/plate-melee.md §4b): barbarian proc mods (gore, gory_maul, gory_iron).
+import { PROC_MODS_KIT_BARBARIAN } from '../data/procs_kit_barbarian';
+// KIT PM-KN (docs/kits/plate-melee.md §1b / §2b): knight proc mods (sudden_death shared with barbarian_execute).
+import { PROC_MODS_KIT_KNIGHT } from '../data/procs_kit_knight';
 
 export interface ProcMod {
   /** Proc status that enables this mod. Also the key of PROC_MODS. */
@@ -54,10 +58,7 @@ function seed(rows: readonly ProcMod[]): void {
 }
 
 seed([
-  { status: 'art_of_justice', skills: ['knight_wake_of_flames'], costMult: 0, cdReset: true,
-    bonusPips: { id: 'adalet', n: 1 }, consume: 'cast' },
-  { status: 'revenge_ready', skills: ['knight_shield_bash'], costMult: 0, cdFree: true, more: 1.4, consume: 'cast' },
-  { status: 'sudden_death', skills: ['barbarian_execute'], costMult: 0, anyHp: true, consume: 'cast' },
+  // art_of_justice / revenge_ready / sudden_death: knight rows moved to data/procs_kit_knight.ts (PM-KN)
   { status: 'wrath_return', skills: ['barbarian_cleave'], costMult: 0, onConsume: { healPct: 0.04 }, consume: 'cast' },
   { status: 'opportunity', skills: ['rogue_crossbow_shot'], costMult: 0, more: 1.6,
     bonusPips: { id: 'combo', n: 1 }, consume: 'cast' },
@@ -75,7 +76,7 @@ export function registerProcMods(rows: readonly ProcMod[]): void {
 }
 
 // KIT PK-0: one merge line for the three kit files (empty until PK-MAGE / PK-ROGUE / PK-WARLOCK).
-registerProcMods([...PROC_MODS_KIT_MAGE, ...PROC_MODS_KIT_ROGUE, ...PROC_MODS_KIT_WARLOCK]);
+registerProcMods([...PROC_MODS_KIT_MAGE, ...PROC_MODS_KIT_ROGUE, ...PROC_MODS_KIT_WARLOCK, ...PROC_MODS_KIT_KNIGHT, ...PROC_MODS_KIT_BARBARIAN]);
 
 /** Merged effect of every active proc mod that applies to one skill. */
 export interface ResolvedProcMods {

@@ -2739,8 +2739,10 @@ export class SkillSystem {
     const p = c.def.params ?? {};
     if (p.gain) this.gainResource(c.caster, p.gain + Math.min(p.gainMax ?? 0, (p.gainExtra ?? 0) * (n - 1)));
     // PM-00b (plate-melee §g need 11): per enemy hit. Chain steps are multiplied by resourceGainPct, ability gains are flat
+    // KIT PM-KN: `gainExtraOnly` counts the hits beyond the first (Arms chain "+1 R per extra target hit", §1a)
     if (p.gainPerTarget) {
-      const g = p.gainPerTarget * Math.min(n, p.gainPerTargetMax ?? n);
+      const hits = p.gainExtraOnly ? Math.max(0, n - 1) : n;
+      const g = p.gainPerTarget * Math.min(hits, p.gainPerTargetMax ?? hits);
       if (c.def.tags.includes('basic')) this.gainResource(c.caster, g);
       else this.addResource(c.caster, g);
     }

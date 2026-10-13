@@ -694,7 +694,13 @@ const channelAoe: Behavior = {
     if (n % 2 === 0) sys.vfx('slash_arc', at(caster, 1.0), { dir: [Math.sin(n), 0, Math.cos(n)], scale: Math.max(0.8, radius / 3.1), color: 0xffc8a0 });
     if (c.remote) return true;
     const list = enemiesIn(caster.position.x, caster.position.z, radius, caster.position.y);
+    // PM-BA (f1b): Kasırga gains `gainPerTarget` rage per distinct enemy hit in the cast (max `gainPerTargetMax` targets)
+    const seen: Set<unknown> = (c.data.seen ??= new Set<unknown>());
     for (const e of list) {
+      if (p.gainPerTarget && !seen.has(e) && seen.size < (p.gainPerTargetMax ?? 5)) {
+        seen.add(e);
+        sys.addResource(caster, p.gainPerTarget);
+      }
       sys.strike(c, e, { tick: true, noGain: true, dir: norm(e.position.x - caster.position.x, e.position.z - caster.position.z), knockback: 0.25 });
     }
     if (list.length) { sys.shake(0.06); sys.sfx('hit_flesh', caster.position, { volume: 0.5, pitchVar: 0.2 }); }
@@ -1030,10 +1036,12 @@ const tempest: Behavior = {
   fire(c) {
     const { caster, sys, def } = c;
     if (!c.remote) {
+      // PM-BA (f1b): consumeAll 1 keeps the old rage-spend bonus; the Savaş Lordu Ata Fırtınası (consumeAll 0) spends no rage
+      const consume = !!def.params?.consumeAll;
       const rage = caster.resource;
       c.data.rage = rage;
-      caster.resource = 0;
-      c.data.bonus = 1 + Math.min(1, rage * 0.01);
+      if (consume) caster.resource = 0;
+      c.data.bonus = consume ? 1 + Math.min(1, rage * 0.01) : 1;
       caster.statuses.addImmunity('cc', (def.channel ?? 2.4) + 0.2);
       caster.statuses.apply('fortify', (def.channel ?? 2.4) + 0.2, { magnitude: def.params?.dr ?? 0.3, sourceId: caster.id });
     }
@@ -1052,6 +1060,8 @@ const tempest: Behavior = {
     sys.shake(0.1 + (last ? 0.3 : 0), 0.2);
     if (c.remote) return n < total;
     caster.statuses.addImmunity('cc', 0.5);
+    // PM-BA (f1b): heals `healPct` of max HP over the channel (one tick share each)
+    if (pr.healPct) healAmount(caster, caster, (caster.maxHp * pr.healPct) / total);
     const list = enemiesIn(caster.position.x, caster.position.z, radius, caster.position.y);
     const bonus = (c.data.bonus as number) ?? 1;
     for (const e of list) {
@@ -1385,6 +1395,15 @@ const absorbSelf: Behavior = {
   },
 };
 
+/** PM-BA (f1b): Kan Yenilenmesi heals `params.healPct` x max HP. Immediate, not the 3 s HoT of the design (no regen consumer exists). */
+const selfHealPct: Behavior = {
+  fire(c) {
+    const { caster, def } = c;
+    if (c.remote) return;
+    healAmount(caster, caster, caster.maxHp * (def.params?.healPct ?? 0.3));
+  },
+};
+
 /** Karar Darbesi: spends 1–5 Adalet pips; coefficient 2.0 + 1.0 × pips, poise 10 + 8 × pips, 5 pips = knockback. */
 const templar: Behavior = {
   begin(c) {
@@ -1448,12 +1467,13 @@ const backstab: Behavior = {
 
 /** Demir Duruş / Kalkan Kaldır are self buffs (selfBuff); their charges live on the SkillDef. Execute: see below. */
 
-/** İdam: usable only on targets under 35% HP (no cost otherwise); coefficient 5.0 + 0.4 × bleed stacks; culls trash/elites under 10%. */
+/** İdam: usable only on targets under 35% HP (no cost otherwise); coefficient = the row's damage coef (3.5); x1.3 under 35 %; culls trash/elites under 10%. PM-BA: Ani Ölüm (sudden_death) lifts the HP gate. */
 const execute: Behavior = {
   begin(c) {
     if (c.remote) return true;
     const p = c.def.params ?? {};
-    const t = c.sys.enemiesInCone(c.caster, c.dir, c.def.range ?? 3.2, c.def.arc ?? 70).find((e) => e.hp / Math.max(1, e.maxHp) < (p.threshold ?? 0.35));
+    const anyHp = c.caster.statuses.has('sudden_death');
+    const t = c.sys.enemiesInCone(c.caster, c.dir, c.def.range ?? 3.2, c.def.arc ?? 70).find((e) => anyHp || e.hp / Math.max(1, e.maxHp) < (p.threshold ?? 0.35));
     if (!t) { c.sys.fail('target'); return false; }
     c.data.target = t;
     return true;
@@ -1465,9 +1485,10 @@ const execute: Behavior = {
     if (c.remote) return;
     const t = c.data.target as Enemy | undefined;
     if (!t || t.isDead) return;
-    const bleed = t.statuses.get('bleed')?.stacks ?? 0;
-    const cull = t.hp / Math.max(1, t.maxHp) < (p.cull ?? 0.1) && (t.def.rank === 'trash' || t.def.rank === 'elite');
-    c.sys.strike(c, t, { coef: 5.0 + (p.bleedCoef ?? 0.4) * bleed, stagger: p.stagger ?? 25, more: cull ? 20 : 1, weight: 'heavy' });
+    const frac = t.hp / Math.max(1, t.maxHp);
+    const cull = frac < (p.cull ?? 0.1) && (t.def.rank === 'trash' || t.def.rank === 'elite');
+    const low = frac < (p.threshold ?? 0.35);
+    c.sys.strike(c, t, { coef: def.damage?.coef ?? 3.5, stagger: p.stagger ?? 25, more: cull ? 20 : low ? 1.3 : 1, weight: 'heavy' });
     if (t.isDead) c.sys.addResource(caster, p.refund ?? 15);
   },
 };
@@ -1586,6 +1607,7 @@ const mending: Behavior = {
 export const BEHAVIORS: Record<string, Behavior> = {
   provoke,
   absorb_self: absorbSelf,
+  self_heal_pct: selfHealPct,
   templar,
   wake_flames: wakeFlames,
   backstab,
