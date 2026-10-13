@@ -100,7 +100,7 @@ add({
   desc: 'Hedefe doğru 12 metreye kadar hücum edersin; yoldaki düşmanları kenara iter, varışta çevrene %160 hasar verip sersemletirsin. 20 Kararlılık kazandırır.',
   cost: -20, cooldown: 10, castTime: 0, anim: 'Running_A', animSpeed: 2.0, targeting: 'dash', range: 12, radius: 3, duration: 0.4, hitTime: 0.4,
   damage: { coef: 1.6, type: 'physical' }, knockback: 1.5, statuses: [{ status: 'stun', duration: 1.2 }],
-  tags: ['melee', 'movement', 'cc'], vfx: { trail: 'charge_trail', impact: 'ground_slam' }, sfx: { cast: 'swing_heavy', impact: 'ground_slam' },
+  tags: ['offgcd', 'melee', 'movement', 'cc'], vfx: { trail: 'charge_trail', impact: 'ground_slam' }, sfx: { cast: 'swing_heavy', impact: 'ground_slam' },
   params: { end: 0.9, chain: 0.1, move: 0.15, stagger: 30, proc: 1, weight: 2, pathCoef: 0.6, pathWidth: 1.5, speed: 30, unstoppable: 1, fit: 0 },
 });
 add({
@@ -116,7 +116,7 @@ add({
   desc: 'Savaş naranla 8 metre içindeki tüm düşmanları 4 saniye boyunca kendine kışkırtır, 6 saniye boyunca %20 daha az hasar alırsın. 30 Kararlılık kazandırır.',
   cost: -30, cooldown: 15, castTime: 0, anim: 'Cheer', animSpeed: 1.5, hitTime: 0.5, targeting: 'self_aoe', radius: 8,
   statuses: [{ status: 'taunt', duration: 4 }], selfStatuses: [{ status: 'fortify', duration: 6, magnitude: 0.2 }],
-  tags: ['aoe', 'shout', 'taunt'], vfx: { cast: 'war_cry' }, sfx: { cast: 'war_cry' },
+  tags: ['offgcd', 'aoe', 'shout', 'taunt'], vfx: { cast: 'war_cry' }, sfx: { cast: 'war_cry' },
   params: { end: 1.0, chain: 0.1, move: 0.15, weight: 1, slow: 0.7, ringColor: 0xff5533 },
 });
 add({
@@ -124,7 +124,7 @@ add({
   desc: 'Tuşu basılı tutarak kalkanını kaldırır ve önden gelen tüm saldırıları engellersin. Bıraktığında engellenen hasarın bir kısmını patlamayla geri yansıtırsın.',
   cost: 10, cooldown: 16, castTime: 0, channel: 4, anim: 'Blocking', animSpeed: 1.0, hitTime: 0.15, targeting: 'custom', behavior: 'shield_wall',
   range: 4, arc: 90, damage: { coef: 1.5, type: 'physical' }, knockback: 3,
-  tags: ['melee', 'defensive', 'channel', 'shield'], vfx: { cast: 'shield_bubble', impact: 'shockwave' }, sfx: { cast: 'buff', impact: 'shield_bash' },
+  tags: ['offgcd', 'melee', 'defensive', 'channel', 'shield'], vfx: { cast: 'shield_bubble', impact: 'shockwave' }, sfx: { cast: 'buff', impact: 'shield_bash' },
   params: { end: 0.6, chain: 0.1, stagger: 40, proc: 1, weight: 2, frontArc: 140, otherReduce: 0.5, moveSlow: 0.6, store: 0.15, storeCap: 10, gainPerBlock: 5 },
 });
 add({
@@ -202,7 +202,7 @@ add({
   desc: 'Hedef noktaya sıçrayıp inişte %220 hasar verirsin ve düşmanları yavaşlatırsın. 15 Öfke kazandırır.',
   cost: -15, cooldown: 9, castTime: 0, anim: 'Jump_Full_Short', targeting: 'leap', range: 14, radius: 4, duration: 0.55, hitTime: 0.55,
   damage: { coef: 2.2, type: 'physical' }, knockback: 1.5, statuses: [{ status: 'slow', duration: 2.5, magnitude: 0.4 }],
-  tags: ['melee', 'movement', 'aoe'], vfx: { impact: 'leap_land', ground: 'ground_slam' }, sfx: { cast: 'jump', impact: 'ground_slam' },
+  tags: ['offgcd', 'melee', 'movement', 'aoe'], vfx: { impact: 'leap_land', ground: 'ground_slam' }, sfx: { cast: 'jump', impact: 'ground_slam' },
   params: { end: 0.8, chain: 0.12, move: 0.2, stagger: 25, proc: 1, weight: 2, fit: 1, unstoppable: 1 },
 });
 add({
@@ -307,7 +307,7 @@ add({
   desc: 'Kısa bir mesafeye ışınlanırsın; ayrıldığın yerde düşmanlara hasar veren bir gizem patlaması bırakırsın.',
   cost: 10, cooldown: 5, castTime: 0, anim: 'Dodge_Forward', animSpeed: 1.0, hitTime: 0.05, targeting: 'teleport', range: 10, radius: 2.5,
   damage: { coef: 0.8, type: 'arcane' }, statuses: [{ status: 'slow', duration: 2, magnitude: 0.3 }], selfStatuses: [{ status: 'iframes', duration: 0.25 }],
-  tags: ['spell', 'arcane', 'movement'], vfx: { cast: 'blink', impact: 'arcane_burst' }, sfx: { cast: 'blink' },
+  tags: ['offgcd', 'spell', 'arcane', 'movement'], vfx: { cast: 'blink', impact: 'arcane_burst' }, sfx: { cast: 'blink' },
   params: { end: 0.3, chain: 0.0, move: 0.0, stagger: 5, proc: 0.5, weight: 0, element: 3 },
 });
 add({
@@ -404,7 +404,7 @@ add({
   desc: 'Hedefin arkasına ışınlanırsın; 3 saniye içindeki ilk yakın dövüş vuruşun kesin kritik olur. 1 Kombo Puanı kazandırır.',
   cost: 20, cooldown: 9, castTime: 0, anim: 'Dodge_Forward', animSpeed: 1.0, hitTime: 0.08, targeting: 'teleport', range: 15,
   selfStatuses: [{ status: 'iframes', duration: 0.2 }, { status: 'ambush', duration: 3 }],
-  tags: ['movement', 'shadow', 'teleport'], vfx: { cast: 'shadow_burst', impact: 'stealth_smoke' }, sfx: { cast: 'whoosh' },
+  tags: ['offgcd', 'movement', 'shadow', 'teleport'], vfx: { cast: 'shadow_burst', impact: 'stealth_smoke' }, sfx: { cast: 'whoosh' },
   behavior: 'shadow_step',
   params: { end: 0.3, chain: 0.0, move: 0.0, weight: 0, cp: 1, fallback: 8 },
 });
@@ -474,13 +474,13 @@ add({
   id: 'knight_provoke', classId: 'knight', spec: 'knight_protector', name: 'Kışkırtma', icon: I('skill-taunt'), unlockLevel: 10,
   desc: 'Bir düşmanı sana çevirir: 3 saniye kışkırtılır ve tehdit listesinde en üste çıkarsın. Boss için 2 saniye.',
   cost: 0, cooldown: 8, castTime: 0, anim: 'Cheer', animSpeed: 2.2, hitTime: 0.25, targeting: 'custom', range: 25,
-  behavior: 'provoke', tags: ['taunt', 'threat', 'spec'], sfx: { cast: 'buff' }, params: { tauntDur: 3, bossTauntDur: 2, threatBoost: 100 },
+  behavior: 'provoke', tags: ['offgcd', 'taunt', 'threat', 'spec'], sfx: { cast: 'buff' }, params: { tauntDur: 3, bossTauntDur: 2, threatBoost: 100 },
 });
 add({
   id: 'knight_shield_block', classId: 'knight', spec: 'knight_protector', name: 'Kalkan Kaldır', icon: I('skill-shield-wall'), unlockLevel: 10,
   desc: '6 saniye boyunca önden gelen saldırıların tamamını engellersin ve engellenen hasarın daha fazlasını emersin. İki yük, her biri 9 saniyede dolar.',
   cost: 30, cooldown: 9, charges: 2, castTime: 0, anim: 'Block_Attack', animSpeed: 1.0, hitTime: 0.2, targeting: 'self_buff',
-  selfStatuses: [{ status: 'shield_block', duration: 6 }], tags: ['defensive', 'mitigation', 'spec'],
+  selfStatuses: [{ status: 'shield_block', duration: 6 }], tags: ['offgcd', 'defensive', 'mitigation', 'spec'],
   vfx: { cast: 'shield_bubble' }, sfx: { cast: 'buff' },
 });
 add({
@@ -510,13 +510,13 @@ add({
   id: 'barbarian_provoke', classId: 'barbarian', spec: 'barbarian_warlord', name: 'Kükreyen Kışkırtma', icon: I('skill-war-cry'), unlockLevel: 10,
   desc: 'Bir düşmanı sana çevirir: 3 saniye kışkırtılır ve tehdit listesinde en üste çıkarsın. Boss için 2 saniye.',
   cost: 0, cooldown: 8, castTime: 0, anim: 'Cheer', animSpeed: 2.0, hitTime: 0.25, targeting: 'custom', range: 25,
-  behavior: 'provoke', tags: ['taunt', 'threat', 'spec'], sfx: { cast: 'buff' }, params: { tauntDur: 3, bossTauntDur: 2, threatBoost: 100 },
+  behavior: 'provoke', tags: ['offgcd', 'taunt', 'threat', 'spec'], sfx: { cast: 'buff' }, params: { tauntDur: 3, bossTauntDur: 2, threatBoost: 100 },
 });
 add({
   id: 'barbarian_iron_stance', classId: 'barbarian', spec: 'barbarian_warlord', name: 'Demir Duruş', icon: I('skill-shield-wall'), unlockLevel: 10,
   desc: '5 saniye boyunca fiziksel hasarın %35\'ini azaltırsın ve sersemletilemezsin. İki yük, her biri 8 saniyede dolar.',
   cost: 20, cooldown: 8, charges: 2, castTime: 0, anim: 'Block_Attack', animSpeed: 1.5, hitTime: 0.2, targeting: 'self_buff',
-  selfStatuses: [{ status: 'iron_stance', duration: 5 }], tags: ['defensive', 'mitigation', 'spec'], vfx: { cast: 'enrage_aura' }, sfx: { cast: 'buff' },
+  selfStatuses: [{ status: 'iron_stance', duration: 5 }], tags: ['offgcd', 'defensive', 'mitigation', 'spec'], vfx: { cast: 'enrage_aura' }, sfx: { cast: 'buff' },
 });
 add({
   id: 'barbarian_blood_shield', classId: 'barbarian', spec: 'barbarian_warlord', name: 'Kan Zırhı', icon: I('skill-mana-shield'), unlockLevel: 15,
@@ -551,7 +551,7 @@ add({
   desc: 'Düşmanın boğazını keser: kanama uygular ve 3 saniye susturur (kesme / sessizlik).',
   cost: 30, cooldown: 14, castTime: 0, anim: 'Dualwield_Melee_Attack_Chop', animSpeed: 1.0, hitTime: 0.4, targeting: 'melee_arc',
   range: 2.6, arc: 60, damage: { coef: 1.2, type: 'physical' }, statuses: [{ status: 'bleed', duration: 8, magnitude: 2 }, { status: 'silence', duration: 3 }],
-  tags: ['melee', 'bleed', 'interrupt', 'spec'], params: { stagger: 6 },
+  tags: ['offgcd', 'melee', 'bleed', 'interrupt', 'spec'], params: { stagger: 6 },
 });
 // ---- Simyacı (rogue_alchemist, the healer; basic attack replaces rogue_basic) ----
 add({

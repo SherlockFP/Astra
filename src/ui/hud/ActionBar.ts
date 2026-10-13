@@ -4,10 +4,14 @@ import { getMaterial } from '../../data/materials';
 import type { InputAction } from '../../core/Input';
 import type { SkillDef, SkillSlotKey } from '../../types/skills';
 import type { AutoInfo } from '../../combat/SkillSystem';
+import type { Actor } from '../../entities/Actor';
+import { lockoutSchool } from '../../combat/castRules';
+import { glowSkillsOf, type GlowState } from '../../data/procs';
 import { DAMAGE_COLORS, ICON, div, fmtCd, fmtNum, pulse, setClass, setDisplay, setIconUrl, setStyle, setText, iconEl, esc } from '../widgets/dom';
 import { skillTooltipHTML } from '../widgets/tooltips';
 import { TalentBadge } from './Extras';
 import type { HudCtx, HudWidget } from './types';
+import '../styles/hud-wow.css';
 
 /**
  * CONTROLS_WOW §8 / Q5: the event PlayerController emits on every change of the auto-attack armed flag.
@@ -50,7 +54,39 @@ const FAIL_TEXT: Record<string, string> = {
   stunned: 'Sersemlemiş durumdasın',
   casting: 'Zaten bir yetenek kullanıyorsun',
   silenced: 'Susturuldun',
+  lockout: 'Okul kilitli',
 };
+
+/** Short school glyphs for the `.locked` state (CW-08 / UI §2.6.8: grey icon + school glyph + seconds). */
+const SCHOOL_GLYPH: Record<string, string> = {
+  fire: 'ATE', frost: 'BUZ', arcane: 'ARK', holy: 'KUT', shadow: 'GÖL', poison: 'ZEH',
+};
+
+/** Resource fraction at which spender skills get the `.spend` cap cue (CW-08 / COMBAT_WOW §2.12). */
+const SPEND_PCT = 0.9;
+/** Skill targeting kinds that need a target for the out-of-range check (CW-08). */
+const OOR_TARGETING = new Set<string>(['melee_arc', 'projectile', 'dash']);
+/** Melee assist distance added to `def.range` before a melee skill counts as out of range (COMBAT_WOW §2.12). */
+const MELEE_ASSIST = 1.5;
+/** Skills with a cooldown of at least this many seconds announce readiness (`skill:ready`, ready pulse). */
+const READY_EVENT_CD = 8;
+const MAJOR_SLOTS = new Set<string>(['m45', 'm90', 'm180']);
+/** A queued press is dropped after this long if no `skill:queued null` arrives (ms). */
+const QUEUE_TTL_MS = 2000;
+
+/** Per-frame values shared by every slot (computed once in ActionBar.update). */
+interface BarFrame {
+  /** Glow ids from glowSkillsOf (skill ids and `@lmb` / `@tag` tokens). */
+  glow: Set<string>;
+  /** Setting Settings.abilityGlow. */
+  glowOn: boolean;
+  /** Target for the out-of-range check: the hover (soft) target, or null. */
+  target: Actor | null;
+  /** Local school lock (school + seconds left), or null. */
+  locked: { school: string; remaining: number } | null;
+  /** Spell queue: the queued skill id / slot, or null. */
+  queued: { skillId: string | null; slot: string | null } | null;
+}
 
 class Slot {
   readonly el: HTMLElement;
@@ -63,12 +99,14 @@ class Slot {
   private keyEl: HTMLElement;
   private charges: HTMLElement;
   private flash: HTMLElement;
+  private school: HTMLElement;
   private skillId: string | null = null;
   private def: SkillDef | null = null;
   private prevCd = 0;
   private potionCount = 0;
   private potionId: string | null = null;
   private hover = false;
+  private glowing = false;
   /** WoW auto-attack cell (lmb with skill_lmb unbound): the last frame's chain info, for the tooltip. */
   private autoInfo: AutoInfo | null = null;
   failUntil = 0;
@@ -84,7 +122,10 @@ class Slot {
     this.swing = div('slot-swing', this.el);
     this.flash = div('slot-flash', this.el);
     div('slot-frame', this.el);
+    // marching ants for `.glow` (and the soft `.spend` cue); the CSS draws them, the class toggles them
+    div('slot-ants', this.el);
     this.cdText = div('slot-cdtext', this.el);
+    this.school = div('slot-school', this.el);
     this.keyEl = div('slot-key', this.el);
     this.charges = div('slot-charges', this.el);
     this.el.classList.add('hud-interactive');
@@ -123,7 +164,8 @@ class Slot {
     ui.showTooltip(skillTooltipHTML(this.def, G.player, bind), x, y);
   }
 
-  private resolveSkill(ctx: HudCtx): string | null {
+  /** The skill id this slot resolves to this frame (bound skill, or the class basic attack on an unbound lmb). */
+  resolveSkill(ctx: HudCtx): string | null {
     const key = this.spec.skill;
     if (!key) return null;
     const c = ctx.character;
@@ -159,7 +201,7 @@ class Slot {
    * @param auto the auto-attack view when this is the WoW auto cell (lmb with skill_lmb unbound), else null.
    * @param armed the auto-attack armed flag from the `autoattack:state` event (only read when `auto` is set).
    */
-  update(ctx: HudCtx, auto: AutoInfo | null, armed: boolean): void {
+  update(ctx: HudCtx, auto: AutoInfo | null, armed: boolean, frame: BarFrame): void {
     const p = ctx.player;
     this.autoInfo = auto;
     setText(this.keyEl, auto ? 'Oto' : G.input ? G.input.bindingLabel(this.spec.action) : '');
@@ -227,6 +269,7 @@ class Slot {
       setStyle(this.cd, '--e', String(elapsed));
       setDisplay(this.cd, true, 'block');
       setText(this.cdText, fmtCd(rem));
+      setStyle(this.cdText, 'color', cdColor(rem));
       setDisplay(this.cdText, true, 'flex');
     } else {
       setDisplay(this.cd, false);
@@ -237,7 +280,11 @@ class Slot {
         setDisplay(this.cd, true, 'block');
       }
     }
-    if (this.prevCd > 0.05 && rem <= 0.05 && !this.spec.potion) pulse(this.el, 'ready');
+    if (this.prevCd > 0.05 && rem <= 0.05 && !this.spec.potion) {
+      pulse(this.el, 'ready');
+      const major = MAJOR_SLOTS.has(this.spec.id);
+      if (this.def && (major || total >= READY_EVENT_CD)) G.events.emit('skill:ready', { skillId: this.def.id, major });
+    }
     this.prevCd = rem;
     // global cooldown sweep (skills only, when the own cooldown is not longer)
     let gcdOn = false;
@@ -253,7 +300,60 @@ class Slot {
     setClass(this.el, 'casting', casting);
     setClass(this.el, 'oncd', lockedByCd);
     setClass(this.el, 'failing', ctx.now < this.failUntil);
+    this.updateStates(ctx, frame, noRes);
   }
+
+  /** CW-08 / UI §2.6.8 states: queued, out of range, school lock, proc glow, spender cap. One class each, painted by hud-wow.css. */
+  private updateStates(ctx: HudCtx, frame: BarFrame, noRes: boolean): void {
+    const p = ctx.player;
+    const def = this.def;
+    const isSkill = !this.spec.potion && !!def;
+    // queued: the spell queue holds this slot's skill (or its key), until the queue clears
+    const q = frame.queued;
+    setClass(this.el, 'queued', isSkill && !!q && (q.slot === this.spec.skill || (q.skillId !== null && q.skillId === def?.id)));
+    // out of range: a targeted skill whose hover target is farther (edge to edge) than its range
+    let oor = false;
+    if (isSkill && def && p && def.range && OOR_TARGETING.has(def.targeting) && frame.target && !frame.target.isDead) {
+      const dx = frame.target.position.x - p.position.x, dz = frame.target.position.z - p.position.z;
+      const edge = Math.hypot(dx, dz) - frame.target.radius - p.radius;
+      oor = edge > def.range + (def.targeting === 'melee_arc' ? MELEE_ASSIST : 0);
+    }
+    setClass(this.el, 'oor', oor);
+    // proc / usable glow (setting abilityGlow); the button pops once when the glow turns on
+    const glow = frame.glowOn && isSkill && !!def && (frame.glow.has(def.id) || (this.spec.id === 'lmb' && frame.glow.has('@lmb')) || def.tags.some((t) => frame.glow.has('@' + t)));
+    if (glow && !this.glowing) pulse(this.el, 'glowpop');
+    this.glowing = glow;
+    setClass(this.el, 'glow', glow);
+    // spender cap cue: resource at or above 90 % of max on a spender-tagged skill
+    const spend = isSkill && !!def && def.tags.includes('spender') && !!p && p.maxResource > 0 && p.resource >= SPEND_PCT * p.maxResource && !noRes;
+    setClass(this.el, 'spend', spend);
+    // school lock: the local school lock matches this skill's school; the countdown replaces the number
+    const school = isSkill && def ? lockoutSchool(def) : null;
+    const lockRem = school !== null && frame.locked && frame.locked.school === school ? frame.locked.remaining : 0;
+    const locked = lockRem > 0;
+    setClass(this.el, 'locked', locked);
+    setText(this.school, locked && school ? (SCHOOL_GLYPH[school] ?? school.toUpperCase()) : '');
+    if (locked) {
+      setText(this.cdText, String(Math.ceil(lockRem)));
+      setStyle(this.cdText, 'color', '#ffffff');
+      setDisplay(this.cdText, true, 'flex');
+    }
+  }
+}
+
+/** Cooldown number colour: under 5 s red, under 60 s yellow, otherwise white (COMBAT_WOW §2.12). */
+function cdColor(sec: number): string {
+  return sec < 5 ? '#ff6a5a' : sec < 60 ? '#ffe27a' : '#ffffff';
+}
+
+/** Living enemies within 12 m of the player with at least 5 bleed stacks (GLOW_RULES.bloodbath3). */
+function countBleeding(ctx: HudCtx, p: Actor): number {
+  let n = 0;
+  for (const e of ctx.world?.enemies ?? []) {
+    if (e.isDead || e.statuses.stacks('bleed') < 5) continue;
+    if (Math.hypot(e.position.x - p.position.x, e.position.z - p.position.z) <= 12) n++;
+  }
+  return n;
 }
 
 /** The 8 skill slots + 2 potion slots with cooldown sweeps, GCD, charges, resource tint and press flashes. */
@@ -263,7 +363,12 @@ export class ActionBar implements HudWidget {
   private lastFailFrame = -10;
   private hasFail = false;
   private lastFailReason = '';
+  private lastFailRemaining: number | undefined;
   private errEl: HTMLElement;
+  /** Spell queue (skill:queued): the queued skill / slot and when the entry expires (performance.now ms). */
+  private queued: { skillId: string | null; slot: string | null; until: number } | null = null;
+  /** Local school lock (skill:lockout): school and when it ends (performance.now ms). */
+  private lockSchool: string | null = null;
   /** Auto-attack armed flag, kept current by the `autoattack:state` event (CONTROLS_WOW Q5). */
   private autoArmed = false;
   /** "N" unspent-points badge on the bar's top edge (GDD_TALENTS §5.9); absolute, so it takes no slot room. */
@@ -282,10 +387,18 @@ export class ActionBar implements HudWidget {
     this.errEl = div('ab-error');
     this.talentBadge = new TalentBadge(ui);
     this.el.appendChild(this.talentBadge.el);
-    G.events.on('skill:fail', ({ reason }) => {
+    G.events.on('skill:fail', ({ reason, remaining }) => {
       this.lastFailFrame = G.engine.frame;
       this.hasFail = true;
       this.lastFailReason = reason;
+      this.lastFailRemaining = remaining;
+    });
+    G.events.on('skill:queued', ({ skillId, slot }) => {
+      // both null = the queue was cleared
+      this.queued = skillId === null && slot === null ? null : { skillId, slot, until: performance.now() + QUEUE_TTL_MS };
+    });
+    G.events.on('skill:lockout', ({ school }) => {
+      this.lockSchool = String(school);
     });
     // typed through a string name: the event is appended to core/events.ts by another package (Q5)
     const bus = G.events as unknown as { on(name: string, fn: (p: AutoStatePayload) => void): unknown };
@@ -304,6 +417,61 @@ export class ActionBar implements HudWidget {
     pulse(this.errEl, 'show');
   }
 
+  /** Clears the transient queue / lockout state (scene change, HUD hidden). */
+  reset(): void {
+    this.queued = null;
+    this.lockSchool = null;
+  }
+
+  /** Once-per-frame inputs for the CW-08 states: the glow set (glowSkillsOf), the target, the lock and the queue. */
+  private buildFrame(ctx: HudCtx, slots: Slot[]): BarFrame {
+    const p = ctx.player;
+    const now = performance.now();
+    if (this.queued && now > this.queued.until) this.queued = null;
+    // a queued skill that has started casting is no longer waiting
+    if (this.queued && this.queued.skillId !== null && p?.cast?.skillId === this.queued.skillId) this.queued = null;
+    const statusLock = p?.statuses.get('lockout');
+    const lockRem = statusLock ? statusLock.remaining : 0;
+    // the status is the authority for the countdown; the event supplies the school (ActiveStatus has none)
+    const locked = this.lockSchool !== null && lockRem > 0 ? { school: this.lockSchool, remaining: lockRem } : null;
+    const glowOn = G.settings?.data.abilityGlow !== false;
+    let glow = new Set<string>();
+    if (p) {
+      // bestSpender: the affordable spender on the bar with the highest cost (else the first spender)
+      let best: { id: string; cost: number } | null = null;
+      let firstSpender: string | null = null;
+      for (const s of slots) {
+        if (s.spec.potion) continue;
+        const id = s.resolveSkill(ctx);
+        const def = id ? G.skills.getDef(id) : undefined;
+        if (!id || !def || !def.tags.includes('spender')) continue;
+        firstSpender ??= id;
+        if (def.cost <= p.resource && (!best || def.cost > best.cost)) best = { id, cost: def.cost };
+      }
+      const target = ctx.hover && !ctx.hover.isDead ? ctx.hover : null;
+      const state: GlowState = {
+        resourcePct: p.maxResource > 0 ? p.resource / p.maxResource : 0,
+        bestSpender: best?.id ?? firstSpender,
+        pips: G.skills.pipCount(p, 'adalet'),
+        combo: G.skills.pipCount(p, 'combo'),
+        arcane: G.skills.pipCount(p, 'arcane'),
+        targetHpPct: target && target.maxHp > 0 ? target.hp / target.maxHp : null,
+        stealthed: p.statuses.has('stealth') || p.statuses.has('ambush') || p.statuses.has('dancer'),
+        riposteOpen: p.statuses.has('riposte'),
+        targetGuardBroken: !!target && target.statuses.has('guard_broken'),
+        bleedingEnemies: countBleeding(ctx, p),
+      };
+      glow = glowSkillsOf(p.statuses, state);
+    }
+    return {
+      glow,
+      glowOn,
+      target: ctx.hover && !ctx.hover.isDead ? ctx.hover : null,
+      locked,
+      queued: this.queued,
+    };
+  }
+
   update(ctx: HudCtx): void {
     this.talentBadge.update(ctx);
     // action camera without a pointer lock: the first mouse click only re-acquires the lock (PlayerController swallows it), no slot flash
@@ -311,8 +479,9 @@ export class ActionBar implements HudWidget {
     // WoW: lmb is the auto-attack cell while skill_lmb has no key (CONTROLS_WOW §9)
     const autoCell = !!G.input && !!G.settings && G.settings.data.controlScheme === 'wow' && G.input.bindings.skill_lmb.length === 0;
     const auto = autoCell && ctx.player ? G.skills.autoInfo(ctx.player) : null;
+    const frame = this.buildFrame(ctx, this.slots);
     for (const s of this.slots) {
-      s.update(ctx, s.spec.id === 'lmb' ? auto : null, this.autoArmed);
+      s.update(ctx, s.spec.id === 'lmb' ? auto : null, this.autoArmed, frame);
       const down = G.input && ctx.mode !== 'menu' && G.input.pressed(s.spec.action);
       const swallowed = relock && (s.spec.action === 'skill_lmb' || s.spec.action === 'skill_rmb');
       if (down && !swallowed && !G.ui.wantsCursor()) {
@@ -321,7 +490,11 @@ export class ActionBar implements HudWidget {
         if (this.hasFail && G.engine.frame - this.lastFailFrame <= 1) {
           s.setFlash('fail');
           s.failUntil = ctx.now + 260;
-          this.showError(FAIL_TEXT[this.lastFailReason] ?? 'Şu an kullanılamaz');
+          const base = FAIL_TEXT[this.lastFailReason] ?? 'Şu an kullanılamaz';
+          // lockout carries the time left on the school lock
+          const lockLeft = this.lastFailRemaining ?? ctx.player?.statuses.get('lockout')?.remaining;
+          const left = this.lastFailReason === 'lockout' && lockLeft !== undefined ? ` (${Math.ceil(lockLeft)} sn)` : '';
+          this.showError(base + left);
           // (the 'ui_error' sound itself is played by the audio module on 'skill:fail')
           this.hasFail = false;
         }

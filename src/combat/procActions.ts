@@ -91,7 +91,25 @@ export function warnOnce(key: string, msg: string): void {
 }
 
 const DAMAGE_TYPES: readonly DamageType[] = ['physical', 'fire', 'frost', 'lightning', 'shadow', 'poison', 'holy', 'arcane'];
-const BUFF_ICON = '/assets/icons/buff-blessing.svg';
+/** CW-07 §4.3 item 6: buff icon by what the buff changes (blessing when none of the known groups matches). */
+const BUFF_ICONS = {
+  crit: '/assets/icons/buff-crit.svg',
+  haste: '/assets/icons/buff-haste.svg',
+  defense: '/assets/icons/buff-defense.svg',
+  lifesteal: '/assets/icons/buff-lifesteal.svg',
+  strength: '/assets/icons/buff-strength.svg',
+  blessing: '/assets/icons/buff-blessing.svg',
+} as const;
+
+export function iconForStats(stats: StatBlock): string {
+  const has = (k: StatId): boolean => (stats[k] ?? 0) !== 0;
+  if (has('critChance') || has('critDamage')) return BUFF_ICONS.crit;
+  if (has('attackSpeed') || has('castSpeed')) return BUFF_ICONS.haste;
+  if (has('damageReductionPct') || has('armor') || has('armorPct')) return BUFF_ICONS.defense;
+  if (has('lifeSteal')) return BUFF_ICONS.lifesteal;
+  if (has('damagePct')) return BUFF_ICONS.strength;
+  return BUFF_ICONS.blessing;
+}
 const MAX_BUFF_STACKS = 5;
 const ECHO_RANGE = 12;
 
@@ -197,11 +215,12 @@ export function runAction(name: string, args: readonly string[], env: ActionEnv)
       const block = args.find((s) => s.startsWith('{')) ?? '{}';
       const maxArg = args.find((s) => s.startsWith('max='));
       const max = maxArg ? Math.floor(num(maxArg.slice(4))) : 1;
+      const stats = parseStats(block);
       host.buff(self, {
         id: `tb:${key}`,
         name: key,
-        icon: BUFF_ICON,
-        stats: parseStats(block),
+        icon: iconForStats(stats),
+        stats,
         duration: num(args[1]),
         maxStacks: Math.max(1, Math.min(MAX_BUFF_STACKS, max)),
       });

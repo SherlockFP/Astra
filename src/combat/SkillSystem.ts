@@ -12,6 +12,9 @@ import { TALENT_PIPS } from '../data/specs_talents';
 import { MAJOR_BASE, MAJOR_SLOTS, readMajorCd, writeMajorCd, resetMajorCooldowns } from './majors';
 import { COMBAT_FEEL, FEEL, WOW, TYPE_COLORS, feelBeat, vfxScale, isAreaVfx, freezeActors, weaponTempoOf, weightFromParam, leadSkipSec, type HitWeight } from './feel';
 import { gcdFor, isOffGcd } from './gcd';
+import { resolveProcMods, consumeProcMods, type ResolvedProcMods } from './procMods';
+import { PUSHBACK_CFG, pushesBack, channelCut, lockoutSchool, LOCKOUT_SCHOOLS, type HitForPushback, type LockoutSchool } from './castRules';
+import { ProcWatcher } from './procFx';
 import { SpellQueue, type TakeState } from './spellQueue';
 import { GUARD_COUNTER_BY_CLASS, GUARD_COUNTER_CD, GUARD_COUNTER_COST, HEAVY_BY_CLASS, KRT_BY_CLASS, RIPOSTE_BY_CLASS, weaponArtVfx, type ChargeProfile, type SwingProfile } from './heavy';
 import { ART_BY_CATEGORY, getWeaponArt } from '../data/weaponArts';
@@ -27,7 +30,7 @@ import { sp, hasSp, combineChance, shockwave, fireWave, specHooksOf, allSpecHook
 import { skillRankCooldownMult } from './skillRanks';
 import type { MageCastMods, MageCtx, TouchBurst } from './specs/mage';
 import type { AimInfo, SkillDef, SkillSlotKey, StatusApply, StatusId } from '../types/skills';
-import type { EntityId, PipId } from '../types/common';
+import type { DamageType, EntityId, PipId } from '../types/common';
 import type { PipDef } from '../types/classes';
 import type { Actor } from '../entities/Actor';
 import type { Player } from '../entities/Player';
@@ -129,6 +132,10 @@ export interface Action {
   hyperUntil?: number;
   /** Jump attack (GDD_V2 §3.3): airborne until the landing resolves the hit. Hit and end times are unknown until then. */
   airborne?: boolean;
+  /** CW-07 §2.4: pushbacks applied to this cast so far (max 2). */
+  pushes?: number;
+  /** CW-07 §2.7: proc mods resolved when the action started; consumed by pay(). */
+  procMods?: ResolvedProcMods | null;
 }
 
 interface Aiming {
@@ -185,6 +192,9 @@ interface ActorState {
   counterReadyAt: number;
   /** Sim time until which the auto-attack driver waits after a finisher ended (CONTROLS_WOW §8.2). Manual LMB ignores it. */
   autoGapUntil: number;
+  /** CW-07 §2.6: school locked by an enemy interrupt, and the sim time the lock ends. */
+  lockSchool: LockoutSchool | null;
+  lockUntil: number;
 }
 
 /** Auto-attack view of the LMB chain for the driver and the HUD (CONTROLS_WOW §8.1). Derived, read-only. */
@@ -265,6 +275,8 @@ export class SkillSystem {
   private masteryAt = new Map<string, number>();
   /** Passive pip decay clocks, keyed `playerId:pipId`. */
   private pipClock = new Map<string, number>();
+  /** CW-07 §2.7: emits proc:gain / proc:fade for the local player's proc statuses (procFx.ts). */
+  private procWatch = new ProcWatcher();
 
   constructor() {
     // GDD_TALENTS T7: the dynamic-buff entry point of the proc actions (procActions.liveProcHost.buff reads G.status)
@@ -601,7 +613,7 @@ export class SkillSystem {
   }
 
   /** Stop the actor's cast/channel (stun, dodge-cancel). `force` also cancels dashes/leaps (death, stun). Returns true if something stopped. */
-  interrupt(actor: Actor, force = false): boolean {
+  interrupt(actor: Actor, force = false, cause?: 'enemyInterrupt'): boolean {
     const st = this.states.get(actor.id);
     if (!st) return false;
     let did = false;
@@ -614,8 +626,26 @@ export class SkillSystem {
       if (a.uninterruptible) return did;
       if (a.def.tags.includes('ultimate') && this.now - a.start < 0.3) return did;
     }
+    // CW-07 §2.6: an enemy interrupt locks the school of the cast it cut (local player only; melee has no school)
+    const school = cause === 'enemyInterrupt' && actor.kind === 'player' && (actor as Player).isLocal ? lockoutSchool(a.def) : null;
     this.endAction(st, force ? 'interrupt' : 'cancel', true);
+    if (school) this.applyLockout(actor as Player, st, school);
     return true;
+  }
+
+  /** CW-07 §2.6: the school is locked for WOW.lockout.sec; the `lockout` status carries the school index for the HUD. */
+  private applyLockout(p: Player, st: ActorState, school: LockoutSchool): void {
+    const sec = WOW.lockout.sec;
+    st.lockSchool = school;
+    st.lockUntil = this.now + sec;
+    p.statuses.apply('lockout', sec, { magnitude: LOCKOUT_SCHOOLS.indexOf(school) + 1, sourceId: null });
+    G.events.emit('skill:lockout', { school, sec });
+  }
+
+  /** True when `def` belongs to the school locked on this player right now. */
+  private schoolLocked(st: ActorState, def: SkillDef): boolean {
+    const school = lockoutSchool(def);
+    return !!school && school === st.lockSchool && this.now < st.lockUntil;
   }
 
   /** Run `fn` with the remote-replay scope set to `rs` (null = local), restoring the previous scope. */
@@ -824,8 +854,40 @@ export class SkillSystem {
     }
   }
 
-  onPlayerDamaged(_p: Player, _amount: number): void {
-    /* hook */
+  /**
+   * CW-07 §2.4 pushback (called from Combat for every hit on a player). A hard cast before its hit frame gets +0.5 s; a
+   * channel loses 25 % of its total duration. Max 2 per cast; hits under 3 % max HP, absorbed hits and immune casts never push.
+   * `amount` is the damage that landed (0 when fully absorbed). DoT ticks are not distinguishable here (see CW-07 report).
+   */
+  onPlayerDamaged(p: Player, amount: number): void {
+    if (!p.isLocal) return;
+    const st = this.states.get(p.id);
+    const a = st?.cur;
+    if (!st || !a || a.ended) return;
+    const channeling = !!a.channel?.active;
+    const hardCast = a.def.castTime > 0 && !a.fired;
+    if (!channeling && !hardCast) return;
+    const resisted = this.isUnstoppable(p) || p.statuses.has('shield') || p.statuses.has('blazing_barrier') || softStat(p, 'pushbackResistPct') >= 1;
+    const hit: HitForPushback = { hitFrac: p.maxHp > 0 ? amount / p.maxHp : 0, absorbed: amount <= 0, resist: resisted };
+    const before = a.pushes ?? 0;
+    if (!pushesBack(before, hit)) return;
+    a.pushes = before + 1;
+    if (channeling && a.channel) {
+      // the channel ends sooner: `until` is seconds after start, so the cut is subtracted from it and from the end time
+      const cut = channelCut(a.def.channel ?? 0, before, hit);
+      a.channel.until = Math.max(this.now - a.start, a.channel.until - cut);
+      a.endAt = a.channel.until + 0.3;
+      if (p.cast) p.cast.duration = Math.max(0, p.cast.duration - cut);
+      G.events.emit('cast:pushback', { skillId: a.def.id, add: -cut, count: a.pushes });
+      return;
+    }
+    const add = PUSHBACK_CFG.add;
+    a.hitAt += add;
+    a.endAt += add;
+    a.chainAt += add;
+    a.moveAt += add;
+    if (p.cast && p.cast.skillId === a.def.id) p.cast.duration += add;
+    G.events.emit('cast:pushback', { skillId: a.def.id, add, count: a.pushes });
   }
 
   /** The 'shield' status ended (absorbed or expired): Büyü Kalkanı frost burst. */
@@ -860,6 +922,7 @@ export class SkillSystem {
         lastAim: { point: [p.position.x, 0, p.position.z + 1], dir: [Math.sin(p.yaw), 0, Math.cos(p.yaw)], targetId: null },
         lastLmbCall: -99, aiming: null, cp: 0, cpTimer: 0, wall: null, barrier: null, bannerT: 0, seen: false, lastElement: 0, dodgeSeen: p.dodgeStartedAt, dodgeStarted: false, basicCount: 0, tailClip: null,
         airT: 0, wasAir: false, runT: 0, jumpReadyAt: 0, rollAtkFor: -99, kickUntil: 0, counterReadyAt: -99, autoGapUntil: -99,
+        lockSchool: null, lockUntil: 0,
       };
       this.states.set(p.id, st);
       if (p.isLocal) this.restoreMajors(p, st);
@@ -948,10 +1011,13 @@ export class SkillSystem {
   private canUse(p: Player, st: ActorState, def: SkillDef, report: boolean, timed = true): boolean {
     const basic = !!def.tags.includes('basic');
     if (p.statuses.silenced && !basic) { if (report) this.fail('silenced'); return false; }
+    if (this.schoolLocked(st, def)) { if (report) this.fail('lockout', Math.max(0, st.lockUntil - this.now)); return false; }
     const c = st.cds.get(def.id);
     if (timed && c && c.charges <= 0) { if (report) this.fail('cooldown', Math.max(0, c.rechargeAt - this.now)); return false; }
     if (timed && !basic && !isOffGcd(def) && this.now < st.gcdUntil) { if (report) this.fail('cooldown', st.gcdUntil - this.now); return false; }
-    if (def.cost > 0 && p.resource + 0.01 < def.cost * this.costMult(p, def)) { if (report) this.fail('resource'); return false; }
+    // CW-07: a proc can make the cost free (costMult 0), so the resource check reads the proc multiplier too
+    const procCost = resolveProcMods(p.statuses, def.id)?.costMult ?? 1;
+    if (def.cost > 0 && p.resource + 0.01 < def.cost * this.costMult(p, def) * procCost) { if (report) this.fail('resource'); return false; }
     const min = def.params?.minResource;
     if (min && p.resource + 0.01 < min) { if (report) this.fail('resource'); return false; }
     if (def.params?.hpCostPct && p.hp <= p.maxHp * 0.1) { if (report) this.fail('resource'); return false; }
@@ -1151,11 +1217,19 @@ export class SkillSystem {
     const beh = behaviorFor(def);
     // GDD_TALENTS T8 hooks (resolveCast): cost and cast-time multipliers change the cast itself; the rest rides on the ctx
     const mm = this.castMods(p, def);
-    if (mm && (mm.costMult !== 1 || mm.castTimeMult !== 1)) def = { ...def, cost: def.cost * mm.costMult, castTime: def.castTime * mm.castTimeMult };
+    // CW-07 §2.7: proc mods sit next to the mage hooks: cost and cast time here, more / crit on the ctx, pips and consumption in pay()
+    const pm = resolveProcMods(p.statuses, def.id);
+    const costMul = (mm?.costMult ?? 1) * (pm?.costMult ?? 1);
+    const castMul = (mm?.castTimeMult ?? 1) * (pm?.castTimeMult ?? 1);
+    if (costMul !== 1 || castMul !== 1) def = { ...def, cost: def.cost * costMul, castTime: def.castTime * castMul };
     const c = this.makeCtx(p, def, aim, false);
     if (mm) {
       c.more *= mm.more;
       c.data.mage = mm;
+    }
+    if (pm) {
+      c.more *= pm.more;
+      c.data.procMods = pm;
     }
     const params = def.params ?? {};
     const rate = this.speedFactor(p, def);
@@ -1182,7 +1256,7 @@ export class SkillSystem {
     const a: Action = {
       def, slot, aim, start: this.now, speed: animSpeed, hitAt: hit, endAt: end, chainAt: chain, moveAt: move,
       fired: false, paid: false, basic, step, faceYaw: yawFromDir(c.dir[0], c.dir[1]), faceUntil: hit + 0.15,
-      uninterruptible: false, channel: null, ctx: c, beh, upper, ended: false,
+      uninterruptible: false, channel: null, ctx: c, beh, upper, ended: false, pushes: 0, procMods: pm,
     };
     c.action = a;
     if (def.id === 'knight_shield_bash' && hasSp('set_holy_vanguard_4')) c.more = 3; // 200% DAHA FAZLA
@@ -1262,13 +1336,17 @@ export class SkillSystem {
     } else if (cost < 0) {
       this.gainResource(p, -cost);
     }
-    if (!def.channel) this.startCooldown(p, st, def);
+    // CW-07 §2.7: a proc spends its effects here: cdFree skips the cooldown, cdReset clears this skill's own cooldown
+    const pm = a?.procMods ?? null;
+    if (!def.channel && !pm?.cdFree) this.startCooldown(p, st, def);
+    if (pm?.cdReset) st.cds.delete(def.id);
     if (pipUse) {
       if (pipUse.spent > 0) this.spendPip(p, pipUse.id, pipUse.spent);
       if (pipUse.gain > 0) this.addPip(p, pipUse.id, pipUse.gain);
       // the consumed count scales the damage of the skill (`coefPerPip`, Gizem Barajı: 1.8 + 0.9 per charge)
       if (a) a.ctx.data.pipSpent = pipUse.spent;
     }
+    if (pm) for (const b of pm.bonusPips) this.addPip(p, b.id, b.n);
     if (a) {
       a.paid = true;
       const mm = a.ctx.data.mage as MageCastMods | undefined;
@@ -1276,6 +1354,11 @@ export class SkillSystem {
         const ctx = this.mageCtx(p);
         for (const h of specHooksOf(p)) h.commitCast?.(p, def, mm, ctx);
       }
+    }
+    if (pm) {
+      // the procs this cast was made under are spent now; onConsume.healPct heals once per cast
+      const heal = consumeProcMods(p.statuses, pm);
+      if (heal > 0) G.combat.healPlayer(p, p, p.maxHp * heal, { quiet: true });
     }
     // GDD_TALENTS T7 triggers: `cast` (every paid cast) and `major` (the m45 / m90 / m180 slots)
     G.procs?.emit('cast', { player: p, skillId: def.id, tags: def.tags, target: a?.ctx.target ?? null });
@@ -1496,6 +1579,7 @@ export class SkillSystem {
   // ------------------------------------------------------------------------------------------------------
 
   private updateLocal(p: Player, st: ActorState, dt: number): void {
+    this.procWatch.update(p, dt);
     // charge hold clock (GDD_V2 §3.2): time the charge key has been down (see chargeDown); 0 once released
     this.lmbHeld = this.chargeDown() ? this.lmbHeld + dt : 0;
     // a charge pose can only outlive its action through a missed reset: never leave the clip frozen
@@ -2038,6 +2122,8 @@ export class SkillSystem {
       if (!e.cast?.interruptible) continue;
       G.events.emit('kick:request', { enemyId: e.id, casterId: p.id });
       G.combat.onHardCC(e, p.id);
+      // CW-07 §2.6: Kes silences trash and elites for 3 s (bosses are cast-cut only)
+      if (!e.isBoss) e.statuses.apply('silence', WOW.lockout.silenceSec, { sourceId: p.id });
       G.combat.meters.add('interrupt');
       feelBeat('interrupt', { pos: [e.position.x, e.position.y + 1.2, e.position.z], vfx: 'interrupt_burst' });
       this.startKickLockout(p, art.kickLockout);
@@ -2396,7 +2482,7 @@ export class SkillSystem {
     return softStat(a, key);
   }
 
-  fail(reason: 'cooldown' | 'resource' | 'range' | 'target' | 'stunned' | 'casting' | 'silenced', remaining?: number): void {
+  fail(reason: 'cooldown' | 'resource' | 'range' | 'target' | 'stunned' | 'casting' | 'silenced' | 'lockout', remaining?: number): void {
     // the controller re-issues held keys every 0.05 s: only report on the press edge (and for non-key casts)
     if (this.quiet) return;
     G.events.emit('skill:fail', remaining !== undefined ? { reason, remaining } : { reason });
@@ -2464,6 +2550,10 @@ export class SkillSystem {
     // pips spent by this cast add `coefPerPip` each to the default coefficient; mage cast mods: ×frozenMult vs Frozen
     const pipBonus = o.coef === undefined ? (c.data.pipSpent ?? 0) * (d.pip?.coefPerPip ?? 0) : 0;
     const mage = c.data.mage as MageCastMods | undefined;
+    // CW-07: a proc's forceCrit applies to the first strike of the cast only
+    const pm = c.data.procMods as ResolvedProcMods | undefined;
+    const procForce = !!pm?.forceCrit && !c.data.procCritSpent;
+    if (procForce) c.data.procCritSpent = true;
     const frozenMul = mage && e.statuses.has('freeze') ? mage.frozenMult : 1;
     const coef = ((o.coef ?? dm?.coef ?? 0) + pipBonus) * frozenMul;
     if (coef <= 0 && !o.flat) return null;
@@ -2477,7 +2567,7 @@ export class SkillSystem {
       type: o.type ?? dm?.type ?? 'physical',
       isSpell: d.tags.includes('spell'),
       canCrit: o.canCrit,
-      critBonus: (pr.critBonus ?? 0) + (mage?.critBonus ?? 0),
+      critBonus: (pr.critBonus ?? 0) + (mage?.critBonus ?? 0) + (pm?.critBonus ?? 0),
       statuses: o.statuses ?? d.statuses,
       knockback: o.knockback ?? (o.tick ? 0 : d.knockback),
       tags: d.tags,
@@ -2487,7 +2577,7 @@ export class SkillSystem {
       stagger: o.stagger ?? pr.stagger,
       proc: pr.proc,
       tick: o.tick,
-      forceCrit: o.forceCrit,
+      forceCrit: o.forceCrit || procForce,
       more: (o.more ?? 1) * (c.more ?? 1),
       knockup: o.tick ? undefined : o.knockup ?? pr.knockup,
       hitstop: o.hitstop ?? (pr.hitstop || undefined),
@@ -3019,6 +3109,7 @@ export class SkillSystem {
 
   private clearAll(): void {
     G.procs?.reset();
+    this.procWatch.reset();
     this.masteryAt.clear();
     for (const st of this.states.values()) {
       try { if (st.aiming) this.endAim(st.player, st, false); } catch { /* ignore */ }

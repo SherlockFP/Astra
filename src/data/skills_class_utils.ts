@@ -48,7 +48,7 @@ const ROWS: SkillDef[] = [
     id: 'barbarian_pummel', classId: 'barbarian', name: 'Yumruk Darbesi', icon: I('skill-double-strike'),
     desc: '3 metre içindeki büyü yapan bir düşmanı yumruklarsın: büyüsü kesilir, 4 saniye boyunca aynı büyüyü yapamaz ve 0,8 saniye sersemler (boss hariç).',
     cost: 10, cooldown: 12, targeting: 'melee_arc', range: 3, arc: 120, anim: 'Unarmed_Melee_Attack_Punch_A', animSpeed: 1.5,
-    behavior: 'interrupt', tags: ['melee', 'kick'],
+    behavior: 'interrupt', tags: ['offgcd', 'melee', 'kick'],
     params: { silence: 0, stun: 0.8 },
   }),
   row({
@@ -64,7 +64,7 @@ const ROWS: SkillDef[] = [
     id: 'mage_counterspell', classId: 'mage', name: 'Büyü Kırma', icon: I('skill-arcane-missiles'),
     desc: '30 metre içindeki büyü yapan bir düşmanın büyüsünü keser ve 3 saniye sessizlik verir (boss hariç). Kesilen büyü 4 saniye boyunca yeniden yapılamaz.',
     cost: 10, cooldown: 20, targeting: 'custom', range: 30, arc: 360, anim: 'Spellcast_Shoot', animSpeed: 1.5,
-    behavior: 'interrupt', tags: ['spell', 'kick'],
+    behavior: 'interrupt', tags: ['offgcd', 'spell', 'kick'],
     params: { silence: 3 },
   }),
   row({
@@ -80,7 +80,7 @@ const ROWS: SkillDef[] = [
     id: 'rogue_kick', classId: 'rogue', name: 'Tekme', icon: I('skill-quick-slash'),
     desc: '3 metre içindeki büyü yapan bir düşmanı tekmelersin: büyüsü kesilir ve 3 saniye sessizlik alır (boss hariç).',
     cost: 10, cooldown: 12, targeting: 'melee_arc', range: 3, arc: 120, anim: 'Unarmed_Melee_Attack_Kick', animSpeed: 1.5,
-    behavior: 'interrupt', tags: ['melee', 'kick'],
+    behavior: 'interrupt', tags: ['offgcd', 'melee', 'kick'],
   }),
   row({
     id: 'rogue_cloak_of_shadows', classId: 'rogue', name: 'Gölge Pelerini', icon: I('skill-smoke-bomb'),
@@ -96,7 +96,7 @@ const ROWS: SkillDef[] = [
     id: 'monk_spear_hand', classId: 'monk', name: 'Mızrak Eli', icon: I('skill-thrust'),
     desc: '4 metre önündeki koni içindeki büyü yapan bir düşmanı keser ve 4 saniye sessizlik verir (boss hariç).',
     cost: 15, cooldown: 15, targeting: 'melee_arc', range: 4, arc: 90, anim: 'Dualwield_Melee_Attack_Stab', animSpeed: 1.5,
-    behavior: 'interrupt', tags: ['melee', 'kick'],
+    behavior: 'interrupt', tags: ['offgcd', 'melee', 'kick'],
     params: { silence: 4 },
   }),
   row({
@@ -112,7 +112,7 @@ const ROWS: SkillDef[] = [
     id: 'archer_muzzle', classId: 'archer', name: 'Susturucu Ok', icon: I('skill-piercing-shot'),
     desc: '25 metre menzildeki bir düşmana ok atarsın: büyüsü kesilir ve 3 saniye sessizlik alır (boss hariç).',
     cost: 15, cooldown: 20, targeting: 'custom', range: 25, arc: 360, anim: '2H_Ranged_Shoot', animSpeed: 1.4,
-    behavior: 'interrupt', tags: ['ranged', 'kick'],
+    behavior: 'interrupt', tags: ['offgcd', 'ranged', 'kick'],
     params: { silence: 3 },
   }),
   row({
@@ -128,7 +128,7 @@ const ROWS: SkillDef[] = [
     id: 'paladin_rebuke', classId: 'paladin', name: 'Azarlama', icon: I('skill-smite'),
     desc: '4 metre içindeki büyü yapan bir düşmanı azarlarsın: büyüsü kesilir ve 3 saniye sessizlik alır (boss hariç). 1 Kutsal Güç kazanırsın.',
     cost: 10, cooldown: 15, targeting: 'melee_arc', range: 4, arc: 120, anim: '1H_Melee_Attack_Stab', animSpeed: 1.5,
-    behavior: 'interrupt', tags: ['melee', 'kick', 'holy'],
+    behavior: 'interrupt', tags: ['offgcd', 'melee', 'kick', 'holy'],
     pip: { id: 'holypower', gain: 1 },
   }),
   row({
@@ -146,7 +146,7 @@ const ROWS: SkillDef[] = [
     id: 'necro_soul_snap', classId: 'necromancer', name: 'Ruh Koparma', icon: I('skill-curse'),
     desc: '20 metre içindeki büyü yapan bir düşmanın büyüsünü keser ve 3 saniye sessizlik verir (boss hariç). Başarılı kesmede 10 Öz geri kazanırsın.',
     cost: 10, cooldown: 20, targeting: 'custom', range: 20, arc: 360, anim: 'Spellcast_Shoot', animSpeed: 1.5,
-    behavior: 'interrupt', tags: ['spell', 'kick'],
+    behavior: 'interrupt', tags: ['offgcd', 'spell', 'kick'],
     params: { silence: 3, gainRes: 10 },
   }),
   row({
@@ -162,7 +162,7 @@ const ROWS: SkillDef[] = [
     id: 'warlock_spell_lock', classId: 'warlock', name: 'Büyü Kilidi', icon: I('skill-curse'),
     desc: '30 metre içindeki büyü yapan bir düşmanın büyüsünü keser ve 3 saniye sessizlik verir (boss hariç).',
     cost: 10, cooldown: 24, targeting: 'custom', range: 30, arc: 360, anim: 'Spellcast_Shoot', animSpeed: 1.5,
-    behavior: 'interrupt', tags: ['spell', 'kick'],
+    behavior: 'interrupt', tags: ['offgcd', 'spell', 'kick'],
     params: { silence: 3 },
   }),
   row({

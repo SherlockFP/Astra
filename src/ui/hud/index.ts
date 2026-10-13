@@ -25,6 +25,7 @@ import { FpsCounter, Vignette } from './Overlays';
 import { PartyFrames } from './PartyFrames';
 import { PlayerCastBar, PlayerFrame, XpBar } from './PlayerFrame';
 import { PerfOverlay } from '../widgets/PerfOverlay';
+import { SpellOverlay } from './SpellOverlay';
 import { TargetFrame } from './TargetFrame';
 import type { HudCtx, HudWidget } from './types';
 
@@ -214,6 +215,9 @@ export function createHUD(ui: UI): HudApi {
   }
   const xh = add(new Crosshair());
   root.appendChild(xh.el);
+  // CW-09: spell activation overlays (<= 3 procs) around the reticle, burst banner + edge vignette
+  const spells = add(new SpellOverlay());
+  root.appendChild(spells.el);
   // parry / riposte / finisher cues, guard arc, LMB prompts and the lock-on ring (all around the reticle or the hard target)
   const cues = add(new CombatCues());
   root.appendChild(cues.el);

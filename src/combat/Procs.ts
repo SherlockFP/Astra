@@ -21,6 +21,7 @@
  * The engine never throws from the frame loop: bad actions and missing services warn once.
  */
 import { RNG } from '../core/utils';
+import { Prd } from './prd';
 import { TRIGGERS, parseFx } from '../data/talentTrees/fx';
 import type { FxItem, ProcEntry } from '../types/talents';
 import type { DamageType, PipId } from '../types/common';
@@ -120,6 +121,8 @@ export class ProcEngine {
   private standFor = 0;
   private delayed: Delayed[] = [];
   private rng = new RNG((Date.now() ^ 0x7f4a7c15) >>> 0);
+  /** CW-07 §2.7: bad-luck protection per entry id (combat/prd.ts). Chances below 1 roll through it. */
+  private prd = new Prd();
 
   constructor(host: ProcHost = liveProcHost) {
     this.host = host;
@@ -166,6 +169,7 @@ export class ProcEngine {
     this.standFor = 0;
     this.delayed = [];
     this.nest = 0;
+    this.prd.reset();
   }
 
   /** Advances the engine clock and runs the timers (`tick`, `still`) and delayed echoes. Call once per frame. */
@@ -255,7 +259,7 @@ export class ProcEngine {
     if (!condsHold(e.conds, { self: ctx.player, target, host: this.host })) return false;
     const mul = PROC_TRIGGERS.has(e.on) ? this.procMul(ctx) : 1;
     const p = e.ch * mul;
-    if (p < 1 && this.rng.next() >= p) return false;
+    if (p < 1 && !this.prd.roll(e.id, p, () => this.rng.next())) return false;
     if (!timed) st.icdUntil = this.clock + Math.max(MIN_ICD, e.icd);
     if (e.on === 'lethal') this.lethalUntil = this.clock + LETHAL_LOCK;
     this.run(e, ctx, target);

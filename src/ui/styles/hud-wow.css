@@ -1,0 +1,101 @@
+/*
+ * CW-08 · Action bar states (COMBAT_WOW §2.12, UI_REDESIGN §2.6.8). ElvUI flat: one-pixel lines, no bevel.
+ * Imported by ui/hud/ActionBar.ts. Every rule is scoped under `.actionbar` so it wins over hud.css without !important.
+ * The states are classes set in ActionBar.ts: queued, oor, locked, glow, glowpop, spend; the sweep and text colour are inline.
+ */
+
+.actionbar {
+  --wow-ants: #ffe58a;
+  --wow-edge: rgba(255, 244, 210, 0.9);
+}
+
+/* ---- marching ants: .glow (proc / usable) and .spend (soft, 50 % alpha) ---- */
+.actionbar .slot-ants {
+  position: absolute;
+  inset: 1px;
+  border-radius: 3px;
+  pointer-events: none;
+  display: none;
+  background:
+    linear-gradient(90deg, var(--wow-ants) 60%, transparent 60%) 0 0 / 10px 2px repeat-x,
+    linear-gradient(90deg, var(--wow-ants) 60%, transparent 60%) 0 100% / 10px 2px repeat-x,
+    linear-gradient(0deg, var(--wow-ants) 60%, transparent 60%) 0 0 / 2px 10px repeat-y,
+    linear-gradient(0deg, var(--wow-ants) 60%, transparent 60%) 100% 0 / 2px 10px repeat-y;
+}
+.actionbar .slot.glow .slot-ants,
+.actionbar .slot.spend .slot-ants {
+  display: block;
+  /* one dash period (10 px) per step: the ring crawls at the 1.4 s-per-revolution pace of COMBAT_WOW §2.7 */
+  animation: wow-ants 0.08s linear infinite;
+}
+.actionbar .slot.glow .slot-ants {
+  box-shadow: 0 0 8px rgba(255, 214, 90, 0.7);
+}
+.actionbar .slot.spend:not(.glow) .slot-ants {
+  opacity: 0.5;
+}
+@keyframes wow-ants {
+  from { background-position: 0 0, 0 100%, 0 0, 100% 0; }
+  to { background-position: 10px 0, 10px 100%, 0 10px, 100% 10px; }
+}
+
+/* the button pops once when its glow turns on (brightness only, no scale: crisp art) */
+.actionbar .slot.glowpop .slot-ico {
+  animation: wow-glowpop 0.12s ease-out;
+}
+@keyframes wow-glowpop {
+  0% { filter: brightness(2.2); }
+  100% { filter: none; }
+}
+
+/* ---- queued: 2 px inner white outline while the spell queue holds this button ---- */
+.actionbar .slot.queued .slot-frame {
+  box-shadow: inset 0 0 0 2px #ffffff, 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+/* ---- out of range: red overlay while the hover target is beyond the skill range ---- */
+.actionbar .slot.oor .slot-tint {
+  background: rgba(210, 40, 30, 0.5);
+}
+
+/* ---- school lock: grey icon, school glyph on top, the remaining seconds centred (cdText) ---- */
+.actionbar .slot-school {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 2px;
+  display: none;
+  text-align: center;
+  font: 700 10px var(--font-head);
+  color: #d9d4c7;
+  text-shadow: 0 1px 0 #000;
+  pointer-events: none;
+}
+.actionbar .slot.locked .slot-school {
+  display: block;
+}
+.actionbar .slot.locked .slot-ico {
+  filter: grayscale(1) brightness(0.45);
+}
+.actionbar .slot.locked .slot-tint {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* ---- sweeps: GCD = 0.45 black with a bright leading edge; cooldown gets the same leading edge ---- */
+.actionbar .slot-gcd {
+  background: conic-gradient(from 0deg, rgba(0, 0, 0, 0) calc(var(--e) * 1%), rgba(0, 0, 0, 0.45) calc(var(--e) * 1%));
+}
+.actionbar .slot-cd::after,
+.actionbar .slot-gcd::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 3px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 244, 210, 0) calc(var(--e) * 1% - 2%),
+    var(--wow-edge) calc(var(--e) * 1% - 2%),
+    var(--wow-edge) calc(var(--e) * 1%),
+    rgba(255, 244, 210, 0) calc(var(--e) * 1%)
+  );
+}

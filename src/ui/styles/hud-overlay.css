@@ -1,0 +1,106 @@
+/* ==========================================================================
+   CW-09 Spell Activation Overlay + burst banner (SpellOverlay.ts).
+   PSX-crisp: CSS gradients and steps() only, no blur filters, no texture assets.
+   Anchor = screen centre, shifted 40 px up (.sao-root).
+   ========================================================================== */
+
+.sao-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+
+.sao-root { position: absolute; left: 50%; top: calc(50% - 40px); width: 0; height: 0; }
+
+/* one overlay = one art piece; the colour comes from the school (--c) set inline */
+.sao {
+  position: absolute;
+  animation: sao-in 0.15s steps(3) both;
+}
+.sao[data-pos="top"]    { left: -90px;  top: -200px; width: 180px; height: 120px; }
+.sao[data-pos="left"]   { left: -200px; top: -90px;  width: 120px; height: 180px; }
+.sao[data-pos="right"]  { left: 80px;   top: -90px;  width: 120px; height: 180px; }
+.sao[data-pos="center"] { left: -70px;  top: -70px;  width: 140px; height: 140px; }
+.sao[data-pos="both"]   { left: -200px; top: -80px;  width: 400px; height: 160px; }
+
+.sao-art {
+  position: absolute;
+  inset: 0;
+  --core: color-mix(in srgb, var(--c) 85%, #ffffff);
+  --halo: color-mix(in srgb, var(--c) 55%, transparent);
+  background: radial-gradient(closest-side, var(--core) 0 55%, var(--halo) 56% 80%, transparent 81%);
+  animation: sao-pulse 1.1s steps(4) infinite;
+}
+/* hard PSX rim: a 2 px stepped ring inside the art */
+.sao-art::after {
+  content: "";
+  position: absolute;
+  inset: 12%;
+  border: 2px solid var(--c);
+  border-radius: 50%;
+  opacity: 0.6;
+}
+.sao[data-pos="both"] .sao-art {
+  background:
+    radial-gradient(ellipse 90px 80px at 25% 50%, var(--core) 0 55%, var(--halo) 56% 80%, transparent 81%),
+    radial-gradient(ellipse 90px 80px at 75% 50%, var(--core) 0 55%, var(--halo) 56% 80%, transparent 81%);
+}
+.sao[data-pos="both"] .sao-art::after { display: none; }
+
+/* expiry warning: 4 Hz flicker over the last 1.5 s (set from SpellOverlay.ts) */
+.sao.warn { animation: sao-flicker 0.25s steps(1) infinite; }
+
+/* consume (spent by a cast): scale 1 -> 1.25 and fade, 0.2 s */
+.sao.consume { animation: sao-consume 0.2s steps(4) forwards; }
+
+/* plain expiry / no longer in the top set: fade-out 0.35 s */
+.sao.out { animation: sao-out 0.35s steps(4) forwards; }
+
+@keyframes sao-in {
+  from { opacity: 0; transform: scale(1.25); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes sao-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.75; }
+}
+@keyframes sao-flicker {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.2; }
+}
+@keyframes sao-consume {
+  to { opacity: 0; transform: scale(1.25); }
+}
+@keyframes sao-out {
+  to { opacity: 0; transform: scale(0.9); }
+}
+
+/* ---- burst window: edge vignette (0.2 alpha) and the PATLAMA! banner under the overlays ---- */
+.sao-edge {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(255, 120, 60, 0.2) 100%);
+  transition: opacity 0.2s steps(4);
+}
+.sao-edge.on { opacity: 1; }
+
+.sao-burst {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 70px);
+  transform: translateX(-50%);
+  opacity: 0;
+  white-space: nowrap;
+  font-family: var(--font-ui);
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  color: #ffe58a;
+  text-shadow: 2px 2px 0 #000, -1px 0 0 #000, 0 -1px 0 #000;
+}
+.sao-burst.on {
+  opacity: 1;
+  animation: sao-burst-in 0.3s steps(4) both;
+}
+@keyframes sao-burst-in {
+  from { opacity: 0; transform: translateX(-50%) scale(1.5); }
+  to   { opacity: 1; transform: translateX(-50%) scale(1); }
+}

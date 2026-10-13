@@ -30,7 +30,7 @@ export const MAGE_SPEC_SKILLS: Record<string, SkillDef> = {
     cost: 20, cooldown: 9, charges: 2, castTime: 0, anim: 'Spellcast_Shoot', animSpeed: 1.4, hitTime: 0.373,
     targeting: 'projectile', behavior: 'bounce_projectile', range: 26, speed: 30, radius: 0.4, count: 1, pierce: 0,
     damage: { coef: 1.9, type: 'fire' }, statuses: [{ status: 'burn', duration: 3, magnitude: 0.4 }],
-    tags: ['spell', 'projectile', 'fire'],
+    tags: ['offgcd', 'spell', 'projectile', 'fire'],
     vfx: { projectile: 'fire_projectile', impact: 'fire_burst' }, sfx: { cast: 'fire_cast', impact: 'fire_impact' },
     params: { bounces: 2, bounceRange: 6, bounceMult: 0.85, element: 1, end: 0.65, chain: 0.08, move: 0.15, stagger: 5, proc: 0.8, weight: 0, upper: 1, slow: 0.4 },
   }),
