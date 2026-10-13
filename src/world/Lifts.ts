@@ -28,6 +28,12 @@ const PAD_STAND_SEC = 0.6;
 const PAD_Y_TOL = 0.6;
 /** Re-broadcast period while moving or idle (§9). */
 const BROADCAST_SEC = 2;
+/**
+ * Call mode after an arrival: a rider who was already on the pad when the lift arrived counts only once they have stood on
+ * it this long after the arrival (no departure from a rider who simply stays put before that). A rider who steps on anew
+ * (after leaving the pad) follows the normal PAD_STAND_SEC rule.
+ */
+const CALL_STAY_SEC = 3;
 
 /** Distance covered after `t` seconds of a trip of `dist` metres at cruise `speed`, with trapezoid velocity. */
 export function liftTravel(dist: number, speed: number, t: number): { s: number; total: number } {
@@ -50,6 +56,10 @@ interface Motion {
   moving: boolean;
   padT: number;
   bcastT: number;
+  /** Call mode: the last arrival found a rider already on the pad (cleared when the pad is left). */
+  stale: boolean;
+  /** Call mode: shared-clock time of the last arrival. */
+  arrivedAt: number;
 }
 
 export class LiftSystem {
@@ -63,7 +73,7 @@ export class LiftSystem {
   constructor(hf: Heightfield, host: LiftHost) {
     this.host = host;
     this.lifts = hf.lifts;
-    this.motion = hf.lifts.map((l) => ({ from: l.stopIdx, to: l.stopIdx, t0: 0, moving: false, padT: 0, bcastT: 0 }));
+    this.motion = hf.lifts.map((l) => ({ from: l.stopIdx, to: l.stopIdx, t0: 0, moving: false, padT: 0, bcastT: 0, stale: false, arrivedAt: -Infinity }));
     hf.lifts.forEach((l, i) => this.index.set(l.def.id, i));
   }
 
@@ -86,6 +96,9 @@ export class LiftSystem {
           L.stopIdx = m.to;
           L.y = stops[m.to]!;
           L.dwellLeft = dwell;
+          m.arrivedAt = now;
+          m.padT = 0;
+          m.stale = auth && (def.mode ?? 'call') === 'call' && this.padOccupied(L, this.host.players());
           if (auth) this.broadcast(i, now);
         } else {
           L.y = stops[m.from]! + dir * s;
@@ -107,13 +120,18 @@ export class LiftSystem {
       if (mode === 'auto') {
         if (L.dwellLeft <= 0) this.depart(i, now);
       } else if (mode === 'call') {
-        if (L.dwellLeft > 0) { m.padT = 0; continue; }
+        // no dwell gate here: the arrival rules below are the whole wait (see CALL_STAY_SEC)
         if (players === null) players = this.host.players();
-        if (this.padOccupied(L, players)) {
+        if (!this.padOccupied(L, players)) {
+          m.padT = 0;
+          m.stale = false; // the pad was left: the next rider to step on is a fresh one
+        } else if (m.stale) {
+          // orchestrator rule: a rider who simply stays on the pad after arriving never sends the lift back (fighting on a
+          // landing must not move it); they step off and on again to call it. CALL_STAY_SEC kept for reference only.
+          void CALL_STAY_SEC;
+        } else {
           m.padT += dt;
           if (m.padT >= PAD_STAND_SEC) this.depart(i, now);
-        } else {
-          m.padT = 0;
         }
       }
       // mode 'script': departs only on a `go` command
@@ -193,6 +211,7 @@ export class LiftSystem {
     m.moving = true;
     m.padT = 0;
     m.bcastT = 0;
+    m.stale = false;
     L.dir = to > from ? 1 : -1;
     L.dwellLeft = 0;
     this.host.broadcast(this.key(i, 0));

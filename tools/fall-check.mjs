@@ -5,12 +5,14 @@
  *   node tools/fall-check.mjs
  *
  * Asserts, on synthetic flag grids (no DungeonDef needed):
- *   - safe history: a walk across a 10 m void strip only records samples on safe ground (no void/ledge within
- *     SAFE_EDGE_PAD), keeps SAFE_HIST_SEC of history, and pickSpot returns the newest sample at least SAFE_BACK_SEC old
- *     (or the checkpoint when none is that old)
+ *   - safe history: a walk across a 10 m void strip never records a void cell, keeps SAFE_HIST_SEC of history, and
+ *     pickSpot returns the newest sample at least SAFE_BACK_SEC old with >= 2 m clearance from the void, facing away from it
+ *   - narrow bridge (2 m): samples stay in the history, the respawn is on the bridge, the history survives the respawn
+ *     teleport, and a second fall right after the respawn still lands on the bridge
  *   - void trigger: stepping off a rim at y = 5 into a pit triggers once, only once y < rim - VOID_KILL_BELOW, never while
  *     grounded or on safe ground; the respawn is due only after VOID_FADE_OUT
  *   - drop-damage table: landing class and non-lethal hard damage for drops 0..20 m at 200 max HP, void damage 25 %
+ *     (exact: 55.5 at 222 max HP, independent of HP/regen, never leaves less than 1 HP)
  *
  * Exit code 1 on any failure. Needs Node >= 22.18 (native TypeScript type stripping).
  */
@@ -26,7 +28,7 @@ const ROOT = rootPath.endsWith('/') ? rootPath.slice(0, -1) : rootPath;
 const imp = (p) => import(pathToFileURL(`${ROOT}/${p}`).href);
 
 const { F, VERT } = await imp('src/world/Heightfield.ts');
-const { FallHandler, isSafeSpot, VOID_FADE_OUT } = await imp('src/game/FallHandler.ts');
+const { FallHandler, isSafeSpot, clearanceAt, VOID_FADE_OUT, RESPAWN_CLEAR } = await imp('src/game/FallHandler.ts');
 
 let failures = 0;
 const eq = (name, got, want, tol = 1e-9) => {
@@ -61,22 +63,63 @@ const noKill = () => Number.NEGATIVE_INFINITY;
   const hist = fh.history();
   eq('walk on safe ground never triggers a void fall', voidTriggers, 0);
   ok('safe history is non-empty before the strip', hist.some((s) => s.x < VOID_X0 - VERT.SAFE_EDGE_PAD));
-  const bad = hist.filter((s) => s.x > VOID_X0 - VERT.SAFE_EDGE_PAD - 0.01 && s.x < VOID_X1 + VERT.SAFE_EDGE_PAD + 0.01);
-  eq('no sample within SAFE_EDGE_PAD of the void (count)', bad.length, 0);
+  const onVoid = hist.filter((s) => flagsStrip(s.x, s.z) & F.VOID);
+  eq('no sample on a void cell (count)', onVoid.length, 0);
   ok('history bounded by SAFE_HIST_SEC', maxHist <= Math.round(VERT.SAFE_HIST_SEC / 0.1) + 2, `max=${maxHist}`);
   ok('isSafeSpot rejects the rim cell itself', !isSafeSpot(VOID_X0, 0, flagsStrip));
   ok('isSafeSpot accepts 4 m from the strip', isSafeSpot(VOID_X0 - 4, 0, flagsStrip));
   ok('isSafeSpot rejects a LIFT cell', !isSafeSpot(3, 101, flagsStrip));
-  // respawn: newest sample at least SAFE_BACK_SEC old
-  const spot = fh.pickSpot(t, { x: -99, z: -99, yaw: 0 });
+  // respawn: newest old-enough sample with >= RESPAWN_CLEAR (2 m) of clearance
+  const spot = fh.pickSpot(t, { x: -99, z: -99, yaw: 0 }, flagsStrip);
   ok('pickSpot returns a recorded safe sample', !!spot && hist.some((s) => s.x === spot.x && s.z === spot.z));
   if (spot) {
     const src = hist.filter((s) => s.x === spot.x && s.z === spot.z).pop();
     ok('pickSpot sample is at least SAFE_BACK_SEC old', t - src.t >= VERT.SAFE_BACK_SEC - 1e-9, `age=${(t - src.t).toFixed(3)}`);
-    const newer = hist.filter((s) => t - s.t >= VERT.SAFE_BACK_SEC && s.t > src.t);
-    eq('pickSpot is the newest such sample', newer.length, 0);
-    ok('respawn spot is on safe ground', isSafeSpot(spot.x, spot.z, flagsStrip));
+    const newer = hist.filter((s) => t - s.t >= VERT.SAFE_BACK_SEC && s.clear >= RESPAWN_CLEAR && s.t > src.t);
+    eq('pickSpot is the newest such sample (clearance >= 2 m)', newer.length, 0);
+    ok('respawn spot is at least 2 m from the void', clearanceAt(spot.x, spot.z, flagsStrip) >= RESPAWN_CLEAR - 1e-9);
+    ok('respawn spot is on safe ground (strict test)', isSafeSpot(spot.x, spot.z, flagsStrip));
+    // facing: walked +x toward the strip, so the spot must face away from it (-x side)
+    ok('respawn facing points away from the void (sin yaw < 0)', spot.yaw !== undefined && Math.sin(spot.yaw) < 0, `yaw=${spot.yaw}`);
   }
+}
+
+// 1b. narrow bridge (2 m) over a pit: samples stay in the history, the respawn is on the bridge, and consecutive falls work
+{
+  const BX0 = 0, BX1 = 30;
+  const flagsBridge = (x, z) => (Math.abs(z) >= 1 ? F.VOID : 0) | (z > 100 ? F.LIFT : 0);
+  const CP = { x: -99, z: -99, yaw: 0 };
+  const fh = new FallHandler();
+  const env = { flagsAt: flagsBridge, killY: () => -Infinity };
+  const dt = 1 / 60;
+  let t = 0;
+  for (let x = BX0; x < BX1; x += 2 * dt) { t += dt; fh.tick(t, dt, { x, y: 0, z: 0, grounded: true }, env); }
+  const hist = fh.history();
+  ok('bridge: samples are recorded on the 2 m bridge', hist.length > 20, `n=${hist.length}`);
+  const spot1 = fh.pickSpot(t, CP, flagsBridge);
+  ok('bridge: respawn is on the bridge, not the checkpoint', !!spot1 && spot1 !== CP && Math.abs(spot1.z) < 0.5 && spot1.x > BX0, `spot=${JSON.stringify(spot1)}`);
+  // fall 1: startVoid -> fade -> respawn; the history must survive the teleport
+  const nBefore = fh.history().length;
+  fh.startVoid(t, CP, env);
+  t += VOID_FADE_OUT + 0.01;
+  const due1 = fh.due(t);
+  fh.onRespawned(0);
+  ok('bridge: fall 1 respawn is due with a spot', !!due1 && due1.spot !== null && due1.spot !== CP);
+  ok('bridge: history kept across the respawn', fh.history().length === nBefore && nBefore > 0, `before=${nBefore} after=${fh.history().length}`);
+  // fall 2 within 0.2 s of landing back on the bridge: still a bridge spot (samples before the respawn are used)
+  for (let i = 0; i < 12; i++) { t += dt; fh.tick(t, dt, { x: due1.spot.x, y: 0, z: due1.spot.z, grounded: true }, env); }
+  const spot2 = fh.pickSpot(t, CP, flagsBridge);
+  ok('bridge: consecutive fall still respawns on the bridge', !!spot2 && spot2 !== CP && Math.abs(spot2.z) < 0.5, `spot=${JSON.stringify(spot2)}`);
+}
+
+// 1c. damage is exact and independent of regeneration (CM §13: 25 % of max HP)
+{
+  eq('void damage at 222 max HP is 55.5', FallHandler.voidDamage(222), 55.5, 1e-9);
+  eq('void damage taken at full HP', FallHandler.voidDamageTaken(222, 222), 55.5, 1e-9);
+  eq('void damage taken after regen to 200 HP (same amount)', FallHandler.voidDamageTaken(200, 222), 55.5, 1e-9);
+  eq('void damage taken at 150 HP (same amount)', FallHandler.voidDamageTaken(150, 222), 55.5, 1e-9);
+  eq('void damage taken never leaves less than 1 HP', FallHandler.voidDamageTaken(40, 222), 39, 1e-9);
+  eq('void damage taken at 1 HP is 0', FallHandler.voidDamageTaken(1, 222), 0, 1e-9);
 }
 
 // 2. respawn fallbacks ------------------------------------------------------------------------------------------------

@@ -14,7 +14,7 @@ import { WowMouse, type WowMouseOut } from './WowMouse';
 import { pickAtNdc, type PickHit } from './ClickPick';
 import { AutoAttack, AUTO, type AutoTarget } from './AutoAttack';
 import { VERT } from '../world/Heightfield';
-import { FallHandler, VOID_FADE_OUT, type Spot } from './FallHandler';
+import { FallHandler, VOID_FADE_IN, VOID_FADE_OUT, VOID_INPUT_LOCK, VOID_INVULN_SEC, type FallEnv, type Spot } from './FallHandler';
 
 /** Black-out / fade-back of the void fall (§11 screen:fade; the HUD listens, unknown events are a no-op). */
 function screenFade(to: number, dur: number): void {
@@ -111,6 +111,8 @@ export class PlayerController {
   private fallStartY = 0;
   /** Falls and drops (§11): safe history, void trigger, landing damage, respawn after the fade. */
   private fall = new FallHandler();
+  /** Movement input is ignored until this controller time (void respawn: fade-in + VOID_INPUT_LOCK). */
+  private inputLockUntil = -1;
   private landUntil = 0;
   private faceHold = 0;
   private loco: Loco = 'idle';
@@ -415,6 +417,8 @@ export class PlayerController {
       // auto-follow (GDD_LIFE §4.4): only while steering straight forward, with nothing locked
       this.cam.setFollow(canInput && !this.dodge && axis.y > 0.5 && Math.abs(axis.x) < 0.5 && !this.hardTarget && !p.isDead, p.yaw + Math.PI, this.dispSpeed);
     }
+    // void respawn: the held key must not walk the player straight back to the edge (fade-in + 0.4 s, §11)
+    if (this.time < this.inputLockUntil) axis = { x: 0, y: 0 };
     this.stepMovement(dt, axis, canInput, action);
     this.updateFall(dt);
 
@@ -520,8 +524,12 @@ export class PlayerController {
     }
     if (this.marker) this.marker.visible = false;
     if (this.markerRing) this.markerRing.visible = false;
-    // keep the body on the ground
+    // keep the body on the ground: airborne bodies fall, grounded ones snap to the floor under them (raised floors included)
     if (p.jumpY > 0 || !this.grounded) this.stepVertical(dt);
+    else if (p.world) {
+      p.position.y = p.world.groundY(p.position.x, p.position.z);
+      p.jumpY = 0;
+    }
   }
 
   // =====================================================================================================================
@@ -678,23 +686,44 @@ export class PlayerController {
     const world = p.world;
     if (!world || !world.vertical) return;
     const pos = p.position;
-    const started = this.fall.tick(this.time, dt, { x: pos.x, y: pos.y, z: pos.z, grounded: this.grounded }, {
-      flagsAt: (x, z) => world.nav.flagsAt(x, z),
-      killY: (x, z) => world.heights?.killY(x, z) ?? Number.NEGATIVE_INFINITY,
-    });
+    const started = this.fall.tick(this.time, dt, { x: pos.x, y: pos.y, z: pos.z, grounded: this.grounded }, this.fallEnv());
     if (started) this.startVoidFall();
     const due = this.fall.due(this.time);
     if (due) this.finishVoidFall(due.spot);
   }
 
-  /** Void fall, first half: black-out, non-lethal damage. The respawn follows when the fade has finished. */
-  private startVoidFall(): void {
-    if (!this.fall.startVoid(this.time, this.sceneCheckpoint())) return;
-    screenFade(1, VOID_FADE_OUT);
-    this.fallHit(FallHandler.voidDamage(this.player.maxHp));
+  /** Fall environment for FallHandler: nav flags and the dungeon's kill height at a point. */
+  private fallEnv(): FallEnv {
+    const world = this.player.world;
+    return {
+      flagsAt: (x, z) => world?.nav.flagsAt(x, z) ?? 0,
+      killY: (x, z) => world?.heights?.killY(x, z) ?? Number.NEGATIVE_INFINITY,
+    };
   }
 
-  /** Void fall, second half: teleport to the safe spot, brief invulnerability, fade back. */
+  /** Void fall, first half: black-out and the 25 % max HP damage, taken at the moment of the fall. */
+  private startVoidFall(): void {
+    if (!this.fall.startVoid(this.time, this.sceneCheckpoint(), this.fallEnv())) return;
+    screenFade(1, VOID_FADE_OUT);
+    this.applyVoidDamage(FallHandler.voidDamageTaken(this.player.hp, this.player.maxHp));
+  }
+
+  /**
+   * Void-fall damage: written straight to HP. Armour, resistances, shields, damage-reduction buffs and regeneration are
+   * not applied, so the amount is exactly 25 % of max HP (clamped so the player stays at 1 HP).
+   */
+  private applyVoidDamage(amount: number): void {
+    const p = this.player;
+    if (!(amount > 0) || p.isDead) return;
+    p.hp = Math.max(1, p.hp - amount);
+    p.combatTimer = 0;
+    G.events.emit('damage', {
+      targetId: p.id, sourceId: null, amount, crit: false, type: 'true', kind: 'player_hurt',
+      pos: [p.position.x, p.position.y + p.height * 0.7, p.position.z], overkill: 0,
+    });
+  }
+
+  /** Void fall, second half: teleport to the safe spot, invulnerability, fade back, short input lock. */
   private finishVoidFall(spot: Spot | null): void {
     const p = this.player;
     const world = p.world;
@@ -705,8 +734,11 @@ export class PlayerController {
     }
     this.teleport(target.x, target.z, target.yaw);
     this.fall.onRespawned(p.position.y);
-    p.statuses.apply('invulnerable', 1);
-    screenFade(0, 0.3);
+    if (!p.statuses.apply('invulnerable', VOID_INVULN_SEC, { sourceId: null })) {
+      console.warn('[fall] invulnerable was not applied after a void respawn');
+    }
+    this.inputLockUntil = this.time + VOID_FADE_IN + VOID_INPUT_LOCK;
+    screenFade(0, VOID_FADE_IN);
     G.events.emit('ui:toast', { text: 'Düştün! (−%25 CAN)', kind: 'warning' });
   }
 

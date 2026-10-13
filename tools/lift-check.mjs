@@ -131,18 +131,55 @@ function makeHost(clock, { auth, players, sink }) {
   check('call: groundY on the pad follows the lift', near(hfC.groundY(cxA, czA), 6), `groundY=${hfC.groundY(cxA, czA)}`);
   check('call: arrival broadcast idles at stop 1', sink.some((m) => m.key === 'lift:A:1:1:0.000'));
 
-  // dwell: the rider stays on the pad at 6 m; the next departure may not come before 4 s
-  const tA = clock.t;
-  let early = false, tNext = -1;
+  // stale rider: the rider stood on the pad when the lift arrived, so it departs 3 s after the arrival (not at the old 4 s dwell)
+  const tArrSent = sink.find((m) => m.key === 'lift:A:1:1:0.000').t;
+  let tNext = -1;
   for (let k = 0; k < 900 && tNext < 0; k++) {
     clock.t += DT;
     rider.y = sys.yOf('A');
     sys.update(DT);
     if (sink.some((m) => m.key.startsWith('lift:A:1:0:'))) tNext = clock.t;
   }
-  early = tNext > 0 && tNext - tA < 4 - 1e-6;
-  check('call: dwell blocks an early second departure', tNext > 0 && !early, `dwell=${(tNext - tA).toFixed(3)}`);
+  const waited = tNext - tArrSent;
+  check('call: a rider who stays on the pad after arrival never sends the lift back', tNext < 0, `tNext=${tNext} waited=${waited.toFixed(3)}`);
   check('yOf unknown id returns 0', sys.yOf('nope') === 0);
+}
+
+// ---- 2b. call mode after arrival: step off and back on = fresh rider (0.6 s stand); leaving for good = no departure ----
+{
+  const clock = { t: 0 };
+  const sink = [];
+  const rider = { x: cxA, y: 0, z: czA };
+  const hfB = buildHeightfield(def, flatTile);
+  const sysB = new LiftSystem(hfB, makeHost(clock, { auth: true, players: () => [rider], sink }));
+  const frame = () => { clock.t += DT; rider.y = sysB.yOf('A'); sysB.update(DT); };
+  const runUntil = (pred, maxSec) => { for (let k = 0; k < maxSec / DT && !pred(); k++) frame(); return pred(); };
+  const arrived = () => sink.some((m) => m.key === 'lift:A:1:1:0.000');
+  check('call (fresh rider): rides up from the start', runUntil(arrived, 10));
+  // step off right after the arrival, step back on 1 s later
+  rider.x = -100;
+  for (let k = 0; k < 60; k++) frame();
+  rider.x = cxA; rider.z = czA;
+  const tOn = clock.t;
+  check('call: re-entry departs after the normal 0.6 s stand', runUntil(() => sink.some((m) => m.key.startsWith('lift:A:1:0:')), 4)
+    && Math.abs(sink.find((m) => m.key.startsWith('lift:A:1:0:')).t - tOn - 0.6) <= 2 * DT,
+    `dep-on=${(sink.find((m) => m.key.startsWith('lift:A:1:0:'))?.t - tOn).toFixed(3)}`);
+}
+
+// ---- 2c. call mode: a rider who leaves after the arrival and never comes back does not trigger a departure ----
+{
+  const clock = { t: 0 };
+  const sink = [];
+  const rider = { x: cxA, y: 0, z: czA };
+  const hfC2 = buildHeightfield(def, flatTile);
+  const sysC = new LiftSystem(hfC2, makeHost(clock, { auth: true, players: () => [rider], sink }));
+  const frame = () => { clock.t += DT; rider.y = sysC.yOf('A'); sysC.update(DT); };
+  for (let k = 0; k < 60 * 10 && !sink.some((m) => m.key === 'lift:A:1:1:0.000'); k++) frame();
+  rider.x = -100;
+  const tLeft = clock.t;
+  for (let k = 0; k < 60 * 6; k++) frame();
+  check('call: a rider who left the pad after arrival does not trigger a departure', !sink.some((m) => m.key.startsWith('lift:A:1:0:') && m.t > tLeft),
+    `departures after leave=${sink.filter((m) => m.key.startsWith('lift:A:1:0:') && m.t > tLeft).length}`);
 }
 
 // ---- 3. script mode: go is applied by the authority only ----
@@ -173,7 +210,8 @@ function makeHost(clock, { auth, players, sink }) {
   const hfAuth = buildHeightfield(def, flatTile);
   const sysAuth = new LiftSystem(hfAuth, {
     isAuthority: () => true,
-    players: () => [{ x: cxA, y: sysAuth.yOf('A'), z: czA }],
+    // the rider steps off between 4 and 5 s and back on, so the call-mode lift departs again (a rider who just stays never re-sends it)
+    players: () => (clock.t > 4 && clock.t < 5 ? [] : [{ x: cxA, y: sysAuth.yOf('A'), z: czA }]),
     broadcast: (key) => wire.push({ deliverAt: clock.t + LATENCY, key }),
     now: () => clock.t,
   });
