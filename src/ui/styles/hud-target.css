@@ -46,3 +46,8 @@
 /* soft-target nameplate: brighter name and HP outline (the hard target keeps its own .target look) */
 .np.soft .np-name { color: #ffffff; text-shadow: 0 0 6px var(--nc, #ffffff), 0 1px 0 #000; }
 .np.soft .np-bar { box-shadow: 0 0 0 1px #ffffff, 0 0 6px rgba(255, 255, 255, 0.6); }
+
+/* click-to-select: the nameplate's name and HP bar (target:select) and the target-of-target text take mouse input; the rest of the plate stays click-through */
+.np .np-click { pointer-events: auto; cursor: pointer; }
+.uf-tot.tot-click { pointer-events: auto; cursor: pointer; }
+.uf-tot.tot-click:hover { text-decoration: underline; }

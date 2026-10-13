@@ -29,6 +29,10 @@ const FIRE_POS = new THREE.Vector3(0, 0, 0);
 const ARC_RADIUS = 6.2;
 const SLOT_STEP = 0.46; // radians between stands
 const PEDESTAL = new THREE.Vector3(-17, 0, 2);
+// creation view framing: preview character height / viewport height, feet line from the top, camera pitch (looking down)
+const CREATE_HEIGHT_FRAC = 0.45;
+const CREATE_FEET_FRAC = 0.75;
+const CREATE_PITCH = THREE.MathUtils.degToRad(7);
 
 interface Stand {
   key: string;
@@ -116,6 +120,18 @@ export class MenuScene implements GameScene {
   private pedStep = 0;
   private pedNext = 0;
   private pedFlash = 0;
+  private pedFill = new THREE.PointLight(0xfff0dc, 0, 14, 2);
+  private pedHeight = 1.85; // measured height of the shown character (world units)
+  private pedFeetY = PEDESTAL.y + 0.64; // world y of the shown character's feet
+  private createCx = 0.5; // horizontal centre of the free gap between the creation panels (0..1 of the canvas)
+  private createCxTarget = 0.5;
+  private createCxTimer = 0;
+  private createBlend = 0; // 0 = camp view, 1 = creation view (eases the framing in and out)
+  private viewShifted = false;
+  private campProps: THREE.Object3D[] = []; // camp props the creation view may hide
+  private occluders: THREE.Object3D[] = [];
+  private sceneryHidden = false;
+  private boxCache = new Map<THREE.Object3D, THREE.Box3>();
 
   async enter(_params?: unknown): Promise<void> {
     G.vfx.attach(this.scene, this.camera);
@@ -351,6 +367,8 @@ export class MenuScene implements GameScene {
     this.particles.push(ff);
     psxify(root, 'world');
     root.add(ground);
+    // camp props the creation view may hide (not the ground, the instanced scatter, or the pedestal, which is built later)
+    this.campProps = root.children.filter((o) => o !== ground && !(o as THREE.InstancedMesh).isInstancedMesh && !!o.getObjectByProperty('isMesh', true));
   }
 
   /** Many copies of a single-mesh prop with one draw call. */
@@ -436,7 +454,8 @@ export class MenuScene implements GameScene {
       g.add(l);
       this.lampLights.push(l);
     }
-    g.add(this.pedLight, this.pedKey);
+    g.add(this.pedLight, this.pedKey, this.pedFill);
+    this.pedFill.position.set(1.4, 2.4, 3.8); // soft fill from the camera side so the face is not left in shadow
     this.pedLight.position.set(0, 3.4, -1.8);
     this.pedKey.position.set(3.5, 3.2, 3.6);
     const motes = createEmbers(new THREE.Vector3(P.x, 0.5, P.z), 60, { spread: 2.4, rise: 0.9, color: 0xb98cff, size: 2, height: 3.6 });
@@ -794,6 +813,7 @@ export class MenuScene implements GameScene {
     this.pedestal.add(v.root);
     v.root.position.set(0, 0.64, 0);
     v.root.rotation.y = oldYaw ?? this.pedBaseYaw() + this.pedYawOffset;
+    this.measurePedestal(v.root);
     const p = classPresentation(classId);
     v.anim?.setBase(v.anim.pick(p.idle, 'Idle') ?? 'Idle', { fade: 0 });
     this.pedStep = 0;
@@ -818,13 +838,123 @@ export class MenuScene implements GameScene {
   }
 
   private createCamTarget(): { pos: THREE.Vector3; look: THREE.Vector3 } {
+    // the camera sways slightly around the pedestal, aims at the character's middle and looks a little down
     const a = 0.38 + Math.sin(this.time * 0.25) * 0.06;
-    const aspect = this.camera.aspect || 1.7;
-    const dist = aspect < 1.4 ? 9.4 : 7.0;
+    const dist = this.createDistance();
+    const mid = this.pedMidY();
+    const flat = dist * Math.cos(CREATE_PITCH);
     return {
-      pos: new THREE.Vector3(PEDESTAL.x + Math.sin(a) * dist, PEDESTAL.y + 2.1, PEDESTAL.z + Math.cos(a) * dist),
-      look: new THREE.Vector3(PEDESTAL.x, PEDESTAL.y + 1.55, PEDESTAL.z),
+      pos: new THREE.Vector3(PEDESTAL.x + Math.sin(a) * flat, mid + dist * Math.sin(CREATE_PITCH), PEDESTAL.z + Math.cos(a) * flat),
+      look: new THREE.Vector3(PEDESTAL.x, mid, PEDESTAL.z),
     };
+  }
+
+  /** Height and feet line of the shown character, so the creation camera frames every class and colour variant alike. */
+  private measurePedestal(root: THREE.Object3D): void {
+    root.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(root);
+    if (box.isEmpty()) return;
+    this.pedHeight = THREE.MathUtils.clamp(box.max.y - box.min.y, 1.2, 3.2);
+    this.pedFeetY = box.min.y;
+  }
+
+  private pedMidY(): number {
+    return this.pedFeetY + this.pedHeight / 2;
+  }
+
+  /** Distance at which the character fills CREATE_HEIGHT_FRAC of the viewport height; narrow screens back off a little. */
+  private createDistance(): number {
+    const aspect = this.camera.aspect || 1.7;
+    const tanHalf = Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2);
+    const narrow = aspect < 1.4 ? 1 + (1.4 - aspect) * 0.8 : 1;
+    return (this.pedHeight / (2 * CREATE_HEIGHT_FRAC * tanHalf)) * narrow;
+  }
+
+  /**
+   * Creation view framing on top of the camera pose: a lens shift that puts the shown character in the middle of the free
+   * gap between the two panels, with its feet at CREATE_FEET_FRAC of the screen height. Eases back out in the camp view.
+   */
+  private updateCreateView(dt: number): void {
+    this.createBlend = damp(this.createBlend, this.mode === 'create' ? 1 : 0, 6, dt);
+    this.createCxTimer -= dt;
+    if (this.createCxTimer <= 0) {
+      this.createCxTimer = 0.25; // the panels slide in, so the gap is re-measured a few times a second
+      this.createCxTarget = this.measureCreateGap();
+    }
+    this.createCx = damp(this.createCx, this.createCxTarget, 5, dt);
+    const k = this.createBlend;
+    if (k < 0.002) {
+      if (this.viewShifted) this.camera.clearViewOffset();
+      this.viewShifted = false;
+      return;
+    }
+    const w = G.engine.width || window.innerWidth;
+    const h = G.engine.height || window.innerHeight;
+    // three.js moves the image by -offset, so the character's middle lands at (0.5 - offset) of the screen
+    const midFrac = CREATE_FEET_FRAC - CREATE_HEIGHT_FRAC / 2;
+    this.camera.setViewOffset(w, h, w * (0.5 - this.createCx) * k, h * (0.5 - midFrac) * k, w, h);
+    this.viewShifted = true;
+  }
+
+  /** Centre (0..1 of the canvas width) of the free space between the creation panels; 0.5 when there is no room. */
+  private measureCreateGap(): number {
+    const cr = this.canvasEl?.getBoundingClientRect();
+    if (!cr || cr.width < 2) return 0.5;
+    const rectOf = (sel: string): DOMRect | null => {
+      const r = document.querySelector(sel)?.getBoundingClientRect();
+      return r && r.width > 0 ? r : null; // display:none panels report width 0
+    };
+    const l = rectOf('.efs-create-l');
+    const r = rectOf('.efs-create-r');
+    const gapL = l ? l.right : cr.left + 12;
+    const gapR = r ? r.left : cr.right - 12;
+    if (gapR - gapL < cr.width * 0.2) return 0.5;
+    return THREE.MathUtils.clamp(((gapL + gapR) / 2 - cr.left) / cr.width, 0.2, 0.8);
+  }
+
+  /** Creation view: hides the camp props standing between the creation camera and the shown character. */
+  private syncCreateScenery(): void {
+    const want = this.mode === 'create';
+    if (want === this.sceneryHidden) return;
+    this.sceneryHidden = want;
+    if (want) {
+      this.occluders = this.findOccluders();
+      for (const o of this.occluders) o.visible = false;
+    } else {
+      for (const o of this.occluders) o.visible = true;
+      this.occluders = [];
+    }
+  }
+
+  private findOccluders(): THREE.Object3D[] {
+    const cam = this.createCamTarget().pos;
+    const feet = this.pedFeetY;
+    const sight = [
+      new THREE.Vector3(PEDESTAL.x, feet + 0.2, PEDESTAL.z),
+      new THREE.Vector3(PEDESTAL.x, feet + this.pedHeight * 0.85, PEDESTAL.z),
+    ];
+    const seg = new THREE.Line3();
+    const near = new THREE.Vector3();
+    const out: THREE.Object3D[] = [];
+    for (const obj of this.campProps) {
+      let box = this.boxCache.get(obj);
+      if (!box) {
+        box = new THREE.Box3().setFromObject(obj);
+        this.boxCache.set(obj, box);
+      }
+      if (box.isEmpty()) continue;
+      const c = box.getCenter(new THREE.Vector3());
+      const r = box.getSize(new THREE.Vector3()).length() / 2;
+      const blocks = sight.some((end) => {
+        seg.set(cam, end);
+        const t = seg.closestPointToPointParameter(c, true);
+        if (t > 0.9) return false; // beside or behind the character, not in front of it
+        seg.at(t, near);
+        return near.distanceTo(c) < r + 0.35;
+      });
+      if (blocks) out.push(obj);
+    }
+    return out;
   }
 
   private submitCreate(rawName: string): string | null {
@@ -988,7 +1118,9 @@ export class MenuScene implements GameScene {
     this.updateAtmosphere(dt, t);
     this.updateStands(dt, t);
     this.updatePedestal(dt, t);
+    this.syncCreateScenery();
     this.updateCamera(dt, t);
+    this.updateCreateView(dt);
     this.updatePlates();
   }
 
@@ -1071,6 +1203,7 @@ export class MenuScene implements GameScene {
     this.pedFlash = Math.max(0, this.pedFlash - dt * 2.2);
     this.pedLight.intensity = damp(this.pedLight.intensity, active ? 40 + this.pedFlash * 120 : 8, 4, dt);
     this.pedKey.intensity = damp(this.pedKey.intensity, active ? 46 : 0, 4, dt);
+    this.pedFill.intensity = damp(this.pedFill.intensity, active ? 20 : 0, 4, dt);
     const v = this.pedVisual;
     if (!v) return;
     v.root.visible = active;
@@ -1177,6 +1310,8 @@ export class MenuScene implements GameScene {
     this.ui = null;
     this.pedVisual?.dispose();
     this.pedVisual = null;
+    this.occluders = [];
+    this.boxCache.clear();
     for (const st of this.allStands()) st.visual?.dispose();
     for (const p of this.particles) p.dispose();
     this.particles = [];

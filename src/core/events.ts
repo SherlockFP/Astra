@@ -270,6 +270,11 @@ export interface GameEvents {
   'market:pin': { zone: string; x: number; z: number; label: string; sellerId: string } | null;
   /** Pazarcı Modu (AFK stall mode: ~2 fps render, audio muted, sales overlay) turned on or off. */
   'market:mode': { on: boolean };
+
+  // ---- HUD click-to-select (append-only). Emitted by the HUD (target-of-target, nameplates); PlayerController must subscribe and
+  // run its selectEnemy(entity) (+ armAuto when `attack`, like a right click in WoW). The HUD never mutates the selection itself.
+  /** The player clicked a unit in the HUD: select it. `attack` = right click (select and arm the auto-attack, WoW). */
+  'target:select': { entityId: EntityId; attack?: boolean };
 }
 
 export type GameEventName = keyof GameEvents;

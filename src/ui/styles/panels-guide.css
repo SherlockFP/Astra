@@ -7,7 +7,7 @@
 .gd-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .gd-col { padding: 10px 12px; }
 .gd-col-t { font: 700 13px var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold-1); margin-bottom: 6px; }
-.gd-col-row { display: flex; align-items: center; gap: 6px; min-height: 24px; font: 15px/1.2 var(--font-body); color: var(--text-1); }
+.gd-col-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 24px; font: 15px/1.2 var(--font-body); color: var(--text-1); }
 .gd-col-row .k-key { font-size: 13px; }
 .gd-first { padding: 10px 12px; }
 .gd-first-t { font: 700 13px var(--font-body); letter-spacing: 0.06em; color: var(--gold-1); }

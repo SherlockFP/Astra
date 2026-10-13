@@ -107,6 +107,18 @@ class Plate {
     this.el.appendChild(this.status.el);
     this.el.style.display = 'none';
     const isPlayer = actor.kind === 'player';
+    // click-to-select: the name and the HP bar take the mouse (the rest of the plate stays click-through); other players are not selectable.
+    // The HUD only reports the click; PlayerController subscribes to target:select (left = select, right = select + attack).
+    if (!isPlayer) {
+      for (const part of [this.nameEl, this.barEl]) {
+        part.classList.add('ui-capture', 'np-click');
+        part.addEventListener('mousedown', (e) => {
+          if ((e.button !== 0 && e.button !== 2) || actor.removed || actor.isDead) return;
+          e.preventDefault();
+          G.events.emit('target:select', { entityId: actor.id, attack: e.button === 2 });
+        });
+      }
+    }
     const rank = isPlayer ? 'player' : ((actor as Enemy).def?.rank ?? 'trash');
     this.rank = rank;
     this.el.dataset.rank = rank;

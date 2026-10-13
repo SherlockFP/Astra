@@ -4,6 +4,7 @@ import type { InputAction } from '../../../core/Input';
 import { buildChrome, keyCap } from '../../kit';
 import { ICON, div, h, setText } from '../../widgets/dom';
 import { formatDistance } from '../../hud/ObjectiveArrow';
+import { isWowScheme } from '../../widgets/controlHints';
 import { GamePanel, button } from './base';
 import { giverPosition, recommend } from './guideEngine';
 
@@ -21,6 +22,24 @@ function key(action: InputAction): string {
   } catch {
     return '?';
   }
+}
+
+/**
+ * WoW "Savaş" rows (CONTROLS_WOW): the mouse gestures are hard-wired (no binding to read); the skill keys come from the live
+ * bindings, and the five bar keys collapse to a range ("1-5") only while they are still the consecutive digits.
+ */
+function wowCombatRows(): [string, string][] {
+  const bar: InputAction[] = ['skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1'];
+  const consecutive = bar.every((a, i) => G.input?.bindings[a]?.[0] === `Digit${i + 1}`);
+  const barKeys = consecutive ? `${key(bar[0])}-${key(bar[bar.length - 1])}` : bar.map(key).join(' ');
+  const more = (['skill_s2', 'skill_s3', 'skill_s4'] as InputAction[]).map(key).join(' ');
+  return [
+    ['Sağ Tık', 'hedef seç + otomatik saldırı'],
+    ['Sol Tık', 'sürükle: kamera'],
+    ['Sağ Tık', 'sürükle: dön'],
+    [`${barKeys} / ${more}`, 'yetenekler'],
+    [key('targetNext'), 'sıradaki düşman'],
+  ];
 }
 
 /**
@@ -83,7 +102,7 @@ export class WelcomePanel extends GamePanel {
       [key('jump'), 'zıpla'],
       [key('dodge'), 'yuvarlan'],
     ]);
-    this.column(cols, 'Savaş', [
+    this.column(cols, 'Savaş', isWowScheme() ? wowCombatRows() : [
       [key('skill_lmb'), 'saldır'],
       [key('skill_rmb'), 'yetenek'],
       [`${key('skill_q')} ${key('skill_e')} ${key('skill_s1')} ${key('skill_s2')} ${key('skill_s3')}`, 'beceriler'],

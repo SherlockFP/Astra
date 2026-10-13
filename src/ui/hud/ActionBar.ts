@@ -2,11 +2,12 @@ import { G } from '../../game/G';
 import { CLASSES } from '../../data/classes';
 import { getMaterial } from '../../data/materials';
 import type { InputAction } from '../../core/Input';
-import type { SkillDef, SkillSlotKey } from '../../types/skills';
+import type { AimInfo, SkillDef, SkillSlotKey } from '../../types/skills';
 import type { AutoInfo } from '../../combat/SkillSystem';
 import type { Actor } from '../../entities/Actor';
 import { lockoutSchool } from '../../combat/castRules';
 import { glowSkillsOf, type GlowState } from '../../data/procs';
+import { localHardTargetId } from '../../game/PlayerController';
 import { DAMAGE_COLORS, ICON, div, fmtCd, fmtNum, iconEl, pulse, setClass, setDisplay, setIconUrl, setStyle, setText, esc } from '../widgets/dom';
 import { skillTooltipHTML } from '../widgets/tooltips';
 import { TalentBadge } from './Extras';
@@ -95,7 +96,7 @@ interface BarFrame {
   glow: Set<string>;
   /** Setting Settings.abilityGlow. */
   glowOn: boolean;
-  /** Target for the out-of-range check: the hover (soft) target, or null. */
+  /** Target for the out-of-range check: the selected (hard) target, else the hover (soft) target, or null. */
   target: Actor | null;
   /** Local school lock (school + seconds left), or null. */
   locked: { school: string; remaining: number } | null;
@@ -144,6 +145,8 @@ class Slot {
   /** WoW auto-attack cell (lmb with skill_lmb unbound): the last frame's chain info, for the tooltip. */
   private autoInfo: AutoInfo | null = null;
   failUntil = 0;
+  /** A mouse click cast this slot since the last frame: ActionBar.update flashes the cell and shows the failure text. */
+  clicked = false;
 
   constructor(readonly spec: SlotSpec, private readonly ui: TipUi) {
     this.el = div(spec.potion ? 'k-slot ab-btn k-slot--cons pot' : 'k-slot ab-btn');
@@ -172,15 +175,38 @@ class Slot {
       ui.hideTooltip();
     });
     this.el.addEventListener('click', () => this.onClick());
+    // right click on a cell is a no-op (the browser menu is already suppressed globally); keep it from reaching the world
+    this.el.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 
-  /** A socket opens the skill book; a potion cell drinks (the same call as its key). */
+  /**
+   * A socket opens the skill book; a potion cell drinks (the same call as its key); a skill cell casts its slot through the
+   * same SkillSystem path as the key (tryCast with the controller's live aim, so a click behaves like a press).
+   */
   private onClick(): void {
     if (this.el.classList.contains('is-socket')) {
       G.ui.openPanel('skills');
       return;
     }
-    if (this.spec.potion) G.combat?.usePotion(this.spec.potion);
+    if (this.spec.potion) {
+      G.combat?.usePotion(this.spec.potion);
+      return;
+    }
+    const key = this.spec.skill;
+    const p = G.player;
+    if (!key || !p || p.isDead || this.el.classList.contains('is-hidden') || this.el.classList.contains('is-ghost')) return;
+    if (G.ui.mode !== 'town' && G.ui.mode !== 'dungeon') return;
+    // an unbound WoW lmb cell is the auto-attack indicator, not a button
+    if (this.el.classList.contains('auto')) return;
+    const id = G.skills.getSlotSkill(p, key);
+    if (!id) return;
+    const aim: AimInfo = G.skills.aimProvider?.() ?? { point: [p.position.x, 0, p.position.z], dir: [Math.sin(p.yaw), 0, Math.cos(p.yaw)], targetId: p.targetId ?? null };
+    this.clicked = true;
+    try {
+      G.skills.tryCast(p, id, aim, key);
+    } catch (err) {
+      console.error('[actionbar] click cast failed', err);
+    }
   }
 
   private showTip(x: number, y: number): void {
@@ -456,6 +482,20 @@ class Slot {
   }
 }
 
+/** Target for the range check and glow rules: the selected (hard) target first, then the player's current target, then the hover (soft) one. */
+function pickTarget(ctx: HudCtx): Actor | null {
+  const w = ctx.world;
+  const ids = [localHardTargetId(), ctx.player?.targetId ?? null];
+  if (w) {
+    for (const id of ids) {
+      if (id == null) continue;
+      const t = w.getActor(id);
+      if (t && !t.isDead && !t.removed && t !== ctx.player) return t;
+    }
+  }
+  return ctx.hover && !ctx.hover.isDead ? ctx.hover : null;
+}
+
 /** Living enemies within 12 m of the player with at least 5 bleed stacks (GLOW_RULES.bloodbath3). */
 function countBleeding(ctx: HudCtx, p: Actor): number {
   let n = 0;
@@ -571,7 +611,7 @@ export class ActionBar implements HudWidget {
         firstSpender ??= id;
         if (def.cost <= p.resource && (!best || def.cost > best.cost)) best = { id, cost: def.cost };
       }
-      const target = ctx.hover && !ctx.hover.isDead ? ctx.hover : null;
+      const target = pickTarget(ctx);
       const state: GlowState = {
         resourcePct: p.maxResource > 0 ? p.resource / p.maxResource : 0,
         bestSpender: best?.id ?? firstSpender,
@@ -589,7 +629,7 @@ export class ActionBar implements HudWidget {
     return {
       glow,
       glowOn,
-      target: ctx.hover && !ctx.hover.isDead ? ctx.hover : null,
+      target: pickTarget(ctx),
       locked,
       queued: this.queued,
     };
@@ -606,9 +646,11 @@ export class ActionBar implements HudWidget {
     const ghost = G.settings?.data.barGhostSlots === true;
     for (const s of this.slots) {
       s.update(ctx, s.spec.id === 'lmb' ? auto : null, this.autoArmed, frame, ghost);
-      const down = G.input && ctx.mode !== 'menu' && G.input.pressed(s.spec.action);
+      const clicked = s.clicked;
+      s.clicked = false;
+      const down = clicked || (G.input && ctx.mode !== 'menu' && G.input.pressed(s.spec.action));
       const swallowed = relock && (s.spec.action === 'skill_lmb' || s.spec.action === 'skill_rmb');
-      if (down && !swallowed && !G.ui.wantsCursor()) {
+      if (down && (clicked || (!swallowed && !G.ui.wantsCursor()))) {
         s.setFlash('press');
         // a failure reported during this frame belongs to the pressed slot
         if (this.hasFail && G.engine.frame - this.lastFailFrame <= 1) {
