@@ -1,0 +1,328 @@
+import type { DecorTier, DoorDef, DungeonDef, DungeonTheme, HeightArea, PackDef, PropPlacement, RoomDef, SlopeDef, TileRect, ZoneDef } from '../../types/dungeons';
+import '../enemies_peri_sisleri';
+import type { PO, PackExtra } from './kit';
+import { bossAt, circleZone, dg, door, gp, hw, kn, lt, pack, pt, rectZone, room, stairs, ramp } from './kit';
+
+/**
+ * PERI SISLERI (peri_sisleri), Season 1 Mythic+ dungeon. Design: docs/dungeons/peri_sisleri.md (sections 3, 4.6, 6, 7 of the
+ * rooms, doors and packs, 2.11 for the dressing). Heights follow docs/ENGINE_VERTICALITY.md (vertical: true, seven walkable
+ * floor levels from -2.4 m to +7.2 m, three stair flights and one ramp, a chasm with a bridge).
+ *
+ * NOT YET REGISTERED: this file is not in dungeons/index.ts. Registration lines are listed in the report.
+ * Known gaps against the design (PS-D9 and the Blender packages are not built): the Kök Kapısı channel gates (doors 6 and 25
+ * are open doors for now), the maze sigil puzzle (choice doorways are open, no traps), the nest seed beyond the
+ * checkpoint list, the sky panorama, the 1,350-prop dressing pass (only the set pieces below are placed), the
+ * Peri Sisleri entrance, and the new GLB props (peri_*), which fall back to existing models here.
+ */
+
+const TILE = 4;
+const rect = (x: number, z: number, w: number, h: number): TileRect => ({ x, z, w, h });
+const P = (model: string, x: number, z: number, o: PO = {}): PropPlacement => ({ model, pos: [x, z], ...o });
+const area = (id: string, x: number, z: number, w: number, h: number, y: number, rim: HeightArea['rim'] = 'none'): HeightArea => ({
+  id, rect: rect(x, z, w, h), y, rim,
+});
+const tier = (kind: DecorTier['kind'], y: number, x: number, z: number, w: number, h: number, extra: Partial<DecorTier> = {}): DecorTier => ({
+  kind, y, rect: rect(x, z, w, h), ...extra,
+});
+const fog = (color: number, near: number, far: number) => ({ color, near, far });
+
+/** Design spiral of section 4.6 (tile offsets from the pack centre; melee first, casters last). Keeps members off walls. */
+const SPIRAL: [number, number][] = [
+  [0.3, 0], [-0.38, 0.35], [0.06, -0.66], [0.48, 0.62], [-0.88, -0.16], [0.83, -0.53],
+  [-0.28, 1.03], [-0.53, -1.02], [1.15, 0.42], [-1.2, 0.49], [0.58, -1.23], [0.43, 1.36],
+];
+/** Pack of `counts` [enemyId, n] pairs laid on the spiral (replaces the kit's rank layout, which pushes members north). */
+function packN(id: string, roomId: string, cx: number, cz: number, counts: [string, number][], extra: PackExtra = {}) {
+  const ids = counts.flatMap(([enemyId, n]) => Array<string>(n).fill(enemyId));
+  if (ids.length > SPIRAL.length) throw new Error(`[peri_sisleri] pack ${id}: ${ids.length} members, spiral holds ${SPIRAL.length}`);
+  return pack(id, roomId, cx, cz, undefined, ids.map((enemyId, i) => [enemyId, SPIRAL[i][0], SPIRAL[i][1]] as [string, number, number]), extra);
+}
+
+// ---- slopes (stairs and the ramp): axis is the direction of the run; yFrom at the min edge, yTo at the max edge -----------
+const ST_PATCH: SlopeDef = stairs(rect(11, 53, 4, 2), 'x', 0.0, 1.2, { id: 'st_patika' });
+const ST_RITUAL: SlopeDef = stairs(rect(21, 44, 2, 2), 'z', 2.4, 1.2, { id: 'st_ritual' });
+const ST_KOK: SlopeDef = stairs(rect(16, 24, 12, 3), 'z', 4.8, 2.4, { id: 'st_kok' });
+const ST_SELALE: SlopeDef = stairs(rect(61, 19, 3, 5), 'z', 6.4, 1.2, { id: 'st_selale' });
+const ST_KUYU: SlopeDef = stairs(rect(56, 39, 9, 3), 'z', 1.2, -2.4, { id: 'st_kuyu' });
+const ST_KOZA: SlopeDef = stairs(rect(59.5, 54, 4, 1), 'z', -2.4, -1.2, { id: 'st_koza' });
+const RP_HALKA: SlopeDef = ramp(rect(73, 25, 3, 6), 'x', 1.2, 2.4, { id: 'rp_halka' });
+
+// ---- chasm (fall = open, depth 8 m: a knockback into it costs 25 % max HP, see ENGINE_VERTICALITY 11) -------------------
+const CHASM = { fall: 'open', depth: 8, color: 0x0a1408, glow: 0x9cff6a, glowIntensity: 0.9 } as const;
+const acid = (x: number, z: number, r: number): ZoneDef =>
+  circleZone('pool', x, z, r, { color: 0x2a4a10, glow: 0x9cff6a, glowIntensity: 0.8, hazard: { coef: 0.35, interval: 1.0 } });
+
+// ---- rooms (20) -----------------------------------------------------------------------------------------------------------
+const ROOMS: RoomDef[] = [
+  room('giris', 'Meşe Kovuğu', 2, 50, 9, 8, 'moss', 'grove', 0.35, {
+    floorY: 0, ceiling: 14, ambientVfx: 'ambient_anima_motes',
+    heightAreas: [area('font_dais', 5.5, 50.5, 2, 2, 0.4)],
+    tiers: [tier('ring', 7.0, 2, 50, 9, 8, { depth: 3 }), tier('windows', 9.0, 2, 50, 9, 8, { count: 6, spacing: 5 }), tier('beams', 13.0, 2, 50, 9, 8)],
+    zones: [circleZone('rune', 6.5, 51.5, 1.0, { color: 0x10201f, glow: 0x60ffd8, glowIntensity: 0.4 })],
+    props: [
+      P(gp('font_of_power'), 6.5, 51.5, { y: 0.4, tint: 0xb8ffe0, light: lt(0x60ffd8, 1.0, 8, false) }),
+      P(gp('waypoint_stone'), 3.5, 56, { tint: 0x80ffe0 }),
+      P(hw('lantern_hanging'), 4, 51, { y: 3.95, light: lt(0x9cffe8, 1.0, 6, false) }),
+      P(hw('lantern_hanging'), 7, 53, { y: 3.95, light: lt(0x9cffe8, 1.0, 6, false) }),
+      P(hw('lantern_hanging'), 9, 56, { y: 3.95, light: lt(0x9cffe8, 1.0, 6, false) }),
+    ],
+  }),
+  room('k_patika', 'Yosunlu Patika', 11, 53, 4, 2, 'moss', 'grove', 0.4, {
+    floorY: 0, ceiling: 8, slopes: [ST_PATCH],
+    props: [P(hw('post_skull'), 14.5, 53.5, { scale: 1 }), P(hw('post_skull'), 14.5, 54.5, { scale: 1 })],
+  }),
+  room('drust_kampi', 'Boynuzlu Ahali Kampı', 15, 46, 13, 13, 'dirt', 'grove', 0.5, {
+    floorY: 1.2, ceiling: 7, openAir: true, fog: fog(0x1c1426, 6, 32),
+    heightAreas: [area('ritual_dais', 19.5, 49.5, 4, 5, 1.6)],
+    tiers: [tier('ring', 5.0, 15, 46, 13, 13, { depth: 2 }), tier('colonnade', 0, 15, 46, 13, 13, { count: 8, spacing: 6 })],
+    zones: [circleZone('rune', 21.5, 52, 3.4, { color: 0x1a1020, glow: 0xb060ff, glowIntensity: 0.5 })],
+    props: [
+      P(gp('tent'), 17, 48, { tint: 0x4a3050 }), P(gp('tent'), 26, 48, { tint: 0x4a3050 }),
+      P(gp('tent'), 17, 56, { tint: 0x4a3050 }), P(gp('tent'), 26, 56, { tint: 0x4a3050 }),
+      P(gp('brazier'), 16, 47, { light: lt(0xb060ff, 1.6, 9, true, 1.4) }), P(gp('brazier'), 27, 47, { light: lt(0xb060ff, 1.6, 9, true, 1.4) }),
+      P(gp('brazier'), 16, 57, { light: lt(0xb060ff, 1.6, 9, true, 1.4) }), P(gp('brazier'), 27, 57, { light: lt(0xb060ff, 1.6, 9, true, 1.4) }),
+      P(gp('iron_cage'), 16, 52), P(gp('iron_cage'), 26, 52),
+      P(dg('barrel_large'), 25.5, 56.5), P(dg('barrel_large'), 25.5, 58), P(gp('cauldron'), 21.5, 56.5),
+    ],
+  }),
+  room('k_ritual', 'Ritüel Yolu', 21, 42, 2, 4, 'dirt', 'grove', 0.2, {
+    floorY: 2.4, ceiling: 10, slopes: [ST_RITUAL],
+    tiers: [tier('beams', 9.0, 21, 42, 2, 4)],
+    props: [P(hw('post_skull'), 21.5, 43), P(gp('brazier'), 22.6, 43.2, { light: lt(0xff5090, 1.5, 8, true, 1.2) })],
+  }),
+  room('ingra_arena', 'Boynuz Çemberi', 15, 29, 14, 13, 'dirt', 'grove', 0.15, {
+    floorY: 2.4, ceiling: 8, openAir: true, boss: 1, explicitDecor: true, fog: fog(0x261830, 7, 36),
+    tiers: [tier('ring', 7.0, 15, 29, 14, 13, { depth: 3 }), tier('balcony', 9.0, 18.5, 29, 7, 1.5, { wall: true })],
+    zones: [
+      circleZone('rune', 21.5, 35, 5.6, { color: 0x1c1024, glow: 0xb060ff, glowIntensity: 0.7 }),
+      circleZone('rune', 21.5, 35, 2.4, { color: 0x1c1024, glow: 0xff5090, glowIntensity: 0.6 }),
+    ],
+    props: [
+      ...[0, 1, 2, 3, 4, 5, 6, 7].map((i) => P(kn('stone_tallB'), 21.5 + 4.5 * Math.cos((i * Math.PI) / 4), 35 + 4.5 * Math.sin((i * Math.PI) / 4), { scale: 3.2, tint: 0x70607a })),
+      P(gp('altar'), 21.5, 30.5, { tint: 0x7a3a8a }),
+      P(gp('statue_hooded'), 19.5, 31, { tint: 0x4a3a5a }), P(gp('statue_hooded'), 23.5, 31, { tint: 0x4a3a5a }),
+    ],
+  }),
+  room('kok_salonu', 'Kök Salonu', 16, 21, 12, 8, 'moss', 'grove', 0.45, {
+    floorY: 4.8, ceiling: 26, fog: fog(0x15281f, 6, 34), slopes: [ST_KOK],
+    heightAreas: [area('landing', 16, 27, 12, 2, 2.4)],
+    tiers: [tier('ring', 12.0, 16, 21, 12, 8, { depth: 4 }), tier('colonnade', 4.8, 16, 21, 12, 8, { count: 10, spacing: 4 }), tier('windows', 16.0, 16, 21, 12, 8, { count: 8, spacing: 5 }), tier('beams', 25.0, 16, 21, 12, 8)],
+    props: [
+      P(gp('crystal_blue'), 18, 23, { tint: 0xb8ffe0, light: lt(0xffd060, 1.0, 5, true) }),
+      P(gp('crystal_blue'), 25, 24, { tint: 0xb8ffe0, light: lt(0xffd060, 1.0, 5, true) }),
+      P(kn('lily_small'), 22, 22), P(kn('lily_small'), 26, 25),
+    ],
+  }),
+  room('mantar_korusu', 'Mantar Korusu', 6, 21, 10, 8, 'moss', 'grove', 0.4, {
+    floorY: 4.4, ceiling: 12, optional: true, fog: fog(0x10281e, 5, 30),
+    heightAreas: [area('shrine_mound', 9.5, 23.5, 2, 2, 4.8)],
+    tiers: [tier('ring', 8.0, 6, 21, 10, 8, { depth: 2 })],
+    zones: [circleZone('pool', 10.5, 24.5, 2.0, { color: 0x1a4a40, glow: 0x60ffd8, glowIntensity: 0.5 })],
+    props: [
+      P(kn('mushroom_redTall'), 8, 23, { scale: 10, tint: 0xe04050 }), P(kn('mushroom_tanTall'), 13, 23, { scale: 10, tint: 0x70f0d0 }),
+      P(kn('mushroom_redGroup'), 8, 28, { scale: 10, tint: 0xe04050 }), P(kn('mushroom_tanGroup'), 13, 28, { scale: 10, tint: 0x70f0d0 }),
+    ],
+  }),
+  room('m1', 'Sis Kıvrımı I', 16, 10, 8, 11, 'moss', 'grove', 0.3, {
+    floorY: 4.8, ceiling: 18, openAir: true, fog: fog(0x7a98b0, 7, 30),
+    tiers: [tier('colonnade', 0, 16, 10, 8, 11, { count: 6, spacing: 5 }), tier('beams', 16.0, 16, 10, 8, 11)],
+    zones: [circleZone('rune', 19.5, 15, 2.0, { color: 0x10201f, glow: 0x80c0ff, glowIntensity: 0.3 })],
+    props: [P(kn('statue_ring'), 19.5, 15, { scale: 3 }), P(gp('statue_hooded'), 17.5, 13, { tint: 0xdce8f0, opacity: 0.7 })],
+  }),
+  room('m2', 'Sis Kıvrımı II', 24, 10, 8, 11, 'moss', 'grove', 0.3, {
+    floorY: 5.2, ceiling: 18, openAir: true, fog: fog(0x7a98b0, 7, 30),
+    tiers: [tier('colonnade', 0, 24, 10, 8, 11, { count: 6, spacing: 5 }), tier('beams', 16.0, 24, 10, 8, 11)],
+    zones: [circleZone('rune', 27.5, 15, 2.0, { color: 0x10201f, glow: 0x80c0ff, glowIntensity: 0.3 })],
+    props: [P(kn('statue_obelisk'), 27.5, 15, { scale: 3 }), P(gp('statue_hooded'), 25.5, 13, { tint: 0xdce8f0, opacity: 0.7 })],
+  }),
+  room('m3', 'Sis Kıvrımı III', 32, 10, 8, 11, 'moss', 'grove', 0.3, {
+    floorY: 5.6, ceiling: 18, openAir: true, fog: fog(0x7a98b0, 7, 30),
+    tiers: [tier('colonnade', 0, 32, 10, 8, 11, { count: 6, spacing: 5 }), tier('beams', 16.0, 32, 10, 8, 11)],
+    zones: [circleZone('rune', 35.5, 15, 2.0, { color: 0x10201f, glow: 0x80c0ff, glowIntensity: 0.3 })],
+    props: [P(kn('statue_ring'), 35.5, 15, { scale: 3 }), P(gp('statue_hooded'), 33.5, 13, { tint: 0xdce8f0, opacity: 0.7 })],
+  }),
+  room('m4', 'Sis Kıvrımı IV', 40, 10, 8, 11, 'moss', 'grove', 0.3, {
+    floorY: 6.0, ceiling: 18, openAir: true, fog: fog(0x7a98b0, 7, 30),
+    tiers: [tier('colonnade', 0, 40, 10, 8, 11, { count: 6, spacing: 5 }), tier('beams', 16.0, 40, 10, 8, 11)],
+    zones: [circleZone('rune', 43.5, 15, 2.0, { color: 0x10201f, glow: 0x80c0ff, glowIntensity: 0.3 })],
+    props: [P(kn('statue_obelisk'), 43.5, 15, { scale: 3 }), P(gp('statue_hooded'), 41.5, 13, { tint: 0xdce8f0, opacity: 0.7 })],
+  }),
+  room('sis_cagiran_cayiri', 'Sis Çağıran Çayırı', 48, 6, 13, 15, 'moss', 'grove', 0.15, {
+    floorY: 6.4, ceiling: 16, openAir: true, boss: 2, explicitDecor: true, fog: fog(0x3a5070, 6, 34),
+    heightAreas: [area('stump_outer', 51, 10, 6, 6, 6.8), area('stump_inner', 52, 11, 4, 4, 7.2)],
+    tiers: [tier('ring', 11.0, 48, 6, 13, 15, { depth: 2 })],
+    zones: [circleZone('pool', 54, 13, 4.0, { color: 0x1a3a58, glow: 0x60c8ff, glowIntensity: 0.45 }), circleZone('dais', 54, 13, 1.8)],
+    props: [P(kn('stump_squareDetailedWide'), 54, 13, { scale: 8 }), P(gp('statue_hooded'), 49, 9, { tint: 0xdce8f0 })],
+  }),
+  room('selale_kenari', 'Şelale Kenarı', 61, 12, 6, 6, 'moss', 'grove', 0.2, {
+    floorY: 6.4, ceiling: 16, openAir: true, fog: fog(0x2a4858, 6, 36),
+    heightAreas: [area('hop_edge', 64, 17, 3, 1, 6.4, 'ledge')],
+    props: [P(kn('cliff_waterfall_rock'), 64, 17, { scale: 4 }), P(kn('lily_large'), 66, 13)],
+  }),
+  room('havuz', 'Çağlayan Havuzu', 61, 18, 6, 6, 'moss', 'cave', 0.3, {
+    floorY: 6.4, ceiling: 24, openAir: true, fog: fog(0x2a4858, 6, 36), slopes: [ST_SELALE],
+    heightAreas: [area('top_landing', 61, 18, 3, 1, 6.4, 'ledge'), area('plunge_pool', 64, 18, 3, 6, 1.2)],
+    zones: [rectZone('pool', 64, 18, 3, 6, { color: 0x1a4a68, glow: 0x70e0ff, glowIntensity: 0.6 })],
+    props: [P(kn('lily_large'), 65, 21), P(gp('rock_large'), 65.5, 23.5)],
+  }),
+  room('yuva_magarasi', 'Dikenfak Mağarası', 58, 24, 15, 8, 'gorm', 'cave', 0.6, {
+    floorY: 1.2, ceiling: 22, fog: fog(0x142418, 5, 30),
+    tiers: [tier('ring', 9.0, 58, 24, 15, 8, { depth: 3 }), tier('beams', 21.0, 58, 24, 15, 8)],
+    zones: [acid(64, 27.5, 1.5), acid(70, 25.5, 1.4), acid(66.5, 30.5, 1.2)],
+    props: [P(gp('rock_cliff'), 60, 25), P(gp('rock_cliff'), 71, 31), P(gp('bone_pile'), 60, 30, { tint: 0x8a8a50 })],
+  }),
+  room('yuva_koprusu', 'Çürük Köprü', 60, 32, 3, 6, 'gorm', 'cave', 0.2, {
+    floorY: 1.2, ceiling: 20, fog: fog(0x142418, 5, 30),
+    tiers: [tier('beams', 19.0, 60, 32, 3, 6)],
+    zones: [rectZone('bridge', 61, 32, 1, 6, { y: 1.2 }), rectZone('void', 60, 32, 1, 6, CHASM), rectZone('void', 62, 32, 1, 6, CHASM)],
+    props: [
+      ...[0, 1, 2].map((i) => P(kn('bridge_woodNarrow'), 61.5, 33 + i * 2, { rot: 90, scale: 4 })),
+    ],
+  }),
+  room('yan_tunel', 'Kök Kestirmesi', 58, 32, 2, 6, 'dirt', 'cave', 0.4, {
+    floorY: 1.2, ceiling: 6, skip: true, optional: true, fog: fog(0x142418, 5, 30),
+    props: [P(kn('hanging_moss'), 58.5, 35, { tint: 0x9cff6a })],
+  }),
+  room('yuva_kuyusu', 'Larva Kuyusu', 56, 38, 9, 8, 'gorm', 'cave', 0.4, {
+    floorY: -2.4, ceiling: 20, fog: fog(0x142418, 5, 30), slopes: [ST_KUYU],
+    heightAreas: [area('top_landing', 56, 38, 9, 1, 1.2)],
+    tiers: [tier('ring', 4.0, 56, 38, 9, 8, { depth: 2.5 })],
+    zones: [acid(60, 43.2, 1.6)],
+    props: [P(gp('bone_pile'), 63, 44, { tint: 0x8a8a50 }), P(gp('rock_cliff'), 57, 45)],
+  }),
+  room('tredova_magarasi', 'Dikenfak Yuvası', 54, 46, 16, 13, 'gorm', 'cave', 0.15, {
+    floorY: -2.4, ceiling: 30, boss: 3, explicitDecor: true, fog: fog(0x0f1c14, 8, 42), slopes: [ST_KOZA],
+    heightAreas: [area('cocoon_dais', 59.5, 55, 4, 3, -1.2, 'rail')],
+    tiers: [tier('ring', 8.0, 54, 46, 16, 13, { depth: 3 }), tier('colonnade', 0, 54, 46, 16, 13, { count: 8, spacing: 8 }), tier('beams', 27.0, 54, 46, 16, 13)],
+    zones: [
+      circleZone('rune', 61.5, 51, 6.0, { color: 0x10201f, glow: 0x9cff6a, glowIntensity: 0.4 }),
+      circleZone('dais', 61.5, 56.5, 2.4),
+      acid(56.5, 49.5, 2.0), acid(66.5, 55, 2.2),
+    ],
+    props: [P(gp('crystal_blue'), 60, 55, { tint: 0x80ffe0, light: lt(0x80ffe0, 2.2, 7, false) }), P(gp('crystal_blue'), 63, 57, { tint: 0x80ffe0 })],
+  }),
+  room('peri_halkasi', 'Peri Halkası', 73, 25, 3, 6, 'moss', 'grove', 0.3, {
+    floorY: 1.2, ceiling: 10, optional: true, openAir: true, fog: fog(0x10281e, 5, 30), slopes: [RP_HALKA],
+    zones: [circleZone('rune', 74.5, 28, 1.3, { color: 0x10201f, glow: 0x60ffd8, glowIntensity: 0.6 })],
+    props: [
+      ...[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => P(kn('mushroom_redGroup'), 74.5 + 1.0 * Math.cos((i * Math.PI) / 6), 28 + 1.0 * Math.sin((i * Math.PI) / 6), { scale: 12, tint: 0xe04050 })),
+      P(gp('chest_gold'), 74.5, 29.8),
+    ],
+  }),
+];
+
+// ---- doors (29) -----------------------------------------------------------------------------------------------------------
+// Doors 6 and 25 would be channel gates (Kök Kapısı, ChannelGate not built yet): they are open for now.
+const DOORS: DoorDef[] = [
+  door('giris', 'k_patika', 10, 53, 'e', 2, 'none'),
+  door('k_patika', 'drust_kampi', 14, 53, 'e', 2, 'none'),
+  door('drust_kampi', 'k_ritual', 21, 46, 'n', 2, 'none'),
+  door('k_ritual', 'ingra_arena', 21, 42, 'n', 2, 'boss_lock'),
+  door('ingra_arena', 'kok_salonu', 21, 29, 'n', 2, 'boss_exit'),
+  door('kok_salonu', 'mantar_korusu', 16, 22, 'w', 2, 'none'),
+  door('kok_salonu', 'm1', 19, 21, 'n', 2, 'none'),
+  door('m1', 'm2', 23, 10, 'e', 2, 'none'), door('m1', 'm2', 23, 13, 'e', 2, 'none'),
+  door('m1', 'm2', 23, 16, 'e', 2, 'none'), door('m1', 'm2', 23, 19, 'e', 2, 'none'),
+  door('m2', 'm3', 31, 10, 'e', 2, 'none'), door('m2', 'm3', 31, 13, 'e', 2, 'none'),
+  door('m2', 'm3', 31, 16, 'e', 2, 'none'), door('m2', 'm3', 31, 19, 'e', 2, 'none'),
+  door('m3', 'm4', 39, 10, 'e', 2, 'none'), door('m3', 'm4', 39, 13, 'e', 2, 'none'),
+  door('m3', 'm4', 39, 16, 'e', 2, 'none'), door('m3', 'm4', 39, 19, 'e', 2, 'none'),
+  door('m4', 'sis_cagiran_cayiri', 47, 14, 'e', 2, 'boss_lock'),
+  door('sis_cagiran_cayiri', 'selale_kenari', 60, 13, 'e', 2, 'boss_exit'),
+  door('selale_kenari', 'havuz', 62, 17, 's', 2, 'none'),
+  door('havuz', 'yuva_magarasi', 62, 23, 's', 2, 'none'),
+  door('yuva_magarasi', 'yuva_koprusu', 61, 31, 's', 1, 'none'),
+  door('yuva_magarasi', 'yan_tunel', 58, 31, 's', 2, 'none'),
+  door('yuva_koprusu', 'yuva_kuyusu', 61, 37, 's', 1, 'none'),
+  door('yan_tunel', 'yuva_kuyusu', 58, 37, 's', 2, 'none'),
+  door('yuva_kuyusu', 'tredova_magarasi', 59, 45, 's', 2, 'boss_lock'),
+  door('yuva_magarasi', 'peri_halkasi', 72, 26, 'e', 2, 'none'),
+];
+
+// ---- packs (30; forces are the member sums, 463 in total) --------------------------------------------------------------
+const BRIDGE_LANE = (): PackDef => pack('ps_p25', 'yuva_koprusu', 61.5, 34.5, undefined, [
+  ['ps_gorger', 0, -1.75], ['ps_gorger', 0, -1.25],
+  ['ps_larva', 0, -0.75], ['ps_larva', 0, -0.25], ['ps_larva', 0, 0.25], ['ps_larva', 0, 0.75], ['ps_larva', 0, 1.25], ['ps_larva', 0, 1.75],
+]);
+
+const PACKS: PackDef[] = [
+  packN('ps_p01', 'drust_kampi', 18, 56, [['ps_spiteclaw', 8]], { stealth: true }),
+  packN('ps_p02', 'drust_kampi', 19.5, 50, [['ps_soulcleaver', 2], ['ps_harvester', 1], ['ps_villager', 1]]),
+  packN('ps_p03', 'drust_kampi', 24.5, 51, [['ps_soulcleaver', 2], ['ps_harvester', 2]], { big: true }),
+  packN('ps_p04', 'drust_kampi', 22, 47.5, [['ps_boughbreaker', 2]]),
+  packN('ps_p05', 'drust_kampi', 21, 56, [['ps_spiteclaw', 3], ['ps_soulcleaver', 1]], { patrol: [[25.5, 56], [19, 56]] }),
+  // two-tile corridor: members in a line along z (the spiral would hug the walls)
+  pack('ps_p06', 'k_ritual', 22, 42.9, undefined, [['ps_harvester', 0, -0.45], ['ps_harvester', 0, 0.45]]),
+  packN('ps_p07', 'kok_salonu', 18.5, 22.5, [['ps_soulcleaver', 1], ['ps_harvester', 1], ['ps_spiteclaw', 4]]),
+  packN('ps_p08', 'kok_salonu', 24, 22.5, [['ps_villager', 1], ['ps_harvester', 1]]),
+  packN('ps_p09', 'mantar_korusu', 10.5, 26.8, [['ps_villager', 2]], { optional: true }),
+  packN('ps_p10', 'm1', 19.5, 17, [['ps_guardian', 2], ['ps_shaper', 1], ['ps_stinger', 1]]),
+  packN('ps_p11', 'm1', 20, 12.5, [['ps_stalker', 2], ['ps_villager', 1]]),
+  packN('ps_p12', 'm2', 27.5, 15, [['ps_matriarch', 1], ['ps_guardian', 2]], { big: true }),
+  packN('ps_p13', 'm2', 27, 11.5, [['ps_tender', 1], ['ps_stinger', 2], ['ps_guardian', 1]]),
+  packN('ps_p14', 'm3', 35.5, 15, [['ps_guardian', 2], ['ps_shaper', 1], ['ps_tender', 1], ['ps_stinger', 2], ['ps_stalker', 1]], { big: true }),
+  packN('ps_p15', 'm3', 35.5, 19, [['ps_nightblossom', 1]]),
+  packN('ps_p16', 'm3', 34, 11.5, [['ps_stinger', 2], ['ps_guardian', 1]]),
+  packN('ps_p17', 'm4', 43.5, 16.5, [['ps_shaper', 1], ['ps_guardian', 2], ['ps_stinger', 1]]),
+  packN('ps_p18', 'm4', 43.5, 12, [['ps_villager', 1], ['ps_stalker', 1]]),
+  packN('ps_p19', 'm4', 43.5, 15, [['ps_guardian', 2]], { patrol: [[41, 19], [46, 19], [46, 11], [41, 11]] }),
+  packN('ps_p20', 'havuz', 65, 21, [['ps_gorger', 2]]),
+  packN('ps_p21', 'yuva_magarasi', 61, 27.5, [['ps_staghorn', 1], ['ps_gorger', 2]], { stealth: true }),
+  packN('ps_p22', 'yuva_magarasi', 66, 26, [['ps_larva', 8], ['ps_reaver', 1]], { dormant: { kind: 'egg', wakeRadius: 6 } }),
+  packN('ps_p23', 'yuva_magarasi', 68.5, 29.5, [['ps_gorger', 2], ['ps_reaver', 1], ['ps_staghorn', 1]]),
+  packN('ps_p24', 'yuva_magarasi', 63.5, 30, [['ps_reaver', 2], ['ps_gorger', 2]]),
+  BRIDGE_LANE(),
+  packN('ps_p26', 'yan_tunel', 58.5, 34.5, [['ps_staghorn', 1]], { optional: true }),
+  packN('ps_p27', 'yuva_kuyusu', 57.5, 42.8, [['ps_staghorn', 1], ['ps_gorger', 2], ['ps_reaver', 1]]),
+  packN('ps_p28', 'yuva_kuyusu', 63, 43.3, [['ps_larva', 8]], { dormant: { kind: 'egg', wakeRadius: 6 } }),
+  packN('ps_p29', 'yuva_kuyusu', 60, 44.6, [['ps_staghorn', 2]]),
+  // three-tile knoll ramp: explicit offsets inside the 3-tile width
+  pack('ps_p30', 'peri_halkasi', 74.5, 27.5, undefined, [
+    ['ps_gorger', 0, -1], ['ps_gorger', 0, 1], ['ps_larva', -0.5, 0], ['ps_larva', 0.5, 0], ['ps_larva', -0.5, 1.5], ['ps_larva', 0.5, -1.5],
+  ], { optional: true }),
+];
+
+// ---- dungeon ----------------------------------------------------------------------------------------------------------
+const THEME: DungeonTheme = {
+  fogColor: 0x1b2a2e, fogNear: 7, fogFar: 36,
+  ambient: 0x4a5c78, ambientIntensity: 0.38,
+  hemiSky: 0x7a92c8, hemiGround: 0x1c2a1c,
+  torchColor: 0xb878ff, bloomStrength: 0.55,
+  music: 'dungeon_peri_sisleri', palette: [0x10201f, 0x2f5a3c, 0x7ab0d8, 0xffd060, 0x60ffd8, 0xb060ff], tint: 0xb8d0b0,
+};
+
+export const PERI_SISLERI: DungeonDef = {
+  id: 'peri_sisleri',
+  name: 'Peri Sisleri',
+  shortName: 'Sisler',
+  lore: 'Kadim Diyar\'ın Gümüş Ormanı\'nda, dünya meşesinin son dalı bir kovuk saklar: Peri Sisleri. Boynuzlu Ahali kovuğa sızdı; Ingra Malok peri ruhlarının animasını kara büyüyle çekiyor, kuraklık sisleri yutuyor. Sisin ortasındaki labirent yanlış adımı affetmez, yuvanın dibinde ise Tred\'ova, Lakali\'nin tohumunu yuttu. Zaman daralıyor.',
+  levelRange: [60, 60],
+  timerSec: 1680,
+  forcesRequired: 370,
+  theme: THEME,
+  grid: { w: 76, h: 60 },
+  rooms: ROOMS,
+  doors: DOORS,
+  packs: PACKS,
+  bosses: [
+    bossAt('boss_ingra_malok', 'ingra_arena', 21.5, 33, 0, 1),
+    bossAt('boss_sis_cagiran', 'sis_cagiran_cayiri', 56.5, 13, -90, 2),
+    bossAt('boss_tredova', 'tredova_magarasi', 61.5, 53, 180, 3),
+  ],
+  start: { pos: [4, 54], facing: 90 },
+  exit: { pos: [64, 48] },
+  extras: {
+    fontOfPower: pt(6.5, 51.5),
+    shrines: [{ type: 'shrine_power', pos: pt(10.5, 24.5) }, { type: 'shrine_haste', pos: pt(74.5, 28) }],
+    riftSpots: [[26.5, 47.5], [26.5, 27.5], [17, 19], [29.5, 20], [37.5, 12], [64, 14.5], [70.5, 25.5], [59.5, 30.5]],
+    chests: [{ pos: pt(8, 22.5), kind: 'chest_wood' }, { pos: pt(74.5, 29.8), kind: 'chest_gold' }],
+    checkpoints: [pt(63.5, 38.5)],
+  },
+  season: 1,
+  endgame: true,
+  vertical: true,
+  lifts: [],
+};
+
+export const PERI_SISLERI_ROOM_COUNT = ROOMS.length;
+export const PERI_SISLERI_TILE = TILE;

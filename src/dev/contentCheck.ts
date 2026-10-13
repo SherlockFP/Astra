@@ -987,7 +987,7 @@ export function checkDungeon(def: DungeonDef, models: ModelDb, knownEnemy?: (id:
   // ---- theme ----
   if (!(MUSIC_IDS as readonly string[]).includes(def.theme.music)) err(id, `unknown music ${def.theme.music}`);
   if (def.theme.fogNear >= def.theme.fogFar) err(id, 'fogNear >= fogFar');
-  if (!def.outdoor && !['dungeon_crypt', 'dungeon_fire', 'dungeon_frost', 'dungeon_shadow'].includes(def.theme.music)) warn(id, 'theme music is not a dungeon track');
+  if (!def.outdoor && !['dungeon_crypt', 'dungeon_fire', 'dungeon_frost', 'dungeon_shadow', 'dungeon_taskasa', 'dungeon_peri_sisleri'].includes(def.theme.music)) warn(id, 'theme music is not a dungeon track');
 
   // ---- connectivity (room graph from the start room) ----
   const startRoom = def.rooms.find((r) => {

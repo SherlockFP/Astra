@@ -1,4 +1,5 @@
 import { G } from '../../game/G';
+import { specRole } from '../../data/specs';
 import type { Player } from '../../entities/Player';
 import type { Enemy } from '../../entities/Enemy';
 import type { BossController } from '../BossController';
@@ -90,7 +91,11 @@ export function statusPlayer(p: Player, status: StatusId, duration: number, o: {
   } catch { /* ignore */ }
 }
 
-export const isTank = (p: Player): boolean => p.classId === 'knight';
+/** Tank by the player's spec role; a player without a known spec (remote players, pre-spec saves) falls back to the knight class. */
+export const isTank = (p: Player): boolean => {
+  const role = specRole(p.spec);
+  return role !== undefined ? role === 'tank' : p.classId === 'knight';
+};
 
 /** HP multiplier GDD 0.3: 1 + 0.6 (0.7 in Mythic+) per extra party member. Mechanic entities carry it explicitly. */
 export function partyHp(c: BossController): number {

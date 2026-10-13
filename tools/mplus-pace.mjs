@@ -41,7 +41,7 @@ const includeOptional = argv.includes('--all');
 const { DUNGEONS } = await imp('src/data/dungeons/index.ts');
 const { ENEMIES, BOSSES } = await imp('src/data/enemies.ts');
 
-if (positional.length !== 1 || !DUNGEONS[positional[0]]) {
+if (positional.length !== 1 || !Object.hasOwn(DUNGEONS, positional[0])) {
   console.error(`usage: node tools/mplus-pace.mjs <dungeon id> [--level N] [--party 1..5] [--deaths N] [--all]\nids: ${Object.keys(DUNGEONS).join(', ')}`);
   process.exit(2);
 }
@@ -82,7 +82,7 @@ if (!startRoom) {
 }
 const bossRoomIds = new Set(def.bosses.map((b) => b.roomId));
 const passed = new Set();
-const assigned = new Set([startRoom.id]);
+const assigned = new Set(); // the start room is not pre-assigned: it is the first trash section's room, so its packs count
 
 /** Rooms reachable from the start: killed bosses are passable, living ones block. */
 function reachableRooms() {
@@ -104,7 +104,8 @@ const warnings = [];
 for (const b of [...def.bosses].sort((x, y) => x.order - y.order)) {
   const reach = reachableRooms();
   if (!reach.has(b.roomId)) warnings.push(`boss ${b.bossId} room ${b.roomId} is not reachable from the start`);
-  groups.push({ rooms: [...reach].filter((r) => !assigned.has(r) && !bossRoomIds.has(r)) });
+  // the boss's own room is entered before the fight: its packs are pulled in the trash section just before the boss row
+  groups.push({ rooms: [...reach].filter((r) => !assigned.has(r) && (!bossRoomIds.has(r) || r === b.roomId)) });
   groups[groups.length - 1].rooms.forEach((r) => assigned.add(r));
   groups.push({ boss: b });
   passed.add(b.roomId);
@@ -116,6 +117,11 @@ if (tail.length) groups.push({ rooms: tail });
 const routeRoom = (r) => includeOptional || !(r.optional || r.skip);
 const routeRoomIds = new Set(def.rooms.filter(routeRoom).map((r) => r.id));
 const packsOf = (roomIds) => def.packs.filter((p) => roomIds.includes(p.roomId) && routeRoomIds.has(p.roomId) && (includeOptional || !p.optional));
+{
+  const counted = new Set(groups.flatMap((g) => g.rooms ?? []));
+  const stray = def.packs.filter((p) => routeRoomIds.has(p.roomId) && !counted.has(p.roomId) && (includeOptional || !p.optional));
+  if (stray.length) warnings.push(`${stray.length} packs in route rooms the walk never reaches (${[...new Set(stray.map((p) => p.roomId))].join(', ')}): not counted`);
+}
 
 // ---- rows ----
 const rows = [];

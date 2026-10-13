@@ -23,8 +23,10 @@ const imp = (p) => import(pathToFileURL(`${ROOT}/${p}`).href);
 const { DUNGEONS, DUNGEON_IDS, OPEN_ZONES, OPEN_ZONE_IDS } = await imp('src/data/dungeons/index.ts');
 const { TOWN } = await imp('src/data/town.ts');
 const cc = await imp('src/dev/contentCheck.ts');
+// every registered dungeon: the levelling set first, then the season dungeons (in DUNGEONS, not in DUNGEON_IDS)
+const DUNGEON_ALL = [...new Set([...DUNGEON_IDS, ...Object.keys(DUNGEONS)])];
 const ALL = { ...DUNGEONS, ...OPEN_ZONES };
-const ALL_IDS = [...DUNGEON_IDS, ...OPEN_ZONE_IDS];
+const ALL_IDS = [...DUNGEON_ALL, ...OPEN_ZONE_IDS];
 const want = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const verbose = process.argv.includes('--v');
 
@@ -255,7 +257,7 @@ if (!want.length || want.includes('sisli_vadi') || want.includes('quests')) {
   const world = ALL.sisli_vadi?.world;
   const npcIds = new Set([...TOWN.npcs.map((n) => n.id), ...(world?.villages ?? []).flatMap((v) => v.npcs.map((n) => n.id))]);
   const placeIds = new Set([...(ALL.sisli_vadi?.rooms ?? []).map((r) => r.id), ...(world?.villages ?? []).map((v) => v.id), ...(ALL.sisli_vadi?.packs ?? []).map((p) => p.id)]);
-  const qr = cc.checkQuests(QUESTS, { npcIds, knownEnemy: known ?? (() => undefined), hasItem: (id) => id in MATERIALS, dungeonIds: [...DUNGEON_IDS, ...OPEN_ZONE_IDS], placeIds });
+  const qr = cc.checkQuests(QUESTS, { npcIds, knownEnemy: known ?? (() => undefined), hasItem: (id) => id in MATERIALS, dungeonIds: [...DUNGEON_ALL, ...OPEN_ZONE_IDS], placeIds });
   const e = qr.filter((i) => i.level === 'error'), w = qr.filter((i) => i.level === 'warn');
   totalErr += e.length;
   console.log(`\n== quests: ${e.length} errors, ${w.length} warns | ${QUESTS.length} quests`);
@@ -269,7 +271,7 @@ if (!want.length || want.includes('sisli_vadi') || want.includes('quests')) {
   for (const i of re) console.log('  ERR ', i.where, '-', i.msg);
   for (const i of rw) console.log('  warn', i.where, '-', i.msg);
   const npcById = new Map([...TOWN.npcs, ...(world?.villages ?? []).flatMap((v) => v.npcs)].map((n) => [n.id, n]));
-  const xq = questReachIssues(QUESTS, world, npcIds, ALL.sisli_vadi?.packs, DUNGEON_IDS, OPEN_ZONE_IDS, npcById);
+  const xq = questReachIssues(QUESTS, world, npcIds, ALL.sisli_vadi?.packs, DUNGEON_ALL, OPEN_ZONE_IDS, npcById);
   const xe = xq.filter((i) => i.level === 'error'), xw = xq.filter((i) => i.level === 'warn');
   totalErr += xe.length;
   console.log(`\n== quest reachability: ${xe.length} errors, ${xw.length} warns | ${QUESTS.length} quests, ${spawnIndex(world, ALL.sisli_vadi?.packs).size} spawnable ids`);
@@ -277,7 +279,7 @@ if (!want.length || want.includes('sisli_vadi') || want.includes('quests')) {
   for (const i of xw) console.log('  warn', i.where, '-', i.msg);
 }
 if (!want.length || want.includes('town')) {
-  const t = cc.checkTown(TOWN, models, DUNGEON_IDS, OPEN_ZONE_IDS);
+  const t = cc.checkTown(TOWN, models, DUNGEON_ALL, OPEN_ZONE_IDS);
   const e = t.issues.filter((i) => i.level === 'error'), w = t.issues.filter((i) => i.level === 'warn');
   totalErr += e.length;
   console.log(`\n== town: ${e.length} errors, ${w.length} warns | props ${t.stats.props} npcs ${t.stats.npcs} lights ${t.stats.lights} models ${t.stats.models}`);

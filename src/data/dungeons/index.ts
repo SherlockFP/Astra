@@ -5,6 +5,9 @@ import { BUZUL_TAHTI } from './buzul_tahti';
 import { GOLGE_TAPINAGI } from './golge_tapinagi';
 import { SISLI_KORU } from './sisli_koru';
 import { SISLI_VADI } from '../world/sisli_vadi';
+import { TASKASA } from './taskasa';
+import { PERI_SISLERI } from './peri_sisleri';
+import { YILDIZ_DIVANI } from './yildiz_divani';
 
 /** OWNER: content module. One file per dungeon in this folder, registered here. */
 export const DUNGEONS: Record<string, DungeonDef> = {
@@ -12,6 +15,10 @@ export const DUNGEONS: Record<string, DungeonDef> = {
   [KIZIL_DOKUMHANE.id]: KIZIL_DOKUMHANE,
   [BUZUL_TAHTI.id]: BUZUL_TAHTI,
   [GOLGE_TAPINAGI.id]: GOLGE_TAPINAGI,
+  // Mythic+ season dungeons: in DUNGEONS (keys, portals, content checks) but NOT in DUNGEON_IDS (levelling set).
+  [TASKASA.id]: TASKASA,
+  [PERI_SISLERI.id]: PERI_SISLERI,
+  [YILDIZ_DIVANI.id]: YILDIZ_DIVANI,
 };
 /** Stable display / progression order (level 8 -> 52). */
 export const DUNGEON_IDS: string[] = [KEMIK_MAHZENI.id, KIZIL_DOKUMHANE.id, BUZUL_TAHTI.id, GOLGE_TAPINAGI.id];
@@ -20,7 +27,7 @@ export const DUNGEON_IDS: string[] = [KEMIK_MAHZENI.id, KIZIL_DOKUMHANE.id, BUZU
  * Mythic+ season pool (P-05), rotation order. Keys, portals, Group Finder and leaderboards read this via MythicPlus.dungeonPool().
  * Empty until the 8 season dungeons land; while empty, MythicPlus.dungeonPool() falls back to DUNGEON_IDS.
  */
-export const MPLUS_POOL: string[] = [];
+export const MPLUS_POOL: string[] = [TASKASA.id, PERI_SISLERI.id]; // yildiz_divani joins once its final boss (spy hunt) lands
 
 /**
  * Open-world zones expressed as DungeonDef. Deliberately NOT part of DUNGEONS / DUNGEON_IDS: those drive the keystone UI,
