@@ -156,6 +156,10 @@ are flagged for design review.
   (score, best runs per dungeon, timed counts) — also shown in the Group Finder's Mythic+ tab.
 
 ## 6. Mythic+ scaling, flow & rewards (overrides GDD_CONTENT §5.4)
+- **Pool (user, binding):** Mythic+ runs ONLY on the 8 hand-crafted season dungeons (docs/dungeons/*.md); all 8 are in
+  the season rotation, weekly affixes rotate, a future season swaps some maps. Procedural dungeons (§14) and the 4
+  levelling dungeons never take keys. The 8 maps must be the most detailed content in the game (§13 verticality, ≥ 3
+  bosses each, dense set dressing).
 - Flow: enter the dungeon on **Mitik** (no timer) → keystone pedestal (Kehanet Taşı) near the start → insert any party
   member's key → 10 s countdown + start barrier → timer. Normal / Kahramanlık / Mitik 0 never use the pedestal.
 - **Scaling:** HP and damage ×`1.08^(L−1)` for L ≤ 10 (→ ×2.0 at +10), then ×1.10 per level above 10.
@@ -285,3 +289,56 @@ bölgede." Reference look: a crowded square of small stalls with floating title 
   "Göster" → a beam over the stall + a map pin; price history per item base from observed listings.
 - New net channels: `shop` (lobby announce), `shopBuy`, `shopSold` (peer-to-peer). Town data: Pazar Meydanı district +
   spot grid; NPC Tezgâh Ustası; items Pazar Bohçası / Büyük Bohça.
+
+## 12. Controls & camera — WoW scheme (user: "TPS'yi aynı WoW kamera açısı gibi yönetelim; skillerden çok sağ/sol klik var")
+Default control scheme **"WoW"**; the old scheme stays as **"Aksiyon"** in Ayarlar (per-profile, switchable any time).
+- **Mouse:** RMB hold = mouselook (camera turns, character faces the camera direction); LMB hold = orbit the camera only;
+  both held = run forward; wheel = zoom (2–30 m open world, 2–18 m indoors, default 10 m, pitch ~20°). LMB click on an
+  enemy/NPC = select target; RMB click on an enemy = target + start auto-attack; RMB click on an NPC/object = interact.
+  The cursor is visible whenever no mouse button is held (no permanent pointer lock); pointer lock only while holding.
+- **Camera:** WoW-style follow: when moving without a mouse button the camera eases back behind the character (smart
+  pivot); collision with walls AND ceilings; per-room zoom limit from the ceiling height (§13).
+- **Movement:** WASD, A/D strafe; Space jump; Shift dodge (Elden Ring layer stays); guard/parry Mouse3 + CapsLock; heavy
+  attack Mouse4.
+- **Auto-attack replaces clicking:** the class weapon chain (slot lmb) runs automatically against the current target
+  while it is in range and the player is in combat (swing timer = chain tempo / haste; chain-step animations and finisher
+  every Nth swing keep the combo feel). Ranged classes auto-shoot; casters only swing in melee range.
+- **Abilities on keys:** slot semantics of §10.1 are unchanged, only keys move: rmb → **1**, q → **2**, e → **3**,
+  r → **4**, s1 → **5**, s2 → **Q**, s3 → **E**, s4 → **R**, majors stay **X / V / T**; potions and flasks move to free keys
+  (6, 7, 8, 9, 0 …) — exact keymap and migrations in docs/CONTROLS_WOW.md. The action bar labels follow the scheme.
+
+## 13. Dungeon verticality (user: "mahzenler yüksek olsun, WoW'dakiler gibi") — engine rule for all dungeons
+- **Heightfield, not multi-storey:** every tile has a floor height. RoomDef gains `floorY` (m) and optional per-area
+  overrides; stairs/ramps are tile strips that interpolate height; max walkable step between tiles 0.45 m. NavGrid stores
+  the height and refuses steps above the limit except along stairs/ramps. World.groundY samples the heightfield, so
+  players, enemies, loot and projectiles stand on it. No overlapping floors (no walking under a bridge).
+- **Tall spaces:** RoomDef `ceiling` (m; default 6, halls 12–30) drives wall height, pillar/arch scale and the camera
+  zoom limit; open-air rooms use the sky backdrop. Decorative upper galleries, balconies, windows, chandeliers, banners and
+  statues at height (non-walkable) make halls read tall. Grand staircases between levels are set pieces.
+- **Chasms and bridges:** void tiles with a fall plane (fall = 25 % max HP + respawn at the last safe tile; scripted pits
+  may kill); bridges/walkways are walkable tiles at height over void.
+- **Lifts:** moving platforms between heights (host-synced event; riders move with it).
+- **Combat on height:** melee and hit shapes ignore height differences ≤ 2.5 m; larger differences miss (no hitting a
+  balcony from below); ranged needs line of sight; enemies path via stairs.
+- Every season dungeon uses ≥ 3 height levels; levelling dungeons get at least one stair/terrace set piece.
+
+## 14. Procedural dungeons — "Kadim Yarıklar" (user: "prosedürel dungeonlar olsun, en sonda boss kesince bitsin, 1 değil 3 boss")
+- For levelling and farming at every level (not M+). A seeded generator assembles 8–14 rooms from per-theme room
+  templates (with height tiers, §13); 3 bosses per run: 2 guardians (mini-bosses from a pool with Elden-Ring-style move
+  sets, §16) + the final boss; the run ends when the final boss dies (exit portal + boss chest). Difficulties Normal /
+  Kahramanlık / Mitik with light modifiers; solo and party. Loot-focused rewards (guaranteed rare+ per boss, legendary
+  pity, crafting currency). Entry stones in the capital and every zone. Spec: docs/GDD_PROCGEN.md.
+
+## 15. Loot (user: "daha iyi lootlar")
+- Every boss drops a personal chest: 1 guaranteed item per player (+ chance of a second) from the boss's own table with
+  2–3 named items per dungeon (build-defining unique effects); 70 % smart loot (main stat / armour type of the spec).
+- Rarity beams and sounds (green small → purple tall → legendary orange pillar + fanfare + toast); auto-salvage toggle for
+  grey/white; elites and rares roll rare+ more often; legendary pity extends to elites.
+- Upgrade currency per difficulty (WoW-crest-like "Yiğitlik Taşı") to raise a dungeon item's item level; M+ end chest
+  and Great Vault as in §6. Spec: docs/GDD_LOOT_V3.md.
+
+## 16. Creatures & mechanics — "hafif Elden Ring"
+- Every trash type has 2–4 attacks with distinct, readable windups (ROADMAP F10 rule), delayed swings, 2–3 hit strings,
+  jump/charge/grab attacks, ground-telegraphed slams, enrage under 30 %; elites and bosses have a posture bar — breaking
+  it opens a stagger window for a riposte/critical hit. Packs mix roles (caster to kick, healer to kill first, brute to
+  kite). 20+ new creature types across the season dungeons, procedural pools and the 30–60 zone. Spec: docs/GDD_CREATURES.md.
