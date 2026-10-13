@@ -7,8 +7,8 @@ import { bossAt, circleZone, dg, door, gp, hw, ip, kg, kn, lt, pack, pt, ramp, r
  * YANKI AGI (yanki_agi), Season 1 Mythic+ dungeon. Design: docs/dungeons/yanki_agi.md (sections 3 rooms, doors and packs; 4 trash;
  * 5 bosses; 6 tuning). Heights use the ENGINE_VERTICALITY fields (`vertical: true`): the design's `strips` are `slopes` here.
  *
- * NOT YET REGISTERED: this file is not in dungeons/index.ts and the boss script is not in ai/bosses/index.ts. Registration lines
- * are in the report. The enemy module (enemies_yanki_agi.ts) is imported here for its side effect.
+ * Registered in dungeons/index.ts (M+ Season 1 pool) and ai/bosses/index.ts. The enemy module (enemies_yanki_agi.ts) is imported here
+ * for its side effect.
  *
  * Known gaps against the design (not built, see the report): the 24 NEW Blender props (every NEW prop falls back to an
  * existing model), the full 3.6 dressing sheet (only the hero anchors and a light fill are placed), the Karakır entrance, the
