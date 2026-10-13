@@ -15,12 +15,13 @@ import { Crosshair, findHoverTarget } from './Crosshair';
 import { DamageMeter } from './DamageMeter';
 import { EditMode, type EditFrame } from './EditMode';
 import { ExtraBars, EXTRA_BARS } from './ExtraBars';
-import { AimHint, ComboPoints, DamageDirection, DodgeCharges, PerfectDodgeText, ReadyCheck } from './Extras';
+import { AimHint, DamageDirection, DodgeCharges, PerfectDodgeText, ReadyCheck } from './Extras';
 import { Minimap } from './Minimap';
 import { MythicTracker } from './MythicTracker';
 import { QuestTracker } from './QuestTracker';
 import { Vignette } from './Overlays';
 import { PartyFrames } from './PartyFrames';
+import { PipBar } from './PipBar';
 import { PlayerCastBar, PlayerFrame } from './PlayerFrame';
 import { PerfOverlay } from '../widgets/PerfOverlay';
 import { SpellOverlay } from './SpellOverlay';
@@ -107,6 +108,9 @@ export function createHUD(ui: UI): HudApi {
   const player = add(new PlayerFrame(ui));
   // UX-10 composition flip: the player frame lives in the .hud-uf zone (UX-11 positions it)
   zUf.appendChild(player.el);
+  // NC36: class resource pips (Çi, Kutsal Güç, Ruh Parçası, Kombo, Rün...) in the player frame's pip slot; the old rogue-only ComboPoints widget is replaced by it
+  const pips = add(new PipBar());
+  player.pipsHost.appendChild(pips.el);
   // F3 / settings.showFps: performance readout, directly under the player frame (hidden = takes no room)
   const perf = add(new PerfOverlay());
   tl.appendChild(perf.el);
@@ -162,8 +166,6 @@ export function createHUD(ui: UI): HudApi {
   const extras = div('hb-extras', bc);
   const dodge = add(new DodgeCharges());
   extras.appendChild(dodge.el);
-  const cpoints = add(new ComboPoints());
-  extras.appendChild(cpoints.el);
   bc.appendChild(bar.el);
 
   // ---- bottom-right column (§2.10, top -> bottom): loot feed, damage meter (out of the flow while hidden), gold, micro menu ----

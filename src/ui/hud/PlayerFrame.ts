@@ -37,6 +37,9 @@ export function classNameTr(id: ClassId | undefined): string {
   return CLASSES[id]?.name || CLASS_META[id]?.name || id;
 }
 
+/** NC36: Turkish name of every primary resource (GDD_CLASSES_V2 §1.2); the gauge colour comes from `.k-bar[data-kind]` (kit.css). */
+export const RES_NAME: Record<string, string> = { mana: 'Mana', rage: 'Öfke', energy: 'Enerji', focus: 'Odak', faith: 'İnanç', essence: 'Öz', fury: 'Gazap' };
+
 /** Ghost trail: a lost share holds this long (s), then drains to the fill at GHOST_LAMBDA (UI_REDESIGN §2.7). */
 const GHOST_HOLD = 0.4;
 const GHOST_LAMBDA = 6;
@@ -152,6 +155,7 @@ export class PlayerFrame implements HudWidget {
     if (this.resType !== p.resourceType) {
       this.resType = p.resourceType;
       this.res.el.dataset.kind = p.resourceType;
+      this.res.el.title = RES_NAME[p.resourceType] ?? '';
     }
     const rv = Math.max(0, p.resource);
     const rf = p.maxResource > 0 ? p.resource / p.maxResource : 0;

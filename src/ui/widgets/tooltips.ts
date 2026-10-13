@@ -15,7 +15,7 @@ const TAG_TR: Record<string, string> = {
   heal: 'İyileştirme', basic: 'Temel Saldırı', combo: 'Kombo',
 };
 
-const RES_NAME: Record<string, string> = { rage: 'Öfke', mana: 'Mana', energy: 'Enerji' };
+const RES_NAME: Record<string, string> = { rage: 'Öfke', mana: 'Mana', energy: 'Enerji', focus: 'Odak', faith: 'İnanç', essence: 'Öz', fury: 'Gazap' };
 
 function fmtStatValue(id: StatId, v: number, signed = true): string {
   const info = STAT_INFO[id];

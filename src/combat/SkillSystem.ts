@@ -43,6 +43,14 @@ import type { SfxId } from '../types/audio';
 import type { VfxId, SpawnVfxOpts } from '../types/vfx';
 import type { TelegraphHandle, VfxHandle } from '../vfx/VFX';
 
+/** NC35: pip counters without a class row or TALENT_PIPS entry (GDD_V2 §0.3 Adalet / Karışım, GDD_CLASSES_V2 §1.2 Kombo). */
+const V2_PIPS: Partial<Record<PipId, PipDef>> = {
+  combo: { id: 'combo', name: 'Kombo Puanı', max: 5, color: '#ffd24a', icon: 'buff-haste' },
+  adalet: { id: 'adalet', name: 'Adalet Puanı', max: 5, color: '#fff0a0', icon: 'skill-holy-light' },
+  karisim: { id: 'karisim', name: 'Karışım Puanı', max: 5, color: '#7fdc8a', icon: 'buff-haste' },
+};
+const NO_PIPS: readonly PipDef[] = [];
+
 export interface CooldownInfo {
   remaining: number;
   total: number;
@@ -301,6 +309,9 @@ export class SkillSystem {
   private masteryAt = new Map<string, number>();
   /** Passive pip decay clocks, keyed `playerId:pipId`. */
   private pipClock = new Map<string, number>();
+  /** NC35: PipDef lookups outside TALENT_PIPS (null = none) and the pips shown per `class:spec`. */
+  private pipDefCache = new Map<PipId, PipDef | null>();
+  private activePipCache = new Map<string, PipDef[]>();
   /** CW-07 §2.7: emits proc:gain / proc:fade for the local player's proc statuses (procFx.ts). */
   private procWatch = new ProcWatcher();
   private watchers = new WatcherHost();
@@ -323,6 +334,8 @@ export class SkillSystem {
       this.playRemoteCast(pl, p.skillId, p.aim, Array.isArray(p.sp) ? p.sp.filter((s) => typeof s === 'string').slice(0, 8) : undefined);
     });
     G.events?.on('scene:leaving', () => this.clearAll());
+    // NC35: a spec switch drops the old spec's pip counters (Gizem Yükü, Adalet, Karışım, shards...)
+    G.events?.on('spec:changed', (d) => { const lp = G.player; if (lp && lp.id === d.entityId) this.resetPips(lp); });
     // KIT PK-0 (E4 / procs.ts GlowState): the local player's shards, behind, dance and refresh inputs for the glow rules
     setGlowExtras(() => this.glowExtras());
     // GDD_V2 §2.1: entering a dungeon / raid resets every major cooldown (never in the open world)
@@ -548,14 +561,69 @@ export class SkillSystem {
     });
   }
 
-  /** Pips of an actor (Player.pips[id]; `arcane` = Gizem Yükü). */
+  /**
+   * Pips of an actor (Player.pips[id]; `arcane` = Gizem Yükü). NC35: `combo` is a wrapper over the rogue's combo points
+   * (ActorState.cp), so every pip id answers through the same API. The value is in internal units (shard: fragments).
+   */
   pipCount(actor: Actor, id: string): number {
+    if (id === 'combo') return this.states.get(actor.id)?.cp ?? 0;
     return (actor as unknown as { pips?: Record<string, number> }).pips?.[id] ?? 0;
+  }
+
+  /** NC35: PipDef of an id: TALENT_PIPS first, then the class `secondary` rows, then the V2 counters (combo / adalet / karisim). */
+  pipDef(id: PipId): PipDef | undefined {
+    const t = TALENT_PIPS[id];
+    if (t) return t;
+    if (this.pipDefCache.has(id)) return this.pipDefCache.get(id) ?? undefined;
+    let found: PipDef | undefined;
+    for (const c of Object.values(CLASSES)) if (c.secondary?.id === id) { found = c.secondary; break; }
+    found ??= V2_PIPS[id];
+    this.pipDefCache.set(id, found ?? null);
+    return found;
+  }
+
+  /** NC35: max of a pip in internal units (rogue combo: 5, Gölge 6; every other pip: its PipDef.max, default 5). */
+  pipMax(actor: Actor, id: string): number {
+    if (id === 'combo') return this.comboCap(actor);
+    return this.pipDef(id as PipId)?.max ?? 5;
+  }
+
+  /**
+   * NC35: the pips the HUD shows for a player (class `secondary`, rogue combo, spec pips: Karışım, Adalet, Gizem Yükü, the
+   * Death Knight rune). Cached per class + spec, so callers may poll it; the returned array must not be mutated.
+   */
+  activePips(actor: Actor): readonly PipDef[] {
+    if (actor.kind !== 'player') return NO_PIPS;
+    const cls = (actor as Player).classId;
+    const spec = specOf(actor)?.id ?? '';
+    const key = cls + ':' + spec;
+    let out = this.activePipCache.get(key);
+    if (out) return out;
+    const ids: PipId[] = [];
+    const sec = CLASSES[cls]?.secondary;
+    if (sec) ids.push(sec.id);
+    if (cls === 'rogue') ids.push('combo');
+    if (spec === 'rogue_alchemist') ids.push('karisim');
+    if (spec === 'knight_blademaster') ids.push('adalet');
+    if (spec === 'mage_arcane') ids.push('arcane');
+    if (cls === 'necromancer') ids.push('rune');
+    out = [];
+    for (const id of ids) { const d = this.pipDef(id); if (d && !out.includes(d)) out.push(d); }
+    this.activePipCache.set(key, out);
+    return out;
+  }
+
+  /** NC35: progress 0..1 of the next timed regen tick of a pip (PipDef.regen, Death Knight runes); 0 when it has none or is full. */
+  pipRegenFrac(actor: Actor, id: PipId): number {
+    const every = this.pipDef(id)?.regen?.every ?? 0;
+    if (every <= 0 || this.pipCount(actor, id) >= this.pipMax(actor, id)) return 0;
+    return clamp((this.pipClock.get(`${actor.id}:${id}`) ?? 0) / every, 0, 1);
   }
 
   /** Gains `n` pips (capped at the pip's max). Emits the `pip` proc trigger when the count rises. */
   addPip(actor: Actor, id: string, n: number): void {
-    const max = TALENT_PIPS[id as PipId]?.max ?? 5;
+    if (id === 'combo') { this.addCombo(actor, n); return; }
+    const max = this.pipMax(actor, id);
     const before = this.pipCount(actor, id);
     const after = clamp(before + Math.max(0, n), 0, max);
     if (after === before) return;
@@ -568,16 +636,37 @@ export class SkillSystem {
     const have = this.pipCount(actor, id);
     if (n <= 0) return true;
     if (have < n) return false;
-    this.setPip(actor, id, have - n, TALENT_PIPS[id as PipId]?.max ?? 5);
+    if (id === 'combo') {
+      const st = this.states.get(actor.id);
+      if (st) { st.cp -= n; this.emitCp(st); }
+    } else {
+      this.setPip(actor, id, have - n, this.pipMax(actor, id));
+    }
     if (actor.kind === 'player') G.procs?.emit('spend', { player: actor as Player, pipId: id as PipId });
     return true;
+  }
+
+  /** NC35: spends every pip of an id and returns how many (internal units) were spent. */
+  consumePips(actor: Actor, id: string): number {
+    const have = this.pipCount(actor, id);
+    if (have > 0) this.spendPip(actor, id, have);
+    return have;
+  }
+
+  /** NC35: zeroes every pip counter of an actor (spec change, scene change) and emits `pips:changed` for each one that moved. */
+  resetPips(actor: Actor): void {
+    const bag = actor as unknown as { pips?: Record<string, number> };
+    for (const id of Object.keys(bag.pips ?? {})) if (this.pipCount(actor, id) > 0) this.setPip(actor, id, 0, this.pipMax(actor, id));
+    if (this.pipCount(actor, 'combo') > 0) this.consumeCombo(actor);
+    const prefix = `${actor.id}:`;
+    for (const k of [...this.pipClock.keys()]) if (k.startsWith(prefix)) this.pipClock.delete(k);
   }
 
   private setPip(actor: Actor, id: string, n: number, max: number): void {
     const bag = actor as unknown as { pips?: Record<string, number> };
     bag.pips = { ...(bag.pips ?? {}), [id]: n };
     // KIT PK-0: the event reports display pips (PipDef.scale; warlock shard: 50 fragments = 5 pips). Default scale 1.
-    const scale = TALENT_PIPS[id as PipId]?.scale ?? 1;
+    const scale = this.pipDef(id as PipId)?.scale ?? 1;
     G.events.emit('pips:changed', { id: id as PipId, points: Math.floor(n / scale), max: Math.floor(max / scale) });
   }
 
@@ -1535,15 +1624,20 @@ export class SkillSystem {
   }
 
   private decayPips(p: Player, dt: number): void {
-    for (const [id, pd] of Object.entries(TALENT_PIPS) as [PipId, PipDef | undefined][]) {
-      if (!pd?.decay) continue;
-      const key = `${p.id}:${id}`;
-      if (this.pipCount(p, id) <= 0 || p.combatTimer <= pd.decay.after) { this.pipClock.set(key, 0); continue; }
-      const t = (this.pipClock.get(key) ?? 0) + dt;
-      if (t < pd.decay.every) { this.pipClock.set(key, t); continue; }
-      this.pipClock.set(key, 0);
-      this.setPip(p, id, this.pipCount(p, id) - 1, pd.max);
-    }
+    for (const [id, pd] of Object.entries(TALENT_PIPS) as [PipId, PipDef | undefined][]) if (pd) this.decayOne(p, id, pd, dt);
+    // NC35: the class's own `secondary` pip decays by the same rule (Çi: -1 every 4 s after 8 s out of combat)
+    const sec = CLASSES[p.classId]?.secondary;
+    if (sec && !TALENT_PIPS[sec.id]) this.decayOne(p, sec.id, sec, dt);
+  }
+
+  private decayOne(p: Player, id: PipId, pd: PipDef, dt: number): void {
+    if (!pd.decay) return;
+    const key = `${p.id}:${id}`;
+    if (this.pipCount(p, id) <= 0 || p.combatTimer <= pd.decay.after) { this.pipClock.set(key, 0); return; }
+    const t = (this.pipClock.get(key) ?? 0) + dt;
+    if (t < pd.decay.every) { this.pipClock.set(key, t); return; }
+    this.pipClock.set(key, 0);
+    this.setPip(p, id, Math.max(0, this.pipCount(p, id) - (pd.scale ?? 1)), pd.max);
   }
 
   /** Büyücü Dokunuşu bursts (specs/mage.ts collectTouchBursts), once per frame across the registered trait tables. */
@@ -2678,7 +2772,9 @@ export class SkillSystem {
   }
 
   private emitCp(st: ActorState): void {
-    G.events.emit('combopoints:changed', { points: st.cp, max: this.comboCap(st.player) });
+    const max = this.comboCap(st.player);
+    G.events.emit('combopoints:changed', { points: st.cp, max });
+    G.events.emit('pips:changed', { id: 'combo', points: st.cp, max }); // NC35: combo is a pip like the others
   }
 
   /** One hit of a skill on one enemy (no-op for remote visuals). */
@@ -3336,6 +3432,9 @@ export class SkillSystem {
   }
 
   private clearAll(): void {
+    const lp = this.localPlayer ?? G.player;
+    if (lp) this.resetPips(lp); // NC35: pips do not survive a scene change
+    this.pipClock.clear();
     G.procs?.reset();
     this.procWatch.reset();
     this.watchers.reset();
@@ -3354,5 +3453,6 @@ export class SkillSystem {
     this.routes.reset();
     this.restoreFog();
     G.events.emit('combopoints:changed', { points: 0, max: 5 });
+    G.events.emit('pips:changed', { id: 'combo', points: 0, max: 5 });
   }
 }
