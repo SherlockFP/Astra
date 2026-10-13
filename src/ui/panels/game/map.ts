@@ -304,11 +304,11 @@ export class MapPanel extends GamePanel {
   private worldHover = '';
 
   constructor() {
-    super('map', { backdropClose: true });
+    super('map', { backdropClose: true, modal: false });
   }
 
   protected build(): void {
-    const { win, body, titleEl, foot } = windowFrame({ title: 'Harita', icon: '/assets/icons/ui-map.svg', cls: 'pg-map', onClose: () => this.requestClose() });
+    const { win, body, titleEl, foot } = windowFrame({ title: 'Harita', icon: '/assets/icons/ui-map.svg', cls: 'pg-map', size: 'L', hints: ['Sürükle: haritayı kaydır'], onClose: () => this.requestClose() });
     this.titleEl = titleEl;
     this.canvas = h('canvas.pg-map-canvas') as HTMLCanvasElement;
     this.ctx = this.canvas.getContext('2d')!;

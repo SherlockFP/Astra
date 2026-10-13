@@ -86,9 +86,9 @@ export class BlacksmithPanel extends ItemPanel {
     super('blacksmith', {
       title: 'Demirci',
       icon: 'ui-blacksmith.svg',
-      width: 716,
-      height: 610,
-      pos: () => [24, 34],
+      width: 780,
+      height: 600,
+      dock: 'left',
     });
   }
 

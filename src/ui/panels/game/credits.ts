@@ -10,11 +10,11 @@ export class CreditsPanel extends GamePanel {
   private pos = 0;
 
   constructor() {
-    super('credits', { backdropClose: true });
+    super('credits', { backdropClose: true, modal: false });
   }
 
   protected build(): void {
-    const { win, body, foot } = windowFrame({ title: 'Emeği Geçenler', icon: '/assets/icons/ui-laurels.svg', cls: 'pg-credits', onClose: () => this.requestClose() });
+    const { win, body, foot } = windowFrame({ title: 'Emeği Geçenler', icon: '/assets/icons/ui-laurels.svg', cls: 'pg-credits', size: 'M', onClose: () => this.requestClose() });
     body.style.padding = '0';
     body.style.overflow = 'hidden';
     this.scroller = h('div.pg-cr-scroll.pg-scroll');

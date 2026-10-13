@@ -9,6 +9,7 @@ import { vendorApi } from './backend';
 import {
   ItemSlot, bindItemTip, bindTip, drag, esc, flashEl, fmt, h, isEquipItem, materialInfo, sfx, toast, type MaterialInfo,
 } from './common';
+import { chip, emptyState } from '../../kit';
 
 const COLS = 8;
 
@@ -40,6 +41,8 @@ export class InventoryPanel extends ItemPanel {
   private filter: PouchFilter = 'all';
   private goldEl!: HTMLSpanElement;
   private freeEl!: HTMLSpanElement;
+  private fullEl!: HTMLElement;
+  private emptyEl!: HTMLElement;
   private hintEl!: HTMLDivElement;
   private matSig = '';
   /** uids seen on the last refresh (null right after opening): new ones get a pickup flash. */
@@ -50,9 +53,9 @@ export class InventoryPanel extends ItemPanel {
     super('inventory', {
       title: 'Çanta',
       icon: 'ui-bag.svg',
-      width: 436,
+      width: 480,
       height: 520,
-      pos: (vw, vh, w) => [Math.max(8, vw - w - 18), 52],
+      dock: 'right',
     });
   }
 
@@ -85,7 +88,13 @@ export class InventoryPanel extends ItemPanel {
     bindTip(sort, () => '<div class="pi-tip-name">Sırala</div><div class="pi-tip-dim">Silah, zırh, nadirlik ve eşya seviyesine göre dizer.</div>');
     this.freeEl = h('span', 'pi-free');
     tools.append(sort, this.freeEl);
-    this.bagView.append(this.grid, tools);
+    // header chip: bag fullness (section 7.3), placed before the close button
+    this.fullEl = chip('');
+    this.fullEl.classList.add('pi-bag-full');
+    this.head.insertBefore(this.fullEl, this.head.querySelector('.k-x'));
+    this.emptyEl = emptyState({ icon: '/assets/icons/item-bag.svg', title: 'Çantan boş', text: 'Yaratıklardan ve zindanlardan eşya düşer.' });
+    this.emptyEl.hidden = true;
+    this.bagView.append(this.emptyEl, this.grid, tools);
 
     // ---- pouch
     this.pouchView = h('div', 'pi-inv-pouch');
@@ -198,12 +207,16 @@ export class InventoryPanel extends ItemPanel {
     }
     this.known = seen;
     for (const i of fresh.slice(0, 6)) flashEl(this.slots[i].el, 'fresh', 800);
+    const used = BAG_SIZE - free;
     this.freeEl.textContent = `Boş yuva: ${free} / ${BAG_SIZE}`;
     this.freeEl.classList.toggle('low', free <= 4);
+    this.fullEl.textContent = `${used} / ${BAG_SIZE}`;
+    this.fullEl.classList.toggle('low', free <= 4);
+    this.emptyEl.hidden = used > 0;
     if (this.lastGold >= 0 && c.save.gold !== this.lastGold) flashEl(this.goldEl, c.save.gold > this.lastGold ? 'gain' : 'loss', 700);
     this.lastGold = c.save.gold;
     this.goldEl.textContent = fmt(c.save.gold);
-    this.hintEl.textContent = this.context();
+    this.hintEl.textContent = `${this.context()} · Ctrl+Tık: kilitle`;
     this.refreshPouch(false);
   }
 

@@ -63,6 +63,9 @@
 .pg-win.pg-size-S { width: 480px; max-height: 620px; }
 .pg-win.pg-size-M { width: 780px; height: 600px; }
 .pg-win.pg-size-L { width: 1180px; height: 720px; }
+/* docks (UX-52a, section 7.1): 24 px from the side, top 56 px; the default is centred */
+.pg-win.pg-dock-left { position: absolute; left: 24px; top: 56px; }
+.pg-win.pg-dock-right { position: absolute; right: 24px; top: 56px; }
 
 .pg-head {
   display: flex;
@@ -137,6 +140,7 @@
   border-top: 1px solid var(--ink);
 }
 .pg-foot:empty { display: none; }
+.pg-foot > .k-hints { margin-right: auto; font-size: 13px; }
 
 /* ---------------------------------------------------------------- typography helpers */
 .pg-h {

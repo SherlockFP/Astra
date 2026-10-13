@@ -2,15 +2,6 @@
    HUD layout editor (hud/EditMode.ts) and the extra action bars (hud/ExtraBars.ts).
    Same dark leather + gold trim language as the rest of the HUD (hud.css tokens).
    ========================================================================== */
-
-/* ---- entry button (bottom-right corner, above the gold / micro menu) ---- */
-.hud .hud-edit-btn {
-  margin-bottom: 4px; padding: 4px 12px; font: 700 12px var(--font-head); letter-spacing: 0.05em; white-space: nowrap;
-  color: var(--hud-gold-l); background: linear-gradient(#3a2a14, #140d07); border: 2px solid #050302; border-radius: 4px;
-  box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 2px 0 #000; cursor: pointer; pointer-events: auto;
-}
-.hud .hud-edit-btn:hover { background: linear-gradient(#5a4522, #251a0d); color: #fff; }
-
 /* ---- editor layer: above the HUD, below the panels ---- */
 .layer-edit { z-index: 90; }
 .ued-boxes { position: absolute; inset: 0; pointer-events: none; }
@@ -62,7 +53,6 @@
 .ued-btn.danger { color: #ffb0a0; }
 
 /* ---- placeholders: frames that are normally hidden stay visible (and sized) while editing ---- */
-.hud.hud-editing .hud-edit-btn { display: none; }
 .hud.hud-editing .tf { display: flex !important; }
 .hud.hud-editing .tf-name:empty::before { content: 'Hedef çerçevesi'; font: 700 17px var(--font-head); color: var(--text-dim); }
 .hud.hud-editing .bf { display: flex !important; }

@@ -21,9 +21,9 @@ export class StashPanel extends ItemPanel {
     super('stash', {
       title: 'Depo',
       icon: 'item-chest-plain.svg',
-      width: 506,
+      width: 480,
       height: 470,
-      pos: (vw, vh, w) => [Math.max(8, vw - w - 470), 70],
+      dock: 'left',
     });
   }
 

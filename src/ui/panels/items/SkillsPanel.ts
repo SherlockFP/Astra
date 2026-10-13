@@ -18,7 +18,16 @@ const DMG_TR: Record<string, string> = {
   physical: 'Fiziksel', fire: 'Ateş', frost: 'Buz', lightning: 'Şimşek', shadow: 'Gölge', poison: 'Zehir', holy: 'Kutsal', arcane: 'Gizem', true: 'Saf',
 };
 const SLOT_LABEL: Record<SkillSlotKey, string> = { lmb: 'Sol Tık', rmb: 'Sağ Tık', q: 'Q', e: 'E', r: 'R', s1: '1', s2: '2', s3: '3', s4: 'G', m45: 'X', m90: 'V', m180: 'T' };
-const SLOT_ORDER: SkillSlotKey[] = ['lmb', 'rmb', 'q', 'e', 'r', 's1', 's2', 's3'];
+/** The 12-slot bar in the HUD's own order (section 7.4): 9 skills, then the 3 majors. */
+const SLOT_ORDER: SkillSlotKey[] = ['lmb', 'rmb', 'q', 'e', 'r', 's1', 's2', 's3', 's4', 'm45', 'm90', 'm180'];
+/** Skill-book groups (section 7.4). */
+type SkGroup = 'bar' | 'learned' | 'spec' | 'locked';
+const SK_GROUP_KEY = 'efsun.skillbook.v1';
+
+/** Lower-case, Turkish-aware and diacritic-insensitive text, for the skill search. */
+function foldText(s: string): string {
+  return s.toLocaleLowerCase('tr-TR').replace(/ı/g, 'i').normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
 const MAIN_STAT: Record<ClassId, 'str' | 'dex' | 'int'> = {
   knight: 'str', barbarian: 'str', mage: 'int', rogue: 'dex',
   monk: 'dex', archer: 'dex', paladin: 'str', necromancer: 'int', warlock: 'int',
@@ -81,6 +90,8 @@ export class SkillsPanel extends ItemPanel {
   private tab: SkillTab = 'skills';
   private skillsView!: HTMLDivElement;
   private specView!: HTMLDivElement;
+  private search!: HTMLInputElement;
+  private query = '';
   /** Skill ids granted by the committed talent build, read at each refresh and before each placement. */
   private granted = new Set<string>();
 
@@ -90,7 +101,8 @@ export class SkillsPanel extends ItemPanel {
       icon: 'ui-spellbook.svg',
       width: 780,
       height: 560,
-      pos: (vw, vh, w) => [Math.max(8, (vw - w) / 2), 46],
+      dock: 'center',
+      hints: ['Sürükle: beceriyi yuvaya bırak', 'Çift Tık: hızlı yerleştir'],
     });
   }
 
@@ -101,8 +113,17 @@ export class SkillsPanel extends ItemPanel {
     this.skillsView = h('div', 'pi-skills');
     const left = h('div', 'pi-sk-left');
     this.header = h('div', 'pi-sk-head');
+    this.search = h('input', 'pi-sk-search') as HTMLInputElement;
+    this.search.type = 'search';
+    this.search.placeholder = 'Ara: ad veya etiket';
+    this.search.setAttribute('aria-label', 'Yetenek ara');
+    this.search.addEventListener('input', () => {
+      this.query = this.search.value;
+      this.sig = '';
+      this.refresh();
+    });
     this.list = h('div', 'pi-sk-list');
-    left.append(this.header, this.list);
+    left.append(this.header, this.search, this.list);
 
     const right = h('div', 'pi-sk-right');
     right.append(h('div', 'pi-sheet-title', 'Yetenek Çubuğu'));
@@ -477,17 +498,7 @@ export class SkillsPanel extends ItemPanel {
     const unlocked = skills.filter((s) => this.isUnlocked(s)).length;
     this.header.replaceChildren(h('span', 'pi-sk-class', def?.name ?? c.classId), h('span', 'pi-sk-count', `${unlocked} / ${skills.length} yetenek açık`));
 
-    this.list.replaceChildren();
-    if (!skills.length) this.list.append(h('div', 'pi-empty', 'Bu sınıfın yetenekleri henüz yüklenmedi.'));
-    const kit = skills.filter((s) => !granted.has(s.id));
-    const fromTree = skills.filter((s) => granted.has(s.id));
-    for (const s of kit) this.list.append(this.skillCard(s));
-    if (fromTree.length) {
-      const label = h('div', 'pi-qtylabel', 'Uzmanlık ağacından açılan');
-      label.style.gridColumn = '1 / -1';
-      this.list.append(label);
-      for (const s of fromTree) this.list.append(this.skillCard(s));
-    }
+    this.renderGroups(skills, granted);
 
     // action bar
     for (const key of SLOT_ORDER) {
@@ -511,6 +522,82 @@ export class SkillsPanel extends ItemPanel {
     if (!this.selected || !SKILLS[this.selected]) this.selected = skills[0]?.id ?? null;
     this.renderDetail();
     this.renderSpec();
+  }
+
+  /** Open / closed state of a group, per character (`efsun.skillbook.v1`). Locked skills start collapsed. */
+  private isGroupOpen(g: SkGroup): boolean {
+    const key = G.character?.save.id ?? 'default';
+    try {
+      const all = JSON.parse(localStorage.getItem(SK_GROUP_KEY) ?? '{}') as Record<string, Partial<Record<SkGroup, boolean>>>;
+      const v = all?.[key]?.[g];
+      if (typeof v === 'boolean') return v;
+    } catch {
+      /* storage unavailable or corrupt: use the defaults */
+    }
+    return g !== 'locked';
+  }
+
+  private setGroupOpen(g: SkGroup, open: boolean): void {
+    const key = G.character?.save.id ?? 'default';
+    try {
+      const all = JSON.parse(localStorage.getItem(SK_GROUP_KEY) ?? '{}') as Record<string, Partial<Record<SkGroup, boolean>>>;
+      all[key] = { ...(all[key] ?? {}), [g]: open };
+      localStorage.setItem(SK_GROUP_KEY, JSON.stringify(all));
+    } catch {
+      /* ignore: the group simply reopens next time */
+    }
+  }
+
+  /**
+   * Beceriler list (section 7.4): Çubukta · Öğrenildi (not on the bar, gold "!") · Uzmanlık (talent-tree grants) ·
+   * Açılacak (locked, sorted by unlock level, collapsed). The search matches name and tags, diacritic-insensitive.
+   */
+  private renderGroups(skills: SkillDef[], granted: Set<string>): void {
+    this.list.replaceChildren();
+    if (!skills.length) {
+      this.list.append(h('div', 'pi-empty', 'Bu sınıfın yetenekleri henüz yüklenmedi.'));
+      return;
+    }
+    const q = foldText(this.query.trim());
+    const hit = (s: SkillDef): boolean => !q || foldText(s.name).includes(q) || s.tags.some((t) => foldText(TAG_TR[t] ?? t).includes(q));
+    const groups: Record<SkGroup, SkillDef[]> = { bar: [], learned: [], spec: [], locked: [] };
+    for (const s of skills) {
+      if (!hit(s)) continue;
+      if (!this.isUnlocked(s)) groups.locked.push(s);
+      else if (this.slotOf(s.id)) groups.bar.push(s);
+      else if (granted.has(s.id)) groups.spec.push(s);
+      else groups.learned.push(s);
+    }
+    groups.locked.sort((a, b) => a.unlockLevel - b.unlockLevel);
+    const sd = G.character ? getSpec(G.character.save.spec ?? null) : undefined;
+    const titles: Record<SkGroup, string> = {
+      bar: 'Çubukta',
+      learned: 'Öğrenildi — çubukta değil',
+      spec: sd ? `Uzmanlık: ${sd.name}` : 'Uzmanlık ağacı',
+      locked: 'Açılacak',
+    };
+
+    if (q && !(groups.bar.length + groups.learned.length + groups.spec.length + groups.locked.length)) {
+      this.list.append(h('div', 'pi-empty', `"${this.query.trim()}" ile eşleşen yetenek yok.`));
+      return;
+    }
+    for (const g of ['bar', 'learned', 'spec', 'locked'] as SkGroup[]) {
+      const items = groups[g];
+      if (!items.length) continue;
+      const open = !!q || this.isGroupOpen(g);
+      const head = h('button', 'pi-sk-group', h('span', 'pi-sk-arrow', open ? '▾' : '▸'), h('span', '', `${titles[g]} (${items.length})`)) as HTMLButtonElement;
+      head.type = 'button';
+      if (g === 'learned') {
+        head.append(h('b', 'pi-sk-bang', '!'), h('small', 'pi-sk-ghint', 'Sürükleyip yuvaya bırak'));
+      }
+      head.addEventListener('click', () => {
+        this.setGroupOpen(g, !open);
+        this.sig = '';
+        this.refresh();
+      });
+      this.list.append(head);
+      if (open) for (const s of items) this.list.append(this.skillCard(s));
+    }
   }
 
   /** Skill rank pips (GDD_OPENWORLD §4.6): filled up to the current rank; the cap for this character level is shown dimmer. */

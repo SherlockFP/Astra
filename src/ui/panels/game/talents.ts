@@ -81,6 +81,8 @@ export class TalentsPanel extends GamePanel {
       title: 'Uzmanlık ve Yetenekler',
       icon: '/assets/icons/ui-talent-tree.svg',
       cls: 'pg-talents pt-shell',
+      size: 'L',
+      hints: ['Enter: al', 'Backspace: geri al', 'A / B: seçenek'],
       onClose: () => this.requestClose(),
     });
     body.classList.add('pt-body');

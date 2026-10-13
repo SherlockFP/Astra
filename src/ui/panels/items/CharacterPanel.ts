@@ -2,10 +2,13 @@ import { G } from '../../../game/G';
 import type { EventScope } from '../../../core/EventBus';
 import { EQUIP_SLOT_NAMES_TR, type EquipSlot, type ItemInstance } from '../../../types/items';
 import { LEVEL_CAP } from '../../../types/character';
-import type { ClassId } from '../../../types/common';
+import { RARITY_COLORS, type ClassId } from '../../../types/common';
 import { type StatId } from '../../../types/stats';
 import { CLASSES } from '../../../data/classes';
-import { ItemPanel } from './PanelBase';
+import { getItemBase } from '../../../data/items';
+import { chip, emptyState } from '../../kit';
+import { CLASS_META, ratingTier } from '../game/base';
+import { ItemPanel, makeTabs, openPanel } from './PanelBase';
 import { CharacterPreview } from './CharacterPreview';
 import { canPlace, moveItem, quickAction } from './actions';
 import {
@@ -107,17 +110,51 @@ interface CatDef {
   rows: RowDef[];
 }
 
+/**
+ * Sheet groups (section 7.7). Nitelikler / İkincil / Üçüncül are open by default; the three legacy sections
+ * (Saldırı · Savunma · Fayda) share one collapsed group.
+ */
 const CATS: CatDef[] = [
-  { id: 'attr', title: 'Nitelikler', icon: 'stat-strength.svg', rows: [{ id: 'str', always: true }, { id: 'dex', always: true }, { id: 'int', always: true }, { id: 'vit', always: true }] },
+  {
+    id: 'attr',
+    title: 'Nitelikler',
+    icon: 'stat-strength.svg',
+    rows: [
+      { id: 'str', always: true },
+      { id: 'dex', always: true },
+      { id: 'int', always: true },
+      { id: 'vit', always: true },
+      { id: 'maxHp', always: true, label: 'Maks. Can' },
+    ],
+  },
+  {
+    id: 'sec',
+    title: 'İkincil',
+    icon: 'stat-damage.svg',
+    rows: [
+      { id: 'critChance', always: true },
+      { id: 'critDamage', always: true, signed: true },
+      { id: 'attackSpeed', always: true, signed: true },
+      { id: 'castSpeed', always: true, signed: true },
+      { id: 'cdr', always: true },
+    ],
+  },
+  {
+    id: 'ter',
+    title: 'Üçüncül',
+    icon: 'stat-move-speed.svg',
+    rows: [
+      { id: 'lifeSteal', always: true },
+      { id: 'dodgeChance', always: true },
+      { id: 'moveSpeedPct', always: true, signed: true },
+      { id: 'damageReductionPct', always: true },
+    ],
+  },
   {
     id: 'off',
     title: 'Saldırı',
     icon: 'stat-damage.svg',
     rows: [
-      { id: 'attackSpeed', always: true, signed: true },
-      { id: 'critChance', always: true },
-      { id: 'critDamage', always: true, signed: true },
-      { id: 'castSpeed', signed: true },
       { id: 'damagePct', signed: true },
       { id: 'spellPower', signed: true },
       { id: 'physicalDamagePct', signed: true },
@@ -133,8 +170,6 @@ const CATS: CatDef[] = [
       { id: 'bossDamagePct', signed: true },
       { id: 'eliteDamagePct', signed: true },
       { id: 'armorPen' },
-      { id: 'cdr' },
-      { id: 'lifeSteal' },
       { id: 'hpOnHit' },
       { id: 'hpOnKill' },
     ],
@@ -144,13 +179,10 @@ const CATS: CatDef[] = [
     title: 'Savunma',
     icon: 'stat-armor.svg',
     rows: [
-      { id: 'maxHp', always: true },
       { id: 'armor', always: true },
-      { id: 'dodgeChance', always: true },
       { id: 'blockChance' },
       { id: 'blockAmount' },
       { id: 'hpRegen' },
-      { id: 'damageReductionPct' },
       { id: 'resFire', always: true },
       { id: 'resFrost', always: true },
       { id: 'resLightning', always: true },
@@ -169,7 +201,6 @@ const CATS: CatDef[] = [
     rows: [
       { id: 'maxResource' },
       { id: 'resourceRegen' },
-      { id: 'moveSpeedPct', always: true, signed: true },
       { id: 'goldFindPct', always: true, signed: true },
       { id: 'magicFindPct', always: true, signed: true },
       { id: 'xpPct', always: true, signed: true },
@@ -179,13 +210,44 @@ const CATS: CatDef[] = [
   },
 ];
 
-/** Karakter: 12-slot paper doll around a live 3D preview + the full stat sheet. */
+const LEGACY_CATS = ['off', 'def', 'util'];
+const LEGACY_KEY = 'legacy';
+const CHAR_SHEET_KEY = 'efsun.charsheet.v1';
+const ALL_SLOTS = Object.keys(EQUIP_SLOT_NAMES_TR) as EquipSlot[];
+
+type ViewId = 'char' | 'titles' | 'sets';
+
+/** One decimal, decimal comma (326,9). */
+const fmt1 = (n: number): string => n.toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+/** Upgrade sockets as filled / hollow marks. Empty string when the item has none. */
+function socketMarks(it: ItemInstance): string {
+  if (!it.sockets?.length) return '';
+  const filled = it.sockets.filter(Boolean).length;
+  return '◆'.repeat(filled) + '◇'.repeat(it.sockets.length - filled);
+}
+
+interface GearRow {
+  row: HTMLElement;
+  name: HTMLElement;
+  meta: HTMLElement;
+}
+
+/**
+ * Karakter (section 7.7, size L, dock left): header strip (level + class, EŞ equipped / overall, Mitik+ score), paper doll
+ * columns with a live 3D preview, the stat groups, and the Unvanlar / Ekipman stubs.
+ */
 export class CharacterPanel extends ItemPanel {
   private slots = new Map<EquipSlot, ItemSlot>();
+  private gear = new Map<EquipSlot, GearRow>();
+  private views = new Map<ViewId, HTMLElement>();
+
   private preview!: CharacterPreview;
   private nameEl!: HTMLDivElement;
-  private subEl!: HTMLDivElement;
+  private clsEl!: HTMLDivElement;
   private ilvlEl!: HTMLDivElement;
+  private mplusVal!: HTMLElement;
+  private durEl!: HTMLElement;
   private xpFill!: HTMLDivElement;
   private xpText!: HTMLDivElement;
   private helmBox!: HTMLInputElement;
@@ -193,7 +255,8 @@ export class CharacterPanel extends ItemPanel {
   private statSig = '';
   private visSig = '';
   private charKey = '';
-  private collapsed = new Set<string>();
+  private collapsed = new Set<string>([LEGACY_KEY]);
+  private lastWeapon: ItemInstance | null = null;
   /** Stat values of the previous render (null right after opening): changed rows flash green / red. */
   private prevStats: Record<string, number> | null = null;
 
@@ -201,34 +264,86 @@ export class CharacterPanel extends ItemPanel {
     super('character', {
       title: 'Karakter',
       icon: 'ui-character.svg',
-      width: 780,
-      height: 600,
-      pos: () => [18, 40],
+      width: 1180,
+      height: 720,
+      dock: 'left',
+      hints: ['Sağ Tık: çıkar', 'Sürükle: eşyayı yuvaya bırak'],
     });
   }
 
   protected build(body: HTMLElement): void {
-    const root = h('div', 'pi-char');
+    this.collapsed = this.loadCollapsed();
+    const tabs = makeTabs(
+      [
+        { id: 'char', label: 'Karakter' },
+        { id: 'titles', label: 'Unvanlar' },
+        { id: 'sets', label: 'Ekipman' },
+      ],
+      (id) => this.showView(id as ViewId),
+    );
+    body.append(tabs.el);
 
-    // ---- left: doll
-    const doll = h('div', 'pi-doll');
-    const top = h('div', 'pi-doll-top');
-    this.nameEl = h('div', 'pi-doll-name');
-    this.subEl = h('div', 'pi-doll-sub');
-    this.ilvlEl = h('div', 'pi-ilvl');
-    bindTip(this.ilvlEl, () => '<div class="pi-tip-name" style="color:#ffd35a">Eşya Seviyesi</div><div class="pi-tip-line">Kuşandığın eşyaların ortalama eşya seviyesi. Yüksek anahtarlı zindanlara girmek için hedefin bu olmalı.</div>');
-    top.append(this.nameEl, this.subEl, this.ilvlEl);
+    const charView = h('div', 'pi-ch');
+    charView.append(this.buildHead(), this.buildCols());
+    const titles = emptyState({
+      icon: '/assets/icons/ui-trophy.svg',
+      title: 'Henüz unvanın yok',
+      text: 'Zindan ilk temizlikleri ve başarımlar unvan kazandırır.',
+      action: { label: 'Görev Defteri', onClick: () => openPanel('questlog') },
+    });
+    const sets = emptyState({
+      icon: '/assets/icons/ui-bag.svg',
+      title: 'Ekipman setleri yakında',
+      text: 'Kuşandığın eşyaları kaydedip tek tıkla değiştireceksin.',
+      action: { label: 'Çantayı Aç', onClick: () => openPanel('inventory') },
+    });
+    this.views.set('char', charView);
+    this.views.set('titles', titles);
+    this.views.set('sets', sets);
+    body.append(charView, titles, sets);
+    this.showView('char');
+  }
 
-    const stage = h('div', 'pi-doll-stage');
-    const colL = h('div', 'pi-doll-col');
-    const colR = h('div', 'pi-doll-col');
-    for (const s of LEFT) colL.append(this.makeSlot(s));
-    for (const s of RIGHT) {
-      colR.append(this.makeSlot(s));
-      if (s === 'ring2') colR.append(h('div', 'pi-doll-sep'));
-    }
+  private showView(id: ViewId): void {
+
+    for (const [k, el] of this.views) el.style.display = k === id ? '' : 'none';
+    this.statSig = '';
+    if (this.isOpen) this.refresh();
+  }
+
+  /** Header strip (52 px): class + name, the item level pair, the Mitik+ score. */
+  private buildHead(): HTMLElement {
+    const head = h('div', 'pi-ch-head');
+    const who = h('div', 'pi-ch-who');
+    this.clsEl = h('div', 'pi-ch-cls');
+    this.nameEl = h('div', 'pi-ch-name');
+    who.append(this.clsEl, this.nameEl);
+
+    const ilvl = h('div', 'pi-ch-ilvl');
+    this.ilvlEl = h('div', 'pi-ch-ilvl-n');
+    ilvl.append(this.ilvlEl, h('div', 'pi-ch-ilvl-cap', 'kuşanılan / toplam'));
+    bindTip(ilvl, () => '<div class="pi-tip-name" style="color:#ffd35a">Eşya Seviyesi</div><div class="pi-tip-line">Solda: kuşandığın eşyaların ortalaması. Sağda: her yuva için kuşanılan ya da çantadaki en iyi eşyanın ortalaması. Aradaki fark, çantanda daha iyi bir eşya olduğunu gösterir.</div>');
+
+    const mplus = h('button', 'pi-ch-mplus') as HTMLButtonElement;
+    mplus.type = 'button';
+    mplus.append(h('span', 'pi-ch-mplus-l', 'Mitik+ Puanı'));
+    this.mplusVal = h('b', 'pi-ch-mplus-v', '–');
+    mplus.append(this.mplusVal);
+    mplus.title = 'Mitik+ Bilgisi';
+    mplus.addEventListener('click', () => openPanel('mplusInfo'));
+    head.append(who, ilvl, mplus);
+    return head;
+  }
+
+  /** Body columns: gear 272 · model 250 · gear 272 · stats 1fr, 8 px apart (section 7.7). */
+  private buildCols(): HTMLElement {
+    const cols = h('div', 'pi-ch-cols');
+    const colL = h('div', 'pi-ch-gear');
+    for (const s of LEFT) colL.append(this.makeRow(s, false));
+
+    const model = h('div', 'pi-ch-model');
     this.preview = new CharacterPreview(250, 340);
-    stage.append(colL, this.preview.el, colR);
+    model.append(this.preview.el);
 
     const xp = h('div', 'pi-xp');
     this.xpFill = h('div', 'pi-xp-fill');
@@ -259,16 +374,34 @@ export class CharacterPanel extends ItemPanel {
     });
     opts.append(this.helmBox, h('span', 'pi-optbox'), h('span', 'pi-opt-txt', 'Kaskı gizle'));
     bindTip(opts, () => '<div class="pi-tip-name">Kaskı Gizle</div><div class="pi-tip-line">Kaskın görünümünü karakter modelinde gizler. Kaskın nitelikleri geçerli kalır.</div>');
-    doll.append(top, stage, xp, opts);
+    this.durEl = chip('');
+    this.durEl.classList.add('pi-ch-dur');
+    this.durEl.addEventListener('click', () => {
+      if (this.durEl.classList.contains('is-bad')) openPanel('blacksmith');
+    });
+    bindTip(this.durEl, () => '<div class="pi-tip-name">Dayanıklılık</div><div class="pi-tip-line">Kırık eşyalar nitelik vermez. Demirci’de onarılır. Kırık durumdayken tıklarsan Demirci açılır.</div>');
+    model.append(opts, xp, this.durEl);
 
-    // ---- right: stat sheet
-    const sheet = h('div', 'pi-sheet');
-    sheet.append(h('div', 'pi-sheet-title', 'Nitelikler'));
-    this.statsEl = h('div', 'pi-stats');
-    sheet.append(this.statsEl);
+    const colR = h('div', 'pi-ch-gear pi-ch-gear--r');
+    for (const s of RIGHT) colR.append(this.makeRow(s, true));
 
-    root.append(doll, sheet);
-    body.append(root);
+    this.statsEl = h('div', 'pi-ch-stats k-scroll');
+    cols.append(colL, model, colR, this.statsEl);
+    return cols;
+  }
+
+  /** One gear row: slot tile + name / item level line. Right-column rows mirror the order (text on the outer edge). */
+  private makeRow(slot: EquipSlot, right: boolean): HTMLElement {
+    const row = h('div', `pi-gear-row${right ? ' is-right' : ''}`);
+    const slotEl = this.makeSlot(slot);
+    const txt = h('div', 'pi-gear-txt');
+    const name = h('div', 'pi-gear-name');
+    const meta = h('div', 'pi-gear-meta');
+    txt.append(name, meta);
+    if (right) row.append(txt, slotEl);
+    else row.append(slotEl, txt);
+    this.gear.set(slot, { row, name, meta });
+    return row;
   }
 
   private makeSlot(slot: EquipSlot): HTMLElement {
@@ -334,6 +467,25 @@ export class CharacterPanel extends ItemPanel {
     }
   }
 
+  /** Best item level per slot over the equipment and the bag, averaged over the slots that have one (the header's "overall"). */
+  private overallIlvl(): number {
+    const c = G.character;
+    if (!c) return 0;
+    const best = new Map<EquipSlot, number>();
+    const up = (s: EquipSlot, v: number): void => {
+      if (v > (best.get(s) ?? 0)) best.set(s, v);
+    };
+    for (const [s, it] of Object.entries(c.save.equipment)) if (it && !it.broken) up(s as EquipSlot, it.itemLevel);
+    for (const it of c.save.bag) {
+      if (!it || it.broken) continue;
+      for (const s of ALL_SLOTS) if (canPlace(it, { where: 'equipment', slot: s })) up(s, it.itemLevel);
+    }
+    if (!best.size) return 0;
+    let sum = 0;
+    for (const v of best.values()) sum += v;
+    return sum / best.size;
+  }
+
   protected refresh(): void {
     const c = G.character;
     if (!c) {
@@ -347,16 +499,28 @@ export class CharacterPanel extends ItemPanel {
       const dis = slot === 'offhand' && isTwoHanded(weapon);
       s.set(eq[slot] ?? null, { disabled: dis && !eq[slot] });
     }
+    this.refreshGear();
+
     const cls = CLASSES[c.classId]?.name ?? CLASS_TR[c.classId];
+    this.clsEl.textContent = `Sv. ${c.level} ${cls}`;
+    this.clsEl.style.color = CLASS_META[c.classId]?.color ?? '';
     this.nameEl.textContent = c.save.name;
-    this.subEl.textContent = `Seviye ${c.level} ${cls}`;
     let il = 0;
     try {
       il = c.itemLevel();
     } catch {
       il = 0;
     }
-    this.ilvlEl.textContent = `Eşya Seviyesi ${il}`;
+    this.ilvlEl.textContent = `EŞ ${fmt1(il)} / ${fmt1(this.overallIlvl())}`;
+    const rating = c.save.mythic?.rating ?? 0;
+    this.mplusVal.textContent = rating > 0 ? (Number.isInteger(rating) ? fmt(rating) : fmt1(rating)) : '–';
+    this.mplusVal.style.color = rating > 0 ? ratingTier(rating).color : '';
+
+    const broken = Object.values(eq).filter((it) => it?.broken).length;
+    this.durEl.textContent = broken ? `Dayanıklılık: Kırık ${broken}` : 'Dayanıklılık: Sağlam';
+    this.durEl.classList.toggle('is-bad', broken > 0);
+    this.durEl.classList.toggle('is-ok', broken === 0);
+
     const need = G.progression?.xpToNext(c.level) ?? 100 * c.level;
     const atCap = c.level >= LEVEL_CAP;
     this.xpFill.style.width = atCap ? '100%' : `${Math.max(0, Math.min(100, (c.save.xp / Math.max(1, need)) * 100))}%`;
@@ -364,66 +528,131 @@ export class CharacterPanel extends ItemPanel {
     this.renderStats(weapon ?? null);
   }
 
+  /** Gear row texts: name in the rarity colour, then item level · +N · sockets (Kırık when broken). */
+  private refreshGear(): void {
+    const c = G.character;
+    if (!c) return;
+    const eq = c.save.equipment;
+    for (const [slot, g] of this.gear) {
+      const it = eq[slot] ?? null;
+      g.row.classList.toggle('is-empty', !it);
+      g.row.classList.toggle('is-broken', !!it?.broken);
+      if (!it) {
+        g.name.textContent = EQUIP_SLOT_NAMES_TR[slot];
+        g.name.style.color = '';
+        g.meta.textContent = '—';
+        continue;
+      }
+      g.name.textContent = it.name || getItemBase(it.baseId)?.name || it.baseId;
+      g.name.style.color = RARITY_COLORS[it.rarity] ?? '';
+      g.meta.textContent = it.broken
+        ? 'Kırık'
+        : [String(it.itemLevel), it.upgrade ? `+${it.upgrade}` : '', socketMarks(it)].filter(Boolean).join(' · ');
+    }
+  }
+
   private renderStats(weapon: ItemInstance | null): void {
     const c = G.character;
     if (!c) return;
+    this.lastWeapon = weapon;
     const st = c.stats;
     const sig = JSON.stringify(st) + `|${c.level}|${weapon?.uid ?? ''}${weapon?.upgrade ?? 0}|${[...this.collapsed].join(',')}`;
     if (sig === this.statSig) return;
     this.statSig = sig;
+    this.statsEl.replaceChildren();
+    for (const id of ['attr', 'sec', 'ter']) {
+      const cat = CATS.find((x) => x.id === id);
+      if (cat) this.statsEl.append(this.catBox(cat, weapon));
+    }
+    const legacy = h('div', 'pi-cat pi-cat--legacy');
+    legacy.append(this.catHead(LEGACY_KEY, 'Saldırı · Savunma · Fayda', 'stat-armor.svg'));
+    if (!this.collapsed.has(LEGACY_KEY)) {
+      for (const id of LEGACY_CATS) {
+        const cat = CATS.find((x) => x.id === id);
+        if (cat) legacy.append(this.catBox(cat, weapon, true));
+      }
+    }
+    this.statsEl.append(legacy);
+    this.prevStats = { ...(st as unknown as Record<string, number>) };
+  }
+
+  private catHead(id: string, title: string, icon: string): HTMLButtonElement {
+    const head = h('button', 'pi-cat-head') as HTMLButtonElement;
+    head.type = 'button';
+    const ic = h('i', 'pi-cat-ico');
+    ic.style.setProperty('--ico', `url("/assets/icons/${icon}")`);
+    head.append(ic, h('span', '', title), h('em', 'pi-cat-arrow', this.collapsed.has(id) ? '▸' : '▾'));
+    head.addEventListener('click', () => {
+      if (this.collapsed.has(id)) this.collapsed.delete(id);
+      else this.collapsed.add(id);
+      this.saveCollapsed();
+      this.statSig = '';
+      this.renderStats(this.lastWeapon);
+    });
+    return head;
+  }
+
+  private catBox(cat: CatDef, weapon: ItemInstance | null, nested = false): HTMLElement {
+    const box = h('div', nested ? 'pi-cat pi-cat--sub' : 'pi-cat');
+    box.append(this.catHead(cat.id, cat.title, cat.icon));
+    const c = G.character;
+    if (!c || this.collapsed.has(cat.id)) return box;
+    const st = c.stats;
     const main = MAIN_STAT[c.classId];
     const res = CLASSES[c.classId]?.resourceName ?? RESOURCE_TR[c.classId];
-    this.statsEl.replaceChildren();
-
-    for (const cat of CATS) {
-      const box = h('div', 'pi-cat');
-      const head = h('button', 'pi-cat-head');
-      const ic = h('i', 'pi-cat-ico');
-      ic.style.setProperty('--ico', `url("/assets/icons/${cat.icon}")`);
-      head.append(ic, h('span', '', cat.title), h('em', 'pi-cat-arrow', this.collapsed.has(cat.id) ? '▸' : '▾'));
-      head.addEventListener('click', () => {
-        if (this.collapsed.has(cat.id)) this.collapsed.delete(cat.id);
-        else this.collapsed.add(cat.id);
-        this.statSig = '';
-        this.renderStats(weapon);
-      });
-      box.append(head);
-      if (!this.collapsed.has(cat.id)) {
-        const list = h('div', 'pi-cat-rows');
-        // custom leading rows
-        if (cat.id === 'off') {
-          const wmin = st.weaponMin ?? 0;
-          const wmax = st.weaponMax ?? 0;
-          list.append(this.row('Silah Hasarı', wmax > 0 ? `${fmt(wmin)} - ${fmt(wmax)}` : '-', '', 'Kuşandığın silahın (ve gövde nitelikleriyle) ortalama vuruş hasar aralığı.'));
-          const dps = weapon ? describe(weapon).damage?.dps : undefined;
-          if (dps) list.append(this.row('Silah DPS', dps.toFixed(1).replace('.', ','), 'hi', 'Silahının saniye başına ortalama hasarı (nitelik ve diğer bonuslar hariç).'));
-        }
-        for (const r of cat.rows) {
-          let v = st[r.id] ?? 0;
-          if (cat.id === 'def' && r.id === 'blockAmount' && (st.blockChance ?? 0) <= 0) continue;
-          if (!r.always && Math.abs(v) < 1e-9) continue;
-          if (r.id === 'maxResource' && v === 0) continue;
-          const cls = r.id === main ? 'main' : v < 0 ? 'neg' : r.id.startsWith('res') && v > 0 ? 'res' : '';
-          let label = r.label ?? statName(r.id);
-          if (r.id === 'maxHpPct') label = 'Maks. Can %';
-          if (r.id === 'maxResource') label = `Maks. ${res}`;
-          if (r.id === 'resourceRegen') label = `${res} Yenilenmesi/sn`;
-          const val = r.id === 'maxHp' || r.id === 'armor' || r.id === 'maxResource' || r.id === 'pickupRadius' ? fmt(v) : fmtStatValue(r.id, v, r.signed);
-          let doc = STAT_DOCS[r.id] ?? `${statName(r.id)}.`;
-          if (r.id === 'armor') {
-            const dr = Math.min(0.75, v / (v + 50 * c.level + 200));
-            doc += `<div class="pi-tip-up2">Seviye ${c.level} bir düşmana karşı: %${(dr * 100).toFixed(1).replace('.', ',')} fiziksel hasar azaltma</div>`;
-          }
-          if (r.id === main) doc += `<div class="pi-tip-gold">Bu sınıfın ana niteliği</div>`;
-          const prev = this.prevStats ? this.prevStats[r.id] ?? 0 : null;
-          const diff = prev === null ? 0 : v - prev;
-          list.append(this.row(label, val, cls, doc, Math.abs(diff) > 1e-6 ? diff : 0));
-        }
-        box.append(list);
-      }
-      this.statsEl.append(box);
+    const list = h('div', 'pi-cat-rows');
+    // custom leading rows
+    if (cat.id === 'off') {
+      const wmin = st.weaponMin ?? 0;
+      const wmax = st.weaponMax ?? 0;
+      list.append(this.row('Silah Hasarı', wmax > 0 ? `${fmt(wmin)} - ${fmt(wmax)}` : '-', '', 'Kuşandığın silahın (ve gövde nitelikleriyle) ortalama vuruş hasar aralığı.'));
+      const dps = weapon ? describe(weapon).damage?.dps : undefined;
+      if (dps) list.append(this.row('Silah DPS', dps.toFixed(1).replace('.', ','), 'hi', 'Silahının saniye başına ortalama hasarı (nitelik ve diğer bonuslar hariç).'));
     }
-    this.prevStats = { ...(st as unknown as Record<string, number>) };
+    for (const r of cat.rows) {
+      const v = st[r.id] ?? 0;
+      if (cat.id === 'def' && r.id === 'blockAmount' && (st.blockChance ?? 0) <= 0) continue;
+      if (!r.always && Math.abs(v) < 1e-9) continue;
+      if (r.id === 'maxResource' && v === 0) continue;
+      const cls = r.id === main ? 'main' : v < 0 ? 'neg' : r.id.startsWith('res') && v > 0 ? 'res' : '';
+      let label = r.label ?? statName(r.id);
+      if (r.id === 'maxHpPct') label = 'Maks. Can %';
+      if (r.id === 'maxResource') label = `Maks. ${res}`;
+      if (r.id === 'resourceRegen') label = `${res} Yenilenmesi/sn`;
+      const val = r.id === 'maxHp' || r.id === 'armor' || r.id === 'maxResource' || r.id === 'pickupRadius' ? fmt(v) : fmtStatValue(r.id, v, r.signed);
+      let doc = STAT_DOCS[r.id] ?? `${statName(r.id)}.`;
+      if (r.id === 'armor') {
+        const dr = Math.min(0.75, v / (v + 50 * c.level + 200));
+        doc += `<div class="pi-tip-up2">Seviye ${c.level} bir düşmana karşı: %${(dr * 100).toFixed(1).replace('.', ',')} fiziksel hasar azaltma</div>`;
+      }
+      if (r.id === main) doc += `<div class="pi-tip-gold">Bu sınıfın ana niteliği</div>`;
+      const prev = this.prevStats ? this.prevStats[r.id] ?? 0 : null;
+      const diff = prev === null ? 0 : v - prev;
+      list.append(this.row(label, val, cls, doc, Math.abs(diff) > 1e-6 ? diff : 0));
+    }
+    box.append(list);
+    return box;
+  }
+
+  private loadCollapsed(): Set<string> {
+    try {
+      const raw = localStorage.getItem(CHAR_SHEET_KEY);
+      if (raw) {
+        const v: unknown = JSON.parse(raw);
+        if (Array.isArray(v)) return new Set(v.filter((x): x is string => typeof x === 'string'));
+      }
+    } catch {
+      /* corrupt or unavailable: defaults */
+    }
+    return new Set([LEGACY_KEY]);
+  }
+
+  private saveCollapsed(): void {
+    try {
+      localStorage.setItem(CHAR_SHEET_KEY, JSON.stringify([...this.collapsed]));
+    } catch {
+      /* ignore */
+    }
   }
 
   private row(label: string, value: string, cls: string, doc: string, diff = 0): HTMLElement {

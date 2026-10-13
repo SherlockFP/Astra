@@ -4,6 +4,7 @@ import type { ClassId } from '../../../types/common';
 import {
   CLASS_META, GamePanel, affixView, askConfirm, bindTip, button, dungeonName, esc, h, icon, ratingTier, selectBox, sfx, toast, toggle, windowFrame,
 } from './base';
+import { emptyState } from '../../kit';
 import { DUNGEONS } from '../../../data/dungeons';
 
 const pingColor = (ms: number) => (ms < 70 ? '#7be37b' : ms < 140 ? '#ffd36a' : '#ff7a6a');
@@ -61,11 +62,11 @@ export class PartyPanel extends GamePanel {
   private busy = false;
 
   constructor() {
-    super('party', { backdropClose: true });
+    super('party', { backdropClose: true, modal: false });
   }
 
   protected build(): void {
-    const { win, body, foot } = windowFrame({ title: 'Grup ve Sunucular', icon: '/assets/icons/ui-party.svg', cls: 'pg-party', onClose: () => this.requestClose() });
+    const { win, body, foot } = windowFrame({ title: 'Grup ve Sunucular', icon: '/assets/icons/ui-party.svg', cls: 'pg-party', size: 'L', onClose: () => this.requestClose() });
 
     // ---- left: server browser
     this.listEl = h('div.pg-pt-list.pg-scroll');
@@ -214,7 +215,7 @@ export class PartyPanel extends GamePanel {
     this.listEl.innerHTML = '';
     this.countEl.textContent = rooms.length ? `${rooms.length} oda` : '';
     if (!rooms.length) {
-      this.listEl.append(h('div.pg-empty', null, 'Şu an açık oda bulunamadı.', h('br'), 'Kendi odanı kur ve arkadaşlarına kodu ver!'));
+      this.listEl.append(emptyState({ icon: '/assets/icons/ui-party.svg', title: 'Şu an açık oda yok', text: 'Kendi odanı kur ve kodu arkadaşlarınla paylaş.' }));
       if (signal && signal.total > 0) {
         this.listEl.append(h('div.pg-pt-signal' + (signal.open > 0 ? '.on' : ''), null, h('i'), signal.open > 0 ? `Sunuculara bağlı (${signal.open}/${signal.total}) · oda aranıyor...` : `Sunuculara bağlanılıyor (${signal.open}/${signal.total})...`));
       }

@@ -32,7 +32,7 @@ export class RunSummaryPanel extends GamePanel {
   private shown = new Set<string>();
 
   constructor() {
-    super('runSummary', { backdropClose: false });
+    super('runSummary', { backdropClose: false, modal: true });
   }
 
   /** The same finished run is only shown once (both this module and the scene may ask for it). */
@@ -47,7 +47,7 @@ export class RunSummaryPanel extends GamePanel {
   }
 
   protected build(): void {
-    const { win, body, foot } = windowFrame({ title: 'Koşu Özeti', icon: '/assets/icons/ui-trophy.svg', cls: 'pg-rs', onClose: () => this.requestClose() });
+    const { win, body, foot } = windowFrame({ title: 'Koşu Özeti', icon: '/assets/icons/ui-trophy.svg', cls: 'pg-rs', size: 'M', onClose: () => this.requestClose() });
     this.bodyEl = body;
     this.confetti = h('div.pg-confetti');
     win.append(this.confetti);

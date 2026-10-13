@@ -30,7 +30,6 @@
 .pt-web-mi { display: block; width: 100%; padding: 7px 9px; text-align: left; font: inherit; font-size: 13px; color: var(--pt-pale); background: transparent; border: 1px solid transparent; cursor: pointer; }
 .pt-web-mi:hover:not(:disabled) { color: #ffe9aa; background: rgba(232, 194, 90, 0.12); border-color: #5a4423; }
 .pt-web-mi:disabled { opacity: 0.45; cursor: default; }
-.pt-web-mi.is-danger:hover:not(:disabled) { color: #ffb0a0; background: rgba(190, 70, 50, 0.16); }
 .pt-web-mi-sub { display: block; font-size: 11px; color: var(--pt-dim); margin-top: 1px; }
 
 /* ---- mastery picker popover (3 cards) ---- */

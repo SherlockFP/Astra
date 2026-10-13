@@ -8,7 +8,9 @@
  *   - dodge roll (charge bar)   = perfect-dodge pop   ` rogue combo point (+switches to rogue)   ; ground-aim hint
  *   ' ready check (answer with Y)   [ resource kind   ] class (knight/rogue/mage)   , hurt party member   Numpad8 kill/revive party member
  *   (`.` is the guide panel now; Numpad8 took the old dev revive key)
- *   LMB / RMB / Q E R / 1-5 (mock casts, REAL combat combo tracker, cooldowns, potions)   Enter chat   I/C/N/K/M/O/J/L/Esc panels
+ *   LMB / RMB / Q E R / 1-5 (mock casts, REAL combat combo tracker, cooldowns, potions)   Enter chat
+ *   panels: B çanta · C karakter · N yetenek ağacı · K yetenek kitabı · M harita · O grup · J Mitik+ · L görev
+ *           I Zindan Bulucu · . ne yapmalıyım · Esc menü (Arayüz, Başlangıç Rehberi, Zindan Bulucu entries there too)
  *   console: window.dev.* (mode, setHp, setRes, bossHp, bossDefeat, cast, interrupt, tooltip, skillTip, setScale, fps...)
  */
 import * as THREE from 'three';

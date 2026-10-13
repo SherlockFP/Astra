@@ -4,7 +4,8 @@ import { MATERIALS } from '../../../data/materials';
 import { TOWN } from '../../../data/town';
 import { AV_DEFTERI } from '../../../data/avDefteri';
 import { getPinnedQuest, setPinnedQuest, worldExtras } from '../../hud/questMarks';
-import { GamePanel, bar, button, fmtInt, h, mmss, sfx, tabs, windowFrame, type TabsHandle } from './base';
+import { GamePanel, bar, button, fmtInt, h, mmss, openPanel, sfx, tabs, windowFrame, type TabsHandle } from './base';
+import { emptyState } from '../../kit';
 
 /**
  * Quest log (`questlog`: hotkey L = Input action 'quests', mapped to this id in UI HOTKEYS; the HUD quest tracker opens it on click)
@@ -87,11 +88,11 @@ export class QuestLogPanel extends GamePanel {
   private tab: LogTab = 'active';
 
   constructor() {
-    super('questlog', { backdropClose: true });
+    super('questlog', { backdropClose: true, modal: false });
   }
 
   protected build(): void {
-    const { win, body } = windowFrame({ title: 'Görevler', icon: '/assets/icons/ui-quest.svg', cls: 'pg-questlog', onClose: () => this.requestClose() });
+    const { win, body } = windowFrame({ title: 'Görevler', icon: '/assets/icons/ui-quest.svg', cls: 'pg-questlog', size: 'M', dock: 'left', hints: ['Takip et: takipçi ve ok bu göreve bakar'], onClose: () => this.requestClose() });
     this.tabsH = tabs(LOG_TABS, (id) => {
       this.tab = id as LogTab;
       this.render();
@@ -142,8 +143,14 @@ export class QuestLogPanel extends GamePanel {
       groups.set(g.key, rec);
     }
     if (!groups.size) {
-      const msg = this.tab === 'active' ? 'Aktif görevin yok. Köy muhtarlarından yeni görev al.' : this.tab === 'available' ? 'Şu an alınabilecek görev yok.' : 'Henüz tamamlanmış görev yok.';
-      this.listEl.append(h('div.pg-empty', null, msg));
+      // section 7.5 copy table
+      this.listEl.append(
+        this.tab === 'active'
+          ? emptyState({ icon: '/assets/icons/ui-quest.svg', title: 'Aktif görevin yok', text: 'Kuzgunkale ve köylerdeki ünlem işaretli kişilerle konuş.', action: { label: 'Ne Yapmalıyım?', onClick: () => openPanel('guide') } })
+          : this.tab === 'available'
+            ? emptyState({ icon: '/assets/icons/ui-quest.svg', title: 'Şu an alabileceğin görev yok', text: 'Yeni görevler seviye atladıkça açılır.' })
+            : emptyState({ icon: '/assets/icons/ui-trophy.svg', title: 'Henüz tamamlanmış görev yok', text: 'Tamamladığın görevler burada listelenir.' }),
+      );
       return;
     }
     const pinned = getPinnedQuest();
@@ -189,6 +196,7 @@ export class QuestLogPanel extends GamePanel {
     }
     if (state === 'active' || state === 'ready') {
       acts.append(
+        button('Haritada göster', () => openPanel('map'), { variant: 'ghost' }),
         button(pinned ? 'Takibi bırak' : 'Takip et', () => {
           setPinnedQuest(pinned ? null : def.id);
           sfx('ui_tab');
@@ -214,11 +222,11 @@ export class QuestDialogPanel extends GamePanel {
   private hasBio = false;
 
   constructor() {
-    super('dialog', { backdropClose: true });
+    super('dialog', { backdropClose: true, modal: false });
   }
 
   protected build(): void {
-    const { win, titleEl, body, foot } = windowFrame({ title: 'Görev Veren', icon: '/assets/icons/ui-quest.svg', cls: 'pg-dialog', onClose: () => this.requestClose() });
+    const { win, titleEl, body, foot } = windowFrame({ title: 'Görev Veren', icon: '/assets/icons/ui-quest.svg', cls: 'pg-dialog', size: 'S', width: '560px', onClose: () => this.requestClose() });
     this.titleEl = titleEl;
     this.bodyEl = h('div.pg-dlg-body.pg-scroll');
     body.append(this.bodyEl);

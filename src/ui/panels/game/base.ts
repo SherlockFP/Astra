@@ -13,6 +13,7 @@ import { MYTHIC_AFFIXES } from '../../../data/mythicAffixes';
 import { getItemBase } from '../../../data/items';
 import { STAT_INFO, type StatId } from '../../../types/stats';
 import '../../styles/panels-game.css';
+import { hintBar } from '../../kit';
 
 export { formatTime };
 export type Kids = (Node | string | number | null | undefined | false)[];
@@ -537,6 +538,10 @@ export interface WinOpts {
   height?: string;
   /** UX-50: optional size class (S 480 / M 780x600 / L 1180x720, section 7.1). Absent = the panel's own width. */
   size?: 'S' | 'M' | 'L';
+  /** UX-52a (section 7.1): default place. 'left' / 'right' sit 24 px from the edge, top 56 px; 'center' (default) is centred. */
+  dock?: 'left' | 'right' | 'center';
+  /** UX-52a (section 7.6): key hints in the footer ("Tuş: açıklama"); "Esc: kapat" is always appended. */
+  hints?: string[];
   noClose?: boolean;
   onClose?: () => void;
 }
@@ -559,9 +564,11 @@ export function windowFrame(o: WinOpts): WinParts {
   }
   const body = h('div.pg-body');
   const foot = h('div.pg-foot');
+  if (o.hints) foot.append(hintBar(o.hints));
   const win = h('div.pg-win', null, head, divider(), body, foot);
   if (o.cls) win.classList.add(...o.cls.split(' '));
   if (o.size) win.classList.add('pg-size-' + o.size);
+  if (o.dock && o.dock !== 'center') win.classList.add('pg-dock-' + o.dock);
   if (o.width) win.style.width = o.width;
   if (o.height) win.style.height = o.height;
   return { win, head, titleEl, body, foot };

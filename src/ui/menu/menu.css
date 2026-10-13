@@ -114,7 +114,6 @@
   text-align: center; padding-bottom: 8px; border-bottom: 1px solid rgba(201,154,69,.45);
   text-shadow: 0 2px 4px #000;
 }
-.efs-hint { font-size: 14px; color: var(--text-dim); text-align: center; }
 
 /* right command stack */
 .efs-stack {

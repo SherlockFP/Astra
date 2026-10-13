@@ -5,6 +5,7 @@ import {
 import type { ItemInstance } from '../../../types/items';
 import { getMaterial } from '../../../data/materials';
 import { GamePanel, askConfirm, bar, button, fmtInt, h, icon, itemTile, openPanel, sfx, toast, windowFrame } from './base';
+import { emptyState } from '../../kit';
 
 const KIND_ICONS: Record<string, string> = {
   salvage: '/assets/icons/ui-gears.svg',
@@ -38,11 +39,11 @@ export class BountyPanel extends GamePanel {
   private timer = 0;
 
   constructor() {
-    super('bounty', { backdropClose: true });
+    super('bounty', { backdropClose: true, modal: false });
   }
 
   protected build(): void {
-    const { win, body, foot } = windowFrame({ title: 'İlan Tahtası', icon: '/assets/icons/ui-quest.svg', cls: 'pg-bounty', onClose: () => this.requestClose() });
+    const { win, body, foot } = windowFrame({ title: 'İlan Tahtası', icon: '/assets/icons/ui-quest.svg', cls: 'pg-bounty', size: 'M', onClose: () => this.requestClose() });
     this.sumEl = h('div.pg-bt-sum');
     this.timeEl = h('div.pg-bt-time');
     this.moneyEl = h('div.pg-bt-money');
@@ -98,7 +99,7 @@ export class BountyPanel extends GamePanel {
     this.moneyEl.append(icon(getMaterial('av_muhru')?.icon ?? '/assets/icons/item-coins.svg'), h('span', null, 'Av Mührü: '), h('b', null, fmtInt(seals)));
     this.listEl.innerHTML = '';
     if (!list.length) {
-      this.listEl.append(h('div.pg-empty', null, 'Bugün için ilan yok. Yarın tekrar gel!'));
+      this.listEl.append(emptyState({ icon: '/assets/icons/ui-quest.svg', title: 'Bugünün görevleri tamamlandı', text: "Yeni görevler her sabah 04:00'te gelir." }));
     } else for (const b of list) this.listEl.append(this.card(b));
     this.renderExtra(list);
   }
@@ -306,11 +307,11 @@ export class TrainerPanel extends GamePanel {
   private bodyEl!: HTMLElement;
 
   constructor() {
-    super('trainer', { backdropClose: true });
+    super('trainer', { backdropClose: true, modal: false });
   }
 
   protected build(): void {
-    const { win, body, foot } = windowFrame({ title: 'Yetenek Eğitmeni', icon: '/assets/icons/ui-talent-tree.svg', cls: 'pg-trainer', onClose: () => this.requestClose() });
+    const { win, body, foot } = windowFrame({ title: 'Yetenek Eğitmeni', icon: '/assets/icons/ui-talent-tree.svg', cls: 'pg-trainer', size: 'S', onClose: () => this.requestClose() });
     this.bodyEl = body;
     foot.append(button('Kapat', () => this.requestClose(), { variant: 'ghost' }));
     this.el.append(win);

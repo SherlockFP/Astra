@@ -16,10 +16,12 @@ export interface PanelOpts {
   width: number;
   /** Natural height (the window scrolls its body when the viewport is smaller). */
   height: number;
-  /** Default top-left position for a given viewport (used when `dock` is not set). */
-  pos(vw: number, vh: number, w: number, h: number): [number, number];
-  /** UX-51 (section 7.1): default dock, centred top 56 px for 'center'; 24 px from the edge for 'left' / 'right'. */
+  /** Legacy default top-left position; ignored when `dock` is set. */
+  pos?(vw: number, vh: number, w: number, h: number): [number, number];
+  /** UX-52b (section 7.1): default dock, top 56 px; 24 px from the edge for 'left' / 'right'. Default: 'center'. */
   dock?: 'left' | 'right' | 'center';
+  /** Footer key hints (section 7.6, "Tuş: açıklama"); the footer is shown only when a panel declares some. */
+  hints?: string[];
   className?: string;
 }
 
@@ -144,8 +146,10 @@ export abstract class ItemPanel implements UIPanel {
     this.titleEl.classList.add('pi-title');
     this.body = this.chrome.body as HTMLDivElement;
     this.body.classList.add('pi-body');
-    // item windows keep their buttons in the body: no footer bar
-    this.chrome.foot.hidden = true;
+    // item windows keep their buttons in the body: the footer (hints only) shows when the panel declares hints
+    const hints = opts.hints ?? [];
+    this.chrome.foot.hidden = hints.length === 0;
+    if (hints.length) this.chrome.setHints(hints);
     // the close button must not start a drag of the header
     this.head.querySelector('.k-x')?.addEventListener('pointerdown', (e) => e.stopPropagation());
     this.el.addEventListener('pointerdown', () => this.front(), true);
@@ -248,7 +252,7 @@ export abstract class ItemPanel implements UIPanel {
       this.y = saved.fy * vh;
       return;
     }
-    let [px, py] = this.opts.dock ? this.dockPos(this.opts.dock, vw, w) : this.opts.pos(vw, vh, w, this.opts.height);
+    let [px, py] = this.opts.pos && !this.opts.dock ? this.opts.pos(vw, vh, w, this.opts.height) : this.dockPos(this.opts.dock ?? 'center', vw, w);
     // cascade away from other open windows sitting on the same spot
     for (let n = 0; n < 6; n++) {
       const clash = Object.values(registry).some((p) => p && p !== this && p.isOpen && Math.abs(p.x - px) < 14 && Math.abs(p.y - py) < 14);

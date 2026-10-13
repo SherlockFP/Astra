@@ -60,6 +60,7 @@ selected in the menu.
 | **hud** | `src/ui/UI.ts`, `src/ui/hud/*`, `src/ui/widgets/*`, `src/ui/styles/*` (except panels-*.css and base.css tokens are append-only) | `G.ui` (panels registry, tooltips, toasts, confirm, loading), HUD |
 | **panels-items** | `src/ui/panels/items/*`, `src/ui/styles/panels-items.css` | `registerItemPanels(ui)` — inventory, character (3D preview), stash, vendor/alchemist, blacksmith (+N upgrade, efsun, sockets), skill book |
 | **panels-game** | `src/ui/panels/game/*`, `src/ui/styles/panels-game.css` | `registerGamePanels(ui)` — talents tree, keystone, run summary, M+ info/vault, settings, party/server browser, map, death, game menu, bounty, trainer, credits |
+| **ui-kit** | `src/ui/kit/*` (`chrome.ts` window shell, `controls.ts` key caps / chips / badges / icons, `index.ts`), `src/ui/styles/tokens.css`, `src/ui/styles/kit.css` | `buildChrome`, `buildTabs`, `hintBar`, `emptyState` (every window: `k-win` / `pg-win` / `pi-win` adapters; sizes S/M/L, docks left/right/center, footer key hints) |
 | **scenes** | `src/scenes/*`, `src/entities/NPC.ts`, concrete interactables in `src/entities/interactables/*` (implementing `entities/Interactable.ts`), `src/ui/menu/*` | Loading, 3D Menu (character select/create), Town, Dungeon scenes; NPC/interactables |
 | **net** | `src/net/*` | `G.net` (NetSession), `net/Replication.ts`, room browser data |
 

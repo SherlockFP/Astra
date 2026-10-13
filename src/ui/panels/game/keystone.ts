@@ -9,6 +9,8 @@ import {
   CLASS_META, DIFFICULTY_NAMES, GamePanel, affixChips, affixView, affixesForLevel, askConfirm, bindTip, button, clampN, dungeonArt, dungeonList, dungeonName, esc, fmtInt, h, icon,
   mmss, openPanel, pct, sfx, tabs, toast, windowFrame, type TabsHandle,
 } from './base';
+import { emptyState } from '../../kit';
+import { startRun } from './runStart';
 import {
   HEROIC_LEVEL, bestM0Sec, cardText, difficultyState, gateToast, isStartable, isUnderGeared, recommendedIlvl, requiredLevel, type DiffKind, type DiffState, type LadderDiff,
 } from './ladder';
@@ -68,11 +70,11 @@ export class KeystonePanel extends GamePanel {
   private returnTo: DungeonParams['returnTo'] = undefined;
 
   constructor() {
-    super('keystone', { backdropClose: true });
+    super('keystone', { backdropClose: true, modal: false });
   }
 
   protected build(): void {
-    const { win, body, foot } = windowFrame({ title: 'Kehanet Taşı', icon: '/assets/icons/item-keystone.svg', cls: 'pg-keystone', onClose: () => this.requestClose() });
+    const { win, body, foot } = windowFrame({ title: 'Kehanet Taşı', icon: '/assets/icons/item-keystone.svg', cls: 'pg-keystone', size: 'M', width: '900px', onClose: () => this.requestClose() });
     this.artEl = h('div.pg-ks-art');
     this.cardInfo = h('div.pg-ks-cardinfo');
     const card = h('div.pg-ks-card', null, this.artEl, this.cardInfo);
@@ -224,7 +226,7 @@ export class KeystonePanel extends GamePanel {
     const sel = holders.find((x) => x.peerId === this.selKeyOwner) ?? holders[0];
     if (!sel) {
       main.append(
-        h('div.pg-empty', null, 'Anahtarın yok. Bir zindanı Mitik 0 zorluğunda bitirince Kadim Anahtar Taşı kazanırsın.'),
+        emptyState({ icon: '/assets/icons/item-keystone.svg', title: 'Anahtarın yok', text: 'Bir zindanı Mitik 0 zorluğunda bitirince Kadim Anahtar Taşı kazanırsın.', action: { label: 'Zindan Bulucu', onClick: () => openPanel('finder') } }),
         h('div.pg-ks-linkrow', null, button('Anahtar Ustası', () => this.switchTab('svc'), { variant: 'ghost', icon: '/assets/icons/ui-anvil.svg' })),
       );
       return;
@@ -329,7 +331,10 @@ export class KeystonePanel extends GamePanel {
     // the leader may start with any member's key; everybody else only with their own
     const party = G.net.isAuthority ? this.holders().filter((ho) => !ho.isSelf).map((ho) => ho.key) : [];
 
-    main.append(h('div.pg-h', null, 'Zindan'));
+    main.append(
+      h('div.pg-ks-banner', null, h('span', null, "Grupla girmek mi istiyorsun? Zindan Bulucu'yu kullan."), button('Zindan Bulucu', () => openPanel('finder'), { variant: 'ghost', icon: '/assets/icons/ui-dungeon.svg' })),
+      h('div.pg-h', null, 'Zindan'),
+    );
     const grid = h('div.pg-ks-dgrid');
     for (const def of list) {
       const min = def.levelRange?.[0] ?? 0;
@@ -628,16 +633,10 @@ export class KeystonePanel extends GamePanel {
     };
   }
 
+  /** Start through runStart.ts (shared with the finder): host/offline moves the party, a client asks the host. */
   private go(params: DungeonParams): void {
     this.requestClose();
-    try {
-      // host/offline: moves the whole party; a client asks the host (NetSession validates and sets keyOwner to the requester)
-      if (G.net.isAuthority) G.net.requestScene('dungeon', params);
-      else G.net.requestSceneFromHost('dungeon', params);
-    } catch (e) {
-      console.error('[keystone] start failed', e);
-      toast('Zindan başlatılamadı.', 'error');
-    }
+    startRun(params);
   }
 
   private startMythicPlus(ho: Holder): void {

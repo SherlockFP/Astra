@@ -30,11 +30,11 @@ export class MplusInfoPanel extends GamePanel {
   private vaultEl: HTMLElement | null = null;
 
   constructor() {
-    super('mplusInfo', { backdropClose: true });
+    super('mplusInfo', { backdropClose: true, modal: false });
   }
 
   protected build(): void {
-    const { win, body, foot } = windowFrame({ title: 'Mitik+ Bilgisi', icon: '/assets/icons/ui-leaderboard.svg', cls: 'pg-mi', onClose: () => this.requestClose() });
+    const { win, body, foot } = windowFrame({ title: 'Mitik+ Bilgisi', icon: '/assets/icons/ui-leaderboard.svg', cls: 'pg-mi', size: 'L', onClose: () => this.requestClose() });
     this.bodyEl = body;
     foot.append(button('Kapat', () => this.requestClose(), { variant: 'ghost' }));
     this.el.append(win);

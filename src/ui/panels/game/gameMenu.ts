@@ -66,7 +66,9 @@ export class GameMenuPanel extends GamePanel {
       this.btns.append(button(label, fn, { variant: v, cls: 'pg-gm-btn', icon: ico }));
     mk('Devam', () => this.requestClose(), 'primary', '/assets/icons/ui-check.svg');
     mk('Ayarlar', () => openPanel('settings'), 'normal', '/assets/icons/ui-settings.svg');
+    mk('Başlangıç Rehberi', () => this.openGuide(), 'normal', '/assets/icons/ui-quest.svg');
     mk('Arayüzü Düzenle', () => this.editHud(), 'normal');
+    mk('Zindan Bulucu', () => this.openFinder(), 'normal', '/assets/icons/ui-dungeon.svg');
     mk('Grup / Sunucular', () => openPanel('party'), 'normal', '/assets/icons/ui-party.svg');
     if (inDungeon) mk(inOpenWorld() ? 'Şehre Dön' : 'Zindandan Ayrıl', () => void this.leaveDungeon(), 'danger', '/assets/icons/ui-exit.svg');
     mk('Karakter Seçimine Dön', () => void this.toCharSelect(), 'normal', '/assets/icons/ui-character.svg');
@@ -82,6 +84,17 @@ export class GameMenuPanel extends GamePanel {
       console.error('[gameMenu] HUD edit failed', e);
       toast('Arayüz düzenleme açılamadı.', 'error');
     }
+  }
+
+  /** Başlangıç Rehberi: reopens the welcome card (section 4.2). */
+  private openGuide(): void {
+    this.requestClose();
+    openPanel('welcome');
+  }
+
+  private openFinder(): void {
+    this.requestClose();
+    openPanel('finder');
   }
 
   private async leaveDungeon(): Promise<void> {

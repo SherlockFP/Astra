@@ -71,16 +71,17 @@ export class SettingsPanel extends GamePanel {
   private sfxTimer = 0;
 
   constructor() {
-    super('settings', { backdropClose: true });
+    super('settings', { backdropClose: true, modal: false });
   }
 
   protected build(): void {
-    const { win, body, foot } = windowFrame({ title: 'Ayarlar', icon: '/assets/icons/ui-settings.svg', cls: 'pg-set', onClose: () => this.requestClose() });
+    const { win, body, foot } = windowFrame({ title: 'Ayarlar', icon: '/assets/icons/ui-settings.svg', cls: 'pg-set', size: 'M', onClose: () => this.requestClose() });
     this.tabsH = tabs(
       [
         { id: 'gfx', label: 'Grafik', icon: '/assets/icons/ui-gears.svg' },
         { id: 'snd', label: 'Ses', icon: '/assets/icons/ui-speaker.svg' },
         { id: 'ctl', label: 'Kontroller', icon: '/assets/icons/ui-compass.svg' },
+        { id: 'ui', label: 'Arayüz', icon: '/assets/icons/ui-settings.svg' },
         { id: 'game', label: 'Oyun', icon: '/assets/icons/ui-character.svg' },
       ],
       (id) => {
@@ -118,6 +119,7 @@ export class SettingsPanel extends GamePanel {
     if (this.tab === 'gfx') this.renderGraphics();
     else if (this.tab === 'snd') this.renderAudio();
     else if (this.tab === 'ctl') this.renderControls();
+    else if (this.tab === 'ui') this.renderUi();
     else this.renderGame();
   }
 
@@ -587,28 +589,6 @@ export class SettingsPanel extends GamePanel {
         'Pasif Ağaç',
         this.flag('autoApplyPassives', 'Pasif puanları anında uygula', 'Yalnızca puan eklediğin taslak 1,5 sn sonra kendiliğinden uygulanır; geri alma içeren taslaklar Uygula ister'),
       ),
-      this.section(
-        'Arayüz',
-        row(
-          'Dövüş Ölçer',
-          selectBox<SettingsData['meterVisibility']>(
-            [
-              { value: 'auto', label: 'Otomatik' },
-              { value: 'always', label: 'Her zaman' },
-              { value: 'never', label: 'Kapalı' },
-            ],
-            G.settings.get('meterVisibility'),
-            (v) => G.settings.set('meterVisibility', v),
-          ),
-          'Otomatik: grupta, zindanda ve savaştan sonra 15 sn açık',
-        ),
-        this.flag('barGhostSlots', 'Boş Yuvaları Göster', 'Yetenek çubuğunda boş kareler görünür'),
-        this.flag('ufIcon', 'Oyuncu Simgesi', 'Oyuncu çerçevesinde sınıf simgesi'),
-        this.flag('showStats', 'Sohbette İstatistik Satırı', 'Kritik, hız, soğuma ve kaçınma özeti'),
-        this.flag('showMapInfo', 'Minimap Saati', 'Haritada yerel saat (FPS göstergesi açıksa kare hızı da)'),
-        this.flag('showTips', 'İpuçları', 'Yeni oyuncular için kısa ipuçları'),
-        this.flag('questArrow', 'Görev Oku', 'Takip edilen görevin hedefine ekran oku'),
-      ),
       this.section('Çevrimiçi', row('Oyuncu Adı', name, 'Boş bırakırsan karakter adın kullanılır'), row('Dil', h('span.pg-gold', null, 'Türkçe'))),
       this.section(
         'Kayıt',
@@ -625,6 +605,90 @@ export class SettingsPanel extends GamePanel {
       ),
     );
     this.bodyEl.append(divider());
+  }
+
+  /** Arayüz tab (section 7.3): UI size, density read-out, info toggles, HUD toggles, the edit mode and the tips reset. */
+  private renderUi(): void {
+    const ui = G.ui;
+    const density = document.querySelector<HTMLElement>('[data-density]')?.dataset.density ?? 'md';
+    const densityTr = density === 'lg' ? 'Geniş' : density === 'sm' ? 'Sıkı' : 'Orta';
+    this.bodyEl.append(
+      this.section(
+        'Boyut',
+        row(
+          'Arayüz Boyutu',
+          slider({
+            min: 0.7,
+            max: 1.5,
+            step: 0.05,
+            value: ui.userScale,
+            format: (v) => `%${Math.round(v * 100)}`,
+            onInput: (v) => ui.setUserScale(v),
+          }),
+          'Tüm arayüzü büyütür ya da küçültür (%70 – %150)',
+        ),
+        row('Yoğunluk', h('span.pg-gold', null, `Yoğunluk: ${densityTr}`), 'Ekran boyutuna göre kendiliğinden ayarlanır; yukarıdaki boyutla birlikte değişir'),
+      ),
+      this.section(
+        'Bilgi',
+        this.flag('showTips', 'Yardım İpuçları', 'Yeni oyuncular için kısa ipuçları'),
+        this.flag('questArrow', 'Görev Oku', 'Takip edilen görevin hedefine ekran oku'),
+        this.flag('showMapInfo', 'Minimap Saati', 'Haritada yerel saat (FPS göstergesi açıksa kare hızı da)'),
+        this.flag('showStats', 'İstatistik Satırı', 'Sohbette kritik, hız, soğuma ve kaçınma özeti'),
+      ),
+      this.section(
+        'Savaş ve Çubuklar',
+        row(
+          'Hasar Ölçer',
+          selectBox<SettingsData['meterVisibility']>(
+            [
+              { value: 'auto', label: 'Otomatik' },
+              { value: 'always', label: 'Hep' },
+              { value: 'never', label: 'Hiç' },
+            ],
+            G.settings.get('meterVisibility'),
+            (v) => G.settings.set('meterVisibility', v),
+          ),
+          'Otomatik: grupta, zindanda ve savaştan sonra 15 sn açık',
+        ),
+        this.flag('barGhostSlots', 'Boş Yuvaları Göster', 'Yetenek çubuğunda boş kareler görünür'),
+        this.flag('ufIcon', 'Oyuncu Simgesi', 'Oyuncu çerçevesinde sınıf simgesi'),
+      ),
+      this.section(
+        'Düzen',
+        row('Arayüzü Düzenle', button('Düzenle', () => this.editLayout(), { variant: 'primary' }), 'Çerçeveleri sürükle ve boyutlandır'),
+        row('İpuçları', button('İpuçlarını Sıfırla', () => this.resetTips(), { variant: 'ghost' }), 'Kapatılan yardım ipuçlarını yeniden gösterir'),
+      ),
+    );
+    this.bodyEl.append(divider());
+  }
+
+  /** Arayüzü Düzenle: closes the settings and starts the HUD layout editor. */
+  private editLayout(): void {
+    this.requestClose();
+    try {
+      G.ui.hud.startEdit();
+    } catch (e) {
+      console.error('[settings] HUD edit failed', e);
+      toast('Arayüz düzenleme açılamadı.', 'error');
+    }
+  }
+
+  /** İpuçlarını Sıfırla: clears the seen tip flags (`tip.<id>`) and turns the tips back on. */
+  private resetTips(): void {
+    const c = G.character;
+    if (c) {
+      for (const k of Object.keys(c.save.flags)) if (k.startsWith('tip.')) delete c.save.flags[k];
+      try {
+        c.persist();
+      } catch {
+        /* ignore */
+      }
+    }
+    G.settings.set('showTips', true);
+    sfx('ui_click');
+    toast('İpuçları yeniden gösterilecek.', 'success');
+    this.renderTab();
   }
 
   private async resetAll(): Promise<void> {

@@ -75,7 +75,7 @@ export class VendorPanel extends ItemPanel {
       icon: 'ui-shop.svg',
       width: 500,
       height: 540,
-      pos: () => [18, 56],
+      dock: 'left',
     });
   }
 

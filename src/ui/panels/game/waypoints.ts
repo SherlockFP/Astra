@@ -1,7 +1,8 @@
 import { G } from '../../../game/G';
 import { activeWorldRuntime } from '../../../scenes/world/WorldRuntime';
 import { waypointKnown, worldExtras } from '../../hud/questMarks';
-import { GamePanel, button, fmtInt, h, icon, sfx, toast, windowFrame } from './base';
+import { GamePanel, button, fmtInt, h, icon, openPanel, sfx, toast, windowFrame } from './base';
+import { emptyState } from '../../kit';
 
 /**
  * Işınlayıcı (fast-travel NPC, `waypoints` panel, opened by `teleporter` NPCs with data `{ npcId }`). Lists the stones this
@@ -15,11 +16,11 @@ export class WaypointsPanel extends GamePanel {
   private titleEl!: HTMLElement;
 
   constructor() {
-    super('waypoints', { backdropClose: true });
+    super('waypoints', { backdropClose: true, modal: false });
   }
 
   protected build(): void {
-    const { win, titleEl, body, foot } = windowFrame({ title: 'Işınlayıcı', icon: '/assets/icons/ui-portal.svg', cls: 'pg-waypoints', onClose: () => this.requestClose() });
+    const { win, titleEl, body, foot } = windowFrame({ title: 'Işınlayıcı', icon: '/assets/icons/ui-portal.svg', cls: 'pg-waypoints', size: 'M', onClose: () => this.requestClose() });
     this.titleEl = titleEl;
     this.bodyEl = h('div.pg-wp-body.pg-scroll');
     body.append(this.bodyEl);
@@ -63,7 +64,7 @@ export class WaypointsPanel extends GamePanel {
     );
 
     if (!known.length) {
-      this.bodyEl.append(h('div.pg-empty', null, 'Henüz Işınlanma Taşı keşfetmedin. Taşların yanından geçince keşfedersin.'));
+      this.bodyEl.append(emptyState({ icon: '/assets/icons/ui-portal.svg', title: 'Henüz taş keşfetmedin', text: 'Açık dünyada ışınlayıcı taşlara F ile dokun.', action: { label: 'Haritayı Aç', onClick: () => openPanel('map') } }));
       return;
     }
 

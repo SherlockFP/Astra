@@ -218,6 +218,15 @@ Audit verdict: scope is outrunning verification; the biggest risks are lost save
 ## Done
 - Core architecture, 13 modules, assets (KayKit, Kenney, itch packs, Blender-generated), 4 dungeons + town + open zone data, M+ system, P2P netcode (2026-10-13).
 - Haiku smoke test: 0 console errors across game + 13 dev pages (2026-10-13).
+- UI redesign W5 implemented (UX-52a game panels, UX-52b item panels, UX-60 cleanup; docs/UI_REDESIGN.md §8). Not scored yet: the Haiku QA + rubric score is still to run. Open from the spec: HUD font pass (see below), hex-to-token pass, quest "Haritada göster" focuses the map only (no pin), map giver pins and zone-progress card, skill book "other spec" filter, rarity frames on item slots, Settings Çubuk 2/3 toggles.
+
+  Re-measured §0.2 (counts from `src/ui/styles` and `src/ui/menu`, this pass):
+  | Metric | Doc "today" | Measured now |
+  |---|---|---|
+  | HUD px font declarations under 13 px (`hud*.css`) | 79 of 201 | 58 of 161 (metin2 included; shorthand `font:` counted) |
+  | Distinct px font sizes (all styles) | 38 | 39 |
+  | Hex colour literals / unique (styles + menu) | 1,970 / 599 | 1,864 / 620 |
+  The HUD and hex targets are not met; the counting method differs from the doc's, so compare trends, not absolute values.
 
 ## Implementation queue (orchestrator notes, 2026-10-13)
 Design docs done: GDD_V2 (8 WPs), GDD_OPENWORLD (WP1–WP8, 4 waves), GDD_CLASSES_V2 (NC01–NC62), GDD_LIFE (own plan).
