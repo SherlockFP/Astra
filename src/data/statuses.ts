@@ -79,6 +79,13 @@ export const STATUSES: Partial<Record<StatusId, StatusDef>> = {
   potion_cd: { id: 'potion_cd', name: 'İksir Bekleme', icon: I('item-potion-health'), kind: 'debuff' },
   act_slow: { id: 'act_slow', name: 'Saldırı', icon: I('buff-strength'), kind: 'debuff', stats: { moveSpeedPct: -1 }, hidden: true },
   act_root: { id: 'act_root', name: 'Saldırı', icon: I('buff-strength'), kind: 'debuff', hidden: true },
+  // ---- Taşkasa (SP-21, docs/dungeons/taskasa.md §5 / §9): boss and mechanic statuses ----
+  seismic_echo: { id: 'seismic_echo', name: 'Sismik Yankı', icon: I('debuff-bleed'), kind: 'debuff', dotType: 'physical', dispellable: true, defaultDuration: 30 },
+  seismic_ward: { id: 'seismic_ward', name: 'Sismik Kalkan', icon: I('buff-absorb'), kind: 'buff', defaultDuration: 6 },
+  earth_fracture: { id: 'earth_fracture', name: 'Yer Çatlağı', icon: I('debuff-armor-break'), kind: 'debuff', dotType: 'physical', maxStacks: 8, defaultDuration: 8 },
+  unstable_energy: { id: 'unstable_energy', name: 'Kararsız Enerji', icon: I('buff-crit'), kind: 'buff', dotType: 'shadow', maxStacks: 6, defaultDuration: 15 },
+  void_mark: { id: 'void_mark', name: 'Boşluk İşareti', icon: I('debuff-marked'), kind: 'debuff', maxStacks: 4, defaultDuration: 20 },
+  void_corruption: { id: 'void_corruption', name: 'Boşluk Yozlaşması', icon: I('debuff-curse'), kind: 'debuff', dotType: 'shadow', maxStacks: 12, vfx: 'curse_loop', defaultDuration: 12 },
 };
 
 // GDD_TALENTS (T0): the 13 talent statuses (compile-only stub until T8 / T9 fill data/statuses_talents.ts).
@@ -236,6 +243,14 @@ export const STATUS_RULES: Partial<Record<StatusId, StatusRule>> = {
   potion_cd: { stack: 'override' },
   act_slow: { stack: 'override', perMag: true, internal: true },
   act_root: { stack: 'override', internal: true },
+  // Taşkasa (SP-21): Sismik Kalkan -50% damage taken; Yer Çatlağı and Kararsız Enerji stack their DoT per stack (dotstack);
+  // Kararsız Enerji +8% damage dealt per stack; Boşluk İşareti +25% damage taken per stack; Boşluk Yozlaşması is the max-HP rot (1 % per stack at 0.35 %)
+  seismic_echo: { stack: 'refresh' },
+  seismic_ward: { stack: 'refresh', takenMore: -0.5 },
+  earth_fracture: { stack: 'dotstack' },
+  unstable_energy: { stack: 'dotstack', dealtMore: 0.08 },
+  void_mark: { stack: 'stack', takenMorePerStack: 0.25 },
+  void_corruption: { stack: 'stack', maxHpPctPerSec: 0.0035 },
 };
 
 /** GDD_V2 §0.3 stack / immunity rules (WP5). HoTs use `hot` (magnitude = HP per second). */

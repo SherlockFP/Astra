@@ -139,7 +139,9 @@ export type StatusId =
   | 'arcane_lockdown' | 'withering_soul' | 'deep_wound' | 'ys_intensity' | 'ay_cesmesi'
   | 'mead_sticky' | 'rod_charged'
   // Kibir Tecessumu (P-27, append-only): Kibirli elite buff (+dmg, +move speed). StatusDef + STATUS_RULES registered by systems/Affixes.ts.
-  | 'kibirli';
+  | 'kibirli'
+  // Taşkasa (SP-21, append-only): boss and mechanic statuses, StatusDefs + STATUS_RULES rows in data/statuses.ts (docs/dungeons/taskasa.md §9).
+  | 'seismic_echo' | 'seismic_ward' | 'earth_fracture' | 'unstable_energy' | 'void_mark' | 'void_corruption';
 
 export interface StatusDef {
   id: StatusId;

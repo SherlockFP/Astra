@@ -202,7 +202,7 @@ const DOORS = [
 // Member offsets: front line (0.3,0) (-0.38,0.35) (0.06,-0.66) (0.48,0.62) (-0.88,-0.16) (0.83,-0.53) (-0.28,1.03) (-0.53,-1.02) (1.15,0.42) (-1.2,0.49), back line (1.1,-0.75) (1.35,0.1) (0.95,0.9).
 // ---------------------------------------------------------------------------------------------------------------------
 const PACKS: PackDef[] = [
-  pack('tk_p01', 'yaklasim', 25.5, 70, 12, [['tk_hurda', 0.3, 0], ['tk_hurda', -0.38, 0.35], ['tk_hurda', 0.06, -0.66], ['tk_hurda', 0.48, 0.62], ['tk_hurda', -0.88, -0.16], ['tk_hurda', 0.83, -0.53], ['tk_hurda', -0.28, 1.03], ['tk_hurda', -0.53, -1.02], ['tk_onarici', 1.1, -0.75]], { dormant: { kind: 'egg', wakeRadius: 6 } }),
+  pack('tk_p01', 'yaklasim', 26, 66.5, 12, [['tk_hurda', 0.3, 0], ['tk_hurda', -0.38, 0.35], ['tk_hurda', 0.06, -0.66], ['tk_hurda', 0.48, 0.62], ['tk_hurda', -0.88, -0.16], ['tk_hurda', 0.83, -0.53], ['tk_hurda', -0.28, 1.03], ['tk_hurda', -0.53, -1.02], ['tk_onarici', 1.1, -0.75]], { dormant: { kind: 'egg', wakeRadius: 6 } }),
   pack('tk_p02', 'yaklasim', 30.5, 66, 12, [['tk_yukleyici', 0.3, 0], ['tk_yukleyici', -0.38, 0.35], ['tk_sozcu', 1.1, -0.75]]),
   pack('tk_p03', 'yaklasim', 40.5, 70.5, 13, [['tk_yukleyici', 0.3, 0], ['tk_yukleyici', -0.38, 0.35], ['tk_uluyan', 1.1, -0.75]]),
   pack('tk_p04', 'yaklasim', 41.5, 65.5, 14, [['tk_hurda', 0.3, 0], ['tk_hurda', -0.38, 0.35], ['tk_hurda', 0.06, -0.66], ['tk_hurda', 0.48, 0.62], ['tk_istilaci', 1.1, -0.75], ['tk_ruh', 1.35, 0.1]], { big: true }),
@@ -302,13 +302,13 @@ function dressRooms(p: (id: string, fn: (pr: Props, r: TileRect) => void) => voi
     q.row(M_RAIL, 31.5, 69, 31.5, 73, 5, { scale: 0.5, tint: 0x7a7f88 });
     q.row(M_RAIL, 38.5, 69, 38.5, 73, 5, { scale: 0.5, tint: 0x7a7f88 });
     // Hand-placed clutter and the wake piles of p01
-    pile(q, 25.5, 70, OFFS);
+    pile(q, 26, 66.5, OFFS);
     q.at(M_WAGON, 46.5, 69.5, { rot: 90, scale: 0.6, collide: true });
     q.row(M_BARREL_L, 22.8, 64, 22.8, 66.8, 3, { collide: true });
     q.at(M_SACKS, 22.5, 63.2, {});
     q.at(M_SACKS, 23.2, 68.2, {});
     q.at(M_CRATES, 24.2, 63.6, { collide: true });
-    q.at(M_CRATES, 24.8, 68.6, { collide: true });
+    q.at(M_CRATES, 23.6, 70.6, { collide: true });
     q.at(dg('rubble_large'), 45.5, 63.9, {});
     q.at(dg('rubble_large'), 48.8, 64.5, {});
     q.at(ks('resource-stone-large'), 23.2, 72.6, {});
@@ -520,7 +520,7 @@ function dressRooms(p: (id: string, fn: (pr: Props, r: TileRect) => void) => voi
     for (const [x, z] of [[71.1, 44], [71.1, 49], [71.1, 54.2]] as [number, number][]) {
       q.at(M_CRYSTAL, x, z, { scale: 2.0, tint: TEAL, emissive: TEAL, emissiveIntensity: 0.6, collide: true });
     }
-    for (const [x, z] of [[63.5, 50], [63.5, 53.5], [69, 58], [68.5, 42.5]] as [number, number][]) q.at(M_CRYSTAL, x, z, { scale: 1.0, tint: TEAL, emissive: TEAL, emissiveIntensity: 0.4 });
+    for (const [x, z] of [[63.5, 50], [63.5, 53.5], [69, 58], [68.5, 45.8]] as [number, number][]) q.at(M_CRYSTAL, x, z, { scale: 1.0, tint: TEAL, emissive: TEAL, emissiveIntensity: 0.4 });
     for (const z of [47, 51, 55]) q.at(ks('metal-panel'), 62.5, z, { rot: 90, collide: true });
     // East gallery (absolute 4.3): teal statues and rails
     for (const z of [47, 51, 55]) q.at(M_STATUE, 71.5, z, { scale: 2.0, tint: 0x5a9a98, y: 5.5 });

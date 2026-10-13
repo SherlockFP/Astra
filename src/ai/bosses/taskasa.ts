@@ -25,9 +25,6 @@ import type { BossScript, BossStrike } from './types';
  * OWNER: enemies module.
  */
 
-/** Ids of the SP-21 status batch. Cast here so this file compiles before the status registry carries every id. */
-const sid = (s: string): StatusId => s as StatusId;
-
 const MAX_SPIKES = 6;
 const PAIR: Record<string, string> = { boss_brokk: 'boss_dorlita', boss_dorlita: 'boss_brokk' };
 
@@ -127,9 +124,9 @@ function pickSparing(c: BossController, n: number, spare: Player | null): Player
 }
 
 /** SP-09 fallback for tankSwapHint: toast the tank once it holds `stacks` of `status`, and the highest-threat other player. */
-function tankSwapHint(c: BossController, status: string, stacks: number, text: string): void {
+function tankSwapHint(c: BossController, status: StatusId, stacks: number, text: string): void {
   const t = tankOf(c);
-  if (!t || t.statuses.stacks(sid(status)) < stacks) return;
+  if (!t || t.statuses.stacks(status) < stacks) return;
   const throttle: Record<number, number> = (c.state.swapAt ??= {});
   if (c.world.time - (throttle[t.id] ?? -99) < 6) return;
   throttle[t.id] = c.world.time;
@@ -148,8 +145,8 @@ function tankSwapHint(c: BossController, status: string, stacks: number, text: s
 }
 
 /** SP-08 fallback: removal of a status on the host. Remote owners are not told (see the report: needs a removed branch in Combat). */
-function removeStatus(p: Player, status: string): void {
-  p.statuses.remove(sid(status));
+function removeStatus(p: Player, status: StatusId): void {
+  p.statuses.remove(status);
 }
 
 /** Common posture-break reaction: stun + vulnerability, and cancel the current windup (never the uninterruptible Shatter). */
@@ -232,7 +229,7 @@ function pairBreak(c: BossController): void {
 function spawnSpike(c: BossController, p: Pt): void {
   const spikes = c.adds('spike');
   if (spikes.length >= MAX_SPIKES) spikes[0].escape();
-  spawnMech(c, 'proc_volatile_spike', p, { tag: 'spike' });
+  spawnMech(c, 'tk_proc_volatile_spike', p, { tag: 'spike' });
 }
 
 /** Spikes within 1.2 m of a line (x,z, ang, length, width) are destroyed (beams, the sweep). */
@@ -252,7 +249,7 @@ function clearSpikesAlong(c: BossController, x: number, z: number, ang: number, 
 function detonateSpike(c: BossController, s: Enemy): void {
   circle(c, s.position.x, s.position.z, 8, 0.05, 1.0, {
     knockback: 6, type: 'physical', name: 'Kararsız Patlama', vfxOnLand: 'ground_slam',
-    statuses: [{ status: sid('earth_fracture'), duration: 8, stacks: 1 }],
+    statuses: [{ status: 'earth_fracture', duration: 8, stacks: 1 }],
   });
   s.escape();
 }
@@ -261,7 +258,7 @@ function registerEchoes(c: BossController, radius: number): void {
   const e = c.e;
   const list = (c.state.echoes ??= []) as Array<{ pid: number; t0: number }>;
   for (const p of playersIn(c, e.position.x, e.position.z, radius)) {
-    if (p.statuses.has(sid('seismic_echo'))) list.push({ pid: p.id, t0: c.world.time });
+    if (p.statuses.has('seismic_echo')) list.push({ pid: p.id, t0: c.world.time });
   }
 }
 
@@ -311,10 +308,10 @@ const seda: BossScript = {
         echoes.splice(echoes.indexOf(w), 1);
         continue;
       }
-      if (p && !p.statuses.has(sid('seismic_echo'))) {
+      if (p && !p.statuses.has('seismic_echo')) {
         echoes.splice(echoes.indexOf(w), 1);
         const t = tankOf(c);
-        if (t) statusPlayer(t, sid('seismic_ward'), 6);
+        if (t) statusPlayer(t, 'seismic_ward', 6);
       }
     }
   },
@@ -512,7 +509,7 @@ const skarmorak: BossScript = {
     // Unstable fragments: the first touch within 1.2 m gives Kararsız Enerji
     for (const o of c.adds('frag')) {
       for (const p of playersIn(c, o.position.x, o.position.z, 1.2)) {
-        statusPlayer(p, sid('unstable_energy'), 15, { stacks: 1 });
+        statusPlayer(p, 'unstable_energy', 15, { stacks: 1 });
         o.escape();
         break;
       }
@@ -571,7 +568,7 @@ const skarmorak: BossScript = {
         const land = b.delay + 1.6;
         for (const p of pts) circle(c, p.x, p.z, 3, land, 1.6, { type: 'physical', name: 'Kristal Düşüşü' });
         c.schedule(land, () => {
-          for (const p of pts) spawnMech(c, 'proc_crystal_shard', p, { hpMult: 3 * partyHp(c), tag: 'shard' });
+          for (const p of pts) spawnMech(c, 'tk_proc_crystal_shard', p, { hpMult: 3 * partyHp(c), tag: 'shard' });
         }, 'shards');
       },
     },
@@ -995,7 +992,7 @@ function riftTick(c: BossController, dt: number): void {
     }
     for (const p of c.playersInArena()) {
       const d = distXZ(r.x, r.z, p.position.x, p.position.z);
-      const eligible = d >= 3.4 && d <= 15 && p.statuses.has(sid('void_corruption'));
+      const eligible = d >= 3.4 && d <= 15 && p.statuses.has('void_corruption');
       if (!eligible) {
         delete r.hold[p.id];
         continue;
@@ -1117,7 +1114,7 @@ const eirich: BossScript = {
     // Void Corruption ramp: +1 stack to every living player every 3 s once the first Corruption has been cast
     if (st.corrOn) {
       every(st, 'corrT', dt, 3, () => {
-        for (const p of c.playersInArena()) statusPlayer(p, sid('void_corruption'), 12, { stacks: 1 });
+        for (const p of c.playersInArena()) statusPlayer(p, 'void_corruption', 12, { stacks: 1 });
       });
     }
     if (st.collapse) every(st, 'soft', dt, 5, () => (c.dmgMul *= 1.05));
@@ -1173,7 +1170,7 @@ const eirich: BossScript = {
         const ang = angleTo(e.position.x, e.position.z, t.position.x, t.position.z);
         wedge(c, e.position.x, e.position.z, ang, 4.5, 90, b.delay, 4.2, {
           type: 'shadow', perilous: true, name: 'Boşluk Kavrayışı',
-          statuses: [{ status: sid('void_mark'), duration: 20, stacks: 2 }],
+          statuses: [{ status: 'void_mark', duration: 20, stacks: 2 }],
         });
         c.schedule(b.delay + 0.05, () => {
           if (t.isDead || t.removed) return;
@@ -1192,7 +1189,7 @@ const eirich: BossScript = {
         c.state.corrOn = true;
       },
       resolve(c) {
-        for (const p of c.playersInArena()) statusPlayer(p, sid('void_corruption'), 12, { stacks: 1 });
+        for (const p of c.playersInArena()) statusPlayer(p, 'void_corruption', 12, { stacks: 1 });
       },
     },
 
@@ -1259,8 +1256,8 @@ export const TASKASA_SCRIPTS: Record<string, BossScript> = {
 };
 
 export const TASKASA_SPAWNS: Record<string, string[]> = {
-  boss_seda: ['proc_volatile_spike'],
-  boss_skarmorak: ['proc_crystal_shard', 'proc_unstable_fragment'],
+  boss_seda: ['tk_proc_volatile_spike'],
+  boss_skarmorak: ['tk_proc_crystal_shard', 'proc_unstable_fragment'],
   boss_brokk: ['proc_scrap_cube', 'proc_magma_blob'],
   boss_dorlita: ['proc_scrap_cube', 'proc_magma_blob'],
   boss_eirich: ['proc_void_rift', 'tk_ruh', 'tk_uluyan', 'tk_hurda', 'tk_yagmaci'],

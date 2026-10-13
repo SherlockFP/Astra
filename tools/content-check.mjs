@@ -279,7 +279,9 @@ if (!want.length || want.includes('sisli_vadi') || want.includes('quests')) {
   for (const i of xw) console.log('  warn', i.where, '-', i.msg);
 }
 if (!want.length || want.includes('town')) {
-  const t = cc.checkTown(TOWN, models, DUNGEON_ALL, OPEN_ZONE_IDS);
+  // season dungeons (DungeonDef.season / endgame) enter through the world (src/data/world/entrances.ts), not a town portal
+  const portalDungeons = DUNGEON_ALL.filter((id) => !ALL[id].season && !ALL[id].endgame);
+  const t = cc.checkTown(TOWN, models, portalDungeons, OPEN_ZONE_IDS);
   const e = t.issues.filter((i) => i.level === 'error'), w = t.issues.filter((i) => i.level === 'warn');
   totalErr += e.length;
   console.log(`\n== town: ${e.length} errors, ${w.length} warns | props ${t.stats.props} npcs ${t.stats.npcs} lights ${t.stats.lights} models ${t.stats.models}`);

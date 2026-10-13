@@ -4,8 +4,7 @@
  *
  * Built with the enemy kit (enemyKit.ts) through `def()` and the ability builders. Nothing here touches the global
  * ENEMIES / BOSSES registries; the dungeon wiring merges TASKASA_ENEMIES and TASKASA_BOSSES itself.
- * Status ids that are not in StatusId yet (fracture, void_infection, void_mark, seismic_echo, seismic_ward,
- * void_corruption) are left off the abilities; see the report for the list.
+ * Status ids that are not in StatusId yet (fracture, void_infection) are left off the abilities; see the report for the list.
  */
 import type { BossArena, BossDef, BossPhase, EnemyDef } from '../types/enemies';
 import type { FamilyId } from '../types/v2';
@@ -147,7 +146,7 @@ const TRASH_DEFS: EnemyDef[] = [
       aoe('tk_yukleyici_pounce', 'Ezici Atılış', 'ground_aoe', 3, 14, 11, 1.2, 4.5, 'physical', 'Attack', 0.67,
         { initialCooldown: 5, perilous: true, telegraph: true, params: { target: 1, minRange: 5, leap: 1 } }),
       cone('tk_yukleyici_shove', 'Omuz Darbesi', 3, 60, 12, 1.6, 'Attack2', 0.57,
-        { initialCooldown: 6, windup: 0.85, knockback: 4, telegraph: true }),
+        { initialCooldown: 6, windup: 0.86, knockback: 4, telegraph: true }),
     ],
   }),
   // ---- caster: Boşluğa Bağlı Uluyan (forces 5, poise 24) ----
@@ -172,7 +171,7 @@ const TRASH_DEFS: EnemyDef[] = [
     abilities: [
       aoe('tk_ruh_fear', 'Uluyan Korku', 'self_aoe', 18, 18, 16, 2.0, 0, 'shadow', 'No', 0.6,
         { castTime: 2.0, interruptible: true, kick: 2, initialCooldown: 6, dispel: 'fear', statuses: [{ status: 'fear', duration: 3 }], vfx: 'shadow_burst', sfx: 'boss_cast' }),
-      line('tk_ruh_dive', 'Ruh Dalışı', 8, 1.6, 9, 0.7, 1.0, 'shadow', 'Punch', 0.33, { initialCooldown: 4, vfx: 'shadow_burst' }),
+      line('tk_ruh_dive', 'Ruh Dalışı', 8, 1.6, 9, 0.9, 1.0, 'shadow', 'Punch', 0.33, { initialCooldown: 4, vfx: 'shadow_burst' }),
     ],
   }),
   // ---- caster: Lanetli Yürek İstilacısı (forces 5, poise 24) ----
@@ -278,8 +277,8 @@ const TRASH_DEFS: EnemyDef[] = [
 // SP-15 mech proc entities (flying / blocker flags as the row says; `invulnerable` has no field and is dropped)
 // =====================================================================================================================
 const MECH_DEFS: EnemyDef[] = [
-  mech('proc_volatile_spike', 'Sivri Taş', 'volatile_spike', 1, { radius: 0.7, visual: { blocker: 0.7 } }),
-  mech('proc_crystal_shard', 'Kristal Kıymığı', 'crystal_shard', 3, { radius: 1.0, visual: { blocker: 1.0 } }),
+  mech('tk_proc_volatile_spike', 'Sivri Taş', 'volatile_spike', 1, { radius: 0.7, visual: { blocker: 0.7 }, ai: { summoned: true, stationary: true } }),
+  mech('tk_proc_crystal_shard', 'Kristal Kıymığı', 'crystal_shard', 3, { radius: 1.0, visual: { blocker: 1.0 }, ai: { summoned: true, stationary: true } }),
   mech('proc_unstable_fragment', 'Kararsız Parça', 'unstable_fragment', 0.02, { radius: 0.5, flying: true, visual: { spin: 1.5 } }),
   mech('proc_scrap_cube', 'Hurda Küpü', 'scrap_cube', 99, { radius: 1.0, speed: 22 }),
   mech('proc_magma_blob', 'Erimiş Damla', 'magma_blob', 0.3, { radius: 0.6, speed: 5 }),
