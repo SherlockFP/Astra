@@ -168,6 +168,15 @@ Audit verdict: scope is outrunning verification; the biggest risks are lost save
     (town ≤ 400 calls / 250k tris, dungeon ≤ 500 / 350k, open world ≤ 600 / 400k, ≤ 10 lights).
   - Process: version history (git, local only) needs the user's OK; until then scratchpad snapshots before each block.
 
+**Batch 10 (user) — Mythic+ Season 1 pool: 8 WoW-style dungeons ("M+ çok önemli")** — designs in docs/dungeons/*.md
+  - Yıldız Divanı (Court of Stars), Yiğitler Sarayı (Halls of Valor), Leş Uyanışı (Necrotic Wake), Peri Sisleri (Mists
+    of Tirna Scithe), Kefaret Salonları (Halls of Atonement), Yankı Ağı (Ara-Kara), Taşkasa (Stonevault), Büyücüler
+    Terası (Magisters' Terrace, Midnight). Art, layout, set pieces and bosses very close to WoW; level-60 season pool,
+    the existing 4 dungeons stay as levelling dungeons. Entrances spread across the endgame zones with grand gates.
+  - Order: designs → shared NEW primitives once (boss kit: intermission, soak, spread, tank-swap, beams, add waves;
+    trash kick/dispel flags; set-piece mechanics) → per-dungeon Haiku packages (data, bosses, enemies, theme/props,
+    Blender assets) → QA per dungeon.
+
 **Batch 9 (user, 2026-10-13 late) — WoW kits, balance, Pazar** — normative spec: docs/CORE_MECHANICS.md
   - Opus-designed core mechanics (§1–§8): 11 classes / 27 specs (+İblis Avcısı, +Ejderhasoy, +Haydut Gölge), every class
     a tank or healer option where WoW has one, party buffs, WoW stat model, DPS within ±3 % at BiS (SimBench + auto-tuner
