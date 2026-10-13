@@ -450,6 +450,8 @@ export class PartyPanel extends GamePanel {
 
     // actions
     this.actionsEl.innerHTML = '';
+    // UX-40: the finder is the front door to every instance (Zindan Bulucu, key I)
+    this.actionsEl.append(button('Zindan Bulucu', () => G.ui.openPanel('finder'), { variant: 'normal', icon: '/assets/icons/ui-dungeon.svg' }));
     if (online) {
       this.actionsEl.append(
         button(me?.ready ? 'Hazır Değilim' : 'Hazırım', () => this.setReady(!me?.ready), { variant: me?.ready ? 'ghost' : 'primary', icon: '/assets/icons/ui-check.svg' }),

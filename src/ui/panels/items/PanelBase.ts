@@ -1,7 +1,8 @@
 import { G } from '../../../game/G';
 import type { EventScope } from '../../../core/EventBus';
 import type { UIPanel } from '../../UI';
-import { h, hideTips, sfx, clamp } from './common';
+import { buildChrome, buildTabs, type Chrome } from '../../kit';
+import { hideTips, sfx, clamp } from './common';
 
 /** Every panel of this module by id (filled by registerItemPanels). */
 export const registry: Record<string, ItemPanel | undefined> = {};
@@ -13,10 +14,12 @@ export interface PanelOpts {
   /** css icon file inside /assets/icons */
   icon?: string;
   width: number;
-  /** Natural height, used for fitting the window into small viewports. */
+  /** Natural height (the window scrolls its body when the viewport is smaller). */
   height: number;
-  /** Default top-left position for a given viewport. */
+  /** Default top-left position for a given viewport (used when `dock` is not set). */
   pos(vw: number, vh: number, w: number, h: number): [number, number];
+  /** UX-51 (section 7.1): default dock, centred top 56 px for 'center'; 24 px from the edge for 'left' / 'right'. */
+  dock?: 'left' | 'right' | 'center';
   className?: string;
 }
 
@@ -27,43 +30,26 @@ export interface TabsHandle {
   badge(id: string, text: string): void;
 }
 
-/** Leather tab strip used by several panels. */
+/** Tab strip used by several panels (kit `.k-tab` look). Same signature as before the UX-51 shell. */
 export function makeTabs(items: { id: string; label: string; icon?: string }[], onChange: (id: string) => void, cls = ''): TabsHandle {
-  const el = h('div', `pi-tabs ${cls}`);
-  const btns = new Map<string, HTMLButtonElement>();
-  let cur = items[0]?.id ?? '';
-  const set = (id: string, silent = false) => {
-    cur = id;
-    for (const [k, b] of btns) b.classList.toggle('on', k === id);
-    if (!silent) onChange(id);
-  };
-  for (const it of items) {
-    const b = h('button', 'pi-tab');
-    if (it.icon) {
-      const i = h('i', 'pi-tab-ico');
-      i.style.setProperty('--ico', `url("/assets/icons/${it.icon}")`);
-      b.append(i);
-    }
-    b.append(h('span', 'pi-tab-label', it.label), h('em', 'pi-tab-badge'));
-    b.addEventListener('click', () => {
-      if (cur !== it.id) sfx('ui_tab');
-      set(it.id);
-    });
-    btns.set(it.id, b);
-    el.append(b);
-  }
-  set(cur, true);
-  return {
-    el,
-    set,
-    get: () => cur,
-    badge: (id, text) => {
-      const b = btns.get(id)?.querySelector('em');
-      if (b) {
-        b.textContent = text;
-        (b as HTMLElement).style.display = text ? '' : 'none';
-      }
+  const kit = buildTabs(
+    items.map((t) => ({ id: t.id, label: t.label, icon: t.icon ? `/assets/icons/${t.icon}` : undefined })),
+    (id) => {
+      sfx('ui_tab');
+      onChange(id);
     },
+    items[0]?.id,
+  );
+  kit.el.classList.add('pi-tabs', ...cls.split(' ').filter(Boolean));
+  return {
+    el: kit.el,
+    // set(id) always reports the change (the old helper did), even when the tab is already current
+    set: (id, silent = false) => {
+      if (silent || kit.current() !== id) kit.select(id, silent);
+      else if (!silent) onChange(id);
+    },
+    get: () => kit.current(),
+    badge: (id, text) => kit.badge(id, text),
   };
 }
 
@@ -106,9 +92,19 @@ export function closePanel(id: string): void {
   if (p && p.isOpen) p.close();
 }
 
+/** Window position key (UX-51): fractions of the viewport, so a saved place survives a resolution change. */
+const posKey = (id: string): string => `efsun.win.v1.${id}`;
+
+/** Visual zoom of the HUD (`--ui-scale`, floor 0.9 like the kit window shell). */
+function uiZoom(el: HTMLElement): number {
+  const v = parseFloat(getComputedStyle(el).getPropertyValue('--ui-scale'));
+  return Math.max(0.9, Number.isFinite(v) && v > 0 ? v : 1);
+}
+
 /**
- * Base class: a draggable leather window with a gold-trimmed title bar and a close button.
+ * Base class: a draggable kit window (`.k-win`, section 7.1) with a header, a close button and a body.
  * Subclasses implement build() (once), refresh() (whenever open and data changed) and subscribe() for events.
+ * The frame comes from buildChrome(); the `pi-*` classes stay on the parts so the items sheet can target them.
  */
 export abstract class ItemPanel implements UIPanel {
   readonly id: string;
@@ -116,36 +112,42 @@ export abstract class ItemPanel implements UIPanel {
   isOpen = false;
   protected head: HTMLDivElement;
   protected body: HTMLDivElement;
-  protected titleEl: HTMLSpanElement;
+  protected titleEl: HTMLElement;
   protected scope: EventScope | null = null;
+  private chrome: Chrome;
   private built = false;
+  /** Visual position in viewport px (the style is written divided by the zoom). */
   private x = 0;
   private y = 0;
-  private fit = 1;
   private onResize = () => this.layout(false);
 
   constructor(id: string, protected opts: PanelOpts) {
     this.id = id;
-    this.el = h('div', `pi-win pi-win-${id} ${opts.className ?? ''}`);
-    this.el.style.width = `${opts.width}px`;
-    this.el.style.display = 'none';
-    this.head = h('div', 'pi-head');
-    if (opts.icon) {
-      const i = h('i', 'pi-head-ico');
-      i.style.setProperty('--ico', `url("/assets/icons/${opts.icon}")`);
-      this.head.append(i);
-    }
-    this.titleEl = h('span', 'pi-title', opts.title);
-    const x = h('button', 'pi-x', '✕');
-    x.title = 'Kapat';
-    x.addEventListener('pointerdown', (e) => e.stopPropagation());
-    x.addEventListener('click', () => {
-      sfx('ui_click');
-      closePanel(this.id);
+    this.chrome = buildChrome({
+      title: opts.title,
+      icon: opts.icon ? `/assets/icons/${opts.icon}` : undefined,
+      onClose: () => {
+        sfx('ui_click');
+        closePanel(this.id);
+      },
     });
-    this.head.append(this.titleEl, x);
-    this.body = h('div', 'pi-body');
-    this.el.append(h('i', 'pi-corner tl'), h('i', 'pi-corner tr'), h('i', 'pi-corner bl'), h('i', 'pi-corner br'), this.head, this.body);
+    this.el = this.chrome.root as HTMLDivElement;
+    this.el.classList.add('pi-win', `pi-win-${id}`);
+    if (opts.className) this.el.classList.add(...opts.className.split(' '));
+    this.el.style.width = `${opts.width}px`;
+    // the kit default size class (M) would pin the height to 600 px: item windows size to their content (max-height from the kit)
+    this.el.style.height = 'auto';
+    this.el.style.display = 'none';
+    this.head = this.chrome.head as HTMLDivElement;
+    this.head.classList.add('pi-head');
+    this.titleEl = this.chrome.titleEl;
+    this.titleEl.classList.add('pi-title');
+    this.body = this.chrome.body as HTMLDivElement;
+    this.body.classList.add('pi-body');
+    // item windows keep their buttons in the body: no footer bar
+    this.chrome.foot.hidden = true;
+    // the close button must not start a drag of the header
+    this.head.querySelector('.k-x')?.addEventListener('pointerdown', (e) => e.stopPropagation());
     this.el.addEventListener('pointerdown', () => this.front(), true);
     this.el.addEventListener('contextmenu', (e) => e.preventDefault());
     this.bindWindowDrag();
@@ -162,7 +164,7 @@ export abstract class ItemPanel implements UIPanel {
   protected onClose(): void {}
 
   setTitle(t: string): void {
-    this.titleEl.textContent = t;
+    this.chrome.setTitle(t);
   }
 
   open(data?: unknown): void {
@@ -235,51 +237,65 @@ export abstract class ItemPanel implements UIPanel {
     }
   };
 
+  /** Saved place (fractions of the viewport) or the dock / pos() default, cascaded away from other open windows. */
   private placeDefault(): void {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
     const w = this.opts.width;
-    const hh = this.opts.height;
-    let saved: { x: number; y: number } | null = null;
-    try {
-      const raw = localStorage.getItem(`pi.pos.${this.id}`);
-      if (raw) saved = JSON.parse(raw);
-    } catch {
-      saved = null;
+    const saved = this.loadPos();
+    if (saved) {
+      this.x = saved.fx * vw;
+      this.y = saved.fy * vh;
+      return;
     }
-    let [px, py] = saved && Number.isFinite(saved.x) && Number.isFinite(saved.y) ? [saved.x, saved.y] : this.opts.pos(window.innerWidth, window.innerHeight, w, hh);
-    if (!saved) {
-      // cascade away from other open windows sitting on the same spot
-      for (let n = 0; n < 6; n++) {
-        const clash = Object.values(registry).some((p) => p && p !== this && p.isOpen && Math.abs(p.x - px) < 14 && Math.abs(p.y - py) < 14);
-        if (!clash) break;
-        px += 30;
-        py += 30;
-      }
+    let [px, py] = this.opts.dock ? this.dockPos(this.opts.dock, vw, w) : this.opts.pos(vw, vh, w, this.opts.height);
+    // cascade away from other open windows sitting on the same spot
+    for (let n = 0; n < 6; n++) {
+      const clash = Object.values(registry).some((p) => p && p !== this && p.isOpen && Math.abs(p.x - px) < 14 && Math.abs(p.y - py) < 14);
+      if (!clash) break;
+      px += 28;
+      py += 28;
     }
     this.x = px;
     this.y = py;
   }
 
-  /** Apply position + fit scale (small viewports). */
+  private dockPos(dock: 'left' | 'right' | 'center', vw: number, w: number): [number, number] {
+    if (dock === 'left') return [24, 56];
+    if (dock === 'right') return [Math.max(8, vw - w - 24), 56];
+    return [Math.max(8, (vw - w) / 2), 56];
+  }
+
+  private loadPos(): { fx: number; fy: number } | null {
+    try {
+      const raw = localStorage.getItem(posKey(this.id));
+      if (!raw) return null;
+      const v = JSON.parse(raw) as { fx?: unknown; fy?: unknown };
+      return typeof v.fx === 'number' && typeof v.fy === 'number' ? { fx: v.fx, fy: v.fy } : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Keeps the window on screen and writes its left / top. The `.pi-win` rule carries the HUD zoom, so the style values are
+   * divided by it. Windows larger than the viewport scroll their body instead of being scaled.
+   */
   private layout(save: boolean): void {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const natW = this.opts.width;
-    const natH = this.el.offsetHeight || this.opts.height;
-    this.fit = Math.min(1, (vw - 12) / natW, (vh - 12) / natH);
-    const w = natW * this.fit;
-    const hh = natH * this.fit;
-    this.x = clamp(this.x, 4 - w + 120, vw - 120);
-    this.y = clamp(this.y, 0, Math.max(0, vh - 40));
-    // keep fully on screen when it fits
-    if (w < vw) this.x = clamp(this.x, 0, vw - w);
-    if (hh < vh) this.y = clamp(this.y, 0, vh - hh);
-    this.el.style.left = `${Math.round(this.x)}px`;
-    this.el.style.top = `${Math.round(this.y)}px`;
-    this.el.style.transformOrigin = '0 0';
-    this.el.style.transform = this.fit < 0.999 ? `scale(${this.fit.toFixed(4)})` : '';
+    const z = uiZoom(this.el);
+    const rect = this.el.getBoundingClientRect();
+    const visW = rect.width || this.opts.width * z;
+    const visH = rect.height || this.opts.height * z;
+    this.x = clamp(this.x, 0, Math.max(0, vw - visW));
+    this.y = clamp(this.y, 0, Math.max(0, vh - Math.min(40, visH)));
+    if (visH < vh) this.y = clamp(this.y, 0, vh - visH);
+    this.el.style.left = `${Math.round(this.x / z)}px`;
+    this.el.style.top = `${Math.round(this.y / z)}px`;
     if (save) {
       try {
-        localStorage.setItem(`pi.pos.${this.id}`, JSON.stringify({ x: Math.round(this.x), y: Math.round(this.y) }));
+        localStorage.setItem(posKey(this.id), JSON.stringify({ fx: this.x / vw, fy: this.y / vh }));
       } catch {
         /* ignore */
       }

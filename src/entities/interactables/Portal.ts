@@ -76,7 +76,7 @@ export class DungeonPortal extends InteractableProp {
   }
 
   get interactPrompt(): string {
-    return `${this.dungeonName}: Zindan Seçimi`;
+    return `${this.dungeonName}: Zindan Bulucu`;
   }
 
   async load(scale = 0.9): Promise<void> {
@@ -110,7 +110,7 @@ export class DungeonPortal extends InteractableProp {
 
   interact(_player: Player): void {
     G.audio.play('portal_enter', { volume: 0.5 });
-    G.ui.openPanel('keystone', { dungeonId: this.dungeonId });
+    G.ui.openPanel('finder', { dungeonId: this.dungeonId });
   }
 
   protected animate(dt: number): void {

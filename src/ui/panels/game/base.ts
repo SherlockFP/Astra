@@ -535,6 +535,8 @@ export interface WinOpts {
   cls?: string;
   width?: string;
   height?: string;
+  /** UX-50: optional size class (S 480 / M 780x600 / L 1180x720, section 7.1). Absent = the panel's own width. */
+  size?: 'S' | 'M' | 'L';
   noClose?: boolean;
   onClose?: () => void;
 }
@@ -559,6 +561,7 @@ export function windowFrame(o: WinOpts): WinParts {
   const foot = h('div.pg-foot');
   const win = h('div.pg-win', null, head, divider(), body, foot);
   if (o.cls) win.classList.add(...o.cls.split(' '));
+  if (o.size) win.classList.add('pg-size-' + o.size);
   if (o.width) win.style.width = o.width;
   if (o.height) win.style.height = o.height;
   return { win, head, titleEl, body, foot };
@@ -590,6 +593,8 @@ export function askConfirm(host: HTMLElement, text: string, okLabel = 'Evet', ca
 export interface PanelOpts {
   /** Clicking the dimmed backdrop closes the panel. */
   backdropClose?: boolean;
+  /** UX-50: modal windows get the dim backdrop; every other window leaves the world visible. Default: = backdropClose. */
+  modal?: boolean;
   /** Backdrop ignores the mouse (death screen): the card itself still captures it. */
   passthrough?: boolean;
   cls?: string;
@@ -605,6 +610,7 @@ export abstract class GamePanel implements UIPanel {
   constructor(readonly id: string, protected opts: PanelOpts = {}) {
     this.el = h('div.pg-root', { dataset: { panel: id } });
     if (opts.cls) this.el.classList.add(...opts.cls.split(' '));
+    if (opts.modal ?? opts.backdropClose) this.el.classList.add('is-modal');
     if (opts.passthrough) this.el.classList.add('pg-pass');
     else this.el.classList.add('panel', 'ui-capture');
     this.el.style.display = 'none';

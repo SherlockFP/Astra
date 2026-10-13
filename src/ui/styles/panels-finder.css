@@ -1,0 +1,253 @@
+/* UX-40 Zindan Bulucu (docs/UI_REDESIGN.md section 6). Flat ElvUI: tokens from tokens.css, kit classes (.k-card, .k-chip, .k-btn) from kit.css.
+   Everything is prefixed fd- and only the finder uses it. */
+
+.fd-split {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: var(--sp-4);
+  height: 100%;
+  min-height: 0;
+}
+.fd-list,
+.fd-detail { min-height: 0; overflow: auto; padding-right: 2px; }
+
+.fd-who { margin-bottom: var(--sp-2); font: 700 var(--fs-13)/1.2 var(--font-body); color: var(--text-3); }
+.fd-h {
+  margin: var(--sp-3) 0 var(--sp-2);
+  font: 700 var(--fs-13)/1 var(--font-body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-2);
+}
+.fd-dim { color: var(--text-3); }
+.fd-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ---- dungeon list ---- */
+.fd-card {
+  display: flex;
+  gap: var(--sp-2);
+  width: 100%;
+  height: 88px;
+  margin-bottom: 6px;
+  padding: 0;
+  text-align: left;
+  color: var(--text-1);
+  background: var(--bg-3);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-1);
+  box-shadow: inset 0 1px 0 var(--hi);
+  cursor: pointer;
+}
+.fd-card:hover { background: var(--bg-4); }
+.fd-card.is-sel { background: var(--bg-4); box-shadow: inset 0 0 0 1px var(--gold-2); }
+.fd-card.is-locked { opacity: 0.55; }
+.fd-art {
+  flex: none;
+  width: 88px;
+  height: 88px;
+  background: var(--bg-0) center / cover no-repeat;
+  border-right: 1px solid var(--ink);
+}
+.fd-ctext { display: flex; flex-direction: column; justify-content: center; gap: 4px; min-width: 0; padding-right: var(--sp-2); }
+.fd-ctext b { overflow: hidden; font: 700 var(--fs-17)/1.2 var(--font-body); text-overflow: ellipsis; white-space: nowrap; }
+.fd-ctext small { font: 400 var(--fs-13)/1.2 var(--font-body); color: var(--text-2); }
+
+.fd-pips { display: flex; flex-wrap: wrap; gap: 6px; font: 700 var(--fs-13)/1 var(--font-body); }
+.fd-pip { color: var(--text-4); }
+.fd-pip.is-open { color: var(--gold-2); }
+.fd-pip.is-cleared { color: var(--ok); }
+.fd-pip.is-filled { color: var(--text-2); }
+.fd-pip.fd-role--tank { color: var(--role-tank); }
+.fd-pip.fd-role--healer { color: var(--role-heal); }
+.fd-pip.fd-role--dps { color: var(--role-dps); }
+
+/* ---- role row (top of the detail pane) ---- */
+.fd-roles { display: flex; align-items: center; gap: 6px; height: 48px; margin-bottom: var(--sp-2); }
+.fd-role {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: var(--bg-1);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  opacity: 0.45;
+  cursor: pointer;
+}
+.fd-role:hover { opacity: 0.8; }
+.fd-role.is-on { opacity: 1; box-shadow: inset 0 0 0 1px currentColor; }
+.fd-role:disabled { opacity: 0.18; cursor: not-allowed; }
+.fd-role--tank { color: var(--role-tank); }
+.fd-role--healer { color: var(--role-heal); }
+.fd-role--dps { color: var(--role-dps); }
+.fd-role-g { font: 700 var(--fs-20)/1 var(--font-body); color: currentColor; }
+.fd-check { position: absolute; right: 3px; bottom: 1px; font: 700 var(--fs-12)/1 var(--font-body); font-style: normal; color: var(--ok); }
+.fd-lead {
+  height: 26px;
+  margin-left: 8px;
+  padding: 0 8px;
+  font: 700 var(--fs-13)/24px var(--font-body);
+  color: var(--text-4);
+  background: var(--bg-1);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-1);
+}
+.fd-lead.is-on { color: var(--gold-1); box-shadow: inset 0 0 0 1px var(--gold-4); }
+.fd-rolename { margin-left: auto; font: 400 var(--fs-13)/1.2 var(--font-body); color: var(--text-2); }
+
+/* ---- banner, lore ---- */
+.fd-banner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 144px;
+  margin-bottom: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--bg-0) center / cover no-repeat;
+  border: 1px solid var(--ink);
+  border-radius: var(--r-1);
+  box-shadow: inset 0 1px 0 var(--hi);
+}
+.fd-bname { font: 700 var(--fs-32)/1.1 var(--font-title); color: var(--gold-1); text-shadow: var(--sh-text); }
+.fd-bstats { display: flex; flex-wrap: wrap; gap: var(--sp-4); font: 700 var(--fs-14)/1 var(--font-body); color: var(--text-2); text-shadow: var(--sh-text); }
+.fd-bstats span { display: inline-flex; align-items: center; gap: 6px; }
+.fd-lore { max-height: 2.7em; margin: 0 0 var(--sp-2); overflow: hidden; font: 400 var(--fs-15)/1.35 var(--font-body); color: var(--text-2); }
+
+/* ---- difficulty selector ---- */
+.fd-diffs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.fd-diff {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 72px;
+  padding: 6px 8px;
+  text-align: left;
+  color: var(--text-1);
+  background: var(--bg-3);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-1);
+  box-shadow: inset 0 1px 0 var(--hi);
+  cursor: pointer;
+}
+.fd-diff:hover { background: var(--bg-4); }
+.fd-diff.is-sel { background: var(--bg-4); box-shadow: inset 0 0 0 1px var(--gold-2); }
+.fd-diff.is-locked { opacity: 0.55; }
+.fd-diff.is-cleared em { color: var(--ok); }
+.fd-dtop { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.fd-dtop b { font: 700 var(--fs-15)/1.2 var(--font-body); }
+.fd-diff small { font: 400 var(--fs-13)/1.2 var(--font-body); color: var(--text-2); }
+.fd-diff em { font: 400 var(--fs-13)/1.2 var(--font-body); font-style: normal; color: var(--text-3); }
+.fd-rec {
+  padding: 2px 5px;
+  font: 700 var(--fs-12)/1 var(--font-body);
+  color: var(--gold-1);
+  border-radius: var(--r-1);
+  box-shadow: inset 0 0 0 1px var(--gold-4);
+}
+
+.fd-lines { display: flex; flex-direction: column; gap: 4px; margin: var(--sp-2) 0 0; font: 400 var(--fs-14)/1.3 var(--font-body); color: var(--text-2); }
+.fd-recline.is-low { color: var(--bad); }
+.fd-warn { color: var(--bad); font: 400 var(--fs-14)/1.3 var(--font-body); }
+.fd-bosses { margin-top: var(--sp-2); }
+
+/* ---- Mitik+ rating card (collapsed by default) ---- */
+.fd-mplus { margin-top: var(--sp-3); padding: 0; }
+.fd-mplus-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  height: 36px;
+  padding: 0 var(--sp-3);
+  color: var(--text-1);
+  font: 700 var(--fs-14)/1 var(--font-body);
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.fd-mplus-head b { font-size: var(--fs-17); }
+.fd-mplus-head .fd-dim { margin-left: auto; font-weight: 400; }
+.fd-mplus-t { letter-spacing: 0.08em; color: var(--text-2); }
+.fd-mplus-caret { color: var(--text-3); }
+.fd-mplus-body { display: flex; flex-direction: column; gap: 8px; padding: 0 var(--sp-3) var(--sp-3); font: 400 var(--fs-14)/1.3 var(--font-body); }
+.fd-mplus-foot { padding: 0 var(--sp-3) var(--sp-3); }
+
+/* ---- footer strip: mode, status, party ---- */
+.fd-strip { display: flex; flex: none; flex-direction: column; gap: 6px; padding-top: 6px; }
+.fd-strip[hidden] { display: none; }
+.fd-strip-top { display: flex; align-items: center; gap: var(--sp-3); }
+.fd-modes { display: flex; gap: 4px; }
+.fd-mode.is-on { color: var(--gold-1); background: color-mix(in srgb, var(--gold-2) 18%, var(--bg-3)); box-shadow: inset 0 0 0 1px var(--gold-4); }
+.fd-status { margin-left: auto; font: 400 var(--fs-13)/1.2 var(--font-body); color: var(--text-3); text-align: right; }
+.fd-party { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.fd-pslot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+  height: 26px;
+  padding: 0 8px;
+  font: 700 var(--fs-13)/1 var(--font-body);
+  background: var(--bg-1);
+  border: 1px solid var(--ink);
+  border-left: 3px solid var(--gold-4);
+  border-radius: var(--r-0);
+}
+.fd-pslot.is-lead .fd-pname { color: var(--gold-1); }
+.fd-pslot.is-empty { justify-content: center; color: var(--text-4); background: transparent; border-style: dashed; }
+.fd-pname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fd-prole { flex: none; color: var(--text-3); }
+
+/* ---- Gruplar tab ---- */
+.fd-groups { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+.fd-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: var(--sp-2); }
+.fd-select {
+  height: 28px;
+  padding: 0 8px;
+  color: var(--text-1);
+  font: 400 var(--fs-14)/1 var(--font-body);
+  background: var(--bg-1);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-1);
+}
+.fd-trow {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.6fr) 96px minmax(120px, 1.3fr) 130px 48px 72px 74px;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 4px 8px;
+  color: var(--text-2);
+  font: 400 var(--fs-14)/1.2 var(--font-body);
+  background: var(--bg-3);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-1);
+}
+.fd-trow.fd-thead { min-height: 26px; color: var(--text-3); font-size: var(--fs-13); letter-spacing: 0.06em; text-transform: uppercase; background: var(--bg-2); }
+.fd-trow .fd-zn { overflow: hidden; color: var(--text-1); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.fd-trow.is-plain { opacity: 0.8; }
+.fd-other { margin-top: var(--sp-2); }
+.fd-other summary { padding: 4px 0; color: var(--text-3); font: 700 var(--fs-13)/1.4 var(--font-body); cursor: pointer; }
+.fd-empty-btns { display: flex; justify-content: center; gap: 8px; }
+
+/* ---- Raid tab ---- */
+.fd-raid { min-height: 0; }
+.fd-raidcard { position: relative; display: flex; flex-direction: column; gap: 6px; padding: var(--sp-4); }
+.fd-raidcard.is-dim { opacity: 0.8; }
+.fd-ribbon {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  padding: 4px 10px;
+  color: #15110a;
+  font: 700 var(--fs-13)/1 var(--font-body);
+  letter-spacing: 0.1em;
+  background: var(--gold-2);
+  border-radius: var(--r-1);
+}

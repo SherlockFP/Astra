@@ -269,7 +269,7 @@ export function panelForNpc(def: NpcDef): { id: string; data?: unknown } | null 
     case 'lobby':
       return { id: 'party' };
     case 'portal':
-      return { id: 'keystone', data: { dungeonId: def.dungeonId } };
+      return { id: 'finder', data: { dungeonId: def.dungeonId } };
     // open world (GDD_OPENWORLD §2.6): the fast-travel panel (quest givers returned above)
     case 'teleporter':
       return { id: 'waypoints', data: { npcId: def.id } };
