@@ -5,7 +5,7 @@ import { dg, fu, gp, hw, ip, kf, kg, kn, ks, tw } from './dungeons/kit';
 /**
  * KUZGUNKALE ("Kadim Zindanlarin Kapisi") - the hub town, GDD_CONTENT section 2. OWNER: content module.
  *
- * 120 x 120 m, origin at the centre, +x east, +z south. The north terrace (Kadim Kapilar Salonu) is raised +2 m; the four dungeon
+ * 320 x 320 m (WP-11: grown from 120 m, with outer districts and gates on the new wall), origin at the centre, +x east, +z south. The north terrace (Kadim Kapilar Salonu) is raised +2 m; the four dungeon
  * portals stand on it. World metres, rotations in degrees (yaw 0 faces +z = south, 180 faces north).
  *
  * What lives where:
@@ -39,16 +39,16 @@ bld('home_A', 'green', -36, 6, 90);
 bld('home_B', 'blue', -36, 18, 90);
 bld('tavern', 'yellow', 40, 42, -90);
 // East Gate (Doğu Kapısı, exit 'dogu_kapisi' -> Karakır Bozkırı): arch over the exit box x 58..62, z -4..4, lamps either side
-add(hw('arch'), 58, 0, { rot: 90, scale: 2 });
+add(hw('arch'), 158, 0, { rot: 90, scale: 2 });
 // West Gate (Batı Kapısı, exit 'bati_kapisi' -> Kızıl Sınır, the PvP zone, level 35+): the same arch, mirrored, with a blue and a red banner
-add(hw('arch'), -58, 0, { rot: 90, scale: 2 });
-add(gp('banner_blue'), -57, -6, { rot: 90, scale: 1.5 });
-add(gp('banner_red'), -57, 6, { rot: 90, scale: 1.5 });
-add(gp('lamp_post'), -56, -4, { light: { color: WARM, intensity: 0.35, distance: 6, flicker: true, y: 3 } });
-add(gp('lamp_post'), -56, 4, { light: { color: WARM, intensity: 0.35, distance: 6, flicker: true, y: 3 } });
+add(hw('arch'), -158, 0, { rot: 90, scale: 2 });
+add(gp('banner_blue'), -157, -6, { rot: 90, scale: 1.5 });
+add(gp('banner_red'), -157, 6, { rot: 90, scale: 1.5 });
+add(gp('lamp_post'), -156, -4, { light: { color: WARM, intensity: 0.35, distance: 6, flicker: true, y: 3 } });
+add(gp('lamp_post'), -156, 4, { light: { color: WARM, intensity: 0.35, distance: 6, flicker: true, y: 3 } });
 // gate lamps: a warm lantern glow (the light sits 3 m up; a stronger one made a white pool on the road under each post)
-add(gp('lamp_post'), 56, -4, { light: { color: WARM, intensity: 0.35, distance: 6, flicker: true, y: 3 } });
-add(gp('lamp_post'), 56, 4, { light: { color: WARM, intensity: 0.35, distance: 6, flicker: true, y: 3 } });
+add(gp('lamp_post'), 156, -4, { light: { color: WARM, intensity: 0.35, distance: 6, flicker: true, y: 3 } });
+add(gp('lamp_post'), 156, 4, { light: { color: WARM, intensity: 0.35, distance: 6, flicker: true, y: 3 } });
 bld('church', 'blue', -44, -44, 45);
 bld('windmill', 'yellow', 44, -44, 0);
 bld('home_A', 'red', 46, -24, -90);
@@ -234,6 +234,62 @@ for (const [x, z, big] of [[-27, -53, 0], [27, -53, 1], [-55, 27, 1], [55, 17, 0
 // ---------------------------------------------------------------------------------------------------------------------
 // NPCs, portals and interactable stand-ins (GDD 2.3). Character models use the short names the scenes module resolves.
 // ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+// Outer districts (WP-11, the 320 m capital): Demirci Mahallesi (north-east), Kervansaray (south-east), Tapınak Avlusu (north-west),
+// Lonca Meydanı (south-west) and the three gate yards. The quarter lanes run along z = +-100 (x 64..150), joined to the cardinal roads
+// by the ring connectors at x = +-64. Each quarter has homes or workshops on both sides of its lane; the walkers use the lane loops below.
+// ---------------------------------------------------------------------------------------------------------------------
+// Demirci Mahallesi: smithies and homes, the forge row on the north front of the lane z = -100
+bld('blacksmith', 'red', 76, -116, 0); bld('home_A', 'green', 94, -116, 0); bld('blacksmith', 'red', 112, -116, 0); bld('home_B', 'yellow', 130, -116, 0);
+bld('home_B', 'red', 76, -84, 180); bld('market', 'blue', 94, -84, 180); bld('home_A', 'blue', 112, -84, 180); bld('home_B', 'green', 130, -84, 180);
+add(gp('anvil'), 76, -107, { collide: true, radius: 0.8 });
+add(ks('workbench-grind'), 94, -107, { scale: 3, collide: true, radius: 0.8 });
+add(gp('forge'), 112, -107, { rot: -90, collide: true, radius: 1.6 });
+add(kf('cart'), 130, -107, { rot: 90, scale: 3.2, collide: true });
+add(gp('barrel'), 84, -107, { collide: true, radius: 0.5 }); add(gp('barrel'), 101, -107, { collide: true, radius: 0.5 });
+add(gp('lamp_post'), 68, -107, { collide: true, radius: 0.4 }); add(gp('lamp_post'), 138, -93, { collide: true, radius: 0.4 });
+add(gp('crate_a'), 120, -93, { collide: true }); add(tw('decoration/props/weaponrack'), 136, -93, { rot: 90, scale: 6, collide: true, radius: 0.8 });
+add(gp('barrel'), 104, -93, { collide: true, radius: 0.5 }); add(kf('stall-red'), 88, -95, { rot: 0, scale: 3.5, collide: true });
+// Kervansaray: the inn on the south front of the lane z = 100, homes on the north front, yard tables between the lane and the inn
+bld('home_B', 'green', 76, 84, 0); bld('home_A', 'red', 94, 84, 0); bld('home_B', 'blue', 112, 84, 0); bld('home_A', 'green', 130, 84, 0);
+bld('tavern', 'yellow', 112, 116, 180); bld('home_B', 'red', 76, 116, 180); bld('market', 'green', 94, 116, 180);
+add(fu('table_medium'), 70, 108, { scale: 1.3, collide: true, radius: 1.3 }); add(fu('table_medium'), 88, 109, { scale: 1.3, collide: true, radius: 1.3 });
+add(ip('nocturnal-watch', 'tavern_beer_mug'), 70.4, 107.7, { y: 1.3, scale: 1.4 }); add(ip('nocturnal-watch', 'tavern_jug'), 88.5, 108.6, { y: 1.3, scale: 1.4 });
+add(kg('hay-bale'), 66, 92, { scale: 3, rot: 15 }); add(kg('hay-bale'), 68, 93.5, { scale: 3, rot: -25 });
+add(gp('barrel'), 66, 88, { collide: true, radius: 0.5 }); add(gp('barrel'), 66.8, 86.4, { collide: true, radius: 0.5 });
+add(gp('campfire'), 130, 92, { rot: 20, vfx: 'ambient_embers', light: { color: 0xff7a2a, intensity: 2.2, distance: 11, flicker: true, y: 0.9 } });
+add(kg('bench'), 124, 92, { rot: 90, scale: 3, collide: true, radius: 0.9 });
+add(gp('lamp_post'), 138, 108, { collide: true, radius: 0.4 });
+add(tw('decoration/nature/trees_A_medium'), 146, 84, { scale: 6, rot: 30 }); add(tw('decoration/nature/trees_A_medium'), 146, 122, { scale: 6, rot: 80 });
+// Tapınak Avlusu: the temple (church) on the north front of the lane z = -100, pillars and braziers in front of it
+bld('church', 'blue', -112, -116, 0); bld('home_A', 'red', -130, -116, 0); bld('home_B', 'green', -94, -116, 0); bld('home_A', 'green', -76, -116, 0);
+bld('home_B', 'yellow', -130, -84, 180); bld('well', 'blue', -112, -84, 0); bld('home_A', 'red', -94, -84, 180); bld('home_B', 'blue', -76, -84, 180);
+add(dg('pillar_decorated'), -124, -107, { y: 0, scale: 1.7, collide: true, radius: 1.2 });
+add(dg('pillar_decorated'), -100, -107, { y: 0, scale: 1.7, collide: true, radius: 1.2 });
+add(gp('statue_hooded'), -118, -93, { collide: true, radius: 1.0, tint: 0xb8b0a8 });
+add(gp('statue_hooded'), -106, -93, { collide: true, radius: 1.0, tint: 0xb8b0a8 });
+brazier(-112, -107); brazier(-136, -107);
+add(gp('banner_red'), -136, -88, { rot: 90, scale: 1.5 });
+add(gp('lamp_post'), -90, -107, { collide: true, radius: 0.4 });
+// Lonca Meydanı: the guild hall is a placeholder (the barracks building and two banners; the guild itself is not built yet)
+bld('barracks', 'blue', -112, 116, 180); bld('home_B', 'blue', -130, 84, 0); bld('home_A', 'green', -112, 84, 0); bld('home_B', 'yellow', -94, 84, 0); bld('home_A', 'red', -76, 84, 0);
+add(gp('banner_blue'), -124, 109.5, { scale: 1.5 }); add(gp('banner_red'), -100, 109.5, { scale: 1.5 });
+add(gp('tent'), -140, 112, { rot: 90, collide: true }); add(gp('tent'), -86, 112, { collide: true });
+add(gp('crate_a'), -134, 92, { collide: true }); add(gp('crate_b'), -128, 94, { rot: 10, collide: true }); add(gp('barrel'), -120, 92, { collide: true, radius: 0.5 });
+add(ks('signpost'), -88, 94, { scale: 3, rot: 90 });
+add(gp('lamp_post'), -140, 106, { collide: true, radius: 0.4 });
+// Gate yards: Güney (south, caravans to Sisli Vadi), Doğu (east, Karakır) and Batı (west, the Kızıl Sınır border post)
+add(gp('lamp_post'), -6, 118, { collide: true, radius: 0.4 }); add(gp('lamp_post'), 6, 118, { collide: true, radius: 0.4 });
+add(gp('wagon'), -30, 132, { rot: 25, collide: true }); add(gp('crate_b'), -27, 128, { rot: 10, collide: true });
+add(gp('barrel'), -26, 140, { collide: true, radius: 0.5 }); add(gp('crate_a'), -29, 146, { collide: true });
+add(gp('wagon'), 30, 134, { rot: -20, collide: true }); add(gp('sacks'), 28, 126, { rot: 70 }); add(gp('barrel'), 27, 144, { collide: true, radius: 0.5 });
+add(ks('signpost'), 6, 126, { scale: 3, rot: 190 });
+add(gp('wagon'), 134, -28, { rot: 90, collide: true }); add(gp('crate_b'), 138, -24, { collide: true });
+add(gp('barrel'), 142, 24, { collide: true, radius: 0.5 }); add(gp('barrel'), 142, 26.5, { collide: true, radius: 0.5 });
+add(kg('hay-bale'), 128, 26, { scale: 3, rot: 15 }); add(tw('decoration/props/weaponrack'), 148, -28, { rot: 90, scale: 6, collide: true, radius: 0.8 });
+add(gp('wagon'), -134, 28, { rot: -90, collide: true }); add(gp('barrel'), -138, -28, { collide: true, radius: 0.5 });
+add(gp('crate_a'), -140, -24, { collide: true }); add(kg('hay-bale'), -128, -28, { scale: 3, rot: -20 });
+add(tw('decoration/props/weaponrack'), -154, 22, { rot: 90, scale: 6, collide: true, radius: 0.8 });
 const npcs: TownNpc[] = [];
 const npc = (id: string, name: string, role: TownNpc['role'], model: string, x: number, z: number, rot: number, o: Partial<TownNpc> = {}, y = 0): void => {
   npcs.push({ id, name, role, model, pos: [x, y, z], rot, ...o });
@@ -251,11 +307,11 @@ npc('npc_efsuncu', 'Efsuncu Nergis', 'blacksmith', 'Mage', 24, 8, -90, {
 });
 // Carsi
 npc('npc_tuccar', 'Tüccar Selim', 'merchant', 'Rogue_Hooded', -24, -8, 90, {
-  title: 'Tüccar', show: ['Rogue_Cape'], tint: 0x90b4d4, idle: 'Idle', ui: { panel: 'vendor', kind: 'merchant' },
+  title: 'Tüccar', show: ['Rogue_Cape'], tint: 0x90b4d4, idle: 'Idle', ui: { panel: 'vendor', kind: 'merchant' }, shouts: ['Ucuz mal, bol çeşit, gel bak!', 'Altının varsa malın bende!'],
   lines: ['Her şeyin bir fiyatı var. Senin de.', 'Altınını say, sonra konuşuruz.'],
 });
 npc('npc_simyaci', 'Simyacı Lale', 'alchemist', 'Mage', -24, 4, 90, {
-  title: 'Simyacı', show: ['1H_Wand'], tint: 0x90d0a0, idle: 'Idle', loop: { clip: 'Spellcasting', every: 6, offset: 1 }, ui: { panel: 'vendor', kind: 'alchemist' },
+  title: 'Simyacı', show: ['1H_Wand'], tint: 0x90d0a0, idle: 'Idle', loop: { clip: 'Spellcasting', every: 6, offset: 1 }, ui: { panel: 'vendor', kind: 'alchemist' }, shouts: ['İksir! Taze iksir, şifalı iksir!', 'Kazan kaynıyor, gelin görün!'],
   lines: ['Bu yeşil olanı içme. Henüz.', 'Kazan bugün huysuz...'],
 });
 npc('npc_depocu', 'Depocu Bekir', 'stash', 'Barbarian', -24, 14, 90, {
@@ -318,7 +374,7 @@ npc('npc_muhtar', 'Muhtar Cemal', 'bounty', 'Barbarian', 10, 18, -150, {
   lines: ['Zindanlar yine kıpırdıyor. İş var, ödül var.', 'İlan tahtasına bir göz at!', 'Günlük görevler seni bekler.'],
 });
 npc('npc_muhurdar', 'Mühürdar Kemal', 'merchant', 'Knight', 13, 21, -150, {
-  title: 'Mühürdar', show: ['Badge_Shield'], tint: 0x9ab0c8, idle: 'Idle', ui: { panel: 'vendor', kind: 'seal_vendor' }, lines: ['Mührünü getir, ödülünü al.'],
+  title: 'Mühürdar', show: ['Badge_Shield'], tint: 0x9ab0c8, idle: 'Idle', ui: { panel: 'vendor', kind: 'seal_vendor' }, lines: ['Mührünü getir, ödülünü al.'], shouts: ['Av mührü! Av mührü, kaçırma!'],
 });
 npc('obj_bulusma_tasi', 'Buluşma Taşı', 'lobby', 'prop', -8, 18, 0, {
   title: 'Online Odalar', ui: { panel: 'party' }, // no 10 m waypoint pillar here: the obelisk itself carries a subtle glow (world/TownBuilder)
@@ -327,20 +383,118 @@ npc('obj_bulusma_tasi', 'Buluşma Taşı', 'lobby', 'prop', -8, 18, 0, {
 // guards
 const GUARD = ['1H_Sword', 'Rectangle_Shield', 'Knight_Helmet', 'Knight_Cape'];
 const GUARD2H = ['2H_Sword', 'Knight_Helmet', 'Knight_Cape'];
-npc('npc_muhafiz_1', 'Kale Muhafızı', 'guard', 'Knight', -5, 55, 0, { title: 'Güney Kapısı', show: GUARD, tint: 0x8090b0, idle: 'Blocking', lines: ['Kapıdan çıkarsan kendi başınasın.'] });
-npc('npc_muhafiz_2', 'Kale Muhafızı', 'guard', 'Knight', 5, 55, 0, { title: 'Güney Kapısı', show: GUARD, tint: 0x8090b0, idle: 'Idle', lines: ['Kapıdan çıkarsan kendi başınasın.'] });
+npc('npc_muhafiz_1', 'Kale Muhafızı', 'guard', 'Knight', -5, 152, 0, { title: 'Güney Kapısı', show: GUARD, tint: 0x8090b0, idle: 'Blocking', lines: ['Kapıdan çıkarsan kendi başınasın.'] });
+npc('npc_muhafiz_2', 'Kale Muhafızı', 'guard', 'Knight', 5, 152, 0, { title: 'Güney Kapısı', show: GUARD, tint: 0x8090b0, idle: 'Idle', lines: ['Kapıdan çıkarsan kendi başınasın.'] });
 npc('npc_muhafiz_3', 'Kale Muhafızı', 'guard', 'Knight', -7, -24, 0, { title: 'Kadim Kapılar', show: GUARD2H, tint: 0x8090b0, idle: '2H_Melee_Idle', lines: ['Kadim Kapılar yalnızca cesurlara açılır.'] });
 npc('npc_muhafiz_4', 'Kale Muhafızı', 'guard', 'Knight', 7, -24, 0, { title: 'Kadim Kapılar', show: GUARD2H, tint: 0x8090b0, idle: '2H_Melee_Idle', lines: ['Kadim Kapılar yalnızca cesurlara açılır.'] });
 const lap = (phase: number): [number, number][] => Array.from({ length: 16 }, (_, i) => {
   const a = ((i / 16 + phase) * 2 * Math.PI);
   return [+(Math.sin(a) * 17).toFixed(2), +(8 + Math.cos(a) * 17).toFixed(2)] as [number, number];
 });
-npc('npc_sinir_subayi', 'Sınır Subayı Tarkan', 'guard', 'Knight', -53.5, 1, 90, {
+npc('npc_sinir_subayi', 'Sınır Subayı Tarkan', 'guard', 'Knight', -153.5, 1, 90, {
   title: 'Batı Kapısı: Kızıl Sınır', show: GUARD2H, tint: 0x6a7ab0, idle: '2H_Melee_Idle',
   lines: ['Batı Kapısı Kızıl Sınır\'a açılır: Gök Kartal ile Kızıl Kurt\'un savaş alanı. Seviye 35 gerekir.', 'Orada iki ulus birbirine düşman. Kendi ulusundan olanlar dostundur, diğerleri değil.'],
 });
 npc('npc_muhafiz_5', 'Devriye', 'guard', 'Knight', 0, 25, 0, { title: 'Devriye', show: GUARD, tint: 0x8090b0, idle: 'Walking_A', patrol: { path: lap(0), lap: 30 } });
 npc('npc_muhafiz_6', 'Devriye', 'guard', 'Knight', 0, -9, 0, { title: 'Devriye', show: GUARD, tint: 0x8090b0, idle: 'Walking_A', patrol: { path: lap(0.5), lap: 30 } });
+// ---------------------------------------------------------------------------------------------------------------------
+// Ambient life (WP-11): citizens walk closed street loops (walk()), vendors stand and shout their wares into /say bubbles (the NPC
+// runtime calls `shouts` every 60-120 s while the vendor is on screen). Walker phases spread each crowd along its loop.
+// ---------------------------------------------------------------------------------------------------------------------
+/** A closed walk: the start point at `phase` (0..1) along the corners, and the patrol record for the NPC runtime (lap at `speed` m/s). */
+const walk = (corners: [number, number][], phase: number, speed = 1.1): { pos: [number, number]; patrol: { path: [number, number][]; lap: number; phase: number } } => {
+  const cum: number[] = [0];
+  for (let i = 0; i < corners.length; i++) {
+    const a = corners[i], b = corners[(i + 1) % corners.length];
+    cum.push(cum[i] + Math.hypot(b[0] - a[0], b[1] - a[1]));
+  }
+  const total = cum[cum.length - 1];
+  const s = phase * total;
+  let i = 0;
+  while (i < corners.length - 1 && cum[i + 1] < s) i++;
+  const a = corners[i], b = corners[(i + 1) % corners.length];
+  const k = (s - cum[i]) / Math.max(1e-6, cum[i + 1] - cum[i]);
+  return { pos: [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k], patrol: { path: corners, lap: total / speed, phase } };
+};
+const LOOP = {
+  ne: [[68, -103], [140, -103], [140, -97], [68, -97]] as [number, number][],
+  se: [[82, 97], [118, 97], [118, 103], [82, 103]] as [number, number][],
+  nw: [[-140, -103], [-70, -103], [-70, -97], [-140, -97]] as [number, number][],
+  sw: [[-140, 97], [-70, 97], [-70, 103], [-140, 103]] as [number, number][],
+  road: [[-2, 66], [2, 66], [2, 112], [-2, 112]] as [number, number][],
+  south: [[-16, 124], [16, 124], [16, 150], [-16, 150]] as [number, number][],
+  east: [[122, -16], [150, -16], [150, 16], [122, 16]] as [number, number][],
+  west: [[-150, -16], [-122, -16], [-122, 16], [-150, 16]] as [number, number][],
+};
+/** A crowd: every citizen walks the same loop from its own point along it. */
+const crowd = (loop: [number, number][], list: [string, string, string, string, number][]): void => {
+  list.forEach(([id, name, title, model, tint], i) => {
+    const w = walk(loop, (i / list.length) % 1);
+    npc(id, name, 'citizen', model, w.pos[0], w.pos[1], 0, { title, tint, idle: 'Walking_A', patrol: w.patrol });
+  });
+};
+// Demirci Mahallesi (north-east) walkers and the smith's shouting seller
+crowd(LOOP.ne, [
+  ['npc_dm_yolcu_1', 'Demirci Çırağı', 'Çırak', 'Worker', 0xb8a890], ['npc_dm_yolcu_2', 'Hamal Osman', 'Hamal', 'Barbarian', 0xa08868],
+  ['npc_dm_yolcu_3', 'Kalfa Asiye', 'Kalfa', 'Rogue', 0x98a8c0], ['npc_dm_yolcu_4', 'Madenci Hüseyin', 'Madenci', 'Knight', 0x8c8c8c],
+  ['npc_dm_yolcu_5', 'Demirci Çırağı Ali', 'Çırak', 'Worker', 0xc0a884], ['npc_dm_yolcu_6', 'Müşteri Zehra', 'Müşteri', 'Mage', 0xb89ab0],
+]);
+npc('npc_dm_silahci', 'Silahçı Ferit', 'citizen', 'Barbarian', 88, -91, 180, {
+  title: 'Silahçı', show: ['1H_Axe'], tint: 0xb08060, idle: 'Idle', loop: { clip: '1H_Melee_Attack_Chop', every: 9 },
+  shouts: ['Kılıç, balta, kalkan! Hepsi taze dövme!', 'Demir ucuz, dövülmesi bedava!'], lines: ['Hangi silahı istersin, yiğit?'],
+});
+npc('npc_dm_usta', 'Demirci Usta Kenan', 'citizen', 'Barbarian', 112, -91, 180, {
+  title: 'Demirci Usta', show: ['1H_Axe'], tint: 0xa08060, idle: 'Idle', loop: { clip: '1H_Melee_Attack_Chop', every: 6, offset: 2 },
+  lines: ['Örs susmaz, demir dinlenmez.'],
+});
+// Kervansaray (south-east)
+crowd(LOOP.se, [
+  ['npc_kv_yolcu_1', 'Kervancı Murat', 'Kervancı', 'Barbarian', 0xa08868], ['npc_kv_yolcu_2', 'Yolcu Deniz', 'Yolcu', 'Rogue', 0x98a8c0],
+  ['npc_kv_yolcu_3', 'Tüccar Yardımcısı Emre', 'Yolcu', 'Knight', 0xa0a8b0], ['npc_kv_yolcu_4', 'Gezgin Şair Kerem', 'Gezgin', 'Mage', 0xb0a0c0],
+  ['npc_kv_yolcu_5', 'Yolcu Fatma', 'Yolcu', 'Rogue_Hooded', 0xa89080], ['npc_kv_yolcu_6', 'Hancı Çırağı Can', 'Çırak', 'Worker', 0xc0b090],
+]);
+npc('npc_han_hanci', 'Hancı Güler', 'citizen', 'Barbarian', 104, 109, 180, {
+  title: 'Hancı', show: ['Mug'], tint: 0x9a6a40, idle: 'Idle', loop: { clip: 'Use_Item', every: 8 },
+  shouts: ['Oda var! Sıcak yemek, soğuk bira!', 'Kervansaray kapıları açık, buyurun!'], lines: ['Hoş geldin, yorgun yolcu!'],
+});
+npc('npc_kv_halil', 'Kervancı Halil', 'citizen', 'Barbarian', 92, 92, 0, { title: 'Kervancı', tint: 0xa08060, idle: 'Idle', lines: ['Yol uzun, bira soğuk.'] });
+// Tapınak Avlusu (north-west): pilgrims, the priest, the holy-water seller and the seer
+crowd(LOOP.nw, [
+  ['npc_tp_hac_1', 'Hacı Ali', 'Hacı', 'Mage', 0xb0c0b0], ['npc_tp_hac_2', 'Hacı Fatma', 'Hacı', 'Rogue_Hooded', 0xc0b0a0],
+  ['npc_tp_hac_3', 'Dilenci Yusuf', 'Dilenci', 'Worker', 0xa89c88], ['npc_tp_hac_4', 'Hacı Recep', 'Hacı', 'Knight', 0xb8b0a8],
+]);
+npc('npc_tp_ahmet', 'Rahip Ahmet', 'citizen', 'Mage', -112, -91, 0, { title: 'Rahip', tint: 0xd8d0c0, idle: 'Idle', lines: ['Tanrı yolunu aydınlatsın.', 'Kutsal ateş burada sönmez.'] });
+npc('npc_tp_meryem', 'Kutsal Su Satıcısı Meryem', 'citizen', 'Rogue_Hooded', -82, -91, 180, {
+  title: 'Kutsal Su', tint: 0x90b4d4, idle: 'Idle',
+  shouts: ['Kutsal su! Bir kupa, bir altın!', 'Şifa suyu, şifa suyu, gelin!'], lines: ['Kutsal su derdine deva.'],
+});
+npc('npc_tp_zeynel', 'Kâhin Zeynel', 'citizen', 'Mage', -98, -91, 0, {
+  title: 'Kâhin', show: ['1H_Wand'], tint: 0xa888c8, idle: 'Idle', loop: { clip: 'Spellcasting', every: 7, offset: 2 }, lines: ['Yıldızlar bu gece parlak.'],
+});
+// Lonca Meydanı (south-west): the guild hall placeholder
+crowd(LOOP.sw, [
+  ['npc_lo_uye_1', 'Lonca Üyesi Kaan', 'Lonca Üyesi', 'Knight', 0x98a8c0], ['npc_lo_uye_2', 'Lonca Çırağı Selin', 'Çırak', 'Rogue', 0xb0b8c8],
+  ['npc_lo_uye_3', 'Taşıyıcı Mahmut', 'Hamal', 'Barbarian', 0xa08868],
+]);
+npc('npc_lo_katip', 'Lonca Katibi Berna', 'citizen', 'Rogue', -104, 108, 180, {
+  title: 'Lonca Katibi', tint: 0x9ab0c8, idle: 'Idle',
+  shouts: ['Lonca kurmak ister misin? Yakında burada!', 'Lonca salonu yakında açılıyor, kayıt yaptır!'], lines: ['Lonca salonu henüz inşa ediliyor.'],
+});
+npc('npc_lo_muhafiz', 'Lonca Muhafızı Ercan', 'guard', 'Knight', -126, 112, 0, {
+  title: 'Lonca', show: GUARD2H, tint: 0x8090b0, idle: '2H_Melee_Idle', lines: ['Lonca salonu yakında. Sabırlı ol.'],
+});
+// Gate yards: Güney (caravans), Doğu (Karakır), Batı (Kızıl Sınır) and the south road walkers
+npc('npc_kapi_dogu_1', 'Kale Muhafızı', 'guard', 'Knight', 152, -6, 90, { title: 'Doğu Kapısı', show: GUARD, tint: 0x8090b0, idle: 'Blocking', lines: ['Kapıdan çıkarsan kendi başınasın.'] });
+npc('npc_kapi_dogu_2', 'Kale Muhafızı', 'guard', 'Knight', 152, 6, 90, { title: 'Doğu Kapısı', show: GUARD2H, tint: 0x8090b0, idle: '2H_Melee_Idle', lines: ['Karakır\'a giden kervan burada toplanır.'] });
+npc('npc_kapi_bati_2', 'Kale Muhafızı', 'guard', 'Knight', -153.5, -7, -90, { title: 'Batı Kapısı', show: GUARD, tint: 0x6a7ab0, idle: 'Blocking', lines: ['Kızıl Sınır seviye 35 ister.'] });
+crowd(LOOP.east, [['npc_kapi_dogu_yolcu_1', 'Karakır Kervancısı Oğuz', 'Kervancı', 'Barbarian', 0xa08868], ['npc_kapi_dogu_yolcu_2', 'Karakır Kervancısı Berk', 'Kervancı', 'Rogue', 0x98a8c0]]);
+crowd(LOOP.west, [['npc_kapi_bati_yolcu_1', 'Sınır Nöbetçisi Vedat', 'Nöbetçi', 'Knight', 0x6a7ab0], ['npc_kapi_bati_yolcu_2', 'Sınır Devriyesi Kadir', 'Devriye', 'Rogue', 0x7a8ab8]]);
+crowd(LOOP.south, [
+  ['npc_kapi_guney_yolcu_1', 'Kervancı Yusuf', 'Kervancı', 'Barbarian', 0xa08868], ['npc_kapi_guney_yolcu_2', 'Kervancı Ayla', 'Kervancı', 'Rogue', 0xb0a0a8],
+  ['npc_kapi_guney_yolcu_3', 'Odun Taşıyıcı Ömer', 'Hamal', 'Worker', 0xa89c88], ['npc_kapi_guney_yolcu_4', 'Nöbet Değişimi Cem', 'Nöbetçi', 'Knight', 0x8090b0],
+]);
+crowd(LOOP.road, [['npc_yol_selim', 'Kervancı Selim', 'Kervancı', 'Barbarian', 0xa08060], ['npc_yol_nuran', 'Köylü Nuran', 'Köylü', 'Mage', 0xa8c890]]);
+
 // tavern + villagers
 npc('npc_meyhaneci', 'Meyhaneci Hasan', 'citizen', 'Barbarian', 34, 34, -90, {
   title: 'Meyhaneci', show: ['Mug'], tint: 0x9a6a40, idle: 'Idle', loop: { clip: 'Use_Item', every: 8 }, lines: ['Zindandan sağ döneni bir içki benden!', 'Bir kupa daha?', 'Hikâyeni anlat bakalım!'],
@@ -361,16 +515,16 @@ villager(6, 'Knight', 29.34, 32.66, 120, 'Sit_Chair_Idle', 0xa08060);   // on a 
 export const TOWN: TownDef = {
   id: 'town_kuzgunkale',
   name: 'Kuzgunkale',
-  size: [120, 120],
+  size: [320, 320],
   spawn: { pos: [0, 0, 26], facing: 180 },
   arrival: { pos: [0, 2, -38], facing: 0 },
   // South Gate -> Sisli Vadi (open-world map, WP2). East Gate -> Karakır Bozkırı (map 2, skeleton; the entry is locked in TownScene
   // until flag q.mq_19_kuzgunkaleye_donus is done or level >= 30, GDD_OPENWORLD §9.3).
   exits: [
-    { id: 'guney_kapisi', box: [-4, 58, 4, 62], to: 'sisli_vadi' },
-    { id: 'dogu_kapisi', box: [58, -4, 62, 4], to: 'karakir_bozkiri' },
+    { id: 'guney_kapisi', box: [-4, 158, 4, 162], to: 'sisli_vadi' },
+    { id: 'dogu_kapisi', box: [158, -4, 162, 4], to: 'karakir_bozkiri' },
     // West Gate -> Kızıl Sınır (WP-07): TownScene.exitLock needs level 35
-    { id: 'bati_kapisi', box: [-62, -4, -58, 4], to: 'kizil_sinir' },
+    { id: 'bati_kapisi', box: [-162, -4, -158, 4], to: 'kizil_sinir' },
   ],
   terraces: [{ id: 'kadim_kapilar_salonu', box: [-24, -58, 24, -28], y: 2 }],
   // the stair runs along z from the terrace edge (z -28, y 2) down to the plaza (z -24, y 0)
@@ -380,16 +534,20 @@ export const TOWN: TownDef = {
     fogColor: 0xd8c0a0, fogNear: 30, fogFar: 140,
   },
   zones: [
-    { id: 'guney_kapisi', name: 'Güney Kapısı', box: [-6, 52, 6, 60] },
-    { id: 'dogu_kapisi', name: 'Doğu Kapısı', box: [56, -6, 62, 6] },
-    { id: 'bati_kapisi', name: 'Batı Kapısı', box: [-62, -6, -56, 6] },
+    { id: 'guney_kapisi', name: 'Güney Kapısı', box: [-24, 120, 24, 160] },
+    { id: 'dogu_kapisi', name: 'Doğu Kapısı', box: [120, -24, 160, 24] },
+    { id: 'bati_kapisi', name: 'Batı Kapısı', box: [-160, -24, -120, 24] },
+    { id: 'demirci_mahallesi', name: 'Demirci Mahallesi', box: [64, -150, 150, -60] },
+    { id: 'kervansaray', name: 'Kervansaray', box: [64, 60, 150, 150] },
+    { id: 'tapinak', name: 'Tapınak Avlusu', box: [-150, -150, -64, -60] },
+    { id: 'lonca', name: 'Lonca Meydanı', box: [-150, 60, -64, 150] },
     { id: 'kadim_kapilar', name: 'Kadim Kapılar Salonu', box: [-24, -58, 24, -28] },
     { id: 'zanaat_sokagi', name: 'Zanaat Sokağı', box: [16, -20, 56, 18] },
     { id: 'carsi', name: 'Çarşı', box: [-56, -20, -16, 18] },
     { id: 'egitim_alani', name: 'Eğitim Alanı', box: [-56, 24, -20, 56] },
     { id: 'han_bahcesi', name: 'Han Bahçesi', box: [20, 24, 56, 56] },
     { id: 'meydan', name: 'Meydan', box: [-14, -6, 14, 22] },
-    { id: 'ana_yol', name: 'Ana Yol', box: [-4, -26, 4, 58] },
+    { id: 'ana_yol', name: 'Ana Yol', box: [-4, -26, 4, 160] },
   ],
   props,
   npcs,

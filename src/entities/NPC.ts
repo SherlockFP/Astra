@@ -34,6 +34,8 @@ export interface NpcPreset {
   greeting?: string;
   /** Closed walking loop (world metres) walked in `lap` seconds; `phase` 0..1 shifts the start along the loop. */
   patrol?: { path: [number, number][]; lap: number; phase: number };
+  /** Ambient shouts (see TownNpc.shouts), one is picked per call. */
+  shouts?: string[];
 }
 
 /** A circular patrol loop (16 points) used by guard presets that the content module did not give an explicit path. */
@@ -170,6 +172,12 @@ const GROUND_CLIP = /^(Death|Lie_|Sit_Floor|T-Pose)|_Pose$/;
  */
 const NPC_VIEW_MARGIN = 7;
 
+/**
+ * Beyond this distance from the local player (m) a town NPC is not drawn (its model, mixer and shouts pause): at 60 m a figure is a few
+ * pixels and the town holds ~80 of them, each a skinned character of ~10k triangles. Fog hides the rest.
+ */
+const NPC_DRAW_RANGE = 60;
+
 const BASE_URL: Record<string, string> = {
   Knight: '/assets/models/characters/Knight.glb',
   Barbarian: '/assets/models/characters/Barbarian.glb',
@@ -198,7 +206,8 @@ export function resolvePreset(def: NpcDef): NpcPreset {
     p.greeting = def.lines[0];
     p.barks = def.lines.length > 1 ? def.lines.slice(1) : def.lines;
   }
-  if (def.patrol && def.patrol.path.length >= 2) p.patrol = { path: def.patrol.path, lap: Math.max(4, def.patrol.lap), phase: 0 };
+  if (def.patrol && def.patrol.path.length >= 2) p.patrol = { path: def.patrol.path, lap: Math.max(4, def.patrol.lap), phase: def.patrol.phase ?? 0 };
+  if (def.shouts?.length) p.shouts = def.shouts;
   return p;
 }
 
@@ -310,6 +319,8 @@ export class NPC extends Entity implements Interactable {
   private nextPeriodic: number;
   private barkCooldown = 8 + Math.random() * 10;
   private barkIdx = 0;
+  private shoutIdx = 0;
+  private nextShout = 0;
   private busyUntil = 0;
   private moving = false;
   private offs: (() => void)[] = [];
@@ -332,6 +343,8 @@ export class NPC extends Entity implements Interactable {
     const pr = this.preset.periodic;
     // content gives a phase offset so neighbours (smith + apprentice) never animate in lockstep
     this.nextPeriodic = this.time + (pr?.offset !== undefined ? pr.offset + 0.5 : 1 + Math.random() * (pr?.every ?? 5));
+    // ambient shouts start 15-60 s in, so a town full of vendors does not call out in unison on the first frame
+    this.nextShout = 15 + Math.random() * 45;
     const pat = this.preset.patrol;
     if (pat && pat.path.length >= 2) {
       const pts = pat.path;
@@ -500,11 +513,11 @@ export class NPC extends Entity implements Interactable {
    * Speech bubble above the head (UX-30 §5.2): the flat npc bubble with the gold name line, 120 characters, lifetime `seconds`.
    * Shares the BubbleLayer stacking and budget with the player bubbles (the old .efs-bark DOM is gone).
    */
-  say(text: string, seconds = 4.5): void {
+  say(text: string, seconds = 4.5, kind: 'npc' | 'say' = 'npc'): void {
     this.bubble?.remove();
     try {
       this.bubble = G.ui.say(this.object3d, {
-        kind: 'npc',
+        kind,
         text,
         name: this.def.name,
         color: 'var(--gold-1)',
@@ -558,7 +571,8 @@ export class NPC extends Entity implements Interactable {
       if (this.warmFrames > 0) this.warmFrames--;
       else {
         const s = p.scale ?? 1;
-        seen = inView(this.position.x, this.position.y + 1.3 * s, this.position.z, 2.6 * s + NPC_VIEW_MARGIN);
+        seen = inView(this.position.x, this.position.y + 1.3 * s, this.position.z, 2.6 * s + NPC_VIEW_MARGIN)
+          && (!player || dist2D(player.position, this.position) < NPC_DRAW_RANGE);
       }
       if (this.model.visible !== seen) this.model.visible = seen;
     }
@@ -579,6 +593,13 @@ export class NPC extends Entity implements Interactable {
         this.bubble?.remove();
         this.bubble = null;
       }
+    }
+    // ambient shouts: a vendor calls its wares into a /say bubble every 60-120 s, only while it is on screen (else it waits 5 s)
+    if (p.shouts?.length && t >= this.nextShout && !this.bubble && t >= this.faceUntil) {
+      if (seen) {
+        this.say(p.shouts[this.shoutIdx++ % p.shouts.length], 4.8, 'say');
+        this.nextShout = t + 60 + Math.random() * 60;
+      } else this.nextShout = t + 5;
     }
     if (player && this.barkCooldown <= 0 && p.barks?.length && !this.bubble) {
       const d = dist2D(player.position, this.position);

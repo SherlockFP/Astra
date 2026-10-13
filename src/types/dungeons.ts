@@ -602,8 +602,10 @@ export interface TownNpc {
   idle?: string;              // idle clip suffix (e.g. 'Idle', '2H_Melee_Idle', 'Sit_Chair_Idle')
   /** Periodic one-shot: clip, repeat period (s) and phase offset (s) (anvil chop, juggling, drinking...). */
   loop?: { clip: string; every: number; offset?: number };
-  /** Walking patrol loop (world metres [x,z]) and lap time in seconds. */
-  patrol?: { path: [number, number][]; lap: number };
+  /** Walking patrol loop (world metres [x,z]) and lap time in seconds; `phase` 0..1 starts the walk part-way round (default 0). */
+  patrol?: { path: [number, number][]; lap: number; phase?: number };
+  /** Ambient calls (vendors shouting): each line goes into a /say bubble every 60-120 s while the NPC is on screen. */
+  shouts?: string[];
   /** Panel to open on interact (G.ui.openPanel id) with an optional tab / data kind. */
   ui?: { panel: string; tab?: string; kind?: string };
   lines?: string[];           // Turkish bark / greeting lines
