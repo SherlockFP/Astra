@@ -5,6 +5,7 @@ import type { TownDef, TownProp } from '../types/dungeons';
 import { NavGrid } from './NavGrid';
 import { treadCount, treadTop } from './Heightfield';
 import { ChunkCuller, InstanceBatcher, type CullLayer } from './Instancing';
+import { getGfxQuality, lodPlans } from './WorldPerf';
 import { getPiece, loadPieces } from './Pieces';
 import { GlowField } from './Glow';
 import { ParticleField } from './Particles';
@@ -1162,6 +1163,7 @@ class TownBuild {
     this.updateRavens(dt);
     worldFocus(this.focus);
     this.culler.limits = TOWN_CULL;
+    this.culler.plans = lodPlans((this.scene.fog as THREE.Fog | null)?.far ?? 150, getGfxQuality()); // voxel LOD tiers of the ground cover (same plans as the open world)
     this.culler.update(dt, this.focus.x, this.focus.z);
     const cam = G.engine?.activeCamera;
     this.lights.update(dt, this.focus);

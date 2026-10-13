@@ -198,3 +198,12 @@ Rules and numbers for big zones:
 * **Hills**: add a per-chunk heightmap (65 x 65 samples per 64 m chunk, generated from a seeded noise + authored ops like the splat), `ChunkedTerrain` vertices from it, `World.groundY` / `DungeonBuild.floorAt` sampling it, the nav floor array from the same source (`NavGrid.floor/flags` exist for vertical dungeons), and instance Y from the same function. The streamer, chunk purity and colliders carry over unchanged.
 * **Enemy sleeping for patrols**: let `EnemyAI.canSleep` apply to patrolling enemies when no player is within `aiSleepM`; they would resume their loop from where they stopped.
 * **Interest management**: `Replication` already limits state to 120 m around each peer; unchanged.
+
+## 9. Triangle budget and voxel LOD
+
+Measured headless by `dev/combat-sim/tribudget.mjs` (real scatter, real batcher / culler / voxel files, three's frustum maths; `--scan` samples every region centre and west-edge forest, `--lod=0` is the old behaviour, `--q=low|mid|high`). The voxel scatter models are 1-2.9k triangles each; a Karakir spawn used to draw 1.78 M triangles (dense map-edge forest, 4,000 grass tufts at 244 triangles, whole 64 m chunk meshes re-drawn by the shadow pass).
+
+* `world/VoxelLod.ts` (pure): rebuilds the voxel grid of a flat-palette mesh, then level 0 = same surface with coplanar same-colour faces merged (lossless, checked face for face by `voxellod.mjs`), level 1 / 2 = occupancy downsampled 2x / 4x with the commonest palette texel per exposed face, greedy-meshed. Models that are not such meshes keep the old path.
+* `Instancing.ts` `LodSet`: scatter layers (tree, border, bush, rock, tuft, flower) are drawn in three distance tiers per (chunk, model); the culler re-sorts them (at most every 0.25 s, after the focus moved 1.5 m) and fits each tier mesh's bounding sphere to what it holds, so frustum and shadow culling work per tier. Only tiers 0 and 1 cast shadows (not the border forest's tier 1). Far ground cover is thinned by a fixed per-instance rank. Colliders and chunk content are untouched (visual only, every peer builds the same world).
+* `WorldPerf.ts`: the tier distances per layer and "Görüntü Kalitesi" (Düşük / Orta / Yüksek, `graphicsQuality` in Settings, default Orta). Nothing is drawn beyond the fog (`end` = fog far + 4).
+* Karakir spawn (Orta): 1.78 M -> 123 k triangles (worst sampled point 205 k, map-edge forest); Yüksek worst 307 k; Düşük worst 118 k.

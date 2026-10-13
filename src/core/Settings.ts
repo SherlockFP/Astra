@@ -155,6 +155,8 @@ export interface SettingsData {
   controlsHintShown: boolean;
   /** Revision of the barGhostSlots default (migrated once: stored files below 1 get barGhostSlots = true). */
   barGhostRev: number;
+  /** Görüntü Kalitesi (world/WorldPerf): scenery draw distances, voxel LOD tiers and ground-cover density. Visual only; same world on every peer. 'mid' (Orta) is the default. */
+  graphicsQuality: 'low' | 'mid' | 'high';
 }
 
 /**
@@ -263,6 +265,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   autoAttackFromSkills: true,
   controlsHintShown: true,
   barGhostRev: 1,
+  graphicsQuality: 'mid',
 };
 
 /**
@@ -362,6 +365,7 @@ export class Settings {
     this.data.cameraMode = cameraModeOf(this.data.controlScheme);
     this.data.schemeBindings = this.data.schemeBindings ?? {};
     this.data.cameraDistanceWow = Number.isFinite(this.data.cameraDistanceWow) ? Math.min(30, Math.max(2, this.data.cameraDistanceWow)) : 10;
+    if (this.data.graphicsQuality !== 'low' && this.data.graphicsQuality !== 'mid' && this.data.graphicsQuality !== 'high') this.data.graphicsQuality = 'mid';
     this.data.settingsVersion = SETTINGS_VERSION;
     if (changed || (hasStored && stored.settingsVersion !== SETTINGS_VERSION)) this.save();
   }

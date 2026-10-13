@@ -214,6 +214,8 @@ export class OccluderFader {
     ghost.updateMatrixWorld(true);
     im.setMatrixAt(inst, ZERO_MATRIX);
     im.instanceMatrix.needsUpdate = true;
+    // a distance-tiered batch (world/Instancing LodSet) re-sorts its instances: it must leave this one alone until the ghost is gone
+    im.userData.fadeLocks = ((im.userData.fadeLocks as number | undefined) ?? 0) + 1;
     return {
       key, target: im, instance: inst, drawn: ghost, material, original: null, castShadow: im.castShadow,
       matrix, alpha: 1, hitAt: 0,
@@ -248,6 +250,7 @@ export class OccluderFader {
         im.setMatrixAt(f.instance, f.matrix);
         im.instanceMatrix.needsUpdate = true;
       }
+      im.userData.fadeLocks = Math.max(0, ((im.userData.fadeLocks as number | undefined) ?? 1) - 1);
       this.ghostOwner.delete(f.drawn);
       f.drawn.removeFromParent();
     } else {

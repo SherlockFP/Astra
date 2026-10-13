@@ -3,6 +3,7 @@ import { G } from './G';
 import { DEFAULT_SETTINGS } from '../core/Settings';
 import { PSXPostPass, patchObjectPSX, setPSXAffine, setPSXJitter } from '../render/psx';
 import { requestShadowMapUpdate, scheduleShadowMap } from '../render/shadowPolicy';
+import { setGfxQuality } from '../world/WorldPerf';
 
 let psxPass: PSXPostPass | null = null;
 
@@ -93,9 +94,11 @@ export function installGraphics(): void {
   G.engine.onUpdate((_dt, t) => scheduleShadowMap(G.engine.renderer.shadowMap, t), 90, 'shadows');
   G.events.on('scene:changed', () => requestShadowMapUpdate());
 
+  setGfxQuality(G.settings.data.graphicsQuality);
   applyRender();
   applyPSX();
   G.settings.onChange((key) => {
+    if (key === 'graphicsQuality' || key === 'psx') setGfxQuality(G.settings.data.graphicsQuality); // 'psx' is also what Settings.reset() notifies
     if (String(key).startsWith('psx')) applyPSX();
     else if (key === 'bloom' || key === 'bloomStrength' || key === 'shadows' || key === 'renderScale') applyRender();
     else if (key === 'fov') {
