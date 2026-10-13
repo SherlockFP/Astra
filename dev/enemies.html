@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dev: düşmanlar</title>
+<style>
+  #en-panel { position: fixed; left: 0; top: 0; bottom: 0; width: 262px; z-index: 9999; overflow-y: auto; padding: 6px 8px 40px; background: rgba(8,6,4,.86); border-right: 1px solid #5a4423; font: 12px/1.25 sans-serif; color: #e8d9b0; }
+  #en-panel h4 { margin: 9px 0 4px; font: 700 12px serif; color: #e6cc80; letter-spacing: .06em; border-bottom: 1px solid #3a2c18; padding-bottom: 2px; }
+  #en-panel .row { display: flex; flex-wrap: wrap; gap: 3px; margin: 2px 0; }
+  #en-panel button { font: 700 11px sans-serif; padding: 3px 6px; color: #f1dfae; background: #2a1c10; border: 1px solid #7a5d2c; cursor: pointer; }
+  #en-panel button:hover { background: #4a3520; }
+  #en-panel button.on { background: #6a4a1c; border-color: #e6cc80; }
+  #en-hud { position: fixed; right: 0; top: 0; width: 380px; z-index: 9990; padding: 6px 8px; background: rgba(8,6,4,.72); border-left: 1px solid #5a4423; font: 11px/1.35 Consolas, monospace; color: #cfe3c0; white-space: pre-wrap; pointer-events: none; }
+  #en-hud b { color: #e6cc80; }
+  #en-help { position: fixed; left: 270px; bottom: 6px; z-index: 9990; padding: 5px 9px; background: rgba(8,6,4,.72); border: 1px solid #3a2c18; font: 11px/1.4 Consolas, monospace; color: #c8b98a; white-space: pre; pointer-events: none; }
+  .en-label { position: fixed; z-index: 9000; transform: translate(-50%, -100%); font: 10px Consolas, monospace; color: #b8d8a8; text-shadow: 0 0 3px #000, 0 0 3px #000; pointer-events: none; white-space: nowrap; }
+</style></head>
+<body><div id="game-root"><canvas id="game-canvas"></canvas><div id="ui-root"></div></div>
+<div id="en-panel"></div><div id="en-hud"></div><div id="en-help"></div>
+<script type="module" src="/src/dev/enemies.ts"></script></body></html>

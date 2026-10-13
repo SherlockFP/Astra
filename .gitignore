@@ -1,0 +1,9 @@
+node_modules
+dist
+*.log
+.vite
+.asset-cache
+browser-out
+*.tsbuildinfo
+.claude/scheduled_tasks.lock
+.claude/settings.local.json

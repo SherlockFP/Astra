@@ -1,0 +1,1834 @@
+{
+ "tree_pine_a": {
+  "id": "tree_pine_a",
+  "name_tr": "Çam Ağacı",
+  "use": "Açık dünya ormanı, kasaba çevresi (uzun çam)",
+  "category": "nature",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 280,
+  "size": [
+   4.019,
+   6.45,
+   3.448
+  ],
+  "min": [
+   -2.014,
+   -1.66,
+   0.0
+  ],
+  "max": [
+   2.005,
+   1.788,
+   6.45
+  ],
+  "colors": 9,
+  "bytes": 33644,
+  "objects": [
+   "tree_pine_a"
+  ]
+ },
+ "tree_pine_b": {
+  "id": "tree_pine_b",
+  "name_tr": "Kara Çam",
+  "use": "Açık dünya ormanı (gür, kısa koyu çam)",
+  "category": "nature",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 232,
+  "size": [
+   4.521,
+   5.2,
+   4.083
+  ],
+  "min": [
+   -2.278,
+   -2.143,
+   0.0
+  ],
+  "max": [
+   2.243,
+   1.94,
+   5.2
+  ],
+  "colors": 9,
+  "bytes": 28384,
+  "objects": [
+   "tree_pine_b"
+  ]
+ },
+ "tree_oak_a": {
+  "id": "tree_oak_a",
+  "name_tr": "Meşe Ağacı",
+  "use": "Kasaba meydanı, açık dünya (yuvarlak taçlı meşe)",
+  "category": "nature",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 279,
+  "size": [
+   4.405,
+   5.524,
+   4.102
+  ],
+  "min": [
+   -2.187,
+   -2.061,
+   0.0
+  ],
+  "max": [
+   2.218,
+   2.041,
+   5.524
+  ],
+  "colors": 9,
+  "bytes": 35804,
+  "objects": [
+   "tree_oak_a"
+  ]
+ },
+ "tree_oak_b": {
+  "id": "tree_oak_b",
+  "name_tr": "Yaşlı Meşe",
+  "use": "Geniş taçlı yaşlı meşe, kasaba odak noktası / gölge alanı",
+  "category": "nature",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 398,
+  "size": [
+   6.774,
+   5.897,
+   4.986
+  ],
+  "min": [
+   -3.374,
+   -2.519,
+   0.0
+  ],
+  "max": [
+   3.4,
+   2.467,
+   5.897
+  ],
+  "colors": 9,
+  "bytes": 48960,
+  "objects": [
+   "tree_oak_b"
+  ]
+ },
+ "tree_dead": {
+  "id": "tree_dead",
+  "name_tr": "Kuru Ağaç",
+  "use": "Mezarlık, lanetli bölgeler, zindan girişi",
+  "category": "nature",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 205,
+  "size": [
+   2.613,
+   4.736,
+   1.934
+  ],
+  "min": [
+   -1.123,
+   -1.025,
+   0.0
+  ],
+  "max": [
+   1.49,
+   0.909,
+   4.736
+  ],
+  "colors": 4,
+  "bytes": 19768,
+  "objects": [
+   "tree_dead"
+  ]
+ },
+ "tree_autumn": {
+  "id": "tree_autumn",
+  "name_tr": "Sonbahar Ağacı",
+  "use": "Açık dünya renk çeşitliliği (turuncu/sarı yapraklı)",
+  "category": "nature",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 239,
+  "size": [
+   3.678,
+   5.754,
+   3.049
+  ],
+  "min": [
+   -1.942,
+   -1.668,
+   0.0
+  ],
+  "max": [
+   1.736,
+   1.381,
+   5.754
+  ],
+  "colors": 13,
+  "bytes": 34016,
+  "objects": [
+   "tree_autumn"
+  ]
+ },
+ "bush_a": {
+  "id": "bush_a",
+  "name_tr": "Çalı",
+  "use": "Yol kenarı / kasaba bahçesi yeşil çalı",
+  "category": "nature",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 140,
+  "size": [
+   1.795,
+   1.0,
+   1.554
+  ],
+  "min": [
+   -0.872,
+   -0.691,
+   0.0
+  ],
+  "max": [
+   0.922,
+   0.863,
+   1.0
+  ],
+  "colors": 5,
+  "bytes": 20508,
+  "objects": [
+   "bush_a"
+  ]
+ },
+ "bush_b": {
+  "id": "bush_b",
+  "name_tr": "Böğürtlen Çalısı",
+  "use": "Orman kenarı meyveli çalı (kırmızı meyveler)",
+  "category": "nature",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 170,
+  "size": [
+   1.502,
+   1.491,
+   1.296
+  ],
+  "min": [
+   -0.735,
+   -0.724,
+   0.0
+  ],
+  "max": [
+   0.767,
+   0.571,
+   1.491
+  ],
+  "colors": 11,
+  "bytes": 25556,
+  "objects": [
+   "bush_b"
+  ]
+ },
+ "grass_tuft": {
+  "id": "grass_tuft",
+  "name_tr": "Çimen Öbeği",
+  "use": "Açık dünya zemin süsü (instancing ile çok sayıda)",
+  "category": "nature",
+  "emissive": "",
+  "attach": "alfa-kesik (MASK) çift yüzlü kartlar",
+  "anims": "",
+  "tris": 8,
+  "size": [
+   0.85,
+   0.55,
+   0.721
+  ],
+  "min": [
+   -0.425,
+   -0.35,
+   0.0
+  ],
+  "max": [
+   0.425,
+   0.371,
+   0.55
+  ],
+  "colors": 4,
+  "bytes": 2868,
+  "objects": [
+   "grass_tuft"
+  ]
+ },
+ "flowers": {
+  "id": "flowers",
+  "name_tr": "Kır Çiçekleri",
+  "use": "Çayır, kasaba bahçeleri, mezarlık süsü",
+  "category": "nature",
+  "emissive": "",
+  "attach": "alfa-kesik (MASK) çift yüzlü kartlar",
+  "anims": "",
+  "tris": 10,
+  "size": [
+   0.861,
+   0.5,
+   0.752
+  ],
+  "min": [
+   -0.511,
+   -0.425,
+   0.0
+  ],
+  "max": [
+   0.35,
+   0.327,
+   0.5
+  ],
+  "colors": 16,
+  "bytes": 3176,
+  "objects": [
+   "flowers"
+  ]
+ },
+ "rock_small": {
+  "id": "rock_small",
+  "name_tr": "Küçük Taş",
+  "use": "Zemin dolgusu, yol kenarı",
+  "category": "nature",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 80,
+  "size": [
+   0.786,
+   0.44,
+   0.597
+  ],
+  "min": [
+   -0.397,
+   -0.29,
+   0.0
+  ],
+  "max": [
+   0.39,
+   0.308,
+   0.44
+  ],
+  "colors": 5,
+  "bytes": 12604,
+  "objects": [
+   "rock_small"
+  ]
+ },
+ "rock_medium": {
+  "id": "rock_medium",
+  "name_tr": "Kaya",
+  "use": "Açık dünya engeli, zindan kenarı",
+  "category": "nature",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 80,
+  "size": [
+   2.246,
+   1.348,
+   1.812
+  ],
+  "min": [
+   -1.128,
+   -1.025,
+   0.0
+  ],
+  "max": [
+   1.117,
+   0.788,
+   1.348
+  ],
+  "colors": 9,
+  "bytes": 14252,
+  "objects": [
+   "rock_medium"
+  ]
+ },
+ "rock_large": {
+  "id": "rock_large",
+  "name_tr": "Büyük Kaya",
+  "use": "Açık dünya engeli / yer işareti",
+  "category": "nature",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 240,
+  "size": [
+   4.055,
+   2.561,
+   2.6
+  ],
+  "min": [
+   -2.028,
+   -1.3,
+   0.0
+  ],
+  "max": [
+   2.028,
+   1.3,
+   2.561
+  ],
+  "colors": 9,
+  "bytes": 34520,
+  "objects": [
+   "rock_large"
+  ]
+ },
+ "rock_cliff": {
+  "id": "rock_cliff",
+  "name_tr": "Kayalık Uçurum Parçası",
+  "use": "Bölge sınırı, dağ yamacı, zindan mağara duvarı",
+  "category": "nature",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 250,
+  "size": [
+   6.925,
+   5.235,
+   5.001
+  ],
+  "min": [
+   -3.441,
+   -2.404,
+   0.0
+  ],
+  "max": [
+   3.485,
+   2.597,
+   5.235
+  ],
+  "colors": 9,
+  "bytes": 26884,
+  "objects": [
+   "rock_cliff"
+  ]
+ },
+ "fence_wood": {
+  "id": "fence_wood",
+  "name_tr": "Ahşap Çit",
+  "use": "Kasaba/çiftlik sınırı; 4 m segment X ekseninde, uç uca dizilir",
+  "category": "nature",
+  "emissive": "",
+  "attach": "segment X ekseni boyunca -2..+2; direkler uçlarda",
+  "anims": "",
+  "tris": 69,
+  "size": [
+   4.097,
+   1.22,
+   0.218
+  ],
+  "min": [
+   -2.041,
+   -0.13,
+   0.0
+  ],
+  "max": [
+   2.056,
+   0.088,
+   1.22
+  ],
+  "colors": 8,
+  "bytes": 10472,
+  "objects": [
+   "fence_wood"
+  ]
+ },
+ "fence_stone": {
+  "id": "fence_stone",
+  "name_tr": "Taş Duvar",
+  "use": "Alçak taş duvar; kasaba/mezarlık sınırı, 4 m segment",
+  "category": "nature",
+  "emissive": "",
+  "attach": "segment X ekseni boyunca -2..+2",
+  "anims": "",
+  "tris": 120,
+  "size": [
+   4.006,
+   0.984,
+   0.742
+  ],
+  "min": [
+   -2.006,
+   -0.365,
+   0.0
+  ],
+  "max": [
+   2.0,
+   0.377,
+   0.984
+  ],
+  "colors": 13,
+  "bytes": 16052,
+  "objects": [
+   "fence_stone"
+  ]
+ },
+ "crate_a": {
+  "id": "crate_a",
+  "name_tr": "Tahta Kasa",
+  "use": "Kasaba/zindan dolgu objesi, üst üste dizilebilir (1x1x1 m)",
+  "category": "town",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 12,
+  "size": [
+   1.0,
+   1.0,
+   1.0
+  ],
+  "min": [
+   -0.5,
+   -0.5,
+   0.0
+  ],
+  "max": [
+   0.5,
+   0.5,
+   1.0
+  ],
+  "colors": 5,
+  "bytes": 3320,
+  "objects": [
+   "crate_a"
+  ]
+ },
+ "crate_b": {
+  "id": "crate_b",
+  "name_tr": "Demir Köşeli Erzak Sandığı",
+  "use": "Liman/depo/kervan yükü, uzun erzak kasası",
+  "category": "town",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 204,
+  "size": [
+   1.378,
+   0.73,
+   0.82
+  ],
+  "min": [
+   -0.689,
+   -0.41,
+   0.0
+  ],
+  "max": [
+   0.689,
+   0.41,
+   0.73
+  ],
+  "colors": 12,
+  "bytes": 22804,
+  "objects": [
+   "crate_b"
+  ]
+ },
+ "barrel": {
+  "id": "barrel",
+  "name_tr": "Fıçı",
+  "use": "Kasaba/meyhane/zindan dolgu objesi",
+  "category": "town",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 176,
+  "size": [
+   0.733,
+   1.05,
+   0.697
+  ],
+  "min": [
+   -0.367,
+   -0.349,
+   0.0
+  ],
+  "max": [
+   0.367,
+   0.349,
+   1.05
+  ],
+  "colors": 13,
+  "bytes": 20160,
+  "objects": [
+   "barrel"
+  ]
+ },
+ "sacks": {
+  "id": "sacks",
+  "name_tr": "Çuval Yığını",
+  "use": "Pazar, değirmen, kervan yükü (3 çuval)",
+  "category": "town",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 304,
+  "size": [
+   1.276,
+   0.816,
+   1.351
+  ],
+  "min": [
+   -0.578,
+   -0.796,
+   0.0
+  ],
+  "max": [
+   0.698,
+   0.555,
+   0.816
+  ],
+  "colors": 11,
+  "bytes": 33348,
+  "objects": [
+   "sacks"
+  ]
+ },
+ "market_stall": {
+  "id": "market_stall",
+  "name_tr": "Pazar Tezgahı",
+  "use": "Kasaba pazarı satıcı tezgahı (NPC satıcı arkasında durur)",
+  "category": "town",
+  "emissive": "",
+  "attach": "'vendor_spot' boş node: satıcı NPC'nin durduğu yer (tezgah arkası); 'roof_cloth' ayrı mesh",
+  "anims": "",
+  "tris": 362,
+  "size": [
+   3.5,
+   2.98,
+   2.45
+  ],
+  "min": [
+   -1.75,
+   -1.3,
+   0.0
+  ],
+  "max": [
+   1.75,
+   1.15,
+   2.98
+  ],
+  "colors": 15,
+  "bytes": 41932,
+  "objects": [
+   "market_stall",
+   "roof_cloth",
+   "vendor_spot"
+  ]
+ },
+ "tent": {
+  "id": "tent",
+  "name_tr": "Çadır",
+  "use": "Kamp alanı, kervan durağı, açık dünya kampı",
+  "category": "town",
+  "emissive": "",
+  "attach": "'entrance' boş node: çadır girişi (-Y)",
+  "anims": "",
+  "tris": 231,
+  "size": [
+   3.4,
+   2.45,
+   5.96
+  ],
+  "min": [
+   -1.7,
+   -2.98,
+   0.0
+  ],
+  "max": [
+   1.7,
+   2.98,
+   2.45
+  ],
+  "colors": 16,
+  "bytes": 26756,
+  "objects": [
+   "tent_frame",
+   "tent",
+   "entrance"
+  ]
+ },
+ "well": {
+  "id": "well",
+  "name_tr": "Kuyu",
+  "use": "Kasaba meydanı merkezi, görev etkileşim noktası",
+  "category": "town",
+  "emissive": "",
+  "attach": "'bucket' ayrı node (ip ucu, yukarı/aşağı animasyon için); 'interact' boş node",
+  "anims": "",
+  "tris": 440,
+  "size": [
+   2.57,
+   2.78,
+   3.694
+  ],
+  "min": [
+   -1.275,
+   -1.847,
+   0.0
+  ],
+  "max": [
+   1.295,
+   1.847,
+   2.78
+  ],
+  "colors": 23,
+  "bytes": 49152,
+  "objects": [
+   "well",
+   "bucket",
+   "interact"
+  ]
+ },
+ "wagon": {
+  "id": "wagon",
+  "name_tr": "Yük Arabası",
+  "use": "Kervan, çiftlik, kasaba girişi süsü (yüklü)",
+  "category": "town",
+  "emissive": "",
+  "attach": "tekerlek node'ları 'wheel_fl','wheel_fr','wheel_bl','wheel_br' (yerel X ekseninde döner)",
+  "anims": "",
+  "tris": 616,
+  "size": [
+   2.02,
+   1.482,
+   4.381
+  ],
+  "min": [
+   -1.01,
+   -2.191,
+   0.0
+  ],
+  "max": [
+   1.01,
+   2.191,
+   1.482
+  ],
+  "colors": 19,
+  "bytes": 69612,
+  "objects": [
+   "wagon",
+   "wheel_fl",
+   "wheel_fr",
+   "wheel_bl",
+   "wheel_br"
+  ]
+ },
+ "lamp_post": {
+  "id": "lamp_post",
+  "name_tr": "Sokak Feneri",
+  "use": "Kasaba sokak aydınlatması (gece)",
+  "category": "town",
+  "emissive": "fener camları (sıcak sarı)",
+  "attach": "'light_0' boş node: fener merkezi, PointLight için",
+  "anims": "",
+  "tris": 136,
+  "size": [
+   0.5,
+   3.55,
+   1.12
+  ],
+  "min": [
+   -0.25,
+   -0.87,
+   0.0
+  ],
+  "max": [
+   0.25,
+   0.25,
+   3.55
+  ],
+  "colors": 12,
+  "bytes": 17524,
+  "objects": [
+   "lamp_post",
+   "light_0"
+  ]
+ },
+ "brazier": {
+  "id": "brazier",
+  "name_tr": "Mangal",
+  "use": "Zindan/kasaba ateş kaynağı, boss odası aydınlatması",
+  "category": "town",
+  "emissive": "kömürler + 'flame' kartları",
+  "attach": "'flame' ayrı mesh (titreşim/ölçek animasyonu); 'light_0', 'fire_fx' boş node",
+  "anims": "",
+  "tris": 318,
+  "size": [
+   1.16,
+   1.73,
+   1.16
+  ],
+  "min": [
+   -0.58,
+   -0.58,
+   0.0
+  ],
+  "max": [
+   0.58,
+   0.58,
+   1.73
+  ],
+  "colors": 11,
+  "bytes": 38556,
+  "objects": [
+   "brazier",
+   "flame",
+   "light_0",
+   "fire_fx"
+  ]
+ },
+ "campfire": {
+  "id": "campfire",
+  "name_tr": "Kamp Ateşi",
+  "use": "Açık dünya kampı, dinlenme noktası (taş çember + odunlar)",
+  "category": "town",
+  "emissive": "köz + 'flame' kartları",
+  "attach": "'flame' ayrı mesh; 'light_0', 'fire_fx' boş node",
+  "anims": "",
+  "tris": 313,
+  "size": [
+   2.647,
+   1.0,
+   1.699
+  ],
+  "min": [
+   -1.293,
+   -0.822,
+   0.0
+  ],
+  "max": [
+   1.354,
+   0.877,
+   1.0
+  ],
+  "colors": 20,
+  "bytes": 44412,
+  "objects": [
+   "campfire",
+   "flame",
+   "light_0",
+   "fire_fx"
+  ]
+ },
+ "banner_red": {
+  "id": "banner_red",
+  "name_tr": "Kızıl Sancak",
+  "use": "Kasaba/lonca sancağı, PvP kızıl takım işareti (kılıç arması)",
+  "category": "town",
+  "emissive": "",
+  "attach": "'cloth' ayrı mesh (rüzgar dalgası için)",
+  "anims": "",
+  "tris": 138,
+  "size": [
+   1.74,
+   4.75,
+   0.7
+  ],
+  "min": [
+   -0.87,
+   -0.35,
+   0.0
+  ],
+  "max": [
+   0.87,
+   0.35,
+   4.75
+  ],
+  "colors": 18,
+  "bytes": 19776,
+  "objects": [
+   "banner_red",
+   "cloth"
+  ]
+ },
+ "banner_blue": {
+  "id": "banner_blue",
+  "name_tr": "Mavi Sancak",
+  "use": "Kraliyet/kasaba sancağı, mavi takım işareti (taç arması)",
+  "category": "town",
+  "emissive": "",
+  "attach": "'cloth' ayrı mesh",
+  "anims": "",
+  "tris": 138,
+  "size": [
+   1.74,
+   4.75,
+   0.7
+  ],
+  "min": [
+   -0.87,
+   -0.35,
+   0.0
+  ],
+  "max": [
+   0.87,
+   0.35,
+   4.75
+  ],
+  "colors": 18,
+  "bytes": 19760,
+  "objects": [
+   "banner_blue",
+   "cloth"
+  ]
+ },
+ "banner_green": {
+  "id": "banner_green",
+  "name_tr": "Yeşil Sancak",
+  "use": "Orman/elf bölgesi sancağı, yeşil takım işareti (ağaç arması)",
+  "category": "town",
+  "emissive": "",
+  "attach": "'cloth' ayrı mesh",
+  "anims": "",
+  "tris": 138,
+  "size": [
+   1.74,
+   4.75,
+   0.7
+  ],
+  "min": [
+   -0.87,
+   -0.35,
+   0.0
+  ],
+  "max": [
+   0.87,
+   0.35,
+   4.75
+  ],
+  "colors": 18,
+  "bytes": 19812,
+  "objects": [
+   "banner_green",
+   "cloth"
+  ]
+ },
+ "signpost": {
+  "id": "signpost",
+  "name_tr": "Yön Tabelası",
+  "use": "Kavşak yön levhası (kasaba / zindan / orman)",
+  "category": "town",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 172,
+  "size": [
+   1.598,
+   2.6,
+   1.322
+  ],
+  "min": [
+   -0.757,
+   -0.841,
+   0.0
+  ],
+  "max": [
+   0.841,
+   0.481,
+   2.6
+  ],
+  "colors": 12,
+  "bytes": 25884,
+  "objects": [
+   "signpost"
+  ]
+ },
+ "notice_board": {
+  "id": "notice_board",
+  "name_tr": "İlan / Ödül Panosu",
+  "use": "Görev ve ödül (bounty) panosu; etkileşim noktası",
+  "category": "town",
+  "emissive": "",
+  "attach": "'interact' boş node (panonun önü, -Y)",
+  "anims": "",
+  "tris": 118,
+  "size": [
+   2.5,
+   2.913,
+   1.07
+  ],
+  "min": [
+   -1.25,
+   -0.535,
+   0.0
+  ],
+  "max": [
+   1.25,
+   0.535,
+   2.913
+  ],
+  "colors": 21,
+  "bytes": 19276,
+  "objects": [
+   "notice_board",
+   "interact"
+  ]
+ },
+ "anvil": {
+  "id": "anvil",
+  "name_tr": "Örs",
+  "use": "Demirci, eşya yükseltme NPC noktası",
+  "category": "town",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 134,
+  "size": [
+   0.96,
+   0.885,
+   0.761
+  ],
+  "min": [
+   -0.42,
+   -0.392,
+   0.0
+  ],
+  "max": [
+   0.54,
+   0.369,
+   0.885
+  ],
+  "colors": 16,
+  "bytes": 17472,
+  "objects": [
+   "anvil"
+  ]
+ },
+ "forge": {
+  "id": "forge",
+  "name_tr": "Demirci Ocağı",
+  "use": "Demirci NPC işyeri; craft/yükseltme istasyonu",
+  "category": "town",
+  "emissive": "ocak közleri, kül çukuru, 'flame' kartları",
+  "attach": "'flame' ayrı mesh; 'light_0', 'fire_fx' boş node",
+  "anims": "",
+  "tris": 252,
+  "size": [
+   2.88,
+   4.27,
+   1.745
+  ],
+  "min": [
+   -1.155,
+   -0.89,
+   0.0
+  ],
+  "max": [
+   1.725,
+   0.855,
+   4.27
+  ],
+  "colors": 22,
+  "bytes": 34932,
+  "objects": [
+   "forge",
+   "flame",
+   "light_0",
+   "fire_fx"
+  ]
+ },
+ "alchemy_table": {
+  "id": "alchemy_table",
+  "name_tr": "Simya Masası",
+  "use": "İksir satıcısı / simya craft istasyonu",
+  "category": "town",
+  "emissive": "iksir sıvıları (yeşil/mor/mavi), mum alevi",
+  "attach": "'interact' boş node (masanın önü)",
+  "anims": "",
+  "tris": 588,
+  "size": [
+   1.9,
+   1.33,
+   0.9
+  ],
+  "min": [
+   -0.95,
+   -0.45,
+   0.0
+  ],
+  "max": [
+   0.95,
+   0.45,
+   1.33
+  ],
+  "colors": 25,
+  "bytes": 67560,
+  "objects": [
+   "alchemy_table",
+   "interact"
+  ]
+ },
+ "cauldron": {
+  "id": "cauldron",
+  "name_tr": "Kazan",
+  "use": "Cadı/simyacı kazanı, kamp aşçısı; zindan tuzak süsü",
+  "category": "town",
+  "emissive": "yeşil kaynayan sıvı ('liquid'), alttaki köz",
+  "attach": "'liquid' ayrı mesh (UV kaydırma/kabarcık için); 'light_0'",
+  "anims": "",
+  "tris": 355,
+  "size": [
+   1.604,
+   1.07,
+   1.255
+  ],
+  "min": [
+   -0.802,
+   -0.628,
+   0.0
+  ],
+  "max": [
+   0.802,
+   0.628,
+   1.07
+  ],
+  "colors": 18,
+  "bytes": 39228,
+  "objects": [
+   "cauldron",
+   "liquid",
+   "light_0"
+  ]
+ },
+ "training_dummy": {
+  "id": "training_dummy",
+  "name_tr": "Antrenman Kuklası",
+  "use": "Kasaba eğitim alanı; hasar testi hedefi",
+  "category": "town",
+  "emissive": "",
+  "attach": "hit animasyonu için gövde tek mesh; 'hit_point' boş node (göğüs)",
+  "anims": "",
+  "tris": 256,
+  "size": [
+   1.84,
+   2.16,
+   1.2
+  ],
+  "min": [
+   -0.92,
+   -0.6,
+   0.0
+  ],
+  "max": [
+   0.92,
+   0.6,
+   2.16
+  ],
+  "colors": 19,
+  "bytes": 31244,
+  "objects": [
+   "training_dummy",
+   "hit_point"
+  ]
+ },
+ "chest_wood": {
+  "id": "chest_wood",
+  "name_tr": "Ahşap Sandık",
+  "use": "Sıradan ganimet sandığı (gri/beyaz nadirlik)",
+  "category": "dungeon",
+  "emissive": "",
+  "attach": "'lid' node menteşede (arka üst kenar); yerel X ekseninde -105° döndürünce açılır, 'Open' animasyonu; 'loot_fx' boş node",
+  "anims": "Open",
+  "tris": 204,
+  "size": [
+   1.1,
+   0.815,
+   0.79
+  ],
+  "min": [
+   -0.55,
+   -0.41,
+   0.0
+  ],
+  "max": [
+   0.55,
+   0.38,
+   0.815
+  ],
+  "colors": 13,
+  "bytes": 27860,
+  "objects": [
+   "chest_wood",
+   "lid",
+   "loot_fx"
+  ]
+ },
+ "chest_iron": {
+  "id": "chest_iron",
+  "name_tr": "Demir Sandık",
+  "use": "Nadir ganimet sandığı (mavi nadirlik)",
+  "category": "dungeon",
+  "emissive": "",
+  "attach": "'lid' menteşe pivotlu, 'Open' animasyonu; 'loot_fx'",
+  "anims": "Open",
+  "tris": 300,
+  "size": [
+   1.17,
+   0.835,
+   0.82
+  ],
+  "min": [
+   -0.585,
+   -0.425,
+   0.0
+  ],
+  "max": [
+   0.585,
+   0.395,
+   0.835
+  ],
+  "colors": 17,
+  "bytes": 36056,
+  "objects": [
+   "chest_iron",
+   "lid",
+   "loot_fx"
+  ]
+ },
+ "chest_gold": {
+  "id": "chest_gold",
+  "name_tr": "Altın Sandık",
+  "use": "Destansı öncesi ödül sandığı (sarı nadirlik), Mythic+ bitiş sandığı",
+  "category": "dungeon",
+  "emissive": "kapak üstü mavi mücevher",
+  "attach": "'lid' menteşe pivotlu, 'Open' animasyonu; 'loot_fx'",
+  "anims": "Open",
+  "tris": 416,
+  "size": [
+   1.24,
+   0.965,
+   0.85
+  ],
+  "min": [
+   -0.62,
+   -0.44,
+   0.0
+  ],
+  "max": [
+   0.62,
+   0.41,
+   0.965
+  ],
+  "colors": 15,
+  "bytes": 47864,
+  "objects": [
+   "chest_gold",
+   "lid",
+   "loot_fx"
+  ]
+ },
+ "chest_epic": {
+  "id": "chest_epic",
+  "name_tr": "Destansı Sandık",
+  "use": "Efsanevi/destansı mor ödül sandığı (Mythic+ +10 ve üstü)",
+  "category": "dungeon",
+  "emissive": "mor rünler (gövde+kapak), iç parıltı, kristal sivri uçlar",
+  "attach": "'lid' menteşe pivotlu, 'Open' animasyonu; 'loot_fx'",
+  "anims": "Open",
+  "tris": 324,
+  "size": [
+   1.39,
+   1.27,
+   0.93
+  ],
+  "min": [
+   -0.695,
+   -0.48,
+   0.0
+  ],
+  "max": [
+   0.695,
+   0.45,
+   1.27
+  ],
+  "colors": 17,
+  "bytes": 42852,
+  "objects": [
+   "chest_epic",
+   "lid",
+   "loot_fx"
+  ]
+ },
+ "crystal_blue": {
+  "id": "crystal_blue",
+  "name_tr": "Mavi Kristal Kümesi",
+  "use": "Zindan/mağara aydınlatması, maden süsü",
+  "category": "dungeon",
+  "emissive": "kristaller (mavi)",
+  "attach": "'light_0' boş node: mavi PointLight için",
+  "anims": "",
+  "tris": 152,
+  "size": [
+   1.625,
+   1.65,
+   1.477
+  ],
+  "min": [
+   -0.798,
+   -0.74,
+   0.0
+  ],
+  "max": [
+   0.827,
+   0.737,
+   1.65
+  ],
+  "colors": 10,
+  "bytes": 19536,
+  "objects": [
+   "crystal_blue",
+   "light_0"
+  ]
+ },
+ "crystal_purple": {
+  "id": "crystal_purple",
+  "name_tr": "Mor Kristal Kümesi",
+  "use": "Büyülü zindan bölgeleri, boss odası süsü",
+  "category": "dungeon",
+  "emissive": "kristaller (mor)",
+  "attach": "'light_0' boş node: mor PointLight için",
+  "anims": "",
+  "tris": 174,
+  "size": [
+   2.196,
+   2.145,
+   2.008
+  ],
+  "min": [
+   -0.989,
+   -0.95,
+   0.0
+  ],
+  "max": [
+   1.206,
+   1.058,
+   2.145
+  ],
+  "colors": 10,
+  "bytes": 21624,
+  "objects": [
+   "crystal_purple",
+   "light_0"
+  ]
+ },
+ "gravestone_a": {
+  "id": "gravestone_a",
+  "name_tr": "Mezar Taşı (Kemerli)",
+  "use": "Mezarlık, zindan girişi; toprak höyüklü",
+  "category": "dungeon",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 124,
+  "size": [
+   0.916,
+   1.283,
+   1.835
+  ],
+  "min": [
+   -0.458,
+   -0.917,
+   0.0
+  ],
+  "max": [
+   0.458,
+   0.917,
+   1.283
+  ],
+  "colors": 12,
+  "bytes": 19484,
+  "objects": [
+   "gravestone_a"
+  ]
+ },
+ "gravestone_b": {
+  "id": "gravestone_b",
+  "name_tr": "Mezar Taşı (Haç)",
+  "use": "Mezarlık; halkalı taş haç",
+  "category": "dungeon",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 176,
+  "size": [
+   0.942,
+   1.503,
+   1.942
+  ],
+  "min": [
+   -0.471,
+   -0.971,
+   0.0
+  ],
+  "max": [
+   0.471,
+   0.971,
+   1.503
+  ],
+  "colors": 9,
+  "bytes": 23912,
+  "objects": [
+   "gravestone_b"
+  ]
+ },
+ "gravestone_c": {
+  "id": "gravestone_c",
+  "name_tr": "Kırık Mezar Taşı",
+  "use": "Eski/terk edilmiş mezarlık, lanetli bölge",
+  "category": "dungeon",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 148,
+  "size": [
+   1.226,
+   0.777,
+   1.841
+  ],
+  "min": [
+   -0.613,
+   -0.92,
+   0.0
+  ],
+  "max": [
+   0.613,
+   0.92,
+   0.777
+  ],
+  "colors": 11,
+  "bytes": 20620,
+  "objects": [
+   "gravestone_c"
+  ]
+ },
+ "bone_pile": {
+  "id": "bone_pile",
+  "name_tr": "Kemik Yığını",
+  "use": "Zindan köşesi, canavar ini, mezar odası",
+  "category": "dungeon",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 516,
+  "size": [
+   1.246,
+   0.375,
+   1.164
+  ],
+  "min": [
+   -0.568,
+   -0.575,
+   0.0
+  ],
+  "max": [
+   0.677,
+   0.589,
+   0.375
+  ],
+  "colors": 8,
+  "bytes": 51436,
+  "objects": [
+   "bone_pile"
+  ]
+ },
+ "chains_hanging": {
+  "id": "chains_hanging",
+  "name_tr": "Asılı Zincirler",
+  "use": "Zindan tavanından sarkan zincirler (zindan duvar yüksekliği 4 m)",
+  "category": "dungeon",
+  "emissive": "",
+  "attach": "İSTİSNA: orijin ÜSTTE (tavan bağlantı noktası); geometri y=0..-3.3 aşağı uzanır, tavana (y=4) yerleştir",
+  "anims": "",
+  "tris": 608,
+  "size": [
+   0.76,
+   3.103,
+   0.35
+  ],
+  "min": [
+   -0.41,
+   -0.175,
+   -3.103
+  ],
+  "max": [
+   0.35,
+   0.175,
+   0.0
+  ],
+  "colors": 8,
+  "bytes": 55884,
+  "objects": [
+   "chains_hanging"
+  ]
+ },
+ "iron_cage": {
+  "id": "iron_cage",
+  "name_tr": "Demir Kafes",
+  "use": "Esir kafesi, zindan hapishane odası, görev (kurtarma) objesi",
+  "category": "dungeon",
+  "emissive": "",
+  "attach": "'door' ayrı mesh (menteşe kapı sol kenarında, dikey eksende döner); 'prisoner_spot' boş node",
+  "anims": "",
+  "tris": 568,
+  "size": [
+   2.0,
+   3.13,
+   2.0
+  ],
+  "min": [
+   -1.0,
+   -1.0,
+   0.0
+  ],
+  "max": [
+   1.0,
+   1.0,
+   3.13
+  ],
+  "colors": 7,
+  "bytes": 56476,
+  "objects": [
+   "iron_cage",
+   "door",
+   "prisoner_spot"
+  ]
+ },
+ "altar": {
+  "id": "altar",
+  "name_tr": "Kurban Sunağı",
+  "use": "Zindan ritüel odası, boss arenası merkezi, görev etkileşimi",
+  "category": "dungeon",
+  "emissive": "kızıl rünler, mum alevleri, kan kasesi",
+  "attach": "'offering' boş node (sunak üstü), 'light_0'",
+  "anims": "",
+  "tris": 251,
+  "size": [
+   2.6,
+   1.67,
+   1.8
+  ],
+  "min": [
+   -1.3,
+   -0.9,
+   0.0
+  ],
+  "max": [
+   1.3,
+   0.9,
+   1.67
+  ],
+  "colors": 27,
+  "bytes": 36260,
+  "objects": [
+   "altar",
+   "offering",
+   "light_0"
+  ]
+ },
+ "sarcophagus": {
+  "id": "sarcophagus",
+  "name_tr": "Lahit",
+  "use": "Kraliyet mezarı, boss ortaya çıkış noktası, gizli hazine",
+  "category": "dungeon",
+  "emissive": "",
+  "attach": "'lid' ayrı mesh (pivot kapak alt merkezi; kaydırma/dönme animasyonu için)",
+  "anims": "",
+  "tris": 186,
+  "size": [
+   1.35,
+   1.32,
+   2.7
+  ],
+  "min": [
+   -0.675,
+   -1.35,
+   0.0
+  ],
+  "max": [
+   0.675,
+   1.35,
+   1.32
+  ],
+  "colors": 8,
+  "bytes": 23720,
+  "objects": [
+   "sarcophagus",
+   "lid"
+  ]
+ },
+ "pillar_broken": {
+  "id": "pillar_broken",
+  "name_tr": "Kırık Sütun",
+  "use": "Antik harabe, zindan salonu, açık dünya kalıntıları",
+  "category": "dungeon",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 232,
+  "size": [
+   2.588,
+   2.507,
+   2.513
+  ],
+  "min": [
+   -1.294,
+   -1.257,
+   0.0
+  ],
+  "max": [
+   1.294,
+   1.257,
+   2.507
+  ],
+  "colors": 5,
+  "bytes": 29412,
+  "objects": [
+   "pillar_broken"
+  ]
+ },
+ "statue_hooded": {
+  "id": "statue_hooded",
+  "name_tr": "Kukuletalı Savaşçı Heykeli",
+  "use": "Kasaba meydanı anıtı, zindan girişi muhafızı",
+  "category": "dungeon",
+  "emissive": "",
+  "attach": "",
+  "anims": "",
+  "tris": 434,
+  "size": [
+   1.729,
+   3.38,
+   1.7
+  ],
+  "min": [
+   -0.85,
+   -0.85,
+   0.0
+  ],
+  "max": [
+   0.879,
+   0.85,
+   3.38
+  ],
+  "colors": 12,
+  "bytes": 46812,
+  "objects": [
+   "statue_hooded"
+  ]
+ },
+ "loot_bag": {
+  "id": "loot_bag",
+  "name_tr": "Ganimet Kesesi",
+  "use": "Düşen ganimet torbası (canavar öldürünce yere düşer)",
+  "category": "dungeon",
+  "emissive": "altın paralar (hafif parıltı, yerde fark edilsin diye)",
+  "attach": "'loot_fx' boş node (ışın/parıltı efekti)",
+  "anims": "",
+  "tris": 273,
+  "size": [
+   0.66,
+   0.47,
+   0.637
+  ],
+  "min": [
+   -0.382,
+   -0.413,
+   0.0
+  ],
+  "max": [
+   0.278,
+   0.224,
+   0.47
+  ],
+  "colors": 9,
+  "bytes": 27796,
+  "objects": [
+   "loot_bag",
+   "loot_fx"
+  ]
+ },
+ "mplus_portal": {
+  "id": "mplus_portal",
+  "name_tr": "Kadim Zindan Geçidi (Mythic+)",
+  "use": "Mythic+ zindan giriş kapısı; anahtar taşı aktifken portal yüzeyi parlar",
+  "category": "special",
+  "emissive": "'portal_surface' (mor girdap), sütun rün şeritleri, kilit taşı mücevheri",
+  "attach": "'portal_surface' ayrı mesh: girdap UV merkezli (texture.center=0.5,0.5 ile döndür); 'enter_trigger' (giriş noktası), 'light_0' (portal merkezi)",
+  "anims": "",
+  "tris": 271,
+  "size": [
+   7.0,
+   7.213,
+   3.55
+  ],
+  "min": [
+   -3.5,
+   -2.05,
+   0.0
+  ],
+  "max": [
+   3.5,
+   1.5,
+   7.213
+  ],
+  "colors": 15,
+  "bytes": 39124,
+  "objects": [
+   "mplus_portal",
+   "portal_surface",
+   "light_0",
+   "enter_trigger"
+  ]
+ },
+ "font_of_power": {
+  "id": "font_of_power",
+  "name_tr": "Güç Kaynağı",
+  "use": "Mythic+ anahtar taşı kaidesi; anahtar taşı buraya yerleştirilince zindan başlar",
+  "category": "special",
+  "emissive": "'rune_ring' (dönen rün halkası), kaide rünleri, kase parıltısı, yüzen kristaller ('shards')",
+  "attach": "'keystone_socket' boş node (anahtar taşının oturduğu nokta, y≈1.42); 'rune_ring' ve 'shards' ayrı mesh (döndür/salla); 'light_0'",
+  "anims": "",
+  "tris": 352,
+  "size": [
+   2.235,
+   1.486,
+   2.235
+  ],
+  "min": [
+   -1.118,
+   -1.118,
+   0.0
+  ],
+  "max": [
+   1.118,
+   1.118,
+   1.486
+  ],
+  "colors": 12,
+  "bytes": 42496,
+  "objects": [
+   "font_of_power",
+   "rune_ring",
+   "shards",
+   "keystone_socket",
+   "light_0"
+  ]
+ },
+ "keystone": {
+  "id": "keystone",
+  "name_tr": "Kadim Anahtar Taşı",
+  "use": "Mythic+ anahtar taşı eşyası (envanter/yerde/Güç Kaynağı üstünde)",
+  "category": "special",
+  "emissive": "rün oyukları ve uç kristalleri (mor)",
+  "attach": "orijin alt merkez; Güç Kaynağı 'keystone_socket' noktasına oturur",
+  "anims": "",
+  "tris": 68,
+  "size": [
+   0.239,
+   0.36,
+   0.276
+  ],
+  "min": [
+   -0.12,
+   -0.138,
+   0.0
+  ],
+  "max": [
+   0.12,
+   0.138,
+   0.36
+  ],
+  "colors": 11,
+  "bytes": 12884,
+  "objects": [
+   "keystone"
+  ]
+ },
+ "lobby_obelisk": {
+  "id": "lobby_obelisk",
+  "name_tr": "Toplanma Dikilitaşı",
+  "use": "Grup/lobi buluşma noktası; 5 yuva her katılan oyuncu için yanar",
+  "category": "special",
+  "emissive": "gövde rün sütunları, tepe kristali ('obelisk_crystal'), 5 yuva taşı ('slot_1'..'slot_5')",
+  "attach": "'slot_1'..'slot_5' ayrı mesh (parti üyesi katıldıkça emissive yak); 'obelisk_crystal' ayrı (döndür); 'light_0'",
+  "anims": "",
+  "tris": 168,
+  "size": [
+   3.786,
+   4.35,
+   3.601
+  ],
+  "min": [
+   -1.893,
+   -1.99,
+   0.0
+  ],
+  "max": [
+   1.893,
+   1.61,
+   4.35
+  ],
+  "colors": 9,
+  "bytes": 35196,
+  "objects": [
+   "lobby_obelisk",
+   "obelisk_crystal",
+   "slot_1",
+   "slot_2",
+   "slot_3",
+   "slot_4",
+   "slot_5",
+   "light_0"
+  ]
+ },
+ "waypoint_stone": {
+  "id": "waypoint_stone",
+  "name_tr": "Işınlanma Taşı",
+  "use": "Waypoint / hızlı seyahat noktası; etkileşimle harita açılır",
+  "category": "special",
+  "emissive": "taş üstü rünler, zemin rün halkası ('teleport_ring'), yüzen kristal ('waypoint_crystal')",
+  "attach": "'waypoint_crystal' ayrı mesh (süzülme+dönme), 'teleport_ring' ayrı mesh (dönme), 'arrive_point' boş node, 'light_0'",
+  "anims": "",
+  "tris": 170,
+  "size": [
+   3.1,
+   3.35,
+   3.1
+  ],
+  "min": [
+   -1.55,
+   -1.55,
+   0.0
+  ],
+  "max": [
+   1.55,
+   1.55,
+   3.35
+  ],
+  "colors": 9,
+  "bytes": 23944,
+  "objects": [
+   "waypoint_stone",
+   "teleport_ring",
+   "waypoint_crystal",
+   "arrive_point",
+   "light_0"
+  ]
+ }
+}

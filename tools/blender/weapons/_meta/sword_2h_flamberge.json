@@ -1,0 +1,27 @@
+{
+ "id": "sword_2h_flamberge",
+ "name": "Dalgalı Büyük Kılıç (Flamberg)",
+ "use": "Wavy-bladed two-hander with parrying hooks (lvl 30-45)",
+ "attach": "upper-hand grip at origin; blade +Y; second hand ~0.25 lower on the grip",
+ "kind": "2h",
+ "emissive": "",
+ "tris": 540,
+ "parts": 5,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": false,
+ "bbox_min": [
+  -0.276,
+  -0.04,
+  -0.516
+ ],
+ "bbox_max": [
+  0.276,
+  0.04,
+  1.62
+ ],
+ "bytes": 35696
+}

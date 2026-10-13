@@ -1,0 +1,4934 @@
+[
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree01_spring.glb",
+  "bytes": 67680,
+  "tris": 360,
+  "nodes": [
+   "tree01"
+  ],
+  "size": [
+   6.72,
+   8.075,
+   6.72
+  ],
+  "min": [
+   -3.36,
+   -0.475,
+   -3.36
+  ],
+  "max": [
+   3.36,
+   7.6,
+   3.36
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree01-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree01",
+  "variant": "spring",
+  "scale": 2.0,
+  "source": "trees/tree01.glb + textures/trees/tree01_spring.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree01-spring": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree01_summer.glb",
+  "bytes": 62032,
+  "tris": 360,
+  "nodes": [
+   "tree01"
+  ],
+  "size": [
+   6.72,
+   8.075,
+   6.72
+  ],
+  "min": [
+   -3.36,
+   -0.475,
+   -3.36
+  ],
+  "max": [
+   3.36,
+   7.6,
+   3.36
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree01-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree01",
+  "variant": "summer",
+  "scale": 2.0,
+  "source": "trees/tree01.glb + textures/trees/tree01_summer.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree01-summer": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree01_fall.glb",
+  "bytes": 67488,
+  "tris": 360,
+  "nodes": [
+   "tree01"
+  ],
+  "size": [
+   6.72,
+   8.075,
+   6.72
+  ],
+  "min": [
+   -3.36,
+   -0.475,
+   -3.36
+  ],
+  "max": [
+   3.36,
+   7.6,
+   3.36
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree01-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree01",
+  "variant": "fall",
+  "scale": 2.0,
+  "source": "trees/tree01.glb + textures/trees/tree01_fall.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree01-fall": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree01_winter.glb",
+  "bytes": 33128,
+  "tris": 110,
+  "nodes": [
+   "tree01"
+  ],
+  "size": [
+   6.72,
+   8.075,
+   6.72
+  ],
+  "min": [
+   -3.36,
+   -0.475,
+   -3.36
+  ],
+  "max": [
+   3.36,
+   7.6,
+   3.36
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree01-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree01",
+  "variant": "winter",
+  "scale": 2.0,
+  "source": "trees/tree01_winter.glb + textures/trees/tree01_winter.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree01-winter": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree02_spring.glb",
+  "bytes": 65592,
+  "tris": 350,
+  "nodes": [
+   "tree02"
+  ],
+  "size": [
+   4.8,
+   7.753,
+   4.8
+  ],
+  "min": [
+   -2.4,
+   -0.353,
+   -2.4
+  ],
+  "max": [
+   2.4,
+   7.4,
+   2.4
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree02-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree02",
+  "variant": "spring",
+  "scale": 2.0,
+  "source": "trees/tree02.glb + textures/trees/tree02_spring.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree02-spring": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree02_summer.glb",
+  "bytes": 62980,
+  "tris": 350,
+  "nodes": [
+   "tree02"
+  ],
+  "size": [
+   4.8,
+   7.753,
+   4.8
+  ],
+  "min": [
+   -2.4,
+   -0.353,
+   -2.4
+  ],
+  "max": [
+   2.4,
+   7.4,
+   2.4
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree02-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree02",
+  "variant": "summer",
+  "scale": 2.0,
+  "source": "trees/tree02.glb + textures/trees/tree02_summer.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree02-summer": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree02_fall.glb",
+  "bytes": 67084,
+  "tris": 350,
+  "nodes": [
+   "tree02"
+  ],
+  "size": [
+   4.8,
+   7.753,
+   4.8
+  ],
+  "min": [
+   -2.4,
+   -0.353,
+   -2.4
+  ],
+  "max": [
+   2.4,
+   7.4,
+   2.4
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree02-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree02",
+  "variant": "fall",
+  "scale": 2.0,
+  "source": "trees/tree02.glb + textures/trees/tree02_fall.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree02-fall": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree02_winter.glb",
+  "bytes": 63728,
+  "tris": 350,
+  "nodes": [
+   "tree02"
+  ],
+  "size": [
+   4.8,
+   7.753,
+   4.8
+  ],
+  "min": [
+   -2.4,
+   -0.353,
+   -2.4
+  ],
+  "max": [
+   2.4,
+   7.4,
+   2.4
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree02-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree02",
+  "variant": "winter",
+  "scale": 2.0,
+  "source": "trees/tree02.glb + textures/trees/tree02_winter.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree02-winter": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree03_spring.glb",
+  "bytes": 59920,
+  "tris": 366,
+  "nodes": [
+   "tree03"
+  ],
+  "size": [
+   6.72,
+   7.873,
+   6.72
+  ],
+  "min": [
+   -3.36,
+   -0.273,
+   -3.36
+  ],
+  "max": [
+   3.36,
+   7.6,
+   3.36
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree03-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree03",
+  "variant": "spring",
+  "scale": 2.0,
+  "source": "trees/tree03.glb + textures/trees/tree03_spring.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree03-spring": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree03_summer.glb",
+  "bytes": 59780,
+  "tris": 366,
+  "nodes": [
+   "tree03"
+  ],
+  "size": [
+   6.72,
+   7.873,
+   6.72
+  ],
+  "min": [
+   -3.36,
+   -0.273,
+   -3.36
+  ],
+  "max": [
+   3.36,
+   7.6,
+   3.36
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree03-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree03",
+  "variant": "summer",
+  "scale": 2.0,
+  "source": "trees/tree03.glb + textures/trees/tree03_summer.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree03-summer": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree03_fall.glb",
+  "bytes": 65304,
+  "tris": 366,
+  "nodes": [
+   "tree03"
+  ],
+  "size": [
+   6.72,
+   7.873,
+   6.72
+  ],
+  "min": [
+   -3.36,
+   -0.273,
+   -3.36
+  ],
+  "max": [
+   3.36,
+   7.6,
+   3.36
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree03-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree03",
+  "variant": "fall",
+  "scale": 2.0,
+  "source": "trees/tree03.glb + textures/trees/tree03_fall.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree03-fall": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree03_winter.glb",
+  "bytes": 32868,
+  "tris": 110,
+  "nodes": [
+   "tree03"
+  ],
+  "size": [
+   6.72,
+   7.873,
+   6.72
+  ],
+  "min": [
+   -3.36,
+   -0.273,
+   -3.36
+  ],
+  "max": [
+   3.36,
+   7.6,
+   3.36
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree03-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree03",
+  "variant": "winter",
+  "scale": 2.0,
+  "source": "trees/tree03_winter.glb + textures/trees/tree03_winter.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree03-winter": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree04_spring.glb",
+  "bytes": 60936,
+  "tris": 368,
+  "nodes": [
+   "tree04"
+  ],
+  "size": [
+   5.92,
+   8.643,
+   5.92
+  ],
+  "min": [
+   -2.96,
+   -0.243,
+   -2.96
+  ],
+  "max": [
+   2.96,
+   8.4,
+   2.96
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree04-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree04",
+  "variant": "spring",
+  "scale": 2.0,
+  "source": "trees/tree04.glb + textures/trees/tree04_spring.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree04-spring": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree04_summer.glb",
+  "bytes": 58272,
+  "tris": 368,
+  "nodes": [
+   "tree04"
+  ],
+  "size": [
+   5.92,
+   8.643,
+   5.92
+  ],
+  "min": [
+   -2.96,
+   -0.243,
+   -2.96
+  ],
+  "max": [
+   2.96,
+   8.4,
+   2.96
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree04-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree04",
+  "variant": "summer",
+  "scale": 2.0,
+  "source": "trees/tree04.glb + textures/trees/tree04_summer.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree04-summer": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree04_fall.glb",
+  "bytes": 64452,
+  "tris": 368,
+  "nodes": [
+   "tree04"
+  ],
+  "size": [
+   5.92,
+   8.643,
+   5.92
+  ],
+  "min": [
+   -2.96,
+   -0.243,
+   -2.96
+  ],
+  "max": [
+   2.96,
+   8.4,
+   2.96
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree04-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree04",
+  "variant": "fall",
+  "scale": 2.0,
+  "source": "trees/tree04.glb + textures/trees/tree04_fall.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree04-fall": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree04_winter.glb",
+  "bytes": 30332,
+  "tris": 110,
+  "nodes": [
+   "tree04"
+  ],
+  "size": [
+   5.92,
+   8.643,
+   5.92
+  ],
+  "min": [
+   -2.96,
+   -0.243,
+   -2.96
+  ],
+  "max": [
+   2.96,
+   8.4,
+   2.96
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree04-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree04",
+  "variant": "winter",
+  "scale": 2.0,
+  "source": "trees/tree04_winter.glb + textures/trees/tree04_winter.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree04-winter": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree05_spring.glb",
+  "bytes": 62900,
+  "tris": 374,
+  "nodes": [
+   "tree05"
+  ],
+  "size": [
+   6.72,
+   8.389,
+   6.72
+  ],
+  "min": [
+   -3.36,
+   -0.389,
+   -3.36
+  ],
+  "max": [
+   3.36,
+   8.0,
+   3.36
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree05-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree05",
+  "variant": "spring",
+  "scale": 2.0,
+  "source": "trees/tree05.glb + textures/trees/tree05_spring.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree05-spring": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree05_summer.glb",
+  "bytes": 62900,
+  "tris": 374,
+  "nodes": [
+   "tree05"
+  ],
+  "size": [
+   6.72,
+   8.389,
+   6.72
+  ],
+  "min": [
+   -3.36,
+   -0.389,
+   -3.36
+  ],
+  "max": [
+   3.36,
+   8.0,
+   3.36
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree05-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree05",
+  "variant": "summer",
+  "scale": 2.0,
+  "source": "trees/tree05.glb + textures/trees/tree05_summer.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree05-summer": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree05_fall.glb",
+  "bytes": 66544,
+  "tris": 374,
+  "nodes": [
+   "tree05"
+  ],
+  "size": [
+   6.72,
+   8.389,
+   6.72
+  ],
+  "min": [
+   -3.36,
+   -0.389,
+   -3.36
+  ],
+  "max": [
+   3.36,
+   8.0,
+   3.36
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree05-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree05",
+  "variant": "fall",
+  "scale": 2.0,
+  "source": "trees/tree05.glb + textures/trees/tree05_fall.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree05-fall": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree05_winter.glb",
+  "bytes": 32080,
+  "tris": 110,
+  "nodes": [
+   "tree05"
+  ],
+  "size": [
+   6.72,
+   8.389,
+   6.72
+  ],
+  "min": [
+   -3.36,
+   -0.389,
+   -3.36
+  ],
+  "max": [
+   3.36,
+   8.0,
+   3.36
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree05-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree05",
+  "variant": "winter",
+  "scale": 2.0,
+  "source": "trees/tree05_winter.glb + textures/trees/tree05_winter.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree05-winter": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree06_spring.glb",
+  "bytes": 67160,
+  "tris": 354,
+  "nodes": [
+   "tree06"
+  ],
+  "size": [
+   6.32,
+   8.265,
+   6.32
+  ],
+  "min": [
+   -3.16,
+   -0.265,
+   -3.16
+  ],
+  "max": [
+   3.16,
+   8.0,
+   3.16
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree06-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree06",
+  "variant": "spring",
+  "scale": 2.0,
+  "source": "trees/tree06.glb + textures/trees/tree06_spring.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree06-spring": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree06_summer.glb",
+  "bytes": 63336,
+  "tris": 354,
+  "nodes": [
+   "tree06"
+  ],
+  "size": [
+   6.32,
+   8.265,
+   6.32
+  ],
+  "min": [
+   -3.16,
+   -0.265,
+   -3.16
+  ],
+  "max": [
+   3.16,
+   8.0,
+   3.16
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree06-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree06",
+  "variant": "summer",
+  "scale": 2.0,
+  "source": "trees/tree06.glb + textures/trees/tree06_summer.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree06-summer": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree06_fall.glb",
+  "bytes": 67164,
+  "tris": 354,
+  "nodes": [
+   "tree06"
+  ],
+  "size": [
+   6.32,
+   8.265,
+   6.32
+  ],
+  "min": [
+   -3.16,
+   -0.265,
+   -3.16
+  ],
+  "max": [
+   3.16,
+   8.0,
+   3.16
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree06-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree06",
+  "variant": "fall",
+  "scale": 2.0,
+  "source": "trees/tree06.glb + textures/trees/tree06_fall.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree06-fall": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree06_winter.glb",
+  "bytes": 36236,
+  "tris": 110,
+  "nodes": [
+   "tree06"
+  ],
+  "size": [
+   6.32,
+   8.265,
+   6.32
+  ],
+  "min": [
+   -3.16,
+   -0.265,
+   -3.16
+  ],
+  "max": [
+   3.16,
+   8.0,
+   3.16
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree06-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree06",
+  "variant": "winter",
+  "scale": 2.0,
+  "source": "trees/tree06_winter.glb + textures/trees/tree06_winter.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree06-winter": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree07_spring.glb",
+  "bytes": 52416,
+  "tris": 334,
+  "nodes": [
+   "tree07"
+  ],
+  "size": [
+   4.598,
+   11.008,
+   4.598
+  ],
+  "min": [
+   -2.299,
+   -1.008,
+   -2.299
+  ],
+  "max": [
+   2.299,
+   10.0,
+   2.299
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree07-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree07",
+  "variant": "spring",
+  "scale": 1.9157,
+  "source": "trees/tree07.glb + textures/trees/tree07_spring.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree07-spring": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree07_summer.glb",
+  "bytes": 51820,
+  "tris": 334,
+  "nodes": [
+   "tree07"
+  ],
+  "size": [
+   4.598,
+   11.008,
+   4.598
+  ],
+  "min": [
+   -2.299,
+   -1.008,
+   -2.299
+  ],
+  "max": [
+   2.299,
+   10.0,
+   2.299
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree07-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree07",
+  "variant": "summer",
+  "scale": 1.9157,
+  "source": "trees/tree07.glb + textures/trees/tree07_summer.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree07-summer": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree07_fall.glb",
+  "bytes": 52648,
+  "tris": 334,
+  "nodes": [
+   "tree07"
+  ],
+  "size": [
+   4.598,
+   11.008,
+   4.598
+  ],
+  "min": [
+   -2.299,
+   -1.008,
+   -2.299
+  ],
+  "max": [
+   2.299,
+   10.0,
+   2.299
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree07-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree07",
+  "variant": "fall",
+  "scale": 1.9157,
+  "source": "trees/tree07.glb + textures/trees/tree07_fall.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree07-fall": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree07_winter.glb",
+  "bytes": 52944,
+  "tris": 334,
+  "nodes": [
+   "tree07"
+  ],
+  "size": [
+   4.598,
+   11.008,
+   4.598
+  ],
+  "min": [
+   -2.299,
+   -1.008,
+   -2.299
+  ],
+  "max": [
+   2.299,
+   10.0,
+   2.299
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree07-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree07",
+  "variant": "winter",
+  "scale": 1.9157,
+  "source": "trees/tree07.glb + textures/trees/tree07_winter.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree07-winter": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree08_spring.glb",
+  "bytes": 42524,
+  "tris": 272,
+  "nodes": [
+   "tree08"
+  ],
+  "size": [
+   4.2,
+   10.179,
+   4.2
+  ],
+  "min": [
+   -2.1,
+   -0.769,
+   -2.1
+  ],
+  "max": [
+   2.1,
+   9.41,
+   2.1
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree08-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree08",
+  "variant": "spring",
+  "scale": 2.0,
+  "source": "trees/tree08.glb + textures/trees/tree08_spring.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree08-spring": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree08_summer.glb",
+  "bytes": 41864,
+  "tris": 272,
+  "nodes": [
+   "tree08"
+  ],
+  "size": [
+   4.2,
+   10.179,
+   4.2
+  ],
+  "min": [
+   -2.1,
+   -0.769,
+   -2.1
+  ],
+  "max": [
+   2.1,
+   9.41,
+   2.1
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree08-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree08",
+  "variant": "summer",
+  "scale": 2.0,
+  "source": "trees/tree08.glb + textures/trees/tree08_summer.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree08-summer": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree08_fall.glb",
+  "bytes": 43800,
+  "tris": 272,
+  "nodes": [
+   "tree08"
+  ],
+  "size": [
+   4.2,
+   10.179,
+   4.2
+  ],
+  "min": [
+   -2.1,
+   -0.769,
+   -2.1
+  ],
+  "max": [
+   2.1,
+   9.41,
+   2.1
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree08-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree08",
+  "variant": "fall",
+  "scale": 2.0,
+  "source": "trees/tree08.glb + textures/trees/tree08_fall.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree08-fall": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/trees/tree08_winter.glb",
+  "bytes": 45080,
+  "tris": 272,
+  "nodes": [
+   "tree08"
+  ],
+  "size": [
+   4.2,
+   10.179,
+   4.2
+  ],
+  "min": [
+   -2.1,
+   -0.769,
+   -2.1
+  ],
+  "max": [
+   2.1,
+   9.41,
+   2.1
+  ],
+  "materials": [
+   "retro-psx-nature-pack_tree08-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "trees",
+  "model": "tree08",
+  "variant": "winter",
+  "scale": 2.0,
+  "source": "trees/tree08.glb + textures/trees/tree08_winter.png",
+  "pivot": "ground contact at y=0 (trunk centre)",
+  "textures": {
+   "tree08-winter": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush01_spring.glb",
+  "bytes": 21492,
+  "tris": 160,
+  "nodes": [
+   "bush01"
+  ],
+  "size": [
+   1.05,
+   1.5,
+   1.05
+  ],
+  "min": [
+   -0.525,
+   -0.0,
+   -0.525
+  ],
+  "max": [
+   0.525,
+   1.5,
+   0.525
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush1-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush01",
+  "variant": "spring",
+  "scale": 1.5,
+  "source": "bushes/bush01.glb + textures/bushes/bush1_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush1-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush01_summer.glb",
+  "bytes": 21204,
+  "tris": 160,
+  "nodes": [
+   "bush01"
+  ],
+  "size": [
+   1.05,
+   1.5,
+   1.05
+  ],
+  "min": [
+   -0.525,
+   -0.0,
+   -0.525
+  ],
+  "max": [
+   0.525,
+   1.5,
+   0.525
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush1-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush01",
+  "variant": "summer",
+  "scale": 1.5,
+  "source": "bushes/bush01.glb + textures/bushes/bush1_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush1-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush01_fall.glb",
+  "bytes": 21856,
+  "tris": 160,
+  "nodes": [
+   "bush01"
+  ],
+  "size": [
+   1.05,
+   1.5,
+   1.05
+  ],
+  "min": [
+   -0.525,
+   -0.0,
+   -0.525
+  ],
+  "max": [
+   0.525,
+   1.5,
+   0.525
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush1-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush01",
+  "variant": "fall",
+  "scale": 1.5,
+  "source": "bushes/bush01.glb + textures/bushes/bush1_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush1-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush01_winter.glb",
+  "bytes": 6508,
+  "tris": 32,
+  "nodes": [
+   "bush01"
+  ],
+  "size": [
+   1.05,
+   1.5,
+   1.05
+  ],
+  "min": [
+   -0.525,
+   -0.0,
+   -0.525
+  ],
+  "max": [
+   0.525,
+   1.5,
+   0.525
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush1-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush01",
+  "variant": "winter",
+  "scale": 1.5,
+  "source": "bushes/bush01_winter.glb + textures/bushes/bush1_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush1-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush02_spring1.glb",
+  "bytes": 31588,
+  "tris": 246,
+  "nodes": [
+   "bush02"
+  ],
+  "size": [
+   1.53,
+   1.05,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.05,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush2-spring1"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush02",
+  "variant": "spring1",
+  "scale": 1.5,
+  "source": "bushes/bush02.glb + textures/bushes/bush2_spring1.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush2-spring1": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush02_spring2.glb",
+  "bytes": 31772,
+  "tris": 246,
+  "nodes": [
+   "bush02"
+  ],
+  "size": [
+   1.53,
+   1.05,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.05,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush2-spring2"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush02",
+  "variant": "spring2",
+  "scale": 1.5,
+  "source": "bushes/bush02.glb + textures/bushes/bush2_spring2.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush2-spring2": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush02_spring3.glb",
+  "bytes": 31732,
+  "tris": 246,
+  "nodes": [
+   "bush02"
+  ],
+  "size": [
+   1.53,
+   1.05,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.05,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush2-spring3"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush02",
+  "variant": "spring3",
+  "scale": 1.5,
+  "source": "bushes/bush02.glb + textures/bushes/bush2_spring3.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush2-spring3": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush02_spring4.glb",
+  "bytes": 31812,
+  "tris": 246,
+  "nodes": [
+   "bush02"
+  ],
+  "size": [
+   1.53,
+   1.05,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.05,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush2-spring4"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush02",
+  "variant": "spring4",
+  "scale": 1.5,
+  "source": "bushes/bush02.glb + textures/bushes/bush2_spring4.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush2-spring4": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush02_spring5.glb",
+  "bytes": 31772,
+  "tris": 246,
+  "nodes": [
+   "bush02"
+  ],
+  "size": [
+   1.53,
+   1.05,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.05,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush2-spring5"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush02",
+  "variant": "spring5",
+  "scale": 1.5,
+  "source": "bushes/bush02.glb + textures/bushes/bush2_spring5.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush2-spring5": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush02_spring6.glb",
+  "bytes": 31772,
+  "tris": 246,
+  "nodes": [
+   "bush02"
+  ],
+  "size": [
+   1.53,
+   1.05,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.05,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush2-spring6"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush02",
+  "variant": "spring6",
+  "scale": 1.5,
+  "source": "bushes/bush02.glb + textures/bushes/bush2_spring6.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush2-spring6": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush02_summer.glb",
+  "bytes": 31260,
+  "tris": 246,
+  "nodes": [
+   "bush02"
+  ],
+  "size": [
+   1.53,
+   1.05,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.05,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush2-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush02",
+  "variant": "summer",
+  "scale": 1.5,
+  "source": "bushes/bush02.glb + textures/bushes/bush2_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush2-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush02_fall.glb",
+  "bytes": 31728,
+  "tris": 246,
+  "nodes": [
+   "bush02"
+  ],
+  "size": [
+   1.53,
+   1.05,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.05,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush2-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush02",
+  "variant": "fall",
+  "scale": 1.5,
+  "source": "bushes/bush02.glb + textures/bushes/bush2_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush2-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush02_winter.glb",
+  "bytes": 5640,
+  "tris": 20,
+  "nodes": [
+   "bush02"
+  ],
+  "size": [
+   1.5,
+   1.05,
+   1.5
+  ],
+  "min": [
+   -0.75,
+   0.0,
+   -0.75
+  ],
+  "max": [
+   0.75,
+   1.05,
+   0.75
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush2-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush02",
+  "variant": "winter",
+  "scale": 1.5,
+  "source": "bushes/bush02_winter.glb + textures/bushes/bush2_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush2-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush03_spring1.glb",
+  "bytes": 25880,
+  "tris": 291,
+  "nodes": [
+   "bush03"
+  ],
+  "size": [
+   1.53,
+   1.5,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.5,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush3-spring1"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush03",
+  "variant": "spring1",
+  "scale": 1.5,
+  "source": "bushes/bush03.glb + textures/bushes/bush3_spring1.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush3-spring1": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush03_spring2.glb",
+  "bytes": 26116,
+  "tris": 291,
+  "nodes": [
+   "bush03"
+  ],
+  "size": [
+   1.53,
+   1.5,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.5,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush3-spring2"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush03",
+  "variant": "spring2",
+  "scale": 1.5,
+  "source": "bushes/bush03.glb + textures/bushes/bush3_spring2.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush3-spring2": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush03_spring3.glb",
+  "bytes": 25996,
+  "tris": 291,
+  "nodes": [
+   "bush03"
+  ],
+  "size": [
+   1.53,
+   1.5,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.5,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush3-spring3"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush03",
+  "variant": "spring3",
+  "scale": 1.5,
+  "source": "bushes/bush03.glb + textures/bushes/bush3_spring3.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush3-spring3": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush03_spring4.glb",
+  "bytes": 26024,
+  "tris": 291,
+  "nodes": [
+   "bush03"
+  ],
+  "size": [
+   1.53,
+   1.5,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.5,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush3-spring4"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush03",
+  "variant": "spring4",
+  "scale": 1.5,
+  "source": "bushes/bush03.glb + textures/bushes/bush3_spring4.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush3-spring4": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush03_spring5.glb",
+  "bytes": 26000,
+  "tris": 291,
+  "nodes": [
+   "bush03"
+  ],
+  "size": [
+   1.53,
+   1.5,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.5,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush3-spring5"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush03",
+  "variant": "spring5",
+  "scale": 1.5,
+  "source": "bushes/bush03.glb + textures/bushes/bush3_spring5.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush3-spring5": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush03_spring6.glb",
+  "bytes": 25988,
+  "tris": 291,
+  "nodes": [
+   "bush03"
+  ],
+  "size": [
+   1.53,
+   1.5,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.5,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush3-spring6"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush03",
+  "variant": "spring6",
+  "scale": 1.5,
+  "source": "bushes/bush03.glb + textures/bushes/bush3_spring6.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush3-spring6": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush03_summer.glb",
+  "bytes": 25568,
+  "tris": 291,
+  "nodes": [
+   "bush03"
+  ],
+  "size": [
+   1.53,
+   1.5,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.5,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush3-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush03",
+  "variant": "summer",
+  "scale": 1.5,
+  "source": "bushes/bush03.glb + textures/bushes/bush3_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush3-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush03_fall.glb",
+  "bytes": 26196,
+  "tris": 291,
+  "nodes": [
+   "bush03"
+  ],
+  "size": [
+   1.53,
+   1.5,
+   1.53
+  ],
+  "min": [
+   -0.765,
+   -0.0,
+   -0.765
+  ],
+  "max": [
+   0.765,
+   1.5,
+   0.765
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush3-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush03",
+  "variant": "fall",
+  "scale": 1.5,
+  "source": "bushes/bush03.glb + textures/bushes/bush3_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush3-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush03_winter.glb",
+  "bytes": 4320,
+  "tris": 16,
+  "nodes": [
+   "bush03"
+  ],
+  "size": [
+   1.5,
+   1.5,
+   1.5
+  ],
+  "min": [
+   -0.75,
+   -0.0,
+   -0.75
+  ],
+  "max": [
+   0.75,
+   1.5,
+   0.75
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush3-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush03",
+  "variant": "winter",
+  "scale": 1.5,
+  "source": "bushes/bush03_winter.glb + textures/bushes/bush3_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush3-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush04_spring1.glb",
+  "bytes": 30292,
+  "tris": 244,
+  "nodes": [
+   "bush04"
+  ],
+  "size": [
+   0.9,
+   1.5,
+   0.9
+  ],
+  "min": [
+   -0.45,
+   0.0,
+   -0.45
+  ],
+  "max": [
+   0.45,
+   1.5,
+   0.45
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush4-spring1"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush04",
+  "variant": "spring1",
+  "scale": 1.5,
+  "source": "bushes/bush04.glb + textures/bushes/bush4_spring1.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush4-spring1": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush04_spring2.glb",
+  "bytes": 30424,
+  "tris": 244,
+  "nodes": [
+   "bush04"
+  ],
+  "size": [
+   0.9,
+   1.5,
+   0.9
+  ],
+  "min": [
+   -0.45,
+   0.0,
+   -0.45
+  ],
+  "max": [
+   0.45,
+   1.5,
+   0.45
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush4-spring2"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush04",
+  "variant": "spring2",
+  "scale": 1.5,
+  "source": "bushes/bush04.glb + textures/bushes/bush4_spring2.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush4-spring2": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush04_spring3.glb",
+  "bytes": 30452,
+  "tris": 244,
+  "nodes": [
+   "bush04"
+  ],
+  "size": [
+   0.9,
+   1.5,
+   0.9
+  ],
+  "min": [
+   -0.45,
+   0.0,
+   -0.45
+  ],
+  "max": [
+   0.45,
+   1.5,
+   0.45
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush4-spring3"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush04",
+  "variant": "spring3",
+  "scale": 1.5,
+  "source": "bushes/bush04.glb + textures/bushes/bush4_spring3.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush4-spring3": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush04_spring4.glb",
+  "bytes": 30456,
+  "tris": 244,
+  "nodes": [
+   "bush04"
+  ],
+  "size": [
+   0.9,
+   1.5,
+   0.9
+  ],
+  "min": [
+   -0.45,
+   0.0,
+   -0.45
+  ],
+  "max": [
+   0.45,
+   1.5,
+   0.45
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush4-spring4"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush04",
+  "variant": "spring4",
+  "scale": 1.5,
+  "source": "bushes/bush04.glb + textures/bushes/bush4_spring4.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush4-spring4": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush04_spring5.glb",
+  "bytes": 30476,
+  "tris": 244,
+  "nodes": [
+   "bush04"
+  ],
+  "size": [
+   0.9,
+   1.5,
+   0.9
+  ],
+  "min": [
+   -0.45,
+   0.0,
+   -0.45
+  ],
+  "max": [
+   0.45,
+   1.5,
+   0.45
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush4-spring5"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush04",
+  "variant": "spring5",
+  "scale": 1.5,
+  "source": "bushes/bush04.glb + textures/bushes/bush4_spring5.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush4-spring5": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush04_spring6.glb",
+  "bytes": 30420,
+  "tris": 244,
+  "nodes": [
+   "bush04"
+  ],
+  "size": [
+   0.9,
+   1.5,
+   0.9
+  ],
+  "min": [
+   -0.45,
+   0.0,
+   -0.45
+  ],
+  "max": [
+   0.45,
+   1.5,
+   0.45
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush4-spring6"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush04",
+  "variant": "spring6",
+  "scale": 1.5,
+  "source": "bushes/bush04.glb + textures/bushes/bush4_spring6.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush4-spring6": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush04_summer.glb",
+  "bytes": 30168,
+  "tris": 244,
+  "nodes": [
+   "bush04"
+  ],
+  "size": [
+   0.9,
+   1.5,
+   0.9
+  ],
+  "min": [
+   -0.45,
+   0.0,
+   -0.45
+  ],
+  "max": [
+   0.45,
+   1.5,
+   0.45
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush4-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush04",
+  "variant": "summer",
+  "scale": 1.5,
+  "source": "bushes/bush04.glb + textures/bushes/bush4_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush4-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush04_fall.glb",
+  "bytes": 30860,
+  "tris": 244,
+  "nodes": [
+   "bush04"
+  ],
+  "size": [
+   0.9,
+   1.5,
+   0.9
+  ],
+  "min": [
+   -0.45,
+   0.0,
+   -0.45
+  ],
+  "max": [
+   0.45,
+   1.5,
+   0.45
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush4-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush04",
+  "variant": "fall",
+  "scale": 1.5,
+  "source": "bushes/bush04.glb + textures/bushes/bush4_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush4-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush04_winter.glb",
+  "bytes": 5148,
+  "tris": 16,
+  "nodes": [
+   "bush04"
+  ],
+  "size": [
+   0.9,
+   1.5,
+   0.9
+  ],
+  "min": [
+   -0.45,
+   0.0,
+   -0.45
+  ],
+  "max": [
+   0.45,
+   1.5,
+   0.45
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush4-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush04",
+  "variant": "winter",
+  "scale": 1.5,
+  "source": "bushes/bush04_winter.glb + textures/bushes/bush4_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush4-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush05_spring1.glb",
+  "bytes": 31640,
+  "tris": 256,
+  "nodes": [
+   "bush05"
+  ],
+  "size": [
+   0.66,
+   1.5,
+   0.66
+  ],
+  "min": [
+   -0.33,
+   0.0,
+   -0.33
+  ],
+  "max": [
+   0.33,
+   1.5,
+   0.33
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush5-spring1"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush05",
+  "variant": "spring1",
+  "scale": 1.5,
+  "source": "bushes/bush05.glb + textures/bushes/bush5_spring1.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush5-spring1": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush05_spring2.glb",
+  "bytes": 31800,
+  "tris": 256,
+  "nodes": [
+   "bush05"
+  ],
+  "size": [
+   0.66,
+   1.5,
+   0.66
+  ],
+  "min": [
+   -0.33,
+   0.0,
+   -0.33
+  ],
+  "max": [
+   0.33,
+   1.5,
+   0.33
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush5-spring2"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush05",
+  "variant": "spring2",
+  "scale": 1.5,
+  "source": "bushes/bush05.glb + textures/bushes/bush5_spring2.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush5-spring2": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush05_spring3.glb",
+  "bytes": 31848,
+  "tris": 256,
+  "nodes": [
+   "bush05"
+  ],
+  "size": [
+   0.66,
+   1.5,
+   0.66
+  ],
+  "min": [
+   -0.33,
+   0.0,
+   -0.33
+  ],
+  "max": [
+   0.33,
+   1.5,
+   0.33
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush5-spring3"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush05",
+  "variant": "spring3",
+  "scale": 1.5,
+  "source": "bushes/bush05.glb + textures/bushes/bush5_spring3.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush5-spring3": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush05_spring4.glb",
+  "bytes": 31796,
+  "tris": 256,
+  "nodes": [
+   "bush05"
+  ],
+  "size": [
+   0.66,
+   1.5,
+   0.66
+  ],
+  "min": [
+   -0.33,
+   0.0,
+   -0.33
+  ],
+  "max": [
+   0.33,
+   1.5,
+   0.33
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush5-spring4"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush05",
+  "variant": "spring4",
+  "scale": 1.5,
+  "source": "bushes/bush05.glb + textures/bushes/bush5_spring4.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush5-spring4": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush05_spring5.glb",
+  "bytes": 31752,
+  "tris": 256,
+  "nodes": [
+   "bush05"
+  ],
+  "size": [
+   0.66,
+   1.5,
+   0.66
+  ],
+  "min": [
+   -0.33,
+   0.0,
+   -0.33
+  ],
+  "max": [
+   0.33,
+   1.5,
+   0.33
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush5-spring5"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush05",
+  "variant": "spring5",
+  "scale": 1.5,
+  "source": "bushes/bush05.glb + textures/bushes/bush5_spring5.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush5-spring5": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush05_spring6.glb",
+  "bytes": 31800,
+  "tris": 256,
+  "nodes": [
+   "bush05"
+  ],
+  "size": [
+   0.66,
+   1.5,
+   0.66
+  ],
+  "min": [
+   -0.33,
+   0.0,
+   -0.33
+  ],
+  "max": [
+   0.33,
+   1.5,
+   0.33
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush5-spring6"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush05",
+  "variant": "spring6",
+  "scale": 1.5,
+  "source": "bushes/bush05.glb + textures/bushes/bush5_spring6.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush5-spring6": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush05_summer.glb",
+  "bytes": 31288,
+  "tris": 256,
+  "nodes": [
+   "bush05"
+  ],
+  "size": [
+   0.66,
+   1.5,
+   0.66
+  ],
+  "min": [
+   -0.33,
+   0.0,
+   -0.33
+  ],
+  "max": [
+   0.33,
+   1.5,
+   0.33
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush5-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush05",
+  "variant": "summer",
+  "scale": 1.5,
+  "source": "bushes/bush05.glb + textures/bushes/bush5_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush5-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush05_fall.glb",
+  "bytes": 32192,
+  "tris": 256,
+  "nodes": [
+   "bush05"
+  ],
+  "size": [
+   0.66,
+   1.5,
+   0.66
+  ],
+  "min": [
+   -0.33,
+   0.0,
+   -0.33
+  ],
+  "max": [
+   0.33,
+   1.5,
+   0.33
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush5-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush05",
+  "variant": "fall",
+  "scale": 1.5,
+  "source": "bushes/bush05.glb + textures/bushes/bush5_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush5-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush05_winter.glb",
+  "bytes": 6836,
+  "tris": 32,
+  "nodes": [
+   "bush05"
+  ],
+  "size": [
+   0.66,
+   1.5,
+   0.66
+  ],
+  "min": [
+   -0.33,
+   0.0,
+   -0.33
+  ],
+  "max": [
+   0.33,
+   1.5,
+   0.33
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush5-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush05",
+  "variant": "winter",
+  "scale": 1.5,
+  "source": "bushes/bush05_winter.glb + textures/bushes/bush5_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush5-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush06_spring1.glb",
+  "bytes": 36216,
+  "tris": 264,
+  "nodes": [
+   "bush06"
+  ],
+  "size": [
+   3.0,
+   1.5,
+   3.0
+  ],
+  "min": [
+   -1.5,
+   -0.0,
+   -1.5
+  ],
+  "max": [
+   1.5,
+   1.5,
+   1.5
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush6-spring1"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush06",
+  "variant": "spring1",
+  "scale": 1.5,
+  "source": "bushes/bush06.glb + textures/bushes/bush6_spring1.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush6-spring1": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush06_spring2.glb",
+  "bytes": 36484,
+  "tris": 264,
+  "nodes": [
+   "bush06"
+  ],
+  "size": [
+   3.0,
+   1.5,
+   3.0
+  ],
+  "min": [
+   -1.5,
+   -0.0,
+   -1.5
+  ],
+  "max": [
+   1.5,
+   1.5,
+   1.5
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush6-spring2"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush06",
+  "variant": "spring2",
+  "scale": 1.5,
+  "source": "bushes/bush06.glb + textures/bushes/bush6_spring2.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush6-spring2": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush06_spring3.glb",
+  "bytes": 36540,
+  "tris": 264,
+  "nodes": [
+   "bush06"
+  ],
+  "size": [
+   3.0,
+   1.5,
+   3.0
+  ],
+  "min": [
+   -1.5,
+   -0.0,
+   -1.5
+  ],
+  "max": [
+   1.5,
+   1.5,
+   1.5
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush6-spring3"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush06",
+  "variant": "spring3",
+  "scale": 1.5,
+  "source": "bushes/bush06.glb + textures/bushes/bush6_spring3.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush6-spring3": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush06_spring4.glb",
+  "bytes": 36464,
+  "tris": 264,
+  "nodes": [
+   "bush06"
+  ],
+  "size": [
+   3.0,
+   1.5,
+   3.0
+  ],
+  "min": [
+   -1.5,
+   -0.0,
+   -1.5
+  ],
+  "max": [
+   1.5,
+   1.5,
+   1.5
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush6-spring4"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush06",
+  "variant": "spring4",
+  "scale": 1.5,
+  "source": "bushes/bush06.glb + textures/bushes/bush6_spring4.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush6-spring4": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush06_spring5.glb",
+  "bytes": 36576,
+  "tris": 264,
+  "nodes": [
+   "bush06"
+  ],
+  "size": [
+   3.0,
+   1.5,
+   3.0
+  ],
+  "min": [
+   -1.5,
+   -0.0,
+   -1.5
+  ],
+  "max": [
+   1.5,
+   1.5,
+   1.5
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush6-spring5"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush06",
+  "variant": "spring5",
+  "scale": 1.5,
+  "source": "bushes/bush06.glb + textures/bushes/bush6_spring5.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush6-spring5": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush06_spring6.glb",
+  "bytes": 36496,
+  "tris": 264,
+  "nodes": [
+   "bush06"
+  ],
+  "size": [
+   3.0,
+   1.5,
+   3.0
+  ],
+  "min": [
+   -1.5,
+   -0.0,
+   -1.5
+  ],
+  "max": [
+   1.5,
+   1.5,
+   1.5
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush6-spring6"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush06",
+  "variant": "spring6",
+  "scale": 1.5,
+  "source": "bushes/bush06.glb + textures/bushes/bush6_spring6.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush6-spring6": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush06_summer.glb",
+  "bytes": 35180,
+  "tris": 264,
+  "nodes": [
+   "bush06"
+  ],
+  "size": [
+   3.0,
+   1.5,
+   3.0
+  ],
+  "min": [
+   -1.5,
+   -0.0,
+   -1.5
+  ],
+  "max": [
+   1.5,
+   1.5,
+   1.5
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush6-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush06",
+  "variant": "summer",
+  "scale": 1.5,
+  "source": "bushes/bush06.glb + textures/bushes/bush6_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush6-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush06_fall.glb",
+  "bytes": 36372,
+  "tris": 264,
+  "nodes": [
+   "bush06"
+  ],
+  "size": [
+   3.0,
+   1.5,
+   3.0
+  ],
+  "min": [
+   -1.5,
+   -0.0,
+   -1.5
+  ],
+  "max": [
+   1.5,
+   1.5,
+   1.5
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush6-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush06",
+  "variant": "fall",
+  "scale": 1.5,
+  "source": "bushes/bush06.glb + textures/bushes/bush6_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush6-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush06_winter.glb",
+  "bytes": 5560,
+  "tris": 16,
+  "nodes": [
+   "bush06"
+  ],
+  "size": [
+   3.0,
+   1.5,
+   3.0
+  ],
+  "min": [
+   -1.5,
+   0.0,
+   -1.5
+  ],
+  "max": [
+   1.5,
+   1.5,
+   1.5
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush6-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush06",
+  "variant": "winter",
+  "scale": 1.5,
+  "source": "bushes/bush06_winter.glb + textures/bushes/bush6_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush6-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush07_spring.glb",
+  "bytes": 30020,
+  "tris": 256,
+  "nodes": [
+   "bush07"
+  ],
+  "size": [
+   1.05,
+   1.5,
+   1.05
+  ],
+  "min": [
+   -0.525,
+   -0.0,
+   -0.525
+  ],
+  "max": [
+   0.525,
+   1.5,
+   0.525
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush7-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush07",
+  "variant": "spring",
+  "scale": 1.5,
+  "source": "bushes/bush07.glb + textures/bushes/bush7_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush7-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush07_summer.glb",
+  "bytes": 29904,
+  "tris": 256,
+  "nodes": [
+   "bush07"
+  ],
+  "size": [
+   1.05,
+   1.5,
+   1.05
+  ],
+  "min": [
+   -0.525,
+   -0.0,
+   -0.525
+  ],
+  "max": [
+   0.525,
+   1.5,
+   0.525
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush7-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush07",
+  "variant": "summer",
+  "scale": 1.5,
+  "source": "bushes/bush07.glb + textures/bushes/bush7_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush7-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush07_fall.glb",
+  "bytes": 30252,
+  "tris": 256,
+  "nodes": [
+   "bush07"
+  ],
+  "size": [
+   1.05,
+   1.5,
+   1.05
+  ],
+  "min": [
+   -0.525,
+   -0.0,
+   -0.525
+  ],
+  "max": [
+   0.525,
+   1.5,
+   0.525
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush7-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush07",
+  "variant": "fall",
+  "scale": 1.5,
+  "source": "bushes/bush07.glb + textures/bushes/bush7_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush7-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush07_winter.glb",
+  "bytes": 30384,
+  "tris": 256,
+  "nodes": [
+   "bush07"
+  ],
+  "size": [
+   1.05,
+   1.5,
+   1.05
+  ],
+  "min": [
+   -0.525,
+   -0.0,
+   -0.525
+  ],
+  "max": [
+   0.525,
+   1.5,
+   0.525
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush7-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush07",
+  "variant": "winter",
+  "scale": 1.5,
+  "source": "bushes/bush07.glb + textures/bushes/bush7_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush7-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush08_spring.glb",
+  "bytes": 32284,
+  "tris": 280,
+  "nodes": [
+   "bush08"
+  ],
+  "size": [
+   1.2,
+   1.5,
+   1.2
+  ],
+  "min": [
+   -0.6,
+   -0.0,
+   -0.6
+  ],
+  "max": [
+   0.6,
+   1.5,
+   0.6
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush8-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush08",
+  "variant": "spring",
+  "scale": 1.5,
+  "source": "bushes/bush08.glb + textures/bushes/bush8_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush8-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush08_summer.glb",
+  "bytes": 32232,
+  "tris": 280,
+  "nodes": [
+   "bush08"
+  ],
+  "size": [
+   1.2,
+   1.5,
+   1.2
+  ],
+  "min": [
+   -0.6,
+   -0.0,
+   -0.6
+  ],
+  "max": [
+   0.6,
+   1.5,
+   0.6
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush8-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush08",
+  "variant": "summer",
+  "scale": 1.5,
+  "source": "bushes/bush08.glb + textures/bushes/bush8_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush8-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush08_fall.glb",
+  "bytes": 32400,
+  "tris": 280,
+  "nodes": [
+   "bush08"
+  ],
+  "size": [
+   1.2,
+   1.5,
+   1.2
+  ],
+  "min": [
+   -0.6,
+   -0.0,
+   -0.6
+  ],
+  "max": [
+   0.6,
+   1.5,
+   0.6
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush8-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush08",
+  "variant": "fall",
+  "scale": 1.5,
+  "source": "bushes/bush08.glb + textures/bushes/bush8_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush8-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/bushes/bush08_winter.glb",
+  "bytes": 32244,
+  "tris": 280,
+  "nodes": [
+   "bush08"
+  ],
+  "size": [
+   1.2,
+   1.5,
+   1.2
+  ],
+  "min": [
+   -0.6,
+   -0.0,
+   -0.6
+  ],
+  "max": [
+   0.6,
+   1.5,
+   0.6
+  ],
+  "materials": [
+   "retro-psx-nature-pack_bush8-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "bushes",
+  "model": "bush08",
+  "variant": "winter",
+  "scale": 1.5,
+  "source": "bushes/bush08.glb + textures/bushes/bush8_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "bush8-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass01_spring.glb",
+  "bytes": 4580,
+  "tris": 8,
+  "nodes": [
+   "grass01"
+  ],
+  "size": [
+   0.324,
+   0.4,
+   0.323
+  ],
+  "min": [
+   -0.164,
+   0.0,
+   -0.162
+  ],
+  "max": [
+   0.16,
+   0.4,
+   0.162
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass01",
+  "variant": "spring",
+  "scale": 0.8,
+  "source": "grass/grass01.glb + textures/grass/grass_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass01_summer.glb",
+  "bytes": 4456,
+  "tris": 8,
+  "nodes": [
+   "grass01"
+  ],
+  "size": [
+   0.324,
+   0.4,
+   0.323
+  ],
+  "min": [
+   -0.164,
+   0.0,
+   -0.162
+  ],
+  "max": [
+   0.16,
+   0.4,
+   0.162
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass01",
+  "variant": "summer",
+  "scale": 0.8,
+  "source": "grass/grass01.glb + textures/grass/grass_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass01_fall.glb",
+  "bytes": 5064,
+  "tris": 8,
+  "nodes": [
+   "grass01"
+  ],
+  "size": [
+   0.324,
+   0.4,
+   0.323
+  ],
+  "min": [
+   -0.164,
+   0.0,
+   -0.162
+  ],
+  "max": [
+   0.16,
+   0.4,
+   0.162
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass01",
+  "variant": "fall",
+  "scale": 0.8,
+  "source": "grass/grass01.glb + textures/grass/grass_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass01_winter.glb",
+  "bytes": 4816,
+  "tris": 8,
+  "nodes": [
+   "grass01"
+  ],
+  "size": [
+   0.324,
+   0.4,
+   0.323
+  ],
+  "min": [
+   -0.164,
+   0.0,
+   -0.162
+  ],
+  "max": [
+   0.16,
+   0.4,
+   0.162
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass01",
+  "variant": "winter",
+  "scale": 0.8,
+  "source": "grass/grass01.glb + textures/grass/grass_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass02_spring.glb",
+  "bytes": 4712,
+  "tris": 8,
+  "nodes": [
+   "grass02"
+  ],
+  "size": [
+   0.4,
+   0.2,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.2,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass02",
+  "variant": "spring",
+  "scale": 0.8,
+  "source": "grass/grass02.glb + textures/grass/grass_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass02_summer.glb",
+  "bytes": 4588,
+  "tris": 8,
+  "nodes": [
+   "grass02"
+  ],
+  "size": [
+   0.4,
+   0.2,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.2,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass02",
+  "variant": "summer",
+  "scale": 0.8,
+  "source": "grass/grass02.glb + textures/grass/grass_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass02_fall.glb",
+  "bytes": 5196,
+  "tris": 8,
+  "nodes": [
+   "grass02"
+  ],
+  "size": [
+   0.4,
+   0.2,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.2,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass02",
+  "variant": "fall",
+  "scale": 0.8,
+  "source": "grass/grass02.glb + textures/grass/grass_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass02_winter.glb",
+  "bytes": 4948,
+  "tris": 8,
+  "nodes": [
+   "grass02"
+  ],
+  "size": [
+   0.4,
+   0.2,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.2,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass02",
+  "variant": "winter",
+  "scale": 0.8,
+  "source": "grass/grass02.glb + textures/grass/grass_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass03_spring.glb",
+  "bytes": 4840,
+  "tris": 8,
+  "nodes": [
+   "grass03"
+  ],
+  "size": [
+   0.267,
+   0.34,
+   0.267
+  ],
+  "min": [
+   -0.133,
+   0.0,
+   -0.133
+  ],
+  "max": [
+   0.133,
+   0.34,
+   0.133
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass03",
+  "variant": "spring",
+  "scale": 0.8,
+  "source": "grass/grass03.glb + textures/grass/grass_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass03_summer.glb",
+  "bytes": 4716,
+  "tris": 8,
+  "nodes": [
+   "grass03"
+  ],
+  "size": [
+   0.267,
+   0.34,
+   0.267
+  ],
+  "min": [
+   -0.133,
+   0.0,
+   -0.133
+  ],
+  "max": [
+   0.133,
+   0.34,
+   0.133
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass03",
+  "variant": "summer",
+  "scale": 0.8,
+  "source": "grass/grass03.glb + textures/grass/grass_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass03_fall.glb",
+  "bytes": 5324,
+  "tris": 8,
+  "nodes": [
+   "grass03"
+  ],
+  "size": [
+   0.267,
+   0.34,
+   0.267
+  ],
+  "min": [
+   -0.133,
+   0.0,
+   -0.133
+  ],
+  "max": [
+   0.133,
+   0.34,
+   0.133
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass03",
+  "variant": "fall",
+  "scale": 0.8,
+  "source": "grass/grass03.glb + textures/grass/grass_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass03_winter.glb",
+  "bytes": 5076,
+  "tris": 8,
+  "nodes": [
+   "grass03"
+  ],
+  "size": [
+   0.267,
+   0.34,
+   0.267
+  ],
+  "min": [
+   -0.133,
+   0.0,
+   -0.133
+  ],
+  "max": [
+   0.133,
+   0.34,
+   0.133
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass03",
+  "variant": "winter",
+  "scale": 0.8,
+  "source": "grass/grass03.glb + textures/grass/grass_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass04_spring.glb",
+  "bytes": 4712,
+  "tris": 8,
+  "nodes": [
+   "grass04"
+  ],
+  "size": [
+   0.4,
+   0.343,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.343,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass04",
+  "variant": "spring",
+  "scale": 0.8,
+  "source": "grass/grass04.glb + textures/grass/grass_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass04_summer.glb",
+  "bytes": 4588,
+  "tris": 8,
+  "nodes": [
+   "grass04"
+  ],
+  "size": [
+   0.4,
+   0.343,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.343,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass04",
+  "variant": "summer",
+  "scale": 0.8,
+  "source": "grass/grass04.glb + textures/grass/grass_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass04_fall.glb",
+  "bytes": 5196,
+  "tris": 8,
+  "nodes": [
+   "grass04"
+  ],
+  "size": [
+   0.4,
+   0.343,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.343,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass04",
+  "variant": "fall",
+  "scale": 0.8,
+  "source": "grass/grass04.glb + textures/grass/grass_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass04_winter.glb",
+  "bytes": 4948,
+  "tris": 8,
+  "nodes": [
+   "grass04"
+  ],
+  "size": [
+   0.4,
+   0.343,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.343,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass04",
+  "variant": "winter",
+  "scale": 0.8,
+  "source": "grass/grass04.glb + textures/grass/grass_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass05_spring.glb",
+  "bytes": 4712,
+  "tris": 8,
+  "nodes": [
+   "grass05"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.201,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.199,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass05",
+  "variant": "spring",
+  "scale": 0.8,
+  "source": "grass/grass05.glb + textures/grass/grass_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass05_summer.glb",
+  "bytes": 4588,
+  "tris": 8,
+  "nodes": [
+   "grass05"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.201,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.199,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass05",
+  "variant": "summer",
+  "scale": 0.8,
+  "source": "grass/grass05.glb + textures/grass/grass_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass05_fall.glb",
+  "bytes": 5196,
+  "tris": 8,
+  "nodes": [
+   "grass05"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.201,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.199,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass05",
+  "variant": "fall",
+  "scale": 0.8,
+  "source": "grass/grass05.glb + textures/grass/grass_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass05_winter.glb",
+  "bytes": 4948,
+  "tris": 8,
+  "nodes": [
+   "grass05"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.201,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.199,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass05",
+  "variant": "winter",
+  "scale": 0.8,
+  "source": "grass/grass05.glb + textures/grass/grass_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass06_spring.glb",
+  "bytes": 4836,
+  "tris": 8,
+  "nodes": [
+   "grass06"
+  ],
+  "size": [
+   0.401,
+   0.4,
+   0.401
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.201,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass06",
+  "variant": "spring",
+  "scale": 0.8,
+  "source": "grass/grass06.glb + textures/grass/grass_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass06_summer.glb",
+  "bytes": 4712,
+  "tris": 8,
+  "nodes": [
+   "grass06"
+  ],
+  "size": [
+   0.401,
+   0.4,
+   0.401
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.201,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass06",
+  "variant": "summer",
+  "scale": 0.8,
+  "source": "grass/grass06.glb + textures/grass/grass_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass06_fall.glb",
+  "bytes": 5320,
+  "tris": 8,
+  "nodes": [
+   "grass06"
+  ],
+  "size": [
+   0.401,
+   0.4,
+   0.401
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.201,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass06",
+  "variant": "fall",
+  "scale": 0.8,
+  "source": "grass/grass06.glb + textures/grass/grass_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass06_winter.glb",
+  "bytes": 5072,
+  "tris": 8,
+  "nodes": [
+   "grass06"
+  ],
+  "size": [
+   0.401,
+   0.4,
+   0.401
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.201,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass06",
+  "variant": "winter",
+  "scale": 0.8,
+  "source": "grass/grass06.glb + textures/grass/grass_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass07_spring.glb",
+  "bytes": 4712,
+  "tris": 8,
+  "nodes": [
+   "grass07"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass07",
+  "variant": "spring",
+  "scale": 0.8,
+  "source": "grass/grass07.glb + textures/grass/grass_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass07_summer.glb",
+  "bytes": 4588,
+  "tris": 8,
+  "nodes": [
+   "grass07"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass07",
+  "variant": "summer",
+  "scale": 0.8,
+  "source": "grass/grass07.glb + textures/grass/grass_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass07_fall.glb",
+  "bytes": 5196,
+  "tris": 8,
+  "nodes": [
+   "grass07"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass07",
+  "variant": "fall",
+  "scale": 0.8,
+  "source": "grass/grass07.glb + textures/grass/grass_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass07_winter.glb",
+  "bytes": 4948,
+  "tris": 8,
+  "nodes": [
+   "grass07"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass07",
+  "variant": "winter",
+  "scale": 0.8,
+  "source": "grass/grass07.glb + textures/grass/grass_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass08_spring.glb",
+  "bytes": 4712,
+  "tris": 8,
+  "nodes": [
+   "grass08"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass08",
+  "variant": "spring",
+  "scale": 0.8,
+  "source": "grass/grass08.glb + textures/grass/grass_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass08_summer.glb",
+  "bytes": 4588,
+  "tris": 8,
+  "nodes": [
+   "grass08"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass08",
+  "variant": "summer",
+  "scale": 0.8,
+  "source": "grass/grass08.glb + textures/grass/grass_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass08_fall.glb",
+  "bytes": 5196,
+  "tris": 8,
+  "nodes": [
+   "grass08"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass08",
+  "variant": "fall",
+  "scale": 0.8,
+  "source": "grass/grass08.glb + textures/grass/grass_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass08_winter.glb",
+  "bytes": 4948,
+  "tris": 8,
+  "nodes": [
+   "grass08"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass08",
+  "variant": "winter",
+  "scale": 0.8,
+  "source": "grass/grass08.glb + textures/grass/grass_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass09_spring.glb",
+  "bytes": 4584,
+  "tris": 8,
+  "nodes": [
+   "grass09"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass09",
+  "variant": "spring",
+  "scale": 0.8,
+  "source": "grass/grass09.glb + textures/grass/grass_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass09_summer.glb",
+  "bytes": 4460,
+  "tris": 8,
+  "nodes": [
+   "grass09"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass09",
+  "variant": "summer",
+  "scale": 0.8,
+  "source": "grass/grass09.glb + textures/grass/grass_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass09_fall.glb",
+  "bytes": 5068,
+  "tris": 8,
+  "nodes": [
+   "grass09"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass09",
+  "variant": "fall",
+  "scale": 0.8,
+  "source": "grass/grass09.glb + textures/grass/grass_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass09_winter.glb",
+  "bytes": 4820,
+  "tris": 8,
+  "nodes": [
+   "grass09"
+  ],
+  "size": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "min": [
+   -0.2,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   0.2,
+   0.4,
+   0.2
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass09",
+  "variant": "winter",
+  "scale": 0.8,
+  "source": "grass/grass09.glb + textures/grass/grass_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass_bush_spring.glb",
+  "bytes": 8304,
+  "tris": 48,
+  "nodes": [
+   "grass_bush"
+  ],
+  "size": [
+   0.802,
+   0.4,
+   0.8
+  ],
+  "min": [
+   -0.401,
+   0.0,
+   -0.4
+  ],
+  "max": [
+   0.401,
+   0.4,
+   0.4
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-bush-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass_bush",
+  "variant": "spring",
+  "scale": 0.8,
+  "source": "grass/grass_bush.glb + textures/grass/grass_bush_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-bush-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass_bush_summer.glb",
+  "bytes": 8228,
+  "tris": 48,
+  "nodes": [
+   "grass_bush"
+  ],
+  "size": [
+   0.802,
+   0.4,
+   0.8
+  ],
+  "min": [
+   -0.401,
+   0.0,
+   -0.4
+  ],
+  "max": [
+   0.401,
+   0.4,
+   0.4
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-bush-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass_bush",
+  "variant": "summer",
+  "scale": 0.8,
+  "source": "grass/grass_bush.glb + textures/grass/grass_bush_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-bush-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass_bush_fall.glb",
+  "bytes": 8600,
+  "tris": 48,
+  "nodes": [
+   "grass_bush"
+  ],
+  "size": [
+   0.802,
+   0.4,
+   0.8
+  ],
+  "min": [
+   -0.401,
+   0.0,
+   -0.4
+  ],
+  "max": [
+   0.401,
+   0.4,
+   0.4
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-bush-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass_bush",
+  "variant": "fall",
+  "scale": 0.8,
+  "source": "grass/grass_bush.glb + textures/grass/grass_bush_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-bush-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass_bush_winter.glb",
+  "bytes": 8372,
+  "tris": 48,
+  "nodes": [
+   "grass_bush"
+  ],
+  "size": [
+   0.802,
+   0.4,
+   0.8
+  ],
+  "min": [
+   -0.401,
+   0.0,
+   -0.4
+  ],
+  "max": [
+   0.401,
+   0.4,
+   0.4
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-bush-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass_bush",
+  "variant": "winter",
+  "scale": 0.8,
+  "source": "grass/grass_bush.glb + textures/grass/grass_bush_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-bush-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass_patch_spring.glb",
+  "bytes": 33256,
+  "tris": 280,
+  "nodes": [
+   "grass_patch"
+  ],
+  "size": [
+   1.68,
+   0.4,
+   1.68
+  ],
+  "min": [
+   -0.84,
+   -0.0,
+   -0.84
+  ],
+  "max": [
+   0.84,
+   0.4,
+   0.84
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-patch-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass_patch",
+  "variant": "spring",
+  "scale": 0.8,
+  "source": "grass/grass_patch.glb + textures/grass/grass_patch_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-patch-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass_patch_summer.glb",
+  "bytes": 32868,
+  "tris": 280,
+  "nodes": [
+   "grass_patch"
+  ],
+  "size": [
+   1.68,
+   0.4,
+   1.68
+  ],
+  "min": [
+   -0.84,
+   -0.0,
+   -0.84
+  ],
+  "max": [
+   0.84,
+   0.4,
+   0.84
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-patch-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass_patch",
+  "variant": "summer",
+  "scale": 0.8,
+  "source": "grass/grass_patch.glb + textures/grass/grass_patch_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-patch-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass_patch_fall.glb",
+  "bytes": 34016,
+  "tris": 280,
+  "nodes": [
+   "grass_patch"
+  ],
+  "size": [
+   1.68,
+   0.4,
+   1.68
+  ],
+  "min": [
+   -0.84,
+   -0.0,
+   -0.84
+  ],
+  "max": [
+   0.84,
+   0.4,
+   0.84
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-patch-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass_patch",
+  "variant": "fall",
+  "scale": 0.8,
+  "source": "grass/grass_patch.glb + textures/grass/grass_patch_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-patch-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass_patch_winter.glb",
+  "bytes": 33176,
+  "tris": 280,
+  "nodes": [
+   "grass_patch"
+  ],
+  "size": [
+   1.68,
+   0.4,
+   1.68
+  ],
+  "min": [
+   -0.84,
+   -0.0,
+   -0.84
+  ],
+  "max": [
+   0.84,
+   0.4,
+   0.84
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-patch-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass_patch",
+  "variant": "winter",
+  "scale": 0.8,
+  "source": "grass/grass_patch.glb + textures/grass/grass_patch_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-patch-winter": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass_patch_corner_spring.glb",
+  "bytes": 34008,
+  "tris": 286,
+  "nodes": [
+   "grass_patch_corner"
+  ],
+  "size": [
+   1.638,
+   0.4,
+   1.638
+  ],
+  "min": [
+   -0.798,
+   -0.0,
+   -0.84
+  ],
+  "max": [
+   0.84,
+   0.4,
+   0.798
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-patch-spring"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass_patch_corner",
+  "variant": "spring",
+  "scale": 0.8,
+  "source": "grass/grass_patch_corner.glb + textures/grass/grass_patch_spring.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-patch-spring": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass_patch_corner_summer.glb",
+  "bytes": 33620,
+  "tris": 286,
+  "nodes": [
+   "grass_patch_corner"
+  ],
+  "size": [
+   1.638,
+   0.4,
+   1.638
+  ],
+  "min": [
+   -0.798,
+   -0.0,
+   -0.84
+  ],
+  "max": [
+   0.84,
+   0.4,
+   0.798
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-patch-summer"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass_patch_corner",
+  "variant": "summer",
+  "scale": 0.8,
+  "source": "grass/grass_patch_corner.glb + textures/grass/grass_patch_summer.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-patch-summer": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass_patch_corner_fall.glb",
+  "bytes": 34768,
+  "tris": 286,
+  "nodes": [
+   "grass_patch_corner"
+  ],
+  "size": [
+   1.638,
+   0.4,
+   1.638
+  ],
+  "min": [
+   -0.798,
+   -0.0,
+   -0.84
+  ],
+  "max": [
+   0.84,
+   0.4,
+   0.798
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-patch-fall"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass_patch_corner",
+  "variant": "fall",
+  "scale": 0.8,
+  "source": "grass/grass_patch_corner.glb + textures/grass/grass_patch_fall.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-patch-fall": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-nature-pack/grass/grass_patch_corner_winter.glb",
+  "bytes": 33928,
+  "tris": 286,
+  "nodes": [
+   "grass_patch_corner"
+  ],
+  "size": [
+   1.638,
+   0.4,
+   1.638
+  ],
+  "min": [
+   -0.798,
+   -0.0,
+   -0.84
+  ],
+  "max": [
+   0.84,
+   0.4,
+   0.798
+  ],
+  "materials": [
+   "retro-psx-nature-pack_grass-patch-winter"
+  ],
+  "pack": "retro-psx-nature-pack",
+  "kind": "grass",
+  "model": "grass_patch_corner",
+  "variant": "winter",
+  "scale": 0.8,
+  "source": "grass/grass_patch_corner.glb + textures/grass/grass_patch_winter.png",
+  "pivot": "bottom centre",
+  "textures": {
+   "grass-patch-winter": "128x128 alpha"
+  }
+ }
+]

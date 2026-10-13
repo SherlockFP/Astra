@@ -1,0 +1,27 @@
+{
+ "id": "sword_1h_iron",
+ "name": "Demir Kılıç",
+ "use": "Common one-handed arming sword (lvl 5-15)",
+ "attach": "grip centre at origin (hand bone); blade +Y; blade flats face +/-Z",
+ "kind": "1h",
+ "emissive": "",
+ "tris": 266,
+ "parts": 5,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 10,
+ "has_emit": false,
+ "bbox_min": [
+  -0.152,
+  -0.021,
+  -0.204
+ ],
+ "bbox_max": [
+  0.152,
+  0.021,
+  0.98
+ ],
+ "bytes": 17344
+}

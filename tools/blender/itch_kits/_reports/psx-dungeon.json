@@ -1,0 +1,1298 @@
+[
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/arch.glb",
+  "bytes": 41892,
+  "tris": 84,
+  "nodes": [
+   "arch"
+  ],
+  "size": [
+   4.004,
+   2.4,
+   0.8
+  ],
+  "min": [
+   -2.002,
+   5.762,
+   -0.4
+  ],
+  "max": [
+   2.002,
+   8.162,
+   0.4
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Arch.fbx",
+  "pivot": {
+   "mode": "bottom",
+   "keep_z": true
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/arch_fence.glb",
+  "bytes": 47928,
+  "tris": 156,
+  "nodes": [
+   "arch_fence"
+  ],
+  "size": [
+   3.2,
+   2.14,
+   0.187
+  ],
+  "min": [
+   -1.6,
+   5.767,
+   -0.093
+  ],
+  "max": [
+   1.6,
+   7.907,
+   0.093
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map_2s"
+  ],
+  "source": "Models/Arch_Fence.fbx",
+  "pivot": {
+   "mode": "bottom",
+   "keep_z": true
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/arch_roof.glb",
+  "bytes": 46820,
+  "tris": 176,
+  "nodes": [
+   "arch_roof"
+  ],
+  "size": [
+   4.0,
+   2.1,
+   4.0
+  ],
+  "min": [
+   -2.0,
+   5.904,
+   -2.0
+  ],
+  "max": [
+   2.0,
+   8.004,
+   2.0
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Arch_Roof.fbx",
+  "pivot": {
+   "mode": "bottom",
+   "keep_z": true
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/barrel.glb",
+  "bytes": 19508,
+  "tris": 56,
+  "nodes": [
+   "barrel"
+  ],
+  "size": [
+   1.524,
+   1.6,
+   1.76
+  ],
+  "min": [
+   -0.762,
+   0.0,
+   -0.88
+  ],
+  "max": [
+   0.762,
+   1.6,
+   0.88
+  ],
+  "materials": [
+   "psx_dungeon_crates_and_barrels_map"
+  ],
+  "source": "Models/Barrel.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/block.glb",
+  "bytes": 39108,
+  "tris": 48,
+  "nodes": [
+   "block"
+  ],
+  "size": [
+   4.0,
+   4.0,
+   4.0
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -2.0
+  ],
+  "max": [
+   2.0,
+   4.0,
+   2.0
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Block.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/block_arch.glb",
+  "bytes": 39948,
+  "tris": 60,
+  "nodes": [
+   "block_arch"
+  ],
+  "size": [
+   4.0,
+   4.0,
+   4.0
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -2.0
+  ],
+  "max": [
+   2.0,
+   4.0,
+   2.0
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Block_Arch.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/block_half.glb",
+  "bytes": 38012,
+  "tris": 32,
+  "nodes": [
+   "block_half"
+  ],
+  "size": [
+   4.0,
+   2.0,
+   4.0
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -2.0
+  ],
+  "max": [
+   2.0,
+   2.0,
+   2.0
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Block_Half.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/box.glb",
+  "bytes": 16540,
+  "tris": 12,
+  "nodes": [
+   "box"
+  ],
+  "size": [
+   1.6,
+   1.6,
+   1.6
+  ],
+  "min": [
+   -0.8,
+   0.0,
+   -0.8
+  ],
+  "max": [
+   0.8,
+   1.6,
+   0.8
+  ],
+  "materials": [
+   "psx_dungeon_crates_and_barrels_map"
+  ],
+  "source": "Models/Box.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/candle_01.glb",
+  "bytes": 38176,
+  "tris": 32,
+  "nodes": [
+   "candle_01"
+  ],
+  "size": [
+   0.381,
+   0.615,
+   0.44
+  ],
+  "min": [
+   -0.191,
+   0.0,
+   -0.22
+  ],
+  "max": [
+   0.191,
+   0.615,
+   0.22
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Candle_01.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/candle_02.glb",
+  "bytes": 42408,
+  "tris": 96,
+  "nodes": [
+   "candle_02"
+  ],
+  "size": [
+   0.661,
+   0.738,
+   0.544
+  ],
+  "min": [
+   -0.331,
+   0.0,
+   -0.272
+  ],
+  "max": [
+   0.331,
+   0.738,
+   0.272
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Candle_02.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/candle_03.glb",
+  "bytes": 38176,
+  "tris": 32,
+  "nodes": [
+   "candle_03"
+  ],
+  "size": [
+   0.381,
+   0.435,
+   0.44
+  ],
+  "min": [
+   -0.191,
+   0.0,
+   -0.22
+  ],
+  "max": [
+   0.191,
+   0.435,
+   0.22
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Candle_03.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/chain.glb",
+  "bytes": 37464,
+  "tris": 20,
+  "nodes": [
+   "chain"
+  ],
+  "size": [
+   0.2,
+   2.0,
+   0.2
+  ],
+  "min": [
+   -0.1,
+   -2.0,
+   -0.1
+  ],
+  "max": [
+   0.1,
+   0.0,
+   0.1
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map_2s"
+  ],
+  "source": "Models/Chain.fbx",
+  "pivot": {
+   "mode": "top"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/chandelier.glb",
+  "bytes": 61404,
+  "tris": 368,
+  "nodes": [
+   "chandelier"
+  ],
+  "size": [
+   3.472,
+   2.9,
+   4.0
+  ],
+  "min": [
+   -1.736,
+   -2.9,
+   -2.0
+  ],
+  "max": [
+   1.736,
+   0.0,
+   2.0
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map_2s"
+  ],
+  "source": "Models/Chandelier.fbx",
+  "pivot": {
+   "mode": "top"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/chest.glb",
+  "bytes": 19848,
+  "tris": 76,
+  "nodes": [
+   "chest"
+  ],
+  "size": [
+   2.0,
+   1.607,
+   1.7
+  ],
+  "min": [
+   -1.0,
+   0.0,
+   -0.85
+  ],
+  "max": [
+   1.0,
+   1.607,
+   0.85
+  ],
+  "materials": [
+   "psx_dungeon_crates_and_barrels_map"
+  ],
+  "source": "Models/Chest.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/debris.glb",
+  "bytes": 46680,
+  "tris": 148,
+  "nodes": [
+   "debris"
+  ],
+  "size": [
+   2.28,
+   0.404,
+   2.28
+  ],
+  "min": [
+   -1.14,
+   0.0,
+   -1.14
+  ],
+  "max": [
+   1.14,
+   0.404,
+   1.14
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Debris.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/door_01.glb",
+  "bytes": 17744,
+  "tris": 12,
+  "nodes": [
+   "door_01"
+  ],
+  "size": [
+   2.0,
+   3.0,
+   0.4
+  ],
+  "min": [
+   -1.0,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   1.0,
+   3.0,
+   0.2
+  ],
+  "materials": [
+   "psx_dungeon_doors_map"
+  ],
+  "source": "Models/Door_01.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/door_02.glb",
+  "bytes": 17744,
+  "tris": 12,
+  "nodes": [
+   "door_02"
+  ],
+  "size": [
+   2.0,
+   3.0,
+   0.4
+  ],
+  "min": [
+   -1.0,
+   0.0,
+   -0.2
+  ],
+  "max": [
+   1.0,
+   3.0,
+   0.2
+  ],
+  "materials": [
+   "psx_dungeon_doors_map"
+  ],
+  "source": "Models/Door_02.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/door_03.glb",
+  "bytes": 44716,
+  "tris": 124,
+  "nodes": [
+   "door_03"
+  ],
+  "size": [
+   2.0,
+   3.0,
+   0.25
+  ],
+  "min": [
+   -1.0,
+   0.0,
+   -0.125
+  ],
+  "max": [
+   1.0,
+   3.0,
+   0.125
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map_2s"
+  ],
+  "source": "Models/Door_03.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/door_frame_01.glb",
+  "bytes": 39924,
+  "tris": 68,
+  "nodes": [
+   "door_frame_01"
+  ],
+  "size": [
+   4.0,
+   4.0,
+   1.0
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -0.5
+  ],
+  "max": [
+   2.0,
+   4.0,
+   0.5
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Door_Frame_01.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/door_frame_02.glb",
+  "bytes": 51740,
+  "tris": 236,
+  "nodes": [
+   "door_frame_02"
+  ],
+  "size": [
+   4.0,
+   4.0,
+   1.48
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -0.74
+  ],
+  "max": [
+   2.0,
+   4.0,
+   0.74
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map_2s"
+  ],
+  "source": "Models/Door_Frame_02.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/floor_tiles.glb",
+  "bytes": 36128,
+  "tris": 2,
+  "nodes": [
+   "floor_tiles"
+  ],
+  "size": [
+   4.0,
+   0.0,
+   4.0
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -2.0
+  ],
+  "max": [
+   2.0,
+   0.0,
+   2.0
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Floor_Tiles.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/hexagon.glb",
+  "bytes": 38136,
+  "tris": 32,
+  "nodes": [
+   "hexagon"
+  ],
+  "size": [
+   6.928,
+   1.6,
+   8.0
+  ],
+  "min": [
+   -3.464,
+   0.0,
+   -4.0
+  ],
+  "max": [
+   3.464,
+   1.6,
+   4.0
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Hexagon.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/pillar.glb",
+  "bytes": 47276,
+  "tris": 204,
+  "nodes": [
+   "pillar"
+  ],
+  "size": [
+   1.13,
+   6.04,
+   1.13
+  ],
+  "min": [
+   -0.565,
+   0.0,
+   -0.565
+  ],
+  "max": [
+   0.565,
+   6.04,
+   0.565
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Pillar.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/pillar_collapsed_01.glb",
+  "bytes": 44168,
+  "tris": 130,
+  "nodes": [
+   "pillar_collapsed_01"
+  ],
+  "size": [
+   1.13,
+   1.94,
+   1.13
+  ],
+  "min": [
+   -0.565,
+   0.0,
+   -0.565
+  ],
+  "max": [
+   0.565,
+   1.94,
+   0.565
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Pillar_Collapsed_01.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/pillar_collapsed_02.glb",
+  "bytes": 38348,
+  "tris": 36,
+  "nodes": [
+   "pillar_collapsed_02"
+  ],
+  "size": [
+   2.84,
+   0.693,
+   0.8
+  ],
+  "min": [
+   -1.42,
+   0.0,
+   -0.4
+  ],
+  "max": [
+   1.42,
+   0.693,
+   0.4
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Pillar_Collapsed_02.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/skull_wall.glb",
+  "bytes": 39316,
+  "tris": 56,
+  "nodes": [
+   "skull_wall"
+  ],
+  "size": [
+   4.0,
+   4.0,
+   1.0
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -0.5
+  ],
+  "max": [
+   2.0,
+   4.0,
+   0.5
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Skull_Wall.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/skull_wall_half.glb",
+  "bytes": 38036,
+  "tris": 36,
+  "nodes": [
+   "skull_wall_half"
+  ],
+  "size": [
+   2.0,
+   4.0,
+   1.0
+  ],
+  "min": [
+   -1.0,
+   0.0,
+   -0.5
+  ],
+  "max": [
+   1.0,
+   4.0,
+   0.5
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Skull_Wall_Half.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/spikes.glb",
+  "bytes": 43208,
+  "tris": 78,
+  "nodes": [
+   "spikes"
+  ],
+  "size": [
+   2.8,
+   1.6,
+   3.6
+  ],
+  "min": [
+   -1.4,
+   0.0,
+   -1.8
+  ],
+  "max": [
+   1.4,
+   1.6,
+   1.8
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map_2s"
+  ],
+  "source": "Models/Spikes.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/stairs.glb",
+  "bytes": 36608,
+  "tris": 8,
+  "nodes": [
+   "stairs"
+  ],
+  "size": [
+   4.0,
+   2.0,
+   4.0
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -2.0
+  ],
+  "max": [
+   2.0,
+   2.0,
+   2.0
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Stairs.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/stairs_ultrawide.glb",
+  "bytes": 37440,
+  "tris": 20,
+  "nodes": [
+   "stairs_ultrawide"
+  ],
+  "size": [
+   4.0,
+   2.0,
+   12.0
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -6.0
+  ],
+  "max": [
+   2.0,
+   2.0,
+   6.0
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Stairs_Ultrawide.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/stairs_wide.glb",
+  "bytes": 36620,
+  "tris": 8,
+  "nodes": [
+   "stairs_wide"
+  ],
+  "size": [
+   4.0,
+   2.0,
+   8.0
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -4.0
+  ],
+  "max": [
+   2.0,
+   2.0,
+   4.0
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Stairs_Wide.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/wall_01.glb",
+  "bytes": 38216,
+  "tris": 32,
+  "nodes": [
+   "wall_01"
+  ],
+  "size": [
+   4.0,
+   4.0,
+   1.0
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -0.5
+  ],
+  "max": [
+   2.0,
+   4.0,
+   0.5
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Wall_01.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/wall_02.glb",
+  "bytes": 40776,
+  "tris": 68,
+  "nodes": [
+   "wall_02"
+  ],
+  "size": [
+   4.0,
+   4.0,
+   1.8
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -0.9
+  ],
+  "max": [
+   2.0,
+   4.0,
+   0.9
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Wall_02.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/wall_border_01.glb",
+  "bytes": 39536,
+  "tris": 56,
+  "nodes": [
+   "wall_border_01"
+  ],
+  "size": [
+   4.0,
+   2.0,
+   1.0
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -0.5
+  ],
+  "max": [
+   2.0,
+   2.0,
+   0.5
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Wall_Border_01.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/wall_border_02.glb",
+  "bytes": 39600,
+  "tris": 56,
+  "nodes": [
+   "wall_border_02"
+  ],
+  "size": [
+   4.0,
+   2.0,
+   1.0
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -0.5
+  ],
+  "max": [
+   2.0,
+   2.0,
+   0.5
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Wall_Border_02.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/wall_decor_01.glb",
+  "bytes": 41884,
+  "tris": 88,
+  "nodes": [
+   "wall_decor_01"
+  ],
+  "size": [
+   0.866,
+   1.126,
+   0.32
+  ],
+  "min": [
+   -0.433,
+   1.124,
+   -0.0
+  ],
+  "max": [
+   0.433,
+   2.25,
+   0.32
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Wall_Decor_01.fbx",
+  "pivot": {
+   "mode": "back",
+   "keep_z": true
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/wall_expanding.glb",
+  "bytes": 38228,
+  "tris": 32,
+  "nodes": [
+   "wall_expanding"
+  ],
+  "size": [
+   4.0,
+   4.0,
+   2.0
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -1.0
+  ],
+  "max": [
+   2.0,
+   4.0,
+   1.0
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Wall_Expanding.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/wall_half.glb",
+  "bytes": 37380,
+  "tris": 20,
+  "nodes": [
+   "wall_half"
+  ],
+  "size": [
+   2.0,
+   4.0,
+   1.0
+  ],
+  "min": [
+   -1.0,
+   0.0,
+   -0.5
+  ],
+  "max": [
+   1.0,
+   4.0,
+   0.5
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Wall_Half.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/wall_narrowing.glb",
+  "bytes": 38228,
+  "tris": 32,
+  "nodes": [
+   "wall_narrowing"
+  ],
+  "size": [
+   4.0,
+   4.0,
+   2.0
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -1.0
+  ],
+  "max": [
+   2.0,
+   4.0,
+   1.0
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Wall_Narrowing.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/wall_ruin.glb",
+  "bytes": 38256,
+  "tris": 32,
+  "nodes": [
+   "wall_ruin"
+  ],
+  "size": [
+   3.8,
+   4.0,
+   1.0
+  ],
+  "min": [
+   -1.9,
+   0.0,
+   -0.5
+  ],
+  "max": [
+   1.9,
+   4.0,
+   0.5
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Wall_Ruin.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/wall_table.glb",
+  "bytes": 55356,
+  "tris": 60,
+  "nodes": [
+   "wall_table"
+  ],
+  "size": [
+   4.0,
+   1.778,
+   2.178
+  ],
+  "min": [
+   -2.0,
+   1.0,
+   -0.0
+  ],
+  "max": [
+   2.0,
+   2.778,
+   2.178
+  ],
+  "materials": [
+   "psx_dungeon_crates_and_barrels_map",
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Wall_Table.fbx",
+  "pivot": {
+   "mode": "back",
+   "keep_z": true
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/windowed_wall_01.glb",
+  "bytes": 43152,
+  "tris": 104,
+  "nodes": [
+   "windowed_wall_01"
+  ],
+  "size": [
+   4.0,
+   4.0,
+   1.12
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -0.56
+  ],
+  "max": [
+   2.0,
+   4.0,
+   0.56
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map"
+  ],
+  "source": "Models/Windowed_Wall_01.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-dungeon/windowed_wall_02.glb",
+  "bytes": 55436,
+  "tris": 280,
+  "nodes": [
+   "windowed_wall_02"
+  ],
+  "size": [
+   4.0,
+   4.0,
+   1.48
+  ],
+  "min": [
+   -2.0,
+   0.0,
+   -0.74
+  ],
+  "max": [
+   2.0,
+   4.0,
+   0.74
+  ],
+  "materials": [
+   "psx_dungeon_dungeon_map_2s"
+  ],
+  "source": "Models/Windowed_Wall_02.fbx",
+  "pivot": {
+   "mode": "bottom"
+  }
+ }
+]

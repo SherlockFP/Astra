@@ -1,0 +1,22 @@
+Monster models by Quaternius (https://quaternius.com) - License: CC0 1.0 Universal (public domain)
+http://creativecommons.org/publicdomain/zero/1.0/
+Downloaded from Poly Pizza (https://poly.pizza). file <- original title (model page)
+
+Slime.glb <- "Slime Enemy" by Quaternius, CC0 1.0, https://poly.pizza/m/eSLKTsbl7F
+Skull.glb <- "Skull Enemy" by Quaternius, CC0 1.0, https://poly.pizza/m/EHHwZ17lWD
+Spider.glb <- "Spider" by Quaternius, CC0 1.0, https://poly.pizza/m/yRYJiAJyiM
+Bat.glb <- "Bat" by Quaternius, CC0 1.0, https://poly.pizza/m/hNO9XvjlKa
+Rat.glb <- "Rat" by Quaternius, CC0 1.0, https://poly.pizza/m/iltq5bVNaV
+Ghost.glb <- "Ghost" by Quaternius, CC0 1.0, https://poly.pizza/m/Iip30bDHmu
+Goblin.glb <- "Goblin" by Quaternius, CC0 1.0, https://poly.pizza/m/OdCOFSmEhl
+Zombie.glb <- "Zombie" by Quaternius, CC0 1.0, https://poly.pizza/m/JoBvxIUpZP
+Imp.glb <- "Demon" by Quaternius, CC0 1.0, https://poly.pizza/m/Mo2ky6vkf8
+Mushnub.glb <- "Mushnub" by Quaternius, CC0 1.0, https://poly.pizza/m/LWKmS30Xxl
+Demon.glb <- "Demon" by Quaternius, CC0 1.0, https://poly.pizza/m/IkB63XOPvr
+Orc.glb <- "Orc" by Quaternius, CC0 1.0, https://poly.pizza/m/5vO2YJsPEf
+Yeti.glb <- "Yeti" by Quaternius, CC0 1.0, https://poly.pizza/m/xtMYEVzyw0
+Giant.glb <- "Giant" by Quaternius, CC0 1.0, https://poly.pizza/m/BldaiPtyJa
+Blue_Demon.glb <- "Blue Demon" by Quaternius, CC0 1.0, https://poly.pizza/m/S7jYW6Amye
+Demon_Lord.glb <- "Demon" by Quaternius, CC0 1.0, https://poly.pizza/m/LnfIziKv4o
+Mushroom_King.glb <- "Mushroom King" by Quaternius, CC0 1.0, https://poly.pizza/m/grnFTziU8u
+Dragon_Evolved.glb <- "Dragon Evolved" by Quaternius, CC0 1.0, https://poly.pizza/m/LlwD0QNUPj

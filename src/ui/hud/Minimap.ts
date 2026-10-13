@@ -1,0 +1,427 @@
+import { G } from '../../game/G';
+import { TOWN } from '../../data/town';
+import { getDungeon } from '../../data/dungeons';
+import type { Entity } from '../../entities/Entity';
+import type { Enemy } from '../../entities/Enemy';
+import type { NavGrid } from '../../world/NavGrid';
+import { RARITY_COLORS, type Rarity } from '../../types/common';
+import { div, setText, setStyle, clampN, h, uiSound } from '../widgets/dom';
+import type { HudCtx, HudWidget } from './types';
+import { inWorldMap, questTargetMarks, tileCentreM, waypointKnown, worldExtras } from './questMarks';
+
+const SIZE = 192;
+const R = SIZE / 2;
+
+interface Poi {
+  e: Entity;
+  kind: 'npc' | 'interactable' | 'loot';
+  color: string;
+}
+
+/** Round rotating minimap: nav-grid walls with fog of war in dungeons, player arrow, party/enemy/POI dots and the zone name. */
+export class Minimap implements HudWidget {
+  readonly el: HTMLElement;
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D | null;
+  private zoneEl: HTMLElement;
+  private subEl: HTMLElement;
+  private northEl: HTMLElement;
+  private nav: NavGrid | null = null;
+  private mapCanvas: HTMLCanvasElement | null = null;
+  private fogCanvas: HTMLCanvasElement | null = null;
+  private mapBuiltAt = 0;
+  private revealX = 1e9;
+  private revealZ = 1e9;
+  private scale = 3.0;
+  private pois: Poi[] = [];
+  private poiAt = 0;
+  private zoneTitle = '';
+  private zoneSub = '';
+  private lastMode = '';
+  /** Open world marks (villages, discovered stones, active metin, quest targets), refreshed twice a second (world metres). */
+  private worldMarks: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' }[] = [];
+  private worldAt = -1e9;
+  /** Metin spots currently standing (spot ids from world:metinChanged). */
+  private metinOn = new Set<string>();
+
+  constructor() {
+    this.el = div('mm');
+    const disc = div('mm-disc', this.el);
+    this.canvas = h('canvas', 'mm-canvas hud-interactive', disc) as HTMLCanvasElement;
+    this.canvas.width = SIZE;
+    this.canvas.height = SIZE;
+    this.ctx = this.canvas.getContext('2d');
+    div('mm-vignette', disc);
+    this.northEl = div('mm-north', this.el);
+    div('mm-n', this.northEl).textContent = 'K';
+    div('mm-ring', this.el);
+    const zoom = div('mm-zoom', this.el);
+    const plus = h('button', 'mm-btn', zoom, '+');
+    const minus = h('button', 'mm-btn', zoom, '−');
+    plus.addEventListener('click', () => this.zoom(1.25));
+    minus.addEventListener('click', () => this.zoom(0.8));
+    const ribbon = div('mm-ribbon', this.el);
+    this.zoneEl = div('mm-zone', ribbon);
+    this.subEl = div('mm-sub', ribbon);
+    this.canvas.addEventListener('wheel', (e) => {
+      this.zoom(e.deltaY < 0 ? 1.15 : 0.87);
+      e.preventDefault();
+    }, { passive: false });
+    this.canvas.addEventListener('click', () => {
+      uiSound('ui_click', 0.5);
+      G.ui.togglePanel('map');
+    });
+    G.events.on('world:metinChanged', ({ id, active }) => {
+      if (active) this.metinOn.add(id);
+      else this.metinOn.delete(id);
+    });
+    G.events.on('ui:zoneName', ({ title, subtitle }) => {
+      this.zoneTitle = title;
+      this.zoneSub = subtitle ?? '';
+    });
+    G.events.on('scene:leaving', () => {
+      this.nav = null;
+      this.mapCanvas = null;
+      this.fogCanvas = null;
+      this.revealX = this.revealZ = 1e9;
+      this.pois = [];
+      this.metinOn.clear();
+      this.worldMarks = [];
+    });
+  }
+
+  private zoom(f: number): void {
+    this.scale = clampN(this.scale * f, 1.6, 9);
+  }
+
+  /** Render the nav grid to a 1 px / cell canvas: floor + brighter outline where it borders a wall. */
+  private buildMap(nav: NavGrid): void {
+    const c = this.mapCanvas && this.mapCanvas.width === nav.cols && this.mapCanvas.height === nav.rows ? this.mapCanvas : document.createElement('canvas');
+    c.width = nav.cols;
+    c.height = nav.rows;
+    const ctx = c.getContext('2d');
+    if (!ctx) return;
+    const img = ctx.createImageData(nav.cols, nav.rows);
+    const d = img.data;
+    const { cols, rows, cells } = nav;
+    for (let r = 0; r < rows; r++) {
+      for (let col = 0; col < cols; col++) {
+        const i = r * cols + col;
+        const o = i * 4;
+        if (!cells[i]) {
+          d[o + 3] = 0;
+          continue;
+        }
+        const edge = col === 0 || r === 0 || col === cols - 1 || r === rows - 1 || !cells[i - 1] || !cells[i + 1] || !cells[i - cols] || !cells[i + cols];
+        if (edge) {
+          d[o] = 196; d[o + 1] = 166; d[o + 2] = 104;
+        } else {
+          const n = ((col * 7 + r * 13) % 11 === 0 ? 8 : 0) + ((col + r) & 1 ? 3 : 0);
+          d[o] = 84 + n; d[o + 1] = 73 + n; d[o + 2] = 56 + n;
+        }
+        d[o + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    this.mapCanvas = c;
+    this.mapBuiltAt = performance.now();
+  }
+
+  private ensureFog(nav: NavGrid): void {
+    if (this.fogCanvas && this.fogCanvas.width === nav.cols && this.fogCanvas.height === nav.rows) return;
+    const f = document.createElement('canvas');
+    f.width = nav.cols;
+    f.height = nav.rows;
+    const ctx = f.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = 'rgb(10,8,6)';
+      ctx.fillRect(0, 0, f.width, f.height);
+    }
+    this.fogCanvas = f;
+    this.revealX = this.revealZ = 1e9;
+  }
+
+  private reveal(nav: NavGrid, x: number, z: number): void {
+    const f = this.fogCanvas;
+    if (!f) return;
+    if (Math.hypot(x - this.revealX, z - this.revealZ) < 1.5) return;
+    this.revealX = x;
+    this.revealZ = z;
+    const ctx = f.getContext('2d');
+    if (!ctx) return;
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc((x - nav.originX) / nav.cellSize, (z - nav.originZ) / nav.cellSize, 14 / nav.cellSize, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  private refreshPois(world: NonNullable<HudCtx['world']>): void {
+    const out: Poi[] = [];
+    for (const e of world.entities.values()) {
+      if (e.removed) continue;
+      if (e.kind === 'npc') out.push({ e, kind: 'npc', color: '#ffd24a' });
+      else if (e.kind === 'interactable') out.push({ e, kind: 'interactable', color: '#5fe0ff' });
+      else if (e.kind === 'loot') {
+        const rar = (e as unknown as { rarity?: Rarity }).rarity;
+        if (rar && (rar === 'rare' || rar === 'epic' || rar === 'legendary' || rar === 'set')) out.push({ e, kind: 'loot', color: RARITY_COLORS[rar] });
+      }
+    }
+    this.pois = out;
+  }
+
+  /** Villages, discovered stones, standing metin stones and quest targets of the open world, in world metres. */
+  private refreshWorldMarks(): void {
+    const out: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' }[] = [];
+    const ext = inWorldMap() ? worldExtras() : null;
+    if (ext) {
+      for (const v of ext.villages) out.push({ x: tileCentreM(v.center[0]), z: tileCentreM(v.center[1]), kind: 'village' });
+      for (const w of ext.waypoints) if (waypointKnown(w.id)) out.push({ x: tileCentreM(w.pos[0]), z: tileCentreM(w.pos[1]), kind: 'waypoint' });
+      for (const s of ext.metin.spots) if (this.metinOn.has(s.id)) out.push({ x: tileCentreM(s.pos[0]), z: tileCentreM(s.pos[1]), kind: 'metin' });
+    }
+    for (const q of questTargetMarks()) out.push({ x: q.x, z: q.z, kind: 'quest' });
+    this.worldMarks = out;
+  }
+
+  update(ctx: HudCtx): void {
+    const ctx2 = this.ctx;
+    const w = ctx.world;
+    const p = ctx.player;
+    // zone label
+    let title = this.zoneTitle;
+    let sub = this.zoneSub;
+    if (!title) {
+      if (ctx.mode === 'town') title = TOWN.name;
+      else if (ctx.mode === 'dungeon') title = getDungeon(G.mplus?.state?.dungeonId ?? '')?.name ?? 'Zindan';
+    }
+    if (ctx.mode !== this.lastMode) {
+      this.lastMode = ctx.mode;
+      this.zoneTitle = '';
+      this.zoneSub = '';
+      if (ctx.mode === 'town') title = TOWN.name;
+      sub = '';
+    }
+    setText(this.zoneEl, title);
+    setText(this.subEl, sub);
+    if (!ctx2) return;
+    ctx2.clearRect(0, 0, SIZE, SIZE);
+    ctx2.imageSmoothingEnabled = false;
+    ctx2.save();
+    ctx2.beginPath();
+    ctx2.arc(R, R, R - 1, 0, Math.PI * 2);
+    ctx2.clip();
+    ctx2.fillStyle = '#0a0806';
+    ctx2.fillRect(0, 0, SIZE, SIZE);
+    if (!w || !p) {
+      ctx2.restore();
+      return;
+    }
+    const nav = w.nav;
+    if (nav !== this.nav) {
+      this.nav = nav;
+      this.mapCanvas = null;
+      this.fogCanvas = null;
+    }
+    const now = ctx.now;
+    if (!this.mapCanvas || now - this.mapBuiltAt > 2500) this.buildMap(nav);
+    const useFog = ctx.mode === 'dungeon';
+    if (useFog) this.ensureFog(nav);
+    const px = p.position.x, pz = p.position.z;
+    if (useFog) this.reveal(nav, px, pz);
+
+    // camera-relative rotation: camera forward points up
+    const cam = G.camera;
+    let a = 0;
+    if (cam) {
+      const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw);
+      a = -Math.PI / 2 - Math.atan2(fz, fx);
+    }
+    const S = this.scale;
+    ctx2.save();
+    ctx2.translate(R, R);
+    ctx2.rotate(a);
+    ctx2.scale(S, S);
+    ctx2.translate(-px, -pz);
+    if (this.mapCanvas) ctx2.drawImage(this.mapCanvas, nav.originX, nav.originZ, nav.cols * nav.cellSize, nav.rows * nav.cellSize);
+    if (useFog && this.fogCanvas) ctx2.drawImage(this.fogCanvas, nav.originX, nav.originZ, nav.cols * nav.cellSize, nav.rows * nav.cellSize);
+    ctx2.restore();
+
+    const cosA = Math.cos(a), sinA = Math.sin(a);
+    const toScreen = (x: number, z: number): { sx: number; sy: number; d: number } => {
+      const dx = (x - px) * S, dz = (z - pz) * S;
+      return { sx: R + dx * cosA - dz * sinA, sy: R + dx * sinA + dz * cosA, d: Math.hypot(dx, dz) };
+    };
+    const edge = R - 7;
+
+    // points of interest
+    if (now - this.poiAt > 300) {
+      this.poiAt = now;
+      this.refreshPois(w);
+    }
+    for (const poi of this.pois) {
+      if (poi.e.removed) continue;
+      const s = toScreen(poi.e.position.x, poi.e.position.z);
+      if (s.d > edge && poi.kind === 'loot') continue;
+      const k = s.d > edge ? edge / s.d : 1;
+      const x = R + (s.sx - R) * k, y = R + (s.sy - R) * k;
+      ctx2.fillStyle = poi.color;
+      ctx2.strokeStyle = '#000';
+      ctx2.lineWidth = 1;
+      if (poi.kind === 'loot') {
+        ctx2.fillRect(x - 2, y - 2, 4, 4);
+        ctx2.strokeRect(x - 2.5, y - 2.5, 5, 5);
+      } else {
+        ctx2.beginPath();
+        ctx2.moveTo(x, y - 4);
+        ctx2.lineTo(x + 3.5, y);
+        ctx2.lineTo(x, y + 4);
+        ctx2.lineTo(x - 3.5, y);
+        ctx2.closePath();
+        ctx2.fill();
+        ctx2.stroke();
+      }
+    }
+
+    // open world (GDD_OPENWORLD §5.9): villages, discovered stones, standing metin stones, quest rings
+    if (now - this.worldAt > 500) {
+      this.worldAt = now;
+      try {
+        this.refreshWorldMarks();
+      } catch {
+        this.worldMarks = [];
+      }
+    }
+    const qk = 0.5 + 0.5 * Math.sin(ctx.t * 6);
+    for (const m of this.worldMarks) {
+      const s = toScreen(m.x, m.z);
+      const k = s.d > edge ? edge / s.d : 1;
+      const x = R + (s.sx - R) * k, y = R + (s.sy - R) * k;
+      if (m.kind === 'quest') {
+        ctx2.strokeStyle = '#58b0ff';
+        ctx2.lineWidth = 1.8;
+        ctx2.beginPath();
+        ctx2.arc(x, y, 4.5 + 1.5 * qk, 0, Math.PI * 2);
+        ctx2.stroke();
+      } else if (m.kind === 'village') {
+        ctx2.fillStyle = '#e8c46a';
+        ctx2.strokeStyle = '#2a1a04';
+        ctx2.lineWidth = 1;
+        ctx2.fillRect(x - 3, y - 3, 6, 6);
+        ctx2.strokeRect(x - 3.5, y - 3.5, 7, 7);
+      } else {
+        ctx2.fillStyle = m.kind === 'metin' ? '#b070ff' : '#6ec8ff';
+        ctx2.strokeStyle = '#000';
+        ctx2.lineWidth = 1;
+        ctx2.beginPath();
+        ctx2.moveTo(x, y - 4);
+        ctx2.lineTo(x + 3.5, y);
+        ctx2.lineTo(x, y + 4);
+        ctx2.lineTo(x - 3.5, y);
+        ctx2.closePath();
+        ctx2.fill();
+        ctx2.stroke();
+      }
+    }
+
+    // enemies
+    const pulseK = 0.5 + 0.5 * Math.sin(ctx.t * 6);
+    for (const e of w.enemies as Enemy[]) {
+      if (e.isDead || e.removed) continue;
+      const s = toScreen(e.position.x, e.position.z);
+      const rank = e.def?.rank;
+      // Hazine Goblini is pinged on the minimap even from far away (it flees on a timer): pulsing gold diamond, clamped to the ring
+      const treasure = e.def?.id === 'treasure_goblin';
+      if (s.d > R - 4) {
+        if (rank !== 'boss' && !treasure) continue;
+      }
+      const k = s.d > edge ? edge / s.d : 1;
+      const x = R + (s.sx - R) * k, y = R + (s.sy - R) * k;
+      if (treasure) {
+        const r = 5 + pulseK * 2.5;
+        ctx2.strokeStyle = `rgba(255, 214, 80, ${(0.9 - pulseK * 0.5).toFixed(2)})`;
+        ctx2.lineWidth = 1.5;
+        ctx2.beginPath();
+        ctx2.arc(x, y, r + 2, 0, Math.PI * 2);
+        ctx2.stroke();
+        ctx2.fillStyle = '#ffd24a';
+        ctx2.strokeStyle = '#3a2800';
+        ctx2.beginPath();
+        ctx2.moveTo(x, y - 5);
+        ctx2.lineTo(x + 4.5, y);
+        ctx2.lineTo(x, y + 5);
+        ctx2.lineTo(x - 4.5, y);
+        ctx2.closePath();
+        ctx2.fill();
+        ctx2.stroke();
+      } else if (e.champion) {
+        // Şampiyon: blue ring around a red dot
+        ctx2.fillStyle = '#d83030';
+        ctx2.strokeStyle = '#58b0ff';
+        ctx2.lineWidth = 2;
+        ctx2.beginPath();
+        ctx2.arc(x, y, 3.6, 0, Math.PI * 2);
+        ctx2.fill();
+        ctx2.stroke();
+      } else if (rank === 'boss') {
+        ctx2.fillStyle = '#ff3a2a';
+        ctx2.strokeStyle = '#fff';
+        ctx2.lineWidth = 1.5;
+        ctx2.beginPath();
+        ctx2.arc(x, y, 4.5 + pulseK, 0, Math.PI * 2);
+        ctx2.fill();
+        ctx2.stroke();
+      } else if (rank === 'elite' || rank === 'miniboss') {
+        ctx2.fillStyle = '#d83030';
+        ctx2.strokeStyle = '#ffd24a';
+        ctx2.lineWidth = 1.5;
+        ctx2.beginPath();
+        ctx2.arc(x, y, 3.2, 0, Math.PI * 2);
+        ctx2.fill();
+        ctx2.stroke();
+      } else {
+        ctx2.fillStyle = e.aggroed ? '#ff5a4a' : '#c23232';
+        ctx2.fillRect(Math.round(x) - 1.5, Math.round(y) - 1.5, 3, 3);
+      }
+    }
+
+    // party
+    for (const pl of w.players) {
+      if (pl.isLocal || pl.isDead) continue;
+      const s = toScreen(pl.position.x, pl.position.z);
+      const k = s.d > edge ? edge / s.d : 1;
+      const x = R + (s.sx - R) * k, y = R + (s.sy - R) * k;
+      ctx2.fillStyle = '#5be07a';
+      ctx2.strokeStyle = '#04200c';
+      ctx2.lineWidth = 1.5;
+      ctx2.beginPath();
+      ctx2.arc(x, y, 3.6, 0, Math.PI * 2);
+      ctx2.fill();
+      ctx2.stroke();
+    }
+
+    // local player arrow
+    const fa = Math.atan2(Math.cos(p.yaw), Math.sin(p.yaw)) + a; // facing vector (sin yaw, cos yaw) in screen space
+    ctx2.save();
+    ctx2.translate(R, R);
+    ctx2.rotate(fa);
+    ctx2.fillStyle = '#ffe9a0';
+    ctx2.strokeStyle = '#2a1a04';
+    ctx2.lineWidth = 1.5;
+    ctx2.beginPath();
+    ctx2.moveTo(7, 0);
+    ctx2.lineTo(-4.5, 4.5);
+    ctx2.lineTo(-2, 0);
+    ctx2.lineTo(-4.5, -4.5);
+    ctx2.closePath();
+    ctx2.stroke();
+    ctx2.fill();
+    ctx2.restore();
+    ctx2.restore();
+
+    // north marker (world -Z) orbits the ring: wrapper rotates with the map, the letter stays upright
+    const deg = (a * 180) / Math.PI;
+    setStyle(this.northEl, 'transform', `rotate(${deg.toFixed(1)}deg)`);
+    setStyle(this.northEl.firstElementChild as HTMLElement, 'transform', `rotate(${(-deg).toFixed(1)}deg)`);
+  }
+}

@@ -1,0 +1,27 @@
+{
+ "id": "wand_arcane",
+ "name": "Yıldız Değneği",
+ "use": "Arcane wand, dark wood with a golden star and glowing sapphire (lvl 15-35)",
+ "attach": "grip at origin; tip +Y",
+ "kind": "wand",
+ "emissive": "sapphire in the star",
+ "tris": 306,
+ "parts": 8,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 14,
+ "has_emit": true,
+ "bbox_min": [
+  -0.071,
+  -0.03,
+  -0.17
+ ],
+ "bbox_max": [
+  0.071,
+  0.03,
+  0.565
+ ],
+ "bytes": 22056
+}

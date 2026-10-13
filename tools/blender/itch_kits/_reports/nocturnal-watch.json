@@ -1,0 +1,1713 @@
+[
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/bridge.glb",
+  "bytes": 238884,
+  "tris": 442,
+  "nodes": [
+   "bridge"
+  ],
+  "size": [
+   9.679,
+   8.37,
+   26.667
+  ],
+  "min": [
+   -4.839,
+   0.0,
+   -13.333
+  ],
+  "max": [
+   4.839,
+   8.37,
+   13.333
+  ],
+  "materials": [
+   "nw_bridge_texture"
+  ],
+  "source": "Bridge/Bridge.fbx",
+  "scale": 1.3333,
+  "textures": {
+   "BridgeTexture.png": "512x512"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/npc_bartender.glb",
+  "bytes": 48424,
+  "tris": 488,
+  "nodes": [
+   "npc_bartender"
+  ],
+  "size": [
+   2.148,
+   2.41,
+   0.401
+  ],
+  "min": [
+   -1.074,
+   0.0,
+   -0.201
+  ],
+  "max": [
+   1.074,
+   2.41,
+   0.201
+  ],
+  "materials": [
+   "nw_bartender"
+  ],
+  "source": "Characters/Bartender.fbx",
+  "scale": 1.3333,
+  "textures": {
+   "Bartender.png": "256x256"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/npc_inquisitor.glb",
+  "bytes": 165100,
+  "tris": 1466,
+  "nodes": [
+   "npc_inquisitor"
+  ],
+  "size": [
+   2.867,
+   2.648,
+   0.497
+  ],
+  "min": [
+   -1.433,
+   0.0,
+   -0.248
+  ],
+  "max": [
+   1.433,
+   2.648,
+   0.248
+  ],
+  "materials": [
+   "nw_iniquisitor_texture",
+   "nw_inquisitor_helmet_texture"
+  ],
+  "source": "Characters/inquisitor.fbx",
+  "scale": 1.3333,
+  "textures": {
+   "IniquisitorTexture.png": "256x256",
+   "InquisitorHelmetTexture.png": "256x256"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/npc_maid.glb",
+  "bytes": 49976,
+  "tris": 618,
+  "nodes": [
+   "npc_maid"
+  ],
+  "size": [
+   2.148,
+   2.374,
+   0.411
+  ],
+  "min": [
+   -1.074,
+   0.0,
+   -0.205
+  ],
+  "max": [
+   1.074,
+   2.374,
+   0.205
+  ],
+  "materials": [
+   "nw_maid_texture"
+  ],
+  "source": "Characters/Maid.fbx",
+  "scale": 1.3333,
+  "textures": {
+   "MaidTexture.png": "256x256"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/npc_nun.glb",
+  "bytes": 56644,
+  "tris": 622,
+  "nodes": [
+   "npc_nun"
+  ],
+  "size": [
+   2.148,
+   2.426,
+   0.426
+  ],
+  "min": [
+   -1.074,
+   0.0,
+   -0.213
+  ],
+  "max": [
+   1.074,
+   2.426,
+   0.213
+  ],
+  "materials": [
+   "nw_nun_texture"
+  ],
+  "source": "Characters/Nun.fbx",
+  "scale": 1.3333,
+  "textures": {
+   "Nun_Texture.png": "256x256"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/npc_peasant.glb",
+  "bytes": 51588,
+  "tris": 478,
+  "nodes": [
+   "npc_peasant"
+  ],
+  "size": [
+   2.148,
+   2.41,
+   0.401
+  ],
+  "min": [
+   -1.074,
+   0.0,
+   -0.201
+  ],
+  "max": [
+   1.074,
+   2.41,
+   0.201
+  ],
+  "materials": [
+   "nw_peasant_texture"
+  ],
+  "source": "Characters/Peasant.fbx",
+  "scale": 1.3333,
+  "textures": {
+   "PeasantTexture.png": "256x256"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/npc_peasant_blonde.glb",
+  "bytes": 56072,
+  "tris": 478,
+  "nodes": [
+   "npc_peasant"
+  ],
+  "size": [
+   2.148,
+   2.41,
+   0.401
+  ],
+  "min": [
+   -1.074,
+   0.0,
+   -0.201
+  ],
+  "max": [
+   1.074,
+   2.41,
+   0.201
+  ],
+  "materials": [
+   "nw_peasant_blonde_texture"
+  ],
+  "source": "Characters/Peasant.fbx + PeasantBlondeTexture.png",
+  "scale": 1.3333,
+  "textures": {
+   "PeasantBlondeTexture.png": "256x256"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/witch.glb",
+  "bytes": 182796,
+  "tris": 1535,
+  "nodes": [
+   "witch"
+  ],
+  "size": [
+   2.938,
+   4.229,
+   0.899
+  ],
+  "min": [
+   -1.469,
+   0.0,
+   -0.449
+  ],
+  "max": [
+   1.469,
+   4.229,
+   0.449
+  ],
+  "materials": [
+   "nw_witch_texture"
+  ],
+  "source": "Characters/Witch.fbx",
+  "scale": 1.3333,
+  "textures": {
+   "WitchTexture.png": "512x512"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/church.glb",
+  "bytes": 235116,
+  "tris": 980,
+  "nodes": [
+   "church",
+   "church_door"
+  ],
+  "size": [
+   11.982,
+   13.598,
+   19.106
+  ],
+  "min": [
+   -5.991,
+   0.0,
+   -9.553
+  ],
+  "max": [
+   5.991,
+   13.598,
+   9.553
+  ],
+  "materials": [
+   "nw_church_texture"
+  ],
+  "source": "Church/Church.fbx",
+  "scale": 1.3333,
+  "textures": {
+   "ChurchTexture.png": "512x512"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/church_altar.glb",
+  "bytes": 86564,
+  "tris": 458,
+  "nodes": [
+   "church_altar"
+  ],
+  "size": [
+   2.569,
+   3.208,
+   1.373
+  ],
+  "min": [
+   -1.285,
+   0.0,
+   -0.686
+  ],
+  "max": [
+   1.285,
+   3.208,
+   0.686
+  ],
+  "materials": [
+   "church_altar_church_props_texture"
+  ],
+  "source": "Church/Altar.fbx",
+  "scale": 1.0,
+  "textures": {
+   "ChurchPropsTexture.png": "256x256 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/church_bench.glb",
+  "bytes": 48180,
+  "tris": 124,
+  "nodes": [
+   "church_bench"
+  ],
+  "size": [
+   3.049,
+   1.333,
+   0.857
+  ],
+  "min": [
+   -1.525,
+   0.0,
+   -0.429
+  ],
+  "max": [
+   1.525,
+   1.333,
+   0.429
+  ],
+  "materials": [
+   "church_bench_church_props_texture"
+  ],
+  "source": "Church/ChurchBench.fbx",
+  "scale": 1.0,
+  "textures": {
+   "ChurchPropsTexture.png": "256x218 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/church_fence.glb",
+  "bytes": 97928,
+  "tris": 528,
+  "nodes": [
+   "church_fence"
+  ],
+  "size": [
+   1.512,
+   1.007,
+   0.488
+  ],
+  "min": [
+   -0.756,
+   0.0,
+   -0.244
+  ],
+  "max": [
+   0.756,
+   1.007,
+   0.244
+  ],
+  "materials": [
+   "church_fence_church_props_texture"
+  ],
+  "source": "Church/ChurchFence.fbx",
+  "scale": 1.3333,
+  "textures": {
+   "ChurchPropsTexture.png": "256x256 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/ritual_dagger.glb",
+  "bytes": 56864,
+  "tris": 240,
+  "nodes": [
+   "ritual_dagger"
+  ],
+  "size": [
+   0.445,
+   1.2,
+   0.089
+  ],
+  "min": [
+   -0.223,
+   0.0,
+   -0.044
+  ],
+  "max": [
+   0.223,
+   1.2,
+   0.044
+  ],
+  "materials": [
+   "ritual_dagger_hut_interior_props_texture"
+  ],
+  "source": "HutInterior/HutInterior.fbx",
+  "scale": 0.9628,
+  "textures": {
+   "HutInteriorPropsTexture.png": "250x256 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/crow.glb",
+  "bytes": 71920,
+  "tris": 442,
+  "nodes": [
+   "crow"
+  ],
+  "size": [
+   0.38,
+   0.6,
+   1.145
+  ],
+  "min": [
+   -0.19,
+   0.0,
+   -0.573
+  ],
+  "max": [
+   0.19,
+   0.6,
+   0.573
+  ],
+  "materials": [
+   "crow_hut_interior_props_texture"
+  ],
+  "source": "HutInterior/HutInterior.fbx",
+  "scale": 0.794,
+  "textures": {
+   "HutInteriorPropsTexture.png": "256x256"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/fish.glb",
+  "bytes": 39988,
+  "tris": 112,
+  "nodes": [
+   "fish"
+  ],
+  "size": [
+   0.8,
+   0.33,
+   0.114
+  ],
+  "min": [
+   -0.4,
+   0.0,
+   -0.057
+  ],
+  "max": [
+   0.4,
+   0.33,
+   0.057
+  ],
+  "materials": [
+   "fish_hut_interior_props_texture"
+  ],
+  "source": "HutInterior/HutInterior.fbx",
+  "scale": 0.7267,
+  "textures": {
+   "HutInteriorPropsTexture.png": "194x256 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/cauldron.glb",
+  "bytes": 60780,
+  "tris": 318,
+  "nodes": [
+   "cauldron"
+  ],
+  "size": [
+   1.594,
+   1.3,
+   1.362
+  ],
+  "min": [
+   -0.797,
+   0.0,
+   -0.681
+  ],
+  "max": [
+   0.797,
+   1.3,
+   0.681
+  ],
+  "materials": [
+   "cauldron_hut_interior_props_texture"
+  ],
+  "source": "HutInterior/HutInterior.fbx",
+  "scale": 0.7227,
+  "textures": {
+   "HutInteriorPropsTexture.png": "256x256"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/severed_leg.glb",
+  "bytes": 42488,
+  "tris": 88,
+  "nodes": [
+   "severed_leg"
+  ],
+  "size": [
+   0.482,
+   0.6,
+   0.203
+  ],
+  "min": [
+   -0.241,
+   0.0,
+   -0.101
+  ],
+  "max": [
+   0.241,
+   0.6,
+   0.101
+  ],
+  "materials": [
+   "severed_leg_hut_interior_props_texture"
+  ],
+  "source": "HutInterior/HutInterior.fbx",
+  "scale": 0.5223,
+  "textures": {
+   "HutInteriorPropsTexture.png": "239x256 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/rat.glb",
+  "bytes": 49224,
+  "tris": 256,
+  "nodes": [
+   "rat"
+  ],
+  "size": [
+   0.9,
+   0.227,
+   0.269
+  ],
+  "min": [
+   -0.45,
+   0.0,
+   -0.135
+  ],
+  "max": [
+   0.45,
+   0.227,
+   0.135
+  ],
+  "materials": [
+   "rat_hut_interior_props_texture"
+  ],
+  "source": "HutInterior/HutInterior.fbx",
+  "scale": 0.4002,
+  "textures": {
+   "HutInteriorPropsTexture.png": "202x256 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/pine_tree.glb",
+  "bytes": 35904,
+  "tris": 346,
+  "nodes": [
+   "pine_tree"
+  ],
+  "size": [
+   10.796,
+   15.117,
+   10.783
+  ],
+  "min": [
+   -5.398,
+   0.0,
+   -5.392
+  ],
+  "max": [
+   5.398,
+   15.117,
+   5.392
+  ],
+  "materials": [
+   "nw_pine_tree_texture"
+  ],
+  "source": "PineTree/PineTree.fbx",
+  "scale": 1.3333,
+  "textures": {
+   "PineTreeTexture.png": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/banner.glb",
+  "bytes": 21564,
+  "tris": 248,
+  "nodes": [
+   "banner"
+  ],
+  "size": [
+   1.771,
+   3.478,
+   0.176
+  ],
+  "min": [
+   -0.886,
+   -3.478,
+   -0.088
+  ],
+  "max": [
+   0.886,
+   0.0,
+   0.088
+  ],
+  "materials": [
+   "banner_props"
+  ],
+  "source": "Props/Banner.fbx",
+  "scale": 1.3333,
+  "textures": {
+   "Props.png": "193x256 crop alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/barrel.glb",
+  "bytes": 70620,
+  "tris": 204,
+  "nodes": [
+   "barrel"
+  ],
+  "size": [
+   1.157,
+   1.4,
+   1.157
+  ],
+  "min": [
+   -0.579,
+   0.0,
+   -0.579
+  ],
+  "max": [
+   0.579,
+   1.4,
+   0.579
+  ],
+  "materials": [
+   "barrel_props"
+  ],
+  "source": "Props/Barrel.fbx",
+  "scale": 0.5748,
+  "textures": {
+   "Props.png": "256x253 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/crate.glb",
+  "bytes": 35520,
+  "tris": 156,
+  "nodes": [
+   "crate"
+  ],
+  "size": [
+   1.2,
+   1.2,
+   1.2
+  ],
+  "min": [
+   -0.6,
+   0.0,
+   -0.6
+  ],
+  "max": [
+   0.6,
+   1.2,
+   0.6
+  ],
+  "materials": [
+   "crate_props"
+  ],
+  "source": "Props/Crate.fbx",
+  "scale": 0.6,
+  "textures": {
+   "Props.png": "193x256 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/torch.glb",
+  "bytes": 20832,
+  "tris": 208,
+  "nodes": [
+   "torch"
+  ],
+  "size": [
+   0.235,
+   1.2,
+   0.354
+  ],
+  "min": [
+   -0.117,
+   0.0,
+   -0.0
+  ],
+  "max": [
+   0.117,
+   1.2,
+   0.354
+  ],
+  "materials": [
+   "torch_props"
+  ],
+  "source": "Props/Torch.fbx",
+  "scale": 0.2986,
+  "textures": {
+   "Props.png": "256x256 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/signpost.glb",
+  "bytes": 48496,
+  "tris": 96,
+  "nodes": [
+   "signpost"
+  ],
+  "size": [
+   1.819,
+   2.771,
+   1.105
+  ],
+  "min": [
+   -0.909,
+   0.0,
+   -0.552
+  ],
+  "max": [
+   0.909,
+   2.771,
+   0.552
+  ],
+  "materials": [
+   "nw_sign_post_texture"
+  ],
+  "source": "SignPost/SignPost.fbx",
+  "scale": 1.3333,
+  "textures": {
+   "SignPostTexture.png": "256x256"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/steel_sword.glb",
+  "bytes": 43124,
+  "tris": 455,
+  "nodes": [
+   "steel_sword"
+  ],
+  "size": [
+   0.497,
+   1.615,
+   0.087
+  ],
+  "min": [
+   -0.248,
+   -0.399,
+   -0.044
+  ],
+  "max": [
+   0.248,
+   1.215,
+   0.044
+  ],
+  "materials": [
+   "steel_sword_steel_sword_texture"
+  ],
+  "source": "Sword/SteelSword.fbx",
+  "scale": 1.3333,
+  "textures": {
+   "SteelSwordTexture.png": "256x256"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_wall_base.glb",
+  "bytes": 55872,
+  "tris": 12,
+  "nodes": [
+   "tavern_wall_base"
+  ],
+  "size": [
+   2.995,
+   4.089,
+   0.3
+  ],
+  "min": [
+   -1.498,
+   0.0,
+   -0.15
+  ],
+  "max": [
+   1.498,
+   4.089,
+   0.15
+  ],
+  "materials": [
+   "tavern_wall_base_tavern_texture"
+  ],
+  "source": "Tavern/Tavern.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernTexture.jpg": "224x243 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_wall_half.glb",
+  "bytes": 32272,
+  "tris": 20,
+  "nodes": [
+   "tavern_wall_half"
+  ],
+  "size": [
+   2.995,
+   2.045,
+   0.3
+  ],
+  "min": [
+   -1.498,
+   0.0,
+   -0.15
+  ],
+  "max": [
+   1.498,
+   2.045,
+   0.15
+  ],
+  "materials": [
+   "tavern_wall_half_tavern_texture"
+  ],
+  "source": "Tavern/Tavern.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernTexture.jpg": "256x129 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_wall_half_window.glb",
+  "bytes": 28336,
+  "tris": 178,
+  "nodes": [
+   "tavern_wall_half_window"
+  ],
+  "size": [
+   2.995,
+   2.045,
+   0.427
+  ],
+  "min": [
+   -1.498,
+   2.047,
+   -0.213
+  ],
+  "max": [
+   1.498,
+   4.093,
+   0.213
+  ],
+  "materials": [
+   "tavern_wall_half_window_tavern_texture"
+  ],
+  "source": "Tavern/Tavern.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernTexture.jpg": "256x64 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_wall_base_door.glb",
+  "bytes": 53908,
+  "tris": 200,
+  "nodes": [
+   "tavern_wall_base_door"
+  ],
+  "size": [
+   2.995,
+   4.089,
+   0.464
+  ],
+  "min": [
+   -1.498,
+   0.0,
+   -0.232
+  ],
+  "max": [
+   1.498,
+   4.089,
+   0.232
+  ],
+  "materials": [
+   "tavern_wall_base_door_tavern_texture"
+  ],
+  "source": "Tavern/Tavern.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernTexture.jpg": "256x160 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_wall_base_window.glb",
+  "bytes": 50688,
+  "tris": 194,
+  "nodes": [
+   "tavern_wall_base_window"
+  ],
+  "size": [
+   2.995,
+   4.089,
+   0.436
+  ],
+  "min": [
+   -1.498,
+   0.0,
+   -0.218
+  ],
+  "max": [
+   1.498,
+   4.089,
+   0.218
+  ],
+  "materials": [
+   "tavern_wall_base_window_tavern_texture"
+  ],
+  "source": "Tavern/Tavern.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernTexture.jpg": "256x171 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_wall_pillar.glb",
+  "bytes": 19856,
+  "tris": 12,
+  "nodes": [
+   "tavern_wall_pillar"
+  ],
+  "size": [
+   0.53,
+   4.07,
+   0.542
+  ],
+  "min": [
+   -0.265,
+   0.0,
+   -0.271
+  ],
+  "max": [
+   0.265,
+   4.07,
+   0.271
+  ],
+  "materials": [
+   "tavern_wall_pillar_tavern_texture"
+  ],
+  "source": "Tavern/Tavern.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernTexture.jpg": "75x243 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_triangular_wall.glb",
+  "bytes": 61852,
+  "tris": 8,
+  "nodes": [
+   "tavern_triangular_wall"
+  ],
+  "size": [
+   2.995,
+   2.045,
+   0.3
+  ],
+  "min": [
+   -1.498,
+   0.0,
+   -0.15
+  ],
+  "max": [
+   1.498,
+   2.045,
+   0.15
+  ],
+  "materials": [
+   "tavern_triangular_wall_tavern_texture"
+  ],
+  "source": "Tavern/Tavern.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernTexture.jpg": "247x248 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_top_ridge.glb",
+  "bytes": 67508,
+  "tris": 108,
+  "nodes": [
+   "tavern_top_ridge"
+  ],
+  "size": [
+   2.995,
+   0.855,
+   0.661
+  ],
+  "min": [
+   -1.498,
+   3.234,
+   -0.33
+  ],
+  "max": [
+   1.498,
+   4.089,
+   0.33
+  ],
+  "materials": [
+   "tavern_top_ridge_tavern_texture"
+  ],
+  "source": "Tavern/Tavern.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernTexture.jpg": "246x247 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_roof.glb",
+  "bytes": 62348,
+  "tris": 36,
+  "nodes": [
+   "tavern_roof"
+  ],
+  "size": [
+   2.995,
+   0.436,
+   2.045
+  ],
+  "min": [
+   -1.498,
+   0.0,
+   -1.023
+  ],
+  "max": [
+   1.498,
+   0.436,
+   1.023
+  ],
+  "materials": [
+   "tavern_roof_tavern_texture"
+  ],
+  "source": "Tavern/Tavern.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernTexture.jpg": "250x256 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_foundation.glb",
+  "bytes": 20336,
+  "tris": 20,
+  "nodes": [
+   "tavern_foundation"
+  ],
+  "size": [
+   2.995,
+   0.954,
+   0.573
+  ],
+  "min": [
+   -1.498,
+   0.0,
+   -0.286
+  ],
+  "max": [
+   1.498,
+   0.954,
+   0.286
+  ],
+  "materials": [
+   "tavern_foundation_tavern_texture"
+  ],
+  "source": "Tavern/Tavern.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernTexture.jpg": "136x124 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_door.glb",
+  "bytes": 45136,
+  "tris": 24,
+  "nodes": [
+   "tavern_door"
+  ],
+  "size": [
+   2.164,
+   3.236,
+   0.3
+  ],
+  "min": [
+   -1.082,
+   0.0,
+   -0.15
+  ],
+  "max": [
+   1.082,
+   3.236,
+   0.15
+  ],
+  "materials": [
+   "tavern_door_tavern_texture"
+  ],
+  "source": "Tavern/Tavern.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernTexture.jpg": "256x183 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_chimney.glb",
+  "bytes": 59992,
+  "tris": 128,
+  "nodes": [
+   "tavern_chimney"
+  ],
+  "size": [
+   0.776,
+   1.945,
+   0.766
+  ],
+  "min": [
+   -0.388,
+   0.0,
+   -0.383
+  ],
+  "max": [
+   0.388,
+   1.945,
+   0.383
+  ],
+  "materials": [
+   "tavern_chimney_tavern_texture"
+  ],
+  "source": "Tavern/Tavern.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernTexture.jpg": "237x233 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_bar.glb",
+  "bytes": 27556,
+  "tris": 36,
+  "nodes": [
+   "tavern_bar"
+  ],
+  "size": [
+   3.735,
+   1.678,
+   1.668
+  ],
+  "min": [
+   -1.868,
+   0.0,
+   -0.834
+  ],
+  "max": [
+   1.868,
+   1.678,
+   0.834
+  ],
+  "materials": [
+   "tavern_bar_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "256x167 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_bar_stool.glb",
+  "bytes": 79236,
+  "tris": 316,
+  "nodes": [
+   "tavern_bar_stool"
+  ],
+  "size": [
+   0.951,
+   1.312,
+   1.004
+  ],
+  "min": [
+   -0.475,
+   0.0,
+   -0.502
+  ],
+  "max": [
+   0.475,
+   1.312,
+   0.502
+  ],
+  "materials": [
+   "tavern_bar_stool_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "256x256 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_beer_mug.glb",
+  "bytes": 58788,
+  "tris": 392,
+  "nodes": [
+   "tavern_beer_mug"
+  ],
+  "size": [
+   0.35,
+   0.307,
+   0.249
+  ],
+  "min": [
+   -0.175,
+   0.0,
+   -0.124
+  ],
+  "max": [
+   0.175,
+   0.307,
+   0.124
+  ],
+  "materials": [
+   "tavern_beer_mug_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "244x245 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_bowl.glb",
+  "bytes": 48948,
+  "tris": 110,
+  "nodes": [
+   "tavern_bowl"
+  ],
+  "size": [
+   0.563,
+   0.153,
+   0.611
+  ],
+  "min": [
+   -0.281,
+   0.0,
+   -0.306
+  ],
+  "max": [
+   0.281,
+   0.153,
+   0.306
+  ],
+  "materials": [
+   "tavern_bowl_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "256x256 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_jug.glb",
+  "bytes": 47088,
+  "tris": 236,
+  "nodes": [
+   "tavern_jug"
+  ],
+  "size": [
+   0.252,
+   0.533,
+   0.252
+  ],
+  "min": [
+   -0.126,
+   0.0,
+   -0.126
+  ],
+  "max": [
+   0.126,
+   0.533,
+   0.126
+  ],
+  "materials": [
+   "tavern_jug_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "251x252 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_cheese.glb",
+  "bytes": 31212,
+  "tris": 48,
+  "nodes": [
+   "tavern_cheese"
+  ],
+  "size": [
+   0.592,
+   0.289,
+   0.592
+  ],
+  "min": [
+   -0.296,
+   0.0,
+   -0.296
+  ],
+  "max": [
+   0.296,
+   0.289,
+   0.296
+  ],
+  "materials": [
+   "tavern_cheese_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "246x246 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_bread.glb",
+  "bytes": 32556,
+  "tris": 80,
+  "nodes": [
+   "tavern_bread"
+  ],
+  "size": [
+   0.501,
+   0.179,
+   0.286
+  ],
+  "min": [
+   -0.25,
+   0.0,
+   -0.143
+  ],
+  "max": [
+   0.25,
+   0.179,
+   0.143
+  ],
+  "materials": [
+   "tavern_bread_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "219x256 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_wooden_spoon.glb",
+  "bytes": 21460,
+  "tris": 84,
+  "nodes": [
+   "tavern_wooden_spoon"
+  ],
+  "size": [
+   0.102,
+   0.031,
+   0.55
+  ],
+  "min": [
+   -0.051,
+   0.0,
+   -0.275
+  ],
+  "max": [
+   0.051,
+   0.031,
+   0.275
+  ],
+  "materials": [
+   "tavern_wooden_spoon_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "165x153 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_shelf.glb",
+  "bytes": 60100,
+  "tris": 168,
+  "nodes": [
+   "tavern_shelf"
+  ],
+  "size": [
+   3.811,
+   0.495,
+   0.688
+  ],
+  "min": [
+   -1.906,
+   0.0,
+   -0.0
+  ],
+  "max": [
+   1.906,
+   0.495,
+   0.688
+  ],
+  "materials": [
+   "tavern_shelf_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "256x255 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_wine_bottle.glb",
+  "bytes": 32360,
+  "tris": 188,
+  "nodes": [
+   "tavern_wine_bottle"
+  ],
+  "size": [
+   0.205,
+   0.624,
+   0.205
+  ],
+  "min": [
+   -0.103,
+   0.0,
+   -0.103
+  ],
+  "max": [
+   0.103,
+   0.624,
+   0.103
+  ],
+  "materials": [
+   "tavern_wine_bottle_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "227x227 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_wine_bottle_02.glb",
+  "bytes": 38296,
+  "tris": 212,
+  "nodes": [
+   "tavern_wine_bottle_02"
+  ],
+  "size": [
+   0.332,
+   0.461,
+   0.332
+  ],
+  "min": [
+   -0.166,
+   0.0,
+   -0.166
+  ],
+  "max": [
+   0.166,
+   0.461,
+   0.166
+  ],
+  "materials": [
+   "tavern_wine_bottle_02_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "229x228 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_lantern.glb",
+  "bytes": 36256,
+  "tris": 268,
+  "nodes": [
+   "tavern_lantern"
+  ],
+  "size": [
+   0.436,
+   0.691,
+   0.45
+  ],
+  "min": [
+   -0.218,
+   0.0,
+   -0.225
+  ],
+  "max": [
+   0.218,
+   0.691,
+   0.225
+  ],
+  "materials": [
+   "tavern_lantern_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "256x172 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_wall_lantern.glb",
+  "bytes": 54016,
+  "tris": 376,
+  "nodes": [
+   "tavern_wall_lantern"
+  ],
+  "size": [
+   0.436,
+   0.87,
+   0.508
+  ],
+  "min": [
+   -0.218,
+   0.0,
+   -0.0
+  ],
+  "max": [
+   0.218,
+   0.87,
+   0.508
+  ],
+  "materials": [
+   "tavern_wall_lantern_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "256x245 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_chandelier.glb",
+  "bytes": 34960,
+  "tris": 380,
+  "nodes": [
+   "tavern_chandelier"
+  ],
+  "size": [
+   2.653,
+   0.455,
+   2.653
+  ],
+  "min": [
+   -1.326,
+   -0.455,
+   -1.326
+  ],
+  "max": [
+   1.326,
+   0.0,
+   1.326
+  ],
+  "materials": [
+   "tavern_chandelier_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "128x256 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_chain.glb",
+  "bytes": 25256,
+  "tris": 4,
+  "nodes": [
+   "tavern_chain"
+  ],
+  "size": [
+   0.074,
+   2.727,
+   0.074
+  ],
+  "min": [
+   -0.037,
+   -2.727,
+   -0.037
+  ],
+  "max": [
+   0.037,
+   0.0,
+   0.037
+  ],
+  "materials": [
+   "tavern_chain_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "256x256"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tavern_painting.glb",
+  "bytes": 17508,
+  "tris": 28,
+  "nodes": [
+   "tavern_painting"
+  ],
+  "size": [
+   1.441,
+   1.661,
+   0.18
+  ],
+  "min": [
+   -0.721,
+   0.0,
+   -0.0
+  ],
+  "max": [
+   0.721,
+   1.661,
+   0.18
+  ],
+  "materials": [
+   "tavern_painting_tavern_props_texture"
+  ],
+  "source": "Tavern/TavernProps.fbx",
+  "scale": 1.3636,
+  "textures": {
+   "TavernPropsTexture.png": "255x256 crop"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/tower.glb",
+  "bytes": 355528,
+  "tris": 1818,
+  "nodes": [
+   "tower",
+   "tower_door"
+  ],
+  "size": [
+   12.339,
+   30.0,
+   12.909
+  ],
+  "min": [
+   -6.169,
+   0.0,
+   -6.455
+  ],
+  "max": [
+   6.169,
+   30.0,
+   6.455
+  ],
+  "materials": [
+   "nw_tower_door_texture",
+   "nw_tower_texture"
+  ],
+  "source": "Tower/Tower.fbx",
+  "scale": 0.632,
+  "textures": {
+   "TowerTexture.png": "512x512",
+   "TowerDoorTexture.png": "512x512"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/nocturnal-watch/well.glb",
+  "bytes": 52040,
+  "tris": 468,
+  "nodes": [
+   "well"
+  ],
+  "size": [
+   1.987,
+   3.0,
+   1.612
+  ],
+  "min": [
+   -0.994,
+   0.0,
+   -0.806
+  ],
+  "max": [
+   0.994,
+   3.0,
+   0.806
+  ],
+  "materials": [
+   "nw_well_texture"
+  ],
+  "source": "Well/Well.fbx",
+  "scale": 0.6555,
+  "textures": {
+   "WellTexture.png": "256x256"
+  }
+ }
+]

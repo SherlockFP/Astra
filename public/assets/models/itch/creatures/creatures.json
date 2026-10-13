@@ -1,0 +1,1036 @@
+{
+ "wolf": {
+  "url": "/assets/models/itch/creatures/wolf.glb",
+  "scale": 1.3333,
+  "size": [
+   0.396,
+   1.412,
+   2.273
+  ],
+  "tris": 4850,
+  "nodes": [
+   "WolfBody"
+  ],
+  "textures": {
+   "wolf": "/assets/textures/itch/creatures/wolf.png",
+   "wolf_black": "/assets/textures/itch/creatures/wolf_black.png",
+   "wolf_white": "/assets/textures/itch/creatures/wolf_white.png"
+  },
+  "clips": {
+   "Idle": {
+    "seconds": 4.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "IdlePant": {
+    "seconds": 3.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Walk": {
+    "seconds": 0.8,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 1.067,
+    "speed": 1.334
+   },
+   "Trot": {
+    "seconds": 0.533,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 1.467,
+    "speed": 2.752
+   },
+   "Run": {
+    "seconds": 0.4,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 2.933,
+    "speed": 7.332
+   },
+   "Bite": {
+    "seconds": 1.1,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Bite": 0.47
+    }
+   },
+   "Lunge": {
+    "seconds": 1.5,
+    "loop": false,
+    "rootMotion": true,
+    "travel": 2.133,
+    "speed": 1.422,
+    "events": {
+     "Bite": 0.87
+    }
+   },
+   "Threat": {
+    "seconds": 2.4,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Howl": {
+    "seconds": 3.5,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Howl": 0.8
+    }
+   },
+   "Hit": {
+    "seconds": 0.5,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Death": {
+    "seconds": 2.2,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Dead": 1.9
+    }
+   },
+   "GetUp": {
+    "seconds": 1.5,
+    "loop": false,
+    "rootMotion": false
+   }
+  }
+ },
+ "warg": {
+  "url": "/assets/models/itch/creatures/warg.glb",
+  "scale": 1.3333,
+  "size": [
+   1.037,
+   1.786,
+   3.198
+  ],
+  "tris": 8940,
+  "nodes": [
+   "WargBody",
+   "WargMask",
+   "WargTack"
+  ],
+  "textures": {
+   "warg": "/assets/textures/itch/creatures/warg.png",
+   "warg_ash": "/assets/textures/itch/creatures/warg_ash.png",
+   "warg_black": "/assets/textures/itch/creatures/warg_black.png"
+  },
+  "clips": {
+   "Idle": {
+    "seconds": 4.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "IdlePant": {
+    "seconds": 3.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Walk": {
+    "seconds": 0.933,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 1.44,
+    "speed": 1.543
+   },
+   "Trot": {
+    "seconds": 0.6,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 1.98,
+    "speed": 3.3
+   },
+   "Run": {
+    "seconds": 0.467,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 3.96,
+    "speed": 8.48
+   },
+   "Bite": {
+    "seconds": 1.2,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Bite": 0.5
+    }
+   },
+   "Lunge": {
+    "seconds": 1.6,
+    "loop": false,
+    "rootMotion": true,
+    "travel": 2.88,
+    "speed": 1.8,
+    "events": {
+     "Bite": 0.93
+    }
+   },
+   "Threat": {
+    "seconds": 2.4,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Howl": {
+    "seconds": 3.5,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Howl": 0.8
+    }
+   },
+   "Hit": {
+    "seconds": 0.5,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Death": {
+    "seconds": 2.2,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Dead": 1.9
+    }
+   },
+   "GetUp": {
+    "seconds": 1.5,
+    "loop": false,
+    "rootMotion": false
+   }
+  }
+ },
+ "rat": {
+  "url": "/assets/models/itch/creatures/rat.glb",
+  "scale": 1.05,
+  "size": [
+   0.455,
+   0.502,
+   1.698
+  ],
+  "tris": 3163,
+  "nodes": [
+   "RatBody"
+  ],
+  "textures": {
+   "rat": "/assets/textures/itch/creatures/rat.png",
+   "rat_black": "/assets/textures/itch/creatures/rat_black.png",
+   "rat_plague": "/assets/textures/itch/creatures/rat_plague.png"
+  },
+  "clips": {
+   "Idle": {
+    "seconds": 3.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Rear": {
+    "seconds": 2.8,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Walk": {
+    "seconds": 0.533,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 0.483,
+    "speed": 0.906
+   },
+   "Run": {
+    "seconds": 0.333,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 0.945,
+    "speed": 2.838
+   },
+   "Bite": {
+    "seconds": 0.8,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Bite": 0.4
+    }
+   },
+   "Lunge": {
+    "seconds": 1.2,
+    "loop": false,
+    "rootMotion": true,
+    "travel": 0.84,
+    "speed": 0.7,
+    "events": {
+     "Bite": 0.73
+    }
+   },
+   "Threat": {
+    "seconds": 2.0,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Hit": {
+    "seconds": 0.4,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Death": {
+    "seconds": 1.8,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Dead": 1.6
+    }
+   },
+   "GetUp": {
+    "seconds": 1.1,
+    "loop": false,
+    "rootMotion": false
+   }
+  }
+ },
+ "bear": {
+  "url": "/assets/models/itch/creatures/bear.glb",
+  "scale": 1.3333,
+  "size": [
+   1.465,
+   2.057,
+   3.372
+  ],
+  "tris": 4710,
+  "nodes": [
+   "BearBody"
+  ],
+  "textures": {
+   "bear": "/assets/textures/itch/creatures/bear.png",
+   "bear_old": "/assets/textures/itch/creatures/bear_old.png"
+  },
+  "clips": {
+   "Sleep": {
+    "seconds": 3.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Wake": {
+    "seconds": 1.5,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Idle": {
+    "seconds": 3.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Walk": {
+    "seconds": 1.067,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 1.467,
+    "speed": 1.375
+   },
+   "Run": {
+    "seconds": 0.433,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 3.067,
+    "speed": 7.083
+   },
+   "Swipe": {
+    "seconds": 1.0,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Bite": 0.42
+    }
+   },
+   "Bite": {
+    "seconds": 1.0,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Bite": 0.4
+    }
+   },
+   "Slam": {
+    "seconds": 1.4,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Bite": 0.77
+    }
+   },
+   "Hug": {
+    "seconds": 2.0,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Bite": 0.73
+    }
+   },
+   "Rear": {
+    "seconds": 2.7,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Roar": 0.9
+    }
+   },
+   "Roar": {
+    "seconds": 2.0,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Roar": 0.3
+    }
+   },
+   "Hit": {
+    "seconds": 0.467,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Death": {
+    "seconds": 2.0,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Dead": 1.6
+    }
+   }
+  }
+ },
+ "rhino": {
+  "url": "/assets/models/itch/creatures/rhino.glb",
+  "scale": 1.3333,
+  "size": [
+   2.096,
+   2.55,
+   4.727
+  ],
+  "tris": 4944,
+  "nodes": [
+   "RhinoBody",
+   "Spear"
+  ],
+  "textures": {
+   "rhino": "/assets/textures/itch/creatures/rhino.png"
+  },
+  "clips": {
+   "Sleep": {
+    "seconds": 3.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Wake": {
+    "seconds": 1.5,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Idle": {
+    "seconds": 2.5,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Walk": {
+    "seconds": 1.0,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 1.733,
+    "speed": 1.733
+   },
+   "Run": {
+    "seconds": 0.533,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 2.667,
+    "speed": 5.004
+   },
+   "Charge": {
+    "seconds": 0.333,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 4.0,
+    "speed": 12.012
+   },
+   "Gore": {
+    "seconds": 1.0,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Bite": 0.45
+    }
+   },
+   "Paw": {
+    "seconds": 1.2,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Daze": {
+    "seconds": 2.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Stamp": {
+    "seconds": 1.3,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Bite": 1.0
+    }
+   },
+   "Roar": {
+    "seconds": 1.5,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Roar": 0.3
+    }
+   },
+   "Hit": {
+    "seconds": 0.4,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Death": {
+    "seconds": 2.0,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Dead": 1.6
+    }
+   }
+  }
+ },
+ "mammoth": {
+  "url": "/assets/models/itch/creatures/mammoth.glb",
+  "scale": 1.25,
+  "size": [
+   2.542,
+   3.982,
+   6.759
+  ],
+  "tris": 6268,
+  "nodes": [
+   "MammothBody"
+  ],
+  "textures": {
+   "mammoth": "/assets/textures/itch/creatures/mammoth.png",
+   "mammoth_dark": "/assets/textures/itch/creatures/mammoth_dark.png"
+  },
+  "clips": {
+   "Sleep": {
+    "seconds": 4.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Wake": {
+    "seconds": 2.0,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Idle": {
+    "seconds": 3.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Walk": {
+    "seconds": 1.6,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 2.75,
+    "speed": 1.719
+   },
+   "Run": {
+    "seconds": 0.8,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 4.5,
+    "speed": 5.625
+   },
+   "Charge": {
+    "seconds": 0.667,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 5.25,
+    "speed": 7.871
+   },
+   "Trumpet": {
+    "seconds": 2.0,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Roar": 0.6
+    }
+   },
+   "TuskSwipe": {
+    "seconds": 1.2,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Bite": 0.5
+    }
+   },
+   "Stomp": {
+    "seconds": 1.6,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Bite": 1.03
+    }
+   },
+   "Graze": {
+    "seconds": 4.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Hit": {
+    "seconds": 0.5,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Death": {
+    "seconds": 2.5,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Dead": 2.2
+    }
+   }
+  }
+ },
+ "deer": {
+  "url": "/assets/models/itch/creatures/deer.glb",
+  "scale": 1.3333,
+  "size": [
+   1.245,
+   3.153,
+   2.725
+  ],
+  "tris": 5390,
+  "nodes": [
+   "DeerBody"
+  ],
+  "textures": {
+   "deer": "/assets/textures/itch/creatures/deer.png"
+  },
+  "clips": {
+   "Idle": {
+    "seconds": 4.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Graze": {
+    "seconds": 5.0,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 0.213,
+    "speed": 0.043
+   },
+   "Alert": {
+    "seconds": 1.5,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Walk": {
+    "seconds": 1.2,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 1.733,
+    "speed": 1.444
+   },
+   "Trot": {
+    "seconds": 0.667,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 2.6,
+    "speed": 3.898
+   },
+   "Run": {
+    "seconds": 0.467,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 5.067,
+    "speed": 10.85
+   },
+   "Attack": {
+    "seconds": 1.2,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Bite": 0.5
+    }
+   },
+   "Hit": {
+    "seconds": 0.5,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Death": {
+    "seconds": 2.2,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Dead": 1.9
+    }
+   },
+   "Sleep": {
+    "seconds": 4.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Wake": {
+    "seconds": 2.0,
+    "loop": false,
+    "rootMotion": false
+   }
+  }
+ },
+ "ooze": {
+  "url": "/assets/models/itch/creatures/ooze.glb",
+  "scale": 1.08,
+  "size": [
+   3.279,
+   1.502,
+   3.165
+  ],
+  "tris": 4914,
+  "nodes": [
+   "OozeBody",
+   "OozeContents"
+  ],
+  "textures": {
+   "ooze_green": "/assets/textures/itch/creatures/ooze_green.png",
+   "ooze_grey": "/assets/textures/itch/creatures/ooze_grey.png",
+   "ooze_black": "/assets/textures/itch/creatures/ooze_black.png",
+   "ooze_ochre": "/assets/textures/itch/creatures/ooze_ochre.png",
+   "ooze_crimson": "/assets/textures/itch/creatures/ooze_crimson.png"
+  },
+  "clips": {
+   "Idle": {
+    "seconds": 3.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Crawl": {
+    "seconds": 2.0,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 1.296,
+    "speed": 0.648
+   },
+   "Lash": {
+    "seconds": 1.333,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Hit": 0.667
+    }
+   },
+   "Grab": {
+    "seconds": 1.467,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Hit": 0.6
+    }
+   },
+   "Engulf": {
+    "seconds": 2.667,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Grab": 0.733,
+     "Engulf": 1.533
+    }
+   },
+   "Spit": {
+    "seconds": 1.467,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Spit": 0.7
+    }
+   },
+   "Hit": {
+    "seconds": 0.8,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Hurt": 0.067
+    }
+   },
+   "Death": {
+    "seconds": 2.333,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Dead": 1.867
+    }
+   },
+   "Puddle": {
+    "seconds": 3.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Rise": {
+    "seconds": 1.667,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Risen": 1.0
+    }
+   },
+   "Split": {
+    "seconds": 2.5,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Split": 1.933
+    }
+   },
+   "Reform": {
+    "seconds": 1.667,
+    "loop": false,
+    "rootMotion": false
+   }
+  }
+ },
+ "spider": {
+  "url": "/assets/models/itch/creatures/spider.glb",
+  "scale": 1.35,
+  "size": [
+   3.01,
+   1.226,
+   3.206
+  ],
+  "tris": 5012,
+  "nodes": [
+   "SpiderBody"
+  ],
+  "textures": {
+   "spider": "/assets/textures/itch/creatures/spider.png",
+   "spider_pale": "/assets/textures/itch/creatures/spider_pale.png"
+  },
+  "clips": {
+   "GetUp": {
+    "seconds": 1.333,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Idle": {
+    "seconds": 3.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Walk": {
+    "seconds": 0.8,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 1.35,
+    "speed": 1.688
+   },
+   "Run": {
+    "seconds": 0.4,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 2.025,
+    "speed": 5.062
+   },
+   "Hit": {
+    "seconds": 0.5,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Death": {
+    "seconds": 2.0,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Dead": 1.75
+    }
+   },
+   "Bite": {
+    "seconds": 1.2,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Bite": 0.5
+    }
+   },
+   "Strike": {
+    "seconds": 1.333,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Strike": 0.73
+    }
+   },
+   "WebSpit": {
+    "seconds": 1.6,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Spit": 0.67
+    }
+   },
+   "Threat": {
+    "seconds": 2.4,
+    "loop": false,
+    "rootMotion": false
+   }
+  }
+ },
+ "centipede": {
+  "url": "/assets/models/itch/creatures/centipede.glb",
+  "scale": 0.8,
+  "size": [
+   0.75,
+   0.296,
+   3.623
+  ],
+  "tris": 5448,
+  "nodes": [
+   "CentipedeBody"
+  ],
+  "textures": {
+   "centipede": "/assets/textures/itch/creatures/centipede.png"
+  },
+  "clips": {
+   "Idle": {
+    "seconds": 3.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Walk": {
+    "seconds": 0.9,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 1.073,
+    "speed": 1.192
+   },
+   "Run": {
+    "seconds": 0.6,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 1.894,
+    "speed": 3.157
+   },
+   "Threat": {
+    "seconds": 2.5,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Bite": {
+    "seconds": 1.2,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Bite": 0.55
+    }
+   },
+   "Burrow": {
+    "seconds": 2.5,
+    "loop": false,
+    "rootMotion": true,
+    "travel": 1.828,
+    "speed": 0.731,
+    "events": {
+     "Burrow": 0.567
+    }
+   },
+   "Emerge": {
+    "seconds": 2.5,
+    "loop": false,
+    "rootMotion": true,
+    "travel": 1.5,
+    "speed": 0.6,
+    "events": {
+     "Emerge": 0.583
+    }
+   },
+   "Hit": {
+    "seconds": 0.5,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Death": {
+    "seconds": 2.0,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Dead": 1.85
+    }
+   },
+   "GetUp": {
+    "seconds": 1.5,
+    "loop": false,
+    "rootMotion": false
+   }
+  }
+ },
+ "wasp": {
+  "url": "/assets/models/itch/creatures/wasp.glb",
+  "scale": 1.0,
+  "size": [
+   2.009,
+   1.085,
+   1.839
+  ],
+  "tris": 4280,
+  "nodes": [
+   "WaspBody"
+  ],
+  "textures": {
+   "wasp": "/assets/textures/itch/creatures/wasp.png"
+  },
+  "clips": {
+   "Idle": {
+    "seconds": 2.0,
+    "loop": true,
+    "rootMotion": false
+   },
+   "Fly": {
+    "seconds": 1.0,
+    "loop": true,
+    "rootMotion": true,
+    "travel": 4.0,
+    "speed": 4.0
+   },
+   "Threat": {
+    "seconds": 1.6,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Sting": {
+    "seconds": 1.3,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Sting": 0.6
+    }
+   },
+   "Dive": {
+    "seconds": 1.8,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Sting": 0.9
+    }
+   },
+   "Hit": {
+    "seconds": 0.5,
+    "loop": false,
+    "rootMotion": false
+   },
+   "Death": {
+    "seconds": 2.0,
+    "loop": false,
+    "rootMotion": false,
+    "events": {
+     "Dead": 1.75
+    }
+   },
+   "GetUp": {
+    "seconds": 1.5,
+    "loop": false,
+    "rootMotion": false
+   }
+  }
+ }
+}

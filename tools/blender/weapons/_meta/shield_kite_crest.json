@@ -1,0 +1,27 @@
+{
+ "id": "shield_kite_crest",
+ "name": "Arma Kalkanı",
+ "use": "Knightly kite shield, blue field with a golden double-headed eagle crest (lvl 15-35)",
+ "attach": "hand grip bar at origin behind the plate (off-hand bone); painted face +Z; up +Y",
+ "kind": "shield",
+ "emissive": "",
+ "tris": 148,
+ "parts": 4,
+ "atlas": [
+  128,
+  128
+ ],
+ "colours": 16,
+ "has_emit": false,
+ "bbox_min": [
+  -0.4,
+  -0.14,
+  -0.78
+ ],
+ "bbox_max": [
+  0.4,
+  0.016,
+  0.47
+ ],
+ "bytes": 17368
+}

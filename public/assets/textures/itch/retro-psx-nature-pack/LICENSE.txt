@@ -1,0 +1,5 @@
+Retro PSX Nature Pack
+Licence: CC0 1.0 Universal (public domain), https://creativecommons.org/publicdomain/zero/1.0/ - as stated on the itch.io page / project brief. The downloaded archive contains no licence file (READ ME only). Credit is optional.
+Author: Elegant Crow (the archive READ ME only links donations / social pages)
+
+Converted for EFSUN ONLINE (headless Blender): textures reduced to <=256 px palette PNGs, materials rebuilt (nearest, alpha MASK), meshes rescaled to 1 unit = 1 m, pivots reset, one GLB per model. See docs/assets/itch-psx-env.md.

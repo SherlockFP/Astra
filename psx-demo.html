@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PSX Demo</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #120c18;
+      }
+      canvas {
+        display: block;
+      }
+      #hud {
+        position: fixed;
+        left: 10px;
+        top: 10px;
+        padding: 8px 10px;
+        background: rgba(0, 0, 0, 0.55);
+        color: #e8dcc0;
+        font: 12px/1.45 monospace;
+        white-space: pre;
+        pointer-events: none;
+        border: 1px solid rgba(232, 220, 192, 0.25);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="hud">Yükleniyor...</div>
+    <script type="module" src="/src/render/psx/demo.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,4 @@
+PSX Dungeon by Goblinatron - https://goblinatron.itch.io/psx-dungeon
+Licence: Creative Commons Attribution 4.0 International (CC BY 4.0) - https://creativecommons.org/licenses/by/4.0/
+ATTRIBUTION REQUIRED. Credit line: "PSX Dungeon by Goblinatron (goblinatron.itch.io), CC BY 4.0"
+Changes: FBX converted to GLB, scaled x0.2, re-pivoted, textures reduced to 256-colour palette PNG (EFSUN ONLINE, 2026).

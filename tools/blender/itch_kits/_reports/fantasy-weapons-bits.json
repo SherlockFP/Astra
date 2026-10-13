@@ -1,0 +1,839 @@
+[
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/arrow_a.glb",
+  "bytes": 7136,
+  "tris": 64,
+  "nodes": [
+   "arrow_a"
+  ],
+  "size": [
+   0.154,
+   0.134,
+   1.214
+  ],
+  "min": [
+   -0.077,
+   -0.089,
+   -0.675
+  ],
+  "max": [
+   0.077,
+   0.045,
+   0.539
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/arrow_A.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/arrow_b.glb",
+  "bytes": 26468,
+  "tris": 602,
+  "nodes": [
+   "arrow_b"
+  ],
+  "size": [
+   0.178,
+   0.148,
+   1.26
+  ],
+  "min": [
+   -0.089,
+   -0.074,
+   -0.606
+  ],
+  "max": [
+   0.088,
+   0.074,
+   0.654
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/arrow_B.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/axe_a.glb",
+  "bytes": 43440,
+  "tris": 1206,
+  "nodes": [
+   "axe_a"
+  ],
+  "size": [
+   0.856,
+   1.162,
+   0.25
+  ],
+  "min": [
+   -0.429,
+   -0.371,
+   -0.125
+  ],
+  "max": [
+   0.427,
+   0.791,
+   0.125
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/axe_A.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/axe_b.glb",
+  "bytes": 45564,
+  "tris": 1246,
+  "nodes": [
+   "axe_b"
+  ],
+  "size": [
+   1.153,
+   1.661,
+   0.25
+  ],
+  "min": [
+   -0.575,
+   -0.413,
+   -0.125
+  ],
+  "max": [
+   0.578,
+   1.248,
+   0.125
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/axe_B.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/axe_c.glb",
+  "bytes": 37668,
+  "tris": 890,
+  "nodes": [
+   "axe_c"
+  ],
+  "size": [
+   0.761,
+   1.352,
+   0.204
+  ],
+  "min": [
+   -0.609,
+   -0.418,
+   -0.102
+  ],
+  "max": [
+   0.152,
+   0.934,
+   0.102
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/axe_C.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/bow_a.glb",
+  "bytes": 32872,
+  "tris": 492,
+  "nodes": [
+   "bow_a"
+  ],
+  "size": [
+   1.957,
+   0.092,
+   0.396
+  ],
+  "min": [
+   -0.979,
+   -0.046,
+   -0.348
+  ],
+  "max": [
+   0.979,
+   0.046,
+   0.047
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/bow_A.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/bow_a_with_string.glb",
+  "bytes": 43592,
+  "tris": 700,
+  "nodes": [
+   "bow_a_with_string"
+  ],
+  "size": [
+   1.957,
+   0.092,
+   0.396
+  ],
+  "min": [
+   -0.979,
+   -0.046,
+   -0.348
+  ],
+  "max": [
+   0.979,
+   0.046,
+   0.047
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/bow_A_withString.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/bow_b.glb",
+  "bytes": 152392,
+  "tris": 2244,
+  "nodes": [
+   "bow_b"
+  ],
+  "size": [
+   1.914,
+   0.167,
+   0.671
+  ],
+  "min": [
+   -0.957,
+   -0.083,
+   -0.312
+  ],
+  "max": [
+   0.957,
+   0.083,
+   0.359
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/bow_B.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/bow_b_with_string.glb",
+  "bytes": 164584,
+  "tris": 2368,
+  "nodes": [
+   "bow_b_with_string"
+  ],
+  "size": [
+   1.914,
+   0.167,
+   0.671
+  ],
+  "min": [
+   -0.957,
+   -0.083,
+   -0.312
+  ],
+  "max": [
+   0.957,
+   0.083,
+   0.359
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/bow_B_withString.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/dagger_a.glb",
+  "bytes": 18960,
+  "tris": 374,
+  "nodes": [
+   "dagger_a"
+  ],
+  "size": [
+   0.438,
+   1.288,
+   0.15
+  ],
+  "min": [
+   -0.219,
+   -0.258,
+   -0.075
+  ],
+  "max": [
+   0.219,
+   1.03,
+   0.075
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/dagger_A.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/dagger_b.glb",
+  "bytes": 20368,
+  "tris": 502,
+  "nodes": [
+   "dagger_b"
+  ],
+  "size": [
+   0.597,
+   1.359,
+   0.096
+  ],
+  "min": [
+   -0.298,
+   -0.227,
+   -0.048
+  ],
+  "max": [
+   0.298,
+   1.133,
+   0.048
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/dagger_B.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/fistweapon_a.glb",
+  "bytes": 13516,
+  "tris": 218,
+  "nodes": [
+   "fistweapon_a"
+  ],
+  "size": [
+   0.227,
+   0.086,
+   0.323
+  ],
+  "min": [
+   -0.172,
+   -0.043,
+   -0.162
+  ],
+  "max": [
+   0.054,
+   0.043,
+   0.162
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/fistweapon_A.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/fistweapon_a_stacked.glb",
+  "bytes": 23392,
+  "tris": 436,
+  "nodes": [
+   "fistweapon_a_stacked"
+  ],
+  "size": [
+   0.43,
+   0.163,
+   0.351
+  ],
+  "min": [
+   -0.212,
+   -0.003,
+   -0.164
+  ],
+  "max": [
+   0.218,
+   0.16,
+   0.187
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/fistweapon_A_stacked.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/fistweapon_b.glb",
+  "bytes": 12860,
+  "tris": 220,
+  "nodes": [
+   "fistweapon_b"
+  ],
+  "size": [
+   0.521,
+   0.176,
+   0.355
+  ],
+  "min": [
+   -0.478,
+   -0.043,
+   -0.178
+  ],
+  "max": [
+   0.043,
+   0.134,
+   0.178
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/fistweapon_B.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/fistweapon_b_stacked.glb",
+  "bytes": 22228,
+  "tris": 440,
+  "nodes": [
+   "fistweapon_b_stacked"
+  ],
+  "size": [
+   0.688,
+   0.238,
+   0.519
+  ],
+  "min": [
+   -0.344,
+   -0.001,
+   -0.185
+  ],
+  "max": [
+   0.344,
+   0.237,
+   0.334
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/fistweapon_B_stacked.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/halberd.glb",
+  "bytes": 63648,
+  "tris": 1496,
+  "nodes": [
+   "halberd"
+  ],
+  "size": [
+   1.293,
+   2.747,
+   0.291
+  ],
+  "min": [
+   -0.79,
+   -0.932,
+   -0.146
+  ],
+  "max": [
+   0.503,
+   1.815,
+   0.145
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/halberd.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/hammer_a.glb",
+  "bytes": 25524,
+  "tris": 524,
+  "nodes": [
+   "hammer_a"
+  ],
+  "size": [
+   0.814,
+   1.139,
+   0.448
+  ],
+  "min": [
+   -0.407,
+   -0.394,
+   -0.224
+  ],
+  "max": [
+   0.407,
+   0.745,
+   0.224
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/hammer_A.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/hammer_b.glb",
+  "bytes": 30812,
+  "tris": 712,
+  "nodes": [
+   "hammer_b"
+  ],
+  "size": [
+   0.647,
+   1.509,
+   0.68
+  ],
+  "min": [
+   -0.323,
+   -0.474,
+   -0.34
+  ],
+  "max": [
+   0.323,
+   1.035,
+   0.34
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/hammer_B.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/hammer_c.glb",
+  "bytes": 35196,
+  "tris": 840,
+  "nodes": [
+   "hammer_c"
+  ],
+  "size": [
+   0.464,
+   1.39,
+   0.464
+  ],
+  "min": [
+   -0.232,
+   -0.197,
+   -0.232
+  ],
+  "max": [
+   0.232,
+   1.193,
+   0.232
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/hammer_C.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/shield_a.glb",
+  "bytes": 18232,
+  "tris": 354,
+  "nodes": [
+   "shield_a"
+  ],
+  "size": [
+   0.773,
+   0.98,
+   0.233
+  ],
+  "min": [
+   -0.386,
+   -0.549,
+   -0.155
+  ],
+  "max": [
+   0.386,
+   0.43,
+   0.078
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/shield_A.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/shield_b.glb",
+  "bytes": 19176,
+  "tris": 368,
+  "nodes": [
+   "shield_b"
+  ],
+  "size": [
+   1.02,
+   1.323,
+   0.248
+  ],
+  "min": [
+   -0.51,
+   -0.776,
+   -0.155
+  ],
+  "max": [
+   0.51,
+   0.546,
+   0.093
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/shield_B.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/shield_c.glb",
+  "bytes": 31352,
+  "tris": 584,
+  "nodes": [
+   "shield_c"
+  ],
+  "size": [
+   1.017,
+   1.331,
+   0.485
+  ],
+  "min": [
+   -0.511,
+   -0.666,
+   -0.165
+  ],
+  "max": [
+   0.506,
+   0.665,
+   0.319
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/shield_C.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/spear_a.glb",
+  "bytes": 51472,
+  "tris": 1216,
+  "nodes": [
+   "spear_a"
+  ],
+  "size": [
+   0.278,
+   3.139,
+   0.246
+  ],
+  "min": [
+   -0.139,
+   -1.032,
+   -0.123
+  ],
+  "max": [
+   0.139,
+   2.107,
+   0.123
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/spear_A.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/staff_a.glb",
+  "bytes": 24324,
+  "tris": 500,
+  "nodes": [
+   "staff_a"
+  ],
+  "size": [
+   0.125,
+   2.149,
+   0.111
+  ],
+  "min": [
+   -0.061,
+   -1.075,
+   -0.052
+  ],
+  "max": [
+   0.064,
+   1.075,
+   0.059
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/staff_A.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/staff_b.glb",
+  "bytes": 30932,
+  "tris": 664,
+  "nodes": [
+   "staff_b"
+  ],
+  "size": [
+   0.617,
+   2.316,
+   0.274
+  ],
+  "min": [
+   -0.309,
+   -0.862,
+   -0.137
+  ],
+  "max": [
+   0.308,
+   1.454,
+   0.137
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/staff_B.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/sword_a.glb",
+  "bytes": 17052,
+  "tris": 292,
+  "nodes": [
+   "sword_a"
+  ],
+  "size": [
+   0.608,
+   1.774,
+   0.129
+  ],
+  "min": [
+   -0.304,
+   -0.357,
+   -0.064
+  ],
+  "max": [
+   0.304,
+   1.417,
+   0.064
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/sword_A.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/sword_b.glb",
+  "bytes": 22356,
+  "tris": 460,
+  "nodes": [
+   "sword_b"
+  ],
+  "size": [
+   0.611,
+   1.786,
+   0.12
+  ],
+  "min": [
+   -0.305,
+   -0.366,
+   -0.06
+  ],
+  "max": [
+   0.305,
+   1.42,
+   0.06
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/sword_B.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/sword_c.glb",
+  "bytes": 18680,
+  "tris": 349,
+  "nodes": [
+   "sword_c"
+  ],
+  "size": [
+   0.265,
+   2.129,
+   0.154
+  ],
+  "min": [
+   -0.122,
+   -0.427,
+   -0.077
+  ],
+  "max": [
+   0.143,
+   1.702,
+   0.077
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/sword_C.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/sword_d.glb",
+  "bytes": 26180,
+  "tris": 730,
+  "nodes": [
+   "sword_d"
+  ],
+  "size": [
+   0.715,
+   2.038,
+   0.402
+  ],
+  "min": [
+   -0.357,
+   -0.323,
+   -0.201
+  ],
+  "max": [
+   0.357,
+   1.715,
+   0.201
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/sword_D.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/sword_e.glb",
+  "bytes": 29752,
+  "tris": 616,
+  "nodes": [
+   "sword_e"
+  ],
+  "size": [
+   0.879,
+   3.252,
+   0.237
+  ],
+  "min": [
+   -0.44,
+   -0.428,
+   -0.118
+  ],
+  "max": [
+   0.44,
+   2.824,
+   0.118
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/sword_E.gltf"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/fantasy-weapons-bits/wand_a.glb",
+  "bytes": 22052,
+  "tris": 442,
+  "nodes": [
+   "wand_a"
+  ],
+  "size": [
+   0.209,
+   1.156,
+   0.213
+  ],
+  "min": [
+   -0.102,
+   -0.323,
+   -0.105
+  ],
+  "max": [
+   0.107,
+   0.834,
+   0.108
+  ],
+  "materials": [
+   "weapons_bits"
+  ],
+  "source": "Assets/gltf/wand_A.gltf"
+ }
+]

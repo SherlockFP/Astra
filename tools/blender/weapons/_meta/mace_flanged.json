@@ -1,0 +1,27 @@
+{
+ "id": "mace_flanged",
+ "name": "Dişli Topuz",
+ "use": "One-handed flanged mace (cleric / warrior, lvl 10-25)",
+ "attach": "grip at origin near the handle end; head +Y",
+ "kind": "1h",
+ "emissive": "",
+ "tris": 474,
+ "parts": 12,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": false,
+ "bbox_min": [
+  -0.102,
+  -0.112,
+  -0.205
+ ],
+ "bbox_max": [
+  0.102,
+  0.112,
+  0.86
+ ],
+ "bytes": 27828
+}

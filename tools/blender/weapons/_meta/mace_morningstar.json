@@ -1,0 +1,27 @@
+{
+ "id": "mace_morningstar",
+ "name": "Çivili Gürz",
+ "use": "Spiked morning-star mace, iron-banded wooden haft (lvl 15-30)",
+ "attach": "grip at origin near the handle end; head +Y",
+ "kind": "1h",
+ "emissive": "",
+ "tris": 370,
+ "parts": 23,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": false,
+ "bbox_min": [
+  -0.162,
+  -0.162,
+  -0.22
+ ],
+ "bbox_max": [
+  0.162,
+  0.162,
+  0.915
+ ],
+ "bytes": 30912
+}

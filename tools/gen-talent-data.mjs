@@ -1,0 +1,461 @@
+#!/usr/bin/env node
+/**
+ * GDD_TALENTS data generator (owner: items, package T1b). Reads the two machine-readable companions of the talent GDD and
+ * writes the TypeScript data files the game imports. Nothing else is generated; the hand-written data stays as it is.
+ *
+ *   src/data/talentTrees/raw/<class>.ts   9 files: { class: RawTree, specs: { <specId>: RawTree } }     docs/GDD_TALENTS.trees.json
+ *   src/data/skillSpecs.ts                SKILL_SPEC_ROWS (162), SIGNATURE_SKILLS, skillSpecsOf()        trees.json  skillSpecs[]
+ *   src/data/passiveExtra.ts              SECTOR_ROWS (122), CLUSTER_ROWS (36), MASTERY_ROWS (14),
+ *                                         SOCKET_ROWS (9), NC_CONNECTORS (2)                             docs/GDD_TALENTS.web.json
+ *
+ *   node tools/gen-talent-data.mjs            write the files (unchanged files are not rewritten), print the counts
+ *   node tools/gen-talent-data.mjs --check    write nothing; exit 1 when a generated file is missing or stale
+ *
+ * Deterministic and idempotent: no timestamps, JSON order kept for rows, object keys sorted or fixed, 2-space indent.
+ * Node >= 18, no dependencies. Every consistency check runs before any file is touched; a failed check throws (exit 1).
+ * Positions and links of the web are NOT copied (T2 `buildPassiveWeb` builds the geometry, GDD_TALENTS §3.3); `off` is
+ * the one geometric value kept, because it is the authored offset of a mastery or socket from its parent's radial direction.
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const TREES_FILE = path.join(ROOT, 'docs', 'GDD_TALENTS.trees.json');
+const WEB_FILE = path.join(ROOT, 'docs', 'GDD_TALENTS.web.json');
+const RAW_DIR = path.join(ROOT, 'src', 'data', 'talentTrees', 'raw');
+const SKILL_SPECS_FILE = path.join(ROOT, 'src', 'data', 'skillSpecs.ts');
+const PASSIVE_EXTRA_FILE = path.join(ROOT, 'src', 'data', 'passiveExtra.ts');
+
+const HEADER = '// GENERATED from docs/GDD_TALENTS.*.json by tools/gen-talent-data.mjs — do not edit';
+
+/** Class order of the 9 raw files and of the signature table (GDD_TALENTS §1.2). */
+const CLASSES = ['knight', 'barbarian', 'mage', 'rogue', 'monk', 'archer', 'paladin', 'necromancer', 'warlock'];
+/** Sector ids of the five new sectors: starts, entry notable, arm nodes and the two Nekromant connectors (nc_c1, nc_c2). */
+const SECTOR_ID = /^(pl|mk|ar|wl|nc)_/;
+/** Sector notables and keystones (n_mk_*, ks_mk_empty_hand, n_pl_gate, ...). */
+const SECTOR_NOTABLE_ID = /^(n|ks)_(pl|mk|ar|wl|nc)_/;
+const CLUSTER_ID = /^cl_/;
+const SLOT_ID = /^s(0[1-9]|[12][0-9]|30)$/;
+const OPTS = ['', 'A', 'B'];
+
+/** Counts the document fixes (GDD_TALENTS §0, §3.2, §4.5); a mismatch means the JSON changed and the doc must be reconciled. */
+const EXPECT = {
+  trees: 30,
+  specs: 21,
+  rows: 729,
+  skillSpecRows: 162,
+  webNodes: 306,
+  sectors: 122,
+  clusters: 36,
+  masteries: 14,
+  masteryChoices: 42,
+  sockets: 9,
+  base: 125,
+};
+const WEB_KINDS = { start: 9, small: 178, notable: 80, keystone: 16, mastery: 14, socket: 9 };
+
+const fail = (msg) => {
+  throw new Error(`gen-talent-data: ${msg}`);
+};
+const isObj = (x) => x !== null && typeof x === 'object';
+const IDENT = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+
+// ---------------------------------------------------------------------------------------------------------------------
+// TypeScript literal printer (single quotes, 2-space indent, trailing commas, short values on one line)
+// ---------------------------------------------------------------------------------------------------------------------
+
+const LINE_SEP = String.fromCharCode(0x2028);
+const PARA_SEP = String.fromCharCode(0x2029);
+
+function q(s) {
+  let out = s.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+  out = out.split(LINE_SEP).join('\\u2028').split(PARA_SEP).join('\\u2029');
+  return "'" + out + "'";
+}
+const key = (k) => (IDENT.test(k) ? k : q(k));
+
+function scalar(v) {
+  if (v === null) return 'null';
+  if (typeof v === 'string') return q(v);
+  if (typeof v === 'number') {
+    if (!Number.isFinite(v)) fail('non-finite number in generated data');
+    return Object.is(v, -0) ? '0' : String(v);
+  }
+  if (typeof v === 'boolean') return String(v);
+  return fail(`unsupported value type ${typeof v}`);
+}
+
+/** Single-line form. */
+function inl(v) {
+  if (!isObj(v)) return scalar(v);
+  if (Array.isArray(v)) return '[' + v.map(inl).join(', ') + ']';
+  const ks = Object.keys(v);
+  return ks.length ? '{ ' + ks.map((k) => `${key(k)}: ${inl(v[k])}`).join(', ') + ' }' : '{}';
+}
+
+/** Block form at indentation `ind`; arrays of primitives and objects up to 100 characters stay on one line. */
+function lit(v, ind = '') {
+  if (!isObj(v)) return scalar(v);
+  const inner = ind + '  ';
+  if (Array.isArray(v)) {
+    if (v.length === 0) return '[]';
+    if (!v.some(isObj)) return inl(v);
+    return '[\n' + v.map((x) => inner + lit(x, inner)).join(',\n') + ',\n' + ind + ']';
+  }
+  const ks = Object.keys(v);
+  if (ks.length === 0) return '{}';
+  const one = inl(v);
+  if (one.length <= 100) return one;
+  return '{\n' + ks.map((k) => `${inner}${key(k)}: ${lit(v[k], inner)}`).join(',\n') + ',\n' + ind + '}';
+}
+
+const sortKeys = (o) => Object.fromEntries(Object.keys(o).sort().map((k) => [k, o[k]]));
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Trees (trees.json) -> raw/<class>.ts
+// ---------------------------------------------------------------------------------------------------------------------
+
+function checkTree(treeKey, t) {
+  if (!isObj(t) || !Array.isArray(t.palette) || !Array.isArray(t.rows)) fail(`${treeKey}: needs palette[] and rows[]`);
+  if (t.palette.length !== 12) fail(`${treeKey}: palette must have 12 stats, has ${t.palette.length}`);
+  if (new Set(t.palette).size !== 12) fail(`${treeKey}: palette has duplicate stats`);
+  const rows = t.rows.map((r, i) => {
+    const where = `${treeKey} row ${i}`;
+    if (!isObj(r) || !SLOT_ID.test(r.slot)) fail(`${where}: bad slot ${JSON.stringify(r && r.slot)}`);
+    if (!OPTS.includes(r.opt)) fail(`${where}: bad opt ${JSON.stringify(r.opt)}`);
+    if (r.name !== null && typeof r.name !== 'string') fail(`${where}: name must be string or null`);
+    if (r.desc !== null && typeof r.desc !== 'string') fail(`${where}: desc must be string or null`);
+    if (typeof r.fx !== 'string' || r.fx === '') fail(`${where}: fx must be a non-empty string`);
+    return [r.slot, r.opt, r.name, r.desc, r.fx];
+  });
+  return { palette: [...t.palette], rows };
+}
+
+function buildRawClasses(T) {
+  const perClass = new Map(CLASSES.map((c) => [c, { class: null, specs: {} }]));
+  const specOwner = (specId) => {
+    const owners = CLASSES.filter((c) => specId.startsWith(c + '_'));
+    if (owners.length !== 1) fail(`spec ${specId} does not map to exactly one class`);
+    return owners[0];
+  };
+  let rows = 0;
+  let specs = 0;
+  for (const treeKey of Object.keys(T.trees)) {
+    const m = /^(class|spec):([a-z_]+)$/.exec(treeKey);
+    if (!m) fail(`unexpected tree key ${treeKey}`);
+    const tree = checkTree(treeKey, T.trees[treeKey]);
+    for (const stat of tree.palette) {
+      if (!(stat in T.paletteValue)) fail(`${treeKey}: palette stat ${stat} has no paletteValue`);
+    }
+    rows += tree.rows.length;
+    if (m[1] === 'class') {
+      if (!perClass.has(m[2])) fail(`unknown class tree ${treeKey}`);
+      perClass.get(m[2]).class = tree;
+    } else {
+      specs++;
+      perClass.get(specOwner(m[2])).specs[m[2]] = tree;
+    }
+  }
+  if (Object.keys(T.trees).length !== EXPECT.trees) fail(`trees: expected ${EXPECT.trees}`);
+  if (specs !== EXPECT.specs) fail(`specs: expected ${EXPECT.specs}, got ${specs}`);
+  if (rows !== EXPECT.rows) fail(`rows: expected ${EXPECT.rows}, got ${rows}`);
+  for (const c of CLASSES) {
+    const e = perClass.get(c);
+    if (!e.class) fail(`class:${c} tree missing`);
+    if (Object.keys(e.specs).length === 0) fail(`no specs for ${c}`);
+  }
+  return { perClass, rows };
+}
+
+function rawFile(classId, entry) {
+  const specKeys = Object.keys(entry.specs);
+  const body = { class: entry.class, specs: entry.specs };
+  return [
+    HEADER,
+    `// Source: docs/GDD_TALENTS.trees.json · class:${classId} + ${specKeys.join(', ')}. Row = [slot, opt, name, desc, fx] (GDD_TALENTS §2.9).`,
+    "import type { SlotId } from '../../../types/talents';",
+    "import type { SpecId } from '../../../types/v2';",
+    "import type { StatId } from '../../../types/stats';",
+    '',
+    "export type RawRow = [slot: SlotId, opt: '' | 'A' | 'B', name: string | null, desc: string | null, fx: string];",
+    'export interface RawTree { palette: StatId[]; rows: RawRow[] }',
+    '',
+    `const data: { class: RawTree; specs: Partial<Record<SpecId, RawTree>> } = ${lit(body)};`,
+    '',
+    'export default data;',
+    '',
+  ].join('\n');
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Skill specialisations (trees.json skillSpecs[]) -> src/data/skillSpecs.ts
+// ---------------------------------------------------------------------------------------------------------------------
+
+function buildSkillSpecs(T) {
+  if (!Array.isArray(T.skillSpecs) || T.skillSpecs.length !== EXPECT.skillSpecRows) fail(`skillSpecs: expected ${EXPECT.skillSpecRows} rows`);
+  const rows = T.skillSpecs.map((r, i) => {
+    const where = `skillSpecs row ${i}`;
+    if (!CLASSES.includes(r.classId)) fail(`${where}: bad classId ${r.classId}`);
+    if (![1, 2, 3].includes(r.tier)) fail(`${where}: bad tier ${r.tier}`);
+    if (r.opt !== 'A' && r.opt !== 'B') fail(`${where}: bad opt ${r.opt}`);
+    for (const f of ['skill', 'name', 'desc', 'fx']) if (typeof r[f] !== 'string' || r[f] === '') fail(`${where}: bad ${f}`);
+    return { classId: r.classId, skill: r.skill, tier: r.tier, opt: r.opt, name: r.name, desc: r.desc, fx: r.fx };
+  });
+  // Every signature skill has 3 tiers x A|B = 6 rows, and every class has exactly 3 skills (GDD_TALENTS §1.4, §4.5).
+  const bySkill = new Map();
+  for (const r of rows) {
+    if (!bySkill.has(r.skill)) bySkill.set(r.skill, { classId: r.classId, rows: [] });
+    bySkill.get(r.skill).rows.push(r);
+  }
+  const signature = Object.fromEntries(CLASSES.map((c) => [c, []]));
+  for (const [skill, info] of bySkill) {
+    if (info.rows.length !== 6) fail(`${skill}: expected 6 option rows, got ${info.rows.length}`);
+    const tiers = info.rows.map((r) => `${r.tier}${r.opt}`).sort().join(',');
+    if (tiers !== '1A,1B,2A,2B,3A,3B') fail(`${skill}: tiers/opts are ${tiers}`);
+    signature[info.classId].push(skill);
+  }
+  for (const c of CLASSES) if (signature[c].length !== 3) fail(`class ${c} has ${signature[c].length} signature skills, expected 3`);
+  if (bySkill.size !== 27) fail(`expected 27 signature skills, got ${bySkill.size}`);
+  return { rows, signature };
+}
+
+function skillSpecsFile({ rows, signature }) {
+  return [
+    HEADER,
+    '// Source: docs/GDD_TALENTS.trees.json · skillSpecs[]: 27 signature skills × 6 options = 162 rows (GDD_TALENTS §4.5), JSON order kept.',
+    "import type { ClassId } from '../types/common';",
+    "import type { SkillSpecRow } from '../types/talents';",
+    '',
+    '/** Every skill-specialisation option row (GDD_TALENTS §4.5). Tier 1–3 × option A|B per skill. */',
+    `export const SKILL_SPEC_ROWS: SkillSpecRow[] = ${lit(rows)};`,
+    '',
+    '/** The three signature skills of each class, in §4.5 table order (the three cards of the Beceri Uzmanlıkları tab, §5.4). */',
+    `export const SIGNATURE_SKILLS: Record<ClassId, string[]> = ${lit(signature)};`,
+    '',
+    '/** The six options (tier 1 A, 1 B, 2 A, 2 B, 3 A, 3 B) of one signature skill; [] for an unknown skill id. */',
+    'export function skillSpecsOf(skillId: string): SkillSpecRow[] {',
+    '  return SKILL_SPEC_ROWS.filter((r) => r.skill === skillId);',
+    '}',
+    '',
+  ].join('\n');
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Passive web (web.json) -> src/data/passiveExtra.ts
+// ---------------------------------------------------------------------------------------------------------------------
+
+/** Authored offset in degrees of `child` from the radial direction of `parent` (GDD_TALENTS §3.3 steps 4 and 5). */
+function offsetDeg(parent, child) {
+  const a0 = Math.atan2(parent.y, parent.x);
+  const a = Math.atan2(child.y - parent.y, child.x - parent.x);
+  let d = ((a - a0) * 180) / Math.PI;
+  while (d <= -180) d += 360;
+  while (d > 180) d -= 360;
+  return d;
+}
+
+function buildWeb(W) {
+  if (!Array.isArray(W) || W.length !== EXPECT.webNodes) fail(`web: expected ${EXPECT.webNodes} nodes`);
+  const byId = new Map();
+  for (const n of W) {
+    if (byId.has(n.id)) fail(`web: duplicate id ${n.id}`);
+    byId.set(n.id, n);
+  }
+  for (const n of W) {
+    for (const l of n.links ?? []) {
+      const other = byId.get(l);
+      if (!other) fail(`web: ${n.id} links to missing ${l}`);
+      if (!other.links.includes(n.id)) fail(`web: link ${n.id} -> ${l} is not bidirectional`);
+    }
+  }
+  const kinds = {};
+  for (const n of W) kinds[n.kind] = (kinds[n.kind] || 0) + 1;
+  for (const k of Object.keys(WEB_KINDS)) {
+    if ((kinds[k] || 0) !== WEB_KINDS[k]) fail(`web kind ${k}: expected ${WEB_KINDS[k]}, got ${kinds[k] || 0}`);
+  }
+
+  const groups = { sector: [], cluster: [], mastery: [], socket: [], base: [] };
+  for (const n of W) {
+    if (n.kind === 'mastery') groups.mastery.push(n);
+    else if (n.kind === 'socket') groups.socket.push(n);
+    else if (CLUSTER_ID.test(n.id)) groups.cluster.push(n);
+    else if (SECTOR_ID.test(n.id) || SECTOR_NOTABLE_ID.test(n.id)) groups.sector.push(n);
+    else groups.base.push(n);
+  }
+  const want = { sector: EXPECT.sectors, cluster: EXPECT.clusters, mastery: EXPECT.masteries, socket: EXPECT.sockets, base: EXPECT.base };
+  for (const g of Object.keys(want)) {
+    if (groups[g].length !== want[g]) fail(`web group ${g}: expected ${want[g]}, got ${groups[g].length}`);
+  }
+
+  // Sector nodes: id / kind / classStart / name / desc / icon / stats / special (no x, y, links).
+  const sectorRows = groups.sector.map((n) => {
+    if (typeof n.desc !== 'string') fail(`sector node ${n.id} has no desc`);
+    if (n.kind === 'start' && !n.classStart) fail(`start ${n.id} has no classStart`);
+    const row = { id: n.id, kind: n.kind };
+    if (n.classStart) row.classStart = n.classStart;
+    row.name = n.name;
+    row.desc = n.desc;
+    if (n.icon) row.icon = n.icon;
+    if (n.stats) row.stats = sortKeys(n.stats);
+    if (n.special) {
+      // Some sector specials carry no text of their own; the node desc is the same effect text (TalentNode.special.desc is required).
+      const sp = { id: n.special.id, desc: n.special.desc ?? n.desc };
+      if (n.special.params) sp.params = sortKeys(n.special.params);
+      row.special = sp;
+    }
+    return row;
+  });
+  if (sectorRows.filter((r) => r.kind === 'start').length !== 5) fail('sectors must contain 5 starts');
+
+  // Cluster nodes: id / kind / name / desc / fx.
+  const clusterRows = groups.cluster.map((n) => {
+    if (typeof n.fx !== 'string' || typeof n.desc !== 'string') fail(`cluster node ${n.id} needs desc and fx`);
+    return { id: n.id, kind: n.kind, name: n.name, desc: n.desc, fx: n.fx };
+  });
+
+  // Masteries and sockets: parent = the single link; off = authored offset, snapped to 5 degrees and checked.
+  const offsetOf = (n, parent) => {
+    const raw = offsetDeg(parent, n);
+    const snapped = Math.round(raw / 5) * 5 + 0;
+    if (Math.abs(raw - snapped) > 2) fail(`${n.id}: offset ${raw.toFixed(2)} is not a 5-degree step`);
+    return snapped;
+  };
+  const masteryRows = groups.mastery.map((n) => {
+    if (!Array.isArray(n.links) || n.links.length !== 1) fail(`mastery ${n.id} must have exactly one parent link`);
+    const parent = byId.get(n.links[0]);
+    if (parent.kind !== 'notable') fail(`mastery ${n.id}: parent ${parent.id} is not a notable`);
+    if (!Array.isArray(n.choices) || n.choices.length !== 3) fail(`mastery ${n.id} must have 3 choices`);
+    const choices = n.choices.map((c) => {
+      if (typeof c.fx !== 'string' || typeof c.name !== 'string' || typeof c.desc !== 'string') fail(`mastery ${n.id}: bad choice`);
+      return { name: c.name, desc: c.desc, fx: c.fx };
+    });
+    return { id: n.id, parent: parent.id, off: offsetOf(n, parent), name: n.name, choices };
+  });
+  const choiceCount = masteryRows.reduce((s, m) => s + m.choices.length, 0);
+  if (choiceCount !== EXPECT.masteryChoices) fail(`mastery choices: expected ${EXPECT.masteryChoices}, got ${choiceCount}`);
+
+  const socketRows = groups.socket.map((n) => {
+    if (!Array.isArray(n.links) || n.links.length !== 1) fail(`socket ${n.id} must have exactly one parent link`);
+    const parent = byId.get(n.links[0]);
+    return { id: n.id, parent: parent.id, off: offsetOf(n, parent), name: n.name, desc: n.desc };
+  });
+
+  // Nekromant connectors: the two sector nodes that also link into the base web (nc_c1 - mg_c1, nc_c2 - mg_c2).
+  const connectorRows = [];
+  for (const n of groups.sector) {
+    if (!/^nc_c\d$/.test(n.id)) continue;
+    for (const l of n.links) {
+      if (groups.base.includes(byId.get(l))) connectorRows.push({ from: n.id, to: l });
+    }
+  }
+  connectorRows.sort((a, b) => (a.from < b.from ? -1 : a.from > b.from ? 1 : 0));
+  if (connectorRows.length !== 2) fail(`NC connectors: expected 2, got ${connectorRows.length}`);
+
+  return { sectorRows, clusterRows, masteryRows, socketRows, connectorRows, groups };
+}
+
+function passiveFile(web) {
+  const table = (name, rows, type) => `export const ${name}: ${type}[] = ${lit(rows)};`;
+  return [
+    HEADER,
+    '// Source: docs/GDD_TALENTS.web.json, the 306-node golden web minus the 125 base nodes of data/talents.ts (RAW_BASE).',
+    "// Content only: no x/y and no links. T2 buildPassiveWeb builds the geometry (GDD_TALENTS §3.3). `off` = degrees from the parent's radial direction.",
+    "import type { ClassId } from '../types/common';",
+    "import type { StatBlock } from '../types/stats';",
+    '',
+    'export interface SectorRow {',
+    '  id: string;',
+    "  kind: 'start' | 'small' | 'notable' | 'keystone';",
+    '  classStart?: ClassId;',
+    '  name: string;',
+    '  desc: string;',
+    '  icon?: string;',
+    '  stats?: StatBlock;',
+    '  special?: { id: string; desc: string; params?: Record<string, number> };',
+    '}',
+    '',
+    "export interface ClusterRow { id: string; kind: 'small' | 'notable' | 'keystone'; name: string; desc: string; fx: string }",
+    'export interface MasteryRow { id: string; parent: string; off: number; name: string; choices: { name: string; desc: string; fx: string }[] }',
+    'export interface SocketRow { id: string; parent: string; off: number; name: string; desc: string }',
+    'export interface ConnectorRow { from: string; to: string }',
+    '',
+    '/** The 122 sector nodes of the five new sectors (GDD_CLASSES_V2 §12, GDD_TALENTS §3.4). */',
+    table('SECTOR_ROWS', web.sectorRows, 'SectorRow'),
+    '',
+    '/** The 36 outer cluster nodes (GDD_TALENTS §3.5). */',
+    table('CLUSTER_ROWS', web.clusterRows, 'ClusterRow'),
+    '',
+    '/** The 14 masteries, each a dead end next to one notable; pick one of three (GDD_TALENTS §3.6). */',
+    table('MASTERY_ROWS', web.masteryRows, 'MasteryRow'),
+    '',
+    '/** The 9 jewel sockets, one per class (GDD_TALENTS §3.7). */',
+    table('SOCKET_ROWS', web.socketRows, 'SocketRow'),
+    '',
+    '/** The two Nekromant connectors into the base web: nc_c1 - mg_c1 and nc_c2 - mg_c2 (GDD_TALENTS §3.1). */',
+    table('NC_CONNECTORS', web.connectorRows, 'ConnectorRow'),
+    '',
+  ].join('\n');
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------------------------------------------------
+
+function main() {
+  const check = process.argv.includes('--check');
+  const T = JSON.parse(fs.readFileSync(TREES_FILE, 'utf8'));
+  const W = JSON.parse(fs.readFileSync(WEB_FILE, 'utf8'));
+  if (!isObj(T.paletteValue)) fail('trees.json has no paletteValue');
+
+  const raw = buildRawClasses(T);
+  const skill = buildSkillSpecs(T);
+  const web = buildWeb(W);
+
+  const outputs = new Map();
+  for (const c of CLASSES) outputs.set(path.join(RAW_DIR, `${c}.ts`), rawFile(c, raw.perClass.get(c)));
+  outputs.set(SKILL_SPECS_FILE, skillSpecsFile(skill));
+  outputs.set(PASSIVE_EXTRA_FILE, passiveFile(web));
+
+  const counts = {
+    trees: Object.keys(T.trees).length,
+    rows: raw.rows,
+    'skill spec rows': skill.rows.length,
+    'mastery choices': web.masteryRows.reduce((s, m) => s + m.choices.length, 0),
+    'cluster nodes': web.clusterRows.length,
+    sectors: web.sectorRows.length,
+    sockets: web.socketRows.length,
+    base: web.groups.base.length,
+    web: W.length,
+  };
+  console.log('gen-talent-data: ' + Object.entries(counts).map(([k, v]) => `${k} ${v}`).join(' · '));
+
+  if (check) {
+    const stale = [...outputs]
+      .filter(([file, text]) => !fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== text)
+      .map(([file]) => path.relative(ROOT, file));
+    if (stale.length) {
+      console.error('gen-talent-data: stale or missing generated files:\n  ' + stale.join('\n  '));
+      process.exit(1);
+    }
+    console.log(`gen-talent-data: ${outputs.size} generated files up to date`);
+    return;
+  }
+
+  fs.mkdirSync(RAW_DIR, { recursive: true });
+  let changed = 0;
+  for (const [file, text] of outputs) {
+    if (!fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== text) {
+      fs.writeFileSync(file, text, 'utf8');
+      changed++;
+    }
+  }
+  console.log(`gen-talent-data: wrote ${outputs.size} files (${changed} changed, ${outputs.size - changed} unchanged)`);
+}
+
+try {
+  main();
+} catch (e) {
+  console.error(e instanceof Error ? e.message : e);
+  process.exit(1);
+}

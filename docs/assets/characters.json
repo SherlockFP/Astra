@@ -1,0 +1,6425 @@
+[
+ {
+  "file": "public/assets/models/characters/Barbarian.glb",
+  "meshes": [
+   "Cube.160",
+   "Cube.001",
+   "Cylinder.404",
+   "Cube.12900",
+   "Cube.222",
+   "Cylinder.061",
+   "Cube.166",
+   "Plane.006",
+   "Cube.161",
+   "PrototypePete_body.022",
+   "Cube.167",
+   "Cube.165",
+   "Cube.163"
+  ],
+  "skins": [
+   {
+    "name": "Rig",
+    "joints": 41
+   }
+  ],
+  "animations": [
+   {
+    "name": "1H_Melee_Attack_Chop",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Diagonal",
+    "duration": 1
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Horizontal",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "1H_Ranged_Aiming",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Reload",
+    "duration": 1.167
+   },
+   {
+    "name": "1H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Shooting",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Attack_Chop",
+    "duration": 1.633
+   },
+   {
+    "name": "2H_Melee_Attack_Slice",
+    "duration": 1.1
+   },
+   {
+    "name": "2H_Melee_Attack_Spin",
+    "duration": 2.4
+   },
+   {
+    "name": "2H_Melee_Attack_Spinning",
+    "duration": 0.667
+   },
+   {
+    "name": "2H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Aiming",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Reload",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Shooting",
+    "duration": 1.067
+   },
+   {
+    "name": "Block",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Attack",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Hit",
+    "duration": 1.067
+   },
+   {
+    "name": "Blocking",
+    "duration": 1.067
+   },
+   {
+    "name": "Cheer",
+    "duration": 1.667
+   },
+   {
+    "name": "Death_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Death_A_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_B",
+    "duration": 2.633
+   },
+   {
+    "name": "Death_B_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Dodge_Backward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Forward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Left",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Right",
+    "duration": 0.4
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Chop",
+    "duration": 1.267
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Slice",
+    "duration": 1.167
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "Hit_A",
+    "duration": 0.667
+   },
+   {
+    "name": "Hit_B",
+    "duration": 0.867
+   },
+   {
+    "name": "Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Interact",
+    "duration": 1.3
+   },
+   {
+    "name": "Jump_Full_Long",
+    "duration": 2.333
+   },
+   {
+    "name": "Jump_Full_Short",
+    "duration": 1.167
+   },
+   {
+    "name": "Jump_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Jump_Land",
+    "duration": 0.667
+   },
+   {
+    "name": "Jump_Start",
+    "duration": 0.6
+   },
+   {
+    "name": "Lie_Down",
+    "duration": 3
+   },
+   {
+    "name": "Lie_Idle",
+    "duration": 2.667
+   },
+   {
+    "name": "Lie_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Lie_StandUp",
+    "duration": 2.333
+   },
+   {
+    "name": "PickUp",
+    "duration": 1.3
+   },
+   {
+    "name": "Running_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Running_Strafe_Left",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_Strafe_Right",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Down",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Idle",
+    "duration": 3.6
+   },
+   {
+    "name": "Sit_Chair_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Chair_StandUp",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Floor_Down",
+    "duration": 1
+   },
+   {
+    "name": "Sit_Floor_Idle",
+    "duration": 4
+   },
+   {
+    "name": "Sit_Floor_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Floor_StandUp",
+    "duration": 1.133
+   },
+   {
+    "name": "Spellcast_Long",
+    "duration": 2.533
+   },
+   {
+    "name": "Spellcast_Raise",
+    "duration": 2.1
+   },
+   {
+    "name": "Spellcast_Shoot",
+    "duration": 0.933
+   },
+   {
+    "name": "Spellcasting",
+    "duration": 0.667
+   },
+   {
+    "name": "T-Pose",
+    "duration": 0
+   },
+   {
+    "name": "Throw",
+    "duration": 1.367
+   },
+   {
+    "name": "Unarmed_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Kick",
+    "duration": 0.933
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_A",
+    "duration": 1.467
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_B",
+    "duration": 1.667
+   },
+   {
+    "name": "Unarmed_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Use_Item",
+    "duration": 1.6
+   },
+   {
+    "name": "Walking_A",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_Backwards",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_C",
+    "duration": 1.6
+   }
+  ],
+  "materials": [
+   "barbarian_texture"
+  ],
+  "images": [
+   "barbarian_texture"
+  ],
+  "nodes": 55,
+  "aabb": {
+   "min": [
+    -1.503,
+    0,
+    -0.525
+   ],
+   "max": [
+    1.472,
+    2.398,
+    1.325
+   ],
+   "size": [
+    2.975,
+    2.398,
+    1.85
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/characters/Knight.glb",
+  "meshes": [
+   "Cube.125",
+   "Cube.003",
+   "Cylinder.280",
+   "Cylinder.005",
+   "Cylinder.010",
+   "Cylinder.022",
+   "Cube.11839",
+   "Cube.12993",
+   "Cube.124",
+   "Plane.004",
+   "Cube.126",
+   "PrototypePete_body.020",
+   "PrototypePete_head.001",
+   "Cube.128",
+   "Cube.127"
+  ],
+  "skins": [
+   {
+    "name": "Rig",
+    "joints": 41
+   }
+  ],
+  "animations": [
+   {
+    "name": "1H_Melee_Attack_Chop",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Diagonal",
+    "duration": 1
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Horizontal",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "1H_Ranged_Aiming",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Reload",
+    "duration": 1.167
+   },
+   {
+    "name": "1H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Shooting",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Attack_Chop",
+    "duration": 1.633
+   },
+   {
+    "name": "2H_Melee_Attack_Slice",
+    "duration": 1.1
+   },
+   {
+    "name": "2H_Melee_Attack_Spin",
+    "duration": 2.4
+   },
+   {
+    "name": "2H_Melee_Attack_Spinning",
+    "duration": 0.667
+   },
+   {
+    "name": "2H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Aiming",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Reload",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Shooting",
+    "duration": 1.067
+   },
+   {
+    "name": "Block",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Attack",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Hit",
+    "duration": 1.067
+   },
+   {
+    "name": "Blocking",
+    "duration": 1.067
+   },
+   {
+    "name": "Cheer",
+    "duration": 1.667
+   },
+   {
+    "name": "Death_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Death_A_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_B",
+    "duration": 2.633
+   },
+   {
+    "name": "Death_B_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Dodge_Backward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Forward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Left",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Right",
+    "duration": 0.4
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Chop",
+    "duration": 1.267
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Slice",
+    "duration": 1.167
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "Hit_A",
+    "duration": 0.667
+   },
+   {
+    "name": "Hit_B",
+    "duration": 0.867
+   },
+   {
+    "name": "Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Interact",
+    "duration": 1.3
+   },
+   {
+    "name": "Jump_Full_Long",
+    "duration": 2.333
+   },
+   {
+    "name": "Jump_Full_Short",
+    "duration": 1.167
+   },
+   {
+    "name": "Jump_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Jump_Land",
+    "duration": 0.667
+   },
+   {
+    "name": "Jump_Start",
+    "duration": 0.6
+   },
+   {
+    "name": "Lie_Down",
+    "duration": 3
+   },
+   {
+    "name": "Lie_Idle",
+    "duration": 2.667
+   },
+   {
+    "name": "Lie_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Lie_StandUp",
+    "duration": 2.333
+   },
+   {
+    "name": "PickUp",
+    "duration": 1.3
+   },
+   {
+    "name": "Running_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Running_Strafe_Left",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_Strafe_Right",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Down",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Idle",
+    "duration": 3.6
+   },
+   {
+    "name": "Sit_Chair_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Chair_StandUp",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Floor_Down",
+    "duration": 1
+   },
+   {
+    "name": "Sit_Floor_Idle",
+    "duration": 4
+   },
+   {
+    "name": "Sit_Floor_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Floor_StandUp",
+    "duration": 1.133
+   },
+   {
+    "name": "Spellcast_Long",
+    "duration": 2.533
+   },
+   {
+    "name": "Spellcast_Raise",
+    "duration": 2.1
+   },
+   {
+    "name": "Spellcast_Shoot",
+    "duration": 0.933
+   },
+   {
+    "name": "Spellcasting",
+    "duration": 0.667
+   },
+   {
+    "name": "T-Pose",
+    "duration": 0
+   },
+   {
+    "name": "Throw",
+    "duration": 1.367
+   },
+   {
+    "name": "Unarmed_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Kick",
+    "duration": 0.933
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_A",
+    "duration": 1.467
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_B",
+    "duration": 1.667
+   },
+   {
+    "name": "Unarmed_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Use_Item",
+    "duration": 1.6
+   },
+   {
+    "name": "Walking_A",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_Backwards",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_C",
+    "duration": 1.6
+   }
+  ],
+  "materials": [
+   "knight_texture"
+  ],
+  "images": [
+   "knight_texture"
+  ],
+  "nodes": 57,
+  "aabb": {
+   "min": [
+    -1.303,
+    0,
+    -0.579
+   ],
+   "max": [
+    1.387,
+    2.467,
+    1.998
+   ],
+   "size": [
+    2.689,
+    2.467,
+    2.577
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/characters/Mage.glb",
+  "meshes": [
+   "Cube.157",
+   "Cube.12901",
+   "Cube.12902",
+   "Cylinder.018",
+   "Cylinder.039",
+   "Cube.156",
+   "Plane.030",
+   "Cube.158",
+   "Cube.155",
+   "Cube.159",
+   "Cube.153",
+   "Cube.154"
+  ],
+  "skins": [
+   {
+    "name": "Rig",
+    "joints": 41
+   }
+  ],
+  "animations": [
+   {
+    "name": "1H_Melee_Attack_Chop",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Diagonal",
+    "duration": 1
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Horizontal",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "1H_Ranged_Aiming",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Reload",
+    "duration": 1.167
+   },
+   {
+    "name": "1H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Shooting",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Attack_Chop",
+    "duration": 1.633
+   },
+   {
+    "name": "2H_Melee_Attack_Slice",
+    "duration": 1.1
+   },
+   {
+    "name": "2H_Melee_Attack_Spin",
+    "duration": 2.4
+   },
+   {
+    "name": "2H_Melee_Attack_Spinning",
+    "duration": 0.667
+   },
+   {
+    "name": "2H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Aiming",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Reload",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Shooting",
+    "duration": 1.067
+   },
+   {
+    "name": "Block",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Attack",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Hit",
+    "duration": 1.067
+   },
+   {
+    "name": "Blocking",
+    "duration": 1.067
+   },
+   {
+    "name": "Cheer",
+    "duration": 1.667
+   },
+   {
+    "name": "Death_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Death_A_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_B",
+    "duration": 2.633
+   },
+   {
+    "name": "Death_B_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Dodge_Backward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Forward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Left",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Right",
+    "duration": 0.4
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Chop",
+    "duration": 1.267
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Slice",
+    "duration": 1.167
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "Hit_A",
+    "duration": 0.667
+   },
+   {
+    "name": "Hit_B",
+    "duration": 0.867
+   },
+   {
+    "name": "Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Interact",
+    "duration": 1.3
+   },
+   {
+    "name": "Jump_Full_Long",
+    "duration": 2.333
+   },
+   {
+    "name": "Jump_Full_Short",
+    "duration": 1.167
+   },
+   {
+    "name": "Jump_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Jump_Land",
+    "duration": 0.667
+   },
+   {
+    "name": "Jump_Start",
+    "duration": 0.6
+   },
+   {
+    "name": "Lie_Down",
+    "duration": 3
+   },
+   {
+    "name": "Lie_Idle",
+    "duration": 2.667
+   },
+   {
+    "name": "Lie_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Lie_StandUp",
+    "duration": 2.333
+   },
+   {
+    "name": "PickUp",
+    "duration": 1.3
+   },
+   {
+    "name": "Running_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Running_Strafe_Left",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_Strafe_Right",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Down",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Idle",
+    "duration": 3.6
+   },
+   {
+    "name": "Sit_Chair_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Chair_StandUp",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Floor_Down",
+    "duration": 1
+   },
+   {
+    "name": "Sit_Floor_Idle",
+    "duration": 4
+   },
+   {
+    "name": "Sit_Floor_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Floor_StandUp",
+    "duration": 1.133
+   },
+   {
+    "name": "Spellcast_Long",
+    "duration": 2.533
+   },
+   {
+    "name": "Spellcast_Raise",
+    "duration": 2.1
+   },
+   {
+    "name": "Spellcast_Shoot",
+    "duration": 0.933
+   },
+   {
+    "name": "Spellcasting",
+    "duration": 0.667
+   },
+   {
+    "name": "T-Pose",
+    "duration": 0
+   },
+   {
+    "name": "Throw",
+    "duration": 1.367
+   },
+   {
+    "name": "Unarmed_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Kick",
+    "duration": 0.933
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_A",
+    "duration": 1.467
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_B",
+    "duration": 1.667
+   },
+   {
+    "name": "Unarmed_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Use_Item",
+    "duration": 1.6
+   },
+   {
+    "name": "Walking_A",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_Backwards",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_C",
+    "duration": 1.6
+   }
+  ],
+  "materials": [
+   "mage_texture"
+  ],
+  "images": [
+   "mage_texture"
+  ],
+  "nodes": 54,
+  "aabb": {
+   "min": [
+    -1.128,
+    0,
+    -1.291
+   ],
+   "max": [
+    1.297,
+    3.003,
+    1.254
+   ],
+   "size": [
+    2.426,
+    3.003,
+    2.545
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/characters/Rogue.glb",
+  "meshes": [
+   "Cube.199",
+   "Cylinder.002",
+   "Cube.015",
+   "Cube.004",
+   "Cylinder.008",
+   "Cylinder.006",
+   "Plane.007",
+   "Cube.202",
+   "PrototypePete_body.025",
+   "Cube.210",
+   "Cube.194",
+   "Cube.187"
+  ],
+  "skins": [
+   {
+    "name": "Rig",
+    "joints": 41
+   }
+  ],
+  "animations": [
+   {
+    "name": "1H_Melee_Attack_Chop",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Diagonal",
+    "duration": 1
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Horizontal",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "1H_Ranged_Aiming",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Reload",
+    "duration": 1.167
+   },
+   {
+    "name": "1H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Shooting",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Attack_Chop",
+    "duration": 1.633
+   },
+   {
+    "name": "2H_Melee_Attack_Slice",
+    "duration": 1.1
+   },
+   {
+    "name": "2H_Melee_Attack_Spin",
+    "duration": 2.4
+   },
+   {
+    "name": "2H_Melee_Attack_Spinning",
+    "duration": 0.667
+   },
+   {
+    "name": "2H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Aiming",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Reload",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Shooting",
+    "duration": 1.067
+   },
+   {
+    "name": "Block",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Attack",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Hit",
+    "duration": 1.067
+   },
+   {
+    "name": "Blocking",
+    "duration": 1.067
+   },
+   {
+    "name": "Cheer",
+    "duration": 1.667
+   },
+   {
+    "name": "Death_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Death_A_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_B",
+    "duration": 2.633
+   },
+   {
+    "name": "Death_B_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Dodge_Backward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Forward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Left",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Right",
+    "duration": 0.4
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Chop",
+    "duration": 1.267
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Slice",
+    "duration": 1.167
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "Hit_A",
+    "duration": 0.667
+   },
+   {
+    "name": "Hit_B",
+    "duration": 0.867
+   },
+   {
+    "name": "Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Interact",
+    "duration": 1.3
+   },
+   {
+    "name": "Jump_Full_Long",
+    "duration": 2.333
+   },
+   {
+    "name": "Jump_Full_Short",
+    "duration": 1.167
+   },
+   {
+    "name": "Jump_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Jump_Land",
+    "duration": 0.667
+   },
+   {
+    "name": "Jump_Start",
+    "duration": 0.6
+   },
+   {
+    "name": "Lie_Down",
+    "duration": 3
+   },
+   {
+    "name": "Lie_Idle",
+    "duration": 2.667
+   },
+   {
+    "name": "Lie_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Lie_StandUp",
+    "duration": 2.333
+   },
+   {
+    "name": "PickUp",
+    "duration": 1.3
+   },
+   {
+    "name": "Running_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Running_Strafe_Left",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_Strafe_Right",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Down",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Idle",
+    "duration": 3.6
+   },
+   {
+    "name": "Sit_Chair_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Chair_StandUp",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Floor_Down",
+    "duration": 1
+   },
+   {
+    "name": "Sit_Floor_Idle",
+    "duration": 4
+   },
+   {
+    "name": "Sit_Floor_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Floor_StandUp",
+    "duration": 1.133
+   },
+   {
+    "name": "Spellcast_Long",
+    "duration": 2.533
+   },
+   {
+    "name": "Spellcast_Raise",
+    "duration": 2.1
+   },
+   {
+    "name": "Spellcast_Shoot",
+    "duration": 0.933
+   },
+   {
+    "name": "Spellcasting",
+    "duration": 0.667
+   },
+   {
+    "name": "T-Pose",
+    "duration": 0
+   },
+   {
+    "name": "Throw",
+    "duration": 1.367
+   },
+   {
+    "name": "Unarmed_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Kick",
+    "duration": 0.933
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_A",
+    "duration": 1.467
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_B",
+    "duration": 1.667
+   },
+   {
+    "name": "Unarmed_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Use_Item",
+    "duration": 1.6
+   },
+   {
+    "name": "Walking_A",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_Backwards",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_C",
+    "duration": 1.6
+   }
+  ],
+  "materials": [
+   "rogue_texture"
+  ],
+  "images": [
+   "rogue_texture"
+  ],
+  "nodes": 54,
+  "aabb": {
+   "min": [
+    -1.942,
+    0,
+    -0.496
+   ],
+   "max": [
+    1.003,
+    2.187,
+    0.981
+   ],
+   "size": [
+    2.945,
+    2.187,
+    1.477
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/characters/Rogue_Hooded.glb",
+  "meshes": [
+   "Cube.199",
+   "Cylinder.002",
+   "Cube.015",
+   "Cube.004",
+   "Cylinder.008",
+   "Cylinder.006",
+   "Plane.007",
+   "Cube.202",
+   "PrototypePete_body.025",
+   "Cube.12634",
+   "Cube.194",
+   "Cube.187"
+  ],
+  "skins": [
+   {
+    "name": "Rig",
+    "joints": 41
+   }
+  ],
+  "animations": [
+   {
+    "name": "1H_Melee_Attack_Chop",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Diagonal",
+    "duration": 1
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Horizontal",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "1H_Ranged_Aiming",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Reload",
+    "duration": 1.167
+   },
+   {
+    "name": "1H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Shooting",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Attack_Chop",
+    "duration": 1.633
+   },
+   {
+    "name": "2H_Melee_Attack_Slice",
+    "duration": 1.1
+   },
+   {
+    "name": "2H_Melee_Attack_Spin",
+    "duration": 2.4
+   },
+   {
+    "name": "2H_Melee_Attack_Spinning",
+    "duration": 0.667
+   },
+   {
+    "name": "2H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Aiming",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Reload",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Shooting",
+    "duration": 1.067
+   },
+   {
+    "name": "Block",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Attack",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Hit",
+    "duration": 1.067
+   },
+   {
+    "name": "Blocking",
+    "duration": 1.067
+   },
+   {
+    "name": "Cheer",
+    "duration": 1.667
+   },
+   {
+    "name": "Death_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Death_A_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_B",
+    "duration": 2.633
+   },
+   {
+    "name": "Death_B_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Dodge_Backward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Forward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Left",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Right",
+    "duration": 0.4
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Chop",
+    "duration": 1.267
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Slice",
+    "duration": 1.167
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "Hit_A",
+    "duration": 0.667
+   },
+   {
+    "name": "Hit_B",
+    "duration": 0.867
+   },
+   {
+    "name": "Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Interact",
+    "duration": 1.3
+   },
+   {
+    "name": "Jump_Full_Long",
+    "duration": 2.333
+   },
+   {
+    "name": "Jump_Full_Short",
+    "duration": 1.167
+   },
+   {
+    "name": "Jump_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Jump_Land",
+    "duration": 0.667
+   },
+   {
+    "name": "Jump_Start",
+    "duration": 0.6
+   },
+   {
+    "name": "Lie_Down",
+    "duration": 3
+   },
+   {
+    "name": "Lie_Idle",
+    "duration": 2.667
+   },
+   {
+    "name": "Lie_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Lie_StandUp",
+    "duration": 2.333
+   },
+   {
+    "name": "PickUp",
+    "duration": 1.3
+   },
+   {
+    "name": "Running_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Running_Strafe_Left",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_Strafe_Right",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Down",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Idle",
+    "duration": 3.6
+   },
+   {
+    "name": "Sit_Chair_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Chair_StandUp",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Floor_Down",
+    "duration": 1
+   },
+   {
+    "name": "Sit_Floor_Idle",
+    "duration": 4
+   },
+   {
+    "name": "Sit_Floor_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Floor_StandUp",
+    "duration": 1.133
+   },
+   {
+    "name": "Spellcast_Long",
+    "duration": 2.533
+   },
+   {
+    "name": "Spellcast_Raise",
+    "duration": 2.1
+   },
+   {
+    "name": "Spellcast_Shoot",
+    "duration": 0.933
+   },
+   {
+    "name": "Spellcasting",
+    "duration": 0.667
+   },
+   {
+    "name": "T-Pose",
+    "duration": 0
+   },
+   {
+    "name": "Throw",
+    "duration": 1.367
+   },
+   {
+    "name": "Unarmed_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Kick",
+    "duration": 0.933
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_A",
+    "duration": 1.467
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_B",
+    "duration": 1.667
+   },
+   {
+    "name": "Unarmed_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Use_Item",
+    "duration": 1.6
+   },
+   {
+    "name": "Walking_A",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_Backwards",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_C",
+    "duration": 1.6
+   }
+  ],
+  "materials": [
+   "rogue_texture"
+  ],
+  "images": [
+   "rogue_texture"
+  ],
+  "nodes": 54,
+  "aabb": {
+   "min": [
+    -1.942,
+    0,
+    -0.567
+   ],
+   "max": [
+    1.003,
+    2.251,
+    0.981
+   ],
+   "size": [
+    2.945,
+    2.251,
+    1.548
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/enemies/Skeleton_Mage.glb",
+  "meshes": [
+   "Skeleton_Mage_ArmLeft",
+   "Skeleton_Mage_Hat",
+   "Skeleton_Mage_ArmRight",
+   "Skeleton_Mage_Body",
+   "Skeleton_Mage_Eyes",
+   "Skeleton_Mage_Jaw",
+   "Skeleton_Mage_LegLeft",
+   "Skeleton_Mage_LegRight",
+   "Skeleton_Mage_Skull"
+  ],
+  "skins": [
+   {
+    "name": "Rig",
+    "joints": 41
+   }
+  ],
+  "animations": [
+   {
+    "name": "1H_Melee_Attack_Chop",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Jump_Chop",
+    "duration": 1.333
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Diagonal",
+    "duration": 1
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Horizontal",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "1H_Ranged_Aiming",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Reload",
+    "duration": 1.167
+   },
+   {
+    "name": "1H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Shooting",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Attack_Chop",
+    "duration": 1.633
+   },
+   {
+    "name": "2H_Melee_Attack_Slice",
+    "duration": 1.1
+   },
+   {
+    "name": "2H_Melee_Attack_Spin",
+    "duration": 2.4
+   },
+   {
+    "name": "2H_Melee_Attack_Spinning",
+    "duration": 0.667
+   },
+   {
+    "name": "2H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Aiming",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Reload",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Shooting",
+    "duration": 1.067
+   },
+   {
+    "name": "Block",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Attack",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Hit",
+    "duration": 1.067
+   },
+   {
+    "name": "Blocking",
+    "duration": 1.067
+   },
+   {
+    "name": "Cheer",
+    "duration": 1.667
+   },
+   {
+    "name": "Death_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Death_A_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_B",
+    "duration": 2.633
+   },
+   {
+    "name": "Death_B_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_C_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_C_Skeletons",
+    "duration": 2
+   },
+   {
+    "name": "Death_C_Skeletons_Resurrect",
+    "duration": 2.7
+   },
+   {
+    "name": "Dodge_Backward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Forward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Left",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Right",
+    "duration": 0.4
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Chop",
+    "duration": 1.267
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Slice",
+    "duration": 1.167
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "Hit_A",
+    "duration": 0.667
+   },
+   {
+    "name": "Hit_B",
+    "duration": 0.867
+   },
+   {
+    "name": "Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Idle_B",
+    "duration": 2.133
+   },
+   {
+    "name": "Idle_Combat",
+    "duration": 4.267
+   },
+   {
+    "name": "Interact",
+    "duration": 1.3
+   },
+   {
+    "name": "Jump_Full_Long",
+    "duration": 2.333
+   },
+   {
+    "name": "Jump_Full_Short",
+    "duration": 1.167
+   },
+   {
+    "name": "Jump_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Jump_Land",
+    "duration": 0.667
+   },
+   {
+    "name": "Jump_Start",
+    "duration": 0.6
+   },
+   {
+    "name": "Lie_Down",
+    "duration": 3
+   },
+   {
+    "name": "Lie_Idle",
+    "duration": 2.667
+   },
+   {
+    "name": "Lie_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Lie_StandUp",
+    "duration": 2.333
+   },
+   {
+    "name": "PickUp",
+    "duration": 1.3
+   },
+   {
+    "name": "Running_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Running_C",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_Strafe_Left",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_Strafe_Right",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Down",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Idle",
+    "duration": 3.6
+   },
+   {
+    "name": "Sit_Chair_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Chair_StandUp",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Floor_Down",
+    "duration": 1
+   },
+   {
+    "name": "Sit_Floor_Idle",
+    "duration": 4
+   },
+   {
+    "name": "Sit_Floor_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Floor_StandUp",
+    "duration": 1.133
+   },
+   {
+    "name": "Skeleton_Inactive_Standing_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Skeletons_Awaken_Floor",
+    "duration": 2.3
+   },
+   {
+    "name": "Skeletons_Awaken_Floor_Long",
+    "duration": 3.833
+   },
+   {
+    "name": "Skeletons_Awaken_Standing",
+    "duration": 1
+   },
+   {
+    "name": "Skeletons_Inactive_Floor_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Spawn_Air",
+    "duration": 1.3
+   },
+   {
+    "name": "Spawn_Ground",
+    "duration": 1.3
+   },
+   {
+    "name": "Spawn_Ground_Skeletons",
+    "duration": 3.567
+   },
+   {
+    "name": "Spellcast_Long",
+    "duration": 2.533
+   },
+   {
+    "name": "Spellcast_Raise",
+    "duration": 2.1
+   },
+   {
+    "name": "Spellcast_Shoot",
+    "duration": 0.933
+   },
+   {
+    "name": "Spellcast_Summon",
+    "duration": 4.3
+   },
+   {
+    "name": "Spellcasting",
+    "duration": 0.667
+   },
+   {
+    "name": "T-Pose",
+    "duration": 0
+   },
+   {
+    "name": "Taunt",
+    "duration": 1.033
+   },
+   {
+    "name": "Taunt_Longer",
+    "duration": 3
+   },
+   {
+    "name": "Throw",
+    "duration": 1.367
+   },
+   {
+    "name": "Unarmed_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Kick",
+    "duration": 0.933
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_A",
+    "duration": 1.467
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_B",
+    "duration": 1.667
+   },
+   {
+    "name": "Unarmed_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Use_Item",
+    "duration": 1.6
+   },
+   {
+    "name": "Walking_A",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_Backwards",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_C",
+    "duration": 1.6
+   },
+   {
+    "name": "Walking_D_Skeletons",
+    "duration": 1.6
+   }
+  ],
+  "materials": [
+   "skeleton",
+   "Glow"
+  ],
+  "images": [
+   "skeleton_texture"
+  ],
+  "nodes": 51,
+  "aabb": {
+   "min": [
+    -0.969,
+    0,
+    -0.848
+   ],
+   "max": [
+    0.969,
+    2.63,
+    0.887
+   ],
+   "size": [
+    1.938,
+    2.63,
+    1.735
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/enemies/Skeleton_Minion.glb",
+  "meshes": [
+   "Skeleton_Minion_ArmLeft",
+   "Skeleton_Minion_ArmRight",
+   "Skeleton_Minion_Body",
+   "Skeleton_Minion_Cloak",
+   "Skeleton_Minion_Eyes",
+   "Skeleton_Minion_Head",
+   "Skeleton_Minion_Jaw",
+   "Skeleton_Minion_LegLeft",
+   "Skeleton_Minion_LegRight"
+  ],
+  "skins": [
+   {
+    "name": "Rig",
+    "joints": 41
+   }
+  ],
+  "animations": [
+   {
+    "name": "1H_Melee_Attack_Chop",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Jump_Chop",
+    "duration": 1.333
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Diagonal",
+    "duration": 1
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Horizontal",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "1H_Ranged_Aiming",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Reload",
+    "duration": 1.167
+   },
+   {
+    "name": "1H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Shooting",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Attack_Chop",
+    "duration": 1.633
+   },
+   {
+    "name": "2H_Melee_Attack_Slice",
+    "duration": 1.1
+   },
+   {
+    "name": "2H_Melee_Attack_Spin",
+    "duration": 2.4
+   },
+   {
+    "name": "2H_Melee_Attack_Spinning",
+    "duration": 0.667
+   },
+   {
+    "name": "2H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Aiming",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Reload",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Shooting",
+    "duration": 1.067
+   },
+   {
+    "name": "Block",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Attack",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Hit",
+    "duration": 1.067
+   },
+   {
+    "name": "Blocking",
+    "duration": 1.067
+   },
+   {
+    "name": "Cheer",
+    "duration": 1.667
+   },
+   {
+    "name": "Death_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Death_A_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_B",
+    "duration": 2.633
+   },
+   {
+    "name": "Death_B_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_C_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_C_Skeletons",
+    "duration": 2
+   },
+   {
+    "name": "Death_C_Skeletons_Resurrect",
+    "duration": 2.7
+   },
+   {
+    "name": "Dodge_Backward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Forward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Left",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Right",
+    "duration": 0.4
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Chop",
+    "duration": 1.267
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Slice",
+    "duration": 1.167
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "Hit_A",
+    "duration": 0.667
+   },
+   {
+    "name": "Hit_B",
+    "duration": 0.867
+   },
+   {
+    "name": "Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Idle_B",
+    "duration": 2.133
+   },
+   {
+    "name": "Idle_Combat",
+    "duration": 4.267
+   },
+   {
+    "name": "Interact",
+    "duration": 1.3
+   },
+   {
+    "name": "Jump_Full_Long",
+    "duration": 2.333
+   },
+   {
+    "name": "Jump_Full_Short",
+    "duration": 1.167
+   },
+   {
+    "name": "Jump_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Jump_Land",
+    "duration": 0.667
+   },
+   {
+    "name": "Jump_Start",
+    "duration": 0.6
+   },
+   {
+    "name": "Lie_Down",
+    "duration": 3
+   },
+   {
+    "name": "Lie_Idle",
+    "duration": 2.667
+   },
+   {
+    "name": "Lie_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Lie_StandUp",
+    "duration": 2.333
+   },
+   {
+    "name": "PickUp",
+    "duration": 1.3
+   },
+   {
+    "name": "Running_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Running_C",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_Strafe_Left",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_Strafe_Right",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Down",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Idle",
+    "duration": 3.6
+   },
+   {
+    "name": "Sit_Chair_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Chair_StandUp",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Floor_Down",
+    "duration": 1
+   },
+   {
+    "name": "Sit_Floor_Idle",
+    "duration": 4
+   },
+   {
+    "name": "Sit_Floor_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Floor_StandUp",
+    "duration": 1.133
+   },
+   {
+    "name": "Skeleton_Inactive_Standing_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Skeletons_Awaken_Floor",
+    "duration": 2.3
+   },
+   {
+    "name": "Skeletons_Awaken_Floor_Long",
+    "duration": 3.833
+   },
+   {
+    "name": "Skeletons_Awaken_Standing",
+    "duration": 1
+   },
+   {
+    "name": "Skeletons_Inactive_Floor_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Spawn_Air",
+    "duration": 1.3
+   },
+   {
+    "name": "Spawn_Ground",
+    "duration": 1.3
+   },
+   {
+    "name": "Spawn_Ground_Skeletons",
+    "duration": 3.567
+   },
+   {
+    "name": "Spellcast_Long",
+    "duration": 2.533
+   },
+   {
+    "name": "Spellcast_Raise",
+    "duration": 2.1
+   },
+   {
+    "name": "Spellcast_Shoot",
+    "duration": 0.933
+   },
+   {
+    "name": "Spellcast_Summon",
+    "duration": 4.3
+   },
+   {
+    "name": "Spellcasting",
+    "duration": 0.667
+   },
+   {
+    "name": "T-Pose",
+    "duration": 0
+   },
+   {
+    "name": "Taunt",
+    "duration": 1.033
+   },
+   {
+    "name": "Taunt_Longer",
+    "duration": 3
+   },
+   {
+    "name": "Throw",
+    "duration": 1.367
+   },
+   {
+    "name": "Unarmed_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Kick",
+    "duration": 0.933
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_A",
+    "duration": 1.467
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_B",
+    "duration": 1.667
+   },
+   {
+    "name": "Unarmed_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Use_Item",
+    "duration": 1.6
+   },
+   {
+    "name": "Walking_A",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_Backwards",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_C",
+    "duration": 1.6
+   },
+   {
+    "name": "Walking_D_Skeletons",
+    "duration": 1.6
+   }
+  ],
+  "materials": [
+   "skeleton",
+   "Glow"
+  ],
+  "images": [
+   "skeleton_texture"
+  ],
+  "nodes": 51,
+  "aabb": {
+   "min": [
+    -0.969,
+    0,
+    -0.458
+   ],
+   "max": [
+    0.969,
+    2.166,
+    0.454
+   ],
+   "size": [
+    1.938,
+    2.166,
+    0.912
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/enemies/Skeleton_Rogue.glb",
+  "meshes": [
+   "Skeleton_Rogue_ArmLeft",
+   "Skeleton_Rogue_Hood",
+   "Skeleton_Rogue_Cape",
+   "Skeleton_Rogue_ArmRight",
+   "Skeleton_Rogue_Body",
+   "Skeleton_Rogue_Eyes",
+   "Skeleton_Rogue_Head",
+   "Skeleton_Rogue_Jaw",
+   "Skeleton_Rogue_LegLeft",
+   "Skeleton_Rogue_LegRight"
+  ],
+  "skins": [
+   {
+    "name": "Rig",
+    "joints": 41
+   }
+  ],
+  "animations": [
+   {
+    "name": "1H_Melee_Attack_Chop",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Jump_Chop",
+    "duration": 1.333
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Diagonal",
+    "duration": 1
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Horizontal",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "1H_Ranged_Aiming",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Reload",
+    "duration": 1.167
+   },
+   {
+    "name": "1H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Shooting",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Attack_Chop",
+    "duration": 1.633
+   },
+   {
+    "name": "2H_Melee_Attack_Slice",
+    "duration": 1.1
+   },
+   {
+    "name": "2H_Melee_Attack_Spin",
+    "duration": 2.4
+   },
+   {
+    "name": "2H_Melee_Attack_Spinning",
+    "duration": 0.667
+   },
+   {
+    "name": "2H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Aiming",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Reload",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Shooting",
+    "duration": 1.067
+   },
+   {
+    "name": "Block",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Attack",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Hit",
+    "duration": 1.067
+   },
+   {
+    "name": "Blocking",
+    "duration": 1.067
+   },
+   {
+    "name": "Cheer",
+    "duration": 1.667
+   },
+   {
+    "name": "Death_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Death_A_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_B",
+    "duration": 2.633
+   },
+   {
+    "name": "Death_B_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_C_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_C_Skeletons",
+    "duration": 2
+   },
+   {
+    "name": "Death_C_Skeletons_Resurrect",
+    "duration": 2.7
+   },
+   {
+    "name": "Dodge_Backward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Forward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Left",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Right",
+    "duration": 0.4
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Chop",
+    "duration": 1.267
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Slice",
+    "duration": 1.167
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "Hit_A",
+    "duration": 0.667
+   },
+   {
+    "name": "Hit_B",
+    "duration": 0.867
+   },
+   {
+    "name": "Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Idle_B",
+    "duration": 2.133
+   },
+   {
+    "name": "Idle_Combat",
+    "duration": 4.267
+   },
+   {
+    "name": "Interact",
+    "duration": 1.3
+   },
+   {
+    "name": "Jump_Full_Long",
+    "duration": 2.333
+   },
+   {
+    "name": "Jump_Full_Short",
+    "duration": 1.167
+   },
+   {
+    "name": "Jump_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Jump_Land",
+    "duration": 0.667
+   },
+   {
+    "name": "Jump_Start",
+    "duration": 0.6
+   },
+   {
+    "name": "Lie_Down",
+    "duration": 3
+   },
+   {
+    "name": "Lie_Idle",
+    "duration": 2.667
+   },
+   {
+    "name": "Lie_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Lie_StandUp",
+    "duration": 2.333
+   },
+   {
+    "name": "PickUp",
+    "duration": 1.3
+   },
+   {
+    "name": "Running_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Running_C",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_Strafe_Left",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_Strafe_Right",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Down",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Idle",
+    "duration": 3.6
+   },
+   {
+    "name": "Sit_Chair_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Chair_StandUp",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Floor_Down",
+    "duration": 1
+   },
+   {
+    "name": "Sit_Floor_Idle",
+    "duration": 4
+   },
+   {
+    "name": "Sit_Floor_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Floor_StandUp",
+    "duration": 1.133
+   },
+   {
+    "name": "Skeleton_Inactive_Standing_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Skeletons_Awaken_Floor",
+    "duration": 2.3
+   },
+   {
+    "name": "Skeletons_Awaken_Floor_Long",
+    "duration": 3.833
+   },
+   {
+    "name": "Skeletons_Awaken_Standing",
+    "duration": 1
+   },
+   {
+    "name": "Skeletons_Inactive_Floor_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Spawn_Air",
+    "duration": 1.3
+   },
+   {
+    "name": "Spawn_Ground",
+    "duration": 1.3
+   },
+   {
+    "name": "Spawn_Ground_Skeletons",
+    "duration": 3.567
+   },
+   {
+    "name": "Spellcast_Long",
+    "duration": 2.533
+   },
+   {
+    "name": "Spellcast_Raise",
+    "duration": 2.1
+   },
+   {
+    "name": "Spellcast_Shoot",
+    "duration": 0.933
+   },
+   {
+    "name": "Spellcast_Summon",
+    "duration": 4.3
+   },
+   {
+    "name": "Spellcasting",
+    "duration": 0.667
+   },
+   {
+    "name": "T-Pose",
+    "duration": 0
+   },
+   {
+    "name": "Taunt",
+    "duration": 1.033
+   },
+   {
+    "name": "Taunt_Longer",
+    "duration": 3
+   },
+   {
+    "name": "Throw",
+    "duration": 1.367
+   },
+   {
+    "name": "Unarmed_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Kick",
+    "duration": 0.933
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_A",
+    "duration": 1.467
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_B",
+    "duration": 1.667
+   },
+   {
+    "name": "Unarmed_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Use_Item",
+    "duration": 1.6
+   },
+   {
+    "name": "Walking_A",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_Backwards",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_C",
+    "duration": 1.6
+   },
+   {
+    "name": "Walking_D_Skeletons",
+    "duration": 1.6
+   }
+  ],
+  "materials": [
+   "skeleton",
+   "Glow"
+  ],
+  "images": [
+   "skeleton_texture"
+  ],
+  "nodes": 52,
+  "aabb": {
+   "min": [
+    -0.971,
+    0,
+    -0.582
+   ],
+   "max": [
+    0.971,
+    2.308,
+    0.571
+   ],
+   "size": [
+    1.943,
+    2.308,
+    1.153
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/enemies/Skeleton_Warrior.glb",
+  "meshes": [
+   "Skeleton_Warrior_ArmLeft",
+   "Skeleton_Warrior_Helmet",
+   "Skeleton_Warrior_ArmRight",
+   "Skeleton_Warrior_Body",
+   "Skeleton_Warrior_Cloak",
+   "Skeleton_Warrior_Eyes",
+   "Skeleton_Warrior_Head",
+   "Skeleton_Warrior_Jaw",
+   "Skeleton_Warrior_LegLeft",
+   "Skeleton_Warrior_LegRight"
+  ],
+  "skins": [
+   {
+    "name": "Rig",
+    "joints": 41
+   }
+  ],
+  "animations": [
+   {
+    "name": "1H_Melee_Attack_Chop",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Jump_Chop",
+    "duration": 1.333
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Diagonal",
+    "duration": 1
+   },
+   {
+    "name": "1H_Melee_Attack_Slice_Horizontal",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "1H_Ranged_Aiming",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Reload",
+    "duration": 1.167
+   },
+   {
+    "name": "1H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "1H_Ranged_Shooting",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Attack_Chop",
+    "duration": 1.633
+   },
+   {
+    "name": "2H_Melee_Attack_Slice",
+    "duration": 1.1
+   },
+   {
+    "name": "2H_Melee_Attack_Spin",
+    "duration": 2.4
+   },
+   {
+    "name": "2H_Melee_Attack_Spinning",
+    "duration": 0.667
+   },
+   {
+    "name": "2H_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Melee_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Aiming",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Reload",
+    "duration": 1.6
+   },
+   {
+    "name": "2H_Ranged_Shoot",
+    "duration": 1.067
+   },
+   {
+    "name": "2H_Ranged_Shooting",
+    "duration": 1.067
+   },
+   {
+    "name": "Block",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Attack",
+    "duration": 1.067
+   },
+   {
+    "name": "Block_Hit",
+    "duration": 1.067
+   },
+   {
+    "name": "Blocking",
+    "duration": 1.067
+   },
+   {
+    "name": "Cheer",
+    "duration": 1.667
+   },
+   {
+    "name": "Death_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Death_A_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_B",
+    "duration": 2.633
+   },
+   {
+    "name": "Death_B_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_C_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Death_C_Skeletons",
+    "duration": 2
+   },
+   {
+    "name": "Death_C_Skeletons_Resurrect",
+    "duration": 2.7
+   },
+   {
+    "name": "Dodge_Backward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Forward",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Left",
+    "duration": 0.4
+   },
+   {
+    "name": "Dodge_Right",
+    "duration": 0.4
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Chop",
+    "duration": 1.267
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Slice",
+    "duration": 1.167
+   },
+   {
+    "name": "Dualwield_Melee_Attack_Stab",
+    "duration": 1.6
+   },
+   {
+    "name": "Hit_A",
+    "duration": 0.667
+   },
+   {
+    "name": "Hit_B",
+    "duration": 0.867
+   },
+   {
+    "name": "Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Idle_B",
+    "duration": 2.133
+   },
+   {
+    "name": "Idle_Combat",
+    "duration": 4.267
+   },
+   {
+    "name": "Interact",
+    "duration": 1.3
+   },
+   {
+    "name": "Jump_Full_Long",
+    "duration": 2.333
+   },
+   {
+    "name": "Jump_Full_Short",
+    "duration": 1.167
+   },
+   {
+    "name": "Jump_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Jump_Land",
+    "duration": 0.667
+   },
+   {
+    "name": "Jump_Start",
+    "duration": 0.6
+   },
+   {
+    "name": "Lie_Down",
+    "duration": 3
+   },
+   {
+    "name": "Lie_Idle",
+    "duration": 2.667
+   },
+   {
+    "name": "Lie_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Lie_StandUp",
+    "duration": 2.333
+   },
+   {
+    "name": "PickUp",
+    "duration": 1.3
+   },
+   {
+    "name": "Running_A",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Running_C",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_Strafe_Left",
+    "duration": 0.8
+   },
+   {
+    "name": "Running_Strafe_Right",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Down",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Chair_Idle",
+    "duration": 3.6
+   },
+   {
+    "name": "Sit_Chair_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Chair_StandUp",
+    "duration": 0.8
+   },
+   {
+    "name": "Sit_Floor_Down",
+    "duration": 1
+   },
+   {
+    "name": "Sit_Floor_Idle",
+    "duration": 4
+   },
+   {
+    "name": "Sit_Floor_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Sit_Floor_StandUp",
+    "duration": 1.133
+   },
+   {
+    "name": "Skeleton_Inactive_Standing_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Skeletons_Awaken_Floor",
+    "duration": 2.3
+   },
+   {
+    "name": "Skeletons_Awaken_Floor_Long",
+    "duration": 3.833
+   },
+   {
+    "name": "Skeletons_Awaken_Standing",
+    "duration": 1
+   },
+   {
+    "name": "Skeletons_Inactive_Floor_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Spawn_Air",
+    "duration": 1.3
+   },
+   {
+    "name": "Spawn_Ground",
+    "duration": 1.3
+   },
+   {
+    "name": "Spawn_Ground_Skeletons",
+    "duration": 3.567
+   },
+   {
+    "name": "Spellcast_Long",
+    "duration": 2.533
+   },
+   {
+    "name": "Spellcast_Raise",
+    "duration": 2.1
+   },
+   {
+    "name": "Spellcast_Shoot",
+    "duration": 0.933
+   },
+   {
+    "name": "Spellcast_Summon",
+    "duration": 4.3
+   },
+   {
+    "name": "Spellcasting",
+    "duration": 0.667
+   },
+   {
+    "name": "T-Pose",
+    "duration": 0
+   },
+   {
+    "name": "Taunt",
+    "duration": 1.033
+   },
+   {
+    "name": "Taunt_Longer",
+    "duration": 3
+   },
+   {
+    "name": "Throw",
+    "duration": 1.367
+   },
+   {
+    "name": "Unarmed_Idle",
+    "duration": 1.067
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Kick",
+    "duration": 0.933
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_A",
+    "duration": 1.467
+   },
+   {
+    "name": "Unarmed_Melee_Attack_Punch_B",
+    "duration": 1.667
+   },
+   {
+    "name": "Unarmed_Pose",
+    "duration": 0
+   },
+   {
+    "name": "Use_Item",
+    "duration": 1.6
+   },
+   {
+    "name": "Walking_A",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_B",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_Backwards",
+    "duration": 1.067
+   },
+   {
+    "name": "Walking_C",
+    "duration": 1.6
+   },
+   {
+    "name": "Walking_D_Skeletons",
+    "duration": 1.6
+   }
+  ],
+  "materials": [
+   "skeleton",
+   "Glow"
+  ],
+  "images": [
+   "skeleton_texture"
+  ],
+  "nodes": 52,
+  "aabb": {
+   "min": [
+    -0.971,
+    0,
+    -0.758
+   ],
+   "max": [
+    0.971,
+    2.59,
+    0.701
+   ],
+   "size": [
+    1.943,
+    2.59,
+    1.459
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Bat.glb",
+  "meshes": [
+   "Eyes",
+   "Bat"
+  ],
+  "skins": [
+   {
+    "joints": 23
+   }
+  ],
+  "animations": [
+   {
+    "name": "BatArmature|Bat_Attack",
+    "duration": 0.875
+   },
+   {
+    "name": "BatArmature|Bat_Attack2",
+    "duration": 1.25
+   },
+   {
+    "name": "BatArmature|Bat_Death",
+    "duration": 1.208
+   },
+   {
+    "name": "BatArmature|Bat_Flying",
+    "duration": 1.25
+   },
+   {
+    "name": "BatArmature|Bat_Hit",
+    "duration": 1.25
+   }
+  ],
+  "materials": [
+   "Eyes",
+   "Main",
+   "Main",
+   "Belly",
+   "Black",
+   "Nose"
+  ],
+  "images": [],
+  "nodes": 32,
+  "aabb": {
+   "min": [
+    -0.652,
+    -0.013,
+    -0.02
+   ],
+   "max": [
+    0.654,
+    3.354,
+    1.139
+   ],
+   "size": [
+    1.306,
+    3.367,
+    1.159
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Blue_Demon.glb",
+  "meshes": [
+   "BlueDemon"
+  ],
+  "skins": [
+   {
+    "joints": 43
+   }
+  ],
+  "animations": [
+   {
+    "name": "CharacterArmature|Death",
+    "duration": 0.75
+   },
+   {
+    "name": "CharacterArmature|Duck",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|HitReact",
+    "duration": 0.583
+   },
+   {
+    "name": "CharacterArmature|Idle",
+    "duration": 1
+   },
+   {
+    "name": "CharacterArmature|Jump",
+    "duration": 0.333
+   },
+   {
+    "name": "CharacterArmature|Jump_Idle",
+    "duration": 0.5
+   },
+   {
+    "name": "CharacterArmature|Jump_Land",
+    "duration": 0.333
+   },
+   {
+    "name": "CharacterArmature|No",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Punch",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Run",
+    "duration": 0.542
+   },
+   {
+    "name": "CharacterArmature|Run2",
+    "duration": 0.542
+   },
+   {
+    "name": "CharacterArmature|Walk",
+    "duration": 1
+   },
+   {
+    "name": "CharacterArmature|Wave",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Weapon",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Yes",
+    "duration": 1.667
+   }
+  ],
+  "materials": [
+   "BlueDemon_Main",
+   "BlueDemon_Secondary",
+   "Wood",
+   "Straps",
+   "Eye_White",
+   "Eye_Black"
+  ],
+  "images": [],
+  "nodes": 61,
+  "aabb": {
+   "min": [
+    -0.043,
+    -0.028,
+    0
+   ],
+   "max": [
+    0.043,
+    0.011,
+    0.052
+   ],
+   "size": [
+    0.086,
+    0.04,
+    0.053
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Demon.glb",
+  "meshes": [
+   "Demon"
+  ],
+  "skins": [
+   {
+    "joints": 12
+   }
+  ],
+  "animations": [
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Attack",
+    "duration": 0.5
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Death",
+    "duration": 0.625
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|HitRecieve",
+    "duration": 0.208
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Idle",
+    "duration": 3.333
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Jump",
+    "duration": 0.25
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Run",
+    "duration": 0.667
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Walk",
+    "duration": 2
+   }
+  ],
+  "materials": [
+   "Atlas"
+  ],
+  "images": [
+   "Atlas.png"
+  ],
+  "nodes": 20,
+  "aabb": {
+   "min": [
+    -0.034,
+    -0.016,
+    0
+   ],
+   "max": [
+    0.034,
+    0.007,
+    0.057
+   ],
+   "size": [
+    0.068,
+    0.023,
+    0.057
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Demon_Lord.glb",
+  "meshes": [
+   "Demon",
+   "Trident"
+  ],
+  "skins": [
+   {
+    "joints": 43
+   },
+   {
+    "joints": 43
+   }
+  ],
+  "animations": [
+   {
+    "name": "CharacterArmature|Death",
+    "duration": 0.75
+   },
+   {
+    "name": "CharacterArmature|Duck",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|HitReact",
+    "duration": 0.583
+   },
+   {
+    "name": "CharacterArmature|Idle",
+    "duration": 1
+   },
+   {
+    "name": "CharacterArmature|Jump",
+    "duration": 0.333
+   },
+   {
+    "name": "CharacterArmature|Jump_Idle",
+    "duration": 0.5
+   },
+   {
+    "name": "CharacterArmature|Jump_Land",
+    "duration": 0.333
+   },
+   {
+    "name": "CharacterArmature|No",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Punch",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Run",
+    "duration": 0.542
+   },
+   {
+    "name": "CharacterArmature|Walk",
+    "duration": 1
+   },
+   {
+    "name": "CharacterArmature|Wave",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Weapon",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Yes",
+    "duration": 1.667
+   }
+  ],
+  "materials": [
+   "Demon_Main",
+   "Black",
+   "Eye_White",
+   "Eye_Black"
+  ],
+  "images": [],
+  "nodes": 62,
+  "aabb": {
+   "min": [
+    -0.023,
+    -0.008,
+    -0.015
+   ],
+   "max": [
+    0.023,
+    0.008,
+    0.031
+   ],
+   "size": [
+    0.047,
+    0.016,
+    0.046
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Dragon_Evolved.glb",
+  "meshes": [
+   "Dragon"
+  ],
+  "skins": [
+   {
+    "joints": 46
+   }
+  ],
+  "animations": [
+   {
+    "name": "CharacterArmature|Death",
+    "duration": 0.667
+   },
+   {
+    "name": "CharacterArmature|Fast_Flying",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Flying_Idle",
+    "duration": 1.5
+   },
+   {
+    "name": "CharacterArmature|Headbutt",
+    "duration": 1.5
+   },
+   {
+    "name": "CharacterArmature|HitReact",
+    "duration": 0.667
+   },
+   {
+    "name": "CharacterArmature|No",
+    "duration": 1.167
+   },
+   {
+    "name": "CharacterArmature|Punch",
+    "duration": 1.333
+   },
+   {
+    "name": "CharacterArmature|Yes",
+    "duration": 1.167
+   }
+  ],
+  "materials": [
+   "Dragon_Main",
+   "Dragon_Secondary",
+   "Dragon_Horn",
+   "Eye_White",
+   "Eye_Black"
+  ],
+  "images": [],
+  "nodes": 61,
+  "aabb": {
+   "min": [
+    -0.027,
+    -0.01,
+    0.003
+   ],
+   "max": [
+    0.027,
+    0.014,
+    0.032
+   ],
+   "size": [
+    0.055,
+    0.024,
+    0.029
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Ghost.glb",
+  "meshes": [
+   "Ghost"
+  ],
+  "skins": [
+   {
+    "joints": 38
+   }
+  ],
+  "animations": [
+   {
+    "name": "CharacterArmature|Death",
+    "duration": 0.667
+   },
+   {
+    "name": "CharacterArmature|Fast_Flying",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Flying_Idle",
+    "duration": 1.167
+   },
+   {
+    "name": "CharacterArmature|Headbutt",
+    "duration": 1.167
+   },
+   {
+    "name": "CharacterArmature|HitReact",
+    "duration": 0.458
+   },
+   {
+    "name": "CharacterArmature|No",
+    "duration": 1.167
+   },
+   {
+    "name": "CharacterArmature|Punch",
+    "duration": 1.167
+   },
+   {
+    "name": "CharacterArmature|Yes",
+    "duration": 1.167
+   }
+  ],
+  "materials": [
+   "Eye_White",
+   "Eye_Black",
+   "Ghost_Main"
+  ],
+  "images": [],
+  "nodes": 51,
+  "aabb": {
+   "min": [
+    -0.028,
+    -0.006,
+    0.003
+   ],
+   "max": [
+    0.027,
+    0.006,
+    0.034
+   ],
+   "size": [
+    0.055,
+    0.012,
+    0.031
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Giant.glb",
+  "meshes": [
+   "Giant"
+  ],
+  "skins": [
+   {
+    "joints": 12
+   }
+  ],
+  "animations": [
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Attack",
+    "duration": 0.667
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Death",
+    "duration": 0.833
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|HitRecieve",
+    "duration": 0.208
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Idle",
+    "duration": 3.333
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Jump",
+    "duration": 0.25
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Run",
+    "duration": 0.667
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Walk",
+    "duration": 2
+   }
+  ],
+  "materials": [
+   "Atlas.001"
+  ],
+  "images": [
+   "Atlas.png"
+  ],
+  "nodes": 20,
+  "aabb": {
+   "min": [
+    -0.032,
+    -0.016,
+    0
+   ],
+   "max": [
+    0.032,
+    0.007,
+    0.046
+   ],
+   "size": [
+    0.065,
+    0.023,
+    0.045
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Goblin.glb",
+  "meshes": [
+   "Goblin"
+  ],
+  "skins": [
+   {
+    "joints": 12
+   }
+  ],
+  "animations": [
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Attack",
+    "duration": 0.5
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Death",
+    "duration": 0.625
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|HitRecieve",
+    "duration": 0.208
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Idle",
+    "duration": 3.333
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Jump",
+    "duration": 0.25
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Run",
+    "duration": 0.667
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Walk",
+    "duration": 2
+   }
+  ],
+  "materials": [
+   "Atlas"
+  ],
+  "images": [
+   "Atlas.png"
+  ],
+  "nodes": 20,
+  "aabb": {
+   "min": [
+    -0.011,
+    -0.004,
+    0
+   ],
+   "max": [
+    0.011,
+    0.004,
+    0.02
+   ],
+   "size": [
+    0.022,
+    0.008,
+    0.02
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Imp.glb",
+  "meshes": [
+   "Demon_Flying.001",
+   "Demon_Flying.002",
+   "Demon_Flying"
+  ],
+  "skins": [
+   {
+    "joints": 43
+   },
+   {
+    "joints": 43
+   },
+   {
+    "joints": 43
+   }
+  ],
+  "animations": [
+   {
+    "name": "CharacterArmature|Death",
+    "duration": 0.667
+   },
+   {
+    "name": "CharacterArmature|Fast_Flying",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Flying_Idle",
+    "duration": 1.167
+   },
+   {
+    "name": "CharacterArmature|Headbutt",
+    "duration": 1.167
+   },
+   {
+    "name": "CharacterArmature|HitReact",
+    "duration": 0.458
+   },
+   {
+    "name": "CharacterArmature|No",
+    "duration": 1.167
+   },
+   {
+    "name": "CharacterArmature|Punch",
+    "duration": 1.167
+   },
+   {
+    "name": "CharacterArmature|Yes",
+    "duration": 1.167
+   }
+  ],
+  "materials": [
+   "Black",
+   "Eye_White",
+   "Eye_Black",
+   "Demon_Main"
+  ],
+  "images": [],
+  "nodes": 60,
+  "aabb": {
+   "min": [
+    -0.027,
+    -0.006,
+    0.011
+   ],
+   "max": [
+    0.027,
+    0.014,
+    0.028
+   ],
+   "size": [
+    0.055,
+    0.021,
+    0.017
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Mushnub.glb",
+  "meshes": [
+   "Mushnub_Blob"
+  ],
+  "skins": [
+   {
+    "joints": 4
+   }
+  ],
+  "animations": [
+   {
+    "name": "CharacterArmature|Bite_Front",
+    "duration": 0.375
+   },
+   {
+    "name": "CharacterArmature|Dance",
+    "duration": 0.667
+   },
+   {
+    "name": "CharacterArmature|Death",
+    "duration": 0.333
+   },
+   {
+    "name": "CharacterArmature|HitRecieve",
+    "duration": 0.292
+   },
+   {
+    "name": "CharacterArmature|Idle",
+    "duration": 2
+   },
+   {
+    "name": "CharacterArmature|Jump",
+    "duration": 0.417
+   },
+   {
+    "name": "CharacterArmature|No",
+    "duration": 1
+   },
+   {
+    "name": "CharacterArmature|Walk",
+    "duration": 0.417
+   },
+   {
+    "name": "CharacterArmature|Yes",
+    "duration": 0.958
+   }
+  ],
+  "materials": [
+   "MushroomKing_Secondary",
+   "MushroomKing_Main",
+   "Eye_White",
+   "Eye_Black"
+  ],
+  "images": [],
+  "nodes": 9,
+  "aabb": {
+   "min": [
+    -0.014,
+    -0.014,
+    -0.001
+   ],
+   "max": [
+    0.014,
+    0.014,
+    0.032
+   ],
+   "size": [
+    0.028,
+    0.028,
+    0.033
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Mushroom_King.glb",
+  "meshes": [
+   "MushroomKing",
+   "Mushroom"
+  ],
+  "skins": [
+   {
+    "joints": 43
+   },
+   {
+    "joints": 43
+   }
+  ],
+  "animations": [
+   {
+    "name": "CharacterArmature|Death",
+    "duration": 0.75
+   },
+   {
+    "name": "CharacterArmature|Duck",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|HitReact",
+    "duration": 0.583
+   },
+   {
+    "name": "CharacterArmature|Idle",
+    "duration": 1
+   },
+   {
+    "name": "CharacterArmature|Jump",
+    "duration": 0.333
+   },
+   {
+    "name": "CharacterArmature|Jump_Idle",
+    "duration": 0.5
+   },
+   {
+    "name": "CharacterArmature|Jump_Land",
+    "duration": 0.333
+   },
+   {
+    "name": "CharacterArmature|No",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Punch",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Run",
+    "duration": 0.542
+   },
+   {
+    "name": "CharacterArmature|Walk",
+    "duration": 1
+   },
+   {
+    "name": "CharacterArmature|Wave",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Weapon",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Yes",
+    "duration": 1.667
+   }
+  ],
+  "materials": [
+   "MushroomKing_Main",
+   "Orc_Main",
+   "MushroomKing_Secondary",
+   "Eye_White",
+   "Eye_Black"
+  ],
+  "images": [],
+  "nodes": 62,
+  "aabb": {
+   "min": [
+    -0.023,
+    -0.013,
+    -0.004
+   ],
+   "max": [
+    0.023,
+    0.009,
+    0.036
+   ],
+   "size": [
+    0.046,
+    0.021,
+    0.04
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Orc.glb",
+  "meshes": [
+   "Orc",
+   "Orc_Weapon"
+  ],
+  "skins": [
+   {
+    "joints": 43
+   },
+   {
+    "joints": 43
+   }
+  ],
+  "animations": [
+   {
+    "name": "CharacterArmature|Death",
+    "duration": 0.75
+   },
+   {
+    "name": "CharacterArmature|Duck",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|HitReact",
+    "duration": 0.583
+   },
+   {
+    "name": "CharacterArmature|Idle",
+    "duration": 1
+   },
+   {
+    "name": "CharacterArmature|Jump",
+    "duration": 0.333
+   },
+   {
+    "name": "CharacterArmature|Jump_Idle",
+    "duration": 0.5
+   },
+   {
+    "name": "CharacterArmature|Jump_Land",
+    "duration": 0.333
+   },
+   {
+    "name": "CharacterArmature|No",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Punch",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Run",
+    "duration": 0.542
+   },
+   {
+    "name": "CharacterArmature|Walk",
+    "duration": 1
+   },
+   {
+    "name": "CharacterArmature|Wave",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Weapon",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Yes",
+    "duration": 1.667
+   }
+  ],
+  "materials": [
+   "Orc_Main",
+   "Orc_Mouth",
+   "Orc_Secondary",
+   "Belt",
+   "Tongue",
+   "Eye_White",
+   "Gold",
+   "Orc_Hair",
+   "Eye_Black",
+   "Wood",
+   "Metal"
+  ],
+  "images": [],
+  "nodes": 62,
+  "aabb": {
+   "min": [
+    -0.024,
+    -0.012,
+    -0.003
+   ],
+   "max": [
+    0.023,
+    0.007,
+    0.032
+   ],
+   "size": [
+    0.047,
+    0.019,
+    0.035
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Rat.glb",
+  "meshes": [
+   "Rat"
+  ],
+  "skins": [
+   {
+    "joints": 31
+   }
+  ],
+  "animations": [
+   {
+    "name": "RatArmature|Rat_Attack",
+    "duration": 0.667
+   },
+   {
+    "name": "RatArmature|Rat_Death",
+    "duration": 1.083
+   },
+   {
+    "name": "RatArmature|Rat_Idle",
+    "duration": 2.375
+   },
+   {
+    "name": "RatArmature|Rat_Jump",
+    "duration": 0.833
+   },
+   {
+    "name": "RatArmature|Rat_Run",
+    "duration": 0.5
+   },
+   {
+    "name": "RatArmature|Rat_Walk",
+    "duration": 1.333
+   }
+  ],
+  "materials": [
+   "Grey",
+   "Pink"
+  ],
+  "images": [],
+  "nodes": 45,
+  "aabb": {
+   "min": [
+    -0.007,
+    -0.021,
+    0
+   ],
+   "max": [
+    0.007,
+    0.049,
+    0.022
+   ],
+   "size": [
+    0.015,
+    0.07,
+    0.023
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Skull.glb",
+  "meshes": [
+   "Skull"
+  ],
+  "skins": [
+   {
+    "joints": 5
+   }
+  ],
+  "animations": [
+   {
+    "name": "MonsterArmature|Bite_Front",
+    "duration": 0.5
+   },
+   {
+    "name": "MonsterArmature|Bite_InPlace",
+    "duration": 0.667
+   },
+   {
+    "name": "MonsterArmature|Dance",
+    "duration": 0.833
+   },
+   {
+    "name": "MonsterArmature|Death",
+    "duration": 0.458
+   },
+   {
+    "name": "MonsterArmature|HitRecieve",
+    "duration": 0.375
+   },
+   {
+    "name": "MonsterArmature|Idle",
+    "duration": 2.5
+   },
+   {
+    "name": "MonsterArmature|Jump",
+    "duration": 0.542
+   },
+   {
+    "name": "MonsterArmature|No",
+    "duration": 0.5
+   },
+   {
+    "name": "MonsterArmature|Walk",
+    "duration": 0.542
+   },
+   {
+    "name": "MonsterArmature|Yes",
+    "duration": 0.5
+   }
+  ],
+  "materials": [
+   "Main",
+   "Main_Light"
+  ],
+  "images": [],
+  "nodes": 10,
+  "aabb": {
+   "min": [
+    -0.007,
+    -0.007,
+    -0.001
+   ],
+   "max": [
+    0.007,
+    0.007,
+    0.014
+   ],
+   "size": [
+    0.014,
+    0.014,
+    0.015
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Slime.glb",
+  "meshes": [
+   "Enemy_Eyes",
+   "Enemy_Body",
+   "Enemy_Face"
+  ],
+  "skins": [
+   {
+    "joints": 7
+   },
+   {
+    "joints": 7
+   },
+   {
+    "joints": 7
+   }
+  ],
+  "animations": [
+   {
+    "name": "MonsterArmature|Bite_Front",
+    "duration": 0.5
+   },
+   {
+    "name": "MonsterArmature|Bite_InPlace",
+    "duration": 0.667
+   },
+   {
+    "name": "MonsterArmature|Dance",
+    "duration": 0.833
+   },
+   {
+    "name": "MonsterArmature|Death",
+    "duration": 0.458
+   },
+   {
+    "name": "MonsterArmature|HitRecieve",
+    "duration": 0.375
+   },
+   {
+    "name": "MonsterArmature|Idle",
+    "duration": 2.5
+   },
+   {
+    "name": "MonsterArmature|Jump",
+    "duration": 0.542
+   },
+   {
+    "name": "MonsterArmature|No",
+    "duration": 0.5
+   },
+   {
+    "name": "MonsterArmature|Walk",
+    "duration": 0.542
+   },
+   {
+    "name": "MonsterArmature|Yes",
+    "duration": 0.5
+   }
+  ],
+  "materials": [
+   "Eyes",
+   "Main",
+   "Main_Dark",
+   "Horns",
+   "Teeth",
+   "Tongue"
+  ],
+  "images": [],
+  "nodes": 16,
+  "aabb": {
+   "min": [
+    -0.01,
+    -0.007,
+    0
+   ],
+   "max": [
+    0.01,
+    0.007,
+    0.016
+   ],
+   "size": [
+    0.02,
+    0.014,
+    0.016
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Spider.glb",
+  "meshes": [
+   "Cube"
+  ],
+  "skins": [
+   {
+    "joints": 39
+   }
+  ],
+  "animations": [
+   {
+    "name": "SpiderArmature|Spider_Attack",
+    "duration": 0.75
+   },
+   {
+    "name": "SpiderArmature|Spider_Death",
+    "duration": 1.042
+   },
+   {
+    "name": "SpiderArmature|Spider_Idle",
+    "duration": 4.167
+   },
+   {
+    "name": "SpiderArmature|Spider_Jump",
+    "duration": 0.708
+   },
+   {
+    "name": "SpiderArmature|Spider_Walk",
+    "duration": 0.833
+   }
+  ],
+  "materials": [
+   "Material",
+   "Material.001"
+  ],
+  "images": [],
+  "nodes": 62,
+  "aabb": {
+   "min": [
+    -0.03,
+    -0.027,
+    0
+   ],
+   "max": [
+    0.03,
+    0.026,
+    0.019
+   ],
+   "size": [
+    0.059,
+    0.053,
+    0.019
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Yeti.glb",
+  "meshes": [
+   "Yeti"
+  ],
+  "skins": [
+   {
+    "joints": 12
+   }
+  ],
+  "animations": [
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Attack",
+    "duration": 0.667
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Death",
+    "duration": 0.833
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|HitRecieve",
+    "duration": 0.208
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Idle",
+    "duration": 3.333
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Jump",
+    "duration": 0.25
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Run",
+    "duration": 0.667
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Walk",
+    "duration": 2
+   }
+  ],
+  "materials": [
+   "Atlas"
+  ],
+  "images": [
+   "Atlas.png"
+  ],
+  "nodes": 20,
+  "aabb": {
+   "min": [
+    -0.026,
+    -0.016,
+    0
+   ],
+   "max": [
+    0.026,
+    0.005,
+    0.032
+   ],
+   "size": [
+    0.051,
+    0.021,
+    0.031
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/monsters/Zombie.glb",
+  "meshes": [
+   "Cube.000"
+  ],
+  "skins": [
+   {
+    "joints": 12
+   }
+  ],
+  "animations": [
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Attack",
+    "duration": 0.5
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Death",
+    "duration": 0.625
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|HitRecieve",
+    "duration": 0.208
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Idle",
+    "duration": 3.333
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Jump",
+    "duration": 0.25
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Run",
+    "duration": 0.667
+   },
+   {
+    "name": "EnemyArmature|EnemyArmature|EnemyArmature|Walk",
+    "duration": 2
+   }
+  ],
+  "materials": [
+   "Atlas"
+  ],
+  "images": [
+   "Atlas.png"
+  ],
+  "nodes": 20,
+  "aabb": {
+   "min": [
+    -0.015,
+    -0.007,
+    0
+   ],
+   "max": [
+    0.015,
+    0.003,
+    0.028
+   ],
+   "size": [
+    0.03,
+    0.01,
+    0.028
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/npcs/King.glb",
+  "meshes": [
+   "King_Feet",
+   "King_Legs",
+   "King_Body",
+   "King_Head"
+  ],
+  "skins": [
+   {
+    "joints": 62
+   },
+   {
+    "joints": 62
+   },
+   {
+    "joints": 62
+   },
+   {
+    "joints": 62
+   }
+  ],
+  "animations": [
+   {
+    "name": "CharacterArmature|Death",
+    "duration": 1.042
+   },
+   {
+    "name": "CharacterArmature|Gun_Shoot",
+    "duration": 0.583
+   },
+   {
+    "name": "CharacterArmature|HitRecieve",
+    "duration": 0.542
+   },
+   {
+    "name": "CharacterArmature|HitRecieve_2",
+    "duration": 0.542
+   },
+   {
+    "name": "CharacterArmature|Idle",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Idle_Gun",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Idle_Gun_Pointing",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Idle_Gun_Shoot",
+    "duration": 0.667
+   },
+   {
+    "name": "CharacterArmature|Idle_Neutral",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Idle_Sword",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Interact",
+    "duration": 1.25
+   },
+   {
+    "name": "CharacterArmature|Kick_Left",
+    "duration": 0.917
+   },
+   {
+    "name": "CharacterArmature|Kick_Right",
+    "duration": 0.917
+   },
+   {
+    "name": "CharacterArmature|Punch_Left",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Punch_Right",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Roll",
+    "duration": 1.333
+   },
+   {
+    "name": "CharacterArmature|Run",
+    "duration": 0.792
+   },
+   {
+    "name": "CharacterArmature|Run_Back",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Run_Left",
+    "duration": 0.792
+   },
+   {
+    "name": "CharacterArmature|Run_Right",
+    "duration": 0.792
+   },
+   {
+    "name": "CharacterArmature|Run_Shoot",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Sword_Slash",
+    "duration": 1
+   },
+   {
+    "name": "CharacterArmature|Walk",
+    "duration": 1.333
+   },
+   {
+    "name": "CharacterArmature|Wave",
+    "duration": 1.667
+   }
+  ],
+  "materials": [
+   "Metal",
+   "DarkBrown",
+   "Metal_Dark",
+   "Blue",
+   "Beige",
+   "Skin",
+   "Hair_White",
+   "Eye",
+   "Gold"
+  ],
+  "images": [],
+  "nodes": 85,
+  "aabb": {
+   "min": [
+    -0.008,
+    -0.003,
+    0
+   ],
+   "max": [
+    0.008,
+    0.001,
+    0.019
+   ],
+   "size": [
+    0.017,
+    0.004,
+    0.019
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/npcs/Worker.glb",
+  "meshes": [
+   "Worker_Feet",
+   "Worker_Legs",
+   "Worker_Body",
+   "Worker_Head"
+  ],
+  "skins": [
+   {
+    "joints": 62
+   },
+   {
+    "joints": 62
+   },
+   {
+    "joints": 62
+   },
+   {
+    "joints": 62
+   }
+  ],
+  "animations": [
+   {
+    "name": "CharacterArmature|Death",
+    "duration": 1.042
+   },
+   {
+    "name": "CharacterArmature|Gun_Shoot",
+    "duration": 0.583
+   },
+   {
+    "name": "CharacterArmature|HitRecieve",
+    "duration": 0.542
+   },
+   {
+    "name": "CharacterArmature|HitRecieve_2",
+    "duration": 0.542
+   },
+   {
+    "name": "CharacterArmature|Idle",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Idle_Gun",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Idle_Gun_Pointing",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Idle_Gun_Shoot",
+    "duration": 0.667
+   },
+   {
+    "name": "CharacterArmature|Idle_Neutral",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Idle_Sword",
+    "duration": 1.667
+   },
+   {
+    "name": "CharacterArmature|Interact",
+    "duration": 1.25
+   },
+   {
+    "name": "CharacterArmature|Kick_Left",
+    "duration": 0.917
+   },
+   {
+    "name": "CharacterArmature|Kick_Right",
+    "duration": 0.917
+   },
+   {
+    "name": "CharacterArmature|Punch_Left",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Punch_Right",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Roll",
+    "duration": 1.333
+   },
+   {
+    "name": "CharacterArmature|Run",
+    "duration": 0.792
+   },
+   {
+    "name": "CharacterArmature|Run_Back",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Run_Left",
+    "duration": 0.792
+   },
+   {
+    "name": "CharacterArmature|Run_Right",
+    "duration": 0.792
+   },
+   {
+    "name": "CharacterArmature|Run_Shoot",
+    "duration": 0.833
+   },
+   {
+    "name": "CharacterArmature|Sword_Slash",
+    "duration": 1
+   },
+   {
+    "name": "CharacterArmature|Walk",
+    "duration": 1.333
+   },
+   {
+    "name": "CharacterArmature|Wave",
+    "duration": 1.667
+   }
+  ],
+  "materials": [
+   "Black",
+   "Grey",
+   "Brown2",
+   "Brown",
+   "Worker_Yellow",
+   "Worker_Vest",
+   "LightBrown",
+   "Skin",
+   "Eyebrows",
+   "Eye",
+   "Moustache"
+  ],
+  "images": [],
+  "nodes": 85,
+  "aabb": {
+   "min": [
+    -0.008,
+    -0.003,
+    0
+   ],
+   "max": [
+    0.008,
+    0.001,
+    0.019
+   ],
+   "size": [
+    0.017,
+    0.004,
+    0.019
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/arrow.gltf",
+  "meshes": [
+   "Cylinder.007"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "rogue_texture"
+  ],
+  "images": [
+   "rogue_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.059,
+    -0.383,
+    -0.034
+   ],
+   "max": [
+    0.059,
+    0.366,
+    0.068
+   ],
+   "size": [
+    0.117,
+    0.749,
+    0.102
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/arrow_bundle.gltf",
+  "meshes": [
+   "Cylinder.451"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "rogue_texture"
+  ],
+  "images": [
+   "rogue_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.151,
+    -0.327,
+    -0.133
+   ],
+   "max": [
+    0.141,
+    0.404,
+    0.154
+   ],
+   "size": [
+    0.292,
+    0.732,
+    0.287
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/axe_1handed.gltf",
+  "meshes": [
+   "Cube.12900"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "barbarian_texture"
+  ],
+  "images": [
+   "barbarian_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.589,
+    -0.273,
+    -0.092
+   ],
+   "max": [
+    0.125,
+    0.971,
+    0.092
+   ],
+   "size": [
+    0.714,
+    1.244,
+    0.185
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/axe_2handed.gltf",
+  "meshes": [
+   "Cube.222"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "barbarian_texture"
+  ],
+  "images": [
+   "barbarian_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.62,
+    -0.433,
+    -0.131
+   ],
+   "max": [
+    0.62,
+    1.292,
+    0.131
+   ],
+   "size": [
+    1.24,
+    1.725,
+    0.262
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/crossbow_1handed.gltf",
+  "meshes": [
+   "Cube.054"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "rogue_texture"
+  ],
+  "images": [
+   "rogue_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.454,
+    -0.171,
+    -0.278
+   ],
+   "max": [
+    0.457,
+    0.235,
+    0.944
+   ],
+   "size": [
+    0.911,
+    0.406,
+    1.222
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/crossbow_2handed.gltf",
+  "meshes": [
+   "Cube.002"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "rogue_texture"
+  ],
+  "images": [
+   "rogue_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.612,
+    -0.171,
+    -0.278
+   ],
+   "max": [
+    0.612,
+    0.308,
+    1.163
+   ],
+   "size": [
+    1.223,
+    0.479,
+    1.441
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/dagger.gltf",
+  "meshes": [
+   "Cylinder.031"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "rogue_texture"
+  ],
+  "images": [
+   "rogue_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.12,
+    -0.225,
+    -0.076
+   ],
+   "max": [
+    0.139,
+    0.981,
+    0.076
+   ],
+   "size": [
+    0.259,
+    1.206,
+    0.152
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/mug_empty.gltf",
+  "meshes": [
+   "Cylinder.062"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "barbarian_texture"
+  ],
+  "images": [
+   "barbarian_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.198,
+    -0.239,
+    -0.198
+   ],
+   "max": [
+    0.336,
+    0.248,
+    0.198
+   ],
+   "size": [
+    0.534,
+    0.487,
+    0.396
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/mug_full.gltf",
+  "meshes": [
+   "Cylinder.061"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "barbarian_texture"
+  ],
+  "images": [
+   "barbarian_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.198,
+    -0.239,
+    -0.198
+   ],
+   "max": [
+    0.336,
+    0.31,
+    0.198
+   ],
+   "size": [
+    0.534,
+    0.548,
+    0.396
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/quiver.gltf",
+  "meshes": [
+   "Cube.12903"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "rogue_texture"
+  ],
+  "images": [
+   "rogue_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.153,
+    -0.509,
+    -0.073
+   ],
+   "max": [
+    0.153,
+    0.421,
+    0.121
+   ],
+   "size": [
+    0.305,
+    0.929,
+    0.194
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/shield_badge.gltf",
+  "meshes": [
+   "Cylinder.280"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "knight_texture"
+  ],
+  "images": [
+   "knight_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.441,
+    -0.54,
+    -0.145
+   ],
+   "max": [
+    0.441,
+    0.481,
+    0.101
+   ],
+   "size": [
+    0.883,
+    1.022,
+    0.246
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/shield_badge_color.gltf",
+  "meshes": [
+   "Cylinder.220"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "knight_texture"
+  ],
+  "images": [
+   "knight_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.441,
+    -0.54,
+    -0.145
+   ],
+   "max": [
+    0.441,
+    0.481,
+    0.101
+   ],
+   "size": [
+    0.883,
+    1.022,
+    0.246
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/shield_round.gltf",
+  "meshes": [
+   "Cylinder.010"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "knight_texture"
+  ],
+  "images": [
+   "knight_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.441,
+    -0.441,
+    -0.145
+   ],
+   "max": [
+    0.441,
+    0.441,
+    0.187
+   ],
+   "size": [
+    0.883,
+    0.883,
+    0.332
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/shield_round_barbarian.gltf",
+  "meshes": [
+   "Cylinder.404"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "barbarian_texture"
+  ],
+  "images": [
+   "barbarian_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.441,
+    -0.441,
+    -0.145
+   ],
+   "max": [
+    0.441,
+    0.441,
+    0.187
+   ],
+   "size": [
+    0.883,
+    0.883,
+    0.332
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/shield_round_color.gltf",
+  "meshes": [
+   "Cylinder.013"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "knight_texture"
+  ],
+  "images": [
+   "knight_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.441,
+    -0.441,
+    -0.145
+   ],
+   "max": [
+    0.441,
+    0.441,
+    0.187
+   ],
+   "size": [
+    0.883,
+    0.883,
+    0.332
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/shield_spikes.gltf",
+  "meshes": [
+   "Cylinder.022"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "knight_texture"
+  ],
+  "images": [
+   "knight_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.504,
+    -0.556,
+    -0.145
+   ],
+   "max": [
+    0.504,
+    0.481,
+    0.315
+   ],
+   "size": [
+    1.007,
+    1.037,
+    0.46
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/shield_spikes_color.gltf",
+  "meshes": [
+   "Cylinder.019"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "knight_texture"
+  ],
+  "images": [
+   "knight_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.504,
+    -0.556,
+    -0.145
+   ],
+   "max": [
+    0.504,
+    0.481,
+    0.315
+   ],
+   "size": [
+    1.007,
+    1.037,
+    0.46
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/shield_square.gltf",
+  "meshes": [
+   "Cylinder.005"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "knight_texture"
+  ],
+  "images": [
+   "knight_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.441,
+    -0.596,
+    -0.145
+   ],
+   "max": [
+    0.441,
+    0.596,
+    0.156
+   ],
+   "size": [
+    0.883,
+    1.193,
+    0.301
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/shield_square_color.gltf",
+  "meshes": [
+   "Cylinder.021"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "knight_texture"
+  ],
+  "images": [
+   "knight_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.441,
+    -0.596,
+    -0.145
+   ],
+   "max": [
+    0.441,
+    0.596,
+    0.156
+   ],
+   "size": [
+    0.883,
+    1.193,
+    0.301
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/skeleton/Skeleton_Arrow.gltf",
+  "meshes": [
+   "Cylinder.006"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "skeleton"
+  ],
+  "images": [
+   "skeleton_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.059,
+    -0.383,
+    -0.034
+   ],
+   "max": [
+    0.059,
+    0.366,
+    0.068
+   ],
+   "size": [
+    0.117,
+    0.749,
+    0.102
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/skeleton/Skeleton_Arrow_Broken.gltf",
+  "meshes": [
+   "Cylinder.007"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "skeleton"
+  ],
+  "images": [
+   "skeleton_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.034,
+    -0.383,
+    -0.059
+   ],
+   "max": [
+    0.284,
+    0.302,
+    0.059
+   ],
+   "size": [
+    0.318,
+    0.685,
+    0.117
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/skeleton/Skeleton_Arrow_Broken_Half.gltf",
+  "meshes": [
+   "Cylinder.008"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "skeleton"
+  ],
+  "images": [
+   "skeleton_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.016,
+    0,
+    -0.059
+   ],
+   "max": [
+    0.284,
+    0.585,
+    0.059
+   ],
+   "size": [
+    0.3,
+    0.585,
+    0.117
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/skeleton/Skeleton_Arrow_Half.gltf",
+  "meshes": [
+   "Cylinder.005"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "skeleton"
+  ],
+  "images": [
+   "skeleton_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.059,
+    0,
+    -0.034
+   ],
+   "max": [
+    0.059,
+    0.365,
+    0.068
+   ],
+   "size": [
+    0.117,
+    0.365,
+    0.102
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/skeleton/Skeleton_Axe.gltf",
+  "meshes": [
+   "Cylinder.002"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "skeleton"
+  ],
+  "images": [
+   "skeleton_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.494,
+    -0.251,
+    -0.141
+   ],
+   "max": [
+    0.494,
+    1.001,
+    0.141
+   ],
+   "size": [
+    0.989,
+    1.252,
+    0.282
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/skeleton/Skeleton_Blade.gltf",
+  "meshes": [
+   "Cube.007"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "skeleton"
+  ],
+  "images": [
+   "skeleton_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.286,
+    -0.329,
+    -0.111
+   ],
+   "max": [
+    0.286,
+    1.168,
+    0.111
+   ],
+   "size": [
+    0.573,
+    1.497,
+    0.222
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/skeleton/Skeleton_Crossbow.gltf",
+  "meshes": [
+   "Cube.001"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "skeleton"
+  ],
+  "images": [
+   "skeleton_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.556,
+    -0.171,
+    -0.278
+   ],
+   "max": [
+    0.556,
+    0.337,
+    1.141
+   ],
+   "size": [
+    1.111,
+    0.508,
+    1.419
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/skeleton/Skeleton_Quiver.gltf",
+  "meshes": [
+   "Cube.009"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "skeleton"
+  ],
+  "images": [
+   "skeleton_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.153,
+    -0.406,
+    -0.089
+   ],
+   "max": [
+    0.153,
+    0.523,
+    0.131
+   ],
+   "size": [
+    0.305,
+    0.929,
+    0.22
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/skeleton/Skeleton_Shield_Large_A.gltf",
+  "meshes": [
+   "Cylinder.001"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "skeleton"
+  ],
+  "images": [
+   "skeleton_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.436,
+    -0.568,
+    -0.169
+   ],
+   "max": [
+    0.441,
+    0.567,
+    0.193
+   ],
+   "size": [
+    0.877,
+    1.135,
+    0.362
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/skeleton/Skeleton_Shield_Large_B.gltf",
+  "meshes": [
+   "Cylinder.003"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "skeleton"
+  ],
+  "images": [
+   "skeleton_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.436,
+    -0.568,
+    -0.169
+   ],
+   "max": [
+    0.441,
+    0.567,
+    0.218
+   ],
+   "size": [
+    0.877,
+    1.135,
+    0.387
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/skeleton/Skeleton_Shield_Small_A.gltf",
+  "meshes": [
+   "Cylinder.010"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "skeleton"
+  ],
+  "images": [
+   "skeleton_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.416,
+    -0.416,
+    -0.045
+   ],
+   "max": [
+    0.416,
+    0.416,
+    0.112
+   ],
+   "size": [
+    0.832,
+    0.832,
+    0.156
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/skeleton/Skeleton_Shield_Small_B.gltf",
+  "meshes": [
+   "Cylinder.009"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "skeleton"
+  ],
+  "images": [
+   "skeleton_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.416,
+    -0.416,
+    -0.045
+   ],
+   "max": [
+    0.416,
+    0.416,
+    0.461
+   ],
+   "size": [
+    0.832,
+    0.832,
+    0.506
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/skeleton/Skeleton_Staff.gltf",
+  "meshes": [
+   "Cylinder.004"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "skeleton"
+  ],
+  "images": [
+   "skeleton_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.458,
+    -0.846,
+    -0.368
+   ],
+   "max": [
+    0.14,
+    1.255,
+    0.385
+   ],
+   "size": [
+    0.598,
+    2.102,
+    0.753
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/smokebomb.gltf",
+  "meshes": [
+   "Cylinder.459"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "rogue_texture"
+  ],
+  "images": [
+   "rogue_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.191,
+    -0.171,
+    -0.182
+   ],
+   "max": [
+    0.191,
+    0.252,
+    0.182
+   ],
+   "size": [
+    0.383,
+    0.423,
+    0.364
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/spellbook_closed.gltf",
+  "meshes": [
+   "Cube.12901"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "mage_texture"
+  ],
+  "images": [
+   "mage_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.147,
+    -0.287,
+    -0.211
+   ],
+   "max": [
+    0.147,
+    0.288,
+    0.216
+   ],
+   "size": [
+    0.293,
+    0.575,
+    0.427
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/spellbook_open.gltf",
+  "meshes": [
+   "Cube.12902"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "mage_texture"
+  ],
+  "images": [
+   "mage_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.414,
+    -0.284,
+    -0.088
+   ],
+   "max": [
+    0.414,
+    0.284,
+    0.134
+   ],
+   "size": [
+    0.828,
+    0.569,
+    0.222
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/staff.gltf",
+  "meshes": [
+   "Cylinder.039"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "mage_texture"
+  ],
+  "images": [
+   "mage_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.245,
+    -0.9,
+    -0.146
+   ],
+   "max": [
+    0.331,
+    1.254,
+    0.146
+   ],
+   "size": [
+    0.576,
+    2.155,
+    0.292
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/sword_1handed.gltf",
+  "meshes": [
+   "Cube.11839"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "knight_texture"
+  ],
+  "images": [
+   "knight_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.252,
+    -0.366,
+    -0.065
+   ],
+   "max": [
+    0.252,
+    1.409,
+    0.065
+   ],
+   "size": [
+    0.503,
+    1.775,
+    0.131
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/sword_2handed.gltf",
+  "meshes": [
+   "Cube.12993"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "knight_texture"
+  ],
+  "images": [
+   "knight_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.42,
+    -0.401,
+    -0.124
+   ],
+   "max": [
+    0.42,
+    1.964,
+    0.124
+   ],
+   "size": [
+    0.839,
+    2.366,
+    0.248
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/sword_2handed_color.gltf",
+  "meshes": [
+   "Cube.12996"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "knight_texture"
+  ],
+  "images": [
+   "knight_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.42,
+    -0.401,
+    -0.124
+   ],
+   "max": [
+    0.42,
+    1.964,
+    0.124
+   ],
+   "size": [
+    0.839,
+    2.366,
+    0.248
+   ]
+  }
+ },
+ {
+  "file": "public/assets/models/weapons/wand.gltf",
+  "meshes": [
+   "Cylinder.018"
+  ],
+  "skins": [],
+  "animations": [],
+  "materials": [
+   "mage_texture"
+  ],
+  "images": [
+   "mage_texture.png"
+  ],
+  "nodes": 1,
+  "aabb": {
+   "min": [
+    -0.08,
+    -0.266,
+    -0.08
+   ],
+   "max": [
+    0.08,
+    0.7,
+    0.08
+   ],
+   "size": [
+    0.161,
+    0.966,
+    0.161
+   ]
+  }
+ }
+]

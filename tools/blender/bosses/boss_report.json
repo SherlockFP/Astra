@@ -1,0 +1,89 @@
+{
+ "kemik_lordu": {
+  "id": "kemik_lordu",
+  "tris": 920,
+  "verts": 610,
+  "bones": 19,
+  "bytes": 186388,
+  "emissive": [
+   "eye",
+   "gem",
+   "runes"
+  ],
+  "name": "Kemik Lordu",
+  "invalid": false
+ },
+ "lav_golemi": {
+  "id": "lav_golemi",
+  "tris": 592,
+  "verts": 396,
+  "bones": 19,
+  "bytes": 170152,
+  "emissive": [
+   "core",
+   "eye",
+   "magma",
+   "rock",
+   "rock2",
+   "rockbig"
+  ],
+  "name": "Lav Golemi",
+  "invalid": false
+ },
+ "buzul_devi": {
+  "id": "buzul_devi",
+  "tris": 980,
+  "verts": 633,
+  "bones": 20,
+  "bytes": 204328,
+  "emissive": [
+   "eye",
+   "ice"
+  ],
+  "name": "Buzul Devi",
+  "invalid": false
+ },
+ "golge_rahibesi": {
+  "id": "golge_rahibesi",
+  "tris": 964,
+  "verts": 593,
+  "bones": 33,
+  "bytes": 266212,
+  "emissive": [
+   "eye",
+   "halo",
+   "orb",
+   "tent"
+  ],
+  "name": "G\u00f6lge Rahibesi",
+  "invalid": false
+ },
+ "kizil_ejder": {
+  "id": "kizil_ejder",
+  "tris": 986,
+  "verts": 661,
+  "bones": 31,
+  "bytes": 267180,
+  "emissive": [
+   "eye",
+   "mouth"
+  ],
+  "name": "K\u0131z\u0131l Ejder",
+  "invalid": false
+ },
+ "mantar_kral": {
+  "id": "mantar_kral",
+  "tris": 1280,
+  "verts": 805,
+  "bones": 20,
+  "bytes": 244652,
+  "emissive": [
+   "cap",
+   "eye",
+   "gem",
+   "glowcap"
+  ],
+  "name": "Mantar Kral",
+  "invalid": false
+ }
+}

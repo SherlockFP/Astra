@@ -1,0 +1,6608 @@
+{
+ "generatedFrom": "docs/GDD_CONTENT.md",
+ "tileSize": 4,
+ "conventions": "theme colours are hex strings (parseInt(v, 16)); tile (x,z) centre = ((x+0.5)*4, 0, (z+0.5)*4); n=-z s=+z e=+x w=-x; door width runs +x for n/s, +z for e/w; facing in degrees, rotY = facing*PI/180 (0 = +z, 90 = +x, 180 = -z)",
+ "dungeons": [
+  {
+   "id": "kemik_mahzeni",
+   "name": "Kemik Mahzeni",
+   "shortName": "Mahzen",
+   "lore": "Kuzgunkale'nin altında, unutulmuş kralların kemikleri yatar. Kemik Lordu Azrakel, ölümsüzlüğü filakterlerine bağladı ve mahzenin her köşesinde ölüleri yeniden ayağa kaldırdı. Bekçi Kaldur hâlâ kapıyı tutar; ruh kuyusu ise diriler için açlıkla fokurdar.",
+   "levelRange": [
+    8,
+    18
+   ],
+   "timerSec": 780,
+   "forcesRequired": 250,
+   "theme": {
+    "fogColor": "0x141a18",
+    "fogNear": 8,
+    "fogFar": 38,
+    "ambient": "0x3c4a48",
+    "ambientIntensity": 0.35,
+    "hemiSky": "0x6a7a90",
+    "hemiGround": "0x201810",
+    "torchColor": "0xffa050",
+    "bloomStrength": 0.6,
+    "music": "dungeon_crypt",
+    "palette": [
+     "0x2b2f2a",
+     "0x5d6b5a",
+     "0xd8d0b8",
+     "0x7affc0",
+     "0xffa050"
+    ],
+    "tint": "0xc8d0c8"
+   },
+   "grid": {
+    "w": 40,
+    "h": 40
+   },
+   "rooms": [
+    {
+     "id": "giris",
+     "name": "Mahzen Kapısı",
+     "rect": {
+      "x": 4,
+      "z": 33,
+      "w": 6,
+      "h": 5
+     },
+     "floor": "stone_dark",
+     "wall": "stone",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "k_giris",
+     "name": "Mezar Taşları Geçidi",
+     "rect": {
+      "x": 6,
+      "z": 28,
+      "w": 2,
+      "h": 5
+     },
+     "floor": "stone_dark",
+     "wall": "stone",
+     "autoDecor": 0.5
+    },
+    {
+     "id": "kemik_salonu",
+     "name": "Kemik Salonu",
+     "rect": {
+      "x": 2,
+      "z": 17,
+      "w": 11,
+      "h": 11
+     },
+     "floor": "stone",
+     "wall": "stone",
+     "autoDecor": 0.6
+    },
+    {
+     "id": "k_bekci",
+     "name": "Bekçi Geçidi",
+     "rect": {
+      "x": 6,
+      "z": 13,
+      "w": 2,
+      "h": 4
+     },
+     "floor": "stone",
+     "wall": "stone",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "bekci_odasi",
+     "name": "Bekçi Odası",
+     "rect": {
+      "x": 2,
+      "z": 2,
+      "w": 10,
+      "h": 11
+     },
+     "floor": "tiles",
+     "wall": "stone",
+     "autoDecor": 0.2,
+     "boss": 1
+    },
+    {
+     "id": "k_fener",
+     "name": "Fenerli Dehliz",
+     "rect": {
+      "x": 12,
+      "z": 6,
+      "w": 5,
+      "h": 2
+     },
+     "floor": "stone_dark",
+     "wall": "stone",
+     "autoDecor": 0.4
+    },
+    {
+     "id": "lahit_galerisi",
+     "name": "Lahit Galerisi",
+     "rect": {
+      "x": 17,
+      "z": 2,
+      "w": 10,
+      "h": 12
+     },
+     "floor": "stone",
+     "wall": "stone",
+     "autoDecor": 0.6
+    },
+    {
+     "id": "k_mum",
+     "name": "Mum Yolu",
+     "rect": {
+      "x": 27,
+      "z": 6,
+      "w": 4,
+      "h": 2
+     },
+     "floor": "stone_dark",
+     "wall": "stone",
+     "autoDecor": 0.4
+    },
+    {
+     "id": "mum_odasi",
+     "name": "Mum Şapeli",
+     "rect": {
+      "x": 31,
+      "z": 3,
+      "w": 7,
+      "h": 8
+     },
+     "floor": "tiles",
+     "wall": "brick",
+     "autoDecor": 0.5
+    },
+    {
+     "id": "k_kuyu",
+     "name": "Kuyuya İniş",
+     "rect": {
+      "x": 33,
+      "z": 11,
+      "w": 2,
+      "h": 5
+     },
+     "floor": "dirt",
+     "wall": "cave",
+     "autoDecor": 0.4
+    },
+    {
+     "id": "ruh_kuyusu",
+     "name": "Ruh Kuyusu",
+     "rect": {
+      "x": 28,
+      "z": 16,
+      "w": 10,
+      "h": 10
+     },
+     "floor": "stone_dark",
+     "wall": "stone",
+     "autoDecor": 0.2,
+     "boss": 2
+    },
+    {
+     "id": "unutulmus_mezarlar",
+     "name": "Unutulmuş Mezarlar",
+     "rect": {
+      "x": 29,
+      "z": 26,
+      "w": 9,
+      "h": 8
+     },
+     "floor": "dirt",
+     "wall": "cave",
+     "autoDecor": 0.7,
+     "optional": true
+    },
+    {
+     "id": "k_cukur",
+     "name": "Çukur Geçidi",
+     "rect": {
+      "x": 24,
+      "z": 19,
+      "w": 4,
+      "h": 2
+     },
+     "floor": "stone_dark",
+     "wall": "stone",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "ceset_cukuru",
+     "name": "Ceset Çukuru",
+     "rect": {
+      "x": 15,
+      "z": 17,
+      "w": 9,
+      "h": 8
+     },
+     "floor": "dirt",
+     "wall": "cave",
+     "autoDecor": 0.6
+    },
+    {
+     "id": "cokuk_tunel",
+     "name": "Çöken Tünel",
+     "rect": {
+      "x": 20,
+      "z": 14,
+      "w": 2,
+      "h": 3
+     },
+     "floor": "dirt",
+     "wall": "cave",
+     "autoDecor": 0.6,
+     "skip": true
+    },
+    {
+     "id": "k_taht",
+     "name": "Taht Merdivenleri",
+     "rect": {
+      "x": 18,
+      "z": 25,
+      "w": 2,
+      "h": 4
+     },
+     "floor": "tiles",
+     "wall": "brick",
+     "autoDecor": 0.2
+    },
+    {
+     "id": "kemik_taht",
+     "name": "Kemik Taht",
+     "rect": {
+      "x": 14,
+      "z": 29,
+      "w": 13,
+      "h": 10
+     },
+     "floor": "tiles",
+     "wall": "brick",
+     "autoDecor": 0.15,
+     "boss": 3
+    }
+   ],
+   "doors": [
+    {
+     "a": "giris",
+     "b": "k_giris",
+     "tile": [
+      6,
+      33
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_giris",
+     "b": "kemik_salonu",
+     "tile": [
+      6,
+      28
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "kemik_salonu",
+     "b": "k_bekci",
+     "tile": [
+      6,
+      17
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_bekci",
+     "b": "bekci_odasi",
+     "tile": [
+      6,
+      13
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "boss_lock"
+    },
+    {
+     "a": "bekci_odasi",
+     "b": "k_fener",
+     "tile": [
+      11,
+      6
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "boss_exit"
+    },
+    {
+     "a": "k_fener",
+     "b": "lahit_galerisi",
+     "tile": [
+      16,
+      6
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "lahit_galerisi",
+     "b": "k_mum",
+     "tile": [
+      26,
+      6
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_mum",
+     "b": "mum_odasi",
+     "tile": [
+      30,
+      6
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "mum_odasi",
+     "b": "k_kuyu",
+     "tile": [
+      33,
+      10
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_kuyu",
+     "b": "ruh_kuyusu",
+     "tile": [
+      33,
+      15
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "boss_lock"
+    },
+    {
+     "a": "ruh_kuyusu",
+     "b": "unutulmus_mezarlar",
+     "tile": [
+      32,
+      25
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "boss_lock"
+    },
+    {
+     "a": "ruh_kuyusu",
+     "b": "k_cukur",
+     "tile": [
+      28,
+      19
+     ],
+     "side": "w",
+     "width": 2,
+     "gate": "boss_lock"
+    },
+    {
+     "a": "k_cukur",
+     "b": "ceset_cukuru",
+     "tile": [
+      24,
+      19
+     ],
+     "side": "w",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "lahit_galerisi",
+     "b": "cokuk_tunel",
+     "tile": [
+      20,
+      13
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "cokuk_tunel",
+     "b": "ceset_cukuru",
+     "tile": [
+      20,
+      16
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "ceset_cukuru",
+     "b": "k_taht",
+     "tile": [
+      18,
+      24
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_taht",
+     "b": "kemik_taht",
+     "tile": [
+      18,
+      28
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "boss_lock"
+    }
+   ],
+   "packs": [
+    {
+     "id": "d1_p01",
+     "roomId": "k_giris",
+     "center": [
+      6.5,
+      30
+     ],
+     "members": [
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "skel_archer",
+       "offset": [
+        0,
+        -1.25
+       ]
+      }
+     ],
+     "forces": 9
+    },
+    {
+     "id": "d1_p02",
+     "roomId": "kemik_salonu",
+     "center": [
+      4.5,
+      25
+     ],
+     "members": [
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.53,
+        -1.02
+       ]
+      }
+     ],
+     "forces": 8
+    },
+    {
+     "id": "d1_p03",
+     "roomId": "kemik_salonu",
+     "center": [
+      10,
+      25
+     ],
+     "members": [
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "skel_mage",
+       "offset": [
+        1.02,
+        -0.73
+       ]
+      }
+     ],
+     "forces": 10
+    },
+    {
+     "id": "d1_p04",
+     "roomId": "kemik_salonu",
+     "center": [
+      4,
+      20
+     ],
+     "members": [
+      {
+       "enemyId": "crypt_ghoul",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "crypt_ghoul",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "skel_archer",
+       "offset": [
+        -0.82,
+        -1.04
+       ]
+      },
+      {
+       "enemyId": "skel_archer",
+       "offset": [
+        0.03,
+        -1.33
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d1_p05",
+     "roomId": "kemik_salonu",
+     "center": [
+      10,
+      19.5
+     ],
+     "members": [
+      {
+       "enemyId": "skel_warrior",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "skel_mage",
+       "offset": [
+        0.5,
+        -1.15
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d1_p06",
+     "roomId": "kemik_salonu",
+     "center": [
+      7,
+      22
+     ],
+     "members": [
+      {
+       "enemyId": "crypt_ghoul",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      }
+     ],
+     "patrol": [
+      [
+       7,
+       26
+      ],
+      [
+       7,
+       18.5
+      ]
+     ],
+     "forces": 8
+    },
+    {
+     "id": "d1_p07",
+     "roomId": "k_bekci",
+     "center": [
+      6.5,
+      14.8
+     ],
+     "members": [
+      {
+       "enemyId": "skel_warrior",
+       "offset": [
+        0,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_archer",
+       "offset": [
+        0,
+        -1.25
+       ]
+      }
+     ],
+     "forces": 9
+    },
+    {
+     "id": "d1_p08",
+     "roomId": "k_fener",
+     "center": [
+      14,
+      6.5
+     ],
+     "members": [
+      {
+       "enemyId": "bone_skull",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "bone_skull",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "bone_skull",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "bone_skull",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "bone_skull",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "bone_skull",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      }
+     ],
+     "forces": 6
+    },
+    {
+     "id": "d1_p09",
+     "roomId": "lahit_galerisi",
+     "center": [
+      19.5,
+      4.5
+     ],
+     "members": [
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "skel_mage",
+       "offset": [
+        1.04,
+        -0.69
+       ]
+      }
+     ],
+     "forces": 12
+    },
+    {
+     "id": "d1_p10",
+     "roomId": "lahit_galerisi",
+     "center": [
+      24.5,
+      4.5
+     ],
+     "members": [
+      {
+       "enemyId": "crypt_ghoul",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "crypt_ghoul",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "crypt_wraith",
+       "offset": [
+        1.21,
+        -0.3
+       ]
+      }
+     ],
+     "forces": 13
+    },
+    {
+     "id": "d1_p11",
+     "roomId": "lahit_galerisi",
+     "center": [
+      21.5,
+      8
+     ],
+     "members": [
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        -0.53,
+        -1.02
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        1.15,
+        0.42
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        -1.2,
+        0.49
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        0.58,
+        -1.23
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        0.43,
+        1.36
+       ]
+      }
+     ],
+     "forces": 12
+    },
+    {
+     "id": "d1_p12",
+     "roomId": "lahit_galerisi",
+     "center": [
+      19.5,
+      11.5
+     ],
+     "members": [
+      {
+       "enemyId": "bone_golem",
+       "offset": [
+        0,
+        0
+       ]
+      }
+     ],
+     "forces": 12
+    },
+    {
+     "id": "d1_p13",
+     "roomId": "lahit_galerisi",
+     "center": [
+      24.5,
+      11.5
+     ],
+     "members": [
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "skel_archer",
+       "offset": [
+        1.54,
+        -0.1
+       ]
+      },
+      {
+       "enemyId": "skel_archer",
+       "offset": [
+        1.06,
+        0.66
+       ]
+      },
+      {
+       "enemyId": "skel_mage",
+       "offset": [
+        0.58,
+        1.43
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d1_p14",
+     "roomId": "k_mum",
+     "center": [
+      28.5,
+      6.5
+     ],
+     "members": [
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "skel_archer",
+       "offset": [
+        1.25,
+        0
+       ]
+      }
+     ],
+     "forces": 7
+    },
+    {
+     "id": "d1_p15",
+     "roomId": "mum_odasi",
+     "center": [
+      33,
+      5
+     ],
+     "members": [
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "crypt_wraith",
+       "offset": [
+        0.84,
+        -1.03
+       ]
+      },
+      {
+       "enemyId": "crypt_wraith",
+       "offset": [
+        1.3,
+        -0.26
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d1_p16",
+     "roomId": "mum_odasi",
+     "center": [
+      36,
+      8.5
+     ],
+     "members": [
+      {
+       "enemyId": "skel_warrior",
+       "offset": [
+        0,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_mage",
+       "offset": [
+        1.2,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_mage",
+       "offset": [
+        0.92,
+        0.85
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d1_p17",
+     "roomId": "mum_odasi",
+     "center": [
+      32.5,
+      8.5
+     ],
+     "members": [
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.53,
+        -1.02
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        1.15,
+        0.42
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -1.2,
+        0.49
+       ]
+      }
+     ],
+     "forces": 10
+    },
+    {
+     "id": "d1_p18",
+     "roomId": "k_kuyu",
+     "center": [
+      33.5,
+      13
+     ],
+     "members": [
+      {
+       "enemyId": "crypt_ghoul",
+       "offset": [
+        0.24,
+        0
+       ]
+      },
+      {
+       "enemyId": "crypt_ghoul",
+       "offset": [
+        -0.3,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "bone_skull",
+       "offset": [
+        0.05,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "bone_skull",
+       "offset": [
+        0.38,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "bone_skull",
+       "offset": [
+        -0.7,
+        -0.16
+       ]
+      }
+     ],
+     "forces": 11
+    },
+    {
+     "id": "d1_p19",
+     "roomId": "unutulmus_mezarlar",
+     "center": [
+      31.5,
+      29
+     ],
+     "members": [
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "skel_archer",
+       "offset": [
+        0.09,
+        1.33
+       ]
+      },
+      {
+       "enemyId": "skel_archer",
+       "offset": [
+        -0.78,
+        1.08
+       ]
+      }
+     ],
+     "optional": true,
+     "forces": 14
+    },
+    {
+     "id": "d1_p20",
+     "roomId": "unutulmus_mezarlar",
+     "center": [
+      35.5,
+      31
+     ],
+     "members": [
+      {
+       "enemyId": "bone_golem",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      }
+     ],
+     "optional": true,
+     "forces": 18
+    },
+    {
+     "id": "d1_p21",
+     "roomId": "unutulmus_mezarlar",
+     "center": [
+      31.5,
+      32.3
+     ],
+     "members": [
+      {
+       "enemyId": "crypt_ghoul",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "crypt_ghoul",
+       "offset": [
+        -0.38,
+        0.24
+       ]
+      },
+      {
+       "enemyId": "crypt_wraith",
+       "offset": [
+        0.26,
+        0.9
+       ]
+      },
+      {
+       "enemyId": "crypt_wraith",
+       "offset": [
+        -0.63,
+        0.81
+       ]
+      }
+     ],
+     "optional": true,
+     "forces": 18
+    },
+    {
+     "id": "d1_p22",
+     "roomId": "k_cukur",
+     "center": [
+      25.5,
+      19.5
+     ],
+     "members": [
+      {
+       "enemyId": "skel_archer",
+       "offset": [
+        0,
+        0.45
+       ]
+      },
+      {
+       "enemyId": "skel_archer",
+       "offset": [
+        0,
+        -0.45
+       ]
+      }
+     ],
+     "forces": 6
+    },
+    {
+     "id": "d1_p23",
+     "roomId": "ceset_cukuru",
+     "center": [
+      17,
+      18.5
+     ],
+     "members": [
+      {
+       "enemyId": "crypt_ghoul",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "crypt_ghoul",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "crypt_ghoul",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "skel_mage",
+       "offset": [
+        -1.24,
+        -0.19
+       ]
+      }
+     ],
+     "forces": 16
+    },
+    {
+     "id": "d1_p24",
+     "roomId": "ceset_cukuru",
+     "center": [
+      21.5,
+      22
+     ],
+     "members": [
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      },
+      {
+       "enemyId": "skel_rattler",
+       "offset": [
+        -0.53,
+        -1.02
+       ]
+      },
+      {
+       "enemyId": "skel_mage",
+       "offset": [
+        -0.78,
+        0.98
+       ]
+      }
+     ],
+     "forces": 12
+    },
+    {
+     "id": "d1_p25",
+     "roomId": "ceset_cukuru",
+     "center": [
+      16.8,
+      22.8
+     ],
+     "members": [
+      {
+       "enemyId": "skel_warrior",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "skel_minion",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "crypt_wraith",
+       "offset": [
+        -1.12,
+        0.55
+       ]
+      }
+     ],
+     "forces": 15
+    },
+    {
+     "id": "d1_p26",
+     "roomId": "cokuk_tunel",
+     "center": [
+      20.5,
+      15
+     ],
+     "members": [
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        0.24,
+        0
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        -0.3,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        0.05,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        0.38,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        -0.7,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "crypt_rat",
+       "offset": [
+        0.66,
+        -0.53
+       ]
+      }
+     ],
+     "optional": true,
+     "forces": 6
+    },
+    {
+     "id": "d1_p27",
+     "roomId": "k_taht",
+     "center": [
+      18.5,
+      26.5
+     ],
+     "members": [
+      {
+       "enemyId": "skel_warrior",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "skel_warrior",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      }
+     ],
+     "forces": 12
+    }
+   ],
+   "bosses": [
+    {
+     "bossId": "boss_bekci_kaldur",
+     "roomId": "bekci_odasi",
+     "pos": [
+      6.5,
+      6
+     ],
+     "facing": 0,
+     "order": 1
+    },
+    {
+     "bossId": "boss_olucagiran_morkan",
+     "roomId": "ruh_kuyusu",
+     "pos": [
+      33,
+      18.5
+     ],
+     "facing": 0,
+     "order": 2
+    },
+    {
+     "bossId": "boss_azrakel",
+     "roomId": "kemik_taht",
+     "pos": [
+      20,
+      34.5
+     ],
+     "facing": 180,
+     "order": 3
+    }
+   ],
+   "start": {
+    "pos": [
+     7,
+     36.5
+    ],
+    "facing": 180
+   },
+   "exit": {
+    "pos": [
+     20,
+     31
+    ]
+   },
+   "extras": {
+    "fontOfPower": [
+     7,
+     34.2
+    ],
+    "shrines": [
+     {
+      "type": "shrine_power",
+      "pos": [
+       26,
+       2.5
+      ]
+     },
+     {
+      "type": "shrine_haste",
+      "pos": [
+       37,
+       33
+      ]
+     }
+    ],
+    "riftSpots": [
+     [
+      8,
+      24
+     ],
+     [
+      21,
+      6
+     ],
+     [
+      34,
+      7
+     ],
+     [
+      33,
+      30
+     ],
+     [
+      19,
+      20
+     ],
+     [
+      6.5,
+      30
+     ]
+    ]
+   }
+  },
+  {
+   "id": "kizil_dokumhane",
+   "name": "Kızıl Dökümhane",
+   "shortName": "Dökümhane",
+   "lore": "Dağın kalbinde, Kuzgunkale'nin ilk silahlarının döküldüğü dökümhane şimdi Mavi Alev Ignaroth'un elinde. Köleleştirilmiş goblinler gece gündüz örslerde çalışırken, Dökümcü Usta Gurz kırbacını şaklatır ve Magma Devi Ateşyürek lav gölünde uyur. Kızıl ateşin altında, mavi bir alev büyüyor.",
+   "levelRange": [
+    18,
+    28
+   ],
+   "timerSec": 810,
+   "forcesRequired": 270,
+   "theme": {
+    "fogColor": "0x2a0e06",
+    "fogNear": 10,
+    "fogFar": 45,
+    "ambient": "0x803020",
+    "ambientIntensity": 0.4,
+    "hemiSky": "0xff7040",
+    "hemiGround": "0x200800",
+    "torchColor": "0xff6a20",
+    "bloomStrength": 0.9,
+    "music": "dungeon_fire",
+    "palette": [
+     "0x1a0c08",
+     "0x4a2418",
+     "0xff4a10",
+     "0xffb040",
+     "0x3070ff"
+    ],
+    "tint": "0xd8a090"
+   },
+   "grid": {
+    "w": 40,
+    "h": 40
+   },
+   "rooms": [
+    {
+     "id": "giris",
+     "name": "Kül Kapısı",
+     "rect": {
+      "x": 1,
+      "z": 17,
+      "w": 5,
+      "h": 6
+     },
+     "floor": "lava_rock",
+     "wall": "forge",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "k_giris",
+     "name": "Cüruf Yolu",
+     "rect": {
+      "x": 6,
+      "z": 19,
+      "w": 4,
+      "h": 2
+     },
+     "floor": "lava_rock",
+     "wall": "forge",
+     "autoDecor": 0.5
+    },
+    {
+     "id": "cevher_deposu",
+     "name": "Cevher Deposu",
+     "rect": {
+      "x": 10,
+      "z": 14,
+      "w": 10,
+      "h": 12
+     },
+     "floor": "lava_rock",
+     "wall": "forge",
+     "autoDecor": 0.6
+    },
+    {
+     "id": "k_kuzey",
+     "name": "Örs Yolu",
+     "rect": {
+      "x": 14,
+      "z": 9,
+      "w": 2,
+      "h": 5
+     },
+     "floor": "stone_dark",
+     "wall": "forge",
+     "autoDecor": 0.4
+    },
+    {
+     "id": "ors_salonu",
+     "name": "Örs Salonu",
+     "rect": {
+      "x": 9,
+      "z": 0,
+      "w": 12,
+      "h": 9
+     },
+     "floor": "stone_dark",
+     "wall": "forge",
+     "autoDecor": 0.2,
+     "boss": 1
+    },
+    {
+     "id": "curuf_ocagi",
+     "name": "Cüruf Ocağı",
+     "rect": {
+      "x": 1,
+      "z": 4,
+      "w": 8,
+      "h": 9
+     },
+     "floor": "lava_rock",
+     "wall": "cave",
+     "autoDecor": 0.6,
+     "optional": true
+    },
+    {
+     "id": "k_dogu1",
+     "name": "Kızgın Dehliz",
+     "rect": {
+      "x": 21,
+      "z": 3,
+      "w": 4,
+      "h": 2
+     },
+     "floor": "lava_rock",
+     "wall": "forge",
+     "autoDecor": 0.4
+    },
+    {
+     "id": "kalip_atolyesi",
+     "name": "Kalıp Atölyesi",
+     "rect": {
+      "x": 25,
+      "z": 0,
+      "w": 10,
+      "h": 9
+     },
+     "floor": "stone_dark",
+     "wall": "forge",
+     "autoDecor": 0.6
+    },
+    {
+     "id": "k_inis",
+     "name": "Kızgın Merdivenler",
+     "rect": {
+      "x": 29,
+      "z": 9,
+      "w": 2,
+      "h": 5
+     },
+     "floor": "stone_dark",
+     "wall": "forge",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "lav_kanali",
+     "name": "Lav Kanalı",
+     "rect": {
+      "x": 24,
+      "z": 14,
+      "w": 12,
+      "h": 10
+     },
+     "floor": "lava_rock",
+     "wall": "cave",
+     "autoDecor": 0.4
+    },
+    {
+     "id": "k_guney",
+     "name": "Zincir Geçidi",
+     "rect": {
+      "x": 29,
+      "z": 24,
+      "w": 2,
+      "h": 4
+     },
+     "floor": "stone_dark",
+     "wall": "forge",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "kopru",
+     "name": "Lav Köprüsü",
+     "rect": {
+      "x": 34,
+      "z": 24,
+      "w": 2,
+      "h": 4
+     },
+     "floor": "wood",
+     "wall": "cave",
+     "autoDecor": 0.1,
+     "skip": true
+    },
+    {
+     "id": "magma_kalbi",
+     "name": "Magma Kalbi",
+     "rect": {
+      "x": 25,
+      "z": 28,
+      "w": 11,
+      "h": 11
+     },
+     "floor": "lava_rock",
+     "wall": "cave",
+     "autoDecor": 0.1,
+     "boss": 2
+    },
+    {
+     "id": "k_bati",
+     "name": "Köle Yolu",
+     "rect": {
+      "x": 20,
+      "z": 32,
+      "w": 5,
+      "h": 2
+     },
+     "floor": "dirt",
+     "wall": "cave",
+     "autoDecor": 0.4
+    },
+    {
+     "id": "kole_kampi",
+     "name": "Köle Kampı",
+     "rect": {
+      "x": 9,
+      "z": 28,
+      "w": 11,
+      "h": 9
+     },
+     "floor": "dirt",
+     "wall": "cave",
+     "autoDecor": 0.7
+    },
+    {
+     "id": "k_son",
+     "name": "Mavi Alev Kapısı",
+     "rect": {
+      "x": 8,
+      "z": 31,
+      "w": 1,
+      "h": 2
+     },
+     "floor": "temple",
+     "wall": "forge",
+     "autoDecor": 0
+    },
+    {
+     "id": "mavi_alev_sunagi",
+     "name": "Mavi Alev Sunağı",
+     "rect": {
+      "x": 0,
+      "z": 27,
+      "w": 8,
+      "h": 12
+     },
+     "floor": "temple",
+     "wall": "forge",
+     "autoDecor": 0.1,
+     "boss": 3
+    }
+   ],
+   "doors": [
+    {
+     "a": "giris",
+     "b": "k_giris",
+     "tile": [
+      5,
+      19
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_giris",
+     "b": "cevher_deposu",
+     "tile": [
+      9,
+      19
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "cevher_deposu",
+     "b": "k_kuzey",
+     "tile": [
+      14,
+      14
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_kuzey",
+     "b": "ors_salonu",
+     "tile": [
+      14,
+      9
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "boss_lock"
+    },
+    {
+     "a": "ors_salonu",
+     "b": "curuf_ocagi",
+     "tile": [
+      9,
+      5
+     ],
+     "side": "w",
+     "width": 2,
+     "gate": "boss_exit"
+    },
+    {
+     "a": "ors_salonu",
+     "b": "k_dogu1",
+     "tile": [
+      20,
+      3
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "boss_exit"
+    },
+    {
+     "a": "k_dogu1",
+     "b": "kalip_atolyesi",
+     "tile": [
+      24,
+      3
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "kalip_atolyesi",
+     "b": "k_inis",
+     "tile": [
+      29,
+      8
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_inis",
+     "b": "lav_kanali",
+     "tile": [
+      29,
+      13
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "lav_kanali",
+     "b": "k_guney",
+     "tile": [
+      29,
+      23
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "lav_kanali",
+     "b": "kopru",
+     "tile": [
+      34,
+      23
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_guney",
+     "b": "magma_kalbi",
+     "tile": [
+      29,
+      27
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "boss_lock"
+    },
+    {
+     "a": "kopru",
+     "b": "magma_kalbi",
+     "tile": [
+      34,
+      27
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "boss_lock"
+    },
+    {
+     "a": "magma_kalbi",
+     "b": "k_bati",
+     "tile": [
+      25,
+      32
+     ],
+     "side": "w",
+     "width": 2,
+     "gate": "boss_exit"
+    },
+    {
+     "a": "k_bati",
+     "b": "kole_kampi",
+     "tile": [
+      20,
+      32
+     ],
+     "side": "w",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "kole_kampi",
+     "b": "k_son",
+     "tile": [
+      9,
+      31
+     ],
+     "side": "w",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_son",
+     "b": "mavi_alev_sunagi",
+     "tile": [
+      8,
+      31
+     ],
+     "side": "w",
+     "width": 2,
+     "gate": "boss_lock"
+    }
+   ],
+   "packs": [
+    {
+     "id": "d2_p01",
+     "roomId": "k_giris",
+     "center": [
+      8,
+      19.5
+     ],
+     "members": [
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      }
+     ],
+     "forces": 6
+    },
+    {
+     "id": "d2_p02",
+     "roomId": "cevher_deposu",
+     "center": [
+      12.5,
+      17
+     ],
+     "members": [
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.53,
+        -1.02
+       ]
+      },
+      {
+       "enemyId": "forge_orc",
+       "offset": [
+        1.15,
+        0.42
+       ]
+      }
+     ],
+     "forces": 15
+    },
+    {
+     "id": "d2_p03",
+     "roomId": "cevher_deposu",
+     "center": [
+      17.5,
+      17
+     ],
+     "members": [
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        1.06,
+        -0.8
+       ]
+      },
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        1.33,
+        0.06
+       ]
+      }
+     ],
+     "forces": 10
+    },
+    {
+     "id": "d2_p04",
+     "roomId": "cevher_deposu",
+     "center": [
+      12.5,
+      22.5
+     ],
+     "members": [
+      {
+       "enemyId": "forge_demon",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "fire_priest",
+       "offset": [
+        0.88,
+        0.88
+       ]
+      }
+     ],
+     "forces": 15
+    },
+    {
+     "id": "d2_p05",
+     "roomId": "cevher_deposu",
+     "center": [
+      17.5,
+      22.5
+     ],
+     "members": [
+      {
+       "enemyId": "magma_golem",
+       "offset": [
+        0,
+        0
+       ]
+      }
+     ],
+     "forces": 10
+    },
+    {
+     "id": "d2_p06",
+     "roomId": "cevher_deposu",
+     "center": [
+      15,
+      20
+     ],
+     "members": [
+      {
+       "enemyId": "forge_orc",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      }
+     ],
+     "patrol": [
+      [
+       11.5,
+       20
+      ],
+      [
+       18,
+       20
+      ]
+     ],
+     "forces": 10
+    },
+    {
+     "id": "d2_p07",
+     "roomId": "k_kuzey",
+     "center": [
+      14.5,
+      11
+     ],
+     "members": [
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        0.24,
+        0
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        -0.3,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        0.05,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        0.38,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        -0.7,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        0,
+        -1.25
+       ]
+      }
+     ],
+     "forces": 7
+    },
+    {
+     "id": "d2_p08",
+     "roomId": "curuf_ocagi",
+     "center": [
+      5.5,
+      6.5
+     ],
+     "members": [
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "fire_priest",
+       "offset": [
+        -1.19,
+        0.4
+       ]
+      }
+     ],
+     "optional": true,
+     "forces": 13
+    },
+    {
+     "id": "d2_p09",
+     "roomId": "curuf_ocagi",
+     "center": [
+      6.5,
+      10
+     ],
+     "members": [
+      {
+       "enemyId": "magma_golem",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      }
+     ],
+     "optional": true,
+     "forces": 16
+    },
+    {
+     "id": "d2_p10",
+     "roomId": "curuf_ocagi",
+     "center": [
+      2.5,
+      10.5
+     ],
+     "members": [
+      {
+       "enemyId": "forge_demon",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_demon",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        -0.67,
+        1.15
+       ]
+      },
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        -1.25,
+        0.45
+       ]
+      }
+     ],
+     "optional": true,
+     "forces": 16
+    },
+    {
+     "id": "d2_p11",
+     "roomId": "k_dogu1",
+     "center": [
+      22.5,
+      3.5
+     ],
+     "members": [
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        0,
+        -0.7
+       ]
+      },
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        0,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        0,
+        0.7
+       ]
+      }
+     ],
+     "forces": 6
+    },
+    {
+     "id": "d2_p12",
+     "roomId": "kalip_atolyesi",
+     "center": [
+      27,
+      2.5
+     ],
+     "members": [
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "forge_orc",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      }
+     ],
+     "forces": 13
+    },
+    {
+     "id": "d2_p13",
+     "roomId": "kalip_atolyesi",
+     "center": [
+      32.5,
+      2.5
+     ],
+     "members": [
+      {
+       "enemyId": "forge_demon",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "fire_priest",
+       "offset": [
+        1.24,
+        -0.16
+       ]
+      }
+     ],
+     "forces": 15
+    },
+    {
+     "id": "d2_p14",
+     "roomId": "kalip_atolyesi",
+     "center": [
+      27,
+      6.5
+     ],
+     "members": [
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        0.8,
+        0.96
+       ]
+      }
+     ],
+     "forces": 10
+    },
+    {
+     "id": "d2_p15",
+     "roomId": "kalip_atolyesi",
+     "center": [
+      32.5,
+      6.5
+     ],
+     "members": [
+      {
+       "enemyId": "magma_golem",
+       "offset": [
+        0,
+        0
+       ]
+      },
+      {
+       "enemyId": "fire_priest",
+       "offset": [
+        1.17,
+        0.44
+       ]
+      }
+     ],
+     "forces": 15
+    },
+    {
+     "id": "d2_p16",
+     "roomId": "k_inis",
+     "center": [
+      29.5,
+      11
+     ],
+     "members": [
+      {
+       "enemyId": "forge_demon",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      }
+     ],
+     "forces": 9
+    },
+    {
+     "id": "d2_p17",
+     "roomId": "lav_kanali",
+     "center": [
+      26,
+      15.8
+     ],
+     "members": [
+      {
+       "enemyId": "forge_orc",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      }
+     ],
+     "forces": 13
+    },
+    {
+     "id": "d2_p18",
+     "roomId": "lav_kanali",
+     "center": [
+      30,
+      18.5
+     ],
+     "members": [
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        1.34,
+        -0.13
+       ]
+      },
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        0.45,
+        -0.04
+       ]
+      },
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        -0.45,
+        0.04
+       ]
+      },
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        -1.34,
+        0.13
+       ]
+      }
+     ],
+     "forces": 8
+    },
+    {
+     "id": "d2_p19",
+     "roomId": "lav_kanali",
+     "center": [
+      33.5,
+      15.8
+     ],
+     "members": [
+      {
+       "enemyId": "magma_golem",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d2_p20",
+     "roomId": "lav_kanali",
+     "center": [
+      26.5,
+      21.5
+     ],
+     "members": [
+      {
+       "enemyId": "forge_demon",
+       "offset": [
+        0,
+        0
+       ]
+      },
+      {
+       "enemyId": "fire_priest",
+       "offset": [
+        -0.02,
+        1.33
+       ]
+      },
+      {
+       "enemyId": "fire_priest",
+       "offset": [
+        -0.86,
+        1.01
+       ]
+      }
+     ],
+     "forces": 16
+    },
+    {
+     "id": "d2_p21",
+     "roomId": "lav_kanali",
+     "center": [
+      33,
+      21.5
+     ],
+     "members": [
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "forge_orc",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      }
+     ],
+     "forces": 13
+    },
+    {
+     "id": "d2_p22",
+     "roomId": "k_guney",
+     "center": [
+      29.5,
+      25.5
+     ],
+     "members": [
+      {
+       "enemyId": "forge_demon",
+       "offset": [
+        0,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        0.45,
+        1.25
+       ]
+      },
+      {
+       "enemyId": "forge_imp",
+       "offset": [
+        -0.45,
+        1.25
+       ]
+      }
+     ],
+     "forces": 10
+    },
+    {
+     "id": "d2_p23",
+     "roomId": "k_bati",
+     "center": [
+      22,
+      32.5
+     ],
+     "members": [
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "lava_slime",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      }
+     ],
+     "forces": 6
+    },
+    {
+     "id": "d2_p24",
+     "roomId": "kole_kampi",
+     "center": [
+      17,
+      30
+     ],
+     "members": [
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.53,
+        -1.02
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        1.15,
+        0.42
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -1.2,
+        0.49
+       ]
+      }
+     ],
+     "forces": 10
+    },
+    {
+     "id": "d2_p25",
+     "roomId": "kole_kampi",
+     "center": [
+      12,
+      30.5
+     ],
+     "members": [
+      {
+       "enemyId": "forge_orc",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_orc",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "fire_priest",
+       "offset": [
+        -1.21,
+        -0.32
+       ]
+      }
+     ],
+     "forces": 19
+    },
+    {
+     "id": "d2_p26",
+     "roomId": "kole_kampi",
+     "center": [
+      17,
+      34
+     ],
+     "members": [
+      {
+       "enemyId": "forge_demon",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_demon",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "flame_skull",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      }
+     ],
+     "forces": 15
+    },
+    {
+     "id": "d2_p27",
+     "roomId": "kole_kampi",
+     "center": [
+      11.5,
+      34
+     ],
+     "members": [
+      {
+       "enemyId": "magma_golem",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "forge_goblin",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d2_p28",
+     "roomId": "k_son",
+     "center": [
+      8,
+      31.5
+     ],
+     "members": [
+      {
+       "enemyId": "forge_orc",
+       "offset": [
+        0,
+        0
+       ]
+      }
+     ],
+     "forces": 7
+    }
+   ],
+   "bosses": [
+    {
+     "bossId": "boss_dokumcu_gurz",
+     "roomId": "ors_salonu",
+     "pos": [
+      15,
+      5.8
+     ],
+     "facing": 180,
+     "order": 1
+    },
+    {
+     "bossId": "boss_atesyurek",
+     "roomId": "magma_kalbi",
+     "pos": [
+      30,
+      33.5
+     ],
+     "facing": 180,
+     "order": 2
+    },
+    {
+     "bossId": "boss_ignaroth",
+     "roomId": "mavi_alev_sunagi",
+     "pos": [
+      3.5,
+      33
+     ],
+     "facing": 90,
+     "order": 3
+    }
+   ],
+   "start": {
+    "pos": [
+     2.5,
+     19.5
+    ],
+    "facing": 90
+   },
+   "exit": {
+    "pos": [
+     3.5,
+     37
+    ]
+   },
+   "extras": {
+    "fontOfPower": [
+     4,
+     18
+    ],
+    "shrines": [
+     {
+      "type": "shrine_power",
+      "pos": [
+       19,
+       25
+      ]
+     },
+     {
+      "type": "shrine_ward",
+      "pos": [
+       7.5,
+       12
+      ]
+     }
+    ],
+    "riftSpots": [
+     [
+      15,
+      19.5
+     ],
+     [
+      29.5,
+      4
+     ],
+     [
+      6,
+      8
+     ],
+     [
+      30,
+      16
+     ],
+     [
+      14,
+      32
+     ],
+     [
+      8,
+      19.5
+     ]
+    ]
+   }
+  },
+  {
+   "id": "buzul_tahti",
+   "name": "Buzul Tahtı",
+   "shortName": "Buzul",
+   "lore": "Kuzeyin ötesinde, bir zamanlar adil bir kral olan Tuğrul, ölümsüzlük uğruna kalbini buza sattı. Sarayı donmuş bir mezara, şövalyeleri buz heykellere döndü. Buz Cadısı Ayaz Ana kulesinden fırtınaları yönetirken, Kırağı adlı ejder tahtın üzerinde süzülür. Ak Pençe ise mağarasında yeni kemikler bekler.",
+   "levelRange": [
+    30,
+    40
+   ],
+   "timerSec": 840,
+   "forcesRequired": 250,
+   "theme": {
+    "fogColor": "0xa8c8e0",
+    "fogNear": 12,
+    "fogFar": 55,
+    "ambient": "0x9ab8d8",
+    "ambientIntensity": 0.6,
+    "hemiSky": "0xdff0ff",
+    "hemiGround": "0x405060",
+    "torchColor": "0x80c8ff",
+    "bloomStrength": 0.7,
+    "music": "dungeon_frost",
+    "palette": [
+     "0xeaf6ff",
+     "0x9fd8ff",
+     "0x4a7aa0",
+     "0x203a5a",
+     "0xffd8a0"
+    ],
+    "tint": "0xc8e0ff"
+   },
+   "grid": {
+    "w": 40,
+    "h": 40
+   },
+   "rooms": [
+    {
+     "id": "giris",
+     "name": "Donmuş Kapı",
+     "rect": {
+      "x": 17,
+      "z": 34,
+      "w": 6,
+      "h": 5
+     },
+     "floor": "ice",
+     "wall": "ice",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "k_giris",
+     "name": "Kar Geçidi",
+     "rect": {
+      "x": 19,
+      "z": 29,
+      "w": 2,
+      "h": 5
+     },
+     "floor": "ice",
+     "wall": "ice",
+     "autoDecor": 0.4
+    },
+    {
+     "id": "buz_avlusu",
+     "name": "Donmuş Avlu",
+     "rect": {
+      "x": 12,
+      "z": 17,
+      "w": 16,
+      "h": 12
+     },
+     "floor": "ice",
+     "wall": "ice",
+     "autoDecor": 0.5
+    },
+    {
+     "id": "k_bati",
+     "name": "Yeti Patikası",
+     "rect": {
+      "x": 8,
+      "z": 21,
+      "w": 4,
+      "h": 2
+     },
+     "floor": "dirt",
+     "wall": "cave",
+     "autoDecor": 0.5
+    },
+    {
+     "id": "yeti_magarasi",
+     "name": "Yeti İni",
+     "rect": {
+      "x": 0,
+      "z": 15,
+      "w": 8,
+      "h": 11
+     },
+     "floor": "dirt",
+     "wall": "cave",
+     "autoDecor": 0.3,
+     "boss": 1
+    },
+    {
+     "id": "k_kuzeybati",
+     "name": "Buzlu Merdiven",
+     "rect": {
+      "x": 3,
+      "z": 10,
+      "w": 2,
+      "h": 5
+     },
+     "floor": "ice",
+     "wall": "ice",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "buz_kutuphane",
+     "name": "Buz Kütüphanesi",
+     "rect": {
+      "x": 0,
+      "z": 0,
+      "w": 10,
+      "h": 10
+     },
+     "floor": "wood",
+     "wall": "ice",
+     "autoDecor": 0.6
+    },
+    {
+     "id": "k_kuzey",
+     "name": "Kristal Koridor",
+     "rect": {
+      "x": 10,
+      "z": 4,
+      "w": 5,
+      "h": 2
+     },
+     "floor": "ice",
+     "wall": "ice",
+     "autoDecor": 0.4
+    },
+    {
+     "id": "merdiven",
+     "name": "Donmuş Şelale Yolu",
+     "rect": {
+      "x": 19,
+      "z": 10,
+      "w": 2,
+      "h": 7
+     },
+     "floor": "ice",
+     "wall": "ice",
+     "autoDecor": 0.3,
+     "skip": true
+    },
+    {
+     "id": "cadi_kulesi",
+     "name": "Cadı Kulesi",
+     "rect": {
+      "x": 15,
+      "z": 0,
+      "w": 10,
+      "h": 10
+     },
+     "floor": "tiles",
+     "wall": "ice",
+     "autoDecor": 0.2,
+     "boss": 2
+    },
+    {
+     "id": "k_dogu",
+     "name": "Ayaz Köprüsü",
+     "rect": {
+      "x": 25,
+      "z": 4,
+      "w": 4,
+      "h": 2
+     },
+     "floor": "ice",
+     "wall": "ice",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "kristal_galeri",
+     "name": "Kristal Galeri",
+     "rect": {
+      "x": 29,
+      "z": 0,
+      "w": 10,
+      "h": 11
+     },
+     "floor": "ice",
+     "wall": "ice",
+     "autoDecor": 0.6
+    },
+    {
+     "id": "k_guneydogu",
+     "name": "Şövalye Yolu",
+     "rect": {
+      "x": 33,
+      "z": 11,
+      "w": 2,
+      "h": 4
+     },
+     "floor": "tiles",
+     "wall": "ice",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "sovalye_salonu",
+     "name": "Ayaz Şövalyeleri Salonu",
+     "rect": {
+      "x": 29,
+      "z": 15,
+      "w": 11,
+      "h": 9
+     },
+     "floor": "tiles",
+     "wall": "ice",
+     "autoDecor": 0.4
+    },
+    {
+     "id": "k_taht",
+     "name": "Taht Kapısı",
+     "rect": {
+      "x": 33,
+      "z": 24,
+      "w": 2,
+      "h": 3
+     },
+     "floor": "tiles",
+     "wall": "ice",
+     "autoDecor": 0.2
+    },
+    {
+     "id": "buzul_tahti",
+     "name": "Buzul Tahtı",
+     "rect": {
+      "x": 28,
+      "z": 27,
+      "w": 12,
+      "h": 12
+     },
+     "floor": "ice",
+     "wall": "ice",
+     "autoDecor": 0.1,
+     "boss": 3
+    }
+   ],
+   "doors": [
+    {
+     "a": "giris",
+     "b": "k_giris",
+     "tile": [
+      19,
+      34
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_giris",
+     "b": "buz_avlusu",
+     "tile": [
+      19,
+      29
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "buz_avlusu",
+     "b": "k_bati",
+     "tile": [
+      12,
+      21
+     ],
+     "side": "w",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_bati",
+     "b": "yeti_magarasi",
+     "tile": [
+      8,
+      21
+     ],
+     "side": "w",
+     "width": 2,
+     "gate": "boss_lock"
+    },
+    {
+     "a": "yeti_magarasi",
+     "b": "k_kuzeybati",
+     "tile": [
+      3,
+      15
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "boss_exit"
+    },
+    {
+     "a": "k_kuzeybati",
+     "b": "buz_kutuphane",
+     "tile": [
+      3,
+      10
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "buz_kutuphane",
+     "b": "k_kuzey",
+     "tile": [
+      9,
+      4
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_kuzey",
+     "b": "cadi_kulesi",
+     "tile": [
+      14,
+      4
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "boss_lock"
+    },
+    {
+     "a": "buz_avlusu",
+     "b": "merdiven",
+     "tile": [
+      19,
+      17
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "merdiven",
+     "b": "cadi_kulesi",
+     "tile": [
+      19,
+      10
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "boss_lock"
+    },
+    {
+     "a": "cadi_kulesi",
+     "b": "k_dogu",
+     "tile": [
+      24,
+      4
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "boss_exit"
+    },
+    {
+     "a": "k_dogu",
+     "b": "kristal_galeri",
+     "tile": [
+      28,
+      4
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "kristal_galeri",
+     "b": "k_guneydogu",
+     "tile": [
+      33,
+      10
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_guneydogu",
+     "b": "sovalye_salonu",
+     "tile": [
+      33,
+      14
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "sovalye_salonu",
+     "b": "k_taht",
+     "tile": [
+      33,
+      23
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_taht",
+     "b": "buzul_tahti",
+     "tile": [
+      33,
+      26
+     ],
+     "side": "s",
+     "width": 2,
+     "gate": "boss_lock"
+    }
+   ],
+   "packs": [
+    {
+     "id": "d3_p01",
+     "roomId": "k_giris",
+     "center": [
+      19.5,
+      31
+     ],
+     "members": [
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.24,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        -0.3,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.05,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        0.38,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        -0.7,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        0.66,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        -0.22,
+        1.03
+       ]
+      }
+     ],
+     "forces": 10
+    },
+    {
+     "id": "d3_p02",
+     "roomId": "buz_avlusu",
+     "center": [
+      14.5,
+      26
+     ],
+     "members": [
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "frost_wraith",
+       "offset": [
+        -1.12,
+        -0.56
+       ]
+      }
+     ],
+     "forces": 12
+    },
+    {
+     "id": "d3_p03",
+     "roomId": "buz_avlusu",
+     "center": [
+      25,
+      26
+     ],
+     "members": [
+      {
+       "enemyId": "yeti_brute",
+       "offset": [
+        0,
+        0
+       ]
+      },
+      {
+       "enemyId": "snow_spider",
+       "offset": [
+        0.95,
+        -0.93
+       ]
+      },
+      {
+       "enemyId": "snow_spider",
+       "offset": [
+        1.32,
+        -0.11
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d3_p04",
+     "roomId": "buz_avlusu",
+     "center": [
+      23.5,
+      22.5
+     ],
+     "members": [
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        -0.53,
+        -1.02
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        1.15,
+        0.42
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        -1.2,
+        0.49
+       ]
+      }
+     ],
+     "forces": 10
+    },
+    {
+     "id": "d3_p05",
+     "roomId": "buz_avlusu",
+     "center": [
+      14.5,
+      19.5
+     ],
+     "members": [
+      {
+       "enemyId": "frost_slime",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_slime",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "frost_slime",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "frost_slime",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "ice_elemental",
+       "offset": [
+        -0.61,
+        -1.09
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d3_p06",
+     "roomId": "buz_avlusu",
+     "center": [
+      25,
+      19.5
+     ],
+     "members": [
+      {
+       "enemyId": "frost_knight",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d3_p07",
+     "roomId": "buz_avlusu",
+     "center": [
+      16,
+      23
+     ],
+     "members": [
+      {
+       "enemyId": "yeti_brute",
+       "offset": [
+        0,
+        0
+       ]
+      }
+     ],
+     "patrol": [
+      [
+       14,
+       23
+      ],
+      [
+       26,
+       23
+      ]
+     ],
+     "forces": 8
+    },
+    {
+     "id": "d3_p08",
+     "roomId": "buz_avlusu",
+     "center": [
+      19.5,
+      19
+     ],
+     "members": [
+      {
+       "enemyId": "frost_wraith",
+       "offset": [
+        -1.35,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_wraith",
+       "offset": [
+        -0.45,
+        0
+       ]
+      },
+      {
+       "enemyId": "snow_spider",
+       "offset": [
+        0.45,
+        0
+       ]
+      },
+      {
+       "enemyId": "snow_spider",
+       "offset": [
+        1.35,
+        0
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d3_p09",
+     "roomId": "k_bati",
+     "center": [
+      10,
+      21.5
+     ],
+     "members": [
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "snow_spider",
+       "offset": [
+        -1.25,
+        0.45
+       ]
+      },
+      {
+       "enemyId": "snow_spider",
+       "offset": [
+        -1.25,
+        -0.45
+       ]
+      }
+     ],
+     "forces": 9
+    },
+    {
+     "id": "d3_p10",
+     "roomId": "k_kuzeybati",
+     "center": [
+      3.5,
+      12.5
+     ],
+     "members": [
+      {
+       "enemyId": "frost_slime",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_slime",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "frost_slime",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      }
+     ],
+     "forces": 6
+    },
+    {
+     "id": "d3_p11",
+     "roomId": "buz_kutuphane",
+     "center": [
+      2.5,
+      2.5
+     ],
+     "members": [
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "frost_wraith",
+       "offset": [
+        -0.62,
+        -1.17
+       ]
+      },
+      {
+       "enemyId": "frost_wraith",
+       "offset": [
+        0.27,
+        -1.3
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d3_p12",
+     "roomId": "buz_kutuphane",
+     "center": [
+      7,
+      2.5
+     ],
+     "members": [
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "ice_elemental",
+       "offset": [
+        0.16,
+        -1.32
+       ]
+      },
+      {
+       "enemyId": "frost_wraith",
+       "offset": [
+        0.96,
+        -0.92
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d3_p13",
+     "roomId": "buz_kutuphane",
+     "center": [
+      5,
+      7
+     ],
+     "members": [
+      {
+       "enemyId": "frost_knight",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_slime",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "frost_slime",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "frost_slime",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d3_p14",
+     "roomId": "k_kuzey",
+     "center": [
+      12,
+      4.5
+     ],
+     "members": [
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      }
+     ],
+     "forces": 8
+    },
+    {
+     "id": "d3_p15",
+     "roomId": "merdiven",
+     "center": [
+      19.5,
+      13.5
+     ],
+     "members": [
+      {
+       "enemyId": "ice_elemental",
+       "offset": [
+        0,
+        0
+       ]
+      }
+     ],
+     "optional": true,
+     "forces": 6
+    },
+    {
+     "id": "d3_p16",
+     "roomId": "k_dogu",
+     "center": [
+      26.5,
+      4.5
+     ],
+     "members": [
+      {
+       "enemyId": "snow_spider",
+       "offset": [
+        0,
+        -0.7
+       ]
+      },
+      {
+       "enemyId": "snow_spider",
+       "offset": [
+        0,
+        0
+       ]
+      },
+      {
+       "enemyId": "snow_spider",
+       "offset": [
+        0,
+        0.7
+       ]
+      }
+     ],
+     "forces": 9
+    },
+    {
+     "id": "d3_p17",
+     "roomId": "kristal_galeri",
+     "center": [
+      31.5,
+      2.5
+     ],
+     "members": [
+      {
+       "enemyId": "frost_slime",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_slime",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "ice_elemental",
+       "offset": [
+        0.79,
+        -1.07
+       ]
+      },
+      {
+       "enemyId": "ice_elemental",
+       "offset": [
+        1.29,
+        -0.32
+       ]
+      }
+     ],
+     "forces": 16
+    },
+    {
+     "id": "d3_p18",
+     "roomId": "kristal_galeri",
+     "center": [
+      36.5,
+      2.5
+     ],
+     "members": [
+      {
+       "enemyId": "yeti_brute",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "ice_bat",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d3_p19",
+     "roomId": "kristal_galeri",
+     "center": [
+      31.5,
+      8
+     ],
+     "members": [
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "frost_wraith",
+       "offset": [
+        1.16,
+        0.66
+       ]
+      },
+      {
+       "enemyId": "frost_wraith",
+       "offset": [
+        0.47,
+        1.24
+       ]
+      }
+     ],
+     "forces": 16
+    },
+    {
+     "id": "d3_p20",
+     "roomId": "kristal_galeri",
+     "center": [
+      36.5,
+      7.5
+     ],
+     "members": [
+      {
+       "enemyId": "frost_knight",
+       "offset": [
+        0,
+        0
+       ]
+      },
+      {
+       "enemyId": "ice_elemental",
+       "offset": [
+        1.33,
+        0.02
+       ]
+      },
+      {
+       "enemyId": "snow_spider",
+       "offset": [
+        1.01,
+        0.86
+       ]
+      }
+     ],
+     "forces": 17
+    },
+    {
+     "id": "d3_p21",
+     "roomId": "k_guneydogu",
+     "center": [
+      33.5,
+      12.5
+     ],
+     "members": [
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "frost_slime",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "frost_slime",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      }
+     ],
+     "forces": 8
+    },
+    {
+     "id": "d3_p22",
+     "roomId": "sovalye_salonu",
+     "center": [
+      31.5,
+      17
+     ],
+     "members": [
+      {
+       "enemyId": "frost_knight",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_knight",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      }
+     ],
+     "forces": 16
+    },
+    {
+     "id": "d3_p23",
+     "roomId": "sovalye_salonu",
+     "center": [
+      37,
+      17
+     ],
+     "members": [
+      {
+       "enemyId": "frost_knight",
+       "offset": [
+        0,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_wraith",
+       "offset": [
+        1.28,
+        0.36
+       ]
+      },
+      {
+       "enemyId": "frost_wraith",
+       "offset": [
+        0.76,
+        1.09
+       ]
+      }
+     ],
+     "forces": 16
+    },
+    {
+     "id": "d3_p24",
+     "roomId": "sovalye_salonu",
+     "center": [
+      34,
+      21
+     ],
+     "members": [
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "ice_elemental",
+       "offset": [
+        0.1,
+        1.25
+       ]
+      }
+     ],
+     "forces": 18
+    },
+    {
+     "id": "d3_p25",
+     "roomId": "k_taht",
+     "center": [
+      33.5,
+      25
+     ],
+     "members": [
+      {
+       "enemyId": "frost_knight",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "frost_dead",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      }
+     ],
+     "forces": 12
+    }
+   ],
+   "bosses": [
+    {
+     "bossId": "boss_ak_pence",
+     "roomId": "yeti_magarasi",
+     "pos": [
+      3.5,
+      20.5
+     ],
+     "facing": 90,
+     "order": 1
+    },
+    {
+     "bossId": "boss_ayaz_ana",
+     "roomId": "cadi_kulesi",
+     "pos": [
+      19.5,
+      4.5
+     ],
+     "facing": 180,
+     "order": 2
+    },
+    {
+     "bossId": "boss_tugrul",
+     "roomId": "buzul_tahti",
+     "pos": [
+      33.5,
+      34
+     ],
+     "facing": 180,
+     "order": 3
+    }
+   ],
+   "start": {
+    "pos": [
+     19.5,
+     37
+    ],
+    "facing": 180
+   },
+   "exit": {
+    "pos": [
+     33.5,
+     29
+    ]
+   },
+   "extras": {
+    "fontOfPower": [
+     19.5,
+     35
+    ],
+    "shrines": [
+     {
+      "type": "shrine_power",
+      "pos": [
+       27,
+       28
+      ]
+     },
+     {
+      "type": "shrine_ward",
+      "pos": [
+       39,
+       22
+      ]
+     }
+    ],
+    "riftSpots": [
+     [
+      19.5,
+      26
+     ],
+     [
+      5,
+      5
+     ],
+     [
+      12,
+      4.5
+     ],
+     [
+      34,
+      5
+     ],
+     [
+      34,
+      18
+     ],
+     [
+      22,
+      19
+     ]
+    ]
+   }
+  },
+  {
+   "id": "golge_tapinagi",
+   "name": "Gölge Tapınağı",
+   "shortName": "Tapınak",
+   "lore": "Gölge Tarikatı, yüzyıllardır mühürlü olan tapınağı yeniden açtı. Müritler gece gündüz ayin yapıyor; amaçları, tapınağın derinliklerinde uyuyan İblis Lordu Zakhar'ı uyandırmak. Gözcü Nefris gölgelerden izler, Yutucu Kevvas boşluk çukurunda açlıkla bekler. Mühürler zayıflıyor. Zaman daralıyor.",
+   "levelRange": [
+    42,
+    52
+   ],
+   "timerSec": 900,
+   "forcesRequired": 210,
+   "theme": {
+    "fogColor": "0x140a20",
+    "fogNear": 6,
+    "fogFar": 34,
+    "ambient": "0x302048",
+    "ambientIntensity": 0.3,
+    "hemiSky": "0x6040a0",
+    "hemiGround": "0x100818",
+    "torchColor": "0xb060ff",
+    "bloomStrength": 1,
+    "music": "dungeon_shadow",
+    "palette": [
+     "0x0e0814",
+     "0x3a1050",
+     "0x8040ff",
+     "0xb060ff",
+     "0x801020"
+    ],
+    "tint": "0x9080b0"
+   },
+   "grid": {
+    "w": 40,
+    "h": 40
+   },
+   "rooms": [
+    {
+     "id": "giris",
+     "name": "Mühürlü Kapı",
+     "rect": {
+      "x": 17,
+      "z": 34,
+      "w": 6,
+      "h": 5
+     },
+     "floor": "temple",
+     "wall": "temple",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "avlu_giris",
+     "name": "Mühürlü Avlu",
+     "rect": {
+      "x": 14,
+      "z": 27,
+      "w": 12,
+      "h": 7
+     },
+     "floor": "temple",
+     "wall": "temple",
+     "autoDecor": 0.5
+    },
+    {
+     "id": "k_bati",
+     "name": "Fısıltı Koridoru",
+     "rect": {
+      "x": 9,
+      "z": 29,
+      "w": 5,
+      "h": 2
+     },
+     "floor": "temple",
+     "wall": "temple",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "bati_kanadi",
+     "name": "Fısıltı Kanadı",
+     "rect": {
+      "x": 1,
+      "z": 22,
+      "w": 8,
+      "h": 12
+     },
+     "floor": "temple",
+     "wall": "temple",
+     "autoDecor": 0.6
+    },
+    {
+     "id": "k_bati_kuzey",
+     "name": "Gözcü Merdiveni",
+     "rect": {
+      "x": 4,
+      "z": 17,
+      "w": 2,
+      "h": 5
+     },
+     "floor": "temple",
+     "wall": "temple",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "nefris_odasi",
+     "name": "Gözcü Odası",
+     "rect": {
+      "x": 0,
+      "z": 6,
+      "w": 10,
+      "h": 11
+     },
+     "floor": "temple",
+     "wall": "temple",
+     "autoDecor": 0.2,
+     "boss": 1
+    },
+    {
+     "id": "k_dogu",
+     "name": "Ayin Koridoru",
+     "rect": {
+      "x": 26,
+      "z": 29,
+      "w": 5,
+      "h": 2
+     },
+     "floor": "temple",
+     "wall": "temple",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "dogu_kanadi",
+     "name": "Ayin Kanadı",
+     "rect": {
+      "x": 31,
+      "z": 22,
+      "w": 8,
+      "h": 12
+     },
+     "floor": "temple",
+     "wall": "temple",
+     "autoDecor": 0.6
+    },
+    {
+     "id": "k_dogu_kuzey",
+     "name": "Çukur Merdiveni",
+     "rect": {
+      "x": 34,
+      "z": 17,
+      "w": 2,
+      "h": 5
+     },
+     "floor": "temple",
+     "wall": "temple",
+     "autoDecor": 0.3
+    },
+    {
+     "id": "kevvas_cukuru",
+     "name": "Boşluk Çukuru",
+     "rect": {
+      "x": 30,
+      "z": 6,
+      "w": 10,
+      "h": 11
+     },
+     "floor": "stone_dark",
+     "wall": "cave",
+     "autoDecor": 0.15,
+     "boss": 2
+    },
+    {
+     "id": "k_merkez_bati",
+     "name": "Batı Kısayolu",
+     "rect": {
+      "x": 10,
+      "z": 15,
+      "w": 4,
+      "h": 2
+     },
+     "floor": "temple",
+     "wall": "temple",
+     "autoDecor": 0.1
+    },
+    {
+     "id": "k_merkez_dogu",
+     "name": "Doğu Kısayolu",
+     "rect": {
+      "x": 26,
+      "z": 15,
+      "w": 4,
+      "h": 2
+     },
+     "floor": "temple",
+     "wall": "temple",
+     "autoDecor": 0.1
+    },
+    {
+     "id": "kara_hol",
+     "name": "Kara Hol",
+     "rect": {
+      "x": 14,
+      "z": 15,
+      "w": 12,
+      "h": 12
+     },
+     "floor": "temple",
+     "wall": "temple",
+     "autoDecor": 0.4
+    },
+    {
+     "id": "k_final",
+     "name": "Uyanış Eşiği",
+     "rect": {
+      "x": 19,
+      "z": 14,
+      "w": 2,
+      "h": 1
+     },
+     "floor": "temple",
+     "wall": "temple",
+     "autoDecor": 0
+    },
+    {
+     "id": "zakhar_sunagi",
+     "name": "Zakhar Sunağı",
+     "rect": {
+      "x": 13,
+      "z": 0,
+      "w": 14,
+      "h": 14
+     },
+     "floor": "temple",
+     "wall": "temple",
+     "autoDecor": 0.1,
+     "boss": 3
+    }
+   ],
+   "doors": [
+    {
+     "a": "giris",
+     "b": "avlu_giris",
+     "tile": [
+      19,
+      34
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "avlu_giris",
+     "b": "k_bati",
+     "tile": [
+      14,
+      29
+     ],
+     "side": "w",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_bati",
+     "b": "bati_kanadi",
+     "tile": [
+      9,
+      29
+     ],
+     "side": "w",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "bati_kanadi",
+     "b": "k_bati_kuzey",
+     "tile": [
+      4,
+      22
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_bati_kuzey",
+     "b": "nefris_odasi",
+     "tile": [
+      4,
+      17
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "boss_lock"
+    },
+    {
+     "a": "nefris_odasi",
+     "b": "k_merkez_bati",
+     "tile": [
+      9,
+      15
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "boss_exit"
+    },
+    {
+     "a": "k_merkez_bati",
+     "b": "kara_hol",
+     "tile": [
+      13,
+      15
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "avlu_giris",
+     "b": "k_dogu",
+     "tile": [
+      25,
+      29
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_dogu",
+     "b": "dogu_kanadi",
+     "tile": [
+      30,
+      29
+     ],
+     "side": "e",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "dogu_kanadi",
+     "b": "k_dogu_kuzey",
+     "tile": [
+      34,
+      22
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_dogu_kuzey",
+     "b": "kevvas_cukuru",
+     "tile": [
+      34,
+      17
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "boss_lock"
+    },
+    {
+     "a": "kevvas_cukuru",
+     "b": "k_merkez_dogu",
+     "tile": [
+      30,
+      15
+     ],
+     "side": "w",
+     "width": 2,
+     "gate": "boss_exit"
+    },
+    {
+     "a": "k_merkez_dogu",
+     "b": "kara_hol",
+     "tile": [
+      26,
+      15
+     ],
+     "side": "w",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "avlu_giris",
+     "b": "kara_hol",
+     "tile": [
+      19,
+      27
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "kara_hol",
+     "b": "k_final",
+     "tile": [
+      19,
+      15
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "none"
+    },
+    {
+     "a": "k_final",
+     "b": "zakhar_sunagi",
+     "tile": [
+      19,
+      14
+     ],
+     "side": "n",
+     "width": 2,
+     "gate": "boss_lock"
+    }
+   ],
+   "packs": [
+    {
+     "id": "d4_p01",
+     "roomId": "avlu_giris",
+     "center": [
+      16,
+      30.5
+     ],
+     "members": [
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.53,
+        -1.02
+       ]
+      },
+      {
+       "enemyId": "shadow_priest",
+       "offset": [
+        -0.95,
+        -0.81
+       ]
+      }
+     ],
+     "forces": 13
+    },
+    {
+     "id": "d4_p02",
+     "roomId": "avlu_giris",
+     "center": [
+      23,
+      30.5
+     ],
+     "members": [
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.53,
+        -1.02
+       ]
+      },
+      {
+       "enemyId": "cult_summoner",
+       "offset": [
+        0.95,
+        -0.81
+       ]
+      }
+     ],
+     "forces": 13
+    },
+    {
+     "id": "d4_p03",
+     "roomId": "avlu_giris",
+     "center": [
+      19.5,
+      29
+     ],
+     "members": [
+      {
+       "enemyId": "void_demon",
+       "offset": [
+        0,
+        0
+       ]
+      },
+      {
+       "enemyId": "shade",
+       "offset": [
+        -0.45,
+        -1.25
+       ]
+      },
+      {
+       "enemyId": "shade",
+       "offset": [
+        0.45,
+        -1.25
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d4_p04",
+     "roomId": "k_bati",
+     "center": [
+      11,
+      29.5
+     ],
+     "members": [
+      {
+       "enemyId": "cult_assassin",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "cult_assassin",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "cult_assassin",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      }
+     ],
+     "forces": 9
+    },
+    {
+     "id": "d4_p05",
+     "roomId": "bati_kanadi",
+     "center": [
+      3,
+      31
+     ],
+     "members": [
+      {
+       "enemyId": "shade",
+       "offset": [
+        0.36,
+        1.3
+       ]
+      },
+      {
+       "enemyId": "shade",
+       "offset": [
+        0.12,
+        0.43
+       ]
+      },
+      {
+       "enemyId": "shade",
+       "offset": [
+        -0.12,
+        -0.43
+       ]
+      },
+      {
+       "enemyId": "shadow_priest",
+       "offset": [
+        -0.36,
+        -1.3
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d4_p06",
+     "roomId": "bati_kanadi",
+     "center": [
+      6.5,
+      28
+     ],
+     "members": [
+      {
+       "enemyId": "shadow_spider",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "shadow_spider",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "shadow_spider",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      }
+     ],
+     "forces": 13
+    },
+    {
+     "id": "d4_p07",
+     "roomId": "bati_kanadi",
+     "center": [
+      3,
+      25
+     ],
+     "members": [
+      {
+       "enemyId": "void_demon",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "cult_assassin",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "cult_assassin",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d4_p08",
+     "roomId": "bati_kanadi",
+     "center": [
+      6.5,
+      23.5
+     ],
+     "members": [
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "cult_summoner",
+       "offset": [
+        -1.68,
+        -0.76
+       ]
+      },
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        -0.82,
+        -1.04
+       ]
+      },
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        0.03,
+        -1.33
+       ]
+      },
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        0.89,
+        -1.61
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d4_p09",
+     "roomId": "k_bati_kuzey",
+     "center": [
+      4.5,
+      19
+     ],
+     "members": [
+      {
+       "enemyId": "cult_assassin",
+       "offset": [
+        0,
+        0
+       ]
+      },
+      {
+       "enemyId": "shade",
+       "offset": [
+        -0.45,
+        -1.25
+       ]
+      },
+      {
+       "enemyId": "shade",
+       "offset": [
+        0.45,
+        -1.25
+       ]
+      }
+     ],
+     "forces": 9
+    },
+    {
+     "id": "d4_p10",
+     "roomId": "k_dogu",
+     "center": [
+      28,
+      29.5
+     ],
+     "members": [
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        0,
+        -0.7
+       ]
+      },
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        0,
+        -0.23
+       ]
+      },
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        0,
+        0.23
+       ]
+      },
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        0,
+        0.7
+       ]
+      }
+     ],
+     "forces": 8
+    },
+    {
+     "id": "d4_p11",
+     "roomId": "dogu_kanadi",
+     "center": [
+      36,
+      31
+     ],
+     "members": [
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "shadow_priest",
+       "offset": [
+        1.32,
+        -0.11
+       ]
+      },
+      {
+       "enemyId": "cult_summoner",
+       "offset": [
+        1.09,
+        0.76
+       ]
+      }
+     ],
+     "forces": 16
+    },
+    {
+     "id": "d4_p12",
+     "roomId": "dogu_kanadi",
+     "center": [
+      32.5,
+      28
+     ],
+     "members": [
+      {
+       "enemyId": "shadow_spider",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "shadow_spider",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "shadow_spider",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "shadow_spider",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      }
+     ],
+     "forces": 12
+    },
+    {
+     "id": "d4_p13",
+     "roomId": "dogu_kanadi",
+     "center": [
+      36.5,
+      25
+     ],
+     "members": [
+      {
+       "enemyId": "void_demon",
+       "offset": [
+        0,
+        0
+       ]
+      },
+      {
+       "enemyId": "shadow_priest",
+       "offset": [
+        1,
+        -0.75
+       ]
+      }
+     ],
+     "forces": 13
+    },
+    {
+     "id": "d4_p14",
+     "roomId": "dogu_kanadi",
+     "center": [
+      32.5,
+      23.5
+     ],
+     "members": [
+      {
+       "enemyId": "shade",
+       "offset": [
+        -1.7,
+        -0.71
+       ]
+      },
+      {
+       "enemyId": "shade",
+       "offset": [
+        -1.02,
+        -0.43
+       ]
+      },
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        -0.34,
+        -0.14
+       ]
+      },
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        0.34,
+        0.14
+       ]
+      },
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        1.02,
+        0.43
+       ]
+      },
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        1.7,
+        0.71
+       ]
+      }
+     ],
+     "forces": 14
+    },
+    {
+     "id": "d4_p15",
+     "roomId": "k_dogu_kuzey",
+     "center": [
+      34.5,
+      19
+     ],
+     "members": [
+      {
+       "enemyId": "void_demon",
+       "offset": [
+        0,
+        0
+       ]
+      }
+     ],
+     "forces": 8
+    },
+    {
+     "id": "d4_p16",
+     "roomId": "kara_hol",
+     "center": [
+      16.5,
+      24
+     ],
+     "members": [
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.83,
+        -0.53
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.28,
+        1.03
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.53,
+        -1.02
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        1.15,
+        0.42
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -1.2,
+        0.49
+       ]
+      },
+      {
+       "enemyId": "cult_summoner",
+       "offset": [
+        0.42,
+        1.18
+       ]
+      }
+     ],
+     "forces": 15
+    },
+    {
+     "id": "d4_p17",
+     "roomId": "kara_hol",
+     "center": [
+      22.5,
+      24
+     ],
+     "members": [
+      {
+       "enemyId": "void_demon",
+       "offset": [
+        0,
+        0
+       ]
+      },
+      {
+       "enemyId": "shadow_priest",
+       "offset": [
+        1.22,
+        0.53
+       ]
+      },
+      {
+       "enemyId": "shade",
+       "offset": [
+        0.6,
+        1.19
+       ]
+      }
+     ],
+     "forces": 16
+    },
+    {
+     "id": "d4_p18",
+     "roomId": "kara_hol",
+     "center": [
+      16.5,
+      18
+     ],
+     "members": [
+      {
+       "enemyId": "shadow_spider",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "shadow_spider",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "cult_assassin",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "cult_assassin",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      }
+     ],
+     "forces": 12
+    },
+    {
+     "id": "d4_p19",
+     "roomId": "kara_hol",
+     "center": [
+      22.5,
+      18
+     ],
+     "members": [
+      {
+       "enemyId": "cult_summoner",
+       "offset": [
+        0.6,
+        -2.17
+       ]
+      },
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        0.36,
+        -1.3
+       ]
+      },
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        0.12,
+        -0.43
+       ]
+      },
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        -0.12,
+        0.43
+       ]
+      },
+      {
+       "enemyId": "void_imp",
+       "offset": [
+        -0.36,
+        1.3
+       ]
+      },
+      {
+       "enemyId": "shadow_priest",
+       "offset": [
+        -0.6,
+        2.17
+       ]
+      }
+     ],
+     "forces": 18
+    },
+    {
+     "id": "d4_p20",
+     "roomId": "kara_hol",
+     "center": [
+      19.5,
+      21
+     ],
+     "members": [
+      {
+       "enemyId": "void_demon",
+       "offset": [
+        0.3,
+        0
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.38,
+        0.35
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.06,
+        -0.66
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        0.48,
+        0.62
+       ]
+      },
+      {
+       "enemyId": "cult_acolyte",
+       "offset": [
+        -0.88,
+        -0.16
+       ]
+      }
+     ],
+     "patrol": [
+      [
+       15.5,
+       21
+      ],
+      [
+       23.5,
+       21
+      ]
+     ],
+     "forces": 12
+    }
+   ],
+   "bosses": [
+    {
+     "bossId": "boss_nefris",
+     "roomId": "nefris_odasi",
+     "pos": [
+      4.5,
+      9
+     ],
+     "facing": 0,
+     "order": 1
+    },
+    {
+     "bossId": "boss_kevvas",
+     "roomId": "kevvas_cukuru",
+     "pos": [
+      34.5,
+      11
+     ],
+     "facing": 0,
+     "order": 1
+    },
+    {
+     "bossId": "boss_zakhar",
+     "roomId": "zakhar_sunagi",
+     "pos": [
+      19.5,
+      6
+     ],
+     "facing": 0,
+     "order": 3
+    }
+   ],
+   "start": {
+    "pos": [
+     19.5,
+     37
+    ],
+    "facing": 180
+   },
+   "exit": {
+    "pos": [
+     19.5,
+     11
+    ]
+   },
+   "extras": {
+    "fontOfPower": [
+     19.5,
+     35
+    ],
+    "shrines": [
+     {
+      "type": "shrine_haste",
+      "pos": [
+       1,
+       33
+      ]
+     },
+     {
+      "type": "shrine_power",
+      "pos": [
+       25,
+       33
+      ]
+     }
+    ],
+    "riftSpots": [
+     [
+      19.5,
+      31
+     ],
+     [
+      4.5,
+      27
+     ],
+     [
+      35,
+      27
+     ],
+     [
+      19.5,
+      21
+     ],
+     [
+      12,
+      29.5
+     ],
+     [
+      28,
+      29.5
+     ]
+    ]
+   }
+  }
+ ]
+}

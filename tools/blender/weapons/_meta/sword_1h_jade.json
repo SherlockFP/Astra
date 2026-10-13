@@ -1,0 +1,27 @@
+{
+ "id": "sword_1h_jade",
+ "name": "Yeşim Kılıcı",
+ "use": "Eastern (Metin2 style) broad sword, jade tsuba, glowing glyphs (lvl 30-45)",
+ "attach": "grip centre at origin (hand bone); blade +Y; blade flats face +/-Z",
+ "kind": "1h",
+ "emissive": "jade glyphs on blade root",
+ "tris": 196,
+ "parts": 6,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": true,
+ "bbox_min": [
+  -0.079,
+  -0.059,
+  -0.305
+ ],
+ "bbox_max": [
+  0.079,
+  0.059,
+  1.03
+ ],
+ "bytes": 16640
+}

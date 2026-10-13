@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="UTF-8" /><title>Dev: harness example</title></head>
+<body><div id="game-root"><canvas id="game-canvas"></canvas><div id="ui-root"></div></div>
+<script type="module">
+import { bootHarness } from '/src/dev/harness.ts';
+import * as THREE from 'three';
+const h = await bootHarness();
+const m = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), new THREE.MeshStandardMaterial({ color: 0xc08040 }));
+m.position.y = 1; h.scene.add(m);
+h.onFrame((dt) => (m.rotation.y += dt));
+</script></body></html>

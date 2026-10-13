@@ -1,0 +1,709 @@
+{
+ "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/ual/UAL_clips.glb",
+ "bytes": 5889492,
+ "tris": 13743,
+ "size": [
+  2.593,
+  2.438,
+  0.493
+ ],
+ "min": [
+  -1.296,
+  0.001,
+  -0.219
+ ],
+ "max": [
+  1.296,
+  2.439,
+  0.274
+ ],
+ "scale": 1.3333333333333333,
+ "pelvis_height": 1.2223,
+ "bones": 65,
+ "clips": [
+  {
+   "name": "A_TPose",
+   "source": "UAL1",
+   "frames": 75,
+   "seconds": 2.5,
+   "channels": 650,
+   "keys": 76
+  },
+  {
+   "name": "Crouch_Fwd_Loop",
+   "source": "UAL1",
+   "frames": 60,
+   "seconds": 2.0,
+   "channels": 650,
+   "keys": 61
+  },
+  {
+   "name": "Crouch_Idle_Loop",
+   "source": "UAL1",
+   "frames": 88,
+   "seconds": 2.933,
+   "channels": 650,
+   "keys": 89
+  },
+  {
+   "name": "Dance_Loop",
+   "source": "UAL1",
+   "frames": 30,
+   "seconds": 1.0,
+   "channels": 650,
+   "keys": 31
+  },
+  {
+   "name": "Death01",
+   "source": "UAL1",
+   "frames": 72,
+   "seconds": 2.4,
+   "channels": 650,
+   "keys": 73
+  },
+  {
+   "name": "Driving_Loop",
+   "source": "UAL1",
+   "frames": 50,
+   "seconds": 1.667,
+   "channels": 650,
+   "keys": 51
+  },
+  {
+   "name": "Fixing_Kneeling",
+   "source": "UAL1",
+   "frames": 156,
+   "seconds": 5.2,
+   "channels": 650,
+   "keys": 157
+  },
+  {
+   "name": "Hit_Chest",
+   "source": "UAL1",
+   "frames": 10,
+   "seconds": 0.333,
+   "channels": 650,
+   "keys": 11
+  },
+  {
+   "name": "Hit_Head",
+   "source": "UAL1",
+   "frames": 13,
+   "seconds": 0.433,
+   "channels": 650,
+   "keys": 14
+  },
+  {
+   "name": "Idle_Loop",
+   "source": "UAL1",
+   "frames": 75,
+   "seconds": 2.5,
+   "channels": 650,
+   "keys": 76
+  },
+  {
+   "name": "Idle_Talking_Loop",
+   "source": "UAL1",
+   "frames": 88,
+   "seconds": 2.933,
+   "channels": 650,
+   "keys": 89
+  },
+  {
+   "name": "Idle_Torch_Loop",
+   "source": "UAL1",
+   "frames": 38,
+   "seconds": 1.267,
+   "channels": 650,
+   "keys": 39
+  },
+  {
+   "name": "Interact",
+   "source": "UAL1",
+   "frames": 60,
+   "seconds": 2.0,
+   "channels": 650,
+   "keys": 61
+  },
+  {
+   "name": "Jog_Fwd_Loop",
+   "source": "UAL1",
+   "frames": 28,
+   "seconds": 0.933,
+   "channels": 650,
+   "keys": 29
+  },
+  {
+   "name": "Jump_Land",
+   "source": "UAL1",
+   "frames": 38,
+   "seconds": 1.267,
+   "channels": 650,
+   "keys": 39
+  },
+  {
+   "name": "Jump_Loop",
+   "source": "UAL1",
+   "frames": 75,
+   "seconds": 2.5,
+   "channels": 650,
+   "keys": 76
+  },
+  {
+   "name": "Jump_Start",
+   "source": "UAL1",
+   "frames": 40,
+   "seconds": 1.333,
+   "channels": 650,
+   "keys": 41
+  },
+  {
+   "name": "PickUp_Table",
+   "source": "UAL1",
+   "frames": 25,
+   "seconds": 0.833,
+   "channels": 650,
+   "keys": 26
+  },
+  {
+   "name": "Pistol_Aim_Down",
+   "source": "UAL1",
+   "frames": 5,
+   "seconds": 0.167,
+   "channels": 650,
+   "keys": 6
+  },
+  {
+   "name": "Pistol_Aim_Neutral",
+   "source": "UAL1",
+   "frames": 5,
+   "seconds": 0.167,
+   "channels": 650,
+   "keys": 6
+  },
+  {
+   "name": "Pistol_Aim_Up",
+   "source": "UAL1",
+   "frames": 5,
+   "seconds": 0.167,
+   "channels": 650,
+   "keys": 6
+  },
+  {
+   "name": "Pistol_Idle_Loop",
+   "source": "UAL1",
+   "frames": 50,
+   "seconds": 1.667,
+   "channels": 650,
+   "keys": 51
+  },
+  {
+   "name": "Pistol_Reload",
+   "source": "UAL1",
+   "frames": 50,
+   "seconds": 1.667,
+   "channels": 650,
+   "keys": 51
+  },
+  {
+   "name": "Pistol_Shoot",
+   "source": "UAL1",
+   "frames": 19,
+   "seconds": 0.633,
+   "channels": 650,
+   "keys": 20
+  },
+  {
+   "name": "Punch_Cross",
+   "source": "UAL1",
+   "frames": 30,
+   "seconds": 1.0,
+   "channels": 650,
+   "keys": 31
+  },
+  {
+   "name": "Punch_Jab",
+   "source": "UAL1",
+   "frames": 26,
+   "seconds": 0.867,
+   "channels": 650,
+   "keys": 27
+  },
+  {
+   "name": "Push_Loop",
+   "source": "UAL1",
+   "frames": 80,
+   "seconds": 2.667,
+   "channels": 650,
+   "keys": 81
+  },
+  {
+   "name": "Roll",
+   "source": "UAL1",
+   "frames": 44,
+   "seconds": 1.467,
+   "channels": 650,
+   "keys": 45
+  },
+  {
+   "name": "Sitting_Enter",
+   "source": "UAL1",
+   "frames": 39,
+   "seconds": 1.3,
+   "channels": 650,
+   "keys": 40
+  },
+  {
+   "name": "Sitting_Exit",
+   "source": "UAL1",
+   "frames": 31,
+   "seconds": 1.033,
+   "channels": 650,
+   "keys": 32
+  },
+  {
+   "name": "Sitting_Idle_Loop",
+   "source": "UAL1",
+   "frames": 50,
+   "seconds": 1.667,
+   "channels": 650,
+   "keys": 51
+  },
+  {
+   "name": "Sitting_Talking_Loop",
+   "source": "UAL1",
+   "frames": 88,
+   "seconds": 2.933,
+   "channels": 650,
+   "keys": 89
+  },
+  {
+   "name": "Spell_Simple_Enter",
+   "source": "UAL1",
+   "frames": 16,
+   "seconds": 0.533,
+   "channels": 650,
+   "keys": 17
+  },
+  {
+   "name": "Spell_Simple_Exit",
+   "source": "UAL1",
+   "frames": 13,
+   "seconds": 0.433,
+   "channels": 650,
+   "keys": 14
+  },
+  {
+   "name": "Spell_Simple_Idle_Loop",
+   "source": "UAL1",
+   "frames": 63,
+   "seconds": 2.1,
+   "channels": 650,
+   "keys": 64
+  },
+  {
+   "name": "Spell_Simple_Shoot",
+   "source": "UAL1",
+   "frames": 15,
+   "seconds": 0.5,
+   "channels": 650,
+   "keys": 16
+  },
+  {
+   "name": "Sprint_Loop",
+   "source": "UAL1",
+   "frames": 20,
+   "seconds": 0.667,
+   "channels": 650,
+   "keys": 21
+  },
+  {
+   "name": "Swim_Fwd_Loop",
+   "source": "UAL1",
+   "frames": 40,
+   "seconds": 1.333,
+   "channels": 650,
+   "keys": 41
+  },
+  {
+   "name": "Swim_Idle_Loop",
+   "source": "UAL1",
+   "frames": 100,
+   "seconds": 3.333,
+   "channels": 650,
+   "keys": 101
+  },
+  {
+   "name": "Sword_Attack",
+   "source": "UAL1",
+   "frames": 46,
+   "seconds": 1.533,
+   "channels": 650,
+   "keys": 47
+  },
+  {
+   "name": "Sword_Idle",
+   "source": "UAL1",
+   "frames": 50,
+   "seconds": 1.667,
+   "channels": 650,
+   "keys": 51
+  },
+  {
+   "name": "Walk_Formal_Loop",
+   "source": "UAL1",
+   "frames": 40,
+   "seconds": 1.333,
+   "channels": 650,
+   "keys": 41
+  },
+  {
+   "name": "Walk_Loop",
+   "source": "UAL1",
+   "frames": 40,
+   "seconds": 1.333,
+   "channels": 650,
+   "keys": 41
+  },
+  {
+   "name": "Chest_Open",
+   "source": "UAL2",
+   "frames": 41,
+   "seconds": 1.367,
+   "channels": 650,
+   "keys": 42
+  },
+  {
+   "name": "ClimbUp_1m",
+   "source": "UAL2",
+   "frames": 20,
+   "seconds": 0.667,
+   "channels": 650,
+   "keys": 21
+  },
+  {
+   "name": "Consume",
+   "source": "UAL2",
+   "frames": 40,
+   "seconds": 1.333,
+   "channels": 650,
+   "keys": 41
+  },
+  {
+   "name": "Farm_Harvest",
+   "source": "UAL2",
+   "frames": 75,
+   "seconds": 2.5,
+   "channels": 650,
+   "keys": 76
+  },
+  {
+   "name": "Farm_PlantSeed",
+   "source": "UAL2",
+   "frames": 83,
+   "seconds": 2.767,
+   "channels": 650,
+   "keys": 84
+  },
+  {
+   "name": "Farm_Watering",
+   "source": "UAL2",
+   "frames": 114,
+   "seconds": 3.8,
+   "channels": 650,
+   "keys": 115
+  },
+  {
+   "name": "Hit_Knockback",
+   "source": "UAL2",
+   "frames": 25,
+   "seconds": 0.833,
+   "channels": 650,
+   "keys": 26
+  },
+  {
+   "name": "Idle_FoldArms_Loop",
+   "source": "UAL2",
+   "frames": 75,
+   "seconds": 2.5,
+   "channels": 650,
+   "keys": 76
+  },
+  {
+   "name": "Idle_Lantern_Loop",
+   "source": "UAL2",
+   "frames": 75,
+   "seconds": 2.5,
+   "channels": 650,
+   "keys": 76
+  },
+  {
+   "name": "Idle_No_Loop",
+   "source": "UAL2",
+   "frames": 75,
+   "seconds": 2.5,
+   "channels": 650,
+   "keys": 76
+  },
+  {
+   "name": "Idle_Rail_Call",
+   "source": "UAL2",
+   "frames": 75,
+   "seconds": 2.5,
+   "channels": 650,
+   "keys": 76
+  },
+  {
+   "name": "Idle_Rail_Loop",
+   "source": "UAL2",
+   "frames": 75,
+   "seconds": 2.5,
+   "channels": 650,
+   "keys": 76
+  },
+  {
+   "name": "Idle_Shield_Break",
+   "source": "UAL2",
+   "frames": 32,
+   "seconds": 1.067,
+   "channels": 650,
+   "keys": 33
+  },
+  {
+   "name": "Idle_Shield_Loop",
+   "source": "UAL2",
+   "frames": 75,
+   "seconds": 2.5,
+   "channels": 650,
+   "keys": 76
+  },
+  {
+   "name": "Idle_TalkingPhone_Loop",
+   "source": "UAL2",
+   "frames": 88,
+   "seconds": 2.933,
+   "channels": 650,
+   "keys": 89
+  },
+  {
+   "name": "LayToIdle",
+   "source": "UAL2",
+   "frames": 46,
+   "seconds": 1.533,
+   "channels": 650,
+   "keys": 47
+  },
+  {
+   "name": "Melee_Hook",
+   "source": "UAL2",
+   "frames": 14,
+   "seconds": 0.467,
+   "channels": 650,
+   "keys": 15
+  },
+  {
+   "name": "Melee_Hook_Rec",
+   "source": "UAL2",
+   "frames": 18,
+   "seconds": 0.6,
+   "channels": 650,
+   "keys": 19
+  },
+  {
+   "name": "NinjaJump_Idle_Loop",
+   "source": "UAL2",
+   "frames": 60,
+   "seconds": 2.0,
+   "channels": 650,
+   "keys": 61
+  },
+  {
+   "name": "NinjaJump_Land",
+   "source": "UAL2",
+   "frames": 38,
+   "seconds": 1.267,
+   "channels": 650,
+   "keys": 39
+  },
+  {
+   "name": "NinjaJump_Start",
+   "source": "UAL2",
+   "frames": 29,
+   "seconds": 0.967,
+   "channels": 650,
+   "keys": 30
+  },
+  {
+   "name": "OverhandThrow",
+   "source": "UAL2",
+   "frames": 40,
+   "seconds": 1.333,
+   "channels": 650,
+   "keys": 41
+  },
+  {
+   "name": "Shield_Dash",
+   "source": "UAL2",
+   "frames": 33,
+   "seconds": 1.1,
+   "channels": 650,
+   "keys": 34
+  },
+  {
+   "name": "Shield_OneShot",
+   "source": "UAL2",
+   "frames": 25,
+   "seconds": 0.833,
+   "channels": 650,
+   "keys": 26
+  },
+  {
+   "name": "Slide_Exit",
+   "source": "UAL2",
+   "frames": 15,
+   "seconds": 0.5,
+   "channels": 650,
+   "keys": 16
+  },
+  {
+   "name": "Slide_Loop",
+   "source": "UAL2",
+   "frames": 60,
+   "seconds": 2.0,
+   "channels": 650,
+   "keys": 61
+  },
+  {
+   "name": "Slide_Start",
+   "source": "UAL2",
+   "frames": 25,
+   "seconds": 0.833,
+   "channels": 650,
+   "keys": 26
+  },
+  {
+   "name": "Sword_Block",
+   "source": "UAL2",
+   "frames": 37,
+   "seconds": 1.233,
+   "channels": 650,
+   "keys": 38
+  },
+  {
+   "name": "Sword_Dash",
+   "source": "UAL2",
+   "frames": 47,
+   "seconds": 1.567,
+   "channels": 650,
+   "keys": 48
+  },
+  {
+   "name": "Sword_Heavy_Combo",
+   "source": "UAL2",
+   "frames": 130,
+   "seconds": 4.333,
+   "channels": 650,
+   "keys": 131
+  },
+  {
+   "name": "Sword_Regular_A",
+   "source": "UAL2",
+   "frames": 13,
+   "seconds": 0.433,
+   "channels": 650,
+   "keys": 14
+  },
+  {
+   "name": "Sword_Regular_A_Rec",
+   "source": "UAL2",
+   "frames": 29,
+   "seconds": 0.967,
+   "channels": 650,
+   "keys": 30
+  },
+  {
+   "name": "Sword_Regular_B",
+   "source": "UAL2",
+   "frames": 16,
+   "seconds": 0.533,
+   "channels": 650,
+   "keys": 17
+  },
+  {
+   "name": "Sword_Regular_B_Rec",
+   "source": "UAL2",
+   "frames": 31,
+   "seconds": 1.033,
+   "channels": 650,
+   "keys": 32
+  },
+  {
+   "name": "Sword_Regular_C",
+   "source": "UAL2",
+   "frames": 60,
+   "seconds": 2.0,
+   "channels": 650,
+   "keys": 61
+  },
+  {
+   "name": "Sword_Regular_Combo",
+   "source": "UAL2",
+   "frames": 90,
+   "seconds": 3.0,
+   "channels": 650,
+   "keys": 91
+  },
+  {
+   "name": "TreeChopping_Loop",
+   "source": "UAL2",
+   "frames": 29,
+   "seconds": 0.967,
+   "channels": 650,
+   "keys": 30
+  },
+  {
+   "name": "Walk_Carry_Loop",
+   "source": "UAL2",
+   "frames": 60,
+   "seconds": 2.0,
+   "channels": 650,
+   "keys": 61
+  },
+  {
+   "name": "Yes",
+   "source": "UAL2",
+   "frames": 75,
+   "seconds": 2.5,
+   "channels": 650,
+   "keys": 76
+  },
+  {
+   "name": "Zombie_Idle_Loop",
+   "source": "UAL2",
+   "frames": 40,
+   "seconds": 1.333,
+   "channels": 650,
+   "keys": 41
+  },
+  {
+   "name": "Zombie_Scratch",
+   "source": "UAL2",
+   "frames": 54,
+   "seconds": 1.8,
+   "channels": 650,
+   "keys": 55
+  },
+  {
+   "name": "Zombie_Walk_Fwd_Loop",
+   "source": "UAL2",
+   "frames": 40,
+   "seconds": 1.333,
+   "channels": 650,
+   "keys": 41
+  }
+ ],
+ "materials": [
+  "M_Joints",
+  "M_Main"
+ ]
+}

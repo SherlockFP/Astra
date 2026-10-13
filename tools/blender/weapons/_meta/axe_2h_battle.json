@@ -1,0 +1,27 @@
+{
+ "id": "axe_2h_battle",
+ "name": "Çift Ağızlı Savaş Baltası",
+ "use": "Double-bitted two-handed battle axe (lvl 15-35)",
+ "attach": "upper-hand grip at origin; head +Y; lower hand ~0.3-0.4 below on the haft",
+ "kind": "2h",
+ "emissive": "",
+ "tris": 228,
+ "parts": 6,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 15,
+ "has_emit": false,
+ "bbox_min": [
+  -0.33,
+  -0.038,
+  -0.65
+ ],
+ "bbox_max": [
+  0.33,
+  0.038,
+  1.36
+ ],
+ "bytes": 17932
+}

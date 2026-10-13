@@ -1,0 +1,27 @@
+{
+ "id": "sword_2h_demon",
+ "name": "İblis Kılıcı",
+ "use": "Cursed demonic greatsword, barbed black blade, violet runes (raid/boss loot)",
+ "attach": "upper-hand grip at origin; blade +Y; second hand ~0.25 lower on the grip",
+ "kind": "2h",
+ "emissive": "violet rune channel, demon eyes + forehead gem",
+ "tris": 498,
+ "parts": 10,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": true,
+ "bbox_min": [
+  -0.25,
+  -0.046,
+  -0.56
+ ],
+ "bbox_max": [
+  0.25,
+  0.046,
+  1.62
+ ],
+ "bytes": 35536
+}

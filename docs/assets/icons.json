@@ -1,0 +1,4189 @@
+[
+  {
+    "name": "skill-sword-slash",
+    "path": "/assets/icons/skill-sword-slash.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/saber-slash.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "warrior",
+      "knight",
+      "melee",
+      "physical",
+      "slash"
+    ]
+  },
+  {
+    "name": "skill-quick-slash",
+    "path": "/assets/icons/skill-quick-slash.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/quick-slash.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "warrior",
+      "rogue",
+      "melee",
+      "physical",
+      "slash"
+    ]
+  },
+  {
+    "name": "skill-double-strike",
+    "path": "/assets/icons/skill-double-strike.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/crossed-slashes.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "warrior",
+      "melee",
+      "physical",
+      "combo"
+    ]
+  },
+  {
+    "name": "skill-whirlwind",
+    "path": "/assets/icons/skill-whirlwind.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/spinning-sword.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "warrior",
+      "barbarian",
+      "melee",
+      "aoe",
+      "spin"
+    ]
+  },
+  {
+    "name": "skill-blade-storm",
+    "path": "/assets/icons/skill-blade-storm.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/spinning-blades.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "warrior",
+      "barbarian",
+      "melee",
+      "aoe",
+      "channel"
+    ]
+  },
+  {
+    "name": "skill-shield-bash",
+    "path": "/assets/icons/skill-shield-bash.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/shield-bash.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "knight",
+      "melee",
+      "stun",
+      "shield"
+    ]
+  },
+  {
+    "name": "skill-shield-wall",
+    "path": "/assets/icons/skill-shield-wall.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/surrounded-shield.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "knight",
+      "defensive",
+      "shield"
+    ]
+  },
+  {
+    "name": "skill-charge",
+    "path": "/assets/icons/skill-charge.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/charging-bull.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "warrior",
+      "barbarian",
+      "movement",
+      "gap-closer"
+    ]
+  },
+  {
+    "name": "skill-war-cry",
+    "path": "/assets/icons/skill-war-cry.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/shouting.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "warrior",
+      "barbarian",
+      "buff",
+      "shout"
+    ]
+  },
+  {
+    "name": "skill-battle-shout",
+    "path": "/assets/icons/skill-battle-shout.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/sonic-shout.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "warrior",
+      "knight",
+      "buff",
+      "shout",
+      "aoe"
+    ]
+  },
+  {
+    "name": "skill-taunt",
+    "path": "/assets/icons/skill-taunt.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/shield-opposition.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "knight",
+      "tank",
+      "taunt"
+    ]
+  },
+  {
+    "name": "skill-berserk",
+    "path": "/assets/icons/skill-berserk.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/angry-eyes.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "barbarian",
+      "buff",
+      "rage"
+    ]
+  },
+  {
+    "name": "skill-cleave",
+    "path": "/assets/icons/skill-cleave.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/axe-swing.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "barbarian",
+      "warrior",
+      "melee",
+      "aoe",
+      "cleave"
+    ]
+  },
+  {
+    "name": "skill-leap",
+    "path": "/assets/icons/skill-leap.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/winged-leg.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "warrior",
+      "barbarian",
+      "movement",
+      "leap"
+    ]
+  },
+  {
+    "name": "skill-ground-slam",
+    "path": "/assets/icons/skill-ground-slam.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/quake-stomp.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "barbarian",
+      "melee",
+      "aoe",
+      "stun"
+    ]
+  },
+  {
+    "name": "skill-execute",
+    "path": "/assets/icons/skill-execute.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/decapitation.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "warrior",
+      "melee",
+      "finisher"
+    ]
+  },
+  {
+    "name": "skill-rend",
+    "path": "/assets/icons/skill-rend.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/serrated-slash.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "warrior",
+      "melee",
+      "bleed",
+      "dot"
+    ]
+  },
+  {
+    "name": "skill-parry",
+    "path": "/assets/icons/skill-parry.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/sword-clash.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "knight",
+      "defensive",
+      "parry"
+    ]
+  },
+  {
+    "name": "skill-riposte",
+    "path": "/assets/icons/skill-riposte.svg",
+    "sourceAuthor": "Andy Meneely",
+    "source": "game-icons.net/andymeneely/riposte.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "knight",
+      "rogue",
+      "counter"
+    ]
+  },
+  {
+    "name": "skill-thrust",
+    "path": "/assets/icons/skill-thrust.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/piercing-sword.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "knight",
+      "melee",
+      "pierce"
+    ]
+  },
+  {
+    "name": "skill-iron-skin",
+    "path": "/assets/icons/skill-iron-skin.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/armor-upgrade.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "knight",
+      "defensive",
+      "buff",
+      "armor"
+    ]
+  },
+  {
+    "name": "skill-hammer-of-justice",
+    "path": "/assets/icons/skill-hammer-of-justice.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/thor-hammer.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "knight",
+      "cleric",
+      "stun",
+      "holy"
+    ]
+  },
+  {
+    "name": "skill-claw-strike",
+    "path": "/assets/icons/skill-claw-strike.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/claw-slashes.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "barbarian",
+      "beast",
+      "melee",
+      "slash"
+    ]
+  },
+  {
+    "name": "skill-fireball",
+    "path": "/assets/icons/skill-fireball.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/fireball.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "fire",
+      "projectile"
+    ]
+  },
+  {
+    "name": "skill-fire-wave",
+    "path": "/assets/icons/skill-fire-wave.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/fire-wave.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "fire",
+      "aoe",
+      "cone"
+    ]
+  },
+  {
+    "name": "skill-fire-nova",
+    "path": "/assets/icons/skill-fire-nova.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/fire-ring.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "fire",
+      "aoe",
+      "nova"
+    ]
+  },
+  {
+    "name": "skill-firewall",
+    "path": "/assets/icons/skill-firewall.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/firewall.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "fire",
+      "ground",
+      "zone"
+    ]
+  },
+  {
+    "name": "skill-fire-breath",
+    "path": "/assets/icons/skill-fire-breath.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/fire-breath.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "fire",
+      "cone",
+      "channel"
+    ]
+  },
+  {
+    "name": "skill-meteor",
+    "path": "/assets/icons/skill-meteor.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/burning-meteor.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "fire",
+      "aoe",
+      "ultimate"
+    ]
+  },
+  {
+    "name": "skill-meteor-impact",
+    "path": "/assets/icons/skill-meteor-impact.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/meteor-impact.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "fire",
+      "aoe",
+      "impact"
+    ]
+  },
+  {
+    "name": "skill-frost-nova",
+    "path": "/assets/icons/skill-frost-nova.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/snowflake-2.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "frost",
+      "aoe",
+      "nova",
+      "root"
+    ]
+  },
+  {
+    "name": "skill-frozen-orb",
+    "path": "/assets/icons/skill-frozen-orb.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/frozen-orb.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "frost",
+      "projectile",
+      "orb"
+    ]
+  },
+  {
+    "name": "skill-ice-lance",
+    "path": "/assets/icons/skill-ice-lance.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/ice-spear.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "frost",
+      "projectile",
+      "pierce"
+    ]
+  },
+  {
+    "name": "skill-ice-bolt",
+    "path": "/assets/icons/skill-ice-bolt.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/ice-bolt.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "frost",
+      "projectile"
+    ]
+  },
+  {
+    "name": "skill-blizzard",
+    "path": "/assets/icons/skill-blizzard.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/snowing.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "frost",
+      "aoe",
+      "channel",
+      "zone"
+    ]
+  },
+  {
+    "name": "skill-ice-block",
+    "path": "/assets/icons/skill-ice-block.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/frozen-block.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "frost",
+      "defensive",
+      "immune"
+    ]
+  },
+  {
+    "name": "skill-frost-armor",
+    "path": "/assets/icons/skill-frost-armor.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/frozen-body.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "frost",
+      "buff",
+      "armor"
+    ]
+  },
+  {
+    "name": "skill-arcane-missiles",
+    "path": "/assets/icons/skill-arcane-missiles.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/comet-spark.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "arcane",
+      "projectile",
+      "channel"
+    ]
+  },
+  {
+    "name": "skill-arcane-orb",
+    "path": "/assets/icons/skill-arcane-orb.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/concentration-orb.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "arcane",
+      "projectile",
+      "orb"
+    ]
+  },
+  {
+    "name": "skill-arcane-explosion",
+    "path": "/assets/icons/skill-arcane-explosion.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/bright-explosion.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "arcane",
+      "aoe",
+      "nova"
+    ]
+  },
+  {
+    "name": "skill-blink",
+    "path": "/assets/icons/skill-blink.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/teleport.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "arcane",
+      "movement",
+      "blink"
+    ]
+  },
+  {
+    "name": "skill-teleport",
+    "path": "/assets/icons/skill-teleport.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/magic-portal.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "arcane",
+      "movement",
+      "portal"
+    ]
+  },
+  {
+    "name": "skill-chain-lightning",
+    "path": "/assets/icons/skill-chain-lightning.svg",
+    "sourceAuthor": "Willdabeast",
+    "source": "game-icons.net/willdabeast/chain-lightning.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "lightning",
+      "chain"
+    ]
+  },
+  {
+    "name": "skill-lightning-bolt",
+    "path": "/assets/icons/skill-lightning-bolt.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/focused-lightning.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "lightning",
+      "projectile"
+    ]
+  },
+  {
+    "name": "skill-thunderstorm",
+    "path": "/assets/icons/skill-thunderstorm.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/lightning-storm.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "lightning",
+      "aoe",
+      "zone"
+    ]
+  },
+  {
+    "name": "skill-thunderclap",
+    "path": "/assets/icons/skill-thunderclap.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/thunder-struck.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "warrior",
+      "lightning",
+      "aoe",
+      "stun"
+    ]
+  },
+  {
+    "name": "skill-mana-shield",
+    "path": "/assets/icons/skill-mana-shield.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/magic-shield.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "mage",
+      "arcane",
+      "defensive",
+      "absorb"
+    ]
+  },
+  {
+    "name": "skill-poison-dagger",
+    "path": "/assets/icons/skill-poison-dagger.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/dripping-knife.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "rogue",
+      "poison",
+      "melee",
+      "dot"
+    ]
+  },
+  {
+    "name": "skill-backstab",
+    "path": "/assets/icons/skill-backstab.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/backstab.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "rogue",
+      "melee",
+      "crit",
+      "positional"
+    ]
+  },
+  {
+    "name": "skill-shadow-step",
+    "path": "/assets/icons/skill-shadow-step.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/shadow-follower.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "rogue",
+      "shadow",
+      "movement",
+      "teleport"
+    ]
+  },
+  {
+    "name": "skill-smoke-bomb",
+    "path": "/assets/icons/skill-smoke-bomb.svg",
+    "sourceAuthor": "DarkZaitzev",
+    "source": "game-icons.net/darkzaitzev/smoke-bomb.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "rogue",
+      "aoe",
+      "blind",
+      "stealth"
+    ]
+  },
+  {
+    "name": "skill-fan-of-knives",
+    "path": "/assets/icons/skill-fan-of-knives.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/thrown-daggers.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "rogue",
+      "aoe",
+      "projectile"
+    ]
+  },
+  {
+    "name": "skill-throw-knife",
+    "path": "/assets/icons/skill-throw-knife.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/thrown-knife.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "rogue",
+      "projectile"
+    ]
+  },
+  {
+    "name": "skill-shuriken",
+    "path": "/assets/icons/skill-shuriken.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/shuriken.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "rogue",
+      "projectile"
+    ]
+  },
+  {
+    "name": "skill-stealth",
+    "path": "/assets/icons/skill-stealth.svg",
+    "sourceAuthor": "DarkZaitzev",
+    "source": "game-icons.net/darkzaitzev/hooded-figure.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "rogue",
+      "stealth",
+      "buff"
+    ]
+  },
+  {
+    "name": "skill-vanish",
+    "path": "/assets/icons/skill-vanish.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/cloak-dagger.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "rogue",
+      "stealth",
+      "escape"
+    ]
+  },
+  {
+    "name": "skill-eviscerate",
+    "path": "/assets/icons/skill-eviscerate.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/knife-thrust.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "rogue",
+      "melee",
+      "finisher"
+    ]
+  },
+  {
+    "name": "skill-assassinate",
+    "path": "/assets/icons/skill-assassinate.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/diving-dagger.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "rogue",
+      "melee",
+      "leap",
+      "finisher"
+    ]
+  },
+  {
+    "name": "skill-shadow-grasp",
+    "path": "/assets/icons/skill-shadow-grasp.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/shadow-grasp.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "rogue",
+      "shadow",
+      "root",
+      "pull"
+    ]
+  },
+  {
+    "name": "skill-dodge-roll",
+    "path": "/assets/icons/skill-dodge-roll.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/dodging.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "generic",
+      "movement",
+      "evade"
+    ]
+  },
+  {
+    "name": "skill-dash",
+    "path": "/assets/icons/skill-dash.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/sprint.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "generic",
+      "movement",
+      "dash"
+    ]
+  },
+  {
+    "name": "skill-poison-cloud",
+    "path": "/assets/icons/skill-poison-cloud.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/poison-gas.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "rogue",
+      "poison",
+      "aoe",
+      "zone"
+    ]
+  },
+  {
+    "name": "skill-arrow-volley",
+    "path": "/assets/icons/skill-arrow-volley.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/arrow-cluster.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "ranger",
+      "physical",
+      "aoe",
+      "arrow"
+    ]
+  },
+  {
+    "name": "skill-rain-of-arrows",
+    "path": "/assets/icons/skill-rain-of-arrows.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/striking-arrows.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "ranger",
+      "physical",
+      "aoe",
+      "arrow"
+    ]
+  },
+  {
+    "name": "skill-multishot",
+    "path": "/assets/icons/skill-multishot.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/split-arrows.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "ranger",
+      "physical",
+      "projectile",
+      "arrow"
+    ]
+  },
+  {
+    "name": "skill-piercing-shot",
+    "path": "/assets/icons/skill-piercing-shot.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/supersonic-arrow.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "ranger",
+      "physical",
+      "pierce",
+      "arrow"
+    ]
+  },
+  {
+    "name": "skill-aimed-shot",
+    "path": "/assets/icons/skill-aimed-shot.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/arrow-scope.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "ranger",
+      "physical",
+      "crit",
+      "arrow"
+    ]
+  },
+  {
+    "name": "skill-rapid-fire",
+    "path": "/assets/icons/skill-rapid-fire.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/fast-arrow.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "ranger",
+      "physical",
+      "channel",
+      "arrow"
+    ]
+  },
+  {
+    "name": "skill-fire-arrow",
+    "path": "/assets/icons/skill-fire-arrow.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/flaming-arrow.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "ranger",
+      "fire",
+      "arrow"
+    ]
+  },
+  {
+    "name": "skill-frost-arrow",
+    "path": "/assets/icons/skill-frost-arrow.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/frozen-arrow.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "ranger",
+      "frost",
+      "slow",
+      "arrow"
+    ]
+  },
+  {
+    "name": "skill-lightning-arrow",
+    "path": "/assets/icons/skill-lightning-arrow.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/charged-arrow.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "ranger",
+      "lightning",
+      "arrow"
+    ]
+  },
+  {
+    "name": "skill-poison-arrow",
+    "path": "/assets/icons/skill-poison-arrow.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/chemical-arrow.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "ranger",
+      "poison",
+      "dot",
+      "arrow"
+    ]
+  },
+  {
+    "name": "skill-trap",
+    "path": "/assets/icons/skill-trap.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/wolf-trap.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "ranger",
+      "trap",
+      "root"
+    ]
+  },
+  {
+    "name": "skill-snare-trap",
+    "path": "/assets/icons/skill-snare-trap.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/mantrap.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "ranger",
+      "trap",
+      "cc"
+    ]
+  },
+  {
+    "name": "skill-heal",
+    "path": "/assets/icons/skill-heal.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/healing.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "cleric",
+      "heal",
+      "support"
+    ]
+  },
+  {
+    "name": "skill-renew",
+    "path": "/assets/icons/skill-renew.svg",
+    "sourceAuthor": "Zeromancer",
+    "source": "game-icons.net/zeromancer/heart-plus.svg",
+    "license": "CC0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "cleric",
+      "heal",
+      "hot"
+    ]
+  },
+  {
+    "name": "skill-regeneration",
+    "path": "/assets/icons/skill-regeneration.svg",
+    "sourceAuthor": "Sbed",
+    "source": "game-icons.net/sbed/regeneration.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "cleric",
+      "heal",
+      "hot",
+      "buff"
+    ]
+  },
+  {
+    "name": "skill-holy-light",
+    "path": "/assets/icons/skill-holy-light.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/sunbeams.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "cleric",
+      "holy",
+      "heal"
+    ]
+  },
+  {
+    "name": "skill-holy-nova",
+    "path": "/assets/icons/skill-holy-nova.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/sun-radiations.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "cleric",
+      "holy",
+      "aoe",
+      "nova"
+    ]
+  },
+  {
+    "name": "skill-divine-shield",
+    "path": "/assets/icons/skill-divine-shield.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/energy-shield.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "cleric",
+      "knight",
+      "holy",
+      "immune"
+    ]
+  },
+  {
+    "name": "skill-healing-shield",
+    "path": "/assets/icons/skill-healing-shield.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/healing-shield.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "cleric",
+      "holy",
+      "absorb"
+    ]
+  },
+  {
+    "name": "skill-consecration",
+    "path": "/assets/icons/skill-consecration.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/holy-symbol.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "cleric",
+      "knight",
+      "holy",
+      "ground",
+      "zone"
+    ]
+  },
+  {
+    "name": "skill-smite",
+    "path": "/assets/icons/skill-smite.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/sun-spear.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "cleric",
+      "holy",
+      "projectile"
+    ]
+  },
+  {
+    "name": "skill-resurrect",
+    "path": "/assets/icons/skill-resurrect.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/angel-wings.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "cleric",
+      "holy",
+      "revive"
+    ]
+  },
+  {
+    "name": "skill-prayer",
+    "path": "/assets/icons/skill-prayer.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/prayer.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "cleric",
+      "holy",
+      "buff"
+    ]
+  },
+  {
+    "name": "skill-holy-water",
+    "path": "/assets/icons/skill-holy-water.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/holy-water.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "cleric",
+      "holy",
+      "cleanse"
+    ]
+  },
+  {
+    "name": "skill-summon-skeleton",
+    "path": "/assets/icons/skill-summon-skeleton.svg",
+    "sourceAuthor": "Skoll",
+    "source": "game-icons.net/skoll/raise-skeleton.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "necromancer",
+      "summon",
+      "minion"
+    ]
+  },
+  {
+    "name": "skill-life-drain",
+    "path": "/assets/icons/skill-life-drain.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/bleeding-heart.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "necromancer",
+      "shadow",
+      "leech"
+    ]
+  },
+  {
+    "name": "skill-curse",
+    "path": "/assets/icons/skill-curse.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/pentagram-rose.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "necromancer",
+      "shadow",
+      "curse"
+    ]
+  },
+  {
+    "name": "skill-bone-spear",
+    "path": "/assets/icons/skill-bone-spear.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/spine-arrow.svg",
+    "license": "CC BY 3.0",
+    "category": "skill",
+    "tags": [
+      "skill",
+      "necromancer",
+      "physical",
+      "projectile",
+      "pierce"
+    ]
+  },
+  {
+    "name": "buff-haste",
+    "path": "/assets/icons/buff-haste.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/run.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "speed",
+      "haste"
+    ]
+  },
+  {
+    "name": "buff-strength",
+    "path": "/assets/icons/buff-strength.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/muscle-up.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "damage",
+      "strength"
+    ]
+  },
+  {
+    "name": "buff-defense",
+    "path": "/assets/icons/buff-defense.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/checked-shield.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "armor",
+      "defense"
+    ]
+  },
+  {
+    "name": "buff-regen",
+    "path": "/assets/icons/buff-regen.svg",
+    "sourceAuthor": "Sbed",
+    "source": "game-icons.net/sbed/health-increase.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "heal",
+      "hot"
+    ]
+  },
+  {
+    "name": "buff-crit",
+    "path": "/assets/icons/buff-crit.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/on-target.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "crit"
+    ]
+  },
+  {
+    "name": "buff-lifesteal",
+    "path": "/assets/icons/buff-lifesteal.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/vampire-dracula.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "leech",
+      "lifesteal"
+    ]
+  },
+  {
+    "name": "buff-absorb",
+    "path": "/assets/icons/buff-absorb.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/vibrating-shield.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "shield",
+      "absorb"
+    ]
+  },
+  {
+    "name": "buff-stealth",
+    "path": "/assets/icons/buff-stealth.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/ninja-mask.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "stealth"
+    ]
+  },
+  {
+    "name": "buff-mana-regen",
+    "path": "/assets/icons/buff-mana-regen.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/droplets.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "mana",
+      "regen"
+    ]
+  },
+  {
+    "name": "buff-aura",
+    "path": "/assets/icons/buff-aura.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/beams-aura.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "aura",
+      "party"
+    ]
+  },
+  {
+    "name": "buff-blessing",
+    "path": "/assets/icons/buff-blessing.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/angel-outfit.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "holy",
+      "blessing"
+    ]
+  },
+  {
+    "name": "buff-thorns",
+    "path": "/assets/icons/buff-thorns.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/thorn-helix.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "thorns",
+      "reflect"
+    ]
+  },
+  {
+    "name": "buff-invulnerable",
+    "path": "/assets/icons/buff-invulnerable.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/winged-shield.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "immune",
+      "invulnerable"
+    ]
+  },
+  {
+    "name": "buff-reflect",
+    "path": "/assets/icons/buff-reflect.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/shield-reflect.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "reflect",
+      "spell"
+    ]
+  },
+  {
+    "name": "buff-loot",
+    "path": "/assets/icons/buff-loot.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/sparkles.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "loot",
+      "magic-find"
+    ]
+  },
+  {
+    "name": "buff-xp",
+    "path": "/assets/icons/buff-xp.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/book-aura.svg",
+    "license": "CC BY 3.0",
+    "category": "buff",
+    "tags": [
+      "buff",
+      "experience"
+    ]
+  },
+  {
+    "name": "debuff-stun",
+    "path": "/assets/icons/debuff-stun.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/knocked-out-stars.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "cc",
+      "stun"
+    ]
+  },
+  {
+    "name": "debuff-slow",
+    "path": "/assets/icons/debuff-slow.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/snail.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "cc",
+      "slow"
+    ]
+  },
+  {
+    "name": "debuff-poison",
+    "path": "/assets/icons/debuff-poison.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/poison-bottle.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "poison",
+      "dot"
+    ]
+  },
+  {
+    "name": "debuff-burn",
+    "path": "/assets/icons/debuff-burn.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/small-fire.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "fire",
+      "dot"
+    ]
+  },
+  {
+    "name": "debuff-freeze",
+    "path": "/assets/icons/debuff-freeze.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/ice-cubes.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "frost",
+      "cc",
+      "freeze"
+    ]
+  },
+  {
+    "name": "debuff-chill",
+    "path": "/assets/icons/debuff-chill.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/snowflake-1.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "frost",
+      "slow"
+    ]
+  },
+  {
+    "name": "debuff-bleed",
+    "path": "/assets/icons/debuff-bleed.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/bleeding-wound.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "physical",
+      "dot",
+      "bleed"
+    ]
+  },
+  {
+    "name": "debuff-curse",
+    "path": "/assets/icons/debuff-curse.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/cursed-star.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "shadow",
+      "curse"
+    ]
+  },
+  {
+    "name": "debuff-silence",
+    "path": "/assets/icons/debuff-silence.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/silenced.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "cc",
+      "silence"
+    ]
+  },
+  {
+    "name": "debuff-root",
+    "path": "/assets/icons/debuff-root.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/tree-roots.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "cc",
+      "root"
+    ]
+  },
+  {
+    "name": "debuff-fear",
+    "path": "/assets/icons/debuff-fear.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/terror.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "cc",
+      "fear"
+    ]
+  },
+  {
+    "name": "debuff-armor-break",
+    "path": "/assets/icons/debuff-armor-break.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/broken-shield.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "armor",
+      "sunder"
+    ]
+  },
+  {
+    "name": "debuff-weakness",
+    "path": "/assets/icons/debuff-weakness.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/broken-bone.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "damage-down"
+    ]
+  },
+  {
+    "name": "debuff-blind",
+    "path": "/assets/icons/debuff-blind.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/blindfold.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "cc",
+      "blind"
+    ]
+  },
+  {
+    "name": "debuff-shock",
+    "path": "/assets/icons/debuff-shock.svg",
+    "sourceAuthor": "Sbed",
+    "source": "game-icons.net/sbed/electric.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "lightning",
+      "shock"
+    ]
+  },
+  {
+    "name": "debuff-sleep",
+    "path": "/assets/icons/debuff-sleep.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/sleepy.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "cc",
+      "sleep"
+    ]
+  },
+  {
+    "name": "debuff-healing-reduction",
+    "path": "/assets/icons/debuff-healing-reduction.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/broken-heart.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "anti-heal"
+    ]
+  },
+  {
+    "name": "debuff-marked",
+    "path": "/assets/icons/debuff-marked.svg",
+    "sourceAuthor": "Sbed",
+    "source": "game-icons.net/sbed/targeted.svg",
+    "license": "CC BY 3.0",
+    "category": "debuff",
+    "tags": [
+      "debuff",
+      "mark",
+      "vulnerable"
+    ]
+  },
+  {
+    "name": "affix-fortified",
+    "path": "/assets/icons/affix-fortified.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/locked-fortress.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "weekly",
+      "trash"
+    ]
+  },
+  {
+    "name": "affix-tyrannical",
+    "path": "/assets/icons/affix-tyrannical.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/crowned-skull.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "weekly",
+      "boss"
+    ]
+  },
+  {
+    "name": "affix-bolstering",
+    "path": "/assets/icons/affix-bolstering.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/team-upgrade.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "death-trigger"
+    ]
+  },
+  {
+    "name": "affix-raging",
+    "path": "/assets/icons/affix-raging.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/enrage.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "enrage"
+    ]
+  },
+  {
+    "name": "affix-sanguine",
+    "path": "/assets/icons/affix-sanguine.svg",
+    "sourceAuthor": "Skoll",
+    "source": "game-icons.net/skoll/blood.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "death-trigger",
+      "pool"
+    ]
+  },
+  {
+    "name": "affix-bursting",
+    "path": "/assets/icons/affix-bursting.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/burst-blob.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "death-trigger",
+      "dot"
+    ]
+  },
+  {
+    "name": "affix-explosive",
+    "path": "/assets/icons/affix-explosive.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/unstable-orb.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "orb",
+      "add"
+    ]
+  },
+  {
+    "name": "affix-necrotic",
+    "path": "/assets/icons/affix-necrotic.svg",
+    "sourceAuthor": "DarkZaitzev",
+    "source": "game-icons.net/darkzaitzev/death-juice.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "stacking",
+      "anti-heal"
+    ]
+  },
+  {
+    "name": "affix-volcanic",
+    "path": "/assets/icons/affix-volcanic.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/volcano.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "ground",
+      "ranged"
+    ]
+  },
+  {
+    "name": "affix-quaking",
+    "path": "/assets/icons/affix-quaking.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/earth-crack.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "aoe",
+      "interrupt"
+    ]
+  },
+  {
+    "name": "affix-storming",
+    "path": "/assets/icons/affix-storming.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/tornado.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "ground",
+      "moving"
+    ]
+  },
+  {
+    "name": "affix-grievous",
+    "path": "/assets/icons/affix-grievous.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/ragged-wound.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "dot",
+      "bleed"
+    ]
+  },
+  {
+    "name": "affix-inspiring",
+    "path": "/assets/icons/affix-inspiring.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/inspiration.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "aura",
+      "cc-immune"
+    ]
+  },
+  {
+    "name": "affix-spiteful",
+    "path": "/assets/icons/affix-spiteful.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/spectre.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "death-trigger",
+      "add"
+    ]
+  },
+  {
+    "name": "affix-afflicted",
+    "path": "/assets/icons/affix-afflicted.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/plague-doctor-profile.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "add",
+      "dispel"
+    ]
+  },
+  {
+    "name": "affix-incorporeal",
+    "path": "/assets/icons/affix-incorporeal.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/ghost.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "add",
+      "cc"
+    ]
+  },
+  {
+    "name": "affix-entangling",
+    "path": "/assets/icons/affix-entangling.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/thorny-vine.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "root",
+      "ground"
+    ]
+  },
+  {
+    "name": "affix-thundering",
+    "path": "/assets/icons/affix-thundering.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/lightning-helix.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "lightning",
+      "debuff"
+    ]
+  },
+  {
+    "name": "affix-teeming",
+    "path": "/assets/icons/affix-teeming.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/minions.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "trash",
+      "extra-mobs"
+    ]
+  },
+  {
+    "name": "affix-prideful",
+    "path": "/assets/icons/affix-prideful.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/sharp-crown.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "seasonal",
+      "buff"
+    ]
+  },
+  {
+    "name": "affix-seasonal",
+    "path": "/assets/icons/affix-seasonal.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/all-seeing-eye.svg",
+    "license": "CC BY 3.0",
+    "category": "affix",
+    "tags": [
+      "affix",
+      "mythic-plus",
+      "seasonal",
+      "void"
+    ]
+  },
+  {
+    "name": "item-helm",
+    "path": "/assets/icons/item-helm.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/visored-helm.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "helm",
+      "head",
+      "plate"
+    ]
+  },
+  {
+    "name": "item-helm-heavy",
+    "path": "/assets/icons/item-helm-heavy.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/heavy-helm.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "helm",
+      "head",
+      "plate"
+    ]
+  },
+  {
+    "name": "item-helm-horned",
+    "path": "/assets/icons/item-helm-horned.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/horned-helm.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "helm",
+      "head",
+      "barbarian"
+    ]
+  },
+  {
+    "name": "item-hood",
+    "path": "/assets/icons/item-hood.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/hood.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "helm",
+      "head",
+      "cloth",
+      "leather"
+    ]
+  },
+  {
+    "name": "item-chest",
+    "path": "/assets/icons/item-chest.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/breastplate.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "chest",
+      "plate"
+    ]
+  },
+  {
+    "name": "item-chest-leather",
+    "path": "/assets/icons/item-chest-leather.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/leather-vest.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "chest",
+      "leather"
+    ]
+  },
+  {
+    "name": "item-chest-cloth",
+    "path": "/assets/icons/item-chest-cloth.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/robe.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "chest",
+      "cloth"
+    ]
+  },
+  {
+    "name": "item-gloves",
+    "path": "/assets/icons/item-gloves.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/gauntlet.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "hands",
+      "plate"
+    ]
+  },
+  {
+    "name": "item-gloves-leather",
+    "path": "/assets/icons/item-gloves-leather.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/gloves.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "hands",
+      "leather"
+    ]
+  },
+  {
+    "name": "item-boots",
+    "path": "/assets/icons/item-boots.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/metal-boot.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "feet",
+      "plate"
+    ]
+  },
+  {
+    "name": "item-boots-leather",
+    "path": "/assets/icons/item-boots-leather.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/leather-boot.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "feet",
+      "leather"
+    ]
+  },
+  {
+    "name": "item-pants",
+    "path": "/assets/icons/item-pants.svg",
+    "sourceAuthor": "Irongamer",
+    "source": "game-icons.net/irongamer/armored-pants.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "legs",
+      "plate"
+    ]
+  },
+  {
+    "name": "item-pants-cloth",
+    "path": "/assets/icons/item-pants-cloth.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/trousers.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "legs",
+      "cloth"
+    ]
+  },
+  {
+    "name": "item-shoulders",
+    "path": "/assets/icons/item-shoulders.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/shoulder-armor.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "shoulders",
+      "plate"
+    ]
+  },
+  {
+    "name": "item-shoulders-spiked",
+    "path": "/assets/icons/item-shoulders-spiked.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/spiked-shoulder-armor.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "shoulders"
+    ]
+  },
+  {
+    "name": "item-belt",
+    "path": "/assets/icons/item-belt.svg",
+    "sourceAuthor": "Lucas",
+    "source": "game-icons.net/lucasms/belt.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "waist",
+      "belt"
+    ]
+  },
+  {
+    "name": "item-cape",
+    "path": "/assets/icons/item-cape.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/cape.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "armor",
+      "back",
+      "cape"
+    ]
+  },
+  {
+    "name": "item-ring",
+    "path": "/assets/icons/item-ring.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/ring.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "jewelry",
+      "ring"
+    ]
+  },
+  {
+    "name": "item-ring-gem",
+    "path": "/assets/icons/item-ring-gem.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/diamond-ring.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "jewelry",
+      "ring"
+    ]
+  },
+  {
+    "name": "item-ring-power",
+    "path": "/assets/icons/item-ring-power.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/power-ring.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "jewelry",
+      "ring"
+    ]
+  },
+  {
+    "name": "item-amulet",
+    "path": "/assets/icons/item-amulet.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/gem-pendant.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "jewelry",
+      "amulet",
+      "neck"
+    ]
+  },
+  {
+    "name": "item-necklace",
+    "path": "/assets/icons/item-necklace.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/emerald-necklace.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "jewelry",
+      "amulet",
+      "neck"
+    ]
+  },
+  {
+    "name": "item-trinket",
+    "path": "/assets/icons/item-trinket.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/glowing-artifact.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "jewelry",
+      "trinket"
+    ]
+  },
+  {
+    "name": "item-sword",
+    "path": "/assets/icons/item-sword.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/broadsword.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "sword",
+      "one-hand"
+    ]
+  },
+  {
+    "name": "item-sword-2h",
+    "path": "/assets/icons/item-sword-2h.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/two-handed-sword.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "sword",
+      "two-hand"
+    ]
+  },
+  {
+    "name": "item-sword-rune",
+    "path": "/assets/icons/item-sword-rune.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/rune-sword.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "sword",
+      "epic"
+    ]
+  },
+  {
+    "name": "item-axe",
+    "path": "/assets/icons/item-axe.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/battle-axe.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "axe",
+      "one-hand"
+    ]
+  },
+  {
+    "name": "item-axe-2h",
+    "path": "/assets/icons/item-axe-2h.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/war-axe.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "axe",
+      "two-hand"
+    ]
+  },
+  {
+    "name": "item-mace",
+    "path": "/assets/icons/item-mace.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/flanged-mace.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "mace",
+      "one-hand"
+    ]
+  },
+  {
+    "name": "item-mace-spiked",
+    "path": "/assets/icons/item-mace-spiked.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/spiked-mace.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "mace"
+    ]
+  },
+  {
+    "name": "item-hammer",
+    "path": "/assets/icons/item-hammer.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/warhammer.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "hammer",
+      "two-hand"
+    ]
+  },
+  {
+    "name": "item-staff",
+    "path": "/assets/icons/item-staff.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/wizard-staff.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "staff",
+      "two-hand",
+      "caster"
+    ]
+  },
+  {
+    "name": "item-staff-skull",
+    "path": "/assets/icons/item-staff-skull.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/skull-staff.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "staff",
+      "caster",
+      "necromancer"
+    ]
+  },
+  {
+    "name": "item-wand",
+    "path": "/assets/icons/item-wand.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/crystal-wand.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "wand",
+      "caster"
+    ]
+  },
+  {
+    "name": "item-wand-orb",
+    "path": "/assets/icons/item-wand-orb.svg",
+    "sourceAuthor": "Willdabeast",
+    "source": "game-icons.net/willdabeast/orb-wand.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "wand",
+      "caster"
+    ]
+  },
+  {
+    "name": "item-dagger",
+    "path": "/assets/icons/item-dagger.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/plain-dagger.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "dagger",
+      "one-hand"
+    ]
+  },
+  {
+    "name": "item-dagger-curved",
+    "path": "/assets/icons/item-dagger-curved.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/curvy-knife.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "dagger",
+      "one-hand"
+    ]
+  },
+  {
+    "name": "item-bow",
+    "path": "/assets/icons/item-bow.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/pocket-bow.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "bow",
+      "ranged"
+    ]
+  },
+  {
+    "name": "item-bow-long",
+    "path": "/assets/icons/item-bow-long.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/bow-arrow.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "bow",
+      "ranged"
+    ]
+  },
+  {
+    "name": "item-crossbow",
+    "path": "/assets/icons/item-crossbow.svg",
+    "sourceAuthor": "Carl Olsen",
+    "source": "game-icons.net/carl-olsen/crossbow.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "crossbow",
+      "ranged"
+    ]
+  },
+  {
+    "name": "item-quiver",
+    "path": "/assets/icons/item-quiver.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/quiver.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "offhand",
+      "quiver",
+      "ranged"
+    ]
+  },
+  {
+    "name": "item-spear",
+    "path": "/assets/icons/item-spear.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/barbed-spear.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "spear",
+      "two-hand"
+    ]
+  },
+  {
+    "name": "item-scythe",
+    "path": "/assets/icons/item-scythe.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/reaper-scythe.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "weapon",
+      "scythe",
+      "two-hand"
+    ]
+  },
+  {
+    "name": "item-shield",
+    "path": "/assets/icons/item-shield.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/templar-shield.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "offhand",
+      "shield"
+    ]
+  },
+  {
+    "name": "item-shield-round",
+    "path": "/assets/icons/item-shield-round.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/viking-shield.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "offhand",
+      "shield"
+    ]
+  },
+  {
+    "name": "item-shield-tower",
+    "path": "/assets/icons/item-shield-tower.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/roman-shield.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "offhand",
+      "shield"
+    ]
+  },
+  {
+    "name": "item-tome",
+    "path": "/assets/icons/item-tome.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/spell-book.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "offhand",
+      "tome",
+      "caster"
+    ]
+  },
+  {
+    "name": "item-potion-health",
+    "path": "/assets/icons/item-potion-health.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/health-potion.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "consumable",
+      "potion",
+      "health"
+    ]
+  },
+  {
+    "name": "item-potion-mana",
+    "path": "/assets/icons/item-potion-mana.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/magic-potion.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "consumable",
+      "potion",
+      "mana"
+    ]
+  },
+  {
+    "name": "item-potion-elixir",
+    "path": "/assets/icons/item-potion-elixir.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/standing-potion.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "consumable",
+      "potion",
+      "elixir"
+    ]
+  },
+  {
+    "name": "item-potion-flask",
+    "path": "/assets/icons/item-potion-flask.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/round-bottom-flask.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "consumable",
+      "potion",
+      "flask"
+    ]
+  },
+  {
+    "name": "item-potion-orb",
+    "path": "/assets/icons/item-potion-orb.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/potion-ball.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "consumable",
+      "potion"
+    ]
+  },
+  {
+    "name": "item-scroll",
+    "path": "/assets/icons/item-scroll.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/scroll-unfurled.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "consumable",
+      "scroll"
+    ]
+  },
+  {
+    "name": "item-scroll-tied",
+    "path": "/assets/icons/item-scroll-tied.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/tied-scroll.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "consumable",
+      "scroll",
+      "teleport"
+    ]
+  },
+  {
+    "name": "item-book",
+    "path": "/assets/icons/item-book.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/open-book.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "consumable",
+      "book",
+      "skill-book"
+    ]
+  },
+  {
+    "name": "item-gem-emerald",
+    "path": "/assets/icons/item-gem-emerald.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/emerald.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "material",
+      "gem"
+    ]
+  },
+  {
+    "name": "item-gem-diamond",
+    "path": "/assets/icons/item-gem-diamond.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/cut-diamond.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "material",
+      "gem"
+    ]
+  },
+  {
+    "name": "item-gems",
+    "path": "/assets/icons/item-gems.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/gems.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "material",
+      "gem"
+    ]
+  },
+  {
+    "name": "item-gem-fire",
+    "path": "/assets/icons/item-gem-fire.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/fire-gem.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "material",
+      "gem",
+      "socket"
+    ]
+  },
+  {
+    "name": "item-crystal",
+    "path": "/assets/icons/item-crystal.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/crystal-cluster.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "material",
+      "crystal"
+    ]
+  },
+  {
+    "name": "item-crystal-shard",
+    "path": "/assets/icons/item-crystal-shard.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/floating-crystal.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "material",
+      "crystal",
+      "shard"
+    ]
+  },
+  {
+    "name": "item-upgrade-stone",
+    "path": "/assets/icons/item-upgrade-stone.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/crystalize.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "material",
+      "upgrade",
+      "blacksmith"
+    ]
+  },
+  {
+    "name": "item-efsun-orb",
+    "path": "/assets/icons/item-efsun-orb.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/crystal-ball.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "material",
+      "efsun",
+      "reroll"
+    ]
+  },
+  {
+    "name": "item-enchant-scroll",
+    "path": "/assets/icons/item-enchant-scroll.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/scroll-quill.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "material",
+      "efsun",
+      "enchant",
+      "scroll"
+    ]
+  },
+  {
+    "name": "item-ore",
+    "path": "/assets/icons/item-ore.svg",
+    "sourceAuthor": "Faithtoken",
+    "source": "game-icons.net/faithtoken/ore.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "material",
+      "ore"
+    ]
+  },
+  {
+    "name": "item-gold-nuggets",
+    "path": "/assets/icons/item-gold-nuggets.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/gold-nuggets.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "material",
+      "ore",
+      "gold"
+    ]
+  },
+  {
+    "name": "item-metal-bar",
+    "path": "/assets/icons/item-metal-bar.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/metal-bar.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "material",
+      "ingot"
+    ]
+  },
+  {
+    "name": "item-gold-bar",
+    "path": "/assets/icons/item-gold-bar.svg",
+    "sourceAuthor": "Willdabeast",
+    "source": "game-icons.net/willdabeast/gold-bar.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "material",
+      "ingot",
+      "gold"
+    ]
+  },
+  {
+    "name": "item-gold-coins",
+    "path": "/assets/icons/item-gold-coins.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/two-coins.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "currency",
+      "gold"
+    ]
+  },
+  {
+    "name": "item-coins",
+    "path": "/assets/icons/item-coins.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/coins.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "currency",
+      "gold"
+    ]
+  },
+  {
+    "name": "item-coins-pile",
+    "path": "/assets/icons/item-coins-pile.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/coins-pile.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "currency",
+      "gold",
+      "loot"
+    ]
+  },
+  {
+    "name": "item-keystone",
+    "path": "/assets/icons/item-keystone.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/rune-stone.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "mythic-plus",
+      "keystone"
+    ]
+  },
+  {
+    "name": "item-key",
+    "path": "/assets/icons/item-key.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/key.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "key"
+    ]
+  },
+  {
+    "name": "item-skeleton-key",
+    "path": "/assets/icons/item-skeleton-key.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/skeleton-key.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "key",
+      "dungeon"
+    ]
+  },
+  {
+    "name": "item-boss-key",
+    "path": "/assets/icons/item-boss-key.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/boss-key.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "key",
+      "boss"
+    ]
+  },
+  {
+    "name": "item-chest-locked",
+    "path": "/assets/icons/item-chest-locked.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/locked-chest.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "container",
+      "chest",
+      "loot"
+    ]
+  },
+  {
+    "name": "item-chest-open",
+    "path": "/assets/icons/item-chest-open.svg",
+    "sourceAuthor": "Skoll",
+    "source": "game-icons.net/skoll/open-treasure-chest.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "container",
+      "chest",
+      "loot"
+    ]
+  },
+  {
+    "name": "item-chest-plain",
+    "path": "/assets/icons/item-chest-plain.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/chest.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "container",
+      "chest"
+    ]
+  },
+  {
+    "name": "item-mimic",
+    "path": "/assets/icons/item-mimic.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/mimic-chest.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "container",
+      "chest",
+      "monster"
+    ]
+  },
+  {
+    "name": "item-bag",
+    "path": "/assets/icons/item-bag.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/swap-bag.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "container",
+      "bag"
+    ]
+  },
+  {
+    "name": "item-chalice",
+    "path": "/assets/icons/item-chalice.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/jeweled-chalice.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "quest",
+      "treasure"
+    ]
+  },
+  {
+    "name": "item-junk",
+    "path": "/assets/icons/item-junk.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/broken-pottery.svg",
+    "license": "CC BY 3.0",
+    "category": "item",
+    "tags": [
+      "item",
+      "junk",
+      "vendor"
+    ]
+  },
+  {
+    "name": "class-knight",
+    "path": "/assets/icons/class-knight.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/black-knight-helm.svg",
+    "license": "CC BY 3.0",
+    "category": "class",
+    "tags": [
+      "class",
+      "knight",
+      "tank"
+    ]
+  },
+  {
+    "name": "class-barbarian",
+    "path": "/assets/icons/class-barbarian.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/barbarian.svg",
+    "license": "CC BY 3.0",
+    "category": "class",
+    "tags": [
+      "class",
+      "barbarian",
+      "melee"
+    ]
+  },
+  {
+    "name": "class-mage",
+    "path": "/assets/icons/class-mage.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/wizard-face.svg",
+    "license": "CC BY 3.0",
+    "category": "class",
+    "tags": [
+      "class",
+      "mage",
+      "caster"
+    ]
+  },
+  {
+    "name": "class-rogue",
+    "path": "/assets/icons/class-rogue.svg",
+    "sourceAuthor": "DarkZaitzev",
+    "source": "game-icons.net/darkzaitzev/hooded-assassin.svg",
+    "license": "CC BY 3.0",
+    "category": "class",
+    "tags": [
+      "class",
+      "rogue",
+      "melee"
+    ]
+  },
+  {
+    "name": "class-ranger",
+    "path": "/assets/icons/class-ranger.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/archer.svg",
+    "license": "CC BY 3.0",
+    "category": "class",
+    "tags": [
+      "class",
+      "ranger",
+      "ranged"
+    ]
+  },
+  {
+    "name": "class-cleric",
+    "path": "/assets/icons/class-cleric.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/sun-priest.svg",
+    "license": "CC BY 3.0",
+    "category": "class",
+    "tags": [
+      "class",
+      "cleric",
+      "healer"
+    ]
+  },
+  {
+    "name": "stat-strength",
+    "path": "/assets/icons/stat-strength.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/biceps.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "attribute",
+      "strength"
+    ]
+  },
+  {
+    "name": "stat-dexterity",
+    "path": "/assets/icons/stat-dexterity.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/feather.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "attribute",
+      "dexterity"
+    ]
+  },
+  {
+    "name": "stat-intelligence",
+    "path": "/assets/icons/stat-intelligence.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/brain.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "attribute",
+      "intelligence"
+    ]
+  },
+  {
+    "name": "stat-vitality",
+    "path": "/assets/icons/stat-vitality.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/heart-beats.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "attribute",
+      "vitality"
+    ]
+  },
+  {
+    "name": "stat-life",
+    "path": "/assets/icons/stat-life.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/heart-organ.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "life",
+      "health"
+    ]
+  },
+  {
+    "name": "stat-mana",
+    "path": "/assets/icons/stat-mana.svg",
+    "sourceAuthor": "Sbed",
+    "source": "game-icons.net/sbed/water-drop.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "mana",
+      "resource"
+    ]
+  },
+  {
+    "name": "stat-armor",
+    "path": "/assets/icons/stat-armor.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/armor-vest.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "defense",
+      "armor"
+    ]
+  },
+  {
+    "name": "stat-damage",
+    "path": "/assets/icons/stat-damage.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/pointy-sword.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "offense",
+      "damage"
+    ]
+  },
+  {
+    "name": "stat-crit",
+    "path": "/assets/icons/stat-crit.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/targeting.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "offense",
+      "crit"
+    ]
+  },
+  {
+    "name": "stat-attack-speed",
+    "path": "/assets/icons/stat-attack-speed.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/dervish-swords.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "offense",
+      "speed"
+    ]
+  },
+  {
+    "name": "stat-move-speed",
+    "path": "/assets/icons/stat-move-speed.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/running-shoe.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "utility",
+      "speed"
+    ]
+  },
+  {
+    "name": "stat-cooldown",
+    "path": "/assets/icons/stat-cooldown.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/extra-time.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "utility",
+      "cooldown"
+    ]
+  },
+  {
+    "name": "stat-block",
+    "path": "/assets/icons/stat-block.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/shield-echoes.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "defense",
+      "block"
+    ]
+  },
+  {
+    "name": "stat-dodge",
+    "path": "/assets/icons/stat-dodge.svg",
+    "sourceAuthor": "Felbrigg",
+    "source": "game-icons.net/felbrigg/dodge.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "defense",
+      "evade"
+    ]
+  },
+  {
+    "name": "stat-fire-resist",
+    "path": "/assets/icons/stat-fire-resist.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/fire-shield.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "resist",
+      "fire"
+    ]
+  },
+  {
+    "name": "stat-cold-resist",
+    "path": "/assets/icons/stat-cold-resist.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/ice-shield.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "resist",
+      "frost"
+    ]
+  },
+  {
+    "name": "stat-lightning-resist",
+    "path": "/assets/icons/stat-lightning-resist.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/lightning-shield.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "resist",
+      "lightning"
+    ]
+  },
+  {
+    "name": "stat-poison-resist",
+    "path": "/assets/icons/stat-poison-resist.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/biohazard.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "resist",
+      "poison"
+    ]
+  },
+  {
+    "name": "stat-magic-find",
+    "path": "/assets/icons/stat-magic-find.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/crystal-eye.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "utility",
+      "loot"
+    ]
+  },
+  {
+    "name": "stat-gold-find",
+    "path": "/assets/icons/stat-gold-find.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/gold-stack.svg",
+    "license": "CC BY 3.0",
+    "category": "stat",
+    "tags": [
+      "stat",
+      "utility",
+      "gold"
+    ]
+  },
+  {
+    "name": "ui-bag",
+    "path": "/assets/icons/ui-bag.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/backpack.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "inventory",
+      "bag"
+    ]
+  },
+  {
+    "name": "ui-character",
+    "path": "/assets/icons/ui-character.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/character.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "character",
+      "equipment"
+    ]
+  },
+  {
+    "name": "ui-talent-tree",
+    "path": "/assets/icons/ui-talent-tree.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/skills.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "talents",
+      "skills"
+    ]
+  },
+  {
+    "name": "ui-passive-tree",
+    "path": "/assets/icons/ui-passive-tree.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/family-tree.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "passive-tree",
+      "talents"
+    ]
+  },
+  {
+    "name": "ui-spellbook",
+    "path": "/assets/icons/ui-spellbook.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/book-cover.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "skills",
+      "abilities"
+    ]
+  },
+  {
+    "name": "ui-map",
+    "path": "/assets/icons/ui-map.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/treasure-map.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "map"
+    ]
+  },
+  {
+    "name": "ui-compass",
+    "path": "/assets/icons/ui-compass.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/compass.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "map",
+      "minimap"
+    ]
+  },
+  {
+    "name": "ui-settings",
+    "path": "/assets/icons/ui-settings.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/cog.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "settings",
+      "options"
+    ]
+  },
+  {
+    "name": "ui-gears",
+    "path": "/assets/icons/ui-gears.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/gears.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "settings"
+    ]
+  },
+  {
+    "name": "ui-skull",
+    "path": "/assets/icons/ui-skull.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/skull-crossed-bones.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "danger",
+      "death"
+    ]
+  },
+  {
+    "name": "ui-death",
+    "path": "/assets/icons/ui-death.svg",
+    "sourceAuthor": "Sbed",
+    "source": "game-icons.net/sbed/death-skull.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "death",
+      "deaths-counter"
+    ]
+  },
+  {
+    "name": "ui-tombstone",
+    "path": "/assets/icons/ui-tombstone.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/tombstone.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "death",
+      "graveyard"
+    ]
+  },
+  {
+    "name": "ui-crown",
+    "path": "/assets/icons/ui-crown.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/crown.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "leader",
+      "party-leader"
+    ]
+  },
+  {
+    "name": "ui-hourglass",
+    "path": "/assets/icons/ui-hourglass.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/hourglass.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "timer",
+      "mythic-plus"
+    ]
+  },
+  {
+    "name": "ui-hourglass-empty",
+    "path": "/assets/icons/ui-hourglass-empty.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/empty-hourglass.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "timer",
+      "depleted"
+    ]
+  },
+  {
+    "name": "ui-timer",
+    "path": "/assets/icons/ui-timer.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/stopwatch.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "timer",
+      "mythic-plus"
+    ]
+  },
+  {
+    "name": "ui-party",
+    "path": "/assets/icons/ui-party.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/three-friends.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "party",
+      "social"
+    ]
+  },
+  {
+    "name": "ui-invite",
+    "path": "/assets/icons/ui-invite.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/team-idea.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "party",
+      "invite"
+    ]
+  },
+  {
+    "name": "ui-trophy",
+    "path": "/assets/icons/ui-trophy.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/trophy.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "achievement",
+      "reward"
+    ]
+  },
+  {
+    "name": "ui-leaderboard",
+    "path": "/assets/icons/ui-leaderboard.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/podium-winner.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "leaderboard",
+      "rating"
+    ]
+  },
+  {
+    "name": "ui-rank-1",
+    "path": "/assets/icons/ui-rank-1.svg",
+    "sourceAuthor": "Skoll",
+    "source": "game-icons.net/skoll/rank-1.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "rank",
+      "rating"
+    ]
+  },
+  {
+    "name": "ui-rank-2",
+    "path": "/assets/icons/ui-rank-2.svg",
+    "sourceAuthor": "Skoll",
+    "source": "game-icons.net/skoll/rank-2.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "rank",
+      "rating"
+    ]
+  },
+  {
+    "name": "ui-rank-3",
+    "path": "/assets/icons/ui-rank-3.svg",
+    "sourceAuthor": "Skoll",
+    "source": "game-icons.net/skoll/rank-3.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "rank",
+      "rating"
+    ]
+  },
+  {
+    "name": "ui-laurels",
+    "path": "/assets/icons/ui-laurels.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/laurels.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "rating",
+      "mythic-plus",
+      "score"
+    ]
+  },
+  {
+    "name": "ui-medal",
+    "path": "/assets/icons/ui-medal.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/medal.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "achievement"
+    ]
+  },
+  {
+    "name": "ui-star",
+    "path": "/assets/icons/ui-star.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/round-star.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "favorite",
+      "rarity"
+    ]
+  },
+  {
+    "name": "ui-key-upgrade",
+    "path": "/assets/icons/ui-key-upgrade.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/star-key.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "mythic-plus",
+      "keystone",
+      "upgrade"
+    ]
+  },
+  {
+    "name": "ui-key-depleted",
+    "path": "/assets/icons/ui-key-depleted.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/broken-tablet.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "mythic-plus",
+      "keystone",
+      "depleted"
+    ]
+  },
+  {
+    "name": "ui-vault",
+    "path": "/assets/icons/ui-vault.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/strongbox.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "mythic-plus",
+      "weekly-vault",
+      "reward"
+    ]
+  },
+  {
+    "name": "ui-lock",
+    "path": "/assets/icons/ui-lock.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/padlock.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "locked"
+    ]
+  },
+  {
+    "name": "ui-unlock",
+    "path": "/assets/icons/ui-unlock.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/padlock-open.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "unlocked"
+    ]
+  },
+  {
+    "name": "ui-shop",
+    "path": "/assets/icons/ui-shop.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/shop.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "vendor",
+      "shop"
+    ]
+  },
+  {
+    "name": "ui-blacksmith",
+    "path": "/assets/icons/ui-blacksmith.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/blacksmith.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "blacksmith",
+      "upgrade",
+      "npc"
+    ]
+  },
+  {
+    "name": "ui-anvil",
+    "path": "/assets/icons/ui-anvil.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/anvil.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "blacksmith",
+      "upgrade"
+    ]
+  },
+  {
+    "name": "ui-anvil-impact",
+    "path": "/assets/icons/ui-anvil-impact.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/anvil-impact.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "blacksmith",
+      "upgrade",
+      "success"
+    ]
+  },
+  {
+    "name": "ui-upgrade-fail",
+    "path": "/assets/icons/ui-upgrade-fail.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/shattered-sword.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "blacksmith",
+      "upgrade",
+      "fail"
+    ]
+  },
+  {
+    "name": "ui-dungeon",
+    "path": "/assets/icons/ui-dungeon.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/dungeon-gate.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "dungeon",
+      "mythic-plus"
+    ]
+  },
+  {
+    "name": "ui-portal",
+    "path": "/assets/icons/ui-portal.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/portal.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "portal",
+      "teleport"
+    ]
+  },
+  {
+    "name": "ui-town",
+    "path": "/assets/icons/ui-town.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/castle.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "town",
+      "hub"
+    ]
+  },
+  {
+    "name": "ui-exit",
+    "path": "/assets/icons/ui-exit.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/exit-door.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "exit",
+      "leave"
+    ]
+  },
+  {
+    "name": "ui-chat",
+    "path": "/assets/icons/ui-chat.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/chat-bubble.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "chat",
+      "social"
+    ]
+  },
+  {
+    "name": "ui-speaker",
+    "path": "/assets/icons/ui-speaker.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/speaker.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "audio",
+      "sound"
+    ]
+  },
+  {
+    "name": "ui-speaker-off",
+    "path": "/assets/icons/ui-speaker-off.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/speaker-off.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "audio",
+      "mute"
+    ]
+  },
+  {
+    "name": "ui-check",
+    "path": "/assets/icons/ui-check.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/check-mark.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "confirm",
+      "ready"
+    ]
+  },
+  {
+    "name": "ui-cancel",
+    "path": "/assets/icons/ui-cancel.svg",
+    "sourceAuthor": "Sbed",
+    "source": "game-icons.net/sbed/cancel.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "cancel",
+      "close"
+    ]
+  },
+  {
+    "name": "ui-level-up",
+    "path": "/assets/icons/ui-level-up.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/upgrade.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "level-up",
+      "progression"
+    ]
+  },
+  {
+    "name": "ui-boss",
+    "path": "/assets/icons/ui-boss.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/daemon-skull.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "boss",
+      "enemy"
+    ]
+  },
+  {
+    "name": "ui-elite",
+    "path": "/assets/icons/ui-elite.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/horned-skull.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "elite",
+      "enemy"
+    ]
+  },
+  {
+    "name": "ui-enemy-forces",
+    "path": "/assets/icons/ui-enemy-forces.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/crossed-swords.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "mythic-plus",
+      "enemy-forces",
+      "combat"
+    ]
+  },
+  {
+    "name": "ui-quest",
+    "path": "/assets/icons/ui-quest.svg",
+    "sourceAuthor": "Delapouite",
+    "source": "game-icons.net/delapouite/checklist.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "quest",
+      "journal"
+    ]
+  },
+  {
+    "name": "ui-target",
+    "path": "/assets/icons/ui-target.svg",
+    "sourceAuthor": "Lorc",
+    "source": "game-icons.net/lorc/archery-target.svg",
+    "license": "CC BY 3.0",
+    "category": "ui",
+    "tags": [
+      "ui",
+      "target",
+      "focus"
+    ]
+  }
+]

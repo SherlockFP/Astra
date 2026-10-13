@@ -1,0 +1,27 @@
+{
+ "id": "sword_2h_claymore",
+ "name": "Büyük Kılıç (Klaymor)",
+ "use": "Two-handed claymore, iron guard with lobed arms (lvl 15-30)",
+ "attach": "upper-hand grip at origin; blade +Y; second hand ~0.25 lower on the grip",
+ "kind": "2h",
+ "emissive": "",
+ "tris": 310,
+ "parts": 5,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 15,
+ "has_emit": false,
+ "bbox_min": [
+  -0.268,
+  -0.042,
+  -0.486
+ ],
+ "bbox_max": [
+  0.268,
+  0.042,
+  1.5
+ ],
+ "bytes": 19844
+}

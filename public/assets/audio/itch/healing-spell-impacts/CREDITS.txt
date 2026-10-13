@@ -1,0 +1,3 @@
+Lentikula - https://lentikula.itch.io/ (healing-spell-impacts)
+Licence: CC0 1.0 ("I release this pack under a CC0 license"). Attribution optional.
+Converted WAV -> mono Ogg Vorbis 48 kHz, silence-trimmed, peak-normalised, renamed.

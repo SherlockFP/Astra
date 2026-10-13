@@ -1,0 +1,385 @@
+import type { MusicId } from './audio';
+import type { VfxId } from './vfx';
+import type { RaidInfo } from './v2';
+
+/**
+ * Dungeons are authored on a tile grid (1 tile = TILE_SIZE world units, KayKit floor tiles).
+ * World position of tile (tx, tz) center = ((tx + 0.5) * TILE_SIZE, 0, (tz + 0.5) * TILE_SIZE).
+ * Fractional tile coordinates are allowed for placements.
+ */
+export const TILE_SIZE = 4;
+
+export interface TileRect { x: number; z: number; w: number; h: number }
+
+export type FloorStyle = 'stone' | 'stone_dark' | 'wood' | 'dirt' | 'tiles' | 'lava_rock' | 'ice' | 'temple';
+export type WallStyle = 'stone' | 'brick' | 'cave' | 'temple' | 'ice' | 'forge';
+
+export interface PropPlacement {
+  model: string;              // GLB/GLTF url
+  pos: [number, number];      // tile coords (fractional ok)
+  y?: number;                 // world height offset
+  rot?: number;               // degrees around Y
+  scale?: number;
+  collide?: boolean;          // blocks movement (marks nav cells)
+  light?: { color: number; intensity: number; distance: number; flicker?: boolean; y?: number };
+  vfx?: VfxId;
+  // --- content additions (all optional; builders ignore what they do not know) ---
+  tint?: number;              // multiply colour over every material (hex, e.g. 0xbfe8ff frost tint)
+  emissive?: number;          // emissive colour override (glow)
+  emissiveIntensity?: number; // default 1
+  opacity?: number;           // 0..1 (ghostly / frozen decor)
+  /** For skinned character models used as static decor: clip name to freeze on frame 0 (e.g. 'Blocking', 'Skeletons_Inactive_Floor_Pose'). */
+  pose?: string;
+  /** For character models: accessory node names to keep visible (everything else toggleable is hidden), e.g. ['2H_Sword']. */
+  show?: string[];
+  /** Id for tooling / gameplay hooks (shrines, chests, phylactery spots...). */
+  id?: string;
+  /** Gameplay marker: what this prop is used for (builder may attach interaction / debug draw). */
+  tag?: 'shrine' | 'chest' | 'breakable' | 'seal' | 'phylactery' | 'rift' | 'crucible' | 'vent' | 'cage' | 'socket' | 'brazier' | 'waypoint' | 'wake' | 'spawn' | 'pillar' | 'gate';
+}
+
+/**
+ * Floor/ground feature drawn by the builder on top of the room floor (lava, pits, rune circles, shadow pools...).
+ * Zones of a room apply IN ARRAY ORDER: `blocked` zones close nav cells, and later non-blocked `bridge` / `dais` zones re-open them
+ * (e.g. a lava lake followed by a circular basalt platform and the walkways to its doors).
+ */
+export interface ZoneDef {
+  kind: 'lava' | 'pit' | 'void' | 'rune' | 'pool' | 'ice' | 'vent' | 'bridge' | 'dais';
+  shape?: 'rect' | 'circle';  // default 'rect'; for 'circle' the rect is the bounding box (w = h = diameter in tiles)
+  rect: TileRect;             // tile coords (fractional ok)
+  blocked?: boolean;          // unwalkable for nav (lava, pits); visual only otherwise
+  color?: number;             // base colour
+  glow?: number;              // emissive colour (bloom)
+  glowIntensity?: number;
+  y?: number;                 // height offset (default 0; dais/platform uses 2)
+  vfx?: VfxId;
+  /** Damage-over-time zone: coef x base damage every `interval` seconds while standing inside (or when knocked in). */
+  hazard?: { coef: number; interval: number };
+  light?: { color: number; intensity: number; distance: number; flicker?: boolean; y?: number };
+}
+
+/** Periodic room hazard (GDD_CONTENT §4): random tile telegraph then burst. */
+export interface HazardDef {
+  kind: 'lava_burst' | 'icicle_drop';
+  interval: number;           // seconds between events
+  warn: number;               // telegraph seconds
+  radius: number;             // metres
+  coef: number;               // damage coefficient
+  stun?: number;              // seconds
+  vfx?: VfxId;
+}
+
+export interface RoomDef {
+  id: string;
+  name?: string;              // Turkish area name shown when entering
+  rect: TileRect;
+  floor?: FloorStyle;
+  wall?: WallStyle;
+  ceilingDark?: boolean;
+  props?: PropPlacement[];
+  autoDecor?: number;         // 0..1 density of random seeded decor (torches, barrels, bones...)
+  ambientVfx?: VfxId;
+  lightColor?: number;
+  // --- content additions (optional) ---
+  boss?: number;              // boss arena: order of the boss that fights here
+  optional?: boolean;         // dead-end room that is not on the standard route
+  skip?: boolean;             // shortcut room (skip route)
+  /**
+   * The room's pillars / braziers / big clutter are hand-placed in `props`: the builder should skip its AUTO pillars,
+   * corner clutter and auto braziers here (auto torches, banners, cobwebs and floor scatter are still welcome).
+   */
+  explicitDecor?: boolean;
+  zones?: ZoneDef[];
+  hazards?: HazardDef[];
+  /** Per-room fog override (e.g. brighter open courtyard). */
+  fog?: { color?: number; near?: number; far?: number };
+}
+
+/** Opening between two rooms/corridors. Builder carves the wall and may place a door model. */
+export interface DoorDef {
+  a: string; b: string;       // room ids
+  tile: [number, number];     // tile on the shared boundary (in room a)
+  side: 'n' | 's' | 'e' | 'w';
+  width?: number;             // tiles (default 1)
+  /**
+   * boss_lock: leads INTO a boss room; open before the fight, closes 3 s after engage, reopens on kill/wipe, stays closed
+   * while a boss with lower `order` lives. boss_exit: leads OUT of a boss room toward progress; closed until that boss
+   * (the boss whose arena is room `a`) is dead (GDD_CONTENT section 0.7).
+   */
+  gate?: 'none' | 'open' | 'boss_lock' | 'boss_exit' | 'forces_lock';
+}
+
+export interface PackMember { enemyId: string; offset: [number, number] } // offset in tiles from pack center
+
+export interface PackDef {
+  id: string;
+  roomId: string;
+  center: [number, number];   // tile coords
+  members: PackMember[];
+  patrol?: [number, number][]; // tile coords waypoint loop
+  linkedTo?: string[];        // pulling one pulls these packs too
+  optional?: boolean;
+  // --- content additions (optional) ---
+  forces?: number;            // M+ forces of the whole pack (sum of its members' EnemyDef.forces; for route planning / minimap)
+  /** Dormant spawn: members start as bone piles / inside coffins and burst out when a player is within `wakeRadius` m. */
+  dormant?: { kind: 'bones' | 'coffin' | 'egg' | 'ceiling'; wakeRadius: number };
+  stealth?: boolean;          // members start stealthed (alpha 0.15) until they attack / are revealed by AoE
+  big?: boolean;              // part of a designed "big pull" (Katliam spot)
+  note?: string;              // design note (tooling only)
+  /** Open world: camp respawn timer (s), mob level range, camp radius (m). */
+  respawnSec?: number;
+  levelRange?: [number, number];
+  radius?: number;
+  // --- open world additions (GDD_OPENWORLD §9.1, all optional) ---
+  /** Loot table id applied to every member (farm spots §3.7). */
+  lootTable?: string;
+  /** Open world: chance that the camp rolls a champion when it activates (default 0.12, 0 disables). */
+  championChance?: number;
+  /** Tooling / minimap hint. */
+  kind?: 'camp' | 'patrol' | 'elite' | 'farm';
+}
+
+export interface BossPlacement {
+  bossId: string;
+  roomId: string;
+  pos: [number, number];
+  facing?: number;            // degrees
+  order: number;              // 1,2,3 — must be killed in order? (only for gates)
+}
+
+export interface DungeonTheme {
+  fogColor: number;
+  fogNear: number;
+  fogFar: number;
+  ambient: number;
+  ambientIntensity: number;
+  hemiSky: number;
+  hemiGround: number;
+  torchColor: number;
+  bloomStrength?: number;
+  music: MusicId;
+  palette?: number[];
+  tint?: number;              // multiply tint for KayKit dungeon textures
+}
+
+/** GDD_LIFE §1.5 (L-00): one gather node placed on a map. `type` = NodeTypeDef id. `rich` = rich vein (yield x2). */
+export interface NodeSpawnDef { type: string; pos: [number, number]; rich?: boolean }
+
+export interface DungeonDef {
+  id: string;
+  name: string;               // Turkish
+  shortName: string;
+  lore: string;
+  levelRange: [number, number];
+  timerSec: number;           // M+ timer
+  forcesRequired: number;     // sum of enemy forces needed for 100%
+  theme: DungeonTheme;
+  grid: { w: number; h: number }; // tiles
+  rooms: RoomDef[];
+  doors: DoorDef[];
+  packs: PackDef[];
+  bosses: BossPlacement[];
+  start: { pos: [number, number]; facing: number };
+  exit: { pos: [number, number] };  // portal after final boss
+  icon?: string;
+  loadingImage?: string;
+  // --- content additions (optional) ---
+  /** Kehanet Tasi (Font of Power) spot, shrines (GDD_CONTENT section 1.4), seasonal rift spots, fixed chests. All tile coords. */
+  extras?: {
+    fontOfPower: [number, number];
+    shrines: { type: 'shrine_power' | 'shrine_haste' | 'shrine_ward' | 'shrine_greed' | 'shrine_wisdom'; pos: [number, number] }[];
+    riftSpots: [number, number][];
+    chests?: { pos: [number, number]; kind: 'chest_wood' | 'chest_iron' | 'chest_gold' }[];
+  };
+  /** Open-world zone (Sisli Koru): one big room, tree walls instead of dungeon walls, camps are packs with respawn. */
+  outdoor?: boolean;
+  /** Open-world MAP (Sisli Vadi, GDD_OPENWORLD §9.1): regions, villages, POIs, metin, rares... Presence = "this is a world map". */
+  world?: WorldExtras;
+  /** GDD_V2 §9 (WP1): raid lockout + boss order. Presence = raid dungeon (efsun_kalesi). */
+  raid?: RaidInfo;
+  // ---- GDD_ITEMS_V2 / GDD_LIFE (contracts, all optional)
+  /** GDD_ITEMS_V2 §5.2.1 (IT-00): player house interior (`home_kulube` / `home_karakol` / `home_konak`). `true` = house scene. */
+  home?: boolean;
+  /** GDD_LIFE §1.5 (L-00): gather nodes placed on this map (tile coords, same convention as PropPlacement.pos). */
+  nodes?: NodeSpawnDef[];
+  /** GDD_LIFE §2.1 (L-00): ids of the regions (RegionDef.id, `src/data/regions.ts`) this map contains. */
+  regions?: string[];
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Open world (Sisli Vadi). GDD_OPENWORLD §9.1. Every map point is in TILE coordinates unless a field says metres (m).
+// ---------------------------------------------------------------------------------------------------------------------
+
+/** Deterministic enemy ids of open-world camps: DUNGEON_ENEMY_ID_BASE + packIndex * WORLD_PACK_STRIDE + memberIndex. */
+export const WORLD_PACK_STRIDE = 24;
+
+export type BorderStyle = 'trees' | 'cliff' | 'water' | 'marsh' | 'canyon' | 'ruin' | 'palisade';
+/** Polyline segment (tile coords) of the map border/shore; unlisted void edges default to 'trees'. */
+export interface BorderSeg { a: [number, number]; b: [number, number]; style: BorderStyle }
+
+export interface RegionTheme {
+  fogColor: number; fogNear: number; fogFar: number;
+  hemiSky: number; hemiGround: number; hemiIntensity: number;
+  sunColor: number; sunIntensity: number;
+  skyZenith: number; skyHorizon: number; skyImage?: string;            // optional PSX panorama url
+  groundTex: { grass: string; dirt: string; cobble: string; dark: string };   // /assets/textures/itch/... urls
+  groundTint?: number;                                                  // value written into the region tint map
+  music: MusicId | 'world_vale' | 'world_hills' | 'world_marsh' | 'world_canyon' | 'world_ruins';   // see audio addition
+  musicVolume?: number; ambience?: string;
+  ambientVfx?: VfxId; ambientColor?: number;
+}
+export interface WorldRegion {
+  id: string;                    // 'r1' .. 'r6'
+  roomId: string;                // RoomDef.id this region covers
+  name: string; subtitle?: string;
+  levels: [number, number];
+  theme: RegionTheme;
+  blendM?: number;               // atmosphere blend window at borders (default 30)
+  discoveryXpPct?: number;       // % of xpToNext on first entry (default 10)
+  landmarkId?: string;
+}
+export interface VillageDef {
+  id: string; name: string;
+  center: [number, number];      // tile coords on the parent map
+  bounds: [number, number];      // half extents (m) of the walled area
+  safe?: { halfX: number; halfZ: number };   // default = bounds
+  spawn: { pos: [number, number]; facing: number };   // metres relative to center = respawn point
+  props: TownProp[];             // metres relative to center, TownProp unchanged
+  npcs: TownNpc[];               // metres relative to center, TownNpc + the additions below
+  gates: { id: string; pos: [number, number]; rot: number; width: number }[];
+  zones?: { id: string; name: string; box: [number, number, number, number] }[];   // local metres (banner)
+  waypointId?: string;
+}
+export interface WaypointDef { id: string; name: string; pos: [number, number]; regionId: string; villageId?: string }
+export interface EntranceDef {
+  id: string; name: string; dungeonId: string; pos: [number, number]; facing: number; minLevel: number; regionId: string;
+  look: 'crypt' | 'forge' | 'cave' | 'ice' | 'temple';
+}
+export interface RoadDef { id: string; kind: 'dirt' | 'cobble' | 'boardwalk' | 'bridge'; width: number; pts: [number, number][] }
+export interface LandmarkDef { id: string; name: string; regionId: string; pos: [number, number]; recipe: string }
+export interface MetinTierDef {
+  id: string;                    // 'metin_keder'
+  enemyId: string;               // EnemyDef id of the stone
+  level: number; regionId: string;
+  maxActive: number;             // 2
+  respawnMin: [number, number];  // minutes, e.g. [6, 6] .. [10, 10]
+  idleDespawnMin: number;        // 25
+  waves: { hpBelow: number; members: { enemyId: string; count: number }[] }[];
+  add: { enemyId: string; count: number; everySec: number; cap: number };
+  aura: { radius: number; slowPct: number; curse?: boolean; dotPctPerSec?: number };
+  pulse?: { everySec: number; coef: number; rMax: number };
+  lootTable: string;
+}
+export interface MetinSpotDef { id: string; regionId: string; pos: [number, number] }
+export interface RareSpawnDef {
+  id: string; enemyId: string; level: number; spots: [number, number][];
+  respawnMin: [number, number]; announce: boolean; lootTable: string;
+}
+export interface MiniBossDef { id: string; enemyId: string; level: number; lair: [number, number]; regionId: string; respawnMin: number; lootTable: string }
+export interface WorldBossSched { bossId: string; firstSec: number; respawnSec: number; announceSec: number[]; announceText: string; minLevelToStart?: number }
+export interface GatherFieldDef { id: string; kind: 'ore' | 'herb'; regionId: string; center: [number, number]; radius: number; count: number; respawnSec: number; lootTable: string }
+export interface ChestSpotDef { id: string; kind: 'chest_wood' | 'chest_iron' | 'chest_gold'; regionId: string; pos: [number, number]; respawnSec: number }
+export interface ShrineSpotDef { id: string; type: 'shrine_power' | 'shrine_haste' | 'shrine_ward' | 'shrine_greed' | 'shrine_wisdom'; regionId: string; pos: [number, number] }
+export interface HiddenAreaDef { id: string; name: string; regionId: string; pos: [number, number]; radius: number; xpPct: number; rewards: string[] }
+export interface VistaDef { id: string; name: string; regionId: string; pos: [number, number]; xpPct: number }
+/** Streaming / AI budgets. Defaults: 70 / 110 / 45 / 240 / 40 (GDD_OPENWORLD §1.5). */
+export interface WorldPerf { activateM: number; deactivateM: number; aiSleepM: number; maxActiveEnemies: number; chunkM: number }
+
+export interface WorldExtras {
+  regions: WorldRegion[];
+  villages: VillageDef[];
+  waypoints: WaypointDef[];
+  entrances: EntranceDef[];
+  roads: RoadDef[];
+  water: { id: string; rect: TileRect }[];
+  borders: BorderSeg[];
+  landmarks: LandmarkDef[];
+  metin: { tiers: MetinTierDef[]; spots: MetinSpotDef[] };
+  rares: RareSpawnDef[];
+  minibosses: MiniBossDef[];
+  bosses: WorldBossSched[];
+  gather: GatherFieldDef[];
+  chests: ChestSpotDef[];
+  cursed: { id: string; regionId: string; pos: [number, number] }[];
+  shrines: ShrineSpotDef[];
+  hidden: HiddenAreaDef[];
+  vistas: VistaDef[];
+  ghostBoat?: { id: string; pos: [number, number]; island: [number, number] };
+  perf: WorldPerf;
+}
+
+export interface TownProp {
+  model: string;
+  pos: [number, number, number];
+  rot?: number;               // degrees around Y
+  scale?: number;
+  collide?: boolean;
+  radius?: number;            // cylinder collider radius (m) when collide
+  // --- content additions (optional) ---
+  box?: [number, number];     // box collider footprint (w along local x, d along local z, metres, before rotation) when collide
+  tint?: number;
+  emissive?: number;
+  emissiveIntensity?: number;
+  light?: { color: number; intensity: number; distance: number; flicker?: boolean; y?: number };
+  vfx?: VfxId;
+  vfxScale?: number;
+  vfxColor?: number;
+  id?: string;
+}
+
+export type TownNpcRole = 'blacksmith' | 'merchant' | 'alchemist' | 'stash' | 'keystone' | 'trainer' | 'bounty' | 'lobby' | 'guard' | 'citizen' | 'portal' | 'quest' | 'teleporter' | 'stable' | 'codex' | 'tierset' | 'crafting' | 'home';
+
+export interface TownNpc {
+  id: string;
+  name: string;
+  role: TownNpcRole;
+  model: string;
+  pos: [number, number, number];
+  rot?: number;
+  dungeonId?: string;
+  // --- content additions (optional) ---
+  title?: string;             // short Turkish job title shown under the name
+  scale?: number;
+  tint?: number;              // multiply tint over the body materials
+  /** KayKit characters: accessory node names that stay visible (all other toggleable accessories are hidden). */
+  show?: string[];
+  idle?: string;              // idle clip suffix (e.g. 'Idle', '2H_Melee_Idle', 'Sit_Chair_Idle')
+  /** Periodic one-shot: clip, repeat period (s) and phase offset (s) (anvil chop, juggling, drinking...). */
+  loop?: { clip: string; every: number; offset?: number };
+  /** Walking patrol loop (world metres [x,z]) and lap time in seconds. */
+  patrol?: { path: [number, number][]; lap: number };
+  /** Panel to open on interact (G.ui.openPanel id) with an optional tab / data kind. */
+  ui?: { panel: string; tab?: string; kind?: string };
+  lines?: string[];           // Turkish bark / greeting lines
+  interactRange?: number;
+  unlockLevel?: number;       // portals / gamble vendor
+  /** Open world: quest ids this NPC offers / turns in (role 'quest'). */
+  quests?: string[];
+  decor?: boolean;            // pure decoration (no interaction)
+  /** Non-NPC interactable (Sef Tasi, Bulusma Tasi, Gorev Panosu...): prop model url shown at pos instead of a character. */
+  object?: { model: string; scale?: number; extra?: { model: string; pos: [number, number, number]; scale?: number }[] };
+  vfx?: VfxId;
+  vfxColor?: number;
+  light?: { color: number; intensity: number; distance: number; flicker?: boolean; y?: number };
+}
+
+export interface TownDef {
+  id: string;
+  name: string;
+  size: [number, number];     // world units
+  spawn: { pos: [number, number, number]; facing: number };
+  props: TownProp[];
+  npcs: TownNpc[];
+  // --- content additions (optional) ---
+  /** Arrival point from a dungeon (in front of the portal arc). */
+  arrival?: { pos: [number, number, number]; facing: number };
+  /** Walk-out trigger boxes [x0,z0,x1,z1] -> scene id. */
+  exits?: { id: string; box: [number, number, number, number]; to: string }[];
+  /** Raised areas [x0,z0,x1,z1] at height y. */
+  terraces?: { id: string; box: [number, number, number, number]; y: number }[];
+  /** Stairs/ramps: walkable height interpolates from yFrom to yTo across the box along axis. */
+  stairs?: { id: string; box: [number, number, number, number]; yFrom: number; yTo: number; axis: 'x' | 'z' }[];
+  lighting?: { hemiSky: number; hemiGround: number; hemiIntensity: number; sun: number; sunIntensity: number; sunDir: [number, number, number]; fogColor: number; fogNear: number; fogFar: number };
+  /** Named zones (area name banner when entering): id, Turkish name, box [x0,z0,x1,z1]. */
+  zones?: { id: string; name: string; box: [number, number, number, number] }[];
+}

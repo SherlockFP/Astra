@@ -1,0 +1,6 @@
+Screaming Brain Studios - Tiny Texture Pack 2 (128x128)
+CC0 1.0 Universal (Public Domain), https://creativecommons.org/publicdomain/zero/1.0/
+
+Statement shipped with the archive (License.txt): "All Screaming Brain Studios assets have been released under the CC0/Public Domain License. You are free to use these assets in any and all projects, commercial or non-commercial, with no restrictions, and can be released with or without credit."
+
+Converted for EFSUN ONLINE: reduced to a 256-colour palette PNG and renamed (tt2-<category>-<nn>.png). Credit is optional.

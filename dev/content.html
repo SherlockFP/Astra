@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dev: content (zindanlar + kasaba)</title>
+<style>
+  html, body { margin: 0; background: #101012; }
+  #game-root { display: none; position: fixed; inset: 0; z-index: 20; background: #000; }
+  #game-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #ui-root { position: absolute; inset: 0; pointer-events: none; }
+  #hud3d { display: none; position: fixed; left: 8px; top: 8px; z-index: 30; font: 12px/1.35 monospace; color: #e8dcc0; background: rgba(0,0,0,.6); padding: 6px 8px; border: 1px solid #5a4a30; pointer-events: none; }
+</style></head>
+<body>
+<div id="app"></div>
+<div id="game-root"><canvas id="game-canvas"></canvas><div id="ui-root"></div></div>
+<div id="hud3d"></div>
+<script type="module" src="/src/dev/content.ts"></script>
+</body></html>

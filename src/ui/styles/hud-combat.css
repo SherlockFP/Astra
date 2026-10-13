@@ -1,0 +1,130 @@
+/* Combat feedback HUD (hud module): reticle cues, LMB prompts, lock-on ring, poise bars, combo route banner, death recap, TANRISAL tier. */
+
+/* ---- reticle cues (CombatCues) ---- */
+.cc { position: absolute; inset: 0; pointer-events: none; }
+.cc-center { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+
+/* parry flash ring on the reticle */
+.cc-flash { position: absolute; left: -44px; top: -44px; width: 88px; height: 88px; border-radius: 50%; border: 3px solid #cfeaff; box-shadow: 0 0 18px rgba(140, 200, 255, 0.9), inset 0 0 14px rgba(140, 200, 255, 0.7); opacity: 0; transform: scale(0.4); }
+.cc-flash.go { animation: ccFlash 0.45s ease-out; }
+@keyframes ccFlash { 0% { opacity: 1; transform: scale(0.4); } 100% { opacity: 0; transform: scale(1.7); } }
+
+/* callouts above the reticle: SAVUŞTURMA!, KARŞI VURUŞ!, KRİTİK VURUŞ! */
+.cc-callout { position: absolute; left: 0; top: -84px; transform: translateX(-50%); white-space: nowrap; font: 700 30px/1 var(--font-title); letter-spacing: 0.12em; color: #fff6d8; text-shadow: 0 3px 0 #000, 0 0 18px rgba(255, 220, 120, 0.7); opacity: 0; pointer-events: none; }
+.cc-callout[data-kind='parry'] { color: #d8f0ff; text-shadow: 0 3px 0 #000, 0 0 20px rgba(120, 190, 255, 0.95); }
+.cc-callout[data-kind='riposte'] { color: #ffd6a8; text-shadow: 0 3px 0 #000, 0 0 20px rgba(255, 140, 60, 0.95); }
+.cc-callout[data-kind='finisher'] { color: #ffe27a; text-shadow: 0 3px 0 #000, 0 0 24px rgba(255, 200, 40, 0.95); font-size: 34px; }
+.cc-callout.go { animation: ccCallout 0.75s cubic-bezier(0.2, 1.5, 0.4, 1); }
+@keyframes ccCallout {
+  0% { opacity: 0; transform: translate(-50%, 12px) scale(1.7); }
+  22% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  70% { opacity: 1; transform: translate(-50%, -4px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -18px) scale(1); }
+}
+
+/* guard gauge arc under the reticle */
+.cc-guard { position: absolute; left: -40px; top: -40px; width: 80px; height: 80px; opacity: 0; transition: opacity 0.18s; }
+.cc-guard.on { opacity: 1; }
+.cc-guard-svg { position: absolute; left: 0; top: 0; width: 80px; height: 80px; overflow: visible; }
+.cc-guard-track { fill: none; stroke: rgba(0, 0, 0, 0.7); stroke-width: 6; stroke-linecap: round; }
+.cc-guard-fill { fill: none; stroke: #9fd8ff; stroke-width: 3.6; stroke-linecap: butt; filter: drop-shadow(0 0 3px rgba(120, 200, 255, 0.85)); }
+.cc-guard.low .cc-guard-fill { stroke: #ff4a3a; filter: drop-shadow(0 0 4px rgba(255, 60, 40, 0.9)); animation: ccGuardLow 0.4s ease-in-out infinite alternate; }
+.cc-guard.broken .cc-guard-track { stroke: rgba(120, 0, 0, 0.8); animation: ccGuardFlick 0.16s steps(2) infinite; }
+.cc-guard.broken .cc-guard-fill { stroke: #ff2a2a; }
+@keyframes ccGuardLow { from { opacity: 1; } to { opacity: 0.4; } }
+@keyframes ccGuardFlick { from { opacity: 1; } to { opacity: 0.35; } }
+.cc-guard.shatter .cc-guard-svg { animation: ccShatter 0.55s ease-out; }
+@keyframes ccShatter { 0% { transform: scale(1); opacity: 1; filter: brightness(1); } 35% { transform: scale(1.22); filter: brightness(2.2); } 100% { transform: scale(0.75); opacity: 0; filter: brightness(1); } }
+.cc-shard { position: absolute; left: 38px; top: 37px; width: 4px; height: 10px; border-radius: 1px; background: linear-gradient(#ffffff, #ff6a52); box-shadow: 0 0 4px rgba(255, 90, 60, 0.9); opacity: 0; }
+.cc-guard.shatter .cc-shard { animation: ccShard 0.6s ease-out; }
+@keyframes ccShard { 0% { opacity: 1; transform: rotate(var(--a)) translateY(-6px); } 100% { opacity: 0; transform: rotate(var(--a)) translateY(-46px) rotate(140deg); } }
+
+/* LMB prompt: "[Sol Tık] KARŞI VURUŞ" (timer ring) / "[Sol Tık] KRİTİK VURUŞ" (pulsing) */
+.cc-prompt { position: absolute; left: 0; top: 70px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 7px 16px 7px 8px; white-space: nowrap; border-radius: 999px; background: rgba(8, 6, 4, 0.8); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 6px 18px rgba(0, 0, 0, 0.6); opacity: 0; transition: opacity 0.15s; font-family: var(--font-head); }
+.cc-prompt.on { opacity: 1; animation: ccPrompt 0.6s ease-in-out infinite alternate; }
+.cc-prompt.on.far { opacity: 0.5; animation: none; }
+/* ring that follows the pill's border; --t (0..1) is the remaining share */
+.cc-prompt::before { content: ''; position: absolute; inset: -4px; border-radius: 999px; padding: 3px; background: conic-gradient(var(--rc, #ffd06a) calc(var(--t, 1) * 360deg), rgba(255, 255, 255, 0.12) 0); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude; pointer-events: none; }
+.cc-prompt.riposte { --rc: #ffb36a; }
+.cc-prompt.finisher { --rc: #ffe27a; }
+.cc-key { font: 700 12px var(--font-head); letter-spacing: 0.08em; color: #0b0805; background: linear-gradient(#fff6d8, #e8c46a); border-radius: 999px; padding: 3px 9px; box-shadow: 0 1px 0 #000; }
+.cc-ptxt { font: 700 15px var(--font-title); letter-spacing: 0.1em; color: #fff6d8; text-shadow: 0 2px 0 #000; }
+.cc-prompt.riposte .cc-ptxt { color: #ffd6a8; }
+.cc-prompt.finisher .cc-ptxt { color: #ffe27a; }
+@keyframes ccPrompt { from { scale: 1; } to { scale: 1.07; } }
+
+/* lock-on ring on the hard target (projected each frame, scaled by distance) */
+.cc-lock { position: absolute; left: 0; top: 0; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; border: 2px dashed rgba(255, 90, 70, 0.95); box-shadow: 0 0 10px rgba(255, 60, 40, 0.55), inset 0 0 8px rgba(255, 60, 40, 0.35); opacity: 0; transition: opacity 0.15s; animation: ccLockSpin 3s linear infinite; }
+.cc-lock.on { opacity: 1; }
+.cc-lock::after { content: ''; position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: #ff4a3a; box-shadow: 0 0 6px #ff4a3a; }
+@keyframes ccLockSpin { from { rotate: 0deg; } to { rotate: 360deg; } }
+
+/* ---- poise (Duruş) bars: nameplates, target and boss frames ---- */
+.np-poise { position: relative; height: 10px; margin-top: 2px; background: rgba(0, 0, 0, 0.78); border: 1px solid #000; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5); }
+.np-poise-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(#f4f8ff 0 35%, #9ab8dc 35% 70%, #5a7aa6); transition: width 0.1s linear; }
+.np-poise.broken { border-color: #5a4000; box-shadow: 0 0 8px rgba(255, 200, 60, 0.7); }
+.np-poise.broken .np-poise-fill { background: linear-gradient(#fff6c0 0 30%, #ffcf33 30% 65%, #b8860b); }
+.np-poise-tag { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font: 700 9px/1 var(--font-head); letter-spacing: 0.08em; color: #1a1000; white-space: nowrap; text-shadow: 0 0 2px rgba(255, 255, 255, 0.6); animation: ccTagPop 0.35s ease-out; }
+@keyframes ccTagPop { from { scale: 1.6; opacity: 0; } to { scale: 1; opacity: 1; } }
+
+.tf-poise { position: relative; height: 5px; background: rgba(0, 0, 0, 0.75); border: 1px solid #000; border-radius: 2px; overflow: hidden; }
+.tf-poise-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(#f4f8ff, #7f9cc4); transition: width 0.1s linear; }
+.tf.stag .tf-poise { border-color: #5a4000; box-shadow: 0 0 8px rgba(255, 200, 60, 0.7); }
+.tf.stag .tf-poise-fill { width: 100% !important; background: linear-gradient(#fff6c0, #ffcf33 60%, #b8860b); }
+.tf-stag { display: none; align-self: center; padding: 1px 7px; font: 700 10px/1.3 var(--font-head); letter-spacing: 0.1em; color: #1a1000; background: linear-gradient(#fff6c0, #ffcf33); border-radius: 3px; box-shadow: 0 0 8px rgba(255, 200, 60, 0.75); white-space: nowrap; animation: ccTagPop 0.35s ease-out; }
+.tf.stag .tf-stag { display: inline-block; }
+
+.bf-poise { position: absolute; left: 0; right: 0; bottom: -6px; height: 5px; background: rgba(0, 0, 0, 0.75); border: 1px solid #000; border-radius: 2px; overflow: hidden; pointer-events: none; }
+.bf-poise-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(#f4f8ff, #7f9cc4); transition: width 0.1s linear; }
+.bf.stag .bf-poise { border-color: #5a4000; box-shadow: 0 0 10px rgba(255, 200, 60, 0.8); }
+.bf.stag .bf-poise-fill { width: 100% !important; background: linear-gradient(#fff6c0, #ffcf33 60%, #b8860b); }
+.bf-stag { position: absolute; right: 60px; top: -22px; display: none; padding: 2px 10px; font: 700 12px/1.3 var(--font-head); letter-spacing: 0.14em; color: #1a1000; background: linear-gradient(#fff6c0, #ffcf33); border-radius: 3px; box-shadow: 0 0 10px rgba(255, 200, 60, 0.8); white-space: nowrap; animation: ccTagPop 0.35s ease-out; }
+.bf.stag .bf-stag { display: inline-block; }
+
+/* ---- combo route banner (ComboRouteBanner): above the combo counter ---- */
+.cr { position: absolute; left: 44px; top: 33%; width: 340px; pointer-events: none; opacity: 0; transition: opacity 0.5s; --c1: #ffffff; --c2: #c9d2e6; --glow: #8fa6d8; }
+.cr.on { opacity: 1; }
+.cr.in { animation: crIn 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+@keyframes crIn { from { transform: translateX(-150px); opacity: 0; } 60% { opacity: 1; } to { transform: translateX(0); opacity: 1; } }
+.cr-label { font: 700 12px var(--font-head); letter-spacing: 0.32em; color: #d8c8a0; text-shadow: var(--shade); }
+.cr-name { margin-top: 2px; font: 700 34px/1.05 var(--font-title); letter-spacing: 0.06em; color: var(--c1); text-shadow: 0 3px 0 #000, 0 0 16px var(--glow); white-space: nowrap; }
+.cr-tier { margin-top: 2px; font: 700 13px var(--font-head); letter-spacing: 0.16em; color: var(--c2); text-shadow: var(--shade); white-space: nowrap; }
+.cr-bar { height: 3px; margin-top: 5px; width: 100%; background: linear-gradient(90deg, var(--c1), transparent); box-shadow: 0 0 8px var(--glow); }
+
+/* ---- death recap ("Ölüm Özeti", DeathRecapBlock): HUD slot on the right while the local player is dead ---- */
+.dr-slot { position: absolute; right: 2.5%; top: 34%; width: 370px; display: none; pointer-events: none; }
+.dr-slot.on { display: block; animation: drIn 0.4s ease-out both; }
+.dr { width: 100%; padding: 12px 14px 10px; pointer-events: none; font-family: var(--font-ui); color: #e8c8bf; background: linear-gradient(180deg, rgba(34, 10, 10, 0.94), rgba(12, 4, 4, 0.96)); box-shadow: inset 0 0 0 1px rgba(200, 60, 50, 0.6), 0 0 0 2px #000, 0 14px 40px #000; }
+@keyframes drIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+.dr-head { display: flex; align-items: center; gap: 8px; }
+.dr-ico { width: 22px; height: 22px; background: linear-gradient(#fff, #ff6a52); filter: drop-shadow(0 1px 0 #000); }
+.dr-title { font: 700 20px var(--font-title); letter-spacing: 0.12em; color: #ff9a86; text-shadow: 0 2px 0 #000; }
+.dr-win { margin-left: auto; font: 700 11px var(--font-head); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); }
+.dr-sum { margin: 7px 0 8px; font: 600 13px var(--font-ui); color: #d8b8ae; }
+.dr-sum b { color: #fff; font-weight: 700; }
+.dr-sum .dr-heal { color: #8fe08a; }
+.dr-list { display: flex; flex-direction: column; gap: 3px; }
+.dr-row { display: grid; grid-template-columns: 62px minmax(0, 1fr) auto 38px; align-items: center; gap: 8px; padding: 4px 8px 4px 7px; font-size: 13px; background: rgba(0, 0, 0, 0.38); border-left: 3px solid var(--tc, #888); }
+.dr-row.kill { background: rgba(130, 10, 10, 0.55); border-left-color: #ff3a2a; }
+.dr-t { font: 700 11.5px var(--font-head); color: var(--text-dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dr-src { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dr-src b { color: #f1e6cf; font-weight: 700; }
+.dr-ab { color: #b09488; font-size: 12px; }
+.dr-amt { font: 700 14px var(--font-head); color: var(--tc, #fff); font-variant-numeric: tabular-nums; text-align: right; text-shadow: 0 1px 0 #000; }
+.dr-hp { font: 700 12px var(--font-head); color: #c8b0a8; text-align: right; font-variant-numeric: tabular-nums; }
+.dr-chip { display: inline-block; margin-left: 6px; padding: 0 5px; font: 700 9.5px/1.5 var(--font-head); letter-spacing: 0.08em; text-transform: uppercase; color: #ffb36a; border: 1px solid #8a4a1a; border-radius: 2px; vertical-align: 1px; }
+.dr-chip.hot { color: #ffe0d0; background: #8a1a10; border-color: #ff5a3a; }
+.dr-none { padding: 6px 8px; color: var(--text-dim); font-style: italic; font-size: 13px; }
+.dr-foot { margin-top: 8px; font-size: 12.5px; line-height: 1.4; color: #cdb5aa; }
+.dr-foot b { color: #ff9a86; font-weight: 700; }
+.dr-unused { display: block; margin-top: 3px; color: var(--text-dim); }
+
+/* ---- TANRISAL! (combo tier 5): rainbow number and rank like tier 4, with a stronger glow ---- */
+.cb[data-tier='5'] .cb-num { animation: cbrainbow 0.9s linear infinite; }
+.cb[data-tier='5'] .cb-rank { animation: cbrainbow 0.9s linear infinite; }
+.cb[data-tier='5'] .cb-numwrap.pop .cb-num { animation: cbpop 0.2s cubic-bezier(0.2, 1.8, 0.4, 1), cbrainbow 0.9s linear infinite; }
+.cb[data-tier='5'] .cb-barfill { box-shadow: 0 0 12px var(--glow); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-prompt.on, .cc-lock, .cc-guard.low .cc-guard-fill, .cc-guard.broken .cc-guard-track { animation: none; }
+}

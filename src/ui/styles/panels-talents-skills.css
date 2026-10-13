@@ -1,0 +1,91 @@
+/* GDD_TALENTS §4.5 / §5.4 / §5.7 (T13): tab 3, Beceri Uzmanlıkları. Three signature skill cards per class, mastery bars,
+   tier rungs with the A | B choosers and the lock text, the chips of the picks and their tooltips. Tokens come from
+   .pt-shell (panels-talents-shell.css). Picks are immediate, so there is no staging look on this tab. */
+
+.pt-tab-skills { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 8px; overflow: auto; padding: 2px 2px 6px; }
+
+.pt-sk-note { flex: none; font-size: 12px; line-height: 1.4; color: var(--pt-pale); border: 1px solid #5a4423; background: rgba(0, 0, 0, 0.35); padding: 6px 10px; }
+.pt-sk-note.is-warn { color: #e0a060; border-color: #7a5a2a; }
+
+.pt-sk-cards { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.pt-sk-empty { grid-column: 1 / -1; margin: auto; color: var(--pt-dim); font-size: 13px; text-align: center; padding: 24px; }
+@media (max-width: 900px) {
+  .pt-sk-cards { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---- card ---- */
+.pt-sk-card {
+  min-width: 0; display: flex; flex-direction: column; gap: 8px; padding: 10px;
+  border: 1px solid #5a4423; background: linear-gradient(#1f1710, #0d0905); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.7);
+  transition: box-shadow 0.3s ease;
+}
+.pt-sk-card.is-focus { box-shadow: 0 0 0 1px var(--pt-gold), 0 0 14px rgba(232, 194, 90, 0.45); }
+
+.pt-sk-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.pt-sk-ico { width: 40px; height: 40px; flex: none; padding: 4px; border: 1px solid #5a4423; background: #0b0805; image-rendering: pixelated; }
+.pt-sk-title { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
+.pt-sk-name { font-family: var(--font-head); font-size: 15px; font-weight: 600; color: #ffe9aa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pt-sk-rank { font-size: 11px; color: var(--pt-dim); }
+
+/* mastery bar (Ustalık) */
+.pt-sk-bar { position: relative; height: 16px; flex: none; background: #0a0705; border: 1px solid #5a4423; overflow: hidden; }
+.pt-sk-bar-fill { position: absolute; top: 0; bottom: 0; left: 0; width: 0; background: linear-gradient(#f0d27a, #a7812f); transition: width 0.4s ease; }
+.pt-sk-bar-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff3c8; text-shadow: 0 1px 0 #000; white-space: nowrap; }
+
+/* pick chips */
+.pt-sk-chips { display: flex; flex-wrap: wrap; gap: 4px; min-height: 20px; }
+.pt-sk-chip { font-size: 11px; line-height: 1.3; color: #ffe9aa; border: 1px solid var(--pt-gold); background: rgba(232, 194, 90, 0.1); padding: 1px 7px; white-space: nowrap; }
+.pt-sk-chip.is-none { color: var(--pt-dim); border-color: var(--pt-iron); background: none; font-style: italic; }
+
+/* ---- tier rungs ---- */
+.pt-sk-rungs { display: flex; flex-direction: column; gap: 6px; }
+.pt-sk-rung { display: flex; flex-direction: column; gap: 4px; padding: 6px; border: 1px solid #3a3328; background: rgba(0, 0, 0, 0.3); }
+.pt-sk-rung.is-open { border-color: #5a4423; }
+.pt-sk-rung.is-focus { border-color: var(--pt-gold); box-shadow: 0 0 8px rgba(232, 194, 90, 0.35); }
+
+.pt-sk-rung-head { display: flex; align-items: center; gap: 6px; min-height: 16px; font-size: 11px; color: var(--pt-dim); }
+.pt-sk-tier { font-family: var(--font-head); letter-spacing: 0.08em; text-transform: uppercase; color: var(--pt-pale); }
+.pt-sk-lock { display: flex; align-items: center; gap: 4px; min-width: 0; color: #c9a36a; }
+.pt-sk-lock-ico { width: 12px; height: 12px; flex: none; opacity: 0.85; image-rendering: pixelated; }
+.pt-sk-status { margin-left: auto; color: var(--pt-dim); white-space: nowrap; }
+.pt-sk-rung.is-open .pt-sk-status { color: var(--pt-pale); }
+
+.pt-sk-rung.is-locked { background: rgba(0, 0, 0, 0.45); }
+.pt-sk-rung.is-locked .pt-sk-tier { color: var(--pt-dim); }
+
+/* A | B choosers */
+.pt-sk-opts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px; }
+.pt-sk-opt {
+  display: flex; align-items: flex-start; gap: 6px; min-width: 0; padding: 6px; text-align: left;
+  font: inherit; color: var(--pt-pale); background: rgba(0, 0, 0, 0.35); border: 1px solid #3a3328; cursor: pointer;
+}
+.pt-sk-opt:hover:not(.is-off) { border-color: var(--pt-gold); color: #ffe9aa; }
+.pt-sk-opt.is-off { opacity: 0.5; cursor: default; }
+.pt-sk-opt.is-picked.is-a { border-color: var(--pt-gold); box-shadow: inset 0 0 0 1px var(--pt-gold); }
+.pt-sk-opt.is-picked.is-b { border-color: var(--pt-rune); box-shadow: inset 0 0 0 1px var(--pt-rune); }
+.pt-sk-opt.is-picked { opacity: 1; }
+.pt-sk-letter {
+  flex: none; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--font-head); font-size: 11px; color: #ffe9aa; border: 1px solid #5a4423; background: #0b0805;
+}
+.pt-sk-opt.is-a .pt-sk-letter { border-color: var(--pt-gold); }
+.pt-sk-opt.is-b .pt-sk-letter { border-color: var(--pt-rune); }
+.pt-sk-opt-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 auto; }
+.pt-sk-opt-top { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.pt-sk-opt-name { font-weight: 600; font-size: 12.5px; line-height: 1.2; color: #ffe9aa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pt-sk-opt-text {
+  font-size: 11px; line-height: 1.35; color: var(--pt-pale);
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* shape icons: stroked by default, the option colour comes from the chooser */
+.pt-sk-shape { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.pt-sk-opt.is-a .pt-sk-shape { color: var(--pt-gold); }
+.pt-sk-opt.is-b .pt-sk-shape { color: var(--pt-rune); }
+
+/* ---- tooltips (base tip: .pg-tip + .pg-ttip-*) ---- */
+.pg-tip.pt-sk-tip { max-width: 300px; }
+.pt-sk-tt-desc { color: var(--pt-pale); font-size: 12px; line-height: 1.4; margin-top: 4px; }
+.pt-sk-tt-line { color: #ffe9aa; font-size: 12px; margin-top: 4px; line-height: 1.4; }
+.pt-sk-tt-hint { color: #8c7f66; font-size: 11px; margin-top: 6px; line-height: 1.3; }
+.pt-sk-tt-block { color: #e0604e; font-size: 12px; margin-top: 6px; line-height: 1.3; }

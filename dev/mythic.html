@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dev: mythic+</title>
+<style>
+  #mp-panel { position: fixed; top: 0; left: 0; bottom: 0; width: 330px; z-index: 9999; overflow-y: auto; padding: 6px 8px 40px; background: rgba(8,6,4,.86); border-right: 1px solid #5a4423; font: 12px/1.25 'Alegreya Sans', sans-serif; color: #e8d9b0; pointer-events: auto; }
+  #mp-panel h4 { margin: 10px 0 4px; font: 700 12px 'Cinzel', serif; color: #e6cc80; letter-spacing: .06em; border-bottom: 1px solid #3a2c18; padding-bottom: 2px; }
+  #mp-panel .row { display: flex; flex-wrap: wrap; gap: 3px; margin: 2px 0; align-items: center; }
+  #mp-panel button { font: 700 11px sans-serif; padding: 3px 7px; color: #f1dfae; background: #2a1c10; border: 1px solid #7a5d2c; cursor: pointer; }
+  #mp-panel button:hover { background: #4a3520; }
+  #mp-panel button.on { background: #6a4a1c; border-color: #e6cc80; }
+  #mp-panel label { display: inline-flex; gap: 3px; align-items: center; margin-right: 6px; }
+  #mp-panel select, #mp-panel input[type=number] { background: #1a120a; color: #f1dfae; border: 1px solid #5a4423; font: 11px sans-serif; padding: 1px 3px; }
+  #mp-panel input[type=number] { width: 52px; }
+  #mp-panel .aff { display: grid; grid-template-columns: 1fr 1fr; gap: 0 6px; }
+  #mp-panel .aff label { font-size: 11px; margin: 0; }
+  #mp-over { position: fixed; top: 0; right: 0; width: 360px; max-height: 100vh; overflow-y: auto; z-index: 9990; padding: 6px 8px; background: rgba(8,6,4,.72); border-left: 1px solid #5a4423; font: 11px/1.3 Consolas, monospace; color: #cfe3c0; white-space: pre-wrap; pointer-events: none; }
+  #mp-over b { color: #e6cc80; }
+  #mp-log { position: fixed; left: 340px; bottom: 6px; width: 520px; max-height: 190px; overflow-y: auto; z-index: 9990; padding: 4px 8px; background: rgba(8,6,4,.72); border: 1px solid #3a2c18; font: 11px/1.3 Consolas, monospace; color: #b8c8d8; pointer-events: none; }
+  #mp-log div.err { color: #ff8070; }
+</style></head>
+<body><div id="game-root"><canvas id="game-canvas"></canvas><div id="ui-root"></div></div>
+<div id="mp-panel"></div><div id="mp-over"></div><div id="mp-log"></div>
+<script type="module" src="/src/dev/mythic.ts"></script></body></html>

@@ -1,0 +1,27 @@
+{
+ "id": "dagger_ritual",
+ "name": "Kurban Hançeri",
+ "use": "Wavy kris ritual dagger, bone grip, glowing ruby pommel (lvl 30-50)",
+ "attach": "grip centre at origin; blade +Y; dual-wield: mirror the off-hand copy on X if needed",
+ "kind": "dagger",
+ "emissive": "ruby pommel + guard stone",
+ "tris": 238,
+ "parts": 6,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": true,
+ "bbox_min": [
+  -0.052,
+  -0.024,
+  -0.142
+ ],
+ "bbox_max": [
+  0.072,
+  0.024,
+  0.47
+ ],
+ "bytes": 19328
+}

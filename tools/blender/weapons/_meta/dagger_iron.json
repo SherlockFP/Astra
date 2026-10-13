@@ -1,0 +1,27 @@
+{
+ "id": "dagger_iron",
+ "name": "Demir Hançer",
+ "use": "Plain iron dagger, rogue starter / off-hand (lvl 1-12)",
+ "attach": "grip centre at origin; blade +Y; dual-wield: mirror the off-hand copy on X if needed",
+ "kind": "dagger",
+ "emissive": "",
+ "tris": 118,
+ "parts": 4,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 15,
+ "has_emit": false,
+ "bbox_min": [
+  -0.066,
+  -0.022,
+  -0.116
+ ],
+ "bbox_max": [
+  0.066,
+  0.022,
+  0.46
+ ],
+ "bytes": 10320
+}

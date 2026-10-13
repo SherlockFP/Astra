@@ -1,0 +1,27 @@
+{
+ "id": "crossbow_heavy",
+ "name": "Ağır Arbalet",
+ "use": "Heavy siege-style crossbow with windlass and iron fittings (lvl 25-45)",
+ "attach": "trigger grip at origin; points forward +Z like KayKit crossbow_1handed; prod across X; up +Y",
+ "kind": "crossbow",
+ "emissive": "",
+ "tris": 358,
+ "parts": 20,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": false,
+ "bbox_min": [
+  -0.504,
+  -0.894,
+  -0.06
+ ],
+ "bbox_max": [
+  0.504,
+  0.386,
+  0.146
+ ],
+ "bytes": 26936
+}

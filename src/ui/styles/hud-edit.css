@@ -1,0 +1,115 @@
+/* ==========================================================================
+   HUD layout editor (hud/EditMode.ts) and the extra action bars (hud/ExtraBars.ts).
+   Same dark leather + gold trim language as the rest of the HUD (hud.css tokens).
+   ========================================================================== */
+
+/* ---- entry button (bottom-right corner, above the gold / micro menu) ---- */
+.hud .hud-edit-btn {
+  margin-bottom: 4px; padding: 4px 12px; font: 700 12px var(--font-head); letter-spacing: 0.05em; white-space: nowrap;
+  color: var(--hud-gold-l); background: linear-gradient(#3a2a14, #140d07); border: 2px solid #050302; border-radius: 4px;
+  box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 2px 0 #000; cursor: pointer; pointer-events: auto;
+}
+.hud .hud-edit-btn:hover { background: linear-gradient(#5a4522, #251a0d); color: #fff; }
+
+/* ---- editor layer: above the HUD, below the panels ---- */
+.layer-edit { z-index: 90; }
+.ued-boxes { position: absolute; inset: 0; pointer-events: none; }
+.ued-box {
+  position: absolute; box-sizing: border-box; border: 2px dashed rgba(255, 231, 163, 0.85); border-radius: 6px;
+  background: rgba(232, 196, 106, 0.07); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.75), inset 0 0 14px rgba(232, 196, 106, 0.12);
+  cursor: move; pointer-events: auto; touch-action: none; user-select: none;
+}
+.ued-box:hover { background: rgba(232, 196, 106, 0.14); }
+.ued-box.sel { border-style: solid; border-color: #ffe7a3; box-shadow: 0 0 0 1px #000, 0 0 16px rgba(255, 231, 163, 0.5), inset 0 0 14px rgba(232, 196, 106, 0.2); }
+.ued-tag {
+  position: absolute; left: -2px; top: -24px; display: flex; align-items: center; gap: 6px; padding: 1px 8px 2px; white-space: nowrap;
+  font: 700 12px/1.3 var(--font-head); color: #1a0f04; background: linear-gradient(160deg, #fff0c0, #e8c46a 50%, #9b7b36);
+  border: 2px solid #050302; border-radius: 4px; box-shadow: 0 2px 0 #000; pointer-events: none;
+}
+.ued-box.low .ued-tag,
+.ued-box.low .ued-ctrl { top: 4px; }
+.ued-sc { font-variant-numeric: tabular-nums; opacity: 0.75; }
+.ued-ctrl { position: absolute; right: -2px; top: -24px; display: flex; gap: 3px; }
+.ued-b {
+  width: 22px; height: 20px; padding: 0; font: 700 14px/18px var(--font-head); color: var(--hud-gold-l);
+  background: linear-gradient(#3a2a14, #140d07); border: 2px solid #050302; border-radius: 4px;
+  box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 2px 0 #000; cursor: pointer;
+}
+.ued-b:hover { background: linear-gradient(#5a4522, #251a0d); color: #fff; }
+.ued-guide { position: absolute; background: #ffe7a3; box-shadow: 0 0 6px rgba(255, 231, 163, 0.9); pointer-events: none; }
+.ued-guide.v { top: 0; bottom: 0; width: 1px; }
+.ued-guide.h { left: 0; right: 0; height: 1px; }
+
+/* ---- toolbar (top centre) ---- */
+.ued-bar {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; flex-wrap: wrap;
+  justify-content: center; gap: 8px; max-width: calc(100% - 24px); padding: 8px 12px; pointer-events: auto;
+  background: linear-gradient(180deg, #2f2216 0%, #1a120b 55%, #0f0a06 100%); border: 2px solid #050302; border-radius: 7px;
+  box-shadow: inset 0 0 0 1px var(--hud-gold-d), inset 0 0 0 3px #120b07, 0 4px 0 #000, 0 10px 22px rgba(0, 0, 0, 0.6);
+}
+.ued-title { font: 700 15px var(--font-head); letter-spacing: 0.08em; text-transform: uppercase; color: var(--hud-gold-l); text-shadow: var(--shade); white-space: nowrap; }
+.ued-hint { font: 13px var(--font-ui); color: var(--text-dim); text-shadow: var(--shade); white-space: nowrap; }
+.ued-sep { width: 2px; height: 22px; background: rgba(155, 123, 54, 0.6); box-shadow: 1px 0 0 #000; }
+.ued-btn {
+  padding: 5px 12px; font: 700 13px var(--font-head); letter-spacing: 0.03em; white-space: nowrap; color: var(--hud-gold-l);
+  background: linear-gradient(#3a2a14, #140d07); border: 2px solid #050302; border-radius: 4px;
+  box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 2px 0 #000; cursor: pointer;
+}
+.ued-btn:hover { background: linear-gradient(#5a4522, #251a0d); color: #fff; }
+.ued-btn.on { background: linear-gradient(#6a4e1c, #2a1c08); box-shadow: inset 0 0 0 1px var(--hud-gold-l), 0 0 8px rgba(232, 196, 106, 0.45), 0 2px 0 #000; color: #fff; }
+.ued-btn.primary { color: #1a0f04; background: linear-gradient(160deg, #fff0c0, #e8c46a 50%, #9b7b36); text-shadow: none; }
+.ued-btn.primary:hover { color: #000; filter: brightness(1.08); }
+.ued-btn.danger { color: #ffb0a0; }
+
+/* ---- placeholders: frames that are normally hidden stay visible (and sized) while editing ---- */
+.hud.hud-editing .hud-edit-btn { display: none; }
+.hud.hud-editing .tf { display: flex !important; }
+.hud.hud-editing .tf-name:empty::before { content: 'Hedef çerçevesi'; font: 700 17px var(--font-head); color: var(--text-dim); }
+.hud.hud-editing .bf { display: flex !important; }
+.hud.hud-editing .bf-name:empty::before { content: 'Patron çerçevesi'; font: 700 26px var(--font-title); color: #d8b48a; }
+.hud.hud-editing .mt { display: flex !important; }
+.hud.hud-editing .cb { display: block !important; min-width: 160px; min-height: 60px; }
+.hud.hud-editing .party:empty { display: block; min-width: 252px; min-height: 48px; }
+.hud.hud-editing .party:empty::before { content: 'Parti çerçeveleri'; font: 700 13px var(--font-head); color: var(--text-dim); text-shadow: var(--shade); }
+.hud.hud-editing .lf:empty { min-width: 220px; min-height: 40px; }
+.hud.hud-editing .lf:empty::before { content: 'Eşya akışı'; font: 700 13px var(--font-head); color: var(--text-dim); text-shadow: var(--shade); }
+.hud.hud-editing .chat { min-width: 320px; min-height: 40px; }
+.hud.hud-editing .pf-auras { min-width: 160px; min-height: 26px; }
+
+/* ==========================================================================
+   Extra action bars (Çubuk 2 / Çubuk 3). Default spots sit above the bottom cluster, left and right of the centre.
+   ========================================================================== */
+.xbar {
+  position: absolute; display: none; align-items: center; gap: 8px; padding: 8px 12px 8px 8px; pointer-events: none;
+  background: linear-gradient(180deg, #2f2216 0%, #1a120b 55%, #0f0a06 100%); border: 2px solid #050302; border-radius: 7px;
+  box-shadow: inset 0 0 0 1px var(--hud-gold-d), inset 0 1px 0 2px rgba(255, 231, 163, 0.1), inset 0 0 0 4px #150e08,
+    inset 0 0 0 5px var(--hud-gold-dd), 0 4px 0 #000, 0 10px 22px rgba(0, 0, 0, 0.65);
+}
+.xbar-bar2 { left: calc(50% - 560px); bottom: 250px; }
+.xbar-bar3 { left: calc(50% + 16px); bottom: 250px; }
+.xbar-row { display: flex; align-items: flex-end; gap: 6px; }
+.hud .xbar-lock {
+  flex: none; width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  pointer-events: auto; background: linear-gradient(#3a2a14, #140d07); border: 2px solid #050302; border-radius: 4px;
+  box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 2px 0 #000;
+}
+.hud .xbar-lock:hover { background: linear-gradient(#5a4522, #251a0d); }
+.xbar-lico { width: 14px; height: 14px; background: linear-gradient(#fff3d0, #d9b05a); filter: drop-shadow(0 1px 0 #000); }
+.xbar.is-locked .xbar-lico { background: linear-gradient(#ffb0a0, #c8452a); }
+.xbar .slot { cursor: pointer; }
+
+.xbar-pick {
+  position: absolute; left: 8px; bottom: calc(100% + 10px); min-width: 280px; max-height: 300px; overflow-y: auto; padding: 6px;
+  pointer-events: auto; background: rgba(12, 8, 5, 0.97); border: 2px solid #050302; border-radius: 6px;
+  box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 8px 18px rgba(0, 0, 0, 0.7); scrollbar-width: thin; scrollbar-color: #6b5530 transparent;
+}
+.xbar-ptitle {
+  padding: 2px 6px 6px; margin-bottom: 4px; font: 700 12px var(--font-head); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--hud-gold); border-bottom: 1px solid rgba(155, 123, 54, 0.5);
+}
+.xbar-pnone { padding: 8px 6px; font: 13px var(--font-ui); color: var(--text-dim); }
+.hud .xbar-prow { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 4px; cursor: pointer; pointer-events: auto; }
+.hud .xbar-prow:hover { background: rgba(232, 196, 106, 0.14); }
+.xbar-pico { width: 24px; height: 24px; background: linear-gradient(#fff, #e8c46a); filter: drop-shadow(0 1px 0 #000); }
+.xbar-pname { flex: 1; min-width: 0; font: 14px var(--font-ui); color: var(--text); text-shadow: var(--shade); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xbar-pn { font: 700 13px var(--font-head); color: var(--hud-gold-l); text-shadow: var(--shade); font-variant-numeric: tabular-nums; }

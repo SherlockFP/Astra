@@ -1,0 +1,27 @@
+{
+ "id": "hammer_2h_thunder",
+ "name": "Gök Gürültüsü Çekici",
+ "use": "Two-handed war hammer with storm runes (lvl 35-50)",
+ "attach": "upper-hand grip at origin; head +Y; lower hand ~0.3-0.4 below on the haft",
+ "kind": "2h",
+ "emissive": "cyan lightning runes on both head faces",
+ "tris": 472,
+ "parts": 11,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": true,
+ "bbox_min": [
+  -0.285,
+  -0.124,
+  -0.53
+ ],
+ "bbox_max": [
+  0.285,
+  0.124,
+  1.25
+ ],
+ "bytes": 32004
+}

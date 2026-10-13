@@ -1,0 +1,422 @@
+{
+ "puglin": {
+  "url": "/assets/models/itch/bestiary/puglin.glb",
+  "scale": 1.75,
+  "size": [
+   2.569,
+   1.629,
+   1.069
+  ],
+  "tris": 7528,
+  "textures": {
+   "puglin_1": "/assets/textures/itch/bestiary/puglin_1.png",
+   "puglin_2": "/assets/textures/itch/bestiary/puglin_2.png",
+   "puglin_3": "/assets/textures/itch/bestiary/puglin_3.png"
+  },
+  "clips": {
+   "Idle": {
+    "seconds": 2.5,
+    "loop": true,
+    "source": "Idle_Loop"
+   },
+   "Idle_Combat": {
+    "seconds": 1.667,
+    "loop": true,
+    "source": "Sword_Idle"
+   },
+   "Idle_Zombie": {
+    "seconds": 1.333,
+    "loop": true,
+    "source": "Zombie_Idle_Loop"
+   },
+   "Walk": {
+    "seconds": 1.333,
+    "loop": true,
+    "source": "Walk_Loop",
+    "footLockSpeed": 0.733
+   },
+   "Walk_Zombie": {
+    "seconds": 1.333,
+    "loop": true,
+    "source": "Zombie_Walk_Fwd_Loop",
+    "footLockSpeed": 0.789
+   },
+   "Run": {
+    "seconds": 0.933,
+    "loop": true,
+    "source": "Jog_Fwd_Loop",
+    "footLockSpeed": 4.027
+   },
+   "Sprint": {
+    "seconds": 0.667,
+    "loop": true,
+    "source": "Sprint_Loop",
+    "footLockSpeed": 6.202
+   },
+   "Crouch_Idle": {
+    "seconds": 2.933,
+    "loop": true,
+    "source": "Crouch_Idle_Loop"
+   },
+   "Crouch_Walk": {
+    "seconds": 2.0,
+    "loop": true,
+    "source": "Crouch_Fwd_Loop",
+    "footLockSpeed": 0.564
+   },
+   "Attack_1H_1": {
+    "seconds": 0.433,
+    "loop": false,
+    "source": "Sword_Regular_A"
+   },
+   "Attack_1H_2": {
+    "seconds": 0.533,
+    "loop": false,
+    "source": "Sword_Regular_B"
+   },
+   "Attack_1H_3": {
+    "seconds": 2.0,
+    "loop": false,
+    "source": "Sword_Regular_C"
+   },
+   "Attack_1H_Combo": {
+    "seconds": 3.0,
+    "loop": false,
+    "source": "Sword_Regular_Combo"
+   },
+   "Attack_2H": {
+    "seconds": 1.533,
+    "loop": false,
+    "source": "Sword_Attack"
+   },
+   "Attack_2H_Combo": {
+    "seconds": 4.333,
+    "loop": false,
+    "source": "Sword_Heavy_Combo"
+   },
+   "Punch": {
+    "seconds": 0.867,
+    "loop": false,
+    "source": "Punch_Jab"
+   },
+   "Punch_2": {
+    "seconds": 1.0,
+    "loop": false,
+    "source": "Punch_Cross"
+   },
+   "Punch_Hook": {
+    "seconds": 0.467,
+    "loop": false,
+    "source": "Melee_Hook"
+   },
+   "Shield_Bash": {
+    "seconds": 0.833,
+    "loop": false,
+    "source": "Shield_OneShot"
+   },
+   "Charge": {
+    "seconds": 1.1,
+    "loop": false,
+    "source": "Shield_Dash",
+    "footLockSpeed": 0.683
+   },
+   "Dash": {
+    "seconds": 1.567,
+    "loop": false,
+    "source": "Sword_Dash",
+    "footLockSpeed": 1.772
+   },
+   "Cast_Start": {
+    "seconds": 0.533,
+    "loop": false,
+    "source": "Spell_Simple_Enter"
+   },
+   "Cast_Loop": {
+    "seconds": 2.1,
+    "loop": true,
+    "source": "Spell_Simple_Idle_Loop"
+   },
+   "Spellcast": {
+    "seconds": 0.5,
+    "loop": false,
+    "source": "Spell_Simple_Shoot"
+   },
+   "Cast_End": {
+    "seconds": 0.433,
+    "loop": false,
+    "source": "Spell_Simple_Exit"
+   },
+   "Throw": {
+    "seconds": 1.333,
+    "loop": false,
+    "source": "OverhandThrow"
+   },
+   "Hit_Front": {
+    "seconds": 0.333,
+    "loop": false,
+    "source": "Hit_Chest"
+   },
+   "Hit_Head": {
+    "seconds": 0.433,
+    "loop": false,
+    "source": "Hit_Head"
+   },
+   "Hit_Knockback": {
+    "seconds": 0.833,
+    "loop": false,
+    "source": "Hit_Knockback"
+   },
+   "Stagger": {
+    "seconds": 1.067,
+    "loop": false,
+    "source": "Idle_Shield_Break"
+   },
+   "Death_A": {
+    "seconds": 2.4,
+    "loop": false,
+    "source": "Death01"
+   },
+   "Death_B": {
+    "seconds": 1.533,
+    "loop": false,
+    "source": "LayToIdle(reversed)"
+   },
+   "Taunt": {
+    "seconds": 2.5,
+    "loop": false,
+    "source": "Idle_Rail_Call"
+   },
+   "Block": {
+    "seconds": 1.233,
+    "loop": false,
+    "source": "Sword_Block"
+   },
+   "Block_Idle": {
+    "seconds": 2.5,
+    "loop": true,
+    "source": "Idle_Shield_Loop"
+   },
+   "Dodge": {
+    "seconds": 1.467,
+    "loop": false,
+    "source": "Roll",
+    "footLockSpeed": 2.558
+   },
+   "GetUp": {
+    "seconds": 1.533,
+    "loop": false,
+    "source": "LayToIdle"
+   }
+  }
+ },
+ "imp": {
+  "url": "/assets/models/itch/bestiary/imp.glb",
+  "scale": 1.75,
+  "size": [
+   3.069,
+   2.936,
+   1.183
+  ],
+  "tris": 15232,
+  "textures": {
+   "imp_1": "/assets/textures/itch/bestiary/imp_1.png",
+   "imp_2": "/assets/textures/itch/bestiary/imp_2.png",
+   "imp_3": "/assets/textures/itch/bestiary/imp_3.png"
+  },
+  "clips": {
+   "Idle": {
+    "seconds": 2.5,
+    "loop": true,
+    "source": "Idle_Loop"
+   },
+   "Idle_Combat": {
+    "seconds": 1.667,
+    "loop": true,
+    "source": "Sword_Idle"
+   },
+   "Idle_Zombie": {
+    "seconds": 1.333,
+    "loop": true,
+    "source": "Zombie_Idle_Loop"
+   },
+   "Walk": {
+    "seconds": 1.333,
+    "loop": true,
+    "source": "Walk_Loop",
+    "footLockSpeed": 1.502
+   },
+   "Walk_Zombie": {
+    "seconds": 1.333,
+    "loop": true,
+    "source": "Zombie_Walk_Fwd_Loop",
+    "footLockSpeed": 1.618
+   },
+   "Run": {
+    "seconds": 0.933,
+    "loop": true,
+    "source": "Jog_Fwd_Loop",
+    "footLockSpeed": 8.253
+   },
+   "Sprint": {
+    "seconds": 0.667,
+    "loop": true,
+    "source": "Sprint_Loop",
+    "footLockSpeed": 12.71
+   },
+   "Crouch_Idle": {
+    "seconds": 2.933,
+    "loop": true,
+    "source": "Crouch_Idle_Loop"
+   },
+   "Crouch_Walk": {
+    "seconds": 2.0,
+    "loop": true,
+    "source": "Crouch_Fwd_Loop",
+    "footLockSpeed": 1.155
+   },
+   "Attack_1H_1": {
+    "seconds": 0.433,
+    "loop": false,
+    "source": "Sword_Regular_A"
+   },
+   "Attack_1H_2": {
+    "seconds": 0.533,
+    "loop": false,
+    "source": "Sword_Regular_B"
+   },
+   "Attack_1H_3": {
+    "seconds": 2.0,
+    "loop": false,
+    "source": "Sword_Regular_C"
+   },
+   "Attack_1H_Combo": {
+    "seconds": 3.0,
+    "loop": false,
+    "source": "Sword_Regular_Combo"
+   },
+   "Attack_2H": {
+    "seconds": 1.533,
+    "loop": false,
+    "source": "Sword_Attack"
+   },
+   "Attack_2H_Combo": {
+    "seconds": 4.333,
+    "loop": false,
+    "source": "Sword_Heavy_Combo"
+   },
+   "Punch": {
+    "seconds": 0.867,
+    "loop": false,
+    "source": "Punch_Jab"
+   },
+   "Punch_2": {
+    "seconds": 1.0,
+    "loop": false,
+    "source": "Punch_Cross"
+   },
+   "Punch_Hook": {
+    "seconds": 0.467,
+    "loop": false,
+    "source": "Melee_Hook"
+   },
+   "Shield_Bash": {
+    "seconds": 0.833,
+    "loop": false,
+    "source": "Shield_OneShot"
+   },
+   "Charge": {
+    "seconds": 1.1,
+    "loop": false,
+    "source": "Shield_Dash",
+    "footLockSpeed": 1.4
+   },
+   "Dash": {
+    "seconds": 1.567,
+    "loop": false,
+    "source": "Sword_Dash",
+    "footLockSpeed": 3.631
+   },
+   "Cast_Start": {
+    "seconds": 0.533,
+    "loop": false,
+    "source": "Spell_Simple_Enter"
+   },
+   "Cast_Loop": {
+    "seconds": 2.1,
+    "loop": true,
+    "source": "Spell_Simple_Idle_Loop"
+   },
+   "Spellcast": {
+    "seconds": 0.5,
+    "loop": false,
+    "source": "Spell_Simple_Shoot"
+   },
+   "Cast_End": {
+    "seconds": 0.433,
+    "loop": false,
+    "source": "Spell_Simple_Exit"
+   },
+   "Throw": {
+    "seconds": 1.333,
+    "loop": false,
+    "source": "OverhandThrow"
+   },
+   "Hit_Front": {
+    "seconds": 0.333,
+    "loop": false,
+    "source": "Hit_Chest"
+   },
+   "Hit_Head": {
+    "seconds": 0.433,
+    "loop": false,
+    "source": "Hit_Head"
+   },
+   "Hit_Knockback": {
+    "seconds": 0.833,
+    "loop": false,
+    "source": "Hit_Knockback"
+   },
+   "Stagger": {
+    "seconds": 1.067,
+    "loop": false,
+    "source": "Idle_Shield_Break"
+   },
+   "Death_A": {
+    "seconds": 2.4,
+    "loop": false,
+    "source": "Death01"
+   },
+   "Death_B": {
+    "seconds": 1.533,
+    "loop": false,
+    "source": "LayToIdle(reversed)"
+   },
+   "Taunt": {
+    "seconds": 2.5,
+    "loop": false,
+    "source": "Idle_Rail_Call"
+   },
+   "Block": {
+    "seconds": 1.233,
+    "loop": false,
+    "source": "Sword_Block"
+   },
+   "Block_Idle": {
+    "seconds": 2.5,
+    "loop": true,
+    "source": "Idle_Shield_Loop"
+   },
+   "Dodge": {
+    "seconds": 1.467,
+    "loop": false,
+    "source": "Roll",
+    "footLockSpeed": 5.243
+   },
+   "GetUp": {
+    "seconds": 1.533,
+    "loop": false,
+    "source": "LayToIdle"
+   }
+  }
+ }
+}

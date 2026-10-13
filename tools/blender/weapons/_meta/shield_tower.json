@@ -1,0 +1,27 @@
+{
+ "id": "shield_tower",
+ "name": "Kule Kalkanı",
+ "use": "Tall curved tower shield, iron-banded with a sun boss (tank, lvl 20-45)",
+ "attach": "hand grip bar at origin behind the plate (off-hand bone); painted face +Z; up +Y",
+ "kind": "shield",
+ "emissive": "",
+ "tris": 174,
+ "parts": 6,
+ "atlas": [
+  128,
+  128
+ ],
+ "colours": 16,
+ "has_emit": false,
+ "bbox_min": [
+  -0.42,
+  -0.212,
+  -0.66
+ ],
+ "bbox_max": [
+  0.42,
+  0.016,
+  0.64
+ ],
+ "bytes": 18600
+}

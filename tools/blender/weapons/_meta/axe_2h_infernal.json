@@ -1,0 +1,27 @@
+{
+ "id": "axe_2h_infernal",
+ "name": "Cehennem Baltası",
+ "use": "Infernal great axe, jagged black blades with molten edges (boss loot)",
+ "attach": "upper-hand grip at origin; head +Y; lower hand ~0.3-0.4 below on the haft",
+ "kind": "2h",
+ "emissive": "molten blade edges + cracks, lava gem in socket",
+ "tris": 336,
+ "parts": 15,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 14,
+ "has_emit": true,
+ "bbox_min": [
+  -0.22,
+  -0.065,
+  -0.64
+ ],
+ "bbox_max": [
+  0.37,
+  0.065,
+  1.32
+ ],
+ "bytes": 27776
+}

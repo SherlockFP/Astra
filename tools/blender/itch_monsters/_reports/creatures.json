@@ -1,0 +1,2272 @@
+[
+ {
+  "id": "wolf",
+  "name": "Wolf",
+  "group": "Beasts",
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/creatures/wolf.glb",
+  "bytes": 791952,
+  "scale": 1.3333,
+  "native_size": [
+   0.297,
+   1.059,
+   1.705
+  ],
+  "size": [
+   0.396,
+   1.412,
+   2.273
+  ],
+  "min": [
+   -0.199,
+   -0.0,
+   -0.939
+  ],
+  "max": [
+   0.197,
+   1.412,
+   1.334
+  ],
+  "idle_size": [
+   0.396,
+   1.412,
+   2.273
+  ],
+  "idle_min": [
+   -0.199,
+   -0.0,
+   -0.939
+  ],
+  "idle_max": [
+   0.197,
+   1.412,
+   1.334
+  ],
+  "tris": 4850,
+  "bones": 41,
+  "nodes": [
+   "WolfBody"
+  ],
+  "variants": [
+   "wolf",
+   "wolf_black",
+   "wolf_white"
+  ],
+  "front_ok": true,
+  "clips": [
+   {
+    "name": "Idle",
+    "frames": 120,
+    "keys": 120,
+    "seconds": 4.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "IdlePant",
+    "frames": 90,
+    "keys": 90,
+    "seconds": 3.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Walk",
+    "frames": 24,
+    "keys": 24,
+    "seconds": 0.8,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 1.067,
+    "events": [],
+    "speed": 1.334
+   },
+   {
+    "name": "Trot",
+    "frames": 16,
+    "keys": 16,
+    "seconds": 0.533,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 1.467,
+    "events": [],
+    "speed": 2.752
+   },
+   {
+    "name": "Run",
+    "frames": 12,
+    "keys": 12,
+    "seconds": 0.4,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 2.933,
+    "events": [],
+    "speed": 7.332
+   },
+   {
+    "name": "Bite",
+    "frames": 33,
+    "keys": 33,
+    "seconds": 1.1,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.47
+     }
+    ]
+   },
+   {
+    "name": "Lunge",
+    "frames": 45,
+    "keys": 45,
+    "seconds": 1.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": true,
+    "travel": 2.133,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.87
+     }
+    ],
+    "speed": 1.422
+   },
+   {
+    "name": "Threat",
+    "frames": 72,
+    "keys": 72,
+    "seconds": 2.4,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Howl",
+    "frames": 105,
+    "keys": 105,
+    "seconds": 3.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Howl",
+      "time": 0.8
+     }
+    ]
+   },
+   {
+    "name": "Hit",
+    "frames": 15,
+    "keys": 15,
+    "seconds": 0.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Death",
+    "frames": 66,
+    "keys": 66,
+    "seconds": 2.2,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Dead",
+      "time": 1.9
+     }
+    ]
+   },
+   {
+    "name": "GetUp",
+    "frames": 45,
+    "keys": 45,
+    "seconds": 1.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   }
+  ],
+  "materials": [
+   "wolf_main"
+  ]
+ },
+ {
+  "id": "warg",
+  "name": "Warg",
+  "group": "Beasts",
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/creatures/warg.glb",
+  "bytes": 1121656,
+  "scale": 1.3333,
+  "native_size": [
+   0.778,
+   1.339,
+   2.399
+  ],
+  "size": [
+   1.037,
+   1.786,
+   3.198
+  ],
+  "min": [
+   -0.553,
+   -0.0,
+   -1.405
+  ],
+  "max": [
+   0.484,
+   1.786,
+   1.793
+  ],
+  "idle_size": [
+   1.037,
+   1.786,
+   3.198
+  ],
+  "idle_min": [
+   -0.553,
+   -0.0,
+   -1.405
+  ],
+  "idle_max": [
+   0.484,
+   1.786,
+   1.793
+  ],
+  "tris": 8940,
+  "bones": 41,
+  "nodes": [
+   "WargBody",
+   "WargMask",
+   "WargTack"
+  ],
+  "variants": [
+   "warg",
+   "warg_ash",
+   "warg_black"
+  ],
+  "front_ok": true,
+  "clips": [
+   {
+    "name": "Idle",
+    "frames": 120,
+    "keys": 120,
+    "seconds": 4.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "IdlePant",
+    "frames": 90,
+    "keys": 90,
+    "seconds": 3.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Walk",
+    "frames": 28,
+    "keys": 28,
+    "seconds": 0.933,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 1.44,
+    "events": [],
+    "speed": 1.543
+   },
+   {
+    "name": "Trot",
+    "frames": 18,
+    "keys": 18,
+    "seconds": 0.6,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 1.98,
+    "events": [],
+    "speed": 3.3
+   },
+   {
+    "name": "Run",
+    "frames": 14,
+    "keys": 14,
+    "seconds": 0.467,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 3.96,
+    "events": [],
+    "speed": 8.48
+   },
+   {
+    "name": "Bite",
+    "frames": 36,
+    "keys": 36,
+    "seconds": 1.2,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.5
+     }
+    ]
+   },
+   {
+    "name": "Lunge",
+    "frames": 48,
+    "keys": 48,
+    "seconds": 1.6,
+    "fps": 30,
+    "loop": false,
+    "root_motion": true,
+    "travel": 2.88,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.93
+     }
+    ],
+    "speed": 1.8
+   },
+   {
+    "name": "Threat",
+    "frames": 72,
+    "keys": 72,
+    "seconds": 2.4,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Howl",
+    "frames": 105,
+    "keys": 105,
+    "seconds": 3.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Howl",
+      "time": 0.8
+     }
+    ]
+   },
+   {
+    "name": "Hit",
+    "frames": 15,
+    "keys": 15,
+    "seconds": 0.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Death",
+    "frames": 66,
+    "keys": 66,
+    "seconds": 2.2,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Dead",
+      "time": 1.9
+     }
+    ]
+   },
+   {
+    "name": "GetUp",
+    "frames": 45,
+    "keys": 45,
+    "seconds": 1.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   }
+  ],
+  "materials": [
+   "warg_main",
+   "warg_tack"
+  ]
+ },
+ {
+  "id": "rat",
+  "name": "Rat",
+  "group": "Beasts",
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/creatures/rat.glb",
+  "bytes": 631480,
+  "scale": 1.05,
+  "native_size": [
+   0.433,
+   0.478,
+   1.617
+  ],
+  "size": [
+   0.455,
+   0.502,
+   1.698
+  ],
+  "min": [
+   -0.157,
+   0.003,
+   -1.023
+  ],
+  "max": [
+   0.298,
+   0.506,
+   0.675
+  ],
+  "idle_size": [
+   0.455,
+   0.502,
+   1.698
+  ],
+  "idle_min": [
+   -0.157,
+   0.003,
+   -1.023
+  ],
+  "idle_max": [
+   0.298,
+   0.506,
+   0.675
+  ],
+  "tris": 3163,
+  "bones": 41,
+  "nodes": [
+   "RatBody"
+  ],
+  "variants": [
+   "rat",
+   "rat_black",
+   "rat_plague"
+  ],
+  "front_ok": true,
+  "clips": [
+   {
+    "name": "Idle",
+    "frames": 90,
+    "keys": 90,
+    "seconds": 3.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Rear",
+    "frames": 84,
+    "keys": 84,
+    "seconds": 2.8,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Walk",
+    "frames": 16,
+    "keys": 16,
+    "seconds": 0.533,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 0.483,
+    "events": [],
+    "speed": 0.906
+   },
+   {
+    "name": "Run",
+    "frames": 10,
+    "keys": 10,
+    "seconds": 0.333,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 0.945,
+    "events": [],
+    "speed": 2.838
+   },
+   {
+    "name": "Bite",
+    "frames": 24,
+    "keys": 24,
+    "seconds": 0.8,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.4
+     }
+    ]
+   },
+   {
+    "name": "Lunge",
+    "frames": 36,
+    "keys": 36,
+    "seconds": 1.2,
+    "fps": 30,
+    "loop": false,
+    "root_motion": true,
+    "travel": 0.84,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.73
+     }
+    ],
+    "speed": 0.7
+   },
+   {
+    "name": "Threat",
+    "frames": 60,
+    "keys": 60,
+    "seconds": 2.0,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Hit",
+    "frames": 12,
+    "keys": 12,
+    "seconds": 0.4,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Death",
+    "frames": 54,
+    "keys": 54,
+    "seconds": 1.8,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Dead",
+      "time": 1.6
+     }
+    ]
+   },
+   {
+    "name": "GetUp",
+    "frames": 33,
+    "keys": 33,
+    "seconds": 1.1,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   }
+  ],
+  "materials": [
+   "rat_main"
+  ]
+ },
+ {
+  "id": "bear",
+  "name": "Bear",
+  "group": "Beasts",
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/creatures/bear.glb",
+  "bytes": 758936,
+  "scale": 1.3333,
+  "native_size": [
+   1.099,
+   1.542,
+   2.529
+  ],
+  "size": [
+   1.465,
+   2.057,
+   3.372
+  ],
+  "min": [
+   -0.718,
+   -0.009,
+   -1.312
+  ],
+  "max": [
+   0.748,
+   2.048,
+   2.06
+  ],
+  "idle_size": [
+   1.465,
+   2.057,
+   3.372
+  ],
+  "idle_min": [
+   -0.718,
+   -0.009,
+   -1.312
+  ],
+  "idle_max": [
+   0.748,
+   2.048,
+   2.06
+  ],
+  "tris": 4710,
+  "bones": 37,
+  "nodes": [
+   "BearBody"
+  ],
+  "variants": [
+   "bear",
+   "bear_old"
+  ],
+  "front_ok": true,
+  "clips": [
+   {
+    "name": "Sleep",
+    "frames": 90,
+    "keys": 90,
+    "seconds": 3.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Wake",
+    "frames": 45,
+    "keys": 45,
+    "seconds": 1.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Idle",
+    "frames": 90,
+    "keys": 90,
+    "seconds": 3.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Walk",
+    "frames": 32,
+    "keys": 32,
+    "seconds": 1.067,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 1.467,
+    "events": [],
+    "speed": 1.375
+   },
+   {
+    "name": "Run",
+    "frames": 13,
+    "keys": 13,
+    "seconds": 0.433,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 3.067,
+    "events": [],
+    "speed": 7.083
+   },
+   {
+    "name": "Swipe",
+    "frames": 30,
+    "keys": 30,
+    "seconds": 1.0,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.42
+     }
+    ]
+   },
+   {
+    "name": "Bite",
+    "frames": 30,
+    "keys": 30,
+    "seconds": 1.0,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.4
+     }
+    ]
+   },
+   {
+    "name": "Slam",
+    "frames": 42,
+    "keys": 42,
+    "seconds": 1.4,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.77
+     }
+    ]
+   },
+   {
+    "name": "Hug",
+    "frames": 60,
+    "keys": 60,
+    "seconds": 2.0,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.73
+     }
+    ]
+   },
+   {
+    "name": "Rear",
+    "frames": 81,
+    "keys": 81,
+    "seconds": 2.7,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Roar",
+      "time": 0.9
+     }
+    ]
+   },
+   {
+    "name": "Roar",
+    "frames": 60,
+    "keys": 60,
+    "seconds": 2.0,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Roar",
+      "time": 0.3
+     }
+    ]
+   },
+   {
+    "name": "Hit",
+    "frames": 14,
+    "keys": 14,
+    "seconds": 0.467,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Death",
+    "frames": 60,
+    "keys": 60,
+    "seconds": 2.0,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Dead",
+      "time": 1.6
+     }
+    ]
+   }
+  ],
+  "materials": [
+   "bear_main"
+  ]
+ },
+ {
+  "id": "rhino",
+  "name": "Rhino",
+  "group": "Beasts",
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/creatures/rhino.glb",
+  "bytes": 746016,
+  "scale": 1.3333,
+  "native_size": [
+   1.572,
+   1.913,
+   3.545
+  ],
+  "size": [
+   2.096,
+   2.55,
+   4.727
+  ],
+  "min": [
+   -0.895,
+   -0.012,
+   -1.763
+  ],
+  "max": [
+   1.201,
+   2.538,
+   2.964
+  ],
+  "idle_size": [
+   2.096,
+   2.55,
+   4.727
+  ],
+  "idle_min": [
+   -0.895,
+   -0.012,
+   -1.763
+  ],
+  "idle_max": [
+   1.201,
+   2.538,
+   2.964
+  ],
+  "tris": 4944,
+  "bones": 38,
+  "nodes": [
+   "RhinoBody",
+   "Spear"
+  ],
+  "variants": [
+   "rhino"
+  ],
+  "front_ok": true,
+  "clips": [
+   {
+    "name": "Sleep",
+    "frames": 90,
+    "keys": 90,
+    "seconds": 3.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Wake",
+    "frames": 45,
+    "keys": 45,
+    "seconds": 1.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Idle",
+    "frames": 75,
+    "keys": 75,
+    "seconds": 2.5,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Walk",
+    "frames": 30,
+    "keys": 30,
+    "seconds": 1.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 1.733,
+    "events": [],
+    "speed": 1.733
+   },
+   {
+    "name": "Run",
+    "frames": 16,
+    "keys": 16,
+    "seconds": 0.533,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 2.667,
+    "events": [],
+    "speed": 5.004
+   },
+   {
+    "name": "Charge",
+    "frames": 10,
+    "keys": 10,
+    "seconds": 0.333,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 4.0,
+    "events": [],
+    "speed": 12.012
+   },
+   {
+    "name": "Gore",
+    "frames": 30,
+    "keys": 30,
+    "seconds": 1.0,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.45
+     }
+    ]
+   },
+   {
+    "name": "Paw",
+    "frames": 36,
+    "keys": 36,
+    "seconds": 1.2,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Daze",
+    "frames": 60,
+    "keys": 60,
+    "seconds": 2.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Stamp",
+    "frames": 39,
+    "keys": 39,
+    "seconds": 1.3,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 1.0
+     }
+    ]
+   },
+   {
+    "name": "Roar",
+    "frames": 45,
+    "keys": 45,
+    "seconds": 1.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Roar",
+      "time": 0.3
+     }
+    ]
+   },
+   {
+    "name": "Hit",
+    "frames": 12,
+    "keys": 12,
+    "seconds": 0.4,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Death",
+    "frames": 60,
+    "keys": 60,
+    "seconds": 2.0,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Dead",
+      "time": 1.6
+     }
+    ]
+   }
+  ],
+  "materials": [
+   "rhino_main"
+  ]
+ },
+ {
+  "id": "mammoth",
+  "name": "Mammoth",
+  "group": "Beasts",
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/creatures/mammoth.glb",
+  "bytes": 945972,
+  "scale": 1.25,
+  "native_size": [
+   2.034,
+   3.185,
+   5.407
+  ],
+  "size": [
+   2.542,
+   3.982,
+   6.759
+  ],
+  "min": [
+   -1.265,
+   0.0,
+   -2.064
+  ],
+  "max": [
+   1.278,
+   3.982,
+   4.695
+  ],
+  "idle_size": [
+   2.542,
+   3.982,
+   6.759
+  ],
+  "idle_min": [
+   -1.265,
+   0.0,
+   -2.064
+  ],
+  "idle_max": [
+   1.278,
+   3.982,
+   4.695
+  ],
+  "tris": 6268,
+  "bones": 44,
+  "nodes": [
+   "MammothBody"
+  ],
+  "variants": [
+   "mammoth",
+   "mammoth_dark"
+  ],
+  "front_ok": true,
+  "clips": [
+   {
+    "name": "Sleep",
+    "frames": 120,
+    "keys": 120,
+    "seconds": 4.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Wake",
+    "frames": 60,
+    "keys": 60,
+    "seconds": 2.0,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Idle",
+    "frames": 90,
+    "keys": 90,
+    "seconds": 3.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Walk",
+    "frames": 48,
+    "keys": 48,
+    "seconds": 1.6,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 2.75,
+    "events": [],
+    "speed": 1.719
+   },
+   {
+    "name": "Run",
+    "frames": 24,
+    "keys": 24,
+    "seconds": 0.8,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 4.5,
+    "events": [],
+    "speed": 5.625
+   },
+   {
+    "name": "Charge",
+    "frames": 20,
+    "keys": 20,
+    "seconds": 0.667,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 5.25,
+    "events": [],
+    "speed": 7.871
+   },
+   {
+    "name": "Trumpet",
+    "frames": 60,
+    "keys": 60,
+    "seconds": 2.0,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Roar",
+      "time": 0.6
+     }
+    ]
+   },
+   {
+    "name": "TuskSwipe",
+    "frames": 36,
+    "keys": 36,
+    "seconds": 1.2,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.5
+     }
+    ]
+   },
+   {
+    "name": "Stomp",
+    "frames": 48,
+    "keys": 48,
+    "seconds": 1.6,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 1.03
+     }
+    ]
+   },
+   {
+    "name": "Graze",
+    "frames": 120,
+    "keys": 120,
+    "seconds": 4.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Hit",
+    "frames": 15,
+    "keys": 15,
+    "seconds": 0.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Death",
+    "frames": 75,
+    "keys": 75,
+    "seconds": 2.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Dead",
+      "time": 2.2
+     }
+    ]
+   }
+  ],
+  "materials": [
+   "mammoth_main"
+  ]
+ },
+ {
+  "id": "deer",
+  "name": "Deer",
+  "group": "Beasts",
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/creatures/deer.glb",
+  "bytes": 787908,
+  "scale": 1.3333,
+  "native_size": [
+   0.934,
+   2.365,
+   2.044
+  ],
+  "size": [
+   1.245,
+   3.153,
+   2.725
+  ],
+  "min": [
+   -0.623,
+   0.0,
+   -1.091
+  ],
+  "max": [
+   0.623,
+   3.153,
+   1.634
+  ],
+  "idle_size": [
+   1.245,
+   3.153,
+   2.725
+  ],
+  "idle_min": [
+   -0.623,
+   0.0,
+   -1.091
+  ],
+  "idle_max": [
+   0.623,
+   3.153,
+   1.634
+  ],
+  "tris": 5390,
+  "bones": 38,
+  "nodes": [
+   "DeerBody"
+  ],
+  "variants": [
+   "deer"
+  ],
+  "front_ok": true,
+  "clips": [
+   {
+    "name": "Idle",
+    "frames": 120,
+    "keys": 120,
+    "seconds": 4.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Graze",
+    "frames": 150,
+    "keys": 150,
+    "seconds": 5.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 0.213,
+    "events": [],
+    "speed": 0.043
+   },
+   {
+    "name": "Alert",
+    "frames": 45,
+    "keys": 45,
+    "seconds": 1.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Walk",
+    "frames": 36,
+    "keys": 36,
+    "seconds": 1.2,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 1.733,
+    "events": [],
+    "speed": 1.444
+   },
+   {
+    "name": "Trot",
+    "frames": 20,
+    "keys": 20,
+    "seconds": 0.667,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 2.6,
+    "events": [],
+    "speed": 3.898
+   },
+   {
+    "name": "Run",
+    "frames": 14,
+    "keys": 14,
+    "seconds": 0.467,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 5.067,
+    "events": [],
+    "speed": 10.85
+   },
+   {
+    "name": "Attack",
+    "frames": 36,
+    "keys": 36,
+    "seconds": 1.2,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.5
+     }
+    ]
+   },
+   {
+    "name": "Hit",
+    "frames": 15,
+    "keys": 15,
+    "seconds": 0.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Death",
+    "frames": 66,
+    "keys": 66,
+    "seconds": 2.2,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Dead",
+      "time": 1.9
+     }
+    ]
+   },
+   {
+    "name": "Sleep",
+    "frames": 120,
+    "keys": 120,
+    "seconds": 4.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Wake",
+    "frames": 60,
+    "keys": 60,
+    "seconds": 2.0,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   }
+  ],
+  "materials": [
+   "deer_main"
+  ]
+ },
+ {
+  "id": "ooze",
+  "name": "Ooze",
+  "group": "Beasts",
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/creatures/ooze.glb",
+  "bytes": 1094596,
+  "scale": 1.08,
+  "native_size": [
+   3.036,
+   1.391,
+   2.931
+  ],
+  "size": [
+   3.279,
+   1.502,
+   3.165
+  ],
+  "min": [
+   -1.675,
+   -0.0,
+   -1.262
+  ],
+  "max": [
+   1.604,
+   1.502,
+   1.904
+  ],
+  "idle_size": [
+   3.279,
+   1.502,
+   3.165
+  ],
+  "idle_min": [
+   -1.675,
+   -0.0,
+   -1.262
+  ],
+  "idle_max": [
+   1.604,
+   1.502,
+   1.904
+  ],
+  "tris": 4914,
+  "bones": 47,
+  "nodes": [
+   "OozeBody",
+   "OozeContents"
+  ],
+  "variants": [
+   "ooze_green",
+   "ooze_grey",
+   "ooze_black",
+   "ooze_ochre",
+   "ooze_crimson"
+  ],
+  "front_ok": null,
+  "clips": [
+   {
+    "name": "Idle",
+    "frames": 90,
+    "keys": 90,
+    "seconds": 3.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Crawl",
+    "frames": 60,
+    "keys": 60,
+    "seconds": 2.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 1.296,
+    "events": [],
+    "speed": 0.648
+   },
+   {
+    "name": "Lash",
+    "frames": 40,
+    "keys": 40,
+    "seconds": 1.333,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Hit",
+      "time": 0.667
+     }
+    ]
+   },
+   {
+    "name": "Grab",
+    "frames": 44,
+    "keys": 44,
+    "seconds": 1.467,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Hit",
+      "time": 0.6
+     }
+    ]
+   },
+   {
+    "name": "Engulf",
+    "frames": 80,
+    "keys": 80,
+    "seconds": 2.667,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Grab",
+      "time": 0.733
+     },
+     {
+      "name": "Engulf",
+      "time": 1.533
+     }
+    ]
+   },
+   {
+    "name": "Spit",
+    "frames": 44,
+    "keys": 44,
+    "seconds": 1.467,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Spit",
+      "time": 0.7
+     }
+    ]
+   },
+   {
+    "name": "Hit",
+    "frames": 24,
+    "keys": 24,
+    "seconds": 0.8,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Hurt",
+      "time": 0.067
+     }
+    ]
+   },
+   {
+    "name": "Death",
+    "frames": 70,
+    "keys": 70,
+    "seconds": 2.333,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Dead",
+      "time": 1.867
+     }
+    ]
+   },
+   {
+    "name": "Puddle",
+    "frames": 90,
+    "keys": 90,
+    "seconds": 3.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Rise",
+    "frames": 50,
+    "keys": 50,
+    "seconds": 1.667,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Risen",
+      "time": 1.0
+     }
+    ]
+   },
+   {
+    "name": "Split",
+    "frames": 75,
+    "keys": 75,
+    "seconds": 2.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Split",
+      "time": 1.933
+     }
+    ]
+   },
+   {
+    "name": "Reform",
+    "frames": 50,
+    "keys": 50,
+    "seconds": 1.667,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   }
+  ],
+  "materials": [
+   "ooze_body",
+   "ooze_contents"
+  ]
+ },
+ {
+  "id": "spider",
+  "name": "Spider",
+  "group": "Insectoids",
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/creatures/spider.glb",
+  "bytes": 980772,
+  "scale": 1.35,
+  "native_size": [
+   2.23,
+   0.908,
+   2.375
+  ],
+  "size": [
+   3.01,
+   1.226,
+   3.206
+  ],
+  "min": [
+   -1.505,
+   -0.036,
+   -1.302
+  ],
+  "max": [
+   1.505,
+   1.19,
+   1.904
+  ],
+  "idle_size": [
+   3.01,
+   1.226,
+   3.206
+  ],
+  "idle_min": [
+   -1.505,
+   -0.036,
+   -1.302
+  ],
+  "idle_max": [
+   1.505,
+   1.19,
+   1.904
+  ],
+  "tris": 5012,
+  "bones": 58,
+  "nodes": [
+   "SpiderBody"
+  ],
+  "variants": [
+   "spider",
+   "spider_pale"
+  ],
+  "front_ok": true,
+  "clips": [
+   {
+    "name": "GetUp",
+    "frames": 40,
+    "keys": 40,
+    "seconds": 1.333,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Idle",
+    "frames": 90,
+    "keys": 90,
+    "seconds": 3.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Walk",
+    "frames": 24,
+    "keys": 24,
+    "seconds": 0.8,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 1.35,
+    "events": [],
+    "speed": 1.688
+   },
+   {
+    "name": "Run",
+    "frames": 12,
+    "keys": 12,
+    "seconds": 0.4,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 2.025,
+    "events": [],
+    "speed": 5.062
+   },
+   {
+    "name": "Hit",
+    "frames": 15,
+    "keys": 15,
+    "seconds": 0.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Death",
+    "frames": 60,
+    "keys": 60,
+    "seconds": 2.0,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Dead",
+      "time": 1.75
+     }
+    ]
+   },
+   {
+    "name": "Bite",
+    "frames": 36,
+    "keys": 36,
+    "seconds": 1.2,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.5
+     }
+    ]
+   },
+   {
+    "name": "Strike",
+    "frames": 40,
+    "keys": 40,
+    "seconds": 1.333,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Strike",
+      "time": 0.73
+     }
+    ]
+   },
+   {
+    "name": "WebSpit",
+    "frames": 48,
+    "keys": 48,
+    "seconds": 1.6,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Spit",
+      "time": 0.67
+     }
+    ]
+   },
+   {
+    "name": "Threat",
+    "frames": 72,
+    "keys": 72,
+    "seconds": 2.4,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   }
+  ],
+  "materials": [
+   "spider_main"
+  ]
+ },
+ {
+  "id": "centipede",
+  "name": "Centipede",
+  "group": "Insectoids",
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/creatures/centipede.glb",
+  "bytes": 2742160,
+  "scale": 0.8,
+  "native_size": [
+   0.938,
+   0.37,
+   4.529
+  ],
+  "size": [
+   0.75,
+   0.296,
+   3.623
+  ],
+  "min": [
+   -0.375,
+   -0.045,
+   -1.838
+  ],
+  "max": [
+   0.375,
+   0.252,
+   1.785
+  ],
+  "idle_size": [
+   0.75,
+   0.296,
+   3.623
+  ],
+  "idle_min": [
+   -0.375,
+   -0.045,
+   -1.838
+  ],
+  "idle_max": [
+   0.375,
+   0.252,
+   1.785
+  ],
+  "tris": 5448,
+  "bones": 107,
+  "nodes": [
+   "CentipedeBody"
+  ],
+  "variants": [
+   "centipede"
+  ],
+  "front_ok": true,
+  "clips": [
+   {
+    "name": "Idle",
+    "frames": 180,
+    "keys": 180,
+    "seconds": 3.0,
+    "fps": 60,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Walk",
+    "frames": 54,
+    "keys": 54,
+    "seconds": 0.9,
+    "fps": 60,
+    "loop": true,
+    "root_motion": true,
+    "travel": 1.073,
+    "events": [],
+    "speed": 1.192
+   },
+   {
+    "name": "Run",
+    "frames": 36,
+    "keys": 36,
+    "seconds": 0.6,
+    "fps": 60,
+    "loop": true,
+    "root_motion": true,
+    "travel": 1.894,
+    "events": [],
+    "speed": 3.157
+   },
+   {
+    "name": "Threat",
+    "frames": 150,
+    "keys": 150,
+    "seconds": 2.5,
+    "fps": 60,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Bite",
+    "frames": 72,
+    "keys": 72,
+    "seconds": 1.2,
+    "fps": 60,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Bite",
+      "time": 0.55
+     }
+    ]
+   },
+   {
+    "name": "Burrow",
+    "frames": 150,
+    "keys": 150,
+    "seconds": 2.5,
+    "fps": 60,
+    "loop": false,
+    "root_motion": true,
+    "travel": 1.828,
+    "events": [
+     {
+      "name": "Burrow",
+      "time": 0.567
+     }
+    ],
+    "speed": 0.731
+   },
+   {
+    "name": "Emerge",
+    "frames": 150,
+    "keys": 150,
+    "seconds": 2.5,
+    "fps": 60,
+    "loop": false,
+    "root_motion": true,
+    "travel": 1.5,
+    "events": [
+     {
+      "name": "Emerge",
+      "time": 0.583
+     }
+    ],
+    "speed": 0.6
+   },
+   {
+    "name": "Hit",
+    "frames": 30,
+    "keys": 30,
+    "seconds": 0.5,
+    "fps": 60,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Death",
+    "frames": 120,
+    "keys": 120,
+    "seconds": 2.0,
+    "fps": 60,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Dead",
+      "time": 1.85
+     }
+    ]
+   },
+   {
+    "name": "GetUp",
+    "frames": 90,
+    "keys": 90,
+    "seconds": 1.5,
+    "fps": 60,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   }
+  ],
+  "materials": [
+   "centipede_main"
+  ]
+ },
+ {
+  "id": "wasp",
+  "name": "Wasp",
+  "group": "Insectoids",
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/creatures/wasp.glb",
+  "bytes": 627640,
+  "scale": 1.0,
+  "native_size": [
+   2.009,
+   1.085,
+   1.839
+  ],
+  "size": [
+   2.009,
+   1.085,
+   1.839
+  ],
+  "min": [
+   -1.004,
+   0.954,
+   -0.999
+  ],
+  "max": [
+   1.004,
+   2.04,
+   0.84
+  ],
+  "idle_size": [
+   2.009,
+   1.085,
+   1.839
+  ],
+  "idle_min": [
+   -1.004,
+   0.954,
+   -0.999
+  ],
+  "idle_max": [
+   1.004,
+   2.04,
+   0.84
+  ],
+  "tris": 4280,
+  "bones": 44,
+  "nodes": [
+   "WaspBody"
+  ],
+  "variants": [
+   "wasp"
+  ],
+  "front_ok": true,
+  "clips": [
+   {
+    "name": "Idle",
+    "frames": 60,
+    "keys": 60,
+    "seconds": 2.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Fly",
+    "frames": 30,
+    "keys": 30,
+    "seconds": 1.0,
+    "fps": 30,
+    "loop": true,
+    "root_motion": true,
+    "travel": 4.0,
+    "events": [],
+    "speed": 4.0
+   },
+   {
+    "name": "Threat",
+    "frames": 48,
+    "keys": 48,
+    "seconds": 1.6,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Sting",
+    "frames": 39,
+    "keys": 39,
+    "seconds": 1.3,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Sting",
+      "time": 0.6
+     }
+    ]
+   },
+   {
+    "name": "Dive",
+    "frames": 54,
+    "keys": 54,
+    "seconds": 1.8,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Sting",
+      "time": 0.9
+     }
+    ]
+   },
+   {
+    "name": "Hit",
+    "frames": 15,
+    "keys": 15,
+    "seconds": 0.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   },
+   {
+    "name": "Death",
+    "frames": 60,
+    "keys": 60,
+    "seconds": 2.0,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": [
+     {
+      "name": "Dead",
+      "time": 1.75
+     }
+    ]
+   },
+   {
+    "name": "GetUp",
+    "frames": 45,
+    "keys": 45,
+    "seconds": 1.5,
+    "fps": 30,
+    "loop": false,
+    "root_motion": false,
+    "travel": 0.0,
+    "events": []
+   }
+  ],
+  "materials": [
+   "wasp_main",
+   "wasp_wing"
+  ]
+ }
+]

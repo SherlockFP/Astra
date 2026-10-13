@@ -1,0 +1,27 @@
+{
+ "id": "shield_round_wood",
+ "name": "Yuvarlak Tahta Kalkan",
+ "use": "Round plank shield with iron rim and boss (lvl 1-15)",
+ "attach": "hand grip bar at origin behind the plate (off-hand bone); painted face +Z; up +Y",
+ "kind": "shield",
+ "emissive": "",
+ "tris": 226,
+ "parts": 5,
+ "atlas": [
+  128,
+  128
+ ],
+ "colours": 16,
+ "has_emit": false,
+ "bbox_min": [
+  -0.49,
+  -0.238,
+  -0.49
+ ],
+ "bbox_max": [
+  0.49,
+  0.016,
+  0.49
+ ],
+ "bytes": 23824
+}

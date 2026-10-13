@@ -1,0 +1,78 @@
+/* Base page + design tokens. The hud/panels modules add their own stylesheets under ui/styles/. */
+:root {
+  --font-title: 'Cinzel Decorative', 'Cinzel', serif;
+  --font-head: 'Cinzel', serif;
+  --font-body: 'Alegreya Sans', 'Segoe UI', sans-serif;
+  --gold: #e8c46a;
+  --gold-dim: #9b7b36;
+  --gold-bright: #ffe7a3;
+  --ink: #0b0806;
+  --panel-bg: rgba(14, 10, 8, 0.92);
+  --panel-bg-2: rgba(28, 20, 14, 0.94);
+  --panel-border: #6b5530;
+  --text: #f1e6cf;
+  --text-dim: #b3a284;
+  --hp: #c8202a;
+  --hp-dark: #5a0a0e;
+  --mana: #2a6bd8;
+  --rage: #c0441b;
+  --energy: #e2c22a;
+  --xp: #8a3fd1;
+  --danger: #ff4040;
+  --ok: #4cd964;
+  --poor: #9d9d9d;
+  --common: #ffffff;
+  --uncommon: #1eff00;
+  --rare: #0070dd;
+  --epic: #a335ee;
+  --legendary: #ff8000;
+  --set: #00d5a0;
+  --ui-scale: 1;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  color: var(--text);
+  font-family: var(--font-body);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#game-root {
+  position: fixed;
+  inset: 0;
+}
+
+#game-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  outline: none;
+}
+
+#ui-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#ui-root .ui-capture,
+#ui-root button,
+#ui-root input,
+#ui-root select,
+#ui-root textarea,
+#ui-root .panel,
+#ui-root .hud-interactive {
+  pointer-events: auto;
+}

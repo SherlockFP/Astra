@@ -1,0 +1,27 @@
+{
+ "id": "axe_1h_crescent",
+ "name": "Hilal Balta",
+ "use": "Ornate crescent-moon axe, blued steel and gold (lvl 25-40)",
+ "attach": "grip at origin near the handle end; head +Y; cutting edge toward +X",
+ "kind": "1h",
+ "emissive": "",
+ "tris": 382,
+ "parts": 6,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 14,
+ "has_emit": false,
+ "bbox_min": [
+  -0.17,
+  -0.024,
+  -0.215
+ ],
+ "bbox_max": [
+  0.265,
+  0.024,
+  0.96
+ ],
+ "bytes": 27380
+}

@@ -1,0 +1,4 @@
+PSX Skyboxes Free by heyheythere - https://heyheythere.itch.io/psx-skyboxes-free - CC BY 4.0
+Licence: https://creativecommons.org/licenses/by/4.0/ (attribution required; the line above is the credit line
+given by the author in LICENSE.txt). Files are unmodified apart from renaming (snake_case -> kebab-case).
+Panoramas: equirectangular 1024x512, 32 colours, ordered-dithered. Cubemaps: 256 px faces (OpenGL order).

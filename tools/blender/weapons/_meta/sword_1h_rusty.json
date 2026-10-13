@@ -1,0 +1,27 @@
+{
+ "id": "sword_1h_rusty",
+ "name": "Paslı Kısa Kılıç",
+ "use": "Starter / trash loot one-handed sword (lvl 1-5)",
+ "attach": "grip centre at origin (hand bone); blade +Y; blade flats face +/-Z",
+ "kind": "1h",
+ "emissive": "",
+ "tris": 174,
+ "parts": 4,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 13,
+ "has_emit": false,
+ "bbox_min": [
+  -0.126,
+  -0.034,
+  -0.192
+ ],
+ "bbox_max": [
+  0.126,
+  0.034,
+  0.88
+ ],
+ "bytes": 14964
+}

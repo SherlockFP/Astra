@@ -1,0 +1,28 @@
+{
+ "id": "staff_frost",
+ "name": "Buz Asası",
+ "use": "Frost mage staff, silver cradle with a cluster of glowing ice shards (lvl 25-45)",
+ "attach": "main-hand grip at origin (~0.8 above the foot); head +Y; length 2.2",
+ "kind": "staff",
+ "emissive": "ice crystal cluster (pale blue)",
+ "tris": 422,
+ "parts": 12,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 15,
+ "has_emit": true,
+ "bbox_min": [
+  -0.127,
+  -0.079,
+  -0.903
+ ],
+ "bbox_max": [
+  0.114,
+  0.094,
+  1.297
+ ],
+ "bytes": 33064,
+ "fit_scale": 0.9402
+}

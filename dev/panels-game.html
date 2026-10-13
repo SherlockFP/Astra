@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dev: panels-game</title>
+<style>
+  #dev-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; display: flex; flex-wrap: wrap; gap: 4px; padding: 5px 8px; background: rgba(0,0,0,.78); border-bottom: 1px solid #5a4423; font: 12px/1 sans-serif; pointer-events: auto; }
+  #dev-bar button { font: 700 11px sans-serif; padding: 4px 8px; color: #f1dfae; background: #2a1c10; border: 1px solid #7a5d2c; cursor: pointer; }
+  #dev-bar button:hover { background: #4a3520; }
+  #dev-bar span { color: #8a7a5a; align-self: center; margin: 0 4px; }
+  #dev-toasts { position: fixed; top: 44px; left: 50%; transform: translateX(-50%); z-index: 9998; display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; }
+  #dev-toasts div { padding: 8px 18px; background: rgba(20,14,8,.92); border: 1px solid #c9a24a; color: #f1e6cf; font: 15px 'Alegreya Sans', sans-serif; animation: devt 3s forwards; }
+  @keyframes devt { 0% { opacity: 0; transform: translateY(-8px); } 8% { opacity: 1; transform: none; } 85% { opacity: 1; } 100% { opacity: 0; } }
+</style></head>
+<body><div id="game-root" style="top:30px"><canvas id="game-canvas"></canvas><div id="ui-root"></div></div>
+<div id="dev-bar"></div><div id="dev-toasts"></div>
+<script type="module" src="/src/dev/panels-game.ts"></script></body></html>

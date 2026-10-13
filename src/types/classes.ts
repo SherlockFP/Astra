@@ -1,0 +1,38 @@
+/**
+ * GDD_CLASSES_V2 shared class data shapes (core module, NC02). Used by data/classes.ts (`ClassDefX` registry fields, the
+ * five new class entries) and by the presentation owners (entities/CharacterModel, ui/menu, audio voices, vfx pips).
+ * Append-only for everyone: add optional fields, never rename or remove. See ARCHITECTURE.md "Class contracts (NC01-NC04)".
+ */
+import type { PipId } from './common';
+
+/**
+ * Secondary pip counter shown under the primary bar (GDD_CLASSES_V2 §1.2). Stored in `Player.pips[id]`
+ * (SkillSystem.addPip / spendPip / pipCount), event `pips:changed { id, points, max }`.
+ */
+export interface PipDef {
+  id: PipId;
+  name: string;               // Turkish
+  max: number;                // 5 for every pip of the new classes (+1 from some notables)
+  color: string;              // hex, e.g. '#5de0a8' (Çi)
+  icon: string;               // icon name in public/assets/icons (no path, no .svg), e.g. 'buff-haste'
+  /** Passive decay: -1 pip every `every` seconds after `after` seconds out of combat (Çi: after 8 s, every 4 s). */
+  decay?: { after: number; every: number };
+  startAt?: number;
+}
+
+/**
+ * Character model recipe (GDD_CLASSES_V2 §2.2–§6.2): one KayKit GLB per class, recoloured by `paletteClass`
+ * (ANCHOR_HUE source), with the KayKit child nodes shown / hidden and the stand-in weapons named.
+ */
+export interface ClassVisualDef {
+  url: string;                                   // /assets/models/characters/<X>.glb
+  plainUrl?: string;
+  paletteClass: 'knight' | 'barbarian' | 'mage' | 'rogue';   // recolour anchor
+  defaultVariant: number;                        // colour variant index (1..5)
+  defaultTint?: number;                          // 0xRRGGBB
+  show: string[];                                // KayKit child nodes shown by default
+  hide: string[];                                // KayKit child nodes hidden by default
+  main: string[];                                // stand-in main-hand nodes, shown only when no gear model resolves
+  off: string[];                                 // stand-in off-hand nodes, same rule
+  attach?: { bow?: boolean; quiver?: boolean; book?: boolean };
+}

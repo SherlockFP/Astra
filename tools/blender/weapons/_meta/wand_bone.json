@@ -1,0 +1,27 @@
+{
+ "id": "wand_bone",
+ "name": "Kemik Değnek",
+ "use": "Necromancer wand, bone shaft with a violet soul orb (lvl 10-30)",
+ "attach": "grip at origin; tip +Y",
+ "kind": "wand",
+ "emissive": "violet orb",
+ "tris": 234,
+ "parts": 5,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 9,
+ "has_emit": true,
+ "bbox_min": [
+  -0.04,
+  -0.029,
+  -0.15
+ ],
+ "bbox_max": [
+  0.04,
+  0.046,
+  0.51
+ ],
+ "bytes": 19976
+}

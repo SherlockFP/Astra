@@ -1,0 +1,28 @@
+{
+ "id": "staff_crystal",
+ "name": "Kristal Asa",
+ "use": "Arcane mage staff, silver claws holding a glowing crystal (lvl 15-35)",
+ "attach": "main-hand grip at origin (~0.8 above the foot); head +Y; length 2.2",
+ "kind": "staff",
+ "emissive": "crystal (cyan)",
+ "tris": 452,
+ "parts": 16,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": true,
+ "bbox_min": [
+  -0.082,
+  -0.051,
+  -0.872
+ ],
+ "bbox_max": [
+  0.082,
+  0.094,
+  1.328
+ ],
+ "bytes": 35520,
+ "fit_scale": 0.9483
+}

@@ -1,0 +1,103 @@
+// GENERATED from docs/GDD_TALENTS.*.json by tools/gen-talent-data.mjs — do not edit
+// Source: docs/GDD_TALENTS.trees.json · class:archer + archer_marksman, archer_beastmaster. Row = [slot, opt, name, desc, fx] (GDD_TALENTS §2.9).
+import type { SlotId } from '../../../types/talents';
+import type { SpecId } from '../../../types/v2';
+import type { StatId } from '../../../types/stats';
+
+export type RawRow = [slot: SlotId, opt: '' | 'A' | 'B', name: string | null, desc: string | null, fx: string];
+export interface RawTree { palette: StatId[]; rows: RawRow[] }
+
+const data: { class: RawTree; specs: Partial<Record<SpecId, RawTree>> } = {
+  class: {
+    palette: ['dex', 'projectileDamagePct', 'critChance', 'critDamage', 'attackSpeed', 'moveSpeedPct', 'maxHpPct', 'dodgeChance', 'projectileSpeedPct', 'resourceRegenPct', 'cdr', 'damagePct'],
+    rows: [
+      ['s02', 'A', 'Rüzgâr Adımı', 'Geri Sıçrayış bekleme −2 sn.', 'M archer_disengage cd=-2'],
+      ['s02', 'B', 'Av Atılışı', 'Geri Sıçrayış +1 şarj (yavaş dolar); sonrası 2 sn hareket hızı +%15.', 'M archer_disengage chg=+1 cdx=1.4 ;; T cast:archer_disengage => buff(hunter_dash,2,{moveSpeedPct=.15})'],
+      ['s04', '', 'Nişancı Gözü', 'Nişanlı Atış hasarı +%15, menzili +4 m.', 'M archer_aimed_shot dmgx=1.15 rng=+4'],
+      ['s05', 'A', null, null, 'G archer_muzzle'],
+      ['s05', 'B', null, null, 'G archer_feign_death'],
+      ['s09', 'A', 'Hızlı Kaçış', 'Hasar alınca %10 şansla 3 sn hareket hızı +%20 (6 sn bekleme).', 'T hurt ch=.1 icd=6 => buff(scatter,3,{moveSpeedPct=.2})'],
+      ['s09', 'B', 'Av Zırhı', 'Canın %35 altına düşünce 6 sn maks. canının %15\'i kadar kalkan kazanırsın (60 sn bekleme).', 'T hurt if=hp<.35 icd=60 => abs(.15,6)'],
+      ['s11', '', 'Geniş Çoklu Atış', 'Çoklu Atış hasarı +%15, maliyeti −%10.', 'M archer_multishot dmgx=1.15 costx=.9'],
+      ['s12', '', 'Av Çağrısı', 'Yoldaş Çağır bekleme −2 sn; yoldaşın iyileşmesi %50 artar.', 'M archer_call_pet cd=-2 p.mend*=1.5'],
+      ['s13', '', 'Pençe Ustası', 'Pençe Tuzağı bekleme −3 sn, alanı +%20.', 'M archer_snare_trap cd=-3 radx=1.2'],
+      ['s15', 'A', 'Keskin Uç', 'Mermi hasarı +%15, kritik şansı +%1.', 'S projectileDamagePct=.15 critChance=.01'],
+      ['s15', 'B', 'Zehirli Uç', 'Mermi vuruşları %10 şansla zehir uygular.', 'T hit:@projectile ch=.1 => st(tgt,poison,6,.2)'],
+      ['s17', 'A', 'Sabit Nişan', 'Odak yenilenmesi +%20.', 'S resourceRegenPct=.20'],
+      ['s17', 'B', 'Odaklı Av', 'Odak maliyetleri −%10; kritik vuruşlar %15 şansla +4 Odak verir.', 'S costReductionPct=.10 ;; T crit ch=.15 => res(4)'],
+      ['s18', '', 'Patlayıcı Uç', 'Patlayıcı Ok patlama alanı +%20, hasarı +%10.', 'M archer_explosive_arrow radx=1.2 dmgx=1.1'],
+      ['s20', '', 'Av Sırrı', 'Büyük yetenek bekleme süreleri %6 daha hızlı azalır.', 'S majorCdrPct=.06'],
+      ['s21', '', 'Uzun İşaret', 'Avcı İşareti 6 sn daha uzun sürer, bekleme −6 sn.', 'M archer_hunters_mark sdur=hunters_mark:+6 cd=-6'],
+      ['s25', '', 'Tuzak Ustalığı', 'Pençe Tuzağı hasarı +%25; aynı anda +1 tuzak kurulabilir.', 'M archer_snare_trap dmgx=1.25 p.trapMax+=1'],
+      ['s26', 'A', 'Av Sürüsü', 'Yoldaş çağırınca 10 m içindeki müttefikler 5 sn hız kazanır.', 'T cast:archer_call_pet => st(near(10),haste,5)'],
+      ['s26', 'B', 'Tuzak Ağı', 'Pençe Tuzağı hedefi 1.5 sn daha uzun köklü tutar.', 'M archer_snare_trap sdur=root:+1.5'],
+      ['s27', '', 'Ok Yağmuru', 'Ok Fırtınası bekleme −%15, alanı +%20.', 'M archer_arrow_storm cdx=.85 radx=1.2'],
+      ['s28', '', 'Av Muhafızı', 'Maks. can +%8, kaçınma +%2. Ölümcül darbede %20 canla ayakta kalır, 1.5 sn dokunulmaz olursun (90 sn bekleme).', 'S maxHpPct=.08 dodgeChance=.02 ;; T lethal icd=90 => heal(.2) ; st(self,invulnerable,1.5)'],
+      ['s29', '', 'Yaban Ritmi', 'Hasar +%6. Kritik vuruşlar 5 sn boyunca +%5 saldırı hızı yığar (en fazla 4).', 'S damagePct=.06 ;; T crit => buff(wild_rhythm,5,{attackSpeed=.05},max=4)'],
+      ['s30', 'A', 'Keskin Gözlü', 'Kritik hasarı +%30, kritik şansı +%2.', 'S critDamage=.30 critChance=.02'],
+      ['s30', 'B', 'Sürü Efendisi', 'Yoldaş hasarı ve canı +%20; Yoldaş Çağır bekleme −%30.', 'S minionDamagePct=.20 minionHpPct=.20 ;; M archer_call_pet cdx=.7'],
+    ],
+  },
+  specs: {
+    archer_marksman: {
+      palette: ['critChance', 'critDamage', 'projectileDamagePct', 'attackSpeed', 'dex', 'damagePct', 'executeDamagePct', 'projectileSpeedPct', 'resourceRegenPct', 'bossDamagePct', 'finisherPct', 'weaponArtPct'],
+      rows: [
+        ['s02', 'A', 'Hızlı Çekiş', 'Nişanlı Atış %15 daha hızlı çekilir.', 'M archer_aimed_shot p.chargeMax*=0.85'],
+        ['s02', 'B', 'Delici Atış', 'Nişanlı Atış +1 delme yapar, hasarı +%10.', 'M archer_aimed_shot prc=+1 dmgx=1.1'],
+        ['s04', '', 'Uzun Seri', 'Seri Ateş hasarı +%20, maliyeti −%15.', 'M archer_rapid_fire dmgx=1.2 costx=.85'],
+        ['s05', '', null, null, 'G archer_kill_shot'],
+        ['s09', 'A', 'Kritik Dalga', 'Mermi kritikleri %15 şansla ek %60 fiziksel hasar vurur.', 'T crit:@projectile ch=.15 => dmg(.6,physical)'],
+        ['s09', 'B', 'Avcı Refleksi', 'Nişanlı Atış sonrası 3 sn %12 hasar azaltma kazanırsın.', 'T cast:archer_aimed_shot => buff(hunter_ward,3,{damageReductionPct=.12})'],
+        ['s11', '', 'Cellat Oku', 'Son Atış bekleme −1 sn, hasarı +%15.', 'M archer_kill_shot cd=-1 dmgx=1.15'],
+        ['s12', '', 'Tüfek Atışı', 'Çoklu Atış +2 ok atar, hasarı +%10.', 'M archer_multishot cnt=+2 dmgx=1.1'],
+        ['s13', '', 'Ağır Patlama', 'Patlayıcı Ok hasarı +%20, alanı +%10.', 'M archer_explosive_arrow dmgx=1.2 radx=1.1'],
+        ['s15', 'A', 'Keskin Nişan Ustası', 'Keskin Nişan 4 sn daha uzun sürer.', 'M archer_ms_deadeye sdur=deadeye:+4'],
+        ['s15', 'B', 'Tam İsabet Ustası', 'Tam İsabet 5 sn daha uzun sürer.', 'M archer_ms_trueshot sdur=trueshot:+5'],
+        ['s17', 'A', 'Sabit Odak', 'Odak yenilenmesi +%20.', 'S resourceRegenPct=.20'],
+        ['s17', 'B', 'Odak Hırsı', 'Son Atış bir hedefi öldürürse +20 Odak kazanırsın.', 'T kill:archer_kill_shot => res(20)'],
+        ['s18', '', 'Uzun Bakış', 'Avcı İşareti 6 sn daha uzun sürer.', 'M archer_hunters_mark sdur=hunters_mark:+6'],
+        ['s20', '', 'Nişancı Zamanı', 'Keskin Nişan ve Tam İsabet bekleme −%10.', 'M archer_ms_deadeye+archer_ms_trueshot cdx=.9'],
+        ['s21', '', 'Hızlı Parmak', 'Seri Ateş döküm süresi −%20.', 'M archer_rapid_fire castx=.8'],
+        ['s25', '', 'Kasırga Fırtınası', 'Ok Fırtınası hasarı +%20, bekleme −%10.', 'M archer_arrow_storm dmgx=1.2 cdx=.9'],
+        ['s26', 'A', 'Av Ortağı', 'Tam İsabet kullanınca grup 6 sn güçlenir.', 'T cast:archer_ms_trueshot => st(party,empower,6)'],
+        ['s26', 'B', 'Gözcü', 'Avcı İşareti 20 m içindeki müttefikleri 5 sn güçlendirir.', 'T cast:archer_hunters_mark => st(near(20),empower,5)'],
+        ['s27', '', 'Yankı Atış', 'Nişanlı Atış %15 şansla yarı güçte tekrar eder.', 'T cast:archer_aimed_shot ch=.15 => echo(archer_aimed_shot,.5,.35)'],
+        ['s28', '', 'Keskin Nişancı', 'Kritik şansı +%2.5, mermi hasarı +%15. Kritik vuruşlar %20 şansla Geri Sıçrayış bekleme süresini 1 sn azaltır.', 'S critChance=.025 projectileDamagePct=.15 ;; T crit ch=.2 => cdr(archer_disengage,1)'],
+        ['s29', '', 'Av Ritmi', 'Hasar +%6. Kritik vuruşlar 5 sn boyunca +%5 saldırı hızı yığar (en fazla 4).', 'S damagePct=.06 ;; T crit => buff(marksman_rhythm,5,{attackSpeed=.05},max=4)'],
+        ['s30', 'A', 'Gökyüzü Atıcısı', 'Mermi hasarı +%25; Nişanlı Atış hasarı +%25.', 'S projectileDamagePct=.25 ;; M archer_aimed_shot dmgx=1.25'],
+        ['s30', 'B', 'Kartal Gözü', 'Kritik hasarı +%30, boss hasarı +%6; Tam İsabet bekleme −%20.', 'S critDamage=.30 bossDamagePct=.06 ;; M archer_ms_trueshot cdx=.8'],
+      ],
+    },
+    archer_beastmaster: {
+      palette: ['minionDamagePct', 'minionHpPct', 'projectileDamagePct', 'critChance', 'attackSpeed', 'poisonDamagePct', 'dex', 'damagePct', 'trapDamagePct', 'resourceRegenPct', 'maxHpPct', 'cdr'],
+      rows: [
+        ['s02', 'A', 'Hızlı Emir', 'Av Emri bekleme −1.5 sn.', 'M archer_kill_command cd=-1.5'],
+        ['s02', 'B', 'Kanlı Isırık', 'Av Emri kanaması +%40 güçlü, 3 sn daha uzun sürer.', 'M archer_kill_command dotx=1.4 sdur=bleed:+3'],
+        ['s04', '', 'Kuvvetli Isırık', 'Av Emri hasarı +%15, sarsması +%20.', 'M archer_kill_command dmgx=1.15 stgx=1.2'],
+        ['s05', '', null, null, 'G archer_serpent_sting'],
+        ['s09', 'A', 'Yoldaş Bağı', 'Yoldaşın canı +%20.', 'S minionHpPct=.20'],
+        ['s09', 'B', 'Sürü Kalkanı', 'Canın %35 altına düşünce 6 sn maks. canının %15\'i kadar kalkan kazanırsın (60 sn bekleme).', 'T hurt if=hp<.35 icd=60 => abs(.15,6)'],
+        ['s11', '', 'Zehir Yayılımı', 'Zehirli Ok hasarı +%20; zehir bir hedef daha yayılır.', 'M archer_serpent_sting dmgx=1.2 p.spreadOnDeath+=1'],
+        ['s12', '', 'Hızlı Çağrı', 'Yoldaş Çağır bekleme −2 sn.', 'M archer_call_pet cd=-2'],
+        ['s13', '', 'Tuzak Ustası', 'Pençe Tuzağı hasarı +%25, kanaması +%30.', 'M archer_snare_trap dmgx=1.25 dotx=1.3'],
+        ['s15', 'A', 'Gazap Ustası', 'Vahşi Gazap 4 sn daha uzun sürer.', 'M archer_bm_bestial_wrath sdur=wild_wrath:+4'],
+        ['s15', 'B', 'Sürü Ustası', 'Av Sürüsü kurtları 6 sn daha uzun kalır.', 'M archer_bm_pack_hunt p.life+=6'],
+        ['s17', 'A', 'Av Ruhu', 'Odak yenilenmesi +%20.', 'S resourceRegenPct=.20'],
+        ['s17', 'B', 'Yoldaş Ruhu', 'Yoldaşın vuruşları %10 şansla +5 Odak verir.', 'T hit:@pet ch=.1 => res(5)'],
+        ['s18', '', 'Ayı Dostu', 'Yoldaş canı +%10, hasarı +%10.', 'S minionHpPct=.10 minionDamagePct=.10'],
+        ['s20', '', 'Sürü Komutanı', 'Vahşi Gazap ve Av Sürüsü bekleme −%10.', 'M archer_bm_bestial_wrath+archer_bm_pack_hunt cdx=.9'],
+        ['s21', '', 'Zehirli Dişler', 'Yoldaşın vuruşları %25 şansla zehir uygular.', 'T hit:@pet ch=.25 => st(tgt,poison,5,.2)'],
+        ['s25', '', 'Ağır Emir', 'Av Emri hasarı +%25, menzili +4 m.', 'M archer_kill_command dmgx=1.25 rng=+4'],
+        ['s26', 'A', 'Sürü Lideri', 'Av Sürüsü kullanınca grup 6 sn güçlenir.', 'T cast:archer_bm_pack_hunt => st(party,empower,6)'],
+        ['s26', 'B', 'Av Dostu', 'Vahşi Gazap 10 m içindeki müttefiklere 6 sn hız verir.', 'T cast:archer_bm_bestial_wrath => st(near(10),haste,6)'],
+        ['s27', '', 'Kurt Fırtınası', 'Av Sürüsü kurtlarının hasarı +%25.', 'M archer_bm_pack_hunt dmgx=1.25'],
+        ['s28', '', 'Sürü Reisi', 'Yoldaş hasarı ve canı +%15. Ölümcül darbede %20 canla ayakta kalır, 1.5 sn dokunulmaz olursun (90 sn bekleme).', 'S minionDamagePct=.15 minionHpPct=.15 ;; T lethal icd=90 => heal(.2) ; st(self,invulnerable,1.5)'],
+        ['s29', '', 'Yaban Kalbi', 'Hasar +%6. Yoldaşın kritik vuruşları %20 şansla +4 Odak verir.', 'S damagePct=.06 ;; T crit:@pet ch=.2 => res(4)'],
+        ['s30', 'A', 'Hayvanlar Efendisi', 'Yoldaş hasarı +%25, canı +%20; Av Emri hasarı +%20.', 'S minionDamagePct=.25 minionHpPct=.20 ;; M archer_kill_command dmgx=1.2'],
+        ['s30', 'B', 'Zehir Avcısı', 'Zehir hasarı +%25, zamanla hasar +%10; Zehirli Ok hasarı +%20.', 'S poisonDamagePct=.25 dotPct=.10 ;; M archer_serpent_sting dmgx=1.2'],
+      ],
+    },
+  },
+};
+
+export default data;

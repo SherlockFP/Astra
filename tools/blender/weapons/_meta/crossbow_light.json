@@ -1,0 +1,27 @@
+{
+ "id": "crossbow_light",
+ "name": "Hafif Arbalet",
+ "use": "Light hunting crossbow, wood stock with steel prod (lvl 5-25)",
+ "attach": "trigger grip at origin; points forward +Z like KayKit crossbow_1handed; prod across X; up +Y",
+ "kind": "crossbow",
+ "emissive": "",
+ "tris": 202,
+ "parts": 11,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": false,
+ "bbox_min": [
+  -0.403,
+  -0.692,
+  -0.05
+ ],
+ "bbox_max": [
+  0.403,
+  0.26,
+  0.111
+ ],
+ "bytes": 16716
+}

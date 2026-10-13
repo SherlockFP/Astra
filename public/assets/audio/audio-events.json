@@ -1,0 +1,2018 @@
+{
+ "version": 1,
+ "basePath": "/assets/audio/",
+ "generated": "see docs/assets/audio.md",
+ "notes": [
+  "All paths are relative to basePath (Vite serves public/ at /). volume is a GainNode value (may exceed 1 for quiet sources).",
+  "pitchVar = random +/- playbackRate variation; maxVoices = concurrent instances per id (horde safety); layer = second file played at the same time (random pick).",
+  "sfx keys == SfxId in src/types/audio.ts; extraSfx are suggested new ids; music keys == MusicId (+ suggested \"combat\")."
+ ],
+ "sfx": {
+  "swing_light": {
+   "files": [
+    "sfx/melee/swish_01.wav",
+    "sfx/melee/swish_02.wav",
+    "sfx/melee/swish_03.wav",
+    "sfx/melee/swish_04.wav",
+    "sfx/melee/swish_05.wav",
+    "sfx/melee/swish_06.wav",
+    "sfx/melee/swish_07.wav",
+    "sfx/melee/swish_08.wav",
+    "sfx/melee/swish_09.wav",
+    "sfx/melee/swish_10.wav",
+    "sfx/melee/swish_11.wav",
+    "sfx/melee/swish_12.wav",
+    "sfx/melee/swish_13.wav"
+   ],
+   "volume": 0.45,
+   "pitchVar": 0.1,
+   "maxVoices": 6,
+   "positional": true
+  },
+  "swing_heavy": {
+   "files": [
+    "sfx/melee/swing_01.wav",
+    "sfx/melee/swing_02.wav",
+    "sfx/melee/swing_03.wav",
+    "sfx/melee/blade_01.ogg",
+    "sfx/melee/blade_02.ogg",
+    "sfx/melee/blade_03.ogg"
+   ],
+   "volume": 0.65,
+   "pitchVar": 0.08,
+   "maxVoices": 4,
+   "positional": true
+  },
+  "hit_flesh": {
+   "files": [
+    "sfx/melee/hit_flesh_medium_01.ogg",
+    "sfx/melee/hit_flesh_medium_02.ogg",
+    "sfx/melee/hit_flesh_medium_03.ogg",
+    "sfx/melee/hit_flesh_medium_04.ogg",
+    "sfx/melee/hit_flesh_medium_05.ogg",
+    "sfx/melee/hit_flesh_heavy_01.ogg",
+    "sfx/melee/hit_flesh_heavy_02.ogg",
+    "sfx/melee/hit_flesh_heavy_03.ogg",
+    "sfx/melee/hit_flesh_heavy_04.ogg",
+    "sfx/melee/hit_flesh_heavy_05.ogg"
+   ],
+   "volume": 0.55,
+   "pitchVar": 0.1,
+   "maxVoices": 8,
+   "positional": true,
+   "note": "horde density: cap voices, rate-limit ~30 ms per id"
+  },
+  "hit_metal": {
+   "files": [
+    "sfx/melee/hit_metal_light_01.ogg",
+    "sfx/melee/hit_metal_light_02.ogg",
+    "sfx/melee/hit_metal_light_03.ogg",
+    "sfx/melee/hit_metal_light_04.ogg",
+    "sfx/melee/hit_metal_light_05.ogg",
+    "sfx/melee/hit_metal_medium_01.ogg",
+    "sfx/melee/hit_metal_medium_02.ogg",
+    "sfx/melee/hit_metal_medium_03.ogg",
+    "sfx/melee/hit_metal_medium_04.ogg",
+    "sfx/melee/hit_metal_medium_05.ogg",
+    "sfx/melee/hit_plate_medium_01.ogg",
+    "sfx/melee/hit_plate_medium_02.ogg",
+    "sfx/melee/hit_plate_medium_03.ogg",
+    "sfx/melee/hit_plate_medium_04.ogg",
+    "sfx/melee/hit_plate_medium_05.ogg"
+   ],
+   "volume": 0.7,
+   "pitchVar": 0.08,
+   "maxVoices": 6,
+   "positional": true
+  },
+  "hit_bone": {
+   "files": [
+    "sfx/world/break_wood_light_01.ogg",
+    "sfx/world/break_wood_light_02.ogg",
+    "sfx/world/break_wood_light_03.ogg",
+    "sfx/world/break_wood_light_04.ogg",
+    "sfx/world/break_wood_light_05.ogg",
+    "sfx/melee/hit_plate_light_01.ogg",
+    "sfx/melee/hit_plate_light_02.ogg",
+    "sfx/melee/hit_plate_light_03.ogg",
+    "sfx/melee/hit_plate_light_04.ogg",
+    "sfx/melee/hit_plate_light_05.ogg"
+   ],
+   "volume": 0.75,
+   "pitchVar": 0.1,
+   "maxVoices": 6,
+   "positional": true,
+   "pitch": 1.15,
+   "note": "no real bone sfx in CC0 set: dry wood knocks pitched up read as bone"
+  },
+  "hit_crit": {
+   "files": [
+    "sfx/melee/hit_flesh_heavy_01.ogg",
+    "sfx/melee/hit_flesh_heavy_02.ogg",
+    "sfx/melee/hit_flesh_heavy_03.ogg",
+    "sfx/melee/hit_flesh_heavy_04.ogg",
+    "sfx/melee/hit_flesh_heavy_05.ogg"
+   ],
+   "volume": 0.75,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "layer": [
+    "sfx/melee/hit_metal_heavy_01.ogg",
+    "sfx/melee/hit_metal_heavy_02.ogg",
+    "sfx/melee/hit_metal_heavy_03.ogg",
+    "sfx/melee/hit_metal_heavy_04.ogg",
+    "sfx/melee/hit_metal_heavy_05.ogg",
+    "sfx/melee/slice_01.ogg",
+    "sfx/melee/slice_02.ogg"
+   ],
+   "layerVolume": 0.7,
+   "positional": true,
+   "note": "pair with hit-stop + screen shake"
+  },
+  "block": {
+   "files": [
+    "sfx/melee/sword_clash_01.ogg",
+    "sfx/melee/sword_clash_02.ogg",
+    "sfx/melee/sword_clash_03.ogg",
+    "sfx/melee/sword_clash_04.ogg",
+    "sfx/melee/sword_clash_05.ogg",
+    "sfx/melee/sword_clash_06.ogg",
+    "sfx/melee/sword_clash_07.ogg",
+    "sfx/melee/sword_clash_08.ogg",
+    "sfx/melee/sword_clash_09.ogg",
+    "sfx/melee/sword_clash_10.ogg"
+   ],
+   "volume": 0.35,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "layer": [
+    "sfx/melee/hit_metal_medium_01.ogg",
+    "sfx/melee/hit_metal_medium_02.ogg",
+    "sfx/melee/hit_metal_medium_03.ogg",
+    "sfx/melee/hit_metal_medium_04.ogg",
+    "sfx/melee/hit_metal_medium_05.ogg"
+   ],
+   "layerVolume": 0.5,
+   "positional": true
+  },
+  "dodge": {
+   "files": [
+    "sfx/loot/cloth_01.ogg",
+    "sfx/loot/cloth_02.ogg",
+    "sfx/loot/cloth_03.ogg",
+    "sfx/loot/cloth_04.ogg"
+   ],
+   "volume": 1,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/melee/swish_07.wav",
+    "sfx/melee/swish_08.wav",
+    "sfx/melee/swish_09.wav"
+   ],
+   "layerVolume": 0.35,
+   "positional": true,
+   "pitch": 0.85
+  },
+  "whoosh": {
+   "files": [
+    "sfx/melee/swish_01.wav",
+    "sfx/melee/swish_02.wav",
+    "sfx/melee/swish_03.wav",
+    "sfx/melee/swish_04.wav",
+    "sfx/melee/swish_05.wav",
+    "sfx/melee/swish_06.wav",
+    "sfx/melee/swish_07.wav",
+    "sfx/melee/swish_08.wav",
+    "sfx/melee/swish_09.wav",
+    "sfx/melee/swish_10.wav",
+    "sfx/melee/swish_11.wav",
+    "sfx/melee/swish_12.wav",
+    "sfx/melee/swish_13.wav"
+   ],
+   "volume": 0.4,
+   "pitchVar": 0.12,
+   "maxVoices": 6,
+   "positional": true
+  },
+  "bow_shot": {
+   "files": [
+    "sfx/ui/pluck_01.ogg",
+    "sfx/ui/pluck_02.ogg"
+   ],
+   "volume": 0.6,
+   "pitchVar": 0.06,
+   "maxVoices": 4,
+   "layer": [
+    "sfx/melee/swish_12.wav",
+    "sfx/melee/swish_13.wav"
+   ],
+   "layerVolume": 0.4,
+   "positional": true,
+   "pitch": 0.65,
+   "note": "proxy: string pluck pitched down + short whoosh (no CC0 bow in set)"
+  },
+  "crossbow_shot": {
+   "files": [
+    "sfx/world/metal_latch_01.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "layer": [
+    "sfx/melee/swish_11.wav",
+    "sfx/melee/swish_12.wav",
+    "sfx/melee/swish_13.wav"
+   ],
+   "layerVolume": 0.4,
+   "positional": true
+  },
+  "dagger_throw": {
+   "files": [
+    "sfx/melee/swish_10.wav",
+    "sfx/melee/swish_11.wav",
+    "sfx/melee/swish_12.wav",
+    "sfx/melee/swish_13.wav"
+   ],
+   "volume": 0.45,
+   "pitchVar": 0.1,
+   "maxVoices": 4,
+   "positional": true,
+   "pitch": 1.2
+  },
+  "shield_bash": {
+   "files": [
+    "sfx/melee/hit_plate_heavy_01.ogg",
+    "sfx/melee/hit_plate_heavy_02.ogg",
+    "sfx/melee/hit_plate_heavy_03.ogg",
+    "sfx/melee/hit_plate_heavy_04.ogg",
+    "sfx/melee/hit_plate_heavy_05.ogg"
+   ],
+   "volume": 0.85,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/melee/hit_soft_heavy_01.ogg",
+    "sfx/melee/hit_soft_heavy_02.ogg",
+    "sfx/melee/hit_soft_heavy_03.ogg",
+    "sfx/melee/hit_soft_heavy_04.ogg",
+    "sfx/melee/hit_soft_heavy_05.ogg"
+   ],
+   "layerVolume": 0.6,
+   "positional": true
+  },
+  "ground_slam": {
+   "files": [
+    "sfx/magic/earth_01.ogg"
+   ],
+   "volume": 1,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/world/mining_01.ogg",
+    "sfx/world/mining_02.ogg",
+    "sfx/world/mining_03.ogg",
+    "sfx/world/mining_04.ogg",
+    "sfx/world/mining_05.ogg"
+   ],
+   "layerVolume": 0.6,
+   "positional": true
+  },
+  "war_cry": {
+   "files": [
+    "sfx/magic/buff_attack_01.ogg"
+   ],
+   "volume": 1.1,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/creatures/roar_05.ogg",
+    "sfx/creatures/roar_02.ogg"
+   ],
+   "layerVolume": 0.35,
+   "positional": true,
+   "pitch": 1.1,
+   "note": "no human voice in set; roar layer at low volume"
+  },
+  "spell_cast": {
+   "files": [
+    "sfx/magic/spell_01.ogg",
+    "sfx/magic/spell_02.ogg",
+    "sfx/magic/cast_01.wav"
+   ],
+   "volume": 0.7,
+   "pitchVar": 0.06,
+   "maxVoices": 4,
+   "positional": true
+  },
+  "fire_cast": {
+   "files": [
+    "sfx/magic/fire_01.ogg",
+    "sfx/magic/fire_02.ogg",
+    "sfx/magic/fire_03.ogg",
+    "sfx/magic/fire_04.ogg",
+    "sfx/magic/fire_05.ogg",
+    "sfx/magic/fire_06.ogg",
+    "sfx/magic/fire_07.ogg"
+   ],
+   "volume": 1.8,
+   "pitchVar": 0.06,
+   "maxVoices": 4,
+   "positional": true,
+   "note": "source files are quiet (-30..-38 dB RMS): GainNode > 1 is fine"
+  },
+  "fire_impact": {
+   "files": [
+    "sfx/magic/fire_explosion_01.ogg"
+   ],
+   "volume": 1.5,
+   "pitchVar": 0.06,
+   "maxVoices": 4,
+   "layer": [
+    "sfx/magic/fire_03.ogg",
+    "sfx/magic/fire_04.ogg"
+   ],
+   "layerVolume": 1.5,
+   "positional": true
+  },
+  "frost_cast": {
+   "files": [
+    "sfx/magic/wind_01.ogg"
+   ],
+   "volume": 1.1,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "positional": true,
+   "pitch": 1.25
+  },
+  "frost_impact": {
+   "files": [
+    "sfx/magic/ice_explosion_01.ogg"
+   ],
+   "volume": 1.3,
+   "pitchVar": 0.06,
+   "maxVoices": 4,
+   "layer": [
+    "sfx/world/break_glass_light_01.ogg",
+    "sfx/world/break_glass_light_02.ogg",
+    "sfx/world/break_glass_light_03.ogg",
+    "sfx/world/break_glass_light_04.ogg",
+    "sfx/world/break_glass_light_05.ogg"
+   ],
+   "layerVolume": 0.5,
+   "positional": true
+  },
+  "lightning_cast": {
+   "files": [
+    "sfx/magic/spell_01.ogg",
+    "sfx/magic/spell_02.ogg"
+   ],
+   "volume": 0.7,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "positional": true,
+   "pitch": 1.3
+  },
+  "lightning_impact": {
+   "files": [
+    "sfx/magic/thunder_01.ogg"
+   ],
+   "volume": 1.6,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "positional": true
+  },
+  "shadow_cast": {
+   "files": [
+    "sfx/magic/debuff_01.ogg"
+   ],
+   "volume": 1.2,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "positional": true
+  },
+  "shadow_impact": {
+   "files": [
+    "sfx/ambience/dark_stinger_02.wav",
+    "sfx/ambience/dark_stinger_03.wav",
+    "sfx/ambience/dark_stinger_04.wav"
+   ],
+   "volume": 0.5,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "positional": true
+  },
+  "poison_impact": {
+   "files": [
+    "sfx/magic/poison_01.ogg"
+   ],
+   "volume": 1.4,
+   "pitchVar": 0.06,
+   "maxVoices": 4,
+   "layer": [
+    "sfx/creatures/spit_01.ogg",
+    "sfx/creatures/spit_02.ogg",
+    "sfx/creatures/spit_03.ogg"
+   ],
+   "layerVolume": 0.5,
+   "positional": true
+  },
+  "heal": {
+   "files": [
+    "sfx/magic/heal_01.ogg"
+   ],
+   "volume": 1,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "positional": true
+  },
+  "buff": {
+   "files": [
+    "sfx/magic/buff_attack_01.ogg",
+    "sfx/magic/buff_defense_01.ogg",
+    "sfx/magic/speed_up_01.ogg"
+   ],
+   "volume": 1.3,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "positional": true,
+   "note": "pick by buff type rather than random"
+  },
+  "blink": {
+   "files": [
+    "sfx/magic/arcane_02.ogg",
+    "sfx/magic/arcane_06.ogg"
+   ],
+   "volume": 1.4,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/melee/swish_09.wav"
+   ],
+   "layerVolume": 0.4,
+   "positional": true
+  },
+  "explosion": {
+   "files": [
+    "sfx/magic/fire_explosion_01.ogg"
+   ],
+   "volume": 1.5,
+   "pitchVar": 0.06,
+   "maxVoices": 4,
+   "layer": [
+    "sfx/world/break_wood_heavy_01.ogg",
+    "sfx/world/break_wood_heavy_02.ogg",
+    "sfx/world/break_wood_heavy_03.ogg",
+    "sfx/world/break_wood_heavy_04.ogg",
+    "sfx/world/break_wood_heavy_05.ogg",
+    "sfx/melee/hit_soft_heavy_01.ogg",
+    "sfx/melee/hit_soft_heavy_02.ogg",
+    "sfx/melee/hit_soft_heavy_03.ogg",
+    "sfx/melee/hit_soft_heavy_04.ogg",
+    "sfx/melee/hit_soft_heavy_05.ogg"
+   ],
+   "layerVolume": 0.7,
+   "positional": true
+  },
+  "player_hurt": {
+   "files": [
+    "sfx/melee/hit_soft_medium_01.ogg",
+    "sfx/melee/hit_soft_medium_02.ogg",
+    "sfx/melee/hit_soft_medium_03.ogg",
+    "sfx/melee/hit_soft_medium_04.ogg",
+    "sfx/melee/hit_soft_medium_05.ogg"
+   ],
+   "volume": 0.6,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "positional": false,
+   "note": "no human grunt voices in the set (gap)"
+  },
+  "player_death": {
+   "files": [
+    "sfx/jingles/hit_15.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/melee/hit_soft_heavy_01.ogg",
+    "sfx/melee/hit_soft_heavy_02.ogg",
+    "sfx/melee/hit_soft_heavy_03.ogg",
+    "sfx/melee/hit_soft_heavy_04.ogg",
+    "sfx/melee/hit_soft_heavy_05.ogg",
+    "sfx/loot/drop_leather_01.ogg"
+   ],
+   "layerVolume": 0.8,
+   "positional": false
+  },
+  "enemy_death": {
+   "files": [
+    "sfx/creatures/die_01.ogg",
+    "sfx/creatures/hurt_03.ogg",
+    "sfx/creatures/hurt_04.ogg",
+    "sfx/creatures/scream_01.ogg",
+    "sfx/creatures/scream_02.ogg",
+    "sfx/creatures/monster_08.ogg",
+    "sfx/creatures/monster_09.ogg"
+   ],
+   "volume": 0.6,
+   "pitchVar": 0.12,
+   "maxVoices": 5,
+   "positional": true,
+   "note": "hordes: max 5 voices, others skipped"
+  },
+  "skeleton_death": {
+   "files": [
+    "sfx/world/break_wood_medium_01.ogg",
+    "sfx/world/break_wood_medium_02.ogg",
+    "sfx/world/break_wood_medium_03.ogg",
+    "sfx/world/break_wood_medium_04.ogg",
+    "sfx/world/break_wood_medium_05.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.1,
+   "maxVoices": 5,
+   "layer": [
+    "sfx/world/wood_01.ogg",
+    "sfx/world/wood_02.ogg",
+    "sfx/world/wood_03.ogg",
+    "sfx/world/wood_04.ogg",
+    "sfx/world/wood_05.ogg",
+    "sfx/loot/item_wood_01.ogg",
+    "sfx/loot/item_wood_02.ogg",
+    "sfx/loot/item_wood_03.ogg"
+   ],
+   "layerVolume": 0.8,
+   "positional": true,
+   "pitch": 1.1
+  },
+  "enemy_aggro": {
+   "files": [
+    "sfx/creatures/monster_01.ogg",
+    "sfx/creatures/monster_02.ogg",
+    "sfx/creatures/monster_03.ogg",
+    "sfx/creatures/monster_04.ogg",
+    "sfx/creatures/monster_05.ogg",
+    "sfx/creatures/monster_06.ogg",
+    "sfx/creatures/monster_07.ogg",
+    "sfx/creatures/monster_08.ogg",
+    "sfx/creatures/monster_09.ogg",
+    "sfx/creatures/grunt_01.ogg",
+    "sfx/creatures/grunt_02.ogg",
+    "sfx/creatures/grunt_03.ogg",
+    "sfx/creatures/grunt_04.ogg",
+    "sfx/creatures/grunt_05.ogg",
+    "sfx/creatures/roar_01.ogg",
+    "sfx/creatures/roar_02.ogg",
+    "sfx/creatures/roar_03.ogg"
+   ],
+   "volume": 0.7,
+   "pitchVar": 0.1,
+   "maxVoices": 3,
+   "positional": true
+  },
+  "boss_roar": {
+   "files": [
+    "sfx/creatures/roar_04.ogg",
+    "sfx/creatures/roar_05.ogg",
+    "sfx/creatures/roar_06.ogg",
+    "sfx/creatures/giant_02.wav",
+    "sfx/creatures/troll_02.ogg"
+   ],
+   "volume": 1,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "positional": true,
+   "pitch": 0.85
+  },
+  "boss_cast": {
+   "files": [
+    "sfx/magic/charge_01.ogg",
+    "sfx/magic/cast_long_01.wav"
+   ],
+   "volume": 0.9,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "positional": true
+  },
+  "boss_death": {
+   "files": [
+    "sfx/creatures/roar_06.ogg"
+   ],
+   "volume": 1,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/ambience/dark_stinger_01.wav",
+    "sfx/world/bell_heavy_01.ogg"
+   ],
+   "layerVolume": 0.8,
+   "positional": true,
+   "pitch": 0.8
+  },
+  "footstep_stone": {
+   "files": [
+    "sfx/footsteps/stone_01.ogg",
+    "sfx/footsteps/stone_02.ogg",
+    "sfx/footsteps/stone_03.ogg",
+    "sfx/footsteps/stone_04.ogg",
+    "sfx/footsteps/stone_05.ogg"
+   ],
+   "volume": 0.35,
+   "pitchVar": 0.08,
+   "maxVoices": 4,
+   "positional": true,
+   "note": "local player 0.35, remote players/enemies 0.15-0.2"
+  },
+  "footstep_dirt": {
+   "files": [
+    "sfx/footsteps/dirt_01.ogg",
+    "sfx/footsteps/dirt_02.ogg",
+    "sfx/footsteps/dirt_03.ogg",
+    "sfx/footsteps/dirt_04.ogg",
+    "sfx/footsteps/dirt_05.ogg",
+    "sfx/footsteps/dirt_06.ogg",
+    "sfx/footsteps/dirt_07.ogg",
+    "sfx/footsteps/dirt_08.ogg",
+    "sfx/footsteps/dirt_09.ogg",
+    "sfx/footsteps/dirt_10.ogg"
+   ],
+   "volume": 0.4,
+   "pitchVar": 0.08,
+   "maxVoices": 4,
+   "positional": true
+  },
+  "jump": {
+   "files": [
+    "sfx/loot/cloth_01.ogg",
+    "sfx/loot/cloth_02.ogg",
+    "sfx/loot/cloth_03.ogg",
+    "sfx/loot/cloth_04.ogg"
+   ],
+   "volume": 0.9,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/melee/swish_01.wav",
+    "sfx/melee/swish_02.wav"
+   ],
+   "layerVolume": 0.25,
+   "positional": true
+  },
+  "land": {
+   "files": [
+    "sfx/footsteps/dirt_01.ogg",
+    "sfx/footsteps/dirt_02.ogg",
+    "sfx/footsteps/dirt_03.ogg",
+    "sfx/footsteps/dirt_04.ogg",
+    "sfx/footsteps/dirt_05.ogg",
+    "sfx/footsteps/dirt_06.ogg",
+    "sfx/footsteps/dirt_07.ogg",
+    "sfx/footsteps/dirt_08.ogg",
+    "sfx/footsteps/dirt_09.ogg",
+    "sfx/footsteps/dirt_10.ogg"
+   ],
+   "volume": 0.6,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/loot/drop_leather_01.ogg"
+   ],
+   "layerVolume": 0.6,
+   "positional": true,
+   "pitch": 0.8
+  },
+  "gold_pickup": {
+   "files": [
+    "sfx/loot/coin_01.wav",
+    "sfx/loot/coin_02.wav",
+    "sfx/loot/coin_03.wav",
+    "sfx/loot/coins_03.ogg",
+    "sfx/loot/coins_04.ogg",
+    "sfx/loot/coins_05.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "positional": false
+  },
+  "item_pickup": {
+   "files": [
+    "sfx/loot/item_misc_01.ogg",
+    "sfx/loot/item_misc_02.ogg",
+    "sfx/loot/item_misc_03.ogg",
+    "sfx/loot/item_misc_04.ogg",
+    "sfx/loot/item_misc_05.ogg",
+    "sfx/loot/item_misc_06.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "positional": false,
+   "note": "better: by item class -> armor loot/cloth_*, weapon loot/metal_small_*, jewelry loot/jewelry_01, material loot/item_stone_*, potion loot/potion_bottle_01"
+  },
+  "loot_drop": {
+   "files": [
+    "sfx/loot/item_misc_01.ogg",
+    "sfx/loot/item_misc_02.ogg",
+    "sfx/loot/item_misc_03.ogg",
+    "sfx/loot/item_misc_04.ogg",
+    "sfx/loot/item_misc_05.ogg",
+    "sfx/loot/item_misc_06.ogg",
+    "sfx/world/impact_light_01.ogg",
+    "sfx/world/impact_light_02.ogg",
+    "sfx/world/impact_light_03.ogg",
+    "sfx/world/impact_light_04.ogg",
+    "sfx/world/impact_light_05.ogg"
+   ],
+   "volume": 0.6,
+   "pitchVar": 0.06,
+   "maxVoices": 4,
+   "positional": true,
+   "pitch": 0.9
+  },
+  "loot_drop_rare": {
+   "files": [
+    "sfx/loot/gem_01.ogg",
+    "sfx/loot/gem_02.ogg",
+    "sfx/loot/gem_03.ogg",
+    "sfx/loot/gem_04.ogg"
+   ],
+   "volume": 1,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "layer": [
+    "sfx/ui/glass_02.ogg",
+    "sfx/ui/glass_03.ogg"
+   ],
+   "layerVolume": 0.5,
+   "positional": true
+  },
+  "loot_drop_epic": {
+   "files": [
+    "sfx/jingles/steel_15.ogg",
+    "sfx/jingles/steel_10.ogg"
+   ],
+   "volume": 0.7,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/magic/shimmer_01.mp3",
+    "sfx/loot/gem_04.ogg"
+   ],
+   "layerVolume": 0.8,
+   "positional": true,
+   "note": "non-positional is OK so players always notice"
+  },
+  "loot_drop_legendary": {
+   "files": [
+    "sfx/jingles/steel_02.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/magic/shimmer_01.mp3",
+    "sfx/world/bell_heavy_03.ogg"
+   ],
+   "layerVolume": 0.8,
+   "positional": true,
+   "note": "PoE/D2-style big drop: bell + shimmer + rising steel jingle; never voice-capped"
+  },
+  "potion_drink": {
+   "files": [
+    "sfx/loot/potion_drink_01.wav",
+    "sfx/loot/potion_drink_02.wav",
+    "sfx/loot/potion_drink_03.wav"
+   ],
+   "volume": 0.6,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "positional": false
+  },
+  "equip": {
+   "files": [
+    "sfx/loot/equip_armor_light_01.wav",
+    "sfx/loot/equip_chainmail_01.wav",
+    "sfx/loot/equip_chainmail_02.wav",
+    "sfx/loot/equip_cloth_01.wav",
+    "sfx/loot/equip_cloth_heavy_01.wav"
+   ],
+   "volume": 0.7,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "positional": false,
+   "note": "weapons: melee/unsheathe_*, jewelry: loot/jewelry_01"
+  },
+  "unequip": {
+   "files": [
+    "sfx/loot/cloth_belt_01.ogg",
+    "sfx/loot/cloth_belt_02.ogg",
+    "sfx/loot/belt_handle_01.ogg",
+    "sfx/loot/belt_handle_02.ogg",
+    "sfx/loot/leather_01.ogg",
+    "sfx/loot/leather_02.ogg"
+   ],
+   "volume": 1,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "positional": false
+  },
+  "upgrade_success": {
+   "files": [
+    "sfx/world/metal_03.ogg"
+   ],
+   "volume": 0.9,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/jingles/steel_10.ogg",
+    "sfx/jingles/steel_15.ogg",
+    "sfx/loot/metal_ringing_01.wav"
+   ],
+   "layerVolume": 0.7,
+   "positional": false,
+   "note": "play hammer (world/mining_*) 2-3x before the result for suspense"
+  },
+  "upgrade_fail": {
+   "files": [
+    "sfx/world/mining_01.ogg",
+    "sfx/world/mining_02.ogg",
+    "sfx/world/mining_03.ogg",
+    "sfx/world/mining_04.ogg",
+    "sfx/world/mining_05.ogg"
+   ],
+   "volume": 0.7,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/jingles/hit_11.ogg",
+    "sfx/jingles/pizzi_05.ogg"
+   ],
+   "layerVolume": 0.7,
+   "positional": false
+  },
+  "upgrade_destroy": {
+   "files": [
+    "sfx/world/break_glass_heavy_01.ogg",
+    "sfx/world/break_glass_heavy_02.ogg",
+    "sfx/world/break_glass_heavy_03.ogg",
+    "sfx/world/break_glass_heavy_04.ogg",
+    "sfx/world/break_glass_heavy_05.ogg"
+   ],
+   "volume": 0.9,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/jingles/steel_12.ogg",
+    "sfx/world/stones_03.ogg"
+   ],
+   "layerVolume": 0.8,
+   "positional": false
+  },
+  "sell": {
+   "files": [
+    "sfx/loot/coins_01.ogg",
+    "sfx/loot/coins_02.ogg",
+    "sfx/loot/coins_06.ogg"
+   ],
+   "volume": 1,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "buy": {
+   "files": [
+    "sfx/loot/coins_04.ogg",
+    "sfx/loot/coins_05.ogg"
+   ],
+   "volume": 1,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/ui/confirm_01.ogg"
+   ],
+   "layerVolume": 0.4,
+   "positional": false,
+   "bus": "ui"
+  },
+  "chest_open": {
+   "files": [
+    "sfx/world/lock_01.ogg",
+    "sfx/world/lock_02.ogg",
+    "sfx/world/lock_03.ogg"
+   ],
+   "volume": 1,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/world/creak_01.ogg",
+    "sfx/world/creak_02.ogg",
+    "sfx/world/creak_03.ogg"
+   ],
+   "layerVolume": 0.9,
+   "positional": true,
+   "note": "lock first, creak ~0.25 s later, then loot burst"
+  },
+  "door_open": {
+   "files": [
+    "sfx/world/door_open_01.ogg",
+    "sfx/world/door_open_02.ogg",
+    "sfx/world/door_heavy_01.wav"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "positional": true,
+   "note": "dungeon gates: door_heavy_01 + world/chain_*"
+  },
+  "portal_enter": {
+   "files": [
+    "sfx/magic/arcane_03.ogg",
+    "sfx/magic/arcane_04.ogg"
+   ],
+   "volume": 1.2,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/magic/absorb_01.ogg"
+   ],
+   "layerVolume": 1.2,
+   "positional": false
+  },
+  "ui_click": {
+   "files": [
+    "sfx/ui/click_01.ogg",
+    "sfx/ui/click_soft_01.ogg",
+    "sfx/ui/click_soft_02.ogg",
+    "sfx/ui/click_soft_03.ogg",
+    "sfx/ui/click_soft_04.ogg",
+    "sfx/ui/click_soft_05.ogg"
+   ],
+   "volume": 0.5,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "ui_hover": {
+   "files": [
+    "sfx/ui/hover_02.ogg",
+    "sfx/ui/hover_03.ogg"
+   ],
+   "volume": 0.25,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "ui_open": {
+   "files": [
+    "sfx/ui/open_01.ogg",
+    "sfx/ui/open_02.ogg",
+    "sfx/ui/open_03.ogg",
+    "sfx/ui/open_04.ogg"
+   ],
+   "volume": 0.5,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui",
+   "note": "inventory: loot/cloth_belt_01, skill tree / passive book: ui/book_open_01"
+  },
+  "ui_close": {
+   "files": [
+    "sfx/ui/close_01.ogg",
+    "sfx/ui/close_02.ogg",
+    "sfx/ui/close_03.ogg",
+    "sfx/ui/close_04.ogg"
+   ],
+   "volume": 0.5,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui",
+   "note": "book panels: ui/book_close_01"
+  },
+  "ui_error": {
+   "files": [
+    "sfx/ui/error_04.ogg",
+    "sfx/ui/error_07.ogg",
+    "sfx/ui/error_08.ogg"
+   ],
+   "volume": 0.5,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "ui_tab": {
+   "files": [
+    "sfx/ui/toggle_01.ogg",
+    "sfx/ui/toggle_02.ogg",
+    "sfx/ui/toggle_03.ogg",
+    "sfx/ui/toggle_04.ogg"
+   ],
+   "volume": 0.45,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "ui_drag": {
+   "files": [
+    "sfx/loot/leather_01.ogg",
+    "sfx/loot/leather_02.ogg",
+    "sfx/ui/select_07.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "ui_drop": {
+   "files": [
+    "sfx/ui/drop_01.ogg",
+    "sfx/ui/drop_02.ogg",
+    "sfx/ui/drop_03.ogg",
+    "sfx/ui/drop_04.ogg"
+   ],
+   "volume": 0.5,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "level_up": {
+   "files": [
+    "sfx/jingles/steel_02.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.02,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/magic/revive_01.ogg"
+   ],
+   "layerVolume": 1.4,
+   "positional": false,
+   "bus": "ui",
+   "note": "steel_02 rises ~+7 semitones (pitch-tracked); revive_01 adds a 6.7 s sparkle tail"
+  },
+  "quest_complete": {
+   "files": [
+    "sfx/jingles/pizzi_02.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "achievement": {
+   "files": [
+    "sfx/jingles/pizzi_15.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/magic/shimmer_01.mp3"
+   ],
+   "layerVolume": 0.7,
+   "positional": false,
+   "bus": "ui"
+  },
+  "keystone_insert": {
+   "files": [
+    "sfx/world/metal_latch_01.ogg"
+   ],
+   "volume": 0.9,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/world/bell_heavy_04.ogg",
+    "sfx/magic/charge_01.ogg"
+   ],
+   "layerVolume": 0.6,
+   "positional": false
+  },
+  "keystone_upgrade": {
+   "files": [
+    "sfx/jingles/hit_09.ogg",
+    "sfx/jingles/hit_10.ogg",
+    "sfx/jingles/steel_15.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/magic/shimmer_01.mp3"
+   ],
+   "layerVolume": 0.7,
+   "positional": false,
+   "bus": "ui",
+   "note": "not random: +1 -> hit_09, +2 -> hit_10, +3 -> steel_15 (+ layer bell_heavy_05 on +3)"
+  },
+  "keystone_deplete": {
+   "files": [
+    "sfx/jingles/steel_12.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/world/break_glass_medium_01.ogg",
+    "sfx/world/break_glass_medium_02.ogg",
+    "sfx/world/break_glass_medium_03.ogg",
+    "sfx/world/break_glass_medium_04.ogg",
+    "sfx/world/break_glass_medium_05.ogg"
+   ],
+   "layerVolume": 0.5,
+   "positional": false,
+   "bus": "ui"
+  },
+  "mplus_start": {
+   "files": [
+    "sfx/world/bell_heavy_01.ogg"
+   ],
+   "volume": 0.9,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/ambience/dark_stinger_04.wav"
+   ],
+   "layerVolume": 0.5,
+   "positional": false,
+   "bus": "ui"
+  },
+  "mplus_complete": {
+   "files": [
+    "sfx/world/bell_heavy_02.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/jingles/steel_02.ogg"
+   ],
+   "layerVolume": 0.8,
+   "positional": false,
+   "bus": "ui",
+   "note": "then music: victory (stinger_victory -> victory_theme)"
+  },
+  "mplus_fail": {
+   "files": [
+    "sfx/jingles/hit_15.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/world/bell_heavy_03.ogg"
+   ],
+   "layerVolume": 0.6,
+   "positional": false,
+   "bus": "ui",
+   "pitch": 0.85,
+   "note": "then music: defeat"
+  },
+  "countdown_tick": {
+   "files": [
+    "sfx/ui/tick_01.ogg",
+    "sfx/ui/tick_02.ogg",
+    "sfx/ui/tick_03.ogg"
+   ],
+   "volume": 0.6,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui",
+   "note": "final GO: world/bell_heavy_05"
+  },
+  "ready_check": {
+   "files": [
+    "sfx/ui/question_01.ogg",
+    "sfx/ui/question_02.ogg",
+    "sfx/ui/question_03.ogg",
+    "sfx/ui/question_04.ogg"
+   ],
+   "volume": 0.6,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "party_join": {
+   "files": [
+    "sfx/ui/maximize_02.ogg",
+    "sfx/ui/maximize_09.ogg"
+   ],
+   "volume": 0.5,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "party_leave": {
+   "files": [
+    "sfx/ui/minimize_02.ogg",
+    "sfx/ui/minimize_09.ogg"
+   ],
+   "volume": 0.5,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "chat": {
+   "files": [
+    "sfx/ui/pluck_01.ogg",
+    "sfx/ui/pluck_02.ogg",
+    "sfx/ui/bong_01.ogg"
+   ],
+   "volume": 0.4,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  }
+ },
+ "extraSfx": {
+  "enemy_hurt": {
+   "files": [
+    "sfx/creatures/hurt_01.ogg",
+    "sfx/creatures/hurt_02.ogg",
+    "sfx/creatures/hurt_03.ogg",
+    "sfx/creatures/hurt_04.ogg",
+    "sfx/creatures/hurt_05.ogg",
+    "sfx/creatures/hurt_06.ogg",
+    "sfx/creatures/hurt_07.ogg"
+   ],
+   "volume": 0.6,
+   "pitchVar": 0.12,
+   "maxVoices": 4,
+   "positional": true
+  },
+  "enemy_aggro_beast": {
+   "files": [
+    "sfx/creatures/beast_01.wav",
+    "sfx/creatures/beast_02.wav",
+    "sfx/creatures/beast_03.wav",
+    "sfx/creatures/beast_04.wav",
+    "sfx/creatures/beast_05.wav",
+    "sfx/creatures/beast_06.wav",
+    "sfx/creatures/beast_07.wav",
+    "sfx/creatures/beast_08.wav",
+    "sfx/creatures/bark_01.ogg",
+    "sfx/creatures/bark_02.ogg",
+    "sfx/creatures/howl_01.ogg",
+    "sfx/creatures/wolfman_01.wav"
+   ],
+   "volume": 0.7,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "positional": true
+  },
+  "enemy_aggro_ghost": {
+   "files": [
+    "sfx/creatures/ghost_01.wav",
+    "sfx/creatures/ghost_02.wav",
+    "sfx/creatures/ghost_03.wav",
+    "sfx/creatures/ghost_04.wav",
+    "sfx/creatures/ghost_05.wav",
+    "sfx/creatures/ghost_06.wav",
+    "sfx/creatures/ghost_07.wav",
+    "sfx/creatures/ghost_08.wav"
+   ],
+   "volume": 0.7,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "positional": true
+  },
+  "enemy_aggro_slime": {
+   "files": [
+    "sfx/creatures/slime_01.ogg",
+    "sfx/creatures/slime_02.ogg",
+    "sfx/creatures/slime_03.ogg",
+    "sfx/creatures/slime_04.ogg",
+    "sfx/creatures/slime_05.wav",
+    "sfx/creatures/slime_06.wav",
+    "sfx/creatures/slime_07.wav",
+    "sfx/creatures/slime_08.wav",
+    "sfx/creatures/burble_01.ogg",
+    "sfx/creatures/burble_02.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "positional": true
+  },
+  "enemy_aggro_spider": {
+   "files": [
+    "sfx/creatures/bug_01.ogg",
+    "sfx/creatures/bug_02.ogg",
+    "sfx/creatures/bug_03.ogg",
+    "sfx/creatures/bug_04.ogg",
+    "sfx/creatures/bite_01.wav",
+    "sfx/creatures/bite_02.wav",
+    "sfx/creatures/bite_03.wav"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "positional": true
+  },
+  "enemy_aggro_brute": {
+   "files": [
+    "sfx/creatures/ogre_01.wav",
+    "sfx/creatures/ogre_02.wav",
+    "sfx/creatures/ogre_03.wav",
+    "sfx/creatures/ogre_04.wav",
+    "sfx/creatures/ogre_05.wav",
+    "sfx/creatures/troll_01.ogg",
+    "sfx/creatures/troll_02.ogg",
+    "sfx/creatures/troll_03.ogg",
+    "sfx/creatures/giant_01.wav",
+    "sfx/creatures/giant_02.wav",
+    "sfx/creatures/giant_03.wav",
+    "sfx/creatures/giant_04.wav",
+    "sfx/creatures/giant_05.wav"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "positional": true
+  },
+  "enemy_aggro_demon": {
+   "files": [
+    "sfx/creatures/alien_01.ogg",
+    "sfx/creatures/alien_02.ogg",
+    "sfx/creatures/alien_03.ogg",
+    "sfx/creatures/alien_04.ogg",
+    "sfx/creatures/alien_05.ogg",
+    "sfx/creatures/alien_06.ogg",
+    "sfx/creatures/weird_01.ogg",
+    "sfx/creatures/weird_02.ogg",
+    "sfx/creatures/weird_03.ogg",
+    "sfx/creatures/weird_04.ogg",
+    "sfx/creatures/weird_05.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "positional": true
+  },
+  "enemy_idle": {
+   "files": [
+    "sfx/creatures/chatter_01.ogg",
+    "sfx/creatures/chatter_02.ogg",
+    "sfx/creatures/chatter_03.ogg",
+    "sfx/creatures/chatter_04.ogg",
+    "sfx/creatures/chatter_05.ogg",
+    "sfx/creatures/chatter_06.ogg",
+    "sfx/creatures/chatter_07.ogg",
+    "sfx/creatures/chatter_08.ogg",
+    "sfx/creatures/breath_01.ogg"
+   ],
+   "volume": 0.4,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "positional": true
+  },
+  "enemy_spit": {
+   "files": [
+    "sfx/creatures/spit_01.ogg",
+    "sfx/creatures/spit_02.ogg",
+    "sfx/creatures/spit_03.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "positional": true
+  },
+  "hit_armor_plate": {
+   "files": [
+    "sfx/melee/hit_plate_heavy_01.ogg",
+    "sfx/melee/hit_plate_heavy_02.ogg",
+    "sfx/melee/hit_plate_heavy_03.ogg",
+    "sfx/melee/hit_plate_heavy_04.ogg",
+    "sfx/melee/hit_plate_heavy_05.ogg",
+    "sfx/melee/hit_plate_light_01.ogg",
+    "sfx/melee/hit_plate_light_02.ogg",
+    "sfx/melee/hit_plate_light_03.ogg",
+    "sfx/melee/hit_plate_light_04.ogg",
+    "sfx/melee/hit_plate_light_05.ogg",
+    "sfx/melee/hit_plate_medium_01.ogg",
+    "sfx/melee/hit_plate_medium_02.ogg",
+    "sfx/melee/hit_plate_medium_03.ogg",
+    "sfx/melee/hit_plate_medium_04.ogg",
+    "sfx/melee/hit_plate_medium_05.ogg"
+   ],
+   "volume": 0.85,
+   "pitchVar": 0.06,
+   "maxVoices": 6,
+   "positional": true
+  },
+  "hit_blunt": {
+   "files": [
+    "sfx/melee/hit_soft_heavy_01.ogg",
+    "sfx/melee/hit_soft_heavy_02.ogg",
+    "sfx/melee/hit_soft_heavy_03.ogg",
+    "sfx/melee/hit_soft_heavy_04.ogg",
+    "sfx/melee/hit_soft_heavy_05.ogg",
+    "sfx/melee/hit_blunt_01.wav"
+   ],
+   "volume": 0.7,
+   "pitchVar": 0.06,
+   "maxVoices": 6,
+   "positional": true
+  },
+  "weapon_draw": {
+   "files": [
+    "sfx/melee/unsheathe_01.wav",
+    "sfx/melee/unsheathe_02.wav",
+    "sfx/melee/unsheathe_03.wav",
+    "sfx/melee/unsheathe_04.wav",
+    "sfx/melee/unsheathe_05.wav"
+   ],
+   "volume": 0.6,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "positional": false
+  },
+  "footstep_wood": {
+   "files": [
+    "sfx/footsteps/wood_01.ogg",
+    "sfx/footsteps/wood_02.ogg",
+    "sfx/footsteps/wood_03.ogg",
+    "sfx/footsteps/wood_04.ogg",
+    "sfx/footsteps/wood_05.ogg"
+   ],
+   "volume": 0.35,
+   "pitchVar": 0.06,
+   "maxVoices": 4,
+   "positional": true
+  },
+  "footstep_grass": {
+   "files": [
+    "sfx/footsteps/grass_01.ogg",
+    "sfx/footsteps/grass_02.ogg",
+    "sfx/footsteps/grass_03.ogg",
+    "sfx/footsteps/grass_04.ogg",
+    "sfx/footsteps/grass_05.ogg"
+   ],
+   "volume": 0.35,
+   "pitchVar": 0.06,
+   "maxVoices": 4,
+   "positional": true
+  },
+  "footstep_snow": {
+   "files": [
+    "sfx/footsteps/snow_01.ogg",
+    "sfx/footsteps/snow_02.ogg",
+    "sfx/footsteps/snow_03.ogg",
+    "sfx/footsteps/snow_04.ogg",
+    "sfx/footsteps/snow_05.ogg"
+   ],
+   "volume": 0.35,
+   "pitchVar": 0.06,
+   "maxVoices": 4,
+   "positional": true
+  },
+  "footstep_carpet": {
+   "files": [
+    "sfx/footsteps/carpet_01.ogg",
+    "sfx/footsteps/carpet_02.ogg",
+    "sfx/footsteps/carpet_03.ogg",
+    "sfx/footsteps/carpet_04.ogg",
+    "sfx/footsteps/carpet_05.ogg"
+   ],
+   "volume": 0.35,
+   "pitchVar": 0.06,
+   "maxVoices": 4,
+   "positional": true
+  },
+  "door_close": {
+   "files": [
+    "sfx/world/door_close_01.ogg",
+    "sfx/world/door_close_02.ogg",
+    "sfx/world/door_close_03.ogg",
+    "sfx/world/door_close_04.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "positional": true
+  },
+  "gate_heavy": {
+   "files": [
+    "sfx/world/door_heavy_01.wav"
+   ],
+   "volume": 0.9,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/world/chain_01.ogg",
+    "sfx/world/chain_02.ogg",
+    "sfx/world/chain_03.ogg"
+   ],
+   "layerVolume": 0.8,
+   "positional": true
+  },
+  "chest_locked": {
+   "files": [
+    "sfx/world/metal_click_01.ogg"
+   ],
+   "volume": 1,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/ui/error_04.ogg"
+   ],
+   "layerVolume": 0.3,
+   "positional": true
+  },
+  "barrel_break": {
+   "files": [
+    "sfx/world/break_wood_medium_01.ogg",
+    "sfx/world/break_wood_medium_02.ogg",
+    "sfx/world/break_wood_medium_03.ogg",
+    "sfx/world/break_wood_medium_04.ogg",
+    "sfx/world/break_wood_medium_05.ogg",
+    "sfx/world/break_wood_heavy_01.ogg",
+    "sfx/world/break_wood_heavy_02.ogg",
+    "sfx/world/break_wood_heavy_03.ogg",
+    "sfx/world/break_wood_heavy_04.ogg",
+    "sfx/world/break_wood_heavy_05.ogg",
+    "sfx/world/plank_01.ogg",
+    "sfx/world/plank_02.ogg",
+    "sfx/world/plank_03.ogg",
+    "sfx/world/plank_04.ogg",
+    "sfx/world/plank_05.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 4,
+   "positional": true
+  },
+  "pot_break": {
+   "files": [
+    "sfx/world/break_glass_medium_01.ogg",
+    "sfx/world/break_glass_medium_02.ogg",
+    "sfx/world/break_glass_medium_03.ogg",
+    "sfx/world/break_glass_medium_04.ogg",
+    "sfx/world/break_glass_medium_05.ogg",
+    "sfx/world/break_glass_heavy_01.ogg",
+    "sfx/world/break_glass_heavy_02.ogg",
+    "sfx/world/break_glass_heavy_03.ogg",
+    "sfx/world/break_glass_heavy_04.ogg",
+    "sfx/world/break_glass_heavy_05.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 4,
+   "positional": true
+  },
+  "rubble": {
+   "files": [
+    "sfx/world/stones_01.ogg",
+    "sfx/world/stones_02.ogg",
+    "sfx/world/stones_03.ogg",
+    "sfx/world/stones_04.ogg"
+   ],
+   "volume": 0.9,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "positional": true
+  },
+  "lever": {
+   "files": [
+    "sfx/world/metal_latch_01.ogg",
+    "sfx/world/metal_click_01.ogg"
+   ],
+   "volume": 0.9,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "positional": true
+  },
+  "trap_trigger": {
+   "files": [
+    "sfx/world/chain_01.ogg",
+    "sfx/world/chain_02.ogg",
+    "sfx/world/chain_03.ogg",
+    "sfx/world/metal_02.ogg"
+   ],
+   "volume": 0.9,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "positional": true
+  },
+  "blacksmith_hammer": {
+   "files": [
+    "sfx/world/mining_01.ogg",
+    "sfx/world/mining_02.ogg",
+    "sfx/world/mining_03.ogg",
+    "sfx/world/mining_04.ogg",
+    "sfx/world/mining_05.ogg",
+    "sfx/world/metal_01.ogg",
+    "sfx/world/metal_02.ogg",
+    "sfx/world/metal_03.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "positional": false
+  },
+  "efsun_reroll": {
+   "files": [
+    "sfx/magic/arcane_03.ogg"
+   ],
+   "volume": 1,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/ui/glass_04.ogg"
+   ],
+   "layerVolume": 0.5,
+   "positional": false
+  },
+  "efsun_reveal": {
+   "files": [
+    "sfx/magic/shimmer_01.mp3"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/loot/item_stone_01.ogg"
+   ],
+   "layerVolume": 0.8,
+   "positional": false
+  },
+  "passive_allocate": {
+   "files": [
+    "sfx/ui/glass_02.ogg",
+    "sfx/ui/glass_03.ogg",
+    "sfx/ui/glass_05.ogg"
+   ],
+   "volume": 0.6,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "passive_refund": {
+   "files": [
+    "sfx/ui/back_01.ogg",
+    "sfx/ui/back_02.ogg",
+    "sfx/ui/back_03.ogg",
+    "sfx/ui/back_04.ogg"
+   ],
+   "volume": 0.5,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "skill_unlock": {
+   "files": [
+    "sfx/progression/upper_01.wav"
+   ],
+   "volume": 1.1,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "vault_open": {
+   "files": [
+    "sfx/world/lock_02.ogg"
+   ],
+   "volume": 1,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/world/creak_01.ogg",
+    "sfx/loot/coins_06.ogg",
+    "sfx/jingles/steel_02.ogg"
+   ],
+   "layerVolume": 0.9,
+   "positional": false,
+   "bus": "ui"
+  },
+  "reward_coin": {
+   "files": [
+    "sfx/progression/coin_get_01.wav"
+   ],
+   "volume": 1.2,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "enemy_forces_complete": {
+   "files": [
+    "sfx/jingles/steel_10.ogg"
+   ],
+   "volume": 0.8,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "timer_warning": {
+   "files": [
+    "sfx/world/bell_heavy_03.ogg"
+   ],
+   "volume": 0.7,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "layer": [
+    "sfx/ui/tick_03.ogg"
+   ],
+   "layerVolume": 0.6,
+   "positional": false,
+   "bus": "ui",
+   "note": "last 60 s of the M+ timer; progression/alarm_01 is a harsher option"
+  },
+  "affix_proc": {
+   "files": [
+    "sfx/ambience/dark_stinger_02.wav",
+    "sfx/ambience/dark_stinger_03.wav",
+    "sfx/ambience/dark_stinger_04.wav"
+   ],
+   "volume": 0.6,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "positional": true
+  },
+  "boss_phase": {
+   "files": [
+    "sfx/ambience/dark_stinger_01.wav",
+    "sfx/ambience/dark_stinger_05.wav"
+   ],
+   "volume": 0.7,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "positional": false
+  },
+  "boss_pull": {
+   "files": [
+    "sfx/creatures/roar_06.ogg"
+   ],
+   "volume": 1,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "layer": [
+    "sfx/world/bell_heavy_02.ogg"
+   ],
+   "layerVolume": 0.7,
+   "positional": false,
+   "note": "and music stinger_boss_intro -> boss"
+  },
+  "player_revive": {
+   "files": [
+    "sfx/magic/revive_01.ogg"
+   ],
+   "volume": 1.4,
+   "pitchVar": 0.06,
+   "maxVoices": 1,
+   "positional": false
+  },
+  "life_leech": {
+   "files": [
+    "sfx/magic/absorb_01.ogg"
+   ],
+   "volume": 1.3,
+   "pitchVar": 0.06,
+   "maxVoices": 2,
+   "positional": true
+  },
+  "stun": {
+   "files": [
+    "sfx/magic/sleep_01.ogg"
+   ],
+   "volume": 1.4,
+   "pitchVar": 0.06,
+   "maxVoices": 3,
+   "positional": true
+  },
+  "ui_confirm": {
+   "files": [
+    "sfx/ui/confirm_01.ogg",
+    "sfx/ui/confirm_02.ogg",
+    "sfx/ui/confirm_03.ogg",
+    "sfx/ui/confirm_04.ogg"
+   ],
+   "volume": 0.45,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "ui_back": {
+   "files": [
+    "sfx/ui/back_01.ogg",
+    "sfx/ui/back_02.ogg",
+    "sfx/ui/back_03.ogg",
+    "sfx/ui/back_04.ogg"
+   ],
+   "volume": 0.5,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "ui_page_flip": {
+   "files": [
+    "sfx/ui/page_flip_01.ogg",
+    "sfx/ui/page_flip_02.ogg",
+    "sfx/ui/page_flip_03.ogg",
+    "sfx/ui/book_01.ogg",
+    "sfx/ui/book_02.ogg",
+    "sfx/ui/book_03.ogg",
+    "sfx/ui/book_04.ogg"
+   ],
+   "volume": 0.9,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "ui_menu_button": {
+   "files": [
+    "sfx/ui/menu_01.wav",
+    "sfx/ui/menu_02.wav",
+    "sfx/ui/menu_03.wav",
+    "sfx/ui/menu_04.wav",
+    "sfx/ui/menu_05.wav",
+    "sfx/ui/menu_06.wav"
+   ],
+   "volume": 0.45,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "ui_notify": {
+   "files": [
+    "sfx/ui/bong_01.ogg",
+    "sfx/ui/question_02.ogg"
+   ],
+   "volume": 0.5,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  },
+  "room_join": {
+   "files": [
+    "sfx/jingles/hit_14.ogg"
+   ],
+   "volume": 0.7,
+   "pitchVar": 0.02,
+   "maxVoices": 2,
+   "positional": false,
+   "bus": "ui"
+  }
+ },
+ "ambience": {
+  "amb_dungeon_bed": {
+   "files": [
+    "sfx/ambience/dungeon_loop_01.ogg"
+   ],
+   "volume": 0.6,
+   "loop": true,
+   "positional": false
+  },
+  "amb_torch": {
+   "files": [
+    "sfx/ambience/fire_loop_01.ogg"
+   ],
+   "volume": 0.35,
+   "loop": true,
+   "positional": true,
+   "note": "PositionalAudio on braziers, refDistance ~2, maxDistance ~12; randomise start offset"
+  },
+  "amb_wind": {
+   "files": [
+    "sfx/ambience/wind_loop_01.ogg"
+   ],
+   "volume": 0.8,
+   "loop": true,
+   "positional": false
+  },
+  "amb_dread_oneshot": {
+   "files": [
+    "sfx/ambience/dark_stinger_01.wav",
+    "sfx/ambience/dark_stinger_02.wav",
+    "sfx/ambience/dark_stinger_03.wav",
+    "sfx/ambience/dark_stinger_04.wav",
+    "sfx/ambience/dark_stinger_05.wav"
+   ],
+   "volume": 0.4,
+   "loop": false,
+   "positional": false,
+   "note": "random every 45-90 s while exploring"
+  }
+ },
+ "music": {
+  "menu": {
+   "files": [
+    "music/menu_the_fall_of_arcana.ogg"
+   ],
+   "alt": [
+    "music/menu_rise_of_spirit.ogg"
+   ],
+   "volume": 1,
+   "loop": true
+  },
+  "town": {
+   "files": [
+    "music/town_old_tower_inn.mp3",
+    "music/town_market_day_loop.ogg",
+    "music/town_theme_rpg.mp3"
+   ],
+   "volume": 1,
+   "loop": true,
+   "note": "playlist; per-track gain: old_tower 1.2, market_day 0.6, town_theme 1.0"
+  },
+  "dungeon_crypt": {
+   "files": [
+    "music/dungeon_ambience_dark.ogg"
+   ],
+   "alt": [
+    "music/dungeon_cave_theme.ogg"
+   ],
+   "volume": 4,
+   "loop": true,
+   "note": "dungeon_ambience_dark is very quiet (-40 dB RMS, peak -20 dBFS): needs GainNode ~4; cave_theme at 1.0"
+  },
+  "dungeon_fire": {
+   "files": [
+    "music/dungeon_heated_lands.mp3"
+   ],
+   "volume": 1,
+   "loop": true
+  },
+  "dungeon_frost": {
+   "files": [
+    "music/dungeon_cold_sanctuary.mp3"
+   ],
+   "volume": 1,
+   "loop": true
+  },
+  "dungeon_shadow": {
+   "files": [
+    "music/dungeon_dark_shrine_loop.ogg"
+   ],
+   "alt": [
+    "music/dungeon_cave_theme.ogg"
+   ],
+   "volume": 2,
+   "loop": true
+  },
+  "boss": {
+   "files": [
+    "music/boss_colossus.ogg",
+    "music/boss_epic_battle.mp3",
+    "music/boss_great_boss.ogg"
+   ],
+   "volume": 0.8,
+   "loop": true,
+   "intro": [
+    "music/stinger_dark_boss_intro.ogg"
+   ],
+   "note": "per-track gain: colossus 0.9, epic_battle 0.55, great_boss 0.6; colossus for final bosses / high keys"
+  },
+  "victory": {
+   "files": [
+    "music/stinger_victory.mp3"
+   ],
+   "then": [
+    "music/victory_theme.mp3"
+   ],
+   "volume": 0.9,
+   "loop": false
+  },
+  "defeat": {
+   "files": [
+    "music/defeat_theme.mp3"
+   ],
+   "volume": 0.9,
+   "loop": false
+  },
+  "combat": {
+   "files": [
+    "music/combat_battle_theme_a.ogg",
+    "music/combat_battle_theme_b.mp3"
+   ],
+   "volume": 0.85,
+   "loop": true,
+   "note": "SUGGESTED new MusicId: optional layer for big pulls; battle_theme_b gain 1.0, a 0.85"
+  }
+ }
+}

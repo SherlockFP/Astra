@@ -1,0 +1,27 @@
+{
+ "id": "sword_1h_scimitar",
+ "name": "Pala",
+ "use": "Curved Turkish kilij-style sabre with yelman tip (lvl 10-25)",
+ "attach": "grip centre at origin (hand bone); blade +Y; blade flats face +/-Z",
+ "kind": "1h",
+ "emissive": "",
+ "tris": 210,
+ "parts": 7,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 14,
+ "has_emit": false,
+ "bbox_min": [
+  -0.127,
+  -0.021,
+  -0.173
+ ],
+ "bbox_max": [
+  0.127,
+  0.021,
+  0.975
+ ],
+ "bytes": 17424
+}

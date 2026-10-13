@@ -1,0 +1,689 @@
+{
+ "ual_pelvis": 0.916700005531311,
+ "monsters": [
+  {
+   "id": "puglin",
+   "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/bestiary/puglin.glb",
+   "bytes": 2449536,
+   "scale": 1.75,
+   "native_height": 0.931,
+   "native_pelvis": 0.3938,
+   "loc_factor": 0.7517,
+   "tris": 7528,
+   "tris_native": 7528,
+   "size": [
+    2.569,
+    1.629,
+    1.069
+   ],
+   "min": [
+    -1.284,
+    -0.007,
+    -0.28
+   ],
+   "max": [
+    1.284,
+    1.623,
+    0.788
+   ],
+   "bones": 55,
+   "missing_vs_ual": [
+    "ball_leaf_l",
+    "ball_leaf_r",
+    "pinky_01_l",
+    "pinky_01_r",
+    "pinky_02_l",
+    "pinky_02_r",
+    "pinky_03_l",
+    "pinky_03_r",
+    "pinky_04_leaf_l",
+    "pinky_04_leaf_r"
+   ],
+   "variants": [
+    "puglin_1",
+    "puglin_2",
+    "puglin_3"
+   ],
+   "clips": [
+    {
+     "name": "Idle",
+     "source": "Idle_Loop",
+     "frames": 75,
+     "seconds": 2.5,
+     "loop": true,
+     "note": "neutral breathing idle"
+    },
+    {
+     "name": "Idle_Combat",
+     "source": "Sword_Idle",
+     "frames": 50,
+     "seconds": 1.667,
+     "loop": true,
+     "note": "guard stance with a weapon, use while aggroed"
+    },
+    {
+     "name": "Idle_Zombie",
+     "source": "Zombie_Idle_Loop",
+     "frames": 40,
+     "seconds": 1.333,
+     "loop": true,
+     "note": "hunched, swaying idle (undead / brutish look)"
+    },
+    {
+     "name": "Walk",
+     "source": "Walk_Loop",
+     "frames": 40,
+     "seconds": 1.333,
+     "loop": true,
+     "note": "normal walk"
+    },
+    {
+     "name": "Walk_Zombie",
+     "source": "Zombie_Walk_Fwd_Loop",
+     "frames": 40,
+     "seconds": 1.333,
+     "loop": true,
+     "note": "shambling walk, arms forward"
+    },
+    {
+     "name": "Run",
+     "source": "Jog_Fwd_Loop",
+     "frames": 28,
+     "seconds": 0.933,
+     "loop": true,
+     "note": "jog"
+    },
+    {
+     "name": "Sprint",
+     "source": "Sprint_Loop",
+     "frames": 20,
+     "seconds": 0.667,
+     "loop": true,
+     "note": "full sprint"
+    },
+    {
+     "name": "Crouch_Idle",
+     "source": "Crouch_Idle_Loop",
+     "frames": 88,
+     "seconds": 2.933,
+     "loop": true,
+     "note": "ambush / sneak idle"
+    },
+    {
+     "name": "Crouch_Walk",
+     "source": "Crouch_Fwd_Loop",
+     "frames": 60,
+     "seconds": 2.0,
+     "loop": true,
+     "note": "sneak walk"
+    },
+    {
+     "name": "Attack_1H_1",
+     "source": "Sword_Regular_A",
+     "frames": 13,
+     "seconds": 0.433,
+     "loop": false,
+     "note": "fast one-hand slash 1 (0.43 s)"
+    },
+    {
+     "name": "Attack_1H_2",
+     "source": "Sword_Regular_B",
+     "frames": 16,
+     "seconds": 0.533,
+     "loop": false,
+     "note": "one-hand slash 2 (0.53 s)"
+    },
+    {
+     "name": "Attack_1H_3",
+     "source": "Sword_Regular_C",
+     "frames": 60,
+     "seconds": 2.0,
+     "loop": false,
+     "note": "one-hand slash 3 / finisher (2.0 s with recovery)"
+    },
+    {
+     "name": "Attack_1H_Combo",
+     "source": "Sword_Regular_Combo",
+     "frames": 90,
+     "seconds": 3.0,
+     "loop": false,
+     "note": "three-hit one-hand combo in one clip"
+    },
+    {
+     "name": "Attack_2H",
+     "source": "Sword_Attack",
+     "frames": 46,
+     "seconds": 1.533,
+     "loop": false,
+     "note": "single heavy swing (1.5 s)"
+    },
+    {
+     "name": "Attack_2H_Combo",
+     "source": "Sword_Heavy_Combo",
+     "frames": 130,
+     "seconds": 4.333,
+     "loop": false,
+     "note": "heavy multi-swing combo (4.3 s)"
+    },
+    {
+     "name": "Punch",
+     "source": "Punch_Jab",
+     "frames": 26,
+     "seconds": 0.867,
+     "loop": false,
+     "note": "jab"
+    },
+    {
+     "name": "Punch_2",
+     "source": "Punch_Cross",
+     "frames": 30,
+     "seconds": 1.0,
+     "loop": false,
+     "note": "cross"
+    },
+    {
+     "name": "Punch_Hook",
+     "source": "Melee_Hook",
+     "frames": 14,
+     "seconds": 0.467,
+     "loop": false,
+     "note": "hook punch"
+    },
+    {
+     "name": "Shield_Bash",
+     "source": "Shield_OneShot",
+     "frames": 25,
+     "seconds": 0.833,
+     "loop": false,
+     "note": "shield / forearm bash"
+    },
+    {
+     "name": "Charge",
+     "source": "Shield_Dash",
+     "frames": 33,
+     "seconds": 1.1,
+     "loop": false,
+     "note": "shoulder-down rush (move the body forward in code)"
+    },
+    {
+     "name": "Dash",
+     "source": "Sword_Dash",
+     "frames": 47,
+     "seconds": 1.567,
+     "loop": false,
+     "note": "lunging dash attack"
+    },
+    {
+     "name": "Cast_Start",
+     "source": "Spell_Simple_Enter",
+     "frames": 16,
+     "seconds": 0.533,
+     "loop": false,
+     "note": "raise hands"
+    },
+    {
+     "name": "Cast_Loop",
+     "source": "Spell_Simple_Idle_Loop",
+     "frames": 63,
+     "seconds": 2.1,
+     "loop": true,
+     "note": "channel loop"
+    },
+    {
+     "name": "Spellcast",
+     "source": "Spell_Simple_Shoot",
+     "frames": 15,
+     "seconds": 0.5,
+     "loop": false,
+     "note": "release a spell (0.53 s)"
+    },
+    {
+     "name": "Cast_End",
+     "source": "Spell_Simple_Exit",
+     "frames": 13,
+     "seconds": 0.433,
+     "loop": false,
+     "note": "lower hands"
+    },
+    {
+     "name": "Throw",
+     "source": "OverhandThrow",
+     "frames": 40,
+     "seconds": 1.333,
+     "loop": false,
+     "note": "overhand throw (spear, rock, bomb)"
+    },
+    {
+     "name": "Hit_Front",
+     "source": "Hit_Chest",
+     "frames": 10,
+     "seconds": 0.333,
+     "loop": false,
+     "note": "flinch from a hit to the chest"
+    },
+    {
+     "name": "Hit_Head",
+     "source": "Hit_Head",
+     "frames": 13,
+     "seconds": 0.433,
+     "loop": false,
+     "note": "head snap"
+    },
+    {
+     "name": "Hit_Knockback",
+     "source": "Hit_Knockback",
+     "frames": 25,
+     "seconds": 0.833,
+     "loop": false,
+     "note": "knocked backwards"
+    },
+    {
+     "name": "Stagger",
+     "source": "Idle_Shield_Break",
+     "frames": 32,
+     "seconds": 1.067,
+     "loop": false,
+     "note": "staggered / guard broken"
+    },
+    {
+     "name": "Death_A",
+     "source": "Death01",
+     "frames": 72,
+     "seconds": 2.4,
+     "loop": false,
+     "note": "falls dead, holds the last pose (play once, clamp)"
+    },
+    {
+     "name": "Death_B",
+     "source": "LayToIdle!",
+     "frames": 46,
+     "seconds": 1.533,
+     "loop": false,
+     "note": "derived: LayToIdle reversed, sinks down and lies on the floor"
+    },
+    {
+     "name": "Taunt",
+     "source": "Idle_Rail_Call",
+     "frames": 75,
+     "seconds": 2.5,
+     "loop": false,
+     "note": "calling / shouting gesture (best match for roar / taunt)"
+    },
+    {
+     "name": "Block",
+     "source": "Sword_Block",
+     "frames": 37,
+     "seconds": 1.233,
+     "loop": false,
+     "note": "raise guard and take the hit"
+    },
+    {
+     "name": "Block_Idle",
+     "source": "Idle_Shield_Loop",
+     "frames": 75,
+     "seconds": 2.5,
+     "loop": true,
+     "note": "shield guard loop"
+    },
+    {
+     "name": "Dodge",
+     "source": "Roll",
+     "frames": 44,
+     "seconds": 1.467,
+     "loop": false,
+     "note": "forward roll (move the body in code)"
+    },
+    {
+     "name": "GetUp",
+     "source": "LayToIdle",
+     "frames": 46,
+     "seconds": 1.533,
+     "loop": false,
+     "note": "rise from the floor (also use as spawn / wake-up)"
+    }
+   ]
+  },
+  {
+   "id": "imp",
+   "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/bestiary/imp.glb",
+   "bytes": 2855320,
+   "scale": 1.75,
+   "native_height": 1.678,
+   "native_pelvis": 0.807,
+   "loc_factor": 1.5406,
+   "tris": 15232,
+   "tris_native": 15232,
+   "size": [
+    3.069,
+    2.936,
+    1.183
+   ],
+   "min": [
+    -1.535,
+    -0.004,
+    -0.322
+   ],
+   "max": [
+    1.535,
+    2.933,
+    0.862
+   ],
+   "bones": 55,
+   "missing_vs_ual": [
+    "ball_leaf_l",
+    "ball_leaf_r",
+    "pinky_01_l",
+    "pinky_01_r",
+    "pinky_02_l",
+    "pinky_02_r",
+    "pinky_03_l",
+    "pinky_03_r",
+    "pinky_04_leaf_l",
+    "pinky_04_leaf_r"
+   ],
+   "variants": [
+    "imp_1",
+    "imp_2",
+    "imp_3"
+   ],
+   "clips": [
+    {
+     "name": "Idle",
+     "source": "Idle_Loop",
+     "frames": 75,
+     "seconds": 2.5,
+     "loop": true,
+     "note": "neutral breathing idle"
+    },
+    {
+     "name": "Idle_Combat",
+     "source": "Sword_Idle",
+     "frames": 50,
+     "seconds": 1.667,
+     "loop": true,
+     "note": "guard stance with a weapon, use while aggroed"
+    },
+    {
+     "name": "Idle_Zombie",
+     "source": "Zombie_Idle_Loop",
+     "frames": 40,
+     "seconds": 1.333,
+     "loop": true,
+     "note": "hunched, swaying idle (undead / brutish look)"
+    },
+    {
+     "name": "Walk",
+     "source": "Walk_Loop",
+     "frames": 40,
+     "seconds": 1.333,
+     "loop": true,
+     "note": "normal walk"
+    },
+    {
+     "name": "Walk_Zombie",
+     "source": "Zombie_Walk_Fwd_Loop",
+     "frames": 40,
+     "seconds": 1.333,
+     "loop": true,
+     "note": "shambling walk, arms forward"
+    },
+    {
+     "name": "Run",
+     "source": "Jog_Fwd_Loop",
+     "frames": 28,
+     "seconds": 0.933,
+     "loop": true,
+     "note": "jog"
+    },
+    {
+     "name": "Sprint",
+     "source": "Sprint_Loop",
+     "frames": 20,
+     "seconds": 0.667,
+     "loop": true,
+     "note": "full sprint"
+    },
+    {
+     "name": "Crouch_Idle",
+     "source": "Crouch_Idle_Loop",
+     "frames": 88,
+     "seconds": 2.933,
+     "loop": true,
+     "note": "ambush / sneak idle"
+    },
+    {
+     "name": "Crouch_Walk",
+     "source": "Crouch_Fwd_Loop",
+     "frames": 60,
+     "seconds": 2.0,
+     "loop": true,
+     "note": "sneak walk"
+    },
+    {
+     "name": "Attack_1H_1",
+     "source": "Sword_Regular_A",
+     "frames": 13,
+     "seconds": 0.433,
+     "loop": false,
+     "note": "fast one-hand slash 1 (0.43 s)"
+    },
+    {
+     "name": "Attack_1H_2",
+     "source": "Sword_Regular_B",
+     "frames": 16,
+     "seconds": 0.533,
+     "loop": false,
+     "note": "one-hand slash 2 (0.53 s)"
+    },
+    {
+     "name": "Attack_1H_3",
+     "source": "Sword_Regular_C",
+     "frames": 60,
+     "seconds": 2.0,
+     "loop": false,
+     "note": "one-hand slash 3 / finisher (2.0 s with recovery)"
+    },
+    {
+     "name": "Attack_1H_Combo",
+     "source": "Sword_Regular_Combo",
+     "frames": 90,
+     "seconds": 3.0,
+     "loop": false,
+     "note": "three-hit one-hand combo in one clip"
+    },
+    {
+     "name": "Attack_2H",
+     "source": "Sword_Attack",
+     "frames": 46,
+     "seconds": 1.533,
+     "loop": false,
+     "note": "single heavy swing (1.5 s)"
+    },
+    {
+     "name": "Attack_2H_Combo",
+     "source": "Sword_Heavy_Combo",
+     "frames": 130,
+     "seconds": 4.333,
+     "loop": false,
+     "note": "heavy multi-swing combo (4.3 s)"
+    },
+    {
+     "name": "Punch",
+     "source": "Punch_Jab",
+     "frames": 26,
+     "seconds": 0.867,
+     "loop": false,
+     "note": "jab"
+    },
+    {
+     "name": "Punch_2",
+     "source": "Punch_Cross",
+     "frames": 30,
+     "seconds": 1.0,
+     "loop": false,
+     "note": "cross"
+    },
+    {
+     "name": "Punch_Hook",
+     "source": "Melee_Hook",
+     "frames": 14,
+     "seconds": 0.467,
+     "loop": false,
+     "note": "hook punch"
+    },
+    {
+     "name": "Shield_Bash",
+     "source": "Shield_OneShot",
+     "frames": 25,
+     "seconds": 0.833,
+     "loop": false,
+     "note": "shield / forearm bash"
+    },
+    {
+     "name": "Charge",
+     "source": "Shield_Dash",
+     "frames": 33,
+     "seconds": 1.1,
+     "loop": false,
+     "note": "shoulder-down rush (move the body forward in code)"
+    },
+    {
+     "name": "Dash",
+     "source": "Sword_Dash",
+     "frames": 47,
+     "seconds": 1.567,
+     "loop": false,
+     "note": "lunging dash attack"
+    },
+    {
+     "name": "Cast_Start",
+     "source": "Spell_Simple_Enter",
+     "frames": 16,
+     "seconds": 0.533,
+     "loop": false,
+     "note": "raise hands"
+    },
+    {
+     "name": "Cast_Loop",
+     "source": "Spell_Simple_Idle_Loop",
+     "frames": 63,
+     "seconds": 2.1,
+     "loop": true,
+     "note": "channel loop"
+    },
+    {
+     "name": "Spellcast",
+     "source": "Spell_Simple_Shoot",
+     "frames": 15,
+     "seconds": 0.5,
+     "loop": false,
+     "note": "release a spell (0.53 s)"
+    },
+    {
+     "name": "Cast_End",
+     "source": "Spell_Simple_Exit",
+     "frames": 13,
+     "seconds": 0.433,
+     "loop": false,
+     "note": "lower hands"
+    },
+    {
+     "name": "Throw",
+     "source": "OverhandThrow",
+     "frames": 40,
+     "seconds": 1.333,
+     "loop": false,
+     "note": "overhand throw (spear, rock, bomb)"
+    },
+    {
+     "name": "Hit_Front",
+     "source": "Hit_Chest",
+     "frames": 10,
+     "seconds": 0.333,
+     "loop": false,
+     "note": "flinch from a hit to the chest"
+    },
+    {
+     "name": "Hit_Head",
+     "source": "Hit_Head",
+     "frames": 13,
+     "seconds": 0.433,
+     "loop": false,
+     "note": "head snap"
+    },
+    {
+     "name": "Hit_Knockback",
+     "source": "Hit_Knockback",
+     "frames": 25,
+     "seconds": 0.833,
+     "loop": false,
+     "note": "knocked backwards"
+    },
+    {
+     "name": "Stagger",
+     "source": "Idle_Shield_Break",
+     "frames": 32,
+     "seconds": 1.067,
+     "loop": false,
+     "note": "staggered / guard broken"
+    },
+    {
+     "name": "Death_A",
+     "source": "Death01",
+     "frames": 72,
+     "seconds": 2.4,
+     "loop": false,
+     "note": "falls dead, holds the last pose (play once, clamp)"
+    },
+    {
+     "name": "Death_B",
+     "source": "LayToIdle!",
+     "frames": 46,
+     "seconds": 1.533,
+     "loop": false,
+     "note": "derived: LayToIdle reversed, sinks down and lies on the floor"
+    },
+    {
+     "name": "Taunt",
+     "source": "Idle_Rail_Call",
+     "frames": 75,
+     "seconds": 2.5,
+     "loop": false,
+     "note": "calling / shouting gesture (best match for roar / taunt)"
+    },
+    {
+     "name": "Block",
+     "source": "Sword_Block",
+     "frames": 37,
+     "seconds": 1.233,
+     "loop": false,
+     "note": "raise guard and take the hit"
+    },
+    {
+     "name": "Block_Idle",
+     "source": "Idle_Shield_Loop",
+     "frames": 75,
+     "seconds": 2.5,
+     "loop": true,
+     "note": "shield guard loop"
+    },
+    {
+     "name": "Dodge",
+     "source": "Roll",
+     "frames": 44,
+     "seconds": 1.467,
+     "loop": false,
+     "note": "forward roll (move the body in code)"
+    },
+    {
+     "name": "GetUp",
+     "source": "LayToIdle",
+     "frames": 46,
+     "seconds": 1.533,
+     "loop": false,
+     "note": "rise from the floor (also use as spawn / wake-up)"
+    }
+   ]
+  }
+ ]
+}

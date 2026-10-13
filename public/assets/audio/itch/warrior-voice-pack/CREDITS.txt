@@ -1,0 +1,3 @@
+John Carroll (@jhncrrll_) - https://johncarroll.itch.io/warrior-voice-pack
+Licence: CC0 1.0 per the itch page; author notes the pack is royalty free, credit not required, but reselling or incorporating the pack itself (re-selling the audio as an asset) is prohibited.
+Converted WAV -> mono Ogg Vorbis 48 kHz, silence-trimmed, peak-normalised, renamed and grouped by category.

@@ -1,0 +1,27 @@
+{
+ "id": "axe_1h_bearded",
+ "name": "Sakallı Balta",
+ "use": "Northern bearded axe with bronze collars (lvl 10-25)",
+ "attach": "grip at origin near the handle end; head +Y; cutting edge toward +X",
+ "kind": "1h",
+ "emissive": "",
+ "tris": 316,
+ "parts": 6,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": false,
+ "bbox_min": [
+  -0.04,
+  -0.028,
+  -0.225
+ ],
+ "bbox_max": [
+  0.222,
+  0.028,
+  0.85
+ ],
+ "bytes": 23548
+}

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dev: combat</title>
+<style>
+  #dev-hud { position: fixed; left: 50%; transform: translateX(-50%); top: 8px; z-index: 9999; padding: 6px 9px; background: rgba(0,0,0,.72); border: 1px solid #5a4423; color: #f1dfae; font: 12px/1.45 monospace; white-space: pre; pointer-events: none; max-width: 640px; }
+  #dev-help { position: fixed; right: 8px; top: 8px; z-index: 9999; padding: 6px 9px; background: rgba(0,0,0,.6); border: 1px solid #5a4423; color: #c8b98a; font: 11px/1.45 monospace; white-space: pre; pointer-events: none; }
+  #dev-panel { position: fixed; left: 8px; top: 96px; z-index: 9999; display: flex; flex-wrap: wrap; gap: 4px; max-width: 520px; }
+  #dev-panel button { background: rgba(20,14,6,.85); color: #f1dfae; border: 1px solid #7a5a2a; padding: 3px 7px; font: 11px monospace; cursor: pointer; }
+  #dev-panel button:hover { background: rgba(70,46,16,.95); }
+  #dev-panel .sep { width: 100%; height: 0; }
+  #dev-specials { position: fixed; left: 8px; bottom: 8px; z-index: 9999; max-width: 560px; max-height: 46vh; overflow: auto; display: flex; flex-direction: column; gap: 4px; }
+  #dev-specials button { background: rgba(20,14,6,.85); color: #f1dfae; border: 1px solid #7a5a2a; padding: 3px 7px; font: 11px monospace; cursor: pointer; text-align: left; }
+  #dev-specials button:hover { background: rgba(70,46,16,.95); }
+  #dev-specials button.on { background: rgba(60,110,40,.9); border-color: #9fe070; color: #fff; }
+  #dev-specials .list { flex-wrap: wrap; gap: 3px; }
+  #dev-cross { position: fixed; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; z-index: 9990; pointer-events: none; }
+  #dev-cross:before, #dev-cross:after { content: ''; position: absolute; background: rgba(255,255,255,.85); }
+  #dev-cross:before { left: 6px; top: 0; width: 2px; height: 14px; }
+  #dev-cross:after { top: 6px; left: 0; height: 2px; width: 14px; }
+</style></head>
+<body><div id="game-root"><canvas id="game-canvas"></canvas><div id="ui-root"></div></div>
+<div id="dev-panel"></div><div id="dev-specials"></div><div id="dev-hud"></div><div id="dev-help"></div><div id="dev-cross"></div>
+<script type="module" src="/src/dev/combat.ts"></script></body></html>

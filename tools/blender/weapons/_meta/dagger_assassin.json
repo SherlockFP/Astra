@@ -1,0 +1,27 @@
+{
+ "id": "dagger_assassin",
+ "name": "Suikastçı Hançeri",
+ "use": "Black sawback assassin dagger with glowing poison groove (lvl 25-45)",
+ "attach": "grip centre at origin; blade +Y; dual-wield: mirror the off-hand copy on X if needed",
+ "kind": "dagger",
+ "emissive": "poison groove (green)",
+ "tris": 286,
+ "parts": 5,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": true,
+ "bbox_min": [
+  -0.059,
+  -0.016,
+  -0.142
+ ],
+ "bbox_max": [
+  0.059,
+  0.016,
+  0.49
+ ],
+ "bytes": 21112
+}

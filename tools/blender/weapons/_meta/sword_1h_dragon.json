@@ -1,0 +1,27 @@
+{
+ "id": "sword_1h_dragon",
+ "name": "Ejder Kılıcı",
+ "use": "Legendary dragon blade, serrated spine, burning runes + ruby (lvl 50+)",
+ "attach": "grip centre at origin (hand bone); blade +Y; blade flats face +/-Z",
+ "kind": "1h",
+ "emissive": "rune channel along blade (orange), ruby in guard",
+ "tris": 516,
+ "parts": 6,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": true,
+ "bbox_min": [
+  -0.24,
+  -0.034,
+  -0.23
+ ],
+ "bbox_max": [
+  0.24,
+  0.034,
+  1.1
+ ],
+ "bytes": 32360
+}

@@ -1,0 +1,28 @@
+{
+ "id": "staff_fire",
+ "name": "Ateş Asası",
+ "use": "Fire mage staff, gold ring with burning orb and flame prongs (lvl 25-45)",
+ "attach": "main-hand grip at origin (~0.8 above the foot); head +Y; length 2.2",
+ "kind": "staff",
+ "emissive": "orb + flame prongs (orange/yellow)",
+ "tris": 622,
+ "parts": 14,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": true,
+ "bbox_min": [
+  -0.157,
+  -0.055,
+  -0.827
+ ],
+ "bbox_max": [
+  0.157,
+  0.055,
+  1.373
+ ],
+ "bytes": 43788,
+ "fit_scale": 0.9402
+}

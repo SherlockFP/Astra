@@ -1,0 +1,27 @@
+{
+ "id": "bow_composite",
+ "name": "Türk Yayı",
+ "use": "Turkish composite recurve bow, red lacquer with gold, horn siyahs (lvl 25-50)",
+ "attach": "bow grip at origin; limbs along +/-Y; string on the archer side (-Z); arrow flies +Z",
+ "kind": "bow",
+ "emissive": "",
+ "tris": 324,
+ "parts": 7,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": false,
+ "bbox_min": [
+  -0.029,
+  -0.033,
+  -0.635
+ ],
+ "bbox_max": [
+  0.029,
+  0.144,
+  0.635
+ ],
+ "bytes": 25172
+}

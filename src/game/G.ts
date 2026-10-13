@@ -1,0 +1,71 @@
+import type { Engine } from '../core/Engine';
+import type { EventBus } from '../core/EventBus';
+import type { Input } from '../core/Input';
+import type { Assets } from '../core/Assets';
+import type { Settings } from '../core/Settings';
+import type { Save } from '../core/Save';
+import type { SceneManager } from '../core/SceneManager';
+import type { Audio } from '../audio/Audio';
+import type { VFX } from '../vfx/VFX';
+import type { UI } from '../ui/UI';
+import type { NetSession } from '../net/NetSession';
+import type { Combat } from '../combat/Combat';
+import type { SkillSystem } from '../combat/SkillSystem';
+import type { HitShapes } from '../combat/HitShapes';
+import type { LootSystem } from '../systems/LootSystem';
+import type { Progression } from '../systems/Progression';
+import type { MythicPlus } from '../systems/MythicPlus';
+import type { QuestSystem } from '../systems/Quests';
+import type { TalentSystem } from '../systems/Talents';
+import type { Professions } from '../systems/Professions';
+import type { ProcEngine } from '../combat/Procs';
+import type { CharacterState } from '../systems/CharacterState';
+import type { World } from '../world/World';
+import type { Player } from '../entities/Player';
+import type { ThirdPersonCamera } from '../camera/ThirdPersonCamera';
+
+/**
+ * Global service locator. Every module imports `G` and uses the services directly:
+ *   G.events.emit('ui:toast', { text: 'Merhaba' }); G.vfx.spawn('hit_spark', pos);
+ * Service fields are assigned once in game/Game.ts before any scene runs.
+ * Scene-scoped fields (world, player, camera) are null outside town/dungeon.
+ * `character` is the selected character (null in the main menu).
+ * This file only has type imports, so importing it never creates runtime cycles.
+ */
+export interface Services {
+  engine: Engine;
+  events: EventBus;
+  input: Input;
+  assets: Assets;
+  settings: Settings;
+  save: Save;
+  scenes: SceneManager;
+  audio: Audio;
+  vfx: VFX;
+  ui: UI;
+  net: NetSession;
+  combat: Combat;
+  skills: SkillSystem;
+  hitShapes: HitShapes;
+  loot: LootSystem;
+  progression: Progression;
+  mplus: MythicPlus;
+  /** Open-world quests (systems/Quests.ts). Created by Game.ts once WP4 lands; until then it is undefined at runtime (nothing reads it yet). */
+  quests: QuestSystem;
+  /** GDD_TALENTS (T0): WoW trees, spec choice, loadouts, passive web, skill mastery (systems/Talents.ts). Stub until T5. */
+  talents?: TalentSystem;
+  /** GDD_TALENTS (T0): proc engine for talent procs and triggers (combat/Procs.ts). Stub until T4. */
+  procs?: ProcEngine;
+  /** GDD_LIFE (L-00): gathering and crafting service (systems/Professions.ts). Stub until L-05; created by Game.ts then. */
+  professions?: Professions;
+  character: CharacterState | null;
+  world: World | null;
+  player: Player | null;
+  camera: ThirdPersonCamera | null;
+  /** Debug flags toggled from the console: G.debug.nav = true */
+  debug: Record<string, boolean>;
+}
+
+export const G: Services = { character: null, world: null, player: null, camera: null, debug: {} } as unknown as Services;
+
+if (typeof window !== 'undefined') (window as unknown as { G: Services }).G = G;

@@ -1,0 +1,27 @@
+{
+ "id": "dagger_curved",
+ "name": "Kıvrık Hançer",
+ "use": "Ottoman-style curved khanjar, ivory grip and gold fittings (lvl 15-30)",
+ "attach": "grip centre at origin; blade +Y; dual-wield: mirror the off-hand copy on X if needed",
+ "kind": "dagger",
+ "emissive": "",
+ "tris": 234,
+ "parts": 6,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": false,
+ "bbox_min": [
+  -0.057,
+  -0.022,
+  -0.124
+ ],
+ "bbox_max": [
+  0.085,
+  0.022,
+  0.47
+ ],
+ "bytes": 16668
+}

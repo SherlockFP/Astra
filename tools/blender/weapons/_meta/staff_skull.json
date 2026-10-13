@@ -1,0 +1,28 @@
+{
+ "id": "staff_skull",
+ "name": "Kafatası Asası",
+ "use": "Necromancer staff, horned skull with glowing soul eyes (lvl 30-50)",
+ "attach": "main-hand grip at origin (~0.8 above the foot); head +Y; length 2.2",
+ "kind": "staff",
+ "emissive": "skull eyes (soul green)",
+ "tris": 562,
+ "parts": 10,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": true,
+ "bbox_min": [
+  -0.181,
+  -0.071,
+  -0.892
+ ],
+ "bbox_max": [
+  0.181,
+  0.075,
+  1.308
+ ],
+ "bytes": 40524,
+ "fit_scale": 0.9389
+}

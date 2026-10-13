@@ -1,0 +1,268 @@
+/* ==========================================================================
+   Damage meter (hud/DamageMeter.ts): Details!-style party meter, draggable header, collapsible, closed to a small
+   DPS pill. Default spot (v2): the lower RIGHT edge, above the loot / gold / menu column (bottom: 232px), away from the
+   centre. The window starts closed, so only the pill shows until the player opens it (Shift+D or the pill).
+   Mouse: only the header and its buttons capture (ui-capture / buttons). The window body and the bar list pass clicks
+   through to the game, so a fight behind the meter stays clickable. While the cursor is free (panel open / Alt) the bar
+   list captures too (ui-capture set by DamageMeter.syncCursorMode), so its rows can be hovered for tooltips.
+   Dark leather + gold trim like the Mythic+ tracker; numbers use tabular figures so the columns stay aligned.
+   ========================================================================== */
+.dm {
+  position: absolute;
+  right: 16px;
+  bottom: 232px;
+  z-index: 6;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  pointer-events: none;
+  font-family: var(--font-ui);
+  color: var(--text);
+}
+.dm.closed { width: auto; }
+
+/* closed: the small button that reopens the meter (same anchor as the window) */
+.dm-pill {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 12px 0 9px;
+  font: 700 13px var(--font-head);
+  letter-spacing: 0.08em;
+  color: var(--hud-gold-l);
+  text-shadow: var(--shade);
+  background: linear-gradient(#3a2a14, #140d07);
+  border: 2px solid #050302;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 2px 0 #000;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.dm.closed .dm-pill { display: inline-flex; }
+.dm-pill:hover { color: #fff; background: linear-gradient(#5a4522, #251a0d); }
+.dm-pico { width: 16px; height: 16px; background: linear-gradient(#fff, #ffcf70); filter: drop-shadow(0 1px 0 #000); }
+
+/* open window */
+.dm-win {
+  display: none;
+  width: 100%;
+  flex-direction: column;
+  overflow: visible;
+  /* the window is not a target itself: header and buttons capture on their own (see the header note below) */
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(30, 20, 13, 0.94), rgba(12, 8, 5, 0.94));
+  border: 2px solid #050302;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px var(--hud-gold-d), inset 0 0 0 3px #120b07, 0 3px 0 #000, 0 10px 20px rgba(0, 0, 0, 0.55);
+}
+.dm:not(.closed) .dm-win { display: flex; }
+
+.dm-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 5px 0 10px;
+  cursor: move;
+  touch-action: none;
+  pointer-events: auto;
+  background: linear-gradient(#4a3520, #241809 60%, #1a1108);
+  border-bottom: 1px solid #050302;
+  box-shadow: inset 0 1px 0 rgba(255, 231, 163, 0.25);
+  border-radius: 4px 4px 0 0;
+}
+.dm.collapsed .dm-head { border-bottom: 0; }
+.dm-title {
+  flex: 1;
+  min-width: 0;
+  font: 700 13px var(--font-head);
+  letter-spacing: 0.08em;
+  color: var(--hud-gold-l);
+  text-shadow: var(--shade);
+  white-space: nowrap;
+}
+.dm-key { font: 700 10px var(--font-ui); color: var(--text-dim); text-shadow: var(--shade); letter-spacing: 0.04em; }
+.dm-hb {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font: 700 15px/18px var(--font-head);
+  color: var(--hud-gold-l);
+  background: linear-gradient(#3a2a14, #140d07);
+  border: 2px solid #050302;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 1px 0 #000;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.dm-hb:hover { color: #fff; background: linear-gradient(#5a4522, #251a0d); }
+
+.dm-body { display: flex; flex-direction: column; gap: 6px; padding: 8px 8px 9px; }
+.dm.collapsed .dm-body { display: none; }
+
+/* mode tabs */
+.dm-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.dm-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 4px 2px 3px;
+  font: 700 10px/1.1 var(--font-ui);
+  color: var(--text-dim);
+  text-shadow: var(--shade);
+  white-space: nowrap;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(155, 123, 54, 0.35);
+  border-radius: 3px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.dm-tab:hover { color: var(--text); border-color: var(--hud-gold-d); }
+.dm-tab.on {
+  color: var(--hud-gold-l);
+  border-color: var(--hud-gold);
+  background: linear-gradient(rgba(232, 196, 106, 0.22), rgba(232, 196, 106, 0.05));
+  box-shadow: inset 0 -2px 0 var(--hud-gold);
+}
+.dm-tlbl { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.dm-tico { width: 15px; height: 15px; background: linear-gradient(#fff, #c9b98a); }
+.dm-tab.on .dm-tico { background: linear-gradient(#fff, #ffcf70); }
+
+/* segment dropdown */
+.dm-seg { position: relative; }
+.dm-segbtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 8px;
+  font: 700 12px var(--font-head);
+  color: var(--hud-gold-l);
+  text-shadow: var(--shade);
+  text-align: left;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(155, 123, 54, 0.5);
+  border-radius: 3px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.dm-segbtn:hover { border-color: var(--hud-gold); }
+.dm-segtxt { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.dm-caret {
+  flex: none;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--hud-gold);
+}
+.dm-menu {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 3px);
+  z-index: 4;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 3px;
+  background: #120c07;
+  border: 2px solid #050302;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 8px 16px rgba(0, 0, 0, 0.7);
+  scrollbar-width: thin;
+  scrollbar-color: #6b5530 transparent;
+}
+.dm.menu-open .dm-menu { display: block; }
+.dm-mi {
+  display: block;
+  width: 100%;
+  padding: 4px 7px;
+  font: 600 12px var(--font-ui);
+  color: var(--text);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: none;
+  border: 0;
+  border-radius: 2px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.dm-mi:hover { color: #fff; background: rgba(232, 196, 106, 0.16); }
+.dm-mi.on { color: var(--hud-gold-l); }
+
+.dm-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font: 11px var(--font-ui);
+  color: var(--text-dim);
+  text-shadow: var(--shade);
+  white-space: nowrap;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+/* player rows */
+/* the list passes the mouse through (inherits none) unless it carries ui-capture: #ui-root .ui-capture sets auto */
+.dm-rows { display: flex; flex-direction: column; gap: 3px; pointer-events: none; }
+.dm-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) 58px 60px 38px;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 6px 0 5px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.42);
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+.dm-row.off { display: none; }
+.dm-row.me { box-shadow: inset 0 0 0 1px rgba(232, 196, 106, 0.45); }
+.dm-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background-color: var(--bc, #8a8a8a);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.22), rgba(0, 0, 0, 0.3));
+  transition: width 0.25s ease-out;
+}
+.dm-rk, .dm-nm, .dm-vl, .dm-ps, .dm-pc { position: relative; min-width: 0; white-space: nowrap; text-shadow: var(--shade); }
+.dm-rk { font: 700 11px var(--font-head); color: var(--text-dim); text-align: center; }
+.dm-nm { font: 700 13px var(--font-ui); color: #fff; overflow: hidden; text-overflow: ellipsis; }
+.dm-vl { font: 700 13px var(--font-ui); color: #fff; text-align: right; font-variant-numeric: tabular-nums; }
+.dm-ps, .dm-pc { font: 600 11px var(--font-ui); color: var(--text-dim); text-align: right; font-variant-numeric: tabular-nums; }
+.dm-row.me .dm-nm { color: var(--hud-gold-l); }
+
+.dm-empty { padding: 12px 6px; text-align: center; font: italic 13px var(--font-ui); color: var(--text-dim); text-shadow: var(--shade); }
+.dm-empty.off { display: none; }
+
+/* chat summary button */
+.dm-send {
+  width: 100%;
+  height: 28px;
+  font: 700 12px var(--font-head);
+  letter-spacing: 0.06em;
+  color: #1a0f04;
+  background: linear-gradient(160deg, #fff0c0, #e8c46a 50%, #9b7b36);
+  border: 2px solid #050302;
+  border-radius: 4px;
+  box-shadow: 0 2px 0 #000, inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  pointer-events: auto;
+}
+.dm-send:hover { filter: brightness(1.08); }
+.dm-send:active { transform: translateY(1px); box-shadow: 0 1px 0 #000; }

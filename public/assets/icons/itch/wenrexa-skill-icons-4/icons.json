@@ -1,0 +1,892 @@
+[
+ {
+  "name": "meteor",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/meteor.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/meteor-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "fire",
+   "meteor",
+   "impact",
+   "aoe"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/1 Icon.png"
+ },
+ {
+  "name": "magma-burst",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/magma-burst.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/magma-burst-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "fire",
+   "lava",
+   "splash"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/2 Icon.png"
+ },
+ {
+  "name": "rune-stone",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/rune-stone.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/rune-stone-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "rune",
+   "earth",
+   "ward"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/3 Icon.png"
+ },
+ {
+  "name": "holy-cross",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/holy-cross.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/holy-cross-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "holy",
+   "heal",
+   "light"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/4 Icon.png"
+ },
+ {
+  "name": "fire-feather",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/fire-feather.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/fire-feather-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "feather",
+   "haste",
+   "phoenix"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/5 Icon.png"
+ },
+ {
+  "name": "burning-eye",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/burning-eye.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/burning-eye-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "eye",
+   "reveal",
+   "curse"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/6 Icon.png"
+ },
+ {
+  "name": "fire-bolt",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/fire-bolt.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/fire-bolt-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "lightning",
+   "bolt",
+   "strike"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/7 Icon.png"
+ },
+ {
+  "name": "ember-clouds",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/ember-clouds.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/ember-clouds-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "smoke",
+   "cloud",
+   "fire"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/8 Icon.png"
+ },
+ {
+  "name": "sun-spiral",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/sun-spiral.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/sun-spiral-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "sun",
+   "spiral",
+   "fire"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/9 Icon.png"
+ },
+ {
+  "name": "burning-heart",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/burning-heart.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/burning-heart-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "heart",
+   "heal",
+   "life"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/10 Icon.png"
+ },
+ {
+  "name": "flame-sword",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/flame-sword.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/flame-sword-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "sword",
+   "melee",
+   "strike"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/11 Icon.png"
+ },
+ {
+  "name": "sword-strike",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/sword-strike.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/sword-strike-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "sword",
+   "melee",
+   "slash"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/12 Icon.png"
+ },
+ {
+  "name": "enchanted-sword",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/enchanted-sword.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/enchanted-sword-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "sword",
+   "buff",
+   "weapon"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/13 Icon.png"
+ },
+ {
+  "name": "crossed-swords",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/crossed-swords.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/crossed-swords-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "sword",
+   "duel",
+   "parry"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/14 Icon.png"
+ },
+ {
+  "name": "twin-swords",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/twin-swords.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/twin-swords-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "sword",
+   "double-strike"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/15 Icon.png"
+ },
+ {
+  "name": "triple-swords",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/triple-swords.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/triple-swords-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "sword",
+   "blade-storm"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/16 Icon.png"
+ },
+ {
+  "name": "sword-rain",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/sword-rain.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/sword-rain-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "sword",
+   "summon",
+   "aoe"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/17 Icon.png"
+ },
+ {
+  "name": "fire-wing",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/fire-wing.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/fire-wing-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "wing",
+   "phoenix",
+   "flame"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/18 Icon.png"
+ },
+ {
+  "name": "burning-sword",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/burning-sword.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/burning-sword-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "sword",
+   "fire",
+   "weapon-buff"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/19 Icon.png"
+ },
+ {
+  "name": "flame-essence",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/flame-essence.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/flame-essence-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "drop",
+   "potion",
+   "essence"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/20 Icon.png"
+ },
+ {
+  "name": "vortex",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/vortex.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/vortex-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "spiral",
+   "whirl"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/21 Icon.png"
+ },
+ {
+  "name": "spear-thrust",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/spear-thrust.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/spear-thrust-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "spear",
+   "thrust",
+   "pierce"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/22 Icon.png"
+ },
+ {
+  "name": "piercing-spear",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/piercing-spear.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/piercing-spear-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "spear",
+   "pierce",
+   "slash"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/23 Icon.png"
+ },
+ {
+  "name": "twin-spears",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/twin-spears.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/twin-spears-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "spear",
+   "multishot"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/24 Icon.png"
+ },
+ {
+  "name": "fireball",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/fireball.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/fireball-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "fire",
+   "projectile"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/25 Icon.png"
+ },
+ {
+  "name": "fire-nova",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/fire-nova.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/fire-nova-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "nova",
+   "explosion",
+   "aoe"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/26 Icon.png"
+ },
+ {
+  "name": "fire-orbs",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/fire-orbs.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/fire-orbs-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "orb",
+   "projectile",
+   "multishot"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/27 Icon.png"
+ },
+ {
+  "name": "flame-orb",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/flame-orb.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/flame-orb-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "orb",
+   "swirl"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/28 Icon.png"
+ },
+ {
+  "name": "flame-tendrils",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/flame-tendrils.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/flame-tendrils-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "flame",
+   "burst",
+   "claw"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/29 Icon.png"
+ },
+ {
+  "name": "fire-arrow",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/fire-arrow.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/fire-arrow-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "arrow",
+   "bow",
+   "projectile"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/30 Icon.png"
+ },
+ {
+  "name": "burning-branch",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/burning-branch.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/burning-branch-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "branch",
+   "chain",
+   "spread"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/31 Icon.png"
+ },
+ {
+  "name": "smoke-wisps",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/smoke-wisps.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/smoke-wisps-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "smoke",
+   "cloud",
+   "poison"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/32 Icon.png"
+ },
+ {
+  "name": "fire-trident",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/fire-trident.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/fire-trident-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "trident",
+   "arrow",
+   "volley"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/33 Icon.png"
+ },
+ {
+  "name": "flame-hand",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/flame-hand.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/flame-hand-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "hand",
+   "grasp",
+   "cast"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/34 Icon.png"
+ },
+ {
+  "name": "fire-triangle",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/fire-triangle.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/fire-triangle-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "rune",
+   "triangle",
+   "ward"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/35 Icon.png"
+ },
+ {
+  "name": "fire-ring",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/fire-ring.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/fire-ring-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "ring",
+   "aura"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/36 Icon.png"
+ },
+ {
+  "name": "demon-mask-01",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/demon-mask-01.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/demon-mask-01-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "demon",
+   "mask",
+   "horned",
+   "rage"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/37 Icon.png"
+ },
+ {
+  "name": "demon-mask-02",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/demon-mask-02.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/demon-mask-02-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "demon",
+   "mask",
+   "horned"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/38 Icon.png"
+ },
+ {
+  "name": "demon-mask-03",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/demon-mask-03.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/demon-mask-03-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "demon",
+   "mask",
+   "horned"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/39 Icon.png"
+ },
+ {
+  "name": "demon-mask-04",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/demon-mask-04.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/demon-mask-04-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "demon",
+   "mask",
+   "horned"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/40 Icon.png"
+ },
+ {
+  "name": "horned-shield",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/horned-shield.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/horned-shield-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "shield",
+   "defense",
+   "block"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/41 Icon.png"
+ },
+ {
+  "name": "flame-crest",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/flame-crest.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/flame-crest-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "flame",
+   "crest",
+   "buff"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/42 Icon.png"
+ },
+ {
+  "name": "rising-flame",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/rising-flame.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/rising-flame-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "flame",
+   "rise",
+   "buff"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/43 Icon.png"
+ },
+ {
+  "name": "flame-pillar",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/flame-pillar.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/flame-pillar-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "pillar",
+   "column",
+   "fire"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/44 Icon.png"
+ },
+ {
+  "name": "rune-diamond",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/rune-diamond.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/rune-diamond-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "rune",
+   "diamond",
+   "ward"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/45 Icon.png"
+ },
+ {
+  "name": "solar-flare",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/solar-flare.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/solar-flare-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "sun",
+   "burst"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/46 Icon.png"
+ },
+ {
+  "name": "sun-burst",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/sun-burst.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/sun-burst-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "sun",
+   "burst",
+   "swirl"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/47 Icon.png"
+ },
+ {
+  "name": "whirlwind",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/whirlwind.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/whirlwind-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "whirl",
+   "spin"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/48 Icon.png"
+ },
+ {
+  "name": "tri-blades",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/tri-blades.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/tri-blades-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "blades",
+   "spin"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/49 Icon.png"
+ },
+ {
+  "name": "fire-mandala",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/fire-mandala.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/fire-mandala-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "mandala",
+   "aura"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/50 Icon.png"
+ },
+ {
+  "name": "fire-lotus",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/fire-lotus.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/fire-lotus-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "lotus",
+   "ornament"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/51 Icon.png"
+ },
+ {
+  "name": "arrow-strike",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/arrow-strike.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/arrow-strike-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "arrow",
+   "charge"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/52 Icon.png"
+ },
+ {
+  "name": "star-burst",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/star-burst.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/star-burst-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "star",
+   "burst"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/53 Icon.png"
+ },
+ {
+  "name": "blazing-sun",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/blazing-sun.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/blazing-sun-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "sun",
+   "whirl",
+   "bright"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/54 Icon.png"
+ },
+ {
+  "name": "radiance",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/radiance.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/radiance-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "light",
+   "holy",
+   "burst"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/55 Icon.png"
+ },
+ {
+  "name": "inferno-vortex",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/inferno-vortex.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/inferno-vortex-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "vortex",
+   "inferno"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/56 Icon.png"
+ },
+ {
+  "name": "cross-star",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/cross-star.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/cross-star-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "star",
+   "focus",
+   "crit"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/57 Icon.png"
+ },
+ {
+  "name": "eye-of-flame",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/eye-of-flame.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/eye-of-flame-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "eye",
+   "star"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/58 Icon.png"
+ },
+ {
+  "name": "flame-leaf",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/flame-leaf.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/flame-leaf-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "leaf",
+   "blade"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/59 Icon.png"
+ },
+ {
+  "name": "heart",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/heart.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/heart-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "heart",
+   "heal",
+   "life"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/60 Icon.png"
+ },
+ {
+  "name": "fire-axe",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/fire-axe.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/fire-axe-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "axe",
+   "melee"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/61 Icon.png"
+ },
+ {
+  "name": "double-axe",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/double-axe.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/double-axe-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "axe",
+   "melee",
+   "cleave"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/62 Icon.png"
+ },
+ {
+  "name": "lance-dash",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/lance-dash.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/lance-dash-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "spear",
+   "dash",
+   "charge"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/63 Icon.png"
+ },
+ {
+  "name": "fire-swirl",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/fire-swirl.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/fire-swirl-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "swirl",
+   "wave"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/64 Icon.png"
+ },
+ {
+  "name": "flame-wave",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/flame-wave.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/flame-wave-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "wave",
+   "swirl"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/65 Icon.png"
+ },
+ {
+  "name": "blinding-flare",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/blinding-flare.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/blinding-flare-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "flare",
+   "blind",
+   "light"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/66 Icon.png"
+ },
+ {
+  "name": "spiral-orb",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/spiral-orb.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/spiral-orb-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "orb",
+   "vortex"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/67 Icon.png"
+ },
+ {
+  "name": "magma-rock",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/magma-rock.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/magma-rock-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "rock",
+   "earth",
+   "lava"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/68 Icon.png"
+ },
+ {
+  "name": "comet",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/comet.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/comet-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "comet",
+   "meteor"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/69 Icon.png"
+ },
+ {
+  "name": "ember-stone",
+  "path": "/assets/icons/itch/wenrexa-skill-icons-4/ember-stone.png",
+  "gray": "/assets/icons/itch/wenrexa-skill-icons-4/ember-stone-gray.png",
+  "size": 128,
+  "category": "skill",
+  "tags": [
+   "stone",
+   "rock",
+   "gem"
+  ],
+  "source": "Skill Icon Pack Wenrexa 4.0/128x128px/Normal/70 Icon.png"
+ }
+]

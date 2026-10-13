@@ -1,0 +1,1586 @@
+[
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/bushes/bush01.glb",
+  "bytes": 8308,
+  "tris": 16,
+  "nodes": [
+   "bush01"
+  ],
+  "size": [
+   1.344,
+   1.2,
+   1.344
+  ],
+  "min": [
+   -0.672,
+   -0.0,
+   -0.672
+  ],
+  "max": [
+   0.672,
+   1.2,
+   0.672
+  ],
+  "materials": [
+   "retro-psx-tree-pack_bush01"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "bushes",
+  "model": "bush01",
+  "variant": "",
+  "source": "models/bush01.fbx",
+  "scale": 0.16,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "bush01": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/bushes/bush02.glb",
+  "bytes": 7624,
+  "tris": 16,
+  "nodes": [
+   "bush02"
+  ],
+  "size": [
+   1.92,
+   1.2,
+   1.92
+  ],
+  "min": [
+   -0.96,
+   -0.0,
+   -0.96
+  ],
+  "max": [
+   0.96,
+   1.2,
+   0.96
+  ],
+  "materials": [
+   "retro-psx-tree-pack_bush02"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "bushes",
+  "model": "bush02",
+  "variant": "",
+  "source": "models/bush02.fbx",
+  "scale": 0.16,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "bush02": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/bushes/bush03.glb",
+  "bytes": 8948,
+  "tris": 16,
+  "nodes": [
+   "bush03"
+  ],
+  "size": [
+   1.152,
+   1.2,
+   1.152
+  ],
+  "min": [
+   -0.576,
+   -0.0,
+   -0.576
+  ],
+  "max": [
+   0.576,
+   1.2,
+   0.576
+  ],
+  "materials": [
+   "retro-psx-tree-pack_bush03"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "bushes",
+  "model": "bush03",
+  "variant": "",
+  "source": "models/bush03.fbx",
+  "scale": 0.16,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "bush03": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/bushes/bush04.glb",
+  "bytes": 7728,
+  "tris": 16,
+  "nodes": [
+   "bush04"
+  ],
+  "size": [
+   1.44,
+   1.2,
+   1.44
+  ],
+  "min": [
+   -0.72,
+   -0.0,
+   -0.72
+  ],
+  "max": [
+   0.72,
+   1.2,
+   0.72
+  ],
+  "materials": [
+   "retro-psx-tree-pack_bush04"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "bushes",
+  "model": "bush04",
+  "variant": "",
+  "source": "models/bush04.fbx",
+  "scale": 0.16,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "bush04": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/bushes/bush05.glb",
+  "bytes": 9404,
+  "tris": 16,
+  "nodes": [
+   "bush05"
+  ],
+  "size": [
+   1.536,
+   1.2,
+   1.536
+  ],
+  "min": [
+   -0.768,
+   -0.0,
+   -0.768
+  ],
+  "max": [
+   0.768,
+   1.2,
+   0.768
+  ],
+  "materials": [
+   "retro-psx-tree-pack_bush05"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "bushes",
+  "model": "bush05",
+  "variant": "",
+  "source": "models/bush05.fbx",
+  "scale": 0.16,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "bush05": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/bushes/bush06.glb",
+  "bytes": 7780,
+  "tris": 16,
+  "nodes": [
+   "bush06"
+  ],
+  "size": [
+   1.344,
+   1.2,
+   1.344
+  ],
+  "min": [
+   -0.672,
+   -0.0,
+   -0.672
+  ],
+  "max": [
+   0.672,
+   1.2,
+   0.672
+  ],
+  "materials": [
+   "retro-psx-tree-pack_bush06"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "bushes",
+  "model": "bush06",
+  "variant": "",
+  "source": "models/bush06.fbx",
+  "scale": 0.16,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "bush06": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/bushes/bush07.glb",
+  "bytes": 8320,
+  "tris": 16,
+  "nodes": [
+   "bush07"
+  ],
+  "size": [
+   1.747,
+   1.2,
+   1.747
+  ],
+  "min": [
+   -0.874,
+   -0.0,
+   -0.874
+  ],
+  "max": [
+   0.874,
+   1.2,
+   0.874
+  ],
+  "materials": [
+   "retro-psx-tree-pack_bush07"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "bushes",
+  "model": "bush07",
+  "variant": "",
+  "source": "models/bush07.fbx",
+  "scale": 0.16,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "bush07": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/bushes/bush08.glb",
+  "bytes": 7420,
+  "tris": 16,
+  "nodes": [
+   "bush08"
+  ],
+  "size": [
+   1.398,
+   1.2,
+   1.398
+  ],
+  "min": [
+   -0.699,
+   -0.0,
+   -0.699
+  ],
+  "max": [
+   0.699,
+   1.2,
+   0.699
+  ],
+  "materials": [
+   "retro-psx-tree-pack_bush08"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "bushes",
+  "model": "bush08",
+  "variant": "",
+  "source": "models/bush08.fbx",
+  "scale": 0.16,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "bush08": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree01.glb",
+  "bytes": 9808,
+  "tris": 52,
+  "nodes": [
+   "tree01"
+  ],
+  "size": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "min": [
+   -1.92,
+   -0.0,
+   -1.92
+  ],
+  "max": [
+   1.92,
+   8.0,
+   1.92
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree01"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree01",
+  "variant": "",
+  "source": "models/tree01.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree01": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree02.glb",
+  "bytes": 11888,
+  "tris": 52,
+  "nodes": [
+   "tree02"
+  ],
+  "size": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "min": [
+   -1.92,
+   -0.0,
+   -1.92
+  ],
+  "max": [
+   1.92,
+   8.0,
+   1.92
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree02"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree02",
+  "variant": "",
+  "source": "models/tree02.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree02": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree03.glb",
+  "bytes": 10048,
+  "tris": 52,
+  "nodes": [
+   "tree03"
+  ],
+  "size": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "min": [
+   -1.92,
+   -0.0,
+   -1.92
+  ],
+  "max": [
+   1.92,
+   8.0,
+   1.92
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree03"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree03",
+  "variant": "",
+  "source": "models/tree03.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree03": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree04.glb",
+  "bytes": 10332,
+  "tris": 52,
+  "nodes": [
+   "tree04"
+  ],
+  "size": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "min": [
+   -1.92,
+   -0.0,
+   -1.92
+  ],
+  "max": [
+   1.92,
+   8.0,
+   1.92
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree04"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree04",
+  "variant": "",
+  "source": "models/tree04.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree04": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree05.glb",
+  "bytes": 9604,
+  "tris": 52,
+  "nodes": [
+   "tree05"
+  ],
+  "size": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "min": [
+   -1.879,
+   -0.0,
+   -1.92
+  ],
+  "max": [
+   1.961,
+   8.0,
+   1.92
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree05"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree05",
+  "variant": "",
+  "source": "models/tree05.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree05": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree06.glb",
+  "bytes": 10940,
+  "tris": 52,
+  "nodes": [
+   "tree06"
+  ],
+  "size": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "min": [
+   -1.92,
+   -0.0,
+   -1.92
+  ],
+  "max": [
+   1.92,
+   8.0,
+   1.92
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree06"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree06",
+  "variant": "",
+  "source": "models/tree06.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree06": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree07.glb",
+  "bytes": 10500,
+  "tris": 52,
+  "nodes": [
+   "tree07"
+  ],
+  "size": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "min": [
+   -1.92,
+   -0.0,
+   -1.92
+  ],
+  "max": [
+   1.92,
+   8.0,
+   1.92
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree07"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree07",
+  "variant": "",
+  "source": "models/tree07.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree07": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree08.glb",
+  "bytes": 9668,
+  "tris": 52,
+  "nodes": [
+   "tree08"
+  ],
+  "size": [
+   4.608,
+   8.0,
+   4.608
+  ],
+  "min": [
+   -2.304,
+   -0.0,
+   -2.304
+  ],
+  "max": [
+   2.304,
+   8.0,
+   2.304
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree08"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree08",
+  "variant": "",
+  "source": "models/tree08.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree08": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree09.glb",
+  "bytes": 10396,
+  "tris": 52,
+  "nodes": [
+   "tree09"
+  ],
+  "size": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "min": [
+   -1.92,
+   -0.0,
+   -1.92
+  ],
+  "max": [
+   1.92,
+   8.0,
+   1.92
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree09"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree09",
+  "variant": "",
+  "source": "models/tree09.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree09": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree10.glb",
+  "bytes": 10108,
+  "tris": 52,
+  "nodes": [
+   "tree10"
+  ],
+  "size": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "min": [
+   -1.92,
+   -0.0,
+   -1.92
+  ],
+  "max": [
+   1.92,
+   8.0,
+   1.92
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree10"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree10",
+  "variant": "",
+  "source": "models/tree10.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree10": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree11.glb",
+  "bytes": 10528,
+  "tris": 52,
+  "nodes": [
+   "tree11"
+  ],
+  "size": [
+   4.608,
+   8.0,
+   4.608
+  ],
+  "min": [
+   -2.304,
+   -0.0,
+   -2.304
+  ],
+  "max": [
+   2.304,
+   8.0,
+   2.304
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree11"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree11",
+  "variant": "",
+  "source": "models/tree11.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree11": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree12.glb",
+  "bytes": 9740,
+  "tris": 52,
+  "nodes": [
+   "tree12"
+  ],
+  "size": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "min": [
+   -1.92,
+   -0.0,
+   -1.92
+  ],
+  "max": [
+   1.92,
+   8.0,
+   1.92
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree12"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree12",
+  "variant": "",
+  "source": "models/tree12.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree12": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree13.glb",
+  "bytes": 10992,
+  "tris": 52,
+  "nodes": [
+   "tree13"
+  ],
+  "size": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "min": [
+   -1.92,
+   -0.0,
+   -1.92
+  ],
+  "max": [
+   1.92,
+   8.0,
+   1.92
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree13"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree13",
+  "variant": "",
+  "source": "models/tree13.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree13": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree14.glb",
+  "bytes": 10024,
+  "tris": 52,
+  "nodes": [
+   "tree14"
+  ],
+  "size": [
+   7.68,
+   8.0,
+   7.68
+  ],
+  "min": [
+   -3.84,
+   -0.0,
+   -3.84
+  ],
+  "max": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree14"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree14",
+  "variant": "",
+  "source": "models/tree14.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree14": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree15.glb",
+  "bytes": 11468,
+  "tris": 52,
+  "nodes": [
+   "tree15"
+  ],
+  "size": [
+   4.992,
+   8.0,
+   4.992
+  ],
+  "min": [
+   -2.496,
+   -0.0,
+   -2.496
+  ],
+  "max": [
+   2.496,
+   8.0,
+   2.496
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree15"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree15",
+  "variant": "",
+  "source": "models/tree15.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree15": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree16.glb",
+  "bytes": 12924,
+  "tris": 52,
+  "nodes": [
+   "tree16"
+  ],
+  "size": [
+   6.49,
+   8.0,
+   6.49
+  ],
+  "min": [
+   -3.245,
+   -0.0,
+   -3.245
+  ],
+  "max": [
+   3.245,
+   8.0,
+   3.245
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree16"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree16",
+  "variant": "",
+  "source": "models/tree16.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree16": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree17.glb",
+  "bytes": 10936,
+  "tris": 52,
+  "nodes": [
+   "tree17"
+  ],
+  "size": [
+   7.68,
+   8.0,
+   7.68
+  ],
+  "min": [
+   -3.84,
+   -0.0,
+   -3.84
+  ],
+  "max": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree17"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree17",
+  "variant": "",
+  "source": "models/tree17.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree17": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree18.glb",
+  "bytes": 10652,
+  "tris": 52,
+  "nodes": [
+   "tree18"
+  ],
+  "size": [
+   5.751,
+   8.0,
+   5.751
+  ],
+  "min": [
+   -2.831,
+   -0.0,
+   -2.875
+  ],
+  "max": [
+   2.92,
+   8.0,
+   2.875
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree18"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree18",
+  "variant": "",
+  "source": "models/tree18.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree18": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree19.glb",
+  "bytes": 10976,
+  "tris": 52,
+  "nodes": [
+   "tree19"
+  ],
+  "size": [
+   7.68,
+   8.0,
+   7.68
+  ],
+  "min": [
+   -3.84,
+   -0.0,
+   -3.84
+  ],
+  "max": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree19"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree19",
+  "variant": "",
+  "source": "models/tree19.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree19": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree20.glb",
+  "bytes": 11964,
+  "tris": 52,
+  "nodes": [
+   "tree20"
+  ],
+  "size": [
+   6.97,
+   8.32,
+   6.97
+  ],
+  "min": [
+   -3.498,
+   -0.0,
+   -3.485
+  ],
+  "max": [
+   3.472,
+   8.32,
+   3.485
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree20"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree20",
+  "variant": "",
+  "source": "models/tree20.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree20": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree21.glb",
+  "bytes": 9272,
+  "tris": 52,
+  "nodes": [
+   "tree21"
+  ],
+  "size": [
+   7.68,
+   8.0,
+   7.68
+  ],
+  "min": [
+   -3.84,
+   -0.0,
+   -3.84
+  ],
+  "max": [
+   3.84,
+   8.0,
+   3.84
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree21"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree21",
+  "variant": "",
+  "source": "models/tree21.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree21": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree22.glb",
+  "bytes": 10604,
+  "tris": 52,
+  "nodes": [
+   "tree22"
+  ],
+  "size": [
+   9.216,
+   8.0,
+   9.216
+  ],
+  "min": [
+   -4.608,
+   -0.0,
+   -4.608
+  ],
+  "max": [
+   4.608,
+   8.0,
+   4.608
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree22"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree22",
+  "variant": "",
+  "source": "models/tree22.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree22": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree23.glb",
+  "bytes": 10944,
+  "tris": 52,
+  "nodes": [
+   "tree23"
+  ],
+  "size": [
+   8.448,
+   8.0,
+   8.448
+  ],
+  "min": [
+   -4.224,
+   -0.0,
+   -4.224
+  ],
+  "max": [
+   4.224,
+   8.0,
+   4.224
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree23"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree23",
+  "variant": "",
+  "source": "models/tree23.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree23": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree24.glb",
+  "bytes": 10844,
+  "tris": 52,
+  "nodes": [
+   "tree24"
+  ],
+  "size": [
+   8.448,
+   8.0,
+   8.448
+  ],
+  "min": [
+   -4.224,
+   -0.0,
+   -4.224
+  ],
+  "max": [
+   4.224,
+   8.0,
+   4.224
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree24"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree24",
+  "variant": "",
+  "source": "models/tree24.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree24": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree25.glb",
+  "bytes": 11080,
+  "tris": 52,
+  "nodes": [
+   "tree25"
+  ],
+  "size": [
+   5.751,
+   8.0,
+   5.751
+  ],
+  "min": [
+   -2.831,
+   -0.0,
+   -2.875
+  ],
+  "max": [
+   2.92,
+   8.0,
+   2.875
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree25"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree25",
+  "variant": "",
+  "source": "models/tree25.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree25": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree26.glb",
+  "bytes": 10052,
+  "tris": 52,
+  "nodes": [
+   "tree26"
+  ],
+  "size": [
+   4.992,
+   8.896,
+   4.992
+  ],
+  "min": [
+   -2.528,
+   -0.0,
+   -2.496
+  ],
+  "max": [
+   2.464,
+   8.896,
+   2.496
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree26"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree26",
+  "variant": "",
+  "source": "models/tree26.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree26": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree27.glb",
+  "bytes": 10224,
+  "tris": 52,
+  "nodes": [
+   "tree27"
+  ],
+  "size": [
+   5.2,
+   6.0,
+   5.2
+  ],
+  "min": [
+   -2.6,
+   -0.0,
+   -2.6
+  ],
+  "max": [
+   2.6,
+   6.0,
+   2.6
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree27"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree27",
+  "variant": "",
+  "source": "models/tree27.fbx",
+  "scale": 0.6667,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree27": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree28.glb",
+  "bytes": 10552,
+  "tris": 52,
+  "nodes": [
+   "tree28"
+  ],
+  "size": [
+   6.451,
+   8.0,
+   6.451
+  ],
+  "min": [
+   -3.226,
+   -0.0,
+   -3.226
+  ],
+  "max": [
+   3.226,
+   8.0,
+   3.226
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree28"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree28",
+  "variant": "",
+  "source": "models/tree28.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree28": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree29.glb",
+  "bytes": 11580,
+  "tris": 52,
+  "nodes": [
+   "tree29"
+  ],
+  "size": [
+   6.528,
+   8.0,
+   6.528
+  ],
+  "min": [
+   -3.264,
+   -0.0,
+   -3.264
+  ],
+  "max": [
+   3.264,
+   8.0,
+   3.264
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree29"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree29",
+  "variant": "",
+  "source": "models/tree29.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree29": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree30.glb",
+  "bytes": 11408,
+  "tris": 52,
+  "nodes": [
+   "tree30"
+  ],
+  "size": [
+   5.76,
+   8.0,
+   5.76
+  ],
+  "min": [
+   -2.88,
+   -0.0,
+   -2.88
+  ],
+  "max": [
+   2.88,
+   8.0,
+   2.88
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree30"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree30",
+  "variant": "",
+  "source": "models/tree30.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree30": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree31.glb",
+  "bytes": 11912,
+  "tris": 52,
+  "nodes": [
+   "tree31"
+  ],
+  "size": [
+   5.76,
+   8.0,
+   5.76
+  ],
+  "min": [
+   -2.88,
+   -0.0,
+   -2.88
+  ],
+  "max": [
+   2.88,
+   8.0,
+   2.88
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree31"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree31",
+  "variant": "",
+  "source": "models/tree31.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree31": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree32.glb",
+  "bytes": 12608,
+  "tris": 52,
+  "nodes": [
+   "tree32"
+  ],
+  "size": [
+   5.76,
+   8.0,
+   5.76
+  ],
+  "min": [
+   -2.88,
+   -0.0,
+   -2.88
+  ],
+  "max": [
+   2.88,
+   8.0,
+   2.88
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree32"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree32",
+  "variant": "",
+  "source": "models/tree32.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree32": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree33.glb",
+  "bytes": 11696,
+  "tris": 52,
+  "nodes": [
+   "tree33"
+  ],
+  "size": [
+   5.76,
+   8.0,
+   5.76
+  ],
+  "min": [
+   -2.88,
+   -0.0,
+   -2.88
+  ],
+  "max": [
+   2.88,
+   8.0,
+   2.88
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree33"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree33",
+  "variant": "",
+  "source": "models/tree33.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree33": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree34.glb",
+  "bytes": 12036,
+  "tris": 52,
+  "nodes": [
+   "tree34"
+  ],
+  "size": [
+   9.216,
+   8.0,
+   9.216
+  ],
+  "min": [
+   -4.608,
+   -0.0,
+   -4.608
+  ],
+  "max": [
+   4.608,
+   8.0,
+   4.608
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree34"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree34",
+  "variant": "",
+  "source": "models/tree34.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree34": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree35.glb",
+  "bytes": 10948,
+  "tris": 52,
+  "nodes": [
+   "tree35"
+  ],
+  "size": [
+   6.528,
+   8.0,
+   6.528
+  ],
+  "min": [
+   -3.264,
+   -0.0,
+   -3.264
+  ],
+  "max": [
+   3.264,
+   8.0,
+   3.264
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree35"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree35",
+  "variant": "",
+  "source": "models/tree35.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree35": "128x128 alpha"
+  }
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/retro-psx-tree-pack/trees/tree36.glb",
+  "bytes": 9980,
+  "tris": 52,
+  "nodes": [
+   "tree36"
+  ],
+  "size": [
+   6.528,
+   8.0,
+   6.528
+  ],
+  "min": [
+   -3.264,
+   -0.0,
+   -3.264
+  ],
+  "max": [
+   3.264,
+   8.0,
+   3.264
+  ],
+  "materials": [
+   "retro-psx-tree-pack_tree36"
+  ],
+  "pack": "retro-psx-tree-pack",
+  "kind": "trees",
+  "model": "tree36",
+  "variant": "",
+  "source": "models/tree36.fbx",
+  "scale": 0.64,
+  "pivot": "trunk base (ground contact), centre of trunk",
+  "textures": {
+   "tree36": "128x128 alpha"
+  }
+ }
+]

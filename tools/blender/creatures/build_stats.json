@@ -1,0 +1,247 @@
+{
+ "slime_green": {
+  "id": "slime_green",
+  "tris": 228,
+  "bones": 3,
+  "actions": [
+   "Idle",
+   "Walk",
+   "Run",
+   "Attack",
+   "Hit",
+   "Death"
+  ],
+  "materials": [
+   "main"
+  ],
+  "name_tr": "Ye\u015fil Bal\u00e7\u0131k",
+  "emissive": "-",
+  "use": "trash mob, spawns in packs; lava/frost for themed floors"
+ },
+ "slime_lava": {
+  "id": "slime_lava",
+  "tris": 228,
+  "bones": 3,
+  "actions": [
+   "Idle",
+   "Walk",
+   "Run",
+   "Attack",
+   "Hit",
+   "Death"
+  ],
+  "materials": [
+   "glow"
+  ],
+  "name_tr": "Lav Bal\u00e7\u0131\u011f\u0131",
+  "emissive": "whole body cracks, eyes, mouth (glow mat)",
+  "use": "trash mob, spawns in packs; lava/frost for themed floors"
+ },
+ "slime_frost": {
+  "id": "slime_frost",
+  "tris": 308,
+  "bones": 3,
+  "actions": [
+   "Idle",
+   "Walk",
+   "Run",
+   "Attack",
+   "Hit",
+   "Death"
+  ],
+  "materials": [
+   "main"
+  ],
+  "name_tr": "Ayaz Bal\u00e7\u0131\u011f\u0131",
+  "emissive": "-",
+  "use": "trash mob, spawns in packs; lava/frost for themed floors"
+ },
+ "spider_giant": {
+  "id": "spider_giant",
+  "tris": 628,
+  "bones": 21,
+  "actions": [
+   "Idle",
+   "Walk",
+   "Run",
+   "Attack",
+   "Hit",
+   "Death"
+  ],
+  "materials": [
+   "main",
+   "glow"
+  ],
+  "name_tr": "Dev \u00d6r\u00fcmcek",
+  "emissive": "eye cluster (8 red eyes)",
+  "use": "fast melee trash / elite in caves & webbed crypts"
+ },
+ "bat_cave": {
+  "id": "bat_cave",
+  "tris": 298,
+  "bones": 7,
+  "actions": [
+   "Idle",
+   "Walk",
+   "Run",
+   "Attack",
+   "Hit",
+   "Death"
+  ],
+  "materials": [
+   "main",
+   "main2s",
+   "glow"
+  ],
+  "name_tr": "Ma\u011fara Yarasas\u0131",
+  "emissive": "eyes (yellow)",
+  "use": "flying swarm trash; place origin on the floor, it hovers at ~1.5"
+ },
+ "golem_stone": {
+  "id": "golem_stone",
+  "tris": 1016,
+  "bones": 12,
+  "actions": [
+   "Idle",
+   "Walk",
+   "Run",
+   "Attack",
+   "Attack2",
+   "Hit",
+   "Death"
+  ],
+  "materials": [
+   "main",
+   "glow"
+  ],
+  "name_tr": "Ta\u015f Golem",
+  "emissive": "chest rune, eyes, back/shoulder crystals (cyan)",
+  "use": "elite / mini-boss bruiser, slow heavy hitter"
+ },
+ "imp_fire": {
+  "id": "imp_fire",
+  "tris": 670,
+  "bones": 17,
+  "actions": [
+   "Idle",
+   "Walk",
+   "Run",
+   "Attack",
+   "Cast",
+   "Hit",
+   "Death"
+  ],
+  "materials": [
+   "main",
+   "main2s",
+   "glow"
+  ],
+  "name_tr": "Ate\u015f \u015eeytanc\u0131\u011f\u0131",
+  "emissive": "eyes, fire orb in right palm (bone \"orb\")",
+  "use": "ranged caster trash; spawn the fireball projectile at bone \"orb\" on Cast frame ~0.7"
+ },
+ "wraith": {
+  "id": "wraith",
+  "tris": 454,
+  "bones": 9,
+  "actions": [
+   "Idle",
+   "Walk",
+   "Run",
+   "Attack",
+   "Cast",
+   "Hit",
+   "Death"
+  ],
+  "materials": [
+   "main",
+   "glow",
+   "alpha"
+  ],
+  "name_tr": "Hortlak",
+  "emissive": "eyes (spectral green); robe uses alpha-blend material",
+  "use": "floating caster / melee elite in crypts; ignore ground snapping (hem floats ~0.05-0.2)"
+ },
+ "mushroom_brute": {
+  "id": "mushroom_brute",
+  "tris": 652,
+  "bones": 10,
+  "actions": [
+   "Idle",
+   "Walk",
+   "Run",
+   "Attack",
+   "Cast",
+   "Hit",
+   "Death"
+  ],
+  "materials": [
+   "main",
+   "glow"
+  ],
+  "name_tr": "Mantar Zorbas\u0131",
+  "emissive": "eyes (acid green)",
+  "use": "tanky melee trash; Cast = poison spore cloud (spawn AoE at cap)"
+ },
+ "wolf_dire": {
+  "id": "wolf_dire",
+  "tris": 448,
+  "bones": 16,
+  "actions": [
+   "Idle",
+   "Walk",
+   "Run",
+   "Attack",
+   "Hit",
+   "Death"
+  ],
+  "materials": [
+   "main",
+   "glow"
+  ],
+  "name_tr": "Deh\u015fet Kurdu",
+  "emissive": "eyes (amber)",
+  "use": "fast pack melee trash (outdoor / cave approach floors)"
+ },
+ "elemental_fire": {
+  "id": "elemental_fire",
+  "tris": 822,
+  "bones": 11,
+  "actions": [
+   "Idle",
+   "Walk",
+   "Run",
+   "Attack",
+   "Cast",
+   "Hit",
+   "Death"
+  ],
+  "materials": [
+   "glow"
+  ],
+  "name_tr": "Ate\u015f Elementali",
+  "emissive": "nearly everything: flame body/tail/arms/crest, lava-crack rock armour, eyes",
+  "use": "elite caster-brute for fire floors; Cast = fireball/flame wave, spawn VFX at hands"
+ },
+ "elemental_ice": {
+  "id": "elemental_ice",
+  "tris": 880,
+  "bones": 11,
+  "actions": [
+   "Idle",
+   "Walk",
+   "Run",
+   "Attack",
+   "Cast",
+   "Hit",
+   "Death"
+  ],
+  "materials": [
+   "main",
+   "glow"
+  ],
+  "name_tr": "Buz Elementali",
+  "emissive": "chest core gem, eyes, tail core (cyan)",
+  "use": "elite caster-brute for frost floors; Cast = ice shard volley / frost nova"
+ }
+}

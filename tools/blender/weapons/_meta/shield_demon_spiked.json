@@ -1,0 +1,27 @@
+{
+ "id": "shield_demon_spiked",
+ "name": "İblis Kalkanı",
+ "use": "Spiked demon-face shield with horns and glowing eyes (raid / boss loot)",
+ "attach": "hand grip bar at origin behind the plate (off-hand bone); painted face +Z; up +Y",
+ "kind": "shield",
+ "emissive": "demon eyes (orange-red)",
+ "tris": 298,
+ "parts": 13,
+ "atlas": [
+  128,
+  128
+ ],
+ "colours": 16,
+ "has_emit": true,
+ "bbox_min": [
+  -0.628,
+  -0.35,
+  -0.628
+ ],
+ "bbox_max": [
+  0.628,
+  0.016,
+  0.82
+ ],
+ "bytes": 30468
+}

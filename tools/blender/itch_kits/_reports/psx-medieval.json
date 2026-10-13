@@ -1,0 +1,5450 @@
+[
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/plaster_wall.glb",
+  "bytes": 32804,
+  "tris": 96,
+  "nodes": [
+   "plaster_wall"
+  ],
+  "size": [
+   5.0,
+   3.75,
+   5.0
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/plaster_wall.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/plaster_wall_alt.glb",
+  "bytes": 33456,
+  "tris": 96,
+  "nodes": [
+   "plaster_wall_alt"
+  ],
+  "size": [
+   5.0,
+   3.75,
+   5.0
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/plaster_wall_alt.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/plaster_wall_cornered.glb",
+  "bytes": 32732,
+  "tris": 84,
+  "nodes": [
+   "plaster_wall_cornered"
+  ],
+  "size": [
+   5.0,
+   3.75,
+   5.0
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/plaster_wall_cornered.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/plaster_wall_cornered_alt.glb",
+  "bytes": 33388,
+  "tris": 84,
+  "nodes": [
+   "plaster_wall_cornered_alt"
+  ],
+  "size": [
+   5.0,
+   3.75,
+   5.0
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/plaster_wall_cornered_alt.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/plaster_wall_half.glb",
+  "bytes": 31488,
+  "tris": 48,
+  "nodes": [
+   "plaster_wall_half"
+  ],
+  "size": [
+   2.5,
+   3.75,
+   2.5
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -2.5
+  ],
+  "max": [
+   2.5,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/plaster_wall_half.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/plaster_wall_half_alt.glb",
+  "bytes": 31880,
+  "tris": 48,
+  "nodes": [
+   "plaster_wall_half_alt"
+  ],
+  "size": [
+   2.5,
+   3.75,
+   2.5
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -2.5
+  ],
+  "max": [
+   2.5,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/plaster_wall_half_alt.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/plaster_wall_stone_base.glb",
+  "bytes": 33472,
+  "tris": 96,
+  "nodes": [
+   "plaster_wall_stone_base"
+  ],
+  "size": [
+   5.0,
+   3.75,
+   5.0
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/plaster_wall_stone_base.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/plaster_wall_stone_base_alt.glb",
+  "bytes": 33480,
+  "tris": 96,
+  "nodes": [
+   "plaster_wall_stone_base_alt"
+  ],
+  "size": [
+   5.0,
+   3.75,
+   5.0
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/plaster_wall_stone_base_alt.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/plaster_wall_stone_base_cornered.glb",
+  "bytes": 33528,
+  "tris": 84,
+  "nodes": [
+   "plaster_wall_stone_base_cornered"
+  ],
+  "size": [
+   5.0,
+   3.75,
+   5.0
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/plaster_wall_stone_base_cornered.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/plaster_wall_stone_base_cornered_alt.glb",
+  "bytes": 33536,
+  "tris": 84,
+  "nodes": [
+   "plaster_wall_stone_base_cornered_alt"
+  ],
+  "size": [
+   5.0,
+   3.75,
+   5.0
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/plaster_wall_stone_base_cornered_alt.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/plaster_wall_stone_base_half.glb",
+  "bytes": 32148,
+  "tris": 48,
+  "nodes": [
+   "plaster_wall_stone_base_half"
+  ],
+  "size": [
+   2.5,
+   3.75,
+   2.5
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -2.5
+  ],
+  "max": [
+   2.5,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/plaster_wall_stone_base_half.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/plaster_wall_stone_base_half_alt.glb",
+  "bytes": 32156,
+  "tris": 48,
+  "nodes": [
+   "plaster_wall_stone_base_half_alt"
+  ],
+  "size": [
+   2.5,
+   3.75,
+   2.5
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -2.5
+  ],
+  "max": [
+   2.5,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/plaster_wall_stone_base_half_alt.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/stone_archway.glb",
+  "bytes": 39956,
+  "tris": 208,
+  "nodes": [
+   "stone_archway"
+  ],
+  "size": [
+   5.0,
+   3.75,
+   5.0
+  ],
+  "min": [
+   0.0,
+   0.0,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/stone_archway.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/stone_archway_top.glb",
+  "bytes": 33724,
+  "tris": 96,
+  "nodes": [
+   "stone_archway_top"
+  ],
+  "size": [
+   5.0,
+   1.25,
+   5.0
+  ],
+  "min": [
+   0.0,
+   2.5,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/stone_archway_top.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/stone_floor_1x1.glb",
+  "bytes": 29760,
+  "tris": 2,
+  "nodes": [
+   "stone_floor_1x1"
+  ],
+  "size": [
+   1.25,
+   0.0,
+   1.25
+  ],
+  "min": [
+   0.0,
+   0.0,
+   -1.25
+  ],
+  "max": [
+   1.25,
+   0.0,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/stone_floor_1x1.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/stone_floor_2x2.glb",
+  "bytes": 30172,
+  "tris": 8,
+  "nodes": [
+   "stone_floor_2x2"
+  ],
+  "size": [
+   2.5,
+   0.0,
+   2.5
+  ],
+  "min": [
+   0.0,
+   0.0,
+   -2.5
+  ],
+  "max": [
+   2.5,
+   0.0,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/stone_floor_2x2.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/stone_floor_4x4.glb",
+  "bytes": 31852,
+  "tris": 32,
+  "nodes": [
+   "stone_floor_4x4"
+  ],
+  "size": [
+   5.0,
+   0.0,
+   5.0
+  ],
+  "min": [
+   0.0,
+   0.0,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   0.0,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/stone_floor_4x4.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/stone_square.glb",
+  "bytes": 33768,
+  "tris": 96,
+  "nodes": [
+   "stone_square"
+  ],
+  "size": [
+   5.0,
+   3.75,
+   5.0
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/stone_square.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/stone_square_1m.glb",
+  "bytes": 31116,
+  "tris": 32,
+  "nodes": [
+   "stone_square_1m"
+  ],
+  "size": [
+   5.0,
+   1.25,
+   5.0
+  ],
+  "min": [
+   0.0,
+   -0.024,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   1.226,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/stone_square_1m.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/stone_square_2m.glb",
+  "bytes": 32616,
+  "tris": 64,
+  "nodes": [
+   "stone_square_2m"
+  ],
+  "size": [
+   5.0,
+   2.5,
+   5.0
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   2.5,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/stone_square_2m.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/stone_square_cornered.glb",
+  "bytes": 32992,
+  "tris": 84,
+  "nodes": [
+   "stone_square_cornered"
+  ],
+  "size": [
+   5.0,
+   3.75,
+   5.0
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/stone_square_cornered.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/stone_square_half.glb",
+  "bytes": 32768,
+  "tris": 48,
+  "nodes": [
+   "stone_square_half"
+  ],
+  "size": [
+   2.5,
+   3.75,
+   2.5
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -2.5
+  ],
+  "max": [
+   2.5,
+   3.75,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/stone_square_half.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/stone_square_half_1m.glb",
+  "bytes": 30776,
+  "tris": 16,
+  "nodes": [
+   "stone_square_half_1m"
+  ],
+  "size": [
+   2.5,
+   1.25,
+   2.5
+  ],
+  "min": [
+   0.0,
+   -0.024,
+   -2.5
+  ],
+  "max": [
+   2.5,
+   1.226,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/stone_square_half_1m.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/stone_square_half_2m.glb",
+  "bytes": 31876,
+  "tris": 32,
+  "nodes": [
+   "stone_square_half_2m"
+  ],
+  "size": [
+   2.5,
+   2.5,
+   2.5
+  ],
+  "min": [
+   -0.0,
+   0.0,
+   -2.5
+  ],
+  "max": [
+   2.5,
+   2.5,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/stone_square_half_2m.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/wood_support_beam.glb",
+  "bytes": 30972,
+  "tris": 20,
+  "nodes": [
+   "wood_support_beam"
+  ],
+  "size": [
+   2.5,
+   0.281,
+   0.25
+  ],
+  "min": [
+   -0.0,
+   -0.156,
+   -0.125
+  ],
+  "max": [
+   2.5,
+   0.125,
+   0.125
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/wood_support_beam.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/wood_support_beam_half.glb",
+  "bytes": 30984,
+  "tris": 20,
+  "nodes": [
+   "wood_support_beam_half"
+  ],
+  "size": [
+   1.25,
+   0.263,
+   0.25
+  ],
+  "min": [
+   -0.0,
+   -0.125,
+   -0.125
+  ],
+  "max": [
+   1.25,
+   0.138,
+   0.125
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/wood_support_beam_half.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/wood_support_beam_metal.glb",
+  "bytes": 35580,
+  "tris": 100,
+  "nodes": [
+   "wood_support_beam_metal"
+  ],
+  "size": [
+   0.291,
+   3.872,
+   0.279
+  ],
+  "min": [
+   -0.128,
+   0.0,
+   -0.138
+  ],
+  "max": [
+   0.163,
+   3.872,
+   0.141
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/wood_support_beam_metal.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/wood_support_corner.glb",
+  "bytes": 36676,
+  "tris": 116,
+  "nodes": [
+   "wood_support_corner"
+  ],
+  "size": [
+   1.378,
+   3.872,
+   1.391
+  ],
+  "min": [
+   -0.128,
+   0.0,
+   -1.25
+  ],
+  "max": [
+   1.25,
+   3.872,
+   0.141
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/wood_support_corner.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/wood_support_half.glb",
+  "bytes": 50512,
+  "tris": 294,
+  "nodes": [
+   "wood_support_half"
+  ],
+  "size": [
+   5.268,
+   3.888,
+   2.143
+  ],
+  "min": [
+   -0.128,
+   -0.108,
+   -2.002
+  ],
+  "max": [
+   5.141,
+   3.78,
+   0.141
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/wood_support_half.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/wood_support_metal_ring.glb",
+  "bytes": 31600,
+  "tris": 32,
+  "nodes": [
+   "wood_support_metal_ring"
+  ],
+  "size": [
+   0.28,
+   0.19,
+   0.275
+  ],
+  "min": [
+   -0.14,
+   -0.095,
+   -0.138
+  ],
+  "max": [
+   0.14,
+   0.095,
+   0.138
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/wood_support_metal_ring.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/wood_support_square.glb",
+  "bytes": 70576,
+  "tris": 580,
+  "nodes": [
+   "wood_support_square"
+  ],
+  "size": [
+   5.282,
+   3.888,
+   5.282
+  ],
+  "min": [
+   -0.141,
+   -0.108,
+   -5.141
+  ],
+  "max": [
+   5.141,
+   3.78,
+   0.141
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/wood_support_square.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/wooden_floor_1x1.glb",
+  "bytes": 29760,
+  "tris": 2,
+  "nodes": [
+   "wooden_floor_1x1"
+  ],
+  "size": [
+   1.25,
+   0.0,
+   1.25
+  ],
+  "min": [
+   0.0,
+   0.0,
+   -1.25
+  ],
+  "max": [
+   1.25,
+   0.0,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/wooden_floor_1x1.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/wooden_floor_2x2.glb",
+  "bytes": 30172,
+  "tris": 8,
+  "nodes": [
+   "wooden_floor_2x2"
+  ],
+  "size": [
+   2.5,
+   0.0,
+   2.5
+  ],
+  "min": [
+   0.0,
+   0.0,
+   -2.5
+  ],
+  "max": [
+   2.5,
+   0.0,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/wooden_floor_2x2.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/building/wooden_floor_4x4.glb",
+  "bytes": 31852,
+  "tris": 32,
+  "nodes": [
+   "wooden_floor_4x4"
+  ],
+  "size": [
+   5.0,
+   0.0,
+   5.0
+  ],
+  "min": [
+   0.0,
+   0.0,
+   -5.0
+  ],
+  "max": [
+   5.0,
+   0.0,
+   0.0
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Building blocks/wooden_floor_4x4.glb",
+  "category": "building"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/chimney.glb",
+  "bytes": 34656,
+  "tris": 92,
+  "nodes": [
+   "chimney"
+  ],
+  "size": [
+   1.436,
+   6.25,
+   2.17
+  ],
+  "min": [
+   -0.718,
+   0.0,
+   -1.598
+  ],
+  "max": [
+   0.718,
+   6.25,
+   0.571
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/chimney.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/chimney_end.glb",
+  "bytes": 33320,
+  "tris": 66,
+  "nodes": [
+   "chimney_end"
+  ],
+  "size": [
+   1.46,
+   3.75,
+   1.28
+  ],
+  "min": [
+   -0.73,
+   0.0,
+   -0.64
+  ],
+  "max": [
+   0.73,
+   3.75,
+   0.64
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/chimney_end.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/chimney_large.glb",
+  "bytes": 35832,
+  "tris": 116,
+  "nodes": [
+   "chimney_large"
+  ],
+  "size": [
+   1.46,
+   10.0,
+   2.176
+  ],
+  "min": [
+   -0.73,
+   0.0,
+   -1.604
+  ],
+  "max": [
+   0.73,
+   10.0,
+   0.571
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/chimney_large.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/door_stone.glb",
+  "bytes": 31644,
+  "tris": 28,
+  "nodes": [
+   "door_stone"
+  ],
+  "size": [
+   1.628,
+   2.883,
+   0.456
+  ],
+  "min": [
+   -0.814,
+   -0.083,
+   -0.191
+  ],
+  "max": [
+   0.814,
+   2.8,
+   0.264
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/door_stone.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/door_stone_double.glb",
+  "bytes": 38272,
+  "tris": 142,
+  "nodes": [
+   "door_stone_double"
+  ],
+  "size": [
+   2.985,
+   3.04,
+   0.456
+  ],
+  "min": [
+   -1.493,
+   -0.082,
+   -0.191
+  ],
+  "max": [
+   1.493,
+   2.958,
+   0.264
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/door_stone_double.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/door_stone_metal_grate.glb",
+  "bytes": 31556,
+  "tris": 30,
+  "nodes": [
+   "door_stone_metal_grate"
+  ],
+  "size": [
+   1.535,
+   2.718,
+   0.361
+  ],
+  "min": [
+   -0.767,
+   -0.0,
+   -0.18
+  ],
+  "max": [
+   0.767,
+   2.718,
+   0.18
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/door_stone_metal_grate.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/door_stone_rounded.glb",
+  "bytes": 34264,
+  "tris": 76,
+  "nodes": [
+   "door_stone_rounded"
+  ],
+  "size": [
+   1.628,
+   2.883,
+   0.456
+  ],
+  "min": [
+   -0.814,
+   -0.079,
+   -0.191
+  ],
+  "max": [
+   0.814,
+   2.804,
+   0.264
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/door_stone_rounded.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/door_wood.glb",
+  "bytes": 31392,
+  "tris": 28,
+  "nodes": [
+   "door_wood"
+  ],
+  "size": [
+   1.535,
+   2.718,
+   0.361
+  ],
+  "min": [
+   -0.767,
+   -0.0,
+   -0.18
+  ],
+  "max": [
+   0.767,
+   2.718,
+   0.18
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/door_wood.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/door_wood_double.glb",
+  "bytes": 38176,
+  "tris": 142,
+  "nodes": [
+   "door_wood_double"
+  ],
+  "size": [
+   2.814,
+   2.866,
+   0.361
+  ],
+  "min": [
+   -1.407,
+   -0.0,
+   -0.18
+  ],
+  "max": [
+   1.407,
+   2.866,
+   0.18
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/door_wood_double.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/door_wood_metal_grate.glb",
+  "bytes": 31556,
+  "tris": 30,
+  "nodes": [
+   "door_wood_metal_grate"
+  ],
+  "size": [
+   1.535,
+   2.718,
+   0.361
+  ],
+  "min": [
+   -0.767,
+   -0.0,
+   -0.18
+  ],
+  "max": [
+   0.767,
+   2.718,
+   0.18
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/door_wood_metal_grate.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/door_wood_rounded.glb",
+  "bytes": 33716,
+  "tris": 76,
+  "nodes": [
+   "door_wood_rounded"
+  ],
+  "size": [
+   1.535,
+   2.718,
+   0.361
+  ],
+  "min": [
+   -0.767,
+   -0.0,
+   -0.18
+  ],
+  "max": [
+   0.767,
+   2.718,
+   0.18
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/door_wood_rounded.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/flower_box.glb",
+  "bytes": 35552,
+  "tris": 126,
+  "nodes": [
+   "flower_box"
+  ],
+  "size": [
+   1.388,
+   1.118,
+   0.887
+  ],
+  "min": [
+   -0.729,
+   0.0,
+   -0.412
+  ],
+  "max": [
+   0.658,
+   1.118,
+   0.476
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/flower_box.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/flower_box_alt.glb",
+  "bytes": 35560,
+  "tris": 126,
+  "nodes": [
+   "flower_box_alt"
+  ],
+  "size": [
+   1.388,
+   1.118,
+   0.887
+  ],
+  "min": [
+   -0.729,
+   0.0,
+   -0.412
+  ],
+  "max": [
+   0.658,
+   1.118,
+   0.476
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/flower_box_alt.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/flower_box_alt2.glb",
+  "bytes": 35560,
+  "tris": 126,
+  "nodes": [
+   "flower_box_alt2"
+  ],
+  "size": [
+   1.388,
+   1.113,
+   0.887
+  ],
+  "min": [
+   -0.729,
+   0.0,
+   -0.412
+  ],
+  "max": [
+   0.658,
+   1.113,
+   0.476
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/flower_box_alt2.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/flower_mixed.glb",
+  "bytes": 31708,
+  "tris": 48,
+  "nodes": [
+   "flower_mixed"
+  ],
+  "size": [
+   0.885,
+   0.771,
+   0.887
+  ],
+  "min": [
+   0.007,
+   -0.036,
+   -0.481
+  ],
+  "max": [
+   0.892,
+   0.735,
+   0.407
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/flower_mixed.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/flower_purple.glb",
+  "bytes": 31712,
+  "tris": 48,
+  "nodes": [
+   "flower_purple"
+  ],
+  "size": [
+   0.885,
+   0.771,
+   0.887
+  ],
+  "min": [
+   0.007,
+   -0.036,
+   -0.481
+  ],
+  "max": [
+   0.892,
+   0.735,
+   0.407
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/flower_purple.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/flower_red.glb",
+  "bytes": 31704,
+  "tris": 48,
+  "nodes": [
+   "flower_red"
+  ],
+  "size": [
+   0.885,
+   0.771,
+   0.887
+  ],
+  "min": [
+   0.007,
+   -0.036,
+   -0.481
+  ],
+  "max": [
+   0.892,
+   0.735,
+   0.407
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/flower_red.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/flower_yellow.glb",
+  "bytes": 31712,
+  "tris": 48,
+  "nodes": [
+   "flower_yellow"
+  ],
+  "size": [
+   0.885,
+   0.771,
+   0.887
+  ],
+  "min": [
+   0.007,
+   -0.036,
+   -0.481
+  ],
+  "max": [
+   0.892,
+   0.735,
+   0.407
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/flower_yellow.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/overhang.glb",
+  "bytes": 32308,
+  "tris": 40,
+  "nodes": [
+   "overhang"
+  ],
+  "size": [
+   2.5,
+   0.263,
+   1.682
+  ],
+  "min": [
+   0.0,
+   -0.125,
+   -1.25
+  ],
+  "max": [
+   2.5,
+   0.138,
+   0.432
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/overhang.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/overhang_end.glb",
+  "bytes": 33608,
+  "tris": 60,
+  "nodes": [
+   "overhang_end"
+  ],
+  "size": [
+   2.625,
+   0.263,
+   1.682
+  ],
+  "min": [
+   0.0,
+   -0.125,
+   -1.25
+  ],
+  "max": [
+   2.625,
+   0.138,
+   0.432
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/overhang_end.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/overhang_large.glb",
+  "bytes": 35992,
+  "tris": 96,
+  "nodes": [
+   "overhang_large"
+  ],
+  "size": [
+   5.0,
+   0.263,
+   1.682
+  ],
+  "min": [
+   0.0,
+   -0.125,
+   -1.25
+  ],
+  "max": [
+   5.0,
+   0.138,
+   0.432
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/overhang_large.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/overhang_large_end.glb",
+  "bytes": 37276,
+  "tris": 116,
+  "nodes": [
+   "overhang_large_end"
+  ],
+  "size": [
+   5.125,
+   0.263,
+   1.682
+  ],
+  "min": [
+   0.0,
+   -0.125,
+   -1.25
+  ],
+  "max": [
+   5.125,
+   0.138,
+   0.432
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/overhang_large_end.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/overhang_wood.glb",
+  "bytes": 30968,
+  "tris": 20,
+  "nodes": [
+   "overhang_wood"
+  ],
+  "size": [
+   0.25,
+   0.263,
+   1.682
+  ],
+  "min": [
+   -0.125,
+   -0.125,
+   -0.0
+  ],
+  "max": [
+   0.125,
+   0.138,
+   1.682
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/overhang_wood.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/stairs_stone_stone.glb",
+  "bytes": 43600,
+  "tris": 248,
+  "nodes": [
+   "stairs_stone_stone"
+  ],
+  "size": [
+   2.551,
+   1.875,
+   3.137
+  ],
+  "min": [
+   -0.051,
+   -0.375,
+   -2.808
+  ],
+  "max": [
+   2.5,
+   1.5,
+   0.329
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/stairs_stone_stone.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/stairs_stone_stone_corner.glb",
+  "bytes": 43408,
+  "tris": 271,
+  "nodes": [
+   "stairs_stone_stone_corner"
+  ],
+  "size": [
+   3.917,
+   3.25,
+   3.834
+  ],
+  "min": [
+   -0.084,
+   -0.125,
+   -0.062
+  ],
+  "max": [
+   3.834,
+   3.125,
+   3.771
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/stairs_stone_stone_corner.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/stairs_wood.glb",
+  "bytes": 38580,
+  "tris": 128,
+  "nodes": [
+   "stairs_wood"
+  ],
+  "size": [
+   2.529,
+   1.268,
+   2.729
+  ],
+  "min": [
+   -0.011,
+   -0.018,
+   -2.616
+  ],
+  "max": [
+   2.517,
+   1.25,
+   0.113
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/stairs_wood.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/stairs_wood_stone.glb",
+  "bytes": 43216,
+  "tris": 248,
+  "nodes": [
+   "stairs_wood_stone"
+  ],
+  "size": [
+   2.551,
+   1.75,
+   3.131
+  ],
+  "min": [
+   -0.051,
+   -0.25,
+   -2.802
+  ],
+  "max": [
+   2.5,
+   1.5,
+   0.329
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/stairs_wood_stone.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/stairs_wood_stone_corner.glb",
+  "bytes": 40936,
+  "tris": 228,
+  "nodes": [
+   "stairs_wood_stone_corner"
+  ],
+  "size": [
+   3.917,
+   3.25,
+   3.834
+  ],
+  "min": [
+   -0.084,
+   -0.125,
+   -0.062
+  ],
+  "max": [
+   3.834,
+   3.125,
+   3.771
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/stairs_wood_stone_corner.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/stairs_wood_wood_large.glb",
+  "bytes": 101848,
+  "tris": 1172,
+  "nodes": [
+   "stairs_wood_wood_large"
+  ],
+  "size": [
+   2.687,
+   4.057,
+   6.012
+  ],
+  "min": [
+   -0.085,
+   -0.368,
+   -5.082
+  ],
+  "max": [
+   2.602,
+   3.688,
+   0.93
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/stairs_wood_wood_large.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/stone_windowsill.glb",
+  "bytes": 30752,
+  "tris": 16,
+  "nodes": [
+   "stone_windowsill"
+  ],
+  "size": [
+   1.5,
+   0.255,
+   0.533
+  ],
+  "min": [
+   -0.75,
+   -0.128,
+   0.0
+  ],
+  "max": [
+   0.75,
+   0.128,
+   0.533
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/stone_windowsil.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/stairs_stone.glb",
+  "bytes": 38584,
+  "tris": 128,
+  "nodes": [
+   "stairs_stone"
+  ],
+  "size": [
+   2.529,
+   1.268,
+   2.729
+  ],
+  "min": [
+   -0.011,
+   -0.018,
+   -2.616
+  ],
+  "max": [
+   2.517,
+   1.25,
+   0.113
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/strairs_stone.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/stairs_wood_wood.glb",
+  "bytes": 57000,
+  "tris": 452,
+  "nodes": [
+   "stairs_wood_wood"
+  ],
+  "size": [
+   2.596,
+   2.625,
+   3.447
+  ],
+  "min": [
+   -0.018,
+   -0.368,
+   -2.592
+  ],
+  "max": [
+   2.578,
+   2.257,
+   0.855
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/strairs_wood_wood.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/vine_corner.glb",
+  "bytes": 35076,
+  "tris": 128,
+  "nodes": [
+   "vine_corner"
+  ],
+  "size": [
+   1.565,
+   1.896,
+   1.108
+  ],
+  "min": [
+   -0.722,
+   -0.0,
+   -0.665
+  ],
+  "max": [
+   0.843,
+   1.896,
+   0.443
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/vine_corner.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/vine_corner_alt.glb",
+  "bytes": 35416,
+  "tris": 136,
+  "nodes": [
+   "vine_corner_alt"
+  ],
+  "size": [
+   1.577,
+   1.913,
+   1.108
+  ],
+  "min": [
+   -0.721,
+   -0.001,
+   -0.665
+  ],
+  "max": [
+   0.856,
+   1.912,
+   0.443
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/vine_corner_alt.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/vine_hanging.glb",
+  "bytes": 33732,
+  "tris": 96,
+  "nodes": [
+   "vine_hanging"
+  ],
+  "size": [
+   1.325,
+   2.936,
+   0.393
+  ],
+  "min": [
+   -0.828,
+   -2.902,
+   -0.174
+  ],
+  "max": [
+   0.496,
+   0.034,
+   0.219
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/vine_hanging.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/vine_hanging_alt.glb",
+  "bytes": 33932,
+  "tris": 96,
+  "nodes": [
+   "vine_hanging_alt"
+  ],
+  "size": [
+   1.24,
+   2.706,
+   0.367
+  ],
+  "min": [
+   -0.646,
+   -2.692,
+   -0.158
+  ],
+  "max": [
+   0.595,
+   0.014,
+   0.209
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/vine_hanging_alt.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/vine_single.glb",
+  "bytes": 30020,
+  "tris": 8,
+  "nodes": [
+   "vine_single"
+  ],
+  "size": [
+   0.627,
+   0.647,
+   0.103
+  ],
+  "min": [
+   -0.002,
+   -0.001,
+   -0.036
+  ],
+  "max": [
+   0.625,
+   0.646,
+   0.066
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/vine_single.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/vine_single_alt.glb",
+  "bytes": 30028,
+  "tris": 8,
+  "nodes": [
+   "vine_single_alt"
+  ],
+  "size": [
+   0.627,
+   0.647,
+   0.103
+  ],
+  "min": [
+   -0.002,
+   -0.001,
+   -0.036
+  ],
+  "max": [
+   0.625,
+   0.646,
+   0.066
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/vine_single_alt.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/window_rectangle.glb",
+  "bytes": 31404,
+  "tris": 28,
+  "nodes": [
+   "window_rectangle"
+  ],
+  "size": [
+   1.191,
+   2.109,
+   0.28
+  ],
+  "min": [
+   -0.596,
+   -0.0,
+   -0.14
+  ],
+  "max": [
+   0.596,
+   2.109,
+   0.14
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/window_rectangle.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/window_round.glb",
+  "bytes": 34760,
+  "tris": 76,
+  "nodes": [
+   "window_round"
+  ],
+  "size": [
+   1.459,
+   1.459,
+   0.375
+  ],
+  "min": [
+   -0.73,
+   0.02,
+   -0.209
+  ],
+  "max": [
+   0.73,
+   1.48,
+   0.166
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/window_round.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/window_rounded.glb",
+  "bytes": 33708,
+  "tris": 76,
+  "nodes": [
+   "window_rounded"
+  ],
+  "size": [
+   1.191,
+   2.109,
+   0.28
+  ],
+  "min": [
+   -0.595,
+   -0.0,
+   -0.14
+  ],
+  "max": [
+   0.595,
+   2.109,
+   0.14
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/window_rounded.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/window_square.glb",
+  "bytes": 31400,
+  "tris": 28,
+  "nodes": [
+   "window_square"
+  ],
+  "size": [
+   1.187,
+   1.135,
+   0.311
+  ],
+  "min": [
+   -0.594,
+   -0.0,
+   -0.156
+  ],
+  "max": [
+   0.594,
+   1.135,
+   0.156
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/window_square.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/decoration/wood_windowsill.glb",
+  "bytes": 30752,
+  "tris": 16,
+  "nodes": [
+   "wood_windowsill"
+  ],
+  "size": [
+   1.5,
+   0.255,
+   0.533
+  ],
+  "min": [
+   -0.75,
+   -0.128,
+   0.0
+  ],
+  "max": [
+   0.75,
+   0.128,
+   0.533
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Decorations/wood_windowsil.glb",
+  "category": "decoration"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_filler_apples.glb",
+  "bytes": 39592,
+  "tris": 98,
+  "nodes": [
+   "barrel_filler_apples"
+  ],
+  "size": [
+   1.005,
+   0.327,
+   1.005
+  ],
+  "min": [
+   -0.503,
+   1.197,
+   -0.503
+  ],
+  "max": [
+   0.503,
+   1.524,
+   0.503
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/apple_barrel_fillter.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/basket.glb",
+  "bytes": 41120,
+  "tris": 146,
+  "nodes": [
+   "basket"
+  ],
+  "size": [
+   0.98,
+   0.915,
+   1.132
+  ],
+  "min": [
+   -0.49,
+   0.0,
+   -0.566
+  ],
+  "max": [
+   0.49,
+   0.915,
+   0.566
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/backet.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/baguette.glb",
+  "bytes": 18668,
+  "tris": 104,
+  "nodes": [
+   "baguette"
+  ],
+  "size": [
+   0.177,
+   0.112,
+   1.194
+  ],
+  "min": [
+   -0.091,
+   -0.008,
+   -0.574
+  ],
+  "max": [
+   0.087,
+   0.104,
+   0.62
+  ],
+  "materials": [
+   "med_market_misc"
+  ],
+  "source": "Market/baguette.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel.glb",
+  "bytes": 58952,
+  "tris": 252,
+  "nodes": [
+   "barrel"
+  ],
+  "size": [
+   1.225,
+   1.431,
+   1.225
+  ],
+  "min": [
+   -0.612,
+   -0.002,
+   -0.612
+  ],
+  "max": [
+   0.612,
+   1.429,
+   0.612
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_apples.glb",
+  "bytes": 101396,
+  "tris": 392,
+  "nodes": [
+   "barrel_apples"
+  ],
+  "size": [
+   1.222,
+   1.526,
+   1.222
+  ],
+  "min": [
+   -0.611,
+   -0.002,
+   -0.611
+  ],
+  "max": [
+   0.611,
+   1.524,
+   0.611
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_market",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_apples.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_apples_small.glb",
+  "bytes": 101340,
+  "tris": 392,
+  "nodes": [
+   "barrel_apples_small"
+  ],
+  "size": [
+   0.893,
+   1.115,
+   0.893
+  ],
+  "min": [
+   -0.447,
+   -0.001,
+   -0.447
+  ],
+  "max": [
+   0.447,
+   1.114,
+   0.447
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_market",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_apples_small.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_beans.glb",
+  "bytes": 95104,
+  "tris": 332,
+  "nodes": [
+   "barrel_beans"
+  ],
+  "size": [
+   1.225,
+   1.488,
+   1.225
+  ],
+  "min": [
+   -0.612,
+   -0.002,
+   -0.612
+  ],
+  "max": [
+   0.612,
+   1.487,
+   0.612
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_market",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_beans.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_beans_small.glb",
+  "bytes": 95244,
+  "tris": 332,
+  "nodes": [
+   "barrel_beans_small"
+  ],
+  "size": [
+   0.893,
+   1.071,
+   0.893
+  ],
+  "min": [
+   -0.447,
+   -0.001,
+   -0.447
+  ],
+  "max": [
+   0.447,
+   1.07,
+   0.447
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_market",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_beans_small.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_eggplant.glb",
+  "bytes": 107468,
+  "tris": 508,
+  "nodes": [
+   "barrel_eggplant"
+  ],
+  "size": [
+   1.225,
+   1.519,
+   1.225
+  ],
+  "min": [
+   -0.612,
+   -0.002,
+   -0.612
+  ],
+  "max": [
+   0.612,
+   1.517,
+   0.612
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_market",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_eggplant.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_eggplant_small.glb",
+  "bytes": 107744,
+  "tris": 508,
+  "nodes": [
+   "barrel_eggplant_small"
+  ],
+  "size": [
+   0.891,
+   1.105,
+   0.891
+  ],
+  "min": [
+   -0.446,
+   -0.001,
+   -0.446
+  ],
+  "max": [
+   0.446,
+   1.104,
+   0.446
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_market",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_eggplant_small.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_lid.glb",
+  "bytes": 15092,
+  "tris": 44,
+  "nodes": [
+   "barrel_lid"
+  ],
+  "size": [
+   0.959,
+   0.067,
+   0.959
+  ],
+  "min": [
+   -0.479,
+   -0.0,
+   -0.479
+  ],
+  "max": [
+   0.479,
+   0.067,
+   0.479
+  ],
+  "materials": [
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_lid.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_lid_alt.glb",
+  "bytes": 51220,
+  "tris": 120,
+  "nodes": [
+   "barrel_lid_alt"
+  ],
+  "size": [
+   0.959,
+   0.201,
+   0.959
+  ],
+  "min": [
+   -0.479,
+   -0.0,
+   -0.479
+  ],
+  "max": [
+   0.479,
+   0.201,
+   0.479
+  ],
+  "materials": [
+   "med_market",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_lid_alt.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_lid_alt2.glb",
+  "bytes": 48912,
+  "tris": 82,
+  "nodes": [
+   "barrel_lid_alt2"
+  ],
+  "size": [
+   0.959,
+   0.219,
+   0.959
+  ],
+  "min": [
+   -0.479,
+   0.0,
+   -0.479
+  ],
+  "max": [
+   0.479,
+   0.219,
+   0.479
+  ],
+  "materials": [
+   "med_market",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_lid_alt2.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_lid_small.glb",
+  "bytes": 15072,
+  "tris": 44,
+  "nodes": [
+   "barrel_lid_small"
+  ],
+  "size": [
+   0.723,
+   0.067,
+   0.723
+  ],
+  "min": [
+   -0.362,
+   0.0,
+   -0.362
+  ],
+  "max": [
+   0.362,
+   0.067,
+   0.362
+  ],
+  "materials": [
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_lid_small.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_lid_small_alt.glb",
+  "bytes": 51200,
+  "tris": 120,
+  "nodes": [
+   "barrel_lid_small_alt"
+  ],
+  "size": [
+   0.723,
+   0.179,
+   0.723
+  ],
+  "min": [
+   -0.362,
+   0.0,
+   -0.362
+  ],
+  "max": [
+   0.362,
+   0.179,
+   0.362
+  ],
+  "materials": [
+   "med_market",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_lid_small_alt.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_lid_small_alt2.glb",
+  "bytes": 48920,
+  "tris": 82,
+  "nodes": [
+   "barrel_lid_small_alt2"
+  ],
+  "size": [
+   0.723,
+   0.221,
+   0.723
+  ],
+  "min": [
+   -0.362,
+   0.0,
+   -0.362
+  ],
+  "max": [
+   0.362,
+   0.221,
+   0.362
+  ],
+  "materials": [
+   "med_market",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_lid_small_alt2.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_onion.glb",
+  "bytes": 101228,
+  "tris": 392,
+  "nodes": [
+   "barrel_onion"
+  ],
+  "size": [
+   1.225,
+   1.516,
+   1.225
+  ],
+  "min": [
+   -0.612,
+   -0.002,
+   -0.612
+  ],
+  "max": [
+   0.612,
+   1.514,
+   0.612
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_market",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_onion.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_onion_small.glb",
+  "bytes": 101364,
+  "tris": 392,
+  "nodes": [
+   "barrel_onion_small"
+  ],
+  "size": [
+   0.893,
+   1.116,
+   0.893
+  ],
+  "min": [
+   -0.447,
+   -0.001,
+   -0.447
+  ],
+  "max": [
+   0.447,
+   1.115,
+   0.447
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_market",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_onion_small.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_open.glb",
+  "bytes": 62000,
+  "tris": 294,
+  "nodes": [
+   "barrel_open"
+  ],
+  "size": [
+   1.225,
+   1.431,
+   1.225
+  ],
+  "min": [
+   -0.612,
+   -0.002,
+   -0.612
+  ],
+  "max": [
+   0.612,
+   1.429,
+   0.612
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_open.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_open_small.glb",
+  "bytes": 62136,
+  "tris": 294,
+  "nodes": [
+   "barrel_open_small"
+  ],
+  "size": [
+   0.893,
+   1.044,
+   0.893
+  ],
+  "min": [
+   -0.447,
+   -0.001,
+   -0.447
+  ],
+  "max": [
+   0.447,
+   1.042,
+   0.447
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_open_small.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_potatoes.glb",
+  "bytes": 103624,
+  "tris": 464,
+  "nodes": [
+   "barrel_potatoes"
+  ],
+  "size": [
+   1.225,
+   1.504,
+   1.225
+  ],
+  "min": [
+   -0.612,
+   -0.002,
+   -0.612
+  ],
+  "max": [
+   0.612,
+   1.503,
+   0.612
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_market",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_potatoes.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_potatoes_small.glb",
+  "bytes": 103892,
+  "tris": 464,
+  "nodes": [
+   "barrel_potatoes_small"
+  ],
+  "size": [
+   0.9,
+   1.106,
+   0.9
+  ],
+  "min": [
+   -0.45,
+   -0.001,
+   -0.45
+  ],
+  "max": [
+   0.45,
+   1.105,
+   0.45
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_market",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_potatoes_small.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_small.glb",
+  "bytes": 59032,
+  "tris": 252,
+  "nodes": [
+   "barrel_small"
+  ],
+  "size": [
+   0.911,
+   1.065,
+   0.911
+  ],
+  "min": [
+   -0.456,
+   -0.001,
+   -0.456
+  ],
+  "max": [
+   0.456,
+   1.064,
+   0.456
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_wood_planks"
+  ],
+  "source": "Market/barrel_small.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/basket_apples.glb",
+  "bytes": 42660,
+  "tris": 176,
+  "nodes": [
+   "basket_apples"
+  ],
+  "size": [
+   0.98,
+   0.915,
+   1.132
+  ],
+  "min": [
+   -0.49,
+   0.0,
+   -0.566
+  ],
+  "max": [
+   0.49,
+   0.915,
+   0.566
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/basket_apples.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/basket_beans.glb",
+  "bytes": 42656,
+  "tris": 176,
+  "nodes": [
+   "basket_beans"
+  ],
+  "size": [
+   0.98,
+   0.915,
+   1.132
+  ],
+  "min": [
+   -0.49,
+   0.0,
+   -0.566
+  ],
+  "max": [
+   0.49,
+   0.915,
+   0.566
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/basket_beans.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/basket_eggplants.glb",
+  "bytes": 42664,
+  "tris": 176,
+  "nodes": [
+   "basket_eggplants"
+  ],
+  "size": [
+   0.98,
+   0.915,
+   1.132
+  ],
+  "min": [
+   -0.49,
+   0.0,
+   -0.566
+  ],
+  "max": [
+   0.49,
+   0.915,
+   0.566
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/basket_eggplants.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/basket_onions.glb",
+  "bytes": 42660,
+  "tris": 176,
+  "nodes": [
+   "basket_onions"
+  ],
+  "size": [
+   0.98,
+   0.915,
+   1.132
+  ],
+  "min": [
+   -0.49,
+   0.0,
+   -0.566
+  ],
+  "max": [
+   0.49,
+   0.915,
+   0.566
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/basket_onions.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/basket_potatoes.glb",
+  "bytes": 42664,
+  "tris": 176,
+  "nodes": [
+   "basket_potatoes"
+  ],
+  "size": [
+   0.98,
+   0.915,
+   1.132
+  ],
+  "min": [
+   -0.49,
+   0.0,
+   -0.566
+  ],
+  "max": [
+   0.49,
+   0.915,
+   0.566
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/basket_potatoes.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/basket_tomatoes.glb",
+  "bytes": 42664,
+  "tris": 176,
+  "nodes": [
+   "basket_tomatoes"
+  ],
+  "size": [
+   0.98,
+   0.915,
+   1.132
+  ],
+  "min": [
+   -0.49,
+   0.0,
+   -0.566
+  ],
+  "max": [
+   0.49,
+   0.915,
+   0.566
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/basket_tomatoes.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_filler_beans.glb",
+  "bytes": 33496,
+  "tris": 38,
+  "nodes": [
+   "barrel_filler_beans"
+  ],
+  "size": [
+   0.982,
+   0.162,
+   0.982
+  ],
+  "min": [
+   -0.491,
+   1.086,
+   -0.491
+  ],
+  "max": [
+   0.491,
+   1.249,
+   0.491
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/beans_barrel_fillter.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/bread.glb",
+  "bytes": 15888,
+  "tris": 84,
+  "nodes": [
+   "bread"
+  ],
+  "size": [
+   0.307,
+   0.18,
+   0.451
+  ],
+  "min": [
+   -0.159,
+   -0.027,
+   -0.063
+  ],
+  "max": [
+   0.148,
+   0.153,
+   0.388
+  ],
+  "materials": [
+   "med_market_misc"
+  ],
+  "source": "Market/bread.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/bread_small.glb",
+  "bytes": 15644,
+  "tris": 84,
+  "nodes": [
+   "bread_small"
+  ],
+  "size": [
+   0.177,
+   0.112,
+   0.557
+  ],
+  "min": [
+   -0.091,
+   -0.008,
+   -0.279
+  ],
+  "max": [
+   0.087,
+   0.104,
+   0.278
+  ],
+  "materials": [
+   "med_market_misc"
+  ],
+  "source": "Market/bread_smol.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/crate.glb",
+  "bytes": 33876,
+  "tris": 28,
+  "nodes": [
+   "crate"
+  ],
+  "size": [
+   0.585,
+   0.305,
+   0.919
+  ],
+  "min": [
+   -0.292,
+   0.0,
+   -0.459
+  ],
+  "max": [
+   0.292,
+   0.305,
+   0.459
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/crate.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/crate_angled.glb",
+  "bytes": 33904,
+  "tris": 28,
+  "nodes": [
+   "crate_angled"
+  ],
+  "size": [
+   0.585,
+   0.723,
+   0.948
+  ],
+  "min": [
+   -0.292,
+   -0.23,
+   -0.398
+  ],
+  "max": [
+   0.292,
+   0.494,
+   0.55
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/crate_angled.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/crate_apples.glb",
+  "bytes": 34880,
+  "tris": 60,
+  "nodes": [
+   "crate_apples"
+  ],
+  "size": [
+   0.585,
+   0.305,
+   0.919
+  ],
+  "min": [
+   -0.292,
+   0.0,
+   -0.459
+  ],
+  "max": [
+   0.292,
+   0.305,
+   0.459
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/crate_apples.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/crate_apples_angled.glb",
+  "bytes": 34912,
+  "tris": 60,
+  "nodes": [
+   "crate_apples_angled"
+  ],
+  "size": [
+   0.585,
+   0.723,
+   0.948
+  ],
+  "min": [
+   -0.292,
+   -0.23,
+   -0.398
+  ],
+  "max": [
+   0.292,
+   0.494,
+   0.55
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/crate_apples_angled.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/crate_beans.glb",
+  "bytes": 34880,
+  "tris": 60,
+  "nodes": [
+   "crate_beans"
+  ],
+  "size": [
+   0.585,
+   0.305,
+   0.919
+  ],
+  "min": [
+   -0.292,
+   0.0,
+   -0.459
+  ],
+  "max": [
+   0.292,
+   0.305,
+   0.459
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/crate_beans.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/crate_beans_angled.glb",
+  "bytes": 34912,
+  "tris": 60,
+  "nodes": [
+   "crate_beans_angled"
+  ],
+  "size": [
+   0.585,
+   0.723,
+   0.948
+  ],
+  "min": [
+   -0.292,
+   -0.23,
+   -0.398
+  ],
+  "max": [
+   0.292,
+   0.494,
+   0.55
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/crate_beans_angled.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/crate_eggplants.glb",
+  "bytes": 34888,
+  "tris": 60,
+  "nodes": [
+   "crate_eggplants"
+  ],
+  "size": [
+   0.585,
+   0.307,
+   0.919
+  ],
+  "min": [
+   -0.292,
+   0.0,
+   -0.459
+  ],
+  "max": [
+   0.292,
+   0.307,
+   0.459
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/crate_eggplants.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/crate_eggplants_angled.glb",
+  "bytes": 34920,
+  "tris": 60,
+  "nodes": [
+   "crate_eggplants_angled"
+  ],
+  "size": [
+   0.585,
+   0.723,
+   0.948
+  ],
+  "min": [
+   -0.292,
+   -0.23,
+   -0.398
+  ],
+  "max": [
+   0.292,
+   0.494,
+   0.55
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/crate_eggplants_angled.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/crate_onions.glb",
+  "bytes": 34880,
+  "tris": 60,
+  "nodes": [
+   "crate_onions"
+  ],
+  "size": [
+   0.585,
+   0.305,
+   0.919
+  ],
+  "min": [
+   -0.292,
+   0.0,
+   -0.459
+  ],
+  "max": [
+   0.292,
+   0.305,
+   0.459
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/crate_onions.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/crate_onions_angled.glb",
+  "bytes": 34912,
+  "tris": 60,
+  "nodes": [
+   "crate_onions_angled"
+  ],
+  "size": [
+   0.585,
+   0.723,
+   0.948
+  ],
+  "min": [
+   -0.292,
+   -0.23,
+   -0.398
+  ],
+  "max": [
+   0.292,
+   0.494,
+   0.55
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/crate_onions_angled.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/crate_potatoes.glb",
+  "bytes": 34884,
+  "tris": 60,
+  "nodes": [
+   "crate_potatoes"
+  ],
+  "size": [
+   0.585,
+   0.305,
+   0.919
+  ],
+  "min": [
+   -0.292,
+   0.0,
+   -0.459
+  ],
+  "max": [
+   0.292,
+   0.305,
+   0.459
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/crate_potatoes.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/crate_potatoes_angled.glb",
+  "bytes": 34916,
+  "tris": 60,
+  "nodes": [
+   "crate_potatoes_angled"
+  ],
+  "size": [
+   0.585,
+   0.723,
+   0.948
+  ],
+  "min": [
+   -0.292,
+   -0.23,
+   -0.398
+  ],
+  "max": [
+   0.292,
+   0.494,
+   0.55
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/crate_potatoes_angled.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/crate_tomatoes.glb",
+  "bytes": 34884,
+  "tris": 60,
+  "nodes": [
+   "crate_tomatoes"
+  ],
+  "size": [
+   0.585,
+   0.322,
+   0.919
+  ],
+  "min": [
+   -0.292,
+   0.0,
+   -0.459
+  ],
+  "max": [
+   0.292,
+   0.322,
+   0.459
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/crate_tomatoes.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/crate_tomatoes_angled.glb",
+  "bytes": 34916,
+  "tris": 60,
+  "nodes": [
+   "crate_tomatoes_angled"
+  ],
+  "size": [
+   0.585,
+   0.723,
+   0.948
+  ],
+  "min": [
+   -0.292,
+   -0.23,
+   -0.398
+  ],
+  "max": [
+   0.292,
+   0.494,
+   0.55
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/crate_tomatoes_angled.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_filler_eggplant.glb",
+  "bytes": 47848,
+  "tris": 214,
+  "nodes": [
+   "barrel_filler_eggplant"
+  ],
+  "size": [
+   0.982,
+   0.267,
+   0.982
+  ],
+  "min": [
+   -0.491,
+   1.012,
+   -0.491
+  ],
+  "max": [
+   0.491,
+   1.278,
+   0.491
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/eggplant_barrel_fillter.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/hay.glb",
+  "bytes": 24440,
+  "tris": 92,
+  "nodes": [
+   "hay"
+  ],
+  "size": [
+   5.0,
+   2.864,
+   5.0
+  ],
+  "min": [
+   -2.5,
+   0.0,
+   -2.5
+  ],
+  "max": [
+   2.5,
+   2.864,
+   2.5
+  ],
+  "materials": [
+   "med_hay"
+  ],
+  "source": "Market/hay.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/hay_covered.glb",
+  "bytes": 128488,
+  "tris": 1140,
+  "nodes": [
+   "hay_covered"
+  ],
+  "size": [
+   6.814,
+   2.896,
+   6.814
+  ],
+  "min": [
+   -3.407,
+   0.0,
+   -3.407
+  ],
+  "max": [
+   3.407,
+   2.896,
+   3.407
+  ],
+  "materials": [
+   "med_hay",
+   "med_market"
+  ],
+  "source": "Market/hay_covered.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/hay_covered_dry.glb",
+  "bytes": 128252,
+  "tris": 1140,
+  "nodes": [
+   "hay_covered_dry"
+  ],
+  "size": [
+   6.814,
+   2.896,
+   6.814
+  ],
+  "min": [
+   -3.407,
+   0.0,
+   -3.407
+  ],
+  "max": [
+   3.407,
+   2.896,
+   3.407
+  ],
+  "materials": [
+   "med_hay_dried",
+   "med_market"
+  ],
+  "source": "Market/hay_covered_dry.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/hay_dry.glb",
+  "bytes": 24204,
+  "tris": 92,
+  "nodes": [
+   "hay_dry"
+  ],
+  "size": [
+   5.0,
+   2.864,
+   5.0
+  ],
+  "min": [
+   -2.5,
+   0.0,
+   -2.5
+  ],
+  "max": [
+   2.5,
+   2.864,
+   2.5
+  ],
+  "materials": [
+   "med_hay_dried"
+  ],
+  "source": "Market/hay_dry.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/haybale.glb",
+  "bytes": 21656,
+  "tris": 44,
+  "nodes": [
+   "haybale"
+  ],
+  "size": [
+   2.25,
+   0.992,
+   1.691
+  ],
+  "min": [
+   -1.125,
+   0.0,
+   -0.846
+  ],
+  "max": [
+   1.125,
+   0.992,
+   0.846
+  ],
+  "materials": [
+   "med_hay"
+  ],
+  "source": "Market/haybale.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/haybale_dry.glb",
+  "bytes": 21420,
+  "tris": 44,
+  "nodes": [
+   "haybale_dry"
+  ],
+  "size": [
+   2.25,
+   0.992,
+   1.691
+  ],
+  "min": [
+   -1.125,
+   0.0,
+   -0.846
+  ],
+  "max": [
+   1.125,
+   0.992,
+   0.846
+  ],
+  "materials": [
+   "med_hay_dried"
+  ],
+  "source": "Market/haybale_dry.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/haybale_wrapped.glb",
+  "bytes": 58844,
+  "tris": 124,
+  "nodes": [
+   "haybale_wrapped"
+  ],
+  "size": [
+   2.25,
+   0.998,
+   1.691
+  ],
+  "min": [
+   -1.125,
+   0.0,
+   -0.846
+  ],
+  "max": [
+   1.125,
+   0.998,
+   0.846
+  ],
+  "materials": [
+   "med_hay",
+   "med_market"
+  ],
+  "source": "Market/haybale_wrapped.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/haybale_wrapped_alt.glb",
+  "bytes": 65176,
+  "tris": 224,
+  "nodes": [
+   "haybale_wrapped_alt"
+  ],
+  "size": [
+   2.25,
+   1.032,
+   1.691
+  ],
+  "min": [
+   -1.125,
+   -0.006,
+   -0.846
+  ],
+  "max": [
+   1.125,
+   1.026,
+   0.846
+  ],
+  "materials": [
+   "med_hay",
+   "med_market"
+  ],
+  "source": "Market/haybale_wrapped_alt.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/haybale_wrapped_alt_dry.glb",
+  "bytes": 64940,
+  "tris": 224,
+  "nodes": [
+   "haybale_wrapped_alt_dry"
+  ],
+  "size": [
+   2.25,
+   1.032,
+   1.691
+  ],
+  "min": [
+   -1.125,
+   -0.006,
+   -0.846
+  ],
+  "max": [
+   1.125,
+   1.026,
+   0.846
+  ],
+  "materials": [
+   "med_hay_dried",
+   "med_market"
+  ],
+  "source": "Market/haybale_wrapped_alt_dry.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/haybale_wrapped_dry.glb",
+  "bytes": 58608,
+  "tris": 124,
+  "nodes": [
+   "haybale_wrapped_dry"
+  ],
+  "size": [
+   2.25,
+   0.998,
+   1.691
+  ],
+  "min": [
+   -1.125,
+   0.0,
+   -0.846
+  ],
+  "max": [
+   1.125,
+   0.998,
+   0.846
+  ],
+  "materials": [
+   "med_hay_dried",
+   "med_market"
+  ],
+  "source": "Market/haybale_wrapped_dry.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/jutesack_closed.glb",
+  "bytes": 11752,
+  "tris": 120,
+  "nodes": [
+   "jutesack_closed"
+  ],
+  "size": [
+   0.945,
+   1.036,
+   0.573
+  ],
+  "min": [
+   -0.473,
+   0.0,
+   -0.286
+  ],
+  "max": [
+   0.473,
+   1.036,
+   0.286
+  ],
+  "materials": [
+   "med_jute"
+  ],
+  "source": "Market/jutesack_closed.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/jutesack_closed_alt.glb",
+  "bytes": 11224,
+  "tris": 120,
+  "nodes": [
+   "jutesack_closed_alt"
+  ],
+  "size": [
+   0.82,
+   1.086,
+   0.89
+  ],
+  "min": [
+   -0.41,
+   0.0,
+   -0.445
+  ],
+  "max": [
+   0.41,
+   1.086,
+   0.445
+  ],
+  "materials": [
+   "med_jute"
+  ],
+  "source": "Market/jutesack_closed_alt.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/jutesack_open.glb",
+  "bytes": 15072,
+  "tris": 144,
+  "nodes": [
+   "jutesack_open"
+  ],
+  "size": [
+   0.912,
+   0.971,
+   0.68
+  ],
+  "min": [
+   -0.456,
+   0.0,
+   -0.34
+  ],
+  "max": [
+   0.456,
+   0.971,
+   0.34
+  ],
+  "materials": [
+   "med_jute"
+  ],
+  "source": "Market/jutesack_open.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/jutesack_open_alt.glb",
+  "bytes": 12236,
+  "tris": 144,
+  "nodes": [
+   "jutesack_open_alt"
+  ],
+  "size": [
+   0.863,
+   0.849,
+   0.95
+  ],
+  "min": [
+   -0.431,
+   0.0,
+   -0.475
+  ],
+  "max": [
+   0.431,
+   0.849,
+   0.475
+  ],
+  "materials": [
+   "med_jute"
+  ],
+  "source": "Market/jutesack_open_alt.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/market_stall_blue.glb",
+  "bytes": 116644,
+  "tris": 974,
+  "nodes": [
+   "market_stall_blue"
+  ],
+  "size": [
+   5.528,
+   3.51,
+   4.328
+  ],
+  "min": [
+   -0.262,
+   -0.118,
+   -4.19
+  ],
+  "max": [
+   5.266,
+   3.392,
+   0.137
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_market"
+  ],
+  "source": "Market/market_stall_blue.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/market_stall_red.glb",
+  "bytes": 116644,
+  "tris": 974,
+  "nodes": [
+   "market_stall_red"
+  ],
+  "size": [
+   5.528,
+   3.51,
+   4.328
+  ],
+  "min": [
+   -0.262,
+   -0.118,
+   -4.19
+  ],
+  "max": [
+   5.266,
+   3.392,
+   0.137
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_market"
+  ],
+  "source": "Market/market_stall_red.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/market_stall_round_blue.glb",
+  "bytes": 101968,
+  "tris": 760,
+  "nodes": [
+   "market_stall_round_blue"
+  ],
+  "size": [
+   4.671,
+   6.171,
+   5.212
+  ],
+  "min": [
+   -2.336,
+   -0.138,
+   -2.456
+  ],
+  "max": [
+   2.336,
+   6.032,
+   2.755
+  ],
+  "materials": [
+   "med_generic_wood",
+   "med_market"
+  ],
+  "source": "Market/market_stall_round_blue.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/market_stall_round_red.glb",
+  "bytes": 101968,
+  "tris": 760,
+  "nodes": [
+   "market_stall_round_red"
+  ],
+  "size": [
+   4.671,
+   6.171,
+   5.212
+  ],
+  "min": [
+   -2.336,
+   -0.138,
+   -2.456
+  ],
+  "max": [
+   2.336,
+   6.032,
+   2.755
+  ],
+  "materials": [
+   "med_generic_wood",
+   "med_market"
+  ],
+  "source": "Market/market_stall_round_red.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/market_stall_round_yellow.glb",
+  "bytes": 101972,
+  "tris": 760,
+  "nodes": [
+   "market_stall_round_yellow"
+  ],
+  "size": [
+   4.671,
+   6.171,
+   5.212
+  ],
+  "min": [
+   -2.336,
+   -0.138,
+   -2.456
+  ],
+  "max": [
+   2.336,
+   6.032,
+   2.755
+  ],
+  "materials": [
+   "med_generic_wood",
+   "med_market"
+  ],
+  "source": "Market/market_stall_round_yellow.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/market_stall_yellow.glb",
+  "bytes": 116648,
+  "tris": 974,
+  "nodes": [
+   "market_stall_yellow"
+  ],
+  "size": [
+   5.528,
+   3.51,
+   4.328
+  ],
+  "min": [
+   -0.262,
+   -0.118,
+   -4.19
+  ],
+  "max": [
+   5.266,
+   3.392,
+   0.137
+  ],
+  "materials": [
+   "med_bauerhaus",
+   "med_market"
+  ],
+  "source": "Market/market_stall_yelow.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/meat_slab.glb",
+  "bytes": 13688,
+  "tris": 48,
+  "nodes": [
+   "meat_slab"
+  ],
+  "size": [
+   0.439,
+   0.621,
+   0.26
+  ],
+  "min": [
+   -0.22,
+   -0.311,
+   -0.138
+  ],
+  "max": [
+   0.219,
+   0.309,
+   0.122
+  ],
+  "materials": [
+   "med_market_misc"
+  ],
+  "source": "Market/meat_slab.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/meat_slab_alt.glb",
+  "bytes": 13692,
+  "tris": 48,
+  "nodes": [
+   "meat_slab_alt"
+  ],
+  "size": [
+   0.439,
+   0.621,
+   0.371
+  ],
+  "min": [
+   -0.22,
+   -0.311,
+   -0.189
+  ],
+  "max": [
+   0.219,
+   0.309,
+   0.182
+  ],
+  "materials": [
+   "med_market_misc"
+  ],
+  "source": "Market/meat_slab_alt.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/meatcube.glb",
+  "bytes": 53772,
+  "tris": 176,
+  "nodes": [
+   "meatcube"
+  ],
+  "size": [
+   0.416,
+   0.481,
+   0.416
+  ],
+  "min": [
+   -0.208,
+   -0.246,
+   -0.208
+  ],
+  "max": [
+   0.208,
+   0.235,
+   0.208
+  ],
+  "materials": [
+   "med_market",
+   "med_market_misc"
+  ],
+  "source": "Market/meatcube.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/pork_leg.glb",
+  "bytes": 16900,
+  "tris": 92,
+  "nodes": [
+   "pork_leg"
+  ],
+  "size": [
+   0.625,
+   1.176,
+   0.524
+  ],
+  "min": [
+   -0.315,
+   -0.273,
+   -0.199
+  ],
+  "max": [
+   0.31,
+   0.902,
+   0.325
+  ],
+  "materials": [
+   "med_market_misc"
+  ],
+  "source": "Market/pork_leg.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/barrel_filler_potatoes.glb",
+  "bytes": 44480,
+  "tris": 170,
+  "nodes": [
+   "barrel_filler_potatoes"
+  ],
+  "size": [
+   0.982,
+   0.213,
+   0.982
+  ],
+  "min": [
+   -0.491,
+   1.051,
+   -0.491
+  ],
+  "max": [
+   0.491,
+   1.264,
+   0.491
+  ],
+  "materials": [
+   "med_market"
+  ],
+  "source": "Market/potato_barrel_fillter.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/pumpkin.glb",
+  "bytes": 17688,
+  "tris": 88,
+  "nodes": [
+   "pumpkin"
+  ],
+  "size": [
+   0.531,
+   0.452,
+   0.613
+  ],
+  "min": [
+   -0.265,
+   0.0,
+   -0.306
+  ],
+  "max": [
+   0.265,
+   0.452,
+   0.306
+  ],
+  "materials": [
+   "med_market_misc"
+  ],
+  "source": "Market/pumpkin.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/sausage.glb",
+  "bytes": 14984,
+  "tris": 40,
+  "nodes": [
+   "sausage"
+  ],
+  "size": [
+   0.158,
+   0.456,
+   0.158
+  ],
+  "min": [
+   -0.079,
+   -0.32,
+   -0.079
+  ],
+  "max": [
+   0.079,
+   0.136,
+   0.079
+  ],
+  "materials": [
+   "med_market_misc"
+  ],
+  "source": "Market/sausage.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/sausage_link.glb",
+  "bytes": 39404,
+  "tris": 336,
+  "nodes": [
+   "sausage_link"
+  ],
+  "size": [
+   0.415,
+   1.081,
+   0.118
+  ],
+  "min": [
+   -0.049,
+   -0.202,
+   -0.049
+  ],
+  "max": [
+   0.366,
+   0.88,
+   0.069
+  ],
+  "materials": [
+   "med_market_misc"
+  ],
+  "source": "Market/sausage_link.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/table.glb",
+  "bytes": 27112,
+  "tris": 168,
+  "nodes": [
+   "table"
+  ],
+  "size": [
+   3.923,
+   1.096,
+   1.727
+  ],
+  "min": [
+   -1.962,
+   0.0,
+   -0.864
+  ],
+  "max": [
+   1.962,
+   1.096,
+   0.864
+  ],
+  "materials": [
+   "med_generic_wood"
+  ],
+  "source": "Market/table.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/table_prebuild.glb",
+  "bytes": 80328,
+  "tris": 584,
+  "nodes": [
+   "table_prebuild"
+  ],
+  "size": [
+   3.979,
+   1.734,
+   1.779
+  ],
+  "min": [
+   -1.989,
+   0.0,
+   -0.889
+  ],
+  "max": [
+   1.989,
+   1.734,
+   0.889
+  ],
+  "materials": [
+   "med_generic_wood",
+   "med_market"
+  ],
+  "source": "Market/table_prebuild.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/terracotta_vase.glb",
+  "bytes": 48648,
+  "tris": 280,
+  "nodes": [
+   "terracotta_vase"
+  ],
+  "size": [
+   1.05,
+   1.299,
+   1.05
+  ],
+  "min": [
+   -0.525,
+   -0.0,
+   -0.525
+  ],
+  "max": [
+   0.525,
+   1.299,
+   0.525
+  ],
+  "materials": [
+   "med_terracotta",
+   "med_wood_planks"
+  ],
+  "source": "Market/terracotta_vase.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/terracotta_vase_open.glb",
+  "bytes": 33636,
+  "tris": 236,
+  "nodes": [
+   "terracotta_vase_open"
+  ],
+  "size": [
+   1.05,
+   1.244,
+   1.05
+  ],
+  "min": [
+   -0.525,
+   -0.0,
+   -0.525
+  ],
+  "max": [
+   0.525,
+   1.244,
+   0.525
+  ],
+  "materials": [
+   "med_terracotta"
+  ],
+  "source": "Market/terracotta_vase_open.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/terracotta_vase_open_small.glb",
+  "bytes": 33912,
+  "tris": 236,
+  "nodes": [
+   "terracotta_vase_open_small"
+  ],
+  "size": [
+   0.824,
+   0.976,
+   0.824
+  ],
+  "min": [
+   -0.412,
+   -0.0,
+   -0.412
+  ],
+  "max": [
+   0.412,
+   0.976,
+   0.412
+  ],
+  "materials": [
+   "med_terracotta"
+  ],
+  "source": "Market/terracotta_vase_open_small.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/terracotta_vase_small.glb",
+  "bytes": 48600,
+  "tris": 280,
+  "nodes": [
+   "terracotta_vase_small"
+  ],
+  "size": [
+   0.824,
+   1.007,
+   0.824
+  ],
+  "min": [
+   -0.412,
+   -0.0,
+   -0.412
+  ],
+  "max": [
+   0.412,
+   1.007,
+   0.412
+  ],
+  "materials": [
+   "med_terracotta",
+   "med_wood_planks"
+  ],
+  "source": "Market/terracotta_vase_small.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/vase_lid.glb",
+  "bytes": 15084,
+  "tris": 44,
+  "nodes": [
+   "vase_lid"
+  ],
+  "size": [
+   0.729,
+   0.108,
+   0.729
+  ],
+  "min": [
+   -0.365,
+   0.0,
+   -0.365
+  ],
+  "max": [
+   0.365,
+   0.108,
+   0.365
+  ],
+  "materials": [
+   "med_wood_planks"
+  ],
+  "source": "Market/vase_lid.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/market/vase_lid_small.glb",
+  "bytes": 15072,
+  "tris": 44,
+  "nodes": [
+   "vase_lid_small"
+  ],
+  "size": [
+   0.584,
+   0.086,
+   0.584
+  ],
+  "min": [
+   -0.292,
+   0.0,
+   -0.292
+  ],
+  "max": [
+   0.292,
+   0.086,
+   0.292
+  ],
+  "materials": [
+   "med_wood_planks"
+  ],
+  "source": "Market/vase_lid_small.glb",
+  "category": "market"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_blue.glb",
+  "bytes": 41024,
+  "tris": 184,
+  "nodes": [
+   "roof_blue"
+  ],
+  "size": [
+   5.0,
+   3.199,
+   5.956
+  ],
+  "min": [
+   -0.0,
+   -0.457,
+   -5.478
+  ],
+  "max": [
+   5.0,
+   2.742,
+   0.478
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_blue.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_blue_T.glb",
+  "bytes": 41144,
+  "tris": 174,
+  "nodes": [
+   "roof_blue_T"
+  ],
+  "size": [
+   5.491,
+   3.199,
+   5.027
+  ],
+  "min": [
+   -0.478,
+   -0.457,
+   -5.013
+  ],
+  "max": [
+   5.013,
+   2.742,
+   0.013
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_blue_T.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_blue_corner.glb",
+  "bytes": 42588,
+  "tris": 189,
+  "nodes": [
+   "roof_blue_corner"
+  ],
+  "size": [
+   5.496,
+   3.199,
+   5.487
+  ],
+  "min": [
+   -0.018,
+   -0.457,
+   -0.478
+  ],
+  "max": [
+   5.478,
+   2.742,
+   5.009
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_blue_corner.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_blue_dormer_window.glb",
+  "bytes": 36948,
+  "tris": 106,
+  "nodes": [
+   "roof_blue_dormer_window"
+  ],
+  "size": [
+   2.306,
+   2.417,
+   3.209
+  ],
+  "min": [
+   -0.236,
+   0.0,
+   -2.751
+  ],
+  "max": [
+   2.07,
+   2.417,
+   0.458
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_blue_dormer_window.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_blue_end.glb",
+  "bytes": 33032,
+  "tris": 44,
+  "nodes": [
+   "roof_blue_end"
+  ],
+  "size": [
+   5.956,
+   3.199,
+   0.625
+  ],
+  "min": [
+   -0.478,
+   -0.457,
+   -0.0
+  ],
+  "max": [
+   5.478,
+   2.742,
+   0.625
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_blue_end.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_blue_half.glb",
+  "bytes": 37016,
+  "tris": 112,
+  "nodes": [
+   "roof_blue_half"
+  ],
+  "size": [
+   2.5,
+   3.199,
+   5.956
+  ],
+  "min": [
+   -0.0,
+   -0.457,
+   -5.478
+  ],
+  "max": [
+   2.5,
+   2.742,
+   0.478
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_blue_half.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_blue_square.glb",
+  "bytes": 43688,
+  "tris": 202,
+  "nodes": [
+   "roof_blue_square"
+  ],
+  "size": [
+   5.956,
+   3.171,
+   5.956
+  ],
+  "min": [
+   -0.478,
+   -0.457,
+   -5.478
+  ],
+  "max": [
+   5.478,
+   2.714,
+   0.478
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_blue_square.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_blue_square_fancy.glb",
+  "bytes": 46100,
+  "tris": 234,
+  "nodes": [
+   "roof_blue_square_fancy"
+  ],
+  "size": [
+   5.956,
+   3.467,
+   5.956
+  ],
+  "min": [
+   -0.478,
+   -0.457,
+   -5.478
+  ],
+  "max": [
+   5.478,
+   3.01,
+   0.478
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_blue_square_fancy.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_blue_stickout.glb",
+  "bytes": 40968,
+  "tris": 174,
+  "nodes": [
+   "roof_blue_stickout"
+  ],
+  "size": [
+   5.25,
+   3.375,
+   1.875
+  ],
+  "min": [
+   -0.125,
+   -0.125,
+   -1.25
+  ],
+  "max": [
+   5.125,
+   3.25,
+   0.625
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_blue_stickout.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_blue_stickout_large.glb",
+  "bytes": 43212,
+  "tris": 212,
+  "nodes": [
+   "roof_blue_stickout_large"
+  ],
+  "size": [
+   5.25,
+   5.25,
+   3.125
+  ],
+  "min": [
+   -0.125,
+   -0.125,
+   -2.5
+  ],
+  "max": [
+   5.125,
+   5.125,
+   0.625
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_blue_stickout_large.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_blue_stickout_triangle_roof.glb",
+  "bytes": 39676,
+  "tris": 160,
+  "nodes": [
+   "roof_blue_stickout_triangle_roof"
+  ],
+  "size": [
+   5.25,
+   5.125,
+   2.936
+  ],
+  "min": [
+   -0.125,
+   -0.125,
+   -2.5
+  ],
+  "max": [
+   5.125,
+   5.0,
+   0.436
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_blue_stickout_triangle_roof.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_red.glb",
+  "bytes": 41020,
+  "tris": 184,
+  "nodes": [
+   "roof_red"
+  ],
+  "size": [
+   5.0,
+   3.199,
+   5.956
+  ],
+  "min": [
+   -0.0,
+   -0.457,
+   -5.478
+  ],
+  "max": [
+   5.0,
+   2.742,
+   0.478
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_red.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_red_T.glb",
+  "bytes": 41140,
+  "tris": 174,
+  "nodes": [
+   "roof_red_T"
+  ],
+  "size": [
+   5.491,
+   3.199,
+   5.027
+  ],
+  "min": [
+   -0.478,
+   -0.457,
+   -5.013
+  ],
+  "max": [
+   5.013,
+   2.742,
+   0.013
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_red_T.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_red_corner.glb",
+  "bytes": 42588,
+  "tris": 189,
+  "nodes": [
+   "roof_red_corner"
+  ],
+  "size": [
+   5.496,
+   3.199,
+   5.487
+  ],
+  "min": [
+   -0.018,
+   -0.457,
+   -0.478
+  ],
+  "max": [
+   5.478,
+   2.742,
+   5.009
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_red_corner.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_red_dormer_window.glb",
+  "bytes": 36688,
+  "tris": 106,
+  "nodes": [
+   "roof_red_dormer_window"
+  ],
+  "size": [
+   2.306,
+   2.417,
+   3.209
+  ],
+  "min": [
+   -0.236,
+   0.0,
+   -2.751
+  ],
+  "max": [
+   2.07,
+   2.417,
+   0.458
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_red_dormer_window.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_red_end.glb",
+  "bytes": 33032,
+  "tris": 44,
+  "nodes": [
+   "roof_red_end"
+  ],
+  "size": [
+   5.956,
+   3.199,
+   0.625
+  ],
+  "min": [
+   -0.478,
+   -0.457,
+   -0.0
+  ],
+  "max": [
+   5.478,
+   2.742,
+   0.625
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_red_end.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_red_half.glb",
+  "bytes": 37016,
+  "tris": 112,
+  "nodes": [
+   "roof_red_half"
+  ],
+  "size": [
+   2.5,
+   3.199,
+   5.956
+  ],
+  "min": [
+   -0.0,
+   -0.457,
+   -5.478
+  ],
+  "max": [
+   2.5,
+   2.742,
+   0.478
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_red_half.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_red_square.glb",
+  "bytes": 43684,
+  "tris": 202,
+  "nodes": [
+   "roof_red_square"
+  ],
+  "size": [
+   5.956,
+   3.171,
+   5.956
+  ],
+  "min": [
+   -0.478,
+   -0.457,
+   -5.478
+  ],
+  "max": [
+   5.478,
+   2.714,
+   0.478
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_red_square.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_red_square_fancy.glb",
+  "bytes": 46164,
+  "tris": 234,
+  "nodes": [
+   "roof_red_square_fancy"
+  ],
+  "size": [
+   5.956,
+   3.467,
+   5.956
+  ],
+  "min": [
+   -0.478,
+   -0.457,
+   -5.478
+  ],
+  "max": [
+   5.478,
+   3.01,
+   0.478
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_red_square_fancy.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_red_stickout.glb",
+  "bytes": 40964,
+  "tris": 174,
+  "nodes": [
+   "roof_red_stickout"
+  ],
+  "size": [
+   5.25,
+   3.375,
+   1.875
+  ],
+  "min": [
+   -0.125,
+   -0.125,
+   -1.25
+  ],
+  "max": [
+   5.125,
+   3.25,
+   0.625
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_red_stickout.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_red_stickout_large.glb",
+  "bytes": 43208,
+  "tris": 212,
+  "nodes": [
+   "roof_red_stickout_large"
+  ],
+  "size": [
+   5.25,
+   5.25,
+   3.125
+  ],
+  "min": [
+   -0.125,
+   -0.125,
+   -2.5
+  ],
+  "max": [
+   5.125,
+   5.125,
+   0.625
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_red_stickout_large.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_red_stickout_triangle_roof.glb",
+  "bytes": 39676,
+  "tris": 160,
+  "nodes": [
+   "roof_red_stickout_triangle_roof"
+  ],
+  "size": [
+   5.25,
+   5.125,
+   2.936
+  ],
+  "min": [
+   -0.125,
+   -0.125,
+   -2.5
+  ],
+  "max": [
+   5.125,
+   5.0,
+   0.436
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_red_stickout_triangle_roof.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_straw.glb",
+  "bytes": 41024,
+  "tris": 184,
+  "nodes": [
+   "roof_straw"
+  ],
+  "size": [
+   5.0,
+   3.199,
+   5.956
+  ],
+  "min": [
+   -0.0,
+   -0.457,
+   -5.478
+  ],
+  "max": [
+   5.0,
+   2.742,
+   0.478
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_straw.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_straw_T.glb",
+  "bytes": 41144,
+  "tris": 174,
+  "nodes": [
+   "roof_straw_T"
+  ],
+  "size": [
+   5.491,
+   3.199,
+   5.027
+  ],
+  "min": [
+   -0.478,
+   -0.457,
+   -5.013
+  ],
+  "max": [
+   5.013,
+   2.742,
+   0.013
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_straw_T.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_straw_corner.glb",
+  "bytes": 42592,
+  "tris": 189,
+  "nodes": [
+   "roof_straw_corner"
+  ],
+  "size": [
+   5.496,
+   3.199,
+   5.487
+  ],
+  "min": [
+   -0.018,
+   -0.457,
+   -0.478
+  ],
+  "max": [
+   5.478,
+   2.742,
+   5.009
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_straw_corner.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_straw_dormer_window.glb",
+  "bytes": 36692,
+  "tris": 106,
+  "nodes": [
+   "roof_straw_dormer_window"
+  ],
+  "size": [
+   2.306,
+   2.417,
+   3.209
+  ],
+  "min": [
+   -0.236,
+   0.0,
+   -2.751
+  ],
+  "max": [
+   2.07,
+   2.417,
+   0.458
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_straw_dormer_window.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_straw_end.glb",
+  "bytes": 33036,
+  "tris": 44,
+  "nodes": [
+   "roof_straw_end"
+  ],
+  "size": [
+   5.956,
+   3.199,
+   0.625
+  ],
+  "min": [
+   -0.478,
+   -0.457,
+   -0.0
+  ],
+  "max": [
+   5.478,
+   2.742,
+   0.625
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_straw_end.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_straw_half.glb",
+  "bytes": 37020,
+  "tris": 112,
+  "nodes": [
+   "roof_straw_half"
+  ],
+  "size": [
+   2.5,
+   3.199,
+   5.956
+  ],
+  "min": [
+   -0.0,
+   -0.457,
+   -5.478
+  ],
+  "max": [
+   2.5,
+   2.742,
+   0.478
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_straw_half.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_straw_square.glb",
+  "bytes": 43688,
+  "tris": 202,
+  "nodes": [
+   "roof_straw_square"
+  ],
+  "size": [
+   5.956,
+   3.171,
+   5.956
+  ],
+  "min": [
+   -0.478,
+   -0.457,
+   -5.478
+  ],
+  "max": [
+   5.478,
+   2.714,
+   0.478
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_straw_square.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_straw_square_fancy.glb",
+  "bytes": 46168,
+  "tris": 234,
+  "nodes": [
+   "roof_straw_square_fancy"
+  ],
+  "size": [
+   5.956,
+   3.467,
+   5.956
+  ],
+  "min": [
+   -0.478,
+   -0.457,
+   -5.478
+  ],
+  "max": [
+   5.478,
+   3.01,
+   0.478
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_straw_square_fancy.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_straw_stickout.glb",
+  "bytes": 40968,
+  "tris": 174,
+  "nodes": [
+   "roof_straw_stickout"
+  ],
+  "size": [
+   5.25,
+   3.375,
+   1.875
+  ],
+  "min": [
+   -0.125,
+   -0.125,
+   -1.25
+  ],
+  "max": [
+   5.125,
+   3.25,
+   0.625
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_straw_stickout.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_straw_stickout_large.glb",
+  "bytes": 43212,
+  "tris": 212,
+  "nodes": [
+   "roof_straw_stickout_large"
+  ],
+  "size": [
+   5.25,
+   5.25,
+   3.125
+  ],
+  "min": [
+   -0.125,
+   -0.125,
+   -2.5
+  ],
+  "max": [
+   5.125,
+   5.125,
+   0.625
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_straw_stickout_large.glb",
+  "category": "roofs"
+ },
+ {
+  "file": "C:/Users/Sher/Desktop/ARPG/public/assets/models/itch/psx-medieval/roofs/roof_straw_stickout_triangle_roof.glb",
+  "bytes": 39680,
+  "tris": 160,
+  "nodes": [
+   "roof_straw_stickout_triangle_roof"
+  ],
+  "size": [
+   5.25,
+   5.125,
+   2.936
+  ],
+  "min": [
+   -0.125,
+   -0.125,
+   -2.5
+  ],
+  "max": [
+   5.125,
+   5.0,
+   0.436
+  ],
+  "materials": [
+   "med_bauerhaus"
+  ],
+  "source": "Roofs/roof_straw_stickout_triangle_roof.glb",
+  "category": "roofs"
+ }
+]

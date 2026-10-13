@@ -1,0 +1,7099 @@
+{
+ "id": "sisli_vadi",
+ "grid": {
+  "w": 160,
+  "h": 160
+ },
+ "tileSize": 4,
+ "levels": [
+  1,
+  30
+ ],
+ "rooms": [
+  {
+   "id": "r0_kuzgun_yolu",
+   "name": "Kuzgunkale Yolu",
+   "rect": {
+    "x": 76,
+    "z": 0,
+    "w": 9,
+    "h": 3
+   }
+  },
+  {
+   "id": "r1_sisli_koru",
+   "name": "Sisli Koru",
+   "rect": {
+    "x": 38,
+    "z": 3,
+    "w": 70,
+    "h": 43
+   }
+  },
+  {
+   "id": "r1x_tas_kopru",
+   "name": "Taş Köprü",
+   "rect": {
+    "x": 108,
+    "z": 25,
+    "w": 6,
+    "h": 6
+   }
+  },
+  {
+   "id": "r2_altin_tarlalar",
+   "name": "Altın Tarlalar",
+   "rect": {
+    "x": 114,
+    "z": 3,
+    "w": 44,
+    "h": 66
+   }
+  },
+  {
+   "id": "r3_haydut_tepeleri",
+   "name": "Haydut Tepeleri",
+   "rect": {
+    "x": 100,
+    "z": 69,
+    "w": 58,
+    "h": 46
+   }
+  },
+  {
+   "id": "r4_agit_batakligi",
+   "name": "Ağıt Bataklığı",
+   "rect": {
+    "x": 58,
+    "z": 115,
+    "w": 100,
+    "h": 43
+   }
+  },
+  {
+   "id": "r5_ork_kanyonu",
+   "name": "Ork Kanyonu",
+   "rect": {
+    "x": 3,
+    "z": 99,
+    "w": 55,
+    "h": 58
+   }
+  },
+  {
+   "id": "r6_lanetli_harabeler",
+   "name": "Lanetli Harabeler",
+   "rect": {
+    "x": 3,
+    "z": 52,
+    "w": 55,
+    "h": 47
+   }
+  },
+  {
+   "id": "r7_mabed_adasi",
+   "name": "Mabed Adası",
+   "rect": {
+    "x": 75,
+    "z": 78,
+    "w": 8,
+    "h": 8
+   }
+  }
+ ],
+ "water": [
+  {
+   "id": "sis_golu",
+   "x0": 58,
+   "z0": 52,
+   "x1": 99,
+   "z1": 114
+  },
+  {
+   "id": "gumus_cay_ns",
+   "x0": 108,
+   "z0": 3,
+   "x1": 113,
+   "z1": 45
+  },
+  {
+   "id": "gumus_cay_ew",
+   "x0": 38,
+   "z0": 46,
+   "x1": 113,
+   "z1": 51
+  }
+ ],
+ "roads": [
+  {
+   "id": "yol_ana",
+   "kind": "cobble",
+   "width": 4.0,
+   "pts": [
+    [
+     80,
+     1
+    ],
+    [
+     80,
+     7
+    ]
+   ]
+  },
+  {
+   "id": "yol_koy_icinde",
+   "kind": "cobble",
+   "width": 3.0,
+   "pts": [
+    [
+     80,
+     7
+    ],
+    [
+     80,
+     21
+    ]
+   ]
+  },
+  {
+   "id": "yol_r1",
+   "kind": "dirt",
+   "width": 3.4,
+   "pts": [
+    [
+     80,
+     21
+    ],
+    [
+     86,
+     27
+    ],
+    [
+     98,
+     28
+    ],
+    [
+     108,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "yol_kopru",
+   "kind": "bridge",
+   "width": 4.0,
+   "pts": [
+    [
+     108,
+     28
+    ],
+    [
+     113,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "yol_r2",
+   "kind": "dirt",
+   "width": 3.4,
+   "pts": [
+    [
+     114,
+     28
+    ],
+    [
+     124,
+     31
+    ],
+    [
+     131,
+     38
+    ],
+    [
+     136,
+     49
+    ],
+    [
+     137,
+     62
+    ],
+    [
+     134,
+     69
+    ]
+   ]
+  },
+  {
+   "id": "yol_r3",
+   "kind": "dirt",
+   "width": 3.4,
+   "pts": [
+    [
+     134,
+     69
+    ],
+    [
+     130,
+     80
+    ],
+    [
+     124,
+     92
+    ],
+    [
+     116,
+     100
+    ],
+    [
+     110,
+     102
+    ]
+   ]
+  },
+  {
+   "id": "yol_r3_r4",
+   "kind": "cobble",
+   "width": 3.4,
+   "pts": [
+    [
+     110,
+     102
+    ],
+    [
+     110,
+     112
+    ],
+    [
+     112,
+     116
+    ]
+   ]
+  },
+  {
+   "id": "yol_r4",
+   "kind": "boardwalk",
+   "width": 3.0,
+   "pts": [
+    [
+     112,
+     116
+    ],
+    [
+     104,
+     124
+    ],
+    [
+     94,
+     130
+    ],
+    [
+     80,
+     134
+    ],
+    [
+     66,
+     137
+    ],
+    [
+     58,
+     135
+    ]
+   ]
+  },
+  {
+   "id": "yol_r5",
+   "kind": "dirt",
+   "width": 3.6,
+   "pts": [
+    [
+     58,
+     135
+    ],
+    [
+     48,
+     131
+    ],
+    [
+     38,
+     124
+    ],
+    [
+     33,
+     113
+    ],
+    [
+     30,
+     104
+    ],
+    [
+     30,
+     99
+    ]
+   ]
+  },
+  {
+   "id": "yol_r6",
+   "kind": "cobble",
+   "width": 3.4,
+   "pts": [
+    [
+     30,
+     99
+    ],
+    [
+     30,
+     94
+    ],
+    [
+     29,
+     82
+    ],
+    [
+     28,
+     68
+    ],
+    [
+     26,
+     56
+    ]
+   ]
+  },
+  {
+   "id": "yol_mezarlik",
+   "kind": "dirt",
+   "width": 3.0,
+   "pts": [
+    [
+     124,
+     31
+    ],
+    [
+     132,
+     24
+    ],
+    [
+     140,
+     16
+    ],
+    [
+     146,
+     11
+    ]
+   ]
+  },
+  {
+   "id": "yol_ciftlik",
+   "kind": "dirt",
+   "width": 3.0,
+   "pts": [
+    [
+     124,
+     31
+    ],
+    [
+     122,
+     22
+    ]
+   ]
+  },
+  {
+   "id": "yol_koy_dogu",
+   "kind": "dirt",
+   "width": 3.0,
+   "pts": [
+    [
+     90,
+     14
+    ],
+    [
+     96,
+     19
+    ],
+    [
+     98,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "yol_kor_ocagi",
+   "kind": "dirt",
+   "width": 3.0,
+   "pts": [
+    [
+     50,
+     133
+    ],
+    [
+     52,
+     142
+    ],
+    [
+     52,
+     147
+    ]
+   ]
+  }
+ ],
+ "regions": {
+  "r1": {
+   "room": "r1_sisli_koru",
+   "name": "Sisli Koru",
+   "levels": [
+    1,
+    5
+   ],
+   "theme": {
+    "fog": [
+     10135696,
+     15,
+     70
+    ],
+    "hemi": [
+     12636336,
+     3160096,
+     1.25
+    ],
+    "sun": [
+     14477496,
+     1.05
+    ],
+    "sky": "procedural (zenith 0x8fa090 / ufuk 0x9aa890) · alt: `cloudy-sky-10.jpg`",
+    "tex": [
+     "tt1-grass-04",
+     "tt2-dirt-03",
+     "tt2-tile-11",
+     "tt1-grass-19"
+    ],
+    "music": "world_vale (town listesi 0.6) + `amb_wind`",
+    "vfx": "yer sisi + ateş böcekleri (mevcut OutdoorBuilder) + `ambient_dust` 0xc8d8b0",
+    "trees": "retro-psx-tree-pack `tree01 tree03 tree05 tree12` (koyu ladin) + `gp(tree_oak_a/b)` · çalı `bush02 bush04` · mantar `kn(mushroom_*)`",
+    "landmark": "Gümüşdere Değirmeni (`kf(windmill)` x4)"
+   }
+  },
+  "r2": {
+   "room": "r2_altin_tarlalar",
+   "name": "Altın Tarlalar",
+   "levels": [
+    5,
+    10
+   ],
+   "theme": {
+    "fog": [
+     14207120,
+     25,
+     95
+    ],
+    "hemi": [
+     15786160,
+     5261352,
+     1.3
+    ],
+    "sun": [
+     16769184,
+     1.25
+    ],
+    "sky": "`cloudy-sky-02.jpg` (puslu altın güneş) · alt `cloudy-sky-21`",
+    "tex": [
+     "tt1-grass-11",
+     "tt2-dirt-18",
+     "tt1-tile-05",
+     "tt1-grass-13"
+    ],
+    "music": "world_vale (town 0.7) + `amb_wind`",
+    "vfx": "`ambient_dust` tint 0xd0a050 (saman tozu) + az sis",
+    "trees": "`tree13 tree15 tree18 tree20 tree35` (yeşil-sarı yaprak, huş) · tarla `kn(crops_wheatStageB)`, `crops_cornStageC`, `crop_pumpkin`, `crops_dirtDoubleRow` · saman `ip(psx-medieval,market/haybale)`",
+    "landmark": "Çürük Höyük (mantar halkası) + Kayıp Mezarlık kriptası"
+   }
+  },
+  "r3": {
+   "room": "r3_haydut_tepeleri",
+   "name": "Haydut Tepeleri",
+   "levels": [
+    10,
+    15
+   ],
+   "theme": {
+    "fog": [
+     13152400,
+     25,
+     100
+    ],
+    "hemi": [
+     14733488,
+     4733992,
+     1.2
+    ],
+    "sun": [
+     16767136,
+     1.15
+    ],
+    "sky": "`cloudy-sky-03.jpg` (tozlu turuncu güneş)",
+    "tex": [
+     "tt1-grass-22",
+     "tt2-dirt-17",
+     "tt3-stone-23",
+     "tt2-dirt-09"
+    ],
+    "music": "world_hills (`combat` parçası 0.5)",
+    "vfx": "`ambient_dust` tint 0xc8a878 (rüzgârlı toz)",
+    "trees": "retro-psx-nature-pack `tree01_fall tree04_fall tree05_fall` (sonbahar) · `tree29 tree33` (kuru yaprak) · kayalar `tw(decoration/nature/rock_single_A..E)` x6 · kaya kütleleri `tw(decoration/nature/hills_A_trees)` (engelleyici tepe)",
+    "landmark": "Yıkık Gözcü Kulesi (`ip(nocturnal-watch,tower)` 30 m)"
+   }
+  },
+  "r4": {
+   "room": "r4_agit_batakligi",
+   "name": "Ağıt Bataklığı",
+   "levels": [
+    15,
+    20
+   ],
+   "theme": {
+    "fog": [
+     6058080,
+     10,
+     55
+    ],
+    "hemi": [
+     9482400,
+     1714208,
+     1.0
+    ],
+    "sun": [
+     10535088,
+     0.7
+    ],
+    "sky": "`cloudy-sky-10.jpg` (gri-yeşil kasvet) · alt `cloudy-sky-14` (yeşil aurora)",
+    "tex": [
+     "tt1-grass-12",
+     "tt2-dirt-09",
+     "tt1-wood-22",
+     "tt3-terrain-13"
+    ],
+    "music": "world_marsh (`dungeon_crypt` gain 4 · ağır sis)",
+    "vfx": "`ambient_shadow_wisps` + cyan ateş böcekleri (0x60ffd0) + yoğun yer sisi",
+    "trees": "çıplak dallı `tree01_winter tree03_winter` (110 tri) · `gp(tree_dead)` · `hw(tree_dead_large)` · `kn(lily_*)`, `tw(decoration/nature/waterplant_A..C)`, `kn(hanging_moss)`, `kn(mushroom_tan*)` · tahta yol `kn(path_wood*)`",
+    "landmark": "Ağıt Ağacı + Cadı Kulübesi (`gp(cauldron)`, kafatası totemleri)"
+   }
+  },
+  "r5": {
+   "room": "r5_ork_kanyonu",
+   "name": "Ork Kanyonu",
+   "levels": [
+    20,
+    25
+   ],
+   "theme": {
+    "fog": [
+     12094048,
+     20,
+     85
+    ],
+    "hemi": [
+     15251600,
+     4728856,
+     1.2
+    ],
+    "sun": [
+     16756848,
+     1.2
+    ],
+    "sky": "`cloudy-sky-21.jpg` (altın turuncu) · alt `cloudy-sky-19` (kan kırmızısı)",
+    "tex": [
+     "tt2-dirt-01",
+     "tt3-stone-03",
+     "tt2-dirt-19",
+     "tt2-stone-01"
+    ],
+    "music": "world_canyon (`dungeon_fire` 0.6)",
+    "vfx": "`ambient_embers` + kızıl toz",
+    "trees": "kanyon duvarları `kn(cliff_block_rock)`, `cliff_half_rock`, `cliff_steps_rock` x4 · `kn(rock_tallA..F)` x4 · `kn(cactus_tall)` · seyrek `gp(tree_dead)` · ork sancakları `gp(banner_red)`",
+    "landmark": "Kızıl Kale (`tw(building_castle_red)` x8) + Ejder Yuvası kayalığı"
+   }
+  },
+  "r6": {
+   "room": "r6_lanetli_harabeler",
+   "name": "Lanetli Harabeler",
+   "levels": [
+    25,
+    30
+   ],
+   "theme": {
+    "fog": [
+     3813456,
+     8,
+     60
+    ],
+    "hemi": [
+     7364768,
+     1577000,
+     0.9
+    ],
+    "sun": [
+     8417472,
+     0.6
+    ],
+    "sky": "`cloudy-sky-12.jpg` (koyu mor alacakaranlık) · alt `psx-skyboxes-free/night-moon.png`",
+    "tex": [
+     "tt1-grass-12",
+     "tt2-dirt-07",
+     "tt2-stone-14",
+     "tt2-tile-05"
+    ],
+    "music": "world_ruins (`dungeon_shadow` 0.6)",
+    "vfx": "`ambient_shadow_wisps` + mor kıvılcımlar",
+    "trees": "`hw(tree_dead_large)`, `hw(tree_dead_medium)` · yıkık surlar `kc(wall-broken)`, `kc(wall-half)`, `kc(wall-corner)` · `kg(gravestone-*)`, `kg(pillar-*)`, `hw(shrine)`, `hw(arch)`, `gp(statue_hooded)`, `kn(statue_*)`",
+    "landmark": "Kara Anıt (`kg(pillar-obelisk)` x9)"
+   }
+  }
+ },
+ "packs": [
+  {
+   "id": "r1_c01",
+   "name": "Fare Yuvası",
+   "region": "r1",
+   "center": [
+    72,
+    30
+   ],
+   "radius": 12,
+   "levelRange": [
+    1,
+    2
+   ],
+   "respawnSec": 40,
+   "members": [
+    {
+     "enemyId": "ow_rat",
+     "count": 7
+    }
+   ],
+   "flags": [
+    "farm:fs01"
+   ],
+   "note": "Çürük kütükler, kırık fıçı; ilk kamp"
+  },
+  {
+   "id": "r1_c02",
+   "name": "Balçık Gölü",
+   "region": "r1",
+   "center": [
+    58,
+    22
+   ],
+   "radius": 14,
+   "levelRange": [
+    1,
+    3
+   ],
+   "respawnSec": 45,
+   "members": [
+    {
+     "enemyId": "ow_slime",
+     "count": 5
+    }
+   ],
+   "flags": [],
+   "note": "Yeşil gölcük, kristal ışığı"
+  },
+  {
+   "id": "r1_c03",
+   "name": "Kurt Açıklığı",
+   "region": "r1",
+   "center": [
+    95,
+    31
+   ],
+   "radius": 14,
+   "levelRange": [
+    2,
+    4
+   ],
+   "respawnSec": 50,
+   "members": [
+    {
+     "enemyId": "ow_wolf",
+     "count": 4
+    },
+    {
+     "enemyId": "ow_rat",
+     "count": 3
+    }
+   ],
+   "flags": [],
+   "note": "Geyik çayırına komşu"
+  },
+  {
+   "id": "r1_c04",
+   "name": "Yağmacı Kampı",
+   "region": "r1",
+   "center": [
+    101,
+    14
+   ],
+   "radius": 16,
+   "levelRange": [
+    3,
+    5
+   ],
+   "respawnSec": 70,
+   "members": [
+    {
+     "enemyId": "ow_goblin",
+     "count": 5
+    },
+    {
+     "enemyId": "ow_goblin_shaman",
+     "count": 1
+    },
+    {
+     "enemyId": "ow_puglin_chief",
+     "count": 1
+    }
+   ],
+   "flags": [
+    "elite",
+    "farm:fs02"
+   ],
+   "note": "Çadırlar, ateş, sandık; lider Puglin Reisi; Gırtlak mini-boss alanı"
+  },
+  {
+   "id": "r1_c05",
+   "name": "Mantar Halkası",
+   "region": "r1",
+   "center": [
+    52,
+    36
+   ],
+   "radius": 14,
+   "levelRange": [
+    3,
+    5
+   ],
+   "respawnSec": 50,
+   "members": [
+    {
+     "enemyId": "ow_mushnub",
+     "count": 8
+    }
+   ],
+   "flags": [],
+   "note": "Dev mantar halkası"
+  },
+  {
+   "id": "r1_c06",
+   "name": "Örümcek Korusu",
+   "region": "r1",
+   "center": [
+    86,
+    39
+   ],
+   "radius": 14,
+   "levelRange": [
+    4,
+    5
+   ],
+   "respawnSec": 60,
+   "members": [
+    {
+     "enemyId": "ow_spider",
+     "count": 4
+    },
+    {
+     "enemyId": "ow_rat",
+     "count": 4
+    }
+   ],
+   "flags": [],
+   "note": "Ölü ağaçlar, ağ perdeleri"
+  },
+  {
+   "id": "r1_c07",
+   "name": "Arı Yuvası",
+   "region": "r1",
+   "center": [
+    103,
+    38
+   ],
+   "radius": 12,
+   "levelRange": [
+    4,
+    5
+   ],
+   "respawnSec": 50,
+   "members": [
+    {
+     "enemyId": "ow_wasp",
+     "count": 6
+    }
+   ],
+   "flags": [],
+   "note": "Nehir kıyısı sazlığı"
+  },
+  {
+   "id": "r1_c08",
+   "name": "Yaban Domuzu Çalılığı",
+   "region": "r1",
+   "center": [
+    64,
+    42
+   ],
+   "radius": 12,
+   "levelRange": [
+    4,
+    5
+   ],
+   "respawnSec": 55,
+   "members": [
+    {
+     "enemyId": "ow_boar",
+     "count": 4
+    }
+   ],
+   "flags": [],
+   "note": "Sık çalılık"
+  },
+  {
+   "id": "r1_c09",
+   "name": "Kesik Kütükler",
+   "region": "r1",
+   "center": [
+    46,
+    20
+   ],
+   "radius": 12,
+   "levelRange": [
+    3,
+    5
+   ],
+   "respawnSec": 55,
+   "members": [
+    {
+     "enemyId": "ow_goblin",
+     "count": 4
+    },
+    {
+     "enemyId": "ow_slime",
+     "count": 2
+    }
+   ],
+   "flags": [],
+   "note": "Odunculuk kampı kalıntısı"
+  },
+  {
+   "id": "r1_c10",
+   "name": "Eski Değirmen",
+   "region": "r1",
+   "center": [
+    52,
+    10
+   ],
+   "radius": 12,
+   "levelRange": [
+    3,
+    5
+   ],
+   "respawnSec": 55,
+   "members": [
+    {
+     "enemyId": "ow_wolf",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_boar",
+     "count": 2
+    }
+   ],
+   "flags": [],
+   "note": "Yıkık değirmen, kurt ini"
+  },
+  {
+   "id": "r2_c01",
+   "name": "Buğday Tarlası",
+   "region": "r2",
+   "center": [
+    130,
+    12
+   ],
+   "radius": 14,
+   "levelRange": [
+    5,
+    7
+   ],
+   "respawnSec": 55,
+   "members": [
+    {
+     "enemyId": "ow_boar",
+     "count": 5
+    }
+   ],
+   "flags": [],
+   "note": "Olgun buğday, domuz izleri"
+  },
+  {
+   "id": "r2_c02",
+   "name": "Korkuluk Tarlası",
+   "region": "r2",
+   "center": [
+    142,
+    28
+   ],
+   "radius": 14,
+   "levelRange": [
+    5,
+    7
+   ],
+   "respawnSec": 55,
+   "members": [
+    {
+     "enemyId": "ow_scarecrow",
+     "count": 6
+    }
+   ],
+   "flags": [
+    "dormant"
+   ],
+   "note": "Gerçek korkuluk gibi duran uyuyanlar"
+  },
+  {
+   "id": "r2_c03",
+   "name": "Terk Edilmiş Çiftlik",
+   "region": "r2",
+   "center": [
+    126,
+    42
+   ],
+   "radius": 16,
+   "levelRange": [
+    6,
+    8
+   ],
+   "respawnSec": 70,
+   "members": [
+    {
+     "enemyId": "ow_zombie",
+     "count": 5
+    },
+    {
+     "enemyId": "ow_bat",
+     "count": 4
+    }
+   ],
+   "flags": [],
+   "note": "Boş çiftlik evleri, kuyu, araba"
+  },
+  {
+   "id": "r2_c04",
+   "name": "Kurt Ormanı",
+   "region": "r2",
+   "center": [
+    152,
+    22
+   ],
+   "radius": 14,
+   "levelRange": [
+    6,
+    8
+   ],
+   "respawnSec": 65,
+   "members": [
+    {
+     "enemyId": "ow_wolf",
+     "count": 5
+    },
+    {
+     "enemyId": "ow_bear",
+     "count": 1
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Tarla kenarı koru; lider Boz Ayı"
+  },
+  {
+   "id": "r2_c05",
+   "name": "Mantar Tarlası",
+   "region": "r2",
+   "center": [
+    118,
+    52
+   ],
+   "radius": 14,
+   "levelRange": [
+    7,
+    9
+   ],
+   "respawnSec": 60,
+   "members": [
+    {
+     "enemyId": "ow_mushnub",
+     "count": 6
+    },
+    {
+     "enemyId": "ow_mushroom_brute",
+     "count": 2
+    }
+   ],
+   "flags": [
+    "farm:fs04"
+   ],
+   "note": "Dev mantarlar"
+  },
+  {
+   "id": "r2_c06",
+   "name": "Haydut Karakolu",
+   "region": "r2",
+   "center": [
+    146,
+    44
+   ],
+   "radius": 16,
+   "levelRange": [
+    7,
+    9
+   ],
+   "respawnSec": 75,
+   "members": [
+    {
+     "enemyId": "ow_bandit",
+     "count": 4
+    },
+    {
+     "enemyId": "ow_bandit_archer",
+     "count": 2
+    },
+    {
+     "enemyId": "ow_bandit_brute",
+     "count": 1
+    }
+   ],
+   "flags": [
+    "elite",
+    "farm:fs05"
+   ],
+   "note": "İlk haydutlar: çadır + sandık"
+  },
+  {
+   "id": "r2_c07",
+   "name": "Yarasa Kayalığı",
+   "region": "r2",
+   "center": [
+    152,
+    58
+   ],
+   "radius": 12,
+   "levelRange": [
+    8,
+    10
+   ],
+   "respawnSec": 50,
+   "members": [
+    {
+     "enemyId": "ow_bat",
+     "count": 8
+    }
+   ],
+   "flags": [],
+   "note": "Doğu kayalıkları, mağara ağzı"
+  },
+  {
+   "id": "r2_c08",
+   "name": "Kayıp Mezarlık",
+   "region": "r2",
+   "center": [
+    144,
+    14
+   ],
+   "radius": 16,
+   "levelRange": [
+    8,
+    10
+   ],
+   "respawnSec": 90,
+   "members": [
+    {
+     "enemyId": "skel_rattler",
+     "count": 6
+    },
+    {
+     "enemyId": "ow_zombie",
+     "count": 3
+    }
+   ],
+   "flags": [
+    "dormant"
+   ],
+   "note": "Mezar taşları, kemik yığınları (dormant); Hovardan alanı"
+  },
+  {
+   "id": "r2_c09",
+   "name": "Mezarlık Bekçileri",
+   "region": "r2",
+   "center": [
+    136,
+    6
+   ],
+   "radius": 12,
+   "levelRange": [
+    8,
+    10
+   ],
+   "respawnSec": 90,
+   "members": [
+    {
+     "enemyId": "skel_minion",
+     "count": 4
+    },
+    {
+     "enemyId": "skel_archer",
+     "count": 2
+    }
+   ],
+   "flags": [],
+   "note": "Mezarlık girişi, yıkık duvar"
+  },
+  {
+   "id": "r2_c10",
+   "name": "Çiftçi Hırsızları",
+   "region": "r2",
+   "center": [
+    140,
+    54
+   ],
+   "radius": 14,
+   "levelRange": [
+    8,
+    10
+   ],
+   "respawnSec": 70,
+   "members": [
+    {
+     "enemyId": "ow_puglin",
+     "count": 5
+    },
+    {
+     "enemyId": "ow_goblin_shaman",
+     "count": 1
+    }
+   ],
+   "flags": [],
+   "note": "Çalıntı erzak yığınları"
+  },
+  {
+   "id": "r2_c11",
+   "name": "Kırık Değirmen",
+   "region": "r2",
+   "center": [
+    118,
+    36
+   ],
+   "radius": 12,
+   "levelRange": [
+    6,
+    8
+   ],
+   "respawnSec": 55,
+   "members": [
+    {
+     "enemyId": "ow_wasp",
+     "count": 5
+    },
+    {
+     "enemyId": "ow_wolf",
+     "count": 2
+    }
+   ],
+   "flags": [],
+   "note": "Köprü başı yıkık değirmen"
+  },
+  {
+   "id": "r2_c12",
+   "name": "Domuz Ağılı",
+   "region": "r2",
+   "center": [
+    150,
+    34
+   ],
+   "radius": 12,
+   "levelRange": [
+    6,
+    8
+   ],
+   "respawnSec": 55,
+   "members": [
+    {
+     "enemyId": "ow_boar",
+     "count": 4
+    },
+    {
+     "enemyId": "ow_scarecrow",
+     "count": 2
+    }
+   ],
+   "flags": [],
+   "note": "Kırık ağıl çitleri"
+  },
+  {
+   "id": "r3_c01",
+   "name": "Haydut Barınağı",
+   "region": "r3",
+   "center": [
+    116,
+    76
+   ],
+   "radius": 14,
+   "levelRange": [
+    10,
+    12
+   ],
+   "respawnSec": 70,
+   "members": [
+    {
+     "enemyId": "ow_bandit",
+     "count": 5
+    },
+    {
+     "enemyId": "ow_bandit_archer",
+     "count": 2
+    }
+   ],
+   "flags": [],
+   "note": "Kaya sığınağı, kamp ateşi"
+  },
+  {
+   "id": "r3_c02",
+   "name": "Kurt İni",
+   "region": "r3",
+   "center": [
+    128,
+    74
+   ],
+   "radius": 14,
+   "levelRange": [
+    10,
+    12
+   ],
+   "respawnSec": 60,
+   "members": [
+    {
+     "enemyId": "ow_wolf",
+     "count": 5
+    },
+    {
+     "enemyId": "ow_wolf_dire",
+     "count": 1
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Kemik yığınlı in; lider Dehşet Kurdu"
+  },
+  {
+   "id": "r3_c03",
+   "name": "Puglin Obası",
+   "region": "r3",
+   "center": [
+    150,
+    74
+   ],
+   "radius": 12,
+   "levelRange": [
+    11,
+    13
+   ],
+   "respawnSec": 75,
+   "members": [
+    {
+     "enemyId": "ow_puglin",
+     "count": 6
+    },
+    {
+     "enemyId": "ow_puglin_chief",
+     "count": 1
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Tüylü çadırlar"
+  },
+  {
+   "id": "r3_c04",
+   "name": "Haydut Kalesi",
+   "region": "r3",
+   "center": [
+    140,
+    86
+   ],
+   "radius": 18,
+   "levelRange": [
+    12,
+    14
+   ],
+   "respawnSec": 120,
+   "members": [
+    {
+     "enemyId": "ow_bandit",
+     "count": 5
+    },
+    {
+     "enemyId": "ow_bandit_archer",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_bandit_brute",
+     "count": 2
+    },
+    {
+     "enemyId": "ow_bandit_chief",
+     "count": 1
+    }
+   ],
+   "flags": [
+    "elite",
+    "farm:fs06"
+   ],
+   "note": "Çit surlu kale; Karabıyık mini-boss alanı"
+  },
+  {
+   "id": "r3_c05",
+   "name": "Gergedan Otlağı",
+   "region": "r3",
+   "center": [
+    122,
+    90
+   ],
+   "radius": 16,
+   "levelRange": [
+    12,
+    14
+   ],
+   "respawnSec": 90,
+   "members": [
+    {
+     "enemyId": "ow_rhino",
+     "count": 2
+    },
+    {
+     "enemyId": "ow_boar",
+     "count": 4
+    }
+   ],
+   "flags": [
+    "elite",
+    "farm:fs07"
+   ],
+   "note": "Açık otlak, kırık çitler"
+  },
+  {
+   "id": "r3_c06",
+   "name": "Arı Kovanları",
+   "region": "r3",
+   "center": [
+    152,
+    92
+   ],
+   "radius": 12,
+   "levelRange": [
+    11,
+    13
+   ],
+   "respawnSec": 55,
+   "members": [
+    {
+     "enemyId": "ow_wasp",
+     "count": 8
+    }
+   ],
+   "flags": [],
+   "note": "Dev kovanlar"
+  },
+  {
+   "id": "r3_c07",
+   "name": "Boz Ayı Mağarası",
+   "region": "r3",
+   "center": [
+    104,
+    80
+   ],
+   "radius": 12,
+   "levelRange": [
+    11,
+    13
+   ],
+   "respawnSec": 80,
+   "members": [
+    {
+     "enemyId": "ow_bear",
+     "count": 2
+    },
+    {
+     "enemyId": "ow_wolf",
+     "count": 3
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Göl kıyısı mağara"
+  },
+  {
+   "id": "r3_c08",
+   "name": "Warg Sürüsü",
+   "region": "r3",
+   "center": [
+    140,
+    102
+   ],
+   "radius": 16,
+   "levelRange": [
+    13,
+    15
+   ],
+   "respawnSec": 90,
+   "members": [
+    {
+     "enemyId": "ow_warg",
+     "count": 2
+    },
+    {
+     "enemyId": "ow_wolf",
+     "count": 4
+    },
+    {
+     "enemyId": "ow_puglin",
+     "count": 3
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Kemik totemler"
+  },
+  {
+   "id": "r3_c09",
+   "name": "Yıkık Gözcü Kulesi",
+   "region": "r3",
+   "center": [
+    128,
+    106
+   ],
+   "radius": 14,
+   "levelRange": [
+    13,
+    15
+   ],
+   "respawnSec": 85,
+   "members": [
+    {
+     "enemyId": "ow_bandit_archer",
+     "count": 4
+    },
+    {
+     "enemyId": "ow_bandit",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_bandit_brute",
+     "count": 1
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Yıkık kule (ufuk işareti)"
+  },
+  {
+   "id": "r3_c10",
+   "name": "Tepe Pusu",
+   "region": "r3",
+   "center": [
+    152,
+    108
+   ],
+   "radius": 12,
+   "levelRange": [
+    13,
+    15
+   ],
+   "respawnSec": 80,
+   "members": [
+    {
+     "enemyId": "ow_bandit",
+     "count": 4
+    }
+   ],
+   "flags": [
+    "stealth"
+   ],
+   "note": "Yol kenarı pusu: görünmez başlar"
+  },
+  {
+   "id": "r3_c11",
+   "name": "Gölge Vadisi",
+   "region": "r3",
+   "center": [
+    108,
+    92
+   ],
+   "radius": 12,
+   "levelRange": [
+    12,
+    14
+   ],
+   "respawnSec": 70,
+   "members": [
+    {
+     "enemyId": "ow_wolf_dire",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_wolf",
+     "count": 3
+    }
+   ],
+   "flags": [],
+   "note": "Gölgeli kaya vadisi"
+  },
+  {
+   "id": "r4_c01",
+   "name": "Bataklık Girişi",
+   "region": "r4",
+   "center": [
+    120,
+    124
+   ],
+   "radius": 14,
+   "levelRange": [
+    15,
+    17
+   ],
+   "respawnSec": 70,
+   "members": [
+    {
+     "enemyId": "ow_ghoul",
+     "count": 5
+    },
+    {
+     "enemyId": "ow_will",
+     "count": 3
+    }
+   ],
+   "flags": [],
+   "note": "Sazlık, ilk tahta yol"
+  },
+  {
+   "id": "r4_c02",
+   "name": "Çamur Havuzu",
+   "region": "r4",
+   "center": [
+    138,
+    126
+   ],
+   "radius": 14,
+   "levelRange": [
+    15,
+    17
+   ],
+   "respawnSec": 65,
+   "members": [
+    {
+     "enemyId": "ow_ooze",
+     "count": 4
+    }
+   ],
+   "flags": [],
+   "note": "Kahverengi çamur gölleri"
+  },
+  {
+   "id": "r4_c03",
+   "name": "Arı Sazlığı",
+   "region": "r4",
+   "center": [
+    152,
+    124
+   ],
+   "radius": 12,
+   "levelRange": [
+    16,
+    18
+   ],
+   "respawnSec": 55,
+   "members": [
+    {
+     "enemyId": "ow_wasp_swamp",
+     "count": 7
+    }
+   ],
+   "flags": [],
+   "note": "Sazlık, yosunlu kovanlar"
+  },
+  {
+   "id": "r4_c04",
+   "name": "Çıyan Çukuru",
+   "region": "r4",
+   "center": [
+    104,
+    132
+   ],
+   "radius": 14,
+   "levelRange": [
+    16,
+    18
+   ],
+   "respawnSec": 70,
+   "members": [
+    {
+     "enemyId": "ow_centipede",
+     "count": 5
+    }
+   ],
+   "flags": [
+    "dormant",
+    "farm:fs09"
+   ],
+   "note": "Toprak çukurları (yerden fırlarlar)"
+  },
+  {
+   "id": "r4_c05",
+   "name": "Ağıt Ağacı",
+   "region": "r4",
+   "center": [
+    110,
+    146
+   ],
+   "radius": 16,
+   "levelRange": [
+    17,
+    19
+   ],
+   "respawnSec": 85,
+   "members": [
+    {
+     "enemyId": "ow_wraith",
+     "count": 4
+    },
+    {
+     "enemyId": "ow_ghoul",
+     "count": 3
+    }
+   ],
+   "flags": [],
+   "note": "Dev ölü ağaç, asılı fenerler"
+  },
+  {
+   "id": "r4_c06",
+   "name": "Zehirli Mağara",
+   "region": "r4",
+   "center": [
+    140,
+    142
+   ],
+   "radius": 14,
+   "levelRange": [
+    17,
+    19
+   ],
+   "respawnSec": 90,
+   "members": [
+    {
+     "enemyId": "ow_spider_giant",
+     "count": 2
+    },
+    {
+     "enemyId": "ow_spider",
+     "count": 5
+    }
+   ],
+   "flags": [
+    "elite",
+    "farm:fs08"
+   ],
+   "note": "Ağ dolu mağara ağzı"
+  },
+  {
+   "id": "r4_c07",
+   "name": "Batık Mezarlık",
+   "region": "r4",
+   "center": [
+    128,
+    152
+   ],
+   "radius": 14,
+   "levelRange": [
+    17,
+    19
+   ],
+   "respawnSec": 85,
+   "members": [
+    {
+     "enemyId": "ow_ghoul",
+     "count": 4
+    },
+    {
+     "enemyId": "skel_rattler",
+     "count": 4
+    }
+   ],
+   "flags": [
+    "dormant",
+    "farm:fs10"
+   ],
+   "note": "Suya gömülü mezar taşları"
+  },
+  {
+   "id": "r4_c08",
+   "name": "Cadı Kulübesi",
+   "region": "r4",
+   "center": [
+    84,
+    148
+   ],
+   "radius": 16,
+   "levelRange": [
+    18,
+    20
+   ],
+   "respawnSec": 100,
+   "members": [
+    {
+     "enemyId": "ow_witch",
+     "count": 1
+    },
+    {
+     "enemyId": "ow_ghoul",
+     "count": 4
+    },
+    {
+     "enemyId": "ow_will",
+     "count": 4
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Kazan, kafatası totemler; Zehra mini-boss alanı"
+  },
+  {
+   "id": "r4_c09",
+   "name": "Kurbağa Gölü",
+   "region": "r4",
+   "center": [
+    92,
+    122
+   ],
+   "radius": 14,
+   "levelRange": [
+    16,
+    18
+   ],
+   "respawnSec": 65,
+   "members": [
+    {
+     "enemyId": "ow_ooze",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_wasp_swamp",
+     "count": 4
+    }
+   ],
+   "flags": [],
+   "note": "Göl kıyısı nilüferler"
+  },
+  {
+   "id": "r4_c10",
+   "name": "Kara Sazlık",
+   "region": "r4",
+   "center": [
+    72,
+    130
+   ],
+   "radius": 14,
+   "levelRange": [
+    18,
+    20
+   ],
+   "respawnSec": 80,
+   "members": [
+    {
+     "enemyId": "ow_wraith",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_will",
+     "count": 5
+    }
+   ],
+   "flags": [],
+   "note": "Sis perdeleri"
+  },
+  {
+   "id": "r4_c11",
+   "name": "Çürük Ana Yuvası",
+   "region": "r4",
+   "center": [
+    68,
+    146
+   ],
+   "radius": 14,
+   "levelRange": [
+    19,
+    20
+   ],
+   "respawnSec": 95,
+   "members": [
+    {
+     "enemyId": "ow_spider_giant",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_centipede",
+     "count": 3
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Yumurta kozaları"
+  },
+  {
+   "id": "r4_c12",
+   "name": "Yosunlu Taşlar",
+   "region": "r4",
+   "center": [
+    152,
+    146
+   ],
+   "radius": 12,
+   "levelRange": [
+    17,
+    19
+   ],
+   "respawnSec": 70,
+   "members": [
+    {
+     "enemyId": "ow_ooze",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_ghoul",
+     "count": 3
+    }
+   ],
+   "flags": [],
+   "note": "Eski taş çember"
+  },
+  {
+   "id": "r4_c13",
+   "name": "Sis Perdesi",
+   "region": "r4",
+   "center": [
+    96,
+    140
+   ],
+   "radius": 12,
+   "levelRange": [
+    17,
+    19
+   ],
+   "respawnSec": 70,
+   "members": [
+    {
+     "enemyId": "ow_will",
+     "count": 6
+    },
+    {
+     "enemyId": "ow_wraith",
+     "count": 2
+    }
+   ],
+   "flags": [],
+   "note": "Yoğun sis, ışıklar"
+  },
+  {
+   "id": "r5_c01",
+   "name": "Kanyon Ağzı",
+   "region": "r5",
+   "center": [
+    50,
+    122
+   ],
+   "radius": 14,
+   "levelRange": [
+    20,
+    21
+   ],
+   "respawnSec": 75,
+   "members": [
+    {
+     "enemyId": "ow_orc",
+     "count": 4
+    },
+    {
+     "enemyId": "ow_orc_archer",
+     "count": 2
+    }
+   ],
+   "flags": [],
+   "note": "Kırmızı kaya kapısı"
+  },
+  {
+   "id": "r5_c02",
+   "name": "Ork Karakolu",
+   "region": "r5",
+   "center": [
+    42,
+    114
+   ],
+   "radius": 16,
+   "levelRange": [
+    21,
+    22
+   ],
+   "respawnSec": 90,
+   "members": [
+    {
+     "enemyId": "ow_orc",
+     "count": 5
+    },
+    {
+     "enemyId": "ow_orc_shaman",
+     "count": 1
+    },
+    {
+     "enemyId": "ow_orc_chief",
+     "count": 1
+    }
+   ],
+   "flags": [
+    "elite",
+    "farm:fs11"
+   ],
+   "note": "Çit, çadır, bayraklar"
+  },
+  {
+   "id": "r5_c03",
+   "name": "Gergedan Vadisi",
+   "region": "r5",
+   "center": [
+    52,
+    106
+   ],
+   "radius": 14,
+   "levelRange": [
+    20,
+    22
+   ],
+   "respawnSec": 80,
+   "members": [
+    {
+     "enemyId": "ow_rhino",
+     "count": 2
+    },
+    {
+     "enemyId": "ow_boar",
+     "count": 3
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Geniş vadi tabanı"
+  },
+  {
+   "id": "r5_c04",
+   "name": "Kor Ocağı Girişi",
+   "region": "r5",
+   "center": [
+    44,
+    144
+   ],
+   "radius": 14,
+   "levelRange": [
+    21,
+    23
+   ],
+   "respawnSec": 80,
+   "members": [
+    {
+     "enemyId": "ow_imp",
+     "count": 5
+    },
+    {
+     "enemyId": "ow_ember",
+     "count": 1
+    }
+   ],
+   "flags": [
+    "elite",
+    "farm:fs12"
+   ],
+   "note": "Lav çatlakları, Kızıl Dökümhane kapısı yakını"
+  },
+  {
+   "id": "r5_c05",
+   "name": "Taş Ocağı",
+   "region": "r5",
+   "center": [
+    30,
+    110
+   ],
+   "radius": 14,
+   "levelRange": [
+    22,
+    24
+   ],
+   "respawnSec": 95,
+   "members": [
+    {
+     "enemyId": "ow_golem",
+     "count": 2
+    },
+    {
+     "enemyId": "ow_orc",
+     "count": 3
+    }
+   ],
+   "flags": [
+    "elite",
+    "farm:fs13"
+   ],
+   "note": "Kırık kaya blokları, vagon"
+  },
+  {
+   "id": "r5_c06",
+   "name": "Kızıl Kale Dış Surları",
+   "region": "r5",
+   "center": [
+    20,
+    118
+   ],
+   "radius": 16,
+   "levelRange": [
+    23,
+    25
+   ],
+   "respawnSec": 100,
+   "members": [
+    {
+     "enemyId": "ow_orc",
+     "count": 6
+    },
+    {
+     "enemyId": "ow_orc_archer",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_orc_brute",
+     "count": 1
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Sur önü, kuşatma kalıntıları"
+  },
+  {
+   "id": "r5_c07",
+   "name": "Savaş Kurdu Kampı",
+   "region": "r5",
+   "center": [
+    12,
+    106
+   ],
+   "radius": 14,
+   "levelRange": [
+    23,
+    25
+   ],
+   "respawnSec": 90,
+   "members": [
+    {
+     "enemyId": "ow_warg",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_orc",
+     "count": 3
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Kemik ve post yığınları"
+  },
+  {
+   "id": "r5_c08",
+   "name": "Ayı Mağarası",
+   "region": "r5",
+   "center": [
+    10,
+    128
+   ],
+   "radius": 12,
+   "levelRange": [
+    22,
+    24
+   ],
+   "respawnSec": 80,
+   "members": [
+    {
+     "enemyId": "ow_bear",
+     "count": 3
+    }
+   ],
+   "flags": [
+    "dormant",
+    "elite"
+   ],
+   "note": "Batı kaya mağarası"
+  },
+  {
+   "id": "r5_c09",
+   "name": "Kızıl Kale İç Avlu",
+   "region": "r5",
+   "center": [
+    24,
+    136
+   ],
+   "radius": 16,
+   "levelRange": [
+    24,
+    25
+   ],
+   "respawnSec": 120,
+   "members": [
+    {
+     "enemyId": "ow_orc_brute",
+     "count": 2
+    },
+    {
+     "enemyId": "ow_orc_shaman",
+     "count": 2
+    },
+    {
+     "enemyId": "ow_orc",
+     "count": 4
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Kale avlusu; Gorak mini-boss alanı"
+  },
+  {
+   "id": "r5_c10",
+   "name": "Ejder Yuvası Yolu",
+   "region": "r5",
+   "center": [
+    26,
+    146
+   ],
+   "radius": 14,
+   "levelRange": [
+    24,
+    25
+   ],
+   "respawnSec": 100,
+   "members": [
+    {
+     "enemyId": "ow_imp",
+     "count": 4
+    },
+    {
+     "enemyId": "ow_ember",
+     "count": 2
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Yanık kayalar, kemikler"
+  },
+  {
+   "id": "r5_c11",
+   "name": "Ork Ocağı",
+   "region": "r5",
+   "center": [
+    36,
+    150
+   ],
+   "radius": 14,
+   "levelRange": [
+    22,
+    24
+   ],
+   "respawnSec": 85,
+   "members": [
+    {
+     "enemyId": "ow_orc",
+     "count": 5
+    },
+    {
+     "enemyId": "ow_orc_shaman",
+     "count": 2
+    }
+   ],
+   "flags": [],
+   "note": "Pişirme ateşleri"
+  },
+  {
+   "id": "r5_c12",
+   "name": "Kor Çatlağı",
+   "region": "r5",
+   "center": [
+    34,
+    128
+   ],
+   "radius": 12,
+   "levelRange": [
+    23,
+    24
+   ],
+   "respawnSec": 85,
+   "members": [
+    {
+     "enemyId": "ow_ember",
+     "count": 2
+    },
+    {
+     "enemyId": "ow_imp",
+     "count": 3
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Parlayan çatlak"
+  },
+  {
+   "id": "r6_c01",
+   "name": "Son Ocak Nöbeti",
+   "region": "r6",
+   "center": [
+    42,
+    86
+   ],
+   "radius": 14,
+   "levelRange": [
+    25,
+    26
+   ],
+   "respawnSec": 80,
+   "members": [
+    {
+     "enemyId": "skel_minion",
+     "count": 5
+    },
+    {
+     "enemyId": "skel_archer",
+     "count": 2
+    }
+   ],
+   "flags": [],
+   "note": "Kamp çevresi gözcüleri"
+  },
+  {
+   "id": "r6_c02",
+   "name": "Kırık Köprü",
+   "region": "r6",
+   "center": [
+    18,
+    90
+   ],
+   "radius": 14,
+   "levelRange": [
+    25,
+    27
+   ],
+   "respawnSec": 85,
+   "members": [
+    {
+     "enemyId": "crypt_ghoul",
+     "count": 4
+    },
+    {
+     "enemyId": "skel_rattler",
+     "count": 5
+    }
+   ],
+   "flags": [
+    "dormant"
+   ],
+   "note": "Çökmüş taş köprü"
+  },
+  {
+   "id": "r6_c03",
+   "name": "Lanetli Avlu",
+   "region": "r6",
+   "center": [
+    46,
+    78
+   ],
+   "radius": 14,
+   "levelRange": [
+    26,
+    28
+   ],
+   "respawnSec": 90,
+   "members": [
+    {
+     "enemyId": "cult_acolyte",
+     "count": 6
+    },
+    {
+     "enemyId": "cult_summoner",
+     "count": 1
+    }
+   ],
+   "flags": [
+    "farm:fs14"
+   ],
+   "note": "Rün çemberi, mor mumlar"
+  },
+  {
+   "id": "r6_c04",
+   "name": "Gölge Kemeri",
+   "region": "r6",
+   "center": [
+    20,
+    80
+   ],
+   "radius": 14,
+   "levelRange": [
+    26,
+    28
+   ],
+   "respawnSec": 85,
+   "members": [
+    {
+     "enemyId": "shade",
+     "count": 4
+    },
+    {
+     "enemyId": "crypt_wraith",
+     "count": 3
+    }
+   ],
+   "flags": [],
+   "note": "Yıkık taş kemer"
+  },
+  {
+   "id": "r6_c05",
+   "name": "Eski Kütüphane",
+   "region": "r6",
+   "center": [
+    40,
+    68
+   ],
+   "radius": 14,
+   "levelRange": [
+    27,
+    29
+   ],
+   "respawnSec": 95,
+   "members": [
+    {
+     "enemyId": "skel_mage",
+     "count": 3
+    },
+    {
+     "enemyId": "skel_warrior",
+     "count": 1
+    },
+    {
+     "enemyId": "skel_minion",
+     "count": 3
+    }
+   ],
+   "flags": [
+    "elite",
+    "farm:fs15"
+   ],
+   "note": "Yıkık raflar, kitap yığınları"
+  },
+  {
+   "id": "r6_c06",
+   "name": "Mezar Çukuru",
+   "region": "r6",
+   "center": [
+    12,
+    70
+   ],
+   "radius": 14,
+   "levelRange": [
+    27,
+    29
+   ],
+   "respawnSec": 100,
+   "members": [
+    {
+     "enemyId": "skel_rattler",
+     "count": 8
+    },
+    {
+     "enemyId": "bone_golem",
+     "count": 1
+    }
+   ],
+   "flags": [
+    "dormant",
+    "elite"
+   ],
+   "note": "Açık toplu mezar"
+  },
+  {
+   "id": "r6_c07",
+   "name": "Kara Rahipler",
+   "region": "r6",
+   "center": [
+    30,
+    58
+   ],
+   "radius": 14,
+   "levelRange": [
+    28,
+    30
+   ],
+   "respawnSec": 95,
+   "members": [
+    {
+     "enemyId": "cult_assassin",
+     "count": 4
+    },
+    {
+     "enemyId": "shadow_priest",
+     "count": 2
+    }
+   ],
+   "flags": [
+    "stealth"
+   ],
+   "note": "Karartılmış sunak"
+  },
+  {
+   "id": "r6_c08",
+   "name": "Kan Lordu Salonu",
+   "region": "r6",
+   "center": [
+    46,
+    58
+   ],
+   "radius": 14,
+   "levelRange": [
+    28,
+    30
+   ],
+   "respawnSec": 120,
+   "members": [
+    {
+     "enemyId": "ow_vampire",
+     "count": 1
+    },
+    {
+     "enemyId": "ow_bat",
+     "count": 6
+    }
+   ],
+   "flags": [
+    "elite",
+    "farm:fs16"
+   ],
+   "note": "Tahta, sütunlar; Valdemar mini-boss alanı"
+  },
+  {
+   "id": "r6_c09",
+   "name": "Ölüm Çukuru",
+   "region": "r6",
+   "center": [
+    14,
+    58
+   ],
+   "radius": 12,
+   "levelRange": [
+    28,
+    30
+   ],
+   "respawnSec": 100,
+   "members": [
+    {
+     "enemyId": "ow_grave_knight",
+     "count": 2
+    },
+    {
+     "enemyId": "skel_minion",
+     "count": 4
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Kara taş çukur"
+  },
+  {
+   "id": "r6_c10",
+   "name": "Yıkık Surlar",
+   "region": "r6",
+   "center": [
+    52,
+    92
+   ],
+   "radius": 12,
+   "levelRange": [
+    25,
+    27
+   ],
+   "respawnSec": 85,
+   "members": [
+    {
+     "enemyId": "skel_warrior",
+     "count": 2
+    },
+    {
+     "enemyId": "cult_assassin",
+     "count": 3
+    }
+   ],
+   "flags": [
+    "stealth"
+   ],
+   "note": "Kırık sur parçaları"
+  },
+  {
+   "id": "r6_c11",
+   "name": "Gölge Mezarlığı",
+   "region": "r6",
+   "center": [
+    6,
+    84
+   ],
+   "radius": 12,
+   "levelRange": [
+    26,
+    28
+   ],
+   "respawnSec": 85,
+   "members": [
+    {
+     "enemyId": "skel_rattler",
+     "count": 6
+    },
+    {
+     "enemyId": "shade",
+     "count": 3
+    }
+   ],
+   "flags": [
+    "dormant"
+   ],
+   "note": "Batı kenarı mezar taşları"
+  },
+  {
+   "id": "r6_c12",
+   "name": "Kara Anıt Nöbetçileri",
+   "region": "r6",
+   "center": [
+    30,
+    74
+   ],
+   "radius": 16,
+   "levelRange": [
+    28,
+    30
+   ],
+   "respawnSec": 110,
+   "members": [
+    {
+     "enemyId": "ow_grave_knight",
+     "count": 2
+    },
+    {
+     "enemyId": "shade",
+     "count": 3
+    },
+    {
+     "enemyId": "skel_mage",
+     "count": 2
+    }
+   ],
+   "flags": [
+    "elite"
+   ],
+   "note": "Anıt meydanı; Ölüm Metini çevresi"
+  }
+ ],
+ "patrols": [
+  {
+   "id": "r1_p01",
+   "name": "Goblin Gözcüleri",
+   "region": "r1",
+   "members": [
+    {
+     "enemyId": "ow_goblin",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_goblin_shaman",
+     "count": 1
+    }
+   ],
+   "levelRange": [
+    3,
+    5
+   ],
+   "respawnSec": 90,
+   "patrol": [
+    [
+     90,
+     26
+    ],
+    [
+     98,
+     22
+    ],
+    [
+     100,
+     30
+    ],
+    [
+     92,
+     34
+    ]
+   ]
+  },
+  {
+   "id": "r2_p01",
+   "name": "Haydut Devriyesi",
+   "region": "r2",
+   "members": [
+    {
+     "enemyId": "ow_bandit",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_bandit_archer",
+     "count": 1
+    }
+   ],
+   "levelRange": [
+    7,
+    9
+   ],
+   "respawnSec": 90,
+   "patrol": [
+    [
+     124,
+     30
+    ],
+    [
+     132,
+     38
+    ],
+    [
+     136,
+     48
+    ],
+    [
+     130,
+     44
+    ]
+   ]
+  },
+  {
+   "id": "r2_p02",
+   "name": "Hortlayan Çiftçiler",
+   "region": "r2",
+   "members": [
+    {
+     "enemyId": "ow_zombie",
+     "count": 4
+    }
+   ],
+   "levelRange": [
+    6,
+    8
+   ],
+   "respawnSec": 80,
+   "patrol": [
+    [
+     122,
+     40
+    ],
+    [
+     130,
+     46
+    ],
+    [
+     124,
+     50
+    ],
+    [
+     118,
+     44
+    ]
+   ]
+  },
+  {
+   "id": "r3_p01",
+   "name": "Warg Devriyesi",
+   "region": "r3",
+   "members": [
+    {
+     "enemyId": "ow_warg",
+     "count": 1
+    },
+    {
+     "enemyId": "ow_wolf",
+     "count": 3
+    }
+   ],
+   "levelRange": [
+    12,
+    14
+   ],
+   "respawnSec": 100,
+   "patrol": [
+    [
+     132,
+     78
+    ],
+    [
+     142,
+     92
+    ],
+    [
+     136,
+     98
+    ],
+    [
+     126,
+     86
+    ]
+   ]
+  },
+  {
+   "id": "r3_p02",
+   "name": "Haydut Kervan Koruması",
+   "region": "r3",
+   "members": [
+    {
+     "enemyId": "ow_bandit_brute",
+     "count": 1
+    },
+    {
+     "enemyId": "ow_bandit",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_bandit_archer",
+     "count": 2
+    }
+   ],
+   "levelRange": [
+    12,
+    14
+   ],
+   "respawnSec": 110,
+   "patrol": [
+    [
+     120,
+     96
+    ],
+    [
+     126,
+     104
+    ],
+    [
+     136,
+     108
+    ],
+    [
+     124,
+     100
+    ]
+   ]
+  },
+  {
+   "id": "r4_p01",
+   "name": "Hortlak Alayı",
+   "region": "r4",
+   "members": [
+    {
+     "enemyId": "ow_wraith",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_will",
+     "count": 3
+    }
+   ],
+   "levelRange": [
+    17,
+    19
+   ],
+   "respawnSec": 100,
+   "patrol": [
+    [
+     100,
+     126
+    ],
+    [
+     90,
+     134
+    ],
+    [
+     80,
+     138
+    ],
+    [
+     92,
+     128
+    ]
+   ]
+  },
+  {
+   "id": "r4_p02",
+   "name": "Gulyabani Sürüsü",
+   "region": "r4",
+   "members": [
+    {
+     "enemyId": "ow_ghoul",
+     "count": 5
+    }
+   ],
+   "levelRange": [
+    16,
+    18
+   ],
+   "respawnSec": 90,
+   "patrol": [
+    [
+     128,
+     130
+    ],
+    [
+     134,
+     138
+    ],
+    [
+     126,
+     144
+    ],
+    [
+     120,
+     136
+    ]
+   ]
+  },
+  {
+   "id": "r5_p01",
+   "name": "Ork Devriyesi",
+   "region": "r5",
+   "members": [
+    {
+     "enemyId": "ow_orc",
+     "count": 3
+    },
+    {
+     "enemyId": "ow_orc_archer",
+     "count": 1
+    },
+    {
+     "enemyId": "ow_orc_shaman",
+     "count": 1
+    }
+   ],
+   "levelRange": [
+    21,
+    23
+   ],
+   "respawnSec": 100,
+   "patrol": [
+    [
+     46,
+     126
+    ],
+    [
+     40,
+     132
+    ],
+    [
+     34,
+     124
+    ],
+    [
+     42,
+     120
+    ]
+   ]
+  },
+  {
+   "id": "r5_p02",
+   "name": "Kor Avcıları",
+   "region": "r5",
+   "members": [
+    {
+     "enemyId": "ow_warg",
+     "count": 2
+    },
+    {
+     "enemyId": "ow_orc",
+     "count": 2
+    }
+   ],
+   "levelRange": [
+    23,
+    25
+   ],
+   "respawnSec": 110,
+   "patrol": [
+    [
+     16,
+     112
+    ],
+    [
+     22,
+     124
+    ],
+    [
+     14,
+     130
+    ],
+    [
+     10,
+     118
+    ]
+   ]
+  },
+  {
+   "id": "r6_p01",
+   "name": "Kemik Alayı",
+   "region": "r6",
+   "members": [
+    {
+     "enemyId": "skel_minion",
+     "count": 4
+    },
+    {
+     "enemyId": "skel_archer",
+     "count": 2
+    },
+    {
+     "enemyId": "skel_warrior",
+     "count": 1
+    }
+   ],
+   "levelRange": [
+    26,
+    28
+   ],
+   "respawnSec": 100,
+   "patrol": [
+    [
+     30,
+     90
+    ],
+    [
+     28,
+     82
+    ],
+    [
+     32,
+     76
+    ],
+    [
+     36,
+     84
+    ]
+   ]
+  },
+  {
+   "id": "r6_p02",
+   "name": "Kara Nöbetçiler",
+   "region": "r6",
+   "members": [
+    {
+     "enemyId": "ow_grave_knight",
+     "count": 1
+    },
+    {
+     "enemyId": "shade",
+     "count": 3
+    }
+   ],
+   "levelRange": [
+    28,
+    30
+   ],
+   "respawnSec": 110,
+   "patrol": [
+    [
+     20,
+     64
+    ],
+    [
+     30,
+     62
+    ],
+    [
+     38,
+     66
+    ],
+    [
+     28,
+     70
+    ]
+   ]
+  }
+ ],
+ "settlements": [
+  {
+   "id": "koy_gumusdere",
+   "name": "Gümüşdere Köyü",
+   "kind": "village",
+   "center": [
+    80,
+    14
+   ],
+   "halfTiles": [
+    10.5,
+    7.5
+   ]
+  },
+  {
+   "id": "koy_kizilkaya",
+   "name": "Kızılkaya Karakolu",
+   "kind": "village",
+   "center": [
+    110,
+    106
+   ],
+   "halfTiles": [
+    8,
+    6.5
+   ]
+  },
+  {
+   "id": "kamp_son_ocak",
+   "name": "Son Ocak Kampı",
+   "kind": "camp",
+   "center": [
+    30,
+    94
+   ],
+   "halfTiles": [
+    4,
+    3.5
+   ]
+  },
+  {
+   "id": "kamp_ciftlik",
+   "name": "Altın Ambar Çiftliği",
+   "kind": "camp",
+   "center": [
+    122,
+    20
+   ],
+   "halfTiles": [
+    4,
+    3.5
+   ]
+  },
+  {
+   "id": "kamp_iskele",
+   "name": "Bataklık İskelesi",
+   "kind": "camp",
+   "center": [
+    84,
+    138
+   ],
+   "halfTiles": [
+    4,
+    3
+   ]
+  },
+  {
+   "id": "kamp_kanyon",
+   "name": "Kanyon Girişi Kampı",
+   "kind": "camp",
+   "center": [
+    52,
+    134
+   ],
+   "halfTiles": [
+    4,
+    3
+   ]
+  }
+ ],
+ "arenas": [
+  {
+   "id": "wb_curukkok",
+   "name": "Çürük Höyük",
+   "region": "r2",
+   "center": [
+    126,
+    60
+   ],
+   "radiusTiles": 6
+  },
+  {
+   "id": "wb_alevkanat",
+   "name": "Ejder Yuvası",
+   "region": "r5",
+   "center": [
+    12,
+    148
+   ],
+   "radiusTiles": 7
+  }
+ ],
+ "waypoints": [
+  {
+   "id": "wp_gumusdere",
+   "name": "Gümüşdere Taşı",
+   "region": "r1",
+   "pos": [
+    83,
+    17.5
+   ]
+  },
+  {
+   "id": "wp_ciftlik",
+   "name": "Çiftlik Taşı",
+   "region": "r2",
+   "pos": [
+    124,
+    22
+   ]
+  },
+  {
+   "id": "wp_mezarlik",
+   "name": "Mezarlık Taşı",
+   "region": "r2",
+   "pos": [
+    150,
+    9
+   ]
+  },
+  {
+   "id": "wp_hoyuk",
+   "name": "Höyük Taşı",
+   "region": "r2",
+   "pos": [
+    118,
+    64
+   ]
+  },
+  {
+   "id": "wp_tepeler",
+   "name": "Tepeler Taşı",
+   "region": "r3",
+   "pos": [
+    136,
+    72
+   ]
+  },
+  {
+   "id": "wp_kizilkaya",
+   "name": "Kızılkaya Taşı",
+   "region": "r3",
+   "pos": [
+    111,
+    108.5
+   ]
+  },
+  {
+   "id": "wp_iskele",
+   "name": "İskele Taşı",
+   "region": "r4",
+   "pos": [
+    84,
+    136
+   ]
+  },
+  {
+   "id": "wp_kanyon",
+   "name": "Kanyon Taşı",
+   "region": "r5",
+   "pos": [
+    52,
+    136
+   ]
+  },
+  {
+   "id": "wp_kor_ocagi",
+   "name": "Kor Ocağı Taşı",
+   "region": "r5",
+   "pos": [
+    49,
+    150
+   ]
+  },
+  {
+   "id": "wp_son_ocak",
+   "name": "Son Ocak Taşı",
+   "region": "r6",
+   "pos": [
+    30,
+    96
+   ]
+  },
+  {
+   "id": "wp_anit",
+   "name": "Anıt Taşı",
+   "region": "r6",
+   "pos": [
+    22,
+    66
+   ]
+  }
+ ],
+ "entrances": [
+  {
+   "id": "ent_kemik_mahzeni",
+   "name": "Kemik Mahzeni Girişi",
+   "dungeonId": "kemik_mahzeni",
+   "region": "r2",
+   "pos": [
+    151,
+    6
+   ],
+   "facing": 0,
+   "minLevel": 8
+  },
+  {
+   "id": "ent_kizil_dokumhane",
+   "name": "Kızıl Dökümhane Girişi",
+   "dungeonId": "kizil_dokumhane",
+   "region": "r5",
+   "pos": [
+    52,
+    148
+   ],
+   "facing": -90,
+   "minLevel": 18
+  }
+ ],
+ "metinSpots": [
+  {
+   "id": "ms_r1_a",
+   "region": "r1",
+   "pos": [
+    60,
+    30
+   ],
+   "tier": "metin_keder"
+  },
+  {
+   "id": "ms_r1_b",
+   "region": "r1",
+   "pos": [
+    96,
+    22
+   ],
+   "tier": "metin_keder"
+  },
+  {
+   "id": "ms_r1_c",
+   "region": "r1",
+   "pos": [
+    74,
+    42
+   ],
+   "tier": "metin_keder"
+  },
+  {
+   "id": "ms_r1_d",
+   "region": "r1",
+   "pos": [
+    46,
+    30
+   ],
+   "tier": "metin_keder"
+  },
+  {
+   "id": "ms_r2_a",
+   "region": "r2",
+   "pos": [
+    138,
+    20
+   ],
+   "tier": "metin_hirs"
+  },
+  {
+   "id": "ms_r2_b",
+   "region": "r2",
+   "pos": [
+    130,
+    50
+   ],
+   "tier": "metin_hirs"
+  },
+  {
+   "id": "ms_r2_c",
+   "region": "r2",
+   "pos": [
+    154,
+    42
+   ],
+   "tier": "metin_hirs"
+  },
+  {
+   "id": "ms_r2_d",
+   "region": "r2",
+   "pos": [
+    117,
+    44
+   ],
+   "tier": "metin_hirs"
+  },
+  {
+   "id": "ms_r3_a",
+   "region": "r3",
+   "pos": [
+    144,
+    80
+   ],
+   "tier": "metin_nefret"
+  },
+  {
+   "id": "ms_r3_b",
+   "region": "r3",
+   "pos": [
+    112,
+    86
+   ],
+   "tier": "metin_nefret"
+  },
+  {
+   "id": "ms_r3_c",
+   "region": "r3",
+   "pos": [
+    132,
+    96
+   ],
+   "tier": "metin_nefret"
+  },
+  {
+   "id": "ms_r3_d",
+   "region": "r3",
+   "pos": [
+    152,
+    100
+   ],
+   "tier": "metin_nefret"
+  },
+  {
+   "id": "ms_r4_a",
+   "region": "r4",
+   "pos": [
+    128,
+    134
+   ],
+   "tier": "metin_aci"
+  },
+  {
+   "id": "ms_r4_b",
+   "region": "r4",
+   "pos": [
+    116,
+    138
+   ],
+   "tier": "metin_aci"
+  },
+  {
+   "id": "ms_r4_c",
+   "region": "r4",
+   "pos": [
+    90,
+    130
+   ],
+   "tier": "metin_aci"
+  },
+  {
+   "id": "ms_r4_d",
+   "region": "r4",
+   "pos": [
+    146,
+    134
+   ],
+   "tier": "metin_aci"
+  },
+  {
+   "id": "ms_r5_a",
+   "region": "r5",
+   "pos": [
+    40,
+    132
+   ],
+   "tier": "metin_ofke"
+  },
+  {
+   "id": "ms_r5_b",
+   "region": "r5",
+   "pos": [
+    22,
+    126
+   ],
+   "tier": "metin_ofke"
+  },
+  {
+   "id": "ms_r5_c",
+   "region": "r5",
+   "pos": [
+    44,
+    106
+   ],
+   "tier": "metin_ofke"
+  },
+  {
+   "id": "ms_r5_d",
+   "region": "r5",
+   "pos": [
+    34,
+    144
+   ],
+   "tier": "metin_ofke"
+  },
+  {
+   "id": "ms_r6_a",
+   "region": "r6",
+   "pos": [
+    36,
+    62
+   ],
+   "tier": "metin_olum"
+  },
+  {
+   "id": "ms_r6_b",
+   "region": "r6",
+   "pos": [
+    8,
+    60
+   ],
+   "tier": "metin_olum"
+  },
+  {
+   "id": "ms_r6_c",
+   "region": "r6",
+   "pos": [
+    50,
+    84
+   ],
+   "tier": "metin_olum"
+  },
+  {
+   "id": "ms_r6_d",
+   "region": "r6",
+   "pos": [
+    12,
+    92
+   ],
+   "tier": "metin_olum"
+  }
+ ],
+ "metinTiers": [
+  {
+   "id": "metin_keder",
+   "name": "Keder Metini",
+   "level": 5,
+   "region": "r1",
+   "hpMult": 28,
+   "armorMult": 1.5
+  },
+  {
+   "id": "metin_hirs",
+   "name": "Hırs Metini",
+   "level": 10,
+   "region": "r2",
+   "hpMult": 34,
+   "armorMult": 1.7
+  },
+  {
+   "id": "metin_nefret",
+   "name": "Nefret Metini",
+   "level": 15,
+   "region": "r3",
+   "hpMult": 40,
+   "armorMult": 1.9
+  },
+  {
+   "id": "metin_aci",
+   "name": "Acı Metini",
+   "level": 20,
+   "region": "r4",
+   "hpMult": 46,
+   "armorMult": 2.1
+  },
+  {
+   "id": "metin_ofke",
+   "name": "Öfke Metini",
+   "level": 25,
+   "region": "r5",
+   "hpMult": 52,
+   "armorMult": 2.3
+  },
+  {
+   "id": "metin_olum",
+   "name": "Ölüm Metini",
+   "level": 30,
+   "region": "r6",
+   "hpMult": 58,
+   "armorMult": 2.5
+  }
+ ],
+ "rares": [
+  {
+   "id": "rare_gumus_yele",
+   "name": "Gümüş Yele",
+   "base": "ow_wolf",
+   "scale": 1.35,
+   "tint": "0xe8e8f0",
+   "level": 4,
+   "hpMult": 9,
+   "spots": [
+    [
+     66,
+     26
+    ],
+    [
+     92,
+     40
+    ],
+    [
+     48,
+     30
+    ]
+   ],
+   "respawnMin": [
+    8,
+    12
+   ],
+   "special": "Uluma: %70 canda 3 kurt çağırır",
+   "drop": "Büyülü+ x2 · Kalıntı x3 · `leg_vadi_gumus_pence` %15"
+  },
+  {
+   "id": "rare_kizil_kuyruk",
+   "name": "Kızıl Kuyruk",
+   "base": "ow_rat",
+   "scale": 2.2,
+   "tint": "0xa04030",
+   "level": 3,
+   "hpMult": 10,
+   "spots": [
+    [
+     56,
+     14
+    ],
+    [
+     44,
+     38
+    ],
+    [
+     66,
+     12
+    ]
+   ],
+   "respawnMin": [
+    8,
+    12
+   ],
+   "special": "Veba Sürüsü: her 10 sn 3 `ow_rat` çağırır",
+   "drop": "Büyülü+ x2 · Kara Demir x8 · Kalıntı x2"
+  },
+  {
+   "id": "rare_korkuluk_kral",
+   "name": "Korkuluk Kral",
+   "base": "ow_scarecrow",
+   "scale": 1.5,
+   "tint": "0xe0c060",
+   "level": 8,
+   "hpMult": 9,
+   "spots": [
+    [
+     140,
+     30
+    ],
+    [
+     122,
+     46
+    ],
+    [
+     148,
+     38
+    ]
+   ],
+   "respawnMin": [
+    10,
+    14
+   ],
+   "special": "Karga Sürüsü: 4 `ow_bat` çağırır (cd 20) · Saman Fırtınası: r 6 kör",
+   "drop": "Nadir x1 · Kalıntı x4 · Büyülü Toz x3"
+  },
+  {
+   "id": "rare_buyuk_boz",
+   "name": "Büyük Boz",
+   "base": "ow_bear",
+   "scale": 1.15,
+   "tint": "0xb8a898",
+   "level": 9,
+   "hpMult": 9,
+   "spots": [
+    [
+     152,
+     22
+    ],
+    [
+     148,
+     48
+    ],
+    [
+     154,
+     12
+    ]
+   ],
+   "respawnMin": [
+    10,
+    14
+   ],
+   "special": "Yaralı Öfke: %40 canın altında +%40 hasar, CC bağışık",
+   "drop": "Nadir x1 · Kalıntı x4 · `leg_vadi_boz_postu` %15"
+  },
+  {
+   "id": "rare_mantar_ana",
+   "name": "Mantar Ana",
+   "base": "ow_mushroom_brute",
+   "scale": 1.6,
+   "tint": "0xe090b0",
+   "level": 9,
+   "hpMult": 9,
+   "spots": [
+    [
+     118,
+     56
+    ],
+    [
+     132,
+     62
+    ],
+    [
+     116,
+     48
+    ]
+   ],
+   "respawnMin": [
+    10,
+    14
+   ],
+   "special": "Spor Fırtınası: 3 bulut r 4; ölünce 4 `ow_mushnub`",
+   "drop": "Nadir x1 · Kalıntı x4 · Zümrüt (Kırık) %30"
+  },
+  {
+   "id": "rare_golge_alfa",
+   "name": "Gölge Alfa",
+   "base": "ow_warg",
+   "scale": 1.3,
+   "tint": "0x404050",
+   "level": 14,
+   "hpMult": 8,
+   "spots": [
+    [
+     108,
+     84
+    ],
+    [
+     146,
+     108
+    ],
+    [
+     152,
+     76
+    ]
+   ],
+   "respawnMin": [
+    10,
+    15
+   ],
+   "special": "Karanlık Uluma: 4 `ow_wolf_dire` çağırır; saldırılar kanama",
+   "drop": "Nadir x2 · Kalıntı x6 · `leg_vadi_gece_tuyu` %15"
+  },
+  {
+   "id": "rare_demir_boynuz",
+   "name": "Demir Boynuz",
+   "base": "ow_rhino",
+   "scale": 1.3,
+   "tint": "0x808890",
+   "level": 14,
+   "hpMult": 8,
+   "spots": [
+    [
+     124,
+     96
+    ],
+    [
+     150,
+     98
+    ],
+    [
+     118,
+     84
+    ]
+   ],
+   "respawnMin": [
+    10,
+    15
+   ],
+   "special": "Demir Deri: %50 fiziksel DR, Hücum 2 kez üst üste",
+   "drop": "Nadir x2 · Kalıntı x6 · Büyülü Toz x6"
+  },
+  {
+   "id": "rare_agit_kralicesi",
+   "name": "Ağıt Kraliçesi",
+   "base": "ow_wraith",
+   "scale": 1.5,
+   "tint": "0x80ffe0",
+   "level": 19,
+   "hpMult": 8,
+   "spots": [
+    [
+     96,
+     142
+    ],
+    [
+     132,
+     136
+    ],
+    [
+     70,
+     126
+    ]
+   ],
+   "respawnMin": [
+    12,
+    18
+   ],
+   "special": "Ağıt: 8 sn kanal, r 10 içinde korku + gölge hasarı",
+   "drop": "Nadir x2 · Kalıntı x8 · Ametist (Kusurlu) %30"
+  },
+  {
+   "id": "rare_zehir_ana",
+   "name": "Zehir Ana",
+   "base": "ow_spider_giant",
+   "scale": 1.6,
+   "tint": "0x50a040",
+   "level": 19,
+   "hpMult": 8,
+   "spots": [
+    [
+     148,
+     142
+    ],
+    [
+     118,
+     150
+    ],
+    [
+     60,
+     150
+    ]
+   ],
+   "respawnMin": [
+    12,
+    18
+   ],
+   "special": "Yavru Yumurtaları: 6 `ow_spider` (swarm) çağırır; ağ + zehir",
+   "drop": "Nadir x2 · Kalıntı x8 · Zümrüt (Kusurlu) %35"
+  },
+  {
+   "id": "rare_camur_baba",
+   "name": "Çamur Baba",
+   "base": "ow_ooze",
+   "scale": 0.9,
+   "tint": "0x806030",
+   "level": 17,
+   "hpMult": 10,
+   "spots": [
+    [
+     100,
+     128
+    ],
+    [
+     146,
+     132
+    ],
+    [
+     74,
+     140
+    ]
+   ],
+   "respawnMin": [
+    12,
+    18
+   ],
+   "special": "Dev Bölünme: ölünce 4 `ow_ooze` (yarı HP)",
+   "drop": "Nadir x2 · Kalıntı x7 · Topaz (Kusurlu) %30"
+  },
+  {
+   "id": "rare_kor_efendisi",
+   "name": "Kor Efendisi",
+   "base": "ow_ember",
+   "scale": 1.4,
+   "tint": "0xff6020",
+   "level": 24,
+   "hpMult": 8,
+   "spots": [
+    [
+     14,
+     134
+    ],
+    [
+     38,
+     132
+    ],
+    [
+     24,
+     106
+    ]
+   ],
+   "respawnMin": [
+    14,
+    20
+   ],
+   "special": "Kor Yağmuru: 6 ateş çemberi r 3, 4 sn boyunca",
+   "drop": "Nadir x2 · Kalıntı x10 · Yakut (Kusurlu) %35"
+  },
+  {
+   "id": "rare_tas_yurek",
+   "name": "Taş Yürek",
+   "base": "ow_golem",
+   "scale": 1.4,
+   "tint": "0xa0a0b8",
+   "level": 24,
+   "hpMult": 8,
+   "spots": [
+    [
+     28,
+     112
+    ],
+    [
+     10,
+     118
+    ],
+    [
+     44,
+     108
+    ]
+   ],
+   "respawnMin": [
+    14,
+    20
+   ],
+   "special": "Taş Kalkan: her 20 sn 5 sn %60 DR; Yer Darbesi iki katı",
+   "drop": "Nadir x2 · Kalıntı x10 · Ejderha Pulu x1"
+  },
+  {
+   "id": "rare_kizil_boynuz",
+   "name": "Kızıl Boynuz",
+   "base": "ow_rhino",
+   "scale": 1.3,
+   "tint": "0xb05040",
+   "level": 23,
+   "hpMult": 8,
+   "spots": [
+    [
+     50,
+     116
+    ],
+    [
+     8,
+     140
+    ],
+    [
+     30,
+     126
+    ]
+   ],
+   "respawnMin": [
+    14,
+    20
+   ],
+   "special": "Öfke Hücumu: 3 hücum zinciri, her biri +%20 hasar",
+   "drop": "Nadir x2 · Kalıntı x9 · Büyülü Toz x8"
+  },
+  {
+   "id": "rare_gece_gezgini",
+   "name": "Gece Gezgini",
+   "base": "ow_vampire",
+   "scale": 1.2,
+   "tint": "0x6a5090",
+   "level": 29,
+   "hpMult": 8,
+   "spots": [
+    [
+     50,
+     70
+    ],
+    [
+     10,
+     62
+    ],
+    [
+     36,
+     76
+    ]
+   ],
+   "respawnMin": [
+    15,
+    22
+   ],
+   "special": "Gece Perdesi: 6 sn kaybolur, arkadan vurur (ilk vuruş x2)",
+   "drop": "Nadir x2 · Kalıntı x12 · Ametist (Kusursuz) %20"
+  },
+  {
+   "id": "rare_kemik_kral",
+   "name": "Kemik Kral Hargar",
+   "base": "skel_warrior",
+   "scale": 1.5,
+   "tint": "0xd8d0c0",
+   "level": 28,
+   "hpMult": 8,
+   "spots": [
+    [
+     16,
+     96
+    ],
+    [
+     50,
+     96
+    ],
+    [
+     8,
+     76
+    ]
+   ],
+   "respawnMin": [
+    15,
+    22
+   ],
+   "special": "Kemik Ordusu: 6 `skel_minion` yükseltir (cd 25)",
+   "drop": "Nadir x2 · Kalıntı x12 · `leg_vadi_kemik_tac` %15"
+  },
+  {
+   "id": "rare_sessiz_rahip",
+   "name": "Sessiz Rahip",
+   "base": "cult_summoner",
+   "scale": 1.4,
+   "tint": "0x302040",
+   "level": 28,
+   "hpMult": 8,
+   "spots": [
+    [
+     26,
+     54
+    ],
+    [
+     44,
+     54
+    ],
+    [
+     18,
+     62
+    ]
+   ],
+   "respawnMin": [
+    15,
+    22
+   ],
+   "special": "Sessizlik: 12 m içinde silence 3 sn; 2 `shade` çağırır",
+   "drop": "Nadir x2 · Kalıntı x12 · Elmas (Kusurlu) %20"
+  }
+ ],
+ "minibosses": [
+  {
+   "id": "mb_girtlak",
+   "name": "Yağmacı Başı Gırtlak",
+   "base": "ow_puglin_chief",
+   "scale": 1.25,
+   "tint": "-",
+   "level": 5,
+   "hpMult": 14,
+   "lair": [
+    100,
+    14
+   ],
+   "region": "r1",
+   "abilities": "Taş Yağmuru: ground_aoe r 4 x3, windup 1.2, coef 1.2 · Gırtlak Çağrısı: 4 `ow_goblin` (cd 25) · Sopa Fırtınası combo (3 vuruş, coef 1.0/1.0/1.8)",
+   "respawnMin": 20,
+   "loot": "loot_mb_r1"
+  },
+  {
+   "id": "mb_hovardan",
+   "name": "Mezarlık Bekçisi Hovardan",
+   "base": "ow_keeper",
+   "scale": 1.2,
+   "tint": "0x80a090",
+   "level": 10,
+   "hpMult": 18,
+   "lair": [
+    144,
+    10
+   ],
+   "region": "r2",
+   "abilities": "Toprak Fırlat · Mezar Aç: 3 `skel_rattler` (cd 20) · Kürek Savurma: self_aoe r 4.5, windup 1.1, coef 2.0",
+   "respawnMin": 20,
+   "loot": "loot_mb_r2"
+  },
+  {
+   "id": "mb_karabiyik",
+   "name": "Haydut Kralı Karabıyık",
+   "base": "ow_bandit_chief",
+   "scale": 1.45,
+   "tint": "0x402020",
+   "level": 14,
+   "hpMult": 20,
+   "lair": [
+    140,
+    84
+   ],
+   "region": "r3",
+   "abilities": "Yardım Çağır: 4 `ow_bandit` + 2 `ow_bandit_archer` (cd 30) · Kalkan Darbesi stun · Kanlı Fiyat: hedefe 3 sn işaret, bitince çember r 3 coef 2.4",
+   "respawnMin": 20,
+   "loot": "loot_mb_r3"
+  },
+  {
+   "id": "mb_zehra",
+   "name": "Cadı Zehra",
+   "base": "ow_witch",
+   "scale": 1.4,
+   "tint": "0x206840",
+   "level": 19,
+   "hpMult": 20,
+   "lair": [
+    84,
+    148
+   ],
+   "region": "r4",
+   "abilities": "Zehir Yağmuru: 5 ground_aoe r 3.5 (zehir persist) · Kurbağa Laneti (2 hedef) · Kazan Çağrısı: 3 `ow_ooze` (cd 25)",
+   "respawnMin": 20,
+   "loot": "loot_mb_r4"
+  },
+  {
+   "id": "mb_gorak",
+   "name": "Ork Reisi Gorak",
+   "base": "ow_orc_brute",
+   "scale": 1.5,
+   "tint": "0x806040",
+   "level": 24,
+   "hpMult": 22,
+   "lair": [
+    24,
+    136
+   ],
+   "region": "r5",
+   "abilities": "Savaş Narası (r 14) · Yarma: line 10 x 2.6, coef 2.8 · Zincir Hücumu: charge 14 m + knockdown, cd 14 · 4 `ow_orc` (cd 30)",
+   "respawnMin": 20,
+   "loot": "loot_mb_r5"
+  },
+  {
+   "id": "mb_valdemar",
+   "name": "Kan Lordu Valdemar",
+   "base": "ow_vampire",
+   "scale": 1.3,
+   "tint": "0x802030",
+   "level": 29,
+   "hpMult": 24,
+   "lair": [
+    46,
+    58
+   ],
+   "region": "r6",
+   "abilities": "Kan Hasadı r 6 · Yarasa Bulutu: 8 `ow_bat` (cd 25) · Kan Bağı: 2 oyuncu arasında 6 sn zincir (ayrı durmazsan hasar)",
+   "respawnMin": 20,
+   "loot": "loot_mb_r6"
+  }
+ ],
+ "shrines": [
+  {
+   "id": "sh_r1_a",
+   "type": "shrine_wisdom",
+   "region": "r1",
+   "pos": [
+    66,
+    16
+   ]
+  },
+  {
+   "id": "sh_r1_b",
+   "type": "shrine_haste",
+   "region": "r1",
+   "pos": [
+    90,
+    34
+   ]
+  },
+  {
+   "id": "sh_r2_a",
+   "type": "shrine_power",
+   "region": "r2",
+   "pos": [
+    132,
+    30
+   ]
+  },
+  {
+   "id": "sh_r2_b",
+   "type": "shrine_ward",
+   "region": "r2",
+   "pos": [
+    146,
+    54
+   ]
+  },
+  {
+   "id": "sh_r3_a",
+   "type": "shrine_haste",
+   "region": "r3",
+   "pos": [
+    120,
+    82
+   ]
+  },
+  {
+   "id": "sh_r3_b",
+   "type": "shrine_greed",
+   "region": "r3",
+   "pos": [
+    146,
+    96
+   ]
+  },
+  {
+   "id": "sh_r4_a",
+   "type": "shrine_ward",
+   "region": "r4",
+   "pos": [
+    100,
+    138
+   ]
+  },
+  {
+   "id": "sh_r4_b",
+   "type": "shrine_power",
+   "region": "r4",
+   "pos": [
+    136,
+    150
+   ]
+  },
+  {
+   "id": "sh_r5_a",
+   "type": "shrine_greed",
+   "region": "r5",
+   "pos": [
+    30,
+    120
+   ]
+  },
+  {
+   "id": "sh_r5_b",
+   "type": "shrine_ward",
+   "region": "r5",
+   "pos": [
+    8,
+    118
+   ]
+  },
+  {
+   "id": "sh_r6_a",
+   "type": "shrine_wisdom",
+   "region": "r6",
+   "pos": [
+    24,
+    88
+   ]
+  },
+  {
+   "id": "sh_r6_b",
+   "type": "shrine_power",
+   "region": "r6",
+   "pos": [
+    44,
+    72
+   ]
+  }
+ ],
+ "chests": [
+  {
+   "id": "ch_r1_a",
+   "kind": "chest_wood",
+   "region": "r1",
+   "pos": [
+    44,
+    12
+   ]
+  },
+  {
+   "id": "ch_r1_b",
+   "kind": "chest_wood",
+   "region": "r1",
+   "pos": [
+    104,
+    24
+   ]
+  },
+  {
+   "id": "ch_r1_c",
+   "kind": "chest_wood",
+   "region": "r1",
+   "pos": [
+    58,
+    40
+   ]
+  },
+  {
+   "id": "ch_r2_a",
+   "kind": "chest_wood",
+   "region": "r2",
+   "pos": [
+    136,
+    40
+   ]
+  },
+  {
+   "id": "ch_r2_b",
+   "kind": "chest_iron",
+   "region": "r2",
+   "pos": [
+    154,
+    62
+   ]
+  },
+  {
+   "id": "ch_r2_c",
+   "kind": "chest_wood",
+   "region": "r2",
+   "pos": [
+    126,
+    8
+   ]
+  },
+  {
+   "id": "ch_r3_a",
+   "kind": "chest_iron",
+   "region": "r3",
+   "pos": [
+    104,
+    72
+   ]
+  },
+  {
+   "id": "ch_r3_b",
+   "kind": "chest_iron",
+   "region": "r3",
+   "pos": [
+    148,
+    82
+   ]
+  },
+  {
+   "id": "ch_r3_c",
+   "kind": "chest_iron",
+   "region": "r3",
+   "pos": [
+    124,
+    110
+   ]
+  },
+  {
+   "id": "ch_r4_a",
+   "kind": "chest_iron",
+   "region": "r4",
+   "pos": [
+    108,
+    126
+   ]
+  },
+  {
+   "id": "ch_r4_b",
+   "kind": "chest_iron",
+   "region": "r4",
+   "pos": [
+    146,
+    152
+   ]
+  },
+  {
+   "id": "ch_r4_c",
+   "kind": "chest_gold",
+   "region": "r4",
+   "pos": [
+    62,
+    142
+   ]
+  },
+  {
+   "id": "ch_r5_a",
+   "kind": "chest_gold",
+   "region": "r5",
+   "pos": [
+    14,
+    112
+   ]
+  },
+  {
+   "id": "ch_r5_b",
+   "kind": "chest_gold",
+   "region": "r5",
+   "pos": [
+    54,
+    112
+   ]
+  },
+  {
+   "id": "ch_r5_c",
+   "kind": "chest_gold",
+   "region": "r5",
+   "pos": [
+    30,
+    150
+   ]
+  },
+  {
+   "id": "ch_r6_a",
+   "kind": "chest_gold",
+   "region": "r6",
+   "pos": [
+    50,
+    64
+   ]
+  },
+  {
+   "id": "ch_r6_b",
+   "kind": "chest_gold",
+   "region": "r6",
+   "pos": [
+    6,
+    66
+   ]
+  },
+  {
+   "id": "ch_r6_c",
+   "kind": "chest_gold",
+   "region": "r6",
+   "pos": [
+    36,
+    94
+   ]
+  }
+ ],
+ "cursedChests": [
+  {
+   "id": "cc_r1",
+   "region": "r1",
+   "pos": [
+    82,
+    32
+   ]
+  },
+  {
+   "id": "cc_r2",
+   "region": "r2",
+   "pos": [
+    126,
+    20
+   ]
+  },
+  {
+   "id": "cc_r3",
+   "region": "r3",
+   "pos": [
+    118,
+    100
+   ]
+  },
+  {
+   "id": "cc_r4",
+   "region": "r4",
+   "pos": [
+    118,
+    132
+   ]
+  },
+  {
+   "id": "cc_r5",
+   "region": "r5",
+   "pos": [
+    40,
+    122
+   ]
+  },
+  {
+   "id": "cc_r6",
+   "region": "r6",
+   "pos": [
+    30,
+    82
+   ]
+  }
+ ],
+ "gatherFields": [
+  {
+   "id": "gf_r1_ore",
+   "kind": "ore",
+   "region": "r1",
+   "center": [
+    44,
+    40
+   ],
+   "radiusTiles": 4,
+   "count": 4,
+   "respawnSec": 300,
+   "yield": "Kara Demir x2-4"
+  },
+  {
+   "id": "gf_r1_herb",
+   "kind": "herb",
+   "region": "r1",
+   "center": [
+    94,
+    8
+   ],
+   "radiusTiles": 5,
+   "count": 6,
+   "respawnSec": 240,
+   "yield": "Küçük Can İksiri x1"
+  },
+  {
+   "id": "gf_r2_ore",
+   "kind": "ore",
+   "region": "r2",
+   "center": [
+    154,
+    28
+   ],
+   "radiusTiles": 4,
+   "count": 4,
+   "respawnSec": 300,
+   "yield": "Kara Demir x3-5"
+  },
+  {
+   "id": "gf_r2_herb",
+   "kind": "herb",
+   "region": "r2",
+   "center": [
+    120,
+    14
+   ],
+   "radiusTiles": 5,
+   "count": 6,
+   "respawnSec": 240,
+   "yield": "Küçük Can İksiri x1-2"
+  },
+  {
+   "id": "gf_r3_ore",
+   "kind": "ore",
+   "region": "r3",
+   "center": [
+    150,
+    112
+   ],
+   "radiusTiles": 4,
+   "count": 5,
+   "respawnSec": 300,
+   "yield": "Kara Demir x3-6 · Büyülü Toz %20"
+  },
+  {
+   "id": "gf_r3_herb",
+   "kind": "herb",
+   "region": "r3",
+   "center": [
+    110,
+    74
+   ],
+   "radiusTiles": 4,
+   "count": 5,
+   "respawnSec": 240,
+   "yield": "Orta Can İksiri x1"
+  },
+  {
+   "id": "gf_r4_herb",
+   "kind": "herb",
+   "region": "r4",
+   "center": [
+    72,
+    124
+   ],
+   "radiusTiles": 5,
+   "count": 6,
+   "respawnSec": 240,
+   "yield": "Orta Can/Ruh İksiri x1-2"
+  },
+  {
+   "id": "gf_r4_ore",
+   "kind": "ore",
+   "region": "r4",
+   "center": [
+    152,
+    134
+   ],
+   "radiusTiles": 4,
+   "count": 4,
+   "respawnSec": 300,
+   "yield": "Büyülü Toz x1-3"
+  },
+  {
+   "id": "gf_r5_ore",
+   "kind": "ore",
+   "region": "r5",
+   "center": [
+    14,
+    100
+   ],
+   "radiusTiles": 4,
+   "count": 6,
+   "respawnSec": 300,
+   "yield": "Büyülü Toz x2-4 · Ejderha Pulu %5"
+  },
+  {
+   "id": "gf_r5_herb",
+   "kind": "herb",
+   "region": "r5",
+   "center": [
+    48,
+    140
+   ],
+   "radiusTiles": 4,
+   "count": 4,
+   "respawnSec": 240,
+   "yield": "Büyük Can İksiri x1"
+  },
+  {
+   "id": "gf_r6_ore",
+   "kind": "ore",
+   "region": "r6",
+   "center": [
+    54,
+    70
+   ],
+   "radiusTiles": 4,
+   "count": 5,
+   "respawnSec": 300,
+   "yield": "Büyülü Toz x2-4 · Ejderha Pulu %8"
+  },
+  {
+   "id": "gf_r6_herb",
+   "kind": "herb",
+   "region": "r6",
+   "center": [
+    10,
+    76
+   ],
+   "radiusTiles": 4,
+   "count": 4,
+   "respawnSec": 240,
+   "yield": "Büyük Can/Ruh İksiri x1"
+  }
+ ],
+ "hiddenAreas": [
+  {
+   "id": "hd_r1",
+   "name": "Kurtların Gizli Çayırı",
+   "region": "r1",
+   "pos": [
+    42,
+    6
+   ],
+   "radiusTiles": 3
+  },
+  {
+   "id": "hd_r2",
+   "name": "Gizli Ambar",
+   "region": "r2",
+   "pos": [
+    155,
+    66
+   ],
+   "radiusTiles": 3
+  },
+  {
+   "id": "hd_r3",
+   "name": "Haydut Hazinesi",
+   "region": "r3",
+   "pos": [
+    156,
+    112
+   ],
+   "radiusTiles": 3
+  },
+  {
+   "id": "hd_r4",
+   "name": "Cadının Bahçesi",
+   "region": "r4",
+   "pos": [
+    62,
+    154
+   ],
+   "radiusTiles": 3
+  },
+  {
+   "id": "hd_r5",
+   "name": "Ejder Yumurtası Mağarası",
+   "region": "r5",
+   "pos": [
+    6,
+    140
+   ],
+   "radiusTiles": 3
+  },
+  {
+   "id": "hd_r6",
+   "name": "Gölün Adası Mabedi",
+   "region": "r6",
+   "pos": [
+    79,
+    82
+   ],
+   "radiusTiles": 3
+  }
+ ],
+ "vistas": [
+  {
+   "id": "vs_r1",
+   "name": "Değirmen Tepesi",
+   "region": "r1",
+   "pos": [
+    50,
+    6
+   ]
+  },
+  {
+   "id": "vs_r1b",
+   "name": "Köprü Manzarası",
+   "region": "r1",
+   "pos": [
+    106,
+    30
+   ]
+  },
+  {
+   "id": "vs_r2",
+   "name": "Altın Ufuk",
+   "region": "r2",
+   "pos": [
+    156,
+    8
+   ]
+  },
+  {
+   "id": "vs_r3",
+   "name": "Kartal Kayası",
+   "region": "r3",
+   "pos": [
+    156,
+    72
+   ]
+  },
+  {
+   "id": "vs_r3b",
+   "name": "Göl Seyir Noktası",
+   "region": "r3",
+   "pos": [
+    102,
+    98
+   ]
+  },
+  {
+   "id": "vs_r4",
+   "name": "Ağıt Ağacı Dibi",
+   "region": "r4",
+   "pos": [
+    112,
+    154
+   ]
+  },
+  {
+   "id": "vs_r5",
+   "name": "Kızıl Uçurum",
+   "region": "r5",
+   "pos": [
+    4,
+    100
+   ]
+  },
+  {
+   "id": "vs_r6",
+   "name": "Kara Anıt Zirvesi",
+   "region": "r6",
+   "pos": [
+    30,
+    54
+   ]
+  }
+ ],
+ "landmarks": [
+  {
+   "id": "lm_degirmen",
+   "name": "Gümüşdere Değirmeni",
+   "region": "r1",
+   "pos": [
+    60,
+    12
+   ]
+  },
+  {
+   "id": "lm_hoyuk",
+   "name": "Çürük Höyük",
+   "region": "r2",
+   "pos": [
+    126,
+    60
+   ]
+  },
+  {
+   "id": "lm_kule",
+   "name": "Yıkık Gözcü Kulesi",
+   "region": "r3",
+   "pos": [
+    128,
+    106
+   ]
+  },
+  {
+   "id": "lm_agit_agaci",
+   "name": "Ağıt Ağacı",
+   "region": "r4",
+   "pos": [
+    110,
+    146
+   ]
+  },
+  {
+   "id": "lm_kizil_kale",
+   "name": "Kızıl Kale",
+   "region": "r5",
+   "pos": [
+    24,
+    128
+   ]
+  },
+  {
+   "id": "lm_kara_anit",
+   "name": "Kara Anıt",
+   "region": "r6",
+   "pos": [
+    30,
+    66
+   ]
+  }
+ ],
+ "farmSpots": [
+  {
+   "id": "fs01",
+   "name": "Fare Yuvası",
+   "pack": "r1_c01",
+   "region": "r1",
+   "lootTable": "farm_rat_nest",
+   "focus": "-"
+  },
+  {
+   "id": "fs02",
+   "name": "Yağmacı Kampı",
+   "pack": "r1_c04",
+   "region": "r1",
+   "lootTable": "farm_goblin_camp",
+   "focus": "ring, amulet, belt"
+  },
+  {
+   "id": "fs03",
+   "name": "Örümcek Korusu",
+   "pack": "r1_c06",
+   "region": "r1",
+   "lootTable": "farm_spider_grove",
+   "focus": "-"
+  },
+  {
+   "id": "fs04",
+   "name": "Mantar Tarlası",
+   "pack": "r2_c05",
+   "region": "r2",
+   "lootTable": "farm_mushroom_field",
+   "focus": "-"
+  },
+  {
+   "id": "fs05",
+   "name": "Haydut Karakolu",
+   "pack": "r2_c06",
+   "region": "r2",
+   "lootTable": "farm_bandit_post",
+   "focus": "dagger, sword1h, gloves"
+  },
+  {
+   "id": "fs06",
+   "name": "Haydut Kalesi",
+   "pack": "r3_c04",
+   "region": "r3",
+   "lootTable": "farm_bandit_fort",
+   "focus": "sword1h, dagger, chest, legs"
+  },
+  {
+   "id": "fs07",
+   "name": "Gergedan Otlağı",
+   "pack": "r3_c05",
+   "region": "r3",
+   "lootTable": "farm_rhino_pasture",
+   "focus": "-"
+  },
+  {
+   "id": "fs08",
+   "name": "Zehirli Mağara",
+   "pack": "r4_c06",
+   "region": "r4",
+   "lootTable": "farm_poison_cave",
+   "focus": "-"
+  },
+  {
+   "id": "fs09",
+   "name": "Çıyan Çukuru",
+   "pack": "r4_c04",
+   "region": "r4",
+   "lootTable": "farm_centipede_pit",
+   "focus": "-"
+  },
+  {
+   "id": "fs10",
+   "name": "Batık Mezarlık",
+   "pack": "r4_c07",
+   "region": "r4",
+   "lootTable": "farm_sunken_graves",
+   "focus": "-"
+  },
+  {
+   "id": "fs11",
+   "name": "Ork Karakolu",
+   "pack": "r5_c02",
+   "region": "r5",
+   "lootTable": "farm_orc_outpost",
+   "focus": "axe2h, helm, shoulders, chest, boots"
+  },
+  {
+   "id": "fs12",
+   "name": "Kor Ocağı Girişi",
+   "pack": "r5_c04",
+   "region": "r5",
+   "lootTable": "farm_ember_vent",
+   "focus": "-"
+  },
+  {
+   "id": "fs13",
+   "name": "Taş Ocağı",
+   "pack": "r5_c05",
+   "region": "r5",
+   "lootTable": "farm_stone_quarry",
+   "focus": "-"
+  },
+  {
+   "id": "fs14",
+   "name": "Lanetli Avlu",
+   "pack": "r6_c03",
+   "region": "r6",
+   "lootTable": "farm_cursed_court",
+   "focus": "-"
+  },
+  {
+   "id": "fs15",
+   "name": "Eski Kütüphane",
+   "pack": "r6_c05",
+   "region": "r6",
+   "lootTable": "farm_old_library",
+   "focus": "staff, wand, tome, amulet"
+  },
+  {
+   "id": "fs16",
+   "name": "Kan Lordu Salonu",
+   "pack": "r6_c08",
+   "region": "r6",
+   "lootTable": "farm_blood_hall",
+   "focus": "-"
+  }
+ ],
+ "villages": [
+  {
+   "id": "koy_gumusdere",
+   "name": "Gümüşdere Köyü",
+   "bounds": [
+    40,
+    28
+   ],
+   "buildings": [
+    {
+     "label": "Gümüş Çay Hanı (han)",
+     "model": "tw('buildings/yellow/building_tavern_yellow')",
+     "x": 26,
+     "z": -12,
+     "rot": -90,
+     "scale": 6
+    },
+    {
+     "label": "Demirci Dükkânı",
+     "model": "tw('buildings/red/building_blacksmith_red')",
+     "x": -26,
+     "z": -12,
+     "rot": 90,
+     "scale": 6
+    },
+    {
+     "label": "Bakkal (Genel Dükkân)",
+     "model": "tw('buildings/blue/building_market_blue')",
+     "x": -27,
+     "z": 7,
+     "rot": 90,
+     "scale": 6
+    },
+    {
+     "label": "Muhtar Evi",
+     "model": "tw('buildings/green/building_home_B_green')",
+     "x": -9,
+     "z": -21,
+     "rot": 0,
+     "scale": 6
+    },
+    {
+     "label": "Küçük Şapel",
+     "model": "tw('buildings/blue/building_church_blue')",
+     "x": 12,
+     "z": -22,
+     "rot": 0,
+     "scale": 6
+    },
+    {
+     "label": "Muhafız Karakolu",
+     "model": "tw('buildings/green/building_barracks_green')",
+     "x": -24,
+     "z": -22,
+     "rot": 0,
+     "scale": 6
+    },
+    {
+     "label": "Depocu Evi",
+     "model": "tw('buildings/blue/building_home_B_blue')",
+     "x": -33,
+     "z": 22,
+     "rot": 90,
+     "scale": 6
+    },
+    {
+     "label": "Çiftçi Evi 1",
+     "model": "tw('buildings/red/building_home_A_red')",
+     "x": 31,
+     "z": 8,
+     "rot": -90,
+     "scale": 6
+    },
+    {
+     "label": "Çiftçi Evi 2",
+     "model": "tw('buildings/yellow/building_home_B_yellow')",
+     "x": 34,
+     "z": 14,
+     "rot": -90,
+     "scale": 6
+    },
+    {
+     "label": "Köylü Evi 3",
+     "model": "tw('buildings/green/building_home_A_green')",
+     "x": -35,
+     "z": -4,
+     "rot": 90,
+     "scale": 6
+    },
+    {
+     "label": "Silah Tezgahı",
+     "model": "gp('market_stall')",
+     "x": 16,
+     "z": 6,
+     "rot": -90,
+     "scale": 1
+    },
+    {
+     "label": "Zırh Tezgahı",
+     "model": "gp('market_stall')",
+     "x": 16,
+     "z": 14,
+     "rot": -90,
+     "scale": 1
+    },
+    {
+     "label": "Metin Tüccarı Tezgahı",
+     "model": "gp('market_stall')",
+     "x": 8,
+     "z": -8,
+     "rot": 0,
+     "scale": 1
+    },
+    {
+     "label": "Eczane Çadırı",
+     "model": "gp('tent')",
+     "x": -10,
+     "z": 20,
+     "rot": 0,
+     "scale": 1
+    },
+    {
+     "label": "Meydan Kuyusu",
+     "model": "gp('well')",
+     "x": 0,
+     "z": 0,
+     "rot": 0,
+     "scale": 1
+    },
+    {
+     "label": "Işınlanma Taşı",
+     "model": "gp('waypoint_stone')",
+     "x": 12,
+     "z": 14,
+     "rot": 0,
+     "scale": 1
+    },
+    {
+     "label": "Görev Panosu",
+     "model": "gp('notice_board')",
+     "x": -6,
+     "z": -7,
+     "rot": 0,
+     "scale": 1
+    },
+    {
+     "label": "Kamp Ateşi",
+     "model": "gp('campfire')",
+     "x": 18,
+     "z": -4,
+     "rot": 0,
+     "scale": 1
+    }
+   ],
+   "rows": [
+    {
+     "label": "Palisade (kuzey/güney)",
+     "model": "ip('psx-walls-fences','plackard-wall/plackard_closed_full')",
+     "placement": "x -40..40, z=-28 ve z=+28; kapı boşluğu x -4..4",
+     "count": "4 m modül, 18 parça/kenar"
+    },
+    {
+     "label": "Palisade (batı)",
+     "model": "ip('psx-walls-fences','plackard-wall/plackard_closed_full')",
+     "placement": "x=-40, z -28..28",
+     "count": "14 parça"
+    },
+    {
+     "label": "Palisade (doğu)",
+     "model": "ip('psx-walls-fences','plackard-wall/plackard_closed_full')",
+     "placement": "x=+40, z -28..28; kapı boşluğu z -4..4",
+     "count": "12 parça"
+    },
+    {
+     "label": "Palisade köşe direkleri",
+     "model": "ip('psx-walls-fences','plackard-wall/plackard_corner_closed')",
+     "placement": "(±40,±28) + her kapı yanı",
+     "count": "10 adet"
+    },
+    {
+     "label": "Kapı kemerleri",
+     "model": "hw('arch')",
+     "placement": "(0,-28) (0,28) rot 0, (40,0) rot 90; scale 1.9",
+     "count": "3 adet; yanlarında `hw(post_lantern)`"
+    },
+    {
+     "label": "Köşe gözcü kuleleri",
+     "model": "tw('buildings/red/building_tower_A_red')",
+     "placement": "(±37,±25)",
+     "count": "4 adet; üstlerinde dekor okçu NPC (`TownNpc.decor: true`)"
+    },
+    {
+     "label": "Sokak fenerleri",
+     "model": "gp('lamp_post')",
+     "placement": "x=±5, z=-20,-8,8,20",
+     "count": "8 adet; ışık yalnız en yakın 6 (LightPool)"
+    },
+    {
+     "label": "Ağıl çiti",
+     "model": "ip('psx-walls-fences','low-wooden-fence/wooden_fence_closed')",
+     "placement": "dikdörtgen x 18..34, z 20..27",
+     "count": "4 kenar, 2.8 m modül; kapı boşluğu (18,23)"
+    },
+    {
+     "label": "Ağıl samanları",
+     "model": "ip('psx-medieval','market/haybale')",
+     "placement": "(22,24) (26,25) (30,22)",
+     "count": "3 adet"
+    },
+    {
+     "label": "Ağıl hayvanları",
+     "model": "ip('creatures','deer')",
+     "placement": "(24,22) (29,24)",
+     "count": "2 adet çevre canlısı (`Graze` döngüsü; \"Binek Geyikleri — yakında\")"
+    },
+    {
+     "label": "Köy ağaçları",
+     "model": "ip('retro-psx-tree-pack','trees/tree13')",
+     "placement": "(-38,-24) (38,-24) (-37,26) (37,26) (-38,12)",
+     "count": "5 adet"
+    },
+    {
+     "label": "Çiçek tarhları",
+     "model": "ip('psx-medieval','decoration/flower_mixed')",
+     "placement": "kuyu çevresi r 6 m, 8 adet; han önü 4 adet",
+     "count": "12 adet"
+    },
+    {
+     "label": "Meydan zemini",
+     "model": "splat disc (cobble) r 10 m + yol şeritleri",
+     "placement": "kapılar arası N-S şerit w 6 m, E-W şerit w 5 m (merkez (0,0))",
+     "count": "OutdoorBuilder splat op"
+    }
+   ],
+   "npcs": [
+    {
+     "id": "npc_g_muhtar",
+     "name": "Muhtar Ferhat",
+     "role": "quest",
+     "model": "Barbarian (silahsız, pelerinsiz) tint 0x705030",
+     "x": -9,
+     "z": -15,
+     "rot": 0,
+     "note": "Ana görev zinciri + köy görevleri (`mq_02`..`mq_07`)"
+    },
+    {
+     "id": "npc_g_demirci",
+     "name": "Demirci Taner",
+     "role": "blacksmith",
+     "model": "Barbarian + `1H_Axe`",
+     "x": -19,
+     "z": -10,
+     "rot": 90,
+     "note": "panel `blacksmith` (köyde yalnız +0..+9 ve Parçalama; Efsun/Oyma Kuzgunkale'de)"
+    },
+    {
+     "id": "npc_g_bakkal",
+     "name": "Bakkal Süleyman",
+     "role": "merchant",
+     "model": "Rogue_Hooded tint 0x406080",
+     "x": -21,
+     "z": 7,
+     "rot": 90,
+     "note": "panel `vendor` kind `merchant` (iksirler, parşömenler, Kırık taşlar)"
+    },
+    {
+     "id": "npc_g_silahci",
+     "name": "Silahçı Rüstem",
+     "role": "merchant",
+     "model": "Barbarian (aksesuarsız) tint 0x806040",
+     "x": 18.5,
+     "z": 6,
+     "rot": -90,
+     "note": "panel `vendor` kind `weaponsmith` (sınıfına uygun beyaz silahlar ≤ seviye+3)"
+    },
+    {
+     "id": "npc_g_zirhci",
+     "name": "Zırhçı Gülsüm",
+     "role": "merchant",
+     "model": "Knight (miğfersiz) tint 0x8090b0",
+     "x": 18.5,
+     "z": 14,
+     "rot": -90,
+     "note": "panel `vendor` kind `armorsmith` (beyaz zırhlar)"
+    },
+    {
+     "id": "npc_g_eczaci",
+     "name": "Eczacı Nermin",
+     "role": "alchemist",
+     "model": "Mage + `1H_Wand` tint 0x40a060",
+     "x": -9,
+     "z": 16.5,
+     "rot": 0,
+     "note": "panel `vendor` kind `alchemist` (Can/Ruh iksirleri 1-2. kademe)"
+    },
+    {
+     "id": "npc_g_depocu",
+     "name": "Depocu Hızır",
+     "role": "stash",
+     "model": "Barbarian + `Mug` tint 0x806040",
+     "x": -24,
+     "z": 17,
+     "rot": 0,
+     "note": "panel `stash` (Kuzgunkale ile aynı depo)"
+    },
+    {
+     "id": "npc_g_isinlayici",
+     "name": "Işınlayıcı Aylin",
+     "role": "teleporter",
+     "model": "Mage + `Spellbook_open` tint 0x60a0ff",
+     "x": 12,
+     "z": 10.5,
+     "rot": 0,
+     "note": "panel `waypoints` (§5.1): keşfedilmiş taşlara ve Kuzgunkale'ye ışınlar"
+    },
+    {
+     "id": "npc_g_kalinti",
+     "name": "Kalıntı Tüccarı Zeynel",
+     "role": "merchant",
+     "model": "Rogue_Hooded tint 0x30203a",
+     "x": 8,
+     "z": -10.8,
+     "rot": 0,
+     "note": "panel `vendor` kind `metin` (Metin Kalıntısı takası, §4.6)"
+    },
+    {
+     "id": "npc_g_seyis",
+     "name": "Seyis Kerem",
+     "role": "stable",
+     "model": "Rogue (silahsız) tint 0x806040",
+     "x": 17,
+     "z": 22,
+     "rot": 90,
+     "note": "ileride binek sistemi; şimdilik konuşma: \"Yakında ata biner, rüzgâr gibi geçersin.\""
+    },
+    {
+     "id": "npc_g_avci",
+     "name": "Avcı Yıldız",
+     "role": "quest",
+     "model": "Rogue + `1H_Crossbow` tint 0x6a8040",
+     "x": -31,
+     "z": 0,
+     "rot": 90,
+     "note": "Av Defteri (biyolog tarzı koleksiyon) + av görevleri"
+    },
+    {
+     "id": "npc_g_ciftci",
+     "name": "Çiftçi Hatice",
+     "role": "quest",
+     "model": "npcs/Worker.glb x1.25",
+     "x": 36,
+     "z": 20.5,
+     "rot": -90,
+     "note": "çiftlik/domuz görevleri (`sq_g_*`)"
+    },
+    {
+     "id": "npc_g_hanci",
+     "name": "Hancı Dursun",
+     "role": "citizen",
+     "model": "Barbarian + `Mug` tint 0x9a6a40",
+     "x": 19,
+     "z": -12,
+     "rot": -90,
+     "note": "`Use_Item` her 8 sn; dinlenme dedikoduları"
+    },
+    {
+     "id": "npc_g_rahibe",
+     "name": "Rahibe Meryem",
+     "role": "quest",
+     "model": "Mage (silahsız) tint 0xe0e0f0",
+     "x": 12,
+     "z": -17.5,
+     "rot": 0,
+     "note": "Şapel görevleri; \"Köy Kutsaması\": seviye ≤ 15 oyunculara saatte bir 15 dk +%10 XP"
+    },
+    {
+     "id": "npc_g_muhafiz_1",
+     "name": "Köy Muhafızı",
+     "role": "guard",
+     "model": "Knight + `1H_Sword` + `Rectangle_Shield` tint 0x8090b0",
+     "x": -5,
+     "z": -26,
+     "rot": 0,
+     "note": "kuzey kapı"
+    },
+    {
+     "id": "npc_g_muhafiz_2",
+     "name": "Köy Muhafızı",
+     "role": "guard",
+     "model": "aynı",
+     "x": 5,
+     "z": -26,
+     "rot": 0,
+     "note": "kuzey kapı"
+    },
+    {
+     "id": "npc_g_muhafiz_3",
+     "name": "Köy Muhafızı",
+     "role": "guard",
+     "model": "aynı",
+     "x": -5,
+     "z": 26,
+     "rot": 180,
+     "note": "güney kapı (dışarı bakar)"
+    },
+    {
+     "id": "npc_g_muhafiz_4",
+     "name": "Köy Muhafızı",
+     "role": "guard",
+     "model": "aynı",
+     "x": 5,
+     "z": 26,
+     "rot": 180,
+     "note": "güney kapı"
+    },
+    {
+     "id": "npc_g_muhafiz_5",
+     "name": "Köy Muhafızı",
+     "role": "guard",
+     "model": "aynı",
+     "x": 38,
+     "z": -5,
+     "rot": 90,
+     "note": "doğu kapı"
+    },
+    {
+     "id": "npc_g_muhafiz_6",
+     "name": "Köy Muhafızı",
+     "role": "guard",
+     "model": "aynı",
+     "x": 38,
+     "z": 5,
+     "rot": 90,
+     "note": "doğu kapı"
+    },
+    {
+     "id": "npc_g_devriye_1",
+     "name": "Köy Devriyesi",
+     "role": "guard",
+     "model": "aynı",
+     "x": -34,
+     "z": -22,
+     "rot": 0,
+     "note": "patrol loop (-34,-22) -> (34,-22) -> (34,22) -> (-34,22), tur 120 sn"
+    },
+    {
+     "id": "npc_g_devriye_2",
+     "name": "Köy Devriyesi",
+     "role": "guard",
+     "model": "aynı",
+     "x": 34,
+     "z": 22,
+     "rot": 0,
+     "note": "aynı döngü, yarım tur arayla"
+    },
+    {
+     "id": "npc_g_koylu_1",
+     "name": "Köylü",
+     "role": "citizen",
+     "model": "Worker x1.25",
+     "x": -4,
+     "z": 8,
+     "rot": 0,
+     "note": "kuyu başında `Interact`; bark: \"Kurtlar yine tarlalara yaklaşmış.\""
+    },
+    {
+     "id": "npc_g_koylu_2",
+     "name": "Köylü",
+     "role": "citizen",
+     "model": "Rogue (silahsız) rastgele tint",
+     "x": 4,
+     "z": -6,
+     "rot": 90,
+     "note": "`Sit_Floor_Idle` bank önünde"
+    },
+    {
+     "id": "npc_g_koylu_3",
+     "name": "Köylü Çocuk",
+     "role": "citizen",
+     "model": "Worker x0.8",
+     "x": 2,
+     "z": 14,
+     "rot": 0,
+     "note": "meydanda koşar; bark: \"Metin taşı görürsen yaklaşma, kaç!\""
+    }
+   ]
+  },
+  {
+   "id": "koy_kizilkaya",
+   "name": "Kızılkaya Karakolu",
+   "bounds": [
+    30,
+    24
+   ],
+   "buildings": [
+    {
+     "label": "Komutanlık Kalesi",
+     "model": "tw('buildings/red/building_castle_red')",
+     "x": 0,
+     "z": -15,
+     "rot": 0,
+     "scale": 5
+    },
+    {
+     "label": "Kızılkaya Hanı",
+     "model": "tw('buildings/red/building_tavern_red')",
+     "x": 20,
+     "z": -4,
+     "rot": -90,
+     "scale": 6
+    },
+    {
+     "label": "Demirci Dükkânı",
+     "model": "tw('buildings/red/building_blacksmith_red')",
+     "x": -20,
+     "z": -4,
+     "rot": 90,
+     "scale": 6
+    },
+    {
+     "label": "Karakol Pazarı",
+     "model": "tw('buildings/blue/building_market_blue')",
+     "x": -20,
+     "z": 11,
+     "rot": 90,
+     "scale": 6
+    },
+    {
+     "label": "Garnizon Kışlası",
+     "model": "tw('buildings/red/building_barracks_red')",
+     "x": 21,
+     "z": 11,
+     "rot": -90,
+     "scale": 6
+    },
+    {
+     "label": "Okçuluk Alanı",
+     "model": "tw('buildings/blue/building_archeryrange_blue')",
+     "x": -4,
+     "z": 14,
+     "rot": 0,
+     "scale": 6
+    },
+    {
+     "label": "Karakol Evi 1",
+     "model": "tw('buildings/red/building_home_A_red')",
+     "x": -24,
+     "z": -15,
+     "rot": 90,
+     "scale": 6
+    },
+    {
+     "label": "Karakol Evi 2",
+     "model": "tw('buildings/red/building_home_B_red')",
+     "x": 24,
+     "z": -15,
+     "rot": -90,
+     "scale": 6
+    },
+    {
+     "label": "Zırh Tezgahı",
+     "model": "gp('market_stall')",
+     "x": 9,
+     "z": 4,
+     "rot": -90,
+     "scale": 1
+    },
+    {
+     "label": "Silah Tezgahı",
+     "model": "gp('market_stall')",
+     "x": 9,
+     "z": -4,
+     "rot": -90,
+     "scale": 1
+    },
+    {
+     "label": "Metin Tüccarı Tezgahı",
+     "model": "gp('market_stall')",
+     "x": -9,
+     "z": 4,
+     "rot": 90,
+     "scale": 1
+    },
+    {
+     "label": "Eczane Çadırı",
+     "model": "gp('tent')",
+     "x": -10,
+     "z": -14,
+     "rot": 0,
+     "scale": 1
+    },
+    {
+     "label": "Kuyu",
+     "model": "ip('nocturnal-watch','well')",
+     "x": 0,
+     "z": 0,
+     "rot": 0,
+     "scale": 1
+    },
+    {
+     "label": "Işınlanma Taşı",
+     "model": "gp('waypoint_stone')",
+     "x": 4,
+     "z": 10,
+     "rot": 0,
+     "scale": 1
+    },
+    {
+     "label": "Görev Panosu",
+     "model": "gp('notice_board')",
+     "x": 0,
+     "z": -5,
+     "rot": 0,
+     "scale": 1
+    }
+   ],
+   "rows": [
+    {
+     "label": "Sur (kuzey/güney)",
+     "model": "tw('buildings/neutral/wall_straight')",
+     "placement": "z=-24 ve z=+24, x -30..30",
+     "count": "12 m modül: 2 + (kapı) + 2; ortada `wall_straight_gate` (x -6..6)"
+    },
+    {
+     "label": "Sur (doğu/batı)",
+     "model": "tw('buildings/neutral/wall_straight')",
+     "placement": "x=±30, z -24..24",
+     "count": "4 modül/kenar"
+    },
+    {
+     "label": "Sur köşeleri",
+     "model": "tw('buildings/neutral/wall_corner_A_outside')",
+     "placement": "(±30,±24)",
+     "count": "4 adet"
+    },
+    {
+     "label": "Kapı kuleleri",
+     "model": "tw('buildings/red/building_tower_B_red')",
+     "placement": "(-12,-24) (12,-24) (-12,24) (12,24)",
+     "count": "4 adet, 15 m; üstlerinde `ip(nocturnal-watch,torch)` + ışık"
+    },
+    {
+     "label": "Kuşatma kalıntıları (dışarı)",
+     "model": "kc('siege-catapult-demolished')",
+     "placement": "(0,34) (-14,38) (16,36)",
+     "count": "dekor, çarpışmalı"
+    },
+    {
+     "label": "Atlı kervan arabaları",
+     "model": "gp('wagon')",
+     "placement": "(24,18) (-26,22)",
+     "count": "2 adet"
+    },
+    {
+     "label": "Meydan zemini",
+     "model": "splat disc (cobble) r 12 m + kapı şeritleri",
+     "placement": "merkez (0,0)",
+     "count": "OutdoorBuilder splat op"
+    }
+   ],
+   "npcs": [
+    {
+     "id": "npc_k_komutan",
+     "name": "Komutan Aslan",
+     "role": "quest",
+     "model": "Knight + `2H_Sword` tint 0xc0a060",
+     "x": 0,
+     "z": -7.5,
+     "rot": 0,
+     "note": "Ana görev zinciri (`mq_13`..`mq_15`)"
+    },
+    {
+     "id": "npc_k_demirci",
+     "name": "Demirci Bilal",
+     "role": "blacksmith",
+     "model": "Barbarian + `1H_Axe`",
+     "x": -14.5,
+     "z": -4,
+     "rot": 90,
+     "note": "panel `blacksmith` (+0..+9, Parçalama)"
+    },
+    {
+     "id": "npc_k_bakkal",
+     "name": "Bakkal Hatice",
+     "role": "merchant",
+     "model": "Rogue_Hooded tint 0x406080",
+     "x": -14,
+     "z": 11,
+     "rot": 90,
+     "note": "panel `vendor` kind `merchant`"
+    },
+    {
+     "id": "npc_k_silahci",
+     "name": "Silahçı Orhan",
+     "role": "merchant",
+     "model": "Barbarian tint 0x806040",
+     "x": 11.5,
+     "z": -4,
+     "rot": -90,
+     "note": "kind `weaponsmith`"
+    },
+    {
+     "id": "npc_k_zirhci",
+     "name": "Zırhçı Melek",
+     "role": "merchant",
+     "model": "Knight (miğfersiz)",
+     "x": 11.5,
+     "z": 4,
+     "rot": -90,
+     "note": "kind `armorsmith`"
+    },
+    {
+     "id": "npc_k_eczaci",
+     "name": "Eczacı Selvi",
+     "role": "alchemist",
+     "model": "Mage + `1H_Wand` tint 0x40a060",
+     "x": -10,
+     "z": -9,
+     "rot": 0,
+     "note": "kind `alchemist` (kademe 2-3 iksirler)"
+    },
+    {
+     "id": "npc_k_depocu",
+     "name": "Depocu Nuri",
+     "role": "stash",
+     "model": "Barbarian + `Mug`",
+     "x": -17,
+     "z": -12,
+     "rot": 90,
+     "note": "panel `stash`"
+    },
+    {
+     "id": "npc_k_isinlayici",
+     "name": "Işınlayıcı Efe",
+     "role": "teleporter",
+     "model": "Mage + `Spellbook_open`",
+     "x": 4,
+     "z": 6.5,
+     "rot": 0,
+     "note": "panel `waypoints`"
+    },
+    {
+     "id": "npc_k_kalinti",
+     "name": "Kalıntı Tüccarı Sabri",
+     "role": "merchant",
+     "model": "Rogue_Hooded tint 0x30203a",
+     "x": -11.5,
+     "z": 4,
+     "rot": 90,
+     "note": "kind `metin`"
+    },
+    {
+     "id": "npc_k_avci",
+     "name": "Avcı Karaca",
+     "role": "quest",
+     "model": "Rogue + `1H_Crossbow`",
+     "x": -14,
+     "z": 19,
+     "rot": 0,
+     "note": "Haydut Tepeleri / bataklık av görevleri"
+    },
+    {
+     "id": "npc_k_kervanci",
+     "name": "Kervancı Mahir",
+     "role": "merchant",
+     "model": "Rogue_Hooded",
+     "x": 24.5,
+     "z": 19.5,
+     "rot": 180,
+     "note": "kind `merchant` (nadir, günlük rotasyonlu 3 eşya: Büyülü + 1 Nadir)"
+    },
+    {
+     "id": "npc_k_seyis",
+     "name": "Seyis Ceyhun",
+     "role": "stable",
+     "model": "Rogue (silahsız)",
+     "x": 18,
+     "z": 18,
+     "rot": 0,
+     "note": "binek yer tutucu"
+    },
+    {
+     "id": "npc_k_muhafiz_1",
+     "name": "Karakol Muhafızı",
+     "role": "guard",
+     "model": "Knight + kılıç/kalkan tint 0xa04040",
+     "x": -6,
+     "z": -22,
+     "rot": 0,
+     "note": "kuzey kapı"
+    },
+    {
+     "id": "npc_k_muhafiz_2",
+     "name": "Karakol Muhafızı",
+     "role": "guard",
+     "model": "aynı",
+     "x": 6,
+     "z": -22,
+     "rot": 0,
+     "note": "kuzey kapı (Haydut Tepeleri yönü)"
+    },
+    {
+     "id": "npc_k_muhafiz_3",
+     "name": "Karakol Muhafızı",
+     "role": "guard",
+     "model": "aynı",
+     "x": -6,
+     "z": 22,
+     "rot": 180,
+     "note": "güney kapı (bataklık yönü)"
+    },
+    {
+     "id": "npc_k_muhafiz_4",
+     "name": "Karakol Muhafızı",
+     "role": "guard",
+     "model": "aynı",
+     "x": 6,
+     "z": 22,
+     "rot": 180,
+     "note": "güney kapı"
+    },
+    {
+     "id": "npc_k_devriye_1",
+     "name": "Surlu Devriye",
+     "role": "guard",
+     "model": "aynı",
+     "x": -26,
+     "z": -20,
+     "rot": 0,
+     "note": "patrol (-26,-20) -> (26,-20) -> (26,20) -> (-26,20), 100 sn"
+    },
+    {
+     "id": "npc_k_devriye_2",
+     "name": "Surlu Devriye",
+     "role": "guard",
+     "model": "aynı",
+     "x": 26,
+     "z": 20,
+     "rot": 0,
+     "note": "yarım tur arayla"
+    },
+    {
+     "id": "npc_k_okcu_hedef",
+     "name": "Okçu Eğitmeni",
+     "role": "trainer",
+     "model": "Rogue + `1H_Crossbow`",
+     "x": -4,
+     "z": 20,
+     "rot": 0,
+     "note": "hedef tahtaları: DPS ölçer (5 sn pencere)"
+    },
+    {
+     "id": "npc_k_askerler",
+     "name": "Dinlenen Asker",
+     "role": "citizen",
+     "model": "Knight (silahsız) x2",
+     "x": 14,
+     "z": 8,
+     "rot": 0,
+     "note": "`Sit_Floor_Idle`"
+    }
+   ]
+  },
+  {
+   "id": "kamp_son_ocak",
+   "name": "Son Ocak Kampı",
+   "bounds": [
+    14,
+    12
+   ],
+   "buildings": [
+    {
+     "label": "Komuta Çadırı",
+     "model": "ks('tent')",
+     "x": 0,
+     "z": -6,
+     "rot": 0,
+     "scale": 3
+    },
+    {
+     "label": "Revir Çadırı",
+     "model": "gp('tent')",
+     "x": -8,
+     "z": -4,
+     "rot": 90,
+     "scale": 1
+    },
+    {
+     "label": "Erzak Çadırı",
+     "model": "ks('tent')",
+     "x": 8,
+     "z": -4,
+     "rot": -90,
+     "scale": 3
+    },
+    {
+     "label": "Kamp Ateşi",
+     "model": "gp('campfire')",
+     "x": 0,
+     "z": 2,
+     "rot": 0,
+     "scale": 1
+    },
+    {
+     "label": "Işınlanma Taşı",
+     "model": "gp('waypoint_stone')",
+     "x": 0,
+     "z": 9,
+     "rot": 0,
+     "scale": 1
+    }
+   ],
+   "rows": [
+    {
+     "label": "Yarım palisade",
+     "model": "ip('psx-walls-fences','plackard-wall/plackard_broken')",
+     "placement": "kuzey/doğu/batı kenar (x ±14, z -12)",
+     "count": "8 parça; güney açık (kamp harabelere kuzeyden bakar, geri çekilme yolu güneyde)"
+    }
+   ],
+   "npcs": [
+    {
+     "id": "npc_s_nobetci",
+     "name": "Nöbetçi Başı Talha",
+     "role": "quest",
+     "model": "Knight + kılıç/kalkan tint 0x6a7a90",
+     "x": 0,
+     "z": -9,
+     "rot": 0,
+     "note": "Lanetli Harabeler görevleri (`mq_17`, `mq_18`)"
+    },
+    {
+     "id": "npc_s_eczaci",
+     "name": "Gezgin Eczacı Hülya",
+     "role": "alchemist",
+     "model": "Mage + `1H_Wand`",
+     "x": -8,
+     "z": -1,
+     "rot": 90,
+     "note": "kind `alchemist` (kademe 3 iksirler)"
+    },
+    {
+     "id": "npc_s_tuccar",
+     "name": "Gezgin Tüccar Mahir",
+     "role": "merchant",
+     "model": "Rogue_Hooded",
+     "x": 8,
+     "z": -1,
+     "rot": -90,
+     "note": "kind `merchant` + `metin` (tek NPC iki sekme)"
+    },
+    {
+     "id": "npc_s_isinlayici",
+     "name": "Işınlayıcı Duru",
+     "role": "teleporter",
+     "model": "Mage + `Spellbook_open`",
+     "x": 3,
+     "z": 7,
+     "rot": 0,
+     "note": "panel `waypoints`"
+    },
+    {
+     "id": "npc_s_muhafiz_1",
+     "name": "Nöbetçi",
+     "role": "guard",
+     "model": "Knight",
+     "x": -6,
+     "z": 10,
+     "rot": 180,
+     "note": "güney yaklaşım yolu"
+    },
+    {
+     "id": "npc_s_muhafiz_2",
+     "name": "Nöbetçi",
+     "role": "guard",
+     "model": "Knight",
+     "x": 6,
+     "z": 10,
+     "rot": 180,
+     "note": "güney yaklaşım yolu"
+    }
+   ]
+  }
+ ],
+ "quests": {
+  "main": [
+   {
+    "id": "mq_01_kuzgunun_cagrisi",
+    "name": "Kuzgun'un Çağrısı",
+    "giver": "Muhtar Cemal (Kuzgunkale)",
+    "place": "Kuzgunkale",
+    "level": 1,
+    "kind": "talk",
+    "goal": "Güney Kapısı'ndan çık, Gümüşdere Köyü'nde Muhtar Ferhat ile konuş",
+    "xpPct": 10,
+    "goldPerLevel": 4,
+    "items": "Dönüş Parşömeni x2 · Küçük Can İksiri x3",
+    "next": "mq_02"
+   },
+   {
+    "id": "mq_02_fare_yuvasi",
+    "name": "Fare Yuvası",
+    "giver": "Muhtar Ferhat",
+    "place": "r1_c01",
+    "level": 1,
+    "kind": "kill",
+    "goal": "10 Orman Sıçanı öldür (temel saldırı + alan hasarı)",
+    "xpPct": 20,
+    "goldPerLevel": 4,
+    "items": "-",
+    "next": "mq_03"
+   },
+   {
+    "id": "mq_03_balcik_temizligi",
+    "name": "Balçık Temizliği",
+    "giver": "Muhtar Ferhat",
+    "place": "r1_c02",
+    "level": 2,
+    "kind": "kill",
+    "goal": "8 Yeşil Balçık öldür (bölünen düşmanlar)",
+    "xpPct": 20,
+    "goldPerLevel": 4,
+    "items": "Küçük Can İksiri x3",
+    "next": "mq_04"
+   },
+   {
+    "id": "mq_04_samani_sustur",
+    "name": "Şamanı Sustur",
+    "giver": "Muhtar Ferhat",
+    "place": "r1_c04",
+    "level": 3,
+    "kind": "skill",
+    "goal": "Goblin Şamanı'nın Şifa Duası'nı 3 kez kes (kesme: sersemletme/vuruş sendeletmesi)",
+    "xpPct": 25,
+    "goldPerLevel": 5,
+    "items": "Büyülü silah",
+    "next": "mq_05"
+   },
+   {
+    "id": "mq_05_yagmaci_kampi",
+    "name": "Yağmacı Başı",
+    "giver": "Muhtar Ferhat",
+    "place": "r1_c04",
+    "level": 4,
+    "kind": "boss",
+    "goal": "Yağmacı Başı Gırtlak'ı öldür (mini-boss: telegraph + çağrılan yardımcılar)",
+    "xpPct": 30,
+    "goldPerLevel": 6,
+    "items": "Büyülü zırh",
+    "next": "mq_06"
+   },
+   {
+    "id": "mq_06_ilk_metin",
+    "name": "İlk Metin",
+    "giver": "Muhtar Ferhat",
+    "place": "metin_keder",
+    "level": 5,
+    "kind": "metin",
+    "goal": "1 Keder Metini yık (Metin mekaniği: dalgalar, aura)",
+    "xpPct": 25,
+    "goldPerLevel": 6,
+    "items": "Metin Kalıntısı x5 · Beceri Kitabı I x1",
+    "next": "mq_07; Kalıntı Tüccarı açılır"
+   },
+   {
+    "id": "mq_07_kopruyu_gec",
+    "name": "Taş Köprü'nün Ötesi",
+    "giver": "Muhtar Ferhat",
+    "place": "kamp_ciftlik",
+    "level": 5,
+    "kind": "talk",
+    "goal": "Taş Köprü'yü geç, Altın Ambar Çiftliği'nde Çiftlik Sahibi Rıza ile konuş",
+    "xpPct": 15,
+    "goldPerLevel": 4,
+    "items": "Işınlanma Taşı keşfi",
+    "next": "mq_08"
+   },
+   {
+    "id": "mq_08_ciftlik_isgali",
+    "name": "Çiftlik İşgali",
+    "giver": "Çiftlik Sahibi Rıza",
+    "place": "r2_c01",
+    "level": 6,
+    "kind": "kill",
+    "goal": "12 Yaban Domuzu + 8 Korkuluk öldür",
+    "xpPct": 20,
+    "goldPerLevel": 6,
+    "items": "Büyülü zırh",
+    "next": "mq_09"
+   },
+   {
+    "id": "mq_09_mezarligin_sirri",
+    "name": "Mezarlığın Sırrı",
+    "giver": "Çiftlik Sahibi Rıza",
+    "place": "r2_c08",
+    "level": 8,
+    "kind": "kill",
+    "goal": "Kayıp Mezarlık'ta 10 iskelet öldür; Kemik Mahzeni kapısını bul",
+    "xpPct": 25,
+    "goldPerLevel": 8,
+    "items": "Kemik Mahzeni ipucu: giriş kapısı etkinleşir",
+    "next": "mq_10"
+   },
+   {
+    "id": "mq_10_kemik_mahzeni",
+    "name": "Kemik Mahzeni",
+    "giver": "Çiftlik Sahibi Rıza",
+    "place": "ent_kemik_mahzeni",
+    "level": 8,
+    "kind": "dungeon",
+    "goal": "Kemik Mahzeni'ni Normal zorlukta bitir (ilk temizleme bonusu %50 ayrıca)",
+    "xpPct": 45,
+    "goldPerLevel": 10,
+    "items": "Nadir eşya · Mühür Parçası I",
+    "next": "mq_11"
+   },
+   {
+    "id": "mq_11_curukkok",
+    "name": "Çürükkök",
+    "giver": "Çiftlik Sahibi Rıza",
+    "place": "wb_curukkok",
+    "level": 10,
+    "kind": "boss",
+    "goal": "Çürükkök'ü yen (grup önerilir) — alternatif: 15 Mantar Zorbası",
+    "xpPct": 45,
+    "goldPerLevel": 10,
+    "items": "Nadir eşya",
+    "next": "mq_12"
+   },
+   {
+    "id": "mq_12_haydut_kalesi",
+    "name": "Haydut Kalesi",
+    "giver": "Çiftlik Sahibi Rıza",
+    "place": "r3_c04",
+    "level": 12,
+    "kind": "boss",
+    "goal": "Haydut Kralı Karabıyık'ı öldür + 15 haydut",
+    "xpPct": 30,
+    "goldPerLevel": 12,
+    "items": "Mühür Parçası II · Nadir eşya",
+    "next": "mq_13"
+   },
+   {
+    "id": "mq_13_kizilkaya_haberi",
+    "name": "Kızılkaya'dan Haber",
+    "giver": "Komutan Aslan",
+    "place": "koy_kizilkaya",
+    "level": 13,
+    "kind": "kill",
+    "goal": "Kızılkaya Karakolu'na ulaş, Komutan Aslan ile konuş; 10 Savaş Kurdu / Kurt öldür",
+    "xpPct": 25,
+    "goldPerLevel": 8,
+    "items": "Büyülü silah",
+    "next": "mq_14"
+   },
+   {
+    "id": "mq_14_bataklik_cadisi",
+    "name": "Bataklık Cadısı",
+    "giver": "Komutan Aslan",
+    "place": "r4_c08",
+    "level": 17,
+    "kind": "boss",
+    "goal": "Cadı Zehra'yı öldür + 6 Cadı Otu topla",
+    "xpPct": 45,
+    "goldPerLevel": 14,
+    "items": "Mühür Parçası III · Nadir eşya",
+    "next": "mq_15"
+   },
+   {
+    "id": "mq_15_kor_ocagi",
+    "name": "Kor Ocağı",
+    "giver": "Komutan Aslan",
+    "place": "ent_kizil_dokumhane",
+    "level": 18,
+    "kind": "dungeon",
+    "goal": "Kızıl Dökümhane'yi Normal zorlukta bitir",
+    "xpPct": 50,
+    "goldPerLevel": 14,
+    "items": "Nadir eşya · Kor Ocağı Taşı",
+    "next": "mq_16"
+   },
+   {
+    "id": "mq_16_ork_istilasi",
+    "name": "Ork İstilası",
+    "giver": "Kanyon Girişi Kampı (Teğmen Deniz)",
+    "place": "r5_c09",
+    "level": 22,
+    "kind": "boss",
+    "goal": "3 Ork Savaş Sancağı yık + Ork Reisi Gorak'ı öldür",
+    "xpPct": 50,
+    "goldPerLevel": 16,
+    "items": "Nadir eşya x2",
+    "next": "mq_17"
+   },
+   {
+    "id": "mq_17_lanetli_yol",
+    "name": "Lanetli Yol",
+    "giver": "Nöbetçi Başı Talha",
+    "place": "kamp_son_ocak",
+    "level": 26,
+    "kind": "kill",
+    "goal": "12 iskelet + 6 Kara Tarikat müridi öldür",
+    "xpPct": 30,
+    "goldPerLevel": 18,
+    "items": "Büyülü Toz x10",
+    "next": "mq_18"
+   },
+   {
+    "id": "mq_18_kara_anit",
+    "name": "Kara Anıt",
+    "giver": "Nöbetçi Başı Talha",
+    "place": "metin_olum",
+    "level": 29,
+    "kind": "boss",
+    "goal": "Ölüm Metini'ni yık + Kan Lordu Valdemar'ı öldür",
+    "xpPct": 40,
+    "goldPerLevel": 20,
+    "items": "Mühür Parçası IV · Destansı eşya",
+    "next": "mq_19"
+   },
+   {
+    "id": "mq_19_kuzgunkaleye_donus",
+    "name": "Kuzgunkale'ye Dönüş",
+    "giver": "Muhtar Cemal (Kuzgunkale)",
+    "place": "Kuzgunkale",
+    "level": 30,
+    "kind": "talk",
+    "goal": "Dört Mühür Parçası'nı Muhtar Cemal'e teslim et",
+    "xpPct": 55,
+    "goldPerLevel": 30,
+    "items": "Destansı eşya · Buzul Tahtı kapısı + Doğu Kapısı (Karakır Bozkırı) açılır",
+    "next": "Karakır Bozkırı zinciri"
+   }
+  ],
+  "side": [
+   {
+    "id": "sq_g_01_kurt_tehlikesi",
+    "name": "Kurt Tehlikesi",
+    "giver": "Avcı Yıldız",
+    "place": "r1_c03",
+    "level": 2,
+    "goal": "8 Orman Kurdu öldür",
+    "xpPct": 15,
+    "items": "Küçük Can İksiri x2"
+   },
+   {
+    "id": "sq_g_02_geyik_derisi",
+    "name": "Geyik Derisi",
+    "giver": "Avcı Yıldız",
+    "place": "r1 ambient",
+    "level": 2,
+    "goal": "5 Geyik Derisi topla (geyik kaçar: kovala)",
+    "xpPct": 15,
+    "items": "Gümüş Yüzük"
+   },
+   {
+    "id": "sq_g_03_orumcek_aglari",
+    "name": "Ağ Ustaları",
+    "giver": "Çiftçi Hatice",
+    "place": "r1_c06",
+    "level": 4,
+    "goal": "8 Orman Örümceği öldür (ağ atışlarından yuvarlan)",
+    "xpPct": 15,
+    "items": "-"
+   },
+   {
+    "id": "sq_g_04_ari_yuvasi",
+    "name": "Arı Yuvası",
+    "giver": "Çiftçi Hatice",
+    "place": "r1_c07",
+    "level": 4,
+    "goal": "10 Orman Arısı öldür",
+    "xpPct": 15,
+    "items": "Büyülü Toz x2"
+   },
+   {
+    "id": "sq_g_05_mantar_halkasi",
+    "name": "Mantar Halkası",
+    "giver": "Rahibe Meryem",
+    "place": "r1_c05",
+    "level": 4,
+    "goal": "12 Mantarcık öldür; ölünce zehir bulutundan kaç",
+    "xpPct": 15,
+    "items": "Küçük Ruh İksiri x3"
+   },
+   {
+    "id": "sq_g_06_degirmen",
+    "name": "Eski Değirmen",
+    "giver": "Muhtar Ferhat",
+    "place": "r1_c10",
+    "level": 5,
+    "goal": "Değirmendeki kurt ini'ni temizle (3 kurt + 2 domuz) ve Gümüş Yele'yi bul",
+    "xpPct": 15,
+    "items": "Nadir yüzük"
+   },
+   {
+    "id": "sq_c_01_bugday_hirsizlari",
+    "name": "Buğday Hırsızları",
+    "giver": "Çiftlik Sahibi Rıza",
+    "place": "r2_c10",
+    "level": 8,
+    "goal": "10 Puglin Yağmacı öldür",
+    "xpPct": 15,
+    "items": "-"
+   },
+   {
+    "id": "sq_c_02_korkuluk_sirri",
+    "name": "Korkuluk Sırrı",
+    "giver": "Çiftlik Sahibi Rıza",
+    "place": "r2_c02",
+    "level": 7,
+    "goal": "8 Korkuluk öldür, Korkuluk Kral'ı (nadir) bul",
+    "xpPct": 15,
+    "items": "Büyülü zırh"
+   },
+   {
+    "id": "sq_c_03_terk_edilmis_ciftlik",
+    "name": "Terk Edilmiş Çiftlik",
+    "giver": "Çiftlik Sahibi Rıza",
+    "place": "r2_c03",
+    "level": 7,
+    "goal": "Çiftlik kampını temizle (5 köylü + 4 yarasa) + devriye",
+    "xpPct": 15,
+    "items": "Nadir eldiven"
+   },
+   {
+    "id": "sq_c_04_mantar_kokusu",
+    "name": "Mantar Kokusu",
+    "giver": "Rahibe Meryem",
+    "place": "r2_c05",
+    "level": 8,
+    "goal": "6 Mantar Zorbası öldür",
+    "xpPct": 15,
+    "items": "Zümrüt (Kırık) x1"
+   },
+   {
+    "id": "sq_c_05_haydut_devriyesi",
+    "name": "Haydut Devriyesi",
+    "giver": "Çiftlik Sahibi Rıza",
+    "place": "r2_c06",
+    "level": 9,
+    "goal": "Haydut Karakolu'nu temizle (haydut + okçu + pehlivan)",
+    "xpPct": 15,
+    "items": "Efsun Nesnesi x1"
+   },
+   {
+    "id": "sq_k_01_gol_kiyisi",
+    "name": "Göl Kıyısı",
+    "giver": "Avcı Karaca",
+    "place": "r3_c07",
+    "level": 12,
+    "goal": "2 Boz Ayı + 6 Kurt öldür",
+    "xpPct": 15,
+    "items": "Büyülü Toz x5"
+   },
+   {
+    "id": "sq_k_02_warg_sürüsü",
+    "name": "Warg Sürüsü",
+    "giver": "Komutan Aslan",
+    "place": "r3_c08",
+    "level": 14,
+    "goal": "2 Savaş Kurdu + 6 Puglin öldür",
+    "xpPct": 15,
+    "items": "Nadir eşya"
+   },
+   {
+    "id": "sq_k_03_gozcu_kulesi",
+    "name": "Yıkık Gözcü Kulesi",
+    "giver": "Komutan Aslan",
+    "place": "r3_c09",
+    "level": 14,
+    "goal": "Gözcü kulesini temizle (haydut okçuları: menzile sızarak)",
+    "xpPct": 15,
+    "items": "Nadir eşya"
+   },
+   {
+    "id": "sq_k_04_gergedan",
+    "name": "Gergedan Otlağı",
+    "giver": "Avcı Karaca",
+    "place": "r3_c05",
+    "level": 13,
+    "goal": "2 Dağ Gergedanı öldür (hücumdan kaç)",
+    "xpPct": 15,
+    "items": "Büyülü Toz x6"
+   },
+   {
+    "id": "sq_k_05_agit_isigi",
+    "name": "Ağıt Işıkları",
+    "giver": "Avcı Karaca",
+    "place": "r4_c01",
+    "level": 16,
+    "goal": "10 Bataklık Işığı öldür; patlamadan uzak dur",
+    "xpPct": 20,
+    "items": "Orta Can İksiri x4"
+   },
+   {
+    "id": "sq_k_06_zehirli_magara",
+    "name": "Zehirli Mağara",
+    "giver": "Avcı Karaca",
+    "place": "r4_c06",
+    "level": 18,
+    "goal": "2 Dev Örümcek + 6 Örümcek öldür",
+    "xpPct": 25,
+    "items": "Zümrüt (Kusurlu) x1"
+   },
+   {
+    "id": "sq_k_07_ciyan_cukuru",
+    "name": "Çıyan Çukuru",
+    "giver": "Avcı Karaca",
+    "place": "r4_c04",
+    "level": 17,
+    "goal": "8 Çürük Çıyanı öldür",
+    "xpPct": 20,
+    "items": "Topaz (Kusurlu) x1"
+   },
+   {
+    "id": "sq_s_01_kanyon_gecidi",
+    "name": "Kanyon Geçidi",
+    "giver": "Teğmen Deniz",
+    "place": "r5_c01",
+    "level": 21,
+    "goal": "6 Ork Savaşçısı + 3 Fırlatıcı öldür",
+    "xpPct": 20,
+    "items": "Büyülü Toz x6"
+   },
+   {
+    "id": "sq_s_02_tas_ocagi",
+    "name": "Taş Ocağı",
+    "giver": "Teğmen Deniz",
+    "place": "r5_c05",
+    "level": 23,
+    "goal": "2 Kanyon Golemi öldür",
+    "xpPct": 20,
+    "items": "Ejderha Pulu x1"
+   },
+   {
+    "id": "sq_s_03_kor_ocagi_ates",
+    "name": "Kor Çatlağı",
+    "giver": "Teğmen Deniz",
+    "place": "r5_c04",
+    "level": 22,
+    "goal": "5 Kanyon İblisçiği + Kor Elementali öldür",
+    "xpPct": 20,
+    "items": "Yakut (Kusurlu) x1"
+   },
+   {
+    "id": "sq_s_04_kemik_nobeti",
+    "name": "Kemik Nöbeti",
+    "giver": "Nöbetçi Başı Talha",
+    "place": "r6_c01",
+    "level": 26,
+    "goal": "Son Ocak Nöbeti kampını temizle",
+    "xpPct": 15,
+    "items": "Büyülü Toz x8"
+   },
+   {
+    "id": "sq_s_05_kutuphane",
+    "name": "Eski Kütüphane",
+    "giver": "Nöbetçi Başı Talha",
+    "place": "r6_c05",
+    "level": 28,
+    "goal": "Kütüphane kampını temizle; 3 Kemik Büyücüsü",
+    "xpPct": 15,
+    "items": "Oyma Kalemi x1"
+   },
+   {
+    "id": "sq_s_06_vampir_izi",
+    "name": "Vampir İzi",
+    "giver": "Nöbetçi Başı Talha",
+    "place": "r6_c08",
+    "level": 29,
+    "goal": "Kan Lordu Salonu'ndaki Kan Lordu'nu öldür",
+    "xpPct": 15,
+    "items": "Ametist (Kusursuz) x1"
+   }
+  ],
+  "bio": [
+   {
+    "step": 1,
+    "minLevel": 5,
+    "item": "Kurt Dişi",
+    "count": 15,
+    "source": "Kurtlar (ow_wolf)",
+    "reward": "maxHpPct +%1"
+   },
+   {
+    "step": 2,
+    "minLevel": 10,
+    "item": "Domuz Dişi",
+    "count": 20,
+    "source": "Yaban Domuzu / Gergedan",
+    "reward": "damagePct +%1"
+   },
+   {
+    "step": 3,
+    "minLevel": 15,
+    "item": "Haydut Mührü",
+    "count": 25,
+    "source": "Haydutlar",
+    "reward": "armorPct +%2"
+   },
+   {
+    "step": 4,
+    "minLevel": 20,
+    "item": "Bataklık Özü",
+    "count": 30,
+    "source": "Gulyabani / Çamur / Hortlak",
+    "reward": "resPoison +%3"
+   },
+   {
+    "step": 5,
+    "minLevel": 25,
+    "item": "Ork Dişi Kolye",
+    "count": 35,
+    "source": "Orklar",
+    "reward": "critChance +%1"
+   },
+   {
+    "step": 6,
+    "minLevel": 30,
+    "item": "Lanetli Kemik",
+    "count": 40,
+    "source": "İskelet / Tarikat / Gölge",
+    "reward": "moveSpeedPct +%2"
+   }
+  ]
+ },
+ "newEnemies": [
+  {
+   "id": "ow_wolf",
+   "name": "Orman Kurdu",
+   "model": "itch/creatures/wolf.glb",
+   "scale": 0.8,
+   "tint": "-",
+   "role": "melee",
+   "rank": "trash",
+   "hpMult": 0.8,
+   "dmgMult": 0.9,
+   "speed": 7.4,
+   "aggro": 10,
+   "radius": 0.55,
+   "basic": "Isırık: cone 2.0 m 90°, cd 1.4, coef 1.0 (`Bite`, impact 0.47)",
+   "abilities": "Atılma: charge 7 m, cd 7, windup 0.6, coef 1.2 (`Lunge`, impact 0.87) · Uluma: yarı canda bir kez +1 `ow_wolf` çağırır (summoned, xp 0; `Howl` 0.8)",
+   "resist": "R_BEAST",
+   "levels": "2-12",
+   "note": "Karanlık sürü varyantı: tint 0x6a6a72"
+  },
+  {
+   "id": "ow_wolf_dire",
+   "name": "Dehşet Kurdu",
+   "model": "gen/creatures/wolf_dire.glb",
+   "scale": 1.0,
+   "tint": "-",
+   "role": "melee",
+   "rank": "elite",
+   "hpMult": 3.5,
+   "dmgMult": 1.4,
+   "speed": 7.8,
+   "aggro": 12,
+   "radius": 0.7,
+   "basic": "Isırık: cone 2.4 m 90°, cd 1.8, coef 1.0 (`Attack`, impact 0.5)",
+   "abilities": "Kemik Kıran: charge 8 m, windup 0.8, cd 9, coef 1.8 + knockdown 1 sn · Sürü Emri: 12 m içindeki müttefikler +%25 saldırı hızı 8 sn (cd 20)",
+   "resist": "R_BEAST",
+   "levels": "10-15",
+   "note": "Kurt sürülerinin lideri"
+  },
+  {
+   "id": "ow_warg",
+   "name": "Savaş Kurdu",
+   "model": "itch/creatures/warg.glb",
+   "scale": 0.95,
+   "tint": "-",
+   "role": "melee",
+   "rank": "elite",
+   "hpMult": 4.2,
+   "dmgMult": 1.5,
+   "speed": 8.0,
+   "aggro": 12,
+   "radius": 0.8,
+   "basic": "Isırık: cone 2.6 m 100°, cd 1.9, coef 1.0 (`Bite`, impact 0.5)",
+   "abilities": "Atılma: charge 9 m, windup 0.8, cd 9, coef 1.9 (`Lunge` 0.93) · Savaş Uluması: bir kez, 14 m içinde +%25 hasar 8 sn ve 2 `ow_wolf` çağırır (`Howl` 0.8)",
+   "resist": "R_BEAST",
+   "levels": "11-25",
+   "note": "Maske + eyer düğümleri (`WargMask`, `WargTack`) görünür"
+  },
+  {
+   "id": "ow_boar",
+   "name": "Yaban Domuzu",
+   "model": "itch/creatures/rhino.glb",
+   "scale": 0.42,
+   "tint": "0x7a5a40",
+   "role": "melee",
+   "rank": "trash",
+   "hpMult": 1.1,
+   "dmgMult": 1.0,
+   "speed": 6.4,
+   "aggro": 9,
+   "radius": 0.6,
+   "basic": "Boynuz: cone 1.8 m 100°, cd 1.6, coef 1.0 (`Gore`, impact 0.45)",
+   "abilities": "Hücum: line 8 x 1.6 m, windup 0.8, cd 8, coef 1.6, dash 0.6 sn (`Charge`)",
+   "resist": "R_BEAST",
+   "levels": "3-15",
+   "note": "`Spear` düğümü gizlenir (visual.hide)"
+  },
+  {
+   "id": "ow_bear",
+   "name": "Boz Ayı",
+   "model": "itch/creatures/bear.glb",
+   "scale": 0.9,
+   "tint": "-",
+   "role": "melee",
+   "rank": "elite",
+   "hpMult": 3.6,
+   "dmgMult": 1.5,
+   "speed": 5.6,
+   "aggro": 11,
+   "radius": 0.95,
+   "basic": "Pençe: cone 2.8 m 110°, cd 2.0, coef 1.0 (`Swipe`, impact 0.42)",
+   "abilities": "Yer Darbesi: self_aoe r 4 m, windup 1.0, cd 11, coef 2.0 (`Slam` 0.77) · Kükreme: kendine +%20 hasar 8 sn, cd 20 (`Roar` 0.3)",
+   "resist": "R_BEAST",
+   "levels": "7-25",
+   "note": "Dokunulmadıkça uyur (`Sleep`→`Wake`, ai.dormant)"
+  },
+  {
+   "id": "ow_rhino",
+   "name": "Dağ Gergedanı",
+   "model": "itch/creatures/rhino.glb",
+   "scale": 0.95,
+   "tint": "-",
+   "role": "melee",
+   "rank": "elite",
+   "hpMult": 4.0,
+   "dmgMult": 1.7,
+   "speed": 5.0,
+   "aggro": 11,
+   "radius": 1.1,
+   "basic": "Boynuz: cone 3.0 m 100°, cd 2.2, coef 1.0 (`Gore`, impact 0.45)",
+   "abilities": "Hücum: line 12 x 2.2 m, windup 1.1, cd 10, coef 2.4 + knockdown 0.8 sn (`Charge`) · Tepinme: self_aoe r 4.2, windup 1.0, cd 12, coef 1.8 (`Stamp` 1.0)",
+   "resist": "R_BEAST",
+   "levels": "12-25",
+   "note": "Kızıl Boynuz varyantı: tint 0xb05040"
+  },
+  {
+   "id": "ow_wasp",
+   "name": "Orman Arısı",
+   "model": "itch/creatures/wasp.glb",
+   "scale": 0.55,
+   "tint": "-",
+   "role": "swarm",
+   "rank": "trash",
+   "hpMult": 0.3,
+   "dmgMult": 0.5,
+   "speed": 6.0,
+   "aggro": 10,
+   "radius": 0.4,
+   "basic": "İğne: cone 1.6 m, cd 1.3, coef 1.0, zehir 1 yük %25 (`Sting`, impact 0.6)",
+   "abilities": "Dalış: charge 6 m, windup 0.5, cd 6, coef 1.2 (`Dive` 0.9)",
+   "resist": "R_BEAST",
+   "levels": "3-15",
+   "note": "flying:true (hover modelde pişmiş); `ow_wasp_swamp`: tint 0x88a838, zehir 2 yük, L15-20"
+  },
+  {
+   "id": "ow_deer",
+   "name": "Geyik",
+   "model": "itch/creatures/deer.glb",
+   "scale": 0.8,
+   "tint": "-",
+   "role": "support",
+   "rank": "trash",
+   "hpMult": 0.5,
+   "dmgMult": 0.6,
+   "speed": 9.5,
+   "aggro": 14,
+   "radius": 0.7,
+   "basic": "Boynuz Vuruşu: yalnızca köşeye sıkışınca, cone 2.0 m, coef 0.6 (`Attack`, 0.5)",
+   "abilities": "- (ai.flee + ai.neutral: saldırmaz, oyuncudan kaçar)",
+   "resist": "R_BEAST",
+   "levels": "1-8",
+   "note": "Çevre canlısı + av görevi; `Geyik Derisi` düşürür"
+  },
+  {
+   "id": "ow_bandit",
+   "name": "Haydut",
+   "model": "characters/Rogue.glb",
+   "scale": 1.0,
+   "tint": "0x8a6a48",
+   "role": "melee",
+   "rank": "trash",
+   "hpMult": 1.0,
+   "dmgMult": 1.0,
+   "speed": 6.0,
+   "aggro": 10,
+   "radius": 0.5,
+   "basic": "Hançer: cone 2.2 m 100°, cd 1.5, coef 1.0 (`Dualwield_Melee_Attack_Slice`, impact 0.55)",
+   "abilities": "Bıçak Fırlat: projectile 15 m/s, range 14, windup 0.6, cd 6, coef 1.1 (`Throw` 0.75)",
+   "resist": "R_BEAST",
+   "levels": "7-16",
+   "note": "ROGUE_HIDE eksi Knife / Knife_Offhand"
+  },
+  {
+   "id": "ow_bandit_archer",
+   "name": "Haydut Okçusu",
+   "model": "characters/Rogue.glb",
+   "scale": 1.0,
+   "tint": "0x6a5a40",
+   "role": "ranged",
+   "rank": "trash",
+   "hpMult": 0.8,
+   "dmgMult": 1.0,
+   "speed": 5.6,
+   "aggro": 14,
+   "radius": 0.5,
+   "basic": "Ok: projectile 22 m/s, range 18, cd 2.4, coef 1.0 (`2H_Ranged_Shoot`, impact 0.15) · ai.kite [9,15]",
+   "abilities": "Çoklu Ok: 3 ok, yelpaze 15°, windup 1.0, cd 10, coef 0.9 (hitscan)",
+   "resist": "R_BEAST",
+   "levels": "8-16",
+   "note": "`2H_Crossbow` görünür, kalan ROGUE_HIDE gizli"
+  },
+  {
+   "id": "ow_bandit_brute",
+   "name": "Haydut Pehlivanı",
+   "model": "characters/Barbarian.glb",
+   "scale": 1.12,
+   "tint": "0x6a4a38",
+   "role": "melee",
+   "rank": "elite",
+   "hpMult": 4.0,
+   "dmgMult": 1.5,
+   "speed": 5.2,
+   "aggro": 11,
+   "radius": 0.8,
+   "basic": "Balta: cone 3.0 m 110°, cd 2.2, coef 1.0 (`2H_Melee_Attack_Slice`, impact 0.5)",
+   "abilities": "Yer Sarsıntısı: self_aoe r 4.2, windup 1.0, cd 11, coef 2.0 (`2H_Melee_Attack_Chop` 0.6) · Savaş Narası: r 12 +%25 hasar 8 sn, cd 20 (`war_cry`)",
+   "resist": "R_BEAST",
+   "levels": "10-16",
+   "note": "`2H_Axe` görünür, kalan aksesuarlar gizli"
+  },
+  {
+   "id": "ow_bandit_chief",
+   "name": "Haydut Başı",
+   "model": "characters/Knight.glb",
+   "scale": 1.25,
+   "tint": "0x5a3a30",
+   "role": "melee",
+   "rank": "elite",
+   "hpMult": 6.0,
+   "dmgMult": 1.6,
+   "speed": 5.4,
+   "aggro": 12,
+   "radius": 0.7,
+   "basic": "Kılıç: cone 2.8 m 100°, cd 2.0, coef 1.0 (`1H_Melee_Attack_Slice_Horizontal`, impact 0.3)",
+   "abilities": "Kalkan Darbesi: cone 3 m, stun 1.5 sn, windup 0.8, cd 12, coef 0.8 · Yardım Çağır: %60 canda bir kez 3 `ow_bandit` çağırır",
+   "resist": "R_BEAST",
+   "levels": "12-16",
+   "note": "`1H_Sword` + `Round_Shield` görünür"
+  },
+  {
+   "id": "ow_puglin",
+   "name": "Puglin Yağmacı",
+   "model": "itch/bestiary/puglin.glb",
+   "scale": 0.9,
+   "tint": "-",
+   "role": "melee",
+   "rank": "trash",
+   "hpMult": 0.9,
+   "dmgMult": 0.9,
+   "speed": 5.6,
+   "aggro": 10,
+   "radius": 0.55,
+   "basic": "Sopa: cone 2.0 m 100°, cd 1.6, coef 1.0 (`Attack_1H_1`, impact 0.25)",
+   "abilities": "Mızrak Fırlat: projectile 14 m/s, range 14, windup 0.7, cd 6, coef 1.2 (`Throw`, impact 0.6)",
+   "resist": "R_BEAST",
+   "levels": "7-15",
+   "note": "Bestiary 7.5k tri: kamp başına ≤ 7 örnek"
+  },
+  {
+   "id": "ow_puglin_chief",
+   "name": "Puglin Reisi",
+   "model": "itch/bestiary/puglin.glb",
+   "scale": 1.4,
+   "tint": "-",
+   "role": "melee",
+   "rank": "elite",
+   "hpMult": 4.0,
+   "dmgMult": 1.5,
+   "speed": 5.2,
+   "aggro": 12,
+   "radius": 0.9,
+   "basic": "Sopa Fırtınası: cone 3.2 m 110°, cd 2.4, coef 1.2 (`Attack_1H_2`, impact 0.35)",
+   "abilities": "Savaş Narası: r 12 +%25 hasar 8 sn, cd 20 (`Taunt`) · Yere Vur: self_aoe r 3.5, windup 0.9, cd 10, coef 1.8 (`Attack_2H` 0.8)",
+   "resist": "R_BEAST",
+   "levels": "5-15",
+   "note": "Puglin texture varyantları: `puglin_2` kırmızı, `puglin_3` mavi (tint yerine texture swap)"
+  },
+  {
+   "id": "ow_scarecrow",
+   "name": "Korkuluk",
+   "model": "characters/Barbarian.glb",
+   "scale": 1.05,
+   "tint": "0xc8a860",
+   "role": "melee",
+   "rank": "trash",
+   "hpMult": 1.2,
+   "dmgMult": 1.0,
+   "speed": 3.8,
+   "aggro": 8,
+   "radius": 0.55,
+   "basic": "Çatal: cone 2.6 m 90°, cd 2.0, coef 1.0 (`Unarmed_Melee_Attack_Punch_A`, impact 0.45)",
+   "abilities": "Saman Bulutu (ölünce): self_aoe r 3, kör 2 sn (`blind`), hasarsız",
+   "resist": "R_BEAST",
+   "levels": "5-9",
+   "note": "ai.dormant (tarlada gerçek korkuluk gibi durur, wakeRange 7); tüm aksesuarlar gizli"
+  },
+  {
+   "id": "ow_mushroom_brute",
+   "name": "Mantar Zorbası",
+   "model": "gen/creatures/mushroom_brute.glb",
+   "scale": 1.0,
+   "tint": "-",
+   "role": "tank",
+   "rank": "trash",
+   "hpMult": 1.8,
+   "dmgMult": 1.0,
+   "speed": 3.8,
+   "aggro": 9,
+   "radius": 0.9,
+   "basic": "Kafa Darbesi: cone 2.4 m 100°, cd 2.0, coef 1.0 (`Attack`, impact 0.5)",
+   "abilities": "Spor Patlaması: self_aoe r 3, windup 0.9, cd 12, coef 0.4 zehir, persist 4 sn tick 0.5 (`Cast` 0.6) · Ölünce 2 `ow_mushnub`",
+   "resist": "R_BEAST",
+   "levels": "7-10",
+   "note": "Çürük Höyük çevresi"
+  },
+  {
+   "id": "ow_ghoul",
+   "name": "Bataklık Gulyabanisi",
+   "model": "monsters/Zombie.glb",
+   "scale": 0.95,
+   "tint": "0x7a9a6a",
+   "role": "melee",
+   "rank": "trash",
+   "hpMult": 1.4,
+   "dmgMult": 1.2,
+   "speed": 4.2,
+   "aggro": 9,
+   "radius": 0.55,
+   "basic": "Pençe: cone 2.2 m 100°, cd 2.0, coef 1.0 (`Attack`, impact 0.37)",
+   "abilities": "Çürük Nefes: cone 60° 4 m, windup 0.8, cd 10, coef 0.4 zehir 3 yük · Leş Çağrısı: %50 canda bir kez 2 `ow_zombie`",
+   "resist": "R_BEAST",
+   "levels": "15-20",
+   "note": "ow_zombie kardeşi"
+  },
+  {
+   "id": "ow_wraith",
+   "name": "Ağıt Hortlağı",
+   "model": "gen/creatures/wraith.glb",
+   "scale": 1.0,
+   "tint": "-",
+   "role": "caster",
+   "rank": "trash",
+   "hpMult": 1.0,
+   "dmgMult": 1.2,
+   "speed": 4.8,
+   "aggro": 12,
+   "radius": 0.6,
+   "basic": "Gölge Oku: projectile 15 m/s, range 16, cd 2.6, windup 0.6, coef 1.2 gölge (`Attack`) · ai.kite [8,14]",
+   "abilities": "Korku Çığlığı: cast 1.6 sn (kesilebilir), cone 70° 8 m, korku 1.5 sn, cd 14 (`Cast` 0.9)",
+   "resist": "R_GHOST",
+   "levels": "16-30",
+   "note": "flying:true; saydamlık 0.8"
+  },
+  {
+   "id": "ow_ooze",
+   "name": "Bataklık Çamuru",
+   "model": "itch/creatures/ooze.glb",
+   "scale": 0.55,
+   "tint": "0xcaa040",
+   "role": "melee",
+   "rank": "trash",
+   "hpMult": 1.5,
+   "dmgMult": 1.0,
+   "speed": 2.8,
+   "aggro": 8,
+   "radius": 0.9,
+   "basic": "Kırbaç: cone 3.0 m 110°, cd 2.2, coef 1.0 (`Lash`, impact 0.67)",
+   "abilities": "Asit Tükürüğü: projectile 12 m/s, range 12, windup 0.7, cd 7, coef 0.9 zehir 1 yük (`Spit` 0.7) · Bölünme (ölünce): 2 `ow_ooze_half`",
+   "resist": "R_BEAST",
+   "levels": "15-19",
+   "note": "Alfa-blend jöle; kamp başına ≤ 5 örnek"
+  },
+  {
+   "id": "ow_ooze_half",
+   "name": "Çamur Parçası",
+   "model": "itch/creatures/ooze.glb",
+   "scale": 0.34,
+   "tint": "0xcaa040",
+   "role": "swarm",
+   "rank": "trash",
+   "hpMult": 0.25,
+   "dmgMult": 0.5,
+   "speed": 3.6,
+   "aggro": 10,
+   "radius": 0.5,
+   "basic": "Kırbaç: cone 1.8 m, cd 1.6, coef 1.0 (`Lash`)",
+   "abilities": "-",
+   "resist": "R_BEAST",
+   "levels": "15-19",
+   "note": "ai.summoned, xp 0"
+  },
+  {
+   "id": "ow_spider_giant",
+   "name": "Dev Örümcek",
+   "model": "itch/creatures/spider.glb",
+   "scale": 0.8,
+   "tint": "-",
+   "role": "melee",
+   "rank": "elite",
+   "hpMult": 3.5,
+   "dmgMult": 1.4,
+   "speed": 6.4,
+   "aggro": 12,
+   "radius": 1.2,
+   "basic": "Isırık: cone 2.8 m 100°, cd 1.8, coef 1.0 zehir 2 yük (`Bite`, impact 0.5)",
+   "abilities": "Atılma: charge 8 m, windup 0.7, cd 9, coef 1.8 (`Strike` 0.73) · Ağ Atışı: projectile 16 m/s, kök 2 sn, cd 12 (`WebSpit` 0.67)",
+   "resist": "R_SPIDER",
+   "levels": "16-25",
+   "note": "Zehirli Mağara + Çürük Ana Yuvası"
+  },
+  {
+   "id": "ow_centipede",
+   "name": "Çürük Çıyanı",
+   "model": "itch/creatures/centipede.glb",
+   "scale": 1.0,
+   "tint": "-",
+   "role": "melee",
+   "rank": "trash",
+   "hpMult": 1.2,
+   "dmgMult": 1.1,
+   "speed": 6.0,
+   "aggro": 7,
+   "radius": 0.7,
+   "basic": "Zehirli Isırık: cone 2.6 m 90°, cd 1.8, coef 1.0 zehir 2 yük (`Bite`, impact 0.55)",
+   "abilities": "-",
+   "resist": "R_BEAST",
+   "levels": "16-25",
+   "note": "ai.dormant + spawn klibi `Emerge` (yerden fırlar); wakeRange 7"
+  },
+  {
+   "id": "ow_will",
+   "name": "Bataklık Işığı",
+   "model": "monsters/Ghost.glb",
+   "scale": 0.5,
+   "tint": "0x60ffd0",
+   "role": "swarm",
+   "rank": "trash",
+   "hpMult": 0.3,
+   "dmgMult": 1.5,
+   "speed": 6.5,
+   "aggro": 10,
+   "radius": 0.4,
+   "basic": "Patlama: self_aoe r 2.5, windup 0.8, coef 2.0, suicide (bone_skull gibi)",
+   "abilities": "-",
+   "resist": "R_GHOST",
+   "levels": "15-22",
+   "note": "flying:true; emissive 0x60ffd0"
+  },
+  {
+   "id": "ow_witch",
+   "name": "Bataklık Cadısı",
+   "model": "characters/Mage.glb",
+   "scale": 1.1,
+   "tint": "0x3a8a58",
+   "role": "caster",
+   "rank": "elite",
+   "hpMult": 3.2,
+   "dmgMult": 1.2,
+   "speed": 5.0,
+   "aggro": 14,
+   "radius": 0.5,
+   "basic": "Zehir Topu: projectile 16 m/s, range 16, cd 2.2, coef 1.3 zehir 2 yük (`Spellcast_Shoot`, impact 0.3) · ai.kite [8,14]",
+   "abilities": "Kurbağa Laneti: cast 1.5 sn (kesilebilir), kök 2 sn + `curse` 6 sn · Şifa Duası: cast 2.0 sn (kesilebilir), %25 can, cd 10",
+   "resist": "R_CULT",
+   "levels": "17-20",
+   "note": "`Mage_Hat` + `1H_Wand` görünür"
+  },
+  {
+   "id": "ow_orc",
+   "name": "Ork Savaşçısı",
+   "model": "monsters/Orc.glb",
+   "scale": 0.95,
+   "tint": "-",
+   "role": "melee",
+   "rank": "trash",
+   "hpMult": 1.3,
+   "dmgMult": 1.2,
+   "speed": 5.2,
+   "aggro": 11,
+   "radius": 0.75,
+   "basic": "Balta: cone 3.0 m 110°, cd 2.2, coef 1.0 (`Weapon`, impact 0.45, windup 0.55)",
+   "abilities": "Dönen Balta: self_aoe r 3.5, windup 0.9, cd 9, coef 1.4",
+   "resist": "R_BEAST",
+   "levels": "20-25",
+   "note": "ow_orc_chief ile aynı model"
+  },
+  {
+   "id": "ow_orc_archer",
+   "name": "Ork Fırlatıcısı",
+   "model": "monsters/Orc.glb",
+   "scale": 0.9,
+   "tint": "0x9a8a40",
+   "role": "ranged",
+   "rank": "trash",
+   "hpMult": 1.0,
+   "dmgMult": 1.2,
+   "speed": 5.0,
+   "aggro": 14,
+   "radius": 0.7,
+   "basic": "Zıpkın: projectile 20 m/s, range 18, cd 2.8, coef 1.3 (`Weapon`, impact 0.45) · ai.kite [9,14]",
+   "abilities": "Zincirli Zıpkın: hedefi 6 m kendine çeker, windup 1.0, cd 14",
+   "resist": "R_BEAST",
+   "levels": "20-25",
+   "note": "-"
+  },
+  {
+   "id": "ow_orc_shaman",
+   "name": "Ork Şamanı",
+   "model": "characters/Mage.glb",
+   "scale": 1.1,
+   "tint": "0x6a9a30",
+   "role": "support",
+   "rank": "trash",
+   "hpMult": 1.0,
+   "dmgMult": 1.0,
+   "speed": 5.0,
+   "aggro": 14,
+   "radius": 0.5,
+   "basic": "Ateş Oku: projectile 16 m/s, cd 2.4, coef 1.2 ateş (`Spellcast_Shoot`) · ai.kite [8,14]",
+   "abilities": "Kan Kızgınlığı: 14 m içinde +%25 hasar 8 sn, cast 1.2 sn, cd 16 · Şifa Duası: %20 can, cast 2.0 sn (kesilebilir), cd 10",
+   "resist": "R_CULT",
+   "levels": "21-25",
+   "note": "`1H_Wand` görünür"
+  },
+  {
+   "id": "ow_orc_brute",
+   "name": "Ork Cellatı",
+   "model": "monsters/Orc.glb",
+   "scale": 1.3,
+   "tint": "0xb8a090",
+   "role": "melee",
+   "rank": "elite",
+   "hpMult": 4.8,
+   "dmgMult": 1.7,
+   "speed": 4.8,
+   "aggro": 12,
+   "radius": 1.0,
+   "basic": "Pala: cone 3.4 m 110°, cd 2.4, coef 1.3 (`Weapon`, impact 0.45)",
+   "abilities": "Yarma: line 8 x 2.2 m, windup 1.1, cd 9, coef 2.4 · Savaş Narası: r 12 +%25 hasar 8 sn, cd 20",
+   "resist": "R_BEAST",
+   "levels": "22-25",
+   "note": "-"
+  },
+  {
+   "id": "ow_imp",
+   "name": "Kanyon İblisçiği",
+   "model": "monsters/Imp.glb",
+   "scale": 0.7,
+   "tint": "0xff8040",
+   "role": "ranged",
+   "rank": "trash",
+   "hpMult": 0.8,
+   "dmgMult": 1.1,
+   "speed": 6.5,
+   "aggro": 14,
+   "radius": 0.5,
+   "basic": "Ateş Topu: projectile 16 m/s, range 16, cd 2.4, coef 1.2 ateş · ai.kite [8,14]",
+   "abilities": "Kıvılcım Yağmuru: ground_aoe r 3, windup 1.0, cd 8, coef 1.0",
+   "resist": "R_DEMON",
+   "levels": "20-25",
+   "note": "forge_imp kopyası; flying:true"
+  },
+  {
+   "id": "ow_golem",
+   "name": "Kanyon Golemi",
+   "model": "gen/creatures/golem_stone.glb",
+   "scale": 1.0,
+   "tint": "-",
+   "role": "tank",
+   "rank": "elite",
+   "hpMult": 5.0,
+   "dmgMult": 1.6,
+   "speed": 3.2,
+   "aggro": 11,
+   "radius": 1.5,
+   "basic": "Taş Yumruk: cone 3.6 m 110°, cd 2.4, coef 1.2 (`Attack2`, impact 0.57)",
+   "abilities": "Yer Darbesi: self_aoe r 4.5, windup 1.1, cd 11, coef 2.2 (`Attack` 0.67)",
+   "resist": "R_GOLEM",
+   "levels": "22-25",
+   "note": "Taş Ocağı çevresi"
+  },
+  {
+   "id": "ow_ember",
+   "name": "Kor Elementali",
+   "model": "gen/creatures/elemental_fire.glb",
+   "scale": 1.0,
+   "tint": "-",
+   "role": "caster",
+   "rank": "elite",
+   "hpMult": 3.5,
+   "dmgMult": 1.5,
+   "speed": 4.5,
+   "aggro": 13,
+   "radius": 1.1,
+   "basic": "Alev Topu: projectile 15 m/s, range 16, cd 2.6, coef 1.4 ateş (`Cast`, impact 0.9) · ai.kite [6,12]",
+   "abilities": "Ateş Halkası: self_aoe r 6, windup 1.3, cd 12, coef 1.8",
+   "resist": "R_DEMON",
+   "levels": "21-25",
+   "note": "flying:true (hover 0.1)"
+  },
+  {
+   "id": "ow_grave_knight",
+   "name": "Mezar Şövalyesi",
+   "model": "characters/Knight.glb",
+   "scale": 1.1,
+   "tint": "0x4a4a68",
+   "role": "tank",
+   "rank": "elite",
+   "hpMult": 4.5,
+   "dmgMult": 1.5,
+   "speed": 5.0,
+   "aggro": 11,
+   "radius": 0.7,
+   "basic": "Kılıç: cone 2.8 m 100°, cd 2.2, coef 1.0 (`1H_Melee_Attack_Slice_Horizontal`, impact 0.3)",
+   "abilities": "Kalkan Duvarı: kendine kalkan %25 maks. can, 8 sn, cd 18 · Mezar Darbesi: cone 3.2 m, stun 1.2 sn, windup 1.0, cd 12, coef 1.6",
+   "resist": "R_SKELETON",
+   "levels": "26-30",
+   "note": "`1H_Sword` + `Rectangle_Shield`; göz emissive 0x80a0ff"
+  },
+  {
+   "id": "ow_vampire",
+   "name": "Kan Lordu",
+   "model": "kenney/graveyard-kit/character-vampire.glb",
+   "scale": 3.0,
+   "tint": "-",
+   "role": "melee",
+   "rank": "elite",
+   "hpMult": 4.2,
+   "dmgMult": 1.5,
+   "speed": 6.0,
+   "aggro": 13,
+   "radius": 0.7,
+   "basic": "Pençe: cone 2.4 m 100°, cd 1.8, coef 1.0, hasarın %30'u kadar can çalar (`attack-melee-right`)",
+   "abilities": "Yarasa Sürüsü: 4 `ow_bat` çağırır, cd 25 · Kan Hasadı: self_aoe r 5, windup 1.1, cd 12, coef 1.8 (can çalar)",
+   "resist": "R_GHOST",
+   "levels": "27-30",
+   "note": "Kenney animasyonlu karakter (x3 = 2.4 m); klip adları: idle/walk/sprint/attack-melee-right/die"
+  },
+  {
+   "id": "ow_keeper",
+   "name": "Mezarlık Bekçisi",
+   "model": "kenney/graveyard-kit/character-keeper.glb",
+   "scale": 3.0,
+   "tint": "-",
+   "role": "melee",
+   "rank": "elite",
+   "hpMult": 6.0,
+   "dmgMult": 1.4,
+   "speed": 5.0,
+   "aggro": 11,
+   "radius": 0.7,
+   "basic": "Kürek: cone 2.6 m 110°, cd 2.2, coef 1.0 (`attack-melee-left`)",
+   "abilities": "Toprak Fırlat: projectile 14 m/s, kör 2 sn, cd 8 · Mezar Aç: 3 `skel_rattler` çağırır (%50 canda bir kez)",
+   "resist": "R_BEAST",
+   "levels": "9-10",
+   "note": "Hovardan mini-boss modeli"
+  }
+ ]
+}

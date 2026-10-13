@@ -1,0 +1,27 @@
+{
+ "id": "bow_short",
+ "name": "Kısa Yay",
+ "use": "Simple wooden self bow for hunters / novice archers (lvl 1-20)",
+ "attach": "bow grip at origin; limbs along +/-Y; string on the archer side (-Z); arrow flies +Z",
+ "kind": "bow",
+ "emissive": "",
+ "tris": 168,
+ "parts": 5,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 13,
+ "has_emit": false,
+ "bbox_min": [
+  -0.026,
+  -0.028,
+  -0.6
+ ],
+ "bbox_max": [
+  0.026,
+  0.165,
+  0.6
+ ],
+ "bytes": 14072
+}

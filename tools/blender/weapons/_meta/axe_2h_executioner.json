@@ -1,0 +1,27 @@
+{
+ "id": "axe_2h_executioner",
+ "name": "Cellat Baltası",
+ "use": "Huge executioner axe, blood-stained edge (lvl 30-45 / elite drop)",
+ "attach": "upper-hand grip at origin; head +Y; lower hand ~0.3-0.4 below on the haft",
+ "kind": "2h",
+ "emissive": "",
+ "tris": 330,
+ "parts": 8,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 14,
+ "has_emit": false,
+ "bbox_min": [
+  -0.09,
+  -0.04,
+  -0.52
+ ],
+ "bbox_max": [
+  0.455,
+  0.04,
+  1.63
+ ],
+ "bytes": 25464
+}

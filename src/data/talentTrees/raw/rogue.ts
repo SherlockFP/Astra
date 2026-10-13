@@ -1,0 +1,103 @@
+// GENERATED from docs/GDD_TALENTS.*.json by tools/gen-talent-data.mjs — do not edit
+// Source: docs/GDD_TALENTS.trees.json · class:rogue + rogue_assassin, rogue_alchemist. Row = [slot, opt, name, desc, fx] (GDD_TALENTS §2.9).
+import type { SlotId } from '../../../types/talents';
+import type { SpecId } from '../../../types/v2';
+import type { StatId } from '../../../types/stats';
+
+export type RawRow = [slot: SlotId, opt: '' | 'A' | 'B', name: string | null, desc: string | null, fx: string];
+export interface RawTree { palette: StatId[]; rows: RawRow[] }
+
+const data: { class: RawTree; specs: Partial<Record<SpecId, RawTree>> } = {
+  class: {
+    palette: ['dex', 'critChance', 'critDamage', 'attackSpeed', 'dodgeChance', 'physicalDamagePct', 'moveSpeedPct', 'poisonDamagePct', 'maxHpPct', 'cdr', 'resourceRegenPct', 'projectileDamagePct'],
+    rows: [
+      ['s02', 'A', 'Gölge Adım Ustası', 'Gölge Adımı bekleme −2 sn.', 'M rogue_shadow_step cd=-2'],
+      ['s02', 'B', 'Çevik Ayak', 'Gölge Adımı +1 şarj (daha yavaş dolar); hareket hızı +%6.', 'M rogue_shadow_step chg=+1 cdx=1.3 ;; S moveSpeedPct=.06'],
+      ['s04', '', 'Keskin Arbalet', 'Arbalet Atışı hasarı +%15, delme +1.', 'M rogue_crossbow_shot dmgx=1.15 prc=+1'],
+      ['s05', 'A', null, null, 'G rogue_kick'],
+      ['s05', 'B', null, null, 'G rogue_cloak_of_shadows'],
+      ['s09', 'A', 'Kaçınma Sanatı', 'Kaçındığın her saldırı +8 Enerji verir (2 sn bekleme).', 'T dodge icd=2 => res(8)'],
+      ['s09', 'B', 'Gölge Kalkan', 'Canın %35 altına düşünce 2 sn gizlenir ve %15 can yenilersin (60 sn bekleme).', 'T hurt if=hp<.35 icd=60 => st(self,stealth,2) ; heal(.15)'],
+      ['s11', '', 'Hızlı Yelpaze', 'Bıçak Yelpazesi bekleme −1.5 sn, zehri +%25.', 'M rogue_fan_of_knives cd=-1.5 dotx=1.25'],
+      ['s12', '', 'İnfaz Ustası', 'İnfaz hasarı +%15, sarsması +%10.', 'M rogue_eviscerate dmgx=1.15 stgx=1.1'],
+      ['s13', '', 'Duman Ustası', 'Duman Bombası bekleme −3 sn, alanı +%20.', 'M rogue_smoke_bomb cd=-3 radx=1.2'],
+      ['s15', 'A', 'Zehir Ustası', 'Zehir hasarı +%15; vuruşlar %10 şansla zehir uygular.', 'S poisonDamagePct=.15 ;; T hit ch=.1 => st(tgt,poison,6,.2)'],
+      ['s15', 'B', 'Kanayan Bıçak', 'Kritik vuruşlar %20 şansla 5 sn kanama uygular.', 'T crit ch=.2 => st(tgt,bleed,5,.4)'],
+      ['s17', 'A', 'Enerji Pınarı', 'Enerji yenilenmesi +%20.', 'S resourceRegenPct=.20'],
+      ['s17', 'B', 'Hızlı Eller', 'Enerji maliyetleri −%10, saldırı hızı +%3.', 'S costReductionPct=.10 attackSpeed=.03'],
+      ['s18', '', 'Kara Bulut', 'Ok Yağmuru bekleme −3 sn, yarıçapı +1 m.', 'M rogue_bolt_rain cd=-3 rad=+1'],
+      ['s20', '', 'Gölge Zamanı', 'Büyük yetenek bekleme süreleri %6 daha hızlı azalır.', 'S majorCdrPct=.06'],
+      ['s21', '', 'Pusu Hazırlığı', 'Gölge Adımı sonrası 3 sn kritik şansı +%10.', 'T cast:rogue_shadow_step => buff(shadow_edge,3,{critChance=.10})'],
+      ['s25', '', 'Yoğun Zehir', 'Ölümcül Zehir 4 sn daha uzun sürer, hasarı +%25.', 'M rogue_deadly_venom sdur=venom:+4 dmgx=1.25'],
+      ['s26', 'A', 'Gölge Ortağı', 'Duman Bombası 8 m içindeki müttefiklere 4 sn hız verir.', 'T cast:rogue_smoke_bomb => st(near(8),haste,4)'],
+      ['s26', 'B', 'Çalıntı Şans', 'Ölümcül Zehir kullanınca maks. enerjinin %20\'si geri gelir.', 'T cast:rogue_deadly_venom => resp(.2)'],
+      ['s27', '', 'Dans Zinciri', 'Ölüm Dansı bekleme −%15, hasarı +%10.', 'M rogue_death_blossom cdx=.85 dmgx=1.1'],
+      ['s28', '', 'Gölge Pelerini', 'Maks. can +%8, kaçınma +%2. Ölümcül darbede %20 canla ayakta kalır, 3 sn gizlenirsin (90 sn bekleme).', 'S maxHpPct=.08 dodgeChance=.02 ;; T lethal icd=90 => heal(.2) ; st(self,stealth,3)'],
+      ['s29', '', 'Katil Refleksi', 'Hasar +%6. Kritik vuruşlar 5 sn boyunca +%5 saldırı hızı yığar (en fazla 4).', 'S damagePct=.06 ;; T crit => buff(assassin_rhythm,5,{attackSpeed=.05},max=4)'],
+      ['s30', 'A', 'Gölge Ustası', 'Kritik hasarı +%30, kritik şansı +%2.', 'S critDamage=.30 critChance=.02'],
+      ['s30', 'B', 'Zehir Kralı', 'Zehir hasarı +%25, zamanla hasar +%10; Ölümcül Zehir hasarı +%20.', 'S poisonDamagePct=.25 dotPct=.10 ;; M rogue_deadly_venom dmgx=1.2'],
+    ],
+  },
+  specs: {
+    rogue_assassin: {
+      palette: ['critChance', 'critDamage', 'attackSpeed', 'physicalDamagePct', 'dex', 'executeDamagePct', 'damagePct', 'bleedDamagePct', 'meleeDamagePct', 'finisherPct', 'dodgeChance', 'cdr'],
+      rows: [
+        ['s02', 'A', 'Arkadan Hasat', 'Sırttan Bıçak hasarı +%15; +1 Kombo verir.', 'M rogue_backstab dmgx=1.15 pip=combo:1'],
+        ['s02', 'B', 'Gölge Atılışı', 'Gölge Adımı sonrası 4 sn enerji maliyetleri −%40.', 'T cast:rogue_shadow_step => buff(step_edge,4,{costReductionPct=.4})'],
+        ['s04', '', 'Keskin Sırt', 'Sırttan Bıçak enerji maliyeti −%10, menzili +0.4 m.', 'M rogue_backstab costx=.9 rng=+0.4'],
+        ['s05', '', null, null, 'G rogue_garrote'],
+        ['s09', 'A', 'Susturucu', 'Gırtlak Kesme bekleme −2 sn, susturma +1.5 sn.', 'M rogue_garrote cd=-2 sdur=silence:+1.5'],
+        ['s09', 'B', 'Kan Dansı', 'Kanayan hedefe Sırttan Bıçak %30 şansla ek %80 fiziksel hasar vurur.', 'T hit:rogue_backstab ch=.3 if=tst:bleed => dmg(.8,physical)'],
+        ['s11', '', 'Gölge Biçer', '5 Kombo\'da İnfaz %20 şansla 2 Kombo iade eder.', 'T cast:rogue_eviscerate if=pips>=5:combo ch=.2 => pip(combo,2)'],
+        ['s12', '', 'Garrote Zehri', 'Gırtlak Kesme kanaması +%40, süresi +2 sn.', 'M rogue_garrote dotx=1.4 sdur=bleed:+2'],
+        ['s13', '', 'Hızlı Bıçak', 'Temel zincir hasarı +%10, saldırı hızı +%3.', 'M rogue_basic dmgx=1.1 ;; S attackSpeed=.03'],
+        ['s15', 'A', 'Bıçak Ustası', 'Gölge Bıçakları 4 sn daha uzun sürer.', 'M rogue_shadow_blades sdur=shadow_blades:+4'],
+        ['s15', 'B', 'Karanlık Dans', 'Ölümcül Gölge Dansı 2 sn daha uzun sürer.', 'M rogue_shadow_dance sdur=shadow_veil_cd:+2'],
+        ['s17', 'A', 'Enerji Hırsı', 'Enerji yenilenmesi +%20; kritik vuruşlar %15 şansla +5 Enerji verir.', 'S resourceRegenPct=.20 ;; T crit ch=.15 => res(5)'],
+        ['s17', 'B', 'Ölümcül Sakinlik', 'Gizlilikten vurunca 4 sn saldırı hızı +%12 (5 sn bekleme).', 'T hit if=stealth icd=5 => buff(ambush_rush,4,{attackSpeed=.12})'],
+        ['s18', '', 'Suikast Planı', 'Gölge Adımı sonrası ilk 4 sn hasar +%25.', 'T cast:rogue_shadow_step => buff(vanish_edge,4,{damagePct=.25})'],
+        ['s20', '', 'Gecenin Katili', 'Gölge Bıçakları ve Ölümcül Gölge Dansı bekleme −%10.', 'M rogue_shadow_blades+rogue_shadow_dance cdx=.9'],
+        ['s21', '', 'Gölge Çiçeği', 'Ölüm Dansı bekleme −8 sn, hasarı +%20.', 'M rogue_death_blossom cd=-8 dmgx=1.2'],
+        ['s25', '', 'Zehirli Gölge', 'Bıçak Yelpazesi kritik şansı +%15, zehri +%30.', 'M rogue_fan_of_knives crit=+.15 dotx=1.3'],
+        ['s26', 'A', 'Gölge Ortağı', 'Ölümcül Gölge Dansı 10 m içindeki müttefiklere 4 sn hız verir.', 'T cast:rogue_shadow_dance => st(near(10),haste,4)'],
+        ['s26', 'B', 'Kan Hırsızı', 'Öldürünce %20 şansla +10 Enerji ve %2 can kazanırsın.', 'T kill ch=.2 => res(10) ; heal(.02)'],
+        ['s27', '', 'Ölümcül Ritim', 'Gölge Bıçakları sırasında İnfaz %30 şansla yarı güçte tekrar vurur.', 'T cast:rogue_eviscerate if=sst:shadow_blades ch=.3 => echo(rogue_eviscerate,.6,.3)'],
+        ['s28', '', 'Gölge Hasadı', 'Kritik hasarı +%20. 5 Kombo\'da İnfaz kullanınca 2 sn gizlenirsin.', 'S critDamage=.20 ;; T cast:rogue_eviscerate if=pips>=5:combo => st(self,stealth,2)'],
+        ['s29', '', 'Katil Ritmi', 'Hasar +%6, kritik şansı +%2. Kritik vuruşlar 4 sn +%5 saldırı hızı yığar (en fazla 4).', 'S damagePct=.06 critChance=.02 ;; T crit => buff(killer_rhythm,4,{attackSpeed=.05},max=4)'],
+        ['s30', 'A', 'Gece Efendisi', 'Kritik şansı +%3, kritik hasarı +%20; Sırttan Bıçak hasarı +%25.', 'S critChance=.03 critDamage=.20 ;; M rogue_backstab dmgx=1.25'],
+        ['s30', 'B', 'Gölge Hükümdarı', 'Fiziksel hasar +%20; İnfaz hasarı +%30; Gölge Adımı +1 şarj.', 'S physicalDamagePct=.20 ;; M rogue_eviscerate dmgx=1.3 ;; M rogue_shadow_step chg=+1'],
+      ],
+    },
+    rogue_alchemist: {
+      palette: ['healingPct', 'resourceRegenPct', 'maxHpPct', 'dex', 'cdr', 'healReceivedPct', 'moveSpeedPct', 'poisonDamagePct', 'costReductionPct', 'armorPct', 'resAll', 'dodgeChance'],
+      rows: [
+        ['s02', 'A', 'Geniş Şişe', 'Şifa Şişesi alanı +%20, iyileştirmesi +%10.', 'M rogue_vial_heal radx=1.2 healx=1.1'],
+        ['s02', 'B', 'Hızlı Şişe', 'Şifa Şişesi bekleme −0.3 sn, maliyeti −%15.', 'M rogue_vial_heal cd=-0.3 costx=.85'],
+        ['s04', '', 'Taze Karışım', 'Şişe Fırlat iyileştirmesi +%25.', 'M rogue_vial_throw healx=1.25'],
+        ['s05', '', null, null, 'G rogue_smoke_ward'],
+        ['s09', 'A', 'Panzehir Ustası', 'Panzehir bekleme −2 sn ve 1 ek olumsuz etki temizler.', 'M rogue_antidote cd=-2 p.dispel+=1'],
+        ['s09', 'B', 'Güçlü Tonik', 'Panzehir iyileştirmesi +%40.', 'M rogue_antidote healx=1.4'],
+        ['s11', '', 'Yoğun Damla', 'Mucize Damla iyileştirmesi +%15.', 'M rogue_mending_draught healx=1.15'],
+        ['s12', '', 'Şişe Yağmuru', 'Şifa Şişesi birikintisi 3 sn daha uzun sürer ve %10 daha çok iyileştirir.', 'M rogue_vial_heal dur=+3 healx=1.1'],
+        ['s13', '', 'Uzun Siper', 'Duman Siperi bekleme −4 sn, alanı +%20.', 'M rogue_smoke_ward cd=-4 radx=1.2'],
+        ['s15', 'A', 'Ayık Kafa', 'Şifalar %12 şansla en yaralı müttefiği %5 iyileştirir.', 'T heal ch=.12 => healally(.05)'],
+        ['s15', 'B', 'Zehirli Dokunuş', 'Şişe Fırlat %20 şansla düşmana zehir uygular.', 'T hit:rogue_vial_throw ch=.2 => st(tgt,poison,6,.2)'],
+        ['s17', 'A', 'Enerji Eczası', 'Enerji yenilenmesi +%20.', 'S resourceRegenPct=.20'],
+        ['s17', 'B', 'Taşan Eczacı', 'Şifalar %10 şansla maks. enerjinin %5\'ini iade eder.', 'T heal ch=.1 => resp(.05)'],
+        ['s18', '', 'Hızlandırıcı Şişe', 'Şifa Şişesi 10 m içindeki müttefiklere 3 sn güçlendirme verir.', 'T cast:rogue_vial_heal => st(near(10),fortify,3)'],
+        ['s20', '', 'Karışım Dengesi', 'Karışım Puanı kazandığında %15 şansla +1 ek puan kazanırsın.', 'T pip:karisim ch=.15 => pip(karisim,1)'],
+        ['s21', '', 'Hayat İksiri Ustalığı', 'Hayat İksiri Yağmuru iyileştirmesi +%20.', 'M rogue_elixir_of_life healx=1.2'],
+        ['s25', '', 'Mucize Karışım Ustalığı', 'Mucize Karışım 4 sn daha uzun sürer.', 'M rogue_miracle_brew sdur=brew_zone:+4'],
+        ['s26', 'A', 'Grup İksiri', 'Hızlandırıcı İksir kullanınca grup 6 sn yenilenme kazanır.', 'T cast:rogue_haste_elixir => st(party,regen,6)'],
+        ['s26', 'B', 'Seyyar Şifacı', 'Hareket hızı +%8; hareket halindeyken şifa gücü +%10.', 'S moveSpeedPct=.08 ;; T tick:1 if=moving => buff(walking_apothecary,2,{healingPct=.1})'],
+        ['s27', '', 'Hızlandırıcı Usta', 'Hızlandırıcı İksir 8 sn daha uzun sürer.', 'M rogue_haste_elixir sdur=hero_haste:+8'],
+        ['s28', '', 'Eczacı Ustası', 'Şifa gücü +%12, maks. can +%5. Ölümcül darbede %20 canla ayakta kalır, 1.5 sn dokunulmaz olursun (90 sn bekleme).', 'S healingPct=.12 maxHpPct=.05 ;; T lethal icd=90 => heal(.2) ; st(self,invulnerable,1.5)'],
+        ['s29', '', 'Kadim Formül', 'Şifa gücü +%8. 5 Karışım Puanı ile Mucize Damla en yaralı müttefiği ek %10 iyileştirir.', 'S healingPct=.08 ;; T cast:rogue_mending_draught if=pips>=5:karisim => healally(.1)'],
+        ['s30', 'A', 'Büyük Simyager', 'Şifa gücü +%20; Hayat İksiri Yağmuru bekleme −%15.', 'S healingPct=.20 ;; M rogue_elixir_of_life cdx=.85'],
+        ['s30', 'B', 'Zehirli Şifa', 'Zehir hasarı +%25, şifa gücü +%8; şifalar %10 şansla düşmanlara zehir bulutu bırakır.', 'S poisonDamagePct=.25 healingPct=.08 ;; T heal ch=.1 => exp(.6,4,poison)'],
+      ],
+    },
+  },
+};
+
+export default data;

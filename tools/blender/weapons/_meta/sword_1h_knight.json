@@ -1,0 +1,27 @@
+{
+ "id": "sword_1h_knight",
+ "name": "Şövalye Kılıcı",
+ "use": "Ornate knight sword, gold guard + sapphire (lvl 20-35)",
+ "attach": "grip centre at origin (hand bone); blade +Y; blade flats face +/-Z",
+ "kind": "1h",
+ "emissive": "",
+ "tris": 308,
+ "parts": 5,
+ "atlas": [
+  64,
+  64
+ ],
+ "colours": 16,
+ "has_emit": false,
+ "bbox_min": [
+  -0.178,
+  -0.034,
+  -0.202
+ ],
+ "bbox_max": [
+  0.178,
+  0.034,
+  1.02
+ ],
+ "bytes": 19404
+}

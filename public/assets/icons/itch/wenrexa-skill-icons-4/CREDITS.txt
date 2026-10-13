@@ -1,0 +1,3 @@
+Skill Icon Pack 4.0 by Wenrexa - https://wenrexa.itch.io/spells-4
+Licence: Creative Commons Zero v1.0 Universal (CC0). Free for commercial use, attribution not required.
+Files renamed (pack numbers -> kebab-case names); see icons.json for the source number of each icon.

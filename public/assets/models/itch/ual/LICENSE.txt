@@ -1,0 +1,15 @@
+Universal Animation Library 1 + 2 (Standard) by Quaternius (https://quaternius.com)
+Converted for EFSUN ONLINE: UAL_clips.glb = male mannequin + all clips of both libraries, scaled x4/3, keys thinned. Licence below is the pack's License.txt.
+
+-------------------------------------------------------
+License:
+CC0 1.0 Universal (CC0 1.0) 
+Public Domain Dedication
+https://creativecommons.org/publicdomain/zero/1.0/
+
+------------------------------------------------------
+Models by @Quaternius
+Consider supporting me on Patreon!
+
+https://www.patreon.com/quaternius
+
