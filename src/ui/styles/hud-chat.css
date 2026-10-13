@@ -55,6 +55,7 @@
 .cl.trade .cl-ch { color: var(--ch-trade); }
 .cl.global .cl-from { color: var(--ch-global); }
 .cl.trade .cl-from { color: var(--ch-trade); }
+.cl.guild, .cl.guild .cl-ch, .cl.guild .cl-from { color: var(--ch-guild, #40ff40); }
 .cl.system { color: var(--ch-system); }
 .cl.loot { color: var(--ch-loot); }
 .cl.boss { color: var(--ch-boss); font-weight: 700; }

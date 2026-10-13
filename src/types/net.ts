@@ -11,7 +11,7 @@ import type { StatBlock } from './stats';
 import type { CampMsg, ChatAnn, HomeMsg } from './itemsV2';
 
 /** GDD_LIFE §3.1 (L-00): chat channel of a `net:chat` line. `party` and `system` are the original two. */
-export type ChatChannel = 'party' | 'system' | 'say' | 'yell' | 'whisper' | 'global' | 'trade' | 'emote' | 'boss' | 'loot';
+export type ChatChannel = 'party' | 'system' | 'say' | 'yell' | 'whisper' | 'global' | 'trade' | 'emote' | 'boss' | 'loot' | 'guild';
 
 /** GDD_LIFE §3.5 (L-00): item link carried by a chat message. Validated by sanitizeItemSnapshot on receive. */
 export type ChatLink =

@@ -21,6 +21,7 @@ import type { CharacterSummary } from '../types/character';
 import type { KeystoneData } from '../types/items';
 import type { NetChannel, ShopAnnounce, ShopBuyMsg, ShopSoldMsg } from '../types/net';
 import type { WorldSpawn } from '../scenes/scenes';
+import type { GuildChatMsg, GuildInviteMsg, GuildSyncMsg } from '../types/guild';
 
 export type { EntityId, Vec2, Vec3 };
 
@@ -192,6 +193,10 @@ export interface LobbyPresenceMsg {
   zone: string;
   zn?: string;
   bye?: boolean;
+  /** WP-05 Lonca (systems/Guild.ts): guild name (tag), guild id and the roster version the sender holds (`gv`, see rosterVersion). Absent = no guild. */
+  g?: string;
+  gid?: string;
+  gv?: number;
 }
 
 /** Social: whisper, sent to ONE peer id (never broadcast). `to` is the target's character name (receiver checks it against its own). */
@@ -215,8 +220,12 @@ export type LobbyChannels = {
   shop: ShopAnnounce;
   shopBuy: ShopBuyMsg;
   shopSold: ShopSoldMsg;
+  /** WP-05 Lonca (systems/Guild.ts): invite handshake, roster / key sync and encrypted guild chat. Always sent to single peer ids. */
+  ginv: GuildInviteMsg;
+  gsync: GuildSyncMsg;
+  gchat: GuildChatMsg;
 };
-export const LOBBY_CHANNELS = ['ann', 'unann', 'lchat', 'lpres', 'lwhis', 'shop', 'shopBuy', 'shopSold'] as const satisfies readonly (keyof LobbyChannels)[];
+export const LOBBY_CHANNELS = ['ann', 'unann', 'lchat', 'lpres', 'lwhis', 'shop', 'shopBuy', 'shopSold', 'ginv', 'gsync', 'gchat'] as const satisfies readonly (keyof LobbyChannels)[];
 
 /* ================================================================================================
  * Control channel 'ctl'

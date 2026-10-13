@@ -58,6 +58,8 @@ class Plate {
   /** The local player's own plate: shown only while a title is chosen; name, level and title, no bars. */
   private readonly self: boolean;
   private lvlEl: HTMLElement;
+  private guildEl: HTMLElement;
+  private guildTxt = '';
   private rankIco: HTMLElement;
   private barEl: HTMLElement;
   private fill: HTMLElement;
@@ -91,6 +93,9 @@ class Plate {
     this.titleEl = div('np-title', this.el);
     setDisplay(this.titleEl, false);
     this.self = actor.kind === 'player' && (actor as Player).isLocal === true;
+    // WP-05 Lonca: `<Lonca Adı>` under the name of another player (G.guild.tagOf, from the lobby presence)
+    this.guildEl = div('np-guild', this.el);
+    this.guildEl.style.cssText = 'display:none;align-self:center;margin-top:-1px;font:600 10px/12px var(--font-body, sans-serif);color:#40ff40;text-shadow:-1px 0 #000,1px 0 #000,0 -1px #000,0 1px #000;white-space:nowrap;pointer-events:none;';
     const bar = div('np-bar', this.el);
     this.barEl = bar;
     this.ghost = div('np-ghost', bar);
@@ -167,6 +172,15 @@ class Plate {
     setDisplay(this.nameEl, this.opts.showName !== false);
     setDisplay(this.lvlEl, this.flavor !== 'mech');
     setText(this.lvlEl, String(a.level));
+    if (a.kind === 'player') {
+      const tag = G.guild?.tagOf(a.name) ?? '';
+      if (tag !== this.guildTxt) {
+        this.guildTxt = tag;
+        setText(this.guildEl, tag ? `<${tag}>` : '');
+        this.guildEl.style.display = tag ? 'block' : 'none';
+        this.w = 0; // the box grew / shrank: measure again
+      }
+    }
     const diff = a.level - ctx.playerLevel;
     setStyle(this.lvlEl, 'color', a.kind === 'player' ? '#ffffff' : diff >= 5 ? '#ff4a3a' : diff >= 3 ? '#ff9a3a' : diff >= -2 ? '#ffe050' : '#9ad86a');
     if (this.self) {

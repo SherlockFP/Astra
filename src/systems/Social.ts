@@ -7,6 +7,7 @@ import type { LobbyTransport } from '../net/lobby';
 import type { Unsubscribe } from '../net/transport';
 import { NET, clampNum, ident, isObj, sanitizeText } from '../net/messages';
 import { emit } from './notify';
+import { cleanGuildName, isGid } from './GuildCore';
 
 /**
  * SOCIAL - the world feels shared even when the party is empty. OWNER: net module.
@@ -104,6 +105,15 @@ export interface PresenceEntry {
   /** ms clock of the last message from this peer. */
   seen: number;
   self: boolean;
+  /** WP-05 Lonca: the guild the peer announced (self-asserted for strangers; systems/Guild.ts checks it against the roster for members). */
+  guild?: { name: string; gid: string; gv: number };
+}
+
+/** What the local player announces about their guild on the presence (systems/Guild.ts presenceInfo). */
+export interface PresenceGuild {
+  name: string;
+  gid: string;
+  gv: number;
 }
 
 export interface SocialSelf {
@@ -125,6 +135,8 @@ export interface SocialCtx {
   expectNetwork(): boolean;
   /** Names the player ignores (case-insensitive, raw character names). */
   ignored(rawName: string): boolean;
+  /** WP-05 Lonca: the local player's guild for the presence (name, id, roster version), null = none. Optional. */
+  guild?(): PresenceGuild | null;
 }
 
 type Lease = () => Promise<{ tr: LobbyTransport; release: () => void } | null>;
@@ -135,7 +147,7 @@ export type SocialStatus = 'offline' | 'connecting' | 'online';
 export interface PresenceApi {
   list(): PresenceEntry[];
   count(): number;
-  find(name: string): PresenceEntry | null;
+  find(name: string, includeSelf?: boolean): PresenceEntry | null;
   readonly status: SocialStatus;
 }
 
@@ -167,6 +179,7 @@ const defaultCtx: SocialCtx = {
     const low = raw.toLowerCase();
     return list.some((n) => typeof n === 'string' && n.toLowerCase() === low);
   },
+  guild: () => G.guild?.presenceInfo() ?? null,
 };
 
 /** Region the local player is in (open world), from `region:entered`. Cleared when a scene ends. */
@@ -217,6 +230,8 @@ export class Social implements PresenceApi {
   private lastTextAt = -Infinity;
   /** Display name of the last player who whispered us (target of /r). */
   replyTo = '';
+  /** WP-05 Lonca: called after every valid presence of a peer that announced a guild (the guild service pulls newer rosters from it). */
+  onGuildPresence: ((e: PresenceEntry) => void) | null = null;
 
   private readonly bChat = new Map<string, TokenBucket>();
   private readonly bWhis = new Map<string, TokenBucket>();
@@ -351,17 +366,22 @@ export class Social implements PresenceApi {
     if (this.tr) this.announce(false);
   }
 
-  private presenceMsg(): { t: 'lpres'; name: string; cls: ClassId; lvl: number; zone: string; zn?: string } | null {
+  private presenceMsg(): { t: 'lpres'; name: string; cls: ClassId; lvl: number; zone: string; zn?: string; g?: string; gid?: string; gv?: number } | null {
     const s = this.ctx.self();
     if (!s) return null;
-    return { t: 'lpres', name: s.name, cls: s.cls, lvl: s.level, zone: s.zone, ...(s.zoneName ? { zn: s.zoneName.slice(0, 24) } : {}) };
+    const g = this.ctx.guild?.() ?? null;
+    return {
+      t: 'lpres', name: s.name, cls: s.cls, lvl: s.level, zone: s.zone,
+      ...(s.zoneName ? { zn: s.zoneName.slice(0, 24) } : {}),
+      ...(g ? { g: g.name, gid: g.gid, gv: g.gv } : {}),
+    };
   }
 
   private announce(force: boolean): void {
     const msg = this.presenceMsg();
     if (!msg || !this.tr) return;
     const now = this.ctx.now();
-    const key = `${msg.name}|${msg.cls}|${msg.lvl}|${msg.zone}`;
+    const key = `${msg.name}|${msg.cls}|${msg.lvl}|${msg.zone}|${msg.gid ?? ''}|${msg.gv ?? 0}`;
     const changed = key !== this.lastSentKey;
     const due = now - this.lastAnnounceAt >= SOCIAL.PRESENCE_EVERY_MS;
     if (!force && !due && !(changed && now - this.lastAnnounceAt >= SOCIAL.CHANGE_GAP_MS)) return;
@@ -391,6 +411,9 @@ export class Social implements PresenceApi {
     e.zone = s.zone;
     e.zoneName = s.zoneName;
     e.seen = this.ctx.now();
+    const g = this.ctx.guild?.() ?? null;
+    if (g) e.guild = { name: g.name, gid: g.gid, gv: g.gv };
+    else delete e.guild;
     this.selfEntry = e;
     if (first || renamed) this.recompute();
     this.touch();
@@ -436,7 +459,7 @@ export class Social implements PresenceApi {
   }
 
   private touch(): void {
-    const sig = this.entries().map((e) => `${e.id}|${e.name}|${e.cls}|${e.lvl}|${e.zone}`).join(';');
+    const sig = this.entries().map((e) => `${e.id}|${e.name}|${e.cls}|${e.lvl}|${e.zone}|${e.guild?.gid ?? ''}${e.guild?.gv ?? ''}`).join(';');
     if (sig === this.listSig) return;
     this.listSig = sig;
     this.ctx.changed(this.count());
@@ -502,7 +525,7 @@ export class Social implements PresenceApi {
     const name = cleanName(d.name);
     if (!name) return;
     const zone = ident(d.zone, 32);
-    this.upsert(
+    const e = this.upsert(
       from,
       name,
       cleanClass(d.cls),
@@ -510,6 +533,18 @@ export class Social implements PresenceApi {
       zone,
       cleanChatText(d.zn, 24),
     );
+    if (!e) return;
+    // WP-05 Lonca: strict validation of the guild fields (a bad one just means "no guild")
+    const gname = cleanGuildName(d.g);
+    const gid = isGid(d.gid) ? d.gid : '';
+    const gv = typeof d.gv === 'number' && Number.isInteger(d.gv) && d.gv >= 0 && d.gv <= 1e11 ? d.gv : -1;
+    const before = e.guild ? `${e.guild.gid}${e.guild.gv}` : '';
+    if (gname && gid && gv >= 0) e.guild = { name: gname, gid, gv };
+    else delete e.guild;
+    if ((e.guild ? `${e.guild.gid}${e.guild.gv}` : '') !== before) this.touch();
+    if (e.guild) {
+      try { this.onGuildPresence?.(e); } catch (err) { console.warn('[social] guild hook failed', err); }
+    }
   }
 
   /** Common sender resolution for chat / whisper: validates the name, registers the peer implicitly (messages may beat the presence). */

@@ -6,6 +6,7 @@ import type { SpecId } from './v2';
 import type { TalentBuild } from './talents';
 import type { CampState, HomeSave, UpgState } from './itemsV2';
 import type { ProfessionId, ProfessionSave } from './professions';
+import type { GuildSave } from './guild';
 
 export const BAG_SIZE = 48;
 export const STASH_SIZE = 120;
@@ -90,6 +91,9 @@ export interface CharacterSave {
   // ---- CM14 Pazar (CORE_MECHANICS §11). OPTIONAL, created on first use by systems/Market.ts.
   /** Sales log of the player's stall (newest last, capped) plus what the player has not seen yet (next-login summary). */
   market?: MarketSave;
+  // ---- WP-05 Lonca (NETCODE.md section 16). OPTIONAL, created by systems/Guild.ts when the character founds or joins a guild.
+  /** Guild membership: guild id, this character's member key pair, chat key and the latest verified signed roster. */
+  guild?: GuildSave;
 }
 
 /**

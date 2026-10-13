@@ -72,6 +72,7 @@ export class GameMenuPanel extends GamePanel {
     mk('Grup / Sunucular', () => openPanel('party'), 'normal', '/assets/icons/ui-party.svg');
     mk('Başarımlar', () => this.openAchievements(), 'normal', '/assets/icons/ui-laurels.svg');
     mk('Meslekler', () => this.openProfessions(), 'normal', '/assets/icons/item-ore.svg');
+    mk('Lonca', () => openPanel('guild'), 'normal', '/assets/icons/ui-party.svg');
     if (inDungeon) mk(inOpenWorld() ? 'Şehre Dön' : 'Zindandan Ayrıl', () => void this.leaveDungeon(), 'danger', '/assets/icons/ui-exit.svg');
     mk('Karakter Seçimine Dön', () => void this.toCharSelect(), 'normal', '/assets/icons/ui-character.svg');
     mk('Jenerik', () => openPanel('credits'), 'ghost', '/assets/icons/ui-laurels.svg');
