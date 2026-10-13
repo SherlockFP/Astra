@@ -6,6 +6,7 @@ import { clampN, div, esc, h, setClass, setStyle } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
 import type { ChatChannel } from '../../types/net';
 import { getSocial } from '../../systems/Social';
+import { getGuild } from '../../systems/Guild';
 import { upcomingEventLines } from '../../scenes/world/EventCalendar';
 
 /* ================================================================================================
@@ -13,7 +14,7 @@ import { upcomingEventLines } from '../../scenes/world/EventCalendar';
  * (200 lines); a line goes to every tab that lists its channel. Tabs with no lines yet are hidden.
  * ============================================================================================== */
 
-type TabId = 'genel' | 'grup' | 'fisilti' | 'dunya' | 'ticaret' | 'sistem' | 'savas';
+type TabId = 'genel' | 'grup' | 'fisilti' | 'dunya' | 'ticaret' | 'lonca' | 'sistem' | 'savas';
 interface TabDef {
   id: TabId;
   label: string;
@@ -22,18 +23,19 @@ interface TabDef {
   channels: readonly ChatChannel[];
 }
 const TABS: readonly TabDef[] = [
-  { id: 'genel', label: 'Genel', always: true, channels: ['say', 'yell', 'party', 'whisper', 'global', 'trade', 'emote', 'system'] },
+  { id: 'genel', label: 'Genel', always: true, channels: ['say', 'yell', 'party', 'whisper', 'global', 'trade', 'guild', 'emote', 'system'] },
   { id: 'grup', label: 'Grup', always: true, channels: ['party'] },
   { id: 'fisilti', label: 'Fısıltı', always: false, channels: ['whisper'] },
   { id: 'dunya', label: 'Dünya', always: false, channels: ['global'] },
   { id: 'ticaret', label: 'Ticaret', always: false, channels: ['trade'] },
+  { id: 'lonca', label: 'Lonca', always: false, channels: ['guild'] },
   { id: 'sistem', label: 'Sistem', always: true, channels: ['system', 'loot', 'boss'] },
   { id: 'savas', label: 'Savaş', always: false, channels: [] },
 ];
 /** Tabs whose idle lines never fade (§5.1 "Fade"). */
 const NO_FADE: ReadonlySet<TabId> = new Set<TabId>(['fisilti', 'sistem']);
 /** Channel prefix of a line (WoW "[1. Genel]"); other channels have none. */
-const CHAN_PREFIX: Partial<Record<ChatChannel, string>> = { global: 'Genel', trade: 'Ticaret' };
+const CHAN_PREFIX: Partial<Record<ChatChannel, string>> = { global: 'Genel', trade: 'Ticaret', guild: 'Lonca' };
 const LINE_CAP = 200;
 const FADE_AFTER_MS = 12000;
 const YELL_COOLDOWN_MS = 5000;
@@ -69,6 +71,8 @@ export const EMOTES: Readonly<Record<string, EmoteDef>> = {
 const COMMANDS: readonly { cmd: string; hint: string }[] = [
   { cmd: 'g', hint: 'Genel Sohbet: /g mesaj (veya /1)' },
   { cmd: 'ticaret', hint: 'Ticaret kanalı: /ticaret mesaj (veya /2)' },
+  { cmd: 'l', hint: 'Lonca sohbeti: /l mesaj' },
+  { cmd: 'lonca', hint: 'Lonca: /lonca kur | davet | at | ayril | bilgi' },
   { cmd: 'w', hint: 'Fısıltı: /w isim mesaj' },
   { cmd: 'r', hint: 'Son fısıldayana yanıt: /r mesaj' },
   { cmd: 'kim', hint: 'Çevrimiçi oyuncuları listele' },
@@ -278,7 +282,7 @@ export class Chat implements HudWidget {
 
   /** Slash commands: the social ones (`/g` `/ticaret` `/w` `/r` `/kim` `/yardim`, systems/Social.ts), local ones (`/temizle`, `/arayuz`, `/zindan`) and emotes. */
   private command(body: string): void {
-    if (getSocial().command(body)) return;
+    if (getSocial().command(body) || getGuild().command(body)) return;
     const cmd = (body.split(/\s+/)[0] ?? '').toLowerCase();
     if (cmd === 'temizle') {
       this.clear();

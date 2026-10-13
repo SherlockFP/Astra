@@ -20,6 +20,7 @@ import type { QuestSystem } from '../systems/Quests';
 import type { TalentSystem } from '../systems/Talents';
 import type { Professions } from '../systems/Professions';
 import type { PresenceApi } from '../systems/Social';
+import type { Guild } from '../systems/Guild';
 import type { ProcEngine } from '../combat/Procs';
 import type { Auras } from '../combat/Auras';
 import type { Corpses } from '../combat/Corpses';
@@ -70,6 +71,8 @@ export interface Services {
   professions?: Professions;
   /** Social (systems/Social.ts): online players on the global lobby (list / count / find). Created by Game.ts; undefined in sims. */
   presence?: PresenceApi;
+  /** WP-05 Lonca (systems/Guild.ts): guild roster, ranks, invites, guild chat; `G.guild.tagOf(peerName)` = guild tag. Created by Game.ts; undefined in sims. */
+  guild?: Guild;
   character: CharacterState | null;
   world: World | null;
   player: Player | null;

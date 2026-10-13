@@ -108,6 +108,8 @@ export interface GameEvents {
   'net:rooms': Record<string, never>;            // room browser list updated
   /** Social (systems/Social.ts): the online-player list (G.presence.list()) changed; `count` includes the local player. */
   'presence:changed': { count: number };
+  /** WP-05 Lonca (systems/Guild.ts): the guild state, roster, a pending invite or the chat key changed (panel refresh). */
+  'guild:changed': Record<string, never>;
   'party:changed': Record<string, never>;
   'party:readyCheck': { active: boolean };
   /** Host: every party member finished loading the current scene. */
