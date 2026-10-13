@@ -558,7 +558,7 @@ export function windowFrame(o: WinOpts): WinParts {
   const titleEl = h('div.pg-title', null, o.title);
   const head = h('div.pg-head', null, o.icon ? icon(o.icon, 'pg-head-ico') : null, titleEl, h('div.pg-head-spacer'));
   if (!o.noClose) {
-    const x = h('button.pg-x', { type: 'button', title: 'Kapat' }, '✕') as HTMLButtonElement;
+    const x = h('button.pg-x', { type: 'button', title: 'Kapat' }, 'X') as HTMLButtonElement;
     x.addEventListener('click', () => o.onClose?.()); // the hud plays ui_close when the panel closes
     head.append(x);
   }

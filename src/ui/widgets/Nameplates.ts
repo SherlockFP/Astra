@@ -10,6 +10,7 @@ import { UNINTERRUPTIBLE_ICON, type CastTracker } from './CastBar';
 import { ICON, clamp01, clampN, div, iconEl, pulse, setClass, setDisplay, setStyle, setText } from './dom';
 import { statusView } from './status';
 import { StatusRow } from './StatusRow';
+import { selectedTitleName } from '../../systems/Achievements';
 
 const _v = new THREE.Vector3();
 const _p = { x: 0, y: 0 };
@@ -52,6 +53,10 @@ const overlaps = (a: Box, b: Box): boolean => a.x0 < b.x1 && b.x0 < a.x1 && a.y0
 class Plate {
   readonly el: HTMLElement;
   private nameEl: HTMLElement;
+  /** Chosen achievement title under the name (local player only, grey). */
+  private titleEl: HTMLElement;
+  /** The local player's own plate: shown only while a title is chosen; name, level and title, no bars. */
+  private readonly self: boolean;
   private lvlEl: HTMLElement;
   private rankIco: HTMLElement;
   private barEl: HTMLElement;
@@ -83,6 +88,9 @@ class Plate {
     this.lvlEl = div('np-lvl', top);
     this.nameEl = div('np-name', top);
     this.rankIco = iconEl(null, 'np-rank', top);
+    this.titleEl = div('np-title', this.el);
+    setDisplay(this.titleEl, false);
+    this.self = actor.kind === 'player' && (actor as Player).isLocal === true;
     const bar = div('np-bar', this.el);
     this.barEl = bar;
     this.ghost = div('np-ghost', bar);
@@ -106,6 +114,10 @@ class Plate {
     this.status = new StatusRow(ui, 'debuff', 4, 'np-st', false);
     this.el.appendChild(this.status.el);
     this.el.style.display = 'none';
+    if (this.self) {
+      // own plate: name + level + title only (no HP bar, cast, poise, dispel or debuffs)
+      for (const part of [bar, this.poiseEl, this.castWrap, this.dispelEl, this.status.el]) setDisplay(part, false);
+    }
     const isPlayer = actor.kind === 'player';
     // click-to-select: the name and the HP bar take the mouse (the rest of the plate stays click-through); other players are not selectable.
     // The HUD only reports the click; PlayerController subscribes to target:select (left = select, right = select + attack).
@@ -148,7 +160,7 @@ class Plate {
   }
 
   /** Content (name, level, HP, cast, debuffs). The position is set by place(), once the declutter has run. */
-  update(ctx: { now: number; world: number; casts: CastTracker; isTarget: boolean; isSoft: boolean; playerLevel: number }): void {
+  update(ctx: { now: number; world: number; casts: CastTracker; isTarget: boolean; isSoft: boolean; playerLevel: number; selfTitle: string }): void {
     const a = this.actor;
     this.applyFlavor();
     setText(this.nameEl, a.name);
@@ -157,6 +169,13 @@ class Plate {
     setText(this.lvlEl, String(a.level));
     const diff = a.level - ctx.playerLevel;
     setStyle(this.lvlEl, 'color', a.kind === 'player' ? '#ffffff' : diff >= 5 ? '#ff4a3a' : diff >= 3 ? '#ff9a3a' : diff >= -2 ? '#ffe050' : '#9ad86a');
+    if (this.self) {
+      setText(this.titleEl, ctx.selfTitle);
+      setDisplay(this.titleEl, ctx.selfTitle !== '');
+      setClass(this.el, 'target', false);
+      setClass(this.el, 'soft', false);
+      return;
+    }
     const frac = a.maxHp > 0 ? clamp01(a.hp / a.maxHp) : 0;
     if (frac !== this.lastFrac) {
       // white flash + bump on every visible HP loss (hit feedback right on the enemy)
@@ -341,6 +360,9 @@ export class Nameplates {
     };
     for (const e of w.enemies) consider(e, false);
     for (const p of w.players) if (!p.isLocal) consider(p as Player, true);
+    // the local player gets a plate only while a title is chosen (name + title, see Plate.self)
+    const selfTitle = selectedTitleName(G.character?.save);
+    if (selfTitle) consider(me as Player, true);
     // placement order: the target and manual plates, then the hot ones (hit / engaged), then nearest first
     cands.sort((x, y) => {
       const rx = x.always ? 0 : x.hot ? 1 : 2;
@@ -368,7 +390,7 @@ export class Nameplates {
       }
       plate.seen = this.tick;
       plate.setShown(true);
-      plate.update({ now, world: wt, casts, isTarget: a.id === hardTarget || a === hover, isSoft: a === hover && a.id !== hardId, playerLevel: me.level });
+      plate.update({ now, world: wt, casts, isTarget: a.id === hardTarget || a === hover, isSoft: a === hover && a.id !== hardId, playerLevel: me.level, selfTitle });
       laid.push({
         plate, d: c.d, k: Math.max(0.68, Math.min(1.05, 1.18 - c.d / 55)),
         x: _p.x, y: _p.y, exempt: c.always || c.hot, lift: 0, show: true,

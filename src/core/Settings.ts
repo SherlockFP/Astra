@@ -153,6 +153,8 @@ export interface SettingsData {
   autoAttackFromSkills: boolean;
   /** True once the one-time "scheme changed" hint has been shown. */
   controlsHintShown: boolean;
+  /** Revision of the barGhostSlots default (migrated once: stored files below 1 get barGhostSlots = true). */
+  barGhostRev: number;
 }
 
 /**
@@ -260,6 +262,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   casterAutoShotRev: 1,
   autoAttackFromSkills: true,
   controlsHintShown: true,
+  barGhostRev: 1,
 };
 
 /**
@@ -344,6 +347,13 @@ export class Settings {
       if ((stored.casterAutoShotRev ?? 0) < 1) {
         this.data.casterAutoShot = true;
         this.data.casterAutoShotRev = 1;
+        changed = true;
+      }
+      // Ghost cells in the action bar default on (ElvUI look). Stored files below rev 1 get barGhostSlots = true once;
+      // the choice made after that (the settings toggle) is kept by the rev flag.
+      if ((stored.barGhostRev ?? 0) < 1) {
+        this.data.barGhostSlots = true;
+        this.data.barGhostRev = 1;
         changed = true;
       }
     }

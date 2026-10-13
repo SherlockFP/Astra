@@ -9,7 +9,7 @@
   --pi-leather-2: var(--bg-2);
   --pi-leather-3: var(--bg-0);
   --pi-edge: var(--ink);
-  --pi-edge-hi: var(--gold-3);
+  --pi-edge-hi: var(--elv-value);
   --pi-slot-edge: var(--ink);
   --pi-line: var(--line);
   --pi-good: var(--ok);
@@ -46,8 +46,8 @@
 
 .pi-title {
   font: 700 var(--fs-15)/1.2 var(--font-body);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  
+  
   color: var(--text-1);
 }
 
