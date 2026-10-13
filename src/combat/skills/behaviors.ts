@@ -243,6 +243,8 @@ const groundAoe: Behavior = {
           for (const e of enemiesIn(z.x, z.z, radius, groundAt(z.x, z.z))) sys.strike(c, e, { tick: true, dir: norm(e.position.x - z.x, e.position.z - z.z), noGain: true, tickIndex: n });
           if (healPct) sys.healAlliesIn(c, z.x, z.z, radius, healPct * every);
           if (holy) sys.applyPartyAt(c, 'empower', 1.6, holy.consecrationAllyDamagePct ?? 0.1, z.x, z.z, radius);
+          // Kutsal Zemin (paladin_consecration): allies standing in the zone get `consecrated` (+3 % armour) for 1.6 s, refreshed per tick
+          if (p.allyArmor) sys.applyPartyAt(c, 'consecrated', 1.6, 0, z.x, z.z, radius);
         },
         onEnd: undefined,
       };

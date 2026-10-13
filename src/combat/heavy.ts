@@ -90,6 +90,16 @@ export const GUARD_COUNTER_BY_CLASS: Partial<Record<ClassId, SwingProfile>> = {
 export const GUARD_COUNTER_COST = 10;
 export const GUARD_COUNTER_CD = 0.6;
 
+// Paladin (PM-PA): the knight's sword-and-shield moveset under its own ids (remote replays and the combo routes look up by id); the
+// tier-2 heavy is the mace art (wa_crushing_blow), the class weapon is a mace.
+{
+  const kn = HEAVY_BY_CLASS.knight!;
+  HEAVY_BY_CLASS.paladin = { ...kn, classId: 'paladin', id: 'paladin_basic_heavy', name: 'Kutsal Ağır Darbe', art: 'wa_crushing_blow' };
+  RIPOSTE_BY_CLASS.paladin = { ...RIPOSTE_BY_CLASS.knight!, classId: 'paladin', id: 'paladin_basic_riposte', name: 'Kutsal Karşılık' };
+  KRT_BY_CLASS.paladin = { ...KRT_BY_CLASS.knight!, classId: 'paladin', id: 'paladin_basic_krt' };
+  GUARD_COUNTER_BY_CLASS.paladin = { ...GUARD_COUNTER_BY_CLASS.knight!, classId: 'paladin', id: 'paladin_basic_counter' };
+}
+
 /** Weapon art (tier 2) ids per class (WEAPON_ARTS). */
 export function weaponArtVfx(artId: string): VfxId {
   return `weapon_art_${artId}` as VfxId;

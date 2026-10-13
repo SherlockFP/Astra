@@ -295,8 +295,10 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     basicAttack: 'paladin_basic',
     // PM-PA (plate-melee §h): the 8 class skills; spec rows (Koruma / Kutsal / Ceza) come from SpecDef.skills
     skills: [
-      'paladin_judgement', 'paladin_crusader_strike', 'paladin_divine_steed', 'paladin_rebuke',
-      'paladin_word_of_glory', 'paladin_avengers_shield', 'paladin_avenging_wrath', 'paladin_divine_shield',
+      // default bar slots rmb, q, e, s1, s2 (steed has its own), s3, m90, m180: L1 = chain + Yargı (builder) + Haçlı Darbesi (builder) +
+      // Işığın Sözü (Kutsal Güç spender, heals yourself without an ally), so a level-1 paladin already has four working buttons
+      'paladin_judgement', 'paladin_crusader_strike', 'paladin_word_of_glory', 'paladin_rebuke',
+      'paladin_divine_steed', 'paladin_avengers_shield', 'paladin_avenging_wrath', 'paladin_divine_shield',
     ],
     startingItems: ['mace_t1', 'shield_t1'],
     color: '#fff0b8',
@@ -529,10 +531,10 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
 export const CLASS_IDS: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue'];
 
 /**
- * Classes the character-creation screen offers. Stays at the four KayKit classes until a new class's skills, model and
- * items are merged (GDD_CLASSES_V2 §13.1 / NC60). Add an id here, and only here, to make a class selectable.
+ * Classes the character-creation screen offers: the four KayKit classes + the paladin (Knight rig, golden palette variant).
+ * The other new classes join when their skills, model and items are merged (GDD_CLASSES_V2 §13.1 / NC60).
  */
-export const PLAYABLE_CLASSES: readonly ClassId[] = ['knight', 'barbarian', 'mage', 'rogue'];
+export const PLAYABLE_CLASSES: readonly ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin'];
 export const isPlayableClass = (id: ClassId): boolean => (PLAYABLE_CLASSES as readonly string[]).includes(id);
 export const getClass = (id: ClassId): ClassDefX => CLASSES[id];
 

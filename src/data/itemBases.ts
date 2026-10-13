@@ -90,11 +90,19 @@ interface WeaponTypeDef {
 }
 const WEAPON_TYPES: WeaponTypeDef[] = [
   {
-    category: 'sword1h', hands: 1, aps: 1.4, typeMult: 1.0, classes: ['knight'], maxSockets: 2,
+    category: 'sword1h', hands: 1, aps: 1.4, typeMult: 1.0, classes: ['knight', 'paladin'], maxSockets: 2,
     names: ['Kısa Kılıç', 'Pala', 'Şövalye Kılıcı', 'Ejder Kılıcı', 'Kadim Kılıç'],
     models: [GEN + 'sword_1h_iron.glb', GEN + 'sword_1h_scimitar.glb', GEN + 'sword_1h_knight.glb', GEN + 'sword_1h_dragon.glb', GEN + 'sword_1h_jade.glb'],
     implicit: [0.01, 0.015, 0.02, 0.025, 0.03].map((v) => ({ critChance: v })),
     icons: ['item-sword', 'item-sword', 'item-sword', 'item-sword-rune', 'item-sword-rune'],
+  },
+  {
+    // Paladin weapon (CLASS_WEAPONS.paladin = sword1h + mace): holy-damage implicit, the `mace` weapon art (wa_crushing_blow)
+    category: 'mace', hands: 1, aps: 1.3, typeMult: 1.05, classes: ['paladin'], maxSockets: 2,
+    names: ['Demir Topuz', 'Dikenli Topuz', 'Kutsal Gürz', 'Işık Gürzü', 'Kadim Gürz'],
+    models: [GEN + 'mace_flanged.glb', GEN + 'mace_flanged.glb', GEN + 'mace_morningstar.glb', GEN + 'mace_morningstar.glb', GEN + 'mace_morningstar.glb'],
+    implicit: [0.03, 0.04, 0.05, 0.06, 0.07].map((v) => ({ holyDamagePct: v })),
+    icons: ['item-mace', 'item-mace', 'item-mace-spiked', 'item-mace-spiked', 'item-mace-spiked'],
   },
   {
     category: 'axe2h', hands: 2, aps: 1.0, typeMult: 1.55, classes: ['barbarian'], maxSockets: 3,
@@ -125,7 +133,7 @@ const WEAPON_TYPES: WeaponTypeDef[] = [
     icons: ['item-dagger', 'item-dagger-curved', 'item-dagger-curved', 'item-dagger-curved', 'item-dagger-curved'],
   },
   {
-    category: 'shield', hands: 0, classes: ['knight'], maxSockets: 1,
+    category: 'shield', hands: 0, classes: ['knight', 'paladin'], maxSockets: 1,
     names: ['Yuvarlak Kalkan', 'Armalı Kalkan', 'Kule Kalkanı', 'Dikenli Kalkan', 'Kadim Kalkan'],
     models: [GEN + 'shield_round_wood.glb', GEN + 'shield_kite_crest.glb', GEN + 'shield_tower.glb', GEN + 'shield_demon_spiked.glb', GEN + 'shield_demon_spiked.glb'],
     implicit: [0.12, 0.14, 0.16, 0.18, 0.2].map((v) => ({ blockChance: v })),

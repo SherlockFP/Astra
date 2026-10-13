@@ -116,7 +116,7 @@ const FALLBACK: Record<ClassId, ClassPresentation> = {
   paladin: {
     id: 'paladin', name: 'Paladin', tagline: 'Işığın Yeminli Kılıcı', role: 'Tank · Şifacı · Savaşçı', resource: 'İnanç + Kutsal Güç', resourceColor: '#ffe9a0',
     desc: 'Kılıcı, topuzu ve kalkanıyla ışığa yemin etmiş zırhlı rahip. Koruma ile düşman dalgalarını durdurur, Kutsal ile ölmekte olan dostu geri çağırır, Ceza ile hüküm verir; auralarıyla tüm partiyi güçlendirir.',
-    highlights: ['Yargı → Kutsal Hüküm: yargıla, sonra hükmet', 'Aura: partiyi sürekli güçlendir', 'Şifa Eli: ölmek üzere olan dostu kurtar'],
+    highlights: ['Yargı → Kutsal Hüküm: yargıla, sonra hükmet', 'Kutsal Güç: vurarak biriktir, Işığın Sözü ile iyileş', 'Şifa Eli: ölmek üzere olan dostu kurtar'],
     stats: { dayaniklilik: 5, hasar: 3, hareket: 2, menzil: 2 }, color: '#fff0b8', icon: '/assets/icons/class-cleric.svg', idle: 'Idle',
     showcase: [
       { clip: '1H_Melee_Attack_Slice_Diagonal', vfx: 'slash_arc', vfxAt: 0.38, offset: [0, 1.3, 1.2], sfx: 'swing_light' },
@@ -177,7 +177,7 @@ export function classPresentation(id: ClassId): ClassPresentation {
   };
 }
 
-export const CLASS_ORDER: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue'];
+export const CLASS_ORDER: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin'];
 
 export interface VariantDef { name: string; css: string; tint: number }
 /** Colour variants (appearance.variant index). `tint` is only used by the scenes-side fallback model loader. */

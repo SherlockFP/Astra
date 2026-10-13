@@ -47,6 +47,8 @@ export const STATUSES_KIT_PLATE: Partial<Record<StatusId, StatusDef>> = {
   aura_mastery: { id: 'aura_mastery', name: 'Aura Ustalığı', icon: I('buff-aura'), kind: 'buff', stats: { damageReductionPct: 0.20 }, vfx: 'aura_ring', defaultDuration: 10 },
   crusade: { id: 'crusade', name: 'Sefer', icon: I('buff-crit'), kind: 'buff', maxStacks: 10, stats: { attackSpeed: 0.02, castSpeed: 0.02 }, defaultDuration: 20 },
   sentenced: { id: 'sentenced', name: 'Hükümlü', icon: I('debuff-marked'), kind: 'debuff', dotType: 'holy', defaultDuration: 10 },
+  // Kutsal Zemin: allies standing in the zone get +3 % armour (re-applied every tick, 1.6 s); plate-melee.md §5a
+  consecrated: { id: 'consecrated', name: 'Kutsal Zemin', icon: I('buff-defense'), kind: 'buff', stats: { armorPct: 0.03 }, defaultDuration: 1.6 },
 
   // ---- Nekromant (Kemik Muhafızı / Ordu Efendisi) rows
   bone_armor: { id: 'bone_armor', name: 'Kemik Zırhı', icon: I('buff-defense'), kind: 'buff', maxStacks: 10, stats: { damageReductionPct: 0.03, armorPct: 0.06 }, vfx: 'bone_armor', defaultDuration: 30 },
@@ -97,6 +99,7 @@ export const STATUS_RULES_KIT_PLATE: Partial<Record<StatusId, StatusRule>> = {
   aura_mastery: { stack: 'refresh' },
   crusade: { stack: 'stack' },
   sentenced: { stack: 'refresh' },
+  consecrated: { stack: 'refresh' },
   bone_armor: { stack: 'stack', consumeOnHit: { icd: 2.5 } },
   blood_plague: { stack: 'refresh' },
   vampiric_blood: { stack: 'refresh' },

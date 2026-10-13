@@ -1,7 +1,8 @@
 // KIT PM-PA checks (docs/kits/plate-melee.md §5-§7, f1c, f3, §h "pmpa.*") that need no browser.
 // Run: node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/kit_paladin.mjs
 // Covered: pmpa.ids, pmpa.apl, pmpa.status, pmpa.cd, pmpa.coef, pmpa.pip, pmpa.procs, pmpa.fx, pmpa.replace, pmpa.hol, pmpa.heal, pmpa.shine,
-//          pmpa.steed, pmpa.cap, pmpa.main (Kutsal int heals, wrath_wings +healing), pmpa.ardent (lethal save), pmpa.hp (60 s APL Holy Power
+//          pmpa.l1 (level-1 bar castable, start gear, creation list), pmpa.hv (heavy / move profiles), pmpa.rt (route status +25 %), pmpa.cs (Kutsal Zemin
+//          ally armour), pmpa.bw (İlahi Siper reflect), pmpa.ow (Taşan Şifa overheal ward), pmpa.steed, pmpa.cap, pmpa.main (Kutsal int heals, wrath_wings +healing), pmpa.ardent (lethal save), pmpa.hp (60 s APL Holy Power
 //          ledger of the three specs), pmpa.mit (Doğruluk Kalkanı uptime), pmpa.mana (Kutsal faith, informational).
 // The APL runner below compiles the A.3 lines of data/rotations_kit_paladin.ts and presses the bar slots through the real SkillSystem
 // (cooldowns, GCD, spell queue, procs via a live ProcEngine fed with the spec fx), on a dev dummy that never fights back.
@@ -94,7 +95,7 @@ ok('pmpa.ids Ceza gets Gazap Çekici from the s05 tree node', RET.treeSkills?.pa
 ok('pmpa.ids SPECS merge holds the three paladin specs', !!SPECS.paladin_protection && !!SPECS.paladin_holy && !!SPECS.paladin_retribution);
 {
   const cls = CLASSES.paladin.skills;
-  ok('pmpa.ids ClassDef.skills is the 8-id list', cls.join() === ['paladin_judgement', 'paladin_crusader_strike', 'paladin_divine_steed', 'paladin_rebuke', 'paladin_word_of_glory', 'paladin_avengers_shield', 'paladin_avenging_wrath', 'paladin_divine_shield'].join());
+  ok('pmpa.ids ClassDef.skills is the 8-id list (default slots rmb q e s1 s2 s3 - m90 r)', cls.join() === ['paladin_judgement', 'paladin_crusader_strike', 'paladin_word_of_glory', 'paladin_rebuke', 'paladin_divine_steed', 'paladin_avengers_shield', 'paladin_avenging_wrath', 'paladin_divine_shield'].join());
   ok('pmpa.ids every ClassDef skill resolves', cls.every((id) => !!SKILLS[id]));
 }
 
@@ -301,7 +302,7 @@ for (const spec of [KOR, RET]) {
   G.skills.addPip(p, 'holypower', 5);
   const hits = [];
   const orig = G.skills.strike.bind(G.skills);
-  G.skills.strike = (c, t, o = {}) => { const r = orig(c, t, o); if (c.def.id === 'paladin_hammer_of_light' && r) hits.push({ id: t.id, more: o.more ?? 1, amount: r.amount }); return r; };
+  G.skills.strike = (c, t, o = {}) => { const r = orig(c, t, o); if (c.def.id === 'paladin_hammer_of_light' && r) hits.push({ id: t.id, more: o.more ?? 1, amount: r.amount, crit: !!r.crit }); return r; };
   const hp0 = [e.hp, n1.hp, n2.hp];
   const rnd = Math.random;
   Math.random = () => 0.5; // weapon roll 100, no crit, no dodge: the amounts below are exact
@@ -317,7 +318,7 @@ for (const spec of [KOR, RET]) {
   const prim = hits.filter((h) => h.id === e.id);
   const sp = hits.filter((h) => h.id !== e.id);
   ok('pmpa.hol primary hit twice, neighbours hit at x0.5', prim.length === 2 && sp.length === 4 && sp.every((h) => near(h.more, 0.5, 1e-9)), `primary=${prim.length} splash=${sp.length}`);
-  const avg = (l) => l.reduce((t, h) => t + h.amount, 0) / Math.max(1, l.length);
+  const avg = (l) => { const n = l.filter((h) => !h.crit); return n.reduce((t, h) => t + h.amount, 0) / Math.max(1, n.length); }; // crits (seeded combat RNG, 5 %) would skew the ratio
   ok('pmpa.hol primary hit is ~2x a neighbour hit (3.2 vs 1.6)', prim.length > 0 && sp.length > 0 && avg(prim) / avg(sp) > 1.65 && avg(prim) / avg(sp) < 2.4, `ratio=${(avg(prim) / avg(sp)).toFixed(2)} (weapon roll +-10 %)`);
   ok('pmpa.hol window is spent: Kutsal Hüküm is back', !p.statuses.has('hammer_window') && G.skills.getSlotSkill(p, 'q') === 'paladin_verdict');
   ok('pmpa.hol enemies lost HP', e.hp < hp0[0] && n1.hp < hp0[1] && n2.hp < hp0[2]);
@@ -781,6 +782,165 @@ function runApl(spec, seconds, { allies = 0, chainsPerMin = Infinity } = {}) {
   G.procs = undefined;
   led.faithEnd = p.resource;
   return led;
+}
+
+// ---- pmpa.l1: a level-1 paladin (no spec yet) has a working bar: lmb chain + Yargı + Haçlı Darbesi + Işığın Sözü, all castable ------------------
+{
+  const { CharacterState } = await H.imp('systems/CharacterState.ts');
+  const bar1 = CharacterState.defaultBar('paladin', 1);
+  ok('pmpa.l1 creation bar at level 1 = lmb chain, rmb Yargı, q Haçlı Darbesi, e Işığın Sözü', JSON.stringify(bar1) === JSON.stringify({
+    lmb: 'paladin_basic', rmb: 'paladin_judgement', q: 'paladin_crusader_strike', e: 'paladin_word_of_glory',
+  }), JSON.stringify(bar1));
+  const bar10 = CharacterState.defaultBar('paladin', 10);
+  ok('pmpa.l1 level-10 bar adds Azarlama s1, İlahi Binek s2 (no slot clash), İntikamcı Kalkan s3, Kanatlar m90',
+    bar10.s1 === 'paladin_rebuke' && bar10.s2 === 'paladin_divine_steed' && bar10.s3 === 'paladin_avengers_shield' && bar10.m90 === 'paladin_avenging_wrath' && !bar10.m180, JSON.stringify(bar10));
+  const bar60 = CharacterState.defaultBar('paladin', 60);
+  ok('pmpa.l1 level-60 bar has 8 distinct class skills + lmb', new Set(Object.values(bar60)).size === 9 && bar60.s2 === 'paladin_divine_steed' && bar60.m180 === 'paladin_divine_shield', JSON.stringify(bar60));
+  ok('pmpa.l1 every skill of the L1 bar unlocks at level 1', Object.values(bar1).every((id) => K(id).unlockLevel <= 1));
+  const items = await H.imp('data/itemBases.ts');
+  ok('pmpa.l1 start gear exists (mace, shield, plate, sword) and a paladin may equip it; a mage may not take the mace',
+    ['mace_t1', 'shield_t1', 'chest_heavy_t1', 'sword1h_t1'].every((id) => items.ITEM_BASES[id] && items.classCanUseBase('paladin', items.ITEM_BASES[id])) && !items.classCanUseBase('mage', items.ITEM_BASES.mace_t1));
+  const cls = await H.imp('data/classes.ts');
+  const menu = await H.imp('ui/menu/classInfo.ts');
+  ok('pmpa.l1 paladin is playable and offered by the character creation list', cls.isPlayableClass('paladin') && menu.CLASS_ORDER.includes('paladin') && menu.classPresentation('paladin').highlights.length === 3);
+
+  const p = H.addPlayer('paladin', 1);
+  p.spec = undefined;
+  p.yaw = 0; p.position.set(0, 0, 0);
+  p.stats.critChance = 0;
+  p.stats.weaponMin = p.stats.weaponMax = 100;
+  G.character.save.skillBar = { ...bar1 };
+  G.character.save.spec = null;
+  G.talents = { grantedSkills: () => [] };
+  const foe = dummy(0, 2.2, 1e8);
+  H.step(2);
+  p.hp = p.maxHp = 1000; p.resource = 100;
+  H.setAimTarget(foe);
+  const spy = healSpy();
+  const fire = (slot) => { H.clearEvents(); const started = G.skills.tryCastSlot(p, slot, H.aimFor(p, foe)); H.stepSec(2.2); return started; };
+  const hitBy = (re) => events['damage'].filter((d) => re.test(d.skillId ?? '') && d.amount > 0 && d.targetId === foe.id);
+  const failed = () => events['skill:fail'].map((f) => f.reason ?? f.why ?? '?').join(',');
+
+  ok('pmpa.l1 lmb: the weapon chain swings and hits', fire('lmb') === true && hitBy(/^paladin_basic/).length >= 1, `hits=${hitBy(/^paladin_basic/).length} fail=${failed()}`);
+  const f0 = p.resource;
+  ok('pmpa.l1 rmb: Yargı hits, applies judged, pays 4 faith, +1 Kutsal Güç', fire('rmb') === true && hitBy(/^paladin_judgement$/).length === 1 && foe.statuses.has('judged')
+    && G.skills.pipCount(p, 'holypower') >= 1 && p.resource < f0, `hits=${hitBy(/^paladin_judgement$/).length} pips=${G.skills.pipCount(p, 'holypower')} fail=${failed()}`);
+  G.skills.resetPips(p);
+  ok('pmpa.l1 q: Haçlı Darbesi hits and gives +1 Kutsal Güç', fire('q') === true && hitBy(/^paladin_crusader_strike$/).length === 1 && G.skills.pipCount(p, 'holypower') === 1, `hits=${hitBy(/^paladin_crusader_strike$/).length} pips=${G.skills.pipCount(p, 'holypower')} fail=${failed()}`);
+  G.skills.addPip(p, 'holypower', 3);
+  p.hp = 400;
+  spy.log.length = 0;
+  const wogOk = fire('e');
+  ok('pmpa.l1 e: Işığın Sözü (no ally) heals the paladin itself, costs 3 Kutsal Güç', wogOk === true && spy.log.some((h) => h.tgt === p) && p.hp > 400 && G.skills.pipCount(p, 'holypower') === 1, `ok=${wogOk} heals=${spy.log.length} hp=${p.hp} pips=${G.skills.pipCount(p, 'holypower')} fail=${failed()}`);
+  H.stepSec(2);
+  G.skills.resetPips(p);
+  ok('pmpa.l1 Işığın Sözü with fewer than 3 Kutsal Güç fails unpaid', fire('e') === false && p.hp > 0);
+  spy.stop();
+  ok('pmpa.l1 the basic chain is a melee_arc chain with an auto-attack-capable melee camera profile', K('paladin_basic_1').targeting === 'melee_arc' && CLASSES.paladin.cameraProfile === 'melee' && CLASSES.paladin.autoAttack === undefined);
+}
+
+// ---- pmpa.hv: heavy / riposte / roll moves exist for the paladin (copied from the knight under paladin ids)
+{
+  const { HEAVY_BY_CLASS, RIPOSTE_BY_CLASS, KRT_BY_CLASS, GUARD_COUNTER_BY_CLASS } = await H.imp('combat/heavy.ts');
+  const { RUN_BY_CLASS, JUMP_BY_CLASS, ROLL_BY_CLASS } = await H.imp('combat/moves.ts');
+  const { guardProfileOf } = await H.imp('combat/guard.ts');
+  const ids = [HEAVY_BY_CLASS, RIPOSTE_BY_CLASS, KRT_BY_CLASS, GUARD_COUNTER_BY_CLASS].map((t) => t.paladin?.id).concat([RUN_BY_CLASS, JUMP_BY_CLASS, ROLL_BY_CLASS].map((t) => t.paladin?.id));
+  ok('pmpa.hv heavy, riposte, krt, guard counter, run, jump, roll profiles exist and are registered skills', ids.every((id) => id && SKILLS[id] && SKILLS[id].classId === 'paladin'), ids.join(','));
+  ok('pmpa.hv heavy tier-2 is the mace art; paladin has a guard profile', HEAVY_BY_CLASS.paladin.art === 'wa_crushing_blow' && !!guardProfileOf('paladin'));
+}
+
+// ---- pmpa.rt: SkillDef.route '@status:judged' (Kutsal Hüküm +25 % on a judged target)
+{
+  const p = newPaladin(RET, { regen: false });
+  p.stats.weaponMin = p.stats.weaponMax = 100;
+  const foe = dummy(0, 2.2, 1e8);
+  H.step(2);
+  H.setAimTarget(foe);
+  const verdictHit = (judged) => {
+    foe.statuses.remove('judged');
+    if (judged) foe.statuses.apply('judged', 10, { sourceId: 9999 }); // another source: the 10 % takenMoreFromSource of the applier does not mix in
+    G.skills.resetPips(p);
+    G.skills.addPip(p, 'holypower', 3);
+    H.clearEvents();
+    G.skills.tryCastSlot(p, 'q', H.aimFor(p, foe));
+    H.stepSec(2.2);
+    const hits = events['damage'].filter((d) => d.skillId === 'paladin_verdict' && d.targetId === foe.id);
+    return hits.some((d) => d.crit) ? -1 : hits.reduce((s, d) => s + d.amount, 0); // -1 = the combat RNG crit this one: roll again
+  };
+  const clean = (judged) => { for (let i = 0; i < 25; i++) { const v = verdictHit(judged); if (v >= 0) return v; } return 0; };
+  const rnd = Math.random;
+  Math.random = () => 0.5; // weapon roll 100, no dodge; crits (seeded combat RNG) are re-rolled: the two amounts differ by the route bonus only
+  let plain, judged;
+  try { plain = clean(false); judged = clean(true); } finally { Math.random = rnd; }
+  ok('pmpa.rt Kutsal Hüküm hits a judged target 25 % harder', plain > 0 && Math.abs(judged / plain - 1.25) < 0.02, `plain=${plain} judged=${judged} ratio=${(judged / Math.max(1, plain)).toFixed(3)}`);
+  const other = (() => {
+    G.skills.resetPips(p); G.skills.addPip(p, 'holypower', 3);
+    return plain;
+  })();
+  ok('pmpa.rt rows without a status route are untouched (Haçlı Darbesi does not read judged)', K('paladin_crusader_strike').route === undefined && other === plain);
+}
+
+// ---- pmpa.cs: Kutsal Zemin gives allies standing in the zone +3 % armour (consecrated), not the ones outside it
+{
+  const p = newPaladin(KOR, { regen: false });
+  const foe = dummy(0, 2.2, 1e8);
+  const mk = (x, id) => { const a = new H.FakePlayer('knight'); a.id = id; a.isLocal = true; a.maxHp = 5000; a.hp = 5000; a.position.set(x, 0, 0); H.world.add(a); return a; };
+  const near1 = mk(3, 701), far = mk(14, 702);
+  H.step(2);
+  p.resource = 100; H.setAimTarget(foe);
+  H.clearEvents();
+  G.skills.tryCastSlot(p, 's1', H.aimFor(p, foe));
+  H.stepSec(2.6);
+  ok('pmpa.cs ally inside the zone and the caster get consecrated, an ally 14 m away does not', near1.statuses.has('consecrated') && p.statuses.has('consecrated') && !far.statuses.has('consecrated'),
+    `near=${near1.statuses.has('consecrated')} self=${p.statuses.has('consecrated')} far=${far.statuses.has('consecrated')}`);
+  ok('pmpa.cs the status carries +3 % armour', Math.abs((STATUSES.consecrated.stats?.armorPct ?? 0) - 0.03) < 1e-9);
+  H.stepSec(14);
+  ok('pmpa.cs the aura ends with the zone', !near1.statuses.has('consecrated'));
+}
+
+// ---- pmpa.bw: İlahi Siper reflects 20 % of an incoming hit as holy damage
+{
+  const p = newPaladin(KOR, { regen: false });
+  const foe = dummy(0, 2.2, 1e8);
+  H.step(2);
+  p.maxHp = p.hp = 100000;
+  const reflected = () => events['damage'].filter((d) => d.skillId === 'paladin_prot_bulwark' && d.targetId === foe.id).reduce((s, d) => s + d.amount, 0);
+  const hit = () => { H.clearEvents(); G.combat.hitLocalPlayer({ sourceId: foe.id, amount: 1000, type: 'physical', unavoidable: true, abilityName: 'test', sourceLevel: 30, melee: true }); };
+  hit();
+  ok('pmpa.bw no reflect without İlahi Siper', reflected() === 0);
+  p.statuses.apply('bulwark', 8, { sourceId: p.id });
+  hit();
+  const r = reflected();
+  ok('pmpa.bw with İlahi Siper ~20 % of the incoming hit comes back (after the enemy\'s holy mitigation)', r >= 100 && r <= 205, `reflected=${r}`);
+  foe.position.set(0, 0, 40);
+  hit();
+  ok('pmpa.bw a hit from beyond 30 m is not reflected', reflected() === 0);
+}
+
+// ---- pmpa.ow: Taşan Şifa (Kutsal): 40 % of the overheal becomes a short absorb on the healed ally
+{
+  const p = newPaladin(HOL, { regen: false });
+  const ally = new H.FakePlayer('knight'); ally.id = 801; ally.isLocal = true; ally.maxHp = 10000; ally.hp = 9990; ally.position.set(3, 0, 0); H.world.add(ally);
+  const foe = dummy(0, 2.2, 1e8);
+  H.step(2);
+  p.resource = 100; p.hp = p.maxHp;
+  H.setAimTarget(foe);
+  G.skills.addPip(p, 'holypower', 5);
+  H.clearEvents();
+  G.skills.tryCastSlot(p, 'q', H.aimFor(p, foe)); // Flash of Light
+  H.stepSec(2.5);
+  const sh = ally.statuses.get('shield');
+  ok('pmpa.ow Kutsal overheal gives the ally a shield + overheal_ward label', !!sh && sh.magnitude > 0 && ally.statuses.has('overheal_ward'), `shield=${sh?.magnitude}`);
+  ok('pmpa.ow the absorb stays under 15 % of the ally\'s max HP', !!sh && sh.magnitude <= ally.maxHp * 0.15 + 1e-6, `shield=${sh?.magnitude}`);
+  const k = newPaladin(KOR, { regen: false });
+  const ally2 = new H.FakePlayer('knight'); ally2.id = 802; ally2.isLocal = true; ally2.maxHp = 10000; ally2.hp = 9990; ally2.position.set(3, 0, 0); H.world.add(ally2);
+  const foe2 = dummy(0, 2.2, 1e8);
+  H.step(2);
+  k.resource = 100; H.setAimTarget(foe2);
+  G.skills.addPip(k, 'holypower', 5);
+  G.skills.tryCastSlot(k, 's3', H.aimFor(k, foe2)); // Işığın Sözü
+  H.stepSec(2.5);
+  ok('pmpa.ow Koruma has no overheal ward', !ally2.statuses.has('overheal_ward'));
 }
 
 // ---- pmpa.hp / pmpa.mit: 60 s APL runs on a dev dummy (Holy Power income and spend, Doğruluk Kalkanı uptime)

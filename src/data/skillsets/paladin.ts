@@ -78,7 +78,7 @@ export function registerPaladin(add: SkillAdd): void {
     replaces: { skill: 'paladin_judgement', whileStatus: 'exec_window' },
   });
   add({
-    id: 'paladin_crusader_strike', classId: 'paladin', name: 'Haçlı Darbesi', icon: I('skill-quick-slash'), unlockLevel: 3,
+    id: 'paladin_crusader_strike', classId: 'paladin', name: 'Haçlı Darbesi', icon: I('skill-quick-slash'), unlockLevel: 1,
     desc: 'Önündeki düşmana %100 kutsal hasar verir, 1 Kutsal Güç kazandırır ve 4 saniye boyunca Tapınakçı Kılıcı\'nı açar. 6 saniye bekleme. 5 İnanç harcarsın.',
     cost: 5, cooldown: 6, castTime: 0, anim: '1H_Melee_Attack_Slice_Diagonal', animSpeed: 1.35, hitTime: 0.38, targeting: 'target_instant', range: 2.8,
     damage: { coef: 1.0, type: 'holy' }, pip: { id: 'holypower', gain: 1 }, tags: ['melee', 'holy', 'builder'],
@@ -113,7 +113,7 @@ export function registerPaladin(add: SkillAdd): void {
     vfx: { trail: 'charge_trail', cast: 'holy_burst' }, sfx: { cast: 'whoosh' }, params: { end: 0.9, chain: 0.1, move: 0.15, speed: 30, unstoppable: 1, fit: 0, trail: 3 },
   });
   add({
-    id: 'paladin_word_of_glory', classId: 'paladin', name: 'Işığın Sözü', icon: I('skill-holy-light'), unlockLevel: 15,
+    id: 'paladin_word_of_glory', classId: 'paladin', name: 'Işığın Sözü', icon: I('skill-holy-light'), unlockLevel: 1,
     desc: 'Seçili ya da en yaralı müttefiki (yoksa kendini) %260 iyileştirirsin; hedefin eksik canı kadar daha güçlü olur. Kendine uygulayınca 5 İnanç geri kazanırsın. 3 Kutsal Güç harcar; Parlak Işık varken bedavadır. (Kutsal: %140 şifa + 12 saniyelik yenilenme.)',
     cost: 0, cooldown: 0, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 2.2, hitTime: 0.95, targeting: 'custom', behavior: 'heal_target', range: 30, allyTarget: 'friendly',
     heal: { coef: 2.6 }, pip: { id: 'holypower', cost: 3 }, tags: ['spell', 'holy', 'heal', 'spender'],

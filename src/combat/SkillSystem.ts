@@ -2844,7 +2844,7 @@ export class SkillSystem {
       proc: pr.proc,
       tick: o.tick,
       forceCrit: o.forceCrit || procForce,
-      more: (o.more ?? 1) * (c.more ?? 1),
+      more: (o.more ?? 1) * (c.more ?? 1) * (o.tick ? 1 : this.routeStatusMore(d, e)),
       knockup: o.tick ? undefined : o.knockup ?? pr.knockup,
       hitstop: o.hitstop ?? (pr.hitstop || undefined),
       shake: o.shake ?? (pr.shake || undefined),
@@ -2867,6 +2867,18 @@ export class SkillSystem {
     const rider = c.data.rider as CleaveRider | undefined;
     if (res && rider && !o.tick && !o.noRider && res.amount > 0 && !res.dodged && !res.immune && !res.parried) this.riderCleave(c, e, rider, o);
     return res;
+  }
+
+  /**
+   * `SkillDef.route` status form (plate-melee.md §7a Kutsal Hüküm: +25 % on a judged target): every '@status:<id>' entry of `route.from`
+   * that the struck enemy carries multiplies the hit by `1 + route.more` (once, whatever the number of matching statuses).
+   * The skill-to-skill form of `route` (`from` skill ids, `window`) is not read here.
+   */
+  private routeStatusMore(d: SkillDef, e: Enemy): number {
+    const r = d.route;
+    if (!r || !r.more) return 1;
+    for (const f of r.from) if (f.startsWith('@status:') && e.statuses.has(f.slice(8) as StatusId)) return 1 + r.more;
+    return 1;
   }
 
   /**
