@@ -3,6 +3,7 @@ import { G } from '../game/G';
 import { RNG, hashString } from '../core/utils';
 import type { TownDef, TownProp } from '../types/dungeons';
 import { NavGrid } from './NavGrid';
+import { treadCount, treadTop } from './Heightfield';
 import { ChunkCuller, InstanceBatcher, type CullLayer } from './Instancing';
 import { getPiece, loadPieces } from './Pieces';
 import { GlowField } from './Glow';
@@ -230,21 +231,6 @@ function tameCauldron(obj: THREE.Object3D): void {
       sm.needsUpdate = true;
     }
   });
-}
-
-/** Treads of a staircase: at most ~0.28 m of rise each. */
-function treadCount(yFrom: number, yTo: number): number {
-  return Math.max(2, Math.ceil(Math.abs(yTo - yFrom) / 0.28));
-}
-
-/**
- * Top of tread i (0 = first tread from the lo end). The tread on the higher level is flush with that level, so a staircase that
- * leaves a terrace starts at the deck height instead of 0.25 m below its lip. groundY walks these same tops.
- */
-function treadTop(yFrom: number, yTo: number, i: number, n: number): number {
-  const dy = yTo - yFrom;
-  const k = dy < 0 ? i / n : (i + 1) / n;
-  return Math.max(0.06, yFrom + dy * k);
 }
 
 function layout(half: number): Item[] {
