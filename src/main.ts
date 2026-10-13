@@ -3,6 +3,10 @@ import '@fontsource/cinzel/700.css';
 import '@fontsource/cinzel-decorative/700.css';
 import '@fontsource/alegreya-sans/400.css';
 import '@fontsource/alegreya-sans/700.css';
+import '@fontsource/roboto-condensed/400.css';
+import '@fontsource/roboto-condensed/700.css';
+import '@fontsource/pt-sans-narrow/400.css';
+import '@fontsource/pt-sans-narrow/700.css';
 import './ui/styles/base.css';
 import { bootGame } from './game/Game';
 

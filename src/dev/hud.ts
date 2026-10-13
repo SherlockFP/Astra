@@ -6,7 +6,8 @@
  *   Numpad1 zone banner   Numpad2 world announce (metin/rare/boss/info cycle)   Numpad3 accept first available quest
  *   Numpad4 advance the first open objective of the first active quest (QuestTracker)   L quest log (real hotkey)
  *   - dodge roll (charge bar)   = perfect-dodge pop   ` rogue combo point (+switches to rogue)   ; ground-aim hint
- *   ' ready check (answer with Y)   [ resource kind   ] class (knight/rogue/mage)   , hurt party member   . kill/revive party member
+ *   ' ready check (answer with Y)   [ resource kind   ] class (knight/rogue/mage)   , hurt party member   Numpad8 kill/revive party member
+ *   (`.` is the guide panel now; Numpad8 took the old dev revive key)
  *   LMB / RMB / Q E R / 1-5 (mock casts, REAL combat combo tracker, cooldowns, potions)   Enter chat   I/C/N/K/M/O/J/L/Esc panels
  *   console: window.dev.* (mode, setHp, setRes, bossHp, bossDefeat, cast, interrupt, tooltip, skillTip, setScale, fps...)
  */
@@ -476,6 +477,16 @@ let aimOn = false;
 let rcId = 0;
 (window as unknown as { dev: typeof dev }).dev = dev;
 
+// hud-ext modules: later UX packages add dev buttons in src/dev/hud-ext/<package>.ts, each exporting an optional install(h, dev).
+const hudExt = import.meta.glob('./hud-ext/*.ts', { eager: true }) as Record<string, { install?: (h: unknown, d: unknown) => void }>;
+for (const [path, mod] of Object.entries(hudExt)) {
+  try {
+    mod.install?.(h, dev);
+  } catch (err) {
+    console.warn('[dev/hud] hud-ext install failed', path, err);
+  }
+}
+
 // ---------------------------------------------------------------- per-frame mock simulation
 let resTick = 0;
 h.onFrame((dt) => {
@@ -524,7 +535,7 @@ const keys: Record<string, () => void> = {
   Semicolon: () => dev.aim(),
   Quote: () => dev.readyCheck(),
   Comma: () => dev.partyHurt(),
-  Period: () => dev.partyRevive(),
+  Numpad8: () => dev.partyRevive(),
   KeyX: () => dev.xp(),
   // KeyL is the real quest-log hotkey now (Input 'quests'), so the zone banner moved to Numpad1
   Numpad1: () => dev.zone(),

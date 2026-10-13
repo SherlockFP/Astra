@@ -1,0 +1,91 @@
+/* UX-00 design tokens (docs/UI_REDESIGN.md §3.2, copied as written). Imported first by ui/UI.ts. Legacy aliases at the bottom keep old CSS working. */
+:root {
+  /* ---- surfaces: flat, dark, translucent, neutral ---- */
+  --bg-0: #050507;                        /* void (solid): behind translucent fills, bar tracks on opaque pages */
+  --bg-1: rgba(8, 8, 10, 0.88);           /* wells: slots, inputs, gauge tracks */
+  --bg-2: rgba(10, 10, 12, 0.90);         /* window / panel base */
+  --bg-3: rgba(18, 18, 22, 0.88);         /* cards, buttons, raised rows */
+  --bg-4: rgba(30, 30, 36, 0.92);         /* hover, active tab */
+  --bg-5: rgba(46, 46, 54, 0.95);         /* highlight, key-cap face */
+  --bg-plate: rgba(10, 10, 12, 0.80);     /* HUD plates, unit-frame backs (more see-through than windows) */
+  --bg-scrim: rgba(0, 0, 0, 0.35);        /* behind action-bar rows, meter columns, chat on hover */
+  --ink: #000000;                         /* THE border colour: 1 px, everywhere */
+  --hi: rgba(255, 255, 255, 0.06);        /* the 1 px inner top highlight */
+  --line: rgba(255, 255, 255, 0.10);      /* hairline dividers inside panels */
+
+  /* ---- accent: gold, used sparingly (selection, legendary, quest titles, focus / new / proc rings) ---- */
+  --gold-1: #ffe7a3;   /* bright text on dark, hover line */
+  --gold-2: #e8c46a;   /* primary accent */
+  --gold-3: #c9a24a;   /* accent shade, hover border */
+  --gold-4: #9b7b36;   /* primary-button line */
+  --gold-5: #5a4522;   /* deep accent (legacy alias target) */
+
+  /* ---- text ---- */
+  --text-1: #f2f2f4;   /* primary (17 : 1 on bg-2) */
+  --text-2: #cfcfd6;   /* secondary (12 : 1) */
+  --text-3: #9e9ea8;   /* dim (7 : 1) */
+  --text-4: #70707a;   /* disabled only (4 : 1) */
+
+  /* ---- status / role ---- */
+  --ok: #4fe06a;  --warn: #ffa83a;  --bad: #ff4c3c;  --info: #4da3ff;
+  --role-tank: #4da3ff;  --role-heal: #4fe08c;  --role-dps: #e8574a;
+
+  /* ---- class colours (WoW-style, one per class; mirrored in ui/widgets/classColors.ts) ---- */
+  --cls-knight: #c79c6e;       /* Warrior tan        */  --cls-barbarian: #ff7c0a;   /* Druid orange      */
+  --cls-mage: #3fc7eb;         /* Mage light blue    */  --cls-rogue: #fff569;       /* Rogue yellow      */
+  --cls-monk: #00ff98;         /* Monk spring green  */  --cls-archer: #abd473;      /* Hunter green      */
+  --cls-paladin: #f58cba;      /* Paladin pink       */  --cls-necromancer: #c41e3a; /* Death Knight red  */
+  --cls-warlock: #8788ee;      /* Warlock violet     */  --cls-demonhunter: #a330c9; /* Demon Hunter      */
+  --cls-evoker: #33937f;       /* Evoker teal        */
+
+  /* ---- resources (WoW power colours) ---- */
+  --res-hp: #d23a3a;  --res-mana: #2f7bff;  --res-rage: #e03a2a;  --res-energy: #f0e04a;
+  --res-focus: #ff8a3c;  --res-faith: #f5e6a0;  --res-essence: #4fd6c0;  --res-fury: #c842fc;  --res-xp: #8a4fe0;
+
+  /* ---- unit reaction, debuff types ---- */
+  --react-hostile: #c84040;  --react-neutral: #d9c45c;  --react-friendly: #4ab04d;
+  --deb-magic: #3c9bed;  --deb-curse: #a64bd0;  --deb-disease: #b07a2a;  --deb-poison: #3fbf3f;  --deb-none: #cc3333;
+
+  /* ---- rarity (WoW, = RARITY_COLORS) + readable text variants for dark UI ---- */
+  --rar-poor: #9d9d9d;  --rar-common: #ffffff;  --rar-uncommon: #1eff00;  --rar-rare: #0070dd;
+  --rar-epic: #a335ee;  --rar-legendary: #ff8000;  --rar-set: #00d5a0;
+  --rar-rare-text: #4da3ff;  --rar-epic-text: #c27bff;     /* TEXT on dark; borders / glows use the base colours */
+
+  /* ---- damage schools (= COMBAT_WOW §2.11 combat-text colours) ---- */
+  --dmg-physical: #fff1d0; --dmg-fire: #ffa040; --dmg-frost: #8fe3ff; --dmg-lightning: #fff05a; --dmg-shadow: #c58cff;
+  --dmg-poison: #8cff70;   --dmg-holy: #fff3a8; --dmg-arcane: #ff8fee; --dmg-true: #ff5a5a;
+
+  /* ---- type ---- */
+  --font-title: 'Cinzel Decorative', 'Cinzel', serif;      /* BIG TITLES ONLY (>= 32 px): zone, level-up, boss yell, welcome, finder banner, countdown */
+  --font-body: 'Roboto Condensed', 'PT Sans Narrow', 'Arial Narrow', 'Segoe UI', sans-serif;   /* everything else */
+  --font-head: var(--font-body);                            /* legacy name: headings, numbers, buttons, key caps are body 700 now */
+  --fs-12: 12px; --fs-13: 13px; --fs-14: 14px; --fs-15: 15px; --fs-17: 17px;
+  --fs-20: 20px; --fs-24: 24px; --fs-32: 32px; --fs-48: 48px; --fs-64: 64px;
+
+  /* ---- space / radius ---- */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px; --sp-7: 48px;
+  --r-0: 0; --r-1: 2px; --r-pill: 999px;                    /* HUD = 0, windows / buttons = 2 px, pills only for count chips */
+
+  /* ---- shadows ---- */
+  --sh-text: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000;   /* crisp 4-way 1 px outline (ElvUI "OUTLINE" font flag) */
+  --sh-pop: 0 8px 24px rgba(0, 0, 0, 0.6);                               /* windows only */
+  --glow-gold: 0 0 8px rgba(255, 214, 90, 0.55);
+
+  /* ---- motion ---- */
+  --t-fast: 90ms; --t-base: 140ms; --t-slow: 280ms;
+  --ease-std: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out: cubic-bezier(0.2, 0.9, 0.3, 1);  --ease-pop: var(--ease-out);
+
+  /* ---- LEGACY ALIASES (do not delete; old CSS keeps working and follows the new palette) ---- */
+  --gold: var(--gold-2);  --gold-dim: var(--gold-4);  --gold-bright: var(--gold-1);
+  --hud-gold: var(--gold-2); --hud-gold-d: var(--gold-4); --hud-gold-dd: var(--gold-5); --hud-gold-l: var(--gold-1);
+  --text: var(--text-1);  --text-dim: var(--text-3);
+  --metal-0: var(--bg-0); --metal-1: var(--bg-1); --metal-2: var(--bg-2); --metal-3: var(--bg-4);
+  --shade: var(--sh-text);
+  --panel-bg: var(--bg-2);  --panel-bg-2: var(--bg-3);  --panel-border: #000;     /* menu.css: login / character select */
+  --hp: var(--res-hp); --hp-dark: #4a1010; --mana: var(--res-mana); --rage: var(--res-rage); --energy: var(--res-energy); --xp: var(--res-xp);
+  --danger: var(--bad);
+  --poor: var(--rar-poor); --common: var(--rar-common);
+  --uncommon: var(--rar-uncommon); --rare: var(--rar-rare); --epic: var(--rar-epic); --legendary: var(--rar-legendary); --set: var(--rar-set);
+  --font-ui: var(--font-body);
+}

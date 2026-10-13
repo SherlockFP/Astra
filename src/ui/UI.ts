@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import './styles/tokens.css';
+import './styles/kit.css';
 import './styles/hud.css';
 import './styles/widgets.css';
 import './styles/overlays.css';
@@ -13,6 +15,8 @@ import { RARITY_COLORS } from '../types/common';
 import { registerPanels } from './panels';
 import { createHUD, type HudApi } from './hud';
 import { div } from './widgets/dom';
+import { runClassColorAsserts } from './widgets/classColors';
+import { runNumFormatAsserts } from './widgets/numFormat';
 import { Toasts, type ToastKind } from './widgets/Toasts';
 import { Modal } from './widgets/Modal';
 import { LoadingScreen } from './widgets/Loading';
@@ -51,7 +55,7 @@ interface PanelRec {
 }
 
 /** Input action -> panel id for the global hotkeys handled in UI.update(). */
-const HOTKEYS: { action: 'inventory' | 'character' | 'talents' | 'skills' | 'map' | 'party' | 'mplus' | 'quests'; panel: string }[] = [
+const HOTKEYS: { action: 'inventory' | 'character' | 'talents' | 'skills' | 'map' | 'party' | 'mplus' | 'quests' | 'groupFinder' | 'guide'; panel: string }[] = [
   { action: 'inventory', panel: 'inventory' },
   { action: 'character', panel: 'character' },
   { action: 'talents', panel: 'talents' },
@@ -60,6 +64,9 @@ const HOTKEYS: { action: 'inventory' | 'character' | 'talents' | 'skills' | 'map
   { action: 'party', panel: 'party' },
   { action: 'mplus', panel: 'mplusInfo' },
   { action: 'quests', panel: 'questlog' },
+  // UI_REDESIGN Appendix A: I = Group Finder (panel lands in UX-40), Period = guide panel (UX-21).
+  { action: 'groupFinder', panel: 'finder' },
+  { action: 'guide', panel: 'guide' },
 ];
 
 /** Close buttons of the panels: base.ts windowFrame (`.pg-x`) and the item windows (`.pi-x`, panels/items/PanelBase.ts). */
@@ -130,6 +137,11 @@ export class UI {
     if (this.initialized) return;
     this.initialized = true;
     this.root = root;
+    root.lang = 'tr'; // Turkish casing for text-transform and toLocaleUpperCase
+    if (import.meta.env.DEV) {
+      runClassColorAsserts();
+      runNumFormatAsserts();
+    }
     try {
       const saved = parseFloat(localStorage.getItem('efsun.uiScale') ?? '');
       if (Number.isFinite(saved)) this.userScale = Math.max(0.7, Math.min(1.5, saved));
@@ -533,7 +545,8 @@ export class UI {
     if (input.pressed('chat') && !consumed && !chat.isFocused) chat.focus();
     if (chat.isFocused) return;
     for (const hk of HOTKEYS) {
-      if (input.pressed(hk.action)) this.togglePanel(hk.panel);
+      // Panels that have not been registered yet (finder, guide) are skipped silently instead of warning every press.
+      if (input.pressed(hk.action) && this.panels.has(hk.panel)) this.togglePanel(hk.panel);
     }
   }
 

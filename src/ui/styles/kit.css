@@ -1,0 +1,197 @@
+/* UX-00 flat ElvUI kit (docs/UI_REDESIGN.md §3.3, §3.5-§3.7 copied as written; §3.4 type classes and §7.1 window shell appended below). Imported after tokens.css by ui/UI.ts. Add rules only. */
+.k-frame {
+  position: relative; background: var(--bg-2); border: 1px solid var(--ink); border-radius: var(--r-1);
+  box-shadow: inset 0 1px 0 var(--hi), inset 0 0 0 1px rgba(255, 255, 255, 0.03), var(--sh-pop);
+  color: var(--text-1); font-family: var(--font-body);
+}
+.k-plate {
+  background: var(--bg-plate); border: 1px solid var(--ink); border-radius: var(--r-0);
+  box-shadow: inset 0 1px 0 var(--hi); color: var(--text-1);
+}
+.k-card { background: var(--bg-3); border: 1px solid var(--ink); border-radius: var(--r-0); box-shadow: inset 0 1px 0 var(--hi); padding: var(--sp-3); }
+.k-well { background: var(--bg-1); border: 1px solid var(--ink); border-radius: var(--r-0); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03); }
+.k-btn { height: 28px; padding: 0 14px; font: 700 var(--fs-14)/1 var(--font-body); letter-spacing: .03em; color: var(--text-1); text-shadow: var(--sh-text);
+  background: var(--bg-3); border: 1px solid var(--ink); border-radius: var(--r-1); box-shadow: inset 0 1px 0 var(--hi); cursor: pointer;
+  transition: background var(--t-fast), box-shadow var(--t-fast), color var(--t-fast); }
+.k-btn:hover { background: var(--bg-4); color: #fff; box-shadow: inset 0 0 0 1px var(--gold-3); }
+.k-btn:active { background: var(--bg-2); transform: translateY(1px); }
+.k-btn:focus-visible { outline: 1px solid var(--gold-2); outline-offset: 1px; }
+.k-btn[disabled] { opacity: .45; cursor: not-allowed; }
+.k-btn--primary { background: color-mix(in srgb, var(--gold-2) 18%, var(--bg-3)); color: var(--gold-1); box-shadow: inset 0 0 0 1px var(--gold-4); }
+.k-btn--primary:hover { background: color-mix(in srgb, var(--gold-2) 30%, var(--bg-3)); box-shadow: inset 0 0 0 1px var(--gold-2); }
+.k-btn--danger  { background: color-mix(in srgb, var(--bad) 22%, var(--bg-3)); color: #ffd9d4; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bad) 60%, #000); }
+.k-btn--ghost   { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+.k-btn--lg { height: 36px; padding: 0 20px; font-size: var(--fs-17); }  .k-btn--sm { height: 22px; padding: 0 10px; font-size: var(--fs-13); }
+
+.k-tabs { display: flex; gap: 1px; border-bottom: 1px solid var(--ink); }
+.k-tab { height: 30px; padding: 0 14px; font: 700 var(--fs-13)/1 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--text-3);
+  background: var(--bg-2); border: 1px solid var(--ink); border-bottom: 0; cursor: pointer; }
+.k-tab:hover { color: var(--text-1); background: var(--bg-3); }
+.k-tab.is-active { color: var(--text-1); background: var(--bg-4); box-shadow: inset 0 -2px 0 var(--gold-2); }
+.k-tab .k-badge { margin-left: 8px; }                       /* unread / count dot */
+
+.k-chip { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 8px; font: 700 var(--fs-13)/1 var(--font-body);
+  color: var(--text-1); background: var(--bg-1); border: 1px solid var(--chip-c, var(--ink)); border-radius: var(--r-1); }
+.k-badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--r-1); font: 700 var(--fs-13)/18px var(--font-body); text-align: center; color: #15110a; background: var(--gold-2); }
+.k-key { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 7px; font: 700 var(--fs-14)/1 var(--font-body); color: var(--text-1);
+  background: var(--bg-5); border: 1px solid var(--ink); border-bottom-width: 3px; border-radius: var(--r-1); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14); }
+.k-key--dim { min-width: 0; height: 16px; padding: 0 4px; font: 700 var(--fs-12)/14px var(--font-body); color: var(--gold-1); background: rgba(0, 0, 0, .6); border: 1px solid var(--ink); border-radius: 0; box-shadow: none; }
+.k-scroll { overflow: auto; scrollbar-width: thin; scrollbar-color: #4a4a54 transparent; }
+.k-sep { height: 1px; background: var(--line); }
+.k-slot { --sz: var(--ab-btn, 44px); position: relative; flex: none; width: var(--sz); height: var(--sz); background: var(--bg-1);
+  border: 1px solid var(--ink); border-radius: var(--r-0); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .04); image-rendering: pixelated; }
+.k-slot > .k-art { position: absolute; inset: 0; background: center / 108% 108% no-repeat; image-rendering: pixelated; }     /* or an .ico mask (mask-size: 108%) */
+.k-slot > .k-key-lbl { position: absolute; top: 2px; right: 3px; font: 700 var(--fs-12)/1 var(--font-body); color: #fff; text-shadow: var(--sh-text); pointer-events: none; }
+.k-slot > .k-count   { position: absolute; right: 3px; bottom: 2px; font: 700 var(--fs-14)/1 var(--font-body); color: #fff; text-shadow: var(--sh-text); font-variant-numeric: tabular-nums; pointer-events: none; }
+.k-slot > .k-count.is-zero { color: var(--bad); }
+.k-slot[data-rarity='uncommon'] { border-color: var(--rar-uncommon); }  .k-slot[data-rarity='rare'] { border-color: var(--rar-rare); }
+.k-slot[data-rarity='epic'] { border-color: var(--rar-epic); box-shadow: 0 0 6px color-mix(in srgb, var(--rar-epic) 60%, transparent); }
+.k-slot[data-rarity='legendary'] { border-color: var(--rar-legendary); box-shadow: 0 0 6px color-mix(in srgb, var(--rar-legendary) 60%, transparent); }
+.k-slot[data-rarity='set'] { border-color: var(--rar-set); }
+.k-slot--cons { --sz: var(--cons-btn, 32px); }
+.k-slot:hover { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .7); }
+
+/* --- cooldown sweep: --p = remaining fraction (1 -> 0), clockwise, ends at 12 o'clock; number centred --- */
+.k-slot > .k-sweep { position: absolute; inset: 0; display: none; pointer-events: none;
+  background: conic-gradient(from calc((1 - var(--p, 0)) * 1turn), rgba(0, 0, 0, .62) calc(var(--p, 0) * 1turn), transparent 0); }
+.k-slot > .k-edge  { position: absolute; left: 50%; top: 0; width: 1px; height: 50%; margin-left: -.5px; display: none; pointer-events: none;
+  background: rgba(255, 255, 255, .85); transform-origin: 50% 100%; transform: rotate(calc((1 - var(--p, 0)) * 360deg)); }   /* bright leading edge */
+.k-slot > .k-cdnum { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; font: 700 16px/1 var(--font-body);
+  color: var(--cd-c, #fff); text-shadow: var(--sh-text); font-variant-numeric: tabular-nums; pointer-events: none; }
+.k-slot.oncd > .k-art { filter: brightness(.6) saturate(.6); }
+.k-slot.oncd > .k-sweep, .k-slot.oncd > .k-cdnum { display: block; }  .k-slot.oncd > .k-cdnum { display: flex; }
+.k-slot.oncd.has-edge > .k-edge { display: block; }                                   /* only for cooldowns > 2 s */
+.k-slot.slot-gcd > .k-sweep { display: block; background: conic-gradient(from calc((1 - var(--p, 0)) * 1turn), rgba(0, 0, 0, .45) calc(var(--p, 0) * 1turn), transparent 0); }
+.k-slot .cd-low { --cd-c: #ff6a5a; }  .k-slot .cd-mid { --cd-c: #ffe27a; }          /* < 5 s / < 60 s; >= 60 s stays white */
+
+/* --- range / resource tints (overlay, alpha-blended — no filters on the art) --- */
+.k-slot.nores::after, .k-slot.oor::after { content: ''; position: absolute; inset: 0; pointer-events: none; }
+.k-slot.nores::after { background: rgba(60, 90, 230, .55); }      /* no resource: blue  */
+.k-slot.oor::after   { background: rgba(210, 40, 30, .50); }      /* out of range: red (declared last, wins) */
+.k-slot.nores > .k-art { filter: saturate(.3); }
+
+/* --- queued / casting / failing / locked / disabled / socket / pressed --- */
+.k-slot.queued  { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .85); }
+.k-slot.casting { box-shadow: inset 0 0 0 2px var(--gold-2); }
+.k-slot.failing, .k-slot.fail { box-shadow: inset 0 0 0 1px var(--bad); animation: k-shake 240ms steps(4); }
+@keyframes k-shake { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+.k-slot.locked > .k-art, .k-slot.is-disabled > .k-art { filter: grayscale(1) brightness(.7); }
+.k-slot.is-disabled::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(45deg, rgba(0, 0, 0, .45) 0 3px, transparent 3px 6px); pointer-events: none; }
+.k-slot.is-socket { outline: 1px dashed rgba(255, 255, 255, .28); outline-offset: -4px; }                  /* unlocked but empty: dark cell + "+" */
+.k-slot.press > .k-art { filter: brightness(1.3); }                                                         /* 100 ms; no scaling */
+.k-slot.ready { animation: k-ready 600ms steps(6) 1; }                                                      /* ElvUI "bling" */
+@keyframes k-ready { 0% { box-shadow: inset 0 0 0 2px var(--gold-1); } 100% { box-shadow: inset 0 0 0 2px transparent; } }
+.k-slot.is-new { animation: k-new-in 300ms steps(5) 1, k-new 1.2s steps(6) 2; }
+@keyframes k-new-in { from { opacity: 0; } }
+@keyframes k-new { 50% { border-color: var(--gold-2); } }
+
+/* --- proc / usable glow: gold MARCHING ANTS (2 px dashes, 6 on / 4 off, one lap per 1.4 s) --- */
+.k-slot.glow { box-shadow: 0 0 8px rgba(255, 214, 90, .7); }
+.k-slot.glow::before, .k-slot.spend::before { content: ''; position: absolute; inset: -1px; z-index: 3; pointer-events: none; --a: #ffe58a;
+  background:
+    linear-gradient(90deg, var(--a) 0 6px, transparent 6px 10px) 0 0 / 10px 2px repeat-x,
+    linear-gradient(90deg, var(--a) 0 6px, transparent 6px 10px) 0 100% / 10px 2px repeat-x,
+    linear-gradient(0deg,  var(--a) 0 6px, transparent 6px 10px) 0 0 / 2px 10px repeat-y,
+    linear-gradient(0deg,  var(--a) 0 6px, transparent 6px 10px) 100% 0 / 2px 10px repeat-y;
+  animation: k-ants 1.4s steps(10) infinite; }
+@keyframes k-ants { to { background-position: 10px 0, -10px 100%, 0 -10px, 100% 10px; } }
+.k-slot.spend:not(.glow)::before { opacity: .5; }      /* resource >= 90 % on a spender: the same ants at 50 %, no outer glow */
+
+/* --- aura icons --- */
+.k-aura { --sz: var(--au-lg, 28px); position: relative; flex: none; width: var(--sz); height: var(--sz); background: var(--bg-1); border: 1px solid var(--bc, var(--ink)); }
+.k-aura[data-deb='magic'] { --bc: var(--deb-magic); }  .k-aura[data-deb='curse'] { --bc: var(--deb-curse); }  .k-aura[data-deb='disease'] { --bc: var(--deb-disease); }
+.k-aura[data-deb='poison'] { --bc: var(--deb-poison); } .k-aura[data-deb='none'] { --bc: var(--deb-none); }
+.k-aura--sm { --sz: var(--au-sm, 20px); opacity: .55; }
+.k-aura > .k-time  { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 700 var(--fs-12)/1 var(--font-body); color: var(--t-c, #fff); text-shadow: var(--sh-text); }
+.k-aura > .k-stack { position: absolute; right: 1px; bottom: 0; font: 700 var(--fs-12)/1 var(--font-body); color: #fff; text-shadow: var(--sh-text); }
+.k-aura .t-low { --t-c: #ff6a5a; }  .k-aura .t-mid { --t-c: #ffe27a; }
+.k-aura.refresh { animation: k-refresh .9s steps(6) infinite; }                        /* own debuff < 30 % left: "refresh now" */
+@keyframes k-refresh { 50% { border-color: var(--gold-2); } }
+.k-bar { --c: var(--res-mana); --bh: 20px; position: relative; height: var(--bh); background: rgba(0, 0, 0, .55); border: 1px solid var(--ink); overflow: hidden;
+  box-shadow: inset 0 1px 0 var(--hi); }
+.k-bar > .k-ghost { position: absolute; left: 0; top: 0; bottom: 0; width: var(--gw, 0); background: rgba(255, 255, 255, .28); }   /* damage-lag trail, behind the fill */
+.k-bar > .k-fill  { position: absolute; left: 0; top: 0; bottom: 0; width: var(--w, 0); background: var(--c); }                    /* --w / --gw = whole px, set by JS */
+.k-bar > .k-abs   { position: absolute; top: 0; bottom: 0; background: rgba(255, 255, 255, .35); }                    /* absorb band: left / width in % */
+.k-bar > .k-text  { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 6px;
+  font: 700 var(--fs-14)/1 var(--font-body); color: #fff; text-shadow: var(--sh-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.k-bar > .k-text > :first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.k-bar--strip { --bh: var(--uf-strip, 16px); }  .k-bar--strip > .k-text { font-size: var(--fs-13); }
+.k-bar[data-kind='hp']      { --c: var(--res-hp); }      .k-bar[data-kind='mana']    { --c: var(--res-mana); }
+.k-bar[data-kind='rage']    { --c: var(--res-rage); }    .k-bar[data-kind='energy']  { --c: var(--res-energy); }
+.k-bar[data-kind='focus']   { --c: var(--res-focus); }   .k-bar[data-kind='faith']   { --c: var(--res-faith); }
+.k-bar[data-kind='essence'] { --c: var(--res-essence); } .k-bar[data-kind='fury']    { --c: var(--res-fury); }
+.k-bar[data-kind='xp']      { --c: var(--res-xp); }
+.k-bar[data-kind='class']   { --c: var(--cls, var(--res-hp)); }                 /* player frame, meter rows: --cls set inline from classColor() */
+.k-bar[data-kind='hostile'] { --c: var(--react-hostile); }  .k-bar[data-kind='neutral'] { --c: var(--react-neutral); }  .k-bar[data-kind='friendly'] { --c: var(--react-friendly); }
+.k-bar.is-cast   { --c: var(--gold-2); }  .k-bar.is-cast.is-locked { --c: #8a8a92; }                    /* interruptible = gold, not = grey + shield */
+.k-bar.is-low  { animation: k-low 1s steps(6) infinite; }  @keyframes k-low { 50% { border-color: var(--bad); } }  /* < 30 % */
+.k-bar.is-dead { filter: grayscale(.9) brightness(.7); }
+
+/* ---- §3.4 type classes (family + size + weight + colour) ---- */
+.k-display { font: 700 var(--fs-64)/1.05 var(--font-title); color: var(--text-1); text-shadow: var(--sh-text); }
+.k-title   { font: 700 var(--fs-15)/1.2 var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--text-1); }
+.k-h1      { font: 700 var(--fs-24)/1.2 var(--font-body); letter-spacing: .04em; color: var(--text-1); }
+.k-h2      { font: 700 var(--fs-20)/1.25 var(--font-body); color: var(--text-1); }
+.k-h3      { font: 700 var(--fs-17)/1.3 var(--font-body); color: var(--text-1); }
+.k-sub     { font: 700 var(--fs-17)/1.3 var(--font-body); color: var(--text-1); }
+.k-body    { font: 400 var(--fs-15)/1.35 var(--font-body); color: var(--text-1); }
+.k-hud     { font: 700 var(--fs-14)/1.2 var(--font-body); color: var(--text-1); }
+.k-small   { font: 400 var(--fs-13)/1.3 var(--font-body); color: var(--text-2); }
+.k-num     { font-variant-numeric: tabular-nums; }
+.k-dim     { color: var(--text-3); }
+.k-good    { color: var(--ok); }
+.k-bad     { color: var(--bad); }
+.k-warn    { color: var(--warn); }
+:where(.k-frame, .k-plate, .k-win, .k-body, .k-hud, .k-h1, .k-h2, .k-h3) { font-synthesis: none; }
+
+/* ---- icons: white SVG as a flat mask (§3.6) ---- */
+.k-ico { display: inline-block; flex: none; width: var(--ico-sz, 20px); height: var(--ico-sz, 20px); background: var(--tint, var(--text-2));
+  -webkit-mask: var(--ico) center / contain no-repeat; mask: var(--ico) center / contain no-repeat; }
+.k-ico-16 { --ico-sz: 16px; }  .k-ico-20 { --ico-sz: 20px; }  .k-ico-24 { --ico-sz: 24px; }  .k-ico-32 { --ico-sz: 32px; }  .k-ico-48 { --ico-sz: 48px; }
+.k-glyph { display: inline-block; flex: none; line-height: 1; font: 700 var(--fs-17)/1 var(--font-body); color: var(--text-2); }
+
+/* ---- §7.1 window shell: .k-win.k-frame > .k-head / .k-tabs / .k-body.k-scroll / .k-foot ---- */
+.k-win { --k-zoom: max(0.9, var(--ui-scale, 1)); position: absolute; zoom: var(--k-zoom); display: flex; flex-direction: column;
+  max-width: calc(100% / var(--k-zoom) - 24px); max-height: calc(100% / var(--k-zoom) - 24px); box-sizing: border-box;
+  box-shadow: inset 0 1px 0 var(--hi), inset 0 0 0 1px rgba(255, 255, 255, 0.03), var(--sh-pop);
+  animation: k-win-in var(--t-base) var(--ease-out) both; }
+.k-win--S { width: 480px; max-height: 620px; }
+.k-win--M { width: 780px; height: 600px; }
+.k-win--L { width: 1180px; height: 720px; }
+.k-win--modal { box-shadow: inset 0 1px 0 var(--hi), var(--sh-pop); }
+.k-win.is-closing { animation: k-win-out var(--t-fast) linear both; }
+@keyframes k-win-in  { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes k-win-out { to { opacity: 0; } }
+
+.k-head { flex: none; display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 8px 0 12px; box-sizing: border-box;
+  background: var(--bg-4); border-bottom: 1px solid var(--ink); box-shadow: inset 0 1px 0 var(--hi); user-select: none; }
+.k-head .k-head-ico { --ico-sz: 20px; --tint: var(--text-2); }
+.k-head .k-title { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.k-head .k-title-key { flex: none; }
+.k-x { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; box-sizing: border-box;
+  background: var(--bg-3); border: 1px solid var(--ink); border-radius: var(--r-1); color: var(--text-2);
+  font: 700 var(--fs-14)/1 var(--font-body); cursor: pointer; transition: background var(--t-fast), color var(--t-fast); }
+.k-x:hover { background: color-mix(in srgb, var(--bad) 40%, var(--bg-3)); color: #fff; }
+.k-win > .k-tabs { flex: none; padding: 0 8px; background: var(--bg-2); }
+.k-win > .k-body { flex: 1 1 auto; min-height: 0; padding: var(--sp-4); box-sizing: border-box; }
+.k-win > .k-foot { flex: none; display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); min-height: 36px; padding: 6px var(--sp-4);
+  box-sizing: border-box; border-top: 1px solid var(--ink); }
+.k-hints { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; font: 400 var(--fs-13)/1.2 var(--font-body); color: var(--text-3); }
+.k-hints .k-hint { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.k-hints .k-sep-dot { color: var(--text-4); }
+.k-btns { display: flex; align-items: center; gap: var(--sp-2); margin-left: auto; }
+
+/* ---- empty states (§7.5) ---- */
+.k-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-2); padding: var(--sp-5) var(--sp-4);
+  text-align: center; color: var(--text-2); }
+.k-empty > .k-ico, .k-empty > .k-glyph { --ico-sz: 64px; --tint: var(--text-4); font-size: var(--fs-48); }
+.k-empty-title { font: 700 var(--fs-17)/1.3 var(--font-body); color: var(--text-1); }
+.k-empty-text  { font: 400 var(--fs-15)/1.35 var(--font-body); color: var(--text-2); max-width: 420px; }
+.k-empty > .k-btn { margin-top: var(--sp-2); }
+
+/* ---- reduced motion (§3.10): drop loops, keep fades ---- */
+@media (prefers-reduced-motion: reduce) {
+  .k-slot.glow::before, .k-slot.spend::before { animation: none; background: none; box-shadow: inset 0 0 0 2px #ffe58a; }
+  .k-slot.ready, .k-slot.is-new, .k-slot.failing, .k-slot.fail, .k-slot.is-disabled, .k-bar.is-low, .k-aura.refresh { animation: none; }
+  .k-win { animation: k-win-in var(--t-fast) linear both; }
+}
