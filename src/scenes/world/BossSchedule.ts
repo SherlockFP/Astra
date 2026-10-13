@@ -67,6 +67,18 @@ export class BossSchedule {
     return this.recs.find((r) => r.sched.bossId === bossId)?.at ?? null;
   }
 
+  /**
+   * Dünya Boss'u (EventCalendar, host): bring an unlocked boss forward to now. Ignored while it is alive or its spawn is in
+   * flight; the usual warnings are skipped (the calendar announces the event). Returns true when a spawn was scheduled.
+   */
+  expedite(bossId: string): boolean {
+    const rec = this.recs.find((r) => r.sched.bossId === bossId);
+    if (!rec || !rec.unlocked || rec.enemy || rec.pending) return false;
+    rec.spawnAt = this.ctx.world.time;
+    rec.warned = new Set(rec.sched.announceSec);
+    return true;
+  }
+
   update(_dt: number): void {
     if (!G.net.isAuthority) return;
     try {

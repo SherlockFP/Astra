@@ -19,6 +19,7 @@ import { SafeZones } from './SafeZones';
 import { WaypointNetwork } from './WaypointNetwork';
 import { spawnVillageNpcs } from './VillageSpawner';
 import { WorldPois } from './WorldPois';
+import { EventCalendar, buildEventSites } from './EventCalendar';
 import { Discoveries } from './Discoveries';
 import { bindQuestMarks } from './QuestMarks';
 import { EV, nameOfDef, spawnPayloadOf, tileToWorld, WorldCtx, type Pt } from './util';
@@ -66,6 +67,7 @@ export class WorldRuntime {
   private readonly pois: WorldPois;
   private readonly discoveries: Discoveries;
   private events: EventScope | null = null;
+  private calendar: EventCalendar | null = null;
   private started = false;
   private disposed = false;
   private regionTimer = 0;
@@ -111,6 +113,7 @@ export class WorldRuntime {
     });
     // quest markers over the village quest givers (after the NPCs are spawned)
     bindQuestMarks(this.events, this.o.world);
+    this.calendar = new EventCalendar(this.ctx, { metin: this.metin, bosses: this.bosses }, buildEventSites(this.ctx));
     this.started = true;
     activeRuntime = this;
     this.trackRegion(true);
@@ -137,6 +140,7 @@ export class WorldRuntime {
     this.run('rares', () => this.rares.update(dt));
     this.run('minis', () => this.minis.update(dt));
     this.run('chests', () => this.pois.update(dt));
+    this.run('events', () => this.calendar?.update(dt));
     if (G.net.isAuthority) this.run('goblins', () => this.goblinTick(dt));
     this.regionTimer -= dt;
     if (this.regionTimer <= 0) {
@@ -201,6 +205,8 @@ export class WorldRuntime {
     this.events?.dispose();
     this.events = null;
     this.waypoints.dispose();
+    this.calendar?.dispose();
+    this.calendar = null;
   }
 
   // ================================================================================================

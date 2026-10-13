@@ -6,6 +6,7 @@ import { clampN, div, esc, h, setClass, setStyle } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
 import type { ChatChannel } from '../../types/net';
 import { getSocial } from '../../systems/Social';
+import { upcomingEventLines } from '../../scenes/world/EventCalendar';
 
 /* ================================================================================================
  * UX-31 (§5.1): tabbed chat. Tabs: Genel · Grup · Fısıltı · Sistem · Savaş. Each tab keeps its own buffer
@@ -75,6 +76,7 @@ const COMMANDS: readonly { cmd: string; hint: string }[] = [
   { cmd: 'temizle', hint: 'Sohbeti temizle' },
   { cmd: 'arayuz', hint: 'Arayüzü düzenle' },
   { cmd: 'zindan', hint: 'Zindan Bulucu' },
+  { cmd: 'etkinlik', hint: 'Sıradaki dünya etkinlikleri' },
   ...Object.keys(EMOTES).map((id) => ({ cmd: id, hint: EMOTES[id].hint })),
 ];
 
@@ -284,6 +286,10 @@ export class Chat implements HudWidget {
       G.ui?.hud?.startEdit();
     } else if (cmd === 'zindan') {
       G.ui?.openPanel('finder');
+    } else if (cmd === 'etkinlik') {
+      const lines = upcomingEventLines();
+      if (!lines.length) this.addLine('', 'Dünya etkinlikleri açık dünyada (Sisli Vadi) çalışır.', 'system', true);
+      else for (const l of ['Sıradaki dünya etkinlikleri:', ...lines]) this.addLine('', l, 'system', true);
     } else if (EMOTES[cmd]) {
       this.emote(cmd, true);
     } else {
