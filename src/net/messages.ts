@@ -51,6 +51,12 @@ export const NET = {
   PLAYER_STATE_HZ: 15,
   /** Idle players still send a keep-alive state this often (seconds). */
   IDLE_STATE_INTERVAL_S: 0.3,
+  /** NC43: owner -> all `minion` snapshot rate (GDD_CLASSES_V2 §1.5 rule 1); an unchanged list is repeated every IDLE_STATE_INTERVAL_S. */
+  MINION_HZ: 10,
+  /** NC43: a remote minion with no snapshot for this long is dropped (seconds). */
+  MINION_STALE_S: 1.5,
+  /** NC43: most minions one peer may own (Minions.MINION_PER_OWNER_CAP); longer lists are cut. */
+  MAX_MINIONS_PER_PEER: 14,
   /** Initial remote interpolation delay (seconds); Replication adapts it per peer to the measured jitter (0.1..0.3). */
   INTERP_DELAY_S: 0.13,
   PING_INTERVAL_MS: 2000,

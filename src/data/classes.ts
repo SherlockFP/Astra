@@ -293,9 +293,10 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
       hide: ['Round_Shield', 'Rectangle_Shield', 'Spike_Shield', '2H_Sword', '1H_Sword_Offhand'],
     },
     basicAttack: 'paladin_basic',
+    // PM-PA (plate-melee §h): the 8 class skills; spec rows (Koruma / Kutsal / Ceza) come from SpecDef.skills
     skills: [
-      'paladin_crusader_strike', 'paladin_judgement', 'paladin_verdict', 'paladin_avengers_shield',
-      'paladin_hammer_of_justice', 'paladin_aura', 'paladin_lay_on_hands', 'paladin_avenging_wrath',
+      'paladin_judgement', 'paladin_crusader_strike', 'paladin_divine_steed', 'paladin_rebuke',
+      'paladin_word_of_glory', 'paladin_avengers_shield', 'paladin_avenging_wrath', 'paladin_divine_shield',
     ],
     startingItems: ['mace_t1', 'shield_t1'],
     color: '#fff0b8',

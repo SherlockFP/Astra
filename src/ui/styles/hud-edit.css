@@ -103,3 +103,5 @@
 .xbar-pico { width: 24px; height: 24px; background: linear-gradient(#fff, #e8c46a); filter: drop-shadow(0 1px 0 #000); }
 .xbar-pname { flex: 1; min-width: 0; font: 14px var(--font-ui); color: var(--text); text-shadow: var(--shade); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .xbar-pn { font: 700 13px var(--font-head); color: var(--hud-gold-l); text-shadow: var(--shade); font-variant-numeric: tabular-nums; }
+.hud.hud-editing .mfr:not(.on) { display: block; min-width: 180px; min-height: 22px; }
+.hud.hud-editing .mfr:not(.on)::before { content: 'Yoldaş çerçeveleri'; font: 700 13px var(--font-head); color: var(--text-dim); text-shadow: var(--shade); }

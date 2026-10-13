@@ -18,7 +18,7 @@ npx tsc --noEmit                         # must be 0
 node tools/content-check.mjs             # TOTAL ERRORS 0
 node tools/talents-check.mjs             # only 2 known pre-existing "bench" errors (knight_protector / knight_blademaster)
 node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/<sim>.mjs
-#   sims that must PASS: kit_plate kit_knight kit_barbarian kit_rogue kit_warlock wow_core wow_queue minions nc48
+#   sims that must PASS: kit_plate kit_knight kit_barbarian kit_rogue kit_warlock kit_paladin wow_core wow_queue minions minions_net nc48 nc51 pips
 ```
 Pre-push (Render safety): export HEAD with `git archive` into a temp dir, junction `node_modules`, run `npx vite build` there — catches files that were never `git add`ed.
 Known non-blocking failures: `tools/smoke/procs_data.mjs` has 6 pre-existing **mage** failures (`freezing_rain`, `comet_ready`, `pyroclasm` lack ProcDef rows; `glowSkillsOf(hot_streak)` misses `mage_flame_wave`, `mage_meteor`, `mage_phoenix_flames`).
@@ -32,11 +32,14 @@ Watch line endings: some files are CRLF — agents sometimes rewrite them as LF 
 - **Class kits (WoW Midnight-like):** Mage (Arcane/Fire/Frost — homing Arcane Missiles), Rogue (Shadowstep behind + Backstab, Subtlety/Assassination), Warlock (Affliction/Destruction), **Şövalye** (Arms/Prot Warrior) and **Barbar** (Kasap = Fury, Savaş Lordu = tank) incl. gap fixes.
 - **Plate groundwork PM-00a/b/c:** rune pip + regen, 30 plate statuses, rider fields, plate engine behaviours in `src/combat/skills/plateKit.ts`.
 - **NC systems:** Minions (`src/entities/Minion.ts`, `src/ai/MinionAI.ts`, `src/combat/Minions.ts`, `src/data/minions*`), Auras (`src/combat/Auras.ts`), shared behaviours (`src/combat/skills/sharedBehaviors.ts`) + per-class behaviour stubs `behaviors_<class>.ts`.
+- **Pips + PipBar (NC35/NC36):** generic pips API in SkillSystem (`pipDef/pipMax/activePips/pipRegenFrac/consumePips/resetPips`, combo routed through it), `src/ui/hud/PipBar.ts` in the player frame.
+- **Paladin (PM-PA, NC51):** behaviours in `behaviors_paladin.ts` (map: `docs/kits/paladin_behaviors.md`); Koruma/Kutsal/Ceza rows in `skillsets/paladin*.ts`, `specs_paladin.ts`, `procs_kit_paladin.ts`, `rotations_kit_paladin.ts`, talent patch `docs/kits/talents_paladin.json` (not applied yet, PM-TAL). Paladin is still not in `PLAYABLE_CLASSES`.
+- **Minion infra (NC42/43/44):** enemies target/damage minions (owner-authoritative minion HP, see ARCHITECTURE Class contracts), `minion` channel replication, `src/ui/hud/MinionFrames.ts`.
 - **ElvUI redesign W1–W5:** action bar, unit frames, tracker, meter, minimap, chat tabs + bubbles + emotes, Zindan Bulucu (finder) + LFG net contract, docked panels.
 
 ## 5. Next steps (priority order)
-1. **PM-PA Paladin** (Koruma/Kutsal/Ceza) — `docs/kits/plate-melee.md` "### PM-PA". Gate: NC48 ✓, NC46 ✓; still needs **NC51** (fill `src/combat/skills/behaviors_paladin.ts`), NC35/NC36 (pip HUD). Paladin skill stubs: `src/data/skillsets/paladin*.ts` are empty; class list in `src/data/classes.ts` must be switched to the 8-id list only once `paladin_divine_steed` / `paladin_word_of_glory` exist.
-2. **PM-NE Nekromant** (Blood DK / Unholy DK) — needs NC52 (`behaviors_necromancer.ts`), NC45 Corpses, NC42 minion damage hooks (enemies target minions), NC43 minion net replication, NC44 MinionFrames HUD. Add the `'rune'` PipDef row.
+1. **PM-NE Nekromant** (Blood DK / Unholy DK) — NC42/43/44 done; still needs NC52 (`behaviors_necromancer.ts`), NC45 Corpses, then the kit data. `necro_ghoul` needs a `taunt` attack row. Rune pip comes from `TALENT_PIPS.rune` (no class `secondary` row — don't add a duplicate).
+2. **Paladin leftovers:** Cleanse on remote allies (no net op to remove a status on the owner), Bulwark reflect, Consecration ally armour aura, `overheal_ward`, Kutsal Hüküm +25 % on judged target (`SkillDef.route` unread), `src/dev/wow/pmPaladin.ts`; talents-check warns `paladin_protection` tree BP 918 vs doc 1199.
 3. **PM-TAL** talent re-pointing for plate (`docs/kits/talents_knight.json` not written yet).
 4. **Agile / Evoker kits** (`docs/kits/agile-evoker.md`: AE-0 → AE-ENG/AE-V → AE-1..4 → AE-5/6).
 5. **Loot v3 engine** — 87 named uniques have no special-effect hooks (`docs/GDD_LOOT_V3.md`).

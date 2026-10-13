@@ -273,7 +273,7 @@ const selfAoe: Behavior = {
     if (c.remote) return;
     const list = enemiesIn(caster.position.x, caster.position.z, radius, caster.position.y);
     if (def.damage && def.damage.coef > 0) {
-      strikeMany(c, list, 99);
+      strikeMany(c, list, p.maxTargets ?? 99); // PM-PA: optional target cap (İlahi Fırtına 8)
       if (def.vfx?.impact && list.length) sys.vfx(def.vfx.impact, pos, { scale: vfxScale(def.vfx.impact, radius) });
     } else {
       // status-only shouts (taunt / fear)

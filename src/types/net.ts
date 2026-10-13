@@ -54,7 +54,7 @@ export interface NetChannels {
   gear: { id: EntityId; gear: Partial<Record<EquipSlot, ItemInstance>>; /** player module: colour variant (v), tint 0xRRGGBB (t) and "hide helm" (hh) of the sender's avatar, so remote models match */ look?: { v: number; t?: number; hh?: boolean } };
   snap: { t: number; enemies: EnemySyncState[] };
   spawn: { id: EntityId; defId: string; x: number; z: number; level: number; packId: string | null; facing?: number; aggro?: boolean; /** enemies module: summoner id, tag and remove (escaped / reset adds) */ owner?: EntityId; tag?: string; hpFrac?: number; remove?: boolean };
-  hit: { targetId: EntityId; amount: number; crit: boolean; type: DamageType; skillId?: string; statuses?: StatusApply[]; knockback?: number; dir?: [number, number]; isDot?: boolean; /** GDD_V2 §3.7: poise damage this hit deals (poise bar, break) */ poise?: number };
+  hit: { targetId: EntityId; amount: number; crit: boolean; type: DamageType; skillId?: string; statuses?: StatusApply[]; knockback?: number; dir?: [number, number]; isDot?: boolean; /** GDD_V2 §3.7: poise damage this hit deals (poise bar, break) */ poise?: number; /** GDD_CLASSES_V2 §1.5.2 (NC42): id of the owner's minion that made this hit/taunt (threat split 0.6 owner / 0.4 minion; taunt source). The host verifies the minion belongs to the sender. */ via?: EntityId };
   dmg: { targetId: EntityId; amount: number; crit: boolean; type: DamageType; sourceId: EntityId | null; hp: number; /** combat module: damage-over-time tick (the attacker did not predict it) */ dot?: boolean };
   death: { entityId: EntityId; killerId: EntityId | null; pos: [number, number, number] };
   estatus: { targetId: EntityId; status: StatusId; duration: number; stacks: number; removed?: boolean };

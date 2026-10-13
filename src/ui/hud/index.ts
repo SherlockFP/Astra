@@ -17,6 +17,7 @@ import { EditMode, type EditFrame } from './EditMode';
 import { ExtraBars, EXTRA_BARS } from './ExtraBars';
 import { AimHint, DamageDirection, DodgeCharges, PerfectDodgeText, ReadyCheck } from './Extras';
 import { Minimap } from './Minimap';
+import { MinionFrames } from './MinionFrames';
 import { MythicTracker } from './MythicTracker';
 import { QuestTracker } from './QuestTracker';
 import { Vignette } from './Overlays';
@@ -117,6 +118,9 @@ export function createHUD(ui: UI): HudApi {
   // UX-11: the buff / debuff rows are children of the player frame itself (no pf-auras wrapper)
   const party = add(new PartyFrames(ui));
   tl.appendChild(party.el);
+  // NC44: the local player's minions (pet, demon, golem, timed summons; the ghoul army as one "×N" row) under the party frames
+  const minions = add(new MinionFrames());
+  tl.appendChild(minions.el);
 
   // ---- top-centre: boss + target ----
   const tc = div('hud-tc', root);
@@ -187,6 +191,7 @@ export function createHUD(ui: UI): HudApi {
   const editFrames: EditFrame[] = [
     { id: 'player', name: 'Oyuncu çerçevesi', el: player.el },
     { id: 'party', name: 'Parti çerçeveleri', el: party.el },
+    { id: 'minions', name: 'Yoldaş çerçeveleri', el: minions.el },
     { id: 'target', name: 'Hedef çerçevesi', el: target.el },
     { id: 'boss', name: 'Patron çerçevesi', el: boss.el },
     { id: 'minimap', name: 'Mini harita', el: minimap.el },

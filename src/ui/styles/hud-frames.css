@@ -155,3 +155,15 @@
 .bf-banner { position: absolute; left: 0; right: 0; top: 100%; margin-top: 8px; text-align: center; font: 700 30px var(--font-title); letter-spacing: 0.14em; color: var(--hud-gold-l); text-shadow: 0 3px 0 #000, 0 0 22px rgba(255, 200, 80, 0.8); opacity: 0; }
 .bf-banner.go { animation: bfbanner 4s ease-out forwards; }
 @keyframes bfbanner { 0% { opacity: 0; transform: scale(1.8); } 10% { opacity: 1; transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-8px); } }
+
+/* ---- minion frames (NC44): the local player's minions under the party frames ---- */
+.mfr { display: none; flex-direction: column; gap: 1px; pointer-events: none; }
+.mfr.on { display: flex; }
+.mf-row { position: relative; width: calc(var(--party-w) * 0.82); height: 18px; background: #000; border: 1px solid #000; }
+.mf-row .mf-hp { --bh: 18px; height: 18px; border: 0; background: rgba(0, 0, 0, 0.55); }
+.mf-row .mf-hp > .k-text { font-size: var(--fs-13); padding: 0 4px; gap: 4px; }
+.mf-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; }
+.mf-right { flex: none; display: flex; align-items: center; gap: 5px; font-variant-numeric: tabular-nums; }
+.mf-badge { font-weight: 700; color: var(--gold-2); }
+.mf-time { color: #d8e8ff; }
+.mf-time.low { color: var(--bad); }

@@ -85,7 +85,8 @@ export class World {
 
   getActor(id: EntityId | null | undefined): Actor | undefined {
     const e = this.get(id);
-    return e && (e.kind === 'player' || e.kind === 'enemy') ? (e as unknown as Actor) : undefined;
+    // minions are actors too (GDD_CLASSES_V2 §1.5, NC42): enemies target them, threat tables and taunt sources hold their ids
+    return e && (e.kind === 'player' || e.kind === 'enemy' || e.kind === 'minion') ? (e as unknown as Actor) : undefined;
   }
 
   remove(e: Entity | EntityId): void {

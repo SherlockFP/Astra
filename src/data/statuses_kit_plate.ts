@@ -41,7 +41,7 @@ export const STATUSES_KIT_PLATE: Partial<Record<StatusId, StatusDef>> = {
   judged: { id: 'judged', name: 'Yargılı', icon: I('debuff-marked'), kind: 'debuff', stats: { damagePct: -0.10 }, defaultDuration: 10 },
   forbearance: { id: 'forbearance', name: 'Cezalandırıldı', icon: I('debuff-marked'), kind: 'debuff', dispellable: false, defaultDuration: 90 },
   righteous: { id: 'righteous', name: 'Doğruluk', icon: I('buff-defense'), kind: 'buff', stats: { armorPct: 0.40, blockChance: 0.20 }, defaultDuration: 6 },
-  wrath_wings: { id: 'wrath_wings', name: 'İntikam Kanatları', icon: I('buff-blessing'), kind: 'buff', stats: { critChance: 1 }, defaultDuration: 20 },
+  wrath_wings: { id: 'wrath_wings', name: 'İntikam Kanatları', icon: I('buff-blessing'), kind: 'buff', stats: { critChance: 1, healingPct: 1 }, defaultDuration: 20 },
   bulwark: { id: 'bulwark', name: 'İlahi Siper', icon: I('buff-defense'), kind: 'buff', stats: { damageReductionPct: 0.45 }, vfx: 'shield_bubble', defaultDuration: 8 },
   ardent: { id: 'ardent', name: 'Yılmaz Savunucu', icon: I('buff-defense'), kind: 'buff', stats: { damageReductionPct: 0.20 }, defaultDuration: 10 },
   aura_mastery: { id: 'aura_mastery', name: 'Aura Ustalığı', icon: I('buff-aura'), kind: 'buff', stats: { damageReductionPct: 0.20 }, vfx: 'aura_ring', defaultDuration: 10 },
@@ -89,10 +89,11 @@ export const STATUS_RULES_KIT_PLATE: Partial<Record<StatusId, StatusRule>> = {
   judged: { stack: 'refresh', takenMoreFromSource: 0.10 },
   forbearance: { stack: 'refresh' },
   righteous: { stack: 'refresh' },
-  // İntikam Kanatları: magnitude 0.10 (Koruma) / 0.15 (Kutsal, Ceza); critChance 1 x magnitude, dealtMore = magnitude
+  // İntikam Kanatları: magnitude 0.10 (Koruma) / 0.15 (Kutsal, Ceza); critChance 1 x magnitude, healingPct 1 x magnitude (Kutsal +15 % healing), dealtMore = magnitude
   wrath_wings: { stack: 'strongest', perMag: true, defMag: 0.15, dealtMore: 1 },
   bulwark: { stack: 'refresh', immuneCC: true },
-  ardent: { stack: 'refresh' },
+  // Yılmaz Savunucu: 'override' so the lethal-save proc (T lethal => st(self,ardent,0.2)) can cut the status short; a recast sets 10 s again
+  ardent: { stack: 'override' },
   aura_mastery: { stack: 'refresh' },
   crusade: { stack: 'stack' },
   sentenced: { stack: 'refresh' },

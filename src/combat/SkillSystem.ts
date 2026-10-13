@@ -1388,6 +1388,8 @@ export class SkillSystem {
     const mm = this.castMods(p, def);
     // CW-07 §2.7: proc mods sit next to the mage hooks: cost and cast time here, more / crit on the ctx, pips and consumption in pay()
     const pm = resolveProcMods(p.statuses, def.id);
+    // PM-PA: Parlak Işık waives the Kutsal Güç cost of the spender (Işığın Sözü); pay() reads the rewritten def
+    if (pm?.pipFree && def.pip?.cost) def = { ...def, pip: { ...def.pip, cost: 0 } };
     const costMul = (mm?.costMult ?? 1) * (pm?.costMult ?? 1);
     const castMul = (mm?.castTimeMult ?? 1) * (pm?.castTimeMult ?? 1);
     if (costMul !== 1 || castMul !== 1) def = { ...def, cost: def.cost * costMul, castTime: def.castTime * castMul };

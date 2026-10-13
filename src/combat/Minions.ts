@@ -1,12 +1,14 @@
 /**
  * Minion manager (GDD_CLASSES_V2 §1.5 rules 4, 7, 8; NC41). `G.minions`, ticked once per frame from Game.ts after G.combat.
  * Owns the minion list (the entities live in World.minions), group / owner / world caps, summons, commands (focus / recall),
- * death and the free respawn of pets and demons. Minions are local-only for now (TODO NC43: `minion` net channel).
+ * death and the free respawn of pets and demons. This manager only lists the LOCAL player's minions; other peers' minions are
+ * remote copies created by net/Replication from the `minion` channel (NC43) and live in World.minions only.
  *   summon(owner, def, opts)   spawns `count` minions in a ring round the owner; past the group cap the oldest of that group leaves
  *   focus(owner, id, sec)      the owner's minions attack that enemy for `sec` seconds (behaviour minion_command)
  *   recall(owner)              clears the focus; minions return to formation
  *   strike(m, atk, target)     a minion's hit: Combat.playerHitEnemy with the owner's stat block (plus the minion damage bonus)
- *   hurt(m, amount, type)      damage in (mitigation by armorFrac); reaching 0 calls die()
+ *   taunt(m, atk)              a `taunt` attack: every enemy within its radius is forced onto the minion (Combat.minionTaunt)
+ *   hurt(m, amount, type)      damage in (mitigation by armorFrac); reaching 0 calls die(). Enemies reach it through Combat.hitMinion
  */
 import { G } from '../game/G';
 import { Minion } from '../entities/Minion';
@@ -127,19 +129,41 @@ export class Minions {
     const owner = G.world?.get<Player>(m.ownerId);
     if (!owner || owner.isDead || target.isDead || target.removed) return;
     // Yoldaş Hasarı (minionDamagePct) as a `more` factor. GDD §1.5 rule 2 has it additive in the damage bucket: approximated here.
-    // TODO(NC42): Combat.minionHitEnemy (sourceId owner, viaId minion, half crit chance, ownerThreatMult split 0.6/0.4).
+    // NC42: sourceId = owner, viaId = the minion (threat split 0.6 owner / 0.4 minion in EnemyAI.onDamaged), half the owner's crit chance.
     const dx = target.position.x - m.position.x, dz = target.position.z - m.position.z;
     G.combat.playerHitEnemy(owner, target, {
       skillId: atk.id,
       coef: atk.coef,
       type: atk.type,
       tags: ['minion'],
+      viaId: m.id,
+      critScale: 0.5,
       statuses: atk.statuses,
       knockback: atk.knockback,
       more: 1 + owner.getStat('minionDamagePct'),
       pos: [target.position.x, target.position.y + target.height * 0.5, target.position.z],
       dir: Math.hypot(dx, dz) > 1e-3 ? [dx / Math.hypot(dx, dz), dz / Math.hypot(dx, dz)] : [0, 1],
     });
+  }
+
+  /**
+   * A `taunt` attack (MinionAttack.kind 'taunt'): every living enemy within `atk.radius ?? atk.range` of the minion that is not already
+   * on it is forced onto the minion for `params.tauntSec` (default 3 s; bosses 2 s) and put at top threat x 1.10 + 100. Returns the count.
+   */
+  taunt(m: Minion, atk: MinionAttack): number {
+    const w = G.world;
+    if (!w || m.isDead || m.removed) return 0;
+    const r = atk.radius ?? atk.range;
+    const secs = atk.params?.tauntSec ?? 3;
+    let n = 0;
+    for (const e of w.enemies) {
+      if (e.isDead || e.removed || e.team !== 'enemy' || e.targetId === m.id) continue;
+      if (Math.hypot(e.position.x - m.position.x, e.position.z - m.position.z) > r + e.radius || !w.sameLevel(e, m.position.y)) continue;
+      G.combat.minionTaunt(m, e, secs, atk.id);
+      n++;
+    }
+    if (n > 0) G.vfx.spawn(atk.vfx?.cast ?? 'war_cry', m.pointAt(0.8));
+    return n;
   }
 
   /** Death: death event, death_bones, and a respawn queued for pets (def.respawn.dead seconds). The body lingers, then goes. */

@@ -2,7 +2,7 @@
  * Minion behaviours (GDD_CLASSES_V2 §1.5 rule 7, NC41): `minion_summon` (SkillDef.minion rows, e.g. necro_golem, necro_army_of_the_dead)
  * and `minion_command` (necro_command_army, archer_kill_command, archer_call_pet, necro_death_order). Installed into BEHAVIORS by the
  * import at the end of behaviors.ts (microtask fallback, as in plateKit.ts). Owner: combat.
- * Remote replays do nothing: minions are local-only for now (TODO NC43 `minion` net channel).
+ * Remote replays do nothing: the owner's peer summons and commands; other peers get the minions from the `minion` net channel (NC43).
  *   minion_summon   `def.minion { id, count, cap, group, life, ignoreCap, cycle }`; id 'auto' = the class default (data/minions.ts)
  *   minion_command  params: `focusSec` (default 6) focus the target; `recall 1` clears the focus instead; `cmdCoef` each minion
  *                   within 40 m teleports to a ring round the target and strikes it once for cmdCoef x the owner's hit

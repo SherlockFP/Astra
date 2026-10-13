@@ -5,6 +5,7 @@ import type { StatusApply } from '../types/skills';
 import type { TelegraphKind, TelegraphShape, VfxId } from '../types/vfx';
 import type { TelegraphHandle, VfxHandle } from '../vfx/VFX';
 import type { Enemy } from '../entities/Enemy';
+import type { Minion } from '../entities/Minion';
 import { VERT } from '../world/Heightfield';
 
 /** K10: every dimension of a telegraph shape multiplied by `k` (angles unchanged). */
@@ -328,6 +329,11 @@ export class HitShapes {
         this.hitPlayer(s, [proj.dirX, proj.dirZ], s.damage, true, [a.ox, a.oz]);
         void pl;
       },
+      // NC42: the shot also hits the local player's own minions (the owner's peer resolves them, like the player)
+      onHitMinion: (m, proj) => {
+        if (s.kind !== 'friendly') this.hitMinion(s, m, s.damage);
+        void proj;
+      },
       onEnd: (proj, reason) => {
         if (s.vfxOnLand && reason !== 'removed') {
           try { G.vfx.spawn(s.vfxOnLand, [proj.position.x, Math.max(0.2, proj.position.y * 0.5), proj.position.z]); } catch { /* ignore */ }
@@ -349,10 +355,46 @@ export class HitShapes {
     return Math.abs(feetY - plane) <= (a.spec.vert ?? VERT.TOL_MELEE);
   }
 
-  /** Test the LOCAL player against the shape at its land/tick moment and hit them. */
+  /** Land / tick moment: test the LOCAL player and the local player's own minions against the shape. */
   private resolve(a: ActiveShape): void {
+    if (a.spec.kind === 'friendly') return;
+    this.resolvePlayer(a);
+    try {
+      this.resolveMinions(a);
+    } catch (e) {
+      console.error('[hitshapes] minion resolve failed', e);
+    }
+  }
+
+  /**
+   * NC42 (GDD_CLASSES_V2 §1.5.2 rule 3): this peer resolves the shape for ITS OWN minions (Minion.authority, ownerId = the local player)
+   * with Combat.hitMinion. Remote players' minions are resolved by their owner's peer from the same replicated spec. 'safe' and
+   * 'soak' shapes (stand-here mechanics) never hurt minions.
+   */
+  private resolveMinions(a: ActiveShape): void {
     const s = a.spec;
-    if (s.kind === 'friendly') return;
+    if (s.kind === 'safe' || s.kind === 'soak' || s.soak) return;
+    const world = G.world;
+    const lp = world?.localPlayer;
+    if (!world || !lp || !lp.isLocal || world.minions.length === 0) return;
+    const shape = this.liveShape(a);
+    for (let i = 0; i < world.minions.length; i++) {
+      const m = world.minions[i];
+      if (m.ownerId !== lp.id || !m.authority || m.isDead || m.removed) continue;
+      if (!this.inReach(a, m.position.y)) continue;
+      if (!HitShapes.contains(shape, a.ox, a.oz, a.dx, a.dz, m.position.x, m.position.z, m.radius)) continue;
+      this.hitMinion(s, m, s.damage);
+    }
+  }
+
+  private hitMinion(s: HitShapeSpec, m: Minion, damage: number): void {
+    const src = s.sourceId !== null ? G.world?.get<Enemy>(s.sourceId) : undefined;
+    G.combat.hitMinion(m, { sourceId: s.sourceId, amount: damage, type: s.type, sourceLevel: src?.level, isDot: !!s.persist, abilityName: s.abilityName });
+  }
+
+  /** Test the LOCAL player against the shape at its land/tick moment and hit them. */
+  private resolvePlayer(a: ActiveShape): void {
+    const s = a.spec;
     const lp = G.world?.localPlayer;
     if (!lp || lp.isDead || !lp.isLocal) return;
     if (!this.inReach(a, lp.position.y)) return;

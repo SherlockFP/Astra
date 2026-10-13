@@ -1,8 +1,11 @@
 import { G } from '../game/G';
 import { Player, type PlayerSyncState } from '../entities/Player';
+import { Minion } from '../entities/Minion';
+import { minionDef } from '../data/minions';
+import type { MinionSync } from '../types/minions';
 import type { Enemy, EnemySyncState } from '../entities/Enemy';
 import type { World } from '../world/World';
-import { HOST_DYNAMIC_ID_BASE, PARTY_ID_BASE, RARITY_ORDER } from '../types/common';
+import { HOST_DYNAMIC_ID_BASE, MINION_ID_BASE, PARTY_ID_BASE, RARITY_ORDER } from '../types/common';
 import type { EquipSlot, ItemInstance } from '../types/items';
 import type { NetChannels } from '../types/net';
 import type { NetSession, PeerInfo } from './NetSession';
@@ -20,12 +23,23 @@ import { syncYOk } from './guard';
  *          radius of a remote player, nearest first, at most NET.MAX_SNAP_ENEMIES per tick. Open world (GDD_OPENWORLD
  *          §9.4): radius 120 m, sleeping (dormant) enemies are not streamed, and host-spawned enemies are announced with
  *          `spawn` to each remote peer before their first entry, so a late joiner gets the camps / stones / rares.
+ *  minion  owner -> all, 10 Hz (NC43, GDD_CLASSES_V2 §1.5): the sender's own Minions as MinionSync[] (the full list; an unchanged
+ *          list repeats every 0.3 s). Receivers keep REMOTE Minion copies (authority false, no AI, interpolated) in World.minions,
+ *          so the host's enemy AI can target them. A copy is dropped when its owner's list no longer holds it, 1.5 s after its last
+ *          snapshot, when its peer leaves, or on a scene change. Damage to a minion is resolved by its owner (Combat.hitMinion).
  *
  * Interpolation time base is G.engine.time: sender timestamps are mapped onto the local clock with a min-filtered
  * offset (de-jittered), so remote motion is evenly spaced even when packets arrive in bursts.
  * Everything received is untrusted: values are clamped / sanitised before touching entities. Nothing here throws
  * from the frame loop.
  */
+
+/** One remote Minion copy (NC43). */
+interface RemoteMinion {
+  peerId: string;
+  world: World;
+  m: Minion;
+}
 
 interface Remote {
   peerId: string;
@@ -145,6 +159,13 @@ export class Replication {
   private readonly announced = new Map<string, Set<number>>();
   private gearDirtyAt = -1;
   private nextGearRefresh = 0;
+  /** NC43 sender: next send time, last signature / send time, and whether the last send carried minions (an empty list is sent once). */
+  private nextMinion = 0;
+  private lastMinionSig = '';
+  private lastMinionAt = 0;
+  private minionsLive = false;
+  /** NC43 receiver: remote Minion copies by entity id. */
+  private readonly remoteMinions = new Map<number, RemoteMinion>();
 
   constructor(private readonly net: NetSession) {
     const ev = G.events;
@@ -162,6 +183,7 @@ export class Replication {
       net.on('pstate', (p, from) => this.onPState(p, from)),
       net.on('gear', (p, from) => this.onGear(p, from)),
       net.on('snap', (p, from) => this.onSnap(p, from)),
+      net.on('minion', (p, from) => this.onMinion(p, from)),
     );
   }
 
@@ -176,11 +198,15 @@ export class Replication {
     this.nextPState = 0;
     this.nextSnap = 0;
     this.lastPSig = '';
+    this.nextMinion = 0;
+    this.lastMinionSig = '';
+    this.minionsLive = false;
     this.snapSigs.clear();
     this.sentAt.clear();
     this.announced.clear();
     if (!active) {
       for (const id of [...this.remotes.keys()]) this.removeRemote(id);
+      this.clearMinions();
       this.pending.clear();
       this.gearCache.clear();
       this.lookCache.clear();
@@ -206,6 +232,10 @@ export class Replication {
         this.nextPState = now + 1 / NET.PLAYER_STATE_HZ - 0.002;
         this.safe(() => this.sendPState(now));
       }
+      if (now >= this.nextMinion) {
+        this.nextMinion = now + 1 / NET.MINION_HZ - 0.002;
+        this.safe(() => this.sendMinions(now));
+      }
       if (net.role === 'host' && now >= this.nextSnap) {
         this.nextSnap = now + 1 / NET.SNAPSHOT_HZ - 0.002;
         this.safe(() => this.sendSnap(world, now));
@@ -219,6 +249,7 @@ export class Replication {
         this.safe(() => this.sendGear());
       }
     }
+    this.safe(() => this.sweepMinions(now));
     // peers whose entity is missing (model load failed earlier, scene raced...) get another chance
     if (G.engine.frame % 60 === 0) for (const p of net.remotePeers()) this.ensureRemote(p);
     this.stats.remotePlayers = this.remotes.size;
@@ -238,6 +269,9 @@ export class Replication {
     // change, so what was announced / sent before no longer applies.
     this.remotes.clear();
     this.pending.clear();
+    this.remoteMinions.clear();   // the old world is disposed by its scene
+    this.lastMinionSig = '';
+    this.minionsLive = false;
     this.snapSigs.clear();
     this.sentAt.clear();
     this.announced.clear();
@@ -335,6 +369,7 @@ export class Replication {
   }
 
   private removeRemote(peerId: string): void {
+    this.removeMinionsOf(peerId);
     this.pending.delete(peerId);
     this.gearCache.delete(peerId);
     this.lookCache.delete(peerId);
@@ -566,6 +601,129 @@ export class Replication {
     }
   }
 
+  /* ================================================================================================
+   * minion (NC43, owner -> all)
+   * ============================================================================================== */
+
+  /** Sender: the local player's minions (Minions.list holds only this peer's own, authority true), the full list, 10 Hz. */
+  private sendMinions(now: number): void {
+    const world = G.world;
+    const list = G.minions?.list;
+    if (!world || !list) return;
+    const out: MinionSync[] = [];
+    for (const m of list) {
+      if (m.removed || m.world !== world || !m.authority) continue;
+      out.push(m.getSyncState());
+      if (out.length >= NET.MAX_MINIONS_PER_PEER) break;
+    }
+    if (out.length === 0 && !this.minionsLive) return;
+    // `life` ticks every frame, so it stays out of the signature (the keep-alive carries it)
+    let sig = '';
+    for (const s of out) sig += `${s.id}|${s.x}|${s.z}|${s.yaw}|${s.anim}|${s.hp}|${s.maxHp};`;
+    if (sig === this.lastMinionSig && now - this.lastMinionAt < NET.IDLE_STATE_INTERVAL_S) return;
+    this.lastMinionSig = sig;
+    this.lastMinionAt = now;
+    this.minionsLive = out.length > 0;
+    this.net.broadcast('minion', { t: now, minions: out });
+  }
+
+  private onMinion(p: NetChannels['minion'], from: string): void {
+    if (!this.active || from === this.net.selfId || !isObj(p) || !Array.isArray(p.minions)) return;
+    const world = G.world;
+    const peer = this.net.peers.get(from);
+    if (!world || !peer || !this.net.sceneIsReady) return;
+    const ownerId = PARTY_ID_BASE + peer.slot;
+    const t = fin(p.t, 0, 1e9, G.engine.time);
+    const mapped = this.mapTime(from, t);
+    const delay = this.clockOf(from).delay;
+    const seen = new Set<number>();
+    for (const raw of p.minions.slice(0, NET.MAX_MINIONS_PER_PEER)) {
+      const s = cleanMinion(raw, peer.slot);
+      if (!s) continue;
+      seen.add(s.id);
+      let rec = this.remoteMinions.get(s.id);
+      if (rec && (rec.world !== world || rec.peerId !== from || rec.m.def.id !== s.defId || rec.m.removed)) {
+        this.dropMinion(rec, false);
+        rec = undefined;
+      }
+      if (!rec) {
+        if (s.hp <= 0) continue;   // a corpse we never saw alive: nothing to show
+        rec = this.createMinion(s, from, ownerId, world, delay) ?? undefined;
+        if (!rec) continue;
+      }
+      const m = rec.m;
+      m.interp.delay = delay;
+      const latest = m.interp.latest;
+      if (latest && Math.hypot(s.x - latest.x, s.z - latest.z) > TELEPORT_DIST) m.interp.clear();
+      const wasAlive = !m.isDead;
+      m.applySyncState(s, mapped);
+      if (wasAlive && m.isDead) {
+        try {
+          G.vfx.spawn(m.def.deathVfx ?? 'death_bones', m.pointAt(0.2));
+        } catch { /* feedback only */ }
+      }
+    }
+    // the snapshot is the sender's whole list: anything of that peer it no longer holds is gone (expired, capped, scene change)
+    for (const rec of [...this.remoteMinions.values()]) {
+      if (rec.peerId === from && !seen.has(rec.m.id) && !rec.m.isDead) this.dropMinion(rec, true);
+    }
+  }
+
+  private createMinion(s: MinionSync, peerId: string, ownerId: number, world: World, delay: number): RemoteMinion | null {
+    const def = minionDef(s.defId);
+    if (!def) return null;
+    if (world.get(s.id)) return null;   // never replace an entity that is not one of our remote minion copies
+    const m = new Minion(s.id, def, ownerId, s.life);
+    m.authority = false;
+    m.maxHp = s.maxHp;
+    m.hp = s.hp;
+    m.position.set(s.x, 0, s.z);
+    m.yaw = s.yaw;
+    m.interp.delay = delay;
+    m.lastSeen = G.engine.time;
+    world.add(m);
+    if (G.assets) void m.loadModel().catch((e) => console.warn('[net] remote minion model failed', def.id, e));
+    const rec: RemoteMinion = { peerId, world, m };
+    this.remoteMinions.set(s.id, rec);
+    return rec;
+  }
+
+  private dropMinion(rec: RemoteMinion, poof: boolean): void {
+    this.remoteMinions.delete(rec.m.id);
+    if (poof && !rec.m.isDead) {
+      try {
+        G.vfx.spawn('death_poof', rec.m.pointAt(0.5));
+      } catch { /* feedback only */ }
+    }
+    try {
+      rec.world.remove(rec.m);
+    } catch { /* world already disposed */ }
+  }
+
+  /** Per frame: copies that stopped receiving snapshots, and dead copies whose body has lingered long enough. */
+  private sweepMinions(now: number): void {
+    if (this.remoteMinions.size === 0) return;
+    for (const rec of [...this.remoteMinions.values()]) {
+      const m = rec.m;
+      if (m.removed || rec.world !== G.world) this.remoteMinions.delete(m.id);
+      else if (m.isDead ? m.deathLeft <= 0 : now - m.lastSeen > NET.MINION_STALE_S) this.dropMinion(rec, !m.isDead);
+    }
+  }
+
+  private removeMinionsOf(peerId: string): void {
+    for (const rec of [...this.remoteMinions.values()]) if (rec.peerId === peerId) this.dropMinion(rec, true);
+  }
+
+  private clearMinions(): void {
+    for (const rec of [...this.remoteMinions.values()]) this.dropMinion(rec, false);
+    this.remoteMinions.clear();
+  }
+
+  /** The remote Minion copies currently held (tests, debug overlays). */
+  get remoteMinionCount(): number {
+    return this.remoteMinions.size;
+  }
+
   private safe(fn: () => void): void {
     try {
       fn();
@@ -612,6 +770,23 @@ function cleanPState(p: unknown): PStateIn | null {
     shot: typeof p.shot === 'string' ? clip(p.shot, 64) || null : null,
     shotSeq: Math.round(fin(p.shotSeq, 0, 2 ** 31, 0)),
     t: fin(p.t, 0, 1e9, G.engine.time),
+  };
+}
+
+/** One MinionSync of a peer in `slot`: the id must lie in that slot's minion range (MINION_ID_BASE + slot * 1000 + n); the owner is forced to that peer. */
+function cleanMinion(raw: unknown, slot: number): MinionSync | null {
+  if (!isObj(raw)) return null;
+  const id = typeof raw.id === 'number' && Number.isFinite(raw.id) ? Math.round(raw.id) : -1;
+  const lo = MINION_ID_BASE + slot * 1000;
+  if (id < lo || id >= lo + 1000) return null;
+  const defId = ident(raw.defId, 48);
+  if (!defId || typeof raw.x !== 'number' || typeof raw.z !== 'number' || !Number.isFinite(raw.x) || !Number.isFinite(raw.z)) return null;
+  return {
+    id, defId, ownerId: PARTY_ID_BASE + slot,
+    x: fin(raw.x, -3000, 3000, 0), z: fin(raw.z, -3000, 3000, 0), yaw: fin(raw.yaw, -100, 100, 0),
+    anim: clip(raw.anim, 80),
+    hp: fin(raw.hp, 0, 1e9, 0), maxHp: fin(raw.maxHp, 1, 1e9, 1),
+    life: fin(raw.life, 0, 3600, 0),
   };
 }
 

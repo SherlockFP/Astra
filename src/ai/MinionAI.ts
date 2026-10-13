@@ -5,7 +5,9 @@
  * Targets: (1) the owner's focus (Minions.focus) or the owner's targetId, (2) the current target while it stays within 1.5 x
  * aggro, (3) the nearest enemy within `aggro` of the minion and `leash` of the owner.
  * Teleports to the owner beyond 30 m or after 3 s stuck. Repaths every 0.5 s via NavGrid.findPath.
- * TODO(NC42): enemies choosing minions as targets (EnemyAI threat scoring) and minion hit shapes are not wired yet.
+ * NC42: enemies pick minions through their threat table (EnemyAI.pickTarget, ids in World.getActor); a `taunt` attack (MinionAttack.kind)
+ * is fired from here when `params.minTargets` (default 2) enemies in its radius are on someone else, and hurts nothing itself.
+ * Damage to a minion arrives through Combat.hitMinion (HitShapes / hostile projectiles, resolved on the owner's peer).
  */
 import type { Minion } from '../entities/Minion';
 import type { Actor } from '../entities/Actor';
@@ -24,7 +26,7 @@ const GOLDEN = 2.39996;
 
 type Pt = { x: number; z: number };
 const dist = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.z - b.z);
-const maxRangeOf = (m: Minion) => Math.max(1.5, ...m.def.attacks.map((a) => a.range));
+const maxRangeOf = (m: Minion) => Math.max(1.5, ...m.def.attacks.filter((a) => a.kind !== 'taunt').map((a) => a.range));
 
 export class MinionAI {
   state: 'follow' | 'engage' | 'return' = 'follow';
@@ -55,6 +57,7 @@ export class MinionAI {
     if (this.retargetT <= 0) {
       this.retargetT = RETARGET;
       this.target = this.pickTarget(m, owner);
+      this.tryTaunt(m);
     }
     if (this.swing) {
       this.runSwing(m, dt);
@@ -68,6 +71,23 @@ export class MinionAI {
     }
     this.target = null;
     this.follow(m, owner, dt);
+  }
+
+  /** Fires the minion's ready `taunt` attack when enough enemies in its radius are busy with someone else (GDD §1.5.6 tank rule). */
+  private tryTaunt(m: Minion): void {
+    const atk = m.def.attacks.find((a) => a.kind === 'taunt' && (this.cd.get(a.id) ?? 0) <= 0);
+    const w = m.world;
+    if (!atk || !w || this.swing) return;
+    const r = atk.radius ?? atk.range;
+    let n = 0;
+    for (const e of w.enemies) {
+      if (e.isDead || e.removed || e.team !== 'enemy' || e.targetId == null || e.targetId === m.id) continue;
+      if (dist(e.position, m.position) <= r + e.radius && w.sameLevel(e, m.position.y)) n++;
+    }
+    if (n < (atk.params?.minTargets ?? 2)) return;
+    this.cd.set(atk.id, atk.cooldown);
+    m.playShot(atk.anim, atk.animSpeed ?? 1);
+    G.minions?.taunt(m, atk);
   }
 
   private pickTarget(m: Minion, owner: Actor): Enemy | null {
@@ -95,7 +115,7 @@ export class MinionAI {
   private engage(m: Minion, t: Enemy, dt: number): void {
     const d = dist(t.position, m.position);
     const reach = maxRangeOf(m);
-    const ready = m.def.attacks.filter((a) => (this.cd.get(a.id) ?? 0) <= 0 && d <= a.range + t.radius);
+    const ready = m.def.attacks.filter((a) => a.kind !== 'taunt' && (this.cd.get(a.id) ?? 0) <= 0 && d <= a.range + t.radius);
     if (ready.length) {
       // highest weight among the ready attacks (ties: the first listed)
       let atk = ready[0];

@@ -335,6 +335,21 @@ the menu (`CLASS_ORDER`, ui/menu/classInfo.ts) is unchanged until NC60. Old save
 **Net**: `minion` is listed in `KNOWN_CHANNELS` (net/messages.ts). Sent by the owning peer at 10 Hz; net owner = NC43.
 Still open for the net owner: V2's `threat`, `kick` and `spec` are missing from `KNOWN_CHANNELS` (V2 WP1 blocker, not changed here).
 
+**Minion damage authority (NC42 / NC43 / NC44).** A minion's HP lives on its OWNER's peer, like a player's. *Enemy → minion*: the host AI scores
+minions in the same threat table as players (`World.getActor` now returns `kind 'minion'`; a hit made through a minion carries `viaId` and
+splits the threat 0.6 owner / 0.4 minion; a `taunt` minion attack applies the `taunt` status with the MINION as source and puts it at
+`max(own, top × 1.10) + 100`). Damage comes only from HitShapes and hostile Projectiles, which every peer already holds: each peer resolves
+them for its local player AND for its own minions (`Minion.ownerId` = local player, `authority` true) with `Combat.hitMinion` (mitigation =
+`armorFrac`, no dodge / block / parry, no statuses or knockback yet; 'safe', 'soak' and 'friendly' shapes never hurt minions). A remote copy
+is never hurt locally; its hp only mirrors the owner's snapshot. Death (`Minions.die`) is decided by the owner and reaches everyone as
+`hp ≤ 0` in the next `minion` snapshot. *Minion → enemy*: `Minions.strike` → `playerHitEnemy` with the owner's stats (half crit chance); a
+client forwards it as the normal `hit` with `via` (the host honours `via` only for a live minion of the sender, and uses it for the threat
+split and for a minion taunt). *Replication*: `minion { t, minions: MinionSync[] }` is the owner's FULL list at 10 Hz (unchanged lists repeat
+every 0.3 s, an empty list is sent once). Receivers keep non-authoritative `Minion` copies in `World.minions` only (not in `G.minions.list`):
+ids must lie in the sender's slot range (`MINION_ID_BASE + slot × 1000 + n`), the owner is forced to the sender, unknown defs are ignored,
+a copy is dropped when the owner's list no longer holds it, 1.5 s after its last snapshot, on peer leave and on scene change. The local
+player's minions are shown by `ui/hud/MinionFrames` (one row each, groups of more than 4 of a def collapse into a "×N" row).
+
 ## Talents contracts (GDD_TALENTS T0)
 
 Design source: `docs/GDD_TALENTS.md` (§0.3 overrides OT1–OT9, §0.4 ids, Appendix A types, Appendix B events, Appendix C save).

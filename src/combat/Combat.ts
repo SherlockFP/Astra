@@ -30,6 +30,7 @@ import type { NetChannels } from '../types/net';
 import type { Actor } from '../entities/Actor';
 import type { Player } from '../entities/Player';
 import type { Enemy } from '../entities/Enemy';
+import type { Minion } from '../entities/Minion';
 
 /** What a player skill/attack does to one target. Built by SkillSystem from SkillDef. */
 /** PM-00b: damage-taken ring buffer horizon (s) and size cap. */
@@ -76,6 +77,13 @@ export interface HitSpec {
   critBonus?: number;
   /** PM-00b: no hit-stop for this hit (multi_strike: only the last hit of a chain stops time). */
   noHitstop?: boolean;
+  /**
+   * NC42 (GDD_CLASSES_V2 §1.5.2): id of the owner's minion that made this hit. The damage is still the owner's (sourceId = attacker),
+   * the number reads as a minion hit and the enemy's threat is split 0.6 owner / 0.4 minion. Clients forward it as `hit.via`.
+   */
+  viaId?: EntityId;
+  /** NC42: multiplies the crit CHANCE of this hit (minions crit with half the owner's chance: 0.5). Default 1. */
+  critScale?: number;
 }
 
 export interface DamageResult {
@@ -136,6 +144,18 @@ export interface ApplyDamageOpts {
   skillId?: string;
   /** Threat multiplier of the hit (EnemyAI.onDamaged). */
   threatMult?: number;
+  /** NC42: the owner's minion that made the hit (threat split, taunt source). Already verified by the caller. */
+  viaId?: EntityId;
+}
+
+/** NC42: damage arriving at one of the LOCAL player's minions (HitShapes / hostile projectiles; the owner's peer resolves it). */
+export interface MinionHit {
+  sourceId: EntityId | null;
+  amount: number;
+  type: DamageType;
+  sourceLevel?: number;
+  isDot?: boolean;
+  abilityName?: string;
 }
 
 /** One frame of accumulated game feel (see Combat.noteFeel / flushFeel). */
@@ -398,7 +418,7 @@ export class Combat {
     attacker.combatTimer = 0;
 
     let killed = false;
-    const opts: ApplyDamageOpts = { skillId: spec.skillId, dot: spec.isDot, weight, stagger, knockup: spec.knockup, pos, noReact: spec.noReact, tick: spec.tick, threatMult: spec.threatMult };
+    const opts: ApplyDamageOpts = { skillId: spec.skillId, dot: spec.isDot, weight, stagger, knockup: spec.knockup, pos, noReact: spec.noReact, tick: spec.tick, threatMult: spec.threatMult, viaId: spec.viaId };
     if (!G.net || G.net.isAuthority) {
       this.applyDamageToEnemy(target, amount, roll.crit, spec.type, attacker.id, statuses, spec.skillId, spec.knockback, dir, opts);
       killed = target.isDead;
@@ -411,7 +431,7 @@ export class Combat {
       target.combatTimer = 0;
       G.net.sendToHost('hit', {
         targetId: target.id, amount, crit: roll.crit, type: spec.type, skillId: spec.skillId,
-        statuses, knockback: spec.knockback, dir, isDot: spec.isDot || spec.tick, poise: stagger ?? 0,
+        statuses, knockback: spec.knockback, dir, isDot: spec.isDot || spec.tick, poise: stagger ?? 0, via: spec.viaId,
       });
     }
     if (!killed && isMelee && spec.type === 'physical' && !spec.isDot && !spec.tick) {
@@ -620,6 +640,7 @@ export class Combat {
       const behind = !!target && local && this.isBehind(attacker, target);
       if (behind) chance += sp('n_assassin')?.backstabCritChance ?? 0;
       chance += spec.critBonus ?? 0;
+      if (spec.critScale !== undefined) chance *= spec.critScale; // NC42: minion hits crit with half the owner's chance
       // KIT PK-WARLOCK Kaos Oku (params.alwaysCrit): the hit always crits, no roll is spent
       const alwaysCrit = !!(spec.skillId && G.skills?.getDef(spec.skillId)?.params?.alwaysCrit);
       crit = !!spec.forceCrit || alwaysCrit || this.rng.next() < chance;
@@ -820,7 +841,7 @@ export class Combat {
     if (amount > 0) {
       target.hp = Math.max(0, target.hp - amount);
       target.combatTimer = 0;
-      try { target.ai?.onDamaged?.(sourceId, amount, opts.threatMult); } catch (e) { console.error('[combat] ai.onDamaged failed', e); }
+      try { target.ai?.onDamaged?.(sourceId, amount, opts.threatMult, opts.viaId); } catch (e) { console.error('[combat] ai.onDamaged failed', e); }
       G.net?.broadcast('dmg', { targetId: target.id, amount, crit, type, sourceId, hp: target.hp, dot: dot || undefined });
       if (dot) this.dotLeech(sourceId, amount);
       this.showEnemyHit(target, amount, crit, type, sourceId, dir ?? [0, 1], { ...opts, skillId: opts.skillId ?? skillId }, Math.min(amount, hpBefore));
@@ -832,7 +853,7 @@ export class Combat {
       if (pts > 0) this.addStagger(target, pts, sourceId);
     }
 
-    if (statuses?.length) this.applyStatusesToEnemy(target, statuses, sourceId);
+    if (statuses?.length) this.applyStatusesToEnemy(target, statuses, sourceId, opts.viaId);
 
     const dead = target.hp <= 0;
     if (!dot && knockback && knockback > 0 && !target.isBoss && !target.def.ccImmune && !this.isStaggerBroken(target)) {
@@ -861,13 +882,18 @@ export class Combat {
     }
   }
 
-  private applyStatusesToEnemy(target: Enemy, statuses: StatusApply[], sourceId: EntityId | null): void {
+  private applyStatusesToEnemy(target: Enemy, statuses: StatusApply[], sourceId: EntityId | null, viaId?: EntityId): void {
     for (const s of statuses) {
       if (s.chance !== undefined && s.chance < 1 && this.rng.next() > s.chance) continue;
-      const ok = target.statuses.apply(s.status, s.duration, { stacks: s.stacks, magnitude: s.magnitude, sourceId, dps: s.dps });
+      // NC42: a taunt made by a minion belongs to the minion (EnemyAI.pickTarget reads taunt.sourceId), not to its owner
+      const taunter = s.status === 'taunt' && viaId !== undefined ? viaId : sourceId;
+      const ok = target.statuses.apply(s.status, s.duration, { stacks: s.stacks, magnitude: s.magnitude, sourceId: taunter, dps: s.dps });
       if (ok) {
         G.net?.broadcast('estatus', { targetId: target.id, status: s.status, duration: s.duration, stacks: target.statuses.stacks(s.status) || 1 });
-        if (s.status === 'taunt' && sourceId !== null) target.targetId = sourceId;
+        if (s.status === 'taunt' && taunter !== null) {
+          target.targetId = taunter;
+          if (viaId !== undefined) target.ai?.tauntThreat(viaId);
+        }
         if (s.status === 'knockdown') this.addHop(target, 1);
       } else if (HARD_CC_IDS.includes(s.status)) {
         // CC-immune target: hard CC converts to stagger (x2 per second of duration)
@@ -885,6 +911,43 @@ export class Combat {
     if (!target || target.isDead || !statuses.length) return;
     if (!G.net || G.net.isAuthority) this.applyStatusesToEnemy(target, statuses, attacker.id);
     else G.net.sendToHost('hit', { targetId: target.id, amount: 0, crit: false, type: 'true', skillId: undefined, statuses, knockback: 0 });
+  }
+
+  /**
+   * NC42 (GDD_CLASSES_V2 §1.5.2): a minion's taunt on one enemy. The taunt status belongs to the MINION (EnemyAI.pickTarget forces it
+   * for `seconds`) and the enemy's threat table puts it at top x 1.10 + 100. Host applies directly; a client asks the host with a
+   * 0-damage `hit` carrying `via`.
+   */
+  minionTaunt(m: Minion, target: Enemy, seconds: number, skillId = 'minion_taunt'): void {
+    if (!m || !target || m.isDead || m.removed || target.isDead || target.removed) return;
+    const statuses: StatusApply[] = [{ status: 'taunt', duration: Math.max(0.5, target.isBoss ? Math.min(seconds, 2) : seconds) }];
+    if (!G.net || G.net.isAuthority) this.applyStatusesToEnemy(target, statuses, m.ownerId, m.id);
+    else G.net.sendToHost('hit', { targetId: target.id, amount: 0, crit: false, type: 'true', skillId, statuses, knockback: 0, via: m.id });
+  }
+
+  /**
+   * NC42 (GDD_CLASSES_V2 §1.5.2 rule 3): damage arriving at one of the LOCAL player's minions. Called from HitShapes (shapes and hostile
+   * projectiles) on the minion's OWNER peer only, exactly like hitLocalPlayer for the local player. Mitigation is the minion's
+   * armorFrac (Minions.hurt); no dodge, block or parry. Reaching 0 HP kills it (Minions.die: minion:died, bones, respawn queue).
+   * Statuses and knockback are not applied to minions in this wave. Returns null when the minion cannot be hurt here.
+   */
+  hitMinion(m: Minion, hit: MinionHit): DamageResult | null {
+    if (!m || m.isDead || m.removed || !m.authority || !(hit.amount > 0) || !G.minions) return null;
+    if (m.statuses.invulnerable) return { amount: 0, crit: false, type: hit.type, killed: false, immune: true };
+    const ownerLevel = (m.owner?.level ?? G.world?.localPlayer?.level) ?? 1;
+    const raw = hit.amount * this.levelDiffIn(hit.sourceLevel, ownerLevel);
+    const taken = G.minions.hurt(m, raw, hit.type);
+    if (taken <= 0) return { amount: 0, crit: false, type: hit.type, killed: false };
+    try {
+      G.events.emit('damage', {
+        targetId: m.id, sourceId: hit.sourceId, amount: taken, crit: false, type: hit.type,
+        kind: hit.isDot ? 'dot' : 'normal', pos: [m.position.x, m.position.y + m.height * 0.6, m.position.z], overkill: 0,
+      });
+    } catch (e) {
+      console.error('[combat] minion damage event failed', e);
+    }
+    if (!m.isDead && !hit.isDot && taken >= m.maxHp * 0.05) m.playShot(m.def.anims.hit, 1.2);
+    return { amount: taken, crit: false, type: hit.type, killed: m.isDead };
   }
 
   /** Drag an enemy along `dir` (Kasırganın Yüreği pull). Host applies directly; a client asks the host with a 0-damage hit. */
@@ -1816,8 +1879,12 @@ export class Combat {
    * or grants `invulnerable` cancels the death (HP is held at 1 for the invulnerable case). Returns true when saved.
    */
   private lethalSaved(p: Player, amount: number): boolean {
+    // PM-PA: hold 1 HP while the procs run, so a `heal(..)` action is not refused for a dead target (Yılmaz Savunucu leaves 25 % HP)
+    const raw = p.hp;
+    p.hp = 1;
     G.procs?.emit('lethal', { player: p, amount });
-    if (p.hp > 0) return true;
+    if (p.hp > 1) return true;
+    p.hp = raw;
     if (p.statuses.invulnerable) {
       p.hp = 1;
       return true;
@@ -2429,7 +2496,13 @@ export class Combat {
     const crit = !!p.crit && (!finisher || t.statuses.has('marked_crit'));
     if (finisher && sourceId !== null) this.markFinisher(t, sourceId);
     const stagger = typeof p.poise === 'number' && p.poise > 0 ? clamp(p.poise, 0, 500) : undefined;
-    this.applyDamageToEnemy(t, amount, crit, p.type, sourceId, p.statuses, p.skillId, p.knockback, p.dir, { remote: true, dot: false, weight, tick: !!p.isDot, noReact: false, knockup: sk?.params?.knockup, stagger });
+    // NC42: `via` is honoured only for a live minion that belongs to the sender (the host sees remote minions through the `minion` channel)
+    let viaId: EntityId | undefined;
+    if (typeof p.via === 'number' && sourceId !== null) {
+      const vm = G.world.get<Minion>(p.via);
+      if (vm && vm.kind === 'minion' && vm.ownerId === sourceId && !vm.isDead) viaId = vm.id;
+    }
+    this.applyDamageToEnemy(t, amount, crit, p.type, sourceId, p.statuses, p.skillId, p.knockback, p.dir, { remote: true, dot: false, weight, tick: !!p.isDot, noReact: false, knockup: sk?.params?.knockup, stagger, viaId });
   }
 
   private onNetDmg(p: NetChannels['dmg']): void {

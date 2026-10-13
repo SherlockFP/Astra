@@ -20,6 +20,8 @@ import { PROC_MODS_KIT_WARLOCK } from '../data/procs_kit_warlock';
 import { PROC_MODS_KIT_BARBARIAN } from '../data/procs_kit_barbarian';
 // KIT PM-KN (docs/kits/plate-melee.md §1b / §2b): knight proc mods (sudden_death shared with barbarian_execute).
 import { PROC_MODS_KIT_KNIGHT } from '../data/procs_kit_knight';
+// KIT PM-PA (docs/kits/plate-melee.md §5b-§7b): paladin proc mods (shining_light, infusion_of_light, art_of_war, hammer_window, templar_combo).
+import { PROC_MODS_KIT_PALADIN } from '../data/procs_kit_paladin';
 
 export interface ProcMod {
   /** Proc status that enables this mod. Also the key of PROC_MODS. */
@@ -38,6 +40,8 @@ export interface ProcMod {
   forceCrit?: boolean;
   /** The skill does not start its cooldown. */
   cdFree?: boolean;
+  /** The skill's Kutsal Güç (pip) cost is waived: a free Işığın Sözü (Parlak Işık, PM-PA). */
+  pipFree?: boolean;
   /** The skill's cooldown is reset when consumed. */
   cdReset?: boolean;
   /** Pips granted on cast (Adalet for knight, Kombo for rogue). */
@@ -80,7 +84,7 @@ export function registerProcMods(rows: readonly ProcMod[]): void {
 }
 
 // KIT PK-0: one merge line for the three kit files (empty until PK-MAGE / PK-ROGUE / PK-WARLOCK).
-registerProcMods([...PROC_MODS_KIT_MAGE, ...PROC_MODS_KIT_ROGUE, ...PROC_MODS_KIT_WARLOCK, ...PROC_MODS_KIT_KNIGHT, ...PROC_MODS_KIT_BARBARIAN]);
+registerProcMods([...PROC_MODS_KIT_MAGE, ...PROC_MODS_KIT_ROGUE, ...PROC_MODS_KIT_WARLOCK, ...PROC_MODS_KIT_KNIGHT, ...PROC_MODS_KIT_BARBARIAN, ...PROC_MODS_KIT_PALADIN]);
 
 /** Merged effect of every active proc mod that applies to one skill. */
 export interface ResolvedProcMods {
@@ -94,6 +98,8 @@ export interface ResolvedProcMods {
   forceCrit: boolean;
   cdFree: boolean;
   cdReset: boolean;
+  /** A pip-cost spender is free (Parlak Işık). */
+  pipFree: boolean;
   anyHp: boolean;
   bonusPips: { id: PipId; n: number }[];
   /** Heal fraction of max HP granted on consume (summed). */
@@ -114,7 +120,7 @@ export function resolveProcMods(p: ProcStatusView, skillId: string): ResolvedPro
     if (!mod || !p.has(mod.status) || !mod.skills.includes(skillId)) continue;
     out ??= {
       skillId, sources: [], costMult: 1, castTimeMult: 1, more: 1, critBonus: 0, forceCrit: false,
-      cdFree: false, cdReset: false, anyHp: false, bonusPips: [], healPct: 0, oneStack: [], resource: 0,
+      cdFree: false, cdReset: false, pipFree: false, anyHp: false, bonusPips: [], healPct: 0, oneStack: [], resource: 0,
     };
     out.sources.push(mod.status);
     out.costMult *= mod.costMult ?? 1;
@@ -124,6 +130,7 @@ export function resolveProcMods(p: ProcStatusView, skillId: string): ResolvedPro
     out.forceCrit ||= mod.forceCrit ?? false;
     out.cdFree ||= mod.cdFree ?? false;
     out.cdReset ||= mod.cdReset ?? false;
+    out.pipFree ||= mod.pipFree ?? false;
     out.anyHp ||= mod.anyHp ?? false;
     if (mod.bonusPips) out.bonusPips.push(mod.bonusPips);
     out.healPct += mod.onConsume?.healPct ?? 0;

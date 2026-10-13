@@ -5,6 +5,7 @@
  */
 import { G } from '../game/G';
 import { STATUSES } from '../data/statuses';
+import { specOf } from './specs';
 import type { Player } from '../entities/Player';
 import type { Actor } from '../entities/Actor';
 import type { AimInfo, StatusId } from '../types/skills';
@@ -14,7 +15,7 @@ import type { StatId } from '../types/stats';
 /** Heal range of the caster's targeting (GDD §1.6 ally reach). */
 export const HEAL_RANGE = 30;
 
-const MAIN_STAT: Record<string, StatId> = { knight: 'str', barbarian: 'str', rogue: 'dex', mage: 'int' };
+const MAIN_STAT: Record<string, StatId> = { knight: 'str', barbarian: 'str', paladin: 'str', rogue: 'dex', mage: 'int' };
 
 /** Friendly target selected with U / F1..F5 (null = self / smart pick). */
 let friendly: EntityId | null = null;
@@ -110,7 +111,8 @@ export function resolveHealTarget(caster: Player, aim: AimInfo | null, injuredOn
 export function healFormula(caster: Player, coef: number, flat = 0): { amount: number; crit: boolean } {
   const lo = caster.getStat('weaponMin'), hi = caster.getStat('weaponMax');
   const weapon = (lo > 0 || hi > 0 ? lo + Math.random() * Math.max(0, hi - lo) : 10 + caster.level * 2);
-  const main = caster.getStat(MAIN_STAT[caster.classId] ?? 'str');
+  // PM-PA: a spec may override the class main stat (Kutsal heals with int, SpecDef.mainStat)
+  const main = caster.getStat(specOf(caster)?.mainStat ?? MAIN_STAT[caster.classId] ?? 'str');
   const crit = Math.random() < clampCrit(caster.getStat('critChance'));
   const critMult = crit ? 1.5 + Math.max(0, caster.getStat('critDamage')) : 1;
   const amount = (weapon * coef + flat) * (1 + main / 100) * (1 + caster.getStat('healingPct')) * critMult;

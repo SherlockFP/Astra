@@ -9,6 +9,7 @@ import { bossMsg, bossText } from './bossNet';
 import { CUSTOM, PASSIVES, runOnDeath, type CustomHandler, type PassiveHandler } from './abilities';
 import type { Actor } from '../entities/Actor';
 import type { Enemy } from '../entities/Enemy';
+import type { Minion } from '../entities/Minion';
 import type { Player } from '../entities/Player';
 import type { DamageType, EntityId } from '../types/common';
 import type { EnemyAbility } from '../types/enemies';
@@ -271,6 +272,17 @@ export class EnemyAI {
     this.threat.set(id, (this.threat.get(id) ?? 0) + amount);
   }
 
+  /**
+   * NC42 (GDD_CLASSES_V2 §1.5.2): a taunting minion jumps to the top of the table, `max(own, top x 1.10) + 100` (the same formula as
+   * the `provoke` behaviour). Host only (Combat.applyStatusesToEnemy calls it for a taunt made through a minion).
+   */
+  tauntThreat(id: EntityId): void {
+    if (this.disposed || this.e.isDead) return;
+    let top = 0;
+    for (const [k, v] of this.threat) if (k !== id && v > top) top = v;
+    this.threat.set(id, Math.max(this.threat.get(id) ?? 0, top * 1.1) + 100);
+  }
+
   schedule(delay: number, fn: () => void, tag = ''): void {
     this.timers.push({ at: this.now + delay, fn, tag });
   }
@@ -384,14 +396,21 @@ export class EnemyAI {
   }
 
   /** Combat calls this for every point of damage (host). Threat + wake-ups. */
-  onDamaged(sourceId: EntityId | null, amount: number, threatMult = 1): void {
+  onDamaged(sourceId: EntityId | null, amount: number, threatMult = 1, viaId?: EntityId): void {
     if (this.disposed || this.e.isDead || amount <= 0) return;
     const src = sourceId != null ? this.world.getActor(sourceId) : undefined;
     if (src && src.kind === 'player') {
       let mult = 1;
       if ((src as Player).classId === 'knight') mult = 2.5;
       // KIT PM-KN: a skill's threatMult (Revenge x2) scales the whole threat of the hit
-      this.addThreat(src.id, (amount * mult + 1) * threatMult);
+      let th = (amount * mult + 1) * threatMult;
+      // NC42 (GDD_CLASSES_V2 §1.5.2): a hit made through a minion splits its threat 0.6 owner / 0.4 minion (the minion's own table entry)
+      const via = viaId !== undefined ? this.world.get<Minion>(viaId) : undefined;
+      if (via && via.kind === 'minion' && !via.isDead && via.ownerId === src.id) {
+        this.addThreat(via.id, th * 0.4);
+        th *= 0.6;
+      }
+      this.addThreat(src.id, th);
       if (this.e.def.ai?.flee) this.onHurtFlee(amount);
       if (!this.aggroed) this.dir.pullPack(this, src);
     } else if (!this.aggroed) {

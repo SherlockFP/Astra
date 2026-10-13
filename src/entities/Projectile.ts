@@ -4,6 +4,7 @@ import { G } from '../game/G';
 import type { Actor } from './Actor';
 import type { Player } from './Player';
 import type { Enemy } from './Enemy';
+import type { Minion } from './Minion';
 import type { EntityId } from '../types/common';
 import type { VfxId } from '../types/vfx';
 
@@ -35,6 +36,8 @@ export interface ProjectileOpts {
   lifetime?: number;
   onHit?: (target: Enemy, p: Projectile) => void;
   onHitLocal?: (player: Player, p: Projectile) => void;
+  /** hostile only (NC42): a minion of the LOCAL player was touched (the owner's peer resolves damage to its own minions). */
+  onHitMinion?: (minion: Minion, p: Projectile) => void;
   onEnd?: (p: Projectile, reason: ProjectileEnd) => void;
   /** Optional model tilt for visuals (rad). */
   pitch?: number;
@@ -331,13 +334,28 @@ export class Projectile extends Entity {
     const p = this.position;
     if (mode === 'hostile') {
       const pl = world.localPlayer;
-      if (!pl || pl.isDead || this.hitSet.has(pl.id) || !this.inCylinder(pl.position.y, pl.height)) return;
-      const r = this.radius + pl.radius;
-      if ((pl.position.x - p.x) ** 2 + (pl.position.z - p.z) ** 2 <= r * r) {
-        this.hitSet.add(pl.id);
-        try { this.opts.onHitLocal?.(pl, this); } catch (e) { console.error('[projectile] hitLocal failed', e); }
-        this.hitsLeft--;
-        if (this.hitsLeft <= 0) this.end('hit');
+      if (pl && !pl.isDead && !this.hitSet.has(pl.id) && this.inCylinder(pl.position.y, pl.height)) {
+        const r = this.radius + pl.radius;
+        if ((pl.position.x - p.x) ** 2 + (pl.position.z - p.z) ** 2 <= r * r) {
+          this.hitSet.add(pl.id);
+          try { this.opts.onHitLocal?.(pl, this); } catch (e) { console.error('[projectile] hitLocal failed', e); }
+          this.hitsLeft--;
+          if (this.hitsLeft <= 0) return this.end('hit');
+        }
+      }
+      // NC42: the local player's own minions are targets too (owner-resolved damage)
+      if (pl && this.opts.onHitMinion) {
+        const ms = world.minions;
+        for (let i = 0; i < ms.length; i++) {
+          const m = ms[i];
+          if (m.ownerId !== pl.id || !m.authority || m.isDead || m.removed || this.hitSet.has(m.id) || !this.inCylinder(m.position.y, m.height)) continue;
+          const r = this.radius + m.radius;
+          if ((m.position.x - p.x) ** 2 + (m.position.z - p.z) ** 2 > r * r) continue;
+          this.hitSet.add(m.id);
+          try { this.opts.onHitMinion(m, this); } catch (e) { console.error('[projectile] hitMinion failed', e); }
+          this.hitsLeft--;
+          if (this.hitsLeft <= 0) return this.end('hit');
+        }
       }
       return;
     }
