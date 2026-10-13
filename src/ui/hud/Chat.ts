@@ -5,13 +5,14 @@ import { classColor } from '../widgets/classColors';
 import { clampN, div, esc, h, setClass, setStyle } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
 import type { ChatChannel } from '../../types/net';
+import { getSocial } from '../../systems/Social';
 
 /* ================================================================================================
  * UX-31 (§5.1): tabbed chat. Tabs: Genel · Grup · Fısıltı · Sistem · Savaş. Each tab keeps its own buffer
  * (200 lines); a line goes to every tab that lists its channel. Tabs with no lines yet are hidden.
  * ============================================================================================== */
 
-type TabId = 'genel' | 'grup' | 'fisilti' | 'sistem' | 'savas';
+type TabId = 'genel' | 'grup' | 'fisilti' | 'dunya' | 'ticaret' | 'sistem' | 'savas';
 interface TabDef {
   id: TabId;
   label: string;
@@ -23,21 +24,27 @@ const TABS: readonly TabDef[] = [
   { id: 'genel', label: 'Genel', always: true, channels: ['say', 'yell', 'party', 'whisper', 'global', 'trade', 'emote', 'system'] },
   { id: 'grup', label: 'Grup', always: true, channels: ['party'] },
   { id: 'fisilti', label: 'Fısıltı', always: false, channels: ['whisper'] },
+  { id: 'dunya', label: 'Dünya', always: false, channels: ['global'] },
+  { id: 'ticaret', label: 'Ticaret', always: false, channels: ['trade'] },
   { id: 'sistem', label: 'Sistem', always: true, channels: ['system', 'loot', 'boss'] },
   { id: 'savas', label: 'Savaş', always: false, channels: [] },
 ];
 /** Tabs whose idle lines never fade (§5.1 "Fade"). */
 const NO_FADE: ReadonlySet<TabId> = new Set<TabId>(['fisilti', 'sistem']);
+/** Channel prefix of a line (WoW "[1. Genel]"); other channels have none. */
+const CHAN_PREFIX: Partial<Record<ChatChannel, string>> = { global: 'Genel', trade: 'Ticaret' };
 const LINE_CAP = 200;
 const FADE_AFTER_MS = 12000;
 const YELL_COOLDOWN_MS = 5000;
 
 /** Send channels of the input row (the chip cycles them with Tab). `party` is the net default. */
-type SendCh = 'party' | 'say' | 'yell';
+type SendCh = 'party' | 'say' | 'yell' | 'global' | 'trade';
 const SEND: readonly { id: SendCh; label: string }[] = [
   { id: 'party', label: 'Grup' },
-  { id: 'say', label: 'Genel' },
+  { id: 'say', label: 'Yakın' },
   { id: 'yell', label: 'Bağır' },
+  { id: 'global', label: 'Genel Sohbet' },
+  { id: 'trade', label: 'Ticaret' },
 ];
 
 /**
@@ -59,6 +66,12 @@ export const EMOTES: Readonly<Record<string, EmoteDef>> = {
 
 /** Commands shown by the `/` hint card (local commands first, then emotes). */
 const COMMANDS: readonly { cmd: string; hint: string }[] = [
+  { cmd: 'g', hint: 'Genel Sohbet: /g mesaj (veya /1)' },
+  { cmd: 'ticaret', hint: 'Ticaret kanalı: /ticaret mesaj (veya /2)' },
+  { cmd: 'w', hint: 'Fısıltı: /w isim mesaj' },
+  { cmd: 'r', hint: 'Son fısıldayana yanıt: /r mesaj' },
+  { cmd: 'kim', hint: 'Çevrimiçi oyuncuları listele' },
+  { cmd: 'yardim', hint: 'Komut listesi' },
   { cmd: 'temizle', hint: 'Sohbeti temizle' },
   { cmd: 'arayuz', hint: 'Arayüzü düzenle' },
   { cmd: 'zindan', hint: 'Zindan Bulucu' },
@@ -175,9 +188,9 @@ export class Chat implements HudWidget {
     this.renderTabs();
     this.renderChip();
 
-    G.events.on('net:chat', ({ from, text, channel }) => {
+    G.events.on('net:chat', ({ from, text, channel, to }) => {
       if (channel === 'emote') this.emote(text, false, from);
-      else this.addLine(from, text, channel, from === this.ownName());
+      else this.addLine(from, text, channel, from === this.ownName(), to);
     });
     G.events.on('net:peerJoined', ({ name }) => this.addLine('', `${name} gruba katıldı.`, 'system'));
     G.events.on('net:peerLeft', ({ name }) => this.addLine('', `${name} gruptan ayrıldı.`, 'system'));
@@ -237,6 +250,12 @@ export class Chat implements HudWidget {
       return;
     }
     const ch = SEND[this.sendIdx].id;
+    if (ch === 'global' || ch === 'trade') {
+      // Social prints its own errors (offline, too fast, duplicate) as system lines
+      getSocial().sendChannel(ch, raw);
+      this.blur();
+      return;
+    }
     if (ch === 'yell') {
       const now = performance.now();
       if (now - this.lastYell < YELL_COOLDOWN_MS) {
@@ -255,8 +274,9 @@ export class Chat implements HudWidget {
     this.blur();
   }
 
-  /** Local slash commands (`/temizle`, `/arayuz`, `/zindan`) and emotes. */
+  /** Slash commands: the social ones (`/g` `/ticaret` `/w` `/r` `/kim` `/yardim`, systems/Social.ts), local ones (`/temizle`, `/arayuz`, `/zindan`) and emotes. */
   private command(body: string): void {
+    if (getSocial().command(body)) return;
     const cmd = (body.split(/\s+/)[0] ?? '').toLowerCase();
     if (cmd === 'temizle') {
       this.clear();
@@ -299,13 +319,13 @@ export class Chat implements HudWidget {
   }
 
   /** One line into every tab that lists its channel. `local` = our own message (typing / own bubble). Emits `chat:line`. */
-  addLine(from: string, text: string, channel: ChatChannel, local = false): void {
+  addLine(from: string, text: string, channel: ChatChannel, local = false, to?: string): void {
     const now = performance.now();
     let placed = false;
     for (const t of this.tabs) {
       if (!t.def.channels.includes(channel)) continue;
       placed = true;
-      const el = this.makeLine(from, text, channel);
+      const el = this.makeLine(from, text, channel, local, to);
       const nearEnd = this.atBottom(t);
       t.log.appendChild(el);
       t.lines.push({ el, t: now });
@@ -319,7 +339,7 @@ export class Chat implements HudWidget {
     G.events?.emit('chat:line', { from, text, channel, local });
   }
 
-  private makeLine(from: string, text: string, channel: ChatChannel): HTMLElement {
+  private makeLine(from: string, text: string, channel: ChatChannel, local = false, to?: string): HTMLElement {
     const el = div('cl ' + channel);
     let html = '';
     if (G.settings?.data.chatTimestamps) {
@@ -327,7 +347,14 @@ export class Chat implements HudWidget {
       const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
       html += `<span class="cl-ts">[${hm}] </span>`;
     }
-    if (from) {
+    const prefix = CHAN_PREFIX[channel];
+    if (prefix) html += `<span class="cl-ch">[${prefix}] </span>`;
+    if (channel === 'whisper' && from) {
+      // WoW style: "X kişisine fısıldadın: ..." / "X sana fısıldıyor: ..." (all text through esc(), never raw HTML)
+      html += local
+        ? `<span class="cl-from">${esc(to ?? '')}</span> kişisine fısıldadın: ${esc(text)}`
+        : `<span class="cl-from">${esc(from)}</span> sana fısıldıyor: ${esc(text)}`;
+    } else if (from) {
       const cls = this.classOf(from);
       const style = cls ? ` style="color:${classColor(cls)}"` : '';
       html += channel === 'emote'
@@ -340,6 +367,8 @@ export class Chat implements HudWidget {
 
   /** Class of a named peer (net roster), for the class-coloured name. */
   private classOf(name: string): string | undefined {
+    const online = G.presence?.find(name);
+    if (online?.cls) return online.cls;
     const peers = G.net?.peers;
     if (!peers) return undefined;
     for (const p of peers.values()) if (p.name === name) return p.summary?.classId;

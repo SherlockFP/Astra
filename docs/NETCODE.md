@@ -678,3 +678,16 @@ scenes module. A host-side `WorldRuntime` must replay its current keys to a new 
 
 **Unchanged.** Authority (host runs AI, camp, metin, rare and boss state), per-peer loot and XP on `death`, and per-peer
 quests. The party shares nothing but the world.
+
+## 15. Social: Genel Sohbet, Ticaret, fisilti, presence (`src/systems/Social.ts`)
+
+The "shared world" layer runs on the **global lobby room** (leased with `G.net.leaseLobby()`, the same reference-counted transport the Pazar uses), independent of party rooms. Lobby channels added to `LOBBY_CHANNELS`: `lchat` (broadcast Genel / Ticaret text, `trade: true` = Ticaret), `lwhis` (whisper, sent to one peer id), `lpres` (presence `{name, cls, lvl, zone, zn?, bye?}`).
+
+- **Presence:** every 5 s, at once on change (level up, zone; at most 1/s) and to each newcomer. A peer silent for more than 20 s is dropped (any valid message counts as proof of life). `G.presence.list()` / `.count()` / `.find(name)`, event `presence:changed {count}`, command `/kim` (`/who`).
+- **Whisper:** `/w name text` (names may contain spaces, the longest online prefix wins), `/r text` answers the last whisperer. Routed by peer id from the presence registry; the receiver drops it unless `to` equals its own character name. Unknown name: "Oyuncu bulunamadı".
+- **Commands:** `/g` `/1` Genel Sohbet, `/ticaret` `/2` Ticaret, `/w`, `/r`, `/kim`, `/yardim`.
+- **Limits:** outgoing 1 message / 1.5 s (whisper 1 / s), same text refused for 10 s; incoming token buckets per peer (chat 5 + 0.8/s, whisper 4 + 0.5/s, presence 6 + 0.5/s); text 200 chars, names 20; control / bidi / zero-width / lone-surrogate characters stripped; at most 300 tracked peers. Text is only ever rendered through `esc()`.
+- **Identity:** character names are self-asserted (no server). The oldest holder of a name keeps it, later holders are shown as `Name~2`, so nobody can pose as a name that is already online. Not a defence against a peer that arrives first.
+- **Offline / no lobby:** "Genel sohbete bağlanılamadı." A failed connection is retried every 30 s or on the next send (after 5 s).
+- Mesh cost: every player joins the one lobby room (see 3.3); presence is ~120 bytes per peer per 5 s.
+- Test: `node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/social.mjs`.

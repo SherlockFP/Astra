@@ -48,7 +48,11 @@
 .cl.yell { font-size: calc(var(--chat-fs) + 2px); }
 .cl.yell .cl-from { color: var(--ch-yell); }
 .cl.party .cl-from { color: var(--ch-party); }
+.cl.whisper { color: var(--ch-whisper); }
 .cl.whisper .cl-from { color: var(--ch-whisper); }
+.cl-ch { color: var(--text-3, #9aa); }
+.cl.global .cl-ch { color: var(--ch-global); }
+.cl.trade .cl-ch { color: var(--ch-trade); }
 .cl.global .cl-from { color: var(--ch-global); }
 .cl.trade .cl-from { color: var(--ch-trade); }
 .cl.system { color: var(--ch-system); }
@@ -63,6 +67,8 @@
 .chat-chan { flex: 0 0 auto; font: 700 13px var(--font-head); letter-spacing: 0.04em; color: var(--ch-party); }
 .chat-chan.say { color: var(--ch-say); }
 .chat-chan.yell { color: var(--ch-yell); }
+.chat-chan.global { color: var(--ch-global); }
+.chat-chan.trade { color: var(--ch-trade); }
 .chat-input { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: var(--text-1); font: var(--chat-fs) var(--font-ui); caret-color: var(--gold-3); pointer-events: auto; user-select: text; -webkit-user-select: text; }
 .chat-input::placeholder { color: var(--text-4); }
 

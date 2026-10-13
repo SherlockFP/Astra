@@ -22,6 +22,7 @@ import { TalentSystem } from '../systems/Talents';
 import { ProcEngine } from '../combat/Procs';
 import { Auras } from '../combat/Auras';
 import { Corpses } from '../combat/Corpses';
+import { installSocial } from '../systems/Social';
 import { LoadingScene } from '../scenes/LoadingScene';
 import { MenuScene } from '../scenes/MenuScene';
 import { TownScene } from '../scenes/TownScene';
@@ -68,6 +69,7 @@ export function createServices(): void {
   G.procs = new ProcEngine();
   G.talents = new TalentSystem();
   G.mplus = new MythicPlus();
+  installSocial(); // G.presence + Genel / Ticaret / fisilti on the global lobby
 
   // saved key bindings for the active control scheme (CONTROLS_WOW §2.3)
   applyStoredBindings();

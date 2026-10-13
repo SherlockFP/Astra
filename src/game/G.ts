@@ -19,6 +19,7 @@ import type { MythicPlus } from '../systems/MythicPlus';
 import type { QuestSystem } from '../systems/Quests';
 import type { TalentSystem } from '../systems/Talents';
 import type { Professions } from '../systems/Professions';
+import type { PresenceApi } from '../systems/Social';
 import type { ProcEngine } from '../combat/Procs';
 import type { Auras } from '../combat/Auras';
 import type { Corpses } from '../combat/Corpses';
@@ -67,6 +68,8 @@ export interface Services {
   corpses?: Corpses;
   /** GDD_LIFE (L-00): gathering and crafting service (systems/Professions.ts). Stub until L-05; created by Game.ts then. */
   professions?: Professions;
+  /** Social (systems/Social.ts): online players on the global lobby (list / count / find). Created by Game.ts; undefined in sims. */
+  presence?: PresenceApi;
   character: CharacterState | null;
   world: World | null;
   player: Player | null;
