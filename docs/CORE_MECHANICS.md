@@ -217,6 +217,8 @@ Berrak Zihin, Ani Ölüm…) carry over into the new kits.
 | s2 | 2 | mobility | Işınlan (Blink), Çekiş, Süzülme |
 | s3 | 3 | personal defensive | Buz Kalkanı, Pelerin, Kemik Kalkanı |
 | s4 **(new, KeyG)** | G | interrupt / utility | Büyü Kesme, Tekme, Susturma Oku |
+
+**Key resolution (all 26 letters and 0–9 are bound):** `skill_s4` takes **KeyG**; `guard` (hold to block/parry) moves to **Mouse3 + CapsLock** (it already had Mouse3); `heavyAttack` stays Mouse4 / '-'. A one-time bindings migration moves a stored guard→KeyG to CapsLock unless the player rebound it.
 | m45 / m90 / m180 | X V T | majors bucketed to 45 s / 90 s / 3 min | Arkan Yükseliş, Yanma (Combustion), Buzlu Damarlar, Gölge Bıçakları |
 
 Rules: 9–12 abilities per spec; WoW cast times ×0.8, WoW cooldowns kept (only majors are bucketed); GCD per
