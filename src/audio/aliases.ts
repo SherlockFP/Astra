@@ -66,6 +66,11 @@ export const SFX_ALIASES: Record<string, SfxAlias> = {
   waltz_loop: { id: 'buff', volume: 0.5 },
   // Leş Uyanışı swarm bed: a high, quiet creature idle until a flies loop is mapped.
   flies_loop: { id: 'enemy_idle', pitch: 1.8, volume: 0.25 },
+  // ---- KIT PK-0 (docs/kits/casters-rogue.md §g): kit sounds until audio/manifest.ts maps them.
+  arcane_missile_launch: { id: 'spell_cast', pitch: 1.2 },
+  arcane_missile_hit: { id: 'arcane_impact', pitch: 1.3 },
+  ice_shatter: { id: 'frost_impact' },
+  shadowstep_snap: { id: 'whoosh', pitch: 0.8 },
 };
 
 /**

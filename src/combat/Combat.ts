@@ -300,12 +300,14 @@ export class Combat {
     const isMelee = tags.includes('melee');
     const wasFrozen = target.statuses.has('freeze');
 
-    // stealth / ambush / Gölge Dansı window
+    // stealth / ambush / Gölge Dansı window. KIT PK-0: the stealth opener (x1.5, forced crit, consumed on the hit) is only the
+    // Kaybol stealth (ActiveStatus.opener). While Gölge Dansı (shadow_veil_cd) is up, hits neither consume stealth nor get the opener.
     let forceCrit = !!spec.forceCrit;
     let more = spec.more ?? 1;
     let critAdd = spec.critAdd ?? 0;
     if (!spec.isDot && !spec.tick) {
-      if (attacker.statuses.has('stealth')) {
+      const danceUp = attacker.statuses.has('shadow_veil_cd');
+      if (!danceUp && attacker.statuses.get('stealth')?.opener === true) {
         more *= 1.5; forceCrit = true;
         critAdd += sp('leg_nightstalker_hood')?.critDamage ?? 0;
         attacker.statuses.remove('stealth');

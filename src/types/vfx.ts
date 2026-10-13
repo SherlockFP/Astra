@@ -61,6 +61,10 @@ export const VFX_IDS = [
   'ambient_stardust', 'arcane_orb', 'void_torrent', 'dome_suppress', 'web_burst', 'egg_burst', 'swarm_cloud', 'black_blood',
   'static_field', 'storm_flash', 'ambient_leaves', 'rune_pad_glow', 'ambient_anima_motes', 'ambient_mist', 'pollen_cloud',
   'anima_glob', 'sigil_pulse', 'consumption_swirl', 'acid_pool',
+  // ---- KIT PK-0 (docs/kits/casters-rogue.md §g, append-only): kit presets. Each has an alias in vfx/aliases.ts until its
+  // preset_kit file implements it.
+  'arcane_missile', 'arcane_missile_hit', 'prismatic_bolt', 'glacial_spike', 'shatter_burst', 'shadowstep_streak',
+  'secret_clones', 'link_tether', 'darkglare_eye',
 ] as const;
 
 export type VfxId = (typeof VFX_IDS)[number];

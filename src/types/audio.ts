@@ -64,6 +64,8 @@ export const SFX_IDS = [
   'void_crack', 'lift_move', 'bell_toll', 'water_lap', 'chandelier_creak', 'crowd_murmur', 'lift_hum', 'waltz_loop',
   // Leş Uyanışı ambience (docs/dungeons/les_uyanisi.md, SP-11): aliased in audio/aliases.ts until a file exists.
   'flies_loop',
+  // ---- KIT PK-0 (docs/kits/casters-rogue.md §g, append-only): kit sounds. audio/aliases.ts plays the closest existing id until mapped.
+  'arcane_missile_launch', 'arcane_missile_hit', 'ice_shatter', 'shadowstep_snap',
 ] as const;
 
 export type SfxId = (typeof SFX_IDS)[number];

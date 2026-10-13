@@ -18,7 +18,7 @@ import type { SpecId } from '../types/v2';
 import { SKILLS } from '../data/skills';
 import { SIGNATURE_SKILLS } from '../data/skillSpecs';
 import { getSpec } from '../data/specs';
-import { SPEC_ORDER, classOfSpec, getTree } from '../data/talentTrees/index';
+import { SPEC_ORDER, classOfSpec, getTree, specHasTree } from '../data/talentTrees/index';
 import { SLOT_ORDER, parentsOf, slotGate, slotType } from '../data/talentTrees/layout';
 import { parseFx } from '../data/talentTrees/fx';
 import { emit } from './notify';
@@ -329,6 +329,8 @@ export class TalentSystem {
     if (!char) return this.refuse('Karakter seçilmedi.');
     const save = char.save;
     if (!SPEC_ORDER.includes(id) || classOfSpec(id) !== save.classId) return this.refuse('Bu uzmanlık bu sınıfa ait değil.');
+    // KIT PK-0: a registered spec without a generated tree (rogue_subtlety until the T-step) cannot be picked
+    if (!specHasTree(id)) return this.refuse('Bu uzmanlık henüz hazır değil.');
     const prev = save.spec;
     if (prev === id) {
       this.lastReason = null;

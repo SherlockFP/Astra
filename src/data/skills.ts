@@ -16,6 +16,10 @@ import { registerLayerPaladinCasters } from './skillsets/layerPaladinCasters';
 // GDD_TALENTS (T0): compile-only stubs, filled by T8 (mage spec rows) and T9 (class utility rows). Merged at the end of this file.
 import { MAGE_SPEC_SKILLS } from './skills_mage_specs';
 import { CLASS_UTIL_SKILLS } from './skills_class_utils';
+// KIT PK-0 (docs/kits/casters-rogue.md §h): empty kit tables until PK-MAGE / PK-ROGUE / PK-WARLOCK fill them.
+import { SKILLS_KIT_MAGE } from './skills_kit_mage';
+import { SKILLS_KIT_ROGUE } from './skills_kit_rogue';
+import { SKILLS_KIT_WARLOCK } from './skills_kit_warlock';
 
 /**
  * OWNER: combat module. Every player skill (basic attack combo steps included) keyed by id. GDD_SYSTEMS 2.1-2.4.
@@ -699,6 +703,8 @@ registerLayerMonkArcher(add);
 registerLayerPaladinCasters(add);
 // GDD_TALENTS (T0): talent skill rows (mage specs §1.3.3, class utilities §1.4). Empty stubs until T8 / T9.
 Object.assign(SKILLS, MAGE_SPEC_SKILLS, CLASS_UTIL_SKILLS);
+// KIT PK-0: the kit packages' rows (the warlock file holds only the overrides of the coded class-utility rows).
+Object.assign(SKILLS, SKILLS_KIT_MAGE, SKILLS_KIT_ROGUE, SKILLS_KIT_WARLOCK);
 
 /** Skill ids of a class in unlock order (8) — convenience for panels. */
 export function classSkillIds(classId: SkillDef['classId']): string[] {

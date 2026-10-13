@@ -31,6 +31,10 @@ import { BEAM_TIERS, lootBeamFx, worldPresets } from './presets_world';
 import { featPresets } from './presets_feel';
 import { subscribeFeedback } from './feedback';
 import { subscribeWowFeedback, wowPresets } from './presets_wow';
+// KIT PK-0 (docs/kits/casters-rogue.md §h): kit presets, empty until PK-MAGE / PK-ROGUE / PK-WARLOCK.
+import { PRESETS_KIT_MAGE } from './presets_kit_mage';
+import { PRESETS_KIT_ROGUE } from './presets_kit_rogue';
+import { PRESETS_KIT_WARLOCK } from './presets_kit_warlock';
 
 export interface VfxHandle {
   readonly alive: boolean;
@@ -46,7 +50,10 @@ export interface TelegraphHandle {
   cancel(): void;
 }
 
-const PRESETS: Record<string, Preset> = { ...combatPresets, ...elementalPresets, ...worldPresets, ...featPresets, ...wowPresets };
+const PRESETS: Record<string, Preset> = {
+  ...combatPresets, ...elementalPresets, ...worldPresets, ...featPresets, ...wowPresets,
+  ...PRESETS_KIT_MAGE, ...PRESETS_KIT_ROGUE, ...PRESETS_KIT_WARLOCK,
+};
 
 /**
  * True when `spawn(id)` plays something: a registered preset, a projectile id, or an alias (vfx/aliases.ts) whose target exists.

@@ -13,6 +13,10 @@ import type { RoleId, SpecDef, SpecId } from '../types/v2';
 import type { StatBlock } from '../types/stats';
 import type { ClassId } from '../types/common';
 import { TALENT_SPECS } from './specs_talents';
+// KIT PK-0 (docs/kits/casters-rogue.md §h): empty kit spec tables until the class packages fill them.
+import { SPECS_KIT_MAGE } from './specs_kit_mage';
+import { SPECS_KIT_ROGUE } from './specs_kit_rogue';
+import { SPECS_KIT_WARLOCK } from './specs_kit_warlock';
 
 const SPEC_LIST: SpecDef[] = [
   // ---------------------------------------------------------------- Şövalye
@@ -134,6 +138,7 @@ const SPEC_LIST: SpecDef[] = [
 export const SPECS: Partial<Record<SpecId, SpecDef>> = {};
 for (const s of SPEC_LIST) SPECS[s.id] = s;
 Object.assign(SPECS, TALENT_SPECS);
+Object.assign(SPECS, SPECS_KIT_MAGE, SPECS_KIT_ROGUE, SPECS_KIT_WARLOCK);
 
 /** Spec definition by id; undefined while the registry is empty or the id is unknown. */
 export function getSpec(id: SpecId | null | undefined): SpecDef | undefined {

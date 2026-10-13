@@ -56,7 +56,7 @@ export function condHolds(c: Cond, env: CondEnv): boolean {
     case 'sst': return self.statuses.has(c.status as StatusId);
     case 'still': return isStanding(self);
     case 'moving': return !isStanding(self);
-    case 'stealth': return self.statuses.has('stealth');
+    case 'stealth': return self.statuses.has('stealth') || self.statuses.has('shadow_veil_cd');
     case 'elite': {
       const r = rankOf(target);
       return r !== undefined && ELITE_OR_HIGHER.has(r);

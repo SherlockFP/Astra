@@ -1113,6 +1113,9 @@ const smoke: Behavior = {
     sys.shake(0.08);
     if (c.remote) return;
     sys.applySelf(c, def.selfStatuses ?? []);
+    // KIT PK-0: Kaybol's stealth is the opener (Combat.ts); the flag is set on the instance applySelf just made
+    const kaybolStealth = def.selfStatuses?.find((s) => s.status === 'stealth');
+    if (kaybolStealth) caster.statuses.apply('stealth', kaybolStealth.duration, { sourceId: caster.id, opener: true });
     let blindT = 0;
     sys.addZone({
       x: px, z: pz, radius, duration: dur, tick: 0.25, t: 0, next: 0.05,
@@ -1125,7 +1128,7 @@ const smoke: Behavior = {
           }
         }
         if (blindT >= 1) blindT = 0;
-        if (dist2(caster.position, z) <= radius) caster.statuses.apply('stealth', 1.2, { sourceId: caster.id });
+        if (dist2(caster.position, z) <= radius) caster.statuses.apply('stealth', 1.2, { sourceId: caster.id, opener: true });
       },
     });
   },
@@ -1527,9 +1530,18 @@ export function behaviorFor(def: SkillDef): Behavior {
   return (def.behavior && BEHAVIORS[def.behavior]) || TARGETING_BEHAVIORS[def.targeting] || meleeArc;
 }
 
+/** KIT PK-0 (docs/kits/casters-rogue.md E9): damage factor of the `crowd` AoE buttons. 8 targets = 1.0, one target = 0.475. */
+export function crowdFactor(n: number): number {
+  return 0.4 + (0.6 * Math.min(Math.max(0, n), 8)) / 8;
+}
+
 // GDD_TALENTS: side-effect modules that register talent behaviours (T9 utilities) and the spec hook tables (T8 mage).
 // The mage tables are registered under their trait ids (specials.ts registerSpecHooks, GDD_TALENTS T7).
 import './utilities';
+// KIT PK-0: kit behaviour tables (empty until PK-MAGE / PK-ROGUE / PK-WARLOCK); each installs itself into BEHAVIORS.
+import './mageKit';
+import './rogueKit';
+import './warlockKit';
 import { mageHooks } from '../specs/mage';
 import { registerSpecHooks } from '../specials';
 for (const trait of mageHooks.traits) registerSpecHooks(trait, mageHooks);

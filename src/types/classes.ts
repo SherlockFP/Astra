@@ -14,7 +14,13 @@ import type { StatusId } from './skills';
 export interface PipDef {
   id: PipId;
   name: string;               // Turkish
-  max: number;                // 5 for every pip of the new classes (+1 from some notables)
+  max: number;                // 5 for every pip of the new classes (+1 from some notables). With `scale`, the max in internal units.
+  /**
+   * KIT PK-0: internal units per displayed pip (warlock shard fragments: max 50, scale 10 = five shown pips). The stored count,
+   * `max`, and every SkillDef.pip amount (cost / consume / gain / min) are in internal units; `pips:changed` reports
+   * `points = floor(count / scale)` and `max / scale`. Default 1.
+   */
+  scale?: number;
   color: string;              // hex, e.g. '#5de0a8' (Çi)
   icon: string;               // icon name in public/assets/icons (no path, no .svg), e.g. 'buff-haste'
   /** Passive decay: -1 pip every `every` seconds after `after` seconds out of combat (Çi: after 8 s, every 4 s). */

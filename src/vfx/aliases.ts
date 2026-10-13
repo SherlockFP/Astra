@@ -103,6 +103,16 @@ export const VFX_ALIASES: Record<string, VfxAlias> = {
   sigil_pulse: { id: 'buff_aura', color: 0x60ffd8 },
   consumption_swirl: { id: 'portal_swirl', color: 0x60c8ff },
   acid_pool: { id: 'poison_cloud', color: 0x9fff40, scale: 0.9 },
+  // ---- KIT PK-0 (docs/kits/casters-rogue.md §g): kit presets until their preset files implement them (presets_kit_*.ts).
+  arcane_missile: { id: 'arcane_projectile', scale: 1.1 },
+  arcane_missile_hit: { id: 'arcane_burst', scale: 0.5 },
+  prismatic_bolt: { id: 'arcane_projectile', color: 0xff80ff, scale: 1.2 },
+  glacial_spike: { id: 'frost_projectile', scale: 1.4 },
+  shatter_burst: { id: 'frost_burst', color: 0xd8f4ff, scale: 1.2 },
+  shadowstep_streak: { id: 'blink', color: 0x6a3ab0 },
+  secret_clones: { id: 'shadow_ground', color: 0x9a7ad0, scale: 0.8 },
+  link_tether: { id: 'haste_trail', color: 0x9fd840, scale: 0.6 },
+  darkglare_eye: { id: 'curse_loop', color: 0x9a4cff, scale: 0.9 },
 };
 
 /** Alias entry for a VFX id, or undefined. Never throws (unknown ids are silently nothing). */

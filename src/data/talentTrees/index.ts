@@ -67,6 +67,9 @@ const SPEC_TABLE: readonly SpecEntry[] = [
   { id: 'necromancer_bone', classId: 'necromancer', name: 'Kemik Ustası' },
   { id: 'warlock_affliction', classId: 'warlock', name: 'Azap' },
   { id: 'warlock_destruction', classId: 'warlock', name: 'Yıkım' },
+  // KIT PK-0 (index 21, appended so existing export strings stay valid). Its raw tree arrives with the T-step (gen-talent-data):
+  // until then getTree returns null and specsOfClass omits it.
+  { id: 'rogue_subtlety', classId: 'rogue', name: 'Gölge' },
 ];
 
 /** Class ids in canonical order (§1.2). */
@@ -81,9 +84,9 @@ export function treeIdFor(kind: TreeKind, classId: ClassId, specId?: SpecId): st
   return `spec:${specId}`;
 }
 
-/** The specs of a class, in §1.2 order. */
+/** The specs of a class, in §1.2 order. Specs without a raw tree yet (KIT PK-0 rogue_subtlety) are left out. */
 export function specsOfClass(classId: ClassId): SpecId[] {
-  return SPEC_TABLE.filter((s) => s.classId === classId).map((s) => s.id);
+  return SPEC_TABLE.filter((s) => s.classId === classId && specHasTree(s.id)).map((s) => s.id);
 }
 
 /** The class a spec belongs to (undefined for an id outside the 21 listed specs). */
@@ -147,8 +150,22 @@ for (const d of TREE_DESCS) {
   Object.defineProperty(TREES, d.key, { enumerable: true, get: () => buildDesc(d) });
 }
 
-/** The tree of a class (`kind 'class'`, `id` = class id) or a spec (`kind 'spec'`, `id` = spec id); null if unknown. */
+/** True when the raw data of a tree exists (a registered id whose tools/gen-talent-data.mjs output is still missing is false). */
+function hasRawTree(d: TreeDesc): boolean {
+  const file = RAW_FILES[d.classId];
+  return d.kind === 'class' ? !!file.class : !!(d.specId && file.specs[d.specId]);
+}
+
+/** True when a spec has a built tree (SPEC_TABLE entry plus raw data). */
+export function specHasTree(specId: SpecId): boolean {
+  const d = TREE_DESCS.find((x) => x.kind === 'spec' && x.specId === specId);
+  return !!d && hasRawTree(d);
+}
+
+/** The tree of a class (`kind 'class'`, `id` = class id) or a spec (`kind 'spec'`, `id` = spec id); null if unknown or not generated yet. */
 export function getTree(kind: TreeKind, id: string): TreeDef | null {
   const key = kind === 'class' ? `class:${id}` : `spec:${id}`;
-  return Object.hasOwn(TREES, key) ? TREES[key] : null;
+  const d = TREE_DESCS.find((x) => x.key === key);
+  if (!d || !hasRawTree(d)) return null;
+  return TREES[key];
 }

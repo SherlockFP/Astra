@@ -130,14 +130,14 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     basicAttack: 'mage_basic',
     skills: [
       'mage_fireball', 'mage_frost_nova', 'mage_blink', 'mage_meteor',
-      'mage_blizzard', 'mage_arcane_orb', 'mage_mana_barrier', 'mage_arcane_cataclysm',
+      'mage_blizzard', 'mage_arcane_orb',
     ],
     startingItems: ['staff_t1'],
     color: '#6aa8ff',
   },
   rogue: {
     id: 'rogue',
-    specs: ['rogue_assassin', 'rogue_alchemist'],
+    specs: ['rogue_assassin', 'rogue_alchemist', 'rogue_subtlety'],
     name: 'Haydut',
     desc: 'Gölgelerde dolaşan çevik suikastçı. Çift hançer ve arbaletle hızlı vurur, zehirle öldürür.',
     role: 'Çevik Suikastçı',
@@ -156,8 +156,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     },
     basicAttack: 'rogue_basic',
     skills: [
-      'rogue_crossbow_shot', 'rogue_shadow_step', 'rogue_fan_of_knives', 'rogue_eviscerate',
-      'rogue_smoke_bomb', 'rogue_bolt_rain', 'rogue_deadly_venom', 'rogue_death_blossom',
+      'rogue_shadow_step', 'rogue_fan_of_knives', 'rogue_eviscerate', 'rogue_smoke_bomb',
     ],
     startingItems: ['dagger_t1', 'dagger_t1'],
     color: '#8d6bd6',
@@ -396,8 +395,8 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     },
     basicAttack: 'warlock_basic',
     skills: [
-      'warlock_shadow_bolt', 'warlock_corruption', 'warlock_agony', 'warlock_summon_demon',
-      'warlock_drain_life', 'warlock_rain_of_fire', 'warlock_life_tap', 'warlock_summon_infernal',
+      'warlock_shadow_bolt', 'warlock_corruption', 'warlock_agony',
+      'warlock_drain_life', 'warlock_rain_of_fire', 'warlock_summon_infernal',
     ],
     startingItems: ['staff_t1'],
     color: '#c05ae0',
@@ -407,7 +406,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     armorWeight: 'light',
     weapons: ['staff', 'wand'],
     offhands: ['tome'],
-    secondary: { id: 'shard', name: 'Ruh Parçası', max: 5, color: '#b06bff', icon: 'skill-curse' },
+    secondary: { id: 'shard', name: 'Ruh Parçası', max: 50, scale: 10, color: '#b06bff', icon: 'skill-curse' },
     specs: ['warlock_affliction', 'warlock_destruction'],
     visual: {
       url: '/assets/models/characters/Rogue_Hooded.glb',

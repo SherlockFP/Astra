@@ -15,6 +15,7 @@ import { gcdFor, isOffGcd } from './gcd';
 import { resolveProcMods, consumeProcMods, type ResolvedProcMods } from './procMods';
 import { PUSHBACK_CFG, pushesBack, channelCut, lockoutSchool, LOCKOUT_SCHOOLS, type HitForPushback, type LockoutSchool } from './castRules';
 import { ProcWatcher } from './procFx';
+import { WatcherHost, WATCHER_RADIUS, type WatcherCtx } from '../data/watchers';
 import { SpellQueue, type TakeState } from './spellQueue';
 import { GUARD_COUNTER_BY_CLASS, GUARD_COUNTER_CD, GUARD_COUNTER_COST, HEAVY_BY_CLASS, KRT_BY_CLASS, RIPOSTE_BY_CLASS, weaponArtVfx, type ChargeProfile, type SwingProfile } from './heavy';
 import { ART_BY_CATEGORY, getWeaponArt } from '../data/weaponArts';
@@ -277,6 +278,7 @@ export class SkillSystem {
   private pipClock = new Map<string, number>();
   /** CW-07 §2.7: emits proc:gain / proc:fade for the local player's proc statuses (procFx.ts). */
   private procWatch = new ProcWatcher();
+  private watchers = new WatcherHost();
 
   constructor() {
     // GDD_TALENTS T7: the dynamic-buff entry point of the proc actions (procActions.liveProcHost.buff reads G.status)
@@ -545,7 +547,9 @@ export class SkillSystem {
   private setPip(actor: Actor, id: string, n: number, max: number): void {
     const bag = actor as unknown as { pips?: Record<string, number> };
     bag.pips = { ...(bag.pips ?? {}), [id]: n };
-    G.events.emit('pips:changed', { id: id as PipId, points: n, max });
+    // KIT PK-0: the event reports display pips (PipDef.scale; warlock shard: 50 fragments = 5 pips). Default scale 1.
+    const scale = TALENT_PIPS[id as PipId]?.scale ?? 1;
+    G.events.emit('pips:changed', { id: id as PipId, points: Math.floor(n / scale), max: Math.floor(max / scale) });
   }
 
   /** Skill ids bound to the bar slot of this player (basic attack for lmb). */
@@ -1580,6 +1584,8 @@ export class SkillSystem {
 
   private updateLocal(p: Player, st: ActorState, dt: number): void {
     this.procWatch.update(p, dt);
+    // KIT PK-0 (E4): hidden watcher statuses (aoe_mode, exec_window), evaluated every 0.25 s
+    this.watchers.update(dt, p.statuses, () => this.watcherCtx(p));
     // charge hold clock (GDD_V2 §3.2): time the charge key has been down (see chargeDown); 0 once released
     this.lmbHeld = this.chargeDown() ? this.lmbHeld + dt : 0;
     // a charge pose can only outlive its action through a missed reset: never leave the clip frozen
@@ -2524,9 +2530,14 @@ export class SkillSystem {
   addCombo(p: Actor, n: number): void {
     const st = this.states.get(p.id);
     if (!st || (p as Player).classId !== 'rogue') return;
-    st.cp = Math.min(5, st.cp + Math.max(0, Math.round(n)));
+    st.cp = Math.min(this.comboCap(p), st.cp + Math.max(0, Math.round(n)));
     st.cpTimer = 0;
     this.emitCp(st);
+  }
+
+  /** KIT PK-0 (docs/kits/casters-rogue.md §g / E6): combo point cap per spec. Gölge (rogue_subtlety) = 6, every other spec 5. */
+  comboCap(p: Actor): number {
+    return specOf(p)?.id === 'rogue_subtlety' ? 6 : 5;
   }
 
   consumeCombo(p: Actor): number {
@@ -2539,7 +2550,7 @@ export class SkillSystem {
   }
 
   private emitCp(st: ActorState): void {
-    G.events.emit('combopoints:changed', { points: st.cp, max: 5 });
+    G.events.emit('combopoints:changed', { points: st.cp, max: this.comboCap(st.player) });
   }
 
   /** One hit of a skill on one enemy (no-op for remote visuals). */
@@ -3107,9 +3118,18 @@ export class SkillSystem {
     });
   }
 
+  /** KIT PK-0 (E4): condition inputs of the watchers, from the local player's selected target. */
+  private watcherCtx(p: Player): WatcherCtx {
+    const t = p.targetId && G.world ? G.world.getActor(p.targetId) : undefined;
+    if (!t || t.isDead || !G.world) return { targetHpPct: null, enemiesNearTarget: 0 };
+    const near = G.world.enemiesInRadius({ x: t.position.x, z: t.position.z }, WATCHER_RADIUS, t.position.y);
+    return { targetHpPct: t.maxHp > 0 ? t.hp / t.maxHp : null, enemiesNearTarget: near.length };
+  }
+
   private clearAll(): void {
     G.procs?.reset();
     this.procWatch.reset();
+    this.watchers.reset();
     this.masteryAt.clear();
     for (const st of this.states.values()) {
       try { if (st.aiming) this.endAim(st.player, st, false); } catch { /* ignore */ }

@@ -11,6 +11,10 @@
 import type { PipId } from '../types/common';
 import type { StatusId } from '../types/skills';
 import type { ProcStatusView } from '../data/procs';
+// KIT PK-0 (docs/kits/casters-rogue.md §h): kit proc mods (empty until the class packages fill them), merged below.
+import { PROC_MODS_KIT_MAGE } from '../data/procs_kit_mage';
+import { PROC_MODS_KIT_ROGUE } from '../data/procs_kit_rogue';
+import { PROC_MODS_KIT_WARLOCK } from '../data/procs_kit_warlock';
 
 export interface ProcMod {
   /** Proc status that enables this mod. Also the key of PROC_MODS. */
@@ -68,6 +72,9 @@ export function registerProcMods(rows: readonly ProcMod[]): void {
     PROC_MODS[row.status] = row;
   }
 }
+
+// KIT PK-0: one merge line for the three kit files (empty until PK-MAGE / PK-ROGUE / PK-WARLOCK).
+registerProcMods([...PROC_MODS_KIT_MAGE, ...PROC_MODS_KIT_ROGUE, ...PROC_MODS_KIT_WARLOCK]);
 
 /** Merged effect of every active proc mod that applies to one skill. */
 export interface ResolvedProcMods {

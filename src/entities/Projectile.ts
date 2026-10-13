@@ -43,6 +43,12 @@ export interface ProjectileOpts {
    * `world.vertical` is false.
    */
   dirY?: number;
+  /**
+   * KIT PK-0 (docs/kits/casters-rogue.md E1, Arkan Füzeler): quadratic Bezier toward the live target with a lateral control
+   * point (`lateral`, m), a height lift (`rise`, m) and a decay of the curve over the flight (`decay`, 0..1). Declared here only;
+   * steering comes with the homing_missiles behaviour (PK-MAGE). Until then steer() ignores it.
+   */
+  curve?: { lateral: number; rise: number; decay: number };
 }
 
 /** §12: max aim slope for projectiles (rise per metre). */

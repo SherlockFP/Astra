@@ -21,6 +21,8 @@ export interface ActiveStatus {
   /** periodic damage per second already resolved by the applier (dots), 0 if none */
   dps: number;
   tickTimer: number;
+  /** KIT PK-0: the Kaybol stealth opener (x1.5 + forced crit on the first hit, consumed). Other stealth has no flag. */
+  opener?: boolean;
 }
 
 export interface ApplyOpts {
@@ -32,6 +34,8 @@ export interface ApplyOpts {
   maxStacks?: number;
   /** Visual replication from the network (estatus/pstatus): skips immunity / diminishing-returns / duration rules. */
   replicated?: boolean;
+  /** KIT PK-0: marks the stealth as Kaybol's opener (see ActiveStatus.opener). */
+  opener?: boolean;
 }
 
 /**
@@ -186,7 +190,7 @@ export class StatusEffects {
       const s0 = mode === 'stack' || mode === 'dotstack' ? Math.min(maxStacks, stackAdd) : 1;
       this.active.set(id, {
         id, remaining: dur, duration: dur, stacks: s0, magnitude: mag,
-        sourceId: opts.sourceId ?? null, dps: opts.dps ?? 0, tickTimer: 0,
+        sourceId: opts.sourceId ?? null, dps: opts.dps ?? 0, tickTimer: 0, opener: opts.opener === true,
       });
       changed = true;
       statusStacks = s0;
@@ -234,6 +238,7 @@ export class StatusEffects {
           if (mag > 0 && mag !== cur.magnitude) { cur.magnitude = mag; changed = true; }
       }
       cur.sourceId = opts.sourceId ?? cur.sourceId;
+      if (opts.opener) cur.opener = true;
       statusStacks = cur.stacks;
     }
 

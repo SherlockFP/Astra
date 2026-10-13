@@ -76,4 +76,6 @@ export const TALENT_SPECS: Partial<Record<string, SpecDef>> = {
  */
 export const TALENT_PIPS: Partial<Record<PipId, PipDef>> = {
   arcane: { id: 'arcane', name: 'Gizem Yükü', max: 4, color: '#b78cff', icon: 'skill-arcane-orb', decay: { after: 8, every: 5 } },
+  // KIT PK-0 (docs/kits/casters-rogue.md §g E6): warlock shard fragments. max / costs / gains are fragments; 10 = one shown pip.
+  shard: { id: 'shard', name: 'Ruh Parçası', max: 50, scale: 10, color: '#b06bff', icon: 'skill-curse' },
 };

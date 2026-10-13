@@ -123,9 +123,16 @@ function endStage(st, summary = '') {
 
 // ============================================================================ tree helpers
 
+/**
+ * KIT PK-0: specs registered in SPEC_TABLE whose raw tree arrives with the T-step (tools/gen-talent-data.mjs). They are
+ * allow-listed: the tree-based stages run on SPEC_TREE_ORDER and the crossrefs stage reports each one as a warning.
+ */
+const TREE_PENDING_SPECS = new Set(['rogue_subtlety']);
+const SPEC_TREE_ORDER = SPEC_ORDER.filter((s) => !TREE_PENDING_SPECS.has(s));
+
 const TREE_LIST = [
   ...CLASS_ORDER.map((c) => ({ kind: 'class', id: c, classId: c, where: `class:${c}` })),
-  ...SPEC_ORDER.map((s) => ({ kind: 'spec', id: s, classId: classOfSpec(s), where: `spec:${s}` })),
+  ...SPEC_TREE_ORDER.map((s) => ({ kind: 'spec', id: s, classId: classOfSpec(s), where: `spec:${s}` })),
 ];
 
 /** Builds one tree; a build error (missing row, bad palette, unknown slot) comes back as `error` instead of throwing. */
@@ -500,7 +507,7 @@ function allocationErrors(tree, arr) {
 function stageStrings() {
   const st = makeStage('strings');
   let ok = 0;
-  for (const spec of SPEC_ORDER) {
+  for (const spec of SPEC_TREE_ORDER) {
     const cls = classOfSpec(spec);
     const classTree = getTree('class', cls);
     const specTree = getTree('spec', spec);
@@ -546,7 +553,7 @@ function stageStrings() {
     const bad = web.slice(0, -2) + (parseInt(web.slice(-2), 16) ^ 1).toString(16).padStart(2, '0').toUpperCase();
     if (decodeWeb(bad).ok) st.err(`web:${cls}`, 'bad CRC accepted');
   }
-  endStage(st, `strings ${ok}/${SPEC_ORDER.length} specs round trip, web ${CLASS_ORDER.length} starts`);
+  endStage(st, `strings ${ok}/${SPEC_TREE_ORDER.length} specs round trip, web ${CLASS_ORDER.length} starts`);
   return ok;
 }
 
@@ -706,11 +713,19 @@ function stageBench() {
 
 // ============================================================================ stage: crossrefs
 
-const INTERRUPT_EXCEPTIONS = { knight: 'knight_shield_bash' };
+// Classes whose interrupt is not the one-per-class s05 pick. KIT PK-0 adds mage_counterspell, rogue_kick and warlock_spell_lock
+// (their kick is a class utility; s05 A still grants it today). An exception class may hold only its own kick in s05.
+const INTERRUPT_EXCEPTIONS = {
+  knight: 'knight_shield_bash',
+  mage: 'mage_counterspell',
+  rogue: 'rogue_kick',
+  warlock: 'warlock_spell_lock',
+};
 
 function stageCrossrefs() {
   const st = makeStage('crossrefs');
   let grants = 0;
+  for (const s of TREE_PENDING_SPECS) st.warn(`spec:${s}`, 'no raw tree yet (KIT PK-0 allow-list; the T-step generates it)');
 
   // every G skill has a SkillDef row
   for (const r of TREE_RESULTS) {
@@ -726,7 +741,7 @@ function stageCrossrefs() {
   }
 
   // every SpecDef.treeSkills slot is a G row of that spec's tree
-  for (const spec of SPEC_ORDER) {
+  for (const spec of SPEC_TREE_ORDER) {
     const def = getSpec(spec);
     const tree = getTree('spec', spec);
     if (!def || !def.treeSkills) continue;
@@ -748,7 +763,8 @@ function stageCrossrefs() {
     const exception = INTERRUPT_EXCEPTIONS[cls];
     if (exception) {
       if (SKILLS[exception]?.behavior !== 'interrupt') st.warn(`class:${cls}`, `${exception} has no behavior 'interrupt' yet (combat owner)`);
-      if (interrupts.length !== 0) st.err(`class:${cls}/s05`, 'the exception class has an interrupt in s05 too');
+      const stray = interrupts.filter((s) => s !== exception);
+      if (stray.length) st.err(`class:${cls}/s05`, `the exception class has ${stray.join(', ')} in s05 besides its exception skill`);
     } else if (interrupts.length === 1) {
       withOne += 1;
     } else {
@@ -757,7 +773,7 @@ function stageCrossrefs() {
   }
   if (withOne !== CLASS_ORDER.length - Object.keys(INTERRUPT_EXCEPTIONS).length) st.err('crossrefs', 'interrupt rule not met');
 
-  endStage(st, `crossrefs ${grants} grants, ${SPEC_ORDER.length} specs, ${CLASS_ORDER.length} class s05 pairs`);
+  endStage(st, `crossrefs ${grants} grants, ${SPEC_TREE_ORDER.length} specs, ${CLASS_ORDER.length} class s05 pairs`);
   return grants;
 }
 

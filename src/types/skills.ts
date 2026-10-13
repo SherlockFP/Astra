@@ -138,6 +138,16 @@ export type StatusId =
   | 'petrify' | 'mortal_wound' | 'disguise' | 'bewitch' | 'exposed' | 'kin_laneti' | 'asit_yarasi'
   | 'arcane_lockdown' | 'withering_soul' | 'deep_wound' | 'ys_intensity' | 'ay_cesmesi'
   | 'mead_sticky' | 'rod_charged'
+  // ---- KIT PK-0 (docs/kits/casters-rogue.md §g, append-only): mage / rogue / warlock kit statuses. StatusDef rows live in
+  // data/statuses_kit_<class>.ts (`freezing` is max 12, `arcane_salvo` max 20, `pyroclasm` 2 stacks, `backdraft` 2 stacks).
+  // aoe_mode / exec_window are hidden watcher statuses (data/watchers.ts).
+  | 'arcane_salvo' | 'prismatic_ready' | 'pyroclasm' | 'icicles' | 'glacial_ready' | 'comet_ready' | 'freezing_rain'
+  | 'freezing' | 'prismatic_barrier' | 'ice_barrier'
+  | 'garrote' | 'rupture' | 'kingsbane' | 'deathmark' | 'darkest_night' | 'improved_garrote' | 'find_weakness'
+  | 'shadow_technique' | 'shadowstep_haste' | 'behind_grace' | 'feint' | 'goremaw' | 'alchemy_link' | 'elixir_ramp'
+  | 'brew_boost' | 'ascendant'
+  | 'haunt' | 'malevolence' | 'darkglare_active' | 'backdraft' | 'fiendish_cruelty' | 'dark_pact'
+  | 'aoe_mode' | 'exec_window'
   // Kibir Tecessumu (P-27, append-only): Kibirli elite buff (+dmg, +move speed). StatusDef + STATUS_RULES registered by systems/Affixes.ts.
   | 'kibirli'
   // Taşkasa (SP-21, append-only): boss and mechanic statuses, StatusDefs + STATUS_RULES rows in data/statuses.ts (docs/dungeons/taskasa.md §9).

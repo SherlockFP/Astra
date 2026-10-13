@@ -13,6 +13,10 @@
  * requires every glow id to be in SKILLS or in that set).
  */
 import type { StatusId } from '../types/skills';
+// KIT PK-0 (docs/kits/casters-rogue.md §h): empty kit tables (proc rows, glow rules) merged below.
+import { PROC_DEFS_KIT_MAGE, GLOW_RULES_KIT_MAGE } from './procs_kit_mage';
+import { PROC_DEFS_KIT_ROGUE, GLOW_RULES_KIT_ROGUE } from './procs_kit_rogue';
+import { PROC_DEFS_KIT_WARLOCK, GLOW_RULES_KIT_WARLOCK } from './procs_kit_warlock';
 
 export type ProcOverlay = 'top' | 'left' | 'right' | 'center' | 'both';
 
@@ -107,6 +111,9 @@ export function getProcDef(id: string): ProcDef | undefined {
   return PROC_DEFS.find((d) => d.id === id);
 }
 
+// KIT PK-0: one merge line per kit file (rows are empty until PK-MAGE / PK-ROGUE / PK-WARLOCK fill them).
+registerProcDefs([...PROC_DEFS_KIT_MAGE, ...PROC_DEFS_KIT_ROGUE, ...PROC_DEFS_KIT_WARLOCK]);
+
 /** Overlay position for a proc at a given stack count (falls back to the row's `overlay`). */
 export function procOverlayFor(def: ProcDef, stacks: number): ProcOverlay {
   return def.overlayByStacks?.[stacks] ?? def.overlay;
@@ -146,7 +153,9 @@ export interface GlowState {
 
 export type GlowRuleId =
   | 'resource90' | 'pips5' | 'execute35' | 'stealthOpener' | 'combo5' | 'arcane4'
-  | 'riposteOpen' | 'breakFinisher' | 'bloodbath3';
+  | 'riposteOpen' | 'breakFinisher' | 'bloodbath3'
+  // KIT PK-0: kit packages add their rule ids (GLOW_RULES_KIT_*), so any string is accepted.
+  | (string & {});
 
 export interface GlowRule {
   id: GlowRuleId;
@@ -175,6 +184,8 @@ export const GLOW_RULES: Record<GlowRuleId, GlowRule> = {
   breakFinisher: { id: 'breakFinisher', test: (s) => s.targetGuardBroken, skills: () => ['@lmb'] },
   bloodbath3: { id: 'bloodbath3', test: (s) => s.bleedingEnemies >= 3, skills: () => ['barbarian_bloodbath'] },
 };
+// KIT PK-0: kit glow rules (empty until the class packages fill them).
+Object.assign(GLOW_RULES, GLOW_RULES_KIT_MAGE, GLOW_RULES_KIT_ROGUE, GLOW_RULES_KIT_WARLOCK);
 
 // ------------------------------------------------------------------------------------------------------------
 // Read-only helpers

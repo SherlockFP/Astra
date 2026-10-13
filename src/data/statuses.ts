@@ -1,6 +1,11 @@
 import type { DamageType } from '../types/common';
 import type { StatusDef, StatusId } from '../types/skills';
 import { TALENT_STATUSES } from './statuses_talents';
+// KIT PK-0 (docs/kits/casters-rogue.md §h): empty kit tables until the class packages fill them (merged at the end of this file).
+import { STATUSES_KIT_MAGE, STATUS_RULES_KIT_MAGE } from './statuses_kit_mage';
+import { STATUSES_KIT_ROGUE, STATUS_RULES_KIT_ROGUE } from './statuses_kit_rogue';
+import { STATUSES_KIT_WARLOCK, STATUS_RULES_KIT_WARLOCK } from './statuses_kit_warlock';
+import { WATCHER_STATUSES } from './watchers';
 
 /**
  * OWNER: combat module. A StatusDef for every StatusId (GDD_SYSTEMS 1.8) + extra runtime rules (STATUS_RULES).
@@ -393,6 +398,9 @@ const YS_LU_STATUS_RULES: Partial<Record<StatusId, StatusRule>> = {
   anima_exhaust: { stack: 'refresh' },
 };
 Object.assign(STATUS_RULES, YS_LU_STATUS_RULES);
+// KIT PK-0: kit statuses (PK-MAGE / PK-ROGUE / PK-WARLOCK) and the shared hidden watcher statuses (data/watchers.ts).
+Object.assign(STATUSES, STATUSES_KIT_MAGE, STATUSES_KIT_ROGUE, STATUSES_KIT_WARLOCK, WATCHER_STATUSES);
+Object.assign(STATUS_RULES, STATUS_RULES_KIT_MAGE, STATUS_RULES_KIT_ROGUE, STATUS_RULES_KIT_WARLOCK);
 
 /** Statuses that are crowd control on the "hard" scale (cannot act). */
 export const HARD_CC: StatusId[] = ['stun', 'freeze', 'knockdown', 'fear', 'petrify'];
