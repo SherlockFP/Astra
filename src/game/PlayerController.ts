@@ -264,6 +264,8 @@ export class PlayerController {
       G.events.on('player:releaseRequested', () => this.disarmAuto()),
       // CONTROLS_WOW §8.4: a melee skill hit on an enemy starts the swing (setting autoAttackFromSkills, melee mode only)
       G.events.on('damage', (e) => this.onLocalDamage(e.sourceId, e.targetId, e.skillId)),
+      // HUD click-to-select (nameplates, target-of-target): left = select, right = select + arm the auto-attack
+      G.events.on('target:select', (e) => this.onHudSelect(e.entityId, e.attack === true)),
     );
     if (G.input) G.input.enabled = true;
   }
@@ -1576,6 +1578,15 @@ export class PlayerController {
       }
     }
     this.emitTarget();
+  }
+
+  /** target:select from the HUD. Only living enemies are selectable; the auto-attack arms on a right click. */
+  private onHudSelect(id: number, attack: boolean): void {
+    const a = (this.player.world ?? G.world)?.getActor(id);
+    if (!a || a.kind !== 'enemy' || a.isDead || a.removed) return;
+    const e = a as Enemy;
+    this.selectEnemy(e);
+    if (attack) this.armAuto(e.id);
   }
 
   /** §8.4: arming on an enemy. A class whose autoInfo().mode is 'off' never arms. */
