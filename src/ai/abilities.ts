@@ -7,6 +7,7 @@ import type { Busy, EnemyAI } from './EnemyAI';
 import { setAlphaAll } from './bossNet';
 import { METIN_PASSIVES } from './metin';
 import type { EntityId } from '../types/common';
+import { attachTrashTargets } from './trash';
 
 /**
  * Behaviour tables for abilities that are not plain "shape + damage": custom casts (raise dead, soul drain, blink...),
@@ -288,6 +289,9 @@ export const PASSIVES: Record<string, PassiveHandler> = {
     },
   },
 };
+
+// P-25: per-dungeon trash tables (src/ai/trash) merge into these live records.
+attachTrashTargets(CUSTOM, PASSIVES);
 
 /** Death effects (abilities flagged `onDeath`): splits, spore clouds, nova flashes, meltdowns, radial shards. */
 export function runOnDeath(ai: EnemyAI, ab: EnemyAbility): void {

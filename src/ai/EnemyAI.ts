@@ -893,11 +893,12 @@ export class EnemyAI {
         const alive = this.world.enemies.filter((o) => o.ownerId === e.id && !o.isDead).length;
         return alive < 6;
       }
+      // P-22 `ranged`: a melee-kind ability fired from range (a reach or a ranged cone) does not take a melee slot
       case 'melee':
       case 'cone':
-        return edge <= ab.range * 0.92 && this.canAttackMelee();
+        return edge <= ab.range * 0.92 && (!!p.ranged || this.canAttackMelee());
       case 'self_aoe':
-        return edge <= Math.max(ab.range, 1.5) && (ab.range > 0 ? this.canAttackMelee() : true);
+        return edge <= Math.max(ab.range, 1.5) && (ab.range > 0 ? (!!p.ranged || this.canAttackMelee()) : true);
       case 'projectile':
       case 'line':
       case 'ground_aoe':
@@ -1316,6 +1317,30 @@ export class EnemyAI {
     return fallback;
   }
 
+  /**
+   * P-24 call for help: every idle enemy within `radius` of this caster is pulled onto the caster's target together with
+   * its pack (EnemyDirector.pullPack). Same rules as the body pulls: enemies that never aggro (totems, summons, fleers)
+   * are left alone. `sameRoom` keeps only enemies with a clear line of sight to the caster (rooms have no runtime id).
+   * Returns how many enemies were called.
+   */
+  callForHelp(radius: number, sameRoom = false): number {
+    const target = this.target;
+    const e = this.e;
+    if (!target || !(radius > 0) || e.isDead) return 0;
+    let called = 0;
+    for (const o of this.dir.ais.slice()) {
+      if (o === this || o.disposed || o.aggroed || o.e.isDead || o.e.removed) continue;
+      const od = o.e.def;
+      if (od.aggroRange <= 0 || od.ai?.summoned || od.ai?.flee) continue;
+      const ox = o.e.position.x, oz = o.e.position.z;
+      if (Math.hypot(ox - e.position.x, oz - e.position.z) > radius) continue;
+      if (sameRoom && !this.world.nav.lineOfSight(e.position.x, e.position.z, ox, oz)) continue;
+      this.dir.pullPack(o, target);
+      called++;
+    }
+    return called;
+  }
+
   /** Begin an ability: facing, animation, cast bar, telegraph shapes; the effect resolves after the windup. */
   startAbility(ab: EnemyAbility, target: Actor, _dist = 0): void {
     const e = this.e;
@@ -1383,6 +1408,8 @@ export class EnemyAI {
       this.readyAt.set(ab.id, now + (this.cdOverride.get(ab.id) ?? ab.cooldown) / this.cdRate(ab));
     } else this.readyAt.set(ab.id, now + 9999);
     if (ab.params?.once) this.used.add(ab.id);
+    // P-24: a cast with `callRadius` calls for help (host-side: the brain only runs on the authority)
+    if ((ab.params?.callRadius ?? 0) > 0) this.callForHelp(ab.params!.callRadius, !!ab.params!.sameRoom);
 
     // cast bar
     if (castTime > 0) {

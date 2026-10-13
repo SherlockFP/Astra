@@ -164,6 +164,8 @@ export interface StatusRule {
   maxHpPctPerSec?: number;
   /** Non-lethal floor of a max-HP rot: its ticks never take the owner below this fraction of max HP. */
   hpFloorPct?: number;
+  /** P-21: a dodge roll by the owner removes this many stacks (arcane_lockdown). Read by the K14 hook in Combat.ts. */
+  onDodge?: { removeStacks: number };
 }
 
 export const STATUS_RULES: Partial<Record<StatusId, StatusRule>> = {
@@ -254,6 +256,63 @@ const V2_STATUS_RULES: Partial<Record<StatusId, StatusRule>> = {
   cursed_zone: { stack: 'refresh', internal: true },
 };
 Object.assign(STATUS_RULES, V2_STATUS_RULES);
+
+/**
+ * Season 1 shared primitives P-21 (K4, append-only): the 14 ids of K1 that have no row yet. Numbers come from the dungeon docs
+ * (docs/dungeons/*.md, cited per row). `takenMore` / `dealtMore` already scale with stacks (StatusEffects.takenMore / dealtMore),
+ * so a stacking debuff only needs `stack: 'stack'` plus `maxStacks`. `defaultDuration` is the nominal value; appliers may override.
+ */
+const S1_STATUSES: Partial<Record<StatusId, StatusDef>> = {
+  // Taşa Çevir (kefaret yagmaci, Taşa Dönüş): hard CC, dispellable (P6)
+  petrify: { id: 'petrify', name: 'Taşlaşma', icon: I('debuff-stun'), kind: 'debuff', cc: true, vfx: 'stun_stars', dispellable: true, defaultDuration: 5 },
+  // Ölümcül Darbe (kefaret): healing received x0.5, not dispellable (P6)
+  mortal_wound: { id: 'mortal_wound', name: 'Ölümcül Yara', icon: I('debuff-bleed'), kind: 'debuff', dispellable: false, defaultDuration: 8 },
+  // Terzi Dolabı (yildiz S6): guards ignore the party while it lasts
+  disguise: { id: 'disguise', name: 'Soylu Kılığı', icon: I('buff-stealth'), kind: 'buff', defaultDuration: 120 },
+  // Büyüleme (yildiz ys_mist_bewitch): move -75%, attack speed -50%, dispellable
+  bewitch: { id: 'bewitch', name: 'Büyülenme', icon: I('debuff-slow'), kind: 'debuff', stats: { moveSpeedPct: -0.75, attackSpeed: -0.5 }, dispellable: true, defaultDuration: 8 },
+  // Açıkta (yanki YSP-06): +1 x magnitude damage taken (magnitude 0.5 = +50%); yanki calls it at 0.5 (tank buster) and 0.15 (Ağ Örücü)
+  exposed: { id: 'exposed', name: 'Açıkta', icon: I('debuff-armor-break'), kind: 'debuff', defaultDuration: 10 },
+  // Kin Laneti (peri ps_spiteclaw_curse): +6% damage taken per stack, max 3, dispellable (peri 4.4)
+  kin_laneti: { id: 'kin_laneti', name: 'Kin Laneti', icon: I('debuff-curse'), kind: 'debuff', maxStacks: 3, dispellable: true, vfx: 'curse_loop', defaultDuration: 10 },
+  // Asit Yarası (peri Tred'ova): +10% damage taken per stack, max 5, dispellable, each stack refreshes the timer (peri 4.4)
+  asit_yarasi: { id: 'asit_yarasi', name: 'Asit Yarası', icon: I('debuff-poison'), kind: 'debuff', maxStacks: 5, dispellable: true, defaultDuration: 8 },
+  // Arcane Kilitlenme (yildiz gerdan_lockdown): -30% move per stack, 1.2% max HP/s per stack (no HP floor), dispellable, a dodge roll removes one stack
+  arcane_lockdown: { id: 'arcane_lockdown', name: 'Arkan Kilitlenme', icon: I('debuff-slow'), kind: 'debuff', maxStacks: 3, stats: { moveSpeedPct: -0.3 }, dotType: 'arcane', dispellable: true, defaultDuration: 20 },
+  // Solan Ruh (yildiz taliksa_withering): -8% max HP and -8% move speed per stack, max 5, dispellable one stack per dispel
+  withering_soul: { id: 'withering_soul', name: 'Solan Ruh', icon: I('debuff-curse'), kind: 'debuff', maxStacks: 5, stats: { maxHpPct: -0.08, moveSpeedPct: -0.08 }, dispellable: true, defaultDuration: 20 },
+  // Derin Yara (yildiz ys_mist_slash): healing received -25%, not dispellable
+  deep_wound: { id: 'deep_wound', name: 'Derin Yara', icon: I('debuff-bleed'), kind: 'debuff', dispellable: false, defaultDuration: 6 },
+  // Yakıcı Şiddet (yildiz taliksa_intensity): +15% damage taken per stack, max 6, dispellable.
+  // Deviation: takenMore is not element-specific, so this applies to all damage (the doc says fire damage only). Typed fire-only needs a new field.
+  ys_intensity: { id: 'ys_intensity', name: 'Yakıcı Şiddet', icon: I('debuff-burn'), kind: 'debuff', maxStacks: 6, vfx: 'burn_loop', dispellable: true, defaultDuration: 12 },
+  // Ay Çeşmesi (yildiz S13 boon): haste and move speed +10% for 60 s. Doc says "haste +10%": mapped to attackSpeed 0.1 (confirm castSpeed).
+  ay_cesmesi: { id: 'ay_cesmesi', name: 'Ay Çeşmesi', icon: I('buff-haste'), kind: 'buff', stats: { attackSpeed: 0.1, moveSpeedPct: 0.1 }, defaultDuration: 60 },
+  // Yapışkan Hidromel (yigitler SET-16 mead puddle, enemy side): -35% move speed, +10% damage taken. Duration not in the doc (puddle-driven).
+  mead_sticky: { id: 'mead_sticky', name: 'Yapışkan Hidromel', icon: I('debuff-slow'), kind: 'debuff', stats: { moveSpeedPct: -0.35 } },
+  // Yüklü Çubuk (yigitler, grounding rods): +8% damage dealt per stack, max 3, 6 s
+  rod_charged: { id: 'rod_charged', name: 'Yüklü Çubuk', icon: I('buff-strength'), kind: 'buff', maxStacks: 3, defaultDuration: 6 },
+};
+
+const S1_STATUS_RULES: Partial<Record<StatusId, StatusRule>> = {
+  petrify: { stack: 'strongest', group: 'hard', hard: true },
+  mortal_wound: { stack: 'refresh', healMult: 0.5 },
+  disguise: { stack: 'refresh' },
+  bewitch: { stack: 'refresh' },
+  exposed: { stack: 'refresh', perMag: true, takenMore: 1 },
+  kin_laneti: { stack: 'stack', takenMore: 0.06 },
+  asit_yarasi: { stack: 'stack', takenMore: 0.10 },
+  // Each dodge roll removes one stack (P-21 onDodge; the hook itself is K14 in Combat.ts)
+  arcane_lockdown: { stack: 'stack', maxHpPctPerSec: 0.012, onDodge: { removeStacks: 1 } },
+  withering_soul: { stack: 'stack' },
+  deep_wound: { stack: 'refresh', healMult: 0.75 },
+  ys_intensity: { stack: 'stack', takenMore: 0.15 },
+  ay_cesmesi: { stack: 'refresh' },
+  mead_sticky: { stack: 'refresh', takenMore: 0.10 },
+  rod_charged: { stack: 'stack', dealtMore: 0.08 },
+};
+Object.assign(STATUSES, S1_STATUSES);
+Object.assign(STATUS_RULES, S1_STATUS_RULES);
 
 /** Statuses that are crowd control on the "hard" scale (cannot act). */
 export const HARD_CC: StatusId[] = ['stun', 'freeze', 'knockdown', 'fear'];

@@ -1,5 +1,6 @@
 import { RNG, hashString } from '../../core/utils';
 import type { DoorDef, FloorStyle, PackDef, PropPlacement, RoomDef, TileRect, WallStyle, ZoneDef } from '../../types/dungeons';
+import { getEnemyDef } from '../enemies';
 
 /**
  * Content kit: tiny authoring helpers shared by the dungeon files (OWNER: content module).
@@ -65,17 +66,76 @@ export const door = (a: string, b: string, tx: number, tz: number, side: Side, w
 
 export type MemberTuple = [enemyId: string, ox: number, oz: number];
 
-export function pack(
-  id: string, roomId: string, cx: number, cz: number, forces: number, members: MemberTuple[],
-  extra: Partial<Omit<PackDef, 'id' | 'roomId' | 'center' | 'members' | 'forces'>> = {},
-): PackDef {
-  const out: PackDef = {
-    id, roomId, center: pt(cx, cz), forces,
-    members: members.map(([enemyId, ox, oz]) => ({ enemyId, offset: [ox, oz] as [number, number] })),
-    ...extra,
-  };
-  if (extra.patrol) out.patrol = extra.patrol.map(([x, z]) => pt(x, z));
+/** P-03 rank arrays: one enemy id per member, laid out on the sunflower table (front = +z of the centre, back = -z). */
+export interface RankSpec { front?: string[]; back?: string[] }
+export type PackExtra = Partial<Omit<PackDef, 'id' | 'roomId' | 'center' | 'members' | 'forces'>> & RankSpec;
+
+/** Offset of each rank from the pack centre along z (tiles). */
+export const RANK_Z = 1.2;
+const SUNFLOWER_DEG = 137.508;
+
+/** Sunflower table: point i at r = 0.3 * sqrt(1 + 2i) tiles and angle i * 137.508 deg (the spiral used by the dungeon docs). */
+export function sunflower(n: number): [number, number][] {
+  const out: [number, number][] = [];
+  for (let i = 0; i < n; i++) {
+    const r = 0.3 * Math.sqrt(1 + 2 * i);
+    const a = (i * SUNFLOWER_DEG * Math.PI) / 180;
+    out.push([r * Math.cos(a), r * Math.sin(a)]);
+  }
   return out;
+}
+
+/** Sum of the M+ forces of the given members (EnemyDef.forces, bosses included). Throws on an unknown id. */
+export function memberForces(members: MemberTuple[]): number {
+  let sum = 0;
+  for (const [enemyId] of members) {
+    const def = getEnemyDef(enemyId);
+    if (!def) throw new Error(`[content] pack: unknown member enemy ${enemyId}`);
+    sum += def.forces;
+  }
+  return sum;
+}
+
+/**
+ * Pack helper (P-03). `forces` undefined means the sum of the member forces. `extra.front` / `extra.back` add members
+ * from rank arrays (enemy ids, sunflower offsets, rows at +RANK_Z / -RANK_Z); they are appended after the explicit members.
+ */
+export function pack(
+  id: string, roomId: string, cx: number, cz: number, forces: number | undefined, members: MemberTuple[],
+  extra: PackExtra = {},
+): PackDef {
+  const { front, back, ...rest } = extra;
+  const ranked: MemberTuple[] = [];
+  const addRank = (ids: string[] | undefined, dz: number): void => {
+    if (!ids) return;
+    const table = sunflower(ids.length);
+    ids.forEach((enemyId, i) => ranked.push([enemyId, table[i][0], table[i][1] + dz]));
+  };
+  addRank(front, RANK_Z);
+  addRank(back, -RANK_Z);
+  const all: MemberTuple[] = [...members, ...ranked];
+  const out: PackDef = {
+    id, roomId, center: pt(cx, cz), forces: forces ?? memberForces(all),
+    members: all.map(([enemyId, ox, oz]) => ({ enemyId, offset: [ox, oz] as [number, number] })),
+    ...rest,
+  };
+  if (rest.patrol) out.patrol = rest.patrol.map(([x, z]) => pt(x, z));
+  return out;
+}
+
+/** Adapter for the Leş spelling `pk(id, roomId, cx, cz, forces, front, back, extra?)` with [enemyId, count] pairs. */
+export function pk(
+  id: string, roomId: string, cx: number, cz: number, forces: number | undefined,
+  front: [string, number][], back: [string, number][], extra: PackExtra = {},
+): PackDef {
+  const expand = (pairs: [string, number][]): string[] => pairs.flatMap(([enemyId, n]) => Array<string>(n).fill(enemyId));
+  return pack(id, roomId, cx, cz, forces, [], { ...extra, front: expand(front), back: expand(back) });
+}
+
+/** Adapter for the Yanki spelling `packN(id, roomId, cx, cz, counts, extra?)`: forces auto, all counted members on the front rank. */
+export function packN(id: string, roomId: string, cx: number, cz: number, counts: [string, number][], extra: PackExtra = {}): PackDef {
+  const ids = counts.flatMap(([enemyId, n]) => Array<string>(n).fill(enemyId));
+  return pack(id, roomId, cx, cz, undefined, [], { ...extra, front: [...(extra.front ?? []), ...ids] });
 }
 
 export function bossAt(bossId: string, roomId: string, x: number, z: number, facing: number, order: number) {
@@ -286,3 +346,86 @@ export function withProps(rooms: RoomDef[], props: Record<string, PropPlacement[
 }
 
 export const rectsOf = (rooms: RoomDef[]): Record<string, TileRect> => Object.fromEntries(rooms.map((r) => [r.id, r.rect]));
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Decor kit (P-04). Pure helpers: each returns PropPlacement[] to concatenate into a room's props (or use dressRoom).
+// ---------------------------------------------------------------------------------------------------------------------
+/** choir_balcony / gothic_balustrade are not in the asset set yet; the town kit balcony wall stands in until they land. */
+export const BALCONY_MODEL = kf('balcony-wall');
+export const CHANDELIER_MODEL = ip('psx-dungeon', 'chandelier');
+export const BANNER_MODEL = dg('banner_patternB_red');
+const CHANDELIER_COLOR = 0xffb35a;
+const WALL_ROT: Record<Side, number> = { n: 0, s: 180, w: 90, e: -90 };
+
+/** Along-wall extent of a room side (GDD coordinates, inset 0.8 tiles from the corners). */
+function wallRun(rect: TileRect, side: Side): [number, number] {
+  const b = Props.inner(rect, 0.8);
+  return side === 'n' || side === 's' ? [b.x0, b.x1] : [b.z0, b.z1];
+}
+
+/** n evenly spaced along-wall positions across a side. */
+function evenRun(rect: TileRect, side: Side, n: number): number[] {
+  const [lo, hi] = wallRun(rect, side);
+  if (n === 1) return [(lo + hi) / 2];
+  return Array.from({ length: n }, (_, i) => lo + ((hi - lo) * i) / (n - 1));
+}
+
+/** Wall points (GDD x,z) for along-wall positions on one side. `inset` is metres from the wall line; door gaps are skipped. */
+function wallPoints(rect: TileRect, side: Side, alongs: number[], inset: number, spans: DoorSpan[] = []): [number, number][] {
+  const horizontal = side === 'n' || side === 's';
+  const line: 'x' | 'z' = horizontal ? 'z' : 'x';
+  const at = side === 'n' ? rect.z - 0.5 : side === 's' ? rect.z + rect.h - 0.5 : side === 'w' ? rect.x - 0.5 : rect.x + rect.w - 0.5;
+  const face = side === 'n' || side === 'w' ? at + inset : at - inset;
+  const out: [number, number][] = [];
+  for (const along of alongs) {
+    if (spans.some((s) => s.line === line && Math.abs(s.at - at) < 0.05 && along > s.lo - 0.6 && along < s.hi + 0.6)) continue;
+    out.push(horizontal ? [along, face] : [face, along]);
+  }
+  return out;
+}
+
+export interface BalconyOpts { side?: Side; model?: string; spans?: DoorSpan[] }
+/** `n` non-walkable balcony modules at height `y`, evenly spaced along one wall of `rect` (default north), facing into the room. */
+export function balcony(rect: TileRect, y: number, n: number, opts: BalconyOpts = {}): PropPlacement[] {
+  const side = opts.side ?? 'n';
+  const model = opts.model ?? BALCONY_MODEL;
+  return wallPoints(rect, side, evenRun(rect, side, n), WALL_FACE, opts.spans).map(([x, z]) => ({
+    model, pos: shPt(x, z), y, rot: WALL_ROT[side], collide: true,
+  }));
+}
+
+export interface ChandelierOpts { light?: boolean; color?: number }
+/** Hung chandelier at (cx, cz), `y` metres up, with an amber point light (1.8 / 11 tiles) unless `light: false`. */
+export function chandelier(cx: number, cz: number, y: number, opts: ChandelierOpts = {}): PropPlacement[] {
+  const pl: PropPlacement = { model: CHANDELIER_MODEL, pos: shPt(cx, cz), y };
+  if (opts.light !== false) pl.light = lt(opts.color ?? CHANDELIER_COLOR, 1.8, 11, true);
+  return [pl];
+}
+
+export interface BannerOpts { y?: number; scale?: number; tint?: number; model?: string; spans?: DoorSpan[] }
+/** Wall banners on one side at the given along-wall positions, on the wall centre line. */
+export function banner(rect: TileRect, side: Side, positions: number[], opts: BannerOpts = {}): PropPlacement[] {
+  const model = opts.model ?? BANNER_MODEL;
+  return wallPoints(rect, side, positions, 0, opts.spans).map(([x, z]) => {
+    const pl: PropPlacement = { model, pos: shPt(x, z), rot: WALL_ROT[side] };
+    if (opts.y !== undefined) pl.y = opts.y;
+    if (opts.scale !== undefined) pl.scale = opts.scale;
+    if (opts.tint !== undefined) pl.tint = opts.tint;
+    return pl;
+  });
+}
+
+/** Per-room dressing recipe: balconies, hung chandeliers and banners in one call. */
+export interface DressRecipe {
+  spans?: DoorSpan[];
+  balconies?: { side?: Side; y: number; n: number; model?: string }[];
+  chandeliers?: { x: number; z: number; y: number; light?: boolean }[];
+  banners?: { side: Side; at: number[]; y?: number; tint?: number }[];
+}
+export function dressRoom(rect: TileRect, r: DressRecipe): PropPlacement[] {
+  return [
+    ...(r.balconies ?? []).flatMap((b) => balcony(rect, b.y, b.n, { side: b.side, model: b.model, spans: r.spans })),
+    ...(r.chandeliers ?? []).flatMap((c) => chandelier(c.x, c.z, c.y, { light: c.light })),
+    ...(r.banners ?? []).flatMap((b) => banner(rect, b.side, b.at, { y: b.y, tint: b.tint, spans: r.spans })),
+  ];
+}

@@ -5,8 +5,9 @@ import type { Enemy } from '../../entities/Enemy';
 import type { Player } from '../../entities/Player';
 import type { EntityId } from '../../types/common';
 import type { UI } from '../UI';
-import type { CastTracker } from './CastBar';
+import { UNINTERRUPTIBLE_ICON, type CastTracker } from './CastBar';
 import { ICON, clamp01, clampN, div, iconEl, pulse, setClass, setDisplay, setStyle, setText } from './dom';
+import { statusView } from './status';
 import { StatusRow } from './StatusRow';
 
 const _v = new THREE.Vector3();
@@ -62,6 +63,8 @@ class Plate {
   private castWrap: HTMLElement;
   private castFill: HTMLElement;
   private castName: HTMLElement;
+  private castShield: HTMLElement;
+  private dispelEl: HTMLElement;
   private status: StatusRow;
   private lastFrac = -1;
   private rank = '';
@@ -91,6 +94,14 @@ class Plate {
     this.castWrap = div('np-cast', this.el);
     this.castFill = div('np-cast-fill', this.castWrap);
     this.castName = div('np-cast-name', this.castWrap);
+    // P-23 must-answer: grey bar + shield for uninterruptible casts (gold otherwise)
+    this.castShield = iconEl(UNINTERRUPTIBLE_ICON, 'np-cast-shield', this.castWrap);
+    this.castShield.style.cssText = 'position:absolute;right:3px;top:50%;width:10px;height:10px;margin-top:-5px;color:#f0f0f8;filter:drop-shadow(0 1px 0 #000);';
+    setDisplay(this.castShield, false);
+    // P-23 dispel mark: green chip under the cast bar while the cast must be cleansed
+    this.dispelEl = div('np-dispel', this.el);
+    this.dispelEl.style.cssText = 'align-self:flex-start;margin-top:2px;padding:0 4px;font:700 9px/13px var(--font-head, sans-serif);color:#d8ffc8;background:#1f6a2a;border:1px solid #7ee862;border-radius:2px;white-space:nowrap;box-shadow:0 0 4px rgba(126,232,98,0.6);';
+    setDisplay(this.dispelEl, false);
     this.status = new StatusRow(ui, 'debuff', 4, 'np-st', false);
     this.el.appendChild(this.status.el);
     this.el.style.display = 'none';
@@ -150,14 +161,21 @@ class Plate {
       setStyle(this.castFill, 'width', (clamp01(cv.channel ? 1 - cv.frac : cv.frac) * 100).toFixed(1) + '%');
       setText(this.castName, cv.name);
       setClass(this.castWrap, 'locked', !cv.interruptible);
+      setDisplay(this.castShield, !cv.interruptible, 'inline-block');
+      setDisplay(this.dispelEl, !!cv.dispel, 'block');
+      if (cv.dispel) setText(this.dispelEl, 'Temizle: ' + statusView(cv.dispel).name);
     } else if (cv && cv.interrupted) {
       setDisplay(this.castWrap, true);
       setStyle(this.castFill, 'width', '100%');
       setText(this.castName, 'Kesildi!');
       setClass(this.castWrap, 'interrupted', true);
+      setDisplay(this.castShield, false);
+      setDisplay(this.dispelEl, false);
     } else {
       setDisplay(this.castWrap, false);
       setClass(this.castWrap, 'interrupted', false);
+      setDisplay(this.castShield, false);
+      setDisplay(this.dispelEl, false);
     }
     this.status.update(a);
   }
