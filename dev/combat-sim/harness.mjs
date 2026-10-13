@@ -72,6 +72,8 @@ export const world = new World(scene);
 G.world = world;
 
 export class FakePlayer extends Actor {
+  /** Player.currentGear(): no gear in the sims (weapon art falls back to the class art). */
+  currentGear() { return {}; }
   constructor(classId, level = 30) {
     super(1, 'player', 'player');
     this.classId = classId;
