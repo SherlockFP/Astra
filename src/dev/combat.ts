@@ -582,6 +582,7 @@ const api = {
 };
 Object.assign(api, { hitWith });
 (window as unknown as { dev: typeof api }).dev = api;
+import './combat_wow';
 G.events.on('damage', (e) => { if (api.log.length < 400) api.log.push(`${e.kind}${e.crit ? '!' : ''} ${e.amount} ${e.type} -> ${e.targetId} (${e.skillId ?? ''})`); });
 G.events.on('hitstop', (e) => { if (api.log.length < 400) api.log.push('hitstop ' + e.ms); });
 G.events.on('camera:shake', (e) => { if (api.log.length < 400) api.log.push('shake ' + e.intensity.toFixed(2)); });
