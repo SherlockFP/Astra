@@ -879,6 +879,11 @@ metinStone('metin_nefret', 'Nefret Metini', 0xff6040, 40, 1.9, 'loot_metin_t3');
 metinStone('metin_aci', 'Acı Metini', 0x40ffa0, 46, 2.1, 'loot_metin_t4');
 metinStone('metin_ofke', 'Öfke Metini', 0xff3020, 52, 2.3, 'loot_metin_t5');
 metinStone('metin_olum', 'Ölüm Metini', 0xb040ff, 58, 2.5, 'loot_metin_t6');
+// Karakır Bozkırı stones (tiers 7-10, one per region r7..r10; placed by data/world/karakir_metin.ts)
+metinStone('metin_susuzluk', 'Susuzluk Metini', 0xd8a040, 64, 2.7, 'loot_metin_t7');
+metinStone('metin_kavrulma', 'Kavrulma Metini', 0xe0603a, 70, 2.9, 'loot_metin_t8');
+metinStone('metin_firtina', 'Fırtına Metini', 0x80c8ff, 76, 3.1, 'loot_metin_t9');
+metinStone('metin_ayaz', 'Ayaz Metini', 0xc8f0ff, 82, 3.3, 'loot_metin_t10');
 
 /** One wave: spawns at this share of max HP (waves fire in order: 85 / 65 / 45 / 25 / 10 %). */
 export interface MetinWaveSpec { hpBelow: number; members: { enemyId: string; count: number }[] }
@@ -940,6 +945,38 @@ export const METIN_SPECS: Record<string, MetinSpec> = {
       [['skel_minion', 6]], [['cult_acolyte', 4], ['skel_archer', 2]], [['shade', 8]], [['ow_grave_knight', 1], ['skel_minion', 4]], [['ow_vampire', 1], ['ow_bat', 8]],
     ]),
     add: { enemyId: 'shade', count: 2, everySec: 20, cap: 12 },
+    aura: { radius: 10, slowPct: 0.15, curse: true, dotPctPerSec: 0.01 },
+    pulse: { everySec: 12, coef: 1.0, rMax: 12 },
+  },
+  // Karakır Bozkırı (levels 31-39): wave and add mobs are the kb_* roster (enemies_karakir.ts)
+  metin_susuzluk: {
+    waves: metinWaves([
+      [['kb_kurt', 6]], [['kb_goblin', 4], ['kb_goblin_saman', 1]], [['kb_ari', 8]], [['kb_domuz', 4], ['kb_haydut_pehlivan', 1]], [['kb_haydut', 4], ['kb_haydut_okcu', 2]],
+    ]),
+    add: { enemyId: 'kb_ari', count: 2, everySec: 20, cap: 12 },
+    aura: { radius: 10, slowPct: 0.15 },
+  },
+  metin_kavrulma: {
+    waves: metinWaves([
+      [['kb_ork', 6]], [['kb_ork_atici', 4], ['kb_ork_saman', 2]], [['kb_ciyan', 8]], [['kb_golem', 1], ['kb_ciyan', 4]], [['kb_ork_cellat', 1], ['kb_ork', 6]],
+    ]),
+    add: { enemyId: 'kb_ciyan', count: 2, everySec: 20, cap: 12 },
+    aura: { radius: 10, slowPct: 0.15, curse: true },
+    pulse: { everySec: 12, coef: 1.0, rMax: 12 },
+  },
+  metin_firtina: {
+    waves: metinWaves([
+      [['kb_iskelet', 6]], [['kb_iskelet_okcu', 4], ['kb_hortlak', 2]], [['kb_yayla_kurdu', 8]], [['kb_warg', 1], ['kb_yayla_kurdu', 4]], [['kb_iskelet_muhafiz', 1], ['kb_iskelet', 6]],
+    ]),
+    add: { enemyId: 'kb_hortlak', count: 2, everySec: 20, cap: 12 },
+    aura: { radius: 10, slowPct: 0.15, curse: true },
+    pulse: { everySec: 12, coef: 1.0, rMax: 12 },
+  },
+  metin_ayaz: {
+    waves: metinWaves([
+      [['kb_ayaz_kurdu', 6]], [['kb_buz_hortlak', 4], ['kb_buz_golemi', 1]], [['kb_ayaz_orumcek', 8]], [['kb_ayaz_warg', 1], ['kb_ayaz_kurdu', 4]], [['kb_ayaz_cellat', 1], ['kb_ayaz_ork', 6]],
+    ]),
+    add: { enemyId: 'kb_buz_hortlak', count: 2, everySec: 20, cap: 12 },
     aura: { radius: 10, slowPct: 0.15, curse: true, dotPctPerSec: 0.01 },
     pulse: { everySec: 12, coef: 1.0, rMax: 12 },
   },

@@ -4,6 +4,7 @@ import {
   ROOM_OF_REGION, SHRINES, VISTAS, WATER, WAYPOINTS, WORLD_BOSSES, WORLD_BOSS_ID, WORLD_PACKS,
 } from './karakir_world';
 import { VILLAGES } from './karakir_villages';
+import { KARAKIR_METIN_SPOTS, KARAKIR_METIN_TIERS } from './karakir_metin';
 
 /**
  * KARAKIR BOZKIRI, open-world map 2 (levels 30-40 in this slice, GDD_OPENWORLD section 1.8). OWNER: content module.
@@ -12,6 +13,7 @@ import { VILLAGES } from './karakir_villages';
  *  - karakir_world.ts     rooms, 4 regions (r7..r10), roads, water, landmarks, waypoints, Buzul Tahtı gate, 36 camps + 8 patrols,
  *                         2 rares, 1 mini-boss, the world boss schedule, shrines, chests, gathering, hidden areas, vistas
  *  - karakir_villages.ts  Karakır Karakolu (fort) and Kervansaray (caravan hub): props, NPCs, gates
+ *  - karakir_metin.ts     four metin tiers (one per region, levels 31-39) and 12 spots (three per region)
  *  - karakir_quests.ts    12 quests (mq_20..22 + zone chain + standalone), appended to QUESTS in quests.ts
  *  - ../enemies_karakir.ts  kb_* mobs, rare_kb_*, mb_kb_horgan, wb_ulu_boz (registered at the end of data/enemies.ts)
  *
@@ -32,7 +34,7 @@ const WORLD: WorldExtras = {
   water: WATER,
   borders: BORDERS,
   landmarks: LANDMARKS,
-  metin: { tiers: [], spots: [] }, // metin tiers 7-9 (GDD 1.8) are a follow-up
+  metin: { tiers: KARAKIR_METIN_TIERS, spots: KARAKIR_METIN_SPOTS },
   rares: RARES,
   minibosses: MINIBOSSES,
   bosses: WORLD_BOSSES,

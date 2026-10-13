@@ -288,7 +288,7 @@ export class Chat implements HudWidget {
       G.ui?.openPanel('finder');
     } else if (cmd === 'etkinlik') {
       const lines = upcomingEventLines();
-      if (!lines.length) this.addLine('', 'Dünya etkinlikleri açık dünyada (Sisli Vadi) çalışır.', 'system', true);
+      if (!lines.length) this.addLine('', 'Dünya etkinlikleri açık dünyada (Sisli Vadi, Karakır Bozkırı) çalışır.', 'system', true);
       else for (const l of ['Sıradaki dünya etkinlikleri:', ...lines]) this.addLine('', l, 'system', true);
     } else if (EMOTES[cmd]) {
       this.emote(cmd, true);

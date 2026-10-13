@@ -135,13 +135,15 @@ function nearestLiveEnemy(ids: string[]): Pt | null {
 
 /** Enemy ids a kill objective can match (its target id, or every metin stone for a metin objective). */
 function killIds(o: QuestObjective): string[] {
-  if (o.kind === 'metin') {
-    const tiers = worldExtras()?.metin.tiers ?? [];
-    if (!o.target) return tiers.map((t) => t.enemyId);
-    const tier = tiers.find((t) => t.id === o.target);
-    return tier ? [tier.enemyId] : [o.target];
-  }
-  return o.target ? [o.target] : [];
+  return enemyIdsOf(o, worldExtras()?.metin.tiers ?? []);
+}
+
+/** Enemy ids an objective can match on a map: its target id, or for a metin objective the stones of the map (`tiers`). */
+function enemyIdsOf(o: QuestObjective, tiers: { id: string; enemyId: string }[]): string[] {
+  if (o.kind !== 'metin') return o.target ? [o.target] : [];
+  if (!o.target) return tiers.map((t) => t.enemyId);
+  const tier = tiers.find((t) => t.id === o.target);
+  return tier ? [tier.enemyId] : [o.target];
 }
 
 /** Where one unfinished objective points, or null when it has no place on the map. */
@@ -235,29 +237,79 @@ export function townNpcName(id: string): string {
   return TOWN.npcs.find((x) => x.id === id)?.name ?? id;
 }
 
+/** The open-world maps and the town gate each one is entered by (TOWN.exits, data/town.ts). */
+const MAP_GATES: Record<string, { exit: string; label: string }> = {
+  sisli_vadi: { exit: 'guney_kapisi', label: 'Güney Kapısı' },
+  karakir_bozkiri: { exit: 'dogu_kapisi', label: 'Doğu Kapısı' },
+};
+
+/** Centre of the town gate of an open-world map, with its name. */
+function gateCentre(zone: string): (Pt & { label: string }) | null {
+  const g = MAP_GATES[zone];
+  const p = g ? townExitCentre(g.exit) : null;
+  return g && p ? { ...p, label: g.label } : null;
+}
+
+/** Does the map hold the objective's place: its enemy (camp, patrol, rare, mini-boss, boss or stone), its NPC or a named place? */
+function mapHolds(def: DungeonDef, o: QuestObjective): boolean {
+  const ext = def.world;
+  const t = o.target ?? '';
+  if (!ext) return false;
+  if (!t && o.kind !== 'metin') return false;
+  switch (o.kind) {
+    case 'kill':
+    case 'boss':
+    case 'metin': {
+      const ids = new Set(enemyIdsOf(o, ext.metin.tiers));
+      return def.packs.some((p) => p.members.some((m) => ids.has(m.enemyId)))
+        || ext.rares.some((r) => ids.has(r.enemyId))
+        || ext.minibosses.some((m) => ids.has(m.enemyId))
+        || ext.bosses.some((b) => ids.has(b.bossId))
+        || ext.metin.tiers.some((x) => ids.has(x.enemyId));
+    }
+    case 'explore':
+      return ext.regions.some((x) => x.id === t) || ext.waypoints.some((x) => x.id === t) || ext.vistas.some((x) => x.id === t)
+        || ext.landmarks.some((x) => x.id === t) || ext.hidden.some((x) => x.id === t) || ext.entrances.some((x) => x.id === t)
+        || ext.villages.some((x) => x.id === t);
+    case 'talk':
+      return ext.villages.some((v) => v.npcs.some((n) => n.id === t));
+    default:
+      return false;
+  }
+}
+
 /**
- * Where an objective points for the arrow, scene-aware (§4.4). In town the open-world places are the exits: anything in
- * Sisli Vadi points at the South Gate, Karakır objectives at the East Gate, dungeons at their portal. On the world map it is
- * the objective's own position. Null when there is no place to point at.
+ * The open-world map an objective belongs to: the map that holds its enemy, NPC or place, else the map that owns the quest's region
+ * (`questRegion`, r1..r6 Sisli Vadi, r7..r10 Karakır Bozkırı). Null when no map claims it.
  */
-export function guideTargetPos(o: QuestObjective, inTown: boolean): (Pt & { label: string }) | null {
+export function worldZoneOf(o: QuestObjective, questRegion?: string): string | null {
+  const maps = Object.keys(MAP_GATES)
+    .map((id) => getDungeon(id))
+    .filter((d): d is DungeonDef => !!d?.world);
+  const held = maps.find((d) => mapHolds(d, o));
+  if (held) return held.id;
+  if (!questRegion) return null;
+  return maps.find((d) => d.world?.regions.some((r) => r.id === questRegion))?.id ?? null;
+}
+
+/**
+ * Where an objective points for the arrow, scene-aware (§4.4). In town the open-world places are the gates: an objective of an
+ * open-world map points at that map's gate (Karakır Bozkırı: the East Gate; Sisli Vadi: the South Gate), dungeons at their portal.
+ * On the world map it is the objective's own position. Null when there is no place to point at.
+ */
+export function guideTargetPos(o: QuestObjective, inTown: boolean, questRegion?: string): (Pt & { label: string }) | null {
   const tgt = o.target ?? '';
   if (!inTown) {
     const p = objectivePos(o);
     return p ? { ...p, label: o.text } : null;
   }
-  if (tgt.includes('karakir')) {
-    const p = townExitCentre('dogu_kapisi');
-    return p ? { ...p, label: 'Doğu Kapısı' } : null;
-  }
+  const zone = worldZoneOf(o, questRegion);
   switch (o.kind) {
     case 'talk': {
       const n = tgt ? townNpcPos(tgt) : null;
       if (n) return { ...n, label: townNpcName(tgt) };
-      if (tgt.startsWith('npc_g_')) {
-        const g = townExitCentre('guney_kapisi');
-        return g ? { ...g, label: 'Güney Kapısı' } : null;
-      }
+      if (zone) return gateCentre(zone);
+      if (tgt.startsWith('npc_g_')) return gateCentre('sisli_vadi');
       return null;
     }
     case 'dungeon': {
@@ -268,10 +320,8 @@ export function guideTargetPos(o: QuestObjective, inTown: boolean): (Pt & { labe
     case 'explore':
     case 'kill':
     case 'boss':
-    case 'metin': {
-      const g = townExitCentre('guney_kapisi');
-      return g ? { ...g, label: 'Güney Kapısı' } : null;
-    }
+    case 'metin':
+      return gateCentre(zone ?? 'sisli_vadi');
     default:
       return null;
   }
@@ -314,7 +364,7 @@ export function guideTarget(recommendedGiver: string | null): GuideTarget | null
         for (let k = 0; k < pdef.objectives.length; k++) {
           const o = pdef.objectives[k];
           if (rows[k]?.done) continue;
-          const p = guideTargetPos(o, inTown);
+          const p = guideTargetPos(o, inTown, pdef.region);
           if (p) return { x: p.x, z: p.z, label: p.label, kind: objectiveKind(o), key: `${pdef.id}#${k}` };
         }
       }
