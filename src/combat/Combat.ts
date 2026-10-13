@@ -15,6 +15,7 @@ import { COMBAT_FEEL, FEEL, FEEL_TABLE, KNOCKBACK, SLOWMO, SLOWMO_GAP, TYPE_COLO
 import { DeathLog } from './deathLog';
 import { GUARD_BREAK_STUN, PARRY_WINDOW, GuardState, guardCost, guardProfileOf } from './guard';
 import { blockChanceCap, protectorCheat, warlordRageMult } from './specs';
+import { weaknessOf } from '../data/families';
 import { breakLock, breakSeconds, finisherPctMaxHp, hyperArmorOf, isSwarm, parryPoise, poiseDelay, poiseMax, poiseRegenRate } from './poise';
 import { CombatMeters } from './meters';
 import { vetHit, vetPlayerDeath } from '../net/guard';
@@ -149,6 +150,8 @@ interface FeelAcc {
 function newFeelAcc(): FeelAcc {
   return { any: false, stop: 0, shake: 0, dur: 0, kick: 0, kx: 0, kz: 0, fov: 0, global: false, slowmo: null, attacker: null, victims: [] };
 }
+/** CW-06: longest victim hit-stop of a projectile-weight hit (ms). */
+const PROJECTILE_STOP_CAP_MS = 40;
 /** Slow-mo priority: earlier wins within one frame (GDD_LIFE §5.7). */
 const SLOW_ORDER: (keyof typeof SLOWMO)[] = ['bossDeath', 'eliteKill', 'lastKill', 'staggerBreak', 'ultimate', 'critHeavy'];
 
@@ -243,6 +246,8 @@ export class Combat {
   /** Second stage of two-stage enemy flashes (GDD_LIFE §5.5), applied when the first stage has played. */
   private flashQueue: { a: Enemy; at: number; c: number; ms: number }[] = [];
   private lastSlowAt = -99;
+  /** CW-06: clock of the last weak_hit / resist_hit cue (shared gate, at most one per 0.15 s). */
+  private lastElemCueAt = -9;
   /** Telemetry of the last feel frame (dev overlay: stop, freezes, trauma, kick, hits per second). */
   readonly feelTel = { weight: 'none', stop: 0, victims: 0, freezes: 0, trauma: 0, kick: 0, fov: 0, flashMs: 0, hitsPerSec: 0, hitTimes: [] as number[] };
   private fxList: HitFx[] = [];
@@ -794,6 +799,8 @@ export class Combat {
         const cast = e.cast;
         e.cast = null;
         const interruptedBy = by ?? undefined;
+        // CW-06: a cancelled cast reads "KESİLDİ" (Kes / Gırtlak Kesme / stun cut the windup)
+        this.numberAt(e, 0, 'interrupt', 'KESİLDİ');
         G.events.emit('enemy:castEnd', { enemyId: e.id, abilityId: cast.skillId, interrupted: true, interruptedBy });
         // the host tells clients (they learn the cast ended and who ended it); a client's own prediction is not re-broadcast
         if (!G.net || G.net.isAuthority) {
@@ -1154,11 +1161,16 @@ export class Combat {
   /** Damage number event + flash + reaction. Never throws. */
   private showEnemyHit(target: Enemy, amount: number, crit: boolean, type: DamageType, sourceId: EntityId | null, dir: [number, number], opts: ApplyDamageOpts, effective: number): void {
     const pos = opts.pos ?? this.impactPos(target);
+    // CW-06: GDD_V2 §7.3 weakness / resist flags of the target's family + def (ZAYIF! / Dirençli on the number)
+    const wk = amount > 0 ? weaknessOf(target.def, type) : null;
+    const weak = !!wk?.weak;
+    const resisted = !!wk?.resisted;
     try {
       G.events.emit('damage', {
         targetId: target.id, sourceId, amount, crit, type,
         kind: opts.dot || opts.tick ? 'dot' : crit ? 'crit' : 'normal',
         pos, overkill: Math.max(0, amount - effective), skillId: opts.skillId,
+        weak, resisted,
       });
     } catch (e) {
       console.error('[combat] damage event failed', e);
@@ -1167,6 +1179,10 @@ export class Combat {
     const heavy = opts.weight === 'finisher' || opts.weight === 'heavy' || opts.weight === 'ultimate' || opts.weight === 'stagger_break';
     const strong = heavy || crit;
     if (opts.tick) return;
+    if ((weak || resisted) && this.clock - this.lastElemCueAt >= 0.15) {
+      this.lastElemCueAt = this.clock;
+      try { G.audio.play(weak ? 'weak_hit' : 'resist_hit', { pos, pitchVar: 0.05 }); } catch { /* feedback only */ }
+    }
     try {
       // GDD_LIFE §5.2 / §5.5: flash colour, jiggle and squash of this weight (crit: gold second stage)
       const f = resolveHitFeel({ weight: opts.weight ?? 'light', crit, boss: target.isBoss }, TYPE_COLORS[type]);
@@ -1338,6 +1354,9 @@ export class Combat {
       stop = spec.hitstop + (crit ? FEEL.hitstopCrit : 0) + (killed ? FEEL.hitstopKill : 0);
       if (boss && !exempt) stop = Math.min(stop, FEEL.hitstopBossCap);
     }
+    // CW-06: a projectile / spell / bow hit is a ranged impact: the victim keeps a short stop (40 ms cap), the shooter never freezes
+    const ranged = weight === 'projectile' || !!spec.isSpell || weaponKindOf(attacker) === 'bow';
+    if (weight === 'projectile') stop = Math.min(stop, PROJECTILE_STOP_CAP_MS);
     let trauma = f.trauma;
     if (spec.shake !== undefined) trauma = Math.min(1, spec.shake + (crit ? FEEL.shakeCrit : 0) + (killed ? FEEL.shakeKill : 0));
     a.stop = Math.max(a.stop, stop);
@@ -1346,7 +1365,7 @@ export class Combat {
     if (f.kick > a.kick) { a.kick = f.kick; a.kx = dir[0]; a.kz = dir[1]; }
     a.fov = Math.max(a.fov, f.fov);
     if (weight === 'ultimate' || weight === 'stagger_break' || (killed && boss)) a.global = true;
-    a.attacker = attacker;
+    if (!ranged) a.attacker = attacker;
     a.victims.push({ a: target, ms: stop });
     // time dilation (GDD_LIFE §5.7): the highest-priority candidate of the frame
     let sl: keyof typeof SLOWMO | null = null;
@@ -1564,7 +1583,16 @@ export class Combat {
       amount -= useMana * per;
     }
     amount = Math.min(Math.round(amount), Math.floor(floorRoom));
-    if (before > 0 && amount <= 0 && !dot) {
+    // CW-06: the soaked part of a direct hit reads as its own `absorb` number (blue-white "(emildi) N")
+    if (absorbed > 0 && !dot) {
+      try {
+        G.events.emit('damage', {
+          targetId: p.id, sourceId: hit.sourceId, amount: absorbed, crit: false, type,
+          kind: 'absorb', pos: posArr, overkill: 0,
+        });
+      } catch (e) { console.error('[combat] absorb event failed', e); }
+    }
+    if (before > 0 && amount <= 0 && !dot && absorbed <= 0) {
       this.numberAt(p, 0, 'block', 'EMİLDİ');
     }
 

@@ -6,6 +6,7 @@ import { G } from '../game/G';
 import type { DamageType } from '../types/common';
 import type { StatusId } from '../types/skills';
 import type { VfxId } from '../types/vfx';
+import { NUMBER_ONLY_KINDS, type DamageNumberOpts } from './DamageNumbers';
 import type { VFX, VfxHandle } from './VFX';
 
 /**
@@ -83,7 +84,19 @@ export function subscribeFeedback(vfx: VFX): void {
         }
         return;
       }
-      vfx.damageNumber([nx, headY, nz], e.amount, e.crit && e.kind === 'normal' ? 'crit' : e.kind);
+      if (NUMBER_ONLY_KINDS.has(e.kind)) {
+        // miss / absorb / resist / interrupt: the word or amount only, no hit sparks
+        vfx.damageNumber([nx, headY, nz], e.amount, e.kind);
+        return;
+      }
+      const numOpts: DamageNumberOpts = {
+        type: e.type,
+        weak: e.weak,
+        resisted: e.resisted,
+        // DoT ticks of one skill on one target merge into a single live number (CW-05)
+        merge: e.kind === 'dot' ? `${e.targetId}:${e.skillId ?? 'dot'}` : undefined,
+      };
+      vfx.damageNumber([nx, headY, nz], e.amount, e.crit && e.kind === 'normal' ? 'crit' : e.kind, undefined, numOpts);
       // ---- budget (hordes)
       if (vfx.hitBudget <= 0) return;
       const dot = e.kind === 'dot';

@@ -14,7 +14,7 @@ import {
 import { G } from '../game/G';
 import type { Rarity } from '../types/common';
 import { VFX_IDS, type DamageNumberKind, type SpawnVfxOpts, type TelegraphKind, type TelegraphShape, type VfxId } from '../types/vfx';
-import { DamageNumbers } from './DamageNumbers';
+import { DamageNumbers, type DamageNumberOpts } from './DamageNumbers';
 import { DONE, type Ctx, type Fx, type LoopCtl, type LoopHandle } from './Fx';
 import { resolveVfxAlias, type VfxAlias, type VfxAliasPart } from './aliases';
 import { Pillar, shellGeometry, shellMaterial } from './Meshes';
@@ -929,14 +929,14 @@ export class VFX {
   }
 
   /** Floating combat text. */
-  damageNumber(pos: THREE.Vector3 | [number, number, number], amount: number, kind: DamageNumberKind, text?: string): void {
+  damageNumber(pos: THREE.Vector3 | [number, number, number], amount: number, kind: DamageNumberKind, text?: string, opts?: DamageNumberOpts): void {
     if (kind === 'xp' || kind === 'gold') {
       const k = `${kind}:${Math.round(amount)}`;
       const last = this.lastNumber.get(k);
       if (last !== undefined && this.time - last < 0.35) return;
       this.lastNumber.set(k, this.time);
     }
-    this.numbers.spawn(pos, amount, kind, text);
+    this.numbers.spawn(pos, amount, kind, text, opts);
   }
 
   /** Rarity-coloured light pillar on a dropped item (Diablo/PoE style). */
