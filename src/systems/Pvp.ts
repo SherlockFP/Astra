@@ -65,14 +65,27 @@ let current: PvpRuntime | null = null;
 /** True while the Kızıl Sınır scene runs (the death panel, the scene's release path and the skill system ask). */
 export const pvpZoneActive = (): boolean => current !== null;
 
-/** The module-level door the combat code uses; every call is a no-op outside the PvP zone. */
+/**
+ * A second runtime that uses the same hit path outside the PvP zone (WP-14 Kale Kuşatması, systems/Siege.ts). It registers itself with
+ * setPvpHook while its map runs. Only one of the two is ever live: the PvP runtime wins when both exist.
+ */
+export interface PvpHook {
+  onFired(c: CastCtx): void;
+  onClientHit(from: string, p: NetChannels['hit']): boolean;
+}
+let hook: PvpHook | null = null;
+export function setPvpHook(h: PvpHook | null): void {
+  hook = h;
+}
+
+/** The module-level door the combat code uses; with no PvP zone and no hook every call is a no-op. */
 export const pvp = {
   get runtime(): PvpRuntime | null { return current; },
   get active(): boolean { return current !== null; },
   /** SkillSystem: a skill fired for the local player. */
-  onFired(c: CastCtx): void { current?.onFired(c); },
+  onFired(c: CastCtx): void { if (current) current.onFired(c); else hook?.onFired(c); },
   /** Combat.onNetHit (host): a client hit whose target may be a player. Returns true when it was one (handled, never an enemy hit). */
-  onClientHit(from: string, p: NetChannels['hit']): boolean { return current ? current.onClientHit(from, p) : false; },
+  onClientHit(from: string, p: NetChannels['hit']): boolean { return current ? current.onClientHit(from, p) : (hook?.onClientHit(from, p) ?? false); },
   /** Scene release handler: the respawn timer is still running. */
   releaseBlocked(): boolean { return current?.releaseBlocked() ?? false; },
   respawnPoint(): { x: number; z: number; yaw: number } | null { return current?.respawnPoint() ?? null; },
@@ -85,7 +98,7 @@ export function startPvp(o: PvpOpts): PvpRuntime {
   return current;
 }
 
-const reachOf = (skillId: string | undefined): number => {
+export const reachOf = (skillId: string | undefined): number => {
   const sk = typeof skillId === 'string' && Object.prototype.hasOwnProperty.call(SKILLS, skillId) ? SKILLS[skillId] : undefined;
   if (!sk || !Array.isArray(sk.tags)) return 30;
   const melee = sk.targeting === 'melee_arc' || sk.tags.includes('melee');
@@ -548,7 +561,7 @@ export class PvpRuntime {
 }
 
 /** Wire statuses -> a safe list: known PvP statuses only, short, no precomputed dps, no chance (rolled by the attacker). */
-function cleanStatuses(x: unknown): StatusApply[] {
+export function cleanStatuses(x: unknown): StatusApply[] {
   if (!Array.isArray(x)) return [];
   const out: StatusApply[] = [];
   for (const s of x.slice(0, 8)) {

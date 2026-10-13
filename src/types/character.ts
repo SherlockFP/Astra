@@ -8,6 +8,7 @@ import type { CampState, HomeSave, UpgState } from './itemsV2';
 import type { ProfessionId, ProfessionSave } from './professions';
 import type { GuildSave } from './guild';
 import type { NationId } from '../data/nations';
+import type { SiegeHolderRec } from '../data/siege';
 
 export const BAG_SIZE = 48;
 export const STASH_SIZE = 120;
@@ -95,6 +96,9 @@ export interface CharacterSave {
   // ---- WP-05 Lonca (NETCODE.md section 16). OPTIONAL, created by systems/Guild.ts when the character founds or joins a guild.
   /** Guild membership: guild id, this character's member key pair, chat key and the latest verified signed roster. */
   guild?: GuildSave;
+  // ---- WP-14 Kale Kuşatması (systems/Siege.ts, systems/SiegeRules.ts). OPTIONAL, written from the host's `sgend` broadcast. Local, trust-based.
+  /** The guild that held the banner at the end of the last siege (null: nobody), its week index, and the winning nation Zafer buff end (epoch ms). */
+  siege?: SiegeSave;
   // ---- WP-06 / WP-07 Uluslar + Kızıl Sınır (data/nations.ts, systems/Pvp.ts). OPTIONAL, append-only.
   /** Nation chosen at creation. Absent on old saves: CharacterState.ensureNation() stores the hash default of the id on first load. */
   nation?: NationId;
@@ -127,6 +131,12 @@ export interface PetSave {
 }
 
 /** WP-07: lifetime PvP record. `honour` is the spendable Onur balance, `honourTotal` the lifetime sum (achievement metric). */
+/** WP-14: the last siege winner (null: nobody held the banner) with its week, and the winning nation's Zafer buff end (epoch ms). */
+export interface SiegeSave {
+  holder: (SiegeHolderRec & { week: number }) | null;
+  zaferUntil?: number;
+}
+
 export interface PvpSave {
   kills: number;
   deaths: number;

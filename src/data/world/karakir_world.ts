@@ -97,6 +97,8 @@ export const LANDMARKS: LandmarkDef[] = [
   { id: 'lm_karlibel_kalesi', name: 'Karlıbel Kalesi', regionId: 'r10', pos: [291, 198], recipe: 'red_castle_ruin' },
   { id: 'lm_kul_kulesi', name: 'Kül Gözetleme Kulesi', regionId: 'r11', pos: [388, 228], recipe: 'watch_tower_ruin' },
   { id: 'lm_kartal_kayasi', name: 'Kartal Kayası Anıtı', regionId: 'r12', pos: [350, 24], recipe: 'obelisk_shrine' },
+  // WP-14 Kale Kuşatması: the weekly siege fortress (data/siege.ts SIEGE_FORT, same tile)
+  { id: 'lm_bozkir_kalesi', name: 'Bozkır Kalesi', regionId: 'r9', pos: [162, 92], recipe: 'red_castle_ruin' },
 ];
 
 export const REGIONS: WorldRegion[] = REGION_SPECS.map((r): WorldRegion => {

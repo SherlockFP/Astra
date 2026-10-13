@@ -12,6 +12,8 @@ import { eventPetItem } from '../../systems/Pets';
 import type { BossSchedule } from './BossSchedule';
 import type { MetinDirector } from './MetinDirector';
 import { distM, tileToWorld, type Pt, type WorldCtx } from './util';
+import { SIEGE_FORT, SIEGE_MAP_ID } from '../../data/siege';
+import { siegeCrossings, type SiegeCrossing } from '../../systems/SiegeRules';
 
 /**
  * Open-world event calendar (MMO pillars WP-04). The schedule is a pure function of the wall clock: a 30-minute slot k
@@ -238,6 +240,8 @@ export class EventCalendar {
   private wave = 0;
   private timer = 0;
   private warned = false;
+  /** WP-14: the weekly siege is announced on this map (the fortress lives here). */
+  private readonly siegeOn: boolean;
 
   constructor(
     private readonly ctx: WorldCtx,
@@ -246,6 +250,7 @@ export class EventCalendar {
     private readonly clock: () => number = () => Date.now(),
   ) {
     this.last = this.clock();
+    this.siegeOn = ctx.def?.id === SIEGE_MAP_ID;
     this.events = G.events.scope();
     this.events.on('damage', (d) => this.onDamage(d.sourceId, d.targetId, d.amount));
     live = this;
@@ -270,6 +275,7 @@ export class EventCalendar {
     for (const c of crossings(from, now, this.sites)) {
       if (now - c.when <= STALE_MS) this.announce(c);
     }
+    if (this.siegeOn) for (const c of siegeCrossings(from, now)) if (now - c.when <= STALE_MS) this.announceSiege(c);
     const cur = eventAt(now, this.sites);
     if (this.active && (!cur || cur.start !== this.active.start)) this.finish(this.active);
     if (cur && !this.active) this.begin(cur);
@@ -385,6 +391,18 @@ export class EventCalendar {
     else if (c.phase === 'start') text = `${def.name} başladı! Bölge: ${site} (${Math.round(def.durSec / 60)} dk)`;
     else text = `${def.name} sona erdi.`;
     G.events.emit('world:event', { id: c.id, phase: c.phase, at: c.at, zone: c.occ.site.id });
+    G.events.emit('world:announce', { text, kind: 'info' });
+    toast(text, c.phase === 'start' ? 'boss' : 'info');
+    G.events.emit('net:chat', { from: '', text, channel: 'system' });
+  }
+
+  /** WP-14 siege phases through the same announce path as the events (banner, toast, chat line). The fight itself is systems/Siege.ts. */
+  private announceSiege(c: SiegeCrossing): void {
+    const text = c.phase === 'soon'
+      ? `Kale Kuşatması ${Math.round((c.lead ?? 0) / 60)} dakika sonra başlıyor! ${SIEGE_FORT.name}`
+      : c.phase === 'start'
+        ? `Kale Kuşatması başladı! ${SIEGE_FORT.name}: bayrağı 60 sn tut.`
+        : 'Kale Kuşatması sona erdi.';
     G.events.emit('world:announce', { text, kind: 'info' });
     toast(text, c.phase === 'start' ? 'boss' : 'info');
     G.events.emit('net:chat', { from: '', text, channel: 'system' });

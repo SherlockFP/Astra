@@ -10,6 +10,7 @@ import { RARITY_COLORS } from '../../types/common';
 import { getSocial } from '../../systems/Social';
 import { getGuild } from '../../systems/Guild';
 import { upcomingEventLines } from '../../scenes/world/EventCalendar';
+import { siegeLines } from '../../systems/SiegeRules';
 import { LINK_MAX, itemLink, linkTag, linkedDisplayItem, snapshotName } from '../../systems/ChatLinks';
 
 /* ================================================================================================
@@ -332,6 +333,8 @@ export class Chat implements HudWidget {
       const lines = upcomingEventLines();
       if (!lines.length) this.addLine('', 'Dünya etkinlikleri açık dünyada (Sisli Vadi, Karakır Bozkırı) çalışır.', 'system', true);
       else for (const l of ['Sıradaki dünya etkinlikleri:', ...lines]) this.addLine('', l, 'system', true);
+    } else if (cmd === 'kusatma') {
+      for (const l of siegeLines(Date.now(), G.character?.save.siege?.holder)) this.addLine('', l, 'system', true);
     } else if (EMOTES[cmd]) {
       this.emote(cmd, true);
     } else {

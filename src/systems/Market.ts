@@ -13,6 +13,7 @@ import {
 import { baseOf, slotsForCategory } from './ItemGen';
 import { cleanWireItem, fromSnapshot, listingName, sanitizeAnnounce, sanitizeBuy, sanitizeSold, toSnapshot, toWireItem } from './MarketWire';
 import { emit, toast } from './notify';
+import { siegeTaxMult } from './SiegeRules';
 
 /**
  * CM14 PAZAR - Metin2-style AFK player shops (docs/CORE_MECHANICS.md §11). OWNER: items module.
@@ -739,7 +740,8 @@ export class Market {
     ch.removeItem(item.uid);
     delete item.listed;
     o.listings = o.listings.filter((l) => l !== row);
-    const tax = saleTax(row.price);
+    // WP-14: the holding guild of the last siege pays a smaller Pazar tax (local, trust-based)
+    const tax = saleTax(row.price, siegeTaxMult(ch.save.siege?.holder, ch.save.guild?.gid));
     const net = row.price - tax;
     ch.addGold(net);
     const rec: MarketSaleRecord = { t: now, name: label, rarity: item.rarity, price: row.price, net, ...(m.buyer ? { buyer: m.buyer } : {}) };
