@@ -243,3 +243,11 @@ export function clearPrisons(c: BossController): void {
   if (!list) return;
   for (const k of list.slice()) releasePrison(c, k, true, false);
 }
+
+// K10 patterns (P-32 intermission, P-33 beams and bands, P-34 soak and marks): implemented in ./patterns.ts
+export {
+  soak, markPlayers, rotatingBeams, trackBeam, movingBand, breathBand, intermission, intermissionActive, updatePatterns, clearPatterns,
+} from './patterns';
+export type {
+  SoakSlot, SoakOpts, MarkOpts, RotatingBeamsOpts, TrackBeamOpts, MovingBandOpts, BreathOpts, IntermissionOpts,
+} from './patterns';

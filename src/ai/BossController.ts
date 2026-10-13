@@ -1,9 +1,10 @@
 import { G } from '../game/G';
 import { clamp, yawFromDir } from '../core/utils';
 import { EnemyAI, type Busy } from './EnemyAI';
-import { bossMsg, bossText } from './bossNet';
+import { BossEnergy, bossMsg, bossText, lockExpired } from './bossNet';
 import { CUSTOM, type CustomHandler } from './abilities';
 import { BOSS_SCRIPTS, BOSS_SPAWNS } from './bosses';
+import { tickLinks } from './bosses/links';
 import type { EnemyDirector } from './EnemyDirector';
 import type { BossScript } from './bosses/types';
 import type { Actor } from '../entities/Actor';
@@ -12,6 +13,9 @@ import type { Player } from '../entities/Player';
 import type { BossDef, BossPhase, EnemyAbility } from '../types/enemies';
 
 export { BOSS_SPAWNS };
+
+/** Optional BossScript fields from the P-31 / P-38 packages (types/ owned elsewhere). */
+type ScriptExt = BossScript & { lockLimit?: number };
 
 /**
  * Boss brain: phases by HP, scripted mechanics (circles under players, cones, line charges, soaks, spreads, adds), cast bars,
@@ -38,6 +42,12 @@ export class BossController extends EnemyAI {
   phase: BossPhase | null = null;
   /** Script scratch state. */
   readonly state: Record<string, any> = {};
+  /** P-38: energy bar (BossDef.energy); null for bosses without one. */
+  energy: BossEnergy | null = null;
+  /** P-31: 'interact' bosses wait for releasePull() (a prop or an NPC), 'aggro' bosses engage from the room trigger. */
+  pullMode: 'aggro' | 'interact' = 'aggro';
+  /** True while an 'interact' boss is still waiting for its pull. */
+  awaitPull = false;
   /** No basic attacks (immune phases, scripted channels). */
   suppressBasic = false;
   /** Stand still and face the target (phase mechanics). */
@@ -70,7 +80,26 @@ export class BossController extends EnemyAI {
       this.arena = { cx: e.homeX, cz: e.homeZ, w: this.bdef.arenaRadius * 2, h: this.bdef.arenaRadius * 2, r: this.bdef.arenaRadius };
     }
     e.arena = { cx: this.arena.cx, cz: this.arena.cz, w: this.arena.w, h: this.arena.h };
+    const en = this.bdef.energy;
+    if (en) this.energy = new BossEnergy(en, { full: () => this.hook(en.onFull), empty: () => this.hook(en.onEmpty) });
     this.script.init?.(this);
+  }
+
+  /** Call a BossScript hook by name (energy onFull / onEmpty). Missing hooks are ignored. */
+  private hook(name: string | undefined): void {
+    if (!name) return;
+    const fn = (this.script as unknown as Record<string, unknown>)[name];
+    if (typeof fn === 'function') (fn as (c: BossController) => void).call(this.script, this);
+  }
+
+  /** P-31: release an 'interact' boss so it engages (it then acquires the nearest player like an aggro boss). */
+  releasePull(): void {
+    this.awaitPull = false;
+  }
+
+  /** P-31: add one boss-side add at a fixed point with hp scaling and a tag (the boss's own `spawnAdds` with positions). */
+  encounterAdd(defId: string, pos: { x: number; z: number }, o: { hpMult?: number; tag?: string } = {}): void {
+    this.spawnAdds(defId, 1, { positions: [pos], hpMult: o.hpMult, tag: o.tag, aggro: true });
   }
 
   protected handler(id: string): CustomHandler | undefined {
@@ -389,6 +418,8 @@ export class BossController extends EnemyAI {
     this.enraged = false;
     for (const k of Object.keys(this.state)) delete this.state[k];
     this.cdOverride.clear();
+    this.energy?.reset();
+    this.awaitPull = this.pullMode === 'interact';
     this.basic = e.def.basicAttack;
     this.basicCd = e.def.attackCooldown;
     e.hover = e.def.hoverHeight ?? 0;
@@ -422,6 +453,7 @@ export class BossController extends EnemyAI {
   protected tick(dt: number): void {
     const e = this.e;
     if (this.engaged) this.fightFrame(dt);
+    tickLinks(this, dt);
     super.tick(dt);
     // keep the boss inside its arena
     if (this.engaged) {
@@ -435,11 +467,14 @@ export class BossController extends EnemyAI {
   private fightFrame(dt: number): void {
     const e = this.e;
     this.fightT += dt;
+    this.energy?.step(dt);
     // phases by HP
     const hpf = e.hpFrac;
     const phases = this.bdef.phases;
     if (this.phaseLocked) {
-      if (this.fightT - this.lockedAt > 150) this.endMechanicPhase(); // safety net: a script forgot to end its phase
+      // safety net: a script forgot to end its phase (BossScript.lockLimit, default 150 s)
+      const limit = (this.script as ScriptExt).lockLimit ?? 150;
+      if (lockExpired(this.lockedAt, this.fightT, limit)) this.endMechanicPhase();
     } else {
       const next = phases[this.phaseIdx + 1];
       if (next && hpf < next.hpBelow) this.enterPhase(this.phaseIdx + 1); // one phase per frame
@@ -478,6 +513,7 @@ export class BossController extends EnemyAI {
   /** Bosses engage when a player steps into the arena (the room is the trigger) or hits them. */
   protected idleTick(dt: number, _now: number): void {
     this.halt(dt);
+    if (this.awaitPull) return; // 'interact' boss: waits for releasePull()
     this.scanT -= dt;
     if (this.scanT > 0) return;
     this.scanT = 0.25;
@@ -505,7 +541,8 @@ export class BossController extends EnemyAI {
     const ids = this.phase?.abilities ?? [];
     for (const id of ids) {
       const ab = this.abilityList.find((a) => a.id === id);
-      if (ab && this.usable(ab, now, target, dist, edge)) {
+      if (ab && this.usable(ab, now, target, dist, edge) && (this.energy?.canPay(ab.id) ?? true)) {
+        this.energy?.spend(ab.id);
         this.gcdUntil = now + 0.7;
         return ab;
       }

@@ -58,8 +58,12 @@ export interface ShapeOpts {
   telegraph?: boolean;
   kind?: TelegraphKind;
   name?: string;
-  persist?: { duration: number; tick: number };
+  persist?: HitShapeSpec['persist'];
   projectile?: HitShapeSpec['projectile'];
+  /** K10: rotation of the shape in deg/s while pending or persisting (rotating beams). */
+  spin?: HitShapeSpec['spin'];
+  /** Vertical worlds: height tolerance; 'free' = room-wide mechanic that ignores height (ENGINE_VERTICALITY §12). */
+  vert?: HitShapeSpec['vert'];
   follow?: boolean;
   vfxOnLand?: VfxId;
   soak?: boolean;
@@ -326,6 +330,8 @@ export class EnemyAI {
         // cones are melee swings (parryable); projectiles, circles and lines are not unless the ability says so
         parryable: o.parryable ?? (!o.projectile && o.shape.type === 'cone'),
         perilous: o.perilous ? true : undefined,
+        spin: o.spin,
+        vert: o.vert,
       };
       try {
         spec = G.mplus.decorateHitShape(e, spec);

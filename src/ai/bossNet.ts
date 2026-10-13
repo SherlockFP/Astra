@@ -2,6 +2,7 @@ import { G } from '../game/G';
 import { VFX_IDS, type VfxId } from '../types/vfx';
 import type { World } from '../world/World';
 import type { EntityId } from '../types/common';
+import type { StatusId } from '../types/skills';
 
 /**
  * Boss mechanics that need every peer to do something local (push / pull the local player, spawn a cosmetic effect, show floating
@@ -58,6 +59,7 @@ class ForceSystem {
         mx += f.dx * f.speed;
         mz += f.dz * f.speed;
       } else {
+        if (pullBlocked(p)) continue; // rooted: pulls do nothing (push still moves)
         const dx = f.x - p.position.x, dz = f.z - p.position.z;
         const d = Math.hypot(dx, dz);
         if (d <= f.stop) continue;
@@ -156,6 +158,9 @@ export function applyBossMsg(m: BossMsg): void {
       case 'boss_shake':
         G.events.emit('camera:shake', { intensity: num(d.i, 0.2), duration: num(d.d, 0.3) });
         return;
+      case 'boss_energy':
+        energyView = { v: num(d.v), max: num(d.max, energyView?.max ?? 0) };
+        return;
       case 'boss_announce':
         // world banner on every peer (kind 0 metin, 1 boss, 2 rare)
         G.events.emit('world:announce', { text: m.text ?? '', kind: num(d.k) === 1 ? 'boss' : num(d.k) === 2 ? 'rare' : 'metin' });
@@ -229,6 +234,146 @@ export function registerBossNet(): void {
       console.warn('[boss] receiver failed', err);
     }
   });
+}
+
+// ---- K11 (P-31, P-38): boss energy, lock limit, pull gate. Pure logic, no three.js, so the smoke can run it headless. ----
+
+/** Snapshot of the boss energy bar as last received (cyan second bar in the boss frame; UI reads it). */
+let energyView: { v: number; max: number } | null = null;
+
+/** The energy bar as last replicated to this peer (null when the boss has no energy). */
+export function bossEnergyView(): { v: number; max: number } | null {
+  return energyView;
+}
+
+/** Config subset of BossDef.energy (types/enemies.ts). */
+export interface BossEnergyCfg {
+  max: number;
+  start?: number;
+  regen?: number;           // per second; negative drains
+  onFull?: string;          // BossScript hook name, called on the rising edge to max
+  onEmpty?: string;         // BossScript hook name, called on the falling edge to 0
+  costs?: Record<string, number>;
+}
+
+/**
+ * Host-side energy bar. `step(dt)` regenerates (or drains) and replicates `boss_energy` every 0.25 s; `onFull` / `onEmpty`
+ * fire once per crossing. `pause` freezes regen (scripted phases can hold the bar), `spend` pays an ability's `costs` entry.
+ */
+export class BossEnergy {
+  readonly max: number;
+  readonly start: number;
+  readonly regen: number;
+  private v: number;
+  private paused = false;
+  private sendT = 0;
+  private wasFull = false;
+  private wasEmpty = false;
+  readonly cfg: BossEnergyCfg;
+  private readonly fire: { full?: () => void; empty?: () => void };
+  private readonly send: (v: number, max: number) => void;
+
+  constructor(
+    cfg: BossEnergyCfg,
+    fire: { full?: () => void; empty?: () => void } = {},
+    send: (v: number, max: number) => void = (v, max) => bossMsg('boss_energy', { v, max }),
+  ) {
+    this.cfg = cfg;
+    this.fire = fire;
+    this.send = send;
+    this.max = Math.max(0, cfg.max);
+    this.start = clampN(cfg.start ?? 0, 0, this.max);
+    this.regen = cfg.regen ?? 0;
+    this.v = this.start;
+    this.syncEdges();
+  }
+
+  get value(): number {
+    return this.v;
+  }
+
+  /** Set without firing hooks (scripts resetting the bar). */
+  set(v: number): void {
+    this.v = clampN(v, 0, this.max);
+    this.syncEdges();
+  }
+
+  /** Add (or subtract) and fire the edge hooks. */
+  add(d: number): void {
+    this.v = clampN(this.v + d, 0, this.max);
+    this.edges();
+  }
+
+  pause(on: boolean): void {
+    this.paused = on;
+  }
+
+  get isPaused(): boolean {
+    return this.paused;
+  }
+
+  canPay(abilityId: string): boolean {
+    return this.v >= (this.cfg.costs?.[abilityId] ?? 0);
+  }
+
+  /** Pay the ability's cost when affordable; abilities without a cost are always free. */
+  spend(abilityId: string): boolean {
+    const cost = this.cfg.costs?.[abilityId] ?? 0;
+    if (cost <= 0) return true;
+    if (this.v < cost) return false;
+    this.add(-cost);
+    return true;
+  }
+
+  /** Back to the start value, regen running again (boss reset). */
+  reset(): void {
+    this.paused = false;
+    this.sendT = 0;
+    this.set(this.start);
+  }
+
+  step(dt: number): void {
+    if (!this.paused && this.regen !== 0) this.add(this.regen * dt);
+    this.sendT -= dt;
+    if (this.sendT <= 0) {
+      this.sendT = 0.25;
+      this.send(Math.round(this.v), this.max);
+    }
+  }
+
+  private edges(): void {
+    if (this.v >= this.max) {
+      if (!this.wasFull) {
+        this.wasFull = true;
+        this.fire.full?.();
+      }
+    } else this.wasFull = false;
+    if (this.v <= 0) {
+      if (!this.wasEmpty) {
+        this.wasEmpty = true;
+        this.fire.empty?.();
+      }
+    } else this.wasEmpty = false;
+  }
+
+  private syncEdges(): void {
+    this.wasFull = this.v >= this.max;
+    this.wasEmpty = this.v <= 0;
+  }
+}
+
+function clampN(v: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, v));
+}
+
+/** True when a mechanic phase has been locked for longer than `limit` seconds (BossScript.lockLimit, default 150 s). */
+export function lockExpired(lockedAt: number, fightT: number, limit = 150): boolean {
+  return fightT - lockedAt > limit;
+}
+
+/** A rooted player ignores pull forces (boss_pull, ForceSystem). */
+export function pullBlocked(p: { statuses: { has(id: StatusId): boolean } }): boolean {
+  return p.statuses.has('root');
 }
 
 /** Fade an enemy in / out on every peer (Gölge Adımı, Duman Bombası). */

@@ -8,6 +8,7 @@ import { Player } from '../entities/Player';
 import { characterAssetUrls } from '../entities/CharacterModel';
 import { enemyAssetUrls, spawnEnemy } from '../entities/EnemyFactory';
 import type { Enemy } from '../entities/Enemy';
+import type { BossController } from '../ai/BossController';
 import { getDirector } from '../ai/EnemyDirector';
 import { assignChampions } from '../ai/champion';
 import { Chest, chestTierForKey, CursedChest, ExitPortal, InteractableProp, PanelProp, Shrine, SHRINES, Waypoint, type ShrineType } from '../entities/interactables';
@@ -46,6 +47,16 @@ interface BossRec {
   entityId: EntityId;
   closeTimer: number | null;
   openTimer: number | null;
+  /** P-31 pairing: bosses with the same group engage, and die, together. */
+  group: string | null;
+  /** P-31: this group already engaged for the current fight. */
+  paired: boolean;
+}
+
+/** P-31 placement fields that land in types/dungeons.ts with the boss-orchestration package; read structurally until then. */
+interface BossPairFields {
+  group?: string;
+  pull?: 'aggro' | 'interact';
 }
 
 type RunCompleted = { state: RunState; record: unknown; rewards: unknown[] };
@@ -396,7 +407,8 @@ export class DungeonScene implements GameScene {
       const sp = snap(b.pos[0], b.pos[1]);
       const id = DUNGEON_ENEMY_ID_BASE + index++;
       jobs.push({ id, defId: b.bossId, x: sp.x, z: sp.z, packId: null, facing: ((b.facing ?? 0) * Math.PI) / 180, level: params.enemyLevel });
-      this.bosses.set(b.bossId, { placement: b, engaged: false, defeated: false, entityId: id, closeTimer: null, openTimer: null });
+      const pair = b as BossPlacement & BossPairFields;
+      this.bosses.set(b.bossId, { placement: b, engaged: false, defeated: false, entityId: id, closeTimer: null, openTimer: null, group: pair.group ?? null, paired: false });
     }
     let done = 0;
     const CHUNK = 14;
@@ -418,6 +430,53 @@ export class DungeonScene implements GameScene {
       );
       G.ui.showLoading(0.55 + 0.4 * (done / Math.max(1, jobs.length)), this.def.name, this.def.loadingImage);
       this.disposeCheck();
+    }
+    this.wireBossPulls();
+  }
+
+  /** P-31 pull hook: 'interact' bosses wait for pullBoss() (host only; the controller is host-side). */
+  private wireBossPulls(): void {
+    if (!G.net.isAuthority || !this.world) return;
+    for (const rec of this.bosses.values()) {
+      if ((rec.placement as BossPlacement & BossPairFields).pull !== 'interact') continue;
+      const ai = (this.world.get(rec.entityId) as Enemy | undefined)?.ai as BossController | null | undefined;
+      if (!ai) continue;
+      ai.pullMode = 'interact';
+      ai.awaitPull = true;
+    }
+  }
+
+  /** P-31 pull hook: release an 'interact' boss (called by the prop or NPC that pulls it). Host only. */
+  pullBoss(bossId: string): void {
+    if (!G.net.isAuthority) return;
+    const rec = this.bosses.get(bossId);
+    const ai = rec ? ((this.world?.get(rec.entityId) as Enemy | undefined)?.ai as BossController | null | undefined) : undefined;
+    ai?.releasePull();
+  }
+
+  /** P-31 pairing: the first engage of a group engages every other member on the same target. Host only. */
+  private engagePartners(bossId: string, entityId: EntityId): void {
+    const src = this.bosses.get(bossId);
+    if (!src?.group || src.paired) return;
+    const target = (this.world?.get(entityId) as Enemy | undefined)?.ai?.target ?? null;
+    if (!target) return;
+    src.paired = true;
+    for (const o of this.bosses.values()) {
+      if (o === src || o.group !== src.group || o.defeated) continue;
+      o.paired = true;
+      const en = this.world?.get(o.entityId) as Enemy | undefined;
+      if (en && !en.isDead) en.ai?.acquire(target, true);
+    }
+  }
+
+  /** P-31 pairing: a group dies together. Partners go through the normal death path (host only). */
+  private defeatPartners(bossId: string): void {
+    const src = this.bosses.get(bossId);
+    if (!src?.group) return;
+    for (const o of this.bosses.values()) {
+      if (o === src || o.group !== src.group || o.defeated) continue;
+      const en = this.world?.get(o.entityId) as Enemy | undefined;
+      if (en && !en.isDead) G.combat.killEnemy(en, null);
     }
   }
 
@@ -897,6 +956,7 @@ export class DungeonScene implements GameScene {
       this.bossEvent('engaged', e.bossId, { entityId: e.entityId });
       const b = this.bosses.get(e.bossId);
       if (!b || b.defeated) return;
+      this.engagePartners(e.bossId, e.entityId);
       if (b.openTimer) clearTimeout(b.openTimer);
       b.openTimer = null;
       if (b.closeTimer) clearTimeout(b.closeTimer);
@@ -913,6 +973,7 @@ export class DungeonScene implements GameScene {
     ev.on('boss:defeated', (e) => {
       this.onBossDefeated(e.bossId, e.entityId);
       if (G.net.isAuthority) {
+        this.defeatPartners(e.bossId);
         this.bossEvent('defeated', e.bossId, { entityId: e.entityId });
         this.zoneEvents?.onBossDefeated(e.bossId);
       }
@@ -922,6 +983,7 @@ export class DungeonScene implements GameScene {
       this.bossEvent('wipe', e.bossId);
       const b = this.bosses.get(e.bossId);
       if (!b) return;
+      b.paired = false;
       if (b.closeTimer) clearTimeout(b.closeTimer);
       b.closeTimer = null;
       // the doors open 5 s after a wipe (GDD 0.7)

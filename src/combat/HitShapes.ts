@@ -7,6 +7,17 @@ import type { TelegraphHandle, VfxHandle } from '../vfx/VFX';
 import type { Enemy } from '../entities/Enemy';
 import { VERT } from '../world/Heightfield';
 
+/** K10: every dimension of a telegraph shape multiplied by `k` (angles unchanged). */
+function scaleShape(sh: TelegraphShape, k: number): TelegraphShape {
+  switch (sh.type) {
+    case 'circle': return { type: 'circle', radius: sh.radius * k };
+    case 'ring': return { type: 'ring', inner: sh.inner * k, outer: sh.outer * k };
+    case 'cone': return { type: 'cone', radius: sh.radius * k, angle: sh.angle };
+    case 'line': return { type: 'line', length: sh.length * k, width: sh.width * k };
+    case 'rect': return { type: 'rect', width: sh.width * k, length: sh.length * k };
+  }
+}
+
 /**
  * A hostile area/projectile that can hurt players: enemy melee swings, boss mechanics, affix hazards.
  * Created on the HOST (spawn) and broadcast; EVERY peer (host included) keeps a copy (add) that shows the
@@ -30,8 +41,16 @@ export interface HitShapeSpec {
   telegraph: boolean;
   kind?: TelegraphKind;
   abilityName?: string;
-  /** Ground hazard that keeps hurting: ticks every `tick` s for `duration` s after landing. */
-  persist?: { duration: number; tick: number };
+  /**
+   * Ground hazard that keeps hurting: ticks every `tick` s for `duration` s after landing.
+   * `scaleTo` (K10): the shape grows (or shrinks) linearly from its nominal size to `scaleTo` x size over `duration`.
+   */
+  persist?: { duration: number; tick: number; scaleTo?: number };
+  /**
+   * K10 rotating shape: the facing turns at `spin` deg/s while pending or persisting (line / cone / rect; no effect on circles).
+   * A spinning persist shape keeps its telegraph alive so the sweep stays visible after landing.
+   */
+  spin?: number;
   /** Moving projectile (origin -> dir); hits the first local player it touches. */
   projectile?: { speed: number; radius: number; range: number; vfx: VfxId; homingTargetId?: EntityId | null; homing?: number };
   /** Telegraph follows the source entity until it lands (cleaves). */
@@ -165,6 +184,7 @@ export class HitShapes {
     if (!world) { this.clear(); return; }
     for (const [id, a] of this.shapes) {
       const s = a.spec;
+      if (s.spin && (a.state === 'pending' || a.state === 'persist')) this.turn(a, s.spin * dt);
       if (a.state === 'pending') {
         a.t += dt;
         if (s.followSource && s.sourceId !== null) {
@@ -201,6 +221,25 @@ export class HitShapes {
     }
   }
 
+  /** K10: rotate the facing by `deg` degrees (ground plane) and keep the telegraph in step. */
+  private turn(a: ActiveShape, deg: number): void {
+    const k = (deg * Math.PI) / 180;
+    const c = Math.cos(k), sn = Math.sin(k);
+    const nx = a.dx * c - a.dz * sn;
+    const nz = a.dx * sn + a.dz * c;
+    a.dx = nx;
+    a.dz = nz;
+    try { a.telegraph?.setTransform([a.ox, a.oy, a.oz], [a.dx, a.dz]); } catch { /* telegraph already finished: feedback only */ }
+  }
+
+  /** K10: the shape as it is right now (`persist.scaleTo` growth applied while a persist shape is ticking). */
+  private liveShape(a: ActiveShape): TelegraphShape {
+    const p = a.spec.persist;
+    if (!p?.scaleTo || a.state !== 'persist' || p.duration <= 0) return a.spec.shape;
+    const k = 1 + (p.scaleTo - 1) * Math.min(1, a.persistT / p.duration);
+    return scaleShape(a.spec.shape, k);
+  }
+
   /**
    * Perilous windup (GDD_V2 §3.4 / §3.12): the caster flashes red and a glyph sits on the telegraph, on every peer (the spec is
    * replicated). Feedback only: never throws, never blocks the shape.
@@ -224,8 +263,11 @@ export class HitShapes {
 
   private land(a: ActiveShape): void {
     const s = a.spec;
-    try { a.telegraph?.cancel(); } catch { /* ignore */ }
-    a.telegraph = null;
+    // K10: a spinning persist shape keeps its telegraph (the sweep stays readable); dispose() cancels it later
+    if (!(s.spin && s.persist)) {
+      try { a.telegraph?.cancel(); } catch { /* ignore */ }
+      a.telegraph = null;
+    }
     if (s.projectile) {
       this.launch(a);
       return;
@@ -314,7 +356,8 @@ export class HitShapes {
     const lp = G.world?.localPlayer;
     if (!lp || lp.isDead || !lp.isLocal) return;
     if (!this.inReach(a, lp.position.y)) return;
-    const inside = HitShapes.contains(s.shape, a.ox, a.oz, a.dx, a.dz, lp.position.x, lp.position.z, lp.radius);
+    const shape = this.liveShape(a);
+    const inside = HitShapes.contains(shape, a.ox, a.oz, a.dx, a.dz, lp.position.x, lp.position.z, lp.radius);
     const hurt = s.kind === 'safe' ? !inside : inside;
     if (!hurt) return;
     let dmg = s.damage;
@@ -322,11 +365,11 @@ export class HitShapes {
       let n = 0;
       for (const p of G.world!.players) {
         if (p.isDead || !this.inReach(a, p.position.y)) continue;
-        if (HitShapes.contains(s.shape, a.ox, a.oz, a.dx, a.dz, p.position.x, p.position.z, p.radius)) n++;
+        if (HitShapes.contains(shape, a.ox, a.oz, a.dx, a.dz, p.position.x, p.position.z, p.radius)) n++;
       }
       dmg /= Math.max(1, n);
     }
-    const t = s.shape.type;
+    const t = shape.type;
     const dx = lp.position.x - a.ox, dz = lp.position.z - a.oz;
     const l = Math.hypot(dx, dz);
     const dir: [number, number] = l > 0.05 ? [dx / l, dz / l] : [a.dx, a.dz];
