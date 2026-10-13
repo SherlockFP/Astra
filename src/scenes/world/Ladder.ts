@@ -1,6 +1,7 @@
 import { G } from '../../game/G';
 import { getDungeon } from '../../data/dungeons';
 import type { RunState } from '../../types/mythic';
+import { isFissureId } from '../../world/procgen';
 
 /**
  * Difficulty ladder bookkeeping (GDD_OPENWORLD §7.3, §7.6): the unlock announcements that follow a clear and the flags the
@@ -53,6 +54,7 @@ export function onRunCompleted(state: RunState | null | undefined): void {
   const ch = G.character;
   if (!ch || !state || state.failed) return;
   const id = state.dungeonId;
+  if (isFissureId(id)) return; // Kadim Yarıklar never unlock ladder steps or write m0.best (one id per seed)
   const zone = getDungeon(id)?.name ?? id;
   const flags = ch.save.flags;
   if (state.difficulty === 'normal') {

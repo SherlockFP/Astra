@@ -95,6 +95,18 @@ DungeonParams)` (offline: `G.scenes.go('dungeon', params)`). DungeonScene builds
 (10 s countdown, then timer). Enemy deaths → `G.mplus.onEnemyKilled` (forces). Final boss dead + forces 100% → completed →
 rewards chest, keystone upgrade +1..+3 (or depleted), score/rating, `run:completed` event → summary panel → portal to town.
 
+**Kadim Yarıklar (procedural dungeons, docs/GDD_PROCGEN.md, docs/kits/procgen_status.md)**: `src/world/procgen/*` (world module; pure, core `RNG`, no trig/clock) turns
+`(theme, tier n/h/m, level, seed, version)` into an ordinary `DungeonDef` (`vertical: true`, `def.fissure` = FissureInfo). The `dungeonId` is self-describing
+(`fis.<theme>.<tier>.<level>.<seed8>.<v>`): `getDungeon(id)` regenerates the identical def on every peer (LRU cache), so nothing else travels over the net;
+an id of another generator version fails closed ("Bilinmeyen zindan"). Bump `FISSURE_VERSION` on any change that alters output. Guardians and the final
+are EXISTING bosses (BossDef + script untouched): the boss room is cloned from the boss's own hand-made arena (same rect, props, zones, door anchors) because
+BossController derives its arena from the baked rect + spawn offset (shift must stay < 400 m). Run flow: Kadim Yarık Taşı (town) -> Zindan Bulucu tab
+"Kadim Yarıklar" -> `buildFissureParams` -> `startRun` (same path as every dungeon); difficulty normal/heroic/mythic (never mythicplus, never a key);
+scaling = `fissureScaling` (replaces DIFFICULTY_MULT in `MythicPlus.enemyScaling`); the run completes when all 3 bosses are dead (gates force the order, so
+this equals "final boss dead"); boss kills roll the normal Loot v3 boss chest (ctx normal/heroic/mythic0, fissure item level), the end chest pays gold/dust/coins
+(`LootSystem.endOfRunRewards` fissure branch). Guards for `isFissureId`: MythicPlus.handleCompleted (no clearedM0 / keystone), Bounties (scalar `fis.clear.<tier>`, no per-seed flags),
+Ladder. Check: `dev/combat-sim/procgen.mjs`.
+
 **Loot**: LootDrop entities (local only) with rarity beam (`G.vfx.lootBeam`); gold auto-pickup; items by walking over (auto-loot
 setting + filter) or pressing F; bag full → toast.
 

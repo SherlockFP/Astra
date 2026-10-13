@@ -1,7 +1,8 @@
 import { G } from '../../../game/G';
 import type { ItemInstance } from '../../../types/items';
 import type { RunRecord, RunState } from '../../../types/mythic';
-import { DUNGEONS } from '../../../data/dungeons';
+import { DUNGEONS, getDungeon } from '../../../data/dungeons';
+import { isFissureId } from '../../../world/procgen';
 import { GamePanel, affixView, bindTip, button, dungeonName, esc, h, icon, itemTile, mmss, ratingTier, sfx, windowFrame, DIFFICULTY_NAMES } from './base';
 
 export interface RunSummaryData {
@@ -113,7 +114,8 @@ export class RunSummaryPanel extends GamePanel {
   private renderSummary(d: RunSummaryData): void {
     const st = d.state;
     const rec = d.record;
-    const def = DUNGEONS[st.dungeonId];
+    const def = DUNGEONS[st.dungeonId] ?? getDungeon(st.dungeonId);
+    const fissure = isFissureId(st.dungeonId);
     const mplus = st.difficulty === 'mythicplus';
     const timer = st.timerSec || def?.timerSec || 0;
     const elapsed = rec?.timeSec ?? st.elapsed;
@@ -237,7 +239,7 @@ export class RunSummaryPanel extends GamePanel {
         icon(timed ? '/assets/icons/ui-key-upgrade.svg' : '/assets/icons/ui-key-depleted.svg', 'pg-rs-ksico'),
         h('div', null, h('b', null, title), h('span', null, sub)),
       );
-    } else if (st.difficulty === 'mythic' && ks) {
+    } else if (st.difficulty === 'mythic' && ks && !fissure) {
       ksBlock = h('div.pg-rs-ks', null, icon('/assets/icons/item-keystone.svg', 'pg-rs-ksico'), h('div', null, h('b', null, 'Kadim Anahtar Taşı kazandın!'), h('span', null, `${dungeonName(ks.dungeonId)} +${ks.level}`)));
     }
     if (ksBlock) {
@@ -253,7 +255,7 @@ export class RunSummaryPanel extends GamePanel {
     const rw = d.rewards ?? [];
     this.bodyEl.append(h('div.pg-h', { style: { marginTop: '14px' } }, `Ödüller (${rw.length})`));
     const grid = h('div.pg-rs-rewards');
-    if (!rw.length) grid.append(h('div.pg-empty', null, 'Bu koşudan ödül çıkmadı.'));
+    if (!rw.length) grid.append(h('div.pg-empty', null, fissure ? 'Eşyalar patronlardan düştü; sandıktan altın ve malzeme geldi.' : 'Bu koşudan ödül çıkmadı.'));
     rw.forEach((item, i) => {
       const t = itemTile(item, 58);
       t.classList.add('is-hidden');

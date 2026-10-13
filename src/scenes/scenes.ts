@@ -30,4 +30,10 @@ export interface DungeonParams {
   returnTo?: { dungeonId: string; spawn: WorldSpawn };
   /** GDD_ITEMS_V2 §5.2.7 (IT-00): house visit. Entity id (`CampMsg.o` / `HomeMsg.o` style) of the house owner; the interior shows their layout. */
   homeOwner?: number;
+  /**
+   * Kadim Yarıklar (procedural dungeon): the spec the dungeonId was built from. Informational: the dungeonId
+   * (fis.<theme>.<tier>.<level>.<seed8>.<v>) is self-describing, so every peer regenerates the identical DungeonDef from the id alone
+   * (data/dungeons getDungeon -> world/procgen). Seed = DungeonParams.seed, level = enemyLevel, tier n/h/m = difficulty.
+   */
+  fissure?: { theme: string; tier: 'n' | 'h' | 'm'; level: number; seed: number; v: number };
 }

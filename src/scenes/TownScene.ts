@@ -297,8 +297,10 @@ export class TownScene implements GameScene {
             ]
           : [{ url: propUrl('altar'), scale: 0.9 }, { url: propUrl('crystal_purple'), scale: 0.55, pos: [0, 1.7, 0] as [number, number, number], spin: 0.9, bob: 0.08 }];
         const e = new PanelProp(world.allocLocalId(), {
-          parts, name: d.name || 'Şeref Taşı', sub: d.title ?? 'Mitik+ puanı ve en iyi koşular', prompt: 'Şeref Taşı: Mitik+ Puanı', panel: d.ui?.panel ?? 'mplusInfo',
-          color: '#d9a8ff', light: 20, block: 1.5, labelY: 3.9,
+          parts, name: d.name || 'Şeref Taşı', sub: d.title ?? 'Mitik+ puanı ve en iyi koşular',
+          prompt: id === 'obj_seref_tasi' ? 'Şeref Taşı: Mitik+ Puanı' : `${d.name}: ${d.title ?? 'Aç'}`, panel: d.ui?.panel ?? 'mplusInfo',
+          data: d.ui?.tab ? { tab: d.ui.tab } : undefined, // e.g. the Kadim Yarık Taşı opens the finder on its fissure tab
+          color: id === 'obj_yarik_tasi' ? '#c98cff' : '#d9a8ff', light: 20, block: 1.5, labelY: 3.9,
         });
         queue(e, () => e.load(), x, z, rot);
       } else if (id.startsWith('obj_')) {

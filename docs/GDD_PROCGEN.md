@@ -3,6 +3,10 @@
 Status: normative for CORE_MECHANICS §14 (precedence ARCHITECTURE > CORE_MECHANICS > this doc > other GDDs). Docs only; nothing here
 is implemented yet. Every package of §14 is written for Haiku coders; every number is a tuning target, not a final value.
 
+> **Implementation note (first build, see `docs/kits/procgen_status.md`):** the generator lives in `src/world/procgen/` (not `data/dungeons/fissure/`), the id carries the enemy level
+> (`fis.<theme>.<tier>.<level>.<seed8>.<v>`), 4 themes (no grotto), guardians and finals are the EXISTING levelling-dungeon bosses with their own arenas (§6 new BossDefs are deferred),
+> modifiers `fm_surusu / fm_zirh / fm_zalim / fm_bereket` only, entry = town stone + finder tab "Kadim Yarıklar" (no separate panel), verticality engine is live (tiers use it).
+
 **In-code name:** the feature is called **fissure** in code, ids and files (`fis`, `fissure`, `Fissure*`) because `rift` is already taken by
 the Mythic+ seasonal rift (`DungeonDef.extras.riftSpots`, `AffixId` rifts). Player-facing Turkish name: **Kadim Yarıklar**; one run = "bir Yarık";
 the entry object = **Yarık Taşı**.

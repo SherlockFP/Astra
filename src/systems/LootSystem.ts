@@ -25,6 +25,7 @@ import { applyAction as autoApply, decide as autoDecide, tick as autoSalvageTick
 import { stampTrack } from './Track';
 import type { BossPlacement } from '../types/dungeons';
 import { getDungeon } from '../data/dungeons';
+import { fissureEndRewards, fissureItemLevel, isFissureId } from '../world/procgen';
 
 export interface RollOpts {
   itemLevel: number;
@@ -167,7 +168,8 @@ export class LootSystem {
     const origin = new THREE.Vector3(enemy.position.x, baseY + Math.max(0.9, enemy.height * 0.5), enemy.position.z);
     const dist = Math.hypot(player.position.x - enemy.position.x, player.position.z - enemy.position.z);
     const mp = G.mplus?.state;
-    const keyLevel = mp && mp.keyLevel > 0 ? mp.keyLevel : mp && mp.difficulty === 'mythic' ? 1 : 0; // Mitik 0 is treated as key 1 (GDD_CONTENT 5.2)
+    // Mitik 0 is treated as key 1 (GDD_CONTENT 5.2); a Kadim Yarık on Mitik is not Mitik 0 (own item ladder, normal drop tables)
+    const keyLevel = mp && mp.keyLevel > 0 ? mp.keyLevel : mp && mp.difficulty === 'mythic' && !isFissureId(mp.dungeonId) ? 1 : 0;
 
     // ---- stats & bounties (Metin stones are objectives, not kills: they only feed the Metin bounty and loot)
     const isMetin = enemy.def.id.startsWith('metin_');
@@ -298,6 +300,7 @@ export class LootSystem {
       const dungeon = dungeonId ? getDungeon(dungeonId) : undefined;
       const ctxId = chestCtxOf(mpState?.difficulty, keyLevel, openWorld || !mpState || !!dungeon?.outdoor);
       const last = (dungeon?.bosses ?? []).reduce<BossPlacement | null>((a, b) => (!a || b.order > a.order ? b : a), null);
+      if (dungeon?.fissure) ilvl = fissureItemLevel(dungeon.fissure.tier, lvl, !!last && last.bossId === def.id);
       const res = rollBossChest({ bossId: def.id, ctx: ctxId, keyLevel: ctxId === 'mplus' ? keyLevel : 0, final: !!last && last.bossId === def.id, ilvl, classId: ch.classId, table: named, magicFind: mf }, ch.save.flags, rng);
       for (const it of res.items) {
         if (it.rarity === 'legendary' || it.rarity === 'set') gotLegend = true;
@@ -793,6 +796,16 @@ export class LootSystem {
     const ch = G.character;
     if (!ch || state.failed) return [];
     const rng = this.rng;
+    // Kadim Yarık: the boss chests already rolled the items; the end chest pays gold, magic dust and dragon coins (GDD_PROCGEN 9.2)
+    const fis = isFissureId(state.dungeonId) ? getDungeon(state.dungeonId)?.fissure : undefined;
+    if (fis) {
+      const r = fissureEndRewards(fis.tier, fis.level, fis.mods);
+      ch.addGold(r.gold);
+      ch.addMaterial('buyulu_toz', r.dust);
+      if (r.dragonCoins > 0) ch.addMaterial('ejderha_pulu', r.dragonCoins);
+      toast(`Yarık ödülü: +${r.gold} altın, +${r.dust} Büyülü Toz${r.dragonCoins > 0 ? `, +${r.dragonCoins} Ejderha Pulu` : ''}`, 'loot');
+      return [];
+    }
     const key = Math.max(0, state.keyLevel);
     const timed = state.inTime;
     const out: ItemInstance[] = [];

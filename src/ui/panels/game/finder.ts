@@ -16,16 +16,18 @@ import {
   listingFor, lfgRows, memberGate, needFor, openSlots, recommendedDungeon, rowGateText, type DiffContext, type DiffRow, type LfgFilter,
 } from './finderModel';
 import { buildParams, partyLevels, startRun } from './runStart';
+import { FissureTab } from './finderFissure';
+import type { DungeonParams } from '../../../scenes/scenes';
 import '../../styles/panels-finder.css';
 
 /**
- * Zindan Bulucu (key I, `finder`, UI_REDESIGN section 6 / UX-40). Tabs Zindan · Raid · Gruplar. The Zindan tab lists the
+ * Zindan Bulucu (key I, `finder`, UI_REDESIGN section 6 / UX-40). Tabs Zindan · Kadim Yarıklar · Raid · Gruplar. The Zindan tab lists the
  * dungeons (levelling set + Mitik+ season pool), the detail pane holds the role row, difficulty selector, rewards and the
  * collapsed Mitik+ rating card; the footer picks the mode (Tek Başına / Grubumla / Grup Ara) and starts the run.
  * Rules live in finderModel.ts, the run start in runStart.ts. OWNER: panels-game module.
  */
 
-type Tab = 'dungeons' | 'raid' | 'groups';
+type Tab = 'dungeons' | 'fissure' | 'raid' | 'groups';
 type Mode = 'solo' | 'party' | 'lfg';
 type QState = 'idle' | 'listing' | 'proposal' | 'entering' | 'inrun' | 'failed';
 
@@ -52,6 +54,7 @@ interface Primary {
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'dungeons', label: 'Zindan' },
+  { id: 'fissure', label: 'Kadim Yarıklar' },
   { id: 'raid', label: 'Raid' },
   { id: 'groups', label: 'Gruplar' },
 ];
@@ -63,6 +66,7 @@ const MODES: { id: Mode; label: string }[] = [
 const PIP: Record<LadderDiff, string> = { normal: 'N', heroic: 'K', mythic: 'M', mythicplus: 'M+' };
 const KEYS_HINTS = ['↑↓: zindan', '←→: zorluk', 'Enter: başla'];
 const GROUP_HINTS = ['Katıl: listedeki satırdan'];
+const FISSURE_HINTS = ['Tema ve zorluk seç', 'Yeniden Çevir: yeni yarık'];
 const REWARDS: Record<LadderDiff, string[]> = {
   normal: ['Eşya', 'Deneyim (XP)', 'Altın'],
   heroic: ['Eşya', 'Deneyim (XP)', 'Altın', 'Set eşyası'],
@@ -88,6 +92,7 @@ export class FinderPanel extends GamePanel {
   private detailEl!: HTMLElement;
   private groupsEl!: HTMLElement;
   private raidEl!: HTMLElement;
+  private fissure!: FissureTab;
   private strip!: HTMLElement;
   private modeBtns = new Map<Mode, HTMLButtonElement>();
   private statusEl!: HTMLElement;
@@ -132,6 +137,11 @@ export class FinderPanel extends GamePanel {
     this.split = h('div.fd-split', null, this.listEl, this.detailEl);
     this.groupsEl = h('div.fd-groups');
     this.raidEl = h('div.fd-raid');
+    this.fissure = new FissureTab({
+      rerender: () => this.render(),
+      inDungeon: () => this.inDungeon(),
+      launch: (params, label) => this.launchFissure(params, label),
+    });
 
     for (const m of MODES) {
       const b = h('button.k-btn.fd-mode', { type: 'button' }, m.label) as HTMLButtonElement;
@@ -162,6 +172,7 @@ export class FinderPanel extends GamePanel {
 
   protected onOpen(data?: unknown): void {
     const d = (data ?? {}) as { dungeonId?: string; tab?: Tab };
+    this.fissure.open();
     if (!this.rolesManual) this.roles = defaultRoles(G.character?.save.spec as SpecId | undefined);
     const list = finderDungeons();
     if (d.dungeonId && list.some((x) => x.id === d.dungeonId)) this.selId = d.dungeonId;
@@ -345,6 +356,15 @@ export class FinderPanel extends GamePanel {
     else this.setQueue('failed', p.def.id);
   }
 
+  /** Kadim Yarık: the host (or an offline player) opens the generated map through the same path as every other run. */
+  private launchFissure(params: DungeonParams, label: string): void {
+    sfx('portal_enter');
+    toast(label, 'info');
+    this.setQueue('entering', params.dungeonId);
+    if (startRun(params)) this.requestClose();
+    else this.setQueue('failed', params.dungeonId);
+  }
+
   /** Grup Ara: a solo player hosts a room first; the listing carries the open slots by role. */
   private async startLfg(def: DungeonDef, diff: LadderDiff): Promise<void> {
     if (G.net.isOnline && !G.net.isAuthority) {
@@ -449,9 +469,12 @@ export class FinderPanel extends GamePanel {
     const c = this.chrome;
     c.body.textContent = '';
     this.strip.hidden = this.tab !== 'dungeons';
-    c.setHints(this.tab === 'groups' ? GROUP_HINTS : KEYS_HINTS);
+    c.setHints(this.tab === 'groups' ? GROUP_HINTS : this.tab === 'fissure' ? FISSURE_HINTS : KEYS_HINTS);
     if (this.tab === 'dungeons') this.renderDungeons();
-    else if (this.tab === 'groups') {
+    else if (this.tab === 'fissure') {
+      c.body.append(this.fissure.el);
+      this.fissure.render();
+    } else if (this.tab === 'groups') {
       c.body.append(this.groupsEl);
       this.renderGroups();
     } else this.renderRaid();
@@ -858,6 +881,7 @@ export class FinderPanel extends GamePanel {
   private primary(): Primary {
     const none: Primary = { label: '', show: false, disabled: true, reason: '', run: NOOP };
     if (this.tab === 'groups') return none;
+    if (this.tab === 'fissure') return this.fissure.primary();
     if (this.tab === 'raid') {
       return { label: "Raid'e Gir", show: true, disabled: true, reason: 'Efsun Kalesi henüz açılmadı.', run: NOOP };
     }

@@ -4,6 +4,7 @@ import type { AffixId } from '../../../types/mythic';
 import type { DungeonParams } from '../../../scenes/scenes';
 import { affixesForLevel, clampN, toast } from './base';
 import { HEROIC_LEVEL, type LadderDiff } from './ladder';
+import { difficultyOfTier, fissureId, type FissureSpec } from '../../../world/procgen';
 
 /**
  * Run start shared by the Zindan Bulucu (finder) and, later, the keystone panel (UX-52a). Ported from keystone.ts
@@ -51,6 +52,26 @@ export function buildParams(def: DungeonDef, diff: LadderDiff, opts: BuildOpts =
     partySize: party.size,
     keyOwner: opts.keyOwner || G.net.selfId || 'local',
     ...(opts.returnTo ? { returnTo: opts.returnTo } : {}),
+  };
+}
+
+/**
+ * DungeonParams of a Kadim Yarık (procedural dungeon): the dungeonId is self-describing, so the other peers regenerate the identical map
+ * from it (data/dungeons getDungeon -> world/procgen). Tier n / h / m = Normal / Kahramanlık / Mitik, never a key run.
+ */
+export function buildFissureParams(spec: FissureSpec): DungeonParams {
+  const party = partyLevels();
+  const seed = spec.seed >>> 0;
+  return {
+    dungeonId: fissureId(spec),
+    difficulty: difficultyOfTier(spec.tier),
+    keyLevel: 0,
+    seed,
+    affixes: [],
+    enemyLevel: spec.level,
+    partySize: party.size,
+    keyOwner: G.net.selfId || 'local',
+    fissure: { theme: spec.theme, tier: spec.tier, level: spec.level, seed, v: spec.v },
   };
 }
 

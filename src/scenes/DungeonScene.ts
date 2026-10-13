@@ -162,6 +162,8 @@ export class DungeonScene implements GameScene {
     }
     this.def = def;
     this.params = params;
+    // Kadim Yarık: every peer regenerates the def from the id; QA compares this hash between two consoles (GDD_PROCGEN section 10)
+    if (def.fissure) console.info(`[dungeon] fissure ${def.id} rooms ${def.fissure.rooms} packs ${def.packs.length} hash ${hashString(JSON.stringify([def.rooms, def.doors, def.packs, def.bosses])).toString(16)}`);
     this.eventStore = new DungeonEventStore(def.events);
     this.dynamicDoors = def.doors.some((d) => d.gate === 'event_lock' || d.gate === 'kill_lock' || d.gate === 'device_lock' || (d.requires?.length ?? 0) > 0);
     this.resetKillState();
@@ -1377,7 +1379,7 @@ export class DungeonScene implements GameScene {
       } catch {
         /* optional */
       }
-      G.ui.toast(this.outdoor ? 'Çürükkök yenildi! Ödül sandığını aç.' : 'Zindan tamamlandı! Ödül sandığını aç ve portala adım at.', 'success');
+      G.ui.toast(this.outdoor ? 'Çürükkök yenildi! Ödül sandığını aç.' : this.def.fissure ? 'Yarık tamamlandı! Ödül sandığını aç ve portala adım at.' : 'Zindan tamamlandı! Ödül sandığını aç ve portala adım at.', 'success');
     } catch (e) {
       console.warn('[dungeon] reward spawn failed', e);
     }

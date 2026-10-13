@@ -3,6 +3,8 @@ import { RNG, clamp } from '../core/utils';
 import { DUNGEONS, DUNGEON_IDS, MPLUS_POOL, getDungeon } from '../data/dungeons';
 import { HOST_DYNAMIC_ID_BASE } from '../types/common';
 import type { AffixId, MythicAffixDef, RunRecord, RunState } from '../types/mythic';
+import type { FissureInfo } from '../types/dungeons';
+import { fissureScaling, isFissureId } from '../world/procgen';
 import type { KeystoneData, ItemInstance } from '../types/items';
 import type { Enemy } from '../entities/Enemy';
 import type { Player } from '../entities/Player';
@@ -38,7 +40,7 @@ const round2 = (v: number) => Math.round(v * 100) / 100;
 const toast = (text: string, kind: 'info' | 'success' | 'warning' | 'error' | 'loot' | 'levelup' | 'boss' = 'info'): void => {
   try { G.events.emit('ui:toast', { text, kind }); } catch { /* ignore */ }
 };
-const dungeonName = (id: string): string => DUNGEONS[id]?.name ?? id;
+const dungeonName = (id: string): string => DUNGEONS[id]?.name ?? getDungeon(id)?.name ?? id;
 
 /* ---- Mythic+ scaling rules (docs/CORE_MECHANICS.md section 6). Pure: the smoke tool tests these directly. ---- */
 
@@ -105,6 +107,8 @@ export class MythicPlus {
   private shown: Shown = { cc: -1, started: false, forces: 0, deaths: 0, completed: false, failed: false };
   private remoteBase: { elapsed: number; countdown: number; at: number } | null = null;
   private keyHandled = false;
+  /** Kadim Yarıklar: the generated map of the current run (set by prepare); its tier x modifiers replace DIFFICULTY_MULT. */
+  private fissure: FissureInfo | null = null;
   private warnedFx = false;
   private wall = 0;                  // monotonic run clock (seconds)
   private wallAt = 0;                // performance.now() of the previous clock() read
@@ -171,6 +175,7 @@ export class MythicPlus {
     this.end(true);
     try { this.recoverUnfinishedRun({ dungeonId: params.dungeonId, keyLevel: Math.floor(params.keyLevel) }); } catch (e) { console.error('[mplus] recover failed', e); }
     const def = getDungeon(params.dungeonId);
+    this.fissure = def?.fissure ?? null;
     const mplus = params.difficulty === 'mythicplus';
     const keyLevel = mplus ? clamp(Math.floor(params.keyLevel) || MIN_KEY_LEVEL, MIN_KEY_LEVEL, MAX_KEY_LEVEL) : 0;
     const affixes = mplus ? (params.affixes ?? []).filter(isAffixId).slice(0, 6) : [];
@@ -314,6 +319,7 @@ export class MythicPlus {
       const sc = this.scalingFor(s.keyLevel, s.affixes, isBoss, encounterAdd);
       return { hp: sc.hp, dmg: sc.dmg * mplusPartyDmg(this.params?.partySize ?? 1) };
     }
+    if (this.fissure) return fissureScaling(this.fissure, isBoss);
     const d = DIFFICULTY_MULT[s.difficulty as 'normal' | 'heroic' | 'mythic'] ?? DIFFICULTY_MULT.normal;
     return { hp: d.hp, dmg: d.dmg };
   }
@@ -518,12 +524,13 @@ export class MythicPlus {
       }
       ch.save.stats.dungeonsCompleted++;
       if (isKey && s.inTime) ch.save.stats.highestKey = Math.max(ch.save.stats.highestKey, s.keyLevel);
-      if (s.difficulty === 'mythic') ch.save.flags.clearedM0 = true;
+      // a Kadim Yarık (generated map) never unlocks Mitik 0 / keystones (CORE_MECHANICS section 6, GDD_PROCGEN D5)
+      if (s.difficulty === 'mythic' && !isFissureId(s.dungeonId)) ch.save.flags.clearedM0 = true;
     }
     let rewards: ItemInstance[] = [];
     try { rewards = G.loot?.endOfRunRewards(s) ?? []; } catch (e) { console.error('[mplus] endOfRunRewards failed', e); }
     try { this.applyKeyResult(s); } catch (e) { console.error('[mplus] key result failed', e); }
-    if (ch && s.difficulty === 'mythic' && !ch.save.mythic.keystone) this.grantKeystone();
+    if (ch && s.difficulty === 'mythic' && !isFissureId(s.dungeonId) && !ch.save.mythic.keystone) this.grantKeystone();
     try { ch?.persist(true); } catch { /* ignore */ }
     this.lastRecord = record;
     this.lastRewards = rewards;

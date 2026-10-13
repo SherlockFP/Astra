@@ -13,6 +13,7 @@ import { LES_UYANISI } from './les_uyanisi';
 import { KEFARET_SALONLARI } from './kefaret_salonlari';
 import { YANKI_AGI } from './yanki_agi';
 import { BUYUCU_TERASI } from './buyucu_terasi';
+import { getFissureDef, isFissureId } from '../../world/procgen';
 
 /** OWNER: content module. One file per dungeon in this folder, registered here. */
 export const DUNGEONS: Record<string, DungeonDef> = {
@@ -62,6 +63,8 @@ export const LEGACY_ZONE_ALIASES: Record<string, string | undefined> = {
 
 /** Dungeon or open-world zone by id (legacy ids resolved through LEGACY_ZONE_ALIASES). */
 export const getDungeon = (id: string): DungeonDef | undefined => {
+  // Kadim Yarıklar: the id is self-describing (fis.<theme>.<tier>.<level>.<seed8>.<v>), every peer regenerates the same def (LRU cache)
+  if (isFissureId(id)) return getFissureDef(id);
   const key = LEGACY_ZONE_ALIASES[id] ?? id;
   return DUNGEONS[key] ?? OPEN_ZONES[key];
 };

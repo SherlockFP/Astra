@@ -3,6 +3,8 @@ import { toast } from './notify';
 import { RNG, hashString } from '../core/utils';
 import type { ItemInstance } from '../types/items';
 import { gemId, GEM_TYPES } from '../data/materials';
+import { fissureBestFlag, fissureClearFlag, isFissureId, parseFissureId } from '../world/procgen';
+import type { RunState } from '../types/mythic';
 
 /** Daily bounties ("Günlük Görevler") from the town bounty board. OWNER: items/progression module. */
 export interface Bounty {
@@ -277,6 +279,12 @@ export function initBounties(): void {
   hooked = true;
   G.events.on('run:completed', ({ state }) => {
     if (!state || state.failed) return;
+    if (isFissureId(state.dungeonId)) {
+      // Kadim Yarık: scalar counters only (no per-seed clear.* flags, no first-clear XP bonus per seed); daily bounties still count it
+      recordFissureClear(state);
+      bountyEvent('dungeon', 1);
+      return;
+    }
     recordClear(state.dungeonId, state.difficulty);
     bountyEvent('dungeon', 1);
     if (state.keyLevel > 0) bountyEvent('mplus', 1, { inTime: state.inTime });
@@ -323,6 +331,20 @@ export function recordClear(dungeonId: string, difficulty: string): void {
   const key = clearFlag(dungeonId, difficulty);
   if (ch.save.flags[key] === true) return;
   ch.save.flags[key] = true;
+  G.events.emit('bounty:changed', {});
+  ch.persist();
+}
+
+/** Kadim Yarıklar: `fis.clear.<tier>` (count, unlocks the next tier) and `fis.best.<tier>` (best clear time in seconds). */
+export function recordFissureClear(state: Pick<RunState, 'dungeonId' | 'elapsed'>): void {
+  const ch = G.character;
+  const spec = parseFissureId(state.dungeonId);
+  if (!ch || !spec) return;
+  const flags = ch.save.flags;
+  const ck = fissureClearFlag(spec.tier), bk = fissureBestFlag(spec.tier);
+  flags[ck] = Math.min(9999, (typeof flags[ck] === 'number' ? (flags[ck] as number) : 0) + 1);
+  const t = Math.max(1, Math.round(state.elapsed));
+  if (typeof flags[bk] !== 'number' || t < (flags[bk] as number)) flags[bk] = t;
   G.events.emit('bounty:changed', {});
   ch.persist();
 }

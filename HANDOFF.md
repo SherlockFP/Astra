@@ -18,7 +18,7 @@ npx tsc --noEmit                         # must be 0
 node tools/content-check.mjs             # TOTAL ERRORS 0
 node tools/talents-check.mjs             # only 2 known pre-existing "bench" errors (knight_protector / knight_blademaster)
 node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/<sim>.mjs
-#   sims that must PASS: kit_plate kit_knight kit_barbarian kit_rogue kit_warlock kit_paladin wow_core wow_queue minions minions_net nc48 nc51 pips
+#   sims that must PASS: kit_plate kit_knight kit_barbarian kit_rogue kit_warlock kit_paladin wow_core wow_queue minions minions_net nc48 nc51 pips procgen shapes loot_v3
 ```
 Pre-push (Render safety): export HEAD with `git archive` into a temp dir, junction `node_modules`, run `npx vite build` there — catches files that were never `git add`ed.
 Known non-blocking failures: `tools/smoke/procs_data.mjs` has 6 pre-existing **mage** failures (`freezing_rain`, `comet_ready`, `pyroclasm` lack ProcDef rows; `glowSkillsOf(hot_streak)` misses `mage_flame_wave`, `mage_meteor`, `mage_phoenix_flames`).
@@ -43,7 +43,7 @@ Watch line endings: some files are CRLF — agents sometimes rewrite them as LF 
 3. **PM-TAL done** (plate talent re-pointing): patches `docs/kits/talents_{knight,barbarian,paladin,necromancer}.json` applied with `node tools/apply-talent-patch.mjs` (reusable for later class packages, then `node tools/gen-talent-data.mjs`). Open: `necro_lichborne` has no SkillDef, so `class:necromancer / s05B` still grants `necro_spirit_walk`; bench `spec:knight_protector` tree BP 958 vs doc 1391.
 4. **Agile / Evoker kits** (`docs/kits/agile-evoker.md`: AE-0 → AE-ENG/AE-V → AE-1..4 → AE-5/6).
 5. **Loot v3 engine** — 87 named uniques have no special-effect hooks (`docs/GDD_LOOT_V3.md`).
-6. **Procedural dungeons** (`docs/GDD_PROCGEN.md`: ~3 bosses, run ends on final boss), **creatures** (`docs/GDD_CREATURES.md`, Elden-Ring-ish mechanics).
+6. **Procedural dungeons** are built (`src/world/procgen/*`, status + deferred list in `docs/kits/procgen_status.md`; QA pass pending: entry stone, finder tab "Kadim Yarıklar", a full Normal run, party hash compare). Still open: grotto theme, the 30 generic guardians of GDD_PROCGEN §6, FissureTracker HUD, open-world stones, daily seed. **Creatures** (`docs/GDD_CREATURES.md`, Elden-Ring-ish mechanics) are not started.
 7. **Pazar** (Metin2-style AFK player shops in a market square; gold goes to seller).
 8. Endgame zones for season dungeon entrances, PvP/Finder (`docs/GDD_PVP_FINDER.md`), balance/SimBench.
 9. **One in-browser QA pass** (UI W3–W5 never seen visually; emote clips unverified; minions unseen in game). Dev server: `.claude/launch.json` → `npx vite --port 5173`.

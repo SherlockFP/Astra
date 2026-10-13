@@ -192,7 +192,7 @@ export function inOpenWorld(): boolean {
   return !!id && !!getDungeon(id)?.outdoor;
 }
 
-export const dungeonName = (id: string): string => DUNGEONS[id]?.name ?? id;
+export const dungeonName = (id: string): string => DUNGEONS[id]?.name ?? getDungeon(id)?.name ?? id;
 
 export function dungeonArt(def: DungeonDef | undefined): string {
   return def?.loadingImage || def?.icon || '/assets/icons/ui-dungeon.svg';

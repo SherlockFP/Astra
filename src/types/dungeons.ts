@@ -418,6 +418,37 @@ export interface DungeonDef {
   vertical?: boolean;
   /** Dungeon-level lifts (they span rooms). Only read when vertical. */
   lifts?: LiftDef[];
+  // ---- Kadim Yarıklar (procedural dungeons, docs/GDD_PROCGEN.md; src/world/procgen) ----
+  /** Presence = generated map (id fis.<theme>.<tier>.<level>.<seed8>.<v>). Never set on hand-made dungeons. */
+  fissure?: FissureInfo;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Kadim Yarıklar (append-only; owner: world module, src/world/procgen)
+// ---------------------------------------------------------------------------------------------------------------------
+export type FissureThemeId = 'crypt' | 'forge' | 'frost' | 'shadow';
+/** n = Normal, h = Kahramanlık, m = Mitik (DungeonParams.difficulty normal / heroic / mythic; never mythicplus). */
+export type FissureTier = 'n' | 'h' | 'm';
+export type FissureModId = 'fm_surusu' | 'fm_zirh' | 'fm_zalim' | 'fm_bereket';
+export type FissureRoomKind = 'start' | 'chamber' | 'hall' | 'treasure' | 'shrine' | 'guardian' | 'final' | 'corridor' | 'ramp';
+
+/** Facts of a generated map that the rest of the game reads (scaling, HUD, summary). Pure data, same on every peer. */
+export interface FissureInfo {
+  v: number;
+  theme: FissureThemeId;
+  tier: FissureTier;
+  /** Enemy level the pack sizes were scaled for (also DungeonParams.enemyLevel). */
+  level: number;
+  seed: number;
+  mods: FissureModId[];
+  /** BossDef ids in encounter order 1, 2, 3. */
+  guardians: [string, string];
+  finalBossId: string;
+  /** Rooms without connectors (corridors / stair strips). */
+  rooms: number;
+  /** Per RoomDef index (same order as DungeonDef.rooms). */
+  kinds: FissureRoomKind[];
+  tiers: number[];
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

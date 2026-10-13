@@ -274,6 +274,12 @@ npc('obj_seref_tasi', 'Şeref Taşı', 'citizen', 'prop', 8, -34, 0, {
   object: { model: kg('pillar-obelisk'), scale: 3, extra: [{ model: gp('crystal_purple'), pos: [0, 3.1, 0], scale: 0.5 }] },
   light: { color: 0xb060ff, intensity: 1.6, distance: 8, flicker: false, y: 3 },
 }, 2);
+// Kadim Yarık Taşı (procedural dungeons, docs/GDD_PROCGEN.md): opens the Zindan Bulucu on its "Kadim Yarıklar" tab
+npc('obj_yarik_tasi', 'Kadim Yarık Taşı', 'citizen', 'prop', 14, -37, 0, {
+  title: 'Kadim Yarıklar', vfx: 'waypoint_glow', vfxColor: 0xc070ff, ui: { panel: 'finder', tab: 'fissure' },
+  object: { model: kg('altar-stone'), scale: 3, extra: [{ model: gp('crystal_purple'), pos: [0, 1.7, 0], scale: 0.9 }] },
+  light: { color: 0xa860ff, intensity: 1.6, distance: 8, flicker: false, y: 2.6 },
+}, 2);
 // id, name, x, z, yaw, required level, swirl tint
 const PORTALS: [string, string, number, number, number, number, number][] = [
   ['kemik_mahzeni', 'Kemik Mahzeni', -10.4, -50, 60, 8, 0x7affc0],
