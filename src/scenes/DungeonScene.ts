@@ -24,6 +24,8 @@ import { clearSceneAnchors, setSceneAnchors } from './anchors';
 import { sceneFlow } from './flow';
 import { World } from '../world/World';
 import { buildDungeon, dungeonAssetUrls, type BuiltDungeon, type BuiltProp, type DungeonGate } from '../world/DungeonBuilder';
+import type { Heightfield } from '../world/Heightfield';
+import { LiftSystem } from '../world/Lifts';
 import { getDungeon } from '../data/dungeons';
 import { DUNGEON_ENEMY_ID_BASE, PARTY_ID_BASE, type EntityId } from '../types/common';
 import { TILE_SIZE, type BossPlacement, type DungeonDef, type PackDef } from '../types/dungeons';
@@ -99,6 +101,8 @@ export class DungeonScene implements GameScene {
   private propGame: PropGameplay | null = null;
   private packWatch: PackWatch | null = null;
   private barrier: StartBarrier | null = null;
+  /** Vertical dungeons only (BuiltDungeon.hf != null): moving lifts, driven by 'lift:' gate messages (ENGINE_VERTICALITY §9). */
+  private lifts: LiftSystem | null = null;
   /** Open-world map (DungeonDef.world): camps, metin, rares, bosses, villages... run in WorldRuntime (GDD_OPENWORLD §9.3). */
   private worldRt: WorldRuntime | null = null;
   private isWorld = false;
@@ -166,6 +170,8 @@ export class DungeonScene implements GameScene {
     G.ui.showLoading(0.5, def.name, def.loadingImage);
     const world = new World(this.scene, built.nav);
     this.world = world;
+    // vertical dungeons: heights before any spawn so groundY is real; legacy dungeons keep the flat world (no-op)
+    this.setupVertical(world, built);
 
     // run state must exist on EVERY peer before enemies spawn (scaling, affixes)
     G.mplus.prepare(params);
@@ -279,6 +285,29 @@ export class DungeonScene implements GameScene {
     }
   }
 
+  /**
+   * Vertical dungeons (BuiltDungeon.hf, ENGINE_VERTICALITY §16): feed the heightfield to World and add the LiftSystem.
+   * Legacy dungeons (hf null) return before touching anything, so World.vertical stays false and groundY stays 0.
+   */
+  private setupVertical(world: World, built: BuiltDungeon): void {
+    const hf = (built as unknown as { hf?: Heightfield | null }).hf ?? null;
+    if (!hf) return;
+    world.heights = hf;
+    world.vertical = true;
+    try {
+      const lifts = new LiftSystem(hf, {
+        isAuthority: () => G.net.isAuthority,
+        players: () => world.players.filter((p) => !p.isDead).map((p) => ({ x: p.position.x, z: p.position.z, y: p.position.y })),
+        broadcast: (key: string) => G.net.broadcast('gate', { key, open: true }),
+        now: () => performance.now() / 1000,
+      });
+      this.lifts = lifts;
+      world.addSystem(lifts);
+    } catch (e) {
+      console.warn('[dungeon] lifts failed', e);
+    }
+  }
+
   /** Host / offline: start the run clock (idempotent: MythicPlus.begin ignores a second call). */
   private tryBegin(): void {
     if (this.disposed || !this.ready || !G.net.isAuthority) return;
@@ -359,6 +388,7 @@ export class DungeonScene implements GameScene {
             const e = await spawnEnemy(world, j.defId, { x: j.x, z: j.z }, {
               id: j.id, level: j.level, packId: j.packId, facing: j.facing, patrol: j.patrol, dormant: j.dormant,
             });
+            this.settleOnGround(world, e);
             if (e && j.camp) j.camp.enemies.push(e);
             if (e && j.stealth) this.packWatch?.stealthify(e);
           } catch (e) {
@@ -402,6 +432,7 @@ export class DungeonScene implements GameScene {
         for (const m of c.members) {
           try {
             const e = await spawnEnemy(world, m.defId, { x: m.x, z: m.z }, { level: m.level, packId: c.pack.id, patrol: m.patrol });
+            this.settleOnGround(world, e);
             if (e) out.push(e);
           } catch (err) {
             console.warn('[dungeon] camp respawn failed', err);
@@ -533,6 +564,14 @@ export class DungeonScene implements GameScene {
       return null;
     }
     return wp;
+  }
+
+  /**
+   * spawnEnemy places the actor at y = 0 before world.add; in vertical worlds put its feet on the heightfield (no-op when flat).
+   */
+  private settleOnGround(world: World, e: Enemy | null): void {
+    if (!e || !world.vertical) return;
+    e.position.y = world.groundY(e.position.x, e.position.z);
   }
 
   /** Goblin / curse / world-boss set pieces (host-driven) and the open world's static extras. */
@@ -849,6 +888,10 @@ export class DungeonScene implements GameScene {
         }
         if (m.key.startsWith('hz:')) {
           this.hazards?.handleMessage(m.key);
+          return;
+        }
+        if (m.key.startsWith('lift:')) {
+          this.lifts?.handleMessage(m.key);
           return;
         }
         if (m.key.startsWith('shrine:')) {

@@ -6,6 +6,7 @@ import { patchPSX } from '../render/psx';
 import { shouldCastShadow } from '../render/shadowPolicy';
 import { freezeStatic } from '../render/staticTransforms';
 import type { NavGrid } from './NavGrid';
+import { buildHeightfield, type Heightfield } from './Heightfield';
 import type { GlowField } from './Glow';
 import { designToPhysical, type LightPool } from './LightPool';
 import { ParticleField } from './Particles';
@@ -51,6 +52,8 @@ export interface ZoneHost {
   W: number;
   H: number;
   tileRoom(i: number, j: number): number;
+  /** Optional prebuilt heightfield (vertical dungeons). `undefined` ⇒ built here from def + tileRoom; `null` ⇒ flat. */
+  hf?: Heightfield | null;
   nav: NavGrid;
   root: THREE.Object3D;
   halo: GlowField;
@@ -193,6 +196,10 @@ export class ZoneField {
   /** 0 = plain floor, 1 = hole (lava / pit), 2 = deck (bridge / dais slab). */
   readonly state: Uint8Array;
   private owner: Int16Array;
+  /** ENGINE_VERTICALITY §8: 1 = hole cell of a `fall` zone in a vertical dungeon (nav stays open, Heightfield marks it VOID). */
+  private fallCell: Uint8Array;
+  /** Vertical dungeons only (null = legacy flat zones, every code path below reduces to the old one). */
+  private hf: Heightfield | null;
   private cells: number[][] = [];
   private mats: THREE.ShaderMaterial[] = [];
   private runes: { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial; k: number; ph: number }[] = [];
@@ -204,8 +211,33 @@ export class ZoneField {
     this.zh = host.H * 2;
     this.state = new Uint8Array(this.zw * this.zh);
     this.owner = new Int16Array(this.zw * this.zh).fill(-1);
+    this.fallCell = new Uint8Array(this.zw * this.zh);
+    this.hf = host.hf !== undefined ? host.hf : host.def.vertical ? buildHeightfield(host.def, (i, j) => host.tileRoom(i, j)) : null;
     this.seed = host.def.id + ':zones';
     this.compute();
+  }
+
+  // ---- vertical helpers (all reduce to 0 / legacy values when this.hf is null) ----
+  /** Floor height of a 2 m cell (room floor; for VOID cells the shaft bottom). */
+  private fy(c: number): number { return this.hf ? this.hf.floor2[c]! : 0; }
+  /** Floor height at a world point (0 outside the grid). */
+  private fyAt(x: number, z: number): number {
+    const zi = Math.floor(x / CELL), zj = Math.floor(z / CELL);
+    if (zi < 0 || zj < 0 || zi >= this.zw || zj >= this.zh) return 0;
+    return this.fy(this.cellIdx(zi, zj));
+  }
+  /** Surface height of a hole cell: shaft bottom (rim − depth) for fall holes, else floor + the legacy surface offset. */
+  private surfYOf(c: number, bz: BuiltZone): number {
+    if (this.fallCell[c]) return this.fy(c);
+    return this.fy(c) + (SURFACE_Y[bz.kind] ?? -0.4);
+  }
+  /** Shift of a hole zone's surface relative to its legacy absolute height (0 in flat dungeons). Applied to halos and lights. */
+  private surfShift(c: number, bz: BuiltZone): number {
+    return this.hf ? this.surfYOf(c, bz) - (SURFACE_Y[bz.kind] ?? -0.4) : 0;
+  }
+  /** Deck top height of a bridge/dais cell: the zone's own `y` in vertical dungeons, else the cell floor. */
+  private deckY(bz: BuiltZone, c: number): number {
+    return this.hf && bz.def.y !== undefined ? bz.def.y : this.fy(c);
   }
 
   // ---- shapes / queries ----
@@ -253,16 +285,22 @@ export class ZoneField {
           if (zi >= 0 && zj >= 0 && zi < this.zw && zj < this.zh && roomOfCell(zi, zj) >= 0) list.push(this.cellIdx(zi, zj));
         }
         this.cells.push(list);
-        if (bz.blocked) for (const c of list) { this.state[c] = 1; this.owner[c] = bz.index; }
-        else if (bz.kind === 'bridge' || bz.kind === 'dais') for (const c of list) { this.state[c] = 2; this.owner[c] = bz.index; }
+        if (bz.blocked) {
+          // vertical `fall` holes stay open for nav (Heightfield marks them VOID); legacy holes block their cells
+          const fall = !!this.hf && !!zd.fall;
+          for (const c of list) { this.state[c] = 1; this.owner[c] = bz.index; this.fallCell[c] = fall ? 1 : 0; }
+        } else if (bz.kind === 'bridge' || bz.kind === 'dais') {
+          for (const c of list) { this.state[c] = 2; this.owner[c] = bz.index; this.fallCell[c] = 0; }
+        }
       }
     });
     void W; void H;
-    // nav: holes block their four 1 m cells; deck cells keep whatever the layout made walkable
+    // nav: holes block their four 1 m cells; deck cells keep whatever the layout made walkable; fall holes stay open
     const nav = this.host.nav;
     for (let zj = 0; zj < this.zh; zj++)
       for (let zi = 0; zi < this.zw; zi++) {
-        if (this.state[this.cellIdx(zi, zj)] !== 1) continue;
+        const c = this.cellIdx(zi, zj);
+        if (this.state[c] !== 1 || this.fallCell[c]) continue;
         for (let dz = 0; dz < 2; dz++) for (let dx = 0; dx < 2; dx++) nav.setCell(nav.cx(zi * CELL + dx), nav.cz(zj * CELL + dz), 0);
       }
   }
@@ -310,13 +348,15 @@ export class ZoneField {
   }
 
   // ---- geometry helpers ----
-  private cellQuads(list: number[], y: number, uvScale = 0.25, color?: number[]): THREE.BufferGeometry {
+  private cellQuads(list: number[], y: number | ((c: number) => number), uvScale = 0.25, color?: number[]): THREE.BufferGeometry {
     const ms = new Mesher();
+    const yOf = typeof y === 'number' ? (): number => y : y;
     for (const c of list) {
       const zi = c % this.zw, zj = Math.floor(c / this.zw);
       const x0 = zi * CELL, z0 = zj * CELL, x1 = x0 + CELL, z1 = z0 + CELL;
       const cols = color ? [color, color, color, color] : undefined;
-      ms.quad([[x0, y, z0], [x1, y, z0], [x1, y, z1], [x0, y, z1]], [0, 1, 0], [[x0 * uvScale, z0 * uvScale], [x1 * uvScale, z0 * uvScale], [x1 * uvScale, z1 * uvScale], [x0 * uvScale, z1 * uvScale]], cols);
+      const yc = yOf(c);
+      ms.quad([[x0, yc, z0], [x1, yc, z0], [x1, yc, z1], [x0, yc, z1]], [0, 1, 0], [[x0 * uvScale, z0 * uvScale], [x1 * uvScale, z0 * uvScale], [x1 * uvScale, z1 * uvScale], [x0 * uvScale, z1 * uvScale]], cols);
     }
     return ms.geometry();
   }
@@ -348,12 +388,14 @@ export class ZoneField {
       const gi = zd.glowIntensity ?? 1;
       const center: [number, number, number] = [bz.cx, 0, bz.cz];
       const areaM2 = list.length * CELL * CELL;
+      // height base of this zone's centre: hole surfaces (vertical shaft / lake) or the floor (0 in flat dungeons)
+      const zb = holeCells.length ? this.surfShift(holeCells[0]!, bz) : this.fyAt(bz.cx, bz.cz);
 
       // ----- sunken surfaces (blocked zones) -----
       if (holeCells.length) {
-        const surfY = SURFACE_Y[bz.kind] ?? -0.4;
+        const surfOf = (c: number): number => this.surfYOf(c, bz);
         if (bz.kind === 'pit' || bz.kind === 'void') {
-          const g = this.cellQuads(holeCells, surfY);
+          const g = this.cellQuads(holeCells, surfOf);
           const m = new THREE.MeshBasicMaterial({ color: 0x000000, fog: false });
           const mesh = new THREE.Mesh(g, m);
           mesh.name = `zone_${bz.kind}_${bz.index}`;
@@ -364,13 +406,13 @@ export class ZoneField {
           if (bz.kind === 'pit' && zd.glow !== undefined) {
             // an unseen glow deep in the shaft: halo + faint light
             const dia = Math.max(bz.hx, bz.hz) * 2;
-            host.halo.add([bz.cx, -2.4, bz.cz], glow, { size: dia * 1.5, flicker: 0.2, intensity: 0.7 * gi });
-            host.halo.add([bz.cx, -0.6, bz.cz], glow, { size: dia * 1.1, flicker: 0.25, intensity: 0.45 * gi });
-            host.lights.add([bz.cx, -0.8, bz.cz], { color: glow, intensity: designToPhysical(1.1 * gi), distance: Math.max(8, dia * 1.8), flicker: 0.2 });
+            host.halo.add([bz.cx, -2.4 + zb, bz.cz], glow, { size: dia * 1.5, flicker: 0.2, intensity: 0.7 * gi });
+            host.halo.add([bz.cx, -0.6 + zb, bz.cz], glow, { size: dia * 1.1, flicker: 0.25, intensity: 0.45 * gi });
+            host.lights.add([bz.cx, -0.8 + zb, bz.cz], { color: glow, intensity: designToPhysical(1.1 * gi), distance: Math.max(8, dia * 1.8), flicker: 0.2 });
           }
         } else {
           const lava = bz.kind === 'lava';
-          const g = this.cellQuads(holeCells, surfY);
+          const g = this.cellQuads(holeCells, surfOf);
           const m = liquidMaterial(color, glow, lava ? 0.85 + gi * 0.45 : 0.9 * Math.max(0.6, gi), lava ? 0.55 : 0.8, lava ? 1 : 0.5, lava ? 1 : 0.2);
           this.mats.push(m);
           const mesh = new THREE.Mesh(g, m);
@@ -385,14 +427,14 @@ export class ZoneField {
             for (const c of holeCells) {
               if ((k++ % 4) !== 0) continue;
               const zi = c % this.zw, zj = Math.floor(c / this.zw);
-              host.halo.add([zi * CELL + 1 + rng.range(-0.5, 0.5), surfY + 0.5, zj * CELL + 1 + rng.range(-0.5, 0.5)], glow, { size: rng.range(3.2, 4.6), flicker: 0.28, intensity: 0.45 * gi });
+              host.halo.add([zi * CELL + 1 + rng.range(-0.5, 0.5), surfOf(c) + 0.5, zj * CELL + 1 + rng.range(-0.5, 0.5)], glow, { size: rng.range(3.2, 4.6), flicker: 0.28, intensity: 0.45 * gi });
             }
             const nLights = areaM2 > 400 ? 4 : areaM2 > 100 ? 2 : 1;
             for (let q = 0; q < nLights; q++) {
               const c = holeCells[Math.min(holeCells.length - 1, Math.floor(((q + 0.5) / nLights) * holeCells.length))];
               const zi = c % this.zw, zj = Math.floor(c / this.zw);
               const spec = zd.light ?? { color: glow, intensity: 1.5, distance: 13 };
-              host.lights.add([nLights === 1 ? bz.cx : zi * CELL + 1, (spec.y ?? 0.9), nLights === 1 ? bz.cz : zj * CELL + 1], {
+              host.lights.add([nLights === 1 ? bz.cx : zi * CELL + 1, (spec.y ?? 0.9) + zb, nLights === 1 ? bz.cz : zj * CELL + 1], {
                 color: spec.color, intensity: designToPhysical(spec.intensity * 0.85), distance: Math.max(spec.distance * (nLights > 1 ? 0.7 : 1), 8), flicker: spec.flicker === false ? 0.05 : 0.3,
               });
             }
@@ -402,17 +444,18 @@ export class ZoneField {
               const c = holeCells[rng.int(0, holeCells.length - 1)];
               const zi = c % this.zw, zj = Math.floor(c / this.zw);
               embers.add({
-                pos: [zi * CELL + rng.range(0, CELL), surfY + 0.1, zj * CELL + rng.range(0, CELL)],
+                pos: [zi * CELL + rng.range(0, CELL), surfOf(c) + 0.1, zj * CELL + rng.range(0, CELL)],
                 vel: [rng.range(-0.25, 0.25), rng.range(0.7, 1.9), rng.range(-0.25, 0.25)],
                 speed: rng.range(0.22, 0.55), size: rng.range(0.07, 0.15), sway: rng.range(0.1, 0.5), color: rng.pick([0xff9a30, 0xffc050, 0xff7020]),
               });
             }
           } else if (zd.light) {
-            host.lights.add([bz.cx, zd.light.y ?? 0.6, bz.cz], { color: zd.light.color, intensity: designToPhysical(zd.light.intensity), distance: zd.light.distance, flicker: zd.light.flicker ? 0.25 : 0.05 });
+            host.lights.add([bz.cx, (zd.light.y ?? 0.6) + zb, bz.cz], { color: zd.light.color, intensity: designToPhysical(zd.light.intensity), distance: zd.light.distance, flicker: zd.light.flicker ? 0.25 : 0.05 });
           }
         }
         // banks: vertical faces from the floor edge down to the surface wherever a hole cell meets solid ground
-        this.addBanks(bankM, glowM, holeCells, bz, surfY, glow);
+        this.addBanks(bankM, glowM, holeCells, bz, surfOf, glow);
+        if (this.hf && zd.fall === 'kill') this.addKillRim(holeCells, bz, this.hf);
       }
 
       // ----- floor decals / decks (do not change the hole mask) -----
@@ -425,7 +468,7 @@ export class ZoneField {
           const base = new THREE.Color(zd.color ?? (dais ? 0x2a2420 : 0x3a2a1a));
           const tex = surfaceTexture(dais ? 'tiles' : 'planks', host.def.id + ':' + bz.kind, 64);
           const mat = psxMaterial(tex, { color: base.clone().multiplyScalar(dais ? 3.6 : 3.0), roughness: 0.9, affine: false });
-          const g = this.cellQuads(deck, FLOOR_TOP + 0.012, dais ? 0.25 : 0.5);
+          const g = this.cellQuads(deck, (c) => this.deckY(bz, c) + FLOOR_TOP + 0.012, dais ? 0.25 : 0.5);
           const mesh = new THREE.Mesh(g, mat);
           mesh.receiveShadow = true;
           mesh.name = `zone_${bz.kind}_${bz.index}`;
@@ -433,7 +476,7 @@ export class ZoneField {
           freezeStatic(mesh);
           this.own(g, mat);
           if (bz.kind === 'bridge') this.addBridgeRails(deck, bz);
-          if (dais && bz.shape === 'circle') this.addRoundDais(bz, base);
+          if (dais && bz.shape === 'circle') this.addRoundDais(bz, base, this.deckY(bz, deck[0]!));
           break;
         }
         case 'rune': this.addRune(bz, color, glow, gi); break;
@@ -451,9 +494,9 @@ export class ZoneField {
       }
 
       // ----- common extras -----
-      if (zd.vfx) host.spawnEmitter(zd.vfx, [bz.cx, bz.kind === 'pit' ? 0.2 : 0.4, bz.cz], 1);
+      if (zd.vfx) host.spawnEmitter(zd.vfx, [bz.cx, (bz.kind === 'pit' ? 0.2 : 0.4) + zb, bz.cz], 1);
       if (zd.light && (bz.kind === 'rune' || bz.kind === 'vent' || bz.kind === 'ice' || bz.kind === 'lava' || bz.kind === 'pool') && !bz.blocked) {
-        host.lights.add([bz.cx, zd.light.y ?? 0.8, bz.cz], { color: zd.light.color, intensity: designToPhysical(zd.light.intensity), distance: zd.light.distance, flicker: zd.light.flicker ? 0.28 : 0.05 });
+        host.lights.add([bz.cx, (zd.light.y ?? 0.8) + zb, bz.cz], { color: zd.light.color, intensity: designToPhysical(zd.light.intensity), distance: zd.light.distance, flicker: zd.light.flicker ? 0.28 : 0.05 });
       }
       void center;
     });
@@ -496,9 +539,7 @@ export class ZoneField {
     });
   }
 
-  private addBanks(bankM: Mesher, glowM: Mesher, holeCells: number[], bz: BuiltZone, surfY: number, glow: number): void {
-    const top = FLOOR_TOP;
-    const depth = top - surfY;
+  private addBanks(bankM: Mesher, glowM: Mesher, holeCells: number[], bz: BuiltZone, surfOf: (c: number) => number, glow: number): void {
     const gc = new THREE.Color(glow);
     const lava = bz.kind === 'lava';
     const topCol = [0.62, 0.6, 0.58];
@@ -513,6 +554,10 @@ export class ZoneField {
         const nIdx = this.cellIdx(ni, nj);
         if (this.state[nIdx] === 1) continue; // still a hole
         if (this.host.tileRoom(Math.floor(ni / 2), Math.floor(nj / 2)) < 0) continue; // a wall stands there
+        // the bank rises from the surface of the hole up to the neighbour's floor (FLOOR_TOP in flat dungeons)
+        const top = this.fy(nIdx) + FLOOR_TOP;
+        const surfY = surfOf(c);
+        const depth = top - surfY;
         // edge line between the hole cell and its neighbour; the face belongs to the neighbour and looks into the hole
         const x0 = zi * CELL, z0 = zj * CELL;
         let a: number[], b: number[];
@@ -548,14 +593,50 @@ export class ZoneField {
     }
   }
 
+  /** ENGINE_VERTICALITY §8: a red decal strip just inside the rim of a scripted kill pit (vertical dungeons only). */
+  private addKillRim(holeCells: number[], bz: BuiltZone, hf: Heightfield): void {
+    const ms = new Mesher();
+    const w = 0.3;
+    const dirs: [number, number][] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    const uvs = [[0, 0], [1, 0], [1, 1], [0, 1]];
+    for (const c of holeCells) {
+      const zi = c % this.zw, zj = Math.floor(c / this.zw);
+      const x0 = zi * CELL, z0 = zj * CELL;
+      const y = hf.rim2[c]! + FLOOR_TOP + 0.03;
+      for (const [dx, dz] of dirs) {
+        const ni = zi + dx, nj = zj + dz;
+        if (ni < 0 || nj < 0 || ni >= this.zw || nj >= this.zh) continue;
+        const nIdx = this.cellIdx(ni, nj);
+        if (this.state[nIdx] === 1 || this.host.tileRoom(Math.floor(ni / 2), Math.floor(nj / 2)) < 0) continue; // rim = shared edge with ground
+        let xa = x0, xb = x0 + CELL, za = z0, zb = z0 + CELL;
+        if (dx < 0) xb = x0 + w;
+        else if (dx > 0) xa = x0 + CELL - w;
+        else if (dz < 0) zb = z0 + w;
+        else za = z0 + CELL - w;
+        ms.quad([[xa, y, za], [xb, y, za], [xb, y, zb], [xa, y, zb]], [0, 1, 0], uvs);
+      }
+    }
+    if (ms.empty) return;
+    const g = ms.geometry();
+    const mat = new THREE.MeshBasicMaterial({ color: 0xc02018, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+    patchPSX(mat, { affine: false });
+    const mesh = new THREE.Mesh(g, mat);
+    mesh.name = `kill_rim_${bz.index}`;
+    mesh.frustumCulled = false;
+    this.add(mesh);
+    freezeStatic(mesh);
+    this.own(g, mat);
+  }
+
   /** Low parapet along the long edges of a bridge so it reads as a causeway (visual only). */
   private addBridgeRails(deck: number[], bz: BuiltZone): void {
     const set = new Set(deck);
     const ms = new Mesher();
-    const h = 0.32, w = 0.22, y0 = FLOOR_TOP;
+    const h = 0.32, w = 0.22;
     const dirs: [number, number][] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
     for (const c of deck) {
       const zi = c % this.zw, zj = Math.floor(c / this.zw);
+      const y0 = this.deckY(bz, c) + FLOOR_TOP;
       for (const [dx, dz] of dirs) {
         const ni = zi + dx, nj = zj + dz;
         if (ni < 0 || nj < 0 || ni >= this.zw || nj >= this.zh) continue;
@@ -595,7 +676,7 @@ export class ZoneField {
   }
 
   /** The visible round platform on top of a circular dais' blocky deck. */
-  private addRoundDais(bz: BuiltZone, base: THREE.Color): void {
+  private addRoundDais(bz: BuiltZone, base: THREE.Color, deckBase: number): void {
     const r = Math.max(bz.hx, bz.hz);
     const hgt = Math.min(0.32, Math.max(0.16, (bz.def.y ?? 0.3) * 0.15));
     const tex = surfaceTexture('tiles', this.host.def.id + ':daistop', 64);
@@ -611,7 +692,7 @@ export class ZoneField {
     }
     const mat = psxMaterial(tex, { color: base.clone().multiplyScalar(4.4), roughness: 0.85, affine: false });
     const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.set(bz.cx, 0, bz.cz);
+    mesh.position.set(bz.cx, deckBase, bz.cz);
     mesh.castShadow = false;
     mesh.receiveShadow = true;
     mesh.name = `dais_${bz.index}`;
@@ -623,7 +704,7 @@ export class ZoneField {
     ring.rotateX(-PI / 2);
     const rm = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.55, 0.45, 0.35), fog: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     const rmesh = new THREE.Mesh(ring, rm);
-    rmesh.position.set(bz.cx, FLOOR_TOP + hgt + 0.03, bz.cz);
+    rmesh.position.set(bz.cx, deckBase + FLOOR_TOP + hgt + 0.03, bz.cz);
     this.add(rmesh);
     freezeStatic(rmesh);
     this.own(ring, rm);
@@ -678,17 +759,18 @@ export class ZoneField {
     const k = 1.15 + gi * 0.6;
     const mat = new THREE.MeshBasicMaterial({ map: tex, alphaTest: 0.5, color: new THREE.Color(k, k, k), toneMapped: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     patchPSX(mat, { affine: false });
+    const fb = this.fyAt(bz.cx, bz.cz);
     const mesh = new THREE.Mesh(g, mat);
-    mesh.position.set(bz.cx, FLOOR_TOP + 0.03, bz.cz);
+    mesh.position.set(bz.cx, fb + FLOOR_TOP + 0.03, bz.cz);
     mesh.name = `rune_${bz.index}`;
     this.add(mesh);
     this.runes.push({ mesh, mat, k, ph: bz.index * 1.37 });
     this.own(g, mat);
-    this.host.halo.add([bz.cx, 0.35, bz.cz], glow, { size: size * 0.8, flicker: 0.12, intensity: 0.28 * gi });
+    this.host.halo.add([bz.cx, fb + 0.35, bz.cz], glow, { size: size * 0.8, flicker: 0.12, intensity: 0.28 * gi });
   }
 
   private addIce(bz: BuiltZone, list: number[], color: number, glow: number, gi: number): void {
-    const g = this.cellQuads(list, FLOOR_TOP + 0.02);
+    const g = this.cellQuads(list, (c) => this.fy(c) + FLOOR_TOP + 0.02);
     const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.08, metalness: 0.1, emissive: glow, emissiveIntensity: 0.25 * gi, transparent: true, opacity: 0.62, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     patchPSX(mat, { affine: false });
     const mesh = new THREE.Mesh(g, mat);
@@ -702,7 +784,7 @@ export class ZoneField {
 
   private addDecalLiquid(bz: BuiltZone, list: number[], color: number, glow: number, gi: number): void {
     const lava = bz.kind === 'lava';
-    const g = this.cellQuads(list, FLOOR_TOP + 0.03);
+    const g = this.cellQuads(list, (c) => this.fy(c) + FLOOR_TOP + 0.03);
     const m = liquidMaterial(color, glow, lava ? 0.8 + gi * 0.4 : 0.85, lava ? 0.7 : 0.8, lava ? 1 : 0.5, lava ? 1 : 0.2);
     m.polygonOffset = true;
     m.polygonOffsetFactor = -2;
@@ -715,14 +797,15 @@ export class ZoneField {
     freezeStatic(mesh);
     this.own(g, m);
     if (lava) {
-      this.host.halo.add([bz.cx, 0.5, bz.cz], glow, { size: Math.max(bz.hx, bz.hz) * 2.2, flicker: 0.25, intensity: 0.4 * gi });
-      if (!bz.def.light) this.host.lights.add([bz.cx, 0.9, bz.cz], { color: glow, intensity: designToPhysical(1.1), distance: Math.max(8, Math.max(bz.hx, bz.hz) * 3), flicker: 0.3 });
+      const fb = this.fyAt(bz.cx, bz.cz);
+      this.host.halo.add([bz.cx, fb + 0.5, bz.cz], glow, { size: Math.max(bz.hx, bz.hz) * 2.2, flicker: 0.25, intensity: 0.4 * gi });
+      if (!bz.def.light) this.host.lights.add([bz.cx, fb + 0.9, bz.cz], { color: glow, intensity: designToPhysical(1.1), distance: Math.max(8, Math.max(bz.hx, bz.hz) * 3), flicker: 0.3 });
     }
   }
 
   /** Walkable "pit" / "void" zones: a sunken-looking dark patch on the floor with a faint rim glow (corpse pits, shadow wells). */
   private addDarkPatch(bz: BuiltZone, list: number[], color: number, glow: number, gi: number): void {
-    const g = this.cellQuads(list, FLOOR_TOP + 0.025);
+    const g = this.cellQuads(list, (c) => this.fy(c) + FLOOR_TOP + 0.025);
     const mat = new THREE.MeshBasicMaterial({ color, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     patchPSX(mat, { affine: false });
     const mesh = new THREE.Mesh(g, mat);
@@ -732,7 +815,7 @@ export class ZoneField {
     freezeStatic(mesh);
     this.own(g, mat);
     const size = Math.max(bz.hx, bz.hz) * 2.3;
-    this.host.halo.add([bz.cx, 0.3, bz.cz], glow, { size, flicker: 0.25, intensity: 0.32 * gi });
+    this.host.halo.add([bz.cx, this.fyAt(bz.cx, bz.cz) + 0.3, bz.cz], glow, { size, flicker: 0.25, intensity: 0.32 * gi });
   }
 
   private addVent(bz: BuiltZone, list: number[], glow: number, gi: number, rng: RNG): void {
@@ -782,12 +865,13 @@ export class ZoneField {
     const gc = new THREE.Color(glow);
     const mat = new THREE.MeshBasicMaterial({ map: tex, alphaTest: 0.5, color: new THREE.Color(gc.r * (1.2 + gi), gc.g * (1.2 + gi), gc.b * (1.2 + gi)), toneMapped: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     patchPSX(mat, { affine: false });
+    const fb = this.fyAt(bz.cx, bz.cz);
     const mesh = new THREE.Mesh(g, mat);
-    mesh.position.set(bz.cx, FLOOR_TOP + 0.03, bz.cz);
+    mesh.position.set(bz.cx, fb + FLOOR_TOP + 0.03, bz.cz);
     mesh.name = `vent_${bz.index}`;
     this.add(mesh);
     freezeStatic(mesh);
     this.own(g, mat);
-    this.host.halo.add([bz.cx, 0.45, bz.cz], glow, { size: size * 1.2, flicker: 0.35, intensity: 0.5 * gi });
+    this.host.halo.add([bz.cx, fb + 0.45, bz.cz], glow, { size: size * 1.2, flicker: 0.35, intensity: 0.5 * gi });
   }
 }
