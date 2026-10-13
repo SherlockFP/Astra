@@ -141,7 +141,10 @@ export type StatusId =
   // Kibir Tecessumu (P-27, append-only): Kibirli elite buff (+dmg, +move speed). StatusDef + STATUS_RULES registered by systems/Affixes.ts.
   | 'kibirli'
   // Taşkasa (SP-21, append-only): boss and mechanic statuses, StatusDefs + STATUS_RULES rows in data/statuses.ts (docs/dungeons/taskasa.md §9).
-  | 'seismic_echo' | 'seismic_ward' | 'earth_fracture' | 'unstable_energy' | 'void_mark' | 'void_corruption';
+  | 'seismic_echo' | 'seismic_ward' | 'earth_fracture' | 'unstable_energy' | 'void_mark' | 'void_corruption'
+  // Yiğitler Sarayı / Leş Uyanışı (SP-05, append-only): StatusDefs + STATUS_RULES rows in data/statuses.ts (YS_LU block).
+  | 'holy_scorch' | 'aegis_ward' | 'odyn_favor' | 'odyn_blessing' | 'rune_blessed' | 'bear_snare' | 'heal_cut' | 'heal_absorb'
+  | 'tank_stack' | 'frost_mark' | 'morbid_fixation' | 'exile_cold' | 'champion_boon' | 'weapon_mark' | 'anima_exhaust';
 
 export interface StatusDef {
   id: StatusId;

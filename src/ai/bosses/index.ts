@@ -7,6 +7,8 @@ import { WORLD_SCRIPTS, WORLD_SPAWNS } from './world';
 import { TASKASA_SCRIPTS, TASKASA_SPAWNS } from './taskasa';
 import { PERI_SCRIPTS, PERI_SPAWNS } from './peri_sisleri';
 import { YILDIZ_SCRIPTS, YILDIZ_SPAWNS } from './yildiz_divani';
+import { YIGITLER_SARAYI_SCRIPTS, YIGITLER_SARAYI_SPAWNS } from './yigitler_sarayi';
+import { LES_SCRIPTS, LES_SPAWNS } from './les_uyanisi';
 
 /** Boss id -> script (one file per dungeon). */
 export const BOSS_SCRIPTS: Record<string, BossScript> = {
@@ -18,6 +20,8 @@ export const BOSS_SCRIPTS: Record<string, BossScript> = {
   ...TASKASA_SCRIPTS,
   ...PERI_SCRIPTS,
   ...YILDIZ_SCRIPTS,
+  ...YIGITLER_SARAYI_SCRIPTS,
+  ...LES_SCRIPTS,
 };
 
 /** Extra enemy ids each boss spawns (asset preloading). */
@@ -30,4 +34,6 @@ export const BOSS_SPAWNS: Record<string, string[]> = {
   ...TASKASA_SPAWNS,
   ...PERI_SPAWNS,
   ...YILDIZ_SPAWNS,
+  ...YIGITLER_SARAYI_SPAWNS,
+  ...LES_SPAWNS,
 };

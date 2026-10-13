@@ -69,6 +69,8 @@ export const SFX_ALIASES: Record<string, SfxAlias> = {
   crowd_murmur: { id: 'enemy_idle', volume: 0.15 },
   lift_hum: { id: 'gate_heavy', pitch: 1.2, volume: 0.5 },
   waltz_loop: { id: 'buff', volume: 0.5 },
+  // Leş Uyanışı swarm bed: a high, quiet creature idle until a flies loop is mapped.
+  flies_loop: { id: 'enemy_idle', pitch: 1.8, volume: 0.25 },
 };
 
 /**

@@ -62,6 +62,8 @@ export const SFX_IDS = [
   'arcane_cast', 'arcane_impact', 'proc_gain', 'proc_use', 'cd_ready', 'cast_pushback', 'cast_interrupted', 'burst_window',
   // ---- K3 / P-06 (append-only): season dungeon sounds. Until audio/manifest.ts maps them, audio/aliases.ts plays the closest existing id.
   'void_crack', 'lift_move', 'bell_toll', 'water_lap', 'chandelier_creak', 'crowd_murmur', 'lift_hum', 'waltz_loop',
+  // Leş Uyanışı ambience (docs/dungeons/les_uyanisi.md, SP-11): aliased in audio/aliases.ts until a file exists.
+  'flies_loop',
 ] as const;
 
 export type SfxId = (typeof SFX_IDS)[number];

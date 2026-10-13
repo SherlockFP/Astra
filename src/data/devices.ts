@@ -31,6 +31,11 @@ export interface DeviceDef {
 
 export const DEVICES: Record<string, DeviceDef> = {
   echo_gong: { id: 'echo_gong', prompt: 'Çanı çal', range: 3, once: true, effect: 'pulse', radius: 14, interrupt: true, stunSec: 2, vfx: 'arcane_burst' },
+  // Leş Uyanışı (docs/dungeons/les_uyanisi.md, section 3, devices): Gökbekçi Devi (Kyrian Goliath repair). One use per run each.
+  // dev_gd1 and dev_gd3 wake the golem and give the party anima_exhaust (60 s, every player within 25 m).
+  dev_gd1: { id: 'dev_gd1', prompt: "Gökbekçi Devi'ni uyandır", range: 3, once: true, effect: 'party_buff', status: 'anima_exhaust', seconds: 60, radius: 25, vfx: 'buff_aura' },
+  dev_gd2: { id: 'dev_gd2', prompt: "Gökbekçi Devi'ni uyandır", range: 3, once: true, effect: 'open_gate', gateDoor: 'toll_kapisi|kisayol', status: 'anima_exhaust', seconds: 60, radius: 25, vfx: 'holy_burst' },
+  dev_gd3: { id: 'dev_gd3', prompt: "Gökbekçi Devi'ni uyandır", range: 3, once: true, effect: 'party_buff', status: 'anima_exhaust', seconds: 60, radius: 25, vfx: 'buff_aura' },
 };
 
 export function deviceDef(id: string | undefined): DeviceDef | undefined {

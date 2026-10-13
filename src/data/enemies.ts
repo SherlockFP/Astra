@@ -7,6 +7,8 @@ import './enemies_mech'; // K13: registers the MECH ids (energy_orb, eye_orb, pr
 // Season dungeons: peri_sisleri and yildiz_divani self-register on import; taskasa exports its defs and is merged below.
 import './enemies_peri_sisleri';
 import './enemies_yildiz_divani';
+import './enemies_yigitler_sarayi';
+import './enemies_les_uyanisi';
 import { TASKASA_ENEMIES, TASKASA_BOSSES } from './enemies_taskasa';
 export { ENEMIES, BOSSES };
 Object.assign(ENEMIES, TASKASA_ENEMIES);

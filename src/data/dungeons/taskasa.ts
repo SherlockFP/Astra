@@ -692,7 +692,7 @@ export const TASKASA: DungeonDef = {
   start: { pos: shPt(START[0], START[1]), facing: 180 },
   exit: { pos: shPt(EXIT[0], EXIT[1]) },
   extras: EXTRAS,
-  season: 7,
+  season: 1,
   endgame: true,
   vertical: true,
 };

@@ -347,6 +347,53 @@ const S1_STATUS_RULES: Partial<Record<StatusId, StatusRule>> = {
 Object.assign(STATUSES, S1_STATUSES);
 Object.assign(STATUS_RULES, S1_STATUS_RULES);
 
+/**
+ * Yiğitler Sarayı and Leş Uyanışı (SP-05, append-only). Numbers from docs/dungeons/yigitler_sarayi.md (sections 4, 6, Odyn's
+ * hook) and docs/dungeons/les_uyanisi.md (SP-05 table, Amarth and Exile sections). `stats` are per stack. Damage-taken rules
+ * apply to every source of damage on the owner; the docs' "from the source" wording is not modelled per source.
+ */
+const YS_LU_STATUSES: Partial<Record<StatusId, StatusDef>> = {
+  holy_scorch: { id: 'holy_scorch', name: 'Kutsal Yanık', icon: I('debuff-burn'), kind: 'debuff', dotType: 'holy', maxStacks: 3, dispellable: true, defaultDuration: 8 },
+  aegis_ward: { id: 'aegis_ward', name: 'Aegis Siperi', icon: I('buff-absorb'), kind: 'buff', stats: { damageReductionPct: 0.75 }, vfx: 'shield_bubble', defaultDuration: 0.8 },
+  odyn_favor: { id: 'odyn_favor', name: "Odyn'in Lütfu", icon: I('buff-blessing'), kind: 'buff', stats: { moveSpeedPct: 0.4 }, vfx: 'buff_aura', defaultDuration: 75 },
+  odyn_blessing: { id: 'odyn_blessing', name: "Odyn'in Nimeti", icon: I('buff-blessing'), kind: 'buff', stats: { moveSpeedPct: 0.7 }, vfx: 'buff_aura', defaultDuration: 60 },
+  rune_blessed: { id: 'rune_blessed', name: 'Rünle Kutsanmış', icon: I('buff-strength'), kind: 'buff', stats: { damagePct: 0.3, moveSpeedPct: 0.25 }, vfx: 'buff_aura', defaultDuration: 20 },
+  bear_snare: { id: 'bear_snare', name: 'Ayı Tuzağı', icon: I('debuff-root'), kind: 'debuff', cc: true, dispellable: true, defaultDuration: 3 },
+  heal_cut: { id: 'heal_cut', name: 'Şifa Kesintisi', icon: I('debuff-healing-reduction'), kind: 'debuff', dispellable: false, defaultDuration: 8 },
+  heal_absorb: { id: 'heal_absorb', name: 'Şifa Emilimi', icon: I('debuff-weakness'), kind: 'debuff', defaultDuration: 10 },
+  tank_stack: { id: 'tank_stack', name: 'Yığın Yarası', icon: I('debuff-bleed'), kind: 'debuff', maxStacks: 8, defaultDuration: 12 },
+  frost_mark: { id: 'frost_mark', name: 'Ayaz Damgası', icon: I('debuff-chill'), kind: 'debuff', maxStacks: 3, defaultDuration: 5 },
+  morbid_fixation: { id: 'morbid_fixation', name: 'Hastalıklı Takıntı', icon: I('debuff-marked'), kind: 'debuff', stats: { moveSpeedPct: -0.6 }, defaultDuration: 8 },
+  exile_cold: { id: 'exile_cold', name: 'Sürgün Soğuğu', icon: I('debuff-chill'), kind: 'debuff', stats: { moveSpeedPct: -0.25 }, defaultDuration: 50 },
+  champion_boon: { id: 'champion_boon', name: 'Şampiyonun Lütfu', icon: I('buff-crit'), kind: 'buff', stats: { critChance: 1.0 }, vfx: 'buff_aura', defaultDuration: 40 },
+  weapon_mark: { id: 'weapon_mark', name: 'Kan İzi', icon: I('debuff-bleed'), kind: 'debuff', defaultDuration: 10 },
+  anima_exhaust: { id: 'anima_exhaust', name: 'Anima Egzozu', icon: I('buff-aura'), kind: 'buff', vfx: 'buff_aura', defaultDuration: 60 },
+};
+Object.assign(STATUSES, YS_LU_STATUSES);
+
+const YS_LU_STATUS_RULES: Partial<Record<StatusId, StatusRule>> = {
+  // Kutsal Yanık: holy DoT, 1.2% of max HP per second per stack, max 3 stacks (the dispel target of the Mystic).
+  holy_scorch: { stack: 'stack', maxHpPctPerSec: 0.012 },
+  aegis_ward: { stack: 'refresh' },
+  odyn_favor: { stack: 'refresh' },
+  odyn_blessing: { stack: 'refresh' },
+  rune_blessed: { stack: 'refresh' },
+  // Ayı Tuzağı: dispellable root, mirrors the root rule.
+  bear_snare: { stack: 'strongest', group: 'root', hard: true },
+  heal_cut: { stack: 'refresh', healMult: 0.5 },
+  heal_absorb: { stack: 'refresh' },
+  // Yığın Yarası: +10% damage taken per stack, max 8, refresh on each bite.
+  tank_stack: { stack: 'stack', takenMorePerStack: 0.10 },
+  // Ayaz Damgası: +25% damage taken per stack, max 3 (frost-only in the docs; the rule applies to all damage).
+  frost_mark: { stack: 'stack', takenMorePerStack: 0.25 },
+  morbid_fixation: { stack: 'refresh', takenMore: 1 },
+  exile_cold: { stack: 'refresh' },
+  champion_boon: { stack: 'refresh' },
+  weapon_mark: { stack: 'refresh', takenMore: 0.25 },
+  anima_exhaust: { stack: 'refresh' },
+};
+Object.assign(STATUS_RULES, YS_LU_STATUS_RULES);
+
 /** Statuses that are crowd control on the "hard" scale (cannot act). */
 export const HARD_CC: StatusId[] = ['stun', 'freeze', 'knockdown', 'fear', 'petrify'];
 
