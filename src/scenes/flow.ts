@@ -11,7 +11,7 @@ import { getDungeon } from '../data/dungeons';
  * `returnTo` is set by a world entrance (GDD_OPENWORLD §9.3 point 5): the dungeon's exit portal sends the party back to that
  * open-world spawn instead of the town. Not yet read by any scene (WP6).
  */
-export const sceneFlow: { leftOpenWorld: boolean; returnTo?: DungeonParams['returnTo'] } = { leftOpenWorld: false };
+export const sceneFlow: { leftOpenWorld: boolean; /** id of the open-world map just left (TownScene picks its gate) */ leftWorldId?: string; returnTo?: DungeonParams['returnTo'] } = { leftOpenWorld: false };
 
 /**
  * True for open-world MAPS (a DungeonDef with `world`, i.e. Sisli Vadi). Use this instead of ad-hoc `getDungeon(id)?.outdoor` checks.

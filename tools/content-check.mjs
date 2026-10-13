@@ -27,6 +27,16 @@ const cc = await imp('src/dev/contentCheck.ts');
 const DUNGEON_ALL = [...new Set([...DUNGEON_IDS, ...Object.keys(DUNGEONS)])];
 const ALL = { ...DUNGEONS, ...OPEN_ZONES };
 const ALL_IDS = [...DUNGEON_ALL, ...OPEN_ZONE_IDS];
+// every open-world MAP (a def with `world`): quests, NPCs and spawns are checked against all of them together (Sisli Vadi + Karakır Bozkırı)
+const WORLD_IDS = OPEN_ZONE_IDS.filter((id) => ALL[id]?.world);
+const cat = (key) => WORLD_IDS.flatMap((id) => ALL[id].world[key] ?? []);
+const ALL_WORLD = {
+  regions: cat('regions'), villages: cat('villages'), waypoints: cat('waypoints'), entrances: cat('entrances'), hidden: cat('hidden'), vistas: cat('vistas'),
+  landmarks: cat('landmarks'), minibosses: cat('minibosses'), rares: cat('rares'), bosses: cat('bosses'),
+  metin: { tiers: WORLD_IDS.flatMap((id) => ALL[id].world.metin?.tiers ?? []), spots: [] },
+};
+const ALL_WORLD_PACKS = WORLD_IDS.flatMap((id) => ALL[id].packs);
+const ALL_WORLD_ROOMS = WORLD_IDS.flatMap((id) => ALL[id].rooms);
 const want = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const verbose = process.argv.includes('--v');
 
@@ -240,7 +250,7 @@ for (const id of ALL_IDS) {
 }
 // open-world quests (GDD_OPENWORLD §6): givers, objectives, reward items; an NPC a quest names must stand in the town or a village
 // NPC ids are keys (quest givers, turn-ins and talk targets resolve by id): HARD error on an id used twice in the town or any village
-if (!want.length || want.includes('town') || want.includes('sisli_vadi')) {
+if (!want.length || want.includes('town') || WORLD_IDS.some((id) => want.includes(id))) {
   const owners = new Map();
   const own = (id, where) => { if (!owners.has(id)) owners.set(id, []); owners.get(id).push(where); };
   for (const n of TOWN.npcs) own(n.id, 'town');
@@ -251,19 +261,21 @@ if (!want.length || want.includes('town') || want.includes('sisli_vadi')) {
   console.log(`\n== npc ids: ${dup.length} errors | ${owners.size} NPCs in the town and ${villages} villages`);
   for (const [id, where] of dup) console.log('  ERR ', `npc ${id}`, '-', `duplicate id in ${where.join(', ')}`);
 }
-if (!want.length || want.includes('sisli_vadi') || want.includes('quests')) {
+if (!want.length || WORLD_IDS.some((id) => want.includes(id)) || want.includes('quests')) {
   const { QUESTS } = await imp('src/data/world/quests.ts');
   const { MATERIALS } = await imp('src/data/materials.ts');
-  const world = ALL.sisli_vadi?.world;
+  const world = ALL_WORLD;
   const npcIds = new Set([...TOWN.npcs.map((n) => n.id), ...(world?.villages ?? []).flatMap((v) => v.npcs.map((n) => n.id))]);
-  const placeIds = new Set([...(ALL.sisli_vadi?.rooms ?? []).map((r) => r.id), ...(world?.villages ?? []).map((v) => v.id), ...(ALL.sisli_vadi?.packs ?? []).map((p) => p.id)]);
+  // places an `explore` objective may name: rooms, villages, camps, and the ids the game emits (regions, waypoints, hidden areas, vistas, landmarks)
+  const placeIds = new Set([...ALL_WORLD_ROOMS.map((r) => r.id), ...world.villages.map((v) => v.id), ...ALL_WORLD_PACKS.map((p) => p.id),
+    ...[world.regions, world.waypoints, world.hidden, world.vistas, world.landmarks].flatMap((l) => l.map((p) => p.id))]);
   const qr = cc.checkQuests(QUESTS, { npcIds, knownEnemy: known ?? (() => undefined), hasItem: (id) => id in MATERIALS, dungeonIds: [...DUNGEON_ALL, ...OPEN_ZONE_IDS], placeIds });
   const e = qr.filter((i) => i.level === 'error'), w = qr.filter((i) => i.level === 'warn');
   totalErr += e.length;
   console.log(`\n== quests: ${e.length} errors, ${w.length} warns | ${QUESTS.length} quests`);
   for (const i of e) console.log('  ERR ', i.where, '-', i.msg);
   for (const i of w) console.log('  warn', i.where, '-', i.msg);
-  const rq = regionQuestIssues(QUESTS, world, ALL.sisli_vadi?.packs);
+  const rq = regionQuestIssues(QUESTS, world, ALL_WORLD_PACKS);
   const rw = rq.filter((i) => i.level === 'warn'), re = rq.filter((i) => i.level === 'error');
   totalErr += re.length;
   console.log(`\n== region quests: ${re.length} errors, ${rw.length} warns | ${QUESTS.filter(isRegionQuest).length} quests`);
@@ -271,10 +283,10 @@ if (!want.length || want.includes('sisli_vadi') || want.includes('quests')) {
   for (const i of re) console.log('  ERR ', i.where, '-', i.msg);
   for (const i of rw) console.log('  warn', i.where, '-', i.msg);
   const npcById = new Map([...TOWN.npcs, ...(world?.villages ?? []).flatMap((v) => v.npcs)].map((n) => [n.id, n]));
-  const xq = questReachIssues(QUESTS, world, npcIds, ALL.sisli_vadi?.packs, DUNGEON_ALL, OPEN_ZONE_IDS, npcById);
+  const xq = questReachIssues(QUESTS, world, npcIds, ALL_WORLD_PACKS, DUNGEON_ALL, OPEN_ZONE_IDS, npcById);
   const xe = xq.filter((i) => i.level === 'error'), xw = xq.filter((i) => i.level === 'warn');
   totalErr += xe.length;
-  console.log(`\n== quest reachability: ${xe.length} errors, ${xw.length} warns | ${QUESTS.length} quests, ${spawnIndex(world, ALL.sisli_vadi?.packs).size} spawnable ids`);
+  console.log(`\n== quest reachability: ${xe.length} errors, ${xw.length} warns | ${QUESTS.length} quests, ${spawnIndex(world, ALL_WORLD_PACKS).size} spawnable ids`);
   for (const i of xe) console.log('  ERR ', i.where, '-', i.msg);
   for (const i of xw) console.log('  warn', i.where, '-', i.msg);
 }

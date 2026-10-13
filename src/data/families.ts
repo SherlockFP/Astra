@@ -21,6 +21,14 @@ const BY_ID: Record<string, EnemyFamily> = {
   ow_orc: 'orc', ow_orc_archer: 'orc', ow_orc_shaman: 'orc', ow_orc_brute: 'orc',
   cult_acolyte: 'cultist', cult_summoner: 'cultist', ow_witch: 'cultist', ow_keeper: 'skeleton',
   ow_grave_knight: 'skeleton',
+  // Karakır Bozkırı (data/enemies_karakir.ts)
+  kb_kurt: 'beast', kb_domuz: 'beast', kb_ari: 'beast', kb_ayi: 'beast', kb_gergedan: 'beast', kb_warg: 'beast', kb_yayla_kurdu: 'beast',
+  kb_yayla_ayisi: 'beast', kb_ayaz_kurdu: 'beast', kb_ayaz_warg: 'beast', kb_ayaz_ayisi: 'beast', kb_mamut: 'beast',
+  kb_ciyan: 'spider', kb_orumcek: 'spider', kb_orumcek_dev: 'spider', kb_ayaz_orumcek: 'spider',
+  kb_hortlak: 'ghost', kb_buz_hortlak: 'ghost', kb_golem: 'golem', kb_buz_golemi: 'golem', kb_iblis: 'demon', kb_kor: 'demon',
+  kb_goblin: 'bandit', kb_goblin_saman: 'bandit', kb_haydut: 'bandit', kb_haydut_okcu: 'bandit', kb_haydut_pehlivan: 'bandit',
+  kb_ork: 'orc', kb_ork_atici: 'orc', kb_ork_saman: 'orc', kb_ork_cellat: 'orc', kb_ayaz_ork: 'orc', kb_ayaz_cellat: 'orc',
+  kb_iskelet: 'skeleton', kb_iskelet_okcu: 'skeleton', kb_iskelet_buyucu: 'skeleton', kb_iskelet_muhafiz: 'skeleton', kb_sovalye: 'skeleton',
 };
 
 /** Family of an enemy def id (undefined when it has none). */
