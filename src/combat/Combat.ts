@@ -253,7 +253,7 @@ export class Combat {
   private corpses: { enemy: Enemy; t: number }[] = [];
   private seenPlayers = new WeakSet<object>();
   private localDead = false;
-  private potionCd = { hp: 0, mp: 0 };
+  private potionCd = { hp: 0, mp: 0, cleanse: 0 };
   private lastRes = { hp: -1, maxHp: -1, res: -1, maxRes: -1 };
   private slow: { until: number; recover: number; active: boolean; scale: number } = { until: 0, recover: 0, active: false, scale: 1 };
   private lifeStealLog: { t: number; amount: number }[] = [];
@@ -1921,16 +1921,39 @@ export class Combat {
   // ======================================================================================================
 
   /** Drink a potion (consumes G.character material, heals/restores, applies 'potion_cd'). False if on cooldown/none left. */
-  usePotion(kind: 'hp' | 'mp'): boolean {
+  usePotion(kind: 'hp' | 'mp' | 'cleanse'): boolean {
     const p = G.world?.localPlayer ?? G.player;
     const ch = G.character;
     if (!p || p.isDead || !ch) return false;
     if (this.potionCd[kind] > 0) {
-      G.events.emit('ui:toast', { text: kind === 'hp' ? 'Can İksiri henüz hazır değil.' : 'Ruh İksiri henüz hazır değil.', kind: 'warning' });
+      const text = kind === 'hp' ? 'Can İksiri henüz hazır değil.' : kind === 'mp' ? 'Ruh İksiri henüz hazır değil.' : 'Panzehir İksiri henüz hazır değil.';
+      G.events.emit('ui:toast', { text, kind: 'warning' });
       return false;
     }
     if (kind === 'hp' && p.hp >= p.maxHp - 0.5) return false;
     if (kind === 'mp' && p.resource >= p.maxResource - 0.5) return false;
+    if (kind === 'cleanse') {
+      // Panzehir İksiri (potion_panzehir): dispels every active poison / bleed / kirlenme (rot) debuff on the local player.
+      const CLEANSE_IDS: StatusId[] = ['poison', 'bleed', 'kirlenme'];
+      const cleansable = CLEANSE_IDS.filter((id) => p.statuses.has(id));
+      if (cleansable.length === 0) {
+        G.events.emit('ui:toast', { text: 'Temizlenecek bir etki yok.', kind: 'info' });
+        return false;
+      }
+      if (!ch.useMaterial('potion_panzehir', 1)) {
+        G.events.emit('ui:toast', { text: 'Panzehir İksirin kalmadı!', kind: 'warning' });
+        return false;
+      }
+      for (const id of cleansable) p.statuses.dispel(id);
+      this.potionCd.cleanse = 15;
+      p.statuses.apply('potion_cd', 15, { magnitude: 1 });
+      G.vfx.spawn('potion_drink', [p.position.x, p.position.y + 1.2, p.position.z]);
+      G.audio.play('potion_drink', { pos: [p.position.x, p.position.y, p.position.z] });
+      if (!G.skills?.isBusy(p)) p.anim?.playOnce('Use_Item', { upperBody: true, speed: 2.3, fade: 0.05 });
+      G.events.emit('materials:changed', {});
+      G.events.emit('ui:toast', { text: `Panzehir: ${cleansable.length} olumsuz etki temizlendi.`, kind: 'success' });
+      return true;
+    }
     const pref = kind === 'hp' ? 'pot_hp_' : 'pot_res_';
     let id: string | null = null;
     let tier = 1;
@@ -1974,7 +1997,7 @@ export class Combat {
   }
 
   /** Seconds left on a potion cooldown (HUD). */
-  potionCooldown(kind: 'hp' | 'mp'): number {
+  potionCooldown(kind: 'hp' | 'mp' | 'cleanse'): number {
     return Math.max(0, this.potionCd[kind]);
   }
 
@@ -1988,6 +2011,7 @@ export class Combat {
     this.combo.update(dt);
     if (this.potionCd.hp > 0) this.potionCd.hp -= dt;
     if (this.potionCd.mp > 0) this.potionCd.mp -= dt;
+    if (this.potionCd.cleanse > 0) this.potionCd.cleanse -= dt;
     this.updateLocalPlayer(dt);
     this.updateGuard(dt);
     this.updateFx(dt);
@@ -2197,7 +2221,7 @@ export class Combat {
     this.guard.setProfile(undefined);
     this.meters.reset();
     this.reactCd.clear();
-    this.potionCd.hp = this.potionCd.mp = 0;
+    this.potionCd.hp = this.potionCd.mp = this.potionCd.cleanse = 0;
     this.localDead = false;
     this.combo.reset();
     this.sp.reset();

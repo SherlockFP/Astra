@@ -137,7 +137,9 @@ export type StatusId =
   // Season 1 shared primitives P-21 / P-18 (K1, append-only; StatusDef rows arrive in K4 / data/statuses.ts)
   | 'petrify' | 'mortal_wound' | 'disguise' | 'bewitch' | 'exposed' | 'kin_laneti' | 'asit_yarasi'
   | 'arcane_lockdown' | 'withering_soul' | 'deep_wound' | 'ys_intensity' | 'ay_cesmesi'
-  | 'mead_sticky' | 'rod_charged';
+  | 'mead_sticky' | 'rod_charged'
+  // Kibir Tecessumu (P-27, append-only): Kibirli elite buff (+dmg, +move speed). StatusDef + STATUS_RULES registered by systems/Affixes.ts.
+  | 'kibirli';
 
 export interface StatusDef {
   id: StatusId;

@@ -334,7 +334,7 @@ function capsuleTick(): void {
     else if (e.statuses.has('inspiring')) mat.color.setHex(0xffe28a);
     if (e.def.id === 'affix_spiteful_shade') { mat.color.setHex(0x8070c0); mat.transparent = true; mat.opacity = 0.6; }
     if (e.def.id === 'affix_explosive_orb') m.visible = false;
-    if (e.def.id.startsWith('efsun_guardian')) { mat.color.setHex(e.def.tint ?? 0xffffff); mat.emissive.setHex(0x331100); }
+    if (e.def.id.startsWith('kibir_tecessumu')) { mat.color.setHex(e.def.tint ?? 0xffffff); mat.emissive.setHex(0x331100); }
   }
 }
 

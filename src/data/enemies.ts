@@ -685,19 +685,6 @@ add({
   anims: A_FLY, resist: R_GHOST, ai: { summoned: true }, visual: { opacity: 0.6, eyeEmissive: 0xff3040, hoverBob: 0.1 },
   basic: cone('spiteful_shade_touch', 'Kin Dokunuşu', 1.6, 100, 1.4, 1.0, 'Headbutt', 0.3, { windup: 0.5, damage: { coef: 1.0, type: 'shadow' } } as Ab),
 });
-for (const [k, o] of Object.entries({
-  kor: { model: MON('Demon'), scale: 1.33, tint: 0xff6a00, emissive: 0xff3000, anims: A_ENEMY, type: 'fire' as DamageType, name: 'Kor Yarık Muhafızı' },
-  ayaz: { model: MON('Yeti'), scale: 1.07, tint: 0x9fd8ff, emissive: 0x2060a0, anims: A_ENEMY, type: 'frost' as DamageType, name: 'Ayaz Yarık Muhafızı' },
-  golge: { model: MON('Ghost'), scale: 1.33, tint: 0x6020a0, emissive: 0x4010a0, anims: A_FLY, type: 'shadow' as DamageType, name: 'Gölge Yarık Muhafızı' },
-})) {
-  add({
-    id: `efsun_guardian_${k}`, name: o.name, model: o.model, scale: o.scale, tint: o.tint, emissive: o.emissive, role: 'melee', rank: 'elite', hp: 15, dmg: 2.0, speed: 5.6, radius: 1.0, aggro: 14, forces: 0, ccImmune: true,
-    anims: o.anims, flying: k === 'golge', ai: { summoned: true }, visual: { opacity: k === 'golge' ? 0.75 : undefined, emissiveIntensity: 0.5 },
-    basic: cone(`efsun_guardian_${k}_hit`, 'Yarık Darbesi', 3, 110, 2.2, 1.5, k === 'golge' ? 'Headbutt' : 'Attack', k === 'golge' ? 0.3 : 0.4, { windup: 0.55, type: o.type, damage: { coef: 1.5, type: o.type } } as Ab),
-    abilities: [aoe(`efsun_guardian_${k}_slam`, 'Yarık Sarsıntısı', 'self_aoe', 5, 5, 12, 1.2, 2.0, o.type, k === 'golge' ? 'Punch' : 'Attack', 0.4, { vfx: 'ground_slam' })],
-  });
-}
-
 MECH('proc_phylactery', 'Filakter', 'phylactery', 10, { radius: 0.9, visual: { hoverBob: 0.0 } });
 MECH('proc_soul_orb', 'Ruh Küresi', 'soul_orb', 0.02, { radius: 0.5, speed: 4, visual: { hoverBob: 0.15 } });
 MECH('proc_bone_cage', 'Kemik Kafesi', 'bone_cage', 4, { radius: 0.9 });

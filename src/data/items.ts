@@ -21,7 +21,7 @@ export const getItemBase = (id: string): ItemBaseDef | undefined => ITEM_BASES[i
 export const POTION_PANZEHIR: MaterialDef = {
   id: 'potion_panzehir',
   name: 'Panzehir İksiri',
-  desc: 'Üzerindeki bir olumsuz etkiyi (zehir, kanama, yanma, yavaşlatma, kök, sersemletme) temizler. Tüm iksirler gibi 60 sn bekleme süresini paylaşır.',
+  desc: 'Üzerindeki zehir, kanama ve kirlenme etkilerini temizler. Bekleme süresi 15 sn.',
   icon: '/assets/icons/item-potion-elixir.svg',
   rarity: 'uncommon',
   sellPrice: 15,

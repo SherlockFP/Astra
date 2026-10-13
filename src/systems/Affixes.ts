@@ -43,8 +43,8 @@ export const SHADE_ID = 'affix_spiteful_shade';
 /** Kibir Tecessumu: the Kibirli elite (P-27). */
 export const KIBIR_ID = 'kibir_tecessumu';
 const KIBIR_COLOR = 0xffd060;
-/** Kibirli buff status (+dmg, +move speed). Registered at runtime by registerAffixStatuses; not yet in the StatusId union. */
-const KIBIR_STATUS = 'kibirli' as unknown as StatusId;
+/** Kibirli buff status (+dmg, +move speed). Registered at runtime by registerAffixStatuses. */
+const KIBIR_STATUS: StatusId = 'kibirli';
 export const isAffixUnitId = (id: string): boolean => id.startsWith('affix_') || id === KIBIR_ID;
 export const isAffixUnit = (e: { def?: { id: string } } | null | undefined): boolean => !!e?.def && isAffixUnitId(e.def.id);
 const isNonBoss = (e: Enemy): boolean => e.def.rank === 'trash' || e.def.rank === 'elite';
