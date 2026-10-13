@@ -1,8 +1,8 @@
 /**
  * KIT PK-ROGUE E8 (docs/kits/casters-rogue.md §8b, §g). Simya Bağı (`alchemy_link`): every damaging hit of the Simyacı heals each
  * linked ally for 46 % of that damage. The first 5 injured linked allies get the full share, the rest x0.5 (lowest HP first).
- * Heals go through the existing heal channel (healing.ts healAmount). NOT CALLED YET: the call-site after a damaging hit
- * belongs to Combat.ts (shared file, not edited by PK-ROGUE) and is reported as a missing hook.
+ * Heals go through the existing heal channel (healing.ts healAmount). Called by Combat.kitHitHooks after each landed direct hit
+ * of a rogue_alchemist (DoT ticks do not pulse the link).
  */
 import type { Player } from '../entities/Player';
 import { healAmount } from './healing';

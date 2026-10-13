@@ -212,7 +212,10 @@ class Slot {
     this.ui.showTooltip(html, x, y);
   }
 
-  /** The skill id this slot resolves to this frame (bound skill, or the class basic attack on an unbound lmb). */
+  /**
+   * The skill id this slot resolves to this frame (bound skill, or the class basic attack on an unbound lmb). A button
+   * transform (SkillDef.replaces) shows the replacing skill while its status is up, the same skill SkillSystem casts.
+   */
   resolveSkill(ctx: HudCtx): string | null {
     const key = this.spec.skill;
     if (!key) return null;
@@ -222,6 +225,7 @@ class Slot {
       const cls = c?.classId ?? ctx.player?.classId;
       id = cls ? CLASSES[cls]?.basicAttack : undefined;
     }
+    if (id && key !== 'lmb' && ctx.player) return G.skills.replacementFor(ctx.player, id) ?? id;
     return id ?? null;
   }
 

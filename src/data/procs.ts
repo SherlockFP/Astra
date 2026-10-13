@@ -63,9 +63,9 @@ function proc(row: Omit<ProcDef, 'sfxGain' | 'sfxUse' | 'vfxGain' | 'vfxUse'> & 
 /** Appendix B rows. Mage rows are the existing hot_streak / fingers_of_frost plus the CW-13 mage states. */
 const BASE_PROC_DEFS: ProcDef[] = [
   proc({ id: 'heating_up', status: 'heating_up', name: 'Isınıyor', school: 'fire', overlay: 'left',
-    glow: ['mage_phoenix_flames'], durationHint: 10, priority: 1 }),
+    glow: ['mage_fire_blast'], durationHint: 10, priority: 1 }),
   proc({ id: 'hot_streak', status: 'hot_streak', name: 'Sıcak Seri', school: 'fire', overlay: 'top',
-    glow: ['mage_flame_wave', 'mage_meteor', 'mage_phoenix_flames'], durationHint: 8, priority: 2 }),
+    glow: ['mage_pyroblast', 'mage_flamestrike'], durationHint: 8, priority: 2 }),
   proc({ id: 'fingers_of_frost', status: 'fingers_of_frost', name: 'Buz Parmağı', school: 'frost', overlay: 'left',
     overlayByStacks: { 2: 'both' }, glow: ['mage_ice_lance'], durationHint: 15, priority: 2 }),
   proc({ id: 'brain_freeze', status: 'brain_freeze', name: 'Beyin Donması', school: 'frost', overlay: 'top',
@@ -89,7 +89,6 @@ const BASE_PROC_DEFS: ProcDef[] = [
  * resolves once the skill lands; the self-check requires every glow id to be in SKILLS or here.
  */
 export const PENDING_GLOW_SKILLS: ReadonlySet<string> = new Set<string>([
-  'mage_ice_lance',
   'mage_flame_wave',
 ]);
 
@@ -149,6 +148,34 @@ export interface GlowState {
   targetGuardBroken: boolean;
   /** Enemies within 12 m with at least 5 bleed stacks. */
   bleedingEnemies: number;
+  // ---- KIT PK-0 fields (optional: glowSkillsOf fills aoeMode / execWindow from the statuses, the rest from setGlowExtras)
+  /** Ruh Parçası shards (display units: fragments / PipDef.scale). */
+  shards?: number;
+  /** The player is behind the hard target (angle > 110 deg, CORE_MECHANICS §10.2), or in behind_grace. */
+  behind?: boolean;
+  /** Gölge Dansı is off cooldown. */
+  danceReady?: boolean;
+  /** `aoe_mode` watcher (data/watchers.ts): at least 3 enemies within 10 m of the target. */
+  aoeMode?: boolean;
+  /** `exec_window` watcher (data/watchers.ts): the target is below 20 % HP. */
+  execWindow?: boolean;
+  /** Refresh window per DoT status on the target: true when less than 30 % of its duration is left. */
+  dotRefresh?: Partial<Record<string, boolean>>;
+}
+
+/** The non-status glow inputs SkillSystem supplies for the local player (see setGlowExtras). */
+export interface GlowExtras {
+  shards: number;
+  behind: boolean;
+  danceReady: boolean;
+  dotRefresh: Partial<Record<string, boolean>>;
+}
+
+let glowExtrasSource: (() => GlowExtras) | null = null;
+
+/** SkillSystem registers the local player's extra glow inputs here (null clears them). */
+export function setGlowExtras(fn: (() => GlowExtras) | null): void {
+  glowExtrasSource = fn;
 }
 
 export type GlowRuleId =
@@ -206,8 +233,10 @@ export function activeProcs(p: ProcStatusView): ProcDef[] {
 export function glowSkillsOf(p: ProcStatusView, s: GlowState): Set<string> {
   const out = new Set<string>();
   for (const d of activeProcs(p)) for (const id of d.glow) out.add(id);
+  // the watcher statuses are read from p here; the caller's state wins where it sets a field
+  const full: GlowState = { aoeMode: p.has('aoe_mode'), execWindow: p.has('exec_window'), ...(glowExtrasSource?.() ?? {}), ...s };
   for (const rule of Object.values(GLOW_RULES)) {
-    if (rule.test(s)) for (const id of rule.skills(s)) out.add(id);
+    if (rule.test(full)) for (const id of rule.skills(full)) out.add(id);
   }
   return out;
 }

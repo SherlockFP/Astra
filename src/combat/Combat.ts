@@ -19,6 +19,9 @@ import { weaknessOf } from '../data/families';
 import { breakLock, breakSeconds, finisherPctMaxHp, hyperArmorOf, isSwarm, parryPoise, poiseDelay, poiseMax, poiseRegenRate } from './poise';
 import { CombatMeters } from './meters';
 import { vetHit, vetPlayerDeath } from '../net/guard';
+import { Prd } from './prd';
+import { applyAlchemyLink } from './link';
+import { SHADOW_TECHNIQUE } from '../data/procs_kit_rogue';
 import './statusesFeel'; // marked_crit / riposte / critbuff defs (side-effect merge into the shared registries)
 import { PARTY_ID_BASE, type DamageType, type EntityId } from '../types/common';
 import type { StatusApply, StatusId } from '../types/skills';
@@ -235,6 +238,14 @@ export class Combat {
   private lastParry: { id: EntityId; at: number } | null = null;
   /** Combat clock of the last backstab route token (one per swing). */
   private lastBskAt = -9;
+  /** KIT PK-WARLOCK / PK-ROGUE: PRD state of the fragment and status procs (per source and key, see kitProc). */
+  private readonly kitPrd = new Prd();
+  /** KIT: clock of the last PRD roll per source and key (the DoT beat / internal cooldown gate). */
+  private kitRollAt = new Map<string, number>();
+  /** KIT PK-ROGUE Gölge Tekniği: Subtlety melee hits counted so far (every 4th grants a combo point). */
+  private shadowTechHits = 0;
+  /** KIT PK-ROGUE Gölge Bıçakları: clock of the last builder that granted its bonus combo point (one per swing). */
+  private lastShadowCpAt = -9;
   private wasDodging = false;
   private dodgeBase = new WeakMap<Player, { max: number; rec: number }>();
   private rng = new RNG((Date.now() ^ 0x5bd1e995) >>> 0);
@@ -410,6 +421,7 @@ export class Combat {
       for (const s of statuses ?? []) G.procs?.emit('status', { ...ctx, status: s.status });
       if (killed) G.procs?.emit('kill', ctx);
     }
+    if (attacker.isLocal) this.kitHitHooks(attacker, target, spec, tags, crit, amount);
     const hooks = specHooksOf(attacker);
     const def = spec.skillId ? G.skills?.getDef(spec.skillId) : undefined;
     if (hooks.length === 0 || !def) return;
@@ -417,6 +429,72 @@ export class Combat {
     for (const h of hooks) h.onHit?.({ source: attacker, target, def, type: spec.type, crit, dot: false, amount }, mctx);
     if (!wasFrozen && target.statuses.has('freeze')) {
       for (const h of hooks) h.onFreeze?.(attacker, def, mctx);
+    }
+  }
+
+  /**
+   * KIT PK-WARLOCK / PK-ROGUE proc gate: a PRD roll (prd.ts) for `key` on `src`, at most one roll per `icd` seconds (0 = every call).
+   * Azap and Yakıp Yıkma ticks use the 2 s DoT beat of the kit tables, so their rates match the §10 / §11 budgets.
+   */
+  private kitProc(src: Actor, key: string, p: number, icd: number): boolean {
+    const id = `${src.id}:${key}`;
+    if (icd > 0) {
+      const last = this.kitRollAt.get(id) ?? -Infinity;
+      if (this.clock - last < icd) return false;
+      this.kitRollAt.set(id, this.clock);
+    }
+    return this.kitPrd.roll(id, p, () => this.rng.next());
+  }
+
+  /** KIT PK-WARLOCK: grants soul fragments (pip `shard`, stored in fragments: 10 = one shown shard). Warlocks only. */
+  private shardGain(src: Actor, frags: number): void {
+    if (src.kind !== 'player' || (src as Player).classId !== 'warlock') return;
+    G.skills?.addPip(src, 'shard', frags);
+  }
+
+  /**
+   * KIT hit feed of the local player's direct hits (after a landed hit, never a DoT tick):
+   *   warlock: Gölge Oku PRD 6 % (+10), Kül Etme crit +1 and Şeytani Zalimlik PRD 8 % (icd 6 s), LMB step 4 PRD 20 % (+10);
+   *   Simyacı: every damaging hit feeds Simya Bağı (link.ts);
+   *   Suikastçı / Gölge Tekniği: every 4th Subtlety melee hit grants +1 Kombo Puanı (2nd while Gölge Dansı is up);
+   *   Gölge Bıçakları: the first builder swing (combo-granting, not a finisher) of each swing gives +1 Kombo Puanı.
+   *   Ateş Patlaması: a burning target passes the burn to spreadMax enemies within spreadR at spreadMult.
+   */
+  private kitHitHooks(attacker: Player, target: Enemy, spec: HitSpec, tags: readonly string[], crit: boolean, amount: number): void {
+    const id = spec.skillId;
+    const def = id ? G.skills?.getDef(id) : undefined;
+    if (attacker.classId === 'warlock' && id) {
+      if (id === 'warlock_shadow_bolt' && this.kitProc(attacker, id, 0.06, 0)) this.shardGain(attacker, 10);
+      if (id === 'warlock_basic_4' && this.kitProc(attacker, id, 0.2, 0)) this.shardGain(attacker, 10);
+      if (id === 'warlock_incinerate' && crit) {
+        this.shardGain(attacker, 1);
+        if (this.kitProc(attacker, 'fiendish_cruelty', 0.08, 6)) attacker.statuses.apply('fiendish_cruelty', 10, { sourceId: attacker.id });
+      }
+    }
+    if (attacker.spec === 'rogue_alchemist') applyAlchemyLink(attacker, amount, G.world?.players ?? []);
+    if (attacker.spec === 'rogue_subtlety' && tags.includes('melee')) {
+      this.shadowTechHits++;
+      const every = attacker.statuses.has('shadow_veil_cd') ? SHADOW_TECHNIQUE.everyInDance : SHADOW_TECHNIQUE.every;
+      if (this.shadowTechHits % every === 0) {
+        G.skills?.addCombo(attacker, SHADOW_TECHNIQUE.cp);
+        G.skills?.gainResource(attacker, SHADOW_TECHNIQUE.energy);
+      }
+    }
+    const builder = !!def && (def.params?.cp ?? 0) > 0 && def.behavior !== 'kit_finisher';
+    if (builder && attacker.statuses.has('shadow_blades') && this.clock - this.lastShadowCpAt > 0.05) {
+      this.lastShadowCpAt = this.clock;
+      G.skills?.addCombo(attacker, 1);
+    }
+    if (id === 'mage_fire_blast' && target.statuses.has('burn')) {
+      const burn = target.statuses.get('burn');
+      const p = def?.params ?? {};
+      if (burn && burn.dps > 0) {
+        const pool = G.world?.enemiesInRadius({ x: target.position.x, z: target.position.z }, p.spreadR ?? 8, target.position.y) ?? [];
+        const near = pool.filter((e) => e !== target && !e.isDead).slice(0, p.spreadMax ?? 2);
+        for (const e of near) {
+          this.applyEnemyStatuses(attacker, e, [{ status: 'burn', duration: burn.remaining, magnitude: burn.magnitude, dps: burn.dps * (p.spreadMult ?? 0.6) }]);
+        }
+      }
     }
   }
 
@@ -525,7 +603,9 @@ export class Combat {
       const behind = !!target && local && this.isBehind(attacker, target);
       if (behind) chance += sp('n_assassin')?.backstabCritChance ?? 0;
       chance += spec.critBonus ?? 0;
-      crit = !!spec.forceCrit || this.rng.next() < chance;
+      // KIT PK-WARLOCK Kaos Oku (params.alwaysCrit): the hit always crits, no roll is spent
+      const alwaysCrit = !!(spec.skillId && G.skills?.getDef(spec.skillId)?.params?.alwaysCrit);
+      crit = !!spec.forceCrit || alwaysCrit || this.rng.next() < chance;
       if (crit) {
         let mult = 1.5 + attacker.getStat('critDamage') + (spec.critAdd ?? 0);
         if (cls?.id === 'rogue' && behind) mult += 0.25;
@@ -710,6 +790,14 @@ export class Combat {
     const dot = !!opts.dot;
     // explosive orb: only direct hits count (DoT ticks and zone ticks arrive here too, from the host's status ticks / remote 'hit's)
     if (amount > 0 && (dot || opts.tick) && !this.mayDamage(target, dot, !!opts.tick)) return;
+    // KIT PK-WARLOCK (§10a, §11a): a landed Azap tick (14 %, +10 fragments) or Yakıp Yıkma tick (12 %, +1) rolls fragments
+    if (dot && amount > 0 && sourceId !== null && (skillId === 'agony' || skillId === 'immolate')) {
+      const src = G.world?.getActor(sourceId);
+      if (src && src.kind === 'player') {
+        const agony = skillId === 'agony';
+        if (this.kitProc(src, skillId, agony ? 0.14 : 0.12, 2)) this.shardGain(src, agony ? 10 : 1);
+      }
+    }
     const hpBefore = target.hp;
     amount = Math.max(0, Math.round(amount));
     if (amount > 0) {
@@ -1116,6 +1204,8 @@ export class Combat {
 
   private onLocalKill(p: Player, enemy: Enemy, burnSnap: { dps: number; remaining: number } | null = null): void {
     this.combo.extend(0.6);
+    // KIT PK-WARLOCK (§10a): Azap kills grant +1 shard (trait_affliction shardOnKill 1)
+    if (p.spec === 'warlock_affliction') this.shardGain(p, 10);
     // Kül Asası: a burning enemy's flames jump to everything around it
     const es = burnSnap ? sp('leg_ember_staff') : null;
     if (es && burnSnap) {
@@ -1564,6 +1654,8 @@ export class Combat {
     // 4. armour / resist, damage reduction buffs, takenMore, absorb shields
     amount = this.mitigate(p, amount, type, lvlSrc);
     amount *= 1 - clamp(p.getStat('damageReductionPct'), 0, 0.9);
+    // KIT PK-ROGUE Aldatma (§5): −40 % from area hits (circle / ring telegraphs arrive with melee === false), −15 % from the rest
+    if (amount > 0 && p.statuses.has('feint')) amount *= hit.melee === false && !dot ? 0.6 : 0.85;
     // Savaş Lordu Öfke Zırhı (GDD_V2 §1.3.3): -0.25% damage taken per rage point, up to -25%
     amount *= warlordRageMult(p);
     amount *= p.statuses.takenMore() * takenPerStack(p);

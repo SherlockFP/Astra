@@ -194,15 +194,18 @@ add({
   id: 'rogue_rupture', classId: 'rogue', spec: 'rogue_assassin', name: 'Yırtma', icon: I('skill-poison-dagger'), unlockLevel: 10, defaultSlot: 'r',
   desc: 'Tüm Kombo Puanlarını harcayarak kanama bırakırsın: süre 8 + 4 x puan saniye, her puan başına 0,84 kanama.',
   cost: 12, cooldown: 0, castTime: 0, anim: 'Dualwield_Melee_Attack_Stab', animSpeed: 1.4, hitTime: 0.5, targeting: 'custom', range: 3.0, arc: 60,
-  damage: { coef: 0, type: 'physical' }, statuses: [{ status: 'rupture', duration: 8, magnitude: 0.84 }], behavior: 'kit_finisher',
+  // The finisher's coefficient is also the bleed's applying coefficient (dps = coef x magnitude / duration): coef 0 left the bleed at
+  // the 0.5 floor. coef 1.0 makes the bleed total 0.84 x CP (4.2 at 5 CP, the §6d budget row).
+  damage: { coef: 1.0, type: 'physical' }, statuses: [{ status: 'rupture', duration: 8, magnitude: 0.84 }], behavior: 'kit_finisher',
   tags: ['melee', 'finisher', 'spec', 'bleed'], vfx: { trail: 'slash_arc', impact: 'hit_blood' }, sfx: { cast: 'swing_heavy' },
-  params: { end: 0.6, chain: 0.1, move: 0.15, stagger: 2, weight: 1, mode: 0, base: 0, perCp: 0, minCp: 1, maxCp: 5, maxTargets: 1, durPerCp: 4, magPerCp: 1 },
+  params: { end: 0.6, chain: 0.1, move: 0.15, stagger: 2, weight: 1, mode: 0, base: 1.0, perCp: 0, minCp: 1, maxCp: 5, maxTargets: 1, durPerCp: 4, magPerCp: 1 },
 });
 add({
   id: 'rogue_crimson_tempest', classId: 'rogue', spec: 'rogue_assassin', name: 'Kızıl Fırtına', icon: I('skill-blade-storm'), unlockLevel: 12,
   desc: 'Çevredeki düşmanlara kanama bırakan bir fırtına (Yırtma yerine, 3 veya daha fazla düşman varken). Her puan kanamayı artırır.',
   cost: 20, cooldown: 0, castTime: 0, anim: 'Dualwield_Melee_Attack_Slice', animSpeed: 1.6, hitTime: 0.5, targeting: 'custom', radius: 8,
-  damage: { coef: 1.2, type: 'physical' }, statuses: [{ status: 'rupture', duration: 8, magnitude: 0.4 }], behavior: 'kit_finisher',
+  // Bleed total = hit coefficient x magnitude: 1.2 x (1/3 per point) x 5 = 2.0 at 5 CP (§7/§6 row "bleed 2.0 per target at 5 CP")
+  damage: { coef: 1.2, type: 'physical' }, statuses: [{ status: 'rupture', duration: 8, magnitude: 0.3333 }], behavior: 'kit_finisher',
   replaces: { skill: 'rogue_rupture', whileStatus: 'aoe_mode' }, tags: ['aoe', 'finisher', 'spec', 'bleed'],
   vfx: { cast: 'slash_arc_big', impact: 'hit_blood' }, sfx: { cast: 'swing_heavy' },
   params: { end: 0.96, chain: 0.08, move: 0.18, stagger: 6, weight: 1, mode: 1, base: 1.2, perCp: 0, minCp: 1, maxCp: 5, maxTargets: 8, radius: 8, durPerCp: 4, magPerCp: 1 },

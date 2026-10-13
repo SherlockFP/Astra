@@ -26,7 +26,9 @@ import { MOVE_BY_KIND, moveBehavior, RUN_ATTACK_SEC, RUN_SPEED_FRAC, ROLL_ATTACK
 import type { ComboRouteDef, WeaponArtDef } from '../types/v2';
 import { softStat, type DamageResult, type HitSpec } from './Combat';
 import { Projectile } from '../entities/Projectile';
-import { behaviorFor, groundAt, aimSlope, type Behavior, type CastCtx } from './skills/behaviors';
+import { behaviorFor, groundAt, aimSlope, isKitBehavior, selfStatusesByDispatch, type Behavior, type CastCtx } from './skills/behaviors';
+import { isBehind } from './positional';
+import { setGlowExtras, type GlowExtras } from '../data/procs';
 import { sp, hasSp, combineChance, shockwave, fireWave, specHooksOf, allSpecHooks, weaponAvg } from './specials';
 import { skillRankCooldownMult } from './skillRanks';
 import type { MageCastMods, MageCtx, TouchBurst } from './specs/mage';
@@ -101,6 +103,17 @@ interface ChannelState {
   fixed: boolean;
   min: number;
 }
+
+/** One replacing skill of a `replaces` row (SkillDef.replaces), indexed by the skill it replaces. */
+interface ReplacerRow {
+  id: string;
+  classId: SkillDef['classId'];
+  unlockLevel: number;
+  whileStatus: StatusId;
+}
+
+/** DoT / bleed statuses the kit glow rules check for a refresh window (target copy below 30 % of its duration). */
+const REFRESH_DOTS: StatusId[] = ['garrote', 'rupture', 'agony', 'corruption', 'immolate', 'unstable_affliction', 'burn', 'bleed', 'poison'];
 
 /** The action a caster is currently executing. All times are seconds after `start` (real/sim seconds, speed applied). */
 export interface Action {
@@ -279,6 +292,8 @@ export class SkillSystem {
   /** CW-07 §2.7: emits proc:gain / proc:fade for the local player's proc statuses (procFx.ts). */
   private procWatch = new ProcWatcher();
   private watchers = new WatcherHost();
+  /** The local player while updateLocal runs (feeds glowExtras for the bar's glow rules); null outside a scene. */
+  private localPlayer: Player | null = null;
 
   constructor() {
     // GDD_TALENTS T7: the dynamic-buff entry point of the proc actions (procActions.liveProcHost.buff reads G.status)
@@ -296,6 +311,8 @@ export class SkillSystem {
       this.playRemoteCast(pl, p.skillId, p.aim, Array.isArray(p.sp) ? p.sp.filter((s) => typeof s === 'string').slice(0, 8) : undefined);
     });
     G.events?.on('scene:leaving', () => this.clearAll());
+    // KIT PK-0 (E4 / procs.ts GlowState): the local player's shards, behind, dance and refresh inputs for the glow rules
+    setGlowExtras(() => this.glowExtras());
     // GDD_V2 §2.1: entering a dungeon / raid resets every major cooldown (never in the open world)
     G.events?.on('scene:changed', (d) => { if (d.to === 'dungeon') resetMajorCooldowns(); });
   }
@@ -306,7 +323,7 @@ export class SkillSystem {
 
   /** Use the skill bound to a bar slot. Returns true if it started (or was buffered / entered aiming). */
   tryCastSlot(player: Player, slot: SkillSlotKey, aim: AimInfo): boolean {
-    const id = this.skillIdForSlot(player, slot);
+    const id = this.activeSkillForSlot(player, slot);
     if (!id) return false;
     const edge = !G.input || G.input.pressed(`skill_${slot}` as 'skill_lmb');
     this.quiet = !edge && slot !== 'lmb';
@@ -554,8 +571,44 @@ export class SkillSystem {
 
   /** Skill ids bound to the bar slot of this player (basic attack for lmb). */
   getSlotSkill(player: Player, slot: SkillSlotKey): string | null {
-    return this.skillIdForSlot(player, slot);
+    return this.activeSkillForSlot(player, slot);
   }
+
+  /** The skill a bar slot casts right now: the slot's own skill, or its replacement while `replaces.whileStatus` is up. */
+  private activeSkillForSlot(player: Player, slot: SkillSlotKey): string | null {
+    const base = this.skillIdForSlot(player, slot);
+    if (!base || slot === 'lmb') return base;
+    return this.replacementFor(player, base) ?? base;
+  }
+
+  /**
+   * Button transform (SkillDef.replaces, CORE_MECHANICS §10.3): the first skill of the player's class that replaces `baseId`
+   * and whose `whileStatus` the player holds (registration order). Null when none is active. ActionBar shows the result too.
+   */
+  replacementFor(player: Player, baseId: string): string | null {
+    for (const r of this.replacersOf(baseId)) {
+      if (r.classId !== player.classId && r.classId !== 'common') continue;
+      if (r.unlockLevel > player.level) continue;
+      if (player.statuses.has(r.whileStatus)) return r.id;
+    }
+    return null;
+  }
+
+  /** Replacing rows by the id they replace, built once from SKILLS. */
+  private replacersOf(baseId: string): ReplacerRow[] {
+    if (!this.replacerIndex) {
+      const idx = new Map<string, ReplacerRow[]>();
+      for (const d of Object.values(SKILLS)) {
+        if (!d.replaces) continue;
+        const list = idx.get(d.replaces.skill) ?? [];
+        list.push({ id: d.id, classId: d.classId, unlockLevel: d.unlockLevel, whileStatus: d.replaces.whileStatus });
+        idx.set(d.replaces.skill, list);
+      }
+      this.replacerIndex = idx;
+    }
+    return this.replacerIndex.get(baseId) ?? [];
+  }
+  private replacerIndex: Map<string, ReplacerRow[]> | null = null;
 
   /** Skills the local player has unlocked at its level (for the skill book). */
   unlockedFor(player: Player): SkillDef[] {
@@ -1162,7 +1215,9 @@ export class SkillSystem {
     let dir: [number, number] = [dx / l, dz / l];
     let target: Actor | null = null;
     if (!remote) {
-      const wantsTarget = def.targeting === 'melee_arc' || def.targeting === 'dash' || def.behavior === 'shadow_step';
+      // CM §10.2 targeted kinds and the kit behaviours (kit_*, mage kit) + `requires.target` take the hard / soft target
+      const wantsTarget = def.targeting === 'melee_arc' || def.targeting === 'dash' || def.targeting === 'target_projectile'
+        || def.targeting === 'target_instant' || def.behavior === 'shadow_step' || isKitBehavior(def.behavior) || !!def.requires?.target;
       if (wantsTarget) target = this.pickTarget(p, def, aim, dir);
       if (target && def.targeting === 'melee_arc') {
         const tdx = target.position.x - p.position.x, tdz = target.position.z - p.position.z;
@@ -1185,8 +1240,10 @@ export class SkillSystem {
   private pickTarget(p: Player, def: SkillDef, aim: AimInfo, dir: [number, number]): Actor | null {
     const w = G.world;
     if (!w) return null;
-    const melee = def.targeting === 'melee_arc';
-    const reach = (def.range ?? 3) + (melee ? FEEL.meleeAssistExtra : 0);
+    // target_instant up to 5 m also lunges up to 3 m (behaviors.ts targetInstant): the pick reaches that far too
+    const instantMelee = def.targeting === 'target_instant' && (def.range ?? 25) <= 5;
+    const melee = def.targeting === 'melee_arc' || instantMelee;
+    const reach = (def.range ?? 3) + (melee ? FEEL.meleeAssistExtra : 0) + (instantMelee ? 3 : 0);
     const hardId = aim.targetId;
     if (hardId !== null && hardId !== undefined) {
       const t = w.getActor(hardId);
@@ -1196,7 +1253,7 @@ export class SkillSystem {
         if (d <= reach + (melee ? 1.5 : 3) && (!melee || w.sameLevel(t, p.position.y))) return t;
       }
     }
-    const cone = melee ? FEEL.meleeAssistCone : 70;
+    const cone = def.targeting === 'melee_arc' ? FEEL.meleeAssistCone : 70;
     const cosHalf = Math.cos(((cone / 2) * Math.PI) / 180);
     let best: Actor | null = null;
     let bestScore = -1;
@@ -1583,6 +1640,7 @@ export class SkillSystem {
   // ------------------------------------------------------------------------------------------------------
 
   private updateLocal(p: Player, st: ActorState, dt: number): void {
+    this.localPlayer = p;
     this.procWatch.update(p, dt);
     // KIT PK-0 (E4): hidden watcher statuses (aoe_mode, exec_window), evaluated every 0.25 s
     this.watchers.update(dt, p.statuses, () => this.watcherCtx(p));
@@ -1674,12 +1732,15 @@ export class SkillSystem {
       a.fired = true;
       if (!a.paid && !this.pay(p, st, a.def, a)) { this.endAction(st, 'cancel', true); return; }
       try { a.beh.fire(a.ctx); } catch (e) { console.error('[skills] fire failed', a.def.id, e); }
+      // kit behaviours that do not apply their own selfStatuses get them here (generic, once per hit)
+      if (selfStatusesByDispatch(a.def) && a.def.selfStatuses) this.applySelf(a.ctx, a.def.selfStatuses);
       try { this.specialsOnFire(p, st, a); } catch (e) { console.error('[skills] specials failed', a.def.id, e); }
       this.noteActionToken(p, a);
       if (st.cur !== a) return;
       if (a.def.channel) {
         const p2 = a.def.params ?? {};
-        const every = p2.tick ?? (a.def.duration ?? a.def.channel) / Math.max(1, a.def.ticks ?? 8);
+        // haste (cast / attack speed factor) shortens the tick interval, like the channel's cast time
+        const every = (p2.tick ?? (a.def.duration ?? a.def.channel) / Math.max(1, a.def.ticks ?? 8)) / this.speedFactor(p, a.def);
         a.channel = {
           active: true, until: el + a.def.channel, every, next: el, n: 0, slot: p2.fixed ? null : a.slot, fixed: !!p2.fixed || !a.slot,
           min: a.slot ? 0.4 : 0,
@@ -1733,7 +1794,8 @@ export class SkillSystem {
     const ch = a.channel;
     try { a.beh.end?.(a.ctx, reason); } catch (e) { console.error('[skills] end failed', a.def.id, e); }
     if (a.def.channel && a.fired) {
-      this.startCooldown(p, st, a.def);
+      // a cdFree proc (Beyin Donması) skips the cooldown and the charge of a channel too (pay() does this for other casts)
+      if (!a.procMods?.cdFree) this.startCooldown(p, st, a.def);
       G.net?.broadcast('cast', { casterId: p.id, skillId: a.def.id, aim: a.aim, end: true });
     }
     if (a.def.castTime > 0 && !a.fired || (a.def.channel && reason === 'interrupt')) {
@@ -2783,6 +2845,8 @@ export class SkillSystem {
       mode: c.remote ? 'visual' : 'player', owner: caster, vfx: id, scale: def.radius && def.radius > 0.45 ? 1.4 : 1,
       origin: [px, caster.position.y + height, pz], dir, speed: (def.speed ?? 25) * speedMul, radius: def.radius ?? 0.4, range: def.range ?? 25, pierce,
       dirY: aimSlope(caster, caster.position.y + height, aimAt),
+      // target_projectile: turns toward the target every frame (turn rate per skill); no target = straight flight
+      homing: def.targeting === 'target_projectile' && aimAt && def.homing ? { targetId: aimAt.id, turn: def.homing } : undefined,
       onHit: (e, pr2) => this.projectileHit(c, e, pr2, explode),
       onEnd: (pr2, reason) => this.projectileEnd(c, pr2, reason, explode),
     });
@@ -3033,7 +3097,7 @@ export class SkillSystem {
     if (p.classId !== 'rogue') return;
     if (pr.crossbow === 1) this.toolNodes(p, ['1H_Crossbow'], 0.85);
     else if (pr.crossbow2 === 1) this.toolNodes(p, ['2H_Crossbow'], 1.1);
-    else if (def.id === 'rogue_fan_of_knives' || def.id === 'rogue_smoke_bomb') this.toolNodes(p, ['Throwable'], 0.7);
+    else if (def.id === 'rogue_fan_of_knives' || def.id === 'rogue_vanish') this.toolNodes(p, ['Throwable'], 0.7);
   }
 
   private tools = new Map<Player, number>();
@@ -3118,6 +3182,35 @@ export class SkillSystem {
     });
   }
 
+  /**
+   * KIT PK-0 glow inputs that are not statuses (procs.ts GlowExtras): Ruh Parçası shards (display units), behind the hard
+   * target (or behind_grace), dance ready (Gölge Dansı off cooldown) and the target's DoT refresh windows (< 30 % left).
+   */
+  private glowExtras(): GlowExtras {
+    const none: GlowExtras = { shards: 0, behind: false, danceReady: false, dotRefresh: {} };
+    const p = this.localPlayer;
+    if (!p || p.isDead) return none;
+    const w = G.world;
+    const t = p.targetId && w ? w.getActor(p.targetId) : undefined;
+    const live = t && !t.isDead && t.team === 'enemy' ? t : null;
+    const dotRefresh: Partial<Record<string, boolean>> = {};
+    let behind = p.statuses.has('behind_grace');
+    if (live) {
+      behind = behind || isBehind([Math.sin(live.yaw), Math.cos(live.yaw)], [p.position.x - live.position.x, p.position.z - live.position.z]);
+      for (const id of REFRESH_DOTS) {
+        const s = live.statuses.get(id);
+        if (s && s.duration > 0) dotRefresh[id] = s.remaining < 0.3 * s.duration;
+      }
+    }
+    const scale = TALENT_PIPS['shard' as PipId]?.scale ?? 1;
+    return {
+      shards: Math.floor(this.pipCount(p, 'shard') / scale),
+      behind,
+      danceReady: this.getCooldown(p, 'rogue_shadow_dance').remaining <= 0,
+      dotRefresh,
+    };
+  }
+
   /** KIT PK-0 (E4): condition inputs of the watchers, from the local player's selected target. */
   private watcherCtx(p: Player): WatcherCtx {
     const t = p.targetId && G.world ? G.world.getActor(p.targetId) : undefined;
@@ -3130,6 +3223,7 @@ export class SkillSystem {
     G.procs?.reset();
     this.procWatch.reset();
     this.watchers.reset();
+    this.localPlayer = null;
     this.masteryAt.clear();
     for (const st of this.states.values()) {
       try { if (st.aiming) this.endAim(st.player, st, false); } catch { /* ignore */ }

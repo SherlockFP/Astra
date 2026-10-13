@@ -20,7 +20,7 @@ export const PROC_MODS_KIT_ROGUE: ProcMod[] = [];
 /**
  * Gölge Tekniği (§7b): a counter, not a status. Every 4th LMB hit (every 2nd while Gölge Dansı / shadow_veil_cd is up) grants
  * `cp` Kombo Puanı and `energy` enerji. Read by the Subtlety talent specials (params on SPECS_KIT_ROGUE.rogue_subtlety.specials).
- * The hit counter itself needs a Combat/SkillSystem hook (not wired yet, see report).
+ * Counted in Combat.kitHitHooks (direct Subtlety melee hits of the local player; 2nd hit while Gölge Dansı is up).
  */
 export const SHADOW_TECHNIQUE = { every: 4, everyInDance: 2, cp: 1, energy: 8 } as const;
 

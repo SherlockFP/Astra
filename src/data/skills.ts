@@ -431,15 +431,6 @@ add({
   params: { end: 0.96, chain: 0.08, move: 0.18, stagger: 8, staggerPerCp: 6, coefPerCp: 1.2, proc: 1, weight: 2, maxTargets: 3, minCp: 1, root: 1, lunge: 0.8 },
 });
 add({
-  id: 'rogue_smoke_bomb', classId: 'rogue', name: 'Duman Bombası', icon: I('skill-smoke-bomb'), unlockLevel: 15, defaultSlot: 's2',
-  desc: 'Bir duman bombası atarsın: içindeki düşmanlar kör olur ve seni kaybeder, sen ise gizlenirsin. Gizlenerek yaptığın ilk vuruş çok daha güçlüdür.',
-  cost: 25, cooldown: 18, castTime: 0, anim: 'Throw', animSpeed: 1.5, hitTime: 0.615, targeting: 'ground_aoe', radius: 5, duration: 5, ticks: 5,
-  statuses: [{ status: 'blind', duration: 2 }], selfStatuses: [{ status: 'stealth', duration: 6 }],
-  tags: ['utility', 'stealth', 'zone'], vfx: { ground: 'stealth_smoke', impact: 'stealth_smoke' }, sfx: { cast: 'dagger_throw' },
-  behavior: 'smoke',
-  params: { end: 0.96, chain: 0.1, move: 0.15, weight: 0, atCaster: 1, slow: 0.5 },
-});
-add({
   id: 'rogue_bolt_rain', classId: 'rogue', name: 'Ok Yağmuru', icon: I('skill-rain-of-arrows'), unlockLevel: 20, defaultSlot: 's3',
   desc: 'Hedef bölgeye ok yağdırarak 2 saniye boyunca toplam %480 hasar verirsin ve düşmanları yavaşlatırsın.',
   cost: 40, cooldown: 10, castTime: 0, anim: '2H_Ranged_Shoot', animSpeed: 1.1, hitTime: 0.32, targeting: 'ground_aoe', range: 22, radius: 5, duration: 2, ticks: 8,

@@ -495,6 +495,72 @@ const summon: Behavior = {
   },
 };
 
+/** The live target of a cast: the picked soft/hard target (local) or the owner's announced target (remote replay). */
+function castTarget(c: CastCtx): Actor | null {
+  if (c.target && !c.target.isDead) return c.target;
+  const id = c.aim.targetId;
+  const t = id !== null && id !== undefined && G.world ? G.world.getActor(id) : undefined;
+  return t && !t.isDead && t.team === 'enemy' ? t : null;
+}
+
+/**
+ * CORE_MECHANICS §10.2 `target_projectile`: a bolt spawned toward the target with homing (`def.homing` turn rate). Without a
+ * target it flies straight along the aim. Never blocks the cast.
+ */
+const targetProjectile: Behavior = {
+  fire(c) {
+    const { sys, caster } = c;
+    const t = castTarget(c);
+    const d = t ? sys.dirTo(caster, t) : c.dir;
+    sys.fireProjectile(c, d, 1.35, t);
+    if (c.def.vfx?.cast) sys.vfx(c.def.vfx.cast, muzzle(c, d, 0.9, 1.35), { dir: [d[0], 0, d[1]], scale: 0.6 });
+  },
+};
+
+/** `target_instant` lunges melee skills (range <= MELEE_INSTANT_RANGE) at most this far (m). */
+const INSTANT_LUNGE = 3;
+const MELEE_INSTANT_RANGE = 5;
+
+/**
+ * CORE_MECHANICS §10.2 `target_instant`: hits the target when it is in range and in line of sight (nav.raycastY). Melee
+ * instants (range <= 5 m) close up to 3 m; anything further fails before any cost is paid ("Menzil dışında").
+ */
+const targetInstant: Behavior = {
+  begin(c) {
+    if (c.remote) return true;
+    const { caster, def, sys } = c;
+    const t = castTarget(c);
+    const range = def.range ?? 25;
+    if (!t) { sys.fail('range'); return false; }
+    const melee = range <= MELEE_INSTANT_RANGE;
+    const w = G.world;
+    if (melee && w && !w.sameLevel(t, caster.position.y)) { sys.fail('range'); return false; }
+    const edge = dist2(t.position, caster.position) - t.radius;
+    let lunge = 0;
+    if (edge > range) {
+      if (!melee || edge - range > INSTANT_LUNGE) { sys.fail('range'); return false; }
+      lunge = Math.min(INSTANT_LUNGE, edge - range + 0.1);
+    }
+    if (!clearSight(caster, t)) { sys.fail('range'); return false; }
+    const d = sys.dirTo(caster, t);
+    if (c.action) c.action.faceYaw = yawFromDir(d[0], d[1]);
+    if (lunge > 0) sys.lunge(caster, d, lunge, 0.12);
+    return true;
+  },
+  fire(c) {
+    if (c.remote) return;
+    const t = castTarget(c);
+    if (!t) { c.sys.whiff(c); return; }
+    const e = t as Enemy;
+    const d = c.sys.dirTo(c.caster, t);
+    const r = c.sys.strike(c, e, { dir: d });
+    if (r) {
+      c.sys.afterHits(c, [r]);
+      impactVfx(c, e, d, 0);
+    }
+  },
+};
+
 export const TARGETING_BEHAVIORS: Record<string, Behavior> = {
   melee_arc: meleeArc,
   projectile,
@@ -506,7 +572,30 @@ export const TARGETING_BEHAVIORS: Record<string, Behavior> = {
   teleport,
   beam,
   summon,
+  target_projectile: targetProjectile,
+  target_instant: targetInstant,
 };
+
+/** Custom behaviour ids of the mage kit (mageKit.ts BEHAVIORS_KIT_MAGE; their ids carry no `kit_` prefix). */
+const MAGE_KIT_BEHAVIOR_IDS: ReadonlySet<string> = new Set([
+  'homing_missiles', 'arcane_blast', 'fire_cast', 'frost_cast', 'fire_blast', 'flamestrike', 'ice_lance', 'flurry',
+  'ray_of_frost', 'comet_storm', 'glacial_spike', 'ward_barrier', 'arcane_pulse',
+]);
+
+/** Kit behaviours that apply their `selfStatuses` in their own code (rogueKit / warlockKit). Every other kit behaviour gets them from SkillSystem. */
+const KIT_OWN_SELF_STATUSES: ReadonlySet<string> = new Set([
+  'kit_shadow_step', 'kit_shadowstrike', 'kit_ward_potion', 'kit_ascendant', 'kit_target_spell', 'kit_darkglare', 'kit_dot_pulse',
+]);
+
+/** True for the custom behaviours of the kit packages (mage, rogue, warlock). Those need the picked target (SkillSystem.makeCtx). */
+export function isKitBehavior(id: string | undefined): boolean {
+  return !!id && (id.startsWith('kit_') || MAGE_KIT_BEHAVIOR_IDS.has(id));
+}
+
+/** True when SkillSystem must apply `def.selfStatuses` after the behaviour's fire (kit behaviours that do not apply them themselves). */
+export function selfStatusesByDispatch(def: SkillDef): boolean {
+  return isKitBehavior(def.behavior) && !KIT_OWN_SELF_STATUSES.has(def.behavior ?? '') && !!def.selfStatuses?.length;
+}
 
 // ---------------------------------------------------------------------------------------------------------
 // custom behaviours

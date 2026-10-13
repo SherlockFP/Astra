@@ -112,7 +112,7 @@ const SPEC_LIST: SpecDef[] = [
     mods: [],
     defaultBar: {
       lmb: 'rogue_basic', rmb: 'rogue_crossbow_shot', q: 'rogue_shadow_step', e: 'rogue_backstab', s1: 'rogue_eviscerate',
-      s2: 'rogue_garrote', s3: 'rogue_smoke_bomb', r: 'rogue_death_blossom',
+      s2: 'rogue_garrote', s3: 'rogue_vanish', r: 'rogue_death_blossom',
       m45: 'rogue_shadow_blades', m90: 'rogue_shadow_dance',
     },
   },

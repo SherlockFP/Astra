@@ -160,7 +160,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     },
     basicAttack: 'rogue_basic',
     skills: [
-      'rogue_shadow_step', 'rogue_fan_of_knives', 'rogue_eviscerate', 'rogue_smoke_bomb',
+      'rogue_shadow_step', 'rogue_fan_of_knives', 'rogue_eviscerate', 'rogue_vanish',
     ],
     startingItems: ['dagger_t1', 'dagger_t1'],
     color: '#8d6bd6',
