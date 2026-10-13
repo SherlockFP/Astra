@@ -15,6 +15,8 @@ export async function resolve(specifier, context, nextResolve) {
 }
 
 export async function load(url, context, nextLoad) {
+  // stylesheets imported by game modules (side effects only) load as empty modules in the headless sims
+  if (url.startsWith('file:') && url.endsWith('.css')) return { format: 'module', source: 'export default {};', shortCircuit: true };
   if (url.startsWith('file:') && url.endsWith('.ts')) {
     const file = fileURLToPath(url);
     const src = fs.readFileSync(file, 'utf8');

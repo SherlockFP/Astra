@@ -75,3 +75,20 @@ export function lodPlans(fogFar: number, q: GfxQuality = current): Partial<Recor
   planCache.set(key, out);
   return out;
 }
+
+/**
+ * Character LOD of the town NPCs (entities/CharacterLod.ts), per quality, in metres from the local player: `full` (shadows and
+ * attachments inside it), `model` (the models end here: a character beyond it is a billboard), `hide` (nothing is drawn beyond it).
+ * `maxDrawn` caps the models in view (nearest first, the rest are billboards); `mixerHz` is the animation rate of the mid tier.
+ */
+export interface CharLodPlan { full: number; model: number; hide: number; maxDrawn: number; mixerHz: number }
+const CHAR_LOD: Record<GfxQuality, CharLodPlan> = {
+  low: { full: 10, model: 28, hide: 55, maxDrawn: 14, mixerHz: 10 },
+  mid: { full: 15, model: 40, hide: 70, maxDrawn: 20, mixerHz: 15 },
+  high: { full: 20, model: 55, hide: 90, maxDrawn: 32, mixerHz: 30 },
+};
+
+/** The character LOD plan of a quality (default: the current one). The same object comes back for the same quality. */
+export function charLodPlan(q: GfxQuality = current): CharLodPlan {
+  return CHAR_LOD[q];
+}

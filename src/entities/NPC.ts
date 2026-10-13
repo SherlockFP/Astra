@@ -12,6 +12,9 @@ import { G } from '../game/G';
 import { RNG, dampAngle, dist2D, hashString } from '../core/utils';
 import { setAccessories, tintObject } from '../scenes/CharacterVisual';
 import { inView } from './ViewCull';
+import { charLodPlan, getGfxQuality, type CharLodPlan } from '../world/WorldPerf';
+import { nearerCount, registerCharLod, tierFor, type CharTier } from './CharacterLod';
+import { characterBillboard } from './CharacterBillboard';
 
 export type NpcRole = TownDef['npcs'][number]['role'];
 export type NpcDef = TownDef['npcs'][number];
@@ -170,13 +173,9 @@ const GROUND_CLIP = /^(Death|Lie_|Sit_Floor|T-Pose)|_Pose$/;
  * View margin (m) of an NPC's sphere. It covers the head label and speech bubble (about 4 m above the feet) and the shadow
  * reach of the body under the town sun (about 6 m at 25 degrees), so an NPC is only hidden where nothing of it can be seen.
  */
-const NPC_VIEW_MARGIN = 7;
+export const NPC_VIEW_MARGIN = 7;
 
-/**
- * Beyond this distance from the local player (m) a town NPC is not drawn (its model, mixer and shouts pause): at 60 m a figure is a few
- * pixels and the town holds ~80 of them, each a skinned character of ~10k triangles. Fog hides the rest.
- */
-const NPC_DRAW_RANGE = 60;
+// Draw distance, ambient cap and the full / mid tiers of a town character: charLodPlan (WorldPerf.ts) and CharacterLod.ts.
 
 const BASE_URL: Record<string, string> = {
   Knight: '/assets/models/characters/Knight.glb',
@@ -329,6 +328,18 @@ export class NPC extends Entity implements Interactable {
   private route: { pts: [number, number][]; cum: number[]; total: number } | null = null;
   /** Frames still drawn after the model is attached, so its shaders compile at spawn (update). */
   private warmFrames = 3;
+  /** Character LOD (CharacterLod.ts): the tier applied now, the distance / view / exemption of the last frame, the mixer's pending time. */
+  private tier: CharTier = 'full';
+  lodDist = Infinity;
+  lodSeen = false;
+  lodExempt = false;
+  private lodAcc = 0;
+  private castMeshes: THREE.Mesh[] = [];
+  private blob: THREE.Object3D | null = null;
+  /** KayKit rigs: the accessory nodes this NPC wears (null = no accessory toggling, the model is drawn as it is). */
+  private accShow: string[] | null = null;
+  /** The billboard stand-in (tier `billboard`), shown while the model is not. */
+  private sprite: THREE.Sprite | null = null;
 
   constructor(id: number, def: NpcDef) {
     super(id, 'npc');
@@ -371,18 +382,28 @@ export class NPC extends Entity implements Interactable {
     if (kay) setAccessories(obj, p.show ?? []);
     if (p.tint) tintObject(obj, liftNpcTint(p.tint));
     if (p.scale) obj.scale.setScalar(p.scale);
+    this.castMeshes = [];
     obj.traverse((o) => {
       const mm = o as THREE.SkinnedMesh;
       if (mm.isMesh) {
         mm.castShadow = true;
         mm.receiveShadow = true;
+        this.castMeshes.push(mm);
       }
       if (mm.isSkinnedMesh) mm.frustumCulled = false;
     });
     const shadow = G.vfx.blobShadow(0.8);
     if (shadow) obj.add(shadow);
+    this.blob = shadow;
+    this.accShow = kay ? (p.show ?? []) : null;
     this.model = obj;
     this.object3d.add(obj);
+    const sc = p.scale ?? 1;
+    const sprite = characterBillboard(p.tint ? liftNpcTint(p.tint) : 0xd9cbb0);
+    sprite.scale.set(0.9 * sc, 2.4 * sc, 1);
+    sprite.visible = false;
+    this.object3d.add(sprite);
+    this.sprite = sprite;
     this.anim = new AnimController(obj, G.assets.clips(url));
     // a content idle that puts the NPC on the ground (GROUND_CLIP) is replaced by the standing idle
     const wantIdle = p.idle && !GROUND_CLIP.test(p.idle) ? p.idle : undefined;
@@ -410,6 +431,7 @@ export class NPC extends Entity implements Interactable {
 
   onAdded(world: World): void {
     super.onAdded(world);
+    this.offs.push(registerCharLod(this));
     if (!this.preset.patrol) world.nav.setCircle(this.position.x, this.position.z, 0.65, false);
     if (this.def.role === 'blacksmith') {
       this.offs.push(
@@ -427,6 +449,19 @@ export class NPC extends Entity implements Interactable {
     if (!a || !a.has(clip) || a.isPlayingOneShot || GROUND_CLIP.test(clip)) return;
     const dur = a.playOnce(clip, { speed, fade: 0.15, onDone: () => a.setBase(this.idleName) });
     this.busyUntil = this.time + dur + hold;
+  }
+
+  /** Applies a character tier to the model (visibility, shadow casting, attachments, blob shadow). Acts only on a change. */
+  private applyTier(tier: CharTier): void {
+    const m = this.model;
+    if (!m || tier === this.tier) return;
+    this.tier = tier;
+    const full = tier === 'full';
+    m.visible = tier === 'full' || tier === 'mid';
+    for (const mesh of this.castMeshes) mesh.castShadow = full;
+    if (this.blob) this.blob.visible = full;
+    if (this.accShow) setAccessories(m, full ? this.accShow : []);
+    if (this.sprite) this.sprite.visible = tier === 'billboard';
   }
 
   canInteract(): boolean {
@@ -565,20 +600,33 @@ export class NPC extends Entity implements Interactable {
     if (t < this.faceUntil && player) want = Math.atan2(player.position.x - this.position.x, player.position.z - this.position.z);
     this.object3d.rotation.y = dampAngle(this.object3d.rotation.y, want, 8, dt);
 
-    // off-camera NPCs are not drawn and their mixer pauses until they come back (see ViewCull; the state machine below still runs)
-    let seen = true;
+    // character LOD (CharacterLod.ts): distance, view and the ambient cap pick the tier. A hidden character is not drawn and its mixer
+    // pauses until it comes back (the state machine below still runs)
+    let tier: CharTier = 'full';
+    const plan: CharLodPlan = charLodPlan(getGfxQuality());
     if (this.model) {
-      if (this.warmFrames > 0) this.warmFrames--;
-      else {
-        const s = p.scale ?? 1;
-        seen = inView(this.position.x, this.position.y + 1.3 * s, this.position.z, 2.6 * s + NPC_VIEW_MARGIN)
-          && (!player || dist2D(player.position, this.position) < NPC_DRAW_RANGE);
+      const near = player ? dist2D(player.position, this.position) : 0;
+      const s = p.scale ?? 1;
+      this.lodDist = near;
+      this.lodExempt = near < this.interactRange + this.radius; // the NPC the player can talk to: never culled
+      if (this.warmFrames > 0) {
+        this.warmFrames--;
+        this.lodSeen = true;
+      } else {
+        this.lodSeen = near < plan.hide && inView(this.position.x, this.position.y + 1.3 * s, this.position.z, 2.6 * s + NPC_VIEW_MARGIN);
       }
-      if (this.model.visible !== seen) this.model.visible = seen;
+      tier = tierFor(near, this.lodSeen, this.lodExempt, this.lodSeen ? nearerCount(this) : 0, plan);
+      this.applyTier(tier);
     }
+    const seen = tier !== 'hidden';
     if (a) {
-      a.paused = !seen;
-      a.update(dt);
+      a.paused = tier === 'billboard' || tier === 'hidden';
+      // the mid tier steps the mixer at plan.mixerHz; a one-shot runs every frame so its events and onDone stay on time
+      this.lodAcc += dt;
+      if (tier !== 'mid' || a.isPlayingOneShot || this.lodAcc >= 1 / plan.mixerHz) {
+        a.update(this.lodAcc);
+        this.lodAcc = 0;
+      }
       if (!p.patrol && !a.isPlayingOneShot && t > this.nextPeriodic && p.periodic && t > this.busyUntil && t >= this.faceUntil) {
         this.playOnce(p.periodic.clip, p.periodic.speed ?? 1);
         this.nextPeriodic = t + p.periodic.every * (0.8 + Math.random() * 0.4);
