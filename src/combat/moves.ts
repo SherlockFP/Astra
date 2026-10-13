@@ -125,9 +125,14 @@ const RG_ROLL: MoveProfile = {
   token: 'ROL', feel: 'rollAttack',
 };
 
-export const RUN_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_RUN, barbarian: BB_RUN, mage: MG_RUN, rogue: RG_RUN };
-export const JUMP_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_JUMP, barbarian: BB_JUMP, mage: MG_JUMP, rogue: RG_JUMP };
-export const ROLL_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_ROLL, barbarian: BB_ROLL, mage: MG_ROLL, rogue: RG_ROLL };
+// Paladin: the knight's run / jump / roll attacks under paladin ids
+const PL_RUN: MoveProfile = { ...KN_RUN, classId: 'paladin', id: 'paladin_basic_run', name: 'Yemin Hamlesi' };
+const PL_JUMP: MoveProfile = { ...KN_JUMP, classId: 'paladin', id: 'paladin_basic_jump', name: 'Kutsal Dalış' };
+const PL_ROLL: MoveProfile = { ...KN_ROLL, classId: 'paladin', id: 'paladin_basic_roll', name: 'Yuvarlanma Darbesi' };
+
+export const RUN_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_RUN, barbarian: BB_RUN, mage: MG_RUN, rogue: RG_RUN, paladin: PL_RUN };
+export const JUMP_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_JUMP, barbarian: BB_JUMP, mage: MG_JUMP, rogue: RG_JUMP, paladin: PL_JUMP };
+export const ROLL_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_ROLL, barbarian: BB_ROLL, mage: MG_ROLL, rogue: RG_ROLL, paladin: PL_ROLL };
 export const MOVE_BY_KIND: Record<MoveKind, Partial<Record<ClassId, MoveProfile>>> = { run: RUN_BY_CLASS, jump: JUMP_BY_CLASS, roll: ROLL_BY_CLASS };
 
 function toSkillDef(p: MoveProfile): SkillDef {
@@ -148,7 +153,7 @@ function toSkillDef(p: MoveProfile): SkillDef {
 
 /** Every move def, merged into the shared registry (remote replays look them up by id). */
 export const MOVE_SKILLS: Record<string, SkillDef> = {};
-for (const p of [KN_RUN, KN_JUMP, KN_ROLL, BB_RUN, BB_JUMP, BB_ROLL, MG_RUN, MG_JUMP, MG_ROLL, RG_RUN, RG_JUMP, RG_ROLL]) {
+for (const p of [KN_RUN, KN_JUMP, KN_ROLL, BB_RUN, BB_JUMP, BB_ROLL, MG_RUN, MG_JUMP, MG_ROLL, RG_RUN, RG_JUMP, RG_ROLL, PL_RUN, PL_JUMP, PL_ROLL]) {
   MOVE_SKILLS[p.id] = toSkillDef(p);
 }
 Object.assign(SKILLS, MOVE_SKILLS);

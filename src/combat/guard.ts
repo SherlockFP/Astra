@@ -24,6 +24,7 @@ export interface GuardProfile {
 export const GUARD_PROFILES: Partial<Record<ClassId, GuardProfile>> = {
   knight: { gauge: 100, arc: 160, blockBase: 0.6 },
   barbarian: { gauge: 60, arc: 120, blockBase: 0.4 },
+  paladin: { gauge: 100, arc: 160, blockBase: 0.55 }, // sword + shield like the knight (Koruma adds blockChance / blockAmount from the spec)
 };
 
 export function guardProfileOf(classId: ClassId | undefined): GuardProfile | undefined {

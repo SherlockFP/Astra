@@ -12,7 +12,7 @@ export function registerPaladinSpecs(add: SkillAdd): void {
   // KORUMA (paladin_protection) — Holy Power loop, Doğruluk Kalkanı near-permanent, İntikamcı Kalkan interrupt rhythm
   // ======================================================================================================
   add({
-    id: 'paladin_blessed_hammer', classId: 'paladin', spec: 'paladin_protection', name: 'Kutsanmış Çekiç', icon: I('skill-hammer-of-justice'), unlockLevel: 15,
+    id: 'paladin_blessed_hammer', classId: 'paladin', spec: 'paladin_protection', name: 'Kutsanmış Çekiç', icon: I('skill-hammer-of-justice'), unlockLevel: 10,
     desc: 'Çevrende dönen üç kutsal çekiç yaratırsın: her biri %60 kutsal hasar verir, vurduğu düşmanları 3 saniye zayıflatır (%20 daha az hasar) ve düşmanların dikkatini çeker. 1 Kutsal Güç kazandırır. 3 yük, her biri 6 saniyede dolar. 5 İnanç harcarsın.',
     cost: 5, cooldown: 6, charges: 3, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 2.0, hitTime: 0.95, targeting: 'self_aoe', behavior: 'orbit_hammers',
     radius: 4.2, duration: 1.0, damage: { coef: 0.6, type: 'holy' }, statuses: [{ status: 'curse', duration: 3 }], pip: { id: 'holypower', gain: 1 },
@@ -29,11 +29,11 @@ export function registerPaladinSpecs(add: SkillAdd): void {
   });
   add({
     id: 'paladin_consecration', classId: 'paladin', spec: 'paladin_protection', name: 'Kutsal Zemin', icon: I('skill-consecration'), unlockLevel: 12,
-    desc: 'Ayaklarının altında 12 saniye süren kutsal bir zemin yaratırsın: içindeki düşmanlar her saniye %10 kutsal hasar alır ve %15 yavaşlar. 9 saniye bekleme. 5 İnanç harcarsın.',
+    desc: 'Ayaklarının altında 12 saniye süren kutsal bir zemin yaratırsın: içindeki düşmanlar her saniye %10 kutsal hasar alır ve %15 yavaşlar; zeminde duran dostların zırhı %3 artar. 9 saniye bekleme. 5 İnanç harcarsın.',
     cost: 5, cooldown: 9, castTime: 0, anim: '1H_Melee_Attack_Stab', animSpeed: 1.8, hitTime: 0.56, targeting: 'ground_aoe', radius: 5, duration: 12, ticks: 12,
     damage: { coef: 0.1, type: 'holy', perTick: true }, statuses: [{ status: 'slow', duration: 1.5, magnitude: 0.15 }],
     tags: ['holy', 'aoe', 'zone', 'dot'], vfx: { ground: 'holy_ground', impact: 'holy_burst' }, sfx: { cast: 'ground_slam' },
-    params: { atCaster: 1, end: 0.95, chain: 0.1, move: 0.2, stagger: 1, proc: 0.2, weight: 1 },
+    params: { atCaster: 1, allyArmor: 1, end: 0.95, chain: 0.1, move: 0.2, stagger: 1, proc: 0.2, weight: 1 },
   });
   add({
     id: 'paladin_reckoning', classId: 'paladin', spec: 'paladin_protection', name: 'Hesaplaşma', icon: I('skill-taunt'), unlockLevel: 10,

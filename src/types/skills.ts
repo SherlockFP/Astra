@@ -130,7 +130,7 @@ export type StatusId =
   | 'guard' | 'riposte' | 'guard_broken' | 'critbuff' | 'shield_block' | 'oath_ward' | 'bastion' | 'aegis' | 'iron_stance'
   | 'blood_shield' | 'last_stand' | 'rally' | 'zeal' | 'wings' | 'carnage' | 'icy_veins' | 'combustion' | 'shadow_blades'
   | 'shadow_veil_cd' | 'clarity' | 'dawn_hot' | 'renew' | 'overheal_ward' | 'brew_zone' | 'elixir_regen' | 'hero_haste' | 'sated'
-  | 'weakness_chain' | 'shielded_poise' | 'marked_crit' | 'armored' | 'cursed_zone'
+  | 'weakness_chain' | 'shielded_poise' | 'marked_crit' | 'armored' | 'cursed_zone' | 'consecrated'
   // GDD_CLASSES_V2 §1.1 / §10 (NC02): each id needs a StatusDef + STATUS_RULES entry (NC21 / NC22, data/statuses.ts)
   | 'chi_flow' | 'tigerlust' | 'tigerfury' | 'fortifying' | 'brewed' | 'stagger_pool' | 'hunters_mark' | 'deadeye'
   | 'trueshot' | 'wild_wrath' | 'judged' | 'forbearance' | 'aura_devotion' | 'aura_might' | 'aura_clarity' | 'righteous'

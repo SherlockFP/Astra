@@ -41,7 +41,8 @@ import { clamp } from '../../core/utils';
 import { Projectile } from '../../entities/Projectile';
 import { STATUSES } from '../../data/statuses';
 import { vfxScale } from '../feel';
-import { HEAL_RANGE, alliesInRange, dispelUpTo, friendlyTargetId, healAmount, healFormula, resolveHealTarget } from '../healing';
+import { HEAL_RANGE, addAbsorb, alliesInRange, dispelUpTo, friendlyTargetId, healAmount, healFormula, resolveHealTarget } from '../healing';
+import { specSpecial } from '../specs';
 import { BEHAVIORS, TARGETING_BEHAVIORS, aimSlope, at, castTarget, clearSight, dist2, impactVfx, muzzle, strikeMany, swingVfx, type Behavior, type CastCtx } from './behaviors';
 import { pickChainTarget } from './sharedBehaviors';
 import type { Actor } from '../../entities/Actor';
@@ -138,6 +139,30 @@ const statusesWithout = (c: CastCtx, ...skip: StatusId[]): NonNullable<CastCtx['
 
 /** The pip count a cast paid (set by SkillSystem.pay), 0 for remote replays. */
 const pipsSpent = (c: CastCtx): number => (c.data.pipSpent as number | undefined) ?? 0;
+
+// ---------------------------------------------------------------------------------------------------------
+// Taşan Şifa (overheal ward)
+// ---------------------------------------------------------------------------------------------------------
+
+/** Seconds the overheal absorb lasts, and its ceiling as a share of the healed ally's max HP. */
+const WARD_DUR = 10;
+const WARD_CAP = 0.15;
+
+/**
+ * Kutsal trait (plate-melee.md §6, `trait_holy.overhealWard` 0.4): the share of a heal's overheal that turns into a short absorb on the
+ * healed ally. A local ally gets the `shield` absorb with the `overheal_ward` label; a remote ally gets a plain `shield` 'pstatus'
+ * (its owner applies it). `over` is what healAmount returned.
+ */
+function wardOverheal(c: CastCtx, ally: Player, over: number): void {
+  if (c.remote || over <= 0) return;
+  const share = specSpecial(c.caster, 'trait_holy')?.overhealWard ?? 0;
+  if (share <= 0) return;
+  const cap = ally.maxHp * WARD_CAP;
+  const amount = Math.min(cap, over * share);
+  if (amount < 1) return;
+  if (ally.isLocal) addAbsorb(ally, amount, cap, WARD_DUR, 'overheal_ward', c.caster.id);
+  else giveStatus(c, ally, 'shield', WARD_DUR, amount);
+}
 
 // ---------------------------------------------------------------------------------------------------------
 // heal_target: Holy Shock / Flash of Light / Word of Glory / Cleanse / Lay on Hands
@@ -238,7 +263,7 @@ const healTarget: Behavior = {
     const removed = dispelN > 0 ? dispelUpTo(ally, dispelN) : 0;
     beamTo(c, ally, def.vfx?.cast ?? 'holy_beam');
     sys.vfx(def.vfx?.impact ?? 'heal_burst', at(ally, ally.height * 0.6), { scale: 1 });
-    if (dispelN === 0 || removed > 0) healAmount(caster as Player, ally, raw);
+    if (dispelN === 0 || removed > 0) wardOverheal(c, ally, healAmount(caster as Player, ally, raw));
 
     if ((p.hotCoef ?? 0) > 0) {
       const dur = p.hotDur ?? 12;
@@ -293,7 +318,7 @@ const healAoe: Behavior = {
     const hotDur = p.hotDur ?? 4;
     for (const a of aoeAllies(c)) {
       const amount = healFormula(caster as Player, coef, def.heal?.flat ?? 0).amount;
-      healAmount(caster as Player, a, amount);
+      wardOverheal(c, a, healAmount(caster as Player, a, amount));
       sys.vfx('heal_burst', at(a, a.height * 0.6), { scale: 0.8 });
       if ((p.hotPct ?? 0) > 0) giveStatus(c, a, 'dawn_hot', hotDur, (amount * p.hotPct) / hotDur);
     }
@@ -355,7 +380,7 @@ const healBolt: Behavior = {
       const d = count > 1 ? rotDir(base, (i - (count - 1) / 2) * spread) : base;
       const ally = bent ?? laneAlly(c, d, range, foe ? dist2(foe.position, caster.position) : Infinity);
       if (ally) {
-        healAmount(caster as Player, ally, healFormula(caster as Player, (def.heal?.coef ?? 0.4) * c.more).amount);
+        wardOverheal(c, ally, healAmount(caster as Player, ally, healFormula(caster as Player, (def.heal?.coef ?? 0.4) * c.more).amount));
         sys.vfx('heal_burst', at(ally, ally.height * 0.6), { scale: 0.6 });
         beamTo(c, ally, 'holy_beam');
         healed++;

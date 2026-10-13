@@ -35,6 +35,8 @@ import type { Minion } from '../entities/Minion';
 
 /** What a player skill/attack does to one target. Built by SkillSystem from SkillDef. */
 /** PM-00b: damage-taken ring buffer horizon (s) and size cap. */
+/** Share of an incoming hit that İlahi Siper (`bulwark`) reflects back as holy damage. */
+const BULWARK_REFLECT = 0.2;
 const TAKEN_WINDOW = 8;
 const TAKEN_MAX = 512;
 
@@ -1825,6 +1827,8 @@ export class Combat {
         // thorns
         const th = p.getStat('thorns');
         if (th > 0 && hit.sourceId !== null) this.reflectThorns(p, hit.sourceId, th);
+        // PM-PA İlahi Siper (bulwark, plate-melee.md §5a): 20 % of the incoming hit comes back as holy damage
+        if (hit.sourceId !== null && p.statuses.has('bulwark')) this.reflectThorns(p, hit.sourceId, rawIn * BULWARK_REFLECT, 'holy', 'paladin_prot_bulwark', 30);
       }
     }
     G.skills?.onPlayerDamaged(p, amount);
@@ -2009,13 +2013,13 @@ export class Combat {
     G.audio.play('dodge', { pos: [p.position.x, p.position.y, p.position.z], pitch: 1.35 });
   }
 
-  private reflectThorns(p: Player, sourceId: EntityId, dmg: number): void {
+  private reflectThorns(p: Player, sourceId: EntityId, dmg: number, type: DamageType = 'physical', skillId = 'thorns', range = 4): void {
     const e = G.world?.get<Enemy>(sourceId);
     if (!e || e.kind !== 'enemy' || e.isDead) return;
-    if (Math.hypot(e.position.x - p.position.x, e.position.z - p.position.z) > 4) return;
-    const amount = Math.max(1, Math.round(this.mitigate(e, dmg, 'physical', p.level)));
-    if (!G.net || G.net.isAuthority) this.applyDamageToEnemy(e, amount, false, 'physical', p.id, undefined, 'thorns', 0, undefined, { tick: true, weight: 'tick', noReact: true });
-    else G.net.sendToHost('hit', { targetId: e.id, amount, crit: false, type: 'physical', skillId: 'thorns', isDot: true });
+    if (Math.hypot(e.position.x - p.position.x, e.position.z - p.position.z) > range) return;
+    const amount = Math.max(1, Math.round(this.mitigate(e, dmg, type, p.level)));
+    if (!G.net || G.net.isAuthority) this.applyDamageToEnemy(e, amount, false, type, p.id, undefined, skillId, 0, undefined, { tick: true, weight: 'tick', noReact: true });
+    else G.net.sendToHost('hit', { targetId: e.id, amount, crit: false, type, skillId, isDot: true });
   }
 
   private dirFromSource(p: Actor, sourceId: EntityId | null): [number, number] {

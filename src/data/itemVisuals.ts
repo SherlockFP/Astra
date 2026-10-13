@@ -128,6 +128,9 @@ export const SET_AURA_COLORS: Readonly<Record<string, number>> = {
   tier_mage_lightbringer: 0xfff2b0,
   tier_rogue_assassin: 0x9060ff,
   tier_rogue_alchemist: 0x70e07a,
+  tier_paladin_protection: 0x9ad0ff,
+  tier_paladin_holy: 0xfff2b0,
+  tier_paladin_retribution: 0xffb040,
 };
 export const SET_AURA_DEFAULT = 0xffffff;
 export const setAuraColor = (setId: string): number => SET_AURA_COLORS[setId] ?? SET_AURA_DEFAULT;

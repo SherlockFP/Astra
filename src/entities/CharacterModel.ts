@@ -94,7 +94,7 @@ Assets.keepNodeNames([...WEAPON_NODES, ...HELM_NODES]);
 
 /** Built-in node used as a stand-in when an item has no model GLB, by item category. */
 const MAIN_STANDIN: Record<string, string[]> = {
-  sword1h: ['1H_Sword'], sword2h: ['2H_Sword'], axe1h: ['1H_Axe'], axe2h: ['2H_Axe'], mace: ['1H_Axe'],
+  sword1h: ['1H_Sword'], sword2h: ['2H_Sword'], axe1h: ['1H_Axe'], axe2h: ['2H_Axe'], mace: ['1H_Sword'],
   staff: ['2H_Staff'], wand: ['1H_Wand'], dagger: ['Knife'], crossbow: ['2H_Crossbow'], bow: ['2H_Crossbow'],
 };
 const OFF_STANDIN: Record<string, string[]> = {
