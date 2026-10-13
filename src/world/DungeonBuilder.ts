@@ -1393,7 +1393,9 @@ class DungeonBuild {
       }
       // gates
       const kind = o.gate;
-      if (kind === 'boss_lock' || kind === 'boss_exit' || kind === 'forces_lock') {
+      // P-12 lock kinds get a physical gate too (DungeonScene's resolver opens and closes it); `requires` alone is a lock as well
+      const locked = kind === 'boss_lock' || kind === 'boss_exit' || kind === 'forces_lock' || kind === 'event_lock' || kind === 'kill_lock' || kind === 'device_lock';
+      if (locked || (d.requires?.length ?? 0) > 0) {
         const g = this.makeGate(o, midx, midz);
         let key = `${d.a}|${d.b}`;
         let n = 2;

@@ -5,7 +5,9 @@ import { CLASSES } from '../data/classes';
 import { SKILLS } from '../data/skills';
 import { MATERIALS } from '../data/materials';
 import { OPEN_ZONES } from '../data/dungeons';
-import { STATUSES, STATUS_RULES } from '../data/statuses';
+import {
+  DODGE_STACK_IDS, STATUSES, STATUS_RULES, dodgeStackLoss, stacksAfterLoss, takenPerStackTotal,
+} from '../data/statuses';
 import { ComboTracker } from './ComboTracker';
 import { SpecialState, sp, hasSp, specHooksOf, weaponAvg } from './specials';
 import { skillRankDamageMult } from './skillRanks';
@@ -159,7 +161,10 @@ const RES_STAT: Partial<Record<DamageType, StatId>> = {
   fire: 'resFire', frost: 'resFrost', lightning: 'resLightning', shadow: 'resShadow', poison: 'resPoison', arcane: 'resArcane',
 };
 
-const HARD_CC_IDS: StatusId[] = ['stun', 'freeze', 'knockdown', 'fear', 'root'];
+const HARD_CC_IDS: StatusId[] = ['stun', 'freeze', 'knockdown', 'fear', 'root', 'petrify'];
+
+/** P-21 K14: product of the actor's per-stack damage-taken multipliers (takenMorePerStack). 1 when none apply. */
+const takenPerStack = (a: Actor): number => takenPerStackTotal((id) => a.statuses.stacks(id));
 
 /** Poise bar of one enemy (GDD_V2 §3.7). Host owns the fill; clients keep a local `finished` set for Kritik Vuruş. */
 interface StaggerState {
@@ -340,7 +345,7 @@ export class Combat {
       armorPen: clamp(attacker.getStat('armorPen') + (spec.armorPen ?? 0), 0, 0.5),
       resPen: softStat(attacker, 'resPen') + (spec.resPen ?? 0),
     });
-    amount *= target.statuses.takenMore();
+    amount *= target.statuses.takenMore() * takenPerStack(target);
     if (wasFrozen) {
       const fc = sp('leg_frozen_crown');
       if (fc) amount *= 1 + (fc.frozenDamage ?? 0.25);
@@ -443,7 +448,7 @@ export class Combat {
    */
   private extraDamage(attacker: Player, target: Enemy, raw: number, type: DamageType, skillId: string | undefined, dir: [number, number], pos: [number, number, number]): void {
     if (raw <= 0 || target.isDead) return;
-    const amount = Math.max(1, Math.round(this.mitigate(target, raw, type, attacker.level, { resPen: softStat(attacker, 'resPen') }) * target.statuses.takenMore() * this.levelDiffOut(attacker.level, target.level)));
+    const amount = Math.max(1, Math.round(this.mitigate(target, raw, type, attacker.level, { resPen: softStat(attacker, 'resPen') }) * target.statuses.takenMore() * takenPerStack(target) * this.levelDiffOut(attacker.level, target.level)));
     const opts: ApplyDamageOpts = { skillId, weight: 'tick', tick: true, noReact: true, pos };
     if (!G.net || G.net.isAuthority) this.applyDamageToEnemy(target, amount, false, type, attacker.id, undefined, skillId, 0, dir, opts);
     else {
@@ -1540,7 +1545,7 @@ export class Combat {
     amount *= 1 - clamp(p.getStat('damageReductionPct'), 0, 0.9);
     // Savaş Lordu Öfke Zırhı (GDD_V2 §1.3.3): -0.25% damage taken per rage point, up to -25%
     amount *= warlordRageMult(p);
-    amount *= p.statuses.takenMore();
+    amount *= p.statuses.takenMore() * takenPerStack(p);
     if (G.skills?.shieldWallActive(p) && amount > 0) amount *= 1; // (frontal handled above)
     const before = amount;
     amount = p.statuses.absorb(amount);
@@ -2083,6 +2088,23 @@ export class Combat {
     if (wr) p.statuses.apply('windrunner', wr.buffSec ?? 3, { sourceId: p.id });
     if (sd) p.statuses.apply('dancer', 0.4 + (sd.guaranteedCritWindow ?? 1.5), { sourceId: p.id });
     if (hasSp('set_shadow_veil_2')) p.statuses.apply('veil', 3.4, { sourceId: p.id });
+    this.applyDodgeStackLoss(p);
+  }
+
+  /**
+   * P-21 onDodge (K14): a dodge roll removes stacks of every status whose rule has onDodge (arcane_lockdown: 1 stack).
+   * StatusEffects has no stack-decrement API, so the status is re-applied with the remaining stacks (same timer and magnitude).
+   */
+  private applyDodgeStackLoss(p: Player): void {
+    for (const id of DODGE_STACK_IDS) {
+      const s = p.statuses.get(id);
+      if (!s) continue;
+      const left = stacksAfterLoss(s.stacks, dodgeStackLoss(id));
+      if (left === s.stacks) continue;
+      const { remaining, magnitude, sourceId, dps } = s;
+      p.statuses.remove(id);
+      if (left > 0) p.statuses.apply(id, remaining, { stacks: left, magnitude, sourceId, dps, replicated: true });
+    }
   }
 
   private emitResources(p: Player): void {

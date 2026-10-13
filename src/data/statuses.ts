@@ -1,3 +1,4 @@
+import type { DamageType } from '../types/common';
 import type { StatusDef, StatusId } from '../types/skills';
 import { TALENT_STATUSES } from './statuses_talents';
 
@@ -166,7 +167,24 @@ export interface StatusRule {
   hpFloorPct?: number;
   /** P-21: a dodge roll by the owner removes this many stacks (arcane_lockdown). Read by the K14 hook in Combat.ts. */
   onDodge?: { removeStacks: number };
+  /** P-21: a dispel removes this many stacks instead of the whole status (arcane_lockdown). Read by dispel code via dispelStackLoss. */
+  onDispel?: { removeStacks: number };
+  /** P-21: per-stack damage-taken multiplier, x(1 + value x stacks). Combined multiplicatively by Combat (takenPerStackTotal). */
+  takenMorePerStack?: number;
+  /** P-21: burst on natural expiry only (never on dispel, see shouldFireOnExpire). Read by the K14 hook in Combat.ts. */
+  onExpire?: StatusExpireBurst;
 }
+
+/** P-21 onExpire payload: an area hit at the owner's position when the status runs out. */
+export interface StatusExpireBurst {
+  shape: 'circle' | 'cone' | 'self';
+  radius: number;
+  coef: number;
+  type: DamageType;
+}
+
+/** Why a status left the owner. Only 'expire' may fire onExpire. */
+export type StatusRemoveReason = 'expire' | 'dispel' | 'remove' | 'clear' | 'death';
 
 export const STATUS_RULES: Partial<Record<StatusId, StatusRule>> = {
   stun: { stack: 'strongest', group: 'hard', hard: true },
@@ -287,7 +305,7 @@ const S1_STATUSES: Partial<Record<StatusId, StatusDef>> = {
   // Deviation: takenMore is not element-specific, so this applies to all damage (the doc says fire damage only). Typed fire-only needs a new field.
   ys_intensity: { id: 'ys_intensity', name: 'Yakıcı Şiddet', icon: I('debuff-burn'), kind: 'debuff', maxStacks: 6, vfx: 'burn_loop', dispellable: true, defaultDuration: 12 },
   // Ay Çeşmesi (yildiz S13 boon): haste and move speed +10% for 60 s. Doc says "haste +10%": mapped to attackSpeed 0.1 (confirm castSpeed).
-  ay_cesmesi: { id: 'ay_cesmesi', name: 'Ay Çeşmesi', icon: I('buff-haste'), kind: 'buff', stats: { attackSpeed: 0.1, moveSpeedPct: 0.1 }, defaultDuration: 60 },
+  ay_cesmesi: { id: 'ay_cesmesi', name: 'Ay Çeşmesi', icon: I('buff-haste'), kind: 'buff', stats: { attackSpeed: 0.1, castSpeed: 0.1, moveSpeedPct: 0.1 }, defaultDuration: 60 },
   // Yapışkan Hidromel (yigitler SET-16 mead puddle, enemy side): -35% move speed, +10% damage taken. Duration not in the doc (puddle-driven).
   mead_sticky: { id: 'mead_sticky', name: 'Yapışkan Hidromel', icon: I('debuff-slow'), kind: 'debuff', stats: { moveSpeedPct: -0.35 } },
   // Yüklü Çubuk (yigitler, grounding rods): +8% damage dealt per stack, max 3, 6 s
@@ -303,7 +321,7 @@ const S1_STATUS_RULES: Partial<Record<StatusId, StatusRule>> = {
   kin_laneti: { stack: 'stack', takenMore: 0.06 },
   asit_yarasi: { stack: 'stack', takenMore: 0.10 },
   // Each dodge roll removes one stack (P-21 onDodge; the hook itself is K14 in Combat.ts)
-  arcane_lockdown: { stack: 'stack', maxHpPctPerSec: 0.012, onDodge: { removeStacks: 1 } },
+  arcane_lockdown: { stack: 'stack', maxHpPctPerSec: 0.012, onDodge: { removeStacks: 1 }, onDispel: { removeStacks: 1 } },
   withering_soul: { stack: 'stack' },
   deep_wound: { stack: 'refresh', healMult: 0.75 },
   ys_intensity: { stack: 'stack', takenMore: 0.15 },
@@ -315,7 +333,48 @@ Object.assign(STATUSES, S1_STATUSES);
 Object.assign(STATUS_RULES, S1_STATUS_RULES);
 
 /** Statuses that are crowd control on the "hard" scale (cannot act). */
-export const HARD_CC: StatusId[] = ['stun', 'freeze', 'knockdown', 'fear'];
+export const HARD_CC: StatusId[] = ['stun', 'freeze', 'knockdown', 'fear', 'petrify'];
 
 /** Statuses that count as debuffs for invulnerability checks etc. */
 export const isDebuff = (id: StatusId): boolean => STATUSES[id]?.kind === 'debuff';
+
+// ---- P-21 K14 pure rule helpers (no game state; Combat.ts and tools/smoke/status_hooks.mjs use them) ----
+
+/** Per-stack damage-taken multiplier of one rule: 1 + takenMorePerStack x stacks (1 when the rule has none). */
+export const takenMorePerStackMult = (rule: StatusRule | undefined, stacks: number): number =>
+  rule?.takenMorePerStack ? 1 + rule.takenMorePerStack * Math.max(0, stacks) : 1;
+
+/** Status ids whose rule has takenMorePerStack, computed once from the rule table. */
+export const TAKEN_PER_STACK_IDS: readonly StatusId[] = (Object.keys(STATUS_RULES) as StatusId[]).filter(
+  (id) => !!STATUS_RULES[id]?.takenMorePerStack,
+);
+
+/** Product of every per-stack damage-taken multiplier, reading each owner's stacks through `stackOf`. */
+export function takenPerStackTotal(stackOf: (id: StatusId) => number, ids: readonly StatusId[] = TAKEN_PER_STACK_IDS): number {
+  let m = 1;
+  for (const id of ids) {
+    const n = stackOf(id);
+    if (n > 0) m *= takenMorePerStackMult(STATUS_RULES[id], n);
+  }
+  return m;
+}
+
+/** Status ids that lose stacks on a dodge roll (arcane_lockdown). */
+export const DODGE_STACK_IDS: readonly StatusId[] = (Object.keys(STATUS_RULES) as StatusId[]).filter(
+  (id) => !!STATUS_RULES[id]?.onDodge,
+);
+
+/** Stacks a dodge roll removes from this status (0 when the status has no onDodge rule). */
+export const dodgeStackLoss = (id: StatusId): number => STATUS_RULES[id]?.onDodge?.removeStacks ?? 0;
+
+/** Stacks a dispel removes from this status: the onDispel amount, or 0 meaning the whole status is removed. */
+export const dispelStackLoss = (id: StatusId): number => STATUS_RULES[id]?.onDispel?.removeStacks ?? 0;
+
+/** Stacks left after `loss` is taken from `stacks` (never below 0). */
+export const stacksAfterLoss = (stacks: number, loss: number): number => Math.max(0, stacks - Math.max(0, loss));
+
+/** onExpire fires only for a natural expiry. A dispel or any other removal never fires it. */
+export const shouldFireOnExpire = (reason: StatusRemoveReason): boolean => reason === 'expire';
+
+/** The onExpire burst of a status, if its rule has one. */
+export const expireBurstOf = (id: StatusId): StatusExpireBurst | undefined => STATUS_RULES[id]?.onExpire;

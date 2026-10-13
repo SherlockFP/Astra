@@ -3,6 +3,7 @@ import type { DamageType } from '../types/common';
 import type { Ab, Spec } from './enemyKit';
 import { ENEMIES, BOSSES, A_KAYKIT, A_SKEL, A_ENEMY, A_CHAR, A_FLY, A_BLOB, A_MUSH, A_RAT, A_SPIDER, A_BAT, A_GEN, A_WOLF, A_WASP, A_PUGLIN, A_KENNEY, poison, bleed, burn, chill, cone, proj, aoe, line, heal, buff, passive, onDeath, charge, summonAb, NOOP, def, R_BEAST, R_SKELETON, R_GHOST, R_SPIDER, R_CULT, R_GOLEM, R_DEMON, W_BLADE, mageHide, KNIGHT_HIDE, ROGUE_HIDE, add, MECH, derive, boss, bp, custom, A_EJDER } from './enemyKit';
 import { MON, CHAR, SKEL, GEN, GENB, WPN, PROC, ITCH, PUG, GRAVE } from './enemyModels';
+import './enemies_mech'; // K13: registers the MECH ids (energy_orb, eye_orb, proc_beacon, ...) into ENEMIES
 export { ENEMIES, BOSSES };
 
 /**

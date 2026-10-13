@@ -212,6 +212,29 @@ export class EnemyDirector {
     }
   }
 
+  /**
+   * P-14 noise (a channel gate opening, a winch drop): every idle enemy within `r` of (x, z) is pulled onto the nearest living
+   * player, with its pack. Host only (AI decisions run on the host); nothing happens when no player is alive in the safe range.
+   */
+  alertNear(x: number, z: number, r: number): void {
+    const idle = this.near(x, z, r).slice();
+    for (const e of idle) {
+      const ai = e.ai;
+      if (!ai || ai.aggroed || e.isDead || e.def.aggroRange <= 0 || e.def.ai?.summoned) continue;
+      let best: Actor | null = null;
+      let bd = Infinity;
+      for (const p of this.world.players) {
+        if (p.isDead || this.inSafeZone(p.position.x, p.position.z)) continue;
+        const d = Math.hypot(p.position.x - e.position.x, p.position.z - e.position.z);
+        if (d < bd) {
+          bd = d;
+          best = p;
+        }
+      }
+      if (best) this.pullPack(ai, best);
+    }
+  }
+
   // ------------------------------------------------------------------------------------------------------------
   // bone piles
   // ------------------------------------------------------------------------------------------------------------

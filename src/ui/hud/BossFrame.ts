@@ -3,6 +3,7 @@ import type { Enemy } from '../../entities/Enemy';
 import type { EntityId } from '../../types/common';
 import { ICON, div, esc, fmtClock, fmtCompact, iconEl, pulse, setClass, setDisplay, setStyle, setText } from '../widgets/dom';
 import { CastBarEl } from '../widgets/CastBar';
+import { bossEnergyView } from '../../ai/bossNet';
 import { Bar } from './PlayerFrame';
 import type { HudCtx, HudWidget } from './types';
 
@@ -21,6 +22,9 @@ export class BossFrame implements HudWidget {
   /** Poise (Duruş) stripe under the HP bar; gold + the SENDELEDİ tag while the boss is broken (its marked_crit window). */
   private poise: HTMLElement;
   private poiseFill: HTMLElement;
+  /** P-38: boss energy stripe (cyan, thin) under the poise stripe; shown for bosses with BossDef.energy only. */
+  private energyEl: HTMLElement;
+  private energyFill: HTMLElement;
   /** Screen-centre boss emote line; the HUD mounts it on its root (it must work while the frame is hidden). */
   readonly yellEl: HTMLElement;
   private banner: HTMLElement;
@@ -51,6 +55,11 @@ export class BossFrame implements HudWidget {
     this.poise = div('bf-poise', barWrap);
     this.poiseFill = div('bf-poise-fill', this.poise);
     setDisplay(this.poise, false);
+    this.energyEl = div('bf-energy', barWrap);
+    this.energyEl.style.cssText = 'position:relative;height:4px;margin-top:3px;background:rgba(0,0,0,.55);border:1px solid rgba(120,220,255,.35);';
+    this.energyFill = div('bf-energy-fill', this.energyEl);
+    this.energyFill.style.cssText = 'position:absolute;left:0;top:0;bottom:0;width:0;background:#4fd8ff;box-shadow:0 0 6px #4fd8ff;';
+    setDisplay(this.energyEl, false);
     div('bf-stag', this.el, 'SENDELEDİ!');
     this.enrageEl = div('bf-enrage', this.el);
     iconEl(ICON('buff-strength'), 'bf-enrage-ico', this.enrageEl);
@@ -130,6 +139,7 @@ export class BossFrame implements HudWidget {
     setText(this.pctEl, `${Math.max(0, frac * 100).toFixed(frac < 0.1 ? 1 : 0).replace('.', ',')}%`);
     setClass(this.el, 'defeated', defeated);
     this.updatePoise(boss);
+    this.updateEnergy(!!def?.energy);
     // phase notches
     if (def && this.notchFor !== def.id) {
       this.notchFor = def.id;
@@ -182,6 +192,16 @@ export class BossFrame implements HudWidget {
     setClass(this.el, 'stag', broken);
     if (!show) return;
     setStyle(this.poiseFill, 'width', broken ? '100%' : (Math.min(1, f) * 100).toFixed(1) + '%');
+  }
+
+  /** P-38: cyan energy stripe from bossEnergyView() (replicated boss_energy messages), only for bosses that have energy. */
+  private updateEnergy(hasEnergy: boolean): void {
+    const view = hasEnergy ? bossEnergyView() : null;
+    const show = !!view && view.max > 0;
+    setDisplay(this.energyEl, show);
+    if (!view || !show) return;
+    const f = Math.max(0, Math.min(1, view.v / view.max));
+    setStyle(this.energyFill, 'width', (f * 100).toFixed(1) + '%');
   }
 
   private phaseLabel(id: string): string {

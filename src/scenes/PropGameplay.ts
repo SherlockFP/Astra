@@ -5,7 +5,10 @@ import { potionIds } from '../data/materials';
 import type { EventScope } from '../core/EventBus';
 import type { World } from '../world/World';
 import type { BuiltDungeon, BuiltProp } from '../world/DungeonBuilder';
-import type { SkillDef } from '../types/skills';
+import type { SkillDef, StatusId } from '../types/skills';
+import type { PropPlacement } from '../types/dungeons';
+import { TILE_SIZE } from '../types/dungeons';
+import { getDungeon } from '../data/dungeons';
 import type { DungeonParams } from './scenes';
 
 type Kind = 'wood' | 'clay' | 'stone' | 'bone';
@@ -13,6 +16,26 @@ type Kind = 'wood' | 'clay' | 'stone' | 'bone';
 const SHARD_COLOR: Record<Kind, number> = { wood: 0x8a5a2e, clay: 0xa8704c, stone: 0x7c7c86, bone: 0xe4dcc4 };
 const SMASH_SFX: Record<Kind, 'barrel_break' | 'pot_break' | 'rubble' | 'hit_bone'> = { wood: 'barrel_break', clay: 'pot_break', stone: 'rubble', bone: 'hit_bone' };
 const MAX_SHARDS = 72;
+
+/** P-18: the spill zone a breakable leaves (`PropPlacement.onBreak.zone`). */
+type SpillDef = NonNullable<NonNullable<PropPlacement['onBreak']>['zone']>;
+const SPILL_COLOR: Partial<Record<StatusId, number>> = { mead_sticky: 0xd9a441, rod_charged: 0x7fd8ff };
+const SPILL_BURN_COLOR = 0xff7a2a;
+/** Seconds an ignited spill keeps burning (players inside gain `burn`). */
+const SPILL_BURN_SEC = 2.5;
+/** Seconds between status refreshes while standing in a spill. */
+const SPILL_TICK = 0.25;
+
+interface Spill {
+  x: number;
+  z: number;
+  def: SpillDef;
+  left: number;
+  burnLeft: number;
+  tick: number;
+  mesh: THREE.Mesh;
+  mat: THREE.MeshBasicMaterial;
+}
 
 function kindOf(model: string): Kind {
   const n = (model.split('/').pop() ?? model).toLowerCase();
@@ -66,19 +89,47 @@ export class PropGameplay {
   private free: THREE.Mesh[] = [];
   private geo: THREE.BoxGeometry | null = null;
   private mats = new Map<Kind, THREE.MeshLambertMaterial>();
+  private spillOf = new Map<BuiltProp, SpillDef>();
+  private spills: Spill[] = [];
+  private spillGeo: THREE.CircleGeometry | null = null;
   private disposed = false;
 
   constructor(private o: PropGameplayOpts) {
     this.items = o.built.props.filter((p) => p.tag === 'breakable' && !p.hidden);
     this.ev = G.events.scope();
-    if (this.items.length) {
-      this.ev.on('skill:cast', (e) => {
-        const lp = this.o.world.localPlayer;
-        if (this.disposed || !lp || e.casterId !== lp.id) return;
-        const def = SKILLS[e.skillId];
-        const hit = e.castTime > 0 ? e.castTime : (def?.hitTime ?? 0.16);
-        this.pending.push({ at: this.o.world.time + Math.min(0.8, Math.max(0.05, hit)), def });
-      });
+    this.mapSpills();
+    this.ev.on('skill:cast', (e) => {
+      const lp = this.o.world.localPlayer;
+      if (this.disposed || !lp || e.casterId !== lp.id) return;
+      const def = SKILLS[e.skillId];
+      if (def?.damage?.type === 'fire') this.igniteNear(lp.position.x, lp.position.z);
+      if (!this.items.length) return;
+      const hit = e.castTime > 0 ? e.castTime : (def?.hitTime ?? 0.16);
+      this.pending.push({ at: this.o.world.time + Math.min(0.8, Math.max(0.05, hit)), def });
+    });
+  }
+
+  /** P-18: link each `onBreak` placement of the dungeon def to its built prop (by id, else the nearest breakable within 1.5 m). */
+  private mapSpills(): void {
+    const def = getDungeon(this.o.params.dungeonId);
+    if (!def) return;
+    for (const room of def.rooms) {
+      for (const p of room.props ?? []) {
+        if (p.tag !== 'breakable' || !p.onBreak) continue;
+        let best = p.id ? this.items.find((b) => b.id === p.id) : undefined;
+        if (!best) {
+          const wx = (p.pos[0] + 0.5) * TILE_SIZE, wz = (p.pos[1] + 0.5) * TILE_SIZE;
+          let bd = 1.5;
+          for (const b of this.items) {
+            const d = Math.hypot(b.x - wx, b.z - wz);
+            if (d < bd) {
+              bd = d;
+              best = b;
+            }
+          }
+        }
+        if (best) this.spillOf.set(best, p.onBreak.zone);
+      }
     }
   }
 
@@ -93,6 +144,7 @@ export class PropGameplay {
   update(dt: number): void {
     if (this.disposed) return;
     this.updateShards(dt);
+    this.updateSpills(dt);
     if (!this.items.length) return;
     const world = this.o.world;
     const p = world.localPlayer;
@@ -213,6 +265,72 @@ export class PropGameplay {
     }
     this.burst(kind, b.x, cy, b.z);
     this.rollLoot(b.x, cy, b.z);
+    const zone = this.spillOf.get(b);
+    if (zone) this.spawnSpill(b.x, b.z, zone);
+  }
+
+  // ------------------------------------------------------------------------------------------------
+  // spill zones (P-18 `onBreak.zone`): a puddle on the floor; the local player standing in it gains the status
+  // ------------------------------------------------------------------------------------------------
+
+  private spawnSpill(x: number, z: number, def: SpillDef): void {
+    if (!this.spillGeo) {
+      this.spillGeo = new THREE.CircleGeometry(1, 28);
+      this.spillGeo.rotateX(-Math.PI / 2); // flat on the floor
+    }
+    const mat = new THREE.MeshBasicMaterial({ color: SPILL_COLOR[def.status] ?? 0xd9a441, transparent: true, opacity: 0.55, depthWrite: false });
+    const mesh = new THREE.Mesh(this.spillGeo, mat);
+    mesh.position.set(x, this.o.world.groundY(x, z) + 0.03, z);
+    mesh.scale.setScalar(def.radius);
+    this.o.scene.add(mesh);
+    this.spills.push({ x, z, def, left: def.duration, burnLeft: 0, tick: 0, mesh, mat });
+  }
+
+  /** A fire skill cast next to an `ignitesOnFire` puddle sets it alight: its players burn for a while. */
+  private igniteNear(x: number, z: number): void {
+    for (const s of this.spills) {
+      if (!s.def.ignitesOnFire || s.burnLeft > 0) continue;
+      if (Math.hypot(x - s.x, z - s.z) > s.def.radius + 3) continue;
+      s.burnLeft = SPILL_BURN_SEC;
+      s.mat.color.setHex(SPILL_BURN_COLOR);
+    }
+  }
+
+  private updateSpills(dt: number): void {
+    if (!this.spills.length) return;
+    const world = this.o.world;
+    const p = world.localPlayer;
+    const alive = !!p && !p.isDead && !p.removed;
+    for (let i = this.spills.length - 1; i >= 0; i--) {
+      const s = this.spills[i];
+      s.left -= dt;
+      if (s.left <= 0) {
+        this.endSpill(i);
+        continue;
+      }
+      if (s.burnLeft > 0) {
+        s.burnLeft -= dt;
+        if (s.burnLeft <= 0) s.mat.color.setHex(SPILL_COLOR[s.def.status] ?? 0xd9a441);
+      }
+      s.tick -= dt;
+      if (!alive || !p || s.tick > 0) continue;
+      s.tick = SPILL_TICK;
+      if (Math.hypot(p.position.x - s.x, p.position.z - s.z) > s.def.radius) continue;
+      if (p.position.y - world.groundY(p.position.x, p.position.z) > 1.0) continue; // jumping over the puddle is safe
+      try {
+        if (s.burnLeft > 0) p.statuses.apply('burn', SPILL_TICK * 4);
+        else p.statuses.apply(s.def.status, SPILL_TICK * 4);
+      } catch (e) {
+        console.warn('[props] spill status failed', e);
+      }
+    }
+  }
+
+  private endSpill(i: number): void {
+    const s = this.spills[i];
+    s.mesh.removeFromParent();
+    s.mat.dispose();
+    this.spills.splice(i, 1);
   }
 
   private rollLoot(x: number, y: number, z: number): void {
@@ -331,5 +449,9 @@ export class PropGameplay {
     for (const m of this.mats.values()) m.dispose();
     this.mats.clear();
     this.geo = null;
+    while (this.spills.length) this.endSpill(this.spills.length - 1);
+    this.spillGeo?.dispose();
+    this.spillGeo = null;
+    this.spillOf.clear();
   }
 }

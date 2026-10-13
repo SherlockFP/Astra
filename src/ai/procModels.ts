@@ -405,6 +405,174 @@ const BUILDERS: Record<string, Builder> = {
       dispose: finish([t1, d, swirl], [ring1, disc1]),
     };
   },
+  /** Enerji Küresi (roaming and fixate orbs, Arkanotron seekers): cyan voxel sphere with a bright core, a halo and a short trail. */
+  energy_orb: (tint = 0x40e0ff) => {
+    const root = new THREE.Group();
+    const core = lambert(0xe8ffff, tint, 1.6);
+    const halo = lambert(tint, tint, 0.9, { transparent: true, opacity: 0.35, depthWrite: false });
+    const trailMat = lambert(tint, tint, 1.0, { transparent: true, opacity: 0.6, depthWrite: false });
+    const g = new THREE.Group();
+    const body = voxMesh(sphere(0.36), core, 0, 1.0, 0);
+    const haloM = voxMesh(shell(0.5, 0.66), halo, 0, 1.0, 0);
+    const trail = [0, 1, 2].map((n) => voxCells([[0, 0, 0]], trailMat, 0, 1.0, -0.4 - n * 0.3));
+    g.add(body, haloM, ...trail);
+    root.add(g);
+    return {
+      root, height: 1.7,
+      update(_dt, t) {
+        g.position.y = Math.sin(t * 3) * 0.1;
+        haloM.scale.setScalar(1 + Math.sin(t * 4) * 0.08);
+        core.emissiveIntensity = 1.4 + Math.sin(t * 6) * 0.3;
+      },
+      dispose: finish([body, haloM, ...trail], [core, halo, trailMat]),
+    };
+  },
+  /** Göz Küresi (eye_orb): a pale voxel eyeball with a red iris and a pupil that wanders and blinks. */
+  eye_orb: () => {
+    const root = new THREE.Group();
+    const white = lambert(0xefe8d8, 0x202020, 0.1);
+    const iris = lambert(0xc02020, 0xff2010, 0.9);
+    const pupil = lambert(0x101010);
+    const look = new THREE.Group();
+    look.position.y = 1.2;
+    const eye = voxMesh(sphere(0.5), white, 0, 1.2, 0);
+    const irisM = voxMesh(sphere(0.26), iris, 0, 0, 0.36);
+    const pupilM = voxMesh(sphere(0.12), pupil, 0, 0, 0.5);
+    look.add(irisM, pupilM);
+    root.add(eye, look);
+    return {
+      root, height: 1.7,
+      update(_dt, t) {
+        look.rotation.y = Math.sin(t * 0.9) * 0.5;
+        look.rotation.x = Math.sin(t * 0.7) * 0.25;
+        // blink: squash the iris and pupil for 0.15 s every 4 s
+        look.scale.y = (t % 4) < 0.15 ? 0.2 : 1;
+        iris.emissiveIntensity = 0.9 + Math.sin(t * 3) * 0.3;
+      },
+      dispose: finish([eye, irisM, pupilM], [white, iris, pupil]),
+    };
+  },
+  /** Işık Direği (proc_beacon): a stone post with a glowing crown ring and a spinning gem. */
+  beacon: (tint = 0x80d0ff) => {
+    const root = new THREE.Group();
+    const stone = lambert(0x5a5e68);
+    const glow = lambert(tint, tint, 1.0);
+    const post = voxMesh(cyl(0.35, 0.25, 0, 2.2), stone);
+    const crown = voxCells(ring(0.55, 'xz', 2.4), glow);
+    const gem = voxMesh(diamond(0.22, 0.4, 0.22), glow, 0, 2.6, 0);
+    root.add(post, crown, gem);
+    return {
+      root, height: 3.0,
+      update(_dt, t) {
+        glow.emissiveIntensity = 0.9 + Math.sin(t * 4) * 0.4;
+        gem.position.y = 2.6 + Math.sin(t * 2) * 0.06;
+        gem.rotation.y = t * 1.6;
+      },
+      dispose: finish([post, crown, gem], [stone, glow]),
+    };
+  },
+  /** Kararsız Sivri Taş (proc_volatile_spike): three stone spikes around a gold tip that brightens as it arms. */
+  volatile_spike: () => {
+    const root = new THREE.Group();
+    const stone = lambert(0x6d6a64);
+    const gold = lambert(0xffc040, 0xffa020, 0.8);
+    const s1 = voxMesh(cyl(0.45, 0.05, 0, 1.6), stone);
+    const s2 = voxMesh(cyl(0.3, 0.05, 0, 1.1), stone, 0.45, 0, 0.15);
+    const s3 = voxMesh(cyl(0.3, 0.05, 0, 1.0), stone, -0.4, 0, -0.2);
+    const tip = voxMesh(diamond(0.16, 0.3, 0.16), gold, 0, 1.75, 0);
+    root.add(s1, s2, s3, tip);
+    return {
+      root, height: 1.9,
+      update(_dt, t) {
+        gold.emissiveIntensity = 0.8 + Math.sin(t * 6) * 0.3;
+        tip.rotation.y = t * 2;
+      },
+      dispose: finish([s1, s2, s3, tip], [stone, gold]),
+    };
+  },
+  /** Kristal Parçası (proc_crystal_shard): two faceted violet crystals on a stone base, breathing glow. */
+  crystal_shard: (tint = 0xb080ff) => {
+    const root = new THREE.Group();
+    const rock = lambert(0x3c3a48);
+    const crystal = lambert(tint, tint, 0.9, { transparent: true, opacity: 0.9 });
+    const base = voxMesh(cyl(0.7, 0.9, 0, 0.4), rock);
+    const big = voxMesh(diamond(0.45, 1.2, 0.45), crystal, 0, 1.4, 0);
+    const small = voxMesh(diamond(0.28, 0.7, 0.28), crystal, 0.5, 0.9, 0.25);
+    root.add(base, big, small);
+    return {
+      root, height: 2.6,
+      update(_dt, t) {
+        crystal.emissiveIntensity = 0.9 + Math.sin(t * 2.5) * 0.25;
+        big.rotation.y = t * 0.5;
+      },
+      dispose: finish([base, big, small], [rock, crystal]),
+    };
+  },
+  /** Sinstone kıymığı (sinstone_shard): three leaning black-violet slabs on a base, crimson seams that pulse. */
+  sinstone_shard: () => {
+    const root = new THREE.Group();
+    const slab = lambert(0x1d1826);
+    const seam = lambert(0xc8382f, 0xc8382f, 1.2);
+    const base = voxMesh(box(0.9, 0, 0.3, 0.7), slab);
+    const tall = voxMesh(box(0.45, 0, 2.6, 0.35), slab, -0.45, 0, 0.1);
+    const mid = voxMesh(box(0.35, 0, 1.8, 0.3), slab, 0.35, 0, -0.25);
+    const low = voxMesh(box(0.3, 0, 1.1, 0.3), slab, 0.1, 0, 0.45);
+    tall.rotation.z = 0.1;
+    mid.rotation.z = -0.14;
+    low.rotation.x = 0.12;
+    // crimson seam: a column of cells on the tall slab's front face
+    const seamCells: Cell[] = [];
+    for (let j = 3; j <= 11; j++) seamCells.push([0, j, 0]);
+    const seams = voxCells(seamCells, seam, -0.45, 0, 0.55);
+    root.add(base, tall, mid, low, seams);
+    return {
+      root, height: 3.6,
+      update(_dt, t) { seam.emissiveIntensity = 1.0 + Math.sin(t * 3) * 0.5; },
+      dispose: finish([base, tall, mid, low, seams], [slab, seam]),
+    };
+  },
+  /** Günah Heykeli (sinstone_statue): a robed black giant 6 m tall, hands over the face, crimson light behind the fingers. */
+  sinstone_statue: () => {
+    const root = new THREE.Group();
+    const slab = lambert(0x1d1826, 0x1d1826, 0.1);
+    const glow = lambert(0xc8382f, 0xc8382f, 1.4);
+    const robe = voxMesh(cyl(1.3, 0.9, 0, 4.4), slab);
+    const shoulders = voxMesh(box(0.9, 4.0, 4.4, 0.5), slab);
+    const head = voxMesh(sphere(0.42), slab, 0, 5.1, 0);
+    const handL = voxMesh(box(0.25, 4.6, 5.0, 0.22), slab, -0.3, 0, 0.6);
+    const handR = voxMesh(box(0.25, 4.6, 5.0, 0.22), slab, 0.3, 0, 0.6);
+    const eyeL = voxCells([[0, 0, 0]], glow, -0.15, 5.1, 0.4);
+    const eyeR = voxCells([[0, 0, 0]], glow, 0.15, 5.1, 0.4);
+    root.add(robe, shoulders, head, handL, handR, eyeL, eyeR);
+    return {
+      root, height: 6.0,
+      update(_dt, t) { glow.emissiveIntensity = 1.2 + Math.sin(t * 2) * 0.3; },
+      dispose: finish([robe, shoulders, head, handL, handR, eyeL, eyeR], [slab, glow]),
+    };
+  },
+  /** Hayalet Cemaat Üyesi (parishioner): a translucent robed ghost 2.2 m tall, gold eyes, a faint additive halo. */
+  parishioner: () => {
+    const root = new THREE.Group();
+    const robe = lambert(0x9a92b8, 0x3a3060, 0.2, { transparent: true, opacity: 0.55, depthWrite: false });
+    const gold = lambert(0xffd060, 0xffc040, 1.4);
+    const haloMat = new THREE.MeshBasicMaterial({ color: 0xffe9a0, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false });
+    const g = new THREE.Group();
+    const body = voxMesh(cyl(0.4, 0.2, 0, 1.8), robe);
+    const head = voxMesh(sphere(0.2), robe, 0, 1.95, 0);
+    const eyeL = voxCells([[0, 0, 0]], gold, -0.08, 1.98, 0.19);
+    const eyeR = voxCells([[0, 0, 0]], gold, 0.08, 1.98, 0.19);
+    const halo = voxMesh(shell(0.5, 0.65), haloMat, 0, 1.0, 0);
+    g.add(body, head, eyeL, eyeR, halo);
+    root.add(g);
+    return {
+      root, height: 2.2,
+      update(_dt, t) {
+        g.position.y = 0.3 + Math.sin(t * 2) * 0.08;
+        gold.emissiveIntensity = 1.2 + Math.sin(t * 5) * 0.3;
+      },
+      dispose: finish([body, head, eyeL, eyeR, halo], [robe, gold, haloMat]),
+    };
+  },
 };
 
 export function hasProcModel(id: string): boolean {

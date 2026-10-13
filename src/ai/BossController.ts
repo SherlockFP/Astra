@@ -5,6 +5,8 @@ import { BossEnergy, bossMsg, bossText, lockExpired } from './bossNet';
 import { CUSTOM, type CustomHandler } from './abilities';
 import { BOSS_SCRIPTS, BOSS_SPAWNS } from './bosses';
 import { tickLinks } from './bosses/links';
+import { bossMovesReset, setMoveBridgeHost } from './bosses/moveBridge';
+import { clearPatterns, updatePatterns } from './bosses/patterns';
 import type { EnemyDirector } from './EnemyDirector';
 import type { BossScript } from './bosses/types';
 import type { Actor } from '../entities/Actor';
@@ -13,6 +15,14 @@ import type { Player } from '../entities/Player';
 import type { BossDef, BossPhase, EnemyAbility } from '../types/enemies';
 
 export { BOSS_SPAWNS };
+
+let moveBridgeWired = false;
+/** K12 / P-41: one-time host hook for the boss move bridge (a poise break or reset retracts enemy shapes through HitShapes). */
+function wireMoveBridge(): void {
+  if (moveBridgeWired) return;
+  moveBridgeWired = true;
+  setMoveBridgeHost({ cancelShape: (id) => G.hitShapes.cancel(id) });
+}
 
 /** Optional BossScript fields from the P-31 / P-38 packages (types/ owned elsewhere). */
 type ScriptExt = BossScript & { lockLimit?: number };
@@ -68,6 +78,7 @@ export class BossController extends EnemyAI {
     super(e, dir);
     this.bdef = e.def as BossDef;
     this.script = BOSS_SCRIPTS[this.bdef.id] ?? { abilities: {} };
+    wireMoveBridge();
     const a = this.bdef.arena;
     if (a) {
       // shift the baked arena if the boss really spawned elsewhere than where it was measured
@@ -390,6 +401,8 @@ export class BossController extends EnemyAI {
     if (this.busy) this.abortBusy('external');
     for (const o of this.adds()) o.escape();
     this.script.onReset?.(this);
+    bossMovesReset(this);
+    clearPatterns(this);
     this.cancelTimers();
     this.setImmune(false);
     e.statuses.clear();
@@ -435,6 +448,8 @@ export class BossController extends EnemyAI {
   runDeathEffects(killerId: number | null): void {
     const e = this.e;
     try {
+      bossMovesReset(this);
+      clearPatterns(this);
       this.script.onDeath?.(this);
       this.cancelTracked();
       G.hitShapes.cancelBySource(e.id, true); // lingering lava / frost zones end with the fight
@@ -468,6 +483,7 @@ export class BossController extends EnemyAI {
     const e = this.e;
     this.fightT += dt;
     this.energy?.step(dt);
+    updatePatterns(this, dt);
     // phases by HP
     const hpf = e.hpFrac;
     const phases = this.bdef.phases;

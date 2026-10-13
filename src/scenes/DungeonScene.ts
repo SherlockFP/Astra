@@ -8,10 +8,15 @@ import { Player } from '../entities/Player';
 import { characterAssetUrls } from '../entities/CharacterModel';
 import { enemyAssetUrls, spawnEnemy } from '../entities/EnemyFactory';
 import type { Enemy } from '../entities/Enemy';
-import type { BossController } from '../ai/BossController';
+import { BossController } from '../ai/BossController';
+import { bossBreak } from '../ai/bosses/moveBridge';
 import { getDirector } from '../ai/EnemyDirector';
 import { assignChampions } from '../ai/champion';
-import { Chest, chestTierForKey, CursedChest, ExitPortal, InteractableProp, PanelProp, Shrine, SHRINES, Waypoint, type ShrineType } from '../entities/interactables';
+import {
+  BoonPad, BuffStation, Chest, chestTierForKey, ChannelGate, CursedChest, DropWinch, DungeonNpc, ExitPortal, InteractableProp, PanelProp, Shrine, SHRINES,
+  TransitCart, Waypoint, type ShrineType,
+} from '../entities/interactables';
+import type { InteractEvent } from '../data/devices';
 import { ZoneEvents } from './ZoneEvents';
 import { WorldRuntime } from './world/WorldRuntime';
 import { initLadder } from './world/Ladder';
@@ -27,7 +32,7 @@ import { World } from '../world/World';
 import { buildDungeon, dungeonAssetUrls, type BuiltDungeon, type BuiltProp, type DungeonGate } from '../world/DungeonBuilder';
 import type { Heightfield } from '../world/Heightfield';
 import { LiftSystem } from '../world/Lifts';
-import { DungeonEventStore, pickCheckpoint, resolveGate, type GateFacts } from '../systems/DungeonEvents';
+import { DEVICE_FLAG_PREFIX, DungeonEventStore, pickCheckpoint, resolveGate, type GateFacts } from '../systems/DungeonEvents';
 import { getDungeon } from '../data/dungeons';
 import { DUNGEON_ENEMY_ID_BASE, PARTY_ID_BASE, type EntityId } from '../types/common';
 import { TILE_SIZE, type BossPlacement, type DungeonDef, type PackDef } from '../types/dungeons';
@@ -39,6 +44,9 @@ import { propUrl, SkeletonReaper } from './SceneKit';
 import type { DungeonParams } from './scenes';
 
 const tileToWorld = (c: number): number => (c + 0.5) * TILE_SIZE;
+
+/** K9: riders board a transit cart within this many metres (same as the TransitCart default). */
+const TRANSIT_BOARD_M = 12;
 
 interface BossRec {
   placement: BossPlacement;
@@ -134,6 +142,10 @@ export class DungeonScene implements GameScene {
   private killedDefs = new Set<string>();
   /** P-19 scene ticker: per-frame callbacks owned by this run (addTicker). */
   private tickers: ((dt: number) => void)[] = [];
+  /** K9 (P-14, P-15): interactables built from DungeonDef.extras and the room props (per run). Channel gates and devices by gate id. */
+  private channelGates = new Map<string, ChannelGate>();
+  private transits = new Map<string, TransitCart>();
+  private winches = new Map<string, DropWinch>();
 
   // ================================================================================================
   async enter(p?: unknown): Promise<void> {
@@ -599,7 +611,145 @@ export class DungeonScene implements GameScene {
         ex.fontOfPower[0], ex.fontOfPower[1],
       );
     }
+    this.spawnK9(world, built, (e, tx, tz) => {
+      place(e, tx, tz);
+    });
     await Promise.all(jobs);
+  }
+
+  /**
+   * K9 (P-14, P-15): the interactables of DungeonDef.extras (NPCs, boons, stations, transit carts, winch drops) and the room props
+   * that carry an interaction (`root_gate_*` channel gates, `tag: 'device'` solves). Legacy dungeons have none of them, so this adds
+   * nothing there. Effects go through onInteractEvent (every peer); the host resolves what must be authoritative.
+   */
+  private spawnK9(world: World, built: BuiltDungeon, place: (e: InteractableProp, tx: number, tz: number) => void): void {
+    const ex = this.def.extras;
+    const onEvent = (e: InteractEvent): void => this.onInteractEvent(e);
+    for (const n of ex?.npcs ?? []) place(new DungeonNpc(world.allocLocalId(), n, { onEvent }), n.pos[0], n.pos[1]);
+    for (const b of ex?.boons ?? []) place(new BoonPad(world.allocLocalId(), b, { onEvent }), b.pos[0], b.pos[1]);
+    for (const s of ex?.stations ?? []) place(new BuffStation(world.allocLocalId(), s, { onEvent }), s.pos[0], s.pos[1]);
+    for (const w of ex?.dropProps ?? []) {
+      const dw = new DropWinch(world.allocLocalId(), w, { dropWorld: [tileToWorld(w.pos[0]), tileToWorld(w.pos[1])], onEvent });
+      this.winches.set(w.id, dw);
+      place(dw, w.winch[0], w.winch[1]);
+    }
+    for (const t of ex?.transits ?? []) {
+      // the stops are where `place` snaps them (same nearest-walkable rule), so the cart's ride line starts on its own spot
+      const snap = (tx: number, tz: number) => built.nav.nearestWalkable(tileToWorld(tx), tileToWorld(tz), 6) ?? { x: tileToWorld(tx), z: tileToWorld(tz) };
+      const s0 = snap(t.stops[0][0], t.stops[0][1]);
+      const s1 = snap(t.stops[1][0], t.stops[1][1]);
+      const cart = new TransitCart(world.allocLocalId(), t, { stopsWorld: [[s0.x, s0.z], [s1.x, s1.z]], boardRadius: TRANSIT_BOARD_M, onEvent });
+      this.transits.set(t.id, cart);
+      place(cart, t.stops[0][0], t.stops[0][1]);
+    }
+    // channel gates: the builder's barricade (tag gate, id root_gate_*) opens after a hold; the prop leaves the nav grid on open
+    for (const bp of built.props) {
+      if (bp.tag !== 'gate' || bp.hidden || !(bp.id ?? '').startsWith('root_gate_')) continue;
+      const gateId = bp.id as string;
+      const cg = new ChannelGate(world.allocLocalId(), {
+        gateId,
+        onOpen: () => bp.hide(),
+        alertNear: (x, z, r) => {
+          if (G.net.isAuthority && this.world) getDirector(this.world).alertNear(x, z, r);
+        },
+        onEvent,
+      });
+      cg.position.set(bp.x, world.groundY(bp.x, bp.z), bp.z);
+      this.channelGates.set(gateId, cg);
+      void world.add(cg);
+    }
+    // devices: a channel solve sets the event flag `dev:<device>` (device_lock doors read it)
+    for (const room of this.def.rooms) {
+      for (const p of room.props ?? []) {
+        if (p.tag !== 'device' || !p.id || !p.device) continue;
+        const bp = built.propById(p.id);
+        const x = bp ? bp.x : tileToWorld(p.pos[0]);
+        const z = bp ? bp.z : tileToWorld(p.pos[1]);
+        const dev = new ChannelGate(world.allocLocalId(), { gateId: `${DEVICE_FLAG_PREFIX}${p.device}`, onEvent });
+        dev.position.set(x, world.groundY(x, z), z);
+        void world.add(dev);
+      }
+    }
+  }
+
+  /** K9: every interactable event lands here, on every peer. Only the host changes shared state (see the helpers). */
+  private onInteractEvent(e: InteractEvent): void {
+    switch (e.type) {
+      case 'gate':
+        this.onChannelOpened(e.gateId);
+        return;
+      case 'transit':
+        if (e.phase === 'start') this.onRideStart(e.transitId);
+        return;
+      case 'drop':
+        this.onWinchDrop(e.propId, e.x, e.z);
+        return;
+      // the interactable already applied its effect to the local player (status, buff, talk); nothing is replicated for these yet
+      case 'npc':
+      case 'boon':
+      case 'station':
+      case 'gate:cancel':
+        return;
+    }
+  }
+
+  /** K9: a channel finished on the host: a device sets its flag, a barricade opens for every peer. Guests mirror the 'cg:' key. */
+  private onChannelOpened(gateId: string): void {
+    if (!G.net.isAuthority) return;
+    if (gateId.startsWith(DEVICE_FLAG_PREFIX)) this.requestEvent(gateId, true);
+    else G.net.broadcast('gate', { key: `cg:${gateId}`, open: true });
+  }
+
+  /** K9: a cart started its ride (host, or a guest mirroring the host's 'tr:' key). The host tells the others; riders carry on. */
+  private onRideStart(transitId: string): void {
+    const cart = this.transits.get(transitId);
+    if (!cart) return;
+    if (G.net.isAuthority) G.net.broadcast('gate', { key: `tr:${transitId}`, open: true });
+    this.carryLocalRider(cart);
+  }
+
+  /**
+   * K9: the local player rides when they stood within the board radius at departure. A per-frame ticker keeps them at the same
+   * offset from the cart until it arrives. Each peer moves only its own player.
+   */
+  private carryLocalRider(cart: TransitCart): void {
+    const p = this.player;
+    const ctl = this.controller;
+    if (!p || !ctl || p.isDead) return;
+    const ox = p.position.x - cart.position.x;
+    const oz = p.position.z - cart.position.z;
+    if (Math.hypot(ox, oz) > TRANSIT_BOARD_M) return;
+    const stop = this.addTicker(() => {
+      if (!cart.riding || p.isDead) {
+        stop();
+        return;
+      }
+      ctl.teleport(cart.position.x + ox, cart.position.z + oz);
+    });
+  }
+
+  /**
+   * K9: a winch dropped on the host. Ring damage (full at the centre, falling to the ring edge; elites capped at eliteCap %) and a
+   * stun for non-ccImmune enemies inside the ring. The drop replicates as a 'dr:' key so guests show the winch as used.
+   * playerCoef (damage to players in the ring) is not applied yet.
+   */
+  private onWinchDrop(propId: string, x: number, z: number): void {
+    if (!G.net.isAuthority) return;
+    const def = this.def.extras?.dropProps?.find((d) => d.id === propId);
+    const world = this.world;
+    if (!def || !world) return;
+    G.net.broadcast('gate', { key: `dr:${propId}`, open: true });
+    const byId = this.player?.id ?? null;
+    for (const e of world.enemies) {
+      if (e.isDead || e.removed) continue;
+      const d = Math.hypot(e.position.x - x, e.position.z - z);
+      if (d > def.ring) continue;
+      const f = 1 - d / def.ring;
+      const elite = e.def.rank !== 'trash';
+      const pct = Math.min(def.dmgPctMax * f, elite ? def.eliteCap : Infinity) / 100;
+      const stun = e.def.ccImmune ? undefined : [{ status: 'stun' as const, duration: def.stun }];
+      G.combat.applyDamageToEnemy(e, e.maxHp * pct, false, 'physical', byId, stun);
+    }
   }
 
   /** Treasure chest contents (GDD_CONTENT 1.3): one elite drop + gold; in M+ gold and a health globe only. */
@@ -1033,6 +1183,30 @@ export class DungeonScene implements GameScene {
       );
     }
 
+    // ---- P-39 / P-41: a poise break on a boss runs its move-bridge break (cancels its strings, script onBreak once per break) ----
+    ev.on('poise:break', ({ enemyId }) => {
+      if (!G.net.isAuthority) return;
+      const e = this.world?.get(enemyId) as Enemy | undefined;
+      if (e?.ai instanceof BossController) bossBreak(e.ai);
+    });
+
+    // ---- K9: guest requests for the interactables; the host applies them (ChannelGate, TransitCart, DropWinch send these) ----
+    this.netOff.push(
+      G.net.onRequest('gate:open', (d) => {
+        if (!G.net.isAuthority || typeof d.gateId !== 'string') return;
+        this.channelGates.get(d.gateId)?.open();
+      }),
+      G.net.onRequest('transit:ride', (d) => {
+        if (!G.net.isAuthority || typeof d.id !== 'string' || !this.player) return;
+        const cart = this.transits.get(d.id);
+        if (cart) cart.ride(cart.nearbyRiders(this.player));
+      }),
+      G.net.onRequest('drop:winch', (d) => {
+        if (!G.net.isAuthority || typeof d.id !== 'string') return;
+        this.winches.get(d.id)?.fire(this.player?.id ?? -1);
+      }),
+    );
+
     // ---- death -> release ----
     ev.on('player:releaseRequested', () => {
       const p = this.player;
@@ -1078,6 +1252,21 @@ export class DungeonScene implements GameScene {
         }
         if (m.key.startsWith('shrine:')) {
           this.shrines.get(m.key.slice(7))?.activate(false);
+          return;
+        }
+        // K9 mirrors: a channel gate opened, a cart started its ride, a winch dropped (the host sends these)
+        if (m.key.startsWith('cg:')) {
+          this.channelGates.get(m.key.slice(3))?.open();
+          return;
+        }
+        if (m.key.startsWith('tr:')) {
+          const cart = this.transits.get(m.key.slice(3));
+          if (cart && !cart.riding && this.player) cart.ride([this.player]);
+          return;
+        }
+        if (m.key.startsWith('dr:')) {
+          const w = this.winches.get(m.key.slice(3));
+          if (w) w.dropped = true;
           return;
         }
         const g = this.built?.gates.get(m.key);
