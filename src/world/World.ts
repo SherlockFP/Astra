@@ -27,6 +27,8 @@ export class World {
   private nextHostId = HOST_DYNAMIC_ID_BASE;
   /** Systems that want a per-frame tick tied to this world's lifetime (hazards, affixes, spawners). */
   private systems: { update(dt: number): void; dispose?(): void }[] = [];
+  /** Entities removed this frame. Reused every frame so update() does not allocate. */
+  private readonly doomed: Entity[] = [];
 
   constructor(scene: THREE.Scene, nav?: NavGrid) {
     this.scene = scene;
@@ -184,7 +186,13 @@ export class World {
         console.error('[world] system update failed', err);
       }
     }
-    for (const e of [...this.entities.values()]) if (e.removed) this.removeNow(e);
+    const doomed = this.doomed;
+    for (const e of this.entities.values()) if (e.removed) doomed.push(e);
+    try {
+      for (const e of doomed) this.removeNow(e);
+    } finally {
+      doomed.length = 0;
+    }
     _v.set(0, 0, 0);
   }
 

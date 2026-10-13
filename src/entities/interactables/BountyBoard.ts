@@ -22,7 +22,7 @@ export class BountyBoard extends InteractableProp {
 
   /** visualExists: the world builder already draws a board/signpost here, so only add interaction + label. */
   async load(visualExists = false): Promise<void> {
-    if (!visualExists) await this.loadModel(propUrl('notice_board'), { ownMaterials: true });
+    if (!visualExists) await this.loadModel(propUrl('notice_board'));
     this.setLabel('<div class="efs-wl"><div class="n" style="color:#ffd982">İlan Tahtası</div><div class="s">Günlük görevler</div></div>', 3.5, 'efs-wl-wrap', 40);
   }
 

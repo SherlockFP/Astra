@@ -4,6 +4,7 @@ import { Assets } from '../core/Assets';
 import { applyPSXTexture } from '../render/psx';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { AnimController } from './AnimController';
+import { disposeFlashClones, mapMeshMaterials } from './sharedMaterials';
 import { getItemBase } from '../data/items';
 import { CLASSES } from '../data/classes';
 import type { ClassId, ResourceType } from '../types/common';
@@ -290,15 +291,6 @@ function findBone(root: THREE.Object3D, name: string): THREE.Object3D | null {
   return found;
 }
 
-function eachMaterial(root: THREE.Object3D, fn: (m: THREE.Material, mesh: THREE.Mesh) => void): void {
-  root.traverse((o) => {
-    const m = o as THREE.Mesh;
-    if (!m.isMesh) return;
-    if (Array.isArray(m.material)) m.material.forEach((x) => fn(x, m));
-    else fn(m.material, m);
-  });
-}
-
 function tipOf(obj: THREE.Object3D): THREE.Object3D {
   const box = new THREE.Box3();
   // measure in the object's own frame: temporarily detach transforms by working on geometry bounds
@@ -367,8 +359,8 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
     return { root: holder, anim: null, classId, shadow: null, async setGear() {}, setVariant() {}, setHideHelm() {}, setNodeOverride() {}, getBone: () => null, getWeaponRoot: () => null, getWeaponTip: () => null, createGhost: () => null, dispose() {} };
   }
 
+  // the body keeps the model's materials until applyVariant swaps in the shared variant (no per-instance copies)
   const body = G.assets.instantiate(url);
-  Assets.cloneMaterials(body); // own materials: variant recolour + hit flash never leak to other instances
   body.traverse((o) => {
     const m = o as THREE.SkinnedMesh;
     if (m.isSkinnedMesh) m.frustumCulled = false;
@@ -413,7 +405,7 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
       G.vfx.weaponGlow(o, 0);
     } catch { /* ignore */ }
     o.removeFromParent();
-    eachMaterial(o, (m) => m.dispose());
+    disposeFlashClones(o); // gear draws the model's materials: only VFX flash clones are ours to free
     delete attached[slot];
     if (slot !== 'helm') delete attachedTips[slot];
   };
@@ -430,8 +422,7 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
       warnOnce('item:' + mUrl, `[character] item model failed: ${mUrl}`);
       return false;
     }
-    const obj = G.assets.instantiate(mUrl);
-    Assets.cloneMaterials(obj);
+    const obj = G.assets.instantiate(mUrl); // gear is never tinted per instance: it draws the model's materials
     obj.name = `Gear_${slot}`;
     obj.position.set(...a.pos);
     if (a.quat) obj.quaternion.set(...a.quat);
@@ -532,19 +523,17 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
   };
 
   const applyVariant = () => {
-    body.traverse((o) => {
-      const m = o as THREE.Mesh;
-      if (!m.isMesh) return;
-      const mats = Array.isArray(m.material) ? m.material : [m.material];
-      for (const mat of mats) {
-        const sm = mat as THREE.MeshStandardMaterial;
-        // resolve the original palette even if this material was re-cloned by someone else (menu/preview code does)
-        const base = sm.map ? baseOf.get(sm.map) ?? sm.map : null;
-        const rec = base ? recolorTexture(base, variant, classId) : null;
-        sm.map = rec ?? base;
-        if (sm.color) sm.color.setHex(tint ?? 0xffffff);
-        sm.needsUpdate = true;
-      }
+    // one shared material per palette material and variant / tint (Assets.sharedMaterial). The palette is resolved from the
+    // source material, so a material another party re-cloned still recolours from the original palette texture.
+    mapMeshMaterials(body, (src) => {
+      const sm = src as THREE.MeshStandardMaterial;
+      const base = sm.map ? baseOf.get(sm.map) ?? sm.map : null;
+      const rec = base ? recolorTexture(base, variant, classId) : null;
+      return Assets.sharedMaterial(sm, `variant|${variant}|${tint ?? ''}`, (c) => {
+        const m = c as THREE.MeshStandardMaterial;
+        m.map = rec ?? base;
+        if (m.color) m.color.setHex(tint ?? 0xffffff);
+      });
     });
   };
 
@@ -664,7 +653,7 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
       for (const slot of ['weapon', 'offhand', 'helm'] as const) detach(slot);
       anim.dispose();
       holder.removeFromParent();
-      eachMaterial(body, (m) => m.dispose());
+      disposeFlashClones(body); // the body's shared variants stay alive for the other characters
     },
   };
   return model;

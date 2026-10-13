@@ -3,6 +3,7 @@ import { G } from '../game/G';
 import { Assets } from '../core/Assets';
 import { AnimController } from '../entities/AnimController';
 import { loadCharacterModel } from '../entities/CharacterModel';
+import { copyMeshMaterials, disposeFlashClones, mapMeshMaterials } from '../entities/sharedMaterials';
 import type { ClassId } from '../types/common';
 import { disposeSkeletons, setEmissiveHighlight } from './SceneKit';
 import { VARIANTS } from '../ui/menu/classInfo';
@@ -51,14 +52,14 @@ export function setAccessories(root: THREE.Object3D, visible: string[]): void {
   });
 }
 
+/** Sets every mesh colour under `root` to `hex`: one shared material per model material and tint (Assets.sharedMaterial). */
 export function tintObject(root: THREE.Object3D, hex: number): void {
-  const c = new THREE.Color(hex);
-  root.traverse((o) => {
-    const m = o as THREE.Mesh;
-    if (!m.isMesh) return;
-    const list = Array.isArray(m.material) ? m.material : [m.material];
-    for (const mat of list as THREE.MeshStandardMaterial[]) if (mat && mat.color) mat.color.copy(c);
-  });
+  mapMeshMaterials(root, (src) =>
+    Assets.sharedMaterial(src, `tint|${hex}`, (c) => {
+      const m = c as THREE.MeshStandardMaterial;
+      if (m.color) m.color.set(hex);
+    }),
+  );
 }
 
 export async function createCharacterVisual(classId: ClassId, variant = 0): Promise<CharVisual> {
@@ -77,7 +78,6 @@ export async function createCharacterVisual(classId: ClassId, variant = 0): Prom
     const url = classModelUrl(classId);
     await G.assets.load(url);
     const obj = G.assets.instantiate(url);
-    Assets.cloneMaterials(obj);
     setAccessories(obj, DEFAULT_VISIBLE[classId] ?? DEFAULT_VISIBLE.knight ?? []);
     tintObject(obj, VARIANTS[variant % VARIANTS.length].tint);
     obj.traverse((o) => {
@@ -88,11 +88,10 @@ export async function createCharacterVisual(classId: ClassId, variant = 0): Prom
     if (shadow) obj.add(shadow);
     root = obj;
     anim = new AnimController(obj, G.assets.clips(url));
-  } else {
-    // unique materials per instance so highlight/tint never leaks to sibling stands
-    Assets.cloneMaterials(root);
   }
+  // the highlight pulse writes emissive per stand: it gets its own copies, the shared tint / variant materials stay untouched
   const rootRef = root;
+  const highlightCopies = copyMeshMaterials(rootRef);
   const vis: CharVisual = {
     root: rootRef,
     anim,
@@ -104,6 +103,8 @@ export async function createCharacterVisual(classId: ClassId, variant = 0): Prom
     dispose() {
       anim?.dispose();
       rootRef.removeFromParent();
+      for (const s of highlightCopies) for (const m of s.copies) m.dispose();
+      disposeFlashClones(rootRef);
       disposeSkeletons(rootRef); // every stand / pedestal rebuild used to leak the rig's bone texture
     },
   };

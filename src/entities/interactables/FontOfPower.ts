@@ -38,7 +38,7 @@ export class FontOfPower extends InteractableProp {
       this.adoptModel(anchor);
       m = anchor;
     } else {
-      m = await this.loadModel(propUrl('font_of_power'), { ownMaterials: true });
+      m = await this.loadModel(propUrl('font_of_power'));
       this.ring = m.getObjectByName('rune_ring') ?? null;
       this.shards = m.getObjectByName('shards') ?? null;
       this.shardsBaseY = this.shards?.position.y ?? 0;

@@ -62,12 +62,15 @@ export class PropGlow {
   }
 }
 
-/** Frees the materials of a model instance an entity cloned for itself (Assets.cloneMaterials). Textures are shared and stay alive. */
+/**
+ * Frees the materials of a model instance an entity cloned for itself (Assets.cloneMaterials). Textures are shared and stay alive.
+ * Shared variants (Assets.sharedMaterial) are skipped: other instances draw them.
+ */
 export function disposeInstanceMaterials(root: THREE.Object3D): void {
   root.traverse((o) => {
     const m = o as THREE.Mesh;
     if (!m.isMesh) return;
-    for (const mat of Array.isArray(m.material) ? m.material : [m.material]) mat?.dispose();
+    for (const mat of Array.isArray(m.material) ? m.material : [m.material]) if (mat && !Assets.isSharedMaterial(mat)) mat.dispose();
   });
 }
 

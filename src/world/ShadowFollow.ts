@@ -1,9 +1,11 @@
 import * as THREE from 'three';
+import { requestShadowMapUpdate } from '../render/shadowPolicy';
 
 /**
  * Shadow box of a scene's one shadow-casting directional light (town sun, dungeon theme light, open-world sun). The ortho box is
  * SHADOW_HALF_EXTENT metres around the focus (the local player) and is re-centred every frame. Its centre is snapped to whole
- * shadow texels in the light's view plane, so shadow edges do not crawl while the player walks. OWNER: world module.
+ * shadow texels in the light's view plane, so shadow edges do not crawl while the player walks. A re-centre to a new texel asks
+ * for a shadow map redraw (render/shadowPolicy). OWNER: world module.
  */
 
 /** Half-size (m) of the shadow box around the focus point. */
@@ -16,6 +18,8 @@ const _toSun = new THREE.Vector3();
 const _x = new THREE.Vector3();
 const _y = new THREE.Vector3();
 const _t = new THREE.Vector3();
+/** Last snapped centre per light (view-plane texel coordinates). */
+const lastSnap = new WeakMap<THREE.DirectionalLight, { x: number; y: number }>();
 
 /**
  * One-time setup of a directional shadow light: shadow casting on, map size, and the ortho box (+-SHADOW_HALF_EXTENT).
@@ -32,6 +36,7 @@ export function configureShadowBox(light: THREE.DirectionalLight, o: { near?: nu
   sc.near = o.near ?? 1;
   sc.far = o.far ?? 220;
   sc.updateProjectionMatrix();
+  requestShadowMapUpdate();
 }
 
 /**
@@ -50,6 +55,13 @@ export function followShadowBox(light: THREE.DirectionalLight, focus: THREE.Vect
   _t.set(focus.x, 0, focus.z);
   const px = _t.dot(_x), py = _t.dot(_y);
   const sx = Math.round(px / texel) * texel, sy = Math.round(py / texel) * texel;
+  let last = lastSnap.get(light);
+  if (!last) lastSnap.set(light, (last = { x: NaN, y: NaN }));
+  if (last.x !== sx || last.y !== sy) {
+    last.x = sx;
+    last.y = sy;
+    requestShadowMapUpdate();
+  }
   _t.addScaledVector(_x, sx - px).addScaledVector(_y, sy - py);
   light.target.position.copy(_t);
   light.target.updateMatrixWorld();

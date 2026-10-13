@@ -4,6 +4,7 @@ import { Entity } from './Entity';
 import type { Interactable } from './Interactable';
 import type { Player } from './Player';
 import { G } from '../game/G';
+import { Assets } from '../core/Assets';
 import { RARITY_COLORS, type Rarity } from '../types/common';
 import type { ItemInstance } from '../types/items';
 import type { VfxHandle } from '../vfx/VFX';
@@ -260,17 +261,17 @@ export class LootDrop extends Entity implements Interactable {
       const obj = G.assets.instantiate(url);
       obj.scale.setScalar(1.0);
       this.visual.add(obj);
-      // lighten the bag by the rarity colour so it reads at a distance
+      // lighten the bag by the rarity colour so it reads at a distance (one shared material per rarity colour)
+      const glow = item.rarity === 'rare' ? 0.15 : 0.3;
       obj.traverse((o) => {
         const mesh = o as THREE.Mesh;
         if (mesh.isMesh && (item.rarity === 'rare' || item.rarity === 'epic' || item.rarity === 'legendary' || item.rarity === 'set')) {
-          const cloned = (mesh.material as THREE.Material).clone() as THREE.MeshStandardMaterial;
-          if ('emissive' in cloned) {
-            cloned.emissive = new THREE.Color(rc);
-            cloned.emissiveIntensity = item.rarity === 'rare' ? 0.15 : 0.3;
-          }
-          patchPSX(cloned);
-          mesh.material = cloned;
+          mesh.material = Assets.sharedMaterial(mesh.material as THREE.MeshStandardMaterial, `loot|${rc}|${glow}`, (c) => {
+            if ('emissive' in c) {
+              c.emissive = new THREE.Color(rc);
+              c.emissiveIntensity = glow;
+            }
+          });
         }
       });
     };

@@ -10,6 +10,7 @@ import type { EntityId } from '../types/common';
 import type { BossDef, EnemyAttach, EnemyDef } from '../types/enemies';
 import type { EnemyAI } from '../ai/EnemyAI';
 import { inView } from './ViewCull';
+import { copyMeshMaterials, disposeFlashClones, mapMeshMaterials, materialsOf, restoreMeshMaterials, type MaterialSwap } from './sharedMaterials';
 
 // Hide lists and hp-driven node toggles address meshes by name: keep those meshes separate when models are merged on load.
 for (const d of [...Object.values(ENEMIES), ...Object.values(BOSSES)]) {
@@ -147,7 +148,12 @@ export class Enemy extends Actor {
   private warmFrames = 3;
   private proc: ProcModel | null = null;
   private shadow: THREE.Object3D | null = null;
-  private mats: { m: THREE.Material; base: number }[] = [];
+  /** Materials this entity made itself (procedural bodies). Freed on removal. */
+  private ownMats: THREE.Material[] = [];
+  /** Own copies of the shared model materials while the entity fades (stealth, corpse sink); gone again once it is opaque. */
+  private fade: MaterialSwap[] | null = null;
+  /** Set by ownMaterials(): the copies stay for good (per-instance affix tints and opacity). */
+  private keepOwn = false;
   private alphaNow = 1;
   private alphaTarget = 1;
   private animT = Math.random() * 10;
@@ -298,12 +304,12 @@ export class Enemy extends Actor {
       const proc = buildProcModel(def.model.slice(5), def.tint);
       if (proc) {
         this.proc = proc;
+        this.ownMats = materialsOf(proc.root);
         holder.add(proc.root);
       } else console.warn(`[enemy] unknown procedural model ${def.model}`);
     } else {
       const asset = await G.assets.load(def.model);
       const root = G.assets.instantiate(def.model);
-      Assets.cloneMaterials(root);
       let clips = asset?.clips ?? [];
       if (vis.clipsFrom) {
         const extra = await G.assets.load(vis.clipsFrom);
@@ -356,14 +362,7 @@ export class Enemy extends Actor {
     noShadows(holder);
     this.setModel(holder, anim);
     this.holder = holder;
-
-    // collectable materials (alpha / disposal)
-    this.mats = [];
-    holder.traverse((o) => {
-      const m = o as THREE.Mesh;
-      if (!m.isMesh) return;
-      for (const mat of Array.isArray(m.material) ? m.material : [m.material]) this.mats.push({ m: mat, base: mat.opacity });
-    });
+    if (this.keepOwn) this.copyForFade(); // ownMaterials() was called before the model arrived
 
     // shadow
     try {
@@ -400,22 +399,24 @@ export class Enemy extends Actor {
     return h * def.scale * this.visualScale;
   }
 
-  /** Tint / emissive / eye / ghost opacity on the cloned materials. */
+  /**
+   * Tint / emissive / eye / ghost opacity. Every mesh gets the shared variant of its model material for this style
+   * (Assets.sharedMaterial), so all enemies of one def share their materials. Nothing is mutated per instance.
+   */
   private styleMaterials(root: THREE.Object3D): void {
     const def = this.def;
     const vis = def.visual ?? {};
     const tint = def.tint !== undefined ? new THREE.Color(def.tint) : null;
     const emissive = def.emissive !== undefined ? new THREE.Color(def.emissive) : null;
     const eye = vis.eyeEmissive !== undefined ? new THREE.Color(vis.eyeEmissive) : null;
-    root.traverse((o) => {
-      const mesh = o as THREE.Mesh;
-      if (!mesh.isMesh) return;
-      const list = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      for (const raw of list) {
-        const m = raw as THREE.MeshStandardMaterial;
-        const nm = m.name ?? '';
-        const isEye = EYE_RE.test(nm) || EYE_RE.test(mesh.name);
-        if (!isEye && !SOFT_RE.test(nm) && tint && m.color) m.color.multiply(tint);
+    mapMeshMaterials(root, (src, mesh) => {
+      const nm = src.name ?? '';
+      const isEye = EYE_RE.test(nm) || EYE_RE.test(mesh.name);
+      const soft = SOFT_RE.test(nm);
+      const key = [isEye ? 'eye' : '', soft ? 'soft' : '', tint?.getHex() ?? '', emissive?.getHex() ?? '', eye?.getHex() ?? '', vis.emissiveIntensity ?? '', vis.opacity ?? ''].join('|');
+      return Assets.sharedMaterial(src, key, (c) => {
+        const m = c as THREE.MeshStandardMaterial;
+        if (!isEye && !soft && tint && m.color) m.color.multiply(tint);
         if (isEye) {
           if (eye && m.emissive) {
             m.emissive.copy(eye);
@@ -430,12 +431,12 @@ export class Enemy extends Actor {
           m.opacity = vis.opacity;
           m.depthWrite = false;
         }
-        if ((m as THREE.MeshStandardMaterial).metalness !== undefined && !m.map && !m.vertexColors && m.metalness > 0.05) {
+        if (m.metalness !== undefined && !m.map && !m.vertexColors && m.metalness > 0.05) {
           // FBX2glTF flat-colour monsters (metalness 0.4) render muddy without an environment map
           m.metalness = 0;
           m.roughness = 1;
         }
-      }
+      });
     });
   }
 
@@ -446,7 +447,7 @@ export class Enemy extends Actor {
       await G.assets.load(a.url);
       if (this.removed) return;
       const obj = G.assets.instantiate(a.url);
-      Assets.cloneMaterials(obj);
+      mapMeshMaterials(obj, (src) => Assets.sharedMaterial(src, 'plain', () => {}));
       obj.name = 'Prop';
       obj.position.set(...(a.pos ?? [0, 0.0333, 0]));
       if (a.quat) obj.quaternion.set(...a.quat);
@@ -481,18 +482,45 @@ export class Enemy extends Actor {
     }
   }
 
+  /**
+   * Opacity on this entity's own materials only: the copies of a fade and the procedural bodies. While the entity is opaque
+   * it wears the shared model materials again (the copies are freed), so a stealth reveal or a finished corpse fade costs nothing.
+   */
   private applyAlpha(): void {
     const a = this.alphaNow;
-    for (const e of this.mats) {
-      const baseOp = this.def.visual?.opacity ?? 1;
-      const op = Math.min(1, baseOp) * a;
-      e.m.opacity = op;
-      const transparent = op < 0.995;
-      if (e.m.transparent !== transparent && baseOp >= 1) {
-        e.m.transparent = transparent;
-        e.m.depthWrite = !transparent;
+    if (a >= 0.995) this.shareAgain();
+    else this.copyForFade();
+    const baseOp = this.def.visual?.opacity ?? 1;
+    const op = Math.min(1, baseOp) * a;
+    const transparent = op < 0.995;
+    const targets = this.fade ? [...this.ownMats, ...this.fade.flatMap((s) => s.copies)] : this.ownMats;
+    for (const m of targets) {
+      m.opacity = op;
+      if (m.transparent !== transparent && baseOp >= 1) {
+        m.transparent = transparent;
+        m.depthWrite = !transparent;
       }
     }
+  }
+
+  /**
+   * Gives this entity its own copies of the model materials for good. Call it before changing this entity's materials
+   * per instance: the M+ affix tints and opacity (systems/Affixes.ts) write straight onto the materials they find.
+   */
+  ownMaterials(): void {
+    this.keepOwn = true;
+    this.copyForFade();
+  }
+
+  private copyForFade(): void {
+    if (this.fade || !this.holder) return;
+    this.fade = copyMeshMaterials(this.holder, (m) => Assets.isSharedMaterial(m));
+  }
+
+  private shareAgain(): void {
+    if (!this.fade || this.keepOwn) return;
+    restoreMeshMaterials(this.fade);
+    this.fade = null;
   }
 
   // -------------------------------------------------------------------------------------------------------------------
@@ -746,9 +774,12 @@ export class Enemy extends Actor {
       if (vis?.spin && this.proc) this.holder.rotation.y += vis.spin * dt;
     }
 
-    // alpha smoothing
+    // alpha smoothing (a finished fade to opaque snaps to 1 so the shared materials come back)
     if (Math.abs(this.alphaNow - this.alphaTarget) > 0.004) {
       this.alphaNow += (this.alphaTarget - this.alphaNow) * Math.min(1, dt * 8);
+      this.applyAlpha();
+    } else if (this.fade?.length && !this.keepOwn && this.alphaTarget >= 1) {
+      this.alphaNow = 1;
       this.applyAlpha();
     }
     // nodes that disappear below an HP threshold (Zakhar hides the trident)
@@ -844,13 +875,18 @@ export class Enemy extends Actor {
     this.ai = null;
     this.proc?.dispose();
     this.proc = null;
-    // every material on the model is this entity's own clone
-    for (const e of this.mats) {
+    // the shared model materials stay in the cache: only this entity's copies, procedural materials and flash clones are freed
+    if (this.fade) {
+      restoreMeshMaterials(this.fade);
+      this.fade = null;
+    }
+    if (this.holder) disposeFlashClones(this.holder);
+    for (const m of this.ownMats) {
       try {
-        e.m.dispose();
+        m.dispose();
       } catch { /* ignore */ }
     }
-    this.mats = [];
+    this.ownMats = [];
     if (this.shadow) {
       this.shadow.removeFromParent();
       this.shadow = null;

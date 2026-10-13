@@ -78,7 +78,7 @@ export class Chest extends InteractableProp {
   }
 
   async load(): Promise<void> {
-    const m = await this.loadModel(propUrl(`chest_${this.tier}`), { ownMaterials: true });
+    const m = await this.loadModel(propUrl(`chest_${this.tier}`)); // static materials: the lid moves, nothing recolours
     this.lid = m.getObjectByName('lid') ?? null;
     this.fxPos = this.nodeLocal('loot_fx', new THREE.Vector3(0, 0.9, 0));
     const info = TIER_INFO[this.tier];

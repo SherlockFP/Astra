@@ -4,7 +4,7 @@ import type { BossDef, EnemyDef } from '../../types/enemies';
 import { G } from '../../game/G';
 import { Assets } from '../../core/Assets';
 import { propUrl } from '../../scenes/SceneKit';
-import { disposeInstanceMaterials } from './InteractableProp';
+import { disposeFlashClones, mapMeshMaterials } from '../sharedMaterials';
 import type { WorldLabelHandle } from '../../ui/UI';
 import type { World } from '../../world/World';
 
@@ -76,11 +76,16 @@ export class TrainingDummy extends Enemy {
     await G.assets.load(url);
     const m = G.assets.instantiate(url);
     m.scale.setScalar(this.def.scale);
-    Assets.cloneMaterials(m); // own materials: hit flashes must not light up every dummy at once
+    // one shared material per dummy kind (hit flashes clone their own copy, so one flash never lights up every dummy)
+    const tintHex = this.dummyKind === 'elite' ? 0xffd070 : this.dummyKind === 'boss' ? 0xff8a7a : undefined;
+    mapMeshMaterials(m, (src) =>
+      Assets.sharedMaterial(src, tintHex === undefined ? 'plain' : `color|${tintHex}`, (c) => {
+        const mat = c as THREE.MeshStandardMaterial;
+        if (tintHex !== undefined) mat.color?.set(tintHex);
+      }),
+    );
     const holder = new THREE.Group();
     holder.add(m);
-    if (this.dummyKind === 'elite') this.tintVisual(m, 0xffd070);
-    if (this.dummyKind === 'boss') this.tintVisual(m, 0xff8a7a);
     m.traverse((o) => {
       const mesh = o as THREE.Mesh;
       if (mesh.isMesh) {
@@ -91,14 +96,6 @@ export class TrainingDummy extends Enemy {
     this.visual = holder;
     this.model = holder;
     this.object3d.add(holder);
-  }
-
-  private tintVisual(m: THREE.Object3D, hex: number): void {
-    m.traverse((o) => {
-      const mesh = o as THREE.Mesh;
-      if (!mesh.isMesh) return;
-      for (const mat of (Array.isArray(mesh.material) ? mesh.material : [mesh.material]) as THREE.MeshStandardMaterial[]) mat.color?.set(hex);
-    });
   }
 
   onAdded(world: World): void {
@@ -194,8 +191,8 @@ export class TrainingDummy extends Enemy {
     this.off = null;
     this.label?.remove();
     this.label = null;
-    // the dummy's materials were cloned for it in loadModel (Assets.cloneMaterials): nothing else uses them
-    if (this.visual) disposeInstanceMaterials(this.visual);
+    // the dummy draws shared materials (loadModel): only the clones its hit flashes made are freed
+    if (this.visual) disposeFlashClones(this.visual);
     super.onRemoved();
   }
 }

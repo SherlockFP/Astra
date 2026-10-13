@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { G } from '../game/G';
-import { Assets } from '../core/Assets';
+import { isPSXPatched, patchPSX } from '../render/psx';
+import { applyShadowPolicy } from '../render/shadowPolicy';
 
 /**
  * Decor: animated/lit props. Gen props (Blender-made, /assets/models/gen/props/) expose named child nodes
@@ -94,9 +95,6 @@ function spinTexture(tex: THREE.Texture | null | undefined, dt: number, speed: n
   tex.rotation += dt * speed;
 }
 
-/** Animated props cast shadows only when their largest world side reaches this (m). Lamp posts, banners, altars and wagons do; braziers, chests and crystals do not. */
-export const ANIMATED_SHADOW_MIN_EXTENT = 2;
-
 /**
  * Nodes that stay separate objects: they are animated by setupAnimatedProp, or looked up by name by the entity modules (lids,
  * obelisk slots, rune rings, portal surfaces ...). Lower-case substring match on the node and its ancestors below the prop root.
@@ -169,18 +167,13 @@ function mergeStaticParts(obj: THREE.Object3D): void {
   }
 }
 
-const _size = new THREE.Vector3();
-/** Shadow rule of an animated prop: every mesh casts only when the prop is large (world-space largest side); receiving stays on. */
+/** Shadow rule of an animated prop: each mesh follows the shared caster policy (render/shadowPolicy); receiving stays on. */
 function applyPropShadows(obj: THREE.Object3D): void {
-  const size = new THREE.Box3().setFromObject(obj).getSize(_size);
-  const cast = Math.max(size.x, size.y, size.z) >= ANIMATED_SHADOW_MIN_EXTENT;
   obj.traverse((o) => {
     const m = o as THREE.Mesh;
-    if (m.isMesh) {
-      m.castShadow = cast;
-      m.receiveShadow = true;
-    }
+    if (m.isMesh) m.receiveShadow = true;
   });
+  applyShadowPolicy(obj);
 }
 
 /** Clone a gen prop and wire its named nodes (flames flicker, rings spin, crystals float, cloth sways...). */
@@ -302,6 +295,45 @@ export interface StaticObjOpts {
   pose?: string;
   /** Character models: accessory node names that stay visible (all other toggleable accessories are hidden). */
   show?: string[];
+  /** The object is handled by a system that may write its materials (interactables): give it its own material copies. */
+  ownMaterials?: boolean;
+}
+
+/**
+ * Shared override materials of static props, keyed by source material and override values. Props with the same tint / glow /
+ * opacity used to clone their own materials (~1k unique materials in the open world). Nothing writes to these per object: a
+ * fade clones before it changes anything (camera/OccluderFade), and object-owned materials are kept for handled props.
+ */
+const propMaterials = new Map<string, THREE.Material>();
+
+/** A copy of `src` with the tint / glow / opacity override applied (PSX patch kept). */
+function overriddenCopy(src: THREE.Material, o: StaticObjOpts): THREE.Material {
+  const m = src.clone();
+  if (isPSXPatched(src)) patchPSX(m); // Material.clone() drops onBeforeCompile
+  const sm = m as THREE.MeshStandardMaterial;
+  if (o.tint !== undefined && sm.color) sm.color.multiply(new THREE.Color(o.tint));
+  if (o.emissive !== undefined && sm.emissive) {
+    sm.emissive.copy(new THREE.Color(o.emissive));
+    sm.emissiveIntensity = o.emissiveIntensity ?? 1;
+  }
+  if (o.opacity !== undefined && o.opacity < 1) {
+    sm.transparent = true;
+    sm.opacity = Math.max(0, o.opacity);
+    sm.depthWrite = o.opacity > 0.9;
+  }
+  sm.needsUpdate = true;
+  return m;
+}
+
+/** The shared override material for a source material (one per distinct key). */
+function propMaterialFor(src: THREE.Material, o: StaticObjOpts): THREE.Material {
+  const key = `${src.uuid}|${o.tint ?? ''}|${o.emissive ?? ''}|${o.emissiveIntensity ?? ''}|${o.opacity ?? ''}`;
+  let m = propMaterials.get(key);
+  if (!m) {
+    m = overriddenCopy(src, o);
+    propMaterials.set(key, m);
+  }
+  return m;
 }
 
 /** Accessories that the KayKit adventurers show by default NOT (characters.md loadout table: the "h" entries). */
@@ -368,7 +400,8 @@ export function posedFootprint(obj: THREE.Object3D, lowFrac = 0.6, trim = 0.05):
 
 /**
  * Clone a model for use as static decor. Returns null when it cannot be loaded. The caller positions it and adds it to the
- * scene. Materials are cloned (and PSX-patched again) only when a tint / emissive / opacity override needs them.
+ * scene. A tint / emissive / opacity override swaps in shared override materials (see propMaterialFor), or per-object copies
+ * when `ownMaterials` is set.
  */
 export async function spawnStaticObject(url: string, o: StaticObjOpts = {}): Promise<THREE.Object3D | null> {
   const asset = await G.assets.load(url);
@@ -376,27 +409,12 @@ export async function spawnStaticObject(url: string, o: StaticObjOpts = {}): Pro
   const obj = G.assets.instantiate(url);
   const needsMat = o.tint !== undefined || o.emissive !== undefined || o.opacity !== undefined;
   if (needsMat) {
-    Assets.cloneMaterials(obj);
-    const tint = o.tint !== undefined ? new THREE.Color(o.tint) : null;
-    const em = o.emissive !== undefined ? new THREE.Color(o.emissive) : null;
     obj.traverse((n) => {
       const m = n as THREE.Mesh;
       if (!m.isMesh) return;
-      const mats = Array.isArray(m.material) ? m.material : [m.material];
-      for (const mat of mats) {
-        const sm = mat as THREE.MeshStandardMaterial;
-        if (tint && sm.color) sm.color.multiply(tint);
-        if (em && sm.emissive) {
-          sm.emissive.copy(em);
-          sm.emissiveIntensity = o.emissiveIntensity ?? 1;
-        }
-        if (o.opacity !== undefined && o.opacity < 1) {
-          sm.transparent = true;
-          sm.opacity = Math.max(0, o.opacity);
-          sm.depthWrite = o.opacity > 0.9;
-        }
-        sm.needsUpdate = true;
-      }
+      const swap = (mat: THREE.Material): THREE.Material => (o.ownMaterials ? overriddenCopy(mat, o) : propMaterialFor(mat, o));
+      if (Array.isArray(m.material)) m.material = m.material.map(swap);
+      else m.material = swap(m.material);
     });
   }
   if (asset.skinned) {

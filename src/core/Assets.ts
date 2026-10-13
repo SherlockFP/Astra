@@ -22,12 +22,16 @@ const SHADOW_MIN_EXTENT = 0.75;
 const KEEP_NAME_RE = /door|gate|lid|hinge|leaf|flag|rope|chain|wheel|blade|eye|glow|tongue|teeth|flame|fire|light|lamp|crystal|ring|shard|portal|waypoint|slot|rune|obelisk|teleport|cloth|trident|spear|socket|fx|cape|shield|helm|hat|weapon|sword|axe|staff|wand|knife|bow|book|mug|throwable|tome|dagger/;
 /** Exact node names registered by entity modules (see `Assets.keepNodeNames`). */
 const keepNames = new Set<string>();
+/** Shared material variants (Assets.sharedMaterial): source material -> variant key -> variant. Weak on the source. */
+const variantsBySource = new WeakMap<THREE.Material, Map<string, THREE.Material>>();
+/** Shared variant -> the material it was made from. */
+const sourceOfVariant = new WeakMap<THREE.Material, THREE.Material>();
 
 /**
  * Central asset cache. All loads are deduplicated by URL.
  *  - `load(url)` / `loadMany(urls)` fetch GLB/GLTF once.
  *  - `instantiate(url)` returns a fresh clone (SkeletonUtils.clone for skinned models, shared geometry/materials).
- *    Call `cloneMaterials(obj)` if you need to tint one instance.
+ *    Call `cloneMaterials(obj)` if you need to tint one instance; `sharedMaterial` gives one copy per tint instead.
  *  - `texture(url)` loads textures with PSX-friendly NearestFilter by default.
  * Missing files never throw from instantiate(): a magenta placeholder box is returned and a warning logged,
  * so one bad asset never breaks a scene.
@@ -148,6 +152,37 @@ export class Assets {
       };
       m.material = Array.isArray(m.material) ? m.material.map(cloneOne) : cloneOne(m.material);
     });
+  }
+
+  /**
+   * One material per (source, variantKey), shared by every instance that asks for it: a PSX-patched clone of `source`
+   * tuned once by `make` (tint, static emissive, map swap). Use it instead of cloneMaterials when the change is the same for
+   * all instances of the model. Never dispose these from an entity: other instances draw them, they live as long as the
+   * source (the model asset). Anything that changes per instance (fades, animated glow) still needs its own copy.
+   */
+  static sharedMaterial<T extends THREE.Material>(source: T, variantKey: string, make: (m: T) => void): T {
+    const src = Assets.sharedSource(source);
+    let variants = variantsBySource.get(src);
+    if (!variants) variantsBySource.set(src, (variants = new Map<string, THREE.Material>()));
+    let v = variants.get(variantKey) as T | undefined;
+    if (!v) {
+      v = src.clone() as T;
+      if (isPSXPatched(src)) patchPSX(v); // Material.clone() drops onBeforeCompile
+      make(v);
+      variants.set(variantKey, v);
+      sourceOfVariant.set(v, src);
+    }
+    return v;
+  }
+
+  /** True for a material returned by sharedMaterial (its users must not dispose it). */
+  static isSharedMaterial(m: THREE.Material): boolean {
+    return sourceOfVariant.has(m);
+  }
+
+  /** The material a shared variant was made from; any other material is returned as it is. */
+  static sharedSource<T extends THREE.Material>(m: T): T {
+    return (sourceOfVariant.get(m) as T | undefined) ?? m;
   }
 
   texture(url: string, opts: { nearest?: boolean; repeat?: boolean; srgb?: boolean } = {}): THREE.Texture {

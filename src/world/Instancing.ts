@@ -1,13 +1,14 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getPiece, loadPieces, type Piece, type PiecePart } from './Pieces';
+import { isShadowCaster } from '../render/shadowPolicy';
 
 /**
  * Collects static piece placements and turns them into chunked InstancedMeshes: one per
  * (chunk, model url, material variant, shadow flags). Per-instance colour (instanceColor) carries tints so a
  * single material serves every theme. Parts of one model that share a material (and vertex layout) are merged into a single
- * geometry once per model, so a multi-part prop costs one draw per chunk, not one per part. Small instances (see
- * SHADOW_MIN_EXTENT) are batched apart and never cast shadows, since every caster is re-drawn in the shadow pass. OWNER: world module.
+ * geometry once per model, so a multi-part prop costs one draw per chunk, not one per part. Instances that are not shadow casters
+ * (render/shadowPolicy) are batched apart and never cast shadows, since every caster is re-drawn in the shadow pass. OWNER: world module.
  */
 
 /** One drawable of a piece: a (possibly merged) geometry with one material. */
@@ -83,12 +84,6 @@ export interface InstOpts {
 
 interface Rec { m: THREE.Matrix4; c: THREE.Color | null }
 interface Group { url: string; chunk: string; cx: number; cz: number; cast: boolean; receive: boolean; variant: string; skip: RegExp | null; layer: CullLayer; recs: Rec[] }
-
-/**
- * Instances whose largest world-space side is below this (m) draw without a shadow: grass tufts, flowers, reeds, pebbles, small
- * rocks and clutter. Same threshold as the static-model rule in Assets (SHADOW_MIN_EXTENT). Applied per instance in build().
- */
-export const SHADOW_MIN_EXTENT = 0.75;
 
 /** Largest axis scale of an instance matrix (the matrix columns carry the scaled axes). */
 function matrixScale(m: THREE.Matrix4): number {
@@ -166,12 +161,16 @@ export class InstanceBatcher {
         missing.add(g.url);
         continue;
       }
-      // Shadow casters are decided per instance: an instance whose largest world side is under SHADOW_MIN_EXTENT is split
-      // into its own no-shadow batch (every caster is drawn again in the shadow pass).
-      const ext = Math.max(piece.size.x, piece.size.y, piece.size.z);
+      // Shadow casters are decided per instance (render/shadowPolicy), measured from the piece and the instance matrix. A
+      // non-caster instance is split into its own no-shadow batch (every caster is drawn again in the shadow pass).
+      const radius = 0.5 * piece.size.length();
       const canCast = g.cast && !piece.hasGlow;
       const casters: Rec[] = [], plain: Rec[] = [];
-      for (const r of g.recs) (canCast && ext * matrixScale(r.m) >= SHADOW_MIN_EXTENT ? casters : plain).push(r);
+      for (const r of g.recs) {
+        const s = matrixScale(r.m);
+        const top = r.m.elements[13] + piece.box.max.y * s;
+        (canCast && isShadowCaster(radius * s, top) ? casters : plain).push(r);
+      }
       if (casters.length) this.emit(g, piece, casters, true);
       if (plain.length) this.emit(g, piece, plain, false);
     }

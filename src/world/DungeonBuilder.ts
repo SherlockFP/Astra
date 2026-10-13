@@ -33,6 +33,8 @@ import { ZoneField, type BuiltZone } from './Zones';
 import { OutdoorScenery, outdoorAssetUrls } from './OutdoorBuilder';
 import { buildWorldDecor, worldAssetUrls, type WorldDecorHandle, type WorldDecorHost } from './WorldDecor';
 import { buildFloorStains, buildMotes } from './Grime';
+import { applyShadowPolicy, shouldCastShadow } from '../render/shadowPolicy';
+import { freezeStatic } from '../render/staticTransforms';
 import {
   cobwebTexture,
   flameTexture,
@@ -966,7 +968,7 @@ class DungeonBuild {
     const mat = psxMaterial(surfaceTexture('brick', 'lintel', 64), { color: new THREE.Color(mulHex(this.tint, 0xb8b0a8)), affine: false });
     const mesh = new THREE.Mesh(geo, mat);
     mesh.position.set(midx, 3.45, midz);
-    mesh.castShadow = true;
+    mesh.castShadow = shouldCastShadow(mesh);
     mesh.receiveShadow = true;
     this.root.add(mesh);
     this.disposables.push(geo, mat);
@@ -1007,7 +1009,7 @@ class DungeonBuild {
     const mat = psxMaterial(tex, { color: 0xb8bcc8, roughness: 0.6, affine: false });
     mat.clippingPlanes = [clip];
     const mesh = new THREE.Mesh(merged, mat);
-    mesh.castShadow = true;
+    mesh.castShadow = shouldCastShadow(mesh);
     mesh.receiveShadow = true;
     const grp = new THREE.Group();
     grp.name = `gate:${o.def.a}|${o.def.b}`;
@@ -1433,7 +1435,7 @@ class DungeonBuild {
       })());
     } else if (individual) {
       this.animProps.push((async () => {
-        const obj = await spawnStaticObject(p.model, { tint: p.tint, emissive: p.emissive, emissiveIntensity: p.emissiveIntensity, opacity: p.opacity, pose: p.pose, show: p.show });
+        const obj = await spawnStaticObject(p.model, { tint: p.tint, emissive: p.emissive, emissiveIntensity: p.emissiveIntensity, opacity: p.opacity, pose: p.pose, show: p.show, ownMaterials: handle !== null });
         if (!obj) {
           if (p.collide && posed) { const cells = this.blockRect(x, z, 0.55 * scale, 0.55 * scale, 0); if (handle) handle.cells = cells; }
           return;
@@ -1449,14 +1451,18 @@ class DungeonBuild {
             : this.blockRect(x, z, 0.55 * scale, 0.55 * scale, 0);
           if (handle) handle.cells = cells;
         }
+        this.root.add(obj);
+        applyShadowPolicy(obj, p.opacity === undefined);
         obj.traverse((n) => {
           const m = n as THREE.Mesh;
-          if (m.isMesh) { m.castShadow = p.opacity === undefined; m.receiveShadow = true; }
+          if (m.isMesh) m.receiveShadow = true;
         });
-        this.root.add(obj);
+        // a handled prop is moved, hidden or swapped by its entity: only untouched decor is frozen
         if (handle) {
           handle.object = obj;
           if (handle.hidden) obj.visible = false;
+        } else {
+          freezeStatic(obj);
         }
       })());
     } else {

@@ -8,6 +8,7 @@ import { ParticleField } from './Particles';
 import { Sky, makeMountainRing } from './Sky';
 import { createTerrain, type SplatOp, type Terrain } from './Terrain';
 import { glowTexture } from './ProceduralAssets';
+import { freezeStatic } from '../render/staticTransforms';
 
 /**
  * Outdoor mode of the dungeon builder (DungeonDef.outdoor = open-world zone such as Sisli Koru): a splat-mapped PSX terrain
@@ -144,6 +145,7 @@ export class OutdoorScenery {
     this.terrain = createTerrain({ half: half + 160, splatHalf: half + 6, splatRes: 512, seed: def.id, ops, grassTint: def.theme.tint ?? 0xffffff, cell: 10 });
     this.terrain.mesh.position.set(this.cx, 0, this.cz);
     this.h.root.add(this.terrain.mesh);
+    freezeStatic(this.terrain.mesh);
     this.h.disposables.push(this.terrain);
   }
 

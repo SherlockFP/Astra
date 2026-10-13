@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { G } from './G';
 import { DEFAULT_SETTINGS } from '../core/Settings';
 import { PSXPostPass, patchObjectPSX, setPSXAffine, setPSXJitter } from '../render/psx';
+import { requestShadowMapUpdate, scheduleShadowMap } from '../render/shadowPolicy';
 
 let psxPass: PSXPostPass | null = null;
 
@@ -83,8 +84,14 @@ export function installGraphics(): void {
     const s = G.settings.data;
     applyBloom();
     G.engine.renderer.shadowMap.enabled = s.shadows;
+    requestShadowMapUpdate();
     G.engine.setPixelRatio(pixelRatioFor(s));
   };
+
+  // Shadows: the map is drawn on a cadence (and at once after a change), not on every render call. See render/shadowPolicy.
+  G.engine.renderer.shadowMap.autoUpdate = false;
+  G.engine.onUpdate(() => scheduleShadowMap(G.engine.renderer.shadowMap), 90, 'shadows');
+  G.events.on('scene:changed', () => requestShadowMapUpdate());
 
   applyRender();
   applyPSX();

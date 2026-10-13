@@ -15,6 +15,8 @@ import { baseName, isAnimatedModel, propLightFor, spawnAnimatedProp, spawnStatic
 import { configureShadowBox, followShadowBox } from './ShadowFollow';
 import { Assets } from '../core/Assets';
 import { isPSXPatched, patchPSX } from '../render/psx';
+import { applyShadowPolicy, shouldCastShadow } from '../render/shadowPolicy';
+import { freezeStatic } from '../render/staticTransforms';
 import { psxMaterial, surfaceTexture, mulHex, worldUVBox } from './ProceduralAssets';
 import type { VfxId } from '../types/vfx';
 
@@ -524,10 +526,11 @@ class TownBuild {
       const g = worldUVBox(w, hgt, d, 0.25);
       const mesh = new THREE.Mesh(g, [sideM, sideM, topM, sideM, sideM, sideM]);
       mesh.position.set((x0 + x1) / 2, hgt / 2 - 0.02, (z0 + z1) / 2);
-      mesh.castShadow = true;
+      mesh.castShadow = shouldCastShadow(mesh);
       mesh.receiveShadow = true;
       mesh.name = 'terrace:' + t.id;
       this.root.add(mesh);
+      freezeStatic(mesh);
       this.disposables.push(g);
       const box: [number, number, number, number] = [Math.min(x0, x1), Math.min(z0, z1), Math.max(x0, x1), Math.max(z0, z1)];
       this.raised.push({ box, y: t.y });
@@ -547,9 +550,10 @@ class TownBuild {
         const cx = st.axis === 'z' ? (lo[0] + hi[0]) / 2 : lo[0] + (a + b) / 2;
         const cz = st.axis === 'z' ? lo[1] + (a + b) / 2 : (lo[1] + hi[1]) / 2;
         mesh.position.set(cx, yTop / 2 - 0.02, cz);
-        mesh.castShadow = true;
+        mesh.castShadow = shouldCastShadow(mesh);
         mesh.receiveShadow = true;
         this.root.add(mesh);
+        freezeStatic(mesh);
         this.disposables.push(g);
       }
       this.stairs.push({ box: [lo[0], lo[1], hi[0], hi[1]], yFrom: st.yFrom, yTo: st.yTo, axis: st.axis });
@@ -590,9 +594,10 @@ class TownBuild {
       const g = worldUVBox(w, y1 - y0, d, 0.25);
       const mesh = new THREE.Mesh(g, mat);
       mesh.position.set(cx, (y0 + y1) / 2, cz);
-      mesh.castShadow = true;
+      mesh.castShadow = shouldCastShadow(mesh);
       mesh.receiveShadow = true;
       this.root.add(mesh);
+      freezeStatic(mesh);
       this.disposables.push(g);
     };
     /** One closed ring of bands outset by `o`: north and south run over the corners, east and west fill the gap between them. */
@@ -773,8 +778,10 @@ class TownBuild {
         obj.position.set(it.x, y, it.z);
         obj.rotation.y = rot;
         obj.scale.setScalar(s);
-        obj.traverse((n) => { const m = n as THREE.Mesh; if (m.isMesh) { m.castShadow = sz.y * s > 0.5; m.receiveShadow = true; } });
         this.root.add(obj);
+        applyShadowPolicy(obj);
+        obj.traverse((n) => { const m = n as THREE.Mesh; if (m.isMesh) m.receiveShadow = true; });
+        freezeStatic(obj);
       }
       if (preset) {
         const lp = new THREE.Vector3(it.x, y + preset.y * s, it.z);
@@ -902,6 +909,7 @@ class TownBuild {
       if (!leaf) continue;
       leaf.rotation.y = ang;
       holder.add(leaf);
+      // door leaves always cast: they swing open, and the holder's x6 scale is applied after this point (policy would read 1x)
       leaf.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
       n++;
     }
@@ -1320,8 +1328,10 @@ export async function placeTownProps(props: TownProp[], origin: { x: number; z: 
           obj.position.set(wx, y, wz);
           obj.rotation.y = rot;
           obj.scale.setScalar(s);
-          obj.traverse((n) => { const m = n as THREE.Mesh; if (m.isMesh) { m.castShadow = sz.y * s > 0.5; m.receiveShadow = true; } });
           host.root.add(obj);
+          applyShadowPolicy(obj);
+          obj.traverse((n) => { const m = n as THREE.Mesh; if (m.isMesh) m.receiveShadow = true; });
+          freezeStatic(obj);
         }
       } else {
         host.batcher.add(p.model, wx, y, wz, rot, s, p.tint ?? null, { cast: sz.y * s > 0.5, receive: true, layer: 'prop' });

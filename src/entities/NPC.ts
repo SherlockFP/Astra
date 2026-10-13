@@ -7,7 +7,6 @@ import type { World } from '../world/World';
 import type { TownDef } from '../types/dungeons';
 import type { WorldLabelHandle } from '../ui/UI';
 import { G } from '../game/G';
-import { Assets } from '../core/Assets';
 import { RNG, dampAngle, dist2D, hashString } from '../core/utils';
 import { setAccessories, tintObject } from '../scenes/CharacterVisual';
 import { inView } from './ViewCull';
@@ -348,8 +347,7 @@ export class NPC extends Entity implements Interactable {
     const p = this.preset;
     const url = npcModelUrl(p.base);
     await G.assets.load(url);
-    const obj = G.assets.instantiate(url);
-    Assets.cloneMaterials(obj);
+    const obj = G.assets.instantiate(url); // untinted NPCs draw the model's own materials: nothing here mutates them
     const kay = url.includes('/characters/');
     if (kay) setAccessories(obj, p.show ?? []);
     if (p.tint) tintObject(obj, liftNpcTint(p.tint));

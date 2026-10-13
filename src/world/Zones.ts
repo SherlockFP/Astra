@@ -3,6 +3,7 @@ import { RNG, hashString } from '../core/utils';
 import { TILE_SIZE, type DungeonDef, type ZoneDef } from '../types/dungeons';
 import type { VfxId } from '../types/vfx';
 import { patchPSX } from '../render/psx';
+import { shouldCastShadow } from '../render/shadowPolicy';
 import type { NavGrid } from './NavGrid';
 import type { GlowField } from './Glow';
 import { designToPhysical, type LightPool } from './LightPool';
@@ -569,7 +570,7 @@ export class ZoneField {
     const base = new THREE.Color(bz.def.color ?? 0x3a2a1a);
     const mat = psxMaterial(surfaceTexture('planks', this.host.def.id + ':rail', 64), { color: base.multiplyScalar(2.2), vertexColors: true, affine: false });
     const mesh = new THREE.Mesh(g, mat);
-    mesh.castShadow = true;
+    mesh.castShadow = shouldCastShadow(mesh);
     mesh.receiveShadow = true;
     mesh.name = `bridge_rails_${bz.index}`;
     this.add(mesh);
