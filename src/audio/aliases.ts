@@ -4,7 +4,7 @@
  * (multiplied with the caller's). Unknown ids still warn once and stay silent.
  * OWNER: vfx-audio / audio. Every `id` here must be an existing SFX_IDS member that has a manifest entry.
  */
-import type { SfxId } from '../types/audio';
+import type { MusicId, SfxId } from '../types/audio';
 import { SFX_MANIFEST } from './manifest';
 
 export interface SfxAlias {
@@ -60,6 +60,30 @@ export const SFX_ALIASES: Record<string, SfxAlias> = {
   cast_pushback: { id: 'hit_blunt', volume: 0.5 },
   cast_interrupted: { id: 'interrupt' },
   burst_window: { id: 'hero_horn', volume: 0.6 },
+  // ---- K3 / P-06 season dungeon sounds (placeholders: closest existing id; the season docs name the real file mixes)
+  void_crack: { id: 'shadow_impact', pitch: 0.6 },
+  lift_move: { id: 'gate_heavy', pitch: 0.8 },
+  bell_toll: { id: 'ui_notify', pitch: 0.6 },
+  water_lap: { id: 'water_impact', volume: 0.5 },
+  chandelier_creak: { id: 'lever', pitch: 0.6 },
+  crowd_murmur: { id: 'enemy_idle', volume: 0.15 },
+  lift_hum: { id: 'gate_heavy', pitch: 1.2, volume: 0.5 },
+  waltz_loop: { id: 'buff', volume: 0.5 },
+};
+
+/**
+ * K3 / P-06: music ids for the season dungeons (`dungeon_<id>`) alias an existing MusicId until a track is composed.
+ * Unknown ids stay silent. The music player must consult this table before giving up on a MUSIC_MANIFEST miss.
+ */
+export const MUSIC_ALIASES: Partial<Record<string, MusicId>> = {
+  dungeon_yildiz_divani: 'dungeon_shadow',
+  dungeon_yigitler_sarayi: 'dungeon_frost',
+  dungeon_les_uyanisi: 'dungeon_crypt',
+  dungeon_peri_sisleri: 'world_marsh',
+  dungeon_kefaret_salonlari: 'dungeon_shadow',
+  dungeon_yanki_agi: 'dungeon_crypt',
+  dungeon_taskasa: 'dungeon_fire',
+  dungeon_buyucu_terasi: 'dungeon_shadow',
 };
 
 /** Alias entry for an SFX id, or undefined. Never throws. */

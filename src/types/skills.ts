@@ -133,7 +133,11 @@ export type StatusId =
   // COMBAT_WOW §3 / Appendix B (CW-03, append-only): proc states and the school lockout. StatusDefs in data/statuses_talents.ts.
   // hot_streak and fingers_of_frost (above) are the existing procs; these are the new ones.
   | 'heating_up' | 'brain_freeze' | 'winters_chill' | 'clearcasting' | 'art_of_justice' | 'revenge_ready' | 'sudden_death'
-  | 'wrath_return' | 'opportunity' | 'lockout';
+  | 'wrath_return' | 'opportunity' | 'lockout'
+  // Season 1 shared primitives P-21 / P-18 (K1, append-only; StatusDef rows arrive in K4 / data/statuses.ts)
+  | 'petrify' | 'mortal_wound' | 'disguise' | 'bewitch' | 'exposed' | 'kin_laneti' | 'asit_yarasi'
+  | 'arcane_lockdown' | 'withering_soul' | 'deep_wound' | 'ys_intensity' | 'ay_cesmesi'
+  | 'mead_sticky' | 'rod_charged';
 
 export interface StatusDef {
   id: StatusId;

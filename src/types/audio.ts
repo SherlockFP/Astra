@@ -60,6 +60,8 @@ export const SFX_IDS = [
   // ---- COMBAT_WOW §4.3 CW-01 (append-only): arcane school sounds, proc gain / use, cooldown ready, cast pushback / interrupt,
   // burst window. Until audio builds them, audio/aliases.ts plays the closest existing id (CW-12).
   'arcane_cast', 'arcane_impact', 'proc_gain', 'proc_use', 'cd_ready', 'cast_pushback', 'cast_interrupted', 'burst_window',
+  // ---- K3 / P-06 (append-only): season dungeon sounds. Until audio/manifest.ts maps them, audio/aliases.ts plays the closest existing id.
+  'void_crack', 'lift_move', 'bell_toll', 'water_lap', 'chandelier_creak', 'crowd_murmur', 'lift_hum', 'waltz_loop',
 ] as const;
 
 export type SfxId = (typeof SFX_IDS)[number];
@@ -69,6 +71,10 @@ export type SfxId = (typeof SFX_IDS)[number];
 export const MUSIC_IDS = [
   'menu', 'town', 'dungeon_crypt', 'dungeon_fire', 'dungeon_frost', 'dungeon_shadow', 'boss', 'victory', 'defeat', 'combat',
   'world_vale', 'world_hills', 'world_marsh', 'world_canyon', 'world_ruins',
+  // ---- K3 / P-06 (append-only): one theme per Mythic+ season dungeon. Each aliases an existing track (MUSIC_ALIASES in audio/aliases.ts)
+  // until it is composed.
+  'dungeon_yildiz_divani', 'dungeon_yigitler_sarayi', 'dungeon_les_uyanisi', 'dungeon_peri_sisleri', 'dungeon_kefaret_salonlari',
+  'dungeon_yanki_agi', 'dungeon_taskasa', 'dungeon_buyucu_terasi',
 ] as const;
 export type MusicId = (typeof MUSIC_IDS)[number];
 

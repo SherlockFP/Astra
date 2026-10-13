@@ -17,6 +17,12 @@ export const DUNGEONS: Record<string, DungeonDef> = {
 export const DUNGEON_IDS: string[] = [KEMIK_MAHZENI.id, KIZIL_DOKUMHANE.id, BUZUL_TAHTI.id, GOLGE_TAPINAGI.id];
 
 /**
+ * Mythic+ season pool (P-05), rotation order. Keys, portals, Group Finder and leaderboards read this via MythicPlus.dungeonPool().
+ * Empty until the 8 season dungeons land; while empty, MythicPlus.dungeonPool() falls back to DUNGEON_IDS.
+ */
+export const MPLUS_POOL: string[] = [];
+
+/**
  * Open-world zones expressed as DungeonDef. Deliberately NOT part of DUNGEONS / DUNGEON_IDS: those drive the keystone UI,
  * portals and M+ scaling. Reach them with getDungeon(id) or OPEN_ZONES.
  * `sisli_koru` (outdoor zone, live until WP2) and `sisli_vadi` (open-world MAP with `world`, GDD_OPENWORLD §9.1; WP1 stub).

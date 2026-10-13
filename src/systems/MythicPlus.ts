@@ -1,6 +1,6 @@
 import { G } from '../game/G';
 import { RNG, clamp } from '../core/utils';
-import { DUNGEONS, DUNGEON_IDS, getDungeon } from '../data/dungeons';
+import { DUNGEONS, DUNGEON_IDS, MPLUS_POOL, getDungeon } from '../data/dungeons';
 import { HOST_DYNAMIC_ID_BASE } from '../types/common';
 import type { AffixId, MythicAffixDef, RunRecord, RunState } from '../types/mythic';
 import type { KeystoneData, ItemInstance } from '../types/items';
@@ -539,10 +539,24 @@ export class MythicPlus {
 
   /* ================================================================================ keystone & services */
 
-  /** Key dungeons: DUNGEON_IDS only (open-world zones such as Sisli Koru are never keystone dungeons). */
+  /**
+   * Key dungeons (P-05): the Mythic+ season pool `MPLUS_POOL` in rotation order. While the pool is empty (no season dungeon data yet)
+   * it falls back to DUNGEON_IDS, then to every dungeon. Open-world zones such as Sisli Koru are never keystone dungeons.
+   */
   private dungeonPool(): string[] {
+    const season = MPLUS_POOL.filter((id) => !!DUNGEONS[id]);
+    if (season.length) return season;
     const ids = DUNGEON_IDS.filter((id) => !!DUNGEONS[id]);
     return ids.length ? ids : Object.keys(DUNGEONS);
+  }
+
+  /**
+   * Difficulties offered for a dungeon (P-05). Season pool dungeons: Kahramanlik, Mitik, Mitik+ (no Normal).
+   * Every other dungeon: Normal, Kahramanlik, Mitik (no Mitik+). Membership is checked against MPLUS_POOL itself, not the fallback,
+   * so an empty pool keeps today's behaviour.
+   */
+  dungeonDifficulties(id: string): RunState['difficulty'][] {
+    return MPLUS_POOL.includes(id) ? ['heroic', 'mythic', 'mythicplus'] : ['normal', 'heroic', 'mythic'];
   }
 
   /** Random dungeon id, different from `exclude` when possible. */

@@ -1,5 +1,5 @@
 import type { DamageType } from './common';
-import type { StatusApply } from './skills';
+import type { StatusApply, StatusId } from './skills';
 import type { TelegraphShape } from './vfx';
 import type { VfxId } from './vfx';
 import type { SfxId } from './audio';
@@ -50,6 +50,8 @@ export interface EnemyAbility {
   kick?: 0 | 1 | 2;
   /** Tank buster: a big single-target hit the tank must mitigate (GDD_V2 §1.5 / §1.7). */
   tankBuster?: boolean;
+  /** P-23: the debuff that must be cleansed (potion or cleanse); shown as a green mark on the nameplate and tooltip. */
+  dispel?: StatusId;
 }
 
 export interface EnemyDef {
@@ -115,6 +117,16 @@ export interface BossPhase {
   onEnter?: { yell?: string; ability?: string; summon?: { enemyId: string; count: number } };
 }
 
+/** P-38: boss energy bar (cyan second bar in the boss frame). Negative `regen` drains. */
+export interface BossEnergyDef {
+  max: number;
+  start?: number;
+  regen?: number;
+  onFull?: string;            // boss script hook name
+  onEmpty?: string;           // boss script hook name
+  costs?: Record<string, number>;   // ability id -> energy cost
+}
+
 export interface BossDef extends EnemyDef {
   title: string;              // e.g. "Mahzenin Efendisi"
   phases: BossPhase[];
@@ -126,6 +138,8 @@ export interface BossDef extends EnemyDef {
   arena?: BossArena;
   /** GDD_LIFE §4.12 (L-00): cinematic boss-intro camera. `false` = no intro; object = tuning (defaults in data). */
   introCam?: false | { hold?: number; dist?: number; height?: number };
+  /** P-38: optional energy bar (BossController.energy). */
+  energy?: BossEnergyDef;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

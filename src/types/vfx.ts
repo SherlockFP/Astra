@@ -56,6 +56,11 @@ export const VFX_IDS = [
   // Implemented by vfx-audio (CW-15); until then vfx/aliases.ts maps each id to the closest existing preset.
   'proc_burst', 'proc_consume', 'cast_hands_fire', 'cast_hands_frost', 'cast_hands_arcane', 'arcane_charge_orb', 'crit_ring',
   'lockout_flash',
+  // ---- K3 / P-06 (append-only): season dungeon visuals (docs/dungeons/_shared_primitives.md). Each id has an alias in vfx/aliases.ts
+  // until a real preset exists. Unknown ids stay silent.
+  'ambient_stardust', 'arcane_orb', 'void_torrent', 'dome_suppress', 'web_burst', 'egg_burst', 'swarm_cloud', 'black_blood',
+  'static_field', 'storm_flash', 'ambient_leaves', 'rune_pad_glow', 'ambient_anima_motes', 'ambient_mist', 'pollen_cloud',
+  'anima_glob', 'sigil_pulse', 'consumption_swirl', 'acid_pool',
 ] as const;
 
 export type VfxId = (typeof VFX_IDS)[number];

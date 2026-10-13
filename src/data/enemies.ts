@@ -1,7 +1,9 @@
+import type { EnemyAbility, EnemyDef } from '../types/enemies';
 import type { DamageType } from '../types/common';
-import type { BossDef, BossArena, BossPhase, EnemyAbility, EnemyAttach, EnemyDef, EnemyRank, EnemyRole, EnemyVisual } from '../types/enemies';
-import type { StatusApply } from '../types/skills';
-import type { VfxId } from '../types/vfx';
+import type { Ab, Spec } from './enemyKit';
+import { ENEMIES, BOSSES, A_KAYKIT, A_SKEL, A_ENEMY, A_CHAR, A_FLY, A_BLOB, A_MUSH, A_RAT, A_SPIDER, A_BAT, A_GEN, A_WOLF, A_WASP, A_PUGLIN, A_KENNEY, poison, bleed, burn, chill, cone, proj, aoe, line, heal, buff, passive, onDeath, charge, summonAb, NOOP, def, R_BEAST, R_SKELETON, R_GHOST, R_SPIDER, R_CULT, R_GOLEM, R_DEMON, W_BLADE, mageHide, KNIGHT_HIDE, ROGUE_HIDE, add, MECH, derive, boss, bp, custom, A_EJDER } from './enemyKit';
+import { MON, CHAR, SKEL, GEN, GENB, WPN, PROC, ITCH, PUG, GRAVE } from './enemyModels';
+export { ENEMIES, BOSSES };
 
 /**
  * OWNER: enemies module. Trash/elite roster (GDD_CONTENT §3) and bosses (§4.x.5).
@@ -34,166 +36,7 @@ import type { VfxId } from '../types/vfx';
  * hit the tank mitigates, never parryable), `kick` (interrupt priority, roster column; not set yet).
  */
 
-const MODELS = '/assets/models/';
-const MON = (n: string) => `${MODELS}monsters/${n}.glb`;
-const CHAR = (n: string) => `${MODELS}characters/${n}.glb`;
-const SKEL = (n: string) => `${MODELS}enemies/${n}.glb`;
-const GEN = (n: string) => `${MODELS}gen/creatures/${n}.glb`;
-const GENB = (n: string) => `${MODELS}gen/bosses/${n}.glb`;
-const WPN = (n: string) => `${MODELS}weapons/skeleton/${n}.gltf`;
-const PROC = (n: string) => `PROC:${n}`;
-const ITCH = (n: string) => `${MODELS}itch/creatures/${n}.glb`;
-const PUG = `${MODELS}itch/bestiary/puglin.glb`;
-const GRAVE = (n: string) => `${MODELS}kenney/graveyard-kit/${n}.glb`;
 
-// ---------------------------------------------------------------------------------------------------------------------
-// animation sets per model family (clip names differ; AnimController registers the part after the last '|')
-// ---------------------------------------------------------------------------------------------------------------------
-type Anims = EnemyDef['anims'];
-const A_KAYKIT: Anims = { idle: 'Idle', walk: 'Walking_A', run: 'Running_A', hit: 'Hit_A', death: 'Death_A' };
-const A_SKEL: Anims = { idle: 'Idle', walk: 'Walking_D_Skeletons', run: 'Running_C', hit: 'Hit_A', death: 'Death_C_Skeletons', spawn: 'Spawn_Ground_Skeletons' };
-const A_ENEMY: Anims = { idle: 'Idle', walk: 'Walk', run: 'Run', hit: 'HitRecieve', death: 'Death' };      // Goblin Zombie Demon Yeti Giant
-const A_CHAR: Anims = { idle: 'Idle', walk: 'Walk', run: 'Run', hit: 'HitReact', death: 'Death' };         // Orc Blue_Demon Demon_Lord Mushroom_King
-const A_FLY: Anims = { idle: 'Flying_Idle', walk: 'Flying_Idle', run: 'Fast_Flying', hit: 'HitReact', death: 'Death' }; // Imp Ghost Dragon
-const A_BLOB: Anims = { idle: 'Idle', walk: 'Walk', run: 'Walk', hit: 'HitRecieve', death: 'Death' };         // Slime Skull
-const A_MUSH: Anims = { idle: 'Idle', walk: 'Walk', run: 'Walk', hit: 'HitRecieve', death: 'Death' };         // Mushnub
-const A_RAT: Anims = { idle: 'Rat_Idle', walk: 'Rat_Walk', run: 'Rat_Run', death: 'Rat_Death' };
-const A_SPIDER: Anims = { idle: 'Spider_Idle', walk: 'Spider_Walk', run: 'Spider_Walk', death: 'Spider_Death' };
-const A_BAT: Anims = { idle: 'Bat_Flying', walk: 'Bat_Flying', run: 'Bat_Flying', hit: 'Bat_Hit', death: 'Bat_Death' };
-const A_GEN: Anims = { idle: 'Idle', walk: 'Walk', run: 'Run', hit: 'Hit', death: 'Death' };                 // gen/creatures + gen/bosses
-// open world (GDD_OPENWORLD §3.1): itch Fantasy Creatures share one clip vocabulary, the rest are per-model
-const A_WOLF: Anims = { idle: 'Idle', walk: 'Walk', run: 'Run', hit: 'Hit', death: 'Death' };                 // wolf warg bear rhino deer ooze spider centipede
-const A_WASP: Anims = { idle: 'Fly', walk: 'Fly', run: 'Fly', death: 'Death' };                                // wasp
-const A_PUGLIN: Anims = { idle: 'Idle', walk: 'Walk', run: 'Run', hit: 'Hit_Front', death: 'Death_A' };         // bestiary puglin
-const A_KENNEY: Anims = { idle: 'idle', walk: 'walk', run: 'sprint', death: 'die' };                           // graveyard-kit characters (no hit clip)
-
-// ---------------------------------------------------------------------------------------------------------------------
-// ability builders
-// ---------------------------------------------------------------------------------------------------------------------
-type Ab = Partial<EnemyAbility>;
-
-const poison = (stacks = 1, mag = 0.15, dur = 5, chance?: number): StatusApply => ({ status: 'poison', duration: dur, stacks, magnitude: mag, chance });
-const bleed = (stacks = 1, mag = 0.2, dur = 6): StatusApply => ({ status: 'bleed', duration: dur, stacks, magnitude: mag });
-const burn = (mag = 0.3, dur = 4): StatusApply => ({ status: 'burn', duration: dur, magnitude: mag });
-const chill = (stacks = 1, dur = 4): StatusApply => ({ status: 'chill', duration: dur, stacks });
-
-/** Melee swing = small cone landing at the hit frame. */
-const cone = (id: string, name: string, range: number, arc: number, cd: number, coef: number, anim: string, impact: number, o: Ab = {}): EnemyAbility => ({
-  id, name, kind: 'melee', range, cooldown: cd, windup: 0.45, parryable: true,
-  shape: { type: 'cone', radius: range, angle: arc },
-  damage: { coef, type: 'physical' }, anim,
-  ...o,
-  params: { impact, ...o.params },
-});
-
-const proj = (id: string, name: string, speed: number, range: number, cd: number, windup: number, coef: number, type: DamageType, vfx: VfxId, anim: string, impact: number, o: Ab = {}): EnemyAbility => ({
-  id, name, kind: 'projectile', range, cooldown: cd, windup, parryable: false,
-  damage: { coef, type }, projectile: { speed, radius: 0.5, vfx }, anim,
-  ...o,
-  params: { impact, ...o.params },
-});
-
-const aoe = (id: string, name: string, kind: 'ground_aoe' | 'self_aoe', radius: number, range: number, cd: number, windup: number, coef: number, type: DamageType, anim: string, impact: number, o: Ab = {}): EnemyAbility => ({
-  id, name, kind, range, cooldown: cd, windup, telegraph: true, parryable: false,
-  shape: { type: 'circle', radius },
-  damage: { coef, type }, anim,
-  ...o,
-  params: { impact, ...o.params },
-});
-
-const line = (id: string, name: string, length: number, width: number, cd: number, windup: number, coef: number, type: DamageType, anim: string, impact: number, o: Ab = {}): EnemyAbility => ({
-  id, name, kind: 'line', range: length, cooldown: cd, windup, telegraph: true, parryable: false,
-  shape: { type: 'line', length, width },
-  damage: { coef, type }, anim,
-  ...o,
-  params: { impact, ...o.params },
-});
-
-const heal = (id: string, name: string, castTime: number, cd: number, pct: number, anim: string, impact: number, o: Ab = {}): EnemyAbility => ({
-  id, name, kind: 'heal_ally', range: 18, cooldown: cd, windup: castTime, castTime, interruptible: true, healPct: pct, anim, vfx: 'heal_burst', sfx: 'spell_cast',
-  ...o,
-  params: { impact, needAlly: 1, ...o.params },
-});
-
-const buff = (id: string, name: string, castTime: number, cd: number, statuses: StatusApply[], anim: string, impact: number, o: Ab = {}): EnemyAbility => ({
-  id, name, kind: 'buff_ally', range: 14, cooldown: cd, windup: castTime, castTime, interruptible: castTime >= 1.5, statuses, anim, vfx: 'buff_aura',
-  ...o,
-  params: { impact, radius: 12, needAlly: 1, ...o.params },
-});
-
-const passive = (id: string, name: string, params: Record<string, number> = {}): EnemyAbility => ({
-  id, name, kind: 'custom', range: 0, cooldown: 0, windup: 0, anim: '', params: { passive: 1, ...params },
-});
-
-const onDeath = (a: EnemyAbility): EnemyAbility => ({ ...a, cooldown: 0, params: { ...a.params, onDeath: 1 } });
-
-/** Lunge / dash: a line of `length` metres the enemy runs along (kind 'charge', `params.dash` = seconds of the run). */
-const charge = (id: string, name: string, length: number, cd: number, windup: number, coef: number, anim: string, impact: number, o: Ab = {}): EnemyAbility => ({
-  id, name, kind: 'charge', range: length, cooldown: cd, windup, telegraph: true, parryable: true, shape: { type: 'line', length, width: 1.6 },
-  damage: { coef, type: 'physical' }, anim,
-  ...o,
-  params: { impact, dash: 0.6, minRange: 3, ...o.params },
-});
-
-/** Call reinforcements (kind 'summon'); `params.once` / `params.hpBelow` make it a one-off / a low-HP call. */
-const summonAb = (id: string, name: string, enemyId: string, count: number, cd: number, anim: string, impact: number, o: Ab = {}): EnemyAbility => ({
-  id, name, kind: 'summon', range: 16, cooldown: cd, windup: 0.8, castTime: 0.8, summon: { enemyId, count }, anim, vfx: 'add_spawn',
-  ...o,
-  params: { impact, ...o.params },
-});
-
-/** Inert basic attack for stationary / passive bodies (never selected, see EnemyAI.chooseAbility). */
-const NOOP = (id: string): EnemyAbility => ({ id, name: '-', kind: 'custom', range: 0, cooldown: 99, windup: 0, anim: '', params: { passive: 1 } });
-
-// ---------------------------------------------------------------------------------------------------------------------
-// def builder
-// ---------------------------------------------------------------------------------------------------------------------
-interface Spec {
-  id: string; name: string; model: string; scale: number; tint?: number; emissive?: number;
-  role: EnemyRole; rank: EnemyRank; hp: number; dmg: number; speed: number; radius: number; aggro: number; forces: number;
-  anims: Anims; basic: EnemyAbility; abilities?: EnemyAbility[];
-  xp?: number; resist?: EnemyDef['resist']; ccImmune?: boolean; flying?: boolean; hover?: number; leash?: number;
-  visual?: EnemyVisual; ai?: EnemyDef['ai']; loot?: string; armor?: number;
-}
-
-/** Rank XP multipliers (GDD_SYSTEMS 6.2). Sürü (role swarm) is 0.35 above monster level 10; Progression.monsterXp floors it at 0.6 for levels 1-10. */
-const SWARM_XP = 0.35;
-const XP: Record<EnemyRank, number> = { trash: 1, elite: 5, miniboss: 25, boss: 100 };
-
-function def(s: Spec): EnemyDef {
-  return {
-    id: s.id, name: s.name, model: s.model, tint: s.tint, emissive: s.emissive, scale: s.scale,
-    role: s.role, rank: s.rank, hpMult: s.hp, dmgMult: s.dmg, armorMult: s.armor,
-    speed: s.speed, radius: s.radius, aggroRange: s.aggro, leashRange: s.leash,
-    attackRange: s.basic.range, attackCooldown: s.basic.cooldown,
-    basicAttack: s.basic, abilities: s.abilities ?? [],
-    forces: s.forces, xp: s.xp ?? (s.role === 'swarm' ? SWARM_XP : XP[s.rank]),
-    resist: s.resist, ccImmune: s.ccImmune, anims: s.anims, lootTable: s.loot,
-    flying: s.flying, hoverHeight: s.hover, visual: s.visual, ai: s.ai,
-  };
-}
-
-// monster family resist profiles (GDD_SYSTEMS §1.10, fractions)
-const R_BEAST = {};
-const R_SKELETON: EnemyDef['resist'] = { physical: 0.15, fire: -0.25, frost: 0.25, shadow: 0.5, poison: 0.75, holy: -0.25 };
-const R_GHOST: EnemyDef['resist'] = { physical: 0.5, shadow: 0.75, poison: 0.75, holy: -0.5 };
-const R_SPIDER: EnemyDef['resist'] = { fire: -0.25, poison: 0.5 };
-const R_CULT: EnemyDef['resist'] = { physical: 0.05, fire: 0.1, frost: 0.1, lightning: 0.1, shadow: 0.25 };
-const R_GOLEM: EnemyDef['resist'] = { physical: 0.3, fire: 0.5, frost: 0.5, lightning: -0.25, poison: 0.75 };
-const R_DEMON: EnemyDef['resist'] = { physical: 0.1, fire: 0.5, frost: -0.25, shadow: 0.25, poison: 0.25, holy: -0.25 };
-
-const W_BLADE: EnemyAttach[] = [{ url: WPN('Skeleton_Blade'), bone: 'handslot.r', pos: [0, 0.0333, 0], rotY: Math.PI }];
-
-// KayKit rigs: hide every accessory that is not in the loadout (they all render by default)
-const MAGE_HIDE = ['2H_Staff', '1H_Wand', 'Spellbook', 'Spellbook_open', 'Mage_Hat'];
-const mageHide = (...keep: string[]) => MAGE_HIDE.filter((n) => !keep.includes(n));
-const KNIGHT_HIDE = ['1H_Sword', '2H_Sword', '1H_Sword_Offhand', 'Round_Shield', 'Badge_Shield', 'Rectangle_Shield', 'Spike_Shield', 'Knight_Helmet', 'Knight_Cape'];
-const ROGUE_HIDE = ['Knife', 'Knife_Offhand', '1H_Crossbow', '2H_Crossbow', 'Throwable'];
-
-export const ENEMIES: Record<string, EnemyDef> = {};
-const add = (s: Spec) => {
-  ENEMIES[s.id] = def(s);
-};
 
 // =====================================================================================================================
 // 3.2 Open world and global
@@ -854,14 +697,6 @@ for (const [k, o] of Object.entries({
   });
 }
 
-// ---- mechanic entities (procedural bodies; spawned by boss scripts, replicated like any enemy) -----------------------------
-const MECH = (id: string, name: string, proc: string, hpMult: number, extra: Partial<Spec> = {}): void =>
-  add({
-    id, name, model: PROC(proc), scale: 1, role: 'support', rank: 'trash', hp: hpMult, dmg: 0, speed: 0, radius: 0.8, aggro: 0, forces: 0, ccImmune: true, xp: 0,
-    anims: { idle: 'Idle', walk: 'Idle', run: 'Idle', death: 'Death' },
-    basic: { id: `${id}_none`, name: '-', kind: 'custom', range: 0, cooldown: 99, windup: 0, anim: '', params: { passive: 1 } },
-    ai: { summoned: true }, ...extra,
-  });
 MECH('proc_phylactery', 'Filakter', 'phylactery', 10, { radius: 0.9, visual: { hoverBob: 0.0 } });
 MECH('proc_soul_orb', 'Ruh Küresi', 'soul_orb', 0.02, { radius: 0.5, speed: 4, visual: { hoverBob: 0.15 } });
 MECH('proc_bone_cage', 'Kemik Kafesi', 'bone_cage', 4, { radius: 0.9 });
@@ -869,24 +704,6 @@ MECH('proc_ice_tomb', 'Buz Mezarı', 'ice_tomb', 5, { radius: 0.9 });
 MECH('proc_rift', 'Boşluk Yarığı', 'rift', 1, { radius: 1.0, tint: 0x8040ff });
 MECH('proc_ice_pillar', 'Buz Sarkıtı', 'ice_pillar', 3, { radius: 1.0, visual: { blocker: 1.1 } });
 
-// ---- derived defs: a copy of a base def with its own scale / tint / HP / XP and special abilities (GDD_OPENWORLD §3.5-3.6)
-interface Derive {
-  scale: number; tint?: number; hp: number; rank: EnemyRank; xp: number; loot: string; abilities: EnemyAbility[];
-  basic?: EnemyAbility; resist?: EnemyDef['resist']; ai?: EnemyDef['ai']; ccImmune?: boolean;
-}
-function derive(id: string, name: string, base: string, o: Derive): void {
-  const b = ENEMIES[base];
-  if (!b) {
-    console.warn(`[enemy] derive "${id}": unknown base "${base}"`);
-    return;
-  }
-  const basic = o.basic ?? b.basicAttack;
-  ENEMIES[id] = {
-    ...b, id, name, scale: b.scale * o.scale, tint: o.tint ?? b.tint, rank: o.rank, hpMult: o.hp, forces: 0, xp: o.xp, lootTable: o.loot,
-    basicAttack: basic, attackRange: basic.range, attackCooldown: basic.cooldown, abilities: o.abilities,
-    resist: o.resist ?? b.resist, ai: o.ai ?? b.ai, ccImmune: o.ccImmune ?? b.ccImmune, leashRange: 40,
-  };
-}
 
 // ---- named rares (GDD_OPENWORLD §3.5): elite, xp x10, one special each (approximations noted per line)
 derive('rare_gumus_yele', 'Gümüş Yele', 'ow_wolf', {
@@ -1131,25 +948,6 @@ export const METIN_SPECS: Record<string, MetinSpec> = {
 // =====================================================================================================================
 // Bosses (GDD_CONTENT §4.x.5). Timings (first at / cd / windup) are the table values; scripts live in ai/bosses/*.ts.
 // =====================================================================================================================
-export const BOSSES: Record<string, BossDef> = {};
-
-interface BossSpec extends Omit<Spec, 'hp' | 'dmg' | 'rank' | 'aggro' | 'forces' | 'basic'> {
-  title: string; hp: number; dmg: number; aggro?: number; basic: EnemyAbility; phases: BossPhase[]; enrage: number; arenaR: number;
-  intro?: string; death?: string; arena: BossArena; music?: string; loot: string;
-}
-
-function boss(s: BossSpec): void {
-  const base = def({ ...s, rank: 'boss', forces: 0, aggro: s.aggro ?? 18, ccImmune: true, xp: 100, leash: 0 });
-  BOSSES[s.id] = {
-    ...base,
-    title: s.title, phases: s.phases, enrageTimer: s.enrage, arenaRadius: s.arenaR, introYell: s.intro, deathYell: s.death, music: 'boss', arena: s.arena,
-  };
-}
-
-const bp = (id: string, hpBelow: number, abilities: string[], onEnter?: BossPhase['onEnter']): BossPhase => ({ id, hpBelow, abilities, onEnter });
-const custom = (id: string, name: string, cd: number, first: number | undefined, windup: number, anim: string, o: Ab = {}): EnemyAbility => ({
-  id, name, kind: 'custom', range: 60, cooldown: cd, initialCooldown: first, windup, anim, ...o, params: { ...o.params },
-});
 
 // ---------------------------------------------------------------- 4.1 Kemik Mahzeni
 boss({
@@ -1440,7 +1238,6 @@ boss({
 });
 
 // ---------------------------------------------------------------- 3.8 Open-world boss (Sisli Vadi, Ejder Yuvası, R5)
-const A_EJDER: Anims = { idle: 'Idle', walk: 'Walk', run: 'Run', hit: 'Hit', death: 'Death' };
 // Ejder Yuvası: tile (12, 148) = world (50, 594), r 7 tiles = 28 m (WORLD ids: scripts in ai/bosses/world.ts)
 boss({
   id: 'wb_alevkanat', name: 'Alevkanat', title: 'Kızıl Ejder', model: GENB('kizil_ejder'), scale: 1.0, role: 'melee',

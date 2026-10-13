@@ -92,6 +92,26 @@ export const VFX_ALIASES: Record<string, VfxAlias> = {
   arcane_charge_orb: { id: 'arcane_burst', scale: 0.25 },
   crit_ring: { id: 'shockwave', color: 0xffd23a, scale: 0.6 },
   lockout_flash: { id: 'hit_magic', color: 0xb0c4ff, scale: 0.7 },
+  // ---- K3 / P-06 season dungeon visuals: alias targets from the season docs where they name one, otherwise the closest preset.
+  ambient_stardust: { id: 'ambient_dust', color: 0xc8d8ff },
+  arcane_orb: { id: 'arcane_projectile', scale: 0.8 },
+  void_torrent: { id: 'lightning_strike', color: 0x7a3cff, scale: 1.2 },
+  dome_suppress: { id: 'aegis_dome', color: 0x6a3ab0 },
+  web_burst: { id: 'smoke_zone', color: 0xe8e8e0, scale: 0.9 },
+  egg_burst: { id: 'add_spawn', color: 0xc8e0a0, scale: 1.1 },
+  swarm_cloud: { id: 'poison_cloud', color: 0x7a8a40 },
+  black_blood: { id: 'shadow_ground', color: 0x1a0c12 },
+  static_field: { id: 'shock_loop', color: 0xeaf2ff, scale: 0.9 },
+  storm_flash: { id: 'lightning_strike', color: 0xeaf2ff, scale: 1.2 },
+  ambient_leaves: { id: 'ambient_embers', color: 0xffc080 },
+  rune_pad_glow: { id: 'arcane_burst', color: 0x7fd0ff, scale: 0.5 },
+  ambient_anima_motes: { id: 'ambient_embers', color: 0x60ffd8 },
+  ambient_mist: { id: 'ambient_dust', scale: 3 },
+  pollen_cloud: { id: 'poison_cloud', color: 0xffd060 },
+  anima_glob: { id: 'poison_projectile', color: 0x60ffd8 },
+  sigil_pulse: { id: 'buff_aura', color: 0x60ffd8 },
+  consumption_swirl: { id: 'portal_swirl', color: 0x60c8ff },
+  acid_pool: { id: 'poison_cloud', color: 0x9fff40, scale: 0.9 },
 };
 
 /** Alias entry for a VFX id, or undefined. Never throws (unknown ids are silently nothing). */

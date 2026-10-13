@@ -1,6 +1,8 @@
-import type { MusicId } from './audio';
+import type { MusicId, SfxId } from './audio';
 import type { VfxId } from './vfx';
 import type { RaidInfo } from './v2';
+import type { StatusId } from './skills';
+import type { SkyOptions } from '../world/Sky';
 
 /**
  * Dungeons are authored on a tile grid (1 tile = TILE_SIZE world units, KayKit floor tiles).
@@ -35,7 +37,38 @@ export interface PropPlacement {
   /** Id for tooling / gameplay hooks (shrines, chests, phylactery spots...). */
   id?: string;
   /** Gameplay marker: what this prop is used for (builder may attach interaction / debug draw). */
-  tag?: 'shrine' | 'chest' | 'breakable' | 'seal' | 'phylactery' | 'rift' | 'crucible' | 'vent' | 'cage' | 'socket' | 'brazier' | 'waypoint' | 'wake' | 'spawn' | 'pillar' | 'gate';
+  tag?: 'shrine' | 'chest' | 'breakable' | 'seal' | 'phylactery' | 'rift' | 'crucible' | 'vent' | 'cage' | 'socket' | 'brazier' | 'waypoint' | 'wake' | 'spawn' | 'pillar' | 'gate'
+    | 'device' | 'lightshaft';
+  // --- shared primitives (docs/dungeons/_shared_primitives.md, K1; all optional) ---
+  /** P-07 shorthand: positional ambience loop anchored on this prop. */
+  sfx?: SfxId;
+  /** P-14: device id for `tag: 'device'` (resolves in src/data/devices.ts). */
+  device?: string;
+  /** P-18: set-piece breakable spill zone, applied when the prop breaks (`tag: 'breakable'`). */
+  onBreak?: { zone: { radius: number; duration: number; status: StatusId; ignitesOnFire?: boolean } };
+  /** P-19: deg/s about Y. */
+  spin?: number;
+  /** P-19: node name inside the model to spin instead of the root. */
+  spinNode?: string;
+  /** P-19: vertical bob [amplitude (m), frequency (Hz)]. */
+  bob?: [number, number];
+}
+
+/** P-07: positional ambience emitter. The builder creates it, the scene ticks it by distance. */
+export interface AmbienceEmitterDef {
+  id: SfxId;
+  pos?: [number, number];     // tile coords; omitted = room centre
+  radius: number;             // metres
+  volume: number;
+  loop?: boolean;
+  every?: [number, number];   // random repeat window in seconds (non-loop)
+}
+
+/** P-08: sky backdrop (theme-wide via DungeonTheme.sky, per-room via RoomDef.sky). */
+export interface DungeonSkyDef {
+  image?: string;
+  stars?: boolean;
+  fallback?: SkyOptions;
 }
 
 /**
@@ -56,17 +89,21 @@ export interface ZoneDef {
   /** Damage-over-time zone: coef x base damage every `interval` seconds while standing inside (or when knocked in). */
   hazard?: { coef: number; interval: number };
   light?: { color: number; intensity: number; distance: number; flicker?: boolean; y?: number };
+  /** P-17 zone look (append-only). */
+  look?: 'cloud' | 'abyss';
 }
 
 /** Periodic room hazard (GDD_CONTENT §4): random tile telegraph then burst. */
 export interface HazardDef {
-  kind: 'lava_burst' | 'icicle_drop';
+  kind: 'lava_burst' | 'icicle_drop' | 'debris_fall' | 'plague_vent' | 'lightning_strike';
   interval: number;           // seconds between events
   warn: number;               // telegraph seconds
   radius: number;             // metres
   coef: number;               // damage coefficient
   stun?: number;              // seconds
   vfx?: VfxId;
+  /** P-17: a strike within `radius` of one of these rods is cancelled; players near a rod gain `status`. */
+  groundedBy?: { pos: [number, number][]; radius: number; status?: StatusId };
 }
 
 export interface RoomDef {
@@ -93,6 +130,17 @@ export interface RoomDef {
   hazards?: HazardDef[];
   /** Per-room fog override (e.g. brighter open courtyard). */
   fog?: { color?: number; near?: number; far?: number };
+  // --- shared primitives (K1; all optional, verticality fields live in ENGINE_VERTICALITY.md) ---
+  /** P-07: positional ambience emitters. */
+  ambience?: AmbienceEmitterDef[];
+  /** P-08: per-room sky, blends like fog. */
+  sky?: DungeonSkyDef;
+  /** P-11: tints applied on top of the floor / wall style. */
+  style?: { floorTint?: number; wallTint?: number };
+  /** P-11: key into DungeonDef.atmospheres (fog blend between rooms). */
+  atmosphere?: string;
+  /** P-17: lightning rhythm and flash for storm rooms. */
+  storm?: { every: [number, number]; color: number; strength: number };
 }
 
 /** Opening between two rooms/corridors. Builder carves the wall and may place a door model. */
@@ -106,7 +154,18 @@ export interface DoorDef {
    * while a boss with lower `order` lives. boss_exit: leads OUT of a boss room toward progress; closed until that boss
    * (the boss whose arena is room `a`) is dead (GDD_CONTENT section 0.7).
    */
-  gate?: 'none' | 'open' | 'boss_lock' | 'boss_exit' | 'forces_lock';
+  gate?: 'none' | 'open' | 'boss_lock' | 'boss_exit' | 'forces_lock' | 'event_lock' | 'kill_lock' | 'device_lock';
+  // --- shared primitives (P-12 / P-13, K1; all optional) ---
+  /** `event_lock`: name of the DungeonDef.events flag that opens the door. */
+  event?: string;
+  /** `kill_lock`: opens when the named pack / enemy / boss dies. */
+  opensOn?: { pack?: string; enemyId?: string; boss?: string };
+  /** `device_lock`: device id (src/data/devices.ts) that must be solved. */
+  device?: string;
+  /** Open when every listed pack is dead (any gate kind). */
+  requires?: string[];
+  /** P-13 gate look; default 'portcullis'. */
+  gateStyle?: 'portcullis' | 'arcane' | 'fel' | 'wood' | 'thorn' | 'bone' | 'web' | 'stone';
 }
 
 export interface PackMember { enemyId: string; offset: [number, number] } // offset in tiles from pack center
@@ -122,7 +181,9 @@ export interface PackDef {
   // --- content additions (optional) ---
   forces?: number;            // M+ forces of the whole pack (sum of its members' EnemyDef.forces; for route planning / minimap)
   /** Dormant spawn: members start as bone piles / inside coffins and burst out when a player is within `wakeRadius` m. */
-  dormant?: { kind: 'bones' | 'coffin' | 'egg' | 'ceiling'; wakeRadius: number };
+  dormant?: { kind: 'bones' | 'coffin' | 'egg' | 'ceiling' | 'statue'; wakeRadius: number };
+  /** P-16: scripted wake; the pack wakes once every listed pack is cleared (plus optional delay, s). */
+  wakeWhen?: { cleared: string[]; delay?: number };
   stealth?: boolean;          // members start stealthed (alpha 0.15) until they attack / are revealed by AoE
   big?: boolean;              // part of a designed "big pull" (Katliam spot)
   note?: string;              // design note (tooling only)
@@ -160,6 +221,67 @@ export interface DungeonTheme {
   music: MusicId;
   palette?: number[];
   tint?: number;              // multiply tint for KayKit dungeon textures
+  // --- shared primitives (K1; all optional) ---
+  /** P-08: sky backdrop for the whole dungeon (RoomDef.sky overrides per room). */
+  sky?: DungeonSkyDef;
+  /** P-08: moon light. */
+  moon?: { color: number; intensity: number; dir?: [number, number, number] };
+  /** P-08: cloud sea below open-air rooms. */
+  cloudSea?: { y: number; color: number; speed: number };
+}
+
+/** P-14: dungeon NPC (src/entities/interactables/DungeonNpc.ts). */
+export interface DungeonNpcDef {
+  id: string;
+  name: string;               // Turkish
+  model: string;              // GLB url
+  pos: [number, number];      // tile coords
+  lines?: string[];
+  /** Any-of gate: a player must match one listed class or profession; otherwise the prompt reads "Gereken: ...". */
+  requires?: { classes?: string[]; professions?: string[] };
+  holdSeconds?: number;
+  /** Runs on the interacting client; ctx type is defined with the interactable framework (K9). */
+  onInteract?: (ctx: unknown) => void;
+}
+
+/** P-15: boon pad. Applies `status` to the interacting player locally. */
+export interface DungeonBoonDef {
+  id: string;
+  pos: [number, number];
+  status: StatusId;
+  duration: number;           // seconds
+  magnitude?: number;
+  oncePerPlayer?: boolean;
+  persistOnDeath?: boolean;
+  cooldownSec?: number;
+}
+
+/** P-15: buff station (one use per run per player). */
+export interface DungeonStationDef {
+  id: string;
+  pos: [number, number];
+  status: StatusId;
+  duration: number;
+  magnitude?: number;
+}
+
+/** P-15: transit cart. Rides between two stops on the host. */
+export interface DungeonTransitDef {
+  id: string;
+  stops: [[number, number], [number, number]];   // tile coords
+  speed?: number;             // m/s
+}
+
+/** P-15: winch drop prop. Hold-interact at `winch` drops the prop: damage and stun inside `ring`. */
+export interface DungeonDropPropDef {
+  id: string;
+  pos: [number, number];
+  ring: number;               // metres
+  dmgPctMax: number;          // max HP % dealt at the centre
+  eliteCap: number;           // max HP % dealt to elites
+  stun: number;               // seconds
+  playerCoef: number;
+  winch: [number, number];    // tile coords
 }
 
 /** GDD_LIFE §1.5 (L-00): one gather node placed on a map. `type` = NodeTypeDef id. `rich` = rich vein (yield x2). */
@@ -190,6 +312,21 @@ export interface DungeonDef {
     shrines: { type: 'shrine_power' | 'shrine_haste' | 'shrine_ward' | 'shrine_greed' | 'shrine_wisdom'; pos: [number, number] }[];
     riftSpots: [number, number][];
     chests?: { pos: [number, number]; kind: 'chest_wood' | 'chest_iron' | 'chest_gold' }[];
+    // --- shared primitives (K1; all optional, tile coords unless a field says otherwise) ---
+    /** P-28: M+ release checkpoints; a death releases at the latest one whose boss is dead. */
+    checkpoints?: [number, number][];
+    /** P-14: named NPCs (DungeonNpc). `onInteract` receives the interaction context (typed by K9). */
+    npcs?: DungeonNpcDef[];
+    /** P-15: boon pads, applied locally to the interacting player. */
+    boons?: DungeonBoonDef[];
+    /** P-15: one-use-per-run-per-player buff stations. */
+    stations?: DungeonStationDef[];
+    /** P-15: two-stop transit carts that ride on the host. */
+    transits?: DungeonTransitDef[];
+    /** P-15: hold-interact winch drops that damage and stun inside a ring. */
+    dropProps?: DungeonDropPropDef[];
+    /** P-26: M+ affix-safe spots (volcanic, storming, explosive, spiteful spawns skip them); radius in tiles. */
+    affixSafe?: { x: number; z: number; r: number }[];
   };
   /** Open-world zone (Sisli Koru): one big room, tree walls instead of dungeon walls, camps are packs with respawn. */
   outdoor?: boolean;
@@ -197,6 +334,14 @@ export interface DungeonDef {
   world?: WorldExtras;
   /** GDD_V2 §9 (WP1): raid lockout + boss order. Presence = raid dungeon (efsun_kalesi). */
   raid?: RaidInfo;
+  // ---- Season 1 shared primitives (docs/dungeons/_shared_primitives.md K1; all optional) ----
+  /** P-05: season pool number (1..8) and endgame flag (no Normal difficulty). Pool order is MPLUS_POOL. */
+  season?: number;
+  endgame?: boolean;
+  /** P-12: initial dungeon event flags; read by DoorDef.gate `event_lock`. */
+  events?: Record<string, boolean>;
+  /** P-08 / P-11: named atmospheres for fog blending between rooms (RoomDef.atmosphere). */
+  atmospheres?: Record<string, { color?: number; near?: number; far?: number }>;
   // ---- GDD_ITEMS_V2 / GDD_LIFE (contracts, all optional)
   /** GDD_ITEMS_V2 §5.2.1 (IT-00): player house interior (`home_kulube` / `home_karakol` / `home_konak`). `true` = house scene. */
   home?: boolean;
@@ -253,7 +398,8 @@ export interface VillageDef {
 export interface WaypointDef { id: string; name: string; pos: [number, number]; regionId: string; villageId?: string }
 export interface EntranceDef {
   id: string; name: string; dungeonId: string; pos: [number, number]; facing: number; minLevel: number; regionId: string;
-  look: 'crypt' | 'forge' | 'cave' | 'ice' | 'temple';
+  /** P-10: closed union widened append-only; recipes in src/data/world/entrances.ts. `temple_large` = the large temple variant. */
+  look: 'crypt' | 'forge' | 'cave' | 'ice' | 'temple' | 'palace' | 'arcane' | 'grove' | 'web' | 'valor' | 'temple_large';
 }
 export interface RoadDef { id: string; kind: 'dirt' | 'cobble' | 'boardwalk' | 'bridge'; width: number; pts: [number, number][] }
 export interface LandmarkDef { id: string; name: string; regionId: string; pos: [number, number]; recipe: string }
