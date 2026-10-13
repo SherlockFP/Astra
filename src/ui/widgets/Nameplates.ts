@@ -132,7 +132,7 @@ class Plate {
     setDisplay(this.lvlEl, this.flavor !== 'mech');
     setText(this.lvlEl, String(a.level));
     const diff = a.level - ctx.playerLevel;
-    this.lvlEl.style.color = a.kind === 'player' ? '#e8c46a' : diff >= 5 ? '#ff4a3a' : diff >= 3 ? '#ff9a3a' : diff >= -2 ? '#ffe050' : '#9ad86a';
+    setStyle(this.lvlEl, 'color', a.kind === 'player' ? '#e8c46a' : diff >= 5 ? '#ff4a3a' : diff >= 3 ? '#ff9a3a' : diff >= -2 ? '#ffe050' : '#9ad86a');
     const frac = a.maxHp > 0 ? clamp01(a.hp / a.maxHp) : 0;
     if (frac !== this.lastFrac) {
       // white flash + bump on every visible HP loss (hit feedback right on the enemy)
@@ -185,8 +185,8 @@ class Plate {
 
   /** Anchor the plate at (x, y) (bottom centre, screen px), lifted `lift` px, scaled by `scale`. */
   place(x: number, y: number, scale: number, lift: number, z: number): void {
-    this.el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y - lift)}px) translate(-50%, -100%) scale(${scale.toFixed(2)})`;
-    this.el.style.zIndex = String(z);
+    setStyle(this.el, 'transform', `translate(${Math.round(x)}px, ${Math.round(y - lift)}px) translate(-50%, -100%) scale(${scale.toFixed(2)})`);
+    setStyle(this.el, 'zIndex', String(z));
   }
 
   dispose(): void {

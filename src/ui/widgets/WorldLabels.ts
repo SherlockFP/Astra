@@ -70,6 +70,9 @@ export class WorldLabels {
   private entries = new Set<Entry>();
   private cands: Entry[] = [];
   private placed: Box[] = [];
+  /** Scratch lists for the measure pass (reused every frame). */
+  private readonly stale: Entry[] = [];
+  private readonly revealed: Entry[] = [];
 
   constructor(private ui: UI, private layer: HTMLElement) {}
 
@@ -164,8 +167,11 @@ export class WorldLabels {
       cands.push(e);
     }
 
-    // 2. measure boxes that are new or stale (a label that was display:none is shown briefly to read its size)
-    for (const e of cands) if (e.w === 0 || now - e.measuredAt > MEASURE_EVERY) this.measure(e, now);
+    // 2. measure boxes that are new or stale: all of them in one pass (a label that was display:none is shown for its read)
+    const stale = this.stale;
+    stale.length = 0;
+    for (const e of cands) if (e.w === 0 || now - e.measuredAt > MEASURE_EVERY) stale.push(e);
+    if (stale.length) this.measureAll(stale, now);
 
     // 2b. keep the labels inside the window: a label partly off screen is pulled in by EDGE px (no clipping at the edge);
     // a label fully off screen is hidden instead of being pinned to the edge
@@ -235,15 +241,26 @@ export class WorldLabels {
     }
   }
 
-  /** Read the label's box size. Displayed briefly when it was hidden (display:none reports 0 x 0). */
-  private measure(e: Entry, now: number): void {
-    const el = e.el;
-    const hidden = el.style.display === 'none';
-    if (hidden) el.style.display = '';
-    e.w = el.offsetWidth;
-    e.h = el.offsetHeight;
-    e.measuredAt = now;
-    if (hidden) el.style.display = 'none';
+  /**
+   * Read the box sizes of `list`. A label that is display:none reports 0 x 0, so it is shown for its read and hidden again.
+   * All of them are shown first and read after, so the browser lays out once instead of once per label
+   * (show, read, hide, then the next label's show forced a new layout each time).
+   */
+  private measureAll(list: Entry[], now: number): void {
+    const revealed = this.revealed;
+    revealed.length = 0;
+    for (const e of list) {
+      if (e.el.style.display === 'none') {
+        e.el.style.display = '';
+        revealed.push(e);
+      }
+    }
+    for (const e of list) {
+      e.w = e.el.offsetWidth;
+      e.h = e.el.offsetHeight;
+      e.measuredAt = now;
+    }
+    for (const e of revealed) e.el.style.display = 'none';
   }
 
   clear(): void {

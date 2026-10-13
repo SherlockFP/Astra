@@ -402,19 +402,22 @@ export class EditMode {
    */
   private layoutBoxes(): void {
     const lr = this.layer.getBoundingClientRect();
+    // every frame rect is read before any box is written: one layout pass instead of one per frame (boxes never move a frame)
+    const regs = [...this.regs.values()];
+    const rects = regs.map((reg) => reg.frame.el.getBoundingClientRect());
     const shown: { reg: Reg; r: DOMRect }[] = [];
-    for (const reg of this.regs.values()) {
-      const r = reg.frame.el.getBoundingClientRect();
+    regs.forEach((reg, i) => {
+      const r = rects[i];
       const show = r.width >= 2 && r.height >= 2;
       const want = show ? '' : 'none';
       if (reg.box.style.display !== want) reg.box.style.display = want;
-      if (!show) continue;
+      if (!show) return;
       reg.box.style.left = `${r.left - lr.left}px`;
       reg.box.style.top = `${r.top - lr.top}px`;
       reg.box.style.width = `${r.width}px`;
       reg.box.style.height = `${r.height}px`;
       shown.push({ reg, r });
-    }
+    });
     for (const { reg, r } of shown) {
       const low = r.top - lr.top < TAG_H + 6 || tagBlocked(r, shown);
       reg.box.classList.toggle('low', low);

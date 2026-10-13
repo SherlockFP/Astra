@@ -58,6 +58,13 @@ export class AnimController {
   shotSeq = 0;
   /** GDD_LIFE §5.4 (L-00): performance.now() ms until which the clip time runs at FREEZE_TIME_SCALE (selective hit-freeze). 0 = off. */
   freezeUntil = 0;
+  /**
+   * Off-camera pause (NPCs and off-screen enemies, see entities/ViewCull.ts): while set and no one-shot plays, update() only
+   * accumulates dt. Anything that starts or changes a clip first applies the accumulated time (catchUp), so the base timeline
+   * is exact when the entity comes back. One-shots are never paused, so their events and onDone fire on time.
+   */
+  paused = false;
+  private pendingDt = 0;
 
   constructor(root: THREE.Object3D, clips: THREE.AnimationClip[]) {
     this.mixer = new THREE.AnimationMixer(root);
@@ -149,9 +156,13 @@ export class AnimController {
   setBase(name: string, opts: PlayOpts = {}): void {
     if (this.locked || !this.clips.has(name)) return;
     if (this.baseName === name && !opts.restart) {
-      if (opts.speed !== undefined && this.baseAction) this.baseAction.timeScale = opts.speed;
+      if (opts.speed !== undefined && this.baseAction && this.baseAction.timeScale !== opts.speed) {
+        this.catchUp();
+        this.baseAction.timeScale = opts.speed;
+      }
       return;
     }
+    this.catchUp();
     this.baseName = name;
     const fade = opts.fade ?? 0.18;
     if (this.shot && this.shot.mask === 'full') return; // applied when the full-body shot ends
@@ -168,6 +179,7 @@ export class AnimController {
       opts.onDone?.();
       return 0;
     }
+    this.catchUp();
     const fade = opts.fade ?? 0.08;
     const old = this.shot;
     if (old && old.action !== a) old.action.fadeOut(fade);
@@ -216,6 +228,7 @@ export class AnimController {
   reset(): void {
     this.locked = false;
     this.shot = null;
+    this.pendingDt = 0;
     this.mixer.stopAllAction();
     this.baseAction = null;
     const b = this.baseName;
@@ -223,8 +236,23 @@ export class AnimController {
     if (b) this.setBase(b, { fade: 0 });
   }
 
+  /** Applies the time skipped while paused, before a clip starts or changes (keeps the base timeline exact). */
+  private catchUp(): void {
+    if (this.pendingDt <= 0) return;
+    const d = this.pendingDt;
+    this.pendingDt = 0;
+    this.mixer.update(d);
+  }
+
   update(dt: number): void {
-    this.mixer.update(this.freezeUntil > 0 && performance.now() < this.freezeUntil ? dt * FREEZE_TIME_SCALE : dt);
+    const step = this.freezeUntil > 0 && performance.now() < this.freezeUntil ? dt * FREEZE_TIME_SCALE : dt;
+    if (this.paused && !this.shot) {
+      this.pendingDt += step;
+      return;
+    }
+    const total = this.pendingDt + step;
+    this.pendingDt = 0;
+    this.mixer.update(total);
     const s = this.shot;
     if (s && !s.eventFired && s.opts.eventAt !== undefined && s.action.time >= s.opts.eventAt) {
       s.eventFired = true;

@@ -16,9 +16,10 @@ Implementation is done by Haiku in the packages of §9; numbers are tuning targe
 4. **Gear is the long-term ladder, skill is the short-term one.** BiS endgame gear ≈ ×2.0 damage and ×2.2 HP over a
    fresh level-60 character in starter greens; a skilled player with mid gear can still out-DPS a careless BiS player.
 5. **Solo-aware roles** (audit finding): the tank/healer damage targets of §5.3 apply only in a party. When the party
-   size is 1 (open world, solo keys) tank and healer specs get "Yalnız Kurt": damage ×1.40 (tanks) / ×2.2 (healers,
-   bringing them to ~75–85 % of a DPS spec) and healers' overheal converts 30 % into a shield; it drops the moment a
-   second player joins. A new character defaults to a DPS spec.
+   size is 1 (open world, solo keys) tank and healer specs get "Yalnız Kurt": the spec's negative damage modifiers are
+   ignored (tanks land at ~85–90 % of a DPS spec) and healers additionally get ×1.3 more damage (~75–85 %) and convert
+   30 % of overheal into a shield; it drops the moment a second player joins. A new character defaults to a DPS spec.
+   SimBench (§5) re-tunes these numbers once it exists.
 6. **Measured, not guessed.** Balance is maintained by a deterministic headless simulator + auto-tuner (§5) run after
    every content wave; out-of-band specs fail the check.
 

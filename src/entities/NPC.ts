@@ -10,6 +10,7 @@ import { G } from '../game/G';
 import { Assets } from '../core/Assets';
 import { RNG, dampAngle, dist2D, hashString } from '../core/utils';
 import { setAccessories, tintObject } from '../scenes/CharacterVisual';
+import { inView } from './ViewCull';
 
 export type NpcRole = TownDef['npcs'][number]['role'];
 export type NpcDef = TownDef['npcs'][number];
@@ -162,6 +163,12 @@ function liftNpcTint(hex: number): number {
  */
 const GROUND_CLIP = /^(Death|Lie_|Sit_Floor|T-Pose)|_Pose$/;
 
+/**
+ * View margin (m) of an NPC's sphere. It covers the head label and speech bubble (about 4 m above the feet) and the shadow
+ * reach of the body under the town sun (about 6 m at 25 degrees), so an NPC is only hidden where nothing of it can be seen.
+ */
+const NPC_VIEW_MARGIN = 7;
+
 const BASE_URL: Record<string, string> = {
   Knight: '/assets/models/characters/Knight.glb',
   Barbarian: '/assets/models/characters/Barbarian.glb',
@@ -304,6 +311,8 @@ export class NPC extends Entity implements Interactable {
   private idleName = 'Idle';
   /** Precomputed patrol loop: points + cumulative lengths. */
   private route: { pts: [number, number][]; cum: number[]; total: number } | null = null;
+  /** Frames still drawn after the model is attached, so its shaders compile at spawn (update). */
+  private warmFrames = 3;
 
   constructor(id: number, def: NpcDef) {
     super(id, 'npc');
@@ -503,7 +512,18 @@ export class NPC extends Entity implements Interactable {
     if (t < this.faceUntil && player) want = Math.atan2(player.position.x - this.position.x, player.position.z - this.position.z);
     this.object3d.rotation.y = dampAngle(this.object3d.rotation.y, want, 8, dt);
 
+    // off-camera NPCs are not drawn and their mixer pauses until they come back (see ViewCull; the state machine below still runs)
+    let seen = true;
+    if (this.model) {
+      if (this.warmFrames > 0) this.warmFrames--;
+      else {
+        const s = p.scale ?? 1;
+        seen = inView(this.position.x, this.position.y + 1.3 * s, this.position.z, 2.6 * s + NPC_VIEW_MARGIN);
+      }
+      if (this.model.visible !== seen) this.model.visible = seen;
+    }
     if (a) {
+      a.paused = !seen;
       a.update(dt);
       if (!p.patrol && !a.isPlayingOneShot && t > this.nextPeriodic && p.periodic && t > this.busyUntil && t >= this.faceUntil) {
         this.playOnce(p.periodic.clip, p.periodic.speed ?? 1);

@@ -12,6 +12,21 @@ import { inWorldMap, questTargetMarks, tileCentreM, waypointKnown, worldExtras }
 const SIZE = 192;
 const R = SIZE / 2;
 
+/** A point on the minimap disc: screen position and distance from the centre (px). */
+interface ScreenPt {
+  sx: number;
+  sy: number;
+  d: number;
+}
+const _sp: ScreenPt = { sx: 0, sy: 0, d: 0 };
+
+/** True when two walkability arrays hold the same cells. */
+function sameCells(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+
 interface Poi {
   e: Entity;
   kind: 'npc' | 'interactable' | 'loot';
@@ -28,6 +43,8 @@ export class Minimap implements HudWidget {
   private northEl: HTMLElement;
   private nav: NavGrid | null = null;
   private mapCanvas: HTMLCanvasElement | null = null;
+  /** Copy of the walkability cells the map image was built from (see refreshMap). */
+  private mapCells: Uint8Array | null = null;
   private fogCanvas: HTMLCanvasElement | null = null;
   private mapBuiltAt = 0;
   private revealX = 1e9;
@@ -127,6 +144,20 @@ export class Minimap implements HudWidget {
     this.mapBuiltAt = performance.now();
   }
 
+  /**
+   * Keeps the map image in step with the nav grid, checked every 2.5 s. The grid is edited at runtime (barriers, doors), so a
+   * check compares the cells and rebuilds the image only when one changed; an unchanged grid just restarts the timer.
+   */
+  private refreshMap(nav: NavGrid, now: number): void {
+    const prev = this.mapCells;
+    if (this.mapCanvas && prev && sameCells(prev, nav.cells)) {
+      this.mapBuiltAt = now;
+      return;
+    }
+    this.buildMap(nav);
+    this.mapCells = nav.cells.slice();
+  }
+
   private ensureFog(nav: NavGrid): void {
     if (this.fogCanvas && this.fogCanvas.width === nav.cols && this.fogCanvas.height === nav.rows) return;
     const f = document.createElement('canvas');
@@ -221,10 +252,11 @@ export class Minimap implements HudWidget {
     if (nav !== this.nav) {
       this.nav = nav;
       this.mapCanvas = null;
+      this.mapCells = null;
       this.fogCanvas = null;
     }
     const now = ctx.now;
-    if (!this.mapCanvas || now - this.mapBuiltAt > 2500) this.buildMap(nav);
+    if (!this.mapCanvas || now - this.mapBuiltAt > 2500) this.refreshMap(nav, now);
     const useFog = ctx.mode === 'dungeon';
     if (useFog) this.ensureFog(nav);
     const px = p.position.x, pz = p.position.z;
@@ -248,9 +280,13 @@ export class Minimap implements HudWidget {
     ctx2.restore();
 
     const cosA = Math.cos(a), sinA = Math.sin(a);
-    const toScreen = (x: number, z: number): { sx: number; sy: number; d: number } => {
+    // one shared result object: every caller reads its fields before the next call (no allocation per point)
+    const toScreen = (x: number, z: number): ScreenPt => {
       const dx = (x - px) * S, dz = (z - pz) * S;
-      return { sx: R + dx * cosA - dz * sinA, sy: R + dx * sinA + dz * cosA, d: Math.hypot(dx, dz) };
+      _sp.sx = R + dx * cosA - dz * sinA;
+      _sp.sy = R + dx * sinA + dz * cosA;
+      _sp.d = Math.hypot(dx, dz);
+      return _sp;
     };
     const edge = R - 7;
 

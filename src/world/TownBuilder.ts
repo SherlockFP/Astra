@@ -14,6 +14,7 @@ import { glowTexture, flameTexture, canvasTexture, makeCanvas, sharedTexture } f
 import { baseName, isAnimatedModel, propLightFor, spawnAnimatedProp, spawnStaticObject, worldFocus, type PropLightSpec } from './Decor';
 import { configureShadowBox, followShadowBox } from './ShadowFollow';
 import { Assets } from '../core/Assets';
+import { isPSXPatched, patchPSX } from '../render/psx';
 import { psxMaterial, surfaceTexture, mulHex, worldUVBox } from './ProceduralAssets';
 import type { VfxId } from '../types/vfx';
 
@@ -160,22 +161,34 @@ function townPreset(url: string): PropLightSpec | null {
   return p ? { ...p, ...TOWN_LIGHT[baseName(url)] } : null;
 }
 
+/** Tamed lamp materials: one copy per source material, shared by every town lamp (the tame is identical for each lamp). */
+const tamedLampMaterials = new WeakMap<THREE.Material, THREE.Material>();
+
 /**
  * The gen lamp ships its glass with KHR_materials_emissive_strength 2.5: a white HDR blob that bloom spreads over the plaza.
- * Town lamps get their own copy of the glass, warm and dim enough to stay under the bloom threshold.
+ * Town lamps get a warm, dim copy of the glass, warm and dim enough to stay under the bloom threshold. The copy is made once per
+ * source material and shared by all lamps: no lamp material is changed per instance, so the lamps stop adding a material each.
  */
 function tameLampGlass(obj: THREE.Object3D): void {
-  Assets.cloneMaterials(obj);
+  const tamed = (src: THREE.Material): THREE.Material => {
+    let c = tamedLampMaterials.get(src);
+    if (!c) {
+      c = src.clone();
+      if (isPSXPatched(src)) patchPSX(c); // Material.clone() drops onBeforeCompile
+      const sm = c as THREE.MeshStandardMaterial;
+      if (sm.name === 'glass' && sm.emissive) {
+        sm.emissive.set(0xffc070);
+        sm.emissiveIntensity = 0.6;
+        sm.needsUpdate = true;
+      }
+      tamedLampMaterials.set(src, c);
+    }
+    return c;
+  };
   obj.traverse((n) => {
     const m = n as THREE.Mesh;
     if (!m.isMesh) return;
-    for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
-      const sm = mat as THREE.MeshStandardMaterial;
-      if (sm.name !== 'glass' || !sm.emissive) continue;
-      sm.emissive.set(0xffc070);
-      sm.emissiveIntensity = 0.6;
-      sm.needsUpdate = true;
-    }
+    m.material = Array.isArray(m.material) ? m.material.map(tamed) : tamed(m.material);
   });
 }
 

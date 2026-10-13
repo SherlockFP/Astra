@@ -198,6 +198,8 @@ export class InstanceBatcher {
       if (im.instanceColor) im.instanceColor.needsUpdate = true;
       im.castShadow = cast;
       im.receiveShadow = g.receive;
+      // the object transform is identity and never changes (every instance carries its own matrix), so skip the per-frame recompose
+      im.matrixAutoUpdate = false;
       im.computeBoundingSphere();
       im.computeBoundingBox();
       this.parent.add(im);

@@ -521,8 +521,16 @@ export class EnemyAI {
 
     // timers
     if (this.timers.length) {
-      const due = this.timers.filter((t) => t.at <= now);
-      if (due.length) {
+      // scan first: the filters below allocate, and most frames have nothing due
+      let anyDue = false;
+      for (const t of this.timers) {
+        if (t.at <= now) {
+          anyDue = true;
+          break;
+        }
+      }
+      if (anyDue) {
+        const due = this.timers.filter((t) => t.at <= now);
         this.timers = this.timers.filter((t) => t.at > now);
         for (const t of due) t.fn();
       }

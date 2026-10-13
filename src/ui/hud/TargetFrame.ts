@@ -136,7 +136,7 @@ export class TargetFrame implements HudWidget {
     const pl = ctx.player?.level ?? 1;
     const skull = !isPlayer && a.level - pl >= 10;
     setText(this.lvlEl, skull ? '☠' : String(a.level));
-    this.lvlEl.style.color = isPlayer ? '#e8c46a' : levelCon(pl, a.level);
+    setStyle(this.lvlEl, 'color', isPlayer ? '#e8c46a' : levelCon(pl, a.level));
     const frac = a.maxHp > 0 ? a.hp / a.maxHp : 0;
     this.hp.set(frac, ctx.dt, `${fmtCompact(Math.max(0, a.hp))} / ${fmtCompact(a.maxHp)}  ·  ${Math.round(frac * 100)}%`);
     this.updatePoise(a);

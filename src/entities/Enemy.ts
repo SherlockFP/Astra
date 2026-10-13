@@ -9,6 +9,7 @@ import { BOSSES, ENEMIES } from '../data/enemies';
 import type { EntityId } from '../types/common';
 import type { BossDef, EnemyAttach, EnemyDef } from '../types/enemies';
 import type { EnemyAI } from '../ai/EnemyAI';
+import { inView } from './ViewCull';
 
 // Hide lists and hp-driven node toggles address meshes by name: keep those meshes separate when models are merged on load.
 for (const d of [...Object.values(ENEMIES), ...Object.values(BOSSES)]) {
@@ -42,6 +43,8 @@ const ANIM_FAR2 = 60 * 60;
 /** Culling of non-aggroed enemies: hidden beyond 70 m, shown again inside 66 m (hysteresis). */
 const CULL_OUT2 = 70 * 70;
 const CULL_IN2 = 66 * 66;
+/** Metres added to an enemy's view sphere (weapon reach, nameplate, blob shadow, one frame of camera lag). */
+const VIEW_MARGIN = 3;
 
 /** Enemies cast no real shadows and take none: the G.vfx.blobShadow under the feet is their shadow. */
 function noShadows(root: THREE.Object3D): void {
@@ -140,6 +143,8 @@ export class Enemy extends Actor {
   private animAcc = 0;
   /** Hidden by distance culling (object3d.visible set by updateLod; not the stealth `hidden` flag). */
   private culled = false;
+  /** Frames still drawn after the model is attached, so its shaders compile at spawn (updateLod). */
+  private warmFrames = 3;
   private proc: ProcModel | null = null;
   private shadow: THREE.Object3D | null = null;
   private mats: { m: THREE.Material; base: number }[] = [];
@@ -690,6 +695,8 @@ export class Enemy extends Actor {
    * Distance LOD + culling against the local player (squared distances, no sqrt). Culled = object3d hidden while the enemy is
    * not aggroed (fog hides it anyway); animation runs every 4th frame beyond 35 m and is frozen beyond 60 m while the enemy is
    * idle and alive (a frozen one-shot would otherwise stall a flinch or cast). Bosses never freeze or cull.
+   * Bodies outside the camera view are hidden too (ViewCull) and their mixer pauses while they are not aggroed: a hidden
+   * skinned mesh costs no draw call and no skeleton update. Bosses are never hidden this way.
    */
   private updateLod(): void {
     const lp = this.world?.localPlayer ?? null;
@@ -700,20 +707,19 @@ export class Enemy extends Actor {
     }
     const o3 = this.object3d;
     if (!this.isBoss) {
-      if (this.aggroed) {
-        if (this.culled) {
-          this.culled = false;
-          o3.visible = true;
-        }
-      } else if (!this.culled) {
-        if (d2 > CULL_OUT2) {
-          this.culled = true;
-          o3.visible = false;
-        }
-      } else if (d2 < CULL_IN2) {
-        this.culled = false;
-        o3.visible = true;
+      if (this.aggroed) this.culled = false;
+      else if (!this.culled) {
+        if (d2 > CULL_OUT2) this.culled = true;
+      } else if (d2 < CULL_IN2) this.culled = false;
+      // the first frames after the model is attached are always drawn: its shaders compile at spawn, as they did before
+      let seen = !this.culled;
+      if (this.holder && this.warmFrames > 0) this.warmFrames--;
+      else if (seen) {
+        const p = this.position;
+        seen = inView(p.x, p.y + this.height * 0.5, p.z, Math.max(this.radius, this.height * 0.5) + VIEW_MARGIN);
       }
+      o3.visible = seen;
+      if (this.anim) this.anim.paused = !seen && !this.aggroed;
     }
     let lod = d2 > ANIM_MID2 ? 4 : 1;
     if (!this.isBoss && !this.aggroed && !this.isDead && (this.culled || d2 > ANIM_FAR2)) lod = 0;

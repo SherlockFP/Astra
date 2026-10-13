@@ -121,6 +121,9 @@ export class UI {
    * held-key set still holds 'Escape' from a release the page never got (pointer lock exit, focus change); this flag does not.
    */
   private escQueued = false;
+  /** The engine canvas whose size feeds viewW / viewH, and the observer that follows its size changes. */
+  private viewCanvas: HTMLCanvasElement | null = null;
+  private viewRO: ResizeObserver | null = null;
 
   /** Build DOM, inject CSS, create HUD + register panels. */
   init(root: HTMLElement): void {
@@ -480,6 +483,22 @@ export class UI {
     }
   }
 
+  /**
+   * Keeps viewW / viewH current without reading the layout every frame: the engine canvas is observed (ResizeObserver reports its
+   * size after layout, only when it changes), and the per-frame call just checks that the engine canvas is still the same element.
+   */
+  private trackView(): void {
+    const c = G.engine?.canvas ?? null;
+    if (c === this.viewCanvas) return;
+    this.viewCanvas = c;
+    this.viewRO?.disconnect();
+    this.updateView();
+    if (c && typeof ResizeObserver !== 'undefined') {
+      this.viewRO ??= new ResizeObserver(() => this.updateView());
+      this.viewRO.observe(c);
+    }
+  }
+
   private playSfx(id: string, volume = 0.7): void {
     try {
       (G.audio as unknown as { play(id: string, o?: { volume?: number }): void }).play(id, { volume });
@@ -523,7 +542,7 @@ export class UI {
     const now = performance.now();
     const rdt = Math.min(0.1, (now - this.lastReal) / 1000);
     this.lastReal = now;
-    this.updateView();
+    this.trackView();
     const cam = this.camera;
     if (cam) cam.updateMatrixWorld();
 
