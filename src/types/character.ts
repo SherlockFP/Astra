@@ -66,6 +66,8 @@ export interface CharacterSave {
   title?: string;
   /** Unlocked cosmetic ids. */
   cosmetics?: Record<string, boolean>;
+  /** WP-08 achievements (systems/Achievements.ts). OPTIONAL, created on first use. Earned title ids go to `titles`, the chosen one to `title`. */
+  achievements?: AchievementSave;
   /** Remaining major cooldown seconds for the 45 s / 90 s / 3-min slots (GDD_V2 §2.1). Top-level because `flags` only holds scalars. */
   majorCd?: { m45: number; m90: number; m180: number };
   // ---- GDD_TALENTS (T0 contracts). All OPTIONAL. Filled by migrateTalents (core/Save.ts) on load, once (flags['tb.migrated']).
@@ -88,6 +90,19 @@ export interface CharacterSave {
   // ---- CM14 Pazar (CORE_MECHANICS §11). OPTIONAL, created on first use by systems/Market.ts.
   /** Sales log of the player's stall (newest last, capped) plus what the player has not seen yet (next-login summary). */
   market?: MarketSave;
+}
+
+/**
+ * WP-08: achievement progress of one character (append-only). `prog` holds counters (add) and maxima (max) by metric id,
+ * `sets` the distinct ids seen per set metric (waypoints, regions, quests...), `done` the unlock time (Date.now()) per
+ * achievement id. Unknown keys are ignored, so old data keeps working when achievements are added.
+ */
+export interface AchievementSave {
+  prog: Record<string, number>;
+  sets: Record<string, string[]>;
+  done: Record<string, number>;
+  /** One-time backfill level (systems/Achievements.ts backfill). Absent = not backfilled yet. */
+  v?: number;
 }
 
 /** CM14: one finished sale of the local player's stall. */

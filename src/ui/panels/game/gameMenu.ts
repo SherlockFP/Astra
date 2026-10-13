@@ -70,6 +70,7 @@ export class GameMenuPanel extends GamePanel {
     mk('Arayüzü Düzenle', () => this.editHud(), 'normal');
     mk('Zindan Bulucu', () => this.openFinder(), 'normal', '/assets/icons/ui-dungeon.svg');
     mk('Grup / Sunucular', () => openPanel('party'), 'normal', '/assets/icons/ui-party.svg');
+    mk('Başarımlar', () => this.openAchievements(), 'normal', '/assets/icons/ui-laurels.svg');
     if (inDungeon) mk(inOpenWorld() ? 'Şehre Dön' : 'Zindandan Ayrıl', () => void this.leaveDungeon(), 'danger', '/assets/icons/ui-exit.svg');
     mk('Karakter Seçimine Dön', () => void this.toCharSelect(), 'normal', '/assets/icons/ui-character.svg');
     mk('Jenerik', () => openPanel('credits'), 'ghost', '/assets/icons/ui-laurels.svg');
@@ -90,6 +91,11 @@ export class GameMenuPanel extends GamePanel {
   private openGuide(): void {
     this.requestClose();
     openPanel('welcome');
+  }
+
+  private openAchievements(): void {
+    this.requestClose();
+    openPanel('achievements');
   }
 
   private openFinder(): void {

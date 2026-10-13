@@ -23,6 +23,7 @@ import { ProcEngine } from '../combat/Procs';
 import { Auras } from '../combat/Auras';
 import { Corpses } from '../combat/Corpses';
 import { installSocial } from '../systems/Social';
+import { installAchievements } from '../systems/Achievements';
 import { LoadingScene } from '../scenes/LoadingScene';
 import { MenuScene } from '../scenes/MenuScene';
 import { TownScene } from '../scenes/TownScene';
@@ -70,6 +71,7 @@ export function createServices(): void {
   G.talents = new TalentSystem();
   G.mplus = new MythicPlus();
   installSocial(); // G.presence + Genel / Ticaret / fisilti on the global lobby
+  installAchievements(); // WP-08: achievement metrics from the game events (reads G.character lazily)
 
   // saved key bindings for the active control scheme (CONTROLS_WOW §2.3)
   applyStoredBindings();

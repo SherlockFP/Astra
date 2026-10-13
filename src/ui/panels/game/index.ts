@@ -18,6 +18,7 @@ import { FinderPanel } from './finder';
 import { GuidePanel } from './guide';
 import { WelcomePanel } from './welcome';
 import { MarketOpenPanel, MarketStallPanel, MarketSearchPanel } from './market';
+import { AchievementsPanel } from './achievements';
 
 /**
  * OWNER: panels-game module.
@@ -66,6 +67,7 @@ export function registerGamePanels(ui: UI): void {
     new MarketOpenPanel(),
     new MarketStallPanel(),
     new MarketSearchPanel(),
+    new AchievementsPanel(),
   ];
   for (const p of panels) {
     registry.set(p.id, p);
