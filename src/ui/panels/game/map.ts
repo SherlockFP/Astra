@@ -1,5 +1,5 @@
 import { G } from '../../../game/G';
-import type { NavGrid } from '../../../world/NavGrid';
+import { mapGridOf, type NavGrid } from '../../../world/NavGrid';
 import type { DungeonDef } from '../../../types/dungeons';
 import { TILE_SIZE } from '../../../types/dungeons';
 import { DUNGEONS, OPEN_ZONES, getDungeon } from '../../../data/dungeons';
@@ -484,27 +484,30 @@ export class MapPanel extends GamePanel {
   };
 
   private buildTerrain(nav: NavGrid, fog: boolean): void {
-    if (!this.terrain || this.terrainNav !== nav) {
-      this.terrain = document.createElement('canvas');
-      this.terrain.width = nav.cols;
-      this.terrain.height = nav.rows;
-    }
+    // zones above MAP_MAX_PX cells per side draw a downsampled walkability grid (ENGINE_BIGMAPS #22); exploration stays per nav cell
+    const mg = mapGridOf(nav);
+    if (!this.terrain || this.terrainNav !== nav) this.terrain = document.createElement('canvas');
+    this.terrain.width = mg.cols;
+    this.terrain.height = mg.rows;
     this.terrainNav = nav;
     this.terrainVer = version;
     this.terrainFog = fog;
     const g = this.terrain.getContext('2d')!;
-    const img = g.createImageData(nav.cols, nav.rows);
+    const img = g.createImageData(mg.cols, mg.rows);
     const ex = exploredOf(nav);
+    const f = mg.factor;
+    const cells = mg.cells;
+    const at = (c: number, r: number): boolean => c >= 0 && r >= 0 && c < mg.cols && r < mg.rows && cells[r * mg.cols + c] === 1;
     const d = img.data;
     const town = inTown();
-    for (let r = 0; r < nav.rows; r++)
-      for (let c = 0; c < nav.cols; c++) {
-        const i = r * nav.cols + c;
+    for (let r = 0; r < mg.rows; r++)
+      for (let c = 0; c < mg.cols; c++) {
+        const i = r * mg.cols + c;
         const o = i * 4;
-        if (!nav.cells[i]) continue; // blocked: transparent
-        const seen = !fog || ex[i] === 1;
+        if (!cells[i]) continue; // blocked: transparent
+        const seen = !fog || ex[r * f * nav.cols + c * f] === 1;
         // edge detection: any blocked 4-neighbour
-        const edge = !nav.cell(c - 1, r) || !nav.cell(c + 1, r) || !nav.cell(c, r - 1) || !nav.cell(c, r + 1);
+        const edge = !at(c - 1, r) || !at(c + 1, r) || !at(c, r - 1) || !at(c, r + 1);
         let R: number, Gc: number, B: number, A: number;
         if (!seen) {
           R = 90; Gc = 76; B = 56; A = 38;

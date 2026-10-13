@@ -225,7 +225,7 @@ export const SEASON_ENTRANCES: SeasonEntranceDef[] = [
   pending('ent_les_uyanisi', 'Leş Uyanışı Girişi', 'les_uyanisi', 50, 'kd_r1', 'temple', 0),
   pending('ent_peri_sisleri', 'Peri Sisleri Girişi', 'peri_sisleri', 60, 'kd_gumus_orman', 'grove', 90, [34, 30]),
   pending('ent_taskasa', 'Taşkasa Kapısı', 'taskasa', 56, 'kd_kor_yarigi', 'forge', 180),
-  pending('ent_yanki_agi', 'Yankı Ağı Girişi', 'yanki_agi', 60, 'karakir_bozkiri', 'web', 0, [46, 108]),
+  pending('ent_yanki_agi', 'Yankı Ağı Girişi', 'yanki_agi', 60, 'karakir_bozkiri', 'web', 0, [69, 162]),
   pending('ent_yigitler_sarayi', 'Yiğitler Sarayı Girişi', 'yigitler_sarayi', 60, 'kd_firtina_zirveleri', 'valor', 180),
   pending('ent_yildiz_divani', 'Yıldız Kapısı', 'yildiz_divani', 55, 'kd_r3', 'palace', 180, [148, 34]),
 ];

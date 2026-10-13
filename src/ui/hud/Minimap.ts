@@ -3,7 +3,7 @@ import { TOWN } from '../../data/town';
 import { getDungeon } from '../../data/dungeons';
 import type { Entity } from '../../entities/Entity';
 import type { Enemy } from '../../entities/Enemy';
-import type { NavGrid } from '../../world/NavGrid';
+import { mapGridOf, type MapGrid, type NavGrid } from '../../world/NavGrid';
 import { RARITY_COLORS, type Rarity } from '../../types/common';
 import { ICON, div, setDisplay, setText, setStyle, clampN, fmtClock, h, iconEl, uiSound } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
@@ -59,6 +59,8 @@ export class Minimap implements HudWidget {
   private subEl: HTMLElement;
   private northEl: HTMLElement;
   private nav: NavGrid | null = null;
+  /** Grid the map image is drawn from: the nav grid, or a downsampled copy above MAP_MAX_PX cells per side (ENGINE_BIGMAPS #22). */
+  private mapGrid: MapGrid | null = null;
   private mapCanvas: HTMLCanvasElement | null = null;
   /** Copy of the walkability cells the map image was built from (see refreshMap). */
   private mapCells: Uint8Array | null = null;
@@ -158,15 +160,15 @@ export class Minimap implements HudWidget {
   }
 
   /** Render the nav grid to a 1 px / cell canvas: floor + brighter outline where it borders a wall. */
-  private buildMap(nav: NavGrid): void {
-    const c = this.mapCanvas && this.mapCanvas.width === nav.cols && this.mapCanvas.height === nav.rows ? this.mapCanvas : document.createElement('canvas');
-    c.width = nav.cols;
-    c.height = nav.rows;
+  private buildMap(g: MapGrid): void {
+    const c = this.mapCanvas && this.mapCanvas.width === g.cols && this.mapCanvas.height === g.rows ? this.mapCanvas : document.createElement('canvas');
+    c.width = g.cols;
+    c.height = g.rows;
     const ctx = c.getContext('2d');
     if (!ctx) return;
-    const img = ctx.createImageData(nav.cols, nav.rows);
+    const img = ctx.createImageData(g.cols, g.rows);
     const d = img.data;
-    const { cols, rows, cells } = nav;
+    const { cols, rows, cells } = g;
     for (let r = 0; r < rows; r++) {
       for (let col = 0; col < cols; col++) {
         const i = r * cols + col;
@@ -195,20 +197,24 @@ export class Minimap implements HudWidget {
    * check compares the cells and rebuilds the image only when one changed; an unchanged grid just restarts the timer.
    */
   private refreshMap(nav: NavGrid, now: number): void {
+    const g = mapGridOf(nav);
+    this.mapGrid = g;
     const prev = this.mapCells;
-    if (this.mapCanvas && prev && sameCells(prev, nav.cells)) {
+    if (this.mapCanvas && prev && sameCells(prev, g.cells)) {
       this.mapBuiltAt = now;
       return;
     }
-    this.buildMap(nav);
-    this.mapCells = nav.cells.slice();
+    this.buildMap(g);
+    this.mapCells = g.cells.slice();
   }
 
-  private ensureFog(nav: NavGrid): void {
-    if (this.fogCanvas && this.fogCanvas.width === nav.cols && this.fogCanvas.height === nav.rows) return;
+  private ensureFog(): void {
+    const g = this.mapGrid;
+    if (!g) return;
+    if (this.fogCanvas && this.fogCanvas.width === g.cols && this.fogCanvas.height === g.rows) return;
     const f = document.createElement('canvas');
-    f.width = nav.cols;
-    f.height = nav.rows;
+    f.width = g.cols;
+    f.height = g.rows;
     const ctx = f.getContext('2d');
     if (ctx) {
       ctx.fillStyle = 'rgb(8,8,8)';
@@ -229,7 +235,8 @@ export class Minimap implements HudWidget {
     ctx.globalCompositeOperation = 'destination-out';
     ctx.fillStyle = '#000';
     ctx.beginPath();
-    ctx.arc((x - nav.originX) / nav.cellSize, (z - nav.originZ) / nav.cellSize, 14 / nav.cellSize, 0, Math.PI * 2);
+    const cs = this.mapGrid?.cellSize ?? nav.cellSize;
+    ctx.arc((x - nav.originX) / cs, (z - nav.originZ) / cs, 14 / cs, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalCompositeOperation = 'source-over';
   }
@@ -377,7 +384,7 @@ export class Minimap implements HudWidget {
     const now = ctx.now;
     if (!this.mapCanvas || now - this.mapBuiltAt > 2500) this.refreshMap(nav, now);
     const useFog = ctx.mode === 'dungeon';
-    if (useFog) this.ensureFog(nav);
+    if (useFog) this.ensureFog();
     const px = p.position.x, pz = p.position.z;
     if (useFog) this.reveal(nav, px, pz);
 

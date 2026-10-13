@@ -884,6 +884,8 @@ metinStone('metin_susuzluk', 'Susuzluk Metini', 0xd8a040, 64, 2.7, 'loot_metin_t
 metinStone('metin_kavrulma', 'Kavrulma Metini', 0xe0603a, 70, 2.9, 'loot_metin_t8');
 metinStone('metin_firtina', 'Fırtına Metini', 0x80c8ff, 76, 3.1, 'loot_metin_t9');
 metinStone('metin_ayaz', 'Ayaz Metini', 0xc8f0ff, 82, 3.3, 'loot_metin_t10');
+metinStone('metin_kul', 'Kül Metini', 0xa8a090, 88, 3.5, 'loot_metin_t11');
+metinStone('metin_kartal', 'Kartal Metini', 0xf0e8d0, 94, 3.7, 'loot_metin_t12');
 
 /** One wave: spawns at this share of max HP (waves fire in order: 85 / 65 / 45 / 25 / 10 %). */
 export interface MetinWaveSpec { hpBelow: number; members: { enemyId: string; count: number }[] }
@@ -946,6 +948,23 @@ export const METIN_SPECS: Record<string, MetinSpec> = {
     ]),
     add: { enemyId: 'shade', count: 2, everySec: 20, cap: 12 },
     aura: { radius: 10, slowPct: 0.15, curse: true, dotPctPerSec: 0.01 },
+    pulse: { everySec: 12, coef: 1.0, rMax: 12 },
+  },
+  // Karakır Bozkırı r11 / r12 (levels 41-44): the same script shape, the kb_* roster of the two new regions
+  metin_kul: {
+    waves: metinWaves([
+      [['kb_kul_akrep', 6]], [['kb_kul_hortlak', 4], ['kb_kul_ates', 1]], [['kb_kul_kurdu', 8]], [['kb_kul_golem', 1], ['kb_kul_akrep', 4]], [['kb_kul_cellat', 1], ['kb_kul_cin', 6]],
+    ]),
+    add: { enemyId: 'kb_kul_hortlak', count: 2, everySec: 20, cap: 12 },
+    aura: { radius: 10, slowPct: 0.15, curse: true },
+    pulse: { everySec: 12, coef: 1.0, rMax: 12 },
+  },
+  metin_kartal: {
+    waves: metinWaves([
+      [['kb_kartal_yirtici', 6]], [['kb_kartal_gozcu', 4], ['kb_kartal_rahip', 2]], [['kb_kartal_karakus', 8]], [['kb_kartal_dagci', 2], ['kb_kartal_karakus', 4]], [['kb_kartal_rahip', 2], ['kb_kartal_yirtici', 6]],
+    ]),
+    add: { enemyId: 'kb_kartal_karakus', count: 2, everySec: 20, cap: 12 },
+    aura: { radius: 10, slowPct: 0.15, dotPctPerSec: 0.01 },
     pulse: { everySec: 12, coef: 1.0, rMax: 12 },
   },
   // Karakır Bozkırı (levels 31-39): wave and add mobs are the kb_* roster (enemies_karakir.ts)
