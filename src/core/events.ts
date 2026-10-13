@@ -277,6 +277,9 @@ export interface GameEvents {
   // run its selectEnemy(entity) (+ armAuto when `attack`, like a right click in WoW). The HUD never mutates the selection itself.
   /** The player clicked a unit in the HUD: select it. `attack` = right click (select and arm the auto-attack, WoW). */
   'target:select': { entityId: EntityId; attack?: boolean };
+  // ---- Binek (WoW ground mount, append-only). Local player only; emitted by game/Mount.ts.
+  /** The local player mounted (`on: true`) or dismounted. */
+  'player:mounted': { on: boolean };
 }
 
 export type GameEventName = keyof GameEvents;

@@ -19,14 +19,14 @@ type Group = { name: string; actions: InputAction[] };
 // Every rebindable action is listed in both schemes (tools/controls-check.mjs reads these arrays). WoW leaves out toggleLock and
 // camShoulder only: both are unbound there (the camera is the classic one).
 const GROUPS_AKSIYON: Group[] = [
-  { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'jump', 'dodge', 'walk', 'walkToggle', 'autorun'] },
+  { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'jump', 'dodge', 'walk', 'walkToggle', 'autorun', 'mount'] },
   { name: 'Savaş', actions: ['skill_lmb', 'heavyAttack', 'skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'skill_s4', 'skill_m45', 'skill_m90', 'skill_m180', 'guard', 'potionHp', 'potionMp', 'potionCleanse', 'flask1', 'flask2', 'flask3', 'flask4', 'flask5', 'targetNext', 'targetPrev', 'focusTarget', 'targetAlly', 'partySel1', 'partySel2', 'partySel3', 'partySel4', 'partySel5', 'interact', 'revive'] },
   { name: 'Arayüz', actions: ['inventory', 'groupFinder', 'character', 'talents', 'skills', 'map', 'party', 'quests', 'mplus', 'paragon', 'bestiary', 'professions', 'guide', 'townPortal', 'chat', 'menu'] },
   { name: 'Kamera ve Diğer', actions: ['freeCursor', 'toggleLock', 'camShoulder', 'zoomIn', 'zoomOut', 'screenshot'] },
 ];
 
 const GROUPS_WOW: Group[] = [
-  { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'turnLeft', 'turnRight', 'jump', 'dodge', 'walk', 'walkToggle', 'autorun'] },
+  { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'turnLeft', 'turnRight', 'jump', 'dodge', 'walk', 'walkToggle', 'autorun', 'mount'] },
   { name: 'Savaş', actions: ['skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'skill_s4', 'skill_m45', 'skill_m90', 'skill_m180', 'autoAttack', 'skill_lmb', 'heavyAttack', 'guard', 'potionHp', 'potionMp', 'potionCleanse', 'flask1', 'flask2', 'flask3', 'flask4', 'flask5', 'targetNext', 'targetPrev', 'focusTarget', 'targetAlly', 'partySel1', 'partySel2', 'partySel3', 'partySel4', 'partySel5', 'interact', 'revive'] },
   { name: 'Arayüz', actions: ['inventory', 'groupFinder', 'character', 'talents', 'skills', 'map', 'party', 'quests', 'mplus', 'paragon', 'bestiary', 'professions', 'guide', 'townPortal', 'chat', 'menu'] },
   { name: 'Kamera ve Diğer', actions: ['freeCursor', 'zoomIn', 'zoomOut', 'screenshot'] },

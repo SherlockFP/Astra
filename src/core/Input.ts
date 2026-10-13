@@ -28,7 +28,9 @@ export type InputAction =
   // UI_REDESIGN §2.6.5 (UX-10, appended): Panzehir İksiri (Combat.usePotion('cleanse')) on the consumable strip
   | 'potionCleanse'
   // CONTROLS_WOW fixes (appended): walk is a toggle (held Ctrl fights browser shortcuts), autorun runs forward until W / S is pressed
-  | 'walkToggle' | 'autorun';
+  | 'walkToggle' | 'autorun'
+  // Binek (WoW ground mount, appended): F9
+  | 'mount';
 
 /** CONTROLS_WOW D1: the control scheme. 'wow' is the default; 'aksiyon' is the pre-WoW layout. */
 export type ControlScheme = 'wow' | 'aksiyon';
@@ -119,6 +121,8 @@ export const DEFAULT_BINDINGS: Record<InputAction, string[]> = {
   // and the backward target cycle takes Backquote (the key above Tab).
   focusTarget: ['F8'],
   targetPrev: ['Backquote'],
+  // Binek (Mount.ts): F9. Every letter and digit is already taken.
+  mount: ['F9'],
   // CONTROLS_WOW §3.1: new actions are unbound in Aksiyon.
   autoAttack: [],
   turnLeft: [],
@@ -193,7 +197,7 @@ export const ACTION_NAMES_TR: Record<InputAction, string> = {
   professions: 'Meslekler', camShoulder: 'Omuz Değiştir', heavyAttack: 'Ağır Saldırı',
   skill_s4: 'Beceri G', groupFinder: 'Grup Bulucu', guide: 'Ne Yapmalıyım?', focusTarget: 'Odak Hedef', targetPrev: 'Önceki Hedef',
   autoAttack: 'Otomatik Saldırı', turnLeft: 'Sola Dön', turnRight: 'Sağa Dön',
-  walkToggle: 'Yürü / Koş (aç/kapat)', autorun: 'Otomatik Koşu',
+  walkToggle: 'Yürü / Koş (aç/kapat)', autorun: 'Otomatik Koşu', mount: 'Binek',
 };
 
 export class Input {
