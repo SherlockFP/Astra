@@ -34,6 +34,10 @@ const SPECS: SlotSpec[] = [
   { id: 's2', action: 'skill_s2', size: 'md', skill: 's2' },
   { id: 's3', action: 'skill_s3', size: 'md', skill: 's3' },
   { id: 's4', action: 'skill_s4', size: 'md', skill: 's4' },
+  // majors (GDD_V2 §2, UI_REDESIGN §2.6.2): after a small gap following s4, before the potion group
+  { id: 'm45', action: 'skill_m45', size: 'md', skill: 'm45' },
+  { id: 'm90', action: 'skill_m90', size: 'md', skill: 'm90' },
+  { id: 'm180', action: 'skill_m180', size: 'md', skill: 'm180' },
   { id: 'potHp', action: 'potionHp', size: 'sm', potion: 'hp' },
   { id: 'potMp', action: 'potionMp', size: 'sm', potion: 'mp' },
 ];
@@ -221,16 +225,16 @@ class Slot {
     if (lockedByCd) {
       const elapsed = Math.round((1 - Math.min(1, rem / total)) * 100);
       setStyle(this.cd, '--e', String(elapsed));
-      setDisplay(this.cd, true);
+      setDisplay(this.cd, true, 'block');
       setText(this.cdText, fmtCd(rem));
-      setDisplay(this.cdText, true);
+      setDisplay(this.cdText, true, 'flex');
     } else {
       setDisplay(this.cd, false);
       setDisplay(this.cdText, false);
       if (onCd) {
         // recharging a charge: show small sweep only
         setStyle(this.cd, '--e', String(Math.round((1 - Math.min(1, rem / total)) * 100)));
-        setDisplay(this.cd, true);
+        setDisplay(this.cd, true, 'block');
       }
     }
     if (this.prevCd > 0.05 && rem <= 0.05 && !this.spec.potion) pulse(this.el, 'ready');
@@ -244,7 +248,7 @@ class Slot {
         gcdOn = true;
       }
     }
-    setDisplay(this.gcd, gcdOn);
+    setDisplay(this.gcd, gcdOn, 'block');
     setClass(this.el, 'nores', noRes);
     setClass(this.el, 'casting', casting);
     setClass(this.el, 'oncd', lockedByCd);
@@ -273,7 +277,7 @@ export class ActionBar implements HudWidget {
       const s = new Slot(spec, ui);
       this.slots.push(s);
       (spec.potion ? pots : skills).appendChild(s.el);
-      if (spec.id === 'rmb' || spec.id === 'r') div('ab-gap', skills);
+      if (spec.id === 'rmb' || spec.id === 'r' || spec.id === 's4') div('ab-gap', skills);
     }
     this.errEl = div('ab-error');
     this.talentBadge = new TalentBadge(ui);

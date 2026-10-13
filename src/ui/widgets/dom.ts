@@ -103,6 +103,11 @@ export function setClass(el: HTMLElement, cls: string, on: boolean): void {
   if (el.classList.contains(cls) !== on) el.classList.toggle(cls, on);
 }
 
+/**
+ * Show or hide an element through an inline `display` value. `display` is the value used when shown: pass the
+ * element's real display ('block', 'flex', ...) whenever a stylesheet hides it by default (e.g. `.slot-cd { display:none }`).
+ * The default '' removes the inline value, so a stylesheet `display:none` wins and the element stays hidden.
+ */
 export function setDisplay(el: HTMLElement, show: boolean, display = ''): void {
   const v = show ? display : 'none';
   if (el.style.display !== v) el.style.display = v;

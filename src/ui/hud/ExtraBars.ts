@@ -195,12 +195,12 @@ class XCell {
     const lockedByCd = onCd && (maxCharges <= 1 || charges <= 0);
     if (lockedByCd) {
       setStyle(this.cd, '--e', String(Math.round((1 - Math.min(1, rem / total)) * 100)));
-      setDisplay(this.cd, true);
+      setDisplay(this.cd, true, 'block');
       setText(this.cdText, fmtCd(rem));
-      setDisplay(this.cdText, true);
+      setDisplay(this.cdText, true, 'flex');
     } else {
       setDisplay(this.cdText, false);
-      setDisplay(this.cd, onCd);
+      setDisplay(this.cd, onCd, 'block');
       if (onCd) setStyle(this.cd, '--e', String(Math.round((1 - Math.min(1, rem / total)) * 100)));
     }
     if (this.prevCd > 0.05 && rem <= 0.05 && c?.k === 'skill') pulse(this.el, 'ready');
@@ -214,7 +214,7 @@ class XCell {
         gcdOn = true;
       }
     }
-    setDisplay(this.gcd, gcdOn);
+    setDisplay(this.gcd, gcdOn, 'block');
     setClass(this.el, 'nores', noRes);
     setClass(this.el, 'casting', casting);
     setClass(this.el, 'oncd', lockedByCd);

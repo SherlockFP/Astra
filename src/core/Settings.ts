@@ -145,6 +145,8 @@ export interface SettingsData {
   cameraSmartPivot: boolean;
   /** Casters auto-fire their LMB chain at range (CONTROLS_WOW Q1). */
   casterAutoShot: boolean;
+  /** Revision of the casterAutoShot default (migrated once: stored files below 1 get casterAutoShot = true). */
+  casterAutoShotRev: number;
   /** A melee skill that hits an enemy arms the WoW auto-attack. */
   autoAttackFromSkills: boolean;
   /** True once the one-time "scheme changed" hint has been shown. */
@@ -251,7 +253,8 @@ export const DEFAULT_SETTINGS: SettingsData = {
   schemeBindings: {},
   cameraDistanceWow: 10,
   cameraSmartPivot: true,
-  casterAutoShot: false,
+  casterAutoShot: true,
+  casterAutoShotRev: 1,
   autoAttackFromSkills: true,
   controlsHintShown: true,
 };
@@ -331,6 +334,13 @@ export class Settings {
       const controlsPatch = migrateControlsRev({ ...stored, bindings: this.data.bindings });
       if (Object.keys(controlsPatch).length > 0) {
         Object.assign(this.data, controlsPatch);
+        changed = true;
+      }
+      // casterAutoShot default false → true (WoW casters had no auto-attack). Stored files always carry the old explicit false,
+      // so the choice cannot be told apart from a deliberate one: flipped once, then the rev flag keeps later choices.
+      if ((stored.casterAutoShotRev ?? 0) < 1) {
+        this.data.casterAutoShot = true;
+        this.data.casterAutoShotRev = 1;
         changed = true;
       }
     }
