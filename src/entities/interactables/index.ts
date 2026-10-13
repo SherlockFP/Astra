@@ -15,3 +15,4 @@ export { BoonPad } from './BoonPad';
 export { BuffStation, type BuffStationSpec } from './BuffStation';
 export { TransitCart, type TransitCartOpts } from './TransitCart';
 export { DropWinch } from './DropWinch';
+export { GatherNode, type GatherNodeOpts } from './GatherNode';

@@ -168,6 +168,31 @@ for (const b of BOHCA_DEFS) {
   add({ id: b.id, name: b.name, desc: b.desc, icon: ic('item-bag'), rarity: b.slots > 12 ? 'rare' : 'uncommon', sellPrice: 0, buyPrice: b.price, kind: 'consumable', maxStack: 99, market: { slots: b.slots } });
 }
 
+// ------------------------------------------------------------------ gathering professions MVP (GDD_LIFE §1.9, tiers 1-6 nodes)
+const GATHER_MAT = (id: string, name: string, desc: string, icon: string, rarity: Rarity, sellPrice: number): MaterialDef => ({
+  id, name, desc, icon, rarity, sellPrice, kind: 'crafting', maxStack: 9999,
+});
+add(GATHER_MAT('ore_copper', 'Bakır Cevheri', 'Madencilik. Bakır damarından çıkar. Külçeye dönüştürülür.', ic('item-ore'), 'common', 2));
+add(GATHER_MAT('ore_iron', 'Demir Cevheri', 'Madencilik. Demir damarından çıkar. Külçeye dönüştürülür.', ic('item-ore'), 'common', 5));
+add(GATHER_MAT('ore_silver', 'Gümüş Cevheri', 'Madencilik. Gümüş damarından çıkar.', ic('item-ore'), 'uncommon', 12));
+add(GATHER_MAT('ore_gold', 'Altın Cevheri', 'Madencilik. Altın damarından çıkar.', ic('item-ore'), 'uncommon', 30));
+add(GATHER_MAT('ore_dragon', 'Ejder Taşı Cevheri', 'Madencilik. Ejder Taşı damarından çıkar.', ic('item-ore'), 'rare', 80));
+add(GATHER_MAT('ore_ancient', 'Kadim Kristal Cevheri', 'Madencilik. Kadim Kristal damarından çıkar.', ic('item-crystal-shard'), 'epic', 200));
+add(GATHER_MAT('coal', 'Kömür', 'Ocakta yakıt olarak kullanılır.', ic('item-ore'), 'common', 3));
+add(GATHER_MAT('ingot_copper', 'Bakır Külçe', 'Bakır cevherinin eritilmiş hali. Bileme taşı yapımında kullanılır.', ic('item-metal-bar'), 'common', 5));
+add(GATHER_MAT('ingot_iron', 'Demir Külçe', 'Demir cevherinin eritilmiş hali. Bileme taşı yapımında kullanılır.', ic('item-metal-bar'), 'common', 12));
+add(GATHER_MAT('bileme_tasi_1', 'Bileme Taşı I', 'Silahları bilemek için. Madencilikten üretilir.', ic('item-upgrade-stone'), 'uncommon', 15));
+add(GATHER_MAT('bileme_tasi_2', 'Bileme Taşı II', 'Daha keskin bileme için. Madencilikten üretilir.', ic('item-upgrade-stone'), 'rare', 40));
+add(GATHER_MAT('herb_daisy', 'Ak Papatya', 'Bitki Toplama. Şifa iksirinin yardımcı otu.', ic('map-herb'), 'common', 2));
+add(GATHER_MAT('shroom_tan', 'Kahverengi Mantar', 'Bitki Toplama. Şifa iksirinin yardımcı mantarı.', ic('map-herb'), 'common', 2));
+add(GATHER_MAT('herb_sage', 'Adaçayı', 'Bitki Toplama. Zihin iksirinin ana otu.', ic('map-herb'), 'common', 5));
+add(GATHER_MAT('shroom_red', 'Zehirli Mantar', 'Bitki Toplama. Dikkatli kullanılmalı.', ic('map-herb'), 'common', 5));
+add(GATHER_MAT('herb_wolfsbane', 'Kurt Otu', 'Bitki Toplama. Kurt Ormanı ve Kar Kurtları bölgelerinde bulunur.', ic('map-herb'), 'uncommon', 12));
+add(GATHER_MAT('herb_dragontongue', 'Ejder Dili', 'Bitki Toplama. Ateşli bir bitki.', ic('map-herb'), 'uncommon', 30));
+add(GATHER_MAT('herb_moonviolet', 'Ay Menekşesi', 'Bitki Toplama. Nadir bir menekşe.', ic('map-herb'), 'rare', 80));
+add(GATHER_MAT('herb_lotus', 'Kadim Nilüfer', 'Bitki Toplama. Kadim sularda açar.', ic('map-herb'), 'epic', 200));
+add(GATHER_MAT('pollen', 'Çiçek Tozu', 'Herhangi bir çiçekten düşen toz. Nadir bulgu.', ic('item-crystal-shard'), 'uncommon', 8));
+
 // ------------------------------------------------------------------ helpers
 /** All potion ids of a kind ('hp' | 'mp') ordered by tier. */
 export const potionIds = (kind: 'hp' | 'mp'): string[] => [1, 2, 3, 4, 5].map((t) => (kind === 'hp' ? `pot_hp_${t}` : `pot_res_${t}`));

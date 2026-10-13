@@ -19,6 +19,7 @@ import { SafeZones } from './SafeZones';
 import { WaypointNetwork } from './WaypointNetwork';
 import { spawnVillageNpcs } from './VillageSpawner';
 import { WorldPois } from './WorldPois';
+import { WorldGather } from './WorldGather';
 import { EventCalendar, buildEventSites } from './EventCalendar';
 import { Discoveries } from './Discoveries';
 import { bindQuestMarks } from './QuestMarks';
@@ -65,6 +66,7 @@ export class WorldRuntime {
   private readonly minis: MiniBossDirector;
   private readonly bosses: BossSchedule;
   private readonly pois: WorldPois;
+  private readonly gather: WorldGather;
   private readonly discoveries: Discoveries;
   private events: EventScope | null = null;
   private calendar: EventCalendar | null = null;
@@ -90,6 +92,7 @@ export class WorldRuntime {
     this.minis = new MiniBossDirector(this.ctx);
     this.bosses = new BossSchedule(this.ctx);
     this.pois = new WorldPois(this.ctx);
+    this.gather = new WorldGather(this.ctx);
     this.discoveries = new Discoveries(this.ctx);
   }
 
@@ -99,6 +102,7 @@ export class WorldRuntime {
       this.guard('npcs', () => spawnVillageNpcs(this.ctx)),
       this.guard('waypoints', () => this.waypoints.place()),
       this.guard('shrines and chests', () => this.pois.place()),
+      this.guard('gathering nodes', () => this.gather.place()),
     ]);
     if (G.net.isAuthority) {
       try {
