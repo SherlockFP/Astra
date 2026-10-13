@@ -8,6 +8,16 @@ import { HOST_DYNAMIC_ID_BASE, LOCAL_ID_BASE, type EntityId, type Team } from '.
 
 const _v = new THREE.Vector3();
 
+/** Structural subset of the Heightfield API (docs/ENGINE_VERTICALITY.md §4, src/world/Heightfield.ts by V1). */
+export interface WorldHeights {
+  groundY(x: number, z: number): number;
+  ceilingY(x: number, z: number): number;
+  killY(x: number, z: number): number;
+}
+
+/** Same value as VERT.TOL_MELEE (§2, Heightfield.ts). Keep in sync until the import is possible. */
+const TOL_MELEE = 2.5;
+
 /**
  * Simulation container for the current town/dungeon. Owns entities, the nav grid and spatial queries.
  * Created by TownScene/DungeonScene; exposed as G.world while active.
@@ -16,6 +26,12 @@ const _v = new THREE.Vector3();
 export class World {
   readonly scene: THREE.Scene;
   nav: NavGrid;
+  /**
+   * Vertical dungeon (§6). Set together with `heights` by DungeonScene (`vertical = !!built.hf`). false = legacy XZ-only
+   * behaviour in every query, so a missed call site stays legacy.
+   */
+  vertical = false;
+  heights: WorldHeights | null = null;
   /** Seconds since the world was created (scaled by hit-stop). */
   time = 0;
   readonly entities = new Map<EntityId, Entity>();
@@ -96,34 +112,44 @@ export class World {
 
   // ---- spatial queries (XZ plane) ----
 
-  /** Living actors whose circle intersects the query circle. */
-  actorsInRadius(pos: { x: number; z: number }, radius: number, filter?: (a: Actor) => boolean): Actor[] {
+  /**
+   * Feet-height gate (§6): true when the world is not vertical, `y` is omitted, or the actor's feet are within `tol` of `y`.
+   */
+  sameLevel(a: { position: { y: number } }, y: number, tol = TOL_MELEE): boolean {
+    return !this.vertical || Math.abs(a.position.y - y) <= tol;
+  }
+
+  /**
+   * Living actors whose circle intersects the query circle. `y`/`tol` add the feet-height gate (vertical worlds only);
+   * omitted `y` keeps the legacy XZ-only behaviour.
+   */
+  actorsInRadius(pos: { x: number; z: number }, radius: number, filter?: (a: Actor) => boolean, y?: number | null, tol = TOL_MELEE): Actor[] {
     const out: Actor[] = [];
     const scan = (a: Actor) => {
       if (a.isDead) return;
       const r = radius + a.radius;
-      if ((a.position.x - pos.x) ** 2 + (a.position.z - pos.z) ** 2 <= r * r && (!filter || filter(a))) out.push(a);
+      if ((a.position.x - pos.x) ** 2 + (a.position.z - pos.z) ** 2 <= r * r && (!filter || filter(a)) && (y == null || this.sameLevel(a, y, tol))) out.push(a);
     };
     for (const p of this.players) scan(p);
     for (const e of this.enemies) scan(e);
     return out;
   }
 
-  enemiesInRadius(pos: { x: number; z: number }, radius: number): Enemy[] {
-    return this.actorsInRadius(pos, radius, (a) => a.kind === 'enemy') as unknown as Enemy[];
+  enemiesInRadius(pos: { x: number; z: number }, radius: number, y?: number | null, tol = TOL_MELEE): Enemy[] {
+    return this.actorsInRadius(pos, radius, (a) => a.kind === 'enemy', y, tol) as unknown as Enemy[];
   }
 
-  playersInRadius(pos: { x: number; z: number }, radius: number): Player[] {
-    return this.actorsInRadius(pos, radius, (a) => a.kind === 'player') as unknown as Player[];
+  playersInRadius(pos: { x: number; z: number }, radius: number, y?: number | null, tol = TOL_MELEE): Player[] {
+    return this.actorsInRadius(pos, radius, (a) => a.kind === 'player', y, tol) as unknown as Player[];
   }
 
   /** Hostile actors relative to a team. */
-  hostilesOf(team: Team, pos: { x: number; z: number }, radius: number): Actor[] {
-    return this.actorsInRadius(pos, radius, (a) => a.team !== team && a.team !== 'neutral');
+  hostilesOf(team: Team, pos: { x: number; z: number }, radius: number, y?: number | null, tol = TOL_MELEE): Actor[] {
+    return this.actorsInRadius(pos, radius, (a) => a.team !== team && a.team !== 'neutral', y, tol);
   }
 
   /** Actors inside a cone (arc in degrees, centered on dir which must be normalized on XZ). */
-  actorsInCone(origin: { x: number; z: number }, dir: { x: number; z: number }, range: number, arcDeg: number, filter?: (a: Actor) => boolean): Actor[] {
+  actorsInCone(origin: { x: number; z: number }, dir: { x: number; z: number }, range: number, arcDeg: number, filter?: (a: Actor) => boolean, y?: number | null, tol = TOL_MELEE): Actor[] {
     const cosHalf = Math.cos(((arcDeg / 2) * Math.PI) / 180);
     return this.actorsInRadius(origin, range, (a) => {
       if (filter && !filter(a)) return false;
@@ -131,18 +157,18 @@ export class World {
       const d = Math.hypot(dx, dz);
       if (d <= a.radius + 0.3) return true; // overlapping: always hit
       return (dx * dir.x + dz * dir.z) / d >= cosHalf - a.radius / Math.max(d, 0.001) * 0.5;
-    });
+    }, y, tol);
   }
 
   /** Actors within `width/2` of the segment origin -> origin + dir*length. */
-  actorsInLine(origin: { x: number; z: number }, dir: { x: number; z: number }, length: number, width: number, filter?: (a: Actor) => boolean): Actor[] {
+  actorsInLine(origin: { x: number; z: number }, dir: { x: number; z: number }, length: number, width: number, filter?: (a: Actor) => boolean, y?: number | null, tol = TOL_MELEE): Actor[] {
     return this.actorsInRadius({ x: origin.x + dir.x * length * 0.5, z: origin.z + dir.z * length * 0.5 }, length * 0.5 + width, (a) => {
       if (filter && !filter(a)) return false;
       const dx = a.position.x - origin.x, dz = a.position.z - origin.z;
       const t = Math.max(0, Math.min(length, dx * dir.x + dz * dir.z));
       const px = origin.x + dir.x * t - a.position.x, pz = origin.z + dir.z * t - a.position.z;
       return Math.hypot(px, pz) <= width / 2 + a.radius;
-    });
+    }, y, tol);
   }
 
   nearest<T extends Actor>(list: readonly T[], pos: { x: number; z: number }, maxDist = Infinity, filter?: (a: T) => boolean): T | null {
@@ -156,25 +182,53 @@ export class World {
     return best;
   }
 
-  /** Ground height at x,z (flat world for now; builders may override for stairs/terrain). */
-  groundY(_x: number, _z: number): number {
-    return 0;
+  /** Ground height at x,z (flat world unless `heights` is set; builders may override for stairs/terrain). */
+  groundY(x: number, z: number): number {
+    return this.heights ? this.heights.groundY(x, z) : 0;
   }
 
   /**
    * Ceiling height above x,z (CONTROLS_WOW §7.2). Infinity = no ceiling (open town, unknown rooms), so the WoW camera's ceiling
    * clamp and indoor zoom cap stay dormant. DungeonBuilder overrides it once RoomDef.ceiling exists (CORE_MECHANICS §13).
    */
-  ceilingY(_x: number, _z: number): number {
-    return Infinity;
+  ceilingY(x: number, z: number): number {
+    return this.heights ? this.heights.ceilingY(x, z) : Infinity;
   }
 
-  /** Intersect a ray with the ground plane y = groundY. */
+  /**
+   * Intersect a ray with the ground. Flat: the plane y = 0 (legacy). Vertical: first point where the ray is at or below
+   * groundY(x,z), searched from the plane-0 estimate (16 m band, 0.5 m march, 6 bisections).
+   */
   rayToGround(ray: THREE.Ray, out = new THREE.Vector3()): THREE.Vector3 | null {
-    if (Math.abs(ray.direction.y) < 1e-5) return null;
-    const t = (0 - ray.origin.y) / ray.direction.y;
-    if (t < 0) return null;
-    return out.copy(ray.origin).addScaledVector(ray.direction, t);
+    const o = ray.origin, d = ray.direction;
+    if (Math.abs(d.y) < 1e-5) return null;
+    const t0 = (0 - o.y) / d.y;
+    if (t0 < 0) return null;
+    if (!this.vertical || !this.heights) return out.copy(o).addScaledVector(d, t0);
+    const h = this.heights;
+    const f = (t: number) => o.y + t * d.y - h.groundY(o.x + t * d.x, o.z + t * d.z);
+    const band = 16 / Math.abs(d.y);
+    const step = 0.5 / Math.hypot(d.x, d.y, d.z);
+    let tPrev = Math.max(0, t0 - band);
+    let fPrev = f(tPrev);
+    if (fPrev <= 0) {
+      tPrev = 0;
+      fPrev = f(0);
+      if (fPrev <= 0) return null;
+    }
+    const tEnd = t0 + band + step;
+    for (let t = tPrev + step; t <= tEnd; t += step) {
+      if (f(t) <= 0) {
+        let lo = tPrev, hi = t;
+        for (let k = 0; k < 6; k++) {
+          const m = (lo + hi) / 2;
+          if (f(m) > 0) lo = m; else hi = m;
+        }
+        return out.copy(o).addScaledVector(d, hi);
+      }
+      tPrev = t;
+    }
+    return null;
   }
 
   update(dt: number): void {

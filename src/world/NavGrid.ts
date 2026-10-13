@@ -1,9 +1,29 @@
 import * as THREE from 'three';
 
 /**
+ * Structural subset of the Heightfield API (docs/ENGINE_VERTICALITY.md §4, src/world/Heightfield.ts by V1).
+ * Replace with `import type { Heightfield }` once that file exists; the shape is the same.
+ */
+export interface NavHeightSource {
+  groundY(x: number, z: number): number;
+  flagsAt(x: number, z: number): number;
+  /** Rim policy of the HIGH side of a drop (HeightArea.rim). Absent => 'rail'. */
+  rimAt?(x: number, z: number): 'rail' | 'ledge' | 'none';
+}
+
+/** Same bit values as `F` in Heightfield.ts (§4). Keep in sync until the import is possible. */
+export const NAV_F = { VOID: 1, SLOPE: 2, LOW: 4, LIFT: 8, LEDGE: 16, RAIL: 32 } as const;
+/** Subset of `VERT` (§2, Heightfield.ts). Keep in sync until the import is possible. */
+const NAV_VERT = { STEP_UP: 0.45, RAMP_PAIR: 0.85, AIR_STEP: 0.25, LOW_RAIL: 1.2 } as const;
+const EPS = 1e-3;
+
+/**
  * Walkability grid on the XZ plane for collision, line of sight and A* pathfinding.
  * Builders (DungeonBuilder/TownBuilder) fill it; actors call resolveCircle() after moving.
  * cell value: 0 = blocked, 1 = walkable.
+ *
+ * Vertical grids (dungeons with `vertical: true`) additionally carry per-cell floor heights, F flags and connected
+ * regions (attachHeights). Every vertical branch is gated on `floor !== null`; flat grids take the legacy code paths.
  */
 export class NavGrid {
   readonly cellSize: number;
@@ -12,6 +32,14 @@ export class NavGrid {
   readonly originX: number;
   readonly originZ: number;
   readonly cells: Uint8Array;
+  /** Static floor height per 1 m cell (absolute metres). null on flat grids. */
+  floor: Float32Array | null = null;
+  /** NAV_F bits per 1 m cell. null on flat grids. */
+  flags: Uint8Array | null = null;
+  /** Connected component id per standable cell (0 = none). null on flat grids. */
+  region: Uint16Array | null = null;
+  /** Live height source (lifts, analytic slopes). null on flat grids. */
+  hf: NavHeightSource | null = null;
 
   constructor(opts: { originX: number; originZ: number; width: number; depth: number; cellSize?: number; walkable?: boolean }) {
     this.cellSize = opts.cellSize ?? 1;
@@ -21,6 +49,8 @@ export class NavGrid {
     this.rows = Math.ceil(opts.depth / this.cellSize);
     this.cells = new Uint8Array(this.cols * this.rows).fill(opts.walkable ? 1 : 0);
   }
+
+  get vertical(): boolean { return this.floor !== null; }
 
   // ---- coordinates ----
   cx(x: number): number { return Math.floor((x - this.originX) / this.cellSize); }
@@ -36,8 +66,30 @@ export class NavGrid {
     if (this.inBounds(c, r)) this.cells[r * this.cols + c] = v;
   }
 
+  /** Raw collision walkability. VOID cells (vertical) are walkable for physics (players fall) but not for planning. */
   isWalkable(x: number, z: number): boolean {
-    return this.cell(this.cx(x), this.cz(z)) > 0;
+    const c = this.cx(x), r = this.cz(z);
+    if (this.cell(c, r) <= 0) return false;
+    if (this.flags && (this.flags[r * this.cols + c] & NAV_F.VOID)) return false;
+    return true;
+  }
+
+  /** Open and not a void/ledge cell (§5.2). Flat grid: cell > 0. */
+  isStandable(x: number, z: number): boolean {
+    return this.standableCell(this.cx(x), this.cz(z));
+  }
+
+  private standableCell(c: number, r: number): boolean {
+    if (this.cell(c, r) <= 0) return false;
+    if (!this.flags) return true;
+    return !(this.flags[r * this.cols + c] & (NAV_F.VOID | NAV_F.LEDGE));
+  }
+
+  /** A* / region node: standable and not a lift platform (lifts never join regions). Flat grid: cell > 0. */
+  private pathCell(c: number, r: number): boolean {
+    if (this.cell(c, r) <= 0) return false;
+    if (!this.flags) return true;
+    return !(this.flags[r * this.cols + c] & (NAV_F.VOID | NAV_F.LEDGE | NAV_F.LIFT));
   }
 
   /** Mark a world-space axis-aligned rectangle. */
@@ -94,6 +146,141 @@ export class NavGrid {
     return hit;
   }
 
+  /**
+   * Floor height at x,z (absolute metres). Dynamic: lifts and analytic slopes via the Heightfield.
+   * Flat grid: 0.
+   */
+  floorAt(x: number, z: number): number {
+    return this.hf ? this.hf.groundY(x, z) : 0;
+  }
+
+  /** NAV_F bits at x,z (0 on flat grids or outside the grid). */
+  flagsAt(x: number, z: number): number {
+    if (!this.flags) return 0;
+    const c = this.cx(x), r = this.cz(z);
+    return this.inBounds(c, r) ? this.flags[r * this.cols + c] : 0;
+  }
+
+  /** Connected region id at x,z (0 = none / flat grid). */
+  regionAt(x: number, z: number): number {
+    if (!this.region) return 0;
+    const c = this.cx(x), r = this.cz(z);
+    return this.inBounds(c, r) ? this.region[r * this.cols + c] : 0;
+  }
+
+  /** True when both points lie in the same non-zero region. Flat grid (no regions): always true. */
+  sameRegion(a: { x: number; z: number }, b: { x: number; z: number }): boolean {
+    if (!this.region) return true;
+    const ra = this.regionAt(a.x, a.z);
+    return ra !== 0 && ra === this.regionAt(b.x, b.z);
+  }
+
+  /**
+   * Attach heights to this grid (vertical dungeons only): fills floor/flags from the Heightfield, runs the rim pass
+   * (§5.3) and the region flood (§5.5).
+   */
+  attachHeights(hf: NavHeightSource): void {
+    const N = this.cols * this.rows;
+    const floor = new Float32Array(N), flags = new Uint8Array(N);
+    for (let r = 0; r < this.rows; r++)
+      for (let c = 0; c < this.cols; c++) {
+        const i = r * this.cols + c;
+        const x = this.centerX(c), z = this.centerZ(r);
+        floor[i] = hf.groundY(x, z);
+        flags[i] = hf.flagsAt(x, z);
+      }
+    this.hf = hf;
+    this.floor = floor;
+    this.flags = flags;
+    this.region = null;
+    this.applyRims(hf);
+    this.buildRegions();
+  }
+
+  /** Open, not void/slope/lift: a cell the rim pass may act on. */
+  private rimEligible(c: number, r: number): boolean {
+    if (this.cell(c, r) <= 0) return false;
+    return !(this.flags![r * this.cols + c] & (NAV_F.VOID | NAV_F.SLOPE | NAV_F.LIFT));
+  }
+
+  /** §5.3: a drop > STEP_UP to a lower open neighbour is finished by a rail (solid) or a ledge (LEDGE flag) on the high side. */
+  private applyRims(hf: NavHeightSource): void {
+    const floor = this.floor!, flags = this.flags!;
+    const cut: number[] = [], ledge: number[] = [];
+    for (let r = 0; r < this.rows; r++)
+      for (let c = 0; c < this.cols; c++) {
+        if (!this.rimEligible(c, r)) continue;
+        const i = r * this.cols + c;
+        const nbrs: [number, number][] = [[c + 1, r], [c - 1, r], [c, r + 1], [c, r - 1]];
+        let drop = false;
+        for (const [nc, nr] of nbrs) {
+          if (!this.rimEligible(nc, nr)) continue;
+          if (floor[i] - floor[nr * this.cols + nc] > NAV_VERT.STEP_UP + EPS) { drop = true; break; }
+        }
+        if (!drop) continue;
+        // a neighbouring slope whose end meets this cell within STEP_UP is where the stair/ramp attaches: no rim.
+        // The slope end is sampled half a cell from this cell, on the shared edge.
+        let attached = false;
+        for (const [nc, nr] of nbrs) {
+          if (!this.inBounds(nc, nr) || !(flags[nr * this.cols + nc] & NAV_F.SLOPE)) continue;
+          const px = (this.centerX(c) + this.centerX(nc)) / 2, pz = (this.centerZ(r) + this.centerZ(nr)) / 2;
+          if (Math.abs(hf.groundY(px, pz) - floor[i]) <= NAV_VERT.STEP_UP + EPS) { attached = true; break; }
+        }
+        if (attached) continue;
+        const rim = hf.rimAt ? hf.rimAt(this.centerX(c), this.centerZ(r)) : 'rail';
+        if (rim === 'rail') cut.push(i);
+        else if (rim === 'ledge') ledge.push(i);
+      }
+    // apply after the scan so every decision sees the pre-pass state
+    for (const i of cut) { this.cells[i] = 0; flags[i] |= NAV_F.LOW | NAV_F.RAIL; }
+    for (const i of ledge) flags[i] |= NAV_F.LEDGE;
+  }
+
+  /** Directional step rule of §5.2 (rise from i to j). */
+  private canStep(i: number, j: number): boolean {
+    const floor = this.floor!, flags = this.flags!;
+    const lim = (flags[i] | flags[j]) & NAV_F.SLOPE ? NAV_VERT.RAMP_PAIR : NAV_VERT.STEP_UP;
+    return floor[j] - floor[i] <= lim + EPS;
+  }
+
+  /**
+   * §5.5: flood fill over pathable cells (8-neighbour, no corner cutting). Two cells join when a step is allowed in
+   * either direction, which is a superset of the A* edges, so a region mismatch always means "unreachable".
+   */
+  private buildRegions(): void {
+    const N = this.cols * this.rows;
+    const reg = new Uint16Array(N);
+    const queue = new Int32Array(N);
+    let id = 0;
+    for (let r = 0; r < this.rows; r++)
+      for (let c = 0; c < this.cols; c++) {
+        const seed = r * this.cols + c;
+        if (reg[seed] || !this.pathCell(c, r)) continue;
+        if (id >= 65535) { console.warn('[nav] more than 65535 regions; the rest stay region 0'); break; }
+        id++;
+        reg[seed] = id;
+        let head = 0, tail = 0;
+        queue[tail++] = seed;
+        while (head < tail) {
+          const cur = queue[head++];
+          const cc = cur % this.cols, cr = (cur - cc) / this.cols;
+          for (let dz = -1; dz <= 1; dz++)
+            for (let dx = -1; dx <= 1; dx++) {
+              if (!dx && !dz) continue;
+              const nc = cc + dx, nr = cr + dz;
+              if (!this.inBounds(nc, nr)) continue;
+              if (dx && dz && (!this.cell(cc + dx, cr) || !this.cell(cc, cr + dz))) continue;
+              const ni = nr * this.cols + nc;
+              if (reg[ni] || !this.pathCell(nc, nr)) continue;
+              if (!this.canStep(cur, ni) && !this.canStep(ni, cur)) continue;
+              reg[ni] = id;
+              queue[tail++] = ni;
+            }
+        }
+      }
+    this.region = reg;
+  }
+
   /** Distance along a->b until the first blocked cell (DDA). Returns 1 if clear (fraction of the segment). */
   raycast(ax: number, az: number, bx: number, bz: number): number {
     const dx = bx - ax, dz = bz - az;
@@ -103,7 +290,34 @@ export class NavGrid {
     const n = Math.ceil(len / step);
     for (let i = 1; i <= n; i++) {
       const t = i / n;
-      if (!this.isWalkable(ax + dx * t, az + dz * t)) return (i - 1) / n;
+      if (!this.cell(this.cx(ax + dx * t), this.cz(az + dz * t))) return (i - 1) / n;
+    }
+    return 1;
+  }
+
+  /**
+   * Height-aware shot / camera ray (§5.2). Same DDA as raycast, but a solid LOW cell (rail, parapet) only blocks while the
+   * ray's height at that point is at or below its floor + LOW_RAIL. Other solid cells always block. Flat grid = raycast.
+   * Returns the blocked fraction like raycast (1 = clear).
+   */
+  raycastY(ax: number, ay: number, az: number, bx: number, by: number, bz: number): number {
+    const dx = bx - ax, dz = bz - az;
+    const len = Math.hypot(dx, dz);
+    if (len < 1e-6) return 1;
+    const step = this.cellSize * 0.25;
+    const n = Math.ceil(len / step);
+    for (let i = 1; i <= n; i++) {
+      const t = i / n;
+      const x = ax + dx * t, z = az + dz * t;
+      const c = this.cx(x), r = this.cz(z);
+      if (this.cell(c, r)) continue;
+      if (!this.flags || !this.inBounds(c, r)) return (i - 1) / n;
+      const idx = r * this.cols + c;
+      if (this.flags[idx] & NAV_F.LOW) {
+        const y = ay + (by - ay) * t;
+        if (y > this.floor![idx] + NAV_VERT.LOW_RAIL) continue;
+      }
+      return (i - 1) / n;
     }
     return 1;
   }
@@ -112,14 +326,63 @@ export class NavGrid {
     return this.raycast(ax, az, bx, bz) >= 1;
   }
 
+  /**
+   * AI / steering line of sight (§5.2): no solid, VOID or LEDGE cell along the segment and no step violation between
+   * consecutive samples (rise > STEP_UP, or > RAMP_PAIR when either sample is a slope). Flat grid = lineOfSight.
+   */
+  walkLine(ax: number, az: number, bx: number, bz: number): boolean {
+    if (!this.floor) return this.lineOfSight(ax, az, bx, bz);
+    const dx = bx - ax, dz = bz - az;
+    const len = Math.hypot(dx, dz);
+    const step = this.cellSize * 0.25;
+    const n = Math.max(1, Math.ceil(len / step));
+    let prevY = this.floorAt(ax, az);
+    let prevSlope = (this.flagsAt(ax, az) & NAV_F.SLOPE) !== 0;
+    for (let i = 1; i <= n; i++) {
+      const t = i / n, x = ax + dx * t, z = az + dz * t;
+      if (!this.isStandable(x, z)) return false;
+      const y = this.floorAt(x, z);
+      const slope = (this.flagsAt(x, z) & NAV_F.SLOPE) !== 0;
+      const lim = slope || prevSlope ? NAV_VERT.RAMP_PAIR : NAV_VERT.STEP_UP;
+      if (y - prevY > lim + EPS) return false;
+      prevY = y;
+      prevSlope = slope;
+    }
+    return true;
+  }
+
+  /**
+   * Move-and-collide for actors (§5.2). Runs resolveCircle, then on vertical grids refuses floors higher than feetY + step
+   * (AIR_STEP when airborne): the offending axis is reverted, trying the x-only then the z-only slide.
+   * Returns true on any collision. Flat grid = resolveCircle.
+   */
+  resolveMove(pos: THREE.Vector3, prevX: number, prevZ: number, radius: number, feetY: number, airborne = false): boolean {
+    const hit = this.resolveCircle(pos, radius);
+    if (!this.floor) return hit;
+    const lim = feetY + (airborne ? NAV_VERT.AIR_STEP : NAV_VERT.STEP_UP);
+    const mx = pos.x - prevX, mz = pos.z - prevZ;
+    const ml = Math.hypot(mx, mz);
+    const ux = ml > 1e-6 ? mx / ml : 0, uz = ml > 1e-6 ? mz / ml : 0;
+    const blocked = (x: number, z: number): boolean => {
+      if (this.floorAt(x, z) > lim) return true;
+      return ml > 1e-6 && this.floorAt(x + ux * radius, z + uz * radius) > lim;
+    };
+    if (!blocked(pos.x, pos.z)) return hit;
+    if (!blocked(pos.x, prevZ)) { pos.z = prevZ; return true; }
+    if (!blocked(prevX, pos.z)) { pos.x = prevX; return true; }
+    pos.x = prevX;
+    pos.z = prevZ;
+    return true;
+  }
+
   nearestWalkable(x: number, z: number, maxRadiusCells = 12): { x: number; z: number } | null {
     const c = this.cx(x), r = this.cz(z);
-    if (this.cell(c, r)) return { x, z };
+    if (this.pathCell(c, r)) return { x, z };
     for (let rad = 1; rad <= maxRadiusCells; rad++)
       for (let dr = -rad; dr <= rad; dr++)
         for (let dc = -rad; dc <= rad; dc++) {
           if (Math.max(Math.abs(dr), Math.abs(dc)) !== rad) continue;
-          if (this.cell(c + dc, r + dr)) return { x: this.centerX(c + dc), z: this.centerZ(r + dr) };
+          if (this.pathCell(c + dc, r + dr)) return { x: this.centerX(c + dc), z: this.centerZ(r + dr) };
         }
     return null;
   }
@@ -129,7 +392,7 @@ export class NavGrid {
     for (let i = 0; i < 20; i++) {
       const a = rand() * Math.PI * 2, d = Math.sqrt(rand()) * radius;
       const px = x + Math.cos(a) * d, pz = z + Math.sin(a) * d;
-      if (this.isWalkable(px, pz) && this.lineOfSight(x, z, px, pz)) return { x: px, z: pz };
+      if (this.isStandable(px, pz) && this.lineOfSight(x, z, px, pz)) return { x: px, z: pz };
     }
     return { x, z };
   }
@@ -137,15 +400,22 @@ export class NavGrid {
   /**
    * A* (8-directional, no corner cutting) + line-of-sight string pulling.
    * Returns world waypoints (excluding start) or null if unreachable within maxNodes.
+   * Vertical grids: steps must satisfy the rise rule, cost adds 0.5 per metre of height change, waypoints carry floorAt,
+   * and different regions are rejected immediately.
    */
   findPath(from: { x: number; z: number }, to: { x: number; z: number }, maxNodes = 6000): THREE.Vector3[] | null {
-    if (this.lineOfSight(from.x, from.z, to.x, to.z)) return [new THREE.Vector3(to.x, 0, to.z)];
+    const vert = this.floor !== null;
+    const los = (ax: number, az: number, bx: number, bz: number): boolean =>
+      vert ? this.walkLine(ax, az, bx, bz) : this.lineOfSight(ax, az, bx, bz);
+    if (los(from.x, from.z, to.x, to.z)) return [new THREE.Vector3(to.x, this.floorAt(to.x, to.z), to.z)];
     const start = this.nearestWalkable(from.x, from.z, 4);
     const goal = this.nearestWalkable(to.x, to.z, 6);
     if (!start || !goal) return null;
     const sc = this.cx(start.x), sr = this.cz(start.z), gc = this.cx(goal.x), gr = this.cz(goal.z);
     const W = this.cols;
     const sIdx = sr * W + sc, gIdx = gr * W + gc;
+    if (this.region && this.region[sIdx] !== this.region[gIdx]) return null;
+    const floor = this.floor;
     const g = new Map<number, number>([[sIdx, 0]]);
     const came = new Map<number, number>();
     const open = new MinHeap();
@@ -167,11 +437,13 @@ export class NavGrid {
         for (let dx = -1; dx <= 1; dx++) {
           if (!dx && !dz) continue;
           const nc = c + dx, nr = r + dz;
-          if (!this.cell(nc, nr)) continue;
+          if (vert ? !this.pathCell(nc, nr) : !this.cell(nc, nr)) continue;
           if (dx && dz && (!this.cell(c + dx, r) || !this.cell(c, r + dz))) continue;
           const ni = nr * W + nc;
           if (closed.has(ni)) continue;
-          const ng = g.get(cur)! + (dx && dz ? 1.4142 : 1);
+          if (vert && !this.canStep(cur, ni)) continue;
+          let ng = g.get(cur)! + (dx && dz ? 1.4142 : 1);
+          if (vert) ng += Math.abs(floor![ni] - floor![cur]) * 0.5;
           if (ng < (g.get(ni) ?? Infinity)) {
             g.set(ni, ng);
             came.set(ni, cur);
@@ -179,19 +451,22 @@ export class NavGrid {
           }
         }
     }
-    if (sIdx === gIdx) return [new THREE.Vector3(goal.x, 0, goal.z)];
+    if (sIdx === gIdx) return [new THREE.Vector3(goal.x, this.floorAt(goal.x, goal.z), goal.z)];
     if (!came.has(gIdx)) return null;
     const cellsPath: number[] = [];
     for (let k = gIdx; k !== sIdx; k = came.get(k)!) cellsPath.push(k);
     cellsPath.reverse();
-    const pts = cellsPath.map((k) => new THREE.Vector3(this.centerX(k % W), 0, this.centerZ(Math.floor(k / W))));
-    pts[pts.length - 1] = new THREE.Vector3(goal.x, 0, goal.z);
+    const pts = cellsPath.map((k) => {
+      const px = this.centerX(k % W), pz = this.centerZ(Math.floor(k / W));
+      return new THREE.Vector3(px, vert ? this.floorAt(px, pz) : 0, pz);
+    });
+    pts[pts.length - 1] = new THREE.Vector3(goal.x, this.floorAt(goal.x, goal.z), goal.z);
     // string pulling
     const out: THREE.Vector3[] = [];
     let ax = from.x, az = from.z, i = 0;
     while (i < pts.length) {
       let j = pts.length - 1;
-      while (j > i && !this.lineOfSight(ax, az, pts[j].x, pts[j].z)) j--;
+      while (j > i && !los(ax, az, pts[j].x, pts[j].z)) j--;
       out.push(pts[j]);
       ax = pts[j].x; az = pts[j].z;
       i = j + 1;
