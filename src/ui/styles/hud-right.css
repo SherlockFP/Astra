@@ -9,12 +9,12 @@
 .mm-canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; cursor: pointer; pointer-events: auto; }
 .mm-vignette { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(0, 0, 0, 0) 62%, rgba(0, 0, 0, 0.55) 100%); box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.9); }
 .mm-ring { position: absolute; left: 0; top: 0; width: 208px; height: 208px; border-radius: 50%; pointer-events: none;
-  background: conic-gradient(from 30deg, #5a4522, #ffe7a3 10%, #9b7b36 22%, #3a2a14 34%, #d9b05a 48%, #fff0c0 54%, #7a5a22 66%, #2a1c0e 78%, #c9a24a 90%, #5a4522);
+  background: #1a1a1a;
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 9px), #000 calc(100% - 8px), #000 calc(100% - 1px), transparent 100%);
   mask: radial-gradient(farthest-side, transparent calc(100% - 9px), #000 calc(100% - 8px), #000 calc(100% - 1px), transparent 100%);
   filter: drop-shadow(0 0 1px #000) drop-shadow(0 2px 0 #000); }
 .mm-north { position: absolute; left: 8px; top: 8px; width: 192px; height: 192px; pointer-events: none; }
-.mm-n { position: absolute; left: calc(50% - 10px); top: -9px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font: 700 11px var(--font-head); color: var(--hud-gold-l); background: linear-gradient(#3a2a14, #140d07); border: 2px solid var(--hud-gold-d); border-radius: 50%; text-shadow: 0 1px 0 #000; }
+.mm-n { position: absolute; left: calc(50% - 10px); top: -9px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font: 700 11px var(--font-head); color: var(--hud-gold-l); background: #1a1a1a; border: 2px solid var(--hud-gold-d); border-radius: 50%; text-shadow: 0 1px 0 #000; }
 .mm-zoom { position: absolute; right: -4px; top: 74px; display: flex; flex-direction: column; gap: 4px; pointer-events: none; opacity: 0; transition: opacity 0.15s linear; }
 .mm:hover .mm-zoom { opacity: 1; }
 .mm-zoom .mm-btn { pointer-events: none; }
@@ -25,9 +25,9 @@
 .mm-eye-ico { position: absolute; left: 3px; top: 3px; width: 12px; height: 12px; background: #9fe3ff; }
 /* clock / FPS line: overlay over the bottom of the disc, no layout height */
 .mm-info { position: absolute; left: 50%; bottom: 46px; transform: translateX(-50%); white-space: nowrap; font: 700 13px/1 var(--font-body); color: #f1e6cf; text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000; font-variant-numeric: tabular-nums; pointer-events: none; }
-.mm-btn { width: 24px; height: 24px; padding: 0; font: 700 16px/20px var(--font-head); color: var(--hud-gold-l); background: linear-gradient(#3a2a14, #140d07); border: 2px solid #050302; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 2px 0 #000; cursor: pointer; pointer-events: auto; }
-.mm-btn:hover { background: linear-gradient(#5a4522, #251a0d); color: #fff; }
-.mm-ribbon { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); min-width: 176px; max-width: 240px; padding: 3px 18px 4px; text-align: center; background: linear-gradient(#33251a, #140d08); border: 2px solid #050302; box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 3px 0 #000; clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); pointer-events: none; }
+.mm-btn { width: 24px; height: 24px; padding: 0; font: 700 16px/20px var(--font-head); color: var(--hud-gold-l); background: #1a1a1a; border: 2px solid #050302; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 2px 0 #000; cursor: pointer; pointer-events: auto; }
+.mm-btn:hover { background: #262626; color: #fff; }
+.mm-ribbon { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); min-width: 176px; max-width: 240px; padding: 3px 18px 4px; text-align: center; background: #1a1a1a; border: 2px solid #050302; box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 3px 0 #000; clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); pointer-events: none; }
 .mm-zone { font: 700 14px var(--font-head); color: var(--hud-gold-l); text-shadow: var(--shade); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mm-sub { font: 11px var(--font-ui); color: var(--text-dim); text-shadow: var(--shade); }
 .mm-sub:empty { display: none; }
@@ -39,12 +39,12 @@
 .mt.enter { animation: mtenter 0.5s ease-out; }
 @keyframes mtenter { 0% { opacity: 0; transform: translateX(40px); } 100% { opacity: 1; transform: none; } }
 .mt-head { display: flex; align-items: center; gap: 10px; }
-.mt-key { flex: none; min-width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; padding: 0 6px; font: 700 21px var(--font-head); color: #1a0f04; background: linear-gradient(160deg, #fff0c0, #e8c46a 50%, #9b7b36); border: 2px solid #050302; border-radius: 6px; box-shadow: 0 2px 0 #000, inset 0 0 0 1px rgba(255, 255, 255, 0.5); text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4); }
+.mt-key { flex: none; min-width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; padding: 0 6px; font: 700 21px var(--font-head); color: #1a0f04; background: #e8c46a; border: 2px solid #050302; border-radius: 6px; box-shadow: 0 2px 0 #000, inset 0 0 0 1px rgba(255, 255, 255, 0.5); text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4); }
 .mt-names { min-width: 0; display: flex; flex-direction: column; line-height: 1.1; }
 .mt-name { font: 700 16px var(--font-head); color: var(--hud-gold-l); text-shadow: var(--shade); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mt-diff { font: 700 11px var(--font-ui); color: var(--text-dim); text-shadow: var(--shade); }
 .mt-affixes { display: flex; gap: 6px; }
-.mt-affix { width: 30px; height: 30px; position: relative; background: radial-gradient(circle at 50% 35%, #3a2a1c, #0b0705); border: 2px solid #050302; border-radius: 50%; box-shadow: 0 0 0 1px var(--hud-gold-d); pointer-events: auto; cursor: help; }
+.mt-affix { width: 30px; height: 30px; position: relative; background: #1a1a1a; border: 2px solid #050302; border-radius: 50%; box-shadow: 0 0 0 1px var(--hud-gold-d); pointer-events: auto; cursor: help; }
 .mt-aico { position: absolute; inset: 4px; background: linear-gradient(#fff, #ffcf70); filter: drop-shadow(0 1px 0 #000); }
 .mt-timer { display: flex; flex-direction: column; gap: 5px; }
 .mt-trow { display: flex; align-items: baseline; gap: 8px; }
@@ -63,7 +63,7 @@
 .mt-mark.m2 { left: 80%; }
 .mt-thr { display: flex; gap: 6px; }
 .mt-t { flex: 1; text-align: center; font: 700 11px var(--font-head); padding: 1px 0; color: var(--text-dim); background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(155, 123, 54, 0.35); border-radius: 3px; white-space: pre; font-variant-numeric: tabular-nums; }
-.mt-t.live { color: #ffe7a3; border-color: var(--hud-gold); background: rgba(232, 196, 106, 0.14); }
+.mt-t.live { color: #ffe7a3; border-color: var(--hud-gold); background: rgba(255, 255, 255, 0.08); }
 .mt-t.passed { opacity: 0.45; text-decoration: line-through; border-color: transparent; }
 .mt-timer.plain .mt-time { color: var(--hud-gold-l); font-size: 26px; }
 .mt-forces { display: flex; flex-direction: column; gap: 4px; position: relative; }

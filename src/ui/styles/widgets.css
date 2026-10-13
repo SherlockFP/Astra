@@ -186,7 +186,7 @@
 .ld-ember { position: absolute; bottom: -10px; width: var(--s, 2px); height: var(--s, 2px); background: #ffb050; box-shadow: 0 0 6px 2px rgba(255, 150, 40, 0.8); border-radius: 50%; animation: ldrise 8s linear infinite; opacity: 0; }
 @keyframes ldrise { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translate(var(--dx, 40px), -105vh); opacity: 0; } }
 .ld-center { position: absolute; left: 0; right: 0; top: 24%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.ld-crest { width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #3a2a1c, #0a0705 80%); box-shadow: 0 0 0 3px #050302, 0 0 0 6px var(--hud-gold-d), 0 0 0 8px #050302, 0 0 40px rgba(232, 150, 60, 0.35); animation: crestpulse 3s ease-in-out infinite; }
+.ld-crest { width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; border-radius: 50%; background: #1a1a1a; box-shadow: 0 0 0 3px #050302, 0 0 0 6px var(--hud-gold-d), 0 0 0 8px #050302, 0 0 40px rgba(232, 150, 60, 0.35); animation: crestpulse 3s ease-in-out infinite; }
 @keyframes crestpulse { 50% { box-shadow: 0 0 0 3px #050302, 0 0 0 6px var(--hud-gold), 0 0 0 8px #050302, 0 0 60px rgba(255, 170, 70, 0.6); } }
 .ld-crest-ico { width: 74px; height: 74px; background: linear-gradient(#fff3d0, #d9a040); filter: drop-shadow(0 2px 0 #000); }
 .ld-title { font: 700 clamp(34px, 5.2vw, 76px) var(--font-title); color: var(--hud-gold-l); text-shadow: 0 4px 0 #000, 0 0 30px rgba(255, 170, 60, 0.55); }

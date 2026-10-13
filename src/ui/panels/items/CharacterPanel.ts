@@ -508,6 +508,7 @@ export class CharacterPanel extends ItemPanel {
     const cls = CLASSES[c.classId]?.name ?? CLASS_TR[c.classId];
     this.clsEl.textContent = `Sv. ${c.level} ${cls}`;
     this.clsEl.style.color = CLASS_META[c.classId]?.color ?? '';
+    this.statsEl.style.setProperty('--cls', CLASS_META[c.classId]?.color ?? '#8a8a8a');
     this.nameEl.textContent = c.save.name;
     this.unvanEl.textContent = selectedTitleName(c.save);
     let il = 0;

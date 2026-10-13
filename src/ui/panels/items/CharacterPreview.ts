@@ -143,15 +143,15 @@ export class CharacterPreview {
     this.scene.add(warm);
 
     // podium
-    const stone = new THREE.MeshStandardMaterial({ color: 0x3a342c, roughness: 1, flatShading: true });
+    const stone = new THREE.MeshStandardMaterial({ color: 0x262626, roughness: 1, flatShading: true });
     const plat = new THREE.Mesh(new THREE.CylinderGeometry(1.12, 1.24, 0.16, 14), stone);
     plat.position.y = -0.08;
     this.scene.add(plat);
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.04, 5, 28), new THREE.MeshBasicMaterial({ color: 0xe8c46a }));
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.04, 5, 28), new THREE.MeshBasicMaterial({ color: 0x8a8a8a, transparent: true, opacity: 0.4 }));
     ring.rotation.x = Math.PI / 2;
     ring.position.y = 0.01;
     this.scene.add(ring);
-    const glow = new THREE.Mesh(new THREE.RingGeometry(0.2, 1.05, 28), new THREE.MeshBasicMaterial({ color: 0xffb860, transparent: true, opacity: 0.1, side: THREE.DoubleSide, depthWrite: false }));
+    const glow = new THREE.Mesh(new THREE.RingGeometry(0.2, 1.05, 28), new THREE.MeshBasicMaterial({ color: 0x9a9a9a, transparent: true, opacity: 0.06, side: THREE.DoubleSide, depthWrite: false }));
     glow.rotation.x = -Math.PI / 2;
     glow.position.y = 0.012;
     this.scene.add(glow);

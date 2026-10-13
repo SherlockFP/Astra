@@ -18,8 +18,8 @@ export interface PanelOpts {
   height: number;
   /** Legacy default top-left position; ignored when `dock` is set. */
   pos?(vw: number, vh: number, w: number, h: number): [number, number];
-  /** UX-52b (section 7.1): default dock, top 56 px; 24 px from the edge for 'left' / 'right'. Default: 'center'. */
-  dock?: 'left' | 'right' | 'center';
+  /** UX-52b (section 7.1): default dock, top 56 px; 24 px from the edge for 'left' / 'right'. 'bottom-right' sits 24 px above the bottom edge (ElvUI bags, clear of the minimap). Default: 'center'. */
+  dock?: 'left' | 'right' | 'center' | 'bottom-right';
   /** Footer key hints (section 7.6, "Tuş: açıklama"); the footer is shown only when a panel declares some. */
   hints?: string[];
   className?: string;
@@ -252,7 +252,7 @@ export abstract class ItemPanel implements UIPanel {
       this.y = saved.fy * vh;
       return;
     }
-    let [px, py] = this.opts.pos && !this.opts.dock ? this.opts.pos(vw, vh, w, this.opts.height) : this.dockPos(this.opts.dock ?? 'center', vw, w);
+    let [px, py] = this.opts.pos && !this.opts.dock ? this.opts.pos(vw, vh, w, this.opts.height) : this.dockPos(this.opts.dock ?? 'center', vw, vh, w, this.opts.height);
     // cascade away from other open windows sitting on the same spot
     for (let n = 0; n < 6; n++) {
       const clash = Object.values(registry).some((p) => p && p !== this && p.isOpen && Math.abs(p.x - px) < 14 && Math.abs(p.y - py) < 14);
@@ -264,9 +264,10 @@ export abstract class ItemPanel implements UIPanel {
     this.y = py;
   }
 
-  private dockPos(dock: 'left' | 'right' | 'center', vw: number, w: number): [number, number] {
+  private dockPos(dock: 'left' | 'right' | 'center' | 'bottom-right', vw: number, vh: number, w: number, h: number): [number, number] {
     if (dock === 'left') return [24, 56];
     if (dock === 'right') return [Math.max(8, vw - w - 24), 56];
+    if (dock === 'bottom-right') return [Math.max(8, vw - w - 24), Math.max(56, vh - h - 24)];
     return [Math.max(8, (vw - w) / 2), 56];
   }
 

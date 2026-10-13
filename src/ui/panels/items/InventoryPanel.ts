@@ -56,7 +56,7 @@ export class InventoryPanel extends ItemPanel {
       icon: 'ui-bag.svg',
       width: 480,
       height: 520,
-      dock: 'right',
+      dock: 'bottom-right',
     });
   }
 
