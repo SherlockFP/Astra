@@ -1,5 +1,5 @@
 import { G } from '../../../game/G';
-import { ACTION_NAMES_TR, DEFAULT_BINDINGS, codeLabel, type InputAction } from '../../../core/Input';
+import { ACTION_NAMES_TR, RESERVED_MOUSE, SCHEME_ACTIONS, codeLabel, defaultBindings, type ControlScheme, type InputAction } from '../../../core/Input';
 import { DEFAULT_SETTINGS, type SettingsData } from '../../../core/Settings';
 import { exportSaves, openImportDialog } from '../../../core/SaveSafety';
 import { GamePanel, askConfirm, button, divider, h, row, selectBox, slider, sfx, tabs, toast, toggle, windowFrame, type TabsHandle } from './base';
@@ -13,12 +13,53 @@ const PRESETS: { id: string; name: string; desc: string; values: Partial<Setting
   { id: 'clean', name: 'Temiz', desc: 'Modern, keskin görüntü', values: { psx: false, psxPixelScale: 1, psxJitter: 0, psxAffine: false, psxDither: false, psxColorDepth: 8, bloom: true, bloomStrength: 0.4, shadows: true } },
 ];
 
-const GROUPS: { name: string; actions: InputAction[] }[] = [
+type Group = { name: string; actions: InputAction[] };
+
+/** CONTROLS_WOW §10: the key list per scheme. Aksiyon is exactly the list that exists today. */
+const GROUPS_AKSIYON: Group[] = [
   { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'jump', 'dodge', 'walk'] },
   { name: 'Savaş', actions: ['skill_lmb', 'heavyAttack', 'skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'skill_s4', 'guard', 'potionHp', 'potionMp', 'targetNext', 'targetPrev', 'focusTarget', 'interact', 'revive'] },
   { name: 'Arayüz', actions: ['inventory', 'groupFinder', 'character', 'talents', 'skills', 'map', 'party', 'mplus', 'guide', 'chat', 'menu'] },
   { name: 'Kamera ve Diğer', actions: ['freeCursor', 'toggleLock', 'zoomIn', 'zoomOut', 'screenshot'] },
 ];
+
+const GROUPS_WOW: Group[] = [
+  { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'turnLeft', 'turnRight', 'jump', 'dodge', 'walk'] },
+  { name: 'Savaş', actions: ['skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'skill_s4', 'autoAttack', 'skill_lmb', 'heavyAttack', 'guard', 'potionHp', 'potionMp', 'targetNext', 'targetPrev', 'focusTarget', 'interact', 'revive'] },
+  { name: 'Arayüz', actions: ['inventory', 'groupFinder', 'character', 'talents', 'skills', 'map', 'party', 'mplus', 'guide', 'chat', 'menu'] },
+  { name: 'Kamera ve Diğer', actions: ['freeCursor', 'zoomIn', 'zoomOut', 'screenshot'] },
+];
+
+function groupsFor(scheme: ControlScheme): Group[] {
+  return scheme === 'wow' ? GROUPS_WOW : GROUPS_AKSIYON;
+}
+
+/** CONTROLS_WOW §10: WoW slot names (the bar cells are numbered 1-5 and Q/E/R there). Aksiyon keeps ACTION_NAMES_TR. */
+const WOW_NAMES: Partial<Record<InputAction, string>> = {
+  skill_lmb: 'Manuel Saldırı',
+  skill_rmb: 'Yetenek 1',
+  skill_q: 'Yetenek 2',
+  skill_e: 'Yetenek 3',
+  skill_r: 'Yetenek 4',
+  skill_s1: 'Yetenek 5',
+  skill_s2: 'Yetenek Q',
+  skill_s3: 'Yetenek E',
+  skill_s4: 'Yetenek R',
+};
+
+/** Display names that differ from ACTION_NAMES_TR (CONTROLS_WOW §10: 'Otomatik Saldırı (aç/kapat)'). Input.ts is not edited by this package. */
+const NAME_OVERRIDES: Partial<Record<InputAction, string>> = {
+  autoAttack: 'Otomatik Saldırı (aç/kapat)',
+};
+
+/** Display name of an action in a scheme (CONTROLS_WOW §10). */
+export function actionName(action: InputAction, scheme: ControlScheme): string {
+  if (scheme === 'wow') {
+    const w = WOW_NAMES[action];
+    if (w) return w;
+  }
+  return NAME_OVERRIDES[action] ?? ACTION_NAMES_TR[action];
+}
 
 export class SettingsPanel extends GamePanel {
   private bodyEl!: HTMLElement;
@@ -238,25 +279,63 @@ export class SettingsPanel extends GamePanel {
 
   /* ---------------------------------------------------------------- controls */
 
+  private scheme(): ControlScheme {
+    return G.settings.get('controlScheme');
+  }
+
   private renderControls(): void {
-    const cam = this.section(
-      'Kamera',
+    const scheme = this.scheme();
+    const wow = scheme === 'wow';
+    const camRows: HTMLElement[] = [
       row(
-        'Kamera Modu',
-        selectBox<'action' | 'classic'>(
+        'Kontrol Şeması',
+        selectBox<ControlScheme>(
           [
-            { value: 'action', label: 'Aksiyon' },
-            { value: 'classic', label: 'Klasik' },
+            { value: 'wow', label: 'WoW (Varsayılan)' },
+            { value: 'aksiyon', label: 'Aksiyon' },
           ],
-          G.settings.get('cameraMode'),
-          (v) => G.settings.set('cameraMode', v),
+          scheme,
+          (v) => {
+            this.cancelCapture();
+            G.settings.set('controlScheme', v);
+            this.renderTab();
+          },
         ),
-        'Aksiyon: fare ekranı kilitler, kamera fareyle döner. Klasik: sağ tık sürükleyerek döndür.',
+        'WoW: fare imleci serbest, sağ tık bakış, sol tık döndür, yetenekler 1–5 / Q E R. Aksiyon: fare kilitli, sol/sağ tık saldırı.',
       ),
       this.num('mouseSensitivity', 'Fare Hassasiyeti', 0.2, 3, 0.05, (v) => v.toFixed(2).replace('.', ',')),
       this.flag('invertY', 'Y Eksenini Ters Çevir'),
-      this.num('cameraDistance', 'Kamera Mesafesi', 4, 16, 0.5, (v) => `${v} m`),
-    );
+    ];
+    if (wow) {
+      camRows.push(
+        this.num('cameraDistanceWow', 'Kamera Mesafesi', 2, 30, 0.5, (v) => `${v} m`),
+        this.flag('cameraSmartPivot', 'Akıllı Kamera (hareket ederken arkaya dön)'),
+      );
+    } else {
+      camRows.push(
+        this.num('cameraDistance', 'Kamera Mesafesi', 4, 16, 0.5, (v) => `${v} m`),
+        this.flag('cameraAutoFollow', 'Otomatik omuz değişimi', 'Kamera, hareket yönüne kendiliğinden döner'),
+        row(
+          'Kilit modu',
+          selectBox<SettingsData['lockOnMode']>(
+            [
+              { value: 'hold-lock', label: 'Basılı tut' },
+              { value: 'tap-cycle', label: 'Tıkla, değiştir' },
+            ],
+            G.settings.get('lockOnMode'),
+            (v) => G.settings.set('lockOnMode', v),
+          ),
+          'Hedef kilidinin nasıl açılıp değiştiği',
+        ),
+      );
+    }
+    const cam = this.section('Kamera', ...camRows);
+    if (wow) {
+      cam.append(
+        this.flag('casterAutoShot', 'Büyücüler uzaktan otomatik ateş etsin'),
+        this.flag('autoAttackFromSkills', 'Yakın dövüş yeteneği otomatik saldırıyı başlatsın'),
+      );
+    }
     const combat = this.section(
       'Savaş',
       row(
@@ -271,15 +350,26 @@ export class SettingsPanel extends GamePanel {
         ),
         'Yetenekler arası genel bekleme. Aksiyon: akıcı tempo. WoW: klasik 1,5 sn (hızla kısalır)',
       ),
-      this.flag('autoCombo', 'Basılı tutunca saldırı zinciri', 'Kapalıyken sol tık basılı tutmak ağır vuruşu şarj eder'),
+      ...(wow ? [] : [this.flag('autoCombo', 'Basılı tutunca saldırı zinciri', 'Kapalıyken sol tık basılı tutmak ağır vuruşu şarj eder')]),
       this.num('spellQueueMs', 'Yetenek Kuyruğu', 0, 400, 50, (v) => (v === 0 ? 'Kapalı' : `${v} ms`), 'Bekleme sırasında basılan yetenek, bitince kendiliğinden uygulanır'),
       this.flag('leadSkip', 'Erken Başlatma', 'Yetenek animasyonunun başını atlar, vuruş daha erken gelir'),
     );
     this.bodyEl.append(cam, combat);
 
-    const binds =h('div.pg-set-sec', null, h('div.pg-h', null, 'Tuş Atamaları'));
-    binds.append(h('div.pg-set-bindhelp', null, 'Bir kutuya tıkla, sonra yeni tuşa bas. ', h('b', null, 'Esc'), ': iptal · ', h('b', null, 'Backspace'), ': temizle · Fare sağ/orta tuşu da atanabilir.'));
-    for (const g of GROUPS) {
+    const binds = h('div.pg-set-sec', null, h('div.pg-h', null, 'Tuş Atamaları'));
+    binds.append(
+      h(
+        'div.pg-set-bindhelp',
+        null,
+        'Bir kutuya tıkla, sonra yeni tuşa bas. ',
+        h('b', null, 'Esc'),
+        ': iptal · ',
+        h('b', null, 'Backspace'),
+        ': temizle · ',
+        wow ? 'Sol ve sağ tık WoW şemasında fare hareketlerine ayrılmıştır; orta ve yan tuşlar atanabilir.' : 'Fare sağ/orta tuşu da atanabilir.',
+      ),
+    );
+    for (const g of groupsFor(scheme)) {
       binds.append(h('div.pg-set-bgroup', null, g.name));
       for (const a of g.actions) binds.append(this.bindRow(a));
     }
@@ -304,7 +394,7 @@ export class SettingsPanel extends GamePanel {
       sfx('ui_click');
       this.resetAction(action);
     });
-    return h('div.pg-bindrow', null, h('span.pg-bindname', null, ACTION_NAMES_TR[action]), mk(0), mk(1), reset);
+    return h('div.pg-bindrow', null, h('span.pg-bindname', null, actionName(action, this.scheme())), mk(0), mk(1), reset);
   }
 
   private paintBind(action: InputAction, slot: number): void {
@@ -344,7 +434,12 @@ export class SettingsPanel extends GamePanel {
       }
       e.preventDefault();
       this.cancelCapture();
-      this.setCode(action, slot, 'Mouse' + e.button);
+      const code = 'Mouse' + e.button;
+      if (RESERVED_MOUSE[this.scheme()].includes(code)) {
+        sfx('ui_error');
+        return void toast('Sol ve sağ tık WoW şemasında fare hareketlerine ayrılmıştır.', 'warning');
+      }
+      this.setCode(action, slot, code);
     };
     window.addEventListener('keydown', onKey, true);
     window.addEventListener('mousedown', onMouse, true);
@@ -364,10 +459,19 @@ export class SettingsPanel extends GamePanel {
     }
   }
 
+  /** CONTROLS_WOW §2.4: scheme actions (SCHEME_ACTIONS) are stored per scheme, every other action in the shared `bindings`. */
   private persistBinding(action: InputAction): void {
-    const all = { ...G.settings.get('bindings') };
-    all[action] = [...G.input.bindings[action]];
-    G.settings.set('bindings', all);
+    const codes = [...G.input.bindings[action]];
+    if (SCHEME_ACTIONS.includes(action)) {
+      const scheme = this.scheme();
+      const all = { ...G.settings.get('schemeBindings') };
+      all[scheme] = { ...(all[scheme] ?? {}), [action]: codes };
+      G.settings.set('schemeBindings', all);
+    } else {
+      const all = { ...G.settings.get('bindings') };
+      all[action] = codes;
+      G.settings.set('bindings', all);
+    }
   }
 
   private setCode(action: InputAction, slot: number, code: string | null): void {
@@ -384,7 +488,7 @@ export class SettingsPanel extends GamePanel {
       this.refreshBinds();
       return;
     }
-    // steal the code from other actions
+    // steal the code from other actions (of the active scheme only)
     const stolenFrom: InputAction[] = [];
     for (const other of Object.keys(G.input.bindings) as InputAction[]) {
       if (other === action) continue;
@@ -405,7 +509,7 @@ export class SettingsPanel extends GamePanel {
     G.input.rebind(action, list);
     this.persistBinding(action);
     sfx('ui_drop');
-    if (stolenFrom.length) toast(`"${codeLabel(code)}" tuşu ${stolenFrom.map((a) => ACTION_NAMES_TR[a]).join(', ')} işleminden alındı.`, 'info');
+    if (stolenFrom.length) toast(`"${codeLabel(code)}" tuşu ${stolenFrom.map((a) => actionName(a, this.scheme())).join(', ')} işleminden alındı.`, 'info');
     this.refreshBinds();
   }
 
@@ -416,17 +520,33 @@ export class SettingsPanel extends GamePanel {
     }
   }
 
+  /** Row reset (↺): the default of the active scheme; the override is dropped from the table it was stored in. */
   private resetAction(action: InputAction): void {
-    G.input.rebind(action, [...DEFAULT_BINDINGS[action]]);
-    const all = { ...G.settings.get('bindings') };
-    delete all[action];
-    G.settings.set('bindings', all);
+    const scheme = this.scheme();
+    G.input.rebind(action, [...defaultBindings(scheme)[action]]);
+    if (SCHEME_ACTIONS.includes(action)) {
+      const all = { ...G.settings.get('schemeBindings') };
+      const perScheme = { ...(all[scheme] ?? {}) };
+      delete perScheme[action];
+      all[scheme] = perScheme;
+      G.settings.set('schemeBindings', all);
+    } else {
+      const all = { ...G.settings.get('bindings') };
+      delete all[action];
+      G.settings.set('bindings', all);
+    }
     this.refreshBinds();
   }
 
+  /** "Tüm Tuşları Sıfırla": clears the shared overrides and the active scheme's overrides; the other scheme is kept. */
   private async resetBindings(): Promise<void> {
     if (!(await askConfirm(this.el, 'Tüm tuş atamaları varsayılana döndürülsün mü?', 'Sıfırla', 'Vazgeç', true))) return;
-    for (const a of Object.keys(DEFAULT_BINDINGS) as InputAction[]) G.input.rebind(a, [...DEFAULT_BINDINGS[a]]);
+    const scheme = this.scheme();
+    const defs = defaultBindings(scheme);
+    for (const a of Object.keys(defs) as InputAction[]) G.input.rebind(a, [...defs[a]]);
+    const perScheme = { ...G.settings.get('schemeBindings') };
+    perScheme[scheme] = {};
+    G.settings.set('schemeBindings', perScheme);
     G.settings.set('bindings', {});
     this.refreshBinds();
     toast('Tuş atamaları sıfırlandı.', 'success');
@@ -512,7 +632,9 @@ export class SettingsPanel extends GamePanel {
     G.settings.reset();
     // Settings.reset() only notifies 'psx': push every key again so graphics / audio / camera listeners re-apply their values
     for (const k of Object.keys(DEFAULT_SETTINGS) as (keyof SettingsData)[]) if (k !== 'bindings') G.settings.set(k, DEFAULT_SETTINGS[k] as never);
-    for (const a of Object.keys(DEFAULT_BINDINGS) as InputAction[]) G.input.rebind(a, [...DEFAULT_BINDINGS[a]]);
+    // CONTROLS_WOW §2.4: "Varsayılana Dön" resets the scheme too, so the bindings are the default scheme's
+    const defs = defaultBindings(DEFAULT_SETTINGS.controlScheme);
+    for (const a of Object.keys(defs) as InputAction[]) G.input.rebind(a, [...defs[a]]);
     try {
       G.ui?.setUserScale(1);
     } catch {

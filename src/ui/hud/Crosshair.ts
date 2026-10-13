@@ -7,10 +7,24 @@ import type { HudCtx, HudWidget } from './types';
 
 const _v = new THREE.Vector3();
 
-/** Reticle position in canvas CSS px: screen centre in action mode, the mouse in classic mode. */
+/**
+ * WoW mouse gesture in progress: a mouse button is held (RMB mouselook, LMB orbit, both = run). CONTROLS_WOW §4.1 / §9.
+ * Read straight from the held set, so it is true for the whole hold, not only the frame it went down.
+ */
+export function wowMouseHeld(): boolean {
+  const i = G.input;
+  return !!i && (i.keyDown('Mouse0') || i.keyDown('Mouse2'));
+}
+
+/** True when the reticle sits on the screen centre: always in Aksiyon (cameraMode 'action'), in WoW only while a mouse button is held. */
+export function reticleAtCentre(): boolean {
+  if (G.settings.data.cameraMode === 'action') return true;
+  return G.settings.data.controlScheme === 'wow' && wowMouseHeld();
+}
+
+/** Reticle position in canvas CSS px: screen centre at the centre rule above, else the mouse. */
 export function reticle(ui: UI): { x: number; y: number; ok: boolean } {
-  const action = G.settings.data.cameraMode === 'action';
-  if (action) return { x: ui.viewW / 2, y: ui.viewH / 2, ok: !ui.wantsCursor() };
+  if (reticleAtCentre()) return { x: ui.viewW / 2, y: ui.viewH / 2, ok: !ui.wantsCursor() };
   return { x: G.input.mouseX, y: G.input.mouseY, ok: !G.input.pointerOverUI && !ui.wantsCursor() };
 }
 
@@ -78,7 +92,7 @@ export class Crosshair implements HudWidget {
   }
 
   update(ctx: HudCtx): void {
-    const show = (ctx.mode === 'town' || ctx.mode === 'dungeon') && G.settings.data.cameraMode === 'action' && !ctx.ui.wantsCursor() && !!ctx.player && !ctx.player.isDead;
+    const show = (ctx.mode === 'town' || ctx.mode === 'dungeon') && reticleAtCentre() && !ctx.ui.wantsCursor() && !!ctx.player && !ctx.player.isDead;
     setClass(this.el, 'on', show);
     setClass(this.el, 'hover', show && !!ctx.hover);
     const boss = ctx.hover && (ctx.hover as unknown as { isBoss?: boolean }).isBoss;

@@ -3,10 +3,18 @@ import { CLASSES } from '../../data/classes';
 import { getMaterial } from '../../data/materials';
 import type { InputAction } from '../../core/Input';
 import type { SkillDef, SkillSlotKey } from '../../types/skills';
+import type { AutoInfo } from '../../combat/SkillSystem';
 import { DAMAGE_COLORS, ICON, div, fmtCd, fmtNum, pulse, setClass, setDisplay, setIconUrl, setStyle, setText, iconEl, esc } from '../widgets/dom';
 import { skillTooltipHTML } from '../widgets/tooltips';
 import { TalentBadge } from './Extras';
 import type { HudCtx, HudWidget } from './types';
+
+/**
+ * CONTROLS_WOW §8 / Q5: the event PlayerController emits on every change of the auto-attack armed flag.
+ * Typed here as a string so this file compiles whether or not core/events.ts already declares it.
+ */
+const AUTO_STATE_EVENT = 'autoattack:state';
+interface AutoStatePayload { armed: boolean; targetId: number | null }
 
 interface SlotSpec {
   id: string;
@@ -25,6 +33,7 @@ const SPECS: SlotSpec[] = [
   { id: 's1', action: 'skill_s1', size: 'md', skill: 's1' },
   { id: 's2', action: 'skill_s2', size: 'md', skill: 's2' },
   { id: 's3', action: 'skill_s3', size: 'md', skill: 's3' },
+  { id: 's4', action: 'skill_s4', size: 'md', skill: 's4' },
   { id: 'potHp', action: 'potionHp', size: 'sm', potion: 'hp' },
   { id: 'potMp', action: 'potionMp', size: 'sm', potion: 'mp' },
 ];
@@ -45,6 +54,7 @@ class Slot {
   private tint: HTMLElement;
   private cd: HTMLElement;
   private gcd: HTMLElement;
+  private swing: HTMLElement;
   private cdText: HTMLElement;
   private keyEl: HTMLElement;
   private charges: HTMLElement;
@@ -55,6 +65,8 @@ class Slot {
   private potionCount = 0;
   private potionId: string | null = null;
   private hover = false;
+  /** WoW auto-attack cell (lmb with skill_lmb unbound): the last frame's chain info, for the tooltip. */
+  private autoInfo: AutoInfo | null = null;
   failUntil = 0;
 
   constructor(readonly spec: SlotSpec, ui: { showTooltip(html: string, x: number, y: number): void; hideTooltip(): void }) {
@@ -65,6 +77,7 @@ class Slot {
     this.tint = div('slot-tint', this.el);
     this.cd = div('slot-cd', this.el);
     this.gcd = div('slot-gcd', this.el);
+    this.swing = div('slot-swing', this.el);
     this.flash = div('slot-flash', this.el);
     div('slot-frame', this.el);
     this.cdText = div('slot-cdtext', this.el);
@@ -84,6 +97,14 @@ class Slot {
 
   private showTip(x: number, y: number, ui: { showTooltip(html: string, x: number, y: number): void }): void {
     const bind = G.input?.bindingLabel(this.spec.action);
+    if (this.autoInfo) {
+      const a = this.autoInfo;
+      const autoKey = G.input?.bindingLabel('autoAttack') ?? '-';
+      const toggle = autoKey === '-' ? 'Sağ tık (düşman)' : `Sağ tık (düşman) / ${esc(autoKey)}`;
+      const step = `Adım ${a.step + 1}/${a.steps}${a.finisherNext ? ' · Bitiriş' : ''}`;
+      ui.showTooltip(`<div class="sk"><div class="sk-head"><div><div class="sk-name">Otomatik Saldırı</div><div class="sk-tags">${esc(step)}</div></div></div><div class="sk-desc">${toggle} ile aç-kapat</div></div>`, x, y);
+      return;
+    }
     if (this.spec.potion) {
       const m = this.potionId ? getMaterial(this.potionId) : undefined;
       const name = m?.name ?? (this.spec.potion === 'hp' ? 'Can İksiri' : 'Ruh İksiri');
@@ -130,9 +151,19 @@ class Slot {
     }
   }
 
-  update(ctx: HudCtx): void {
+  /**
+   * @param auto the auto-attack view when this is the WoW auto cell (lmb with skill_lmb unbound), else null.
+   * @param armed the auto-attack armed flag from the `autoattack:state` event (only read when `auto` is set).
+   */
+  update(ctx: HudCtx, auto: AutoInfo | null, armed: boolean): void {
     const p = ctx.player;
-    setText(this.keyEl, G.input ? G.input.bindingLabel(this.spec.action) : '');
+    this.autoInfo = auto;
+    setText(this.keyEl, auto ? 'Oto' : G.input ? G.input.bindingLabel(this.spec.action) : '');
+    setClass(this.el, 'auto', !!auto);
+    setClass(this.el, 'armed', !!auto && armed);
+    const swingOn = !!auto && auto.total > 0 && auto.elapsed < auto.total;
+    if (auto && swingOn) setStyle(this.swing, '--e', String(Math.round((auto.elapsed / auto.total) * 100)));
+    setDisplay(this.swing, swingOn);
     let rem = 0, total = 0, charges = 1, maxCharges = 1;
     let noRes = false;
     let casting = false;
@@ -229,6 +260,8 @@ export class ActionBar implements HudWidget {
   private hasFail = false;
   private lastFailReason = '';
   private errEl: HTMLElement;
+  /** Auto-attack armed flag, kept current by the `autoattack:state` event (CONTROLS_WOW Q5). */
+  private autoArmed = false;
   /** "N" unspent-points badge on the bar's top edge (GDD_TALENTS §5.9); absolute, so it takes no slot room. */
   private talentBadge: TalentBadge;
 
@@ -250,6 +283,11 @@ export class ActionBar implements HudWidget {
       this.hasFail = true;
       this.lastFailReason = reason;
     });
+    // typed through a string name: the event is appended to core/events.ts by another package (Q5)
+    const bus = G.events as unknown as { on(name: string, fn: (p: AutoStatePayload) => void): unknown };
+    bus.on(AUTO_STATE_EVENT, (p) => {
+      this.autoArmed = !!p?.armed;
+    });
   }
 
   /** Error text line mounted by the HUD above the bar. */
@@ -266,8 +304,11 @@ export class ActionBar implements HudWidget {
     this.talentBadge.update(ctx);
     // action camera without a pointer lock: the first mouse click only re-acquires the lock (PlayerController swallows it), no slot flash
     const relock = !!G.input && !G.input.isLocked() && G.settings?.data.cameraMode === 'action';
+    // WoW: lmb is the auto-attack cell while skill_lmb has no key (CONTROLS_WOW §9)
+    const autoCell = !!G.input && !!G.settings && G.settings.data.controlScheme === 'wow' && G.input.bindings.skill_lmb.length === 0;
+    const auto = autoCell && ctx.player ? G.skills.autoInfo(ctx.player) : null;
     for (const s of this.slots) {
-      s.update(ctx);
+      s.update(ctx, s.spec.id === 'lmb' ? auto : null, this.autoArmed);
       const down = G.input && ctx.mode !== 'menu' && G.input.pressed(s.spec.action);
       const swallowed = relock && (s.spec.action === 'skill_lmb' || s.spec.action === 'skill_rmb');
       if (down && !swallowed && !G.ui.wantsCursor()) {

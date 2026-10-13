@@ -254,6 +254,9 @@ export interface GameEvents {
   'finder:queue': { state: 'idle' | 'listing' | 'proposal' | 'entering' | 'inrun' | 'failed'; dungeonId?: string; since?: number };
   /** The pinned quest changed (`null` = unpinned). The objective arrow follows it. */
   'quest:pinned': { questId: string | null };
+
+  // ---- CONTROLS_WOW §8 (W2-A, append-only). Local auto-attack state, emitted on change (HUD Oto frame, swing sweep).
+  'autoattack:state': { armed: boolean; targetId: number | null };
 }
 
 export type GameEventName = keyof GameEvents;

@@ -446,3 +446,8 @@
 .fps { align-self: flex-end; font: 700 12px ui-monospace, Consolas, monospace; color: #9be07a; text-shadow: var(--shade); padding: 1px 6px; background: rgba(0, 0, 0, 0.45); border-radius: 3px; }
 .fps.warn { color: #ffd24a; }
 .fps.bad { color: #ff5a4a; }
+
+/* CONTROLS_WOW §9: WoW auto-attack cell (lmb while skill_lmb is unbound). Swing sweep, armed frame. */
+.slot-swing { position: absolute; inset: 0; border-radius: 3px; pointer-events: none; --e: 0; display: block; background: conic-gradient(from 0deg, rgba(255, 244, 210, 0.34) calc(var(--e) * 1%), rgba(0, 0, 0, 0) 0); }
+.slot.armed .slot-frame { animation: slotarmed 0.9s ease-in-out infinite; }
+@keyframes slotarmed { 0%, 100% { box-shadow: inset 0 0 0 2px #ff5a2a, 0 0 4px rgba(255, 90, 42, 0.5); } 50% { box-shadow: inset 0 0 0 2px #ffd24a, 0 0 12px rgba(255, 210, 74, 0.9); } }

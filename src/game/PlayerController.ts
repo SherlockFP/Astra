@@ -10,6 +10,9 @@ import type { Player } from '../entities/Player';
 import type { Enemy } from '../entities/Enemy';
 import type { ThirdPersonCamera } from '../camera/ThirdPersonCamera';
 import type { InputAction } from '../core/Input';
+import { WowMouse, type WowMouseOut } from './WowMouse';
+import { pickAtNdc, type PickHit } from './ClickPick';
+import { AutoAttack, AUTO, type AutoTarget } from './AutoAttack';
 
 // ---- feel constants -------------------------------------------------------------------------------------------------
 const ACCEL_TIME = 0.08;          // seconds to full speed
@@ -30,9 +33,7 @@ const FACE_HOLD = 0.55;           // seconds the character keeps facing the aim 
 const LOCO_REF = { run: 4.0, strafe: 4.2, back: 2.0, walk: 1.7 };
 const SLOT_ACTION: Record<SkillSlotKey, InputAction | null> = {
   lmb: 'skill_lmb', rmb: 'skill_rmb', q: 'skill_q', e: 'skill_e', r: 'skill_r', s1: 'skill_s1', s2: 'skill_s2', s3: 'skill_s3',
-  // CORE_MECHANICS §10.1 (CM1 typing only): s4 = G has no InputAction yet (`skill_s4` lands with the kit package, Input.ts is not
-  // touched here); a null action is skipped by the slot loop.
-  s4: null,
+  s4: 'skill_s4',
   m45: 'skill_m45', m90: 'skill_m90', m180: 'skill_m180', // GDD_V2 major slots (WP1 typing only; input wired by WP5)
 };
 
@@ -45,6 +46,19 @@ const _ray = new THREE.Ray();
 const _p = new THREE.Vector3();
 const _q = new THREE.Vector3();
 const BODY_SAMPLES = [0.1, 0.5, 0.9];
+// ---- WoW (CONTROLS_WOW §4-§8) ----
+const WOW_HARD_RANGE = 45;        // §6: a selection drops beyond 45 m (Aksiyon: HARD_TARGET_RANGE)
+const WOW_TAB_RANGE = 40;         // §6: Tab candidates within 40 m
+const WOW_TURN_RATE = 3.1;        // §5: TURN_RATE rad/s (~178 deg/s) for the turn keys
+const WOW_FACE_LAMBDA = 20;       // §5 row 6: auto-face toward the auto-attack target
+const WOW_FACE_MAX = 14;
+const WOW_CURSOR_EVERY = 0.1;     // §4.5: context cursor refresh interval (s)
+const WOW_TOAST_EVERY = 1;        // §4.4: "Çok uzak" throttle (s)
+const WOW_CURSOR: Record<'enemy' | 'interact' | 'loot', string> = {
+  enemy: 'url(/assets/cursors/attack.png) 6 6, crosshair',
+  interact: 'url(/assets/cursors/interact.png) 6 6, pointer',
+  loot: 'url(/assets/cursors/loot.png) 6 6, pointer',
+};
 
 /** Roll speed at normalised time u: fast burst that eases out to ~run speed (integrates to DODGE_DIST over DODGE_TIME). */
 function dodgeSpeed(u: number): number {
@@ -130,13 +144,21 @@ export class PlayerController {
   private disposed = false;
   private lastWorld: unknown = null;
 
-  // classic-mode RMB click detection
-  private rmbDown = false;
-  private rmbMoved = 0;
-  private rmbTime = 0;
-  /** classic mode: true once an RMB press became a drag (pointer lock is requested for unlimited orbiting). */
-  private rmbDragging = false;
-  private classicLockAsked = false;
+  // WoW mouse gestures (CONTROLS_WOW §4.1-§4.3)
+  private wowMouse = new WowMouse();
+  private wowOut: WowMouseOut = { mouseLook: false, orbit: false, both: false, wantLock: false };
+  private wowLockAsked = false;
+  /** Esc / alt-tab released the lock during a WoW hold: buttons are ignored until every button is up (§4.3). */
+  private mouseSuspended = false;
+  private cursorAt = -1;
+  private cursorKey = '';
+  private wowToastAt = -99;
+
+  // WoW auto-attack (CONTROLS_WOW §8)
+  private auto = new AutoAttack();
+  private autoSent: string = '';
+  /** Facing the auto-attack driver asks for this frame (idle, in reach): read by stepMovement's facing table. */
+  private autoFaceWant: number | null = null;
 
   // aim cache
   private aimFrame = -1;
@@ -186,6 +208,15 @@ export class PlayerController {
       G.events.on('boss:wipe', () => this.releaseBossLock()),
       // CORE_MECHANICS §1.5 (solo-aware roles): StatCalc reads the party size, so a party change refolds the local stats
       G.events.on('party:changed', () => G.character?.recomputeStats()),
+      // CONTROLS_WOW §2.3: runtime scheme switch (Ayarlar -> Kontroller)
+      G.events.on('settings:changed', (e) => {
+        if (e.key === 'controlScheme') this.onSchemeSwitched();
+      }),
+      // CONTROLS_WOW §8.4: auto-attack stops on scene change, release and (below) death
+      G.events.on('scene:leaving', () => this.disarmAuto()),
+      G.events.on('player:releaseRequested', () => this.disarmAuto()),
+      // CONTROLS_WOW §8.4: a melee skill hit on an enemy starts the swing (setting autoAttackFromSkills, melee mode only)
+      G.events.on('damage', (e) => this.onLocalDamage(e.sourceId, e.targetId, e.skillId)),
     );
     if (G.input) G.input.enabled = true;
   }
@@ -275,7 +306,7 @@ export class PlayerController {
   clearTargets(): void {
     this.hardTarget = null;
     this.softTarget = null;
-    this.cam.setLockOn(null);
+    this.setLock(null);
     this.emitTarget();
   }
 
@@ -309,8 +340,6 @@ export class PlayerController {
 
     const canInput = this.enabled && !dead && !uiOpen;
     if (!canInput) {
-      this.rmbDown = false;
-      this.rmbDragging = false;
       this.dodgeBuf = -1;
       this.tabDownAt = -1;
       this.shoulderDownAt = -1;
@@ -322,6 +351,10 @@ export class PlayerController {
       this.cam.shiftLock = !this.cam.shiftLock;
       G.events.emit('ui:toast', { text: this.cam.shiftLock ? 'Kamera kilidi: AÇIK' : 'Kamera kilidi: KAPALI', kind: 'info' });
     }
+
+    // WoW mouse (CONTROLS_WOW §4): gesture flags for the camera and movement, clicks resolved on release, lock, cursor.
+    // Runs on dead frames too (canInput is false there), so a held lock is released.
+    if (!action) this.updateWowMouse(dt, canInput, uiOpen);
 
     if (dead) {
       this.onDeadFrame(dt);
@@ -354,9 +387,20 @@ export class PlayerController {
     if (canInput && input.pressed('jump')) this.tryJump();
 
     // ---------------- movement ----------------
-    const axis = canInput && !this.dodge ? input.moveAxis() : { x: 0, y: 0 };
-    // auto-follow (GDD_LIFE §4.4): only while steering straight forward, with nothing locked
-    this.cam.setFollow(canInput && !this.dodge && axis.y > 0.5 && Math.abs(axis.x) < 0.5 && !this.hardTarget && !p.isDead, p.yaw + Math.PI, this.dispSpeed);
+    let axis = canInput && !this.dodge ? input.moveAxis() : { x: 0, y: 0 };
+    if (!action) {
+      // WoW (§4.1): LMB + RMB runs forward unless S is held (A/D still strafe)
+      if (canInput && this.wowOut.both && !input.down('moveBack')) axis = { x: axis.x, y: 1 };
+      // WoW auto-attack driver (§8): arm / disarm / swing decided per frame, before movement and facing
+      this.updateAuto(dt, canInput, axis);
+      // WoW camera smart pivot (§5, §7.4): only while steering forward (strafe and back-pedal leave it off), and not while one
+      // mouse button orbits or mouselooks. A both-button run counts as forward.
+      const orbitOnly = this.wowOut.orbit && !this.wowOut.both;
+      this.cam.setFollow(canInput && !this.dodge && axis.y > 0.5 && Math.abs(axis.x) < 0.71 && !orbitOnly && !p.isDead, p.yaw + Math.PI, this.dispSpeed);
+    } else {
+      // auto-follow (GDD_LIFE §4.4): only while steering straight forward, with nothing locked
+      this.cam.setFollow(canInput && !this.dodge && axis.y > 0.5 && Math.abs(axis.x) < 0.5 && !this.hardTarget && !p.isDead, p.yaw + Math.PI, this.dispSpeed);
+    }
     this.stepMovement(dt, axis, canInput, action);
 
     // ---------------- skills / potions / interact ----------------
@@ -383,26 +427,11 @@ export class PlayerController {
     const locked = input.isLocked();
 
     if (!action) {
-      // classic mode: the cursor stays free; pointer lock is only borrowed while dragging with RMB (unlimited orbiting,
-      // the cursor reappears exactly where it was)
-      const want = this.enabled && !uiOpen && this.rmbDragging && input.down('skill_rmb');
-      if (want) {
-        if (!locked && !this.classicLockAsked) {
-          this.classicLockAsked = true;
-          input.lock();
-        }
-      } else {
-        this.classicLockAsked = false;
-        if (locked) {
-          this.expectedUnlock = true;
-          input.unlock();
-        }
-      }
+      // WoW: the cursor stays free; the lock is borrowed during orbit / mouselook holds (updateWowLock, CONTROLS_WOW §4.3)
       this.swallowLmb = false;
       this.autoRelockPending = false;
       return;
     }
-    this.classicLockAsked = false;
 
     const free = input.down('freeCursor');
     const wantLock = this.enabled && !uiOpen && !free;
@@ -440,8 +469,13 @@ export class PlayerController {
       this.expectedUnlock = false;
       return;
     }
+    if (!this.enabled) return;
+    // WoW (§4.3): Esc / alt-tab while a hold locked the mouse: ignore the buttons until they are all up, no game menu
+    if (this.cam.mode !== 'action') {
+      this.mouseSuspended = true;
+      return;
+    }
     // the browser released the lock (Esc / alt-tab): show the game menu unless a panel already wants the cursor
-    if (!this.enabled || this.cam.mode !== 'action') return;
     if (!G.ui?.wantsCursor?.()) G.ui?.openPanel('gameMenu');
   }
 
@@ -463,7 +497,8 @@ export class PlayerController {
     p.dodging = false;
     this.pending = null;
     this.hardTarget = null;
-    this.cam.setLockOn(null);
+    this.disarmAuto(); // CONTROLS_WOW §8.4: death disarms
+    this.setLock(null);
     if (this.softTarget) {
       this.softTarget = null;
       this.emitTarget();
@@ -500,7 +535,7 @@ export class PlayerController {
     const steering = canInput && !this.dodge && !forced && p.canMove();
 
     // wish direction in world space
-    this.cam.getBasis(_f, _r);
+    this.moveBasis(_f, _r);
     let wx = 0, wz = 0;
     const hasInput = steering && (axis.x !== 0 || axis.y !== 0);
     if (hasInput) {
@@ -516,7 +551,30 @@ export class PlayerController {
     const rmbSteer = !action && this.cam.orbiting;
     let want: number | null = null;
     let lambda = 14, maxRate = 11;
-    if (this.dodge) {
+    if (this.wow) {
+      // CONTROLS_WOW §5 facing table, first match wins. Movement input alone never turns the character (row 7).
+      const turnL = !!input.down('turnLeft'), turnR = !!input.down('turnRight');
+      if (this.dodge) {
+        want = null; // row 1: the roll decides
+      } else if (this.wowOut.mouseLook) {
+        want = this.cam.faceYaw; // row 2: mouselook
+        lambda = 40; maxRate = 30;
+      } else if (busy) {
+        want = this.aimYaw; // row 3: hard cast / hold-to-aim facing
+        lambda = 42; maxRate = 24;
+      } else if (G.combat?.isGuarding(p)) {
+        want = this.cam.faceYaw; // row 4: guard
+        lambda = 30; maxRate = 14;
+      } else if (steering && turnL !== turnR) {
+        // row 5: turn keys. The character turns directly and the camera turns rigidly with it.
+        const d = (turnL ? 1 : -1) * WOW_TURN_RATE * dt;
+        p.yaw += d;
+        this.cam.rotateYaw(d);
+      } else if (this.autoFaceWant !== null) {
+        want = this.autoFaceWant; // row 6: auto-attack, idle, target in reach
+        lambda = WOW_FACE_LAMBDA; maxRate = WOW_FACE_MAX;
+      }
+    } else if (this.dodge) {
       want = null; // the roll decides
     } else if (busy) {
       want = this.aimYaw;
@@ -711,9 +769,8 @@ export class PlayerController {
     }
 
     const input = G.input;
-    const action = this.cam.mode === 'action';
     const axis = input.moveAxis();
-    this.cam.getBasis(_f, _r);
+    this.moveBasis(_f, _r);
     let dx: number, dz: number;
     const hasInput = axis.x !== 0 || axis.y !== 0;
     if (hasInput) {
@@ -727,7 +784,8 @@ export class PlayerController {
     }
 
     // free-facing mode: turn into the roll so every roll plays Dodge_Forward; shift-lock keeps facing and picks the clip
-    const keepFacing = action && this.cam.shiftLock;
+    // WoW (§5): the character never turns into a roll (the clip is picked relative to its facing)
+    const keepFacing = (this.cam.mode === 'action' && this.cam.shiftLock) || this.wow;
     if (!keepFacing && hasInput && !this.hardTarget) p.yaw = Math.atan2(dx, dz);
     const fx = Math.sin(p.yaw), fz = Math.cos(p.yaw);
     const rx = -Math.cos(p.yaw), rz = Math.sin(p.yaw);
@@ -822,11 +880,12 @@ export class PlayerController {
     if (this.heavyUntil > this.time && canFireDuringRoll && G.skills.tryHeavyPress(p)) this.heavyUntil = -1;
 
     for (const slot of SKILL_SLOT_KEYS) {
-      const act = SLOT_ACTION[slot];
-      if (!act) continue; // s4 (G) has no input action yet (CM12)
+      // s4 (G / skill_s4) is WoW-only here: Aksiyon's KeyG stays inert as before (orchestrator: Aksiyon unchanged)
+      const act = slot === 's4' && !this.wow ? null : SLOT_ACTION[slot];
+      if (!act) continue;
       const isMouse = slot === 'lmb' || slot === 'rmb';
       if (isMouse && !mouseOk) continue;
-      if (slot === 'rmb' && !action) continue; // classic RMB: click-vs-drag handled below
+      // WoW: skill_rmb is the Digit1 key and the mouse clicks are gestures (updateWowMouse), so the slot loop takes it as any key
       let pressed = input.pressed(act);
       let down = input.down(act);
       // a heavy charge owns LMB until its release: a chain press must not cancel it (SkillSystem.isCharging)
@@ -848,33 +907,6 @@ export class PlayerController {
       else if (!pressed) this.repeat[slot] = slot === 'lmb' ? 0.03 : 0.12;
     }
 
-    // classic mode: a quick RMB click (no drag) casts the RMB skill at the cursor
-    if (!action) {
-      if (input.pressed('skill_rmb') && !input.pointerOverUI) {
-        this.rmbDown = true;
-        this.rmbDragging = false;
-        this.rmbMoved = 0;
-        this.rmbTime = 0;
-      }
-      if (this.rmbDown) {
-        this.rmbMoved += Math.abs(input.mouseDX) + Math.abs(input.mouseDY);
-        this.rmbTime += dt;
-        if (!this.rmbDragging && (this.rmbMoved >= 7 || this.rmbTime >= 0.3)) this.rmbDragging = true;
-        // a press + release inside one frame has pressed() true and down() false: still a click
-        if (!input.down('skill_rmb')) {
-          const click = this.rmbMoved < 7 && this.rmbTime < 0.3;
-          this.rmbDown = false;
-          this.rmbDragging = false;
-          if (click) {
-            if (rolling && !canFireDuringRoll) this.pending = { slot: 'rmb', until: this.time + 0.35 };
-            else this.fireSlot('rmb', aim);
-          }
-        }
-      }
-    } else {
-      this.rmbDown = false;
-      this.rmbDragging = false;
-    }
   }
 
   private fireSlot(slot: SkillSlotKey, aim: AimInfo): boolean {
@@ -909,8 +941,9 @@ export class PlayerController {
     const hard = this.hardTarget;
     if (hard) {
       const d = Math.hypot(hard.position.x - px, hard.position.z - pz);
-      let drop = hard.isDead || hard.removed || d > HARD_TARGET_RANGE;
-      if (!drop) {
+      let drop = hard.isDead || hard.removed || d > (this.wow ? WOW_HARD_RANGE : HARD_TARGET_RANGE);
+      // CONTROLS_WOW §6: no LOS drop timer in WoW (a selection survives walls and corners)
+      if (!drop && !this.wow) {
         if (!world.nav.lineOfSight(px, pz, hard.position.x, hard.position.z)) {
           this.losLost += 1 / 15;
           if (this.losLost > 2) drop = true;
@@ -921,10 +954,10 @@ export class PlayerController {
         const alt = this.nearestInCone(60, 8, hard);
         this.hardTarget = alt;
         this.losLost = 0;
-        this.cam.setLockOn(alt);
+        this.setLock(alt);
       } else if (drop) {
         this.hardTarget = null;
-        this.cam.setLockOn(null);
+        this.setLock(null);
       }
     }
 
@@ -971,7 +1004,7 @@ export class PlayerController {
 
     // hard-target camera framing (lock-on, GDD_LIFE §4.7)
     const h = this.hardTarget;
-    if (h) this.cam.setLockOn(h);
+    if (h) this.setLock(h);
     this.emitTarget();
   }
 
@@ -980,25 +1013,31 @@ export class PlayerController {
     const world = p.world;
     if (!world) return;
     const cam = this.cam.camera;
-    const list: { e: Enemy; x: number }[] = [];
+    const wow = this.wow;
+    const list: { e: Enemy; x: number; d: number; ag: boolean }[] = [];
     for (const e of world.enemies) {
       if (e.isDead || e.removed || !e.alive) continue;
-      if (Math.hypot(e.position.x - p.position.x, e.position.z - p.position.z) > HARD_TARGET_RANGE) continue;
+      const d = Math.hypot(e.position.x - p.position.x, e.position.z - p.position.z);
+      if (d > (wow ? WOW_TAB_RANGE : HARD_TARGET_RANGE)) continue;
       _p.set(e.position.x, e.position.y + e.height * 0.5, e.position.z).project(cam);
       if (_p.z > 1 || _p.z < -1 || Math.abs(_p.x) > 1.05 || Math.abs(_p.y) > 1.05) continue; // not visible
-      list.push({ e, x: _p.x });
+      list.push({ e, x: _p.x, d, ag: !!e.aggroed });
     }
     const now = this.time;
     const cur = this.hardTarget;
     if (!list.length) {
       if (cur) this.hardTarget = null;
-      this.cam.setLockOn(null);
+      this.setLock(null);
       this.emitTarget();
       return;
     }
-    list.sort((a, b) => a.x - b.x);
+    // CONTROLS_WOW §6: WoW sorts engaged enemies first, then nearest; Aksiyon keeps screen order
+    if (wow) list.sort((a, b) => (Number(b.ag) - Number(a.ag)) || (a.d - b.d));
+    else list.sort((a, b) => a.x - b.x);
     let next: Enemy | null;
-    if (!cur) {
+    if (!cur && wow) {
+      next = list[0].e; // WoW: the best candidate at once
+    } else if (!cur) {
       // first press: the visible enemy closest to the screen centre
       let bi = 0, bd = 1e9;
       for (let i = 0; i < list.length; i++) {
@@ -1008,13 +1047,14 @@ export class PlayerController {
       next = list[bi].e;
     } else {
       const i = list.findIndex((c) => c.e === cur);
-      if (now - this.lastTabAt < 0.25 || (list.length === 1 && i === 0)) next = null; // double-tap / only target: release
+      // Aksiyon: a double-tap releases. WoW: only a single candidate that is already selected releases (§6).
+      if ((!wow && now - this.lastTabAt < 0.25) || (list.length === 1 && i === 0)) next = null;
       else next = list[(i + 1) % list.length].e;
     }
     this.lastTabAt = now;
     this.hardTarget = next;
     this.losLost = 0;
-    this.cam.setLockOn(next);
+    this.setLock(next);
     this.emitTarget();
     G.audio.play('ui_tab', { volume: 0.5 });
   }
@@ -1039,7 +1079,8 @@ export class PlayerController {
   /** Tab: a tap cycles (tap-cycle mode: on press; hold-lock mode: on release), a hold of 0.3 s toggles the lock-on. */
   private updateTabAndShoulder(canInput: boolean, action: boolean): void {
     const input = G.input;
-    const lockMode = G.settings?.data.lockOnMode ?? 'hold-lock';
+    // CONTROLS_WOW §6: WoW cycles on press (no Tab-hold lock), whatever lockOnMode says
+    const lockMode = this.wow ? 'tap-cycle' : (G.settings?.data.lockOnMode ?? 'hold-lock');
     if (canInput && input.pressed('targetNext')) {
       if (lockMode === 'tap-cycle') this.cycleTarget(action);
       this.tabDownAt = this.time;
@@ -1076,7 +1117,7 @@ export class PlayerController {
     if (this.hardTarget) {
       this.hardTarget = null;
       this.losLost = 0;
-      this.cam.setLockOn(null);
+      this.setLock(null);
     } else {
       const pick = this.softTarget ?? this.nearestInCone(60, HARD_TARGET_RANGE, null);
       if (!pick) {
@@ -1085,7 +1126,7 @@ export class PlayerController {
       }
       this.hardTarget = pick;
       this.losLost = 0;
-      this.cam.setLockOn(pick);
+      this.setLock(pick);
       G.audio.play('ui_tab', { volume: 0.5 });
     }
     this.emitTarget();
@@ -1096,8 +1137,8 @@ export class PlayerController {
     const p = this.player;
     const world = p.world;
     if (!world) return null;
-    this.cam.getBasis(_f, _r);
-    const cosLim = Math.cos((coneDeg / 2) * Math.PI / 180);
+    this.moveBasis(_f, _r); // WoW: "facing" is the character's facing (CONTROLS_WOW §8.4)
+    const cosLim =Math.cos((coneDeg / 2) * Math.PI / 180);
     let best: Enemy | null = null;
     let bestD = Infinity;
     for (const e of world.enemies) {
@@ -1120,7 +1161,7 @@ export class PlayerController {
     if (d > 25) return;
     this.hardTarget = boss;
     this.losLost = 0;
-    this.cam.setLockOn(boss);
+    this.setLock(boss);
     this.emitTarget();
   }
 
@@ -1129,7 +1170,7 @@ export class PlayerController {
     const h = this.hardTarget;
     if (!h || !h.isBoss) return;
     this.hardTarget = null;
-    this.cam.setLockOn(null);
+    this.setLock(null);
     this.emitTarget();
   }
 
@@ -1141,6 +1182,306 @@ export class PlayerController {
       this.lastTargetEmit = id;
       G.events.emit('target:changed', { targetId: id });
     }
+  }
+
+  // =====================================================================================================================
+  // WoW controls (CONTROLS_WOW §4-§8). Runs only with the classic (WoW) camera; the Aksiyon paths never reach it.
+  // =====================================================================================================================
+
+  /** WoW = the classic camera (cameraMode mirrors controlScheme, Game.ts). */
+  private get wow(): boolean {
+    return this.cam.mode === 'classic';
+  }
+
+  /** §6: a WoW selection never locks the camera. */
+  private setLock(t: Enemy | null): void {
+    this.cam.setLockOn(this.wow ? null : t);
+  }
+
+  /** Movement basis: the character's facing in WoW (§5), the camera heading in Aksiyon. */
+  private moveBasis(f: THREE.Vector3, r: THREE.Vector3): void {
+    if (!this.wow) {
+      this.cam.getBasis(f, r);
+      return;
+    }
+    const s = Math.sin(this.player.yaw), c = Math.cos(this.player.yaw);
+    f.set(s, 0, c);
+    r.set(-c, 0, s);
+  }
+
+  /** One short WoW toast, at most one per WOW_TOAST_EVERY seconds. */
+  private wowToast(text: string): void {
+    if (this.time - this.wowToastAt < WOW_TOAST_EVERY) return;
+    this.wowToastAt = this.time;
+    G.events.emit('ui:toast', { text, kind: 'warning' });
+  }
+
+  private wowPick(ndcX: number, ndcY: number): PickHit | null {
+    const world = this.player.world;
+    return world ? pickAtNdc(this.cam.camera, world, ndcX, ndcY) : null;
+  }
+
+  /** §4.1-§4.3: gesture state for this frame, clicks resolved on release, the pointer lock and the cursor. */
+  private updateWowMouse(dt: number, canInput: boolean, uiOpen: boolean): void {
+    const input = G.input;
+    const p = this.player;
+    // a suspended mouse (Esc / alt-tab during a hold) comes back once every button is up
+    if (this.mouseSuspended && !input.keyDown('Mouse0') && !input.keyDown('Mouse2')) this.mouseSuspended = false;
+    // Mouse presses over UI never reach Input's held / justDown sets while the cursor is free; pointerOverUI guards the
+    // press frame as well, so a click on a panel can never select, orbit, confirm an aim or cancel one
+    const out = this.wowMouse.update({
+      dt,
+      l: input.keyDown('Mouse0'),
+      r: input.keyDown('Mouse2'),
+      lPressed: input.keyPressed('Mouse0') && !input.pointerOverUI,
+      rPressed: input.keyPressed('Mouse2') && !input.pointerOverUI,
+      dx: input.mouseDX,
+      dy: input.mouseDY,
+      ndcX: input.ndcX,
+      ndcY: input.ndcY,
+      enabled: canInput && !this.mouseSuspended,
+      aiming: G.skills.isAiming(p),
+    });
+    this.wowOut = out;
+    // a ground aim is confirmed by SkillSystem on the Mouse0 press itself; a click that lands while it waits (confirmAim) is
+    // swallowed here: no selection, no orbit. RMB cancels the aim.
+    if (out.cancelAim) G.skills.cancelAim(p);
+    if (out.clickL) this.wowClickL(out.clickL.ndcX, out.clickL.ndcY);
+    if (out.clickR) this.wowClickR(out.clickR.ndcX, out.clickR.ndcY);
+    this.updateWowLock(out, uiOpen);
+    this.updateWowCursor(dt, out, uiOpen);
+  }
+
+  /** LMB click: an enemy under the cursor is selected, empty ground clears the selection (§4.1). */
+  private wowClickL(ndcX: number, ndcY: number): void {
+    const hit = this.wowPick(ndcX, ndcY);
+    if (!hit) this.selectEnemy(null);
+    else if (hit.kind === 'enemy') this.selectEnemy(hit.entity as Enemy);
+    // a friendly NPC, loot or interactable under the cursor: nothing (§4.1)
+  }
+
+  /** RMB click (§4.1, §4.4): enemy -> select and arm; interactable in reach -> interact; too far -> "Çok uzak". */
+  private wowClickR(ndcX: number, ndcY: number): void {
+    const p = this.player;
+    const hit = this.wowPick(ndcX, ndcY);
+    if (!hit) return;
+    if (hit.kind === 'enemy') {
+      const e = hit.entity as Enemy;
+      this.selectEnemy(e);
+      this.armAuto(e.id);
+      return;
+    }
+    const e = hit.entity;
+    if (!isInteractable(e)) return;
+    const d = Math.hypot(e.position.x - p.position.x, e.position.z - p.position.z);
+    if (d > e.interactRange + e.radius) {
+      this.wowToast('Çok uzak');
+      return;
+    }
+    if (e.canInteract && !e.canInteract(p)) return;
+    try {
+      e.interact(p);
+    } catch (err) {
+      console.error('[controller] interact failed', err);
+    }
+  }
+
+  /** WoW selection. Switching the selection while armed keeps the driver armed and moves it to the new enemy (§8.4). */
+  private selectEnemy(e: Enemy | null): void {
+    if (this.hardTarget === e) return;
+    this.hardTarget = e;
+    this.losLost = 0;
+    this.setLock(e);
+    if (e) {
+      G.audio.play('ui_tab', { volume: 0.5 });
+      if (this.auto.armed) {
+        this.auto.setTarget(e.id);
+        this.emitAuto();
+      }
+    }
+    this.emitTarget();
+  }
+
+  /** §8.4: arming on an enemy. A class whose autoInfo().mode is 'off' never arms. */
+  private armAuto(targetId: number): void {
+    if (G.skills.autoInfo(this.player).mode === 'off') return;
+    this.auto.arm(targetId);
+    this.emitAuto();
+  }
+
+  /** §4.3: the lock is borrowed while a hold asks for it (once per hold), and released when no hold, a panel or a scheme change needs it. */
+  private updateWowLock(out: WowMouseOut, uiOpen: boolean): void {
+    const input = G.input;
+    const locked = input.isLocked();
+    if (out.wantLock && !uiOpen && this.enabled && !this.mouseSuspended) {
+      if (!locked && !this.wowLockAsked && !input.pointerOverUI) {
+        this.wowLockAsked = true; // a refused request is not retried within the same hold
+        input.lock();
+      }
+      return;
+    }
+    if (!out.wantLock) this.wowLockAsked = false;
+    if (locked) {
+      this.expectedUnlock = true;
+      input.unlock();
+    }
+  }
+
+  /** §4.5: the context cursor on the canvas (refreshed every 0.1 s), none while a hold turns the camera. */
+  private updateWowCursor(dt: number, out: WowMouseOut, uiOpen: boolean): void {
+    const canvas = G.engine?.canvas;
+    if (!canvas) return;
+    let next = '';
+    if (out.mouseLook || out.orbit) next = 'none';
+    else if (!uiOpen && !G.input.pointerOverUI && !G.input.isLocked()) next = this.hoverCursor(dt);
+    if (canvas.style.cursor !== next) canvas.style.cursor = next;
+  }
+
+  private hoverCursor(dt: number): string {
+    this.cursorAt -= dt;
+    if (this.cursorAt <= 0) {
+      this.cursorAt = WOW_CURSOR_EVERY;
+      this.cursorKey = this.hoverKind();
+    }
+    return this.cursorKey;
+  }
+
+  private hoverKind(): string {
+    const hit = this.wowPick(G.input.ndcX, G.input.ndcY);
+    if (!hit) return '';
+    if (hit.kind === 'enemy') return WOW_CURSOR.enemy;
+    const e = hit.entity;
+    if (!isInteractable(e)) return '';
+    const d = Math.hypot(e.position.x - this.player.position.x, e.position.z - this.player.position.z);
+    if (d > e.interactRange + e.radius) return '';
+    return hit.kind === 'loot' ? WOW_CURSOR.loot : WOW_CURSOR.interact;
+  }
+
+  /**
+   * §8: the auto-attack driver. Toggle key, the per-frame tick (reach, facing, leash, retarget) and the swing request.
+   * SkillSystem owns the chain (autoSwing); this decides when to ask for the next step. Runs before movement.
+   */
+  private updateAuto(dt: number, canInput: boolean, axis: { x: number; y: number }): void {
+    const p = this.player;
+    const world = p.world;
+    const sk = G.skills;
+    this.autoFaceWant = null;
+    if (!this.wow || !world) {
+      if (this.auto.armed) this.disarmAuto();
+      return;
+    }
+    const info = sk.autoInfo(p);
+
+    // toggle key (MMB / =): disarm, or arm the selection / the nearest enemy in the cone (no arming when the mode is off)
+    if (canInput && G.input.pressed('autoAttack')) {
+      if (this.auto.armed) this.auto.disarm();
+      else if (info.mode === 'off') this.wowToast('Bu sınıf otomatik saldırı yapamaz');
+      else {
+        const selected = this.hardTarget ? this.hardTarget.id : null;
+        const nearest = selected === null ? this.nearestInCone(AUTO.retargetCone, AUTO.retargetRange, null) : null;
+        const r = this.auto.toggle(selected, nearest ? nearest.id : null);
+        if (r.toast) this.wowToast(r.toast);
+      }
+      this.emitAuto();
+    }
+    if (!this.auto.armed) return;
+
+    const tgt = this.auto.targetId !== null ? world.get<Enemy>(this.auto.targetId) : undefined;
+    const mouseLook = this.wowOut.mouseLook;
+    const heading = mouseLook ? this.cam.faceYaw : p.yaw;
+    let target: AutoTarget | null = null;
+    if (tgt && tgt.kind === 'enemy') {
+      const dx = tgt.position.x - p.position.x, dz = tgt.position.z - p.position.z;
+      target = {
+        id: tgt.id,
+        dist: Math.max(0, Math.hypot(dx, dz) - tgt.radius),
+        angleDeg: Math.abs(angleDiff(heading, Math.atan2(dx, dz))) * 180 / Math.PI,
+        los: info.mode !== 'ranged' || world.nav.lineOfSight(p.position.x, p.position.z, tgt.position.x, tgt.position.z),
+        valid: !tgt.isDead && !tgt.removed && tgt.alive,
+      };
+    }
+    const nearestId = !target || !target.valid
+      ? (this.nearestInCone(AUTO.retargetCone, AUTO.retargetRange, null)?.id ?? null)
+      : null;
+    // stun, hard cast, charge, ground aim, roll before its attack window, !canAct, panels, chat: pause (never disarm)
+    const paused = !canInput || p.statuses.stunned || !!p.cast || !p.canAct() || sk.isAiming(p) || sk.isCharging(p)
+      || (!!this.dodge && this.dodge.t < DODGE_ATTACK_AT);
+    const out = this.auto.tick({
+      dt,
+      mode: info.mode,
+      reach: info.reach,
+      ready: info.ready,
+      paused,
+      dead: false,
+      target,
+      nearestId,
+      moving: axis.x !== 0 || axis.y !== 0,
+      mouseLook,
+      inCombat: p.inCombat,
+    });
+    if (out.toast) this.wowToast(out.toast);
+    // idle and in reach: the character turns to the target (facing table row 6)
+    if (out.faceTarget && target && tgt) this.autoFaceWant = Math.atan2(tgt.position.x - p.position.x, tgt.position.z - p.position.z);
+    if (out.swing && target && tgt) {
+      const dx = tgt.position.x - p.position.x, dz = tgt.position.z - p.position.z;
+      const len = Math.hypot(dx, dz) || 1;
+      const aim: AimInfo = { point: [tgt.position.x, tgt.position.y, tgt.position.z], dir: [dx / len, 0, dz / len], targetId: tgt.id };
+      if (sk.autoSwing(p, aim)) this.timeSinceCast = 0;
+    }
+    this.emitAuto();
+  }
+
+  /** §8.4: a melee skill hit on an enemy starts the swing (WoW rule, setting autoAttackFromSkills, melee mode only). */
+  private onLocalDamage(sourceId: number | null, targetId: number, skillId: string | undefined): void {
+    const p = this.player;
+    if (!this.wow || this.auto.armed || sourceId !== p.id || !skillId || !G.settings?.data.autoAttackFromSkills) return;
+    if (G.skills.getDef(skillId)?.targeting !== 'melee_arc') return;
+    const e = p.world?.get<Enemy>(targetId);
+    if (!e || e.kind !== 'enemy' || e.isDead || e.removed) return;
+    if (G.skills.autoInfo(p).mode !== 'melee') return;
+    this.auto.arm(e.id);
+    this.emitAuto();
+  }
+
+  /** Silent disarm (death, scene change, release, scheme change). */
+  private disarmAuto(): void {
+    this.auto.disarm();
+    this.autoFaceWant = null;
+    this.emitAuto();
+  }
+
+  /** `autoattack:state` (armed, target id) whenever either changes. */
+  private emitAuto(): void {
+    const armed = this.auto.armed;
+    const targetId = armed ? this.auto.targetId : null;
+    const key = `${armed}:${targetId}`;
+    if (key === this.autoSent) return;
+    this.autoSent = key;
+    G.events.emit('autoattack:state', { armed, targetId });
+  }
+
+  /**
+   * Ayarlar -> Kontroller switched the scheme at runtime (CONTROLS_WOW §2.3). Game.ts (earlier listener) has re-applied the
+   * bindings and mirrored cameraMode already.
+   */
+  private onSchemeSwitched(): void {
+    const input = G.input;
+    if (input.isLocked()) {
+      this.expectedUnlock = true;
+      input.unlock();
+    }
+    this.wowLockAsked = false;
+    this.mouseSuspended = false;
+    this.wowMouse.reset();
+    this.wowOut = { mouseLook: false, orbit: false, both: false, wantLock: false };
+    this.disarmAuto();
+    this.cam.onSchemeChanged();
+    this.cursorAt = -1;
+    this.cursorKey = '';
+    if (G.engine?.canvas) G.engine.canvas.style.cursor = '';
+    const toAksiyon = G.settings?.data.controlScheme === 'aksiyon';
+    if (toAksiyon) this.autoRelockPending = true;
+    G.events.emit('ui:toast', { text: `Kontrol şeması: ${toAksiyon ? 'Aksiyon' : 'WoW'}`, kind: 'info' });
   }
 
   // ---- target marker (floating diamond; the HUD may add its own frame) ----
@@ -1438,6 +1779,8 @@ export class PlayerController {
       (m.material as THREE.Material).dispose();
     }
     this.marker = this.markerRing = null;
-    this.cam.setLockOn(null);
+    this.setLock(null);
+    this.disarmAuto();
+    if (G.engine?.canvas) G.engine.canvas.style.cursor = '';
   }
 }

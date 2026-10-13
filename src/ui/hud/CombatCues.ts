@@ -5,6 +5,7 @@ import type { Enemy } from '../../entities/Enemy';
 import { COMBAT_FEEL } from '../../combat/feel';
 import { clamp01, div, pulse, setClass, setStyle, setText } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
+import { reticleAtCentre } from './Crosshair';
 import '../styles/hud-combat.css';
 
 const _v = new THREE.Vector3();
@@ -91,9 +92,10 @@ export class CombatCues implements HudWidget {
     const p = ctx.player;
     const inGame = ctx.mode === 'town' || ctx.mode === 'dungeon';
     const alive = inGame && !!p && !p.isDead;
-    const action = alive && G.settings.data.cameraMode === 'action' && !ctx.ui.wantsCursor();
+    // the reticle is at screen centre (Aksiyon always, WoW while a mouse button is held)
+    const action = alive && reticleAtCentre() && !ctx.ui.wantsCursor();
 
-    // guard gauge arc (action camera only: it sits on the reticle)
+    // guard gauge arc (centre reticle only: it sits on the reticle)
     const g = G.combat?.guard;
     const shattering = now - this.shatterAt < SHATTER_MS;
     const guardOn = action && !!p && !!g && g.max > 0 && (G.combat.isGuarding(p) || shattering);
