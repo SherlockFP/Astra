@@ -280,6 +280,10 @@ export interface GameEvents {
   // ---- Binek (WoW ground mount, append-only). Local player only; emitted by game/Mount.ts.
   /** The local player mounted (`on: true`) or dismounted. */
   'player:mounted': { on: boolean };
+
+  // ---- WP-08 achievements (append-only). Emitted by systems/Achievements.ts once per unlock; the achievements panel listens.
+  /** An achievement was unlocked by the LOCAL character (`title` = the title it grants, if any). */
+  'achievement:unlocked': { id: string; name: string; points: number; title?: string };
 }
 
 export type GameEventName = keyof GameEvents;
