@@ -60,6 +60,8 @@ export class Player extends Actor {
   jumping = false;
   /** Simple vertical offset for jumps (y position = ground + jumpY). */
   jumpY = 0;
+  /** Mount (game/Mount.ts): the character model and blob shadow are lifted by this while mounted. 0 on foot. */
+  modelLift = 0;
 
   // ---- additions (player module) ----
   /** The built character model (weapon tip / bones / variants). `Actor.model` is its root. */
@@ -521,10 +523,11 @@ export class Player extends Actor {
 
     this.updateJuice(dt);
 
+    if (this.charModel) this.charModel.root.position.y = this.modelLift;
     // blob shadow stays on the ground while jumping and shrinks with height
     const sh = this.charModel?.shadow;
     if (sh) {
-      sh.position.y = 0.03 - this.jumpY;
+      sh.position.y = 0.03 - this.jumpY - this.modelLift;
       const s = Math.max(0.55, 1 - this.jumpY * 0.18);
       sh.scale.setScalar(s);
     }

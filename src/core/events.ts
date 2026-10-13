@@ -270,6 +270,10 @@ export interface GameEvents {
   'market:pin': { zone: string; x: number; z: number; label: string; sellerId: string } | null;
   /** Pazarcı Modu (AFK stall mode: ~2 fps render, audio muted, sales overlay) turned on or off. */
   'market:mode': { on: boolean };
+
+  // ---- Binek (WoW ground mount, append-only). Local player only; emitted by game/Mount.ts.
+  /** The local player mounted (`on: true`) or dismounted. */
+  'player:mounted': { on: boolean };
 }
 
 export type GameEventName = keyof GameEvents;

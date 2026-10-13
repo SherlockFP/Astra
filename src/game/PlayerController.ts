@@ -16,6 +16,7 @@ import { pickAtNdc, type PickHit } from './ClickPick';
 import { AutoAttack, AUTO, type AutoTarget } from './AutoAttack';
 import { VERT } from '../world/Heightfield';
 import { FallHandler, VOID_FADE_IN, VOID_FADE_OUT, VOID_INPUT_LOCK, VOID_INVULN_SEC, type FallEnv, type Spot } from './FallHandler';
+import { MountRider } from './Mount';
 
 /** Black-out / fade-back of the void fall (§11 screen:fade; the HUD listens, unknown events are a no-op). */
 function screenFade(to: number, dur: number): void {
@@ -120,6 +121,8 @@ export class PlayerController {
   private fallStartY = 0;
   /** Falls and drops (§11): safe history, void trigger, landing damage, respawn after the fade. */
   private fall = new FallHandler();
+  /** WoW ground mount (game/Mount.ts): cast, ride state and the run-speed multiplier. */
+  private mount: MountRider;
   /** Movement input is ignored until this controller time (void respawn: fade-in + VOID_INPUT_LOCK). */
   private inputLockUntil = -1;
   private landUntil = 0;
@@ -198,6 +201,7 @@ export class PlayerController {
   constructor(player: Player, cam: ThirdPersonCamera) {
     this.player = player;
     this.cam = cam;
+    this.mount = new MountRider(player);
     liveController = this;
     document.addEventListener('pointerlockchange', this.onLockChange);
     this.buildMarker();
@@ -429,6 +433,7 @@ export class PlayerController {
     }
     // void respawn: the held key must not walk the player straight back to the edge (fade-in + 0.4 s, §11)
     if (this.time < this.inputLockUntil) axis = { x: 0, y: 0 };
+    this.mount.update(dt, canInput, axis.x !== 0 || axis.y !== 0);
     this.stepMovement(dt, axis, canInput, action);
     this.updateFall(dt);
 
@@ -634,6 +639,7 @@ export class PlayerController {
     // ---- speed ----
     let maxSpeed = p.moveSpeed();
     if (input.down('walk')) maxSpeed *= WALK_MUL;
+    else maxSpeed *= this.mount.speedMul(); // binek (Mount.ts): +%60 koşu hızı, yürüyüş hariç
     maxSpeed *= this.actionSpeedMul();
     if (hasInput) {
       // backpedal penalty relative to facing
@@ -1937,6 +1943,7 @@ export class PlayerController {
     this.marker = this.markerRing = null;
     this.setLock(null);
     this.disarmAuto();
+    this.mount.dispose();
     if (G.engine?.canvas) G.engine.canvas.style.cursor = '';
   }
 }

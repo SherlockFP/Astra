@@ -26,7 +26,9 @@ export type InputAction =
   // CONTROLS_WOW §2.1 / §3.2 (appended): WoW auto-attack toggle and keyboard turning (default unbound in Aksiyon)
   | 'autoAttack' | 'turnLeft' | 'turnRight'
   // UI_REDESIGN §2.6.5 (UX-10, appended): Panzehir İksiri (Combat.usePotion('cleanse')) on the consumable strip
-  | 'potionCleanse';
+  | 'potionCleanse'
+  // Binek (WoW ground mount, appended): F9, since every letter and digit is already bound (tools/controls-check.mjs).
+  | 'mount';
 
 /** CONTROLS_WOW D1: the control scheme. 'wow' is the default; 'aksiyon' is the pre-WoW layout. */
 export type ControlScheme = 'wow' | 'aksiyon';
@@ -115,6 +117,8 @@ export const DEFAULT_BINDINGS: Record<InputAction, string[]> = {
   // and the backward target cycle takes Backquote (the key above Tab).
   focusTarget: ['F8'],
   targetPrev: ['Backquote'],
+  // Binek (Mount.ts): F9. Every letter and digit is already taken.
+  mount: ['F9'],
   // CONTROLS_WOW §3.1: new actions are unbound in Aksiyon.
   autoAttack: [],
   turnLeft: [],
@@ -184,7 +188,7 @@ export const ACTION_NAMES_TR: Record<InputAction, string> = {
   partySel4: 'Grup Üyesi 4', partySel5: 'Grup Üyesi 5', paragon: 'Kadim Levha', bestiary: 'Bestiyari', townPortal: 'Dönüş Parşömeni',
   professions: 'Meslekler', camShoulder: 'Omuz Değiştir', heavyAttack: 'Ağır Saldırı',
   skill_s4: 'Beceri G', groupFinder: 'Grup Bulucu', guide: 'Ne Yapmalıyım?', focusTarget: 'Odak Hedef', targetPrev: 'Önceki Hedef',
-  autoAttack: 'Otomatik Saldırı', turnLeft: 'Sola Dön', turnRight: 'Sağa Dön',
+  autoAttack: 'Otomatik Saldırı', turnLeft: 'Sola Dön', turnRight: 'Sağa Dön', mount: 'Binek',
 };
 
 export class Input {

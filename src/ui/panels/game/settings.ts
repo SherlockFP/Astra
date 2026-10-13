@@ -17,14 +17,14 @@ type Group = { name: string; actions: InputAction[] };
 
 /** CONTROLS_WOW §10: the key list per scheme. Aksiyon is exactly the list that exists today. */
 const GROUPS_AKSIYON: Group[] = [
-  { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'jump', 'dodge', 'walk'] },
+  { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'jump', 'dodge', 'walk', 'mount'] },
   { name: 'Savaş', actions: ['skill_lmb', 'heavyAttack', 'skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'skill_s4', 'guard', 'potionHp', 'potionMp', 'potionCleanse', 'targetNext', 'targetPrev', 'focusTarget', 'interact', 'revive'] },
   { name: 'Arayüz', actions: ['inventory', 'groupFinder', 'character', 'talents', 'skills', 'map', 'party', 'mplus', 'guide', 'chat', 'menu'] },
   { name: 'Kamera ve Diğer', actions: ['freeCursor', 'toggleLock', 'zoomIn', 'zoomOut', 'screenshot'] },
 ];
 
 const GROUPS_WOW: Group[] = [
-  { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'turnLeft', 'turnRight', 'jump', 'dodge', 'walk'] },
+  { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'turnLeft', 'turnRight', 'jump', 'dodge', 'walk', 'mount'] },
   { name: 'Savaş', actions: ['skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'skill_s4', 'autoAttack', 'skill_lmb', 'heavyAttack', 'guard', 'potionHp', 'potionMp', 'potionCleanse', 'targetNext', 'targetPrev', 'focusTarget', 'interact', 'revive'] },
   { name: 'Arayüz', actions: ['inventory', 'groupFinder', 'character', 'talents', 'skills', 'map', 'party', 'mplus', 'guide', 'chat', 'menu'] },
   { name: 'Kamera ve Diğer', actions: ['freeCursor', 'zoomIn', 'zoomOut', 'screenshot'] },
