@@ -195,6 +195,8 @@ export interface LobbyPresenceMsg {
   zn?: string;
   /** WP-06: nation id (absent from old clients). */
   nat?: string;
+  /** WP-12 (append-only): id of the summoned cosmetic pet (data/pets.ts), absent = none. */
+  pet?: string;
   bye?: boolean;
   /** WP-05 Lonca (systems/Guild.ts): guild name (tag), guild id and the roster version the sender holds (`gv`, see rosterVersion). Absent = no guild. */
   g?: string;

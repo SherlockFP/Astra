@@ -103,6 +103,9 @@ export interface CharacterSave {
   // ---- WP-10 daily loop (systems/DailyLoop.ts). OPTIONAL, created on first use. Daily progress flags live in `flags` (wq.*, gd.*).
   /** Rested XP pool, login streak. */
   daily?: DailySave;
+  // ---- WP-12 pets (systems/Pets.ts). OPTIONAL, created on first use. Append-only.
+  /** Learned cosmetic pets (data/pets.ts ids) and the summoned one (absent = none). */
+  pets?: PetSave;
 }
 
 /** WP-10: rested XP (accrues logged out or resting in a village / town, see DailyLoop) and the daily login streak. */
@@ -115,6 +118,12 @@ export interface DailySave {
   streak: number;
   /** Bounty day key of the last counted login. */
   streakDay: number;
+}
+
+/** WP-12: cosmetic pets of one character. `known` never shrinks; `active` must be a known id (checked on use). */
+export interface PetSave {
+  known: string[];
+  active?: string;
 }
 
 /** WP-07: lifetime PvP record. `honour` is the spendable Onur balance, `honourTotal` the lifetime sum (achievement metric). */

@@ -18,6 +18,8 @@ import { CLASS_WEAPONS, CLASS_OFFHANDS, CLASS_NAMES_TR } from '../data/itemBases
 import { SAVE_VERSION, migrateTalents } from '../core/Save';
 import { migrationToast } from '../dev/migrate';
 import { emit, toast } from './notify';
+import { teachFromItem } from './Pets';
+import { PET_BY_ID } from '../data/pets';
 import { activeElixirs, computeStats, emptyFx, type SpecialEntry } from './StatCalc';
 import { baseOf, buildFromBase, defaultRng, isEquipmentItem, itemDisplayName, rarityIndex, requiredLevelOf, sellValue, slotsForCategory } from './ItemGen';
 
@@ -784,6 +786,15 @@ export class CharacterState {
     if (def.market) {
       // CM14 Pazar: the licence is consumed when the stall opens, not here; using it opens the stall setup.
       emit('ui:openPanel', { panel: 'marketOpen', data: { licence: id } });
+      return { ok: true };
+    }
+    if (def.teachesPet) {
+      // WP-12: a pet egg teaches its pet once; a known pet keeps the egg
+      if (this.material(id) <= 0) return { ok: false, reason: 'Yumurtan yok.' };
+      const r = teachFromItem(this.save, id);
+      if (!r.ok || !r.petId) return { ok: false, reason: r.reason ?? 'Kullanılamadı.' };
+      this.useMaterial(id, 1);
+      toast(`Evcil hayvan öğrenildi: ${PET_BY_ID[r.petId]?.name ?? r.petId}`, 'success');
       return { ok: true };
     }
     if (def.elixir) return this.useElixir(id);

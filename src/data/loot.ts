@@ -325,7 +325,7 @@ export const RARE_TABLES: Record<string, LootTableDef> = {
   loot_rare_gumus_yele: { ...RARE_BASE, minRarity: 'uncommon', items: [2, 2], uniqueIds: ['leg_vadi_gumus_pence'], uniqueChance: 0.15,
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [3, 3] }] },
   loot_rare_kizil_kuyruk: { ...RARE_BASE, minRarity: 'uncommon', items: [2, 2],
-    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [2, 2] }, { id: 'kara_demir', chance: 1, count: [8, 8] }] },
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [2, 2] }, { id: 'kara_demir', chance: 1, count: [8, 8] }, { id: 'pet_kizil_tilki', chance: 0.04 }] },
   loot_rare_korkuluk_kral: { ...RARE_BASE, items: [1, 1],
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [4, 4] }, { id: 'buyulu_toz', chance: 1, count: [3, 3] }] },
   loot_rare_buyuk_boz: { ...RARE_BASE, items: [1, 1], uniqueIds: ['leg_vadi_boz_postu'], uniqueChance: 0.15,
@@ -333,7 +333,7 @@ export const RARE_TABLES: Record<string, LootTableDef> = {
   loot_rare_mantar_ana: { ...RARE_BASE, items: [1, 1],
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [4, 4] }, { id: 'gem_emerald_1', chance: 0.3 }] },
   loot_rare_golge_alfa: { ...RARE_BASE, items: [2, 2], uniqueIds: ['leg_vadi_gece_tuyu'], uniqueChance: 0.15,
-    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [6, 6] }] },
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [6, 6] }, { id: 'pet_kurt_yavrusu', chance: 0.04 }] },
   loot_rare_demir_boynuz: { ...RARE_BASE, items: [2, 2],
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [6, 6] }, { id: 'buyulu_toz', chance: 1, count: [6, 6] }] },
   loot_rare_agit_kralicesi: { ...RARE_BASE, items: [2, 2],
@@ -368,9 +368,9 @@ export const RARE_TABLES: Record<string, LootTableDef> = {
 
 /** World bosses (GDD 3.8): boss rank table (item level = level + 3) plus extra Metin Kalintisi. */
 export const WORLD_BOSS_TABLES: Record<string, LootTableDef> = {
-  loot_wb_curukkok: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [8, 12] }] },
+  loot_wb_curukkok: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [8, 12] }, { id: 'pet_tas_kaplumbaga', chance: 0.05 }] },
   loot_wb_alevkanat: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [12, 18] }] },
-  loot_wb_ulu_boz: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [20, 28] }] },
+  loot_wb_ulu_boz: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [20, 28] }, { id: 'pet_ejder_yavrusu', chance: 0.05 }] },
 };
 
 /** Gather nodes (GDD 5.5): one harvest rolls every entry. Ore = Kara Demir / Buyulu Toz, herb = potions. */

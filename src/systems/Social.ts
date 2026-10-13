@@ -8,6 +8,8 @@ import type { LobbyTransport } from '../net/lobby';
 import type { Unsubscribe } from '../net/transport';
 import { NET, clampNum, ident, isObj, sanitizeText } from '../net/messages';
 import { emit } from './notify';
+import { activePetId } from './Pets';
+import { PET_BY_ID } from '../data/pets';
 import { cleanGuildName, isGid } from './GuildCore';
 import { NATIONS, cleanNation, nationOfSave, nationTag, type NationId } from '../data/nations';
 
@@ -111,6 +113,8 @@ export interface PresenceEntry {
   self: boolean;
   /** WP-05 Lonca: the guild the peer announced (self-asserted for strangers; systems/Guild.ts checks it against the roster for members). */
   guild?: { name: string; gid: string; gv: number };
+  /** WP-12: summoned cosmetic pet of the peer (data/pets.ts id), absent = none. Replicated in lpres. */
+  pet?: string;
 }
 
 /** What the local player announces about their guild on the presence (systems/Guild.ts presenceInfo). */
@@ -127,6 +131,8 @@ export interface SocialSelf {
   zone: string;
   zoneName: string;
   nation?: NationId;
+  /** WP-12: summoned cosmetic pet (absent = none). */
+  pet?: string;
 }
 
 export interface SocialCtx {
@@ -173,6 +179,7 @@ const defaultCtx: SocialCtx = {
       zone: ident(zone, 32) || 'town',
       zoneName: regionNow.id === zone ? regionNow.name : zoneLabel(zone),
       nation: nationOfSave(ch.save),
+      pet: activePetId(ch.save) ?? undefined,
     };
   },
   now: () => Date.now(),
@@ -373,7 +380,7 @@ export class Social implements PresenceApi {
     if (this.tr) this.announce(false);
   }
 
-  private presenceMsg(): { t: 'lpres'; name: string; cls: ClassId; lvl: number; zone: string; zn?: string; g?: string; gid?: string; gv?: number; nat?: NationId } | null {
+  private presenceMsg(): { t: 'lpres'; name: string; cls: ClassId; lvl: number; zone: string; zn?: string; g?: string; gid?: string; gv?: number; nat?: NationId; pet?: string } | null {
     const s = this.ctx.self();
     if (!s) return null;
     const g = this.ctx.guild?.() ?? null;
@@ -382,6 +389,7 @@ export class Social implements PresenceApi {
       ...(s.zoneName ? { zn: s.zoneName.slice(0, 24) } : {}),
       ...(g ? { g: g.name, gid: g.gid, gv: g.gv } : {}),
       ...(s.nation ? { nat: s.nation } : {}),
+      ...(s.pet ? { pet: s.pet } : {}),
     };
   }
 
@@ -389,7 +397,7 @@ export class Social implements PresenceApi {
     const msg = this.presenceMsg();
     if (!msg || !this.tr) return;
     const now = this.ctx.now();
-    const key = `${msg.name}|${msg.cls}|${msg.lvl}|${msg.zone}|${msg.gid ?? ''}|${msg.gv ?? 0}|${msg.nat ?? ''}`;
+    const key = `${msg.name}|${msg.cls}|${msg.lvl}|${msg.zone}|${msg.gid ?? ''}|${msg.gv ?? 0}|${msg.nat ?? ''}|${msg.pet ?? ''}`;
     const changed = key !== this.lastSentKey;
     const due = now - this.lastAnnounceAt >= SOCIAL.PRESENCE_EVERY_MS;
     if (!force && !due && !(changed && now - this.lastAnnounceAt >= SOCIAL.CHANGE_GAP_MS)) return;
@@ -419,6 +427,8 @@ export class Social implements PresenceApi {
     e.zone = s.zone;
     e.zoneName = s.zoneName;
     e.nat = s.nation;
+    if (s.pet) e.pet = s.pet;
+    else delete e.pet;
     e.seen = this.ctx.now();
     const g = this.ctx.guild?.() ?? null;
     if (g) e.guild = { name: g.name, gid: g.gid, gv: g.gv };
@@ -545,6 +555,13 @@ export class Social implements PresenceApi {
       cleanNation(d.nat),
     );
     if (!e) return;
+    // WP-12: a pet id this build does not know means "no pet" (strict validation, like the nation)
+    const pet = typeof d.pet === 'string' && PET_BY_ID[d.pet] ? d.pet : undefined;
+    if (pet !== e.pet) {
+      if (pet) e.pet = pet;
+      else delete e.pet;
+      this.touch();
+    }
     // WP-05 Lonca: strict validation of the guild fields (a bad one just means "no guild")
     const gname = cleanGuildName(d.g);
     const gid = isGid(d.gid) ? d.gid : '';

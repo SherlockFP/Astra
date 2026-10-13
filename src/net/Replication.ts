@@ -11,6 +11,7 @@ import type { NetChannels } from '../types/net';
 import type { NetSession, PeerInfo } from './NetSession';
 import { NET, clampNum, ident, isObj, sanitizeText } from './messages';
 import { syncYOk } from './guard';
+import { PetFollower } from '../game/Pet';
 
 /**
  * Replication (net module): turns the typed `pstate` / `gear` / `snap` channels into entities.
@@ -48,6 +49,8 @@ interface Remote {
   player: Player;
   added: boolean;
   hasPos: boolean;
+  /** WP-12: the remote player's cosmetic pet (from the presence `pet` field). */
+  pet: PetFollower;
 }
 
 export interface ReplicationStats {
@@ -148,6 +151,8 @@ export class Replication {
   private readonly unsubs: (() => void)[] = [];
 
   private nextPState = 0;
+  /** WP-12: next time the remote pets are checked against the presence list (1 s). */
+  private nextPetSync = 0;
   private lastPSig = '';
   private lastPAt = 0;
   private nextSnap = 0;
@@ -219,13 +224,19 @@ export class Replication {
   }
 
   /** Per-frame (Engine order -100 via NetSession.update). */
-  update(_dt: number): void {
+  update(dt: number): void {
     if (!this.active) return;
     const net = this.net;
     const world = G.world;
     if (!world || !net.sceneIsReady || net.role === 'offline') return;
     const now = G.engine.time;
     const hasRemotes = net.peers.size > 1;
+    // WP-12: remote pets follow the presence list (checked once a second), then move with their player
+    if (now >= this.nextPetSync) {
+      this.nextPetSync = now + 1;
+      this.syncPets();
+    }
+    for (const rec of this.remotes.values()) if (rec.added) rec.pet.update(dt);
 
     if (hasRemotes) {
       if (now >= this.nextPState) {
@@ -301,6 +312,12 @@ export class Replication {
     if (this.gearDirtyAt < 0 || t < this.gearDirtyAt) this.gearDirtyAt = t;
   }
 
+  /** WP-12: sets each remote player's pet from its presence entry (PetFollower.setPet keeps the model when unchanged). */
+  private syncPets(): void {
+    const list = G.presence?.list() ?? [];
+    for (const rec of this.remotes.values()) rec.pet.setPet(list.find((e) => e.id === rec.peerId)?.pet ?? null);
+  }
+
   private refreshRemoteInfo(): void {
     for (const rec of this.remotes.values()) {
       const peer = this.net.peers.get(rec.peerId);
@@ -350,10 +367,11 @@ export class Replication {
       player.visibleGear = gear;
       player.refreshEquipmentVisuals(); // marks gear as known so the model loads with it
     }
-    const rec: Remote = { peerId: peer.peerId, slot: peer.slot, world, player, added: false, hasPos: false };
+    const rec: Remote = { peerId: peer.peerId, slot: peer.slot, world, player, added: false, hasPos: false, pet: new PetFollower(player) };
     this.remotes.set(peer.peerId, rec);
     const finish = () => {
       if (this.remotes.get(peer.peerId) !== rec || !this.active || G.world !== world) {
+        rec.pet.dispose();
         player.removed = true;
         player.onRemoved();
         return;
@@ -382,6 +400,7 @@ export class Replication {
     const rec = this.remotes.get(peerId);
     if (!rec) return;
     this.remotes.delete(peerId);
+    rec.pet.dispose();
     if (rec.added) {
       try {
         rec.world.remove(rec.player);

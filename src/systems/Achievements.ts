@@ -1,7 +1,9 @@
 import { G } from '../game/G';
 import type { AchievementSave, CharacterSave } from '../types/character';
 import { ACHIEVEMENTS, ACHIEVEMENT_BY_ID, METRIC_KIND, type AchMetric, type AchievementDef } from '../data/achievements';
+import { PET_BY_ID } from '../data/pets';
 import { toast } from './notify';
+import { learnPet } from './Pets';
 
 /**
  * WP-08 achievements and titles (docs/MMO_PILLARS.md). OWNER: panels-game / items (new system).
@@ -81,6 +83,8 @@ export function checkUnlocks(save: CharacterSave, now = Date.now()): Achievement
       save.titles ??= [];
       if (!save.titles.includes(def.id)) save.titles.push(def.id);
     }
+    // WP-12: the reward pet is learned with the unlock (no-op when it is already known)
+    if (def.pet) learnPet(save, def.pet);
     fresh.push(def);
   }
   return fresh;
@@ -152,6 +156,7 @@ function announce(def: AchievementDef): void {
   if (!ch) return;
   const ev = G.events;
   toast(`Başarım kazanıldı: ${def.name} (+${def.points} puan)${def.title ? ` · Unvan: ${def.title}` : ''}`, 'success');
+  if (def.pet && ch.save.pets?.known.includes(def.pet)) toast(`Evcil hayvan ödülü: ${PET_BY_ID[def.pet]?.name ?? def.pet}`, 'success');
   try {
     G.audio?.play('achievement');
   } catch {
