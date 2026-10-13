@@ -13,6 +13,7 @@ import { DEFAULT_BLEND_M, RegionAtmosphere, atmoOf } from './RegionAtmosphere';
 import { createTerrain, type SplatOp, type Terrain } from './Terrain';
 import { ChunkedTerrain } from './TerrainChunks';
 import { WorldStream, type WorldStreamStats } from './WorldStream';
+import { getGfxQuality, lodPlans } from './WorldPerf';
 import { ChunkScatter } from './chunks/ChunkScatter';
 import type { StreamConfig } from './chunks/StreamConfig';
 import { surfaceTexture } from './ProceduralAssets';
@@ -207,6 +208,8 @@ class OpenWorld implements WorldDecorHandle {
     const far = Math.min(this.atmo.cur.far, this.fogFarCap);
     const limits: Partial<Record<CullLayer, number>> = { tuft: 55, flower: 55, bush: 80, rock: 100, prop: 100, tree: far + 20, border: far + 20 };
     this.culler.limits = limits;
+    // scatter layers draw in distance tiers (voxel LOD, world/Instancing LodSet); the plan object is cached, so it only changes with the fog or the quality
+    this.culler.plans = lodPlans(far, getGfxQuality());
     this.culler.update(dt, this.px, this.pz);
 
     const cam = G.engine?.activeCamera;

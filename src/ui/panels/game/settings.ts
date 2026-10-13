@@ -195,6 +195,19 @@ export class SettingsPanel extends GamePanel {
       ),
       this.section(
         'Görüntü',
+        row(
+          'Görüntü Kalitesi',
+          selectBox<SettingsData['graphicsQuality']>(
+            [
+              { value: 'low', label: 'Düşük' },
+              { value: 'mid', label: 'Orta' },
+              { value: 'high', label: 'Yüksek' },
+            ],
+            G.settings.get('graphicsQuality'),
+            (v) => G.settings.set('graphicsQuality', v),
+          ),
+          'Ağaç, kaya ve ot çizim mesafesi ile detay kademeleri. Düşük değer FPS kazandırır',
+        ),
         this.num('renderScale', 'Çözünürlük Ölçeği', 0.5, 2, 0.25, (v) => `${v}x`, 'Düşük değer FPS kazandırır'),
         this.num('fov', 'Görüş Açısı (FOV)', 40, 100, 1, (v) => `${v}°`),
         this.flag('showFps', 'FPS Göstergesi'),
