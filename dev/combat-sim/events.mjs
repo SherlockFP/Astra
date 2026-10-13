@@ -173,6 +173,7 @@ G.character = {
   moreDamage: 1,
   material: () => 0,
   useMaterial: () => false,
+  addMaterial() {},
   persist() {},
   addGold(n) { rewards.gold.push(n); },
   addItem() { rewards.items++; return true; },
