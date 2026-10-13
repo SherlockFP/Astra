@@ -73,11 +73,25 @@ export const MAGE_SPEC_SKILLS: Record<string, SkillDef> = {
     id: 'mage_arcane_blast', name: 'Gizem Patlaması', icon: I('skill-arcane-missiles'), spec: 'mage_arcane', unlockLevel: 10,
     desc: '%240 gizem hasarı verirsin ve 1 Gizem Yükü kazanırsın. Her yük hasarı artırır ama mana maliyetini de artırır.',
     cost: 18, cooldown: 0, castTime: 0.9, anim: 'Spellcast_Shoot', animSpeed: 1.1, hitTime: 0.373,
-    targeting: 'projectile', range: 26, speed: 32, radius: 0.45, count: 1, pierce: 0,
+    targeting: 'projectile', behavior: 'arcane_blast', range: 26, speed: 32, radius: 0.45, count: 1, pierce: 0,
     damage: { coef: 2.4, type: 'arcane' }, pip: { id: 'arcane', gain: 1 },
     tags: ['spell', 'projectile', 'arcane', 'builder'],
     vfx: { projectile: 'arcane_projectile', impact: 'arcane_burst' }, sfx: { cast: 'spell_cast' },
     params: { element: 3, end: 0.7, chain: 0.1, move: 0.2, stagger: 6, proc: 1, weight: 4, upper: 0 },
+  }),
+  // KIT PK-MAGE (docs/kits/casters-rogue.md §2a / §2e). Channel 2.0 s from press: the hit frame is 0.1 s in, so the channel
+  // itself is 1.9 s. Waves at 0.1 / 0.5 / 0.9 / 1.3 / 1.7 s (params.tick 0.4). Haste does not stretch the wave spacing yet.
+  // Berrak Zihin (clearcasting, ProcMod in procs_kit_mage.ts) makes it free and gives 0.60 per missile; the hardcast gives 0.36.
+  mage_arcane_missiles: row({
+    id: 'mage_arcane_missiles', name: 'Arkan Füzeler', icon: I('skill-arcane-missiles'), spec: 'mage_arcane', unlockLevel: 3, defaultSlot: 'q',
+    desc: 'İki saniye boyunca beş gizem füzesi yollarsın; her füze kavisli bir yolla hedefe gider ve hedef hareket etse de peşini bırakmaz. Berrak Zihin ile ücretsiz ve tam hasarlı; yoksa mana harcarsın ve hasar düşer. Kanalize ederken yürüyebilirsin (%50 hız).',
+    cost: 10, cooldown: 0, castTime: 0, channel: 1.9, hitTime: 0.1, anim: 'Spellcasting', animSpeed: 1,
+    targeting: 'projectile', behavior: 'homing_missiles', range: 30, speed: 22, radius: 0.3, count: 5, pierce: 0,
+    damage: { coef: 0.6, type: 'arcane' },
+    tags: ['spell', 'projectile', 'arcane', 'channel'],
+    vfx: { projectile: 'arcane_projectile', impact: 'arcane_missile_hit', cast: 'cast_hands_arcane' },
+    sfx: { cast: 'arcane_missile_launch', impact: 'arcane_missile_hit' },
+    params: { tick: 0.4, waves: 5, element: 3, stagger: 2, proc: 0.5, slow: 0.5, upper: 0 },
   }),
   mage_arcane_barrage: row({
     id: 'mage_arcane_barrage', name: 'Gizem Barajı', icon: I('skill-arcane-explosion'), spec: 'mage_arcane',

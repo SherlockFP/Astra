@@ -44,9 +44,10 @@ export interface ProjectileOpts {
    */
   dirY?: number;
   /**
-   * KIT PK-0 (docs/kits/casters-rogue.md E1, Arkan Füzeler): quadratic Bezier toward the live target with a lateral control
-   * point (`lateral`, m), a height lift (`rise`, m) and a decay of the curve over the flight (`decay`, 0..1). Declared here only;
-   * steering comes with the homing_missiles behaviour (PK-MAGE). Until then steer() ignores it.
+   * KIT PK-MAGE (docs/kits/casters-rogue.md E1, Arkan Füzeler): quadratic Bezier from the spawn point to the LIVE target chest
+   * (`homing.targetId`), re-evaluated every frame. `lateral` (m) and `rise` (m) move the control point sideways and up;
+   * `decay` (0..1) is how much of both is gone at the end of the flight (the fade covers the last 25 % of the curve, so a live
+   * target is always reached). Without a live target steer() falls back to straight flight along the current heading.
    */
   curve?: { lateral: number; rise: number; decay: number };
 }
@@ -57,6 +58,9 @@ const DIR_Y_MAX = 0.6;
 const GROUND_CULL = 0.2;
 /** §12: slack added to the target's half-height in the cylinder test. */
 const CYL_SLACK = 1.0;
+/** KIT PK-MAGE curve: the lateral / rise fade covers the last quarter of the flight; the length is sampled in this many chords. */
+const CURVE_FADE_SPAN = 0.25;
+const CURVE_SAMPLES = 8;
 
 /**
  * Local-only moving shot (fireball, arrow, thrown axe, enemy bolt). Moves in the XZ plane at a fixed height, collides
@@ -82,8 +86,11 @@ export class Projectile extends Entity {
   private visual: { object: THREE.Object3D; update(dt: number): void; dispose(): void } | null = null;
   private pulseT = 0;
   private startX: number;
+  private startY: number;
   private startZ: number;
   private baseY: number;
+  /** KIT PK-MAGE curve: parameter u of the Bezier (0 = spawn, 1 = target). */
+  private curveU = 0;
 
   private constructor(id: EntityId, opts: ProjectileOpts) {
     super(id, 'projectile');
@@ -99,6 +106,7 @@ export class Projectile extends Entity {
     this.baseY = opts.origin[1];
     this.object3d.position.set(opts.origin[0], opts.origin[1], opts.origin[2]);
     this.startX = opts.origin[0];
+    this.startY = opts.origin[1];
     this.startZ = opts.origin[2];
     try {
       this.visual = G.vfx.createProjectileVisual(opts.vfx, opts.scale ?? 1);
@@ -154,8 +162,8 @@ export class Projectile extends Entity {
     if (this.opts.lob) {
       this.updateLob(dt);
     } else {
-      this.steer(dt);
-      let remaining = this.speed * dt;
+      const travel = this.steer(dt);
+      let remaining = travel ?? this.speed * dt;
       const maxStep = Math.max(0.18, this.radius * 0.8);
       let guard = 0;
       while (remaining > 1e-4 && !this.done && guard++ < 40) {
@@ -168,22 +176,30 @@ export class Projectile extends Entity {
     this.visual?.update(dt);
   }
 
-  private steer(dt: number): void {
+  /**
+   * Turns the heading (homing / boomerang / curve). Returns the XZ distance to move this frame when the curve sets it, or
+   * undefined to move `speed x dt` along the heading as usual.
+   */
+  private steer(dt: number): number | undefined {
     const world = this.world!;
     if (this.opts.boomerang && this.phase === 'back' && this.owner) {
       const dx = this.owner.position.x - this.position.x;
       const dz = this.owner.position.z - this.position.z;
       const d = Math.hypot(dx, dz);
-      if (d < 1.1 + this.owner.radius) return this.end('caught');
+      if (d < 1.1 + this.owner.radius) { this.end('caught'); return undefined; }
       this.dirX = dx / d;
       this.dirZ = dz / d;
       this.face();
-      return;
+      return undefined;
+    }
+    if (this.opts.curve) {
+      const travel = this.steerCurve(dt);
+      if (travel !== undefined) return travel;
     }
     const h = this.opts.homing;
-    if (!h || !h.targetId) return;
+    if (!h || !h.targetId) return undefined;
     const t = world.getActor(h.targetId);
-    if (!t || t.isDead) return;
+    if (!t || t.isDead) return undefined;
     const dx = t.position.x - this.position.x;
     const dz = t.position.z - this.position.z;
     const want = Math.atan2(dx, dz);
@@ -196,6 +212,65 @@ export class Projectile extends Entity {
     this.dirX = Math.sin(a);
     this.dirZ = Math.cos(a);
     this.face();
+    return undefined;
+  }
+
+  /**
+   * KIT PK-MAGE curve (docs/kits/casters-rogue.md E1): quadratic Bezier P0 = spawn, P2 = the live target chest, P1 = midpoint
+   * + lateral x unit normal (XZ) + rise. The lateral and rise terms fade to 0 over the last 25 % of u (scaled by `decay`).
+   * `u` advances by speed x dt / curve length (re-estimated every frame). Sets the heading and the vertical slope toward
+   * the new point and returns the XZ distance, so the normal advance loop walks exactly onto the curve. Returns undefined
+   * (straight flight) without a live target.
+   */
+  private steerCurve(dt: number): number | undefined {
+    const cv = this.opts.curve!;
+    const world = this.world!;
+    const tid = this.opts.homing?.targetId;
+    const t = tid ? world.getActor(tid) : null;
+    if (!t || t.isDead) return undefined;
+    const p0x = this.startX, p0y = this.startY, p0z = this.startZ;
+    const p2x = t.position.x, p2y = t.position.y + t.height * 0.55, p2z = t.position.z;
+    const dx = p2x - p0x, dz = p2z - p0z;
+    const run = Math.hypot(dx, dz);
+    // unit normal of the flight in XZ (no lateral bend for a target on top of the spawn point)
+    const nx = run > 0.5 ? -dz / run : 0;
+    const nz = run > 0.5 ? dx / run : 0;
+    const fadeK = Math.min(1, Math.max(0, (this.curveU - (1 - CURVE_FADE_SPAN)) / CURVE_FADE_SPAN));
+    const fade = 1 - cv.decay * fadeK;
+    const side = cv.lateral * fade;
+    const p1x = (p0x + p2x) / 2 + nx * side;
+    const p1y = (p0y + p2y) / 2 + cv.rise * fade;
+    const p1z = (p0z + p2z) / 2 + nz * side;
+    const at = (u: number): [number, number, number] => {
+      const v = 1 - u;
+      return [
+        v * v * p0x + 2 * v * u * p1x + u * u * p2x,
+        v * v * p0y + 2 * v * u * p1y + u * u * p2y,
+        v * v * p0z + 2 * v * u * p1z + u * u * p2z,
+      ];
+    };
+    let len = 0;
+    let prev = at(0);
+    for (let i = 1; i <= CURVE_SAMPLES; i++) {
+      const q = at(i / CURVE_SAMPLES);
+      len += Math.hypot(q[0] - prev[0], q[1] - prev[1], q[2] - prev[2]);
+      prev = q;
+    }
+    const uNext = Math.min(1, this.curveU + (this.speed * dt) / Math.max(0.5, len));
+    this.curveU = uNext;
+    const q = at(uNext);
+    const mx = q[0] - this.position.x;
+    const mz = q[2] - this.position.z;
+    const step = Math.hypot(mx, mz);
+    if (step > 1e-5) {
+      this.dirX = mx / step;
+      this.dirZ = mz / step;
+      // vertical worlds: advance() lifts along dirY; flat worlds have no height steering, so the height is set here
+      this.dirY = (q[1] - this.position.y) / step;
+      if (!world.vertical) this.position.y = q[1];
+      this.face();
+    }
+    return step;
   }
 
   private advance(step: number): void {
