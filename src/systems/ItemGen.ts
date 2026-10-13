@@ -445,6 +445,7 @@ function pickSetPiece(ilvl: number, classId: ClassId | undefined, rng: RNG) {
 const MAIN_STAT: Record<ClassId, StatId> = {
   knight: 'str', barbarian: 'str', mage: 'int', rogue: 'dex',
   monk: 'dex', archer: 'dex', paladin: 'str', necromancer: 'int', warlock: 'int',   // GDD_CLASSES_V2 §2.1–§6.1
+  demonhunter: 'dex', evoker: 'int', // CORE_MECHANICS §2 (CM1 stubs)
 };
 export const mainStatOf = (c: ClassId): StatId => MAIN_STAT[c];
 

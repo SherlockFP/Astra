@@ -52,6 +52,10 @@ export const VFX_IDS = [
   'set_aura', 'forge_announce', 'forge_announce_rainbow', 'camp_light', 'camp_smoke',
   // ---- GDD_LIFE (L-00b ids, append-only): gather strikes and chips (§1.6). Implemented by vfx-audio (L-00b); unknown ids stay silent.
   'wood_chips', 'rock_chips', 'leaf_burst', 'gather_sparkle',
+  // ---- COMBAT_WOW §4.3 CW-01 (append-only): proc gain / consume bursts, cast hands, arcane orbs, crit ring, lockout flash.
+  // Implemented by vfx-audio (CW-15); until then vfx/aliases.ts maps each id to the closest existing preset.
+  'proc_burst', 'proc_consume', 'cast_hands_fire', 'cast_hands_frost', 'cast_hands_arcane', 'arcane_charge_orb', 'crit_ring',
+  'lockout_flash',
 ] as const;
 
 export type VfxId = (typeof VFX_IDS)[number];
@@ -76,4 +80,6 @@ export interface SpawnVfxOpts {
   seed?: number;
 }
 
-export type DamageNumberKind = 'normal' | 'crit' | 'heal' | 'player_hurt' | 'dot' | 'immune' | 'dodge' | 'block' | 'xp' | 'gold';
+/** COMBAT_WOW §4.3 CW-01 (append-only): `absorb` shield soak, `resist`, `miss`, `interrupt`, `mana` (mana gain numbers). */
+export type DamageNumberKind = 'normal' | 'crit' | 'heal' | 'player_hurt' | 'dot' | 'immune' | 'dodge' | 'block' | 'xp' | 'gold'
+  | 'absorb' | 'resist' | 'miss' | 'interrupt' | 'mana';

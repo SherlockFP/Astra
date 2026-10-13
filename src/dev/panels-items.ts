@@ -108,6 +108,7 @@ function makeForgeItem(): ItemInstance | null {
   const cat = ({
     knight: 'sword1h', barbarian: 'axe2h', mage: 'staff', rogue: 'dagger',
     monk: 'fist', archer: 'bow', paladin: 'mace', necromancer: 'staff', warlock: 'staff',
+    demonhunter: 'dagger', evoker: 'staff', // CM1 stubs
   } as const)[c.classId];
   const it = generateItem({ itemLevel: 40, rarity: (params.get('rarity') as Rarity) || 'epic', category: cat, classId: c.classId });
   it.upgrade = Number(params.get('lvl') ?? 9);

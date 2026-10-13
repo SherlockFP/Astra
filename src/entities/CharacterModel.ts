@@ -77,6 +77,9 @@ export const CLASS_VISUALS: Record<ClassId, ClassVisual> = {
   paladin: { url: KAYKIT + 'Knight.glb', resource: 'faith', main: ['1H_Sword'], off: [], helm: 'Knight_Helmet', shield: 'Round_Shield' },
   necromancer: { url: KAYKIT + 'Mage.glb', resource: 'essence', main: ['2H_Staff'], off: [], helm: 'Mage_Hat', shield: null },
   warlock: { url: KAYKIT + 'Rogue_Hooded.glb', resource: 'mana', main: [], off: [], helm: null, shield: null },
+  // CORE_MECHANICS §2 (CM1): stand-in recipes of the two new classes (ClassDefX.visual is the real recipe, CM10 / CM12)
+  demonhunter: { url: KAYKIT + 'Rogue_Hooded.glb', resource: 'fury', main: [], off: [], helm: null, shield: null },
+  evoker: { url: KAYKIT + 'Mage.glb', resource: 'essence', main: ['2H_Staff'], off: [], helm: 'Mage_Hat', shield: null },
 };
 
 /** Every toggleable weapon-ish node on the KayKit rigs (capes are never toggled). */
@@ -169,6 +172,8 @@ const ANCHOR_HUE: Record<ClassId, number> = {
   knight: 355, barbarian: 212, mage: 252, rogue: 152,
   // GDD_CLASSES_V2 §2.2–§6.2 paletteClass: monk barbarian, archer rogue, paladin knight, necromancer mage, warlock rogue
   monk: 212, archer: 152, paladin: 355, necromancer: 252, warlock: 152,
+  // CM1: demonhunter paletteClass rogue (152), evoker paletteClass mage (252)
+  demonhunter: 152, evoker: 252,
 };
 
 export const CHARACTER_VARIANTS: VariantDef[] = [

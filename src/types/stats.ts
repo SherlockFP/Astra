@@ -29,6 +29,9 @@ export const STAT_IDS = [
   'skillMasteryPct',
   // appended by GDD_LIFE §7 (L-00): PvP damage dealt (power) / taken (resilience); PvP hits only
   'pvpPower', 'pvpResilience',
+  // appended by CORE_MECHANICS §4.2 (CM1): secondary RATINGS (raw item/character values; StatCalc converts them to % with the
+  // level-scaled cost and diminishing returns, CM2). leech / avoidance / speed are the rare tertiary ratings.
+  'critRating', 'hasteRating', 'masteryRating', 'versRating', 'leechRating', 'avoidanceRating', 'speedRating',
 ] as const;
 
 export type StatId = (typeof STAT_IDS)[number];
@@ -104,6 +107,14 @@ export const STAT_INFO: Record<StatId, { name: string; pct?: boolean }> = {
   // appended by GDD_LIFE §7 (L-00)
   pvpPower: { name: 'PvP Gücü', pct: true },
   pvpResilience: { name: 'PvP Direnci', pct: true },
+  // appended by CORE_MECHANICS §4.2 (CM1): ratings are shown as raw numbers (no pct); the % conversion is StatCalc's (CM2)
+  critRating: { name: 'Kritik Vuruş' },
+  hasteRating: { name: 'Hız' },
+  masteryRating: { name: 'Ustalık' },
+  versRating: { name: 'Çok Yönlülük' },
+  leechRating: { name: 'Can Çalma' },
+  avoidanceRating: { name: 'Kaçınma' },
+  speedRating: { name: 'Hareket Hızı' },
 };
 
 export function addStats(into: StatBlock, add: StatBlock, mult = 1): StatBlock {

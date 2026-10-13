@@ -32,8 +32,8 @@ export interface SettingsData {
   playerName: string;        // online display name fallback
   bindings: Partial<Record<InputAction, string[]>>;
   language: 'tr';
-  /** Bottom HUD style: Metin2-like stone bar with horizontal gauges + 4 EXP beads, or the Diablo-style orbs. */
-  hudStyle: 'metin2' | 'orbs';
+  /** Bottom HUD style. 'elvui' (UI_REDESIGN, the only mounted skin from UX-10 on, default) · 'metin2' (stone bar) · 'orbs' (Diablo orbs). Parked skins stay compiled. */
+  hudStyle: 'elvui' | 'metin2' | 'orbs';
   // GDD_V2 (WP1 contracts). Defaults below; old settings files merge over them.
   /** Heal target picking mode (GDD_V2 §1.6). */
   healTargeting: 'smart' | 'frames' | 'crosshair';
@@ -58,7 +58,7 @@ export interface SettingsData {
   // GDD_LIFE (L-00). Chat (§3.2): filter, font, opacity, timestamps, bubbles, trade mute, ignore list.
   /** Profanity-safe filter on incoming text (ChatFilter.ts, §3.7). */
   chatFilter: boolean;
-  /** Chat font size 11..16 px. */
+  /** Chat font size in px. UI_REDESIGN UX-00: default 15, every reader clamps to 13..17. */
   chatFontSize: number;
   /** Chat background alpha 0.2..1 (idle). */
   chatOpacity: number;
@@ -95,13 +95,56 @@ export interface SettingsData {
   lockOnMode: 'hold-lock' | 'tap-cycle';
   /** Gamepad rumble (no effect on keyboard play). */
   rumble: boolean;
+  /** Voxel-PSX model set (src/core/voxelRemap.ts). Read at page load: a change needs a reload. `?voxel=0` / `?voxel=1` override it. */
+  voxelModels: boolean;
+  // ---- WoW-faithful combat feel (COMBAT_WOW CW-01, append-only). Read by combat/gcd.ts, spellQueue.ts, procs and CW-05 text.
+  /** Global cooldown profile: 'arpg' = 1.0 s / (1 + haste), floor 0.5 s (default); 'wow' = 1.5 s / (1 + haste) (CORE_MECHANICS §10.1). */
+  gcdProfile: 'arpg' | 'wow';
+  /** Spell queue window in ms (0 = off). A skill pressed during a cast / GCD fires as soon as it is ready. */
+  spellQueueMs: number;
+  /** Proc and ready glow on the ability bar and the spell overlay (CW-09 / CW-08). */
+  abilityGlow: boolean;
+  /** Lead skip: a cast starts partway into its windup so the hit lands on time (CW-04). Heavy skills are excluded by rule. */
+  leadSkip: boolean;
+  /** Damage number style: 'school' = school colour + amount scale (default), 'classic' = one colour (CW-05). */
+  numberStyle: 'school' | 'classic';
+  // ---- UI_REDESIGN UX-00 (append-only, Appendix A). Read by the HUD, the meter, the tracker and the chat.
+  /** Dövüş Ölçer visibility: 'auto' = party ≥ 2, dungeon, or combat within 15 s (default); 'always'; 'never'. */
+  meterVisibility: 'auto' | 'always' | 'never';
+  /** Empty ghost cells in the action bar (false = quiet progressive bar, the default). */
+  barGhostSlots: boolean;
+  /** Spec icon block in the player frame (off by default). */
+  ufIcon: boolean;
+  /** Chat stats line (Kritik · Hız · Soğuma · Kaçınma). */
+  showStats: boolean;
+  /** Minimap clock; with showFps also the FPS / ms text. */
+  showMapInfo: boolean;
+  /** One-time contextual tips (UX-20). */
+  showTips: boolean;
+  /** Objective arrow towards the pinned quest target (UX-20). */
+  questArrow: boolean;
+  /** Schema revision of the UI settings. Stored files below 2 are migrated once (hudStyle → 'elvui', chat font 13 → 15). */
+  uiRev: number;
+  /** Schema revision of the stored key bindings. Stored files below 1 are migrated once (see the constructor). */
+  bindingsRev: number;
 }
 
 /**
  * Settings schema version. 1 = before F4 (autoCombo defaulted to false and every save wrote it out as false).
  * 2 = autoCombo defaults to true; stored v1 files get autoCombo flipped to true once, on load.
+ * 3 = CM1 / CW-01 / UX-00 fields (combat feel, UI flags, uiRev, bindingsRev). The one-time migrations are keyed on
+ *     their own revisions (uiRev, bindingsRev, settingsVersion < 2), so a v2 file runs only the ones it still needs.
  */
-export const SETTINGS_VERSION = 2;
+export const SETTINGS_VERSION = 3;
+
+/** Key codes of the guard and inventory defaults before CM1 / UX-00 (used only by the one-time bindings migration). */
+const LEGACY_GUARD = ['KeyG', 'Mouse3'];
+const LEGACY_INVENTORY = ['KeyI', 'KeyB'];
+
+/** True when `a` holds exactly the codes of `b` (any order). */
+function sameCodes(a: string[] | undefined, b: string[]): boolean {
+  return Array.isArray(a) && a.length === b.length && b.every((c) => a.includes(c));
+}
 
 export const DEFAULT_SETTINGS: SettingsData = {
   psx: true,
@@ -132,7 +175,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   playerName: '',
   bindings: {},
   language: 'tr',
-  hudStyle: 'metin2',
+  hudStyle: 'elvui',
   healTargeting: 'smart',
   autoCombo: true,
   settingsVersion: SETTINGS_VERSION,
@@ -143,7 +186,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   armorGlow: 'high',
   fastForge: false,
   chatFilter: true,
-  chatFontSize: 13,
+  chatFontSize: 15,
   chatOpacity: 0.35,
   chatTimestamps: false,
   chatBubbles: true,
@@ -161,9 +204,27 @@ export const DEFAULT_SETTINGS: SettingsData = {
   bossAutoLock: true,
   lockOnMode: 'hold-lock',
   rumble: true,
+  voxelModels: true,
+  // CM1 / CW-01 (combat feel)
+  gcdProfile: 'arpg',
+  spellQueueMs: 400,
+  abilityGlow: true,
+  leadSkip: true,
+  numberStyle: 'school',
+  // UX-00 (UI_REDESIGN Appendix A)
+  meterVisibility: 'auto',
+  barGhostSlots: false,
+  ufIcon: false,
+  showStats: false,
+  showMapInfo: false,
+  showTips: true,
+  questArrow: true,
+  uiRev: 2,
+  bindingsRev: 1,
 };
 
-const KEY = 'efsun.settings.v1';
+/** localStorage key of the settings object (exported so the early model resolver can read it before G.settings exists). */
+export const SETTINGS_KEY = 'efsun.settings.v1';
 
 /** Persistent user settings. `set()` saves and notifies listeners (Game re-emits 'settings:changed'). */
 export class Settings {
@@ -173,18 +234,41 @@ export class Settings {
   constructor() {
     let stored: Partial<SettingsData> = {};
     try {
-      stored = JSON.parse(localStorage.getItem(KEY) || '{}');
+      stored = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
     } catch {
       stored = {};
     }
-    // F4 migration, once: a stored file older than v2 saved autoCombo as false (the old default). Flip it, keep later choices.
-    const migrate = !!stored && Object.keys(stored).length > 0 && (stored.settingsVersion ?? 1) < SETTINGS_VERSION;
+    if (!stored || typeof stored !== 'object') stored = {};
+    const hasStored = Object.keys(stored).length > 0;
     this.data = { ...DEFAULT_SETTINGS, ...stored };
-    if (migrate) {
-      this.data.autoCombo = true;
-      this.data.settingsVersion = SETTINGS_VERSION;
-      this.save();
+    // One-time migrations run only on a stored file (a new player already has the defaults). Each checks its own revision.
+    let changed = false;
+    if (hasStored) {
+      // F4 (settingsVersion 1 → 2): autoCombo defaulted to false and every save wrote it out as false. Flip it once, keep later choices.
+      if ((stored.settingsVersion ?? 1) < 2) {
+        this.data.autoCombo = true;
+        changed = true;
+      }
+      // UX-00 (uiRev 1 → 2): ElvUI is the only HUD skin; the chat font default moved 13 → 15 (a stored 13 is the old default).
+      if ((stored.uiRev ?? 1) < 2) {
+        this.data.hudStyle = 'elvui';
+        if (stored.chatFontSize === 13) this.data.chatFontSize = 15;
+        this.data.uiRev = 2;
+        changed = true;
+      }
+      // CM1 / UX-00 (bindingsRev 0 → 1): guard G → CapsLock (skill_s4 takes G), inventory I → B only (groupFinder takes I).
+      // A stored override is dropped only while it still equals the old default; a player who rebound the action keeps it.
+      if ((stored.bindingsRev ?? 0) < 1) {
+        const all: Partial<Record<InputAction, string[]>> = { ...(stored.bindings ?? {}) };
+        if (sameCodes(all.guard, LEGACY_GUARD)) delete all.guard;
+        if (sameCodes(all.inventory, LEGACY_INVENTORY)) delete all.inventory;
+        this.data.bindings = all;
+        this.data.bindingsRev = 1;
+        changed = true;
+      }
     }
+    this.data.settingsVersion = SETTINGS_VERSION;
+    if (changed || (hasStored && stored.settingsVersion !== SETTINGS_VERSION)) this.save();
   }
 
   get<K extends keyof SettingsData>(key: K): SettingsData[K] {
@@ -210,7 +294,7 @@ export class Settings {
 
   save(): void {
     try {
-      localStorage.setItem(KEY, JSON.stringify(this.data));
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.data));
     } catch (e) {
       console.warn('[settings] save failed (storage full or blocked)', e);
     }

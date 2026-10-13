@@ -57,6 +57,9 @@ export const SFX_IDS = [
   'forge_strike', 'forge_heartbeat', 'forge_ding', 'forge_crack', 'forge_shatter', 'camp_crackle', 'ann_chime',
   // ---- GDD_LIFE (L-00b, append-only): gathering, crafting and whisper sounds (§1.6, §1.11, §3.1). Mapped to existing files by L-00b.
   'chop_wood', 'mine_rock', 'pick_herb', 'skin_cut', 'tree_fall', 'craft_done', 'chat_whisper',
+  // ---- COMBAT_WOW §4.3 CW-01 (append-only): arcane school sounds, proc gain / use, cooldown ready, cast pushback / interrupt,
+  // burst window. Until audio builds them, audio/aliases.ts plays the closest existing id (CW-12).
+  'arcane_cast', 'arcane_impact', 'proc_gain', 'proc_use', 'cd_ready', 'cast_pushback', 'cast_interrupted', 'burst_window',
 ] as const;
 
 export type SfxId = (typeof SFX_IDS)[number];

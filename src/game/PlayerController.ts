@@ -28,8 +28,11 @@ const HARD_TARGET_RANGE = 30;
 const FACE_HOLD = 0.55;           // seconds the character keeps facing the aim point after a cast
 // KayKit clips are chibi-short strides: ground speed (u/s) at which each clip plays at 1.0x. Cartoony speed-up (<= 2x) is intended.
 const LOCO_REF = { run: 4.0, strafe: 4.2, back: 2.0, walk: 1.7 };
-const SLOT_ACTION: Record<SkillSlotKey, InputAction> = {
+const SLOT_ACTION: Record<SkillSlotKey, InputAction | null> = {
   lmb: 'skill_lmb', rmb: 'skill_rmb', q: 'skill_q', e: 'skill_e', r: 'skill_r', s1: 'skill_s1', s2: 'skill_s2', s3: 'skill_s3',
+  // CORE_MECHANICS §10.1 (CM1 typing only): s4 = G has no InputAction yet (`skill_s4` lands with the kit package, Input.ts is not
+  // touched here); a null action is skipped by the slot loop.
+  s4: null,
   m45: 'skill_m45', m90: 'skill_m90', m180: 'skill_m180', // GDD_V2 major slots (WP1 typing only; input wired by WP5)
 };
 
@@ -89,7 +92,7 @@ export class PlayerController {
   private dispSpeed = 0;
   private wishSpeed = 0;
   private stepAcc = 0;
-  private repeat: Record<SkillSlotKey, number> = { lmb: 0, rmb: 0, q: 0, e: 0, r: 0, s1: 0, s2: 0, s3: 0, m45: 0, m90: 0, m180: 0 };
+  private repeat: Record<SkillSlotKey, number> = { lmb: 0, rmb: 0, q: 0, e: 0, r: 0, s1: 0, s2: 0, s3: 0, s4: 0, m45: 0, m90: 0, m180: 0 };
   private pending: { slot: SkillSlotKey; until: number } | null = null;
   /** controller time until which a heavyAttack press that SkillSystem could not take yet stays buffered (F4). */
   private heavyUntil = -1;
@@ -820,6 +823,7 @@ export class PlayerController {
 
     for (const slot of SKILL_SLOT_KEYS) {
       const act = SLOT_ACTION[slot];
+      if (!act) continue; // s4 (G) has no input action yet (CM12)
       const isMouse = slot === 'lmb' || slot === 'rmb';
       if (isMouse && !mouseOk) continue;
       if (slot === 'rmb' && !action) continue; // classic RMB: click-vs-drag handled below

@@ -106,6 +106,7 @@ const GEAR_SETS: Record<ClassId, (Partial<Record<'weapon' | 'offhand' | 'helm', 
   rogue: [undefined, { weapon: it('dv_dagger_a', 9), offhand: it('dv_dagger_c', 7) }, { weapon: it('dv_dagger_r', 12), offhand: it('dv_dagger_r') }, { weapon: it('dv_xbow') }, {}],
   // GDD_CLASSES_V2 (NC04): dev gear for the new classes comes with their bases (NC09); one empty set keeps indexing safe
   monk: [undefined], archer: [undefined], paladin: [undefined], necromancer: [undefined], warlock: [undefined],
+  demonhunter: [undefined], evoker: [undefined], // CM1 stubs
 };
 
 // ---- player management ----

@@ -7,6 +7,7 @@ import type { SpecId } from '../types/v2';
 import type { ChatAnn } from '../types/itemsV2';
 import type { ChatChannel, ChatLink } from '../types/net';
 import type { DeathRecap } from '../types/deathLog';
+import type { StatusId } from '../types/skills';
 
 /**
  * Every game-wide event and its payload. Emit with G.events.emit('name', payload).
@@ -31,7 +32,8 @@ export interface GameEvents {
   'player:releaseRequested': Record<string, never>;
   'skill:cast': { casterId: EntityId; skillId: string; castTime: number };
   'skill:castInterrupted': { casterId: EntityId; skillId: string };
-  'skill:fail': { reason: 'cooldown' | 'resource' | 'range' | 'target' | 'stunned' | 'casting' | 'silenced' };
+  /** COMBAT_WOW CW-01: `remaining` (seconds) is set on 'cooldown'; 'lockout' = the school is locked by an interrupt (skill:lockout). */
+  'skill:fail': { reason: 'cooldown' | 'resource' | 'range' | 'target' | 'stunned' | 'casting' | 'silenced' | 'lockout'; remaining?: number };
   'status:applied': { targetId: EntityId; status: string; duration: number; stacks: number };
   'status:removed': { targetId: EntityId; status: string };
   'target:changed': { targetId: EntityId | null };
@@ -224,6 +226,34 @@ export interface GameEvents {
   // ---- combat (append-only). Emitted by Combat on the LOCAL player's death; the death panel's "Ölüm Özeti" tab reads it.
   /** Death recap of the local player (GDD_V2 §8.5): last 10 s of hits and heals, the killing blow, top sources. */
   'death:recap': DeathRecap;
+
+  // ---- COMBAT_WOW (CW-01, append-only). Emitted by the skill loop (procs, queue, pushback, lockout); feedback modules subscribe.
+  /** A proc (ProcDef `id`, e.g. Sıcak Seri) was gained by the LOCAL player (spell alert, glow, sfx). */
+  'proc:gain': { id: string; status: StatusId; duration: number; stacks: number };
+  /** The proc ended: `consumed` = removed early (> 0.3 s left, spent by a cast), `false` = it ran out. */
+  'proc:fade': { id: string; consumed: boolean };
+  /** A skill or LMB was pressed during a cast / GCD and waits in the spell queue. Both `null` = the queue was cleared. */
+  'skill:queued': { skillId: string | null; slot: string | null };
+  /** A hit pushed the LOCAL player's cast back by `add` seconds; `count` = pushbacks so far in this cast. */
+  'cast:pushback': { skillId: string; add: number; count: number };
+  /** An interrupt locked a school for `sec` seconds on the LOCAL player (skills of that school fail with 'lockout'). */
+  'skill:lockout': { school: DamageType; sec: number };
+  /** A skill's cooldown finished (majors always, others for the glow / sfx). */
+  'skill:ready': { skillId: string; major: boolean };
+  /** The burst window (≥ 2 offensive major statuses up) opened or closed: PATLAMA! banner and edge vignette. */
+  'burst:window': { active: boolean };
+
+  // ---- GDD_CLASSES / CORE_MECHANICS §3 (CM1, append-only). Party buff set of the LOCAL party view.
+  /** `active`: buff ids applied to the party with their source; `missing`: buff ids no member provides (Group Finder hint). */
+  'party:buffs': { active: { id: string; sourceId: EntityId }[]; missing: string[] };
+
+  // ---- UI_REDESIGN Appendix A (UX-00, append-only). HUD chat bubbles, Group Finder state, objective pin.
+  /** A chat line was added locally (incoming or own). `local` = typed on this client. Speech bubbles and the chat tabs listen. */
+  'chat:line': { from: string; text: string; channel: ChatChannel; local: boolean };
+  /** Group Finder state step (drives the minimap eye and the finder panel). */
+  'finder:queue': { state: 'idle' | 'listing' | 'proposal' | 'entering' | 'inrun' | 'failed'; dungeonId?: string; since?: number };
+  /** The pinned quest changed (`null` = unpinned). The objective arrow follows it. */
+  'quest:pinned': { questId: string | null };
 }
 
 export type GameEventName = keyof GameEvents;

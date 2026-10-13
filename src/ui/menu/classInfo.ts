@@ -149,6 +149,19 @@ const FALLBACK: Record<ClassId, ClassPresentation> = {
       { clip: 'Cheer' },
     ],
   },
+  // CORE_MECHANICS §2 (CM1): presentation stubs of the two new classes. Not in CLASS_ORDER (not selectable); no showcase yet.
+  demonhunter: {
+    id: 'demonhunter', name: 'İblis Avcısı', tagline: 'Şeytani Öfkenin Avcısı', role: 'Hız · Gazap', resource: 'Gazap', resourceColor: '#b8ff3a',
+    desc: 'Gözünü şeytani bir nefretle açan avcı. İki hançerle ve kanatlarıyla hızlıca yer değiştirir; düşman ateşiyle beslenir.',
+    highlights: [], stats: { dayaniklilik: 3, hasar: 5, hareket: 5, menzil: 1 }, color: '#a330c9', icon: '/assets/icons/skill-claw-strike.svg', idle: 'Idle',
+    showcase: [],
+  },
+  evoker: {
+    id: 'evoker', name: 'Ejderhasoy', tagline: 'Ejderhanın Nefesi', role: 'Ejderha Nefesi · Destek', resource: 'Öz', resourceColor: '#d9a441',
+    desc: 'Ejderha soyunun son büyücüsü. Tunç ve yeşil nefesiyle yakın ve uzak düşmanları yakar; müttefiklerini kanatlarının altına alır.',
+    highlights: [], stats: { dayaniklilik: 3, hasar: 4, hareket: 2, menzil: 4 }, color: '#33937f', icon: '/assets/icons/skill-fire-breath.svg', idle: 'Idle',
+    showcase: [],
+  },
 };
 
 export function classPresentation(id: ClassId): ClassPresentation {

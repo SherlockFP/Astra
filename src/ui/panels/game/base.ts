@@ -90,6 +90,8 @@ export const CLASS_META: Record<ClassId, { name: string; icon: string; color: st
   paladin: { name: 'Paladin', icon: '/assets/icons/class-cleric.svg', color: '#fff0b8' },
   necromancer: { name: 'Nekromant', icon: '/assets/icons/skill-summon-skeleton.svg', color: '#9ee07a' },
   warlock: { name: 'Warlock', icon: '/assets/icons/skill-curse.svg', color: '#c05ae0' },
+  demonhunter: { name: 'İblis Avcısı', icon: '/assets/icons/skill-claw-strike.svg', color: '#a330c9' }, // CM1 stub
+  evoker: { name: 'Ejderhasoy', icon: '/assets/icons/skill-fire-breath.svg', color: '#33937f' },        // CM1 stub
 };
 
 export const DIFFICULTY_NAMES: Record<string, string> = {

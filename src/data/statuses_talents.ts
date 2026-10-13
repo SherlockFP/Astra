@@ -43,4 +43,27 @@ export const TALENT_STATUSES: Partial<Record<StatusId, StatusDef>> = {
   resolve_pact: { id: 'resolve_pact', name: 'Dayanıklılık Sözleşmesi', icon: I('buff-strength'), kind: 'buff', stats: { damageReductionPct: 0.3 } },
   // Buz Küresi: invulnerable for 4 s (the `invulnerable` status does the work; this is the HUD marker).
   ice_block: { id: 'ice_block', name: 'Buz Küresi', icon: I('buff-invulnerable'), kind: 'buff' },
+
+  // ---- procs (COMBAT_WOW §3 / Appendix B, CW-03). Durations are nominal (`defaultDuration`, seconds, from §3); the proc
+  // that applies the status may pass its own. Icons come from the existing set only. Proc chances / overlays: data/procs.ts (CW-03).
+  // Isınıyor: a fire crit primes the next fire crit to become Sıcak Seri (Anka Alevleri is a guaranteed crit while it is up).
+  heating_up: { id: 'heating_up', name: 'Isınıyor', icon: I('skill-fireball'), kind: 'buff', defaultDuration: 10 },
+  // Beyin Donması: the next Dondurucu Sağanak is free and applies Kış Soğuğu.
+  brain_freeze: { id: 'brain_freeze', name: 'Beyin Donması', icon: I('skill-frozen-orb'), kind: 'buff', defaultDuration: 12 },
+  // Kış Soğuğu: frost hits on the target count as Frozen (shatter); 2 stacks; a target debuff, not CC (bosses are valid).
+  winters_chill: { id: 'winters_chill', name: 'Kış Soğuğu', icon: I('debuff-chill'), kind: 'debuff', maxStacks: 2, defaultDuration: 6 },
+  // Berrak Zihin: the next Gizem Patlaması costs nothing (ignores the per-charge cost increase).
+  clearcasting: { id: 'clearcasting', name: 'Berrak Zihin', icon: I('buff-mana-regen'), kind: 'buff', defaultDuration: 15 },
+  // Adalet İlhamı: the next Kutsal Alev Dalgası costs nothing, its cooldown resets and it adds one Adalet.
+  art_of_justice: { id: 'art_of_justice', name: 'Adalet İlhamı', icon: I('buff-blessing'), kind: 'buff', defaultDuration: 12 },
+  // İntikam Hazır: the next Kalkan Darbesi costs nothing, ignores its cooldown and hits 40 % harder.
+  revenge_ready: { id: 'revenge_ready', name: 'İntikam Hazır', icon: I('buff-defense'), kind: 'buff', defaultDuration: 6 },
+  // Ani Ölüm: the next İdam is usable at any target HP and costs nothing.
+  sudden_death: { id: 'sudden_death', name: 'Ani Ölüm', icon: I('skill-execute'), kind: 'buff', defaultDuration: 10 },
+  // Misilleme: the next Yarma costs nothing and heals 4 % max HP.
+  wrath_return: { id: 'wrath_return', name: 'Misilleme', icon: I('buff-thorns'), kind: 'buff', defaultDuration: 6 },
+  // Fırsat: the next Arbalet Atışı costs nothing, deals 60 % more damage and adds one combo point.
+  opportunity: { id: 'opportunity', name: 'Fırsat', icon: I('buff-haste'), kind: 'buff', defaultDuration: 10 },
+  // Okul Kilidi: the caster's school is locked after an interrupt (4 s, silence 3 s). Shown as a debuff on the caster.
+  lockout: { id: 'lockout', name: 'Okul Kilidi', icon: I('debuff-silence'), kind: 'debuff', defaultDuration: 4 },
 };

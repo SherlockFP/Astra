@@ -9,7 +9,7 @@
  * `mods` only lists changes the runtime applies: `patch` (cooldown, cost, statuses) and `params.threat` / `params.threatMult`
  * (the GDD §1.4 threat formula reads them). Everything else in the design text is still open (see the WP5 report).
  */
-import type { SpecDef, SpecId } from '../types/v2';
+import type { RoleId, SpecDef, SpecId } from '../types/v2';
 import type { StatBlock } from '../types/stats';
 import type { ClassId } from '../types/common';
 import { TALENT_SPECS } from './specs_talents';
@@ -148,4 +148,38 @@ export function specsForClass(classId: ClassId): SpecId[] {
 /** Passive stat block of a spec (empty for an unknown id). Folded additively by Player.refreshStats. */
 export function specStatBlock(id: SpecId | null | undefined): StatBlock {
   return getSpec(id)?.stats ?? {};
+}
+
+/**
+ * CORE_MECHANICS §2 (CM1): role overrides for specs whose SpecDef is not registered yet (Kemik Ustası has no row, so its role
+ * lives here). `necromancer_bone` = tank (Blood Death Knight style). The six new CM1 spec ids follow the §2 table
+ * (coverage: 6 tanks, 4 healers, 16 DPS + 1 support). Once a SpecDef exists its own `role` wins.
+ */
+export const SPEC_ROLE_OVERRIDES: Partial<Record<SpecId, RoleId>> = {
+  necromancer_bone: 'tank',
+  demonhunter_chaos: 'dps',
+  demonhunter_vengeance: 'tank',
+  evoker_devastation: 'dps',
+  evoker_preservation: 'healer',
+  evoker_augmentation: 'dps',
+  rogue_subtlety: 'dps',
+};
+
+/**
+ * CORE_MECHANICS §2 (CM1): Turkish names of the six new spec ids (compile-only stubs; no SpecDef rows until the CM10 / CM12 kits).
+ * Not read by the runtime yet.
+ */
+export const NEW_SPEC_NAMES_TR: Partial<Record<SpecId, { classId: ClassId; name: string }>> = {
+  demonhunter_chaos: { classId: 'demonhunter', name: 'Kaos' },
+  demonhunter_vengeance: { classId: 'demonhunter', name: 'İntikam' },
+  evoker_devastation: { classId: 'evoker', name: 'Yıkım Nefesi' },
+  evoker_preservation: { classId: 'evoker', name: 'Koruyucu Nefes' },
+  evoker_augmentation: { classId: 'evoker', name: 'Yüceltme' },
+  rogue_subtlety: { classId: 'rogue', name: 'Gölge' },
+};
+
+/** Role of a spec: its SpecDef.role when registered, else SPEC_ROLE_OVERRIDES (undefined for unknown ids). */
+export function specRole(id: SpecId | null | undefined): RoleId | undefined {
+  if (!id) return undefined;
+  return getSpec(id)?.role ?? SPEC_ROLE_OVERRIDES[id];
 }

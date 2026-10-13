@@ -21,6 +21,8 @@ export const CLASS_META: Record<ClassId, { name: string; color: string }> = {
   paladin: { name: 'Paladin', color: '#fff0b8' },
   necromancer: { name: 'Nekromant', color: '#9ee07a' },
   warlock: { name: 'Warlock', color: '#c05ae0' },
+  demonhunter: { name: 'İblis Avcısı', color: '#a330c9' }, // CM1 stub (WoW class colour)
+  evoker: { name: 'Ejderhasoy', color: '#33937f' },        // CM1 stub (WoW class colour)
 };
 
 export function classColor(id: ClassId | undefined): string {

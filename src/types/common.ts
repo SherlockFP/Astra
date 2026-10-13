@@ -29,11 +29,15 @@ export type EntityKind = 'player' | 'enemy' | 'npc' | 'projectile' | 'loot' | 'p
  * registry entries in data/classes.ts and only become selectable through PLAYABLE_CLASSES (data/classes.ts).
  */
 export type ClassId = 'knight' | 'barbarian' | 'mage' | 'rogue'
-  | 'monk' | 'archer' | 'paladin' | 'necromancer' | 'warlock';
+  | 'monk' | 'archer' | 'paladin' | 'necromancer' | 'warlock'
+  // CORE_MECHANICS §2 / CM1 (append-only): İblis Avcısı and Ejderhasoy. Registry rows only; not in PLAYABLE_CLASSES yet.
+  | 'demonhunter' | 'evoker';
 /**
  * Resource bars. `focus` (Okçu), `faith` (Paladin), `essence` (Nekromant) are GDD_CLASSES_V2 §1.2 additions (NC01).
  */
-export type ResourceType = 'rage' | 'mana' | 'energy' | 'focus' | 'faith' | 'essence';
+export type ResourceType = 'rage' | 'mana' | 'energy' | 'focus' | 'faith' | 'essence'
+  // CORE_MECHANICS §2 / CM1: İblis Avcısı (Fury builder/spender). Ejderhasoy reuses `essence`.
+  | 'fury';
 /**
  * Secondary pip counters (GDD_CLASSES_V2 §1.2, NC01): shown as small pips under the bar, stored in Player.pips.
  * `combo` = rogue combo points, `adalet`/`karisim` = GDD_V2 (knight / rogue), the rest are new classes.

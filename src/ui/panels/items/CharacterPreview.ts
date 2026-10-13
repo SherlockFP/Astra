@@ -31,6 +31,9 @@ const CLASS_GLB: Record<ClassId, string> = {
   paladin: '/assets/models/characters/Knight.glb',
   necromancer: '/assets/models/characters/Mage.glb',
   warlock: '/assets/models/characters/Rogue_Hooded.glb',
+  // CORE_MECHANICS §2 (CM1) stubs: same KayKit rigs as data/classes.ts `visual.url` (not selectable yet)
+  demonhunter: '/assets/models/characters/Rogue_Hooded.glb',
+  evoker: '/assets/models/characters/Mage.glb',
 };
 
 /** Fallback only (used if loadCharacterModel returns an empty model): accessory meshes + the default visible subset. */
@@ -71,6 +74,15 @@ const ACCESSORIES: Record<ClassId, { all: string[]; show: string[] }> = {
   rogue: {
     all: ['Knife', '1H_Crossbow', '2H_Crossbow', 'Throwable', 'Knife_Offhand', 'Rogue_Cape'],
     show: ['Knife', 'Knife_Offhand', 'Rogue_Cape'],
+  },
+  // CORE_MECHANICS §2 (CM1) stubs, mirroring the visual recipes of data/classes.ts (not selectable yet)
+  demonhunter: {
+    all: ['Knife', 'Knife_Offhand', 'Rogue_Cape', '1H_Crossbow', '2H_Crossbow', 'Throwable'],
+    show: ['Rogue_Cape'],
+  },
+  evoker: {
+    all: ['2H_Staff', '1H_Wand', 'Spellbook', 'Spellbook_open', 'Mage_Hat', 'Mage_Cape'],
+    show: ['2H_Staff', 'Mage_Cape'],
   },
 };
 

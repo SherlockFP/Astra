@@ -40,6 +40,8 @@ const CLASS_COLOR: Record<ClassId, string> = {
   paladin: '#fff0b8',
   necromancer: '#9ee07a',
   warlock: '#c05ae0',
+  demonhunter: '#a330c9', // WoW class colour (CM1)
+  evoker: '#33937f',      // WoW class colour (CM1)
 };
 const OTHER_COLOR = '#8a8a8a';
 

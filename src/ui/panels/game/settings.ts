@@ -15,8 +15,8 @@ const PRESETS: { id: string; name: string; desc: string; values: Partial<Setting
 
 const GROUPS: { name: string; actions: InputAction[] }[] = [
   { name: 'Hareket', actions: ['moveForward', 'moveBack', 'moveLeft', 'moveRight', 'jump', 'dodge', 'walk'] },
-  { name: 'Savaş', actions: ['skill_lmb', 'heavyAttack', 'skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'potionHp', 'potionMp', 'targetNext', 'interact', 'revive'] },
-  { name: 'Arayüz', actions: ['inventory', 'character', 'talents', 'skills', 'map', 'party', 'mplus', 'chat', 'menu'] },
+  { name: 'Savaş', actions: ['skill_lmb', 'heavyAttack', 'skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1', 'skill_s2', 'skill_s3', 'skill_s4', 'guard', 'potionHp', 'potionMp', 'targetNext', 'targetPrev', 'focusTarget', 'interact', 'revive'] },
+  { name: 'Arayüz', actions: ['inventory', 'groupFinder', 'character', 'talents', 'skills', 'map', 'party', 'mplus', 'guide', 'chat', 'menu'] },
   { name: 'Kamera ve Diğer', actions: ['freeCursor', 'toggleLock', 'zoomIn', 'zoomOut', 'screenshot'] },
 ];
 
@@ -141,6 +141,7 @@ export class SettingsPanel extends GamePanel {
     this.bodyEl.append(
       this.section('Hazır Ayarlar', presets),
       this.section('PSX Görünümü', psxRow, psxRows),
+      this.section('Modeller', this.voxelRow()),
       this.section(
         'Işık ve Efektler',
         this.flag('bloom', 'Parlama (Bloom)', 'Büyü ve ateş efektlerinde ışıma'),
@@ -166,20 +167,46 @@ export class SettingsPanel extends GamePanel {
           'Arayüz Stili',
           selectBox<SettingsData['hudStyle']>(
             [
+              { value: 'elvui', label: 'ElvUI' },
               { value: 'metin2', label: 'Metin2' },
               { value: 'orbs', label: 'Küreler' },
             ],
             G.settings.get('hudStyle'),
             (v) => G.settings.set('hudStyle', v),
           ),
-          'Alt çubuk: taş panel (Metin2) veya Diablo küreleri',
+          'Alt çubuk görünümü: ElvUI (varsayılan), taş panel (Metin2) veya Diablo küreleri',
         ),
       ),
       this.section(
         'Savaş Hissi',
         this.flag('damageNumbers', 'Hasar Sayıları'),
+        row(
+          'Hasar Sayısı Stili',
+          selectBox<SettingsData['numberStyle']>(
+            [
+              { value: 'school', label: 'Okul renkli' },
+              { value: 'classic', label: 'Klasik' },
+            ],
+            G.settings.get('numberStyle'),
+            (v) => G.settings.set('numberStyle', v),
+          ),
+          'Okul renkli: hasar türüne göre renk ve büyüklük. Klasik: eski tek renk görünüm',
+        ),
+        this.flag('abilityGlow', 'Yetenek Parıltısı', 'Hazır ve tetiklenen yetenekler altın çerçeveyle parlar'),
         this.num('screenShake', 'Ekran Sarsıntısı', 0, 1, 0.05, (v) => (v === 0 ? 'Kapalı' : `%${Math.round(v * 100)}`), 'Vuruş ve patlamalarda kamera sarsıntısı'),
       ),
+    );
+  }
+
+  /** Voxel model set. Read once at page load (core/voxelRemap.ts), so the change applies after a reload. */
+  private voxelRow(): HTMLElement {
+    return row(
+      'Voxel modeller',
+      toggle(G.settings.get('voxelModels'), (v) => {
+        G.settings.set('voxelModels', v);
+        toast('Voxel modeller için sayfayı yenileyin.', 'info');
+      }),
+      'Karakter ve yaratıklar küp (voxel) modellerle. Kapalıyken orijinal modeller kullanılır. Sayfa yenilenince uygulanır.',
     );
   }
 
@@ -230,7 +257,24 @@ export class SettingsPanel extends GamePanel {
       this.flag('invertY', 'Y Eksenini Ters Çevir'),
       this.num('cameraDistance', 'Kamera Mesafesi', 4, 16, 0.5, (v) => `${v} m`),
     );
-    const combat = this.section('Savaş', this.flag('autoCombo', 'Basılı tutunca saldırı zinciri', 'Kapalıyken sol tık basılı tutmak ağır vuruşu şarj eder'));
+    const combat = this.section(
+      'Savaş',
+      row(
+        'Tempo (GCD)',
+        selectBox<SettingsData['gcdProfile']>(
+          [
+            { value: 'arpg', label: 'Aksiyon (1 sn)' },
+            { value: 'wow', label: 'WoW (1,5 sn)' },
+          ],
+          G.settings.get('gcdProfile'),
+          (v) => G.settings.set('gcdProfile', v),
+        ),
+        'Yetenekler arası genel bekleme. Aksiyon: akıcı tempo. WoW: klasik 1,5 sn (hızla kısalır)',
+      ),
+      this.flag('autoCombo', 'Basılı tutunca saldırı zinciri', 'Kapalıyken sol tık basılı tutmak ağır vuruşu şarj eder'),
+      this.num('spellQueueMs', 'Yetenek Kuyruğu', 0, 400, 50, (v) => (v === 0 ? 'Kapalı' : `${v} ms`), 'Bekleme sırasında basılan yetenek, bitince kendiliğinden uygulanır'),
+      this.flag('leadSkip', 'Erken Başlatma', 'Yetenek animasyonunun başını atlar, vuruş daha erken gelir'),
+    );
     this.bodyEl.append(cam, combat);
 
     const binds =h('div.pg-set-sec', null, h('div.pg-h', null, 'Tuş Atamaları'));
@@ -422,6 +466,28 @@ export class SettingsPanel extends GamePanel {
       this.section(
         'Pasif Ağaç',
         this.flag('autoApplyPassives', 'Pasif puanları anında uygula', 'Yalnızca puan eklediğin taslak 1,5 sn sonra kendiliğinden uygulanır; geri alma içeren taslaklar Uygula ister'),
+      ),
+      this.section(
+        'Arayüz',
+        row(
+          'Dövüş Ölçer',
+          selectBox<SettingsData['meterVisibility']>(
+            [
+              { value: 'auto', label: 'Otomatik' },
+              { value: 'always', label: 'Her zaman' },
+              { value: 'never', label: 'Kapalı' },
+            ],
+            G.settings.get('meterVisibility'),
+            (v) => G.settings.set('meterVisibility', v),
+          ),
+          'Otomatik: grupta, zindanda ve savaştan sonra 15 sn açık',
+        ),
+        this.flag('barGhostSlots', 'Boş Yuvaları Göster', 'Yetenek çubuğunda boş kareler görünür'),
+        this.flag('ufIcon', 'Oyuncu Simgesi', 'Oyuncu çerçevesinde sınıf simgesi'),
+        this.flag('showStats', 'Sohbette İstatistik Satırı', 'Kritik, hız, soğuma ve kaçınma özeti'),
+        this.flag('showMapInfo', 'Minimap Saati', 'Haritada yerel saat (FPS göstergesi açıksa kare hızı da)'),
+        this.flag('showTips', 'İpuçları', 'Yeni oyuncular için kısa ipuçları'),
+        this.flag('questArrow', 'Görev Oku', 'Takip edilen görevin hedefine ekran oku'),
       ),
       this.section('Çevrimiçi', row('Oyuncu Adı', name, 'Boş bırakırsan karakter adın kullanılır'), row('Dil', h('span.pg-gold', null, 'Türkçe'))),
       this.section(

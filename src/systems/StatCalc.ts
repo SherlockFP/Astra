@@ -238,6 +238,9 @@ export const FALLBACK_CLASS: Record<ClassId, ClassTable> = {
   paladin: { base: { str: 14, dex: 8, int: 10, vit: 16 }, growth: { str: 3, dex: 0, int: 1, vit: 3 }, hpPerLevel: 11, hpPerVit: 10, maxResource: 100, resourceRegen: 5, mainStat: 'str', extra: {} },
   necromancer: { base: { str: 6, dex: 8, int: 18, vit: 14 }, growth: { str: 0, dex: 1, int: 4, vit: 2 }, hpPerLevel: 8, hpPerVit: 9, maxResource: 100, resourceRegen: 7, mainStat: 'int', extra: {} },
   warlock: { base: { str: 6, dex: 8, int: 17, vit: 15 }, growth: { str: 0, dex: 1, int: 4, vit: 2 }, hpPerLevel: 8, hpPerVit: 9, maxResource: 100, resourceRegen: 6, mainStat: 'int', extra: {} },
+  // CORE_MECHANICS §2 (CM1): fallback rows of the two new classes (same numbers as their data/classes.ts registry rows)
+  demonhunter: { base: { str: 6, dex: 17, int: 6, vit: 14 }, growth: { str: 0, dex: 4, int: 0, vit: 2 }, hpPerLevel: 10, hpPerVit: 10, maxResource: 100, resourceRegen: 6, mainStat: 'dex', extra: {} },
+  evoker: { base: { str: 6, dex: 8, int: 18, vit: 14 }, growth: { str: 0, dex: 1, int: 4, vit: 2 }, hpPerLevel: 9, hpPerVit: 9, maxResource: 100, resourceRegen: 6, mainStat: 'int', extra: {} },
 };
 
 /** Class table merged from combat's ClassDef (when present) over the GDD fallback. */

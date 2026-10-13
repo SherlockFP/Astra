@@ -20,7 +20,7 @@ const TRAIL_DELAY = 0.4;
 const LEVELUP_HOLD = 1.15;
 const BEADS = 4;
 
-const RES_NAME: Record<ResourceType, string> = { mana: 'Mana', rage: 'Öfke', energy: 'Enerji', focus: 'Odak', faith: 'İnanç', essence: 'Öz' };
+const RES_NAME: Record<ResourceType, string> = { mana: 'Mana', rage: 'Öfke', energy: 'Enerji', focus: 'Odak', faith: 'İnanç', essence: 'Öz', fury: 'Gazap' };
 
 function fmtVal(n: number): string {
   const r = Math.round(n);

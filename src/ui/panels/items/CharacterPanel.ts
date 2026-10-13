@@ -18,14 +18,17 @@ const RIGHT: EquipSlot[] = ['amulet', 'belt', 'ring1', 'ring2', 'weapon', 'offha
 const CLASS_TR: Record<ClassId, string> = {
   knight: 'Şövalye', barbarian: 'Barbar', mage: 'Büyücü', rogue: 'Haydut',
   monk: 'Keşiş', archer: 'Okçu', paladin: 'Paladin', necromancer: 'Nekromant', warlock: 'Warlock',
+  demonhunter: 'İblis Avcısı', evoker: 'Ejderhasoy', // CM1
 };
 const RESOURCE_TR: Record<ClassId, string> = {
   knight: 'Kararlılık', barbarian: 'Öfke', mage: 'Mana', rogue: 'Enerji',
   monk: 'Enerji', archer: 'Odak', paladin: 'İnanç', necromancer: 'Öz', warlock: 'Mana',
+  demonhunter: 'Gazap', evoker: 'Öz', // CM1
 };
 const MAIN_STAT: Record<ClassId, StatId> = {
   knight: 'str', barbarian: 'str', mage: 'int', rogue: 'dex',
   monk: 'dex', archer: 'dex', paladin: 'str', necromancer: 'int', warlock: 'int',
+  demonhunter: 'dex', evoker: 'int', // CM1
 };
 
 /** Turkish explanations shown when hovering a stat row. */

@@ -38,6 +38,7 @@ const KIND_COLORS: Record<TalentNode['kind'], string> = { small: '#e9dcc0', nota
 /** Sector id prefix of each class (GDD_CLASSES_V2 §12.1): own sector is tinted on the minimap. */
 const CLASS_PREFIX: Record<ClassId, string> = {
   knight: 'kn', barbarian: 'bb', mage: 'mg', rogue: 'rg', monk: 'mk', archer: 'ar', paladin: 'pl', necromancer: 'nc', warlock: 'wl',
+  demonhunter: 'dh', evoker: 'ev', // CM1 placeholder sector prefixes (no nodes yet, see data/talents.ts CLASS_START_NODE)
 };
 /** Cluster hubs get their own label (GDD_TALENTS §3.5). */
 const CLUSTER_LABEL: Record<string, string> = { cl_kn_hub: 'Siper Kümesi', cl_bb_hub: 'Şişe ve Kan Kümesi', cl_rg_hub: 'Sömürü Kümesi' };

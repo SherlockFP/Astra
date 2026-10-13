@@ -23,20 +23,24 @@ export const ARMOR_WEIGHT_NAMES_TR: Record<ArmorWeight, string> = { heavy: 'Ağ�
 export const CLASS_ARMOR_WEIGHT: Record<ClassId, ArmorWeight> = {
   knight: 'heavy', barbarian: 'heavy', mage: 'light', rogue: 'medium',
   monk: 'medium', archer: 'medium', paladin: 'heavy', necromancer: 'light', warlock: 'light',
+  demonhunter: 'medium', evoker: 'light', // CM1 stubs (mirror the registry rows of data/classes.ts)
 };
 export const WEIGHT_CLASSES: Record<ArmorWeight, ClassId[]> = { heavy: ['knight', 'barbarian'], medium: ['rogue'], light: ['mage'] };
 /** Weapon / off-hand categories each class can use (GDD 4.1). */
 export const CLASS_WEAPONS: Record<ClassId, ItemCategory[]> = {
   knight: ['sword1h'], barbarian: ['axe2h'], mage: ['staff', 'wand'], rogue: ['dagger'],
   monk: ['fist'], archer: ['bow'], paladin: ['sword1h', 'mace'], necromancer: ['staff', 'wand'], warlock: ['staff', 'wand'],
+  demonhunter: ['sword1h', 'dagger'], evoker: ['staff', 'wand'], // CM1 stubs
 };
 export const CLASS_OFFHANDS: Record<ClassId, ItemCategory[]> = {
   knight: ['shield'], barbarian: [], mage: ['tome'], rogue: ['dagger'],
   monk: [], archer: ['quiver'], paladin: ['shield'], necromancer: ['tome'], warlock: ['tome'],
+  demonhunter: ['dagger'], evoker: ['tome'], // CM1 stubs
 };
 export const CLASS_NAMES_TR: Record<ClassId, string> = {
   knight: 'Şövalye', barbarian: 'Barbar', mage: 'Büyücü', rogue: 'Haydut',
   monk: 'Keşiş', archer: 'Okçu', paladin: 'Paladin', necromancer: 'Nekromant', warlock: 'Warlock',
+  demonhunter: 'İblis Avcısı', evoker: 'Ejderhasoy', // CM1
 };
 
 export const WEAPON_CATEGORIES: ItemCategory[] = ['sword1h', 'sword2h', 'axe1h', 'axe2h', 'mace', 'staff', 'wand', 'dagger', 'crossbow', 'bow'];

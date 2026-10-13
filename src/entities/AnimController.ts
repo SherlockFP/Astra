@@ -13,6 +13,9 @@ export interface PlayOpts {
   speed?: number;         // timeScale
   loop?: boolean;         // default true for base, false for one-shots
   restart?: boolean;      // restart even if already playing
+  /** Seconds into the clip (unscaled clip time) where playback starts (COMBAT_WOW CW-01, lead skip). playOnce honours it
+   *  (clamped to 90 % of the clip); setBase ignores it. Events placed before it (eventAt < startAt) fire on the next update. */
+  startAt?: number;
 }
 
 export interface OneShotOpts extends PlayOpts {
@@ -169,7 +172,8 @@ export class AnimController {
     this.startBase(name, this.shot && this.shot.mask === 'upper' ? 'lower' : 'full', fade, opts.speed);
   }
 
-  /** Play a one-shot over the base layer. Returns its duration in seconds (after speed), 0 if missing. */
+  /** Play a one-shot over the base layer. Returns the time left to play in seconds (after speed; the whole clip without
+   *  `startAt`), 0 if missing. */
   playOnce(name: string, opts: OneShotOpts = {}): number {
     if (this.locked) return 0;
     const mask: Mask = opts.upperBody && this.baseName ? 'upper' : 'full';
@@ -191,6 +195,10 @@ export class AnimController {
     a.enabled = true;
     a.setEffectiveWeight(1);
     a.play();
+    // CW-01: start partway into the clip (reset() put the time at 0). Clamped so a bad value never skips the whole shot.
+    const clipLen = a.getClip().duration;
+    const startAt = Math.min(Math.max(0, opts.startAt ?? 0), clipLen * 0.9);
+    if (startAt > 0) a.time = startAt;
     this.shot = { action: a, opts, name, eventFired: !opts.onEvent, mask };
     this.shotSeq++;
     if (this.baseName) {
@@ -198,7 +206,7 @@ export class AnimController {
       else if (this.baseAction) this.baseAction.fadeOut(fade);
     }
     if (opts.hold) this.locked = true;
-    return a.getClip().duration / Math.max(0.01, speed);
+    return (clipLen - startAt) / Math.max(0.01, speed);
   }
 
   /** Stop the current one-shot (interrupted cast, dodge cancel). */

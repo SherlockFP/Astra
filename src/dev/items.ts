@@ -529,6 +529,7 @@ async function smoke(): Promise<void> {
 const CHAR_WEAPON: Record<ClassId, string> = {
   knight: 'sword1h_t3', barbarian: 'axe2h_t3', mage: 'staff_t3', rogue: 'dagger_t3',
   monk: 'fist_t3', archer: 'bow_t3', paladin: 'mace_t3', necromancer: 'staff_t3', warlock: 'staff_t3',
+  demonhunter: 'dagger_t3', evoker: 'staff_t3', // CM1 stubs
 };
 
 // ------------------------------------------------------------------------------------------------------ ui

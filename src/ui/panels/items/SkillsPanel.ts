@@ -17,15 +17,17 @@ const DMG_COLOR: Record<string, string> = {
 const DMG_TR: Record<string, string> = {
   physical: 'Fiziksel', fire: 'Ateş', frost: 'Buz', lightning: 'Şimşek', shadow: 'Gölge', poison: 'Zehir', holy: 'Kutsal', arcane: 'Gizem', true: 'Saf',
 };
-const SLOT_LABEL: Record<SkillSlotKey, string> = { lmb: 'Sol Tık', rmb: 'Sağ Tık', q: 'Q', e: 'E', r: 'R', s1: '1', s2: '2', s3: '3', m45: 'X', m90: 'V', m180: 'T' };
+const SLOT_LABEL: Record<SkillSlotKey, string> = { lmb: 'Sol Tık', rmb: 'Sağ Tık', q: 'Q', e: 'E', r: 'R', s1: '1', s2: '2', s3: '3', s4: 'G', m45: 'X', m90: 'V', m180: 'T' };
 const SLOT_ORDER: SkillSlotKey[] = ['lmb', 'rmb', 'q', 'e', 'r', 's1', 's2', 's3'];
 const MAIN_STAT: Record<ClassId, 'str' | 'dex' | 'int'> = {
   knight: 'str', barbarian: 'str', mage: 'int', rogue: 'dex',
   monk: 'dex', archer: 'dex', paladin: 'str', necromancer: 'int', warlock: 'int',
+  demonhunter: 'dex', evoker: 'int', // CM1 stubs
 };
 const RESOURCE_TR: Record<ClassId, string> = {
   knight: 'Kararlılık', barbarian: 'Öfke', mage: 'Mana', rogue: 'Enerji',
   monk: 'Enerji', archer: 'Odak', paladin: 'İnanç', necromancer: 'Öz', warlock: 'Mana',
+  demonhunter: 'Gazap', evoker: 'Öz', // CM1 stubs
 };
 const TAG_TR: Record<string, string> = {
   melee: 'Yakın', spell: 'Büyü', aoe: 'Alan', projectile: 'Mermi', movement: 'Hareket', fire: 'Ateş', frost: 'Buz', arcane: 'Gizem', lightning: 'Şimşek', shadow: 'Gölge',

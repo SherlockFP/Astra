@@ -20,7 +20,9 @@ export type InputAction =
   // GDD_LIFE §0 (L-00): appended. Both stay UNBOUND ([]): the doc's KeyP is taken by `paragon`, KeyV by `skill_m90`.
   | 'professions' | 'camShoulder'
   // F4 (roadmap, combat): hold-to-charge the heavy. Shift (dodge) and Alt (freeCursor) are taken, so the side button (Mouse4) and Minus are the keys.
-  | 'heavyAttack';
+  | 'heavyAttack'
+  // CORE_MECHANICS §10.1 key resolution + UI_REDESIGN Appendix A + COMBAT_WOW CW-01 (appended)
+  | 'skill_s4' | 'groupFinder' | 'guide' | 'focusTarget' | 'targetPrev';
 
 export const DEFAULT_BINDINGS: Record<InputAction, string[]> = {
   moveForward: ['KeyW', 'ArrowUp'],
@@ -44,7 +46,7 @@ export const DEFAULT_BINDINGS: Record<InputAction, string[]> = {
   targetNext: ['Tab'],
   freeCursor: ['AltLeft', 'AltRight'],
   toggleLock: ['Mouse1'],
-  inventory: ['KeyI', 'KeyB'],
+  inventory: ['KeyB'],
   character: ['KeyC'],
   talents: ['KeyN'],
   skills: ['KeyK'],
@@ -59,7 +61,8 @@ export const DEFAULT_BINDINGS: Record<InputAction, string[]> = {
   screenshot: ['F12'],
   revive: ['KeyZ'],
   // GDD_V2 §0.4 (WP1). bestiary: the doc says L, but L is already 'quests' (KeyL, existing); left unbound pending a decision.
-  guard: ['KeyG', 'Mouse3'],
+  // CORE_MECHANICS §10.1: G is skill_s4 now; guard = Mouse3 + CapsLock (a stored guard→KeyG is migrated in Settings).
+  guard: ['Mouse3', 'CapsLock'],
   skill_m45: ['KeyX'],
   skill_m90: ['KeyV'],
   skill_m180: ['KeyT'],
@@ -83,6 +86,16 @@ export const DEFAULT_BINDINGS: Record<InputAction, string[]> = {
   // F4: Mouse4 (side button), with Minus as the keyboard fallback for mice without a side button and for laptops. Holding LMB
   // chains the combo when autoCombo is on. Alt (freeCursor) and Shift (dodge) are taken, so Alt+LMB and Shift+LMB do not work.
   heavyAttack: ['Mouse4', 'Minus'],
+  // CORE_MECHANICS §10.1: the s4 slot (interrupt / utility). G was free after guard moved.
+  skill_s4: ['KeyG'],
+  // MAP_UI P00 / GDD_PVP_FINDER PV-00 / UI_REDESIGN: I opens the Group Finder; B is the only inventory key.
+  groupFinder: ['KeyI'],
+  // UI_REDESIGN Appendix A: the guide ("Ne Yapmalıyım?") panel.
+  guide: ['Period'],
+  // COMBAT_WOW §2.14 / CW-01: Shift+Tab is not a single code, and KeyZ is revive, so focus takes F8 (no browser default)
+  // and the backward target cycle takes Backquote (the key above Tab).
+  focusTarget: ['F8'],
+  targetPrev: ['Backquote'],
 };
 
 export const ACTION_NAMES_TR: Record<InputAction, string> = {
@@ -97,6 +110,7 @@ export const ACTION_NAMES_TR: Record<InputAction, string> = {
   targetAlly: 'Sonraki Müttefik', partySel1: 'Grup Üyesi 1 (Sen)', partySel2: 'Grup Üyesi 2', partySel3: 'Grup Üyesi 3',
   partySel4: 'Grup Üyesi 4', partySel5: 'Grup Üyesi 5', paragon: 'Kadim Levha', bestiary: 'Bestiyari', townPortal: 'Dönüş Parşömeni',
   professions: 'Meslekler', camShoulder: 'Omuz Değiştir', heavyAttack: 'Ağır Saldırı',
+  skill_s4: 'Beceri G', groupFinder: 'Grup Bulucu', guide: 'Ne Yapmalıyım?', focusTarget: 'Odak Hedef', targetPrev: 'Önceki Hedef',
 };
 
 export class Input {
@@ -257,7 +271,8 @@ export function codeLabel(code: string): string {
   const map: Record<string, string> = {
     Mouse0: 'SolT', Mouse1: 'OrtaT', Mouse2: 'SağT', Space: 'Boşluk', ShiftLeft: 'Shift', ShiftRight: 'Shift', ControlLeft: 'Ctrl',
     AltLeft: 'Alt', AltRight: 'Alt', Escape: 'Esc', Enter: 'Enter', Tab: 'Tab', ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→',
-    Mouse3: 'Geri Tuşu', Mouse4: 'İleri Tuşu', Minus: '-',
+    // Short forms: the action bar prints these at 12 px in a 44 px cell.
+    Mouse3: 'Geri', Mouse4: 'İleri', Minus: '-', CapsLock: 'Caps', Period: '.', Backquote: '`',
   };
   return map[code] ?? code;
 }

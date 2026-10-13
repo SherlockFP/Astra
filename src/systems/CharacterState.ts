@@ -38,6 +38,8 @@ const START_GEAR: Record<ClassId, string[]> = {
   paladin: ['mace_t1', 'shield_t1', 'chest_heavy_t1', 'boots_heavy_t1'],
   necromancer: ['staff_t1', 'chest_light_t1', 'boots_light_t1'],
   warlock: ['staff_t1', 'chest_light_t1', 'boots_light_t1'],
+  demonhunter: ['dagger_t1', 'dagger_t1', 'chest_medium_t1', 'boots_medium_t1'], // CM1 stub (not playable yet)
+  evoker: ['staff_t1', 'chest_light_t1', 'boots_light_t1'],                     // CM1 stub
 };
 /** Extra pieces every class gets so the first minutes already feel like dressing up a hero. */
 const START_EXTRA_GEAR: Record<ClassId, string[]> = {
@@ -50,11 +52,14 @@ const START_EXTRA_GEAR: Record<ClassId, string[]> = {
   paladin: ['helm_heavy_t1', 'gloves_heavy_t1'],
   necromancer: ['helm_light_t1', 'gloves_light_t1'],
   warlock: ['helm_light_t1', 'gloves_light_t1'],
+  demonhunter: ['helm_medium_t1', 'gloves_medium_t1'], // CM1 stub
+  evoker: ['helm_light_t1', 'gloves_light_t1'],         // CM1 stub
 };
 /** Spare gear in the bag (Mage can switch to wand + tome). */
 const START_BAG: Record<ClassId, string[]> = {
   knight: [], barbarian: [], mage: ['wand_t1', 'tome_t1'], rogue: [],
   monk: [], archer: [], paladin: ['sword1h_t1'], necromancer: ['wand_t1', 'tome_t1'], warlock: ['wand_t1', 'tome_t1'],
+  demonhunter: [], evoker: ['wand_t1', 'tome_t1'], // CM1 stubs
 };
 
 /** Bag sort order: weapons, off-hands, armour, belt, jewelry; then rarity, item level, upgrade, name. */

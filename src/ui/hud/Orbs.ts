@@ -15,6 +15,8 @@ const PALETTES: Record<OrbKind, RGB[]> = {
   focus: [[255, 226, 150], [230, 176, 76], [200, 140, 44], [150, 100, 28], [100, 64, 16], [60, 36, 8]],
   faith: [[255, 250, 220], [255, 233, 160], [230, 200, 110], [180, 150, 70], [120, 96, 40], [70, 56, 24]],
   essence: [[200, 255, 230], [120, 227, 176], [70, 190, 140], [44, 140, 104], [28, 92, 70], [14, 52, 40]],
+  // CORE_MECHANICS §2 (CM1 stub): İblis Avcısı Gazap, fel-green (#b8ff3a); dark bands follow the energy ramp
+  fury: [[238, 255, 190], [184, 255, 58], [140, 210, 40], [104, 160, 30], [70, 110, 20], [40, 64, 10]],
 };
 const EMPTY: RGB[] = [[34, 24, 24], [26, 18, 18], [18, 12, 13], [12, 8, 9]];
 
@@ -80,7 +82,7 @@ class Orb {
   applyKind(kind: OrbKind): void {
     this.kind = kind;
     this.el.dataset.kind = kind;
-    const names: Record<OrbKind, string> = { hp: 'CAN', rage: 'ÖFKE', mana: 'MANA', energy: 'ENERJİ', focus: 'ODAK', faith: 'İNANÇ', essence: 'ÖZ' };
+    const names: Record<OrbKind, string> = { hp: 'CAN', rage: 'ÖFKE', mana: 'MANA', energy: 'ENERJİ', focus: 'ODAK', faith: 'İNANÇ', essence: 'ÖZ', fury: 'GAZAP' };
     setText(this.labelEl, names[kind]);
   }
 

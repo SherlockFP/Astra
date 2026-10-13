@@ -5,8 +5,9 @@ import type { SfxId } from './audio';
 import type { SpecId } from './v2';
 
 /** `m45` / `m90` / `m180` = GDD_V2 major cooldown slots (§2), appended by WP1. */
-export type SkillSlotKey = 'lmb' | 'rmb' | 'q' | 'e' | 'r' | 's1' | 's2' | 's3' | 'm45' | 'm90' | 'm180';
-export const SKILL_SLOT_KEYS: SkillSlotKey[] = ['lmb', 'rmb', 'q', 'e', 'r', 's1', 's2', 's3', 'm45', 'm90', 'm180'];
+/** `m45` / `m90` / `m180` = GDD_V2 major cooldown slots (§2), appended by WP1. `s4` = G (CORE_MECHANICS §10.1, CM1 / CM12: interrupt / utility). */
+export type SkillSlotKey = 'lmb' | 'rmb' | 'q' | 'e' | 'r' | 's1' | 's2' | 's3' | 's4' | 'm45' | 'm90' | 'm180';
+export const SKILL_SLOT_KEYS: SkillSlotKey[] = ['lmb', 'rmb', 'q', 'e', 'r', 's1', 's2', 's3', 's4', 'm45', 'm90', 'm180'];
 
 export type SkillTargeting =
   | 'melee_arc'     // instant arc in front: range + arc (deg)
@@ -19,7 +20,10 @@ export type SkillTargeting =
   | 'beam'          // channeled line
   | 'teleport'      // blink to aim point
   | 'summon'
-  | 'custom';       // behavior key implemented in combat/skills/
+  | 'custom'        // behavior key implemented in combat/skills/
+  // COMBAT_WOW / CORE_MECHANICS §10.2 (CM1, append-only): aimed at the hard/soft target instead of the aim point.
+  | 'target_projectile' // spawned toward the target with `homing` turn rate; flies straight along the aim with no target
+  | 'target_instant';   // hits the target if in range and line of sight; melee ones lunge up to 3 m extra
 
 export interface StatusApply {
   status: StatusId;
@@ -87,6 +91,17 @@ export interface SkillDef {
   animCycle?: string[];
   /** Loop played while a charge / channel key is held. */
   holdAnim?: string;
+  // ---- COMBAT_WOW / CORE_MECHANICS §10.3 (CM1, append-only). All optional; existing rows stay valid.
+  /** Gating: needs a status on the caster, a position behind the target, or a target kind (CORE_MECHANICS §10.3). */
+  requires?: { selfStatus?: StatusId; behind?: boolean; target?: 'enemy' | 'ally' };
+  /** Proc-instant: while `status` is up the cast is instant (castTime 0); `consume` removes the status on cast (Sıcak Seri). */
+  procInstant?: { status: StatusId; consume: boolean };
+  /** Button transform: while `whileStatus` is up this slot casts `skill` instead (Gölge Vuruşu replaces Sırttan Bıçak). */
+  replaces?: { skill: string; whileStatus: StatusId };
+  /** Off the global cooldown (WoW off-GCD): casting it does not start or wait for the GCD. */
+  offGcd?: boolean;
+  /** Homing turn rate in rad/s for `target_projectile` (bolts 5, Kaos Oku 4, missiles 9). */
+  homing?: number;
 }
 
 export type StatusId =
@@ -114,7 +129,11 @@ export type StatusId =
   | 'frenzy_minions' | 'lich' | 'agony' | 'corruption' | 'unstable_affliction' | 'immolate' | 'seed' | 'havoc' | 'soul_misery'
   // GDD_TALENTS §0.4 (T0): 13 ids. Each needs a StatusDef (data/statuses_talents.ts, merged into STATUSES; T8 / T9).
   | 'hot_streak' | 'fingers_of_frost' | 'touch_of_magi' | 'arcane_surge' | 'blazing_barrier' | 'intercept_ward'
-  | 'guardian_vow' | 'karma_ward' | 'spirit_walk' | 'feign_death' | 'cloak_ward' | 'resolve_pact' | 'ice_block';
+  | 'guardian_vow' | 'karma_ward' | 'spirit_walk' | 'feign_death' | 'cloak_ward' | 'resolve_pact' | 'ice_block'
+  // COMBAT_WOW §3 / Appendix B (CW-03, append-only): proc states and the school lockout. StatusDefs in data/statuses_talents.ts.
+  // hot_streak and fingers_of_frost (above) are the existing procs; these are the new ones.
+  | 'heating_up' | 'brain_freeze' | 'winters_chill' | 'clearcasting' | 'art_of_justice' | 'revenge_ready' | 'sudden_death'
+  | 'wrath_return' | 'opportunity' | 'lockout';
 
 export interface StatusDef {
   id: StatusId;
@@ -129,6 +148,8 @@ export interface StatusDef {
   dispellable?: boolean;
   /** combat module: never listed by StatusEffects.list() (internal movement locks). */
   hidden?: boolean;
+  /** COMBAT_WOW §3 (CW-03, append-only): nominal duration in seconds for statuses applied by procs. The applying code may override it. */
+  defaultDuration?: number;
 }
 
 /** Runtime aim info produced by PlayerController from the camera. */

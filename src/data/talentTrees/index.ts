@@ -109,6 +109,9 @@ const RAW_FILES: Record<ClassId, RawClassFile> = {
   paladin,
   necromancer,
   warlock,
+  // CORE_MECHANICS §2 (CM1): empty stand-ins until the CM12 talent trees of the new classes are generated (no tree rows yet).
+  demonhunter: { class: { palette: [], rows: [] }, specs: {} },
+  evoker: { class: { palette: [], rows: [] }, specs: {} },
 };
 
 const TREE_DESCS: readonly TreeDesc[] = [

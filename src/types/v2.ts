@@ -17,7 +17,11 @@ export type SpecId = 'knight_protector' | 'knight_blademaster' | 'barbarian_warl
   // GDD_TALENTS (T0, append-only): mage_elementalist / mage_lightbringer stay in the union until the migration ships (OT1).
   | 'mage_fire' | 'mage_frost' | 'mage_arcane'
   // GDD_TALENTS OT1: monk_mistweaver is a listed spec (its tree is authored; kit rows are wave 2)
-  | 'monk_mistweaver';
+  | 'monk_mistweaver'
+  // CORE_MECHANICS §2 / CM1 (append-only): İblis Avcısı (Kaos, İntikam), Ejderhasoy (Yıkım Nefesi, Koruyucu Nefes, Yüceltme),
+  // and the Gölge spec of the rogue (CM12 kit). Ids only; SPECS rows arrive with the kit packages.
+  | 'demonhunter_chaos' | 'demonhunter_vengeance' | 'evoker_devastation' | 'evoker_preservation' | 'evoker_augmentation'
+  | 'rogue_subtlety';
 export interface SpecDef {
   id: SpecId; classId: ClassId; name: string; role: RoleId; desc: string;
   stats: StatBlock;                                   // folded like a keystone (threatPct, maxHpPct, ...)
@@ -36,6 +40,13 @@ export interface SpecDef {
   /** Spec-level numeric skill changes in the effect DSL (GDD_TALENTS §2.5), applied by combat/skillMods.ts. */
   fx?: string;
 }
+/**
+ * CORE_MECHANICS §1.1 / §5.4 (CM1, append-only): generated per-spec correction factors (`src/data/specTuning.ts`, written by
+ * tools/simbench.mjs --tune). Applied as the last multiplier in Combat.rollOutgoing (`dmg`), heal paths (`heal`) and shields (`absorb`).
+ * Neutral value = 1 for each factor.
+ */
+export interface SpecTuning { dmg: number; heal: number; absorb: number }
+
 export type FamilyId = 'beast'|'undead_bone'|'undead_flesh'|'ghost'|'insect'|'slime'|'fungus'|'humanoid'|'cultist'|'golem'|'demon'|'elemental_fire'|'elemental_frost'|'dragon';
 export interface FamilyDef { id: FamilyId; name: string; resist: Partial<Record<DamageType, number>>; immune: StatusId[]; takenMore?: Partial<Record<StatusId, number>>; poiseMult: number; icon: string }
 export interface RuneDef { id: string; name: string; needs: string[]; forbid?: string[]; costMult: number; ranks: [RuneMods, RuneMods, RuneMods]; desc: string }

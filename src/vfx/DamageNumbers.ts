@@ -33,9 +33,18 @@ const STYLES: Record<DamageNumberKind, Style> = {
   block: { color: '#bcd0ff', glow: '#28408f', size: 16, life: 0.6, vy: 70, pop: 1.2, italic: true, fade: 0.3 },
   xp: { color: '#c58bff', glow: '#5a1fa0', size: 21, life: 1.5, vy: 80, pop: 1.3 },
   gold: { color: '#ffd84a', glow: '#8a5a00', size: 22, life: 1.3, vy: 95, pop: 1.35 },
+  // COMBAT_WOW §4.3 CW-01 placeholders (styles only; CW-05 owns the final colours): status words and the mana gain number
+  absorb: { color: '#e6f7ff', glow: '#3d7fa8', size: 16, life: 0.6, vy: 70, pop: 1.2, italic: true, fade: 0.3 },
+  resist: { color: '#d7c6ff', glow: '#4b2c8a', size: 16, life: 0.6, vy: 70, pop: 1.2, italic: true, fade: 0.3 },
+  miss: { color: '#b8e6ff', glow: '#1f5f8c', size: 16, life: 0.6, vy: 70, pop: 1.2, italic: true, fade: 0.3 },
+  interrupt: { color: '#ffe9a0', glow: '#8a5a00', size: 18, life: 0.8, vy: 80, pop: 1.3, italic: true, fade: 0.3 },
+  mana: { color: '#7fb6ff', glow: '#1d4f9e', size: 20, life: 1.0, vy: 90, pop: 1.25 },
 };
 
-const TEXTS: Partial<Record<DamageNumberKind, string>> = { immune: 'Bağışık', dodge: 'Kaçındı', block: 'Bloklandı' };
+const TEXTS: Partial<Record<DamageNumberKind, string>> = {
+  immune: 'Bağışık', dodge: 'Kaçındı', block: 'Bloklandı',
+  absorb: 'Emildi', resist: 'Direndi', miss: 'Iskaladı', interrupt: 'Kesildi',
+};
 
 /** Status words are capped on screen: a new one past this count replaces the oldest status word. */
 const STATUS_KINDS: ReadonlySet<DamageNumberKind> = new Set<DamageNumberKind>(['immune', 'dodge', 'block']);

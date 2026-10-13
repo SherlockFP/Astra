@@ -18,6 +18,8 @@ export const CLASS_ICON_PATH: Record<ClassId, string> = {
   paladin: '/assets/icons/class-cleric.svg',
   necromancer: '/assets/icons/skill-summon-skeleton.svg',
   warlock: '/assets/icons/skill-curse.svg',
+  demonhunter: '/assets/icons/skill-claw-strike.svg', // CM1 stub (İblis Avcısı)
+  evoker: '/assets/icons/skill-fire-breath.svg',      // CM1 stub (Ejderhasoy)
 };
 
 /** Icon path of every spec id (the whole SpecId union; the legacy mage specs keep the mage icon). */
@@ -45,6 +47,13 @@ export const SPEC_ICON: Record<SpecId, string> = {
   necromancer_bone: CLASS_ICON_PATH.necromancer,
   warlock_affliction: CLASS_ICON_PATH.warlock,
   warlock_destruction: CLASS_ICON_PATH.warlock,
+  // CM1 stubs: the six new spec ids fall back to their class icon (the SPEC_ICON contract: every SpecId has a path)
+  demonhunter_chaos: CLASS_ICON_PATH.demonhunter,
+  demonhunter_vengeance: CLASS_ICON_PATH.demonhunter,
+  evoker_devastation: CLASS_ICON_PATH.evoker,
+  evoker_preservation: CLASS_ICON_PATH.evoker,
+  evoker_augmentation: CLASS_ICON_PATH.evoker,
+  rogue_subtlety: CLASS_ICON_PATH.rogue,
 };
 
 /** Role tint of a spec icon (GDD_TALENTS §5.7): tank blue, healer green, DPS red. */

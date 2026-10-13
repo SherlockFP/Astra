@@ -1,4 +1,6 @@
 import type { KeystoneData } from './items';
+import type { ClassId } from './common';
+import type { SpecId } from './v2';
 
 export type AffixId =
   | 'fortified' | 'tyrannical'
@@ -50,6 +52,14 @@ export interface RunState {
   partySize?: number;
 }
 
+/** CORE_MECHANICS §7 (CM1, append-only): one member of a run's roster (Raider.IO-style row: name, class/spec icons, ilvl). */
+export interface RunRosterEntry {
+  name: string;
+  classId: ClassId;
+  spec?: SpecId;
+  ilvl?: number;
+}
+
 export interface RunRecord {
   dungeonId: string;
   keyLevel: number;
@@ -63,6 +73,12 @@ export interface RunRecord {
   party?: string[];
   /** GDD_V2 §4.4 (WP1): seals used in this run. */
   seals?: string[];
+  /**
+   * CORE_MECHANICS §7 (CM1): the roster, sorted by name (the run hash is taken over the sorted roster). Absent on records made before CM1.
+   */
+  roster?: RunRosterEntry[];
+  /** CORE_MECHANICS §6 / §7 (CM1): party size of the run (1..5). Leaderboards split solo / duo / party by it. */
+  partySize?: number;
 }
 
 export interface MythicProfile {
