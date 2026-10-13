@@ -217,8 +217,11 @@ export class QuestSystem {
     const ch = G.character;
     if (!def || !ch || this.stateOf(def) !== 'available') return false;
     ch.save.flags[qKey(def.id)] = 'active';
-    def.objectives.forEach((_, k) => {
-      ch.save.flags[pKey(def.id, k)] = 0;
+    def.objectives.forEach((o, k) => {
+      // discoveries fire once per character: a place found before the quest was taken counts as explored
+      const f = ch.save.flags;
+      const known = o.kind === 'explore' && !!o.target && !!(f[`world.found.${o.target}`] || f[`world.region.${o.target}`] || f[`world.wp.${o.target}`]);
+      f[pKey(def.id, k)] = known ? o.count : 0;
     });
     ch.persist();
     this.notify(def, true);

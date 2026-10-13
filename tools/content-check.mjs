@@ -50,7 +50,7 @@ try {
   known = (id) => { const d = E[id] ?? B[id]; return d ? (d.forces ?? 0) : undefined; };
 } catch { /* GDD roster fallback */ }
 
-// ---- region quests (data/world/quests_extra.ts, ids sq_rN_* / dq_rN_*): spawn, band, chain and giver checks on top of cc.checkQuests
+// ---- region quests (data/world/quests_extra.ts, ids sq_rN_* / dq_rN_*): the level band of their region and the spawn of their kill targets
 const isRegionQuest = (q) => /^(sq|dq)_r\d_/.test(q.id);
 /** enemy / stone / boss id -> regions it spawns in (camp and patrol members, miniboss and metin regionId, rares by level band). */
 function spawnIndex(world, packs) {
@@ -64,33 +64,118 @@ function spawnIndex(world, packs) {
   for (const b of world?.bosses ?? []) add(b.bossId, undefined); // world bosses roam any region
   return at;
 }
-function regionQuestIssues(quests, world, npcIds, packs) {
+function regionQuestIssues(quests, world, packs) {
+  const out = [];
+  const warn = (where, msg) => out.push({ level: 'warn', where, msg });
+  const err = (where, msg) => out.push({ level: 'error', where, msg });
+  const spawns = spawnIndex(world, packs);
+  const band = new Map((world?.regions ?? []).map((r) => [r.id, r.levels]));
+  for (const q of quests.filter(isRegionQuest)) {
+    const where = `quest ${q.id}`;
+    const [lo, hi] = band.get(q.region) ?? [1, 99];
+    if (q.level < lo || q.level > hi) err(where, `level ${q.level} is outside the ${q.region} band ${lo}-${hi}`);
+    for (const o of q.objectives) {
+      const ow = `${where} [${o.kind} ${o.target ?? ''}]`;
+      if ((o.kind === 'kill' || o.kind === 'metin') && o.target) {
+        const at = spawns.get(o.target);
+        if (at && at.size && !at.has(q.region)) warn(ow, `${o.target} spawns in ${[...at].join(', ')}, not in ${q.region}`);
+      }
+    }
+  }
+  return out;
+}
+/**
+ * Quest reachability, HARD errors on every quest (GDD_OPENWORLD §6, the runtime rules of systems/Quests.ts):
+ *  - giver, turn-in and talk targets are NPCs of some town or village;
+ *  - a kill / metin / boss target spawns in a camp, patrol, rare, miniboss, metin stone or world boss; a kill or metin target
+ *    must spawn in a region whose level band holds the quest level (world bosses roam, so they need only a spawn);
+ *  - a collect item has a source: a quest reward, a kill objective that spawns, the quest's region (packs), or any camp when the
+ *    quest is region-less (sourceMatches);
+ *  - prerequisites exist, do not step down in level, form no cycle, and every main quest is reached from the first one;
+ *  - unlocks that name a waypoint, an entrance or a dungeon must exist (an unregistered zone is only a warning);
+ *  - an explore target is a region, waypoint, hidden area, vista or landmark id: the only ids the game emits (Quests.ts listens to
+ *    world:regionEntered, waypoint:discovered and scenes/world/Discoveries.ts). Rooms and villages are never emitted.
+ */
+function questReachIssues(quests, world, npcIds, packs, dungeonIds, zoneIds) {
   const out = [];
   const err = (where, msg) => out.push({ level: 'error', where, msg });
   const warn = (where, msg) => out.push({ level: 'warn', where, msg });
   const spawns = spawnIndex(world, packs);
+  const roomRegion = new Map((world?.regions ?? []).map((r) => [r.roomId, r.id]));
+  const packRegions = new Set((packs ?? []).map((p) => roomRegion.get(p.roomId)).filter(Boolean));
+  const bandOf = new Map((world?.regions ?? []).map((r) => [r.id, r.levels]));
+  const inBand = (region, lvl) => { const b = bandOf.get(region); return !!b && lvl >= b[0] && lvl <= b[1]; };
   const byId = new Map(quests.map((q) => [q.id, q]));
-  const band = new Map((world?.regions ?? []).map((r) => [r.id, r.levels]));
-  for (const q of quests.filter(isRegionQuest)) {
+  const rewardItems = new Set(quests.flatMap((q) => (q.reward?.items ?? []).map((i) => i.id)));
+  const waypoints = new Set((world?.waypoints ?? []).map((w) => w.id));
+  const entrances = new Set((world?.entrances ?? []).map((e) => e.id));
+  // the only ids the game emits as `explore` events (see the header): region entry, waypoint discovery, Discoveries spots
+  const explorePlaces = new Set([world?.regions, world?.waypoints, world?.hidden, world?.vistas, world?.landmarks]
+    .flatMap((list) => (list ?? []).map((p) => p.id)));
+  for (const q of quests) {
     const where = `quest ${q.id}`;
-    if (!npcIds.has(q.giver)) err(where, `giver ${q.giver} is not an NPC in the town / villages`);
-    if (q.turnIn && !npcIds.has(q.turnIn)) err(where, `turn-in ${q.turnIn} is not an NPC in the town / villages`);
-    const [lo, hi] = band.get(q.region) ?? [1, 99];
-    if (q.level < lo || q.level > hi) err(where, `level ${q.level} is outside the ${q.region} band ${lo}-${hi}`);
+    if (!npcIds.has(q.giver)) err(where, `giver ${q.giver} is not an NPC in any town or village`);
+    if (q.turnIn && !npcIds.has(q.turnIn)) err(where, `turn-in ${q.turnIn} is not an NPC in any town or village`);
     for (const p of q.prereq ?? []) {
       const pd = byId.get(p);
       if (!pd) err(where, `unknown prerequisite ${p}`);
       else if (q.level < pd.level) err(where, `level ${q.level} is below its prerequisite ${p} (${pd.level}): chain levels must not drop`);
     }
+    const kills = q.objectives.filter((o) => o.kind === 'kill' || o.kind === 'metin' || o.kind === 'boss');
     for (const o of q.objectives) {
       const ow = `${where} [${o.kind} ${o.target ?? ''}]`;
-      if (o.kind === 'talk' && !npcIds.has(o.target)) err(ow, `npc ${o.target} is not in the town / villages`);
-      if ((o.kind === 'kill' || o.kind === 'metin') && o.target) {
-        const at = spawns.get(o.target);
-        if (!at) err(ow, `${o.target} does not spawn in any camp, rare, miniboss, metin stone or world boss`);
-        else if (at.size && !at.has(q.region)) warn(ow, `${o.target} spawns in ${[...at].join(', ')}, not in ${q.region}`);
+      if (o.kind === 'talk' && !npcIds.has(o.target)) err(ow, `npc ${o.target} is not in any town or village`);
+      if (o.kind === 'explore' && !explorePlaces.has(o.target)) {
+        err(ow, `${o.target} is no region, waypoint, hidden area, vista or landmark: the game emits explore only for those ids`);
+      }
+      if ((o.kind === 'kill' || o.kind === 'metin' || o.kind === 'boss') && o.target) {
+        const regs = spawns.get(o.target);
+        if (!regs) err(ow, `${o.target} spawns in no camp, patrol, rare, miniboss, metin stone or world boss`);
+        else if (o.kind !== 'boss' && regs.size && ![...regs].some((r) => inBand(r, q.level))) {
+          err(ow, `${o.target} spawns only in ${[...regs].map((r) => `${r} (${bandOf.get(r)?.join('-')})`).join(', ')}: no level band holds quest level ${q.level}`);
+        }
+      }
+      if (o.kind === 'collect' && o.target) {
+        let src;
+        if (rewardItems.has(o.target)) src = 'reward';
+        else if (kills.length) src = kills.some((k) => k.target && spawns.has(k.target)) ? 'kill' : undefined;
+        else if (q.region) src = packRegions.has(q.region) ? 'region' : undefined;
+        else src = (packs ?? []).length ? 'camp' : undefined;
+        if (!src) err(ow, `${o.target} has no source: no quest reward, no spawning kill objective, no camp in ${q.region ?? 'the world'}`);
       }
     }
+    for (const u of q.unlocks ?? []) {
+      const uw = `${where} [unlock ${u}]`;
+      if (u.startsWith('wp_')) { if (!waypoints.has(u)) err(uw, 'waypoint is not in the world'); }
+      else if (u.startsWith('ent_')) { if (!entrances.has(u)) err(uw, 'entrance is not in the world'); }
+      else if (u.startsWith('dungeon:')) { if (!dungeonIds.includes(u.slice('dungeon:'.length))) err(uw, 'dungeon is not registered'); }
+      else if (!zoneIds.includes(u)) warn(uw, 'zone is not registered (skeleton map, not authored yet)');
+    }
+  }
+  // prerequisite chains: a cycle is an error; the main chain must be reached from its first quest
+  const state = new Map(); // 1 = on the current path, 2 = done
+  const visit = (id, path) => {
+    if (state.get(id) === 2 || !byId.has(id)) return;
+    if (state.get(id) === 1) { err(`quest ${id}`, `prerequisite cycle: ${[...path, id].join(' -> ')}`); return; }
+    state.set(id, 1);
+    for (const p of byId.get(id).prereq ?? []) visit(p, [...path, id]);
+    state.set(id, 2);
+  };
+  for (const q of quests) visit(q.id, []);
+  const succ = new Map();
+  for (const q of quests) for (const p of q.prereq ?? []) { if (!succ.has(p)) succ.set(p, []); succ.get(p).push(q.id); }
+  const mains = quests.filter((q) => q.main);
+  const first = mains[0]; // the chain starts at the first layout entry (mq_01)
+  if (!first) err('main chain', 'the main chain is empty');
+  else if ((first.prereq ?? []).length) err(`quest ${first.id}`, 'the main chain must start here, without a prerequisite');
+  else {
+    const reach = new Set([first.id]);
+    const stack = [first.id];
+    while (stack.length) {
+      const c = stack.pop();
+      for (const n of succ.get(c) ?? []) if (!reach.has(n)) { reach.add(n); stack.push(n); }
+    }
+    for (const q of mains) if (!reach.has(q.id)) err(`quest ${q.id}`, `main quest is not reachable from ${first.id} through prerequisites`);
   }
   return out;
 }
@@ -133,13 +218,19 @@ if (!want.length || want.includes('sisli_vadi') || want.includes('quests')) {
   console.log(`\n== quests: ${e.length} errors, ${w.length} warns | ${QUESTS.length} quests`);
   for (const i of e) console.log('  ERR ', i.where, '-', i.msg);
   for (const i of w) console.log('  warn', i.where, '-', i.msg);
-  const rq = regionQuestIssues(QUESTS, world, npcIds, ALL.sisli_vadi?.packs);
-  const re = rq.filter((i) => i.level === 'error'), rw = rq.filter((i) => i.level === 'warn');
+  const rq = regionQuestIssues(QUESTS, world, ALL.sisli_vadi?.packs);
+  const rw = rq.filter((i) => i.level === 'warn'), re = rq.filter((i) => i.level === 'error');
   totalErr += re.length;
   console.log(`\n== region quests: ${re.length} errors, ${rw.length} warns | ${QUESTS.filter(isRegionQuest).length} quests`);
   for (const line of regionCounts(QUESTS)) console.log(`   ${line}`);
   for (const i of re) console.log('  ERR ', i.where, '-', i.msg);
   for (const i of rw) console.log('  warn', i.where, '-', i.msg);
+  const xq = questReachIssues(QUESTS, world, npcIds, ALL.sisli_vadi?.packs, DUNGEON_IDS, OPEN_ZONE_IDS);
+  const xe = xq.filter((i) => i.level === 'error'), xw = xq.filter((i) => i.level === 'warn');
+  totalErr += xe.length;
+  console.log(`\n== quest reachability: ${xe.length} errors, ${xw.length} warns | ${QUESTS.length} quests, ${spawnIndex(world, ALL.sisli_vadi?.packs).size} spawnable ids`);
+  for (const i of xe) console.log('  ERR ', i.where, '-', i.msg);
+  for (const i of xw) console.log('  warn', i.where, '-', i.msg);
 }
 if (!want.length || want.includes('town')) {
   const t = cc.checkTown(TOWN, models, DUNGEON_IDS, OPEN_ZONE_IDS);

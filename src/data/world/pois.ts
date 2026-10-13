@@ -14,6 +14,8 @@ const VILLAGE_OF_WAYPOINT: Record<string, string> = {
   wp_gumusdere: 'koy_gumusdere',
   wp_kizilkaya: 'koy_kizilkaya',
   wp_son_ocak: 'kamp_son_ocak',
+  wp_ciftlik: 'kamp_ciftlik',
+  wp_kanyon: 'kamp_kanyon',
 };
 
 export const WAYPOINTS: WaypointDef[] = LAYOUT.waypoints.map((w) => ({

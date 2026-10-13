@@ -28,6 +28,9 @@ const round10 = (n: number) => Math.round(n / 10) * 10;
 
 /** Rank defaults used only when an enemy def gives no xp multiplier (GDD 6.2). */
 const RANK_XP: Record<string, number> = { swarm: 0.35, trash: 1, elite: 5, miniboss: 25, boss: 100 };
+/** F3 first-10-minutes pace: Sürü (swarm) monsters of level 1-10 give at least 0.6 (0.35 above level 10). */
+const SWARM_EARLY_MULT = 0.6;
+const SWARM_EARLY_MAX_LEVEL = 10;
 
 /**
  * XP/levels, talent (passive tree) allocation and skill unlocks for the LOCAL character (G.character).
@@ -63,9 +66,11 @@ export class Progression {
    * XP a monster gives (level difference penalty, rank multiplier).
    * `xpMult` is EnemyDef.xp: the monster's TOTAL multiplier vs a same-level Sıradan (it already includes its rank);
    * when it is <= 0/undefined the rank default (Sürü .35, Sıradan 1, Seçkin 5, Ara Patron 25, Patron 100) is used.
+   * Sürü monsters of level 1-10 are floored at SWARM_EARLY_MULT (0.6), see tools/pace-check.mjs.
    */
   monsterXp(enemyLevel: number, rank: EnemyRank | 'swarm', xpMult: number, playerLevel: number): number {
-    const mult = xpMult > 0 ? xpMult : RANK_XP[rank] ?? 1;
+    let mult = xpMult > 0 ? xpMult : RANK_XP[rank] ?? 1;
+    if (rank === 'swarm' && enemyLevel <= SWARM_EARLY_MAX_LEVEL) mult = Math.max(mult, SWARM_EARLY_MULT);
     const d = playerLevel - enemyLevel;
     let diff = 1;
     if (d >= 8) diff = 0.05;

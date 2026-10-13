@@ -156,6 +156,8 @@ interface Spec {
   visual?: EnemyVisual; ai?: EnemyDef['ai']; loot?: string; armor?: number;
 }
 
+/** Rank XP multipliers (GDD_SYSTEMS 6.2). Sürü (role swarm) is 0.35 above monster level 10; Progression.monsterXp floors it at 0.6 for levels 1-10. */
+const SWARM_XP = 0.35;
 const XP: Record<EnemyRank, number> = { trash: 1, elite: 5, miniboss: 25, boss: 100 };
 
 function def(s: Spec): EnemyDef {
@@ -165,7 +167,7 @@ function def(s: Spec): EnemyDef {
     speed: s.speed, radius: s.radius, aggroRange: s.aggro, leashRange: s.leash,
     attackRange: s.basic.range, attackCooldown: s.basic.cooldown,
     basicAttack: s.basic, abilities: s.abilities ?? [],
-    forces: s.forces, xp: s.xp ?? (s.role === 'swarm' ? 0.35 : XP[s.rank]),
+    forces: s.forces, xp: s.xp ?? (s.role === 'swarm' ? SWARM_XP : XP[s.rank]),
     resist: s.resist, ccImmune: s.ccImmune, anims: s.anims, lootTable: s.loot,
     flying: s.flying, hoverHeight: s.hover, visual: s.visual, ai: s.ai,
   };

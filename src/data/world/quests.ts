@@ -57,7 +57,7 @@ const EXTRA_MAIN: Record<string, Extra> = {
     progress: "Gümüşdere Köyü'nde Muhtar Ferhat ile konuş.", done: 'Muhtar Ferhat seni bekliyordu. Vadinin işi uzun olacak.',
   },
   mq_02_fare_yuvasi: {
-    objectives: [kill('ow_rat', 10, 'Orman Sıçanı öldür')],
+    objectives: [kill('ow_rat', 10, 'Orman Sıçanı öldür')], generic: [{ rarity: 'uncommon', slot: 'weapon' }],
     offer: "Fareler tarlaları bastı. Fare Yuvası'nı temizle.", progress: 'Orman Sıçanı öldür (10).', done: 'Tarlalar yeniden güvende.',
   },
   mq_03_balcik_temizligi: {
@@ -253,6 +253,27 @@ const EXTRA_SIDE: Record<string, Extra> = {
   },
 };
 
+/**
+ * One-time quest XP rebalance (F3 first 10 minutes + XP parity, 2026-10-13): xpPct of the 19 main and 24 side quests, replacing the
+ * layout values. Each 5-level band now gives ~35 % of its XP to one-time quests (region quests in quests_extra.ts follow the same
+ * factor), and mq_01 / mq_02 are 8.5x / 3x their layout value: level 2 then arrives at ~76 s (4x on mq_01 would hit the 90 s limit
+ * exactly). Level 3 is set by the mq_05 miniboss kill (Gırtlak, level 5, about 500 XP at level 2-3).
+ * Check with `node tools/pace-check.mjs`. docs/GDD_OPENWORLD.layout.json (and its §6.2-6.3 tables) still show the layout values.
+ */
+const XP_PCT: Record<string, number> = {
+  mq_01_kuzgunun_cagrisi: 85, mq_02_fare_yuvasi: 60, mq_03_balcik_temizligi: 4, mq_04_samani_sustur: 4,
+  mq_05_yagmaci_kampi: 5, mq_06_ilk_metin: 4, mq_07_kopruyu_gec: 3, mq_08_ciftlik_isgali: 6,
+  mq_09_mezarligin_sirri: 7, mq_10_kemik_mahzeni: 13, mq_11_curukkok: 13, mq_12_haydut_kalesi: 11,
+  mq_13_kizilkaya_haberi: 9, mq_14_bataklik_cadisi: 14, mq_15_kor_ocagi: 15, mq_16_ork_istilasi: 16,
+  mq_17_lanetli_yol: 10, mq_18_kara_anit: 13, mq_19_kuzgunkaleye_donus: 18,
+  sq_g_01_kurt_tehlikesi: 3, sq_g_02_geyik_derisi: 3, sq_g_03_orumcek_aglari: 3, sq_g_04_ari_yuvasi: 3,
+  sq_g_05_mantar_halkasi: 3, sq_g_06_degirmen: 3, sq_c_01_bugday_hirsizlari: 4, sq_c_02_korkuluk_sirri: 4,
+  sq_c_03_terk_edilmis_ciftlik: 4, sq_c_04_mantar_kokusu: 4, sq_c_05_haydut_devriyesi: 4, sq_k_01_gol_kiyisi: 5,
+  sq_k_02_warg_sürüsü: 5, sq_k_03_gozcu_kulesi: 5, sq_k_04_gergedan: 5, sq_k_05_agit_isigi: 6,
+  sq_k_06_zehirli_magara: 8, sq_k_07_ciyan_cukuru: 6, sq_s_01_kanyon_gecidi: 7, sq_s_02_tas_ocagi: 7,
+  sq_s_03_kor_ocagi_ates: 7, sq_s_04_kemik_nobeti: 5, sq_s_05_kutuphane: 5, sq_s_06_vampir_izi: 5,
+};
+
 /** Build a QuestDef from layout fields + the extra table. */
 function quest(
   p: { id: string; name: string; level: number; giver: string; xpPct: number; goldPerLevel?: number; region?: string; main: boolean; prereq?: string },
@@ -278,7 +299,7 @@ function quest(
 export const MAIN_QUESTS: QuestDef[] = LAYOUT.quests.main.map((q, i) =>
   quest(
     {
-      id: q.id, name: q.name, level: q.level, giver: q.giver, xpPct: q.xpPct, goldPerLevel: q.goldPerLevel, main: true,
+      id: q.id, name: q.name, level: q.level, giver: q.giver, xpPct: XP_PCT[q.id] ?? q.xpPct, goldPerLevel: q.goldPerLevel, main: true,
       prereq: i > 0 ? LAYOUT.quests.main[i - 1].id : undefined,
     },
     EXTRA_MAIN[q.id] ?? { objectives: [], offer: q.goal, progress: q.goal, done: q.goal },
@@ -288,7 +309,7 @@ export const MAIN_QUESTS: QuestDef[] = LAYOUT.quests.main.map((q, i) =>
 /** Side quests: the region is the first `rN` token of the place (camp id or "r1 ambient"). */
 export const SIDE_QUESTS: QuestDef[] = LAYOUT.quests.side.map((q) =>
   quest(
-    { id: q.id, name: q.name, level: q.level, giver: q.giver, xpPct: q.xpPct, region: /^(r\d)/.exec(q.place)?.[1], main: false },
+    { id: q.id, name: q.name, level: q.level, giver: q.giver, xpPct: XP_PCT[q.id] ?? q.xpPct, region: /^(r\d)/.exec(q.place)?.[1], main: false },
     EXTRA_SIDE[q.id] ?? { objectives: [], offer: q.goal, progress: q.goal, done: q.goal },
   ),
 );

@@ -4789,6 +4789,24 @@
     30,
     66
    ]
+  },
+  {
+   "id": "r1x_tas_kopru",
+   "name": "Taş Köprü",
+   "region": "r1",
+   "pos": [
+    111,
+    28
+   ]
+  },
+  {
+   "id": "koy_kizilkaya",
+   "name": "Kızılkaya Karakolu",
+   "region": "r3",
+   "pos": [
+    110,
+    106
+   ]
   }
  ],
  "farmSpots": [
@@ -5901,6 +5919,306 @@
      "z": 10,
      "rot": 180,
      "note": "güney yaklaşım yolu"
+    }
+   ]
+  },
+  {
+   "id": "kamp_ciftlik",
+   "name": "Altın Ambar Çiftliği",
+   "bounds": [
+    12,
+    12
+   ],
+   "buildings": [
+    {
+     "label": "Çiftlik Evi",
+     "model": "tw('buildings/red/building_home_A_red')",
+     "x": -7,
+     "z": -6,
+     "rot": 0,
+     "scale": 5
+    },
+    {
+     "label": "Çiftlik Evi 2",
+     "model": "tw('buildings/red/building_home_B_red')",
+     "x": 7,
+     "z": -7,
+     "rot": 180,
+     "scale": 5
+    },
+    {
+     "label": "Samanlık (ambar)",
+     "model": "ip('psx-medieval','market/hay_covered')",
+     "x": -9,
+     "z": 7,
+     "rot": 0,
+     "scale": 0.7
+    },
+    {
+     "label": "Kuyu",
+     "model": "gp('well')",
+     "x": 3,
+     "z": -1,
+     "rot": 0,
+     "scale": 1
+    },
+    {
+     "label": "Kamp Ateşi",
+     "model": "gp('campfire')",
+     "x": -1,
+     "z": 3,
+     "rot": 0,
+     "scale": 1
+    },
+    {
+     "label": "Işınlanma Taşı",
+     "model": "gp('waypoint_stone')",
+     "x": 8,
+     "z": 8,
+     "rot": 0,
+     "scale": 1
+    },
+    {
+     "label": "Buğday Tarlası",
+     "model": "kn('crops_wheatStageA')",
+     "x": -10,
+     "z": -10,
+     "rot": 0,
+     "scale": 3
+    },
+    {
+     "label": "Buğday Tarlası",
+     "model": "kn('crops_wheatStageA')",
+     "x": -7,
+     "z": -10,
+     "rot": 0,
+     "scale": 3
+    },
+    {
+     "label": "Buğday Tarlası",
+     "model": "kn('crops_wheatStageA')",
+     "x": -4,
+     "z": -10,
+     "rot": 0,
+     "scale": 3
+    },
+    {
+     "label": "Mısır Tarlası",
+     "model": "kn('crops_cornStageB')",
+     "x": 4,
+     "z": -11,
+     "rot": 0,
+     "scale": 3
+    },
+    {
+     "label": "Mısır Tarlası",
+     "model": "kn('crops_cornStageB')",
+     "x": 7,
+     "z": -11,
+     "rot": 0,
+     "scale": 3
+    },
+    {
+     "label": "Çiftlik Arabası",
+     "model": "gp('wagon')",
+     "x": 9,
+     "z": 1,
+     "rot": 0,
+     "scale": 1
+    }
+   ],
+   "rows": [
+    {
+     "label": "Tarla çiti",
+     "model": "kn('fence_planks')",
+     "placement": "kuzey ve doğu kenar (z -12, x 12); güney kenar kapı için açık",
+     "count": "kenar başına 6 parça; güney kapı x ±4 (8 m) açık"
+    }
+   ],
+   "npcs": [
+    {
+     "id": "npc_c_riza",
+     "name": "Çiftlik Sahibi Rıza",
+     "role": "quest",
+     "model": "Worker",
+     "x": 0,
+     "z": -6,
+     "rot": 180,
+     "note": "Altın Ambar görevleri (ana zincir `mq_07`..`mq_12`, yan görevler `sq_c_*`); \"Çiftlik kapısı herkese açık. Yoldaki haberleri bana getir.\""
+    },
+    {
+     "id": "npc_c_gulizar",
+     "name": "Avcı Gülizar",
+     "role": "citizen",
+     "model": "Rogue (silahsız) tint 0x6a8040",
+     "x": -3,
+     "z": 7,
+     "rot": 90,
+     "note": "avcı; \"Gece bataklık ışıklarının peşinden gitme, dönüşü olmaz.\""
+    },
+    {
+     "id": "npc_c_zeliha",
+     "name": "Çiftçi Anne Zeliha",
+     "role": "citizen",
+     "model": "Barbarian (aksesuarsız) tint 0x806040",
+     "x": 4,
+     "z": 4,
+     "rot": -90,
+     "note": "tarla işleri; \"Korkuluklar yine kalkmış, sabaha kadar gözümüz uykuda değil.\""
+    },
+    {
+     "id": "npc_c_muhafiz_1",
+     "name": "Çiftlik Muhafızı",
+     "role": "guard",
+     "model": "Knight (miğfersiz) tint 0x8090b0",
+     "x": -3,
+     "z": 10,
+     "rot": 180,
+     "note": "güney kapı"
+    },
+    {
+     "id": "npc_c_muhafiz_2",
+     "name": "Çiftlik Muhafızı",
+     "role": "guard",
+     "model": "Knight (miğfersiz) tint 0x8090b0",
+     "x": 3,
+     "z": 10,
+     "rot": 180,
+     "note": "güney kapı"
+    }
+   ]
+  },
+  {
+   "id": "kamp_kanyon",
+   "name": "Kanyon Girişi Kampı",
+   "bounds": [
+    10,
+    10
+   ],
+   "buildings": [
+    {
+     "label": "Komuta Çadırı",
+     "model": "ks('tent')",
+     "x": 0,
+     "z": -8,
+     "rot": 0,
+     "scale": 3
+    },
+    {
+     "label": "Erzak Çadırı",
+     "model": "ks('tent')",
+     "x": -6,
+     "z": -5,
+     "rot": 90,
+     "scale": 3
+    },
+    {
+     "label": "Revir Çadırı",
+     "model": "ks('tent')",
+     "x": 6,
+     "z": -5,
+     "rot": -90,
+     "scale": 3
+    },
+    {
+     "label": "Kuşatma Kalıntısı",
+     "model": "kc('siege-ballista-demolished')",
+     "x": -8,
+     "z": 2,
+     "rot": 20,
+     "scale": 2
+    },
+    {
+     "label": "Kırmızı Bayrak",
+     "model": "kc('flag-banner-long')",
+     "x": -9,
+     "z": -9,
+     "rot": 0,
+     "scale": 1.2
+    },
+    {
+     "label": "Kırmızı Bayrak",
+     "model": "kc('flag-banner-long')",
+     "x": 9,
+     "z": -9,
+     "rot": 0,
+     "scale": 1.2
+    },
+    {
+     "label": "Kamp Ateşi",
+     "model": "gp('campfire')",
+     "x": 3,
+     "z": 3,
+     "rot": 0,
+     "scale": 1
+    },
+    {
+     "label": "Işınlanma Taşı",
+     "model": "gp('waypoint_stone')",
+     "x": 0,
+     "z": 8,
+     "rot": 0,
+     "scale": 1
+    }
+   ],
+   "rows": [
+    {
+     "label": "Yarım palisade",
+     "model": "ip('psx-walls-fences','plackard-wall/plackard_open')",
+     "placement": "kuzey, doğu ve batı kenar (z -10, x ±10)",
+     "count": "kenar başına parçalar; güney açık (kapı x ±4, 8 m)"
+    }
+   ],
+   "npcs": [
+    {
+     "id": "npc_c_deniz",
+     "name": "Teğmen Deniz",
+     "role": "quest",
+     "model": "Knight + kılıç/kalkan tint 0xa04040",
+     "x": 0,
+     "z": -4,
+     "rot": 180,
+     "note": "Kanyon görevleri (ana zincir `mq_16`, yan görevler `sq_s_*`); \"Geçit kapanmadan kanyonu tutun.\""
+    },
+    {
+     "id": "npc_c_oguz",
+     "name": "Gezgin Tüccar Oğuz",
+     "role": "merchant",
+     "model": "Rogue_Hooded tint 0x406080",
+     "x": -4,
+     "z": -1,
+     "rot": 90,
+     "note": "panel `vendor` kind `merchant` (iksirler, parşömenler, Kırık taşlar)"
+    },
+    {
+     "id": "npc_c_nil",
+     "name": "Işınlayıcı Nil",
+     "role": "teleporter",
+     "model": "Mage + `Spellbook_open` tint 0x60a0ff",
+     "x": 4,
+     "z": -1,
+     "rot": -90,
+     "note": "panel `waypoints`"
+    },
+    {
+     "id": "npc_c_muhafiz_1",
+     "name": "Kanyon Muhafızı",
+     "role": "guard",
+     "model": "Knight (miğfersiz) tint 0x8090b0",
+     "x": -4,
+     "z": 7,
+     "rot": 180,
+     "note": "güney kapı"
+    },
+    {
+     "id": "npc_c_muhafiz_2",
+     "name": "Kanyon Muhafızı",
+     "role": "guard",
+     "model": "Knight (miğfersiz) tint 0x8090b0",
+     "x": 4,
+     "z": 7,
+     "rot": 180,
+     "note": "güney kapı"
     }
    ]
   }

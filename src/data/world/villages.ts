@@ -5,7 +5,8 @@ import { questIdsFor } from './quests';
 import { WAYPOINTS } from './pois';
 
 /**
- * Sisli Vadi villages (GDD_OPENWORLD §2): Gümüşdere Köyü, Kızılkaya Karakolu, Son Ocak Kampı. OWNER: content module.
+ * Sisli Vadi villages (GDD_OPENWORLD §2): Gümüşdere Köyü, Kızılkaya Karakolu, Son Ocak Kampı and the camp hubs Altın Ambar Çiftliği
+ * (Rıza, npc_c_riza) and Kanyon Girişi Kampı (Teğmen Deniz, npc_c_deniz). OWNER: content module.
  * Buildings, NPCs, roles, panels and quest givers come from the layout (`villages`); the palisade / wall rows are NOT turned into
  * props: the world builder (WP5) raises the walls from `bounds` + `gates`. A few hand-placed dressings (arches, towers, lamps,
  * siege remains) are listed in DRESSING. Village props and NPCs are metres relative to the village centre.
@@ -32,6 +33,8 @@ const GATES: Record<string, VillageDef['gates']> = {
   ],
   // the south side of the camp is open (retreat route)
   kamp_son_ocak: [{ id: 'guney', pos: [0, 12], rot: 0, width: 8 }],
+  kamp_ciftlik: [{ id: 'guney', pos: [0, 12], rot: 0, width: 8 }],
+  kamp_kanyon: [{ id: 'guney', pos: [0, 10], rot: 0, width: 8 }],
 };
 
 /** Hand-placed dressing from the layout rows (metres, rot in degrees). */

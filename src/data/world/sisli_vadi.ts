@@ -14,7 +14,7 @@ import { METIN_SPOTS, METIN_TIERS } from './metin';
  *  - layout.ts              loader, typed layout shape, model / texture url converters
  *  - regions.ts             rooms, regions (6 themes), roads, water, landmarks, borders
  *  - camps.ts               70 camps + 11 patrols as PackDefs (WORLD_PACKS: camps first; the enemy id scheme depends on this order)
- *  - villages.ts            Gümüşdere, Kızılkaya, Son Ocak: props, NPCs, gates, spawn points
+ *  - villages.ts            Gümüşdere, Kızılkaya, Son Ocak, camp hubs Altın Ambar and Kanyon: props, NPCs, gates, spawn points
  *  - pois.ts                waypoints, entrances, shrines, chests, cursed chests, gathering, hidden areas, vistas, rares,
  *                           mini-bosses, world boss schedules, ghost boat
  *  - metin.ts               six metin tiers (waves, adds, aura, pulse, respawn) and 24 spots
