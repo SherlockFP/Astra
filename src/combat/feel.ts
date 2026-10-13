@@ -479,3 +479,25 @@ export function massFactor(rank: string | undefined, role?: string): number {
     default: return 1;
   }
 }
+
+/** COMBAT_WOW Appendix A: WoW-style skill loop numbers (single source). CW-04 reads gcd / queue / lead. */
+export const WOW = {
+  gcd:   { profile: 'arpg' as 'arpg' | 'wow', arpg: { base: 1.0 }, wow: { base: 1.5, rogue: 1.0 }, floorMul: 0.5, rogueFixed: true },
+  queue: { window: 0.40, ttl: 0.80 },
+  lead:  { enabled: true, instant: 0.14, basic: 0.17, min: 0.08 },
+  pushback: { add: 0.5, max: 2, minHpFrac: 0.03, channelCut: 0.25 },
+  lockout:  { sec: 4, silenceSec: 3 },
+  proc:  { prd: true, overlayIn: 0.15, overlayOut: 0.35, warnSec: 1.5, maxOverlays: 3 },
+  glow:  { spendFrac: 0.90 },
+  text:  { critMul: 1.5, mergeSec: 0.45, bounce: [[0.18, 14], [0.34, 6]] },
+  spellFeel: { projectileTrauma: 0.06, bigSpellStop: 40, bigSpellTrauma: [0.14, 0.22], bigSpellFovPull: -2 },
+};
+
+/**
+ * Lead skip (COMBAT_WOW §2.3): seconds of the clip to skip so the hit lands at `target` instead of `hit`.
+ * Never pushes the hit below WOW.lead.min. `target <= 0` = keep authored (0).
+ */
+export function leadSkipSec(hit: number, target: number): number {
+  if (!(target > 0)) return 0;
+  return Math.max(0, Math.min(hit - target, hit - WOW.lead.min));
+}

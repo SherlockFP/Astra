@@ -1038,7 +1038,7 @@ export class PlayerController {
         if (pressed) this.pending = { slot, until: this.time + 0.35 };
         continue;
       }
-      if (this.fireSlot(slot, aim)) this.repeat[slot] = slot === 'lmb' ? 0 : 0.1;
+      if (this.fireSlot(slot, aim)) this.repeat[slot] = slot === 'lmb' ? 0 : 0.05;
       else if (!pressed) this.repeat[slot] = slot === 'lmb' ? 0.03 : 0.12;
     }
 

@@ -10,7 +10,9 @@ import { applyDynamicBuff } from './StatusEffects';
 import { xpFor } from '../systems/SkillMastery';
 import { TALENT_PIPS } from '../data/specs_talents';
 import { MAJOR_BASE, MAJOR_SLOTS, readMajorCd, writeMajorCd, resetMajorCooldowns } from './majors';
-import { COMBAT_FEEL, FEEL, TYPE_COLORS, feelBeat, vfxScale, isAreaVfx, freezeActors, weaponTempoOf, weightFromParam, type HitWeight } from './feel';
+import { COMBAT_FEEL, FEEL, WOW, TYPE_COLORS, feelBeat, vfxScale, isAreaVfx, freezeActors, weaponTempoOf, weightFromParam, leadSkipSec, type HitWeight } from './feel';
+import { gcdFor, isOffGcd } from './gcd';
+import { SpellQueue, type TakeState } from './spellQueue';
 import { GUARD_COUNTER_BY_CLASS, GUARD_COUNTER_CD, GUARD_COUNTER_COST, HEAVY_BY_CLASS, KRT_BY_CLASS, RIPOSTE_BY_CLASS, weaponArtVfx, type ChargeProfile, type SwingProfile } from './heavy';
 import { ART_BY_CATEGORY, getWeaponArt } from '../data/weaponArts';
 import { getItemBase } from '../data/items';
@@ -145,6 +147,9 @@ interface ActorState {
   gcdTotal: number;
   cur: Action | null;
   buffer: { slot: SkillSlotKey | null; skillId: string | null; aim: AimInfo; at: number } | null;
+  /** COMBAT_WOW §2.2 spell queue (one slot) and the aim it was pressed with. */
+  queue: SpellQueue;
+  queueAim: AimInfo | null;
   combo: { next: number; lastEnd: number };
   lastAim: AimInfo;
   lastLmbCall: number;
@@ -330,7 +335,9 @@ export class SkillSystem {
     if (def.behavior === 'combo') return this.tryBasic(player, st, def, st.lastAim, slot);
 
     if (this.needsAim(def) && slot) {
-      if (st.cur && this.now - st.cur.start < st.cur.chainAt) { this.buffer(st, slot, skillId, st.lastAim); return true; }
+      // a ground skill still on GCD / cooldown / chain window goes to the spell queue (fires with the live aim)
+      const wait = this.skillWait(st, def);
+      if (wait > 0) return this.queueSkill(st, def, slot, st.lastAim, wait);
       return this.startAim(player, st, def, slot);
     }
     return this.tryStartSkill(player, st, def, slot, st.lastAim);
@@ -382,7 +389,9 @@ export class SkillSystem {
 
   /** A queued skill (not the LMB chain itself) waits in the input buffer: the driver must yield to it. */
   hasBufferedSkill(p: Player): boolean {
-    const b = this.states.get(p.id)?.buffer;
+    const st = this.states.get(p.id);
+    if (st?.queue.peek()?.kind === 'skill') return true;
+    const b = st?.buffer;
     if (!b || !b.skillId) return false;
     return b.skillId !== this.skillIdForSlot(p, 'lmb');
   }
@@ -597,6 +606,7 @@ export class SkillSystem {
     if (!st) return false;
     let did = false;
     st.buffer = null; // a dodge / stun swallows any queued press (otherwise a swing would start in the middle of the roll)
+    st.queue.clear('interrupt');
     if (st.aiming) { this.endAim(actor as Player, st, false); did = true; }
     const a = st.cur;
     if (!a) return did;
@@ -734,6 +744,7 @@ export class SkillSystem {
     st.cds.clear();
     st.gcdUntil = 0;
     st.buffer = null;
+    st.queue.clear('reset');
     st.combo.next = 0;
     st.autoGapUntil = -99;
     st.wall = null;
@@ -845,7 +856,7 @@ export class SkillSystem {
     let st = this.states.get(p.id);
     if (!st) {
       st = {
-        player: p, cds: new Map(), gcdUntil: 0, gcdTotal: 0, cur: null, buffer: null, combo: { next: 0, lastEnd: -99 },
+        player: p, cds: new Map(), gcdUntil: 0, gcdTotal: 0, cur: null, buffer: null, queue: new SpellQueue(), queueAim: null, combo: { next: 0, lastEnd: -99 },
         lastAim: { point: [p.position.x, 0, p.position.z + 1], dir: [Math.sin(p.yaw), 0, Math.cos(p.yaw)], targetId: null },
         lastLmbCall: -99, aiming: null, cp: 0, cpTimer: 0, wall: null, barrier: null, bannerT: 0, seen: false, lastElement: 0, dodgeSeen: p.dodgeStartedAt, dodgeStarted: false, basicCount: 0, tailClip: null,
         airT: 0, wasAir: false, runT: 0, jumpReadyAt: 0, rollAtkFor: -99, kickUntil: 0, counterReadyAt: -99, autoGapUntil: -99,
@@ -930,12 +941,16 @@ export class SkillSystem {
   // starting skills
   // ======================================================================================================
 
-  private canUse(p: Player, st: ActorState, def: SkillDef, report: boolean): boolean {
+  /**
+   * `timed` = also check cooldown and GCD. Off-GCD skills (COMBAT_WOW §2.1) never wait for the GCD. `timed = false` is the
+   * validity-only check used for queued presses (their timing is handled by skillWait).
+   */
+  private canUse(p: Player, st: ActorState, def: SkillDef, report: boolean, timed = true): boolean {
     const basic = !!def.tags.includes('basic');
     if (p.statuses.silenced && !basic) { if (report) this.fail('silenced'); return false; }
     const c = st.cds.get(def.id);
-    if (c && c.charges <= 0) { if (report) this.fail('cooldown'); return false; }
-    if (!basic && this.now < st.gcdUntil - 0.12) { if (report) this.fail('cooldown'); return false; }
+    if (timed && c && c.charges <= 0) { if (report) this.fail('cooldown', Math.max(0, c.rechargeAt - this.now)); return false; }
+    if (timed && !basic && !isOffGcd(def) && this.now < st.gcdUntil) { if (report) this.fail('cooldown', st.gcdUntil - this.now); return false; }
     if (def.cost > 0 && p.resource + 0.01 < def.cost * this.costMult(p, def)) { if (report) this.fail('resource'); return false; }
     const min = def.params?.minResource;
     if (min && p.resource + 0.01 < min) { if (report) this.fail('resource'); return false; }
@@ -947,20 +962,66 @@ export class SkillSystem {
   }
 
   private tryStartSkill(p: Player, st: ActorState, def: SkillDef, slot: SkillSlotKey | null, aim: AimInfo): boolean {
-    if (!this.canUse(p, st, def, true)) return false;
-    const cur = st.cur;
-    if (cur) {
-      const el = this.now - cur.start;
-      if (el < cur.chainAt) {
-        // cannot cancel yet: buffer the press (last input wins)
-        if (cur.channel?.active) return false;
-        this.buffer(st, slot, def.id, aim);
-        return true;
-      }
-      this.endAction(st, 'cancel', true);
-    }
+    // silence / resource refusals are reported now and never queued
+    if (!this.canUse(p, st, def, true, false)) return false;
+    if (st.cur?.channel?.active) return false;
+    const wait = this.skillWait(st, def);
+    if (wait > 0) return this.queueSkill(st, def, slot, aim, wait);
+    if (st.cur) this.endAction(st, 'cancel', true); // wait == 0: the chain window is open
     st.combo.next = 0; // skills reset the LMB chain
     return this.startAction(p, st, def, slot, aim, false, 0);
+  }
+
+  /**
+   * Seconds until `def` may start: GCD (on-GCD skills only), own cooldown, and the current action's chain window.
+   * Infinity = cannot be queued (channel). Charge / other non-cancellable actions with no chain end are Infinity too.
+   */
+  private skillWait(st: ActorState, def: SkillDef): number {
+    let w = 0;
+    const c = st.cds.get(def.id);
+    if (c && c.charges <= 0) w = Math.max(w, c.rechargeAt - this.now);
+    if (!isOffGcd(def)) w = Math.max(w, st.gcdUntil - this.now);
+    const cur = st.cur;
+    if (cur) {
+      if (cur.channel?.active) return Infinity;
+      w = Math.max(w, cur.chainAt - (this.now - cur.start));
+    }
+    return Math.max(0, w);
+  }
+
+  /** COMBAT_WOW §2.2 window in seconds: Settings.spellQueueMs (0 disables the queue), capped at WOW.queue.window. */
+  private spellQueueWindow(): number {
+    const ms = G.settings?.data.spellQueueMs ?? WOW.queue.window * 1000;
+    return Math.max(0, Math.min(WOW.queue.window, ms / 1000));
+  }
+
+  /** Holds a press that is `wait` seconds early. Too early (> window) is rejected with the remaining time. */
+  private queueSkill(st: ActorState, def: SkillDef, slot: SkillSlotKey | null, aim: AimInfo, wait: number): boolean {
+    if (!Number.isFinite(wait)) { this.buffer(st, slot, def.id, aim); return true; }
+    if (wait > this.spellQueueWindow()) { this.fail('cooldown', wait); return false; }
+    const prev = st.queue.peek();
+    st.queue.offer(wait, { kind: 'skill', skillId: def.id, slot }, this.now);
+    st.queueAim = aim;
+    if (!prev || prev.skillId !== def.id) G.events.emit('skill:queued', { skillId: def.id, slot });
+    return true;
+  }
+
+  /** Fires the queued press once it is legal (called every frame from updateLocal). Invalid presses are dropped quietly. */
+  private serviceQueue(p: Player, st: ActorState): void {
+    const e = st.queue.peek();
+    if (!e || st.aiming) return;
+    const base = e.skillId ? SKILLS[e.skillId] : undefined;
+    const def = base ? this.resolveSkill(base, p) : null;
+    const valid = !!def && !p.isDead && !p.statuses.stunned && this.canUse(p, st, def, false, false);
+    const wait = def ? this.skillWait(st, def) : 0;
+    const state: TakeState = !valid ? 'invalid' : wait > 0 ? 'wait' : 'ready';
+    const t = st.queue.take(this.now, state);
+    if (!t || !def) return;
+    if (st.cur) this.endAction(st, 'cancel', true);
+    st.combo.next = 0;
+    const live = this.liveAim(p, st);
+    const aim: AimInfo = { ...live, targetId: st.queueAim?.targetId ?? live.targetId };
+    this.startAction(p, st, def, (t.slot as SkillSlotKey | null), aim, false, 0);
   }
 
   private buffer(st: ActorState, slot: SkillSlotKey | null, skillId: string | null, aim: AimInfo): void {
@@ -1102,12 +1163,19 @@ export class SkillSystem {
     const animSpeed = (def.animSpeed ?? 1) * rate * (basic ? FEEL.basicTempo * weaponTempoOf(p) : 1);
     const hitClip = def.hitTime ?? 0.3;
     const isChannel = !!def.channel;
-    const hit = def.castTime > 0 ? def.castTime / rate : isChannel ? Math.max(0.05, hitClip / animSpeed) : hitClip / animSpeed;
+    let hit = def.castTime > 0 ? def.castTime / rate : isChannel ? Math.max(0.05, hitClip / animSpeed) : hitClip / animSpeed;
     let end = (params.end ?? hitClip + 0.3) / animSpeed;
     if (def.castTime > 0) end = hit + Math.max(0.2, ((params.end ?? hitClip + 0.4) - hitClip) / animSpeed);
     if (end < hit + 0.06) end = hit + 0.1;
-    const chain = hit + (params.chain ?? (basic ? 0.05 : 0.1)) / animSpeed * (isChannel ? 0 : 1);
-    const move = hit + (params.move ?? (basic ? 0.15 : 0.2)) / animSpeed;
+    let chain = hit + (params.chain ?? (basic ? 0.05 : 0.1)) / animSpeed * (isChannel ? 0 : 1);
+    let move = hit + (params.move ?? (basic ? 0.15 : 0.2)) / animSpeed;
+    // COMBAT_WOW §2.3 lead skip: the clip starts later so the hit lands at the lead target (instants and LMB steps 1-2 only)
+    const movement = def.targeting === 'dash' || def.targeting === 'leap' || def.targeting === 'teleport' || def.behavior === 'shadow_step';
+    const leadable = WOW.lead.enabled && !isChannel && !movement && !def.tags.includes('finisher')
+      && (basic ? step <= 1 : def.castTime === 0 && (params.weight ?? 0) < 2);
+    const leadTarget = leadable ? (params.lead ?? (basic ? WOW.lead.basic : WOW.lead.instant)) : 0;
+    const leadSkip = G.settings?.data.leadSkip === false ? 0 : leadSkipSec(hit, leadTarget);
+    hit -= leadSkip; end -= leadSkip; chain -= leadSkip; move -= leadSkip;
     const moving = p.isLocal && (G.input?.moveAxis?.().x !== 0 || G.input?.moveAxis?.().y !== 0);
     const upper = params.upper === 1 && !!moving;
 
@@ -1124,7 +1192,11 @@ export class SkillSystem {
     const payNow = isChannel || def.targeting === 'dash' || def.targeting === 'leap' || def.targeting === 'teleport' || params.payStart === 1;
     if (payNow && !this.pay(p, st, def, a)) return false;
 
-    if (!basic) { st.gcdUntil = this.now + FEEL.gcd; st.gcdTotal = FEEL.gcd; }
+    // COMBAT_WOW §2.1: GCD from Settings.gcdProfile + haste; off-GCD skills (gcdFor = 0) never touch it
+    if (!basic) {
+      const g = gcdFor(G.settings?.data.gcdProfile ?? 'arpg', p.classId, rate, def);
+      if (g > 0) { st.gcdUntil = this.now + g; st.gcdTotal = g; }
+    }
     st.cur = a;
     st.buffer = null;
     if (p.classId === 'mage' && params.element) this.elementBalance(p, st, params.element);
@@ -1159,7 +1231,7 @@ export class SkillSystem {
       const fit = params.fit ? (p.anim.clipDuration(def.anim) / Math.max(0.2, def.duration ?? 0.6)) : animSpeed;
       const loop = isChannel && !params.fixed;
       if (def.targeting !== 'dash' && def.targeting !== 'leap' && def.targeting !== 'teleport' && def.behavior !== 'shadow_step') {
-        p.anim.playOnce(def.anim, { speed: fit, fade: 0.06, upperBody: upper, loop, restart: true });
+        p.anim.playOnce(def.anim, { speed: fit, fade: 0.06, upperBody: upper, loop, restart: true, startAt: leadSkip * fit });
         st.tailClip = upper || loop ? null : def.anim;
       }
     }
@@ -1429,6 +1501,7 @@ export class SkillSystem {
     // a charge pose can only outlive its action through a missed reset: never leave the clip frozen
     if (p.anim && p.anim.freezeUntil >= FREEZE_HOLD * 0.5 && !st.cur?.charging) p.anim.freezeUntil = 0;
     if (p.isDead) {
+      st.queue.clear('death');
       if (st.cur || st.aiming) { this.interrupt(p, true); }
       return;
     }
@@ -1440,6 +1513,7 @@ export class SkillSystem {
     } else st.cpTimer = 0;
     this.decayPips(p, dt);
 
+    if (p.statuses.stunned) st.queue.clear('stun');
     if (p.statuses.stunned && (st.cur || st.aiming)) this.interrupt(p, true);
     // F4: the heavyAttack press starts the charge in tryHeavyPress (PlayerController calls it behind its input gates)
     // (PlayerController calls interrupt() itself when a dodge roll really starts: pressing Shift without charges must not cancel swings;
@@ -1474,6 +1548,7 @@ export class SkillSystem {
     }
 
     if (st.cur) this.updateAction(p, st, dt);
+    this.serviceQueue(p, st);
     if (!st.cur && st.buffer) this.runBuffer(p, st);
   }
 
@@ -1965,7 +2040,6 @@ export class SkillSystem {
       G.combat.onHardCC(e, p.id);
       G.combat.meters.add('interrupt');
       feelBeat('interrupt', { pos: [e.position.x, e.position.y + 1.2, e.position.z], vfx: 'interrupt_burst' });
-      try { G.vfx.damageNumber([e.position.x, e.position.y + e.height, e.position.z], 0, 'crit', 'KESİLDİ!'); } catch { /* ignore */ }
       this.startKickLockout(p, art.kickLockout);
       return;
     }
@@ -2322,9 +2396,10 @@ export class SkillSystem {
     return softStat(a, key);
   }
 
-  fail(reason: 'cooldown' | 'resource' | 'range' | 'target' | 'stunned' | 'casting' | 'silenced'): void {
-    // the controller re-issues held keys every 0.1 s: only report on the press edge (and for non-key casts)
-    if (!this.quiet) G.events.emit('skill:fail', { reason });
+  fail(reason: 'cooldown' | 'resource' | 'range' | 'target' | 'stunned' | 'casting' | 'silenced', remaining?: number): void {
+    // the controller re-issues held keys every 0.05 s: only report on the press edge (and for non-key casts)
+    if (this.quiet) return;
+    G.events.emit('skill:fail', remaining !== undefined ? { reason, remaining } : { reason });
   }
 
   /** Suppresses skill:fail while a held key is being re-issued. */
