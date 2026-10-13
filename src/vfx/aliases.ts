@@ -113,6 +113,16 @@ export const VFX_ALIASES: Record<string, VfxAlias> = {
   secret_clones: { id: 'shadow_ground', color: 0x9a7ad0, scale: 0.8 },
   link_tether: { id: 'haste_trail', color: 0x9fd840, scale: 0.6 },
   darkglare_eye: { id: 'curse_loop', color: 0x9a4cff, scale: 0.9 },
+  // ---- PM-00a (docs/kits/plate-melee.md §g 'New VFX ids'): plate-melee kit presets, alias targets until real presets exist.
+  colossus_smash: { id: 'shockwave', color: 0xffd070, extra: [{ id: 'ground_slam' }] },
+  blood_burst: { id: 'death_nova', color: 0xaa1830 },
+  hammer_of_light: { id: 'holy_hammer', scale: 2.5, extra: [{ id: 'holy_burst', scale: 1.2 }] },
+  wake_of_ashes: { id: 'holy_burst', scale: 2.0, extra: [{ id: 'fire_burst', color: 0xffd070 }] },
+  divine_toll: { id: 'aura_ring', scale: 2.5, extra: [{ id: 'holy_beam' }, { id: 'holy_beam' }, { id: 'holy_beam' }, { id: 'holy_beam' }, { id: 'holy_beam' }] },
+  ancestral_beam: { id: 'spin_slash', extra: [{ id: 'heal_loop' }, { id: 'shockwave' }] },
+  ancestor_bear: { id: 'enrage_aura', scale: 1.5, extra: [{ id: 'carnage_aura' }] },
+  ancient_guardian: { id: 'shield_bubble', color: 0xffe9a0, extra: [{ id: 'wings_aura' }] },
+  dawn_dome: { id: 'aura_ring', scale: 3, extra: [{ id: 'heal_burst' }] },
 };
 
 /** Alias entry for a VFX id, or undefined. Never throws (unknown ids are silently nothing). */

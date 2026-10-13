@@ -5,6 +5,7 @@ import { TALENT_STATUSES } from './statuses_talents';
 import { STATUSES_KIT_MAGE, STATUS_RULES_KIT_MAGE } from './statuses_kit_mage';
 import { STATUSES_KIT_ROGUE, STATUS_RULES_KIT_ROGUE } from './statuses_kit_rogue';
 import { STATUSES_KIT_WARLOCK, STATUS_RULES_KIT_WARLOCK } from './statuses_kit_warlock';
+import { STATUSES_KIT_PLATE, STATUS_RULES_KIT_PLATE } from './statuses_kit_plate';
 import { WATCHER_STATUSES } from './watchers';
 
 /**
@@ -58,7 +59,8 @@ export const STATUSES: Partial<Record<StatusId, StatusDef>> = {
   empower: { id: 'empower', name: 'Güçlenme', icon: I('buff-strength'), kind: 'buff', vfx: 'buff_aura', dispellable: true },
   banner: { id: 'banner', name: 'Savaş Sancağı', icon: I('buff-aura'), kind: 'buff', stats: { armorPct: 0.2, resourceRegen: 1.5 }, vfx: 'buff_aura' },
   blessed: { id: 'blessed', name: 'Kutsanmış', icon: I('buff-blessing'), kind: 'buff', stats: { damageReductionPct: 0.25, attackSpeed: 0.2 }, vfx: 'buff_aura' },
-  bloodrage: { id: 'bloodrage', name: 'Kan Hiddeti', icon: I('buff-lifesteal'), kind: 'buff', stats: { lifeSteal: 0.08 }, vfx: 'enrage_aura' },
+  // PM-00a retune (plate-melee 3b): -30 % damage taken added to the 8 % lifesteal.
+  bloodrage: { id: 'bloodrage', name: 'Kan Hiddeti', icon: I('buff-lifesteal'), kind: 'buff', stats: { lifeSteal: 0.08, damageReductionPct: 0.30 }, vfx: 'enrage_aura', defaultDuration: 8 },
   venom: { id: 'venom', name: 'Ölümcül Zehir', icon: I('debuff-poison'), kind: 'buff', stats: { poisonDamagePct: 0.5 } },
   ambush: { id: 'ambush', name: 'Pusu', icon: I('buff-crit'), kind: 'buff' },
   balance: { id: 'balance', name: 'Element Dengesi', icon: I('buff-mana-regen'), kind: 'buff', vfx: 'buff_aura' },
@@ -105,17 +107,21 @@ const V2_STATUSES: Partial<Record<StatusId, StatusDef>> = {
   riposte: { id: 'riposte', name: 'Karşı Vuruş Hazır', icon: I('buff-crit'), kind: 'buff' },
   guard_broken: { id: 'guard_broken', name: 'Siper Kırıldı', icon: I('debuff-stun'), kind: 'debuff', cc: true },
   critbuff: { id: 'critbuff', name: 'Kritik Gücü', icon: I('buff-crit'), kind: 'buff' },
-  shield_block: { id: 'shield_block', name: 'Kalkan Kaldır', icon: I('buff-defense'), kind: 'buff', stats: { blockAmount: 0.25 }, vfx: 'shield_bubble' },
+  // PM-00a retune (plate-melee 2b): 6 s; blockAmount +0.25 kept.
+  shield_block: { id: 'shield_block', name: 'Kalkan Kaldır', icon: I('buff-defense'), kind: 'buff', stats: { blockAmount: 0.25 }, vfx: 'shield_bubble', defaultDuration: 6 },
   oath_ward: { id: 'oath_ward', name: 'Yemin Siperi', icon: I('buff-absorb'), kind: 'buff', vfx: 'shield_bubble' },
-  bastion: { id: 'bastion', name: 'Sarsılmaz Bastion', icon: I('buff-defense'), kind: 'buff', stats: { damageReductionPct: 0.40 }, vfx: 'shield_bubble' },
+  bastion: { id: 'bastion', name: 'Sarsılmaz Bastion', icon: I('buff-defense'), kind: 'buff', stats: { damageReductionPct: 0.40 }, vfx: 'shield_bubble', defaultDuration: 8 },
   aegis: { id: 'aegis', name: "Yemin Aegis'i", icon: I('buff-defense'), kind: 'buff', stats: { damageReductionPct: 0.25 }, vfx: 'buff_aura' },
-  iron_stance: { id: 'iron_stance', name: 'Demir Duruş', icon: I('buff-defense'), kind: 'buff', stats: { damageReductionPct: 0.35 }, vfx: 'enrage_aura' },
+  // PM-00a retune (plate-melee 3b / 4b): +13 % damage reduction per stack, max 3 stacks, 7 s.
+  iron_stance: { id: 'iron_stance', name: 'Demir Duruş', icon: I('buff-defense'), kind: 'buff', maxStacks: 3, defaultDuration: 7, stats: { damageReductionPct: 0.13 }, vfx: 'enrage_aura' },
   blood_shield: { id: 'blood_shield', name: 'Kan Zırhı', icon: I('buff-absorb'), kind: 'buff', vfx: 'enrage_aura' },
-  last_stand: { id: 'last_stand', name: 'Son Direniş', icon: I('buff-defense'), kind: 'buff', stats: { maxHpPct: 0.30, damageReductionPct: 0.20 }, vfx: 'enrage_aura' },
+  // PM-00a retune (plate-melee 4b): -25 % damage taken, CC immune, 8 s, no max-HP bonus.
+  last_stand: { id: 'last_stand', name: 'Son Direniş', icon: I('buff-defense'), kind: 'buff', stats: { damageReductionPct: 0.25 }, vfx: 'enrage_aura', defaultDuration: 8 },
   rally: { id: 'rally', name: 'Toplayıcı Kükreme', icon: I('buff-strength'), kind: 'buff', stats: { maxHpPct: 0.15 }, vfx: 'enrage_aura' },
   zeal: { id: 'zeal', name: 'Gayret', icon: I('buff-haste'), kind: 'buff', stats: { attackSpeed: 0.30 }, vfx: 'buff_aura' },
   wings: { id: 'wings', name: 'Hüküm Kanatları', icon: I('buff-blessing'), kind: 'buff', stats: { critChance: 0.20, moveSpeedPct: 0.15 }, vfx: 'buff_aura' },
-  carnage: { id: 'carnage', name: 'Katliam Çılgınlığı', icon: I('buff-strength'), kind: 'buff', stats: { attackSpeed: 0.30, healReceivedPct: -0.30 }, vfx: 'enrage_aura' },
+  // PM-00a retune (plate-melee 3b): +20 % crit chance, +50 % rage generation (rule resGain), no damage / healing malus.
+  carnage: { id: 'carnage', name: 'Katliam Çılgınlığı', icon: I('buff-strength'), kind: 'buff', stats: { critChance: 0.20 }, vfx: 'enrage_aura' },
   icy_veins: { id: 'icy_veins', name: 'Ayaz Damarları', icon: I('buff-mana-regen'), kind: 'buff', stats: { castSpeed: 0.30 }, vfx: 'buff_aura' },
   combustion: { id: 'combustion', name: 'Yanış', icon: I('buff-strength'), kind: 'buff', vfx: 'buff_aura' },
   shadow_blades: { id: 'shadow_blades', name: 'Gölge Bıçakları', icon: I('buff-crit'), kind: 'buff', stats: { costReductionPct: 0.30 }, vfx: 'buff_aura' },
@@ -185,6 +191,19 @@ export interface StatusRule {
   takenMorePerStack?: number;
   /** P-21: burst on natural expiry only (never on dispel, see shouldFireOnExpire). Read by the K14 hook in Combat.ts. */
   onExpire?: StatusExpireBurst;
+  // ---- PM-00a (plate-melee §g needs 4 / 7 / 8): rule fields only; the behaviour is wired by PM-00b (combat/procMods.ts, Combat.ts).
+  /** Target takes this much extra damage (fraction) only from the player who applied the status (Dev Ezme `colossus`, Ceza `judged`). */
+  takenMoreFromSource?: number;
+  /** Rider: hits from the owner's skills also strike this many nearby enemies (`sweeping` 2, `meat_cleaver` 3) ... */
+  extraTargets?: number;
+  /** ... at this damage multiplier (0.6 for both). */
+  extraMult?: number;
+  /** Cooldown multiplier on the listed skills while the status is up (`ursoc_form`: Yarma / Paralama x0.5). */
+  cdMult?: { mult: number; skills: string[] };
+  /** Heal-over-time pandemic: a refresh keeps this fraction of the remaining duration (`rend` 0.30, `virulent_plague` pandemic). */
+  pandemic?: number;
+  /** Knockback immunity while active (`deaths_advance`). */
+  immuneKnockback?: boolean;
 }
 
 /** P-21 onExpire payload: an area hit at the owner's position when the status runs out. */
@@ -217,7 +236,8 @@ export const STATUS_RULES: Partial<Record<StatusId, StatusRule>> = {
   sunder: { stack: 'refresh', takenMore: 0.15, perMag: false },
   shield: { stack: 'strongest' },
   haste: { stack: 'strongest', perMag: true, defMag: 0.2 },
-  enrage: { stack: 'strongest', perMag: true, defMag: 0.2, dealtMore: 1 },
+  // PM-00a retune (plate-melee 3b): called with magnitude 0.15 (Kudurma), default magnitude 0.15.
+  enrage: { stack: 'strongest', perMag: true, defMag: 0.15, dealtMore: 1 },
   regen: { stack: 'strongest', hot: true, defMag: 5 },
   fortify: { stack: 'strongest', perMag: true, defMag: 0.2 },
   invulnerable: { stack: 'refresh' },
@@ -268,13 +288,13 @@ const V2_STATUS_RULES: Partial<Record<StatusId, StatusRule>> = {
   oath_ward: { stack: 'strongest' },
   bastion: { stack: 'refresh', immuneCC: true },
   aegis: { stack: 'refresh' },
-  iron_stance: { stack: 'refresh', immuneCC: true },
+  iron_stance: { stack: 'stack' },
   blood_shield: { stack: 'strongest' },
   last_stand: { stack: 'refresh', immuneCC: true },
   rally: { stack: 'refresh' },
   zeal: { stack: 'refresh' },
   wings: { stack: 'refresh', dealtMore: 0.25 },
-  carnage: { stack: 'refresh', immuneSlow: true, dealtMore: 0.35 },
+  carnage: { stack: 'refresh', immuneSlow: true, resGain: 0.5 },
   icy_veins: { stack: 'refresh' },
   combustion: { stack: 'refresh' },
   shadow_blades: { stack: 'refresh' },
@@ -401,6 +421,9 @@ Object.assign(STATUS_RULES, YS_LU_STATUS_RULES);
 // KIT PK-0: kit statuses (PK-MAGE / PK-ROGUE / PK-WARLOCK) and the shared hidden watcher statuses (data/watchers.ts).
 Object.assign(STATUSES, STATUSES_KIT_MAGE, STATUSES_KIT_ROGUE, STATUSES_KIT_WARLOCK, WATCHER_STATUSES);
 Object.assign(STATUS_RULES, STATUS_RULES_KIT_MAGE, STATUS_RULES_KIT_ROGUE, STATUS_RULES_KIT_WARLOCK);
+// PM-00a (plate-melee §g): plate kit statuses (32 ids, 10 pending defs). Merged last: sudden_death overrides the talent stub.
+Object.assign(STATUSES, STATUSES_KIT_PLATE);
+Object.assign(STATUS_RULES, STATUS_RULES_KIT_PLATE);
 
 /** Statuses that are crowd control on the "hard" scale (cannot act). */
 export const HARD_CC: StatusId[] = ['stun', 'freeze', 'knockdown', 'fear', 'petrify'];

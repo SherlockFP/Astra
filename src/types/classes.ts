@@ -25,6 +25,8 @@ export interface PipDef {
   icon: string;               // icon name in public/assets/icons (no path, no .svg), e.g. 'buff-haste'
   /** Passive decay: -1 pip every `every` seconds after `after` seconds out of combat (Çi: after 8 s, every 4 s). */
   decay?: { after: number; every: number };
+  /** PM-00a (plate-melee §g need 1): timed regeneration, +1 per `every` seconds up to `max` (Death Knight runes: every 10 s). */
+  regen?: { every: number };
   startAt?: number;
 }
 

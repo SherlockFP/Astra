@@ -50,7 +50,26 @@ export function normaliseCharacterSave(raw: unknown): CharacterSave | null {
   c.professions ??= {};
   if (c.mythic && !c.mythic.seasons) c.mythic.seasons = {};
   migrateTalents(c);
+  migratePlateBars(c);
   return c;
+}
+
+/** PM-00a (docs/kits/plate-melee.md §g need 9 / f4): the nine plate-melee specs. */
+const PLATE_SPEC_IDS: SpecId[] = [
+  'knight_protector', 'knight_blademaster', 'barbarian_warlord', 'barbarian_butcher',
+  'paladin_protection', 'paladin_holy', 'paladin_retribution', 'necromancer_bone', 'necromancer_summoner',
+];
+
+/**
+ * One-time reset (flags['bars.plate1']): drops the saved bars of the nine plate specs so they fall back to the new
+ * `defaultBar` (dropped / moved skill ids would otherwise stay on the bar, see remapBars). Idempotent.
+ */
+function migratePlateBars(save: CharacterSave): void {
+  save.flags ??= {};
+  if (save.flags['bars.plate1']) return;
+  save.flags['bars.plate1'] = 1;
+  const bars = (save.specBars ??= {});
+  for (const s of PLATE_SPEC_IDS) delete bars[s];
 }
 
 /**

@@ -14,7 +14,7 @@ import { skillRankDamageMult } from './skillRanks';
 import { COMBAT_FEEL, FEEL, FEEL_TABLE, KNOCKBACK, SLOWMO, SLOWMO_GAP, TYPE_COLORS, feelBeat, freezeActors, knockbackDuration, massFactor, resolveHitFeel, vfxScale, weaponKindOf, type HitWeight } from './feel';
 import { DeathLog } from './deathLog';
 import { GUARD_BREAK_STUN, PARRY_WINDOW, GuardState, guardCost, guardProfileOf } from './guard';
-import { blockChanceCap, protectorCheat, warlordRageMult } from './specs';
+import { blockChanceCap, protectorCheat, specOf, warlordRageMult } from './specs';
 import { weaknessOf } from '../data/families';
 import { breakLock, breakSeconds, finisherPctMaxHp, hyperArmorOf, isSwarm, parryPoise, poiseDelay, poiseMax, poiseRegenRate } from './poise';
 import { CombatMeters } from './meters';
@@ -558,7 +558,8 @@ export class Combat {
     let base = W * spec.coef + (spec.flat ?? 0);
 
     const cls = attacker.kind === 'player' ? CLASSES[(attacker as Player).classId] : null;
-    if (cls) base *= 1 + Math.max(0, attacker.getStat(cls.mainStat)) / 100;
+    // PM-00a (plate-melee §g need 10): a spec's own mainStat (Kutsal int, Death Knights str) wins over the class default.
+    if (cls) base *= 1 + Math.max(0, attacker.getStat(specOf(attacker)?.mainStat ?? cls.mainStat)) / 100;
 
     // increased bucket (one additive sum)
     const tags = spec.tags ?? [];

@@ -154,7 +154,13 @@ export type StatusId =
   | 'seismic_echo' | 'seismic_ward' | 'earth_fracture' | 'unstable_energy' | 'void_mark' | 'void_corruption'
   // Yiğitler Sarayı / Leş Uyanışı (SP-05, append-only): StatusDefs + STATUS_RULES rows in data/statuses.ts (YS_LU block).
   | 'holy_scorch' | 'aegis_ward' | 'odyn_favor' | 'odyn_blessing' | 'rune_blessed' | 'bear_snare' | 'heal_cut' | 'heal_absorb'
-  | 'tank_stack' | 'frost_mark' | 'morbid_fixation' | 'exile_cold' | 'champion_boon' | 'weapon_mark' | 'anima_exhaust';
+  | 'tank_stack' | 'frost_mark' | 'morbid_fixation' | 'exile_cold' | 'champion_boon' | 'weapon_mark' | 'anima_exhaust'
+  // PM-00a (docs/kits/plate-melee.md §g 'New StatusIds'): plate-melee kit statuses. StatusDefs + STATUS_RULES in data/statuses_kit_plate.ts.
+  // (sudden_death, revenge_ready, mortal_wound, exec_window are already in the union above; exec_window is defined in data/watchers.ts.)
+  | 'battlelord' | 'colossus' | 'sweeping' | 'avatar' | 'die_by_sword' | 'rend' | 'meat_cleaver' | 'gore'
+  | 'gory_maul' | 'gory_iron' | 'ursoc_form' | 'shining_light' | 'infusion_of_light' | 'art_of_war' | 'hammer_window'
+  | 'templar_combo' | 'divine_steed' | 'blood_plague' | 'vampiric_blood' | 'dancing_rune_weapon' | 'icebound'
+  | 'anti_magic_shell' | 'deaths_advance' | 'vile_contagion' | 'virulent_plague' | 'sudden_doom' | 'dark_transformation' | 'army';
 
 export interface StatusDef {
   id: StatusId;

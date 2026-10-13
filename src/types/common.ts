@@ -44,7 +44,9 @@ export type ResourceType = 'rage' | 'mana' | 'energy' | 'focus' | 'faith' | 'ess
  */
 export type PipId = 'combo' | 'adalet' | 'karisim' | 'chi' | 'holypower' | 'shard'
   // GDD_TALENTS §0.4 (T0): Gizem Yükü (mage_arcane), max 4, #b78cff
-  | 'arcane';
+  | 'arcane'
+  // PM-00a (docs/kits/plate-melee.md §g need 1): Death Knight rune pip (max 6, timed regen via PipDef.regen).
+  | 'rune';
 
 export type DamageType = 'physical' | 'fire' | 'frost' | 'lightning' | 'shadow' | 'poison' | 'holy' | 'arcane' | 'true';
 

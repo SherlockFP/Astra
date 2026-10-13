@@ -65,6 +65,10 @@ export const VFX_IDS = [
   // preset_kit file implements it.
   'arcane_missile', 'arcane_missile_hit', 'prismatic_bolt', 'glacial_spike', 'shatter_burst', 'shadowstep_streak',
   'secret_clones', 'link_tether', 'darkglare_eye',
+  // ---- PM-00a (docs/kits/plate-melee.md §g 'New VFX ids', append-only): plate-melee kit presets. Each has an alias in
+  // vfx/aliases.ts until its real preset exists (the vfx owner implements them later).
+  'colossus_smash', 'blood_burst', 'hammer_of_light', 'wake_of_ashes', 'divine_toll', 'ancestral_beam', 'ancestor_bear',
+  'ancient_guardian', 'dawn_dome',
 ] as const;
 
 export type VfxId = (typeof VFX_IDS)[number];

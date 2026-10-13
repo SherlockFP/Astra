@@ -33,6 +33,8 @@ export interface SpecDef {
   defaultBar: Partial<Record<SkillSlotKey, string>>;
   weaponArt?: string;                                 // override of the category art (healers)
   basic?: string;                                     // replaces <class>_basic (Işık Çağıran, Simyacı)
+  /** PM-00a (plate-melee §g need 10): per-spec main stat for Combat.rollOutgoing (falls back to ClassDef.mainStat). */
+  mainStat?: 'str' | 'dex' | 'int';
   guard?: { gauge: number; arc: number; blockAmount: number };
   // ---- GDD_TALENTS (T0, append-only). Optional; data owners fill them (combat data for mage specs, §1.3.1).
   /** Skills granted by an A node of the spec tree instead of level 10 (`Progression.unlockedSkills`). */
