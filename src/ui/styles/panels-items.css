@@ -345,7 +345,7 @@ body.pi-dragging, body.pi-dragging * { cursor: grabbing !important; }
   width: 250px;
   height: 342px;
   overflow: hidden;
-  background: rgba(255, 150, 60, 0.28);
+  background: #111;
   border: 1px solid #2f2f2f;
   border-radius: 0;
   box-shadow: 0 0 0 1px #000;
@@ -389,9 +389,9 @@ body.pi-dragging, body.pi-dragging * { cursor: grabbing !important; }
 .pi-ch-model { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
 .pi-ch-model .pi-preview { width: 250px; height: 340px; }
 .pi-ch-model .pi-xp { width: 100%; }
-.pi-ch-dur { cursor: default; }
-.pi-ch-dur.is-bad { --chip-c: var(--pi-bad); cursor: pointer; }
-.pi-ch-dur.is-ok { --chip-c: var(--pi-good); }
+.pi-ch-dur.k-chip { height: auto; padding: 0; background: none; border: 0; color: var(--text-1); cursor: default; }
+.pi-ch-dur.k-chip.is-bad { color: var(--pi-bad); cursor: pointer; }
+.pi-ch-dur.k-chip.is-ok { color: var(--pi-good); }
 .pi-ch-stats { min-width: 0; min-height: 0; overflow-y: auto; padding-right: 5px; }
 .pi-cat--sub { margin-left: 10px; }
 .pi-cat--legacy { margin-top: 4px; }
@@ -408,19 +408,20 @@ body.pi-dragging, body.pi-dragging * { cursor: grabbing !important; }
   font-size: 13px;
   
   
-  color: var(--elv-value);
+  color: #fff;
   text-align: left;
   cursor: pointer;
-  background: rgba(120, 86, 40, 0.5);
-  border: 1px solid #2f2f2f;
+  background: #262626;
+  border: 1px solid #000;
+  border-left: 2px solid var(--cls, #8a8a8a);
   border-radius: 0;
 }
-.pi-cat-head:hover { border-color: var(--pi-edge); }
+.pi-cat-head:hover { background: #303030; }
 .pi-cat-head span { flex: 1; }
 .pi-cat-arrow { font-style: normal; color: var(--text-dim); }
-.pi-cat-ico { width: 16px; height: 16px; background: var(--elv-value); -webkit-mask: var(--ico) center / contain no-repeat; mask: var(--ico) center / contain no-repeat; }
+.pi-cat-ico { width: 16px; height: 16px; background: #fff; -webkit-mask: var(--ico) center / contain no-repeat; mask: var(--ico) center / contain no-repeat; }
 .pi-stat { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 3px 7px; border-bottom: 1px solid rgba(255, 255, 255, 0.045); cursor: help; }
-.pi-stat:hover { background: rgba(232, 196, 106, 0.09); }
+.pi-stat:hover { background: rgba(255, 255, 255, 0.05); }
 .pi-stat-l { color: var(--text-dim); font-size: 13px; }
 .pi-stat-v { font-family: var(--font-head); font-weight: 700; font-size: 13px; color: #fff; }
 .pi-stat.main .pi-stat-l { color: var(--elv-value); }
@@ -612,7 +613,7 @@ body.pi-dragging, body.pi-dragging * { cursor: grabbing !important; }
 .pi-prot input { display: none; }
 .pi-prot-box { flex: none; width: 17px; height: 17px; display: grid; place-items: center; background: #120c08; border: 1px solid var(--elv-value); border-radius: 0; font-size: 13px; color: #ffe27a; }
 .pi-prot input:checked + .pi-prot-box::after { content: '\2714'; }
-.pi-prot.on { border-color: var(--elv-value); background: rgba(232, 196, 106, 0.12); }
+.pi-prot.on { border-color: var(--elv-value); background: rgba(255, 255, 255, 0.08); }
 .pi-prot.off { opacity: 0.5; cursor: not-allowed; }
 .pi-prot-ico { flex: none; width: 20px; height: 20px; background: #fff; -webkit-mask: var(--ico) center / contain no-repeat; mask: var(--ico) center / contain no-repeat; }
 .pi-prot-txt { flex: 1; }
@@ -623,7 +624,7 @@ body.pi-dragging, body.pi-dragging * { cursor: grabbing !important; }
 .pi-affix { display: flex; align-items: center; gap: 8px; padding: 7px 9px; color: var(--pi-blue); cursor: pointer; background: rgba(40, 60, 110, 0.14); border: 1px solid #2c3a55; border-radius: 0; }
 .pi-affix:hover { border-color: var(--pi-edge); }
 .pi-affix input { display: none; }
-.pi-affix.locked { color: var(--elv-value); background: rgba(232, 196, 106, 0.13); border-color: var(--elv-value); box-shadow: none; }
+.pi-affix.locked { color: var(--elv-value); background: rgba(255, 255, 255, 0.08); border-color: var(--elv-value); box-shadow: none; }
 .pi-lockbox { flex: none; width: 18px; height: 18px; background: currentColor; -webkit-mask: var(--ico) center / contain no-repeat; mask: var(--ico) center / contain no-repeat; opacity: 0.8; }
 .pi-affix-text { flex: 1; }
 .pi-affix-tier { font-style: normal; font-size: 13px; color: var(--text-dim); }

@@ -47,7 +47,7 @@
 .cc-prompt::before { content: ''; position: absolute; inset: -4px; border-radius: 999px; padding: 3px; background: conic-gradient(var(--rc, #ffd06a) calc(var(--t, 1) * 360deg), rgba(255, 255, 255, 0.12) 0); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude; pointer-events: none; }
 .cc-prompt.riposte { --rc: #ffb36a; }
 .cc-prompt.finisher { --rc: #ffe27a; }
-.cc-key { font: 700 12px var(--font-head); color: #0b0805; background: linear-gradient(#fff6d8, #e8c46a); border-radius: 999px; padding: 3px 9px; box-shadow: 0 1px 0 #000; }
+.cc-key { font: 700 12px var(--font-head); color: #0b0805; background: #e8c46a; border-radius: 999px; padding: 3px 9px; box-shadow: 0 1px 0 #000; }
 .cc-ptxt { font: 700 15px var(--font-title); color: #fff6d8; text-shadow: 0 2px 0 #000; }
 .cc-prompt.riposte .cc-ptxt { color: #ffd6a8; }
 .cc-prompt.finisher .cc-ptxt { color: #ffe27a; }
