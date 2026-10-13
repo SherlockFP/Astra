@@ -27,20 +27,20 @@ const RPT = (n: string) => ip('retro-psx-tree-pack', `trees/${n}`);
 const RPN = (n: string) => ip('retro-psx-nature-pack', `trees/${n}`);
 const RPB = (n: string) => ip('retro-psx-tree-pack', `bushes/${n}`);
 const TWD = (n: string) => tw(`decoration/nature/${n}`);
-const TREE_DEAD = gp('tree_dead');
-const TREE_DEAD_M = hw('tree_dead_medium');
-const TUFT = gp('grass_tuft');
-const FLOWERS = gp('flowers');
-const PATH_WOOD = kn('path_wood');
-const LILIES = [kn('lily_large'), kn('lily_small')];
-const REEDS = [TWD('waterplant_A'), TWD('waterplant_B'), TWD('waterplant_C')];
-const MUSHROOMS = [kn('mushroom_redGroup'), kn('mushroom_tanGroup'), kn('mushroom_red'), kn('mushroom_tanTall')];
-const CROPS = [kn('crops_wheatStageB'), kn('crops_cornStageC'), kn('crop_pumpkin'), kn('crops_dirtDoubleRow')];
-const FOREST = [RPT('tree01'), RPT('tree03'), RPT('tree05'), RPT('tree12'), RPT('tree13'), RPT('tree15'), gp('tree_pine_a'), gp('tree_pine_b')];
-const CLIFF = kn('cliff_block_rock');
-const WALL_HALF = kc('wall-half');
-const MASSIFS = [TWD('hills_A_trees'), TWD('hills_B_trees')];
-const ROCK_SINGLE = ['A', 'B', 'C', 'D', 'E'].map((c) => TWD(`rock_single_${c}`));
+export const TREE_DEAD = gp('tree_dead');
+export const TREE_DEAD_M = hw('tree_dead_medium');
+export const TUFT = gp('grass_tuft');
+export const FLOWERS = gp('flowers');
+export const PATH_WOOD = kn('path_wood');
+export const LILIES = [kn('lily_large'), kn('lily_small')];
+export const REEDS = [TWD('waterplant_A'), TWD('waterplant_B'), TWD('waterplant_C')];
+export const MUSHROOMS = [kn('mushroom_redGroup'), kn('mushroom_tanGroup'), kn('mushroom_red'), kn('mushroom_tanTall')];
+export const CROPS = [kn('crops_wheatStageB'), kn('crops_cornStageC'), kn('crop_pumpkin'), kn('crops_dirtDoubleRow')];
+export const FOREST = [RPT('tree01'), RPT('tree03'), RPT('tree05'), RPT('tree12'), RPT('tree13'), RPT('tree15'), gp('tree_pine_a'), gp('tree_pine_b')];
+export const CLIFF = kn('cliff_block_rock');
+export const WALL_HALF = kc('wall-half');
+export const MASSIFS = [TWD('hills_A_trees'), TWD('hills_B_trees')];
+export const ROCK_SINGLE = ['A', 'B', 'C', 'D', 'E'].map((c) => TWD(`rock_single_${c}`));
 
 /** Every static model the scenery module can use (preloaded with the dungeon). */
 export function worldSceneryUrls(): string[] {
@@ -68,7 +68,7 @@ export function worldSceneryUrls(): string[] {
 // Palettes (GDD_OPENWORLD §8.2 table: trees, bushes, rocks, tufts, flowers multipliers)
 // ---------------------------------------------------------------------------
 
-interface Palette {
+export interface Palette {
   trees: string[];
   deadTrees: string[];
   /** Share of dead trees among the trees (default 0.02). Regions without living trees use the dead list only. */
@@ -80,7 +80,7 @@ interface Palette {
   mushrooms?: number;
 }
 
-const PALETTES: Record<string, Palette> = {
+export const PALETTES: Record<string, Palette> = {
   r1: {
     trees: [RPT('tree01'), RPT('tree03'), RPT('tree05'), RPT('tree12'), gp('tree_oak_a'), gp('tree_oak_b')],
     deadTrees: [TREE_DEAD],
@@ -130,8 +130,8 @@ const PALETTES: Record<string, Palette> = {
 };
 
 /** Props scattered at random spots of a region (count per region room). */
-interface Sprinkle { urls: string[]; n: number; s: [number, number]; layer: CullLayer; block?: number }
-const SPRINKLES: Record<string, Sprinkle[]> = {
+export interface Sprinkle { urls: string[]; n: number; s: [number, number]; layer: CullLayer; block?: number }
+export const SPRINKLES: Record<string, Sprinkle[]> = {
   r1: [{ urls: [kn('log'), kn('log_large')], n: 10, s: [0.9, 1.2], layer: 'prop' }],
   r3: [{ urls: [gp('tent')], n: 4, s: [0.9, 1.1], layer: 'prop' }],
   r4: [{ urls: [gp('bone_pile')], n: 8, s: [1, 1.3], layer: 'prop' }],
@@ -193,10 +193,10 @@ export function fitHeight(url: string, h: number): number {
 }
 
 /** Spatial hash of placed circles (trees, rocks, specials): keeps clusters apart without an O(n) scan. */
-class Occupancy {
-  private cells = new Map<number, { x: number; z: number; r: number }[]>();
+export class Occupancy {
+  protected cells = new Map<number, { x: number; z: number; r: number }[]>();
   constructor(private cs: number) {}
-  private key(cx: number, cz: number): number {
+  protected key(cx: number, cz: number): number {
     return (cx + 4096) * 8192 + (cz + 4096);
   }
   add(x: number, z: number, r: number): void {
@@ -332,15 +332,15 @@ export interface WorldScatterHost {
  * block the nav and keep apart (Occupancy); everything keeps clear of roads, camps (trees), POIs (avoid list) and water.
  */
 export class WorldScatter {
-  private readonly rng: RNG;
-  private readonly occ = new Occupancy(6);
-  private readonly roads: { ax: number; az: number; bx: number; bz: number; hw: number }[] = [];
-  private readonly camps: { x: number; z: number; r: number }[] = [];
-  private readonly regs: (WorldRegion | null)[];
-  private readonly waterTiles: Uint8Array;
-  private readonly styleOverride = new Map<string, BorderStyle>();
+  protected rng: RNG;
+  protected occ = new Occupancy(6);
+  protected roads: { ax: number; az: number; bx: number; bz: number; hw: number }[] = [];
+  protected camps: { x: number; z: number; r: number }[] = [];
+  protected regs: (WorldRegion | null)[];
+  protected waterTiles: Uint8Array;
+  protected styleOverride = new Map<string, BorderStyle>();
 
-  constructor(private h: WorldScatterHost) {
+  constructor(protected h: WorldScatterHost) {
     const def = h.def;
     this.rng = new RNG(hashString(def.id + ':world-scatter'));
     this.regs = regionsByRoom(def);
@@ -375,18 +375,18 @@ export class WorldScatter {
 
   // ---- queries ----
 
-  private isWaterTile(i: number, j: number): boolean {
+  protected isWaterTile(i: number, j: number): boolean {
     return i >= 0 && j >= 0 && i < this.h.W && j < this.h.H && this.waterTiles[j * this.h.W + i] === 1;
   }
-  private walkable(x: number, z: number): boolean {
+  protected walkable(x: number, z: number): boolean {
     return this.h.tileRoom(Math.floor(x / T), Math.floor(z / T)) >= 0 && this.h.nav.isWalkable(x, z);
   }
-  private nearWalk(i: number, j: number, r: number): boolean {
+  protected nearWalk(i: number, j: number, r: number): boolean {
     for (let dj = -r; dj <= r; dj++) for (let di = -r; di <= r; di++) if (this.h.tileRoom(i + di, j + dj) >= 0) return true;
     return false;
   }
   /** Distance from the nearest road EDGE (negative = on the road). */
-  private roadGap(x: number, z: number): number {
+  protected roadGap(x: number, z: number): number {
     let best = 1e9;
     for (const s of this.roads) {
       const vx = s.bx - s.ax, vz = s.bz - s.az;
@@ -397,25 +397,25 @@ export class WorldScatter {
     }
     return best;
   }
-  private inCamp(x: number, z: number, f: number): boolean {
+  protected inCamp(x: number, z: number, f: number): boolean {
     for (const c of this.camps) if (Math.hypot(c.x - x, c.z - z) < c.r * f) return true;
     return false;
   }
-  private free(x: number, z: number, avoidPad: number, roadPad: number): boolean {
+  protected free(x: number, z: number, avoidPad: number, roadPad: number): boolean {
     return this.walkable(x, z) && this.roadGap(x, z) > roadPad && !this.h.isAvoided(x, z, avoidPad);
   }
-  private roomsOf(id: string): TileRect[] {
+  protected roomsOf(id: string): TileRect[] {
     return this.h.def.rooms.filter((_, ri) => this.regs[ri]?.id === id).map((r) => r.rect);
   }
 
   // ---- primitives ----
 
-  private col(k: number): THREE.Color {
+  protected col(k: number): THREE.Color {
     return new THREE.Color(0xffffff).multiplyScalar(1 - k * 0.5 + this.rng.next() * k);
   }
 
   /** Samples uniformly inside a tile rect until `n` placements succeed (fn returns true on success). */
-  private many(rect: TileRect, n: number, maxTries: number, fn: (x: number, z: number) => boolean): number {
+  protected many(rect: TileRect, n: number, maxTries: number, fn: (x: number, z: number) => boolean): number {
     let placed = 0;
     for (let a = 0; a < maxTries && placed < n; a++) {
       const x = (rect.x + this.rng.next() * rect.w) * T, z = (rect.z + this.rng.next() * rect.h) * T;
@@ -425,7 +425,7 @@ export class WorldScatter {
   }
 
   /** Tree: dim colour jitter, optional trunk block on the nav. Layer 'tree' (or 'border'). */
-  private tree(url: string, x: number, z: number, s: number, block: boolean, layer: CullLayer): void {
+  protected tree(url: string, x: number, z: number, s: number, block: boolean, layer: CullLayer): void {
     const dim = 0.86 - this.rng.next() * 0.12;
     this.h.batcher.add(url, x, 0, z, this.rng.range(0, 2 * PI), s, new THREE.Color(0xffffff).multiplyScalar(dim + this.rng.next() * 0.2), { cast: true, receive: true, layer });
     if (block) this.h.nav.setCircle(x, z, 0.7 * s, false);
@@ -434,7 +434,7 @@ export class WorldScatter {
 
   // ---- borders ----
 
-  private styleOf(wt: [number, number], vt: [number, number], key: string): BorderStyle {
+  protected styleOf(wt: [number, number], vt: [number, number], key: string): BorderStyle {
     if (this.isWaterTile(vt[0], vt[1])) return 'water';
     const o = this.styleOverride.get(key);
     if (o) return o;
@@ -466,7 +466,7 @@ export class WorldScatter {
       }
   }
 
-  private dress(style: BorderStyle, x0: number, z0: number, ux: number, uz: number, ox: number, oz: number): void {
+  protected dress(style: BorderStyle, x0: number, z0: number, ux: number, uz: number, ox: number, oz: number): void {
     switch (style) {
       case 'water': return this.dressWater(x0, z0, ux, uz, ox, oz);
       case 'marsh': return this.dressMarsh(x0, z0, ux, uz, ox, oz);
@@ -478,7 +478,7 @@ export class WorldScatter {
     }
   }
 
-  private dressTrees(x0: number, z0: number, ux: number, uz: number, ox: number, oz: number): void {
+  protected dressTrees(x0: number, z0: number, ux: number, uz: number, ox: number, oz: number): void {
     const rng = this.rng;
     for (let t = 0.5; t < T; t += rng.range(1.2, 1.9)) {
       const off = rng.range(0.2, 1.8);
@@ -490,7 +490,7 @@ export class WorldScatter {
     }
   }
 
-  private dressWater(x0: number, z0: number, ux: number, uz: number, ox: number, oz: number): void {
+  protected dressWater(x0: number, z0: number, ux: number, uz: number, ox: number, oz: number): void {
     const rng = this.rng;
     for (let t = 1; t < T; t += rng.range(1.5, 2.5)) {
       const off = rng.range(0.8, 2.2);
@@ -502,7 +502,7 @@ export class WorldScatter {
     }
   }
 
-  private dressMarsh(x0: number, z0: number, ux: number, uz: number, ox: number, oz: number): void {
+  protected dressMarsh(x0: number, z0: number, ux: number, uz: number, ox: number, oz: number): void {
     const rng = this.rng;
     for (let t = 1; t < T; t += rng.range(2.5, 4)) {
       const off = rng.range(1.5, 4.5);
@@ -512,7 +512,7 @@ export class WorldScatter {
     }
   }
 
-  private dressCliff(x0: number, z0: number, ux: number, uz: number, ox: number, oz: number, courses: number): void {
+  protected dressCliff(x0: number, z0: number, ux: number, uz: number, ox: number, oz: number, courses: number): void {
     const sc = fitScale(CLIFF, T);
     const yaw = yawAlong(CLIFF, ux, uz);
     const course = (getPiece(CLIFF)?.size.y ?? 2) * sc;
@@ -521,7 +521,7 @@ export class WorldScatter {
     }
   }
 
-  private dressRuin(x0: number, z0: number, ux: number, uz: number, ox: number, oz: number): void {
+  protected dressRuin(x0: number, z0: number, ux: number, uz: number, ox: number, oz: number): void {
     const rng = this.rng;
     const sc = fitScale(WALL_HALF, 3);
     for (let t = 1; t < T; t += rng.range(2.6, 3.4)) {
@@ -559,7 +559,7 @@ export class WorldScatter {
 
   // ---- regions ----
 
-  private scatterRegions(): void {
+  protected scatterRegions(): void {
     const h = this.h;
     h.def.rooms.forEach((room, ri) => {
       const reg = this.regs[ri];
@@ -642,7 +642,7 @@ export class WorldScatter {
   }
 
   /** R2 farm: six 3 x 3 crop patches, 3.5 m apart. */
-  private cropFields(): void {
+  protected cropFields(): void {
     const rng = this.rng;
     for (const rect of this.roomsOf('r2')) {
       let placed = 0;
@@ -661,7 +661,7 @@ export class WorldScatter {
   }
 
   /** R3 blocking hill massifs (nav circles 10-14 m), kept 16 m off the roads so the route stays open. */
-  private massifs(): void {
+  protected massifs(): void {
     let placed = 0;
     for (const rect of this.roomsOf('r3')) {
       this.many(rect, 6, 400, (x, z) => {
@@ -678,7 +678,7 @@ export class WorldScatter {
   }
 
   /** R4 marsh reeds on the dark (wet) splat patches. */
-  private marshPlants(): void {
+  protected marshPlants(): void {
     const rng = this.rng;
     for (const rect of this.roomsOf('r4')) {
       this.many(rect, 140, 2000, (x, z) => {

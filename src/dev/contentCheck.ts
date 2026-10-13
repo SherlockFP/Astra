@@ -4,6 +4,7 @@ import type { EnemyAbility, EnemyDef } from '../types/enemies';
 import { MUSIC_IDS, SFX_IDS } from '../types/audio';
 import { VFX_IDS } from '../types/vfx';
 import { GDD_BOSSES, GDD_ROSTER, GDD_SUMMONS } from './contentRoster';
+import { MAX_ZONE_M, STREAM_AUTO_M, VIEW_MAX_M, VIEW_MIN_M, streamConfig, widestFogFar } from '../world/chunks/StreamConfig';
 
 /**
  * Pure validation logic for the content module (dev/content.html). No DOM here.
@@ -944,6 +945,20 @@ export function checkDungeon(def: DungeonDef, models: ModelDb, knownEnemy?: (id:
   for (let i = 0; i < def.rooms.length; i++) for (let j = i + 1; j < def.rooms.length; j++) {
     const a = def.rooms[i].rect, b = def.rooms[j].rect;
     if (a.x < b.x + b.w && b.x < a.x + a.w && a.z < b.z + b.h && b.z < a.z + a.h) err(`room ${def.rooms[i].id}`, `overlaps ${def.rooms[j].id}`);
+  }
+
+  // ---- zone size and chunk streaming (docs/ENGINE_BIGMAPS.md) ----
+  if (def.world) {
+    const sizeM = Math.max(def.grid.w, def.grid.h) * T;
+    const pf = def.world.perf;
+    if (sizeM > MAX_ZONE_M) err(id, `zone is ${sizeM} m wide; the engine supports at most ${MAX_ZONE_M} m (nav grid and room index are dense)`);
+    if (pf.stream !== undefined && pf.stream !== 'auto' && pf.stream !== 'on' && pf.stream !== 'off') err(id, `perf.stream must be 'auto', 'on' or 'off', not ${String(pf.stream)}`);
+    if (pf.stream === 'off' && sizeM > STREAM_AUTO_M) warn(id, `${sizeM} m zone with perf.stream 'off': the whole zone is built at load (slow, ${Math.round((sizeM / 640) ** 2)}x Sisli Vadi's scenery)`);
+    if (pf.streamChunkM !== undefined && (pf.streamChunkM % 16 !== 0 || pf.streamChunkM < 32 || pf.streamChunkM > 256)) err(id, `perf.streamChunkM ${pf.streamChunkM} must be a multiple of 16 between 32 and 256`);
+    if (pf.viewM !== undefined && (pf.viewM < VIEW_MIN_M || pf.viewM > VIEW_MAX_M)) err(id, `perf.viewM ${pf.viewM} must be between ${VIEW_MIN_M} and ${VIEW_MAX_M} m`);
+    if (widestFogFar(def) > 250) warn(id, `fogFar ${widestFogFar(def)} m: the camera far plane is 500 m and the streamed ring stays below ${VIEW_MAX_M} m, keep region fogFar <= 250 m`);
+    const cfg = streamConfig(def, null);
+    info(id, `${sizeM} m zone, chunk streaming ${cfg.on ? `on (chunk ${cfg.chunkM} m, view ${cfg.viewM} m, <= ${cfg.maxResident} chunks resident)` : 'off'}`);
   }
 
   // ---- doors on shared boundaries ----
