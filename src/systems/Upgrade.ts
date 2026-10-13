@@ -8,6 +8,7 @@ import { parseGemId } from '../data/gems';
 import { MAX_UPGRADE, UPGRADE_STEPS, stepOf, upgradeGold, type UpgradeStep } from '../data/upgrades';
 import { baseOf, canEfsun, cleanName, isEquipmentItem, maxUpgradeOf, refreshItemName, rerollAffixes, rerollAffixValues, rerollableAffixIndices, addRandomAffix, rarityIndex, defaultRng } from './ItemGen';
 import { bountyEvent } from './Bounties';
+import { salvageRefund } from './Track';
 
 export interface UpgradeCost {
   gold: number;
@@ -342,7 +343,7 @@ export function combineGems(type: GemType, grade: number): { ok: boolean; reason
 // ============================================================================ salvage (Parçalama)
 export interface SalvageResult { ok: boolean; reason?: string; yields: { id: string; count: number }[] }
 
-function salvageYield(item: ItemInstance, r: RNG): { id: string; count: number }[] {
+export function salvageYield(item: ItemInstance, r: RNG): { id: string; count: number }[] {
   const out = new Map<string, number>();
   const add = (id: string, n: number) => {
     if (n > 0) out.set(id, (out.get(id) ?? 0) + n);
@@ -379,6 +380,12 @@ export function salvageItem(uid: string): SalvageResult {
   for (const g of f.item.sockets ?? []) if (g) ch.addMaterial(g, 1);
   ch.removeItem(f.item.uid);
   for (const y of yields) ch.addMaterial(y.id, y.count);
+  // Loot V3 O-L10: a Yiğitlik Yolu piece returns SALVAGE_REFUND of the stones spent on it
+  const refund = salvageRefund(f.item);
+  if (refund) {
+    ch.addMaterial(refund.id, refund.count);
+    yields.push(refund);
+  }
   bountyEvent('salvage', 1);
   return { ok: true, yields };
 }

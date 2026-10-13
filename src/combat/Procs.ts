@@ -272,6 +272,7 @@ export class ProcEngine {
       target,
       ally: ctx.ally ?? null,
       host: this.host,
+      src: e.id,
       schedule: (delay, fn) => {
         this.delayed.push({ at: this.clock + Math.max(0, delay), run: fn });
       },

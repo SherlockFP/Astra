@@ -24,10 +24,14 @@ type ActionItem = TrigItem['actions'][number];
 /** Triggers (Appendix D, 16). */
 export const TRIGGERS: ReadonlySet<string> = new Set([
   'hit', 'crit', 'kill', 'cast', 'dodge', 'block', 'parry', 'hurt', 'lethal', 'heal', 'pip', 'spend', 'status', 'major', 'still', 'tick',
+  // Loot V3 (systems/UniqueEffects.ts emits them): you started a dodge roll · you broke an enemy's posture · you interrupted a cast
+  'roll', 'break', 'kick',
 ]);
 /** Actions (Appendix D, 15). */
 export const ACTIONS: ReadonlySet<string> = new Set([
   'st', 'buff', 'cdr', 'rst', 'res', 'resp', 'pip', 'exp', 'dmg', 'heal', 'healally', 'abs', 'echo', 'spawn', 'purge',
+  // Loot V3: ground zone `zone(coef,type,radius,dur[,tick=1[,taken=0]])` · stacking mark `burst(key,n,coef,radius,type[,status:dur])`
+  'zone', 'burst',
 ]);
 /** Mod ops (Appendix D, 26; `p.<key>` is handled separately). */
 export const MOD_OPS: ReadonlySet<string> = new Set([
@@ -184,9 +188,11 @@ export function parseFx(fx: string, ctx: FxContext | null = null): FxParseResult
         // commas inside {…} belong to the buff block: protect them while splitting the arguments
         const args = am[2].replace(/\{[^}]*\}/, (s) => s.replace(/,/g, '\u0001')).split(',').map((s) => s.replace(/\u0001/g, ','));
         if (am[1] === 'st') {
-          if (!['self', 'tgt', 'ally', 'party'].includes(args[0]) && !/^near\(\d+\)$/.test(args[0])) errors.push(`bad who ${args[0]}`);
+          if (!['self', 'tgt', 'ally', 'party'].includes(args[0]) && !/^(near|foes)\(\d+\)$/.test(args[0])) errors.push(`bad who ${args[0]}`);
           has('statuses', args[1], 'status');
         }
+        if (am[1] === 'zone' && (args.length < 4 || ![0, 2, 3].every((i) => Number.isFinite(num(args[i]))) || !FX_CONVERT_TYPES.includes(args[1]))) errors.push(`bad zone "${a.trim()}"`);
+        if (am[1] === 'burst' && (args.length < 5 || !Number.isFinite(num(args[1])) || !FX_CONVERT_TYPES.includes(args[4]))) errors.push(`bad burst "${a.trim()}"`);
         if (am[1] === 'buff') {
           const b = am[2].match(/\{([^}]*)\}/);
           if (!b) errors.push('buff needs {stats}');

@@ -10,6 +10,7 @@ import {
   ItemSlot, bindItemTip, bindTip, drag, esc, flashEl, fmt, h, isEquipItem, materialInfo, sfx, toast, type MaterialInfo,
 } from './common';
 import { chip, emptyState } from '../../kit';
+import { AUTO_SALVAGE_MODES, currentMode, nextMode } from '../../../systems/AutoSalvage';
 
 const COLS = 8;
 
@@ -86,8 +87,24 @@ export class InventoryPanel extends ItemPanel {
       this.refresh();
     });
     bindTip(sort, () => '<div class="pi-tip-name">Sırala</div><div class="pi-tip-dim">Silah, zırh, nadirlik ve eşya seviyesine göre dizer.</div>');
+    // Loot V3 §6: Otomatik Parçala toggle (Kapalı -> Gri -> Beyaz -> Gereksiz); the mode is the `autoSalvage` setting
+    const auto = h('button', 'pi-btn sm', '');
+    const paintAuto = (): void => {
+      const m = AUTO_SALVAGE_MODES.find((x) => x.id === currentMode()) ?? AUTO_SALVAGE_MODES[0];
+      auto.textContent = `Oto-Parçala: ${m.label}`;
+    };
+    auto.addEventListener('click', () => {
+      G.settings?.set('autoSalvage', nextMode(currentMode()));
+      sfx('ui_tab');
+      paintAuto();
+    });
+    bindTip(auto, () => {
+      const rows = AUTO_SALVAGE_MODES.map((m) => `<div class="pi-tip-line${m.id === currentMode() ? '' : ' pi-tip-dim'}">${esc(m.label)}: ${esc(m.help)}</div>`).join('');
+      return `<div class="pi-tip-name">Otomatik Parçala</div>${rows}<div class="pi-tip-dim">Kilitli, efsanevi, takım, Nadir ve üstü eşyalara dokunulmaz.</div>`;
+    });
+    paintAuto();
     this.freeEl = h('span', 'pi-free');
-    tools.append(sort, this.freeEl);
+    tools.append(sort, auto, this.freeEl);
     // header chip: bag fullness (section 7.3), placed before the close button
     this.fullEl = chip('');
     this.fullEl.classList.add('pi-bag-full');

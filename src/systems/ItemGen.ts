@@ -9,7 +9,9 @@ import { UNIQUES, SETS, SET_PIECES, CLASS_SET } from '../data/uniques';
 import { parseGemId } from '../data/gems';
 import { GEM_COLORS, gemName, MATERIALS } from '../data/materials';
 import { MAX_UPGRADE_BY_RARITY, stepOf } from '../data/upgrades';
-import { RARITY_WEIGHTS, type RankKey } from '../data/loot';
+import { ILVL_MAX, RARITY_WEIGHTS, SMART_LOOT, type RankKey } from '../data/loot';
+import { describeUniqueEffect } from './UniqueEffects';
+import { RESCALE } from '../data/trackData';
 
 /** Everything a tooltip needs, computed by the items module (hud renders it in UI.itemTooltipHTML). */
 export interface ItemDescription {
@@ -28,6 +30,8 @@ export interface ItemDescription {
   socketLines: { gemName: string | null; text: string | null; color: string | null }[];
   setInfo?: { name: string; pieces: { name: string; owned: boolean }[]; bonuses: { count: number; text: string; active: boolean }[] };
   specialLines: string[];       // legendary effects (orange)
+  /** Parallel to specialLines: true when the effect is not implemented yet (the tooltip greys it out; the text already ends in "(etkin değil)"). */
+  specialInactive?: boolean[];
   flavor?: string;
   sellPrice: number;
   totalStats: StatBlock;        // all stats this item gives (for comparison deltas)
@@ -175,8 +179,9 @@ export function classCanUse(classId: ClassId, base: ItemBaseDef): boolean {
   return !base.classes || base.classes.includes(classId);
 }
 
+/** `smart` (default true when a class is given) restricts the pick to the class's categories and usable bases; the coin is flipped by generateItem (Loot V3 §4.1). */
 export function pickBase(ilvl: number, opts: { category?: ItemCategory; classId?: ClassId; smart?: boolean; focus?: ItemCategory[] } = {}, rng: RNG = defaultRng): ItemBaseDef {
-  const smart = !!opts.classId && (opts.smart ?? true) && rng.chance(0.75);
+  const smart = !!opts.classId && (opts.smart ?? true);
   let cats: { c: ItemCategory; w: number }[];
   if (opts.category) cats = [{ c: opts.category, w: 1 }];
   else if (opts.focus && opts.focus.length && rng.chance(0.5)) cats = opts.focus.map((c) => ({ c, w: 1 }));
@@ -360,10 +365,11 @@ export interface GenOpts {
   rarity?: Rarity;
   baseId?: string;
   category?: ItemCategory;
-  /** Looter's class: smart loot (75% usable gear, 70% usable legendaries) and class-flavoured affix weights. */
+  /** Looter's class: smart loot (SMART_LOOT = 70 % usable gear, class legendaries / sets, main-stat line) and class-flavoured affix weights. */
   classId?: ClassId;
   uniqueId?: string;
   setPieceId?: string;
+  /** Loot V3 §4: true = force a smart roll, false = fully random (alts / stash fodder), undefined = flip the SMART_LOOT coin once (needs classId). */
   smart?: boolean;
   rarityCtx?: RarityCtx;
   /** Bias equipment categories (named loot tables). */
@@ -379,31 +385,51 @@ function resolveBaseId(template: string, ilvl: number, classId: ClassId | undefi
 
 /** Generate an item (bases x rarity x affixes x item level). `rng` defaults to a module stream. */
 export function generateItem(opts: GenOpts, rng: RNG = defaultRng): ItemInstance {
-  const ilvl = clamp(Math.round(opts.itemLevel), 1, 95);
+  const ilvl = clamp(Math.round(opts.itemLevel), 1, ILVL_MAX);
   if (opts.uniqueId) return generateUnique(opts.uniqueId, ilvl, rng, opts.classId);
   if (opts.setPieceId) return generateSetPiece(opts.setPieceId, ilvl, rng);
+  // Loot V3 §4.1: ONE smart coin per item; a "not smart" item is fully random (no class bias anywhere in the roll)
+  const smart = !!opts.classId && (opts.smart === true || (opts.smart !== false && rng.chance(SMART_LOOT)));
+  const cls = smart ? opts.classId : undefined;
   let rarity = opts.rarity ?? rollRarity(ilvl, opts.rarityCtx ?? {}, rng);
 
   if (rarity === 'legendary') {
-    const u = pickUnique(ilvl, opts.classId, opts.category, rng);
-    if (u) return generateUnique(u.id, Math.max(ilvl, u.minItemLevel ?? 1), rng, opts.classId);
+    const u = pickUnique(ilvl, cls, opts.category, rng);
+    if (u) return generateUnique(u.id, Math.max(ilvl, u.minItemLevel ?? 1), rng, cls);
     rarity = 'epic';
   } else if (rarity === 'set') {
-    const piece = pickSetPiece(ilvl, opts.classId, rng);
+    const piece = pickSetPiece(ilvl, cls, rng);
     if (piece) return generateSetPiece(piece.id, ilvl, rng);
     rarity = 'epic';
   }
   // legendary/set requested through rarityCtx may also be redirected into the class set
   if (rarity === 'epic' && opts.setChance && ilvl >= 40 && rng.chance(opts.setChance)) {
-    const piece = pickSetPiece(ilvl, opts.classId, rng);
+    const piece = pickSetPiece(ilvl, cls, rng);
     if (piece) return generateSetPiece(piece.id, ilvl, rng);
   }
 
-  const base = opts.baseId && ITEM_BASES[opts.baseId] ? ITEM_BASES[opts.baseId] : pickBase(ilvl, { category: opts.category, classId: opts.classId, smart: opts.smart, focus: opts.focus }, rng);
-  return buildFromBase(base, ilvl, rarity, rng, opts.classId);
+  const base = opts.baseId && ITEM_BASES[opts.baseId] ? ITEM_BASES[opts.baseId] : pickBase(ilvl, { category: opts.category, classId: cls, smart, focus: opts.focus }, rng);
+  return buildFromBase(base, ilvl, rarity, rng, cls, smart);
 }
 
-export function buildFromBase(base: ItemBaseDef, ilvl: number, rarity: Rarity, rng: RNG, classId?: ClassId): ItemInstance {
+/**
+ * Smart loot main-stat guarantee (Loot V3 §4.1): an equipment piece with at least two rolled lines that carries neither the looter's
+ * main stat as an affix nor as an implicit gets its first suffix replaced by the main-stat suffix (normal tier roll for the item level).
+ */
+function ensureMainStat(item: ItemInstance, base: ItemBaseDef, classId: ClassId, rng: RNG): void {
+  if (item.affixes.length < 2) return;
+  const main = MAIN_STAT[classId];
+  if (item.affixes.some((a) => a.stat === main) || (item.implicit?.[main] ?? 0) > 0) return;
+  const def = AFFIX_BY_ID['suf_' + main];
+  if (!def || (def.categories && !def.categories.includes(base.category)) || item.itemLevel < def.tiers[0].minItemLevel) return;
+  const rolled = rollAffixOf(def, item.itemLevel, rng, { twoHanded: base.twoHanded, bestN: item.rarity === 'epic' ? 3 : undefined });
+  if (!rolled) return;
+  let i = item.affixes.findIndex((a) => AFFIX_BY_ID[a.affixId]?.kind === 'suffix');
+  if (i < 0) i = 0;
+  item.affixes[i] = rolled;
+}
+
+export function buildFromBase(base: ItemBaseDef, ilvl: number, rarity: Rarity, rng: RNG, classId?: ClassId, smart = false): ItemInstance {
   const item: ItemInstance = {
     uid: uid('i'), baseId: base.id, rarity, itemLevel: ilvl, upgrade: 0, affixes: [], identified: true, createdAt: Date.now(),
   };
@@ -411,6 +437,7 @@ export function buildFromBase(base: ItemBaseDef, ilvl: number, rarity: Rarity, r
   if (rarity !== 'poor' && rarity !== 'set' && rarity !== 'legendary') {
     const n = randomAffixCount(rarity, rng);
     item.affixes = rollMoreAffixes(base.category, ilvl, rarity, n, [], rng, { classId, twoHanded: base.twoHanded, bestN: rarity === 'epic' ? 3 : undefined });
+    if (smart && classId) ensureMainStat(item, base, classId, rng);
   }
   item.sockets = rollSockets(base, rarity, rng);
   switch (rarity) {
@@ -423,11 +450,12 @@ export function buildFromBase(base: ItemBaseDef, ilvl: number, rarity: Rarity, r
   return item;
 }
 
+/** `classId` is only given for a smart roll (the coin was already flipped): then the legendary is one the class can use. */
 function pickUnique(ilvl: number, classId: ClassId | undefined, category: ItemCategory | undefined, rng: RNG): UniqueDef | null {
   let pool = Object.values(UNIQUES).filter((u) => ilvl >= (u.minItemLevel ?? 1));
   if (category) pool = pool.filter((u) => ITEM_BASES[u.baseId.replace('{w}', 'heavy').replace('{t}', '1')]?.category === category);
   if (!pool.length) return null;
-  if (classId && rng.chance(0.7)) {
+  if (classId) {
     const mine = pool.filter((u) => !u.classes || u.classes.includes(classId));
     if (mine.length) pool = mine;
   }
@@ -438,7 +466,8 @@ function pickSetPiece(ilvl: number, classId: ClassId | undefined, rng: RNG) {
   if (ilvl < 40) return null;
   const all = Object.values(SET_PIECES);
   let pool = all;
-  if (classId && rng.chance(0.7)) pool = all.filter((p) => p.setId === CLASS_SET[classId]);
+  if (classId) pool = all.filter((p) => p.setId === CLASS_SET[classId]);
+  if (!pool.length) pool = all;
   return pool.length ? rng.pick(pool) : null;
 }
 
@@ -455,7 +484,7 @@ export function generateUnique(uniqueId: string, ilvl: number, rng: RNG = defaul
   const looterClass = classId ?? def.classes?.[0] ?? 'knight';
   const baseId = resolveBaseId(def.baseId, ilvl, looterClass, def.classes?.[0]);
   const base = ITEM_BASES[baseId] ?? ITEM_BASES[def.baseId];
-  const lvl = clamp(Math.max(ilvl, def.minItemLevel ?? 1), 1, 95);
+  const lvl = clamp(Math.max(ilvl, def.minItemLevel ?? 1), 1, ILVL_MAX);
   const item: ItemInstance = {
     uid: uid('i'), baseId: base.id, rarity: 'legendary', itemLevel: lvl, upgrade: 0, affixes: [], uniqueId: def.id, name: def.name, identified: true, bound: true, createdAt: Date.now(),
   };
@@ -473,11 +502,33 @@ export function generateUnique(uniqueId: string, ilvl: number, rng: RNG = defaul
   return item;
 }
 
+/**
+ * Loot V3 §9.4: raises an item by `deltaIlvl` item levels as if it had dropped there: flat stats and weapon numbers x1.022^Δ,
+ * percent stats (and the local damage / armour percents) x1.010^Δ. Every rolled line (locked, efsun and unique lines too) and the
+ * implicit scale; nothing is re-rolled. Gems, sockets, +N, uniqueId stay. Used by systems/Track.ts.
+ */
+export function rescaleItem(item: ItemInstance, deltaIlvl: number): void {
+  if (!(deltaIlvl > 0)) return;
+  const flat = Math.pow(RESCALE.flat, deltaIlvl);
+  const pct = Math.pow(RESCALE.pct, deltaIlvl);
+  const isPct = (stat: StatId, local?: LocalMod): boolean => local === 'wpnDamagePct' || local === 'armorPct' || !!STAT_INFO[stat]?.pct;
+  const lines = [...item.affixes, ...(item.bench ? [item.bench] : []), ...(item.special ? [item.special] : [])];
+  for (const a of lines) {
+    const local = affixLocal(a);
+    a.value = roundAffixValue(a.stat, a.value * (isPct(a.stat, local) ? pct : flat), local);
+  }
+  if (item.weaponDamage) item.weaponDamage = [Math.max(1, Math.round(item.weaponDamage[0] * flat)), Math.max(2, Math.round(item.weaponDamage[1] * flat))];
+  if (item.implicit) {
+    for (const k of Object.keys(item.implicit) as StatId[]) item.implicit[k] = roundStat(k, (item.implicit[k] ?? 0) * (isPct(k) ? pct : flat));
+  }
+  item.itemLevel = clamp(item.itemLevel + deltaIlvl, 1, ILVL_MAX);
+}
+
 export function generateSetPiece(pieceId: string, ilvl: number, rng: RNG = defaultRng): ItemInstance {
   const piece = SET_PIECES[pieceId];
   if (!piece) return generateItem({ itemLevel: ilvl, rarity: 'epic' }, rng);
   const classId = piece.classId ?? 'knight';
-  const lvl = clamp(Math.max(ilvl, 40), 1, 95);
+  const lvl = clamp(Math.max(ilvl, 40), 1, ILVL_MAX);
   const baseId = resolveBaseId(piece.baseId, lvl, classId, classId);
   const base = ITEM_BASES[baseId] ?? ITEM_BASES['sword1h_t1'];
   const item: ItemInstance = {
@@ -775,7 +826,12 @@ export function describeItem(item: ItemInstance): ItemDescription {
     return { gemName: gemName(g.type, g.grade), text: e ? e.lines.join(', ') : null, color: GEM_COLORS[g.type] };
   });
   const specialLines: string[] = [];
-  if (unique?.special) specialLines.push(unique.special.desc);
+  const specialInactive: boolean[] = [];
+  const eff = unique ? describeUniqueEffect(unique.id) : null;
+  if (eff) {
+    specialLines.push(eff.active ? eff.text : `${eff.text} (etkin değil)`);
+    specialInactive.push(!eff.active);
+  }
 
   let setInfo: ItemDescription['setInfo'];
   if (item.setId && SETS[item.setId]) {
@@ -797,7 +853,7 @@ export function describeItem(item: ItemInstance): ItemDescription {
   const slotLabel = base.typeName ?? CATEGORY_NAMES_TR[base.category] ?? '';
   const desc: ItemDescription = {
     name: itemDisplayName(item), rarity: item.rarity, color, slotLabel, itemLevel: item.itemLevel, requiredLevel: requiredLevelOf(item), classes,
-    implicitLines, affixLines, socketLines, specialLines, sellPrice: sellValue(item), totalStats: itemStats(item), icon: base.icon, isEquipment: equip,
+    implicitLines, affixLines, socketLines, specialLines, specialInactive, sellPrice: sellValue(item), totalStats: itemStats(item), icon: base.icon, isEquipment: equip,
     baseName: base.name, bound: item.bound, upgrade: up, maxUpgrade: maxUpgradeOf(item), unique: !!unique || undefined, locked: item.locked,
   };
   if (w) {

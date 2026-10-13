@@ -116,4 +116,12 @@ export const CLASS_AFFINITY: Record<string, StatId[]> = {
   barbarian: ['str', 'vit', 'physicalDamagePct', 'meleeDamagePct', 'aoePct', 'lifeSteal', 'attackSpeed', 'critDamage', 'maxHp', 'staggerPct'],
   mage: ['int', 'fireDamagePct', 'frostDamagePct', 'arcaneDamagePct', 'castSpeed', 'resourceRegenPct', 'cdr', 'maxResource', 'aoePct', 'dotPct'],
   rogue: ['dex', 'physicalDamagePct', 'poisonDamagePct', 'projectileDamagePct', 'meleeDamagePct', 'critChance', 'critDamage', 'attackSpeed', 'dodgeChance', 'dotPct'],
+  // Loot V3 §4.1: every class has a list (the 7 newer classes were missing)
+  monk: ['dex', 'vit', 'physicalDamagePct', 'meleeDamagePct', 'attackSpeed', 'critChance', 'dodgeChance', 'maxHp', 'cdr'],
+  archer: ['dex', 'projectileDamagePct', 'physicalDamagePct', 'critChance', 'critDamage', 'attackSpeed', 'dodgeChance', 'poisonDamagePct', 'moveSpeedPct'],
+  paladin: ['str', 'vit', 'armor', 'blockChance', 'holyDamagePct', 'healingPct', 'maxHp', 'maxHpPct', 'resAll', 'cdr'],
+  necromancer: ['int', 'shadowDamagePct', 'dotPct', 'minionDamagePct', 'minionHpPct', 'castSpeed', 'lifeSteal', 'maxResource', 'cdr'],
+  warlock: ['int', 'shadowDamagePct', 'fireDamagePct', 'dotPct', 'castSpeed', 'lifeSteal', 'resourceRegenPct', 'cdr', 'maxHp'],
+  demonhunter: ['dex', 'shadowDamagePct', 'fireDamagePct', 'critChance', 'critDamage', 'attackSpeed', 'dodgeChance', 'moveSpeedPct'],
+  evoker: ['int', 'fireDamagePct', 'arcaneDamagePct', 'castSpeed', 'healingPct', 'cdr', 'resourceRegenPct', 'maxResource'],
 };

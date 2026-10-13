@@ -10,7 +10,7 @@ import type { SfxId } from '../types/audio';
 import type { Enemy } from '../entities/Enemy';
 import type { EnemyRank } from '../types/enemies';
 import { LootDrop, type DropPayload } from '../entities/LootDrop';
-import { DROP_TABLES, GATHER_TABLES, LOOT, LOOT_TABLES, MPLUS, PITY_CAP, PITY_STEP, RANK_ILVL_BONUS, type DropTable, type LootTableDef, type RankKey } from '../data/loot';
+import { DROP_TABLES, GATHER_TABLES, LOOT, LOOT_TABLES, ILVL_MAX, MPLUS, PITY, RANK_ILVL_BONUS, chestStones, type DropTable, type LootTableDef, type RankKey } from '../data/loot';
 import { GEM_TYPES, MATERIALS, gemId, potionIds } from '../data/materials';
 import { CLASS_NAMES_TR } from '../data/itemBases';
 import { familyOf, regionOfPack } from '../data/families';
@@ -18,6 +18,12 @@ import { generateItem, generateUnique, itemDisplayName, rarityIndex, sellValue, 
 import { bountyEvent, initBounties } from './Bounties';
 import { QuestSystem } from './Quests';
 import { isAffixUnit } from './Affixes';
+import { tickUniqueEffects } from './UniqueEffects';
+import { chestCtxOf, rollBossChest } from './ChestRoll';
+import { addPity, eliteGuardDue, noteEliteItem, pityMult, resetPity } from './LootPity'; // Loot V3 §8: the shared legendary pity counter lives in save.flags
+import { applyAction as autoApply, decide as autoDecide, tick as autoSalvageTick } from './AutoSalvage';
+import { stampTrack } from './Track';
+import type { BossPlacement } from '../types/dungeons';
 import { getDungeon } from '../data/dungeons';
 
 export interface RollOpts {
@@ -224,10 +230,6 @@ export class LootSystem {
     }
   }
 
-  private legendPity(): number {
-    return Number(G.character?.save.flags['loot.pity'] ?? 0);
-  }
-
   /**
    * Named loot table of a kill: the enemy's own table (rares, mini-bosses, metin stones), else the table of its camp (PackDef.lootTable:
    * the farm spots of GDD_OPENWORLD 3.7, "applies to every member of the camp").
@@ -268,15 +270,50 @@ export class LootSystem {
     const lvl = Math.max(1, enemy.level || ch.level);
     const bossLike = rank === 'boss' || rank === 'miniboss';
     const drops: { payload: DropPayload }[] = [];
-    const pushItem = (item: ItemInstance) => drops.push({ payload: { kind: 'item', item, rarity: item.rarity } });
+    // Loot V3 §6: generic drops pass the auto-salvage gate first (gray -> sold, white / green -> salvaged, protected items always drop)
+    const pushItem = (item: ItemInstance, gate = true) => {
+      if (gate) {
+        const act = autoDecide(item);
+        if (act !== 'keep') {
+          autoApply(item, act);
+          return;
+        }
+      }
+      drops.push({ payload: { kind: 'item', item, rarity: item.rarity } });
+    };
+    const pityRank = rank === 'elite' || rank === 'miniboss' || def.id.startsWith('rare_');
 
     // ---- item level
     let ilvl = clamp(lvl + RANK_ILVL_BONUS[rank], 1, 60);
     if (keyLevel) ilvl = rank === 'boss' ? Math.min(MPLUS.bossCap, MPLUS.ilvlBase + keyLevel + MPLUS.bossBonus) : Math.min(MPLUS.ilvlCap, MPLUS.ilvlBase + keyLevel);
 
+    // ---- boss chest (Loot V3 §2): 1 guaranteed item (2 levelling) + a chance of a second, the boss's named item with named pity,
+    // hard legendary pity, Yiğitlik Taşı. The items are the boss's personal ground drops (no chest entity yet: see loot_v3_status.md).
+    let gotLegend = false;
+    let chestBoss = false;
+    if (rank === 'boss') {
+      chestBoss = true;
+      const mpState = G.mplus?.state;
+      const dungeonId = mpState?.dungeonId ?? G.mplus?.params?.dungeonId;
+      const dungeon = dungeonId ? getDungeon(dungeonId) : undefined;
+      const ctxId = chestCtxOf(mpState?.difficulty, keyLevel, openWorld || !mpState || !!dungeon?.outdoor);
+      const last = (dungeon?.bosses ?? []).reduce<BossPlacement | null>((a, b) => (!a || b.order > a.order ? b : a), null);
+      const res = rollBossChest({ bossId: def.id, ctx: ctxId, keyLevel: ctxId === 'mplus' ? keyLevel : 0, final: !!last && last.bossId === def.id, ilvl, classId: ch.classId, table: named, magicFind: mf }, ch.save.flags, rng);
+      for (const it of res.items) {
+        if (it.rarity === 'legendary' || it.rarity === 'set') gotLegend = true;
+        pushItem(it, false);
+      }
+      if (res.stones) {
+        ch.addMaterial(res.stones.id, res.stones.count);
+        toast(`+${res.stones.count} ${MATERIALS[res.stones.id]?.name ?? res.stones.id}`, 'loot');
+      }
+    }
+
     // ---- equipment
     let itemCount = 0;
-    if (keyLevel) {
+    if (chestBoss) {
+      // rolled by the chest above
+    } else if (keyLevel) {
       if (rank === 'boss' || named?.mplusItem) itemCount = 1;
       else if (rank === 'elite' || rank === 'miniboss') itemCount = rng.chance(MPLUS.eliteItemChance) ? 1 : 0;
     } else {
@@ -286,7 +323,6 @@ export class LootSystem {
       if (named?.extraItems) itemCount += named.extraItems;
       if (enemy.champion) itemCount++;
     }
-    let gotLegend = false;
     for (let i = 0; i < itemCount; i++) {
       let minRarity: Rarity | undefined;
       if (keyLevel) minRarity = rank === 'boss' ? 'rare' : 'uncommon';
@@ -294,17 +330,31 @@ export class LootSystem {
       if (named?.minRarity && i < (named.minRarityCount ?? 1) && (!minRarity || rarityIndex(named.minRarity) > rarityIndex(minRarity))) minRarity = named.minRarity;
       // champion (GDD 1.4): open world = Büyülü+ with a 25% Nadir; dungeons keep the guaranteed Nadir
       if (enemy.champion && i === itemCount - 1) minRarity = openWorld ? (rng.chance(0.25) ? 'rare' : 'uncommon') : 'rare';
+      // Seçkin bad-luck guard (§7): 4 elite items in a row below Nadir -> the next one is Nadir or better
+      if (rank === 'elite' && eliteGuardDue(ch.save.flags) && (!minRarity || rarityIndex(minRarity) < rarityIndex('rare'))) minRarity = 'rare';
       const item = this.rollItem({
         itemLevel: ilvl, classId: ch.classId, rarityBonus: mf, rank: rank === 'swarm' ? 'trash' : rank, minRarity,
         focus: named?.focus, setChance: rank === 'boss' ? named?.setChance ?? 0.1 : 0,
-        legendaryMult: (rank === 'boss' ? Math.min(PITY_CAP, 1 + PITY_STEP * this.legendPity()) : 1) * (named?.legendaryMult ?? 1),
+        legendaryMult: (pityRank ? pityMult(ch.save.flags) : 1) * (named?.legendaryMult ?? 1),
       });
       if (item.rarity === 'legendary' || item.rarity === 'set') gotLegend = true;
+      if (rank === 'elite') noteEliteItem(ch.save.flags, rarityIndex(item.rarity) >= rarityIndex('rare'));
       pushItem(item);
     }
     // ---- open-world uniques (stat-only Vadi Efsanevileri): one roll per killed member of the table
-    if (named?.uniqueIds?.length && rng.chance(named.uniqueChance ?? 0.15)) pushItem(generateUnique(rng.pick(named.uniqueIds), ilvl, rng, ch.classId));
-    if (rank === 'boss' && itemCount > 0) ch.save.flags['loot.pity'] = gotLegend ? 0 : Math.min(40, this.legendPity() + 1);
+    if (!chestBoss && named?.uniqueIds?.length && rng.chance(named.uniqueChance ?? 0.15)) pushItem(generateUnique(rng.pick(named.uniqueIds), ilvl, rng, ch.classId));
+    // ---- pity (Loot V3 §8.1): elites, mini-bosses and named rares feed the shared counter, a legendary / set resets it (bosses: the chest does)
+    if (!chestBoss && pityRank) {
+      const isRareMob = def.id.startsWith('rare_');
+      if (gotLegend) resetPity(ch.save.flags);
+      else addPity(ch.save.flags, isRareMob ? PITY.feed.rare : rank === 'miniboss' ? PITY.feed.miniboss : keyLevel ? PITY.feed.eliteMplus : PITY.feed.elite);
+      // stones (§7, §9.2): a named rare in the open world gives 2 Çırak, a mini-boss 1 of its difficulty's grade at 50 %
+      if (isRareMob && openWorld) ch.addMaterial('yt_cirak', 2);
+      else if (rank === 'miniboss' && G.mplus?.state && !openWorld && rng.chance(0.5)) {
+        const st = chestStones(chestCtxOf(G.mplus.state.difficulty, keyLevel, false), keyLevel, false);
+        if (st) ch.addMaterial(st.id, 1);
+      }
+    }
 
     // ---- gold
     if (rng.chance(table.goldChance)) {
@@ -589,6 +639,8 @@ export class LootSystem {
   private updateInner(dt: number): void {
     this.clock += dt;
     const ch = G.character;
+    if (G.world) tickUniqueEffects(); // Loot V3: lazy unique-effect bridge (roll / break / kick triggers)
+    autoSalvageTick(dt);
     if (ch) {
       ch.tickBuffs(dt);
       ch.save.playedSec += dt;
@@ -762,15 +814,23 @@ export class LootSystem {
       ilvl = Math.max(1, ch.level); count = 1; minRarity = 'uncommon';
       weights = { uncommon: 65, rare: 30, epic: 5 };
     }
-    ilvl = clamp(Math.round(ilvl), 1, 95);
+    ilvl = clamp(Math.round(ilvl), 1, ILVL_MAX);
+    // Loot V3: the end chest shares the legendary pity (weight x pity multiplier; any legendary / set resets it, else +1) and feeds the Yiğitlik Yolu
+    if (weights?.legendary) weights = { ...weights, legendary: weights.legendary * pityMult(ch.save.flags) };
+    const endCtx = key >= 2 ? 'mplus' : state.difficulty === 'mythic' ? 'mythic0' : state.difficulty === 'heroic' ? 'heroic' : 'normal';
     for (let i = 0; i < count; i++) {
       const item = generateItem({ itemLevel: ilvl, classId: ch.classId, rarityCtx: { weights, minRarity, allowSet: true }, setChance: key >= 2 ? 0.1 : 0 }, rng);
       item.bound = true;
+      item.src = { d: state.dungeonId, k: key, df: endCtx === 'mplus' ? 'k' : endCtx === 'mythic0' ? 'm' : endCtx === 'heroic' ? 'h' : 'n' };
+      stampTrack(item, endCtx, key);
       out.push(item);
     }
+    if (out.some((it) => it.rarity === 'legendary' || it.rarity === 'set')) resetPity(ch.save.flags);
+    else addPity(ch.save.flags, PITY.feed.boss);
     // extras (granted directly)
     if (key >= 2) {
       ch.addGold(2000 * key);
+      ch.addMaterial(key >= 7 ? 'yt_efsane' : 'yt_sampiyon', timed ? 4 + key : Math.floor((4 + key) / 2)); // Loot V3 §9.2
       ch.addMaterial('ruh_tasi', 1 + Math.floor(key / 3));
       ch.addMaterial('ejderha_pulu', 2 + Math.floor(key / 2));
       ch.addMaterial('buyulu_toz', 10 + 2 * key);

@@ -28,6 +28,8 @@ export interface SettingsData {
   cameraDistance: number;
   autoLoot: boolean;
   lootFilter: 'all' | 'uncommon' | 'rare' | 'epic';
+  /** Loot V3 §6: gray items are sold, white / green ones salvaged on drop ('off' = keep everything). */
+  autoSalvage: 'off' | 'poor' | 'common' | 'unneeded';
   // audio
   masterVolume: number;
   musicVolume: number;
@@ -194,6 +196,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   cameraDistance: 9,
   autoLoot: true,
   lootFilter: 'all',
+  autoSalvage: 'off',
   masterVolume: 0.8,
   musicVolume: 0.5,
   sfxVolume: 0.8,

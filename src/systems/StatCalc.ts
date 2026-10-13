@@ -13,6 +13,7 @@ import { PALETTE_VALUE } from '../data/talentTrees/palette';
 import { collectMods } from '../combat/skillMods';
 import { baseOf, itemStats } from './ItemGen';
 import { masteryRankAt } from './SkillMastery';
+import { foldEquippedUniques } from './UniqueEffects';
 import type { ClassId } from '../types/common';
 import type { CharacterSave } from '../types/character';
 import { EQUIP_SLOTS } from '../types/items';
@@ -213,6 +214,8 @@ export function collectFx(save: CharacterSave): ActiveFx {
       if (jewel) addStats(acc.stats, itemStats(jewel), WEB_POWER);
     }
   }
+  // Loot V3 gear stage: the fx rows of the equipped uniques (systems/UniqueEffects.ts; broken items and duplicates skipped)
+  foldEquippedUniques(acc, save);
   return acc;
 }
 

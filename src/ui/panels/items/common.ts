@@ -436,7 +436,9 @@ export function fallbackItemHTML(item: ItemInstance, cmp?: ItemInstance | null):
     for (const p of d.setInfo.pieces) s += `<div class="pi-tip-line ${p.owned ? 'pi-tip-setown' : 'pi-tip-dim'}">${esc(p.name)}</div>`;
     for (const b of d.setInfo.bonuses) s += `<div class="pi-tip-line ${b.active ? 'pi-tip-setown' : 'pi-tip-dim'}">(${b.count}) ${esc(b.text)}</div>`;
   }
-  for (const l of d.specialLines) s += `<div class="pi-tip-line pi-tip-special">${esc(l)}</div>`;
+  d.specialLines.forEach((l, i) => {
+    s += d.specialInactive?.[i] ? `<div class="pi-tip-line pi-tip-special off" style="color:#8f8a80;opacity:.85">${esc(l)}</div>` : `<div class="pi-tip-line pi-tip-special">${esc(l)}</div>`;
+  });
   if (d.flavor) s += `<div class="pi-tip-flavor">"${esc(d.flavor)}"</div>`;
   s += `<div class="pi-tip-foot">`;
   if (d.isEquipment) {

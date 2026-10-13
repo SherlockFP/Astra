@@ -25,7 +25,9 @@ export const CLASS_ARMOR_WEIGHT: Record<ClassId, ArmorWeight> = {
   monk: 'medium', archer: 'medium', paladin: 'heavy', necromancer: 'light', warlock: 'light',
   demonhunter: 'medium', evoker: 'light', // CM1 stubs (mirror the registry rows of data/classes.ts)
 };
-export const WEIGHT_CLASSES: Record<ArmorWeight, ClassId[]> = { heavy: ['knight', 'barbarian'], medium: ['rogue'], light: ['mage'] };
+// Loot V3 F6 fix: derived from CLASS_ARMOR_WEIGHT, so the 7 newer classes can use (and be dropped) armour too
+const classesOfWeight = (w: ArmorWeight): ClassId[] => (Object.keys(CLASS_ARMOR_WEIGHT) as ClassId[]).filter((c) => CLASS_ARMOR_WEIGHT[c] === w);
+export const WEIGHT_CLASSES: Record<ArmorWeight, ClassId[]> = { heavy: classesOfWeight('heavy'), medium: classesOfWeight('medium'), light: classesOfWeight('light') };
 /** Weapon / off-hand categories each class can use (GDD 4.1). */
 export const CLASS_WEAPONS: Record<ClassId, ItemCategory[]> = {
   knight: ['sword1h'], barbarian: ['axe2h'], mage: ['staff', 'wand'], rogue: ['dagger'],

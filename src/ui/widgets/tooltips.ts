@@ -7,6 +7,7 @@ import type { SkillDef } from '../../types/skills';
 import type { Actor } from '../../entities/Actor';
 import { esc, fmtNum, iconHTML, ICON, DAMAGE_COLORS } from './dom';
 import type { StatusView } from './status';
+import { trackInfo } from '../../systems/Track';
 
 const TAG_TR: Record<string, string> = {
   melee: 'Yakın Dövüş', spell: 'Büyü', aoe: 'Alan', projectile: 'Mermi', movement: 'Hareket', fire: 'Ateş', frost: 'Buz',
@@ -73,6 +74,9 @@ export function itemTooltipHTML(item: ItemInstance, compare?: ItemInstance | nul
   h += `<div class="it-sub"><span class="it-rar">${esc(RARITY_NAMES_TR[rarity] ?? rarity)}</span>${d?.slotLabel ? `<span>${esc(d.slotLabel)}</span>` : ''}</div>`;
   if (d) {
     h += `<div class="it-ilvl">Eşya Seviyesi <b>${d.itemLevel}</b></div>`;
+    // Loot V3 §9.6: Yiğitlik Yolu line (track name, rank, item level -> cap)
+    const tr = trackInfo(item);
+    if (tr) h += `<div class="it-ilvl" style="color:${tr.color}">Yiğitlik Yolu: ${esc(tr.name.replace(' Yolu', ''))} ${tr.rank}/${tr.maxRank} (${item.itemLevel} → ${tr.cap})</div>`;
     if (d.damage) {
       h += `<div class="it-dmg"><b>${fmtNum(d.damage.min)} – ${fmtNum(d.damage.max)}</b> Hasar<span class="it-dps">Saniyede ${trim(d.damage.dps)} hasar</span></div>`;
       h += `<div class="it-aps">Saldırı hızı <b>${d.damage.aps.toFixed(2).replace('.', ',')}</b></div>`;
@@ -109,7 +113,10 @@ export function itemTooltipHTML(item: ItemInstance, compare?: ItemInstance | nul
     }
     if (d.specialLines.length) {
       h += '<div class="it-sep"></div>';
-      for (const l of d.specialLines) h += `<div class="it-line leg">${esc(l)}</div>`;
+      d.specialLines.forEach((l, i) => {
+        // an effect that is not implemented yet is greyed out (its text already ends in "(etkin değil)")
+        h += d.specialInactive?.[i] ? `<div class="it-line leg off" style="color:#8f8a80;opacity:.85">${esc(l)}</div>` : `<div class="it-line leg">${esc(l)}</div>`;
+      });
     }
     if (d.flavor) h += `<div class="it-flavor">“${esc(d.flavor)}”</div>`;
     h += '<div class="it-sep faint"></div>';

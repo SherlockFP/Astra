@@ -69,6 +69,13 @@ export interface ProcHost {
   explode(self: Player, target: Actor, coef: number, radius: number, type: DamageType): void;
   /** Replays a skill's hit on `target` after the echo delay (`coef` of the skill's damage). */
   echo(self: Player, skillId: string, coef: number, target: Actor): void;
+  /** Loot V3 (optional): living enemies within `radius` m of a point (`foes(r)`, `burst` statuses). */
+  enemiesAround?(pos: { x: number; y?: number; z: number }, radius: number): Actor[];
+  /**
+   * Loot V3 (optional): one tick of a `zone`: a proc-tagged hit of `coef` (weapon damage) on every enemy inside, and when
+   * `taken` > 0 the status `exposed` (+`taken` damage taken) for `statusDur` s.
+   */
+  zoneTick?(self: Player, pos: { x: number; y?: number; z: number }, radius: number, coef: number, type: DamageType, taken: number, statusDur: number): void;
 }
 
 /** What an action receives: the local player, the trigger's target and ally, and a delayed-call hook. */
@@ -77,8 +84,10 @@ export interface ActionEnv {
   target: Actor | null;
   ally: Actor | null;
   host: ProcHost;
-  /** Runs `fn` after `delay` seconds of engine time (used by `echo`). */
+  /** Runs `fn` after `delay` seconds of engine time (used by `echo`, `zone`). */
   schedule(delay: number, fn: () => void): void;
+  /** Id of the proc entry (`<source>#<index>`): per-source caps of `zone`. Optional so test hosts need not set it. */
+  src?: string;
 }
 
 const warned = new Set<string>();
@@ -163,9 +172,11 @@ function allyOf(env: ActionEnv): Actor {
   return env.ally ?? lowestHpAlly(env.self, env.host) ?? env.self;
 }
 
-/** Targets of a `who` argument: self · tgt · ally · party · near(r). */
+/** Targets of a `who` argument: self · tgt · ally · party · near(r) (allies) · foes(r) (enemies around the player). */
 function resolveWho(who: string, env: ActionEnv): Actor[] {
   const { self, target, host } = env;
+  const fm = /^foes\((\d+(?:\.\d+)?)\)$/.exec(who);
+  if (fm) return host.enemiesAround?.(self.position, num(fm[1])) ?? [];
   switch (who) {
     case 'self': return [self];
     case 'tgt': return target ? [target] : [];
@@ -183,6 +194,20 @@ function resolveWho(who: string, env: ActionEnv): Actor[] {
 /** A skill selector of `cdr` / `rst`: a skill id or `@tag`. */
 function skillSel(sel: string, host: ProcHost): string[] {
   return sel.startsWith('@') ? host.skillsWithTag(sel.slice(1)) : [sel];
+}
+
+// ---- Loot V3: zone / burst (state per source, keyed by engine time so a ProcEngine.reset() cannot leak a cap)
+const ZONE_CAP = 3;
+const zoneLive = new Map<string, number[]>();
+const burstMarks = new WeakMap<object, Map<string, { n: number; until: number }>>();
+const BURST_WINDOW = 8;
+const nowSec = (): number => G.engine?.time ?? 0;
+
+/** The holder plus the enemies within `radius` m of it (the holder alone for radius 0). */
+function aroundHolder(host: ProcHost, holder: Actor, radius: number): Actor[] {
+  const out: Actor[] = [holder];
+  if (radius > 0) for (const e of host.enemiesAround?.(holder.position, radius) ?? []) if (!out.includes(e)) out.push(e);
+  return out;
 }
 
 /** Removes up to `n` dispellable debuffs from the owner. */
@@ -282,6 +307,61 @@ export function runAction(name: string, args: readonly string[], env: ActionEnv)
     }
     case 'spawn': {
       warnOnce('spawn', 'spawn() is reserved and no v1 data uses it; ignored');
+      return;
+    }
+    case 'zone': {
+      // zone(coef,type,radius,dur[,tick=1[,taken=0]]): a ground zone at the trigger target (else at the player). Radius <= 6 m,
+      // dur <= 8 s, taken <= 0.2, at most ZONE_CAP live zones per source entry (a new one is skipped while the cap is full).
+      const coef = num(args[0]);
+      const type = dmgType(args[1]);
+      const radius = Math.max(0.5, Math.min(6, num(args[2])));
+      const dur = Math.max(0.1, Math.min(8, num(args[3])));
+      const tick = Math.max(0.2, num(args[4]) || 1);
+      const taken = Math.max(0, Math.min(0.2, num(args[5])));
+      const at = env.target ?? self;
+      const pos = { x: at.position.x, y: at.position.y, z: at.position.z };
+      const key = env.src ?? 'zone';
+      const t0 = nowSec();
+      const live = (zoneLive.get(key) ?? []).filter((e) => e > t0);
+      if (live.length >= ZONE_CAP) {
+        zoneLive.set(key, live);
+        return;
+      }
+      live.push(t0 + dur);
+      zoneLive.set(key, live);
+      const n = Math.max(1, Math.floor(dur / tick + 1e-6));
+      for (let i = 1; i <= n; i++) env.schedule(i * tick, () => host.zoneTick?.(self, pos, radius, coef, type, taken, tick + 0.6));
+      if (!host.zoneTick) warnOnce('zone', 'zone() needs ProcHost.zoneTick; ignored');
+      return;
+    }
+    case 'burst': {
+      // burst(key,n,coef,radius,type[,status:dur]): +1 mark `key` on the trigger target (8 s refresh); at n marks they are consumed
+      // and explode on the target (coef x weapon damage in radius m; radius 0 = the target only), optionally applying status:dur.
+      const key = args[0] ?? '';
+      const n = Math.max(2, Math.min(12, Math.floor(num(args[1]))));
+      const coef = num(args[2]);
+      const radius = Math.max(0, Math.min(8, num(args[3])));
+      const type = dmgType(args[4]);
+      const holder = env.target ?? self;
+      let marks = burstMarks.get(holder);
+      if (!marks) burstMarks.set(holder, (marks = new Map()));
+      const t0 = nowSec();
+      const cur = marks.get(key);
+      const count = (cur && cur.until > t0 ? cur.n : 0) + 1;
+      if (count < n) {
+        marks.set(key, { n: count, until: t0 + BURST_WINDOW });
+        return;
+      }
+      marks.delete(key);
+      if (coef > 0) {
+        if (env.target) host.explode(self, env.target, coef, radius, type);
+        else host.zoneTick?.(self, { x: self.position.x, y: self.position.y, z: self.position.z }, Math.max(1, radius), coef, type, 0, 0.5);
+      }
+      const st = args[5];
+      if (st) {
+        const [sid, d] = st.split(':');
+        for (const a of aroundHolder(host, holder, radius)) if (a !== self) applyStatus(a, sid, num(d), undefined, self.id);
+      }
       return;
     }
     default: {
@@ -397,6 +477,18 @@ export const liveProcHost: ProcHost = {
   explode(self, target, coef, radius, type) {
     const hits = new Set<Actor>([target, ...(G.world?.enemiesInRadius(target.position, radius, target.position.y) ?? [])]);
     for (const e of hits) hitEnemy(self, e, coef, type);
+  },
+
+  enemiesAround(pos, radius) {
+    return (G.world?.enemiesInRadius(pos, radius, pos.y ?? 0) ?? []).filter((e) => !e.isDead && !e.removed);
+  },
+
+  zoneTick(self, pos, radius, coef, type, taken, statusDur) {
+    for (const e of G.world?.enemiesInRadius(pos, radius, pos.y ?? 0) ?? []) {
+      if (e.isDead || e.removed) continue;
+      if (coef > 0) hitEnemy(self, e, coef, type);
+      if (taken > 0) applyStatus(e, 'exposed', statusDur, taken, self.id);
+    }
   },
 
   echo(self, skillId, coef, target) {

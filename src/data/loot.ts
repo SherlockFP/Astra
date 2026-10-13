@@ -58,9 +58,10 @@ export const RARITY_WEIGHTS: Record<Rarity, { base: number; elite: number; boss:
   poor: { base: 300, elite: 0, boss: 0, minIlvl: 1 },
   common: { base: 400, elite: 0, boss: 0, minIlvl: 1 },
   uncommon: { base: 230, elite: 1, boss: 1, minIlvl: 1 },
-  rare: { base: 60, elite: 1.5, boss: 3, minIlvl: 1 },
-  epic: { base: 8, elite: 2, boss: 4, minIlvl: 10 },
-  legendary: { base: 1.0, elite: 2, boss: 4, minIlvl: 20 },
+  // Loot V3 O-L6: elite / mini-boss weights rare 1.5 -> 2.5, epic 2 -> 3, legendary 2 -> 3
+  rare: { base: 60, elite: 2.5, boss: 3, minIlvl: 1 },
+  epic: { base: 8, elite: 3, boss: 4, minIlvl: 10 },
+  legendary: { base: 1.0, elite: 3, boss: 4, minIlvl: 20 },
   set: { base: 0.8, elite: 0, boss: 4, minIlvl: 40 },
 };
 
@@ -77,6 +78,80 @@ export const MPLUS = {
 /** Legendary pity per boss kill without a legendary (+25% of the base weight, cap x5). */
 export const PITY_STEP = 0.25;
 export const PITY_CAP = 5;
+
+// ============================================================================ Loot V3 (docs/GDD_LOOT_V3.md)
+/** Highest item level an item can be generated at (Loot V3 §1: raid last bosses are 99; was 95). */
+export const ILVL_MAX = 100;
+/** Smart loot (§4): chance that a rolled item is built for the looter's class (armour weight, weapon, main stat). */
+export const SMART_LOOT = 0.7;
+/** Anti-streak (§4.2): after this many consecutive non-smart guaranteed chest items the next one is smart. */
+export const SMART_STREAK = 2;
+
+/** Pity (§8): the legendary counter is a float fed by every source below; `PITY_STEP` / `PITY_CAP` above turn it into the weight multiplier. */
+export const PITY = {
+  cap: 60,
+  /** Added to the counter per source (M+ elites 0.05). Boss: once per chest. */
+  feed: { boss: 1, miniboss: 0.2, rare: 0.34, elite: 0.1, eliteMplus: 0.05 },
+  /** At this value the next boss-chest generic guaranteed item is forced to legendary / set and the counter resets. */
+  hard: 30,
+  /** Seçkin guard: after this many consecutive elite items below Nadir the next elite item is Nadir or better. */
+  eliteGuard: 4,
+};
+/** Named pity (§8.2): per-boss chance = min(cap, p0 + step x misses); at `hard` misses the chance is 1. */
+export const NAMED_PITY = { step: 0.025, cap: 0.75, hard: 16 };
+
+export type ChestCtxId = 'normal' | 'heroic' | 'mythic0' | 'mplus' | 'world';
+export interface ChestRule {
+  /** Guaranteed generic-or-named items (named replaces the first one). */
+  items: number;
+  /** Chance of one more item (uncommon or better). */
+  second: number;
+  /** Rarity weights of the guaranteed generic item (legendary is multiplied by the pity multiplier); `undefined` = the boss rank weights. */
+  weights?: Partial<Record<Rarity, number>>;
+  /** Base chance that the boss's named item drops (0 = no named channel). */
+  named: number;
+}
+/** Boss chest rules (§2.2). `mplus` rows depend on the key level: use `chestRuleFor`. */
+export const CHEST_RULES: Record<ChestCtxId, ChestRule> = {
+  normal: { items: 2, second: 0.5, weights: { rare: 70, epic: 24, legendary: 1, set: 5 }, named: 0.1 },
+  heroic: { items: 1, second: 0.35, weights: { rare: 60, epic: 33, legendary: 3, set: 4 }, named: 0.12 },
+  mythic0: { items: 1, second: 0.4, weights: { rare: 45, epic: 45, legendary: 4, set: 6 }, named: 0.15 },
+  mplus: { items: 1, second: 0.1, named: 0.15 },
+  world: { items: 2, second: 0.25, named: 0 },
+};
+/** Final boss multipliers: second-item chance x2 (cap 0.75), named base x1.25 (cap NAMED_PITY.cap); M+ x1.5 second cap 0.6. */
+export const CHEST_FINAL = { second: 2, secondCap: 0.75, named: 1.25 };
+
+/** The rule of a chest for a key level (M+ rows scale with L, §2.2). */
+export function chestRuleFor(ctx: ChestCtxId, keyLevel: number): ChestRule {
+  if (ctx !== 'mplus') return CHEST_RULES[ctx];
+  const L = Math.max(2, keyLevel);
+  const epic = Math.min(70, 25 + 3 * L), legend = Math.min(6, 1.5 + 0.25 * L), set = Math.min(7, 2.5 + 0.25 * L);
+  return {
+    items: 1,
+    second: Math.min(0.4, 0.1 + 0.015 * L),
+    weights: { rare: Math.max(4, 100 - epic - legend - set), epic, legendary: legend, set },
+    named: 0.15 + 0.01 * Math.min(L, 10),
+  };
+}
+
+/**
+ * Yiğitlik Taşı income of a boss chest (§2.2 / §9.2): stone id + count, or null. Final boss: +1 / +2 (normal, heroic, Mitik 0),
+ * x1.5 in M+. Open world: none.
+ */
+export function chestStones(ctx: ChestCtxId, keyLevel: number, final: boolean): { id: string; count: number } | null {
+  switch (ctx) {
+    case 'normal': return { id: 'yt_cirak', count: 2 + (final ? 1 : 0) };
+    case 'heroic': return { id: 'yt_usta', count: 3 + (final ? 2 : 0) };
+    case 'mythic0': return { id: 'yt_sampiyon', count: 3 + (final ? 2 : 0) };
+    case 'mplus': {
+      const L = Math.max(2, keyLevel);
+      const base = L >= 7 ? 2 + Math.floor(L / 3) : 3 + Math.floor(L / 2);
+      return { id: L >= 7 ? 'yt_efsane' : 'yt_sampiyon', count: Math.floor(base * (final ? 1.5 : 1)) };
+    }
+    default: return null;
+  }
+}
 
 export const LOOT = {
   /** Anti-leech distance (units). */
