@@ -100,6 +100,21 @@ export interface CharacterSave {
   nation?: NationId;
   /** PvP record of the character (owner-stored, like every personal counter). */
   pvp?: PvpSave;
+  // ---- WP-10 daily loop (systems/DailyLoop.ts). OPTIONAL, created on first use. Daily progress flags live in `flags` (wq.*, gd.*).
+  /** Rested XP pool, login streak. */
+  daily?: DailySave;
+}
+
+/** WP-10: rested XP (accrues logged out or resting in a village / town, see DailyLoop) and the daily login streak. */
+export interface DailySave {
+  /** XP in the rested pool (kills give bonus XP from it until it is used up). */
+  rested: number;
+  /** Date.now() of the last rested accrual tick (also the start of the logged-out gap). */
+  restedAt: number;
+  /** Consecutive login days (bounty day keys). */
+  streak: number;
+  /** Bounty day key of the last counted login. */
+  streakDay: number;
 }
 
 /** WP-07: lifetime PvP record. `honour` is the spendable Onur balance, `honourTotal` the lifetime sum (achievement metric). */

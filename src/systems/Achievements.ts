@@ -135,7 +135,7 @@ export function backfill(save: CharacterSave, now = Date.now()): AchievementDef[
 // ---------------------------------------------------------------------------------------------- game wiring
 
 /** Applies one metric change to the local character, then unlocks and announces what it completed. */
-function feed(change: (save: CharacterSave) => void): void {
+export function feed(change: (save: CharacterSave) => void): void {
   const ch = G.character;
   if (!ch) return;
   try {

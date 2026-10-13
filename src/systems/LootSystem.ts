@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { G } from '../game/G';
 import { toast } from './notify';
+import { restedKillBonus } from './DailyLoop';
 import { RNG, TAU, clamp, hashString } from '../core/utils';
 import { RARITY_COLORS, type ClassId, type Rarity } from '../types/common';
 import type { ItemCategory, ItemInstance } from '../types/items';
@@ -213,7 +214,8 @@ export class LootSystem {
     const n = Math.max(1, world.players.length);
     xp *= 1 + 0.05 * (n - 1);
     xp = Math.max(1, Math.round(xp));
-    G.progression.addXp(xp); // vfx/HUD show the floating "+N" from the 'player:xp' event
+    // WP-10: rested XP doubles the kill until the pool is used up (quest XP is never boosted)
+    G.progression.addXp(xp + restedKillBonus(xp)); // vfx/HUD show the floating "+N" from the 'player:xp' event
     const p = G.player;
 
     // massacre chain (GDD 6.2): < 1.5 s between kills; bonus at 10/25/50/100

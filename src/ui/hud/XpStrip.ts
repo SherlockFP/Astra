@@ -1,5 +1,6 @@
 import { G } from '../../game/G';
 import { LEVEL_CAP } from '../../types/character';
+import { restedPool } from '../../systems/DailyLoop';
 import { div, fmtNum, pulse, setDisplay, setStyle } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
 
@@ -12,6 +13,8 @@ interface TipUi {
 const LEVEL_HOLD_MS = 800;
 /** "+N XP" floater lifetime (ms), matching the CSS rise + fade. */
 const FLOATER_MS = 1000;
+/** Fill of the XP strip while rested XP is banked (WP-10): the blue of the rested tint. */
+const RESTED_FILL = 'linear-gradient(#cfe9ff 0 28%, #4fa3ff 28% 62%, #1f5fb8 62%)';
 
 /**
  * The thin XP strip on the bottom edge of the screen (UI §2.6.7, `.hud-xp`): exact fill, level-up hold + flash, "+N XP" floaters,
@@ -84,6 +87,8 @@ export class XpStrip implements HudWidget {
       this.shown += (target - this.shown) * Math.min(1, ctx.dt * 5);
     }
     setStyle(this.fill, 'width', (this.shown * 100).toFixed(2) + '%');
-    this.tipHtml = `<div class="sk"><div class="sk-desc">Tecrübe: ${(target * 100).toFixed(1).replace('.', ',')}% (${fmtNum(xp)} / ${fmtNum(need)})</div></div>`;
+    const rested = Math.round(restedPool(c.save, need));
+    setStyle(this.fill, 'background', rested > 0 ? RESTED_FILL : '');
+    this.tipHtml = `<div class="sk"><div class="sk-desc">Tecrübe: ${(target * 100).toFixed(1).replace('.', ',')}% (${fmtNum(xp)} / ${fmtNum(need)})${rested > 0 ? `<br>Dinlenmiş TP: +${fmtNum(rested)} (kıllar 2x)` : ''}</div></div>`;
   }
 }
