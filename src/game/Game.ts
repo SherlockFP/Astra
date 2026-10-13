@@ -17,6 +17,7 @@ import { HitShapes } from '../combat/HitShapes';
 import { LootSystem } from '../systems/LootSystem';
 import { Progression } from '../systems/Progression';
 import { MythicPlus } from '../systems/MythicPlus';
+import { Professions } from '../systems/Professions';
 import { QuestSystem } from '../systems/Quests';
 import { TalentSystem } from '../systems/Talents';
 import { ProcEngine } from '../combat/Procs';
@@ -70,6 +71,7 @@ export function createServices(): void {
   G.procs = new ProcEngine();
   G.talents = new TalentSystem();
   G.mplus = new MythicPlus();
+  G.professions = new Professions(); // GDD_LIFE §1 MVP: Madencilik / Bitki Toplama skills, gather nodes, starter recipes
   installSocial(); // G.presence + Genel / Ticaret / fisilti on the global lobby
   installAchievements(); // WP-08: achievement metrics from the game events (reads G.character lazily)
 
