@@ -38,10 +38,17 @@ export interface ItemSnapshot {
 export type PvpMsg =
   | { k: 'flag'; on: boolean; team?: 0 | 1 }
   | { k: 'duel'; op: 'invite' | 'accept' | 'decline' | 'start' | 'end'; to?: string; ring?: [number, number, number]; winner?: string }
-  | { k: 'hit'; to: string; amount: number; type: DamageType; crit: boolean; skillId?: string; statuses?: StatusApply[]; knockback?: number; dir: [number, number]; aLvl: number; aIlvl: number; seq: number }
+  | { k: 'hit'; to: string; amount: number; type: DamageType; crit: boolean; skillId?: string; statuses?: StatusApply[]; knockback?: number; dir: [number, number]; aLvl: number; aIlvl: number; seq: number; /** WP-07 (Kızıl Sınır): attacker entity id, written by the HOST only. */ from?: EntityId }
   | { k: 'ack'; to: string; amount: number; crit: boolean; hp: number; killed?: boolean; seq: number }
   | { k: 'kill'; killer: string; victim: string; assists: string[] }
-  | { k: 'score'; teams: [number, number] };
+  | { k: 'score'; teams: [number, number] }
+  // ---- WP-07 Kızıl Sınır (systems/Pvp.ts). Host -> clients only ('pvp' is a HOST_ONLY channel). Nation index: 0 = Gök Kartal, 1 = Kızıl Kurt.
+  /** Capture points: `p` = [owner (0 | 1 | 2 none), capturing nation (0 | 1 | 2 none), progress seconds] per point, `sc` nation scores, `ev` a flip that just happened (+ entity ids of the capturers). */
+  | { k: 'pcap'; p: [number, number, number][]; sc: [number, number]; ev?: { id: number; to: number; by: EntityId[] } }
+  /** A PvP kill (kill feed + honour). `h` = honour awarded to the killer (0 when anti-farm cut it), `s` = killer streak. */
+  | { k: 'pkill'; killer: EntityId; victim: EntityId; kn: string; vn: string; ka: number; va: number; h: number; s: number; sc: [number, number] }
+  /** Scoreboard rows: [entity id, name, nation, kills, deaths, honour earned this visit]. */
+  | { k: 'pboard'; rows: [EntityId, string, number, number, number, number][]; sc: [number, number] };
 
 /**
  * CM14 Pazar (CORE_MECHANICS §11). The three shop channels travel on the LOBBY room (net/messages.ts LobbyChannels), not the party

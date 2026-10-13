@@ -8,6 +8,7 @@ import type { CharacterState } from '../systems/CharacterState';
 import type { EquipSlot, ItemInstance } from '../types/items';
 import type { StatusId } from '../types/skills';
 import type { SpecId } from '../types/v2';
+import { nationOfSave, type NationId } from '../data/nations';
 
 /** State every player broadcasts about its own avatar ~15 Hz (net glue converts to/from wire format). */
 export interface PlayerSyncState {
@@ -54,6 +55,8 @@ export class Player extends Actor {
   visibleGear: Partial<Record<EquipSlot, ItemInstance>> = {};
   /** GDD_V2 WP5: spec of this player (local: from the save; remote: none until the spec channel lands). */
   spec: SpecId | null = null;
+  /** WP-06: nation (local: from the save; remote: from the peer's summary, set by net/Replication). Null = unknown (old client). */
+  nation: NationId | null = null;
   /** GDD_V2 §0.3: Adalet (Kılıç Ustası) and Karışım (Simyacı) pip counters, separate from the combo points. */
   pips: { adalet?: number; karisim?: number } = {};
   dodging = false;
@@ -124,6 +127,7 @@ export class Player extends Actor {
     this.name = opts.name;
     this.level = opts.level;
     this.character = opts.character ?? null;
+    if (this.character) this.nation = nationOfSave(this.character.save);
     this.interp = opts.isLocal ? null : new Interpolator();
     this.authority = opts.isLocal;
     this.radius = 0.55;

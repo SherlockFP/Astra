@@ -7,6 +7,7 @@ import type { LobbyTransport } from '../net/lobby';
 import type { Unsubscribe } from '../net/transport';
 import { NET, clampNum, ident, isObj, sanitizeText } from '../net/messages';
 import { emit } from './notify';
+import { NATIONS, cleanNation, nationOfSave, nationTag, type NationId } from '../data/nations';
 
 /**
  * SOCIAL - the world feels shared even when the party is empty. OWNER: net module.
@@ -101,6 +102,8 @@ export interface PresenceEntry {
   lvl: number;
   zone: string;
   zoneName: string;
+  /** WP-06: nation announced by the peer (absent for old clients). */
+  nat?: NationId;
   /** ms clock of the last message from this peer. */
   seen: number;
   self: boolean;
@@ -112,6 +115,7 @@ export interface SocialSelf {
   level: number;
   zone: string;
   zoneName: string;
+  nation?: NationId;
 }
 
 export interface SocialCtx {
@@ -155,6 +159,7 @@ const defaultCtx: SocialCtx = {
       level: Math.max(1, Math.min(LEVEL_CAP, Math.floor(ch.save.level || 1))),
       zone: ident(zone, 32) || 'town',
       zoneName: regionNow.id === zone ? regionNow.name : zoneLabel(zone),
+      nation: nationOfSave(ch.save),
     };
   },
   now: () => Date.now(),
@@ -187,7 +192,8 @@ const HELP_LINES = [
   '/g veya /1 mesaj - Genel Sohbet (tüm oyuncular)',
   '/ticaret veya /2 mesaj - Ticaret kanalı',
   '/w isim mesaj - fısıltı;  /r mesaj - son fısıldayana yanıt',
-  '/kim - çevrimiçi oyuncuları listele',
+  '/kim - çevrimiçi oyuncuları listele ([GK] Gök Kartal, [KK] Kızıl Kurt)',
+  '/skor veya /pvp - Kızıl Sınır skor tablosu;  /ulus - ulusun',
   '/temizle, /arayuz, /zindan - diğer komutlar',
 ];
 
@@ -351,17 +357,17 @@ export class Social implements PresenceApi {
     if (this.tr) this.announce(false);
   }
 
-  private presenceMsg(): { t: 'lpres'; name: string; cls: ClassId; lvl: number; zone: string; zn?: string } | null {
+  private presenceMsg(): { t: 'lpres'; name: string; cls: ClassId; lvl: number; zone: string; zn?: string; nat?: NationId } | null {
     const s = this.ctx.self();
     if (!s) return null;
-    return { t: 'lpres', name: s.name, cls: s.cls, lvl: s.level, zone: s.zone, ...(s.zoneName ? { zn: s.zoneName.slice(0, 24) } : {}) };
+    return { t: 'lpres', name: s.name, cls: s.cls, lvl: s.level, zone: s.zone, ...(s.zoneName ? { zn: s.zoneName.slice(0, 24) } : {}), ...(s.nation ? { nat: s.nation } : {}) };
   }
 
   private announce(force: boolean): void {
     const msg = this.presenceMsg();
     if (!msg || !this.tr) return;
     const now = this.ctx.now();
-    const key = `${msg.name}|${msg.cls}|${msg.lvl}|${msg.zone}`;
+    const key = `${msg.name}|${msg.cls}|${msg.lvl}|${msg.zone}|${msg.nat ?? ''}`;
     const changed = key !== this.lastSentKey;
     const due = now - this.lastAnnounceAt >= SOCIAL.PRESENCE_EVERY_MS;
     if (!force && !due && !(changed && now - this.lastAnnounceAt >= SOCIAL.CHANGE_GAP_MS)) return;
@@ -390,6 +396,7 @@ export class Social implements PresenceApi {
     e.lvl = s.level;
     e.zone = s.zone;
     e.zoneName = s.zoneName;
+    e.nat = s.nation;
     e.seen = this.ctx.now();
     this.selfEntry = e;
     if (first || renamed) this.recompute();
@@ -468,7 +475,7 @@ export class Social implements PresenceApi {
   }
 
   /** Insert / update the entry of a remote peer from validated fields. Returns it, or null when the table is full. */
-  private upsert(id: string, raw: string, cls: ClassId | '', lvl: number | null, zone: string | null, zoneName: string | null): PresenceEntry | null {
+  private upsert(id: string, raw: string, cls: ClassId | '', lvl: number | null, zone: string | null, zoneName: string | null, nat?: NationId): PresenceEntry | null {
     let e = this.peers.get(id);
     const now = this.ctx.now();
     if (!e) {
@@ -486,6 +493,7 @@ export class Social implements PresenceApi {
     if (lvl !== null) e.lvl = lvl;
     if (zone !== null) e.zone = zone;
     if (zoneName !== null) e.zoneName = zoneName;
+    if (nat) e.nat = nat;
     this.touch();
     return e;
   }
@@ -509,6 +517,7 @@ export class Social implements PresenceApi {
       Math.round(clampNum(d.lvl, 1, LEVEL_CAP, 1)),
       zone,
       cleanChatText(d.zn, 24),
+      cleanNation(d.nat),
     );
   }
 
@@ -661,6 +670,14 @@ export class Social implements PresenceApi {
       case 'kim': case 'who':
         this.who();
         return true;
+      case 'skor': case 'pvp': case 'siralama':
+        try { G.ui?.openPanel('pvpBoard'); } catch { /* ui not ready */ }
+        return true;
+      case 'ulus': case 'nation': {
+        const n = G.character ? nationOfSave(G.character.save) : null;
+        this.sys(n ? `Ulusun: ${NATIONS[n].name} [${NATIONS[n].tag}]. Karşı ulus yalnızca Kızıl Sınır'da düşmandır; aynı ulustan olanlar grup kurabilir.` : 'Karakter seçilmedi.');
+        return true;
+      }
       case 'yardim': case 'help':
         for (const l of HELP_LINES) this.sys(l);
         return true;
@@ -692,7 +709,7 @@ export class Social implements PresenceApi {
     this.sys(`Çevrimiçi oyuncular (${list.length}):`);
     for (const e of list.slice(0, SOCIAL.WHO_MAX)) {
       const cn = e.cls ? CLASSES[e.cls]?.name ?? '' : '';
-      this.sys(`${e.name} - Sv ${e.lvl}${cn ? ' ' + cn : ''}${e.zoneName || e.zone ? ' - ' + (e.zoneName || e.zone) : ''}`);
+      this.sys(`${e.nat ? `[${nationTag(e.nat)}] ` : ''}${e.name} - Sv ${e.lvl}${cn ? ' ' + cn : ''}${e.zoneName || e.zone ? ' - ' + (e.zoneName || e.zone) : ''}`);
     }
     if (list.length > SOCIAL.WHO_MAX) this.sys(`... ve ${list.length - SOCIAL.WHO_MAX} oyuncu daha.`);
   }

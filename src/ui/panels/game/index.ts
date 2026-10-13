@@ -20,6 +20,7 @@ import { WelcomePanel } from './welcome';
 import { MarketOpenPanel, MarketStallPanel, MarketSearchPanel } from './market';
 import { AchievementsPanel } from './achievements';
 import { ProfessionsPanel } from './professions';
+import { PvpBoardPanel } from './pvpBoard';
 
 /**
  * OWNER: panels-game module.
@@ -70,6 +71,7 @@ export function registerGamePanels(ui: UI): void {
     new MarketSearchPanel(),
     new AchievementsPanel(),
     new ProfessionsPanel(),
+    new PvpBoardPanel(),
   ];
   for (const p of panels) {
     registry.set(p.id, p);

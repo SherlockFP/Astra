@@ -11,6 +11,7 @@ import { ICON, clamp01, clampN, div, iconEl, pulse, setClass, setDisplay, setSty
 import { statusView } from './status';
 import { StatusRow } from './StatusRow';
 import { selectedTitleName } from '../../systems/Achievements';
+import { nationColor, nationTag } from '../../data/nations';
 
 const _v = new THREE.Vector3();
 const _p = { x: 0, y: 0 };
@@ -141,10 +142,12 @@ class Plate {
   private applyFlavor(): void {
     const a = this.actor;
     const isPlayer = a.kind === 'player';
-    const flavor = isPlayer ? 'player' : isMechanic(a) ? 'mech' : isChampion(a) ? 'champ' : this.rank;
+    // WP-06: a player's plate takes its nation's colour (Gök Kartal blue, Kızıl Kurt red); the nation is part of the key so a late-known nation repaints
+    const nation = isPlayer ? (a as Player).nation : null;
+    const flavor = isPlayer ? 'player' + (nation ?? '') : isMechanic(a) ? 'mech' : isChampion(a) ? 'champ' : this.rank;
     if (flavor === this.flavor) return;
     this.flavor = flavor;
-    const col = this.opts.color ?? (isPlayer ? '#7fe08a' : flavor === 'champ' ? CHAMPION_COLOR : flavor === 'mech' ? MECH_COLOR : RANK_NAME_COLOR[this.rank] ?? '#f1e6cf');
+    const col = this.opts.color ?? (isPlayer ? nationColor(nation) : flavor === 'champ' ? CHAMPION_COLOR : flavor === 'mech' ? MECH_COLOR : RANK_NAME_COLOR[this.rank] ?? '#f1e6cf');
     this.el.style.setProperty('--nc', col);
     if (flavor === 'champ' || flavor === 'mech') this.el.dataset.flavor = flavor;
     else delete this.el.dataset.flavor;
@@ -163,7 +166,8 @@ class Plate {
   update(ctx: { now: number; world: number; casts: CastTracker; isTarget: boolean; isSoft: boolean; playerLevel: number; selfTitle: string }): void {
     const a = this.actor;
     this.applyFlavor();
-    setText(this.nameEl, a.name);
+    const tag = a.kind === 'player' ? nationTag((a as Player).nation) : '';
+    setText(this.nameEl, tag ? `[${tag}] ${a.name}` : a.name);
     setDisplay(this.nameEl, this.opts.showName !== false);
     setDisplay(this.lvlEl, this.flavor !== 'mech');
     setText(this.lvlEl, String(a.level));

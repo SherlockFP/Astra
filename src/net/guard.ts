@@ -7,6 +7,7 @@ import { monsterHP } from '../data/mythicAffixes';
 import { LEVEL_CAP } from '../types/character';
 import { toast } from '../systems/notify';
 import { clampNum } from './messages';
+import { PVP, pvpHitCap, type PvpDeny } from '../systems/PvpRules';
 
 /**
  * Host-side validation of client-sent combat messages (ROADMAP F6, ARCHITECTURE "Damage authority"). The attacker computes
@@ -168,6 +169,60 @@ export function vetHit(
   const cap = Math.max(AMOUNT_CAP_FLOOR, AMOUNT_CAP_MULT * monsterHP(clampNum(sender.level, 1, LEVEL_CAP, 1)));
   if (raw > cap) { logOnce(peer, 'hit-amount-clamped'); return cap; }
   return raw;
+}
+
+/** WP-07: per-attacker PvP token bucket (host), tighter than the PvE `hit` bucket. */
+const pvpBuckets = new Map<string, { tokens: number; at: number }>();
+
+function takePvpToken(peer: string): boolean {
+  let b = pvpBuckets.get(peer);
+  const t = now();
+  if (!b) {
+    if (pvpBuckets.size >= MAX_PEERS) {
+      const oldest = pvpBuckets.keys().next().value;
+      if (oldest !== undefined) pvpBuckets.delete(oldest);
+    }
+    b = { tokens: PVP.BUCKET_CAP, at: t };
+    pvpBuckets.set(peer, b);
+  }
+  b.tokens = Math.min(PVP.BUCKET_CAP, b.tokens + (t - b.at) * PVP.BUCKET_REFILL);
+  b.at = t;
+  if (b.tokens < 1) return false;
+  b.tokens -= 1;
+  return true;
+}
+
+/** Tests only: forget the PvP buckets. */
+export function resetPvpGuard(): void {
+  pvpBuckets.clear();
+}
+
+/**
+ * Host gate for a client `hit` whose target is another PLAYER (WP-07 Kızıl Sınır). Same pipeline as `vetHit` (known live sender, the
+ * shared hit bucket, reach with the skill's range, amount clamp) plus the PvP rules and three PvP-only limits:
+ *  1. `deny` is the result of the pure zone / nation / safe-box rules (PvpRules.pvpDeny), evaluated by the caller with the host's
+ *     own view of both players;
+ *  2. a separate per-attacker bucket (PVP.BUCKET_CAP burst, PVP.BUCKET_REFILL / s);
+ *  3. the amount cap is pvpHitCap(level) (about 9k at level 35), far below the PvE floor of 20,000.
+ * Returns the amount to deliver (before the victim's 60 % reduction), or null when the hit must be dropped.
+ */
+export function vetPvpHit(
+  peer: string,
+  victim: { position: { x: number; z: number }; radius?: number },
+  skillId: string | undefined,
+  isDot: boolean,
+  amount: number,
+  deny: PvpDeny,
+): number | null {
+  if (deny !== null) { reject(peer, `pvp-${deny}`); return null; }
+  if (isDot) { reject(peer, 'pvp-dot'); return null; }
+  if (!takePvpToken(peer)) { reject(peer, 'pvp-rate'); return null; }
+  const amt = vetHit(peer, victim, skillId, isDot, amount);
+  if (amt === null) return null;
+  const sender = G.world?.get<Player>(partyEntityOf(peer) ?? -1);
+  const cap = pvpHitCap(clampNum(sender?.level, 1, LEVEL_CAP, 1), monsterHP);
+  if (amt > cap) { logOnce(peer, 'pvp-amount-clamped'); return cap; }
+  return amt;
 }
 
 /**

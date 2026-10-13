@@ -1,7 +1,8 @@
 import { G } from '../game/G';
 import { RNG } from '../core/utils';
 import type { ClassId } from '../types/common';
-import { BAG_SIZE, STASH_SIZE, type CharacterSave, type CharacterSummary } from '../types/character';
+import { BAG_SIZE, STASH_SIZE, type CharacterSave, type CharacterSummary, type PvpSave } from '../types/character';
+import { hashNation, isNationId, nationOfSave, type NationId } from '../data/nations';
 import type { EquipSlot, ItemBaseDef, ItemCategory, ItemInstance } from '../types/items';
 import type { SkillSlotKey } from '../types/skills';
 import type { StatBlock } from '../types/stats';
@@ -147,15 +148,18 @@ export class CharacterState {
     // GDD_TALENTS (T6): mastery XP and passive extras always exist; migrateTalents fills tb and runs once per save
     save.skillMastery ??= {};
     save.passiveExtra ??= { picks: {}, jewels: {} };
+    // WP-06: old saves get the deterministic hash default of their id once; creation stores the player's choice
+    if (!isNationId(save.nation)) save.nation = hashNation(save.id);
     migrateTalents(save);
     return save;
   }
 
-  /** New level-1 character with starting gear, potions and default skill bar. */
-  static create(name: string, classId: ClassId, variant = 0): CharacterState {
+  /** New level-1 character with starting gear, potions and default skill bar. `nation` = the creation-screen choice (default: the hash of the id). */
+  static create(name: string, classId: ClassId, variant = 0, nation?: NationId): CharacterState {
     const now = Date.now();
+    const newId = 'c' + now.toString(36) + Math.random().toString(36).slice(2, 5);
     const save: CharacterSave = {
-      version: SAVE_VERSION, id: 'c' + now.toString(36) + Math.random().toString(36).slice(2, 5), name, classId, appearance: { variant }, level: 1, xp: 0, gold: 50,
+      version: SAVE_VERSION, id: newId, nation: isNationId(nation) ? nation : hashNation(newId), name, classId, appearance: { variant }, level: 1, xp: 0, gold: 50,
       createdAt: now, lastPlayed: now, playedSec: 0, equipment: {}, bag: new Array(BAG_SIZE).fill(null), stash: new Array(STASH_SIZE).fill(null),
       materials: { pot_hp_1: 5, pot_res_1: 5, scroll_town: 1 }, talents: [CLASS_START_NODE[classId]], talentRefunds: 0, skillBar: {}, skillRanks: {},
       mythic: { rating: 0, best: {}, weekly: { week: 0, runs: [] }, vaultClaimedWeek: -1, keystone: null },
@@ -338,7 +342,17 @@ export class CharacterState {
   }
 
   summary(): CharacterSummary {
-    return { id: this.save.id, name: this.save.name, classId: this.save.classId, level: this.save.level, itemLevel: this.itemLevel(), rating: this.save.mythic.rating, variant: this.save.appearance.variant, role: specRole(this.save.spec) ?? "dps" };
+    return { id: this.save.id, name: this.save.name, classId: this.save.classId, level: this.save.level, itemLevel: this.itemLevel(), rating: this.save.mythic.rating, variant: this.save.appearance.variant, role: specRole(this.save.spec) ?? "dps", nation: nationOfSave(this.save) };
+  }
+
+  /** WP-06: the character's nation (the stored choice, else the hash default of its id). */
+  get nation(): NationId {
+    return nationOfSave(this.save);
+  }
+
+  /** WP-07: the PvP record, created on first use. */
+  pvpRecord(): PvpSave {
+    return (this.save.pvp ??= { kills: 0, deaths: 0, honour: 0, honourTotal: 0, bestStreak: 0, captures: 0 });
   }
 
   // ======================================================================== inventory

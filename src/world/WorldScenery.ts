@@ -159,6 +159,31 @@ export const PALETTES: Record<string, Palette> = {
     rocks: [...ROCK_SINGLE, kn('stone_largeA'), kn('stone_largeC')],
     mult: { tree: 0.45, bush: 0.2, rock: 1.6, tuft: 0.25, flower: 0 },
   },
+  // ---- Kızıl Sınır (data/world/kizil_sinir.ts, the PvP zone): r11 Gök Kartal fort (cool meadow), r12 Kızıl Kurt fort (dry steppe), r13 the field
+  r11: {
+    trees: [RPT('tree01'), RPT('tree03'), gp('tree_oak_a'), gp('tree_pine_a')],
+    deadTrees: [TREE_DEAD],
+    deadShare: 0.05,
+    bushes: [gp('bush_a'), gp('bush_b')],
+    rocks: [gp('rock_small'), gp('rock_medium')],
+    mult: { tree: 0.35, bush: 0.7, rock: 0.6, tuft: 1.1, flower: 1.0 },
+  },
+  r12: {
+    trees: [RPN('tree01_fall'), gp('tree_autumn')],
+    deadTrees: [TREE_DEAD, TREE_DEAD_M],
+    deadShare: 0.3,
+    bushes: [gp('bush_b'), kn('plant_bushLarge')],
+    rocks: [gp('rock_small'), gp('rock_medium'), ROCK_SINGLE[0]],
+    mult: { tree: 0.12, bush: 0.6, rock: 1.0, tuft: 1.0, flower: 0.2 },
+  },
+  r13: {
+    trees: [RPN('tree01_fall'), RPN('tree04_fall'), RPT('tree29'), gp('tree_pine_a')],
+    deadTrees: [TREE_DEAD, TREE_DEAD_M],
+    deadShare: 0.25,
+    bushes: [gp('bush_b'), kn('plant_bushLarge'), kn('plant_bushSmall')],
+    rocks: [gp('rock_small'), gp('rock_medium'), ...ROCK_SINGLE],
+    mult: { tree: 0.14, bush: 0.7, rock: 1.4, tuft: 1.1, flower: 0.3 },
+  },
 };
 
 /** Props scattered at random spots of a region (count per region room). */
@@ -180,6 +205,9 @@ export const SPRINKLES: Record<string, Sprinkle[]> = {
   r9: [{ urls: [kg('gravestone-round'), kg('gravestone-cross'), kg('gravestone-broken')], n: 14, s: [0.9, 1.2], layer: 'prop' },
     { urls: [kg('pillar-small'), kn('statue_column')], n: 6, s: [1, 1.2], layer: 'prop', block: 0.8 }],
   r10: [{ urls: [gp('bone_pile')], n: 6, s: [1, 1.3], layer: 'prop' }],
+  // Kızıl Sınır: the field is dressed with both nations' banners, old camps and bones
+  r13: [{ urls: [gp('banner_blue')], n: 3, s: [1.2, 1.5], layer: 'prop' }, { urls: [gp('banner_red')], n: 3, s: [1.2, 1.5], layer: 'prop' },
+    { urls: [gp('bone_pile')], n: 3, s: [1, 1.3], layer: 'prop' }, { urls: [gp('tent')], n: 2, s: [0.9, 1.1], layer: 'prop' }],
 };
 
 /** Ground patches per region (splat channel, one per `every` m2, radius range). GDD §8.3: R4 ~40% dark, R5 red dirt, R6 dark. */
@@ -194,6 +222,9 @@ const PATCHES: Record<string, { ch: SplatChannel; every: number; r: [number, num
   r8: { ch: 'dirt', every: 700, r: [3, 7] },
   r9: { ch: 'dark', every: 1200, r: [3, 6] },
   r10: { ch: 'dark', every: 900, r: [3, 7] },
+  r11: { ch: 'dirt', every: 2200, r: [3, 6] },
+  r12: { ch: 'dirt', every: 1200, r: [3, 6] },
+  r13: { ch: 'dirt', every: 1400, r: [3, 7] },
 };
 
 /** Region tint (multiplied into the ground colour, GDD §8.3). Used when the region theme has no `groundTint`. */

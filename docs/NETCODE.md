@@ -691,3 +691,16 @@ The "shared world" layer runs on the **global lobby room** (leased with `G.net.l
 - **Offline / no lobby:** "Genel sohbete bağlanılamadı." A failed connection is retried every 30 s or on the next send (after 5 s).
 - Mesh cost: every player joins the one lobby room (see 3.3); presence is ~120 bytes per peer per 5 s.
 - Test: `node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/social.mjs`.
+
+## 16. Nations and Kızıl Sınır (WP-06 / WP-07, `systems/Pvp.ts`, `systems/PvpRules.ts`, `data/nations.ts`, `data/pvpZone.ts`)
+
+**Nations.** `CharacterSave.nation` (`gok_kartal` blue / `kizil_kurt` red) is chosen on the creation screen and travels in `CharacterSummary.nation` (hello / char / party), in the presence message (`lpres.nat`, `/kim`) and on `Player.nation` (nameplate colour + `[GK]` / `[KK]` tag). A coop room is single-nation: `onHello` answers `reject:'nation'` to the other nation. A room hosted with `mode: 'pvp'` (party panel toggle, `RoomAnnouncement.mode`, `PartyStateMsg.mode`) takes both nations and up to `MAX_ROOM_SIZE` = 8 players. Nations are hostile only inside the PvP zone.
+
+**PvP hits** (no new hit channel; `pvp` is now a HOST_ONLY channel, so clients cannot originate it):
+1. attacker, after a skill fired (`SkillSystem` -> `pvp.onFired`): hostile players inside the skill's shape (`pvpShapeHit`), damage rolled by `Combat.rollOutgoing`, sent on the existing `hit` channel with `targetId` = a player entity (the host itself calls `hostHit`);
+2. host (`Combat.onNetHit` -> `pvp.onClientHit` -> `guard.vetPvpHit`): `pvpDeny` (zone, nations, base safe box, both level >= 35, dead, self), the PvP bucket (10 burst, 6/s), the shared hit bucket, reach, `pvpHitCap(level)` (max(6000, 12 x monsterHP)); remembers the hitter for kill credit (10 s) and forwards `{k:'hit', from}` on `pvp` to the victim's peer;
+3. victim (`Pvp.victimReceive`): re-checks the rules with its own view, reach, the cap again, multiplies by `PVP.DAMAGE_MULT` (0.4 = 60 % reduction), halves CC (max 3 s), drops statuses that are not CC / DoT, and runs the normal `Combat.hitLocalPlayer` (i-frames, parry, dodge, block, armour). Only the owner ever changes a player's HP.
+
+**Kills / score.** The victim's `pdeath` (`player:died`) makes the host credit the last hitter: `PvpBoard.kill` (anti-farm 100/50/25/0 % per killer->victim pair for 10 min, streak, shutdown bonus), `{k:'pkill'}` to all (kill feed as `net:chat` system lines), each owner updates its OWN save (`pvp.kills/deaths/honour`, event `pvp:honor`). The host steps `CaptureField` (3 points, 14 m radius, 30 s uncontested hold, contested = frozen) and publishes `{k:'pcap'}` 2 Hz plus `{k:'pboard'}` every 2 s. Respawn: the dead are released at their nation's graveyard after 10 s (`Pvp.respawnPoint`, no "Burada Diril", no XP penalty).
+
+Limits: damage is attacker-computed (cheat surface = the capped, rate-limited, reach-checked hit the host forwards; a modified client can still hit for up to the cap at the bucket rate, so the 60 % rule is enforced on the victim); channels / ground ticks after the first fire and minion hits do not hurt players; a zone is one room (<= 8 players). Test: `node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/pvp.mjs`.

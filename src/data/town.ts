@@ -40,6 +40,12 @@ bld('home_B', 'blue', -36, 18, 90);
 bld('tavern', 'yellow', 40, 42, -90);
 // East Gate (Doğu Kapısı, exit 'dogu_kapisi' -> Karakır Bozkırı): arch over the exit box x 58..62, z -4..4, lamps either side
 add(hw('arch'), 58, 0, { rot: 90, scale: 2 });
+// West Gate (Batı Kapısı, exit 'bati_kapisi' -> Kızıl Sınır, the PvP zone, level 35+): the same arch, mirrored, with a blue and a red banner
+add(hw('arch'), -58, 0, { rot: 90, scale: 2 });
+add(gp('banner_blue'), -57, -6, { rot: 90, scale: 1.5 });
+add(gp('banner_red'), -57, 6, { rot: 90, scale: 1.5 });
+add(gp('lamp_post'), -56, -4, { light: { color: WARM, intensity: 0.35, distance: 6, flicker: true, y: 3 } });
+add(gp('lamp_post'), -56, 4, { light: { color: WARM, intensity: 0.35, distance: 6, flicker: true, y: 3 } });
 // gate lamps: a warm lantern glow (the light sits 3 m up; a stronger one made a white pool on the road under each post)
 add(gp('lamp_post'), 56, -4, { light: { color: WARM, intensity: 0.35, distance: 6, flicker: true, y: 3 } });
 add(gp('lamp_post'), 56, 4, { light: { color: WARM, intensity: 0.35, distance: 6, flicker: true, y: 3 } });
@@ -329,6 +335,10 @@ const lap = (phase: number): [number, number][] => Array.from({ length: 16 }, (_
   const a = ((i / 16 + phase) * 2 * Math.PI);
   return [+(Math.sin(a) * 17).toFixed(2), +(8 + Math.cos(a) * 17).toFixed(2)] as [number, number];
 });
+npc('npc_sinir_subayi', 'Sınır Subayı Tarkan', 'guard', 'Knight', -53.5, 1, 90, {
+  title: 'Batı Kapısı: Kızıl Sınır', show: GUARD2H, tint: 0x6a7ab0, idle: '2H_Melee_Idle',
+  lines: ['Batı Kapısı Kızıl Sınır\'a açılır: Gök Kartal ile Kızıl Kurt\'un savaş alanı. Seviye 35 gerekir.', 'Orada iki ulus birbirine düşman. Kendi ulusundan olanlar dostundur, diğerleri değil.'],
+});
 npc('npc_muhafiz_5', 'Devriye', 'guard', 'Knight', 0, 25, 0, { title: 'Devriye', show: GUARD, tint: 0x8090b0, idle: 'Walking_A', patrol: { path: lap(0), lap: 30 } });
 npc('npc_muhafiz_6', 'Devriye', 'guard', 'Knight', 0, -9, 0, { title: 'Devriye', show: GUARD, tint: 0x8090b0, idle: 'Walking_A', patrol: { path: lap(0.5), lap: 30 } });
 // tavern + villagers
@@ -359,6 +369,8 @@ export const TOWN: TownDef = {
   exits: [
     { id: 'guney_kapisi', box: [-4, 58, 4, 62], to: 'sisli_vadi' },
     { id: 'dogu_kapisi', box: [58, -4, 62, 4], to: 'karakir_bozkiri' },
+    // West Gate -> Kızıl Sınır (WP-07): TownScene.exitLock needs level 35
+    { id: 'bati_kapisi', box: [-62, -4, -58, 4], to: 'kizil_sinir' },
   ],
   terraces: [{ id: 'kadim_kapilar_salonu', box: [-24, -58, 24, -28], y: 2 }],
   // the stair runs along z from the terrace edge (z -28, y 2) down to the plaza (z -24, y 0)
@@ -370,6 +382,7 @@ export const TOWN: TownDef = {
   zones: [
     { id: 'guney_kapisi', name: 'Güney Kapısı', box: [-6, 52, 6, 60] },
     { id: 'dogu_kapisi', name: 'Doğu Kapısı', box: [56, -6, 62, 6] },
+    { id: 'bati_kapisi', name: 'Batı Kapısı', box: [-62, -6, -56, 6] },
     { id: 'kadim_kapilar', name: 'Kadim Kapılar Salonu', box: [-24, -58, 24, -28] },
     { id: 'zanaat_sokagi', name: 'Zanaat Sokağı', box: [16, -20, 56, 18] },
     { id: 'carsi', name: 'Çarşı', box: [-56, -20, -16, 18] },

@@ -306,7 +306,10 @@ export class Replication {
       const peer = this.net.peers.get(rec.peerId);
       if (!peer) continue;
       rec.player.name = peer.name;
-      if (peer.summary) rec.player.level = peer.summary.level;
+      if (peer.summary) {
+        rec.player.level = peer.summary.level;
+        rec.player.nation = peer.summary.nation ?? null;
+      }
     }
   }
 
@@ -337,6 +340,7 @@ export class Replication {
       id, slot: peer.slot, classId: sum?.classId ?? 'knight', name: peer.name, level: sum?.level ?? 1, isLocal: false, peerId: peer.peerId,
     });
     player.variant = sum?.variant ?? 0;
+    player.nation = sum?.nation ?? null;
     if (player.interp) player.interp.delay = NET.INTERP_DELAY_S;
     player.object3d.visible = false; // until the first state arrives (no flash at the origin)
     const look = this.lookCache.get(peer.peerId);

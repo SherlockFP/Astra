@@ -4,6 +4,7 @@ import { exportSaves, openImportDialog } from '../../core/SaveSafety';
 import { G } from '../../game/G';
 import type { ClassId } from '../../types/common';
 import { CLASS_ORDER, VARIANTS, classPresentation, randomName } from './classInfo';
+import { NATIONS, NATION_IDS, type NationId } from '../../data/nations';
 
 /**
  * DOM overlay of the main menu: title, character list, command stack (Oyna / Yeni Karakter / Sil / Ayarlar /
@@ -32,6 +33,8 @@ export interface MenuCallbacks {
   onExit(): void;
   onPickClass(id: ClassId): void;
   onPickVariant(i: number): void;
+  /** WP-06: nation picked on the creation screen (Gök Kartal / Kızıl Kurt). Optional: older callers need not pass it. */
+  onPickNation?(id: NationId): void;
   /** Returns an error message to show (null = accepted). */
   onSubmitCreate(name: string): string | null;
   onValidateName(name: string): string | null;
@@ -83,6 +86,7 @@ export class MenuUI {
   private createR = h('div.efs-panel.efs-create-r');
   private classCards = new Map<ClassId, HTMLElement>();
   private swatchEls: HTMLElement[] = [];
+  private nationCards = new Map<NationId, HTMLElement>();
   private nameInput!: HTMLInputElement;
   private errEl!: HTMLElement;
   private variantName!: HTMLElement;
@@ -225,6 +229,27 @@ export class MenuUI {
     this.variantName = h('div.efs-vname');
     l.append(sw, this.variantName);
 
+    // WP-06: nation (cannot be changed later; hostile only inside the Kızıl Sınır PvP zone)
+    l.append(h('div.efs-label', null, 'Ulus'));
+    for (const id of NATION_IDS) {
+      const n = NATIONS[id];
+      const card = h(
+        'div.efs-class',
+        {
+          style: `--c:${n.color}`,
+          title: n.lore,
+          onclick: () => {
+            this.cb.onUiSound('click');
+            this.cb.onPickNation?.(id);
+          },
+          onmouseenter: () => this.cb.onUiSound('hover'),
+        },
+        h('div', null, h('div.nm', null, n.name), h('div.tg', null, id === 'gok_kartal' ? 'Mavi bayrak · Kuzey sınırı' : 'Kızıl bayrak · Güney bozkırı')),
+      );
+      this.nationCards.set(id, card);
+      l.append(card);
+    }
+
     l.append(h('div.efs-label', null, 'Kahraman Adı'));
     this.nameInput = h('input.efs-input', { type: 'text', maxLength: 14, placeholder: 'Bir isim seç...', spellcheck: false, autocomplete: 'off' }) as HTMLInputElement;
     this.nameInput.addEventListener('input', () => {
@@ -300,6 +325,11 @@ export class MenuUI {
     // icon (mask-based) needs custom properties, set explicitly
     const ic = r.querySelector('.efs-detail-hd .efs-icon') as HTMLElement;
     ic.style.cssText = `${iconStyle(p.icon, p.color)};width:54px;height:54px`;
+  }
+
+  /** Highlight the chosen nation card of the creation screen. */
+  setCreateNation(id: NationId): void {
+    for (const [nid, el] of this.nationCards) el.classList.toggle('sel', nid === id);
   }
 
   focusName(): void {
