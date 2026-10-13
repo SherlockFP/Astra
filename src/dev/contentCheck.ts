@@ -1,6 +1,7 @@
-import { TILE_SIZE, WORLD_PACK_STRIDE, type DoorDef, type DungeonDef, type HeightArea, type PropPlacement, type RoomDef, type TileRect, type TownDef, type ZoneDef } from '../types/dungeons';
+import { TILE_SIZE, WORLD_PACK_STRIDE, type BossPlacement, type DoorDef, type DungeonDef, type HeightArea, type PropPlacement, type RoomDef, type TileRect, type TownDef, type ZoneDef } from '../types/dungeons';
 import type { QuestDef } from '../types/quests';
-import { MUSIC_IDS } from '../types/audio';
+import type { EnemyAbility, EnemyDef } from '../types/enemies';
+import { MUSIC_IDS, SFX_IDS } from '../types/audio';
 import { VFX_IDS } from '../types/vfx';
 import { GDD_BOSSES, GDD_ROSTER, GDD_SUMMONS } from './contentRoster';
 
@@ -325,6 +326,10 @@ export const roomAtTile = (def: DungeonDef, wx: number, wz: number): RoomDef | u
 export function dungeonUrls(def: DungeonDef): string[] {
   const out = new Set<string>();
   for (const r of def.rooms) for (const p of r.props ?? []) out.add(p.model);
+  // P-14 NPC models, P-08 sky images (textures and panoramas: existence only)
+  for (const n of def.extras?.npcs ?? []) out.add(n.model);
+  if (def.theme.sky?.image) out.add(def.theme.sky.image);
+  for (const r of def.rooms) if (r.sky?.image) out.add(r.sky.image);
   // open-world map: village props and npcs, region ground textures and panoramas
   for (const v of def.world?.villages ?? []) {
     for (const p of v.props) out.add(p.model);
@@ -650,7 +655,271 @@ export function checkVerticalDungeon(def: DungeonDef): Issue[] {
   return out;
 }
 
-export function checkDungeon(def: DungeonDef, models: ModelDb, knownEnemy?: (id: string) => number | undefined): DungeonReport {
+// ---------------------------------------------------------------------------------------------------------------------
+// Season content rules (K20, docs/dungeons/_shared_primitives.md P-29). The registries come from the caller
+// (tools/content-check.mjs, dev/content) so this file keeps no data imports. A missing registry turns its rules off.
+// Season dungeons (`isSeasonDungeon`) get errors; the four legacy dungeons get the same findings as warnings.
+// ---------------------------------------------------------------------------------------------------------------------
+
+/** Data the season rules resolve ids against. Every field is optional: a missing registry switches its rules off. */
+export interface ContentRegistries {
+  /** STATUSES keys (data/statuses.ts). */
+  statuses?: ReadonlySet<string>;
+  /** DEVICES (data/devices.ts): effect, and for `open_gate` the door it opens. */
+  devices?: Readonly<Record<string, { effect: string; gateDoor?: string }>>;
+  /** UNIQUES keys (data/uniques.ts). */
+  uniques?: ReadonlySet<string>;
+  /** Every loot table (data/loot.ts) by id, with its unique list. */
+  lootTables?: Readonly<Record<string, { uniqueIds?: string[] }>>;
+  /** CLASS_IDS (data/classes.ts). */
+  classes?: ReadonlySet<string>;
+  /** PROFESSION_NAMES keys (data/devices.ts). */
+  professions?: ReadonlySet<string>;
+  /** hasProcModel (ai/procModels.ts): does a `PROC:<key>` model have a builder. */
+  hasProc?: (key: string) => boolean;
+  /** ENEMIES and BOSSES, full definitions. */
+  enemyDef?: (id: string) => EnemyDef | undefined;
+  /** BOSSES keys. Season bosses are checked here instead of the GDD roster. */
+  bossIds?: ReadonlySet<string>;
+}
+
+/** Inputs the season rules take from checkDungeon. */
+export interface SeasonCtx {
+  nav: NavMask;
+  reachable: (wx: number, wz: number) => boolean;
+  enemyForces: (eid: string) => number | undefined;
+  forces: { all: number; mandatory: number; required: number };
+}
+
+export const isSeasonDungeon = (def: DungeonDef): boolean => def.season !== undefined || def.endgame === true;
+
+const HAZARD_KINDS: readonly string[] = ['lava_burst', 'icicle_drop', 'debris_fall', 'plague_vent', 'lightning_strike'];
+const GATE_KINDS: readonly string[] = ['none', 'open', 'boss_lock', 'boss_exit', 'forces_lock', 'event_lock', 'kill_lock', 'device_lock'];
+const GATE_STYLES: readonly string[] = ['portcullis', 'arcane', 'fel', 'wood', 'thorn', 'bone', 'web', 'stone'];
+const DORMANT_KINDS: readonly string[] = ['bones', 'coffin', 'egg', 'ceiling', 'statue'];
+const ZONE_LOOKS: readonly string[] = ['cloud', 'abyss'];
+
+/** First-windup floor (s) of one ability, GDD_CREATURES 1.2 (melee curve, projectile 0.60, line and ground 0.90, perilous 1.00). */
+export function windupFloor(a: EnemyAbility): number {
+  if (a.perilous) return 1.0;
+  const coef = a.damage?.coef ?? 1.0;
+  switch (a.kind) {
+    case 'melee': case 'cone': case 'charge': return Math.min(1.2, Math.max(0.45, 0.45 + 0.25 * coef));
+    case 'projectile': return 0.6;
+    case 'line': case 'ground_aoe': case 'self_aoe': return 0.9;
+    default: return 0;
+  }
+}
+
+/** `DeviceDef.gateDoor` names a door: `roomA|roomB` in either order, optionally `@x,y` for the door tile. */
+function gateDoorMatches(gateDoor: string, d: DoorDef): boolean {
+  const [pair, at] = gateDoor.split('@');
+  if (pair.split('|').sort().join('|') !== [d.a, d.b].sort().join('|')) return false;
+  return at === undefined || at === `${d.tile[0]},${d.tile[1]}`;
+}
+
+/**
+ * P-29 rules that the 8 season packages need: pack and boss references, gate pairs (event, kill, device, boss), device and
+ * interactable extras, statuses, hazard kinds, proc bodies, loot uniques, trash windup, kick and dispel flags, the forces
+ * slack (115 to 130 %, the 115 % floor is in checkDungeon) and the boss count (3, groups count once).
+ */
+export function checkSeasonRules(def: DungeonDef, ctx: SeasonCtx, reg: ContentRegistries = {}): Issue[] {
+  const out: Issue[] = [];
+  const id = def.id;
+  const season = isSeasonDungeon(def);
+  const err = (where: string, msg: string): void => { out.push({ level: 'error', where, msg }); };
+  const warn = (where: string, msg: string): void => { out.push({ level: 'warn', where, msg }); };
+  const bad = season ? err : warn;
+  const roomById = new Map(def.rooms.map((r) => [r.id, r]));
+  const packById = new Map(def.packs.map((p) => [p.id, p]));
+  const bossRooms = new Set(def.bosses.map((b) => b.roomId));
+  const statusOk = (s: string): boolean => !reg.statuses || reg.statuses.has(s);
+  const onGround = (wx: number, wz: number, r: number): boolean => clearAt(ctx.nav, wx, wz, r) && ctx.reachable(wx, wz);
+  const inRoom = (tx: number, tz: number): boolean => roomAtTile(def, sceneW(tx), sceneW(tz)) !== undefined;
+  const dupes = (ids: string[], where: string, what: string): void => {
+    const seen = new Set<string>();
+    for (const i of ids) { if (seen.has(i)) err(where, `duplicate ${what} id ${i}`); seen.add(i); }
+  };
+
+  // ---- bosses: count (groups count once, M+ bossesTotal) ----
+  const groups = new Set<string>();
+  let solo = 0;
+  for (const b of def.bosses as (BossPlacement & { group?: string })[]) { if (b.group) groups.add(b.group); else solo++; }
+  const bossCount = solo + groups.size;
+  if (season && bossCount < 3) err(id, `season dungeon needs at least 3 bosses (a group counts once): found ${bossCount}`);
+  if (season) for (const r of def.rooms) if (r.boss && !bossRooms.has(r.id)) err(`room ${r.id}`, 'flagged boss but has no boss placement');
+
+  // ---- forces: 115 to 130 % of forcesRequired; the mandatory route must cover it in season dungeons ----
+  const { all, mandatory, required } = ctx.forces;
+  if (required > 0 && !def.outdoor && !def.world) {
+    if (all / required > 1.3) bad(id, `forces available ${all} = ${((all / required) * 100).toFixed(1)}% of required ${required}: above the 130% slack ceiling`);
+    if (season && mandatory < required) err(id, `mandatory route ${mandatory} is below forcesRequired ${required}`);
+  }
+
+  // ---- packs ----
+  for (const p of def.packs) {
+    const w = `pack ${p.id}`;
+    for (const l of p.linkedTo ?? []) if (!packById.has(l)) err(w, `linkedTo ${l} is not a pack of this dungeon`);
+    if (p.dormant && !DORMANT_KINDS.includes(p.dormant.kind)) err(w, `unknown dormant kind ${p.dormant.kind}`);
+    if (p.dormant && !(p.dormant.wakeRadius > 0)) err(w, 'dormant wakeRadius must be > 0');
+    for (const c of p.wakeWhen?.cleared ?? []) if (!packById.has(c)) err(w, `wakeWhen names unknown pack ${c}`);
+    if (p.wakeWhen?.delay !== undefined && p.wakeWhen.delay < 0) err(w, 'wakeWhen.delay is negative');
+  }
+
+  // ---- rooms: ambience, atmosphere, storms, zones, hazards, props ----
+  for (const r of def.rooms) {
+    const w = `room ${r.id}`;
+    if (r.atmosphere !== undefined && !def.atmospheres?.[r.atmosphere]) err(w, `atmosphere ${r.atmosphere} is not in DungeonDef.atmospheres`);
+    for (const a of r.ambience ?? []) {
+      const aw = `${w} ambience ${a.id}`;
+      if (!(SFX_IDS as readonly string[]).includes(a.id)) err(aw, 'unknown sfx id');
+      if (!(a.radius > 0)) err(aw, 'radius must be > 0');
+      if (!(a.volume >= 0 && a.volume <= 1)) err(aw, 'volume must be 0..1');
+      if (a.every && !(a.every[0] >= 0 && a.every[0] <= a.every[1])) err(aw, 'every must be [min, max] with 0 <= min <= max');
+      if (a.pos && roomAtTile(def, sceneW(a.pos[0]), sceneW(a.pos[1])) !== r) warn(aw, 'pos is outside its room');
+    }
+    if (r.storm) {
+      if (!(r.storm.strength > 0)) err(w, 'storm strength must be > 0');
+      if (!(r.storm.every[0] > 0 && r.storm.every[0] <= r.storm.every[1])) err(w, 'storm every must be [min, max] with 0 < min <= max');
+    }
+    for (const z of r.zones ?? []) if (z.look !== undefined && !ZONE_LOOKS.includes(z.look)) err(`${w} zone`, `unknown look ${z.look}`);
+    for (const h of r.hazards ?? []) {
+      const hw = `${w} hazard ${h.kind}`;
+      if (!HAZARD_KINDS.includes(h.kind)) err(hw, 'unknown hazard kind');
+      if (!(h.interval > 0) || !(h.warn >= 0) || !(h.radius > 0)) err(hw, 'interval and radius must be > 0, warn >= 0');
+      if (h.groundedBy) {
+        for (const [px, pz] of h.groundedBy.pos) if (roomAtTile(def, sceneW(px), sceneW(pz)) !== r) err(hw, `rod ${px},${pz} is outside its room`);
+        if (!(h.groundedBy.radius > 0)) err(hw, 'groundedBy radius must be > 0');
+        if (h.groundedBy.status !== undefined && !statusOk(h.groundedBy.status)) err(hw, `groundedBy status ${h.groundedBy.status} is not in STATUSES`);
+      }
+    }
+    for (const p of r.props ?? []) {
+      const pw = `${w} prop ${p.id ?? p.model.split('/').pop()}`;
+      if (p.tag === 'device') {
+        if (reg.devices && (!p.device || !(p.device in reg.devices))) err(pw, `device id ${p.device ?? '(none)'} is not in DEVICES`);
+      } else if (p.device !== undefined) warn(pw, 'device is set on a prop that is not tag device');
+      if (p.sfx !== undefined && !(SFX_IDS as readonly string[]).includes(p.sfx)) err(pw, `unknown sfx ${p.sfx}`);
+      if (p.onBreak) {
+        if (p.tag !== 'breakable') warn(pw, 'onBreak on a prop that is not tag breakable');
+        const z = p.onBreak.zone;
+        if (!(z.radius > 0) || !(z.duration > 0)) err(pw, 'onBreak zone radius and duration must be > 0');
+        if (!statusOk(z.status)) err(pw, `onBreak status ${z.status} is not in STATUSES`);
+      }
+      if (p.spinNode !== undefined && p.spin === undefined) warn(pw, 'spinNode without spin');
+      if (p.bob !== undefined && !(p.bob[0] >= 0 && p.bob[1] > 0)) err(pw, 'bob must be [amplitude >= 0, hz > 0]');
+    }
+  }
+
+  // ---- doors: gate kinds and their pairs (event, kill, device, boss) ----
+  const deviceProps = new Set<string>();
+  for (const r of def.rooms) for (const p of r.props ?? []) if (p.tag === 'device' && p.device) deviceProps.add(p.device);
+  for (const d of def.doors) {
+    const dw = `door ${d.a}|${d.b}`;
+    if (!GATE_KINDS.includes(d.gate ?? 'none')) err(dw, `unknown gate ${d.gate}`);
+    if (d.gateStyle !== undefined && !GATE_STYLES.includes(d.gateStyle)) warn(dw, `unknown gateStyle ${d.gateStyle}`);
+    if (season && d.gate === 'boss_lock' && !(bossRooms.has(d.a) || bossRooms.has(d.b))) err(dw, 'boss_lock leads into no room with a boss');
+    if (d.gate === 'event_lock') {
+      if (!d.event) err(dw, 'event_lock without event');
+      else if (!(def.events && d.event in def.events)) err(dw, `event ${d.event} is not in DungeonDef.events`);
+    }
+    if (d.gate === 'kill_lock') {
+      const o = d.opensOn;
+      if (!o || !(o.pack || o.enemyId || o.boss)) err(dw, 'kill_lock without opensOn (pack, enemyId or boss)');
+      if (o?.pack && !packById.has(o.pack)) err(dw, `opensOn.pack ${o.pack} is not a pack`);
+      if (o?.enemyId && ctx.enemyForces(o.enemyId) === undefined) err(dw, `opensOn.enemyId ${o.enemyId} is not an enemy`);
+      if (o?.boss && !def.bosses.some((b) => b.bossId === o.boss)) err(dw, `opensOn.boss ${o.boss} is not a boss of this dungeon`);
+    }
+    if (d.gate === 'device_lock') {
+      if (!d.device) err(dw, 'device_lock without device');
+      else if (reg.devices) {
+        const dev = reg.devices[d.device];
+        if (!dev) err(dw, `device ${d.device} is not in DEVICES`);
+        else {
+          if (dev.effect !== 'open_gate') err(dw, `device ${d.device} has effect ${dev.effect}: a device_lock needs open_gate`);
+          if (dev.gateDoor !== undefined && !gateDoorMatches(dev.gateDoor, d)) err(dw, `device ${d.device} opens ${dev.gateDoor}, not this door`);
+        }
+        if (!deviceProps.has(d.device)) err(dw, `no prop with tag device ${d.device} in this dungeon: the lock cannot be solved`);
+      }
+    }
+    for (const q of d.requires ?? []) if (!packById.has(q)) err(dw, `requires pack ${q}, which is not a pack`);
+  }
+
+  // ---- enemies: proc bodies, loot tables and uniques, trash windup (season), kick and dispel flags, statuses, summons ----
+  const used = new Set<string>([...def.packs.flatMap((p) => p.members.map((m) => m.enemyId)), ...def.bosses.map((b) => b.bossId)]);
+  for (const eid of used) {
+    const e = reg.enemyDef?.(eid);
+    if (!e) continue; // unknown ids are reported by checkDungeon
+    const w = `enemy ${eid}`;
+    if (e.model.startsWith('PROC:') && reg.hasProc && !reg.hasProc(e.model.slice(5))) err(w, `proc body ${e.model.slice(5)} has no builder in ai/procModels.ts`);
+    if (e.lootTable && reg.lootTables && !(e.lootTable in reg.lootTables)) warn(w, `loot table ${e.lootTable} is not registered: the rank table is used`);
+    for (const u of (e.lootTable ? reg.lootTables?.[e.lootTable]?.uniqueIds : undefined) ?? []) {
+      if (reg.uniques && !reg.uniques.has(u)) err(w, `loot table ${e.lootTable} lists unknown unique ${u}`);
+    }
+    for (const a of [e.basicAttack, ...e.abilities]) {
+      const aw = `${w} ${a.id}`;
+      if (season && e.rank !== 'boss' && e.role !== 'swarm') {
+        const floor = windupFloor(a);
+        if (a.windup < floor) err(aw, `windup ${a.windup} s is under the ${floor} s floor for ${a.kind} (GDD_CREATURES 1.2)`);
+        if (a.interruptible && (a.castTime ?? 0) > 0 && (a.castTime ?? 0) < 1) err(aw, `interruptible cast ${a.castTime} s is under 1.0 s`);
+      }
+      if (a.interruptible && a.kick === undefined) warn(aw, 'interruptible ability has no kick priority (P-23)');
+      if (a.kick !== undefined && ![0, 1, 2].includes(a.kick)) err(aw, `kick ${a.kick} is not 0, 1 or 2`);
+      if (a.dispel !== undefined && !statusOk(a.dispel)) warn(aw, `dispel ${a.dispel} is not in STATUSES (P-23)`);
+      for (const s of a.statuses ?? []) if (!statusOk(s.status)) err(aw, `status ${s.status} is not in STATUSES`);
+      if (a.summon && reg.enemyDef && !reg.enemyDef(a.summon.enemyId)) err(aw, `summons ${a.summon.enemyId}, which is not in ENEMIES or BOSSES`);
+    }
+  }
+
+  // ---- extras: NPCs, boons, stations, transits, winch drops, checkpoints, affix-safe spots ----
+  const ex = def.extras;
+  if (ex) {
+    dupes((ex.npcs ?? []).map((n) => n.id), id, 'npc');
+    for (const n of ex.npcs ?? []) {
+      const w = `npc ${n.id}`;
+      if (!inRoom(n.pos[0], n.pos[1])) err(w, `at ${n.pos[0]},${n.pos[1]} is not inside a room`);
+      for (const c of n.requires?.classes ?? []) if (reg.classes && !reg.classes.has(c)) err(w, `requires unknown class ${c}`);
+      for (const p of n.requires?.professions ?? []) if (reg.professions && !reg.professions.has(p)) err(w, `requires unknown profession ${p}`);
+      if (n.holdSeconds !== undefined && !(n.holdSeconds > 0)) err(w, 'holdSeconds must be > 0');
+    }
+    dupes((ex.boons ?? []).map((b) => b.id), id, 'boon');
+    for (const b of ex.boons ?? []) {
+      const w = `boon ${b.id}`;
+      if (!inRoom(b.pos[0], b.pos[1])) err(w, 'is not inside a room');
+      if (!statusOk(b.status)) err(w, `status ${b.status} is not in STATUSES`);
+      if (!(b.duration > 0)) err(w, 'duration must be > 0');
+    }
+    dupes((ex.stations ?? []).map((s) => s.id), id, 'station');
+    for (const s of ex.stations ?? []) {
+      const w = `station ${s.id}`;
+      if (!inRoom(s.pos[0], s.pos[1])) err(w, 'is not inside a room');
+      if (!statusOk(s.status)) err(w, `status ${s.status} is not in STATUSES`);
+      if (!(s.duration > 0)) err(w, 'duration must be > 0');
+    }
+    for (const t of ex.transits ?? []) {
+      const w = `transit ${t.id}`;
+      for (const [sx, sz] of t.stops) if (!onGround(sceneW(sx), sceneW(sz), 0.6)) err(w, `stop ${sx},${sz} is blocked or unreachable`);
+      if (t.speed !== undefined && !(t.speed > 0)) err(w, 'speed must be > 0');
+    }
+    dupes((ex.dropProps ?? []).map((d) => d.id), id, 'drop prop');
+    for (const d of ex.dropProps ?? []) {
+      const w = `drop prop ${d.id}`;
+      if (!onGround(sceneW(d.pos[0]), sceneW(d.pos[1]), 0.6)) err(w, `pos ${d.pos[0]},${d.pos[1]} is blocked or unreachable`);
+      if (!onGround(sceneW(d.winch[0]), sceneW(d.winch[1]), 0.6)) err(w, `winch ${d.winch[0]},${d.winch[1]} is blocked or unreachable`);
+      if (!(d.ring > 0)) err(w, 'ring must be > 0');
+      if (!(d.dmgPctMax > 0 && d.dmgPctMax <= 100)) err(w, `dmgPctMax ${d.dmgPctMax} must be in (0, 100]`);
+      if (d.eliteCap > d.dmgPctMax) bad(w, `eliteCap ${d.eliteCap} is above dmgPctMax ${d.dmgPctMax}`);
+      if (!(d.stun >= 0) || !(d.playerCoef > 0)) err(w, 'stun must be >= 0 and playerCoef > 0');
+    }
+    for (const [cx, cz] of ex.checkpoints ?? []) if (!onGround(sceneW(cx), sceneW(cz), 0.6)) err(id, `checkpoint ${cx},${cz} is blocked or unreachable`);
+    if (ex.checkpoints && ex.checkpoints.length > bossCount) warn(id, `${ex.checkpoints.length} checkpoints for ${bossCount} bosses: a checkpoint needs a boss before it`);
+    for (const s of ex.affixSafe ?? []) {
+      if (!(s.r > 0) || s.x < 0 || s.z < 0 || s.x > def.grid.w || s.z > def.grid.h) err(id, `affixSafe ${s.x},${s.z} r ${s.r} is outside the grid or has no radius`);
+    }
+  }
+  return out;
+}
+
+export function checkDungeon(def: DungeonDef, models: ModelDb, knownEnemy?: (id: string) => number | undefined, reg: ContentRegistries = {}): DungeonReport {
   const issues: Issue[] = [];
   const err = (where: string, msg: string): void => { issues.push({ level: 'error', where, msg }); };
   const warn = (where: string, msg: string): void => { issues.push({ level: 'warn', where, msg }); };
@@ -706,10 +975,13 @@ export function checkDungeon(def: DungeonDef, models: ModelDb, knownEnemy?: (id:
     const r = roomById.get(b.roomId);
     if (!r) { err(`boss ${b.bossId}`, `unknown room ${b.roomId}`); continue; }
     orders.add(b.order);
-    if (def.outdoor ? !/^(wb_|boss_)/.test(b.bossId) : !BOSS_RE.test(b.bossId) || !GDD_BOSSES.includes(b.bossId)) err(`boss ${b.bossId}`, def.outdoor ? 'open-world boss ids start with wb_' : 'not in the GDD boss list');
+    const seasonBoss = !def.outdoor && isSeasonDungeon(def) && reg.bossIds !== undefined;
+    const bossOk = def.outdoor ? /^(wb_|boss_)/.test(b.bossId) : seasonBoss ? (reg.bossIds?.has(b.bossId) ?? false) : BOSS_RE.test(b.bossId) && GDD_BOSSES.includes(b.bossId);
+    if (!bossOk) err(`boss ${b.bossId}`, def.outdoor ? 'open-world boss ids start with wb_' : seasonBoss ? 'not a boss in BOSSES' : 'not in the GDD boss list');
     if (!r.boss && !def.outdoor) warn(`boss ${b.bossId}`, `room ${r.id} is not flagged boss`);
   }
-  if (!def.outdoor && def.bosses.length !== 3) err(id, `expected 3 bosses, found ${def.bosses.length}`);
+  // legacy dungeons: exactly 3 bosses; season dungeons: at least 3, groups count once (checkSeasonRules)
+  if (!def.outdoor && !isSeasonDungeon(def) && def.bosses.length !== 3) err(id, `expected 3 bosses, found ${def.bosses.length}`);
   if (!def.outdoor && !orders.has(3)) err(id, 'no final boss (order 3)');
 
   // ---- theme ----
@@ -896,6 +1168,7 @@ export function checkDungeon(def: DungeonDef, models: ModelDb, knownEnemy?: (id:
   const empty = def.rooms.filter((r) => !r.props || r.props.length < 4).map((r) => r.id);
   if (empty.length && !def.world) warn(id, `rooms with fewer than 4 hand placed props: ${empty.join(', ')}`);
   issues.push(...checkVerticalDungeon(def));
+  issues.push(...checkSeasonRules(def, { nav, reachable, enemyForces, forces: { all: forcesAll, mandatory: forcesNon, required } }, reg));
 
   return {
     id,

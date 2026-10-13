@@ -201,10 +201,31 @@ function regionCounts(quests) {
   return [...rows].map(([r, c]) => `${r}: kill ${c.k}, collect ${c.c}, hunt ${c.h}, metin ${c.m}, chain ${c.ch}, daily ${c.daily}`);
 }
 
+// registries for the season rules (P-29): ids resolve against the real data modules, not a copy
+const { STATUSES } = await imp('src/data/statuses.ts');
+const { DEVICES, PROFESSION_NAMES } = await imp('src/data/devices.ts');
+const { UNIQUES } = await imp('src/data/uniques.ts');
+const LOOT = await imp('src/data/loot.ts');
+const { CLASS_IDS } = await imp('src/data/classes.ts');
+const { hasProcModel } = await imp('src/ai/procModels.ts');
+const { ENEMIES: ENEMY_DEFS, BOSSES: BOSS_DEFS } = await imp('src/data/enemies.ts');
+const lootTables = { ...LOOT.LOOT_TABLES, ...LOOT.FARM_TABLES, ...LOOT.METIN_TABLES, ...LOOT.MINIBOSS_TABLES, ...LOOT.RARE_TABLES, ...LOOT.WORLD_BOSS_TABLES, ...LOOT.SEASON_LOOT_TABLES };
+const reg = {
+  statuses: new Set(Object.keys(STATUSES)),
+  devices: DEVICES,
+  uniques: new Set(Object.keys(UNIQUES)),
+  lootTables,
+  classes: new Set(CLASS_IDS),
+  professions: new Set(Object.keys(PROFESSION_NAMES)),
+  hasProc: hasProcModel,
+  enemyDef: (eid) => ENEMY_DEFS[eid] ?? BOSS_DEFS[eid],
+  bossIds: new Set(Object.keys(BOSS_DEFS)),
+};
+
 let totalErr = 0;
 for (const id of ALL_IDS) {
   if (want.length && !want.includes(id)) continue;
-  const rep = cc.checkDungeon(ALL[id], models, known);
+  const rep = cc.checkDungeon(ALL[id], models, known, reg);
   const e = rep.issues.filter((i) => i.level === 'error'), w = rep.issues.filter((i) => i.level === 'warn'), n = rep.issues.filter((i) => i.level === 'info');
   totalErr += e.length;
   const s = rep.stats;
