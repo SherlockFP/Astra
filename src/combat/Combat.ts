@@ -32,6 +32,10 @@ import type { Player } from '../entities/Player';
 import type { Enemy } from '../entities/Enemy';
 
 /** What a player skill/attack does to one target. Built by SkillSystem from SkillDef. */
+/** PM-00b: damage-taken ring buffer horizon (s) and size cap. */
+const TAKEN_WINDOW = 8;
+const TAKEN_MAX = 512;
+
 export interface HitSpec {
   skillId?: string;
   coef: number;                 // x attacker base damage (weapon damage for attacks, spell power for spells)
@@ -68,6 +72,8 @@ export interface HitSpec {
   critAdd?: number;
   /** extra crit CHANCE for this hit (skill-local `crit` mods, mage cast mods); added to the attacker's critChance */
   critBonus?: number;
+  /** PM-00b: no hit-stop for this hit (multi_strike: only the last hit of a chain stops time). */
+  noHitstop?: boolean;
 }
 
 export interface DamageResult {
@@ -246,6 +252,10 @@ export class Combat {
   private shadowTechHits = 0;
   /** KIT PK-ROGUE Gölge Bıçakları: clock of the last builder that granted its bonus combo point (one per swing). */
   private lastShadowCpAt = -9;
+  /** PM-00b: clock of the last consume-on-hit removal per `playerId:status` (ICD gate). */
+  private consumeAt = new Map<string, number>();
+  /** PM-00b: recent damage taken by the players (ring buffer, see damageTakenWithin). */
+  private takenLog: { id: EntityId; t: number; amount: number }[] = [];
   private wasDodging = false;
   private dodgeBase = new WeakMap<Player, { max: number; rec: number }>();
   private rng = new RNG((Date.now() ^ 0x5bd1e995) >>> 0);
@@ -364,6 +374,8 @@ export class Combat {
       resPen: softStat(attacker, 'resPen') + (spec.resPen ?? 0),
     });
     amount *= target.statuses.takenMore() * takenPerStack(target);
+    // PM-00b (plate-melee §g need 4): colossus / judged add damage from the applier only
+    amount *= target.statuses.takenMoreFrom(attacker.id);
     if (wasFrozen) {
       const fc = sp('leg_frozen_crown');
       if (fc) amount *= 1 + (fc.frozenDamage ?? 0.25);
@@ -1447,6 +1459,7 @@ export class Combat {
       stop = spec.hitstop + (crit ? FEEL.hitstopCrit : 0) + (killed ? FEEL.hitstopKill : 0);
       if (boss && !exempt) stop = Math.min(stop, FEEL.hitstopBossCap);
     }
+    if (spec.noHitstop) stop = 0;
     // CW-06: a projectile / spell / bow hit is a ranged impact: the victim keeps a short stop (40 ms cap), the shooter never freezes
     const ranged = weight === 'projectile' || !!spec.isSpell || weaponKindOf(attacker) === 'bow';
     if (weight === 'projectile') stop = Math.min(stop, PROJECTILE_STOP_CAP_MS);
@@ -1645,7 +1658,8 @@ export class Combat {
         this.statusEvent(p, 'block', hit.sourceId, type, [p.position.x - dir[0] * 0.6, p.position.y + 1.3, p.position.z - dir[1] * 0.6]);
         G.procs?.emit('block', { player: p });
         G.audio.play('block', { pos: posArr });
-        if (p.classId === 'knight' && !G.skills.shieldWallActive(p)) G.skills.addResource(p, 6);
+        // PM-00b: Kalkan Kaldır blocks give no rage (`gainPerBlock 0`, plate-melee §g need 12)
+        if (p.classId === 'knight' && !G.skills.shieldWallActive(p) && !p.statuses.has('shield_block')) G.skills.addResource(p, 6);
         G.events.emit('camera:shake', { intensity: 0.12, duration: 0.15 });
         this.onBlockSpecials(p);
         if (amount <= 0) return { amount: 0, crit: false, type, killed: false, blocked: true };
@@ -1699,6 +1713,9 @@ export class Combat {
     if (amount > 0) {
       p.hp = Math.max(0, p.hp - amount);
       p.combatTimer = 0;
+      this.recordTaken(p, amount);
+      // PM-00b (plate-melee §g need 2): Kemik Zırhı and other consume-on-hit stacks lose one stack per melee hit taken
+      if (hit.melee && !dot) this.consumeOnHit(p);
     }
     if (absorbed > 0 || amount > 0) p.combatTimer = 0;
 
@@ -1707,7 +1724,7 @@ export class Combat {
 
     // 7. knockback (positive = away from the hit, negative = pulled toward its origin)
     if (!dot && hit.knockback && !p.statuses.invulnerable && !p.forcedMove && p.statuses.get('act_root') === undefined) {
-      const immune = p.statuses.get('bloodrage') || G.skills?.isUnstoppable(p) || armored;
+      const immune = p.statuses.get('bloodrage') || G.skills?.isUnstoppable(p) || armored || p.statuses.immuneKnockback();
       if (!immune) {
         if (hit.knockback > 0) {
           p.applyKnockback(dir[0], dir[1], hit.knockback, knockbackDuration(hit.knockback));
@@ -1761,6 +1778,33 @@ export class Combat {
       this.killLocalPlayer(hit.sourceId, { by: hit.abilityName, av: avoidable });
     }
     return { amount, crit: false, type, killed: p.hp <= 0, blocked };
+  }
+
+  /** PM-00b (plate-melee §g need 3): damage the player took in the last `sec` seconds (ring buffer, 8 s kept). */
+  damageTakenWithin(p: Actor, sec: number): number {
+    let sum = 0;
+    for (const e of this.takenLog) if (e.id === p.id && this.clock - e.t <= sec) sum += e.amount;
+    return sum;
+  }
+
+  private recordTaken(p: Actor, amount: number): void {
+    const now = this.clock;
+    while (this.takenLog.length && now - this.takenLog[0].t > TAKEN_WINDOW) this.takenLog.shift();
+    this.takenLog.push({ id: p.id, t: now, amount });
+    if (this.takenLog.length > TAKEN_MAX) this.takenLog.splice(0, this.takenLog.length - TAKEN_MAX);
+  }
+
+  /** PM-00b (plate-melee §g need 2): one stack per consume-on-hit status, at most once per its `icd` (clock seconds). */
+  private consumeOnHit(p: Player): void {
+    for (const id of p.statuses.ids()) {
+      const icd = STATUS_RULES[id]?.consumeOnHit?.icd;
+      if (!icd) continue;
+      const key = `${p.id}:${id}`;
+      const last = this.consumeAt.get(key) ?? -Infinity;
+      if (this.clock - last < icd) continue;
+      if (!p.statuses.consumeStack(id)) continue;
+      this.consumeAt.set(key, this.clock);
+    }
   }
 
   /**

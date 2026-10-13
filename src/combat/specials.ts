@@ -3,8 +3,9 @@ import { G } from '../game/G';
 import { cosmeticRng } from '../core/utils';
 import type { DamageType } from '../types/common';
 import type { Enemy } from '../entities/Enemy';
+import type { Player } from '../entities/Player';
 import { vfxScale, type HitWeight } from './feel';
-import { specHas } from './specs';
+import { specHas, specSpecial } from './specs';
 import type { SkillSystem } from './SkillSystem';
 import type { CastCtx } from './skills/behaviors';
 import type { Actor } from '../entities/Actor';
@@ -60,6 +61,22 @@ export class SpecialState {
       else this.recent.delete(t);
     }
     return (p.perType ?? 0.08) * Math.min(p.maxTypes ?? 3, n);
+  }
+}
+
+/**
+ * PM-00b (plate-melee §g need 7, G3): `trait_anger` (Anger Management). Every `angerPer` (default 20) rage or Öz spent by the
+ * caster cuts the remaining cooldown of its three majors (m45 / m90 / m180) by 1 s. Called by SkillSystem.pay() on every paid cost.
+ * Faith / holy pips and the other resources do not count (only `rage` and `essence`, the Öz bar).
+ */
+export function onSpend(sys: SkillSystem, p: Actor, resource: string, amount: number): void {
+  if (!(amount > 0) || (resource !== 'rage' && resource !== 'essence')) return;
+  const params = specSpecial(p, 'trait_anger');
+  if (!params) return;
+  const sec = amount / (params.angerPer ?? 20);
+  for (const slot of ['m45', 'm90', 'm180'] as const) {
+    const id = sys.getSlotSkill(p as Player, slot);
+    if (id) sys.reduceCooldown(p, id, sec);
   }
 }
 

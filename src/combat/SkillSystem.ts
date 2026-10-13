@@ -12,7 +12,7 @@ import { TALENT_PIPS } from '../data/specs_talents';
 import { MAJOR_BASE, MAJOR_SLOTS, readMajorCd, writeMajorCd, resetMajorCooldowns } from './majors';
 import { COMBAT_FEEL, FEEL, WOW, TYPE_COLORS, feelBeat, vfxScale, isAreaVfx, freezeActors, weaponTempoOf, weightFromParam, leadSkipSec, type HitWeight } from './feel';
 import { gcdFor, isOffGcd } from './gcd';
-import { resolveProcMods, consumeProcMods, type ResolvedProcMods } from './procMods';
+import { resolveProcMods, consumeProcMods, cdMultFor, cleaveRidersOf, type CleaveRider, type ResolvedProcMods } from './procMods';
 import { PUSHBACK_CFG, pushesBack, channelCut, lockoutSchool, LOCKOUT_SCHOOLS, type HitForPushback, type LockoutSchool } from './castRules';
 import { ProcWatcher } from './procFx';
 import { WatcherHost, WATCHER_RADIUS, type WatcherCtx } from '../data/watchers';
@@ -29,7 +29,8 @@ import { Projectile } from '../entities/Projectile';
 import { behaviorFor, groundAt, aimSlope, isKitBehavior, selfStatusesByDispatch, type Behavior, type CastCtx } from './skills/behaviors';
 import { isBehind } from './positional';
 import { setGlowExtras, type GlowExtras } from '../data/procs';
-import { sp, hasSp, combineChance, shockwave, fireWave, specHooksOf, allSpecHooks, weaponAvg } from './specials';
+import { sp, hasSp, combineChance, shockwave, fireWave, specHooksOf, allSpecHooks, weaponAvg, onSpend as spendSpecials } from './specials';
+import { shieldStoreAdd, shieldStoreRelease } from './skills/plateKit';
 import { skillRankCooldownMult } from './skillRanks';
 import type { MageCastMods, MageCtx, TouchBurst } from './specs/mage';
 import type { AimInfo, SkillDef, SkillSlotKey, StatusApply, StatusId } from '../types/skills';
@@ -69,7 +70,14 @@ export interface StrikeOpts {
   forceCrit?: boolean;
   pos?: [number, number, number];
   tickIndex?: number;
+  /** PM-00b: no hit-stop on this hit (multi_strike, rider cleaves). */
+  noHitstop?: boolean;
+  /** PM-00b: this hit starts no cleave rider (the rider's own strikes). */
+  noRider?: boolean;
 }
+
+/** PM-00b (plate-melee §g need 4): radius (m) around the primary target where a cleave rider finds its extra targets. */
+const RIDER_RADIUS = 4;
 
 /** A timed ground effect (consecration, meteor fire, blizzard, banner...). */
 export interface Zone {
@@ -899,6 +907,8 @@ export class SkillSystem {
   }
 
   onBlocked(p: Player, amount: number, wall: boolean): void {
+    // PM-00b (plate-melee §g need 12): Kalkan Kaldır stores a share of every frontal block for its release
+    if (!wall && p.statuses.has('shield_block')) shieldStoreAdd(p, amount);
     const st = this.states.get(p.id);
     if (!st) return;
     if (wall && st.wall) {
@@ -945,6 +955,11 @@ export class SkillSystem {
     a.moveAt += add;
     if (p.cast && p.cast.skillId === a.def.id) p.cast.duration += add;
     G.events.emit('cast:pushback', { skillId: a.def.id, add, count: a.pushes });
+  }
+
+  /** PM-00b (plate-melee §g need 12): `shield_block` ended (expiry, dispel or recast): the stored damage is released. */
+  onShieldBlockEnded(owner: Actor): void {
+    shieldStoreRelease(owner);
   }
 
   /** The 'shield' status ended (absorbed or expired): Büyü Kalkanı frost burst. */
@@ -1394,6 +1409,8 @@ export class SkillSystem {
       cost *= this.costMult(p, def);
       if (p.resource + 0.01 < cost) { this.fail('resource'); return false; }
       p.resource = Math.max(0, p.resource - cost);
+      // PM-00b (plate-melee §g need 7): Anger Management reads every paid spend
+      spendSpecials(this, p, p.resourceType, cost);
     } else if (cost < 0) {
       this.gainResource(p, -cost);
     }
@@ -1408,6 +1425,14 @@ export class SkillSystem {
       if (a) a.ctx.data.pipSpent = pipUse.spent;
     }
     if (pm) for (const b of pm.bonusPips) this.addPip(p, b.id, b.n);
+    // PM-00b (plate-melee §g need 4): a cleave rider is spent by the cast it starts; every hit of that cast cleaves
+    if (a) {
+      const riders = cleaveRidersOf(p.statuses);
+      if (riders.length) {
+        a.ctx.data.rider = riders[0];
+        p.statuses.consumeStack(riders[0].status);
+      }
+    }
     if (a) {
       a.paid = true;
       const mm = a.ctx.data.mage as MageCastMods | undefined;
@@ -1483,6 +1508,23 @@ export class SkillSystem {
   }
 
   /** Passive pip decay (TALENT_PIPS `decay`: Gizem Yükü −1 every 5 s after 8 s out of combat). */
+  /**
+   * PM-00b (plate-melee §g need 1): timed pip regeneration (PipDef.regen): +1 per `every` seconds up to `max`, in or out of combat.
+   * Only the Death Knight's rune pip (class `necromancer`) regenerates, so no other class ever gains it.
+   */
+  private regenPips(p: Player, dt: number): void {
+    if (p.classId !== 'necromancer') return;
+    for (const [id, pd] of Object.entries(TALENT_PIPS) as [PipId, PipDef | undefined][]) {
+      if (!pd?.regen) continue;
+      const key = `${p.id}:${id}`;
+      if (this.pipCount(p, id) >= pd.max) { this.pipClock.set(key, 0); continue; }
+      const t = (this.pipClock.get(key) ?? 0) + dt;
+      if (t < pd.regen.every) { this.pipClock.set(key, t); continue; }
+      this.pipClock.set(key, t - pd.regen.every);
+      this.addPip(p, id, 1);
+    }
+  }
+
   private decayPips(p: Player, dt: number): void {
     for (const [id, pd] of Object.entries(TALENT_PIPS) as [PipId, PipDef | undefined][]) {
       if (!pd?.decay) continue;
@@ -1632,7 +1674,8 @@ export class SkillSystem {
     if (!def) return 0;
     // Beceri Kitabı: -2% cooldown per rank above 1 (local player's skills only)
     const local = p.kind === 'player' && (p as Player).isLocal;
-    return def.cooldown * (1 - Math.min(0.4, Math.max(0, p.getStat('cdr')))) * (local ? skillRankCooldownMult(def.id) : 1);
+    // PM-00b (plate-melee §g need 4): `cdMult` riders (ursoc_form halves Yarma / Paralama)
+    return def.cooldown * (1 - Math.min(0.4, Math.max(0, p.getStat('cdr')))) * (local ? skillRankCooldownMult(def.id) : 1) * cdMultFor(p.statuses, def.id);
   }
 
   // ------------------------------------------------------------------------------------------------------
@@ -1660,6 +1703,7 @@ export class SkillSystem {
       if (st.cpTimer >= 3) { st.cpTimer = 0; st.cp--; this.emitCp(st); }
     } else st.cpTimer = 0;
     this.decayPips(p, dt);
+    this.regenPips(p, dt);
 
     if (p.statuses.stunned) st.queue.clear('stun');
     if (p.statuses.stunned && (st.cur || st.aiming)) this.interrupt(p, true);
@@ -2657,6 +2701,7 @@ export class SkillSystem {
       shake: o.shake ?? (pr.shake || undefined),
     };
     if (o.tick && d.tags.includes('melee')) spec.tags = d.tags.filter((t) => t !== 'melee');
+    if (o.noHitstop) spec.noHitstop = true;
     const res = G.combat.playerHitEnemy(c.caster, e, spec);
     // GDD_LIFE §5.9: finishing a full chain at combo tier >= 2 refunds a share of max resource, once per chain (per cast)
     if (res && pr.finisher && !c.data.comboRefund && G.combat.combo.tier >= 2 && c.caster.maxResource > 0) {
@@ -2665,7 +2710,26 @@ export class SkillSystem {
     }
     // GDD_TALENTS §4 `shape`: the form of the skill after a landed direct hit (DoT-like ticks never shape)
     if (res && !o.tick && res.amount > 0 && !res.dodged && !res.immune && !res.parried) this.applyShape(c, e);
+    // PM-00b (plate-melee §g need 4): a cast carrying a cleave rider (sweeping / meat_cleaver) also strikes nearby enemies
+    const rider = c.data.rider as CleaveRider | undefined;
+    if (res && rider && !o.tick && !o.noRider && res.amount > 0 && !res.dodged && !res.immune && !res.parried) this.riderCleave(c, e, rider, o);
     return res;
+  }
+
+  /** PM-00b: the cleave rider's extra strikes (nearest first, `extraTargets` of them, `extraMult` damage, no hit-stop, no riders). */
+  private riderCleave(c: CastCtx, e: Enemy, rider: CleaveRider, o: StrikeOpts): void {
+    const w = G.world;
+    if (!w) return;
+    const near = w.enemiesInRadius({ x: e.position.x, z: e.position.z }, RIDER_RADIUS, e.position.y)
+      .filter((x) => x !== e && !x.isDead && !x.removed)
+      .sort((a, b) => Math.hypot(a.position.x - e.position.x, a.position.z - e.position.z) - Math.hypot(b.position.x - e.position.x, b.position.z - e.position.z))
+      .slice(0, rider.extraTargets);
+    for (const x of near) {
+      this.strike(c, x, {
+        coef: o.coef, flat: o.flat, type: o.type, weight: 'light', knockback: 0, statuses: [], noGain: true, noHitstop: true, noRider: true,
+        more: (o.more ?? 1) * rider.extraMult, dir: this.dirTo(c.caster, x),
+      });
+    }
   }
 
   /** After a swing/cast: resource gain, combo points, skill impact sound (once). */
@@ -2674,6 +2738,12 @@ export class SkillSystem {
     if (!n || c.remote) return;
     const p = c.def.params ?? {};
     if (p.gain) this.gainResource(c.caster, p.gain + Math.min(p.gainMax ?? 0, (p.gainExtra ?? 0) * (n - 1)));
+    // PM-00b (plate-melee §g need 11): per enemy hit. Chain steps are multiplied by resourceGainPct, ability gains are flat
+    if (p.gainPerTarget) {
+      const g = p.gainPerTarget * Math.min(n, p.gainPerTargetMax ?? n);
+      if (c.def.tags.includes('basic')) this.gainResource(c.caster, g);
+      else this.addResource(c.caster, g);
+    }
     if (p.cp) this.addCombo(c.caster, p.cp);
     if (c.def.sfx?.impact && !c.data.impactSfx) {
       c.data.impactSfx = true;

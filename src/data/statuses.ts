@@ -204,6 +204,8 @@ export interface StatusRule {
   pandemic?: number;
   /** Knockback immunity while active (`deaths_advance`). */
   immuneKnockback?: boolean;
+  /** PM-00b (plate-melee §g need 2): each melee hit taken removes one stack, at most once per `icd` s (`bone_armor`, 2.5 s). */
+  consumeOnHit?: { icd: number };
 }
 
 /** P-21 onExpire payload: an area hit at the owner's position when the status runs out. */

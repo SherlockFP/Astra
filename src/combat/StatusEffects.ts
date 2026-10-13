@@ -232,10 +232,18 @@ export class StatusEffects {
           cur.duration = Math.max(cur.duration, dur);
           break;
         }
-        default:
-          cur.remaining = Math.max(cur.remaining, dur);
-          cur.duration = Math.max(cur.duration, dur);
+        default: {
+          // PM-00b (plate-melee §g need 4): pandemic refresh keeps `pandemic` x the remaining time on top of the new duration
+          const pan = rule.pandemic ?? 0;
+          if (pan > 0) {
+            cur.remaining = dur + pan * Math.max(0, cur.remaining);
+            cur.duration = cur.remaining;
+          } else {
+            cur.remaining = Math.max(cur.remaining, dur);
+            cur.duration = Math.max(cur.duration, dur);
+          }
           if (mag > 0 && mag !== cur.magnitude) { cur.magnitude = mag; changed = true; }
+        }
       }
       cur.sourceId = opts.sourceId ?? cur.sourceId;
       if (opts.opener) cur.opener = true;
@@ -331,6 +339,8 @@ export class StatusEffects {
       G.events?.emit('status:removed', { targetId: this.owner.id, status: s.id, reason });
       this.owner.onStatusesChanged();
       if (s.id === 'shield') G.skills?.onShieldEnded(this.owner);
+      // PM-00b (plate-melee §g need 12): Kalkan Kaldır releases its stored damage when it ends (any reason)
+      if (s.id === 'shield_block') G.skills?.onShieldBlockEnded(this.owner);
     } catch (e) {
       console.error('[status] remove hook failed', e);
     }
@@ -375,6 +385,48 @@ export class StatusEffects {
 
   has(id: StatusId): boolean {
     return this.active.has(id);
+  }
+
+  /**
+   * PM-00b (plate-melee §g need 2): removes one stack of a status (the whole status when it has one). Returns false when it is
+   * not active. Used by the consume-on-hit rule (`bone_armor`).
+   */
+  consumeStack(id: StatusId): boolean {
+    const s = this.active.get(id);
+    if (!s) return false;
+    if (s.stacks <= 1) {
+      this.remove(id, 'remove');
+      return true;
+    }
+    s.stacks--;
+    this.invalidate();
+    try {
+      G.events?.emit('status:applied', { targetId: this.owner.id, status: id, duration: s.duration, stacks: s.stacks });
+      this.owner.onStatusesChanged();
+    } catch (e) {
+      console.error('[status] consume hook failed', e);
+    }
+    return true;
+  }
+
+  /**
+   * PM-00b (plate-melee §g need 4): extra damage taken from ONE applier only (`colossus` from the Şövalye's Dev Ezme, `judged`
+   * from the Paladin). Multiplicative, 1 when no status from that source is active. Not cached (per-hit source).
+   */
+  takenMoreFrom(sourceId: EntityId | null): number {
+    if (sourceId === null) return 1;
+    let m = 1;
+    for (const s of this.active.values()) {
+      const v = STATUS_RULES[s.id]?.takenMoreFromSource;
+      if (v && s.sourceId === sourceId) m *= 1 + v;
+    }
+    return m;
+  }
+
+  /** PM-00b (plate-melee §g need 4): `deaths_advance`-style knockback immunity while any active status grants it. */
+  immuneKnockback(): boolean {
+    for (const s of this.active.values()) if (STATUS_RULES[s.id]?.immuneKnockback) return true;
+    return false;
   }
 
   get(id: StatusId): ActiveStatus | undefined {

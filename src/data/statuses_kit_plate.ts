@@ -86,7 +86,7 @@ export const STATUS_RULES_KIT_PLATE: Partial<Record<StatusId, StatusRule>> = {
   hammer_window: { stack: 'stack' },
   templar_combo: { stack: 'refresh' },
   divine_steed: { stack: 'refresh' },
-  judged: { stack: 'refresh' },
+  judged: { stack: 'refresh', takenMoreFromSource: 0.10 },
   forbearance: { stack: 'refresh' },
   righteous: { stack: 'refresh' },
   // İntikam Kanatları: magnitude 0.10 (Koruma) / 0.15 (Kutsal, Ceza); critChance 1 x magnitude, dealtMore = magnitude
@@ -96,7 +96,7 @@ export const STATUS_RULES_KIT_PLATE: Partial<Record<StatusId, StatusRule>> = {
   aura_mastery: { stack: 'refresh' },
   crusade: { stack: 'stack' },
   sentenced: { stack: 'refresh' },
-  bone_armor: { stack: 'stack' },
+  bone_armor: { stack: 'stack', consumeOnHit: { icd: 2.5 } },
   blood_plague: { stack: 'refresh' },
   vampiric_blood: { stack: 'refresh' },
   dancing_rune_weapon: { stack: 'refresh' },

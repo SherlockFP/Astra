@@ -1631,6 +1631,8 @@ import './utilities';
 import './mageKit';
 import './rogueKit';
 import './warlockKit';
+// PM-00b (docs/kits/plate-melee.md §g): plate-melee engine behaviours (multi_strike, grip, divine_toll, shield_block, heal_self_recent)
+import './plateKit';
 import { mageHooks } from '../specs/mage';
 import { registerSpecHooks } from '../specials';
 for (const trait of mageHooks.traits) registerSpecHooks(trait, mageHooks);

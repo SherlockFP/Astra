@@ -11,6 +11,7 @@
 import type { PipId } from '../types/common';
 import type { StatusId } from '../types/skills';
 import type { ProcStatusView } from '../data/procs';
+import { STATUS_RULES } from '../data/statuses';
 // KIT PK-0 (docs/kits/casters-rogue.md §h): kit proc mods (empty until the class packages fill them), merged below.
 import { PROC_MODS_KIT_MAGE } from '../data/procs_kit_mage';
 import { PROC_MODS_KIT_ROGUE } from '../data/procs_kit_rogue';
@@ -140,3 +141,31 @@ export function consumeProcMods(p: ProcStatusHost, r: ResolvedProcMods | null): 
   }
   return consumed > 0 ? r.healPct : 0;
 }
+
+// ---- PM-00b (plate-melee §g need 4): status riders read from STATUS_RULES -----------------------------------------------
+
+/** Anything that lists its active statuses (StatusEffects.ids). */
+export interface StatusIdsView { ids(): StatusId[] }
+
+/** Cooldown multiplier of one skill from the `cdMult` riders of the active statuses (`ursoc_form`: Yarma / Paralama x0.5). */
+export function cdMultFor(p: StatusIdsView, skillId: string): number {
+  let m = 1;
+  for (const id of p.ids()) {
+    const r = STATUS_RULES[id]?.cdMult;
+    if (r && r.skills.includes(skillId)) m *= r.mult;
+  }
+  return m;
+}
+
+/** A cleave rider that is up on the caster (`sweeping` 2 / 0.6, `meat_cleaver` 3 / 0.6): the largest extra-target count wins. */
+export interface CleaveRider { status: StatusId; extraTargets: number; extraMult: number }
+
+export function cleaveRidersOf(p: StatusIdsView): CleaveRider[] {
+  const out: CleaveRider[] = [];
+  for (const id of p.ids()) {
+    const r = STATUS_RULES[id];
+    if (r?.extraTargets && r.extraTargets > 0) out.push({ status: id, extraTargets: r.extraTargets, extraMult: r.extraMult ?? 1 });
+  }
+  return out.sort((a, b) => b.extraTargets - a.extraTargets);
+}
+
