@@ -49,7 +49,7 @@ interface Poi {
   color: string;
 }
 
-/** Round rotating minimap: nav-grid walls with fog of war in dungeons, player arrow, party/enemy/POI dots and the zone name. */
+/** Square rotating minimap: nav-grid walls with fog of war in dungeons, player arrow, party/enemy/POI dots and the zone name. */
 export class Minimap implements HudWidget {
   readonly el: HTMLElement;
   private canvas: HTMLCanvasElement;
@@ -176,10 +176,10 @@ export class Minimap implements HudWidget {
         }
         const edge = col === 0 || r === 0 || col === cols - 1 || r === rows - 1 || !cells[i - 1] || !cells[i + 1] || !cells[i - cols] || !cells[i + cols];
         if (edge) {
-          d[o] = 196; d[o + 1] = 166; d[o + 2] = 104;
+          d[o] = 168; d[o + 1] = 170; d[o + 2] = 176;
         } else {
           const n = ((col * 7 + r * 13) % 11 === 0 ? 8 : 0) + ((col + r) & 1 ? 3 : 0);
-          d[o] = 84 + n; d[o + 1] = 73 + n; d[o + 2] = 56 + n;
+          d[o] = 68 + n; d[o + 1] = 70 + n; d[o + 2] = 74 + n;
         }
         d[o + 3] = 255;
       }
@@ -210,7 +210,7 @@ export class Minimap implements HudWidget {
     f.height = nav.rows;
     const ctx = f.getContext('2d');
     if (ctx) {
-      ctx.fillStyle = 'rgb(10,8,6)';
+      ctx.fillStyle = 'rgb(8,8,8)';
       ctx.fillRect(0, 0, f.width, f.height);
     }
     this.fogCanvas = f;
@@ -354,10 +354,11 @@ export class Minimap implements HudWidget {
     ctx2.clearRect(0, 0, SIZE, SIZE);
     ctx2.imageSmoothingEnabled = false;
     ctx2.save();
+    // square minimap (retail ElvUI): the viewport is the whole canvas; markers still clamp to the inscribed circle
     ctx2.beginPath();
-    ctx2.arc(R, R, R - 1, 0, Math.PI * 2);
+    ctx2.rect(0, 0, SIZE, SIZE);
     ctx2.clip();
-    ctx2.fillStyle = '#0a0806';
+    ctx2.fillStyle = '#0c0c0c';
     ctx2.fillRect(0, 0, SIZE, SIZE);
     if (!w || !p) {
       ctx2.restore();

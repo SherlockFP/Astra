@@ -109,9 +109,9 @@ interface TipUi {
   hideTooltip(): void;
 }
 
-/** Cooldown number colour: under 5 s red, under 60 s yellow, otherwise white (COMBAT_WOW §2.12). */
+/** Cooldown number colour: white, red under 3 s (docs/UI_WOW_CLASSIC.md §2). */
 function cdColor(sec: number): string {
-  return sec < 5 ? '#ff6a5a' : sec < 60 ? '#ffe27a' : '#ffffff';
+  return sec < 3 ? '#ff4a3a' : '#ffffff';
 }
 
 /** Cooldown text: one decimal under 3 s (decimal comma), else the shared short format. */

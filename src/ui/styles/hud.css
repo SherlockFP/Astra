@@ -50,23 +50,24 @@
    Density (§2.2). Every value is an integer css px (the grid gap is always 1 px). Only these tokens size the HUD;
    no other sheet hard-codes these numbers. --uf-top is a share of the HUD height.
    ========================================================================== */
+/* ElvUI retail layout (docs/UI_WOW_CLASSIC.md §3): unit frames left / right of the centre, a little above the bars. */
 .hud[data-density='lg'] {
-  --ab-btn: 44px; --ab-gap: 1px; --cons-btn: 32px; --uf-w: 320px; --uf-gap: 132px; --uf-top: 57%;
-  --uf-hp-p: 30px; --uf-hp-t: 24px; --uf-strip: 16px; --au-lg: 28px; --au-sm: 20px; --party-w: 220px;
+  --ab-btn: 40px; --ab-gap: 2px; --cons-btn: 30px; --uf-w: 260px; --uf-gap: 70px; --uf-top: 68%;
+  --uf-hp-p: 28px; --uf-hp-t: 28px; --uf-strip: 12px; --au-lg: 30px; --au-sm: 22px; --party-w: 200px;
   --boss-w: 560px; --trk-w: 264px; --trk-h: 320px; --chat-w: 400px; --chat-h: 176px; --dm-col: 196px;
-  --dm-row: 18px; --xp-h: 6px; --micro: 32px; --gut: 16px; --tip-w: 320px;
+  --dm-row: 18px; --xp-h: 6px; --micro: 28px; --gut: 16px; --tip-w: 320px;
 }
 .hud[data-density='md'] {
-  --ab-btn: 40px; --ab-gap: 1px; --cons-btn: 30px; --uf-w: 292px; --uf-gap: 120px; --uf-top: 57%;
-  --uf-hp-p: 28px; --uf-hp-t: 22px; --uf-strip: 16px; --au-lg: 26px; --au-sm: 18px; --party-w: 204px;
+  --ab-btn: 38px; --ab-gap: 2px; --cons-btn: 28px; --uf-w: 240px; --uf-gap: 56px; --uf-top: 66%;
+  --uf-hp-p: 26px; --uf-hp-t: 26px; --uf-strip: 12px; --au-lg: 28px; --au-sm: 20px; --party-w: 188px;
   --boss-w: 520px; --trk-w: 244px; --trk-h: 240px; --chat-w: 360px; --chat-h: 152px; --dm-col: 176px;
-  --dm-row: 18px; --xp-h: 5px; --micro: 30px; --gut: 14px; --tip-w: 300px;
+  --dm-row: 18px; --xp-h: 5px; --micro: 26px; --gut: 14px; --tip-w: 300px;
 }
 .hud[data-density='sm'] {
-  --ab-btn: 36px; --ab-gap: 1px; --cons-btn: 28px; --uf-w: 260px; --uf-gap: 100px; --uf-top: 57%;
-  --uf-hp-p: 26px; --uf-hp-t: 20px; --uf-strip: 16px; --au-lg: 24px; --au-sm: 16px; --party-w: 188px;
+  --ab-btn: 36px; --ab-gap: 1px; --cons-btn: 26px; --uf-w: 210px; --uf-gap: 40px; --uf-top: 62%;
+  --uf-hp-p: 24px; --uf-hp-t: 24px; --uf-strip: 10px; --au-lg: 26px; --au-sm: 18px; --party-w: 172px;
   --boss-w: 480px; --trk-w: 220px; --trk-h: 200px; --chat-w: 320px; --chat-h: 120px; --dm-col: 172px;
-  --dm-row: 16px; --xp-h: 4px; --micro: 28px; --gut: 12px; --tip-w: 280px;
+  --dm-row: 16px; --xp-h: 4px; --micro: 24px; --gut: 12px; --tip-w: 280px;
 }
 
 /* ==========================================================================

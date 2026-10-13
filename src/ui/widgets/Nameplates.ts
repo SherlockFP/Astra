@@ -156,7 +156,7 @@ class Plate {
     setDisplay(this.lvlEl, this.flavor !== 'mech');
     setText(this.lvlEl, String(a.level));
     const diff = a.level - ctx.playerLevel;
-    setStyle(this.lvlEl, 'color', a.kind === 'player' ? '#e8c46a' : diff >= 5 ? '#ff4a3a' : diff >= 3 ? '#ff9a3a' : diff >= -2 ? '#ffe050' : '#9ad86a');
+    setStyle(this.lvlEl, 'color', a.kind === 'player' ? '#ffffff' : diff >= 5 ? '#ff4a3a' : diff >= 3 ? '#ff9a3a' : diff >= -2 ? '#ffe050' : '#9ad86a');
     const frac = a.maxHp > 0 ? clamp01(a.hp / a.maxHp) : 0;
     if (frac !== this.lastFrac) {
       // white flash + bump on every visible HP loss (hit feedback right on the enemy)

@@ -8,7 +8,6 @@ import { div, setClass, setDisplay, setStyle, setText } from '../widgets/dom';
 import { CastBarEl } from '../widgets/CastBar';
 import { StatusRow } from '../widgets/StatusRow';
 import { isSkullLevel, levelColor } from '../widgets/levelColor';
-import { fmtHealth } from '../widgets/numFormat';
 import { Bar, classColor } from './PlayerFrame';
 import type { HudCtx, HudWidget } from './types';
 import '../styles/hud-target.css';
@@ -43,18 +42,25 @@ const THREAT_NONE = '#8a8a92';
 const THREAT_OTHER = '#ffe040';
 const THREAT_ME = '#ff3030';
 
+/** Classification text shown after the name (docs/UI_WOW_CLASSIC.md §3). */
+const RANK_TEXT: Record<string, string> = { elite: 'Elit', miniboss: 'Nadir', boss: 'Boss' };
+
 /**
- * Target frame (UI_REDESIGN §2.8, ElvUI): a flat reaction-coloured bar with only the centred `{pct}%`, a strip underneath
- * with `{level} {name}` left and `▸ target-of-target · hp` right, the target cast bar replacing that strip while the target
- * casts, own debuffs and other auras in two rows below. Soft target dims the frame, hard target gets a gold inner line.
+ * Target frame (UI_REDESIGN §2.8, retail ElvUI): one flat health bar in the reaction colour (class colour for players)
+ * with `{level} {name} {classification}` left and the `{pct}%` right, the target cast bar attached under it, own debuffs
+ * and other auras above it, and the target-of-target as a small bar beside it. Soft target dims the frame.
  */
 export class TargetFrame implements HudWidget {
   readonly el: HTMLElement;
   private hp: Bar;
-  private strip: Bar;
   private lvlEl: HTMLElement;
   private nameEl: HTMLElement;
+  private clsEl: HTMLElement;
+  private pctEl: HTMLElement;
   private threatDot: HTMLElement;
+  /** Target-of-target: a small bar beside the frame (name inside, class / reaction colour). */
+  private tot: HTMLElement;
+  private totBar: Bar;
   private totEl: HTMLElement;
   /** Entity shown in the target-of-target slot (clicking it selects it, event target:select), or null. */
   private totId: EntityId | null = null;
@@ -73,36 +79,42 @@ export class TargetFrame implements HudWidget {
 
   constructor(ui: UI) {
     this.el = div('tf uf-target');
+    // auras sit above the frame in their own host, so the frame does not move when a debuff appears
+    const auraHost = div('uf-aurahost', this.el);
+    this.ownRow = new StatusRow(ui, 'debuff', 8, 'uf-auras-own', true, true, 'own');
+    this.othersRow = new StatusRow(ui, 'all', 8, 'uf-auras-oth', true, true, 'others');
+    auraHost.appendChild(this.othersRow.el);
+    auraHost.appendChild(this.ownRow.el);
     const main = div('uf-main', this.el);
     this.hp = new Bar('uf-hp tf-hp', main);
-    const stripWrap = div('uf-stripwrap', main);
-    this.strip = new Bar('uf-strip', stripWrap);
-    const left = div('uf-lname', this.strip.label);
+    const left = div('uf-lname', this.hp.label);
     this.lvlEl = div('uf-lvl', left);
     this.nameEl = div('uf-tname', left);
-    const right = div('uf-rt', this.strip.label);
+    this.clsEl = div('uf-cls', left);
+    const right = div('uf-rt', this.hp.label);
     this.threatDot = div('uf-tdot', right);
-    this.totEl = div('uf-tot', right);
-    this.totEl.addEventListener('mousedown', (e) => {
+    this.pctEl = div('uf-pct', right);
+    setDisplay(this.threatDot, false);
+    // poise stripe: the bottom edge of the health bar (gold + the SENDELEDİ tag while the enemy is broken)
+    this.poise = div('tf-poise', main);
+    this.poiseFill = div('tf-poise-fill', this.poise);
+    setDisplay(this.poise, false);
+    div('tf-stag', this.el, 'SENDELEDİ!');
+    // target cast bar: attached under the frame, same width (hud-elvui.css)
+    const castWrap = div('uf-cast', this.el);
+    this.cast = new CastBarEl('tf-cast');
+    castWrap.appendChild(this.cast.el);
+    // target of target: small bar beside the frame
+    this.tot = div('uf-totf', this.el);
+    this.totBar = new Bar('uf-hp uf-totbar', this.tot);
+    this.totEl = div('uf-tot', this.totBar.label);
+    this.tot.addEventListener('mousedown', (e) => {
       if (e.button !== 0 || this.totId === null) return;
       e.preventDefault();
       // PlayerController subscribes and selects the unit (the HUD never changes the selection itself)
       G.events.emit('target:select', { entityId: this.totId });
     });
-    setDisplay(this.totEl, false);
-    setDisplay(this.threatDot, false);
-    // target cast bar: same box as the strip, drawn over it while the target casts (nothing moves)
-    const castWrap = div('uf-cast', stripWrap);
-    this.cast = new CastBarEl('tf-cast');
-    castWrap.appendChild(this.cast.el);
-    this.poise = div('tf-poise', this.el);
-    this.poiseFill = div('tf-poise-fill', this.poise);
-    setDisplay(this.poise, false);
-    div('tf-stag', this.el, 'SENDELEDİ!');
-    this.ownRow = new StatusRow(ui, 'debuff', 8, 'uf-auras-own', true, true, 'own');
-    this.othersRow = new StatusRow(ui, 'all', 8, 'uf-auras-oth', true, true, 'others');
-    this.el.appendChild(this.ownRow.el);
-    this.el.appendChild(this.othersRow.el);
+    setDisplay(this.tot, false);
     setDisplay(this.el, false);
     G.events.on('scene:leaving', () => {
       this.curId = null;
@@ -143,16 +155,19 @@ export class TargetFrame implements HudWidget {
       this.curChamp = champ;
       this.clearRows();
       this.el.dataset.rank = champ ? 'elite' : rank;
-      this.hp.el.dataset.kind = isPlayer ? 'friendly' : 'hostile';
+      this.hp.el.dataset.kind = isPlayer ? 'class' : 'hostile';
+      if (isPlayer) setStyle(this.hp.el, '--cls', classColor((a as unknown as { classId?: ClassId }).classId));
+      setText(this.clsEl, champ ? 'Şampiyon' : RANK_TEXT[rank] ?? '');
     }
     setText(this.nameEl, a.name);
     const pl = ctx.player?.level ?? 1;
     const skull = !isPlayer && isSkullLevel(pl, a.level);
     setText(this.lvlEl, skull ? '☠ ' + a.level : String(a.level));
-    setStyle(this.lvlEl, 'color', isPlayer ? '#e8c46a' : levelColor(pl, a.level));
+    setStyle(this.lvlEl, 'color', isPlayer ? '#ffffff' : levelColor(pl, a.level));
     const frac = a.maxHp > 0 ? Math.max(0, Math.min(1, a.hp / a.maxHp)) : 0;
     const pc = frac > 0 ? Math.max(1, Math.ceil(frac * 100)) : 0;
-    this.hp.set(frac, ctx.dt, `${pc}%`);
+    this.hp.set(frac, ctx.dt);
+    setText(this.pctEl, `${pc}%`);
     this.updatePoise(a);
     this.updateTot(a, ctx);
     const cv = ctx.casts.get(a, ctx.now, ctx.world?.time ?? 0);
@@ -163,7 +178,7 @@ export class TargetFrame implements HudWidget {
   }
 
   /**
-   * Target-of-target (§2.8): `▸ name · hp` on the right of the strip, the threat dot before it. Hidden when the target has
+   * Target-of-target (§2.8): a small bar beside the frame with the name inside, the threat dot in the health row. Hidden when the target has
    * no target. The threat dot is grey (none), yellow (another player) or red (the local player): the enemy threat table
    * is private to the AI, so the HUD cannot show the graded orange step yet.
    */
@@ -172,7 +187,7 @@ export class TargetFrame implements HudWidget {
     const v = id != null && ctx.world ? ctx.world.getActor(id) : undefined;
     if (!v || v.isDead || v.removed) {
       this.totId = null;
-      setDisplay(this.totEl, false);
+      setDisplay(this.tot, false);
       setDisplay(this.threatDot, false);
       return;
     }
@@ -180,12 +195,14 @@ export class TargetFrame implements HudWidget {
     const isPl = v.kind === 'player';
     // only units that can be selected (not the local player, not other players) are clickable
     this.totId = !onMe && !isPl ? v.id : null;
-    this.totEl.classList.toggle('ui-capture', this.totId !== null);
-    this.totEl.classList.toggle('tot-click', this.totId !== null);
-    setText(this.totEl, `▸ ${v.name} · ${fmtHealth(Math.max(0, v.hp))}`);
-    setStyle(this.totEl, 'color', isPl ? classColor((v as unknown as { classId?: ClassId }).classId) : 'var(--react-hostile)');
+    this.tot.classList.toggle('ui-capture', this.totId !== null);
+    this.tot.classList.toggle('tot-click', this.totId !== null);
+    setText(this.totEl, v.name);
+    this.totBar.el.dataset.kind = isPl ? 'class' : 'hostile';
+    if (isPl) setStyle(this.totBar.el, '--cls', classColor((v as unknown as { classId?: ClassId }).classId));
+    this.totBar.set(v.maxHp > 0 ? Math.max(0, Math.min(1, v.hp / v.maxHp)) : 0, ctx.dt);
     setStyle(this.threatDot, 'background', onMe ? THREAT_ME : isPl ? THREAT_OTHER : THREAT_NONE);
-    setDisplay(this.totEl, true);
+    setDisplay(this.tot, true);
     setDisplay(this.threatDot, true);
   }
 

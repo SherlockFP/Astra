@@ -13,6 +13,15 @@ export const SCALE_MAX = 1.6;
 const KEY = 'efsun.uiLayout.v2';
 const OLD_KEY = 'efsun.uiLayout.v1';
 
+/**
+ * Skin stamp of the stored layout. Offsets are deltas from each frame's default spot (CSS), so when the defaults moved
+ * (retail ElvUI layout, docs/UI_WOW_CLASSIC.md §3) the offsets of the moved frames would land somewhere else. A v2 layout
+ * without this stamp keeps its grid / lock / extra-bar choices and the frames that did not move, and drops the offsets of
+ * SKIN_MOVED_FRAMES once; the stamp is written with every save.
+ */
+const SKIN = 2;
+const SKIN_MOVED_FRAMES = ['player', 'party', 'minions', 'target', 'minimap', 'tracker', 'bottom', 'corner', 'bar2', 'bar3'];
+
 /** v1 frames whose offsets carry over. bottom, player, buffs, target, meter and corner changed anatomy and are dropped. */
 const V1_KEPT_FRAMES = ['boss', 'minimap', 'combo', 'chat', 'loot', 'party', 'bar2', 'bar3'];
 /** v1 frame ids that were renamed in v2. */
@@ -38,6 +47,8 @@ export interface UiLayout {
   bars: Record<string, boolean>;
   /** Frame offsets by frame id (see EditMode.ts). */
   frames: Record<string, FrameOffset>;
+  /** Default-layout generation the offsets belong to (see SKIN). Written by writeLayout; absent on older stores. */
+  skin?: number;
 }
 
 let cache: UiLayout | null = null;
@@ -85,6 +96,7 @@ function fromV2(p: Record<string, unknown>): UiLayout {
   l.locked = p.locked === true;
   l.bars = sanitizeBars(p.bars);
   l.frames = sanitizeFrames(p.frames);
+  if (p.skin !== SKIN) for (const id of SKIN_MOVED_FRAMES) delete l.frames[id];
   return l;
 }
 
@@ -97,6 +109,7 @@ function fromV1(p: Record<string, unknown>): UiLayout {
   const frames = sanitizeFrames(p.frames);
   for (const id of V1_KEPT_FRAMES) if (frames[id]) l.frames[id] = frames[id];
   for (const [from, to] of Object.entries(V1_RENAMED_FRAMES)) if (frames[from]) l.frames[to] = frames[from];
+  for (const id of SKIN_MOVED_FRAMES) delete l.frames[id];
   return l;
 }
 
@@ -111,7 +124,11 @@ export function readLayout(): UiLayout {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const p = parseObject(raw);
-      if (p) l = fromV2(p);
+      if (p) {
+        l = fromV2(p);
+        // first run after the default positions moved: store the layout again with the new stamp
+        if (p.skin !== SKIN) writeLayout(l);
+      }
     } else {
       const old = localStorage.getItem(OLD_KEY);
       const p1 = old ? parseObject(old) : null;
@@ -131,7 +148,7 @@ export function readLayout(): UiLayout {
 export function writeLayout(next: UiLayout): void {
   cache = next;
   try {
-    localStorage.setItem(KEY, JSON.stringify(next));
+    localStorage.setItem(KEY, JSON.stringify({ ...next, skin: SKIN }));
   } catch (e) {
     console.warn('[hud] layout not saved, it lasts for this session only', e);
   }

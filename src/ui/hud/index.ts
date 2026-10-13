@@ -35,6 +35,8 @@ import { adviceLine } from '../panels/game/guideEngine';
 import { TipCards } from './TipCards';
 import { XpStrip } from './XpStrip';
 import type { HudCtx, HudDensity, HudWidget, HudZones } from './types';
+// last on purpose: the ElvUI skin overrides every earlier HUD sheet (docs/UI_WOW_CLASSIC.md)
+import '../styles/hud-elvui.css';
 
 export interface HudApi {
   update(dt: number): void;
@@ -135,6 +137,10 @@ export function createHUD(ui: UI): HudApi {
   const tr = div('hud-tr', root);
   const minimap = add(new Minimap());
   tr.appendChild(minimap.el);
+  // ElvUI default: the player's buffs and debuffs sit left of the minimap (hud-elvui.css .hud-auras), not on the player frame
+  const auraHost = div('hud-auras', minimap.el);
+  auraHost.appendChild(player.buffs.el);
+  auraHost.appendChild(player.debuffs.el);
   const mythic = add(new MythicTracker(ui));
   // open world: pinned quest (click = quest log), under the M+ tracker
   const quests = add(new QuestTracker());

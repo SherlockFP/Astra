@@ -98,7 +98,7 @@
 .wa-row {
   padding: 5px 18px;
   font: 700 16px var(--font-head);
-  letter-spacing: 0.04em;
+
   color: #f4e7c0;
   white-space: nowrap;
   background: rgba(12, 8, 5, 0.8);

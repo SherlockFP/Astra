@@ -1,16 +1,16 @@
 /**
- * Class colours (UI_REDESIGN §3.2 / §3.8): one table, mirrored from the `--cls-*` tokens in styles/tokens.css.
+ * Class colours (UI_REDESIGN §3.2 / §3.8, retail RAID_CLASS_COLORS per docs/UI_WOW_CLASSIC.md §2): one table, mirrored from the `--cls-*` tokens in styles/tokens.css.
  * Used by the player frame, meter rows, party frames, nameplates and chat sender names.
  */
 
 export const CLASS_COLORS: Record<string, string> = {
-  knight: '#c79c6e',
-  barbarian: '#ff7c0a',
+  knight: '#c69b6d',
+  barbarian: '#b5562f',
   mage: '#3fc7eb',
-  rogue: '#fff569',
+  rogue: '#fff468',
   monk: '#00ff98',
-  archer: '#abd473',
-  paladin: '#f58cba',
+  archer: '#aad372',
+  paladin: '#f48cba',
   necromancer: '#c41e3a',
   warlock: '#8788ee',
   demonhunter: '#a330c9',

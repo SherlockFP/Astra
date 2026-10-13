@@ -141,6 +141,8 @@ export class PlayerFrame implements HudWidget {
     if (this.classId !== p.classId) {
       this.classId = p.classId;
       setStyle(this.hp.el, '--cls', classColor(p.classId));
+      // the attached cast bar paints with the class colour too (hud-elvui.css): it lives beside the health bar, not inside it
+      setStyle(this.el, '--cls', classColor(p.classId));
     }
     const dead = p.isDead;
     const pct = p.maxHp > 0 ? clamp01(p.hp / p.maxHp) : 0;

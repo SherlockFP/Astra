@@ -69,8 +69,8 @@
   background: radial-gradient(circle at 50% 30%, #4a361c, #140d07 80%);
   box-shadow: 0 0 0 1px #050302, 0 0 0 2px var(--hud-gold), 0 0 0 3px #050302, 0 0 8px color-mix(in srgb, var(--cc) 50%, transparent);
 }
-.m2-name { flex: 1; min-width: 0; font: 700 15px var(--font-head); letter-spacing: 0.02em; color: var(--hud-gold-l); text-shadow: var(--shade); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.m2-cls { flex: none; font: 700 10px var(--font-ui); letter-spacing: 0.1em; text-transform: uppercase; color: var(--cc); text-shadow: var(--shade); }
+.m2-name { flex: 1; min-width: 0; font: 700 15px var(--font-head); color: var(--hud-gold-l); text-shadow: var(--shade); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m2-cls { flex: none; font: 700 10px var(--font-ui); color: var(--cc); text-shadow: var(--shade); }
 
 .m2-gauge {
   --trail: #ffd9c8;
@@ -91,7 +91,7 @@
 .m2-gauge[data-kind='energy'] .m2-fill { background: linear-gradient(#fff29a 0 24%, #f0d23a 24% 58%, #a88a14 58%); }
 .m2-gloss { position: absolute; inset: 0 0 52% 0; background: linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0)); pointer-events: none; }
 .m2-notches { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), rgba(0, 0, 0, 0.32) calc(10% - 1px) 10%); pointer-events: none; }
-.m2-glabel { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 700 12px var(--font-head); letter-spacing: 0.04em; color: #fff; text-shadow: var(--shade); font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
+.m2-glabel { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 700 12px var(--font-head); color: #fff; text-shadow: var(--shade); font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
 .m2-sp .m2-glabel { font-size: 11px; }
 .m2-gauge.hit .m2-fill { animation: m2hit 0.18s ease-out; }
 @keyframes m2hit { 0% { filter: brightness(1.9); } 100% { filter: none; } }
@@ -107,7 +107,7 @@
 
 /* ---- middle: the EXP beads ("boncuk") ---- */
 .m2-beads { width: 172px; padding: 5px 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
-.m2-explabel { font: 700 9px/10px var(--font-head); letter-spacing: 0.26em; text-indent: 0.26em; color: #b99aff; text-shadow: var(--shade); }
+.m2-explabel { font: 700 9px/10px var(--font-head); text-indent: 0.26em; color: #b99aff; text-shadow: var(--shade); }
 .m2-exppct { font: 700 11px/11px var(--font-head); color: #ecdfff; text-shadow: var(--shade); font-variant-numeric: tabular-nums; }
 .m2-beadrow { display: flex; gap: 5px; height: 34px; }
 .m2-bead { position: relative; width: 34px; height: 34px; flex: none; border-radius: 50%; isolation: isolate; }
@@ -148,7 +148,7 @@
 .m2-exptip {
   position: absolute; left: 50%; bottom: calc(100% + 18px); transform: translateX(-50%) translateY(4px); z-index: 5;
   padding: 2px 10px 3px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.12s, transform 0.12s;
-  font: 700 12px var(--font-ui); letter-spacing: 0.03em; color: #f3e9ff; text-shadow: var(--shade);
+  font: 700 12px var(--font-ui); color: #f3e9ff; text-shadow: var(--shade);
   background: rgba(8, 5, 3, 0.94); border: 1px solid var(--hud-gold-d); border-radius: 3px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
 }
 .m2-beads:hover .m2-exptip { opacity: 1; transform: translateX(-50%); }

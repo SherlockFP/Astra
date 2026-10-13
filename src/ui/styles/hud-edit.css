@@ -38,11 +38,11 @@
   background: linear-gradient(180deg, #2f2216 0%, #1a120b 55%, #0f0a06 100%); border: 2px solid #050302; border-radius: 7px;
   box-shadow: inset 0 0 0 1px var(--hud-gold-d), inset 0 0 0 3px #120b07, 0 4px 0 #000, 0 10px 22px rgba(0, 0, 0, 0.6);
 }
-.ued-title { font: 700 15px var(--font-head); letter-spacing: 0.08em; text-transform: uppercase; color: var(--hud-gold-l); text-shadow: var(--shade); white-space: nowrap; }
+.ued-title { font: 700 15px var(--font-head); color: var(--hud-gold-l); text-shadow: var(--shade); white-space: nowrap; }
 .ued-hint { font: 13px var(--font-ui); color: var(--text-dim); text-shadow: var(--shade); white-space: nowrap; }
 .ued-sep { width: 2px; height: 22px; background: rgba(155, 123, 54, 0.6); box-shadow: 1px 0 0 #000; }
 .ued-btn {
-  padding: 5px 12px; font: 700 13px var(--font-head); letter-spacing: 0.03em; white-space: nowrap; color: var(--hud-gold-l);
+  padding: 5px 12px; font: 700 13px var(--font-head); white-space: nowrap; color: var(--hud-gold-l);
   background: linear-gradient(#3a2a14, #140d07); border: 2px solid #050302; border-radius: 4px;
   box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 2px 0 #000; cursor: pointer;
 }
@@ -94,7 +94,7 @@
   box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 8px 18px rgba(0, 0, 0, 0.7); scrollbar-width: thin; scrollbar-color: #6b5530 transparent;
 }
 .xbar-ptitle {
-  padding: 2px 6px 6px; margin-bottom: 4px; font: 700 12px var(--font-head); letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 2px 6px 6px; margin-bottom: 4px; font: 700 12px var(--font-head);
   color: var(--hud-gold); border-bottom: 1px solid rgba(155, 123, 54, 0.5);
 }
 .xbar-pnone { padding: 8px 6px; font: 13px var(--font-ui); color: var(--text-dim); }

@@ -1,33 +1,16 @@
-/* CW-16 target frame: aura rows (own debuffs first and larger, other debuffs dim), timer colours, refresh-window pulse,
-   target-of-target label, soft-target ring and the brighter soft nameplate. Flat ElvUI look (docs/UI_REDESIGN.md §2.7/§2.8). */
+/* CW-16 target frame: aura timer colours, refresh-window flash, soft-target ring and the brighter soft nameplate.
+   Retail ElvUI look (docs/UI_WOW_CLASSIC.md): flat, 1 px black borders, no glows. The aura rows themselves are laid out in hud-elvui.css. */
 
-/* aura rows */
-.tf-buffs:empty { display: none; }
-.tf-buffs .st-icon { width: 22px; height: 22px; }
-.tf-debuffs .st-icon.own { width: 30px; height: 30px; border-color: #d04a3a; }
-.tf-debuffs .st-icon.other { width: 20px; height: 20px; opacity: 0.45; filter: saturate(0.4); }
+/* timers by threshold: yellow in the refresh window (< 30 %), red under 3 s (the .expiring blink stays) */
+.st-time.tm-warn { color: #ffd100; }
+.st-time.tm-crit { color: #ff4a3a; }
 
-/* timers by threshold: gold in the refresh window (< 30 %), red under 3 s (the .expiring blink stays) */
-.st-time.tm-warn { color: #ffd84a; text-shadow: 0 1px 0 #000; }
-.st-time.tm-crit { color: #ff5a4a; text-shadow: 0 1px 0 #000; }
-
-/* own debuff in its refresh window: gold pulse ("refresh now") */
-.st-icon.refresh { animation: tf-refresh 0.6s ease-in-out infinite alternate; }
+/* own debuff in its refresh window: the border flashes white ("refresh now") */
+.st-icon.refresh { animation: tf-refresh 0.6s steps(2) infinite; }
 @keyframes tf-refresh {
-  from { border-color: #b8860b; box-shadow: 0 0 0 0 rgba(255, 216, 74, 0); }
-  to { border-color: #ffd84a; box-shadow: 0 0 8px 2px rgba(255, 216, 74, 0.7); }
+  from { border-color: var(--bc, #000); }
+  to { border-color: #ffffff; }
 }
-
-/* target-of-target label under the bars */
-.tf-tot {
-  font: 600 11px/14px var(--font-body, sans-serif);
-  color: #cfc3a8;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.tf-tot.threat { color: #ff6a52; }
 
 /* soft target: a flat ring at the hovered enemy's feet (Nameplates places it) */
 .np-soft-ring {
@@ -37,17 +20,17 @@
   width: 46px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.55), inset 0 0 6px rgba(255, 255, 255, 0.35);
+  border: 1px solid #ffffff;
+  outline: 1px solid #000;
   pointer-events: none;
   z-index: 400;
 }
 
-/* soft-target nameplate: brighter name and HP outline (the hard target keeps its own .target look) */
-.np.soft .np-name { color: #ffffff; text-shadow: 0 0 6px var(--nc, #ffffff), 0 1px 0 #000; }
-.np.soft .np-bar { box-shadow: 0 0 0 1px #ffffff, 0 0 6px rgba(255, 255, 255, 0.6); }
+/* soft-target nameplate: white outline on the bar (the hard target keeps its own .target look) */
+.np.soft .np-name { color: #ffffff; }
+.np.soft .np-bar { box-shadow: 0 0 0 1px #ffffff; }
 
-/* click-to-select: the nameplate's name and HP bar (target:select) and the target-of-target text take mouse input; the rest of the plate stays click-through */
+/* click-to-select: the nameplate's name and HP bar (target:select) and the target-of-target frame take mouse input; the rest of the plate stays click-through */
 .np .np-click { pointer-events: auto; cursor: pointer; }
-.uf-tot.tot-click { pointer-events: auto; cursor: pointer; }
-.uf-tot.tot-click:hover { text-decoration: underline; }
+.uf-totf.tot-click { pointer-events: auto; cursor: pointer; }
+.uf-totf.tot-click:hover .k-bar { box-shadow: inset 0 0 0 1px #ffffff; }
