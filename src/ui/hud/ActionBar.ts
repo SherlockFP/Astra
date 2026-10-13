@@ -309,7 +309,7 @@ class Slot {
         this.def = sid ? (G.skills.getDef(sid) ?? null) : null;
         setIconUrl(this.art, this.def?.icon ?? null);
         const dtype = this.def?.damage?.type;
-        const accent = dtype ? DAMAGE_COLORS[dtype] ?? '#e8c46a' : this.def?.tags.includes('buff') ? '#9be86a' : '#e8c46a';
+        const accent = dtype ? DAMAGE_COLORS[dtype] ?? '#fff' : this.def?.tags.includes('buff') ? '#9be86a' : '#fff';
         this.el.style.setProperty('--ac', accent);
       }
       // def may appear later (data loaded after first frame)

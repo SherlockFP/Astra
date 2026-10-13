@@ -135,10 +135,16 @@
 .hud .k-slot.glow { box-shadow: none; }
 .hud .k-slot.queued { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85); }
 .hud .ab-btn.armed { box-shadow: inset 0 0 0 1px #fff; }
-.hud .ab-btn > .k-art { filter: none; }
+.hud .ab-btn > .k-art { filter: none; background: var(--ac, #fff); }
+/* ElvUI cells: every slot is a black square; empty (ghost) cells are dark squares with a 1 px black border and no art */
+.hud .ab-btn { background: #000; }
+.hud .ab-btn.is-ghost { opacity: 1; background: var(--elv-backdrop-solid); border: 1px solid #000; box-shadow: none; }
+.hud .ab-btn.is-ghost > * { display: none !important; }
+/* the ornaments at the bar ends (retail gold diamonds) are gone */
+.hud .actionbar::before, .hud .actionbar::after { content: none; }
 /* majors: a plain white tone line instead of the gold hairline (defensive blue and heal green stay) */
 .hud .ab-btn[data-tone='gold'], .hud .ab-btn[data-tone='gold2'] { --tone-c: rgba(255, 255, 255, 0.45); }
-.hud .ab-new { padding: 0 4px; font: 700 11px/14px var(--font-body); color: #ffd100; background: rgba(0, 0, 0, 0.75); }
+.hud .ab-new { padding: 0 4px; font: 700 11px/14px var(--font-body); color: #fff; background: #000; border: 1px solid var(--ac, #fff); }
 .hud .k-sated, .hud .k-school { text-shadow: var(--elv-outline); }
 .hud-bc > .ab-error { font: 700 15px/18px var(--font-body); text-shadow: var(--elv-outline); }
 .hud .actionbar > .tb-badge { height: 18px; padding: 0 6px 0 3px; border-radius: 0; border: 1px solid #000; background: var(--elv-backdrop-solid); box-shadow: none; }
