@@ -1,6 +1,6 @@
 import LAYOUT_JSON from './sisli_vadi.layout.json' with { type: 'json' };
 import { dg, fu, gp, hw, ip, kc, kf, kg, kn, ks, tw } from '../dungeons/kit';
-import type { TileRect } from '../../types/dungeons';
+import type { TileRect, WorldPerf } from '../../types/dungeons';
 
 /**
  * Sisli Vadi design layout (OWNER: content module). `sisli_vadi.layout.json` is a copy of docs/GDD_OPENWORLD.layout.json, the
@@ -70,9 +70,25 @@ export interface LQuestMain {
 export interface LQuestSide { id: string; name: string; giver: string; place: string; level: number; goal: string; xpPct: number; items: string }
 export interface LBio { step: number; minLevel: number; item: string; count: number; source: string; reward: string }
 
+/**
+ * Zone size and streaming (OPTIONAL; docs/ENGINE_BIGMAPS.md). Without it `grid` (tiles) is the zone size, as before.
+ * `sizeM` is the zone edge in METRES (a number = square, or [x, z]); gridOf() turns it into tiles. Zones above 800 m stream their
+ * terrain and scenery by chunk automatically ('auto'); the other fields tune that.
+ */
+export interface LZone {
+  sizeM?: number | [number, number];
+  stream?: 'auto' | 'on' | 'off';
+  /** Streaming chunk edge (m), a multiple of 16, default 64. */
+  chunkM?: number;
+  /** Radius around the player that stays built (m), default widest region fogFar + 64, 96..320. */
+  viewM?: number;
+}
+
 export interface LayoutDoc {
   id: string;
   grid: { w: number; h: number };
+  /** Optional zone size / streaming block (see LZone). */
+  zone?: LZone;
   tileSize: number;
   levels: number[];
   rooms: LRoom[];
@@ -139,3 +155,27 @@ export function texUrl(name: string): string {
 
 /** Panorama file name (cloudy-sky-02.jpg) -> url. */
 export const skyUrl = (file: string): string => `/assets/sky/itch/cloudy-skyboxes-panorama/${file}`;
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Zone size (docs/ENGINE_BIGMAPS.md)
+// ---------------------------------------------------------------------------------------------------------------------
+
+/** DungeonDef.grid of a layout: `zone.sizeM` (metres, rounded up to whole tiles) when present, else the `grid` tile counts. */
+export function gridOf(doc: LayoutDoc): { w: number; h: number } {
+  const m = doc.zone?.sizeM;
+  if (m === undefined) return { w: doc.grid.w, h: doc.grid.h };
+  const [mx, mz] = typeof m === 'number' ? [m, m] : m;
+  const t = doc.tileSize || 4;
+  return { w: Math.ceil(mx / t), h: Math.ceil(mz / t) };
+}
+
+/** WorldExtras.perf of a layout: the given budgets plus the layout's streaming fields. */
+export function perfOf(doc: LayoutDoc, base: WorldPerf): WorldPerf {
+  const z = doc.zone;
+  if (!z) return base;
+  const out: WorldPerf = { ...base };
+  if (z.stream !== undefined) out.stream = z.stream;
+  if (z.chunkM !== undefined) out.streamChunkM = z.chunkM;
+  if (z.viewM !== undefined) out.viewM = z.viewM;
+  return out;
+}

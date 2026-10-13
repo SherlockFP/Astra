@@ -470,6 +470,26 @@ export class NavGrid {
     return out;
   }
 
+  /**
+   * Coarse copy for maps and minimaps of big zones (docs/ENGINE_BIGMAPS.md): one byte per `factor` x `factor` block of cells, 1 when
+   * at least `minFill` of the block is walkable (default any cell). A 4 km zone has 4001 x 4001 fine cells (a 64 MB canvas as RGBA);
+   * factor 4 gives 1001 x 1001. Block (c, r) covers cells [c*factor, (c+1)*factor) x [r*factor, (r+1)*factor).
+   */
+  downsample(factor: number, minFill = 0): { cols: number; rows: number; cellSize: number; cells: Uint8Array } {
+    const f = Math.max(1, Math.floor(factor));
+    const cols = Math.ceil(this.cols / f), rows = Math.ceil(this.rows / f);
+    const out = new Uint8Array(cols * rows);
+    const need = Math.max(1, Math.ceil(minFill * f * f));
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++) {
+        let n = 0;
+        const r1 = Math.min(this.rows, (r + 1) * f), c1 = Math.min(this.cols, (c + 1) * f);
+        for (let rr = r * f; rr < r1 && n < need; rr++) for (let cc = c * f; cc < c1; cc++) if (this.cells[rr * this.cols + cc]) n++;
+        out[r * cols + c] = n >= need ? 1 : 0;
+      }
+    return { cols, rows, cellSize: this.cellSize * f, cells: out };
+  }
+
   /** Debug texture-friendly dump (1 byte per cell). */
   toImageData(): ImageData {
     const img = new ImageData(this.cols, this.rows);

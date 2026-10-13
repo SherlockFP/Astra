@@ -11,6 +11,10 @@ import { designToPhysical, type LightPool } from './LightPool';
 import { Sky, makeMountainRing } from './Sky';
 import { DEFAULT_BLEND_M, RegionAtmosphere, atmoOf } from './RegionAtmosphere';
 import { createTerrain, type SplatOp, type Terrain } from './Terrain';
+import { ChunkedTerrain } from './TerrainChunks';
+import { WorldStream, type WorldStreamStats } from './WorldStream';
+import { ChunkScatter } from './chunks/ChunkScatter';
+import type { StreamConfig } from './chunks/StreamConfig';
 import { surfaceTexture } from './ProceduralAssets';
 import { getPiece } from './Pieces';
 import { placeTownProps } from './TownBuilder';
@@ -57,6 +61,8 @@ export interface WorldDecorHost {
   sun: THREE.DirectionalLight | null;
   /** Fog near/far changed: torch halos follow (the builder owns the glow fields). */
   onFog?(near: number, far: number): void;
+  /** Streaming configuration (docs/ENGINE_BIGMAPS.md). `stream.on` = chunked terrain + scenery instead of one build-everything pass. */
+  stream?: StreamConfig;
 }
 
 export interface WorldDecorHandle {
@@ -71,6 +77,12 @@ export interface WorldDecorHandle {
   readonly region: WorldRegion | null;
   /** The map's villages (walls and props are already placed). */
   readonly villages: VillageDef[];
+  /** Bumped whenever streamed chunks came or went (0 and constant in a small zone). */
+  readonly streamVersion: number;
+  /** Streaming counters (null in a small zone). */
+  streamStats(): WorldStreamStats | null;
+  /** Builds the whole streamed ring around a point now (after the batches are built; a no-op in a small zone). */
+  primeStream(x: number, z: number): void;
 }
 
 /** Every model url the open world needs (villages, roads, landmarks, scenery). Preloaded with the dungeon. */
@@ -124,6 +136,9 @@ class OpenWorld implements WorldDecorHandle {
   private ambientTimer = 1;
   private readonly ambient: { h: VfxLike; t: number }[] = [];
   private readonly rng: RNG;
+  /** Streamed zone: the fog never reaches past the built ring, so chunks never pop in view (content sets fogFar; this is the safety net). */
+  private readonly fogFarCap: number;
+  private streamFailed = false;
 
   constructor(
     private readonly def: DungeonDef,
@@ -136,8 +151,10 @@ class OpenWorld implements WorldDecorHandle {
     readonly culler: ChunkCuller,
     blendM: number,
     villages: VillageDef[],
+    private readonly stream: WorldStream | null = null,
   ) {
     this.villages = villages;
+    this.fogFarCap = host.stream?.on ? host.stream.viewM - 24 : Infinity;
     this.regs = regs;
     this.rng = new RNG(hashString(def.id + ':ambient'));
     this.atmo = new RegionAtmosphere(regs, (i, j) => host.tileRoom(i, j), regions, fallbackTheme(def), blendM);
@@ -145,6 +162,19 @@ class OpenWorld implements WorldDecorHandle {
 
   get region(): WorldRegion | null {
     return this.curRegion;
+  }
+
+  get streamVersion(): number {
+    return this.stream?.version ?? 0;
+  }
+
+  streamStats(): WorldStreamStats | null {
+    return this.stream?.stats ?? null;
+  }
+
+  primeStream(x: number, z: number): void {
+    this.stream?.prime(x, z);
+    this.culler.invalidate();
   }
 
   setPlayerPos(x: number, z: number): void {
@@ -159,12 +189,22 @@ class OpenWorld implements WorldDecorHandle {
 
   update(dt: number): void {
     this.time += dt;
+    // streamed zone: build / free the chunks around the player first, so the culler below sees them
+    if (this.stream && !this.streamFailed) {
+      try {
+        if (this.stream.update(dt, this.px, this.pz)) this.culler.invalidate();
+      } catch (e) {
+        // never take the frame loop down: keep what is built, stop streaming
+        this.streamFailed = true;
+        console.warn('[world] chunk streaming failed, frozen at the current ring', e);
+      }
+    }
     this.atmo.update(this.px, this.pz);
     const r = this.regionAt(this.px, this.pz);
     if (r && r !== this.curRegion) this.enter(r);
     this.applyAtmosphere();
 
-    const far = this.atmo.cur.far;
+    const far = Math.min(this.atmo.cur.far, this.fogFarCap);
     const limits: Partial<Record<CullLayer, number>> = { tuft: 55, flower: 55, bush: 80, rock: 100, prop: 100, tree: far + 20, border: far + 20 };
     this.culler.limits = limits;
     this.culler.update(dt, this.px, this.pz);
@@ -204,8 +244,8 @@ class OpenWorld implements WorldDecorHandle {
     const c = this.atmo.cur, h = this.host;
     if (h.fog) {
       h.fog.color.copy(c.fog);
-      h.fog.near = c.near;
-      h.fog.far = c.far;
+      h.fog.far = Math.min(c.far, this.fogFarCap);
+      h.fog.near = this.fogFarCap < c.far ? Math.min(c.near, h.fog.far * 0.8) : c.near;
     }
     const bg = h.scene.background;
     if (bg && (bg as THREE.Color).isColor) (bg as THREE.Color).copy(c.fog);
@@ -469,15 +509,28 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
   // ---- ground: splat ops + region tint (one 2048 splat, 640 m tint) ----
   const ops: SplatOp[] = worldSplatOps(def, cx, cz);
   const tint = worldTintRGB(def);
-  const terrain: Terrain = createTerrain({
-    half: 480, splatHalf: Math.max(cx, cz) + 6, splatRes: 2048, seed: def.id, ops, cell: 10, grassTint: 0xffffff,
-    tint: { w: tint.w, h: tint.h, rgb: tint.rgb, half: Math.max(cx, cz) },
-  });
-  terrain.mesh.position.set(cx, 0, cz);
-  host.root.add(terrain.mesh);
-  freezeStatic(terrain.mesh); // placed once, never moves
-  host.disposables.push(terrain);
-  const weights = (x: number, z: number) => terrain.weights(x - cx, z - cz);
+  const stream = host.stream?.on ? host.stream : null;
+  let weights: (x: number, z: number) => { dirt: number; cobble: number; dark: number };
+  let chunkTerrain: ChunkedTerrain | null = null;
+  if (stream) {
+    // big zone: one flat quad + one small splat per chunk, built when the streamer asks (WorldStream)
+    chunkTerrain = new ChunkedTerrain({
+      seed: def.id, ops, mapCx: cx, mapCz: cz, chunkM: stream.chunkM, grassTint: 0xffffff,
+      tint: { w: tint.w, h: tint.h, rgb: tint.rgb, half: Math.max(cx, cz) }, parent: host.root,
+    });
+    const ct = chunkTerrain;
+    weights = (x, z) => ct.weights(x, z);
+  } else {
+    const terrain: Terrain = createTerrain({
+      half: 480, splatHalf: Math.max(cx, cz) + 6, splatRes: 2048, seed: def.id, ops, cell: 10, grassTint: 0xffffff,
+      tint: { w: tint.w, h: tint.h, rgb: tint.rgb, half: Math.max(cx, cz) },
+    });
+    terrain.mesh.position.set(cx, 0, cz);
+    host.root.add(terrain.mesh);
+    freezeStatic(terrain.mesh); // placed once, never moves
+    host.disposables.push(terrain);
+    weights = (x, z) => terrain.weights(x - cx, z - cz);
+  }
 
   // ---- sky dome + far mountain rings (beyond the map edge, above the fog) ----
   const first = world.regions[0] ?? null;
@@ -535,18 +588,36 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
   });
 
   // ---- scatter (borders, forests, regions, specials) ----
-  guard('scatter', () => {
-    new WorldScatter({
-      def, W, H, batcher: host.batcher, nav: host.nav, avoid: host.avoid,
-      isAvoided: (x, z, p) => host.isAvoided(x, z, p),
+  let worldStream: WorldStream | null = null;
+  if (stream && chunkTerrain) {
+    // streamed zone: the scatter is a pure per-chunk generator, run by WorldStream as chunks come into range
+    const scatter = new ChunkScatter({
+      def, W, H, chunkM: stream.chunkM, avoid: host.avoid,
       tileRoom: (i, j) => host.tileRoom(i, j),
       hasH: (i, j) => host.hasH(i, j),
       hasV: (i, j) => host.hasV(i, j),
       weights,
-    }).run();
-  });
+    });
+    worldStream = new WorldStream({
+      cfg: stream, tilesW: W, tilesH: H, batcher: host.batcher, nav: host.nav, terrain: chunkTerrain, scatter,
+      players: () => (G.world?.players ?? []).filter((p) => !p.removed).map((p) => ({ x: p.position.x, z: p.position.z })),
+    });
+    const ws = worldStream, ct = chunkTerrain;
+    host.disposables.push({ dispose() { ws.dispose(); ct.dispose(); } });
+  } else {
+    guard('scatter', () => {
+      new WorldScatter({
+        def, W, H, batcher: host.batcher, nav: host.nav, avoid: host.avoid,
+        isAvoided: (x, z, p) => host.isAvoided(x, z, p),
+        tileRoom: (i, j) => host.tileRoom(i, j),
+        hasH: (i, j) => host.hasH(i, j),
+        hasV: (i, j) => host.hasV(i, j),
+        weights,
+      }).run();
+    });
+  }
 
-  const culler = new ChunkCuller(host.batcher, world.perf?.chunkM ?? 40);
+  const culler = new ChunkCuller(host.batcher, stream ? stream.chunkM : world.perf?.chunkM ?? 40);
   const blendM = world.regions.reduce((m, r) => Math.max(m, r.blendM ?? 0), 0) || DEFAULT_BLEND_M;
-  return new OpenWorld(def, host, regs, world.regions, sky, rings, waters, culler, blendM, world.villages);
+  return new OpenWorld(def, host, regs, world.regions, sky, rings, waters, culler, blendM, world.villages, worldStream);
 }

@@ -7,6 +7,7 @@ import { RNG, hashString } from '../../core/utils';
 import { DUNGEON_ENEMY_ID_BASE, HOST_DYNAMIC_ID_BASE } from '../../types/common';
 import { WORLD_PACK_STRIDE, type PackDef, type WorldPerf } from '../../types/dungeons';
 import { EV, spawnPayloadOf, tileToWorld, type Pt, type WorldCtx } from './util';
+import { CampIndex } from './CampIndex';
 
 /**
  * Camp streaming (GDD_OPENWORLD §1.5.2). Host only. Camps and patrols of the map are spawned when a player comes within
@@ -16,6 +17,9 @@ import { EV, spawnPayloadOf, tileToWorld, type Pt, type WorldCtx } from './util'
  * removes it with `remove: true` (Enemy.escape). A camp refreshes `respawnSec` after its LAST kill, but only when no player is
  * within `radius + 30` m. Above the 240-enemy budget the farthest camps are deactivated first.
  * Champions of a camp are rolled once per activation and announced as `ev:champ` so every peer shows the plate.
+ * Big zones (docs/ENGINE_BIGMAPS.md): a tick only visits the camps that can act - active ones, ones waiting for their respawn timer
+ * (kept by world time, so a camp far away still comes back on schedule) and ones a player is near, found through a bucket index -
+ * instead of every camp of the map. The decisions are exactly the old loop's, in the same (index) order.
  * OWNER: scenes module.
  */
 
@@ -31,6 +35,8 @@ interface Member {
 }
 
 interface Camp {
+  /** Position in the director's camp list (the index buckets and the awake sets hold slots). */
+  slot: number;
   index: number;             // pack index in DungeonDef.packs (part of the id)
   pack: PackDef;
   cx: number;
@@ -53,6 +59,10 @@ const REFRESH_CLEAR_M = 30;
 
 export class CampDirector {
   private readonly camps: Camp[] = [];
+  private index!: CampIndex;
+  /** Slots of active camps / of camps whose members are all dead and wait for the respawn timer. */
+  private readonly activeSlots = new Set<number>();
+  private readonly refreshing = new Set<number>();
   private timer = 0;
   private warned = false;
 
@@ -80,6 +90,7 @@ export class CampDirector {
       });
       if (!members.length) return;
       this.camps.push({
+        slot: this.camps.length,
         index,
         pack: pk,
         cx: tileToWorld(pk.center[0]),
@@ -96,6 +107,7 @@ export class CampDirector {
         lastKillAt: null,
       });
     });
+    this.index = new CampIndex(this.camps);
   }
 
   /** Number of camps (camps + patrols) on the map. */
@@ -140,16 +152,23 @@ export class CampDirector {
     const { ctx, perf } = this;
     const cap = perf.maxActiveEnemies;
     const budget = { n: cap - ctx.aliveEnemies() };
-    for (const c of this.camps) {
+    // only the camps that can act: active, waiting for the respawn timer, or with a player within activation reach
+    const awake = new Set<number>([...this.activeSlots, ...this.refreshing]);
+    const pts = ctx.world.players.filter((p) => !p.removed).map((p) => ({ x: p.position.x, z: p.position.z }));
+    for (const slot of this.index.near(pts, perf.activateM)) awake.add(slot);
+    for (const slot of [...awake].sort((x, y) => x - y)) {
+      const c = this.camps[slot];
       this.collectDeaths(c, now);
       const nearest = ctx.nearestPlayerDist(c.cx, c.cz);
       // refresh: the whole camp comes back `respawnSec` after its last kill, never with a player standing next to it
       if (c.dead.size >= c.members.length && c.lastKillAt !== null && now - c.lastKillAt >= c.respawnSec && nearest > c.radius + REFRESH_CLEAR_M) {
         c.dead.clear();
         c.lastKillAt = null;
+        this.refreshing.delete(c.slot);
       }
       if (!c.active && nearest <= c.radius + perf.activateM && budget.n > 0) {
         c.active = true;
+        this.activeSlots.add(c.slot);
         c.activations++;
       }
       if (!c.active) continue;
@@ -162,7 +181,9 @@ export class CampDirector {
     }
     // 240-enemy budget: the farthest calm camps leave first (rares, mini-bosses, metin waves and boss adds are not camp members)
     if (ctx.aliveEnemies() > cap) {
-      const calm = this.camps
+      const calm = [...this.activeSlots]
+        .sort((x, y) => x - y) // index order, like the full loop (ties in the distance sort keep it)
+        .map((slot) => this.camps[slot])
         .filter((c) => c.active && !this.anyAggro(c))
         .map((c) => ({ c, d: ctx.nearestPlayerDist(c.cx, c.cz) }))
         .sort((a, b) => b.d - a.d);
@@ -180,7 +201,10 @@ export class CampDirector {
       if (e.isDead) {
         c.live.delete(k);
         c.dead.add(k);
-        if (c.dead.size >= c.members.length) c.lastKillAt = now;
+        if (c.dead.size >= c.members.length) {
+          c.lastKillAt = now;
+          this.refreshing.add(c.slot);
+        }
       } else if (e.removed) {
         c.live.delete(k);
       }
@@ -265,6 +289,7 @@ export class CampDirector {
 
   private deactivate(c: Camp): void {
     c.active = false;
+    this.activeSlots.delete(c.slot);
     for (const e of c.live.values()) if (!e.removed && !e.isDead) e.escape();
     c.live.clear();
   }

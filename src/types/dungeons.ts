@@ -528,8 +528,18 @@ export interface ChestSpotDef { id: string; kind: 'chest_wood' | 'chest_iron' | 
 export interface ShrineSpotDef { id: string; type: 'shrine_power' | 'shrine_haste' | 'shrine_ward' | 'shrine_greed' | 'shrine_wisdom'; regionId: string; pos: [number, number] }
 export interface HiddenAreaDef { id: string; name: string; regionId: string; pos: [number, number]; radius: number; xpPct: number; rewards: string[] }
 export interface VistaDef { id: string; name: string; regionId: string; pos: [number, number]; xpPct: number }
-/** Streaming / AI budgets. Defaults: 70 / 110 / 45 / 240 / 40 (GDD_OPENWORLD §1.5). */
-export interface WorldPerf { activateM: number; deactivateM: number; aiSleepM: number; maxActiveEnemies: number; chunkM: number }
+/**
+ * Streaming / AI budgets. Defaults: 70 / 110 / 45 / 240 / 40 (GDD_OPENWORLD §1.5). `chunkM` is the culling chunk of a small zone.
+ * The optional fields drive BIG zones (docs/ENGINE_BIGMAPS.md): `stream` 'auto' (default) turns terrain + scenery chunk streaming
+ * on above 800 m, 'on' / 'off' force it; `streamChunkM` is the streaming chunk edge (multiple of 16 m, default 64); `viewM` the
+ * radius around the player that stays built (default: widest region fogFar + 64 m, clamped 96..320).
+ */
+export interface WorldPerf {
+  activateM: number; deactivateM: number; aiSleepM: number; maxActiveEnemies: number; chunkM: number;
+  stream?: 'auto' | 'on' | 'off';
+  streamChunkM?: number;
+  viewM?: number;
+}
 
 export interface WorldExtras {
   regions: WorldRegion[];

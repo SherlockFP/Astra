@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { patchPSX } from '../render/psx';
 import { TileNoise, makeCanvas, surfaceTexture } from './ProceduralAssets';
+import { EDGE_NOISE_MAX, SPLAT_CH_INDEX, opBounds, opRaw, type SplatChannel, type SplatOp } from './chunks/SplatPaint';
 
 /**
  * Terrain: one big ground mesh shaded with a splat map (dirt / cobble / dark patches painted from shape ops) over
@@ -11,13 +12,7 @@ import { TileNoise, makeCanvas, surfaceTexture } from './ProceduralAssets';
  * without extra textures.
  */
 
-export type SplatChannel = 'dirt' | 'cobble' | 'dark';
-
-export type SplatOp =
-  | { t: 'rect'; ch: SplatChannel; x: number; z: number; hw: number; hd: number; rot?: number; soft?: number; amount?: number }
-  | { t: 'disc'; ch: SplatChannel; x: number; z: number; r: number; soft?: number; amount?: number }
-  | { t: 'ring'; ch: SplatChannel; x: number; z: number; r0: number; r1: number; soft?: number; amount?: number }
-  | { t: 'line'; ch: SplatChannel; x0: number; z0: number; x1: number; z1: number; w: number; soft?: number; amount?: number };
+export type { SplatChannel, SplatOp };
 
 /** RGB tint texels (row-major, row 0 = z -half) covering [-half, half]^2 metres around the terrain centre. */
 export interface TerrainTint {
@@ -44,10 +39,6 @@ export interface TerrainOptions {
   tint?: TerrainTint;
 }
 
-const idx = { dirt: 0, cobble: 1, dark: 2 } as const;
-/** Largest |displacement| of the organic edge noise below (fbm 1.2 + sample 0.45). Used to reject far pixels early. */
-const EDGE_NOISE_MAX = 1.7;
-
 export interface Terrain {
   mesh: THREE.Mesh;
   /** Splat weights at a world position (0..1). */
@@ -64,7 +55,7 @@ export function createTerrain(o: TerrainOptions): Terrain {
   const mpp = S / N;
 
   const apply = (ch: SplatChannel, i: number, w: number, amount: number) => {
-    const k = i * 3 + idx[ch];
+    const k = i * 3 + SPLAT_CH_INDEX[ch];
     const v = Math.round(Math.max(0, Math.min(1, w)) * amount * 255);
     if (v > data[k]) data[k] = v;
   };
@@ -72,40 +63,14 @@ export function createTerrain(o: TerrainOptions): Terrain {
   for (const op of o.ops) {
     const soft = op.soft ?? 1.2;
     const amount = op.amount ?? 1;
-    // bounding box in px
-    let x0: number, x1: number, z0: number, z1: number;
-    if (op.t === 'rect') {
-      const r = Math.hypot(op.hw, op.hd) + soft + 2;
-      x0 = op.x - r; x1 = op.x + r; z0 = op.z - r; z1 = op.z + r;
-    } else if (op.t === 'disc') {
-      x0 = op.x - op.r - soft - 2; x1 = op.x + op.r + soft + 2; z0 = op.z - op.r - soft - 2; z1 = op.z + op.r + soft + 2;
-    } else if (op.t === 'ring') {
-      x0 = op.x - op.r1 - soft - 2; x1 = op.x + op.r1 + soft + 2; z0 = op.z - op.r1 - soft - 2; z1 = op.z + op.r1 + soft + 2;
-    } else {
-      x0 = Math.min(op.x0, op.x1) - op.w - soft - 2; x1 = Math.max(op.x0, op.x1) + op.w + soft + 2;
-      z0 = Math.min(op.z0, op.z1) - op.w - soft - 2; z1 = Math.max(op.z0, op.z1) + op.w + soft + 2;
-    }
-    const px0 = Math.max(0, Math.floor(toPx(x0))), px1 = Math.min(N - 1, Math.ceil(toPx(x1)));
-    const pz0 = Math.max(0, Math.floor(toPx(z0))), pz1 = Math.min(N - 1, Math.ceil(toPx(z1)));
+    // bounding box in px (shape maths shared with the chunked splat: chunks/SplatPaint.ts)
+    const bb = opBounds(op);
+    const px0 = Math.max(0, Math.floor(toPx(bb.x0))), px1 = Math.min(N - 1, Math.ceil(toPx(bb.x1)));
+    const pz0 = Math.max(0, Math.floor(toPx(bb.z0))), pz1 = Math.min(N - 1, Math.ceil(toPx(bb.z1)));
     for (let pz = pz0; pz <= pz1; pz++)
       for (let px = px0; px <= px1; px++) {
         const wx = (px + 0.5) * mpp - o.splatHalf, wz = (pz + 0.5) * mpp - o.splatHalf;
-        let raw: number; // signed distance without the edge noise, negative inside
-        if (op.t === 'rect') {
-          const c = Math.cos(op.rot ?? 0), s = Math.sin(op.rot ?? 0);
-          const dx = wx - op.x, dz = wz - op.z;
-          const lx = dx * c - dz * s, lz = dx * s + dz * c;
-          raw = Math.max(Math.abs(lx) - op.hw, Math.abs(lz) - op.hd);
-        } else if (op.t === 'disc') raw = Math.hypot(wx - op.x, wz - op.z) - op.r;
-        else if (op.t === 'ring') {
-          const r = Math.hypot(wx - op.x, wz - op.z);
-          raw = Math.max(op.r0 - r, r - op.r1);
-        } else {
-          const vx = op.x1 - op.x0, vz = op.z1 - op.z0;
-          const L2 = vx * vx + vz * vz || 1;
-          const t = Math.max(0, Math.min(1, ((wx - op.x0) * vx + (wz - op.z0) * vz) / L2));
-          raw = Math.hypot(wx - (op.x0 + vx * t), wz - (op.z0 + vz * t)) - op.w / 2;
-        }
+        const raw = opRaw(op, wx, wz); // signed distance without the edge noise, negative inside
         // cheap reject: the edge noise cannot bring a pixel this far outside back inside the soft band
         if (raw - EDGE_NOISE_MAX > soft) continue;
         // noise displaces the edge: chunky, organic borders

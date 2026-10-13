@@ -36,6 +36,8 @@ import { configureShadowBox, followShadowBox } from './ShadowFollow';
 import { ZoneField, type BuiltZone } from './Zones';
 import { OutdoorScenery, outdoorAssetUrls } from './OutdoorBuilder';
 import { buildWorldDecor, worldAssetUrls, type WorldDecorHandle, type WorldDecorHost } from './WorldDecor';
+import { paintRoomTiles, computeWalls, fillNavFast, fillNavReference } from './NavBase';
+import { streamConfig, type StreamConfig } from './chunks/StreamConfig';
 import { buildFloorStains, buildMotes } from './Grime';
 import { applyShadowPolicy, markFadeable, shouldCastShadow } from '../render/shadowPolicy';
 import { freezeStatic } from '../render/staticTransforms';
@@ -568,6 +570,8 @@ class DungeonBuild {
   hf: Heightfield | null = null;
   /** Open-world mode (DungeonDef.outdoor): terrain + tree walls instead of tiles + stone walls. */
   readonly outdoor: boolean;
+  /** Chunk streaming of a big open-world zone (docs/ENGINE_BIGMAPS.md); `stream.on` false = the classic build-everything path. */
+  readonly stream: StreamConfig;
   os: OutdoorScenery | null = null;
   /** Open world (DungeonDef.world): decor, region atmosphere and culling. Built in build(), driven by update(). */
   worldDecor: WorldDecorHandle | null = null;
@@ -601,7 +605,9 @@ class DungeonBuild {
     this.tint = def.theme.tint ?? 0xffffff;
     this.outdoor = !!def.outdoor;
     this.root.name = `dungeon:${def.id}`;
-    this.batcher = new InstanceBatcher(this.root, def.outdoor ? 40 : 24);
+    this.stream = streamConfig(def);
+    this.batcher = new InstanceBatcher(this.root, this.stream.on ? this.stream.chunkM : def.outdoor ? 40 : 24);
+    this.batcher.deferred = this.stream.on;
     this.lights = new LightPool(this.root, MAX_REAL_LIGHTS);
     // shared, process-lifetime glow textures (not owned by this build)
     const gt = glowTexture(32, 6, 1.7);
@@ -806,6 +812,7 @@ class DungeonBuild {
       fog: this.fog,
       hemi: this.hemi,
       sun: this.moon,
+      stream: this.stream,
       onFog: (near, far) => {
         this.halo.setFog(near * 0.9, far * 1.1);
         this.flames.setFog(near * 0.9, far * 1.1);
@@ -816,20 +823,10 @@ class DungeonBuild {
   // ---- 1. grid ----
   buildGrid(): void {
     const { def, W, H } = this;
-    def.rooms.forEach((r, idx) => {
-      for (let tz = r.rect.z; tz < r.rect.z + r.rect.h; tz++)
-        for (let tx = r.rect.x; tx < r.rect.x + r.rect.w; tx++) {
-          if (tx < 0 || tz < 0 || tx >= W || tz >= H) continue;
-          this.roomIdx[tz * W + tx] = idx;
-        }
-    });
+    paintRoomTiles(def, this.roomIdx);
     // walls on every edge where the two sides belong to different rooms
     // open-world zones are one connected field: only the border towards solid ground is a wall
-    const differ = (a: number, b: number): boolean => (this.outdoor ? (a >= 0) !== (b >= 0) : a !== b);
-    for (let j = 0; j <= H; j++)
-      for (let i = 0; i < W; i++) this.hWall[j * W + i] = differ(this.tileRoom(i, j - 1), this.tileRoom(i, j)) ? 1 : 0;
-    for (let j = 0; j < H; j++)
-      for (let i = 0; i <= W; i++) this.vWall[j * (W + 1) + i] = differ(this.tileRoom(i - 1, j), this.tileRoom(i, j)) ? 1 : 0;
+    computeWalls(W, H, this.roomIdx, this.outdoor, this.hWall, this.vWall);
 
     // door openings carve walls
     for (const d of this.outdoor ? [] : def.doors) {
@@ -865,28 +862,13 @@ class DungeonBuild {
     }
 
     // nav classification on the half-metre-offset lattice (cell centre = integer world coords)
-    const nav = this.nav;
-    for (let cz = 0; cz <= H * T; cz++)
-      for (let cx = 0; cx <= W * T; cx++) {
-        const mx = cx % T, mz = cz % T;
-        const i = Math.floor(cx / T), j = Math.floor(cz / T);
-        let walk = false;
-        if (mx !== 0 && mz !== 0) walk = this.tileRoom(i, j) >= 0;
-        else if (mx === 0 && mz !== 0) walk = !this.hasV(i, j) && this.tileRoom(i - 1, j) >= 0 && this.tileRoom(i, j) >= 0;
-        else if (mz === 0 && mx !== 0) walk = !this.hasH(i, j) && this.tileRoom(i, j - 1) >= 0 && this.tileRoom(i, j) >= 0;
-        else {
-          // vertex cell: walkable only when no arm touches it and all four tiles are walkable
-          walk = !this.hasH(i, j) && !this.hasH(i - 1, j) && !this.hasV(i, j) && !this.hasV(i, j - 1) &&
-            this.tileRoom(i - 1, j - 1) >= 0 && this.tileRoom(i, j - 1) >= 0 && this.tileRoom(i - 1, j) >= 0 && this.tileRoom(i, j) >= 0;
-        }
-        if (walk) {
-          nav.setCell(cx, cz, 1);
-          if (cx < this.walkMin.x) this.walkMin.x = cx;
-          if (cz < this.walkMin.y) this.walkMin.y = cz;
-          if (cx > this.walkMax.x) this.walkMax.x = cx;
-          if (cz > this.walkMax.y) this.walkMax.y = cz;
-        }
-      }
+    // (NavBase.ts: the original per-cell rule; streamed zones use the row-wise fill that gives the same grid in O(tiles))
+    const tiles = { W, H, roomIdx: this.roomIdx, hWall: this.hWall, vWall: this.vWall };
+    const wb = this.stream.on ? fillNavFast(tiles, this.nav) : fillNavReference(tiles, this.nav);
+    if (Number.isFinite(wb.minX)) {
+      this.walkMin.set(wb.minX, wb.minZ);
+      this.walkMax.set(wb.maxX, wb.maxZ);
+    }
 
     this.startPos.set(tc(def.start.pos[0]), 0, tc(def.start.pos[1]));
     this.startYaw = (def.start.facing * PI) / 180;
@@ -2165,6 +2147,12 @@ class DungeonBuild {
     this.halo.build();
     this.flames.build();
     const missing = await this.batcher.build();
+    // streamed zone: the ring around the entry point is built behind the loading screen (needs the staged hand-placed groups)
+    try {
+      this.worldDecor?.primeStream(this.startPos.x, this.startPos.z);
+    } catch (e) {
+      console.warn('[world] streamed ring failed to build at load, streaming continues in the first frames', e);
+    }
     if (missing.length) console.warn(`[world] ${missing.length} dungeon pieces missing`, missing.slice(0, 8));
     // decor collisions must be computed after pieces are loaded -> run again for the ones the first pass skipped
     for (const d of this.decorMeta) {

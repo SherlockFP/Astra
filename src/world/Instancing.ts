@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getPiece, loadPieces, type Piece, type PiecePart } from './Pieces';
 import { isShadowCaster, isFadeableHeight } from '../render/shadowPolicy';
+import type { StreamInstance } from './chunks/ChunkContent';
 
 /**
  * Collects static piece placements and turns them into chunked InstancedMeshes: one per
@@ -102,7 +103,17 @@ export class InstanceBatcher {
   private groups = new Map<string, Group>();
   private variants = new Map<string, (base: THREE.Material) => THREE.Material>();
   private variantCache = new Map<string, THREE.Material>();
-  readonly meshes: THREE.InstancedMesh[] = [];
+  /** Every InstancedMesh that is resident now (all of them in a small zone, the loaded chunks in a streamed one). */
+  meshes: THREE.InstancedMesh[] = [];
+  /**
+   * Streaming (docs/ENGINE_BIGMAPS.md): build() loads the pieces and stages the groups per chunk instead of emitting meshes;
+   * loadChunk(cx, cz) emits the meshes of one chunk (its staged hand-placed groups plus generated instances) and unloadChunk
+   * frees them. The batcher's chunk size is then the streaming chunk size.
+   */
+  deferred = false;
+  private staged = new Map<string, Group[]>();
+  private chunkMeshes = new Map<string, THREE.InstancedMesh[]>();
+  private warnedMissing = new Set<string>();
   /** Materials created by variants (disposed with the batcher). */
   private ownMaterials: THREE.Material[] = [];
   count = 0;
@@ -155,38 +166,109 @@ export class InstanceBatcher {
   async build(): Promise<string[]> {
     await loadPieces(this.urls());
     const missing = new Set<string>();
+    if (this.deferred) {
+      // streamed zone: keep the hand-placed groups per chunk, loadChunk() makes the meshes
+      for (const g of this.groups.values()) {
+        if (!getPiece(g.url)) missing.add(g.url);
+        const list = this.staged.get(g.chunk);
+        if (list) list.push(g);
+        else this.staged.set(g.chunk, [g]);
+      }
+      this.groups.clear();
+      return [...missing];
+    }
     for (const g of this.groups.values()) {
-      const piece = getPiece(g.url);
-      if (!piece) {
-        missing.add(g.url);
-        continue;
-      }
-      // Shadow casters are decided per instance (render/shadowPolicy), measured from the piece and the instance matrix. A
-      // non-caster instance is split into its own no-shadow batch (every caster is drawn again in the shadow pass).
-      const radius = 0.5 * piece.size.length();
-      const canCast = g.cast && !piece.hasGlow;
-      const casters: Rec[] = [], plain: Rec[] = [];
-      let plainTall = false;
-      for (const r of g.recs) {
-        const s = matrixScale(r.m);
-        const top = r.m.elements[13] + piece.box.max.y * s;
-        if (canCast && isShadowCaster(radius * s, top)) casters.push(r);
-        else {
-          plain.push(r);
-          if (isFadeableHeight(piece.size.y * s)) plainTall = true;
-        }
-      }
-      if (casters.length) this.emit(g, piece, casters, true);
-      // a solid (cast:true) group's non-caster batch still blocks the camera when an instance is tall enough: flag it for
-      // OccluderFade without splitting it again (no extra draw calls); ground cover / wall decor are cast:false and stay out
-      if (plain.length) this.emit(g, piece, plain, false, g.cast && plainTall);
+      if (!this.emitGroup(g)) missing.add(g.url);
     }
     this.groups.clear();
     return [...missing];
   }
 
+  /** Emits the meshes of one group (casters / plain split). Returns false when the model is not loaded. */
+  private emitGroup(g: Group, into?: THREE.InstancedMesh[]): boolean {
+    const piece = getPiece(g.url);
+    if (!piece) return false;
+    // Shadow casters are decided per instance (render/shadowPolicy), measured from the piece and the instance matrix. A
+    // non-caster instance is split into its own no-shadow batch (every caster is drawn again in the shadow pass).
+    const radius = 0.5 * piece.size.length();
+    const canCast = g.cast && !piece.hasGlow;
+    const casters: Rec[] = [], plain: Rec[] = [];
+    let plainTall = false;
+    for (const r of g.recs) {
+      const s = matrixScale(r.m);
+      const top = r.m.elements[13] + piece.box.max.y * s;
+      if (canCast && isShadowCaster(radius * s, top)) casters.push(r);
+      else {
+        plain.push(r);
+        if (isFadeableHeight(piece.size.y * s)) plainTall = true;
+      }
+    }
+    if (casters.length) this.emit(g, piece, casters, true, false, into);
+    // a solid (cast:true) group's non-caster batch still blocks the camera when an instance is tall enough: flag it for
+    // OccluderFade without splitting it again (no extra draw calls); ground cover / wall decor are cast:false and stay out
+    if (plain.length) this.emit(g, piece, plain, false, g.cast && plainTall, into);
+    return true;
+  }
+
+  /**
+   * Streaming: makes the meshes of chunk (cx, cz) from its staged hand-placed groups plus `generated` instances (scatter that is a
+   * pure function of the chunk). No-op when the chunk is already resident. Returns the number of meshes made.
+   */
+  loadChunk(cx: number, cz: number, generated?: readonly StreamInstance[]): number {
+    const ck = `${cx},${cz}`;
+    if (this.chunkMeshes.has(ck)) return 0;
+    const made: THREE.InstancedMesh[] = [];
+    this.chunkMeshes.set(ck, made);
+    const groups: Group[] = [...(this.staged.get(ck) ?? [])];
+    if (generated?.length) {
+      const byKey = new Map<string, Group>();
+      for (const gi of generated) {
+        _p.set(gi.x, gi.y, gi.z);
+        _q.setFromAxisAngle(_Y, gi.rot);
+        _s.set(gi.scale, gi.scale, gi.scale);
+        _m.compose(_p, _q, _s);
+        const layer: CullLayer = gi.layer ?? 'other';
+        const key = `${gi.url}|${gi.cast ? 1 : 0}${gi.receive ? 1 : 0}|${layer}`;
+        let g = byKey.get(key);
+        if (!g) {
+          g = { url: gi.url, chunk: ck, cx, cz, cast: gi.cast, receive: gi.receive, variant: '', skip: null, layer, recs: [] };
+          byKey.set(key, g);
+        }
+        g.recs.push({ m: _m.clone(), c: gi.tint == null ? null : new THREE.Color().setScalar(gi.tint) });
+      }
+      groups.push(...byKey.values());
+    }
+    for (const g of groups) {
+      if (!this.emitGroup(g, made) && !this.warnedMissing.has(g.url)) {
+        this.warnedMissing.add(g.url);
+        console.warn(`[world] streamed model not loaded: ${g.url}`);
+      }
+    }
+    return made.length;
+  }
+
+  /** Streaming: frees the meshes of chunk (cx, cz) (geometry and materials are shared pieces and stay). */
+  unloadChunk(cx: number, cz: number): void {
+    const ck = `${cx},${cz}`;
+    const made = this.chunkMeshes.get(ck);
+    if (!made) return;
+    this.chunkMeshes.delete(ck);
+    if (!made.length) return;
+    const gone = new Set(made);
+    for (const im of made) {
+      im.removeFromParent();
+      im.dispose();
+    }
+    this.meshes = this.meshes.filter((m) => !gone.has(m));
+  }
+
+  /** Number of chunks with meshes now (streamed zones). */
+  get residentChunks(): number {
+    return this.chunkMeshes.size;
+  }
+
   /** One InstancedMesh per draw of the piece for these instances. */
-  private emit(g: Group, piece: Piece, recs: Rec[], cast: boolean, fadeable = false): void {
+  private emit(g: Group, piece: Piece, recs: Rec[], cast: boolean, fadeable = false, into?: THREE.InstancedMesh[]): void {
     const n = recs.length;
     const anyColor = recs.some((r) => r.c);
     for (const draw of drawsOf(piece, g.skip)) {
@@ -211,6 +293,7 @@ export class InstanceBatcher {
       im.computeBoundingBox();
       this.parent.add(im);
       this.meshes.push(im);
+      into?.push(im);
     }
   }
 
@@ -238,6 +321,8 @@ export class InstanceBatcher {
     this.ownMaterials.length = 0;
     this.variantCache.clear();
     this.groups.clear();
+    this.staged.clear();
+    this.chunkMeshes.clear();
   }
 }
 
@@ -253,6 +338,11 @@ export class ChunkCuller {
   private hidden = 0;
 
   constructor(private batcher: InstanceBatcher, private chunkSize = 40) {}
+
+  /** Re-evaluate on the next update() (a streamed chunk just appeared: its far layers must not show for a quarter second). */
+  invalidate(): void {
+    this.acc = 1;
+  }
 
   update(dt: number, x: number, z: number): void {
     this.acc += dt;

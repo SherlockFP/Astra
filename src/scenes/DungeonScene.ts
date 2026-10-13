@@ -1388,11 +1388,21 @@ export class DungeonScene implements GameScene {
 
   // ================================================================================================
 
+  /** Streamed open-world zone: chunks came or went, so the camera's fade candidates (collected once from the built root) are rebuilt. */
+  private occVersion = 0;
+  private refreshOccluders(): void {
+    const v = this.built?.world?.streamVersion ?? 0;
+    if (v === this.occVersion || !this.cam || !this.built) return;
+    this.occVersion = v;
+    this.cam.occluders = collectFadeOccluders(this.built.root);
+  }
+
   update(dt: number): void {
     if (!this.ready) return;
     this.controller?.update(dt);
     this.world?.update(dt);
     this.built?.update(dt);
+    this.refreshOccluders();
     this.cam?.update(dt);
     this.updateCamps(dt);
     this.tickScene(dt);
