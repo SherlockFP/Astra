@@ -62,7 +62,7 @@ add({
   abilities: [
     // Parçalayıcı Vuruş (2 hits with bleed) as one cone with the summed coefficient (no `string` field yet)
     cone('les_ks_rend', 'Parçalayıcı Vuruş', 2.8, 70, 9, 1.8, '1H_Melee_Attack_Slice_Diagonal', 0.38,
-      { initialCooldown: 3, windup: 0.85, telegraph: true, statuses: [bleed(2, 0.25, 8)], dispel: 'bleed' }),
+      { initialCooldown: 3, windup: 0.91, telegraph: true, statuses: [bleed(2, 0.25, 8)], dispel: 'bleed' }),
     charge('les_ks_leap', 'Atılış Kesiği', 7, 14, 0.8, 1.4, '1H_Melee_Attack_Jump_Chop', 0.5, { initialCooldown: 5, parryable: false }),
   ],
 });
@@ -74,7 +74,7 @@ add({
   abilities: [
     proj('les_kb_frostbolt', 'Don Oku', 14, 22, 7, 1.8, 1.8, 'frost', 'frost_projectile', 'Spellcast_Shoot', 0.3,
       { castTime: 1.8, interruptible: true, kick: 2, initialCooldown: 2, statuses: [chill(1, 5)], sfx: 'frost_cast' }),
-    aoe('les_kb_nova', 'Don Halkası', 'self_aoe', 4.5, 0, 12, 0.75, 1.2, 'frost', 'Spellcast_Long', 0.5,
+    aoe('les_kb_nova', 'Don Halkası', 'self_aoe', 4.5, 0, 12, 0.91, 1.2, 'frost', 'Spellcast_Long', 0.5,
       { initialCooldown: 6, statuses: [chill(1, 4)], vfx: 'frost_burst' }),
   ],
 });
@@ -104,8 +104,8 @@ add({
   abilities: [
     cone('les_vt_vomit', 'Kusma Dalgası', 6, 60, 10, 1.8, 'Attack', 0.5, { initialCooldown: 4, windup: 0.9, telegraph: true, parryable: false,
       statuses: [poison(1, 0.2, 6)], dispel: 'poison' }),
-    charge('les_vt_roll', 'Yuvarlanış', 10, 16, 0.85, 1.6, 'Attack', 0.5, { initialCooldown: 7 }),
-    onDeath(aoe('les_vt_guts', 'İçini Boşalt', 'self_aoe', 4, 0, 0, 0.8, 1.4, 'poison', '', 0,
+    charge('les_vt_roll', 'Yuvarlanış', 10, 16, 0.87, 1.6, 'Attack', 0.5, { initialCooldown: 7 }),
+    onDeath(aoe('les_vt_guts', 'İçini Boşalt', 'self_aoe', 4, 0, 0, 0.91, 1.4, 'poison', '', 0,
       { telegraph: true, vfx: 'poison_cloud', params: { persist: 8, tick: 1, persistCoef: 0.4 } })),
   ],
 });
@@ -113,7 +113,7 @@ add({
   id: 'les_canavar', name: 'İskelet Canavarı', model: LES_MODEL.iskelet_canavari.model, scale: LES_MODEL.iskelet_canavari.scale,
   tint: LES_MODEL.iskelet_canavari.tint, role: 'tank', rank: 'elite', hp: 5.5, dmg: 1.8, speed: 4.4, radius: 1.15, aggro: 10, forces: 12,
   anims: LES_MODEL.iskelet_canavari.anims, resist: R_SKELETON, ai: { bonePile: 20 },
-  basic: cone('les_cn_smash', 'Kemik Ezici', 3.6, 120, 3.0, 1.2, 'Attack', 0.47, { windup: 0.7 }),   // 2-hit smash, summed
+  basic: cone('les_cn_smash', 'Kemik Ezici', 3.6, 120, 3.0, 1.2, 'Attack', 0.47, { windup: 0.77 }),   // 2-hit smash, summed
   abilities: [
     aoe('les_cn_quake', 'Kemik Sarsıntısı', 'self_aoe', 6, 6, 13, 1.0, 2.2, 'physical', 'Attack2', 0.47,
       { statuses: [{ status: 'knockdown', duration: 0.8 }], vfx: 'ground_slam', sfx: 'ground_slam' }),
@@ -142,22 +142,22 @@ add({
   visual: { hide: ROGUE_KEEP_KNIFE, runRef: 6 },
   basic: proj('les_lt_scrap', 'Çürük Et', 14, 16, 2.6, 0.7, 1.0, 'poison', 'poison_projectile', 'Throw', 0.75),
   abilities: [
-    aoe('les_lt_throw', 'Et Fırlat', 'ground_aoe', 2.5, 16, 8, 0.75, 1.2, 'poison', 'Throw', 0.75,
+    aoe('les_lt_throw', 'Et Fırlat', 'ground_aoe', 2.5, 16, 8, 0.91, 1.2, 'poison', 'Throw', 0.75,
       { vfx: 'poison_cloud', params: { target: 1, persist: 4, tick: 1, persistCoef: 0.3 } }),
     // Sıvı Çek: 3 s channel that heals the caster (must be interrupted)
     { id: 'les_lt_drain', name: 'Sıvı Çek', kind: 'custom', range: 13, cooldown: 14, initialCooldown: 5, windup: 0.5, castTime: 3.0,
       interruptible: true, kick: 2, damage: { coef: 0.55, type: 'poison' }, anim: 'Spellcast_Raise',
       params: { loop: 1, tick: 0.5, healMult: 2.5, impact: 0.33 } } satisfies EnemyAbility,
-    line('les_lt_hook', 'Tırpan Kancası', 12, 1.4, 20, 0.8, 1.4, 'physical', 'Throw', 0.6,
+    line('les_lt_hook', 'Tırpan Kancası', 12, 1.4, 20, 0.91, 1.4, 'physical', 'Throw', 0.6,
       { telegraph: true, initialCooldown: 9, knockback: -4 }),
   ],
 });
 add({
   id: 'les_et_zanaatkari', name: 'Et Zanaatkârı', model: CHAR('Barbarian'), scale: 1.1, tint: 0xa88070, role: 'support', rank: 'trash',
   hp: 1.3, dmg: 1.0, speed: 4.8, radius: 0.6, aggro: 11, forces: 5, anims: A_KAYKIT, resist: R_FLESH, ai: { kite: [5, 10] }, visual: { runRef: 6 },
-  basic: cone('les_ez_cleaver', 'Satır', 2.4, 90, 2.4, 1.2, '1H_Melee_Attack_Chop', 0.5, { windup: 0.7 }),
+  basic: cone('les_ez_cleaver', 'Satır', 2.4, 90, 2.4, 1.2, '1H_Melee_Attack_Chop', 0.5, { windup: 0.77 }),
   abilities: [
-    line('les_ez_throw', 'Satır Fırlat', 16, 1.6, 10, 0.8, 1.4, 'physical', 'Throw', 0.6, { telegraph: true, initialCooldown: 3 }),
+    line('les_ez_throw', 'Satır Fırlat', 16, 1.6, 10, 0.91, 1.4, 'physical', 'Throw', 0.6, { telegraph: true, initialCooldown: 3 }),
     heal('les_ez_repair', 'Et Onarımı', 2.5, 12, 0.3, 'Spellcast_Raise', 0.5, { kick: 2, initialCooldown: 5 }),
     cone('les_ez_saw', 'Kemik Testeresi', 3, 60, 11, 1.8, '1H_Melee_Attack_Slice_Horizontal', 0.4,
       { windup: 0.9, telegraph: true, statuses: [bleed(1, 0.25, 8)], initialCooldown: 6 }),
@@ -179,12 +179,12 @@ add({
   id: 'les_zol_bekci', name: 'Zolramus Kapı Bekçisi', model: SKEL('Skeleton_Warrior'), scale: 1.2, tint: 0x8a78b8, role: 'tank', rank: 'elite',
   hp: 2.8, dmg: 1.4, speed: 5.0, radius: 0.7, aggro: 10, forces: 7, anims: A_SKEL_COMBAT, resist: R_NECRO, ai: { bonePile: 12 },
   visual: { attach: [...W_BLADE, { url: WPN('Skeleton_Shield_Large_A'), bone: 'handslot.l', pos: [0, 0.017, 0.05] }], eyeEmissive: 0xb070ff, runRef: 7 },
-  basic: cone('les_zb_slash', 'Zolramus Kılıcı', 2.8, 100, 2.6, 1.2, '1H_Melee_Attack_Slice_Horizontal', 0.3, { windup: 0.7 }),
+  basic: cone('les_zb_slash', 'Zolramus Kılıcı', 2.8, 100, 2.6, 1.2, '1H_Melee_Attack_Slice_Horizontal', 0.3, { windup: 0.77 }),
   abilities: [
     proj('les_zb_bolt', 'Nekrotik Ok', 16, 20, 8, 2.0, 2.0, 'shadow', 'shadow_projectile', 'Spellcast_Shoot', 0.3,
       { castTime: 2.0, interruptible: true, kick: 2, initialCooldown: 2, statuses: [{ status: 'necrotic', duration: 8, stacks: 4 }], sfx: 'shadow_cast' }),
     cone('les_zb_bash', 'Kalkan Vuruşu', 2.4, 90, 14, 1.6, 'Block_Attack', 0.4,
-      { initialCooldown: 5, windup: 0.85, telegraph: true, statuses: [{ status: 'slow', duration: 2, magnitude: 0.4 }] }),
+      { initialCooldown: 5, windup: 0.87, telegraph: true, statuses: [{ status: 'slow', duration: 2, magnitude: 0.4 }] }),
     aoe('les_zb_wrath', "Zolramus'un Gazabı", 'self_aoe', 6, 6, 20, 2.0, 2.8, 'shadow', 'Block_Attack', 0.4,
       { initialCooldown: 8, castTime: 2.0, vfx: 'shadow_burst' }),
   ],
@@ -199,9 +199,9 @@ add({
   abilities: [
     proj('les_zs_bolt', 'Nekrotik Ok', 16, 20, 9, 2.0, 2.0, 'shadow', 'shadow_projectile', 'Spellcast_Shoot', 0.3,
       { castTime: 2.0, interruptible: true, kick: 2, initialCooldown: 3, statuses: [{ status: 'necrotic', duration: 8, stacks: 4 }], sfx: 'shadow_cast' }),
-    aoe('les_zs_well', 'Gölge Kuyusu', 'ground_aoe', 3, 18, 12, 0.8, 1.4, 'shadow', 'Spellcast_Long', 0.6,
+    aoe('les_zs_well', 'Gölge Kuyusu', 'ground_aoe', 3, 18, 12, 0.91, 1.4, 'shadow', 'Spellcast_Long', 0.6,
       { initialCooldown: 6, vfx: 'shadow_ground', params: { target: 1, persist: 8, tick: 1, persistCoef: 0.5 } }),
-    aoe('les_zs_nova', 'Ruh Patlaması', 'self_aoe', 4.5, 0, 14, 0.85, 1.6, 'shadow', 'Spellcast_Long', 0.6,
+    aoe('les_zs_nova', 'Ruh Patlaması', 'self_aoe', 4.5, 0, 14, 0.91, 1.6, 'shadow', 'Spellcast_Long', 0.6,
       { initialCooldown: 8, vfx: 'shadow_burst' }),
   ],
 });
@@ -210,7 +210,7 @@ add({
   hp: 4.6, dmg: 1.7, speed: 5.4, radius: 0.8, aggro: 10, forces: 10, anims: A_SKEL_COMBAT, resist: R_NECRO, ai: { bonePile: 12 },
   visual: { attach: [{ url: WPN('Skeleton_Axe'), bone: 'handslot.r', pos: [0, 0, 0] }, { url: WPN('Skeleton_Axe'), bone: 'handslot.l', pos: [0, 0, 0] }],
     eyeEmissive: 0xb070ff, runRef: 7 },
-  basic: cone('les_zh_axe', 'Kemik Satırı', 3.0, 100, 4.0, 1.3, 'Dualwield_Melee_Attack_Slice', 0.3, { windup: 0.7 }),   // 3-hit, summed
+  basic: cone('les_zh_axe', 'Kemik Satırı', 3.0, 100, 4.0, 1.3, 'Dualwield_Melee_Attack_Slice', 0.3, { windup: 0.79 }),   // 3-hit, summed
   abilities: [
     line('les_zh_spear', 'Kemik Mızrağı', 14, 1.6, 11, 1.05, 2.4, 'physical', '1H_Melee_Attack_Stab', 0.4,
       { initialCooldown: 4, statuses: [bleed(3, 0.3, 10)], dispel: 'bleed' }),
@@ -230,7 +230,7 @@ add({
   abilities: [
     heal('les_zsf_mend', 'Kemik Şifası', 2.2, 9, 0.25, 'Spellcast_Raise', 0.5, { kick: 2, initialCooldown: 4 }),
     buff('les_zsf_ward', 'Ruh Kalkanı', 1.6, 16, [{ status: 'shield', duration: 8 }], 'Spellcast_Raise', 0.5, { kick: 1 }),
-    aoe('les_zsf_shrap', 'Kemik Şarapneli', 'self_aoe', 4, 0, 12, 0.75, 1.2, 'physical', 'Spellcast_Shoot', 0.4, { initialCooldown: 7 }),
+    aoe('les_zsf_shrap', 'Kemik Şarapneli', 'self_aoe', 4, 0, 12, 0.91, 1.2, 'physical', 'Spellcast_Shoot', 0.4, { initialCooldown: 7 }),
   ],
 });
 
@@ -277,7 +277,7 @@ function lesBoss(s: BossSpec, p: Posture): void {
 
 lesBoss({
   id: 'les_boss_curukkemik', name: 'Çürükkemik', title: 'Hasat Çukurunun Dikişli Devi', model: LES_MODEL.curukkemik.model,
-  scale: LES_MODEL.curukkemik.scale, tint: LES_MODEL.curukkemik.tint, role: 'melee', hp: 95, dmg: 2.4, speed: 4.4, radius: 1.7, enrage: 300,
+  scale: LES_MODEL.curukkemik.scale, tint: LES_MODEL.curukkemik.tint, role: 'melee', hp: 60, dmg: 2.4, speed: 4.4, radius: 1.7, enrage: 300,
   arenaR: 28, loot: 'loot_mp_les_b1', anims: LES_MODEL.curukkemik.anims, resist: { poison: 0.9, physical: 0.1, fire: -0.15, holy: -0.25 },
   visual: { eyeEmissive: GREEN, runRef: 4.4, glow: GREEN },
   basic: cone('les_cur_claw', 'Pençe', 5, 110, 3.2, 1.0, 'Attack', 0.6, { windup: 0.7, telegraph: true }),
@@ -301,7 +301,7 @@ lesBoss({
 
 lesBoss({
   id: 'les_boss_hasatci_amarth', name: 'Hasatçı Amarth', title: "Cesaret'in Düşüşünün Hasatçısı", model: LES_MODEL.hasatci_amarth.model,
-  scale: LES_MODEL.hasatci_amarth.scale, tint: LES_MODEL.hasatci_amarth.tint, role: 'melee', flying: true, hover: 1.2, hp: 112, dmg: 2.2,
+  scale: LES_MODEL.hasatci_amarth.scale, tint: LES_MODEL.hasatci_amarth.tint, role: 'melee', flying: true, hover: 1.2, hp: 72, dmg: 2.2,
   speed: 5.2, radius: 1.6, enrage: 330, arenaR: 32, loot: 'loot_mp_les_b2', anims: LES_MODEL.hasatci_amarth.anims,
   resist: { shadow: 0.75, frost: 0.5, holy: -0.25, fire: -0.1 }, visual: { eyeEmissive: GREEN, glow: 0x9060ff },
   basic: cone('les_amr_bite', 'Kemikdiş Isırığı', 6, 110, 3.4, 1.0, 'Attack', 0.5, { windup: 0.7, telegraph: true }),
@@ -363,7 +363,7 @@ lesBoss({
 
 lesBoss({
   id: 'les_boss_ayazbaglayan_nalthor', name: 'Ayazbağlayan Nalthor', title: 'Kadim Mührün Buz Bağlayıcısı', model: LES_MODEL.ayazbaglayan.model,
-  scale: LES_MODEL.ayazbaglayan.scale, tint: LES_MODEL.ayazbaglayan.tint, role: 'caster', hp: 165, dmg: 2.5, speed: 5.0, radius: 1.1, enrage: 360,
+  scale: LES_MODEL.ayazbaglayan.scale, tint: LES_MODEL.ayazbaglayan.tint, role: 'caster', hp: 105, dmg: 2.5, speed: 5.0, radius: 1.1, enrage: 360,
   arenaR: 36, loot: 'loot_mp_les_b4', anims: LES_MODEL.ayazbaglayan.anims, resist: { frost: 0.9, shadow: 0.5, fire: -0.25, holy: -0.1 },
   visual: { eyeEmissive: 0x80d0ff, glow: 0x80c8ff },
   basic: cone('les_nal_blade', 'Don Kılıcı', 5.5, 100, 3.4, 1.0, 'Attack', 0.5, { windup: 0.7, telegraph: true }),

@@ -1,7 +1,7 @@
 import type { DungeonDef, PackDef, RoomDef, TileRect } from '../../types/dungeons';
 import { GEN } from '../enemyModels';
 import {
-  bossAt, chandelier, circleZone, decorator, dg, door, gp, kc, kf, kg, ks, lt, makeCtx, pk, plateau, pt, Props, ramp, rectsOf,
+  bossAt, chandelier, circleZone, decorator, dg, door, gp, kc, kf, kg, ks, lt, makeCtx, pack, pk, plateau, pt, Props, ramp, rectsOf,
   rectZone, room, shPt, stairs, withProps, banner, hw, ip,
 } from './kit';
 
@@ -215,7 +215,8 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
     explicitDecor: true, atmosphere: 'stitch', ambientVfx: 'ambient_shadow_wisps', lightColor: GREEN,
     zones: [
       circleZone('pit', 36.5, 5.5, 3.2, { blocked: true, fall: 'kill', depth: 4, color: 0x0e1a0a, glow: GREEN, glowIntensity: 0.4 }),
-      circleZone('dais', 36.5, 5.5, 2.0, { blocked: false, y: 2.4, color: 0x3a3428, glow: GREEN, glowIntensity: 0.3 }),
+      rectZone('bridge', 31, 5, 11, 1, { blocked: false, y: 17.4, color: 0x3a3428, glow: GREEN, glowIntensity: 0.3 }),
+      circleZone('dais', 36.5, 5.5, 2.0, { blocked: false, y: 17.4, color: 0x3a3428, glow: GREEN, glowIntensity: 0.3 }),
       circleZone('rune', 31, 10, 1.1, { color: 0x1a2a10, glow: GREEN, glowIntensity: 0.5 }),
       circleZone('rune', 36.5, 11.5, 1.1, { color: 0x1a2a10, glow: GREEN, glowIntensity: 0.5 }),
       circleZone('rune', 42, 10, 1.1, { color: 0x1a2a10, glow: GREEN, glowIntensity: 0.5 }),
@@ -311,29 +312,29 @@ const KF = 'les_kafatasi';
 // Packs (section 4.3). `pk(id, room, cx, cz, forces, front, back, extra)`; forces are the sums of the member forces.
 // ---------------------------------------------------------------------------------------------------------------------
 const PACKS: PackDef[] = [
-  pk('les_p01', 'k_giris', 13.5, 57.5, 10, [[KS, 2]], [[KB, 1]]),
+  pack('les_p01', 'k_giris', 13.5, 57.5, undefined, [[KS, -1, 0], [KS, 0, 0], [KB, 1, 0]]),
   pk('les_p02', 'meydan', 19, 52, 13, [[KS, 3]], [[KB, 1]]),
   pk('les_p03', 'meydan', 22.5, 50, 14, [[KS, 2]], [[AR, 2]]),
   pk('les_p04', 'meydan', 26.5, 57, 14, [[KS, 2]], [[KB, 1], [AR, 1]]),
-  pk('les_p05', 'meydan', 17.5, 60.8, 5, [[VT, 1]], [], { patrol: [[17.5, 60.8], [29, 60.8], [29, 61.6], [17.5, 61.6]] }),
+  pack('les_p05', 'meydan', 17.5, 60.8, 5, [[VT, 0.3, 0]], { patrol: [[17.5, 60.8], [29, 60.8], [29, 61.1], [17.5, 61.1]] }),
   pk('les_p06', 'meydan', 23, 57.5, 15, [[CN, 1], [KS, 1]], [], { big: true }),
-  pk('les_p07', 'k_hasat', 31.5, 54.5, 10, [[KS, 2]], [[AR, 1]]),
+  pack('les_p07', 'k_hasat', 32, 54.5, undefined, [[KS, -1.5, 0], [KS, -0.5, 0], [AR, 0.5, 0]]),
   pk('les_p08', 'ambar', 21.5, 44.5, 17, [[KS, 3]], [[KB, 1], [AR, 1]], { optional: true }),
   pk('les_p09', 'ambar', 25.5, 45, 16, [[CN, 1]], [[KB, 1]], { optional: true }),
   pk('les_p10', 'k_toll_a', 40.5, 43.5, 11, [[KS, 1]], [[KB, 1], [AR, 1]]),
   pk('les_p11', 'toll_kapisi', 39.5, 39, 14, [[KS, 2]], [[AR, 2]]),
-  pk('les_p12', 'toll_kapisi', 45, 39.5, 14, [[KS, 2]], [[KB, 2]]),
+  pack('les_p12', 'toll_kapisi', 44.5, 39.5, undefined, [[KS, 0.3, 0.8], [KS, -0.4, 0.8], [KB, 0.3, -0.8], [KB, -0.4, -0.8]]),
   pk('les_p13', 'son_can', 34, 28, 17, [[KS, 3]], [[KB, 1], [AR, 1]]),
-  pk('les_p14', 'son_can', 40.5, 31, 20, [[CN, 1]], [[KB, 2]], { big: true }),
+  pack('les_p14', 'son_can', 40.5, 33.5, undefined, [[CN, 0.3, 1.2], [KB, 0.3, -1.2], [KB, -0.39, -0.86]], { big: true }),
   pk('les_p15', 'son_can', 47, 27, 18, [[KS, 2]], [[AR, 2], [KB, 1]]),
-  pk('les_p16', 'son_can', 33, 34.5, 5, [[VT, 1]], [], { patrol: [[33, 34.5], [50, 34.5], [50, 35.2], [33, 35.2]] }),
-  pk('les_p17', 'can_kulesi', 54.5, 35, 22, [[CN, 1], [KS, 2]], [[AR, 1]], { optional: true }),
-  pk('les_p18', 'k_toll_b', 27.5, 29.5, 14, [[KS, 2]], [[KB, 1], [AR, 1]]),
-  pk('les_p19', 'k_kopru', 15, 19.5, 12, [], [[KB, 1], [AR, 2]]),
+  pack('les_p16', 'son_can', 33, 33, 5, [[VT, 0.3, 0]], { patrol: [[32.5, 33], [36.5, 33], [36.5, 34], [32.5, 34]] }),
+  pk('les_p17', 'can_kulesi', 54.5, 33, 22, [[CN, 1], [KS, 2]], [[AR, 1]], { optional: true }),
+  pack('les_p18', 'k_toll_b', 27.6, 29.5, undefined, [[KS, -1.2, 0], [KS, -0.4, 0], [KB, 0.4, 0], [AR, 1.2, 0]]),
+  pack('les_p19', 'k_kopru', 15, 19.5, undefined, [[KB, -0.9, 0], [AR, -0.3, -0.6], [AR, 0.1, 0.5]]),
   pk('les_p20', 'dikis_kapi', 11, 14, 25, [[DO, 3]], [[LT, 1], [EZ, 1]], { big: true }),
   pk('les_p21', 'dikis_kapi', 17.5, 12, 25, [[DO, 2]], [[LT, 2], [EZ, 1]], { big: true }),
-  pk('les_p22', 'dikis_kapi', 21, 14.8, 10, [[VT, 2]], [], { patrol: [[21, 14.8], [23, 14.8], [23, 17.4], [21, 17.4]] }),
-  pk('les_p23', 'k_atolye', 25.5, 12.5, 20, [[DO, 2]], [[LT, 1], [EZ, 1]]),
+  pk('les_p22', 'dikis_kapi', 21, 14.8, 10, [[VT, 2]], [], { patrol: [[21, 14.8], [23, 14.8], [23, 16.6], [21, 16.6]] }),
+  pack('les_p23', 'k_atolye', 26, 12.5, undefined, [[DO, -1.6, 0], [DO, -0.8, 0], [LT, 0, 0], [EZ, 0.8, 0]]),
   pk('les_p24', 'vana_odasi', 3.5, 12, 20, [[DO, 3]], [[EZ, 1]], { optional: true, dormant: { kind: 'egg', wakeRadius: 6 } }),
   pk('les_p25', 'kan_havuzu', 10, 7, 25, [[DO, 2]], [[LT, 2], [EZ, 1]], { optional: true }),
   pk('les_p26', 'zolramus_kapi', 53, 6, 17, [[ZB, 1]], [[ZS, 2]]),
@@ -344,10 +345,9 @@ const PACKS: PackDef[] = [
   pk('les_p31', 'kemik_nef', 62, 23.5, 17, [[ZH, 1], [ZB, 1]], [], { big: true }),
   pk('les_p32', 'heykel_galerisi', 71, 20, 20, [[ZH, 1]], [[ZS, 1], [ZF, 1]]),
   pk('les_p33', 'heykel_galerisi', 76, 23.5, 17, [[ZB, 1]], [[ZS, 1], [ZF, 1]]),
-  pk('les_p34', 'heykel_galerisi', 77, 30.5, 15, [[ZH, 1]], [[ZS, 1]]),
+  pk('les_p34', 'heykel_galerisi', 77, 29.5, 15, [[ZH, 1]], [[ZS, 1]]),
   pk('les_p35', 'k_cikis', 72.5, 33.5, 10, [], [[ZS, 2]]),
   pk('les_p36', 'zolramus_kapi', 62, 12, 10, [[KF, 5]], []),
-  pk('les_p37', 'can_kulesi', 57.5, 31.5, 12, [], [[AR, 2], [KB, 1]], { optional: true }),
 ];
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -376,35 +376,29 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.at(M_BRAZIER, 9, 55.5, { scale: 1.2, collide: true, light: lt(GOLD, 1.6, 9, true) });
     q.at(kc('siege-ballista-demolished'), 6, 61, { scale: 1, rot: 35 });
     q.at(kg('column-large'), 5, 56, { scale: 1, tint: 0xf0e4c8, collide: true });
-    q.at(kg('column-large'), 11, 62, { scale: 1, tint: 0xf0e4c8, collide: true });
     q.at(dg('sword_shield_gold'), 4.3, 58, { y: 2.6 });
     q.at(dg('sword_shield_gold'), 4.3, 60, { y: 2.6 });
     q.list.push(...banner(rect(4, 54, 8, 8), 'w', [56, 60], { model: M_BANNER_GOLD, y: 5 }));
-    q.at(FB.gokbekci.model, 3.6, 62, { scale: FB.gokbekci.scale, tint: 0x8a8a88 });   // dormant, decor (no device)
     q.at(M_BONE_A, 10.5, 61, { scale: 1 });
   });
 
   p('k_giris', (q) => {
     q.torches(rect(12, 57, 4, 2), 'n', [13, 15], GOLD);
-    q.at(M_BROKEN_PILLAR, 14.6, 59.2, { scale: 1.2, tint: 0xd8d0b8, collide: true });
   });
 
   p('meydan', (q) => {
     // The working Gökbekçi Devi (device dev_gd1) and two collapsed decorative golems
     const dev = DEV_GD[0];
     q.at(FB.gokbekci.model, dev[0], dev[1], { scale: FB.gokbekci.scale, tint: FB.gokbekci.tint, collide: true, id: 'dev_gd1', tag: 'device', device: 'dev_gd1' });
-    q.at(FB.gokbekci.model, 13.5, 62.5, { scale: FB.gokbekci.scale, tint: 0x8a8a88, rot: 90, y: -0.3 });
     q.at(FB.gokbekci.model, 26.5, 51.5, { scale: FB.gokbekci.scale, tint: 0x8a8a88, rot: -90, y: -0.3 });
     // Fountain (anima) at the pool centre
     q.at(kf('fountain-round'), 22.5, 54.5, { scale: 3, collide: false });
     q.at(M_CRYSTAL, 22.5, 54.5, { y: 2.2, scale: 0.6, tint: ANIMA, light: lt(ANIMA, 1.4, 8, true) });
     // Market ruin and fallen wardens
-    q.at(gp('market_stall'), 20.5, 62, { rot: 20, scale: 1 });
-    q.at(gp('market_stall'), 28, 62.5, { rot: -15, scale: 1 });
+    q.at(gp('market_stall'), 20.5, 59.5, { rot: 20, scale: 1 });
+    q.at(gp('market_stall'), 28, 59, { rot: -15, scale: 1 });
     q.at(M_WAGON, 27, 47.5, { rot: 60, scale: 1, collide: true });
     q.at(M_BONE_PILE, 26.4, 47.8, { scale: 2, tint: 0xd8d0b8 });
-    q.at(M_CRATES, 18, 46.5, { collide: true });
-    q.at(M_BARREL, 30, 61.5, { collide: true });
     q.at(M_SACKS, 21, 61.6, {});
     q.at(M_SKULL, 24, 60.3, {});
     q.at(M_SKULL, 28.5, 58, {});
@@ -413,7 +407,6 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     // Pillars, braziers (green when plague, gold here), banners
     q.at(M_PILLAR, 16.5, 49.5, { scale: 1.2, collide: true, tint: 0xd8d0b8 });
     q.at(M_PILLAR, 29.5, 49.5, { scale: 1.2, collide: true, tint: 0xd8d0b8 });
-    q.at(M_BROKEN_PILLAR, 16.5, 62.5, { scale: 1.2, collide: true });
     q.at(M_BRAZIER, 18.5, 49.5, { scale: 1.2, collide: true, light: lt(GREEN, 1.6, 8, true) });
     q.at(M_BRAZIER, 27.5, 49.5, { scale: 1.2, collide: true, light: lt(GREEN, 1.6, 8, true) });
     q.list.push(...banner(rect(16, 48, 14, 14), 'n', [19, 23, 27], { model: M_BANNER, y: 6, tint: 0x4a2870 }));
@@ -421,7 +414,7 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
   });
 
   p('ambar', (q) => {
-    q.row(M_BARREL, 21.5, 43.2, 27.5, 43.2, 4, { collide: true, tint: 0x90b060 });
+    q.row(M_BARREL, 23.5, 43.2, 27.5, 43.2, 3, { collide: true, tint: 0x90b060 });
     q.at(M_CRATES, 26.5, 47, { collide: true });
     q.at(M_SACKS, 22.5, 47, {});
     q.at(dg('shelf_large'), 20.5, 45.5, { rot: 90, collide: true });
@@ -444,10 +437,10 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.at(M_CAULDRON, 37.2, 57, { scale: 1.3, tint: 0x9aff50, light: lt(GREEN, 1.2, 6, true) });
     q.at(M_CAULDRON, 46.5, 58.5, { scale: 1.3, tint: 0x9aff50, light: lt(GREEN, 1.2, 6, true) });
     q.at(FB.et_kancasi.model, 39, 48, { scale: 1.2, y: 3.4, tint: FB.et_kancasi.tint });
-    q.at(FB.et_kancasi.model, 45, 60, { scale: 1.2, y: 3.4, tint: FB.et_kancasi.tint });
-    q.at(M_CHAINS, 48, 52, { y: 0 });
-    q.at(hw('tree_dead_large'), 36, 60, { scale: 1.2 });
-    q.at(hw('tree_dead_large'), 49, 46.6, { scale: 1.2 });
+    q.at(FB.et_kancasi.model, 45, 59, { scale: 1.2, y: 3.4, tint: FB.et_kancasi.tint });
+    q.at(M_CHAINS, 47, 50, { y: 0 });
+    q.at(hw('tree_dead_large'), 36, 59, { scale: 1.2 });
+    q.at(hw('tree_dead_large'), 46, 46.8, { scale: 1.2 });
     q.at(gp('well'), 47.5, 52.5, { collide: false, scale: 1.2 });
     q.torches(rect(34, 46, 14, 14), 'n', [38, 44], GREEN);
   });
@@ -461,8 +454,8 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     // Gatehouse: the wrecked siege machines, the Devi dev_gd2 by the west wall (the device_lock door)
     const dev = DEV_GD[1];
     q.at(FB.gokbekci.model, dev[0], dev[1], { scale: FB.gokbekci.scale, tint: FB.gokbekci.tint, collide: true, id: 'dev_gd2', tag: 'device', device: 'dev_gd2' });
-    q.at(kc('siege-catapult-demolished'), 44, 42, { scale: 1 });
-    q.at(kc('siege-trebuchet-demolished'), 41.5, 42.5, { scale: 1 });
+    q.at(kc('siege-catapult-demolished'), 43.5, 40, { scale: 1 });
+    q.at(kc('siege-trebuchet-demolished'), 41.5, 40, { scale: 1 });
     q.at(dg('rubble_large'), 37.5, 41, {});
     q.at(dg('rubble_large'), 45, 37.5, {});
     q.list.push(...banner(rect(36, 36, 10, 6), 'e', [38, 40], { model: M_BANNER_GOLD, y: 5 }));
@@ -536,7 +529,6 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.at(M_CHAINS, 12, 11, { y: 0 });
     q.at(M_CHAINS, 20, 11, { y: 0 });
     q.at(FB.ameliyat_masasi.model, 13, 16, { scale: 1, tint: FB.ameliyat_masasi.tint, collide: true });
-    q.at(FB.ameliyat_masasi.model, 21, 16, { scale: 1, tint: FB.ameliyat_masasi.tint, collide: true });
     q.at(M_CAGE, 22.5, 11, { scale: 1 });
     q.at(M_CAULDRON, 10, 12, { scale: 1, tint: GREEN, light: lt(GREEN, 1.2, 6, true) });
     q.at(M_CAULDRON, 18.5, 12.5, { scale: 1, tint: GREEN, light: lt(GREEN, 1.2, 6, true) });
@@ -564,8 +556,8 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
 
   p('dikis_atolye', (q) => {
     // Table island: the operating table on the 8 m platform (the boss sits next to it), slabs and the cages
-    q.at(FB.ameliyat_masasi.model, 36.5, 5.5, { scale: 2, tint: FB.ameliyat_masasi.tint, collide: false, y: 2.4, id: 'dikiset_masasi' });
-    q.at(M_CAULDRON, 35, 4.5, { scale: 1.2, tint: GREEN, y: 2.4, light: lt(GREEN, 1.8, 9, true) });
+    q.at(FB.ameliyat_masasi.model, 36.5, 5.5, { scale: 2, tint: FB.ameliyat_masasi.tint, collide: false, y: 0, id: 'dikiset_masasi' });
+    q.at(M_CAULDRON, 35, 4.5, { scale: 1.2, tint: GREEN, y: 0, light: lt(GREEN, 1.8, 9, true) });
     q.at(ip('psx-dungeon', 'chandelier'), 36.5, 5.5, { y: 9, scale: 1, tint: 0xd8ff80, light: lt(0xd8ff80, 2.2, 12, false) });
     for (const [x, z] of [[31, 13], [42, 13], [45, 6], [28.5, 8]] as [number, number][]) {
       q.at(M_CAGE, x, z, { scale: 1, collide: true });
@@ -589,7 +581,6 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.at(M_BRAZIER, 54, 8, { scale: 1, collide: true, light: lt(VIOLET, 2.0, 11, true) });
     q.at(M_BRAZIER, 61, 8, { scale: 1, collide: true, light: lt(VIOLET, 2.0, 11, true) });
     q.at(M_CRYSTAL_P, 57, 9, { scale: 1, emissive: VIOLET, emissiveIntensity: 0.6 });
-    q.at(M_STATUE, 60, 5.5, { scale: 2.2, tint: 0x4a3a68, collide: true });
     q.at(M_TABLE, 52, 12, { scale: 1, tint: 0xd8d0b8, collide: true });
     q.list.push(...banner(rect(50, 2, 14, 14), 'n', [53, 59], { model: M_BANNER, y: 12, tint: 0x4a2870, scale: 1.4 }));
   });
@@ -603,7 +594,6 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.at(FB.kemik_avize.model, 60, 24, { y: 18, scale: 2.4, tint: VIOLET, light: lt(VIOLET, 1.6, 12, true) });
     q.at(FB.kemik_avize.model, 60, 27, { y: 18, scale: 2.4, tint: VIOLET, light: lt(VIOLET, 1.6, 12, true) });
     for (const x of [55, 65]) {
-      q.at(FB.zol_sutun.model, x, 22, { scale: 2.4, tint: FB.zol_sutun.tint, collide: true, y: 0 });
       q.at(FB.zol_sutun.model, x, 26.5, { scale: 2.4, tint: FB.zol_sutun.tint, collide: true, y: 0 });
     }
     q.at(M_STATUE, 56, 20.5, { scale: 2.2, tint: 0x6a5a98, y: 9 });
@@ -674,7 +664,7 @@ export const LES_UYANISI: DungeonDef = {
   shortName: 'Leş Uyanışı',
   lore: "Kadim Diyar'ın üstündeki Cesaret Tapınağı yüzyıllardır Kadim Mühür'ü kapalı tutar. Leş Tarikatı, Azrakel'in son meclisi, tapınağın üzerine uçan bir kemik zigurat kaldırdı: Gökbekçilerin ruhları hasat ediliyor, ölüler dikişle birbirine bağlanıyor, Ayazbağlayan Nalthor mührü kıran buzu hazırlıyor.",
   levelRange: [50, 60],
-  timerSec: 1620,
+  timerSec: 1800,
   forcesRequired: 430,
   theme: {
     fogColor: 0xd8e6f2, fogNear: 22, fogFar: 90,
