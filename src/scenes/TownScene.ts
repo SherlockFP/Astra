@@ -147,8 +147,15 @@ export class TownScene implements GameScene {
     const gate = TOWN.exits?.find((ex) => ex.id === SOUTH_GATE_ID);
     // leaving the open world through the Esc game menu asks for 'portal': the south gate is where that player really belongs
     const spawnAt = p.spawnAt === 'portal' && sceneFlow.leftOpenWorld && gate ? 'south' : p.spawnAt;
+    // back from Karakır Bozkırı: the East Gate is the way home
+    const eastGate = sceneFlow.leftWorldId === 'karakir_bozkiri' ? TOWN.exits?.find((ex) => ex.id === 'dogu_kapisi') : undefined;
     sceneFlow.leftOpenWorld = false;
-    if (spawnAt === 'south' && gate) {
+    sceneFlow.leftWorldId = undefined;
+    if (spawnAt === 'south' && eastGate) {
+      sx = eastGate.box[0] - 5;
+      sz = (eastGate.box[1] + eastGate.box[3]) / 2;
+      syaw = -Math.PI / 2;
+    } else if (spawnAt === 'south' && gate) {
       // back from the open world: just inside the south gate, facing the town
       sx = (gate.box[0] + gate.box[2]) / 2;
       sz = gate.box[1] - 5;
@@ -404,7 +411,7 @@ export class TownScene implements GameScene {
     if (!ch) return 'Karakter yok.';
     if (to === 'karakir_bozkiri') {
       const questDone = ch.save.flags['q.mq_19_kuzgunkaleye_donus'] === 'done';
-      if (!questDone && ch.level < 30) return 'Doğu Kapısı mühürlü: Kuzgunkale\'ye dönüş görevini bitir (30. seviyede kendiliğinden açılır).';
+      if (!questDone && ch.level < 30) return 'Seviye 30 gerekli: Doğu Kapısı mühürlü (Kuzgunkale\'ye dönüş görevini bitirince de açılır).';
     }
     if (!getDungeon(to)) return 'Bu kapı henüz açılmadı.';
     return null;
@@ -434,7 +441,7 @@ export class TownScene implements GameScene {
     // open-world maps: the party appears at the map's entry, the north edge (tile 80,1 of Sisli Vadi), which is the Kuzgunkale side
     // of the valley, i.e. the world spawn of the South Gate; other zones keep the old trip
     const params: DungeonParams = isOpenWorld(to)
-      ? openWorldParams(to, { type: 'gate', id: SOUTH_GATE_ID })
+      ? openWorldParams(to, { type: 'gate', id: to === 'karakir_bozkiri' ? 'dogu_kapisi' : SOUTH_GATE_ID })
       : {
           dungeonId: to, difficulty: 'normal', keyLevel: 0, seed: (Math.random() * 0x7fffffff) >>> 0 || 1, affixes: [],
           enemyLevel: Math.max(lo, Math.min(hi, lvl)), partySize: Math.max(1, G.net.peers.size || 1), keyOwner: G.net.selfId,

@@ -1421,6 +1421,7 @@ export class DungeonScene implements GameScene {
     this.ready = false;
     this.reaper.flush(this.scene);
     sceneFlow.leftOpenWorld = this.outdoor;
+    sceneFlow.leftWorldId = this.outdoor ? this.def.id : undefined;
     for (const t of this.timeouts) clearTimeout(t);
     this.timeouts = [];
     for (const b of this.bosses.values()) {

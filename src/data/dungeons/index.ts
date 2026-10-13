@@ -5,6 +5,7 @@ import { BUZUL_TAHTI } from './buzul_tahti';
 import { GOLGE_TAPINAGI } from './golge_tapinagi';
 import { SISLI_KORU } from './sisli_koru';
 import { SISLI_VADI } from '../world/sisli_vadi';
+import { KARAKIR_BOZKIRI } from '../world/karakir';
 import { TASKASA } from './taskasa';
 import { PERI_SISLERI } from './peri_sisleri';
 import { YILDIZ_DIVANI } from './yildiz_divani';
@@ -45,13 +46,15 @@ export const MPLUS_POOL: string[] = [
 /**
  * Open-world zones expressed as DungeonDef. Deliberately NOT part of DUNGEONS / DUNGEON_IDS: those drive the keystone UI,
  * portals and M+ scaling. Reach them with getDungeon(id) or OPEN_ZONES.
- * `sisli_koru` (outdoor zone, live until WP2) and `sisli_vadi` (open-world MAP with `world`, GDD_OPENWORLD §9.1; WP1 stub).
+ * `sisli_koru` (outdoor zone, live until WP2), `sisli_vadi` (open-world MAP with `world`, GDD_OPENWORLD §9.1) and `karakir_bozkiri`
+ * (open-world map 2, levels 30-40, data/world/karakir*.ts; entered from the town's East Gate).
  */
 export const OPEN_ZONES: Record<string, DungeonDef> = {
   [SISLI_KORU.id]: SISLI_KORU,
   [SISLI_VADI.id]: SISLI_VADI,
+  [KARAKIR_BOZKIRI.id]: KARAKIR_BOZKIRI,
 };
-export const OPEN_ZONE_IDS: string[] = [SISLI_KORU.id, SISLI_VADI.id];
+export const OPEN_ZONE_IDS: string[] = [SISLI_KORU.id, SISLI_VADI.id, KARAKIR_BOZKIRI.id];
 
 /**
  * Legacy zone id -> current id. The town's South Gate (data/town.ts `guney_kapisi`) leads to 'sisli_vadi' since WP2, so the old

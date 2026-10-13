@@ -13,6 +13,7 @@ import './enemies_kefaret_salonlari';
 import './enemies_yanki_agi';
 import './enemies_buyucu_terasi';
 import { TASKASA_ENEMIES, TASKASA_BOSSES } from './enemies_taskasa';
+import { registerKarakirEnemies } from './enemies_karakir';
 export { ENEMIES, BOSSES };
 Object.assign(ENEMIES, TASKASA_ENEMIES);
 Object.assign(BOSSES, TASKASA_BOSSES);
@@ -1261,5 +1262,8 @@ boss({
   intro: 'Kül olun, ey küçük kemikler!', death: 'Alevler... sönüyor...',
   arena: { cx: 50, cz: 594, w: 56, h: 56, homeX: 50, homeZ: 594 },
 });
+
+// Karakır Bozkırı (levels 30-40): kb_* variants of the ow_* / skel_* bases above, rares, mini-boss and the world boss Ulu-Boz
+registerKarakirEnemies();
 
 export const getEnemyDef = (id: string): EnemyDef | undefined => ENEMIES[id] ?? BOSSES[id];

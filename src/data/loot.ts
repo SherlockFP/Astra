@@ -301,6 +301,8 @@ export const MINIBOSS_TABLES: Record<string, LootTableDef> = {
   loot_mb_r4: { base: 'miniboss', focus: ['ring', 'amulet', 'belt', 'boots'], bonus: mbKalinti('mb_zehra') },
   loot_mb_r5: { base: 'miniboss', focus: ['axe2h', 'helm', 'shoulders', 'chest', 'boots'], bonus: mbKalinti('mb_gorak') },
   loot_mb_r6: { base: 'miniboss', focus: ['staff', 'wand', 'tome', 'helm', 'gloves'], bonus: mbKalinti('mb_valdemar') },
+  // Karakır Bozkırı (levels 30-40)
+  loot_mb_kb_horgan: { base: 'miniboss', focus: ['axe2h', 'helm', 'shoulders', 'chest', 'boots'], bonus: [{ id: 'metin_kalintisi', chance: 1, count: [16, 16] }] },
 };
 
 /** Named rares (GDD 3.5): Nadir x1-2 guaranteed, Metin Kalintisi, one themed bonus; four of them carry a Vadi Efsanevisi (15%). */
@@ -338,12 +340,18 @@ export const RARE_TABLES: Record<string, LootTableDef> = {
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [12, 12] }] },
   loot_rare_sessiz_rahip: { ...RARE_BASE, items: [2, 2],
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [12, 12] }, { id: 'gem_diamond_2', chance: 0.2 }] },
+  // Karakır Bozkırı (levels 30-40)
+  loot_rare_kb_alaca_yele: { ...RARE_BASE, items: [2, 2],
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [14, 14] }, { id: 'gem_topaz_2', chance: 0.3 }] },
+  loot_rare_kb_kor_pehlivan: { ...RARE_BASE, items: [2, 2],
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [16, 16] }, { id: 'buyulu_toz', chance: 1, count: [8, 8] }, { id: 'ejderha_pulu', chance: 0.5, count: [1, 1] }] },
 };
 
 /** World bosses (GDD 3.8): boss rank table (item level = level + 3) plus extra Metin Kalintisi. */
 export const WORLD_BOSS_TABLES: Record<string, LootTableDef> = {
   loot_wb_curukkok: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [8, 12] }] },
   loot_wb_alevkanat: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [12, 18] }] },
+  loot_wb_ulu_boz: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [20, 28] }] },
 };
 
 /** Gather nodes (GDD 5.5): one harvest rolls every entry. Ore = Kara Demir / Buyulu Toz, herb = potions. */
@@ -360,6 +368,15 @@ export const GATHER_TABLES: Record<string, GatherTableDef> = {
   gather_herb_r5: { entries: [{ id: 'pot_hp_3', chance: 1, count: [1, 1] }] },
   gather_ore_r6: { entries: [{ id: 'buyulu_toz', chance: 1, count: [2, 4] }, { id: 'ejderha_pulu', chance: 0.08, count: [1, 1] }] },
   gather_herb_r6: { entries: [{ id: 'pot_hp_3', chance: 1, count: [1, 1] }, { id: 'pot_res_3', chance: 0.5, count: [1, 1] }] },
+  // Karakır Bozkırı (r7..r10)
+  gather_ore_r7: { entries: [{ id: 'kara_demir', chance: 1, count: [4, 6] }, { id: 'buyulu_toz', chance: 0.25, count: [1, 2] }] },
+  gather_herb_r7: { entries: [{ id: 'pot_hp_3', chance: 1, count: [1, 1] }] },
+  gather_ore_r8: { entries: [{ id: 'buyulu_toz', chance: 1, count: [2, 4] }, { id: 'ejderha_pulu', chance: 0.06, count: [1, 1] }] },
+  gather_herb_r8: { entries: [{ id: 'pot_hp_3', chance: 1, count: [1, 1] }, { id: 'pot_res_3', chance: 0.4, count: [1, 1] }] },
+  gather_ore_r9: { entries: [{ id: 'buyulu_toz', chance: 1, count: [2, 4] }, { id: 'ejderha_pulu', chance: 0.08, count: [1, 1] }] },
+  gather_herb_r9: { entries: [{ id: 'pot_hp_3', chance: 1, count: [1, 2] }, { id: 'pot_res_3', chance: 0.5, count: [1, 1] }] },
+  gather_ore_r10: { entries: [{ id: 'buyulu_toz', chance: 1, count: [3, 5] }, { id: 'ejderha_pulu', chance: 0.1, count: [1, 1] }] },
+  gather_herb_r10: { entries: [{ id: 'pot_hp_3', chance: 1, count: [1, 2] }, { id: 'pot_res_3', chance: 0.6, count: [1, 2] }] },
 };
 
 /** Every open-world table is also reachable through the shared registry (LootSystem looks named tables up there). */

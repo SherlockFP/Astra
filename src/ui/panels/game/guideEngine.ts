@@ -23,8 +23,8 @@ export interface GuideAdvice {
 
 /** Open-world zones past the last region (§4.6). They are listed until their content exists. */
 const EXTRA_ZONES: { id: string; name: string; levels: [number, number] }[] = [
-  { id: 'karakir_bozkiri', name: 'Karakır Bozkırı', levels: [30, 37] },
-  { id: 'ayaz_eteği', name: 'Ayaz Eteği', levels: [38, 45] },
+  { id: 'karakir_bozkiri', name: 'Karakır Bozkırı', levels: [30, 40] }, // built: data/world/karakir*.ts (r7..r10, Ayaz Eteği is its r10)
+  { id: 'ayaz_eteği', name: 'Ayaz Eteği (devamı)', levels: [41, 45] },
 ];
 
 /** Below this level the dungeon card reads "unlocks at level N" (§4.6). */

@@ -95,6 +95,10 @@ QUEST_ITEM('item_tas_parcasi', 'Kanyon Taş Parçası', 'Kanyon golemlerinin kı
 QUEST_ITEM('item_kirik_kemik', 'Kırık Kemik', 'Harabelerdeki iskeletlerin kırık kemikleri.', 'item-junk');
 QUEST_ITEM('item_tarikat_muhru', 'Tarikat Mührü', 'Kara Tarikat müritlerinin taşıdığı mühür. Nöbetçiler bunu kanıt sayar.', 'item-scroll-tied', 'uncommon');
 QUEST_ITEM('item_golge_ozu', 'Gölge Özü', 'Gölgelerin dağılırken geride bıraktığı koyu öz.', 'item-crystal-shard', 'rare');
+// Karakır Bozkırı quest items (data/world/karakir_quests.ts)
+QUEST_ITEM('item_bozkir_postu', 'Bozkır Kurdu Postu', 'Bozkır kurtlarının kalın, kum rengi postu. Çoban Kerem kışlık mont için istiyor.', 'item-chest-leather');
+QUEST_ITEM('item_corak_kristali', 'Çorak Kristali', 'Kızıl Çorak yaratıklarının içinden çıkan, ısı saçan kristal.', 'item-crystal', 'uncommon');
+QUEST_ITEM('item_kervan_muhru', 'Eski Kervan Mührü', 'Kayıp bir kervanın mühürü. Avcı Börte yolun nerede kesildiğini bundan okuyabiliyor.', 'item-scroll-tied', 'uncommon');
 
 // ------------------------------------------------------------------ potions (GDD 6.4 / 6.5)
 const POTION_TIER_NAMES = ['Küçük', 'Orta', 'Büyük', 'Güçlü', 'Kadim'];

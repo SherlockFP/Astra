@@ -13,7 +13,7 @@ import { EV, type Pt, type WorldCtx } from './util';
  */
 
 /** Fixed levels of the world bosses (GDD §3.8: Çürükkök 10, Alevkanat 27). */
-export const WORLD_BOSS_LEVEL: Record<string, number> = { wb_curukkok: 10, wb_alevkanat: 27 };
+export const WORLD_BOSS_LEVEL: Record<string, number> = { wb_curukkok: 10, wb_alevkanat: 27, wb_ulu_boz: 40 };
 
 interface BossRec {
   sched: WorldBossSched;
