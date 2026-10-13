@@ -33,7 +33,7 @@ import { ZoneField, type BuiltZone } from './Zones';
 import { OutdoorScenery, outdoorAssetUrls } from './OutdoorBuilder';
 import { buildWorldDecor, worldAssetUrls, type WorldDecorHandle, type WorldDecorHost } from './WorldDecor';
 import { buildFloorStains, buildMotes } from './Grime';
-import { applyShadowPolicy, shouldCastShadow } from '../render/shadowPolicy';
+import { applyShadowPolicy, markFadeable, shouldCastShadow } from '../render/shadowPolicy';
 import { freezeStatic } from '../render/staticTransforms';
 import {
   cobwebTexture,
@@ -971,6 +971,7 @@ class DungeonBuild {
     mesh.castShadow = shouldCastShadow(mesh);
     mesh.receiveShadow = true;
     this.root.add(mesh);
+    markFadeable(mesh);
     this.disposables.push(geo, mat);
   }
 
@@ -1017,6 +1018,7 @@ class DungeonBuild {
     grp.position.set(midx, 0, midz);
     grp.rotation.y = along ? 0 : PI / 2;
     this.root.add(grp);
+    markFadeable(grp);
     this.disposables.push(merged, mat);
 
     // nav cells along the opening line

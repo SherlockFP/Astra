@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { G } from '../game/G';
 import { RNG, hashString } from '../core/utils';
 import { patchPSX } from '../render/psx';
+import { freezeStatic } from '../render/staticTransforms';
 import { TILE_SIZE, type DungeonDef, type LandmarkDef, type RegionTheme, type RoadDef, type VillageDef, type WorldRegion } from '../types/dungeons';
 import { gp, hw, ip, kc, kf, kg, kn, tw } from '../data/dungeons/kit';
 import type { NavGrid } from './NavGrid';
@@ -474,6 +475,7 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
   });
   terrain.mesh.position.set(cx, 0, cz);
   host.root.add(terrain.mesh);
+  freezeStatic(terrain.mesh); // placed once, never moves
   host.disposables.push(terrain);
   const weights = (x: number, z: number) => terrain.weights(x - cx, z - cz);
 

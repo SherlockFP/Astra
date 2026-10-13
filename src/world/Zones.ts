@@ -4,6 +4,7 @@ import { TILE_SIZE, type DungeonDef, type ZoneDef } from '../types/dungeons';
 import type { VfxId } from '../types/vfx';
 import { patchPSX } from '../render/psx';
 import { shouldCastShadow } from '../render/shadowPolicy';
+import { freezeStatic } from '../render/staticTransforms';
 import type { NavGrid } from './NavGrid';
 import type { GlowField } from './Glow';
 import { designToPhysical, type LightPool } from './LightPool';
@@ -358,6 +359,7 @@ export class ZoneField {
           mesh.name = `zone_${bz.kind}_${bz.index}`;
           mesh.frustumCulled = false;
           this.add(mesh);
+          freezeStatic(mesh);
           this.own(g, m);
           if (bz.kind === 'pit' && zd.glow !== undefined) {
             // an unseen glow deep in the shaft: halo + faint light
@@ -375,6 +377,7 @@ export class ZoneField {
           mesh.name = `zone_${bz.kind}_${bz.index}`;
           mesh.frustumCulled = false;
           this.add(mesh);
+          freezeStatic(mesh);
           this.own(g, m);
           if (lava) {
             // lake lighting: halos scattered over the surface + a few real lights (the pool keeps the nearest)
@@ -427,6 +430,7 @@ export class ZoneField {
           mesh.receiveShadow = true;
           mesh.name = `zone_${bz.kind}_${bz.index}`;
           this.add(mesh);
+          freezeStatic(mesh);
           this.own(g, mat);
           if (bz.kind === 'bridge') this.addBridgeRails(deck, bz);
           if (dais && bz.shape === 'circle') this.addRoundDais(bz, base);
@@ -462,6 +466,7 @@ export class ZoneField {
       mesh.name = 'zone_banks';
       mesh.frustumCulled = false;
       this.add(mesh);
+      freezeStatic(mesh);
       this.own(g, mat);
     }
     if (!glowM.empty) {
@@ -472,6 +477,7 @@ export class ZoneField {
       mesh.renderOrder = 3;
       mesh.frustumCulled = false;
       this.add(mesh);
+      freezeStatic(mesh);
       this.own(g, mat);
     }
     if (embers.count) {
@@ -574,6 +580,7 @@ export class ZoneField {
     mesh.receiveShadow = true;
     mesh.name = `bridge_rails_${bz.index}`;
     this.add(mesh);
+    freezeStatic(mesh);
     this.own(g, mat);
   }
 
@@ -609,6 +616,7 @@ export class ZoneField {
     mesh.receiveShadow = true;
     mesh.name = `dais_${bz.index}`;
     this.add(mesh);
+    freezeStatic(mesh);
     this.own(geo, mat);
     // an engraved ring on top
     const ring = new THREE.RingGeometry(r * 0.7, r * 0.74, seg);
@@ -617,6 +625,7 @@ export class ZoneField {
     const rmesh = new THREE.Mesh(ring, rm);
     rmesh.position.set(bz.cx, FLOOR_TOP + hgt + 0.03, bz.cz);
     this.add(rmesh);
+    freezeStatic(rmesh);
     this.own(ring, rm);
   }
 
@@ -687,6 +696,7 @@ export class ZoneField {
     mesh.renderOrder = 1;
     mesh.name = `ice_${bz.index}`;
     this.add(mesh);
+    freezeStatic(mesh);
     this.own(g, mat);
   }
 
@@ -702,6 +712,7 @@ export class ZoneField {
     mesh.name = `${bz.kind}_decal_${bz.index}`;
     mesh.frustumCulled = false;
     this.add(mesh);
+    freezeStatic(mesh);
     this.own(g, m);
     if (lava) {
       this.host.halo.add([bz.cx, 0.5, bz.cz], glow, { size: Math.max(bz.hx, bz.hz) * 2.2, flicker: 0.25, intensity: 0.4 * gi });
@@ -718,6 +729,7 @@ export class ZoneField {
     mesh.name = `dark_patch_${bz.index}`;
     mesh.frustumCulled = false;
     this.add(mesh);
+    freezeStatic(mesh);
     this.own(g, mat);
     const size = Math.max(bz.hx, bz.hz) * 2.3;
     this.host.halo.add([bz.cx, 0.3, bz.cz], glow, { size, flicker: 0.25, intensity: 0.32 * gi });
@@ -774,6 +786,7 @@ export class ZoneField {
     mesh.position.set(bz.cx, FLOOR_TOP + 0.03, bz.cz);
     mesh.name = `vent_${bz.index}`;
     this.add(mesh);
+    freezeStatic(mesh);
     this.own(g, mat);
     this.host.halo.add([bz.cx, 0.45, bz.cz], glow, { size: size * 1.2, flicker: 0.35, intensity: 0.5 * gi });
   }

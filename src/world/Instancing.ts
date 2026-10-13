@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getPiece, loadPieces, type Piece, type PiecePart } from './Pieces';
-import { isShadowCaster } from '../render/shadowPolicy';
+import { isShadowCaster, isFadeableHeight } from '../render/shadowPolicy';
 
 /**
  * Collects static piece placements and turns them into chunked InstancedMeshes: one per
@@ -166,20 +166,27 @@ export class InstanceBatcher {
       const radius = 0.5 * piece.size.length();
       const canCast = g.cast && !piece.hasGlow;
       const casters: Rec[] = [], plain: Rec[] = [];
+      let plainTall = false;
       for (const r of g.recs) {
         const s = matrixScale(r.m);
         const top = r.m.elements[13] + piece.box.max.y * s;
-        (canCast && isShadowCaster(radius * s, top) ? casters : plain).push(r);
+        if (canCast && isShadowCaster(radius * s, top)) casters.push(r);
+        else {
+          plain.push(r);
+          if (isFadeableHeight(piece.size.y * s)) plainTall = true;
+        }
       }
       if (casters.length) this.emit(g, piece, casters, true);
-      if (plain.length) this.emit(g, piece, plain, false);
+      // a solid (cast:true) group's non-caster batch still blocks the camera when an instance is tall enough: flag it for
+      // OccluderFade without splitting it again (no extra draw calls); ground cover / wall decor are cast:false and stay out
+      if (plain.length) this.emit(g, piece, plain, false, g.cast && plainTall);
     }
     this.groups.clear();
     return [...missing];
   }
 
   /** One InstancedMesh per draw of the piece for these instances. */
-  private emit(g: Group, piece: Piece, recs: Rec[], cast: boolean): void {
+  private emit(g: Group, piece: Piece, recs: Rec[], cast: boolean, fadeable = false): void {
     const n = recs.length;
     const anyColor = recs.some((r) => r.c);
     for (const draw of drawsOf(piece, g.skip)) {
@@ -196,6 +203,7 @@ export class InstanceBatcher {
       im.instanceMatrix.needsUpdate = true;
       if (im.instanceColor) im.instanceColor.needsUpdate = true;
       im.castShadow = cast;
+      if (fadeable) im.userData.fadeable = true;
       im.receiveShadow = g.receive;
       // the object transform is identity and never changes (every instance carries its own matrix), so skip the per-frame recompose
       im.matrixAutoUpdate = false;

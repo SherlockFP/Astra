@@ -505,6 +505,7 @@ class TownBuild {
     ops.push({ t: 'line', ch: 'dirt', x0: 0, z0: h - 2, x1: 0, z1: h + 40, w: 7 });
     this.terrain = createTerrain({ half: 280, splatHalf: h + 6, splatRes: 512, seed: this.def.id, ops, cell: 10 });
     this.root.add(this.terrain.mesh);
+    freezeStatic(this.terrain.mesh); // the ground never moves: skip its per-frame matrix compose
     this.disposables.push(this.terrain);
   }
 

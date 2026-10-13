@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { isPSXPatched, patchPSX } from '../render/psx';
+import { FADE_MIN_HEIGHT } from '../render/shadowPolicy';
 
 /**
  * Occluder fade (dungeons and the open world). When a solid scene mesh stands between the orbit camera and the player, it fades
@@ -8,7 +9,8 @@ import { isPSXPatched, patchPSX } from '../render/psx';
  *  - An InstancedMesh instance (the open world batches its trees, rocks, walls and cliffs) is ghosted: the instance is hidden
  *    inside its batch (zero matrix) and a single faded Mesh with the same geometry stands in for it until the view is clear.
  * Hits are sampled ~10 Hz; the alpha eases every frame and a fade holds for a short time after its last hit (no flicker).
- * Only meshes that cast shadows, are opaque and taller than a floor qualify (see collectFadeOccluders). OWNER: player module.
+ * Only opaque meshes that cast shadows or are flagged fadeable (tall static scenery, render/shadowPolicy markFadeable) qualify
+ * (see collectFadeOccluders). OWNER: player module.
  */
 
 /** Opacity of a faded occluder (0 = invisible). */
@@ -20,8 +22,6 @@ const HOLD_SEC = 0.35;
 const EASE = 9;
 /** Faded occluders at once (a corridor can put several walls on the ray). */
 const MAX_FADES = 12;
-/** Candidates shorter than this (m) are floors, rugs, slabs or tufts: never faded. */
-const MIN_HEIGHT = 0.6;
 /** Meshes with a bigger geometry radius (m) are terrain, sky or mountains: never faded. */
 const MAX_RADIUS = 40;
 /** Hits closer than this (m) to the pivot are the player's own surroundings. */
@@ -68,21 +68,25 @@ function isShown(o: THREE.Object3D): boolean {
 }
 
 /**
- * Candidate occluders under `root`: meshes that cast shadows (grass, flowers, reeds and decals do not), are opaque and not
- * multi-material, taller than a floor and not terrain-sized. Instanced batches qualify per piece. Call once per built level.
+ * Candidate occluders under `root`: opaque, not multi-material, not terrain-sized meshes that either cast shadows or are flagged
+ * fadeable (render/shadowPolicy markFadeable: tall static scenery that does not cast). A caster must also be taller than a floor,
+ * since a flagged mesh was measured tall already. Grass, flowers, reeds and decals neither cast nor get flagged. Instanced batches
+ * qualify per piece. Call once per built level.
  */
 export function collectFadeOccluders(root: THREE.Object3D): THREE.Object3D[] {
   const out: THREE.Object3D[] = [];
   root.traverse((o) => {
     const m = o as THREE.Mesh;
-    if (!m.isMesh || !m.castShadow || !m.geometry || m.userData.noFade) return;
+    if (!m.isMesh || !m.geometry || m.userData.noFade) return;
+    const flagged = m.userData.fadeable === true;
+    if (!flagged && !m.castShadow) return;
     const mat = m.material as THREE.Material | THREE.Material[] | undefined;
     if (!mat || Array.isArray(mat) || mat.transparent) return;
     const g = m.geometry;
     if (!g.boundingBox) g.computeBoundingBox();
     if (!g.boundingSphere) g.computeBoundingSphere();
     if (!g.boundingBox || !g.boundingSphere) return;
-    if (g.boundingBox.max.y - g.boundingBox.min.y < MIN_HEIGHT) return;
+    if (!flagged && g.boundingBox.max.y - g.boundingBox.min.y < FADE_MIN_HEIGHT) return;
     if (g.boundingSphere.radius > MAX_RADIUS) return;
     out.push(m);
   });

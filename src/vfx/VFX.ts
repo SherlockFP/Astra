@@ -1,7 +1,17 @@
 import * as THREE from 'three';
 import { Group } from 'three';
+import {
+  FLASH_STEPS,
+  flashable,
+  flashRest,
+  flashVariant,
+  isOwnCopy,
+  shadeFlash,
+  unflashed,
+  type Flashable,
+  type FlashRest,
+} from '../entities/sharedMaterials';
 import { G } from '../game/G';
-import { isPSXPatched, patchPSX } from '../render/psx';
 import type { Rarity } from '../types/common';
 import { VFX_IDS, type DamageNumberKind, type SpawnVfxOpts, type TelegraphKind, type TelegraphShape, type VfxId } from '../types/vfx';
 import { DamageNumbers } from './DamageNumbers';
@@ -528,29 +538,73 @@ class LightPool {
 // Hit flash
 // ---------------------------------------------------------------------------
 
-interface FlashMat {
-  mat: THREE.Material & { emissive?: THREE.Color; emissiveIntensity?: number; color?: THREE.Color };
-  e0: THREE.Color | null;
-  i0: number;
-  c0: THREE.Color | null;
+/**
+ * One material slot of a flashing mesh. A shared (or per-entity) material is swapped for its flash variants while the flash
+ * runs; an own copy (sharedMaterials.copyMeshMaterials) keeps its place and is shaded in place.
+ */
+interface FlashSlot {
+  index: number; // array index, -1 for a single material
+  origin: Flashable; // what the slot holds when no flash runs (never a flash variant)
+  shown: THREE.Material; // what the slot holds now: the origin or the flash variant this flash put there
+  lost: boolean; // something else replaced the slot during the flash: the flash leaves it alone
+  rest: FlashRest | null; // own copies only: the values to put back when the flash ends
 }
 interface FlashState {
+  root: THREE.Object3D; // the model the flash was asked for: the flash ends when it leaves the scene
   t: number;
   dur: number;
   color: THREE.Color;
-  strength: number;
-  mats: FlashMat[];
+  step: number; // the flash step the slots show (-1: none yet)
+  slots: FlashSlot[];
 }
 
-function ownMaterials(mesh: THREE.Mesh): void {
-  if (mesh.userData.vfxOwnMat) return;
-  const clone = (x: THREE.Material): THREE.Material => {
-    const c = x.clone();
-    if (isPSXPatched(x)) patchPSX(c);
-    return c;
-  };
-  mesh.material = Array.isArray(mesh.material) ? mesh.material.map(clone) : clone(mesh.material);
-  mesh.userData.vfxOwnMat = true;
+const materialAt = (mesh: THREE.Mesh, index: number): THREE.Material | undefined =>
+  index < 0 ? (mesh.material as THREE.Material) : (mesh.material as THREE.Material[])[index];
+
+/** Writes one slot. Array materials are replaced, never edited: a restore may still hold the old array. */
+function setMaterialAt(mesh: THREE.Mesh, index: number, next: THREE.Material): void {
+  if (index < 0) {
+    mesh.material = next;
+    return;
+  }
+  const list = (mesh.material as THREE.Material[]).slice();
+  list[index] = next;
+  mesh.material = list;
+}
+
+/** Plans a flash on one mesh: what each flashable material slot stands for. Null when the mesh has nothing to flash. */
+function planMeshFlash(mesh: THREE.Mesh, root: THREE.Object3D, color: THREE.Color, dur: number): FlashState | null {
+  const cur = mesh.material;
+  const list = Array.isArray(cur) ? cur : [cur];
+  const slots: FlashSlot[] = [];
+  list.forEach((x, i) => {
+    if (!x || !flashable(x)) return;
+    const origin = unflashed(x); // a leftover flash variant stands for the material it replaced
+    const own = isOwnCopy(origin);
+    slots.push({ index: Array.isArray(cur) ? i : -1, origin, shown: x, lost: false, rest: own ? flashRest(origin) : null });
+  });
+  return slots.length ? { root, t: 0, dur, color, step: -1, slots } : null;
+}
+
+/** Moves a mesh's swapped slots to the flash variants of `step` (0: the originals). A slot changed by someone else is left alone. */
+function swapFlash(mesh: THREE.Mesh, st: FlashState, step: number): void {
+  for (const s of st.slots) {
+    if (s.rest || s.lost) continue;
+    if (materialAt(mesh, s.index) !== s.shown) {
+      s.lost = true;
+      continue;
+    }
+    const next = step > 0 ? flashVariant(s.origin, st.color, step) : s.origin;
+    if (next === s.shown) continue;
+    setMaterialAt(mesh, s.index, next);
+    s.shown = next;
+  }
+}
+
+/** Ends a flash: the mesh holds its own materials again and own copies get their values back. */
+function endMeshFlash(mesh: THREE.Mesh, st: FlashState): void {
+  swapFlash(mesh, st, 0);
+  for (const s of st.slots) if (s.rest) shadeFlash(s.origin, s.rest, st.color, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -600,7 +654,7 @@ export class VFX {
   private telegraphs: TelegraphFx[] = [];
   private trails: TrailRibbon[] = [];
   private visuals = new Set<ProjectileVisual>();
-  private flashes = new Map<THREE.Object3D, FlashState>();
+  private flashes = new Map<THREE.Mesh, FlashState>();
   private unique = new Map<string, VfxHandle>();
   private warned = new Set<string>();
   private blobMat: THREE.MeshBasicMaterial | null = null;
@@ -914,29 +968,29 @@ export class VFX {
     }
   }
 
-  /** White/red emissive flash on a model (hit feedback). */
+  /**
+   * White/red emissive flash on a model (hit feedback). Shared materials show flash variants (no clones per hit); own copies are
+   * shaded in place; every mesh gets its own materials back when the flash ends. Overlapping flashes share one state per mesh.
+   */
   flash(model: THREE.Object3D, color = 0xffffff, duration = 0.09): void {
     try {
-      let st = this.flashes.get(model);
-      if (!st) {
-        const mats: FlashMat[] = [];
-        model.traverse((o) => {
-          const m = o as THREE.Mesh;
-          if (!m.isMesh || o.userData.vfxShell || o.userData.vfxLayer || o.userData.noFlash) return;
-          ownMaterials(m);
-          for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
-            const mm = mat as FlashMat['mat'];
-            if (mm.emissive) mats.push({ mat: mm, e0: mm.emissive.clone(), i0: mm.emissiveIntensity ?? 1, c0: null });
-            else if (mm.color) mats.push({ mat: mm, e0: null, i0: 1, c0: mm.color.clone() });
+      model.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh || o.userData.vfxShell || o.userData.vfxLayer || o.userData.noFlash) return;
+        const st = this.flashes.get(m);
+        if (st) {
+          st.root = model;
+          st.t = 0;
+          st.dur = Math.max(st.dur * 0.5, duration);
+          if (st.color.getHex() !== color) {
+            st.color.setHex(color);
+            st.step = -1; // re-swap to the variants of the new colour
           }
-        });
-        st = { t: 0, dur: duration, color: new THREE.Color(color), strength: 1, mats };
-        this.flashes.set(model, st);
-      } else {
-        st.t = 0;
-        st.dur = Math.max(st.dur * 0.5, duration);
-        st.color.setHex(color);
-      }
+          return;
+        }
+        const fresh = planMeshFlash(m, model, new THREE.Color(color), duration);
+        if (fresh) this.flashes.set(m, fresh);
+      });
     } catch (e) {
       this.warnOnce('flash', `[vfx] flash failed: ${String(e)}`);
     }
@@ -1082,34 +1136,25 @@ export class VFX {
 
   private updateFlashes(dt: number): void {
     if (!this.flashes.size) return;
-    for (const [model, st] of this.flashes) {
-      st.t += dt;
-      const done = st.t >= st.dur;
-      const k = done ? 0 : Math.pow(1 - st.t / st.dur, 0.7);
-      for (const m of st.mats) {
-        if (m.e0 && m.mat.emissive) {
-          if (done) {
-            m.mat.emissive.copy(m.e0);
-            m.mat.emissiveIntensity = m.i0;
-          } else {
-            m.mat.emissive.copy(st.color);
-            m.mat.emissiveIntensity = m.i0 + 1.4 * k;
-          }
-        } else if (m.c0 && m.mat.color) {
-          if (done) m.mat.color.copy(m.c0);
-          else m.mat.color.copy(m.c0).lerp(st.color, k);
+    for (const [mesh, st] of this.flashes) {
+      try {
+        st.t += dt;
+        if (st.t >= st.dur || !st.root.parent) {
+          endMeshFlash(mesh, st);
+          this.flashes.delete(mesh);
+          continue;
         }
-      }
-      if (done || !model.parent) {
-        if (!done) {
-          for (const m of st.mats) {
-            if (m.e0 && m.mat.emissive) {
-              m.mat.emissive.copy(m.e0);
-              m.mat.emissiveIntensity = m.i0;
-            } else if (m.c0 && m.mat.color) m.mat.color.copy(m.c0);
-          }
+        // the decay is continuous for own copies and steps through the shared variants (quantised, so variants are reused)
+        const k = Math.pow(1 - st.t / st.dur, 0.7);
+        const step = Math.min(FLASH_STEPS, Math.max(1, Math.ceil(k * FLASH_STEPS)));
+        if (step !== st.step) {
+          st.step = step;
+          swapFlash(mesh, st, step);
         }
-        this.flashes.delete(model);
+        for (const s of st.slots) if (s.rest) shadeFlash(s.origin, s.rest, st.color, k);
+      } catch (e) {
+        this.flashes.delete(mesh);
+        this.warnOnce('flashFrame', `[vfx] flash update failed: ${String(e)}`);
       }
     }
   }
@@ -1141,14 +1186,7 @@ export class VFX {
     this.layers.sheetAdd.clear();
     this.lights.clear();
     this.numbers.clear();
-    for (const [, st] of this.flashes) {
-      for (const m of st.mats) {
-        if (m.e0 && m.mat.emissive) {
-          m.mat.emissive.copy(m.e0);
-          m.mat.emissiveIntensity = m.i0;
-        } else if (m.c0 && m.mat.color) m.mat.color.copy(m.c0);
-      }
-    }
+    for (const [mesh, st] of this.flashes) endMeshFlash(mesh, st);
     this.flashes.clear();
   }
 

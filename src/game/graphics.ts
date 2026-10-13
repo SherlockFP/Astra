@@ -90,7 +90,7 @@ export function installGraphics(): void {
 
   // Shadows: the map is drawn on a cadence (and at once after a change), not on every render call. See render/shadowPolicy.
   G.engine.renderer.shadowMap.autoUpdate = false;
-  G.engine.onUpdate(() => scheduleShadowMap(G.engine.renderer.shadowMap), 90, 'shadows');
+  G.engine.onUpdate((_dt, t) => scheduleShadowMap(G.engine.renderer.shadowMap, t), 90, 'shadows');
   G.events.on('scene:changed', () => requestShadowMapUpdate());
 
   applyRender();
