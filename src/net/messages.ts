@@ -182,16 +182,41 @@ export interface LobbyChatMsg {
   trade?: boolean;
 }
 
+/** Social (global lobby): presence announcement. Sender id from the transport meta. `bye` = leaving (character switch / logout). Owner: systems/Social.ts. */
+export interface LobbyPresenceMsg {
+  t: 'lpres';
+  name: string;
+  cls: ClassId;
+  lvl: number;
+  /** Scene / region id (identifier characters only) and an optional display name. */
+  zone: string;
+  zn?: string;
+  bye?: boolean;
+}
+
+/** Social: whisper, sent to ONE peer id (never broadcast). `to` is the target's character name (receiver checks it against its own). */
+export interface LobbyWhisperMsg {
+  t: 'lwhis';
+  name: string;
+  to: string;
+  text: string;
+  cls?: ClassId;
+  lvl?: number;
+}
+
 export type LobbyChannels = {
   ann: RoomAnnouncement;
   unann: RoomUnannounceMsg;
   lchat: LobbyChatMsg;
+  /** Social presence + whispers (systems/Social.ts). */
+  lpres: LobbyPresenceMsg;
+  lwhis: LobbyWhisperMsg;
   /** CM14 Pazar: stall announcements (broadcast), buy requests (to the seller) and sale replies (to the buyer). Owner: systems/Market.ts. */
   shop: ShopAnnounce;
   shopBuy: ShopBuyMsg;
   shopSold: ShopSoldMsg;
 };
-export const LOBBY_CHANNELS = ['ann', 'unann', 'shop', 'shopBuy', 'shopSold'] as const satisfies readonly (keyof LobbyChannels)[];
+export const LOBBY_CHANNELS = ['ann', 'unann', 'lchat', 'lpres', 'lwhis', 'shop', 'shopBuy', 'shopSold'] as const satisfies readonly (keyof LobbyChannels)[];
 
 /* ================================================================================================
  * Control channel 'ctl'

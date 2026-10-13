@@ -106,6 +106,8 @@ export interface GameEvents {
   /** GDD_LIFE §3.8 (L-00): `channel` widened (old `party` / `system` lines unchanged). `to` = whisper target name, `links` ≤ 2. */
   'net:chat': { from: string; text: string; channel: ChatChannel; to?: string; links?: ChatLink[] };
   'net:rooms': Record<string, never>;            // room browser list updated
+  /** Social (systems/Social.ts): the online-player list (G.presence.list()) changed; `count` includes the local player. */
+  'presence:changed': { count: number };
   'party:changed': Record<string, never>;
   'party:readyCheck': { active: boolean };
   /** Host: every party member finished loading the current scene. */
