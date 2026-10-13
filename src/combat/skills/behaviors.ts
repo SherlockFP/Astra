@@ -67,15 +67,15 @@ const rot = (d: [number, number], deg: number): [number, number] => {
 const NO_PARAMS: Record<string, number> = {};
 /** A special of the CASTER: the local character's for own casts, the owner's announced ids (default params) for remote replays. */
 const csp = (c: CastCtx, id: string): Record<string, number> | null => (c.remote ? (c.rsp?.has(id) ? NO_PARAMS : null) : sp(id));
-const typeColor = (c: CastCtx): number => TYPE_COLORS[c.def.damage?.type ?? 'physical'];
-const at = (p: Actor, y: number): [number, number, number] => [p.position.x, p.position.y + y, p.position.z];
-const dist2 = (a: { x: number; z: number }, b: { x: number; z: number }) => Math.hypot(a.x - b.x, a.z - b.z);
-const norm = (x: number, z: number): [number, number] => {
+export const typeColor = (c: CastCtx): number => TYPE_COLORS[c.def.damage?.type ?? 'physical'];
+export const at = (p: Actor, y: number): [number, number, number] => [p.position.x, p.position.y + y, p.position.z];
+export const dist2 = (a: { x: number; z: number }, b: { x: number; z: number }) => Math.hypot(a.x - b.x, a.z - b.z);
+export const norm = (x: number, z: number): [number, number] => {
   const l = Math.hypot(x, z);
   return l > 1e-5 ? [x / l, z / l] : [0, 1];
 };
 
-function swingVfx(c: CastCtx, range: number, arc: number, big: boolean): void {
+export function swingVfx(c: CastCtx, range: number, arc: number, big: boolean): void {
   const { caster, def, sys } = c;
   const [dx, dz] = c.dir;
   const id: VfxId = (def.vfx?.trail as VfxId) ?? (big ? 'slash_arc_big' : 'slash_arc');
@@ -85,7 +85,7 @@ function swingVfx(c: CastCtx, range: number, arc: number, big: boolean): void {
   sys.vfx(id, [caster.position.x, caster.position.y + 1.15, caster.position.z], { dir: [dx, 0, dz], scale: s, color: typeColor(c) });
 }
 
-function impactVfx(c: CastCtx, e: Actor, dir: [number, number], n: number): void {
+export function impactVfx(c: CastCtx, e: Actor, dir: [number, number], n: number): void {
   const id = c.def.vfx?.impact;
   if (!id || n > 4) return;
   // per-target impacts must not draw skill-sized rings under every enemy
@@ -93,7 +93,7 @@ function impactVfx(c: CastCtx, e: Actor, dir: [number, number], n: number): void
 }
 
 /** Strike a list of enemies (nearest first, max N) and apply resource/combo gains once. */
-function strikeMany(c: CastCtx, list: Enemy[], max: number, o?: Parameters<SkillSystem['strike']>[2]): DamageResult[] {
+export function strikeMany(c: CastCtx, list: Enemy[], max: number, o?: Parameters<SkillSystem['strike']>[2]): DamageResult[] {
   const { caster, sys } = c;
   list.sort((a, b) => dist2(a.position, caster.position) - dist2(b.position, caster.position));
   const out: DamageResult[] = [];
@@ -144,7 +144,7 @@ function assistDir(c: CastCtx, maxDeg = 4): [number, number] {
   return assistAim(c, maxDeg).dir;
 }
 
-function muzzle(c: CastCtx, d: [number, number], fwd = 0.9, y = 1.35): [number, number, number] {
+export function muzzle(c: CastCtx, d: [number, number], fwd = 0.9, y = 1.35): [number, number, number] {
   const p = c.caster.position;
   return [p.x + d[0] * fwd, p.y + y, p.z + d[1] * fwd];
 }
@@ -153,7 +153,7 @@ function muzzle(c: CastCtx, d: [number, number], fwd = 0.9, y = 1.35): [number, 
  * Everything inside a circle that is an alive enemy. `y` is the reference feet height (ENGINE_VERTICALITY §12): the caster's
  * y for caster-centred shapes, the ground plane under a ground point (`groundAt`), or the live projectile / entity y.
  */
-const enemiesIn = (x: number, z: number, r: number, y: number | null): Enemy[] => (G.world ? G.world.enemiesInRadius({ x, z }, r, y) : []);
+export const enemiesIn = (x: number, z: number, r: number, y: number | null): Enemy[] => (G.world ? G.world.enemiesInRadius({ x, z }, r, y) : []);
 
 /** Ground plane height under a point (ENGINE_VERTICALITY §12, ground-target AoE). null without a world; flat worlds ignore it. */
 export const groundAt = (x: number, z: number): number | null => (G.world ? G.world.groundY(x, z) : null);
@@ -496,7 +496,7 @@ const summon: Behavior = {
 };
 
 /** The live target of a cast: the picked soft/hard target (local) or the owner's announced target (remote replay). */
-function castTarget(c: CastCtx): Actor | null {
+export function castTarget(c: CastCtx): Actor | null {
   if (c.target && !c.target.isDead) return c.target;
   const id = c.aim.targetId;
   const t = id !== null && id !== undefined && G.world ? G.world.getActor(id) : undefined;
@@ -1656,6 +1656,15 @@ import './rogueKit';
 import './warlockKit';
 // PM-00b (docs/kits/plate-melee.md §g): plate-melee engine behaviours (multi_strike, grip, divine_toll, shield_block, heal_self_recent)
 import './plateKit';
+// NC48 (GDD_CLASSES_V2 §14): shared behaviours (chain_projectile, pip_finisher, target_status, channel_cone, beam_drain,
+// orbit_hammers) and the per-class behaviour stubs NC49-NC53 fill (monk, archer, paladin, necromancer, warlock).
+import './sharedBehaviors';
+import './behaviors_monk';
+import './behaviors_archer';
+import './behaviors_paladin';
+import './behaviors_necromancer';
+import './behaviors_warlock';
+import './minionBehaviors';
 import { mageHooks } from '../specs/mage';
 import { registerSpecHooks } from '../specials';
 for (const trait of mageHooks.traits) registerSpecHooks(trait, mageHooks);

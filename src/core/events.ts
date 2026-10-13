@@ -157,6 +157,8 @@ export interface GameEvents {
   // ---- GDD_CLASSES_V2 (NC01, append-only). Emitted by combat (pips, minions, corpses); feedback modules subscribe.
   /** A secondary pip counter (Çi, Kutsal Güç, Ruh Parçası, Kombo) changed on the LOCAL player (HUD PipBar). */
   'pips:changed': { id: PipId; points: number; max: number };
+  /** NC46 (Auras): the LOCAL player's active party aura changed (`status` null = off). Auras.ts emits it on every change. */
+  'aura:changed': { playerId: EntityId; status: StatusId | null };
   /** A minion / pet / summon entered the world. */
   'minion:spawned': { id: EntityId; defId: string; ownerId: EntityId };
   /** A minion died (hp <= 0): death vfx and the skeleton corpse hook (GDD_CLASSES_V2 §1.5 rule 3). */

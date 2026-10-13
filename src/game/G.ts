@@ -11,6 +11,7 @@ import type { UI } from '../ui/UI';
 import type { NetSession } from '../net/NetSession';
 import type { Combat } from '../combat/Combat';
 import type { SkillSystem } from '../combat/SkillSystem';
+import type { Minions } from '../combat/Minions';
 import type { HitShapes } from '../combat/HitShapes';
 import type { LootSystem } from '../systems/LootSystem';
 import type { Progression } from '../systems/Progression';
@@ -19,6 +20,7 @@ import type { QuestSystem } from '../systems/Quests';
 import type { TalentSystem } from '../systems/Talents';
 import type { Professions } from '../systems/Professions';
 import type { ProcEngine } from '../combat/Procs';
+import type { Auras } from '../combat/Auras';
 import type { CharacterState } from '../systems/CharacterState';
 import type { World } from '../world/World';
 import type { Player } from '../entities/Player';
@@ -46,6 +48,8 @@ export interface Services {
   net: NetSession;
   combat: Combat;
   skills: SkillSystem;
+  /** GDD_CLASSES_V2 §1.5 (NC41): minion / pet / summon manager (caps, summon, commands, respawn). Ticked from Game.ts. */
+  minions: Minions;
   hitShapes: HitShapes;
   loot: LootSystem;
   progression: Progression;
@@ -56,6 +60,8 @@ export interface Services {
   talents?: TalentSystem;
   /** GDD_TALENTS (T0): proc engine for talent procs and triggers (combat/Procs.ts). Stub until T4. */
   procs?: ProcEngine;
+  /** GDD_CLASSES_V2 NC46: party auras (combat/Auras.ts). Created by Game.ts with the combat services. */
+  auras?: Auras;
   /** GDD_LIFE (L-00): gathering and crafting service (systems/Professions.ts). Stub until L-05; created by Game.ts then. */
   professions?: Professions;
   character: CharacterState | null;

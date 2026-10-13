@@ -30,6 +30,8 @@ export interface MinionDef {
   attacks: MinionAttack[]; aggro: number; follow: [number, number]; leash: number;
   life?: number;               // seconds (timed summons)
   spawnVfx?: VfxId; spawnSfx?: SfxId; deathVfx?: VfxId;
+  /** Free re-summon of a dead pet / demon (no cast): seconds until it returns, `scene` after a scene change (GDD_CLASSES_V2 §1.5 rule 8). */
+  respawn?: { dead: number; scene?: number };
 }
 
 /**

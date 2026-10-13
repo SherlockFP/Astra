@@ -4,6 +4,7 @@ import type { Entity } from '../entities/Entity';
 import type { Actor } from '../entities/Actor';
 import type { Player } from '../entities/Player';
 import type { Enemy } from '../entities/Enemy';
+import type { Minion } from '../entities/Minion';
 import { HOST_DYNAMIC_ID_BASE, LOCAL_ID_BASE, type EntityId, type Team } from '../types/common';
 
 const _v = new THREE.Vector3();
@@ -38,6 +39,8 @@ export class World {
   /** Fast lists maintained on add/remove. */
   readonly players: Player[] = [];
   readonly enemies: Enemy[] = [];
+  /** GDD_CLASSES_V2 §1.5 (NC39): owned minions / pets / summons in this world (kind 'minion'), maintained like `enemies`. */
+  readonly minions: Minion[] = [];
   localPlayer: Player | null = null;
   private nextLocalId = LOCAL_ID_BASE;
   private nextHostId = HOST_DYNAMIC_ID_BASE;
@@ -71,6 +74,7 @@ export class World {
     this.entities.set(e.id, e);
     if (e.kind === 'player') this.players.push(e as unknown as Player);
     else if (e.kind === 'enemy') this.enemies.push(e as unknown as Enemy);
+    else if (e.kind === 'minion') this.minions.push(e as unknown as Minion);
     e.onAdded(this);
     return e;
   }
@@ -98,6 +102,9 @@ export class World {
     } else if (e.kind === 'enemy') {
       const i = this.enemies.indexOf(e as unknown as Enemy);
       if (i >= 0) this.enemies.splice(i, 1);
+    } else if (e.kind === 'minion') {
+      const i = this.minions.indexOf(e as unknown as Minion);
+      if (i >= 0) this.minions.splice(i, 1);
     }
     e.onRemoved();
   }

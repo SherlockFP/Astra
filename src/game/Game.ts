@@ -12,6 +12,7 @@ import { UI } from '../ui/UI';
 import { NetSession } from '../net/NetSession';
 import { Combat } from '../combat/Combat';
 import { SkillSystem } from '../combat/SkillSystem';
+import { Minions } from '../combat/Minions';
 import { HitShapes } from '../combat/HitShapes';
 import { LootSystem } from '../systems/LootSystem';
 import { Progression } from '../systems/Progression';
@@ -19,6 +20,7 @@ import { MythicPlus } from '../systems/MythicPlus';
 import { QuestSystem } from '../systems/Quests';
 import { TalentSystem } from '../systems/Talents';
 import { ProcEngine } from '../combat/Procs';
+import { Auras } from '../combat/Auras';
 import { LoadingScene } from '../scenes/LoadingScene';
 import { MenuScene } from '../scenes/MenuScene';
 import { TownScene } from '../scenes/TownScene';
@@ -53,6 +55,8 @@ export function createServices(): void {
   G.net = new NetSession();
   G.combat = new Combat();
   G.skills = new SkillSystem();
+  G.minions = new Minions();
+  G.auras = new Auras();
   G.hitShapes = new HitShapes();
   // QuestSystem before LootSystem: LootSystem creates one itself if missing (avoid a duplicate subscriber)
   G.quests = new QuestSystem();
@@ -94,7 +98,9 @@ export function installServiceUpdates(): void {
   e.onUpdate((dt) => {
     if (!G.world) return;
     G.skills.update(dt);
+    G.auras?.update(dt);
     G.combat.update(dt);
+    G.minions.update(dt);
     G.hitShapes.update(dt);
     G.mplus.update(dt);
     G.loot.update(dt);
