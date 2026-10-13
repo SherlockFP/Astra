@@ -9,7 +9,7 @@
  * Band = 5 levels (1-5, 6-10, ..., 56-59). Per band:
  *   XP to cross     sum of xpToNext(L) over the band's levels (the XP that must be earned to cross the band)
  *   quest XP        one-time quests of the band (main / side / region): xpPct x xpToNext(quest level), and its % of the band
- *                   target ~35 % (allowed 25-45 %)
+ *                   target ~35 % (allowed 25-45 %; band 1-5 is the tutorial band and allows 25-60 %)
  *   dailies         daily quests of the band: count, XP if every one is done once, average % of a level per daily (target 5-8 %)
  *   kills           Sıradan (rank trash) and Sürü (swarm) kills to cross the band at the same level
  *
@@ -73,6 +73,8 @@ function mobLevel(id, fallback) {
 const CAP = LEVEL_CAP;
 const BANDS = [];
 for (let lo = 1; lo < CAP; lo += 5) BANDS.push([lo, Math.min(lo + 4, CAP - 1)]);
+/** One-time quest XP % range per band: bands 6+ 25-45 (ideal 35); band 1-5 is the tutorial band, 25-60. */
+const QUEST_PCT = (lo) => (lo === 1 ? { min: 25, max: 60 } : { min: 25, max: 45 });
 
 const rows = BANDS.map(([lo, hi]) => {
   const levels = range(lo, hi);
@@ -88,6 +90,7 @@ const rows = BANDS.map(([lo, hi]) => {
     need,
     main, side, region, oneTime,
     oneTimePct: need ? (100 * oneTime) / need : 0,
+    quest: QUEST_PCT(lo),
     dailies: dailies.length,
     dailyXp,
     dailyPct: avg(dailies.map((q) => q.reward.xpPct)),
@@ -131,14 +134,14 @@ const f = (n, w) => String(n).padStart(w);
 const p1 = (n) => (Number.isFinite(n) ? n.toFixed(1) : '-');
 const kinds = QUESTS.reduce((m, q) => ((m[kindOf(q)] = (m[kindOf(q)] ?? 0) + 1), m), {});
 console.log(`pace-check | ${QUESTS.length} quests (${Object.entries(kinds).map(([k, v]) => `${k} ${v}`).join(', ')}) | level cap ${CAP}`);
-console.log('\nBands (5 levels). quest % = one-time quests / XP to cross the band (target 25-45, ideal 35). dailies: avg % of a level per daily (target 5-8).');
+console.log('\nBands (5 levels). quest % = one-time quests / XP to cross the band (target 25-45, ideal 35; band 1-5 tutorial 25-60). dailies: avg % of a level per daily (target 5-8).');
 console.log(`${'band'.padEnd(6)}${f('XP to cross', 13)}${f('main', 9)}${f('side', 9)}${f('region', 9)}${f('quest %', 9)}${f('dailies', 9)}${f('d/day XP', 10)}${f('d %', 7)}${f('Sıradan', 9)}${f('Sürü', 8)}`);
 for (const r of rows) {
   console.log(`${r.band.padEnd(6)}${f(r.need, 13)}${f(r.main, 9)}${f(r.side, 9)}${f(r.region, 9)}${f(p1(r.oneTimePct) + '%', 9)}${f(r.dailies, 9)}${f(r.dailyXp, 10)}${f(p1(r.dailyPct) + '%', 7)}${f(r.trashKills, 9)}${f(r.swarmKills, 8)}`);
 }
-const badQuest = rows.filter((r) => r.need && r.oneTime && (r.oneTimePct < 25 || r.oneTimePct > 45));
+const badQuest = rows.filter((r) => r.need && r.oneTime && (r.oneTimePct < r.quest.min || r.oneTimePct > r.quest.max));
 const badDaily = rows.filter((r) => r.dailies && (r.dailyPct < 5 || r.dailyPct > 8));
-console.log(`\nbands outside 25-45 % one-time quest XP: ${badQuest.length ? badQuest.map((r) => r.band).join(', ') : 'none'}`);
+console.log(`\nbands outside their one-time quest XP range (25-45 %; band 1-5 25-60 %): ${badQuest.length ? badQuest.map((r) => r.band).join(', ') : 'none'}`);
 console.log(`bands outside 5-8 % per daily: ${badDaily.length ? badDaily.map((r) => r.band).join(', ') : 'none'}`);
 console.log('Sıradan / Sürü = kills to cross the band at the same level (rank trash x1, swarm as the game grants it).');
 
@@ -151,4 +154,5 @@ for (const [L, target, label] of [[2, TARGET_L2_S, 'level 2 by 90 s'], [3, TARGE
   if (!ok) bad++;
   console.log(`  ${label}: ${at === undefined ? 'not reached on the path' : `${at} s`} ${ok ? 'PASS' : 'FAIL'}`);
 }
+bad += badQuest.length + badDaily.length;
 process.exit(bad ? 1 : 0);

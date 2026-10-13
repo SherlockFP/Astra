@@ -8,14 +8,14 @@ import type { QuestDef, QuestObjective, QuestReward } from '../../types/quests';
  * `item_*` görev malzemeleridir; görev `region` alanındaki herhangi bir yaratıktan düşer (systems/Quests.ts rollDrops).
  *
  * Verenler yalnızca var olan NPC id'leridir: Gümüşdere (npc_g_*), Kızılkaya (npc_k_*), Son Ocak (npc_s_nobetci) ve
- * Kuzgunkale (npc_muhtar, yalnızca zincir teslimi). Altın Ambar (npc_c_riza) ve Kanyon (npc_c_deniz) hub'ları henüz yok, bu
- * yüzden R2 ve R5 görevleri de şimdilik köy ve karakol NPC'lerinden verilir.
+ * Kuzgunkale (npc_muhtar, yalnızca zincir teslimi). Kamp hub'ları (Altın Ambar npc_c_riza, Kanyon npc_c_deniz) ana ve yan
+ * zincirlerde görev verir; bölge görevlerini ise köy ve karakol NPC'leri verir.
  *
  * tools/content-check.mjs her hedef düşmanın bir kampta, nadirde, mini-bossta ya da metinde gerçekten doğduğunu, seviye
  * bandının ve zincir sıralamasının tutarlı olduğunu kontrol eder.
  *
- * xpPct (2026-10-13 XP parity): bölge ve günlük görevler, ana/yan görevlerle birlikte her 5 seviyelik bantta tek seferlik görev
- * XP'sini bandın XP'sinin ~%35'ine indirecek şekilde ölçeklendi (günlükler %5-8 bir seviye, `node tools/pace-check.mjs`).
+ * xpPct (2026-10-13 XP parity): bantlar 6+ için tek seferlik görev XP'si bandın ~%35'i. Bant 1-5 öğreticidir (%60'a kadar); bu
+ * yüzden R1 (sq_r1_*) bölge görevleri bir basamak aşağı alındı (taban %2). Günlükler %5-8 bir seviye (`node tools/pace-check.mjs`).
  */
 
 type Reward = { items?: { id: string; count: number }[]; generic?: NonNullable<QuestReward['generic']> };
@@ -54,53 +54,53 @@ const R1: Spec[] = [
   { id: 'sq_r1_k02_balcik_avi', name: 'Balçık Avı', level: 2, region: 'r1', giver: 'npc_g_muhtar', xpPct: 2, goldPerLevel: 1,
     objectives: [kill('ow_slime', 10, 'Yeşil Balçık öldür')],
     offer: 'Göl kenarındaki yeşil balçıklar yollara yayıldı. On tanesini temizle.', progress: 'Yeşil Balçık öldür (10).', done: 'Yollar yeniden açık.' },
-  { id: 'sq_r1_k03_goblin_yagmasi', name: 'Goblin Yağması', level: 3, region: 'r1', giver: 'npc_g_avci', xpPct: 3, goldPerLevel: 2,
+  { id: 'sq_r1_k03_goblin_yagmasi', name: 'Goblin Yağması', level: 3, region: 'r1', giver: 'npc_g_avci', xpPct: 2, goldPerLevel: 2,
     objectives: [kill('ow_goblin', 12, 'Goblin Yağmacı öldür')],
     offer: 'Goblin yağmacıları kervan yollarını soyuyor. Sürünün gücünü kır.', progress: 'Goblin Yağmacı öldür (12).', done: 'Kervanlar yeniden geçiyor.' },
-  { id: 'sq_r1_k04_orman_kurtlari', name: 'Orman Kurtları', level: 3, region: 'r1', giver: 'npc_g_avci', xpPct: 3, goldPerLevel: 2,
+  { id: 'sq_r1_k04_orman_kurtlari', name: 'Orman Kurtları', level: 3, region: 'r1', giver: 'npc_g_avci', xpPct: 2, goldPerLevel: 2,
     objectives: [kill('ow_wolf', 14, 'Orman Kurdu öldür')],
     offer: 'Orman kurtları sürü halinde dolaşıyor. Çobanlar korku içinde.', progress: 'Orman Kurdu öldür (14).', done: 'Çobanlar sürüleri yeniden otlatıyor.' },
-  { id: 'sq_r1_k05_mantar_ormani', name: 'Mantar Ormanı Temizliği', level: 4, region: 'r1', giver: 'npc_g_rahibe', xpPct: 3, goldPerLevel: 2,
+  { id: 'sq_r1_k05_mantar_ormani', name: 'Mantar Ormanı Temizliği', level: 4, region: 'r1', giver: 'npc_g_rahibe', xpPct: 2, goldPerLevel: 2,
     objectives: [kill('ow_mushnub', 15, 'Mantarcık öldür')],
     offer: 'Mantarcıklar ormanın patikalarını kapatıyor. Onları kes ve patikayı aç.', progress: 'Mantarcık öldür (15).', done: 'Patikalar açıldı.' },
-  { id: 'sq_r1_k06_kizgin_arilar', name: 'Kızgın Arılar', level: 4, region: 'r1', giver: 'npc_g_ciftci', xpPct: 3, goldPerLevel: 2,
+  { id: 'sq_r1_k06_kizgin_arilar', name: 'Kızgın Arılar', level: 4, region: 'r1', giver: 'npc_g_ciftci', xpPct: 2, goldPerLevel: 2,
     objectives: [kill('ow_wasp', 12, 'Orman Arısı öldür')],
     offer: 'Arılar bahçelere saldırıyor. Sürüyü dağıt, meyveler kurtulsun.', progress: 'Orman Arısı öldür (12).', done: 'Bahçeler yeniden sakin.' },
-  { id: 'sq_r1_k07_domuz_avi', name: 'Domuz Avı', level: 4, region: 'r1', giver: 'npc_g_ciftci', xpPct: 3, goldPerLevel: 2,
+  { id: 'sq_r1_k07_domuz_avi', name: 'Domuz Avı', level: 4, region: 'r1', giver: 'npc_g_ciftci', xpPct: 2, goldPerLevel: 2,
     objectives: [kill('ow_boar', 10, 'Yaban Domuzu öldür')],
     offer: 'Yaban domuzları ekinleri ezip geçiyor. On tanesini avla.', progress: 'Yaban Domuzu öldür (10).', done: 'Ekinler kurtuldu.' },
-  { id: 'sq_r1_k08_orumcek_yuvasi', name: 'Örümcek Yuvası', level: 5, region: 'r1', giver: 'npc_g_muhtar', xpPct: 3, goldPerLevel: 3,
+  { id: 'sq_r1_k08_orumcek_yuvasi', name: 'Örümcek Yuvası', level: 5, region: 'r1', giver: 'npc_g_muhtar', xpPct: 2, goldPerLevel: 3,
     objectives: [kill('ow_spider', 10, 'Orman Örümceği öldür')],
     offer: 'Ormanın derinliklerinde örümcekler yuva kurdu. Yuvanın sahiplerini kes.', progress: 'Orman Örümceği öldür (10).', done: 'Yuva dağıldı.' },
-  { id: 'sq_r1_k09_samanin_golgesi', name: 'Şamanın Gölgesi', level: 5, region: 'r1', giver: 'npc_g_rahibe', xpPct: 3, goldPerLevel: 3,
+  { id: 'sq_r1_k09_samanin_golgesi', name: 'Şamanın Gölgesi', level: 5, region: 'r1', giver: 'npc_g_rahibe', xpPct: 2, goldPerLevel: 3,
     objectives: [kill('ow_goblin_shaman', 3, 'Goblin Şamanı öldür'), kill('ow_goblin', 6, 'Goblin Yağmacı öldür')],
     offer: 'Goblin şamanları kutsal duaları bozuyor. Şamanları ve koruyucularını kes.',
     progress: 'Goblin Şamanı (3) ve Goblin Yağmacı (6) öldür.', done: 'Dualar yeniden okunabiliyor.' },
-  { id: 'sq_r1_c01_kulak_avcisi', name: 'Kulak Avcısı', level: 2, region: 'r1', giver: 'npc_g_avci', xpPct: 3, goldPerLevel: 2,
+  { id: 'sq_r1_c01_kulak_avcisi', name: 'Kulak Avcısı', level: 2, region: 'r1', giver: 'npc_g_avci', xpPct: 2, goldPerLevel: 2,
     objectives: [collect('item_goblin_kulagi', 8, 'Goblin Kulağı topla')], items: [{ id: 'pot_hp_1', count: 2 }],
     offer: 'Ödül avcıları her goblin için bir kulak ister. Sekiz kulak getir.', progress: 'Goblin Kulağı topla (8).', done: 'Ödül avcıları memnun.' },
-  { id: 'sq_r1_c02_bal_toplayicisi', name: 'Bal Toplayıcısı', level: 3, region: 'r1', giver: 'npc_g_ciftci', xpPct: 3, goldPerLevel: 2,
+  { id: 'sq_r1_c02_bal_toplayicisi', name: 'Bal Toplayıcısı', level: 3, region: 'r1', giver: 'npc_g_ciftci', xpPct: 2, goldPerLevel: 2,
     objectives: [collect('item_orman_balı', 6, 'Orman Balı topla')],
     offer: 'Kovanlardan bal almak istiyoruz. Arılar bize izin vermiyor, sen topla.', progress: 'Orman Balı topla (6).', done: 'Bal kavanozları dolu.' },
-  { id: 'sq_r1_c03_sifali_mantar', name: 'Şifalı Mantar', level: 4, region: 'r1', giver: 'npc_g_rahibe', xpPct: 3, goldPerLevel: 2,
+  { id: 'sq_r1_c03_sifali_mantar', name: 'Şifalı Mantar', level: 4, region: 'r1', giver: 'npc_g_rahibe', xpPct: 2, goldPerLevel: 2,
     objectives: [collect('item_mantar_sapi', 10, 'Şifalı Mantar Sapı topla')],
     offer: 'Şapelde merhem kalmadı. Mantarcıkların sapları işe yarar.', progress: 'Şifalı Mantar Sapı topla (10).', done: 'Merhemler hazır.' },
-  { id: 'sq_r1_h01_kizil_kuyruk_avi', name: 'Kızıl Kuyruk Avı', level: 3, region: 'r1', giver: 'npc_g_avci', xpPct: 5, goldPerLevel: 3,
+  { id: 'sq_r1_h01_kizil_kuyruk_avi', name: 'Kızıl Kuyruk Avı', level: 3, region: 'r1', giver: 'npc_g_avci', xpPct: 4, goldPerLevel: 3,
     objectives: [kill('rare_kizil_kuyruk', 1, 'Kızıl Kuyruk öldür')], generic: [{ rarity: 'uncommon', slot: 'weapon' }],
     offer: 'Kızıl Kuyruk adlı dev sıçan ambarları yağmalıyor. Onu avlayabilir misin?', progress: 'Kızıl Kuyruk öldür.', done: 'Ambarlar onun korkusundan kurtuldu.' },
-  { id: 'sq_r1_h02_gumus_yele_avi', name: 'Gümüş Yele Avı', level: 4, region: 'r1', giver: 'npc_g_avci', xpPct: 6, goldPerLevel: 4,
+  { id: 'sq_r1_h02_gumus_yele_avi', name: 'Gümüş Yele Avı', level: 4, region: 'r1', giver: 'npc_g_avci', xpPct: 5, goldPerLevel: 4,
     objectives: [kill('rare_gumus_yele', 1, 'Gümüş Yele öldür')], generic: [{ rarity: 'uncommon', slot: 'jewelry' }],
     offer: 'Gümüş Yele ormanın en hızlı kurdu. Yakalayıp kesmen gerek.', progress: 'Gümüş Yele öldür.', done: 'Yele artık ormanda dolaşmıyor.' },
-  { id: 'sq_r1_m01_keder_metinleri', name: 'Keder Metinleri', level: 5, region: 'r1', giver: 'npc_g_muhtar', xpPct: 4, goldPerLevel: 3,
+  { id: 'sq_r1_m01_keder_metinleri', name: 'Keder Metinleri', level: 5, region: 'r1', giver: 'npc_g_muhtar', xpPct: 3, goldPerLevel: 3,
     objectives: [metin('metin_keder', 3, 'Keder Metini yık')], items: [{ id: 'metin_kalintisi', count: 3 }],
     offer: 'Vadinin kara taşları birer birer kırılmalı. Keder Metinleri\'ni üç kez yık.', progress: 'Keder Metini yık (3).', done: 'Taşlar kırıldı, kalıntılar senin.' },
   { id: 'sq_r1_ch01_muhtarin_haberi', name: 'Muhtarın Haberi', level: 2, region: 'r1', giver: 'npc_g_muhtar', turnIn: 'npc_g_avci', xpPct: 2, goldPerLevel: 1,
     objectives: [talk('npc_g_avci', 'Avcı Yıldız ile konuş')],
     offer: 'Goblin gözcüleri köyün çevresinde dolaşıyor. Bu haberi Avcı Yıldız\'a ilet.', progress: 'Avcı Yıldız ile konuş.', done: 'Avcı Yıldız haberi duydu. İşin devamı var.' },
-  { id: 'sq_r1_ch02_gozcu_avi', name: 'Gözcü Avı', level: 3, region: 'r1', giver: 'npc_g_avci', prereq: 'sq_r1_ch01_muhtarin_haberi', xpPct: 3, goldPerLevel: 2,
+  { id: 'sq_r1_ch02_gozcu_avi', name: 'Gözcü Avı', level: 3, region: 'r1', giver: 'npc_g_avci', prereq: 'sq_r1_ch01_muhtarin_haberi', xpPct: 2, goldPerLevel: 2,
     objectives: [kill('ow_goblin', 10, 'Goblin Gözcüsü öldür')],
     offer: 'Yol kenarındaki gözcüleri temizle ve bana geri dön.', progress: 'Goblin Gözcüsü öldür (10).', done: 'Yol kenarı temiz.' },
-  { id: 'sq_r1_ch03_saman_raporu', name: 'Şaman Raporu', level: 4, region: 'r1', giver: 'npc_g_avci', turnIn: 'npc_g_muhtar', prereq: 'sq_r1_ch02_gozcu_avi', xpPct: 5, goldPerLevel: 4,
+  { id: 'sq_r1_ch03_saman_raporu', name: 'Şaman Raporu', level: 4, region: 'r1', giver: 'npc_g_avci', turnIn: 'npc_g_muhtar', prereq: 'sq_r1_ch02_gozcu_avi', xpPct: 4, goldPerLevel: 4,
     objectives: [talk('npc_g_rahibe', 'Rahibe Meryem ile konuş')], items: [{ id: 'pot_hp_1', count: 3 }],
     offer: 'Rahibe Meryem goblin şamanının izlerini de duymak istiyor. Önce ona uğra, sonra Muhtar Ferhat\'a dön.',
     progress: 'Rahibe Meryem ile konuş, sonra Muhtar Ferhat\'a dön.', done: 'Gözcü raporu tamamlandı. Köy seni anıyor.' },
@@ -327,7 +327,7 @@ const R4: Spec[] = [
 ];
 
 // ---------------------------------------------------------------------------------------------------------------------
-// R5 Ork Kanyonu (lv 20-25). Verenler: Komutan Aslan, Avcı Karaca (Kızılkaya; Kanyon hub'ı henüz yok).
+// R5 Ork Kanyonu (lv 20-25). Verenler: Komutan Aslan, Avcı Karaca (Kızılkaya).
 // ---------------------------------------------------------------------------------------------------------------------
 const R5: Spec[] = [
   { id: 'sq_r5_k01_ork_savaslilari', name: 'Ork Savaşçıları', level: 20, region: 'r5', giver: 'npc_k_komutan', xpPct: 6, goldPerLevel: 5,

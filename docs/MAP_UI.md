@@ -22,7 +22,7 @@ Legend used below: **[code]** = verified by reading the repo today. **[web]** = 
 | Lobby | `src/net/messages.ts` (`RoomAnnouncement`, lines ~120-150), `src/net/NetSession.ts` | Announcement already carries `activity`, `dungeon`, `keyLevel`, `minIlvl`, `mode`. `NetSession.sendRequest` and `onRequest` exist (lines ~500 and ~512). |
 | Bindings persistence | `src/core/Settings.ts` | `bindings: Partial<Record<InputAction, string[]>>`. A saved `inventory: ['KeyI','KeyB']` survives a default change, so a migration is needed (see package P00). |
 | Karakır Bozkırı | `src/data/world/karakir.ts` | Skeleton only: constants, halves, entrance ids. No layout, no `DungeonDef`. The town exit `dogu_kapisi` leads to an unregistered map. |
-| Content check | `node tools/content-check.mjs` | Baseline run today: 0 errors. Warnings: 15 quest warnings (`npc_c_riza`, `npc_c_deniz` not authored in a village), 1 town warning (Karakır exit not registered). |
+| Content check | `node tools/content-check.mjs` | Baseline run today: 0 errors (NPC ids, quests, region quests, reachability, town). Warnings: 1 quest warning (`mq_19` unlocks the unregistered Karakır zone), 85 town warnings (84 terrace floor-height prop warnings in `kadim_kapilar_salonu`, 1 exit `dogu_kapisi` to the unregistered Karakır zone). |
 | Layout facts | `sisli_vadi.layout.json` | 160 x 160 tiles, 4 m per tile. 70 camps, 11 patrols, 24 metin spots (4 per region), 16 rares, 6 mini-bosses, 12 shrines (2 per region), 18 chests (3 per region), 12 gather fields, 6 hidden areas, 8 vistas, 16 farm spots, 11 waypoint stones, 2 world bosses. |
 
 Density facts computed from the layout (camps per 1000 room-rect tiles):

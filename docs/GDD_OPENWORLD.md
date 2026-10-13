@@ -288,7 +288,7 @@ Metin2's villages are walled safe havens with every service one step away and mo
 | Respawn point (yeniden doğuş) | town spawn | yes (waypoint stone) | yes | yes | yes (their stone) |
 | Işınlanma Taşı (waypoint) | - | `wp_gumusdere` | `wp_kizilkaya` | `wp_son_ocak` | `wp_ciftlik` / `wp_iskele` / `wp_kanyon` |
 | Işınlayıcı NPC (`waypoints` panel) | - | yes | yes | yes | kanyon only |
-| General store (`merchant`) | Tüccar Selim | Bakkal Süleyman | Bakkal Hatice | Gezgin Tüccar | kanyon only |
+| General store (`merchant`) | Tüccar Selim | Bakkal Süleyman | Bakkal Hatice | Gezgin Tüccar | çiftlik: Çiftlik Tezgâhtarı (`npc_c_tezgah`); kanyon: Gezgin Tüccar Oğuz |
 | Weapon smith (`weaponsmith`) | - | Silahçı Rüstem | Silahçı Orhan | - | - |
 | Armour smith (`armorsmith`) | - | Zırhçı Gülsüm | Zırhçı Melek | - | - |
 | Alchemist (`alchemist`) | Simyacı Lale | Eczacı Nermin (tier 1-2) | Eczacı Selvi (tier 2-3) | Gezgin Eczacı (tier 3) | iskele only |
@@ -296,7 +296,7 @@ Metin2's villages are walled safe havens with every service one step away and mo
 | Efsun / Oyma | Efsuncu Nergis | - | - | - | - |
 | Stash (`stash`, same shared stash) | Depocu Bekir | Depocu Hızır | Depocu Nuri | - | - |
 | **Metin Kalıntısı Tüccarı** (§4.6) | - | Zeynel | Sabri | Mahir (merged with the traveller) | - |
-| Quest NPCs | Muhtar Cemal | Muhtar Ferhat, Avcı Yıldız, Çiftçi Hatice, Rahibe Meryem | Komutan Aslan, Avcı Karaca | Nöbetçi Başı Talha | Rıza, Gülizar / Ömer / Deniz |
+| Quest NPCs | Muhtar Cemal | Muhtar Ferhat, Avcı Yıldız, Çiftçi Hatice, Rahibe Meryem | Komutan Aslan, Avcı Karaca | Nöbetçi Başı Talha | Rıza, Deniz (Gülizar is a citizen in the layout; iskele Ömer is not in the layout yet) |
 | Daily bounty board (Görev Panosu) | yes | yes (`gp(notice_board)`) | yes | - | - |
 | Seal vendor (Mühürdar), keystone, vault, portals, trainer, gamble, Şeref Taşı | **only here** | - | - | - | - |
 | Stable (`stable`, mount placeholder) | - | Seyis Kerem | Seyis Ceyhun | - | - |

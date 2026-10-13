@@ -6040,7 +6040,7 @@
      "id": "npc_c_riza",
      "name": "Çiftlik Sahibi Rıza",
      "role": "quest",
-     "model": "Worker",
+     "model": "Worker x1.25",
      "x": 0,
      "z": -6,
      "rot": 180,
@@ -6065,6 +6065,16 @@
      "z": 4,
      "rot": -90,
      "note": "tarla işleri; \"Korkuluklar yine kalkmış, sabaha kadar gözümüz uykuda değil.\""
+    },
+    {
+     "id": "npc_c_tezgah",
+     "name": "Çiftlik Tezgâhtarı",
+     "role": "merchant",
+     "model": "Rogue_Hooded tint 0x8a6a40",
+     "x": -7,
+     "z": 2,
+     "rot": 90,
+     "note": "panel `vendor` kind `merchant` (iksirler, parşömenler, Kırık taşlar); \"Yolcular için iksir ve parşömen burada.\""
     },
     {
      "id": "npc_c_muhafiz_1",
@@ -6201,7 +6211,7 @@
      "note": "panel `waypoints`"
     },
     {
-     "id": "npc_c_muhafiz_1",
+     "id": "npc_c_muhafiz_3",
      "name": "Kanyon Muhafızı",
      "role": "guard",
      "model": "Knight (miğfersiz) tint 0x8090b0",
@@ -6211,7 +6221,7 @@
      "note": "güney kapı"
     },
     {
-     "id": "npc_c_muhafiz_2",
+     "id": "npc_c_muhafiz_4",
      "name": "Kanyon Muhafızı",
      "role": "guard",
      "model": "Knight (miğfersiz) tint 0x8090b0",

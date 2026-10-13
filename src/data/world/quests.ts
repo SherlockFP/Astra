@@ -8,8 +8,8 @@ import { REGION_QUESTS } from './quests_extra';
  * Ids, names, levels, XP %, gold per level and quest givers come from the layout JSON (`quests.main`, `quests.side`, `quests.bio`).
  * The objectives, reward items and Turkish dialogue are authored in EXTRA below from the GDD tables.
  *
- * Conventions: NPC ids are the layout / town ids. Two camp hub NPCs (Çiftlik Sahibi Rıza = npc_c_riza, Teğmen Deniz = npc_c_deniz)
- * have no layout entry yet, so tools/content-check.mjs reports them until the hubs are authored. Item ids are data/materials.ts ids,
+ * Conventions: NPC ids are the layout / town ids. The camp hub NPCs are layout villages too: Çiftlik Sahibi Rıza (npc_c_riza,
+ * kamp_ciftlik) and Teğmen Deniz (npc_c_deniz, kamp_kanyon). Item ids are data/materials.ts ids,
  * quest-only items are `item_*`. Enemy ids are mob / rare / mini-boss / boss ids (WP3). `kill` counts mobs of that id.
  */
 
@@ -254,15 +254,16 @@ const EXTRA_SIDE: Record<string, Extra> = {
 };
 
 /**
- * One-time quest XP rebalance (F3 first 10 minutes + XP parity, 2026-10-13): xpPct of the 19 main and 24 side quests, replacing the
- * layout values. Each 5-level band now gives ~35 % of its XP to one-time quests (region quests in quests_extra.ts follow the same
- * factor), and mq_01 / mq_02 are 8.5x / 3x their layout value: level 2 then arrives at ~76 s (4x on mq_01 would hit the 90 s limit
- * exactly). Level 3 is set by the mq_05 miniboss kill (Gırtlak, level 5, about 500 XP at level 2-3).
+ * One-time quest XP (F3 first 10 minutes + XP parity, 2026-10-13): xpPct of the 19 main and 24 side quests, replacing the layout
+ * values. Bands 6+ give ~35 % of their XP to one-time quests (region quests in quests_extra.ts follow the same factor). Band 1-5 is
+ * the tutorial band and may take up to 60 %: mq_03..mq_07 are 15-25 % each. mq_03 + mq_04 stay below the level 3 threshold before
+ * the mq_05 boss (Gırtlak), so mq_04 is 15 %, or level 3 would land before 210 s. mq_01 / mq_02 are 8.5x / 3x their layout value:
+ * level 2 then arrives at ~76 s. Level 3 is set by the mq_05 boss kill.
  * Check with `node tools/pace-check.mjs`. docs/GDD_OPENWORLD.layout.json (and its §6.2-6.3 tables) still show the layout values.
  */
 const XP_PCT: Record<string, number> = {
-  mq_01_kuzgunun_cagrisi: 85, mq_02_fare_yuvasi: 60, mq_03_balcik_temizligi: 4, mq_04_samani_sustur: 4,
-  mq_05_yagmaci_kampi: 5, mq_06_ilk_metin: 4, mq_07_kopruyu_gec: 3, mq_08_ciftlik_isgali: 6,
+  mq_01_kuzgunun_cagrisi: 85, mq_02_fare_yuvasi: 60, mq_03_balcik_temizligi: 20, mq_04_samani_sustur: 15,
+  mq_05_yagmaci_kampi: 20, mq_06_ilk_metin: 25, mq_07_kopruyu_gec: 20, mq_08_ciftlik_isgali: 6,
   mq_09_mezarligin_sirri: 7, mq_10_kemik_mahzeni: 13, mq_11_curukkok: 13, mq_12_haydut_kalesi: 11,
   mq_13_kizilkaya_haberi: 9, mq_14_bataklik_cadisi: 14, mq_15_kor_ocagi: 15, mq_16_ork_istilasi: 16,
   mq_17_lanetli_yol: 10, mq_18_kara_anit: 13, mq_19_kuzgunkaleye_donus: 18,

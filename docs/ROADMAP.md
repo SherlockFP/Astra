@@ -142,6 +142,7 @@ otherwise polish; score it; test with Haiku; implement with Sonnet; fetch assets
 **P0 — Foundation sprint (from the 5-lens game audit, 2026-10-13; runs before/alongside batch 9)**
 Audit verdict: scope is outrunning verification; the biggest risks are lost saves, a dead-ended main story, a level
 30–60 content cliff, an unvalidated multiplayer base and swallowed errors. Order (S = small, M = medium):
+  - DONE 2026-10-13: F1, F2, F3, F4, F5, F6 (commits 99d32f2, 09a8abf, a0d2b92 + follow-ups); perf wave 2 (326e5b5).
   - F1 [S/M core] Save safety: navigator.storage.persist(), rolling `.bak` before every migration + every 5 min,
     corrupt-save recovery from `.bak`, write-failure toast, "Kayıtları Dışa/İçe Aktar" (JSON) in Ayarlar.
   - F2 [S content] Unblock the main chain: author missing hub NPCs (npc_c_riza at Altın Ambar, npc_c_deniz at Kanyon

@@ -84,23 +84,27 @@ function regionQuestIssues(quests, world, packs) {
   }
   return out;
 }
+/** The main chain (GDD_OPENWORLD §6.2) starts here; every other main quest must be reached from it through prerequisites. */
+const MAIN_ROOT = 'mq_01_kuzgunun_cagrisi';
 /**
  * Quest reachability, HARD errors on every quest (GDD_OPENWORLD §6, the runtime rules of systems/Quests.ts):
- *  - giver, turn-in and talk targets are NPCs of some town or village;
- *  - a kill / metin / boss target spawns in a camp, patrol, rare, miniboss, metin stone or world boss; a kill or metin target
- *    must spawn in a region whose level band holds the quest level (world bosses roam, so they need only a spawn);
+ *  - giver, turn-in and talk targets are NPCs of some town or village; a talk target is a quest NPC (role 'quest', or it offers
+ *    quests) or a dialog NPC (ui.panel 'dialog'), never a plain merchant / guard / citizen;
+ *  - a kill / metin / boss target spawns in a camp, patrol, rare, miniboss, metin stone or world boss; a kill, metin or boss
+ *    target must spawn in a region whose level band holds the quest level (world bosses roam, so they need only a spawn);
  *  - a collect item has a source: a quest reward, a kill objective that spawns, the quest's region (packs), or any camp when the
  *    quest is region-less (sourceMatches);
- *  - prerequisites exist, do not step down in level, form no cycle, and every main quest is reached from the first one;
+ *  - prerequisites exist, do not step down in level, form no cycle, and every main quest is reached from MAIN_ROOT (mq_01);
  *  - unlocks that name a waypoint, an entrance or a dungeon must exist (an unregistered zone is only a warning);
  *  - an explore target is a region, waypoint, hidden area, vista or landmark id: the only ids the game emits (Quests.ts listens to
  *    world:regionEntered, waypoint:discovered and scenes/world/Discoveries.ts). Rooms and villages are never emitted.
  */
-function questReachIssues(quests, world, npcIds, packs, dungeonIds, zoneIds) {
+function questReachIssues(quests, world, npcIds, packs, dungeonIds, zoneIds, npcById) {
   const out = [];
   const err = (where, msg) => out.push({ level: 'error', where, msg });
   const warn = (where, msg) => out.push({ level: 'warn', where, msg });
   const spawns = spawnIndex(world, packs);
+  const offerers = new Set(quests.flatMap((q) => [q.giver, q.turnIn].filter(Boolean))); // NPCs that give or take in a quest
   const roomRegion = new Map((world?.regions ?? []).map((r) => [r.roomId, r.id]));
   const packRegions = new Set((packs ?? []).map((p) => roomRegion.get(p.roomId)).filter(Boolean));
   const bandOf = new Map((world?.regions ?? []).map((r) => [r.id, r.levels]));
@@ -125,13 +129,18 @@ function questReachIssues(quests, world, npcIds, packs, dungeonIds, zoneIds) {
     for (const o of q.objectives) {
       const ow = `${where} [${o.kind} ${o.target ?? ''}]`;
       if (o.kind === 'talk' && !npcIds.has(o.target)) err(ow, `npc ${o.target} is not in any town or village`);
+      if (o.kind === 'talk' && npcById.has(o.target)) {
+        const n = npcById.get(o.target);
+        const quest = n.role === 'quest' || offerers.has(n.id) || (n.quests?.length ?? 0) > 0;
+        if (!quest && n.ui?.panel !== 'dialog') err(ow, `npc ${o.target} is a ${n.role} with no quest and no dialog panel: talk targets are quest or dialog NPCs`);
+      }
       if (o.kind === 'explore' && !explorePlaces.has(o.target)) {
         err(ow, `${o.target} is no region, waypoint, hidden area, vista or landmark: the game emits explore only for those ids`);
       }
       if ((o.kind === 'kill' || o.kind === 'metin' || o.kind === 'boss') && o.target) {
         const regs = spawns.get(o.target);
         if (!regs) err(ow, `${o.target} spawns in no camp, patrol, rare, miniboss, metin stone or world boss`);
-        else if (o.kind !== 'boss' && regs.size && ![...regs].some((r) => inBand(r, q.level))) {
+        else if (regs.size && ![...regs].some((r) => inBand(r, q.level))) {
           err(ow, `${o.target} spawns only in ${[...regs].map((r) => `${r} (${bandOf.get(r)?.join('-')})`).join(', ')}: no level band holds quest level ${q.level}`);
         }
       }
@@ -165,8 +174,9 @@ function questReachIssues(quests, world, npcIds, packs, dungeonIds, zoneIds) {
   const succ = new Map();
   for (const q of quests) for (const p of q.prereq ?? []) { if (!succ.has(p)) succ.set(p, []); succ.get(p).push(q.id); }
   const mains = quests.filter((q) => q.main);
-  const first = mains[0]; // the chain starts at the first layout entry (mq_01)
-  if (!first) err('main chain', 'the main chain is empty');
+  const first = byId.get(MAIN_ROOT); // the main chain is rooted at mq_01 by id, not by layout order
+  if (!first) err('main chain', `${MAIN_ROOT} is missing: the main chain must start there`);
+  else if (!first.main) err(`quest ${first.id}`, 'the main chain root must be a main quest');
   else if ((first.prereq ?? []).length) err(`quest ${first.id}`, 'the main chain must start here, without a prerequisite');
   else {
     const reach = new Set([first.id]);
@@ -205,7 +215,19 @@ for (const id of ALL_IDS) {
   for (const i of w) console.log('  warn', i.where, '-', i.msg);
   if (verbose) for (const i of n) console.log('  info', i.where, '-', i.msg);
 }
-// open-world quests (GDD_OPENWORLD §6): givers, objectives, reward items; hub NPCs without a layout entry are warnings
+// open-world quests (GDD_OPENWORLD §6): givers, objectives, reward items; an NPC a quest names must stand in the town or a village
+// NPC ids are keys (quest givers, turn-ins and talk targets resolve by id): HARD error on an id used twice in the town or any village
+if (!want.length || want.includes('town') || want.includes('sisli_vadi')) {
+  const owners = new Map();
+  const own = (id, where) => { if (!owners.has(id)) owners.set(id, []); owners.get(id).push(where); };
+  for (const n of TOWN.npcs) own(n.id, 'town');
+  for (const [id, d] of Object.entries(ALL)) for (const v of d.world?.villages ?? []) for (const n of v.npcs) own(n.id, `${id}/${v.id}`);
+  const dup = [...owners].filter(([, where]) => where.length > 1);
+  const villages = Object.values(ALL).reduce((s, d) => s + (d.world?.villages?.length ?? 0), 0);
+  totalErr += dup.length;
+  console.log(`\n== npc ids: ${dup.length} errors | ${owners.size} NPCs in the town and ${villages} villages`);
+  for (const [id, where] of dup) console.log('  ERR ', `npc ${id}`, '-', `duplicate id in ${where.join(', ')}`);
+}
 if (!want.length || want.includes('sisli_vadi') || want.includes('quests')) {
   const { QUESTS } = await imp('src/data/world/quests.ts');
   const { MATERIALS } = await imp('src/data/materials.ts');
@@ -225,7 +247,8 @@ if (!want.length || want.includes('sisli_vadi') || want.includes('quests')) {
   for (const line of regionCounts(QUESTS)) console.log(`   ${line}`);
   for (const i of re) console.log('  ERR ', i.where, '-', i.msg);
   for (const i of rw) console.log('  warn', i.where, '-', i.msg);
-  const xq = questReachIssues(QUESTS, world, npcIds, ALL.sisli_vadi?.packs, DUNGEON_IDS, OPEN_ZONE_IDS);
+  const npcById = new Map([...TOWN.npcs, ...(world?.villages ?? []).flatMap((v) => v.npcs)].map((n) => [n.id, n]));
+  const xq = questReachIssues(QUESTS, world, npcIds, ALL.sisli_vadi?.packs, DUNGEON_IDS, OPEN_ZONE_IDS, npcById);
   const xe = xq.filter((i) => i.level === 'error'), xw = xq.filter((i) => i.level === 'warn');
   totalErr += xe.length;
   console.log(`\n== quest reachability: ${xe.length} errors, ${xw.length} warns | ${QUESTS.length} quests, ${spawnIndex(world, ALL.sisli_vadi?.packs).size} spawnable ids`);
