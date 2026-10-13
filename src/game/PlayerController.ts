@@ -13,6 +13,13 @@ import type { InputAction } from '../core/Input';
 import { WowMouse, type WowMouseOut } from './WowMouse';
 import { pickAtNdc, type PickHit } from './ClickPick';
 import { AutoAttack, AUTO, type AutoTarget } from './AutoAttack';
+import { VERT } from '../world/Heightfield';
+import { FallHandler, VOID_FADE_OUT, type Spot } from './FallHandler';
+
+/** Black-out / fade-back of the void fall (§11 screen:fade; the HUD listens, unknown events are a no-op). */
+function screenFade(to: number, dur: number): void {
+  (G.events as unknown as { emit(name: string, payload: { to: number; dur: number }): void }).emit('screen:fade', { to, dur });
+}
 
 // ---- feel constants -------------------------------------------------------------------------------------------------
 const ACCEL_TIME = 0.08;          // seconds to full speed
@@ -100,6 +107,10 @@ export class PlayerController {
 
   private time = 0;
   private vy = 0;
+  /** Height the current airborne spell started from (grounded height at take-off / walk-off): drop = fallStartY - groundY. */
+  private fallStartY = 0;
+  /** Falls and drops (§11): safe history, void trigger, landing damage, respawn after the fade. */
+  private fall = new FallHandler();
   private landUntil = 0;
   private faceHold = 0;
   private loco: Loco = 'idle';
@@ -282,7 +293,9 @@ export class PlayerController {
     p.jumping = false;
     p.dodging = false;
     this.vy = 0;
+    this.fallStartY = p.position.y;
     this.grounded = true;
+    this.fall.cancelPending();
     this.dodge = null;
     this.pending = null;
     p.interp?.clear();
@@ -298,6 +311,7 @@ export class PlayerController {
     this.grounded = true;
     this.vy = 0;
     p.jumpY = 0;
+    this.fall.reset();
     p.velocity.set(0, 0, 0);
     this.loco = 'idle';
   }
@@ -402,6 +416,7 @@ export class PlayerController {
       this.cam.setFollow(canInput && !this.dodge && axis.y > 0.5 && Math.abs(axis.x) < 0.5 && !this.hardTarget && !p.isDead, p.yaw + Math.PI, this.dispSpeed);
     }
     this.stepMovement(dt, axis, canInput, action);
+    this.updateFall(dt);
 
     // ---------------- skills / potions / interact ----------------
     if (canInput) {
@@ -642,7 +657,7 @@ export class PlayerController {
     if (!this.dodge && !forced) {
       p.position.x += v.x * dt;
       p.position.z += v.z * dt;
-      const hit = world.nav.resolveCircle(p.position, p.radius);
+      const hit = world.nav.resolveMove(p.position, ox, oz, p.radius, p.position.y, !this.grounded);
       if (hit && dt > 1e-4) {
         // slide: report the speed we actually achieved so animation/footsteps/network stay truthful
         const ax = (p.position.x - ox) / dt, az = (p.position.z - oz) / dt;
@@ -657,35 +672,120 @@ export class PlayerController {
     this.stepVertical(dt);
   }
 
+  /** Falls (§11): safe history, void trigger and the respawn after the fade. Vertical worlds only (flat: no-op). */
+  private updateFall(dt: number): void {
+    const p = this.player;
+    const world = p.world;
+    if (!world || !world.vertical) return;
+    const pos = p.position;
+    const started = this.fall.tick(this.time, dt, { x: pos.x, y: pos.y, z: pos.z, grounded: this.grounded }, {
+      flagsAt: (x, z) => world.nav.flagsAt(x, z),
+      killY: (x, z) => world.heights?.killY(x, z) ?? Number.NEGATIVE_INFINITY,
+    });
+    if (started) this.startVoidFall();
+    const due = this.fall.due(this.time);
+    if (due) this.finishVoidFall(due.spot);
+  }
+
+  /** Void fall, first half: black-out, non-lethal damage. The respawn follows when the fade has finished. */
+  private startVoidFall(): void {
+    if (!this.fall.startVoid(this.time, this.sceneCheckpoint())) return;
+    screenFade(1, VOID_FADE_OUT);
+    this.fallHit(FallHandler.voidDamage(this.player.maxHp));
+  }
+
+  /** Void fall, second half: teleport to the safe spot, brief invulnerability, fade back. */
+  private finishVoidFall(spot: Spot | null): void {
+    const p = this.player;
+    const world = p.world;
+    let target: { x: number; z: number; yaw?: number } = spot ?? { x: p.position.x, z: p.position.z };
+    if (!spot && world) {
+      const n = world.nav.nearestWalkable(p.position.x, p.position.z, 6);
+      if (n) target = { x: n.x, z: n.z };
+    }
+    this.teleport(target.x, target.z, target.yaw);
+    this.fall.onRespawned(p.position.y);
+    p.statuses.apply('invulnerable', 1);
+    screenFade(0, 0.3);
+    G.events.emit('ui:toast', { text: 'Düştün! (−%25 CAN)', kind: 'warning' });
+  }
+
+  /** Fall damage through the normal hit path: unavoidable, not blockable, never lethal (HP stays >= 1). */
+  private fallHit(amount: number): void {
+    if (!(amount > 0)) return;
+    G.combat?.hitLocalPlayer({ sourceId: null, amount, type: 'physical', unavoidable: true, blockable: false, abilityName: 'Düşüş', floorHp: 1 });
+  }
+
+  /** DungeonScene keeps its Diriliş checkpoint in a private field; read it structurally (null in other scenes). */
+  private sceneCheckpoint(): Spot | null {
+    const sc = G.scenes?.current as unknown as { checkpoint?: { x: number; z: number; yaw: number } } | null | undefined;
+    const c = sc?.checkpoint;
+    return c ? { x: c.x, z: c.z, yaw: c.yaw } : null;
+  }
+
+  /** §10.1 absolute vertical integrator. Flat grids: gy = 0 and the arithmetic equals the former jumpY integrator. */
   private stepVertical(dt: number): void {
     const p = this.player;
     const world = p.world;
     if (!world) return;
+    const pos = p.position;
+    const gy = world.groundY(pos.x, pos.z);
     const fm = p.forcedMove;
     if (fm && fm.vy !== undefined && world.time < fm.until) {
-      // skill-driven vertical motion (leaps): SkillSystem owns the arc
-      p.jumpY = Math.max(0, p.jumpY + fm.vy * dt);
+      // skill-driven vertical motion (leaps): SkillSystem owns the arc, no landing call
+      pos.y = Math.max(gy, pos.y + fm.vy * dt);
       this.vy = fm.vy;
-      this.grounded = p.jumpY <= 0.001;
-    } else if (!this.grounded || p.jumpY > 0.001) {
+      this.grounded = pos.y - gy <= 0.001;
+    } else if (!this.grounded) {
       this.vy -= GRAVITY * dt;
-      p.jumpY += this.vy * dt;
-      if (p.jumpY <= 0) this.land(Math.abs(this.vy));
+      let ny = pos.y + this.vy * dt;
+      if (world.vertical) {
+        // head clearance under a low ceiling: bonk and fall
+        const ce = world.ceilingY(pos.x, pos.z);
+        if (ny + p.height > ce) {
+          ny = ce - p.height;
+          this.vy = Math.min(this.vy, 0);
+        }
+      }
+      pos.y = ny;
+      // on vertical grids feet may clip AIR_STEP above a new floor while falling; flat grids land on contact, as before
+      const reach = world.vertical && this.vy < 0 ? VERT.AIR_STEP : 0;
+      if (pos.y <= gy + reach && this.vy <= 0) {
+        pos.y = gy;
+        this.land(Math.abs(this.vy), this.fallStartY - gy);
+      }
+    } else {
+      const d = pos.y - gy;
+      if (d <= 0) {
+        pos.y = gy; // ground rose (rise <= STEP_UP is guaranteed by resolveMove)
+      } else if (d <= 0.3) {
+        pos.y = Math.max(gy, pos.y - 12 * dt); // stick to the ground: stairs down, descending lift
+      } else {
+        // walked off a ledge / the lift dropped away
+        this.grounded = false;
+        this.vy = 0;
+        this.fallStartY = pos.y;
+      }
+      if (this.grounded) this.fallStartY = pos.y;
     }
-    p.position.y = world.groundY(p.position.x, p.position.z) + p.jumpY;
+    p.jumpY = Math.max(0, pos.y - gy);
   }
 
-  private land(fallSpeed: number): void {
+  /** drop = metres fallen since take-off / walk-off. Hard and void landings cost HP (§11). */
+  private land(fallSpeed: number, drop: number): void {
     const p = this.player;
     p.jumpY = 0;
     this.vy = 0;
     const wasAir = !this.grounded || p.jumping;
     this.grounded = true;
     p.jumping = false;
+    const kind = this.fall.onLand(drop);
+    if (kind === 'void') this.startVoidFall();
+    else if (kind === 'hard') this.fallHit(FallHandler.hardDamage(drop, p.maxHp));
     if (!wasAir) return;
     G.audio.play('land', { pos: [p.position.x, p.position.y, p.position.z], volume: clamp(fallSpeed / 12, 0.4, 1) });
-    G.vfx.spawn('dodge_dust', p.position, { scale: 0.7 });
-    if (fallSpeed > 6) this.cam.punch(-0.1);
+    G.vfx.spawn('dodge_dust', p.position, { scale: kind === 'hard' ? 1.0 : 0.7 });
+    if (fallSpeed > 6 || kind === 'hard') this.cam.punch(-0.1);
     p.squash(0.14);
     const a = p.anim;
     if (a && !p.isDead) {
@@ -708,6 +808,9 @@ export class PlayerController {
     this.grounded = false;
     p.jumping = true;
     this.vy = JUMP_V;
+    const gy = world?.groundY(p.position.x, p.position.z) ?? 0;
+    this.fallStartY = gy;
+    p.position.y = gy + 0.001;
     p.jumpY = 0.001;
     const a = p.anim;
     if (a) {
@@ -975,6 +1078,11 @@ export class PlayerController {
       if (e.isDead || e.removed || !e.alive) continue;
       const pd = Math.hypot(e.position.x - px, e.position.z - pz);
       if (pd > SOFT_TARGET_RANGE) continue;
+      // §10.1: a body more than TOL_MELEE above/below needs a clear height-aware sight line (eye to chest)
+      if (world.vertical && Math.abs(e.position.y - p.position.y) > VERT.TOL_MELEE) {
+        const eyeY = p.position.y + p.height * 0.9, chestY = e.position.y + e.height * 0.6;
+        if (world.nav.raycastY(px, eyeY, pz, e.position.x, chestY, e.position.z) < 1) continue;
+      }
       // ray distance to the enemy's body (feet / chest / head samples)
       let ratio = 1e9;
       for (const f of BODY_SAMPLES) {

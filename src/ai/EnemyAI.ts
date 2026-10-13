@@ -3,6 +3,7 @@ import { G } from '../game/G';
 import type { HitShapeSpec } from '../combat/HitShapes';
 import { hyperArmorOf } from '../combat/poise';
 import { clamp, dampAngle, yawFromDir } from '../core/utils';
+import { F, VERT } from '../world/Heightfield';
 import { getDirector, hooks, isHeavyHit, type EnemyDirector } from './EnemyDirector';
 import { bossMsg, bossText } from './bossNet';
 import { CUSTOM, PASSIVES, runOnDeath, type CustomHandler, type PassiveHandler } from './abilities';
@@ -90,6 +91,10 @@ const GLOW_COLOR: Record<DamageType, number> = {
 const MAX_MELEE_SLOTS = 6;
 /** Idle enemies farther than this (m) from every living player skip perception and steering (see EnemyAI.canSleep). */
 const SLEEP_DIST = 45;
+/** ENGINE_VERTICALITY §13: a melee/charge unit with no path to its target (other region / unreachable) gives up after this. */
+const NOPATH_LEASH = 6;
+/** ENGINE_VERTICALITY §10.2: lastSafe sampling period (s). */
+const SAFE_SAMPLE_EVERY = 0.5;
 /** Ability kinds a blinded enemy can miss with (mechanic scripts / custom casts are never nullified). */
 const MISSABLE = new Set(['melee', 'cone', 'projectile', 'line', 'charge', 'ground_aoe', 'self_aoe']);
 const DOT_STATUSES = new Set(['burn', 'bleed', 'poison']);
@@ -143,6 +148,9 @@ export class EnemyAI {
   protected pathGZ = 0;
   protected los = true;
   protected losAt = -9;
+  /** Vertical worlds: hasLos cache (raycastY), separate from the steering walkLine cache above. */
+  protected aimLos = true;
+  protected aimLosAt = -9;
   protected fleeT = 0;
   protected fleeX = 0;
   protected fleeZ = 0;
@@ -160,6 +168,10 @@ export class EnemyAI {
   protected escapeAt = 0;
   /** When this summoned mob's owner (a metin stone) was first seen gone; -1 while the owner lives. */
   protected orphanAt = -1;
+  /** Vertical worlds: when the current target became unreachable (no path, other region); -1 while reachable. */
+  protected unreachableSince = -1;
+  /** Vertical worlds: next lastSafe sample time. */
+  protected safeAt = 0;
   /** Called when any ability of this enemy resolves (champion modifiers: Vampir). */
   readonly onResolveHooks: ((b: Busy) => void)[] = [];
   /** Current basic attack (boss scripts may swap it, e.g. Zakhar's trident -> claw combo). */
@@ -475,6 +487,7 @@ export class EnemyAI {
     this.threat.clear();
     this.mode = this.e.patrol ? 'patrol' : 'idle';
     this.path = null;
+    this.unreachableSince = -1;
   }
 
   protected wake(by: Actor | null): void {
@@ -537,6 +550,7 @@ export class EnemyAI {
     }
     for (const p of this.passives) p.h.tick?.(this, p.ab, p.state, dt);
     this.orphanTick(now);
+    if (e.world!.vertical && this.verticalTick(now)) return;
 
     // statuses that stop the brain
     const st = e.statuses;
@@ -549,6 +563,12 @@ export class EnemyAI {
       // a knockback from a player's hit cuts an interruptible cast; the pusher is consumed here (one frame, not stale)
       if (this.busy && this.busy.castId && this.busy.ab.interruptible && !this.busy.resolved) this.interrupt('cc', e.kbBy);
       e.kbBy = null;
+      this.halt(dt, true);
+      return;
+    }
+
+    // falling off a ledge (vertical worlds): no steering or casting until landed
+    if (e.airborne) {
       this.halt(dt, true);
       return;
     }
@@ -621,6 +641,63 @@ export class EnemyAI {
     if (now - this.orphanAt >= 8) e.escape();
   }
 
+  /**
+   * Vertical worlds, host only (ENGINE_VERTICALITY §10.2): a trash enemy whose feet are below the kill plane (knocked or
+   * walked into a pit) dies; every other enemy on the ground samples lastSafe every 0.5 s. Returns true when the enemy died
+   * (the caller stops this tick: death disposes the brain).
+   */
+  protected verticalTick(now: number): boolean {
+    const e = this.e;
+    const x = e.position.x, z = e.position.z;
+    const killY = this.world.heights?.killY(x, z);
+    if (e.def.rank === 'trash' && !e.def.flying && killY !== undefined && (e.feetY ?? 0) < killY) {
+      G.combat.killEnemy(e, null);
+      return true;
+    }
+    if (!e.airborne && now >= this.safeAt) {
+      this.safeAt = now + SAFE_SAMPLE_EVERY;
+      if (this.isSafeSpot(x, z)) e.lastSafe = { x, z };
+    }
+    return false;
+  }
+
+  /** Standable and with no VOID/LEDGE cell within SAFE_EDGE_PAD (8 directions). */
+  protected isSafeSpot(x: number, z: number): boolean {
+    const nav = this.world.nav;
+    if (!nav.isStandable(x, z)) return false;
+    for (let i = 0; i < 8; i++) {
+      const a = (i * Math.PI) / 4;
+      if (nav.flagsAt(x + Math.cos(a) * VERT.SAFE_EDGE_PAD, z + Math.sin(a) * VERT.SAFE_EDGE_PAD) & (F.VOID | F.LEDGE)) return false;
+    }
+    return true;
+  }
+
+  /**
+   * Closest standable cell of the enemy's own region to (x,z), searched within 8 cells of the enemy (ENGINE_VERTICALITY §13
+   * hold point for an unreachable target). null when the enemy stands on no region.
+   */
+  protected closestOwnCell(x: number, z: number): { x: number; z: number } | null {
+    const e = this.e;
+    const nav = this.world.nav;
+    const own = nav.regionAt(e.position.x, e.position.z);
+    if (!own) return null;
+    const c0 = nav.cx(e.position.x), r0 = nav.cz(e.position.z);
+    let best: { x: number; z: number } | null = null;
+    let bestD = Infinity;
+    for (let dr = -8; dr <= 8; dr++) {
+      for (let dc = -8; dc <= 8; dc++) {
+        const wx = nav.centerX(c0 + dc), wz = nav.centerZ(r0 + dr);
+        if (!nav.isStandable(wx, wz) || nav.regionAt(wx, wz) !== own) continue;
+        const d = Math.hypot(wx - x, wz - z);
+        if (d < bestD) {
+          bestD = d;
+          best = { x: wx, z: wz };
+        }
+      }
+    }
+    return best;
+  }
+
   /** Stationary bodies (metin stones) never steer: face the target and hold. */
   protected moveOrHold(dt: number, now: number, target: Actor, dist: number, edge: number): void {
     const e = this.e;
@@ -690,7 +767,14 @@ export class EnemyAI {
         const r = range * (stealthy ? 0.3 : 1);
         const d = Math.hypot(p.position.x - e.position.x, p.position.z - e.position.z);
         if (d > r) continue;
-        if (!def.flying && !this.world.nav.lineOfSight(e.position.x, e.position.z, p.position.x, p.position.z)) continue;
+        if (!def.flying) {
+          // vertical: a shot-height ray (low rails do not block) instead of XZ LOS; a player on another level with no clear ray never aggroes
+          const nav = this.world.nav;
+          const clear = nav.vertical
+            ? nav.raycastY(e.position.x, e.position.y + e.height * 0.8, e.position.z, p.position.x, p.position.y + p.height * 0.6, p.position.z) >= 1
+            : nav.lineOfSight(e.position.x, e.position.z, p.position.x, p.position.z);
+          if (!clear) continue;
+        }
         this.dir.pullPack(this, p);
         return;
       }
@@ -828,6 +912,12 @@ export class EnemyAI {
       this.startReturn();
       return;
     }
+    // ENGINE_VERTICALITY §13: no route to the target for NOPATH_LEASH seconds and no clear shot => evade / reset home (bosses never leash by height)
+    if (this.world.nav.vertical && this.unreachableSince >= 0 && !e.isBoss && now - this.unreachableSince > NOPATH_LEASH && !this.hasLos(target)) {
+      this.unreachableSince = -1;
+      this.startReturn();
+      return;
+    }
     const px = e.position.x, pz = e.position.z;
     const tx = target.position.x, tz = target.position.z;
     const dx = tx - px, dz = tz - pz;
@@ -919,6 +1009,15 @@ export class EnemyAI {
 
   protected hasLos(target: Actor): boolean {
     const now = this.now;
+    if (this.world.nav.vertical) {
+      // vertical: shot-height ray from the head to the target's chest (ENGINE_VERTICALITY §12); kept apart from steering's walkLine cache
+      if (now - this.aimLosAt > 0.25) {
+        this.aimLosAt = now + Math.random() * 0.05;
+        const e = this.e;
+        this.aimLos = e.def.flying || this.world.nav.raycastY(e.position.x, e.position.y + e.height * 0.8, e.position.z, target.position.x, target.position.y + target.height * 0.6, target.position.z) >= 1;
+      }
+      return this.aimLos;
+    }
     if (now - this.losAt > 0.25) {
       this.losAt = now + Math.random() * 0.05;
       const e = this.e;
@@ -1046,13 +1145,24 @@ export class EnemyAI {
     if (!e.def.flying) {
       if (now - this.losAt > 0.2) {
         this.losAt = now + Math.random() * 0.05;
-        this.los = nav.lineOfSight(px, pz, x, z);
+        // vertical: walkLine also refuses cliffs, VOID and ledges between us and the goal (ENGINE_VERTICALITY §5.2)
+        this.los = nav.vertical ? nav.walkLine(px, pz, x, z) : nav.lineOfSight(px, pz, x, z);
       }
       if (!this.los) {
         const stale = !this.path || now - this.pathAt > 0.55 || Math.hypot(this.pathGX - x, this.pathGZ - z) > 2.5;
         if (stale && this.dir.pathBudget > 0) {
           this.dir.pathBudget--;
-          this.path = nav.findPath({ x: px, z: pz }, { x, z });
+          const from = { x: px, z: pz };
+          const direct = nav.findPath(from, { x, z });
+          if (nav.vertical && !direct) {
+            // unreachable (other region, no route): hold at the closest own-region cell and start the NOPATH clock (§13)
+            if (this.unreachableSince < 0) this.unreachableSince = now;
+            const hold = this.closestOwnCell(x, z);
+            this.path = hold ? nav.findPath(from, hold) : null;
+          } else {
+            this.path = direct;
+            if (nav.vertical) this.unreachableSince = -1;
+          }
           this.pathI = 0;
           this.pathAt = now;
           this.pathGX = x;
@@ -1064,11 +1174,16 @@ export class EnemyAI {
           gx = wp.x;
           gz = wp.z;
         }
+        // vertical: never walk straight at a goal with no route (it would press into a cliff); hold instead
+        if (nav.vertical && !this.path) {
+          this.halt(dt);
+          return;
+        }
       } else this.path = null;
     }
     const dx = gx - px, dz = gz - pz;
     const l = Math.hypot(dx, dz);
-    if (l < 0.05) {
+    if (l < 0.05 || (nav.vertical && !this.los && l < 0.35)) {
       this.halt(dt);
       return;
     }
@@ -1131,9 +1246,10 @@ export class EnemyAI {
     const k = 1 - Math.exp(-16 * dt);
     e.velocity.x += (vx - e.velocity.x) * k;
     e.velocity.z += (vz - e.velocity.z) * k;
+    const prevX = e.position.x, prevZ = e.position.z;
     e.position.x += e.velocity.x * dt;
     e.position.z += e.velocity.z * dt;
-    this.world.nav.resolveCircle(e.position, e.radius);
+    this.world.nav.resolveMove(e.position, prevX, prevZ, e.radius, e.moveBaseY());
     const sp = Math.hypot(e.velocity.x, e.velocity.z);
     this.moveSpeedNow = sp;
     if (faceMove && sp > 0.3) {

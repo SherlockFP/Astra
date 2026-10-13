@@ -146,7 +146,7 @@ export async function spawnEnemy(world: World, defId: string, pos: THREE.Vector3
   e.packId = opts.packId ?? null;
   e.homeX = pos.x;
   e.homeZ = pos.z;
-  e.object3d.position.set(pos.x, 0, pos.z);
+  e.object3d.position.set(pos.x, world.vertical ? world.groundY(pos.x, pos.z) : 0, pos.z);
   e.yaw = opts.facing ?? Math.random() * Math.PI * 2;
   e.dynamic = dynamic;
   e.forcesCounted = dynamic; // summoned / split / raised enemies give no M+ forces

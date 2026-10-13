@@ -11,6 +11,16 @@ import type { BossDef, EnemyAttach, EnemyDef } from '../types/enemies';
 import type { EnemyAI } from '../ai/EnemyAI';
 import { inView } from './ViewCull';
 import { copyMeshMaterials, disposeFlashClones, mapMeshMaterials, materialsOf, restoreMeshMaterials, type MaterialSwap } from './sharedMaterials';
+import { VERT } from '../world/Heightfield';
+import type { World } from '../world/World';
+
+/** Gravity for falling enemies (m/s^2), same as the player (PlayerController GRAVITY). */
+const ENEMY_GRAVITY = 28.5;
+/** Ground drop (m) beyond which an enemy walking off a ledge starts falling. */
+const FALL_START_DROP = 0.4;
+/** Feet follow the ground at this rate (damp lambda) when rising, and at 12 m/s when stepping down. */
+const FOLLOW_UP = 24;
+const FOLLOW_DOWN = 12;
 
 // Hide lists and hp-driven node toggles address meshes by name: keep those meshes separate when models are merged on load.
 for (const d of [...Object.values(ENEMIES), ...Object.values(BOSSES)]) {
@@ -22,6 +32,8 @@ for (const d of [...Object.values(ENEMIES), ...Object.values(BOSSES)]) {
 export interface EnemySyncState {
   id: EntityId;
   x: number; z: number; yaw: number;
+  /** Airborne / falling only (vertical worlds): world y incl. hover. Absent = derive from groundY(x,z) + hover. */
+  y?: number;
   hp: number; maxHp: number;
   anim: string;                 // base clip
   targetId: EntityId | null;
@@ -136,6 +148,18 @@ export class Enemy extends Actor {
   wakeRange = 0;
   /** Last player (or enemy) whose knockback is pending on this enemy: Combat sets it, EnemyAI reads it when the push cuts a cast. */
   kbBy: EntityId | null = null;
+
+  // ---- vertical worlds (ENGINE_VERTICALITY §10.2). Flat worlds never touch these: feetY stays 0.
+  /** Absolute feet height. null = snap to the ground on the next vertical update. */
+  feetY: number | null = null;
+  /** Vertical speed while falling off a ledge (m/s). */
+  vy = 0;
+  /** True while falling (gravity integrates feetY). Host-authoritative; clients use the synced y. */
+  airborne = false;
+  /** Last standable spot with no VOID/LEDGE cell within SAFE_EDGE_PAD (sampled by EnemyAI every 0.5 s). */
+  lastSafe: { x: number; z: number } | null = null;
+  /** Clients: feet height from the host's EnemySyncState.y (NaN = none, derive from the ground). */
+  private remoteFeetY = NaN;
 
   private holder: THREE.Group | null = null;
   /** Distance LOD state: 1 = mixer every frame, 4 = every 4th frame with the accumulated dt, 0 = frozen (see updateLod). */
@@ -581,15 +605,21 @@ export class Enemy extends Actor {
     const a = this.anim;
     const ls = this.lastShot;
     const shot = a && a.shotSeq > 0 && ls.name ? `${ls.name}:${ls.speed.toFixed(2)}${ls.loop > 0 ? `:${ls.loop.toFixed(1)}` : ''}` : null;
-    return {
+    const out: EnemySyncState = {
       id: this.id, x: this.position.x, z: this.position.z, yaw: this.yaw, hp: this.hp, maxHp: this.maxHp,
       anim: a?.baseName ?? '', targetId: this.targetId, cast: this.cast?.skillId ?? null, dead: this.isDead,
       shot, shotSeq: a?.shotSeq ?? 0, aggroed: this.aggroed,
     };
+    // airborne / falling only (§15): clients derive the ground height locally otherwise
+    const world = this.world;
+    if (world?.vertical && this.feetY !== null && Math.abs(this.feetY - world.groundY(this.position.x, this.position.z)) > 0.3) {
+      out.y = this.feetY + this.hover;
+    }
+    return out;
   }
 
   applySyncState(s: EnemySyncState, now: number): void {
-    this.interp.push({ t: now, x: s.x, y: 0, z: s.z, yaw: s.yaw });
+    this.interp.push({ t: now, x: s.x, y: s.y ?? NaN, z: s.z, yaw: s.yaw });
     const prevHp = this.hp;
     this.hp = s.hp;
     this.maxHp = s.maxHp;
@@ -678,6 +708,7 @@ export class Enemy extends Actor {
       this.position.z = o.z;
       this.yaw = o.yaw;
       this.remoteHasPos = true;
+      this.remoteFeetY = Number.isFinite(o.y) ? o.y - this.hover : NaN;
     }
     const a = this.anim;
     if (!a) return;
@@ -757,6 +788,55 @@ export class Enemy extends Actor {
     }
   }
 
+  /**
+   * Feet height for the vertical move-and-collide step (NavGrid.resolveMove). Flyers pass steps freely (Infinity limit).
+   */
+  override moveBaseY(): number {
+    if (this.def.flying) return Infinity;
+    return this.feetY ?? this.position.y;
+  }
+
+  /**
+   * One frame of the vertical state (ENGINE_VERTICALITY §10.2); returns the feet height. Host: rises follow the ground with
+   * damp, steps down at 12 m/s, a drop over 0.4 m starts a fall (gravity until the ground). Clients: the host's airborne y
+   * when one was sent, otherwise the same ground follow. Flyers track the ground without falling.
+   */
+  private stepFeet(dt: number, world: World): number {
+    const gy = world.groundY(this.position.x, this.position.z);
+    if (this.feetY === null) {
+      this.feetY = gy;
+      this.vy = 0;
+      this.airborne = false;
+    }
+    if (!this.authority && Number.isFinite(this.remoteFeetY)) {
+      this.feetY = this.remoteFeetY;
+      return this.feetY;
+    }
+    let feet = this.feetY;
+    if (this.def.flying) {
+      this.airborne = false;
+      this.vy = 0;
+      feet += (gy - feet) * (1 - Math.exp(-FOLLOW_UP * dt));
+    } else if (this.airborne) {
+      this.vy -= ENEMY_GRAVITY * dt;
+      feet += this.vy * dt;
+      if (this.vy <= 0 && feet <= gy) {
+        feet = gy;
+        this.vy = 0;
+        this.airborne = false;
+      }
+    } else if (gy > feet) {
+      feet = gy - feet > VERT.STEP_UP ? gy : feet + (gy - feet) * (1 - Math.exp(-FOLLOW_UP * dt));
+    } else if (feet - gy > FALL_START_DROP) {
+      this.airborne = true;
+      this.vy = 0;
+    } else {
+      feet = Math.max(gy, feet - FOLLOW_DOWN * dt);
+    }
+    this.feetY = feet;
+    return feet;
+  }
+
   update(dt: number): void {
     this.updateLod();
     if (!this.authority) this.updateRemote(dt);
@@ -766,13 +846,15 @@ export class Enemy extends Actor {
     // procedural bodies
     this.proc?.update(dt, t, this.hpFrac);
 
-    // hover / bob
+    // ground follow (vertical worlds only; flat worlds keep feet at 0), then hover / bob on top of the feet
+    const world = this.world;
+    const feet = world?.vertical ? this.stepFeet(dt, world) : 0;
     const vis = this.def.visual;
     if (this.holder) {
       const bob = vis?.hoverBob ? Math.sin(t * 2.4 + this.id) * vis.hoverBob : 0;
-      this.position.y = this.hover + bob;
+      this.position.y = feet + this.hover + bob;
       if (vis?.spin && this.proc) this.holder.rotation.y += vis.spin * dt;
-    }
+    } else if (world?.vertical) this.position.y = feet + this.hover;
 
     // alpha smoothing (a finished fade to opaque snaps to 1 so the shared materials come back)
     if (Math.abs(this.alphaNow - this.alphaTarget) > 0.004) {

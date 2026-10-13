@@ -4,6 +4,7 @@ import { clamp, damp, angleDiff, lerp } from '../core/utils';
 import { OccluderFader } from './OccluderFade';
 import type { Actor } from '../entities/Actor';
 import type { Enemy } from '../entities/Enemy';
+import { VERT } from '../world/Heightfield';
 
 export type CameraMode = 'action' | 'classic';
 /**
@@ -33,8 +34,6 @@ const WOW_MIN_ZOOM_STEP = 0.4;
 const ZOOM_MAX_SLEW = 4;
 /** WoW: lateral wall probes sit this far (m) either side of the camera axis. */
 const LATERAL_PROBE = 0.35;
-/** WoW: the camera stays this far (m) under a ceiling. */
-const CEIL_MARGIN = 0.35;
 /** WoW smart pivot (§7.4): dead zone (rad, 2 deg) and the speed/turn limits. */
 const SMART_DEAD = 2 * Math.PI / 180;
 const SMART_EASE = 3.0;
@@ -191,6 +190,9 @@ export class ThirdPersonCamera {
   private colFrac = 1;
   private colHold = 0;
   private colByProp = false;
+  /** Debug (debugStats): the ceiling cap over the pivot (Infinity = none) and the ceiling fraction of the last frame. */
+  private dbgCapY = Infinity;
+  private dbgFracCeil = 1;
   private shoulderCur = SHOULDER;
   private shakes: ShakeEntry[] = [];
   private shakeClock = 0;
@@ -351,7 +353,7 @@ export class ThirdPersonCamera {
     if (!this.pivotReady) return;
     const floorY = this.groundAt(this.pivot.x, this.pivot.z) + 0.45;
     const minPitch = Math.max(-0.95, Math.asin(clamp((floorY - this.pivot.y) / Math.max(1, this.zoomCur), -1, 1)));
-    this.pitch = clamp(this.pitch, minPitch, this.profile.maxPitch);
+    this.pitch = clamp(this.pitch, minPitch, this.pitchUpLimit(this.ceilCap(), minPitch));
     const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
     _fwd.set(-Math.sin(this.yaw) * cp, -sp, -Math.cos(this.yaw) * cp);
     _right.set(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
@@ -772,7 +774,9 @@ export class ThirdPersonCamera {
     const world = G.world;
     if (world) {
       const x1 = this.pivot.x + rx * len, z1 = this.pivot.z + rz * len;
-      const f = world.nav.raycast(this.pivot.x, this.pivot.z, x1, z1);
+      const f = world.vertical
+        ? world.nav.raycastY(this.pivot.x, this.pivot.y, this.pivot.z, x1, this.pivot.y, z1)
+        : world.nav.raycast(this.pivot.x, this.pivot.z, x1, z1);
       if (f < 1) best = Math.min(best, f * len);
     }
     if (this.occluders && this.occluders.length) {
@@ -795,8 +799,13 @@ export class ThirdPersonCamera {
     const p = this.profile;
     const wow = this.mode === 'classic';
 
-    // zoom maximum: WoW indoors follows the ceiling (CONTROLS_WOW §7.1), slewed at 4 m/s; Aksiyon stays at 18 m
-    const goalMax = this.zoomGoalMax();
+    // zoom maximum: WoW indoors follows the ceiling (CONTROLS_WOW §7.1), slewed at 4 m/s; Aksiyon stays at 18 m.
+    // Vertical dungeons also cap it by the room's headroom (§14.4), so the slew covers both.
+    const world = G.world;
+    const vert = world?.vertical === true;
+    const capY = this.ceilCap();
+    this.dbgCapY = capY;
+    const goalMax = this.zoomGoalMax(capY);
     this.zoomMaxCur = instant ? goalMax : this.zoomMaxCur + clamp(goalMax - this.zoomMaxCur, -ZOOM_MAX_SLEW * dt, ZOOM_MAX_SLEW * dt);
 
     // zoom: the target, plus combat and lock-on biases; the death cam pulls in to 5.5 m
@@ -819,7 +828,7 @@ export class ThirdPersonCamera {
     // pitch limits depend on the distance so the camera never dips under the floor
     const floorY = this.groundAt(this.pivot.x, this.pivot.z) + 0.45;
     const minPitch = Math.max(-0.95, Math.asin(clamp((floorY - this.pivot.y) / Math.max(1, this.zoomCur), -1, 1)));
-    this.pitch = clamp(this.pitch, minPitch, p.maxPitch);
+    this.pitch = clamp(this.pitch, minPitch, this.pitchUpLimit(capY, minPitch));
 
     const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
     _fwd.set(-Math.sin(this.yaw) * cp, -sp, -Math.cos(this.yaw) * cp);
@@ -834,13 +843,15 @@ export class ThirdPersonCamera {
     _pos.copy(this.pivot).addScaledVector(_fwd, -this.zoomCur).addScaledVector(_right, this.shoulderCur);
 
     // wall collision: shorten the pivot -> camera segment where the nav grid blocks it
+    // vertical dungeons use the height-aware ray (§5.2): LOW rails are looked over, tall walls still block
     let fracNav = 1;
-    const world = G.world;
     if (this.collide && world) {
       const dx = _pos.x - this.pivot.x, dz = _pos.z - this.pivot.z;
       const len = Math.hypot(dx, dz);
       if (len > 0.01) {
-        const f = world.nav.raycast(this.pivot.x, this.pivot.z, _pos.x, _pos.z);
+        const f = vert
+          ? world.nav.raycastY(this.pivot.x, this.pivot.y, this.pivot.z, _pos.x, _pos.y, _pos.z)
+          : world.nav.raycast(this.pivot.x, this.pivot.z, _pos.x, _pos.z);
         if (f < 1) {
           let blocks = true;
           if (this.collideMaxRayHeight < 1e6) {
@@ -859,7 +870,9 @@ export class ThirdPersonCamera {
       if (len > 0.01) {
         const rx = Math.cos(this.yaw), rz = -Math.sin(this.yaw);
         for (const side of [-LATERAL_PROBE, LATERAL_PROBE]) {
-          const f = world.nav.raycast(this.pivot.x + rx * side, this.pivot.z + rz * side, _pos.x + rx * side, _pos.z + rz * side);
+          const f = vert
+            ? world.nav.raycastY(this.pivot.x + rx * side, this.pivot.y, this.pivot.z + rz * side, _pos.x + rx * side, _pos.y, _pos.z + rz * side)
+            : world.nav.raycast(this.pivot.x + rx * side, this.pivot.z + rz * side, _pos.x + rx * side, _pos.z + rz * side);
           if (f < 1) fracNav = Math.min(fracNav, clamp(f - 0.55 / len, 0.12, 1));
         }
       }
@@ -868,9 +881,13 @@ export class ThirdPersonCamera {
     const pull = this.occluderMode === 'pull';
     let fracProp = 1;
     if (pull && this.occluders && this.occluders.length) fracProp = this.occluderFrac(_pos);
-    // WoW ceilings (CONTROLS_WOW §7.3): the reactive half of the indoor zoom cap
-    const fracCeil = wow ? this.ceilingFrac(_pos) : 1;
-    const frac = Math.min(fracNav, fracProp, fracCeil);
+    // ceilings: WoW (CONTROLS_WOW §7.3) always; vertical dungeons (§14.3) for both schemes. capY is Infinity for flat maps, open air,
+    // the death cam and the boss intro, so those paths stay as they were.
+    const fracCeil = wow || capY !== Infinity ? this.ceilingFrac(_pos) : 1;
+    // raised floors between the pivot and the camera (§14.5); flat maps always 1
+    const fracGround = this.groundFrac(_pos);
+    const frac = Math.min(fracNav, fracProp, fracCeil, fracGround);
+    this.dbgFracCeil = fracCeil;
     // pull in instantly; after the last block hold 0.15 s, then ease out (2.5/s for props, 4/s for nav walls)
     if (instant || frac < this.colFrac) {
       this.colFrac = frac;
@@ -1084,15 +1101,59 @@ export class ThirdPersonCamera {
    * Zoom maximum the effective zoom may reach (CONTROLS_WOW §7.1). Aksiyon: 18 m. WoW outdoors: 30 m. WoW indoors:
    * clamp(1.35 x ceiling under the pivot, 6, 18), which is 18 when no ceiling is known (World.ceilingY = Infinity).
    */
-  private zoomGoalMax(): number {
+  private zoomGoalMax(capY: number): number {
     const p = this.profile;
-    if (this.mode !== 'classic' || this.outdoor) return p.zoomMaxOutdoor;
-    const ceil = G.world ? G.world.ceilingY(this.pivot.x, this.pivot.z) : Infinity;
-    return ceil === Infinity ? p.zoomMaxIndoor : clamp(1.35 * ceil, 6, p.zoomMaxIndoor);
+    let goal: number;
+    if (this.mode !== 'classic' || this.outdoor) goal = p.zoomMaxOutdoor;
+    else {
+      const ceil = G.world ? G.world.ceilingY(this.pivot.x, this.pivot.z) : Infinity;
+      goal = ceil === Infinity ? p.zoomMaxIndoor : clamp(1.35 * ceil, 6, p.zoomMaxIndoor);
+    }
+    // §14.4 per-room zoom ceiling: the headroom under the pivot caps the zoom (vertical dungeons, both schemes)
+    if (capY !== Infinity) goal = Math.min(goal, clamp((capY - this.pivot.y) * 2.2 + 2, 5, 18));
+    return goal;
   }
 
   /**
-   * CONTROLS_WOW §7.3: the fraction of the pivot -> wanted-camera segment that stays CEIL_MARGIN under the ceiling
+   * §14.1 cap: the ceiling over the pivot minus CAM_CEIL_MARGIN, in vertical dungeons only. Infinity = no cap (flat maps, open air,
+   * the death cam and the boss intro, which frame the player on their own).
+   */
+  private ceilCap(): number {
+    const world = G.world;
+    if (!world || !world.vertical || this.deathCam || this.cine !== null) return Infinity;
+    const c = world.ceilingY(this.pivot.x, this.pivot.z);
+    return c === Infinity ? Infinity : c - VERT.CAM_CEIL_MARGIN;
+  }
+
+  /**
+   * §14.2: the highest pitch allowed. The profile's maxPitch, or the elevation that keeps the camera under `capY` at the current zoom
+   * (never below CAM_MIN_CEIL_PITCH, so the camera still orbits in a low room). Never below `minPitch` (the floor limit wins).
+   */
+  private pitchUpLimit(capY: number, minPitch: number): number {
+    const maxP = this.profile.maxPitch;
+    if (capY === Infinity) return maxP;
+    const pitchCeil = Math.asin(clamp((capY - this.pivot.y) / Math.max(1, this.zoomCur), -1, 1));
+    return Math.max(minPitch, Math.min(maxP, Math.max(pitchCeil, VERT.CAM_MIN_CEIL_PITCH)));
+  }
+
+  /**
+   * §14.5: the fraction of the pivot -> camera segment before the ray dips under a raised floor (8 samples, +0.35 m clearance).
+   * 1 = clear. Never below 12%, like the other fractions. Flat maps are always 1.
+   */
+  private groundFrac(pos: THREE.Vector3): number {
+    const world = G.world;
+    if (!world || !world.vertical) return 1;
+    const px = this.pivot.x, py = this.pivot.y, pz = this.pivot.z;
+    for (let k = 1; k <= 8; k++) {
+      const t = k / 8;
+      const x = px + (pos.x - px) * t, y = py + (pos.y - py) * t, z = pz + (pos.z - pz) * t;
+      if (y < world.groundY(x, z) + 0.35) return clamp(t - 0.04, 0.12, 1);
+    }
+    return 1;
+  }
+
+  /**
+   * CONTROLS_WOW §7.3 / GDD §14.3: the fraction of the pivot -> wanted-camera segment that stays CAM_CEIL_MARGIN under the ceiling
    * (sampled at 0.25 / 0.5 / 0.75 / 1, then bisected). 1 = clear. Never below 12%, like the wall fraction.
    */
   private ceilingFrac(pos: THREE.Vector3): number {
@@ -1101,7 +1162,7 @@ export class ThirdPersonCamera {
     const px = this.pivot.x, py = this.pivot.y, pz = this.pivot.z;
     const bad = (t: number): boolean => {
       const x = px + (pos.x - px) * t, y = py + (pos.y - py) * t, z = pz + (pos.z - pz) * t;
-      return y > world.ceilingY(x, z) - CEIL_MARGIN;
+      return y > world.ceilingY(x, z) - VERT.CAM_CEIL_MARGIN;
     };
     let safe = 0;
     for (const t of [0.25, 0.5, 0.75, 1]) {
@@ -1134,7 +1195,7 @@ export class ThirdPersonCamera {
   }
 
   /** Debug numbers for the camera overlay (dev/player.html ?camdebug=1, dev/combat.html telemetry). */
-  debugStats(): { dist: number; colFrac: number; pitch: number; fov: number; shakeUsed: number; budgetUsed: number; kick: number; lock: boolean; cine: boolean; occluders: number } {
+  debugStats(): { dist: number; colFrac: number; pitch: number; fov: number; shakeUsed: number; budgetUsed: number; kick: number; lock: boolean; cine: boolean; occluders: number; capY: number; fracCeil: number } {
     let shakeUsed = 0;
     for (const s of this.shakes) {
       const e = 1 - s.t / s.dur;
@@ -1146,6 +1207,7 @@ export class ThirdPersonCamera {
       dist: this.zoomCur, colFrac: this.colFrac, pitch: this.pitch, fov: this.camera.fov, shakeUsed, budgetUsed,
       kick: Math.hypot(this.kickX, this.kickY), lock: this.lockOnTarget !== null, cine: this.cine !== null,
       occluders: this.occluders ? this.occluders.length : 0,
+      capY: this.dbgCapY, fracCeil: this.dbgFracCeil,
     };
   }
 

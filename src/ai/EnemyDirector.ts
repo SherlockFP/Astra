@@ -205,7 +205,9 @@ export class EnemyDirector {
       const op = o.e.packId;
       if (op && packs.has(op)) o.acquire(target, true);
       else if (!pid && !op && o.e.def.aggroRange > 0 && !o.e.def.ai?.summoned) {
-        if (Math.hypot(o.e.position.x - ai.e.position.x, o.e.position.z - ai.e.position.z) <= 8) o.acquire(target, true);
+        // vertical: a pack-less neighbour on another level (balcony / pit) is not pulled (ENGINE_VERTICALITY §12)
+        const nav = this.world.nav;
+        if (Math.hypot(o.e.position.x - ai.e.position.x, o.e.position.z - ai.e.position.z) <= 8 && (!nav.vertical || nav.sameRegion(o.e.position, ai.e.position))) o.acquire(target, true);
       }
     }
   }

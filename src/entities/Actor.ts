@@ -112,6 +112,14 @@ export abstract class Actor extends Entity {
     this.object3d.add(model);
   }
 
+  /**
+   * Feet height used by the vertical move-and-collide step (NavGrid.resolveMove, ENGINE_VERTICALITY §5.2). Players and
+   * flat-world bodies use their own y; Enemy overrides it with its ground-following feet height.
+   */
+  moveBaseY(): number {
+    return this.position.y;
+  }
+
   update(dt: number): void {
     this.combatTimer += dt;
     this.statuses.update(dt);
@@ -121,9 +129,10 @@ export abstract class Actor extends Entity {
       else {
         // GDD_LIFE §5.4: a hit-frozen actor's forced movement runs at 0.04 speed (0 = never frozen).
         const k = this.hitFreezeUntil > 0 && performance.now() < this.hitFreezeUntil ? 0.04 : 1;
+        const px = this.position.x, pz = this.position.z;
         this.position.x += fm.vx * dt * k;
         this.position.z += fm.vz * dt * k;
-        this.world.nav.resolveCircle(this.position, this.radius);
+        this.world.nav.resolveMove(this.position, px, pz, this.radius, this.moveBaseY());
       }
     }
     this.anim?.update(dt);
