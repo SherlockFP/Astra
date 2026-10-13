@@ -7,7 +7,7 @@
  * Deviations from the design doc, all because the engine piece is not in place (see the report of the dungeon author):
  *  - multi-strike strings (followUps, SP-12) are one cone with the summed coefficient, as enemies_peri_sisleri.ts does;
  *  - no Sentinel aura passive (needs a new ally-aura handler, SP-6); no `fuse`, `stunOnBlock`, `minTargets` params;
- *  - no holy_scorch DoT (status not in StatusId) and no bear_snare (the Trapper's trap roots with the existing `root`);
+ *  - the Mystic's scorch applies holy_scorch and the Trapper's trap applies bear_snare (both real statuses, dispellable);
  *  - the Storm Drake's breath strip (persist) is not drawn: the breath is a single line hit.
  * Poise bars: the doc's posture numbers (SP-11 units) are written onto the defs at the bottom of this file, the same way
  * enemies_peri_sisleri.ts sets `poise`. Check the unit scale against the poise system before tuning.
@@ -46,18 +46,18 @@ add({ id: 'yg_thundercaller', name: 'Yiğit Gök Çağıran', model: MON('Giant'
   abilities: [
     proj('yg_tc_thunderbolt', 'Gök Gürültüsü Okuyu', 18, 20, 9, 2.2, 3.2, 'lightning', 'lightning_projectile', 'Attack', 0.47,
       { initialCooldown: 3, castTime: 2.2, interruptible: true, kick: 2, sfx: 'lightning_cast' }),
-    aoe('yg_tc_strike', 'Yıldırım Darbesi', 'ground_aoe', 4, 18, 16, 0.83, 1.5, 'lightning', 'Jump', 0.25,
+    aoe('yg_tc_strike', 'Yıldırım Darbesi', 'ground_aoe', 4, 18, 16, 0.9, 1.5, 'lightning', 'Jump', 0.25,
       { initialCooldown: 8, statuses: [{ status: 'stun', duration: 2.0 }], vfx: 'lightning_strike', params: { target: 3 } }),
   ] });
 
 add({ id: 'yg_sentinel', name: 'Fırtına Dövümlü Nöbetçi', model: CHAR('Knight'), scale: 1.3, role: 'tank', rank: 'elite',
   hp: 3.6, dmg: 1.6, speed: 5.2, radius: 0.8, aggro: 12, forces: 8, anims: A_KAYKIT, resist: R_VALARJAR,
   visual: { hide: KNIGHT_HIDE.filter((n) => n !== '1H_Sword' && n !== 'Round_Shield'), eyeEmissive: 0x80c0ff, runRef: 7 },
-  basic: cone('yg_sn_slash', 'Çelik Kılıç', 3.0, 100, 2.2, 1.8, '1H_Melee_Attack_Slice_Diagonal', 0.38, { windup: 0.70 }),
+  basic: cone('yg_sn_slash', 'Çelik Kılıç', 3.0, 100, 2.2, 1.8, '1H_Melee_Attack_Slice_Diagonal', 0.38, { windup: 0.90 }),
   abilities: [
     aoe('yg_sn_pulse', 'Yüklü Nabız', 'self_aoe', 8, 8, 14, 0.90, 1.8, 'lightning', 'Block_Attack', 0.35,
       { initialCooldown: 6, knockback: 6, vfx: 'shockwave', sfx: 'lightning_impact' }),
-    line('yg_sn_crackle', 'Çıtırtı', 14, 2, 9, 0.80, 1.4, 'lightning', '1H_Melee_Attack_Stab', 0.55,
+    line('yg_sn_crackle', 'Çıtırtı', 14, 2, 9, 0.90, 1.4, 'lightning', '1H_Melee_Attack_Stab', 0.55,
       { initialCooldown: 3, params: { target: 1 } }),
     buff('yg_sn_light', 'Koruyucu Işık', 1.0, 99, [{ status: 'shield', duration: 8 }], 'Spellcast_Raise', 1.0,
       { interruptible: true, kick: 2, vfx: 'shield_bubble', params: { hpBelow: 0.3, once: 1, self: 1, single: 1, shieldPct: 0.25, radius: 1, needAlly: 0 } }),
@@ -68,7 +68,7 @@ add({ id: 'yg_storm_drake', name: 'Fırtına Ejderi', model: MON('Dragon_Evolved
   basic: proj('yg_dr_spit', 'Şimşek Tükürüğü', 18, 18, 2.4, 0.70, 1.0, 'lightning', 'lightning_projectile', 'Punch', 0.33),
   abilities: [
     stormBreath('yg_dr_breath', 12),
-    aoe('yg_dr_buffet', 'Kanat Savrulması', 'self_aoe', 4, 4, 10, 0.75, 1.2, 'physical', 'Spin', 0.5,
+    aoe('yg_dr_buffet', 'Kanat Savrulması', 'self_aoe', 4, 4, 10, 0.90, 1.2, 'physical', 'Spin', 0.5,
       { initialCooldown: 6, knockback: 4 }),
   ] });
 
@@ -80,7 +80,7 @@ add({ id: 'yg_worg', name: 'Karapençe Kurt', model: ITCH('wolf'), scale: 0.8, r
 add({ id: 'yg_grizzly', name: 'Çeliçene Ayı', model: ITCH('bear'), scale: 1.15, role: 'tank', rank: 'elite',
   hp: 4.2, dmg: 1.8, speed: 5.6, radius: 1.1, aggro: 12, forces: 8, anims: A_WOLF, resist: R_BEAST, ai: { kite: [6, 12] },
   visual: { runRef: 5.6 },
-  basic: cone('yg_bz_swipe', 'Pençe', 3.2, 110, 2.2, 1.9, 'Swipe', 0.42, { windup: 0.70 }),
+  basic: cone('yg_bz_swipe', 'Pençe', 3.2, 110, 2.2, 1.9, 'Swipe', 0.42, { windup: 0.95 }),
   abilities: [
     aoe('yg_bz_slam', 'Yer Darbesi', 'self_aoe', 5, 5, 10, 1.00, 2.2, 'physical', 'Slam', 0.77, { initialCooldown: 5, vfx: 'ground_slam' }),
     charge('yg_bz_maul', 'Ayı Hamlesi', 10, 14, 0.90, 1.8, 'Lunge', 0.7,
@@ -94,8 +94,8 @@ add({ id: 'yg_mystic', name: 'Yiğit Mistik', model: CHAR('Mage'), scale: 1.05, 
   basic: proj('yg_my_bolt', 'Kutsal Ok', 16, 18, 2.4, 0.70, 1.0, 'holy', 'holy_projectile', 'Spellcast_Shoot', 0.3),
   abilities: [
     heal('yg_my_heal', 'Kutsal Şifa', 2.2, 9, 0.35, 'Spellcast_Raise', 1.0, { kick: 2 }),
-    proj('yg_my_scorch', 'Kutsal Yanık', 18, 20, 14, 0.55, 0.4, 'holy', 'holy_projectile', 'Spellcast_Shoot', 0.3,
-      { initialCooldown: 5, params: { target: 1 } }),
+    proj('yg_my_scorch', 'Kutsal Yanık', 18, 20, 14, 0.6, 0.4, 'holy', 'holy_projectile', 'Spellcast_Shoot', 0.3,
+      { initialCooldown: 5, statuses: [{ status: 'holy_scorch', duration: 8, stacks: 1 }], params: { target: 1 } }),
     buff('yg_my_ward', 'Kutsal Mühür', 1.5, 15, [{ status: 'shield', duration: 8 }], 'Spellcast_Raise', 1.0,
       { vfx: 'shield_bubble', kick: 1, params: { shieldPct: 0.15, single: 1, radius: 14 } }),
   ] });
@@ -105,9 +105,9 @@ add({ id: 'yg_trapper', name: 'Yiğit Tuzakçı', model: CHAR('Rogue_Hooded'), s
   visual: { hide: ROGUE_HIDE.filter((n) => n !== '2H_Crossbow') },
   basic: proj('yg_tp_bolt', 'Arbalet Oku', 22, 20, 2.4, 0.70, 1.0, 'physical', 'arrow_projectile', '2H_Ranged_Shoot', 0.15, { sfx: 'crossbow_shot' }),
   abilities: [
-    aoe('yg_tp_trap', 'Ayı Tuzağı', 'ground_aoe', 1.8, 18, 14, 0.60, 0.6, 'physical', 'Throw', 0.6,
-      { initialCooldown: 4, statuses: [{ status: 'root', duration: 3 }], vfx: 'trap_snap', dispel: 'root', params: { target: 1 } }),
-    line('yg_tp_pierce', 'Delici Ok', 22, 1.2, 12, 0.85, 1.6, 'physical', '2H_Ranged_Shoot', 0.15,
+    aoe('yg_tp_trap', 'Ayı Tuzağı', 'ground_aoe', 1.8, 18, 14, 0.90, 0.6, 'physical', 'Throw', 0.6,
+      { initialCooldown: 4, statuses: [{ status: 'bear_snare', duration: 3 }], vfx: 'trap_snap', params: { target: 1 } }),
+    line('yg_tp_pierce', 'Delici Ok', 22, 1.2, 12, 0.90, 1.6, 'physical', '2H_Ranged_Shoot', 0.15,
       { initialCooldown: 6, telegraph: true, sfx: 'crossbow_shot', params: { target: 1, pierce: 1 } }),
   ] });
 
@@ -120,13 +120,13 @@ add({ id: 'yg_runecarver', name: 'Rün Oymacısı', model: CHAR('Mage'), scale: 
       { initialCooldown: 4, castTime: 2.0, interruptible: true, kick: 2 }),
     buff('yg_rc_rune', 'Rün Kalkanı', 1.2, 18, [{ status: 'shield', duration: 6 }], 'Spellcast_Raise', 1.0,
       { params: { shieldPct: 0.12, radius: 12 } }),
-    aoe('yg_rc_mine', 'Rün Mayını', 'ground_aoe', 2.2, 16, 15, 0.75, 1.2, 'lightning', 'Throw', 0.5,
+    aoe('yg_rc_mine', 'Rün Mayını', 'ground_aoe', 2.2, 16, 15, 0.90, 1.2, 'lightning', 'Throw', 0.5,
       { initialCooldown: 7, vfx: 'rune_pad_glow', params: { target: 1 } }),
   ] });
 
 add({ id: 'yg_tideskorn', name: 'Gelgitkıran Akıncı', model: CHAR('Orc'), scale: 1.0, role: 'melee', rank: 'elite',
   hp: 3.2, dmg: 1.7, speed: 5.8, radius: 0.8, aggro: 12, forces: 7, anims: A_CHAR, resist: R_DEMON,
-  basic: cone('yg_ts_axe', 'Gelgit Baltası', 3.0, 100, 2.2, 2.2, 'Weapon', 0.45, { windup: 0.70 }),
+  basic: cone('yg_ts_axe', 'Gelgit Baltası', 3.0, 100, 2.2, 2.2, 'Weapon', 0.45, { windup: 1.0 }),
   abilities: tideskornAbilities(),
 });
 
@@ -145,7 +145,7 @@ add({ id: 'yg_stag', name: 'Altın Tüylü Geyik', model: ITCH('deer'), scale: 1
   abilities: [
     charge('yg_st_charge', 'Altın Hücum', 16, 13, 0.95, 2.0, 'Run', 0.9,
       { initialCooldown: 5, knockback: 5, params: { target: 3, dash: 0.8, minRange: 6 } }),
-    aoe('yg_st_stomp', 'Toynak Darbesi', 'self_aoe', 4, 4, 9, 0.78, 1.3, 'physical', 'Slam', 0.6, { initialCooldown: 4 }),
+    aoe('yg_st_stomp', 'Toynak Darbesi', 'self_aoe', 4, 4, 9, 0.90, 1.3, 'physical', 'Slam', 0.6, { initialCooldown: 4 }),
   ] });
 
 add({ id: 'yg_purifier', name: 'Yiğit Arındırıcı', model: CHAR('Rogue'), scale: 1.0, tint: 0xf0e8c8, role: 'support', rank: 'trash',
@@ -153,7 +153,7 @@ add({ id: 'yg_purifier', name: 'Yiğit Arındırıcı', model: CHAR('Rogue'), sc
   visual: { hide: ROGUE_HIDE, glow: 0xfff0c0, runRef: 7 },
   basic: proj('yg_pu_bolt', 'Arınma Oku', 16, 18, 2.4, 0.70, 1.0, 'holy', 'holy_projectile', 'Spellcast_Shoot', 0.3),
   abilities: [
-    aoe('yg_pu_circle', 'Kutsal Çember', 'ground_aoe', 3.2, 18, 14, 0.75, 1.2, 'holy', 'Spellcast_Raise', 0.5,
+    aoe('yg_pu_circle', 'Kutsal Çember', 'ground_aoe', 3.2, 18, 14, 0.90, 1.2, 'holy', 'Spellcast_Raise', 0.5,
       { initialCooldown: 5, vfx: 'holy_burst', params: { target: 0, persist: 8, persistCoef: 0.4, tick: 2 } }),
     heal('yg_pu_fire', 'Arınma Ateşi', 2.0, 12, 0.18, 'Spellcast_Raise', 1.0, { kick: 1, params: { cleanse: 1 } }),
   ] });
@@ -192,7 +192,7 @@ add({ id: 'yg_skovald', name: 'Tanrı-Kral Skovald', model: CHAR('Orc'), scale: 
 
 add({ id: 'yg_tideskorn_add', name: 'Gelgitkıran Akıncı', model: CHAR('Orc'), scale: 1.0, role: 'melee', rank: 'elite',
   hp: 3.2, dmg: 1.7, speed: 5.8, radius: 0.8, aggro: 12, forces: 0, xp: 0, anims: A_CHAR, resist: R_DEMON, ai: { summoned: true },
-  basic: cone('yg_ts_axe', 'Gelgit Baltası', 3.0, 100, 2.2, 2.2, 'Weapon', 0.45, { windup: 0.70 }),
+  basic: cone('yg_ts_axe', 'Gelgit Baltası', 3.0, 100, 2.2, 2.2, 'Weapon', 0.45, { windup: 1.0 }),
   abilities: tideskornAbilities() });
 
 add({ id: 'yg_obliterator', name: 'Yok Edici Golem', model: GEN('golem_stone'), scale: 1.0, tint: 0x8aa8ff, emissive: 0x4080ff, role: 'caster', rank: 'elite',
@@ -212,7 +212,7 @@ function stormBreath(id: string, range: number) {
 }
 
 function worgLeap(id: string) {
-  return charge(id, 'Atılış', 12, 9, 0.85, 1.6, 'Lunge', 0.87,
+  return charge(id, 'Atılış', 12, 9, 0.90, 1.6, 'Lunge', 0.87,
     { initialCooldown: 3, statuses: [bleed(1, 0.2, 6)], params: { target: 3, dash: 0.5, minRange: 5 } });
 }
 

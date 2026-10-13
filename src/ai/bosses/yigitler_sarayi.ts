@@ -2,7 +2,7 @@ import { G } from '../../game/G';
 import type { Player } from '../../entities/Player';
 import type { BossController } from '../BossController';
 import type { BossScript } from './types';
-import { angleTo, circle, dashLine, every, floatOver, isTank, partyHp, pickPlayers, rad, ring, statusPlayer, zone } from './kit';
+import { angleTo, circle, dashLine, every, floatOver, isTank, partyHp, pickPlayers, playersIn, rad, ring, statusPlayer, zone } from './kit';
 import { bossLeap, bossString } from './moveBridge';
 import { markPlayers } from './patterns';
 import { clearOrbs, fixate, roamingOrb, updateOrbs } from './orbs';
@@ -12,11 +12,10 @@ import { clearOrbs, fixate, roamingOrb, updateOrbs } from './orbs';
  * Fenrür (retreat with pups, fixation) and Odyn (stage 1 Skovald, stage 2 judgment), one boss entity with two stages.
  * Elden-style strings use bossString; leaps use bossLeap; marks use markPlayers; orbs use roamingOrb.
  *
- * Deviations (engine pieces not in place, see the report): no Aegis of Aggramar ward (-75% damage) so the Ragnarok ticks land
- * at full coefficient; no Statik Alan strip behind the drakes' breath; no rune-pad soak (a brand is cleansed by standing near any
- * pad); no `holy_scorch` / `aegis_ward` / `odyn_favor` / `odyn_blessing` statuses (Favor and Blessing use the `haste` fallback
- * the doc names); no posture-break cancels of Ragnarok or Tempest (only runs with cancelOnBreak are cut); the
- * Felblaze / Tide Crush leaps and the Fenrür frenzy are fixed-time (no stagger interaction).
+ * Deviations (engine pieces not in place, see the report): no Statik Alan strip behind the drakes' breath; no rune-pad soak
+ * (a brand is cleansed by standing near any pad, and the pads are not assigned per player); the Felblaze / Tide Crush leaps and
+ * the Fenrür frenzy are fixed-time (no stagger interaction). The Aegis opens at the Parlak Fırtına cast start (the 4 s cast is
+ * the telegraph; no 1.5 s pre-glow). Skovald's break is polled from Odyn's update (his add break is not a boss break).
  * OWNER: enemies module (season dungeon Yiğitler Sarayı).
  */
 
@@ -39,8 +38,8 @@ function nonTankOf(c: BossController): Player | null {
 export function grantOdynBuff(c: BossController): void {
   const killed = (G.mplus.state?.bossesKilled ?? []).filter((id) => FORK_BOSSES.includes(id) && id !== c.bdef.id);
   for (const p of c.playersInArena()) {
-    if (killed.length === 0) statusPlayer(p, 'haste', 75, { magnitude: 0.4 });   // odyn_favor fallback
-    else statusPlayer(p, 'haste', 60, { magnitude: 0.7 });                       // odyn_blessing fallback
+    if (killed.length === 0) statusPlayer(p, 'odyn_favor', 75);
+    else statusPlayer(p, 'odyn_blessing', 60);
   }
 }
 
@@ -366,12 +365,70 @@ const SKOVALD_GATE: [number, number] = [51.5, 14.2];
 const DAIS_TELEPORT: [number, number] = [51.5, 6.5];
 const OBLITERATOR_RIM: [number, number][] = [[45.5, 8.5], [57.5, 8.5]];
 
-/** Ragnarok: 6 fire ticks every 1.5 s over the whole arena (coefficients as the doc). The Aegis ward is NOT implemented. */
+/** Aegis of Aggramar (doc 5.4): the pedestal opens from 1.5 s before a Ragnarok (or the Tempest) to 3 s after it. */
+const AEGIS_HOLD = 12;
+const AEGIS_REARM = 6;
+const AEGIS_WARD_R = 5;
+
+/** The holder is the first player within reach of the open pedestal. Their ward (aegis_ward, -75%) goes on everyone within 5 m
+ *  every 0.5 s for 12 s; the holder is slowed 25%. The pedestal re-arms 6 s after the holder expires or dies. */
+function updateAegis(c: BossController, dt: number): void {
+  const st = c.state;
+  const h: Player | null = st.aegisHolder ?? null;
+  if (h) {
+    st.aegisHoldLeft = (st.aegisHoldLeft ?? 0) - dt;
+    if (st.aegisHoldLeft <= 0 || h.isDead || h.removed) {
+      st.aegisHolder = null;
+      st.aegisRearm = AEGIS_REARM;
+      return;
+    }
+    every(st, 'aegisWard', dt, 0.5, () => {
+      for (const p of playersIn(c, h.position.x, h.position.z, AEGIS_WARD_R)) statusPlayer(p, 'aegis_ward', 0.8);
+    });
+    return;
+  }
+  if ((st.aegisRearm ?? 0) > 0) {
+    st.aegisRearm = Math.max(0, st.aegisRearm - dt);
+    return;
+  }
+  if (!st.aegisOpen) return;
+  const ped = c.gdd(PEDESTAL[0], PEDESTAL[1]);
+  const [who] = playersIn(c, ped.x, ped.z, 1.5);
+  if (!who) return;
+  st.aegisHolder = who;
+  st.aegisHoldLeft = AEGIS_HOLD;
+  statusPlayer(who, 'slow', AEGIS_HOLD, { magnitude: 0.25 });
+}
+
+/** Skovald's posture break during Ragnarok: the ticks after the current one are cut (doc 5.4). */
+function skovaldBroken(c: BossController): void {
+  const st = c.state;
+  if (!st.ragActive) return;
+  st.ragStop = (st.ragLast ?? -1) + 1;
+  st.ragActive = false;
+  c.yell('Skovald yere çöktü! Ragnarok kesildi.');
+}
+
+/** Ragnarok: 6 fire ticks every 1.5 s over the whole arena (coefficients as the doc). Inside the Aegis ward a tick is cut by 75%. */
 function ragnarok(c: BossController, t0: number): void {
+  const st = c.state;
   const center = c.gdd(PEDESTAL[0], PEDESTAL[1]);
   const coefs = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25];
+  c.schedule(t0 - 1.5, () => {
+    st.ragActive = false;
+    st.ragLast = -1;
+    st.ragStop = undefined;
+  }, 'odn_s1');
+  c.schedule(t0 - 1.5, () => { st.aegisOpen = true; }, 'odn_aegis');
+  c.schedule(t0 + 12, () => { st.aegisOpen = false; }, 'odn_aegis');
+  c.schedule(t0, () => { st.ragActive = true; }, 'odn_s1');
+  c.schedule(t0 + 9, () => { st.ragActive = false; }, 'odn_s1');
   coefs.forEach((coef, i) => {
-    c.schedule(t0 + 1.5 * i, () => circle(c, center.x, center.z, c.arena.r, 0.6, coef, { name: 'Ragnarok', type: 'holy' }), 'odn_s1');
+    c.schedule(t0 + 1.5 * i, () => {
+      if (st.ragStop !== undefined && i >= st.ragStop) return;
+      st.ragLast = i;
+      circle(c, center.x, center.z, c.arena.r, 0.6, coef, { name: 'Ragnarok', type: 'holy' });
+    }, 'odn_s1');
   });
   for (let k = 0; k < 3; k++) {
     c.schedule(t0 + 3 * k, () => {
@@ -423,7 +480,7 @@ const odyn: BossScript & { lockLimit?: number } = {
         c.schedule(12, () => {
           for (const p of c.playersInArena()) {
             const onPad = pads.some((q) => dist(p.position, q) <= 2.4);
-            if (onPad) statusPlayer(p, 'empower', 12, { magnitude: 0.3 });   // rune_blessed fallback
+            if (onPad) statusPlayer(p, 'rune_blessed', 20);
             else circle(c, p.position.x, p.position.z, 1.6, 0.05, 3.2, { type: 'holy', name: 'Rünik Damga', statuses: [{ status: 'sunder', duration: 15 }] });
           }
         }, 'odn_brand');
@@ -441,8 +498,13 @@ const odyn: BossScript & { lockLimit?: number } = {
     },
     odn_tempest: {
       start(c) {
+        const st = c.state;
         const e = c.e;
-        circle(c, e.position.x, e.position.z, c.arena.r, 4.0, 4.0, { name: 'Parlak Fırtına', type: 'holy', knockback: 14 });
+        // the Aegis is open for the cast and 3 s after the landing
+        st.aegisOpen = true;
+        c.schedule(7, () => { st.aegisOpen = false; }, 'odn_aegis');
+        st.tempestShape = circle(c, e.position.x, e.position.z, c.arena.r, 4.0, 4.0, { name: 'Parlak Fırtına', type: 'holy', knockback: 14 });
+        c.schedule(4.1, () => { st.tempestShape = 0; }, 'odn_tempest');
       },
     },
     odn_obliterator: {
@@ -480,13 +542,21 @@ const odyn: BossScript & { lockLimit?: number } = {
   },
   update(c, dt) {
     updateOrbs(c, dt);
+    updateAegis(c, dt);
     const st = c.state;
     if (st.stage !== 1) return;
     st.s1t = (st.s1t ?? 0) + dt;
+    // Skovald's posture break (his add break never reaches the boss break hook, so it is polled here)
+    const broken = c.adds('skovald').some((s) => G.combat.isStaggerBroken(s));
+    if (broken && !st.skBroken) skovaldBroken(c);
+    st.skBroken = broken;
     // Skovald dead (give the spawn two seconds to register): stage 2 starts, Odyn steps down to the dais.
     if (st.s1t > 2 && !c.adds('skovald').some((s) => !s.isDead)) {
       st.stage = 2;
       c.cancelTimers('odn_s1');
+      c.cancelTimers('odn_aegis');
+      st.aegisOpen = false;
+      st.ragActive = false;
       c.yell('Kral düştü... şimdi sizi sınayacağım.');
       c.setImmune(false);
       c.freeze(false);
@@ -496,8 +566,15 @@ const odyn: BossScript & { lockLimit?: number } = {
       c.endMechanicPhase();
     }
   },
+  onBreak(c) {
+    // Parlak Fırtına: the engine drops the cast on a break; its pending hit shape goes with it
+    const id = c.state.tempestShape;
+    if (id) G.hitShapes.cancel(id);
+    c.state.tempestShape = 0;
+  },
   onReset(c) {
     c.cancelTimers('odn_s1');
+    c.cancelTimers('odn_aegis');
     wipe(c);
   },
   onDeath(c) {

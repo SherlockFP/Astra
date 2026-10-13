@@ -70,7 +70,7 @@ const ROOMS: RoomDef[] = [
       ramp(rect(18, 29, 2, 2), 'x', 4.0, 3.2, { id: 'so_kapi_rampasi' }),
       stairs(rect(37, 27, 1, 6), 'x', 3.2, 4.1, { id: 'so_yuksek_masa' }),
     ],
-    heightAreas: [area('high_table', 38, 27, 2, 6, 4.1, 'none')],
+    heightAreas: [area('high_table', 38, 27, 2, 6, 4.1, 'ledge')],
   }),
   room('bal_mahzeni', 'Bal Mahzeni', 40, 28, 6, 5, 'dirt', 'brick', 0.35, {
     optional: true, floorY: 1.9, ceiling: 5.5, lightColor: 0xffa050, ambientVfx: 'ambient_embers', fog: { color: 0x2a2016, near: 8, far: 36 },
@@ -125,7 +125,7 @@ const ROOMS: RoomDef[] = [
     boss: 3, openAir: true, sky: SKY_GLORY, storm: STORM, floorY: 8.6, ceiling: 30, lightColor: 0xffe8b0, ambientVfx: 'ambient_dust',
     fog: { color: 0xcfc8b0, near: 24, far: 110 }, explicitDecor: true,
     // Odyn's dais, one raised block at the north rim
-    heightAreas: [area('odyn_kursusu', 49, 1, 6, 3, 9.4, 'none')],
+    heightAreas: [area('odyn_kursusu', 49, 1, 6, 3, 9.4, 'ledge')],
   }),
 ];
 
@@ -187,8 +187,6 @@ const PACKS: PackDef[] = [
   P_PACK('yg_p17', 'av_meydani', 25, 51, [['yg_trapper', 3], ['yg_worg', 2]]),
   P_PACK('yg_p18', 'av_meydani', 31.5, 41, [['yg_grizzly', 1]], { optional: true }),
   P_PACK('yg_p19', 'av_meydani', 40, 40.5, [['yg_thundercaller', 1], ['yg_stag', 1], ['yg_worg', 2]]),
-  P_PACK('yg_p20', 'av_meydani', 30, 51.5, [['yg_grizzly', 1]], { optional: true }),
-  P_PACK('yg_p21', 'av_meydani', 37, 52, [['yg_grizzly', 1]], { optional: true }),
   P_PACK('yg_p22', 'av_meydani', 32, 46.5, [['yg_worg', 2], ['yg_trapper', 2]], { patrol: [[26, 46.5], [38, 46.5]] }),
   P_PACK('yg_p23', 'k_hyrja_dogu', 37.5, 18.5, [['yg_shieldmaiden', 2], ['yg_thundercaller', 1], ['yg_mystic', 1]]),
   P_PACK('yg_p24', 'k_hyrja_dogu', 42.5, 18.5, [['yg_tideskorn', 1], ['yg_trapper', 2]]),
@@ -301,7 +299,7 @@ export const YIGITLER_SARAYI: DungeonDef = {
   shortName: 'Yiğitler',
   lore: "Kadimler, ölen yiğitlerin ruhlarını sınamak için fırtınanın üstüne bir saray kaldırdı: Yiğitler Sarayı. Titan kemerleri bulutların üzerinde yüzüyor, Odyn'in ebedi şölenine açılıyor. Yüksek Kapı'da Heymdal'ın borusu çalıyor; Eyra'nın Seçilmişi Hirya yükseliş koltuğunu bekliyor; Fenrür Sonsuz Av'da kan kokusu alıyor. Ama Gelgitkıran Kralı Skovald, Kadim Zindanlar'ın gölgesinden gelen bir fısıltıya kulak verdi ve kutsal Aegis'i çalmak için Şan Salonu'na daldı. Sınav başladı. Layık olan, Odyn'in sofrasına oturur.",
   levelRange: [60, 60],
-  timerSec: 1920,
+  timerSec: 1500,
   forcesRequired: 325,
   theme: THEME,
   grid: { w: 64, h: 60 },
