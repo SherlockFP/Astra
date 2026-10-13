@@ -1,0 +1,50 @@
+{
+ "src": "gen/bosses/kizil_ejder.glb",
+ "out": "gen/bosses/kizil_ejder.glb",
+ "family": "gen/bosses",
+ "class": "boss",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "median of 1 boss def(s) only, src/data/enemies.ts",
+ "game_cell": 0.18,
+ "native_cell_base": 0.18,
+ "budget": 9500,
+ "hidden_nodes": [],
+ "kb_src": 261,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:02",
+ "status": "PASS",
+ "cell_used": 0.18,
+ "passes": [
+  {
+   "cell": 0.18,
+   "tris_visible": 8752,
+   "voxels": 3133
+  }
+ ],
+ "voxels": 3133,
+ "faces": 4376,
+ "tris_total": 8752,
+ "tris_visible": 8752,
+ "budget_pct": -7.9,
+ "colors": {
+  "M0": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 8752,
+  "kb": 942,
+  "clips": 10,
+  "orig_kb": 261
+ },
+ "kb_out": 942,
+ "seconds": 0.57
+}

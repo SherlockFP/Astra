@@ -1,0 +1,50 @@
+{
+ "src": "gen/creatures/elemental_fire.glb",
+ "out": "gen/creatures/elemental_fire.glb",
+ "family": "gen/creatures",
+ "class": "large",
+ "decision": "voxel",
+ "scale": 1.4,
+ "scale_src": "Appendix A in-game scale (pinned, enemy defs vary)",
+ "game_cell": 0.14,
+ "native_cell_base": 0.1,
+ "budget": 8500,
+ "hidden_nodes": [],
+ "kb_src": 197,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:03",
+ "status": "PASS",
+ "cell_used": 0.1,
+ "passes": [
+  {
+   "cell": 0.1,
+   "tris_visible": 4108,
+   "voxels": 2098
+  }
+ ],
+ "voxels": 2098,
+ "faces": 2054,
+ "tris_total": 4108,
+ "tris_visible": 4108,
+ "budget_pct": -51.7,
+ "colors": {
+  "M0": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 4108,
+  "kb": 455,
+  "clips": 7,
+  "orig_kb": 197
+ },
+ "kb_out": 455,
+ "seconds": 0.49
+}

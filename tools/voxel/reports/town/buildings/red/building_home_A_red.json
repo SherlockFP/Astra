@@ -1,0 +1,50 @@
+{
+ "src": "town/buildings/red/building_home_A_red.glb",
+ "out": "town/buildings/red/building_home_A_red.glb",
+ "family": "town/buildings",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.3986,
+ "native_cell_base": 0.0664,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 71,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:41",
+ "status": "PASS",
+ "cell_used": 0.0664,
+ "passes": [
+  {
+   "cell": 0.0664,
+   "tris_visible": 1838,
+   "voxels": 959
+  }
+ ],
+ "voxels": 959,
+ "faces": 919,
+ "tris_total": 1838,
+ "tris_visible": 1838,
+ "budget_pct": -69.4,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1838,
+  "kb": 84,
+  "clips": 0,
+  "orig_kb": 71
+ },
+ "kb_out": 84,
+ "seconds": 3.1
+}

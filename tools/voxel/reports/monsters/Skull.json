@@ -1,0 +1,50 @@
+{
+ "src": "monsters/Skull.glb",
+ "out": "monsters/Skull.glb",
+ "family": "monsters",
+ "class": "small",
+ "decision": "voxel",
+ "scale": 0.71,
+ "scale_src": "median of 2 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.06,
+ "native_cell_base": 0.0845,
+ "budget": 3200,
+ "hidden_nodes": [],
+ "kb_src": 119,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:13",
+ "status": "PASS",
+ "cell_used": 0.0845,
+ "passes": [
+  {
+   "cell": 0.0845,
+   "tris_visible": 3136,
+   "voxels": 1413
+  }
+ ],
+ "voxels": 1413,
+ "faces": 1568,
+ "tris_total": 3136,
+ "tris_visible": 3136,
+ "budget_pct": -2.0,
+ "colors": {
+  "MAIN": 2
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3136,
+  "kb": 316,
+  "clips": 10,
+  "orig_kb": 119
+ },
+ "kb_out": 316,
+ "seconds": 0.47
+}

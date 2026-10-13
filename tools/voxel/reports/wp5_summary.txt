@@ -1,0 +1,33 @@
+WP5 nature (ART_VOXEL_PSX.md 2.2, 4.3 WP5)  -  summary written by the WP5 coder
+
+Generated (tools/voxel/gen_nature.py, tools/voxel/build_replace.py)
+  canonical ids: 66 (48 from the prototype set + stump, reeds, lily, tree_swamp_l1, grove_a/b_s/m/l, cliff_block/half/corner/slope, massif_1..4)
+  public/assets/models/voxel/nature/: 66 canonical GLBs + 145 scaled variants (k<tag>/<id>.glb, same grid and tris) + manifest.json + voxel_master.png + voxel_master_winter.png (11 MB)
+  verification: 211 of 211 nature GLBs parsed back by build_replace.py verify(): 0 errors (reports/wp5_nature_verify.txt)
+  trees: max 2932 tris (tree_pine_l2), budget 3000
+  tree_oak_l1 and tree_pine_l1 reproduce the prototype bytes (docs/voxel/gen_nature.py output identical)
+
+Remap (tools/voxel/replace.json, 487 entries = manifest decision replace)
+  all 487 sources within +-25 % of the source's native height (reports/wp5_nature_replace.txt)
+  71 sources map to sub-floor voxels (edge 0.008..0.056 m, below the 0.06 m floor): tiny tufts, flowers, mushrooms, stumps, lily pads, small rocks (source heights mostly below 0.4 m); at the default camera they are about 1-2 px per voxel
+  distinct targets: 166 (66 canonical + 145 variants, some unused)
+  tree-like sources left as voxel: dungeon/trunk_{small,medium,large}_{A,B,C} (interior props, not outdoor trees) and the hex massifs with trees on them (hills_*_trees, mountain_*_grass_trees; voxelised as massifs)
+  tools/voxel/generated/voxelReplace.ts and voxelIndex.ts emitted by build_remap.mjs (src/core not written; run node tools/voxel/build_remap.mjs to install)
+
+Voxelised (run_all.py --no-rebuild, decision voxel)
+  Kenney nature-kit crops_* and crop_* (21): 17 PASS by run_all, 2 OVER_BUDGET (crops_dirtDoubleRowCorner 2260 tris, crops_wheatStageB 1980 tris; budget 1500), 2 PASS by hand (leafsStageA/B, see below)
+  hex town/decoration/nature hills_*, mountain_*, cloud_*, hill_single_* (20): 20 PASS, game cell 1.0 (native 0.1667), 166..1632 tris
+  total 41: 39 PASS, 2 OVER_BUDGET, 0 FAIL
+
+Manual exception
+  crops_leafsStageA.glb and crops_leafsStageB.glb: the manifest keep regex ("leaf") matches the node name, so run_all passed the whole mesh through untouched and the validator failed (UVs outside 0..1, 0 voxels). Converted with voxelize_glb.py --cell 0.0375 --static (no --keep), validated PASS (722 / 866 tris). Their JSON reports were patched to match. Re-running run_all on these files would fail again and delete the output; fix the keep regex in build_manifest.py (WP0) first.
+
+Deviations to decide
+  1. Scaled variants (k != 1) are a new mechanism: the doc remap rule picks ids by hash without scaling, which cannot hit +-25 % for every source. Variants keep the call-site scales and the triangle counts.
+  2. massif_1..4 are generated at cell 2.5-3.0 m (30-57 m tall, 1.7k-3.0k tris); the spec cell 0.9-1.2 was not measured (estimated well above the 3k budget). Not mapped to any source.
+  3. tree_swamp_l1 is generated but no source is classified into the swamp group (the group exists in build_replace.py for the marsh region).
+  4. crops_dirt* keep the 0.15 game cell from the spec; they are 0.2 m tall in game, so they become one or two voxel layers.
+
+Not verified here (needs the core owner / in-engine check)
+  - resolver wiring (Assets / Settings / Pieces pack-material trap, section 4.2) and the zero-non-voxel-tree-URL log in r1-r6 and the town yards
+  - forest density and draw calls in-engine; voxel_master_winter season swap on r4

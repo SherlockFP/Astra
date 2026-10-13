@@ -1,0 +1,50 @@
+{
+ "src": "gen/props/iron_cage.glb",
+ "out": "gen/props/iron_cage.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2236,
+ "native_cell_base": 0.2236,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 55,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:02",
+ "status": "PASS",
+ "cell_used": 0.2236,
+ "passes": [
+  {
+   "cell": 0.2236,
+   "tris_visible": 1938,
+   "voxels": 354
+  }
+ ],
+ "voxels": 354,
+ "faces": 969,
+ "tris_total": 1938,
+ "tris_visible": 1938,
+ "budget_pct": -44.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1938,
+  "kb": 89,
+  "clips": 0,
+  "orig_kb": 55
+ },
+ "kb_out": 89,
+ "seconds": 0.52
+}

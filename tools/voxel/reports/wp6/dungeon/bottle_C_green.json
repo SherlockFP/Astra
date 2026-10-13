@@ -1,0 +1,50 @@
+{
+ "src": "dungeon/bottle_C_green.glb",
+ "out": "dungeon/bottle_C_green.glb",
+ "family": "dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0647,
+ "native_cell_base": 0.0647,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 26,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:02",
+ "status": "PASS",
+ "cell_used": 0.0647,
+ "passes": [
+  {
+   "cell": 0.0647,
+   "tris_visible": 1378,
+   "voxels": 595
+  }
+ ],
+ "voxels": 595,
+ "faces": 689,
+ "tris_total": 1378,
+ "tris_visible": 1378,
+ "budget_pct": -60.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1378,
+  "kb": 63,
+  "clips": 0,
+  "orig_kb": 26
+ },
+ "kb_out": 63,
+ "seconds": 3.92
+}

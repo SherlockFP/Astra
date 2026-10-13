@@ -1,0 +1,50 @@
+{
+ "src": "kenney/nature-kit/crops_cornStageA.glb",
+ "out": "kenney/nature-kit/crops_cornStageA.glb",
+ "family": "kenney/nature-kit",
+ "class": "crop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.15,
+ "native_cell_base": 0.0375,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 9,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:13:37",
+ "status": "PASS",
+ "cell_used": 0.0375,
+ "passes": [
+  {
+   "cell": 0.0375,
+   "tris_visible": 654,
+   "voxels": 169
+  }
+ ],
+ "voxels": 169,
+ "faces": 327,
+ "tris_total": 654,
+ "tris_visible": 654,
+ "budget_pct": -56.4,
+ "colors": {
+  "MAIN": 1
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 654,
+  "kb": 31,
+  "clips": 0,
+  "orig_kb": 9
+ },
+ "kb_out": 31,
+ "seconds": 1.37
+}

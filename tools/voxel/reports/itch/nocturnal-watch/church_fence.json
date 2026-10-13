@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/church_fence.glb",
+ "out": "itch/nocturnal-watch/church_fence.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.25,
+ "native_cell_base": 0.25,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 96,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:58",
+ "status": "PASS",
+ "cell_used": 0.25,
+ "passes": [
+  {
+   "cell": 0.25,
+   "tris_visible": 278,
+   "voxels": 75
+  }
+ ],
+ "voxels": 75,
+ "faces": 139,
+ "tris_total": 278,
+ "tris_visible": 278,
+ "budget_pct": -95.4,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 278,
+  "kb": 14,
+  "clips": 0,
+  "orig_kb": 96
+ },
+ "kb_out": 14,
+ "seconds": 5.05
+}

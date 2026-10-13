@@ -1,0 +1,52 @@
+{
+ "src": "gen/props/lobby_obelisk.glb",
+ "out": "gen/props/lobby_obelisk.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.3107,
+ "native_cell_base": 0.3107,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 34,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:03",
+ "status": "PASS",
+ "cell_used": 0.3107,
+ "passes": [
+  {
+   "cell": 0.3107,
+   "tris_visible": 842,
+   "voxels": 277
+  }
+ ],
+ "voxels": 277,
+ "faces": 421,
+ "tris_total": 842,
+ "tris_visible": 842,
+ "budget_pct": -75.9,
+ "colors": {
+  "M2": 16,
+  "MAIN": 24,
+  "M3": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 842,
+  "kb": 49,
+  "clips": 0,
+  "orig_kb": 34
+ },
+ "kb_out": 49,
+ "seconds": 0.59
+}

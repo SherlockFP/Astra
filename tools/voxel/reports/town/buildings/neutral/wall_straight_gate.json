@@ -1,0 +1,50 @@
+{
+ "src": "town/buildings/neutral/wall_straight_gate.glb",
+ "out": "town/buildings/neutral/wall_straight_gate.glb",
+ "family": "town/buildings",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.5,
+ "native_cell_base": 0.0833,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 65,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:37",
+ "status": "PASS",
+ "cell_used": 0.0833,
+ "passes": [
+  {
+   "cell": 0.0833,
+   "tris_visible": 4848,
+   "voxels": 1946
+  }
+ ],
+ "voxels": 1946,
+ "faces": 2424,
+ "tris_total": 4848,
+ "tris_visible": 4848,
+ "budget_pct": -19.2,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 4848,
+  "kb": 221,
+  "clips": 0,
+  "orig_kb": 65
+ },
+ "kb_out": 221,
+ "seconds": 3.21
+}

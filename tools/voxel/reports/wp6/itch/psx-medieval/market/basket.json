@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/market/basket.glb",
+ "out": "itch/psx-medieval/market/basket.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0808,
+ "native_cell_base": 0.0808,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 40,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:51",
+ "status": "PASS",
+ "cell_used": 0.0808,
+ "passes": [
+  {
+   "cell": 0.0808,
+   "tris_visible": 1734,
+   "voxels": 832
+  }
+ ],
+ "voxels": 832,
+ "faces": 867,
+ "tris_total": 1734,
+ "tris_visible": 1734,
+ "budget_pct": -50.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1734,
+  "kb": 79,
+  "clips": 0,
+  "orig_kb": 40
+ },
+ "kb_out": 79,
+ "seconds": 2.93
+}

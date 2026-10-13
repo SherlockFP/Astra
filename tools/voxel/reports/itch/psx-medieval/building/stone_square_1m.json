@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/building/stone_square_1m.glb",
+ "out": "itch/psx-medieval/building/stone_square_1m.glb",
+ "family": "itch/psx-medieval",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.3571,
+ "native_cell_base": 0.3571,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 30,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:43",
+ "status": "PASS",
+ "cell_used": 0.3571,
+ "passes": [
+  {
+   "cell": 0.3571,
+   "tris_visible": 1232,
+   "voxels": 280
+  }
+ ],
+ "voxels": 280,
+ "faces": 616,
+ "tris_total": 1232,
+ "tris_visible": 1232,
+ "budget_pct": -79.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1232,
+  "kb": 57,
+  "clips": 0,
+  "orig_kb": 30
+ },
+ "kb_out": 57,
+ "seconds": 0.48
+}

@@ -1,0 +1,50 @@
+{
+ "src": "kenney/nature-kit/crops_dirtDoubleRowEnd.glb",
+ "out": "kenney/nature-kit/crops_dirtDoubleRowEnd.glb",
+ "family": "kenney/nature-kit",
+ "class": "crop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.15,
+ "native_cell_base": 0.0375,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 6,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:13:43",
+ "status": "PASS",
+ "cell_used": 0.0375,
+ "passes": [
+  {
+   "cell": 0.0375,
+   "tris_visible": 1358,
+   "voxels": 761
+  }
+ ],
+ "voxels": 761,
+ "faces": 679,
+ "tris_total": 1358,
+ "tris_visible": 1358,
+ "budget_pct": -9.5,
+ "colors": {
+  "MAIN": 2
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1358,
+  "kb": 63,
+  "clips": 0,
+  "orig_kb": 6
+ },
+ "kb_out": 63,
+ "seconds": 1.81
+}

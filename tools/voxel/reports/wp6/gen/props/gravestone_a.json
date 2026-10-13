@@ -1,0 +1,50 @@
+{
+ "src": "gen/props/gravestone_a.glb",
+ "out": "gen/props/gravestone_a.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1311,
+ "native_cell_base": 0.1311,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 19,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:01",
+ "status": "PASS",
+ "cell_used": 0.1311,
+ "passes": [
+  {
+   "cell": 0.1311,
+   "tris_visible": 720,
+   "voxels": 277
+  }
+ ],
+ "voxels": 277,
+ "faces": 360,
+ "tris_total": 720,
+ "tris_visible": 720,
+ "budget_pct": -79.4,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 720,
+  "kb": 34,
+  "clips": 0,
+  "orig_kb": 19
+ },
+ "kb_out": 34,
+ "seconds": 0.51
+}

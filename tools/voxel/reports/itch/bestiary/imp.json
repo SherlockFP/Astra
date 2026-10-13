@@ -1,0 +1,50 @@
+{
+ "src": "itch/bestiary/imp.glb",
+ "out": "itch/bestiary/imp.glb",
+ "family": "itch/bestiary",
+ "class": "large",
+ "decision": "voxel",
+ "scale": 1.2,
+ "scale_src": "fallback table (NPC.ts / Appendix A)",
+ "game_cell": 0.14,
+ "native_cell_base": 0.1167,
+ "budget": 8500,
+ "hidden_nodes": [],
+ "kb_src": 1785,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:06",
+ "status": "PASS",
+ "cell_used": 0.1167,
+ "passes": [
+  {
+   "cell": 0.1167,
+   "tris_visible": 2128,
+   "voxels": 622
+  }
+ ],
+ "voxels": 622,
+ "faces": 1064,
+ "tris_total": 2128,
+ "tris_visible": 2128,
+ "budget_pct": -75.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2128,
+  "kb": 1284,
+  "clips": 37,
+  "orig_kb": 1785
+ },
+ "kb_out": 1284,
+ "seconds": 0.57
+}

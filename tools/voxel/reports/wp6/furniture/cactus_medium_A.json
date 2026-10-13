@@ -1,0 +1,50 @@
+{
+ "src": "furniture/cactus_medium_A.glb",
+ "out": "furniture/cactus_medium_A.glb",
+ "family": "furniture",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0629,
+ "native_cell_base": 0.0629,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 34,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:48",
+ "status": "PASS",
+ "cell_used": 0.0629,
+ "passes": [
+  {
+   "cell": 0.0629,
+   "tris_visible": 1762,
+   "voxels": 932
+  }
+ ],
+ "voxels": 932,
+ "faces": 881,
+ "tris_total": 1762,
+ "tris_visible": 1762,
+ "budget_pct": -49.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1762,
+  "kb": 81,
+  "clips": 0,
+  "orig_kb": 34
+ },
+ "kb_out": 81,
+ "seconds": 0.86
+}

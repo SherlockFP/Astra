@@ -28,7 +28,8 @@ const cache = new Map<string, Piece | null>();
 const inflight = new Map<string, Promise<Piece | null>>();
 const warned = new Set<string>();
 
-type PackId = 'dungeon' | 'halloween' | 'furniture' | 'hex';
+/** 'voxel' is the bypass tag of a remapped voxel model (asset.voxel): never returned by packOf, never re-skinned. */
+type PackId = 'dungeon' | 'halloween' | 'furniture' | 'hex' | 'voxel';
 const PACK_PREFIX: [string, PackId][] = [
   ['/assets/models/dungeon/', 'dungeon'],
   ['/assets/models/halloween/', 'halloween'],
@@ -82,6 +83,8 @@ const packBase = new Map<PackId, THREE.Material>();
 const packVariants = new Map<string, THREE.Material>();
 
 function packMaterial(pack: PackId, struct: boolean, base: THREE.Material): THREE.Material {
+  // Voxel palette materials are their own (one 24-colour image per file): a shared pack atlas would recolour them.
+  if (pack === 'voxel') return base;
   if (!packBase.has(pack)) packBase.set(pack, base);
   const key = `${pack}|${struct ? 's' : 'p'}`;
   let m = packVariants.get(key);
@@ -105,7 +108,9 @@ async function loadOne(url: string): Promise<Piece | null> {
   }
   const root = asset.scene;
   root.updateMatrixWorld(true);
-  const pack = packOf(url);
+  // A voxel model (remapped by the requested url) keeps its own material: no pack atlas, no foliage / itch re-skin.
+  const voxel = asset.voxel;
+  const pack: PackId | null = voxel ? 'voxel' : packOf(url);
   const struct = STRUCT_RE.test(url);
   const parts: PiecePart[] = [];
   let hasGlow = false;
@@ -116,8 +121,10 @@ async function loadOne(url: string): Promise<Piece | null> {
     const sm = mat as THREE.MeshStandardMaterial;
     if (sm.emissiveMap || sm.alphaTest > 0 || sm.transparent) hasGlow = true;
     if (pack && sm.map && !sm.emissiveMap && !(sm.alphaTest > 0)) mat = packMaterial(pack, struct, mat);
-    if (FOLIAGE_RE.test(url)) mat = foliageMaterial(mat);
-    else if (ITCH_STRUCT_RE.test(url)) mat = itchStructMaterial(mat);
+    if (!voxel) {
+      if (FOLIAGE_RE.test(url)) mat = foliageMaterial(mat);
+      else if (ITCH_STRUCT_RE.test(url)) mat = itchStructMaterial(mat);
+    }
     const g = m.geometry.clone();
     g.applyMatrix4(m.matrixWorld);
     parts.push({ name: m.name, geometry: g, material: mat });

@@ -1,0 +1,50 @@
+{
+ "src": "monsters/Orc.glb",
+ "out": "monsters/Orc.glb",
+ "family": "monsters",
+ "class": "large",
+ "decision": "voxel",
+ "scale": 1.05,
+ "scale_src": "median of 5 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.14,
+ "native_cell_base": 0.1333,
+ "budget": 8500,
+ "hidden_nodes": [],
+ "kb_src": 501,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:13",
+ "status": "PASS",
+ "cell_used": 0.1333,
+ "passes": [
+  {
+   "cell": 0.1333,
+   "tris_visible": 3572,
+   "voxels": 1372
+  }
+ ],
+ "voxels": 1372,
+ "faces": 1786,
+ "tris_total": 3572,
+ "tris_visible": 3572,
+ "budget_pct": -58.0,
+ "colors": {
+  "MAIN": 7
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3572,
+  "kb": 513,
+  "clips": 14,
+  "orig_kb": 501
+ },
+ "kb_out": 513,
+ "seconds": 0.52
+}

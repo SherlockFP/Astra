@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/gravestone-round.glb",
+ "out": "kenney/graveyard-kit/gravestone-round.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1232,
+ "native_cell_base": 0.0411,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 16,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:22",
+ "status": "PASS",
+ "cell_used": 0.0411,
+ "passes": [
+  {
+   "cell": 0.0411,
+   "tris_visible": 1104,
+   "voxels": 536
+  }
+ ],
+ "voxels": 536,
+ "faces": 552,
+ "tris_total": 1104,
+ "tris_visible": 1104,
+ "budget_pct": -68.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1104,
+  "kb": 51,
+  "clips": 0,
+  "orig_kb": 16
+ },
+ "kb_out": 51,
+ "seconds": 0.46
+}

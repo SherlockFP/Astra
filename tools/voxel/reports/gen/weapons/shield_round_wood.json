@@ -1,0 +1,50 @@
+{
+ "src": "gen/weapons/shield_round_wood.glb",
+ "out": "gen/weapons/shield_round_wood.glb",
+ "family": "gen/weapons",
+ "class": "shield",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3000,
+ "hidden_nodes": [],
+ "kb_src": 23,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:30",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 1384,
+   "voxels": 548
+  }
+ ],
+ "voxels": 548,
+ "faces": 692,
+ "tris_total": 1384,
+ "tris_visible": 1384,
+ "budget_pct": -53.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1384,
+  "kb": 64,
+  "clips": 0,
+  "orig_kb": 23
+ },
+ "kb_out": 64,
+ "seconds": 0.42
+}

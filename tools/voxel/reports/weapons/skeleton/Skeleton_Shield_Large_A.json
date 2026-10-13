@@ -1,0 +1,50 @@
+{
+ "src": "weapons/skeleton/Skeleton_Shield_Large_A.gltf",
+ "out": "weapons/skeleton/Skeleton_Shield_Large_A.glb",
+ "family": "weapons/skeleton",
+ "class": "shield",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3000,
+ "hidden_nodes": [],
+ "kb_src": 3,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:49",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 1752,
+   "voxels": 824
+  }
+ ],
+ "voxels": 824,
+ "faces": 876,
+ "tris_total": 1752,
+ "tris_visible": 1752,
+ "budget_pct": -41.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1752,
+  "kb": 80,
+  "clips": 0,
+  "orig_kb": 3
+ },
+ "kb_out": 80,
+ "seconds": 0.46
+}

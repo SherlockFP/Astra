@@ -1,0 +1,50 @@
+{
+ "src": "town/decoration/nature/mountain_A_grass.glb",
+ "out": "town/decoration/nature/mountain_A_grass.glb",
+ "family": "town/decoration",
+ "class": "massif",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 1.0,
+ "native_cell_base": 0.1667,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 32,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:14:03",
+ "status": "PASS",
+ "cell_used": 0.1667,
+ "passes": [
+  {
+   "cell": 0.1667,
+   "tris_visible": 958,
+   "voxels": 707
+  }
+ ],
+ "voxels": 707,
+ "faces": 479,
+ "tris_total": 958,
+ "tris_visible": 958,
+ "budget_pct": -36.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 958,
+  "kb": 45,
+  "clips": 0,
+  "orig_kb": 32
+ },
+ "kb_out": 45,
+ "seconds": 1.6
+}

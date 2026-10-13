@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/fire-basket.glb",
+ "out": "kenney/graveyard-kit/fire-basket.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0893,
+ "native_cell_base": 0.0298,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 18,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:21",
+ "status": "PASS",
+ "cell_used": 0.0298,
+ "passes": [
+  {
+   "cell": 0.0298,
+   "tris_visible": 1360,
+   "voxels": 592
+  }
+ ],
+ "voxels": 592,
+ "faces": 680,
+ "tris_total": 1360,
+ "tris_visible": 1360,
+ "budget_pct": -61.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1360,
+  "kb": 63,
+  "clips": 0,
+  "orig_kb": 18
+ },
+ "kb_out": 63,
+ "seconds": 0.56
+}

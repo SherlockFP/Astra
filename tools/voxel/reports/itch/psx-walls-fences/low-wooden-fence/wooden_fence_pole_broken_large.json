@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-walls-fences/low-wooden-fence/wooden_fence_pole_broken_large.glb",
+ "out": "itch/psx-walls-fences/low-wooden-fence/wooden_fence_pole_broken_large.glb",
+ "family": "itch/psx-walls-fences",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.25,
+ "native_cell_base": 0.25,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 23,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:22:01",
+ "status": "PASS",
+ "cell_used": 0.25,
+ "passes": [
+  {
+   "cell": 0.25,
+   "tris_visible": 110,
+   "voxels": 19
+  }
+ ],
+ "voxels": 19,
+ "faces": 55,
+ "tris_total": 110,
+ "tris_visible": 110,
+ "budget_pct": -98.2,
+ "colors": {
+  "MAIN": 19
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 110,
+  "kb": 6,
+  "clips": 0,
+  "orig_kb": 23
+ },
+ "kb_out": 6,
+ "seconds": 0.5
+}

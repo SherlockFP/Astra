@@ -1,0 +1,50 @@
+{
+ "src": "itch/creatures/deer.glb",
+ "out": "itch/creatures/deer.glb",
+ "family": "itch/creatures",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 0.8,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.093,
+ "native_cell_base": 0.1162,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 504,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:07",
+ "status": "PASS",
+ "cell_used": 0.1162,
+ "passes": [
+  {
+   "cell": 0.1162,
+   "tris_visible": 2436,
+   "voxels": 724
+  }
+ ],
+ "voxels": 724,
+ "faces": 1218,
+ "tris_total": 2436,
+ "tris_visible": 2436,
+ "budget_pct": -59.4,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2436,
+  "kb": 491,
+  "clips": 11,
+  "orig_kb": 504
+ },
+ "kb_out": 491,
+ "seconds": 0.54
+}

@@ -1,0 +1,50 @@
+{
+ "src": "halloween/bench_decorated.glb",
+ "out": "halloween/bench_decorated.glb",
+ "family": "halloween",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1429,
+ "native_cell_base": 0.1429,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 62,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:05",
+ "status": "PASS",
+ "cell_used": 0.1429,
+ "passes": [
+  {
+   "cell": 0.1429,
+   "tris_visible": 1520,
+   "voxels": 647
+  }
+ ],
+ "voxels": 647,
+ "faces": 760,
+ "tris_total": 1520,
+ "tris_visible": 1520,
+ "budget_pct": -56.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1520,
+  "kb": 70,
+  "clips": 0,
+  "orig_kb": 62
+ },
+ "kb_out": 70,
+ "seconds": 0.5
+}

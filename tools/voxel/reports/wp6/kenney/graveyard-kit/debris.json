@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/debris.glb",
+ "out": "kenney/graveyard-kit/debris.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1173,
+ "native_cell_base": 0.0391,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 25,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:20",
+ "status": "PASS",
+ "cell_used": 0.0391,
+ "passes": [
+  {
+   "cell": 0.0391,
+   "tris_visible": 944,
+   "voxels": 417
+  }
+ ],
+ "voxels": 417,
+ "faces": 472,
+ "tris_total": 944,
+ "tris_visible": 944,
+ "budget_pct": -73.0,
+ "colors": {
+  "MAIN": 22
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 944,
+  "kb": 44,
+  "clips": 0,
+  "orig_kb": 25
+ },
+ "kb_out": 44,
+ "seconds": 0.54
+}

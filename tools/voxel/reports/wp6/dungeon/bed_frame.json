@@ -1,0 +1,50 @@
+{
+ "src": "dungeon/bed_frame.glb",
+ "out": "dungeon/bed_frame.glb",
+ "family": "dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2143,
+ "native_cell_base": 0.2143,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 30,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:20:52",
+ "status": "PASS",
+ "cell_used": 0.2143,
+ "passes": [
+  {
+   "cell": 0.2143,
+   "tris_visible": 840,
+   "voxels": 328
+  }
+ ],
+ "voxels": 328,
+ "faces": 420,
+ "tris_total": 840,
+ "tris_visible": 840,
+ "budget_pct": -76.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 840,
+  "kb": 39,
+  "clips": 0,
+  "orig_kb": 30
+ },
+ "kb_out": 39,
+ "seconds": 3.52
+}

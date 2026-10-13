@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/tavern_wine_bottle.glb",
+ "out": "itch/nocturnal-watch/tavern_wine_bottle.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.25,
+ "native_cell_base": 0.25,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 32,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:30",
+ "status": "PASS",
+ "cell_used": 0.25,
+ "passes": [
+  {
+   "cell": 0.25,
+   "tris_visible": 26,
+   "voxels": 3
+  }
+ ],
+ "voxels": 3,
+ "faces": 13,
+ "tris_total": 26,
+ "tris_visible": 26,
+ "budget_pct": -99.6,
+ "colors": {
+  "MAIN": 2
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 26,
+  "kb": 2,
+  "clips": 0,
+  "orig_kb": 32
+ },
+ "kb_out": 2,
+ "seconds": 7.44
+}

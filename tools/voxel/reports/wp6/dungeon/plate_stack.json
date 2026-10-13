@@ -1,0 +1,50 @@
+{
+ "src": "dungeon/plate_stack.glb",
+ "out": "dungeon/plate_stack.glb",
+ "family": "dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0716,
+ "native_cell_base": 0.0716,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 35,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:39",
+ "status": "PASS",
+ "cell_used": 0.0716,
+ "passes": [
+  {
+   "cell": 0.0716,
+   "tris_visible": 1432,
+   "voxels": 1091
+  }
+ ],
+ "voxels": 1091,
+ "faces": 716,
+ "tris_total": 1432,
+ "tris_visible": 1432,
+ "budget_pct": -59.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1432,
+  "kb": 66,
+  "clips": 0,
+  "orig_kb": 35
+ },
+ "kb_out": 66,
+ "seconds": 0.89
+}

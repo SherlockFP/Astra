@@ -1,0 +1,55 @@
+{
+ "src": "town/decoration/nature/cloud_big.glb",
+ "out": "town/decoration/nature/cloud_big.glb",
+ "family": "town/decoration",
+ "class": "massif",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 1.0,
+ "native_cell_base": 0.1667,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 31,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:13:52",
+ "status": "PASS",
+ "cell_used": 0.2084,
+ "passes": [
+  {
+   "cell": 0.1667,
+   "tris_visible": 2402,
+   "voxels": 1010
+  },
+  {
+   "cell": 0.2084,
+   "tris_visible": 1632,
+   "voxels": 657
+  }
+ ],
+ "voxels": 657,
+ "faces": 816,
+ "tris_total": 1632,
+ "tris_visible": 1632,
+ "budget_pct": 8.8,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1632,
+  "kb": 75,
+  "clips": 0,
+  "orig_kb": 31
+ },
+ "kb_out": 75,
+ "seconds": 2.33
+}

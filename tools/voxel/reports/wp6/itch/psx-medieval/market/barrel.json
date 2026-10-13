@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/market/barrel.glb",
+ "out": "itch/psx-medieval/market/barrel.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1022,
+ "native_cell_base": 0.1022,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 58,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:26",
+ "status": "PASS",
+ "cell_used": 0.1022,
+ "passes": [
+  {
+   "cell": 0.1022,
+   "tris_visible": 1858,
+   "voxels": 868
+  }
+ ],
+ "voxels": 868,
+ "faces": 929,
+ "tris_total": 1858,
+ "tris_visible": 1858,
+ "budget_pct": -46.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1858,
+  "kb": 85,
+  "clips": 0,
+  "orig_kb": 58
+ },
+ "kb_out": 85,
+ "seconds": 2.47
+}

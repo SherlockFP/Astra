@@ -1,0 +1,51 @@
+{
+ "src": "gen/props/forge.glb",
+ "out": "gen/props/forge.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.305,
+ "native_cell_base": 0.305,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 34,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:01",
+ "status": "PASS",
+ "cell_used": 0.305,
+ "passes": [
+  {
+   "cell": 0.305,
+   "tris_visible": 1090,
+   "voxels": 443
+  }
+ ],
+ "voxels": 443,
+ "faces": 545,
+ "tris_total": 1090,
+ "tris_visible": 1090,
+ "budget_pct": -68.9,
+ "colors": {
+  "MAIN": 24,
+  "M2": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1098,
+  "kb": 55,
+  "clips": 0,
+  "orig_kb": 34
+ },
+ "kb_out": 55,
+ "seconds": 0.52
+}

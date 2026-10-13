@@ -1,0 +1,49 @@
+{
+ "src": "kenney/nature-kit/crops_leafsStageB.glb",
+ "out": "kenney/nature-kit/crops_leafsStageB.glb",
+ "family": "kenney/nature-kit",
+ "class": "crop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.15,
+ "native_cell_base": 0.0375,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 8,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false,
+  "note": "manual: manifest keep regex \"leaf\" matched the node name crops_leafs*, so the whole mesh passed through and failed; converted without --keep"
+ },
+ "generated": "2026-10-13T13:13:50",
+ "status": "PASS",
+ "cell_used": 0.0375,
+ "passes": [
+  {
+   "cell": 0.0375,
+   "tris_visible": 866,
+   "voxels": 197
+  }
+ ],
+ "voxels": 197,
+ "faces": 433,
+ "tris_total": 866,
+ "tris_visible": 866,
+ "budget_pct": -42.3,
+ "colors": {},
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 866,
+  "kb": 40,
+  "clips": 0,
+  "orig_kb": 8
+ },
+ "kb_out": 40,
+ "seconds": 1.47
+}

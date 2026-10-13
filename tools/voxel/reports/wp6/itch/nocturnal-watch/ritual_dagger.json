@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/ritual_dagger.glb",
+ "out": "itch/nocturnal-watch/ritual_dagger.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0857,
+ "native_cell_base": 0.0857,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 56,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:13",
+ "status": "PASS",
+ "cell_used": 0.0857,
+ "passes": [
+  {
+   "cell": 0.0857,
+   "tris_visible": 274,
+   "voxels": 42
+  }
+ ],
+ "voxels": 42,
+ "faces": 137,
+ "tris_total": 274,
+ "tris_visible": 274,
+ "budget_pct": -92.2,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 274,
+  "kb": 14,
+  "clips": 0,
+  "orig_kb": 56
+ },
+ "kb_out": 14,
+ "seconds": 0.41
+}

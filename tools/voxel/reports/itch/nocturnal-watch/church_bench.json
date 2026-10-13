@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/church_bench.glb",
+ "out": "itch/nocturnal-watch/church_bench.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.25,
+ "native_cell_base": 0.25,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 47,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:56",
+ "status": "PASS",
+ "cell_used": 0.25,
+ "passes": [
+  {
+   "cell": 0.25,
+   "tris_visible": 594,
+   "voxels": 146
+  }
+ ],
+ "voxels": 146,
+ "faces": 297,
+ "tris_total": 594,
+ "tris_visible": 594,
+ "budget_pct": -90.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 594,
+  "kb": 28,
+  "clips": 0,
+  "orig_kb": 47
+ },
+ "kb_out": 28,
+ "seconds": 3.46
+}

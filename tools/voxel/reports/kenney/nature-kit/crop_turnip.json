@@ -1,0 +1,50 @@
+{
+ "src": "kenney/nature-kit/crop_turnip.glb",
+ "out": "kenney/nature-kit/crop_turnip.glb",
+ "family": "kenney/nature-kit",
+ "class": "crop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.15,
+ "native_cell_base": 0.0375,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 14,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:13:32",
+ "status": "PASS",
+ "cell_used": 0.0375,
+ "passes": [
+  {
+   "cell": 0.0375,
+   "tris_visible": 1134,
+   "voxels": 302
+  }
+ ],
+ "voxels": 302,
+ "faces": 567,
+ "tris_total": 1134,
+ "tris_visible": 1134,
+ "budget_pct": -24.4,
+ "colors": {
+  "MAIN": 2
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1134,
+  "kb": 52,
+  "clips": 0,
+  "orig_kb": 14
+ },
+ "kb_out": 52,
+ "seconds": 2.32
+}

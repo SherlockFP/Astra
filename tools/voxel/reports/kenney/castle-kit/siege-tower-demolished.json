@@ -1,0 +1,50 @@
+{
+ "src": "kenney/castle-kit/siege-tower-demolished.glb",
+ "out": "kenney/castle-kit/siege-tower-demolished.glb",
+ "family": "kenney/castle-kit",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.5,
+ "native_cell_base": 0.125,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 117,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:00",
+ "status": "PASS",
+ "cell_used": 0.125,
+ "passes": [
+  {
+   "cell": 0.125,
+   "tris_visible": 2398,
+   "voxels": 942
+  }
+ ],
+ "voxels": 942,
+ "faces": 1199,
+ "tris_total": 2398,
+ "tris_visible": 2398,
+ "budget_pct": -60.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2398,
+  "kb": 109,
+  "clips": 0,
+  "orig_kb": 117
+ },
+ "kb_out": 109,
+ "seconds": 4.11
+}

@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/roofs/roof_straw_stickout_triangle_roof.glb",
+ "out": "itch/psx-medieval/roofs/roof_straw_stickout_triangle_roof.glb",
+ "family": "itch/psx-medieval",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.375,
+ "native_cell_base": 0.375,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 39,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:56",
+ "status": "PASS",
+ "cell_used": 0.375,
+ "passes": [
+  {
+   "cell": 0.375,
+   "tris_visible": 1784,
+   "voxels": 436
+  }
+ ],
+ "voxels": 436,
+ "faces": 892,
+ "tris_total": 1784,
+ "tris_visible": 1784,
+ "budget_pct": -70.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1784,
+  "kb": 82,
+  "clips": 0,
+  "orig_kb": 39
+ },
+ "kb_out": 82,
+ "seconds": 0.57
+}

@@ -1,0 +1,50 @@
+{
+ "src": "kenney/castle-kit/tower-slant-roof.glb",
+ "out": "kenney/castle-kit/tower-slant-roof.glb",
+ "family": "kenney/castle-kit",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.5,
+ "native_cell_base": 0.125,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 46,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:11",
+ "status": "PASS",
+ "cell_used": 0.125,
+ "passes": [
+  {
+   "cell": 0.125,
+   "tris_visible": 1482,
+   "voxels": 674
+  }
+ ],
+ "voxels": 674,
+ "faces": 741,
+ "tris_total": 1482,
+ "tris_visible": 1482,
+ "budget_pct": -75.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1482,
+  "kb": 68,
+  "clips": 0,
+  "orig_kb": 46
+ },
+ "kb_out": 68,
+ "seconds": 3.79
+}

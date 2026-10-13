@@ -1,0 +1,50 @@
+{
+ "src": "gen/weapons/staff_frost.glb",
+ "out": "gen/weapons/staff_frost.glb",
+ "family": "gen/weapons",
+ "class": "weapon",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 32,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:31",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 454,
+   "voxels": 80
+  }
+ ],
+ "voxels": 80,
+ "faces": 227,
+ "tris_total": 454,
+ "tris_visible": 454,
+ "budget_pct": -69.7,
+ "colors": {
+  "M0": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 454,
+  "kb": 22,
+  "clips": 0,
+  "orig_kb": 32
+ },
+ "kb_out": 22,
+ "seconds": 0.4
+}

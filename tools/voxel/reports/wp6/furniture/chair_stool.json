@@ -1,0 +1,50 @@
+{
+ "src": "furniture/chair_stool.glb",
+ "out": "furniture/chair_stool.glb",
+ "family": "furniture",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 27,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:51",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 1650,
+   "voxels": 705
+  }
+ ],
+ "voxels": 705,
+ "faces": 825,
+ "tris_total": 1650,
+ "tris_visible": 1650,
+ "budget_pct": -52.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1650,
+  "kb": 76,
+  "clips": 0,
+  "orig_kb": 27
+ },
+ "kb_out": 76,
+ "seconds": 0.68
+}

@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/decoration/stairs_wood_stone_corner.glb",
+ "out": "itch/psx-medieval/decoration/stairs_wood_stone_corner.glb",
+ "family": "itch/psx-medieval",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2798,
+ "native_cell_base": 0.2798,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 40,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:48",
+ "status": "PASS",
+ "cell_used": 0.2798,
+ "passes": [
+  {
+   "cell": 0.2798,
+   "tris_visible": 1810,
+   "voxels": 430
+  }
+ ],
+ "voxels": 430,
+ "faces": 905,
+ "tris_total": 1810,
+ "tris_visible": 1810,
+ "budget_pct": -69.8,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1810,
+  "kb": 83,
+  "clips": 0,
+  "orig_kb": 40
+ },
+ "kb_out": 83,
+ "seconds": 0.58
+}

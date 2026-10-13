@@ -1,0 +1,50 @@
+{
+ "src": "gen/weapons/shield_demon_spiked.glb",
+ "out": "gen/weapons/shield_demon_spiked.glb",
+ "family": "gen/weapons",
+ "class": "shield",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3000,
+ "hidden_nodes": [],
+ "kb_src": 30,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:30",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 2056,
+   "voxels": 712
+  }
+ ],
+ "voxels": 712,
+ "faces": 1028,
+ "tris_total": 2056,
+ "tris_visible": 2056,
+ "budget_pct": -31.5,
+ "colors": {
+  "M0": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2056,
+  "kb": 94,
+  "clips": 0,
+  "orig_kb": 30
+ },
+ "kb_out": 94,
+ "seconds": 0.42
+}

@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/building/stone_floor_2x2.glb",
+ "out": "itch/psx-medieval/building/stone_floor_2x2.glb",
+ "family": "itch/psx-medieval",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.25,
+ "native_cell_base": 0.25,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 29,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:42",
+ "status": "PASS",
+ "cell_used": 0.25,
+ "passes": [
+  {
+   "cell": 0.25,
+   "tris_visible": 330,
+   "voxels": 121
+  }
+ ],
+ "voxels": 121,
+ "faces": 165,
+ "tris_total": 330,
+ "tris_visible": 330,
+ "budget_pct": -94.5,
+ "colors": {
+  "MAIN": 22
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 330,
+  "kb": 16,
+  "clips": 0,
+  "orig_kb": 29
+ },
+ "kb_out": 16,
+ "seconds": 0.52
+}

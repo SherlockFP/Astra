@@ -1,0 +1,50 @@
+{
+ "src": "kenney/survival-kit/resource-stone-large.glb",
+ "out": "kenney/survival-kit/resource-stone-large.glb",
+ "family": "kenney/survival-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0806,
+ "native_cell_base": 0.0269,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 12,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:33",
+ "status": "PASS",
+ "cell_used": 0.0269,
+ "passes": [
+  {
+   "cell": 0.0269,
+   "tris_visible": 766,
+   "voxels": 406
+  }
+ ],
+ "voxels": 406,
+ "faces": 383,
+ "tris_total": 766,
+ "tris_visible": 766,
+ "budget_pct": -78.1,
+ "colors": {
+  "MAIN": 15
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 766,
+  "kb": 36,
+  "clips": 0,
+  "orig_kb": 12
+ },
+ "kb_out": 36,
+ "seconds": 0.92
+}

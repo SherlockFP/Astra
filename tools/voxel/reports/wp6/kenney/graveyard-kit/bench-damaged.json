@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/bench-damaged.glb",
+ "out": "kenney/graveyard-kit/bench-damaged.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1947,
+ "native_cell_base": 0.0649,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 23,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:18",
+ "status": "PASS",
+ "cell_used": 0.0649,
+ "passes": [
+  {
+   "cell": 0.0649,
+   "tris_visible": 1108,
+   "voxels": 384
+  }
+ ],
+ "voxels": 384,
+ "faces": 554,
+ "tris_total": 1108,
+ "tris_visible": 1108,
+ "budget_pct": -68.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1108,
+  "kb": 51,
+  "clips": 0,
+  "orig_kb": 23
+ },
+ "kb_out": 51,
+ "seconds": 0.57
+}

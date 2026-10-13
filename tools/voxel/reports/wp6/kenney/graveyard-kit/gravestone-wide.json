@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/gravestone-wide.glb",
+ "out": "kenney/graveyard-kit/gravestone-wide.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1821,
+ "native_cell_base": 0.0607,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 22,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:22",
+ "status": "PASS",
+ "cell_used": 0.0607,
+ "passes": [
+  {
+   "cell": 0.0607,
+   "tris_visible": 942,
+   "voxels": 475
+  }
+ ],
+ "voxels": 475,
+ "faces": 471,
+ "tris_total": 942,
+ "tris_visible": 942,
+ "budget_pct": -73.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 942,
+  "kb": 44,
+  "clips": 0,
+  "orig_kb": 22
+ },
+ "kb_out": 44,
+ "seconds": 0.46
+}

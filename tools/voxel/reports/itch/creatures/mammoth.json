@@ -1,0 +1,55 @@
+{
+ "src": "itch/creatures/mammoth.glb",
+ "out": "itch/creatures/mammoth.glb",
+ "family": "itch/creatures",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "no enemy def found, default 1.0",
+ "game_cell": 0.09,
+ "native_cell_base": 0.09,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 644,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:07",
+ "status": "OVER_BUDGET",
+ "cell_used": 0.1125,
+ "passes": [
+  {
+   "cell": 0.09,
+   "tris_visible": 23352,
+   "voxels": 11364
+  },
+  {
+   "cell": 0.1125,
+   "tris_visible": 14952,
+   "voxels": 7007
+  }
+ ],
+ "voxels": 7007,
+ "faces": 7476,
+ "tris_total": 14952,
+ "tris_visible": 14952,
+ "budget_pct": 149.2,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 14952,
+  "kb": 1726,
+  "clips": 12,
+  "orig_kb": 644
+ },
+ "kb_out": 1726,
+ "seconds": 1.63
+}

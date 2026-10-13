@@ -1,0 +1,50 @@
+{
+ "src": "gen/creatures/slime_lava.glb",
+ "out": "gen/creatures/slime_lava.glb",
+ "family": "gen/creatures",
+ "class": "small",
+ "decision": "voxel",
+ "scale": 1.33,
+ "scale_src": "Appendix A in-game scale (pinned, enemy defs vary)",
+ "game_cell": 0.089,
+ "native_cell_base": 0.0669,
+ "budget": 3200,
+ "hidden_nodes": [],
+ "kb_src": 40,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "blend",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:05",
+ "status": "PASS",
+ "cell_used": 0.0669,
+ "passes": [
+  {
+   "cell": 0.0669,
+   "tris_visible": 3356,
+   "voxels": 1491
+  }
+ ],
+ "voxels": 1491,
+ "faces": 1678,
+ "tris_total": 3356,
+ "tris_visible": 3356,
+ "budget_pct": 4.9,
+ "colors": {
+  "M0": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3356,
+  "kb": 329,
+  "clips": 6,
+  "orig_kb": 40
+ },
+ "kb_out": 329,
+ "seconds": 0.47
+}

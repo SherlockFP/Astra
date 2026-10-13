@@ -1,0 +1,50 @@
+{
+ "src": "itch/fantasy-weapons-bits/shield_b.glb",
+ "out": "itch/fantasy-weapons-bits/shield_b.glb",
+ "family": "itch/fantasy-weapons-bits",
+ "class": "shield",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3000,
+ "hidden_nodes": [],
+ "kb_src": 19,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:39",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 2072,
+   "voxels": 843
+  }
+ ],
+ "voxels": 843,
+ "faces": 1036,
+ "tris_total": 2072,
+ "tris_visible": 2072,
+ "budget_pct": -30.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2072,
+  "kb": 95,
+  "clips": 0,
+  "orig_kb": 19
+ },
+ "kb_out": 95,
+ "seconds": 0.42
+}

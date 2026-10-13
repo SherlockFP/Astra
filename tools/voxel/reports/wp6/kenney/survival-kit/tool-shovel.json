@@ -1,0 +1,50 @@
+{
+ "src": "kenney/survival-kit/tool-shovel.glb",
+ "out": "kenney/survival-kit/tool-shovel.glb",
+ "family": "kenney/survival-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0621,
+ "native_cell_base": 0.0207,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 11,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:45",
+ "status": "PASS",
+ "cell_used": 0.0207,
+ "passes": [
+  {
+   "cell": 0.0207,
+   "tris_visible": 430,
+   "voxels": 128
+  }
+ ],
+ "voxels": 128,
+ "faces": 215,
+ "tris_total": 430,
+ "tris_visible": 430,
+ "budget_pct": -87.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 430,
+  "kb": 21,
+  "clips": 0,
+  "orig_kb": 11
+ },
+ "kb_out": 21,
+ "seconds": 2.81
+}

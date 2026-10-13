@@ -1,0 +1,50 @@
+{
+ "src": "gen/creatures/slime_green.glb",
+ "out": "gen/creatures/slime_green.glb",
+ "family": "gen/creatures",
+ "class": "small",
+ "decision": "voxel",
+ "scale": 1.07,
+ "scale_src": "Appendix A in-game scale (pinned, enemy defs vary)",
+ "game_cell": 0.072,
+ "native_cell_base": 0.0673,
+ "budget": 3200,
+ "hidden_nodes": [],
+ "kb_src": 39,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "blend",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:05",
+ "status": "PASS",
+ "cell_used": 0.0673,
+ "passes": [
+  {
+   "cell": 0.0673,
+   "tris_visible": 3324,
+   "voxels": 1473
+  }
+ ],
+ "voxels": 1473,
+ "faces": 1662,
+ "tris_total": 3324,
+ "tris_visible": 3324,
+ "budget_pct": 3.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3324,
+  "kb": 325,
+  "clips": 6,
+  "orig_kb": 39
+ },
+ "kb_out": 325,
+ "seconds": 0.47
+}

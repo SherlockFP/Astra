@@ -1,0 +1,50 @@
+{
+ "src": "town/decoration/props/flag_red.glb",
+ "out": "town/decoration/props/flag_red.glb",
+ "family": "town/decoration",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1189,
+ "native_cell_base": 0.0198,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 19,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:25:00",
+ "status": "PASS",
+ "cell_used": 0.0198,
+ "passes": [
+  {
+   "cell": 0.0198,
+   "tris_visible": 800,
+   "voxels": 251
+  }
+ ],
+ "voxels": 251,
+ "faces": 400,
+ "tris_total": 800,
+ "tris_visible": 800,
+ "budget_pct": -77.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 800,
+  "kb": 38,
+  "clips": 0,
+  "orig_kb": 19
+ },
+ "kb_out": 38,
+ "seconds": 1.75
+}

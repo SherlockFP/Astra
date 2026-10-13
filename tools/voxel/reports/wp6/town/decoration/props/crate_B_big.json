@@ -1,0 +1,50 @@
+{
+ "src": "town/decoration/props/crate_B_big.glb",
+ "out": "town/decoration/props/crate_B_big.glb",
+ "family": "town/decoration",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.09,
+ "native_cell_base": 0.015,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 24,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:54",
+ "status": "PASS",
+ "cell_used": 0.015,
+ "passes": [
+  {
+   "cell": 0.015,
+   "tris_visible": 2634,
+   "voxels": 1394
+  }
+ ],
+ "voxels": 1394,
+ "faces": 1317,
+ "tris_total": 2634,
+ "tris_visible": 2634,
+ "budget_pct": -24.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2634,
+  "kb": 120,
+  "clips": 0,
+  "orig_kb": 24
+ },
+ "kb_out": 120,
+ "seconds": 2.66
+}

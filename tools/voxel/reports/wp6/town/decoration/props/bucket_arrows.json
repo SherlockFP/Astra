@@ -1,0 +1,50 @@
+{
+ "src": "town/decoration/props/bucket_arrows.glb",
+ "out": "town/decoration/props/bucket_arrows.glb",
+ "family": "town/decoration",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0991,
+ "native_cell_base": 0.0165,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 33,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:49",
+ "status": "PASS",
+ "cell_used": 0.0165,
+ "passes": [
+  {
+   "cell": 0.0165,
+   "tris_visible": 1528,
+   "voxels": 618
+  }
+ ],
+ "voxels": 618,
+ "faces": 764,
+ "tris_total": 1528,
+ "tris_visible": 1528,
+ "budget_pct": -56.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1528,
+  "kb": 70,
+  "clips": 0,
+  "orig_kb": 33
+ },
+ "kb_out": 70,
+ "seconds": 2.5
+}

@@ -1,0 +1,50 @@
+{
+ "src": "halloween/gravemarker_A.glb",
+ "out": "halloween/gravemarker_A.glb",
+ "family": "halloween",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0854,
+ "native_cell_base": 0.0854,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 20,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:07",
+ "status": "PASS",
+ "cell_used": 0.0854,
+ "passes": [
+  {
+   "cell": 0.0854,
+   "tris_visible": 594,
+   "voxels": 192
+  }
+ ],
+ "voxels": 192,
+ "faces": 297,
+ "tris_total": 594,
+ "tris_visible": 594,
+ "budget_pct": -83.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 594,
+  "kb": 28,
+  "clips": 0,
+  "orig_kb": 20
+ },
+ "kb_out": 28,
+ "seconds": 0.53
+}

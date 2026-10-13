@@ -1,0 +1,50 @@
+{
+ "src": "dungeon/shelf_small_candles.glb",
+ "out": "dungeon/shelf_small_candles.glb",
+ "family": "dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0714,
+ "native_cell_base": 0.0714,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 29,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:40",
+ "status": "PASS",
+ "cell_used": 0.0714,
+ "passes": [
+  {
+   "cell": 0.0714,
+   "tris_visible": 1314,
+   "voxels": 629
+  }
+ ],
+ "voxels": 629,
+ "faces": 657,
+ "tris_total": 1314,
+ "tris_visible": 1314,
+ "budget_pct": -62.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1314,
+  "kb": 61,
+  "clips": 0,
+  "orig_kb": 29
+ },
+ "kb_out": 61,
+ "seconds": 0.68
+}

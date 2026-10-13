@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-walls-fences/brick-fence/brick_wall_one_overhang.glb",
+ "out": "itch/psx-walls-fences/brick-fence/brick_wall_one_overhang.glb",
+ "family": "itch/psx-walls-fences",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.25,
+ "native_cell_base": 0.25,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 77,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:57",
+ "status": "PASS",
+ "cell_used": 0.25,
+ "passes": [
+  {
+   "cell": 0.25,
+   "tris_visible": 1184,
+   "voxels": 483
+  }
+ ],
+ "voxels": 483,
+ "faces": 592,
+ "tris_total": 1184,
+ "tris_visible": 1184,
+ "budget_pct": -80.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1184,
+  "kb": 55,
+  "clips": 0,
+  "orig_kb": 77
+ },
+ "kb_out": 55,
+ "seconds": 0.56
+}

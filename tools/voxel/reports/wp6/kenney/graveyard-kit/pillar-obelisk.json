@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/pillar-obelisk.glb",
+ "out": "kenney/graveyard-kit/pillar-obelisk.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2169,
+ "native_cell_base": 0.0723,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 8,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:24",
+ "status": "PASS",
+ "cell_used": 0.0723,
+ "passes": [
+  {
+   "cell": 0.0723,
+   "tris_visible": 474,
+   "voxels": 196
+  }
+ ],
+ "voxels": 196,
+ "faces": 237,
+ "tris_total": 474,
+ "tris_visible": 474,
+ "budget_pct": -86.5,
+ "colors": {
+  "MAIN": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 474,
+  "kb": 23,
+  "clips": 0,
+  "orig_kb": 8
+ },
+ "kb_out": 23,
+ "seconds": 0.61
+}

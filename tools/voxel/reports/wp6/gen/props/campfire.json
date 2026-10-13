@@ -1,0 +1,51 @@
+{
+ "src": "gen/props/campfire.glb",
+ "out": "gen/props/campfire.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1891,
+ "native_cell_base": 0.1891,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 43,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:59",
+ "status": "PASS",
+ "cell_used": 0.1891,
+ "passes": [
+  {
+   "cell": 0.1891,
+   "tris_visible": 672,
+   "voxels": 184
+  }
+ ],
+ "voxels": 184,
+ "faces": 336,
+ "tris_total": 672,
+ "tris_visible": 672,
+ "budget_pct": -80.8,
+ "colors": {
+  "MAIN": 24,
+  "M1": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 678,
+  "kb": 36,
+  "clips": 0,
+  "orig_kb": 43
+ },
+ "kb_out": 36,
+ "seconds": 0.57
+}

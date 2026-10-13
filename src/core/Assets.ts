@@ -3,9 +3,15 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { isPSXPatched, patchPSX } from '../render/psx';
+import { resolveModelUrl } from './voxelRemap';
 
 export interface ModelAsset {
+  /** The URL actually loaded: the voxel file when `voxel`, otherwise the requested source path. */
   url: string;
+  /** The URL the caller asked for (the source path, unchanged). */
+  srcUrl: string;
+  /** True when this is a converted voxel model (see voxelRemap.ts). */
+  voxel: boolean;
   gltf: GLTF;
   scene: THREE.Group;
   clips: THREE.AnimationClip[];
@@ -47,11 +53,11 @@ export class Assets {
   onModelLoaded: ((asset: ModelAsset) => void) | null = null;
 
   has(url: string): boolean {
-    return this.models.has(url);
+    return this.models.has(resolveModelUrl(url));
   }
 
   get(url: string): ModelAsset | undefined {
-    return this.models.get(url);
+    return this.models.get(resolveModelUrl(url));
   }
 
   /**
@@ -63,13 +69,18 @@ export class Assets {
   }
 
   load(url: string): Promise<ModelAsset | null> {
-    const cached = this.models.get(url);
+    return this.loadKey(url, resolveModelUrl(url));
+  }
+
+  /** Fetches `key` (the voxel file or the source itself). Cache, pending and failed sets are keyed by `key`. */
+  private loadKey(srcUrl: string, key: string): Promise<ModelAsset | null> {
+    const cached = this.models.get(key);
     if (cached) return Promise.resolve(cached);
-    const p = this.pending.get(url);
+    const p = this.pending.get(key);
     if (p) return p;
     const promise = new Promise<ModelAsset | null>((resolve) => {
       this.gltfLoader.load(
-        url,
+        key,
         (gltf) => {
           let skinned = false;
           gltf.scene.traverse((o) => {
@@ -80,28 +91,40 @@ export class Assets {
             applyCastFlags(gltf.scene, skinned);
             mergeSameMaterialMeshes(gltf, skinned);
           } catch (e) {
-            console.warn(`[assets] mesh merge skipped for ${url}`, e);
+            console.warn(`[assets] mesh merge skipped for ${key}`, e);
           }
-          const asset: ModelAsset = { url, gltf, scene: gltf.scene, clips: gltf.animations, skinned };
+          const asset: ModelAsset = { url: key, srcUrl, voxel: key !== srcUrl, gltf, scene: gltf.scene, clips: gltf.animations, skinned };
           try {
             this.onModelLoaded?.(asset);
           } catch (e) {
             console.warn('[assets] onModelLoaded hook failed', e);
           }
-          this.models.set(url, asset);
-          this.pending.delete(url);
+          this.models.set(key, asset);
+          this.pending.delete(key);
           resolve(asset);
         },
         undefined,
         (err) => {
-          console.warn(`[assets] failed to load ${url}`, err);
-          this.failed.add(url);
-          this.pending.delete(url);
+          this.pending.delete(key);
+          if (key !== srcUrl) {
+            // A broken voxel file falls back to its source model (this URL only; other files are unaffected).
+            console.warn(`[assets] voxel model failed, using ${srcUrl}`, err);
+            resolve(
+              this.loadKey(srcUrl, srcUrl).then((a) => {
+                if (a) this.models.set(key, a);
+                else this.failed.add(key);
+                return a;
+              }),
+            );
+            return;
+          }
+          console.warn(`[assets] failed to load ${key}`, err);
+          this.failed.add(key);
           resolve(null);
         },
       );
     });
-    this.pending.set(url, promise);
+    this.pending.set(key, promise);
     return promise;
   }
 
@@ -120,13 +143,15 @@ export class Assets {
 
   /** Fresh instance of a loaded model. Load it first (or it returns a placeholder). */
   instantiate(url: string): THREE.Object3D {
-    const asset = this.models.get(url);
+    const key = resolveModelUrl(url);
+    const asset = this.models.get(key);
     if (!asset) {
-      if (!this.failed.has(url)) console.warn(`[assets] instantiate() before load: ${url}`);
+      if (!this.failed.has(key)) console.warn(`[assets] instantiate() before load: ${url}`);
       return placeholder();
     }
     const obj = asset.skinned ? SkeletonUtils.clone(asset.scene) : asset.scene.clone(true);
-    obj.userData.assetUrl = url;
+    obj.userData.assetUrl = url; // the requested url, unchanged
+    if (asset.voxel) obj.userData.voxelUrl = asset.url;
     return obj;
   }
 
@@ -137,7 +162,7 @@ export class Assets {
   }
 
   clips(url: string): THREE.AnimationClip[] {
-    return this.models.get(url)?.clips ?? [];
+    return this.models.get(resolveModelUrl(url))?.clips ?? [];
   }
 
   /** Give an instance its own material copies (for tinting/flash effects). */

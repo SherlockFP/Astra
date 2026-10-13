@@ -1,0 +1,50 @@
+{
+ "src": "town/buildings/red/building_castle_red.glb",
+ "out": "town/buildings/red/building_castle_red.glb",
+ "family": "town/buildings",
+ "class": "castle",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.5,
+ "native_cell_base": 0.0833,
+ "budget": 11000,
+ "hidden_nodes": [],
+ "kb_src": 327,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:40",
+ "status": "PASS",
+ "cell_used": 0.0833,
+ "passes": [
+  {
+   "cell": 0.0833,
+   "tris_visible": 10124,
+   "voxels": 7381
+  }
+ ],
+ "voxels": 7381,
+ "faces": 5062,
+ "tris_total": 10124,
+ "tris_visible": 10124,
+ "budget_pct": -8.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 10124,
+  "kb": 456,
+  "clips": 0,
+  "orig_kb": 327
+ },
+ "kb_out": 456,
+ "seconds": 4.09
+}

@@ -1,0 +1,50 @@
+{
+ "src": "furniture/bed_single_B.glb",
+ "out": "furniture/bed_single_B.glb",
+ "family": "furniture",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2143,
+ "native_cell_base": 0.2143,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 41,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:47",
+ "status": "PASS",
+ "cell_used": 0.2143,
+ "passes": [
+  {
+   "cell": 0.2143,
+   "tris_visible": 676,
+   "voxels": 388
+  }
+ ],
+ "voxels": 388,
+ "faces": 338,
+ "tris_total": 676,
+ "tris_visible": 676,
+ "budget_pct": -80.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 676,
+  "kb": 32,
+  "clips": 0,
+  "orig_kb": 41
+ },
+ "kb_out": 32,
+ "seconds": 0.52
+}

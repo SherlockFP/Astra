@@ -1,0 +1,54 @@
+{
+ "src": "gen/props/alchemy_table.glb",
+ "out": "gen/props/alchemy_table.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1357,
+ "native_cell_base": 0.1357,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 66,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:58",
+ "status": "PASS",
+ "cell_used": 0.1357,
+ "passes": [
+  {
+   "cell": 0.1357,
+   "tris_visible": 1236,
+   "voxels": 296
+  }
+ ],
+ "voxels": 296,
+ "faces": 618,
+ "tris_total": 1236,
+ "tris_visible": 1236,
+ "budget_pct": -64.7,
+ "colors": {
+  "M1": 16,
+  "M3": 7,
+  "MAIN": 24,
+  "M2": 16,
+  "M8": 1
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1236,
+  "kb": 63,
+  "clips": 0,
+  "orig_kb": 66
+ },
+ "kb_out": 63,
+ "seconds": 0.58
+}

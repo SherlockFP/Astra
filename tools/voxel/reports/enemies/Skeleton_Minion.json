@@ -1,0 +1,50 @@
+{
+ "src": "enemies/Skeleton_Minion.glb",
+ "out": "enemies/Skeleton_Minion.glb",
+ "family": "enemies",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "median of 3 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.09,
+ "native_cell_base": 0.09,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 4701,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": "(Helmet|Hat|Hood|Cloak)$",
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:25",
+ "status": "PASS",
+ "cell_used": 0.09,
+ "passes": [
+  {
+   "cell": 0.09,
+   "tris_visible": 3418,
+   "voxels": 1489
+  }
+ ],
+ "voxels": 1489,
+ "faces": 1709,
+ "tris_total": 3418,
+ "tris_visible": 3418,
+ "budget_pct": -43.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3418,
+  "kb": 4720,
+  "clips": 95,
+  "orig_kb": 4701
+ },
+ "kb_out": 4720,
+ "seconds": 0.73
+}

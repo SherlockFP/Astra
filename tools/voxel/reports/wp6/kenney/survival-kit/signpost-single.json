@@ -1,0 +1,50 @@
+{
+ "src": "kenney/survival-kit/signpost-single.glb",
+ "out": "kenney/survival-kit/signpost-single.glb",
+ "family": "kenney/survival-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0986,
+ "native_cell_base": 0.0329,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 4,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:34",
+ "status": "PASS",
+ "cell_used": 0.0329,
+ "passes": [
+  {
+   "cell": 0.0329,
+   "tris_visible": 346,
+   "voxels": 90
+  }
+ ],
+ "voxels": 90,
+ "faces": 173,
+ "tris_total": 346,
+ "tris_visible": 346,
+ "budget_pct": -90.1,
+ "colors": {
+  "MAIN": 12
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 346,
+  "kb": 17,
+  "clips": 0,
+  "orig_kb": 4
+ },
+ "kb_out": 17,
+ "seconds": 1.68
+}

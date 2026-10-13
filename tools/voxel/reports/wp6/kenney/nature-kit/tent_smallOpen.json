@@ -1,0 +1,50 @@
+{
+ "src": "kenney/nature-kit/tent_smallOpen.glb",
+ "out": "kenney/nature-kit/tent_smallOpen.glb",
+ "family": "kenney/nature-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1904,
+ "native_cell_base": 0.0476,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 13,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:30",
+ "status": "PASS",
+ "cell_used": 0.0476,
+ "passes": [
+  {
+   "cell": 0.0476,
+   "tris_visible": 2806,
+   "voxels": 697
+  }
+ ],
+ "voxels": 697,
+ "faces": 1403,
+ "tris_total": 2806,
+ "tris_visible": 2806,
+ "budget_pct": -19.8,
+ "colors": {
+  "MAIN": 3
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2806,
+  "kb": 128,
+  "clips": 0,
+  "orig_kb": 13
+ },
+ "kb_out": 128,
+ "seconds": 0.45
+}

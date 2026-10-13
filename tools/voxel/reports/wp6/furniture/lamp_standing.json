@@ -1,0 +1,50 @@
+{
+ "src": "furniture/lamp_standing.glb",
+ "out": "furniture/lamp_standing.glb",
+ "family": "furniture",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.18,
+ "native_cell_base": 0.18,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 28,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:52",
+ "status": "PASS",
+ "cell_used": 0.18,
+ "passes": [
+  {
+   "cell": 0.18,
+   "tris_visible": 618,
+   "voxels": 169
+  }
+ ],
+ "voxels": 169,
+ "faces": 309,
+ "tris_total": 618,
+ "tris_visible": 618,
+ "budget_pct": -82.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 618,
+  "kb": 29,
+  "clips": 0,
+  "orig_kb": 28
+ },
+ "kb_out": 29,
+ "seconds": 0.75
+}

@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/decoration/door_stone.glb",
+ "out": "itch/psx-medieval/decoration/door_stone.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2059,
+ "native_cell_base": 0.2059,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 31,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:17",
+ "status": "PASS",
+ "cell_used": 0.2059,
+ "passes": [
+  {
+   "cell": 0.2059,
+   "tris_visible": 824,
+   "voxels": 294
+  }
+ ],
+ "voxels": 294,
+ "faces": 412,
+ "tris_total": 824,
+ "tris_visible": 824,
+ "budget_pct": -76.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 824,
+  "kb": 39,
+  "clips": 0,
+  "orig_kb": 31
+ },
+ "kb_out": 39,
+ "seconds": 0.43
+}

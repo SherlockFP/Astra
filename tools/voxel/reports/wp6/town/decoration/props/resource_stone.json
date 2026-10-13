@@ -1,0 +1,50 @@
+{
+ "src": "town/decoration/props/resource_stone.glb",
+ "out": "town/decoration/props/resource_stone.glb",
+ "family": "town/decoration",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1805,
+ "native_cell_base": 0.0301,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 28,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:25:04",
+ "status": "PASS",
+ "cell_used": 0.0301,
+ "passes": [
+  {
+   "cell": 0.0301,
+   "tris_visible": 1510,
+   "voxels": 1009
+  }
+ ],
+ "voxels": 1009,
+ "faces": 755,
+ "tris_total": 1510,
+ "tris_visible": 1510,
+ "budget_pct": -56.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1510,
+  "kb": 69,
+  "clips": 0,
+  "orig_kb": 28
+ },
+ "kb_out": 69,
+ "seconds": 2.23
+}

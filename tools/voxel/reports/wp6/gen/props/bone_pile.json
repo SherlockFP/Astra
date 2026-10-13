@@ -1,0 +1,50 @@
+{
+ "src": "gen/props/bone_pile.glb",
+ "out": "gen/props/bone_pile.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.089,
+ "native_cell_base": 0.089,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 50,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:59",
+ "status": "PASS",
+ "cell_used": 0.089,
+ "passes": [
+  {
+   "cell": 0.089,
+   "tris_visible": 754,
+   "voxels": 327
+  }
+ ],
+ "voxels": 327,
+ "faces": 377,
+ "tris_total": 754,
+ "tris_visible": 754,
+ "budget_pct": -78.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 754,
+  "kb": 35,
+  "clips": 0,
+  "orig_kb": 50
+ },
+ "kb_out": 35,
+ "seconds": 0.58
+}

@@ -1,0 +1,50 @@
+{
+ "src": "itch/fantasy-weapons-bits/hammer_c.glb",
+ "out": "itch/fantasy-weapons-bits/hammer_c.glb",
+ "family": "itch/fantasy-weapons-bits",
+ "class": "weapon",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 34,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:38",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 1382,
+   "voxels": 448
+  }
+ ],
+ "voxels": 448,
+ "faces": 691,
+ "tris_total": 1382,
+ "tris_visible": 1382,
+ "budget_pct": -7.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1382,
+  "kb": 64,
+  "clips": 0,
+  "orig_kb": 34
+ },
+ "kb_out": 64,
+ "seconds": 0.41
+}

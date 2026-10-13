@@ -1,0 +1,55 @@
+{
+ "src": "itch/nocturnal-watch/tower.glb",
+ "out": "itch/nocturnal-watch/tower.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.5,
+ "native_cell_base": 0.5,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 347,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:38",
+ "status": "OVER_BUDGET",
+ "cell_used": 0.625,
+ "passes": [
+  {
+   "cell": 0.5,
+   "tris_visible": 24536,
+   "voxels": 6274
+  },
+  {
+   "cell": 0.625,
+   "tris_visible": 15300,
+   "voxels": 3975
+  }
+ ],
+ "voxels": 3975,
+ "faces": 7650,
+ "tris_total": 15300,
+ "tris_visible": 15300,
+ "budget_pct": 155.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 15300,
+  "kb": 689,
+  "clips": 0,
+  "orig_kb": 347
+ },
+ "kb_out": 689,
+ "seconds": 2.42
+}

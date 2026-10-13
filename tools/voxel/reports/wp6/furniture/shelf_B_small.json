@@ -1,0 +1,50 @@
+{
+ "src": "furniture/shelf_B_small.glb",
+ "out": "furniture/shelf_B_small.glb",
+ "family": "furniture",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0714,
+ "native_cell_base": 0.0714,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 26,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:56",
+ "status": "PASS",
+ "cell_used": 0.0714,
+ "passes": [
+  {
+   "cell": 0.0714,
+   "tris_visible": 800,
+   "voxels": 420
+  }
+ ],
+ "voxels": 420,
+ "faces": 400,
+ "tris_total": 800,
+ "tris_visible": 800,
+ "budget_pct": -77.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 800,
+  "kb": 37,
+  "clips": 0,
+  "orig_kb": 26
+ },
+ "kb_out": 37,
+ "seconds": 0.56
+}

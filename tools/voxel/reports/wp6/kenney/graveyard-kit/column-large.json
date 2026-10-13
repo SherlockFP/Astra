@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/column-large.glb",
+ "out": "kenney/graveyard-kit/column-large.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2421,
+ "native_cell_base": 0.0807,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 37,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:19",
+ "status": "PASS",
+ "cell_used": 0.0807,
+ "passes": [
+  {
+   "cell": 0.0807,
+   "tris_visible": 654,
+   "voxels": 271
+  }
+ ],
+ "voxels": 271,
+ "faces": 327,
+ "tris_total": 654,
+ "tris_visible": 654,
+ "budget_pct": -81.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 654,
+  "kb": 31,
+  "clips": 0,
+  "orig_kb": 37
+ },
+ "kb_out": 31,
+ "seconds": 0.53
+}

@@ -1,0 +1,51 @@
+{
+ "src": "gen/creatures/spider_giant.glb",
+ "out": "gen/creatures/spider_giant.glb",
+ "family": "gen/creatures",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "no enemy def found, default 1.0",
+ "game_cell": 0.09,
+ "native_cell_base": 0.09,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 176,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:05",
+ "status": "PASS",
+ "cell_used": 0.09,
+ "passes": [
+  {
+   "cell": 0.09,
+   "tris_visible": 5232,
+   "voxels": 1609
+  }
+ ],
+ "voxels": 1609,
+ "faces": 2616,
+ "tris_total": 5232,
+ "tris_visible": 5232,
+ "budget_pct": -12.8,
+ "colors": {
+  "MAIN": 24,
+  "M1": 9
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 5232,
+  "kb": 570,
+  "clips": 6,
+  "orig_kb": 176
+ },
+ "kb_out": 570,
+ "seconds": 0.51
+}

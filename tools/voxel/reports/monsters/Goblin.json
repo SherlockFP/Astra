@@ -1,0 +1,50 @@
+{
+ "src": "monsters/Goblin.glb",
+ "out": "monsters/Goblin.glb",
+ "family": "monsters",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 0.6,
+ "scale_src": "median of 4 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.09,
+ "native_cell_base": 0.15,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 210,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:12",
+ "status": "PASS",
+ "cell_used": 0.15,
+ "passes": [
+  {
+   "cell": 0.15,
+   "tris_visible": 1960,
+   "voxels": 956
+  }
+ ],
+ "voxels": 956,
+ "faces": 980,
+ "tris_total": 1960,
+ "tris_visible": 1960,
+ "budget_pct": -67.3,
+ "colors": {
+  "MAIN": 5
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1960,
+  "kb": 216,
+  "clips": 7,
+  "orig_kb": 210
+ },
+ "kb_out": 216,
+ "seconds": 0.44
+}

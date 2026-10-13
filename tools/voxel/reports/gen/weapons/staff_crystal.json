@@ -1,0 +1,50 @@
+{
+ "src": "gen/weapons/staff_crystal.glb",
+ "out": "gen/weapons/staff_crystal.glb",
+ "family": "gen/weapons",
+ "class": "weapon",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 35,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:31",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 700,
+   "voxels": 172
+  }
+ ],
+ "voxels": 172,
+ "faces": 350,
+ "tris_total": 700,
+ "tris_visible": 700,
+ "budget_pct": -53.3,
+ "colors": {
+  "M0": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 700,
+  "kb": 33,
+  "clips": 0,
+  "orig_kb": 35
+ },
+ "kb_out": 33,
+ "seconds": 0.4
+}

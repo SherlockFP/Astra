@@ -1,0 +1,50 @@
+{
+ "src": "dungeon/keyring_hanging.glb",
+ "out": "dungeon/keyring_hanging.glb",
+ "family": "dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0871,
+ "native_cell_base": 0.0871,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 48,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:35",
+ "status": "PASS",
+ "cell_used": 0.0871,
+ "passes": [
+  {
+   "cell": 0.0871,
+   "tris_visible": 744,
+   "voxels": 210
+  }
+ ],
+ "voxels": 210,
+ "faces": 372,
+ "tris_total": 744,
+ "tris_visible": 744,
+ "budget_pct": -78.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 744,
+  "kb": 35,
+  "clips": 0,
+  "orig_kb": 48
+ },
+ "kb_out": 35,
+ "seconds": 3.89
+}

@@ -1,0 +1,50 @@
+{
+ "src": "dungeon/table_long_tablecloth.glb",
+ "out": "dungeon/table_long_tablecloth.glb",
+ "family": "dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2857,
+ "native_cell_base": 0.2857,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 38,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:42",
+ "status": "PASS",
+ "cell_used": 0.2857,
+ "passes": [
+  {
+   "cell": 0.2857,
+   "tris_visible": 828,
+   "voxels": 304
+  }
+ ],
+ "voxels": 304,
+ "faces": 414,
+ "tris_total": 828,
+ "tris_visible": 828,
+ "budget_pct": -76.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 828,
+  "kb": 39,
+  "clips": 0,
+  "orig_kb": 38
+ },
+ "kb_out": 39,
+ "seconds": 0.53
+}

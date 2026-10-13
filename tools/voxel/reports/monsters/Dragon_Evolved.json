@@ -1,0 +1,50 @@
+{
+ "src": "monsters/Dragon_Evolved.glb",
+ "out": "monsters/Dragon_Evolved.glb",
+ "family": "monsters",
+ "class": "boss",
+ "decision": "voxel",
+ "scale": 1.5,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.14,
+ "native_cell_base": 0.0933,
+ "budget": 9500,
+ "hidden_nodes": [],
+ "kb_src": 426,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:11",
+ "status": "PASS",
+ "cell_used": 0.0933,
+ "passes": [
+  {
+   "cell": 0.0933,
+   "tris_visible": 9388,
+   "voxels": 3637
+  }
+ ],
+ "voxels": 3637,
+ "faces": 4694,
+ "tris_total": 9388,
+ "tris_visible": 9388,
+ "budget_pct": -1.2,
+ "colors": {
+  "MAIN": 3
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 9388,
+  "kb": 987,
+  "clips": 8,
+  "orig_kb": 426
+ },
+ "kb_out": 987,
+ "seconds": 0.55
+}

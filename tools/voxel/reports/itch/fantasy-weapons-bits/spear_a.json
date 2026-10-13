@@ -1,0 +1,50 @@
+{
+ "src": "itch/fantasy-weapons-bits/spear_a.glb",
+ "out": "itch/fantasy-weapons-bits/spear_a.glb",
+ "family": "itch/fantasy-weapons-bits",
+ "class": "weapon",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 50,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:39",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 1454,
+   "voxels": 423
+  }
+ ],
+ "voxels": 423,
+ "faces": 727,
+ "tris_total": 1454,
+ "tris_visible": 1454,
+ "budget_pct": -3.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1454,
+  "kb": 67,
+  "clips": 0,
+  "orig_kb": 50
+ },
+ "kb_out": 67,
+ "seconds": 0.4
+}

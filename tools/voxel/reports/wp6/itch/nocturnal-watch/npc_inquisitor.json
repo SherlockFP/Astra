@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/npc_inquisitor.glb",
+ "out": "itch/nocturnal-watch/npc_inquisitor.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2048,
+ "native_cell_base": 0.2048,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 161,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:12",
+ "status": "PASS",
+ "cell_used": 0.2048,
+ "passes": [
+  {
+   "cell": 0.2048,
+   "tris_visible": 548,
+   "voxels": 134
+  }
+ ],
+ "voxels": 134,
+ "faces": 274,
+ "tris_total": 548,
+ "tris_visible": 548,
+ "budget_pct": -84.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 548,
+  "kb": 26,
+  "clips": 0,
+  "orig_kb": 161
+ },
+ "kb_out": 26,
+ "seconds": 0.42
+}

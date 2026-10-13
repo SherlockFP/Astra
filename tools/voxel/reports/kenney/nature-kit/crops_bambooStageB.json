@@ -1,0 +1,55 @@
+{
+ "src": "kenney/nature-kit/crops_bambooStageB.glb",
+ "out": "kenney/nature-kit/crops_bambooStageB.glb",
+ "family": "kenney/nature-kit",
+ "class": "crop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.15,
+ "native_cell_base": 0.0375,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 39,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:13:35",
+ "status": "PASS",
+ "cell_used": 0.0414,
+ "passes": [
+  {
+   "cell": 0.0375,
+   "tris_visible": 1824,
+   "voxels": 571
+  },
+  {
+   "cell": 0.0414,
+   "tris_visible": 1564,
+   "voxels": 489
+  }
+ ],
+ "voxels": 489,
+ "faces": 782,
+ "tris_total": 1564,
+ "tris_visible": 1564,
+ "budget_pct": 4.3,
+ "colors": {
+  "MAIN": 1
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1564,
+  "kb": 72,
+  "clips": 0,
+  "orig_kb": 39
+ },
+ "kb_out": 72,
+ "seconds": 2.28
+}

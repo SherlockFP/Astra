@@ -1,0 +1,50 @@
+{
+ "src": "kenney/fantasy-town-kit/wheel.glb",
+ "out": "kenney/fantasy-town-kit/wheel.glb",
+ "family": "kenney/fantasy-town-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1381,
+ "native_cell_base": 0.0345,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 17,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:16",
+ "status": "PASS",
+ "cell_used": 0.0345,
+ "passes": [
+  {
+   "cell": 0.0345,
+   "tris_visible": 1568,
+   "voxels": 602
+  }
+ ],
+ "voxels": 602,
+ "faces": 784,
+ "tris_total": 1568,
+ "tris_visible": 1568,
+ "budget_pct": -55.2,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1568,
+  "kb": 72,
+  "clips": 0,
+  "orig_kb": 17
+ },
+ "kb_out": 72,
+ "seconds": 1.42
+}

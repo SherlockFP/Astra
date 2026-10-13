@@ -1,0 +1,50 @@
+{
+ "src": "kenney/nature-kit/statue_obelisk.glb",
+ "out": "kenney/nature-kit/statue_obelisk.glb",
+ "family": "kenney/nature-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2501,
+ "native_cell_base": 0.0625,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 4,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:29",
+ "status": "PASS",
+ "cell_used": 0.0625,
+ "passes": [
+  {
+   "cell": 0.0625,
+   "tris_visible": 426,
+   "voxels": 147
+  }
+ ],
+ "voxels": 147,
+ "faces": 213,
+ "tris_total": 426,
+ "tris_visible": 426,
+ "budget_pct": -87.8,
+ "colors": {
+  "MAIN": 2
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 426,
+  "kb": 21,
+  "clips": 0,
+  "orig_kb": 4
+ },
+ "kb_out": 21,
+ "seconds": 0.42
+}

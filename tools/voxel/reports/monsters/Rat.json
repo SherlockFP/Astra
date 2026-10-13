@@ -1,0 +1,50 @@
+{
+ "src": "monsters/Rat.glb",
+ "out": "monsters/Rat.glb",
+ "family": "monsters",
+ "class": "small",
+ "decision": "voxel",
+ "scale": 0.31,
+ "scale_src": "median of 2 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.06,
+ "native_cell_base": 0.1935,
+ "budget": 3200,
+ "hidden_nodes": [],
+ "kb_src": 538,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:13",
+ "status": "PASS",
+ "cell_used": 0.1935,
+ "passes": [
+  {
+   "cell": 0.1935,
+   "tris_visible": 2252,
+   "voxels": 736
+  }
+ ],
+ "voxels": 736,
+ "faces": 1126,
+ "tris_total": 2252,
+ "tris_visible": 2252,
+ "budget_pct": -29.6,
+ "colors": {
+  "MAIN": 2
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2252,
+  "kb": 333,
+  "clips": 6,
+  "orig_kb": 538
+ },
+ "kb_out": 333,
+ "seconds": 0.49
+}

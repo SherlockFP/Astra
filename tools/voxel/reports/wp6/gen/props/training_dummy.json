@@ -1,0 +1,50 @@
+{
+ "src": "gen/props/training_dummy.glb",
+ "out": "gen/props/training_dummy.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1543,
+ "native_cell_base": 0.1543,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 31,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:04",
+ "status": "PASS",
+ "cell_used": 0.1543,
+ "passes": [
+  {
+   "cell": 0.1543,
+   "tris_visible": 702,
+   "voxels": 196
+  }
+ ],
+ "voxels": 196,
+ "faces": 351,
+ "tris_total": 702,
+ "tris_visible": 702,
+ "budget_pct": -79.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 702,
+  "kb": 33,
+  "clips": 0,
+  "orig_kb": 31
+ },
+ "kb_out": 33,
+ "seconds": 0.49
+}

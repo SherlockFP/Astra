@@ -1,0 +1,50 @@
+{
+ "src": "itch/creatures/warg.glb",
+ "out": "itch/creatures/warg.glb",
+ "family": "itch/creatures",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 0.95,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.09,
+ "native_cell_base": 0.0947,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 848,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:09",
+ "status": "PASS",
+ "cell_used": 0.0947,
+ "passes": [
+  {
+   "cell": 0.0947,
+   "tris_visible": 3824,
+   "voxels": 1474
+  }
+ ],
+ "voxels": 1474,
+ "faces": 1912,
+ "tris_total": 3824,
+ "tris_visible": 3824,
+ "budget_pct": -36.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3824,
+  "kb": 664,
+  "clips": 12,
+  "orig_kb": 848
+ },
+ "kb_out": 664,
+ "seconds": 0.52
+}

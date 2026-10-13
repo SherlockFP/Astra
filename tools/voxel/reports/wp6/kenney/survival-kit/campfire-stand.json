@@ -1,0 +1,50 @@
+{
+ "src": "kenney/survival-kit/campfire-stand.glb",
+ "out": "kenney/survival-kit/campfire-stand.glb",
+ "family": "kenney/survival-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0879,
+ "native_cell_base": 0.0293,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 8,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:32",
+ "status": "PASS",
+ "cell_used": 0.0293,
+ "passes": [
+  {
+   "cell": 0.0293,
+   "tris_visible": 624,
+   "voxels": 152
+  }
+ ],
+ "voxels": 152,
+ "faces": 312,
+ "tris_total": 624,
+ "tris_visible": 624,
+ "budget_pct": -82.2,
+ "colors": {
+  "MAIN": 12
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 624,
+  "kb": 30,
+  "clips": 0,
+  "orig_kb": 8
+ },
+ "kb_out": 30,
+ "seconds": 0.42
+}

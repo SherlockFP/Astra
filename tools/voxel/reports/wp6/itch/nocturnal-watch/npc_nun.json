@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/npc_nun.glb",
+ "out": "itch/nocturnal-watch/npc_nun.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1733,
+ "native_cell_base": 0.1733,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 55,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:12",
+ "status": "PASS",
+ "cell_used": 0.1733,
+ "passes": [
+  {
+   "cell": 0.1733,
+   "tris_visible": 628,
+   "voxels": 178
+  }
+ ],
+ "voxels": 178,
+ "faces": 314,
+ "tris_total": 628,
+ "tris_visible": 628,
+ "budget_pct": -82.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 628,
+  "kb": 30,
+  "clips": 0,
+  "orig_kb": 55
+ },
+ "kb_out": 30,
+ "seconds": 0.42
+}

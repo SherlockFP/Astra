@@ -1,0 +1,50 @@
+{
+ "src": "gen/bosses/mantar_kral.glb",
+ "out": "gen/bosses/mantar_kral.glb",
+ "family": "gen/bosses",
+ "class": "boss",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "no enemy def found, default 1.0",
+ "game_cell": 0.156,
+ "native_cell_base": 0.156,
+ "budget": 9500,
+ "hidden_nodes": [],
+ "kb_src": 239,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:03",
+ "status": "PASS",
+ "cell_used": 0.156,
+ "passes": [
+  {
+   "cell": 0.156,
+   "tris_visible": 8508,
+   "voxels": 3663
+  }
+ ],
+ "voxels": 3663,
+ "faces": 4254,
+ "tris_total": 8508,
+ "tris_visible": 8508,
+ "budget_pct": -10.4,
+ "colors": {
+  "M0": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 8508,
+  "kb": 864,
+  "clips": 9,
+  "orig_kb": 239
+ },
+ "kb_out": 864,
+ "seconds": 0.53
+}

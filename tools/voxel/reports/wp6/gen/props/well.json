@@ -1,0 +1,50 @@
+{
+ "src": "gen/props/well.glb",
+ "out": "gen/props/well.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2638,
+ "native_cell_base": 0.2638,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 48,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:05",
+ "status": "PASS",
+ "cell_used": 0.2638,
+ "passes": [
+  {
+   "cell": 0.2638,
+   "tris_visible": 1768,
+   "voxels": 482
+  }
+ ],
+ "voxels": 482,
+ "faces": 884,
+ "tris_total": 1768,
+ "tris_visible": 1768,
+ "budget_pct": -49.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1768,
+  "kb": 82,
+  "clips": 0,
+  "orig_kb": 48
+ },
+ "kb_out": 82,
+ "seconds": 0.49
+}

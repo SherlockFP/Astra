@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/well.glb",
+ "out": "itch/nocturnal-watch/well.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2143,
+ "native_cell_base": 0.2143,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 51,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:13",
+ "status": "PASS",
+ "cell_used": 0.2143,
+ "passes": [
+  {
+   "cell": 0.2143,
+   "tris_visible": 1654,
+   "voxels": 569
+  }
+ ],
+ "voxels": 569,
+ "faces": 827,
+ "tris_total": 1654,
+ "tris_visible": 1654,
+ "budget_pct": -52.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1654,
+  "kb": 76,
+  "clips": 0,
+  "orig_kb": 51
+ },
+ "kb_out": 76,
+ "seconds": 0.47
+}

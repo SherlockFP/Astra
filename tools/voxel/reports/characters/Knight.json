@@ -1,0 +1,56 @@
+{
+ "src": "characters/Knight.glb",
+ "out": "characters/Knight.glb",
+ "family": "characters",
+ "class": "hero",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "players scale 1",
+ "game_cell": 0.09,
+ "native_cell_base": 0.09,
+ "budget": 7600,
+ "hidden_nodes": [
+  "1H_Sword_Offhand",
+  "2H_Sword",
+  "Badge_Shield",
+  "Rectangle_Shield",
+  "Spike_Shield"
+ ],
+ "kb_src": 3574,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": "(Helmet|Hat|Hood)$",
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:23",
+ "status": "PASS",
+ "cell_used": 0.09,
+ "passes": [
+  {
+   "cell": 0.09,
+   "tris_visible": 6460,
+   "voxels": 4175
+  }
+ ],
+ "voxels": 4175,
+ "faces": 5278,
+ "tris_total": 10556,
+ "tris_visible": 6460,
+ "budget_pct": -15.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 10556,
+  "kb": 3835,
+  "clips": 76,
+  "orig_kb": 3574
+ },
+ "kb_out": 3835,
+ "seconds": 0.79
+}

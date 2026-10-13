@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/building/wood_support_corner.glb",
+ "out": "itch/psx-medieval/building/wood_support_corner.glb",
+ "family": "itch/psx-medieval",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2766,
+ "native_cell_base": 0.2766,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 36,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:44",
+ "status": "PASS",
+ "cell_used": 0.2766,
+ "passes": [
+  {
+   "cell": 0.2766,
+   "tris_visible": 258,
+   "voxels": 38
+  }
+ ],
+ "voxels": 38,
+ "faces": 129,
+ "tris_total": 258,
+ "tris_visible": 258,
+ "budget_pct": -95.7,
+ "colors": {
+  "MAIN": 14
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 258,
+  "kb": 13,
+  "clips": 0,
+  "orig_kb": 36
+ },
+ "kb_out": 13,
+ "seconds": 0.5
+}

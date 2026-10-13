@@ -1,0 +1,50 @@
+{
+ "src": "monsters/Blue_Demon.glb",
+ "out": "monsters/Blue_Demon.glb",
+ "family": "monsters",
+ "class": "boss",
+ "decision": "voxel",
+ "scale": 1.5,
+ "scale_src": "median of 1 boss def(s) only, src/data/enemies.ts",
+ "game_cell": 0.14,
+ "native_cell_base": 0.0933,
+ "budget": 9500,
+ "hidden_nodes": [],
+ "kb_src": 429,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:10",
+ "status": "PASS",
+ "cell_used": 0.0933,
+ "passes": [
+  {
+   "cell": 0.0933,
+   "tris_visible": 6236,
+   "voxels": 2562
+  }
+ ],
+ "voxels": 2562,
+ "faces": 3118,
+ "tris_total": 6236,
+ "tris_visible": 6236,
+ "budget_pct": -34.4,
+ "colors": {
+  "MAIN": 4
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 6236,
+  "kb": 764,
+  "clips": 15,
+  "orig_kb": 429
+ },
+ "kb_out": 764,
+ "seconds": 0.52
+}

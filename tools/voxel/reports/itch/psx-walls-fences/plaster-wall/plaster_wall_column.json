@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-walls-fences/plaster-wall/plaster_wall_column.glb",
+ "out": "itch/psx-walls-fences/plaster-wall/plaster_wall_column.glb",
+ "family": "itch/psx-walls-fences",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.25,
+ "native_cell_base": 0.25,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 38,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:22:07",
+ "status": "PASS",
+ "cell_used": 0.25,
+ "passes": [
+  {
+   "cell": 0.25,
+   "tris_visible": 282,
+   "voxels": 90
+  }
+ ],
+ "voxels": 90,
+ "faces": 141,
+ "tris_total": 282,
+ "tris_visible": 282,
+ "budget_pct": -95.3,
+ "colors": {
+  "MAIN": 21
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 282,
+  "kb": 14,
+  "clips": 0,
+  "orig_kb": 38
+ },
+ "kb_out": 14,
+ "seconds": 0.52
+}

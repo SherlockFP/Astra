@@ -1,0 +1,50 @@
+{
+ "src": "gen/bosses/kemik_lordu.glb",
+ "out": "gen/bosses/kemik_lordu.glb",
+ "family": "gen/bosses",
+ "class": "boss",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "median of 1 boss def(s) only, src/data/enemies.ts",
+ "game_cell": 0.142,
+ "native_cell_base": 0.142,
+ "budget": 9500,
+ "hidden_nodes": [],
+ "kb_src": 182,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:02",
+ "status": "PASS",
+ "cell_used": 0.142,
+ "passes": [
+  {
+   "cell": 0.142,
+   "tris_visible": 8216,
+   "voxels": 2535
+  }
+ ],
+ "voxels": 2535,
+ "faces": 4108,
+ "tris_total": 8216,
+ "tris_visible": 8216,
+ "budget_pct": -13.5,
+ "colors": {
+  "M0": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 8216,
+  "kb": 821,
+  "clips": 9,
+  "orig_kb": 182
+ },
+ "kb_out": 821,
+ "seconds": 0.52
+}

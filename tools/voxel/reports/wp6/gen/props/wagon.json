@@ -1,0 +1,50 @@
+{
+ "src": "gen/props/wagon.glb",
+ "out": "gen/props/wagon.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.313,
+ "native_cell_base": 0.313,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 68,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:05",
+ "status": "PASS",
+ "cell_used": 0.313,
+ "passes": [
+  {
+   "cell": 0.313,
+   "tris_visible": 1222,
+   "voxels": 327
+  }
+ ],
+ "voxels": 327,
+ "faces": 611,
+ "tris_total": 1222,
+ "tris_visible": 1222,
+ "budget_pct": -65.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1222,
+  "kb": 59,
+  "clips": 0,
+  "orig_kb": 68
+ },
+ "kb_out": 59,
+ "seconds": 0.49
+}

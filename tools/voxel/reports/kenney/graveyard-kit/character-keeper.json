@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/character-keeper.glb",
+ "out": "kenney/graveyard-kit/character-keeper.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.1,
+ "native_cell_base": 0.0333,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 244,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:41",
+ "status": "PASS",
+ "cell_used": 0.0333,
+ "passes": [
+  {
+   "cell": 0.0333,
+   "tris_visible": 5476,
+   "voxels": 2528
+  }
+ ],
+ "voxels": 2528,
+ "faces": 2738,
+ "tris_total": 5476,
+ "tris_visible": 5476,
+ "budget_pct": -8.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 5476,
+  "kb": 383,
+  "clips": 32,
+  "orig_kb": 244
+ },
+ "kb_out": 383,
+ "seconds": 0.47
+}

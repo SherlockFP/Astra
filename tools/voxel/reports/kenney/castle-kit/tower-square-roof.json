@@ -1,0 +1,50 @@
+{
+ "src": "kenney/castle-kit/tower-square-roof.glb",
+ "out": "kenney/castle-kit/tower-square-roof.glb",
+ "family": "kenney/castle-kit",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.5,
+ "native_cell_base": 0.125,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 14,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:26",
+ "status": "PASS",
+ "cell_used": 0.125,
+ "passes": [
+  {
+   "cell": 0.125,
+   "tris_visible": 1162,
+   "voxels": 629
+  }
+ ],
+ "voxels": 629,
+ "faces": 581,
+ "tris_total": 1162,
+ "tris_visible": 1162,
+ "budget_pct": -80.6,
+ "colors": {
+  "MAIN": 15
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1162,
+  "kb": 54,
+  "clips": 0,
+  "orig_kb": 14
+ },
+ "kb_out": 54,
+ "seconds": 3.76
+}

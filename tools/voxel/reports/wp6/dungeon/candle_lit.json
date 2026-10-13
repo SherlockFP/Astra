@@ -1,0 +1,50 @@
+{
+ "src": "dungeon/candle_lit.glb",
+ "out": "dungeon/candle_lit.glb",
+ "family": "dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0751,
+ "native_cell_base": 0.0751,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 22,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:10",
+ "status": "PASS",
+ "cell_used": 0.0751,
+ "passes": [
+  {
+   "cell": 0.0751,
+   "tris_visible": 546,
+   "voxels": 214
+  }
+ ],
+ "voxels": 214,
+ "faces": 273,
+ "tris_total": 546,
+ "tris_visible": 546,
+ "budget_pct": -84.4,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 546,
+  "kb": 26,
+  "clips": 0,
+  "orig_kb": 22
+ },
+ "kb_out": 26,
+ "seconds": 3.47
+}

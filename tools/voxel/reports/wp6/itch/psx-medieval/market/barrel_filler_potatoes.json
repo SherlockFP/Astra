@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/market/barrel_filler_potatoes.glb",
+ "out": "itch/psx-medieval/market/barrel_filler_potatoes.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0702,
+ "native_cell_base": 0.0702,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 43,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:37",
+ "status": "PASS",
+ "cell_used": 0.0702,
+ "passes": [
+  {
+   "cell": 0.0702,
+   "tris_visible": 1210,
+   "voxels": 304
+  }
+ ],
+ "voxels": 304,
+ "faces": 605,
+ "tris_total": 1210,
+ "tris_visible": 1210,
+ "budget_pct": -65.4,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1210,
+  "kb": 56,
+  "clips": 0,
+  "orig_kb": 43
+ },
+ "kb_out": 56,
+ "seconds": 2.89
+}

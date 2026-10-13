@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/cross.glb",
+ "out": "kenney/graveyard-kit/cross.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2249,
+ "native_cell_base": 0.075,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 15,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:20",
+ "status": "PASS",
+ "cell_used": 0.075,
+ "passes": [
+  {
+   "cell": 0.075,
+   "tris_visible": 578,
+   "voxels": 208
+  }
+ ],
+ "voxels": 208,
+ "faces": 289,
+ "tris_total": 578,
+ "tris_visible": 578,
+ "budget_pct": -83.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 578,
+  "kb": 28,
+  "clips": 0,
+  "orig_kb": 15
+ },
+ "kb_out": 28,
+ "seconds": 0.46
+}

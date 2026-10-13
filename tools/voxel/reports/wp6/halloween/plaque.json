@@ -1,0 +1,50 @@
+{
+ "src": "halloween/plaque.glb",
+ "out": "halloween/plaque.glb",
+ "family": "halloween",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1429,
+ "native_cell_base": 0.1429,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 22,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:09",
+ "status": "PASS",
+ "cell_used": 0.1429,
+ "passes": [
+  {
+   "cell": 0.1429,
+   "tris_visible": 762,
+   "voxels": 531
+  }
+ ],
+ "voxels": 531,
+ "faces": 381,
+ "tris_total": 762,
+ "tris_visible": 762,
+ "budget_pct": -78.2,
+ "colors": {
+  "MAIN": 15
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 762,
+  "kb": 36,
+  "clips": 0,
+  "orig_kb": 22
+ },
+ "kb_out": 36,
+ "seconds": 0.45
+}

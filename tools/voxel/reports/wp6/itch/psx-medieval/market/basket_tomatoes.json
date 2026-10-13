@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/market/basket_tomatoes.glb",
+ "out": "itch/psx-medieval/market/basket_tomatoes.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0808,
+ "native_cell_base": 0.0808,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 42,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:58",
+ "status": "PASS",
+ "cell_used": 0.0808,
+ "passes": [
+  {
+   "cell": 0.0808,
+   "tris_visible": 1610,
+   "voxels": 906
+  }
+ ],
+ "voxels": 906,
+ "faces": 805,
+ "tris_total": 1610,
+ "tris_visible": 1610,
+ "budget_pct": -54.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1610,
+  "kb": 74,
+  "clips": 0,
+  "orig_kb": 42
+ },
+ "kb_out": 74,
+ "seconds": 3.39
+}

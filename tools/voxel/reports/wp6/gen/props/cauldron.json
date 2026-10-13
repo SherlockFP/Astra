@@ -1,0 +1,52 @@
+{
+ "src": "gen/props/cauldron.glb",
+ "out": "gen/props/cauldron.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1146,
+ "native_cell_base": 0.1146,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 38,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf|liquid",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:25:33",
+ "status": "PASS",
+ "cell_used": 0.1146,
+ "passes": [
+  {
+   "cell": 0.1146,
+   "tris_visible": 1986,
+   "voxels": 552
+  }
+ ],
+ "voxels": 552,
+ "faces": 993,
+ "tris_total": 1986,
+ "tris_visible": 1986,
+ "budget_pct": -43.3,
+ "colors": {
+  "M2": 16,
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1994,
+  "kb": 95,
+  "clips": 0,
+  "orig_kb": 38
+ },
+ "kb_out": 95,
+ "seconds": 1.48,
+ "keep_used": "flame|fire_fx|grass|flowers|vine|leaf|liquid"
+}

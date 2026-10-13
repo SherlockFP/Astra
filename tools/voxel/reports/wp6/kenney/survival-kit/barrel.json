@@ -1,0 +1,50 @@
+{
+ "src": "kenney/survival-kit/barrel.glb",
+ "out": "kenney/survival-kit/barrel.glb",
+ "family": "kenney/survival-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0737,
+ "native_cell_base": 0.0246,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 33,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:30",
+ "status": "PASS",
+ "cell_used": 0.0246,
+ "passes": [
+  {
+   "cell": 0.0246,
+   "tris_visible": 1626,
+   "voxels": 730
+  }
+ ],
+ "voxels": 730,
+ "faces": 813,
+ "tris_total": 1626,
+ "tris_visible": 1626,
+ "budget_pct": -53.5,
+ "colors": {
+  "MAIN": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1626,
+  "kb": 75,
+  "clips": 0,
+  "orig_kb": 33
+ },
+ "kb_out": 75,
+ "seconds": 0.43
+}

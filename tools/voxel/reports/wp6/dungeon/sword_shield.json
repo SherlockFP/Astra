@@ -1,0 +1,50 @@
+{
+ "src": "dungeon/sword_shield.glb",
+ "out": "dungeon/sword_shield.glb",
+ "family": "dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1594,
+ "native_cell_base": 0.1594,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 47,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:41",
+ "status": "PASS",
+ "cell_used": 0.1594,
+ "passes": [
+  {
+   "cell": 0.1594,
+   "tris_visible": 766,
+   "voxels": 202
+  }
+ ],
+ "voxels": 202,
+ "faces": 383,
+ "tris_total": 766,
+ "tris_visible": 766,
+ "budget_pct": -78.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 766,
+  "kb": 36,
+  "clips": 0,
+  "orig_kb": 47
+ },
+ "kb_out": 36,
+ "seconds": 0.72
+}

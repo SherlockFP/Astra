@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/market/crate_beans.glb",
+ "out": "itch/psx-medieval/market/crate_beans.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0656,
+ "native_cell_base": 0.0656,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 34,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:23:05",
+ "status": "PASS",
+ "cell_used": 0.0656,
+ "passes": [
+  {
+   "cell": 0.0656,
+   "tris_visible": 802,
+   "voxels": 438
+  }
+ ],
+ "voxels": 438,
+ "faces": 401,
+ "tris_total": 802,
+ "tris_visible": 802,
+ "budget_pct": -77.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 802,
+  "kb": 38,
+  "clips": 0,
+  "orig_kb": 34
+ },
+ "kb_out": 38,
+ "seconds": 4.36
+}

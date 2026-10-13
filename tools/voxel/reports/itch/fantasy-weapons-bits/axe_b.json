@@ -1,0 +1,55 @@
+{
+ "src": "itch/fantasy-weapons-bits/axe_b.glb",
+ "out": "itch/fantasy-weapons-bits/axe_b.glb",
+ "family": "itch/fantasy-weapons-bits",
+ "class": "weapon",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 44,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:35",
+ "status": "PASS",
+ "cell_used": 0.0686,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 1962,
+   "voxels": 681
+  },
+  {
+   "cell": 0.0686,
+   "tris_visible": 1614,
+   "voxels": 535
+  }
+ ],
+ "voxels": 535,
+ "faces": 807,
+ "tris_total": 1614,
+ "tris_visible": 1614,
+ "budget_pct": 7.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1614,
+  "kb": 74,
+  "clips": 0,
+  "orig_kb": 44
+ },
+ "kb_out": 74,
+ "seconds": 0.65
+}

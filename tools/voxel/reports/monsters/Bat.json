@@ -1,0 +1,50 @@
+{
+ "src": "monsters/Bat.glb",
+ "out": "monsters/Bat.glb",
+ "family": "monsters",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 0.47,
+ "scale_src": "median of 2 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.09,
+ "native_cell_base": 0.1915,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 226,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:10",
+ "status": "PASS",
+ "cell_used": 0.1915,
+ "passes": [
+  {
+   "cell": 0.1915,
+   "tris_visible": 3384,
+   "voxels": 1093
+  }
+ ],
+ "voxels": 1093,
+ "faces": 1692,
+ "tris_total": 3384,
+ "tris_visible": 3384,
+ "budget_pct": -43.6,
+ "colors": {
+  "MAIN": 4
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3384,
+  "kb": 372,
+  "clips": 5,
+  "orig_kb": 226
+ },
+ "kb_out": 372,
+ "seconds": 0.44
+}

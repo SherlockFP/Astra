@@ -1,0 +1,50 @@
+{
+ "src": "furniture/book_set.glb",
+ "out": "furniture/book_set.glb",
+ "family": "furniture",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 28,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:47",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 1192,
+   "voxels": 576
+  }
+ ],
+ "voxels": 576,
+ "faces": 596,
+ "tris_total": 1192,
+ "tris_visible": 1192,
+ "budget_pct": -65.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1192,
+  "kb": 55,
+  "clips": 0,
+  "orig_kb": 28
+ },
+ "kb_out": 55,
+ "seconds": 0.52
+}

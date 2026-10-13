@@ -1,0 +1,50 @@
+{
+ "src": "gen/props/sarcophagus.glb",
+ "out": "gen/props/sarcophagus.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1929,
+ "native_cell_base": 0.1929,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 23,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:04",
+ "status": "PASS",
+ "cell_used": 0.1929,
+ "passes": [
+  {
+   "cell": 0.1929,
+   "tris_visible": 1364,
+   "voxels": 495
+  }
+ ],
+ "voxels": 495,
+ "faces": 682,
+ "tris_total": 1364,
+ "tris_visible": 1364,
+ "budget_pct": -61.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1364,
+  "kb": 64,
+  "clips": 0,
+  "orig_kb": 23
+ },
+ "kb_out": 64,
+ "seconds": 0.49
+}

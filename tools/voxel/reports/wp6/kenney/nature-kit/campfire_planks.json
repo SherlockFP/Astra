@@ -1,0 +1,50 @@
+{
+ "src": "kenney/nature-kit/campfire_planks.glb",
+ "out": "kenney/nature-kit/campfire_planks.glb",
+ "family": "kenney/nature-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1,
+ "native_cell_base": 0.025,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 8,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:27",
+ "status": "PASS",
+ "cell_used": 0.025,
+ "passes": [
+  {
+   "cell": 0.025,
+   "tris_visible": 908,
+   "voxels": 261
+  }
+ ],
+ "voxels": 261,
+ "faces": 454,
+ "tris_total": 908,
+ "tris_visible": 908,
+ "budget_pct": -74.1,
+ "colors": {
+  "MAIN": 1
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 908,
+  "kb": 42,
+  "clips": 0,
+  "orig_kb": 8
+ },
+ "kb_out": 42,
+ "seconds": 0.47
+}

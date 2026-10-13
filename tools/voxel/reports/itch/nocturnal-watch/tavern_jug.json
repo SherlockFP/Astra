@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/tavern_jug.glb",
+ "out": "itch/nocturnal-watch/tavern_jug.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.25,
+ "native_cell_base": 0.25,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 46,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:13",
+ "status": "PASS",
+ "cell_used": 0.25,
+ "passes": [
+  {
+   "cell": 0.25,
+   "tris_visible": 50,
+   "voxels": 7
+  }
+ ],
+ "voxels": 7,
+ "faces": 25,
+ "tris_total": 50,
+ "tris_visible": 50,
+ "budget_pct": -99.2,
+ "colors": {
+  "MAIN": 7
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 50,
+  "kb": 4,
+  "clips": 0,
+  "orig_kb": 46
+ },
+ "kb_out": 4,
+ "seconds": 3.6
+}

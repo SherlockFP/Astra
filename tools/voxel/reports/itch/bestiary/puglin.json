@@ -1,0 +1,50 @@
+{
+ "src": "itch/bestiary/puglin.glb",
+ "out": "itch/bestiary/puglin.glb",
+ "family": "itch/bestiary",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 1.4,
+ "scale_src": "Appendix A in-game scale (pinned, enemy defs vary)",
+ "game_cell": 0.09,
+ "native_cell_base": 0.0643,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 1390,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:06",
+ "status": "PASS",
+ "cell_used": 0.0643,
+ "passes": [
+  {
+   "cell": 0.0643,
+   "tris_visible": 4696,
+   "voxels": 1861
+  }
+ ],
+ "voxels": 1861,
+ "faces": 2348,
+ "tris_total": 4696,
+ "tris_visible": 4696,
+ "budget_pct": -21.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 4696,
+  "kb": 1521,
+  "clips": 37,
+  "orig_kb": 1390
+ },
+ "kb_out": 1521,
+ "seconds": 0.64
+}

@@ -1,0 +1,50 @@
+{
+ "src": "gen/weapons/shield_kite_crest.glb",
+ "out": "gen/weapons/shield_kite_crest.glb",
+ "family": "gen/weapons",
+ "class": "shield",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3000,
+ "hidden_nodes": [],
+ "kb_src": 17,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:30",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 1268,
+   "voxels": 464
+  }
+ ],
+ "voxels": 464,
+ "faces": 634,
+ "tris_total": 1268,
+ "tris_visible": 1268,
+ "budget_pct": -57.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1268,
+  "kb": 59,
+  "clips": 0,
+  "orig_kb": 17
+ },
+ "kb_out": 59,
+ "seconds": 0.43
+}

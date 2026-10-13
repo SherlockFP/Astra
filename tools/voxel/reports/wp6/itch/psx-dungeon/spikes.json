@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-dungeon/spikes.glb",
+ "out": "itch/psx-dungeon/spikes.glb",
+ "family": "itch/psx-dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2571,
+ "native_cell_base": 0.2571,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 42,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:17",
+ "status": "PASS",
+ "cell_used": 0.2571,
+ "passes": [
+  {
+   "cell": 0.2571,
+   "tris_visible": 1290,
+   "voxels": 274
+  }
+ ],
+ "voxels": 274,
+ "faces": 645,
+ "tris_total": 1290,
+ "tris_visible": 1290,
+ "budget_pct": -63.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1290,
+  "kb": 59,
+  "clips": 0,
+  "orig_kb": 42
+ },
+ "kb_out": 59,
+ "seconds": 0.47
+}

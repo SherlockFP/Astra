@@ -1,0 +1,50 @@
+{
+ "src": "kenney/fantasy-town-kit/stall.glb",
+ "out": "kenney/fantasy-town-kit/stall.glb",
+ "family": "kenney/fantasy-town-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2857,
+ "native_cell_base": 0.0714,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 11,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:16",
+ "status": "PASS",
+ "cell_used": 0.0714,
+ "passes": [
+  {
+   "cell": 0.0714,
+   "tris_visible": 1396,
+   "voxels": 426
+  }
+ ],
+ "voxels": 426,
+ "faces": 698,
+ "tris_total": 1396,
+ "tris_visible": 1396,
+ "budget_pct": -60.1,
+ "colors": {
+  "MAIN": 10
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1396,
+  "kb": 64,
+  "clips": 0,
+  "orig_kb": 11
+ },
+ "kb_out": 64,
+ "seconds": 1.54
+}

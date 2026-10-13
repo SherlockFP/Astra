@@ -1,0 +1,50 @@
+{
+ "src": "itch/creatures/centipede.glb",
+ "out": "itch/creatures/centipede.glb",
+ "family": "itch/creatures",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.09,
+ "native_cell_base": 0.09,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 1655,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:07",
+ "status": "PASS",
+ "cell_used": 0.09,
+ "passes": [
+  {
+   "cell": 0.09,
+   "tris_visible": 2300,
+   "voxels": 590
+  }
+ ],
+ "voxels": 590,
+ "faces": 1150,
+ "tris_total": 2300,
+ "tris_visible": 2300,
+ "budget_pct": -61.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2300,
+  "kb": 1587,
+  "clips": 10,
+  "orig_kb": 1655
+ },
+ "kb_out": 1587,
+ "seconds": 0.58
+}

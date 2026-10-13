@@ -1,0 +1,50 @@
+{
+ "src": "kenney/nature-kit/statue_head.glb",
+ "out": "kenney/nature-kit/statue_head.glb",
+ "family": "kenney/nature-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2857,
+ "native_cell_base": 0.0714,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 14,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:29",
+ "status": "PASS",
+ "cell_used": 0.0714,
+ "passes": [
+  {
+   "cell": 0.0714,
+   "tris_visible": 1018,
+   "voxels": 446
+  }
+ ],
+ "voxels": 446,
+ "faces": 509,
+ "tris_total": 1018,
+ "tris_visible": 1018,
+ "budget_pct": -70.9,
+ "colors": {
+  "MAIN": 3
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1018,
+  "kb": 47,
+  "clips": 0,
+  "orig_kb": 14
+ },
+ "kb_out": 47,
+ "seconds": 0.42
+}

@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/decoration/window_rounded.glb",
+ "out": "itch/psx-medieval/decoration/window_rounded.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1506,
+ "native_cell_base": 0.1506,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 33,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:23",
+ "status": "PASS",
+ "cell_used": 0.1506,
+ "passes": [
+  {
+   "cell": 0.1506,
+   "tris_visible": 742,
+   "voxels": 298
+  }
+ ],
+ "voxels": 298,
+ "faces": 371,
+ "tris_total": 742,
+ "tris_visible": 742,
+ "budget_pct": -78.8,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 742,
+  "kb": 35,
+  "clips": 0,
+  "orig_kb": 33
+ },
+ "kb_out": 35,
+ "seconds": 1.15
+}

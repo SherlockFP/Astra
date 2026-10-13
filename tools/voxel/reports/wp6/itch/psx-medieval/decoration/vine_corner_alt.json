@@ -1,0 +1,51 @@
+{
+ "src": "itch/psx-medieval/decoration/vine_corner_alt.glb",
+ "out": "itch/psx-medieval/decoration/vine_corner_alt.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1366,
+ "native_cell_base": 0.1366,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 35,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:25:21",
+ "status": "PASS",
+ "cell_used": 0.1366,
+ "passes": [
+  {
+   "cell": 0.1366,
+   "tris_visible": 1178,
+   "voxels": 172
+  }
+ ],
+ "voxels": 172,
+ "faces": 589,
+ "tris_total": 1178,
+ "tris_visible": 1178,
+ "budget_pct": -66.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1178,
+  "kb": 54,
+  "clips": 0,
+  "orig_kb": 35
+ },
+ "kb_out": 54,
+ "seconds": 1.37,
+ "keep_used": "flame|fire_fx"
+}

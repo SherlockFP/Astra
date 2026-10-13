@@ -1,0 +1,51 @@
+{
+ "src": "gen/creatures/bat_cave.glb",
+ "out": "gen/creatures/bat_cave.glb",
+ "family": "gen/creatures",
+ "class": "small",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "fallback table (NPC.ts / Appendix A)",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3200,
+ "hidden_nodes": [],
+ "kb_src": 89,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:03",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 2612,
+   "voxels": 721
+  }
+ ],
+ "voxels": 721,
+ "faces": 1306,
+ "tris_total": 2612,
+ "tris_visible": 2612,
+ "budget_pct": -18.4,
+ "colors": {
+  "M2": 3,
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2612,
+  "kb": 281,
+  "clips": 6,
+  "orig_kb": 89
+ },
+ "kb_out": 281,
+ "seconds": 0.46
+}

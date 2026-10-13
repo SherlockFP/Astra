@@ -28,10 +28,12 @@ RAMPS = {
     'flower_p': ramp(285, .6, .4, .45, 1.0), 'grass': ramp(100, .62, .45, .25, .85), 'cactus': ramp(135, .55, .40, .22, .66), 'cap_red': ramp(2, .85, .6, .30, .95), 'cap_tan': ramp(35, .45, .3, .45, .9),
 }
 ROWS = list(RAMPS)
-def palette_png():
+def palette_png(over=None):
+    """Master palette PNG (embedded in every nature GLB). `over` replaces single ramps, e.g. WINTER for the season palette."""
+    R = RAMPS if not over else {**RAMPS, **over}
     img = np.zeros((len(ROWS), 8, 4), np.uint8); img[..., 3] = 255
     for r, name in enumerate(ROWS):
-        for k, c in enumerate(RAMPS[name]): img[r, k, :3] = c
+        for k, c in enumerate(R[name]): img[r, k, :3] = c
     buf = io.BytesIO(); Image.fromarray(img, 'RGBA').save(buf, 'PNG', optimize=True); return buf.getvalue()
 
 # ------------------------------------------------------------------------------------------------ voxel canvas
@@ -177,6 +179,98 @@ def log(rng, L=14):
         for (y, z) in [(0, 0), (0, 1), (1, 0), (1, 1), (0, -1), (1, -1)]: cv.put(x, y, z, 'bark', 2 + int(rng.integers(0, 2)))
     return cv
 
+# ------------------------------------------------------------------------------------------------ WP5 builders (appended; ids after 'log' keep their seeds)
+def tree_at(cv, rng, H, ox, oz, leaf='leaf', trunk='bark', blobs=4):
+    """One broadleaf tree drawn into an existing canvas at (ox, oz): used by groves and the swamp tree. Returns (crown centre y, crown radius)."""
+    th = int(H * 0.42)
+    for y in range(th):
+        w = 2 if y < th - 3 else 1
+        for dx in range(w + (y < 2)):
+            for dz in range(w + (y < 2)): cv.put(ox - 1 + dx, y, oz - 1 + dz, trunk, 2 + ((dx + dz + y) % 3 == 0) + int(rng.integers(0, 2)))
+    cy = H * 0.64; R = H * 0.30; sf = lambda x, y, z, d: 3 + int(2.2 * (y - (cy - R)) / (2 * R) + rng.integers(-1, 2) - d)
+    cv.blob(ox, cy, oz, R, R * .85, R, leaf, sf, rng, .35)
+    for _ in range(blobs):
+        a = rng.random() * 6.283; r = R * .62
+        cv.blob(ox + math.cos(a) * r, cy + rng.uniform(-R * .3, R * .3), oz + math.sin(a) * r, R * .6, R * .5, R * .6, leaf, sf, rng, .35)
+    return cy, R
+
+def grove(rng, H=10, n=5, spread=3.0, leaf='leaf'):
+    """n broadleaf trees on one footprint (replaces the hex trees_A / trees_B clusters; overlapping crowns share faces)."""
+    cv = Canvas(64)
+    for _ in range(n):
+        a = rng.random() * 6.283; r = spread * math.sqrt(rng.random())
+        tree_at(cv, rng, H * rng.uniform(.7, 1.0), r * math.cos(a), r * math.sin(a), leaf, blobs=3)
+    return cv.finish()
+
+def swamp(rng, H=21, leaf='leaf_pine'):
+    """Tall dark conifer-green crown with moss strands hanging from the rim."""
+    cv = Canvas(56); cy, R = tree_at(cv, rng, H, 0, 0, leaf, blobs=3)
+    for _ in range(9):
+        a = rng.random() * 6.283; r = R * rng.uniform(.6, 1.0); x, z = math.cos(a) * r, math.sin(a) * r
+        top = cy - R * .4 + rng.uniform(-1, 1); L = int(H * rng.uniform(.25, .4))
+        for y in range(L): cv.put(x, top - y, z, 'moss', 2 + int(rng.integers(0, 3)))
+    return cv.finish()
+
+def stump(rng, H=5, R=2.4):
+    """Cut trunk: bark sides, light ring top."""
+    cv = Canvas(24)
+    for y in range(H):
+        for x in range(-3, 4):
+            for z in range(-3, 4):
+                d = math.hypot(x, z)
+                if d <= R + .3 * (rng.random() - .5) and (y < H - 1 or d <= R - 1):
+                    top = y == H - 1
+                    cv.put(x, y, z, 'birch' if top else 'bark', 5 if top else 2 + int(rng.integers(0, 2)))
+    return cv
+
+def reeds(rng, n=7):
+    """Swamp reed cluster: olive stalks with brown seed heads."""
+    cv = Canvas(24)
+    for _ in range(n):
+        x, z = int(rng.integers(-2, 3)), int(rng.integers(-2, 3)); h = int(rng.integers(9, 15))
+        for y in range(h): cv.put(x, y, z, 'leaf_olive', 2 + int(3 * y / h) + int(rng.integers(0, 2)))
+        cv.put(x, h, z, 'sand', 3); cv.put(x, h + 1, z, 'sand', 3)
+    return cv.finish()
+
+def lily(rng, R=3):
+    """Water-lily pad: a flat disc with a notched rim and one bloom."""
+    cv = Canvas(16)
+    for x in range(-R, R + 1):
+        for z in range(-R, R + 1):
+            d = math.hypot(x, z)
+            if d <= R and not (d > R - .8 and rng.random() < .35): cv.put(x, 0, z, 'leaf', 3 + int(rng.integers(0, 3)))
+    cv.put(0, 1, 0, 'flower_p', 5)
+    return cv
+
+def cliff(rng, W=10, H=9, D=10, kind='block', ramp_='rock'):
+    """Kenney-style cliff block (kind block / corner / slope): ragged top edge, moss on the exposed top."""
+    cv = Canvas(40)
+    for x in range(-(W // 2), W - W // 2):
+        for z in range(-(D // 2), D - D // 2):
+            if kind == 'corner' and x > 0 and z > 0: continue
+            hh = H * (x + W / 2 + 1) / (W + 1) if kind == 'slope' else H
+            top = int(round(hh - (rng.random() < .3)))
+            for y in range(max(top, 1)): cv.put(x, y, z, ramp_, 2 + int(3 * y / H) + int(rng.integers(-1, 2)))
+    top = cv.occ & ~np.pad(cv.occ[:, 1:], ((0, 0), (0, 1), (0, 0)))
+    m = top & (rng.random(cv.occ.shape) < .5)
+    cv.ramp[m] = ROWS.index('moss'); cv.shade[m] = rng.integers(2, 6, size=int(m.sum()))
+    return cv
+
+def massif(rng, H=30, R=14, steps=3, ramp_='rock'):
+    """Stepped hill / mountain (30-60 m at cell 1 m): concentric terraces that shrink with height, conifer-clad summit."""
+    cv = Canvas(72)
+    for y in range(H):
+        lvl = int(steps * y / H) / steps
+        r = R * (1 - .85 * lvl ** 1.3) * (1 + .06 * math.sin(.9 * y))
+        for x in range(-int(r) - 2, int(r) + 3):
+            for z in range(-int(r) - 2, int(r) + 3):
+                d = math.hypot(x, z) / max(r, 1)
+                if d <= 1 and not (d > .8 and rng.random() < .3): cv.put(x, y, z, ramp_, 2 + int(3 * y / H) + int(rng.integers(-1, 2)))
+    top = cv.occ & ~np.pad(cv.occ[:, 1:], ((0, 0), (0, 1), (0, 0)))
+    m = top & (rng.random(cv.occ.shape) < .45)
+    cv.ramp[m] = ROWS.index('leaf_pine'); cv.shade[m] = rng.integers(2, 5, size=int(m.sum()))
+    return cv
+
 # ------------------------------------------------------------------------------------------------ canonical set: id -> (builder, kwargs, cell metres)
 def S(fn, cell, **kw): return (fn, kw, cell)
 SET = {
@@ -198,7 +292,20 @@ SET = {
     'rock_xl1': S(rock, .45, S=14), 'rock_tall_1': S(rock_tall, .30, H=12), 'rock_tall_2': S(rock_tall, .30, H=15), 'rock_tall_3': S(rock_tall, .30, H=10, ramp_='rock'),
     'tuft': S(tuft, .09), 'flowers_r': S(flowers, .1, ramp_='flower_r'), 'flowers_y': S(flowers, .1, ramp_='flower_y'), 'flowers_p': S(flowers, .1, ramp_='flower_p'),
     'mushroom_red': S(mushroom, .1), 'mushroom_tan': S(mushroom, .1, cap='cap_tan'), 'log': S(log, .12, L=14),
+    # ---- WP5 (ART_VOXEL_PSX.md 2.2, appended so the ids above keep their seeds) ----
+    'stump': S(stump, .12, H=5), 'reeds': S(reeds, .08), 'lily': S(lily, .1),
+    'tree_swamp_l1': S(swamp, .40, H=21),
+    'grove_a_s': S(grove, .45, n=3, H=9, spread=2.5), 'grove_a_m': S(grove, .45, n=5, H=10, spread=3.0), 'grove_a_l': S(grove, .45, n=8, H=11, spread=3.8),
+    'grove_b_s': S(grove, .45, n=3, H=9, spread=2.5, leaf='leaf_olive'), 'grove_b_m': S(grove, .45, n=5, H=10, spread=3.0, leaf='leaf_olive'), 'grove_b_l': S(grove, .45, n=8, H=11, spread=3.8, leaf='leaf_olive'),
+    'cliff_block': S(cliff, .45, W=10, H=9, D=10, kind='block'), 'cliff_half': S(cliff, .45, W=10, H=5, D=10, kind='block'),
+    'cliff_corner': S(cliff, .45, W=10, H=9, D=10, kind='corner'), 'cliff_slope': S(cliff, .45, W=12, H=9, D=10, kind='slope'),
+    'massif_1': S(massif, 2.5, H=12, R=6, steps=3), 'massif_2': S(massif, 2.5, H=15, R=7, steps=4),
+    'massif_3': S(massif, 3.0, H=16, R=7, steps=4), 'massif_4': S(massif, 3.0, H=19, R=7, steps=5),
 }
+
+# Winter master palette: same layout (8 shades x 24 rows), foliage and grass pushed toward snow. Season swap = this PNG.
+WINTER = {'leaf': ramp(200, .20, .05, .55, .98), 'leaf_olive': ramp(200, .18, .04, .50, .95), 'leaf_pine': ramp(150, .30, .18, .25, .62),
+          'leaf_spruce': ramp(170, .28, .15, .22, .55), 'grass': ramp(90, .25, .14, .45, .90), 'moss': ramp(100, .30, .18, .40, .80)}
 
 def export(cv, cell, path, name):
     occ = cv.occ; n = cv.n
@@ -232,11 +339,22 @@ def export(cv, cell, path, name):
     write_glb(path, js, bytes(buf))
     return nq * 2, (pos.min(0) * 1).tolist(), pos.max(0).tolist()
 
-if __name__ == '__main__':
-    out = sys.argv[1]; os.makedirs(out, exist_ok=True); ids = sys.argv[2:] or list(SET); man = {}
-    for name in ids:
+def generate(out, ids=None, scale=1.0, write_manifest=True, quiet=False):
+    """Writes OUT/<id>.glb for each id (default: the whole SET). `scale` multiplies every voxel edge: same grid, same
+    triangles, a uniformly bigger or smaller model (build_replace.py uses it for pack-native variants). Returns {id: info}."""
+    os.makedirs(out, exist_ok=True); man = {}
+    for name in ids or list(SET):
         fn, kw, cell = SET[name]; rng = np.random.default_rng(1000 + list(SET).index(name) * 7919 + sum(map(ord, name)))   # position in SET, not in argv: single-id runs equal full runs
+        cell = cell * scale
         cv = fn(rng, **kw); tris, mn, mx = export(cv, cell, os.path.join(out, name + '.glb'), name)
-        man[name] = dict(tris=tris, size=[round(mx[0] - mn[0], 2), round(mx[1], 2), round(mx[2] - mn[2], 2)], cell=cell)
-        print(name, man[name])
-    json.dump(man, open(os.path.join(out, 'manifest.json'), 'w'), indent=1)
+        man[name] = dict(tris=tris, size=[round(mx[0] - mn[0], 2), round(mx[1], 2), round(mx[2] - mn[2], 2)], cell=round(cell, 5))
+        if not quiet: print(name, man[name])
+    if write_manifest: json.dump(man, open(os.path.join(out, 'manifest.json'), 'w'), indent=1)
+    return man
+
+if __name__ == '__main__':
+    out = sys.argv[1]; ids = sys.argv[2:] or None
+    generate(out, ids)
+    if ids is None:                                       # full run also writes the two master palettes (season swap = texture swap)
+        open(os.path.join(out, 'voxel_master.png'), 'wb').write(palette_png())
+        open(os.path.join(out, 'voxel_master_winter.png'), 'wb').write(palette_png(WINTER))

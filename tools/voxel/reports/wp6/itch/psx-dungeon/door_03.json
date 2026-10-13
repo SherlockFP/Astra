@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-dungeon/door_03.glb",
+ "out": "itch/psx-dungeon/door_03.glb",
+ "family": "itch/psx-dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2143,
+ "native_cell_base": 0.2143,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 44,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:16",
+ "status": "PASS",
+ "cell_used": 0.2143,
+ "passes": [
+  {
+   "cell": 0.2143,
+   "tris_visible": 768,
+   "voxels": 268
+  }
+ ],
+ "voxels": 268,
+ "faces": 384,
+ "tris_total": 768,
+ "tris_visible": 768,
+ "budget_pct": -78.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 768,
+  "kb": 36,
+  "clips": 0,
+  "orig_kb": 44
+ },
+ "kb_out": 36,
+ "seconds": 0.47
+}

@@ -1,0 +1,50 @@
+{
+ "src": "npcs/King.glb",
+ "out": "npcs/King.glb",
+ "family": "npcs",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 1.15,
+ "scale_src": "fallback table (NPC.ts / Appendix A)",
+ "game_cell": 0.09,
+ "native_cell_base": 0.0783,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 1957,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:42",
+ "status": "PASS",
+ "cell_used": 0.0783,
+ "passes": [
+  {
+   "cell": 0.0783,
+   "tris_visible": 1440,
+   "voxels": 485
+  }
+ ],
+ "voxels": 485,
+ "faces": 720,
+ "tris_total": 1440,
+ "tris_visible": 1440,
+ "budget_pct": -76.0,
+ "colors": {
+  "MAIN": 8
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1440,
+  "kb": 769,
+  "clips": 24,
+  "orig_kb": 1957
+ },
+ "kb_out": 769,
+ "seconds": 0.49
+}

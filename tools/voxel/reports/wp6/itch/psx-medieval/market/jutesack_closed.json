@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/market/jutesack_closed.glb",
+ "out": "itch/psx-medieval/market/jutesack_closed.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.074,
+ "native_cell_base": 0.074,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 11,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:23:33",
+ "status": "PASS",
+ "cell_used": 0.074,
+ "passes": [
+  {
+   "cell": 0.074,
+   "tris_visible": 1142,
+   "voxels": 512
+  }
+ ],
+ "voxels": 512,
+ "faces": 571,
+ "tris_total": 1142,
+ "tris_visible": 1142,
+ "budget_pct": -67.4,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1142,
+  "kb": 53,
+  "clips": 0,
+  "orig_kb": 11
+ },
+ "kb_out": 53,
+ "seconds": 2.48
+}

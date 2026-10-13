@@ -1,0 +1,50 @@
+{
+ "src": "enemies/Skeleton_Warrior.glb",
+ "out": "enemies/Skeleton_Warrior.glb",
+ "family": "enemies",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 1.07,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.09,
+ "native_cell_base": 0.0841,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 4750,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": "(Helmet|Hat|Hood|Cloak)$",
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:26",
+ "status": "PASS",
+ "cell_used": 0.0841,
+ "passes": [
+  {
+   "cell": 0.0841,
+   "tris_visible": 6002,
+   "voxels": 2880
+  }
+ ],
+ "voxels": 2880,
+ "faces": 3001,
+ "tris_total": 6002,
+ "tris_visible": 6002,
+ "budget_pct": 0.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 6002,
+  "kb": 4849,
+  "clips": 95,
+  "orig_kb": 4750
+ },
+ "kb_out": 4849,
+ "seconds": 0.77
+}

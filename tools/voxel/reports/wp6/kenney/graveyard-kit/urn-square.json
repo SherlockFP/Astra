@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/urn-square.glb",
+ "out": "kenney/graveyard-kit/urn-square.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0823,
+ "native_cell_base": 0.0274,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 22,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:26",
+ "status": "PASS",
+ "cell_used": 0.0274,
+ "passes": [
+  {
+   "cell": 0.0274,
+   "tris_visible": 1842,
+   "voxels": 756
+  }
+ ],
+ "voxels": 756,
+ "faces": 921,
+ "tris_total": 1842,
+ "tris_visible": 1842,
+ "budget_pct": -47.4,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1842,
+  "kb": 85,
+  "clips": 0,
+  "orig_kb": 22
+ },
+ "kb_out": 85,
+ "seconds": 0.48
+}

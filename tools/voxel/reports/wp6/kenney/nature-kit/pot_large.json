@@ -1,0 +1,50 @@
+{
+ "src": "kenney/nature-kit/pot_large.glb",
+ "out": "kenney/nature-kit/pot_large.glb",
+ "family": "kenney/nature-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.161,
+ "native_cell_base": 0.0403,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 6,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:28",
+ "status": "PASS",
+ "cell_used": 0.0403,
+ "passes": [
+  {
+   "cell": 0.0403,
+   "tris_visible": 1122,
+   "voxels": 517
+  }
+ ],
+ "voxels": 517,
+ "faces": 561,
+ "tris_total": 1122,
+ "tris_visible": 1122,
+ "budget_pct": -67.9,
+ "colors": {
+  "MAIN": 2
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1122,
+  "kb": 52,
+  "clips": 0,
+  "orig_kb": 6
+ },
+ "kb_out": 52,
+ "seconds": 0.45
+}

@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/tavern_shelf.glb",
+ "out": "itch/nocturnal-watch/tavern_shelf.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2722,
+ "native_cell_base": 0.2722,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 59,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:18",
+ "status": "PASS",
+ "cell_used": 0.2722,
+ "passes": [
+  {
+   "cell": 0.2722,
+   "tris_visible": 340,
+   "voxels": 68
+  }
+ ],
+ "voxels": 68,
+ "faces": 170,
+ "tris_total": 340,
+ "tris_visible": 340,
+ "budget_pct": -94.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 340,
+  "kb": 17,
+  "clips": 0,
+  "orig_kb": 59
+ },
+ "kb_out": 17,
+ "seconds": 3.53
+}

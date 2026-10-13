@@ -1,0 +1,50 @@
+{
+ "src": "itch/fantasy-weapons-bits/bow_b.glb",
+ "out": "itch/fantasy-weapons-bits/bow_b.glb",
+ "family": "itch/fantasy-weapons-bits",
+ "class": "weapon",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 149,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:36",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 1202,
+   "voxels": 344
+  }
+ ],
+ "voxels": 344,
+ "faces": 601,
+ "tris_total": 1202,
+ "tris_visible": 1202,
+ "budget_pct": -19.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1202,
+  "kb": 56,
+  "clips": 0,
+  "orig_kb": 149
+ },
+ "kb_out": 56,
+ "seconds": 0.43
+}

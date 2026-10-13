@@ -1,0 +1,51 @@
+{
+ "src": "gen/props/keystone.glb",
+ "out": "gen/props/keystone.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 13,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:02",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 274,
+   "voxels": 90
+  }
+ ],
+ "voxels": 90,
+ "faces": 137,
+ "tris_total": 274,
+ "tris_visible": 274,
+ "budget_pct": -92.2,
+ "colors": {
+  "M2": 5,
+  "M0": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 274,
+  "kb": 15,
+  "clips": 0,
+  "orig_kb": 13
+ },
+ "kb_out": 15,
+ "seconds": 0.51
+}

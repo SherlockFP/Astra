@@ -1,0 +1,50 @@
+{
+ "src": "weapons/dagger.gltf",
+ "out": "weapons/dagger.glb",
+ "family": "weapons",
+ "class": "weapon",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 3,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:44",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 626,
+   "voxels": 159
+  }
+ ],
+ "voxels": 159,
+ "faces": 313,
+ "tris_total": 626,
+ "tris_visible": 626,
+ "budget_pct": -58.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 626,
+  "kb": 30,
+  "clips": 0,
+  "orig_kb": 3
+ },
+ "kb_out": 30,
+ "seconds": 0.4
+}

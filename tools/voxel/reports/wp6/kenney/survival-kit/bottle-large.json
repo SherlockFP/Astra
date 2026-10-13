@@ -1,0 +1,50 @@
+{
+ "src": "kenney/survival-kit/bottle-large.glb",
+ "out": "kenney/survival-kit/bottle-large.glb",
+ "family": "kenney/survival-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.06,
+ "native_cell_base": 0.02,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 10,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:30",
+ "status": "PASS",
+ "cell_used": 0.02,
+ "passes": [
+  {
+   "cell": 0.02,
+   "tris_visible": 314,
+   "voxels": 111
+  }
+ ],
+ "voxels": 111,
+ "faces": 157,
+ "tris_total": 314,
+ "tris_visible": 314,
+ "budget_pct": -91.0,
+ "colors": {
+  "MAIN": 14
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 314,
+  "kb": 16,
+  "clips": 0,
+  "orig_kb": 10
+ },
+ "kb_out": 16,
+ "seconds": 0.42
+}

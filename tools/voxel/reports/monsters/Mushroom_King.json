@@ -1,0 +1,50 @@
+{
+ "src": "monsters/Mushroom_King.glb",
+ "out": "monsters/Mushroom_King.glb",
+ "family": "monsters",
+ "class": "boss",
+ "decision": "voxel",
+ "scale": 1.36,
+ "scale_src": "median of 1 boss def(s) only, src/data/enemies.ts",
+ "game_cell": 0.14,
+ "native_cell_base": 0.1029,
+ "budget": 9500,
+ "hidden_nodes": [],
+ "kb_src": 434,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:12",
+ "status": "PASS",
+ "cell_used": 0.1029,
+ "passes": [
+  {
+   "cell": 0.1029,
+   "tris_visible": 7516,
+   "voxels": 3169
+  }
+ ],
+ "voxels": 3169,
+ "faces": 3758,
+ "tris_total": 7516,
+ "tris_visible": 7516,
+ "budget_pct": -20.9,
+ "colors": {
+  "MAIN": 3
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 7516,
+  "kb": 877,
+  "clips": 14,
+  "orig_kb": 434
+ },
+ "kb_out": 877,
+ "seconds": 0.56
+}

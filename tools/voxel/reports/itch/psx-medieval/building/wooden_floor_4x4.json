@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/building/wooden_floor_4x4.glb",
+ "out": "itch/psx-medieval/building/wooden_floor_4x4.glb",
+ "family": "itch/psx-medieval",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.3571,
+ "native_cell_base": 0.3571,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 31,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:45",
+ "status": "PASS",
+ "cell_used": 0.3571,
+ "passes": [
+  {
+   "cell": 0.3571,
+   "tris_visible": 594,
+   "voxels": 213
+  }
+ ],
+ "voxels": 213,
+ "faces": 297,
+ "tris_total": 594,
+ "tris_visible": 594,
+ "budget_pct": -90.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 594,
+  "kb": 28,
+  "clips": 0,
+  "orig_kb": 31
+ },
+ "kb_out": 28,
+ "seconds": 0.49
+}

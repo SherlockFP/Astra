@@ -1,0 +1,51 @@
+{
+ "src": "itch/creatures/ooze.glb",
+ "out": "itch/creatures/ooze.glb",
+ "family": "itch/creatures",
+ "class": "small",
+ "decision": "voxel",
+ "scale": 0.55,
+ "scale_src": "Appendix A in-game scale (pinned, enemy defs vary)",
+ "game_cell": 0.081,
+ "native_cell_base": 0.1473,
+ "budget": 3200,
+ "hidden_nodes": [],
+ "kb_src": 761,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "blend",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:08",
+ "status": "PASS",
+ "cell_used": 0.1473,
+ "passes": [
+  {
+   "cell": 0.1473,
+   "tris_visible": 3344,
+   "voxels": 729
+  }
+ ],
+ "voxels": 729,
+ "faces": 1672,
+ "tris_total": 3344,
+ "tris_visible": 3344,
+ "budget_pct": 4.5,
+ "colors": {
+  "MAIN": 24,
+  "M0": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3344,
+  "kb": 795,
+  "clips": 12,
+  "orig_kb": 761
+ },
+ "kb_out": 795,
+ "seconds": 0.67
+}

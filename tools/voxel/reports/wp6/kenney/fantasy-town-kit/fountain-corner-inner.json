@@ -1,0 +1,51 @@
+{
+ "src": "kenney/fantasy-town-kit/fountain-corner-inner.glb",
+ "out": "kenney/fantasy-town-kit/fountain-corner-inner.glb",
+ "family": "kenney/fantasy-town-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2857,
+ "native_cell_base": 0.0714,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 15,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:02",
+ "status": "PASS",
+ "cell_used": 0.0714,
+ "passes": [
+  {
+   "cell": 0.0714,
+   "tris_visible": 770,
+   "voxels": 482
+  }
+ ],
+ "voxels": 482,
+ "faces": 385,
+ "tris_total": 770,
+ "tris_visible": 770,
+ "budget_pct": -78.0,
+ "colors": {
+  "M1": 1,
+  "MAIN": 10
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 770,
+  "kb": 37,
+  "clips": 0,
+  "orig_kb": 15
+ },
+ "kb_out": 37,
+ "seconds": 2.78
+}

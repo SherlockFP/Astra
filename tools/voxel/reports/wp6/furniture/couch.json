@@ -1,0 +1,50 @@
+{
+ "src": "furniture/couch.glb",
+ "out": "furniture/couch.glb",
+ "family": "furniture",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2143,
+ "native_cell_base": 0.2143,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 37,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:51",
+ "status": "PASS",
+ "cell_used": 0.2143,
+ "passes": [
+  {
+   "cell": 0.2143,
+   "tris_visible": 792,
+   "voxels": 457
+  }
+ ],
+ "voxels": 457,
+ "faces": 396,
+ "tris_total": 792,
+ "tris_visible": 792,
+ "budget_pct": -77.4,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 792,
+  "kb": 37,
+  "clips": 0,
+  "orig_kb": 37
+ },
+ "kb_out": 37,
+ "seconds": 0.7
+}

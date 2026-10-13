@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/tavern_wooden_spoon.glb",
+ "out": "itch/nocturnal-watch/tavern_wooden_spoon.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.25,
+ "native_cell_base": 0.25,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 21,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:34",
+ "status": "PASS",
+ "cell_used": 0.25,
+ "passes": [
+  {
+   "cell": 0.25,
+   "tris_visible": 22,
+   "voxels": 3
+  }
+ ],
+ "voxels": 3,
+ "faces": 11,
+ "tris_total": 22,
+ "tris_visible": 22,
+ "budget_pct": -99.6,
+ "colors": {
+  "MAIN": 3
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 22,
+  "kb": 2,
+  "clips": 0,
+  "orig_kb": 21
+ },
+ "kb_out": 2,
+ "seconds": 4.4
+}

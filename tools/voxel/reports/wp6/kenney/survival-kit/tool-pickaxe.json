@@ -1,0 +1,50 @@
+{
+ "src": "kenney/survival-kit/tool-pickaxe.glb",
+ "out": "kenney/survival-kit/tool-pickaxe.glb",
+ "family": "kenney/survival-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.06,
+ "native_cell_base": 0.02,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 8,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:43",
+ "status": "PASS",
+ "cell_used": 0.02,
+ "passes": [
+  {
+   "cell": 0.02,
+   "tris_visible": 402,
+   "voxels": 122
+  }
+ ],
+ "voxels": 122,
+ "faces": 201,
+ "tris_total": 402,
+ "tris_visible": 402,
+ "budget_pct": -88.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 402,
+  "kb": 20,
+  "clips": 0,
+  "orig_kb": 8
+ },
+ "kb_out": 20,
+ "seconds": 3.47
+}

@@ -1,0 +1,50 @@
+{
+ "src": "itch/creatures/spider.glb",
+ "out": "itch/creatures/spider.glb",
+ "family": "itch/creatures",
+ "class": "small",
+ "decision": "voxel",
+ "scale": 0.8,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.105,
+ "native_cell_base": 0.1312,
+ "budget": 3200,
+ "hidden_nodes": [],
+ "kb_src": 722,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:09",
+ "status": "PASS",
+ "cell_used": 0.1312,
+ "passes": [
+  {
+   "cell": 0.1312,
+   "tris_visible": 3528,
+   "voxels": 1050
+  }
+ ],
+ "voxels": 1050,
+ "faces": 1764,
+ "tris_total": 3528,
+ "tris_visible": 3528,
+ "budget_pct": 10.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3528,
+  "kb": 785,
+  "clips": 10,
+  "orig_kb": 722
+ },
+ "kb_out": 785,
+ "seconds": 0.51
+}

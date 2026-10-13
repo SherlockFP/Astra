@@ -1,0 +1,50 @@
+{
+ "src": "itch/creatures/rhino.glb",
+ "out": "itch/creatures/rhino.glb",
+ "family": "itch/creatures",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 0.95,
+ "scale_src": "Appendix A in-game scale (pinned, enemy defs vary)",
+ "game_cell": 0.111,
+ "native_cell_base": 0.1168,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 514,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:09",
+ "status": "PASS",
+ "cell_used": 0.1168,
+ "passes": [
+  {
+   "cell": 0.1168,
+   "tris_visible": 6092,
+   "voxels": 2616
+  }
+ ],
+ "voxels": 2616,
+ "faces": 3046,
+ "tris_total": 6092,
+ "tris_visible": 6092,
+ "budget_pct": 1.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 6092,
+  "kb": 832,
+  "clips": 13,
+  "orig_kb": 514
+ },
+ "kb_out": 832,
+ "seconds": 0.55
+}

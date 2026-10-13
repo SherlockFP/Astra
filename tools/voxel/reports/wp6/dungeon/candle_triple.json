@@ -1,0 +1,50 @@
+{
+ "src": "dungeon/candle_triple.glb",
+ "out": "dungeon/candle_triple.glb",
+ "family": "dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0624,
+ "native_cell_base": 0.0624,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 28,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:14",
+ "status": "PASS",
+ "cell_used": 0.0624,
+ "passes": [
+  {
+   "cell": 0.0624,
+   "tris_visible": 934,
+   "voxels": 480
+  }
+ ],
+ "voxels": 480,
+ "faces": 467,
+ "tris_total": 934,
+ "tris_visible": 934,
+ "budget_pct": -73.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 934,
+  "kb": 44,
+  "clips": 0,
+  "orig_kb": 28
+ },
+ "kb_out": 44,
+ "seconds": 3.41
+}

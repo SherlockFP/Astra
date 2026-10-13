@@ -1,0 +1,51 @@
+{
+ "src": "gen/creatures/mushroom_brute.glb",
+ "out": "gen/creatures/mushroom_brute.glb",
+ "family": "gen/creatures",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.09,
+ "native_cell_base": 0.09,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 156,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:04",
+ "status": "PASS",
+ "cell_used": 0.09,
+ "passes": [
+  {
+   "cell": 0.09,
+   "tris_visible": 4816,
+   "voxels": 2277
+  }
+ ],
+ "voxels": 2277,
+ "faces": 2408,
+ "tris_total": 4816,
+ "tris_visible": 4816,
+ "budget_pct": -19.7,
+ "colors": {
+  "M1": 16,
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 4816,
+  "kb": 507,
+  "clips": 7,
+  "orig_kb": 156
+ },
+ "kb_out": 507,
+ "seconds": 0.49
+}

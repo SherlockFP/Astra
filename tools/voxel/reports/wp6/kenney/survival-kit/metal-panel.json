@@ -1,0 +1,50 @@
+{
+ "src": "kenney/survival-kit/metal-panel.glb",
+ "out": "kenney/survival-kit/metal-panel.glb",
+ "family": "kenney/survival-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1071,
+ "native_cell_base": 0.0357,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 24,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:33",
+ "status": "PASS",
+ "cell_used": 0.0357,
+ "passes": [
+  {
+   "cell": 0.0357,
+   "tris_visible": 1456,
+   "voxels": 570
+  }
+ ],
+ "voxels": 570,
+ "faces": 728,
+ "tris_total": 1456,
+ "tris_visible": 1456,
+ "budget_pct": -58.4,
+ "colors": {
+  "MAIN": 20
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1456,
+  "kb": 67,
+  "clips": 0,
+  "orig_kb": 24
+ },
+ "kb_out": 67,
+ "seconds": 0.66
+}

@@ -1,0 +1,50 @@
+{
+ "src": "kenney/survival-kit/bucket.glb",
+ "out": "kenney/survival-kit/bucket.glb",
+ "family": "kenney/survival-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.06,
+ "native_cell_base": 0.02,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 8,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:31",
+ "status": "PASS",
+ "cell_used": 0.02,
+ "passes": [
+  {
+   "cell": 0.02,
+   "tris_visible": 1080,
+   "voxels": 244
+  }
+ ],
+ "voxels": 244,
+ "faces": 540,
+ "tris_total": 1080,
+ "tris_visible": 1080,
+ "budget_pct": -69.1,
+ "colors": {
+  "MAIN": 17
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1080,
+  "kb": 50,
+  "clips": 0,
+  "orig_kb": 8
+ },
+ "kb_out": 50,
+ "seconds": 0.43
+}

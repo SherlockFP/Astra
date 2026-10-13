@@ -1,0 +1,50 @@
+{
+ "src": "dungeon/box_stacked.glb",
+ "out": "dungeon/box_stacked.glb",
+ "family": "dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2596,
+ "native_cell_base": 0.2596,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 144,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:08",
+ "status": "PASS",
+ "cell_used": 0.2596,
+ "passes": [
+  {
+   "cell": 0.2596,
+   "tris_visible": 1576,
+   "voxels": 925
+  }
+ ],
+ "voxels": 925,
+ "faces": 788,
+ "tris_total": 1576,
+ "tris_visible": 1576,
+ "budget_pct": -55.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1576,
+  "kb": 72,
+  "clips": 0,
+  "orig_kb": 144
+ },
+ "kb_out": 72,
+ "seconds": 3.02
+}

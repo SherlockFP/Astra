@@ -1,0 +1,51 @@
+{
+ "src": "gen/creatures/imp_fire.glb",
+ "out": "gen/creatures/imp_fire.glb",
+ "family": "gen/creatures",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "no enemy def found, default 1.0",
+ "game_cell": 0.09,
+ "native_cell_base": 0.09,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 202,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:04",
+ "status": "PASS",
+ "cell_used": 0.09,
+ "passes": [
+  {
+   "cell": 0.09,
+   "tris_visible": 1860,
+   "voxels": 537
+  }
+ ],
+ "voxels": 537,
+ "faces": 930,
+ "tris_total": 1860,
+ "tris_visible": 1860,
+ "budget_pct": -69.0,
+ "colors": {
+  "M2": 16,
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1860,
+  "kb": 272,
+  "clips": 7,
+  "orig_kb": 202
+ },
+ "kb_out": 272,
+ "seconds": 0.45
+}

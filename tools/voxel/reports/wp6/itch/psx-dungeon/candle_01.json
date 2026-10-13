@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-dungeon/candle_01.glb",
+ "out": "itch/psx-dungeon/candle_01.glb",
+ "family": "itch/psx-dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 37,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:14",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 714,
+   "voxels": 304
+  }
+ ],
+ "voxels": 304,
+ "faces": 357,
+ "tris_total": 714,
+ "tris_visible": 714,
+ "budget_pct": -79.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 714,
+  "kb": 34,
+  "clips": 0,
+  "orig_kb": 37
+ },
+ "kb_out": 34,
+ "seconds": 0.62
+}

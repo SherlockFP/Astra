@@ -1,0 +1,50 @@
+{
+ "src": "town/decoration/props/bucket_empty.glb",
+ "out": "town/decoration/props/bucket_empty.glb",
+ "family": "town/decoration",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.06,
+ "native_cell_base": 0.01,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 24,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:51",
+ "status": "PASS",
+ "cell_used": 0.01,
+ "passes": [
+  {
+   "cell": 0.01,
+   "tris_visible": 2904,
+   "voxels": 1324
+  }
+ ],
+ "voxels": 1324,
+ "faces": 1452,
+ "tris_total": 2904,
+ "tris_visible": 2904,
+ "budget_pct": -17.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2904,
+  "kb": 132,
+  "clips": 0,
+  "orig_kb": 24
+ },
+ "kb_out": 132,
+ "seconds": 2.31
+}

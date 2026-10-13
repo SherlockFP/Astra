@@ -1,0 +1,50 @@
+{
+ "src": "kenney/nature-kit/crop_carrot.glb",
+ "out": "kenney/nature-kit/crop_carrot.glb",
+ "family": "kenney/nature-kit",
+ "class": "crop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.15,
+ "native_cell_base": 0.0375,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 12,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:13:30",
+ "status": "PASS",
+ "cell_used": 0.0375,
+ "passes": [
+  {
+   "cell": 0.0375,
+   "tris_visible": 918,
+   "voxels": 225
+  }
+ ],
+ "voxels": 225,
+ "faces": 459,
+ "tris_total": 918,
+ "tris_visible": 918,
+ "budget_pct": -38.8,
+ "colors": {
+  "MAIN": 2
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 918,
+  "kb": 43,
+  "clips": 0,
+  "orig_kb": 12
+ },
+ "kb_out": 43,
+ "seconds": 2.09
+}

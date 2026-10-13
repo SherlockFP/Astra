@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/hay-bale-bundled.glb",
+ "out": "kenney/graveyard-kit/hay-bale-bundled.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.13,
+ "native_cell_base": 0.0433,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 34,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:23",
+ "status": "PASS",
+ "cell_used": 0.0433,
+ "passes": [
+  {
+   "cell": 0.0433,
+   "tris_visible": 1550,
+   "voxels": 978
+  }
+ ],
+ "voxels": 978,
+ "faces": 775,
+ "tris_total": 1550,
+ "tris_visible": 1550,
+ "budget_pct": -55.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1550,
+  "kb": 71,
+  "clips": 0,
+  "orig_kb": 34
+ },
+ "kb_out": 71,
+ "seconds": 0.46
+}

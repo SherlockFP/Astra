@@ -1,0 +1,50 @@
+{
+ "src": "itch/creatures/rat.glb",
+ "out": "itch/creatures/rat.glb",
+ "family": "itch/creatures",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "no enemy def found, default 1.0",
+ "game_cell": 0.09,
+ "native_cell_base": 0.09,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 445,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:08",
+ "status": "PASS",
+ "cell_used": 0.09,
+ "passes": [
+  {
+   "cell": 0.09,
+   "tris_visible": 664,
+   "voxels": 191
+  }
+ ],
+ "voxels": 191,
+ "faces": 332,
+ "tris_total": 664,
+ "tris_visible": 664,
+ "budget_pct": -88.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 664,
+  "kb": 337,
+  "clips": 10,
+  "orig_kb": 445
+ },
+ "kb_out": 337,
+ "seconds": 0.47
+}

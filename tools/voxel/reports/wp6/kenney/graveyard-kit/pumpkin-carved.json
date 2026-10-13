@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/pumpkin-carved.glb",
+ "out": "kenney/graveyard-kit/pumpkin-carved.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0809,
+ "native_cell_base": 0.027,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 45,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:25",
+ "status": "PASS",
+ "cell_used": 0.027,
+ "passes": [
+  {
+   "cell": 0.027,
+   "tris_visible": 1506,
+   "voxels": 1051
+  }
+ ],
+ "voxels": 1051,
+ "faces": 753,
+ "tris_total": 1506,
+ "tris_visible": 1506,
+ "budget_pct": -57.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1506,
+  "kb": 69,
+  "clips": 0,
+  "orig_kb": 45
+ },
+ "kb_out": 69,
+ "seconds": 0.5
+}

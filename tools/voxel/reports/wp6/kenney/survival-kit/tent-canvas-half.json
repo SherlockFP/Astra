@@ -1,0 +1,50 @@
+{
+ "src": "kenney/survival-kit/tent-canvas-half.glb",
+ "out": "kenney/survival-kit/tent-canvas-half.glb",
+ "family": "kenney/survival-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1202,
+ "native_cell_base": 0.0401,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 15,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:36",
+ "status": "PASS",
+ "cell_used": 0.0401,
+ "passes": [
+  {
+   "cell": 0.0401,
+   "tris_visible": 1860,
+   "voxels": 478
+  }
+ ],
+ "voxels": 478,
+ "faces": 930,
+ "tris_total": 1860,
+ "tris_visible": 1860,
+ "budget_pct": -46.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1860,
+  "kb": 85,
+  "clips": 0,
+  "orig_kb": 15
+ },
+ "kb_out": 85,
+ "seconds": 1.76
+}

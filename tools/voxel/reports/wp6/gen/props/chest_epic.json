@@ -1,0 +1,54 @@
+{
+ "src": "gen/props/chest_epic.glb",
+ "out": "gen/props/chest_epic.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0993,
+ "native_cell_base": 0.0993,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 42,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:00",
+ "status": "PASS",
+ "cell_used": 0.0993,
+ "passes": [
+  {
+   "cell": 0.0993,
+   "tris_visible": 2070,
+   "voxels": 955
+  }
+ ],
+ "voxels": 955,
+ "faces": 1035,
+ "tris_total": 2070,
+ "tris_visible": 2070,
+ "budget_pct": -40.9,
+ "colors": {
+  "MAIN": 24,
+  "M1": 16,
+  "M0": 16,
+  "M4": 16,
+  "M5": 13
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2070,
+  "kb": 102,
+  "clips": 1,
+  "orig_kb": 42
+ },
+ "kb_out": 102,
+ "seconds": 0.55
+}

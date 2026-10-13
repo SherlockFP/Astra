@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/market/meat_slab.glb",
+ "out": "itch/psx-medieval/market/meat_slab.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 13,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:23:40",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 642,
+   "voxels": 226
+  }
+ ],
+ "voxels": 226,
+ "faces": 321,
+ "tris_total": 642,
+ "tris_visible": 642,
+ "budget_pct": -81.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 642,
+  "kb": 30,
+  "clips": 0,
+  "orig_kb": 13
+ },
+ "kb_out": 30,
+ "seconds": 1.42
+}

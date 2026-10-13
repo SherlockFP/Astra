@@ -1,0 +1,51 @@
+{
+ "src": "gen/props/crystal_purple.glb",
+ "out": "gen/props/crystal_purple.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1568,
+ "native_cell_base": 0.1568,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 21,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:01",
+ "status": "PASS",
+ "cell_used": 0.1568,
+ "passes": [
+  {
+   "cell": 0.1568,
+   "tris_visible": 1772,
+   "voxels": 791
+  }
+ ],
+ "voxels": 791,
+ "faces": 886,
+ "tris_total": 1772,
+ "tris_visible": 1772,
+ "budget_pct": -49.4,
+ "colors": {
+  "MAIN": 24,
+  "M1": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1772,
+  "kb": 83,
+  "clips": 0,
+  "orig_kb": 21
+ },
+ "kb_out": 83,
+ "seconds": 0.53
+}

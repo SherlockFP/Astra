@@ -1,0 +1,51 @@
+{
+ "src": "itch/psx-medieval/decoration/vine_hanging.glb",
+ "out": "itch/psx-medieval/decoration/vine_hanging.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2097,
+ "native_cell_base": 0.2097,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 33,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:25:23",
+ "status": "PASS",
+ "cell_used": 0.2097,
+ "passes": [
+  {
+   "cell": 0.2097,
+   "tris_visible": 278,
+   "voxels": 30
+  }
+ ],
+ "voxels": 30,
+ "faces": 139,
+ "tris_total": 278,
+ "tris_visible": 278,
+ "budget_pct": -92.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 278,
+  "kb": 14,
+  "clips": 0,
+  "orig_kb": 33
+ },
+ "kb_out": 14,
+ "seconds": 2.87,
+ "keep_used": "flame|fire_fx"
+}

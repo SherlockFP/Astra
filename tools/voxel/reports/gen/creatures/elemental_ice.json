@@ -1,0 +1,51 @@
+{
+ "src": "gen/creatures/elemental_ice.glb",
+ "out": "gen/creatures/elemental_ice.glb",
+ "family": "gen/creatures",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 1.05,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.095,
+ "native_cell_base": 0.0905,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 211,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:04",
+ "status": "PASS",
+ "cell_used": 0.0905,
+ "passes": [
+  {
+   "cell": 0.0905,
+   "tris_visible": 4668,
+   "voxels": 2182
+  }
+ ],
+ "voxels": 2182,
+ "faces": 2334,
+ "tris_total": 4668,
+ "tris_visible": 4668,
+ "budget_pct": -22.2,
+ "colors": {
+  "MAIN": 24,
+  "M1": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 4668,
+  "kb": 505,
+  "clips": 7,
+  "orig_kb": 211
+ },
+ "kb_out": 505,
+ "seconds": 0.49
+}

@@ -1,0 +1,51 @@
+{
+ "src": "gen/creatures/golem_stone.glb",
+ "out": "gen/creatures/golem_stone.glb",
+ "family": "gen/creatures",
+ "class": "large",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.14,
+ "native_cell_base": 0.14,
+ "budget": 8500,
+ "hidden_nodes": [],
+ "kb_src": 230,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:04",
+ "status": "PASS",
+ "cell_used": 0.14,
+ "passes": [
+  {
+   "cell": 0.14,
+   "tris_visible": 5140,
+   "voxels": 2750
+  }
+ ],
+ "voxels": 2750,
+ "faces": 2570,
+ "tris_total": 5140,
+ "tris_visible": 5140,
+ "budget_pct": -39.5,
+ "colors": {
+  "M1": 16,
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 5140,
+  "kb": 554,
+  "clips": 7,
+  "orig_kb": 230
+ },
+ "kb_out": 554,
+ "seconds": 0.51
+}

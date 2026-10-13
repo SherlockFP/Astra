@@ -1,0 +1,50 @@
+{
+ "src": "monsters/Mushnub.glb",
+ "out": "monsters/Mushnub.glb",
+ "family": "monsters",
+ "class": "small",
+ "decision": "voxel",
+ "scale": 0.36,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.06,
+ "native_cell_base": 0.1667,
+ "budget": 3200,
+ "hidden_nodes": [],
+ "kb_src": 66,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:12",
+ "status": "PASS",
+ "cell_used": 0.1667,
+ "passes": [
+  {
+   "cell": 0.1667,
+   "tris_visible": 3244,
+   "voxels": 1380
+  }
+ ],
+ "voxels": 1380,
+ "faces": 1622,
+ "tris_total": 3244,
+ "tris_visible": 3244,
+ "budget_pct": 1.4,
+ "colors": {
+  "MAIN": 2
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3244,
+  "kb": 316,
+  "clips": 9,
+  "orig_kb": 66
+ },
+ "kb_out": 316,
+ "seconds": 0.49
+}

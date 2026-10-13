@@ -1,0 +1,50 @@
+{
+ "src": "monsters/Yeti.glb",
+ "out": "monsters/Yeti.glb",
+ "family": "monsters",
+ "class": "boss",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "Appendix A in-game scale (pinned, enemy defs vary)",
+ "game_cell": 0.14,
+ "native_cell_base": 0.14,
+ "budget": 9500,
+ "hidden_nodes": [],
+ "kb_src": 210,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:14",
+ "status": "PASS",
+ "cell_used": 0.14,
+ "passes": [
+  {
+   "cell": 0.14,
+   "tris_visible": 3988,
+   "voxels": 2082
+  }
+ ],
+ "voxels": 2082,
+ "faces": 1994,
+ "tris_total": 3988,
+ "tris_visible": 3988,
+ "budget_pct": -58.0,
+ "colors": {
+  "MAIN": 3
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3988,
+  "kb": 403,
+  "clips": 7,
+  "orig_kb": 210
+ },
+ "kb_out": 403,
+ "seconds": 0.48
+}

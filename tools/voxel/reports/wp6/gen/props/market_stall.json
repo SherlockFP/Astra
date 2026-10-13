@@ -1,0 +1,50 @@
+{
+ "src": "gen/props/market_stall.glb",
+ "out": "gen/props/market_stall.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.25,
+ "native_cell_base": 0.25,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 41,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:03",
+ "status": "PASS",
+ "cell_used": 0.25,
+ "passes": [
+  {
+   "cell": 0.25,
+   "tris_visible": 2382,
+   "voxels": 716
+  }
+ ],
+ "voxels": 716,
+ "faces": 1191,
+ "tris_total": 2382,
+ "tris_visible": 2382,
+ "budget_pct": -31.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2382,
+  "kb": 109,
+  "clips": 0,
+  "orig_kb": 41
+ },
+ "kb_out": 109,
+ "seconds": 0.52
+}

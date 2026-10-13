@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/banner.glb",
+ "out": "itch/nocturnal-watch/banner.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2485,
+ "native_cell_base": 0.2485,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 21,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:11",
+ "status": "PASS",
+ "cell_used": 0.2485,
+ "passes": [
+  {
+   "cell": 0.2485,
+   "tris_visible": 380,
+   "voxels": 67
+  }
+ ],
+ "voxels": 67,
+ "faces": 190,
+ "tris_total": 380,
+ "tris_visible": 380,
+ "budget_pct": -89.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 380,
+  "kb": 19,
+  "clips": 0,
+  "orig_kb": 21
+ },
+ "kb_out": 19,
+ "seconds": 0.42
+}

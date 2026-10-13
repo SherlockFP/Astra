@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/lightpost-double.glb",
+ "out": "kenney/graveyard-kit/lightpost-double.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2714,
+ "native_cell_base": 0.0905,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 53,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:23",
+ "status": "PASS",
+ "cell_used": 0.0905,
+ "passes": [
+  {
+   "cell": 0.0905,
+   "tris_visible": 608,
+   "voxels": 144
+  }
+ ],
+ "voxels": 144,
+ "faces": 304,
+ "tris_total": 608,
+ "tris_visible": 608,
+ "budget_pct": -82.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 608,
+  "kb": 29,
+  "clips": 0,
+  "orig_kb": 53
+ },
+ "kb_out": 29,
+ "seconds": 0.57
+}

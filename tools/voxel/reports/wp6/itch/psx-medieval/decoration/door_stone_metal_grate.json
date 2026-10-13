@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/decoration/door_stone_metal_grate.glb",
+ "out": "itch/psx-medieval/decoration/door_stone_metal_grate.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1941,
+ "native_cell_base": 0.1941,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 31,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:18",
+ "status": "PASS",
+ "cell_used": 0.1941,
+ "passes": [
+  {
+   "cell": 0.1941,
+   "tris_visible": 760,
+   "voxels": 219
+  }
+ ],
+ "voxels": 219,
+ "faces": 380,
+ "tris_total": 760,
+ "tris_visible": 760,
+ "budget_pct": -78.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 760,
+  "kb": 36,
+  "clips": 0,
+  "orig_kb": 31
+ },
+ "kb_out": 36,
+ "seconds": 0.43
+}

@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/church_altar.glb",
+ "out": "itch/nocturnal-watch/church_altar.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.25,
+ "native_cell_base": 0.25,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 85,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:52",
+ "status": "PASS",
+ "cell_used": 0.25,
+ "passes": [
+  {
+   "cell": 0.25,
+   "tris_visible": 742,
+   "voxels": 309
+  }
+ ],
+ "voxels": 309,
+ "faces": 371,
+ "tris_total": 742,
+ "tris_visible": 742,
+ "budget_pct": -87.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 742,
+  "kb": 35,
+  "clips": 0,
+  "orig_kb": 85
+ },
+ "kb_out": 35,
+ "seconds": 3.53
+}

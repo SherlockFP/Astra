@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/gravestone-cross-large.glb",
+ "out": "kenney/graveyard-kit/gravestone-cross-large.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2011,
+ "native_cell_base": 0.067,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 18,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:22",
+ "status": "PASS",
+ "cell_used": 0.067,
+ "passes": [
+  {
+   "cell": 0.067,
+   "tris_visible": 644,
+   "voxels": 254
+  }
+ ],
+ "voxels": 254,
+ "faces": 322,
+ "tris_total": 644,
+ "tris_visible": 644,
+ "budget_pct": -81.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 644,
+  "kb": 31,
+  "clips": 0,
+  "orig_kb": 18
+ },
+ "kb_out": 31,
+ "seconds": 0.44
+}

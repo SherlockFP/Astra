@@ -1,0 +1,50 @@
+{
+ "src": "kenney/nature-kit/campfire_bricks.glb",
+ "out": "kenney/nature-kit/campfire_bricks.glb",
+ "family": "kenney/nature-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1341,
+ "native_cell_base": 0.0335,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 10,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:26",
+ "status": "PASS",
+ "cell_used": 0.0335,
+ "passes": [
+  {
+   "cell": 0.0335,
+   "tris_visible": 1036,
+   "voxels": 278
+  }
+ ],
+ "voxels": 278,
+ "faces": 518,
+ "tris_total": 1036,
+ "tris_visible": 1036,
+ "budget_pct": -70.4,
+ "colors": {
+  "MAIN": 1
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1036,
+  "kb": 48,
+  "clips": 0,
+  "orig_kb": 10
+ },
+ "kb_out": 48,
+ "seconds": 0.48
+}

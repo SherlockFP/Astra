@@ -1,0 +1,50 @@
+{
+ "src": "town/decoration/props/pallet.glb",
+ "out": "town/decoration/props/pallet.glb",
+ "family": "town/decoration",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1286,
+ "native_cell_base": 0.0214,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 22,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:25:02",
+ "status": "PASS",
+ "cell_used": 0.0214,
+ "passes": [
+  {
+   "cell": 0.0214,
+   "tris_visible": 1206,
+   "voxels": 693
+  }
+ ],
+ "voxels": 693,
+ "faces": 603,
+ "tris_total": 1206,
+ "tris_visible": 1206,
+ "budget_pct": -65.5,
+ "colors": {
+  "MAIN": 15
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1206,
+  "kb": 56,
+  "clips": 0,
+  "orig_kb": 22
+ },
+ "kb_out": 56,
+ "seconds": 2.64
+}

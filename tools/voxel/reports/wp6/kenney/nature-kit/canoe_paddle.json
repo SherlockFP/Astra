@@ -1,0 +1,50 @@
+{
+ "src": "kenney/nature-kit/canoe_paddle.glb",
+ "out": "kenney/nature-kit/canoe_paddle.glb",
+ "family": "kenney/nature-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1686,
+ "native_cell_base": 0.0421,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 4,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:27",
+ "status": "PASS",
+ "cell_used": 0.0421,
+ "passes": [
+  {
+   "cell": 0.0421,
+   "tris_visible": 170,
+   "voxels": 36
+  }
+ ],
+ "voxels": 36,
+ "faces": 85,
+ "tris_total": 170,
+ "tris_visible": 170,
+ "budget_pct": -95.1,
+ "colors": {
+  "MAIN": 1
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 170,
+  "kb": 9,
+  "clips": 0,
+  "orig_kb": 4
+ },
+ "kb_out": 9,
+ "seconds": 0.44
+}

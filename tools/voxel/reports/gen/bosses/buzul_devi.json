@@ -1,0 +1,50 @@
+{
+ "src": "gen/bosses/buzul_devi.glb",
+ "out": "gen/bosses/buzul_devi.glb",
+ "family": "gen/bosses",
+ "class": "boss",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "no enemy def found, default 1.0",
+ "game_cell": 0.158,
+ "native_cell_base": 0.158,
+ "budget": 9500,
+ "hidden_nodes": [],
+ "kb_src": 200,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:02",
+ "status": "PASS",
+ "cell_used": 0.158,
+ "passes": [
+  {
+   "cell": 0.158,
+   "tris_visible": 7552,
+   "voxels": 3418
+  }
+ ],
+ "voxels": 3418,
+ "faces": 3776,
+ "tris_total": 7552,
+ "tris_visible": 7552,
+ "budget_pct": -20.5,
+ "colors": {
+  "M0": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 7552,
+  "kb": 774,
+  "clips": 9,
+  "orig_kb": 200
+ },
+ "kb_out": 774,
+ "seconds": 0.52
+}

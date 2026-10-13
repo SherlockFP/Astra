@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-dungeon/windowed_wall_01.glb",
+ "out": "itch/psx-dungeon/windowed_wall_01.glb",
+ "family": "itch/psx-dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2857,
+ "native_cell_base": 0.2857,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 42,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:17",
+ "status": "PASS",
+ "cell_used": 0.2857,
+ "passes": [
+  {
+   "cell": 0.2857,
+   "tris_visible": 1446,
+   "voxels": 672
+  }
+ ],
+ "voxels": 672,
+ "faces": 723,
+ "tris_total": 1446,
+ "tris_visible": 1446,
+ "budget_pct": -58.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1446,
+  "kb": 67,
+  "clips": 0,
+  "orig_kb": 42
+ },
+ "kb_out": 67,
+ "seconds": 0.46
+}

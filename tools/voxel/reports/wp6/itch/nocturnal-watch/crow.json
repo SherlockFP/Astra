@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/crow.glb",
+ "out": "itch/nocturnal-watch/crow.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0818,
+ "native_cell_base": 0.0818,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 70,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:11",
+ "status": "PASS",
+ "cell_used": 0.0818,
+ "passes": [
+  {
+   "cell": 0.0818,
+   "tris_visible": 588,
+   "voxels": 170
+  }
+ ],
+ "voxels": 170,
+ "faces": 294,
+ "tris_total": 588,
+ "tris_visible": 588,
+ "budget_pct": -83.2,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 588,
+  "kb": 28,
+  "clips": 0,
+  "orig_kb": 70
+ },
+ "kb_out": 28,
+ "seconds": 0.41
+}

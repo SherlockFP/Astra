@@ -1,0 +1,50 @@
+{
+ "src": "kenney/castle-kit/tower-square-top-roof-rounded.glb",
+ "out": "kenney/castle-kit/tower-square-top-roof-rounded.glb",
+ "family": "kenney/castle-kit",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2857,
+ "native_cell_base": 0.0714,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 11,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:30",
+ "status": "PASS",
+ "cell_used": 0.0714,
+ "passes": [
+  {
+   "cell": 0.0714,
+   "tris_visible": 1650,
+   "voxels": 882
+  }
+ ],
+ "voxels": 882,
+ "faces": 825,
+ "tris_total": 1650,
+ "tris_visible": 1650,
+ "budget_pct": -72.5,
+ "colors": {
+  "MAIN": 15
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1650,
+  "kb": 76,
+  "clips": 0,
+  "orig_kb": 11
+ },
+ "kb_out": 76,
+ "seconds": 3.76
+}

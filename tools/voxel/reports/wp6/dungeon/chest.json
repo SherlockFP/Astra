@@ -1,0 +1,50 @@
+{
+ "src": "dungeon/chest.glb",
+ "out": "dungeon/chest.glb",
+ "family": "dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1214,
+ "native_cell_base": 0.1214,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 80,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:17",
+ "status": "PASS",
+ "cell_used": 0.1214,
+ "passes": [
+  {
+   "cell": 0.1214,
+   "tris_visible": 3062,
+   "voxels": 1280
+  }
+ ],
+ "voxels": 1280,
+ "faces": 1531,
+ "tris_total": 3062,
+ "tris_visible": 3062,
+ "budget_pct": -12.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3062,
+  "kb": 141,
+  "clips": 0,
+  "orig_kb": 80
+ },
+ "kb_out": 141,
+ "seconds": 2.93
+}

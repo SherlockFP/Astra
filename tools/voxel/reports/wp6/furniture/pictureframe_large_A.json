@@ -1,0 +1,50 @@
+{
+ "src": "furniture/pictureframe_large_A.glb",
+ "out": "furniture/pictureframe_large_A.glb",
+ "family": "furniture",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0857,
+ "native_cell_base": 0.0857,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 20,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:52",
+ "status": "PASS",
+ "cell_used": 0.0857,
+ "passes": [
+  {
+   "cell": 0.0857,
+   "tris_visible": 1102,
+   "voxels": 470
+  }
+ ],
+ "voxels": 470,
+ "faces": 551,
+ "tris_total": 1102,
+ "tris_visible": 1102,
+ "budget_pct": -68.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1102,
+  "kb": 51,
+  "clips": 0,
+  "orig_kb": 20
+ },
+ "kb_out": 51,
+ "seconds": 0.88
+}

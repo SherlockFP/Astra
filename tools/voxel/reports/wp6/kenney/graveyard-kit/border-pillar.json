@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/border-pillar.glb",
+ "out": "kenney/graveyard-kit/border-pillar.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1629,
+ "native_cell_base": 0.0543,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 11,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:18",
+ "status": "PASS",
+ "cell_used": 0.0543,
+ "passes": [
+  {
+   "cell": 0.0543,
+   "tris_visible": 578,
+   "voxels": 212
+  }
+ ],
+ "voxels": 212,
+ "faces": 289,
+ "tris_total": 578,
+ "tris_visible": 578,
+ "budget_pct": -83.5,
+ "colors": {
+  "MAIN": 17
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 578,
+  "kb": 27,
+  "clips": 0,
+  "orig_kb": 11
+ },
+ "kb_out": 27,
+ "seconds": 0.53
+}

@@ -1,0 +1,50 @@
+{
+ "src": "itch/creatures/wasp.glb",
+ "out": "itch/creatures/wasp.glb",
+ "family": "itch/creatures",
+ "class": "small",
+ "decision": "voxel",
+ "scale": 0.55,
+ "scale_src": "median of 2 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.06,
+ "native_cell_base": 0.1091,
+ "budget": 3200,
+ "hidden_nodes": [],
+ "kb_src": 476,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:09",
+ "status": "PASS",
+ "cell_used": 0.1091,
+ "passes": [
+  {
+   "cell": 0.1091,
+   "tris_visible": 1352,
+   "voxels": 317
+  }
+ ],
+ "voxels": 317,
+ "faces": 676,
+ "tris_total": 1352,
+ "tris_visible": 1352,
+ "budget_pct": -57.8,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1352,
+  "kb": 405,
+  "clips": 8,
+  "orig_kb": 476
+ },
+ "kb_out": 405,
+ "seconds": 0.45
+}

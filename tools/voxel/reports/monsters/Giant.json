@@ -1,0 +1,50 @@
+{
+ "src": "monsters/Giant.glb",
+ "out": "monsters/Giant.glb",
+ "family": "monsters",
+ "class": "boss",
+ "decision": "voxel",
+ "scale": 1.07,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.14,
+ "native_cell_base": 0.1308,
+ "budget": 9500,
+ "hidden_nodes": [],
+ "kb_src": 240,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:11",
+ "status": "PASS",
+ "cell_used": 0.1308,
+ "passes": [
+  {
+   "cell": 0.1308,
+   "tris_visible": 5008,
+   "voxels": 2778
+  }
+ ],
+ "voxels": 2778,
+ "faces": 2504,
+ "tris_total": 5008,
+ "tris_visible": 5008,
+ "budget_pct": -47.3,
+ "colors": {
+  "MAIN": 5
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 5008,
+  "kb": 497,
+  "clips": 7,
+  "orig_kb": 240
+ },
+ "kb_out": 497,
+ "seconds": 0.48
+}

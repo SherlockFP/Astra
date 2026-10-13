@@ -1,0 +1,50 @@
+{
+ "src": "kenney/nature-kit/statue_block.glb",
+ "out": "kenney/nature-kit/statue_block.glb",
+ "family": "kenney/nature-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1143,
+ "native_cell_base": 0.0286,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 11,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:28",
+ "status": "PASS",
+ "cell_used": 0.0286,
+ "passes": [
+  {
+   "cell": 0.0286,
+   "tris_visible": 2844,
+   "voxels": 1442
+  }
+ ],
+ "voxels": 1442,
+ "faces": 1422,
+ "tris_total": 2844,
+ "tris_visible": 2844,
+ "budget_pct": -18.7,
+ "colors": {
+  "MAIN": 2
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2844,
+  "kb": 129,
+  "clips": 0,
+  "orig_kb": 11
+ },
+ "kb_out": 129,
+ "seconds": 0.43
+}

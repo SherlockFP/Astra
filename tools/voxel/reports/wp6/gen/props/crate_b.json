@@ -1,0 +1,50 @@
+{
+ "src": "gen/props/crate_b.glb",
+ "out": "gen/props/crate_b.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0984,
+ "native_cell_base": 0.0984,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 22,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:01",
+ "status": "PASS",
+ "cell_used": 0.0984,
+ "passes": [
+  {
+   "cell": 0.0984,
+   "tris_visible": 1038,
+   "voxels": 642
+  }
+ ],
+ "voxels": 642,
+ "faces": 519,
+ "tris_total": 1038,
+ "tris_visible": 1038,
+ "budget_pct": -70.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1038,
+  "kb": 48,
+  "clips": 0,
+  "orig_kb": 22
+ },
+ "kb_out": 48,
+ "seconds": 0.49
+}

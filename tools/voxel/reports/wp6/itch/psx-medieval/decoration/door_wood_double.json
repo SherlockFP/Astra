@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/decoration/door_wood_double.glb",
+ "out": "itch/psx-medieval/decoration/door_wood_double.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2047,
+ "native_cell_base": 0.2047,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 37,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:18",
+ "status": "PASS",
+ "cell_used": 0.2047,
+ "passes": [
+  {
+   "cell": 0.2047,
+   "tris_visible": 1016,
+   "voxels": 392
+  }
+ ],
+ "voxels": 392,
+ "faces": 508,
+ "tris_total": 1016,
+ "tris_visible": 1016,
+ "budget_pct": -71.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1016,
+  "kb": 47,
+  "clips": 0,
+  "orig_kb": 37
+ },
+ "kb_out": 47,
+ "seconds": 0.43
+}

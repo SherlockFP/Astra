@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/pillar-large.glb",
+ "out": "kenney/graveyard-kit/pillar-large.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2411,
+ "native_cell_base": 0.0804,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 17,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:24",
+ "status": "PASS",
+ "cell_used": 0.0804,
+ "passes": [
+  {
+   "cell": 0.0804,
+   "tris_visible": 354,
+   "voxels": 117
+  }
+ ],
+ "voxels": 117,
+ "faces": 177,
+ "tris_total": 354,
+ "tris_visible": 354,
+ "budget_pct": -89.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 354,
+  "kb": 17,
+  "clips": 0,
+  "orig_kb": 17
+ },
+ "kb_out": 17,
+ "seconds": 0.66
+}

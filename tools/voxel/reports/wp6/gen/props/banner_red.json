@@ -1,0 +1,50 @@
+{
+ "src": "gen/props/banner_red.glb",
+ "out": "gen/props/banner_red.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.3393,
+ "native_cell_base": 0.3393,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 19,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:58",
+ "status": "PASS",
+ "cell_used": 0.3393,
+ "passes": [
+  {
+   "cell": 0.3393,
+   "tris_visible": 414,
+   "voxels": 69
+  }
+ ],
+ "voxels": 69,
+ "faces": 207,
+ "tris_total": 414,
+ "tris_visible": 414,
+ "budget_pct": -88.2,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 414,
+  "kb": 21,
+  "clips": 0,
+  "orig_kb": 19
+ },
+ "kb_out": 21,
+ "seconds": 0.54
+}

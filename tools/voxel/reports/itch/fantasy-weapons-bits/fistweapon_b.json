@@ -1,0 +1,50 @@
+{
+ "src": "itch/fantasy-weapons-bits/fistweapon_b.glb",
+ "out": "itch/fantasy-weapons-bits/fistweapon_b.glb",
+ "family": "itch/fantasy-weapons-bits",
+ "class": "weapon",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 13,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:37",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 402,
+   "voxels": 140
+  }
+ ],
+ "voxels": 140,
+ "faces": 201,
+ "tris_total": 402,
+ "tris_visible": 402,
+ "budget_pct": -73.2,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 402,
+  "kb": 20,
+  "clips": 0,
+  "orig_kb": 13
+ },
+ "kb_out": 20,
+ "seconds": 0.41
+}

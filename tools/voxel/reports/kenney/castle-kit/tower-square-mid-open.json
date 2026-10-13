@@ -1,0 +1,50 @@
+{
+ "src": "kenney/castle-kit/tower-square-mid-open.glb",
+ "out": "kenney/castle-kit/tower-square-mid-open.glb",
+ "family": "kenney/castle-kit",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2886,
+ "native_cell_base": 0.0722,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 23,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:22",
+ "status": "PASS",
+ "cell_used": 0.0722,
+ "passes": [
+  {
+   "cell": 0.0722,
+   "tris_visible": 2298,
+   "voxels": 665
+  }
+ ],
+ "voxels": 665,
+ "faces": 1149,
+ "tris_total": 2298,
+ "tris_visible": 2298,
+ "budget_pct": -61.7,
+ "colors": {
+  "MAIN": 19
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2298,
+  "kb": 105,
+  "clips": 0,
+  "orig_kb": 23
+ },
+ "kb_out": 105,
+ "seconds": 4.38
+}

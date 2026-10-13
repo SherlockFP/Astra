@@ -1,0 +1,50 @@
+{
+ "src": "enemies/Skeleton_Mage.glb",
+ "out": "enemies/Skeleton_Mage.glb",
+ "family": "enemies",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.09,
+ "native_cell_base": 0.09,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 4649,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": "(Helmet|Hat|Hood|Cloak)$",
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:25",
+ "status": "PASS",
+ "cell_used": 0.09,
+ "passes": [
+  {
+   "cell": 0.09,
+   "tris_visible": 5648,
+   "voxels": 2556
+  }
+ ],
+ "voxels": 2556,
+ "faces": 2824,
+ "tris_total": 5648,
+ "tris_visible": 5648,
+ "budget_pct": -5.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 5648,
+  "kb": 4798,
+  "clips": 95,
+  "orig_kb": 4649
+ },
+ "kb_out": 4798,
+ "seconds": 0.79
+}

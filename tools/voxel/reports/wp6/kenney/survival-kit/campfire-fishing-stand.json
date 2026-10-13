@@ -1,0 +1,50 @@
+{
+ "src": "kenney/survival-kit/campfire-fishing-stand.glb",
+ "out": "kenney/survival-kit/campfire-fishing-stand.glb",
+ "family": "kenney/survival-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0845,
+ "native_cell_base": 0.0282,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 10,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:31",
+ "status": "PASS",
+ "cell_used": 0.0282,
+ "passes": [
+  {
+   "cell": 0.0282,
+   "tris_visible": 976,
+   "voxels": 266
+  }
+ ],
+ "voxels": 266,
+ "faces": 488,
+ "tris_total": 976,
+ "tris_visible": 976,
+ "budget_pct": -72.1,
+ "colors": {
+  "MAIN": 15
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 976,
+  "kb": 45,
+  "clips": 0,
+  "orig_kb": 10
+ },
+ "kb_out": 45,
+ "seconds": 0.43
+}

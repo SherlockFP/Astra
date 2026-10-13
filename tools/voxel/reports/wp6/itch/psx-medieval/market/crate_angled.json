@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/market/crate_angled.glb",
+ "out": "itch/psx-medieval/market/crate_angled.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0677,
+ "native_cell_base": 0.0677,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 33,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:23:01",
+ "status": "PASS",
+ "cell_used": 0.0677,
+ "passes": [
+  {
+   "cell": 0.0677,
+   "tris_visible": 1620,
+   "voxels": 456
+  }
+ ],
+ "voxels": 456,
+ "faces": 810,
+ "tris_total": 1620,
+ "tris_visible": 1620,
+ "budget_pct": -53.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1620,
+  "kb": 74,
+  "clips": 0,
+  "orig_kb": 33
+ },
+ "kb_out": 74,
+ "seconds": 4.03
+}

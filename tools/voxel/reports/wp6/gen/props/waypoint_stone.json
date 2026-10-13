@@ -1,0 +1,53 @@
+{
+ "src": "gen/props/waypoint_stone.glb",
+ "out": "gen/props/waypoint_stone.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2393,
+ "native_cell_base": 0.2393,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 23,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:05",
+ "status": "PASS",
+ "cell_used": 0.2393,
+ "passes": [
+  {
+   "cell": 0.2393,
+   "tris_visible": 1206,
+   "voxels": 341
+  }
+ ],
+ "voxels": 341,
+ "faces": 603,
+ "tris_total": 1206,
+ "tris_visible": 1206,
+ "budget_pct": -65.5,
+ "colors": {
+  "M3": 16,
+  "MAIN": 24,
+  "M0": 16,
+  "M1": 10
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1206,
+  "kb": 60,
+  "clips": 0,
+  "orig_kb": 23
+ },
+ "kb_out": 60,
+ "seconds": 0.5
+}

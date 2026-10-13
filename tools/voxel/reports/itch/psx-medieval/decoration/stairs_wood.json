@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/decoration/stairs_wood.glb",
+ "out": "itch/psx-medieval/decoration/stairs_wood.glb",
+ "family": "itch/psx-medieval",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.25,
+ "native_cell_base": 0.25,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 38,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:47",
+ "status": "PASS",
+ "cell_used": 0.25,
+ "passes": [
+  {
+   "cell": 0.25,
+   "tris_visible": 926,
+   "voxels": 399
+  }
+ ],
+ "voxels": 399,
+ "faces": 463,
+ "tris_total": 926,
+ "tris_visible": 926,
+ "budget_pct": -84.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 926,
+  "kb": 43,
+  "clips": 0,
+  "orig_kb": 38
+ },
+ "kb_out": 43,
+ "seconds": 0.49
+}

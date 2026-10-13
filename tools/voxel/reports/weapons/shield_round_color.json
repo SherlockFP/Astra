@@ -1,0 +1,50 @@
+{
+ "src": "weapons/shield_round_color.gltf",
+ "out": "weapons/shield_round_color.glb",
+ "family": "weapons",
+ "class": "shield",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3000,
+ "hidden_nodes": [],
+ "kb_src": 3,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:46",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 1396,
+   "voxels": 574
+  }
+ ],
+ "voxels": 574,
+ "faces": 698,
+ "tris_total": 1396,
+ "tris_visible": 1396,
+ "budget_pct": -53.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1396,
+  "kb": 64,
+  "clips": 0,
+  "orig_kb": 3
+ },
+ "kb_out": 64,
+ "seconds": 0.42
+}

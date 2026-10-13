@@ -1,0 +1,51 @@
+{
+ "src": "gen/props/brazier.glb",
+ "out": "gen/props/brazier.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1236,
+ "native_cell_base": 0.1236,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 38,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:59",
+ "status": "PASS",
+ "cell_used": 0.1236,
+ "passes": [
+  {
+   "cell": 0.1236,
+   "tris_visible": 1016,
+   "voxels": 284
+  }
+ ],
+ "voxels": 284,
+ "faces": 508,
+ "tris_total": 1016,
+ "tris_visible": 1016,
+ "budget_pct": -71.0,
+ "colors": {
+  "M1": 16,
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1022,
+  "kb": 51,
+  "clips": 0,
+  "orig_kb": 38
+ },
+ "kb_out": 51,
+ "seconds": 0.58
+}

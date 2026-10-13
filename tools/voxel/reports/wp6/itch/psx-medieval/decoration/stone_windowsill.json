@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/decoration/stone_windowsill.glb",
+ "out": "itch/psx-medieval/decoration/stone_windowsill.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1071,
+ "native_cell_base": 0.1071,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 30,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:20",
+ "status": "PASS",
+ "cell_used": 0.1071,
+ "passes": [
+  {
+   "cell": 0.1071,
+   "tris_visible": 504,
+   "voxels": 250
+  }
+ ],
+ "voxels": 250,
+ "faces": 252,
+ "tris_total": 504,
+ "tris_visible": 504,
+ "budget_pct": -85.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 504,
+  "kb": 24,
+  "clips": 0,
+  "orig_kb": 30
+ },
+ "kb_out": 24,
+ "seconds": 1.02
+}

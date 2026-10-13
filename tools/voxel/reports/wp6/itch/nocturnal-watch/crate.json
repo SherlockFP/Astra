@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/crate.glb",
+ "out": "itch/nocturnal-watch/crate.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0857,
+ "native_cell_base": 0.0857,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 35,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:11",
+ "status": "PASS",
+ "cell_used": 0.0857,
+ "passes": [
+  {
+   "cell": 0.0857,
+   "tris_visible": 2546,
+   "voxels": 1346
+  }
+ ],
+ "voxels": 1346,
+ "faces": 1273,
+ "tris_total": 2546,
+ "tris_visible": 2546,
+ "budget_pct": -27.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2546,
+  "kb": 116,
+  "clips": 0,
+  "orig_kb": 35
+ },
+ "kb_out": 116,
+ "seconds": 0.43
+}

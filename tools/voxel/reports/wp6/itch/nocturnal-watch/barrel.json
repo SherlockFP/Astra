@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/barrel.glb",
+ "out": "itch/nocturnal-watch/barrel.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1,
+ "native_cell_base": 0.1,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 69,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:11",
+ "status": "PASS",
+ "cell_used": 0.1,
+ "passes": [
+  {
+   "cell": 0.1,
+   "tris_visible": 1802,
+   "voxels": 794
+  }
+ ],
+ "voxels": 794,
+ "faces": 901,
+ "tris_total": 1802,
+ "tris_visible": 1802,
+ "budget_pct": -48.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1802,
+  "kb": 82,
+  "clips": 0,
+  "orig_kb": 69
+ },
+ "kb_out": 82,
+ "seconds": 0.43
+}

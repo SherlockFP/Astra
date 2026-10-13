@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-dungeon/barrel.glb",
+ "out": "itch/psx-dungeon/barrel.glb",
+ "family": "itch/psx-dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1257,
+ "native_cell_base": 0.1257,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 19,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:14",
+ "status": "PASS",
+ "cell_used": 0.1257,
+ "passes": [
+  {
+   "cell": 0.1257,
+   "tris_visible": 1730,
+   "voxels": 798
+  }
+ ],
+ "voxels": 798,
+ "faces": 865,
+ "tris_total": 1730,
+ "tris_visible": 1730,
+ "budget_pct": -50.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1730,
+  "kb": 79,
+  "clips": 0,
+  "orig_kb": 19
+ },
+ "kb_out": 79,
+ "seconds": 0.46
+}

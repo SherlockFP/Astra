@@ -1,0 +1,50 @@
+{
+ "src": "kenney/fantasy-town-kit/cart-high.glb",
+ "out": "kenney/fantasy-town-kit/cart-high.glb",
+ "family": "kenney/fantasy-town-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.3971,
+ "native_cell_base": 0.0993,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 86,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:23:59",
+ "status": "PASS",
+ "cell_used": 0.0993,
+ "passes": [
+  {
+   "cell": 0.0993,
+   "tris_visible": 1388,
+   "voxels": 519
+  }
+ ],
+ "voxels": 519,
+ "faces": 694,
+ "tris_total": 1388,
+ "tris_visible": 1388,
+ "budget_pct": -60.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1388,
+  "kb": 65,
+  "clips": 0,
+  "orig_kb": 86
+ },
+ "kb_out": 65,
+ "seconds": 2.8
+}

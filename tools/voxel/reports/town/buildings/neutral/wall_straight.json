@@ -1,0 +1,50 @@
+{
+ "src": "town/buildings/neutral/wall_straight.glb",
+ "out": "town/buildings/neutral/wall_straight.glb",
+ "family": "town/buildings",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.5,
+ "native_cell_base": 0.0833,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 47,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:37",
+ "status": "PASS",
+ "cell_used": 0.0833,
+ "passes": [
+  {
+   "cell": 0.0833,
+   "tris_visible": 2654,
+   "voxels": 1388
+  }
+ ],
+ "voxels": 1388,
+ "faces": 1327,
+ "tris_total": 2654,
+ "tris_visible": 2654,
+ "budget_pct": -55.8,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2654,
+  "kb": 121,
+  "clips": 0,
+  "orig_kb": 47
+ },
+ "kb_out": 121,
+ "seconds": 3.45
+}

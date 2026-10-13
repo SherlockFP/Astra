@@ -1,0 +1,50 @@
+{
+ "src": "kenney/fantasy-town-kit/poles.glb",
+ "out": "kenney/fantasy-town-kit/poles.glb",
+ "family": "kenney/fantasy-town-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2857,
+ "native_cell_base": 0.0714,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 4,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:14",
+ "status": "PASS",
+ "cell_used": 0.0714,
+ "passes": [
+  {
+   "cell": 0.0714,
+   "tris_visible": 496,
+   "voxels": 120
+  }
+ ],
+ "voxels": 120,
+ "faces": 248,
+ "tris_total": 496,
+ "tris_visible": 496,
+ "budget_pct": -85.8,
+ "colors": {
+  "MAIN": 15
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 496,
+  "kb": 24,
+  "clips": 0,
+  "orig_kb": 4
+ },
+ "kb_out": 24,
+ "seconds": 1.22
+}

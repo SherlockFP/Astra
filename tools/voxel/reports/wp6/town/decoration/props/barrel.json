@@ -1,0 +1,50 @@
+{
+ "src": "town/decoration/props/barrel.glb",
+ "out": "town/decoration/props/barrel.glb",
+ "family": "town/decoration",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0907,
+ "native_cell_base": 0.0151,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 32,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:49",
+ "status": "PASS",
+ "cell_used": 0.0151,
+ "passes": [
+  {
+   "cell": 0.0151,
+   "tris_visible": 2104,
+   "voxels": 953
+  }
+ ],
+ "voxels": 953,
+ "faces": 1052,
+ "tris_total": 2104,
+ "tris_visible": 2104,
+ "budget_pct": -39.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2104,
+  "kb": 96,
+  "clips": 0,
+  "orig_kb": 32
+ },
+ "kb_out": 96,
+ "seconds": 2.31
+}

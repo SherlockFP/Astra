@@ -1,0 +1,53 @@
+{
+ "src": "gen/props/font_of_power.glb",
+ "out": "gen/props/font_of_power.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1597,
+ "native_cell_base": 0.1597,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 42,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:01",
+ "status": "PASS",
+ "cell_used": 0.1597,
+ "passes": [
+  {
+   "cell": 0.1597,
+   "tris_visible": 1746,
+   "voxels": 577
+  }
+ ],
+ "voxels": 577,
+ "faces": 873,
+ "tris_total": 1746,
+ "tris_visible": 1746,
+ "budget_pct": -50.1,
+ "colors": {
+  "MAIN": 24,
+  "M1": 16,
+  "M2": 16,
+  "M4": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1746,
+  "kb": 85,
+  "clips": 0,
+  "orig_kb": 42
+ },
+ "kb_out": 85,
+ "seconds": 0.53
+}

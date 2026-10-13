@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-walls-fences/plackard-wall/plackard_corner_open_90_alt.glb",
+ "out": "itch/psx-walls-fences/plackard-wall/plackard_corner_open_90_alt.glb",
+ "family": "itch/psx-walls-fences",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.25,
+ "native_cell_base": 0.25,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 43,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:22:04",
+ "status": "PASS",
+ "cell_used": 0.25,
+ "passes": [
+  {
+   "cell": 0.25,
+   "tris_visible": 216,
+   "voxels": 52
+  }
+ ],
+ "voxels": 52,
+ "faces": 108,
+ "tris_total": 216,
+ "tris_visible": 216,
+ "budget_pct": -96.4,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 216,
+  "kb": 11,
+  "clips": 0,
+  "orig_kb": 43
+ },
+ "kb_out": 11,
+ "seconds": 0.48
+}

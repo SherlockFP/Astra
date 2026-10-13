@@ -1,0 +1,50 @@
+{
+ "src": "halloween/skull_candle.glb",
+ "out": "halloween/skull_candle.glb",
+ "family": "halloween",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0848,
+ "native_cell_base": 0.0848,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 39,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:11",
+ "status": "PASS",
+ "cell_used": 0.0848,
+ "passes": [
+  {
+   "cell": 0.0848,
+   "tris_visible": 1568,
+   "voxels": 781
+  }
+ ],
+ "voxels": 781,
+ "faces": 784,
+ "tris_total": 1568,
+ "tris_visible": 1568,
+ "budget_pct": -55.2,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1568,
+  "kb": 72,
+  "clips": 0,
+  "orig_kb": 39
+ },
+ "kb_out": 72,
+ "seconds": 0.47
+}

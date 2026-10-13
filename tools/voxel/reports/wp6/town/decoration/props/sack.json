@@ -1,0 +1,50 @@
+{
+ "src": "town/decoration/props/sack.glb",
+ "out": "town/decoration/props/sack.glb",
+ "family": "town/decoration",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0684,
+ "native_cell_base": 0.0114,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 20,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:25:05",
+ "status": "PASS",
+ "cell_used": 0.0114,
+ "passes": [
+  {
+   "cell": 0.0114,
+   "tris_visible": 1242,
+   "voxels": 538
+  }
+ ],
+ "voxels": 538,
+ "faces": 621,
+ "tris_total": 1242,
+ "tris_visible": 1242,
+ "budget_pct": -64.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1242,
+  "kb": 57,
+  "clips": 0,
+  "orig_kb": 20
+ },
+ "kb_out": 57,
+ "seconds": 2.13
+}

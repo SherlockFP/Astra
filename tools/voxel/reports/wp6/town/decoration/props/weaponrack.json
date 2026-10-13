@@ -1,0 +1,50 @@
+{
+ "src": "town/decoration/props/weaponrack.glb",
+ "out": "town/decoration/props/weaponrack.glb",
+ "family": "town/decoration",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1029,
+ "native_cell_base": 0.0172,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 20,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:25:07",
+ "status": "PASS",
+ "cell_used": 0.0172,
+ "passes": [
+  {
+   "cell": 0.0172,
+   "tris_visible": 1410,
+   "voxels": 577
+  }
+ ],
+ "voxels": 577,
+ "faces": 705,
+ "tris_total": 1410,
+ "tris_visible": 1410,
+ "budget_pct": -59.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1410,
+  "kb": 65,
+  "clips": 0,
+  "orig_kb": 20
+ },
+ "kb_out": 65,
+ "seconds": 2.54
+}

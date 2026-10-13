@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/decoration/chimney_large.glb",
+ "out": "itch/psx-medieval/decoration/chimney_large.glb",
+ "family": "itch/psx-medieval",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.5,
+ "native_cell_base": 0.5,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 35,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:46",
+ "status": "PASS",
+ "cell_used": 0.5,
+ "passes": [
+  {
+   "cell": 0.5,
+   "tris_visible": 804,
+   "voxels": 199
+  }
+ ],
+ "voxels": 199,
+ "faces": 402,
+ "tris_total": 804,
+ "tris_visible": 804,
+ "budget_pct": -86.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 804,
+  "kb": 37,
+  "clips": 0,
+  "orig_kb": 35
+ },
+ "kb_out": 37,
+ "seconds": 0.49
+}

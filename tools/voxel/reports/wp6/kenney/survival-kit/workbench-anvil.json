@@ -1,0 +1,50 @@
+{
+ "src": "kenney/survival-kit/workbench-anvil.glb",
+ "out": "kenney/survival-kit/workbench-anvil.glb",
+ "family": "kenney/survival-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0719,
+ "native_cell_base": 0.024,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 29,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:46",
+ "status": "PASS",
+ "cell_used": 0.024,
+ "passes": [
+  {
+   "cell": 0.024,
+   "tris_visible": 1972,
+   "voxels": 813
+  }
+ ],
+ "voxels": 813,
+ "faces": 986,
+ "tris_total": 1972,
+ "tris_visible": 1972,
+ "budget_pct": -43.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1972,
+  "kb": 91,
+  "clips": 0,
+  "orig_kb": 29
+ },
+ "kb_out": 91,
+ "seconds": 2.96
+}

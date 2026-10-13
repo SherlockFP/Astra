@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/market/market_stall_blue.glb",
+ "out": "itch/psx-medieval/market/market_stall_blue.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.3949,
+ "native_cell_base": 0.3949,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 114,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:23:36",
+ "status": "PASS",
+ "cell_used": 0.3949,
+ "passes": [
+  {
+   "cell": 0.3949,
+   "tris_visible": 1824,
+   "voxels": 473
+  }
+ ],
+ "voxels": 473,
+ "faces": 912,
+ "tris_total": 1824,
+ "tris_visible": 1824,
+ "budget_pct": -47.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1824,
+  "kb": 84,
+  "clips": 0,
+  "orig_kb": 114
+ },
+ "kb_out": 84,
+ "seconds": 2.62
+}

@@ -1,0 +1,50 @@
+{
+ "src": "gen/props/chest_iron.glb",
+ "out": "gen/props/chest_iron.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0836,
+ "native_cell_base": 0.0836,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 35,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:00",
+ "status": "PASS",
+ "cell_used": 0.0836,
+ "passes": [
+  {
+   "cell": 0.0836,
+   "tris_visible": 2194,
+   "voxels": 1070
+  }
+ ],
+ "voxels": 1070,
+ "faces": 1097,
+ "tris_total": 2194,
+ "tris_visible": 2194,
+ "budget_pct": -37.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2194,
+  "kb": 102,
+  "clips": 1,
+  "orig_kb": 35
+ },
+ "kb_out": 102,
+ "seconds": 0.5
+}

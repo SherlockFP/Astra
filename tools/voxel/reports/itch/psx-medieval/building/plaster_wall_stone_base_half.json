@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/building/plaster_wall_stone_base_half.glb",
+ "out": "itch/psx-medieval/building/plaster_wall_stone_base_half.glb",
+ "family": "itch/psx-medieval",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2679,
+ "native_cell_base": 0.2679,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 31,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:42",
+ "status": "PASS",
+ "cell_used": 0.2679,
+ "passes": [
+  {
+   "cell": 0.2679,
+   "tris_visible": 2088,
+   "voxels": 504
+  }
+ ],
+ "voxels": 504,
+ "faces": 1044,
+ "tris_total": 2088,
+ "tris_visible": 2088,
+ "budget_pct": -65.2,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2088,
+  "kb": 95,
+  "clips": 0,
+  "orig_kb": 31
+ },
+ "kb_out": 95,
+ "seconds": 0.54
+}

@@ -1,0 +1,50 @@
+{
+ "src": "dungeon/chair.glb",
+ "out": "dungeon/chair.glb",
+ "family": "dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0876,
+ "native_cell_base": 0.0876,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 35,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:15",
+ "status": "PASS",
+ "cell_used": 0.0876,
+ "passes": [
+  {
+   "cell": 0.0876,
+   "tris_visible": 1188,
+   "voxels": 548
+  }
+ ],
+ "voxels": 548,
+ "faces": 594,
+ "tris_total": 1188,
+ "tris_visible": 1188,
+ "budget_pct": -66.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1188,
+  "kb": 55,
+  "clips": 0,
+  "orig_kb": 35
+ },
+ "kb_out": 55,
+ "seconds": 3.11
+}

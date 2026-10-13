@@ -1,0 +1,55 @@
+{
+ "src": "monsters/Slime.glb",
+ "out": "monsters/Slime.glb",
+ "family": "monsters",
+ "class": "small",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "no enemy def found, default 1.0",
+ "game_cell": 0.072,
+ "native_cell_base": 0.072,
+ "budget": 3200,
+ "hidden_nodes": [],
+ "kb_src": 156,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "blend",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:13",
+ "status": "OVER_BUDGET",
+ "cell_used": 0.09,
+ "passes": [
+  {
+   "cell": 0.072,
+   "tris_visible": 5668,
+   "voxels": 2737
+  },
+  {
+   "cell": 0.09,
+   "tris_visible": 3684,
+   "voxels": 1701
+  }
+ ],
+ "voxels": 1701,
+ "faces": 1842,
+ "tris_total": 3684,
+ "tris_visible": 3684,
+ "budget_pct": 15.1,
+ "colors": {
+  "MAIN": 3
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3684,
+  "kb": 386,
+  "clips": 10,
+  "orig_kb": 156
+ },
+ "kb_out": 386,
+ "seconds": 0.82
+}

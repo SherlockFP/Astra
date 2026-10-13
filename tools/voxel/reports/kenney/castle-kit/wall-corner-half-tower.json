@@ -1,0 +1,50 @@
+{
+ "src": "kenney/castle-kit/wall-corner-half-tower.glb",
+ "out": "kenney/castle-kit/wall-corner-half-tower.glb",
+ "family": "kenney/castle-kit",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.4286,
+ "native_cell_base": 0.1071,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 78,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:37",
+ "status": "PASS",
+ "cell_used": 0.1071,
+ "passes": [
+  {
+   "cell": 0.1071,
+   "tris_visible": 2128,
+   "voxels": 1062
+  }
+ ],
+ "voxels": 1062,
+ "faces": 1064,
+ "tris_total": 2128,
+ "tris_visible": 2128,
+ "budget_pct": -64.5,
+ "colors": {
+  "MAIN": 22
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2128,
+  "kb": 97,
+  "clips": 0,
+  "orig_kb": 78
+ },
+ "kb_out": 97,
+ "seconds": 3.2
+}

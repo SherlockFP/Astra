@@ -1,0 +1,50 @@
+{
+ "src": "gen/props/statue_hooded.glb",
+ "out": "gen/props/statue_hooded.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2414,
+ "native_cell_base": 0.2414,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 46,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:04",
+ "status": "PASS",
+ "cell_used": 0.2414,
+ "passes": [
+  {
+   "cell": 0.2414,
+   "tris_visible": 830,
+   "voxels": 337
+  }
+ ],
+ "voxels": 337,
+ "faces": 415,
+ "tris_total": 830,
+ "tris_visible": 830,
+ "budget_pct": -76.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 830,
+  "kb": 39,
+  "clips": 0,
+  "orig_kb": 46
+ },
+ "kb_out": 39,
+ "seconds": 0.48
+}

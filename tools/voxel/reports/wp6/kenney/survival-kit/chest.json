@@ -1,0 +1,50 @@
+{
+ "src": "kenney/survival-kit/chest.glb",
+ "out": "kenney/survival-kit/chest.glb",
+ "family": "kenney/survival-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.06,
+ "native_cell_base": 0.02,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 34,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:32",
+ "status": "PASS",
+ "cell_used": 0.02,
+ "passes": [
+  {
+   "cell": 0.02,
+   "tris_visible": 3218,
+   "voxels": 1482
+  }
+ ],
+ "voxels": 1482,
+ "faces": 1609,
+ "tris_total": 3218,
+ "tris_visible": 3218,
+ "budget_pct": -8.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3218,
+  "kb": 150,
+  "clips": 3,
+  "orig_kb": 34
+ },
+ "kb_out": 150,
+ "seconds": 0.46
+}

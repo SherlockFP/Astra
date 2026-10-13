@@ -1,0 +1,52 @@
+{
+ "src": "gen/creatures/wraith.glb",
+ "out": "gen/creatures/wraith.glb",
+ "family": "gen/creatures",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.09,
+ "native_cell_base": 0.09,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 133,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "blend",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:06",
+ "status": "PASS",
+ "cell_used": 0.09,
+ "passes": [
+  {
+   "cell": 0.09,
+   "tris_visible": 3936,
+   "voxels": 1134
+  }
+ ],
+ "voxels": 1134,
+ "faces": 1968,
+ "tris_total": 3936,
+ "tris_visible": 3936,
+ "budget_pct": -34.4,
+ "colors": {
+  "M1": 3,
+  "MAIN": 24,
+  "M2": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3936,
+  "kb": 430,
+  "clips": 7,
+  "orig_kb": 133
+ },
+ "kb_out": 430,
+ "seconds": 0.49
+}

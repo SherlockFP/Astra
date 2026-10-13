@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/character-vampire.glb",
+ "out": "kenney/graveyard-kit/character-vampire.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.1,
+ "native_cell_base": 0.0333,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 242,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:42",
+ "status": "PASS",
+ "cell_used": 0.0333,
+ "passes": [
+  {
+   "cell": 0.0333,
+   "tris_visible": 5624,
+   "voxels": 2332
+  }
+ ],
+ "voxels": 2332,
+ "faces": 2812,
+ "tris_total": 5624,
+ "tris_visible": 5624,
+ "budget_pct": -6.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 5624,
+  "kb": 390,
+  "clips": 32,
+  "orig_kb": 242
+ },
+ "kb_out": 390,
+ "seconds": 0.48
+}

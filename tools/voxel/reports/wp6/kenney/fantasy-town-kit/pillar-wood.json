@@ -1,0 +1,50 @@
+{
+ "src": "kenney/fantasy-town-kit/pillar-wood.glb",
+ "out": "kenney/fantasy-town-kit/pillar-wood.glb",
+ "family": "kenney/fantasy-town-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2857,
+ "native_cell_base": 0.0714,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 5,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:12",
+ "status": "PASS",
+ "cell_used": 0.0714,
+ "passes": [
+  {
+   "cell": 0.0714,
+   "tris_visible": 378,
+   "voxels": 122
+  }
+ ],
+ "voxels": 122,
+ "faces": 189,
+ "tris_total": 378,
+ "tris_visible": 378,
+ "budget_pct": -89.2,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 378,
+  "kb": 19,
+  "clips": 0,
+  "orig_kb": 5
+ },
+ "kb_out": 19,
+ "seconds": 2.11
+}

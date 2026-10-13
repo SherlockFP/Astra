@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/character-skeleton.glb",
+ "out": "kenney/graveyard-kit/character-skeleton.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale x3 (graveyard kit)",
+ "game_cell": 0.1,
+ "native_cell_base": 0.0333,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 198,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:41",
+ "status": "PASS",
+ "cell_used": 0.0333,
+ "passes": [
+  {
+   "cell": 0.0333,
+   "tris_visible": 3164,
+   "voxels": 1220
+  }
+ ],
+ "voxels": 1220,
+ "faces": 1582,
+ "tris_total": 3164,
+ "tris_visible": 3164,
+ "budget_pct": -47.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3164,
+  "kb": 280,
+  "clips": 32,
+  "orig_kb": 198
+ },
+ "kb_out": 280,
+ "seconds": 0.47
+}

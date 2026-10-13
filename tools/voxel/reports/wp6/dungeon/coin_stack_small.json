@@ -1,0 +1,50 @@
+{
+ "src": "dungeon/coin_stack_small.glb",
+ "out": "dungeon/coin_stack_small.glb",
+ "family": "dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0685,
+ "native_cell_base": 0.0685,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 38,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:21:22",
+ "status": "PASS",
+ "cell_used": 0.0685,
+ "passes": [
+  {
+   "cell": 0.0685,
+   "tris_visible": 1372,
+   "voxels": 438
+  }
+ ],
+ "voxels": 438,
+ "faces": 686,
+ "tris_total": 1372,
+ "tris_visible": 1372,
+ "budget_pct": -60.8,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1372,
+  "kb": 63,
+  "clips": 0,
+  "orig_kb": 38
+ },
+ "kb_out": 63,
+ "seconds": 4.92
+}

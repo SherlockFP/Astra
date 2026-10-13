@@ -1,0 +1,54 @@
+{
+ "src": "characters/Rogue.glb",
+ "out": "characters/Rogue.glb",
+ "family": "characters",
+ "class": "hero",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "players scale 1",
+ "game_cell": 0.09,
+ "native_cell_base": 0.09,
+ "budget": 7600,
+ "hidden_nodes": [
+  "1H_Crossbow",
+  "2H_Crossbow",
+  "Throwable"
+ ],
+ "kb_src": 3532,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": "(Helmet|Hat|Hood)$",
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:24",
+ "status": "PASS",
+ "cell_used": 0.09,
+ "passes": [
+  {
+   "cell": 0.09,
+   "tris_visible": 3796,
+   "voxels": 2132
+  }
+ ],
+ "voxels": 2132,
+ "faces": 2762,
+ "tris_total": 5524,
+ "tris_visible": 3796,
+ "budget_pct": -50.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 5524,
+  "kb": 3600,
+  "clips": 76,
+  "orig_kb": 3532
+ },
+ "kb_out": 3600,
+ "seconds": 0.68
+}

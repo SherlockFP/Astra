@@ -1,0 +1,50 @@
+{
+ "src": "gen/bosses/golge_rahibesi.glb",
+ "out": "gen/bosses/golge_rahibesi.glb",
+ "family": "gen/bosses",
+ "class": "boss",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "no enemy def found, default 1.0",
+ "game_cell": 0.14,
+ "native_cell_base": 0.14,
+ "budget": 9500,
+ "hidden_nodes": [],
+ "kb_src": 260,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:02",
+ "status": "PASS",
+ "cell_used": 0.14,
+ "passes": [
+  {
+   "cell": 0.14,
+   "tris_visible": 4976,
+   "voxels": 1526
+  }
+ ],
+ "voxels": 1526,
+ "faces": 2488,
+ "tris_total": 4976,
+ "tris_visible": 4976,
+ "budget_pct": -47.6,
+ "colors": {
+  "M0": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 4976,
+  "kb": 597,
+  "clips": 9,
+  "orig_kb": 260
+ },
+ "kb_out": 597,
+ "seconds": 0.48
+}

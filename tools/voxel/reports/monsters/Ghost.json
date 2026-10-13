@@ -1,0 +1,50 @@
+{
+ "src": "monsters/Ghost.glb",
+ "out": "monsters/Ghost.glb",
+ "family": "monsters",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 0.79,
+ "scale_src": "median of 6 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.092,
+ "native_cell_base": 0.1165,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 199,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "blend",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:11",
+ "status": "PASS",
+ "cell_used": 0.1165,
+ "passes": [
+  {
+   "cell": 0.1165,
+   "tris_visible": 3932,
+   "voxels": 1588
+  }
+ ],
+ "voxels": 1588,
+ "faces": 1966,
+ "tris_total": 3932,
+ "tris_visible": 3932,
+ "budget_pct": -34.5,
+ "colors": {
+  "MAIN": 1
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3932,
+  "kb": 443,
+  "clips": 8,
+  "orig_kb": 199
+ },
+ "kb_out": 443,
+ "seconds": 0.47
+}

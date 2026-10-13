@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/roofs/roof_straw.glb",
+ "out": "itch/psx-medieval/roofs/roof_straw.glb",
+ "family": "itch/psx-medieval",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.4254,
+ "native_cell_base": 0.4254,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 40,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:54",
+ "status": "PASS",
+ "cell_used": 0.4254,
+ "passes": [
+  {
+   "cell": 0.4254,
+   "tris_visible": 1528,
+   "voxels": 544
+  }
+ ],
+ "voxels": 544,
+ "faces": 764,
+ "tris_total": 1528,
+ "tris_visible": 1528,
+ "budget_pct": -74.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1528,
+  "kb": 70,
+  "clips": 0,
+  "orig_kb": 40
+ },
+ "kb_out": 70,
+ "seconds": 0.56
+}

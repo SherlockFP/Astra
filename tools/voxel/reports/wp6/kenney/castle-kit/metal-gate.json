@@ -1,0 +1,50 @@
+{
+ "src": "kenney/castle-kit/metal-gate.glb",
+ "out": "kenney/castle-kit/metal-gate.glb",
+ "family": "kenney/castle-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2086,
+ "native_cell_base": 0.0522,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 23,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:23:53",
+ "status": "PASS",
+ "cell_used": 0.0522,
+ "passes": [
+  {
+   "cell": 0.0522,
+   "tris_visible": 1008,
+   "voxels": 392
+  }
+ ],
+ "voxels": 392,
+ "faces": 504,
+ "tris_total": 1008,
+ "tris_visible": 1008,
+ "budget_pct": -71.2,
+ "colors": {
+  "MAIN": 18
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1008,
+  "kb": 47,
+  "clips": 0,
+  "orig_kb": 23
+ },
+ "kb_out": 47,
+ "seconds": 2.64
+}

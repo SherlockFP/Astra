@@ -1,0 +1,50 @@
+{
+ "src": "gen/weapons/shield_tower.glb",
+ "out": "gen/weapons/shield_tower.glb",
+ "family": "gen/weapons",
+ "class": "shield",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3000,
+ "hidden_nodes": [],
+ "kb_src": 18,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:31",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 1800,
+   "voxels": 732
+  }
+ ],
+ "voxels": 732,
+ "faces": 900,
+ "tris_total": 1800,
+ "tris_visible": 1800,
+ "budget_pct": -40.0,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1800,
+  "kb": 82,
+  "clips": 0,
+  "orig_kb": 18
+ },
+ "kb_out": 82,
+ "seconds": 0.42
+}

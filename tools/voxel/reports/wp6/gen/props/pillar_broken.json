@@ -1,0 +1,50 @@
+{
+ "src": "gen/props/pillar_broken.glb",
+ "out": "gen/props/pillar_broken.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.1848,
+ "native_cell_base": 0.1848,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 29,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:04",
+ "status": "PASS",
+ "cell_used": 0.1848,
+ "passes": [
+  {
+   "cell": 0.1848,
+   "tris_visible": 1256,
+   "voxels": 559
+  }
+ ],
+ "voxels": 559,
+ "faces": 628,
+ "tris_total": 1256,
+ "tris_visible": 1256,
+ "budget_pct": -64.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1256,
+  "kb": 58,
+  "clips": 0,
+  "orig_kb": 29
+ },
+ "kb_out": 58,
+ "seconds": 0.49
+}

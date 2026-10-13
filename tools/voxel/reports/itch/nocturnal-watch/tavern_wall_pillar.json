@@ -1,0 +1,50 @@
+{
+ "src": "itch/nocturnal-watch/tavern_wall_pillar.glb",
+ "out": "itch/nocturnal-watch/tavern_wall_pillar.glb",
+ "family": "itch/nocturnal-watch",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2907,
+ "native_cell_base": 0.2907,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 19,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:30",
+ "status": "PASS",
+ "cell_used": 0.2907,
+ "passes": [
+  {
+   "cell": 0.2907,
+   "tris_visible": 378,
+   "voxels": 122
+  }
+ ],
+ "voxels": 122,
+ "faces": 189,
+ "tris_total": 378,
+ "tris_visible": 378,
+ "budget_pct": -93.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 378,
+  "kb": 18,
+  "clips": 0,
+  "orig_kb": 19
+ },
+ "kb_out": 18,
+ "seconds": 4.81
+}

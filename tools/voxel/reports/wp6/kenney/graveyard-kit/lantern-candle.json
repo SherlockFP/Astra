@@ -1,0 +1,50 @@
+{
+ "src": "kenney/graveyard-kit/lantern-candle.glb",
+ "out": "kenney/graveyard-kit/lantern-candle.glb",
+ "family": "kenney/graveyard-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 3.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0831,
+ "native_cell_base": 0.0277,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 22,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:24:23",
+ "status": "PASS",
+ "cell_used": 0.0277,
+ "passes": [
+  {
+   "cell": 0.0277,
+   "tris_visible": 1422,
+   "voxels": 696
+  }
+ ],
+ "voxels": 696,
+ "faces": 711,
+ "tris_total": 1422,
+ "tris_visible": 1422,
+ "budget_pct": -59.4,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1422,
+  "kb": 66,
+  "clips": 0,
+  "orig_kb": 22
+ },
+ "kb_out": 66,
+ "seconds": 0.45
+}

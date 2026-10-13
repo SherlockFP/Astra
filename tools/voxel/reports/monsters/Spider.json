@@ -1,0 +1,50 @@
+{
+ "src": "monsters/Spider.glb",
+ "out": "monsters/Spider.glb",
+ "family": "monsters",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 0.63,
+ "scale_src": "median of 4 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.09,
+ "native_cell_base": 0.1429,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 438,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:14",
+ "status": "PASS",
+ "cell_used": 0.1429,
+ "passes": [
+  {
+   "cell": 0.1429,
+   "tris_visible": 6192,
+   "voxels": 1811
+  }
+ ],
+ "voxels": 1811,
+ "faces": 3096,
+ "tris_total": 6192,
+ "tris_visible": 6192,
+ "budget_pct": 3.2,
+ "colors": {
+  "MAIN": 2
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 6192,
+  "kb": 722,
+  "clips": 5,
+  "orig_kb": 438
+ },
+ "kb_out": 722,
+ "seconds": 0.54
+}

@@ -1,0 +1,50 @@
+{
+ "src": "gen/props/chest_gold.glb",
+ "out": "gen/props/chest_gold.glb",
+ "family": "gen/props",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0886,
+ "native_cell_base": 0.0886,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 47,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:00",
+ "status": "PASS",
+ "cell_used": 0.0886,
+ "passes": [
+  {
+   "cell": 0.0886,
+   "tris_visible": 2370,
+   "voxels": 1172
+  }
+ ],
+ "voxels": 1172,
+ "faces": 1185,
+ "tris_total": 2370,
+ "tris_visible": 2370,
+ "budget_pct": -32.3,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2370,
+  "kb": 110,
+  "clips": 1,
+  "orig_kb": 47
+ },
+ "kb_out": 110,
+ "seconds": 0.53
+}

@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-walls-fences/brick-fence/brick_wall_pole.glb",
+ "out": "itch/psx-walls-fences/brick-fence/brick_wall_pole.glb",
+ "family": "itch/psx-walls-fences",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.25,
+ "native_cell_base": 0.25,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 77,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:57",
+ "status": "PASS",
+ "cell_used": 0.25,
+ "passes": [
+  {
+   "cell": 0.25,
+   "tris_visible": 290,
+   "voxels": 91
+  }
+ ],
+ "voxels": 91,
+ "faces": 145,
+ "tris_total": 290,
+ "tris_visible": 290,
+ "budget_pct": -95.2,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 290,
+  "kb": 14,
+  "clips": 0,
+  "orig_kb": 77
+ },
+ "kb_out": 14,
+ "seconds": 0.55
+}

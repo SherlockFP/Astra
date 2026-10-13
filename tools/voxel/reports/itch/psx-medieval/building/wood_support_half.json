@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/building/wood_support_half.glb",
+ "out": "itch/psx-medieval/building/wood_support_half.glb",
+ "family": "itch/psx-medieval",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.3763,
+ "native_cell_base": 0.3763,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 49,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:45",
+ "status": "PASS",
+ "cell_used": 0.3763,
+ "passes": [
+  {
+   "cell": 0.3763,
+   "tris_visible": 518,
+   "voxels": 89
+  }
+ ],
+ "voxels": 89,
+ "faces": 259,
+ "tris_total": 518,
+ "tris_visible": 518,
+ "budget_pct": -91.4,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 518,
+  "kb": 25,
+  "clips": 0,
+  "orig_kb": 49
+ },
+ "kb_out": 25,
+ "seconds": 0.51
+}

@@ -1,0 +1,55 @@
+{
+ "src": "weapons/axe_2handed.gltf",
+ "out": "weapons/axe_2handed.glb",
+ "family": "weapons",
+ "class": "weapon",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 3,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:43",
+ "status": "PASS",
+ "cell_used": 0.0714,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 2126,
+   "voxels": 818
+  },
+  {
+   "cell": 0.0714,
+   "tris_visible": 1576,
+   "voxels": 551
+  }
+ ],
+ "voxels": 551,
+ "faces": 788,
+ "tris_total": 1576,
+ "tris_visible": 1576,
+ "budget_pct": 5.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1576,
+  "kb": 72,
+  "clips": 0,
+  "orig_kb": 3
+ },
+ "kb_out": 72,
+ "seconds": 0.65
+}

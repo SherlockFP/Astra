@@ -1,0 +1,50 @@
+{
+ "src": "gen/creatures/slime_frost.glb",
+ "out": "gen/creatures/slime_frost.glb",
+ "family": "gen/creatures",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 1.33,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.09,
+ "native_cell_base": 0.0677,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 53,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "blend",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:04",
+ "status": "PASS",
+ "cell_used": 0.0677,
+ "passes": [
+  {
+   "cell": 0.0677,
+   "tris_visible": 3548,
+   "voxels": 1544
+  }
+ ],
+ "voxels": 1544,
+ "faces": 1774,
+ "tris_total": 3548,
+ "tris_visible": 3548,
+ "budget_pct": -40.9,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3548,
+  "kb": 346,
+  "clips": 6,
+  "orig_kb": 53
+ },
+ "kb_out": 346,
+ "seconds": 0.46
+}

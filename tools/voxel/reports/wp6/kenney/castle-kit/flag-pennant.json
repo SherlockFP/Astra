@@ -1,0 +1,50 @@
+{
+ "src": "kenney/castle-kit/flag-pennant.glb",
+ "out": "kenney/castle-kit/flag-pennant.glb",
+ "family": "kenney/castle-kit",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2473,
+ "native_cell_base": 0.0618,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 13,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:23:50",
+ "status": "PASS",
+ "cell_used": 0.0618,
+ "passes": [
+  {
+   "cell": 0.0618,
+   "tris_visible": 424,
+   "voxels": 91
+  }
+ ],
+ "voxels": 91,
+ "faces": 212,
+ "tris_total": 424,
+ "tris_visible": 424,
+ "budget_pct": -87.9,
+ "colors": {
+  "MAIN": 20
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 424,
+  "kb": 21,
+  "clips": 0,
+  "orig_kb": 13
+ },
+ "kb_out": 21,
+ "seconds": 3.18
+}

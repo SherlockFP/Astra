@@ -1,0 +1,50 @@
+{
+ "src": "itch/creatures/wolf.glb",
+ "out": "itch/creatures/wolf.glb",
+ "family": "itch/creatures",
+ "class": "small",
+ "decision": "voxel",
+ "scale": 0.8,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.06,
+ "native_cell_base": 0.075,
+ "budget": 3200,
+ "hidden_nodes": [],
+ "kb_src": 521,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:10",
+ "status": "PASS",
+ "cell_used": 0.075,
+ "passes": [
+  {
+   "cell": 0.075,
+   "tris_visible": 2412,
+   "voxels": 786
+  }
+ ],
+ "voxels": 786,
+ "faces": 1206,
+ "tris_total": 2412,
+ "tris_visible": 2412,
+ "budget_pct": -24.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2412,
+  "kb": 520,
+  "clips": 12,
+  "orig_kb": 521
+ },
+ "kb_out": 520,
+ "seconds": 0.47
+}

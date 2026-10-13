@@ -1,0 +1,51 @@
+{
+ "src": "gen/creatures/wolf_dire.glb",
+ "out": "gen/creatures/wolf_dire.glb",
+ "family": "gen/creatures",
+ "class": "small",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "median of 1 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.075,
+ "native_cell_base": 0.075,
+ "budget": 3200,
+ "hidden_nodes": [],
+ "kb_src": 148,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:05",
+ "status": "PASS",
+ "cell_used": 0.075,
+ "passes": [
+  {
+   "cell": 0.075,
+   "tris_visible": 3200,
+   "voxels": 1298
+  }
+ ],
+ "voxels": 1298,
+ "faces": 1600,
+ "tris_total": 3200,
+ "tris_visible": 3200,
+ "budget_pct": 0.0,
+ "colors": {
+  "M1": 10,
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3200,
+  "kb": 379,
+  "clips": 6,
+  "orig_kb": 148
+ },
+ "kb_out": 379,
+ "seconds": 0.46
+}

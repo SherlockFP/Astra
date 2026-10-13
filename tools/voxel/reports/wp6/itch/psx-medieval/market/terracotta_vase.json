@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/market/terracotta_vase.glb",
+ "out": "itch/psx-medieval/market/terracotta_vase.glb",
+ "family": "itch/psx-medieval",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.0928,
+ "native_cell_base": 0.0928,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 48,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:23:44",
+ "status": "PASS",
+ "cell_used": 0.0928,
+ "passes": [
+  {
+   "cell": 0.0928,
+   "tris_visible": 1562,
+   "voxels": 805
+  }
+ ],
+ "voxels": 805,
+ "faces": 781,
+ "tris_total": 1562,
+ "tris_visible": 1562,
+ "budget_pct": -55.4,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1562,
+  "kb": 72,
+  "clips": 0,
+  "orig_kb": 48
+ },
+ "kb_out": 72,
+ "seconds": 2.03
+}

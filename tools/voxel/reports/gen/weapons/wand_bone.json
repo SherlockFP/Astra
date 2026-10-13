@@ -1,0 +1,50 @@
+{
+ "src": "gen/weapons/wand_bone.glb",
+ "out": "gen/weapons/wand_bone.glb",
+ "family": "gen/weapons",
+ "class": "weapon",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 20,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:34",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 146,
+   "voxels": 21
+  }
+ ],
+ "voxels": 21,
+ "faces": 73,
+ "tris_total": 146,
+ "tris_visible": 146,
+ "budget_pct": -90.3,
+ "colors": {
+  "M0": 12
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 146,
+  "kb": 8,
+  "clips": 0,
+  "orig_kb": 20
+ },
+ "kb_out": 8,
+ "seconds": 0.39
+}

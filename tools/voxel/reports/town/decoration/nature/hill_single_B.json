@@ -1,0 +1,50 @@
+{
+ "src": "town/decoration/nature/hill_single_B.glb",
+ "out": "town/decoration/nature/hill_single_B.glb",
+ "family": "town/decoration",
+ "class": "massif",
+ "decision": "voxel",
+ "scale": 6.0,
+ "scale_src": "pack scale",
+ "game_cell": 1.0,
+ "native_cell_base": 0.1667,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 20,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:13:55",
+ "status": "PASS",
+ "cell_used": 0.1667,
+ "passes": [
+  {
+   "cell": 0.1667,
+   "tris_visible": 290,
+   "voxels": 120
+  }
+ ],
+ "voxels": 120,
+ "faces": 145,
+ "tris_total": 290,
+ "tris_visible": 290,
+ "budget_pct": -80.7,
+ "colors": {
+  "MAIN": 21
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 290,
+  "kb": 14,
+  "clips": 0,
+  "orig_kb": 20
+ },
+ "kb_out": 14,
+ "seconds": 1.02
+}

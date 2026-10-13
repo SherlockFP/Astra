@@ -1,0 +1,50 @@
+{
+ "src": "halloween/candle_melted.glb",
+ "out": "halloween/candle_melted.glb",
+ "family": "halloween",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 19,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:06",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 588,
+   "voxels": 212
+  }
+ ],
+ "voxels": 212,
+ "faces": 294,
+ "tris_total": 588,
+ "tris_visible": 588,
+ "budget_pct": -83.2,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 588,
+  "kb": 28,
+  "clips": 0,
+  "orig_kb": 19
+ },
+ "kb_out": 28,
+ "seconds": 0.5
+}

@@ -1,0 +1,50 @@
+{
+ "src": "kenney/castle-kit/siege-tower.glb",
+ "out": "kenney/castle-kit/siege-tower.glb",
+ "family": "kenney/castle-kit",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.5,
+ "native_cell_base": 0.125,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 141,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:00",
+ "status": "PASS",
+ "cell_used": 0.125,
+ "passes": [
+  {
+   "cell": 0.125,
+   "tris_visible": 3450,
+   "voxels": 990
+  }
+ ],
+ "voxels": 990,
+ "faces": 1725,
+ "tris_total": 3450,
+ "tris_visible": 3450,
+ "budget_pct": -42.5,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3450,
+  "kb": 159,
+  "clips": 0,
+  "orig_kb": 141
+ },
+ "kb_out": 159,
+ "seconds": 4.37
+}

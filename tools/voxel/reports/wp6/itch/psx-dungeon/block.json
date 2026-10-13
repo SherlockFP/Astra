@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-dungeon/block.glb",
+ "out": "itch/psx-dungeon/block.glb",
+ "family": "itch/psx-dungeon",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2857,
+ "native_cell_base": 0.2857,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 38,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:14",
+ "status": "PASS",
+ "cell_used": 0.2857,
+ "passes": [
+  {
+   "cell": 0.2857,
+   "tris_visible": 2250,
+   "voxels": 1178
+  }
+ ],
+ "voxels": 1178,
+ "faces": 1125,
+ "tris_total": 2250,
+ "tris_visible": 2250,
+ "budget_pct": -35.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2250,
+  "kb": 103,
+  "clips": 0,
+  "orig_kb": 38
+ },
+ "kb_out": 103,
+ "seconds": 0.46
+}

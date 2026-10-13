@@ -1,0 +1,50 @@
+{
+ "src": "kenney/castle-kit/tower-hexagon-roof.glb",
+ "out": "kenney/castle-kit/tower-hexagon-roof.glb",
+ "family": "kenney/castle-kit",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 4.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.2789,
+ "native_cell_base": 0.0697,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 8,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:20:08",
+ "status": "PASS",
+ "cell_used": 0.0697,
+ "passes": [
+  {
+   "cell": 0.0697,
+   "tris_visible": 1246,
+   "voxels": 588
+  }
+ ],
+ "voxels": 588,
+ "faces": 623,
+ "tris_total": 1246,
+ "tris_visible": 1246,
+ "budget_pct": -79.2,
+ "colors": {
+  "MAIN": 16
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1246,
+  "kb": 57,
+  "clips": 0,
+  "orig_kb": 8
+ },
+ "kb_out": 57,
+ "seconds": 3.45
+}

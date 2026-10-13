@@ -1,0 +1,55 @@
+{
+ "src": "monsters/Imp.glb",
+ "out": "monsters/Imp.glb",
+ "family": "monsters",
+ "class": "medium",
+ "decision": "voxel",
+ "scale": 0.67,
+ "scale_src": "median of 3 non-boss enemy def(s), src/data/enemies.ts",
+ "game_cell": 0.09,
+ "native_cell_base": 0.13,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 314,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:46:37",
+ "status": "PASS",
+ "cell_used": 0.13,
+ "passes": [
+  {
+   "cell": 0.13,
+   "tris_visible": 4580,
+   "voxels": 1465
+  }
+ ],
+ "voxels": 1465,
+ "faces": 2290,
+ "tris_total": 4580,
+ "tris_visible": 4580,
+ "budget_pct": -23.7,
+ "colors": {
+  "MAIN": 2
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 4580,
+  "kb": 529,
+  "clips": 8,
+  "orig_kb": 314
+ },
+ "kb_out": 529,
+ "seconds": 0.48,
+ "override": {
+  "manifest_native_cell": 0.1343,
+  "used_native_cell": 0.13,
+  "reason": "Eye_Black pupil is lost at the manifest cell (validator FAIL: semantic material name lost). Cell sweep in steps of about 0.001-0.0025 shows it survives at 0.13 (closest passing cell; the cell grid phase decides which voxels stay exposed). Converter not changed."
+ }
+}

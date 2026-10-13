@@ -1,0 +1,50 @@
+{
+ "src": "halloween/pumpkin_orange_small.glb",
+ "out": "halloween/pumpkin_orange_small.glb",
+ "family": "halloween",
+ "class": "prop",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 3500,
+ "hidden_nodes": [],
+ "kb_src": 25,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T13:22:10",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 1148,
+   "voxels": 453
+  }
+ ],
+ "voxels": 453,
+ "faces": 574,
+ "tris_total": 1148,
+ "tris_visible": 1148,
+ "budget_pct": -67.2,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 1148,
+  "kb": 53,
+  "clips": 0,
+  "orig_kb": 25
+ },
+ "kb_out": 53,
+ "seconds": 0.43
+}

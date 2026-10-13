@@ -1,0 +1,50 @@
+{
+ "src": "itch/psx-medieval/roofs/roof_red_stickout_large.glb",
+ "out": "itch/psx-medieval/roofs/roof_red_stickout_large.glb",
+ "family": "itch/psx-medieval",
+ "class": "building",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "pack scale",
+ "game_cell": 0.375,
+ "native_cell_base": 0.375,
+ "budget": 6000,
+ "hidden_nodes": [],
+ "kb_src": 42,
+ "flags": {
+  "static": true,
+  "keep": "flame|fire_fx|grass|flowers|vine|leaf",
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": true
+ },
+ "generated": "2026-10-13T13:21:54",
+ "status": "PASS",
+ "cell_used": 0.375,
+ "passes": [
+  {
+   "cell": 0.375,
+   "tris_visible": 2032,
+   "voxels": 508
+  }
+ ],
+ "voxels": 508,
+ "faces": 1016,
+ "tris_total": 2032,
+ "tris_visible": 2032,
+ "budget_pct": -66.1,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 2032,
+  "kb": 93,
+  "clips": 0,
+  "orig_kb": 42
+ },
+ "kb_out": 93,
+ "seconds": 0.56
+}

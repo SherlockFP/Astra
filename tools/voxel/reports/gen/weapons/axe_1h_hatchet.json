@@ -1,0 +1,50 @@
+{
+ "src": "gen/weapons/axe_1h_hatchet.glb",
+ "out": "gen/weapons/axe_1h_hatchet.glb",
+ "family": "gen/weapons",
+ "class": "weapon",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "held item scale 1",
+ "game_cell": 0.06,
+ "native_cell_base": 0.06,
+ "budget": 1500,
+ "hidden_nodes": [],
+ "kb_src": 13,
+ "flags": {
+  "static": true,
+  "keep": null,
+  "overlay": null,
+  "blur": 1,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-13T12:44:27",
+ "status": "PASS",
+ "cell_used": 0.06,
+ "passes": [
+  {
+   "cell": 0.06,
+   "tris_visible": 274,
+   "voxels": 52
+  }
+ ],
+ "voxels": 52,
+ "faces": 137,
+ "tris_total": 274,
+ "tris_visible": 274,
+ "budget_pct": -81.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 274,
+  "kb": 14,
+  "clips": 0,
+  "orig_kb": 13
+ },
+ "kb_out": 14,
+ "seconds": 0.41
+}
