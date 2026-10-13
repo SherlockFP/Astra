@@ -42,6 +42,7 @@ import { RNG, hashString } from '../core/utils';
 import { releaseLocalPlayer } from './respawn';
 import { propUrl, SkeletonReaper } from './SceneKit';
 import type { DungeonParams } from './scenes';
+import { attachYildizSpy } from '../data/dungeons/yildiz_divani';
 
 const tileToWorld = (c: number): number => (c + 0.5) * TILE_SIZE;
 
@@ -1182,6 +1183,8 @@ export class DungeonScene implements GameScene {
         }),
       );
     }
+    // Yıldız Divanı (Court of Stars): the seeded spy hunt needs the scene (events, ticker, spawns)
+    if (this.def.id === 'yildiz_divani') this.netOff.push(attachYildizSpy(this));
 
     // ---- P-39 / P-41: a poise break on a boss runs its move-bridge break (cancels its strings, script onBreak once per break) ----
     ev.on('poise:break', ({ enemyId }) => {

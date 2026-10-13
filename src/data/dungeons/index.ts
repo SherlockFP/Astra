@@ -27,7 +27,7 @@ export const DUNGEON_IDS: string[] = [KEMIK_MAHZENI.id, KIZIL_DOKUMHANE.id, BUZU
  * Mythic+ season pool (P-05), rotation order. Keys, portals, Group Finder and leaderboards read this via MythicPlus.dungeonPool().
  * Empty until the 8 season dungeons land; while empty, MythicPlus.dungeonPool() falls back to DUNGEON_IDS.
  */
-export const MPLUS_POOL: string[] = [TASKASA.id, PERI_SISLERI.id]; // yildiz_divani joins once its final boss (spy hunt) lands
+export const MPLUS_POOL: string[] = [TASKASA.id, PERI_SISLERI.id, YILDIZ_DIVANI.id]; // season 1 pool; the other 5 season dungeons join as they land
 
 /**
  * Open-world zones expressed as DungeonDef. Deliberately NOT part of DUNGEONS / DUNGEON_IDS: those drive the keystone UI,
