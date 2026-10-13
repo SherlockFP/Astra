@@ -180,7 +180,7 @@ export function buildEventSites(ctx: WorldCtx): EventSites {
     });
   const boss: EventSite[] = [];
   for (const sched of ext.bosses) {
-    if (sched.minLevelToStart) continue;
+    // level-gated bosses stay eligible: BossSchedule.expedite() refuses while the gate is still locked
     const pl = ctx.def.bosses.find((b) => b.bossId === sched.bossId);
     if (!pl) continue;
     const region = ctx.regionAtTile(pl.pos[0], pl.pos[1]);
