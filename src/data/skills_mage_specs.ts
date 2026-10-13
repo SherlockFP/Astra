@@ -35,7 +35,7 @@ export const MAGE_SPEC_SKILLS: Record<string, SkillDef> = {
     params: { bounces: 2, bounceRange: 6, bounceMult: 0.85, element: 1, end: 0.65, chain: 0.08, move: 0.15, stagger: 5, proc: 0.8, weight: 0, upper: 1, slow: 0.4 },
   }),
   mage_blazing_barrier: row({
-    id: 'mage_blazing_barrier', name: 'Alev Bariyeri', icon: I('skill-firewall'), spec: 'mage_fire', unlockLevel: 10, defaultSlot: 'm45',
+    id: 'mage_blazing_barrier', name: 'Alev Bariyeri', icon: I('skill-firewall'), spec: 'mage_fire', unlockLevel: 10,
     desc: '10 saniye boyunca maks. canının %22\'si kadar kalkan kazanırsın; sana vuranlar yanar, kalkan kırılınca çevreye ateş patlar.',
     cost: 0, cooldown: 45, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 1.8, hitTime: 0.3,
     targeting: 'self_buff', selfStatuses: [{ status: 'blazing_barrier', duration: 10 }],
@@ -83,7 +83,7 @@ export const MAGE_SPEC_SKILLS: Record<string, SkillDef> = {
   // itself is 1.9 s. Waves at 0.1 / 0.5 / 0.9 / 1.3 / 1.7 s (params.tick 0.4). Haste does not stretch the wave spacing yet.
   // Berrak Zihin (clearcasting, ProcMod in procs_kit_mage.ts) makes it free and gives 0.60 per missile; the hardcast gives 0.36.
   mage_arcane_missiles: row({
-    id: 'mage_arcane_missiles', name: 'Arkan Füzeler', icon: I('skill-arcane-missiles'), spec: 'mage_arcane', unlockLevel: 3, defaultSlot: 'q',
+    id: 'mage_arcane_missiles', name: 'Arkan Füzeler', icon: I('skill-arcane-missiles'), spec: 'mage_arcane', unlockLevel: 3,
     desc: 'İki saniye boyunca beş gizem füzesi yollarsın; her füze kavisli bir yolla hedefe gider ve hedef hareket etse de peşini bırakmaz. Berrak Zihin ile ücretsiz ve tam hasarlı; yoksa mana harcarsın ve hasar düşer. Kanalize ederken yürüyebilirsin (%50 hız).',
     cost: 10, cooldown: 0, castTime: 0, channel: 1.9, hitTime: 0.1, anim: 'Spellcasting', animSpeed: 1,
     targeting: 'projectile', behavior: 'homing_missiles', range: 30, speed: 22, radius: 0.3, count: 5, pierce: 0,

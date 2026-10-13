@@ -71,7 +71,7 @@ const BASE_PROC_DEFS: ProcDef[] = [
   proc({ id: 'brain_freeze', status: 'brain_freeze', name: 'Beyin Donması', school: 'frost', overlay: 'top',
     glow: ['mage_flurry'], durationHint: 12, priority: 2 }),
   proc({ id: 'clearcasting', status: 'clearcasting', name: 'Berrak Zihin', school: 'arcane', overlay: 'center',
-    glow: ['mage_arcane_blast'], durationHint: 15, priority: 2 }),
+    glow: ['mage_arcane_missiles', 'mage_arcane_barrage'], durationHint: 15, priority: 2 }),
   proc({ id: 'art_of_justice', status: 'art_of_justice', name: 'Adalet İlhamı', school: 'holy', overlay: 'top',
     glow: ['knight_wake_of_flames'], durationHint: 12, priority: 2 }),
   proc({ id: 'revenge_ready', status: 'revenge_ready', name: 'İntikam Hazır', school: 'physical', overlay: 'both',

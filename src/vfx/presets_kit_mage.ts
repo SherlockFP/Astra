@@ -46,4 +46,18 @@ export const PRESETS_KIT_MAGE: Record<string, Preset> = {
     fx.light(p, col, 14, 0.08, 3);
     return DONE;
   },
+
+  /** Buz Mızrağı shatter: a glass-shard burst with a short white flash (one-shot). */
+  shatter_burst(fx: Fx, c) {
+    const s = c.s;
+    const col = c.color(0x9fe0ff);
+    const p = c.p;
+    flare(fx, p, 1.4 * s, WHITE, 0.12, 'magic-flare-01', 2.4);
+    fx.add.spawn({
+      tex: ['star-02', 'cross'], n: 8, at: p, speed: [3 * s, 6 * s], cone: Math.PI, life: [0.25, 0.45], size: [0.1 * s, 0.18 * s],
+      c0: WHITE, c1: col, glow: 2.2, drag: 1, grav: 4, fi: 0, fp: 1,
+    });
+    fx.light(p, col, 18, 0.1, 4);
+    return DONE;
+  },
 };

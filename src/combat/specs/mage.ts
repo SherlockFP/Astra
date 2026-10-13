@@ -89,20 +89,22 @@ function rowParams(id: string): Params {
 }
 
 /** Sıcak Seri counts these spells as free while the status lasts. */
-const HOT_STREAK_SKILLS: ReadonlySet<string> = new Set(['mage_meteor', 'mage_flame_wave', 'mage_phoenix_flames']);
+const HOT_STREAK_SKILLS: ReadonlySet<string> = new Set(['mage_pyroblast', 'mage_flamestrike']);
 
 interface CasterState {
-  /** Consecutive critical fire hits (Sıcak Seri counter). */
-  streak: number;
   /** Expiry time (world s) of each Buz Parmağı charge. */
   fingers: number[];
+  /** Piroklazm proc internal cooldown (Piroblast crit, 6 s). */
+  pyroIcd: number;
+  /** Beyin Donması proc internal cooldown (Ayaz Oku / Buz Sarkıtı hit, 3 s). */
+  brainIcd: number;
 }
 const casters = new WeakMap<Actor, CasterState>();
 
 function stateOf(a: Actor): CasterState {
   let s = casters.get(a);
   if (!s) {
-    s = { streak: 0, fingers: [] };
+    s = { fingers: [], pyroIcd: 0, brainIcd: 0 };
     casters.set(a, s);
   }
   return s;
@@ -187,16 +189,22 @@ export function resolveCast(caster: Actor, def: SkillDef, ctx: MageCtx): MageCas
     m.critBonus += trait(caster, 'trait_pyromancer', PYRO).streakCrit;
     m.consumeHot = true;
   }
-  if (def.id === 'mage_ice_lance' && specHas(caster, 'trait_cryomancer') && fingerCount(caster, ctx.now) > 0) {
+  // Buz Mızrağı: x3 on every Frozen target (the engine applies frozenMult to those); Parmak / Donma shatters are in mageKit
+  if (def.id === 'mage_ice_lance') {
     m.frozenMult = 3;
-    m.critBonus += trait(caster, 'trait_cryomancer', CRYO).fofCrit;
-    m.consumeFingers = 1;
+    if (specHas(caster, 'trait_cryomancer') && fingerCount(caster, ctx.now) > 0) {
+      m.critBonus += trait(caster, 'trait_cryomancer', CRYO).fofCrit;
+      m.consumeFingers = 1;
+    }
   }
+  // Yanış (Combustion): fire spells always crit while the status lasts
+  if (def.tags.includes('fire') && caster.statuses.has('combustion')) m.critBonus += 1;
   if (isArcane(def) && specHas(caster, 'trait_arcanist')) {
     const p = trait(caster, 'trait_arcanist', ARCANE);
     const n = clamp(charges(caster), 0, p.chargeMax);
     const manaBonus = p.manaSlope * clamp((manaPct(caster) - p.manaFloor) * 100, 0, 60);
-    m.costMult *= 1 + p.chargeCost * n;
+    // the per-charge cost applies to Gizem Patlaması and Prizma Oku only (the kit's charge_cost tag); Barajı spends the charges
+    if (def.id === 'mage_arcane_blast' || def.id === 'mage_prismatic_bolt') m.costMult *= 1 + p.chargeCost * n;
     m.more *= (1 + p.chargeDmg * n) * (1 + manaBonus);
     if (def.id === 'mage_arcane_barrage') m.spendCharges = n;
     if (caster.statuses.has('arcane_surge')) {
@@ -230,28 +238,49 @@ export function commitCast(caster: Actor, def: SkillDef, m: MageCastMods, ctx: M
 }
 
 /**
- * Every damaging instance a caster dealt. Sıcak Seri: a crit fire hit adds to the streak (a non-crit resets it; at
- * `streakCrits` the status starts). Buz Parmakları: a frost hit rolls `fofChance` (the skill's own `fofChance` or
- * `fofPerPulse` when it has one). Büyücü Dokunuşu: 25 % of the owner's damage on a marked target is stored (cap 30 × W).
+ * Every damaging instance a caster dealt. Isınıyor / Sıcak Seri: a direct fire crit starts Isınıyor, a second one while it is up
+ * becomes Sıcak Seri; a non-crit does nothing. Piroklazm: Piroblast crit, 20 %. Buz Parmakları: a frost hit rolls `fofChance`
+ * (the skill's own `fofChance` or `fofPerPulse` when it has one). Buz Sarkıtları / Beyin Donması: Ayaz Oku hits.
+ * Büyücü Dokunuşu: 25 % of the owner's damage on a marked target is stored (cap 30 × W).
  */
 export function onHit(hit: MageHit, ctx: MageCtx): void {
   const a = hit.source;
-  if (hit.type === 'fire' && !hit.dot && specHas(a, 'trait_pyromancer')) {
+  // Isınıyor (CW-13): a direct fire crit starts it; a second direct fire crit while it is up becomes Sıcak Seri (8 s).
+  // A non-crit does not clear it.
+  if (hit.type === 'fire' && !hit.dot && hit.crit && specHas(a, 'trait_pyromancer')) {
     const p = trait(a, 'trait_pyromancer', PYRO);
-    const s = stateOf(a);
-    if (hit.crit) {
-      s.streak += 1;
-      if (s.streak >= p.streakCrits) {
-        s.streak = 0;
-        a.statuses.apply('hot_streak', p.streakDur, { sourceId: a.id });
-      }
+    if (a.statuses.has('heating_up')) {
+      a.statuses.remove('heating_up');
+      a.statuses.apply('hot_streak', p.streakDur, { sourceId: a.id });
     } else {
-      s.streak = 0;
+      a.statuses.apply('heating_up', 10, { sourceId: a.id });
+    }
+    // Piroklazm: a Piroblast crit, 20 % (6 s internal cooldown); the next hard-cast Piroblast / Alev Sütunu is faster and stronger
+    const s = stateOf(a);
+    if (hit.def.id === 'mage_pyroblast' && ctx.now >= s.pyroIcd && Math.random() < 0.2) {
+      s.pyroIcd = ctx.now + 6;
+      a.statuses.apply('pyroclasm', 20, { stacks: 1, sourceId: a.id });
     }
   }
   if (hit.type === 'frost' && !hit.dot && specHas(a, 'trait_cryomancer')) {
     const chance = hit.def.params?.fofChance ?? hit.def.params?.fofPerPulse ?? trait(a, 'trait_cryomancer', CRYO).fofChance;
     if (Math.random() < chance) grantFinger(a, ctx);
+    // Buz Sarkıtları: each Ayaz Oku hit adds one; five make Buz Sarkıtı ready (the icicles are spent by the spike)
+    if (hit.def.id === 'mage_frostbolt') {
+      const n = a.statuses.get('icicles')?.stacks ?? 0;
+      if (n + 1 >= 5) {
+        a.statuses.remove('icicles');
+        a.statuses.apply('glacial_ready', 15, { sourceId: a.id });
+      } else {
+        a.statuses.apply('icicles', 20, { stacks: 1, sourceId: a.id });
+      }
+    }
+    // Beyin Donması: 12 % on an Ayaz Oku or Buz Sarkıtı hit, 3 s internal cooldown; the next Dondurucu Sağanak is free
+    const s = stateOf(a);
+    if ((hit.def.id === 'mage_frostbolt' || hit.def.id === 'mage_glacial_spike') && ctx.now >= s.brainIcd && Math.random() < 0.12) {
+      s.brainIcd = ctx.now + 3;
+      a.statuses.apply('brain_freeze', 12, { sourceId: a.id });
+    }
   }
   const t = hit.target;
   if (t && hit.amount > 0 && t.statuses.get('touch_of_magi')?.sourceId === a.id) {

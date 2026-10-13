@@ -131,6 +131,10 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     skills: [
       'mage_fireball', 'mage_frost_nova', 'mage_blink', 'mage_meteor',
       'mage_blizzard', 'mage_arcane_orb',
+      // KIT PK-MAGE: appended (no defaultSlot, so the class default bar keeps the slots of the six above)
+      'mage_pyroblast', 'mage_fire_blast', 'mage_scorch', 'mage_flamestrike',
+      'mage_frostbolt', 'mage_ice_lance', 'mage_flurry', 'mage_ice_barrier', 'mage_comet_storm', 'mage_glacial_spike',
+      'mage_arcane_blast', 'mage_arcane_missiles', 'mage_arcane_barrage', 'mage_arcane_pulse', 'mage_prismatic_barrier',
     ],
     startingItems: ['staff_t1'],
     color: '#6aa8ff',
