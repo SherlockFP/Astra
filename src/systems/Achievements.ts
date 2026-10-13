@@ -102,6 +102,13 @@ export function titleName(id: string): string {
   return ACHIEVEMENT_BY_ID[id]?.title ?? id;
 }
 
+/** The title a character shows (nameplate, character header): '' when none is chosen or it is no longer earned. */
+export function selectedTitleName(save: CharacterSave | undefined): string {
+  const id = save?.title;
+  if (!id || !(save?.titles ?? []).includes(id)) return '';
+  return ACHIEVEMENT_BY_ID[id]?.title ?? '';
+}
+
 /**
  * One-time backfill (`achievements.v` 1) from counters the game already keeps, so a character made before WP-08 gets its
  * earned achievements on the next scene change. Also keeps the level maximum current. Returns the new unlocks.

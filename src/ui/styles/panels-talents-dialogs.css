@@ -4,10 +4,10 @@
 
 .pt-dlg-layer {
   --pt-gold: #e8c25a;
-  --pt-pale: #cdbd96;
-  --pt-iron: #3a3328;
+  --pt-pale: #bebebe;
+  --pt-iron: #343434;
   --pt-rune: #5de0d0;
-  --pt-dim: #8c7f66;
+  --pt-dim: #808080;
   z-index: 60;
   padding: 16px;
   box-sizing: border-box;
@@ -30,8 +30,8 @@
   font-family: var(--font-head);
   font-size: 17px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  color: #ffe9aa;
+  
+  color: #e9e9e9;
   margin: 0 0 12px;
 }
 
@@ -53,16 +53,16 @@
   padding: 10px 12px;
   text-align: left;
   background: rgba(0, 0, 0, 0.45);
-  border: 1px solid #5a4423;
+  border: 1px solid #474747;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6);
 }
-.pt-dlg-spec b { font-family: var(--font-head); color: #ffe9aa; font-size: 15px; font-weight: 600; letter-spacing: 0.02em; }
+.pt-dlg-spec b { font-family: var(--font-head); color: #e9e9e9; font-size: 15px; font-weight: 600; }
 .pt-dlg-role {
   color: var(--role, var(--pt-gold));
   border: 1px solid var(--role, var(--pt-gold));
   padding: 1px 8px;
   font-size: 11px;
-  letter-spacing: 0.04em;
+  
 }
 .pt-dlg.pg-confirm-box .pt-dlg-spec p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--pt-pale); }
 
@@ -74,12 +74,12 @@
   font-size: 12px;
   line-height: 1.5;
   background: rgba(0, 0, 0, 0.6);
-  border: 1px solid #5a4423;
+  border: 1px solid #474747;
 }
 
 /* fields */
 .pt-dlg-input { width: 100%; box-sizing: border-box; }
-.pt-dlg-code { font-family: monospace; letter-spacing: 0.02em; }
+.pt-dlg-code { font-family: monospace; }
 .pt-dlg-area {
   width: 100%;
   box-sizing: border-box;
@@ -91,11 +91,11 @@
   color: var(--text);
   background: #0d0806;
   border: 1px solid #000;
-  box-shadow: inset 0 0 0 1px #5a4423, inset 0 2px 6px rgba(0, 0, 0, 0.7);
-  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px #474747;
+  border-radius: 0;
   outline: none;
 }
-.pt-dlg-area:focus { box-shadow: inset 0 0 0 1px #e8c46a, inset 0 2px 6px rgba(0, 0, 0, 0.7), 0 0 12px rgba(232, 196, 106, 0.25); }
+.pt-dlg-area:focus { box-shadow: inset 0 0 0 1px var(--elv-value); }
 .pt-dlg-area:disabled { opacity: 0.5; }
 .pt-dlg-err { display: none; color: #ff9a8a; font-size: 13px; line-height: 1.4; }
 .pt-dlg-err.is-on { display: block; }

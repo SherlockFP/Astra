@@ -6,6 +6,7 @@ import { RARITY_COLORS, type ClassId } from '../../../types/common';
 import { type StatId } from '../../../types/stats';
 import { CLASSES } from '../../../data/classes';
 import { getItemBase } from '../../../data/items';
+import { selectedTitleName } from '../../../systems/Achievements';
 import { chip, emptyState } from '../../kit';
 import { CLASS_META, ratingTier } from '../game/base';
 import { ItemPanel, makeTabs, openPanel } from './PanelBase';
@@ -244,6 +245,7 @@ export class CharacterPanel extends ItemPanel {
 
   private preview!: CharacterPreview;
   private nameEl!: HTMLDivElement;
+  private unvanEl!: HTMLDivElement;
   private clsEl!: HTMLDivElement;
   private ilvlEl!: HTMLDivElement;
   private mplusVal!: HTMLElement;
@@ -317,7 +319,8 @@ export class CharacterPanel extends ItemPanel {
     const who = h('div', 'pi-ch-who');
     this.clsEl = h('div', 'pi-ch-cls');
     this.nameEl = h('div', 'pi-ch-name');
-    who.append(this.clsEl, this.nameEl);
+    this.unvanEl = h('div', 'pi-ch-title');
+    who.append(this.clsEl, this.nameEl, this.unvanEl);
 
     const ilvl = h('div', 'pi-ch-ilvl');
     this.ilvlEl = h('div', 'pi-ch-ilvl-n');
@@ -490,6 +493,7 @@ export class CharacterPanel extends ItemPanel {
     const c = G.character;
     if (!c) {
       this.nameEl.textContent = 'Karakter yok';
+      this.unvanEl.textContent = '';
       return;
     }
     this.syncPreview(false);
@@ -505,6 +509,7 @@ export class CharacterPanel extends ItemPanel {
     this.clsEl.textContent = `Sv. ${c.level} ${cls}`;
     this.clsEl.style.color = CLASS_META[c.classId]?.color ?? '';
     this.nameEl.textContent = c.save.name;
+    this.unvanEl.textContent = selectedTitleName(c.save);
     let il = 0;
     try {
       il = c.itemLevel();

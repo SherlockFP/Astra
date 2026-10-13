@@ -220,6 +220,8 @@
 .np-top { display: flex; align-items: center; justify-content: center; gap: 4px; min-height: 14px; margin: 0 -40px; }
 .np-name { font: 700 12px/1.1 var(--font-body); color: #fff; text-shadow: var(--elv-outline); white-space: nowrap; max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
 .np-lvl { font: 700 11px var(--font-body); text-shadow: var(--elv-outline); }
+/* chosen achievement title (local player only), small grey text under the name */
+.np-title { font: 400 11px/1.1 var(--font-body); color: #9d9d9d; text-align: center; text-shadow: var(--elv-outline); white-space: nowrap; max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
 .np-rank { width: 12px; height: 12px; background: var(--nc); filter: drop-shadow(0 1px 0 #000); }
 .np-bar { position: relative; height: 10px; background: var(--elv-backdrop-solid, #1a1a1a); border: 1px solid #000; overflow: hidden; }
 .np-fill, .np-ghost { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; }

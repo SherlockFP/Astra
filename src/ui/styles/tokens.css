@@ -61,6 +61,7 @@
   --elv-title: #ffd100;                    /* quest titles, section labels (retail yellow) */
   --elv-green: #1eff00;                    /* "Kullan:" / equip lines */
   --elv-grey: #808080;                     /* completed objectives, disabled */
+  --elv-value: #ffffff;                    /* window value colour: active tab line, button hover / focus, section bars (ElvUI: class colour; white until a window knows the class) */
   --elv-cast: #ffd100;                     /* enemy / generic cast fill */
   --elv-outline: -1px 0 0 #000, 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000;   /* crisp text outline */
 

@@ -38,11 +38,6 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string): HTMLEl
   return e;
 }
 
-/** Turkish upper-casing (dotted / dotless i). */
-function trUpper(s: string): string {
-  return s.toLocaleUpperCase('tr-TR');
-}
-
 /** Panel hotkey label read from the live bindings; '' when unavailable (never throws). */
 function hotkeyLabel(action: InputAction | undefined): string {
   if (!action) return '';
@@ -86,7 +81,7 @@ export function buildChrome(o: ChromeOpts): Chrome {
   const head = el('div', 'k-head');
   if (o.icon) head.append(iconEl(o.icon, 'k-ico k-head-ico'));
   const titleEl = el('div', 'k-title');
-  titleEl.textContent = trUpper(o.title);
+  titleEl.textContent = o.title;
   head.append(titleEl);
   const key = hotkeyLabel(o.keyAction);
   if (key) {
@@ -97,7 +92,7 @@ export function buildChrome(o: ChromeOpts): Chrome {
   if (o.closable !== false) {
     const x = el('button', 'k-x');
     x.type = 'button';
-    x.textContent = '✕';
+    x.textContent = 'X';
     x.setAttribute('aria-label', 'Kapat');
     x.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -126,7 +121,7 @@ export function buildChrome(o: ChromeOpts): Chrome {
     hintsEl,
     btnsEl,
     setTitle(t: string) {
-      titleEl.textContent = trUpper(t);
+      titleEl.textContent = t;
     },
     setHints(list: string[]) {
       fillHints(hintsEl, list);
@@ -182,7 +177,7 @@ export function buildTabs(items: TabItem[], onChange: (id: string) => void, init
     b.type = 'button';
     b.dataset.id = t.id;
     if (t.icon) b.append(iconEl(t.icon, 'k-ico k-tab-ico'));
-    b.append(document.createTextNode(trUpper(t.label)));
+    b.append(document.createTextNode(t.label));
     b.addEventListener('click', () => select(t.id));
     buttons.set(t.id, b);
     strip.append(b);

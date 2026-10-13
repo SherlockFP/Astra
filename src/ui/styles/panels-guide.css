@@ -6,13 +6,13 @@
 .gd-intro { text-align: center; font: 17px/1.4 var(--font-body); color: var(--text-2); }
 .gd-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .gd-col { padding: 10px 12px; }
-.gd-col-t { font: 700 13px var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold-1); margin-bottom: 6px; }
+.gd-col-t { font: 700 13px var(--font-body); color: var(--elv-value); margin-bottom: 6px; }
 .gd-col-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 24px; font: 15px/1.2 var(--font-body); color: var(--text-1); }
 .gd-col-row .k-key { font-size: 13px; }
 .gd-first { padding: 10px 12px; }
-.gd-first-t { font: 700 13px var(--font-body); letter-spacing: 0.06em; color: var(--gold-1); }
+.gd-first-t { font: 700 13px var(--font-body); color: var(--elv-value); }
 .gd-first-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; font: 700 17px var(--font-body); color: var(--text-1); }
-.gd-first-ico { color: var(--gold-1); }
+.gd-first-ico { color: var(--elv-value); }
 .gd-first-name { flex: 1; }
 .gd-first-dist { font: 700 15px var(--font-body); color: var(--text-2); font-variant-numeric: tabular-nums; }
 .gd-welcome-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -22,16 +22,16 @@
 .gd-guide .k-win { width: 560px; max-width: calc(100vw - 32px); }
 .gd-body { display: flex; flex-direction: column; gap: 8px; }
 .gd-head { font: 700 14px var(--font-body); color: var(--text-1); }
-.gd-summary { font: 15px var(--font-body); color: var(--gold-1); }
+.gd-summary { font: 15px var(--font-body); color: var(--elv-value); }
 .gd-card { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; }
-.gd-card-t { font: 700 12px var(--font-body); letter-spacing: 0.08em; color: var(--text-3); }
+.gd-card-t { font: 700 12px var(--font-body); color: var(--text-3); }
 .gd-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.gd-diamond { color: var(--gold-1); }
+.gd-diamond { color: var(--elv-value); }
 .gd-name { font: 700 17px var(--font-body); color: var(--text-1); }
 .gd-text { font: 15px/1.35 var(--font-body); color: var(--text-2); }
 .gd-spot { font: 14px var(--font-body); color: var(--text-2); padding-left: 10px; border-left: 2px solid var(--line); }
 .gd-btns { display: flex; gap: 6px; flex-wrap: wrap; }
 .gd-todo { display: block; width: 100%; padding: 2px 0; background: none; border: 0; text-align: left; font: 15px var(--font-body); color: var(--text-1); cursor: pointer; }
-.gd-todo:hover { color: var(--gold-1); }
+.gd-todo:hover { color: var(--elv-value); }
 .gd-todo.done { color: var(--ok); text-decoration: line-through; opacity: 0.75; }
 .gd-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
