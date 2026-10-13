@@ -91,7 +91,7 @@ export function registerNecromancerSpecs(add: SkillAdd): void {
     params: { gain: 10, cmdCoef: 0.25, focusSec: 6, armyOnly: 1, cleaveMin: 3, cleaveRadius: 5, cleaveMax: 5, cleaveMult: 0.5, end: 0.9, chain: 0.06, move: 0.15, weight: 0 },
   });
   add({
-    id: 'necro_death_coil', classId: 'necromancer', spec: 'necromancer_summoner', name: 'Ölüm Sarmalı', icon: I('skill-curse'), unlockLevel: 3, defaultSlot: 'q',
+    id: 'necro_death_coil', classId: 'necromancer', spec: 'necromancer_summoner', name: 'Ölüm Sarmalı', icon: I('skill-curse'), unlockLevel: 1, defaultSlot: 'q',
     desc: 'Hedefi izleyen bir gölge sarmalı fırlatırsın: %160 gölge hasarı verir ve Kemik Ghul\'unun canının %5\'ini yeniler (kendi minyonuna nişan alırsan onu %20 iyileştirir). 30 Öz harcar; Ani Kıyamet varken bedavadır. Karanlık Dönüşüm sırasında %20 güçlüdür.',
     cost: 30, cooldown: 0, castTime: 0, anim: 'Spellcast_Shoot', animSpeed: 1.5, hitTime: 0.373, targeting: 'target_projectile', behavior: 'death_coil',
     range: 30, speed: 32, radius: 0.5, homing: 5, damage: { coef: 1.6, type: 'shadow' }, tags: ['spell', 'projectile', 'spender', 'shadow'],
@@ -99,7 +99,7 @@ export function registerNecromancerSpecs(add: SkillAdd): void {
     params: { petHealPct: 0.05, minionHealPct: 0.2, dtMore: 0.2, end: 0.75, chain: 0.06, move: 0.12, stagger: 6, proc: 1, weight: 0 },
   });
   add({
-    id: 'necro_festering_strike', classId: 'necromancer', spec: 'necromancer_summoner', name: 'Çürüten Darbe', icon: I('skill-poison-dagger'), unlockLevel: 6, defaultSlot: 'e',
+    id: 'necro_festering_strike', classId: 'necromancer', spec: 'necromancer_summoner', name: 'Çürüten Darbe', icon: I('skill-poison-dagger'), unlockLevel: 1, defaultSlot: 'e',
     desc: 'Önündeki düşmana asanla %70 fiziksel hasar verirsin ve hedefe 20 saniye süren 3 Çürük Bulaşı yükü bırakırsın. 2 Rün harcar, 15 Öz kazandırır. Ani Kıyamet tetikleyebilir.',
     cost: 0, cooldown: 0, castTime: 0, anim: '2H_Melee_Attack_Stab', animSpeed: 1.5, hitTime: 0.56, targeting: 'target_instant',
     range: 3.2, damage: { coef: 0.7, type: 'physical' }, pip: { id: 'rune', cost: 2 }, statuses: [{ status: 'vile_contagion', duration: 20, stacks: 3 }],

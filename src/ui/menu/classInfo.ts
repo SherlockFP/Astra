@@ -133,7 +133,7 @@ const FALLBACK: Record<ClassId, ClassPresentation> = {
     showcase: [
       { clip: 'Spellcast_Shoot', vfx: 'hit_magic', vfxAt: 0.37, offset: [0, 1.5, 1.4], sfx: 'shadow_cast' },
       { clip: 'Spellcast_Raise', vfx: 'death_poof', vfxAt: 0.95, offset: [0, 0.1, 2.0], speed: 2.0 },
-      { clip: 'Spellcast_Summon', vfx: 'death_bones', vfxAt: 1.5, offset: [0, 0.1, 2.2], sfx: 'boss_cast', speed: 1.6 },
+      { clip: 'Spellcast_Long', vfx: 'death_bones', vfxAt: 1.5, offset: [0, 0.1, 2.2], sfx: 'boss_cast', speed: 1.6 },
       { clip: 'Cheer' },
     ],
   },
@@ -177,7 +177,7 @@ export function classPresentation(id: ClassId): ClassPresentation {
   };
 }
 
-export const CLASS_ORDER: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin'];
+export const CLASS_ORDER: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock'];
 
 export interface VariantDef { name: string; css: string; tint: number }
 /** Colour variants (appearance.variant index). `tint` is only used by the scenes-side fallback model loader. */

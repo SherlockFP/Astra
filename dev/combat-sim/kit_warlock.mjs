@@ -165,6 +165,46 @@ for (const [sid, apl] of Object.entries(ROTATIONS_KIT_WARLOCK)) {
 ok('kit.warlock.resolve resolve_pact is -25 % damage taken', STATUSES.resolve_pact?.stats?.damageReductionPct === 0.25,
   `value=${STATUSES.resolve_pact?.stats?.damageReductionPct}`);
 
+// ---- wlk.l1 (WP-01): a level-1 warlock with no spec has a working bar (chain + Gölge Oku + Azap + İblis Çemberi), start gear, moveset
+{
+  const { CharacterState } = await H.imp('systems/CharacterState.ts');
+  const { HEAVY_BY_CLASS, RIPOSTE_BY_CLASS, KRT_BY_CLASS } = await H.imp('combat/heavy.ts');
+  const { RUN_BY_CLASS, JUMP_BY_CLASS, ROLL_BY_CLASS } = await H.imp('combat/moves.ts');
+  const items = await H.imp('data/itemBases.ts');
+  const menu = await H.imp('ui/menu/classInfo.ts');
+  const cls = await H.imp('data/classes.ts');
+  const bar1 = CharacterState.defaultBar('warlock', 1);
+  ok('wlk.l1 level-1 bar = lmb chain, rmb Gölge Oku, e Azap, s2 İblis Çemberi', JSON.stringify(bar1) === JSON.stringify({
+    lmb: 'warlock_basic', rmb: 'warlock_shadow_bolt', e: 'warlock_agony', s2: 'warlock_demonic_circle',
+  }), JSON.stringify(bar1));
+  ok('wlk.l1 warlock is playable and offered by the creation list', cls.isPlayableClass('warlock') && menu.CLASS_ORDER.includes('warlock'));
+  ok('wlk.l1 start gear (staff, wand, tome) is usable by a warlock and not by a knight',
+    ['staff_t1', 'wand_t1', 'tome_t1'].every((id) => items.ITEM_BASES[id] && items.classCanUseBase('warlock', items.ITEM_BASES[id]))
+    && !items.classCanUseBase('knight', items.ITEM_BASES.staff_t1));
+  ok('wlk.l1 heavy, riposte, krt, run, jump, roll profiles exist under warlock ids', [HEAVY_BY_CLASS, RIPOSTE_BY_CLASS, KRT_BY_CLASS, RUN_BY_CLASS, JUMP_BY_CLASS, ROLL_BY_CLASS]
+    .every((t) => t.warlock && SKILLS[t.warlock.id]?.classId === 'warlock'));
+
+  const p = H.addPlayer('warlock', 1);
+  p.spec = undefined;
+  p.yaw = 0; p.position.set(0, 0, 0);
+  p.stats.critChance = 0;
+  p.stats.weaponMin = p.stats.weaponMax = 100;
+  G.character.save.skillBar = { ...bar1 };
+  G.character.save.spec = null;
+  G.talents = { grantedSkills: () => [], skillPick: () => 0 };
+  const foe = H.addEnemy(0, 2.2, { hp: 1e9 });
+  foe.maxHp = 1e9; foe.hp = 1e9;
+  H.step(2);
+  p.hp = p.maxHp = 1e6;
+  H.setAimTarget(foe);
+  const fire = (slot) => { H.clearEvents(); p.resource = 100; const s = G.skills.tryCastSlot(p, slot, H.aimFor(p, foe)); H.stepSec(2.2); return s; };
+  const hitBy = (re) => events['damage'].filter((d) => re.test(d.skillId ?? '') && d.amount > 0 && d.targetId === foe.id);
+  const failed = () => events['skill:fail'].map((f) => f.reason ?? f.why ?? '?').join(',');
+  ok('wlk.l1 lmb: the warlock chain casts and hits', fire('lmb') === true && hitBy(/^warlock_basic/).length >= 1, `hits=${hitBy(/^warlock_basic/).length} fail=${failed()}`);
+  ok('wlk.l1 rmb: Gölge Oku casts and hits without a spec', fire('rmb') === true && hitBy(/^warlock_shadow_bolt$/).length >= 1, `hits=${hitBy(/^warlock_shadow_bolt$/).length} fail=${failed()}`);
+  ok('wlk.l1 e: Azap casts and applies agony without a spec', fire('e') === true && foe.statuses.has('agony'), `agony=${foe.statuses.has('agony')} fail=${failed()}`);
+}
+
 console.log(fails === 0 ? '\nkit.warlock: all checks PASS' : `\nkit.warlock: ${fails} FAIL`);
 H.restoreConsole?.();
 process.exit(fails === 0 ? 0 : 1);

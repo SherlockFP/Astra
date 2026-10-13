@@ -112,14 +112,14 @@ const WEAPON_TYPES: WeaponTypeDef[] = [
     icons: ['item-axe-2h', 'item-axe-2h', 'item-axe-2h', 'item-axe-2h', 'item-axe-2h'],
   },
   {
-    category: 'staff', hands: 2, aps: 1.1, typeMult: 1.45, classes: ['mage'], maxSockets: 3,
+    category: 'staff', hands: 2, aps: 1.1, typeMult: 1.45, classes: ['mage', 'necromancer', 'warlock'], maxSockets: 3,
     names: ['Meşe Asa', 'Kemik Asa', 'Kristal Asa', 'Ejder Asası', 'Kadim Asa'],
     models: [GEN + 'staff_wood.glb', GEN + 'staff_skull.glb', GEN + 'staff_crystal.glb', GEN + 'staff_fire.glb', GEN + 'staff_frost.glb'],
     implicit: [0.1, 0.15, 0.2, 0.25, 0.3].map((v) => ({ resourceRegenPct: v })),
     icons: ['item-staff', 'item-staff-skull', 'item-staff', 'item-staff', 'item-staff'],
   },
   {
-    category: 'wand', hands: 1, aps: 1.4, typeMult: 1.0, classes: ['mage'], maxSockets: 2,
+    category: 'wand', hands: 1, aps: 1.4, typeMult: 1.0, classes: ['mage', 'necromancer', 'warlock'], maxSockets: 2,
     names: ['Söğüt Değnek', 'Kemik Değnek', 'Kristal Değnek', 'Yıldız Değneği', 'Kadim Değnek'],
     models: [KK + 'wand.gltf', GEN + 'wand_bone.glb', GEN + 'wand_arcane.glb', GEN + 'wand_arcane.glb', GEN + 'wand_arcane.glb'],
     implicit: [0.04, 0.06, 0.08, 0.1, 0.12].map((v) => ({ castSpeed: v })),
@@ -140,7 +140,7 @@ const WEAPON_TYPES: WeaponTypeDef[] = [
     icons: ['item-shield-round', 'item-shield', 'item-shield-tower', 'item-shield-tower', 'item-shield-tower'],
   },
   {
-    category: 'tome', hands: 0, classes: ['mage'], maxSockets: 1,
+    category: 'tome', hands: 0, classes: ['mage', 'necromancer', 'warlock'], maxSockets: 1,
     names: ['Eski Defter', 'Büyü Kitabı', 'Mühürlü Kitap', 'Kara Kitap', 'Kadim Kitap'],
     models: [KK + 'spellbook_closed.gltf', KK + 'spellbook_closed.gltf', KK + 'spellbook_closed.gltf', KK + 'spellbook_closed.gltf', KK + 'spellbook_closed.gltf'],
     implicit: [

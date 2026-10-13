@@ -111,7 +111,7 @@ ok('pmne.ids tree skills: İlik Söken (Kemik), Salgın (Ordu) at s05', BONE.tre
 }
 ok('pmne.ids necro_soul_snap / necro_spirit_walk stay defined, unslotted', !!SKILLS.necro_soul_snap && !!SKILLS.necro_spirit_walk
   && !SKILLS.necro_soul_snap.defaultSlot && !SKILLS.necro_spirit_walk.defaultSlot && !ALL.some((s) => Object.values(s.defaultBar).some((id) => id === 'necro_soul_snap' || id === 'necro_spirit_walk')));
-ok('pmne.ids PLAYABLE_CLASSES is untouched (necromancer still not selectable)', !(await H.imp('data/classes.ts')).PLAYABLE_CLASSES.includes('necromancer'));
+ok('pmne.ids necromancer is in PLAYABLE_CLASSES (WP-01)', (await H.imp('data/classes.ts')).PLAYABLE_CLASSES.includes('necromancer'));
 ok('pmne.ids no duplicate minion ids across classes', Object.keys(MINION_DEFS).length === new Set(Object.keys(MINION_DEFS)).size && errors.filter((e) => /duplicate minion/.test(e)).length === 0);
 
 // ---- pmne.apl: skill and status names in the APL rows resolve --------------------------------------------------------------------------------
@@ -862,6 +862,48 @@ for (const spec of ALL) {
 {
   const bad = errors.filter((m) => m.startsWith('ERR'));
   ok('pmne.errors no console errors from the necromancer rows', bad.length === 0, bad.slice(0, 2).join(' | ').slice(0, 300));
+}
+
+// ---- pmne.l1 (WP-01): a level-1 necromancer with no spec has a working bar (chain + Ölüm Kırbacı + Ölüm Sarmalı + Çürüten Darbe), start gear, moveset
+{
+  const { CharacterState } = await H.imp('systems/CharacterState.ts');
+  const { HEAVY_BY_CLASS, RIPOSTE_BY_CLASS, KRT_BY_CLASS } = await H.imp('combat/heavy.ts');
+  const { RUN_BY_CLASS, JUMP_BY_CLASS, ROLL_BY_CLASS } = await H.imp('combat/moves.ts');
+  const items = await H.imp('data/itemBases.ts');
+  const menu = await H.imp('ui/menu/classInfo.ts');
+  const cls = await H.imp('data/classes.ts');
+  const bar1 = CharacterState.defaultBar('necromancer', 1);
+  ok('pmne.l1 level-1 bar = lmb chain, rmb Ölüm Kırbacı, q Ölüm Sarmalı, e Çürüten Darbe', JSON.stringify(bar1) === JSON.stringify({
+    lmb: 'necro_basic', rmb: 'necro_scourge_strike', q: 'necro_death_coil', e: 'necro_festering_strike',
+  }), JSON.stringify(bar1));
+  ok('pmne.l1 necromancer is playable and offered by the creation list', cls.isPlayableClass('necromancer') && menu.CLASS_ORDER.includes('necromancer'));
+  ok('pmne.l1 start gear (staff, wand, tome) is usable by a necromancer and not by a knight',
+    ['staff_t1', 'wand_t1', 'tome_t1'].every((id) => items.ITEM_BASES[id] && items.classCanUseBase('necromancer', items.ITEM_BASES[id]))
+    && !items.classCanUseBase('knight', items.ITEM_BASES.staff_t1));
+  ok('pmne.l1 heavy, riposte, krt, run, jump, roll profiles exist under necro ids', [HEAVY_BY_CLASS, RIPOSTE_BY_CLASS, KRT_BY_CLASS, RUN_BY_CLASS, JUMP_BY_CLASS, ROLL_BY_CLASS]
+    .every((t) => t.necromancer && SKILLS[t.necromancer.id]?.classId === 'necromancer'));
+
+  const p = H.addPlayer('necromancer', 1);
+  p.spec = undefined;
+  p.yaw = 0; p.position.set(0, 0, 0);
+  p.stats.critChance = 0;
+  p.stats.weaponMin = p.stats.weaponMax = 100;
+  G.character.save.skillBar = { ...bar1 };
+  G.character.save.spec = null;
+  G.talents = { grantedSkills: () => [], skillPick: () => 0 };
+  const foe = H.addEnemy(0, 2.2, { hp: 1e9 });
+  foe.maxHp = 1e9; foe.hp = 1e9;
+  H.step(2);
+  p.hp = p.maxHp = 1e6;
+  H.setAimTarget(foe);
+  const fire = (slot) => { H.clearEvents(); G.skills.addPip(p, 'rune', 6); p.resource = 100; const s = G.skills.tryCastSlot(p, slot, H.aimFor(p, foe)); H.stepSec(2.2); return s; };
+  const hitBy = (re) => events['damage'].filter((d) => re.test(d.skillId ?? '') && d.amount > 0 && d.targetId === foe.id);
+  const failed = () => events['skill:fail'].map((f) => f.reason ?? f.why ?? '?').join(',');
+  ok('pmne.l1 lmb: the bone chain swings and hits', fire('lmb') === true && hitBy(/^necro_basic/).length >= 1, `hits=${hitBy(/^necro_basic/).length} fail=${failed()}`);
+  ok('pmne.l1 rmb: Ölüm Kırbacı casts and hits without a spec', fire('rmb') === true && hitBy(/^necro_scourge_strike$/).length >= 1, `hits=${hitBy(/^necro_scourge_strike$/).length} fail=${failed()}`);
+  ok('pmne.l1 q: Ölüm Sarmalı casts and hits without a spec', fire('q') === true && hitBy(/^necro_death_coil$/).length >= 1, `hits=${hitBy(/^necro_death_coil$/).length} fail=${failed()}`);
+  ok('pmne.l1 e: Çürüten Darbe casts and hits without a spec', fire('e') === true && hitBy(/^necro_festering_strike$/).length >= 1, `hits=${hitBy(/^necro_festering_strike$/).length} fail=${failed()}`);
+  ok('pmne.l1 level-1 bar has three non-basic skills', Object.keys(bar1).filter((k) => k !== 'lmb').length === 3);
 }
 
 console.log(fails === 0 ? '\nkit.necro (pmne): all checks PASS' : `\nkit.necro (pmne): ${fails} FAIL`);

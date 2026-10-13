@@ -20,7 +20,7 @@ export const SPECS_KIT_WARLOCK: Partial<Record<SpecId, SpecDef>> = {
       'warlock_malevolence', 'warlock_summon_darkglare', 'warlock_unending_resolve',
     ],
     unlock: {
-      warlock_shadow_bolt: 1, warlock_agony: 3, warlock_corruption: 6, warlock_demonic_circle: 6, warlock_haunt: 10,
+      warlock_shadow_bolt: 1, warlock_agony: 1, warlock_corruption: 6, warlock_demonic_circle: 1, warlock_haunt: 10,
       warlock_unstable_affliction: 10, warlock_spell_lock: 10, warlock_malevolence: 10, warlock_seed_of_corruption: 12,
       warlock_dark_pact: 15, warlock_summon_darkglare: 20, warlock_unending_resolve: 30,
     },
@@ -48,7 +48,7 @@ export const SPECS_KIT_WARLOCK: Partial<Record<SpecId, SpecDef>> = {
       'warlock_summon_infernal', 'warlock_unending_resolve',
     ],
     unlock: {
-      warlock_incinerate: 1, warlock_conflagrate: 3, warlock_immolate: 6, warlock_demonic_circle: 6, warlock_shadowburn: 10,
+      warlock_incinerate: 1, warlock_conflagrate: 3, warlock_immolate: 6, warlock_demonic_circle: 1, warlock_shadowburn: 10,
       warlock_spell_lock: 10, warlock_malevolence: 10, warlock_rain_of_fire: 12, warlock_chaos_bolt: 15, warlock_dark_pact: 15,
       warlock_summon_infernal: 20, warlock_unending_resolve: 30,
     },
