@@ -248,6 +248,7 @@ and talent nodes are re-pointed (tools/talents-check.mjs must pass).
   teleports to 1.2 m behind the target facing its back; smoke puff at origin and destination, camera lerps 120 ms (no
   hard cut); +70 % move speed 2 s. Destination via NavGrid.resolveCircle, else try ±45°/±90° around the target, else
   fail "Yol yok". Remote peers see a jump, not a slide (Interpolator.SNAP_DIST — done).
+- **Positional decision (orchestrator, overrides the kit docs):** keep the existing game-wide rear bonus in Combat.rollOutgoing (melee from the rear ×1.3, rogue +0.25 crit damage from behind) as THE positional rule; no extra Backstab-specific +20 %; kit budgets count the ×1.3 rear share for melee specs. Combo-point cap per spec (Subtlety 6) and the warlock shard pip (max 50, scale 10) go into the serialized kit package PK-0 together with stealth-in-Dance, watchers/procs merges and talents-check exceptions.
 - **Positional**: "behind" = angle between the target's facing and (attacker − target) > 110°. Sırttan Bıçak (Backstab)
   and Pusu: +30 % damage and +15 % crit chance from behind (exact rule follows the research file). Enemies face their
   current threat target, so DPS behind a tanked boss is rewarded and frontal cleaves punish standing in front.
