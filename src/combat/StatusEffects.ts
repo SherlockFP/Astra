@@ -1,9 +1,14 @@
 import { G } from '../game/G';
-import { STATUSES, STATUS_RULES, type StatusRule } from '../data/statuses';
+import {
+  STATUSES, STATUS_RULES, dispelStackLoss, expireBurstOf, shouldFireOnExpire,
+  type StatusRemoveReason, type StatusRule,
+} from '../data/statuses';
 import type { EntityId } from '../types/common';
 import type { StatusId } from '../types/skills';
 import type { StatBlock, StatId } from '../types/stats';
 import type { Actor } from '../entities/Actor';
+import type { Player } from '../entities/Player';
+import type { HitSpec, IncomingHit } from './Combat';
 import type { DynamicBuff } from './procActions';
 
 export interface ActiveStatus {
@@ -280,24 +285,86 @@ export class StatusEffects {
     return f;
   }
 
-  remove(id: StatusId): void {
+  remove(id: StatusId, reason: StatusRemoveReason = 'remove'): void {
     const s = this.active.get(id);
     if (!s) return;
     this.active.delete(id);
     this.invalidate();
-    this.afterRemoved(s);
+    this.afterRemoved(s, reason);
   }
 
-  private afterRemoved(s: ActiveStatus): void {
+  /**
+   * A dispel. A status with an onDispel stack loss (arcane_lockdown) gives up that many stacks and keeps its timer,
+   * magnitude and source, as long as it has more stacks than the loss. Any other status is removed whole (reason
+   * 'dispel', so onExpire never fires). Returns true when the dispel took effect, false when the status is not active.
+   */
+  dispel(id: StatusId): boolean {
+    const s = this.active.get(id);
+    if (!s) return false;
+    const loss = dispelStackLoss(id);
+    if (loss > 0 && s.stacks > loss) {
+      s.stacks -= loss;
+      this.invalidate();
+      try {
+        G.events?.emit('status:applied', { targetId: this.owner.id, status: id, duration: s.duration, stacks: s.stacks });
+        this.owner.onStatusesChanged();
+      } catch (e) {
+        console.error('[status] dispel hook failed', e);
+      }
+      return true;
+    }
+    this.remove(id, 'dispel');
+    return true;
+  }
+
+  private afterRemoved(s: ActiveStatus, reason: StatusRemoveReason): void {
     const rule = STATUS_RULES[s.id] ?? {};
     if (s.id === 'freeze') this.setAnimPaused(false);
+    if (shouldFireOnExpire(reason)) this.fireExpireBurst(s);
     if (rule.internal) return;
     try {
-      G.events?.emit('status:removed', { targetId: this.owner.id, status: s.id });
+      G.events?.emit('status:removed', { targetId: this.owner.id, status: s.id, reason });
       this.owner.onStatusesChanged();
       if (s.id === 'shield') G.skills?.onShieldEnded(this.owner);
     } catch (e) {
       console.error('[status] remove hook failed', e);
+    }
+  }
+
+  /**
+   * onExpire burst (P-21): an area hit centred on the owner, fired only on a natural expiry and only by the authority.
+   * A player owner hits enemies in range (attributed to the status source when that is a player). An enemy owner hits
+   * the local player in range; remote players are not hit from here (deferred: needs a networked hit).
+   */
+  private fireExpireBurst(s: ActiveStatus): void {
+    const burst = expireBurstOf(s.id);
+    const owner = this.owner;
+    if (!burst || !owner.authority || owner.isDead) return;
+    const world = G.world;
+    const combat = G.combat;
+    if (!world || !combat) return;
+    try {
+      const ox = owner.position.x, oz = owner.position.z;
+      const inside = (a: Actor): boolean =>
+        !a.isDead && Math.hypot(a.position.x - ox, a.position.z - oz) <= burst.radius + a.radius;
+      const spec: HitSpec = { skillId: s.id, coef: burst.coef, type: burst.type, tags: ['aoe'], pos: [ox, owner.position.y, oz] };
+      if (owner.kind === 'enemy') {
+        for (const p of world.players) {
+          if (!p.isLocal || !inside(p)) continue;
+          const amount = combat.rollOutgoing(owner, spec, p).amount;
+          const hit: IncomingHit = { sourceId: owner.id, amount, type: burst.type, abilityName: STATUSES[s.id]?.name, sourceLevel: owner.level };
+          combat.hitLocalPlayer(hit);
+        }
+      } else {
+        const src = world.getActor(s.sourceId);
+        if (!src || src.kind !== 'player') return;
+        const attacker = src as Player;
+        for (const e of world.enemies) {
+          if (inside(e)) combat.playerHitEnemy(attacker, e, spec);
+        }
+      }
+    } catch (e) {
+      console.error('[status] expire burst failed', e);
     }
   }
 
@@ -433,7 +500,7 @@ export class StatusEffects {
     this.active.clear();
     this.invalidate();
     this.immune.slow = this.immune.cc = 0;
-    for (const s of all) this.afterRemoved(s);
+    for (const s of all) this.afterRemoved(s, 'clear');
   }
 
   update(dt: number): void {
@@ -462,7 +529,7 @@ export class StatusEffects {
         this.active.delete(s.id);
       }
       this.invalidate();
-      for (const s of expired) this.afterRemoved(s);
+      for (const s of expired) this.afterRemoved(s, 'expire');
     }
   }
 

@@ -174,8 +174,7 @@ function purge(self: Player, n: number): void {
     if (left <= 0) break;
     const def = STATUSES[s.id];
     if (def && def.kind === 'debuff' && def.dispellable) {
-      self.statuses.remove(s.id);
-      left--;
+      if (self.statuses.dispel(s.id)) left--;
     }
   }
 }

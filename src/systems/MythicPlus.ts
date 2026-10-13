@@ -10,7 +10,7 @@ import type { HitShapeSpec } from '../combat/HitShapes';
 import { Affixes, isAffixUnit } from './Affixes';
 import {
   COUNTDOWN_SEC, DEATH_PENALTY_SEC, DIFFICULTY_MULT, MAX_KEY_LEVEL, MIN_KEY_LEVEL, MPLUS_TR, MYTHIC_AFFIXES,
-  affixesForWeek, computeRunScore, currentWeek, dungeonScore, isAffixId, keystoneTitle, mplusDmg, mplusHp, partyHpFactor, upgradeLevelsFor,
+  affixesForWeek, computeRunScore, currentWeek, dungeonScore, isAffixId, keystoneTitle, upgradeLevelsFor,
   vaultItemLevel, weekStartMs,
 } from '../data/mythicAffixes';
 
@@ -39,6 +39,29 @@ const toast = (text: string, kind: 'info' | 'success' | 'warning' | 'error' | 'l
   try { G.events.emit('ui:toast', { text, kind }); } catch { /* ignore */ }
 };
 const dungeonName = (id: string): string => DUNGEONS[id]?.name ?? id;
+
+/* ---- Mythic+ scaling rules (docs/CORE_MECHANICS.md section 6). Pure: the smoke tool tests these directly. ---- */
+
+/** Level multiplier for enemy HP and damage: x1.08 per level up to +10 (x2.0 at +10), then x1.10 per level above. */
+export function mplusLevelMult(level: number): number {
+  const L = Math.max(1, Math.floor(level) || 1);
+  if (L <= 10) return 1.08 ** (L - 1);
+  return 1.08 ** 9 * 1.1 ** (L - 10);
+}
+
+/** Enemy HP multiplier for the party size (Mythic+ only). Index = player count 1..5. */
+export const MPLUS_PARTY_HP: Readonly<Record<1 | 2 | 3 | 4 | 5, number>> = { 1: 0.45, 2: 0.62, 3: 0.78, 4: 0.89, 5: 1.0 };
+
+/** Enemy damage multiplier for the party size: x0.85 for 1-2 players, 1 otherwise (Mythic+ only). */
+export const mplusPartyDmg = (partySize: number): number => (partySize <= 2 ? 0.85 : 1);
+
+/**
+ * Encounter adds (rank 'miniboss' or tag 'encounter_boss', spawned by a boss encounter) take Tyrannical and not Fortified
+ * (docs/dungeons/_shared_primitives.md P-26, decision 3).
+ */
+export function isEncounterAdd(rank: string | undefined, tag?: string): boolean {
+  return rank === 'miniboss' || tag === 'encounter_boss';
+}
 
 /**
  * Dungeon run controller (all difficulties; Mythic+ adds timer, affixes, scaling, keystones, score).
@@ -280,31 +303,46 @@ export class MythicPlus {
     return MYTHIC_AFFIXES[id];
   }
 
-  /** HP/damage multipliers for enemies in the current run (1/1 outside runs). Party HP scaling is NOT included (see partyHpMult). */
-  enemyScaling(isBoss: boolean): { hp: number; dmg: number } {
+  /**
+   * HP/damage multipliers for enemies in the current run (1/1 outside runs). Party HP scaling is NOT included (see partyHpMult).
+   * Mythic+ damage also takes the x0.85 for 1-2 players. `encounterAdd`: rank 'miniboss' / tag 'encounter_boss' adds (isEncounterAdd).
+   */
+  enemyScaling(isBoss: boolean, encounterAdd = false): { hp: number; dmg: number } {
     const s = this.state;
     if (!s) return { hp: 1, dmg: 1 };
-    if (s.difficulty === 'mythicplus') return this.scalingFor(s.keyLevel, s.affixes, isBoss);
+    if (s.difficulty === 'mythicplus') {
+      const sc = this.scalingFor(s.keyLevel, s.affixes, isBoss, encounterAdd);
+      return { hp: sc.hp, dmg: sc.dmg * mplusPartyDmg(this.params?.partySize ?? 1) };
+    }
     const d = DIFFICULTY_MULT[s.difficulty as 'normal' | 'heroic' | 'mythic'] ?? DIFFICULTY_MULT.normal;
     return { hp: d.hp, dmg: d.dmg };
   }
 
-  /** HP multiplier for the party size of the current run: x(1 + 0.7 (n-1)) in Mythic+, x(1 + 0.6 (n-1)) otherwise. 1 outside runs. */
+  /**
+   * HP multiplier for the party size of the current run: Mythic+ table {1: 0.45, 2: 0.62, 3: 0.78, 4: 0.89, 5: 1.0};
+   * other modes x(1 + 0.6 (n-1)). 1 outside runs.
+   */
   partyHpMult(): number {
     const p = this.params;
     if (!p) return 1;
-    return partyHpFactor(p.partySize, p.difficulty === 'mythicplus');
+    if (p.difficulty === 'mythicplus') return MPLUS_PARTY_HP[clamp(Math.floor(p.partySize) || 1, 1, 5) as 1 | 2 | 3 | 4 | 5];
+    return 1 + 0.6 * (clamp(Math.floor(p.partySize) || 1, 1, 5) - 1);
   }
 
-  /** Multipliers for an arbitrary level/affix set (tooltips, keystone UI). */
-  scalingFor(level: number, affixes: AffixId[], isBoss: boolean): { hp: number; dmg: number } {
+  /**
+   * Multipliers for an arbitrary level/affix set (tooltips, keystone UI). Party factors are not included.
+   * Fortified (trash only) and Tyrannical (bosses and encounter adds) per docs/CORE_MECHANICS.md section 6.
+   */
+  scalingFor(level: number, affixes: AffixId[], isBoss: boolean, encounterAdd = false): { hp: number; dmg: number } {
     if (level < MIN_KEY_LEVEL) return { hp: 1, dmg: 1 };
-    let hp = mplusHp(level);
-    let dmg = mplusDmg(level);
+    const lv = mplusLevelMult(level);
+    let hp = lv;
+    let dmg = lv;
     const f = MYTHIC_AFFIXES.fortified?.params;
     const t = MYTHIC_AFFIXES.tyrannical?.params;
-    if (!isBoss && affixes.includes('fortified') && f) { hp *= 1 + f.trashHpPct; dmg *= 1 + f.trashDmgPct; }
-    if (isBoss && affixes.includes('tyrannical') && t) { hp *= 1 + t.bossHpPct; dmg *= 1 + t.bossDmgPct; }
+    const tyrannicalTarget = isBoss || encounterAdd;
+    if (!tyrannicalTarget && affixes.includes('fortified') && f) { hp *= 1 + f.trashHpPct; dmg *= 1 + f.trashDmgPct; }
+    if (tyrannicalTarget && affixes.includes('tyrannical') && t) { hp *= 1 + t.bossHpPct; dmg *= 1 + t.bossDmgPct; }
     return { hp, dmg };
   }
 
@@ -375,6 +413,29 @@ export class MythicPlus {
     this.bossActive = false;
     this.checkCompletion();
     this.commit(true);
+  }
+
+  /**
+   * HOST: dynamic events (rifts, kibirli spawns...) add forces through this only (P-26). Adds `n` to forces; in Mythic+ the bar
+   * stops at forcesRequired (surplus dropped, like onEnemyKilled). Calls fx.onForces, shows `reason` as a toast, re-checks completion.
+   */
+  grantForces(n: number, reason: string): void {
+    const s = this.state;
+    if (!s || !this.isHost || !s.started || s.completed || s.failed) return;
+    if (!Number.isFinite(n) || n <= 0) return;
+    const req = Math.max(1, s.forcesRequired);
+    const before = s.forces;
+    const prev = before / req;
+    s.forces = this.requiresForces(s) ? Math.min(s.forcesRequired, before + n) : before + n;
+    if (s.forces === before) return;
+    try {
+      this.fx.onForces(prev, s.forces / req);
+      if (reason) toast(reason, 'info');
+    } catch (e) {
+      this.warnFx(e);
+    }
+    this.checkCompletion();
+    this.commit();
   }
 
   /** HOST: a player died (+15 s on key runs). Called by Combat for local deaths and replicated deaths. */

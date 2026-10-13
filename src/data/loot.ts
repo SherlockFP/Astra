@@ -290,6 +290,53 @@ export const GATHER_TABLES: Record<string, GatherTableDef> = {
 /** Every open-world table is also reachable through the shared registry (LootSystem looks named tables up there). */
 Object.assign(LOOT_TABLES, FARM_TABLES, METIN_TABLES, MINIBOSS_TABLES, RARE_TABLES, WORLD_BOSS_TABLES);
 
+/**
+ * Season 1 Mythic+ dungeon boss tables (K18, docs/dungeons/*.md section 5 loot). Keys are the doc table ids
+ * (`loot_<dungeon>_b<n>`); each boss's 3 named items are its `uniqueIds` (UniqueDef ids in uniques.ts), rolled with
+ * `uniqueChance` per personal roll. Trinket slots do not exist: the docs' trinkets are amulets or rings here.
+ * `focus` uses the item categories of the docs; the 2H sword / mace / polearm slots map to the categories that have bases.
+ */
+export const SEASON_LOOT_TABLES: Record<string, LootTableDef> = {
+  // Büyücü Terasi (buyucu_terasi)
+  loot_mt_b1: { focus: ['gloves', 'belt', 'wand', 'tome', 'ring'], setChance: 0.15, uniqueIds: ['mt_gloves_kural', 'mt_belt_shackle', 'mt_ring_orb'], uniqueChance: 0.22 },
+  loot_mt_b2: { focus: ['amulet', 'shield', 'sword1h', 'dagger', 'shoulders'], setChance: 0.15, uniqueIds: ['leg_cynosure_pendant', 'mt_shield_dome', 'mt_sword_glaive'], uniqueChance: 0.22 },
+  loot_mt_b3: { focus: ['staff', 'wand', 'tome', 'helm', 'legs'], setChance: 0.2, uniqueIds: ['mt_helm_triplicate', 'mt_legs_neural', 'mt_staff_echo'], uniqueChance: 0.22 },
+  loot_mt_b4: { focus: ['chest', 'helm', 'staff', 'sword1h', 'ring', 'amulet'], setChance: 0.25, extraItems: 1, uniqueIds: ['leg_orrery_staff', 'mt_chest_entropy', 'mt_ring_splinter'], uniqueChance: 0.3 },
+  // Kefaret Salonları (kefaret_salonlari)
+  loot_kef_b1: { focus: ['axe2h', 'shield', 'gloves', 'boots', 'belt'], setChance: 0.2, uniqueIds: ['leg_kef_halkor_shard', 'leg_kef_sinstone_aegis', 'leg_kef_fracture_axe'], uniqueChance: 0.25 },
+  loot_kef_b2: { focus: ['dagger', 'chest', 'legs', 'amulet', 'helm'], setChance: 0.2, uniqueIds: ['leg_kef_ekelon_eye', 'leg_kef_dive_boots', 'leg_kef_commander_dagger'], uniqueChance: 0.25 },
+  loot_kef_b3: { focus: ['staff', 'wand', 'tome', 'ring', 'shoulders'], setChance: 0.2, uniqueIds: ['leg_kef_vessel', 'leg_kef_judge_seal', 'leg_kef_halo_wand'], uniqueChance: 0.25 },
+  loot_kef_b4: { focus: ['chest', 'helm', 'staff', 'sword1h', 'axe2h', 'dagger', 'wand'], setChance: 0.25, extraItems: 1, uniqueIds: ['leg_kef_ferula', 'leg_kef_reaper', 'leg_kef_pride_mantle'], uniqueChance: 0.35 },
+  // Leş Uyanışı (les_uyanisi)
+  loot_mp_les_b1: { focus: ['gloves', 'belt', 'boots', 'shield', 'sword1h'], setChance: 0.15, uniqueIds: ['leg_les_curukkemik', 'leg_les_kanemici', 'leg_les_cukur_kalkan'], uniqueChance: 0.14 },
+  loot_mp_les_b2: { focus: ['axe2h', 'ring', 'amulet', 'shoulders', 'dagger'], setChance: 0.15, uniqueIds: ['leg_les_amarth', 'leg_les_ruh_hasadi', 'leg_les_kanat_omuz'], uniqueChance: 0.14 },
+  loot_mp_les_b3: { focus: ['chest', 'legs', 'tome', 'wand', 'gloves'], setChance: 0.15, uniqueIds: ['leg_les_dikisat', 'leg_les_onluk', 'leg_les_mumya_tomu'], uniqueChance: 0.14 },
+  loot_mp_les_b4: { focus: ['helm', 'staff', 'chest', 'ring', 'sword1h', 'axe2h', 'wand'], setChance: 0.25, extraItems: 1, uniqueIds: ['leg_les_nalthor', 'leg_les_ayaz_tac', 'leg_les_surgun_muhru'], uniqueChance: 0.2 },
+  // Peri Sisleri (peri_sisleri)
+  loot_ps_b1: { focus: ['staff', 'wand', 'tome', 'helm', 'shoulders', 'amulet'], setChance: 0.15, uniqueIds: ['leg_ps_antler_charm', 'leg_ps_soul_splitter', 'leg_ps_wicker_mantle'], uniqueChance: 0.22 },
+  loot_ps_b2: { focus: ['gloves', 'boots', 'ring', 'dagger', 'belt'], setChance: 0.15, uniqueIds: ['leg_ps_mist_ocarina', 'leg_ps_vulpin_treads', 'leg_ps_player_dagger'], uniqueChance: 0.22 },
+  loot_ps_b3: { focus: ['chest', 'legs', 'sword1h', 'axe2h', 'staff', 'amulet', 'ring'], setChance: 0.25, extraItems: 1, legendaryMult: 1.5, uniqueIds: ['leg_ps_acid_fang', 'leg_ps_lakali_tear', 'leg_ps_brood_carapace'], uniqueChance: 0.28 },
+  // Yankı Ağı (yanki_agi)
+  loot_yk_b1: { focus: ['helm', 'gloves', 'legs'], setChance: 0.15, uniqueIds: ['uni_yk_sacbrood', 'uni_yk_maw', 'uni_yk_webwrap'], uniqueChance: 0.45 },
+  loot_yk_b2: { focus: ['shoulders', 'chest'], setChance: 0.15, uniqueIds: ['uni_yk_impaler', 'uni_yk_echoshield', 'uni_yk_hiveeye'], uniqueChance: 0.45 },
+  loot_yk_b3: { focus: ['chest', 'belt', 'boots', 'ring'], setChance: 0.2, uniqueIds: ['uni_yk_sickle', 'uni_yk_echo', 'uni_yk_harvestrobe'], uniqueChance: 0.45 },
+  // Yiğitler Sarayı (yigitler_sarayi)
+  loot_yg_b1: { focus: ['shoulders', 'helm', 'amulet', 'axe2h'], setChance: 0.15, uniqueIds: ['leg_yg_borusu', 'leg_yg_kapi_kilic', 'leg_yg_statik_kusak'], uniqueChance: 0.66 },
+  loot_yg_b2: { focus: ['chest', 'legs', 'shoulders', 'staff'], setChance: 0.15, uniqueIds: ['leg_yg_valkyr_pelerin', 'leg_yg_isik_asa', 'leg_yg_ikiz_muhur'], uniqueChance: 0.66 },
+  loot_yg_b3: { focus: ['ring', 'amulet', 'legs', 'dagger'], setChance: 0.15, uniqueIds: ['leg_yg_kanli_av', 'leg_yg_av_yuzugu', 'leg_yg_surusu_kurk'], uniqueChance: 0.66 },
+  loot_yg_b4: { focus: ['axe2h', 'shield', 'staff', 'helm', 'chest', 'ring'], setChance: 0.2, uniqueIds: ['leg_yg_sinav_mizragi', 'leg_yg_yargi_muhru', 'leg_yg_aegis_golgesi'], uniqueChance: 0.66 },
+  // Yıldız Divanı (yildiz_divani)
+  loot_ys_b1: { focus: ['axe2h', 'shield', 'chest', 'gloves', 'helm'], setChance: 0.2, uniqueIds: ['leg_ys_nobet_cani', 'leg_ys_kilitlenme_zinciri', 'leg_ys_fener_yuzugu'], uniqueChance: 0.3 },
+  loot_ys_b2: { focus: ['staff', 'wand', 'tome', 'ring', 'amulet'], setChance: 0.2, uniqueIds: ['leg_ys_alevcelenk', 'leg_ys_zumrut_sozlesme', 'leg_ys_yakici_siddet'], uniqueChance: 0.3 },
+  loot_ys_b3: { focus: ['dagger', 'sword1h', 'amulet', 'ring', 'belt'], setChance: 0.25, extraItems: 1, uniqueIds: ['leg_ys_pinar_keser', 'leg_ys_yildiz_haritasi', 'leg_ys_yanki_kusagi'], uniqueChance: 0.3 },
+  // Taşkasa (taskasa)
+  loot_tk_b1: { focus: ['axe2h', 'chest', 'gloves', 'boots'], setChance: 0.15, uniqueIds: ['leg_seda_lens', 'leg_seda_aegis', 'leg_seda_gauntlets'], uniqueChance: 0.35 },
+  loot_tk_b2: { focus: ['ring', 'amulet', 'belt', 'shoulders', 'legs'], setChance: 0.15, uniqueIds: ['leg_skarmorak_heart', 'leg_skar_fragment_belt', 'leg_skar_pauldrons'], uniqueChance: 0.35 },
+  loot_tk_b3: { focus: ['mace', 'sword1h', 'gloves', 'shoulders', 'tome'], setChance: 0.15, uniqueIds: ['leg_dorlita_hammer', 'leg_brokk_anvil_staff', 'leg_crescendo_plate'], uniqueChance: 0.35 },
+  loot_tk_b4: { focus: ['staff', 'helm', 'chest', 'legs', 'dagger', 'wand'], setChance: 0.25, extraItems: 1, uniqueIds: ['leg_eirich_staff', 'leg_eirich_crown', 'leg_eirich_dagger'], uniqueChance: 0.4 },
+};
+Object.assign(LOOT_TABLES, SEASON_LOOT_TABLES);
+
 export function registerLootTable(id: string, def: LootTableDef): void {
   LOOT_TABLES[id] = def;
 }

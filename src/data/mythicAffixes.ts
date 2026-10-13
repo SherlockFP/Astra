@@ -84,18 +84,52 @@ export const MYTHIC_AFFIXES: Partial<Record<AffixId, MythicAffixDef>> = {
     params: { hpBelow: 0.9, stackInterval: 3, dotPctPerStack: 0.015, maxStacks: 5 },
   },
   seasonal_efsun: {
-    id: 'seasonal_efsun', name: 'Efsunlu Yarık', icon: '/assets/icons/affix-seasonal.svg', minLevel: 10,
-    desc: 'Zindan güçlendikçe efsun yarıkları açılır. Muhafızı öldürürsen efsun senindir; yoksa yarık düşmanları efsunlar.',
+    id: 'seasonal_efsun', name: 'Kibirli', icon: '/assets/icons/affix-seasonal.svg', minLevel: 10,
+    desc: 'Düşman gücünün %20, %40, %60 ve %80\'inde bir Kibir Tecessümü belirir. 60 sn içinde öldürürsen grup +%10 hasar ve +%10 hareket hızı kazanır (60 sn). Öldüremezsen yakındaki sürü efsunlanır.',
     params: {
       t1: 0.2, t2: 0.4, t3: 0.6, t4: 0.8,
-      guardianHp: 15, guardianDmg: 2, killWindow: 45, buffDuration: 60, possessHpPct: 0.3, possessDmgPct: 0.2, spawnDelay: 3,
-      minDistance: 15, rootSec: 3,
+      kibirHpMult: 4, dmgMult: 2, killWindow: 60, spawnDelay: 3, rootSec: 3,
+      buffDuration: 60, buffDmgPct: 0.1, buffMoveSpeedPct: 0.1,
+      possessHpPct: 0.3, possessDmgPct: 0.2,
+      minDistance: 15,
     },
   },
 };
 
-/** Affix thresholds of the seasonal affix (fractions of forces). */
+/** Kibirli thresholds (fractions of enemy forces): one Kibir Tecessümü spawn each (CORE_MECHANICS section 6). */
 export const EFSUN_THRESHOLDS = [0.2, 0.4, 0.6, 0.8] as const;
+
+/* ------------------------------------------------------------------ Kibirli pure helpers (used by systems/Affixes.ts and tools/smoke/kibirli.mjs) */
+
+export interface Pt2 { x: number; z: number }
+/** A circle in world metres. */
+export interface Circle2 extends Pt2 { r: number }
+
+/** Thresholds crossed when the forces fraction moves from `prev` to `cur` (each one fires once: prev < t <= cur). */
+export function kibirThresholdsCrossed(prev: number, cur: number): number[] {
+  return EFSUN_THRESHOLDS.filter((t) => prev < t && cur >= t);
+}
+
+/** True when (x, z) lies inside any affix-safe zone (world metres, inclusive edge). */
+export function inAffixSafe(x: number, z: number, zones: readonly Circle2[]): boolean {
+  for (const c of zones) if (Math.hypot(x - c.x, z - c.z) <= c.r) return true;
+  return false;
+}
+
+/**
+ * Kibirli spot choice: the unblocked spot nearest to the party's chosen point that is at least `minDist` metres away.
+ * Returns the spot index, or -1. Distances are never relaxed: when no spot qualifies the spawn is skipped.
+ */
+export function pickKibirSpot(spots: readonly Pt2[], party: Pt2, minDist: number, blocked: (i: number) => boolean): number {
+  let best = -1;
+  let bd = Infinity;
+  spots.forEach((s, i) => {
+    if (blocked(i)) return;
+    const d = Math.hypot(s.x - party.x, s.z - party.z);
+    if (d >= minDist && d < bd) { bd = d; best = i; }
+  });
+  return best;
+}
 
 /* ------------------------------------------------------------------ constants */
 
@@ -145,10 +179,6 @@ export function affixesForWeek(level: number, week: number = currentWeek()): Aff
 
 /* ------------------------------------------------------------------ scaling (GDD 5.4 / GDD_SYSTEMS 1.10) */
 
-export const mplusHp = (level: number): number => 1.1 ** Math.max(0, level - 1);
-export const mplusDmg = (level: number): number => 1.08 ** Math.max(0, level - 1);
-/** Party HP scaling: x(1 + 0.7 (n-1)) in Mythic+, x(1 + 0.6 (n-1)) elsewhere. */
-export const partyHpFactor = (n: number, mythicPlus: boolean): number => 1 + (mythicPlus ? 0.7 : 0.6) * Math.max(0, Math.min(5, n) - 1);
 /** Difficulty multipliers of non-keystone modes (GDD_CONTENT 6). */
 export const DIFFICULTY_MULT: Record<'normal' | 'heroic' | 'mythic', { hp: number; dmg: number }> = {
   normal: { hp: 1, dmg: 1 },
@@ -204,16 +234,6 @@ export function ratingTier(rating: number): RatingTier {
   return t;
 }
 
-/* ------------------------------------------------------------------ Efsunlu Yarik guardians (GDD 5.5.4) */
-
-export type EfsunType = 'kor' | 'ayaz' | 'golge';
-export const EFSUN_ORDER: EfsunType[] = ['kor', 'ayaz', 'golge'];
-export const EFSUN_INFO: Record<EfsunType, { name: string; blessing: string; color: number; unit: string; status: 'blessing_kor' | 'blessing_ayaz' | 'blessing_golge'; desc: string }> = {
-  kor: { name: 'Kor', blessing: 'Kor Efsunu', color: 0xff6a00, unit: 'efsun_guardian_kor', status: 'blessing_kor', desc: '+%15 hasar, vuruşlar yakar' },
-  ayaz: { name: 'Ayaz', blessing: 'Ayaz Efsunu', color: 0x6fc4ff, unit: 'efsun_guardian_ayaz', status: 'blessing_ayaz', desc: '-%15 alınan hasar, saldıranlar üşür' },
-  golge: { name: 'Gölge', blessing: 'Gölge Efsunu', color: 0xa050ff, unit: 'efsun_guardian_golge', status: 'blessing_golge', desc: '+%20 hareket hızı, +%10 kritik, %10 hızlı bekleme' },
-};
-
 /* ------------------------------------------------------------------ keystone helpers / strings (GDD 5.1, 5.14) */
 
 export const keystoneTitle = (dungeonName: string, level: number): string => `Kadim Anahtar Taşı: ${dungeonName} +${level}`;
@@ -237,9 +257,9 @@ export const MPLUS_TR = {
   abandoned: 'Koşu terk edildi. Anahtar 1 seviye düştü.',
   score: (r: number, d: number) => `Mitik+ Puanı: ${r.toFixed(1)} (${d >= 0 ? '+' : ''}${d.toFixed(1)})`,
   newKey: (dungeon: string, L: number) => `Kadim Anahtar Taşı kazandın: ${dungeon} +${L}!`,
-  riftOpen: 'Bir Efsun Yarığı açıldı!',
-  riftFail: 'Yarık Muhafızı bir sürüyü efsunladı!',
-  riftWin: (blessing: string) => `${blessing} kazandın! (60 sn)`,
+  riftOpen: 'Bir Kibir Yarığı açıldı!',
+  riftFail: 'Kibir Tecessümü yetişilemedi! Yakındaki sürü efsunlandı.',
+  riftWin: 'Kibirli ödülü: grup +%10 hasar ve +%10 hareket hızı kazandı (60 sn)',
   orbWarn: 'Patlayıcı Küre belirdi!',
   stormWarn: 'Bir hortum belirdi!',
   bannerTimed: (n: number, cur: number, max: number, deaths: number) => `Zamanında: +${n} · ${mmss(cur)} / ${mmss(max)} · Ölüm: ${deaths}`,

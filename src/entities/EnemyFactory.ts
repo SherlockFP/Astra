@@ -168,7 +168,8 @@ export async function spawnEnemy(world: World, defId: string, pos: THREE.Vector3
   let hpScale = 1, dmgScale = 1;
   if (opts.scaled !== false) {
     try {
-      const s = G.mplus.enemyScaling(def.rank === 'boss');
+      // encounter adds (mini-bosses / boss-summoned adds) take Tyrannical, not Fortified (MythicPlus.isEncounterAdd, K16)
+      const s = G.mplus.enemyScaling(def.rank === 'boss', def.rank === 'miniboss' || opts.tag === 'encounter_boss');
       dmgScale = s.dmg;
       if (opts.hpMult === undefined) hpScale = s.hp;
     } catch { /* mythic not ready */ }

@@ -16,9 +16,9 @@ import type { HitShapeSpec } from '../combat/HitShapes';
 import type { VfxHandle } from '../vfx/VFX';
 import type { MythicPlus, RunParams } from './MythicPlus';
 import {
-  EFSUN_INFO, EFSUN_ORDER, EFSUN_THRESHOLDS, MPLUS_TR, MYTHIC_AFFIXES, affixDamageScale, chestItemLevel, monsterDmg, monsterHP, mplusDmg, mplusHp,
-  partyHpFactor, type EfsunType,
+  MPLUS_TR, MYTHIC_AFFIXES, affixDamageScale, chestItemLevel, inAffixSafe, kibirThresholdsCrossed, monsterDmg, monsterHP, pickKibirSpot, type Circle2,
 } from '../data/mythicAffixes';
+import { MPLUS_PARTY_HP, mplusLevelMult, mplusPartyDmg } from './MythicPlus';
 
 /**
  * Affix behaviours (GDD_CONTENT 5.5). Owned and driven by MythicPlus.
@@ -40,7 +40,12 @@ type Vec2 = { x: number; z: number };
 
 export const ORB_ID = 'affix_explosive_orb';
 export const SHADE_ID = 'affix_spiteful_shade';
-export const isAffixUnitId = (id: string): boolean => id.startsWith('affix_') || id.startsWith('efsun_guardian');
+/** Kibir Tecessumu: the Kibirli elite (P-27). */
+export const KIBIR_ID = 'kibir_tecessumu';
+const KIBIR_COLOR = 0xffd060;
+/** Kibirli buff status (+dmg, +move speed). Registered at runtime by registerAffixStatuses; not yet in the StatusId union. */
+const KIBIR_STATUS = 'kibirli' as unknown as StatusId;
+export const isAffixUnitId = (id: string): boolean => id.startsWith('affix_') || id === KIBIR_ID;
 export const isAffixUnit = (e: { def?: { id: string } } | null | undefined): boolean => !!e?.def && isAffixUnitId(e.def.id);
 const isNonBoss = (e: Enemy): boolean => e.def.rank === 'trash' || e.def.rank === 'elite';
 /** Regular enemies that affixes act on (not bosses, not affix units, not boss-mechanic entities like phylacteries). */
@@ -64,43 +69,19 @@ const dist = (ax: number, az: number, bx: number, bz: number): number => Math.hy
 
 const ability = (o: Partial<EnemyAbility> & Pick<EnemyAbility, 'id' | 'name' | 'kind' | 'anim'>): EnemyAbility => ({ range: 2, cooldown: 2, windup: 0.5, ...o });
 
-function guardianDef(type: EfsunType): EnemyDef {
-  const info = EFSUN_INFO[type];
-  const common = { hpMult: 15, dmgMult: 2.0, forces: 0, xp: 2, ccImmune: true, rank: 'elite' as const, aggroRange: 40, radius: 0.9 };
-  if (type === 'kor') {
-    return {
-      ...common, id: info.unit, name: 'Kor Yarık Muhafızı', model: '/assets/models/monsters/Demon.glb', tint: 0xff6a00, emissive: 0xff3000, scale: 1.33,
-      role: 'melee', speed: 4.2, attackRange: 2.6, attackCooldown: 1.8,
-      basicAttack: ability({ id: 'kor_pence', name: 'Kor Pençesi', kind: 'melee', range: 2.6, cooldown: 1.8, windup: 0.55, damage: { coef: 1.5, type: 'fire' }, anim: 'Attack' }),
-      abilities: [ability({
-        id: 'alev_halkasi', name: 'Alev Halkası', kind: 'self_aoe', range: 8, cooldown: 6, initialCooldown: 3, windup: 1.2, castTime: 1.2,
-        shape: { type: 'ring', inner: 3, outer: 8 }, telegraph: true, damage: { coef: 2.0, type: 'fire' }, anim: 'Attack', vfx: 'fire_burst',
-      })],
-      anims: { idle: 'Idle', walk: 'Walk', run: 'Run', hit: 'HitRecieve', death: 'Death' },
-    };
-  }
-  if (type === 'ayaz') {
-    return {
-      ...common, id: info.unit, name: 'Ayaz Yarık Muhafızı', model: '/assets/models/monsters/Yeti.glb', tint: 0x9fd8ff, emissive: 0x2060a0, scale: 1.07,
-      role: 'tank', speed: 3.8, attackRange: 2.8, attackCooldown: 2,
-      basicAttack: ability({ id: 'ayaz_pence', name: 'Buz Pençesi', kind: 'melee', range: 2.8, cooldown: 2, windup: 0.6, damage: { coef: 1.5, type: 'frost' }, anim: 'Attack' }),
-      abilities: [ability({
-        id: 'buz_kirici', name: 'Buz Kırıcı', kind: 'cone', range: 8, cooldown: 8, initialCooldown: 3, windup: 1.4, castTime: 1.4,
-        shape: { type: 'cone', radius: 8, angle: 90 }, telegraph: true, damage: { coef: 3.0, type: 'frost' },
-        statuses: [{ status: 'freeze', duration: 1.5 }], anim: 'Attack', vfx: 'frost_burst',
-      })],
-      anims: { idle: 'Idle', walk: 'Walk', run: 'Run', hit: 'HitRecieve', death: 'Death' },
-    };
-  }
+/** Kibir Tecessumu: one gold elite, 4 x trash HP, CC immune, 0 forces (the Kibirli spawn). */
+function kibirDef(): EnemyDef {
+  const p = P('seasonal_efsun');
   return {
-    ...common, id: info.unit, name: 'Gölge Yarık Muhafızı', model: '/assets/models/monsters/Ghost.glb', tint: 0x6020a0, emissive: 0x401080, scale: 1.33,
-    role: 'caster', speed: 4.6, attackRange: 6, attackCooldown: 2.2, flying: true,
-    basicAttack: ability({ id: 'golge_vurus', name: 'Gölge Vuruşu', kind: 'melee', range: 2.6, cooldown: 2.2, windup: 0.5, damage: { coef: 1.5, type: 'shadow' }, anim: 'Punch' }),
+    id: KIBIR_ID, name: 'Kibir Tecessümü', model: '/assets/models/monsters/Demon.glb', tint: KIBIR_COLOR, emissive: 0x806000, scale: 1.2,
+    role: 'melee', rank: 'elite', hpMult: p.kibirHpMult, dmgMult: p.dmgMult, forces: 0, xp: 2, ccImmune: true, aggroRange: 40, radius: 0.9,
+    speed: 4.2, attackRange: 2.6, attackCooldown: 1.8,
+    basicAttack: ability({ id: 'kibir_pence', name: 'Kibir Pençesi', kind: 'melee', range: 2.6, cooldown: 1.8, windup: 0.55, damage: { coef: 1.5, type: 'physical' }, anim: 'Attack' }),
     abilities: [ability({
-      id: 'golge_sicramasi', name: 'Gölge Sıçraması', kind: 'custom', range: 30, cooldown: 7, initialCooldown: 3, windup: 1.0, castTime: 1.0, interruptible: true,
-      shape: { type: 'circle', radius: 3 }, telegraph: true, damage: { coef: 2.0, type: 'shadow' }, anim: 'Headbutt', vfx: 'shadow_burst', params: { blink: 1 },
+      id: 'kibir_halkasi', name: 'Kibir Halkası', kind: 'self_aoe', range: 8, cooldown: 6, initialCooldown: 3, windup: 1.2, castTime: 1.2,
+      shape: { type: 'ring', inner: 3, outer: 8 }, telegraph: true, damage: { coef: 2.0, type: 'physical' }, anim: 'Attack', vfx: 'shadow_burst',
     })],
-    anims: { idle: 'Flying_Idle', walk: 'Fast_Flying', run: 'Fast_Flying', hit: 'HitReact', death: 'Death' },
+    anims: { idle: 'Idle', walk: 'Walk', run: 'Run', hit: 'HitRecieve', death: 'Death' },
   };
 }
 
@@ -122,19 +103,16 @@ export function registerAffixUnits(): void {
     abilities: [],
     anims: { idle: 'Flying_Idle', walk: 'Fast_Flying', run: 'Fast_Flying', hit: 'HitReact', death: 'Death' },
   });
-  for (const t of EFSUN_ORDER) reg(guardianDef(t));
+  reg(kibirDef());
 }
 
-/** Register runtime statuses used by the seasonal affix (blessings + possessed pack). Idempotent. */
+/** Register runtime statuses used by the seasonal affix (Kibirli buff + possessed pack). Idempotent. */
 export function registerAffixStatuses(): void {
   const I = (n: string) => `/assets/icons/${n}.svg`;
-  STATUSES.blessing_kor ??= { id: 'blessing_kor', name: 'Kor Efsunu', icon: I('buff-strength'), kind: 'buff', stats: { damagePct: 0.15 }, vfx: 'buff_aura' };
-  STATUSES.blessing_ayaz ??= { id: 'blessing_ayaz', name: 'Ayaz Efsunu', icon: I('buff-defense'), kind: 'buff', stats: { damageReductionPct: 0.15 }, vfx: 'buff_aura' };
-  STATUSES.blessing_golge ??= { id: 'blessing_golge', name: 'Gölge Efsunu', icon: I('buff-haste'), kind: 'buff', stats: { moveSpeedPct: 0.2, critChance: 0.1, cdr: 0.1 }, vfx: 'buff_aura' };
+  const p = P('seasonal_efsun');
+  STATUSES[KIBIR_STATUS] ??= { id: KIBIR_STATUS, name: 'Kibirli', icon: I('affix-seasonal'), kind: 'buff', stats: { damagePct: p.buffDmgPct, moveSpeedPct: p.buffMoveSpeedPct }, vfx: 'buff_aura' };
   STATUSES.efsunlu ??= { id: 'efsunlu', name: 'Efsunlu', icon: I('affix-seasonal'), kind: 'buff', stats: { damagePct: 0.2 } };
-  STATUS_RULES.blessing_kor ??= { stack: 'refresh' };
-  STATUS_RULES.blessing_ayaz ??= { stack: 'refresh' };
-  STATUS_RULES.blessing_golge ??= { stack: 'refresh' };
+  STATUS_RULES[KIBIR_STATUS] ??= { stack: 'refresh' };
   STATUS_RULES.efsunlu ??= { stack: 'refresh' };
   // GDD 5.5: Necrotic -3 % healing received per stack (max 99 %); the affix params are the single source of truth
   const necro = (STATUS_RULES.necrotic ??= { stack: 'stack' });
@@ -197,10 +175,8 @@ interface Tornado { id: number; x: number; z: number; heading: number; speed: nu
 interface OrbHost { enemy: Enemy; born: number; cast: number }
 interface OrbView { id: number; t0: number; cast: number; x: number; z: number; mesh: THREE.Group | null; castStarted: boolean }
 interface Shade { enemy: Enemy; initial: number; targetId: EntityId | null; nextAttack: number; moving: boolean }
-interface HostRift { number: number; type: EfsunType; x: number; z: number; phase: 'opening' | 'guardian'; t: number; guardian: Enemy | null; spawning: boolean }
-interface RiftView { number: number; type: EfsunType; x: number; z: number; group: THREE.Group; vfx: VfxHandle | null; t: number }
-
-const TYPE_INDEX: Record<EfsunType, number> = { kor: 0, ayaz: 1, golge: 2 };
+interface HostRift { number: number; x: number; z: number; phase: 'opening' | 'guardian'; t: number; guardian: Enemy | null; spawning: boolean }
+interface RiftView { number: number; x: number; z: number; group: THREE.Group; vfx: VfxHandle | null; t: number }
 
 /**
  * All affix gameplay. One instance lives inside MythicPlus (`G.mplus.fx`).
@@ -253,18 +229,16 @@ export class Affixes {
   /** Enemies already passed through onSpawned (the enemy factory only notifies the host; every peer also scans the world). */
   private seen = new WeakSet<Enemy>();
   private scanT = 0;
-  private burnAt = new Map<number, number>();
-  private chillAt = new Map<number, number>();
+  /** P-26 affix-safe zones of this dungeon, world metres (volcanic, storming, explosive, spiteful spawns and Kibirli spots skip them). */
+  private safe: Circle2[] = [];
 
-  // seasonal affix
+  // seasonal affix (Kibirli)
   private riftNumber = 0;
   private riftQueue: number[] = [];
   private riftSpotsUsed = new Set<number>();
   private rift: HostRift | null = null;
   private riftViews = new Map<number, RiftView>();
   private lastFracShown = 0;
-  /** Efsun blessing of the LOCAL player (for combat hooks: burn on hit / chill attackers). */
-  blessing: EfsunType | null = null;
 
   constructor(readonly mp: MythicPlus) {}
 
@@ -277,6 +251,7 @@ export class Affixes {
     this.st = state;
     this.prm = params;
     this.def = getDungeon(params.dungeonId);
+    this.safe = this.affixSafeWorld();
     this.rng = new RNG(((params.seed ^ 0x5bd1e995) >>> 0) || 1);
     this.active = true;
     this.combatClock = 0;
@@ -284,7 +259,6 @@ export class Affixes {
     this.nextExplosive = P('explosive').interval ?? 8;
     this.nextStorm = P('storming').interval ?? 30;
     this.offs.push(G.events.on('death', (d) => this.onDeathEvent(d.entityId)));
-    if (this.has('seasonal_efsun')) this.offs.push(G.events.on('damage', (d) => this.onDamageEvent(d)));
     if (this.has('inspiring')) this.inspirers = this.computeInspirers();
   }
 
@@ -304,8 +278,8 @@ export class Affixes {
     this.waiting = []; this.polls = []; this.pending = []; this.nextQuake.clear();
     this.grievousN = 0; this.grievousT = 0; this.grievousShown = 0; this.lastFracShown = 0;
     this.acc025 = 0; this.acc05 = 0; this.accLocal = 0; this.stormClock = 0;
-    this.blessing = null;
-    this.seen = new WeakSet(); this.scanT = 0; this.burnAt.clear(); this.chillAt.clear();
+    this.seen = new WeakSet(); this.scanT = 0;
+    this.safe = [];
   }
 
   /** Replace the unit spawner (dev pages / tests). null restores spawnEnemy from entities/EnemyFactory. */
@@ -552,7 +526,7 @@ export class Affixes {
     const hostile = w.enemies.filter((e) => !e.isDead && e.aggroed && !isAffixUnit(e));
     if (!hostile.length) return;
     for (const pl of w.players) {
-      if (pl.isDead) continue;
+      if (pl.isDead || inAffixSafe(pl.position.x, pl.position.z, this.safe)) continue;
       let min = Infinity;
       for (const e of hostile) min = Math.min(min, dist(pl.position.x, pl.position.z, e.position.x, e.position.z));
       if (min < p.minDistance) continue;
@@ -604,6 +578,7 @@ export class Affixes {
     if (!cands.length) return;
     const e = this.rng.pick(cands);
     const pt = w.nav.randomNear(e.position.x, e.position.z, p.spawnRadius, () => this.rng.next());
+    if (inAffixSafe(pt.x, pt.z, this.safe)) return;
     void this.spawnOrbAt(pt.x, pt.z);
   }
 
@@ -643,17 +618,21 @@ export class Affixes {
     if (!alive.length) return;
     const pl = this.rng.pick(alive);
     let x = pl.position.x, z = pl.position.z;
-    for (let i = 0; i < 8; i++) {
+    let found = false;
+    for (let i = 0; i < 8 && !found; i++) {
       const a = this.rng.range(0, Math.PI * 2);
       const tx = pl.position.x + Math.cos(a) * p.spawnDist, tz = pl.position.z + Math.sin(a) * p.spawnDist;
-      if (w.nav.isWalkable(tx, tz)) { x = tx; z = tz; break; }
+      if (w.nav.isWalkable(tx, tz) && !inAffixSafe(tx, tz, this.safe)) { x = tx; z = tz; found = true; }
     }
+    // no walkable, affix-safe-free candidate: fall back to the player's own spot unless that is safe too
+    if (!found && inAffixSafe(x, z, this.safe)) return;
     this.emit({ kind: 'tornado', data: { id: ++this.tornadoSeq, x, z, seed: Math.floor(this.rng.next() * 2 ** 31), life: p.lifetime, speed: p.speed } });
   }
 
   /* ---- spiteful shade ---- */
   private spawnShade(dead: Enemy): void {
     if (this.shades.size >= 12) return;
+    if (inAffixSafe(dead.position.x, dead.position.z, this.safe)) return;
     const p = P('spiteful');
     const initial = Math.max(10, Math.round(dead.maxHp * p.hpPctOfDead));
     void this.spawnUnit(SHADE_ID, { x: dead.position.x, z: dead.position.z }, { level: this.prm.enemyLevel }).then((en) => {
@@ -777,10 +756,10 @@ export class Affixes {
     e.hp = clamp(e.hp + delta, 1, nm);
   }
 
-  /** Forces crossed a threshold: open Efsun rifts (host). */
+  /** Forces crossed a Kibirli threshold (20 / 40 / 60 / 80 %): queue one Kibir Tecessümü per threshold (host). */
   onForces(prevFrac: number, frac: number): void {
     if (!this.has('seasonal_efsun') || !this.host) return;
-    for (const t of EFSUN_THRESHOLDS) if (prevFrac < t && frac >= t) this.riftQueue.push(t);
+    for (const t of kibirThresholdsCrossed(prevFrac, frac)) this.riftQueue.push(t);
   }
 
   /** Called on every peer for every spawned enemy (visual set-up of special units / designated inspirers). */
@@ -791,7 +770,7 @@ export class Affixes {
       const id = e.def.id;
       if (id === ORB_ID) this.attachOrbMesh(e);
       else if (id === SHADE_ID) this.decorateShade(e);
-      else if (id.startsWith('efsun_guardian')) this.guardians.add(e.id);
+      else if (id === KIBIR_ID) this.guardians.add(e.id);
       if (this.inspirers.has(e.id)) this.attachInspirerFx(e);
     } catch (err) { warnOnce('onSpawned', err); }
   }
@@ -828,12 +807,6 @@ export class Affixes {
   canDamage(e: Enemy, o: { dot?: boolean; tick?: boolean }): boolean {
     if (e.def.id === ORB_ID && (o.dot || o.tick)) return false;
     return true;
-  }
-
-  /** Efsun blessing id of an actor (combat uses it for burn-on-hit / chill-attackers). */
-  blessingOf(actor: { statuses: { has(id: StatusId): boolean } }): EfsunType | null {
-    for (const t of EFSUN_ORDER) if (actor.statuses.has(EFSUN_INFO[t].status)) return t;
-    return null;
   }
 
   isPossessed(id: EntityId): boolean {
@@ -985,11 +958,11 @@ export class Affixes {
         case 'tornado': return this.hTornado(num(d.id), num(d.x), num(d.z), num(d.seed, 1), clamp(num(d.life, 12), 1, 60), clamp(num(d.speed, 3.5), 0.5, 10));
         case 'volcanic': return this.hVolcanic(num(d.x), num(d.z), clamp(num(d.delay, 1.5), 0, 10), clamp(num(d.r, 2), 0.5, 10));
         case 'quake': return this.hQuake(m.targetId, clamp(num(d.r, 5), 1, 20), clamp(num(d.delay, 2.5), 0, 10));
-        case 'rift': return this.hRift(num(d.n), num(d.x), num(d.z), num(d.type, 0), clamp(num(d.delay, 3), 0, 10));
+        case 'rift': return this.hRift(num(d.n), num(d.x), num(d.z), clamp(num(d.delay, 3), 0, 10));
         case 'rift_close': return this.hRiftClose(num(d.n), num(d.ok, 0) > 0);
-        case 'guardian': return this.hGuardian(m.targetId, num(d.type, 0));
+        case 'guardian': return this.hGuardian(m.targetId);
         case 'guardian_dive': return this.hGuardianDive(m.targetId, num(d.x), num(d.z), num(d.px), num(d.pz));
-        case 'blessing': return this.hBlessing(num(d.type, 0), clamp(num(d.dur, 60), 1, 600));
+        case 'blessing': return this.hBlessing(clamp(num(d.dur, 60), 1, 600));
         case 'efsunlu': return this.hEfsunlu(Array.isArray(m.ids) ? m.ids.filter((n) => Number.isFinite(n)).slice(0, 64) : []);
         case 'efsun_loot': return this.hEfsunLoot(num(d.x), num(d.z));
         default: return;
@@ -1097,23 +1070,21 @@ export class Affixes {
     });
   }
 
-  /* ---- seasonal: rift + guardian + blessing + possession ---- */
+  /* ---- seasonal (Kibirli): rift + Kibir Tecessümü + buff + possession ---- */
 
-  private hRift(n: number, x: number, z: number, typeIdx: number, delay: number): void {
-    const type = EFSUN_ORDER[clamp(typeIdx | 0, 0, 2)];
-    const info = EFSUN_INFO[type];
+  private hRift(n: number, x: number, z: number, delay: number): void {
     if (this.riftViews.has(n)) return;
     const group = new THREE.Group();
-    const col = new THREE.Color(info.color);
+    const col = new THREE.Color(KIBIR_COLOR);
     const ring = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.15, 8, 28), new THREE.MeshBasicMaterial({ color: col }));
     const disc = new THREE.Mesh(new THREE.CircleGeometry(1.15, 24), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.35, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
     group.add(ring, disc);
     group.position.set(x, 1.5, z);
     G.world?.scene.add(group);
-    const vfx = G.vfx.spawn('portal_swirl', vpos(x, z, 1.4), { color: info.color, duration: 70, scale: 1 }) ?? null;
-    this.riftViews.set(n, { number: n, type, x, z, group, vfx, t: 0 });
+    const vfx = G.vfx.spawn('portal_swirl', vpos(x, z, 1.4), { color: KIBIR_COLOR, duration: 70, scale: 1 }) ?? null;
+    this.riftViews.set(n, { number: n, x, z, group, vfx, t: 0 });
     toast(MPLUS_TR.riftOpen, 'boss');
-    try { G.events.emit('ui:zoneName', { title: MPLUS_TR.riftOpen, subtitle: `${info.name} Yarığı · Muhafız ${delay.toFixed(0)} sn içinde çıkıyor` }); } catch { /* ignore */ }
+    try { G.events.emit('ui:zoneName', { title: MPLUS_TR.riftOpen, subtitle: `Kibirli · Kibir Tecessümü ${delay.toFixed(0)} sn içinde çıkıyor` }); } catch { /* ignore */ }
     G.audio.play('boss_cast', { pos: vpos(x, z, 1) });
     G.events.emit('camera:shake', { intensity: 0.25, duration: 0.4 });
   }
@@ -1122,7 +1093,7 @@ export class Affixes {
     const v = this.riftViews.get(n);
     if (!v) return;
     this.riftViews.delete(n);
-    G.vfx.spawn(ok ? 'upgrade_success' : 'shadow_burst', vpos(v.x, v.z, 1), { color: EFSUN_INFO[v.type].color });
+    G.vfx.spawn(ok ? 'upgrade_success' : 'shadow_burst', vpos(v.x, v.z, 1), { color: KIBIR_COLOR });
     this.disposeRiftView(v);
   }
 
@@ -1135,11 +1106,10 @@ export class Affixes {
     });
   }
 
-  private hGuardian(id: EntityId | undefined, typeIdx: number): void {
-    const info = EFSUN_INFO[EFSUN_ORDER[clamp(typeIdx | 0, 0, 2)]];
+  private hGuardian(id: EntityId | undefined): void {
     if (id !== undefined) this.guardians.add(id);
     this.whenEnemy(id, (e) => {
-      G.vfx.spawn('boss_spawn', e.position, { color: info.color, scale: 0.9 });
+      G.vfx.spawn('boss_spawn', e.position, { color: KIBIR_COLOR, scale: 0.9 });
       G.events.emit('camera:shake', { intensity: 0.35, duration: 0.4 });
     });
   }
@@ -1155,18 +1125,14 @@ export class Affixes {
     if (!this.host && id !== undefined) { try { G.world?.remove(id); } catch { /* ignore */ } }
   }
 
-  private hBlessing(typeIdx: number, dur: number): void {
-    const type = EFSUN_ORDER[clamp(typeIdx | 0, 0, 2)];
-    const info = EFSUN_INFO[type];
-    toast(MPLUS_TR.riftWin(info.blessing), 'success');
+  /** Kibirli reward: every peer applies the buff to its own local player (the kill is broadcast to the whole party). */
+  private hBlessing(dur: number): void {
+    toast(MPLUS_TR.riftWin, 'success');
     const p = this.localPlayer();
     if (!p) return;
-    for (const t of EFSUN_ORDER) if (t !== type) p.statuses.remove(EFSUN_INFO[t].status);
-    p.statuses.apply(info.status, dur, { sourceId: null });
-    this.blessing = type;
-    G.vfx.spawn('upgrade_success', p.position, { color: info.color, follow: p.object3d });
+    p.statuses.apply(KIBIR_STATUS, dur, { sourceId: null });
+    G.vfx.spawn('upgrade_success', p.position, { color: KIBIR_COLOR, follow: p.object3d });
     G.audio.play('upgrade_success');
-    this.later(dur, () => { if (this.blessing === type) this.blessing = null; });
   }
 
   private hEfsunlu(ids: number[]): void {
@@ -1218,30 +1184,33 @@ export class Affixes {
     return false;
   }
 
-  /** Spot nearest to the party centroid that is far enough away, outside boss arenas and unused. */
+  /** P-26 affix-safe zones (data in tiles, like riftSpots; radius in tiles) converted to world metres. */
+  private affixSafeWorld(): Circle2[] {
+    const list = this.def?.extras?.affixSafe ?? [];
+    return list.map((s) => ({ x: (s.x + 0.5) * TILE_SIZE, z: (s.z + 0.5) * TILE_SIZE, r: s.r * TILE_SIZE }));
+  }
+
+  /**
+   * Kibirli spot: the unused spot nearest to the party's chosen point (their centroid) that is at least minDistance away,
+   * outside boss arenas and outside affix-safe zones. No relaxed distances: no qualifying spot means no spawn yet.
+   */
   private pickRiftSpot(): { spot: Vec2; index: number } | null {
-    const w = G.world!;
-    const alive = w.players.filter((p) => !p.isDead);
-    const cx = alive.length ? alive.reduce((a, p) => a + p.position.x, 0) / alive.length : 0;
-    const cz = alive.length ? alive.reduce((a, p) => a + p.position.z, 0) / alive.length : 0;
+    const alive = G.world!.players.filter((p) => !p.isDead);
+    if (!alive.length) return null;
+    const party = {
+      x: alive.reduce((a, p) => a + p.position.x, 0) / alive.length,
+      z: alive.reduce((a, p) => a + p.position.z, 0) / alive.length,
+    };
     const spots = this.riftSpots();
-    const min = P('seasonal_efsun').minDistance;
-    for (const minDist of [min, min * 0.5, 0]) {
-      let best = -1;
-      let bd = Infinity;
-      spots.forEach((s, i) => {
-        if (this.riftSpotsUsed.has(i) || this.inBossArena(s.x, s.z)) return;
-        const d = dist(s.x, s.z, cx, cz);
-        if (d >= minDist && d < bd) { bd = d; best = i; }
-      });
-      if (best >= 0) return { spot: spots[best], index: best };
-    }
-    return null;
+    const idx = pickKibirSpot(spots, party, P('seasonal_efsun').minDistance, (i) =>
+      this.riftSpotsUsed.has(i) || this.inBossArena(spots[i].x, spots[i].z) || inAffixSafe(spots[i].x, spots[i].z, this.safe));
+    return idx >= 0 ? { spot: spots[idx], index: idx } : null;
   }
 
   private tickRift(dt: number): void {
     if (!this.rift) {
-      if (this.riftQueue.length) { this.riftQueue.shift(); this.openRift(); }
+      // a queued threshold stays queued until a legal spot exists (the party may still be too close to every spot)
+      if (this.riftQueue.length && this.openRift()) this.riftQueue.shift();
       return;
     }
     const r = this.rift;
@@ -1261,39 +1230,36 @@ export class Affixes {
     const pick = this.pickRiftSpot();
     if (!pick) return false;
     this.riftSpotsUsed.add(pick.index);
-    const dIdx = Math.max(0, DUNGEON_IDS.indexOf(this.prm.dungeonId));
-    const type = EFSUN_ORDER[(this.riftNumber + dIdx) % 3];
     const n = this.riftNumber++;
-    this.rift = { number: n, type, x: pick.spot.x, z: pick.spot.z, phase: 'opening', t: 0, guardian: null, spawning: false };
-    this.emit({ kind: 'rift', data: { n, x: pick.spot.x, z: pick.spot.z, type: TYPE_INDEX[type], delay: P('seasonal_efsun').spawnDelay } });
+    this.rift = { number: n, x: pick.spot.x, z: pick.spot.z, phase: 'opening', t: 0, guardian: null, spawning: false };
+    this.emit({ kind: 'rift', data: { n, x: pick.spot.x, z: pick.spot.z, delay: P('seasonal_efsun').spawnDelay } });
     return true;
   }
 
   private spawnGuardian(r: HostRift): void {
     r.spawning = true;
-    const info = EFSUN_INFO[r.type];
-    void this.spawnUnit(info.unit, { x: r.x, z: r.z }, { level: this.prm.enemyLevel, aggro: true }).then((en) => {
+    void this.spawnUnit(KIBIR_ID, { x: r.x, z: r.z }, { level: this.prm.enemyLevel, aggro: true }).then((en) => {
       r.spawning = false;
       if (!en || this.rift !== r) { if (this.rift === r) this.closeRift(r, false); return; }
       const L = this.prm.keyLevel;
-      // GDD 5.5.4: HP 15 x TRASH_HP x M+ HP curve x partyHp (no Tahkimli factor); damage x M+ damage curve
-      const hpMult = en.def.hpMult > 0 ? en.def.hpMult : P('seasonal_efsun').guardianHp;
-      const hp = Math.round(hpMult * monsterHP(en.level) * mplusHp(L) * partyHpFactor(this.prm.partySize, true));
+      // Kibir Tecessumu: 4 x trash HP (hpMult) x M+ level curve x party HP factor (MythicPlus is the one scaling source; no Tahkimli factor)
+      const size = clamp(Math.floor(this.prm.partySize) || 1, 1, 5) as 1 | 2 | 3 | 4 | 5;
+      const hp = Math.round(en.def.hpMult * monsterHP(en.level) * mplusLevelMult(L) * MPLUS_PARTY_HP[size]);
       en.maxHp = hp; en.hp = hp;
-      // GDD 5.5.4: dmgMult 2.0, 0 forces, CC immune, rooted for its first 3 s
-      en.baseDamage = monsterDmg(en.level) * Math.max(P('seasonal_efsun').guardianDmg ?? 2, en.def.dmgMult) * mplusDmg(L);
+      // dmgMult 2.0, 0 forces, CC immune, rooted for its first 3 s (inherited from the Efsun guardian tuning)
+      en.baseDamage = monsterDmg(en.level) * en.def.dmgMult * mplusLevelMult(L) * mplusPartyDmg(this.prm.partySize);
       en.forcesCounted = true;
       try { en.statuses.addImmunity('cc', 3600); } catch { /* ignore */ }
       try { en.statuses.apply('act_root', P('seasonal_efsun').rootSec); } catch { /* ignore */ }
       r.guardian = en;
       r.t = 0;
       this.guardians.add(en.id);
-      this.emit({ kind: 'guardian', targetId: en.id, data: { n: r.number, type: TYPE_INDEX[r.type] } });
+      this.emit({ kind: 'guardian', targetId: en.id, data: { n: r.number } });
     });
   }
 
   private riftSuccess(r: HostRift): void {
-    this.emit({ kind: 'blessing', data: { type: TYPE_INDEX[r.type], dur: P('seasonal_efsun').buffDuration } });
+    this.emit({ kind: 'blessing', data: { dur: P('seasonal_efsun').buffDuration } });
     this.closeRift(r, true);
   }
 
@@ -1369,32 +1335,6 @@ export class Affixes {
     if (h) this.inspirerFx.set(e.id, h);
   }
 
-  /**
-   * Efsun blessings that need a combat hook (feedback event, local player only; statuses go through the public Combat API so the
-   * host stays authoritative): Kor = the local player's hits set the enemy ablaze, Ayaz = enemies that hurt the local player get chilled.
-   */
-  private onDamageEvent(d: { targetId: EntityId; sourceId: EntityId | null; amount: number; kind: string }): void {
-    if (!this.live || d.amount <= 0 || d.sourceId === null) return;
-    const lp = G.world?.localPlayer;
-    if (!lp || lp.isDead || !lp.isLocal) return;
-    const b = this.blessingOf(lp);
-    if (!b || b === 'golge') return;
-    const now = G.engine?.time ?? 0;
-    try {
-      if (b === 'kor' && d.sourceId === lp.id && d.kind !== 'dot' && d.kind !== 'player_hurt') {
-        const e = this.enemy(d.targetId);
-        if (!e || e.isDead || isAffixUnit(e) || now < (this.burnAt.get(e.id) ?? 0)) return;
-        this.burnAt.set(e.id, now + 0.7);
-        G.combat.applyEnemyStatuses(lp, e, [{ status: 'burn', duration: 3, dps: Math.max(1, (d.amount * 0.4) / 3) }]);
-      } else if (b === 'ayaz' && d.targetId === lp.id) {
-        const e = this.enemy(d.sourceId);
-        if (!e || e.isDead || isAffixUnit(e) || now < (this.chillAt.get(e.id) ?? 0)) return;
-        this.chillAt.set(e.id, now + 1.2);
-        G.combat.applyEnemyStatuses(lp, e, [{ status: 'chill', duration: 3 }]);
-      }
-    } catch (err) { warnOnce('blessing-hook', err); }
-  }
-
   private onDeathEvent(id: EntityId): void {
     const h = this.inspirerFx.get(id);
     if (h) { h.stop(); this.inspirerFx.delete(id); }
@@ -1438,7 +1378,7 @@ export class Affixes {
       case 'spiteful': case 'shade': G.vfx.spawn('spiteful_shade', vpos(x, z, 0.4), { duration: 4 }); break;
       case 'storming': this.hTornado(++this.tornadoSeq, x, z, (Math.random() * 2 ** 31) | 0, 8, 3.5); break;
       case 'grievous': G.vfx.spawn('hit_blood', vpos(x, z, 1)); break;
-      case 'seasonal_efsun': case 'rift': this.hRift(900 + (this.riftViews.size % 3), x, z, this.riftViews.size % 3, 3); break;
+      case 'seasonal_efsun': case 'rift': this.hRift(900 + (this.riftViews.size % 3), x, z, 3); break;
       case 'fortified': case 'tyrannical': G.vfx.spawn('boss_enrage', at, { scale: 0.8 }); break;
     }
   }
@@ -1466,8 +1406,8 @@ export class Affixes {
   debugInfo(): Record<string, number | string> {
     return {
       pools: this.pools.length, tornadoes: this.tornadoes.length, orbs: this.orbs.size, shades: this.shades.size,
-      inspirers: this.inspirers.size, possessed: this.possessed.size, rift: this.rift ? `${this.rift.type}:${this.rift.phase}:${this.rift.t.toFixed(0)}s` : '-',
-      riftQueue: this.riftQueue.length, combatClock: +this.combatClock.toFixed(1), grievous: this.grievousN, blessing: this.blessing ?? '-',
+      inspirers: this.inspirers.size, possessed: this.possessed.size, rift: this.rift ? `${this.rift.phase}:${this.rift.t.toFixed(0)}s` : '-',
+      riftQueue: this.riftQueue.length, combatClock: +this.combatClock.toFixed(1), grievous: this.grievousN,
     };
   }
 }

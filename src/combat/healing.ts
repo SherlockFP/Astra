@@ -156,8 +156,7 @@ export function dispelUpTo(target: Actor, n: number, only?: StatusId[]): number 
     const def = STATUSES[s.id];
     if (!def || def.kind !== 'debuff' || !def.dispellable) continue;
     if (only && !only.includes(s.id)) continue;
-    target.statuses.remove(s.id);
-    k++;
+    if (target.statuses.dispel(s.id)) k++;
   }
   return k;
 }

@@ -8,6 +8,7 @@ import type { ChatAnn } from '../types/itemsV2';
 import type { ChatChannel, ChatLink } from '../types/net';
 import type { DeathRecap } from '../types/deathLog';
 import type { StatusId } from '../types/skills';
+import type { StatusRemoveReason } from '../data/statuses';
 
 /**
  * Every game-wide event and its payload. Emit with G.events.emit('name', payload).
@@ -35,7 +36,7 @@ export interface GameEvents {
   /** COMBAT_WOW CW-01: `remaining` (seconds) is set on 'cooldown'; 'lockout' = the school is locked by an interrupt (skill:lockout). */
   'skill:fail': { reason: 'cooldown' | 'resource' | 'range' | 'target' | 'stunned' | 'casting' | 'silenced' | 'lockout'; remaining?: number };
   'status:applied': { targetId: EntityId; status: string; duration: number; stacks: number };
-  'status:removed': { targetId: EntityId; status: string };
+  'status:removed': { targetId: EntityId; status: string; reason?: StatusRemoveReason };
   'target:changed': { targetId: EntityId | null };
   'enemy:aggro': { enemyId: EntityId; targetId: EntityId };
   'enemy:castStart': { enemyId: EntityId; abilityId: string; name: string; castTime: number; interruptible: boolean };

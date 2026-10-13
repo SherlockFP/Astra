@@ -25,6 +25,7 @@ import { TRIGGERS, parseFx } from '../data/talentTrees/fx';
 import type { FxItem, ProcEntry } from '../types/talents';
 import type { DamageType, PipId } from '../types/common';
 import type { StatusId } from '../types/skills';
+import { dispelStackLoss } from '../data/statuses';
 import type { Actor } from '../entities/Actor';
 import type { Player } from '../entities/Player';
 import { condsHold, isStanding } from './procConds';
@@ -310,6 +311,7 @@ export class ProcEngine {
 interface FakeStatus {
   id: string;
   magnitude: number;
+  stacks: number;
 }
 
 class FakeStatuses {
@@ -317,9 +319,9 @@ class FakeStatuses {
   /** apply() calls per status id (the shield test counts them). */
   readonly applies = new Map<string, number>();
 
-  apply(id: string, duration: number, opts: { magnitude?: number } = {}): boolean {
+  apply(id: string, duration: number, opts: { magnitude?: number; stacks?: number } = {}): boolean {
     if (duration <= 0) return false;
-    this.map.set(id, { id, magnitude: opts.magnitude ?? 0 });
+    this.map.set(id, { id, magnitude: opts.magnitude ?? 0, stacks: opts.stacks ?? 1 });
     this.applies.set(id, (this.applies.get(id) ?? 0) + 1);
     return true;
   }
@@ -328,8 +330,22 @@ class FakeStatuses {
     return this.map.has(id);
   }
 
+  stacks(id: string): number {
+    return this.map.get(id)?.stacks ?? 0;
+  }
+
   remove(id: string): void {
     this.map.delete(id);
+  }
+
+  /** Mirrors StatusEffects.dispel: a status with an onDispel stack loss keeps its rest, any other is removed whole. */
+  dispel(id: string): boolean {
+    const s = this.map.get(id);
+    if (!s) return false;
+    const loss = dispelStackLoss(id as StatusId);
+    if (loss > 0 && s.stacks > loss) s.stacks -= loss;
+    else this.map.delete(id);
+    return true;
   }
 
   list(): { id: string }[] {
@@ -696,6 +712,15 @@ export function selfTestProcs(): string[] {
     h.me.statuses.apply('burn', 5);
     eng.emit('hurt', ctxOf(h));
     expect('purge removes burn', !h.me.statuses.has('burn'));
+  }
+
+  // 21b: purge on arcane_lockdown (onDispel: 1 stack) drops one stack and keeps the status
+  {
+    const h = new FakeHost();
+    const eng = engineWith(h, 'T hurt => purge(1)', fails);
+    h.me.statuses.apply('arcane_lockdown', 5, { stacks: 3 });
+    eng.emit('hurt', ctxOf(h));
+    expect('purge drops one arcane_lockdown stack', h.me.statuses.stacks('arcane_lockdown') === 2);
   }
 
   // 22: echo replays after its delay, not before
