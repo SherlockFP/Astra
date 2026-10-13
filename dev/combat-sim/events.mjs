@@ -369,11 +369,12 @@ const sSites = buildEventSites(mapCtx(sDef));
 const idsOf = (list) => list.map((s) => s.id).join();
 
 {
-  ok('kar.storm-in-the-four-regions', idsOf(kSites.metin_storm) === 'r7,r8,r9,r10', idsOf(kSites.metin_storm));
-  ok('kar.stone-tiers-cover-the-regions', kDef.world.metin.tiers.map((t) => t.regionId).join() === 'r7,r8,r9,r10' && kDef.world.metin.tiers.every((t) => t.level >= 30 && t.level <= 40));
+  ok('kar.storm-in-the-six-regions', idsOf(kSites.metin_storm) === 'r7,r8,r9,r10,r11,r12', idsOf(kSites.metin_storm));
+  ok('kar.stone-tiers-cover-the-regions', kDef.world.metin.tiers.map((t) => t.regionId).join() === 'r7,r8,r9,r10,r11,r12' && kDef.world.metin.tiers.every((t) => t.level >= 30 && t.level <= 45));
   const perRegion = kDef.world.regions.map((r) => kDef.world.metin.spots.filter((s) => s.regionId === r.id).length);
-  ok('kar.three-spots-per-region', perRegion.every((n) => n === 3) && kDef.world.metin.spots.length === 12, perRegion.join());
-  ok('kar.raid-at-the-outposts', idsOf(kSites.village_raid) === 'koy_karakir_karakolu,kamp_kervansaray' && kSites.village_raid.every((s) => s.radius > 0), idsOf(kSites.village_raid));
+  ok('kar.spots-per-region', perRegion.join() === '3,3,3,3,4,4' && kDef.world.metin.spots.length === 20, perRegion.join());
+  ok('kar.zone-streams-1600x1200', kDef.grid.w === 400 && kDef.grid.h === 300 && kDef.world.perf.stream === 'auto', `${kDef.grid.w}x${kDef.grid.h} stream=${kDef.world.perf.stream}`);
+  ok('kar.raid-at-the-outposts', idsOf(kSites.village_raid) === 'koy_karakir_karakolu,kamp_kervansaray,koy_kul_ocagi' &&kSites.village_raid.every((s) => s.radius > 0), idsOf(kSites.village_raid));
   ok('kar.caravan-on-karakir-roads', kSites.goblin_caravan.length === kDef.world.roads.length && kSites.goblin_caravan.every((s) => s.id.startsWith('yol_') && s.path.length >= 2), `${kSites.goblin_caravan.length} roads`);
   // Ulu-Boz is level-gated (minLevelToStart 38) but still gets a site: BossSchedule.expedite() enforces the gate at spawn time
   ok('kar.world-boss-gated-has-site', kSites.world_boss.length === 1, `${kSites.world_boss.length} sites`);
@@ -414,7 +415,7 @@ const idsOf = (list) => list.map((s) => s.id).join();
   const before = worldEvents.length;
   for (const t of [occK.start - 300 * 1000, occK.start - 60 * 1000, occK.start, occK.end]) { now = t; cal.tick(t); }
   const got = worldEvents.slice(before);
-  ok('kar.run-announces-karakir-zone', got.map((p) => p.phase).join() === 'soon,soon,start,end' && got.every((p) => p.zone === occK.site.id && ['r7', 'r8', 'r9', 'r10'].includes(p.zone)), got.map((p) => `${p.phase}:${p.zone}`).join(' '));
+  ok('kar.run-announces-karakir-zone', got.map((p) => p.phase).join() === 'soon,soon,start,end' && got.every((p) => p.zone === occK.site.id && ['r7', 'r8', 'r9', 'r10', 'r11', 'r12'].includes(p.zone)), got.map((p) => `${p.phase}:${p.zone}`).join(' '));
   ok('kar.run-banner-names-the-region', announces.some((a) => a.text.includes(occK.site.name)), occK.site.name);
   cal.dispose();
 }

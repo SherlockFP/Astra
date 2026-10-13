@@ -5,7 +5,7 @@ import { WAYPOINTS } from './karakir_world';
 
 /**
  * KARAKIR BOZKIRI outposts (GDD_OPENWORLD section 1.8 / 2): Karakır Karakolu (walled fort at the entry, every service) and Kervansaray
- * (caravan stop in the middle, compact hub). OWNER: content module. Same VillageDef schema as data/world/villages.ts: metres relative to
+ * (caravan stop in the middle, compact hub) and Kül Ocağı (ash outpost in r11, the third one). OWNER: content module. Same VillageDef schema as data/world/villages.ts: metres relative to
  * the village centre (+x east, +z south); the world builder raises the palisade from `bounds` + `gates`; NPC positions reuse the proven
  * layout of Kızılkaya Karakolu (no NPC inside a building).
  *
@@ -126,7 +126,7 @@ const KARAKOL_NPCS: TownNpc[] = [
 ];
 
 // ---------------------------------------------------------------------------------------------------------------------
-// Kervansaray (r8 north edge, centre of the map): caravan camp 36 x 28 m
+// Kervansaray (r8, south-centre of the map): caravan camp 36 x 28 m
 // ---------------------------------------------------------------------------------------------------------------------
 
 const KERVAN_PROPS: TownProp[] = [
@@ -171,15 +171,61 @@ const KERVAN_NPCS: TownNpc[] = [
 
 // ---------------------------------------------------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------------------------------------------------
+// Kül Ocağı (r11, south-east of the Kül Ovası): ash camp 48 x 36 m, the third outpost; the road from the Kervansaray ends at its west gate
+// ---------------------------------------------------------------------------------------------------------------------
+
+const KUL_PROPS: TownProp[] = [
+  prop(ks('tent'), 0, -8, 0, { scale: 3 }),
+  prop(gp('tent'), -10, -5, 90),
+  prop(gp('tent'), 10, -5, -90),
+  prop(gp('wagon'), -12, 6, 30, { collide: true }),
+  prop(gp('wagon'), 12, 7, -30, { collide: true }),
+  prop(gp('campfire'), 0, 2, 0, { light: { color: 0xffa050, intensity: 1.6, distance: 10, flicker: true, y: 0.9 } }),
+  prop(gp('market_stall'), -7, 6, 90),
+  prop(gp('notice_board'), 4, -3, 0),
+  prop(gp('waypoint_stone'), 4, 6, 0, { id: 'wp_karakir_kul_ocagi' }),
+  prop(gp('banner_red'), -16, -11, 0, { scale: 1.3 }),
+  prop(gp('banner_red'), 16, -11, 0, { scale: 1.3 }),
+  prop(gp('barrel'), -14, -9),
+  prop(gp('crate_a'), 14, -9),
+  prop(gp('sacks'), -4, 9),
+  prop(gp('bone_pile'), 14, 8),
+  prop(gp('lamp_post'), -6, -2, 0, { light: FLAME }),
+  prop(gp('lamp_post'), 8, 3, 0, { light: FLAME }),
+];
+
+const KUL_NPCS: TownNpc[] = [
+  mkNpc('npc_ko_nobetci', 'Nöbetçi Yusuf', 'quest', 'Knight', 0, -5.5, 0, {
+    title: 'Kül Ocağı Nöbetçisi', show: ['1H_Sword'], tint: 0x9a9488,
+    lines: ['Kül Ovası\'nda rüzgâr tozu kaldırır; gözünü açık tut.', 'Kül Efendisi\'nin adını duyan geceleri uyuyamaz.'],
+  }),
+  mkNpc('npc_ko_kasif', 'Kâşif Aslı', 'quest', 'Rogue', 8, -1.5, -90, {
+    title: 'Kâşif', show: ['1H_Crossbow'], tint: 0x7a8090, lines: ['Sırttaki kartal yuvalarına çıkmak isteyen var mı? Önce benimle konuş.'],
+  }),
+  mkNpc('npc_ko_hanci', 'Handar Nazlı', 'citizen', 'Barbarian', -8, -1.5, 90, {
+    title: 'Handar', show: ['Mug'], tint: 0xc0a078, ui: { panel: 'dialog' },
+    lines: ['Ateşin yanına otur. Kül Ocağı Taşı\'na dokunursan buradan doğarsın.', 'Kül Ovası\'nda geceleri hortlaklar yürür, dikkat et.'],
+  }),
+  mkNpc('npc_ko_tuccar', 'Kervancı Halil', 'merchant', 'Rogue_Hooded', -5, 4.5, 90, {
+    title: 'Tüccar', show: ['Rogue_Cape'], tint: 0x90a4b4, ui: { panel: 'vendor', kind: 'merchant' }, lines: ['Kül Ovası\'nın iksirleri pahalı, ama işe yarar.'],
+  }),
+  mkNpc('npc_ko_isinlayici', 'Işınlayıcı Ferhat', 'teleporter', 'Mage', 0.5, 7, 0, {
+    title: 'Işınlayıcı', show: ['Spellbook_open'], tint: 0x8898b8, ui: { panel: 'waypoints' }, lines: ['Taşları gördüğün yerden bana dön, yolun açılır.'],
+  }),
+  mkNpc('npc_ko_muhafiz_1', 'Kül Ocağı Muhafızı', 'guard', 'Knight', -17, 0, 90, { show: ['1H_Sword', 'Badge_Shield'], tint: 0x706058, lines: ['Batı kapısı kapalı kalmaz, ama bizim izin gerekir.'] }),
+  mkNpc('npc_ko_muhafiz_2', 'Kül Ocağı Muhafızı', 'guard', 'Knight', 17, 0, -90, { show: ['1H_Sword', 'Badge_Shield'], tint: 0x706058, lines: ['Kartal Sırtı\'na giden yol yukarıda.'] }),
+];
+
 const waypointOf = (id: string): string | undefined => WAYPOINTS.find((w) => w.id === id)?.id;
 
 export const VILLAGES: VillageDef[] = [
   {
     id: 'koy_karakir_karakolu',
     name: 'Karakır Karakolu',
-    center: [30, 106],
+    center: [45, 159],
     bounds: [30, 24],
-    // respawn point = the Karakol Taşı: wp (31, 108.5) - centre (30, 106) = (4, 10) m
+    // respawn point = the Karakol Taşı: wp (46, 161.5) - centre (45, 159) = (4, 10) m
     spawn: { pos: [4, 10], facing: 0 },
     props: KARAKOL_PROPS,
     npcs: KARAKOL_NPCS,
@@ -193,9 +239,9 @@ export const VILLAGES: VillageDef[] = [
   {
     id: 'kamp_kervansaray',
     name: 'Kervansaray',
-    center: [116, 128],
+    center: [174, 192],
     bounds: [20, 14],
-    // wp (117, 129.5) - centre (116, 128) = (4, 6) m; the stone prop stands on it
+    // wp (175, 193.5) - centre (174, 192) = (4, 6) m; the stone prop stands on it
     spawn: { pos: [4, 6], facing: 0 },
     props: KERVAN_PROPS,
     npcs: KERVAN_NPCS,
@@ -206,5 +252,22 @@ export const VILLAGES: VillageDef[] = [
       { id: 'guney', pos: [0, 14], rot: 0, width: 8 },
     ],
     waypointId: waypointOf('wp_karakir_kervansaray'),
+  },
+  {
+    id: 'koy_kul_ocagi',
+    name: 'Kül Ocağı',
+    center: [348, 210],
+    bounds: [24, 18],
+    // wp (349, 211.5) - centre (348, 210) = (4, 6) m; the stone prop stands on it
+    spawn: { pos: [4, 6], facing: 0 },
+    props: KUL_PROPS,
+    npcs: KUL_NPCS,
+    gates: [
+      { id: 'bati', pos: [-24, 0], rot: 90, width: 8 },
+      { id: 'dogu', pos: [24, 0], rot: 90, width: 8 },
+      { id: 'kuzey', pos: [0, -18], rot: 0, width: 8 },
+      { id: 'guney', pos: [0, 18], rot: 0, width: 8 },
+    ],
+    waypointId: waypointOf('wp_karakir_kul_ocagi'),
   },
 ];

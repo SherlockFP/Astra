@@ -1,29 +1,31 @@
 import type { BossPlacement, DungeonDef, WorldExtras } from '../../types/dungeons';
 import {
-  BORDERS, BOSS_ARENA, CHESTS, CURSED, ENTRANCES, GATHER, HIDDEN, KARAKIR_GRID, LANDMARKS, MINIBOSSES, RARES, REGIONS, ROADS, ROOMS,
+  BORDERS, BOSS_ARENA, CHESTS, CURSED, ENTRANCES, GATHER, HIDDEN, KARAKIR_GRID, KARAKIR_ZONE_SRC, LANDMARKS, MINIBOSSES, RARES, REGIONS, ROADS, ROOMS,
   ROOM_OF_REGION, SHRINES, VISTAS, WATER, WAYPOINTS, WORLD_BOSSES, WORLD_BOSS_ID, WORLD_PACKS,
 } from './karakir_world';
 import { VILLAGES } from './karakir_villages';
 import { KARAKIR_METIN_SPOTS, KARAKIR_METIN_TIERS } from './karakir_metin';
+import { perfOf } from './layout';
 
 /**
- * KARAKIR BOZKIRI, open-world map 2 (levels 30-40 in this slice, GDD_OPENWORLD section 1.8). OWNER: content module.
+ * KARAKIR BOZKIRI, open-world map 2 (levels 30-45, GDD_OPENWORLD section 1.8). OWNER: content module.
  *
  * Assembles the typed pieces of this folder, the same shape as sisli_vadi.ts (DungeonDef + WorldExtras, no new engine system):
- *  - karakir_world.ts     rooms, 4 regions (r7..r10), roads, water, landmarks, waypoints, Buzul Tahtı gate, 36 camps + 8 patrols,
- *                         2 rares, 1 mini-boss, the world boss schedule, shrines, chests, gathering, hidden areas, vistas
- *  - karakir_villages.ts  Karakır Karakolu (fort) and Kervansaray (caravan hub): props, NPCs, gates
- *  - karakir_metin.ts     four metin tiers (one per region, levels 31-39) and 12 spots (three per region)
- *  - karakir_quests.ts    12 quests (mq_20..22 + zone chain + standalone), appended to QUESTS in quests.ts
- *  - ../enemies_karakir.ts  kb_* mobs, rare_kb_*, mb_kb_horgan, wb_ulu_boz (registered at the end of data/enemies.ts)
+ *  - karakir_world.ts     rooms, 6 regions (r7..r12), roads, water, landmarks, waypoints, Buzul Tahtı gate, 74 camps + 16 patrols,
+ *                         4 rares, 2 mini-bosses, the world boss schedule, shrines, chests, gathering, hidden areas, vistas, the zone block
+ *  - karakir_villages.ts  Karakır Karakolu (fort), Kervansaray (caravan hub) and Kül Ocağı (ash outpost): props, NPCs, gates
+ *  - karakir_metin.ts     six metin tiers (one per region, levels 31-44) and 20 spots
+ *  - karakir_quests.ts    22 quests (mq_20..22 + zone chains + standalone), appended to QUESTS in quests.ts
+ *  - ../enemies_karakir.ts  kb_* mobs, rare_kb_*, mb_kb_*, wb_ulu_boz (registered at the end of data/enemies.ts)
  *
- * Entry: tile (3, 100) facing +x (90 deg) from Kuzgunkale's East Gate (`dogu_kapisi`, data/town.ts; TownScene.exitLock: level 30 or the
- * quest mq_19); the exit portal stands at tile (3, 103). Rooms are the region rects + the entry strip; no doors, connectivity is by
- * adjacency. 200 x 200 tiles = 800 m. Registered in OPEN_ZONES (data/dungeons/index.ts).
+ * Entry: tile (4, 150) facing +x (90 deg) from Kuzgunkale's East Gate (`dogu_kapisi`, data/town.ts; TownScene.exitLock: level 30 or the
+ * quest mq_19); the exit portal stands at tile (4, 153). Rooms are the region rects + the entry strip; no doors, connectivity is by
+ * adjacency. 400 x 300 tiles = 1600 x 1200 m, streamed (KARAKIR_ZONE_SRC: `zone` block, gridOf / perfOf). Registered in OPEN_ZONES
+ * (data/dungeons/index.ts).
  */
 
-/** Streaming / AI budgets (GDD_OPENWORLD section 1.5), the same as Sisli Vadi. */
-const PERF: WorldExtras['perf'] = { activateM: 70, deactivateM: 110, aiSleepM: 45, maxActiveEnemies: 240, chunkM: 40 };
+/** Streaming / AI budgets (GDD_OPENWORLD section 1.5), the same as Sisli Vadi; the zone block of karakir_world.ts sets the size. */
+const PERF: WorldExtras['perf'] = perfOf(KARAKIR_ZONE_SRC, { activateM: 70, deactivateM: 110, aiSleepM: 45, maxActiveEnemies: 240, chunkM: 40 });
 
 const WORLD: WorldExtras = {
   regions: REGIONS,
@@ -53,8 +55,8 @@ export const KARAKIR_BOZKIRI: DungeonDef = {
   id: 'karakir_bozkiri',
   name: 'Karakır Bozkırı',
   shortName: 'Bozkır',
-  lore: "Doğu Kapısı'ndan çıkan yol, rüzgârın hiç dinmediği kurak bir bozkıra ve karlı eteklere açılır.",
-  levelRange: [30, 40],
+  lore: "Doğu Kapısı'ndan çıkan yol, rüzgârın hiç dinmediği kurak bir bozkıra, kül ovalarına ve karlı eteklere açılır.",
+  levelRange: [30, 45],
   timerSec: 0,
   forcesRequired: 0,
   theme: {
@@ -66,8 +68,8 @@ export const KARAKIR_BOZKIRI: DungeonDef = {
   doors: [],
   packs: WORLD_PACKS,
   bosses: BOSSES,
-  start: { pos: [3, 100], facing: 90 },
-  exit: { pos: [3, 103] },
+  start: { pos: [4, 150], facing: 90 },
+  exit: { pos: [4, 153] },
   outdoor: true,
   world: WORLD,
 };

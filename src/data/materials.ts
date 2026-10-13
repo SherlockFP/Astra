@@ -99,6 +99,8 @@ QUEST_ITEM('item_golge_ozu', 'Gölge Özü', 'Gölgelerin dağılırken geride b
 QUEST_ITEM('item_bozkir_postu', 'Bozkır Kurdu Postu', 'Bozkır kurtlarının kalın, kum rengi postu. Çoban Kerem kışlık mont için istiyor.', 'item-chest-leather');
 QUEST_ITEM('item_corak_kristali', 'Çorak Kristali', 'Kızıl Çorak yaratıklarının içinden çıkan, ısı saçan kristal.', 'item-crystal', 'uncommon');
 QUEST_ITEM('item_kervan_muhru', 'Eski Kervan Mührü', 'Kayıp bir kervanın mühürü. Avcı Börte yolun nerede kesildiğini bundan okuyabiliyor.', 'item-scroll-tied', 'uncommon');
+QUEST_ITEM('item_kul_tozu', 'Kül Tozu', 'Kül Ovası yaratıklarının içinde biriken, ateşe dayanıklı ince toz.', 'item-ore', 'uncommon');
+QUEST_ITEM('item_kartal_tuyu', 'Dev Kartal Tüyü', 'Kartal Sırtı karakuşlarının sert, uzun tüyü. Ok yapımında aranıyor.', 'item-crystal', 'uncommon');
 
 // ------------------------------------------------------------------ potions (GDD 6.4 / 6.5)
 const POTION_TIER_NAMES = ['Küçük', 'Orta', 'Büyük', 'Güçlü', 'Kadim'];

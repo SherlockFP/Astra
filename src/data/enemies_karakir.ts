@@ -3,7 +3,7 @@ import { ENEMIES, A_WOLF, cone, aoe, line, buff, charge, summonAb, derive, boss,
 import { ITCH } from './enemyModels';
 
 /**
- * KARAKIR BOZKIRI mob roster (levels 30-40, docs/GDD_OPENWORLD.md section 1.8). OWNER: enemies module.
+ * KARAKIR BOZKIRI mob roster (levels 30-45, docs/GDD_OPENWORLD.md section 1.8). OWNER: enemies module.
  *
  * No new bodies and no new engine behaviour: every mob is a retinted copy of an existing open-world def (`variant`), registered under a
  * new `kb_` id with its own name, tint (or creature texture) and a small stat bias. HP and damage follow the same helpers as Sisli
@@ -95,6 +95,22 @@ export function registerKarakirEnemies(): void {
   variant('kb_ayaz_cellat', 'ow_orc_brute', { name: 'Ayaz Cellatı', tint: 0x8098b8, hp: 1.15, dmg: 1.1 });
   variant('kb_ayaz_orumcek', 'ow_spider', { name: 'Buz Örümceği', texture: 'spider_pale', hp: 1.15, dmg: 1.1 });
 
+  // ---- R11 Kul Ovasi (40-43): ash plain, ash ghouls, will-o'-wisps, ash golems, cinders ----------------------------------------
+  variant('kb_kul_akrep', 'ow_centipede', { name: 'Kül Akrebi', tint: 0x8c8478, hp: 1.1 });
+  variant('kb_kul_kurdu', 'ow_wolf_dire', { name: 'Kül Kurdu', tint: 0x8a8680, hp: 1.1, dmg: 1.05 });
+  variant('kb_kul_hortlak', 'ow_ghoul', { name: 'Kül Hortlağı', tint: 0xb0a890, hp: 1.1 });
+  variant('kb_kul_ates', 'ow_will', { name: 'Kül Ateşi', tint: 0xffb060 });
+  variant('kb_kul_golem', 'ow_golem', { name: 'Kül Golemi', tint: 0x7a7068, hp: 1.15, dmg: 1.1 });
+  variant('kb_kul_cellat', 'ow_orc_brute', { name: 'Küllü Cellat', tint: 0x6e6258, hp: 1.15, dmg: 1.1 });
+  variant('kb_kul_cin', 'ow_imp', { name: 'Kül Cini', tint: 0x8a6a58, hp: 1.1 });
+
+  // ---- R12 Kartal Sirti (43-45): eagle ridge, cliff bandits, eagle priests, giant hawks -------------------------------------
+  variant('kb_kartal_yirtici', 'ow_warg', { name: 'Sırt Yırtıcısı', tint: 0xcfc8b8, speed: 1.1, hp: 1.15, dmg: 1.1 });
+  variant('kb_kartal_karakus', 'ow_wasp', { name: 'Dev Karakuş', tint: 0xe0d8c0, scale: 1.3, hp: 1.1 });
+  variant('kb_kartal_rahip', 'shadow_priest', { name: 'Kartal Rahibi', tint: 0xe0d8c0, hp: 1.1, dmg: 1.05 });
+  variant('kb_kartal_gozcu', 'ow_bandit_archer', { name: 'Sırt Gözcüsü', tint: 0xa0a8b0, dmg: 1.1 });
+  variant('kb_kartal_dagci', 'ow_bandit_brute', { name: 'Dağcı Haydudu', tint: 0x8c9098, hp: 1.15, dmg: 1.05 });
+
   // Ayaz Mamutu: an elite on the mammoth body (clips Stomp / Charge / TuskSwipe), plain ability rows, no script.
   ENEMIES.kb_mamut = {
     id: 'kb_mamut', name: 'Ayaz Mamutu', model: ITCH('mammoth'), scale: 0.62, role: 'melee', rank: 'elite', hpMult: 4.6, dmgMult: 1.75,
@@ -108,7 +124,7 @@ export function registerKarakirEnemies(): void {
     anims: A_WOLF, ai: { dormant: true, wakeRange: 7 },
   };
 
-  // ---- named rares (2): elite, xp x10, one special each --------------------------------------------------------------------
+  // ---- named rares (4): elite, xp x10, one special each --------------------------------------------------------------------
   derive('rare_kb_alaca_yele', 'Alaca Yele', 'ow_warg', {
     scale: 1.45, tint: 0xb89860, hp: 9, rank: 'elite', xp: 10, loot: 'loot_rare_kb_alaca_yele',
     abilities: [
@@ -123,6 +139,33 @@ export function registerKarakirEnemies(): void {
       charge('rare_kb_kor_pehlivan_charge', 'Zincir Hücumu', 12, 11, 1.0, 1.8, 'Charge', 0.6, { shape: { type: 'line', length: 12, width: 2.2 }, statuses: [{ status: 'knockdown', duration: 0.8 }] }),
       aoe('rare_kb_kor_pehlivan_slam', 'Kor Darbesi', 'self_aoe', 5, 5, 10, 1.1, 2.2, 'fire', 'Weapon', 0.45, { vfx: 'fire_burst' }),
       buff('rare_kb_kor_pehlivan_cry', 'Pehlivan Narası', 0.6, 22, [{ status: 'empower', duration: 8, magnitude: 0.25 }], 'Wave', 0.8, { params: { self: 1, radius: 12 } }),
+    ],
+  });
+
+  derive('rare_kb_kul_hayaleti', 'Kül Hayaleti', 'ow_wraith', {
+    scale: 1.4, tint: 0xc8c4b8, hp: 9, rank: 'elite', xp: 10, loot: 'loot_rare_kb_kul_hayaleti',
+    abilities: [
+      charge('rare_kb_kul_hayaleti_glide', 'Kül Süzülüşü', 10, 9, 0.8, 2.0, 'Lunge', 0.9),
+      summonAb('rare_kb_kul_hayaleti_call', 'Kül Çağrısı', 'kb_kul_ates', 3, 30, 'Howl', 0.8, { params: { hpBelow: 0.6, once: 1, radius: 14 } }),
+    ],
+  });
+  derive('rare_kb_kartal_kral', 'Kartal Kralı', 'ow_warg', {
+    scale: 1.5, tint: 0xf0e0c0, hp: 9, rank: 'elite', xp: 10, loot: 'loot_rare_kb_kartal_kral',
+    abilities: [
+      charge('rare_kb_kartal_kral_dive', 'Dalış', 13, 9, 0.9, 2.0, 'Lunge', 0.9, { shape: { type: 'line', length: 13, width: 2.4 }, statuses: [{ status: 'knockdown', duration: 0.8 }] }),
+      summonAb('rare_kb_kartal_kral_call', 'Kanat Çağrısı', 'kb_kartal_karakus', 3, 30, 'Howl', 0.8, { params: { hpBelow: 0.6, once: 1, radius: 14 } }),
+      buff('rare_kb_kartal_kral_rage', 'Kral Öfkesi', 0.8, 25, [{ status: 'empower', duration: 8, magnitude: 0.3 }], 'Howl', 0.8, { params: { self: 1, radius: 14 } }),
+    ],
+  });
+
+  // ---- mini-bosses (2): Corak Kagani Horgan (Kizil Corak) and Kul Efendisi Ruhan (Kul Ovasi), 20 / 25 min respawn (MiniBossDirector) ----
+  derive('mb_kb_kul_efendisi', 'Kül Efendisi Ruhan', 'ow_grave_knight', {
+    scale: 1.55, tint: 0x7a7468, hp: 26, rank: 'miniboss', xp: 25, loot: 'loot_mb_kb_kul_efendisi', ai: { homeRadius: 30 },
+    abilities: [
+      buff('mb_kb_kul_efendisi_cry', 'Kül Narası', 0.6, 20, [{ status: 'empower', duration: 8, magnitude: 0.25 }], 'Wave', 0.8, { params: { radius: 14, self: 1 } }),
+      line('mb_kb_kul_efendisi_rend', 'Kül Yarması', 11, 2.8, 9, 1.1, 2.9, 'physical', 'Weapon', 0.45),
+      charge('mb_kb_kul_efendisi_charge', 'Kül Hücumu', 14, 14, 1.0, 1.5, 'Charge', 0.6, { shape: { type: 'line', length: 14, width: 2 }, statuses: [{ status: 'knockdown', duration: 1 }] }),
+      summonAb('mb_kb_kul_efendisi_horde', 'Hortlak Çağrısı', 'kb_kul_hortlak', 4, 30, 'Wave', 0.8),
     ],
   });
 
@@ -155,7 +198,7 @@ export function registerKarakirEnemies(): void {
       bp('p3', 0.3, ['ulu_boz_stomp', 'ulu_boz_charge', 'ulu_boz_trumpet', 'ulu_boz_frost'], { yell: 'Ayaz her şeyi donduracak!' }),
     ],
     intro: 'Bu buzullar benden eski. Gidin, yoksa donarsınız!', death: 'Buz... eriyor...',
-    // Buzul Canağı: tile (178, 134) = world (714, 538), r 7 tiles = 28 m (WorldDecor places the BossPlacement at the same point)
-    arena: { cx: 714, cz: 538, w: 56, h: 56, homeX: 714, homeZ: 538 },
+    // Buzul Canağı: tile (276, 222) = world (1106, 890), r 7 tiles = 28 m (WorldDecor places the BossPlacement at the same point)
+    arena: { cx: 1106, cz: 890, w: 56, h: 56, homeX: 1106, homeZ: 890 },
   });
 }

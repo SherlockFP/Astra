@@ -21,6 +21,18 @@ const EPS = 1e-3;
  * Vertical grids (dungeons with `vertical: true`) additionally carry per-cell floor heights, F flags and connected
  * regions (attachHeights). Every vertical branch is gated on `floor !== null`; flat grids take the legacy code paths.
  */
+/** Cells per side of the minimap / world map images (docs/ENGINE_BIGMAPS.md #22): a 1600 m zone draws at 2 m per pixel. */
+export const MAP_MAX_PX = 800;
+
+/** The walkability grid the map images are drawn from: the nav grid itself up to MAP_MAX_PX cells per side, else a downsampled copy. */
+export interface MapGrid { cols: number; rows: number; cellSize: number; cells: Uint8Array; /** nav cells per map cell per side */ factor: number }
+export function mapGridOf(nav: NavGrid): MapGrid {
+  const f = Math.max(1, Math.ceil(Math.max(nav.cols, nav.rows) / MAP_MAX_PX));
+  if (f === 1) return { cols: nav.cols, rows: nav.rows, cellSize: nav.cellSize, cells: nav.cells, factor: 1 };
+  // a map cell is walkable when at least half of its nav cells are: walls stay visible, thin gaps close
+  return { ...nav.downsample(f, 0.5), factor: f };
+}
+
 export class NavGrid {
   readonly cellSize: number;
   readonly cols: number;

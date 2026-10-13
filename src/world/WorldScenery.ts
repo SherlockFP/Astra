@@ -159,6 +159,24 @@ export const PALETTES: Record<string, Palette> = {
     rocks: [...ROCK_SINGLE, kn('stone_largeA'), kn('stone_largeC')],
     mult: { tree: 0.45, bush: 0.2, rock: 1.6, tuft: 0.25, flower: 0 },
   },
+  // Kül Ovası: ash flats, dead trees and burnt stumps, few bushes
+  r11: {
+    trees: [],
+    deadTrees: [TREE_DEAD, TREE_DEAD_M],
+    deadShare: 0.3,
+    bushes: [kn('plant_bushSmall')],
+    rocks: [kn('rock_tallA'), kn('rock_tallB'), ...ROCK_SINGLE],
+    mult: { tree: 0.04, bush: 0.12, rock: 1.4, tuft: 0.35, flower: 0 },
+  },
+  // Kartal Sırtı: a bare ridge with scattered pines and big boulders
+  r12: {
+    trees: [gp('tree_pine_a'), gp('tree_pine_b')],
+    deadTrees: [TREE_DEAD],
+    deadShare: 0.1,
+    bushes: [gp('bush_b')],
+    rocks: [...ROCK_SINGLE, kn('stone_largeA'), kn('stone_largeC')],
+    mult: { tree: 0.18, bush: 0.15, rock: 2.2, tuft: 0.25, flower: 0 },
+  },
 };
 
 /** Props scattered at random spots of a region (count per region room). */
@@ -194,6 +212,8 @@ const PATCHES: Record<string, { ch: SplatChannel; every: number; r: [number, num
   r8: { ch: 'dirt', every: 700, r: [3, 7] },
   r9: { ch: 'dark', every: 1200, r: [3, 6] },
   r10: { ch: 'dark', every: 900, r: [3, 7] },
+  r11: { ch: 'dirt', every: 1400, r: [3, 6] },
+  r12: { ch: 'dark', every: 1000, r: [3, 6] },
 };
 
 /** Region tint (multiplied into the ground colour, GDD §8.3). Used when the region theme has no `groundTint`. */

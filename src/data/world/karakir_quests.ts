@@ -4,7 +4,7 @@ import { gemId } from '../materials'; // gem grades are 1-based there: 1 Kırık
 /**
  * KARAKIR BOZKIRI quests (GDD_OPENWORLD section 1.8, levels 30-40). OWNER: content module. The runtime is systems/Quests.ts.
  *
- * 12 quests, Turkish text in the WoW style (kill X, bring Y, talk to Z; nobody escorts):
+ * 22 quests, Turkish text in the WoW style (kill X, bring Y, talk to Z; nobody escorts):
  *  - main chain continuation mq_20..mq_22 ("Kadim Mühür" after mq_19; `main: true`, prerequisite chain from mq_19)
  *  - zone chain "Kervan Yolu" sq_kk_ch01..ch03 (talk -> collect -> kill, turned in across the two outposts)
  *  - 6 standalone: 2 kill, 2 collect, 1 rare hunt (Alaca Yele), 1 world boss (Ulu-Boz)
@@ -97,6 +97,48 @@ const SPECS: Spec[] = [
     objectives: [boss('wb_ulu_boz', 1, 'Kadim Mamut Ulu-Boz\'u yen')], generic: [{ rarity: 'epic' }],
     offer: "Ayaz Eteği'nin kalbinde, buzul çanağında Kadim Mamut Ulu-Boz uyanıyor. Yer onun adımlarıyla sarsılıyor. Grupla git, onu devir.",
     progress: "Ulu-Boz'u yen.", done: 'Buzullar sustu. Efsaneyi yendin.' },
+
+  // ---- r11 Kül Ovası and r12 Kartal Sırtı (levels 40-44): the Kül Ocağı outpost gives them (npc_ko_*)
+  { id: 'sq_ko_ch01_kul_ocagi', name: 'Kül Ocağı Nöbeti', level: 40, giver: 'npc_kv_basi', turnIn: 'npc_ko_nobetci', xpPct: 7, goldPerLevel: 7,
+    objectives: [talk('npc_ko_nobetci', 'Nöbetçi Yusuf ile konuş')],
+    offer: "Kervan yolunun sonunda yeni bir karakol kurduk. Kül Ocağı'nın nöbetçisi Yusuf sana yeri gösterecek; ona selam ver.",
+    progress: 'Nöbetçi Yusuf ile konuş.', done: 'Kül Ocağı artık bizim. Ovadaki tehlikeleri bir bir öğrenmeye başlayacaksın.' },
+  { id: 'sq_ko_k01_kul_akrepleri', name: 'Kül Akrepleri', level: 40, region: 'r11', giver: 'npc_ko_nobetci', xpPct: 7, goldPerLevel: 7,
+    objectives: [kill('kb_kul_akrep', 12, 'Kül Akrebi öldür')],
+    offer: 'Ovanın küllü çukurlarından akrepler çıkıyor; devriye yolunu kapatıyorlar. On iki tanesini kes, yol açılsın.',
+    progress: 'Kül Akrebi öldür (12).', done: 'Çukurlar sessizleşti. Devriyeler yeniden yola çıkabilir.' },
+  { id: 'sq_ko_k02_hortlak_avi', name: 'Hortlak Avı', level: 41, region: 'r11', giver: 'npc_ko_nobetci', xpPct: 8, goldPerLevel: 8,
+    objectives: [kill('kb_kul_hortlak', 10, 'Kül Hortlağı öldür')],
+    offer: 'Gece olunca küllerin altından hortlaklar kalkıyor. Tabutları açmadan önce sayılarını azaltmalıyız. On tanesini yok et.',
+    progress: 'Kül Hortlağı öldür (10).', done: 'Hortlaklar toprağa döndü. Gece biraz daha sakin.' },
+  { id: 'sq_ko_c01_kul_tozu', name: 'Kül Tozu', level: 41, region: 'r11', giver: 'npc_ko_kasif', xpPct: 7, goldPerLevel: 8,
+    objectives: [collect('item_kul_tozu', 8, 'Kül Tozu topla')], items: [{ id: 'buyulu_toz', count: 4 }],
+    offer: 'Kül Ovası\'nın tozu bazı yaratıkların içinde saklı. Onları öldüğünde toz bırakıyor; sekiz avuç topla, analiz edeceğim.',
+    progress: 'Kül Tozu topla (8).', done: 'Bu toz ateşe dayanıklı bir kaplama için birebir. Teşekkürler.' },
+  { id: 'sq_ko_k03_golem_kiriklari', name: 'Golem Kırıkları', level: 42, region: 'r11', giver: 'npc_ko_kasif', xpPct: 8, goldPerLevel: 9,
+    objectives: [kill('kb_kul_golem', 8, 'Kül Golemi öldür')],
+    offer: 'Kül Golemleri ovanın ortasındaki eski kale duvarlarını yıkıyor. Sekiz tanesini devirirsen duvarın kalıntılarını kurtarabiliriz.',
+    progress: 'Kül Golemi öldür (8).', done: 'Golemler sustu. Kaleden geriye kalan taşlar bize yol gösterecek.' },
+  { id: 'sq_ko_h01_kul_efendisi', name: 'Kül Efendisi', level: 42, region: 'r11', giver: 'npc_ko_nobetci', turnIn: 'npc_ko_nobetci', xpPct: 13, goldPerLevel: 9,
+    objectives: [boss('mb_kb_kul_efendisi', 1, 'Kül Efendisi Ruhan\'ı öldür')], generic: [{ rarity: 'rare', slot: 'weapon' }],
+    offer: 'Ovanın dibindeki lahitte bir hükümdar uyuyor: Kül Efendisi Ruhan. Hortlakları o çağırıyor. Onu lahdinden çıkar ve bitir.',
+    progress: 'Kül Efendisi Ruhan\'ı öldür.', done: 'Lahit açıldı, ova rahatladı. Efendinin kılıcı bizde kalacak.' },
+  { id: 'sq_kt_k01_kartal_yirtici', name: 'Sırt Yırtıcıları', level: 43, region: 'r12', giver: 'npc_ko_kasif', xpPct: 8, goldPerLevel: 9,
+    objectives: [kill('kb_kartal_yirtici', 12, 'Sırt Yırtıcısı öldür')],
+    offer: 'Kartal Sırtı\'nda yırtıcılar kayalıkların üstünden atlayıp yolcuları kovalıyor. On iki tanesini yakalayıp sürüyü dağıt.',
+    progress: 'Sırt Yırtıcısı öldür (12).', done: 'Sırtlar güvende. Kartal yuvalarına çıkmak artık daha az tehlikeli.' },
+  { id: 'sq_kt_c01_kartal_tuyu', name: 'Kartal Tüyü', level: 43, region: 'r12', giver: 'npc_ko_kasif', xpPct: 8, goldPerLevel: 9,
+    objectives: [collect('item_kartal_tuyu', 8, 'Kartal Tüyü topla')], items: [{ id: 'buyulu_toz', count: 4 }],
+    offer: 'Dev karakuşların tüyleri rüzgârı kesen oklar için aranıyor. Sekiz tüy getir, okçularımıza yeni ok yaptıracağım.',
+    progress: 'Kartal Tüyü topla (8).', done: 'Ne güzel tüyler! Oklar bu sırttan da hedefi bulacak.' },
+  { id: 'sq_kt_k02_kartal_rahipleri', name: 'Kartal Rahipleri', level: 44, region: 'r12', giver: 'npc_ko_nobetci', xpPct: 9, goldPerLevel: 10,
+    objectives: [kill('kb_kartal_rahip', 10, 'Kartal Rahibi öldür')],
+    offer: 'Sırtın tepesindeki tapınakta rahipler kartal tanrısına kurban kesiyor. On rahibi durdur, tapınağın kapısı kapansın.',
+    progress: 'Kartal Rahibi öldür (10).', done: 'Tapınak sessiz. Rahiplerin sandıklarında eski bir harita bulduk.' },
+  { id: 'sq_kt_h01_kartal_kral', name: 'Kartal Kralı', level: 44, region: 'r12', giver: 'npc_ko_kasif', xpPct: 13, goldPerLevel: 10,
+    objectives: [kill('rare_kb_kartal_kral', 1, 'Kartal Kralı\'nı öldür')], generic: [{ rarity: 'rare', slot: 'armor' }],
+    offer: 'Sırtın en yüksek kayasında Kartal Kralı dolaşıyor; kanatlarını açtığında gökyüzü kararıyor. Onu avlamadan sırt bize ait olmaz.',
+    progress: 'Kartal Kralı\'nı öldür.', done: 'Kral düştü. Sırtın gökyüzü yeniden açık.' },
 ];
 
 function toDef(s: Spec): QuestDef {

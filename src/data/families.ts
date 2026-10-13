@@ -29,6 +29,8 @@ const BY_ID: Record<string, EnemyFamily> = {
   kb_goblin: 'bandit', kb_goblin_saman: 'bandit', kb_haydut: 'bandit', kb_haydut_okcu: 'bandit', kb_haydut_pehlivan: 'bandit',
   kb_ork: 'orc', kb_ork_atici: 'orc', kb_ork_saman: 'orc', kb_ork_cellat: 'orc', kb_ayaz_ork: 'orc', kb_ayaz_cellat: 'orc',
   kb_iskelet: 'skeleton', kb_iskelet_okcu: 'skeleton', kb_iskelet_buyucu: 'skeleton', kb_iskelet_muhafiz: 'skeleton', kb_sovalye: 'skeleton',
+  kb_kul_akrep: 'spider', kb_kul_kurdu: 'beast', kb_kul_hortlak: 'ghost', kb_kul_ates: 'demon', kb_kul_golem: 'golem', kb_kul_cellat: 'orc',
+  kb_kul_cin: 'demon', kb_kartal_yirtici: 'beast', kb_kartal_karakus: 'beast', kb_kartal_rahip: 'cultist', kb_kartal_gozcu: 'bandit', kb_kartal_dagci: 'bandit',
 };
 
 /** Family of an enemy def id (undefined when it has none). */

@@ -160,8 +160,11 @@ export const skyUrl = (file: string): string => `/assets/sky/itch/cloudy-skyboxe
 // Zone size (docs/ENGINE_BIGMAPS.md)
 // ---------------------------------------------------------------------------------------------------------------------
 
+/** What the zone helpers read: a layout doc, or a TypeScript-authored zone (Karakır Bozkırı, karakir_world.ts). */
+export type ZoneSource = Pick<LayoutDoc, 'grid' | 'tileSize' | 'zone'>;
+
 /** DungeonDef.grid of a layout: `zone.sizeM` (metres, rounded up to whole tiles) when present, else the `grid` tile counts. */
-export function gridOf(doc: LayoutDoc): { w: number; h: number } {
+export function gridOf(doc: ZoneSource): { w: number; h: number } {
   const m = doc.zone?.sizeM;
   if (m === undefined) return { w: doc.grid.w, h: doc.grid.h };
   const [mx, mz] = typeof m === 'number' ? [m, m] : m;
@@ -170,7 +173,7 @@ export function gridOf(doc: LayoutDoc): { w: number; h: number } {
 }
 
 /** WorldExtras.perf of a layout: the given budgets plus the layout's streaming fields. */
-export function perfOf(doc: LayoutDoc, base: WorldPerf): WorldPerf {
+export function perfOf(doc: ZoneSource, base: WorldPerf): WorldPerf {
   const z = doc.zone;
   if (!z) return base;
   const out: WorldPerf = { ...base };
