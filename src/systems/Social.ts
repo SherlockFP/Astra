@@ -2,7 +2,8 @@ import { G } from '../game/G';
 import { CLASSES } from '../data/classes';
 import { LEVEL_CAP } from '../types/character';
 import type { ClassId } from '../types/common';
-import type { ChatChannel } from '../types/net';
+import type { ChatChannel, ChatLink } from '../types/net';
+import { sanitizeLinks } from './ChatLinks';
 import type { LobbyTransport } from '../net/lobby';
 import type { Unsubscribe } from '../net/transport';
 import { NET, clampNum, ident, isObj, sanitizeText } from '../net/messages';
@@ -132,7 +133,7 @@ export interface SocialCtx {
   self(): SocialSelf | null;
   now(): number;
   /** A chat line for the player (the game routes it to the `net:chat` event). */
-  say(line: { from: string; text: string; channel: ChatChannel; to?: string }): void;
+  say(line: { from: string; text: string; channel: ChatChannel; to?: string; links?: ChatLink[] }): void;
   /** Presence list changed (`presence:changed`). */
   changed(count: number): void;
   /** True when a lobby connection is expected (online play). */
@@ -573,7 +574,9 @@ export class Social implements PresenceApi {
     if (!text) return;
     const e = this.sender(d, from);
     if (!e || this.ctx.ignored(e.raw)) return;
-    this.ctx.say({ from: e.name, text, channel: d.trade === true ? 'trade' : 'global' });
+    // WP-13 item links: validated snapshots, display only
+    const links = sanitizeLinks(d.links);
+    this.ctx.say({ from: e.name, text, channel: d.trade === true ? 'trade' : 'global', ...(links.length ? { links } : {}) });
   }
 
   private onWhisper(d: unknown, from: string): void {
@@ -619,10 +622,11 @@ export class Social implements PresenceApi {
   }
 
   /** Genel Sohbet / Ticaret message. Prints its own error as a system line; returns true when the message was sent. */
-  sendChannel(channel: 'global' | 'trade', textIn: string): boolean {
+  sendChannel(channel: 'global' | 'trade', textIn: string, linksIn?: ChatLink[]): boolean {
     const me = this.ctx.self();
     const text = cleanChatText(textIn);
     if (!me || !text) return false;
+    const links = sanitizeLinks(linksIn);
     const why = this.unavailable();
     if (why) {
       this.sys(why);
@@ -640,8 +644,9 @@ export class Social implements PresenceApi {
     this.lastChatAt = now;
     this.lastText = text;
     this.lastTextAt = now;
-    this.send('lchat', { t: 'lchat', name: me.name, text, cls: me.cls, lvl: me.level, ...(channel === 'trade' ? { trade: true } : {}) });
-    this.ctx.say({ from: me.name, text, channel });
+    const withLinks = links.length ? { links } : {};
+    this.send('lchat', { t: 'lchat', name: me.name, text, cls: me.cls, lvl: me.level, ...(channel === 'trade' ? { trade: true } : {}), ...withLinks });
+    this.ctx.say({ from: me.name, text, channel, ...withLinks });
     return true;
   }
 

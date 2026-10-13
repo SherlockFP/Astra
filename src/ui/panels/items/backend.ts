@@ -33,6 +33,9 @@ export const vendorApi = {
 export const forgeApi = {
   upgradeCost: Upgrade.upgradeCost,
   upgradeItem: Upgrade.upgradeItem,
+  repairCost: Upgrade.repairCost,
+  repairItem: Upgrade.repairItem,
+  isBoundItem: Upgrade.isBoundItem,
   efsunCost: Upgrade.efsunCost,
   efsun: Upgrade.efsun,
   kadimEfsun: Upgrade.kadimEfsun,

@@ -341,6 +341,10 @@ export class BlacksmithPanel extends ItemPanel {
     const c = G.character;
     const cur = item.upgrade ?? 0;
     this.info.append(this.itemHeader(item));
+    if (item.broken) {
+      this.buildRepair(item);
+      return;
+    }
     const haveBook = (c?.material('demirci_el_kitabi') ?? 0) > 0;
     if (!haveBook) this.useBook = false;
     const cost = forgeApi.upgradeCost(item, { useBook: this.useBook });
@@ -362,7 +366,7 @@ export class BlacksmithPanel extends ItemPanel {
     bar.append(fill, h('span', 'pi-chance-txt', `Başarı Şansı: %${pct}`));
     this.info.append(bar);
     if (cost.failStacksBonus) this.info.append(h('div', 'pi-fi-note good', `Demircinin Hatırası: +%${Math.round(cost.failStacksBonus * 100)} şans (önceki başarısız denemelerin)`));
-    const failTxt = cost.failOutcome === 'stay' ? 'Başarısız olursa: seviye korunur.' : cost.failOutcome === 'downgrade' ? 'Başarısız olursa: seviye 1 düşer!' : 'Başarısız olursa: EŞYA YOK OLUR!';
+    const failTxt = cost.failOutcome === 'stay' ? 'Başarısız olursa: seviye korunur.' : cost.failOutcome === 'downgrade' ? 'Başarısız olursa: seviye 1 düşer!' : forgeApi.isBoundItem(item) ? 'Başarısız olursa: EŞYA KIRILIR (onarılabilir).' : 'Başarısız olursa: EŞYA YOK OLUR!';
     this.info.append(h('div', `pi-fi-note ${cost.failOutcome === 'destroy' ? 'danger' : cost.failOutcome === 'downgrade' ? 'warn' : ''}`, failTxt));
 
     // stat preview
@@ -413,6 +417,35 @@ export class BlacksmithPanel extends ItemPanel {
     if (lackGold || lackMat) this.info.append(h('div', 'pi-fi-note bad', lackGold ? 'Yeterli altının yok.' : 'Yeterli malzemen yok.'));
   }
 
+  /** WP-13: a Kırık item shows its repair bill in place of the upgrade (no stats until repaired). */
+  private buildRepair(item: ItemInstance): void {
+    const c = G.character;
+    this.info.append(h('div', 'pi-fi-note bad', 'KIRIK: bu eşya etkisiz. Demirci onarabilir; seviye kırılmada düştü ve geri gelmez.'));
+    const cost = forgeApi.repairCost(item);
+    if (!cost) return;
+    const costs = h('div', 'pi-costs');
+    costs.append(this.goldRow(cost.gold));
+    for (const m of cost.materials) costs.append(this.matRow(m.id, m.count));
+    this.info.append(costs);
+    const lackGold = !!c && c.save.gold < cost.gold;
+    const lackMat = cost.materials.some((m) => (c?.material(m.id) ?? 0) < m.count);
+    const btn = h('button', 'pi-btn primary big pi-go', 'ONAR');
+    btn.disabled = this.busy || lackGold || lackMat;
+    btn.addEventListener('click', () => {
+      const res = forgeApi.repairItem(item.uid);
+      if (res.ok) {
+        sfx('ui_click');
+        toast('Eşya onarıldı.', 'success');
+      } else {
+        sfx('ui_error');
+        toast(res.reason ?? 'Onarılamadı.', 'warning');
+      }
+      this.refresh();
+    });
+    this.info.append(btn);
+    if (lackGold || lackMat) this.info.append(h('div', 'pi-fi-note bad', lackGold ? 'Yeterli altının yok.' : 'Yeterli malzemen yok.'));
+  }
+
   private doUpgrade(item: ItemInstance, failOutcome: string, prot: boolean, book: boolean): void {
     const oldLevel = item.upgrade ?? 0;
     const color = RARITY_COLORS[item.rarity];
@@ -456,6 +489,16 @@ export class BlacksmithPanel extends ItemPanel {
       sfx('upgrade_destroy');
       this.uid = null;
       this.endBusy(1500);
+      return;
+    }
+    if (res.broken) {
+      // WP-13: bound item is Kırık: it stays in the slot with the repair bill
+      this.stageFlash('res-destroy', 'shake-m');
+      this.fx.shards(CX, CY, 14, color);
+      this.fx.sparks(CX, CY, 30, '#ff5a3a', 260, 0.4);
+      this.showBanner('EŞYA KIRILDI!', 'Demirci onarabilir.', 'destroy');
+      sfx('upgrade_destroy');
+      this.endBusy(1200);
       return;
     }
     // plain failure

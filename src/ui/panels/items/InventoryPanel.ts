@@ -11,6 +11,7 @@ import {
 } from './common';
 import { chip, emptyState } from '../../kit';
 import { AUTO_SALVAGE_MODES, currentMode, nextMode } from '../../../systems/AutoSalvage';
+import { linkItemInChat } from '../../../systems/ChatLinks';
 
 const COLS = 8;
 
@@ -185,6 +186,7 @@ export class InventoryPanel extends ItemPanel {
       },
       onClick: (e) => {
         if (e.ctrlKey && slot.item) quickAction(loc(), slot.item, e);
+        else if (e.shiftKey && slot.item) linkItemInChat(slot.item); // WP-13: item link into the chat input
       },
     });
     drag.zone(slot.el, {

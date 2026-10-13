@@ -1,7 +1,8 @@
 import { G } from '../game/G';
 import type { CharacterSummary } from '../types/character';
 import type { KeystoneData } from '../types/items';
-import type { NetChannel, NetChannels } from '../types/net';
+import type { ChatLink, NetChannel, NetChannels } from '../types/net';
+import { sanitizeLinks } from '../systems/ChatLinks';
 import { PARTY_ID_BASE, type SceneId } from '../types/common';
 import type { DungeonParams } from '../scenes/scenes';
 import { isOpenWorld } from '../scenes/flow';
@@ -730,11 +731,13 @@ export class NetSession {
   }
 
   /** Chat line to the party. `ch` is the send channel (party = default; say / yell are relayed with the line). */
-  sendChat(text: string, ch: 'party' | 'say' | 'yell' = 'party'): void {
+  sendChat(text: string, ch: 'party' | 'say' | 'yell' = 'party', linksIn?: ChatLink[]): void {
     const t = sanitizeText(text, NET.MAX_CHAT_LEN);
     if (!t) return;
-    G.events?.emit('net:chat', { from: this.self?.name ?? 'Sen', text: t, channel: ch });
-    this.broadcast('chat', ch === 'party' ? { text: t } : { text: t, ch });
+    const links = sanitizeLinks(linksIn);
+    const withLinks = links.length ? { links } : {};
+    G.events?.emit('net:chat', { from: this.self?.name ?? 'Sen', text: t, channel: ch, ...withLinks });
+    this.broadcast('chat', ch === 'party' ? { text: t, ...withLinks } : { text: t, ch, ...withLinks });
   }
 
   /** Emote (WoW-style /dance ...): the emote id travels on the chat channel; receivers play the clip and show the line. */
@@ -1328,7 +1331,9 @@ export class NetSession {
     const text = sanitizeText(p.text, NET.MAX_CHAT_LEN);
     if (!text) return;
     const channel = p.ch === 'say' || p.ch === 'yell' ? p.ch : 'party';
-    G.events?.emit('net:chat', { from: name, text, channel });
+    // WP-13 item links: validated snapshots, display only (a linked item is never added to an inventory)
+    const links = sanitizeLinks(p.links);
+    G.events?.emit('net:chat', { from: name, text, channel, ...(links.length ? { links } : {}) });
   }
 
   /** Client: host moved the party. */

@@ -259,6 +259,8 @@ export interface GameEvents {
   // ---- UI_REDESIGN Appendix A (UX-00, append-only). HUD chat bubbles, Group Finder state, objective pin.
   /** A chat line was added locally (incoming or own). `local` = typed on this client. Speech bubbles and the chat tabs listen. */
   'chat:line': { from: string; text: string; channel: ChatChannel; local: boolean };
+  /** WP-13: Shift+click on an item in a bag / equipment slot asks the chat input for an item link. */
+  'chat:linkItem': { item: ItemInstance };
   /** Group Finder state step (drives the minimap eye and the finder panel). */
   'finder:queue': { state: 'idle' | 'listing' | 'proposal' | 'entering' | 'inrun' | 'failed'; dungeonId?: string; since?: number };
   /** The pinned quest changed (`null` = unpinned). The objective arrow follows it. */

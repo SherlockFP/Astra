@@ -4,10 +4,13 @@ import type { AnimController } from '../../entities/AnimController';
 import { classColor } from '../widgets/classColors';
 import { clampN, div, esc, h, setClass, setStyle } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
-import type { ChatChannel } from '../../types/net';
+import type { ChatChannel, ChatLink } from '../../types/net';
+import type { ItemInstance } from '../../types/items';
+import { RARITY_COLORS } from '../../types/common';
 import { getSocial } from '../../systems/Social';
 import { getGuild } from '../../systems/Guild';
 import { upcomingEventLines } from '../../scenes/world/EventCalendar';
+import { LINK_MAX, itemLink, linkTag, linkedDisplayItem, snapshotName } from '../../systems/ChatLinks';
 
 /* ================================================================================================
  * UX-31 (§5.1): tabbed chat. Tabs: Genel · Grup · Fısıltı · Sistem · Savaş. Each tab keeps its own buffer
@@ -133,6 +136,8 @@ export class Chat implements HudWidget {
   private statsAcc = 0;
   /** performance.now() of the last time Enter/Esc was consumed by the input (UI hotkeys must ignore it). */
   consumedAt = 0;
+  /** WP-13: item links inserted by Shift+click for the message being typed (at most LINK_MAX; dropped unless their tag is still in the text). */
+  private pendingLinks: ChatLink[] = [];
 
   constructor() {
     this.el = div('chat');
@@ -194,10 +199,11 @@ export class Chat implements HudWidget {
     this.renderTabs();
     this.renderChip();
 
-    G.events.on('net:chat', ({ from, text, channel, to }) => {
+    G.events.on('net:chat', ({ from, text, channel, to, links }) => {
       if (channel === 'emote') this.emote(text, false, from);
-      else this.addLine(from, text, channel, from === this.ownName(), to);
+      else this.addLine(from, text, channel, from === this.ownName(), to, links);
     });
+    G.events.on('chat:linkItem', ({ item }) => this.linkItem(item));
     G.events.on('net:peerJoined', ({ name }) => this.addLine('', `${name} gruba katıldı.`, 'system'));
     G.events.on('net:peerLeft', ({ name }) => this.addLine('', `${name} gruptan ayrıldı.`, 'system'));
     G.events.on('player:levelup', ({ level }) => this.addLine('', `Seviye ${level} oldun! Tebrikler.`, 'system'));
@@ -227,6 +233,7 @@ export class Chat implements HudWidget {
 
   blur(): void {
     this.consumedAt = performance.now();
+    this.pendingLinks = [];
     this.focused = false;
     setClass(this.el, 'typing', false);
     this.input.blur();
@@ -256,9 +263,11 @@ export class Chat implements HudWidget {
       return;
     }
     const ch = SEND[this.sendIdx].id;
+    // WP-13: only the links whose tag is still in the text travel (an edited tag is plain text)
+    const links = this.pendingLinks.filter((l) => l.k === 'item' && raw.includes(linkTag(snapshotName(l.item))));
     if (ch === 'global' || ch === 'trade') {
       // Social prints its own errors (offline, too fast, duplicate) as system lines
-      getSocial().sendChannel(ch, raw);
+      getSocial().sendChannel(ch, raw, links);
       this.blur();
       return;
     }
@@ -273,11 +282,40 @@ export class Chat implements HudWidget {
     }
     try {
       // NetSession echoes our own line through 'net:chat' (offline too), so the line appears in addLine
-      G.net.sendChat(raw, ch);
+      G.net.sendChat(raw, ch, links);
     } catch (e) {
       console.warn('[chat] send failed', e);
     }
     this.blur();
+  }
+
+  /**
+   * WP-13 Shift+click: puts `[Name]` into the input (the draft is kept, the input is focused without clearing it) and keeps the item
+   * snapshot as a pending link for the next send. At most LINK_MAX links per message.
+   */
+  linkItem(item: ItemInstance): void {
+    const made = itemLink(item);
+    if (!made) return;
+    if (this.pendingLinks.length >= LINK_MAX) {
+      G.ui?.toast?.(`En fazla ${LINK_MAX} eşya bağlayabilirsin.`, 'warning');
+      return;
+    }
+    const cur = this.input.value;
+    const sep = cur && !cur.endsWith(' ') ? 1 : 0;
+    if (cur.length + sep + made.tag.length > this.input.maxLength) {
+      G.ui?.toast?.('Mesaj çok uzun, eşya bağlanamadı.', 'warning');
+      return;
+    }
+    if (!this.isFocused) {
+      G.input?.unlock();
+      this.input.focus();
+      this.focused = true;
+      setClass(this.el, 'typing', true);
+      this.scrollEnd();
+    }
+    this.input.value = `${cur}${sep ? ' ' : ''}${made.tag} `;
+    this.pendingLinks.push(made.link);
+    this.updateHint();
   }
 
   /** Slash commands: the social ones (`/g` `/ticaret` `/w` `/r` `/kim` `/yardim`, systems/Social.ts), local ones (`/temizle`, `/arayuz`, `/zindan`) and emotes. */
@@ -329,13 +367,13 @@ export class Chat implements HudWidget {
   }
 
   /** One line into every tab that lists its channel. `local` = our own message (typing / own bubble). Emits `chat:line`. */
-  addLine(from: string, text: string, channel: ChatChannel, local = false, to?: string): void {
+  addLine(from: string, text: string, channel: ChatChannel, local = false, to?: string, links?: ChatLink[]): void {
     const now = performance.now();
     let placed = false;
     for (const t of this.tabs) {
       if (!t.def.channels.includes(channel)) continue;
       placed = true;
-      const el = this.makeLine(from, text, channel, local, to);
+      const el = this.makeLine(from, text, channel, local, to, links);
       const nearEnd = this.atBottom(t);
       t.log.appendChild(el);
       t.lines.push({ el, t: now });
@@ -349,8 +387,11 @@ export class Chat implements HudWidget {
     G.events?.emit('chat:line', { from, text, channel, local });
   }
 
-  private makeLine(from: string, text: string, channel: ChatChannel, local = false, to?: string): HTMLElement {
+  private makeLine(from: string, text: string, channel: ChatChannel, local = false, to?: string, links?: ChatLink[]): HTMLElement {
     const el = div('cl ' + channel);
+    // WP-13: `[Name]` tags that match a link become quality-coloured tooltips (the message body only, never the names)
+    const matched: ChatLink[] = [];
+    const body = (t: string): string => this.linkedText(t, links, matched);
     let html = '';
     if (G.settings?.data.chatTimestamps) {
       const d = new Date();
@@ -362,17 +403,45 @@ export class Chat implements HudWidget {
     if (channel === 'whisper' && from) {
       // WoW style: "X kişisine fısıldadın: ..." / "X sana fısıldıyor: ..." (all text through esc(), never raw HTML)
       html += local
-        ? `<span class="cl-from">${esc(to ?? '')}</span> kişisine fısıldadın: ${esc(text)}`
-        : `<span class="cl-from">${esc(from)}</span> sana fısıldıyor: ${esc(text)}`;
+        ? `<span class="cl-from">${esc(to ?? '')}</span> kişisine fısıldadın: ${body(text)}`
+        : `<span class="cl-from">${esc(from)}</span> sana fısıldıyor: ${body(text)}`;
     } else if (from) {
       const cls = this.classOf(from);
       const style = cls ? ` style="color:${classColor(cls)}"` : '';
       html += channel === 'emote'
         ? `<span class="cl-from"${style}>${esc(from)}</span> ${esc(text)}`
-        : `<span class="cl-from"${style}>${esc(from)}:</span> ${esc(text)}`;
-    } else html += esc(text);
+        : `<span class="cl-from"${style}>${esc(from)}:</span> ${body(text)}`;
+    } else html += body(text);
     el.innerHTML = html;
+    el.querySelectorAll<HTMLElement>('.cl-link').forEach((span, i) => this.bindLinkTip(span, matched[i]));
     return el;
+  }
+
+  /** Escaped message text with each matched item tag wrapped in a rarity-coloured `.cl-link` span (matched links collected in order). */
+  private linkedText(text: string, links: ChatLink[] | undefined, matched: ChatLink[]): string {
+    if (!links?.length) return esc(text);
+    let rest = text;
+    let out = '';
+    for (const l of links) {
+      if (l.k !== 'item') continue;
+      const tag = linkTag(snapshotName(l.item));
+      const at = rest.indexOf(tag);
+      if (at < 0) continue;
+      matched.push(l);
+      const color = RARITY_COLORS[l.item.rarity] ?? '';
+      out += `${esc(rest.slice(0, at))}<span class="cl-link" style="color:${color}">${esc(tag)}</span>`;
+      rest = rest.slice(at + tag.length);
+    }
+    return out + esc(rest);
+  }
+
+  /** Hover on a linked item shows its tooltip. The tooltip is built from the validated snapshot, display only. */
+  private bindLinkTip(span: HTMLElement, link: ChatLink | undefined): void {
+    if (!link || link.k !== 'item') return;
+    const item = linkedDisplayItem(link.item);
+    span.tabIndex = 0;
+    span.addEventListener('mouseenter', (e) => G.ui?.showItemTooltip(item, e.clientX, e.clientY, { owner: span }));
+    span.addEventListener('mouseleave', () => G.ui?.hideTooltipIf(span));
   }
 
   /** Class of a named peer (net roster), for the class-coloured name. */

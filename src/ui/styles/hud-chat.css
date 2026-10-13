@@ -44,6 +44,8 @@
 .chat.typing .cl.old, .chat.open .cl.old { opacity: 1; }
 .cl-ts { color: var(--text-4); font-size: 12px; }
 .cl-from { font-weight: 700; }
+/* WP-13: a linked item in chat (Shift+click); the colour is the rarity, set inline */
+.cl-link { font-weight: 700; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
 .cl.say .cl-from { color: var(--ch-say); }
 .cl.yell { font-size: calc(var(--chat-fs) + 2px); }
 .cl.yell .cl-from { color: var(--ch-yell); }

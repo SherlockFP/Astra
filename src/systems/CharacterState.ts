@@ -459,6 +459,7 @@ export class CharacterState {
   canEquip(item: ItemInstance, slot?: EquipSlot): { ok: boolean; reason?: string } {
     const base = baseOf(item);
     if (!base || !isEquipmentItem(item)) return { ok: false, reason: 'Bu eşya kuşanılamaz.' };
+    if (item.broken) return { ok: false, reason: 'Kırık eşya kuşanılamaz. Demirci onarmalı.' };
     const target = slot ?? this.pickSlot(item);
     if (!target) return { ok: false, reason: 'Uygun yuva yok.' };
     if (!slotsForCategory(base.category).includes(target)) return { ok: false, reason: 'Bu eşya o yuvaya takılamaz.' };
