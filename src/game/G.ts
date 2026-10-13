@@ -21,6 +21,7 @@ import type { TalentSystem } from '../systems/Talents';
 import type { Professions } from '../systems/Professions';
 import type { ProcEngine } from '../combat/Procs';
 import type { Auras } from '../combat/Auras';
+import type { Corpses } from '../combat/Corpses';
 import type { CharacterState } from '../systems/CharacterState';
 import type { World } from '../world/World';
 import type { Player } from '../entities/Player';
@@ -62,6 +63,8 @@ export interface Services {
   procs?: ProcEngine;
   /** GDD_CLASSES_V2 NC46: party auras (combat/Auras.ts). Created by Game.ts with the combat services. */
   auras?: Auras;
+  /** GDD_CLASSES_V2 NC45: corpse registry (combat/Corpses.ts). Filled by Combat.finalizeDeath on every peer, ticked from Game.ts. Optional so sims without it keep working. */
+  corpses?: Corpses;
   /** GDD_LIFE (L-00): gathering and crafting service (systems/Professions.ts). Stub until L-05; created by Game.ts then. */
   professions?: Professions;
   character: CharacterState | null;

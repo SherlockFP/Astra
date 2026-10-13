@@ -457,7 +457,7 @@ function netStub(remoteIds = []) {
   const B = H.addEnemy(0, 10, { hp: 1e6 });
   const C = H.addEnemy(3, 14, { hp: 1e6 });
   const D = H.addEnemy(3, 22, { hp: 1e6 });
-  A.cast = { skillId: 'fireball', name: 'Ateş Topu', start: 0, duration: 2, channel: false, interruptible: true };
+  A.cast = { skillId: 'fireball', name: 'Ateş Topu', start: 0, duration: 60, channel: false, interruptible: true };
   const locks = new Map();
   A.ai = { setCooldown: (id, s) => locks.set(id, s), cooldownLeft: (id) => locks.get(id) ?? 0, armoredNow: () => false };
   H.step(2);

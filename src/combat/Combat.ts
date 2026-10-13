@@ -20,6 +20,7 @@ import { breakLock, breakSeconds, finisherPctMaxHp, hyperArmorOf, isSwarm, parry
 import { CombatMeters } from './meters';
 import { vetHit, vetPlayerDeath } from '../net/guard';
 import { Prd } from './prd';
+import { absorbMagicShell } from './magicShell';
 import { applyAlchemyLink } from './link';
 import { SHADOW_TECHNIQUE } from '../data/procs_kit_rogue';
 import './statusesFeel'; // marked_crit / riposte / critbuff defs (side-effect merge into the shared registries)
@@ -1264,6 +1265,8 @@ export class Combat {
     }
     if (!this.isRewardless(enemy)) {
       try { G.loot.onEnemyKilled(enemy); } catch (e) { console.error('[combat] loot.onEnemyKilled failed', e); }
+      // NC45: every peer registers the corpse locally (boss ranks leave none); a Corpses failure never reaches the death flow
+      try { G.corpses?.onEnemyKilled(enemy); } catch (e) { console.error('[combat] corpses.onEnemyKilled failed', e); }
     }
 
     // visuals: death clip (the enemies module may also play it; same clip restarts invisibly)
@@ -1743,6 +1746,7 @@ export class Combat {
     amount *= p.statuses.takenMore() * takenPerStack(p);
     if (G.skills?.shieldWallActive(p) && amount > 0) amount *= 1; // (frontal handled above)
     const before = amount;
+    amount = absorbMagicShell(p, amount, type); // NC52 Büyü Karşıtı Kalkan: magic-only absorb, before the type-blind shield
     amount = p.statuses.absorb(amount);
     const absorbed = before - amount;
     // non-lethal floor (Kirlenme): clipped before the mana shield so no mana is spent on damage that never lands
