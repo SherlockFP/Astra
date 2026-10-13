@@ -7,3 +7,5 @@ browser-out
 *.tsbuildinfo
 .claude/scheduled_tasks.lock
 .claude/settings.local.json
+__pycache__/
+*.pyc
