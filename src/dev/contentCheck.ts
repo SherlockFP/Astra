@@ -1,4 +1,4 @@
-import { TILE_SIZE, WORLD_PACK_STRIDE, type DoorDef, type DungeonDef, type PropPlacement, type RoomDef, type TownDef } from '../types/dungeons';
+import { TILE_SIZE, WORLD_PACK_STRIDE, type DoorDef, type DungeonDef, type HeightArea, type PropPlacement, type RoomDef, type TileRect, type TownDef, type ZoneDef } from '../types/dungeons';
 import type { QuestDef } from '../types/quests';
 import { MUSIC_IDS } from '../types/audio';
 import { VFX_IDS } from '../types/vfx';
@@ -359,6 +359,297 @@ export const BOSS_ANCHORS: Record<string, Record<string, [number, number]>> = {
   kizil_dokumhane: { vent_1: [27, 30], vent_2: [33, 30], vent_3: [27, 36], vent_4: [33, 36], crucible_11: [11, 2.2], crucible_15: [15, 2.2], crucible_19: [19, 2.2] },
 };
 
+// ---------------------------------------------------------------------------------------------------------------------
+// Vertical dungeons (ENGINE_VERTICALITY §17 validator, V3). Data-only: no three.js, no Heightfield import (this file also
+// feeds dev/content.html; Heightfield lands with V1). Floors are rebuilt here per 2 m cell (half a tile) using the same
+// resolution order as §4: room floorY, heightAreas, bridge/dais zone y, fall holes (rim - depth), slopes, lifts.
+// ---------------------------------------------------------------------------------------------------------------------
+/** Mirrors VERT (§2) for the checks below; keep in sync with src/world/Heightfield.ts once it exists. */
+const VZ = {
+  STEP_UP: 0.45, MAX_GRADE: 0.8, TREAD_RISE: 0.28, TREAD_RISE_MAX: 0.3, TREAD_DEPTH_MIN: 0.45,
+  CEIL_MIN: 3, CEIL_LEGACY: 4, CEIL_WARN_MAX: 30, Y_MIN: -60, Y_MAX: 120, FALL_DEPTH: 9, FALL_DEPTH_MAX: 30,
+  LIFT_MATCH: 0.15, TIER_CLEAR: 1, TILE_M: 4,
+} as const;
+const VERTICAL_FALL_KINDS = new Set<ZoneDef['kind']>(['void', 'pit', 'lava']);
+const LIFT_MODES = new Set(['call', 'auto', 'script']);
+
+/** True when any §3 vertical field is present on the dungeon or its rooms / zones. */
+export function hasVerticalFields(def: DungeonDef): boolean {
+  if (def.vertical !== undefined || def.lifts !== undefined) return true;
+  return def.rooms.some((r) =>
+    r.floorY !== undefined || r.ceiling !== undefined || r.heightAreas !== undefined || r.slopes !== undefined ||
+    r.tiers !== undefined || r.openAir !== undefined || (r.zones ?? []).some((z) => z.fall !== undefined || z.depth !== undefined));
+}
+
+interface VCell { room: number; floor: number; solid: boolean; fall: boolean; slope: boolean; lift: boolean; area: HeightArea | null }
+
+const vFinite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+const isHalf = (v: number): boolean => Math.abs(v * 2 - Math.round(v * 2)) < 1e-9;
+const rectInside = (inner: TileRect, outer: TileRect): boolean =>
+  inner.x >= outer.x && inner.z >= outer.z && inner.x + inner.w <= outer.x + outer.w && inner.z + inner.h <= outer.z + outer.h;
+/** Stair treads, same body as treadCount in §4 (kept local so this file has no dependency on the V1 module). */
+export const verticalTreadCount = (yFrom: number, yTo: number): number => Math.max(2, Math.ceil(Math.abs(yTo - yFrom) / VZ.TREAD_RISE));
+
+/**
+ * Vertical-dungeon rules E1-E10 (ENGINE_VERTICALITY §17; the numbered list there is referenced by §5, §13, §18 but was never
+ * written out, so the numbering below is the one used by the checks and by docs/ENGINE_VERTICALITY.md §18):
+ *  E1 shape: rects are positive, on 0.5-tile multiples and inside their room; slope axis/kind valid; start/heights finite.
+ *  E2 range: every absolute height (room floor, area, slope end, tier, lift stop, bridge/dais deck, fall floor) in Y_MIN..Y_MAX.
+ *  E3 steps: an unrimmed 4-neighbour step > STEP_UP inside a room (outside slopes, lifts, falls) is an error when the high side
+ *     has rim 'none'. 'rail' / 'ledge' high sides are finished by the rim pass (§5.3).
+ *  E4 lifts: >= 2 strictly ascending stops, valid start/speed/dwell/mode, pad >= 0.5 x 0.5 tile and inside its room.
+ *  E5 doors: across each door tile pair |Δ| <= STEP_UP unless one side is a slope.
+ *  E6 lifts: every stop equals an adjoining floor (within 0.15 m) so stepping on and off obeys the normal step rule.
+ *  E7 falls: `fall` only on void/pit/lava; `depth` in (0, 30] m.
+ *  E8 tiers: y above the room's lowest floor under the tier and below its roof (ceiling, or the legacy 4 m).
+ *  E9 ceilings: ceiling >= CEIL_MIN (3 m); > 30 m warns; a room without ceiling in a vertical dungeon warns (legacy 4 m).
+ *  E10 scope: vertical fields are ignored (warn) on non-vertical dungeons, and on outdoor / world maps (§17.7).
+ */
+export function checkVerticalDungeon(def: DungeonDef): Issue[] {
+  const out: Issue[] = [];
+  const id = def.id;
+  const err = (where: string, msg: string): void => { out.push({ level: 'error', where, msg }); };
+  const warn = (where: string, msg: string): void => { out.push({ level: 'warn', where, msg }); };
+  const info = (where: string, msg: string): void => { out.push({ level: 'info', where, msg }); };
+
+  // E10: scope
+  if (!def.vertical) {
+    if (hasVerticalFields(def)) warn(id, 'vertical fields are set but `vertical` is not true: they are ignored (§17.7)');
+    return out;
+  }
+  if (def.outdoor || def.world) { warn(id, 'vertical is set on an outdoor / world map: vertical fields are ignored in v1 (§17.7)'); return out; }
+
+  const W = def.grid.w, H = def.grid.h, zw = W * 2, zh = H * 2;
+  const rooms = def.rooms;
+  const roomIdx = new Map(rooms.map((r, i) => [r.id, i]));
+  const tileRoom = new Int16Array(W * H).fill(-1);
+  rooms.forEach((r, ri) => {
+    for (let tz = Math.max(0, r.rect.z); tz < Math.min(H, r.rect.z + r.rect.h); tz++)
+      for (let tx = Math.max(0, r.rect.x); tx < Math.min(W, r.rect.x + r.rect.w); tx++) tileRoom[tz * W + tx] = ri;
+  });
+  const cellRoom = (zi: number, zj: number): number => (zi < 0 || zj < 0 || zi >= zw || zj >= zh ? -1 : tileRoom[(zj >> 1) * W + (zi >> 1)]);
+  const inGrid = (zi: number, zj: number): boolean => zi >= 0 && zj >= 0 && zi < zw && zj < zh;
+  const cellsOf = (rect: TileRect): { x0: number; x1: number; z0: number; z1: number } =>
+    ({ x0: Math.round(rect.x * 2), x1: Math.round((rect.x + rect.w) * 2), z0: Math.round(rect.z * 2), z1: Math.round((rect.z + rect.h) * 2) });
+  const forCells = (rect: TileRect, ri: number, fn: (c: VCell, idx: number) => void): void => {
+    const { x0, x1, z0, z1 } = cellsOf(rect);
+    for (let zj = Math.max(0, z0); zj < Math.min(zh, z1); zj++)
+      for (let zi = Math.max(0, x0); zi < Math.min(zw, x1); zi++) if (cellRoom(zi, zj) === ri) fn(cells[zj * zw + zi], zj * zw + zi);
+  };
+
+  // ---- E1 shape (before the floors are built, so a bad rect is reported once and cannot skew them) ----
+  for (const r of rooms) {
+    const shapeOk = (rect: TileRect, where: string, what: string): boolean => {
+      if (![rect.x, rect.z, rect.w, rect.h].every(vFinite)) { err(where, `${what}: non-finite rect`); return false; }
+      if (rect.w <= 0 || rect.h <= 0) { err(where, `${what}: empty rect`); return false; }
+      if (![rect.x, rect.z, rect.w, rect.h].every(isHalf)) err(where, `${what}: rect is not on 0.5-tile multiples`);
+      if (!rectInside(rect, r.rect)) err(where, `${what}: rect is outside room ${r.id}`);
+      return true;
+    };
+    (r.heightAreas ?? []).forEach((a, i) => { shapeOk(a.rect, `room ${r.id}`, `heightArea ${a.id ?? i}`); });
+    (r.slopes ?? []).forEach((s, i) => {
+      const where = `room ${r.id}`;
+      if (!shapeOk(s.rect, where, `slope ${s.id ?? i}`)) return;
+      if (s.axis !== 'x' && s.axis !== 'z') err(where, `slope ${s.id ?? i}: axis must be x or z`);
+      if (s.kind !== 'stairs' && s.kind !== 'ramp') err(where, `slope ${s.id ?? i}: kind must be stairs or ramp`);
+      if (!vFinite(s.yFrom) || !vFinite(s.yTo)) return;
+      const run = (s.axis === 'x' ? s.rect.w : s.rect.h) * VZ.TILE_M;
+      const rise = Math.abs(s.yTo - s.yFrom);
+      if (s.kind === 'ramp' && rise / run > VZ.MAX_GRADE + 1e-9) err(where, `ramp ${s.id ?? ''}: grade ${(rise / run).toFixed(2)} > ${VZ.MAX_GRADE}`);
+      if (s.kind === 'stairs') {
+        const n = verticalTreadCount(s.yFrom, s.yTo);
+        if (rise / n > VZ.TREAD_RISE_MAX + 1e-9) err(where, `stairs ${s.id ?? ''}: tread rise ${(rise / n).toFixed(3)} > ${VZ.TREAD_RISE_MAX}`);
+        if (run / n < VZ.TREAD_DEPTH_MIN) warn(where, `stairs ${s.id ?? ''}: tread depth ${(run / n).toFixed(2)} m < ${VZ.TREAD_DEPTH_MIN}`);
+      }
+    });
+    (r.tiers ?? []).forEach((t, i) => { shapeOk(t.rect, `room ${r.id}`, `tier ${i} (${t.kind})`); });
+  }
+  const [sx, sz] = [Math.floor(def.start.pos[0]), Math.floor(def.start.pos[1])];
+  if (sx < 0 || sz < 0 || sx >= W || sz >= H) err(id, `start (${def.start.pos.join(', ')}) is outside the grid`);
+  else if (tileRoom[sz * W + sx] < 0) err(id, `start (${def.start.pos.join(', ')}) is not inside any room`);
+
+  // ---- floors per 2 m cell (§4 order) ----
+  const cells: VCell[] = new Array(zw * zh);
+  for (let zj = 0; zj < zh; zj++) for (let zi = 0; zi < zw; zi++) {
+    const ri = cellRoom(zi, zj);
+    cells[zj * zw + zi] = { room: ri, floor: ri >= 0 ? (rooms[ri].floorY ?? 0) : 0, solid: ri < 0, fall: false, slope: false, lift: false, area: null };
+  }
+  const fallDepth = new Map<number, number>();
+  rooms.forEach((r, ri) => {
+    for (const a of r.heightAreas ?? []) forCells(a.rect, ri, (c) => { c.floor = a.y; c.area = a; });
+    for (const z of r.zones ?? []) {
+      if ((z.kind === 'bridge' || z.kind === 'dais') && z.y !== undefined) forCells(z.rect, ri, (c) => { c.floor = z.y as number; });
+      if (z.fall !== undefined && VERTICAL_FALL_KINDS.has(z.kind)) forCells(z.rect, ri, (c, idx) => { c.fall = true; fallDepth.set(idx, z.depth ?? VZ.FALL_DEPTH); });
+    }
+    for (const s of r.slopes ?? []) forCells(s.rect, ri, (c) => { c.slope = true; });
+  });
+  for (const l of def.lifts ?? []) {
+    const ri = roomIdx.get(l.roomId);
+    if (ri === undefined) { err(`lift ${l.id}`, `unknown room ${l.roomId}`); continue; }
+    if (l.stops.length) forCells(l.rect, ri, (c) => { c.lift = true; c.floor = Math.min(...l.stops); });
+  }
+  // fall holes: rim (max floor of the non-fall 4-neighbours) minus depth
+  for (const [idx, depth] of fallDepth) {
+    const zi = idx % zw, zj = Math.floor(idx / zw), c = cells[idx];
+    let rim = -Infinity;
+    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+      const ni = zi + dx, nj = zj + dz;
+      if (!inGrid(ni, nj)) continue;
+      const n = cells[nj * zw + ni];
+      if (!n.solid && !n.fall && n.room === c.room && n.floor > rim) rim = n.floor;
+    }
+    c.floor = (rim === -Infinity ? c.floor : rim) - depth;
+  }
+
+  // per room: lowest floor and top (for ceilings, §4: max floor incl. slope ends and lift stops, + ceiling)
+  const roomMax = rooms.map(() => -Infinity), roomMin = rooms.map(() => Infinity);
+  cells.forEach((c) => {
+    if (c.solid || c.fall || !vFinite(c.floor)) return;
+    roomMax[c.room] = Math.max(roomMax[c.room], c.floor);
+    roomMin[c.room] = Math.min(roomMin[c.room], c.floor);
+  });
+  rooms.forEach((r, ri) => {
+    for (const s of r.slopes ?? []) if (vFinite(s.yFrom) && vFinite(s.yTo)) roomMax[ri] = Math.max(roomMax[ri], s.yFrom, s.yTo);
+  });
+  for (const l of def.lifts ?? []) {
+    const ri = roomIdx.get(l.roomId);
+    if (ri !== undefined) for (const s of l.stops) if (vFinite(s)) roomMax[ri] = Math.max(roomMax[ri], s);
+  }
+  const roofOf = (ri: number): number => {
+    const r = rooms[ri];
+    if (r.openAir) return Infinity;
+    return roomMax[ri] + (r.ceiling ?? VZ.CEIL_LEGACY);
+  };
+
+  // ---- E2 range ----
+  const range = (where: string, v: number, what: string): void => {
+    if (!vFinite(v)) err(where, `${what} is not a finite number`);
+    else if (v < VZ.Y_MIN || v > VZ.Y_MAX) err(where, `${what} ${v} m is outside ${VZ.Y_MIN}..${VZ.Y_MAX}`);
+  };
+  for (const r of rooms) {
+    const where = `room ${r.id}`;
+    if (r.floorY !== undefined) range(where, r.floorY, 'floorY');
+    for (const a of r.heightAreas ?? []) range(where, a.y, 'heightArea y');
+    for (const s of r.slopes ?? []) { range(where, s.yFrom, 'slope yFrom'); range(where, s.yTo, 'slope yTo'); }
+    for (const t of r.tiers ?? []) range(where, t.y, `tier ${t.kind} y`);
+    for (const z of r.zones ?? []) if (z.y !== undefined && (z.kind === 'bridge' || z.kind === 'dais')) range(where, z.y, `${z.kind} deck y`);
+  }
+  for (const l of def.lifts ?? []) {
+    l.stops.forEach((s, i) => range(`lift ${l.id}`, s, `stop ${i}`));
+    if (l.stops.length < 2) err(`lift ${l.id}`, 'needs at least 2 stops');
+    for (let i = 1; i < l.stops.length; i++) if (!(l.stops[i] > l.stops[i - 1])) err(`lift ${l.id}`, 'stops must be strictly ascending');
+    const where = `lift ${l.id}`;
+    if (!(l.rect.w >= 0.5 && l.rect.h >= 0.5)) err(where, 'pad is smaller than 0.5 x 0.5 tile (2 x 2 m)');
+    if (!roomIdx.has(l.roomId)) err(where, `unknown room ${l.roomId}`);
+    else if (!rectInside(l.rect, rooms[roomIdx.get(l.roomId) as number].rect)) err(where, 'pad is outside its room');
+    const start = l.start ?? 0;
+    if (!Number.isInteger(start) || start < 0 || start >= l.stops.length) err(where, `start index ${start} is out of range`);
+    if (l.speed !== undefined && !(l.speed > 0)) err(where, 'speed must be > 0');
+    if (l.dwell !== undefined && !(l.dwell >= 0)) err(where, 'dwell must be >= 0');
+    if (l.mode !== undefined && !LIFT_MODES.has(l.mode)) err(where, `unknown mode ${l.mode}`);
+  }
+  cells.forEach((c, idx) => {
+    if (c.solid || !vFinite(c.floor) || (c.floor >= VZ.Y_MIN && c.floor <= VZ.Y_MAX)) return;
+    const ri = c.room;
+    err(`room ${rooms[ri].id}`, `cell (${idx % zw},${Math.floor(idx / zw)}) floor ${c.floor.toFixed(2)} m is outside ${VZ.Y_MIN}..${VZ.Y_MAX}`);
+  });
+
+  // ---- E3 unrimmed steps inside rooms ----
+  const nearSlope = (zi: number, zj: number): boolean => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dz]) => {
+    const ni = zi + dx, nj = zj + dz;
+    return inGrid(ni, nj) && cells[nj * zw + ni].slope;
+  });
+  const unrimmed = new Map<number, { n: number; first: string; maxD: number }>();
+  for (let zj = 0; zj < zh; zj++) for (let zi = 0; zi < zw; zi++) {
+    const c = cells[zj * zw + zi];
+    if (c.solid || c.fall || c.slope || c.lift) continue;
+    for (const [dx, dz] of [[1, 0], [0, 1]] as const) {
+      const ni = zi + dx, nj = zj + dz;
+      if (!inGrid(ni, nj)) continue;
+      const n = cells[nj * zw + ni];
+      if (n.solid || n.fall || n.slope || n.lift || n.room !== c.room) continue;
+      if (nearSlope(zi, zj) || nearSlope(ni, nj)) continue;
+      const d = c.floor - n.floor;
+      if (Math.abs(d) <= VZ.STEP_UP + 1e-3) continue;
+      const high = d > 0 ? c : n;
+      const rim = high.area?.rim ?? 'rail';
+      if (rim !== 'none') continue;
+      const u = unrimmed.get(c.room) ?? { n: 0, first: `cells (${zi},${zj})-(${ni},${nj})`, maxD: 0 };
+      u.n++; u.maxD = Math.max(u.maxD, Math.abs(d)); unrimmed.set(c.room, u);
+    }
+  }
+  for (const [ri, u] of unrimmed) err(`room ${rooms[ri].id}`, `${u.n} unrimmed step(s) up to ${u.maxD.toFixed(2)} m (rim 'none'), first at ${u.first}: add a slope or a rail/ledge`);
+
+  // ---- E5 doors ----
+  for (const d of def.doors) {
+    const a = roomIdx.get(d.a), b = roomIdx.get(d.b);
+    if (a === undefined || b === undefined) continue;
+    const where = `door ${d.a}|${d.b}`;
+    const w = d.width ?? 1;
+    for (let k = 0; k < w; k++) for (let s = 0; s < 2; s++) {
+      const tx = d.tile[0] + (d.side === 'n' || d.side === 's' ? k : 0);
+      const tz = d.tile[1] + (d.side === 'e' || d.side === 'w' ? k : 0);
+      let ax: number, az: number, bx: number, bz: number;
+      if (d.side === 'e') { ax = 2 * tx + 1; az = 2 * tz + s; bx = 2 * tx + 2; bz = az; }
+      else if (d.side === 'w') { ax = 2 * tx; az = 2 * tz + s; bx = 2 * tx - 1; bz = az; }
+      else if (d.side === 's') { ax = 2 * tx + s; az = 2 * tz + 1; bx = ax; bz = 2 * tz + 2; }
+      else { ax = 2 * tx + s; az = 2 * tz; bx = ax; bz = 2 * tz - 1; }
+      if (!inGrid(ax, az) || !inGrid(bx, bz)) continue;
+      const ca = cells[az * zw + ax], cb = cells[bz * zw + bx];
+      if (ca.solid || cb.solid || ca.slope || cb.slope || ca.fall || cb.fall) continue;
+      const dd = ca.floor - cb.floor;
+      if (Math.abs(dd) > VZ.STEP_UP + 1e-3) err(where, `step ${Math.abs(dd).toFixed(2)} m across the door at tile ${tx},${tz}: needs |Δ| <= ${VZ.STEP_UP} or a slope`);
+    }
+  }
+
+  // ---- E6 lift stops vs adjoining floors ----
+  for (const l of def.lifts ?? []) {
+    const ri = roomIdx.get(l.roomId);
+    if (ri === undefined) continue;
+    const { x0, x1, z0, z1 } = cellsOf(l.rect);
+    const ring: number[] = [];
+    for (let zi = x0; zi < x1; zi++) { ring.push(...[z0 - 1, z1].map((zj) => (inGrid(zi, zj) ? zj * zw + zi : -1))); }
+    for (let zj = z0; zj < z1; zj++) { ring.push(...[x0 - 1, x1].map((zi) => (inGrid(zi, zj) ? zj * zw + zi : -1))); }
+    const floors = ring.filter((i) => i >= 0 && cellRoom(i % zw, Math.floor(i / zw)) === ri)
+      .map((i) => cells[i]).filter((c) => !c.solid && !c.fall && !c.lift).map((c) => c.floor);
+    l.stops.forEach((s, i) => {
+      if (!vFinite(s)) return;
+      if (!floors.some((f) => Math.abs(f - s) <= VZ.LIFT_MATCH + 1e-6)) err(`lift ${l.id}`, `stop ${i} (${s} m) matches no adjoining floor within ${VZ.LIFT_MATCH} m (E6)`);
+    });
+  }
+
+  // ---- E7 falls ----
+  rooms.forEach((r) => {
+    for (const z of r.zones ?? []) {
+      if (z.fall === undefined && z.depth === undefined) continue;
+      const where = `room ${r.id} zone ${z.kind}`;
+      if (!VERTICAL_FALL_KINDS.has(z.kind)) err(where, 'fall / depth are only valid on void, pit or lava zones (E7)');
+      if (z.depth !== undefined && !(z.depth > 0 && z.depth <= VZ.FALL_DEPTH_MAX)) err(where, `depth ${z.depth} must be in (0, ${VZ.FALL_DEPTH_MAX}] m`);
+    }
+  });
+
+  // ---- E8 tiers, E9 ceilings ----
+  rooms.forEach((r, ri) => {
+    if (r.openAir) { if (r.ceiling !== undefined) info(`room ${r.id}`, 'ceiling ignored on an openAir room'); return; }
+    const where = `room ${r.id}`;
+    if (r.ceiling === undefined) warn(where, 'vertical dungeon room without ceiling: legacy 4 m geometry (set tall() or ceiling)');
+    else if (!vFinite(r.ceiling) || r.ceiling < VZ.CEIL_MIN) err(where, `ceiling ${r.ceiling} m is below ${VZ.CEIL_MIN} m (E9)`);
+    else if (r.ceiling > VZ.CEIL_WARN_MAX) warn(where, `ceiling ${r.ceiling} m is above ${VZ.CEIL_WARN_MAX} m`);
+    const roof = roofOf(ri);
+    for (const t of r.tiers ?? []) {
+      let low = Infinity;
+      forCells(t.rect, ri, (c) => { if (!c.solid && !c.fall) low = Math.min(low, c.floor); });
+      if (low !== Infinity && t.y < low + VZ.TIER_CLEAR) err(where, `tier ${t.kind} at y ${t.y} is not ${VZ.TIER_CLEAR} m above the floor under it (${low.toFixed(2)})`);
+      if (vFinite(roof) && t.y > roof - VZ.TIER_CLEAR) err(where, `tier ${t.kind} at y ${t.y} is above the roof (${roof.toFixed(2)})`);
+    }
+    if (roofOf(ri) !== Infinity && roomMin[ri] !== Infinity) {
+      info(where, `floors ${roomMin[ri].toFixed(2)}..${roomMax[ri].toFixed(2)} m, roof ${roofOf(ri).toFixed(2)} m`);
+    }
+  });
+
+  return out;
+}
+
 export function checkDungeon(def: DungeonDef, models: ModelDb, knownEnemy?: (id: string) => number | undefined): DungeonReport {
   const issues: Issue[] = [];
   const err = (where: string, msg: string): void => { issues.push({ level: 'error', where, msg }); };
@@ -604,6 +895,7 @@ export function checkDungeon(def: DungeonDef, models: ModelDb, knownEnemy?: (id:
   // props per room sanity (told in info)
   const empty = def.rooms.filter((r) => !r.props || r.props.length < 4).map((r) => r.id);
   if (empty.length && !def.world) warn(id, `rooms with fewer than 4 hand placed props: ${empty.join(', ')}`);
+  issues.push(...checkVerticalDungeon(def));
 
   return {
     id,

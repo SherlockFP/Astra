@@ -91,6 +91,11 @@ export interface ZoneDef {
   light?: { color: number; intensity: number; distance: number; flicker?: boolean; y?: number };
   /** P-17 zone look (append-only). */
   look?: 'cloud' | 'abyss';
+  // ---- ENGINE_VERTICALITY §3 (V1; optional, read only when DungeonDef.vertical) ----
+  /** void/pit/lava only. Absent = legacy solid hole. 'open' = walkable-for-physics VOID (fall possible), 'kill' = fall kills (scripted pit). */
+  fall?: 'open' | 'kill';
+  /** Void depth below the rim (m), default 9. Shaft visual bottom and VOID groundY. */
+  depth?: number;
 }
 
 /** Periodic room hazard (GDD_CONTENT §4): random tile telegraph then burst. */
@@ -141,6 +146,62 @@ export interface RoomDef {
   atmosphere?: string;
   /** P-17: lightning rhythm and flash for storm rooms. */
   storm?: { every: [number, number]; color: number; strength: number };
+  // ---- ENGINE_VERTICALITY §3 (V1; all optional, read only when DungeonDef.vertical) ----
+  /** Base floor height of the whole room, absolute metres (default 0). */
+  floorY?: number;
+  /** Clear height above the room's HIGHEST floor (m). Absent = legacy 4 m geometry. Halls 12-30. */
+  ceiling?: number;
+  /** Per-area floor overrides, applied in array order AFTER floorY (later wins). */
+  heightAreas?: HeightArea[];
+  /** Stair / ramp strips, applied after heightAreas (later wins). */
+  slopes?: SlopeDef[];
+  /** Decorative, non-walkable upper structure (galleries, balconies, windows...). */
+  tiers?: DecorTier[];
+  /** Open-air room: no ceiling cap, camera uncapped, sky backdrop. */
+  openAir?: boolean;
+}
+
+/** Per-area floor override (ENGINE_VERTICALITY §3). */
+export interface HeightArea {
+  rect: TileRect;                       // tile coords, multiples of 0.5
+  y: number;                            // ABSOLUTE floor height of the area
+  rim?: 'rail' | 'ledge' | 'none';      // drop > STEP_UP to a lower neighbour; default 'rail'
+  floor?: FloorStyle;
+  id?: string;
+}
+
+/** Stairs or ramp strip (ENGINE_VERTICALITY §3). yFrom/yTo are absolute, same convention as TownDef.stairs. */
+export interface SlopeDef {
+  id?: string;
+  kind: 'stairs' | 'ramp';
+  rect: TileRect;                       // tile coords, multiples of 0.5
+  axis: 'x' | 'z';
+  yFrom: number;                        // absolute height at the MIN edge on `axis`
+  yTo: number;                          // absolute height at the MAX edge
+  style?: 'stone' | 'wood' | 'carpet';
+  color?: number;
+}
+
+/** Decorative non-walkable upper structure (ENGINE_VERTICALITY §3, drawn by §7.6). */
+export interface DecorTier {
+  kind: 'gallery' | 'balcony' | 'colonnade' | 'windows' | 'beams' | 'ring';
+  y: number;                            // ABSOLUTE height of the walking surface / sill
+  rect: TileRect;
+  depth?: number;                       // metres, default 3
+  count?: number; spacing?: number;
+  wall?: boolean;
+}
+
+/** Vertical transport platform spanning rooms (ENGINE_VERTICALITY §3, dungeon-level). */
+export interface LiftDef {
+  id: string;
+  roomId: string;
+  rect: TileRect;                       // platform footprint >= 2x2 m, multiples of 0.5 tile
+  stops: number[];                      // absolute heights, >= 2, ascending
+  speed?: number;                       // m/s, default VERT.LIFT_SPEED
+  dwell?: number;                       // s, default VERT.LIFT_DWELL
+  mode?: 'call' | 'auto' | 'script';    // default 'call'
+  start?: number;                       // initial stop index, default 0
 }
 
 /** Opening between two rooms/corridors. Builder carves the wall and may place a door model. */
@@ -349,6 +410,11 @@ export interface DungeonDef {
   nodes?: NodeSpawnDef[];
   /** GDD_LIFE §2.1 (L-00): ids of the regions (RegionDef.id, `src/data/regions.ts`) this map contains. */
   regions?: string[];
+  // ---- ENGINE_VERTICALITY §3 (V1; optional) ----
+  /** Switches the heightfield feature on for this dungeon. Unset/false = legacy build, nav, camera and combat paths. */
+  vertical?: boolean;
+  /** Dungeon-level lifts (they span rooms). Only read when vertical. */
+  lifts?: LiftDef[];
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

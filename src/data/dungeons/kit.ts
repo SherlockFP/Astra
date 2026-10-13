@@ -1,5 +1,5 @@
 import { RNG, hashString } from '../../core/utils';
-import type { DoorDef, FloorStyle, PackDef, PropPlacement, RoomDef, TileRect, WallStyle, ZoneDef } from '../../types/dungeons';
+import type { DoorDef, FloorStyle, HeightArea, LiftDef, PackDef, PropPlacement, RoomDef, SlopeDef, TileRect, WallStyle, ZoneDef } from '../../types/dungeons';
 import { getEnemyDef } from '../enemies';
 
 /**
@@ -428,4 +428,37 @@ export function dressRoom(rect: TileRect, r: DressRecipe): PropPlacement[] {
     ...(r.chandeliers ?? []).flatMap((c) => chandelier(c.x, c.z, c.y, { light: c.light })),
     ...(r.banners ?? []).flatMap((b) => banner(rect, b.side, b.at, { y: b.y, tint: b.tint, spans: r.spans })),
   ];
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Vertical helpers (ENGINE_VERTICALITY §3, V3). Thin constructors for the height fields; all values are absolute metres
+// and tile rects follow the same tile-corner convention as RoomDef.rect. Only read when DungeonDef.vertical is set.
+// ---------------------------------------------------------------------------------------------------------------------
+/** Default ceiling for vertical rooms (ENGINE_VERTICALITY §2 CEIL_NEW_DEFAULT). Absent `ceiling` keeps legacy 4 m geometry. */
+export const TALL_CEIL_DEFAULT = 6;
+
+/** Sets the clear height of a room above its highest floor (metres). Halls 12..30; defaults to 6. */
+export const tall = (room: RoomDef, ceiling: number = TALL_CEIL_DEFAULT): RoomDef => ({ ...room, ceiling });
+
+/** Raised floor area inside a room (absolute `y`). `rim` omitted = builder default ('rail'). */
+export function plateau(rect: TileRect, y: number, rim?: HeightArea['rim'], id?: string): HeightArea {
+  const out: HeightArea = { rect, y };
+  if (rim !== undefined) out.rim = rim;
+  if (id !== undefined) out.id = id;
+  return out;
+}
+
+/** Stair strip along `axis`: `yFrom` at the min edge, `yTo` at the max edge (absolute). Treads come from the builder. */
+export function stairs(rect: TileRect, axis: 'x' | 'z', yFrom: number, yTo: number, extra: Partial<SlopeDef> = {}): SlopeDef {
+  return { kind: 'stairs', rect, axis, yFrom, yTo, ...extra };
+}
+
+/** Ramp strip along `axis`: linear from `yFrom` (min edge) to `yTo` (max edge). Grade limit VERT.MAX_GRADE (0.80). */
+export function ramp(rect: TileRect, axis: 'x' | 'z', yFrom: number, yTo: number, extra: Partial<SlopeDef> = {}): SlopeDef {
+  return { kind: 'ramp', rect, axis, yFrom, yTo, ...extra };
+}
+
+/** Dungeon-level lift platform. `stops` ascending absolute heights (>= 2). Mode defaults to 'call' in the runtime. */
+export function lift(id: string, roomId: string, rect: TileRect, stops: number[], extra: Partial<LiftDef> = {}): LiftDef {
+  return { id, roomId, rect, stops, ...extra };
 }
