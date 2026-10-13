@@ -5,6 +5,7 @@ import type { StatusApply } from '../types/skills';
 import type { TelegraphKind, TelegraphShape, VfxId } from '../types/vfx';
 import type { TelegraphHandle, VfxHandle } from '../vfx/VFX';
 import type { Enemy } from '../entities/Enemy';
+import { VERT } from '../world/Heightfield';
 
 /**
  * A hostile area/projectile that can hurt players: enemy melee swings, boss mechanics, affix hazards.
@@ -47,6 +48,11 @@ export interface HitShapeSpec {
   low?: boolean;
   /** Poise damage this shape deals to a broken-or-guarding target (GDD_V2 §3.7). */
   poise?: number;
+  /**
+   * ENGINE_VERTICALITY §12 (vertical worlds only): max |feet y − groundY(ox,oz)| at which the local player can be hit.
+   * Default VERT.TOL_MELEE (2.5). 'free' = no height gate (room-wide boss mechanics keep the legacy XZ-only test).
+   */
+  vert?: number | 'free';
 }
 
 interface ActiveShape {
@@ -257,10 +263,24 @@ export class HitShapes {
     const s = a.spec;
     const pr = s.projectile!;
     a.state = 'flying';
-    const y = a.oy > 0.2 ? a.oy : 1.2;
     const owner = s.sourceId !== null ? G.world?.getActor(s.sourceId) ?? null : null;
+    const world = G.world;
+    let y = a.oy > 0.2 ? a.oy : 1.2;
+    let dirY: number | undefined;
+    if (world?.vertical) {
+      // ENGINE_VERTICALITY §12: shot starts at the source's live height (flying enemies keep their real y), not at origin[1].
+      const flying = owner !== null && (owner as Enemy).def?.flying === true;
+      const offset = a.oy > 0.2 ? a.oy : 1.2;
+      y = owner ? (flying ? owner.position.y : owner.position.y + offset) : world.groundY(a.ox, a.oz) + offset;
+      // slope toward the local player's chest (clamped ±0.6), so a shot at a balcony above/below can reach its height
+      const lp = world.localPlayer;
+      if (lp && !lp.isDead) {
+        const run = Math.max(0.5, Math.hypot(lp.position.x - a.ox, lp.position.z - a.oz));
+        dirY = Math.max(-0.6, Math.min(0.6, (lp.position.y + lp.height * 0.6 - y) / run));
+      }
+    }
     const p = Projectile.spawn({
-      mode: 'hostile', owner, vfx: pr.vfx, origin: [a.ox, y, a.oz], dir: [a.dx, a.dz], speed: pr.speed, radius: pr.radius, range: pr.range,
+      mode: 'hostile', owner, vfx: pr.vfx, origin: [a.ox, y, a.oz], dir: [a.dx, a.dz], speed: pr.speed, radius: pr.radius, range: pr.range, dirY,
       homing: pr.homing ? { targetId: pr.homingTargetId ?? G.world?.localPlayer?.id ?? null, turn: pr.homing } : undefined,
       onHitLocal: (pl, proj) => {
         this.hitPlayer(s, [proj.dirX, proj.dirZ], s.damage, true, [a.ox, a.oz]);
@@ -276,12 +296,24 @@ export class HitShapes {
     if (!p) { this.shapes.delete(s.id); }
   }
 
+  /**
+   * ENGINE_VERTICALITY §12: height reach of a shape. Flat worlds (and 'free' specs) are always in reach. Otherwise the feet
+   * must be within `vert` of the ground plane under the shape origin (origin[1] is ignored).
+   */
+  private inReach(a: ActiveShape, feetY: number): boolean {
+    const world = G.world;
+    if (!world || !world.vertical || a.spec.vert === 'free') return true;
+    const plane = world.groundY(a.ox, a.oz);
+    return Math.abs(feetY - plane) <= (a.spec.vert ?? VERT.TOL_MELEE);
+  }
+
   /** Test the LOCAL player against the shape at its land/tick moment and hit them. */
   private resolve(a: ActiveShape): void {
     const s = a.spec;
     if (s.kind === 'friendly') return;
     const lp = G.world?.localPlayer;
     if (!lp || lp.isDead || !lp.isLocal) return;
+    if (!this.inReach(a, lp.position.y)) return;
     const inside = HitShapes.contains(s.shape, a.ox, a.oz, a.dx, a.dz, lp.position.x, lp.position.z, lp.radius);
     const hurt = s.kind === 'safe' ? !inside : inside;
     if (!hurt) return;
@@ -289,7 +321,7 @@ export class HitShapes {
     if (s.soak || s.kind === 'soak') {
       let n = 0;
       for (const p of G.world!.players) {
-        if (p.isDead) continue;
+        if (p.isDead || !this.inReach(a, p.position.y)) continue;
         if (HitShapes.contains(s.shape, a.ox, a.oz, a.dx, a.dz, p.position.x, p.position.z, p.radius)) n++;
       }
       dmg /= Math.max(1, n);

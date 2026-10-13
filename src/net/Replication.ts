@@ -7,6 +7,7 @@ import type { EquipSlot, ItemInstance } from '../types/items';
 import type { NetChannels } from '../types/net';
 import type { NetSession, PeerInfo } from './NetSession';
 import { NET, clampNum, ident, isObj, sanitizeText } from './messages';
+import { syncYOk } from './guard';
 
 /**
  * Replication (net module): turns the typed `pstate` / `gear` / `snap` channels into entities.
@@ -634,6 +635,8 @@ function cleanEnemy(raw: unknown): EnemySyncState | null {
   else if (raw.shot === null) s.shot = null;
   if (typeof raw.shotSeq === 'number' && Number.isFinite(raw.shotSeq)) s.shotSeq = Math.round(fin(raw.shotSeq, 0, 2 ** 31, 0));
   if (typeof raw.aggroed === 'boolean') s.aggroed = raw.aggroed;
+  // vertical worlds: airborne height (codec element 12), validated like pstate y
+  if (typeof raw.y === 'number' && syncYOk(raw.y)) s.y = raw.y;
   return s;
 }
 

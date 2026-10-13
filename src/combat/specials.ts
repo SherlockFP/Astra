@@ -80,7 +80,7 @@ export function shockwave(
   sys.shake(o.shake ?? 0.22, 0.22);
   if (c.remote) return 0;
   let n = 0;
-  for (const e of sys.enemiesNear(x, z, o.radius)) {
+  for (const e of sys.enemiesNear(x, z, o.radius, G.world ? G.world.groundY(x, z) : null)) {
     const dx = e.position.x - x, dz = e.position.z - z;
     const l = Math.hypot(dx, dz) || 1;
     if (sys.strike(c, e, { coef: o.coef, type: o.type, weight: o.weight ?? 'heavy', knockback: o.knockback ?? 2, dir: [dx / l, dz / l], noGain: true })) n++;
@@ -106,7 +106,7 @@ export function fireWave(sys: SkillSystem, c: CastCtx, o: { range: number; coef:
       nextFx += 1.2;
     }
     if (!c.remote) {
-      const list = G.world?.actorsInLine({ x: ox, z: oz }, { x: dx, z: dz }, nf, width, (a) => a.team === 'enemy' && !hit.has(a.id)) ?? [];
+      const list = G.world?.actorsInLine({ x: ox, z: oz }, { x: dx, z: dz }, nf, width, (a) => a.team === 'enemy' && !hit.has(a.id), caster.position.y) ?? [];
       for (const a of list) {
         hit.add(a.id);
         const e = a as unknown as Enemy;
@@ -160,7 +160,7 @@ export function bloodTornado(sys: SkillSystem, c: CastCtx, o: { coefPerSec: numb
     if (tickT >= 0.5) {
       tickT -= 0.5;
       if (!c.remote) {
-        for (const e of sys.enemiesNear(holder.position.x, holder.position.z, radius)) {
+        for (const e of sys.enemiesNear(holder.position.x, holder.position.z, radius, holder.position.y)) {
           const dx = e.position.x - holder.position.x, dz = e.position.z - holder.position.z;
           const l = Math.hypot(dx, dz) || 1;
           sys.strike(c, e, { coef: o.coefPerSec * 0.5, tick: true, noGain: true, dir: [dx / l, dz / l], knockback: 0.3 });

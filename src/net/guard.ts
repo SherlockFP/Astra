@@ -17,6 +17,17 @@ import { clampNum } from './messages';
  * OWNER: net module.
  */
 
+/**
+ * Height range accepted from the wire for `y` in pstate and in the enemy tuple (element 12, flag 16; ENGINE_VERTICALITY §15).
+ * Same bounds as Replication.cleanPState (−100..300). Validator floors (VERT.Y_MIN..Y_MAX) are stricter and live in the content check.
+ */
+export const SYNC_Y_MIN = -100;
+export const SYNC_Y_MAX = 300;
+/** True when a wire height is a finite number inside SYNC_Y_MIN..SYNC_Y_MAX. A false result means the message's y must be dropped. */
+export function syncYOk(y: unknown): y is number {
+  return typeof y === 'number' && Number.isFinite(y) && y >= SYNC_Y_MIN && y <= SYNC_Y_MAX;
+}
+
 /** `hit` token bucket per peer (ROADMAP F6: about 40 hits/s). */
 export const HIT_BUCKET_CAPACITY = 60;
 export const HIT_BUCKET_REFILL = 40;      // tokens / s

@@ -38,7 +38,19 @@ export interface ProjectileOpts {
   onEnd?: (p: Projectile, reason: ProjectileEnd) => void;
   /** Optional model tilt for visuals (rad). */
   pitch?: number;
+  /**
+   * ENGINE_VERTICALITY §12, vertical worlds only: rise per metre of XZ travel (aim slope), clamped to ±0.6. Ignored when
+   * `world.vertical` is false.
+   */
+  dirY?: number;
 }
+
+/** §12: max aim slope for projectiles (rise per metre). */
+const DIR_Y_MAX = 0.6;
+/** §12: a projectile sinking this far into the ground (above its floor) is culled. */
+const GROUND_CULL = 0.2;
+/** §12: slack added to the target's half-height in the cylinder test. */
+const CYL_SLACK = 1.0;
 
 /**
  * Local-only moving shot (fireball, arrow, thrown axe, enemy bolt). Moves in the XZ plane at a fixed height, collides
@@ -52,6 +64,8 @@ export class Projectile extends Entity {
   readonly owner: Actor | null;
   dirX: number;
   dirZ: number;
+  /** Rise per metre of XZ travel (vertical worlds only; clamped to ±DIR_Y_MAX). */
+  dirY: number;
   speed: number;
   hitsLeft: number;
   traveled = 0;
@@ -71,6 +85,7 @@ export class Projectile extends Entity {
     this.owner = opts.owner ?? null;
     this.dirX = opts.dir[0];
     this.dirZ = opts.dir[1];
+    this.dirY = Math.max(-DIR_Y_MAX, Math.min(DIR_Y_MAX, opts.dirY ?? 0));
     this.speed = opts.speed;
     this.radius = opts.radius;
     this.hitsLeft = 1 + (opts.pierce ?? 0);
@@ -182,16 +197,35 @@ export class Projectile extends Entity {
     const p = this.position;
     const nx = p.x + this.dirX * step;
     const nz = p.z + this.dirZ * step;
-    const f = world.nav.raycast(p.x, p.z, nx, nz);
-    if (f < 1) {
-      p.x += this.dirX * step * f;
-      p.z += this.dirZ * step * f;
-      return this.end('wall');
+    if (world.vertical) {
+      // §12: height-aware shot ray (low rails are shot over, walls/pillars block at any height)
+      const ny = p.y + this.dirY * step;
+      const f = world.nav.raycastY(p.x, p.y, p.z, nx, ny, nz);
+      if (f < 1) {
+        p.x += this.dirX * step * f;
+        p.z += this.dirZ * step * f;
+        p.y += this.dirY * step * f;
+        return this.end('wall');
+      }
+      p.x = nx;
+      p.z = nz;
+      p.y = ny;
+      this.traveled += step;
+      // §12 ground cull: sinking into the floor under it ends the shot (reported as 'wall' so impact effects still fire)
+      if (p.y < world.groundY(p.x, p.z) + GROUND_CULL) return this.end('wall');
+      this.checkHits();
+    } else {
+      const f = world.nav.raycast(p.x, p.z, nx, nz);
+      if (f < 1) {
+        p.x += this.dirX * step * f;
+        p.z += this.dirZ * step * f;
+        return this.end('wall');
+      }
+      p.x = nx;
+      p.z = nz;
+      this.traveled += step;
+      this.checkHits();
     }
-    p.x = nx;
-    p.z = nz;
-    this.traveled += step;
-    this.checkHits();
     if (this.done) return;
     if (this.traveled >= this.opts.range) {
       if (this.opts.boomerang && this.phase === 'out') {
@@ -204,13 +238,19 @@ export class Projectile extends Entity {
     }
   }
 
+  /** §12 cylinder test (vertical worlds only): the shot's height must be within the target's body (+ radius + slack). */
+  private inCylinder(feetY: number, height: number): boolean {
+    if (!this.world!.vertical) return true;
+    return Math.abs(this.position.y - (feetY + height / 2)) <= height / 2 + this.radius + CYL_SLACK;
+  }
+
   private checkHits(): void {
     const world = this.world!;
     const mode = this.opts.mode;
     const p = this.position;
     if (mode === 'hostile') {
       const pl = world.localPlayer;
-      if (!pl || pl.isDead || this.hitSet.has(pl.id)) return;
+      if (!pl || pl.isDead || this.hitSet.has(pl.id) || !this.inCylinder(pl.position.y, pl.height)) return;
       const r = this.radius + pl.radius;
       if ((pl.position.x - p.x) ** 2 + (pl.position.z - p.z) ** 2 <= r * r) {
         this.hitSet.add(pl.id);
@@ -223,7 +263,7 @@ export class Projectile extends Entity {
     const list = world.enemies as readonly Enemy[];
     for (let i = 0; i < list.length; i++) {
       const e = list[i];
-      if (e.isDead || this.hitSet.has(e.id)) continue;
+      if (e.isDead || this.hitSet.has(e.id) || !this.inCylinder(e.position.y, e.height)) continue;
       const r = this.radius + e.radius;
       if ((e.position.x - p.x) ** 2 + (e.position.z - p.z) ** 2 > r * r) continue;
       this.hitSet.add(e.id);

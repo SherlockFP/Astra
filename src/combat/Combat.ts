@@ -103,6 +103,8 @@ export interface IncomingHit {
   blockable?: boolean;
   /** Non-lethal damage over time (Kirlenme): the hit never takes the player below this absolute HP. */
   floorHp?: number;
+  /** ENGINE_VERTICALITY §11 (V11): `false` = the hit never takes the player below 1 HP (fall damage). Default true (may kill). */
+  lethal?: boolean;
 }
 
 /** Extra context for applyDamageToEnemy (all optional). */
@@ -418,7 +420,7 @@ export class Combat {
       this.numberAt(t, 0, 'crit', 'PARÇALANDI!');
       G.events.emit('camera:shake', { intensity: 0.16, duration: 0.2 });
     } catch { /* ignore */ }
-    const list = G.world?.enemiesInRadius({ x, z }, 2.2) ?? [];
+    const list = G.world?.enemiesInRadius({ x, z }, 2.2, t.position.y) ?? [];
     this.shatterDepth++;
     try {
       for (const e of list) {
@@ -1012,6 +1014,34 @@ export class Combat {
   }
 
   /**
+   * HOST: an enemy's feet fell below the kill plane of a pit (ENGINE_VERTICALITY §10.2, §11, §13). Trash dies as a normal kill
+   * (no killer credit: there is no last-damager record, so the killer is null). Elite / rare / champion take 25 % max HP and are
+   * warped back to `lastSafe` (threat stays: the AI brain is not reset). Bosses, ccImmune and flying units never fall.
+   */
+  fallKill(e: Enemy): void {
+    if (!e || e.isDead || e.removed) return;
+    if (e.isBoss || e.def.ccImmune || e.def.flying) return;
+    if (e.def.rank === 'trash' || !e.lastSafe) {
+      G.events.emit('ui:toast', { text: `${e.def.name}: Boşluğa düştü`, kind: 'info' });
+      this.killEnemy(e, null);
+      return;
+    }
+    // 25 % max HP through the normal damage path (numbers, sync, death if it runs out)
+    this.applyDamageToEnemy(e, e.maxHp * 0.25, false, 'physical', null, undefined, undefined, undefined, undefined, { noReact: true });
+    if (e.isDead) return;
+    const safe = e.lastSafe;
+    const w = G.world;
+    e.position.x = safe.x;
+    e.position.z = safe.z;
+    // snap to the ground of the safe spot; a pending fling or fall must not carry it back into the pit
+    e.feetY = w ? w.groundY(safe.x, safe.z) : 0;
+    e.airborne = false;
+    e.vy = 0;
+    e.forcedMove = null;
+    G.events.emit('ui:toast', { text: `${e.def.name}: Boşluğa düştü (−%25 CAN)`, kind: 'info' });
+  }
+
+  /**
    * Units that never reward kills: M+ affix units (explosive orbs, spiteful shades, Efsun guardians) and boss mechanic entities
    * (bone cages, ice tombs, phylacteries...): no loot, no XP, no kill / bounty credit, no forces.
    */
@@ -1078,7 +1108,7 @@ export class Combat {
       const r = es.spreadRadius ?? 4;
       try {
         G.vfx.spawn('fire_burst', [enemy.position.x, enemy.position.y + enemy.height * 0.5, enemy.position.z], { scale: vfxScale('fire_burst', r * 0.6) });
-        for (const e of G.world?.enemiesInRadius({ x: enemy.position.x, z: enemy.position.z }, r) ?? []) {
+        for (const e of G.world?.enemiesInRadius({ x: enemy.position.x, z: enemy.position.z }, r, enemy.position.y) ?? []) {
           if (e === enemy || e.isDead) continue;
           this.applyEnemyStatuses(p, e, [{ status: 'burn', duration: Math.max(2, burnSnap.remaining), magnitude: 0.3, dps: burnSnap.dps }]);
         }
@@ -1329,7 +1359,7 @@ export class Combat {
   /** No other aggroed living enemy within 14 m of the dead one (GDD_LIFE §5.7 "last kill"). */
   private isLastKill(target: Enemy): boolean {
     try {
-      const list = G.world?.enemiesInRadius({ x: target.position.x, z: target.position.z }, 14) ?? [];
+      const list = G.world?.enemiesInRadius({ x: target.position.x, z: target.position.z }, 14, target.position.y) ?? [];
       return !list.some((e) => e !== target && !e.isDead && !e.removed && e.aggroed);
     } catch {
       return false;
@@ -1516,7 +1546,9 @@ export class Combat {
     amount = p.statuses.absorb(amount);
     const absorbed = before - amount;
     // non-lethal floor (Kirlenme): clipped before the mana shield so no mana is spent on damage that never lands
-    const floorRoom = hit.floorHp !== undefined ? Math.max(0, p.hp - hit.floorHp) : Infinity;
+    // lethal:false (fall damage) adds the 1 HP floor on top of any explicit floorHp
+    const floorHp = hit.lethal === false ? Math.max(1, hit.floorHp ?? 1) : hit.floorHp;
+    const floorRoom = floorHp !== undefined ? Math.max(0, p.hp - floorHp) : Infinity;
     amount = Math.min(amount, floorRoom);
     // Zihin Kalkanı: a share of the damage is paid with mana first (4 damage = 1 mana)
     const ms = sp('ks_mind_shield');

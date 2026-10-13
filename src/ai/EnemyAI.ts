@@ -650,9 +650,10 @@ export class EnemyAI {
     const e = this.e;
     const x = e.position.x, z = e.position.z;
     const killY = this.world.heights?.killY(x, z);
-    if (e.def.rank === 'trash' && !e.def.flying && killY !== undefined && (e.feetY ?? 0) < killY) {
-      G.combat.killEnemy(e, null);
-      return true;
+    if (!e.def.flying && killY !== undefined && (e.feetY ?? 0) < killY) {
+      // Combat.fallKill: trash dies, elites/rares/champions take 25 % and warp to lastSafe, bosses are skipped
+      G.combat.fallKill(e);
+      return !e.isDead ? false : true;
     }
     if (!e.airborne && now >= this.safeAt) {
       this.safeAt = now + SAFE_SAMPLE_EVERY;

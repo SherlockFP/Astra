@@ -7,12 +7,13 @@ import { TOWN } from '../data/town';
 import { DUNGEONS, OPEN_ZONES } from '../data/dungeons';
 import type { DungeonDef } from '../types/dungeons';
 import type { NavGrid } from '../world/NavGrid';
+import { DEV_HEIGHT } from './heightDemo';
 
 /**
  * Dev page for the world module: a rich test dungeon (all zone kinds, tagged/posed props, fog override), an outdoor test zone,
  * the real content dungeons and the hub town.
  * Keys: T town <-> last dungeon, 1..9 / [ ] pick a dungeon, N nav overlay, G gates, F orbit on/off, WASD walk (Shift = fast).
- * URL: ?mode=town | ?dungeon=<id|dev_test|dev_outdoor|kemik_mahzeni...> &cam=x,z,dist,height,yaw &nav=1 &gates=close &light=hemi,ambient,moon
+ * URL: ?mode=town | ?dungeon=<id|dev_test|dev_outdoor|dev_height|kemik_mahzeni...> &cam=x,z,dist,height,yaw &nav=1 &gates=close &light=hemi,ambient,moon
  */
 
 const GEN = '/assets/models/gen/props/';
@@ -154,6 +155,14 @@ function navOverlay(nav: NavGrid): THREE.Mesh {
       data[i + 1] = walk ? 255 : 30;
       data[i + 2] = 40;
       data[i + 3] = walk ? 50 : 150;
+      // vertical grids: walkable cells tinted by floor height (blue = -3 m, red = 12 m and above)
+      if (walk && nav.floor) {
+        const t = Math.min(1, Math.max(0, (nav.floor[r * w + c] + 3) / 15));
+        data[i] = Math.round(255 * t);
+        data[i + 1] = Math.round(255 * (1 - t));
+        data[i + 2] = 255 - Math.round(255 * t);
+        data[i + 3] = 80;
+      }
     }
   const tex = new THREE.DataTexture(data, w, h, THREE.RGBAFormat);
   tex.magFilter = THREE.NearestFilter;
@@ -180,6 +189,7 @@ async function main() {
   const defs: Record<string, () => DungeonDef> = {
     dev_test: testDungeon,
     dev_outdoor: testOutdoor,
+    dev_height: () => DEV_HEIGHT,
     ...Object.fromEntries(Object.entries(DUNGEONS).map(([id, d]) => [id, () => d])),
     // open-world maps (sisli_vadi = 640 m fly-through, WP5): ?dungeon=sisli_vadi
     ...Object.fromEntries(Object.entries(OPEN_ZONES).map(([id, d]) => [id, () => d])),

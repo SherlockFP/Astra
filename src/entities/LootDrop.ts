@@ -116,6 +116,8 @@ export class LootDrop extends Entity implements Interactable {
   private spin = new THREE.Vector3();
   private baseRot = new THREE.Euler();
   private restY = 0.08;
+  /** Ground height under the landing spot (vertical worlds; 0 on flat maps). The drop lands at floorY + restY. */
+  private floorY = 0;
   private bobPhase = Math.random() * 6.28;
   private bounceCount = 0;
   private squash = 0;
@@ -147,6 +149,7 @@ export class LootDrop extends Entity implements Interactable {
     this.height = 0.8;
     this.origin = opts.origin.clone();
     this.target = opts.target.clone();
+    this.floorY = this.target.y;
     this.delay = opts.delay ?? 0;
     this.object3d.add(this.pivot);
     this.pivot.add(this.visual);
@@ -154,7 +157,7 @@ export class LootDrop extends Entity implements Interactable {
     this.object3d.visible = this.delay <= 0;
     const vy = opts.vy ?? 6 + Math.random() * 3;
     // flight time to reach the target height (restY) from the origin height
-    const h0 = this.origin.y - this.restY;
+    const h0 = this.origin.y - (this.floorY + this.restY);
     const tFlight = (vy + Math.sqrt(vy * vy + 2 * GRAVITY * Math.max(0, h0))) / GRAVITY;
     this.vel.set((this.target.x - this.origin.x) / tFlight, vy, (this.target.z - this.origin.z) / tFlight);
     this.spin.set((Math.random() - 0.5) * 14, (Math.random() - 0.5) * 12, (Math.random() - 0.5) * 14);
@@ -537,8 +540,8 @@ export class LootDrop extends Entity implements Interactable {
         this.pivot.rotation.x += this.spin.x * dt;
         this.pivot.rotation.y += this.spin.y * dt;
         this.pivot.rotation.z += this.spin.z * dt;
-        if (pos.y <= this.restY && this.vel.y < 0) {
-          pos.y = this.restY;
+        if (pos.y <= this.floorY + this.restY && this.vel.y < 0) {
+          pos.y = this.floorY + this.restY;
           this.bounceCount++;
           if (this.bounceCount === 1) {
             this.onFirstLand();
@@ -573,7 +576,7 @@ export class LootDrop extends Entity implements Interactable {
         this.pivot.rotation.z += (this.baseRot.z - this.pivot.rotation.z) * (1 - Math.exp(-10 * dt));
         this.pivot.rotation.y += this.spin.y * dt;
         const bob = this.drop.kind === 'gold' ? 0 : Math.sin(this.age * 2.2 + this.bobPhase) * 0.05;
-        pos.y = this.restY + bob + (this.drop.kind === 'globe' ? 0.15 : 0);
+        pos.y = this.floorY + this.restY + bob + (this.drop.kind === 'globe' ? 0.15 : 0);
         break;
       }
     }

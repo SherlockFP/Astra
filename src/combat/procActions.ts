@@ -303,6 +303,7 @@ export const liveProcHost: ProcHost = {
 
   party(self, radius) {
     const w = G.world;
+    // y-free: party / support reach is XZ-only (ENGINE_VERTICALITY §12: supports are not height-gated)
     const pool: Player[] = !w ? [] : radius === Infinity ? w.players.slice() : w.playersInRadius(self.position, radius);
     const out = pool.filter((p) => !p.isDead);
     if (!out.includes(self)) out.unshift(self);
@@ -310,7 +311,7 @@ export const liveProcHost: ProcHost = {
   },
 
   nearestEnemy(self, radius) {
-    const list = G.world?.enemiesInRadius(self.position, radius) ?? [];
+    const list = G.world?.enemiesInRadius(self.position, radius, self.position.y) ?? [];
     let best: Enemy | null = null;
     let bestD = Infinity;
     for (const e of list) {
@@ -376,7 +377,7 @@ export const liveProcHost: ProcHost = {
   },
 
   explode(self, target, coef, radius, type) {
-    const hits = new Set<Actor>([target, ...(G.world?.enemiesInRadius(target.position, radius) ?? [])]);
+    const hits = new Set<Actor>([target, ...(G.world?.enemiesInRadius(target.position, radius, target.position.y) ?? [])]);
     for (const e of hits) hitEnemy(self, e, coef, type);
   },
 

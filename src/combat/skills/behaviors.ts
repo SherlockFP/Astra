@@ -108,23 +108,27 @@ function strikeMany(c: CastCtx, list: Enemy[], max: number, o?: Parameters<Skill
   return out;
 }
 
-/** Aim assist for projectiles: bend up to `maxDeg` toward an enemy near the aim line. */
-function assistDir(c: CastCtx, maxDeg = 4): [number, number] {
+/** Aim assist result: the bent direction and the enemy it bent toward (null when nothing was in the lane). */
+interface AimAssist { dir: [number, number]; target: Enemy | null }
+
+/** Aim assist for projectiles: bend up to `maxDeg` toward an enemy near the aim line (same height level, clear sight). */
+function assistAim(c: CastCtx, maxDeg = 4): AimAssist {
   const { caster, dir } = c;
-  if (c.remote) return dir;
+  if (c.remote) return { dir, target: null };
   const w = G.world;
-  if (!w) return dir;
+  if (!w) return { dir, target: null };
   let best: Enemy | null = null;
   let bestLat = 2.2;
   for (const e of w.enemies) {
     if (e.isDead) continue;
+    if (!w.sameLevel(e, caster.position.y)) continue;
     const vx = e.position.x - caster.position.x, vz = e.position.z - caster.position.z;
     const along = vx * dir[0] + vz * dir[1];
     if (along < 1 || along > (c.def.range ?? 25)) continue;
     const lat = Math.abs(-vx * dir[1] + vz * dir[0]) - e.radius * 0.5;
-    if (lat < bestLat) { bestLat = lat; best = e; }
+    if (lat < bestLat && clearSight(caster, e)) { bestLat = lat; best = e; }
   }
-  if (!best) return dir;
+  if (!best) return { dir, target: null };
   const want = Math.atan2(best.position.x - caster.position.x, best.position.z - caster.position.z);
   const cur = Math.atan2(dir[0], dir[1]);
   let diff = want - cur;
@@ -132,7 +136,12 @@ function assistDir(c: CastCtx, maxDeg = 4): [number, number] {
   while (diff < -Math.PI) diff += Math.PI * 2;
   const lim = (maxDeg * Math.PI) / 180;
   const a = cur + clamp(diff, -lim, lim);
-  return [Math.sin(a), Math.cos(a)];
+  return { dir: [Math.sin(a), Math.cos(a)], target: best };
+}
+
+/** Aim assist direction only (see assistAim). */
+function assistDir(c: CastCtx, maxDeg = 4): [number, number] {
+  return assistAim(c, maxDeg).dir;
 }
 
 function muzzle(c: CastCtx, d: [number, number], fwd = 0.9, y = 1.35): [number, number, number] {
@@ -140,8 +149,30 @@ function muzzle(c: CastCtx, d: [number, number], fwd = 0.9, y = 1.35): [number, 
   return [p.x + d[0] * fwd, p.y + y, p.z + d[1] * fwd];
 }
 
-/** Everything inside a circle that is an alive enemy. */
-const enemiesIn = (x: number, z: number, r: number): Enemy[] => (G.world ? G.world.enemiesInRadius({ x, z }, r) : []);
+/**
+ * Everything inside a circle that is an alive enemy. `y` is the reference feet height (ENGINE_VERTICALITY §12): the caster's
+ * y for caster-centred shapes, the ground plane under a ground point (`groundAt`), or the live projectile / entity y.
+ */
+const enemiesIn = (x: number, z: number, r: number, y: number | null): Enemy[] => (G.world ? G.world.enemiesInRadius({ x, z }, r, y) : []);
+
+/** Ground plane height under a point (ENGINE_VERTICALITY §12, ground-target AoE). null without a world; flat worlds ignore it. */
+export const groundAt = (x: number, z: number): number | null => (G.world ? G.world.groundY(x, z) : null);
+
+/** Clear eye-to-chest line between two actors through the nav grid (ENGINE_VERTICALITY §12, LOS via raycastY). Flat worlds: always clear. */
+export function clearSight(from: Actor, to: Actor): boolean {
+  const w = G.world;
+  if (!w || !w.vertical) return true;
+  return w.nav.raycastY(from.position.x, from.position.y + from.height * 0.8, from.position.z, to.position.x, to.position.y + to.height * 0.6, to.position.z) >= 1;
+}
+
+/** Projectile slope toward a target's chest (rise per metre of XZ travel, clamped to ±0.6, §12). 0 in flat worlds or without a target. */
+export function aimSlope(from: Actor, originY: number, to: Actor | null): number {
+  const w = G.world;
+  if (!w || !w.vertical || !to) return 0;
+  const run = Math.hypot(to.position.x - from.position.x, to.position.z - from.position.z);
+  if (run < 0.5) return 0;
+  return clamp((to.position.y + to.height * 0.6 - originY) / run, -0.6, 0.6);
+}
 
 // ---------------------------------------------------------------------------------------------------------
 // generic targeting behaviours
@@ -163,7 +194,7 @@ const meleeArc: Behavior = {
     if (ir > 0 && (res.length > 0 || true)) {
       const cx = caster.position.x + c.dir[0] * range * 0.78, cz = caster.position.z + c.dir[1] * range * 0.78;
       const hit = new Set(targets.map((t) => t.id));
-      const extra = enemiesIn(cx, cz, ir).filter((e) => !hit.has(e.id));
+      const extra = enemiesIn(cx, cz, ir, groundAt(cx, cz)).filter((e) => !hit.has(e.id));
       if (res.length || extra.length) {
         sys.vfx('ground_slam', [cx, 0.05, cz], { scale: vfxScale('ground_slam', ir * 1.3, 0.35) });
         const more = strikeMany(c, extra, 99, { coef: (def.damage?.coef ?? 1) * 0.6, weight: 'light', noGain: true });
@@ -179,11 +210,12 @@ const projectile: Behavior = {
     const { def, caster, sys } = c;
     const count = def.count ?? 1;
     const spread = def.spread ?? 0;
-    const base = assistDir(c);
+    const aim = assistAim(c);
+    const base = aim.dir;
     const heightY = 1.35;
     for (let i = 0; i < count; i++) {
       const d = count > 1 ? rot(base, (i - (count - 1) / 2) * spread) : base;
-      sys.fireProjectile(c, d, heightY);
+      sys.fireProjectile(c, d, heightY, aim.target);
     }
     if (def.vfx?.cast) sys.vfx(def.vfx.cast, muzzle(c, base, 0.9, 1.35), { dir: [base[0], 0, base[1]], scale: 0.6 });
     void caster;
@@ -208,7 +240,7 @@ const groundAoe: Behavior = {
         x: px, z: pz, radius, duration: dur, tick: every, t: 0, next: every,
         onTick: (z: { x: number; z: number }, n: number) => {
           if (c.remote) return;
-          for (const e of enemiesIn(z.x, z.z, radius)) sys.strike(c, e, { tick: true, dir: norm(e.position.x - z.x, e.position.z - z.z), noGain: true, tickIndex: n });
+          for (const e of enemiesIn(z.x, z.z, radius, groundAt(z.x, z.z))) sys.strike(c, e, { tick: true, dir: norm(e.position.x - z.x, e.position.z - z.z), noGain: true, tickIndex: n });
           if (healPct) sys.healAlliesIn(c, z.x, z.z, radius, healPct * every);
           if (holy) sys.applyPartyAt(c, 'empower', 1.6, holy.consecrationAllyDamagePct ?? 0.1, z.x, z.z, radius);
         },
@@ -221,7 +253,7 @@ const groundAoe: Behavior = {
         sys.shake(0.2);
       }
     } else if (!c.remote) {
-      const list = enemiesIn(px, pz, radius);
+      const list = enemiesIn(px, pz, radius, groundAt(px, pz));
       strikeMany(c, list, 99);
       if (def.vfx?.impact) sys.vfx(def.vfx.impact, [px, 0.1, pz], { scale: vfxScale(def.vfx.impact, radius) });
     }
@@ -239,7 +271,7 @@ const selfAoe: Behavior = {
     if (def.selfStatuses) sys.applySelf(c, def.selfStatuses);
     if (p.allyRange && p.allyMore) sys.applyParty(c, 'empower', 8, p.allyMore, p.allyRange);
     if (c.remote) return;
-    const list = enemiesIn(caster.position.x, caster.position.z, radius);
+    const list = enemiesIn(caster.position.x, caster.position.z, radius, caster.position.y);
     if (def.damage && def.damage.coef > 0) {
       strikeMany(c, list, 99);
       if (def.vfx?.impact && list.length) sys.vfx(def.vfx.impact, pos, { scale: vfxScale(def.vfx.impact, radius) });
@@ -304,7 +336,7 @@ const dash: Behavior = {
     const { def, caster, sys } = c;
     const width = (def.params?.pathWidth ?? 1.5) * 0.5;
     const dir = c.data.dir as [number, number];
-    for (const e of enemiesIn(caster.position.x, caster.position.z, width + 0.2)) {
+    for (const e of enemiesIn(caster.position.x, caster.position.z, width + 0.2, caster.position.y)) {
       const hit = c.data.hit as Set<number>;
       if (hit.has(e.id)) continue;
       hit.add(e.id);
@@ -323,7 +355,7 @@ const dash: Behavior = {
     sys.ring(pos[0], pos[2], radius, 0xffd27a);
     sys.playClip(caster, '1H_Melee_Attack_Stab', { speed: 1.9, fade: 0.04 });
     if (c.remote) return;
-    const list = enemiesIn(caster.position.x, caster.position.z, radius);
+    const list = enemiesIn(caster.position.x, caster.position.z, radius, caster.position.y);
     const res = strikeMany(c, list, 99);
     sys.gainFromCost(c);
     if (!res.length) sys.shake(0.3);
@@ -393,7 +425,7 @@ const leap: Behavior = {
     if (!ult) G.camera?.punch?.(0.25);
     if (def.selfStatuses && !c.remote) sys.applySelf(c, def.selfStatuses);
     if (c.remote) return;
-    const list = enemiesIn(caster.position.x, caster.position.z, radius);
+    const list = enemiesIn(caster.position.x, caster.position.z, radius, caster.position.y);
     const res = strikeMany(c, list, 99, { knockup: def.params?.knockup });
     sys.gainFromCost(c);
     if (!res.length && !ult) sys.hitstopMs(35);
@@ -425,7 +457,7 @@ const teleport: Behavior = {
     sys.vfx(def.vfx?.cast ?? 'blink', [from.x, from.y + 1, from.z], { scale: 1.2 });
     if (def.damage && !c.remote) {
       const radius = def.radius ?? 2.5;
-      strikeMany(c, enemiesIn(from.x, from.z, radius), 99);
+      strikeMany(c, enemiesIn(from.x, from.z, radius, caster.position.y), 99);
     }
     if (def.selfStatuses && !c.remote) sys.applySelf(c, def.selfStatuses);
     if (!c.remote) {
@@ -449,7 +481,7 @@ const beam: Behavior = {
     sys.vfx(def.vfx?.cast ?? 'lightning_strike', at(caster, 1.2), { dir: [c.dir[0], 0, c.dir[1]], scale: 1 });
     if (c.remote) return;
     const len = def.range ?? 10;
-    const list = G.world?.actorsInLine({ x: caster.position.x, z: caster.position.z }, { x: c.dir[0], z: c.dir[1] }, len, def.radius ?? 1.2, (a) => a.team === 'enemy') ?? [];
+    const list = G.world?.actorsInLine({ x: caster.position.x, z: caster.position.z }, { x: c.dir[0], z: c.dir[1] }, len, def.radius ?? 1.2, (a) => a.team === 'enemy', caster.position.y) ?? [];
     strikeMany(c, list as unknown as Enemy[], 99);
   },
   tick(c) {
@@ -572,7 +604,7 @@ const channelAoe: Behavior = {
     const radius = (def.radius ?? 3.2) * (1 + sys.softStat(caster, 'aoeRadiusPct'));
     if (n % 2 === 0) sys.vfx('slash_arc', at(caster, 1.0), { dir: [Math.sin(n), 0, Math.cos(n)], scale: Math.max(0.8, radius / 3.1), color: 0xffc8a0 });
     if (c.remote) return true;
-    const list = enemiesIn(caster.position.x, caster.position.z, radius);
+    const list = enemiesIn(caster.position.x, caster.position.z, radius, caster.position.y);
     for (const e of list) {
       sys.strike(c, e, { tick: true, noGain: true, dir: norm(e.position.x - caster.position.x, e.position.z - caster.position.z), knockback: 0.25 });
     }
@@ -580,7 +612,7 @@ const channelAoe: Behavior = {
     // Kasırganın Yüreği: enemies further out are dragged in
     const hs = sp('leg_heart_of_storm');
     if (hs) {
-      for (const e of enemiesIn(caster.position.x, caster.position.z, hs.pullRadius ?? 6)) {
+      for (const e of enemiesIn(caster.position.x, caster.position.z, hs.pullRadius ?? 6, caster.position.y)) {
         const dx = caster.position.x - e.position.x, dz = caster.position.z - e.position.z;
         const dist = Math.hypot(dx, dz);
         if (dist < 1.8) continue;
@@ -616,7 +648,7 @@ function runFissure(c: CastCtx, dir: [number, number], more: number, staggerMul:
       nextRock += 1.6;
     }
     if (!c.remote) {
-      const list = G.world?.actorsInLine({ x: ox, z: oz }, { x: dx, z: dz }, nf, width, (a) => a.team === 'enemy' && !hit.has(a.id)) ?? [];
+      const list = G.world?.actorsInLine({ x: ox, z: oz }, { x: dx, z: dz }, nf, width, (a) => a.team === 'enemy' && !hit.has(a.id), caster.position.y) ?? [];
       for (const a of list) {
         hit.add(a.id);
         const e = a as unknown as Enemy;
@@ -703,7 +735,7 @@ function dropMeteor(c: CastCtx, px: number, pz: number, more: number, delayExtra
     sys.shake(clamp(0.5 * (1 - near / 28), 0.08, 0.5) * (more < 1 ? 0.6 : 1), 0.35);
     if (!c.remote) {
       sys.hitstopMs(more < 1 ? 40 : 80);
-      const list = enemiesIn(px, pz, radius);
+      const list = enemiesIn(px, pz, radius, groundAt(px, pz));
       for (const e of list) sys.strike(c, e, { dir: norm(e.position.x - px, e.position.z - pz), weight: 'heavy', noGain: true, more });
       sys.afterHits(c, []);
     }
@@ -713,7 +745,7 @@ function dropMeteor(c: CastCtx, px: number, pz: number, more: number, delayExtra
       x: px, z: pz, radius: gr, duration: def.duration ?? 3, tick: tickEvery, t: 0, next: tickEvery,
       onTick: (z) => {
         if (c.remote) return;
-        for (const e of enemiesIn(z.x, z.z, gr)) {
+        for (const e of enemiesIn(z.x, z.z, gr, groundAt(z.x, z.z))) {
           sys.strike(c, e, { coef: (p.groundCoef ?? 0.4) * more, tick: true, noGain: true, statuses: [{ status: 'burn', duration: 2, magnitude: 0.3 }], knockback: 0, dir: norm(e.position.x - z.x, e.position.z - z.z) });
         }
       },
@@ -776,7 +808,7 @@ const blizzard: Behavior = {
       sys.vfx('frost_burst', [p[0] + Math.cos(a) * r, 0.2, p[1] + Math.sin(a) * r], { scale: 0.35 });
     }
     if (c.remote) return true;
-    for (const e of enemiesIn(p[0], p[1], radius)) {
+    for (const e of enemiesIn(p[0], p[1], radius, groundAt(p[0], p[1]))) {
       sys.strike(c, e, { tick: true, noGain: true, dir: norm(e.position.x - p[0], e.position.z - p[1]) });
     }
     sys.shake(0.03);
@@ -807,7 +839,7 @@ const orb: Behavior = {
       sys.shake(0.38, 0.3);
       if (c.remote) return;
       sys.hitstopMs(85);
-      for (const e of enemiesIn(x, z, er)) {
+      for (const e of enemiesIn(x, z, er, groundAt(x, z))) {
         sys.strike(c, e, { coef: p.endCoef ?? 3, weight: 'heavy', stagger: p.endStagger ?? 20, noGain: true, dir: norm(e.position.x - x, e.position.z - z), knockback: 1.5 });
       }
     };
@@ -819,7 +851,7 @@ const orb: Behavior = {
         fn: (pr) => {
           sys.vfx('arcane_burst', [pr.position.x, pr.position.y, pr.position.z], { scale: 0.7 });
           if (c.remote) return;
-          for (const e of enemiesIn(pr.position.x, pr.position.z, pulseR)) {
+          for (const e of enemiesIn(pr.position.x, pr.position.z, pulseR, pr.position.y)) {
             sys.strike(c, e, { tick: true, noGain: true, dir: norm(e.position.x - pr.position.x, e.position.z - pr.position.z), knockback: 0 });
           }
           sys.shake(0.04);
@@ -854,7 +886,7 @@ const cataclysm: Behavior = {
     const range = def.range ?? 14;
     const sr = pr.strikeRadius ?? 2;
     let x: number, z: number;
-    const list = c.remote ? [] : enemiesIn(caster.position.x, caster.position.z, range).filter((e) => !e.isDead);
+    const list = c.remote ? [] : enemiesIn(caster.position.x, caster.position.z, range, caster.position.y).filter((e) => !e.isDead);
     if (list.length) {
       // elites/bosses first, then random
       const prio = list.filter((e) => e.def.rank !== 'trash');
@@ -871,7 +903,7 @@ const cataclysm: Behavior = {
     sys.sfx('lightning_impact', [x, 0, z] as unknown as THREE.Vector3, { volume: 0.7, pitchVar: 0.2 });
     if (!c.remote) {
       sys.hitstopMs(30);
-      for (const e of enemiesIn(x, z, sr)) {
+      for (const e of enemiesIn(x, z, sr, groundAt(x, z))) {
         sys.strike(c, e, { tick: true, weight: 'light', noGain: true, dir: norm(e.position.x - x, e.position.z - z), shake: 0.1 });
       }
     }
@@ -890,7 +922,7 @@ const cataclysm: Behavior = {
     sys.hitstopMs(120);
     sys.playClip(caster, 'Spellcast_Shoot', { speed: 1.2, fade: 0.04 });
     if (c.remote) return;
-    const list = enemiesIn(caster.position.x, caster.position.z, nr);
+    const list = enemiesIn(caster.position.x, caster.position.z, nr, caster.position.y);
     for (const e of list) {
       sys.strike(c, e, { coef: pr.novaCoef ?? 4, weight: 'ultimate', stagger: pr.novaStagger ?? 60, knockback: def.knockback ?? 5, noGain: true, dir: norm(e.position.x - caster.position.x, e.position.z - caster.position.z) });
     }
@@ -931,7 +963,7 @@ const tempest: Behavior = {
     sys.shake(0.1 + (last ? 0.3 : 0), 0.2);
     if (c.remote) return n < total;
     caster.statuses.addImmunity('cc', 0.5);
-    const list = enemiesIn(caster.position.x, caster.position.z, radius);
+    const list = enemiesIn(caster.position.x, caster.position.z, radius, caster.position.y);
     const bonus = (c.data.bonus as number) ?? 1;
     for (const e of list) {
       const d = norm(e.position.x - caster.position.x, e.position.z - caster.position.z);
@@ -1007,7 +1039,7 @@ const fan: Behavior = {
     sys.shake(0.12);
     sys.sfx('dagger_throw', caster.position);
     if (c.remote) return;
-    const list = enemiesIn(caster.position.x, caster.position.z, radius);
+    const list = enemiesIn(caster.position.x, caster.position.z, radius, caster.position.y);
     const res = strikeMany(c, list, 99, { noGain: true });
     if (res.length) sys.addCombo(caster, Math.min(p.cpMax ?? 3, res.length * (p.cpPerTarget ?? 1)));
   },
@@ -1052,7 +1084,7 @@ const eviscerate: Behavior = {
         e.statuses.remove('poison');
         sys.vfx('poison_burst', at(e, e.height * 0.5), { scale: 1.6 });
         sys.ring(e.position.x, e.position.z, 3, 0x7dff5a);
-        for (const o of enemiesIn(e.position.x, e.position.z, 3)) {
+        for (const o of enemiesIn(e.position.x, e.position.z, 3, e.position.y)) {
           sys.strike(c, o, { coef: 0, flat: total, type: 'poison', tick: true, noGain: true, canCrit: false, dir: norm(o.position.x - e.position.x, o.position.z - e.position.z) });
         }
       }
@@ -1086,7 +1118,7 @@ const smoke: Behavior = {
       x: px, z: pz, radius, duration: dur, tick: 0.25, t: 0, next: 0.05,
       onTick: (z) => {
         blindT += 0.25;
-        for (const e of enemiesIn(z.x, z.z, radius)) {
+        for (const e of enemiesIn(z.x, z.z, radius, groundAt(z.x, z.z))) {
           if (blindT >= 1 || blindT === 0.25) {
             sys.statusOnly(c, e, [{ status: 'blind', duration: 2 }]);
             if (!G.net || G.net.isAuthority) { if (e.targetId === caster.id) e.targetId = null; }
@@ -1125,7 +1157,7 @@ const boltRain: Behavior = {
           });
         }
         if (c.remote) return;
-        for (const e of enemiesIn(z.x, z.z, radius)) {
+        for (const e of enemiesIn(z.x, z.z, radius, groundAt(z.x, z.z))) {
           sys.strike(c, e, { tick: true, noGain: true, dir: norm(e.position.x - z.x, e.position.z - z.z), knockback: 0 });
         }
         sys.shake(0.05);
@@ -1141,7 +1173,7 @@ const deathBlossom: Behavior = {
     if (c.remote) return;
     const { caster, sys, def } = c;
     const range = def.range ?? 12;
-    const list = enemiesIn(caster.position.x, caster.position.z, range).filter((e) => !e.isDead);
+    const list = enemiesIn(caster.position.x, caster.position.z, range, caster.position.y).filter((e) => !e.isDead);
     if (!list.length) { sys.fail('target'); return false; }
     list.sort((a, b) => dist2(a.position, caster.position) - dist2(b.position, caster.position));
     c.data.targets = list.slice(0, def.params?.maxTargets ?? 8);
@@ -1217,9 +1249,11 @@ const deathBlossom: Behavior = {
 
 /** Nearest living enemy the cast can reach: the soft target when it is in the cone, else the first one in the cone. */
 function pickEnemy(c: CastCtx, range: number, arc: number): Enemy | null {
+  // single-target instants: same height level (enemiesInCone is gated by the caster y) and a clear eye-to-chest line
   const t = c.target;
-  if (t && t.kind === 'enemy' && !t.isDead && Math.hypot(t.position.x - c.caster.position.x, t.position.z - c.caster.position.z) <= range) return t as Enemy;
-  return c.sys.enemiesInCone(c.caster, c.dir, range, arc)[0] ?? null;
+  if (t && t.kind === 'enemy' && !t.isDead && Math.hypot(t.position.x - c.caster.position.x, t.position.z - c.caster.position.z) <= range
+    && (!G.world || G.world.sameLevel(t, c.caster.position.y)) && clearSight(c.caster, t)) return t as Enemy;
+  return c.sys.enemiesInCone(c.caster, c.dir, range, arc).find((e) => clearSight(c.caster, e)) ?? null;
 }
 
 /** Kışkırtma (knight_provoke / barbarian_provoke): taunt 3 s (boss 2 s), threat set to max(current, top × 1.10) + 100. */
@@ -1426,7 +1460,7 @@ const smokeWard: Behavior = {
     if (c.remote) return;
     const tick = (): void => {
       sys.applyPartyAt(c, 'fortify', 1.2, p.drPct ?? 0.2, x, z, r);
-      for (const e of sys.enemiesNear(x, z, r)) e.statuses.apply('blind', p.blindDur ?? 1.2, { sourceId: caster.id });
+      for (const e of sys.enemiesNear(x, z, r, groundAt(x, z))) e.statuses.apply('blind', p.blindDur ?? 1.2, { sourceId: caster.id });
     };
     tick();
     for (let i = 1; i < Math.ceil(def.duration ?? 6); i++) sys.schedule(i, tick);

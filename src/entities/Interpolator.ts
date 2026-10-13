@@ -13,6 +13,8 @@ export interface InterpSample {
 
 /** Metres per snapshot segment above which remote motion is treated as a teleport (no lerp). Dashes stay below it. */
 export const SNAP_DIST = 7;
+/** Metres of height change per snapshot segment above which remote motion is treated as a teleport (vertical world, §10.3). */
+export const SNAP_DY = 3;
 
 export class Interpolator {
   private buf: InterpSample[] = [];
@@ -52,9 +54,10 @@ export class Interpolator {
       const c = b[i];
       if (t >= a.t) {
         let k = Math.min(1, (t - a.t) / Math.max(1e-4, c.t - a.t));
-        // teleports (Shadowstep, Blink, portals): a segment longer than SNAP_DIST is a jump, never a slide
+        // teleports (Shadowstep, Blink, portals): a segment longer than SNAP_DIST is a jump, never a slide; so is a height
+        // change above SNAP_DY (falls and vertical blinks under 7 m XZ). The horizontal rule is unchanged.
         const jx = c.x - a.x, jz = c.z - a.z;
-        if (jx * jx + jz * jz > SNAP_DIST * SNAP_DIST) k = k < 0.5 ? 0 : 1;
+        if (jx * jx + jz * jz > SNAP_DIST * SNAP_DIST || Math.abs(c.y - a.y) > SNAP_DY) k = k < 0.5 ? 0 : 1;
         out.x = a.x + (c.x - a.x) * k;
         out.y = a.y + (c.y - a.y) * k;
         out.z = a.z + (c.z - a.z) * k;

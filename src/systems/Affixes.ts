@@ -523,7 +523,7 @@ export class Affixes {
     for (const id of this.inspirers) {
       const src = w.get<Enemy>(id);
       if (!src || src.kind !== 'enemy' || src.isDead || src.removed) continue;
-      for (const a of w.enemiesInRadius(src.position, r)) {
+      for (const a of w.enemiesInRadius(src.position, r, src.position.y)) {
         if (a.isDead || !isRegular(a)) continue;
         a.statuses.apply('inspiring', 1.4, { sourceId: src.id });
       }
@@ -754,7 +754,7 @@ export class Affixes {
 
   private bolster(dead: Enemy): void {
     const p = P('bolstering');
-    for (const a of G.world!.enemiesInRadius(dead.position, p.radius)) {
+    for (const a of G.world!.enemiesInRadius(dead.position, p.radius, dead.position.y)) {
       if (a === dead || a.isDead || !isRegular(a)) continue;
       if (a.statuses.stacks('bolstered') >= p.maxStacks) continue;
       a.statuses.apply('bolstered', 3600, { stacks: 1, sourceId: null });
@@ -1090,7 +1090,7 @@ export class Affixes {
       if (!src) return;
       G.vfx.spawn('quaking_ring', src.position, { scale: r / 5 });
       const lp = G.world?.localPlayer;
-      if (lp && !lp.isDead && dist(lp.position.x, lp.position.z, src.position.x, src.position.z) <= r + lp.radius) {
+      if (lp && !lp.isDead && dist(lp.position.x, lp.position.z, src.position.x, src.position.z) <= r + lp.radius && G.world!.sameLevel(lp, src.position.y)) {
         try { G.skills.interrupt(lp, true); } catch { /* ignore */ }
         G.events.emit('camera:shake', { intensity: 0.5, duration: 0.4 });
       }

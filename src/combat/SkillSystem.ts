@@ -20,7 +20,7 @@ import { MOVE_BY_KIND, moveBehavior, RUN_ATTACK_SEC, RUN_SPEED_FRAC, ROLL_ATTACK
 import type { ComboRouteDef, WeaponArtDef } from '../types/v2';
 import { softStat, type DamageResult, type HitSpec } from './Combat';
 import { Projectile } from '../entities/Projectile';
-import { behaviorFor, type Behavior, type CastCtx } from './skills/behaviors';
+import { behaviorFor, groundAt, aimSlope, type Behavior, type CastCtx } from './skills/behaviors';
 import { sp, hasSp, combineChance, shockwave, fireWave, specHooksOf, allSpecHooks, weaponAvg } from './specials';
 import { skillRankCooldownMult } from './skillRanks';
 import type { MageCastMods, MageCtx, TouchBurst } from './specs/mage';
@@ -832,7 +832,7 @@ export class SkillSystem {
     this.sfx('frost_impact', p.position);
     this.shake(0.22, 0.25);
     if (c.remote || p.isDead) return;
-    for (const e of this.enemiesNear(p.position.x, p.position.z, r)) {
+    for (const e of this.enemiesNear(p.position.x, p.position.z, r, p.position.y)) {
       this.strike(c, e, { coef: def.damage?.coef ?? 1, weight: 'heavy', stagger: 10, noGain: true, statuses: [{ status: 'chill', duration: 3, stacks: 2 }], dir: this.dirTo(p, e), knockback: 1.2 });
     }
   }
@@ -1061,7 +1061,8 @@ export class SkillSystem {
       const t = w.getActor(hardId);
       if (t && !t.isDead && t.team === 'enemy') {
         const d = Math.hypot(t.position.x - p.position.x, t.position.z - p.position.z) - t.radius;
-        if (d <= reach + (melee ? 1.5 : 3)) return t;
+        // melee: |Δy| ≤ 2.5 (sameLevel default tol); ranged single-target picks are gated by the instant rule elsewhere
+        if (d <= reach + (melee ? 1.5 : 3) && (!melee || w.sameLevel(t, p.position.y))) return t;
       }
     }
     const cone = melee ? FEEL.meleeAssistCone : 70;
@@ -1070,6 +1071,7 @@ export class SkillSystem {
     let bestScore = -1;
     for (const e of w.enemies) {
       if (e.isDead) continue;
+      if (melee && !w.sameLevel(e, p.position.y)) continue;
       const dx = e.position.x - p.position.x, dz = e.position.z - p.position.z;
       const dist = Math.hypot(dx, dz);
       const edge = dist - e.radius;
@@ -1288,7 +1290,7 @@ export class SkillSystem {
   private applyTouchBurst(b: TouchBurst): void {
     if (b.owner.kind !== 'player' || !(b.owner as Player).isLocal) return;
     const owner = b.owner as Player;
-    for (const e of this.enemiesNear(b.x, b.z, b.radius)) {
+    for (const e of this.enemiesNear(b.x, b.z, b.radius, groundAt(b.x, b.z))) {
       G.combat.playerHitEnemy(owner, e, {
         skillId: 'mage_touch_of_magi', coef: 0, flat: b.amount, type: b.type, tags: ['spell', 'arcane', 'aoe', 'proc'],
         isSpell: true, canCrit: false, noCombo: true, pos: [e.position.x, e.position.y + e.height * 0.5, e.position.z],
@@ -1304,7 +1306,7 @@ export class SkillSystem {
       if (!nova) continue;
       this.ring(nova.x, nova.z, nova.radius, 0xff7a2e);
       this.shake(0.2, 0.2);
-      for (const e of this.enemiesNear(nova.x, nova.z, nova.radius)) {
+      for (const e of this.enemiesNear(nova.x, nova.z, nova.radius, groundAt(nova.x, nova.z))) {
         G.combat.playerHitEnemy(owner as Player, e, {
           skillId: 'mage_blazing_barrier', coef: nova.coef, type: nova.type, tags: ['spell', 'fire', 'aoe'], isSpell: true,
           canCrit: true, noCombo: true, pos: [e.position.x, e.position.y + e.height * 0.5, e.position.z],
@@ -1341,7 +1343,7 @@ export class SkillSystem {
           const px = cx + Math.cos(a) * 1.5, pz = cz + Math.sin(a) * 1.5;
           this.schedule(0.1 + 0.05 * i, () => {
             this.vfx('hit_spark', [px, 0.8, pz], { scale: 0.7 });
-            for (const v of this.enemiesNear(px, pz, 1.5)) this.strike(child, v, { coef, noGain: true, weight: 'light' });
+            for (const v of this.enemiesNear(px, pz, 1.5, groundAt(px, pz))) this.strike(child, v, { coef, noGain: true, weight: 'light' });
           });
         }
         return;
@@ -1371,7 +1373,7 @@ export class SkillSystem {
             for (let i = 0; i < n; i++) {
               const a = t * 2.5 + (Math.PI * 2 * i) / n;
               const ox = caster.position.x + Math.cos(a) * 2.5, oz = caster.position.z + Math.sin(a) * 2.5;
-              for (const v of this.enemiesNear(ox, oz, 1.2)) this.strike(child, v, { coef, tick: true, noGain: true });
+              for (const v of this.enemiesNear(ox, oz, 1.2, groundAt(ox, oz))) this.strike(child, v, { coef, tick: true, noGain: true });
             }
           }
           return t >= 3;
@@ -1926,7 +1928,7 @@ export class SkillSystem {
       const sr = art?.params.shockRadius ?? 0;
       if (sr > 0) {
         sys.vfx('ground_slam', [p.position.x, 0.05, p.position.z], { scale: vfxScale('ground_slam', sr * 1.3, 0.35) });
-        for (const e of sys.enemiesNear(p.position.x, p.position.z, sr)) {
+        for (const e of sys.enemiesNear(p.position.x, p.position.z, sr, p.position.y)) {
           if (hit.has(e.id)) continue;
           sys.strike(c, e, { coef: art?.params.shockCoef ?? 1.2, weight: 'heavy', stagger: poise, more: mul, knockback: 1.5 });
         }
@@ -1957,7 +1959,7 @@ export class SkillSystem {
    */
   private kes(p: Player, x: number, z: number, art: WeaponArtDef | undefined): void {
     if (!art?.kick || this.kickLeft(p) > 0) return;
-    for (const e of this.enemiesNear(x, z, 2.4)) {
+    for (const e of this.enemiesNear(x, z, 2.4, p.position.y)) {
       if (!e.cast?.interruptible) continue;
       G.events.emit('kick:request', { enemyId: e.id, casterId: p.id });
       G.combat.onHardCC(e, p.id);
@@ -2146,7 +2148,7 @@ export class SkillSystem {
     const fx = Math.sin(p.yaw), fz = Math.cos(p.yaw);
     let best: Enemy | null = null;
     let bd = Infinity;
-    for (const e of this.enemiesNear(p.position.x, p.position.z, reach + 2.5)) {
+    for (const e of this.enemiesNear(p.position.x, p.position.z, reach + 2.5, p.position.y)) {
       if (e.isDead || e.removed) continue;
       const dx = e.position.x - p.position.x, dz = e.position.z - p.position.z;
       const dist = Math.hypot(dx, dz) || 1e-3;
@@ -2194,7 +2196,7 @@ export class SkillSystem {
   private finisherTarget(p: Player): Enemy | null {
     let best: Enemy | null = null;
     let bd = Infinity;
-    for (const e of this.enemiesNear(p.position.x, p.position.z, COMBAT_FEEL.krtRange + 2)) {
+    for (const e of this.enemiesNear(p.position.x, p.position.z, COMBAT_FEEL.krtRange + 2, p.position.y)) {
       if (e.isDead || e.removed || !e.statuses.has('marked_crit') || !G.combat.canFinish(e, p.id)) continue;
       const d = Math.hypot(e.position.x - p.position.x, e.position.z - p.position.z) - e.radius;
       if (d <= COMBAT_FEEL.krtRange && d < bd) { bd = d; best = e; }
@@ -2458,14 +2460,14 @@ export class SkillSystem {
     G.combat.applyEnemyStatuses(c.caster, e, statuses);
   }
 
-  enemiesNear(x: number, z: number, r: number): Enemy[] {
-    return G.world ? G.world.enemiesInRadius({ x, z }, r) : [];
+  enemiesNear(x: number, z: number, r: number, y?: number | null): Enemy[] {
+    return G.world ? G.world.enemiesInRadius({ x, z }, r, y) : [];
   }
 
   enemiesInCone(caster: Actor, dir: [number, number], range: number, arc: number): Enemy[] {
     const w = G.world;
     if (!w) return [];
-    return w.actorsInCone({ x: caster.position.x, z: caster.position.z }, { x: dir[0], z: dir[1] }, range, arc, (a) => a.team === 'enemy' && !a.isDead) as unknown as Enemy[];
+    return w.actorsInCone({ x: caster.position.x, z: caster.position.z }, { x: dir[0], z: dir[1] }, range, arc, (a) => a.team === 'enemy' && !a.isDead, caster.position.y) as unknown as Enemy[];
   }
 
   dirTo(a: Actor, b: Actor): [number, number] {
@@ -2589,7 +2591,8 @@ export class SkillSystem {
     try { p.anim?.playOnce(clip, { speed: o.speed ?? 1, fade: o.fade ?? 0.06, loop: o.loop, upperBody: o.upper, restart: true }); } catch { /* ignore */ }
   }
 
-  fireProjectile(c: CastCtx, dir: [number, number], height: number): void {
+  /** `aimAt`: the enemy the aim assist bent toward (ENGINE_VERTICALITY §12: Projectile.dirY slope, vertical worlds only). */
+  fireProjectile(c: CastCtx, dir: [number, number], height: number, aimAt: Actor | null = null): void {
     const { def, caster } = c;
     const pr = def.params ?? {};
     const hand = pr.hand ?? 0;
@@ -2603,6 +2606,7 @@ export class SkillSystem {
     Projectile.spawn({
       mode: c.remote ? 'visual' : 'player', owner: caster, vfx: id, scale: def.radius && def.radius > 0.45 ? 1.4 : 1,
       origin: [px, caster.position.y + height, pz], dir, speed: (def.speed ?? 25) * speedMul, radius: def.radius ?? 0.4, range: def.range ?? 25, pierce,
+      dirY: aimSlope(caster, caster.position.y + height, aimAt),
       onHit: (e, pr2) => this.projectileHit(c, e, pr2, explode),
       onEnd: (pr2, reason) => this.projectileEnd(c, pr2, reason, explode),
     });
@@ -2628,7 +2632,7 @@ export class SkillSystem {
     this.sfx(def.sfx?.impact ?? 'explosion', [x, 0, z] as unknown as THREE.Vector3);
     this.shake(0.12, 0.2);
     if (c.remote) return;
-    const list = this.enemiesNear(x, z, radius);
+    const list = this.enemiesNear(x, z, radius, groundAt(x, z));
     const res: DamageResult[] = [];
     for (const e of list) {
       const r = this.strike(c, e, { dir: this.dirFromPoint(x, z, e) ?? dir });

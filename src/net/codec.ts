@@ -31,12 +31,19 @@ function decodePState(a: unknown): unknown {
   return s;
 }
 
-/** [id, x, z, yaw, hp, maxHp, anim, targetId, cast, flags, shot, shotSeq]; flags: 1 dead, 2 aggroed, 4 has aggroed, 8 has shot */
+/**
+ * [id, x, z, yaw, hp, maxHp, anim, targetId, cast, flags, shot, shotSeq, y?]
+ * flags: 1 dead, 2 aggroed, 4 has aggroed, 8 has shot, 16 has y (ENGINE_VERTICALITY §15). Element 12 (y) is appended only when
+ * the host set EnemySyncState.y, so a grounded enemy keeps the legacy 12-element tuple and old peers see no change.
+ */
 function encodeEnemy(e: EnemySyncState): unknown[] {
   const hasAggro = e.aggroed !== undefined;
   const hasShot = e.shot !== undefined || e.shotSeq !== undefined;
-  const flags = (e.dead ? 1 : 0) | (e.aggroed ? 2 : 0) | (hasAggro ? 4 : 0) | (hasShot ? 8 : 0);
-  return [e.id, e.x, e.z, e.yaw, e.hp, e.maxHp, e.anim, e.targetId, e.cast, flags, e.shot ?? null, e.shotSeq ?? 0];
+  const hasY = typeof e.y === 'number' && Number.isFinite(e.y);
+  const flags = (e.dead ? 1 : 0) | (e.aggroed ? 2 : 0) | (hasAggro ? 4 : 0) | (hasShot ? 8 : 0) | (hasY ? 16 : 0);
+  const out: unknown[] = [e.id, e.x, e.z, e.yaw, e.hp, e.maxHp, e.anim, e.targetId, e.cast, flags, e.shot ?? null, e.shotSeq ?? 0];
+  if (hasY) out.push(e.y);
+  return out;
 }
 
 function decodeEnemy(a: unknown): unknown {
@@ -50,6 +57,7 @@ function decodeEnemy(a: unknown): unknown {
     e.shot = a[10];
     e.shotSeq = a[11];
   }
+  if ((flags & 16) && a.length >= 13 && typeof a[12] === 'number' && Number.isFinite(a[12])) e.y = a[12];
   return e;
 }
 

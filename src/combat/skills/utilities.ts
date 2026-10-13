@@ -69,7 +69,7 @@ function kickTarget(c: CastCtx, range: number, arc: number): Enemy | null {
   }
   let best: Enemy | null = null;
   let bestD = Infinity;
-  for (const e of w.enemiesInRadius({ x: me.x, z: me.z }, range + 2)) {
+  for (const e of w.enemiesInRadius({ x: me.x, z: me.z }, range + 2, me.y)) {
     if (!kickable(e) || !inReach(e) || !inArc(e)) continue;
     const d = distXZ(e.position.x, e.position.z, me.x, me.z);
     if (d < bestD) { best = e; bestD = d; }
@@ -273,7 +273,7 @@ const intimidate: Behavior = {
     if (c.remote) return;
     const fear = def.params?.fear ?? 6;
     const curse = def.params?.curse ?? 6;
-    for (const e of G.world?.enemiesInRadius({ x: caster.position.x, z: caster.position.z }, r) ?? []) {
+    for (const e of G.world?.enemiesInRadius({ x: caster.position.x, z: caster.position.z }, r, caster.position.y) ?? []) {
       if (e.isDead) continue;
       if (e.isBoss || e.def.rank === 'miniboss') e.statuses.apply('curse', curse, { sourceId: caster.id });
       else e.statuses.apply('fear', fear, { sourceId: caster.id });

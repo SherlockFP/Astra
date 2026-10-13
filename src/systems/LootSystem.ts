@@ -82,6 +82,9 @@ function namedTable(rank: RankKey, named?: LootTableDef): DropTable {
   };
 }
 
+/** Vertical worlds: a drop is auto-picked / magnetised only within this height difference (ENGINE_VERTICALITY §16). */
+const PICKUP_DY = 2.5;
+
 const POTION_LEVELS = [1, 15, 30, 45, 60];
 const potionTier = (level: number) => POTION_LEVELS.reduce((t, l, i) => (level >= l ? i + 1 : t), 1);
 const gemGradeFor = (level: number) => (level >= 60 ? 5 : level >= 45 ? 4 : level >= 30 ? 3 : level >= 15 ? 2 : 1);
@@ -153,7 +156,9 @@ export class LootSystem {
     // M+ affix units (explosive orbs, spiteful shades, Efsun guardians) and boss mechanic entities (cages, tombs, phylacteries) never reward
     if (isAffixUnit(enemy) || enemy.def.id.startsWith('proc_')) return;
     const rank = rankKeyOf(enemy);
-    const origin = new THREE.Vector3(enemy.position.x, Math.max(0.9, enemy.height * 0.5), enemy.position.z);
+    // vertical worlds: the corpse may stand on a ledge, so the drop starts from its own height, not from y 0
+    const baseY = world.vertical ? enemy.position.y : 0;
+    const origin = new THREE.Vector3(enemy.position.x, baseY + Math.max(0.9, enemy.height * 0.5), enemy.position.z);
     const dist = Math.hypot(player.position.x - enemy.position.x, player.position.z - enemy.position.z);
     const mp = G.mplus?.state;
     const keyLevel = mp && mp.keyLevel > 0 ? mp.keyLevel : mp && mp.difficulty === 'mythic' ? 1 : 0; // Mitik 0 is treated as key 1 (GDD_CONTENT 5.2)
@@ -384,7 +389,7 @@ export class LootSystem {
       let r = (radius ?? rng.range(1.5, 4)) * (attempt > 5 ? 0.55 : 1);
       if (!spiral && radius === undefined) r = rng.range(1.5, 4) * (attempt > 5 ? 0.55 : 1);
       const x = origin.x + Math.cos(ang) * r, z = origin.z + Math.sin(ang) * r;
-      if (nav && (!nav.isWalkable(x, z) || !nav.lineOfSight(origin.x, origin.z, x, z))) continue;
+      if (nav && (!nav.isStandable(x, z) || !nav.lineOfSight(origin.x, origin.z, x, z))) continue;
       let ok = true;
       for (const d of this.drops) {
         if (d.removed) continue;
@@ -394,10 +399,11 @@ export class LootSystem {
           break;
         }
       }
-      if (ok) return new THREE.Vector3(x, 0, z);
+      if (ok) return new THREE.Vector3(x, G.world?.groundY(x, z) ?? 0, z);
     }
     const near = nav?.nearestWalkable(origin.x, origin.z);
-    return new THREE.Vector3(near?.x ?? origin.x + rng.range(-0.5, 0.5), 0, near?.z ?? origin.z + rng.range(-0.5, 0.5));
+    const nx = near?.x ?? origin.x + rng.range(-0.5, 0.5), nz = near?.z ?? origin.z + rng.range(-0.5, 0.5);
+    return new THREE.Vector3(nx, G.world?.groundY(nx, nz) ?? 0, nz);
   }
 
   private spawnDrop(payload: DropPayload, origin: THREE.Vector3, opts: { delay?: number; spot?: THREE.Vector3; vy?: number } = {}): LootDrop | null {
@@ -625,6 +631,8 @@ export class LootSystem {
         if (chest < 0.85) this.pickup(d);
         continue;
       }
+      // vertical worlds: a drop on another level (balcony, pit floor) is neither magnetised nor picked up from here
+      if (world.vertical && Math.abs(d.object3d.position.y - player.position.y) > PICKUP_DY) continue;
       if (d.sinceLanded < 0.25) continue;
       switch (kind) {
         case 'gold': {
