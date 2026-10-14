@@ -11,6 +11,9 @@ import { localHardTargetId } from '../../game/PlayerController';
 import { DAMAGE_COLORS, ICON, div, fmtCd, fmtNum, iconEl, pulse, setClass, setDisplay, setIconUrl, setStyle, setText, esc } from '../widgets/dom';
 import { skillTooltipHTML } from '../widgets/tooltips';
 import { TalentBadge } from './Extras';
+import { drag } from '../panels/items/common';
+import { applyBarDrop, barAccepts, barDropOutside, barPayload, readBars, useBarMat } from './barDrop';
+import { type CellRef, itemCount, sharedCooldown } from './barModel';
 import type { HudCtx, HudWidget } from './types';
 import '../styles/hud-wow.css';
 
@@ -109,6 +112,11 @@ interface TipUi {
   hideTooltip(): void;
 }
 
+/** Stands in for the skill id of an item cell, so the next skill frame refreshes the icon. */
+const MAT_SENTINEL = '\u0000mat';
+/** Classes a skill cell paints that an item cell must not show. */
+const ITEM_OFF = ['auto', 'armed', 'queued', 'oor', 'glow', 'spend', 'is-disabled', 'locked', 'casting', 'nores', 'slot-gcd'];
+
 /** Cooldown number colour: white, red under 3 s (docs/UI_WOW_CLASSIC.md §2). */
 function cdColor(sec: number): string {
   return sec < 3 ? '#ff4a3a' : '#ffffff';
@@ -147,6 +155,9 @@ class Slot {
   failUntil = 0;
   /** A mouse click cast this slot since the last frame: ActionBar.update flashes the cell and shows the failure text. */
   clicked = false;
+  /** Consumable on this main-bar cell (set per frame by ActionBar from the save), or null. */
+  matId: string | null = null;
+  private shownMat: string | null = null;
 
   constructor(readonly spec: SlotSpec, private readonly ui: TipUi) {
     this.el = div(spec.potion ? 'k-slot ab-btn k-slot--cons pot' : 'k-slot ab-btn');
@@ -188,6 +199,10 @@ class Slot {
       G.ui.openPanel('skills');
       return;
     }
+    if (this.matId) {
+      this.useMat();
+      return;
+    }
     if (this.spec.potion) {
       G.combat?.usePotion(this.spec.potion);
       return;
@@ -209,8 +224,20 @@ class Slot {
     }
   }
 
+  /** Uses the consumable on this cell (a click, or the cell's key). */
+  useMat(): void {
+    if (!this.matId) return;
+    pulse(this.el, useBarMat(this.matId) ? 'press' : 'fail');
+  }
+
   private showTip(x: number, y: number): void {
     const bind = G.input?.bindingLabel(this.spec.action);
+    if (this.matId) {
+      const m = getMaterial(this.matId);
+      const n = G.character?.material(this.matId) ?? 0;
+      this.ui.showTooltip(`<div class="sk"><div class="sk-head"><div><div class="sk-name">${esc(m?.name ?? this.matId)}</div><div class="sk-tags">Tüketilebilir · Elindeki: ${fmtNum(n)}</div></div></div><div class="sk-desc">${esc(m?.desc ?? '')}</div><div class="sk-key">Tuş: <b>${esc(bind ?? '')}</b></div></div>`, x, y);
+      return;
+    }
     if (this.autoInfo) {
       const a = this.autoInfo;
       const autoKey = G.input?.bindingLabel('autoAttack') ?? '-';
@@ -244,7 +271,7 @@ class Slot {
    */
   resolveSkill(ctx: HudCtx): string | null {
     const key = this.spec.skill;
-    if (!key) return null;
+    if (!key || this.matId) return null;
     const c = ctx.character;
     let id: string | undefined = c?.save.skillBar[key];
     if (!id && key === 'lmb') {
@@ -301,6 +328,10 @@ class Slot {
   update(ctx: HudCtx, auto: AutoInfo | null, armed: boolean, frame: BarFrame, ghost: boolean): void {
     const p = ctx.player;
     this.autoInfo = auto;
+    if (this.matId) {
+      this.updateMat(ctx);
+      return;
+    }
     let rev: Reveal = 'ready';
     if (!this.spec.potion) {
       const sid = this.resolveSkill(ctx);
@@ -423,6 +454,50 @@ class Slot {
     this.updateMajor(ctx);
   }
 
+  /**
+   * An item cell (a consumable on the main bar): icon, stack count (total in the bags), the shared cooldown (potion_cd),
+   * greyed at 0 but kept on the bar.
+   */
+  private updateMat(ctx: HudCtx): void {
+    const id = this.matId ?? '';
+    if (this.shownMat !== id) {
+      this.shownMat = id;
+      const m = getMaterial(id);
+      setIconUrl(this.art, m?.icon ?? null);
+      this.el.style.setProperty('--ac', m?.potion ? (m.potion.kind === 'mp' ? '#6aa8ff' : '#ff6a5a') : '#e8c46a');
+      this.skillId = MAT_SENTINEL;
+      this.def = null;
+    }
+    setClass(this.el, 'is-hidden', false);
+    setClass(this.el, 'is-ghost', false);
+    setClass(this.el, 'is-socket', false);
+    setClass(this.el, 'noskill', false);
+    setClass(this.el, 'is-new', false);
+    setDisplay(this.chip, false);
+    setDisplay(this.school, false);
+    setDisplay(this.sated, false);
+    setDisplay(this.swing, false);
+    for (const c of ITEM_OFF) setClass(this.el, c, false);
+    setText(this.keyEl, G.input ? G.input.bindingLabel(this.spec.action) : '');
+    const n = itemCount(ctx.character?.save.materials ?? {}, id);
+    setClass(this.el, 'empty', n <= 0);
+    setText(this.count, String(n));
+    setClass(this.count, 'is-zero', n <= 0);
+    setDisplay(this.count, n > 1 || n <= 0);
+    const cd = sharedCooldown(ctx.player?.statuses.get('potion_cd'));
+    const onCd = cd.remaining > 0.05 && cd.total > 0;
+    setClass(this.el, 'oncd', onCd);
+    setClass(this.el, 'has-edge', onCd && cd.total > 2);
+    if (onCd) {
+      setStyle(this.el, '--p', Math.min(1, cd.remaining / cd.total).toFixed(3));
+      setText(this.cdEl, cdText(cd.remaining));
+      setStyle(this.cdEl, 'color', cdColor(cd.remaining));
+    }
+    setDisplay(this.cdEl, onCd, 'flex');
+    setDisplay(this.sweep, onCd, 'block');
+    this.prevCd = cd.remaining;
+  }
+
   /** Major tone line (`--tone`: defensive blue, heal green, otherwise gold; the hero slot is always gold), `Yorgun m:ss` on T. */
   private updateMajor(ctx: HudCtx): void {
     if (!this.spec.major) return;
@@ -539,6 +614,15 @@ export class ActionBar implements HudWidget {
     const row = div('ab-row r1', bars);
     for (const spec of MAIN_SPECS) {
       const s = new Slot(spec, ui);
+      const ref: CellRef = { bar: 'main', idx: this.slots.length };
+      drag.zone(s.el, {
+        accepts: (p) => barAccepts(ref, p),
+        drop: (p) => applyBarDrop(ref, p),
+      });
+      drag.bindSource(s.el, {
+        payload: (ev) => barPayload(ref, ev),
+        onDropOutside: barDropOutside,
+      });
       this.slots.push(s);
       row.appendChild(s.el);
     }
@@ -642,15 +726,26 @@ export class ActionBar implements HudWidget {
     // WoW: lmb is the auto-attack cell while skill_lmb has no key (CONTROLS_WOW §9)
     const autoCell = !!G.input && !!G.settings && G.settings.data.controlScheme === 'wow' && G.input.bindings.skill_lmb.length === 0;
     const auto = autoCell && ctx.player ? G.skills.autoInfo(ctx.player) : null;
+    // the main row's consumables come from the save (skills come from skillBar, read by each slot)
+    const mainRow = readBars().main;
+    this.slots.forEach((s, i) => {
+      const c = mainRow[i];
+      s.matId = c?.k === 'mat' ? c.id : null;
+    });
     const frame = this.buildFrame(ctx, this.slots);
     const ghost = G.settings?.data.barGhostSlots === true;
     for (const s of this.slots) {
-      s.update(ctx, s.spec.id === 'lmb' ? auto : null, this.autoArmed, frame, ghost);
+      s.update(ctx, s.spec.id === 'lmb' && !s.matId ? auto : null, this.autoArmed, frame, ghost);
       const clicked = s.clicked;
       s.clicked = false;
       const down = clicked || (G.input && ctx.mode !== 'menu' && G.input.pressed(s.spec.action));
       const swallowed = relock && (s.spec.action === 'skill_lmb' || s.spec.action === 'skill_rmb');
       if (down && (clicked || (!swallowed && !G.ui.wantsCursor()))) {
+        // an item cell fires from its key (a skill cell casts through SkillSystem)
+        if (s.matId) {
+          s.useMat();
+          continue;
+        }
         s.setFlash('press');
         // a failure reported during this frame belongs to the pressed slot
         if (this.hasFail && G.engine.frame - this.lastFailFrame <= 1) {

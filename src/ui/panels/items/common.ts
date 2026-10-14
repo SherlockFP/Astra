@@ -4,6 +4,7 @@ import { EQUIP_SLOT_NAMES_TR, type EquipSlot, type ItemBaseDef, type ItemCategor
 import { STAT_INFO, type StatBlock, type StatId } from '../../../types/stats';
 import type { SfxId } from '../../../types/audio';
 import type { SkillSlotKey } from '../../../types/skills';
+import type { CellRef } from '../../hud/barModel';
 import { GEMS, getItemBase } from '../../../data/items';
 import { getMaterial } from '../../../data/materials';
 import type { ItemDescription } from '../../../systems/ItemGen';
@@ -610,7 +611,8 @@ export class ItemSlot {
 
 export type DragPayload =
   | { kind: 'item'; item: ItemInstance; loc: ItemLocation }
-  | { kind: 'skill'; skillId: string; from?: SkillSlotKey };
+  | { kind: 'skill'; skillId: string; from?: SkillSlotKey; cell?: CellRef }
+  | { kind: 'mat'; id: string; cell?: CellRef };
 
 export interface DropSpec {
   accepts(p: DragPayload): boolean;
@@ -619,7 +621,10 @@ export interface DropSpec {
 }
 
 export interface SourceSpec {
-  payload(): DragPayload | null;
+  /** The pointer event of the first move past the threshold (shiftKey gates action bar pickups). */
+  payload(ev?: PointerEvent): DragPayload | null;
+  /** Released with no drop zone under the pointer (drag off an action bar removes the cell). */
+  onDropOutside?(p: DragPayload): void;
   onClick?(e: MouseEvent): void;
   onDouble?(e: MouseEvent): void;
   onContext?(e: MouseEvent): void;
@@ -630,6 +635,7 @@ class DragManager {
   private zones = new WeakMap<HTMLElement, DropSpec>();
   private ghost: HTMLElement | null = null;
   private srcEl: HTMLElement | null = null;
+  private srcSpec: SourceSpec | null = null;
   private hover: HTMLElement | null = null;
   private lastClick = new WeakMap<HTMLElement, number>();
 
@@ -647,13 +653,13 @@ class DragManager {
       const move = (ev: PointerEvent) => {
         if (!started) {
           if (Math.hypot(ev.clientX - sx, ev.clientY - sy) < 5) return;
-          const p = spec.payload();
+          const p = spec.payload(ev);
           if (!p) {
             cleanup();
             return;
           }
           started = true;
-          this.begin(p, el, ev);
+          this.begin(p, el, ev, spec);
         }
         this.moveTo(ev);
       };
@@ -696,9 +702,10 @@ class DragManager {
     });
   }
 
-  private begin(p: DragPayload, src: HTMLElement, ev: PointerEvent): void {
+  private begin(p: DragPayload, src: HTMLElement, ev: PointerEvent, spec: SourceSpec): void {
     this.active = p;
     this.srcEl = src;
+    this.srcSpec = spec;
     hideTips();
     src.classList.add('is-dragging');
     const g = src.cloneNode(true) as HTMLElement;
@@ -738,6 +745,8 @@ class DragManager {
   private end(ev: PointerEvent | null, drop: boolean): void {
     const p = this.active;
     const z = this.hover;
+    const src = this.srcSpec;
+    this.srcSpec = null;
     this.ghost?.remove();
     this.ghost = null;
     this.srcEl?.classList.remove('is-dragging');
@@ -746,6 +755,7 @@ class DragManager {
     document.querySelectorAll('.pi-accept, .hover-ok, .hover-bad').forEach((x) => x.classList.remove('pi-accept', 'hover-ok', 'hover-bad'));
     this.hover = null;
     this.active = null;
+    if (drop && ev && p && !z) src?.onDropOutside?.(p);
     if (drop && ev && p && z) {
       const spec = this.zones.get(z);
       if (spec && spec.accepts(p)) {

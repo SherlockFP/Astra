@@ -120,6 +120,8 @@ export interface SettingsData {
   meterVisibility: 'auto' | 'always' | 'never';
   /** Empty ghost cells in the action bar (false = quiet progressive bar, the default). */
   barGhostSlots: boolean;
+  /** Barları Kilitle (append-only): while on, picking a cell up from an action bar needs Shift held. Default on. */
+  barLock: boolean;
   /** Spec icon block in the player frame (off by default). */
   ufIcon: boolean;
   /** Chat stats line (Kritik · Hız · Soğuma · Kaçınma). */
@@ -247,6 +249,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   // UX-00 (UI_REDESIGN Appendix A)
   meterVisibility: 'auto',
   barGhostSlots: true,
+  barLock: true,
   ufIcon: false,
   showStats: false,
   showMapInfo: false,
