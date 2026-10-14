@@ -19,7 +19,7 @@ export const SPECS_KIT_SHAMAN: Partial<Record<SpecId, SpecDef>> = {
       'shaman_totem_earthbind', 'shaman_stormkeeper', 'shaman_totem_fire', 'shaman_ascendance', 'shaman_earth_elemental',
     ],
     unlock: {
-      shaman_flame_shock: 1, shaman_lava_burst: 10, shaman_earth_shock: 10, shaman_chain_lightning: 15, shaman_elemental_blast: 20,
+      shaman_flame_shock: 1, shaman_lava_burst: 1, shaman_earth_shock: 10, shaman_chain_lightning: 15, shaman_elemental_blast: 20,
       shaman_earthquake: 20, shaman_totem_earthbind: 15, shaman_stormkeeper: 10, shaman_totem_fire: 20, shaman_ascendance: 20,
       shaman_earth_elemental: 25,
     },
@@ -46,7 +46,7 @@ export const SPECS_KIT_SHAMAN: Partial<Record<SpecId, SpecDef>> = {
       'shaman_enh_unleash', 'shaman_feral_spirit', 'shaman_enh_ascendance',
     ],
     unlock: {
-      shaman_stormstrike: 1, shaman_lava_lash: 10, shaman_crash_lightning: 10, shaman_maelstrom_spender: 10, shaman_frost_shock: 10,
+      shaman_stormstrike: 1, shaman_lava_lash: 10, shaman_crash_lightning: 10, shaman_maelstrom_spender: 1, shaman_frost_shock: 10,
       shaman_enh_unleash: 10, shaman_feral_spirit: 20, shaman_enh_ascendance: 25,
     },
     majors: { m45: 'shaman_enh_unleash', m90: 'shaman_feral_spirit', m180: 'shaman_enh_ascendance' },
@@ -72,7 +72,7 @@ export const SPECS_KIT_SHAMAN: Partial<Record<SpecId, SpecDef>> = {
       'shaman_nature_swiftness', 'shaman_tide_totem',
     ],
     unlock: {
-      shaman_healing_wave: 1, shaman_riptide: 1, shaman_chain_heal: 10, shaman_purify_spirit: 10, shaman_stream_totem: 10,
+      shaman_healing_wave: 1, shaman_riptide: 1, shaman_chain_heal: 1, shaman_purify_spirit: 10, shaman_stream_totem: 10,
       shaman_healing_rain: 15, shaman_nature_swiftness: 10, shaman_tide_totem: 20,
     },
     majors: { m45: 'shaman_nature_swiftness', m90: 'shaman_tide_totem' },

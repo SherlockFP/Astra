@@ -74,7 +74,7 @@ export function registerDemonHunter(add: SkillAdd): void {
 
   // ---- Bıçak Dansı / Ölüm Süpürmesi (q)
   add({
-    id: 'demonhunter_blade_dance', classId: 'demonhunter', name: 'Bıçak Dansı (Blade Dance)', icon: I('skill-blade-storm'), unlockLevel: 3, defaultSlot: 's1',
+    id: 'demonhunter_blade_dance', classId: 'demonhunter', name: 'Bıçak Dansı (Blade Dance)', icon: I('skill-blade-storm'), unlockLevel: 1, defaultSlot: 's1',
     desc: 'Çevrendeki 6 metrelik alanda herkese %220 gölge hasarı verirsin. 18 Gazap harcar. 15 saniye bekleme. Metamorfoz sırasında Ölüm Süpürmesi\'ne dönüşür.',
     cost: 18, cooldown: 15, castTime: 0, anim: '2H_Melee_Attack_Spin', animSpeed: 1.8, hitTime: 0.6, targeting: 'self_aoe', radius: 6,
     damage: { coef: 2.2, type: 'shadow' }, tags: ['melee', 'aoe', 'spender', 'shadow'],

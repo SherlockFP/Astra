@@ -46,7 +46,7 @@ add({
 
 // Gölge Adımı (Shadowstep): off-GCD, enemy or ally target within 25 m, 2 charges / 30 s, lands behind the target
 add({
-  id: 'rogue_shadow_step', classId: 'rogue', name: 'Gölge Adımı (Shadowstep)', icon: I('skill-shadow-step'), unlockLevel: 3, defaultSlot: 's2',
+  id: 'rogue_shadow_step', classId: 'rogue', name: 'Gölge Adımı (Shadowstep)', icon: I('skill-shadow-step'), unlockLevel: 1, defaultSlot: 's2',
   desc: '25 m içindeki bir hedefin (düşman ya da müttefik) arkasına ışınlanırsın; 2 yük, 30 sn. 2 sn boyunca %70 daha hızlı koşarsın.',
   cost: 0, cooldown: 30, charges: 2, castTime: 0, offGcd: true, anim: 'Dodge_Forward', animSpeed: 1.0, hitTime: 0.08,
   targeting: 'custom', range: 25,
@@ -57,7 +57,7 @@ add({
 
 // Tekme (Kick): interrupt, 15 s
 add({
-  id: 'rogue_kick', classId: 'rogue', name: 'Tekme (Kick)', icon: I('skill-quick-slash'), unlockLevel: 10, defaultSlot: 's4',
+  id: 'rogue_kick', classId: 'rogue', name: 'Tekme (Kick)', icon: I('skill-quick-slash'), unlockLevel: 1, defaultSlot: 's4',
   desc: '3 metre içindeki büyü yapan bir düşmanı tekmelersin: büyüsü kesilir ve 3 saniye sessizlik alır (boss hariç). Bekleme 15 sn.',
   cost: 0, cooldown: 15, castTime: 0, offGcd: true, anim: 'Unarmed_Melee_Attack_Kick', animSpeed: 1.5, hitTime: 0.2,
   targeting: 'melee_arc', range: 3, arc: 120, behavior: 'interrupt', tags: ['offgcd', 'melee', 'kick'],
@@ -141,7 +141,7 @@ add({
   params: { end: 0.6, chain: 0.1, move: 0.15, stagger: 4, cp: 2, weight: 0 },
 });
 add({
-  id: 'rogue_envenom', classId: 'rogue', spec: 'rogue_assassin', name: 'Zehirleme (Envenom)', icon: I('skill-poison-dagger'), unlockLevel: 3, defaultSlot: 'q',
+  id: 'rogue_envenom', classId: 'rogue', spec: 'rogue_assassin', name: 'Zehirleme (Envenom)', icon: I('skill-poison-dagger'), unlockLevel: 1, defaultSlot: 'q',
   desc: 'Tüm Kombo Puanlarını harcarsın. Hasar 0,8 + 0,38 x puan. Karanlık Gece aktifken hasar 2 katına çıkar ve 2 puan geri verir.',
   cost: 15, cooldown: 0, castTime: 0, anim: 'Dualwield_Melee_Attack_Stab', animSpeed: 1.5, hitTime: 0.5, targeting: 'custom', range: 3.0, arc: 60,
   damage: { coef: 0.8, type: 'physical' }, behavior: 'kit_finisher', tags: ['melee', 'finisher', 'spec', 'poison'],
@@ -236,7 +236,7 @@ add({
   params: { end: 0.6, chain: 0.1, move: 0.1, weight: 0, minCp: 1, maxCp: 5, base: 6, perCp: 3 },
 });
 add({
-  id: 'rogue_between_the_eyes', classId: 'rogue', spec: 'rogue_outlaw', name: 'Gözler Arası (Between the Eyes)', icon: I('skill-assassinate'), unlockLevel: 10, defaultSlot: 'r',
+  id: 'rogue_between_the_eyes', classId: 'rogue', spec: 'rogue_outlaw', name: 'Gözler Arası (Between the Eyes)', icon: I('skill-assassinate'), unlockLevel: 1, defaultSlot: 'r',
   desc: 'Kombo Puanlarını harcayarak hedefe ağır bir darbe indirir ve 4 saniye sersemletirsin (boss hariç).',
   cost: 30, cooldown: 0, castTime: 0, anim: 'Dualwield_Melee_Attack_Stab', animSpeed: 1.4, hitTime: 0.45, targeting: 'custom', range: 3.0, arc: 60,
   damage: { coef: 0.6, type: 'physical' }, statuses: [{ status: 'stun', duration: 4 }], behavior: 'kit_finisher',
@@ -294,7 +294,7 @@ add({
   params: { end: 0.6, chain: 0.1, move: 0.15, stagger: 8, cp: 2, stealthMore: 1.25, weight: 0 },
 });
 add({
-  id: 'rogue_eviscerate', classId: 'rogue', spec: 'rogue_subtlety', name: 'İnfaz (Eviscerate)', icon: I('skill-eviscerate'), unlockLevel: 10, defaultSlot: 'q',
+  id: 'rogue_eviscerate', classId: 'rogue', spec: 'rogue_subtlety', name: 'İnfaz (Eviscerate)', icon: I('skill-eviscerate'), unlockLevel: 1, defaultSlot: 'q',
   desc: 'Tüm Kombo Puanlarını harcarsın. Her puan hasarı artırır: 0,5 + 0,38 x puan.',
   cost: 20, cooldown: 0, castTime: 0, anim: 'Dualwield_Melee_Attack_Stab', animSpeed: 1.5, hitTime: 0.512, targeting: 'custom', range: 3.0, arc: 60,
   damage: { coef: 0.5, type: 'physical' }, behavior: 'kit_finisher', tags: ['melee', 'finisher'],
@@ -327,7 +327,7 @@ add({
   params: { end: 0.5, chain: 0.1, move: 0.1, weight: 0 },
 });
 add({
-  id: 'rogue_shuriken_storm', classId: 'rogue', spec: 'rogue_subtlety', name: 'Shuriken Fırtınası (Shuriken Storm)', icon: I('skill-fan-of-knives'), unlockLevel: 6, defaultSlot: 's1',
+  id: 'rogue_shuriken_storm', classId: 'rogue', spec: 'rogue_subtlety', name: 'Shuriken Fırtınası (Shuriken Storm)', icon: I('skill-fan-of-knives'), unlockLevel: 1, defaultSlot: 's1',
   desc: 'Çevrene shuriken yağdırırsın. Vurduğun her düşman için 1 Kombo Puanı kazanırsın (en çok 5).',
   cost: 24, cooldown: 0, castTime: 0, anim: 'Throw', animSpeed: 1.8, hitTime: 0.5, targeting: 'self_aoe', radius: 8,
   damage: { coef: 1.0, type: 'physical' }, behavior: 'fan', tags: ['aoe', 'projectile', 'spec'],

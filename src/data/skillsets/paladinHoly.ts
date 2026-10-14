@@ -48,7 +48,7 @@ export function registerPaladinHoly(add: SkillAdd): void {
   // Kutsal spec rows
   // ======================================================================================================
   add({
-    id: 'paladin_holy_shock', classId: 'paladin', spec: 'paladin_holy', name: 'Kutsal Şok (Holy Shock)', icon: I('skill-heal'), unlockLevel: 10,
+    id: 'paladin_holy_shock', classId: 'paladin', spec: 'paladin_holy', name: 'Kutsal Şok (Holy Shock)', icon: I('skill-heal'), unlockLevel: 1,
     desc: 'Müttefiki %143 iyileştirir ya da imleçteki düşmana %200 kutsal hasar verir; 1 Kutsal Güç kazandırır. %25 ihtimalle Işık Aşısı verir. 6 saniye bekleme. 6 İnanç harcarsın.',
     cost: 6, cooldown: 6, castTime: 0, anim: 'Spellcast_Shoot', animSpeed: 1.6, hitTime: 0.373, targeting: 'custom', behavior: 'heal_target', range: 25, allyTarget: 'any',
     heal: { coef: 1.43 }, damage: { coef: 2.0, type: 'holy' }, pip: { id: 'holypower', gain: 1 }, tags: ['spell', 'holy', 'heal', 'builder'],

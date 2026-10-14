@@ -114,7 +114,7 @@ export function registerPaladin(add: SkillAdd): void {
     params: { end: 0.7, chain: 0.06, move: 0.15, stagger: 12, proc: 1, weight: 1, slow: 0.4 },
   });
   add({
-    id: 'paladin_divine_steed', classId: 'paladin', name: 'İlahi Binek (Divine Steed)', icon: I('skill-dash'), unlockLevel: 6, defaultSlot: 's2',
+    id: 'paladin_divine_steed', classId: 'paladin', name: 'İlahi Binek (Divine Steed)', icon: I('skill-dash'), unlockLevel: 1, defaultSlot: 's2',
     desc: '10 metre atılırsın, köklerden ve yavaşlatmalardan kurtulursun ve 3 saniye boyunca hareket hızın %40 artar. 45 saniye bekleme.',
     cost: 0, cooldown: 45, castTime: 0, anim: 'Running_A', animSpeed: 2.0, targeting: 'dash', behavior: 'divine_steed', range: 10, duration: 0.4, hitTime: 0.4, offGcd: true,
     selfStatuses: [{ status: 'divine_steed', duration: 3 }], cleanses: ['root', 'slow'], tags: ['offgcd', 'movement', 'holy'],

@@ -19,8 +19,8 @@ export const SPECS_KIT_ROGUE: Partial<Record<SpecId, SpecDef>> = {
       'rogue_kingsbane', 'rogue_deathmark', 'rogue_kick', 'rogue_shadow_step', 'rogue_vanish', 'rogue_feint', 'rogue_kidney_shot',
       'rogue_cloak_of_shadows', 'rogue_stealth', 'rogue_sprint', 'rogue_evasion', 'rogue_crimson_vial'],
     unlock: {
-      rogue_mutilate: 1, rogue_envenom: 3, rogue_shadow_step: 3, rogue_garrote: 6, rogue_fan_of_knives: 6, rogue_rupture: 10,
-      rogue_kick: 10, rogue_kingsbane: 10, rogue_kidney_shot: 10, rogue_crimson_tempest: 12, rogue_feint: 15, rogue_vanish: 15,
+      rogue_mutilate: 1, rogue_envenom: 1, rogue_shadow_step: 1, rogue_garrote: 6, rogue_fan_of_knives: 6, rogue_rupture: 10,
+      rogue_kick: 1, rogue_kingsbane: 10, rogue_kidney_shot: 10, rogue_crimson_tempest: 12, rogue_feint: 15, rogue_vanish: 15,
       rogue_cloak_of_shadows: 15, rogue_deathmark: 20,
     },
     majors: { m45: 'rogue_kingsbane', m90: 'rogue_deathmark', m180: 'rogue_vanish' },
@@ -42,8 +42,8 @@ export const SPECS_KIT_ROGUE: Partial<Record<SpecId, SpecDef>> = {
       'rogue_feint', 'rogue_vanish', 'rogue_kidney_shot', 'rogue_cloak_of_shadows', 'rogue_stealth', 'rogue_sprint', 'rogue_evasion',
       'rogue_crimson_vial'],
     unlock: {
-      rogue_sinister_strike: 1, rogue_crossbow_shot: 3, rogue_slice_and_dice: 3, rogue_shadow_step: 3, rogue_dispatch: 6,
-      rogue_kick: 10, rogue_between_the_eyes: 10, rogue_roll_the_bones: 10, rogue_adrenaline_rush: 10, rogue_kidney_shot: 10,
+      rogue_sinister_strike: 1, rogue_crossbow_shot: 3, rogue_slice_and_dice: 3, rogue_shadow_step: 1, rogue_dispatch: 6,
+      rogue_kick: 1, rogue_between_the_eyes: 1, rogue_roll_the_bones: 10, rogue_adrenaline_rush: 10, rogue_kidney_shot: 10,
       rogue_blade_flurry: 12, rogue_feint: 15, rogue_vanish: 15, rogue_cloak_of_shadows: 15, rogue_killing_spree: 20,
     },
     majors: { m45: 'rogue_adrenaline_rush', m90: 'rogue_killing_spree', m180: 'rogue_vanish' },
@@ -78,8 +78,8 @@ export const SPECS_KIT_ROGUE: Partial<Record<SpecId, SpecDef>> = {
       'rogue_kidney_shot', 'rogue_vanish', 'rogue_feint', 'rogue_cloak_of_shadows', 'rogue_stealth', 'rogue_sprint', 'rogue_evasion',
       'rogue_crimson_vial'],
     unlock: {
-      rogue_shadow_step: 3, rogue_shuriken_storm: 6, rogue_backstab: 1, rogue_eviscerate: 10, rogue_shadowstrike: 10,
-      rogue_black_powder: 10, rogue_goremaws_bite: 10, rogue_shadow_blades: 10, rogue_symbols_of_death: 10, rogue_kick: 10,
+      rogue_shadow_step: 1, rogue_shuriken_storm: 1, rogue_backstab: 1, rogue_eviscerate: 1, rogue_shadowstrike: 10,
+      rogue_black_powder: 10, rogue_goremaws_bite: 10, rogue_shadow_blades: 10, rogue_symbols_of_death: 10, rogue_kick: 1,
       rogue_kidney_shot: 10, rogue_secret_technique: 20, rogue_shadow_dance: 20, rogue_feint: 15, rogue_vanish: 15,
       rogue_cloak_of_shadows: 15,
     },

@@ -15,7 +15,7 @@ export function registerPriestSpecs(add: SkillAdd): void {
   // Disiplin (priest_discipline, healer): Keffara (Atonement) turns damage into healing
   // =====================================================================================================
   add({
-    id: 'priest_disc_penance', classId: 'priest', spec: 'priest_discipline', name: 'Tövbe (Penance)', icon: I('skill-prayer'), unlockLevel: 10,
+    id: 'priest_disc_penance', classId: 'priest', spec: 'priest_discipline', name: 'Tövbe (Penance)', icon: I('skill-prayer'), unlockLevel: 1,
     desc: '2 saniye boyunca hedefine kutsal ok yağdırırsın. Düşmana isabet eden her ok hasar verir ve Keffara\'lı müttefiklerini iyileştirir; müttefike giden her ok onu iyileştirir.',
     cost: 20, cooldown: 12, castTime: 0, channel: 2.0, hitTime: 0.1, anim: 'Spellcasting', animSpeed: 1.0,
     targeting: 'custom', behavior: 'priest_penance', allyTarget: 'any', damage: { coef: 0.7, type: 'holy' }, heal: { coef: 0.6 },
@@ -23,7 +23,7 @@ export function registerPriestSpecs(add: SkillAdd): void {
     params: { end: 0.5, chain: 0.1, move: 0.15, weight: 0, tick: 0.5 },
   });
   add({
-    id: 'priest_disc_radiance', classId: 'priest', spec: 'priest_discipline', name: 'Güç Işıması (Power Word: Radiance)', icon: I('skill-holy-nova'), unlockLevel: 15,
+    id: 'priest_disc_radiance', classId: 'priest', spec: 'priest_discipline', name: 'Güç Işıması (Power Word: Radiance)', icon: I('skill-holy-nova'), unlockLevel: 1,
     desc: '1.5 saniyelik bir büyüyle bir müttefikini iyileştirirsin; 12 metre içindeki en fazla 4 müttefikine de Keffara uygularsın.',
     cost: 25, cooldown: 9, castTime: 1.5, hitTime: 1.5, anim: 'Spellcast_Raise', animSpeed: 1.2,
     targeting: 'custom', behavior: 'priest_radiance', allyTarget: 'friendly', heal: { coef: 1.6 }, radius: 12,
@@ -77,7 +77,7 @@ export function registerPriestSpecs(add: SkillAdd): void {
     params: { end: 0.6, chain: 0.05, move: 0.1, stagger: 2, weight: 0 },
   });
   add({
-    id: 'priest_holy_prayer', classId: 'priest', spec: 'priest_holy', name: 'Şifa Duası (Prayer of Healing)', icon: I('skill-prayer'), unlockLevel: 10,
+    id: 'priest_holy_prayer', classId: 'priest', spec: 'priest_holy', name: 'Şifa Duası (Prayer of Healing)', icon: I('skill-prayer'), unlockLevel: 1,
     desc: '2 saniyelik bir duayla 8 metre içindeki en fazla 5 yaralı müttefiki iyileştirirsin.',
     cost: 20, cooldown: 0, castTime: 2.0, hitTime: 2.0, anim: 'Spellcast_Raise', animSpeed: 1.0,
     targeting: 'custom', behavior: 'heal_aoe', allyTarget: 'friendly', heal: { coef: 1.2 }, radius: 8,
@@ -85,7 +85,7 @@ export function registerPriestSpecs(add: SkillAdd): void {
     params: { maxTargets: 5, needInjured: 1, end: 0.8, chain: 0.1, move: 0.1, weight: 1 },
   });
   add({
-    id: 'priest_holy_serenity', classId: 'priest', spec: 'priest_holy', name: 'Kutsal Söz: Huzur (Holy Word: Serenity)', icon: I('skill-divine-shield'), unlockLevel: 10,
+    id: 'priest_holy_serenity', classId: 'priest', spec: 'priest_holy', name: 'Kutsal Söz: Huzur (Holy Word: Serenity)', icon: I('skill-divine-shield'), unlockLevel: 1,
     desc: 'Anında büyük bir iyileştirme yaparsın: seçtiğin müttefike Şifa gücünün 3,2 katı kadar can verirsin.',
     cost: 10, cooldown: 60, castTime: 0, hitTime: 0.5, anim: 'Spellcast_Shoot', animSpeed: 1.4,
     targeting: 'custom', behavior: 'heal_target', allyTarget: 'friendly', heal: { coef: 3.2 },
@@ -138,7 +138,7 @@ export function registerPriestSpecs(add: SkillAdd): void {
   // Gölge (priest_shadow, DPS): Insanity (Delilik) from Mind Blast and the DoTs, Voidform and Boşluk Oku, Gölge Canavarı
   // =====================================================================================================
   add({
-    id: 'priest_shadow_mind_blast', classId: 'priest', spec: 'priest_shadow', name: 'Zihin Patlaması (Mind Blast)', icon: I('skill-shadow-grasp'), unlockLevel: 10,
+    id: 'priest_shadow_mind_blast', classId: 'priest', spec: 'priest_shadow', name: 'Zihin Patlaması (Mind Blast)', icon: I('skill-shadow-grasp'), unlockLevel: 1,
     desc: 'Bir düşmana zihin patlaması gönderip %220 gölge hasarı verirsin. 20 Delilik kazanırsın.',
     cost: 12, cooldown: 7.5, castTime: 1.5, hitTime: 1.5, anim: 'Spellcast_Shoot', animSpeed: 1.0,
     targeting: 'target_instant', range: 25, behavior: 'priest_strike', damage: { coef: 2.2, type: 'shadow' }, pip: { id: 'insanity', gain: 20 },
@@ -172,7 +172,7 @@ export function registerPriestSpecs(add: SkillAdd): void {
     params: { end: 0.5, chain: 0.1, move: 0.15, weight: 0, tick: 0.75 },
   });
   add({
-    id: 'priest_shadow_void_bolt', classId: 'priest', spec: 'priest_shadow', name: 'Boşluk Oku (Void Bolt)', icon: I('skill-lightning-bolt'), unlockLevel: 15,
+    id: 'priest_shadow_void_bolt', classId: 'priest', spec: 'priest_shadow', name: 'Boşluk Oku (Void Bolt)', icon: I('skill-lightning-bolt'), unlockLevel: 1,
     desc: '40 Delilik harcayıp bir düşmana %260 gölge hasarı verirsin.',
     cost: 0, cooldown: 6, castTime: 0, hitTime: 0.5, anim: 'Spellcast_Shoot', animSpeed: 1.2,
     targeting: 'target_instant', range: 25, behavior: 'priest_strike', damage: { coef: 2.6, type: 'shadow' }, pip: { id: 'insanity', cost: 40 },
@@ -197,7 +197,7 @@ export function registerPriestSpecs(add: SkillAdd): void {
     params: { execute: 0.2, executeMult: 3, end: 0.6, chain: 0.1, move: 0.15, stagger: 4, proc: 0.8, weight: 1 },
   });
   add({
-    id: 'priest_shadow_dispersion', classId: 'priest', spec: 'priest_shadow', name: 'Dağılma (Dispersion)', icon: I('buff-defense'), unlockLevel: 16,
+    id: 'priest_shadow_dispersion', classId: 'priest', spec: 'priest_shadow', name: 'Dağılma (Dispersion)', icon: I('buff-defense'), unlockLevel: 1,
     desc: '6 saniye boyunca aldığın hasarın %75\'ini azaltırsın. Dağılırken hareket edebilirsin.',
     cost: 0, cooldown: 90, castTime: 0, hitTime: 0.2, anim: 'Cheer', animSpeed: 1.0,
     targeting: 'self_buff', selfStatuses: [{ status: 'dispersion', duration: 6 }],
@@ -205,7 +205,7 @@ export function registerPriestSpecs(add: SkillAdd): void {
     params: { end: 0.4, chain: 0.1, move: 0.1, weight: 0 },
   });
   add({
-    id: 'priest_shadow_silence', classId: 'priest', spec: 'priest_shadow', name: 'Susturma (Silence)', icon: I('skill-thrust'), unlockLevel: 10,
+    id: 'priest_shadow_silence', classId: 'priest', spec: 'priest_shadow', name: 'Susturma (Silence)', icon: I('skill-thrust'), unlockLevel: 1,
     desc: '30 metre içindeki büyü yapan bir düşmanın büyüsünü keser ve 3 saniye susturursun (boss hariç). Bekleme süresi 20 saniye.',
     cost: 0, cooldown: 20, castTime: 0, hitTime: 0.2, offGcd: true, anim: 'Spellcast_Shoot', animSpeed: 1.8, targeting: 'custom', range: 30, arc: 360,
     behavior: 'interrupt', tags: ['offgcd', 'spell', 'kick', 'f_any'], params: { silence: 3 }, vfx: { impact: 'interrupt_burst' }, sfx: { cast: 'spell_cast', impact: 'stun' },

@@ -20,7 +20,7 @@ export function registerPaladinSpecs(add: SkillAdd): void {
     params: { hammers: 3, orbitTime: 0.9, orbitRadius: 3.2, hammerCoef: 0.6, threatMult: 2.5, end: 1.2, chain: 0.1, move: 0.2, stagger: 5, proc: 0.6, weight: 4 },
   });
   add({
-    id: 'paladin_shield_of_righteous', classId: 'paladin', spec: 'paladin_protection', name: 'Doğruluk Kalkanı (Shield of the Righteous)', icon: I('skill-shield-wall'), unlockLevel: 10,
+    id: 'paladin_shield_of_righteous', classId: 'paladin', spec: 'paladin_protection', name: 'Doğruluk Kalkanı (Shield of the Righteous)', icon: I('skill-shield-wall'), unlockLevel: 1,
     desc: 'Kalkanınla önündeki en fazla 5 düşmana %200 kutsal hasar verirsin ve 6 saniye boyunca zırhın %40, blok şansın %20 artar. 3 Kutsal Güç harcar. Her kullanımda %50 ihtimalle bir sonraki Işığın Sözü bedavaya gelir (Parlak Işık).',
     cost: 0, cooldown: 0, castTime: 0, anim: 'Block_Attack', animSpeed: 1.5, hitTime: 0.427, targeting: 'melee_arc', range: 3.0, arc: 120, offGcd: true,
     damage: { coef: 2.0, type: 'holy' }, pip: { id: 'holypower', cost: 3 }, tags: ['offgcd', 'melee', 'holy', 'shield', 'defensive', 'spender'],
@@ -28,7 +28,7 @@ export function registerPaladinSpecs(add: SkillAdd): void {
     params: { maxTargets: 5, threatMult: 2, end: 0.64, chain: 0.08, move: 0.15, stagger: 15, proc: 1, weight: 4 },
   });
   add({
-    id: 'paladin_consecration', classId: 'paladin', spec: 'paladin_protection', name: 'Kutsal Zemin (Consecration)', icon: I('skill-consecration'), unlockLevel: 12,
+    id: 'paladin_consecration', classId: 'paladin', spec: 'paladin_protection', name: 'Kutsal Zemin (Consecration)', icon: I('skill-consecration'), unlockLevel: 1,
     desc: 'Ayaklarının altında 12 saniye süren kutsal bir zemin yaratırsın: içindeki düşmanlar her saniye %10 kutsal hasar alır ve %15 yavaşlar; zeminde duran dostların zırhı %3 artar. 9 saniye bekleme. 5 İnanç harcarsın.',
     cost: 5, cooldown: 9, castTime: 0, anim: '1H_Melee_Attack_Stab', animSpeed: 1.8, hitTime: 0.56, targeting: 'ground_aoe', radius: 5, duration: 12, ticks: 12,
     damage: { coef: 0.1, type: 'holy', perTick: true }, statuses: [{ status: 'slow', duration: 1.5, magnitude: 0.15 }],
@@ -61,7 +61,7 @@ export function registerPaladinSpecs(add: SkillAdd): void {
   // CEZA (paladin_retribution) — Holy Power spend at 5, Işık Çekici windows, Küllerin Uyanışı, Adalet Savaşı
   // ======================================================================================================
   add({
-    id: 'paladin_verdict', classId: 'paladin', spec: 'paladin_retribution', name: 'Nihai Hüküm (Final Verdict)', icon: I('skill-execute'), unlockLevel: 10,
+    id: 'paladin_verdict', classId: 'paladin', spec: 'paladin_retribution', name: 'Nihai Hüküm (Final Verdict)', icon: I('skill-execute'), unlockLevel: 1,
     desc: 'Hedefe %230 kutsal hasar verirsin; yargılı hedefe %25 daha güçlü vurur. 3 Kutsal Güç harcar. %15 ihtimalle Yargı\'nın beklemesini sıfırlar. Işık Çekici açıkken Işık Çekici\'ne dönüşür.',
     cost: 0, cooldown: 0, castTime: 0, anim: '1H_Melee_Attack_Chop', animSpeed: 1.2, hitTime: 0.448, targeting: 'target_instant', range: 3.2,
     damage: { coef: 2.3, type: 'holy' }, pip: { id: 'holypower', cost: 3 }, route: { from: ['@status:judged'], window: 6, more: 0.25 },
@@ -85,7 +85,7 @@ export function registerPaladinSpecs(add: SkillAdd): void {
     params: { end: 0.7, chain: 0.08, move: 0.15, stagger: 8, proc: 1, weight: 0 },
   });
   add({
-    id: 'paladin_divine_storm', classId: 'paladin', spec: 'paladin_retribution', name: 'İlahi Fırtına (Divine Storm)', icon: I('skill-whirlwind'), unlockLevel: 10,
+    id: 'paladin_divine_storm', classId: 'paladin', spec: 'paladin_retribution', name: 'İlahi Fırtına (Divine Storm)', icon: I('skill-whirlwind'), unlockLevel: 1,
     desc: 'Çevrendeki 5.5 metre içindeki en fazla 8 düşmana %230 kutsal hasar veren bir kasırga yaratırsın. 3 Kutsal Güç harcar.',
     cost: 0, cooldown: 0, castTime: 0, anim: '2H_Melee_Attack_Spin', animSpeed: 2.4, hitTime: 0.6, targeting: 'self_aoe', radius: 5.5,
     damage: { coef: 2.3, type: 'holy' }, pip: { id: 'holypower', cost: 3 }, tags: ['melee', 'holy', 'aoe', 'spender'],

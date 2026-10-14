@@ -33,7 +33,7 @@ export const SPECS_KIT_DEMONHUNTER: Partial<Record<SpecId, SpecDef>> = {
     ],
     unlock: {
       demonhunter_chaos_nova: 20,
-      demonhunter_chaos_strike: 1, demonhunter_immolation_aura: 1, demonhunter_fel_rush: 1, demonhunter_blade_dance: 3, demonhunter_eye_beam: 6,
+      demonhunter_chaos_strike: 1, demonhunter_immolation_aura: 1, demonhunter_fel_rush: 1, demonhunter_blade_dance: 1, demonhunter_eye_beam: 6,
       demonhunter_vengeful_retreat: 10, demonhunter_blur: 10, demonhunter_disrupt: 10, demonhunter_essence_break: 10,
       demonhunter_metamorphosis: 20, demonhunter_annihilation: 20, demonhunter_death_sweep: 20, demonhunter_the_hunt: 30,
     },
@@ -105,8 +105,8 @@ export const SPECS_KIT_DEMONHUNTER: Partial<Record<SpecId, SpecDef>> = {
     ],
     unlock: {
       demonhunter_silence: 10,
-      demonhunter_void_basic: 1, demonhunter_consume: 1, demonhunter_fel_rush: 1, demonhunter_reap: 3, demonhunter_void_ray: 6,
-      demonhunter_void_nova: 10, demonhunter_blur: 10, demonhunter_disrupt: 10,
+      demonhunter_void_basic: 1, demonhunter_consume: 1, demonhunter_fel_rush: 1, demonhunter_reap: 1, demonhunter_void_ray: 6,
+      demonhunter_void_nova: 1, demonhunter_blur: 10, demonhunter_disrupt: 10,
       demonhunter_void_storm: 20, demonhunter_collapsing_star: 20, demonhunter_darkness: 20, demonhunter_void_metamorphosis: 20, demonhunter_the_hunt: 30,
     },
     majors: { m45: 'demonhunter_darkness', m90: 'demonhunter_void_metamorphosis', m180: 'demonhunter_the_hunt' },

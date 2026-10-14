@@ -17,7 +17,7 @@ const KNIGHT_SPEC_LIST: SpecDef[] = [
       { id: 'trait_anger', desc: 'Harcanan her 20 Kararlılık, majör bekleme sürelerini 1 saniye azaltır (Öfke Yönetimi).', params: { angerPer: 20 } },
     ],
     skills: ['knight_shield_slam', 'knight_revenge', 'knight_thunder_clap', 'knight_ward_of_oath', 'knight_shield_block', 'knight_provoke', 'knight_heroic_throw', 'knight_unbroken_bastion', 'knight_shield_wall', 'knight_challenge', 'knight_pummel'],
-    unlock: { knight_shield_slam: 10, knight_revenge: 12, knight_thunder_clap: 12, knight_ward_of_oath: 15, knight_shield_block: 10, knight_provoke: 10, knight_heroic_throw: 12, knight_unbroken_bastion: 10, knight_shield_wall: 30, knight_challenge: 10, knight_pummel: 10 },
+    unlock: { knight_shield_slam: 1, knight_revenge: 1, knight_thunder_clap: 1, knight_ward_of_oath: 15, knight_shield_block: 1, knight_provoke: 10, knight_heroic_throw: 12, knight_unbroken_bastion: 10, knight_shield_wall: 30, knight_challenge: 10, knight_pummel: 10 },
     majors: { m45: 'knight_unbroken_bastion', m90: 'knight_avatar', m180: 'knight_shield_wall' },
     // Blok (30 %, icd 1.5 s) and perfect parry (100 %) light İntikam Hazır (6 s: the next İntikam is free, +25 %, threat x2)
     fx: 'T block ch=.30 icd=1.5 => st(self,revenge_ready,6) ;; T parry => st(self,revenge_ready,6)',
@@ -50,7 +50,7 @@ const KNIGHT_SPEC_LIST: SpecDef[] = [
       { id: 'trait_anger', desc: 'Harcanan her 20 Kararlılık, majör bekleme sürelerini 1 saniye azaltır (Öfke Yönetimi).', params: { angerPer: 20 } },
     ],
     skills: ['knight_mortal_strike', 'knight_overpower', 'knight_execute', 'knight_slam', 'knight_rend', 'knight_heroic_leap', 'knight_die_by_sword', 'knight_pummel'],
-    unlock: { knight_mortal_strike: 10, knight_overpower: 10, knight_execute: 10, knight_slam: 10, knight_rend: 12, knight_heroic_leap: 25, knight_die_by_sword: 15, knight_pummel: 10 },
+    unlock: { knight_mortal_strike: 1, knight_overpower: 1, knight_execute: 10, knight_slam: 10, knight_rend: 12, knight_heroic_leap: 25, knight_die_by_sword: 15, knight_pummel: 10 },
     majors: { m45: 'knight_colossus_smash', m90: 'knight_avatar', m180: 'knight_bladestorm' },
     // Ani Ölüm: weapon chain hit 10 % (icd 3 s, max 2 stacks); Savaş Efendisi: Ölümcül Darbe hit 25 %
     fx: 'T hit:@basic ch=.10 icd=3 => st(self,sudden_death,12) ;; T hit:knight_mortal_strike ch=.25 => st(self,battlelord,8)',

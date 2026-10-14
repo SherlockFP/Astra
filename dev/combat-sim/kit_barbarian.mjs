@@ -508,6 +508,12 @@ const spyStrike = (id, into) => {
   ok('pmba.stack the last sudden_death stack goes with the next execute', !p.statuses.has('sudden_death'));
 }
 
+// ---- level 1 (owner rule): every spec starts at level 1 with >= 4 usable core skills on its bar (basic / auto attack excluded)
+for (const sid of ["barbarian_warlord","barbarian_butcher"]) {
+  const spec = SPECS[sid];
+  const l1 = Object.entries(spec.defaultBar).filter(([slot, id]) => slot !== 'lmb' && id !== spec.basic && SKILLS[id]?.unlockLevel <= 1 && (spec.unlock?.[id] ?? 1) <= 1);
+  ok(`kit_barbarian.l1 ${sid} level 1 has >= 4 usable skills`, l1.length >= 4, l1.map(([s, id]) => `${s}=${id}`).join(','));
+}
 console.log(fails === 0 ? '\nkit.barbarian (pmba): all checks PASS' : `\nkit.barbarian (pmba): ${fails} FAIL`);
 if (errors.length) for (const m of errors.slice(0, 4)) console.log('   !!', String(m).slice(0, 300));
 H.restoreConsole?.();

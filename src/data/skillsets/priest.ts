@@ -46,7 +46,7 @@ export function registerPriest(add: SkillAdd): void {
     params: { end: 0.6, chain: 0.08, move: 0.12, stagger: 4, proc: 0.8, weight: 1 },
   });
   add({
-    id: 'priest_renew', classId: 'priest', name: 'Yenileme (Renew)', icon: I('skill-renew'), unlockLevel: 5, defaultSlot: 's2',
+    id: 'priest_renew', classId: 'priest', name: 'Yenileme (Renew)', icon: I('skill-renew'), unlockLevel: 1, defaultSlot: 's2',
     desc: 'Müttefikine 15 saniye boyunca her 3 saniyede bir iyileştiren bir yenileme bırakırsın.',
     cost: 10, cooldown: 0, castTime: 0, hitTime: 0.3, anim: 'Spellcast_Shoot', animSpeed: 1.5,
     targeting: 'custom', behavior: 'priest_renew', allyTarget: 'friendly', statuses: [{ status: 'renew', duration: 15 }],
@@ -70,7 +70,7 @@ export function registerPriest(add: SkillAdd): void {
     params: { end: 0.4, chain: 0.1, move: 0.1, stagger: 6, proc: 1, weight: 1 },
   });
   add({
-    id: 'priest_desperate_prayer', classId: 'priest', name: 'Çaresiz Dua (Desperate Prayer)', icon: I('skill-prayer'), unlockLevel: 8,
+    id: 'priest_desperate_prayer', classId: 'priest', name: 'Çaresiz Dua (Desperate Prayer)', icon: I('skill-prayer'), unlockLevel: 1,
     desc: 'Kendini anında iyileştirirsin: Şifa gücünün 3 katı kadar can kazanırsın. Yaklaşık 90 saniyede bir kullanılır.',
     cost: 0, cooldown: 90, castTime: 0, hitTime: 0.2, anim: 'Spellcast_Raise', animSpeed: 1.2,
     targeting: 'custom', behavior: 'priest_self', heal: { coef: 3.0 },
@@ -78,7 +78,7 @@ export function registerPriest(add: SkillAdd): void {
     params: { end: 0.4, chain: 0.1, move: 0.1, weight: 0 },
   });
   add({
-    id: 'priest_fade', classId: 'priest', name: 'Solma (Fade)', icon: I('buff-haste'), unlockLevel: 6,
+    id: 'priest_fade', classId: 'priest', name: 'Solma (Fade)', icon: I('buff-haste'), unlockLevel: 1,
     desc: '10 saniye boyunca hareket hızın %20 artar. Tehdit düşürme bu sürümde yok; hareket hızı bonusu olarak uygulanır.',
     cost: 0, cooldown: 30, castTime: 0, hitTime: 0.1, anim: 'Cheer', animSpeed: 1.2,
     targeting: 'self_buff', selfStatuses: [{ status: 'fade', duration: 10 }],

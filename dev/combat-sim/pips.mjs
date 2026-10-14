@@ -129,6 +129,16 @@ const since = (n) => changed.slice(n);
   ok('pips.reset scene:leaving emits points 0 for both', since(n1).some((e) => e.id === 'combo' && e.points === 0) && since(n1).some((e) => e.id === 'karisim' && e.points === 0));
 }
 
+// ---- level 1 (owner rule): every mage spec starts at level 1 with >= 4 usable core skills on its bar (basic / auto attack excluded)
+{
+  const { SPECS: MAGE_SPECS } = await H.imp('data/specs.ts');
+  for (const sid of ['mage_fire', 'mage_frost', 'mage_arcane']) {
+    const spec = MAGE_SPECS[sid];
+    const l1 = Object.entries(spec.defaultBar).filter(([slot, id]) => slot !== 'lmb' && id !== spec.basic && H.SKILLS[id]?.unlockLevel <= 1 && (spec.unlock?.[id] ?? 1) <= 1);
+    ok(`mage.l1 ${sid} level 1 has >= 4 usable skills`, l1.length >= 4, l1.map(([s, id]) => `${s}=${id}`).join(','));
+  }
+}
+
 console.log(fails === 0 ? '\npips: all checks PASS' : `\npips: ${fails} FAIL`);
 H.restoreConsole?.();
 process.exit(fails === 0 ? 0 : 1);

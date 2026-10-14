@@ -64,7 +64,7 @@ export function registerShaman(add: SkillAdd): void {
 
   // ---- Astral Kayma (Astral Shift, s3, L10): 40 % damage reduction for 8 s, 90 s cooldown (the personal defensive)
   add({
-    id: 'shaman_astral_shift', classId: 'shaman', name: 'Astral Kayma (Astral Shift)', icon: I('buff-absorb'), unlockLevel: 10, defaultSlot: 's3',
+    id: 'shaman_astral_shift', classId: 'shaman', name: 'Astral Kayma (Astral Shift)', icon: I('buff-absorb'), unlockLevel: 1, defaultSlot: 's3',
     desc: '8 saniye boyunca aldığın hasar %40 azalır. 90 saniyede bir kullanılır.',
     cost: 0, cooldown: 90, castTime: 0, hitTime: 0.2, anim: 'Cheer', animSpeed: 1.2,
     targeting: 'self_buff', selfStatuses: [{ status: 'astral_shift', duration: 8 }],

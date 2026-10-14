@@ -135,7 +135,7 @@ add({
   params: { end: 1.4, chain: 0.1, move: 0.0, stagger: 50, proc: 1, weight: 2, delay: 0.9, groundCoef: 0.4, groundRadius: 3, groundTick: 0.5, root: 1, element: 1 },
 });
 add({
-  id: 'mage_blizzard', classId: 'mage', name: 'Kar Fırtınası (Blizzard)', icon: I('skill-blizzard'), unlockLevel: 15, defaultSlot: 's1',
+  id: 'mage_blizzard', classId: 'mage', name: 'Kar Fırtınası (Blizzard)', icon: I('skill-blizzard'), unlockLevel: 1, defaultSlot: 's1',
   desc: 'Tuşu basılı tutarak hedef bölgeye sürekli buz yağdırırsın. Düşmanlar yavaşlar ve sonunda donar. Büyü yaparken yerinde durursun.',
   cost: 15, cooldown: 0, castTime: 0, channel: 5, anim: 'Spellcasting', animSpeed: 1.0, hitTime: 0.1, targeting: 'custom', behavior: 'blizzard', range: 25, radius: 5,
   damage: { coef: 0.55, type: 'frost', perTick: true }, statuses: [{ status: 'slow', duration: 0.8, magnitude: 0.4 }, { status: 'chill', duration: 3 }],

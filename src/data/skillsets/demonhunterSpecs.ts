@@ -135,7 +135,7 @@ export function registerDemonHunterSpecs(add: SkillAdd): void {
     params: { end: 0.6, chain: 0.06, move: 0.1, stagger: 3, proc: 0.8, weight: 0, upper: 1, slow: 0.2 },
   });
   add({
-    id: 'demonhunter_reap', classId: 'demonhunter', spec: 'demonhunter_devourer', name: 'Biç (Reap)', icon: I('skill-shadow-grasp'), unlockLevel: 3, defaultSlot: 'q',
+    id: 'demonhunter_reap', classId: 'demonhunter', spec: 'demonhunter_devourer', name: 'Biç (Reap)', icon: I('skill-shadow-grasp'), unlockLevel: 1, defaultSlot: 'q',
     desc: 'Çevrendeki 8 metrelik alanda ruhları biçersin: tüm Ruh Parçacıklarını yutar, düşmanlara %90 + parçacık başına %55 gölge hasarı verir ve yuttuğun her parçacık için 4 Gazap kazanırsın. En az 1 parçacık gerekir. 5 saniye bekleme.',
     cost: 0, cooldown: 5, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 2.0, hitTime: 0.6, targeting: 'self_aoe', behavior: 'kit_dh_reap', radius: 8,
     damage: { coef: 0.9, type: 'shadow' }, pip: { id: 'soul', consume: 'all', min: 1, coefPerPip: 0.55 }, tags: ['spell', 'aoe', 'spender', 'shadow'],
@@ -166,7 +166,7 @@ export function registerDemonHunterSpecs(add: SkillAdd): void {
     params: { end: 1.0, chain: 0.1, move: 0.2, stagger: 14, proc: 1, weight: 2, maxTargets: 8, perStack: 0.15, maxStacks: 6 },
   });
   add({
-    id: 'demonhunter_void_nova', classId: 'demonhunter', spec: 'demonhunter_devourer', name: 'Boşluk Girdabı (Void Nova)', icon: I('skill-arcane-explosion'), unlockLevel: 10, defaultSlot: 's1',
+    id: 'demonhunter_void_nova', classId: 'demonhunter', spec: 'demonhunter_devourer', name: 'Boşluk Girdabı (Void Nova)', icon: I('skill-arcane-explosion'), unlockLevel: 1, defaultSlot: 's1',
     desc: 'Çevrendeki 8 metrelik alanda boşluğu patlatırsın: %180 gölge hasarı verir, 2 Ruh Parçacığı ve 10 Gazap kazandırır. 12 saniye bekleme.',
     cost: -10, cooldown: 12, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 2.0, hitTime: 0.6, targeting: 'self_aoe', radius: 8,
     damage: { coef: 1.8, type: 'shadow' }, pip: { id: 'soul', gain: 2 }, tags: ['spell', 'aoe', 'builder', 'shadow'],

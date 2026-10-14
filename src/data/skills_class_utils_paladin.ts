@@ -18,7 +18,7 @@ export const PALADIN_UTIL_ROWS: SkillDef[] = [
       behavior: 'interrupt', tags: ['offgcd', 'melee', 'kick', 'holy'],
       vfx: { impact: 'interrupt_burst' }, params: { silence: 3 },
     }),
-    unlockLevel: 10,
+    unlockLevel: 1,
     offGcd: true,
   },
   {
