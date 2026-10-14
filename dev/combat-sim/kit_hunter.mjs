@@ -44,6 +44,17 @@ ok('kit.hunter.ids the chain steps archer_basic_1..4 exist', [1, 2, 3, 4].every(
 ok('kit.hunter.ids the eight core skills resolve', CORE.length === 8 && CORE.every((id) => !!SKILLS[id]), CORE.filter((id) => !SKILLS[id]).join(','));
 ok('kit.hunter.ids archer_basic is the basic attack of the class', CLASSES.archer.basicAttack === 'archer_basic');
 
+// ---- kit.hunter.l1spec: every spec and the class start at level 1 with >= 4 usable skills on the bar (plus the basic)
+for (const sid of [...SPEC_IDS]) {
+  const usable = Object.values(SPECS[sid]?.defaultBar ?? {}).filter((id) => id && !/_basic/.test(id) && (SKILLS[id]?.unlockLevel ?? 99) <= 1);
+  ok(`kit.hunter.l1spec ${sid} has >= 4 usable skills at level 1`, usable.length >= 4, usable.join(','));
+}
+{
+  const bar1 = CharacterState.defaultBar('archer', 1);
+  const usable = Object.values(bar1).filter((id) => id && !/_basic/.test(id) && (SKILLS[id]?.unlockLevel ?? 99) <= 1);
+  ok('kit.hunter.l1spec class level-1 bar has >= 4 usable skills', usable.length >= 4, usable.join(','));
+}
+
 // ---- kit.hunter.apl: every skill and status named in the APL rows exists
 for (const [sid, apl] of Object.entries(ROTATIONS_KIT_ARCHER)) {
   const lines = [...apl.st, ...(apl.aoe ?? [])];

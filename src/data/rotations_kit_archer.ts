@@ -13,15 +13,13 @@ export const ROTATIONS_KIT_ARCHER: Record<string, KitApl> = {
       'archer_ms_trueshot if cd_ready(archer_ms_trueshot) && status:deadeye',
       'archer_kill_shot if target.hp% < 25 || target.status:hunters_mark',
       'archer_rapid_fire if cd_ready(archer_rapid_fire) && res >= 90 && !moving',
-      'archer_explosive_arrow if cd_ready(archer_explosive_arrow) && target.status:root',
-      'archer_snare_trap if cd_ready(archer_snare_trap) && !target.status:root',
+      'archer_arcane_shot if res >= 40',
       'archer_aimed_shot if res >= 25',
       'archer_basic',
     ],
     aoe: [
       'archer_arrow_storm if cd_ready(archer_arrow_storm) && targets >= 3',
       'archer_multishot if targets >= 3 && res >= 30',
-      'archer_snare_trap if cd_ready(archer_snare_trap) && targets >= 2',
       'archer_basic',
     ],
   },
@@ -32,9 +30,8 @@ export const ROTATIONS_KIT_ARCHER: Record<string, KitApl> = {
       'archer_bm_pack_hunt if cd_ready(archer_bm_pack_hunt)',
       'archer_kill_command if cd_ready(archer_kill_command)',
       'archer_serpent_sting if cd_ready(archer_serpent_sting) && !target.status:poison',
-      'archer_snare_trap if cd_ready(archer_snare_trap)',
       'archer_arrow_storm if cd_ready(archer_arrow_storm) && targets >= 3',
-      'archer_aimed_shot if res >= 25',
+      'archer_cobra_shot if res < 90',
       'archer_basic',
     ],
     aoe: [
@@ -49,13 +46,13 @@ export const ROTATIONS_KIT_ARCHER: Record<string, KitApl> = {
 
   archer_survival: {
     st: [
+      'archer_coordinated_assault if cd_ready(archer_coordinated_assault)',
       'archer_sv_last_stand if cd_ready(archer_sv_last_stand) && hp% < 50',
       'archer_sv_boomstick if cd_ready(archer_sv_boomstick)',
       'archer_snare_trap if cd_ready(archer_snare_trap) && !target.status:root',
       'archer_explosive_arrow if cd_ready(archer_explosive_arrow) && target.status:root',
       'archer_sv_wildfire_bomb if cd_ready(archer_sv_wildfire_bomb) && !target.status:burn',
       'archer_sv_raptor_strike if res >= 20',
-      'archer_aimed_shot if res >= 25',
       'archer_basic',
     ],
     aoe: [

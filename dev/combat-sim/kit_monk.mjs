@@ -61,6 +61,13 @@ ok('kit.monk.ids ClassDef.skills is the 8-id core list', (CLASSES.monk?.skills ?
   ok('kit.monk.l1 the monk is playable and at level 1 has the chain resolved', !!SKILLS.monk_basic_1 && CLASSES.monk.basicAttack === 'monk_basic');
 }
 
+// ---- kit.monk.l1spec: every spec starts at level 1 with >= 4 usable skills on its bar (plus the basic)
+for (const sid of MONK_KIT_SPEC_IDS) {
+  const s = SPECS[sid];
+  const usable = Object.values(s?.defaultBar ?? {}).filter((id) => id && !/_basic/.test(id) && (SKILLS[id]?.unlockLevel ?? 99) <= 1);
+  ok(`kit.monk.l1spec ${sid} has >= 4 usable skills at level 1`, usable.length >= 4, usable.join(','));
+}
+
 // ---- kit.monk.chi: pip gains and costs match the rows (GDD §2.4 Çi column)
 {
   const gains = { monk_tiger_palm: 2, monk_chi_torpedo: 1, monk_keg_smash: 2, monk_ww_tigers_fury: 2, monk_chi_wave: 1, monk_mw_basic: 1 };
@@ -250,7 +257,7 @@ const foeAt = (z = 2.2) => {
   H.step(2);
   p.resource = 100;
   p.hp = p.maxHp * 0.5;
-  G.skills.tryCastSlot(p, 'rmb', H.aimFor(p, foeAt(3)));
+  G.skills.tryCastSlot(p, 'e', H.aimFor(p, foeAt(3)));
   H.stepSec(0.8);
   ok('kit.monk.cast Yenileyen Sis puts the HoT on the healed ally', p.statuses.has('renewing_mist'));
   p.hp = p.maxHp * 0.5;

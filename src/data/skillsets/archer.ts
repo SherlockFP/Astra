@@ -6,7 +6,7 @@
 import type { SkillAdd } from './types';
 
 const I = (n: string) => `/assets/icons/${n}.svg`;
-const BASIC = 'Ok Serisi';
+const BASIC = 'Ok Serisi (Auto Shot)';
 
 export function registerArcher(add: SkillAdd): void {
   // ---- LMB chain (GDD §3.3): 4 steps, cadence 0.220 + 0.190 + 0.243 + 0.467 = 1.120 s, sum of coef 3.59
@@ -51,7 +51,7 @@ export function registerArcher(add: SkillAdd): void {
 
   // ---- Nişanlı Atış (rmb, GDD §3.4): hold to draw. Channel of up to 1.0 s; the arrow is released in behaviour archer_charge_shot.
   add({
-    id: 'archer_aimed_shot', classId: 'archer', name: 'Nişanlı Atış', icon: I('skill-aimed-shot'), unlockLevel: 1, defaultSlot: 'rmb',
+    id: 'archer_aimed_shot', classId: 'archer', name: 'Nişanlı Atış (Aimed Shot)', icon: I('skill-aimed-shot'), unlockLevel: 1, defaultSlot: 'rmb',
     desc: 'Tuşu basılı tutarak yayı çeker, bırakınca %220–%400 hasar veren delici bir ok atarsın. Çekerken yavaşlarsın.',
     cost: 25, cooldown: 0, castTime: 0, channel: 1.0, hitTime: 0.2, anim: '2H_Ranged_Aiming', holdAnim: '2H_Ranged_Aiming',
     targeting: 'projectile', range: 35, speed: 75, radius: 0.35, count: 1, pierce: 1, damage: { coef: 2.2, type: 'physical' },
@@ -63,7 +63,7 @@ export function registerArcher(add: SkillAdd): void {
 
   // ---- Geri Sıçrayış (q, GDD §3.4): dash 7 m backwards, origin ring, free arrow on landing; quick_draw for the next Nişanlı Atış.
   add({
-    id: 'archer_disengage', classId: 'archer', name: 'Geri Sıçrayış', icon: I('skill-vanish'), unlockLevel: 1, defaultSlot: 'q',
+    id: 'archer_disengage', classId: 'archer', name: 'Geri Sıçrayış (Disengage)', icon: I('skill-vanish'), unlockLevel: 1, defaultSlot: 'q',
     desc: 'Geriye 7 metre sıçrar, çevrendekileri yavaşlatıp iter ve inerken en yakın düşmana %140 hasarlı bir ok atarsın. Sonraki Nişanlı Atış anında tam çekilir.',
     // the stock dash travels 0.8 x range without a target: range 8.75 gives the GDD's 7 m hop
     cost: 10, cooldown: 9, castTime: 0, anim: 'Dodge_Backward', animSpeed: 1.0, hitTime: 0.05, targeting: 'dash', range: 8.75,
@@ -76,7 +76,7 @@ export function registerArcher(add: SkillAdd): void {
 
   // ---- Çoklu Atış (e, GDD §3.4): five arrows, 0.9 each, spread 9 degrees
   add({
-    id: 'archer_multishot', classId: 'archer', name: 'Çoklu Atış', icon: I('skill-multishot'), unlockLevel: 1, defaultSlot: 'e',
+    id: 'archer_multishot', classId: 'archer', name: 'Çoklu Atış (Multi-Shot)', icon: I('skill-multishot'), unlockLevel: 1, defaultSlot: 'e',
     desc: 'Beş ok birden atarsın; her biri %90 hasar verir. Yakın mesafede tüm oklar çarpar.',
     cost: 30, cooldown: 4, castTime: 0, anim: '2H_Ranged_Shoot', animSpeed: 1.3, hitTime: 0.32, targeting: 'projectile', range: 22,
     speed: 55, radius: 0.3, count: 5, spread: 9, pierce: 0, damage: { coef: 0.9, type: 'physical' }, knockback: 0.6,
@@ -87,7 +87,7 @@ export function registerArcher(add: SkillAdd): void {
 
   // ---- Yoldaş Çağır (s1, L10, GDD §3.4): summon the wolf; recast mends a hurt pet (<70 %) and dismisses a healthy one.
   add({
-    id: 'archer_call_pet', classId: 'archer', name: 'Yoldaş Çağır', icon: I('skill-battle-shout'), unlockLevel: 10, defaultSlot: 's1',
+    id: 'archer_call_pet', classId: 'archer', name: 'Yoldaş Çağır (Call Pet)', icon: I('skill-battle-shout'), unlockLevel: 10, defaultSlot: 's1',
     desc: 'Kurt yoldaşını çağırır; yaşıyorsa ve yaralıysa iyileştirir, tam canındaysa geri gönderir. Yoldaş ölürse 10 sn sonra kendiliğinden döner.',
     cost: 0, cooldown: 6, castTime: 0, anim: 'Use_Item', animSpeed: 1.6, hitTime: 0.72, targeting: 'summon',
     behavior: 'archer_call_pet', minion: { id: 'archer_wolf', count: 1, cap: 1, group: 'pet' },
@@ -97,7 +97,7 @@ export function registerArcher(add: SkillAdd): void {
 
   // ---- Pençe Tuzağı (s2, L15, GDD §3.4): ground trap, arms after 0.8 s, max 2 traps, 25 s life; trigger roots 2.5 s and bleeds
   add({
-    id: 'archer_snare_trap', classId: 'archer', name: 'Pençe Tuzağı', icon: I('skill-snare-trap'), unlockLevel: 15, defaultSlot: 's2',
+    id: 'archer_snare_trap', classId: 'archer', name: 'Pençe Tuzağı (Snare Trap)', icon: I('skill-snare-trap'), unlockLevel: 1, defaultSlot: 's2',
     desc: 'Yere bir tuzak kurarsın (25 sn, en fazla 2). Düşman basınca 2.5 sn köklenir, %150 hasar alır ve kanar.',
     cost: 20, cooldown: 14, castTime: 0, anim: 'Throw', animSpeed: 1.5, hitTime: 0.615, targeting: 'ground_aoe', range: 7, radius: 1.8,
     behavior: 'archer_trap', damage: { coef: 1.5, type: 'physical' },
@@ -108,7 +108,7 @@ export function registerArcher(add: SkillAdd): void {
 
   // ---- Patlayıcı Ok (s3, L20, GDD §3.4): explodes r 3.2, 2.4 fire, burn; +35 % when the target is rooted (route status form)
   add({
-    id: 'archer_explosive_arrow', classId: 'archer', name: 'Patlayıcı Ok', icon: I('skill-fire-arrow'), unlockLevel: 20, defaultSlot: 's3',
+    id: 'archer_explosive_arrow', classId: 'archer', name: 'Patlayıcı Atış (Explosive Shot)', icon: I('skill-fire-arrow'), unlockLevel: 20, defaultSlot: 's3',
     desc: 'Çarptığında patlayan ok: %240 ateş hasarı verir ve yakar. Köklenmiş hedeflere Tuzak\'tan sonra %35 daha güçlüdür.',
     cost: 35, cooldown: 7, castTime: 0, anim: '2H_Ranged_Shoot', animSpeed: 1.0, hitTime: 0.32, targeting: 'projectile', range: 30,
     speed: 55, radius: 0.4, count: 1, pierce: 0, damage: { coef: 2.4, type: 'fire' }, knockback: 1.5,
@@ -121,7 +121,7 @@ export function registerArcher(add: SkillAdd): void {
 
   // ---- Avcı İşareti (kitap, L25, no bar slot, GDD §3.4): 12 s mark on the soft target. The mark is the Son Atış route window.
   add({
-    id: 'archer_hunters_mark', classId: 'archer', name: 'Avcı İşareti', icon: I('skill-curse'), unlockLevel: 25,
+    id: 'archer_hunters_mark', classId: 'archer', name: "Avcı İşareti (Hunter's Mark)", icon: I('skill-curse'), unlockLevel: 25,
     desc: 'Hedefi 12 sn işaretlersin: hedef %8 fazla hasar alır. Son Atış bu işaretli hedefe +%25 hasar verir.',
     cost: 0, cooldown: 20, castTime: 0, anim: 'Spellcast_Shoot', animSpeed: 1.8, hitTime: 0.373, targeting: 'custom', range: 32,
     behavior: 'archer_hunters_mark', requires: { target: 'enemy' }, tags: ['utility', 'debuff', 'spell'],
@@ -133,7 +133,7 @@ export function registerArcher(add: SkillAdd): void {
 
   // ---- Ok Fırtınası (r, L30, GDD §3.4): ground zone r 7, 14 waves of 0.8 over 3.5 s, slow 30 % per wave. Wind-up 0.5 s.
   add({
-    id: 'archer_arrow_storm', classId: 'archer', name: 'Ok Fırtınası', icon: I('skill-arrow-volley'), unlockLevel: 30, defaultSlot: 'r',
+    id: 'archer_arrow_storm', classId: 'archer', name: 'Ok Yağmuru (Volley)', icon: I('skill-arrow-volley'), unlockLevel: 30, defaultSlot: 'r',
     desc: 'Hedef bölgeye 3.5 sn boyunca ok yağdırır, 14 dalgada her düşmana %80 hasar verir ve yavaşlatırsın.',
     cost: 40, cooldown: 60, castTime: 0.5, anim: '2H_Ranged_Shoot', animSpeed: 0.8, hitTime: 0.5, targeting: 'ground_aoe', range: 24, radius: 7,
     duration: 3.5, ticks: 14, damage: { coef: 0.8, type: 'physical' }, statuses: [{ status: 'slow', duration: 0.6, magnitude: 0.3 }],
