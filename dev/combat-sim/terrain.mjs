@@ -519,7 +519,8 @@ function triangleCheck(r, geo, ox, oz, x, z) {
     });
     if (below && verbose) console.log('  below ground:', [...belowBy].map(([k, v]) => `${k} x${v}`).join(', '), 'worst', worstBelow.toFixed(2));
     ok(`build.${def.id}.instances`, inst > 100 && below === 0 && onGround / inst > 0.97, `${inst} resident instances, ${onGround} within 0..8 m above the ground, ${below} below it`);
-    if (def.id === KARAKIR_BOZKIRI.id) {
+    // Sisli Vadi is a 1600 m zone now (zone block, streamed): its resident ring is checked like Karakır's
+    if (def.id === KARAKIR_BOZKIRI.id || def.id === SISLI_VADI.id) {
       ok(`build.${def.id}.streamed`, tris < 60000, `resident ring: ${terr} chunk meshes, ${tris} terrain triangles`);
     } else {
       ok(`build.${def.id}.classic`, terr === 1 && tris < 110000, `one mesh, ${tris} triangles (flat Sisli was 18k)`);

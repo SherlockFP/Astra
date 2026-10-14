@@ -1,5 +1,5 @@
 import type { BossPlacement, DungeonDef, WorldExtras } from '../../types/dungeons';
-import { LAYOUT } from './layout';
+import { LAYOUT, gridOf, perfOf } from './layout';
 import { BORDERS, LANDMARKS, REGIONS, ROADS, ROOM_OF_REGION, ROOMS, WATER } from './regions';
 import { WORLD_PACKS } from './camps';
 import { VILLAGES } from './villages';
@@ -7,13 +7,14 @@ import { CHESTS, CURSED, ENTRANCES, GATHER, GHOST_BOAT, HIDDEN, MINIBOSSES, RARE
 import { METIN_SPOTS, METIN_TIERS } from './metin';
 
 /**
- * SISLI VADI, the open-world map (GDD_OPENWORLD §1, §9.1). OWNER: content module. Levels 1-30, 160 x 160 tiles (640 m).
+ * SISLI VADI, the open-world map (GDD_OPENWORLD §1, §9.1). OWNER: content module. Levels 1-30, 400 x 400 tiles (1600 m), a streamed
+ * zone (docs/ENGINE_BIGMAPS.md section 6: the `zone` block of the layout, gridOf / perfOf).
  *
  * This file only ASSEMBLES the typed pieces of this folder; the data itself lives in:
  *  - sisli_vadi.layout.json  the design layout (copy of docs/GDD_OPENWORLD.layout.json, the source of truth)
  *  - layout.ts              loader, typed layout shape, model / texture url converters
  *  - regions.ts             rooms, regions (6 themes), roads, water, landmarks, borders
- *  - camps.ts               70 camps + 11 patrols as PackDefs (WORLD_PACKS: camps first; the enemy id scheme depends on this order)
+ *  - camps.ts               camps + patrols as PackDefs (WORLD_PACKS: camps first; the enemy id scheme depends on this order, < 2079)
  *  - villages.ts            Gümüşdere, Kızılkaya, Son Ocak, camp hubs Altın Ambar and Kanyon: props, NPCs, gates, spawn points
  *  - pois.ts                waypoints, entrances, shrines, chests, cursed chests, gathering, hidden areas, vistas, rares,
  *                           mini-bosses, world boss schedules, ghost boat
@@ -21,7 +22,8 @@ import { METIN_SPOTS, METIN_TIERS } from './metin';
  *  - quests.ts              main chain (19), side quests (24), Av Defteri (6)
  * Other districts: karakir.ts (skeleton, map 2), sisli_koru.ts (deprecated predecessor, recipes only).
  *
- * Entry: tile (80, 1) facing 0 (+z, into the map) from the Kuzgunkale south gate; the return portal stands at tile (80, 2).
+ * Entry: tile (200, 1) facing 0 (+z, into the map) from the Kuzgunkale south gate (the 640 m entry tile (80, 1) x 2.5); the return portal
+ * stands at tile (200, 2).
  * Bosses: wb_curukkok (Çürük Höyük, R2) and wb_alevkanat (Ejder Yuvası, R5) are BossPlacements; their schedules are WORLD_BOSSES.
  * Rooms are the region rects + the bridge / approach / island rects. There are no doors: connectivity is by adjacency (the nav).
  */
@@ -95,13 +97,13 @@ export const SISLI_VADI: DungeonDef = {
     fogColor: 0x9aa890, fogNear: 15, fogFar: 70, ambient: 0x607060, ambientIntensity: 0.3, hemiSky: 0xc0d0b0, hemiGround: 0x303820,
     torchColor: 0xffa050, bloomStrength: 0.3, music: 'world_vale', palette: [0x303820, 0x6a7a58, 0x9aa890, 0xc0d0b0, 0xffa050], tint: 0xdde4d0,
   },
-  grid: { w: LAYOUT.grid.w, h: LAYOUT.grid.h },
+  grid: gridOf(LAYOUT),
   rooms: ROOMS,
   doors: [],
   packs: WORLD_PACKS,
   bosses: BOSSES,
-  start: { pos: [80, 1], facing: 0 },
-  exit: { pos: [80, 2] },
+  start: { pos: [200, 1], facing: 0 },
+  exit: { pos: [200, 2] },
   outdoor: true,
-  world: WORLD,
+  world: { ...WORLD, perf: perfOf(LAYOUT, PERF) },
 };

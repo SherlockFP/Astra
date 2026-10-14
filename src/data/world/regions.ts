@@ -33,6 +33,12 @@ const LANDMARK_RECIPE: Record<string, string> = {
   lm_agit_agaci: 'dead_tree_lanterns',
   lm_kizil_kale: 'red_castle_ruin',
   lm_kara_anit: 'obelisk_shrine',
+  lm_tarla_kulesi: 'watch_tower_ruin',
+  lm_haydut_kalesi: 'red_castle_ruin',
+  lm_bataklik_mantari: 'mushroom_ring',
+  lm_ork_agaci: 'dead_tree_lanterns',
+  lm_harabe_anit: 'obelisk_shrine',
+  lm_kanyon_gozcu: 'watch_tower_ruin',
 };
 export const LANDMARKS: LandmarkDef[] = LAYOUT.landmarks.map((l) => ({
   id: l.id, name: l.name, regionId: l.region, pos: l.pos, recipe: LANDMARK_RECIPE[l.id] ?? l.id,
