@@ -104,3 +104,34 @@ export function makeRescale(o: RescaleOpts): Rescale {
   };
   return { packs, ctx, toNew, at2, near, bossAtNew, D };
 }
+
+/**
+ * SCALE PASS extension (append-only; used by kefaret_salonlari): stairs, tiers, height areas, zones and props follow their room.
+ * Points go through the room's own affine map (toNew); rects map edge to edge and snap to 0.5 tiles (stairs and height areas
+ * must stay on that grid). Circle zones keep their radius and move with their centre.
+ */
+const snapHalf = (v: number): number => Math.round(v * 2) / 2;
+
+export function remapRoomGeometry(R: Rescale, room: RoomDef): RoomDef {
+  const mapRect = (r: TileRect): TileRect => {
+    const [x0, z0] = R.toNew(room.id, r.x - 0.5, r.z - 0.5);
+    const [x1, z1] = R.toNew(room.id, r.x + r.w - 0.5, r.z + r.h - 0.5);
+    const left = snapHalf(x0 + 0.5);
+    const top = snapHalf(z0 + 0.5);
+    return { x: left, z: top, w: snapHalf(x1 + 0.5) - left, h: snapHalf(z1 + 0.5) - top };
+  };
+  type Zone = NonNullable<RoomDef['zones']>[number];
+  const mapZone = (z: Zone): Zone => {
+    if (z.shape !== 'circle') return { ...z, rect: mapRect(z.rect) };
+    const r = z.rect.w / 2;
+    const [cx, cz] = R.toNew(room.id, z.rect.x + r - 0.5, z.rect.z + r - 0.5);
+    return { ...z, rect: { x: cx + 0.5 - r, z: cz + 0.5 - r, w: 2 * r, h: 2 * r } };
+  };
+  const out: RoomDef = { ...room };
+  if (room.props) out.props = room.props.map((p) => ({ ...p, pos: R.toNew(room.id, p.pos[0], p.pos[1]) }));
+  if (room.zones) out.zones = room.zones.map(mapZone);
+  if (room.slopes) out.slopes = room.slopes.map((s) => ({ ...s, rect: mapRect(s.rect) }));
+  if (room.tiers) out.tiers = room.tiers.map((t) => ({ ...t, rect: mapRect(t.rect) }));
+  if (room.heightAreas) out.heightAreas = room.heightAreas.map((a) => ({ ...a, rect: mapRect(a.rect) }));
+  return out;
+}

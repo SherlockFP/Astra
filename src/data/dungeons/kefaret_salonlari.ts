@@ -1,7 +1,8 @@
 import type { DecorTier, DoorDef, DungeonDef, DungeonTheme, PackDef, PropPlacement, RoomDef, SlopeDef, TileRect, ZoneDef } from '../../types/dungeons';
 import '../enemies_kefaret_salonlari';
 import type { PackExtra } from './kit';
-import { bossAt, chandelier, circleZone, door, gp, lt, pack, pt, rectZone, room, stairs } from './kit';
+import { chandelier, circleZone, door, gp, lt, pack, pt, rectZone, room, stairs } from './kit';
+import { makeRescale, remapRoomGeometry, type Rect4 } from './rescale';
 
 /**
  * KEFARET SALONLARI (kefaret_salonlari), Season 1 Mythic+ dungeon. Design: docs/dungeons/kefaret_salonlari.md (sections 3.2 to
@@ -11,7 +12,7 @@ import { bossAt, chandelier, circleZone, door, gp, lt, pack, pt, rectZone, room,
  *
  * NOT YET REGISTERED: this file is not in dungeons/index.ts. Registration lines are listed in the report.
  * Deviations from the design, all for the content-check forces band (115 to 130 %) and the engine today:
- *  - forcesRequired is 340 (design 380) and the timer 30:00 (design 29:00), so the mandatory route (route A, 393) is 115.6 %
+ *  - forcesRequired is 340 (design 380) and the timer 29:35 (design 29:00), so the mandatory route (route A, 393) is 115.6 %
  *    and every non-optional pack (route A plus the servants' passage, 417) is 122.6 %. Design totals (493 forces) would be
  *    145 % of 340: the optional Archive keeps one pack (20 forces) and the Pişmanlık crypt has no pack (its 36 forces are cut).
  *  - Kibir spawns use `extras.riftSpots` only (no kibirSpots field in the types yet). No `kibirCanon`.
@@ -71,7 +72,7 @@ const ROOMS: RoomDef[] = [
     ],
   }),
 
-  room('narteks', 'Günah Nefi', 28, 48, 8, 6, 'tiles', 'temple', 0.2, {
+  room('narteks', 'Günah Nefi', 24, 45, 16, 9, 'tiles', 'temple', 0.2, {
     floorY: 2.4, ceiling: 14, lightColor: 0xffb070,
     props: [
       ...chandelier(31.5, 50.5, 11, { color: 0xffb070 }),
@@ -80,7 +81,7 @@ const ROOMS: RoomDef[] = [
     ],
   }),
 
-  room('tas_galerisi', 'Günah Taşı Galerisi', 16, 40, 32, 8, 'stone_dark', 'temple', 0.25, {
+  room('tas_galerisi', 'Günah Taşı Galerisi', 16, 36, 32, 9, 'stone_dark', 'temple', 0.25, {
     floorY: 2.4, ceiling: 20, lightColor: 0xd08a70,
     tiers: [tier('windows', 12, 16, 40, 32, 8, { count: 8, spacing: 4 })],
     zones: [sinRune(31.5, 43.5, 1.2, 0.5)],
@@ -92,7 +93,7 @@ const ROOMS: RoomDef[] = [
     ],
   }),
 
-  room('kiymik_bati', 'Batı Mühür Odası', 7, 38, 9, 10, 'stone_dark', 'stone', 0.3, {
+  room('kiymik_bati', 'Batı Mühür Odası', 7, 36, 9, 10, 'stone_dark', 'stone', 0.3, {
     floorY: 0, ceiling: 10, lightColor: RED, slopes: [S2],
     props: [
       P(gp('crystal_purple'), 8, 39, { tint: 0x1d1826, emissive: RED, emissiveIntensity: 0.9, light: lt(RED, 1.8, 9) }),
@@ -100,7 +101,7 @@ const ROOMS: RoomDef[] = [
     ],
   }),
 
-  room('kiymik_dogu', 'Doğu Mühür Odası', 48, 38, 9, 10, 'stone_dark', 'stone', 0.3, {
+  room('kiymik_dogu', 'Doğu Mühür Odası', 48, 36, 9, 10, 'stone_dark', 'stone', 0.3, {
     floorY: 2.4, ceiling: 10, lightColor: RED,
     props: [
       P(gp('crystal_purple'), 55, 39, { tint: 0x1d1826, emissive: RED, emissiveIntensity: 0.9, light: lt(RED, 1.8, 9) }),
@@ -108,7 +109,7 @@ const ROOMS: RoomDef[] = [
     ],
   }),
 
-  room('kiymik_kuzey', 'Kuzey Mühür Odası', 40, 30, 8, 10, 'stone_dark', 'stone', 0.3, {
+  room('kiymik_kuzey', 'Kuzey Mühür Odası', 39, 26, 9, 10, 'stone_dark', 'stone', 0.3, {
     floorY: 4.2, ceiling: 10, lightColor: RED, slopes: [S3],
     props: [
       P(gp('crystal_purple'), 46, 31, { tint: 0x1d1826, emissive: RED, emissiveIntensity: 0.9, light: lt(RED, 1.8, 9) }),
@@ -116,7 +117,7 @@ const ROOMS: RoomDef[] = [
     ],
   }),
 
-  room('halkor_cemberi', 'Halkor Çemberi', 24, 26, 16, 14, 'stone_dark', 'temple', 0.12, {
+  room('halkor_cemberi', 'Halkor Çemberi', 24, 22, 15, 14, 'stone_dark', 'temple', 0.12, {
     boss: 1, explicitDecor: true, floorY: 0.6, ceiling: 24, lightColor: RED, slopes: [S4],
     // the glowing ring r 21 to 22 m (outer rune disc, inner dais disc on top: later zones override earlier ones)
     zones: [circleZone('rune', 31.5, 32.5, 5.6, { color: 0x2a1020, glow: RED, glowIntensity: 0.9 }), circleZone('dais', 31.5, 32.5, 5.3, { color: 0x1d1826 })],
@@ -129,17 +130,17 @@ const ROOMS: RoomDef[] = [
     ],
   }),
 
-  room('arsiv', 'Günah Taşı Arşivi', 48, 48, 9, 6, 'stone_dark', 'brick', 0.5, {
+  room('arsiv', 'Günah Taşı Arşivi', 48, 46, 9, 9, 'stone_dark', 'brick', 0.5, {
     optional: true, floorY: 0, ceiling: 8, lightColor: 0xffc080, slopes: [S5],
     props: [P(gp('bone_pile'), 55, 52, { tint: 0x8a8a50 }), P(gp('brazier'), 55, 49, { light: lt(0xffc080, 1.0, 6) })],
   }),
 
-  room('k_bati', 'Batı Kolonadı', 4, 28, 20, 6, 'tiles', 'temple', 0.3, {
+  room('k_bati', 'Batı Kolonadı', 4, 27, 20, 9, 'tiles', 'temple', 0.3, {
     floorY: 3.6, ceiling: 12, lightColor: 0xffb070, slopes: [S6],
     props: [P(gp('brazier'), 5, 29, { light: lt(0xffb070, 1.2, 7) }), P(gp('brazier'), 5, 32.5, { light: lt(0xffb070, 1.2, 7) })],
   }),
 
-  room('gargoyle_avlusu', 'Gargoyle Avlusu', 4, 16, 20, 12, 'stone', 'stone', 0.4, {
+  room('gargoyle_avlusu', 'Gargoyle Avlusu', 4, 16, 20, 11, 'stone', 'stone', 0.4, {
     floorY: 3.6, ceiling: 20, openAir: true, ambientVfx: 'ambient_dust', lightColor: 0x9a9ac8, fog: fog(0x30242e, 14, 64),
     zones: [circleZone('pool', 8, 24, 1.5, { color: 0x3e3a22 }), circleZone('pool', 15.5, 25.5, 1.2, { color: 0x3e3a22 })],
     props: [
@@ -163,11 +164,12 @@ const ROOMS: RoomDef[] = [
     props: [P(gp('brazier'), 20, 8, { light: lt(RED, 1.6, 9) }), P(gp('brazier'), 4, 8, { light: lt(RED, 1.6, 9) })],
   }),
 
-  room('k_kuzey', 'Ağıt Köprüsü', 24, 2, 6, 6, 'stone_dark', 'temple', 0.3, {
+  room('k_kuzey', 'Ağıt Köprüsü', 24, 0, 6, 8, 'stone_dark', 'temple', 0.3, {
     floorY: 8.4, ceiling: 20, openAir: true, ambientVfx: 'ambient_embers', lightColor: MOON,
-    // T-shaped span: the main span is rows z 3 to 5 (all x), the branch is x 25 to 27 at rows z 6 and 7
+    // T-shaped span (hand placed in the new coordinates, not remapped): the main span is rows z 2 to 5 (x 24 to 29), the branch
+    // is x 25 to 28 at rows z 6 and 7 (the door to the Pismanlik crypt is on its north row)
     zones: [
-      rectZone('void', 24, 2, 6, 1, VOID), rectZone('void', 24, 6, 1, 2, VOID), rectZone('void', 28, 6, 2, 2, VOID),
+      rectZone('void', 24, 0, 6, 2, VOID), rectZone('void', 24, 6, 1, 2, VOID), rectZone('void', 29, 6, 1, 2, VOID),
     ],
     props: [P(gp('chains_hanging'), 24.5, 3, { y: 4 }), P(gp('chains_hanging'), 29, 5, { y: 4 })],
   }),
@@ -186,12 +188,12 @@ const ROOMS: RoomDef[] = [
     ],
   }),
 
-  room('kefaret_merdiveni', 'Kefaret Merdiveni', 48, 14, 16, 8, 'tiles', 'temple', 0.25, {
+  room('kefaret_merdiveni', 'Kefaret Merdiveni', 46, 14, 16, 9, 'tiles', 'temple', 0.25, {
     floorY: 8.4, ceiling: 22, lightColor: 0xffb070, slopes: [S9],
     props: [...chandelier(52, 18, 16, { color: 0xffb070 }), ...chandelier(60, 18, 16, { color: 0xffb070 })],
   }),
 
-  room('kamarar_salonu', 'Kamarar Salonu', 48, 22, 16, 16, 'tiles', 'temple', 0.1, {
+  room('kamarar_salonu', 'Kamarar Salonu', 48, 23, 16, 12, 'tiles', 'temple', 0.1, {
     boss: 4, explicitDecor: true, floorY: 14.4, ceiling: 30, lightColor: RED,
     zones: [
       sinRune(55.5, 29.5, 4.2), circleZone('dais', 55.5, 29.5, 1.6, { color: 0x2a1020, y: 0.4 }),
@@ -208,28 +210,28 @@ const ROOMS: RoomDef[] = [
 
 // ---- doors (18) ------------------------------------------------------------------------------------------------------------
 const DOORS: DoorDef[] = [
-  door('giris', 'narteks', 31, 54, 'n', 2, 'none'),
-  door('narteks', 'tas_galerisi', 31, 48, 'n', 2, 'none'),
-  door('tas_galerisi', 'kiymik_bati', 16, 43, 'w', 2, 'none'),
-  door('tas_galerisi', 'kiymik_dogu', 47, 43, 'e', 2, 'none'),
-  door('tas_galerisi', 'kiymik_kuzey', 42, 40, 'n', 2, 'none'),
-  door('tas_galerisi', 'halkor_cemberi', 31, 40, 'n', 2, 'boss_lock'),
-  door('kiymik_dogu', 'arsiv', 50, 47, 's', 2, 'none'),
-  door('halkor_cemberi', 'k_bati', 24, 30, 'w', 2, 'boss_exit'),
-  door('k_bati', 'gargoyle_avlusu', 17, 28, 'n', 2, 'none'),
+  door('giris', 'narteks', 30, 54, 'n', 4, 'none'),
+  door('narteks', 'tas_galerisi', 30, 45, 'n', 4, 'none'),
+  door('tas_galerisi', 'kiymik_bati', 16, 39, 'w', 2, 'none'),
+  door('tas_galerisi', 'kiymik_dogu', 47, 39, 'e', 2, 'none'),
+  door('tas_galerisi', 'kiymik_kuzey', 42, 36, 'n', 2, 'none'),
+  door('tas_galerisi', 'halkor_cemberi', 30, 36, 'n', 4, 'boss_lock'),
+  door('kiymik_dogu', 'arsiv', 50, 45, 's', 2, 'none'),
+  door('halkor_cemberi', 'k_bati', 24, 29, 'w', 4, 'boss_exit'),
+  door('k_bati', 'gargoyle_avlusu', 16, 27, 'n', 4, 'none'),
   door('k_bati', 'servis_gecidi', 4, 30, 'w', 2, 'none'),
-  door('gargoyle_avlusu', 'k_ekelon', 9, 16, 'n', 2, 'none'),
+  door('gargoyle_avlusu', 'k_ekelon', 8, 16, 'n', 4, 'none'),
   door('servis_gecidi', 'k_ekelon', 1, 16, 'n', 2, 'none'),
-  door('k_ekelon', 'ekelon_terasi', 7, 12, 'n', 2, 'boss_lock'),
-  door('ekelon_terasi', 'k_kuzey', 23, 4, 'e', 2, 'boss_exit'),
-  door('k_kuzey', 'pismanlik_mahzeni', 26, 7, 's', 2, 'none'),
-  door('k_kuzey', 'cemaat_nefi', 29, 4, 'e', 2, 'boss_lock'),
-  door('cemaat_nefi', 'kefaret_merdiveni', 48, 13, 's', 2, 'boss_exit'),
-  door('kefaret_merdiveni', 'kamarar_salonu', 52, 21, 's', 2, 'boss_lock'),
+  door('k_ekelon', 'ekelon_terasi', 6, 12, 'n', 4, 'boss_lock'),
+  door('ekelon_terasi', 'k_kuzey', 23, 2, 'e', 4, 'boss_exit'),
+  door('k_kuzey', 'pismanlik_mahzeni', 25, 7, 's', 4, 'none'),
+  door('k_kuzey', 'cemaat_nefi', 29, 2, 'e', 4, 'boss_lock'),
+  door('cemaat_nefi', 'kefaret_merdiveni', 46, 13, 's', 4, 'boss_exit'),
+  door('kefaret_merdiveni', 'kamarar_salonu', 52, 22, 's', 4, 'boss_lock'),
 ];
 
 // ---- packs: route A 393 forces (the mandatory route), servants' passage 24, Archive 20 (optional) ------------------------
-const PACKS: PackDef[] = [
+const PACKS_RAW: PackDef[] = [
   // narthex and gallery
   packS('k_p01', 'narteks', 30.5, 51.5, [['kef_darkblade', 2], ['kef_tazici', 1]]),
   packS('k_p02', 'narteks', 33.5, 49.3, [['kef_gargon', 3], ['kef_tazici', 1]]),
@@ -272,6 +274,30 @@ const PACKS: PackDef[] = [
   packS('o_p29', 'arsiv', 51, 51.2, [['kef_obliterator', 2], ['kef_toplayici', 2]], { optional: true }),
 ];
 
+// ---- scale pass ----------------------------------------------------------------------------------------------------------------
+// The hand placed props, zones, stairs, tiers, packs, bosses and extras are written in the OLD layout (OLD_RECT) and remapped per
+// room (rescale.ts). Exempt: the bridge room k_kuzey and its two pack centres, which are written in the new coordinates.
+const OLD_RECT: Record<string, Rect4> = {
+  giris: [24, 54, 16, 8], narteks: [28, 48, 8, 6], tas_galerisi: [16, 40, 32, 8], kiymik_bati: [7, 38, 9, 10],
+  kiymik_dogu: [48, 38, 9, 10], kiymik_kuzey: [40, 30, 8, 10], halkor_cemberi: [24, 26, 16, 14], arsiv: [48, 48, 9, 6],
+  k_bati: [4, 28, 20, 6], gargoyle_avlusu: [4, 16, 20, 12], servis_gecidi: [0, 16, 4, 18], k_ekelon: [0, 12, 16, 4],
+  ekelon_terasi: [0, 0, 24, 12], k_kuzey: [24, 2, 6, 6], pismanlik_mahzeni: [24, 8, 6, 10], cemaat_nefi: [30, 0, 20, 14],
+  kefaret_merdiveni: [48, 14, 16, 8], kamarar_salonu: [48, 22, 16, 16],
+};
+const EXEMPT_ROOMS = new Set<string>(['k_kuzey']);
+const EXEMPT_PACKS = new Set<string>(['a_p22', 'a_p23']);
+const R = makeRescale({
+  seed: 'kefaret_salonlari', oldRect: OLD_RECT, rooms: ROOMS, doors: DOORS, packsRaw: PACKS_RAW,
+  anchors: [
+    { x: 31.5, z: 59, r: 2.0 }, { x: 31.5, z: 56.4, r: 1.6 }, { x: 55.5, z: 35.5, r: 2.8 },
+    { x: 31.5, z: 32.5, r: 5.0 }, { x: 11.5, z: 4, r: 4.5 }, { x: 42, z: 6.5, r: 4.5 }, { x: 55.5, z: 29.5, r: 4.5 },
+    { x: 22, z: 17, r: 1.5 }, { x: 40.5, z: 11.5, r: 1.5 },
+  ],
+});
+const ROOMS_R: RoomDef[] = ROOMS.map((r) => (EXEMPT_ROOMS.has(r.id) ? r : remapRoomGeometry(R, r)));
+const PACKS: PackDef[] = PACKS_RAW.map((p, i) => (EXEMPT_PACKS.has(p.id) ? p : R.packs[i]));
+const at2 = R.at2;
+
 // ---- dungeon ----------------------------------------------------------------------------------------------------------------
 const THEME: DungeonTheme = {
   fogColor: 0x1d1626, fogNear: 10, fogFar: 46,
@@ -287,28 +313,28 @@ export const KEFARET_SALONLARI: DungeonDef = {
   shortName: 'Kefaret',
   lore: "Kadim Diyar'ın kızıl tepelerinde, Kefaret Salonları yüzyıllarca kibirli ruhları arındırmak için kullanıldı: yargılanan ruhlar Günah Taşları'na mühürlenir, tövbe edenler Kefaret Kapları'ndan yeniden doğardı. Ta ki Baş Kamarar Velkaan salonları ele geçirip ruhları arındırmak yerine kibirlerini hasat edene kadar. Şimdi taşlar canlanıyor, bekçiler taşlaşıyor ve Kadim Anahtar Taşı bu karanlık katedralin kapısını açıyor.",
   levelRange: [60, 60],
-  timerSec: 1800,
+  timerSec: 1775,
   forcesRequired: 340,
   theme: THEME,
   grid: { w: 64, h: 64 },
-  rooms: ROOMS,
+  rooms: ROOMS_R,
   doors: DOORS,
   packs: PACKS,
   bosses: [
-    bossAt('boss_halkor', 'halkor_cemberi', 31.5, 32.5, 0, 1),
-    bossAt('boss_ekelon', 'ekelon_terasi', 11.5, 4, 0, 2),
-    bossAt('boss_alyez', 'cemaat_nefi', 42, 6.5, -90, 3),
-    bossAt('boss_velkaan', 'kamarar_salonu', 55.5, 29.5, 180, 4),
+    R.bossAtNew('boss_halkor', 'halkor_cemberi', 31.5, 32.5, 0, 1),
+    R.bossAtNew('boss_ekelon', 'ekelon_terasi', 11.5, 4, 0, 2),
+    R.bossAtNew('boss_alyez', 'cemaat_nefi', 42, 6.5, -90, 3),
+    R.bossAtNew('boss_velkaan', 'kamarar_salonu', 55.5, 29.5, 180, 4),
   ],
-  start: { pos: [31.5, 59], facing: 180 },
-  exit: { pos: [55.5, 35.5] },
+  start: { pos: at2(31.5, 59), facing: 180 },
+  exit: { pos: at2(55.5, 35.5) },
   extras: {
-    fontOfPower: pt(31.5, 56.4),
-    shrines: [{ type: 'shrine_haste', pos: pt(22, 17) }, { type: 'shrine_power', pos: pt(40.5, 11.5) }],
+    fontOfPower: pt(...at2(31.5, 56.4)),
+    shrines: [{ type: 'shrine_haste', pos: pt(...at2(22, 17)) }, { type: 'shrine_power', pos: pt(...at2(40.5, 11.5)) }],
     // Efsunlu Yarik rift spots (at least 15 m from the party, nearest reachable spot): the Kibirli guardian spawns here
-    riftSpots: [[18, 44], [44.5, 45.5], [10, 31.5], [6.5, 25.5], [27, 11.2], [62, 14.5]],
-    chests: [{ pos: pt(28.2, 52.8), kind: 'chest_wood' }, { pos: pt(55.6, 49.2), kind: 'chest_gold' }],
-    checkpoints: [pt(33, 9)],
+    riftSpots: ([[18, 44], [44.5, 45.5], [10, 31.5], [6.5, 25.5], [27, 11.2], [62, 14.5]] as [number, number][]).map(([x, z]) => pt(...at2(x, z))),
+    chests: [{ pos: pt(...at2(28.2, 52.8)), kind: 'chest_wood' }, { pos: pt(...at2(55.6, 49.2)), kind: 'chest_gold' }],
+    checkpoints: [pt(...at2(33, 9))],
   },
   season: 1,
   endgame: true,
