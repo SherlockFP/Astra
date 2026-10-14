@@ -30,7 +30,7 @@
   gap: 2px;
   padding: 0 4px;
   background: rgba(10, 10, 12, 0.8);
-  border: 1px solid #000;
+  border: 1px solid var(--elv-border);
   border-bottom: 0;
   pointer-events: auto;
 }
@@ -114,7 +114,7 @@
   display: flex;
   flex-direction: column;
   background: rgba(10, 10, 12, 0.35);
-  border: 1px solid #000;
+  border: 1px solid var(--elv-border);
 }
 .dm-col:hover { background: rgba(10, 10, 12, 0.8); }
 .dm-title {
@@ -135,7 +135,7 @@
 /* one row: spec icon, then the class-coloured bar with the name left and the value right */
 .dm-row { height: var(--dm-row); display: flex; align-items: center; gap: 1px; padding: 0 1px 0 0; }
 .dm-ico { width: var(--dm-row); height: var(--dm-row); flex: none; background: #f1e6cf; }
-.dm-bar { position: relative; flex: 1 1 0; min-width: 0; height: 100%; overflow: hidden; background: rgba(0, 0, 0, 0.45); }
+.dm-bar { position: relative; flex: 1 1 0; min-width: 0; height: 100%; overflow: hidden; background: var(--ui-well); }
 .dm-fill {
   position: absolute;
   left: 0;
@@ -153,7 +153,7 @@
   font: 700 13px/1 var(--font-body);
   color: #fff;
   white-space: nowrap;
-  text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
+  text-shadow: -1px 0 2px rgba(0, 0, 0, 0.85), 1px 0 2px rgba(0, 0, 0, 0.85), 0 -1px rgba(0, 0, 0, 0.5), 0 1px rgba(0, 0, 0, 0.5);
   pointer-events: none;
 }
 .dm-nm { left: 4px; right: 56px; overflow: hidden; text-overflow: ellipsis; }
@@ -168,7 +168,7 @@
   gap: 1px;
   padding: 4px 6px;
   background: rgba(10, 10, 12, 0.5);
-  border: 1px solid #000;
+  border: 1px solid var(--elv-border);
   border-top: 0;
   font: 400 13px/1.2 var(--font-body);
   color: var(--text-2);
@@ -188,7 +188,7 @@
   font: 400 13px/1.3 var(--font-body);
   color: var(--text-3);
   background: rgba(10, 10, 12, 0.35);
-  border: 1px solid #000;
+  border: 1px solid var(--elv-border);
   pointer-events: none;
 }
 

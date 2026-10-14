@@ -16,7 +16,7 @@
   padding: 10px 14px;
   transform: scale(var(--m2-fit, 1));
   transform-origin: 50% 100%;
-  border: 2px solid #050302;
+  border: 2px solid var(--elv-border);
   border-radius: 12px 12px 3px 3px;
   /* top -> bottom: gold corner rivets, light/shade falloff, wood streaks, stone grain, warm dark stone base */
   background:
@@ -36,7 +36,7 @@
 /* gold diamond caps on both ends (same language as the orbs-style action bar) */
 .m2::before, .m2::after {
   content: ''; position: absolute; top: 50%; width: 14px; height: 14px; transform: translateY(-50%) rotate(45deg);
-  background: #262626; border: 2px solid #050302; box-shadow: 0 0 6px rgba(232, 196, 106, 0.4);
+  background: var(--elv-backdrop-solid); border: 2px solid var(--elv-border); box-shadow: 0 0 6px rgba(232, 196, 106, 0.4);
 }
 .m2::before { left: -9px; }
 .m2::after { right: -9px; }
@@ -50,8 +50,8 @@
 /* recessed carved wells */
 .m2-well {
   position: relative; flex: none; height: 84px;
-  background: linear-gradient(180deg, #0a0605 0%, #160e09 100%);
-  border: 2px solid #050302; border-radius: 5px;
+  background: var(--elv-backdrop);
+  border: 2px solid var(--elv-border); border-radius: 5px;
   box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.9), inset 0 0 0 1px rgba(155, 123, 54, 0.55), 0 1px 0 rgba(255, 231, 163, 0.14);
 }
 .m2.dead .m2-stat { filter: grayscale(0.9) brightness(0.7); }
@@ -61,9 +61,9 @@
 .m2-head { display: flex; align-items: center; gap: 8px; height: 26px; min-width: 0; }
 .m2-lvl {
   flex: none; width: 26px; height: 26px; margin-left: 2px; display: flex; align-items: center; justify-content: center; border-radius: 50%;
-  font: 700 13px var(--font-head); color: var(--hud-gold-l); text-shadow: 0 1px 0 #000;
-  background: #1a1a1a;
-  box-shadow: 0 0 0 1px #050302, 0 0 0 2px var(--hud-gold), 0 0 0 3px #050302, 0 0 8px color-mix(in srgb, var(--cc) 50%, transparent);
+  font: 700 13px var(--font-head); color: var(--hud-gold-l); text-shadow: var(--sh-text);
+  background: var(--elv-backdrop-solid);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 0 0 2px var(--hud-gold), 0 0 0 3px rgba(0, 0, 0, 0.5), 0 0 8px color-mix(in srgb, var(--cc) 50%, transparent);
 }
 .m2-name { flex: 1; min-width: 0; font: 700 15px var(--font-head); color: var(--hud-gold-l); text-shadow: var(--shade); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .m2-cls { flex: none; font: 700 10px var(--font-ui); color: var(--cc); text-shadow: var(--shade); }
@@ -71,7 +71,7 @@
 .m2-gauge {
   --trail: #ffd9c8;
   position: relative; flex: none; height: 21px; overflow: hidden;
-  background: #0a0605; border: 2px solid #050302; border-radius: 2px;
+  background: var(--ui-well-deep); border: 2px solid var(--elv-border); border-radius: 2px;
   box-shadow: inset 0 0 0 1px rgba(155, 123, 54, 0.6), 0 1px 0 rgba(255, 231, 163, 0.12);
 }
 .m2-gauge.m2-sp { height: 17px; }
@@ -109,10 +109,10 @@
 .m2-bead { position: relative; width: 34px; height: 34px; flex: none; border-radius: 50%; isolation: isolate; }
 .m2-bead-ring {
   position: absolute; inset: 0; border-radius: 50%;
-  background: #1a1a1a;
-  box-shadow: 0 0 0 1px #050302, 0 2px 0 #000;
+  background: var(--elv-backdrop-solid);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.45);
 }
-.m2-bead-in { position: absolute; inset: 3px; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 35% 30%, #2b1838, #0a050e 78%); box-shadow: inset 0 0 6px #000; }
+.m2-bead-in { position: absolute; inset: 3px; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 35% 30%, #2b1838, rgba(0, 0, 0, 0.5) 78%); box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5); }
 /* liquid: gradient anchored to the bottom of the 28px inner circle; purple while filling, gold when full */
 .m2-bead-fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: linear-gradient(0deg, #2a0a4d, #6a22b8 42%, #a85cf0 78%, #d9a8ff) bottom / 100% 28px no-repeat; }
 .m2-bead-fill::before {
@@ -156,7 +156,7 @@
 .m2-extras { position: absolute; left: 6px; right: 6px; bottom: calc(100% + 14px); pointer-events: none; }
 .m2-extras .hb-extras { padding: 0 4px; }
 
-.hud[data-hudstyle='metin2'] .actionbar { align-items: center; gap: 8px; padding: 0; background: none; border: 0; border-radius: 0; box-shadow: none; }
+.hud[data-hudstyle='metin2'] .actionbar { align-items: center; gap: 8px; padding: 0; background: none; border: 0; border-radius: var(--ui-r-frame); box-shadow: none; }
 .hud[data-hudstyle='metin2'] .actionbar::before, .hud[data-hudstyle='metin2'] .actionbar::after { display: none; }
 .hud[data-hudstyle='metin2'] .ab-group { align-items: center; gap: 4px; }
 .hud[data-hudstyle='metin2'] .ab-group.potions { gap: 4px; padding-left: 8px; }
@@ -170,9 +170,9 @@
 .hud[data-hudstyle='metin2'] .slot.sz-sm .slot-cdtext { font-size: 14px; }
 .hud[data-hudstyle='metin2'] .slot.potion .slot-charges { font-size: 12px; }
 /* empty sockets sit in the carved stone well: a deeper hole with no gold rim, the bar's own dark tone */
-.hud[data-hudstyle='metin2'] .slot.noskill .slot-bg, .hud[data-hudstyle='metin2'] .slot.empty .slot-bg { background: radial-gradient(circle at 50% 35%, #0e0906 0%, #020101 90%); }
+.hud[data-hudstyle='metin2'] .slot.noskill .slot-bg, .hud[data-hudstyle='metin2'] .slot.empty .slot-bg { background: var(--ui-well-deep); }
 .hud[data-hudstyle='metin2'] .slot.noskill .slot-frame, .hud[data-hudstyle='metin2'] .slot.empty .slot-frame {
-  border-color: #000; box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.95), inset 0 0 0 1px rgba(155, 123, 54, 0.3), 0 1px 0 rgba(255, 231, 163, 0.08);
+  border-color: var(--elv-border); box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.95), inset 0 0 0 1px rgba(155, 123, 54, 0.3), 0 1px 0 rgba(255, 231, 163, 0.08);
 }
 .hud[data-hudstyle='metin2'] .slot.noskill:hover .slot-frame, .hud[data-hudstyle='metin2'] .slot.empty:hover .slot-frame {
   box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.95), inset 0 0 0 1px var(--hud-gold-d), 0 0 6px rgba(255, 231, 163, 0.2);

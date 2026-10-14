@@ -1,16 +1,36 @@
-/* UX-00 design tokens (docs/UI_REDESIGN.md §3.2, copied as written). Imported first by ui/UI.ts. Legacy aliases at the bottom keep old CSS working. */
+/* UX-00 design tokens (docs/UI_REDESIGN.md §3.2). Imported first by ui/UI.ts. Legacy aliases at the bottom keep old CSS working.
+   2026-10-14 owner revision (docs/UI_WOW_CLASSIC.md §6): translucent slate glass, rounded corners, soft text shadow.
+   Every surface, border, radius and text-shadow in the skin reads from the --ui-* block below. */
 :root {
-  /* ---- surfaces: flat, dark, translucent, neutral ---- */
-  --bg-0: #050507;                        /* void (solid): behind translucent fills, bar tracks on opaque pages */
-  --bg-1: rgba(8, 8, 10, 0.88);           /* wells: slots, inputs, gauge tracks */
-  --bg-2: rgba(10, 10, 12, 0.90);         /* window / panel base */
-  --bg-3: rgba(18, 18, 22, 0.88);         /* cards, buttons, raised rows */
-  --bg-4: rgba(30, 30, 36, 0.92);         /* hover, active tab */
-  --bg-5: rgba(46, 46, 54, 0.95);         /* highlight, key-cap face */
-  --bg-plate: rgba(26, 26, 26, 0.80);     /* HUD plates, unit-frame backs: the ElvUI backdrop (docs/UI_WOW_CLASSIC.md §2) */
-  --bg-scrim: rgba(0, 0, 0, 0.35);        /* behind action-bar rows, meter columns, chat on hover */
-  --ink: #000000;                         /* THE border colour: 1 px, everywhere */
-  --hi: rgba(255, 255, 255, 0.06);        /* the 1 px inner top highlight */
+  /* ---- ui: the owner revision. Change the look here, not in the rules ---- */
+  --ui-glass-hud: rgba(16, 20, 28, 0.55);     /* HUD frames: unit frames, plates, minimap, action-bar rows, tracker chips */
+  --ui-glass-win: rgba(18, 22, 30, 0.72);     /* windows, panels, tooltips, modals (the only layer that is blurred) */
+  --ui-glass-solid: rgba(16, 20, 28, 0.70);   /* slots, small plates, bar backs where the fill must still read */
+  --ui-well: rgba(8, 11, 16, 0.50);           /* wells inside a frame: sub-fills, pips, empty cells, rank chips */
+  --ui-well-deep: rgba(6, 8, 12, 0.62);       /* the darkest well: bar tracks behind a fill, scrollbars */
+  --ui-border: rgba(255, 255, 255, 0.10);     /* THE border: 1 px light hairline, everywhere */
+  --ui-border-hi: rgba(255, 255, 255, 0.45);  /* hover / focus / selected border */
+  --ui-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --ui-blur: blur(6px);                        /* windows and tooltips only, never per-frame HUD bits */
+  --ui-r-win: 8px;                            /* windows, panels, tooltips, modals */
+  --ui-r-frame: 6px;                          /* unit frames, cast bars, minimap frame, tracker chips */
+  --ui-r-btn: 4px;                            /* buttons, action-bar slots, keycaps */
+  --ui-r-bar: 3px;                            /* bars inside frames */
+  --ui-r-pill: 999px;                         /* badges, count chips, portraits */
+  --ui-head: #f5d68a;                         /* headers, section labels, quest titles: warm light gold (not dark brown) */
+  --ui-text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 4px rgba(0, 0, 0, 0.55);   /* soft shadow under white text */
+
+  /* ---- surfaces: translucent slate glass (no pure black fills) ---- */
+  --bg-0: rgba(12, 15, 21, 0.60);         /* void: behind translucent fills, bar tracks on opaque pages */
+  --bg-1: rgba(12, 15, 21, 0.60);         /* wells: slots, inputs, gauge tracks */
+  --bg-2: var(--ui-glass-win);            /* window / panel base */
+  --bg-3: rgba(24, 29, 40, 0.70);         /* cards, buttons, raised rows */
+  --bg-4: rgba(38, 45, 60, 0.78);         /* hover, active tab */
+  --bg-5: rgba(54, 63, 80, 0.85);         /* highlight, key-cap face */
+  --bg-plate: var(--ui-glass-hud);        /* HUD plates, unit-frame backs */
+  --bg-scrim: rgba(8, 11, 16, 0.30);      /* behind action-bar rows, meter columns, chat on hover */
+  --ink: var(--ui-border);                /* THE border colour (1 px): light hairline, not black */
+  --hi: rgba(255, 255, 255, 0.08);        /* the 1 px inner top highlight */
   --line: rgba(255, 255, 255, 0.10);      /* hairline dividers inside panels */
 
   /* ---- accent: gold, used sparingly (selection, legendary, quest titles, focus / new / proc rings) ---- */
@@ -20,11 +40,11 @@
   --gold-4: #9b7b36;   /* primary-button line */
   --gold-5: #5a4522;   /* deep accent (legacy alias target) */
 
-  /* ---- text ---- */
-  --text-1: #f2f2f4;   /* primary (17 : 1 on bg-2) */
-  --text-2: #cfcfd6;   /* secondary (12 : 1) */
-  --text-3: #9e9ea8;   /* dim (7 : 1) */
-  --text-4: #70707a;   /* disabled only (4 : 1) */
+  /* ---- text: white with a soft shadow; secondary text lifted for translucent backdrops ---- */
+  --text-1: #f5f6f8;   /* primary */
+  --text-2: #e2e5ec;   /* secondary */
+  --text-3: #b9bfcc;   /* dim */
+  --text-4: #7f8694;   /* disabled only */
 
   /* ---- status / role ---- */
   --ok: #4fe06a;  --warn: #ffa83a;  --bad: #ff4c3c;  --info: #4da3ff;
@@ -57,15 +77,15 @@
   --dmg-physical: #fff1d0; --dmg-fire: #ffa040; --dmg-frost: #8fe3ff; --dmg-lightning: #fff05a; --dmg-shadow: #c58cff;
   --dmg-poison: #8cff70;   --dmg-holy: #fff3a8; --dmg-arcane: #ff8fee; --dmg-true: #ff5a5a;
 
-  /* ---- ElvUI HUD language (docs/UI_WOW_CLASSIC.md §2): flat neutral backdrop, 1 px black border, outlined condensed text ---- */
-  --elv-backdrop: rgba(26, 26, 26, 0.8);   --elv-backdrop-solid: #1a1a1a;   --elv-border: #000;
-  --elv-bar-back: rgba(26, 26, 26, 0.85);  --elv-hi: rgba(255, 255, 255, 0.06);
-  --elv-title: #ffd100;                    /* quest titles, section labels (retail yellow) */
+  /* ---- ElvUI HUD language (docs/UI_WOW_CLASSIC.md §2), re-pointed at the --ui-* glass (owner revision 2026-10-14) ---- */
+  --elv-backdrop: var(--ui-glass-hud);     --elv-backdrop-solid: var(--ui-glass-solid);   --elv-border: var(--ui-border);
+  --elv-bar-back: var(--ui-well-deep);     --elv-hi: var(--hi);
+  --elv-title: var(--ui-head);             /* quest titles, section labels, headers: warm light gold */
   --elv-green: #1eff00;                    /* "Kullan:" / equip lines */
-  --elv-grey: #808080;                     /* completed objectives, disabled */
-  --elv-value: #ffffff;                    /* window value colour: active tab line, button hover / focus, section bars (ElvUI: class colour; white until a window knows the class) */
+  --elv-grey: #9aa0ac;                     /* completed objectives, disabled */
+  --elv-value: #ffffff;                    /* window value colour: active tab line, button hover / focus, section bars */
   --elv-cast: #ffd100;                     /* enemy / generic cast fill */
-  --elv-outline: -1px 0 0 #000, 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000;   /* crisp text outline */
+  --elv-outline: var(--ui-text-shadow);    /* soft shadow under white text (was the crisp black outline) */
 
   /* ---- type ---- */
   --font-title: 'Cinzel Decorative', 'Cinzel', serif;      /* BIG TITLES ONLY (>= 32 px): zone, level-up, boss yell, welcome, finder banner, countdown */
@@ -74,13 +94,13 @@
   --fs-12: 12px; --fs-13: 13px; --fs-14: 14px; --fs-15: 15px; --fs-17: 17px;
   --fs-20: 20px; --fs-24: 24px; --fs-32: 32px; --fs-48: 48px; --fs-64: 64px;
 
-  /* ---- space / radius ---- */
+  /* ---- space / radius (rounded since 2026-10-14: windows 8, frames 6, buttons 4, bars 3; see --ui-r-*) ---- */
   --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px; --sp-7: 48px;
-  --r-0: 0; --r-1: 2px; --r-pill: 999px;                    /* HUD = 0, windows / buttons = 2 px, pills only for count chips */
+  --r-0: var(--ui-r-frame); --r-1: var(--ui-r-btn); --r-pill: var(--ui-r-pill);
 
   /* ---- shadows ---- */
-  --sh-text: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000;   /* crisp 4-way 1 px outline (ElvUI "OUTLINE" font flag) */
-  --sh-pop: 0 8px 24px rgba(0, 0, 0, 0.6);                               /* windows only */
+  --sh-text: var(--ui-text-shadow);                                      /* soft shadow under white text */
+  --sh-pop: var(--ui-shadow);                                            /* windows only */
   --glow-gold: 0 0 8px rgba(255, 214, 90, 0.55);
 
   /* ---- motion ---- */
@@ -94,7 +114,7 @@
   --text: var(--text-1);  --text-dim: var(--text-3);
   --metal-0: var(--bg-0); --metal-1: var(--bg-1); --metal-2: var(--bg-2); --metal-3: var(--bg-4);
   --shade: var(--sh-text);
-  --panel-bg: var(--bg-2);  --panel-bg-2: var(--bg-3);  --panel-border: #000;     /* menu.css: login / character select */
+  --panel-bg: var(--bg-2);  --panel-bg-2: var(--bg-3);  --panel-border: var(--ui-border);     /* menu.css: login / character select */
   --hp: var(--res-hp); --hp-dark: #4a1010; --mana: var(--res-mana); --rage: var(--res-rage); --energy: var(--res-energy); --xp: var(--res-xp);
   --danger: var(--bad);
   --poor: var(--rar-poor); --common: var(--rar-common);

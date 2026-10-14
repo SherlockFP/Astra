@@ -35,7 +35,7 @@
   color: var(--text-1);
   background: var(--bg-3);
   border: 1px solid var(--ink);
-  border-radius: 0;
+  border-radius: var(--ui-r-frame);
   box-shadow: none;
   cursor: pointer;
 }
@@ -71,7 +71,7 @@
   padding: 0;
   background: var(--bg-1);
   border: 1px solid var(--ink);
-  border-radius: 0;
+  border-radius: var(--ui-r-frame);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
   opacity: 0.45;
   cursor: pointer;
@@ -92,7 +92,7 @@
   color: var(--text-4);
   background: var(--bg-1);
   border: 1px solid var(--ink);
-  border-radius: 0;
+  border-radius: var(--ui-r-frame);
 }
 .fd-lead.is-on { color: var(--elv-value); box-shadow: inset 0 0 0 1px var(--elv-value); }
 .fd-rolename { margin-left: auto; font: 400 var(--fs-13)/1.2 var(--font-body); color: var(--text-2); }
@@ -109,7 +109,7 @@
   padding: var(--sp-3) var(--sp-4);
   background: var(--bg-0) center / cover no-repeat;
   border: 1px solid var(--ink);
-  border-radius: 0;
+  border-radius: var(--ui-r-frame);
   box-shadow: none;
 }
 .fd-bname { font: 700 var(--fs-32)/1.1 var(--font-title); color: var(--elv-value); text-shadow: var(--sh-text); }
@@ -129,7 +129,7 @@
   color: var(--text-1);
   background: var(--bg-3);
   border: 1px solid var(--ink);
-  border-radius: 0;
+  border-radius: var(--ui-r-frame);
   box-shadow: none;
   cursor: pointer;
 }
@@ -145,7 +145,7 @@
   padding: 2px 5px;
   font: 700 var(--fs-12)/1 var(--font-body);
   color: var(--elv-value);
-  border-radius: 0;
+  border-radius: var(--ui-r-frame);
   box-shadow: inset 0 0 0 1px var(--elv-value);
 }
 
@@ -197,7 +197,7 @@
   background: var(--bg-1);
   border: 1px solid var(--ink);
   border-left: 3px solid var(--elv-value);
-  border-radius: 0;
+  border-radius: var(--ui-r-btn);
 }
 .fd-pslot.is-lead .fd-pname { color: var(--elv-value); }
 .fd-pslot.is-empty { justify-content: center; color: var(--text-4); background: transparent; border-style: dashed; }
@@ -214,7 +214,7 @@
   font: 400 var(--fs-14)/1 var(--font-body);
   background: var(--bg-1);
   border: 1px solid var(--ink);
-  border-radius: 0;
+  border-radius: var(--ui-r-frame);
 }
 .fd-trow {
   display: grid;
@@ -227,7 +227,7 @@
   font: 400 var(--fs-14)/1.2 var(--font-body);
   background: var(--bg-3);
   border: 1px solid var(--ink);
-  border-radius: 0;
+  border-radius: var(--ui-r-frame);
 }
 .fd-trow.fd-thead { min-height: 26px; color: var(--text-3); font-size: var(--fs-13); background: var(--bg-2); }
 .fd-trow .fd-zn { overflow: hidden; color: var(--text-1); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
@@ -249,5 +249,5 @@
   font: 700 var(--fs-13)/1 var(--font-body);
   
   background: var(--elv-value);
-  border-radius: 0;
+  border-radius: var(--ui-r-frame);
 }
