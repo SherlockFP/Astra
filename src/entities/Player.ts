@@ -29,6 +29,8 @@ export interface PlayerSyncState {
   mcd?: [number, number, number];
   shot?: string | null;         // current one-shot clip (attack/cast) for remote replay
   shotSeq?: number;             // increments each time a new one-shot starts
+  /** Append-only (sprint1): the owner is riding a mount (game/Mount.ts). Wire: bit 4 of the pstate flags (net/codec.ts). */
+  mounted?: boolean;
 }
 
 const VISIBLE_SLOTS: EquipSlot[] = ['weapon', 'offhand', 'helm'];

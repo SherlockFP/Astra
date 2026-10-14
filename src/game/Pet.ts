@@ -6,9 +6,10 @@ import { psxMaterial } from '../world/ProceduralAssets';
 import { activePetId } from '../systems/Pets';
 
 /**
- * WP-12 cosmetic pet follower (local character only, docs/MMO_PILLARS.md). The summoned pet (`save.pets.active`) floats
+ * WP-12 cosmetic pet follower (docs/MMO_PILLARS.md). The local character's summoned pet (`save.pets.active`) floats
  * behind and beside the character, hops while it catches up and does nothing in combat. It is built from boxes like the
- * mount (game/Mount.ts), one of five shape families (data/pets.ts PetShape). Remote players do not see it yet (local-only).
+ * mount (game/Mount.ts), one of five shape families (data/pets.ts PetShape). Remote players: net/Replication.ts sets the pet from the
+ * lobby presence (`lpres.pet`, once a second) and the follower moves with the remote character.
  */
 
 /** Offset behind (m) and beside (m) the character, in the character's own frame. */
@@ -137,6 +138,12 @@ export class PetFollower {
     if (root.parent !== world.scene) {
       world.scene.add(root);
       this.inited = false;
+    }
+    // a hidden owner (a remote character before its first state) hides the pet and drops the anchor: no slide in from the origin
+    if (!this.player.object3d.visible) {
+      root.visible = false;
+      this.inited = false;
+      return;
     }
     root.visible = !this.player.isDead;
 

@@ -12,11 +12,14 @@ import type { NetChannel, NetChannels } from '../types/net';
 type PState = NetChannels['pstate'];
 type Snap = NetChannels['snap'];
 
-/** [x, y, z, yaw, vx, vz, anim, hp, maxHp, res, maxRes, flags, casting, level, statuses, shot, shotSeq, t, id] */
+/**
+ * [x, y, z, yaw, vx, vz, anim, hp, maxHp, res, maxRes, flags, casting, level, statuses, shot, shotSeq, t, id]
+ * flags: 1 dead, 2 dodging, 4 mounted (sprint1, append-only: older peers ignore the bit).
+ */
 function encodePState(p: PState): unknown[] {
   return [
     p.x, p.y, p.z, p.yaw, p.vx, p.vz, p.anim, p.hp, p.maxHp, p.res, p.maxRes,
-    (p.dead ? 1 : 0) | (p.dodging ? 2 : 0),
+    (p.dead ? 1 : 0) | (p.dodging ? 2 : 0) | (p.mounted ? 4 : 0),
     p.casting ?? null, p.level, p.statuses ?? [], p.shot ?? null, p.shotSeq ?? 0, p.t, p.id,
   ];
 }
@@ -26,7 +29,8 @@ function decodePState(a: unknown): unknown {
   const flags = typeof a[11] === 'number' ? a[11] : 0;
   const s: PlayerSyncState & { id: number; t: number } = {
     x: a[0], y: a[1], z: a[2], yaw: a[3], vx: a[4], vz: a[5], anim: a[6], hp: a[7], maxHp: a[8], res: a[9], maxRes: a[10],
-    dead: (flags & 1) !== 0, dodging: (flags & 2) !== 0, casting: a[12], level: a[13], statuses: a[14], shot: a[15], shotSeq: a[16], t: a[17], id: a[18],
+    dead: (flags & 1) !== 0, dodging: (flags & 2) !== 0, mounted: (flags & 4) !== 0,
+    casting: a[12], level: a[13], statuses: a[14], shot: a[15], shotSeq: a[16], t: a[17], id: a[18],
   };
   return s;
 }
