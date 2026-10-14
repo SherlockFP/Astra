@@ -27,7 +27,9 @@ export type SpecId = 'knight_protector' | 'knight_blademaster' | 'barbarian_warl
   // CLASS SCAFFOLD (append-only): Rahip (priest_*), Şaman (shaman_*), Druid (druid_*). Ids only; SPECS rows arrive with the kits.
   | 'priest_discipline' | 'priest_holy' | 'priest_shadow'
   | 'shaman_elemental' | 'shaman_enhancement' | 'shaman_restoration'
-  | 'druid_balance' | 'druid_feral' | 'druid_guardian' | 'druid_restoration';
+  | 'druid_balance' | 'druid_feral' | 'druid_guardian' | 'druid_restoration'
+  // WoW Midnight (12.0): the third Demon Hunter spec, Devourer ("Yutucu", Void caster)
+  | 'demonhunter_devourer';
 export interface SpecDef {
   id: SpecId; classId: ClassId; name: string; role: RoleId; desc: string;
   stats: StatBlock;                                   // folded like a keystone (threatPct, maxHpPct, ...)

@@ -150,6 +150,17 @@ export const GUARD_COUNTER_CD = 0.6;
   };
 }
 
+// AE-3 / AE-4: İblis Avcısı = the Rogue's dual-glaive moveset under its own ids (typed shadow, tier-2 art wa_flurry); Ejderhasoy = the Mage's
+// staff moveset (frost, tier-2 art wa_starfall_beam).
+{
+  HEAVY_BY_CLASS.demonhunter = { ...HEAVY_BY_CLASS.rogue!, classId: 'demonhunter', id: 'demonhunter_basic_heavy', name: 'Fel Delici Hamle', type: 'shadow' };
+  RIPOSTE_BY_CLASS.demonhunter = { ...RIPOSTE_BY_CLASS.rogue!, classId: 'demonhunter', id: 'demonhunter_basic_riposte', name: 'Kör Karşılık', type: 'shadow' };
+  KRT_BY_CLASS.demonhunter = { ...KRT_BY_CLASS.rogue!, classId: 'demonhunter', id: 'demonhunter_basic_krt', type: 'shadow' };
+  HEAVY_BY_CLASS.evoker = { ...HEAVY_BY_CLASS.mage!, classId: 'evoker', id: 'evoker_basic_heavy', name: 'Yüklü Ejder Nefesi', type: 'frost' };
+  RIPOSTE_BY_CLASS.evoker = { ...RIPOSTE_BY_CLASS.mage!, classId: 'evoker', id: 'evoker_basic_riposte', name: 'Karşı Nefes', type: 'frost' };
+  KRT_BY_CLASS.evoker = { ...KRT_BY_CLASS.mage!, classId: 'evoker', id: 'evoker_basic_krt', type: 'frost' };
+}
+
 /** Weapon art (tier 2) ids per class (WEAPON_ARTS). */
 export function weaponArtVfx(artId: string): VfxId {
   return `weapon_art_${artId}` as VfxId;

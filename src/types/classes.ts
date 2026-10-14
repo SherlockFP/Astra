@@ -31,6 +31,8 @@ export interface PipDef {
    * back 10 s after it was spent = up to 0.6 rune/s, plate-melee §8 / §9), instead of one shared timer.
    */
   regen?: { every: number; parallel?: boolean };
+  /** AE-3 (agile-evoker §g.2 #5): a hidden status kept up while the pip count (internal units) is at least `min` (soul_overflow: Ruh Bombası). */
+  statusAt?: { min: number; status: StatusId };
   startAt?: number;
 }
 

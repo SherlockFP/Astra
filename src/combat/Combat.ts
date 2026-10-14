@@ -2327,6 +2327,17 @@ export class Combat {
         const hold = sp('n_rage_engine')?.rageDecayDelay ?? 0;
         const held = hold > 0 && !!G.skills && G.skills.now - G.skills.lastResourceGainAt < hold;
         if (ooc && !held) p.resource = Math.max(0, p.resource - 4 * dt);
+      } else if (cls.regenRule === 'fury') {
+        // AE-3: İblis Avcısı Gazap. The Fel Bıçakları engine (resourceRegen: class + spec stats) runs only in combat; out of combat it
+        // decays 4/s. Boşluk Metamorfozu (Yutucu) drains `magnitude` Gazap per second and ends when the bar is empty.
+        if (!ooc) {
+          if (regen > 0 && p.resource < p.maxResource) p.resource = Math.min(p.maxResource, p.resource + regen * dt);
+        } else p.resource = Math.max(0, p.resource - 4 * dt);
+        const vm = p.statuses.get('void_meta');
+        if (vm) {
+          p.resource = Math.max(0, p.resource - (vm.magnitude > 0 ? vm.magnitude : 5) * dt);
+          if (p.resource <= 0) { p.statuses.remove('void_meta'); p.statuses.remove('collapsing_star'); }
+        }
       } else {
         if (cls.id === 'mage' && ooc) regen *= 3;
         if (regen > 0 && p.resource < p.maxResource) p.resource = Math.min(p.maxResource, p.resource + regen * dt);

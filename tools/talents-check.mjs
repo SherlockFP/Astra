@@ -572,6 +572,8 @@ function stageStrings() {
     const cls = classOfSpec(spec);
     const classTree = getTree('class', cls);
     const specTree = getTree('spec', spec);
+    // classes still being built (kits without CM12 trees yet) are reported, not crashed on
+    if (!classTree || !specTree) { st.warn(spec, `no ${!classTree ? 'class' : 'spec'} tree yet (strings stage skipped)`); continue; }
     const clsArr = autoBuildTree('class', 25);
     const spcArr = autoBuildTree('spec', 25);
     for (const [kind, tree, arr] of [['class', classTree, clsArr], ['spec', specTree, spcArr]]) {

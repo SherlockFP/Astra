@@ -17,6 +17,11 @@ import { registerPaladinSpecs } from './skillsets/paladinSpecs';
 import { registerPaladinHoly } from './skillsets/paladinHoly';
 import { registerNecromancerSpecs } from './skillsets/necromancerSpecs';
 import { registerWarlockSpecs } from './skillsets/warlockSpecs';
+// AE-3 / AE-4 (docs/kits/agile-evoker.md): İblis Avcısı and Ejderhasoy rows
+import { registerDemonHunter } from './skillsets/demonhunter';
+import { registerDemonHunterSpecs } from './skillsets/demonhunterSpecs';
+import { registerEvoker } from './skillsets/evoker';
+import { registerEvokerSpecs } from './skillsets/evokerSpecs';
 import { registerLayerMonkArcher } from './skillsets/layerMonkArcher';
 import { registerLayerPaladinCasters } from './skillsets/layerPaladinCasters';
 // GDD_TALENTS (T0): compile-only stubs, filled by T8 (mage spec rows) and T9 (class utility rows). Merged at the end of this file.
@@ -367,6 +372,10 @@ registerPaladinSpecs(add);
 registerPaladinHoly(add);
 registerNecromancerSpecs(add);
 registerWarlockSpecs(add);
+registerDemonHunter(add);
+registerDemonHunterSpecs(add);
+registerEvoker(add);
+registerEvokerSpecs(add);
 registerLayerMonkArcher(add);
 registerLayerPaladinCasters(add);
 // GDD_TALENTS (T0): talent skill rows (mage specs §1.3.3, class utilities §1.4). Empty stubs until T8 / T9.

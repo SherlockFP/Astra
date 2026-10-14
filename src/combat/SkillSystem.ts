@@ -610,6 +610,9 @@ export class SkillSystem {
     if (spec === 'knight_blademaster') ids.push('adalet');
     if (spec === 'mage_arcane') ids.push('arcane');
     if (cls === 'necromancer') ids.push('rune');
+    // AE-3 / AE-4: İblis Avcısı soul fragments (İntikam + Yutucu) and the Ejderhasoy Öz pips (every spec)
+    if (cls === 'demonhunter' && (spec === 'demonhunter_vengeance' || spec === 'demonhunter_devourer')) ids.push('soul');
+    if (cls === 'evoker') ids.push('essence');
     out = [];
     for (const id of ids) { const d = this.pipDef(id); if (d && !out.includes(d)) out.push(d); }
     this.activePipCache.set(key, out);
@@ -673,6 +676,12 @@ export class SkillSystem {
   private setPip(actor: Actor, id: string, n: number, max: number): void {
     const bag = actor as unknown as { pips?: Record<string, number> };
     bag.pips = { ...(bag.pips ?? {}), [id]: n };
+    // AE-3: PipDef.statusAt keeps a hidden status up while the counter is at least `min` (soul_overflow turns Ruh Yarma into Ruh Bombası)
+    const sa = this.pipDef(id as PipId)?.statusAt;
+    if (sa && actor.statuses) {
+      if (n >= sa.min) { if (!actor.statuses.has(sa.status)) actor.statuses.apply(sa.status, 3600, { sourceId: actor.id }); }
+      else if (actor.statuses.has(sa.status)) actor.statuses.remove(sa.status);
+    }
     // KIT PK-0: the event reports display pips (PipDef.scale; warlock shard: 50 fragments = 5 pips). Default scale 1.
     const scale = this.pipDef(id as PipId)?.scale ?? 1;
     G.events.emit('pips:changed', { id: id as PipId, points: Math.floor(n / scale), max: Math.floor(max / scale) });
@@ -1473,9 +1482,10 @@ export class SkillSystem {
     }
 
     // movement lock
+    // AE-4 (agile-evoker §g.2 #7): Süzül (hover) lets hard casts run without the movement slow
     if (!isChannel) {
       if (params.root === 1 || def.lockMovement) this.actRoot(p, move);
-      else this.actSlow(p, params.slow ?? (basic ? 0.5 : 0.55), move);
+      else if (!(p.statuses.has('hover') && def.castTime > 0)) this.actSlow(p, params.slow ?? (basic ? 0.5 : 0.55), move);
     }
     if (def.castTime > 0 || isChannel) {
       p.cast = { skillId: def.id, name: def.name, start: G.world?.time ?? this.now, duration: def.castTime > 0 ? hit : (def.channel ?? 0), channel: isChannel, interruptible: true };
@@ -1623,13 +1633,15 @@ export class SkillSystem {
    * Only the Death Knight's rune pip (class `necromancer`) regenerates, so no other class ever gains it.
    */
   private regenPips(p: Player, dt: number): void {
-    if (p.classId !== 'necromancer') return;
-    for (const [id, pd] of Object.entries(TALENT_PIPS) as [PipId, PipDef | undefined][]) {
-      if (!pd?.regen) continue;
+    // PM-NE: rune (necromancer); AE-4: Ejderhasoy Öz (1 pip per 3.5 s, divided by haste). Only the pips this player shows regenerate.
+    if (p.classId !== 'necromancer' && p.classId !== 'evoker') return;
+    for (const pd of this.activePips(p)) {
+      if (!pd.regen) continue;
+      const id = pd.id;
       const key = `${p.id}:${id}`;
       if (pd.regen.parallel) { this.regenParallel(p, id, pd.max, pd.regen.every, key, dt); continue; }
       if (this.pipCount(p, id) >= pd.max) { this.pipClock.set(key, 0); continue; }
-      const t = (this.pipClock.get(key) ?? 0) + dt;
+      const t = (this.pipClock.get(key) ?? 0) + dt * (id === 'essence' ? 1 + Math.max(0, softStat(p, 'castSpeed')) : 1);
       if (t < pd.regen.every) { this.pipClock.set(key, t); continue; }
       this.pipClock.set(key, t - pd.regen.every);
       this.addPip(p, id, 1);
@@ -1988,7 +2000,8 @@ export class SkillSystem {
     try { a.beh.end?.(a.ctx, reason); } catch (e) { console.error('[skills] end failed', a.def.id, e); }
     if (a.def.channel && a.fired) {
       // a cdFree proc (Beyin Donması) skips the cooldown and the charge of a channel too (pay() does this for other casts)
-      if (!a.procMods?.cdFree) this.startCooldown(p, st, a.def);
+      // AE-4: an empowered hold released before rank 1 (ctx.data.noCooldown) costs no cooldown
+      if (!a.procMods?.cdFree && !a.ctx.data.noCooldown) this.startCooldown(p, st, a.def);
       G.net?.broadcast('cast', { casterId: p.id, skillId: a.def.id, aim: a.aim, end: true });
     }
     if (a.def.castTime > 0 && !a.fired || (a.def.channel && reason === 'interrupt')) {

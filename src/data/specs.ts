@@ -23,6 +23,9 @@ import { SPECS_KIT_ARCHER } from './specs_kit_archer';
 import { SPECS_KIT_PRIEST } from './specs_kit_priest';
 import { SPECS_KIT_SHAMAN } from './specs_kit_shaman';
 import { SPECS_KIT_DRUID } from './specs_kit_druid';
+// AE-3 / AE-4 (docs/kits/agile-evoker.md): İblis Avcısı (Kaos, İntikam, Yutucu) and Ejderhasoy (Yıkım Nefesi, Koruyucu Nefes, Yüceltme)
+import { SPECS_KIT_DEMONHUNTER } from './specs_kit_demonhunter';
+import { SPECS_KIT_EVOKER } from './specs_kit_evoker';
 import { KNIGHT_SPECS } from './specs_kit_knight';
 import { BARBARIAN_SPECS } from './specs_barbarian';
 import { PALADIN_SPECS } from './specs_paladin';
@@ -71,7 +74,7 @@ export const SPECS: Partial<Record<SpecId, SpecDef>> = {};
 Object.assign(SPECS, KNIGHT_SPECS, BARBARIAN_SPECS, PALADIN_SPECS, NECRO_SPECS);
 for (const s of SPEC_LIST) SPECS[s.id] = s;
 Object.assign(SPECS, TALENT_SPECS);
-Object.assign(SPECS, SPECS_KIT_MAGE, SPECS_KIT_ROGUE, SPECS_KIT_WARLOCK, SPECS_KIT_MONK, SPECS_KIT_ARCHER, SPECS_KIT_PRIEST, SPECS_KIT_SHAMAN, SPECS_KIT_DRUID);
+Object.assign(SPECS, SPECS_KIT_MAGE, SPECS_KIT_ROGUE, SPECS_KIT_WARLOCK, SPECS_KIT_MONK, SPECS_KIT_ARCHER, SPECS_KIT_PRIEST, SPECS_KIT_SHAMAN, SPECS_KIT_DRUID, SPECS_KIT_DEMONHUNTER, SPECS_KIT_EVOKER);
 
 /** Spec definition by id; undefined while the registry is empty or the id is unknown. */
 export function getSpec(id: SpecId | null | undefined): SpecDef | undefined {
@@ -105,6 +108,7 @@ export const SPEC_ROLE_OVERRIDES: Partial<Record<SpecId, RoleId>> = {
   priest_discipline: 'healer', priest_holy: 'healer', priest_shadow: 'dps',
   shaman_elemental: 'dps', shaman_enhancement: 'dps', shaman_restoration: 'healer',
   druid_balance: 'dps', druid_feral: 'dps', druid_guardian: 'tank', druid_restoration: 'healer',
+  demonhunter_devourer: 'dps',
 };
 
 /**
@@ -122,6 +126,7 @@ export const NEW_SPEC_NAMES_TR: Partial<Record<SpecId, { classId: ClassId; name:
   priest_discipline: { classId: 'priest', name: 'Disiplin' }, priest_holy: { classId: 'priest', name: 'Kutsal' }, priest_shadow: { classId: 'priest', name: 'Gölge' },
   shaman_elemental: { classId: 'shaman', name: 'Elementel' }, shaman_enhancement: { classId: 'shaman', name: 'Geliştirme' }, shaman_restoration: { classId: 'shaman', name: 'Restorasyon' },
   druid_balance: { classId: 'druid', name: 'Denge' }, druid_feral: { classId: 'druid', name: 'Vahşi' }, druid_guardian: { classId: 'druid', name: 'Koruyucu' }, druid_restoration: { classId: 'druid', name: 'Restorasyon' },
+  demonhunter_devourer: { classId: 'demonhunter', name: 'Yutucu' },
 };
 
 /** Role of a spec: its SpecDef.role when registered, else SPEC_ROLE_OVERRIDES (undefined for unknown ids). */

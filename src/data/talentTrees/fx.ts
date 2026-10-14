@@ -41,7 +41,7 @@ export const MOD_OPS: ReadonlySet<string> = new Set([
 /** Damage types accepted by `cv`. */
 export const FX_CONVERT_TYPES: readonly string[] = ['physical', 'fire', 'frost', 'lightning', 'shadow', 'poison', 'holy', 'arcane'];
 /** Pip ids accepted by `pip` / `pipc` / `pips>=`. */
-export const FX_PIPS: readonly string[] = ['combo', 'adalet', 'karisim', 'chi', 'holypower', 'shard', 'arcane'];
+export const FX_PIPS: readonly string[] = ['combo', 'adalet', 'karisim', 'chi', 'holypower', 'shard', 'arcane', 'soul', 'essence'];
 /** Tag list (Appendix D), used for `@tag` targets and filters. */
 export const FX_TAGS: readonly string[] = [
   'basic', 'melee', 'spell', 'projectile', 'aoe', 'dot', 'kick', 'finisher', 'ultimate', 'movement', 'major', 'buff', 'defensive',

@@ -66,6 +66,8 @@ export const SFX_IDS = [
   'flies_loop',
   // ---- KIT PK-0 (docs/kits/casters-rogue.md §g, append-only): kit sounds. audio/aliases.ts plays the closest existing id until mapped.
   'arcane_missile_launch', 'arcane_missile_hit', 'ice_shatter', 'shadowstep_snap',
+  // ---- AE-0 (docs/kits/agile-evoker.md §g.3, append-only): Ejderhasoy empower charge ticks, dragon breath, İblis Avcısı beam hum.
+  'empower_charge', 'dragon_breath', 'eye_beam_loop',
 ] as const;
 
 export type SfxId = (typeof SFX_IDS)[number];

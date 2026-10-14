@@ -49,7 +49,7 @@ export interface ClassDefX extends ClassDef {
   /** Class trait (GDD_CLASSES_V2 §x.1 "trait_*"). */
   trait?: { id: string; name: string; desc: string };
   /** Resource regen behaviour (GDD_CLASSES_V2 §1.2; replaces the mage/barbarian special cases in Combat). */
-  regenRule?: 'default' | 'mana' | 'rage' | 'still';
+  regenRule?: 'default' | 'mana' | 'rage' | 'still' | 'fury';
   /** StatCalc adds 0.015 × Zeka to resource regen when true (mage, warlock). */
   manaScaling?: boolean;
 }
@@ -441,17 +441,19 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     regenRule: 'mana',
     manaScaling: true,
   },
-  // ---- CORE_MECHANICS §2 (CM1): compile-only registry rows of the two new classes. NOT selectable (PLAYABLE_CLASSES below),
-  // no skills, items or spec rows yet: the kits arrive with CM10 (design) / CM12 (WoW-faithful kits). Numbers are placeholders.
+  // ---- AE-3 / AE-4 (docs/kits/agile-evoker.md §3 / §4, WoW Midnight 12.0): İblis Avcısı (Kaos, İntikam, Yutucu) and Ejderhasoy
+  // (Yıkım Nefesi, Koruyucu Nefes, Yüceltme). Registry rows; both classes are in PLAYABLE_CLASSES below.
   demonhunter: {
     id: 'demonhunter',
     name: 'İblis Avcısı',
-    desc: 'Gözünü şeytani bir nefretle açan avcı. İki hançerle ve kanatlarıyla hızlıca yer değiştirir; düşman ateşiyle beslenir.',
-    role: 'Hız · Gazap Savaşçısı',
+    desc: 'Gözleri bağlı, ruhu uyanık şeytani gazap avcısı. Kaos ile iki hançerle doğrar ve Göz Işını saçar, İntikam ile ruh parçacıklarını yutup en önde durur, Yutucu ile boşluğu çağırıp ruhları biçer. Çift zıplama ve süzülmeyle haritayı aşar.',
+    role: 'Hız · Gazap Savaşçısı · Tank',
     model: '/assets/models/characters/Rogue_Hooded.glb',
     resource: 'fury',
     resourceName: 'Gazap',
-    baseStats: { str: 6, dex: 17, int: 6, vit: 14, resourceRegen: 6 },
+    // Fel Bıçakları engine: class base regen (in combat only, decays out of combat: Combat.updateLocalPlayer 'fury' rule); specs add to it
+    // (Kaos +5 = 10/s, İntikam +1 = 6/s, Yutucu +0 = 5/s). maxResource 100 (fixed pool).
+    baseStats: { str: 6, dex: 17, int: 6, vit: 14, resourceRegen: 5, critChance: 0.04, moveSpeedPct: 0.05 },
     perLevel: { str: 0, dex: 4, int: 0, vit: 2 },
     hpPerLevel: 10,
     hpPerVit: 10,
@@ -462,37 +464,50 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
       hide: ['Knife', 'Knife_Offhand', '1H_Crossbow', '2H_Crossbow', 'Throwable'],
     },
     basicAttack: 'demonhunter_basic',
-    skills: [],
-    startingItems: [],
+    // Pre-spec level bar (before the level-10 spec choice): Kaos Darbesi + Yakıp Yok Etme Aurası + Fel Atılışı are usable at level 1.
+    skills: [
+      'demonhunter_chaos_strike', 'demonhunter_blade_dance', 'demonhunter_eye_beam', 'demonhunter_immolation_aura',
+      'demonhunter_fel_rush', 'demonhunter_blur', 'demonhunter_disrupt', 'demonhunter_metamorphosis',
+    ],
+    startingItems: ['dagger_t1', 'dagger_t1'],
     color: '#a330c9',
-    resourceColor: '#b8ff3a',
-    tagline: 'Şeytani Öfkenin Avcısı',
+    resourceColor: '#9cff4a',
+    tagline: 'Gözleri Bağlı, Ruhu Uyanık',
     icon: 'skill-claw-strike',
     armorWeight: 'medium',
-    weapons: ['sword1h', 'dagger'],
+    weapons: ['dagger'],
     offhands: ['dagger'],
-    specs: ['demonhunter_chaos', 'demonhunter_vengeance'],
+    specs: ['demonhunter_chaos', 'demonhunter_vengeance', 'demonhunter_devourer'],
     visual: {
       url: '/assets/models/characters/Rogue_Hooded.glb',
       paletteClass: 'rogue',
-      defaultVariant: 1,
+      defaultVariant: 5,
+      defaultTint: 0xa88ac8,
       show: ['Rogue_Cape'],
       hide: ['Knife', 'Knife_Offhand', '1H_Crossbow', '2H_Crossbow', 'Throwable'],
       main: [],
       off: [],
     },
+    voice: { pack: 'warrior', pitch: 0.9 },
+    anims: { idle: 'Idle' },
     cameraProfile: 'melee',
-    regenRule: 'default',
+    trait: {
+      id: 'trait_demonhunter',
+      name: 'Karanlık Görüş',
+      desc: '+%4 kritik şansı, +%5 hareket hızı. Havada ikinci kez zıplayabilir; düşerken zıplama tuşunu basılı tutarak süzülürsün.',
+    },
+    regenRule: 'fury',
   },
   evoker: {
     id: 'evoker',
     name: 'Ejderhasoy',
-    desc: 'Ejderha soyunun son büyücüsü. Tunç ve yeşil nefesiyle yakın ve uzak düşmanları yakar; müttefiklerini kanatlarının altına alır.',
-    role: 'Ejderha Nefesi · Destek',
+    desc: 'Ejderha soyunun çocuğu. Tuş basılı tutulan güçlendirilmiş nefesleriyle (Ateş Nefesi, Rüya Nefesi) hasar ve şifa saçar: Yıkım Nefesi ile ateş ve Öz ışınları, Koruyucu Nefes ile Geri Dönüş ve Yankı ağı, Yüceltme ile en iyi iki dostunun hasarını büyütür.',
+    role: 'Menzilli · Yıkım / Şifa / Destek',
     model: '/assets/models/characters/Mage.glb',
-    resource: 'essence',
-    resourceName: 'Öz',
-    baseStats: { str: 6, dex: 8, int: 18, vit: 14, resourceRegen: 6 },
+    // Mana is the bar; Öz (essence) is a pip (PipId 'essence', regen 1 per 3.5 s / haste), see combat/skills/evokerKit.ts
+    resource: 'mana',
+    resourceName: 'Mana',
+    baseStats: { str: 6, dex: 8, int: 18, vit: 14, resourceRegen: 5, maxHpPct: 0.05 },
     perLevel: { str: 0, dex: 1, int: 4, vit: 2 },
     hpPerLevel: 9,
     hpPerVit: 9,
@@ -503,11 +518,15 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
       hide: ['1H_Wand', 'Spellbook', 'Spellbook_open', 'Mage_Hat'],
     },
     basicAttack: 'evoker_basic',
-    skills: [],
+    // Pre-spec level bar: Yaşayan Alev, Parçala (Öz), Ateş Nefesi (empowered hold) and Süzül are usable at level 1-3.
+    skills: [
+      'evoker_living_flame', 'evoker_disintegrate', 'evoker_fire_breath', 'evoker_pyre',
+      'evoker_hover', 'evoker_obsidian_scales', 'evoker_quell', 'evoker_dragonrage',
+    ],
     startingItems: ['staff_t1'],
     color: '#33937f',
-    resourceColor: '#d9a441',
-    tagline: 'Ejderhanın Nefesi',
+    resourceColor: '#4f8bff',
+    tagline: 'Alevin ve Zamanın Çocuğu',
     icon: 'skill-fire-breath',
     armorWeight: 'light',
     weapons: ['staff', 'wand'],
@@ -523,8 +542,16 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
       main: ['2H_Staff'],
       off: [],
     },
+    voice: { pack: 'mage', pitch: 0.85 },
+    anims: { idle: 'Idle' },
     cameraProfile: 'caster',
-    regenRule: 'default',
+    autoAttack: 'ranged',
+    trait: {
+      id: 'trait_evoker',
+      name: 'Ejder Kanı',
+      desc: 'Maks. can +%5. Öz pipleri 3.5 saniyede bir kendiliğinden dolar (büyü hızıyla hızlanır).',
+    },
+    regenRule: 'mana',
     manaScaling: true,
   },
   // ---- CLASS SCAFFOLD (Rahip / Şaman / Druid): registry rows only. Skills, specs, items and models land with their kit packages.
@@ -670,7 +697,7 @@ export const CLASS_IDS: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue'];
  * necromancer (Mage rig) and the warlock (Rogue rig), WP-01. The other new classes join when their skills, model and items are merged
  * (GDD_CLASSES_V2 §13.1 / NC60).
  */
-export const PLAYABLE_CLASSES: readonly ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer', 'shaman'];
+export const PLAYABLE_CLASSES: readonly ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer', 'shaman', 'demonhunter', 'evoker'];
 export const isPlayableClass = (id: ClassId): boolean => (PLAYABLE_CLASSES as readonly string[]).includes(id);
 export const getClass = (id: ClassId): ClassDefX => CLASSES[id];
 

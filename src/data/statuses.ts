@@ -12,6 +12,9 @@ import { STATUSES_KIT_PRIEST, STATUS_RULES_KIT_PRIEST } from './statuses_kit_pri
 import { STATUSES_KIT_SHAMAN, STATUS_RULES_KIT_SHAMAN } from './statuses_kit_shaman';
 import { STATUSES_KIT_DRUID, STATUS_RULES_KIT_DRUID } from './statuses_kit_druid';
 import { STATUSES_KIT_ARCHER, STATUS_RULES_KIT_ARCHER } from './statuses_kit_archer';
+// AE-3 / AE-4 (docs/kits/agile-evoker.md): İblis Avcısı and Ejderhasoy statuses
+import { STATUSES_KIT_DEMONHUNTER, STATUS_RULES_KIT_DEMONHUNTER } from './statuses_kit_demonhunter';
+import { STATUSES_KIT_EVOKER, STATUS_RULES_KIT_EVOKER } from './statuses_kit_evoker';
 import { WATCHER_STATUSES } from './watchers';
 
 /**
@@ -437,6 +440,8 @@ Object.assign(STATUSES, STATUSES_KIT_MONK, STATUSES_KIT_ARCHER);
 Object.assign(STATUSES, STATUSES_KIT_PRIEST, STATUSES_KIT_SHAMAN, STATUSES_KIT_DRUID);
 Object.assign(STATUS_RULES, STATUS_RULES_KIT_MONK, STATUS_RULES_KIT_ARCHER);
 Object.assign(STATUS_RULES, STATUS_RULES_KIT_PRIEST, STATUS_RULES_KIT_SHAMAN, STATUS_RULES_KIT_DRUID);
+Object.assign(STATUSES, STATUSES_KIT_DEMONHUNTER, STATUSES_KIT_EVOKER);
+Object.assign(STATUS_RULES, STATUS_RULES_KIT_DEMONHUNTER, STATUS_RULES_KIT_EVOKER);
 
 /** Statuses that are crowd control on the "hard" scale (cannot act). */
 export const HARD_CC: StatusId[] = ['stun', 'freeze', 'knockdown', 'fear', 'petrify'];

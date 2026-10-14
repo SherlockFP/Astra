@@ -33,7 +33,7 @@ export const WEIGHT_CLASSES: Record<ArmorWeight, ClassId[]> = { heavy: classesOf
 export const CLASS_WEAPONS: Record<ClassId, ItemCategory[]> = {
   knight: ['sword1h'], barbarian: ['axe2h'], mage: ['staff', 'wand'], rogue: ['dagger'],
   monk: ['fist'], archer: ['bow'], paladin: ['sword1h', 'mace'], necromancer: ['staff', 'wand'], warlock: ['staff', 'wand'],
-  demonhunter: ['sword1h', 'dagger'], evoker: ['staff', 'wand'], // CM1 stubs
+  demonhunter: ['dagger'], evoker: ['staff', 'wand'], // AE-3 / AE-4
   priest: ['staff', 'wand', 'mace'], shaman: ['mace', 'axe1h'], druid: ['staff', 'dagger', 'mace'], // CLASS SCAFFOLD stubs
 };
 export const CLASS_OFFHANDS: Record<ClassId, ItemCategory[]> = {
@@ -116,21 +116,21 @@ const WEAPON_TYPES: WeaponTypeDef[] = [
     icons: ['item-axe-2h', 'item-axe-2h', 'item-axe-2h', 'item-axe-2h', 'item-axe-2h'],
   },
   {
-    category: 'staff', hands: 2, aps: 1.1, typeMult: 1.45, classes: ['mage', 'necromancer', 'warlock'], maxSockets: 3,
+    category: 'staff', hands: 2, aps: 1.1, typeMult: 1.45, classes: ['mage', 'necromancer', 'warlock', 'evoker'], maxSockets: 3,
     names: ['Meşe Asa', 'Kemik Asa', 'Kristal Asa', 'Ejder Asası', 'Kadim Asa'],
     models: [GEN + 'staff_wood.glb', GEN + 'staff_skull.glb', GEN + 'staff_crystal.glb', GEN + 'staff_fire.glb', GEN + 'staff_frost.glb'],
     implicit: [0.1, 0.15, 0.2, 0.25, 0.3].map((v) => ({ resourceRegenPct: v })),
     icons: ['item-staff', 'item-staff-skull', 'item-staff', 'item-staff', 'item-staff'],
   },
   {
-    category: 'wand', hands: 1, aps: 1.4, typeMult: 1.0, classes: ['mage', 'necromancer', 'warlock'], maxSockets: 2,
+    category: 'wand', hands: 1, aps: 1.4, typeMult: 1.0, classes: ['mage', 'necromancer', 'warlock', 'evoker'], maxSockets: 2,
     names: ['Söğüt Değnek', 'Kemik Değnek', 'Kristal Değnek', 'Yıldız Değneği', 'Kadim Değnek'],
     models: [KK + 'wand.gltf', GEN + 'wand_bone.glb', GEN + 'wand_arcane.glb', GEN + 'wand_arcane.glb', GEN + 'wand_arcane.glb'],
     implicit: [0.04, 0.06, 0.08, 0.1, 0.12].map((v) => ({ castSpeed: v })),
     icons: ['item-wand', 'item-wand', 'item-wand-orb', 'item-wand-orb', 'item-wand-orb'],
   },
   {
-    category: 'dagger', hands: 1, aps: 1.7, typeMult: 0.85, classes: ['rogue'], maxSockets: 2,
+    category: 'dagger', hands: 1, aps: 1.7, typeMult: 0.85, classes: ['rogue', 'demonhunter'], maxSockets: 2,
     names: ['Hançer', 'Kama', 'Gölge Hançeri', 'Yılan Dişi', 'Kadim Hançer'],
     models: [GEN + 'dagger_iron.glb', GEN + 'dagger_curved.glb', GEN + 'dagger_assassin.glb', GEN + 'dagger_ritual.glb', GEN + 'dagger_ritual.glb'],
     implicit: [0.02, 0.025, 0.03, 0.035, 0.04].map((v) => ({ critChance: v })),
@@ -167,7 +167,7 @@ const WEAPON_TYPES: WeaponTypeDef[] = [
     icons: ['item-quiver', 'item-quiver', 'item-quiver', 'item-quiver', 'item-quiver'],
   },
   {
-    category: 'tome', hands: 0, classes: ['mage', 'necromancer', 'warlock'], maxSockets: 1,
+    category: 'tome', hands: 0, classes: ['mage', 'necromancer', 'warlock', 'evoker'], maxSockets: 1,
     names: ['Eski Defter', 'Büyü Kitabı', 'Mühürlü Kitap', 'Kara Kitap', 'Kadim Kitap'],
     models: [KK + 'spellbook_closed.gltf', KK + 'spellbook_closed.gltf', KK + 'spellbook_closed.gltf', KK + 'spellbook_closed.gltf', KK + 'spellbook_closed.gltf'],
     implicit: [

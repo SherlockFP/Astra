@@ -1682,6 +1682,9 @@ import './behaviors_archer';
 import './behaviors_paladin';
 import './behaviors_necromancer';
 import './behaviors_warlock';
+// AE-3 / AE-4 (docs/kits/agile-evoker.md): İblis Avcısı and Ejderhasoy kit behaviours
+import './demonhunterKit';
+import './evokerKit';
 import './minionBehaviors';
 import { mageHooks } from '../specs/mage';
 import { registerSpecHooks } from '../specials';

@@ -31,11 +31,12 @@ export interface PvpSetDef extends SetDef {
 }
 
 /** The seven playable classes (GDD_PVP_FINDER §4.3). Turkish class nouns come from the GDD list. */
-const CLASS_NOUN: Record<'knight' | 'barbarian' | 'mage' | 'rogue' | 'paladin' | 'warlock' | 'necromancer' | 'monk' | 'archer' | 'priest' | 'shaman' | 'druid', string> = {
+const CLASS_NOUN: Record<'knight' | 'barbarian' | 'mage' | 'rogue' | 'paladin' | 'warlock' | 'necromancer' | 'monk' | 'archer' | 'priest' | 'shaman' | 'druid' | 'demonhunter' | 'evoker', string> = {
   knight: 'Şövalye', barbarian: 'Barbar', mage: 'Büyücü', rogue: 'Haydut', paladin: 'Paladin', warlock: 'Warlock', necromancer: 'Nekromant',
   monk: 'Keşiş', archer: 'Okçu',
   // CLASS SCAFFOLD (PvP set stubs; the sets are derived from this map)
   priest: 'Rahip', shaman: 'Şaman', druid: 'Druid',
+  demonhunter: 'İblis Avcısı', evoker: 'Ejderhasoy',
 };
 
 const SAVAS_RUHU = {
@@ -100,5 +101,11 @@ export const PVP_SPEC_TRAITS: Partial<Record<SpecId, PvpSpecTrait>> = {
   archer_marksman: { specId: 'archer_marksman', name: 'Nişancı', desc: 'Arenada kritik şansı +%3.', stats: { critChance: 0.03 } },
   archer_beastmaster: { specId: 'archer_beastmaster', name: 'Av Ustası', desc: 'Arenada yoldaş hasarı +%5.', stats: { minionDamagePct: 0.05 } },
   archer_survival: { specId: 'archer_survival', name: 'Hayatta Kalma', desc: 'Arenada maksimum can +%2.', stats: { maxHpPct: 0.02 } },
+  demonhunter_chaos: { specId: 'demonhunter_chaos', name: 'Kaos', desc: 'Arenada kritik şansı +%3.', stats: { critChance: 0.03 } },
+  demonhunter_vengeance: { specId: 'demonhunter_vengeance', name: 'İntikam', desc: 'Arenada alınan hasar -%3.', stats: { damageReductionPct: 0.03 } },
+  demonhunter_devourer: { specId: 'demonhunter_devourer', name: 'Yutucu', desc: 'Arenada gölge hasarı +%5.', stats: { shadowDamagePct: 0.05 } },
+  evoker_devastation: { specId: 'evoker_devastation', name: 'Yıkım Nefesi', desc: 'Arenada ateş hasarı +%5.', stats: { fireDamagePct: 0.05 } },
+  evoker_preservation: { specId: 'evoker_preservation', name: 'Koruyucu Nefes', desc: 'Arenada aldığın iyileşme +%3.', stats: { healReceivedPct: 0.03 } },
+  evoker_augmentation: { specId: 'evoker_augmentation', name: 'Yüceltme', desc: 'Arenada büyü hızı +%3.', stats: { castSpeed: 0.03 } },
 };
 

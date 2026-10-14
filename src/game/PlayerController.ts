@@ -33,6 +33,9 @@ const WALK_MUL = 0.45;
 const BACKPEDAL_MUL = 0.643;      // WoW: back-pedal 4.5 / run 7
 const JUMP_V = 9.3;               // 1.5 m apex, ~0.65 s airtime
 const GRAVITY = 28.5;
+// AE-3 (agile-evoker §3.0): İblis Avcısı movement signature. A second jump in the air (+60 % height) and a glide while jump is held on the way down.
+const AIR_JUMP_V = JUMP_V * 1.265;   // sqrt(1.6): +60 % apex height
+const GLIDE_FALL = 3.2;              // m/s terminal fall speed while gliding (about a quarter of a long fall)
 const DODGE_DIST = 5.2;
 const DODGE_TIME = 0.4;
 const DODGE_IFRAMES = 0.34;
@@ -132,6 +135,8 @@ export class PlayerController {
 
   private time = 0;
   private vy = 0;
+  /** AE-3: air jumps used since the last landing (İblis Avcısı: 1). */
+  private airJumps = 0;
   /** Position at the previous stepVertical (rolling terrain: how far the player moved this frame). */
   private svX = 0;
   private svZ = 0;
@@ -923,6 +928,13 @@ export class PlayerController {
       this.grounded = pos.y - gy <= 0.001;
     } else if (!this.grounded) {
       this.vy -= GRAVITY * dt;
+      // AE-3: İblis Avcısı glide: holding jump while falling caps the fall speed; a glide also forgets the fall height (no landing damage)
+      if (p.classId === 'demonhunter' && this.vy < -GLIDE_FALL && G.input?.down('jump') && !p.isDead && !this.dodge) {
+        this.vy = -GLIDE_FALL;
+        this.fallStartY = pos.y;
+        const a = p.anim;
+        if (a && a.has('Jump_Idle')) a.setBase('Jump_Idle', { fade: 0.1 });
+      }
       let ny = pos.y + this.vy * dt;
       if (world.vertical) {
         // head clearance under a low ceiling: bonk and fall
@@ -963,6 +975,7 @@ export class PlayerController {
     const p = this.player;
     p.jumpY = 0;
     this.vy = 0;
+    this.airJumps = 0;
     const wasAir = !this.grounded || p.jumping;
     this.grounded = true;
     p.jumping = false;
@@ -989,6 +1002,25 @@ export class PlayerController {
 
   private tryJump(): void {
     const p = this.player;
+    // AE-3: İblis Avcısı double jump (once per airtime)
+    if (!this.grounded && p.classId === 'demonhunter' && this.airJumps < 1 && !p.isDead && !p.dodging && p.canMove() && !this.dodge) {
+      const fm = p.forcedMove;
+      if (fm && p.world && p.world.time < fm.until) return;
+      this.airJumps++;
+      this.vy = AIR_JUMP_V;
+      p.jumping = true;
+      this.fallStartY = p.position.y;
+      const a = p.anim;
+      if (a) {
+        if (a.has('Jump_Idle')) a.setBase('Jump_Idle', { fade: 0.08 });
+        if (a.has('Jump_Start')) a.playOnce('Jump_Start', { fade: 0.04, speed: 2.6 });
+      }
+      p.squash(-0.07);
+      G.audio.play('jump', { pos: [p.position.x, p.position.y, p.position.z], pitch: 1.2 });
+      G.vfx.spawn('fel_wings', p.position, { scale: 0.7, duration: 0.5 });
+      G.vfx.spawn('dodge_dust', p.position, { scale: 0.5 });
+      return;
+    }
     if (!this.grounded || p.isDead || p.dodging || !p.canMove()) return;
     const world = p.world;
     if (p.forcedMove && world && world.time < p.forcedMove.until) return;

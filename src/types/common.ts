@@ -51,7 +51,9 @@ export type PipId = 'combo' | 'adalet' | 'karisim' | 'chi' | 'holypower' | 'shar
   // PM-00a (docs/kits/plate-melee.md §g need 1): Death Knight rune pip (max 6, timed regen via PipDef.regen).
   | 'rune'
   // CLASS SCAFFOLD (append-only): secondary pips of Rahip (insanity), Şaman (maelstrom), Druid (astral_power).
-  | 'insanity' | 'maelstrom' | 'astral_power';
+  | 'insanity' | 'maelstrom' | 'astral_power'
+  // AE-3 / AE-4 (docs/kits/agile-evoker.md §3 / §4): İblis Avcısı Ruh Parçacığı (soul fragments), Ejderhasoy Öz (essence pips; not the Nekromant's `essence` ResourceType).
+  | 'soul' | 'essence';
 
 export type DamageType = 'physical' | 'fire' | 'frost' | 'lightning' | 'shadow' | 'poison' | 'holy' | 'arcane' | 'true';
 

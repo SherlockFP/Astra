@@ -435,7 +435,7 @@ export const ident = (x: unknown, maxLen = 48): string => (typeof x === 'string'
 const identList = (x: unknown, maxItems: number): string[] =>
   Array.isArray(x) ? x.slice(0, maxItems).map((a) => ident(a)).filter((a) => a.length > 0) : [];
 
-const CLASS_IDS: readonly ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer', 'priest', 'shaman', 'druid'];
+const CLASS_IDS: readonly ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer', 'priest', 'shaman', 'druid', 'demonhunter', 'evoker'];
 const SCENE_IDS: readonly SceneId[] = ['loading', 'menu', 'town', 'dungeon'];
 
 export function sanitizeSceneId(x: unknown): SceneId | null {
