@@ -286,6 +286,7 @@ for (const sid of ["shaman_elemental","shaman_enhancement","shaman_restoration"]
   const f = low.hp / low.maxHp;
   ok('kit.defensive shaman_spirit_link lifts the low ally toward the party share', c === true && f > 0.7 && f < 0.9, `low=${f.toFixed(3)} caster=${(p.hp / p.maxHp).toFixed(3)}`);
   ok('kit.defensive shaman_spirit_link summons its totem', G.minions.ownedBy(p.id, (m) => m.def.id === 'shaman_spirit_link_totem').length === 1);
+  ok('kit.defensive shaman_spirit_link equalises: the healthiest (caster) comes down to the low ally share', p.hp / p.maxHp < 0.95 && Math.abs(p.hp / p.maxHp - f) < 0.05, `caster=${(p.hp / p.maxHp).toFixed(3)} low=${f.toFixed(3)}`);
   const q = newShaman(SPECS.shaman_restoration);
   H.step(2);
   G.skills.addResource(q, 300);

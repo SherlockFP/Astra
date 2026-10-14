@@ -218,6 +218,27 @@ export function registerDruidSpecs(add: SkillAdd): void {
     params: { major: 90, end: 0.5, chain: 0.1, move: 0.15, weight: 2, tick: 1 },
   });
 
+  // Yeniden Doğuş (Rebirth), Restorasyon: battle res (behaviour kit_druid_rebirth). 30 m içindeki ölü bir müttefik %35 canla doğar.
+  add({
+    id: 'druid_rebirth', classId: 'druid', spec: 'druid_restoration', name: 'Yeniden Doğuş (Rebirth)', icon: I('skill-resurrect'), unlockLevel: 15,
+    desc: '30 metre içindeki ölü bir müttefikini savaş içinde bile %35 canla diriltirsin. 2 saniye sürer. 600 saniye bekleme.',
+    cost: 30, cooldown: 600, castTime: 2, hitTime: 0.3, anim: 'Spellcast_Raise', animSpeed: 1,
+    targeting: 'custom', behavior: 'kit_druid_rebirth', range: 30, allyTarget: 'friendly',
+    tags: ['spell', 'heal', 'res', 'spec'], vfx: { cast: 'heal_loop', impact: 'heal_burst' }, sfx: { cast: 'heal_big' },
+    params: { hpFrac: 0.35, end: 0.5, chain: 0.1, move: 0.1, weight: 1 },
+  });
+
+  // Çiçeklenme (Efflorescence), Restorasyon: hedef noktada 12 sn süren 6 m şifa alanı (behaviour kit_druid_efflorescence).
+  add({
+    id: 'druid_efflorescence', classId: 'druid', spec: 'druid_restoration', name: 'Çiçeklenme (Efflorescence)', icon: I('skill-renew'), unlockLevel: 20,
+    desc: 'Hedef noktada 12 saniye süren bir çiçek alanı bırakırsın: alanın içindeki müttefikler 2 saniyede bir şifa alır. 25 saniye bekleme.',
+    cost: 25, cooldown: 25, castTime: 0, hitTime: 0.3, anim: 'Spellcast_Shoot', animSpeed: 1,
+    targeting: 'ground_aoe', behavior: 'kit_druid_efflorescence', range: 25, radius: 6, allyTarget: 'friendly',
+    heal: { coef: 0.6 },
+    tags: ['spell', 'heal', 'aoe', 'spec'], vfx: { cast: 'heal_loop', impact: 'heal_burst' }, sfx: { cast: 'heal_big' },
+    params: { pulses: 6, interval: 2, end: 0.5, chain: 0.1, move: 0.15, weight: 1 },
+  });
+
   // =====================================================================================================
   // Added rows (WoW Midnight list): Maul (Ayı), Innervate (Restorasyon), Skull Bash / Stampeding Roar (shared)
   // =====================================================================================================

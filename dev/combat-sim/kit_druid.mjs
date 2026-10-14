@@ -466,6 +466,31 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   ok('kit.druid.resto no script errors', errors.length === 0, errors.slice(0, 2).map((m) => m.slice(0, 160)).join(' | '));
 }
 
+// ---- kit.druid.resto.new: Yeniden Doğuş (battle res: refused without a dead ally, accepted with one) and Çiçeklenme (ground heal zone)
+{
+  const p = newDruid(SPECS.druid_restoration);
+  H.step(2);
+  p.resource = 200;
+  ok('kit.druid.resto Yeniden Doğuş is refused with no dead ally in range', G.skills.tryCast(p, 'druid_rebirth', H.aimFor(p, null)) === false);
+  const dead = new H.FakePlayer('druid', 30); dead.id = 93; H.world.add(dead);
+  dead.position.set(p.position.x - Math.sin(p.yaw) * 4, 0, p.position.z - Math.cos(p.yaw) * 4); dead.alive = false; dead.hp = 0;
+  ok('kit.druid.resto Yeniden Doğuş accepts a dead ally in range', G.skills.tryCast(p, 'druid_rebirth', H.aimFor(p, null)) === true);
+  ok('kit.druid.resto Yeniden Doğuş is on the resto bar (r)', G.skills.getSlotSkill(p, 'r') === 'druid_rebirth');
+}
+{
+  const q = newDruid(SPECS.druid_restoration);
+  H.step(2);
+  q.resource = 200;
+  const ally = new H.FakePlayer('druid', 30); ally.id = 94; H.world.add(ally);
+  ally.position.set(q.position.x + Math.sin(q.yaw) * 6, 0, q.position.z + Math.cos(q.yaw) * 6); ally.hp = ally.maxHp * 0.4;
+  const hpA0 = ally.hp;
+  const cE = G.skills.tryCast(q, 'druid_efflorescence', H.aimFor(q, null));
+  H.stepSec(5);
+  ok('kit.druid.resto Çiçeklenme heals the allies inside its ground zone', cE === true && ally.hp > hpA0, `hp ${hpA0.toFixed(0)} -> ${ally.hp.toFixed(0)}`);
+  ok('kit.druid.resto Çiçeklenme is on the resto bar (s4)', G.skills.getSlotSkill(q, 's4') === 'druid_efflorescence');
+  ok('kit.druid.resto no script errors (Yeniden Doğuş / Çiçeklenme)', errors.length === 0, errors.slice(0, 2).map((m) => m.slice(0, 160)).join(' | '));
+}
+
 // ---- kit.druid.l1 (owner rule): level 1 starts with >= 4 usable core skills per spec, and each form's level-1 bar has >= 4 too
 {
   const usable = (id) => !!SKILLS[id] && (SKILLS[id].unlockLevel ?? 1) <= 1;

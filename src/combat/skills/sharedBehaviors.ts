@@ -437,7 +437,8 @@ const absorbAlly: Behavior = {
 /**
  * Ruh Bağı (Spirit Link): summons the totem (def.minion), then every second for def.duration (6 s) the living allies in def.radius
  * (caster included) are lifted to the party's HP share (sum of HP / sum of max HP). Only allies below that share gain HP (healPlayer,
- * raw); nobody loses HP. Approximation: the heal-up half of the Midnight redistribution (see the Midnight report).
+ * raw). The healthiest local players come down to the same share (never below 1 HP): a remote player's HP is owned by its peer and no
+ * message lowers it, so remote allies are only lifted. Approximation of the Midnight redistribution (see the Midnight report).
  */
 const hpRedistribute: Behavior = {
   fire(c) {
@@ -461,6 +462,7 @@ const hpRedistribute: Behavior = {
       for (const a of party) {
         const want = share * a.maxHp;
         if (a.hp < want - 0.5) G.combat.healPlayer(caster, a, want - a.hp, { raw: true, quiet: true });
+        else if (a.hp > want + 0.5 && a.kind === 'player' && (a as Player).isLocal) (a as Player).hp = Math.max(1, want);
       }
     };
     tick();
