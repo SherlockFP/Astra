@@ -83,8 +83,8 @@ export const SPECS_KIT_SHAMAN: Partial<Record<SpecId, SpecDef>> = {
     mods: [],
     basic: 'shaman_resto_basic',
     defaultBar: {
-      lmb: 'shaman_resto_basic', rmb: 'shaman_healing_wave', q: 'shaman_riptide', e: 'shaman_chain_heal', r: 'shaman_bloodlust',
-      s1: 'shaman_healing_rain', s2: 'shaman_purify_spirit', s3: 'shaman_astral_shift', s4: 'shaman_wind_shear',
+      lmb: 'shaman_resto_basic', rmb: 'shaman_healing_wave', q: 'shaman_riptide', e: 'shaman_lightning_bolt', r: 'shaman_wind_shear',
+      s1: 'shaman_chain_heal', s2: 'shaman_healing_rain', s3: 'shaman_astral_shift', s4: 'shaman_bloodlust',
       m45: 'shaman_nature_swiftness', m90: 'shaman_tide_totem', m180: 'shaman_earthen_wall',
     },
   },

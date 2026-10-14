@@ -84,8 +84,8 @@ const SPEC_LIST: SpecDef[] = [
       },
     ],
     defaultBar: {
-      lmb: 'evoker_basic', rmb: 'evoker_living_flame', q: 'evoker_reversion', e: 'evoker_dream_breath', r: 'evoker_echo',
-      s1: 'evoker_emerald_blossom', s2: 'evoker_verdant_embrace', s3: 'evoker_obsidian_scales', s4: 'evoker_quell',
+      lmb: 'evoker_basic', rmb: 'evoker_living_flame', q: 'evoker_reversion', e: 'evoker_disintegrate', r: 'evoker_echo',
+      s1: 'evoker_emerald_blossom', s2: 'evoker_verdant_embrace', s3: 'evoker_dream_breath', s4: 'evoker_quell',
       m45: 'evoker_time_dilation', m90: 'evoker_stasis', m180: 'evoker_fury_of_aspects',
     },
   },

@@ -300,4 +300,14 @@ for (const sid of ["shaman_elemental","shaman_enhancement","shaman_restoration"]
 
 console.log(fails === 0 ? '\nkit.shaman: all checks PASS' : `\nkit.shaman: ${fails} FAIL`);
 H.restoreConsole?.();
+// ---- kit.shaman.dmg: keys 1-4 (rmb, q, e, r) carry >= 2 damage skills on each healer spec of the class
+{
+  const KEYS14 = ['rmb', 'q', 'e', 'r'];
+  const healers = Object.values(SPECS).filter((s) => s.classId === 'shaman' && s.role === 'healer');
+  ok('kit.shaman.dmg has a healer spec to audit', healers.length > 0, healers.map((s) => s.id).join(','));
+  for (const s of healers) {
+    const n = KEYS14.filter((k) => (H.SKILLS[s.defaultBar[k]]?.damage?.coef ?? 0) > 0).length;
+    ok(`kit.shaman.dmg ${s.id} has >= 2 damage skills on keys 1-4`, n >= 2, KEYS14.map((k) => `${k}=${s.defaultBar[k]}`).join(','));
+  }
+}
 process.exit(fails === 0 ? 0 : 1);
