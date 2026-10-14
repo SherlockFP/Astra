@@ -607,7 +607,9 @@ await bigStage(4096);
   const scatter = new CScat.ChunkScatter(chunkHost(def, tiles, avoid, splats, cfg.chunkM));
   for (let cz = 8; cz < 14; cz++) for (let cx = 8; cx < 14; cx++) for (const i of scatter.generate(cx, cz).instances) generatedUrls.add(i.url);
   const { loadPieces } = await imp('world/Pieces.ts');
-  await loadPieces([...generatedUrls]);
+  // the production preload (DungeonBuilder.buildDungeon -> dungeonAssetUrls -> worldAssetUrls) covers every scenery model, not just the ones this 6x6 sample hits
+  const { worldAssetUrls } = await imp('world/WorldDecor.ts');
+  await loadPieces([...generatedUrls, ...worldAssetUrls(def)]);
   const missing = await batcher.build();
   ok('render.static-staged', missing.length === 0 && root.children.length === 0 && batcher.meshes.length === 0, 'build() stages the groups, no mesh yet');
   const terrain = new ChunkedTerrain({ seed: def.id, ops: WS.worldSplatOps(def, cx0, cz0), mapCx: cx0, mapCz: cz0, chunkM: cfg.chunkM, parent: root, tint: { w: 4, h: 4, rgb: new Uint8Array(48).fill(200), half: cx0 } });
