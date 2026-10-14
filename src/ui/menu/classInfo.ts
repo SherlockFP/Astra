@@ -195,7 +195,7 @@ export function classPresentation(id: ClassId): ClassPresentation {
   };
 }
 
-export const CLASS_ORDER: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer'];
+export const CLASS_ORDER: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer', 'shaman'];
 
 export interface VariantDef { name: string; css: string; tint: number }
 /** Colour variants (appearance.variant index). `tint` is only used by the scenes-side fallback model loader. */

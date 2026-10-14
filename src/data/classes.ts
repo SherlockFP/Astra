@@ -592,7 +592,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
       hide: ['2H_Staff', '1H_Wand', 'Spellbook', 'Spellbook_open', 'Mage_Hat'],
     },
     basicAttack: 'shaman_basic',
-    skills: [],
+    skills: ['shaman_lightning_bolt', 'shaman_ghost_wolf', 'shaman_wind_shear', 'shaman_bloodlust'],
     startingItems: ['mace_t1'],
     color: '#0070dd',
     resourceColor: '#3d7bd9',
@@ -670,7 +670,7 @@ export const CLASS_IDS: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue'];
  * necromancer (Mage rig) and the warlock (Rogue rig), WP-01. The other new classes join when their skills, model and items are merged
  * (GDD_CLASSES_V2 §13.1 / NC60).
  */
-export const PLAYABLE_CLASSES: readonly ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer'];
+export const PLAYABLE_CLASSES: readonly ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer', 'shaman'];
 export const isPlayableClass = (id: ClassId): boolean => (PLAYABLE_CLASSES as readonly string[]).includes(id);
 export const getClass = (id: ClassId): ClassDefX => CLASSES[id];
 

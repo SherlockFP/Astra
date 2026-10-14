@@ -75,6 +75,10 @@ const SPEC_TABLE: readonly SpecEntry[] = [
   { id: 'rogue_subtlety', classId: 'rogue', name: 'Gölge' },
   // WP-02 Okçu (index 22, appended): Hayatta Kalma. Its raw tree is at the end of raw/archer.ts.
   { id: 'archer_survival', classId: 'archer', name: 'Hayatta Kalma' },
+  // Şaman (index 23-25, appended): Elementel, Geliştirme, Restorasyon. Their raw trees are in raw/shaman.ts.
+  { id: 'shaman_elemental', classId: 'shaman', name: 'Elementel' },
+  { id: 'shaman_enhancement', classId: 'shaman', name: 'Geliştirme' },
+  { id: 'shaman_restoration', classId: 'shaman', name: 'Restorasyon' },
 ];
 
 /** Class ids in canonical order (§1.2). */

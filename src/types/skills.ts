@@ -175,7 +175,9 @@ export type StatusId =
   | 'quick_draw' | 'survivor_ward'
   // KIT Keşiş (monk, append-only): the chi/stagger statuses already above (chi_flow, tigerlust, tigerfury, fortifying, brewed,
   // stagger_pool) get StatusDefs in data/statuses_kit_monk.ts; these five are new monk-only ids.
-  | 'fists_guard' | 'rising_sun' | 'thunder_tea' | 'renewing_mist' | 'enveloping_mist';
+  | 'fists_guard' | 'rising_sun' | 'thunder_tea' | 'renewing_mist' | 'enveloping_mist'
+  // KIT Şaman (shaman, append-only): StatusDefs in data/statuses_kit_shaman.ts.
+  | 'ghost_wolf' | 'stormkeeper' | 'unleash' | 'bloodlust' | 'swiftness' | 'riptide' | 'rain_hot' | 'stream_totem';
 
 export interface StatusDef {
   id: StatusId;
