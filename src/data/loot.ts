@@ -408,7 +408,7 @@ export const WORLD_BOSS_TABLES: Record<string, LootTableDef> = {
   loot_wb_alevkanat: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [12, 18] }] },
   loot_wb_ulu_boz: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [20, 28] }, { id: 'pet_ejder_yavrusu', chance: 0.05 }] },
   // Ayaz Dağları (levels 45-60): Zemheri, the r20 arena
-  loot_wb_ad_zemheri: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [30, 40] }] },
+  loot_wb_ad_zemheri: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [30, 40] }, { id: 'pet_buz_tilkisi', chance: 0.05 }] },
 };
 
 /** Gather nodes (GDD 5.5): one harvest rolls every entry. Ore = Kara Demir / Buyulu Toz, herb = potions. */

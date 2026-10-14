@@ -1,6 +1,6 @@
 import type { EnemyAbility, EnemyDef } from '../types/enemies';
 import type { MetinSpec, MetinWaveSpec } from './enemies';
-import { ENEMIES, A_WOLF, cone, aoe, line, buff, charge, summonAb, derive, boss, bp, add, NOOP } from './enemyKit';
+import { ENEMIES, A_WOLF, cone, aoe, line, buff, charge, summonAb, derive, boss, bp, add, NOOP, custom, MECH } from './enemyKit';
 import { ITCH, PROC } from './enemyModels';
 
 /**
@@ -183,21 +183,24 @@ export function registerAyazEnemies(): void {
   });
 
   // ---- world boss: Zemheri, the deep-winter beast of the r20 arena. Bear body (ITCH bear, old-fur texture), not the mammoth ---
+  // Scripted in ai/bosses/world_steppe_ice.ts (custom rows). The ice pillars are proc_ice_pillar (nav blockers, data/enemies.ts).
+  MECH('zemheri_ruh', 'Buz Ruhu', 'soul_orb', 0.5, { radius: 0.6, speed: 2.4, visual: { hoverBob: 0.15 }, ai: { summoned: true } });
   boss({
     id: 'wb_ad_zemheri', name: 'Zemheri', title: 'Kışın Kadim Canavarı', model: ITCH('bear'), scale: 1.5, role: 'melee',
     hp: 150, dmg: 2.7, speed: 4.8, radius: 2.6, enrage: 36000, arenaR: 28, loot: 'loot_wb_ad_zemheri', anims: A_WOLF,
     resist: { frost: 0.6, physical: 0.05 }, armor: 1.4, visual: { glow: 0xa0e0ff, texture: TEX('bear_old') },
     basic: cone('zemheri_claw', 'Pençe Savurma', 6.5, 120, 2.6, 1.0, 'Swipe', 0.5, { windup: 0.8, telegraph: true }),
     abilities: [
-      aoe('zemheri_stomp', 'Buz Sarsıntısı', 'self_aoe', 9, 9, 12, 1.4, 2.2, 'physical', 'Slam', 0.55, { initialCooldown: 6 }),
-      charge('zemheri_charge', 'Kar Fırtınası', 24, 16, 1.4, 2.8, 'Bite', 0.5, { shape: { type: 'line', length: 24, width: 4 }, statuses: [{ status: 'knockdown', duration: 1 }] }),
-      summonAb('zemheri_call', 'Kış Çağrısı', 'ad_kar_warg', 4, 28, 'Roar', 0.8, { params: { radius: 18 } }),
-      aoe('zemheri_frost', 'Zemheri Ayazı', 'ground_aoe', 5, 20, 14, 1.6, 1.8, 'frost', 'Roar', 0.8),
+      // Buz Nefesi (LOS cone), Kar Fırtınası (Donma zones), Buz Çağrısı (spirits), Mutlak Sıfır (25 % interruptible channel)
+      custom('zemheri_breath', 'Buz Nefesi', 11, 6, 1.2, 'Roar', { sfx: 'boss_cast', range: 16, params: { impact: 1.0 } }),
+      custom('zemheri_storm', 'Kar Fırtınası', 18, 9, 1.4, 'Slam', { sfx: 'boss_cast', range: 60, params: { impact: 0.6 } }),
+      custom('zemheri_spirits', 'Buz Çağrısı', 25, 12, 1.0, 'Roar', { sfx: 'boss_roar', range: 60, params: { impact: 0.8 } }),
+      custom('zemheri_absolute', 'Mutlak Sıfır', 40, undefined, 4.5, 'Roar', { sfx: 'boss_cast', range: 60, castTime: 4.5, interruptible: true, kick: 2, params: { impact: 1.6 } }),
     ],
     phases: [
-      bp('p1', 1.01, ['zemheri_stomp', 'zemheri_charge']),
-      bp('p2', 0.65, ['zemheri_stomp', 'zemheri_charge', 'zemheri_call'], { yell: 'Kış derinleşiyor!' }),
-      bp('p3', 0.3, ['zemheri_stomp', 'zemheri_charge', 'zemheri_call', 'zemheri_frost'], { yell: 'Zemheri uyandı, herkes donacak!' }),
+      bp('p1', 1.01, ['zemheri_breath', 'zemheri_storm']),
+      bp('p2', 0.5, ['zemheri_breath', 'zemheri_storm', 'zemheri_spirits'], { yell: 'Buz ruhları, uyanın! Onu ısıtın!' }),
+      bp('p3', 0.25, ['zemheri_breath', 'zemheri_storm', 'zemheri_spirits', 'zemheri_absolute'], { yell: 'Mutlak sıfır! Hepiniz donacaksınız!', ability: 'zemheri_absolute' }),
     ],
     intro: 'Kışın en derin gecesinde uyandım. Ayazımdan kaçamazsınız!', death: 'Kış... nihayet çözüldü...',
     // Zemheri Yatağı in r20: placeholder centre (world m); the zone layout decides the final spot (see the enemies report)

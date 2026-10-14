@@ -38,6 +38,8 @@ export const PETS: PetDef[] = [
     source: { kind: 'drop', table: 'loot_rare_kizil_kuyruk', text: 'Nadir düşman: Kızıl Kuyruk' } },
   { id: 'ejder_yavrusu', name: 'Küçük Ejder', desc: 'Ulu-Boz\'un kanından doğmuş minik bir ejder.', shape: 'dragon', color: 0x2e7d4f, accent: 0xf2c037, scale: 0.9,
     source: { kind: 'drop', table: 'loot_wb_ulu_boz', text: 'Dünya Boss\'u: Ulu-Boz (Karakır Bozkırı)' } },
+  { id: 'buz_tilkisi', name: 'Buz Tilkisi', desc: 'Zemheri\'nin karından doğmuş, gözleri mavi parlayan küçük bir tilki.', shape: 'quad', color: 0xe8f4ff, accent: 0x6fb8e0, scale: 0.7,
+    source: { kind: 'drop', table: 'loot_wb_ad_zemheri', text: 'Dünya Boss\'u: Zemheri (Ayaz Dağları)' } },
   { id: 'tas_kaplumbaga', name: 'Taş Kaplumbağa', desc: 'Sırtında yosun taşıyan yaşlı bir kaplumbağa.', shape: 'turtle', color: 0x7d7a6e, accent: 0x4f8a5b, scale: 0.8,
     source: { kind: 'drop', table: 'loot_wb_curukkok', text: 'Dünya Boss\'u: Çürükkök (Mantar Kral)' } },
   // ---- achievements

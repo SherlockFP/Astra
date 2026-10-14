@@ -4,6 +4,7 @@ import { DOKUMHANE_SCRIPTS, DOKUMHANE_SPAWNS } from './dokumhane';
 import { BUZUL_SCRIPTS, BUZUL_SPAWNS } from './buzul';
 import { GOLGE_SCRIPTS, GOLGE_SPAWNS } from './golge';
 import { WORLD_SCRIPTS, WORLD_SPAWNS } from './world';
+import { WORLD_STEPPE_SCRIPTS, WORLD_STEPPE_SPAWNS } from './world_steppe_ice';
 import { TASKASA_SCRIPTS, TASKASA_SPAWNS } from './taskasa';
 import { PERI_SCRIPTS, PERI_SPAWNS } from './peri_sisleri';
 import { YILDIZ_SCRIPTS, YILDIZ_SPAWNS } from './yildiz_divani';
@@ -20,6 +21,7 @@ export const BOSS_SCRIPTS: Record<string, BossScript> = {
   ...BUZUL_SCRIPTS,
   ...GOLGE_SCRIPTS,
   ...WORLD_SCRIPTS,
+  ...WORLD_STEPPE_SCRIPTS,
   ...TASKASA_SCRIPTS,
   ...PERI_SCRIPTS,
   ...YILDIZ_SCRIPTS,
@@ -37,6 +39,7 @@ export const BOSS_SPAWNS: Record<string, string[]> = {
   ...BUZUL_SPAWNS,
   ...GOLGE_SPAWNS,
   ...WORLD_SPAWNS,
+  ...WORLD_STEPPE_SPAWNS,
   ...TASKASA_SPAWNS,
   ...PERI_SPAWNS,
   ...YILDIZ_SPAWNS,
