@@ -12,6 +12,7 @@ import { TALENT_PIPS } from '../data/specs_talents';
 import { MAJOR_BASE, MAJOR_SLOTS, readMajorCd, writeMajorCd, resetMajorCooldowns } from './majors';
 import { COMBAT_FEEL, FEEL, WOW, TYPE_COLORS, feelBeat, vfxScale, isAreaVfx, freezeActors, weaponTempoOf, weightFromParam, leadSkipSec, type HitWeight } from './feel';
 import { gcdFor, isOffGcd } from './gcd';
+import { beforeCast as beforeFormCast, formBasic } from './Forms';
 import { resolveProcMods, consumeProcMods, cdMultFor, cleaveRidersOf, type CleaveRider, type ResolvedProcMods } from './procMods';
 import { PUSHBACK_CFG, pushesBack, channelCut, lockoutSchool, LOCKOUT_SCHOOLS, type HitForPushback, type LockoutSchool } from './castRules';
 import { ProcWatcher } from './procFx';
@@ -380,6 +381,9 @@ export class SkillSystem {
       return false;
     }
 
+    // KIT Druid: a form skill auto-shifts into its form, a caster spell drops Kedi / Ayı / Yolcu (combat/Forms.ts)
+    beforeFormCast(player, def);
+
     // already aiming this slot: just refresh the aim (the controller may call every frame while held)
     if (st.aiming) {
       if (st.aiming.def.id === def.id) return true;
@@ -604,8 +608,8 @@ export class SkillSystem {
     if (out) return out;
     const ids: PipId[] = [];
     const sec = CLASSES[cls]?.secondary;
-    if (sec) ids.push(sec.id);
-    if (cls === 'rogue') ids.push('combo');
+    if (sec && !(cls === 'druid' && spec !== 'druid_balance')) ids.push(sec.id); // KIT Druid: Astral Güç only for Denge
+    if (cls === 'rogue' || (cls === 'druid' && (spec === 'druid_feral' || !spec))) ids.push('combo'); // KIT Druid: Vahşi (and the no-spec cat) count combo points
     if (spec === 'rogue_alchemist') ids.push('karisim');
     if (spec === 'knight_blademaster') ids.push('adalet');
     if (spec === 'mage_arcane') ids.push('arcane');
@@ -1130,7 +1134,7 @@ export class SkillSystem {
     const cls = CLASSES[player.classId];
     if (!cls) return null;
     // GDD_V2 §1.1: a spec may replace the class basic attack (Simyacı: Şişe Fırlat)
-    if (slot === 'lmb') return specOf(player)?.basic ?? cls.basicAttack;
+    if (slot === 'lmb') return formBasic(player) ?? specOf(player)?.basic ?? cls.basicAttack; // KIT Druid: Kedi / Ayı chains
     const bar = G.character?.save.skillBar;
     let id = bar?.[slot];
     const def = id ? SKILLS[id] : undefined;
@@ -2784,7 +2788,7 @@ export class SkillSystem {
 
   addCombo(p: Actor, n: number): void {
     const st = this.states.get(p.id);
-    if (!st || (p as Player).classId !== 'rogue') return;
+    if (!st || ((p as Player).classId !== 'rogue' && (p as Player).classId !== 'druid')) return;
     st.cp = Math.min(this.comboCap(p), st.cp + Math.max(0, Math.round(n)));
     st.cpTimer = 0;
     this.emitCp(st);

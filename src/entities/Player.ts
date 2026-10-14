@@ -3,6 +3,8 @@ import { Actor } from './Actor';
 import { Interpolator } from './Interpolator';
 import { G } from '../game/G';
 import { loadCharacterModel, classResource, type CharacterModel, type GearMap } from './CharacterModel';
+import { syncFormResources, formResourceOf } from '../combat/Forms';
+import { updateFormBody, disposeFormBody } from '../combat/FormBody';
 import { siegeGlow } from '../systems/SiegeRules';
 import type { ClassId, EntityId } from '../types/common';
 import type { CharacterState } from '../systems/CharacterState';
@@ -274,6 +276,7 @@ export class Player extends Actor {
     // stats.maxHp is final (StatCalc applied gear/talent/spec maxHpPct); only status modifiers are added here
     this.maxHp = Math.max(1, Math.round((baseHp + (mods.maxHp ?? 0)) * (1 + (mods.maxHpPct ?? 0))));
     this.maxResource = Math.max(1, Math.round(baseRes + (mods.maxResource ?? 0)));
+    syncFormResources(this); // KIT Druid: shapeshift forms swap Mana <-> Energy / Rage (combat/Forms.ts)
     this.baseMoveSpeed = DEFAULT_MOVE_SPEED;
     if (!this.statsInit) {
       this.statsInit = true;
@@ -390,6 +393,7 @@ export class Player extends Actor {
       }
       for (const id of this.remoteStatusSeen) if (!seen.has(id)) this.statuses.remove(id as StatusId);
       this.remoteStatusSeen = seen;
+      this.resourceType = formResourceOf(this) ?? classResource(this.classId); // KIT Druid: a remote cat shows an energy bar
     }
 
     // casting indicator
@@ -538,6 +542,7 @@ export class Player extends Actor {
     }
 
     this.updateJuice(dt);
+    updateFormBody(this, dt); // KIT Druid: beast rig of the active shapeshift form
 
     if (this.charModel) this.charModel.root.position.y = this.modelLift;
     // blob shadow stays on the ground while jumping and shrinks with height
@@ -580,6 +585,7 @@ export class Player extends Actor {
     this.ghosts.length = 0;
     for (const off of this.unsubs) off();
     this.unsubs = [];
+    disposeFormBody(this);
     this.charModel?.dispose();
     this.charModel = null;
     this.anim = null; // already disposed together with the model

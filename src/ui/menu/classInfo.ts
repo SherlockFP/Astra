@@ -176,8 +176,8 @@ const FALLBACK: Record<ClassId, ClassPresentation> = {
   },
   druid: {
     id: 'druid', name: 'Druid', tagline: 'Doğanın Biçim Değiştireni', role: 'Biçim Değiştiren · Hibrit', resource: 'Mana', resourceColor: '#3d7bd9',
-    desc: 'Doğanın ve biçim değiştirmenin ustası. Ay ışığıyla büyü yapar, ayıya, kurda ya da kuşa dönüşür; yıkıcı bir yol da iyileştiren bir yol da seçebilir.',
-    highlights: [], stats: { dayaniklilik: 4, hasar: 3, hareket: 4, menzil: 2 }, color: '#ff7c0a', icon: '/assets/icons/buff-regen.svg', idle: 'Idle',
+    desc: 'Doğanın ve biçim değiştirmenin ustası. Ay ışığıyla büyü yapar, kediye, ayıya ya da baykuşa dönüşür; yıkıcı bir yol da iyileştiren bir yol da seçebilir.',
+    highlights: ['Kedi, Ayı, Yolcu ve Ay Baykuşu biçimleri: kaynak ve düğmeler değişir', 'Denge · Vahşi · Koruyucu · Restorasyon', 'Kanamalar, Astral Güç ve üst üste binen şifa'], stats: { dayaniklilik: 4, hasar: 3, hareket: 4, menzil: 2 }, color: '#ff7c0a', icon: '/assets/icons/buff-regen.svg', idle: 'Idle',
     showcase: [],
   },
 };
@@ -195,7 +195,7 @@ export function classPresentation(id: ClassId): ClassPresentation {
   };
 }
 
-export const CLASS_ORDER: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer'];
+export const CLASS_ORDER: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer', 'druid'];
 
 export interface VariantDef { name: string; css: string; tint: number }
 /** Colour variants (appearance.variant index). `tint` is only used by the scenes-side fallback model loader. */

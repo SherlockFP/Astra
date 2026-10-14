@@ -155,6 +155,10 @@ export type StatusId =
   | 'garrote' | 'rupture' | 'kingsbane' | 'deathmark' | 'darkest_night' | 'improved_garrote' | 'find_weakness'
   | 'shadow_technique' | 'shadowstep_haste' | 'behind_grace' | 'feint' | 'goremaw' | 'alchemy_link' | 'elixir_ramp'
   | 'brew_boost' | 'ascendant'
+  // KIT Druid (append-only): shapeshift forms (combat/Forms.ts), Denge / Vahşi / Koruyucu / Restorasyon statuses. StatusDefs in data/statuses_kit_druid.ts.
+  | 'form_moonkin' | 'form_cat' | 'form_bear' | 'form_travel' | 'eclipse_solar' | 'eclipse_lunar' | 'moonfire' | 'sunfire'
+  | 'celestial_alignment' | 'rake' | 'rip' | 'thrash' | 'feral_fury' | 'berserk' | 'cat_dash' | 'ironfur' | 'barkskin' | 'frenzied'
+  | 'survival_instincts' | 'sleeper_rage' | 'rejuvenation' | 'regrowth' | 'lifebloom' | 'wild_growth' | 'ironbark' | 'omen_clarity'
   | 'haunt' | 'malevolence' | 'darkglare_active' | 'backdraft' | 'fiendish_cruelty' | 'dark_pact'
   | 'aoe_mode' | 'exec_window'
   // Kibir Tecessumu (P-27, append-only): Kibirli elite buff (+dmg, +move speed). StatusDef + STATUS_RULES registered by systems/Affixes.ts.
