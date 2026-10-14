@@ -16,8 +16,8 @@ const KNIGHT_SPEC_LIST: SpecDef[] = [
       { id: 'protector_cheat', desc: '90 saniyede bir ölümcül darbe canını %15\'e indirir ve 1.5 saniye dokunulmazlık verir (Son Savunma).', params: { cooldown: 90, hpLeft: 0.15, invul: 1.5 } },
       { id: 'trait_anger', desc: 'Harcanan her 20 Kararlılık, majör bekleme sürelerini 1 saniye azaltır (Öfke Yönetimi).', params: { angerPer: 20 } },
     ],
-    skills: ['knight_shield_slam', 'knight_revenge', 'knight_thunder_clap', 'knight_ward_of_oath', 'knight_shield_block', 'knight_provoke', 'knight_heroic_throw', 'knight_unbroken_bastion', 'knight_shield_wall', 'knight_challenge', 'knight_pummel'],
-    unlock: { knight_shield_slam: 1, knight_revenge: 1, knight_thunder_clap: 1, knight_ward_of_oath: 15, knight_shield_block: 1, knight_provoke: 10, knight_heroic_throw: 12, knight_unbroken_bastion: 10, knight_shield_wall: 30, knight_challenge: 10, knight_pummel: 10 },
+    skills: ['knight_spell_reflection', 'knight_intercept', 'knight_shield_slam', 'knight_revenge', 'knight_thunder_clap', 'knight_ward_of_oath', 'knight_shield_block', 'knight_provoke', 'knight_heroic_throw', 'knight_unbroken_bastion', 'knight_shield_wall', 'knight_challenge', 'knight_pummel'],
+    unlock: { knight_spell_reflection: 15, knight_intercept: 10,  knight_shield_slam: 1, knight_revenge: 1, knight_thunder_clap: 1, knight_ward_of_oath: 15, knight_shield_block: 1, knight_provoke: 10, knight_heroic_throw: 12, knight_unbroken_bastion: 10, knight_shield_wall: 30, knight_challenge: 10, knight_pummel: 10 },
     majors: { m45: 'knight_unbroken_bastion', m90: 'knight_avatar', m180: 'knight_shield_wall' },
     // Blok (30 %, icd 1.5 s) and perfect parry (100 %) light İntikam Hazır (6 s: the next İntikam is free, +25 %, threat x2)
     fx: 'T block ch=.30 icd=1.5 => st(self,revenge_ready,6) ;; T parry => st(self,revenge_ready,6)',

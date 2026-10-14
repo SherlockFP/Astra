@@ -39,8 +39,8 @@ export const SPECS_KIT_PRIEST: Partial<Record<SpecId, SpecDef>> = {
     specials: [
       { id: 'trait_holy', desc: 'Kutsal Güç: Kutsal Söz sonrası Şifa Çemberi\'nin bekleme süresi 2 sn kısalır.', params: { cdrOnHolyWord: 2 } },
     ],
-    skills: ['priest_holy_prayer', 'priest_holy_serenity', 'priest_holy_sanctify', 'priest_holy_circle', 'priest_holy_mending', 'priest_holy_hymn', 'priest_holy_guardian'],
-    unlock: {
+    skills: ['priest_holy_fire', 'priest_holy_prayer', 'priest_holy_serenity', 'priest_holy_sanctify', 'priest_holy_circle', 'priest_holy_mending', 'priest_holy_hymn', 'priest_holy_guardian'],
+    unlock: { priest_holy_fire: 6, 
       priest_holy_basic: 1, priest_holy_prayer: 1, priest_holy_serenity: 1, priest_holy_sanctify: 15, priest_holy_circle: 15,
       priest_holy_mending: 10, priest_holy_hymn: 10, priest_holy_guardian: 20,
     },

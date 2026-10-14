@@ -158,6 +158,9 @@ export type StatusId =
   // HAYDUT WoW layout (append-only): Outlaw and utility statuses. StatusDefs in data/statuses_kit_rogue.ts.
   | 'sprint' | 'evasion' | 'slice_and_dice' | 'roll_the_bones' | 'adrenaline_rush' | 'killing_spree' | 'blade_flurry'
   | 'symbols_of_death'
+  // Midnight defensive / utility group (append-only): Beacon of Light, Blessing of Protection, Spell Reflection, Misdirection and the
+  // absorb labels (Life Cocoon, Celestial Brew, Earthen Wall). StatusDefs in data/statuses_defensive.ts.
+  | 'beacon_of_light' | 'blessing_protection' | 'spell_reflection' | 'misdirection' | 'life_cocoon' | 'celestial_brew' | 'earthen_wall'
   // KIT Druid (append-only): shapeshift forms (combat/Forms.ts), Denge / Vahşi / Koruyucu / Restorasyon statuses. StatusDefs in data/statuses_kit_druid.ts.
   | 'form_moonkin' | 'form_cat' | 'form_bear' | 'form_travel' | 'eclipse_solar' | 'eclipse_lunar' | 'moonfire' | 'sunfire'
   | 'celestial_alignment' | 'rake' | 'rip' | 'thrash' | 'feral_fury' | 'berserk' | 'cat_dash' | 'ironfur' | 'barkskin' | 'frenzied'

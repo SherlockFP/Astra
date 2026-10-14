@@ -970,6 +970,49 @@ for (const spec of ALL) {
   console.log(`     pmpa.mana Kutsal faith over the 60 s run: ${l.faith0.toFixed(0)} -> ${l.faithEnd.toFixed(0)} (informational only: the dummy party never rises above 60 %, so the APL spams the panic Işık Parlaması; the kit's +10 per minute ledger belongs to SimBench)`);
 }
 
+// ---- kit.defensive (Midnight defensive group, paladin side): Işık Mekanı, Koruma Duası, Özgürlük Duası.
+// Hooks: healing.ts beaconCopy (the beacon gets 15 % of each heal given to another ally), Combat.hitLocalPlayer step 1a (blessing_protection).
+{
+  const { healAlly, setFriendlyTarget } = await H.imp('combat/healing.ts');
+  const near = (a, b, tol = 1e-6) => Math.abs(a - b) <= tol;
+  setFriendlyTarget(null);
+  const p = newPaladin(HOL);
+  const ally = new H.FakePlayer('paladin', 30); ally.id = 77; H.world.add(ally); ally.position.set(4, 0, 0);
+  const third = new H.FakePlayer('paladin', 30); third.id = 78; H.world.add(third); third.position.set(-4, 0, 0); third.hp = third.maxHp * 0.5;
+  H.step(2);
+  G.skills.addResource(p, 300);
+  const cB = G.skills.tryCast(p, 'paladin_beacon_of_light', { ...H.aimFor(p, null), allyId: ally.id });
+  H.stepSec(0.6);
+  const bst = ally.statuses.get('beacon_of_light');
+  ok('kit.defensive paladin_beacon_of_light puts the beacon on the picked ally at 15 %', cB === true && !!bst && near(bst.magnitude, 0.15), `cast=${cB} mag=${bst?.magnitude}`);
+  const spyB = healSpy();
+  healAlly(p, third, 1);
+  const toThird = spyB.log.find((h) => h.tgt === third);
+  const toBeacon = spyB.log.find((h) => h.tgt === ally);
+  spyB.stop();
+  ok('kit.defensive a heal on another ally is copied 15 % to the beacon', !!toThird && !!toBeacon && near(toBeacon.amt, toThird.amt * 0.15, 1e-6), `heal=${toThird?.amt?.toFixed(1)} copy=${toBeacon?.amt?.toFixed(1)}`);
+  H.stepSec(1.6);
+  G.skills.tryCast(p, 'paladin_beacon_of_light', { ...H.aimFor(p, null), allyId: third.id });
+  H.stepSec(0.6);
+  ok('kit.defensive a new beacon replaces the old one (one beacon at a time)', !ally.statuses.has('beacon_of_light') && third.statuses.has('beacon_of_light'));
+  H.stepSec(1.6);
+  p.statuses.apply('root', 4, {}); p.statuses.apply('slow', 4, { magnitude: 0.3 });
+  const cF = G.skills.tryCast(p, 'paladin_blessing_freedom', H.aimFor(p, null));
+  H.stepSec(0.6);
+  ok('kit.defensive paladin_blessing_freedom cleanses root and slow', cF === true && !p.statuses.has('root') && !p.statuses.has('slow'), `cast=${cF}`);
+  H.stepSec(1.6);
+  const hp0 = p.hp;
+  const cP = G.skills.tryCast(p, 'paladin_blessing_protection', H.aimFor(p, null));
+  H.stepSec(0.6);
+  const rP = G.combat.hitLocalPlayer({ sourceId: null, amount: 800, type: 'physical', unavoidable: true, sourceLevel: 30 });
+  ok('kit.defensive paladin_blessing_protection: physical hits do nothing', cP === true && p.statuses.has('blessing_protection') && rP.amount === 0 && p.hp === hp0, `cast=${cP} amount=${rP.amount}`);
+  const rM = G.combat.hitLocalPlayer({ sourceId: null, amount: 800, type: 'fire', unavoidable: true, sourceLevel: 30 });
+  ok('kit.defensive paladin_blessing_protection leaves magic hits alone', rM.amount > 0 && p.hp < hp0, `amount=${rM.amount}`);
+  ok('kit.defensive paladin_blessing_protection leaves forbearance on the target', p.statuses.has('forbearance'));
+  ok('kit.defensive the three paladin rows sit on the Kutsal list', HOL.skills.includes('paladin_beacon_of_light') && HOL.skills.includes('paladin_blessing_protection') && HOL.skills.includes('paladin_blessing_freedom'));
+  setFriendlyTarget(null);
+}
+
 // ---- level 1 (owner rule): every spec starts at level 1 with >= 4 usable core skills on its bar (basic / auto attack excluded)
 for (const sid of ["paladin_protection","paladin_holy","paladin_retribution"]) {
   const spec = SPECS[sid];

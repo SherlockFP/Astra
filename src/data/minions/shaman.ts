@@ -12,6 +12,24 @@ const WOLF_ANIMS = { idle: 'Idle', walk: 'Walk', run: 'Run', hit: 'Hit', death: 
 
 export const SHAMAN_MINIONS: MinionDef[] = [
   {
+    // Ruh Bağı Totemi (shaman_spirit_link): 6 s; its HP redistribution is the hp_redistribute behaviour (no attacks)
+    id: 'shaman_spirit_link_totem', name: 'Ruh Bağı Totemi', ownerClass: 'shaman', role: 'caster', group: 'lesser',
+    model: TOTEM_MODEL, scale: 0.95, tint: 0xd8b8ff,
+    anims: TOTEM_ANIMS, radius: 0.5, height: 2.0, speed: 0,
+    hpFrac: 0.3, armorFrac: 0.2,
+    attacks: [],
+    aggro: 0, follow: [0, 0], leash: 30,
+  },
+  {
+    // Toprak Duvarı Totemi (shaman_earthen_wall, T): 15 s; its absorb is the absorb_ally behaviour (no attacks)
+    id: 'shaman_earthen_wall_totem', name: 'Toprak Duvarı Totemi', ownerClass: 'shaman', role: 'caster', group: 'lesser',
+    model: TOTEM_MODEL, scale: 1.05, tint: 0xb08a50,
+    anims: TOTEM_ANIMS, radius: 0.6, height: 2.2, speed: 0,
+    hpFrac: 0.4, armorFrac: 0.3,
+    attacks: [],
+    aggro: 0, follow: [0, 0], leash: 30,
+  },
+  {
     // Ateş Elementali (shaman_totem_fire skill): a mobile fire elemental for 30 s; fire bolts at enemies within 18 m
     id: 'shaman_fire_elemental', name: 'Ateş Elementali', ownerClass: 'shaman', role: 'caster', group: 'infernal',
     model: TOTEM_MODEL, scale: 1.3, tint: 0xff5a20, emissive: 0x602000,

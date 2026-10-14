@@ -67,11 +67,11 @@ export const SPECS_KIT_SHAMAN: Partial<Record<SpecId, SpecDef>> = {
     specials: [
       { id: 'trait_restoration', desc: 'Şifa Akışı: iyileştirmelerin %15 fazla etkili olur.', params: { healMore: 0.15 } },
     ],
-    skills: [
+    skills: ['shaman_spirit_link', 'shaman_earthen_wall', 
       'shaman_healing_wave', 'shaman_riptide', 'shaman_chain_heal', 'shaman_purify_spirit', 'shaman_stream_totem', 'shaman_healing_rain',
       'shaman_nature_swiftness', 'shaman_tide_totem',
     ],
-    unlock: {
+    unlock: { shaman_spirit_link: 20, shaman_earthen_wall: 16, 
       shaman_healing_wave: 1, shaman_riptide: 1, shaman_chain_heal: 1, shaman_purify_spirit: 10, shaman_stream_totem: 10,
       shaman_healing_rain: 15, shaman_nature_swiftness: 10, shaman_tide_totem: 20,
     },
@@ -81,7 +81,7 @@ export const SPECS_KIT_SHAMAN: Partial<Record<SpecId, SpecDef>> = {
     defaultBar: {
       lmb: 'shaman_resto_basic', rmb: 'shaman_healing_wave', q: 'shaman_riptide', e: 'shaman_chain_heal', r: 'shaman_bloodlust',
       s1: 'shaman_healing_rain', s2: 'shaman_purify_spirit', s3: 'shaman_astral_shift', s4: 'shaman_wind_shear',
-      m45: 'shaman_nature_swiftness', m90: 'shaman_tide_totem', m180: 'shaman_stream_totem',
+      m45: 'shaman_nature_swiftness', m90: 'shaman_tide_totem', m180: 'shaman_earthen_wall',
     },
   },
 };

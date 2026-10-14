@@ -435,6 +435,23 @@ for (const sid of ["knight_protector","knight_blademaster"]) {
   const l1 = Object.entries(spec.defaultBar).filter(([slot, id]) => slot !== 'lmb' && id !== spec.basic && SKILLS[id]?.unlockLevel <= 1 && (spec.unlock?.[id] ?? 1) <= 1);
   ok(`kit_knight.l1 ${sid} level 1 has >= 4 usable skills`, l1.length >= 4, l1.map(([s, id]) => `${s}=${id}`).join(','));
 }
+// ---- kit.defensive: Büyü Yansıtma (Spell Reflection: magic hits sent back) and Müdahale (Intervene, knight_intercept) on the Koruyucu list
+{
+  const k = H.addPlayer('knight');
+  k.yaw = 0; k.position.set(0, 0, 0); k.stats.critChance = 0;
+  H.step(2);
+  const foe = H.addEnemy(0, 6, { hp: 1e9 }); foe.maxHp = 1e9; foe.hp = 1e9;
+  const cr = G.skills.tryCast(k, 'knight_spell_reflection', H.aimFor(k, null));
+  H.stepSec(0.3);
+  ok('kit.defensive knight_spell_reflection grants spell_reflection for 5 s', cr === true && k.statuses.has('spell_reflection'), `cast=${cr}`);
+  const hp0 = k.hp;
+  const rM = G.combat.hitLocalPlayer({ sourceId: foe.id, amount: 600, type: 'fire', unavoidable: true, sourceLevel: 30 });
+  ok('kit.defensive a magic hit is reflected to its source and does no damage', rM.reflected === true && k.hp === hp0 && foe.hp < 1e9, `hp ${hp0}->${k.hp} foe=${foe.hp}`);
+  const rP = G.combat.hitLocalPlayer({ sourceId: foe.id, amount: 600, type: 'physical', unavoidable: true, sourceLevel: 30 });
+  ok('kit.defensive physical hits are not reflected by spell_reflection', !rP.reflected && rP.amount > 0, `amount=${rP.amount}`);
+  ok('kit.defensive knight_intercept (Müdahale) is on the Koruyucu list at unlock 10', PROT.skills.includes('knight_intercept') && !!SKILLS.knight_intercept && PROT.unlock.knight_intercept === 10);
+}
+
 console.log(fails === 0 ? '\nkit.knight (pmkn): all checks PASS' : `\nkit.knight (pmkn): ${fails} FAIL`);
 H.restoreConsole?.();
 process.exit(fails === 0 ? 0 : 1);

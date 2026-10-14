@@ -12,6 +12,26 @@ import type { SkillAdd, SkillInput } from './types';
 const I = (n: string) => `/assets/icons/${n}.svg`;
 
 export function registerPaladin(add: SkillAdd): void {
+  // Koruma Duası (Blessing of Protection): an ally takes no physical damage for 10 s; that ally gets Forbearance (60 s: no second
+  // blessing and no Divine Shield meanwhile). The caster when no ally is picked.
+  add({
+    id: 'paladin_blessing_protection', classId: 'paladin', name: 'Koruma Duası (Blessing of Protection)', icon: I('buff-blessing'), unlockLevel: 10,
+    desc: '25 metre içindeki seçtiğin müttefike (yoksa kendine) 10 saniye boyunca fiziksel hasar vurmaz. Hedef 60 saniye boyunca Dayanma alır: yeniden kutsanamaz ve İlahi Kalkan kullanamaz. 300 saniye bekleme.',
+    cost: 0, cooldown: 300, castTime: 0, hitTime: 0.3, anim: 'Cheer', animSpeed: 1.4,
+    targeting: 'custom', behavior: 'ally_buff', allyTarget: 'friendly', range: 25,
+    tags: ['spell', 'holy', 'defensive', 'ally'], vfx: { cast: 'shield_bubble' }, sfx: { cast: 'chi_cast', impact: 'buff' },
+    statuses: [{ status: 'blessing_protection', duration: 10 }, { status: 'forbearance', duration: 60 }],
+    params: { self: 1, forbearance: 1, end: 0.5, chain: 0.1, move: 0.1, weight: 0 },
+  });
+  // Özgürlük Duası (Blessing of Freedom): removes root and slow from an ally (the caster when none is picked).
+  add({
+    id: 'paladin_blessing_freedom', classId: 'paladin', name: 'Özgürlük Duası (Blessing of Freedom)', icon: I('skill-leap'), unlockLevel: 16,
+    desc: '25 metre içindeki seçtiğin müttefikinin kök ve yavaşlatma etkilerini kaldırır (yoksa kendininkileri). 25 saniye bekleme.',
+    cost: 0, cooldown: 25, castTime: 0, hitTime: 0.3, anim: 'Cheer', animSpeed: 1.4,
+    targeting: 'custom', behavior: 'ally_buff', allyTarget: 'friendly', range: 25,
+    tags: ['spell', 'holy', 'utility', 'ally'], vfx: { cast: 'buff_aura' }, sfx: { cast: 'chi_cast' },
+    params: { self: 1, cleanse: 1, end: 0.5, chain: 0.1, move: 0.1, weight: 0 },
+  });
   // ======================================================================================================
   // Kutsal Zincir (Koruma + Ceza): Σ 2.50 (G1), faith +3/+3/+4/+6, +1 Kutsal Güç on steps 3 and 4 (2 per chain)
   // ======================================================================================================

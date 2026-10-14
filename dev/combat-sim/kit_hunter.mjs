@@ -298,6 +298,39 @@ ok('kit.hunter.apl every archer spec has an APL', SPEC_IDS.every((sid) => !!ROTA
   ok('kit.hunter.casts Son Siper grants survivor_ward', ward === true && p.statuses.has('survivor_ward'));
 }
 
+// ---- kit.defensive: Coşku (Exhilaration, self + pet heal) and Yanıltma (Misdirection, threat redirect to the tank)
+{
+  const { EnemyAI } = await H.imp('ai/EnemyAI.ts');
+  const p = H.addPlayer('archer');
+  G.minions.clearAll('scene');
+  p.yaw = 0; p.position.set(0, 0, 0); p.stats.critChance = 0;
+  G.talents = { grantedSkills: () => [], skillPick: () => 0 };
+  H.step(2);
+  G.skills.addResource(p, 300);
+  G.skills.tryCast(p, 'archer_call_pet', H.aimFor(p, null), 's1');
+  H.stepSec(1.5);
+  const pet = G.minions.ownedBy(p.id, (m) => m.def.group === 'pet')[0];
+  if (pet) pet.hp = pet.maxHp * 0.5;
+  p.hp = p.maxHp * 0.5;
+  const hp0 = p.hp, pet0 = pet ? pet.hp : 0;
+  const ce = G.skills.tryCast(p, 'archer_exhilaration', H.aimFor(p, null));
+  H.stepSec(0.6);
+  ok('kit.defensive archer_exhilaration heals the caster and the pet', ce === true && p.hp > hp0 && !!pet && pet.hp > pet0, `self ${hp0.toFixed(0)}->${p.hp.toFixed(0)} pet ${pet0.toFixed(0)}->${pet ? pet.hp.toFixed(0) : '-'}`);
+  const tank = new H.FakePlayer('knight', 30); tank.id = 77; H.world.add(tank); tank.position.set(4, 0, 0);
+  H.stepSec(1.6); // global cooldown after Coşku
+  const cm = G.skills.tryCast(p, 'archer_misdirection', { ...H.aimFor(p, null), allyId: tank.id });
+  H.stepSec(0.6);
+  const mis = p.statuses.get('misdirection');
+  ok('kit.defensive archer_misdirection redirects for 8 s to the picked ally', cm === true && !!mis && mis.sourceId === tank.id && mis.remaining > 7, `cast=${cm} src=${mis?.sourceId} left=${mis?.remaining?.toFixed(2)}`);
+  const foe = H.addEnemy(0, 6, { hp: 1e9 }); foe.maxHp = 1e9; foe.hp = 1e9;
+  const ai = Object.create(EnemyAI.prototype);
+  Object.assign(ai, { e: foe, dir: { inSafeZone: () => false }, threat: new Map(), target: null, disposed: false, passives: [], aggroed: true });
+  foe.ai = ai;
+  ai.onDamaged(p.id, 500);
+  ok('kit.defensive misdirection books the caster hits on the tank, not on the caster', (ai.threat.get(tank.id) ?? 0) > 0 && !(ai.threat.get(p.id) > 0), `tank=${ai.threat.get(tank.id)} self=${ai.threat.get(p.id)}`);
+  ok('kit.defensive the hunter rows sit on the archer class skills (unlock 10)', SKILLS.archer_exhilaration?.unlockLevel === 10 && SKILLS.archer_misdirection?.unlockLevel === 10);
+}
+
 console.log(fails === 0 ? '\nkit.hunter: all checks PASS' : `\nkit.hunter: ${fails} FAIL`);
 H.restoreConsole?.();
 process.exit(fails === 0 ? 0 : 1);

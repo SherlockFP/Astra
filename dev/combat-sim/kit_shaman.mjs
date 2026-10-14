@@ -274,6 +274,29 @@ for (const sid of ["shaman_elemental","shaman_enhancement","shaman_restoration"]
   const l1 = Object.entries(spec.defaultBar).filter(([slot, id]) => slot !== 'lmb' && id !== spec.basic && SKILLS[id]?.unlockLevel <= 1 && (spec.unlock?.[id] ?? 1) <= 1);
   ok(`kit_shaman.l1 ${sid} level 1 has >= 4 usable skills`, l1.length >= 4, l1.map(([s, id]) => `${s}=${id}`).join(','));
 }
+// ---- kit.defensive: Ruh Bağı Totemi (Spirit Link, HP redistribution) and Toprak Duvarı Totemi (Earthen Wall, party absorb)
+{
+  const near = (a, b, tol = 1e-6) => Math.abs(a - b) <= tol;
+  const p = newShaman(SPECS.shaman_restoration);
+  const low = new H.FakePlayer('shaman', 30); low.id = 77; H.world.add(low); low.position.set(3, 0, 0); low.hp = low.maxHp * 0.5;
+  H.step(2);
+  G.skills.addResource(p, 300);
+  const c = G.skills.tryCast(p, 'shaman_spirit_link', H.aimFor(p, null));
+  H.stepSec(0.8);
+  const f = low.hp / low.maxHp;
+  ok('kit.defensive shaman_spirit_link lifts the low ally toward the party share', c === true && f > 0.7 && f < 0.9, `low=${f.toFixed(3)} caster=${(p.hp / p.maxHp).toFixed(3)}`);
+  ok('kit.defensive shaman_spirit_link summons its totem', G.minions.ownedBy(p.id, (m) => m.def.id === 'shaman_spirit_link_totem').length === 1);
+  const q = newShaman(SPECS.shaman_restoration);
+  H.step(2);
+  G.skills.addResource(q, 300);
+  const cE = G.skills.tryCast(q, 'shaman_earthen_wall', H.aimFor(q, null));
+  H.stepSec(0.8);
+  const sh = q.statuses.get('shield');
+  ok('kit.defensive shaman_earthen_wall absorbs 10 % of max HP for the party', cE === true && !!sh && near(sh.magnitude, q.maxHp * 0.1, 1) && q.statuses.has('earthen_wall'), `shield=${sh?.magnitude}`);
+  ok('kit.defensive shaman_earthen_wall summons its totem', G.minions.ownedBy(q.id, (m) => m.def.id === 'shaman_earthen_wall_totem').length === 1);
+  ok('kit.defensive shaman_earthen_wall is on the T (m180) key of Restorasyon', SPECS.shaman_restoration.defaultBar.m180 === 'shaman_earthen_wall');
+}
+
 console.log(fails === 0 ? '\nkit.shaman: all checks PASS' : `\nkit.shaman: ${fails} FAIL`);
 H.restoreConsole?.();
 process.exit(fails === 0 ? 0 : 1);

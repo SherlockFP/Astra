@@ -102,6 +102,8 @@ export interface DamageResult {
   immune?: boolean;
   /** GDD_V2 §3.5: a perfect parry negated the hit (no damage, no statuses, no knockback). */
   parried?: boolean;
+  /** Midnight Büyü Yansıtma (spell_reflection): a magic hit was sent back to its source; the victim took no damage. */
+  reflected?: boolean;
 }
 
 /**
@@ -1677,6 +1679,13 @@ export class Combat {
       if (!dot && !noDamage && p.dodging && G.world && G.world.time - p.dodgeStartedAt <= 0.15 && G.world.time - p.dodgeStartedAt >= 0) this.onPerfectDodge(p);
       if (!dot && !noDamage && p.dodging) this.energyOnDodge(p);
       return { amount: 0, crit: false, type, killed: false, immune: true };
+    }
+    // 1a. Midnight defensive rows (no damage over time): Koruma Duası (blessing_protection) makes physical hits do nothing; Büyü
+    // Yansıtma (spell_reflection) sends a magic hit back to its source (30 m reflect, the thorns path) and the victim takes none of it.
+    if (!dot && !noDamage && type === 'physical' && p.statuses.has('blessing_protection')) return { amount: 0, crit: false, type, killed: false, immune: true };
+    if (!dot && !noDamage && type !== 'physical' && hit.sourceId !== null && p.statuses.has('spell_reflection')) {
+      this.reflectThorns(p, hit.sourceId, Math.max(0, hit.amount), type, 'spell_reflection', 30);
+      return { amount: 0, crit: false, type, killed: false, reflected: true };
     }
     // 1b. parry (GDD_V2 §3.5, step 0 before the dodge): a parryable melee hit inside the open window is negated outright
     if (!hit.unavoidable && !dot && !noDamage && hit.perilous !== true && (hit.parryable ?? hit.blockable !== false) && this.guard.consumeParry(this.clock)) {

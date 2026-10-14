@@ -9,6 +9,15 @@ import type { SkillAdd } from './types';
 const I = (n: string) => `/assets/icons/${n}.svg`;
 
 export function registerKnight(add: SkillAdd): void {
+  // Büyü Yansıtma (Spell Reflection), Koruyucu: 5 s of magic hits are sent back to their source (Combat.hitLocalPlayer)
+  add({
+    id: 'knight_spell_reflection', classId: 'knight', spec: 'knight_protector', name: 'Büyü Yansıtma (Spell Reflection)', icon: I('buff-reflect'), unlockLevel: 15,
+    desc: 'Beş saniye boyunca sana gelen büyü hasarını kaynağına geri yansıtırsın; o hasar sana vurmaz. 25 saniye bekleme.',
+    cost: 0, cooldown: 25, castTime: 0, hitTime: 0, anim: 'Cheer', animSpeed: 1.4,
+    targeting: 'self_buff', behavior: 'status_self', selfStatuses: [{ status: 'spell_reflection', duration: 5 }],
+    tags: ['offgcd', 'defensive', 'buff'], vfx: { cast: 'shield_bubble' }, sfx: { cast: 'buff' },
+    params: { end: 0.5, chain: 0.1, move: 0.1, weight: 0 },
+  });
   // ======================================================================================================
   // ŞÖVALYE (knight) — Kararlılık. Class-wide rows (both specs)
   // ======================================================================================================

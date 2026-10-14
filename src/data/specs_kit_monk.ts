@@ -14,9 +14,9 @@ export const SPECS_KIT_MONK: Partial<Record<SpecId, SpecDef>> = {
     specials: [
       { id: 'trait_brewmaster', desc: 'Ertelenmiş Hasar: alınan hasarın %40\'ı Sarsma havuzuna gider (havuz yarılanma süresi ~4 sn); başarılı parry havuzun %15\'ini temizler.', params: { moreDamage: 0.75, staggerAbsorb: 0.4, parryPurge: 0.15 } },
     ],
-    skills: ['monk_provoke', 'monk_keg_smash', 'monk_purifying_brew', 'monk_bm_fortifying_brew', 'monk_bm_black_ox',
+    skills: ['monk_celestial_brew', 'monk_provoke', 'monk_keg_smash', 'monk_purifying_brew', 'monk_bm_fortifying_brew', 'monk_bm_black_ox',
       'monk_breath_of_fire', 'monk_expel_harm', 'monk_exploding_keg', 'monk_spear_hand_strike'],
-    unlock: {
+    unlock: { monk_celestial_brew: 15, 
       monk_provoke: 10, monk_keg_smash: 10, monk_purifying_brew: 15,
       monk_bm_fortifying_brew: 10, monk_bm_black_ox: 20,
       monk_breath_of_fire: 15, monk_expel_harm: 1, monk_exploding_keg: 20, monk_spear_hand_strike: 1,
@@ -65,8 +65,8 @@ export const SPECS_KIT_MONK: Partial<Record<SpecId, SpecDef>> = {
     specials: [
       { id: 'trait_mistweaver', desc: 'Sis Örgüsü: vuruşların %60 ile hasar verir; fazla iyileşme koruyucu kalkana döner (%40); Kara Tekme ve Dönen Turna, bir sis ile en düşük canlı müttefiki iyileştirir (vuruş hasarının %40\'ı).', params: { moreDamage: 0.6, overhealWard: 0.4, smartHeal: 1, mistLeech: 0.4 } },
     ],
-    skills: ['monk_mw_soothing_mist', 'monk_mw_renewing_mist', 'monk_mw_detox', 'monk_mw_enveloping_mist', 'monk_mw_vivify', 'monk_mw_thunder_tea', 'monk_mw_revival', 'monk_essence_font'],
-    unlock: {
+    skills: ['monk_life_cocoon', 'monk_mw_soothing_mist', 'monk_mw_renewing_mist', 'monk_mw_detox', 'monk_mw_enveloping_mist', 'monk_mw_vivify', 'monk_mw_thunder_tea', 'monk_mw_revival', 'monk_essence_font'],
+    unlock: { monk_life_cocoon: 20, 
       monk_mw_basic: 1, monk_mw_soothing_mist: 10, monk_mw_renewing_mist: 1, monk_mw_detox: 12, monk_mw_enveloping_mist: 1,
       monk_mw_vivify: 1, monk_mw_thunder_tea: 10, monk_mw_revival: 20, monk_essence_font: 1,
     },

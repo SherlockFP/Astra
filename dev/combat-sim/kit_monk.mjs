@@ -350,6 +350,45 @@ for (const sid of MONK_KIT_SPEC_IDS) {
   ok(`kit.monk.rotation ${sid} runs without script errors`, errors.length === 0, errors.slice(0, 2).map((m) => m.slice(0, 160)).join(' | '));
 }
 
+// ---- kit.defensive: Yaşam Kozası (Life Cocoon, ally absorb), Göksel Karışım (Celestial Brew, self absorb), Ölüm Dokunuşu (execute)
+{
+  const near = (a, b, tol = 1e-6) => Math.abs(a - b) <= tol;
+  const m = newMonk(SPECS.monk_mistweaver);
+  const ally = new H.FakePlayer('monk', 30); ally.id = 77; H.world.add(ally); ally.position.set(3, 0, 0);
+  H.step(2);
+  G.skills.addResource(m, 300);
+  const c = G.skills.tryCast(m, 'monk_life_cocoon', { ...H.aimFor(m, null), allyId: ally.id });
+  H.stepSec(0.8);
+  const sh = ally.statuses.get('shield');
+  ok('kit.defensive monk_life_cocoon absorbs 30 % of the ally max HP', c === true && !!sh && near(sh.magnitude, ally.maxHp * 0.3, 1) && ally.statuses.has('life_cocoon'), `shield=${sh?.magnitude}`);
+  const b = newMonk(SPECS.monk_brewmaster);
+  G.skills.addResource(b, 300);
+  const cb = G.skills.tryCast(b, 'monk_celestial_brew', H.aimFor(b, null));
+  H.stepSec(0.6);
+  const sb = b.statuses.get('shield');
+  ok('kit.defensive monk_celestial_brew absorbs 20 % of max HP on the caster', cb === true && !!sb && near(sb.magnitude, b.maxHp * 0.2, 1) && b.statuses.has('celestial_brew'), `shield=${sb?.magnitude}`);
+  // Touch of Death: a non-boss under the caster's max HP dies; above it, or a boss above bossPct, is struck and lives
+  const w = newMonk(SPECS.monk_windwalker);
+  const low = H.addEnemy(0, 2.2, { hp: 100 }); low.maxHp = 1e6; low.hp = w.maxHp * 0.5; low.reviveCount = 0; // a real Enemy starts at 0 (finalizeDeath)
+  G.skills.addResource(w, 300);
+  const ct = G.skills.tryCast(w, 'monk_touch_of_death', H.aimFor(w, null));
+  H.stepSec(0.8);
+  ok('kit.defensive monk_touch_of_death kills a non-boss below the caster max HP', ct === true && low.isDead === true, `hp=${low.hp} dead=${low.isDead}`);
+  const w2 = newMonk(SPECS.monk_windwalker);
+  const big = H.addEnemy(0, 2.2, { hp: 1e9 }); big.maxHp = 1e9; big.hp = 1e9;
+  G.skills.addResource(w2, 300);
+  const ct2 = G.skills.tryCast(w2, 'monk_touch_of_death', H.aimFor(w2, null));
+  H.stepSec(0.8);
+  ok('kit.defensive monk_touch_of_death strikes, not kills, a target above the caster max HP', ct2 === true && !big.isDead && big.hp < 1e9, `hp=${big.hp}`);
+  const w3 = newMonk(SPECS.monk_windwalker);
+  const boss = H.addEnemy(0, 2.2, { hp: 1e9, rank: 'boss' }); boss.maxHp = 1e9; boss.hp = 0.5e9;
+  G.skills.addResource(w3, 300);
+  const ct3 = G.skills.tryCast(w3, 'monk_touch_of_death', H.aimFor(w3, null));
+  H.stepSec(0.8);
+  ok('kit.defensive monk_touch_of_death does not kill a boss at 50 % (bossPct 15 %)', ct3 === true && !boss.isDead && boss.hp < 0.5e9, `hp=${boss.hp}`);
+  ok('kit.defensive the monk rows sit on their spec lists', SPECS.monk_mistweaver.skills.includes('monk_life_cocoon') && SPECS.monk_brewmaster.skills.includes('monk_celestial_brew'));
+}
+
 console.log(fails === 0 ? '\nkit.monk: all checks PASS' : `\nkit.monk: ${fails} FAIL`);
 H.restoreConsole?.();
 process.exit(fails === 0 ? 0 : 1);

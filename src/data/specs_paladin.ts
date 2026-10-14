@@ -21,8 +21,8 @@ const PALADIN_SPEC_LIST: SpecDef[] = [
     specials: [
       { id: 'trait_protection', desc: 'Blok +4 İnanç ve %20 ihtimalle +1 Kutsal Güç kazandırır; kusursuz savuşturma +1 Kutsal Güç verir.', params: { blockFaith: 4, blockHolyPower: 0.2 } },
     ],
-    skills: ['paladin_reckoning', 'paladin_shield_of_righteous', 'paladin_blessed_hammer', 'paladin_word_of_glory', 'paladin_avengers_shield', 'paladin_consecration', 'paladin_divine_steed', 'paladin_hammer_of_justice', 'paladin_rebuke'],
-    unlock: {
+    skills: ['paladin_blessing_protection', 'paladin_blessing_freedom', 'paladin_reckoning', 'paladin_shield_of_righteous', 'paladin_blessed_hammer', 'paladin_word_of_glory', 'paladin_avengers_shield', 'paladin_consecration', 'paladin_divine_steed', 'paladin_hammer_of_justice', 'paladin_rebuke'],
+    unlock: { paladin_blessing_protection: 10, paladin_blessing_freedom: 16, 
       paladin_reckoning: 10, paladin_shield_of_righteous: 1, paladin_avengers_shield: 10, paladin_consecration: 1,
       paladin_blessed_hammer: 10, paladin_word_of_glory: 1, paladin_divine_steed: 1,
       paladin_rebuke: 1, paladin_prot_ardent: 20, paladin_prot_bulwark: 30, paladin_avenging_wrath: 10, paladin_hammer_of_justice: 10,
@@ -56,11 +56,11 @@ const PALADIN_SPEC_LIST: SpecDef[] = [
     specials: [
       { id: 'trait_holy', desc: 'Akıllı şifa: seçili, imleçteki ya da en yaralı müttefik iyileşir. Işığın Sözü canı %35\'in altındaki hedefe %15 daha güçlüdür. Taşan şifanın %40\'ı hedefe kısa süreli kalkan olur.', params: { smartHeal: 1, overhealWard: 0.4 } },
     ],
-    skills: [
+    skills: ['paladin_beacon_of_light', 'paladin_blessing_protection', 'paladin_blessing_freedom', 
       'paladin_holy_shock', 'paladin_flash_of_light', 'paladin_cleanse', 'paladin_word_of_glory', 'paladin_light_of_dawn',
       'paladin_divine_steed', 'paladin_rebuke', 'paladin_divine_shield', 'paladin_holy_light', 'paladin_lay_on_hands', 'paladin_divine_toll', 'paladin_holy_aura_mastery',
     ],
-    unlock: {
+    unlock: { paladin_beacon_of_light: 10, paladin_blessing_protection: 10, paladin_blessing_freedom: 16, 
       paladin_holy_shock: 1, paladin_flash_of_light: 1, paladin_rebuke: 1, paladin_cleanse: 12, paladin_word_of_glory: 1,
       paladin_light_of_dawn: 15, paladin_divine_shield: 15, paladin_divine_steed: 1, paladin_holy_light: 20, paladin_lay_on_hands: 25,
       paladin_divine_toll: 10, paladin_holy_aura_mastery: 30,
@@ -92,11 +92,11 @@ const PALADIN_SPEC_LIST: SpecDef[] = [
     specials: [
       { id: 'trait_retribution', desc: 'Zincirin üçüncü ve dördüncü vuruşları Kutsal Güç kazandırır; Kanatlar sırasında harcanan her Kutsal Güç bir Sefer yığını verir.', params: { crusadeStacks: 10 } },
     ],
-    skills: [
+    skills: ['paladin_blessing_protection', 'paladin_blessing_freedom', 
       'paladin_crusader_strike', 'paladin_verdict', 'paladin_divine_storm', 'paladin_blade_of_justice', 'paladin_judgement',
       'paladin_wake_of_ashes', 'paladin_divine_steed', 'paladin_rebuke', 'paladin_hammer_of_justice',
     ],
-    unlock: {
+    unlock: { paladin_blessing_protection: 10, paladin_blessing_freedom: 16, 
       paladin_crusader_strike: 1, paladin_verdict: 1, paladin_divine_storm: 1, paladin_rebuke: 1, paladin_blade_of_justice: 12,
       paladin_judgement: 1, paladin_wake_of_ashes: 15, paladin_divine_steed: 1,
       paladin_hammer_of_wrath: 15, paladin_ret_execution: 10, paladin_avenging_wrath: 10, paladin_divine_shield: 15, paladin_hammer_of_justice: 10,
