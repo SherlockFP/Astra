@@ -29,6 +29,9 @@ import { bindQuestMarks } from './world/QuestMarks';
 import { mountMarket, unmountMarket } from '../world/MarketStalls';
 import { PAZAR_MEYDANI, PAZAR_USTASI_AT } from '../data/market';
 import { PVP_MIN_LEVEL, PVP_ZONE_ID } from '../data/pvpZone';
+import { devUnlockOn } from '../systems/BetaTest';
+import { spawnBetaArea } from './BetaArea';
+import { BETA_GUIDE_NPC } from '../data/betaTest';
 
 type NpcDef = TownDef['npcs'][number];
 
@@ -104,7 +107,9 @@ export class TownScene implements GameScene {
     this.camera.updateProjectionMatrix();
     G.ui.showLoading(0.02, 'Kuzgunkale yükleniyor...');
 
-    const defs: NpcDef[] = TOWN.npcs.length ? TOWN.npcs : DEFAULT_TOWN_NPCS;
+    // beta test character only: the Beta Rehberi NPC (its menu is the teleport list); the test corner is spawned after the POIs
+    const townNpcs: NpcDef[] = TOWN.npcs.length ? TOWN.npcs : DEFAULT_TOWN_NPCS;
+    const defs: NpcDef[] = ch.save.beta ? [...townNpcs, BETA_GUIDE_NPC] : townNpcs;
     const usingDefaults = !TOWN.npcs.length;
     try {
       ch.recomputeStats();
@@ -219,6 +224,13 @@ export class TownScene implements GameScene {
 
     // ---- NPCs and interactables ----
     await this.spawnPOIs(world, defs, built, usingDefaults);
+    if (ch.save.beta) {
+      try {
+        await spawnBetaArea(world, this.scene);
+      } catch (e) {
+        console.warn('[town] beta test corner failed', e);
+      }
+    }
     // CM14 Pazar Meydanı: stalls, boards and the Tezgâh Ustası NPC (a failure never blocks entering the town)
     try { mountMarket(this.scene, PAZAR_MEYDANI, { world, npc: PAZAR_USTASI_AT }); } catch (e) { console.warn('[town] market mount failed', e); }
     G.ui.showLoading(0.95, 'Kuzgunkale yükleniyor...');
@@ -290,6 +302,8 @@ export class TownScene implements GameScene {
       const [x, , z] = d.pos;
       const rot = ((d.rot ?? 0) * Math.PI) / 180;
       const id = d.id;
+      // Kadim Yarık Taşı (procedural rifts) is hidden for everyone but the dev tester switch (`?unlock` / efsun.unlock)
+      if (id === 'obj_yarik_tasi' && !devUnlockOn()) continue;
       if (d.role === 'portal') {
         const e = new DungeonPortal(world.allocLocalId(), { dungeonId: d.dungeonId ?? id.replace(/^portal_/, ''), name: d.name, minLevel: d.unlockLevel });
         queue(e, () => e.load(), x, z, rot);

@@ -205,8 +205,11 @@ class Plate {
     const diff = a.level - ctx.playerLevel;
     setStyle(this.lvlEl, 'color', a.kind === 'player' ? '#ffffff' : diff >= 5 ? '#ff4a3a' : diff >= 3 ? '#ff9a3a' : diff >= -2 ? '#ffe050' : '#9ad86a');
     if (this.self) {
-      setText(this.titleEl, ctx.selfTitle);
-      setDisplay(this.titleEl, ctx.selfTitle !== '');
+      // beta test character: a BETA badge under the name (the own plate shows for it even without a title)
+      const betaTag = G.character?.save.beta ? 'BETA' : '';
+      const line = [ctx.selfTitle, betaTag].filter(Boolean).join(' · ');
+      setText(this.titleEl, line);
+      setDisplay(this.titleEl, line !== '');
       setClass(this.el, 'target', false);
       setClass(this.el, 'soft', false);
       return;
@@ -397,7 +400,7 @@ export class Nameplates {
     for (const p of w.players) if (!p.isLocal) consider(p as Player, true);
     // the local player gets a plate only while a title is chosen (name + title, see Plate.self)
     const selfTitle = selectedTitleName(G.character?.save);
-    if (selfTitle) consider(me as Player, true);
+    if (selfTitle || G.character?.save.beta) consider(me as Player, true);
     // placement order: the target and manual plates, then the hot ones (hit / engaged), then nearest first
     cands.sort((x, y) => {
       const rx = x.always ? 0 : x.hot ? 1 : 2;

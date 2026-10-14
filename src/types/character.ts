@@ -113,6 +113,8 @@ export interface CharacterSave {
   // ---- WP-12 pets (systems/Pets.ts). OPTIONAL, created on first use. Append-only.
   /** Learned cosmetic pets (data/pets.ts ids) and the summoned one (absent = none). */
   pets?: PetSave;
+  /** Beta test character (systems/BetaTest.ts): created at the level cap with the tester kit. Shows the BETA badge. Append-only. */
+  beta?: boolean;
 }
 
 /** WP-10: rested XP (accrues logged out or resting in a village / town, see DailyLoop) and the daily login streak. */

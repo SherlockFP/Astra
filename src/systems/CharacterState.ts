@@ -22,6 +22,8 @@ import { teachFromItem } from './Pets';
 import { PET_BY_ID } from '../data/pets';
 import { activeElixirs, computeStats, emptyFx, type SpecialEntry } from './StatCalc';
 import { baseOf, buildFromBase, defaultRng, isEquipmentItem, itemDisplayName, rarityIndex, requiredLevelOf, sellValue, slotsForCategory } from './ItemGen';
+import { applyBetaPreset, BETA_GOLD, BETA_LEVEL } from './BetaTest';
+import { SKILL_MAX } from '../data/professions';
 
 export type ItemLocation =
   | { where: 'bag'; index: number }
@@ -164,11 +166,13 @@ export class CharacterState {
   }
 
   /** New level-1 character with starting gear, potions and default skill bar. `nation` = the creation-screen choice (default: the hash of the id). */
-  static create(name: string, classId: ClassId, variant = 0, nation?: NationId): CharacterState {
+  static create(name: string, classId: ClassId, variant = 0, nation?: NationId, opts: { beta?: boolean } = {}): CharacterState {
     const now = Date.now();
     const newId = 'c' + now.toString(36) + Math.random().toString(36).slice(2, 5);
+    // beta test character (systems/BetaTest.ts): starts at the cap, no starting kit; the preset below fills the gear and the rest
+    const beta = !!opts.beta;
     const save: CharacterSave = {
-      version: SAVE_VERSION, id: newId, nation: isNationId(nation) ? nation : hashNation(newId), name, classId, appearance: { variant }, level: 1, xp: 0, gold: 50,
+      version: SAVE_VERSION, id: newId, nation: isNationId(nation) ? nation : hashNation(newId), name, classId, appearance: { variant }, level: beta ? BETA_LEVEL : 1, xp: 0, gold: beta ? BETA_GOLD : 50,
       createdAt: now, lastPlayed: now, playedSec: 0, equipment: {}, bag: new Array(BAG_SIZE).fill(null), stash: new Array(STASH_SIZE).fill(null),
       materials: { pot_hp_1: 5, pot_res_1: 5, scroll_town: 1 }, talents: [CLASS_START_NODE[classId]], talentRefunds: 0, skillBar: {}, skillRanks: {},
       mythic: { rating: 0, best: {}, weekly: { week: 0, runs: [] }, vaultClaimedWeek: -1, keystone: null },
@@ -178,9 +182,9 @@ export class CharacterState {
     const rng = new RNG((now ^ 0x9e3779b9) >>> 0);
     const ch = new CharacterState(save);
     const defIds = CLASSES[classId]?.startingItems?.filter((id) => ITEM_BASES[id]) ?? [];
-    const gearIds = [...(defIds.length ? defIds : START_GEAR[classId]), ...START_EXTRA_GEAR[classId]];
+    const gearIds = beta ? [] : [...(defIds.length ? defIds : START_GEAR[classId]), ...START_EXTRA_GEAR[classId]];
     // armour pieces from the fallback list that the class def did not include
-    for (const id of START_GEAR[classId]) if (!gearIds.includes(id) && !ITEM_BASES[id]?.weaponDamage && ITEM_BASES[id]?.category !== 'shield' && gearIds.filter((g) => ITEM_BASES[g]?.category === ITEM_BASES[id]?.category).length === 0) gearIds.push(id);
+    for (const id of beta ? [] : START_GEAR[classId]) if (!gearIds.includes(id) && !ITEM_BASES[id]?.weaponDamage && ITEM_BASES[id]?.category !== 'shield' && gearIds.filter((g) => ITEM_BASES[g]?.category === ITEM_BASES[id]?.category).length === 0) gearIds.push(id);
     for (const id of gearIds) {
       const base = ITEM_BASES[id];
       if (!base) continue;
@@ -191,11 +195,12 @@ export class CharacterState {
       if (slot && !save.equipment[slot] && ch.canEquip(it, slot).ok) save.equipment[slot] = it;
       else ch.addItem(it);
     }
-    for (const id of START_BAG[classId]) {
+    for (const id of beta ? [] : START_BAG[classId]) {
       const base = ITEM_BASES[id];
       if (base) ch.addItem(buildFromBase(base, 1, 'common', rng, classId));
     }
-    save.skillBar = CharacterState.defaultBar(classId, 1);
+    save.skillBar = CharacterState.defaultBar(classId, beta ? BETA_LEVEL : 1);
+    if (beta) applyBetaPreset(ch, { skillMax: SKILL_MAX, rng, now });
     ch.recomputeStats(false);
     return ch;
   }

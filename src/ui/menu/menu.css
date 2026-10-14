@@ -279,3 +279,10 @@
 .efs-wl { text-align: center; white-space: nowrap; line-height: 1.15; pointer-events: none; }
 .efs-wl .n { font-family: var(--font-head); font-weight: 700; font-size: 15px; letter-spacing: .05em; text-shadow: 0 0 4px #000, 0 2px 3px #000, 0 0 10px rgba(0,0,0,.85); }
 .efs-wl .s { font-size: 13px; color: #cdb98a; text-shadow: 0 0 4px #000, 0 2px 3px #000; }
+
+/* ------------------------------------------------------------------ beta test character (systems/BetaTest.ts) */
+.efs-beta { display: inline-block; margin-left: 6px; padding: 0 5px; border: 1px solid #e0a040; border-radius: 3px; font-family: var(--font-head); font-size: 10px; letter-spacing: .12em; line-height: 15px; vertical-align: 2px; color: #ffd27a; background: rgba(120, 70, 10, .45); }
+.efs-beta-toggle { display: flex; align-items: flex-start; gap: 8px; margin: 10px 0 2px; padding: 7px 9px; border: 1px dashed #c99a45; border-radius: 4px; cursor: pointer; background: rgba(90, 55, 10, .18); }
+.efs-beta-toggle input { margin-top: 3px; accent-color: #e0a040; }
+.efs-beta-toggle b { display: block; color: #ffd27a; font-size: 14px; }
+.efs-beta-toggle small { display: block; color: #bfae8a; font-size: 12px; line-height: 1.3; margin-top: 2px; }

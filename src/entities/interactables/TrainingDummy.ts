@@ -7,15 +7,25 @@ import { propUrl } from '../../scenes/SceneKit';
 import { disposeFlashClones, mapMeshMaterials } from '../sharedMaterials';
 import type { WorldLabelHandle } from '../../ui/UI';
 import type { World } from '../../world/World';
+import { TANK_DUMMY } from '../../data/betaTest';
 
-export type DummyKind = 'normal' | 'elite' | 'boss' | 'small';
+export type DummyKind = 'normal' | 'elite' | 'boss' | 'small' | 'tank';
 
 const DUMMY_NAMES: Record<DummyKind, string> = {
   normal: 'Eğitim Kuklası',
   elite: 'Elit Kukla',
   boss: 'Boss Kuklası',
   small: 'Grup Kuklası',
+  tank: 'Tank Kuklası',
 };
+
+/** Damage per window of the DPS meter: the sum of the hits of the last `window` seconds (divided by the window). */
+export function dpsOfHits(hits: readonly { t: number; amount: number }[], now: number, window = 5): number {
+  const from = now - window;
+  let sum = 0;
+  for (const h of hits) if (h.t >= from) sum += h.amount;
+  return sum / window;
+}
 
 function dummyDef(kind: DummyKind): EnemyDef | BossDef {
   const base: EnemyDef = {
@@ -61,6 +71,7 @@ export class TrainingDummy extends Enemy {
   private label: WorldLabelHandle | null = null;
   private labelTimer = 0;
   private off: (() => void) | null = null;
+  private strikeT = TANK_DUMMY.strikeEvery;
 
   constructor(id: number, kind: DummyKind = 'normal') {
     super(id, dummyDef(kind));
@@ -77,7 +88,7 @@ export class TrainingDummy extends Enemy {
     const m = G.assets.instantiate(url);
     m.scale.setScalar(this.def.scale);
     // one shared material per dummy kind (hit flashes clone their own copy, so one flash never lights up every dummy)
-    const tintHex = this.dummyKind === 'elite' ? 0xffd070 : this.dummyKind === 'boss' ? 0xff8a7a : undefined;
+    const tintHex = this.dummyKind === 'elite' ? 0xffd070 : this.dummyKind === 'boss' ? 0xff8a7a : this.dummyKind === 'tank' ? 0x7fb0ff : undefined;
     mapMeshMaterials(m, (src) =>
       Assets.sharedMaterial(src, tintHex === undefined ? 'plain' : `color|${tintHex}`, (c) => {
         const mat = c as THREE.MeshStandardMaterial;
@@ -149,17 +160,15 @@ export class TrainingDummy extends Enemy {
 
   private dps(now: number): number {
     const from = now - 5;
-    let sum = 0;
     while (this.hits.length && this.hits[0].t < from - 1) this.hits.shift();
-    for (const h of this.hits) if (h.t >= from) sum += h.amount;
-    return sum / 5;
+    return dpsOfHits(this.hits, now, 5);
   }
 
   private labelHtml(): string {
     const now = this.world?.time ?? 0;
     const active = now - this.lastHit < 6;
     const dps = active ? Math.round(this.dps(now)) : 0;
-    const col = this.dummyKind === 'boss' ? '#ff8a7a' : this.dummyKind === 'elite' ? '#ffd070' : '#e8e2d2';
+    const col = this.dummyKind === 'boss' ? '#ff8a7a' : this.dummyKind === 'elite' ? '#ffd070' : this.dummyKind === 'tank' ? '#9fd0ff' : '#e8e2d2';
     return `<div class="efs-wl"><div class="n" style="color:${col}">${DUMMY_NAMES[this.dummyKind]}</div><div class="s" style="color:${active ? '#9fe8ff' : '#8a8f98'}">${
       active ? `DPS ${dps.toLocaleString('tr-TR')} · Toplam ${Math.round(this.total).toLocaleString('tr-TR')}` : 'Vur ve hasarını ölç'
     }</div></div>`;
@@ -169,6 +178,7 @@ export class TrainingDummy extends Enemy {
     super.update(dt);
     this.hp = this.maxHp;
     this.alive = true;
+    if (this.dummyKind === 'tank') this.tankStrike(dt);
     // spring wobble
     const w = this.wob;
     w.vx += -w.x * 60 * dt - w.vx * 5.5 * dt;
@@ -184,6 +194,17 @@ export class TrainingDummy extends Enemy {
       this.labelTimer = 0.25;
       this.label?.setText(this.labelHtml());
     }
+  }
+
+  /** Tank dummy: hits back. Every TANK_DUMMY.strikeEvery seconds a blow of hpFrac of max HP lands on the local player within range. */
+  private tankStrike(dt: number): void {
+    this.strikeT -= dt;
+    if (this.strikeT > 0) return;
+    this.strikeT = TANK_DUMMY.strikeEvery;
+    const p = G.world?.localPlayer ?? G.player;
+    if (!p || p.isDead || !p.isLocal) return;
+    if (Math.hypot(p.position.x - this.position.x, p.position.z - this.position.z) > TANK_DUMMY.range) return;
+    G.combat?.hitLocalPlayer({ sourceId: this.id, amount: Math.max(1, Math.round(p.maxHp * TANK_DUMMY.hpFrac)), type: 'physical', melee: true, parryable: true, abilityName: 'Tank Vuruşu' });
   }
 
   onRemoved(): void {

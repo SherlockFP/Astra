@@ -13,6 +13,7 @@
  */
 import { G } from '../game/G';
 import type { SkillSlotKey } from '../types/skills';
+import type { ClassId } from '../types/common';
 import type { SlotId, TalentBuild, TalentLoadout, TreeDef, TreeKind, TreeNodeDef } from '../types/talents';
 import type { SpecId } from '../types/v2';
 import { SKILLS } from '../data/skills';
@@ -155,6 +156,27 @@ function pointsOf(node: TreeNodeDef, v: number): number {
 
 function optionIndexOf(node: TreeNodeDef, v: number): number {
   return isChoice(node) && v === 2 ? 1 : 0;
+}
+
+/**
+ * Skill ids a build grants (taken `G` nodes of the class tree and the spec tree, GDD_TALENTS §2.3). Pure: `cls` / `spc` are the
+ * point arrays of the build. TalentSystem.grantedSkills uses it for the committed build; systems/BetaTest.ts for the beta kit.
+ */
+export function grantedSkillsOf(classId: ClassId, specId: SpecId, cls: readonly number[], spc: readonly number[]): string[] {
+  const out: string[] = [];
+  for (const kind of ['class', 'spec'] as const) {
+    const tree = getTree(kind, kind === 'class' ? classId : specId);
+    if (!tree) continue;
+    const arr = kind === 'class' ? cls : spc;
+    tree.nodes.forEach((node, i) => {
+      const v = arr[i] ?? 0;
+      if (!v) return;
+      const o = node.options[optionIndexOf(node, v)];
+      if (!o) return;
+      for (const g of grantsOf(o.fx)) if (!out.includes(g)) out.push(g);
+    });
+  }
+  return out;
 }
 
 function letterOf(node: TreeNodeDef, v: number): 'A' | 'B' | undefined {
@@ -568,22 +590,10 @@ export class TalentSystem {
   /** Skill ids granted by the committed build (taken `G` nodes of both trees of the active spec, §2.3). */
   grantedSkills(): string[] {
     const spec = this.specId;
-    if (!spec) return [];
+    const char = G.character;
+    if (!spec || !char) return [];
     const comm = this.committed();
-    const out: string[] = [];
-    for (const kind of ['class', 'spec'] as const) {
-      const tree = this.tree(kind);
-      if (!tree) continue;
-      const arr = this.arrayOf(kind, comm);
-      tree.nodes.forEach((node, i) => {
-        const v = arr[i] ?? 0;
-        if (!v) return;
-        const o = node.options[optionIndexOf(node, v)];
-        if (!o) return;
-        for (const g of grantsOf(o.fx)) if (!out.includes(g)) out.push(g);
-      });
-    }
-    return out;
+    return grantedSkillsOf(char.save.classId, spec, comm.cls, comm.spc);
   }
 
   /** Picked option of a signature skill's tier in the working build: 0 none, 1 A, 2 B. */

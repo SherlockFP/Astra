@@ -20,6 +20,8 @@ export interface CharRow {
   level: number;
   rating: number;
   lastPlayed: number;
+  /** Beta test character (BETA badge). */
+  beta?: boolean;
 }
 
 export interface MenuCallbacks {
@@ -35,6 +37,8 @@ export interface MenuCallbacks {
   onPickVariant(i: number): void;
   /** WP-06: nation picked on the creation screen (Gök Kartal / Kızıl Kurt). Optional: older callers need not pass it. */
   onPickNation?(id: NationId): void;
+  /** Beta test toggle on the creation screen (the character starts at the level cap with the tester kit). */
+  onPickBeta?(on: boolean): void;
   /** Returns an error message to show (null = accepted). */
   onSubmitCreate(name: string): string | null;
   onValidateName(name: string): string | null;
@@ -88,6 +92,7 @@ export class MenuUI {
   private swatchEls: HTMLElement[] = [];
   private nationCards = new Map<NationId, HTMLElement>();
   private nameInput!: HTMLInputElement;
+  private betaBox!: HTMLInputElement;
   private errEl!: HTMLElement;
   private variantName!: HTMLElement;
   private createBtn!: HTMLButtonElement;
@@ -171,7 +176,7 @@ export class MenuUI {
           onmouseenter: () => this.cb.onUiSound('hover'),
         },
         h('div.efs-icon', { style: iconStyle(p.icon, p.color) }),
-        h('div', null, h('div.nm', null, r.name), h('div.meta', null, `Sv. ${r.level} ${p.name}`)),
+        h('div', null, h('div.nm', null, r.name, r.beta ? h('span.efs-beta', { title: 'Beta test karakteri' }, 'BETA') : null), h('div.meta', null, `Sv. ${r.level} ${p.name}`)),
         r.rating > 0 ? h('div.rt', null, h('div', null, 'Mitik+'), h('div', null, String(Math.round(r.rating)))) : null,
       );
       list.append(el);
@@ -251,6 +256,16 @@ export class MenuUI {
     });
     this.variantName = h('div.efs-vname');
     l.append(sw, this.variantName);
+
+    // beta test character: a checkbox row (the state is read by MenuScene at Oluştur)
+    this.betaBox = h('input', {
+      type: 'checkbox',
+      onchange: () => {
+        this.cb.onUiSound('click');
+        this.cb.onPickBeta?.(this.betaBox.checked);
+      },
+    }) as HTMLInputElement;
+    l.append(h('label.efs-beta-toggle', null, this.betaBox, h('span', null, h('b', null, 'Beta Test Karakteri (Sv. 60)'), h('small', null, 'Seviye 60, tam kuşanma, tüm puanlar ve yetenekler, 100k altın, PvP para birimleri, Test Alanı ve Beta Rehberi.'))));
 
     // name + Oluştur / Geri live in a footer that stays pinned at the bottom of the (scrollable) panel on short screens
     const foot = h('div.efs-createfoot', null, h('div.efs-label', null, 'Kahraman Adı'));
@@ -342,6 +357,10 @@ export class MenuUI {
   resetCreateForm(): void {
     this.nameInput.value = '';
     this.setNameError(null);
+  }
+  /** Beta toggle state (the creation screen remembers the last choice of the session). */
+  setBeta(on: boolean): void {
+    if (this.betaBox) this.betaBox.checked = on;
   }
 
   // ------------------------------------------------------------------ mode
