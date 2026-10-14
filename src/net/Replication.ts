@@ -5,13 +5,16 @@ import { minionDef } from '../data/minions';
 import type { MinionSync } from '../types/minions';
 import type { Enemy, EnemySyncState } from '../entities/Enemy';
 import type { World } from '../world/World';
-import { HOST_DYNAMIC_ID_BASE, MINION_ID_BASE, PARTY_ID_BASE, RARITY_ORDER } from '../types/common';
+import { HOST_DYNAMIC_ID_BASE, MINION_ID_BASE, PARTY_ID_BASE, RARITY_ORDER, type EntityId } from '../types/common';
 import type { EquipSlot, ItemInstance } from '../types/items';
 import type { NetChannels } from '../types/net';
+import type { StatusId } from '../types/skills';
 import type { NetSession, PeerInfo } from './NetSession';
-import { NET, clampNum, ident, isObj, sanitizeText } from './messages';
+import { MAX_SLOTS, NET, clampNum, ident, isObj, sanitizeText } from './messages';
 import { syncYOk } from './guard';
 import { PetFollower } from '../game/Pet';
+import { setRemoteMounted } from '../game/Mount';
+import { STATUSES } from '../data/statuses';
 
 /**
  * Replication (net module): turns the typed `pstate` / `gear` / `snap` channels into entities.
@@ -31,6 +34,12 @@ import { PetFollower } from '../game/Pet';
  *
  * Interpolation time base is G.engine.time: sender timestamps are mapped onto the local clock with a min-filtered
  * offset (de-jittered), so remote motion is evenly spaced even when packets arrive in bursts.
+ * sprint1 additions (see docs/NETCODE.md section 19):
+ *  - pstate flag 4 = `mounted`: a remote rider gets the horse (game/Mount.ts setRemoteMounted), dropped when the flag clears.
+ *  - pets: remote pets follow the lobby presence (`pet`), once a second; a hidden owner hides its pet (game/Pet.ts).
+ *  - cleanse: a dispel on a REMOTE party member (dispelUpTo on an ally) is a request to the host (`req` kind 'cleanse'). The host
+ *    validates it (caster and owner in the party, dispellable debuff that the owner really has, range, rate limit) and sends the
+ *    `cleanse` channel to the owner, which removes the status from its own character.
  * Everything received is untrusted: values are clamped / sanitised before touching entities. Nothing here throws
  * from the frame loop.
  */
@@ -66,6 +75,36 @@ export interface ReplicationStats {
 }
 
 type PStateIn = PlayerSyncState & { t: number };
+
+/** sprint1 cleanse: a little over the heal range (combat/healing.ts HEAL_RANGE = 30 m); both positions are a few hundred ms old. */
+const CLEANSE_RANGE = 36;
+/** sprint1 cleanse rate limit per requesting peer (token bucket): a burst of 8, refilled 4 per second. */
+const CLEANSE_BURST = 8;
+const CLEANSE_PER_S = 4;
+
+/** The host's view of one peer, from its last pstate (cleanse validation). */
+interface PeerView {
+  x: number;
+  z: number;
+  dead: boolean;
+  statuses: string[];
+}
+
+/** One party member as the host sees it when it validates a cleanse. */
+interface MemberView {
+  id: number;
+  x: number;
+  z: number;
+  dead: boolean;
+  statuses: Set<string>;
+}
+
+/** A status a cleanse may remove: kind debuff with `dispellable` (data/statuses.ts). Unknown and inherited keys are refused. */
+function isRemovableDebuff(id: string): boolean {
+  if (!Object.prototype.hasOwnProperty.call(STATUSES, id)) return false;
+  const def = STATUSES[id as StatusId];
+  return !!def && def.kind === 'debuff' && def.dispellable === true;
+}
 
 const VISIBLE_SLOTS: EquipSlot[] = ['weapon', 'offhand', 'helm'];
 const TELEPORT_DIST = 10;
@@ -171,11 +210,22 @@ export class Replication {
   private minionsLive = false;
   /** NC43 receiver: remote Minion copies by entity id. */
   private readonly remoteMinions = new Map<number, RemoteMinion>();
+  /** sprint1: the local character rides a mount (`player:mounted`), sent as the pstate `mounted` flag. */
+  private localMounted = false;
+  /** sprint1 host: last pstate view of every peer, for cleanse validation. */
+  private readonly peerView = new Map<string, PeerView>();
+  /** sprint1 host: cleanse token bucket per requesting peer. */
+  private readonly cleanseTokens = new Map<string, { n: number; at: number }>();
 
   constructor(private readonly net: NetSession) {
     const ev = G.events;
     this.unsubs.push(
       ev.on('scene:leaving', () => this.onSceneLeaving()),
+      ev.on('player:mounted', ({ on }) => {
+        this.localMounted = on === true;
+      }),
+      // sprint1 cleanse: a dispel that took a debuff off a REMOTE party member's copy is asked of the host (caster side)
+      ev.on('status:removed', (e) => this.onStatusRemoved(e)),
       ev.on('scene:changed', () => this.onSceneChanged()),
       ev.on('net:peerJoined', ({ peerId }) => this.onPeerJoined(peerId)),
       ev.on('net:peerLeft', ({ peerId }) => {
@@ -189,6 +239,9 @@ export class Replication {
       net.on('gear', (p, from) => this.onGear(p, from)),
       net.on('snap', (p, from) => this.onSnap(p, from)),
       net.on('minion', (p, from) => this.onMinion(p, from)),
+      // sprint1 cleanse: the host validates the request (every peer registers, only the host ever receives it) and the owner applies it
+      net.onRequest('cleanse', (data, from) => this.onCleanseRequest(data, from)),
+      net.on('cleanse', (p, from) => this.onCleanse(p, from)),
     );
   }
 
@@ -212,6 +265,8 @@ export class Replication {
     if (!active) {
       for (const id of [...this.remotes.keys()]) this.removeRemote(id);
       this.clearMinions();
+      this.peerView.clear();
+      this.cleanseTokens.clear();
       this.pending.clear();
       this.gearCache.clear();
       this.lookCache.clear();
@@ -280,7 +335,12 @@ export class Replication {
   private onSceneLeaving(): void {
     // The old world is disposed by its scene; just forget our references. Every peer rebuilds its world on a scene
     // change, so what was announced / sent before no longer applies.
+    for (const rec of this.remotes.values()) {
+      rec.pet.dispose();
+      setRemoteMounted(rec.player, false);
+    }
     this.remotes.clear();
+    this.peerView.clear();
     this.pending.clear();
     this.remoteMinions.clear();   // the old world is disposed by its scene
     this.lastMinionSig = '';
@@ -374,6 +434,7 @@ export class Replication {
     const finish = () => {
       if (this.remotes.get(peer.peerId) !== rec || !this.active || G.world !== world) {
         rec.pet.dispose();
+        setRemoteMounted(player, false);
         player.removed = true;
         player.onRemoved();
         return;
@@ -399,10 +460,13 @@ export class Replication {
     this.lookCache.delete(peerId);
     this.gearSig.delete(peerId);
     this.clocks.delete(peerId);
+    this.peerView.delete(peerId);
+    this.cleanseTokens.delete(peerId);
     const rec = this.remotes.get(peerId);
     if (!rec) return;
     this.remotes.delete(peerId);
     rec.pet.dispose();
+    setRemoteMounted(rec.player, false);
     if (rec.added) {
       try {
         rec.world.remove(rec.player);
@@ -438,6 +502,7 @@ export class Replication {
       rec.hasPos = true;
       pl.object3d.visible = true;
     }
+    setRemoteMounted(pl, st.mounted === true); // sprint1: the replicated ride state (no-op when unchanged)
     pl.applySyncState(st, mapped);
   }
 
@@ -453,9 +518,9 @@ export class Replication {
       x: r2(s.x), y: r2(s.y), z: r2(s.z), yaw: r2(s.yaw), vx: r1(s.vx), vz: r1(s.vz), anim: s.anim,
       hp: Math.round(s.hp), maxHp: Math.round(s.maxHp), res: Math.round(s.res), maxRes: Math.round(s.maxRes), dead: s.dead,
       casting: s.casting ?? null, level: s.level, dodging: s.dodging ?? false, statuses: s.statuses ?? [],
-      shot: s.shot ?? null, shotSeq: s.shotSeq ?? 0,
+      shot: s.shot ?? null, shotSeq: s.shotSeq ?? 0, mounted: this.localMounted,
     };
-    const sig = `${q.x}|${q.y}|${q.z}|${q.yaw}|${q.anim}|${q.hp}|${q.maxHp}|${q.res}|${q.dead}|${q.casting}|${q.level}|${q.dodging}|${q.shot}|${q.shotSeq}|${q.statuses!.join(',')}`;
+    const sig = `${q.x}|${q.y}|${q.z}|${q.yaw}|${q.anim}|${q.hp}|${q.maxHp}|${q.res}|${q.dead}|${q.casting}|${q.level}|${q.dodging}|${q.shot}|${q.shotSeq}|${q.mounted}|${q.statuses!.join(',')}`;
     if (sig === this.lastPSig && now - this.lastPAt < NET.IDLE_STATE_INTERVAL_S) return;
     this.lastPSig = sig;
     this.lastPAt = now;
@@ -470,6 +535,7 @@ export class Replication {
     const st = cleanPState(p);
     if (!st) return;
     this.stats.pstateRecv++;
+    this.peerView.set(from, { x: st.x, z: st.z, dead: st.dead, statuses: st.statuses ?? [] });
     const rec = this.remotes.get(from);
     if (!rec || !rec.added) {
       this.pending.set(from, st);
@@ -477,6 +543,85 @@ export class Replication {
       return;
     }
     this.applyState(rec, st);
+  }
+
+  /* ================================================================================================
+   * cleanse (sprint1): a dispel on a REMOTE party member
+   * ============================================================================================== */
+
+  private remoteById(id: number): Remote | undefined {
+    for (const rec of this.remotes.values()) if (rec.player.id === id) return rec;
+    return undefined;
+  }
+
+  /** Caster side: a dispel took a debuff off a REMOTE party member's copy. Ask the host; the owner removes it for real. */
+  private onStatusRemoved(e: { targetId: number; status: string; reason?: string }): void {
+    if (!this.active || e.reason !== 'dispel' || !isRemovableDebuff(e.status)) return;
+    if (!this.remoteById(e.targetId)) return;
+    this.net.sendRequest('cleanse', { target: e.targetId, status: e.status });
+  }
+
+  /** A party member as the host sees it (the local player is read live, a remote one from its last pstate). */
+  private memberView(peerId: string): MemberView | null {
+    if (peerId === this.net.selfId) {
+      const me = G.player;
+      if (!me) return null;
+      return { id: me.id, x: me.position.x, z: me.position.z, dead: me.isDead, statuses: new Set(me.statuses.list().map((s) => s.id)) };
+    }
+    const peer = this.net.peers.get(peerId);
+    const v = this.peerView.get(peerId);
+    if (!peer || !v) return null;
+    return { id: PARTY_ID_BASE + peer.slot, x: v.x, z: v.z, dead: v.dead, statuses: new Set(v.statuses) };
+  }
+
+  /** Token bucket per requesting peer (CLEANSE_BURST, refilled CLEANSE_PER_S a second). Every request costs one token. */
+  private takeCleanseToken(peerId: string): boolean {
+    const now = G.engine.time;
+    const b = this.cleanseTokens.get(peerId) ?? { n: CLEANSE_BURST, at: now };
+    b.n = Math.min(CLEANSE_BURST, b.n + Math.max(0, now - b.at) * CLEANSE_PER_S);
+    b.at = now;
+    this.cleanseTokens.set(peerId, b);
+    if (b.n < 1) return false;
+    b.n -= 1;
+    return true;
+  }
+
+  /**
+   * Host: a caster (a client, or the host itself through sendRequest) asks to remove `status` from `target`. Every check runs here:
+   * the caster is a live party member, the rate limit, the target is a party entity other than the caster, the status is a
+   * dispellable debuff that the owner really has (its last pstate), and both are within CLEANSE_RANGE. Only then the owner is told.
+   */
+  private onCleanseRequest(data: Record<string, unknown>, from: string): void {
+    if (!this.active || this.net.role !== 'host') return;
+    const caster = this.memberView(from);
+    if (!caster || caster.dead) return;
+    if (!this.takeCleanseToken(from)) return;
+    const target = typeof data.target === 'number' && Number.isInteger(data.target) ? data.target : NaN;
+    const status = typeof data.status === 'string' ? data.status : '';
+    if (!isRemovableDebuff(status)) return;
+    if (!(target >= PARTY_ID_BASE && target < PARTY_ID_BASE + MAX_SLOTS) || target === caster.id) return;
+    const owner = this.net.peerOfEntity(target);
+    if (!owner) return;
+    const view = this.memberView(owner);
+    if (!view || view.dead || !view.statuses.has(status)) return;
+    if (Math.hypot(caster.x - view.x, caster.z - view.z) > CLEANSE_RANGE) return;
+    if (owner === this.net.selfId) this.applyCleanse(status);
+    else this.net.sendTo(owner, 'cleanse', { id: target as EntityId, status: status as StatusId, by: caster.id as EntityId });
+  }
+
+  /** Owner-authoritative removal on our own StatusEffects. Only a dispellable debuff; a dead character keeps its statuses. */
+  private applyCleanse(status: string): void {
+    const me = G.player;
+    if (!me || me.isDead || !isRemovableDebuff(status)) return;
+    me.statuses.dispel(status as StatusId);
+  }
+
+  /** Owner: the host passed a validated cleanse on. Accept it only from the host, for our own entity, for a removable debuff. */
+  private onCleanse(p: unknown, from: string): void {
+    if (!this.active || this.net.role !== 'client' || from !== this.net.hostId || !isObj(p)) return;
+    const me = G.player;
+    if (!me || p.id !== me.id || typeof p.status !== 'string') return;
+    this.applyCleanse(p.status);
   }
 
   /* ================================================================================================
@@ -887,6 +1032,7 @@ function cleanPState(p: unknown): PStateIn | null {
     casting: typeof p.casting === 'string' ? ident(p.casting, 48) || null : null,
     level: Math.round(fin(p.level, 1, 60, 1)),
     dodging: p.dodging === true,
+    mounted: p.mounted === true,
     statuses,
     shot: typeof p.shot === 'string' ? clip(p.shot, 64) || null : null,
     shotSeq: Math.round(fin(p.shotSeq, 0, 2 ** 31, 0)),

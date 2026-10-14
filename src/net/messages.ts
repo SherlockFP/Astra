@@ -367,6 +367,7 @@ export const KNOWN_CHANNELS: ReadonlySet<string> = new Set<NetChannel>([
   'camp', 'home', 'pvp', // GDD_ITEMS_V2 / GDD_LIFE contracts
   'dungeon_event', // K8 (P-12): host-authoritative dungeon event flags
   'arena', // GDD_PVP_FINDER §3.5.2: host-authored arena state (start, phase, damp, out, forfeit, result)
+  'cleanse', // sprint1: host -> owner, the owner removes one dispellable debuff from its own character (net/Replication.ts)
 ]);
 
 /** Channels only the HOST may originate: a client's envelope on these is dropped by the host, and clients ignore relayed copies. */
@@ -374,6 +375,7 @@ export const HOST_ONLY_CHANNELS: ReadonlySet<string> = new Set<NetChannel>([
   'snap', 'spawn', 'dmg', 'death', 'estatus', 'ecast', 'hitshape', 'hitshape_x', 'run', 'affix', 'scene', 'threat', 'dungeon_event',
   'pvp', // WP-07: hit delivery, capture state, scoreboard and kill feed are host-authored; clients ask through the existing `hit` channel
   'arena',
+  'cleanse', // the owner's removal is decided by the host (range, rate, caster); a client cannot send it
 ]);
 
 /**

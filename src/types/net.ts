@@ -169,6 +169,9 @@ export interface NetChannels {
   shopSold: ShopSoldMsg;
   // ---- GDD_PVP_FINDER (PV-00/PV-04). Owner: scenes/arena/ArenaController.ts (sends AND registers). Host-only origin.
   arena: ArenaMsg;
+  // ---- sprint1 (append-only). Owner: net (Replication). Host -> owner only: remove one dispellable debuff from the owner's own character
+  // after a dispel on that party member was validated by the host (range, rate, caster). Never a client origin.
+  cleanse: { id: EntityId; status: StatusId; by: EntityId };
 }
 
 export type NetChannel = keyof NetChannels;

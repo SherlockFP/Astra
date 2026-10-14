@@ -748,3 +748,26 @@ Limits: damage is attacker-computed (cheat surface = the capped, rate-limited, r
 **Limits / threat model.** Same as any host-authoritative room, with strangers in it: the host decides enemies, loot rolls, events; per-peer rate limits and vetting of `guard.ts` apply; `sceneRequest` is ignored in a channel; a hello needs the channel key; `rehome` / `hostleft` / `cledger` count only from the current host. A hostile first-minute host can still misbehave as a host (the usual P2P caveat); presence counts are self-asserted. The mesh is 11 WebRTC links per player at 12.
 
 **Test / gates.** `node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/channels.mjs` (pure rules, join / overflow / stale-presence race, election and split-brain merge, migration incl. silent loss, double loss, ledger, party follow, `/kanal`, interest rates, load table; the REAL `NetSession` per simulated player on a fake transport, ~20 s mostly sleeping) next to `social`, `guild`, `pvp`, `minions_net`, `market`.
+
+---
+
+## 19. Mounts, pets and cleanse on remote players (sprint1)
+
+Test: `node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/netsync.mjs` (real `Replication`, `codec` and `Social` with fake transports). `minions_net.mjs` and `pets.mjs` cover the neighbouring paths.
+
+**Mount (`mounted`).** The owner's pstate carries `mounted` as flag bit 4 (`net/codec.ts`: 1 dead, 2 dodging, 4 mounted). It is append-only: an older peer ignores the bit and reads "not mounted". The sender takes the flag from the local `player:mounted` event (game/Mount.ts), and it is part of the change signature, so a mount or dismount goes out on the next pstate. A receiver shows the horse with `setRemoteMounted(player, on)` (game/Mount.ts): one horse per remote rider, model lifted as for the local rider. The horse is removed when the flag clears, when the peer leaves (`net:peerLeft`) and on a scene change. A non-boolean flag counts as "not mounted".
+
+**Pets (presence).** A pet is not in pstate. The owner announces `pet` in the lobby presence (`lpres`, systems/Social.ts); a change goes out on the next 1 s tick. `Replication.syncPets()` (once a second) sets each remote `PetFollower` from `G.presence`. The remote follower sits behind and beside its owner with the local offsets. It hides with a hidden owner and re-anchors when the owner shows again, so it does not slide in from the origin (game/Pet.ts). It is released on a scene change and goes when the presence expires. Local mode (`?net=local`) uses one session id for the lobby and game transports, so the lookup holds there too.
+
+**Cleanse (`cleanse`).** A dispel that takes a debuff off a REMOTE party member's copy (`StatusEffects.dispel`, reached through `dispelUpTo` on an ally: the paladin, priest and monk rows, the ally majors and Panzehir) emits `status:removed` with reason `dispel`. The caster's Replication turns that into the request `req 'cleanse' {target, status}` to the host. The host (`Replication.onCleanseRequest`) accepts only when all of these hold:
+
+- the caster is a live party member and has a token (burst 8, refilled 4 a second per peer, spent on every request that passes the caster check);
+- `target` is a party entity id other than the caster's;
+- the status is a `kind: 'debuff'` with `dispellable` (data/statuses.ts), and the owner's last pstate lists it (the host's own character is read live);
+- caster and owner are within 36 m (heal range 30 plus a lag margin), and the owner is alive.
+
+The host then sends the host-only channel `cleanse {id, status, by}` to the owner. The owner applies it to its own StatusEffects only if it comes from the host, names its own entity id and the status is a removable debuff. The owner's next pstate drops the status from every copy. A host casting on a party member runs the same path locally, and the host's own character is the owner in the same way.
+
+Wire: `cleanse` is in `KNOWN_CHANNELS` and `HOST_ONLY_CHANNELS` (messages.ts); the typed payload is `NetChannels['cleanse']` (types/net.ts). The pstate flag is bit 4. `PROTOCOL_VERSION` is unchanged: both changes are append-only, and an older client drops the unknown channel.
+
+Limits: a stack-loss dispel (arcane_lockdown `onDispel`) keeps the status on the owner, so it is not replicated. Only a full removal is. The caster's copy shows the removal at once and the owner's next pstate settles it. The paladin's Özgürlük Duası removes its movement locks with `statuses.remove` (combat/skills/sharedBehaviors.ts, not a dispel), so that removal is not replicated yet: a generic `remove` hook would also catch the remote state sync, so it needs a combat-side change.

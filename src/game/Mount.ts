@@ -8,7 +8,8 @@ import { psxMaterial } from '../world/ProceduralAssets';
  * cancelled by a move, damage, a skill or attack, or by entering combat. Mounted: +MOUNT_SPEED_MUL run speed (PlayerController
  * applies it), the character is lifted onto a voxel horse parented under the player, and the mount drops on attack / skill cast,
  * taking damage, entering combat, death, a scene change, or pressing the mount key again. Jumping keeps the mount.
- * Not in dungeons. Remote players do not see it (no net field carries it; local-only).
+ * Not in dungeons. Remote players see it: the owner sends `mounted` in its pstate (net/Replication.ts) and the receiver shows the same
+ * horse through setRemoteMounted() (sprint1).
  */
 
 export const MOUNT_LEVEL = 10;
@@ -62,6 +63,30 @@ function buildHorse(): { root: THREE.Group; dispose(): void } {
       saddle.dispose();
     },
   };
+}
+
+/** Horses of remote riders (one per Player while its pstate says mounted). */
+const remoteHorses = new WeakMap<Player, { root: THREE.Group; dispose(): void }>();
+
+/**
+ * Shows (on) or removes (off) the horse of a REMOTE player, driven by its replicated `mounted` flag. Idempotent. The remote model is
+ * lifted by MOUNT_LIFT like the local one. Removing a remote who is not mounted is a no-op.
+ */
+export function setRemoteMounted(player: Player, on: boolean): void {
+  const cur = remoteHorses.get(player);
+  if (on) {
+    if (cur) return;
+    const horse = buildHorse();
+    player.object3d.add(horse.root);
+    player.modelLift = MOUNT_LIFT;
+    remoteHorses.set(player, horse);
+    return;
+  }
+  if (!cur) return;
+  remoteHorses.delete(player);
+  cur.root.removeFromParent();
+  cur.dispose();
+  player.modelLift = 0;
 }
 
 export class MountRider {

@@ -214,7 +214,7 @@ const tauntDef = (minTargets) => ({
   const fakeNet = {
     peers: new Map([['me', { peerId: 'me', slot: 0, name: 'Ben' }], ['peerB', { peerId: 'peerB', slot: 1, name: 'B' }]]),
     selfId: 'me', role: 'host', isAuthority: true, isOnline: true, sceneIsReady: true, localSlot: 0,
-    on: () => () => {}, broadcast: (c, pl) => sent.push([c, pl]), sendTo() {}, sendToHost() {}, remotePeers: () => [],
+    on: () => () => {}, onRequest: () => () => {}, broadcast: (c, pl) => sent.push([c, pl]), sendTo() {}, sendToHost() {}, remotePeers: () => [],
   };
   const rep = new Replication(fakeNet);
   rep.setActive(true);
