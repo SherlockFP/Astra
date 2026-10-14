@@ -89,8 +89,8 @@ ok('pmpa.ids majors per spec', KOR.majors.m45 === 'paladin_avenging_wrath' && KO
   && HOL.majors.m45 === 'paladin_divine_toll' && HOL.majors.m90 === 'paladin_avenging_wrath' && HOL.majors.m180 === 'paladin_holy_aura_mastery'
   && RET.majors.m45 === 'paladin_ret_execution' && RET.majors.m90 === 'paladin_avenging_wrath' && RET.majors.m180 === 'paladin_divine_shield');
 ok('pmpa.ids roles + main stats', KOR.role === 'tank' && HOL.role === 'healer' && RET.role === 'dps' && KOR.mainStat === 'str' && HOL.mainStat === 'int' && RET.mainStat === 'str');
-ok('pmpa.ids Kutsal basic is the heal-bolt chain, Rebuke is in the Kutsal / Ceza lists but not in Koruma\'s', HOL.basic === 'paladin_holy_basic'
-  && HOL.skills.includes('paladin_rebuke') && RET.skills.includes('paladin_rebuke') && !KOR.skills.includes('paladin_rebuke'));
+ok('pmpa.ids Kutsal basic is the heal-bolt chain, Rebuke is in all three spec lists (Koruma too)\'s', HOL.basic === 'paladin_holy_basic'
+  && HOL.skills.includes('paladin_rebuke') && RET.skills.includes('paladin_rebuke') && KOR.skills.includes('paladin_rebuke'));
 ok('pmpa.ids Ceza gets Gazap Çekici from the s05 tree node', RET.treeSkills?.paladin_hammer_of_wrath === 's05');
 ok('pmpa.ids SPECS merge holds the three paladin specs', !!SPECS.paladin_protection && !!SPECS.paladin_holy && !!SPECS.paladin_retribution);
 {
@@ -300,6 +300,7 @@ for (const spec of [KOR, RET]) {
   ok('pmpa.hol Avenging Wrath opens hammer_window with 2 stacks', p.statuses.stacks('hammer_window') === 2, `stacks=${p.statuses.stacks('hammer_window')}`);
   ok('pmpa.hol Kutsal Hüküm button is Işık Çekici', G.skills.getSlotSkill(p, 'q') === 'paladin_hammer_of_light');
   G.skills.addPip(p, 'holypower', 5);
+  p.stats.critChance = -1; // no crit: the ratio below compares exact amounts
   const hits = [];
   const orig = G.skills.strike.bind(G.skills);
   G.skills.strike = (c, t, o = {}) => { const r = orig(c, t, o); if (c.def.id === 'paladin_hammer_of_light' && r) hits.push({ id: t.id, more: o.more ?? 1, amount: r.amount, crit: !!r.crit }); return r; };
@@ -318,7 +319,7 @@ for (const spec of [KOR, RET]) {
   const prim = hits.filter((h) => h.id === e.id);
   const sp = hits.filter((h) => h.id !== e.id);
   ok('pmpa.hol primary hit twice, neighbours hit at x0.5', prim.length === 2 && sp.length === 4 && sp.every((h) => near(h.more, 0.5, 1e-9)), `primary=${prim.length} splash=${sp.length}`);
-  const avg = (l) => { const n = l.filter((h) => !h.crit); return n.reduce((t, h) => t + h.amount, 0) / Math.max(1, n.length); }; // crits (seeded combat RNG, 5 %) would skew the ratio
+  const avg = (l) => l.reduce((t, h) => t + h.amount, 0) / Math.max(1, l.length); // no crit: critChance forced below 0 above
   ok('pmpa.hol primary hit is ~2x a neighbour hit (3.2 vs 1.6)', prim.length > 0 && sp.length > 0 && avg(prim) / avg(sp) > 1.65 && avg(prim) / avg(sp) < 2.4, `ratio=${(avg(prim) / avg(sp)).toFixed(2)} (weapon roll +-10 %)`);
   ok('pmpa.hol window is spent: Kutsal Hüküm is back', !p.statuses.has('hammer_window') && G.skills.getSlotSkill(p, 'q') === 'paladin_verdict');
   ok('pmpa.hol enemies lost HP', e.hp < hp0[0] && n1.hp < hp0[1] && n2.hp < hp0[2]);
@@ -444,7 +445,7 @@ for (const spec of [KOR, RET]) {
   for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2; list.push(dummy(Math.cos(a) * 2.5, Math.sin(a) * 2.5, 1e6)); }
   H.step(2);
   G.skills.addPip(p, 'holypower', 5);
-  G.skills.tryCastSlot(p, 's1', H.aimFor(p, null));
+  G.skills.tryCastSlot(p, 's3', H.aimFor(p, null));
   H.stepSec(1.2);
   const hit = list.filter((e) => e.hp < e.maxHp).length;
   ok('pmpa.cap İlahi Fırtına hits 8 of 10 enemies in range', hit === 8, `hit=${hit}`);
