@@ -290,6 +290,23 @@ export class SettingsPanel extends GamePanel {
         this.num('musicVolume', 'Müzik', 0, 1, 0.01, pc, undefined, () => apply(null)),
         this.num('sfxVolume', 'Efektler', 0, 1, 0.01, pc, 'Vuruş, büyü ve ortam sesleri', () => apply('hit_flesh')),
         this.num('uiVolume', 'Arayüz', 0, 1, 0.01, pc, 'Tıklama ve pencere sesleri', () => apply('ui_click')),
+        this.num('ambienceVolume', 'Ortam', 0, 1, 0.01, pc, 'Rüzgâr ve zindan yatağı', () => apply(null)),
+      ),
+      this.section(
+        'Savaş Sesleri',
+        row(
+          'Savaş sesleri',
+          selectBox<SettingsData['combatSoundLevel']>(
+            [
+              { value: 'low', label: 'Az' },
+              { value: 'normal', label: 'Normal' },
+            ],
+            G.settings.get('combatSoundLevel'),
+            (v) => G.settings.set('combatSoundLevel', v),
+          ),
+          'Az: vuruş ve kılıç seslerini kısar, aynı sesten en fazla 2 tane aynı anda çalar',
+        ),
+        this.flag('uiHoverSfx', 'Düğme üstü sesi', 'Düğmenin üzerine gelince kısa ses (varsayılan kapalı)'),
       ),
     );
   }

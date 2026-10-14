@@ -5,6 +5,7 @@ import type { MusicId, PlaySfxOpts, SfxId } from '../types/audio';
 import { AMBIENCE_MANIFEST, MUSIC_MANIFEST, SFX_MANIFEST, type SfxEntry } from './manifest';
 import { MUSIC_ALIASES, resolveSfxAlias } from './aliases';
 import { getProcDef } from '../data/procs';
+import { COMBAT_LOW_CAP, COMBAT_LOW_GAIN, COMBAT_LOW_GAP, COMBAT_RX, MAX_SEC, mixTrim } from './mix';
 
 /**
  * WebAudio sound manager: sfx (variants, pitch variation, per-id rate limits and voice caps, distance attenuation + stereo pan
@@ -48,6 +49,7 @@ const TRANSIENT_MUSIC = new Set<string>(['boss', 'victory', 'defeat', 'combat'])
 /** COMBAT_WOW §2.16: at most 3 impact sounds (hit_* / *_impact) per 100 ms, rolling window. */
 const IMPACT_MAX = 3;
 const IMPACT_WINDOW_SEC = 0.1;
+
 
 /** CW-12: first-cast cue per damage school (volume 0.5 at the call site). Poison has no cast file, so it borrows shadow_cast higher. */
 const CAST_START_CUE: Record<string, { id: SfxId; pitch?: number }> = {
@@ -136,6 +138,7 @@ export class Audio {
   private musicDuck: GainNode | null = null;
   private sfxBus: GainNode | null = null;
   private uiBus: GainNode | null = null;
+  private ambBus: GainNode | null = null;
 
   private buffers = new Map<string, AudioBuffer>();
   private inflight = new Map<string, Promise<AudioBuffer | null>>();
@@ -272,16 +275,19 @@ export class Audio {
       const musicDuck = ctx.createGain();
       const sfxBus = ctx.createGain();
       const uiBus = ctx.createGain();
+      const ambBus = ctx.createGain();
       musicDuck.connect(musicBus);
       musicBus.connect(master);
       sfxBus.connect(master);
       uiBus.connect(master);
+      ambBus.connect(master);
       this.master = master;
       this.comp = comp;
       this.musicBus = musicBus;
       this.musicDuck = musicDuck;
       this.sfxBus = sfxBus;
       this.uiBus = uiBus;
+      this.ambBus = ambBus;
       this.applyVolumes();
       ctx.onstatechange = () => {
         if (ctx.state === 'running') this.onRunning();
@@ -367,9 +373,10 @@ export class Audio {
       const t = ctx.currentTime;
       const v = (x: number | undefined, d: number): number => clamp01(typeof x === 'number' ? x : d);
       this.master.gain.setTargetAtTime(v(s?.masterVolume, 0.8), t, 0.03);
-      this.musicBus.gain.setTargetAtTime(v(s?.musicVolume, 0.5) * 0.7, t, 0.05);
-      this.sfxBus.gain.setTargetAtTime(v(s?.sfxVolume, 0.8), t, 0.03);
-      this.uiBus.gain.setTargetAtTime(v(s?.uiVolume, 0.7), t, 0.03);
+      this.musicBus.gain.setTargetAtTime(v(s?.musicVolume, 0.35) * 0.7, t, 0.05);
+      this.sfxBus.gain.setTargetAtTime(v(s?.sfxVolume, 0.5), t, 0.03);
+      this.uiBus.gain.setTargetAtTime(v(s?.uiVolume, 0.35), t, 0.03);
+      this.ambBus?.gain.setTargetAtTime(v(s?.ambienceVolume, 0.4), t, 0.03);
     } catch {
       /* ignore */
     }
@@ -444,14 +451,14 @@ export class Audio {
 
   private gapFor(id: string): number {
     if (id.startsWith('voice_')) return 0.25;
-    if (id.startsWith('hit_') || id === 'block' || id === 'shield_bash') return 0.035;
-    if (id.startsWith('footstep')) return 0.09;
-    if (id.startsWith('swing') || id === 'whoosh' || id === 'dodge') return 0.07;
+    if (id.startsWith('hit_') || id === 'block' || id === 'shield_bash') return 0.07;
+    if (id.startsWith('footstep')) return 0.1;
+    if (id.startsWith('swing') || id === 'whoosh' || id === 'dodge') return 0.12;
     if (id === 'ui_hover') return 0.06;
     if (id.startsWith('upgrade_')) return 0.4;
     if (id === 'level_up' || id === 'mplus_start' || id === 'mplus_complete' || id === 'mplus_fail') return 0.5;
     if (id === 'gold_pickup') return 0.045;
-    if (id === 'explosion' || id.endsWith('_impact')) return 0.06;
+    if (id === 'explosion' || id.endsWith('_impact')) return 0.07;
     if (id.startsWith('enemy_')) return 0.06;
     return 0.025;
   }
@@ -478,7 +485,21 @@ export class Audio {
     return this.impactTimes.length < IMPACT_MAX;
   }
 
+  /** AUDIO_MIX: impacts that started within the last `sec` (no pruning). */
+  private recentImpacts(t: number, sec: number): number {
+    let n = 0;
+    for (const x of this.impactTimes) if (t - x <= sec) n++;
+    return n;
+  }
+
+  /** AUDIO_MIX: Savaş sesleri 'low' (Az). */
+  private lowCombat(): boolean {
+    return G.settings?.data?.combatSoundLevel === 'low';
+  }
+
   private playInternal(id: string, opts?: PlaySfxOpts): boolean {
+    // AUDIO_MIX: the hover blip is opt-in (Settings > Ses > Düğme üstü sesi)
+    if (id === 'ui_hover' && G.settings?.data?.uiHoverSfx !== true) return false;
     const ctx = this.ctx;
     if (!ctx || ctx.state !== 'running' || !this.sfxBus || !this.uiBus) return false;
     const def: SfxEntry | undefined = SFX_MANIFEST[id];
@@ -496,15 +517,21 @@ export class Audio {
       return false;
     }
     const t0 = now();
-    if (t0 - (this.lastPlay.get(id) ?? -9) < this.gapFor(id)) return false;
     const ui = UI_RX.test(id);
     const impact = id.startsWith('hit_') || id.endsWith('_impact');
+    const combat = COMBAT_RX.test(id);
+    const low = combat && this.lowCombat();
+    if (t0 - (this.lastPlay.get(id) ?? -9) < this.gapFor(id) * (low ? COMBAT_LOW_GAP : 1)) return false;
     if (!ui) {
       if (this.frameCount >= 14) return false;
       if (impact && !this.impactAllowed(t0)) return false;
+      // AUDIO_MIX: a hit that stacks on another hit inside 250 ms is kept half of the time
+      if (impact && this.recentImpacts(t0, 0.25) >= 1 && Math.random() < 0.5) return false;
     }
     const act = this.active.get(id) ?? 0;
-    if (act >= def.mv) return false;
+    // AUDIO_MIX per-id limiter: hits and swings never stack past 3 voices (2 on Az)
+    const cap = impact || id.startsWith('swing_') ? Math.min(def.mv, low ? COMBAT_LOW_CAP : 3) : def.mv;
+    if (act >= cap) return false;
 
     // spatialisation
     let atten = 1;
@@ -515,9 +542,10 @@ export class Audio {
       const dy = opts.pos[1] - this.ly;
       const d = Math.sqrt(dx * dx + dy * dy * 0.25 + dz * dz);
       const ref = FAR[id] ?? 5;
-      const max = Math.max(55, ref * 9);
+      // AUDIO_MIX: distant sounds (other players, enemies) fall off faster and stop at 45 m (was 55 m)
+      const max = Math.max(45, ref * 8);
       if (d > max) return false;
-      atten = d <= ref ? 1 : ref / (ref + (d - ref) * 1.15);
+      atten = d <= ref ? 1 : ref / (ref + (d - ref) * 1.6);
       if (d > max - 12) atten *= (max - d) / 12;
       if (d > 2.5) {
         // right vector for forward (sin yaw, cos yaw) is (-cos yaw, 0, sin yaw)
@@ -527,10 +555,14 @@ export class Audio {
       if (atten < 0.012) return false;
     }
 
-    const vol = (opts?.volume ?? 1) * def.v * atten;
-    const pv = opts?.pitchVar ?? def.pv;
+    // AUDIO_MIX: per-id trim, Az level, and +/-5 % volume and pitch on every play so repeats do not sound copy-pasted
+    const jitter = 1 + (Math.random() * 2 - 1) * 0.05;
+    const trim = mixTrim(id) * (low ? COMBAT_LOW_GAIN : 1);
+    const vol = (opts?.volume ?? 1) * def.v * atten * trim * jitter;
+    const pv = Math.max(0.05, opts?.pitchVar ?? def.pv);
     const rate = (opts?.pitch ?? 1) * (def.p ?? 1) * (1 + (Math.random() * 2 - 1) * pv);
     const bus = ui ? this.uiBus : this.sfxBus;
+    const maxSec = MAX_SEC[id] ?? 0;
 
     const idx = this.pick(id, def.f);
     const file = def.f[idx];
@@ -540,14 +572,14 @@ export class Audio {
       const asked = t0;
       void this.load(file).then((b) => {
         if (!b || now() - asked > 0.35) return;
-        this.fire(id, b, vol * (def.fg?.[idx] ?? 1), rate, pan, bus, true);
+        this.fire(id, b, vol * (def.fg?.[idx] ?? 1), rate, pan, bus, true, maxSec);
       });
       this.lastPlay.set(id, t0);
       if (impact && !ui) this.impactTimes.push(t0);
       return true;
     }
     this.lastPlay.set(id, t0);
-    this.fire(id, buf, vol * (def.fg?.[idx] ?? 1), rate, pan, bus, true);
+    this.fire(id, buf, vol * (def.fg?.[idx] ?? 1), rate, pan, bus, true, maxSec);
     if (!ui) {
       this.frameCount++;
       if (impact) this.impactTimes.push(t0);
@@ -561,7 +593,7 @@ export class Audio {
     return true;
   }
 
-  private fire(id: string, buf: AudioBuffer, gain: number, rate: number, pan: number, bus: GainNode, count: boolean): void {
+  private fire(id: string, buf: AudioBuffer, gain: number, rate: number, pan: number, bus: GainNode, count: boolean, maxSec = 0): void {
     const ctx = this.ctx;
     if (!ctx || gain <= 0.002) return;
     const src = ctx.createBufferSource();
@@ -590,7 +622,14 @@ export class Audio {
         /* ignore */
       }
     };
-    src.start(0);
+    const r = src.playbackRate.value;
+    if (maxSec > 0 && buf.duration / r > maxSec) {
+      // AUDIO_MIX: cut to maxSec (real time) and fade out over the last 40 ms
+      const at = ctx.currentTime;
+      g.gain.setValueAtTime(gain, at + Math.max(0, maxSec - 0.04));
+      g.gain.linearRampToValueAtTime(0, at + maxSec);
+      src.start(0, 0, maxSec * r);
+    } else src.start(0);
   }
 
   /** Synthesized sub-bass drop that gives crits, slams and explosions weight (no sample needed). */
@@ -945,7 +984,7 @@ export class Audio {
       gain.gain.setValueAtTime(0, t);
       gain.gain.linearRampToValueAtTime(def.v * 0.45, t + fade);
       src.connect(gain);
-      gain.connect(this.sfxBus);
+      gain.connect(this.ambBus ?? this.sfxBus);
       src.start(0, Math.random() * Math.max(0.1, buf.duration - 0.2));
       this.ambNode = { src, gain };
     });

@@ -163,6 +163,15 @@ export interface SettingsData {
   graphicsQuality: 'low' | 'mid' | 'high';
   /** Revision of the crisp-look defaults (psx off, no jitter / affine / dither). Stored files below 1 get them once (see the constructor). */
   gfxLookRev: number;
+  // ---- AUDIO_MIX (append-only). Calmer mix: ambience slider, Savaş sesleri Az / Normal, hover blip, and the mix revision.
+  /** Ambience bed (wind, dungeon bed) level, 0..1. Separate from the effects slider. */
+  ambienceVolume: number;
+  /** Savaş sesleri: 'normal' or 'low' (Az). Low = combat sounds 40 % quieter, at most 2 hits or swings per id, longer gaps. */
+  combatSoundLevel: 'normal' | 'low';
+  /** UI hover blip on buttons. Off by default (it fired on every pointer crossing). */
+  uiHoverSfx: boolean;
+  /** Revision of the calmer audio mix (audio levels, hover off). Stored files below 1 get the new defaults once. */
+  audioRev: number;
 }
 
 /**
@@ -173,8 +182,9 @@ export interface SettingsData {
  * 4 = CONTROLS_WOW fields (controlScheme, controlsRev, schemeBindings, WoW camera and auto-attack flags).
  *     The scheme migration is keyed on controlsRev (see migrateControlsRev).
  * 5 = crisp default look (gfxLookRev): PSX filter off by default, stored files below rev 1 are switched once.
+ * 6 = calmer audio mix (audioRev): ambienceVolume, combatSoundLevel, uiHoverSfx; the level defaults move down once.
  */
-export const SETTINGS_VERSION = 5;
+export const SETTINGS_VERSION = 6;
 
 /** Key codes of the guard and inventory defaults before CM1 / UX-00 (used only by the one-time bindings migration). */
 const LEGACY_GUARD = ['KeyG', 'Mouse3'];
@@ -210,9 +220,9 @@ export const DEFAULT_SETTINGS: SettingsData = {
   lootFilter: 'all',
   autoSalvage: 'off',
   masterVolume: 0.8,
-  musicVolume: 0.5,
-  sfxVolume: 0.8,
-  uiVolume: 0.7,
+  musicVolume: 0.35,
+  sfxVolume: 0.5,
+  uiVolume: 0.35,
   playerName: '',
   bindings: {},
   language: 'tr',
@@ -277,6 +287,11 @@ export const DEFAULT_SETTINGS: SettingsData = {
   barGhostRev: 1,
   graphicsQuality: 'mid',
   gfxLookRev: 1,
+  // AUDIO_MIX (audioRev 1)
+  ambienceVolume: 0.4,
+  combatSoundLevel: 'normal',
+  uiHoverSfx: false,
+  audioRev: 1,
 };
 
 /**
@@ -376,6 +391,11 @@ export class Settings {
         Object.assign(this.data, { psx: false, psxJitter: 0, psxAffine: false, psxDither: false, gfxLookRev: 1 });
         changed = true;
       }
+      // AUDIO_MIX (audioRev 0 -> 1): calmer level defaults and the hover blip off, once. A level changed afterwards is kept by the rev flag.
+      if ((stored.audioRev ?? 0) < 1) {
+        Object.assign(this.data, { sfxVolume: 0.5, musicVolume: 0.35, uiVolume: 0.35, ambienceVolume: 0.4, uiHoverSfx: false, audioRev: 1 });
+        changed = true;
+      }
     }
     // The scheme is the source of truth: cameraMode always follows it, whatever was stored.
     if (this.data.controlScheme !== 'wow' && this.data.controlScheme !== 'aksiyon') this.data.controlScheme = 'wow';
@@ -383,6 +403,8 @@ export class Settings {
     this.data.schemeBindings = this.data.schemeBindings ?? {};
     this.data.cameraDistanceWow = Number.isFinite(this.data.cameraDistanceWow) ? Math.min(30, Math.max(2, this.data.cameraDistanceWow)) : 10;
     if (this.data.graphicsQuality !== 'low' && this.data.graphicsQuality !== 'mid' && this.data.graphicsQuality !== 'high') this.data.graphicsQuality = 'mid';
+    if (this.data.combatSoundLevel !== 'low' && this.data.combatSoundLevel !== 'normal') this.data.combatSoundLevel = 'normal';
+    this.data.ambienceVolume = Number.isFinite(this.data.ambienceVolume) ? Math.min(1, Math.max(0, this.data.ambienceVolume)) : 0.4;
     this.data.settingsVersion = SETTINGS_VERSION;
     if (changed || (hasStored && stored.settingsVersion !== SETTINGS_VERSION)) this.save();
   }
