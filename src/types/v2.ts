@@ -24,6 +24,8 @@ export type SpecId = 'knight_protector' | 'knight_blademaster' | 'barbarian_warl
   // and the Gölge spec of the rogue (CM12 kit). Ids only; SPECS rows arrive with the kit packages.
   | 'demonhunter_chaos' | 'demonhunter_vengeance' | 'evoker_devastation' | 'evoker_preservation' | 'evoker_augmentation'
   | 'rogue_subtlety'
+  // HAYDUT WoW layout (append-only): Kanun Kaçağı (Outlaw). Kit rows only; no GDD_TALENTS tree yet, so it is not pickable.
+  | 'rogue_outlaw'
   // CLASS SCAFFOLD (append-only): Rahip (priest_*), Şaman (shaman_*), Druid (druid_*). Ids only; SPECS rows arrive with the kits.
   | 'priest_discipline' | 'priest_holy' | 'priest_shadow'
   | 'shaman_elemental' | 'shaman_enhancement' | 'shaman_restoration'

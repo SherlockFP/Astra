@@ -32,41 +32,6 @@ import { PALADIN_SPECS } from './specs_paladin';
 import { NECRO_SPECS } from './specs_necromancer';
 
 const SPEC_LIST: SpecDef[] = [
-  // ---------------------------------------------------------------- Haydut
-  {
-    id: 'rogue_assassin', classId: 'rogue', name: 'Suikastçı', role: 'dps',
-    desc: 'Gizlilik açılışları, arkadan vuruş ve Gölge Dansı. Düşük tehdit.',
-    stats: { critChance: 0.06, critDamage: 0.20, attackSpeed: 0.05, parryWindow: 0.04, resourceRegenPct: 0.17, threatPct: -0.2 },
-    specials: [
-      { id: 'assassin_vanish', desc: 'Gölge Adımı tehdidinin %50\'sini düşürür (veri; tehdit kancası WP4).', params: { threatDown: 0.5 } },
-      { id: 'assassin_opener', desc: 'Gizlilik açılış bonusu +%80, arkadan vuruş +%60 (Sırttan Bıçak gizlilikte ×1.8).', params: { openerMore: 0.8, backstabMore: 0.6 } },
-    ],
-    skills: ['rogue_backstab', 'rogue_garrote', 'rogue_shadow_blades', 'rogue_shadow_dance'],
-    unlock: { rogue_backstab: 10, rogue_garrote: 15, rogue_shadow_blades: 10, rogue_shadow_dance: 20 },
-    majors: { m45: 'rogue_shadow_blades', m90: 'rogue_shadow_dance' },
-    mods: [],
-    defaultBar: {
-      lmb: 'rogue_basic', rmb: 'rogue_crossbow_shot', q: 'rogue_shadow_step', e: 'rogue_backstab', s1: 'rogue_eviscerate',
-      s2: 'rogue_garrote', s3: 'rogue_vanish', r: 'rogue_death_blossom',
-      m45: 'rogue_shadow_blades', m90: 'rogue_shadow_dance',
-    },
-  },
-  {
-    id: 'rogue_alchemist', classId: 'rogue', name: 'Simyacı', role: 'healer',
-    desc: 'Seyyar şifacı: şişe bombaları, panzehir ve Karışım Puanı. Hızlandırıcı İksir sahibi.',
-    stats: { healingPct: 0.25, damagePct: -0.40, resourceRegenPct: 0.33, moveSpeedPct: 0.05 },
-    specials: [{ id: 'alchemist_overheal', desc: 'Taşan şifa: fazla şifa 4 saniye boyunca +%10 şifa gücü verir (en fazla %40, yığılır).', params: { perStack: 0.10, cap: 0.40, dur: 4 } }],
-    skills: ['rogue_vial_throw', 'rogue_vial_heal', 'rogue_antidote', 'rogue_smoke_ward', 'rogue_mending_draught'],
-    unlock: { rogue_vial_throw: 1, rogue_vial_heal: 10, rogue_antidote: 15, rogue_smoke_ward: 15, rogue_mending_draught: 20, rogue_elixir_of_life: 10, rogue_miracle_brew: 20, rogue_haste_elixir: 30 },
-    majors: { m45: 'rogue_elixir_of_life', m90: 'rogue_miracle_brew', m180: 'rogue_haste_elixir' },
-    basic: 'rogue_vial_throw',
-    mods: [],
-    defaultBar: {
-      lmb: 'rogue_vial_throw', rmb: 'rogue_vial_heal', q: 'rogue_shadow_step', e: 'rogue_smoke_ward', s1: 'rogue_antidote',
-      s2: 'rogue_mending_draught', s3: 'rogue_fan_of_knives', r: 'rogue_death_blossom',
-      m45: 'rogue_elixir_of_life', m90: 'rogue_miracle_brew', m180: 'rogue_haste_elixir',
-    },
-  },
 ];
 
 /** Non-mage spec registry plus the GDD_TALENTS mage specs (merged in; T8 fills TALENT_SPECS). */

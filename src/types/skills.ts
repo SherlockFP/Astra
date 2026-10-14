@@ -155,6 +155,9 @@ export type StatusId =
   | 'garrote' | 'rupture' | 'kingsbane' | 'deathmark' | 'darkest_night' | 'improved_garrote' | 'find_weakness'
   | 'shadow_technique' | 'shadowstep_haste' | 'behind_grace' | 'feint' | 'goremaw' | 'alchemy_link' | 'elixir_ramp'
   | 'brew_boost' | 'ascendant'
+  // HAYDUT WoW layout (append-only): Outlaw and utility statuses. StatusDefs in data/statuses_kit_rogue.ts.
+  | 'sprint' | 'evasion' | 'slice_and_dice' | 'roll_the_bones' | 'adrenaline_rush' | 'killing_spree' | 'blade_flurry'
+  | 'symbols_of_death'
   // KIT Druid (append-only): shapeshift forms (combat/Forms.ts), Denge / Vahşi / Koruyucu / Restorasyon statuses. StatusDefs in data/statuses_kit_druid.ts.
   | 'form_moonkin' | 'form_cat' | 'form_bear' | 'form_travel' | 'eclipse_solar' | 'eclipse_lunar' | 'moonfire' | 'sunfire'
   | 'celestial_alignment' | 'rake' | 'rip' | 'thrash' | 'feral_fury' | 'berserk' | 'cat_dash' | 'ironfur' | 'barkskin' | 'frenzied'
