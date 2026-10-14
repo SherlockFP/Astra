@@ -370,13 +370,13 @@ export class Chat implements HudWidget {
   }
 
   /** One line into every tab that lists its channel. `local` = our own message (typing / own bubble). Emits `chat:line`. */
-  addLine(from: string, text: string, channel: ChatChannel, local = false, to?: string, links?: ChatLink[]): void {
+  addLine(from: string, text: string, channel: ChatChannel, local = false, to?: string, links?: ChatLink[], variant?: 'rumor'): void {
     const now = performance.now();
     let placed = false;
     for (const t of this.tabs) {
       if (!t.def.channels.includes(channel)) continue;
       placed = true;
-      const el = this.makeLine(from, text, channel, local, to, links);
+      const el = this.makeLine(from, text, channel, local, to, links, variant);
       const nearEnd = this.atBottom(t);
       t.log.appendChild(el);
       t.lines.push({ el, t: now });
@@ -390,8 +390,13 @@ export class Chat implements HudWidget {
     G.events?.emit('chat:line', { from, text, channel, local });
   }
 
-  private makeLine(from: string, text: string, channel: ChatChannel, local = false, to?: string, links?: ChatLink[]): HTMLElement {
-    const el = div('cl ' + channel);
+  /** Barks (systems/Barks.ts): a faint italic 'Söylenti' line in the tabs that list system lines. Not our own chat, so no chat:line count. */
+  addRumor(from: string, text: string): void {
+    this.addLine(from, text, 'system', false, undefined, undefined, 'rumor');
+  }
+
+  private makeLine(from: string, text: string, channel: ChatChannel, local = false, to?: string, links?: ChatLink[], variant?: 'rumor'): HTMLElement {
+    const el = div('cl ' + channel + (variant ? ' ' + variant : ''));
     // WP-13: `[Name]` tags that match a link become quality-coloured tooltips (the message body only, never the names)
     const matched: ChatLink[] = [];
     const body = (t: string): string => this.linkedText(t, links, matched);
@@ -401,7 +406,7 @@ export class Chat implements HudWidget {
       const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
       html += `<span class="cl-ts">[${hm}] </span>`;
     }
-    const prefix = CHAN_PREFIX[channel];
+    const prefix = variant === 'rumor' ? 'Söylenti' : CHAN_PREFIX[channel];
     if (prefix) html += `<span class="cl-ch">[${prefix}] </span>`;
     if (channel === 'whisper' && from) {
       // WoW style: "X kişisine fısıldadın: ..." / "X sana fısıldıyor: ..." (all text through esc(), never raw HTML)

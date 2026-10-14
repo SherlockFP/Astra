@@ -22,6 +22,7 @@ import type { Professions } from '../systems/Professions';
 import type { PresenceApi } from '../systems/Social';
 import type { Guild } from '../systems/Guild';
 import type { ArenaLadder } from '../systems/ArenaLadder';
+import type { BarkService } from '../systems/Barks';
 import type { ProcEngine } from '../combat/Procs';
 import type { Auras } from '../combat/Auras';
 import type { Corpses } from '../combat/Corpses';
@@ -76,6 +77,8 @@ export interface Services {
   guild?: Guild;
   /** GDD_PVP_FINDER §3.4 (systems/ArenaLadder.ts, installed by systems/ArenaInstall.ts): bracket ratings, MMR, season, tiers, weekly Fetih, queue lock. Undefined in sims. */
   arenaLadder?: ArenaLadder;
+  /** Karakter sözleri (systems/Barks.ts): speech lines of the player, NPCs and enemies. Created by Game.ts; undefined in sims without it. */
+  barks?: BarkService;
   character: CharacterState | null;
   world: World | null;
   player: Player | null;

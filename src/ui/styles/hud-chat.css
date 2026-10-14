@@ -63,6 +63,9 @@
 .cl.boss { color: var(--ch-boss); font-weight: 700; }
 .cl.emote { color: var(--ch-emote); font-style: italic; }
 .cl.emote .cl-from { font-style: normal; }
+/* Karakter sözleri (systems/Barks.ts): the faint italic Söylenti line */
+.cl.rumor { font-style: italic; opacity: 0.72; }
+.cl.rumor .cl-ch { font-style: normal; }
 
 /* input row: 28 px, only while typing */
 .chat-row { display: none; align-items: center; gap: 6px; height: 28px; padding: 0 8px; background: color-mix(in srgb, var(--bg-plate) 88%, transparent); border: 1px solid var(--ink); box-shadow: inset 0 0 0 1px var(--line); }

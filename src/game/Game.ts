@@ -26,6 +26,7 @@ import { Corpses } from '../combat/Corpses';
 import { installSocial } from '../systems/Social';
 import { installAchievements } from '../systems/Achievements';
 import { installDailyLoop } from '../systems/DailyLoop';
+import { installBarks } from '../systems/Barks';
 import { installGuild } from '../systems/Guild';
 import { installArena } from '../systems/ArenaInstall';
 import { LoadingScene } from '../scenes/LoadingScene';
@@ -80,6 +81,7 @@ export function createServices(): void {
   installArena(); // GDD_PVP_FINDER: G.arenaLadder (ratings, season, Fetih) + G.net.queue (arena matchmaking on the global lobby)
   installAchievements(); // WP-08: achievement metrics from the game events (reads G.character lazily)
   installDailyLoop(); // WP-10: login streak, rested XP tick, world quests and the daily dungeon (reads G.character lazily)
+  G.barks = installBarks(); // karakter sözleri: speech bubbles + Söylenti lines (systems/Barks.ts, ticked in installServiceUpdates)
 
   // saved key bindings for the active control scheme (CONTROLS_WOW §2.3)
   applyStoredBindings();
@@ -124,6 +126,7 @@ export function installServiceUpdates(): void {
     G.vfx.update(dt);
     G.audio.update(dt);
   }, 50, 'vfx/audio');
+  e.onUpdate((dt) => G.barks?.update(dt), 60, 'barks');
   e.onUpdate((dt) => G.ui.update(dt), 100, 'ui');
   e.onUpdate(() => G.input.endFrame(), 1000, 'inputEnd');
 }
