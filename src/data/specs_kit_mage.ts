@@ -5,10 +5,10 @@
  *
  * defaultBar (WoW layout): lmb = the chain (Oto), 1 (rmb) = core builder / filler, 2 (q) = main spender, 3 (e) = second builder,
  * spender or DoT, 4 (r) = long cooldown / filler, 5 (s1) = AoE, Q (s2) = Blink, E (s3) = personal defensive, R (s4) = Counterspell,
- * X / V / T (m45 / m90 / m180) = majors. Time Warp is the T major of all three specs (Buz too). The three specs bind their
- * displaced builders / fillers to the free-standing skills: Ateş puts Ejderha Nefesi on R (cone, 20 s) and Canlı Bomba on 5
- * (Alev Sütunu leaves the bar); Buz puts Buz Damarları (Icy Veins) on R (Buz Sarkıtı leaves the bar); Gizem puts Büyü Çağırma
- * (Evocation) on R (Gizemli Küre leaves the bar). Displaced skills stay in `skills`. The second bar does not exist in code yet.
+ * X / V / T (m45 / m90 / m180) = majors. Time Warp is the T major of all three specs. Displaced skills stay in `skills`, off the bar:
+ * Ateş: Ejderha Nefesi on R (cone, 20 s), Canlı Bomba on E (DoT; Ateş Patlaması leaves the bar). Buz: Buz Damarları (Icy Veins) on X
+ * (Ray of Frost leaves the bar). Gizem: Büyü Çağırma (Evocation) on R (Gizemli Küre leaves the bar). Level 1 keeps at least 4 usable
+ * skills per spec (sim rule: mage.l1), so every level-1 skill stays bound. The second bar does not exist in code yet.
  * OWNER: combat (data).
  */
 import type { SpecDef, SpecId } from '../types/v2';
@@ -34,7 +34,7 @@ export const SPECS_KIT_MAGE: Partial<Record<SpecId, SpecDef>> = {
     majors: { m45: 'mage_meteor', m90: 'mage_combustion', m180: 'mage_time_warp' },
     mods: [{ skill: 'mage_basic', patch: { name: 'Ateş Oku (Fire Bolt)' } }],
     defaultBar: {
-      lmb: 'mage_basic', rmb: 'mage_fireball', q: 'mage_pyroblast', e: 'mage_fire_blast', r: 'mage_dragons_breath', s1: 'mage_living_bomb',
+      lmb: 'mage_basic', rmb: 'mage_fireball', q: 'mage_pyroblast', e: 'mage_living_bomb', r: 'mage_dragons_breath', s1: 'mage_flamestrike',
       s2: 'mage_blink', s3: 'mage_blazing_barrier', s4: 'mage_counterspell', m45: 'mage_meteor', m90: 'mage_combustion', m180: 'mage_time_warp',
     },
   },
@@ -56,11 +56,11 @@ export const SPECS_KIT_MAGE: Partial<Record<SpecId, SpecDef>> = {
     },
     // the s05 tree row is Dondurucu Sağanak (talent tree, T-step)
     treeSkills: { mage_flurry: 's05' },
-    majors: { m45: 'mage_ray_of_frost', m90: 'mage_frozen_orb', m180: 'mage_time_warp' },
+    majors: { m45: 'mage_icy_veins', m90: 'mage_frozen_orb', m180: 'mage_time_warp' },
     mods: [{ skill: 'mage_basic', patch: { name: 'Buz Oku (Ice Bolt)' } }],
     defaultBar: {
-      lmb: 'mage_basic', rmb: 'mage_frostbolt', q: 'mage_ice_lance', e: 'mage_flurry', r: 'mage_icy_veins', s1: 'mage_blizzard',
-      s2: 'mage_blink', s3: 'mage_ice_barrier', s4: 'mage_counterspell', m45: 'mage_ray_of_frost', m90: 'mage_frozen_orb', m180: 'mage_time_warp',
+      lmb: 'mage_basic', rmb: 'mage_frostbolt', q: 'mage_ice_lance', e: 'mage_flurry', r: 'mage_glacial_spike', s1: 'mage_blizzard',
+      s2: 'mage_blink', s3: 'mage_ice_barrier', s4: 'mage_counterspell', m45: 'mage_icy_veins', m90: 'mage_frozen_orb', m180: 'mage_time_warp',
     },
   },
 
