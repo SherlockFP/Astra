@@ -18,7 +18,7 @@ import type { MythicPlus, RunParams } from './MythicPlus';
 import {
   MPLUS_TR, MYTHIC_AFFIXES, affixDamageScale, chestItemLevel, inAffixSafe, kibirThresholdsCrossed, monsterDmg, monsterHP, pickKibirSpot, type Circle2,
 } from '../data/mythicAffixes';
-import { MPLUS_PARTY_HP, mplusLevelMult, mplusPartyDmg } from './MythicPlus';
+import { mplusLevelMult } from './MythicPlus';
 
 /**
  * Affix behaviours (GDD_CONTENT 5.5). Owned and driven by MythicPlus.
@@ -1242,12 +1242,11 @@ export class Affixes {
       r.spawning = false;
       if (!en || this.rift !== r) { if (this.rift === r) this.closeRift(r, false); return; }
       const L = this.prm.keyLevel;
-      // Kibir Tecessumu: 4 x trash HP (hpMult) x M+ level curve x party HP factor (MythicPlus is the one scaling source; no Tahkimli factor)
-      const size = clamp(Math.floor(this.prm.partySize) || 1, 1, 5) as 1 | 2 | 3 | 4 | 5;
-      const hp = Math.round(en.def.hpMult * monsterHP(en.level) * mplusLevelMult(L) * MPLUS_PARTY_HP[size]);
+      // Kibir Tecessumu: 4 x trash HP (hpMult) x M+ level curve (Mythic+ takes no party-size factor, instanceScaling)
+      const hp = Math.round(en.def.hpMult * monsterHP(en.level) * mplusLevelMult(L));
       en.maxHp = hp; en.hp = hp;
       // dmgMult 2.0, 0 forces, CC immune, rooted for its first 3 s (inherited from the Efsun guardian tuning)
-      en.baseDamage = monsterDmg(en.level) * en.def.dmgMult * mplusLevelMult(L) * mplusPartyDmg(this.prm.partySize);
+      en.baseDamage = monsterDmg(en.level) * en.def.dmgMult * mplusLevelMult(L);
       en.forcesCounted = true;
       try { en.statuses.addImmunity('cc', 3600); } catch { /* ignore */ }
       try { en.statuses.apply('act_root', P('seasonal_efsun').rootSec); } catch { /* ignore */ }

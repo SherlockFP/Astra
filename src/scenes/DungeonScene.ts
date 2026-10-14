@@ -457,7 +457,9 @@ export class DungeonScene implements GameScene {
       let k = 0;
       for (const m of pk.members) {
         const sp = snap(pk.center[0] + m.offset[0], pk.center[1] + m.offset[1]);
-        const level = pk.levelRange ? new RNG(hashString(`${params.seed}:${pk.id}:${k}`)).int(pk.levelRange[0], pk.levelRange[1]) : params.enemyLevel;
+        // instanced runs: every body is the run's enemy level (the party average clamped to the band, or the fixed top band);
+        // open-world zones keep the per-pack level ranges
+        const level = pk.levelRange && this.outdoor ? new RNG(hashString(`${params.seed}:${pk.id}:${k}`)).int(pk.levelRange[0], pk.levelRange[1]) : params.enemyLevel;
         k++;
         jobs.push({ id: DUNGEON_ENEMY_ID_BASE + index++, defId: m.enemyId, x: sp.x, z: sp.z, packId: pk.id, level, patrol, dormant: pk.dormant ? true : undefined, stealth: pk.stealth, camp });
         camp?.members.push({ defId: m.enemyId, x: sp.x, z: sp.z, level, patrol });

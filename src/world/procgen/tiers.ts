@@ -1,4 +1,5 @@
 import type { FissureInfo, FissureModId, FissureThemeId, FissureTier } from '../../types/dungeons';
+import { normalEnemyLevel, normalLevelGate } from '../../systems/instanceScaling';
 
 /**
  * Kadim Yarıklar: difficulty tiers, modifiers, scaling and unlock rules (docs/GDD_PROCGEN.md §7, §8). OWNER: world module.
@@ -72,23 +73,26 @@ export const FISSURE_THEME_NAMES: Record<FissureThemeId, string> = {
   crypt: 'Mezarlık Yarığı', forge: 'Kor Yarığı', frost: 'Buzul Yarığı', shadow: 'Gölge Yarığı',
 };
 
-/** Enemy level of a run: Normal follows the party level, Kahramanlık is 30..60, Mitik is always 60. */
-export function fissureEnemyLevel(tier: FissureTier, avgLevel: number): number {
-  const a = Math.max(1, Math.min(60, Math.round(avgLevel) || 1));
+/**
+ * Enemy level of a run (instanceScaling): Normal = the party average clamped to the theme's level band `band`; Kahramanlık = the
+ * band top (fixed, not the party level); Mitik always 60. Without a band the range is 1..60.
+ */
+export function fissureEnemyLevel(tier: FissureTier, avgLevel: number, band?: readonly [number, number]): number {
   if (tier === 'm') return 60;
-  if (tier === 'h') return Math.max(30, a);
-  return a;
+  if (tier === 'h') return Math.max(1, Math.min(60, Math.round(band?.[1] ?? 60)));
+  return normalEnemyLevel(band, avgLevel);
 }
 
 export interface UnlockResult { ok: boolean; reason: string }
 
 /**
  * Can this character open the tier? `clears` = the `fis.clear.<tier>` counters. `gatesOff` is the `?unlock` tester switch
- * (skips the clear counts only, like the Zindan Bulucu).
+ * (skips the clear counts only, like the Zindan Bulucu). Normal with a theme `band` needs band min - 2 (instanceScaling).
  */
-export function fissureUnlock(tier: FissureTier, charLevel: number, clears: Partial<Record<FissureTier, number>>, gatesOff = false): UnlockResult {
+export function fissureUnlock(tier: FissureTier, charLevel: number, clears: Partial<Record<FissureTier, number>>, gatesOff = false, band?: readonly [number, number]): UnlockResult {
   const rule = FISSURE_TIERS[tier];
-  if (charLevel < rule.unlockLevel) return { ok: false, reason: `${rule.name} için ${rule.unlockLevel}. seviye gerekir.` };
+  const need0 = tier === 'n' && band ? Math.max(rule.unlockLevel, normalLevelGate(band)) : rule.unlockLevel;
+  if (charLevel < need0) return { ok: false, reason: `Seviye ${need0} gerekli (${rule.name} Yarığı).` };
   const need = rule.needClear;
   if (need && !gatesOff && (clears[need.tier] ?? 0) < need.count) {
     return { ok: false, reason: `${FISSURE_TIERS[need.tier].name} Yarığı ${need.count} kez tamamla (${Math.min(need.count, clears[need.tier] ?? 0)}/${need.count}).` };

@@ -3,6 +3,7 @@ import { InteractableProp, type PropGlow } from './InteractableProp';
 import type { Player } from '../Player';
 import { G } from '../../game/G';
 import { getDungeon } from '../../data/dungeons';
+import { normalLevelGate } from '../../systems/instanceScaling';
 import type { VfxHandle } from '../../vfx/VFX';
 import { propUrl } from '../../scenes/SceneKit';
 import type { DungeonParams } from '../../scenes/scenes';
@@ -68,7 +69,8 @@ export class DungeonPortal extends InteractableProp {
     this.dungeonId = opts.dungeonId;
     const def = getDungeon(opts.dungeonId);
     this.dungeonName = opts.name ?? def?.name ?? opts.dungeonId;
-    this.minLevel = opts.minLevel ?? def?.levelRange?.[0] ?? 1;
+    // the door opens from band minimum - 2 (instanceScaling.normalLevelGate); the label shows the gate
+    this.minLevel = opts.minLevel ?? normalLevelGate(def?.levelRange);
     this.tint = opts.tint ?? PORTAL_TINTS[opts.dungeonId] ?? 0xb060ff;
     this.interactRange = 5.5;
     this.radius = 2.4;
@@ -87,7 +89,7 @@ export class DungeonPortal extends InteractableProp {
     const lvl = G.character?.level ?? 1;
     const lock = lvl < this.minLevel;
     this.setLabel(
-      `<div class="efs-wl"><div class="n" style="color:#${this.tint.toString(16).padStart(6, '0')}">${this.dungeonName}</div><div class="s" style="color:${lock ? '#ff8a7a' : '#d6c196'}">Önerilen seviye ${this.minLevel}</div></div>`,
+      `<div class="efs-wl"><div class="n" style="color:#${this.tint.toString(16).padStart(6, '0')}">${this.dungeonName}</div><div class="s" style="color:${lock ? '#ff8a7a' : '#d6c196'}">${lock ? `Seviye ${this.minLevel} gerekli` : `Önerilen seviye ${getDungeon(this.dungeonId)?.levelRange?.[0] ?? this.minLevel}`}</div></div>`,
       7.4 * scale,
       'efs-wl-wrap',
       60,
@@ -109,6 +111,10 @@ export class DungeonPortal extends InteractableProp {
   }
 
   interact(_player: Player): void {
+    if ((G.character?.level ?? 1) < this.minLevel) {
+      G.ui.toast(`${this.dungeonName}: Seviye ${this.minLevel} gerekli.`, 'info');
+      return;
+    }
     G.audio.play('portal_enter', { volume: 0.5 });
     G.ui.openPanel('finder', { dungeonId: this.dungeonId });
   }

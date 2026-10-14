@@ -3,6 +3,7 @@ import type { DungeonDef } from '../../../types/dungeons';
 import type { KeystoneData } from '../../../types/items';
 import { DUNGEONS } from '../../../data/dungeons';
 import { hasCleared } from '../../../systems/Bounties';
+import { normalLevelGate } from '../../../systems/instanceScaling';
 import { LADDER_TR } from '../../../scenes/world/Ladder';
 
 /**
@@ -68,7 +69,7 @@ export function toLadder(d: 'normal' | 'heroic' | 'mythic' | 'mplus'): LadderDif
 
 /** Level a character needs to enter this difficulty (party members are checked against it too). */
 export function requiredLevel(def: DungeonDef, d: LadderDiff): number {
-  if (d === 'normal') return def.levelRange?.[0] ?? 1;
+  if (d === 'normal') return normalLevelGate(def.levelRange);
   if (d === 'heroic') return HEROIC_LEVEL;
   return MYTHIC_LEVEL;
 }

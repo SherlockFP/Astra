@@ -166,6 +166,7 @@ export async function spawnEnemy(world: World, defId: string, pos: THREE.Vector3
 
   // ---- stats ----
   let hpScale = 1, dmgScale = 1;
+  let partyScale: { hp: number; dmg: number } | null = null;
   if (opts.scaled !== false) {
     try {
       // encounter adds (mini-bosses / boss-summoned adds) take Tyrannical, not Fortified (MythicPlus.isEncounterAdd, K16)
@@ -175,7 +176,12 @@ export async function spawnEnemy(world: World, defId: string, pos: THREE.Vector3
     } catch { /* mythic not ready */ }
     // explicit hpMult (mechanic entities: cages, tombs, phylacteries) already contains its own party scaling
     if (opts.hpMult === undefined) hpScale *= G.mplus?.state ? G.mplus.partyHpMult() : partyHpMult();
+    // instance runs keep the party factors they were spawned with, so a join / leave can rescale them (MythicPlus.syncPartySize)
+    if (opts.hpMult === undefined && G.mplus?.state) {
+      try { partyScale = G.mplus.partyFactors(def.rank === 'boss'); } catch { /* mythic not ready */ }
+    }
   }
+  e.partyScale = partyScale;
   const baseHp = monsterHP(level) * (opts.hpMult ?? def.hpMult) * (opts.hpMult !== undefined ? 1 : hpScale);
   e.maxHp = Math.max(1, Math.round(baseHp));
   e.hp = Math.max(1, Math.round(e.maxHp * (opts.hpFrac ?? 1)));
