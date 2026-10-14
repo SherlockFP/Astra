@@ -968,10 +968,13 @@ export class VFX {
     }
   }
 
-  /** Metin2-style weapon glow by upgrade level (+7 blue, +9 purple, +12 red/gold, +15 rainbow). 0 removes. */
-  weaponGlow(weaponRoot: THREE.Object3D, upgrade: number): void {
+  /**
+   * Metin2-style weapon glow by upgrade level (+7 blue, +9 purple, +12 red/gold, +15 rainbow). 0 removes.
+   * `siege`: the siege winner's faint gold aura on top (or alone when the upgrade is below +7).
+   */
+  weaponGlow(weaponRoot: THREE.Object3D, upgrade: number, siege = false): void {
     try {
-      this.glows.set(weaponRoot, upgrade);
+      this.glows.set(weaponRoot, upgrade, siege);
     } catch (e) {
       this.warnOnce('weaponGlow', `[vfx] weaponGlow failed: ${String(e)}`);
     }

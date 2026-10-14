@@ -27,6 +27,9 @@ const ok = (name, cond, info = '') => {
 };
 const unlockedIds = () => D.ACHIEVEMENTS.filter((d) => A.isUnlocked(G.character.save, d.id)).map((d) => d.id);
 const clearLogs = () => { toasts.length = 0; chat.length = 0; unlocks.length = 0; };
+// live toasts wait for the merge window (A.TOAST_MERGE_MS) before they show
+const WINDOW = A.TOAST_MERGE_MS + 150;
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ------------------------------------------------------------------------------------------------ cat.*
 {
@@ -58,6 +61,7 @@ clearLogs();
 G.events.emit('player:levelup', { level: 5 });
 ok('ev.level-unlock', A.isUnlocked(G.character.save, 'sev_lv5'));
 ok('ev.unlock-once-event', unlocks.filter((id) => id === 'sev_lv5').length === 1, `events ${unlocks.join(',')}`);
+await wait(WINDOW);
 ok('ev.toast', toasts.length === 1 && /Çırak/.test(toasts[0]), toasts.join(' | '));
 ok('ev.chat-line', chat.some((c) => c.channel === 'system' && c.text === 'Çırak başarımını kazandın!'));
 ok('ev.points', A.totalPoints(G.character.save) === 5, `${A.totalPoints(G.character.save)}`);
@@ -192,6 +196,41 @@ ok('save.backfill-kills', A.isUnlocked(legacy, 'sav_kill10') && A.progressOf(leg
 ok('save.backfill-flags', A.progressOf(legacy, D.ACHIEVEMENTS.find((d) => d.id === 'kesif_wp5')) === 2 && A.isUnlocked(legacy, 'kesif_reg1') && A.isUnlocked(legacy, 'gorev_1'));
 ok('save.backfill-returns-new', firstRun.some((d) => d.id === 'sev_lv30') && firstRun.some((d) => d.id === 'sav_kill10'));
 ok('save.backfill-idempotent', A.backfill(legacy, 6).length === 0 && legacy.achievements.v === 1);
+
+// ------------------------------------------------------------------------------------------------ batch.*
+// A scene change backfills silently (one summary line, no toast, no party echo); live unlocks in one window share a toast.
+{
+  await wait(WINDOW); // flush toasts queued by the stages above
+  const main = G.character;
+  G.net = { isOnline: true, sendChat: (t) => sent.push(t) };
+  const legacyCh = CharacterState.create('Toplu', 'knight');
+  delete legacyCh.save.achievements;
+  legacyCh.save.level = 30;
+  legacyCh.save.stats.kills = 120;
+  legacyCh.save.stats.bossKills = 2;
+  G.character = legacyCh;
+  sent.length = 0;
+  clearLogs();
+  G.events.emit('scene:changed', { id: 'world' });
+  const sys = chat.filter((c) => c.channel === 'system');
+  ok('batch.backfill-one-line', sys.length === 1 && /^\d+ başarım kazandın \(toplam \d+ puan\)$/.test(sys[0]?.text ?? ''), sys.map((c) => c.text).join(' | '));
+  ok('batch.backfill-count', unlocks.length >= 3 && sys[0]?.text === `${unlocks.length} başarım kazandın (toplam ${A.totalPoints(legacyCh.save)} puan)`, `${unlocks.length} unlocks`);
+  ok('batch.backfill-silent', toasts.length === 0 && sent.length === 0, `toasts ${toasts.length}, party ${sent.length}`);
+  // live: two unlocks in one window -> one merged toast, but one chat line each
+  const mergeCh = CharacterState.create('Birlesik', 'knight');
+  G.character = mergeCh;
+  clearLogs();
+  G.events.emit('player:levelup', { level: 5 });
+  G.events.emit('waypoint:discovered', { id: 'merge_a' });
+  ok('batch.live-both-unlocked', A.isUnlocked(mergeCh.save, 'sev_lv5') && A.isUnlocked(mergeCh.save, 'kesif_wp1'));
+  ok('batch.live-toast-waits', toasts.length === 0, 'the toast waits for the window');
+  await wait(WINDOW);
+  ok('batch.live-one-toast', toasts.length === 1 && /^2 başarım kazanıldı: /.test(toasts[0]), toasts.join(' | '));
+  ok('batch.live-chat-each', chat.filter((c) => c.channel === 'system' && /başarımını kazandın!$/.test(c.text)).length === 2);
+  ok('batch.live-party-each', sent.length === 2, `party ${sent.length}`);
+  G.character = main;
+  G.net = { isOnline: false };
+}
 
 // The disposer detaches every subscription: later events change nothing
 dispose();

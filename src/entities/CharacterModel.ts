@@ -18,6 +18,7 @@ export interface CharacterModelOpts {
   tint?: number;                                        // optional extra 0xRRGGBB multiply on top of the variant
   hooded?: boolean;                                     // rogue only: Rogue_Hooded (default) or Rogue
   hideHelm?: boolean;                                   // "Kaskı gizle"
+  siegeAura?: boolean;                                  // siege winner's gold aura on the main-hand weapon (SiegeRules.siegeGlow)
   shadow?: boolean;                                     // blob shadow (default true)
 }
 
@@ -34,6 +35,8 @@ export interface CharacterModel {
   setVariant(variant: number, tint?: number): void;
   /** "Kaskı gizle" toggle at runtime (takes effect on the next setGear / immediately for the built-in helmet). */
   setHideHelm(hide: boolean): void;
+  /** Siege winner aura on the main-hand weapon (faint gold shell); toggled in place, the weapon is not reloaded. */
+  setSiegeAura(on: boolean): void;
   /**
    * Temporary "tool" loadout: show exactly these built-in nodes (e.g. ['1H_Crossbow'] for Arbalet Atışı, ['Spellbook_open']
    * for channels) and hide every other weapon. Pass null to restore the gear loadout.
@@ -361,7 +364,7 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
     warnOnce('model:' + url, `[character] model failed to load: ${url}`);
     const fallback = G.assets.instantiate(url); // placeholder box
     holder.add(fallback);
-    return { root: holder, anim: null, classId, shadow: null, async setGear() {}, setVariant() {}, setHideHelm() {}, setNodeOverride() {}, getBone: () => null, getWeaponRoot: () => null, getWeaponTip: () => null, createGhost: () => null, dispose() {} };
+    return { root: holder, anim: null, classId, shadow: null, async setGear() {}, setVariant() {}, setHideHelm() {}, setSiegeAura() {}, setNodeOverride() {}, getBone: () => null, getWeaponRoot: () => null, getWeaponTip: () => null, createGhost: () => null, dispose() {} };
   }
 
   // the body keeps the model's materials until applyVariant swaps in the shared variant (no per-instance copies)
@@ -398,6 +401,7 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
   let tint = opts.tint;
   let gearVersion = 0;
   let hideHelm = !!opts.hideHelm;
+  let siegeAura = !!opts.siegeAura;
   const attached: { weapon?: THREE.Object3D; offhand?: THREE.Object3D; helm?: THREE.Object3D } = {};
   const attachedTips: { weapon?: THREE.Object3D; offhand?: THREE.Object3D } = {};
   let visibleBuiltin: { weapon: THREE.Object3D | null; offhand: THREE.Object3D | null } = { weapon: null, offhand: null };
@@ -439,7 +443,7 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
     if (slot !== 'helm') attachedTips[slot] = tipOf(obj);
     const up = item.upgrade ?? 0;
     try {
-      G.vfx.weaponGlow(obj, slot === 'helm' ? 0 : up);
+      G.vfx.weaponGlow(obj, slot === 'helm' ? 0 : up, slot === 'weapon' && siegeAura);
     } catch (e) {
       console.warn('[character] weaponGlow failed', e);
     }
@@ -560,7 +564,7 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
         // same item, new upgrade level: refresh the glow only
         (cur.userData as { upgrade?: number }).upgrade = item.upgrade ?? 0;
         try {
-          G.vfx.weaponGlow(cur, slot === 'helm' ? 0 : item.upgrade ?? 0);
+          G.vfx.weaponGlow(cur, slot === 'helm' ? 0 : item.upgrade ?? 0, slot === 'weapon' && siegeAura);
         } catch { /* ignore */ }
         continue;
       }
@@ -614,6 +618,12 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
       if (hide === hideHelm) return;
       hideHelm = hide;
       void setGear(gear);
+    },
+    setSiegeAura(on: boolean) {
+      if (on === siegeAura) return;
+      siegeAura = on;
+      const w = attached.weapon;
+      if (w) G.vfx.weaponGlow(w, (w.userData as { upgrade?: number }).upgrade ?? 0, on);
     },
     setNodeOverride(names: string[] | null) {
       override = names && names.length ? names : null;

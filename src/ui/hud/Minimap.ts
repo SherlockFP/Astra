@@ -9,6 +9,7 @@ import { ICON, div, setDisplay, setText, setStyle, clampN, fmtClock, h, iconEl, 
 import type { HudCtx, HudWidget } from './types';
 import { inWorldMap, questGiverMarks, questTargetMarks, tileCentreM, waypointKnown, worldExtras } from './questMarks';
 import { activeEventPins } from '../../scenes/world/EventCalendar';
+import { getSocial } from '../../systems/Social';
 
 const SIZE = 192;
 const R = SIZE / 2;
@@ -88,6 +89,9 @@ export class Minimap implements HudWidget {
   private infoAcc = 1;
   private readonly infoEl: HTMLElement;
   private readonly eyeEl: HTMLButtonElement;
+  /** "Çevrimiçi: N" under the ring (G.presence); shown once the count is known. */
+  private readonly onlineEl: HTMLButtonElement;
+  private onlineShown = false;
 
   constructor() {
     this.el = div('mm');
@@ -120,6 +124,17 @@ export class Minimap implements HudWidget {
     // optional clock / FPS line (Settings.showMapInfo); an overlay, so it takes no layout height
     this.infoEl = div('mm-info', this.el);
     setDisplay(this.infoEl, false);
+    // online count under the ring; a click lists the players the same way /kim does
+    this.onlineEl = h('button', 'mm-online hud-interactive', this.el);
+    this.onlineEl.type = 'button';
+    this.onlineEl.title = 'Çevrimiçi oyuncuları listele (/kim)';
+    setDisplay(this.onlineEl, false);
+    this.onlineEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      uiSound('ui_click', 0.5);
+      getSocial().command('kim');
+    });
+    G.events.on('presence:changed', ({ count }) => this.setOnline(count));
     this.canvas.addEventListener('wheel', (e) => {
       this.zoom(e.deltaY < 0 ? 1.15 : 0.87);
       e.preventDefault();
@@ -301,6 +316,12 @@ export class Minimap implements HudWidget {
     setStyle(this.subEl, 'color', bandTone(G.character?.level ?? 1, band));
   }
 
+  private setOnline(count: number): void {
+    this.onlineShown = true;
+    setText(this.onlineEl, `Çevrimiçi: ${count}`);
+    setDisplay(this.onlineEl, true);
+  }
+
   private updateEye(): void {
     const on = this.finderState === 'listing' || this.finderState === 'proposal';
     setDisplay(this.eyeEl, on);
@@ -359,6 +380,7 @@ export class Minimap implements HudWidget {
     setText(this.zoneEl, title);
     this.updateBand(ctx, sub);
     this.updateEye();
+    if (!this.onlineShown && G.presence) this.setOnline(G.presence.count());
     this.updateInfo(ctx);
     if (!ctx2) return;
     ctx2.clearRect(0, 0, SIZE, SIZE);

@@ -3,6 +3,7 @@ import { Actor } from './Actor';
 import { Interpolator } from './Interpolator';
 import { G } from '../game/G';
 import { loadCharacterModel, classResource, type CharacterModel, type GearMap } from './CharacterModel';
+import { siegeGlow } from '../systems/SiegeRules';
 import type { ClassId, EntityId } from '../types/common';
 import type { CharacterState } from '../systems/CharacterState';
 import type { EquipSlot, ItemInstance } from '../types/items';
@@ -170,7 +171,7 @@ export class Player extends Actor {
 
     let cm: CharacterModel;
     try {
-      cm = await loadCharacterModel(this.classId, { variant, tint, gear, hideHelm, hooded: save?.flags?.hooded !== false });
+      cm = await loadCharacterModel(this.classId, { variant, tint, gear, hideHelm, hooded: save?.flags?.hooded !== false, siegeAura: this.siegeAuraOn() });
     } catch (e) {
       console.error('[player] model load failed', e);
       return;
@@ -192,6 +193,17 @@ export class Player extends Actor {
     const out: GearMap = {};
     for (const s of VISIBLE_SLOTS) if (src[s]) out[s] = src[s];
     return out;
+  }
+
+  /** Local player: the siege winner's weapon aura, from the saved holder record (same rule as the Pazar tax cut). */
+  siegeAuraOn(): boolean {
+    const save = this.character?.save;
+    return this.isLocal && siegeGlow(save?.siege?.holder, save?.guild?.gid);
+  }
+
+  /** Re-reads the siege record (a siege ended, or the guild changed) and updates the weapon aura in place. */
+  refreshSiegeAura(): void {
+    this.charModel?.setSiegeAura(this.siegeAuraOn());
   }
 
   /** Re-attach weapon/offhand visuals + upgrade glow after equipment changes. */

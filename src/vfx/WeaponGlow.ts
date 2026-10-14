@@ -23,10 +23,17 @@ const TIERS: TierDef[] = [
   { level: 7, layers: [{ color: 0x3fa9ff, power: 2.3, inflate: 0.022, alpha: 0.6, pulse: 0.4, base: 0.06 }], rate: 0, kind: 'none' },
 ];
 
+/** No upgrade tier (+0 … +6): only the siege aura, if any. */
+const NO_TIER: TierDef = { level: 0, layers: [], rate: 0, kind: 'none' };
+
+/** Siege winner aura (SiegeRules.siegeGlow): a faint gold shell, no particles; drawn over the upgrade tier when both apply. */
+const SIEGE_LAYER: TierDef['layers'][number] = { color: 0xffd24a, power: 2.4, inflate: 0.02, alpha: 0.4, pulse: 0.2, base: 0.03 };
+
 interface State {
   root: THREE.Object3D;
   level: number;
   tier: TierDef;
+  siege: boolean;
   shells: THREE.Mesh[];
   mats: THREE.ShaderMaterial[];
   box: THREE.Box3;
@@ -46,13 +53,14 @@ export class WeaponGlows {
   private map = new Map<THREE.Object3D, State>();
   constructor(private fx: Fx) {}
 
-  set(root: THREE.Object3D, upgrade: number): void {
+  set(root: THREE.Object3D, upgrade: number, siege = false): void {
     const level = Math.floor(upgrade);
-    const tier = TIERS.find((t) => level >= t.level) ?? null;
+    const tier = TIERS.find((t) => level >= t.level) ?? NO_TIER;
     const cur = this.map.get(root);
-    if (cur && cur.tier === tier && cur.shells.every((s) => s.parent)) return;
+    if (cur && cur.tier === tier && cur.siege === siege && cur.shells.every((s) => s.parent)) return;
     this.remove(root);
-    if (!tier) return;
+    const layers = siege ? [...tier.layers, SIEGE_LAYER] : tier.layers;
+    if (!layers.length) return;
     const shells: THREE.Mesh[] = [];
     const mats: THREE.ShaderMaterial[] = [];
     const targets: THREE.Mesh[] = [];
@@ -74,7 +82,7 @@ export class WeaponGlows {
       // compensate for non-unit scale so the inflate is roughly world-constant
       m.updateWorldMatrix(true, false);
       const sc = Math.max(1e-3, new THREE.Vector3().setFromMatrixScale(m.matrixWorld).x);
-      for (const L of tier.layers) {
+      for (const L of layers) {
         const mat = shellMaterial(L.color, { power: L.power, inflate: L.inflate / sc, alpha: L.alpha, pulse: L.pulse, rainbow: L.rainbow, base: L.base });
         const shell = new THREE.Mesh(m.geometry, mat);
         shell.userData.vfxShell = true;
@@ -85,7 +93,7 @@ export class WeaponGlows {
         mats.push(mat);
       }
     }
-    this.map.set(root, { root, level, tier, shells, mats, box, carry: 0, lightT: 0, t: Math.random() * 10 });
+    this.map.set(root, { root, level, tier, siege, shells, mats, box, carry: 0, lightT: 0, t: Math.random() * 10 });
   }
 
   remove(root: THREE.Object3D): void {

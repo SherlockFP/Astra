@@ -17,6 +17,11 @@ import { learnPet } from './Pets';
 /** Boss kills with the same boss id and entity id within this window count once (two sources can report one kill). */
 const BOSS_DEDUPE_MS = 30_000;
 
+/** Live unlocks that land within this window (ms, from the first one) share one toast. */
+export const TOAST_MERGE_MS = 2000;
+/** Names listed in a merged toast before the rest is counted. */
+const TOAST_NAMES_MAX = 3;
+
 // ---------------------------------------------------------------------------------------------- save helpers (pure)
 
 /** The character's achievement block, created on first use. Missing parts of an older block are filled in. */
@@ -138,33 +143,74 @@ export function backfill(save: CharacterSave, now = Date.now()): AchievementDef[
 
 // ---------------------------------------------------------------------------------------------- game wiring
 
+/** Live unlocks waiting for the merged toast, and the timer that shows them. */
+let toastQueue: AchievementDef[] = [];
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
 /** Applies one metric change to the local character, then unlocks and announces what it completed. */
 export function feed(change: (save: CharacterSave) => void): void {
   const ch = G.character;
   if (!ch) return;
   try {
     change(ch.save);
-    for (const def of checkUnlocks(ch.save)) announce(def);
+    const fresh = checkUnlocks(ch.save);
+    if (fresh.length) announceLive(fresh);
     ch.persist();
   } catch (e) {
     console.warn('[achievements] update failed', e);
   }
 }
 
-function announce(def: AchievementDef): void {
+/** A live unlock: chat line, party echo (online), sound once, event per achievement; the toast is merged (queueToast). */
+function announceLive(defs: AchievementDef[]): void {
   const ch = G.character;
   if (!ch) return;
   const ev = G.events;
-  toast(`Başarım kazanıldı: ${def.name} (+${def.points} puan)${def.title ? ` · Unvan: ${def.title}` : ''}`, 'success');
-  if (def.pet && ch.save.pets?.known.includes(def.pet)) toast(`Evcil hayvan ödülü: ${PET_BY_ID[def.pet]?.name ?? def.pet}`, 'success');
   try {
     G.audio?.play('achievement');
   } catch {
     /* audio unavailable */
   }
-  ev.emit('net:chat', { from: '', text: `${def.name} başarımını kazandın!`, channel: 'system' });
-  if (G.net?.isOnline) G.net.sendChat(`${ch.save.name}: ${def.name} başarımını kazandı!`);
-  ev.emit('achievement:unlocked', { id: def.id, name: def.name, points: def.points, title: def.title });
+  for (const def of defs) {
+    ev.emit('net:chat', { from: '', text: `${def.name} başarımını kazandın!`, channel: 'system' });
+    if (G.net?.isOnline) G.net.sendChat(`${ch.save.name}: ${def.name} başarımını kazandı!`);
+    ev.emit('achievement:unlocked', { id: def.id, name: def.name, points: def.points, title: def.title });
+  }
+  queueToast(defs);
+}
+
+/** Adds live unlocks to the open toast window; the first one opens it, the window closes after TOAST_MERGE_MS. */
+function queueToast(defs: AchievementDef[]): void {
+  toastQueue.push(...defs);
+  toastTimer ??= setTimeout(flushToast, TOAST_MERGE_MS);
+}
+
+/** One toast for everything queued in the window: a single unlock keeps its own text, several are listed together. */
+function flushToast(): void {
+  toastTimer = null;
+  const defs = toastQueue;
+  toastQueue = [];
+  if (!defs.length) return;
+  const save = G.character?.save;
+  const points = defs.reduce((sum, d) => sum + d.points, 0);
+  const names = defs.map((d) => d.name);
+  const listed = names.slice(0, TOAST_NAMES_MAX).join(', ') + (names.length > TOAST_NAMES_MAX ? ` ve ${names.length - TOAST_NAMES_MAX} tane daha` : '');
+  const parts = [defs.length === 1 ? `Başarım kazanıldı: ${names[0]} (+${points} puan)` : `${defs.length} başarım kazanıldı: ${listed} (+${points} puan)`];
+  const titles = defs.filter((d) => d.title).map((d) => d.title as string);
+  if (titles.length) parts.push(`Unvan: ${titles.join(', ')}`);
+  const pets = defs.filter((d) => d.pet && save?.pets?.known.includes(d.pet)).map((d) => PET_BY_ID[d.pet!]?.name ?? d.pet!);
+  if (pets.length) parts.push(`Evcil hayvan ödülü: ${pets.join(', ')}`);
+  toast(parts.join(' · '), 'success');
+}
+
+/**
+ * Backfill unlocks are silent: one system chat line with the count and the total points. No toast, sound or party echo;
+ * the achievement:unlocked event still fires for each one.
+ */
+function announceBackfill(defs: AchievementDef[], save: CharacterSave): void {
+  const ev = G.events;
+  for (const def of defs) ev.emit('achievement:unlocked', { id: def.id, name: def.name, points: def.points, title: def.title });
+  ev.emit('net:chat', { from: '', text: `${defs.length} başarım kazandın (toplam ${totalPoints(save)} puan)`, channel: 'system' });
 }
 
 /** Chooses the title of the local character and saves it. */
@@ -191,7 +237,8 @@ export function installAchievements(): () => void {
       const ch = G.character;
       if (!ch) return;
       try {
-        for (const def of backfill(ch.save)) announce(def);
+        const fresh = backfill(ch.save);
+        if (fresh.length) announceBackfill(fresh, ch.save);
         ch.persist();
       } catch (e) {
         console.warn('[achievements] backfill failed', e);
@@ -279,5 +326,9 @@ export function installAchievements(): () => void {
   return () => {
     for (const off of offs) off();
     bossSeen.clear();
+    if (toastTimer !== null) {
+      clearTimeout(toastTimer);
+      flushToast();
+    }
   };
 }

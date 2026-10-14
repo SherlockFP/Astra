@@ -223,6 +223,7 @@ export class SiegeRuntime implements PvpHook {
     const zaferUntil = won ? this.now() + SIEGE.ZAFER_SEC * 1000 : prev?.zaferUntil;
     ch.save.siege = { holder: h ? { ...h, week: Math.round(clampNum(m.w, 0, 1e9, 0)) } : null, ...(zaferUntil ? { zaferUntil } : {}) };
     ch.persist();
+    G.player?.refreshSiegeAura?.(); // the winning guild's weapon glow follows the new record
     const line = h
       ? `Kale Kuşatması sona erdi. Bayrağı tutan: ${h.name}.${won ? ` ${NATIONS[ch.nation].name} için Zafer: 1 saat +${SIEGE.ZAFER_XP_PCT}% XP.` : ''}`
       : 'Kale Kuşatması sona erdi. Bayrağı kimse tutamadı.';
