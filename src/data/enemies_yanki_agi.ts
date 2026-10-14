@@ -318,7 +318,7 @@ boss({
     bp('p2', 0.4, ['yk_kk_string', 'yk_kk_hook', 'yk_kk_tide', 'yk_kk_haul', 'yk_kk_singularity', 'yk_kk_poisons', 'yk_kk_webs'], { yell: 'Hasat hızlansın!' }),
   ],
   intro: 'Kara Kan şehri yükseltecek. Siz yalnızca akacaksınız.', death: 'Ağ... yırtıldı... yankı... susuyor...',
-  arena: { cx: 222, cz: 116, w: 60, h: 56, homeX: 222, homeZ: 128 } });
+  arena: { cx: 222, cz: 118, w: 60, h: 52, homeX: 222, homeZ: 128 } });
 
 for (const id of ['boss_avanoksa', 'boss_anubzek', 'boss_kikatal']) {
   const b = BOSSES[id];

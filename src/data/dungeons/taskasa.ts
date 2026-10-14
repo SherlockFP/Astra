@@ -65,7 +65,7 @@ const rect = (x: number, z: number, w: number, h: number): TileRect => ({ x, z, 
 const ROOM_BASE: RoomDef[] = [
   room('giris', 'Kasa Eşiği', 28, 74, 16, 10, 'earthen_dark', 'earthen', 0.3),
   room('yaklasim', 'Muhafız Yaklaşımı', 22, 62, 28, 12, 'earthen', 'earthen', 0.45),
-  room('maden_ambari', 'Madenci Ambarı', 10, 64, 12, 8, 'dirt', 'cave', 0.6, { optional: true }),
+  room('maden_ambari', 'Madenci Ambarı', 10, 64, 12, 9, 'dirt', 'cave', 0.6, { optional: true }),
   room('ray_gecidi', 'Eski Raylar', 8, 60, 4, 4, 'dirt', 'cave', 0.3, { skip: true }),
   room('merkez', 'Merkezi İşleme', 16, 44, 40, 18, 'earthen', 'earthen', 0.3),
   room('k_bati', 'Batı Maden Yolu', 10, 50, 6, 4, 'earthen_dark', 'earthen', 0.4),
@@ -77,8 +77,8 @@ const ROOM_BASE: RoomDef[] = [
   room('k_pota', 'Kor Geçidi', 64, 40, 4, 4, 'dirt', 'cave', 0.3),
   room('skarmorak_odasi', 'Kristal Kazanı', 58, 26, 14, 14, 'lava_rock', 'cave', 0.15, { boss: 2 }),
   room('k_edna', 'Otomat Geçidi', 34, 40, 4, 4, 'earthen_dark', 'earthen', 0.3),
-  room('edna_odasi', 'Savunma Çekirdeği', 27, 26, 18, 14, 'tiles', 'earthen', 0.15, { boss: 1 }),
-  room('titan_koridoru', 'Titan Tünelleri', 24, 18, 24, 8, 'earthen_dark', 'earthen', 0.4),
+  room('edna_odasi', 'Savunma Çekirdeği', 27, 27, 18, 13, 'tiles', 'earthen', 0.15, { boss: 1 }),
+  room('titan_koridoru', 'Titan Tünelleri', 24, 18, 24, 9, 'earthen_dark', 'earthen', 0.4),
   room('fisilti_salonu', 'Fısıltı Salonu', 24, 0, 24, 18, 'earthen_dark', 'earthen', 0.1, { boss: 3 }),
 ];
 
@@ -157,13 +157,13 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
     floorY: 1.2, ceiling: 18, ceilingDark: true, explicitDecor: true, lightColor: GOLD, ambientVfx: 'ambient_dust',
     fog: { color: 0x2a150d, near: 14, far: 70 },
     zones: [GOLD_RUNE(35.5, 32.5, 6.5, GOLD, 0.55), GOLD_RUNE(35.5, 32.5, 3.5, GOLD, 0.7)],
-    tiers: [gal(27, 26, 18, 1, 8.4), gal(27, 39, 18, 1, 8.4), gal(27, 27, 1, 12, 8.4), gal(44, 27, 1, 12, 8.4)],
+    tiers: [gal(27, 27, 18, 1, 8.4), gal(27, 39, 18, 1, 8.4), gal(27, 28, 1, 11, 8.4), gal(44, 28, 1, 11, 8.4)],
   },
   titan_koridoru: {
     ceiling: 10, ceilingDark: true, lightColor: GOLD, ambientVfx: 'ambient_dust',
     fog: { color: 0x1e100a, near: 12, far: 60 },
-    slopes: [stairs(rect(24, 18, 24, 8), 'z', -3.6, 1.2, { id: 'descent' })],
-    tiers: [gal(24, 18, 1, 8, 4.5), gal(47, 18, 1, 8, 4.5)],
+    slopes: [stairs(rect(24, 18, 24, 9), 'z', -3.6, 1.2, { id: 'descent' })],
+    tiers: [gal(24, 18, 1, 9, 4.5), gal(47, 18, 1, 9, 4.5)],
   },
   fisilti_salonu: {
     floorY: -3.6, ceiling: 30, ceilingDark: true, explicitDecor: true, lightColor: VOID, ambientVfx: 'ambient_shadow_wisps',
@@ -183,18 +183,18 @@ const DOORS = [
   door('yaklasim', 'maden_ambari', 22, 66, 'w', 2, 'none'),
   door('maden_ambari', 'ray_gecidi', 10, 64, 'n', 2, 'none'),
   door('ray_gecidi', 'dokum_girisi', 8, 60, 'n', 2, 'none'),
-  door('merkez', 'k_bati', 16, 51, 'w', 2, 'none'),
-  door('k_bati', 'dokum_girisi', 10, 51, 'w', 2, 'none'),
-  door('dokum_girisi', 'k_dokum', 5, 44, 'n', 2, 'none'),
-  door('k_dokum', 'makinist_odasi', 5, 40, 'n', 2, 'boss_lock'),
-  door('merkez', 'k_dogu', 55, 51, 'e', 2, 'none'),
-  door('k_dogu', 'pota_girisi', 61, 51, 'e', 2, 'none'),
-  door('pota_girisi', 'k_pota', 65, 44, 'n', 2, 'none'),
-  door('k_pota', 'skarmorak_odasi', 65, 40, 'n', 2, 'boss_lock'),
-  door('merkez', 'k_edna', 35, 44, 'n', 2, 'none'),
-  door('k_edna', 'edna_odasi', 35, 40, 'n', 2, 'boss_lock'),
-  door('edna_odasi', 'titan_koridoru', 35, 26, 'n', 2, 'boss_exit'),
-  door('titan_koridoru', 'fisilti_salonu', 35, 18, 'n', 2, 'boss_lock'),
+  door('merkez', 'k_bati', 16, 50, 'w', 4, 'none'),
+  door('k_bati', 'dokum_girisi', 10, 50, 'w', 4, 'none'),
+  door('dokum_girisi', 'k_dokum', 4, 44, 'n', 4, 'none'),
+  door('k_dokum', 'makinist_odasi', 4, 40, 'n', 4, 'boss_lock'),
+  door('merkez', 'k_dogu', 55, 50, 'e', 4, 'none'),
+  door('k_dogu', 'pota_girisi', 61, 50, 'e', 4, 'none'),
+  door('pota_girisi', 'k_pota', 64, 44, 'n', 4, 'none'),
+  door('k_pota', 'skarmorak_odasi', 64, 40, 'n', 4, 'boss_lock'),
+  door('merkez', 'k_edna', 34, 44, 'n', 4, 'none'),
+  door('k_edna', 'edna_odasi', 34, 40, 'n', 4, 'boss_lock'),
+  door('edna_odasi', 'titan_koridoru', 34, 27, 'n', 4, 'boss_exit'),
+  door('titan_koridoru', 'fisilti_salonu', 34, 18, 'n', 4, 'boss_lock'),
 ];
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -564,17 +564,17 @@ function dressRooms(p: (id: string, fn: (pr: Props, r: TileRect) => void) => voi
     q.at(M_ALTAR, 35.5, 32.5, { scale: 3.5, tint: 0xffd54a, collide: true, id: 'lens_pedestal' });
     q.ring(M_STATUE_BLOCK, 35.5, 32.5, 5.2, 8, { scale: 1, tint: 0x9a7a60, collide: true }, 'out', 90);
     for (const [x, z] of [[29, 28], [42, 28], [29, 37], [42, 37]] as [number, number][]) q.at(M_PILLAR, x, z, { scale: 1.6, tint: 0xb08868, collide: true });
-    for (const [x, z] of [[27.2, 29], [27.2, 36], [43.8, 29], [43.8, 36], [30, 26.2], [41, 26.2], [30, 38.8], [41, 38.8]] as [number, number][]) {
+    for (const [x, z] of [[27.2, 29], [27.2, 36], [43.8, 29], [43.8, 36], [30, 27.5], [41, 27.5], [30, 38.8], [41, 38.8]] as [number, number][]) {
       q.at(M_SPIKES, x, z, { y: 0.02, emissive: GOLD, emissiveIntensity: 0.4 });
     }
     // Ring gallery (absolute 8.4) with Titan statues
-    for (const [x, z] of [[29, 26.5], [35.5, 26.5], [42, 26.5], [30, 39.5], [41, 39.5], [27.5, 30], [44.5, 35]] as [number, number][]) {
+    for (const [x, z] of [[29, 27.5], [35.5, 27.5], [42, 27.5], [30, 39.5], [41, 39.5], [27.5, 30], [44.5, 35]] as [number, number][]) {
       q.at(M_STATUE, x, z, { scale: 2.4, tint: 0x8a7a68, y: 7.2 });
     }
     // Lens chandelier (no pooled light here: the lens glow is the light)
     q.list.push(...chandelier(35.5, 32.5, 12.5, { light: true, color: GOLD }));
-    for (const [x, z] of [[31, 25.8], [40, 25.8]] as [number, number][]) q.at(M_ROCK, x, z, { scale: 1.0, tint: 0xff6a10, emissive: 0xff6a10, emissiveIntensity: 0.8, light: lt(LAVA, 1.8, 14, true) });
-    q.row(M_STAL, 28, 27, 43, 27, 4, { scale: 0.6, tint: 0x4a3020, y: 15 });
+    for (const [x, z] of [[31, 27.5], [40, 27.5]] as [number, number][]) q.at(M_ROCK, x, z, { scale: 1.0, tint: 0xff6a10, emissive: 0xff6a10, emissiveIntensity: 0.8, light: lt(LAVA, 1.8, 14, true) });
+    q.row(M_STAL, 28, 28, 43, 28, 4, { scale: 0.6, tint: 0x4a3020, y: 15 });
     q.torches(r, 'w', [29, 33], GOLD);
     q.torches(r, 'e', [29, 33], GOLD);
   });

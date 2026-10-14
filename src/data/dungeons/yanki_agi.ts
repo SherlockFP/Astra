@@ -47,13 +47,13 @@ const ST_GRAND_TELLER: SlopeDef = stairs(rect(16, 46, 4, 5), 'x', 10, 4, { id: '
 const ST_IXIN: SlopeDef = stairs(rect(17, 40, 3, 2), 'z', 7, 4, { id: 'h2_ixin' });
 const ST_NAKT: SlopeDef = stairs(rect(25, 40, 3, 2), 'z', 7, 4, { id: 'h3_nakt' });
 const ST_ATIK: SlopeDef = stairs(rect(30, 46, 2, 4), 'x', 4, 7, { id: 'h4_atik' });
-const RP_BIR: SlopeDef = ramp(rect(30, 40, 4, 3), 'x', 4, 2, { id: 'h5_ramp_bir' });
-const RP_IKI: SlopeDef = ramp(rect(40, 28, 3, 5), 'z', 8, 2, { id: 'h6_yukari_yol' });
+const RP_BIR: SlopeDef = ramp(rect(30, 40, 4, 4), 'x', 4, 2, { id: 'h5_ramp_bir' });
+const RP_IKI: SlopeDef = ramp(rect(40, 28, 4, 5), 'z', 8, 2, { id: 'h6_yukari_yol' });
 const RP_GECIT: SlopeDef = ramp(rect(30, 28, 4, 3), 'x', 5, 6.5, { id: 'h7_gecit' });
 const ST_LAB_W: SlopeDef = stairs(rect(31, 20, 3, 4), 'x', 5, 8, { id: 'h8_lab_west' });
 const ST_YANKI: SlopeDef = stairs(rect(24, 17, 5, 4), 'z', 11, 5, { id: 'h9_yanki_merdiveni' });
-const RP_TUNEL: SlopeDef = ramp(rect(34, 8, 6, 3), 'x', 11, 7, { id: 'h10_tunel' });
-const ST_PIT: SlopeDef = stairs(rect(50, 22, 4, 3), 'z', 7, 3, { id: 'h11_pit_stair' });
+const RP_TUNEL: SlopeDef = ramp(rect(34, 8, 6, 4), 'x', 11, 7, { id: 'h10_tunel' });
+const ST_PIT: SlopeDef = stairs(rect(50, 23, 4, 3), 'z', 7, 3, { id: 'h11_pit_stair' });
 
 // ---- zones -----------------------------------------------------------------------------------------------------------------
 /** Chasm of the Yarık Köprüsü (fall rule of CORE_MECHANICS section 13: a fall costs 25 % and respawns at the last safe tile). */
@@ -127,7 +127,7 @@ const ROOMS: RoomDef[] = [
       P(dg('bottle_A_green'), 33, 47.5), P(dg('bottle_B_green'), 33.5, 48.5),
     ],
   }),
-  room('yumurta_odasi', 'Yumurta Kuluçkası', 36, 44, 10, 9, 'dirt', 'cave', 0.25, {
+  room('yumurta_odasi', 'Yumurta Kuluçkası', 36, 45, 10, 9, 'dirt', 'cave', 0.25, {
     floorY: 7, ceiling: 12, optional: true, fog: fog(0x16241a, 8, 38), lightColor: GREEN,
     props: [
       P(gp('chest_epic'), 44, 51, { scale: 0.8 }),
@@ -135,7 +135,7 @@ const ROOMS: RoomDef[] = [
       P(kn('hanging_moss'), 38, 51, { y: 3.6, tint: 0xb9c6d8 }), P(kn('hanging_moss'), 43.5, 45.5, { y: 3.6, tint: 0xb9c6d8 }),
     ],
   }),
-  room('rampa_bir', 'Ağ Rampası', 30, 40, 4, 3, 'stone_dark', 'cave', 0.15, {
+  room('rampa_bir', 'Ağ Rampası', 30, 40, 4, 4, 'stone_dark', 'cave', 0.15, {
     floorY: 4, ceiling: 8, slopes: [RP_BIR], explicitDecor: true,
     props: [
       P(hw('lantern_hanging'), 31, 41.5, { y: 3.0, light: lt(AMBER, 1.8, 9, true) }),
@@ -143,7 +143,7 @@ const ROOMS: RoomDef[] = [
       P(kn('hanging_moss'), 31.5, 40.5, { y: 3.5, tint: 0xb9c6d8 }), P(kn('hanging_moss'), 30.5, 41.5, { y: 3.5, tint: 0xb9c6d8 }),
     ],
   }),
-  room('avanoksa_yuvasi', "Avanoksa'nın Yuvası", 34, 33, 13, 11, 'stone_dark', 'cave', 0.1, {
+  room('avanoksa_yuvasi', "Avanoksa'nın Yuvası", 34, 33, 13, 12, 'stone_dark', 'cave', 0.1, {
     floorY: 2, ceiling: 20, boss: 1, explicitDecor: true, lightColor: TEAL, fog: fog(0x12202a, 12, 64),
     zones: [circleZone('dais', 40, 38, 5.2, { color: 0x1c2630 }), circleZone('rune', 40, 38, 5.6, { color: 0x1c2630, glow: 0xb9c6d8, glowIntensity: 0.4 })],
     props: [
@@ -152,7 +152,7 @@ const ROOMS: RoomDef[] = [
       P(gp('crystal_blue'), 45.5, 41, { tint: TEAL, light: lt(TEAL, 1.2, 7, false) }),
     ],
   }),
-  room('rampa_iki', 'Yukarı Yol', 40, 28, 3, 5, 'stone_dark', 'temple', 0.15, {
+  room('rampa_iki', 'Yukarı Yol', 40, 28, 4, 5, 'stone_dark', 'temple', 0.15, {
     floorY: 2, ceiling: 9, slopes: [RP_IKI], explicitDecor: true,
     props: [
       P(hw('lantern_hanging'), 41.5, 31, { y: 3.0, light: lt(AMBER, 1.8, 9, true) }),
@@ -211,7 +211,7 @@ const ROOMS: RoomDef[] = [
       P(ip('psx-medieval', 'decoration/vine_hanging'), 23, 7, { y: 6.5, tint: 0xb9c6d8 }),
     ],
   }),
-  room('tunel', 'Kara Kan Tüneli', 34, 8, 6, 3, 'stone_dark', 'forge', 0.2, {
+  room('tunel', 'Kara Kan Tüneli', 34, 8, 6, 4, 'stone_dark', 'forge', 0.2, {
     floorY: 7, ceiling: 8, slopes: [RP_TUNEL], explicitDecor: true, ambientVfx: 'ambient_shadow_wisps', lightColor: VIOLET,
     zones: [wetPool(35, 9.5, 3, 1.2)],
     props: [
@@ -234,25 +234,25 @@ const ROOMS: RoomDef[] = [
       P(kg('lantern-glass'), 46.5, 9, { scale: 2, tint: AMBER, tag: 'device', device: 'echo_gong' }),
     ],
   }),
-  room('dron_kogusu', 'Dron Koğuşu', 48, 14, 8, 8, 'dirt', 'cave', 0.3, {
+  room('dron_kogusu', 'Dron Koğuşu', 48, 14, 9, 9, 'dirt', 'cave', 0.3, {
     floorY: 7, ceiling: 12, explicitDecor: true, lightColor: GREEN, fog: fog(0x141c22, 8, 36),
     props: [
       ...[14.5, 17.5, 20.5].flatMap((z) => [49.5, 51.5, 53.5].map((x) => P(kg('coffin-old'), x, z, { y: 3.2, tint: 0xb9c6d8 }))),
       P(kn('hanging_moss'), 55, 16, { y: 3.6, tint: 0xb9c6d8 }),
     ],
   }),
-  room('kikatal_deposu', 'Alt Depo', 48, 22, 15, 14, 'stone_dark', 'forge', 0.1, {
+  room('kikatal_deposu', 'Alt Depo', 48, 23, 15, 13, 'stone_dark', 'forge', 0.1, {
     floorY: 3, ceiling: 22, openAir: true, boss: 3, explicitDecor: true, slopes: [ST_PIT], lightColor: VIOLET, fog: fog(0x1a1028, 10, 52),
     zones: [
       circleZone('pit', 55, 28.5, 1.7, { blocked: true, color: 0x000000, glow: VIOLET, glowIntensity: 1.2 }),
-      circleZone('pool', 48.8, 25.8, 1.3, { color: 0x1a0a22, glow: VIOLET }), circleZone('pool', 60.5, 24, 1.3, { color: 0x1a0a22, glow: VIOLET }),
+      circleZone('pool', 48.8, 25.8, 1.3, { color: 0x1a0a22, glow: VIOLET }), circleZone('pool', 60.5, 24.5, 1.3, { color: 0x1a0a22, glow: VIOLET }),
       circleZone('pool', 49.5, 33.5, 1.3, { color: 0x1a0a22, glow: VIOLET }), circleZone('pool', 60.5, 33.5, 1.3, { color: 0x1a0a22, glow: VIOLET }),
     ],
     props: [
       P(gp('cauldron'), 55, 28.5, { scale: 3, tint: 0x3a1245, light: lt(VIOLET, 2.0, 12, true) }),
-      P(dg('barrel_large'), 48.8, 25.8, { tint: 0x2a2030 }), P(dg('barrel_large'), 60.5, 24, { tint: 0x2a2030 }),
+      P(dg('barrel_large'), 48.8, 25.8, { tint: 0x2a2030 }), P(dg('barrel_large'), 60.5, 24.5, { tint: 0x2a2030 }),
       P(dg('barrel_large'), 49.5, 33.5, { tint: 0x2a2030 }), P(dg('barrel_large'), 60.5, 33.5, { tint: 0x2a2030 }),
-      P(gp('crystal_blue'), 55, 22.5, { tint: VIOLET, light: lt(VIOLET, 1.5, 8, false) }),
+      P(gp('crystal_blue'), 55, 23.5, { tint: VIOLET, light: lt(VIOLET, 1.5, 8, false) }),
       P(hw('lantern_hanging'), 58, 27, { y: 3.0, light: lt(VIOLET, 1.4, 7, true) }),
     ],
   }),
@@ -266,18 +266,18 @@ const DOORS: DoorDef[] = [
   door('teller', 'nakt_oyugu', 26, 40, 'n', 2, 'none'),
   door('teller', 'atik_oyugu', 29, 47, 'e', 2, 'none'),
   door('atik_oyugu', 'yumurta_odasi', 35, 47, 'e', 2, 'none'),
-  door('teller', 'rampa_bir', 29, 41, 'e', 2, 'none'),
-  { ...door('rampa_bir', 'avanoksa_yuvasi', 33, 41, 'e', 2, 'boss_lock'), requires: ['yk_p07', 'yk_p08', 'yk_p09'] },
-  door('avanoksa_yuvasi', 'rampa_iki', 40, 33, 'n', 2, 'boss_exit'),
-  door('rampa_iki', 'nobet_holu', 40, 28, 'n', 2, 'none'),
+  door('teller', 'rampa_bir', 29, 40, 'e', 4, 'none'),
+  { ...door('rampa_bir', 'avanoksa_yuvasi', 33, 40, 'e', 4, 'boss_lock'), requires: ['yk_p07', 'yk_p08', 'yk_p09'] },
+  door('avanoksa_yuvasi', 'rampa_iki', 40, 33, 'n', 4, 'boss_exit'),
+  door('rampa_iki', 'nobet_holu', 40, 28, 'n', 4, 'none'),
   door('nobet_holu', 'laboratuvar', 34, 21, 'w', 2, 'none'),
   door('rampa_iki', 'ag_gecidi', 40, 29, 'w', 2, 'none'),
   door('ag_gecidi', 'laboratuvar', 31, 28, 'n', 2, 'none'),
   door('laboratuvar', 'anubzek_terasi', 26, 17, 'n', 2, 'boss_lock'),
-  door('anubzek_terasi', 'tunel', 33, 9, 'e', 2, 'boss_exit'),
-  door('tunel', 'kan_hatti', 39, 9, 'e', 2, 'none'),
-  door('kan_hatti', 'dron_kogusu', 49, 13, 's', 2, 'none'),
-  door('dron_kogusu', 'kikatal_deposu', 51, 21, 's', 2, 'boss_lock'),
+  door('anubzek_terasi', 'tunel', 33, 8, 'e', 4, 'boss_exit'),
+  door('tunel', 'kan_hatti', 39, 8, 'e', 4, 'none'),
+  door('kan_hatti', 'dron_kogusu', 48, 13, 's', 4, 'none'),
+  door('dron_kogusu', 'kikatal_deposu', 50, 22, 's', 4, 'boss_lock'),
 ];
 
 // ---- packs (29; forces are the member sums, 502 in total, 474 on the non-optional route) ---------------------------------
