@@ -59,6 +59,7 @@ const MELEE = new Set(['knight', 'barbarian', 'rogue', 'paladin']);
 /** console noise that is not a game bug: blocked fonts (junction node_modules), relay sockets of the P2P layer, favicon, 403 of @fs. */
 const NOISE = /WebSocket|nostr|satellite|ERR_|favicon|net::|Failed to load resource|@fontsource|A network error occurred/i;
 
+let NAVS = 0; // main-frame navigations of the current journey; a reload resets the game state
 const results = [];
 const blockers = [];
 const uxNotes = [];
@@ -88,7 +89,7 @@ for (const cls of CLASSES) {
   try {
     await journey(cls);
   } catch (e) {
-    check(`[${cls}] journey finished without exception`, false, String(e?.stack ?? e).slice(0, 400));
+    check(`[${cls}] journey finished without exception`, false, `navigations=${NAVS} (>1 means the page reloaded mid-journey) ` + String(e?.stack ?? e).slice(0, 400));
   }
 }
 await browser.close();
@@ -121,6 +122,12 @@ async function journey(cls) {
     if (m.type() !== 'error') return;
     const t = m.text();
     if (!NOISE.test(t)) errors.push(`console.error: ${t.slice(0, 300)}`);
+  });
+  NAVS = 0;
+  page.on('framenavigated', (fr) => {
+    if (fr !== page.mainFrame()) return;
+    NAVS++;
+    console.log(`  NAV #${NAVS} main frame -> ${fr.url()}`);
   });
   const fpsSamples = [];
   let shotN = 0;
