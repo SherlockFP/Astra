@@ -38,7 +38,7 @@ export function registerPriest(add: SkillAdd): void {
     params: { atonement: 1, end: 0.7, chain: 0.1, move: 0.1, weight: 0 },
   });
   add({
-    id: 'priest_smite', classId: 'priest', name: 'Kutsal Ceza (Smite)', icon: I('skill-smite'), unlockLevel: 1, defaultSlot: 's1',
+    id: 'priest_smite', classId: 'priest', name: 'Kutsal Ceza (Smite)', icon: I('skill-smite'), unlockLevel: 1, defaultSlot: 'e',
     desc: 'Hedefe kutsal bir ceza indirip %140 kutsal hasar verirsin. Disiplinde verdiğin hasar müttefiklerini iyileştirir.',
     cost: 8, cooldown: 0, castTime: 1.0, hitTime: 1.0, anim: 'Spellcast_Shoot', animSpeed: 1.0,
     targeting: 'target_instant', range: 25, behavior: 'priest_strike', damage: { coef: 1.4, type: 'holy' },
@@ -62,7 +62,7 @@ export function registerPriest(add: SkillAdd): void {
     params: { dispel: 1, end: 0.6, chain: 0.1, move: 0.15, weight: 0 },
   });
   add({
-    id: 'priest_psychic_scream', classId: 'priest', name: 'Psişik Çığlık (Psychic Scream)', icon: I('debuff-fear'), unlockLevel: 8, defaultSlot: 'e',
+    id: 'priest_psychic_scream', classId: 'priest', name: 'Psişik Çığlık (Psychic Scream)', icon: I('debuff-fear'), unlockLevel: 8, defaultSlot: 's1',
     desc: 'Çevrendeki düşmanlara hasar verip onları 3 saniye korkutarak kaçmaya zorlarsın.',
     cost: 15, cooldown: 30, castTime: 0, hitTime: 0.3, anim: 'Spellcast_Shoot', animSpeed: 1.2,
     targeting: 'self_aoe', radius: 8, damage: { coef: 0.6, type: 'shadow' }, statuses: [{ status: 'fear', duration: 3 }],

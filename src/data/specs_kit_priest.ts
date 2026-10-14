@@ -25,8 +25,8 @@ export const SPECS_KIT_PRIEST: Partial<Record<SpecId, SpecDef>> = {
     mods: [],
     mainStat: 'int',
     defaultBar: {
-      lmb: 'priest_basic', rmb: 'priest_power_word_shield', q: 'priest_disc_penance', e: 'priest_flash_heal', r: 'priest_desperate_prayer',
-      s1: 'priest_disc_radiance', s2: 'priest_fade', s3: 'priest_disc_pain_suppression',
+      lmb: 'priest_basic', rmb: 'priest_power_word_shield', q: 'priest_disc_penance', e: 'priest_smite', r: 'priest_flash_heal',
+      s1: 'priest_disc_radiance', s2: 'priest_fade', s3: 'priest_disc_pain_suppression', s4: 'priest_desperate_prayer',
       m45: 'priest_disc_evangelism', m90: 'priest_disc_rapture', m180: 'priest_disc_power_infusion',
     },
   },
@@ -49,8 +49,8 @@ export const SPECS_KIT_PRIEST: Partial<Record<SpecId, SpecDef>> = {
     basic: 'priest_holy_basic',
     mainStat: 'int',
     defaultBar: {
-      lmb: 'priest_holy_basic', rmb: 'priest_holy_serenity', q: 'priest_holy_sanctify', e: 'priest_holy_prayer', r: 'priest_flash_heal',
-      s1: 'priest_holy_circle', s2: 'priest_renew', s3: 'priest_holy_mending', s4: 'priest_desperate_prayer',
+      lmb: 'priest_holy_basic', rmb: 'priest_holy_serenity', q: 'priest_holy_fire', e: 'priest_smite', r: 'priest_flash_heal',
+      s1: 'priest_holy_circle', s2: 'priest_holy_prayer', s3: 'priest_renew', s4: 'priest_desperate_prayer',
       m45: 'priest_holy_hymn', m90: 'priest_holy_guardian',
     },
   },

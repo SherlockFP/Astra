@@ -257,7 +257,7 @@ const foeAt = (z = 2.2) => {
   H.step(2);
   p.resource = 100;
   p.hp = p.maxHp * 0.5;
-  G.skills.tryCastSlot(p, 'e', H.aimFor(p, foeAt(3)));
+  G.skills.tryCastSlot(p, 's4', H.aimFor(p, foeAt(3)));
   H.stepSec(0.8);
   ok('kit.monk.cast Yenileyen Sis puts the HoT on the healed ally', p.statuses.has('renewing_mist'));
   p.hp = p.maxHp * 0.5;
@@ -391,4 +391,14 @@ for (const sid of MONK_KIT_SPEC_IDS) {
 
 console.log(fails === 0 ? '\nkit.monk: all checks PASS' : `\nkit.monk: ${fails} FAIL`);
 H.restoreConsole?.();
+// ---- kit.monk.dmg: keys 1-4 (rmb, q, e, r) carry >= 2 damage skills on each healer spec of the class
+{
+  const KEYS14 = ['rmb', 'q', 'e', 'r'];
+  const healers = Object.values(SPECS).filter((s) => s.classId === 'monk' && s.role === 'healer');
+  ok('kit.monk.dmg has a healer spec to audit', healers.length > 0, healers.map((s) => s.id).join(','));
+  for (const s of healers) {
+    const n = KEYS14.filter((k) => (H.SKILLS[s.defaultBar[k]]?.damage?.coef ?? 0) > 0).length;
+    ok(`kit.monk.dmg ${s.id} has >= 2 damage skills on keys 1-4`, n >= 2, KEYS14.map((k) => `${k}=${s.defaultBar[k]}`).join(','));
+  }
+}
 process.exit(fails === 0 ? 0 : 1);

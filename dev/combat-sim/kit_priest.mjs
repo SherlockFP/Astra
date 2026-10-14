@@ -54,7 +54,7 @@ ok('kit.priest.basic Kutsal basic is the heal bolt', SPECS.priest_holy?.basic ==
   ok('kit.priest.l1 lmb is the class basic', bar1.lmb === 'priest_basic', JSON.stringify(bar1));
   const usable = Object.values(bar1).filter((id) => id !== 'priest_basic' && SKILLS[id]?.unlockLevel <= 1);
   ok('kit.priest.l1 at least 3 usable skills at unlock 1', usable.length >= 3, usable.join(','));
-  ok('kit.priest.l1 bar is rmb shield, q flash heal, s1 smite', bar1.rmb === 'priest_power_word_shield' && bar1.q === 'priest_flash_heal' && bar1.s1 === 'priest_smite', JSON.stringify(bar1));
+  ok('kit.priest.l1 bar is rmb shield, q flash heal, e smite (damage on keys 1-4 from level 1)', bar1.rmb === 'priest_power_word_shield' && bar1.q === 'priest_flash_heal' && bar1.e === 'priest_smite', JSON.stringify(bar1));
 }
 
 // ---- kit.priest.insanity: Delilik is the class secondary (max 100, 20 per shown pip); gains and the spend match the rows
@@ -154,7 +154,7 @@ const allyAt = (x, z, hpFrac = 1) => {
   ok('kit.priest.cast L1 Hızlı Şifa heals the caster', p.hp > hp0, `hp ${hp0.toFixed(0)} -> ${p.hp.toFixed(0)}`);
   const f0 = foe.hp;
   p.resource = 100;
-  const started = G.skills.tryCastSlot(p, 's1', H.aimFor(p, foe)); H.stepSec(1.6);
+  const started = G.skills.tryCastSlot(p, 'e', H.aimFor(p, foe)); H.stepSec(1.6);
   ok('kit.priest.cast L1 Kutsal Ceza starts and hurts the foe', started === true && foe.hp < f0, `started=${started} hp ${f0} -> ${foe.hp}`);
   ok('kit.priest.cast no script errors in the L1 economy', errors.length === 0, errors.slice(0, 2).map((m) => m.slice(0, 160)).join(' | '));
 }
@@ -172,7 +172,7 @@ const allyAt = (x, z, hpFrac = 1) => {
   ok('kit.priest.cast Disiplin shield on an ally marks Keffara', ally.statuses.has('atonement'), `atonement=${ally.statuses.has('atonement')}`);
   const hpA = ally.hp;
   p.resource = 100;
-  const smite = G.skills.tryCastSlot(p, 's1', H.aimFor(p, foe)); H.stepSec(1.6);
+  const smite = G.skills.tryCastSlot(p, 'e', H.aimFor(p, foe)); H.stepSec(1.6);
   ok('kit.priest.cast Keffara: the smite heals the marked ally', ally.hp > hpA, `smite=${smite} ally hp ${hpA.toFixed(0)} -> ${ally.hp.toFixed(0)}`);
   setFriendlyTarget(null);
 }
@@ -209,7 +209,7 @@ const allyAt = (x, z, hpFrac = 1) => {
   H.step(2);
   p.resource = 100;
   p.hp = p.maxHp * 0.5;
-  G.skills.tryCastSlot(p, 's2', H.aimFor(p, foe)); H.stepSec(0.8);
+  G.skills.tryCastSlot(p, 's3', H.aimFor(p, foe)); H.stepSec(0.8);
   ok('kit.priest.cast Yenileme puts the HoT on the healed ally', p.statuses.has('renew'));
   p.hp = p.maxHp * 0.5;
   const hp1 = p.hp;
@@ -319,6 +319,20 @@ for (const sid of ["priest_discipline","priest_holy","priest_shadow"]) {
   H.stepSec(0.9);
   ok('kit.defensive priest_holy_fire strikes the target with holy damage', c === true && foe.hp < 1e9 && SKILLS.priest_holy_fire?.damage?.type === 'holy', `hp=${foe.hp}`);
   ok('kit.defensive priest_holy_fire is on the Kutsal list at unlock 6', SPECS.priest_holy.skills.includes('priest_holy_fire') && SPECS.priest_holy.unlock.priest_holy_fire === 6);
+}
+
+// ---- kit.priest.dmg: keys 1-4 (rmb, q, e, r) carry >= 2 damage skills on each healer spec, and the class bar has damage on 1-4 from level 1
+{
+  const KEYS14 = ['rmb', 'q', 'e', 'r'];
+  const isDmg = (id) => !!id && (SKILLS[id]?.damage?.coef ?? 0) > 0;
+  for (const sid of PRIEST_KIT_SPEC_IDS.filter((id) => SPECS[id]?.role === 'healer')) {
+    const bar = SPECS[sid].defaultBar;
+    const n = KEYS14.filter((k) => isDmg(bar[k])).length;
+    ok(`kit.priest.dmg ${sid} has >= 2 damage skills on keys 1-4`, n >= 2, KEYS14.map((k) => `${k}=${bar[k]}`).join(','));
+  }
+  const noDmg = [];
+  for (let L = 1; L <= 15; L++) if (!KEYS14.some((k) => isDmg(CharacterState.defaultBar('priest', L)[k]))) noDmg.push(L);
+  ok('kit.priest.dmg the class bar has damage on keys 1-4 at levels 1-15 (before a spec is chosen)', noDmg.length === 0, `no damage at L${noDmg.join(',L')}`);
 }
 
 console.log(fails === 0 ? '\nkit.priest: all checks PASS' : `\nkit.priest: ${fails} FAIL`);

@@ -1023,4 +1023,14 @@ console.log(fails === 0 ? '\nkit.paladin (pmpa): all checks PASS' : `\nkit.palad
 const engineErrors = H.errors.filter((m) => m.startsWith('ERR'));
 if (engineErrors.length) console.log(`engine console errors (${engineErrors.length}): ${[...new Set(engineErrors)].slice(0, 5).join(' | ')}`);
 H.restoreConsole?.();
+// ---- kit.paladin.dmg: keys 1-4 (rmb, q, e, r) carry >= 2 damage skills on each healer spec of the class
+{
+  const KEYS14 = ['rmb', 'q', 'e', 'r'];
+  const healers = Object.values(SPECS).filter((s) => s.classId === 'paladin' && s.role === 'healer');
+  ok('kit.paladin.dmg has a healer spec to audit', healers.length > 0, healers.map((s) => s.id).join(','));
+  for (const s of healers) {
+    const n = KEYS14.filter((k) => (H.SKILLS[s.defaultBar[k]]?.damage?.coef ?? 0) > 0).length;
+    ok(`kit.paladin.dmg ${s.id} has >= 2 damage skills on keys 1-4`, n >= 2, KEYS14.map((k) => `${k}=${s.defaultBar[k]}`).join(','));
+  }
+}
 process.exit(fails === 0 ? 0 : 1);

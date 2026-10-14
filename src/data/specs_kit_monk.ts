@@ -80,8 +80,8 @@ export const SPECS_KIT_MONK: Partial<Record<SpecId, SpecDef>> = {
     basic: 'monk_mw_basic',
     weaponArt: 'wa_tiger_barrage',
     defaultBar: {
-      lmb: 'monk_mw_basic', rmb: 'monk_mw_vivify', q: 'monk_mw_enveloping_mist', e: 'monk_mw_renewing_mist',
-      r: 'monk_mw_soothing_mist', s1: 'monk_essence_font', s2: 'monk_mw_sheilun_gift', s3: 'monk_mw_detox',
+      lmb: 'monk_mw_basic', rmb: 'monk_mw_vivify', q: 'monk_mw_enveloping_mist', e: 'monk_tiger_palm',
+      r: 'monk_blackout_kick', s1: 'monk_essence_font', s2: 'monk_mw_sheilun_gift', s3: 'monk_mw_detox', s4: 'monk_mw_renewing_mist',
       m45: 'monk_mw_thunder_tea', m90: 'monk_mw_revival',
     },
   },

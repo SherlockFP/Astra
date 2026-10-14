@@ -98,8 +98,8 @@ export const SPECS_KIT_DRUID: Partial<Record<SpecId, SpecDef>> = {
     mods: [],
     basic: 'druid_resto_basic',
     defaultBar: {
-      lmb: 'druid_resto_basic', rmb: 'druid_rejuvenation', q: 'druid_lifebloom', e: 'druid_swiftmend', s1: 'druid_wild_growth', s2: 'druid_regrowth', s3: 'druid_natures_cure',
-      m45: 'druid_ironbark', m90: 'druid_tranquility', r: 'druid_rebirth', s4: 'druid_efflorescence',
+      lmb: 'druid_resto_basic', rmb: 'druid_rejuvenation', q: 'druid_lifebloom', e: 'druid_wrath', s1: 'druid_wild_growth', s2: 'druid_regrowth', s3: 'druid_swiftmend',
+      m45: 'druid_ironbark', m90: 'druid_tranquility', r: 'druid_moonfire', s4: 'druid_efflorescence',
     },
   },
 };

@@ -80,8 +80,8 @@ const PALADIN_SPEC_LIST: SpecDef[] = [
       { skill: 'paladin_divine_shield', patch: { cooldown: 300 } },
     ],
     defaultBar: {
-      lmb: 'paladin_holy_basic', rmb: 'paladin_holy_shock', q: 'paladin_flash_of_light', e: 'paladin_light_of_dawn', r: 'paladin_word_of_glory',
-      s1: 'paladin_cleanse', s2: 'paladin_divine_steed', s3: 'paladin_divine_shield', s4: 'paladin_rebuke',
+      lmb: 'paladin_holy_basic', rmb: 'paladin_holy_shock', q: 'paladin_flash_of_light', e: 'paladin_judgement', r: 'paladin_word_of_glory',
+      s1: 'paladin_cleanse', s2: 'paladin_light_of_dawn', s3: 'paladin_divine_shield', s4: 'paladin_rebuke',
       m45: 'paladin_divine_toll', m90: 'paladin_avenging_wrath', m180: 'paladin_holy_aura_mastery',
     },
   },

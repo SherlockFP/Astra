@@ -9,6 +9,7 @@ import * as H from './harness.mjs';
 
 const { G, SKILLS, errors, events, THREE } = H;
 const { SPECS } = await H.imp('data/specs.ts');
+const { DEFAULT_BAR2_BY_SPEC } = await H.imp('data/defaultExtraBar.ts');
 const { ROTATIONS_KIT_DRUID } = await H.imp('data/rotations_kit_druid.ts');
 const { STATUSES, STATUS_RULES } = await H.imp('data/statuses.ts');
 const { CLASSES, PLAYABLE_CLASSES } = await H.imp('data/classes.ts');
@@ -428,14 +429,14 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   // Çabuk İyileşme consumes a HoT
   p.hp = p.maxHp * 0.4;
   const hpS = p.hp;
-  cast(p, 'e', null, 1.7);
+  cast(p, 's3', null, 1.7);
   ok('kit.druid.resto Çabuk İyileşme consumes a HoT and heals big', p.hp - hpS > p.maxHp * 0.03 && HOTCOUNT(p) < 4, `hots=${HOTCOUNT(p)}`);
   function HOTCOUNT(a) { return ['rejuvenation', 'regrowth', 'lifebloom', 'wild_growth'].filter((s) => a.statuses.has(s)).length; }
   // swiftmend without a HoT fails
   for (const s of ['rejuvenation', 'regrowth', 'lifebloom', 'wild_growth']) p.statuses.remove(s);
   G.skills.resetCooldown?.(p, 'druid_swiftmend');
   p.resource = 100;
-  ok('kit.druid.resto Çabuk İyileşme refuses without a HoT', cast(p, 'e', null, 0.5) === false);
+  ok('kit.druid.resto Çabuk İyileşme refuses without a HoT', cast(p, 's3', null, 0.5) === false);
   // Yaşam Çiçeği blooms at the end
   p.hp = p.maxHp * 0.2;
   p.resource = 100;
@@ -477,7 +478,7 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   const dead = new H.FakePlayer('druid', 30); dead.id = 93; H.world.add(dead);
   dead.position.set(p.position.x - Math.sin(p.yaw) * 4, 0, p.position.z - Math.cos(p.yaw) * 4); dead.alive = false; dead.hp = 0;
   ok('kit.druid.resto Yeniden Doğuş accepts a dead ally in range', G.skills.tryCast(p, 'druid_rebirth', H.aimFor(p, null)) === true);
-  ok('kit.druid.resto Yeniden Doğuş is on the resto bar (r)', G.skills.getSlotSkill(p, 'r') === 'druid_rebirth');
+  ok('kit.druid.resto Yeniden Doğuş is on the resto default bar (Shift bar 2)', DEFAULT_BAR2_BY_SPEC.druid_restoration?.includes('druid_rebirth') === true);
 }
 {
   const q = newDruid(SPECS.druid_restoration);
@@ -610,4 +611,14 @@ for (const sid of ['druid_balance', 'druid_feral', 'druid_guardian']) {
 
 console.log(fails === 0 ? '\nkit.druid: all checks PASS' : `\nkit.druid: ${fails} FAIL`);
 H.restoreConsole?.();
+// ---- kit.druid.dmg: keys 1-4 (rmb, q, e, r) carry >= 2 damage skills on each healer spec of the class
+{
+  const KEYS14 = ['rmb', 'q', 'e', 'r'];
+  const healers = Object.values(SPECS).filter((s) => s.classId === 'druid' && s.role === 'healer');
+  ok('kit.druid.dmg has a healer spec to audit', healers.length > 0, healers.map((s) => s.id).join(','));
+  for (const s of healers) {
+    const n = KEYS14.filter((k) => (H.SKILLS[s.defaultBar[k]]?.damage?.coef ?? 0) > 0).length;
+    ok(`kit.druid.dmg ${s.id} has >= 2 damage skills on keys 1-4`, n >= 2, KEYS14.map((k) => `${k}=${s.defaultBar[k]}`).join(','));
+  }
+}
 process.exit(fails === 0 ? 0 : 1);

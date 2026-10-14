@@ -122,9 +122,9 @@ for (const spec of ALL) {
   ok(`ae4.ids ${spec.id} every id is an evoker row`, ids.every((id) => !SKILLS[id] || SKILLS[id].classId === 'evoker'));
   ok(`ae4.ids ${spec.id} unlock levels cover the skill list`, spec.skills.every((id) => spec.unlock[id] !== undefined), spec.skills.filter((id) => spec.unlock[id] === undefined).join(','));
   ok(`ae4.ids ${spec.id} Turkish name and desc`, !!spec.name && spec.desc.length > 60 && spec.mainStat === 'int');
-  ok(`ae4.ids ${spec.id} bar slots hold the chain, the spec skills or the majors`, SLOTS.every((s) => {
+  ok(`ae4.ids ${spec.id} bar slots hold the chain, the spec skills, the majors or a class-wide skill (no spec field)`, SLOTS.every((s) => {
     const id = spec.defaultBar[s];
-    return id === 'evoker_basic' || spec.skills.includes(id) || Object.values(spec.majors).includes(id);
+    return id === 'evoker_basic' || spec.skills.includes(id) || Object.values(spec.majors).includes(id) || (!!SKILLS[id] && !SKILLS[id].spec);
   }));
   ok(`ae4.ids ${spec.id} unlock levels agree with the SkillDef (core buttons by 10-15, majors 10 / 20 / 30)`, spec.skills.every((id) => spec.unlock[id] === K(id).unlockLevel) && spec.skills.every((id) => spec.unlock[id] <= 15)
     && K(spec.majors.m45).unlockLevel <= 10 && K(spec.majors.m90).unlockLevel <= 20 && K(spec.majors.m180).unlockLevel === 30, spec.skills.filter((id) => spec.unlock[id] !== K(id).unlockLevel).join(','));
@@ -529,7 +529,7 @@ ok('ae4.unit a Yaşayan Alev hit is a measurable unit', UNIT > 50, `unit=${UNIT}
     const allies = [10, 14, 17].map((z) => addAlly(0, z, 1000));
     const behind = addAlly(0, -6, 1000);
     const spy = healSpy();
-    H.press('e'); H.stepSec(hold); H.release('e'); H.stepSec(0.6);
+    H.press('s3'); H.stepSec(hold); H.release('s3'); H.stepSec(0.6);
     const out = { p, hit: allies.map((a) => spy.log.some((h) => h.tgt === a && h.src === p)), hotLeft: allies.map((a) => a.statuses.get('dream_breath')?.remaining ?? 0), behindHit: spy.log.some((h) => h.tgt === behind) };
     spy.stop();
     return out;
@@ -961,4 +961,14 @@ console.log(fails === 0 ? '\nkit.evoker (ae4): all checks PASS' : `\nkit.evoker 
 const engineErrors = errors.filter((m) => m.startsWith('ERR'));
 if (engineErrors.length) console.log(`engine console errors (${engineErrors.length}): ${[...new Set(engineErrors)].slice(0, 5).join(' | ')}`);
 H.restoreConsole?.();
+// ---- kit.evoker.dmg: keys 1-4 (rmb, q, e, r) carry >= 2 damage skills on each healer spec of the class
+{
+  const KEYS14 = ['rmb', 'q', 'e', 'r'];
+  const healers = Object.values(SPECS).filter((s) => s.classId === 'evoker' && s.role === 'healer');
+  ok('kit.evoker.dmg has a healer spec to audit', healers.length > 0, healers.map((s) => s.id).join(','));
+  for (const s of healers) {
+    const n = KEYS14.filter((k) => (H.SKILLS[s.defaultBar[k]]?.damage?.coef ?? 0) > 0).length;
+    ok(`kit.evoker.dmg ${s.id} has >= 2 damage skills on keys 1-4`, n >= 2, KEYS14.map((k) => `${k}=${s.defaultBar[k]}`).join(','));
+  }
+}
 process.exit(fails === 0 ? 0 : 1);
