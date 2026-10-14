@@ -84,6 +84,12 @@ export class WorldCtx {
     return this.ext.regions.find((r) => r.id === id);
   }
 
+  /** Tile rect of a region (its room's rect); null when the map has no such region. */
+  regionRect(regionId: string): { x: number; z: number; w: number; h: number } | null {
+    const r = this.rects.find((x) => x.region.id === regionId);
+    return r ? { x: r.x, z: r.z, w: r.w, h: r.h } : null;
+  }
+
   /** Walkable point nearest to a tile centre (falls back to the raw centre). */
   snapTile(tx: number, tz: number, radius = 16): Pt {
     const x = tileToWorld(tx), z = tileToWorld(tz);

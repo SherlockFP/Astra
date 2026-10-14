@@ -184,6 +184,11 @@ export class QuestSystem {
   }
 
   /** Quests currently 'active' or 'ready' (questlog / tracker). */
+  /** True while an active quest still has an unfinished objective of `kind` on `target` (world props check this before counting). */
+  wants(kind: QuestKind, target: string): boolean {
+    return this.active().some((d) => d.objectives.some((o, k) => o.kind === kind && o.target === target && this.progressAt(d, k) < o.count));
+  }
+
   active(): QuestDef[] {
     return this.all().filter((d) => {
       const s = this.stateOf(d);
@@ -225,6 +230,7 @@ export class QuestSystem {
       const known = o.kind === 'explore' && !!o.target && !!(f[`world.found.${o.target}`] || f[`world.region.${o.target}`] || f[`world.wp.${o.target}`]);
       f[pKey(def.id, k)] = known ? o.count : 0;
     });
+    for (const it of def.startItems ?? []) if (MATERIALS[it.id]) ch.addMaterial(it.id, it.count);
     ch.persist();
     this.notify(def, true);
     toast(`Görev alındı: ${def.name}`, 'info');

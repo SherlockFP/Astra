@@ -20,6 +20,7 @@ import { WaypointNetwork } from './WaypointNetwork';
 import { spawnVillageNpcs } from './VillageSpawner';
 import { WorldPois } from './WorldPois';
 import { WorldGather } from './WorldGather';
+import { WorldQuestProps } from './WorldQuestProps';
 import { EventCalendar, buildEventSites } from './EventCalendar';
 import { startSiege, type SiegeRuntime } from '../../systems/Siege';
 import { SIEGE_MAP_ID } from '../../data/siege';
@@ -69,6 +70,7 @@ export class WorldRuntime {
   private readonly bosses: BossSchedule;
   private readonly pois: WorldPois;
   private readonly gather: WorldGather;
+  private readonly questProps: WorldQuestProps;
   private readonly discoveries: Discoveries;
   private events: EventScope | null = null;
   private calendar: EventCalendar | null = null;
@@ -97,6 +99,7 @@ export class WorldRuntime {
     this.bosses = new BossSchedule(this.ctx);
     this.pois = new WorldPois(this.ctx);
     this.gather = new WorldGather(this.ctx);
+    this.questProps = new WorldQuestProps(this.ctx);
     this.discoveries = new Discoveries(this.ctx);
   }
 
@@ -107,6 +110,7 @@ export class WorldRuntime {
       this.guard('waypoints', () => this.waypoints.place()),
       this.guard('shrines and chests', () => this.pois.place()),
       this.guard('gathering nodes', () => this.gather.place()),
+      this.guard('quest props', () => this.questProps.place()),
     ]);
     if (G.net.isAuthority) {
       try {
@@ -149,6 +153,7 @@ export class WorldRuntime {
     this.run('rares', () => this.rares.update(dt));
     this.run('minis', () => this.minis.update(dt));
     this.run('chests', () => this.pois.update(dt));
+    this.run('quest props', () => this.questProps.update(dt));
     this.run('events', () => this.calendar?.update(dt));
     this.run('siege', () => this.siege?.update(dt));
     if (G.net.isAuthority) this.run('goblins', () => this.goblinTick(dt));

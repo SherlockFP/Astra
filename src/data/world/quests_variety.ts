@@ -10,8 +10,8 @@ import type { QuestDef, QuestObjective } from '../../types/quests';
  * Bu dosya görev verisini `VARIETY` ile üzerine yazar (applyVariety, data/world/quests.ts). Ödül ve XP yüzdeleri değişmez;
  * `node tools/pace-check.mjs` aynı kalır. Görev ve hedef kimlikleri kendi `id`'lerinden gelir, metinler Türkçedir.
  *
- * Kullanılmayan türler (interact, use, escort) çalışma zamanında hazırdır ama bu veride yoktur: nesne etkileşimi, eşya kullanımı
- * ve eskort NPC'si sahne kodunda bağlanmalıdır (QuestSystem.onEvent('interact', id), useItem, tickEscort).
+ * interact (qo_sack / qo_crystal / qo_banner props, F), use (qt_* altar, F with the item) and escort (NPC walk with ambushes) are
+ * placed by scenes/world/WorldQuestProps.ts in the quest's region.
  */
 
 const drop = (target: string, count: number, from: string[], text: string): QuestObjective =>
@@ -20,11 +20,19 @@ const kill = (target: string, count: number, text: string): QuestObjective => ({
 const elite = (target: string, text: string): QuestObjective => ({ kind: 'elite', target, count: 1, text });
 const boss = (target: string, count: number, text: string): QuestObjective => ({ kind: 'boss', target, count, text });
 const explore = (target: string, text: string): QuestObjective => ({ kind: 'explore', target, count: 1, text });
+/** interact: `count` uses of world props (qo_sack / qo_crystal / qo_banner, F; a prop is empty for 60 s after each use). */
+const interact = (target: string, count: number, text: string): QuestObjective => ({ kind: 'interact', target, count, text });
+/** escort: stay within reach of the escort NPC for `seconds` seconds of walking (the NPC walks and is ambushed on the way). */
+const escort = (seconds: number, text: string): QuestObjective => ({ kind: 'escort', count: seconds, text });
+/** use: the quest item `item` used on the altar `target` (F, one item per use). */
+const use = (item: string, target: string, count: number, text: string): QuestObjective => ({ kind: 'use', item, target, count, text });
 
 interface VarietyPatch {
   objectives: QuestObjective[];
   offer?: string;
   progress?: string;
+  /** Quest items handed over on accept (use objectives). */
+  startItems?: { id: string; count: number }[];
 }
 
 /** Quest id -> new objectives (and flavour text) for levelling quests (levels 1-15 of Sisli Vadi). */
@@ -75,9 +83,9 @@ export const VARIETY: Record<string, VarietyPatch> = {
     progress: 'Korkuluklardan Saman Demeti topla (8).',
   },
   sq_r2_k03_curumus_koylular: {
-    objectives: [drop('item_mezar_tozu', 9, ['ow_zombie'], 'Çürümüş Köylülerden Mezar Tozu topla (9)')],
-    offer: 'Çürümüş köylüler mezarlıktan çıkıp tarlaya yürüyor. Dökülen mezar tozunu topla, rahibe onu kutsayacak.',
-    progress: 'Çürümüş Köylülerden Mezar Tozu topla (9).',
+    objectives: [interact('qo_crystal', 3, 'Mezar kristallerini kır (3)'), kill('ow_zombie', 10, 'Çürümüş Köylü öldür (10)')],
+    offer: 'Çürümüş köylüler mezarlıktan çıkıp tarlaya yürüyor. Mezarlardaki kristaller onları çağırıyor; kır ve köylüleri dağıt.',
+    progress: 'Mezar kristallerini kır (3). Çürümüş Köylü öldür (10).',
   },
   sq_r2_k04_magara_yarasalari: {
     objectives: [drop('item_yarasa_kanadi', 9, ['ow_bat'], 'Mağara Yarasalarından Yarasa Kanadı topla (9)')],
@@ -151,6 +159,54 @@ export const VARIETY: Record<string, VarietyPatch> = {
     objectives: [kill('ow_bear', 2, 'Boz Ayı öldür'), drop('item_kurt_postu', 4, ['ow_wolf'], 'Orman Kurdu postu topla (4)')],
     offer: 'Göl kıyısındaki mağarada ayılar ve kurtlar var. İki ayıyı indir, kurt postlarını da getir.',
     progress: 'Boz Ayı öldür (2). Orman Kurdu postu topla (4).',
+  },
+
+  // ---- interact / use / escort conversions (levels 1-10; props and escort NPCs are placed by scenes/world/WorldQuestProps.ts)
+  sq_r1_k01_ambar_sicanlari: {
+    objectives: [interact('qo_sack', 4, 'Ambardaki sıçan yuvası çuvallarını aç (4)'), kill('ow_rat', 8, 'Orman Sıçanı öldür (8)')],
+    offer: 'Ambardaki sıçanlar buğdayın yarısını yedi. Yuvaladıkları çuvalları aç ve sıçanları dağıt.',
+    progress: 'Ambar çuvallarını aç (4). Orman Sıçanı öldür (8).',
+  },
+  sq_r1_k02_balcik_avi: {
+    objectives: [interact('qo_crystal', 4, 'Balçık kristallerini kır (4)'), kill('ow_slime', 6, 'Yeşil Balçık öldür (6)')],
+    offer: 'Göl kenarındaki balçıklar kristallerin ışığıyla çoğalıyor. Kristalleri kır, balçıkları temizle.',
+    progress: 'Balçık kristallerini kır (4). Yeşil Balçık öldür (6).',
+  },
+  sq_r1_k03_goblin_yagmasi: {
+    objectives: [interact('qo_banner', 4, 'Goblin sancaklarını indir (4)'), kill('ow_goblin', 6, 'Goblin Yağmacı öldür (6)')],
+    offer: 'Goblin yağmacıları kervan yollarına sancaklarını dikti. Sancakları indir ve yağmacıların gücünü kır.',
+    progress: 'Goblin sancaklarını indir (4). Goblin Yağmacı öldür (6).',
+  },
+  sq_r1_ch02_gozcu_avi: {
+    objectives: [escort(40, 'Yaralı gözcüyü 40 sn eskort et (yolda pusu var)'), kill('ow_goblin', 4, 'Goblin Gözcüsü öldür (4)')],
+    offer: 'Gözcü yaralı dönüyor ve goblinler peşinde. Onu kampa kadar yanında tut; yolda pusu kurulmuş olabilir.',
+    progress: 'Gözcüyü 40 sn eskort et. Goblin öldür (4).',
+  },
+  sq_r1_c03_sifali_mantar: {
+    objectives: [interact('qo_sack', 4, 'Mantar sepetlerini aç (4)')],
+    offer: 'Rahibe merhem için şifalı mantar istiyor. Mantar sepetlerini bul ve aç; sapları sen topla.',
+    progress: 'Mantar sepetlerini aç (4).',
+  },
+  sq_r1_k07_domuz_avi: {
+    objectives: [interact('qo_banner', 3, 'Domuz tuzaklarının sancaklarını indir (3)'), kill('ow_boar', 7, 'Yaban Domuzu öldür (7)')],
+    offer: 'Domuzlar tarlaların kenarına tuzak kurdu. Tuzakların sancaklarını indir ve domuzları avla.',
+    progress: 'Tuzak sancaklarını indir (3). Yaban Domuzu öldür (7).',
+  },
+  sq_g_03_orumcek_aglari: {
+    objectives: [interact('qo_sack', 3, 'Ağlardaki çuvalları kes (3)'), kill('ow_spider', 6, 'Orman Örümceği öldür (6)')],
+    offer: 'Örümcekler ağlarını tarlaların üstüne ördü. Ağlara takılmış çuvalları kes ve örümcekleri uzaklaştır.',
+    progress: 'Ağlardaki çuvalları kes (3). Orman Örümceği öldür (6).',
+  },
+  sq_r2_c01_mezar_tozu: {
+    objectives: [use('item_mezar_tozu', 'qt_kutsama_tasi', 4, "Kutsama Taşı'nda Mezar Tozu kullan (4)")],
+    startItems: [{ id: 'item_mezar_tozu', count: 4 }],
+    offer: "Mezarlıktaki kutsanmamış tozu rahibe kutsatmam gerek. Verdiğim tozu Kutsama Taşı'nda dört kez kullan.",
+    progress: "Kutsama Taşı'nda Mezar Tozu kullan (4).",
+  },
+  sq_c_02_korkuluk_sirri: {
+    objectives: [interact('qo_banner', 3, 'Korkuluk sancaklarını indir (3)'), kill('ow_scarecrow', 5, 'Korkuluk öldür (5)'), elite('rare_korkuluk_kral', 'Korkuluk Kral öldür')],
+    offer: "Korkuluklar bir gün yürüyüp köye gelebilir. Sancaklarını indir, sürüyü dağıt ve Korkuluk Kral'ı bul.",
+    progress: 'Korkuluk sancaklarını indir (3). Korkuluk öldür (5). Korkuluk Kral öldür.',
   },
 
   // ---- Sisli side chains (sq_g / sq_c) and the r4 bataklık quest
@@ -240,7 +296,12 @@ export function applyVariety(defs: readonly QuestDef[]): QuestDef[] {
   const out = defs.map((d) => {
     const p = VARIETY[d.id];
     if (!p) return d;
-    return { ...d, objectives: p.objectives, text: { ...d.text, offer: p.offer ?? d.text.offer, progress: p.progress ?? d.text.progress } };
+    return {
+      ...d,
+      objectives: p.objectives,
+      text: { ...d.text, offer: p.offer ?? d.text.offer, progress: p.progress ?? d.text.progress },
+      ...(p.startItems ? { startItems: p.startItems } : {}),
+    };
   });
   return [...out, ...BONUS_QUESTS];
 }

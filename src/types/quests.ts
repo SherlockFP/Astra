@@ -60,6 +60,8 @@ export interface QuestDef {
   daily?: boolean;
   /** Bonus objective of a region: mixed objectives, one shared progress bar (QuestSystem.progressPct). */
   bonus?: boolean;
+  /** Quest items handed over on accept (use objectives need the item in the bag). */
+  startItems?: { id: string; count: number }[];
 }
 
 /** locked = prerequisites not met yet; available = can be accepted; active = in progress; ready = turn in; done = finished. */

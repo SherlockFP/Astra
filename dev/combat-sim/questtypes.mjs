@@ -20,6 +20,9 @@ const { VARIETY, BONUS_QUESTS } = await H.imp('data/world/quests_variety.ts');
 const { ENEMIES, BOSSES } = await H.imp('data/enemies.ts');
 const { MATERIALS } = await H.imp('data/materials.ts');
 const { G } = H;
+const { QuestProp, questPropKind, QUEST_PROP_RESPAWN_SEC } = await H.imp('entities/interactables/QuestProp.ts');
+const { questPropSpots, escortPath } = await H.imp('scenes/world/WorldQuestProps.ts');
+const { EscortRun } = await H.imp('scenes/world/QuestEscortRun.ts');
 
 let fails = 0;
 let passes = 0;
@@ -211,6 +214,144 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   const before = ch.material('pot_hp_1');
   ok('real.bonus-turn-in', qs.turnIn(bd.id) && qs.state(bd.id) === 'done' && ch.material('item_goblin_kulagi') === 0);
   ok('real.bonus-reward', ch.material('pot_hp_1') === before + 2, `pot_hp_1 ${before} -> ${ch.material('pot_hp_1')}`);
+}
+
+// ------------------------------------------------------------------------------------------------ props: interact / altar call sites
+{
+  const p = { id: 42 };
+  const interact = (target, count) => ({ kind: 'interact', target, count, text: 'i' });
+  ok('prop.kind-map', questPropKind('qo_sack') === 'sack' && questPropKind('qo_crystal') === 'crystal' && questPropKind('qo_banner') === 'banner' && questPropKind('qt_x') === 'altar' && questPropKind('ow_rat') === null);
+  const sack = new QuestProp(9001, { key: 'sim:sack:0', target: 'qo_sack', kind: 'sack' });
+  await sack.load();
+  ok('prop.is-interactable', sack.kind === 'interactable' && sack.propKind === 'sack' && typeof sack.interact === 'function');
+  ok('prop.unrelated-prompt', sack.interactPrompt.includes('görevle ilgisi yok'));
+  sack.interact(p);
+  ok('prop.unrelated-no-flag', G.character.save.flags['qprop.sim:sack:0'] === undefined, 'no active quest wants it: nothing counted, no timer');
+  ok('prop.hidden-unwanted', !sack.canInteract(p), 'PlayerController skips it');
+  qs.registerDefs([T('t_sack', 1, [interact('qo_sack', 2)])]);
+  qs.accept('t_sack');
+  ok('prop.wants', qs.wants('interact', 'qo_sack') && sack.interactPrompt.includes('incele') && sack.canInteract(p));
+  sack.interact(p);
+  ok('prop.counts-once', qs.progressRows('t_sack')[0].have === 1);
+  ok('prop.empty-after-use', sack.interactPrompt.includes('boş') && G.character.save.flags['qprop.sim:sack:0'] > Date.now());
+  sack.interact(p);
+  ok('prop.empty-no-count', qs.progressRows('t_sack')[0].have === 1);
+  const realNow = Date.now;
+  Date.now = () => realNow() + QUEST_PROP_RESPAWN_SEC * 1000 + 1;
+  sack.update(0);
+  Date.now = realNow;
+  ok('prop.respawns', sack.interactPrompt.includes('incele'));
+  const sack2 = new QuestProp(9002, { key: 'sim:sack:1', target: 'qo_sack', kind: 'sack' });
+  await sack2.load();
+  sack2.interact(p);
+  ok('prop.second-completes', qs.state('t_sack') === 'ready');
+  ok('prop.turn-in', qs.turnIn('t_sack') && !qs.wants('interact', 'qo_sack'));
+
+  // altar: use of the quest item at the location; startItems on accept
+  const altar = new QuestProp(9003, { key: 'sim:altar:0', target: 'qt_sim', kind: 'altar', item: 'item_mezar_tozu' });
+  await altar.load();
+  ok('use.prompt-missing', altar.interactPrompt.includes('gerekli'));
+  qs.registerDefs([T('t_altar', 1, [{ kind: 'use', item: 'item_mezar_tozu', target: 'qt_sim', count: 2, text: 'u' }], { startItems: [{ id: 'item_mezar_tozu', count: 2 }] })]);
+  ok('use.accept-start-items', qs.accept('t_altar') && ch.material('item_mezar_tozu') === 2);
+  ok('use.prompt-have', altar.interactPrompt.includes('kullan'));
+  altar.interact(p);
+  ok('use.consumes-one', qs.progressRows('t_altar')[0].have === 1 && ch.material('item_mezar_tozu') === 1);
+  altar.interact(p);
+  ok('use.ready', qs.state('t_altar') === 'ready' && ch.material('item_mezar_tozu') === 0);
+  altar.interact(p);
+  ok('use.empty-no-progress', qs.progressRows('t_altar')[0].have === 2);
+  qs.turnIn('t_altar');
+  const wrong = new QuestProp(9004, { key: 'sim:altar:1', target: 'qt_other', kind: 'altar', item: 'item_mezar_tozu' });
+  await wrong.load();
+  qs.registerDefs([T('t_altar2', 1, [{ kind: 'use', item: 'item_mezar_tozu', target: 'qt_sim', count: 1, text: 'u' }], { startItems: [{ id: 'item_mezar_tozu', count: 1 }] })]);
+  qs.accept('t_altar2');
+  wrong.interact(p);
+  ok('use.wrong-location', qs.progressRows('t_altar2')[0].have === 0 && ch.material('item_mezar_tozu') === 1);
+  ch.useMaterial('item_mezar_tozu', 1);
+  qs.turnIn('t_altar2');
+}
+
+// ------------------------------------------------------------------------------------------------ escort.run (state machine, fake deps)
+{
+  const log = { ticks: [], ambush: [], alive: 0, dist: 0 };
+  const deps = {
+    playerDist: () => log.dist,
+    ambush: (x, z) => { log.ambush.push([x, z]); log.alive = 2; },
+    ambushAlive: () => log.alive,
+    tick: (s, alive) => log.ticks.push([s, alive]),
+    done: () => log.ticks.filter((t) => t[1]).length >= 8,
+  };
+  const path = [{ x: 0, z: 0 }, { x: 30, z: 0 }, { x: 60, z: 0 }];
+  const run = new EscortRun({ path, triggers: [1, 2], speed: 10, leash: 25, failSec: 3 }, deps);
+  run.update(1);
+  ok('esc.idle-no-move', run.state === 'idle' && run.pos.x === 0 && log.ticks.length === 0);
+  ok('esc.start', run.start() && !run.start() && run.state === 'walking');
+  run.update(1);
+  ok('esc.walks-and-ticks', Math.abs(run.pos.x - 10) < 1e-9 && log.ticks.length === 1 && log.ticks[0][1] === true);
+  run.update(2);
+  ok('esc.ambush-at-trigger', run.state === 'ambush' && log.ambush.length === 1 && Math.abs(log.ambush[0][0] - 30) < 1e-9);
+  run.update(1);
+  ok('esc.waits-for-ambush', run.state === 'ambush' && log.ticks.length === 1 && run.pos.x === 30);
+  log.alive = 0;
+  run.update(1);
+  ok('esc.resumes-after-kills', run.state === 'walking');
+  let guard = 0;
+  while (run.state !== 'done' && guard++ < 200) {
+    if (log.alive) log.alive = 0;
+    run.update(1);
+  }
+  ok('esc.completes', run.state === 'done' && log.ambush.length === 2, `ambushes ${log.ambush.length}, state ${run.state}`);
+  ok('esc.ticks-only-alive', log.ticks.every((t) => t[1] === true));
+
+  const far = { ticks: [], ambush: 0, dist: 40 };
+  const fdeps = { playerDist: () => far.dist, ambush: () => { far.ambush++; }, ambushAlive: () => 0, tick: (s, a) => far.ticks.push([s, a]), done: () => false };
+  const frun = new EscortRun({ path, triggers: [1, 2], speed: 10, leash: 25, failSec: 3 }, fdeps);
+  frun.start();
+  frun.update(1);
+  frun.update(1);
+  ok('esc.out-of-range-pauses', frun.state === 'walking' && frun.pos.x === 0 && far.ticks.length === 0);
+  frun.update(1);
+  ok('esc.fails-and-resets', frun.state === 'idle' && frun.pos.x === 0 && far.ticks.length === 1 && far.ticks[0][1] === false);
+  far.dist = 0;
+  ok('esc.restart-after-fail', frun.start());
+}
+
+// ------------------------------------------------------------------------------------------------ placement (stub context)
+{
+  const RECTS = { r1: { x: 0, z: 0, w: 100, h: 100 }, r2: { x: 100, z: 0, w: 100, h: 100 }, r3: { x: 200, z: 0, w: 100, h: 100 } };
+  const stub = {
+    seed: 12345,
+    regionRect: (id) => RECTS[id] ?? null,
+    regionAtTile: (tx) => ({ id: tx < 100 ? 'r1' : tx < 200 ? 'r2' : 'r3' }),
+    snapTile: (tx, tz) => ({ x: tx * 4 + 2, z: tz * 4 + 2 }),
+  };
+  const defs = [
+    { id: 'pq1', region: 'r1', objectives: [{ kind: 'interact', target: 'qo_crystal', count: 3 }, { kind: 'use', item: 'item_mezar_tozu', target: 'qt_pl', count: 1 }] },
+    { id: 'pq2', region: 'r1', objectives: [{ kind: 'interact', target: 'qo_crystal', count: 2 }] },
+    { id: 'pq3', region: 'rZ', objectives: [{ kind: 'interact', target: 'qo_banner', count: 2 }] },
+  ];
+  const a = questPropSpots(stub, defs);
+  const b = questPropSpots(stub, defs);
+  ok('place.spot-count', a.filter((s) => s.target === 'qo_crystal').length === 4 && a.filter((s) => s.kind === 'altar').length === 1 && a.length === 5, `${a.length} spots`);
+  ok('place.deterministic', JSON.stringify(a) === JSON.stringify(b));
+  ok('place.in-region', a.every((s) => s.region === 'r1' && s.x >= 0 && s.x < 100 * 4 + 4));
+  ok('place.unknown-region-skipped', !a.some((s) => s.region === 'rZ'));
+  const real = questPropSpots(stub, QUESTS.filter((q) => q.region && /^r[123]$/.test(q.region)));
+  ok('place.real-quests', real.length >= 20 && real.every((s) => questPropKind(s.target)), `${real.length} real spots`);
+  const path = escortPath(stub, 'pe', 'r1');
+  ok('place.escort-path', !!path && path.length >= 2, path ? `${path.length} waypoints` : 'none');
+  ok('place.escort-gaps', !!path && path.every((p, i) => i === 0 || Math.hypot(p.x - path[i - 1].x, p.z - path[i - 1].z) >= 18));
+  ok('place.escort-no-region', escortPath(stub, 'pe2', 'rZ') === null);
+}
+
+// ------------------------------------------------------------------------------------------------ wiring (converted quests)
+{
+  const withNew = QUESTS.filter((q) => q.objectives.some((o) => ['interact', 'use', 'escort'].includes(o.kind)));
+  const lv = withNew.filter((q) => q.level <= 10);
+  ok('wire.converted-count', withNew.length >= 10 && lv.length === withNew.length, `${withNew.length} quests with interact/use/escort, ${lv.length} at level 1-10`);
+  ok('wire.targets-mapped', withNew.every((q) => q.objectives.every((o) => (o.kind !== 'interact' && o.kind !== 'use') || questPropKind(o.target))));
+  ok('wire.escort-regions', withNew.filter((q) => q.objectives.some((o) => o.kind === 'escort')).every((q) => /^r\d$/.test(q.region ?? '')));
+  ok('wire.use-items', withNew.filter((q) => q.objectives.some((o) => o.kind === 'use')).every((q) => (q.startItems ?? []).some((it) => q.objectives.find((o) => o.kind === 'use').item === it.id)), 'use quests hand the item out on accept');
 }
 
 console.log(`questtypes: ${passes} PASS, ${fails} FAIL`);
