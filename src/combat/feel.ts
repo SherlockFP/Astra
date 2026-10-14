@@ -72,7 +72,7 @@ export const FEEL = {
   basicTempo: 1,
   gcd: 0.3,
   /** Corpse safety-net removal */
-  corpseLifetime: 7,
+  corpseLifetime: 20,
 };
 
 /** Feel row of one hit weight (GDD_LIFE §5.2). `flash.c2` = 'type' uses the damage-type colour. */
