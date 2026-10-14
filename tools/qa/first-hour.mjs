@@ -809,6 +809,7 @@ async function journey(cls) {
 
   // 5b.1 prop objective: F on the crystals; a prop is empty for 60 s after each use, so walk to the nearest one that still has a charge
   if ((await acceptFromFerhat(PROP_Q, 'Balçık Avı')) === 'active') {
+    await closePanels(); // the accepted quest's dialog stays open and would block walking and F (wantsCursor)
     for (let i = 0; i < 12; i++) {
       const row0 = (await page.evaluate((q) => window.G.quests.progressRows(q), PROP_Q))[0];
       if (!row0 || row0.have >= row0.need) break;
