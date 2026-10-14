@@ -145,7 +145,7 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   ok('kit.druid.forms Kedi Biçimi button enters form_cat', p.statuses.has('form_cat') && Forms.formOf(p) === 'cat', `form=${Forms.formOf(p)}`);
   ok('kit.druid.forms cat uses Energy (max 100, start 50), mana is stashed', p.resourceType === 'energy' && p.maxResource === 100 && p.resource >= 48 && p.resource <= 62, `${p.resourceType} ${p.resource.toFixed(1)}/${p.maxResource}`);
   ok('kit.druid.forms cat transforms rmb / q / e / lmb', G.skills.getSlotSkill(p, 'rmb') === 'druid_shred' && G.skills.getSlotSkill(p, 'q') === 'druid_rake'
-    && G.skills.getSlotSkill(p, 'e') === 'druid_ferocious_bite' && G.skills.getSlotSkill(p, 'lmb') === 'druid_cat_basic',
+    && G.skills.getSlotSkill(p, 'e') === 'druid_rip' && G.skills.getSlotSkill(p, 'lmb') === 'druid_cat_basic',
   [1, 2, 3].map((i) => G.skills.getSlotSkill(p, ['rmb', 'q', 'e'][i - 1])).join(','));
   ok('kit.druid.forms cat form stat swap: speed, crit, dodge', (p.statuses.getStatMods().moveSpeedPct ?? 0) > 0.1 && (p.statuses.getStatMods().critChance ?? 0) > 0);
   H.stepSec(2);
@@ -156,8 +156,10 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   ok('kit.druid.forms Doğra costs 25 Energy and builds 1 Kombo Puanı', p.resource < e0 - 8 && G.skills.pipCount(p, 'combo') >= 1, `energy ${e0}->${p.resource.toFixed(1)} cp=${G.skills.pipCount(p, 'combo')}`);
   // a caster spell drops the form and mana returns
   p.resource = 90;
-  const castOk = cast(p, 's2', foe, 2.2);
-  ok('kit.druid.forms a caster spell (Yeniden Büyüme) drops the form', castOk && Forms.formOf(p) === null, `form=${Forms.formOf(p)}`);
+  // Yaşam Çiçeği (not a form skill, no moonkin tag) is bound to s4 for this check
+  G.character.save.skillBar = { ...G.character.save.skillBar, s4: 'druid_lifebloom' };
+  const castOk = cast(p, 's4', null, 2.2);
+  ok('kit.druid.forms a caster spell (Yaşam Çiçeği) drops the form', castOk && Forms.formOf(p) === null, `form=${Forms.formOf(p)}`);
   ok('kit.druid.forms mana is back (77 minus the spell cost)', p.resourceType === 'mana' && p.resource > 40 && p.resource <= 77, `${p.resourceType} ${p.resource.toFixed(1)}`);
   ok('kit.druid.forms the human bar is back after leaving', G.skills.getSlotSkill(p, 'rmb') === 'druid_wrath' && G.skills.getSlotSkill(p, 'lmb') === 'druid_basic');
   // toggling: the button again leaves the form
@@ -226,7 +228,7 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   ok('kit.druid.l1run Gençleşme heals the caster over time', p.statuses.has('rejuvenation'));
   foe.position.set(0, 0, 2.2);
   cast(p, 's1', foe, 1.0);
-  ok('kit.druid.l1run Kedi Biçimi: Doğra on rmb, Tırmık on q, Yırtıcı Isırık on e, no spec needed', Forms.formOf(p) === 'cat' && G.skills.getSlotSkill(p, 'rmb') === 'druid_shred' && G.skills.getSlotSkill(p, 'q') === 'druid_rake' && G.skills.getSlotSkill(p, 'e') === 'druid_ferocious_bite');
+  ok('kit.druid.l1run Kedi Biçimi: Doğra on rmb, Tırmık on q, Parçalama on e, no spec needed', Forms.formOf(p) === 'cat' && G.skills.getSlotSkill(p, 'rmb') === 'druid_shred' && G.skills.getSlotSkill(p, 'q') === 'druid_rake' && G.skills.getSlotSkill(p, 'e') === 'druid_rip');
   p.resource = 100;
   cast(p, 'rmb', foe, 1.0);
   p.resource = 100;
@@ -234,7 +236,7 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   p.resource = 100;
   const hpB = foe.hp;
   cast(p, 'e', foe, 1.0);
-  ok('kit.druid.l1run Doğra x2 builds points and Yırtıcı Isırık spends them', foe.hp < hpB && G.skills.pipCount(p, 'combo') === 0);
+  ok('kit.druid.l1run Doğra x2 builds points and Parçalama spends them', foe.hp < hpB && G.skills.pipCount(p, 'combo') === 0);
   ok('kit.druid.l1run no script errors', errors.length === 0, errors.slice(0, 2).map((m) => m.slice(0, 160)).join(' | '));
 }
 
@@ -250,22 +252,22 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   errors.length = 0;
   cast(p, 'rmb', foe, 2.0);
   ok('kit.druid.balance Güneş Gazabı hits and gives 8 Astral Güç', G.skills.pipCount(p, 'astral_power') === 8 && foe.hp < 1e9, `ap=${G.skills.pipCount(p, 'astral_power')}`);
-  cast(p, 'q', foe, 2.5); // Yıldız Ateşi
+  cast(p, 'e', foe, 2.5); // Yıldız Ateşi
   ok('kit.druid.balance Yıldız Ateşi (2 s cast) gives 12 more, enters Ay Baykuşu Biçimi', G.skills.pipCount(p, 'astral_power') === 20 && Forms.formOf(p) === 'moonkin', `ap=${G.skills.pipCount(p, 'astral_power')} form=${Forms.formOf(p)}`);
   ok('kit.druid.balance Moonkin keeps casting (spells do not drop it) on mana', Forms.formOf(p) === 'moonkin' && p.resourceType === 'mana');
   const ap0 = G.skills.pipCount(p, 'astral_power');
-  const started = cast(p, 'e', foe, 1.0);
+  const started = cast(p, 's2', foe, 1.0);
   ok('kit.druid.balance Yıldız Dalgası refuses below 35 AP', started === false && G.skills.pipCount(p, 'astral_power') === ap0);
   p.pips = { ...(p.pips ?? {}), astral_power: 60 };
   const hpB = foe.hp;
-  cast(p, 'e', foe, 1.5);
+  cast(p, 's2', foe, 1.5);
   ok('kit.druid.balance Yıldız Dalgası spends 35 AP and hits hard', G.skills.pipCount(p, 'astral_power') === 25 && hpB - foe.hp > 0, `ap=${G.skills.pipCount(p, 'astral_power')}`);
-  cast(p, 's1', foe, 1.0);
+  cast(p, 'q', foe, 1.0);
   ok('kit.druid.balance Ay Ateşi puts moonfire on the target (dps snapshot)', foe.statuses.has('moonfire') && (foe.statuses.get('moonfire')?.dps ?? 0) > 0);
-  cast(p, 's2', foe, 1.0);
+  cast(p, 's1', foe, 1.0);
   ok('kit.druid.balance Güneş Ateşi burns the pack around the target', foe.statuses.has('sunfire') && foe2.statuses.has('sunfire'), `${foe.statuses.has('sunfire')} ${foe2.statuses.has('sunfire')}`);
   // Tutulma alternates Güneş / Ay
-  cast(p, 's3', foe, 0.8);
+  G.character.save.skillBar = { ...G.character.save.skillBar, s3: 'druid_eclipse' }; cast(p, 's3', foe, 0.8);
   const first = p.statuses.has('eclipse_solar') ? 'solar' : p.statuses.has('eclipse_lunar') ? 'lunar' : 'none';
   p.pips = { ...p.pips, astral_power: 0 };
   G.skills.resetCooldown?.(p, 'druid_eclipse');
@@ -376,7 +378,7 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   errors.length = 0;
   cast(p, 'rmb', foe, 1.0);
   ok('kit.druid.guardian Parçalayıcı Pençe auto-shifts into Ayı and builds Öfke (8)', Forms.formOf(p) === 'bear' && p.resourceType === 'rage' && p.resource >= 7, `form=${Forms.formOf(p)} rage=${p.resource.toFixed(1)}`);
-  cast(p, 'q', foe, 1.0);
+  cast(p, 's1', foe, 1.0);
   ok('kit.druid.guardian Çırpınma bleeds both enemies and gives Öfke', foe.statuses.has('thrash') && foe2.statuses.has('thrash') && p.resource >= 11, `rage=${p.resource.toFixed(1)}`);
   p.resource = 80;
   cast(p, 'e', foe, 0.8);
@@ -386,9 +388,9 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   ok('kit.druid.guardian armour from the form and Ironfur stacks (>= 1.0 + 0.5)', armor0 >= 1.45, `armorPct=${armor0}`);
   p.hp = p.maxHp * 0.4;
   const hp0 = p.hp;
-  cast(p, 's1', foe, 3.4);
+  cast(p, 's3', foe, 3.4);
   ok('kit.druid.guardian Çılgın Yenilenme heals ~35 % max HP over 3 s', p.hp - hp0 > p.maxHp * 0.2, `+${((p.hp - hp0) / p.maxHp * 100).toFixed(0)} %`);
-  cast(p, 's2', foe, 0.8);
+  cast(p, 'q', foe, 0.8);
   ok('kit.druid.guardian Kükreme taunts', foe.statuses.has('taunt'));
   cast(p, 'm45', foe, 0.8);
   ok('kit.druid.guardian Hayatta Kalma İçgüdüsü -50 % damage taken', p.statuses.has('survival_instincts') && Math.abs(p.statuses.takenMore() - 0.5) < 0.01 * 0.5 + 0.2, `takenMore=${p.statuses.takenMore().toFixed(2)}`);
@@ -414,8 +416,8 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   const hpR = p.hp;
   H.stepSec(6);
   ok('kit.druid.resto the HoT heals over time', p.hp > hpR, `hp ${hpR.toFixed(0)} -> ${p.hp.toFixed(0)}`);
-  cast(p, 'e', null, 1.7);
-  cast(p, 'q', null, 3.0);
+  cast(p, 'q', null, 1.7);
+  cast(p, 's2', null, 3.0);
   ok('kit.druid.resto Gençleşme + Yaşam Çiçeği + Yeniden Büyüme stack on one target', p.statuses.has('rejuvenation') && p.statuses.has('lifebloom') && p.statuses.has('regrowth'));
   ok('kit.druid.resto Mastery: Armoni grows with each HoT (>= +12 % with 3)', harmonyMul(p, p) >= 1.17, `x${harmonyMul(p, p).toFixed(2)}`);
   // Yabani Büyüme
@@ -426,18 +428,18 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   // Çabuk İyileşme consumes a HoT
   p.hp = p.maxHp * 0.4;
   const hpS = p.hp;
-  cast(p, 's2', null, 1.7);
+  cast(p, 'e', null, 1.7);
   ok('kit.druid.resto Çabuk İyileşme consumes a HoT and heals big', p.hp - hpS > p.maxHp * 0.03 && HOTCOUNT(p) < 4, `hots=${HOTCOUNT(p)}`);
   function HOTCOUNT(a) { return ['rejuvenation', 'regrowth', 'lifebloom', 'wild_growth'].filter((s) => a.statuses.has(s)).length; }
   // swiftmend without a HoT fails
   for (const s of ['rejuvenation', 'regrowth', 'lifebloom', 'wild_growth']) p.statuses.remove(s);
   G.skills.resetCooldown?.(p, 'druid_swiftmend');
   p.resource = 100;
-  ok('kit.druid.resto Çabuk İyileşme refuses without a HoT', cast(p, 's2', null, 0.5) === false);
+  ok('kit.druid.resto Çabuk İyileşme refuses without a HoT', cast(p, 'e', null, 0.5) === false);
   // Yaşam Çiçeği blooms at the end
   p.hp = p.maxHp * 0.2;
   p.resource = 100;
-  cast(p, 'e', null, 1.7);
+  cast(p, 'q', null, 1.7);
   const t = p.statuses.get('lifebloom');
   p.statuses.apply('lifebloom', 0.1, { magnitude: 0, sourceId: p.id });
   const hpBloom0 = p.hp;
@@ -446,7 +448,7 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   // Berraklık Alameti makes Yeniden Büyüme instant
   p.statuses.apply('omen_clarity', 10, { sourceId: p.id });
   p.resource = 60;
-  G.skills.tryCastSlot(p, 'q', H.aimFor(p, null));
+  G.skills.tryCastSlot(p, 's2', H.aimFor(p, null));
   H.stepSec(2.2);
   ok('kit.druid.resto Berraklık Alameti: Yeniden Büyüme is free and consumes the proc', p.statuses.has('regrowth') && !p.statuses.has('omen_clarity') && p.resource >= 60, `regrowth=${p.statuses.has('regrowth')} mana=${p.resource.toFixed(0)}`);
   // Demir Kabuk
@@ -462,6 +464,26 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   // the basic is the healer chain
   ok('kit.druid.resto Doğa Kıvılcımı is the healer basic', G.skills.getSlotSkill(p, 'lmb') === 'druid_resto_basic');
   ok('kit.druid.resto no script errors', errors.length === 0, errors.slice(0, 2).map((m) => m.slice(0, 160)).join(' | '));
+}
+
+// ---- kit.druid.l1 (owner rule): level 1 starts with >= 4 usable core skills per spec, and each form's level-1 bar has >= 4 too
+{
+  const usable = (id) => !!SKILLS[id] && (SKILLS[id].unlockLevel ?? 1) <= 1;
+  const L1 = CharacterState.defaultBar('druid', 1);
+  for (const sid of ['druid_balance', 'druid_feral', 'druid_guardian', 'druid_restoration']) {
+    const bar = SPECS[sid].defaultBar;
+    const core = Object.entries(bar).filter(([slot, id]) => slot !== 'lmb' && id !== SPECS[sid].basic && usable(id)).map(([, id]) => id);
+    ok(`kit.druid.l1 ${sid} starts with >= 4 usable core skills`, core.length >= 4, core.join(','));
+  }
+  // form buttons: the level-1 bar (caster slots) after the form swaps its skills through SkillDef.replaces
+  for (const [st, nm] of [['form_cat', 'Kedi'], ['form_bear', 'Ayı']]) {
+    const eff = Object.values(L1).map((slotId) => {
+      const r = Object.values(SKILLS).find((x) => x.replaces?.whileStatus === st && x.replaces.skill === slotId && usable(x.id));
+      return r ? r.id : slotId;
+    });
+    const n = eff.filter((id) => usable(id)).length;
+    ok(`kit.druid.l1 ${nm} Biçimi bar has >= 4 usable skills at level 1`, n >= 4, eff.join(','));
+  }
 }
 
 // ---- kit.druid.rotation: each spec's APL runs through the real SkillSystem for 30 s without script errors

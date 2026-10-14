@@ -24,15 +24,15 @@ export const SPECS_KIT_DRUID: Partial<Record<SpecId, SpecDef>> = {
     ],
     skills: ['druid_bal_basic', 'druid_sunfire', 'druid_starfire', 'druid_starsurge', 'druid_eclipse', 'druid_starfall', 'druid_celestial_alignment', 'druid_fury_of_elune'],
     unlock: {
-      druid_bal_basic: 1, druid_sunfire: 10, druid_starfire: 10, druid_celestial_alignment: 10, druid_starsurge: 12, druid_eclipse: 15,
+      druid_bal_basic: 1, druid_sunfire: 1, druid_starfire: 1, druid_celestial_alignment: 10, druid_starsurge: 12, druid_eclipse: 15,
       druid_starfall: 20, druid_fury_of_elune: 20,
     },
     majors: { m45: 'druid_celestial_alignment', m90: 'druid_fury_of_elune' },
     mods: [],
     basic: 'druid_bal_basic',
     defaultBar: {
-      lmb: 'druid_bal_basic', rmb: 'druid_wrath', q: 'druid_starfire', e: 'druid_starsurge', s1: 'druid_moonfire', s2: 'druid_sunfire', s3: 'druid_eclipse',
-      r: 'druid_starfall', m45: 'druid_celestial_alignment', m90: 'druid_fury_of_elune',
+      lmb: 'druid_bal_basic', rmb: 'druid_wrath', q: 'druid_moonfire', e: 'druid_starfire', s1: 'druid_sunfire', s2: 'druid_starsurge', s3: 'druid_barkskin',
+      r: 'druid_starfall', s4: 'druid_solar_beam', m45: 'druid_celestial_alignment', m90: 'druid_fury_of_elune',
     },
   },
 
@@ -45,13 +45,16 @@ export const SPECS_KIT_DRUID: Partial<Record<SpecId, SpecDef>> = {
     specials: [
       { id: 'trait_feral', desc: 'Avcı İçgüdüsü: Kedi Biçimi\'nde pençe zincirinin son vuruşu Kombo Puanı verir; Pars Öfkesi sırasında kanamalar %15 daha güçlü açılır (Bloodtalons yok: odak kanamaları ayakta tutmak).', params: { tigerFury: 0.15 } },
     ],
-    skills: ['druid_rip', 'druid_swipe', 'druid_feral_fury', 'druid_berserk', 'druid_feral_frenzy'],
-    unlock: { druid_rip: 10, druid_swipe: 10, druid_berserk: 10, druid_feral_fury: 12, druid_feral_frenzy: 20 },
+    skills: ['druid_rip', 'druid_swipe', 'druid_feral_fury', 'druid_berserk', 'druid_feral_frenzy', 'druid_cat_dash', 'druid_skull_bash', 'druid_stampeding_roar'],
+    unlock: {
+      druid_rip: 1, druid_swipe: 10, druid_berserk: 10, druid_feral_fury: 12, druid_feral_frenzy: 20, druid_cat_dash: 15, druid_skull_bash: 10,
+      druid_stampeding_roar: 15,
+    },
     majors: { m45: 'druid_berserk', m90: 'druid_feral_frenzy' },
     mods: [],
     defaultBar: {
-      lmb: 'druid_basic', rmb: 'druid_shred', q: 'druid_rake', e: 'druid_rip', s1: 'druid_ferocious_bite', s2: 'druid_swipe', s3: 'druid_feral_fury',
-      r: 'druid_barkskin', m45: 'druid_berserk', m90: 'druid_feral_frenzy',
+      lmb: 'druid_basic', rmb: 'druid_shred', q: 'druid_rake', e: 'druid_rip', s1: 'druid_ferocious_bite', s2: 'druid_cat_dash', s3: 'druid_feral_fury',
+      r: 'druid_barkskin', s4: 'druid_skull_bash', m45: 'druid_berserk', m90: 'druid_feral_frenzy',
     },
   },
 
@@ -64,14 +67,16 @@ export const SPECS_KIT_DRUID: Partial<Record<SpecId, SpecDef>> = {
     specials: [
       { id: 'trait_guardian', desc: 'Doğanın Muhafızı: Ayı Biçimi\'nde en çok canın %30 fazla; Parçalayıcı Pençe %60, Çırpınma %40 daha fazla tehdit üretir.', params: { mangleThreat: 1.6, thrashThreat: 1.4 } },
     ],
-    skills: ['druid_frenzied_regen', 'druid_growl', 'druid_survival_instincts', 'druid_sleeper_rage'],
-    unlock: { druid_frenzied_regen: 10, druid_growl: 10, druid_survival_instincts: 10, druid_sleeper_rage: 20 },
+    skills: ['druid_frenzied_regen', 'druid_growl', 'druid_survival_instincts', 'druid_sleeper_rage', 'druid_ironfur', 'druid_maul', 'druid_skull_bash'],
+    unlock: {
+      druid_frenzied_regen: 1, druid_growl: 10, druid_survival_instincts: 10, druid_sleeper_rage: 20, druid_ironfur: 1, druid_maul: 10, druid_skull_bash: 10,
+    },
     majors: { m45: 'druid_survival_instincts', m90: 'druid_sleeper_rage' },
     mods: [],
     guard: { gauge: 80, arc: 120, blockAmount: 0.4 },
     defaultBar: {
-      lmb: 'druid_basic', rmb: 'druid_mangle', q: 'druid_thrash', e: 'druid_ironfur', s1: 'druid_frenzied_regen', s2: 'druid_growl', s3: 'druid_barkskin',
-      r: 'druid_travel_form', m45: 'druid_survival_instincts', m90: 'druid_sleeper_rage',
+      lmb: 'druid_basic', rmb: 'druid_mangle', q: 'druid_growl', e: 'druid_ironfur', s1: 'druid_thrash', s3: 'druid_frenzied_regen', s4: 'druid_skull_bash',
+      r: 'druid_barkskin', m45: 'druid_survival_instincts', m90: 'druid_sleeper_rage',
     },
   },
 
@@ -84,16 +89,17 @@ export const SPECS_KIT_DRUID: Partial<Record<SpecId, SpecDef>> = {
     specials: [
       { id: 'trait_restoration', desc: 'Armoni: üzerinde kendi iyileştirme etkilerinden (en çok 5) olan hedefe yaptığın her şifa etki başına %6 daha güçlüdür.', params: { harmony: 0.06, harmonyCap: 5 } },
     ],
-    skills: ['druid_resto_basic', 'druid_lifebloom', 'druid_swiftmend', 'druid_wild_growth', 'druid_natures_cure', 'druid_ironbark', 'druid_tranquility'],
+    skills: ['druid_resto_basic', 'druid_lifebloom', 'druid_swiftmend', 'druid_wild_growth', 'druid_natures_cure', 'druid_ironbark', 'druid_tranquility', 'druid_innervate'],
     unlock: {
-      druid_resto_basic: 1, druid_lifebloom: 10, druid_swiftmend: 10, druid_ironbark: 10, druid_wild_growth: 12, druid_natures_cure: 12, druid_tranquility: 20,
+      druid_resto_basic: 1, druid_lifebloom: 1, druid_swiftmend: 1, druid_ironbark: 10, druid_wild_growth: 1, druid_natures_cure: 12, druid_tranquility: 20,
+      druid_innervate: 10,
     },
     majors: { m45: 'druid_ironbark', m90: 'druid_tranquility' },
     mods: [],
     basic: 'druid_resto_basic',
     defaultBar: {
-      lmb: 'druid_resto_basic', rmb: 'druid_rejuvenation', q: 'druid_regrowth', e: 'druid_lifebloom', s1: 'druid_wild_growth', s2: 'druid_swiftmend', s3: 'druid_natures_cure',
-      r: 'druid_wrath', m45: 'druid_ironbark', m90: 'druid_tranquility',
+      lmb: 'druid_resto_basic', rmb: 'druid_rejuvenation', q: 'druid_lifebloom', e: 'druid_swiftmend', s1: 'druid_wild_growth', s2: 'druid_regrowth', s3: 'druid_natures_cure',
+      m45: 'druid_ironbark', m90: 'druid_tranquility',
     },
   },
 };
