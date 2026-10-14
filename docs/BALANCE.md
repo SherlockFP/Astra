@@ -6,7 +6,7 @@ Tool: `dev/combat-sim/balance.mjs` (headless, seeded, real CharacterState / Skil
 node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/balance.mjs [--level=30] [--spec=a,b] [--quick] [--no-check] [--json] [--gear]
 ```
 
-Exit code 1 when a band check fails. Current state: **the band gate fails (74 checks on the data as it stands)**. Section 4 explains why and what is needed to close it.
+Exit code 1 when a band check fails. Current state: **the band gate fails (30 / 30 / 29 checks at L60 / L30 / L10 with the calibrated tuning table, §9)**. Sections 4 and 9 explain why and what is needed to close it.
 
 ## 1. What the tool measures
 
@@ -25,10 +25,10 @@ Not modelled (documented in the tool header): talent trees, movement (`moving` f
 
 | Check | Band (brief / CORE_MECHANICS §5.3) |
 |---|---|
-| DPS specs, ST | within ±8 % of the median ST DPS of the DPS specs at each level |
+| DPS specs, ST | within ±10 % of the median ST DPS of the DPS specs at each level (§9; was ±8 %) |
 | Tanks, ST | 70–80 % of that median |
 | Melee vs ranged DPS median | within ±8 % |
-| AoE, DPS and tank specs | at most 1.35 x the median AoE of the DPS specs |
+| AoE, DPS and tank specs | at most 1.4 x the median AoE of the DPS specs (§9; was 1.35 x) |
 | Tank survival in the tank profile | the tank does not die in 180 s |
 | TTD index across tanks | within ±5 % of the tank median (CORE_MECHANICS §5.3) |
 | Healers | HPS >= the reference tank's damage after mitigation; the reference tank survives |
@@ -189,3 +189,37 @@ Calibration passes: failing bands 43, then 22, 15, 15 (stopped at the cap).
 - AoE above 1.35 x median (not gated): knight_blademaster 1.36, mage_fire 2.17, evoker_augmentation 1.87.
 
 **Verification.** `tsc --noEmit` exit 0. `content-check` exit 0. All kit sims, `wow_core`, `pips`, `beta`, `loot_v3` (1074 checks) and `pvpgear` (78) pass. The kit sims failed once with the table active (demonhunter ledger, necro absorb, paladin reflect, shaman spirit link). They pass with the table cleared, so the calibrated factors are what changed those checks.
+
+## 9. Pass 4: level-aware calibration (L10 / L30 / L60)
+
+**Table.** `src/data/specTuning.ts` holds, per spec, `{ dmg, heal, taken }` as knot triples `[L10, L30, L60]`. `tuneOf(actor, key)` reads the actor's level and interpolates linearly between the knots (held at the end knots outside 10-60). A plain number still means the same factor at every level, and an actor with no level reads the L60 knot, so the table from pass 3 gives the same results. The three factors keep their choke points (`Combat.rollOutgoing`, `Combat.healPlayer`, `Combat.hitLocalPlayer`), and `Combat.ts` is unchanged. Each knot applies only at its own level, so the levels fit independently.
+
+**Calibrator.** `tools/calibrate-balance.mjs` fits L60, then L30, then L10. A level runs up to 4 passes. Each pass measures the level with `balance.mjs --level=L`, then moves that level's knots 60 % of the way to their targets (each target ratio clamped to 0.5-2.0): DPS to the median, tanks to 75 % of the median and to equal TTD, healers to 1.2 x the reference tank's DTPS. The best pass is kept, so a step that adds failing bands is rolled back. The calibrator's count leaves out AoE (reported, gated only by `balance.mjs`).
+
+**Gate changes (brief).** DPS ST ±10 % (was ±8 %). AoE at most 1.4 x median (was 1.35 x). Melee vs ranged stays ±8 %. The tank band (70-80 %) and TTD (±5 %) are unchanged.
+
+**Harness fixes in this pass** (`dev/combat-sim/balance.mjs`):
+1. `performance.now` now reads the sim clock. The combat code's slow-motion and hit-freeze timers read the wall clock, so two identical runs gave different numbers (archer_survival ST 368 vs 426 at L10). Runs are now byte-identical.
+2. A tank that dies ends its fight, but its rates were divided by the full 180 s. Its TTD then read about 180 s whatever its real time to die, and the calibrator pushed incoming damage up for tanks that were dying. Rates now divide by the time the tank was alive.
+
+**Result.** Failing bands from `balance.mjs` on the same harness (the original table, then the calibrated table):
+
+| level | total | DPS ST | AoE | tank ST | TTD | tank died | healers | melee vs ranged |
+|---|---|---|---|---|---|---|---|---|
+| L60 | 38 -> 30 | 12 -> 8 | 7 -> 9 | 2 -> 0 | 5 -> 4 | 3 -> 3 | 8 -> 6 | 1 -> 0 |
+| L30 | 60 -> 30 | 22 -> 6 | 9 -> 6 | 6 -> 0 | 6 -> 2 | 6 -> 6 | 10 -> 10 | 1 -> 0 |
+| L10 | 64 -> 29 | 23 -> 6 | 10 -> 4 | 6 -> 0 | 6 -> 2 | 7 -> 7 | 11 -> 10 | 1 -> 0 |
+
+The calibrator's own count (no AoE) ends at 21 / 24 / 25 for the same table.
+
+**Still failing, and why tuning does not close it:**
+1. Archers and monk windwalker: archer_beastmaster and archer_survival sit at the 4.0 bound at every level, and monk_windwalker and archer_marksman are below band at L60. The deterministic clock exposed this. The likely cause is the attacker's own hit-freeze (`Combat.ts` `freezeActors` on the attacker, animation at 0.04 speed for `ms`). This is not verified, and it may be a game-feel bug rather than a tuning gap.
+2. Kit damage at the bound: priest_shadow, evoker_devastation and evoker_augmentation are at or near the 4.0 bound at every level (kit data, as in §4).
+3. Healers that let the reference tank die: priest_holy, shaman_restoration and monk_mistweaver are at the 4.0 heal bound; priest_discipline and druid_restoration fail on timing. The average-HPS target does not capture timing, so heal rows, not the factor, are the lever. paladin_holy and evoker_preservation sit at the 0.25 heal bound (over-healing).
+4. Tanks dying in the tank profile at L30 (6) and L10 (7): four damped passes move the incoming factor by at most about 30 % per pass at the clamp.
+5. AoE above 1.4 x: mage_fire is 2.9 x at L60, 2.4 x at L30 and 2.6 x at L10. The one damage factor that lifts its single-target number lifts its AoE too, so the AoE kit needs a look.
+6. knight_protector takes no net damage in the tank profile (permanent block, §4.3). The `taken` factor cannot move it.
+
+**Verification.** `tsc --noEmit` exit 0. All kit_* sims, `wow_core`, `pips`, `beta` and `pvpgear` exit 0 (the harness clears the table for them).
+
+**Decisions needed.** Whether the archer and monk collapse under the attacker's hit-freeze is intended; the healer heal rows and the 0.25 / 4.0 heal bounds; the mage_fire AoE kit; the priest_shadow and evoker damage kit; the protector block (§4.3).
