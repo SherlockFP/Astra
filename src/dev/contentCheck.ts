@@ -356,14 +356,14 @@ export const BOSS_ANCHORS: Record<string, Record<string, [number, number]>> = {
   golge_tapinagi: {
     seal_socket_1: [15, 6.5], seal_socket_2: [24, 6.5], seal_socket_3: [15, 11.5], seal_socket_4: [24, 11.5],
     priest_platform_1: [15, 3], priest_platform_2: [24, 3], priest_platform_3: [15, 10], priest_platform_4: [24, 10],
-    rift_spot_1: [32, 10], rift_spot_2: [38, 10], rift_spot_3: [35, 15],
+    rift_spot_1: [30.5, 11.41], rift_spot_2: [37.7, 11.41], rift_spot_3: [34.1, 16.86],
   },
   kemik_mahzeni: { phylactery_1: [15.5, 31.5], phylactery_2: [25, 31.5], phylactery_3: [20, 38.7], soul_well: [34.1, 22.1] },
   buzul_tahti: {
     pylon_1: [17, 2], pylon_2: [23, 2], pylon_3: [17, 8], pylon_4: [23, 8],
     ice_pillar_1: [30.5, 30.5], ice_pillar_2: [36.5, 30.5], ice_pillar_3: [30.5, 35], ice_pillar_4: [36.5, 35],
   },
-  kizil_dokumhane: { vent_1: [27, 30], vent_2: [33, 30], vent_3: [27, 36], vent_4: [33, 36], crucible_11: [11, 2.2], crucible_15: [15, 2.2], crucible_19: [19, 2.2] },
+  kizil_dokumhane: { vent_1: [27.23, 30.23], vent_2: [33.77, 30.23], vent_3: [27.23, 36.77], vent_4: [33.77, 36.77], crucible_11: [11, 3.1], crucible_15: [15, 3.1], crucible_19: [19, 3.1] },
 };
 
 // ---------------------------------------------------------------------------------------------------------------------

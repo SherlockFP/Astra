@@ -1,7 +1,8 @@
-import type { DoorDef, DungeonDef, DungeonTheme, PackDef, RoomDef, ZoneDef } from '../../types/dungeons';
+import type { DoorDef, DungeonDef, DungeonTheme, PackDef, RoomDef, TileRect, ZoneDef } from '../../types/dungeons';
 import {
   GRID_SHIFT, MOUNT_Y, Props, bossAt, circleZone, decorator, door, dg, gp, hw, kc, kf, kg, ks, lt, makeCtx, mon, pack, rectZone, rectsOf, pt, room, shPt, tw, withProps,
 } from './kit';
+import { makeRescale, oldTileRect, type Rect4 } from './rescale';
 
 /**
  * KIZIL DOKUMHANE (fire forge and lava) - GDD_CONTENT 4.2. Level 18-28, M+ 13:30, 270 forces (331 available).
@@ -10,47 +11,58 @@ import {
  */
 
 // ---- GENERATED from docs/GDD_CONTENT.layout.json (rooms, doors, packs, bosses) ----
+// SCALE PASS (docs/SCALE_REFERENCE.md section 3): combat corridors 2 -> 4 tiles, pull rooms >= 9 short side, boss arenas 12x12.
+// OLD_RECT is the layout the hand placed decoration, packs, bosses and extras were written in; they are remapped below.
+const OLD_RECT: Record<string, Rect4> = {
+  giris: [1, 17, 5, 6], k_giris: [6, 19, 4, 2], cevher_deposu: [10, 14, 10, 12], k_kuzey: [14, 9, 2, 5], ors_salonu: [9, 0, 12, 9],
+  curuf_ocagi: [1, 4, 8, 9], k_dogu1: [21, 3, 4, 2], kalip_atolyesi: [25, 0, 10, 9], k_inis: [29, 9, 2, 5], lav_kanali: [24, 14, 12, 10],
+  k_guney: [29, 24, 2, 4], kopru: [34, 24, 2, 4], magma_kalbi: [25, 28, 11, 11], k_bati: [20, 32, 5, 2], kole_kampi: [9, 28, 11, 9],
+  k_son: [8, 31, 1, 2], mavi_alev_sunagi: [0, 27, 8, 12],
+};
+
 const ROOMS: RoomDef[] = [
   room('giris', 'Kül Kapısı', 1, 17, 5, 6, 'lava_rock', 'forge', 0.3),
-  room('k_giris', 'Cüruf Yolu', 6, 19, 4, 2, 'lava_rock', 'forge', 0.5),
-  room('cevher_deposu', 'Cevher Deposu', 10, 14, 10, 12, 'lava_rock', 'forge', 0.6),
-  room('k_kuzey', 'Örs Yolu', 14, 9, 2, 5, 'stone_dark', 'forge', 0.4),
-  room('ors_salonu', 'Örs Salonu', 9, 0, 12, 9, 'stone_dark', 'forge', 0.2, { boss: 1 }),
-  room('curuf_ocagi', 'Cüruf Ocağı', 1, 4, 8, 9, 'lava_rock', 'cave', 0.6, { optional: true }),
-  room('k_dogu1', 'Kızgın Dehliz', 21, 3, 4, 2, 'lava_rock', 'forge', 0.4),
+  room('k_giris', 'Cüruf Yolu', 6, 18, 4, 4, 'lava_rock', 'forge', 0.5),
+  room('cevher_deposu', 'Cevher Deposu', 10, 17, 10, 11, 'lava_rock', 'forge', 0.6),
+  room('k_kuzey', 'Örs Yolu', 13, 12, 4, 5, 'stone_dark', 'forge', 0.4),
+  room('ors_salonu', 'Örs Salonu', 9, 0, 12, 12, 'stone_dark', 'forge', 0.2, { boss: 1 }),
+  room('curuf_ocagi', 'Cüruf Ocağı', 0, 4, 9, 9, 'lava_rock', 'cave', 0.6, { optional: true }),
+  room('k_dogu1', 'Kızgın Dehliz', 21, 2, 4, 4, 'lava_rock', 'forge', 0.4),
   room('kalip_atolyesi', 'Kalıp Atölyesi', 25, 0, 10, 9, 'stone_dark', 'forge', 0.6),
-  room('k_inis', 'Kızgın Merdivenler', 29, 9, 2, 5, 'stone_dark', 'forge', 0.3),
+  room('k_inis', 'Kızgın Merdivenler', 28, 9, 4, 5, 'stone_dark', 'forge', 0.3),
   room('lav_kanali', 'Lav Kanalı', 24, 14, 12, 10, 'lava_rock', 'cave', 0.4),
-  room('k_guney', 'Zincir Geçidi', 29, 24, 2, 4, 'stone_dark', 'forge', 0.3),
+  room('k_guney', 'Zincir Geçidi', 28, 24, 4, 4, 'stone_dark', 'forge', 0.3),
   room('kopru', 'Lav Köprüsü', 34, 24, 2, 4, 'wood', 'cave', 0.1, { skip: true }),
-  room('magma_kalbi', 'Magma Kalbi', 25, 28, 11, 11, 'lava_rock', 'cave', 0.1, { boss: 2 }),
-  room('k_bati', 'Köle Yolu', 20, 32, 5, 2, 'dirt', 'cave', 0.4),
+  room('magma_kalbi', 'Magma Kalbi', 25, 28, 12, 12, 'lava_rock', 'cave', 0.1, { boss: 2 }),
+  room('k_bati', 'Köle Yolu', 20, 31, 5, 4, 'dirt', 'cave', 0.4),
   room('kole_kampi', 'Köle Kampı', 9, 28, 11, 9, 'dirt', 'cave', 0.7),
-  room('k_son', 'Mavi Alev Kapısı', 8, 31, 1, 2, 'temple', 'forge', 0),
-  room('mavi_alev_sunagi', 'Mavi Alev Sunağı', 0, 27, 8, 12, 'temple', 'forge', 0.1, { boss: 3 }),
+  room('k_son', 'Mavi Alev Kapısı', 9, 37, 2, 1, 'temple', 'forge', 0),
+  room('mavi_alev_sunagi', 'Mavi Alev Sunağı', 0, 38, 12, 12, 'temple', 'forge', 0.1, { boss: 3 }),
 ];
+
+const R = makeRescale(OLD_RECT, ROOMS);
 
 const DOORS: DoorDef[] = [
-  door('giris', 'k_giris', 5, 19, 'e', 2, 'none'),
-  door('k_giris', 'cevher_deposu', 9, 19, 'e', 2, 'none'),
-  door('cevher_deposu', 'k_kuzey', 14, 14, 'n', 2, 'none'),
-  door('k_kuzey', 'ors_salonu', 14, 9, 'n', 2, 'boss_lock'),
+  door('giris', 'k_giris', 5, 18, 'e', 4, 'none'),
+  door('k_giris', 'cevher_deposu', 9, 18, 'e', 4, 'none'),
+  door('cevher_deposu', 'k_kuzey', 13, 17, 'n', 4, 'none'),
+  door('k_kuzey', 'ors_salonu', 13, 12, 'n', 4, 'boss_lock'),
   door('ors_salonu', 'curuf_ocagi', 9, 5, 'w', 2, 'boss_exit'),
-  door('ors_salonu', 'k_dogu1', 20, 3, 'e', 2, 'boss_exit'),
-  door('k_dogu1', 'kalip_atolyesi', 24, 3, 'e', 2, 'none'),
-  door('kalip_atolyesi', 'k_inis', 29, 8, 's', 2, 'none'),
-  door('k_inis', 'lav_kanali', 29, 13, 's', 2, 'none'),
-  door('lav_kanali', 'k_guney', 29, 23, 's', 2, 'none'),
+  door('ors_salonu', 'k_dogu1', 20, 2, 'e', 4, 'boss_exit'),
+  door('k_dogu1', 'kalip_atolyesi', 24, 2, 'e', 4, 'none'),
+  door('kalip_atolyesi', 'k_inis', 28, 8, 's', 4, 'none'),
+  door('k_inis', 'lav_kanali', 28, 13, 's', 4, 'none'),
+  door('lav_kanali', 'k_guney', 28, 23, 's', 4, 'none'),
   door('lav_kanali', 'kopru', 34, 23, 's', 2, 'none'),
-  door('k_guney', 'magma_kalbi', 29, 27, 's', 2, 'boss_lock'),
+  door('k_guney', 'magma_kalbi', 28, 27, 's', 4, 'boss_lock'),
   door('kopru', 'magma_kalbi', 34, 27, 's', 2, 'boss_lock'),
-  door('magma_kalbi', 'k_bati', 25, 32, 'w', 2, 'boss_exit'),
-  door('k_bati', 'kole_kampi', 20, 32, 'w', 2, 'none'),
-  door('kole_kampi', 'k_son', 9, 31, 'w', 2, 'none'),
-  door('k_son', 'mavi_alev_sunagi', 8, 31, 'w', 2, 'boss_lock'),
+  door('magma_kalbi', 'k_bati', 25, 31, 'w', 4, 'boss_exit'),
+  door('k_bati', 'kole_kampi', 20, 31, 'w', 4, 'none'),
+  door('kole_kampi', 'k_son', 9, 36, 's', 2, 'none'),
+  door('k_son', 'mavi_alev_sunagi', 9, 37, 's', 2, 'boss_lock'),
 ];
 
-const PACKS: PackDef[] = [
+const PACKS_RAW: PackDef[] = [
   pack('d2_p01', 'k_giris', 8, 19.5, 6, [['forge_goblin', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['forge_goblin', 0.83, -0.53]]),
   pack('d2_p02', 'cevher_deposu', 12.5, 17, 15, [['forge_goblin', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['forge_goblin', 0.83, -0.53], ['forge_goblin', -0.28, 1.03], ['forge_goblin', -0.53, -1.02], ['forge_orc', 1.15, 0.42]]),
   pack('d2_p03', 'cevher_deposu', 17.5, 17, 10, [['lava_slime', 0.3, 0], ['lava_slime', -0.38, 0.35], ['lava_slime', 0.06, -0.66], ['forge_imp', 1.06, -0.8], ['forge_imp', 1.33, 0.06]]),
@@ -81,10 +93,17 @@ const PACKS: PackDef[] = [
   pack('d2_p28', 'k_son', 8, 31.5, 7, [['forge_orc', 0, 0]]),
 ];
 
+const PACKS: PackDef[] = PACKS_RAW.map(R.remapPack);
+
+const bossAtNew = (id: string, roomId: string, x: number, z: number, facing: number, order: number) => {
+  const [nx, nz] = R.toNew(roomId, x, z);
+  return bossAt(id, roomId, nx, nz, facing, order);
+};
+
 const BOSSES = [
-  bossAt('boss_dokumcu_gurz', 'ors_salonu', 15, 5.8, 180, 1),
-  bossAt('boss_atesyurek', 'magma_kalbi', 30, 33.5, 180, 2),
-  bossAt('boss_ignaroth', 'mavi_alev_sunagi', 3.5, 33, 90, 3),
+  bossAtNew('boss_dokumcu_gurz', 'ors_salonu', 15, 5.8, 180, 1),
+  bossAtNew('boss_atesyurek', 'magma_kalbi', 30, 33.5, 180, 2),
+  bossAtNew('boss_ignaroth', 'mavi_alev_sunagi', 3.5, 33, 90, 3),
 ];
 
 const THEME: DungeonTheme = { fogColor: 0x2a0e06, fogNear: 10, fogFar: 45, ambient: 0x803020, ambientIntensity: 0.4, hemiSky: 0xff7040, hemiGround: 0x200800, torchColor: 0xff6a20, bloomStrength: 0.35, music: 'dungeon_fire', palette: [0x1a0c08, 0x4a2418, 0xff4a10, 0xffb040, 0x3070ff], tint: 0xd8a090 };
@@ -101,17 +120,30 @@ const START: [number, number] = [2.5, 19.5];
 const FONT: [number, number] = [4, 18];
 const EXIT: [number, number] = [3.5, 37];
 
+/** Old-layout point -> new layout (the reserved circles and extras are in the new layout). */
+const near = (x: number, z: number, r: number): { x: number; z: number; r: number } => {
+  const [nx, nz] = R.at2(x, z);
+  return { x: nx, z: nz, r };
+};
+
 const ctx = makeCtx('kizil_dokumhane', DOORS, PACKS, [
-  { x: START[0], z: START[1], r: 2.0 },
-  { x: FONT[0], z: FONT[1], r: 1.6 },
-  { x: EXIT[0], z: EXIT[1], r: 2.8 },
-  { x: 15, z: 5.8, r: 4.5 },     // Dokumcu Gurz
-  { x: 30, z: 33.5, r: 5.0 },    // Atesyurek
-  { x: 3.5, z: 33, r: 4.5 },     // Ignaroth
-  { x: 19, z: 25, r: 1.5 },      // Kudret Sunagi
-  { x: 7.5, z: 12, r: 1.5 },     // Koruma Sunagi
+  near(START[0], START[1], 2.0),
+  near(FONT[0], FONT[1], 1.6),
+  near(EXIT[0], EXIT[1], 2.8),
+  near(15, 5.8, 4.5),     // Dokumcu Gurz
+  near(30, 33.5, 5.0),    // Atesyurek
+  near(3.5, 33, 4.5),     // Ignaroth
+  near(19, 25, 1.5),      // Kudret Sunagi
+  near(7.5, 12, 1.5),     // Koruma Sunagi
 ]);
-const D = decorator(ctx, rectsOf(ROOMS));
+const decor = decorator(ctx, rectsOf(ROOMS));
+/** Room callbacks get the OLD rect and a Props whose at()/wall()/scatter() remap into the new layout. */
+const D = {
+  out: decor.out,
+  room(id: string, fn: (p: Props, r: TileRect) => void): void {
+    decor.room(id, (p) => fn(R.remapProps(p, id), oldTileRect(OLD_RECT, id)));
+  },
+};
 
 const shrine = (p: Props, x: number, z: number, crystal: 'crystal_blue' | 'crystal_purple', color: number, id: string): void => {
   p.at(kg('altar-stone'), x, z, { scale: 3, collide: true, id, tag: 'shrine' });
@@ -320,11 +352,9 @@ D.room('kole_kampi', (p, r) => {
 
 // ---- k_son: Mavi Alev Kapisi ------------------------------------------------------------------------------------------------
 D.room('k_son', (p, r) => {
-  for (const z of [30.85, 32.15]) {
-    p.at(dg('column'), 8.0, z, { id: 'blue_column' });
-    p.at(kg('fire-basket'), 8.0, z, { y: 1.4, scale: 3, light: lt(BLUE, 2.0, 10, true, 0.7), emissive: BLUE });
-  }
-  p.wall(r, 'n', [8.0], dg('banner_thin_red'), {}, 0).wall(r, 's', [8.0], dg('banner_thin_red'), {}, 0);
+  // the 1-tile gate passage is 2 wide now: the flanking columns move to the side walls (old z 31.5 = the passage row)
+  p.torches(r, 'w', [31.5], BLUE).torches(r, 'e', [31.5], BLUE);
+  p.at(gp('chains_hanging'), 8.0, 31.5, { y: 4 });
 });
 
 // ---- mavi_alev_sunagi: Boss 3 arena (Mavi Alev Ignaroth) ----------------------------------------------------------------
@@ -357,7 +387,8 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
   k_kuzey: { ambientVfx: 'ambient_embers' },
   ors_salonu: {
     explicitDecor: true, lightColor: 0xff5020, ambientVfx: 'ambient_embers',
-    zones: [lavaZone(9, 0, 12, 1, true, false), lavaZone(9, 8, 5, 1, true, false), lavaZone(16, 8, 5, 1, true, false)],
+    // the south wall is lava except the entrance from the Ore Road (x 13-16)
+    zones: [lavaZone(9, 0, 12, 1, true, false), lavaZone(9, 11, 4, 1, true, false), lavaZone(17, 11, 4, 1, true, false)],
   },
   curuf_ocagi: { ambientVfx: 'ambient_embers', zones: [lavaZone(2, 5, 2, 2)] },
   k_dogu1: { ambientVfx: 'ambient_embers' },
@@ -381,10 +412,10 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
     explicitDecor: true, lightColor: LAVA, ambientVfx: 'ambient_embers',
     // the whole room is lava, then the platform (r = 16 m) and the two walkways from the doors re-open the floor (zones apply in order)
     zones: [
-      rectZone('lava', 25, 28, 11, 11, { blocked: true, color: 0x7a1a05, glow: LAVA, glowIntensity: 1.5, light: { color: LAVA, intensity: 1.5, distance: 24, flicker: true, y: 1 } }),
-      circleZone('dais', 30, 33, 4, { blocked: false, color: 0x1e1612 }),
-      rectZone('bridge', 29, 28, 2, 2, { color: 0x1e1612 }), rectZone('bridge', 34, 28, 2, 5, { color: 0x1e1612 }),
-      rectZone('bridge', 25, 32, 3, 2, { color: 0x1e1612 }),   // walkway from the platform to the west (boss_exit) door
+      rectZone('lava', 25, 28, 12, 12, { blocked: true, color: 0x7a1a05, glow: LAVA, glowIntensity: 1.5, light: { color: LAVA, intensity: 1.5, distance: 24, flicker: true, y: 1 } }),
+      circleZone('dais', ...R.at2(30, 33), 4.4, { blocked: false, color: 0x1e1612 }),
+      rectZone('bridge', 28, 28, 4, 2, { color: 0x1e1612 }), rectZone('bridge', 34, 28, 2, 5, { color: 0x1e1612 }),
+      rectZone('bridge', 25, 31, 3, 4, { color: 0x1e1612 }),   // walkway from the platform to the west (boss_exit) door
     ],
   },
   k_bati: { ambientVfx: 'ambient_embers' },
@@ -401,10 +432,10 @@ const PACK_EXTRA: Record<string, Partial<PackDef>> = {
 };
 
 const EXTRAS: NonNullable<DungeonDef['extras']> = {
-  fontOfPower: pt(4, 18),
-  shrines: [{ type: 'shrine_power', pos: pt(19, 25) }, { type: 'shrine_ward', pos: pt(7.5, 12) }],
-  riftSpots: ([[15, 19.5], [29.5, 4], [6, 8], [30, 16], [14, 32], [8, 19.5]] as [number, number][]).map(([x, z]) => pt(x, z)),
-  chests: [{ pos: pt(1.2, 12.0), kind: 'chest_gold' }],
+  fontOfPower: pt(...R.at2(FONT[0], FONT[1])),
+  shrines: [{ type: 'shrine_power', pos: pt(...R.at2(19, 25)) }, { type: 'shrine_ward', pos: pt(...R.at2(7.5, 12)) }],
+  riftSpots: ([[15, 19.5], [29.5, 4], [6, 8], [30, 16], [14, 32], [8, 19.5]] as [number, number][]).map(([x, z]) => pt(...R.at2(x, z))),
+  chests: [{ pos: pt(...R.at2(1.2, 12.0)), kind: 'chest_gold' }],
 };
 
 export const KIZIL_DOKUMHANE: DungeonDef = {
@@ -413,15 +444,15 @@ export const KIZIL_DOKUMHANE: DungeonDef = {
   shortName: 'Dökümhane',
   lore: 'Dağın kalbinde, Kuzgunkale\'nin ilk silahlarının döküldüğü dökümhane şimdi Mavi Alev Ignaroth\'un elinde. Köleleştirilmiş goblinler gece gündüz örslerde çalışırken, Dökümcü Usta Gurz kırbacını şaklatır ve Magma Devi Ateşyürek lav gölünde uyur. Kızıl ateşin altında, mavi bir alev büyüyor.',
   levelRange: [18, 28],
-  timerSec: 810,
+  timerSec: 860,
   forcesRequired: 270,
   theme: THEME,
-  grid: { w: 40, h: 40 },
+  grid: { w: 40, h: 50 },
   rooms: withProps(ROOMS.map((r) => ({ ...r, ...ROOM_EXTRA[r.id] })), D.out),
   doors: DOORS,
   packs: PACKS.map((p) => (PACK_EXTRA[p.id] ? { ...p, ...PACK_EXTRA[p.id] } : p)),
   bosses: BOSSES,
-  start: { pos: shPt(START[0], START[1]), facing: 90 },
-  exit: { pos: shPt(EXIT[0], EXIT[1]) },
+  start: { pos: shPt(...R.at2(START[0], START[1])), facing: 90 },
+  exit: { pos: shPt(...R.at2(EXIT[0], EXIT[1])) },
   extras: EXTRAS,
 };
