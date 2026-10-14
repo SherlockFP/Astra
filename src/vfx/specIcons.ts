@@ -60,6 +60,7 @@ export const SPEC_ICON: Record<SpecId, string> = {
   evoker_preservation: '/assets/icons/skill-regeneration.svg',
   evoker_augmentation: '/assets/icons/buff-haste.svg',
   rogue_subtlety: CLASS_ICON_PATH.rogue,
+  rogue_outlaw: CLASS_ICON_PATH.rogue,
   // CLASS SCAFFOLD: the ten new spec ids fall back to their class icon
   priest_discipline: CLASS_ICON_PATH.priest,
   priest_holy: CLASS_ICON_PATH.priest,

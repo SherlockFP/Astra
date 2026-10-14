@@ -141,7 +141,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
   },
   rogue: {
     id: 'rogue',
-    specs: ['rogue_assassin', 'rogue_alchemist', 'rogue_subtlety'],
+    specs: ['rogue_assassin', 'rogue_outlaw', 'rogue_subtlety'],
     name: 'Haydut',
     desc: 'Gölgelerde dolaşan çevik suikastçı. Çift hançer ve arbaletle hızlı vurur, zehirle öldürür.',
     role: 'Çevik Suikastçı',
@@ -160,7 +160,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     },
     basicAttack: 'rogue_basic',
     skills: [
-      'rogue_shadow_step', 'rogue_fan_of_knives', 'rogue_eviscerate', 'rogue_vanish',
+      'rogue_shadow_step', 'rogue_kick', 'rogue_vanish', 'rogue_feint',
     ],
     startingItems: ['dagger_t1', 'dagger_t1'],
     color: '#8d6bd6',

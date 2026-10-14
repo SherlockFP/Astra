@@ -24,14 +24,8 @@ export const OTHER_UTIL_ROWS: SkillDef[] = [
 
   // ---- Haydut ----
   row({
-    id: 'rogue_kick', classId: 'rogue', name: 'Tekme', icon: I('skill-quick-slash'),
-    desc: '3 metre içindeki büyü yapan bir düşmanı tekmelersin: büyüsü kesilir ve 3 saniye sessizlik alır (boss hariç).',
-    cost: 10, cooldown: 12, targeting: 'melee_arc', range: 3, arc: 120, anim: 'Unarmed_Melee_Attack_Kick', animSpeed: 1.5,
-    behavior: 'interrupt', tags: ['offgcd', 'melee', 'kick'],
-  }),
-  row({
-    id: 'rogue_cloak_of_shadows', classId: 'rogue', name: 'Gölge Pelerini', icon: I('skill-smoke-bomb'),
-    desc: '4 saniye boyunca tüm temizlenebilir olumsuz etkilerini kaldırır ve tüm dirençlerini %60 artırırsın.',
+    id: 'rogue_cloak_of_shadows', classId: 'rogue', name: 'Gölge Pelerini (Cloak of Shadows)', icon: I('skill-smoke-bomb'),
+    desc: '4 saniye boyunca tüm temizlenebilir olumsuz etkilerini kaldırır ve tüm dirençlerini %60 artırırsın. Shift+ çubuğunda.',
     cost: 0, cooldown: 60, targeting: 'self_buff', anim: 'Cheer', animSpeed: 1.8, vfx: { cast: 'buff_aura' },
     behavior: 'status_self', tags: ['defensive'],
     selfStatuses: [{ status: 'cloak_ward', duration: 4 }],

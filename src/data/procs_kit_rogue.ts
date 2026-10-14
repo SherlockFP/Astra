@@ -10,9 +10,6 @@ const FX = { sfxGain: 'proc_gain', sfxUse: 'proc_use', vfxGain: 'proc_burst', vf
 export const PROC_DEFS_KIT_ROGUE: ProcDef[] = [
   { id: 'darkest_night', status: 'darkest_night', name: 'Karanlık Gece', school: 'shadow', overlay: 'top', glow: ['rogue_envenom'], durationHint: 16, priority: 2, ...FX },
   { id: 'improved_garrote', status: 'improved_garrote', name: 'Gelişmiş Gırtlak Kesme', school: 'shadow', overlay: 'right', glow: ['rogue_garrote'], durationHint: 6, priority: 2, ...FX },
-  { id: 'elixir_ramp', status: 'elixir_ramp', name: 'Hayat İksiri Hazırlığı', school: 'holy', overlay: 'center', glow: ['rogue_vial_heal'], durationHint: 10, priority: 2, ...FX },
-  // Köpüren Karışım: its glow is the bubbling-brew row, which is not written yet (see report), so no glow entry yet.
-  { id: 'brew_boost', status: 'brew_boost', name: 'Köpüren Karışım', school: 'poison', overlay: 'left', glow: [], durationHint: 12, priority: 2, ...FX },
 ];
 
 export const PROC_MODS_KIT_ROGUE: ProcMod[] = [];

@@ -15,7 +15,7 @@ const ok = (name, cond, info = '') => {
 };
 
 // ---- kit.rogue.ids: every id on the three rogue specs resolves to a skill
-for (const sid of ['rogue_assassin', 'rogue_subtlety', 'rogue_alchemist']) {
+for (const sid of ['rogue_assassin', 'rogue_outlaw', 'rogue_subtlety']) {
   const s = SPECS[sid];
   ok(`kit.rogue.ids ${sid} spec exists`, !!s);
   if (!s) continue;

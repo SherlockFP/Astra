@@ -245,44 +245,41 @@ const kitFinisher: Behavior = {
 
 type DamageHits = Array<ReturnType<CastCtx['sys']['strike']>>;
 
-/** Koruyucu İksir (Simyacı, §8a): absorb on a friendly target, Simya Bağı for 15 s. Target = friendly target, else self. */
-const kitWardPotion: Behavior = {
+/** Dilimleme (Outlaw, Slice and Dice): spends every point. Duration = base + perCp x points. No damage. */
+const kitBuffFinisher: Behavior = {
   begin(c) {
     if (c.remote) return true;
-    const t = c.target;
-    c.data.ally = t && t.kind !== 'enemy' && !t.isDead ? t : c.caster;
+    const need = c.def.params?.minCp ?? 1;
+    if (c.sys.comboPoints(c.caster) < need) { c.sys.fail('resource'); return false; }
     return true;
   },
   fire(c) {
     const { caster, sys, def } = c;
     if (c.remote) return;
     const p = def.params ?? {};
-    const ally = (c.data.ally as Player | undefined) ?? caster;
-    addAbsorb(ally, healFormula(caster, p.absorbCoef ?? 1.5).amount, ally.maxHp * 0.45, p.absorbDur ?? 15, undefined, caster.id);
-    ally.statuses.apply('alchemy_link', p.linkDur ?? 15, { sourceId: caster.id });
-    if (def.selfStatuses) sys.applySelf(c, def.selfStatuses);
-    sys.sfx('buff', ally.position);
+    const cp = sys.consumeCombo(caster);
+    const dur = (p.base ?? 6) + (p.perCp ?? 3) * cp;
+    if (def.selfStatuses) sys.applySelf(c, def.selfStatuses.map((s) => ({ ...s, duration: dur })));
+    sys.sfx('buff', caster.position);
   },
 };
-
-/** Yüce Karışım (Simyacı major, §8a): absorb 60 % of max HP for 6 s. The channel pulses and their poison are not wired (report). */
-const kitAscendant: Behavior = {
+/** Kızıl Şişe (Crimson Vial): self absorb for absorbDur. The WoW heal is wired as an absorb (approximation, see the row desc). */
+const kitCrimsonVial: Behavior = {
   fire(c) {
     const { caster, sys, def } = c;
     if (c.remote) return;
     const p = def.params ?? {};
-    addAbsorb(caster, caster.maxHp * (p.absorbPct ?? 0.6), caster.maxHp * (p.absorbPct ?? 0.6), p.dur ?? 6, undefined, caster.id);
-    if (def.selfStatuses) sys.applySelf(c, def.selfStatuses);
+    addAbsorb(caster, healFormula(caster, p.absorbCoef ?? 1.2).amount, caster.maxHp * 0.3, p.absorbDur ?? 4, undefined, caster.id);
+    sys.sfx('buff', caster.position);
   },
 };
-
 Object.assign(BEHAVIORS_KIT_ROGUE, {
   kit_shadow_step: kitShadowStep,
   kit_shadowstrike: kitShadowStrike,
   kit_backstab: kitBackstab,
   kit_finisher: kitFinisher,
-  kit_ward_potion: kitWardPotion,
-  kit_ascendant: kitAscendant,
+  kit_buff_finisher: kitBuffFinisher,
+  kit_crimson_vial: kitCrimsonVial,
 });
 
 function installKitRogue(): void {
