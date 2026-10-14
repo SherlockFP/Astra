@@ -51,9 +51,9 @@ Evaluation docs: `docs/MMO_PILLARS.md` (scorecard + WP-01..14), `docs/UI_WOW_CLA
 
 ## 4c. Sprint 2 (same branch, 2026-10-14)
 - **Zones (all streamed, relief):** Sisli Vadi 1600×1600 (lvl 1-30, 1095 camps, 16 waypoints), Karakır 1600×1200 (30-45), **Ayaz Dağları** 1600×1600 (45-60, r16-r21, Kartal Geçidi pass from Karakır r12, world boss Zemheri), Kızıl Sınır PvP. Used region ids r1-r21 (global). pace-check passes 1-60.
-- **Dungeon doors in the world:** Gölge Tapınağı in Karakır, 8 season dungeons in Ayaz (sign shows recommended level; minLevel not enforced; door  recipes not rendered).
-- **Public channels:**  + : auto-join  (cap 12, PvP 8), host election/migration (fights in progress lost on host loss), interest mgmt (150 m full / 400 m 2 Hz), /kanal. Host upload ≈260 KB/s at 12 players.
-- **Dev server:**  ignores .claude/docs/sims; never leave agent worktrees around (they were pegging the PC).
+- **Dungeon doors in the world:** Gölge Tapınağı in Karakır, 8 season dungeons in Ayaz (sign shows recommended level; minLevel not enforced; door `look` recipes not rendered).
+- **Public channels:** `src/net/Channels.ts` + `NetSession.enterScene`: auto-join `zone:<id>:ch<N>` (cap 12, PvP 8), host election/migration (fights in progress lost on host loss), interest mgmt (150 m full / 400 m 2 Hz), /kanal. Host upload ≈260 KB/s at 12 players.
+- **Dev server:** `vite.config.ts` ignores .claude/docs/sims; never leave agent worktrees around (they were pegging the PC).
 
 ## 5. Next steps (priority order)
 0. **Sprint-1 QA in the browser** (visible pane): FPS/calls in Karakır + town, ElvUI HUD/windows at 800×450 and 1920×1080, mount, pets, PvP gate, guild panel, achievements spam on first load (5 lines at once — batch them), streaming pop-in. Then WP-14 castle siege (`docs/MMO_PILLARS.md`), terrain heights for open world (ground is y=0), minimap presence list, camp id space > 2079 per zone (`HOST_DYNAMIC_ID_BASE`).
