@@ -397,6 +397,15 @@ npc('npc_sinir_subayi', 'Sınır Subayı Tarkan', 'guard', 'Knight', -153.5, 1, 
 });
 npc('npc_muhafiz_5', 'Devriye', 'guard', 'Knight', 0, 25, 0, { title: 'Devriye', show: GUARD, tint: 0x8090b0, idle: 'Walking_A', patrol: { path: lap(0), lap: 30 } });
 npc('npc_muhafiz_6', 'Devriye', 'guard', 'Knight', 0, -9, 0, { title: 'Devriye', show: GUARD, tint: 0x8090b0, idle: 'Walking_A', patrol: { path: lap(0.5), lap: 30 } });
+// Batı Kapısı yard: PvP vendors (GDD_PVP_FINDER §4.4). Onur (Er tier) and Fetih (Şampiyon tier, upgrades) beside the Kızıl Sınır gate.
+npc('npc_savas_ustasi', 'Savaş Ustası', 'pvp', 'Knight', -140, -8, 90, {
+  title: 'Savaş Ustası', show: GUARD2H, tint: 0xc05040, idle: '2H_Melee_Idle', ui: { panel: 'vendor', kind: 'pvp_honor' },
+  lines: ['Kızıl Sınır\'da kanını döktün mü? Onurun burada değerli.', 'Er tier zırh, Onur karşılığı.'],
+});
+npc('npc_fetih_muhafizi', 'Fetih Muhafızı', 'pvp', 'Knight', -140, 8, 90, {
+  title: 'Fetih Muhafızı', show: GUARD2H, tint: 0x6a7ab0, idle: '2H_Melee_Idle', ui: { panel: 'vendor', kind: 'pvp_conquest' },
+  lines: ['Fetih kazandın, şimdi zırhını yükselt.', 'Şampiyon tier, haftalık sınırla satılır. Mühürle yükseltilir.'],
+});
 // ---------------------------------------------------------------------------------------------------------------------
 // Ambient life (WP-11): citizens walk closed street loops (walk()), vendors stand and shout their wares into /say bubbles (the NPC
 // runtime calls `shouts` every 60-120 s while the vendor is on screen). Walker phases spread each crowd along its loop.

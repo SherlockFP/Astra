@@ -12,6 +12,7 @@ import { getTree } from '../data/talentTrees/index';
 import { PALETTE_VALUE } from '../data/talentTrees/palette';
 import { collectMods } from '../combat/skillMods';
 import { baseOf, itemStats } from './ItemGen';
+import { PVP_SETS, PVP_SPEC_TRAITS } from '../data/pvp/sets';
 import { masteryRankAt } from './SkillMastery';
 import { foldEquippedUniques } from './UniqueEffects';
 import type { ClassId } from '../types/common';
@@ -68,6 +69,19 @@ export interface StatCalcResult {
 
 /** §6.5 knob 2: multiplies every numeric tree stat at fold time, and the deviation from 1 of dmgx / cdx / radx. */
 export const TALENT_POWER: number = 1;
+
+/**
+ * GDD_PVP_FINDER §3.7: stat context. `arena` scales PvE item lines to ARENA_PVE_ITEM_MULT (PvP pieces stay at 100 %). `pvp` (arena, PvP zone,
+ * duel) and `arena` enable pvpPower / pvpResilience and the spec traits. Outside them both PvP stats read 0. The default context is
+ * PvE. The arena scene and the PvP flag path change it with setStatContext() and then call recomputeStats().
+ */
+export interface StatCtx { arena?: boolean; pvp?: boolean }
+export const pvpStatCtx: StatCtx = { arena: false, pvp: false };
+export function setStatContext(c: StatCtx): void {
+  pvpStatCtx.arena = !!c.arena;
+  pvpStatCtx.pvp = !!c.pvp || !!c.arena;
+}
+export const ARENA_PVE_ITEM_MULT = 0.6;
 /** §6.5 knob 4: scalar for the web nodes defined by GDD_TALENTS (nodes with `fx`: clusters, masteries, jewels). */
 export const WEB_POWER: number = 1;
 /** §6.5 knob 3: per-spec scalar for the spec tree stats (default 1). */
@@ -308,7 +322,7 @@ export function soloRoleAdjust(role: RoleId | undefined, specStats: StatBlock, p
   return { stats, moreDamage: role === 'healer' ? 1.3 : 1 };
 }
 
-export function computeStats(save: CharacterSave, partySize: number = localPartySize()): StatCalcResult {
+export function computeStats(save: CharacterSave, partySize: number = localPartySize(), ctx: StatCtx = pvpStatCtx): StatCalcResult {
   const classId = save.classId;
   const L = Math.max(1, save.level);
   const table = classTable(classId);
@@ -322,7 +336,8 @@ export function computeStats(save: CharacterSave, partySize: number = localParty
   for (const slot of EQUIP_SLOTS) {
     const it = save.equipment[slot];
     if (!it || it.broken) continue; // WP-13: a Kırık item contributes 0 stats
-    addStats(S, itemStats(it, slot));
+    // §3.7.2: arena context scales PvE items to 60 %; PvP pieces (it.pvp) stay at 100 %
+    addStats(S, itemStats(it, slot), ctx.arena && !it.pvp ? ARENA_PVE_ITEM_MULT : 1);
     const base = baseOf(it);
     if (base?.category === 'shield' && slot === 'offhand') hasShield = true;
     if (it.setId) setCounts[it.setId] = (setCounts[it.setId] ?? 0) + 1;
@@ -333,7 +348,9 @@ export function computeStats(save: CharacterSave, partySize: number = localParty
   }
   // ---- set bonuses
   for (const [setId, count] of Object.entries(setCounts)) {
-    const set = SETS[setId];
+    const pvpSet = PVP_SETS[setId];
+    if (pvpSet && pvpSet.classId !== classId) continue;   // a PvP set counts only for its class
+    const set = SETS[setId] ?? pvpSet;
     if (!set) continue;
     for (const b of set.bonuses) {
       if (count < b.count) continue;
@@ -360,6 +377,9 @@ export function computeStats(save: CharacterSave, partySize: number = localParty
     }
     for (const sp of specDef.specials ?? []) registerSpecial(specials, sp.id, sp.desc, sp.params, 'talent');
   }
+  // ---- PvP spec trait (GDD_PVP_FINDER §4.3): arena and PvP contexts only
+  const pvpTrait = save.spec ? PVP_SPEC_TRAITS[save.spec] : undefined;
+  if (pvpTrait && (ctx.arena || ctx.pvp)) addStats(S, pvpTrait.stats);
   // ---- talent layer: trees, web fx, masteries, jewels, skill picks (GDD_TALENTS §2.5); a failed fold keeps the rest
   let fx: ActiveFx = emptyFx();
   try {
@@ -402,6 +422,8 @@ export function computeStats(save: CharacterSave, partySize: number = localParty
   const out: StatBlock = {};
   // raw copy (everything not specifically derived below stays as the raw sum)
   for (const k of Object.keys(S) as StatId[]) out[k] = S[k];
+  // §3.7.1: pvpPower / pvpResilience exist only in arena and PvP contexts (PvE stays unchanged)
+  if (!(ctx.arena || ctx.pvp)) { out.pvpPower = 0; out.pvpResilience = 0; }
 
   // ---- primary attributes
   const allAttr = S.allAttr ?? 0;

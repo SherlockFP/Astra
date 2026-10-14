@@ -57,6 +57,12 @@ add({ id: 'takviye_nesnesi', name: 'Takviye Nesnesi', desc: 'Nadirlik sınırın
 add({ id: 'oyma_kalemi', name: 'Oyma Kalemi', desc: 'Eşyaya yeni bir taş yuvası açar (yuva sınırına kadar).', icon: ic('item-trinket'), rarity: 'rare', sellPrice: 900, kind: 'crafting', maxStack: 999 });
 add({ id: 'av_muhru', name: 'Av Mührü', desc: 'Günlük görevlerden kazanılan para birimi. Mühürdar\'dan nadir malzemeler alınır.', icon: ic('item-coins'), rarity: 'uncommon', sellPrice: 0, kind: 'currency', maxStack: 9999 });
 
+// ------------------------------------------------------------------ PvP (GDD_PVP_FINDER §4.2): one spend balance per currency
+// Onur: world PvP honour and arena rewards (daily cap 1500 on earning, PvpGear.grantOnur). Fetih: ranked arena only (weekly cap).
+add({ id: 'onur_puani', name: 'Onur Puanı', desc: 'Dünya PvP\'sinde, arenada ve günün ilk galibiyetinde kazanılır. Savaş Ustası\'ndan Er tier PvP eşyası alınır. Günlük kazanç sınırı 1500.', icon: ic('item-coins'), rarity: 'rare', sellPrice: 0, kind: 'currency', maxStack: 99999 });
+add({ id: 'fetih_puani', name: 'Fetih Puanı', desc: 'Dereceli arenada kazanılır. Fetih Muhafızı\'ndan Şampiyon tier PvP eşyası alınır. Haftalık kazanç sınırı vardır.', icon: ic('item-coins'), rarity: 'epic', sellPrice: 0, kind: 'currency', maxStack: 99999 });
+add({ id: 'fetih_muhru', name: 'Fetih Mührü', desc: 'PvP eşyalarını yükseltmek için kullanılır (Fetih Muhafızı).', icon: ic('item-crystal'), rarity: 'epic', sellPrice: 0, kind: 'upgrade', maxStack: 9999 });
+
 // ------------------------------------------------------------------ open world (GDD_OPENWORLD 4.6, 6.2-6.4)
 add({ id: 'metin_kalintisi', name: 'Metin Kalıntısı', desc: 'Vadi\'nin yüreğindeki kara taşlardan, nadir yaratıklardan ve ara patronlardan düşer. Kalıntı Tüccarı\'nda kullanılır.', icon: ic('item-crystal-shard'), rarity: 'epic', sellPrice: 10, kind: 'currency', maxStack: 9999 });
 add({ id: 'beceri_kitabi_1', name: 'Beceri Kitabı I (Çırak)', desc: 'Bir becerinin seviyesini 3. kademeye kadar yükseltir. Beceriler panelinden okunur.', icon: ic('ui-spellbook'), rarity: 'uncommon', sellPrice: 30, kind: 'consumable', maxStack: 99 });

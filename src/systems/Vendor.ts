@@ -6,6 +6,7 @@ import { MATERIALS, GEM_TYPES, gemId } from '../data/materials';
 import { BASES_BY_CATEGORY, CATEGORY_NAMES_TR, classCanUseBase } from '../data/itemBases';
 import { bountyDayKey } from './Bounties';
 import { categoriesForClass, defaultRng, generateItem, itemDisplayName, rollRarity, sellValue } from './ItemGen';
+import { addWeeklyBought, pvpStockEntries, weeklyBought } from './PvpGear';
 
 /** Merchant / alchemist trading for the local character. OWNER: items module. */
 export interface VendorEntry {
@@ -26,10 +27,13 @@ export interface VendorEntry {
   perUnit?: number;
   /** Daily-limit key (`world.shop.<shopKey>.<day>`) for shop entries; default is the material id. */
   shopKey?: string;
+  /** GDD_PVP_FINDER §4.4: purchases per week for this entry (flag `pvp.buy.<weeklyKey>.<week>`). */
+  weeklyLimit?: number;
+  weeklyKey?: string;
 }
 
 /** Vendor kinds: merchant (Kervancı), alchemist, blacksmith (materials), metin (Kalıntı Tüccarı), weaponsmith / armorsmith. */
-export type VendorKind = 'merchant' | 'alchemist' | 'blacksmith' | 'metin' | 'weaponsmith' | 'armorsmith';
+export type VendorKind = 'merchant' | 'alchemist' | 'blacksmith' | 'metin' | 'weaponsmith' | 'armorsmith' | 'pvp_honor' | 'pvp_conquest';
 
 const DAILY_LIMITS: Record<string, number> = { efsun_nesnesi: 5 };
 
@@ -56,6 +60,15 @@ const limitKey = (e: { materialId?: string; shopKey?: string }) =>
 function boughtToday(e: { materialId?: string; shopKey?: string }): number {
   return Number(G.character?.save.flags[limitKey(e)] ?? 0);
 }
+
+/** PvP stock: purchases this week of an entry (its weeklyKey is the vendor kind and stock id). */
+function weeklyBoughtOf(e: { weeklyKey?: string }): number {
+  return e.weeklyKey ? weeklyBought(pvpKindOf(e.weeklyKey), e.weeklyKey) : 0;
+}
+function addWeeklyBoughtOf(e: { weeklyKey?: string }, n = 1): void {
+  if (e.weeklyKey) addWeeklyBought(pvpKindOf(e.weeklyKey), e.weeklyKey, n);
+}
+const pvpKindOf = (key: string): 'pvp_honor' | 'pvp_conquest' => (key.startsWith('pvp_honor.') ? 'pvp_honor' : 'pvp_conquest');
 
 function pruneVendorFlags(): void {
   const flags = G.character?.save.flags;
@@ -152,7 +165,10 @@ export function vendorEntries(kind: VendorKind): VendorEntry[] {
   const cached = caches[kind];
   if (cached && cached.key === key) {
     // refresh dynamic stock numbers
-    for (const e of cached.entries) if (e.dailyLimit && e.materialId) e.stock = Math.max(0, e.dailyLimit - boughtToday(e));
+    for (const e of cached.entries) {
+      if (e.dailyLimit && e.materialId) e.stock = Math.max(0, e.dailyLimit - boughtToday(e));
+      if (e.weeklyLimit && e.weeklyKey) e.stock = Math.max(0, e.weeklyLimit - weeklyBoughtOf(e));
+    }
     return cached.entries;
   }
   let entries: VendorEntry[] = [];
@@ -176,6 +192,8 @@ export function vendorEntries(kind: VendorKind): VendorEntry[] {
     entries = metinShopEntries(ch.level, hashString(ch.save.id) ^ day);
   } else if (kind === 'weaponsmith' || kind === 'armorsmith') {
     entries = smithEntries(kind, ch.level, ch.classId, hashString(ch.save.id) ^ day);
+  } else if (kind === 'pvp_honor' || kind === 'pvp_conquest') {
+    entries = pvpStockEntries(kind, ch.classId, hashString(ch.save.id) ^ day);
   } else {
     const ids = ['kara_demir', 'buyulu_toz', 'efsun_nesnesi', ...GEM_TYPES.map((t) => gemId(t, 1))];
     for (const id of ids) {
@@ -195,9 +213,17 @@ export function buy(entry: VendorEntry, count = 1): { ok: boolean; reason?: stri
   if (entry.item) {
     const item = entry.item;
     if (ch.findItem(item.uid)) return { ok: false, reason: 'Bu eşya zaten satın alındı.' };
-    if (ch.save.gold < entry.price) return { ok: false, reason: 'Yeterli altının yok.' };
-    if (ch.freeBagSlots() <= 0) return { ok: false, reason: 'Çantan dolu!' };
-    ch.spendGold(entry.price);
+    if (entry.weeklyLimit && entry.weeklyKey && weeklyBoughtOf(entry) >= entry.weeklyLimit) return { ok: false, reason: 'Haftalık sınır doldu.' };
+    if (entry.currency) {
+      if (ch.material(entry.currency) < entry.price) return { ok: false, reason: `Yeterli ${MATERIALS[entry.currency]?.name ?? 'para birimin'} yok.` };
+      if (ch.freeBagSlots() <= 0) return { ok: false, reason: 'Çantan dolu!' };
+      ch.useMaterial(entry.currency, entry.price);
+    } else {
+      if (ch.save.gold < entry.price) return { ok: false, reason: 'Yeterli altının yok.' };
+      if (ch.freeBagSlots() <= 0) return { ok: false, reason: 'Çantan dolu!' };
+      ch.spendGold(entry.price);
+    }
+    if (entry.weeklyKey) addWeeklyBoughtOf(entry);
     ch.addItem(item);
     // remove from stock
     for (const c of Object.values(caches)) {
@@ -218,6 +244,11 @@ export function buy(entry: VendorEntry, count = 1): { ok: boolean; reason?: stri
     if (left <= 0) return { ok: false, reason: 'Bugünlük satış limiti doldu.' };
     if (n > left) return { ok: false, reason: `Bugün en fazla ${left} adet daha alabilirsin.` };
   }
+  if (entry.weeklyLimit && entry.weeklyKey) {
+    const left = entry.weeklyLimit - weeklyBoughtOf(entry);
+    if (left <= 0) return { ok: false, reason: 'Haftalık sınır doldu.' };
+    if (n > left) return { ok: false, reason: `Bu hafta en fazla ${left} adet daha alabilirsin.` };
+  }
   const unit = Math.max(1, entry.perUnit ?? 1);
   const total = entry.price * n;
   const currency = entry.currency;
@@ -229,6 +260,10 @@ export function buy(entry: VendorEntry, count = 1): { ok: boolean; reason?: stri
   if (currency) ch.useMaterial(currency, total);
   else ch.spendGold(total);
   ch.addMaterial(id, n * unit);
+  if (entry.weeklyKey) {
+    addWeeklyBoughtOf(entry, n);
+    if (entry.weeklyLimit) entry.stock = Math.max(0, entry.weeklyLimit - weeklyBoughtOf(entry));
+  }
   if (entry.dailyLimit) {
     ch.save.flags[limitKey(entry)] = boughtToday(entry) + n;
     entry.stock = Math.max(0, entry.dailyLimit - boughtToday(entry));

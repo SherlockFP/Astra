@@ -147,6 +147,8 @@ const ROLE_DEFAULT: Record<NpcRole, NpcPreset> = {
   crafting: { base: 'Barbarian', show: [], title: 'Zanaat Ustası', idle: 'Idle' },
   // GDD_ITEMS_V2 §5.2.1 (IT-00): Emlakçı Rıza, the house agent (typing default only; no town NPC uses it yet)
   home: { base: 'Rogue', show: [], title: 'Emlakçı', idle: 'Idle' },
+  // GDD_PVP_FINDER §4.4: PvP vendors (Savaş Ustası, Fetih Muhafızı) are placed in town data; this is the typing default
+  pvp: { base: 'Knight', show: [], title: 'Savaş Ustası', idle: 'Idle' },
 };
 
 const VILLAGER_TINTS = [0xa08060, 0x6080a0, 0x80a060, 0xa06060];

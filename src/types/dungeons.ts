@@ -623,7 +623,7 @@ export interface TownProp {
   id?: string;
 }
 
-export type TownNpcRole = 'blacksmith' | 'merchant' | 'alchemist' | 'stash' | 'keystone' | 'trainer' | 'bounty' | 'lobby' | 'guard' | 'citizen' | 'portal' | 'quest' | 'teleporter' | 'stable' | 'codex' | 'tierset' | 'crafting' | 'home';
+export type TownNpcRole = 'blacksmith' | 'merchant' | 'alchemist' | 'stash' | 'keystone' | 'trainer' | 'bounty' | 'lobby' | 'guard' | 'citizen' | 'portal' | 'quest' | 'teleporter' | 'stable' | 'codex' | 'tierset' | 'crafting' | 'home' | 'pvp';
 
 export interface TownNpc {
   id: string;

@@ -138,6 +138,8 @@ export interface ItemInstance {
   craftedBy?: string;
   /** CM14 Pazar: the item stands in the local player's open stall. Not usable / sellable / equippable / salvageable / upgradable until the shop closes (systems/Market.ts sets and clears it; stale flags are cleared on load). */
   listed?: boolean;
+  /** GDD_PVP_FINDER §4.6: PvP gear (bought from a PvP vendor, systems/PvpGear.ts). Set only by PvpGear; StatCalc reads it for arena normalisation. */
+  pvp?: true;
 }
 
 export interface KeystoneData {

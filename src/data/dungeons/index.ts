@@ -17,6 +17,7 @@ import { KEFARET_SALONLARI } from './kefaret_salonlari';
 import { YANKI_AGI } from './yanki_agi';
 import { BUYUCU_TERASI } from './buyucu_terasi';
 import { getFissureDef, isFissureId } from '../../world/procgen';
+import { ARENA_DUNGEONS } from '../arenas';
 
 /** OWNER: content module. One file per dungeon in this folder, registered here. */
 export const DUNGEONS: Record<string, DungeonDef> = {
@@ -74,5 +75,6 @@ export const getDungeon = (id: string): DungeonDef | undefined => {
   // Kadim Yarıklar: the id is self-describing (fis.<theme>.<tier>.<level>.<seed8>.<v>), every peer regenerates the same def (LRU cache)
   if (isFissureId(id)) return getFissureDef(id);
   const key = LEGACY_ZONE_ALIASES[id] ?? id;
-  return DUNGEONS[key] ?? OPEN_ZONES[key];
+  // GDD_PVP_FINDER §3.2.2: arenas resolve here but are not in DUNGEON_IDS
+  return DUNGEONS[key] ?? OPEN_ZONES[key] ?? ARENA_DUNGEONS[key];
 };

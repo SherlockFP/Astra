@@ -17,6 +17,7 @@ import {
   type CapPresence, type PvpDeny,
 } from './PvpRules';
 import { partyEntityOf, vetPvpHit } from '../net/guard';
+import { grantOnur } from './PvpGear';
 import { clampNum, isObj, sanitizeText } from '../net/messages';
 
 /**
@@ -429,6 +430,7 @@ export class PvpRuntime {
       rec.kills++;
       rec.honour += m.h;
       rec.honourTotal += m.h;
+      grantOnur(m.h, 'kill');   // GDD_PVP_FINDER §4.2: the spendable Onur balance is the onur_puani material
       rec.bestStreak = Math.max(rec.bestStreak, m.s);
       ch.persist();
       G.events.emit('pvp:honor', { amount: m.h, total: rec.honourTotal, rank: 0 });
@@ -458,6 +460,7 @@ export class PvpRuntime {
       rec.captures++;
       rec.honour += PVP.HONOUR_FLIP;
       rec.honourTotal += PVP.HONOUR_FLIP;
+      grantOnur(PVP.HONOUR_FLIP, 'flip');
       ch.persist();
       G.events.emit('pvp:honor', { amount: PVP.HONOUR_FLIP, total: rec.honourTotal, rank: 0 });
       G.ui?.toast(`${def.name} ele geçirildi: +${PVP.HONOUR_FLIP} Onur`, 'loot');

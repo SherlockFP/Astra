@@ -1,6 +1,7 @@
 import * as Vendor from '../../../systems/Vendor';
 import * as Upgrade from '../../../systems/Upgrade';
 import { describeItem } from '../../../systems/ItemGen';
+import * as PvpGear from '../../../systems/PvpGear';
 
 /**
  * Thin indirection over the systems this module talks to (items module: ItemGen / Vendor / Upgrade).
@@ -28,6 +29,16 @@ export const vendorApi = {
   gambleCost: Vendor.gambleCost,
   gamble: Vendor.gamble,
   gambleMinLevel: Vendor.GAMBLE_MIN_LEVEL,
+};
+
+/** PvP vendors (GDD_PVP_FINDER §4.4-4.5): balances, weekly caps and the upgrade path. */
+export const pvpApi = {
+  onurToday: PvpGear.onurToday,
+  fetihThisWeek: PvpGear.fetihThisWeek,
+  owned: PvpGear.ownedPvpItems,
+  nextStep: PvpGear.pvpNextStep,
+  tierLabel: PvpGear.pvpTierLabel,
+  upgrade: PvpGear.pvpUpgrade,
 };
 
 export const forgeApi = {

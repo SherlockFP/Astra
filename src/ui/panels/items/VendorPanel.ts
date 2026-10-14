@@ -4,32 +4,38 @@ import { RARITY_COLORS, RARITY_NAMES_TR } from '../../../types/common';
 import type { VendorEntry } from '../../../systems/Vendor';
 import type { ItemCategory, ItemInstance } from '../../../types/items';
 import { ItemPanel, makeTabs, openCompanionBag, releaseCompanionBag, type TabsHandle } from './PanelBase';
-import { vendorApi } from './backend';
+import { pvpApi, vendorApi } from './backend';
 import { sellItem } from './actions';
 import { CATEGORY_ICON, ItemSlot, bindItemTip, bindTip, describe, drag, esc, fmt, h, iconUrl, materialInfo, sfx, toast } from './common';
 
 /** merchant / alchemist: classic shops. gamble: Gizemli Tüccar (blind boxes). seal_vendor: Mühürdar (Av Mührü shop). */
-type Kind = 'merchant' | 'alchemist' | 'gamble' | 'seal_vendor';
+type Kind = 'merchant' | 'alchemist' | 'gamble' | 'seal_vendor' | 'pvp_honor' | 'pvp_conquest';
 
 const KIND_INFO: Record<Kind, { title: string; icon: string; line: string }> = {
   merchant: { title: 'Tüccar', icon: 'ui-shop.svg', line: 'Hoş geldin, maceracı! Kaliteli mallarım var; satacaklarını da buraya bırakabilirsin.' },
   alchemist: { title: 'Simyacı', icon: 'item-potion-flask.svg', line: 'İksirler, tozlar, merhemler... Zindanlara hazırlıksız girme!' },
   gamble: { title: 'Gizemli Tüccar', icon: 'item-chest-locked.svg', line: 'Kutunun içinde ne var? Öde ve gör! Şansın varsa Efsanevi bile çıkar...' },
   seal_vendor: { title: 'Mühürdar', icon: 'item-trinket.svg', line: 'Mührünü getir, ödülünü al. Günlük görevlerden kazandığın Av Mührü burada geçer.' },
+  pvp_honor: { title: 'Savaş Ustası', icon: 'ui-shop.svg', line: "Kızıl Sınır'da kanını döktün mü? Onurun burada Er tier zırha dönüşür." },
+  pvp_conquest: { title: 'Fetih Muhafızı', icon: 'item-trinket.svg', line: 'Fetih kazandın, şimdi zırhını yükselt. Şampiyon tier haftalık sınırla satılır.' },
 };
 
 /**
  * Vendor kind from the open data: an explicit `kind` wins; otherwise an NPC id hint (`npcId` / `npc` / `id`) selects the special vendors,
  * so a Mühürdar / Gizemli Tüccar opened without a kind never degrades into the plain merchant shop.
  */
+const isPvpKind = (k: Kind): boolean => k === 'pvp_honor' || k === 'pvp_conquest';
+
 function parseKind(d: { kind?: unknown; npcId?: unknown; npc?: unknown; id?: unknown } | undefined): Kind {
   const v = d?.kind;
-  if (v === 'alchemist' || v === 'gamble' || v === 'seal_vendor' || v === 'merchant') return v;
+  if (v === 'alchemist' || v === 'gamble' || v === 'seal_vendor' || v === 'merchant' || v === 'pvp_honor' || v === 'pvp_conquest') return v;
   const hint = [d?.npcId, d?.npc, d?.id].find((x) => typeof x === 'string') as string | undefined;
   if (hint) {
     if (/gizemli|kumar|gamble/i.test(hint)) return 'gamble';
     if (/muhurdar|mühürdar|seal/i.test(hint)) return 'seal_vendor';
     if (/simyaci|simyacı|alchemist/i.test(hint)) return 'alchemist';
+    if (/savas|savaş/i.test(hint)) return 'pvp_honor';
+    if (/fetih/i.test(hint)) return 'pvp_conquest';
   }
   return 'merchant';
 }
@@ -63,6 +69,8 @@ export class VendorPanel extends ItemPanel {
   private junkBtn!: HTMLButtonElement;
   private sealWrap!: HTMLDivElement;
   private sealEl!: HTMLSpanElement;
+  /** PvP vendors: weekly / daily cap line above the list (GDD_PVP_FINDER §4.4). */
+  private pvpLine!: HTMLDivElement;
   /** Muhurdar: the open "Muhur Sandigi" category picker. */
   private chestPick = false;
   /** Gizemli Tuccar: the last results (newest first). */
@@ -146,12 +154,17 @@ export class VendorPanel extends ItemPanel {
     const sealIco = h('i', 'pi-seal-ico');
     sealIco.style.setProperty('--ico', `url("${materialInfo('av_muhru').icon}")`);
     this.sealWrap.append(sealIco, (this.sealEl = h('span', 'pi-gold-n', '0')));
-    bindTip(this.sealWrap, () => `<div class="pi-tip-name" style="color:${RARITY_COLORS[materialInfo('av_muhru').rarity]}">Av Mührü</div><div class="pi-tip-line">${esc(materialInfo('av_muhru').desc)}</div>`);
+    bindTip(this.sealWrap, () => {
+      const m = materialInfo(this.kind === 'pvp_honor' ? 'onur_puani' : this.kind === 'pvp_conquest' ? 'fetih_puani' : 'av_muhru');
+      return `<div class="pi-tip-name" style="color:${RARITY_COLORS[m.rarity]}">${esc(m.name)}</div><div class="pi-tip-line">${esc(m.desc)}</div>`;
+    });
     const goldBox = h('div', 'pi-vgold');
     goldBox.append(this.sealWrap, gold);
     foot.append(junk, goldBox);
 
-    body.append(top, this.tabs.el, this.reveal, this.list, this.qtyRow, this.sellZone, foot);
+    this.pvpLine = h('div', 'pi-pvpline');
+    this.pvpLine.style.display = 'none';
+    body.append(top, this.tabs.el, this.reveal, this.pvpLine, this.list, this.qtyRow, this.sellZone, foot);
   }
 
   protected subscribe(s: EventScope): void {
@@ -184,9 +197,10 @@ export class VendorPanel extends ItemPanel {
     this.flavor.textContent = info.line;
     this.flavorIco.style.setProperty('--ico', `url("/assets/icons/${info.icon}")`);
     this.entries = [];
-    if (kind === 'merchant' || kind === 'alchemist') {
+    const vk = kind === 'merchant' || kind === 'alchemist' || kind === 'pvp_honor' || kind === 'pvp_conquest' ? kind : undefined;
+    if (vk) {
       try {
-        this.entries = vendorApi.entries(kind);
+        this.entries = vendorApi.entries(vk);
       } catch (e) {
         console.warn('[vendor] entries failed', e);
         this.entries = [];
@@ -197,10 +211,12 @@ export class VendorPanel extends ItemPanel {
     this.paintQty();
     // layout per kind: shops have tabs + a sell zone; the gamble and seal screens are single-purpose
     const special = this.special();
-    this.tabs.el.style.display = special ? 'none' : '';
-    this.sellZone.style.display = special ? 'none' : '';
-    this.junkBtn.style.display = special ? 'none' : '';
-    this.sealWrap.style.display = kind === 'seal_vendor' ? '' : 'none';
+    const shop = kind === 'merchant' || kind === 'alchemist';
+    this.tabs.el.style.display = shop ? '' : 'none';
+    this.sellZone.style.display = shop ? '' : 'none';
+    this.junkBtn.style.display = shop ? '' : 'none';
+    this.sealWrap.style.display = kind === 'seal_vendor' || isPvpKind(kind) ? '' : 'none';
+    this.pvpLine.style.display = isPvpKind(kind) ? '' : 'none';
     this.list.classList.toggle('special', special);
     openCompanionBag(this.id);
   }
@@ -228,6 +244,7 @@ export class VendorPanel extends ItemPanel {
     const c = G.character;
     this.goldEl.textContent = c ? fmt(c.save.gold) : '-';
     if (this.kind === 'seal_vendor') this.sealEl.textContent = c ? fmt(c.material('av_muhru')) : '-';
+    if (isPvpKind(this.kind)) this.paintPvpHeader();
   }
 
   private unitQty(e: VendorEntry): number {
@@ -257,11 +274,9 @@ export class VendorPanel extends ItemPanel {
     this.list.replaceChildren();
     const c = G.character;
     if (this.tab === 'buy') {
-      if (!this.entries.length) {
-        this.list.append(h('div', 'pi-empty', 'Şu an satacak bir şeyim yok.'));
-        return;
-      }
+      if (!this.entries.length) this.list.append(h('div', 'pi-empty', 'Şu an satacak bir şeyim yok.'));
       this.entries.forEach((e, i) => this.list.append(this.buyRow(e, i)));
+      if (this.kind === 'pvp_conquest') this.list.append(this.upgradeSection());
     } else {
       let back: { item: ItemInstance; price: number }[] = [];
       try {
@@ -279,6 +294,81 @@ export class VendorPanel extends ItemPanel {
     void c;
   }
 
+  /** PvP header (GDD_PVP_FINDER §4.4): the vendor's currency in the header, the cap line above the list. */
+  private paintPvpHeader(): void {
+    const c = G.character;
+    const honor = this.kind === 'pvp_honor';
+    const cur = honor ? 'onur_puani' : 'fetih_puani';
+    const ico = this.sealWrap.querySelector<HTMLElement>('.pi-seal-ico');
+    ico?.style.setProperty('--ico', `url("${materialInfo(cur).icon}")`);
+    this.sealEl.textContent = c ? fmt(c.material(cur)) : '-';
+    if (!c) {
+      this.pvpLine.textContent = '';
+      return;
+    }
+    if (honor) {
+      const t = pvpApi.onurToday();
+      this.pvpLine.textContent = `Onur: ${fmt(c.material(cur))} (bugün ${fmt(t.earned)}/${fmt(t.cap)})${t.left <= 0 ? ' · Günlük sınır doldu.' : ''}`;
+    } else {
+      const t = pvpApi.fetihThisWeek();
+      this.pvpLine.textContent = `Fetih: ${fmt(c.material(cur))} (bu hafta ${fmt(t.earned)}/${fmt(t.cap)})${t.left <= 0 ? ' · Haftalık sınır doldu.' : ''}`;
+    }
+  }
+
+  /** Fetih Muhafızı: the owned PvP pieces with their next ilvl step and mühür cost (GDD_PVP_FINDER §4.5). */
+  private upgradeSection(): HTMLElement {
+    const wrap = h('div', 'pi-pvpup');
+    wrap.append(h('div', 'pi-pvpup-title', 'Yükselt'));
+    const items = pvpApi.owned();
+    if (!items.length) {
+      wrap.append(h('div', 'pi-empty', 'Üzerinde ya da çantanda PvP eşyası yok.'));
+      return wrap;
+    }
+    const muhur = G.character?.material('fetih_muhru') ?? 0;
+    for (const it of items) {
+      const step = pvpApi.nextStep(it);
+      const row = h('div', 'pi-vrow');
+      const text = h('div', 'pi-vtext');
+      const d = describe(it);
+      const name = h('div', 'pi-vname', d.name);
+      name.style.color = RARITY_COLORS[it.rarity];
+      const line = step
+        ? `${pvpApi.tierLabel(it.itemLevel)} → ${pvpApi.tierLabel(step.to)} · ${step.cost} Fetih mührü (sende ${muhur})`
+        : `${pvpApi.tierLabel(it.itemLevel)} · en yüksek seviye`;
+      text.append(name, h('div', 'pi-vsub', line));
+      const btn = h('button', 'pi-btn sm', step ? 'Yükselt' : 'Son');
+      (btn as HTMLButtonElement).disabled = !step || muhur < step.cost;
+      btn.addEventListener('click', () => {
+        const r = pvpApi.upgrade(it);
+        if (r.ok) {
+          sfx('buy');
+          toast(`${d.name}: ${pvpApi.tierLabel(r.to ?? it.itemLevel)} seviyesine yükseltildi`, 'success');
+        } else {
+          toast(r.reason ?? 'Yükseltilemedi', 'warning');
+          sfx('ui_error');
+        }
+        this.refresh();
+      });
+      const slot = new ItemSlot('md');
+      slot.set(it);
+      row.append(slot.el, text, btn);
+      wrap.append(row);
+    }
+    return wrap;
+  }
+
+  /** Money the vendor takes for an entry: gold, or the entry's currency (PvP stock). */
+  private have(e: VendorEntry): number {
+    const c = G.character;
+    if (!c) return 0;
+    return e.currency ? c.material(e.currency) : c.save.gold;
+  }
+
+  /** Shop list kind for vendorApi.entries (after a purchase the list is rebuilt). */
+  private entriesKind(): 'merchant' | 'alchemist' | 'pvp_honor' | 'pvp_conquest' {
+    return this.kind === 'alchemist' || this.kind === 'pvp_honor' || this.kind === 'pvp_conquest' ? this.kind : 'merchant';
+  }
+
   /** Recolor prices / stock without rebuilding the rows. */
   private refreshRows = (): void => {
     if (!this.isOpen || this.tab !== 'buy' || this.special()) return;
@@ -291,13 +381,13 @@ export class VendorPanel extends ItemPanel {
       const total = e.price * q;
       const price = row.querySelector('.pi-vprice-n');
       if (price) price.textContent = fmt(total);
-      row.classList.toggle('poor', !!c && c.save.gold < total);
+      row.classList.toggle('poor', !!c && this.have(e) < total);
       const sub = row.querySelector('.pi-vq');
       if (sub) sub.textContent = !e.item && q > 1 ? `×${q}` : '';
       const out = e.stock !== undefined && e.stock <= 0;
       row.classList.toggle('soldout', out);
       const st = row.querySelector('.pi-vstock');
-      if (st) st.textContent = e.stock !== undefined ? (out ? 'Tükendi' : `Stok: ${e.stock}`) : '';
+      if (st) st.textContent = e.stock !== undefined ? (out ? (e.weeklyLimit ? 'Haftalık sınır doldu.' : 'Tükendi') : `Stok: ${e.stock}`) : e.currency ? (materialInfo(e.currency).name) : '';
     });
   };
 
@@ -558,8 +648,8 @@ export class VendorPanel extends ItemPanel {
       sfx('ui_error');
       return;
     }
-    if (c.save.gold < e.price * q) {
-      toast('Yeterli altının yok', 'warning');
+    if (this.have(e) < e.price * q) {
+      toast(e.currency ? `Yeterli ${materialInfo(e.currency).name} yok` : 'Yeterli altının yok', 'warning');
       sfx('ui_error');
       return;
     }
@@ -569,7 +659,7 @@ export class VendorPanel extends ItemPanel {
       if (e.item) {
         // the vendor removes sold equipment from its stock
         try {
-          this.entries = vendorApi.entries(this.kind === 'alchemist' ? 'alchemist' : 'merchant');
+          this.entries = vendorApi.entries(this.entriesKind());
         } catch {
           /* keep the old list */
         }
