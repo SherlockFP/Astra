@@ -1136,7 +1136,7 @@ boss({
     bp('p3', 0.33, ['gurz_anvil_slam', 'gurz_molten_pour', 'gurz_bellows'], { yell: 'Köleler! İşbaşına!', ability: 'gurz_call_slaves' }),
   ],
   intro: 'Örsüm aç! Kemiklerinizi döveceğim!', death: 'Ateş... sönüyor...',
-  arena: { cx: 60, cz: 18, w: 48, h: 36, homeX: 62, homeZ: 25.2 },
+  arena: { cx: 60, cz: 24, w: 48, h: 48, homeX: 60, homeZ: 31.6 },
 });
 
 boss({
@@ -1155,7 +1155,7 @@ boss({
     bp('p3', 0.25, ['atesyurek_eruption', 'atesyurek_magma_wave'], { yell: '*Erimiş öfke!*' }),
   ],
   intro: '*Ateşyürek lav gölünden yükseliyor!*', death: '*Ateşyürek soğuyarak taşa dönüşüyor...*',
-  arena: { cx: 122, cz: 134, w: 44, h: 44, homeX: 122, homeZ: 136 },
+  arena: { cx: 124, cz: 136, w: 48, h: 48, homeX: 122, homeZ: 136 },
 });
 
 boss({
@@ -1176,7 +1176,7 @@ boss({
     bp('p4', 0.3, ['ignaroth_charge', 'ignaroth_meteor', 'ignaroth_flame_walls'], { yell: 'YETER! Hepiniz kül olacaksınız!', ability: 'ignaroth_fury' }),
   ],
   intro: 'Mavi alev, kızıl alevi yutar. Siz de yanacaksınız!', death: 'Bu alev... sönmez... bir gün... dönerim...',
-  arena: { cx: 16, cz: 132, w: 32, h: 48, homeX: 16, homeZ: 134 },
+  arena: { cx: 24, cz: 176, w: 48, h: 48, homeX: 22, homeZ: 176 },
 });
 
 // ---------------------------------------------------------------- 4.3 Buzul Tahtı
@@ -1270,7 +1270,7 @@ boss({
     bp('p3', 0.33, ['nefris_shadowstep', 'nefris_fan'], { yell: 'Hangimi vuracaksın?', ability: 'nefris_clones' }),
   ],
   intro: 'Sizi saatlerdir izliyorum. Sıkıcısınız.', death: 'Efendim... uyan...',
-  arena: { cx: 20, cz: 46, w: 40, h: 44, homeX: 20, homeZ: 38 },
+  arena: { cx: 24, cz: 52, w: 48, h: 48, homeX: 22, homeZ: 41 },
 });
 
 ENEMIES.nefris_clone = def({
@@ -1296,7 +1296,7 @@ boss({
     bp('p2', 0.5, ['kevvas_devour', 'kevvas_void_pull', 'kevvas_rifts', 'kevvas_roar'], { yell: 'ZİYAFET!', ability: 'kevvas_feast' }),
   ],
   intro: 'AÇ... ÇOK AÇ...', death: 'Boşluk... beni... geri... çağırıyor...',
-  arena: { cx: 140, cz: 46, w: 40, h: 44, homeX: 140, homeZ: 46 },
+  arena: { cx: 136, cz: 52, w: 48, h: 48, homeX: 136, homeZ: 52 },
 });
 
 boss({

@@ -44,16 +44,16 @@ const gurz: BossScript = {
       },
     },
 
-    /** Erimiş Döküm: 2 of the 3 crucibles pour N-S lava lines (36 x 3 m): impact coef 2.5 then a burning strip for 12 s. */
+    /** Erimiş Döküm: 2 of the 3 crucibles pour N-S lava lines (48 x 3 m, the arena is 12 tiles): impact coef 2.5 then a burning strip for 12 s. */
     gurz_molten_pour: {
       start(c, b) {
         const xs = [11, 15, 19].sort(() => Math.random() - 0.5).slice(0, 2);
-        const z0 = c.arena.cz - 18;
+        const z0 = c.arena.cz - 24;
         for (const gx of xs) {
           const wx = c.gdd(gx, 0).x;
-          beam(c, wx, z0, 0, 36, 3, b.delay, 2.5, { type: 'fire', name: 'Erimiş Döküm' });
+          beam(c, wx, z0, 0, 48, 3, b.delay, 2.5, { type: 'fire', name: 'Erimiş Döküm' });
           c.shape({
-            shape: { type: 'line', length: 36, width: 3 }, x: wx, z: z0, dx: 0, dz: 1, delay: b.delay, coef: 0.5, type: 'fire', telegraph: false,
+            shape: { type: 'line', length: 48, width: 3 }, x: wx, z: z0, dx: 0, dz: 1, delay: b.delay, coef: 0.5, type: 'fire', telegraph: false,
             persist: { duration: 12, tick: 0.5 }, name: 'Yanan Lav',
           });
           c.schedule(b.delay, () => {
@@ -110,7 +110,7 @@ function eruption(c: BossController, delay: number): void {
   G.events.emit('camera:shake', { intensity: 0.2, duration: 0.3 });
 }
 
-const VENTS: [number, number][] = [[27, 30], [33, 30], [27, 36], [33, 36]];
+const VENTS: [number, number][] = [[27.23, 30.23], [33.77, 30.23], [27.23, 36.77], [33.77, 36.77]];
 
 const atesyurek: BossScript = {
   init(c) {
@@ -262,8 +262,9 @@ const ignaroth: BossScript = {
       g.rowT -= dt;
       if (g.rowT <= 0) {
         g.rowT = 3;
-        const z = [29.5, 32.5, 35.5][g.rows++ % 3];
-        for (const x of [2, 5]) {
+        // Ignaroth's grate rows (the 12x12 gate arena: grates at x 3.25 / 7.75)
+        const z = [40.5, 43.5, 46.5][g.rows++ % 3];
+        for (const x of [3.25, 7.75]) {
           const p = c.gdd(x, z);
           circle(c, p.x, p.z, 3, 1.5, 2.0, { type: 'fire', name: 'Zemin Menfezi', vfxOnLand: 'fire_burst' });
         }
@@ -352,7 +353,7 @@ const ignaroth: BossScript = {
         c.freeze(true);
       },
       resolve(c) {
-        const p = c.gdd(3.5, 35.5);
+        const p = c.gdd(5.5, 46.5);
         c.teleport(p.x, p.z, false);
         G.vfx.spawn('leap_land', [p.x, 0.2, p.z], { scale: 1.6 });
         G.events.emit('camera:shake', { intensity: 0.4, duration: 0.4 });

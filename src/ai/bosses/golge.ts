@@ -111,7 +111,7 @@ const nefris: BossScript = {
 // ---------------------------------------------------------------------------------------------------------------------
 // Boss 2: Yutucu Kevvas
 // ---------------------------------------------------------------------------------------------------------------------
-const RIFT_SPOTS: [number, number][] = [[32, 10], [38, 10], [35, 15]];
+const RIFT_SPOTS: [number, number][] = [[30.5, 11.41], [37.7, 11.41], [34.1, 16.86]];
 
 interface Rift { idx: number; x: number; z: number; closeT: number; imp: number; zone: number; armed: boolean }
 

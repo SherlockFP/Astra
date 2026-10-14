@@ -2,6 +2,7 @@ import type { DoorDef, DungeonDef, DungeonTheme, PackDef, RoomDef, TileRect, Zon
 import {
   Props, bossAt, circleZone, decorator, door, dg, fu, gp, hw, kg, lt, makeCtx, mon, pack, pt, rectZone, rectsOf, room, shPt, withProps,
 } from './kit';
+import { makeRescale, oldTileRect, type Rect4 } from './rescale2';
 
 /**
  * GOLGE TAPINAGI (shadow temple) - GDD_CONTENT 4.4. Level 42-52, M+ 15:00, 210 forces (257 available).
@@ -10,45 +11,57 @@ import {
  * The darkest dungeon: violet fog, purple braziers, blood-red runes, void cracks. Corridors are lit by a few dim candles only.
  */
 
+// SCALE PASS (docs/SCALE_REFERENCE.md section 3): combat corridors 2 -> 4 tiles, pull rooms >= 9 short side, boss arenas 12x12.
+// OLD_RECT is the layout the hand placed decoration, packs, bosses and extras were written in; they are remapped below.
+// Zakhar's arena and the start-to-Kara Hol spine stay as they were.
+const OLD_RECT: Record<string, Rect4> = {
+  giris: [17, 34, 6, 5], avlu_giris: [14, 27, 12, 7], k_bati: [9, 29, 5, 2], bati_kanadi: [1, 22, 8, 12], k_bati_kuzey: [4, 17, 2, 5],
+  nefris_odasi: [0, 6, 10, 11], k_dogu: [26, 29, 5, 2], dogu_kanadi: [31, 22, 8, 12], k_dogu_kuzey: [34, 17, 2, 5],
+  kevvas_cukuru: [30, 6, 10, 11], k_merkez_bati: [10, 15, 4, 2], k_merkez_dogu: [26, 15, 4, 2], kara_hol: [14, 15, 12, 12],
+  k_final: [19, 14, 2, 1], zakhar_sunagi: [13, 0, 14, 14],
+};
+
 // ---- GENERATED from docs/GDD_CONTENT.layout.json (rooms, doors, packs, bosses) ----
 const ROOMS: RoomDef[] = [
-  room('giris', 'Mühürlü Kapı', 17, 34, 6, 5, 'temple', 'temple', 0.3),
-  room('avlu_giris', 'Mühürlü Avlu', 14, 27, 12, 7, 'temple', 'temple', 0.5),
-  room('k_bati', 'Fısıltı Koridoru', 9, 29, 5, 2, 'temple', 'temple', 0.3),
-  room('bati_kanadi', 'Fısıltı Kanadı', 1, 22, 8, 12, 'temple', 'temple', 0.6),
-  room('k_bati_kuzey', 'Gözcü Merdiveni', 4, 17, 2, 5, 'temple', 'temple', 0.3),
-  room('nefris_odasi', 'Gözcü Odası', 0, 6, 10, 11, 'temple', 'temple', 0.2, { boss: 1 }),
-  room('k_dogu', 'Ayin Koridoru', 26, 29, 5, 2, 'temple', 'temple', 0.3),
-  room('dogu_kanadi', 'Ayin Kanadı', 31, 22, 8, 12, 'temple', 'temple', 0.6),
-  room('k_dogu_kuzey', 'Çukur Merdiveni', 34, 17, 2, 5, 'temple', 'temple', 0.3),
-  room('kevvas_cukuru', 'Boşluk Çukuru', 30, 6, 10, 11, 'stone_dark', 'cave', 0.15, { boss: 2 }),
-  room('k_merkez_bati', 'Batı Kısayolu', 10, 15, 4, 2, 'temple', 'temple', 0.1),
-  room('k_merkez_dogu', 'Doğu Kısayolu', 26, 15, 4, 2, 'temple', 'temple', 0.1),
+  room('giris', 'Mühürlü Kapı', 17, 36, 6, 5, 'temple', 'temple', 0.3),
+  room('avlu_giris', 'Mühürlü Avlu', 14, 27, 12, 9, 'temple', 'temple', 0.5),
+  room('k_bati', 'Fısıltı Koridoru', 9, 30, 5, 4, 'temple', 'temple', 0.3),
+  room('bati_kanadi', 'Fısıltı Kanadı', 0, 24, 9, 12, 'temple', 'temple', 0.6),
+  room('k_bati_kuzey', 'Gözcü Merdiveni', 2, 19, 4, 5, 'temple', 'temple', 0.3),
+  room('nefris_odasi', 'Gözcü Odası', 0, 7, 12, 12, 'temple', 'temple', 0.2, { boss: 1 }),
+  room('k_dogu', 'Ayin Koridoru', 26, 30, 5, 4, 'temple', 'temple', 0.3),
+  room('dogu_kanadi', 'Ayin Kanadı', 31, 24, 9, 12, 'temple', 'temple', 0.6),
+  room('k_dogu_kuzey', 'Çukur Merdiveni', 34, 19, 4, 5, 'temple', 'temple', 0.3),
+  room('kevvas_cukuru', 'Boşluk Çukuru', 28, 7, 12, 12, 'stone_dark', 'cave', 0.15, { boss: 2 }),
+  room('k_merkez_bati', 'Batı Kısayolu', 12, 15, 2, 4, 'temple', 'temple', 0.1),
+  room('k_merkez_dogu', 'Doğu Kısayolu', 26, 15, 2, 4, 'temple', 'temple', 0.1),
   room('kara_hol', 'Kara Hol', 14, 15, 12, 12, 'temple', 'temple', 0.4),
   room('k_final', 'Uyanış Eşiği', 19, 14, 2, 1, 'temple', 'temple', 0),
   room('zakhar_sunagi', 'Zakhar Sunağı', 13, 0, 14, 14, 'temple', 'temple', 0.1, { boss: 3 }),
 ];
 
+const R = makeRescale(OLD_RECT, ROOMS);
+
 const DOORS: DoorDef[] = [
-  door('giris', 'avlu_giris', 19, 34, 'n', 2, 'none'),
-  door('avlu_giris', 'k_bati', 14, 29, 'w', 2, 'none'),
-  door('k_bati', 'bati_kanadi', 9, 29, 'w', 2, 'none'),
-  door('bati_kanadi', 'k_bati_kuzey', 4, 22, 'n', 2, 'none'),
-  door('k_bati_kuzey', 'nefris_odasi', 4, 17, 'n', 2, 'boss_lock'),
-  door('nefris_odasi', 'k_merkez_bati', 9, 15, 'e', 2, 'boss_exit'),
-  door('k_merkez_bati', 'kara_hol', 13, 15, 'e', 2, 'none'),
-  door('avlu_giris', 'k_dogu', 25, 29, 'e', 2, 'none'),
-  door('k_dogu', 'dogu_kanadi', 30, 29, 'e', 2, 'none'),
-  door('dogu_kanadi', 'k_dogu_kuzey', 34, 22, 'n', 2, 'none'),
-  door('k_dogu_kuzey', 'kevvas_cukuru', 34, 17, 'n', 2, 'boss_lock'),
-  door('kevvas_cukuru', 'k_merkez_dogu', 30, 15, 'w', 2, 'boss_exit'),
-  door('k_merkez_dogu', 'kara_hol', 26, 15, 'w', 2, 'none'),
+  door('giris', 'avlu_giris', 19, 36, 'n', 2, 'none'),
+  door('avlu_giris', 'k_bati', 14, 30, 'w', 4, 'none'),
+  door('k_bati', 'bati_kanadi', 9, 30, 'w', 4, 'none'),
+  door('bati_kanadi', 'k_bati_kuzey', 2, 24, 'n', 4, 'none'),
+  door('k_bati_kuzey', 'nefris_odasi', 2, 19, 'n', 4, 'boss_lock'),
+  door('nefris_odasi', 'k_merkez_bati', 11, 15, 'e', 4, 'boss_exit'),
+  door('k_merkez_bati', 'kara_hol', 13, 15, 'e', 4, 'none'),
+  door('avlu_giris', 'k_dogu', 25, 30, 'e', 4, 'none'),
+  door('k_dogu', 'dogu_kanadi', 30, 30, 'e', 4, 'none'),
+  door('dogu_kanadi', 'k_dogu_kuzey', 34, 24, 'n', 4, 'none'),
+  door('k_dogu_kuzey', 'kevvas_cukuru', 34, 19, 'n', 4, 'boss_lock'),
+  door('kevvas_cukuru', 'k_merkez_dogu', 28, 15, 'w', 4, 'boss_exit'),
+  door('k_merkez_dogu', 'kara_hol', 26, 15, 'w', 4, 'none'),
   door('avlu_giris', 'kara_hol', 19, 27, 'n', 2, 'none'),
   door('kara_hol', 'k_final', 19, 15, 'n', 2, 'none'),
   door('k_final', 'zakhar_sunagi', 19, 14, 'n', 2, 'boss_lock'),
 ];
 
-const PACKS: PackDef[] = [
+const PACKS_RAW: PackDef[] = [
   pack('d4_p01', 'avlu_giris', 16, 30.5, 13, [['cult_acolyte', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_acolyte', 0.48, 0.62], ['cult_acolyte', -0.88, -0.16], ['cult_acolyte', 0.83, -0.53], ['cult_acolyte', -0.28, 1.03], ['cult_acolyte', -0.53, -1.02], ['shadow_priest', -0.95, -0.81]]),
   pack('d4_p02', 'avlu_giris', 23, 30.5, 13, [['cult_acolyte', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_acolyte', 0.48, 0.62], ['cult_acolyte', -0.88, -0.16], ['cult_acolyte', 0.83, -0.53], ['cult_acolyte', -0.28, 1.03], ['cult_acolyte', -0.53, -1.02], ['cult_summoner', 0.95, -0.81]]),
   pack('d4_p03', 'avlu_giris', 19.5, 29, 14, [['void_demon', 0, 0], ['shade', -0.45, -1.25], ['shade', 0.45, -1.25]]),
@@ -71,9 +84,16 @@ const PACKS: PackDef[] = [
   pack('d4_p20', 'kara_hol', 19.5, 21, 12, [['void_demon', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_acolyte', 0.48, 0.62], ['cult_acolyte', -0.88, -0.16]], { patrol: [[15.5, 21], [23.5, 21]] }),
 ];
 
+const PACKS: PackDef[] = PACKS_RAW.map(R.remapPack);
+
+const bossAtNew = (id: string, roomId: string, x: number, z: number, facing: number, order: number) => {
+  const [nx, nz] = R.toNew(roomId, x, z);
+  return bossAt(id, roomId, nx, nz, facing, order);
+};
+
 const BOSSES = [
-  bossAt('boss_nefris', 'nefris_odasi', 4.5, 9, 0, 1),
-  bossAt('boss_kevvas', 'kevvas_cukuru', 34.5, 11, 0, 1),
+  bossAtNew('boss_nefris', 'nefris_odasi', 4.5, 9, 0, 1),
+  bossAtNew('boss_kevvas', 'kevvas_cukuru', 34.5, 11, 0, 1),
   bossAt('boss_zakhar', 'zakhar_sunagi', 19.5, 6, 0, 3),
 ];
 
@@ -101,18 +121,31 @@ const START: [number, number] = [19.5, 37];
 const FONT: [number, number] = [19.5, 35];
 const EXIT: [number, number] = [19.5, 11];
 
+/** Old-layout point -> new layout (the reserved circles and extras are in the new layout). */
+const near = (x: number, z: number, r: number): { x: number; z: number; r: number } => {
+  const [nx, nz] = R.at2(x, z);
+  return { x: nx, z: nz, r };
+};
+
 const ctx = makeCtx('golge_tapinagi', DOORS, PACKS, [
-  { x: START[0], z: START[1], r: 2.0 },
-  { x: FONT[0], z: FONT[1], r: 1.6 },
-  { x: EXIT[0], z: EXIT[1], r: 2.8 },
-  { x: 4.5, z: 9, r: 4.5 },      // Gozcu Nefris
-  { x: 34.5, z: 11, r: 4.5 },    // Yutucu Kevvas
-  { x: 19.5, z: 6, r: 5.0 },     // Iblis Lordu Zakhar
-  { x: 25, z: 33, r: 1.5 },      // Kudret Sunagi
-  { x: 1, z: 33, r: 1.5 },       // Ruzgar Sunagi
-  { x: 38, z: 33, r: 1.5 },      // gold chest
+  near(START[0], START[1], 2.0),
+  near(FONT[0], FONT[1], 1.6),
+  near(EXIT[0], EXIT[1], 2.8),
+  near(4.5, 9, 4.5),      // Gozcu Nefris
+  near(34.5, 11, 4.5),    // Yutucu Kevvas
+  { x: 19.5, z: 6, r: 5.0 },     // Iblis Lordu Zakhar (unchanged room)
+  near(25, 33, 1.5),      // Kudret Sunagi
+  near(1, 33, 1.5),       // Ruzgar Sunagi
+  near(38, 33, 1.5),      // gold chest
 ]);
-const D = decorator(ctx, rectsOf(ROOMS));
+const decor = decorator(ctx, rectsOf(ROOMS));
+/** Room callbacks get the OLD rect and a Props whose at()/wall()/scatter() remap into the new layout. */
+const D = {
+  out: decor.out,
+  room(id: string, fn: (p: Props, r: TileRect) => void): void {
+    decor.room(id, (p) => fn(R.remapProps(p, id), oldTileRect(OLD_RECT, id)));
+  },
+};
 
 /** Temple brazier: generated brazier with a coloured fire (one real light). */
 const brazier = (p: Props, x: number, z: number, color = VIOLET, strong = 2.0): void => {
@@ -389,29 +422,30 @@ D.room('zakhar_sunagi', (p, r) => {
 const sealRune = (x: number, z: number, r: number, glow = VOID, color = 0x14061c, intensity = 0.9): ZoneDef => circleZone('rune', x, z, r, { color, glow, glowIntensity: intensity });
 
 const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
-  giris: { explicitDecor: true, ambientVfx: 'ambient_shadow_wisps', lightColor: VIOLET, zones: [sealRune(FONT[0], FONT[1], 1.7, VIOLET)] },
+  giris: { explicitDecor: true, ambientVfx: 'ambient_shadow_wisps', lightColor: VIOLET, zones: [sealRune(...R.at2(FONT[0], FONT[1]), 1.7, VIOLET)] },
   avlu_giris: {
     explicitDecor: true, ambientVfx: 'ambient_shadow_wisps', lightColor: VIOLET,
-    zones: [circleZone('pool', 19.5, 31, 1.7, { color: 0x050308, glow: VOID, glowIntensity: 0.8, vfx: 'ambient_shadow_wisps' })],
+    zones: [circleZone('pool', ...R.at2(19.5, 31), 1.7, { color: 0x050308, glow: VOID, glowIntensity: 0.8, vfx: 'ambient_shadow_wisps' })],
   },
   k_bati: { ambientVfx: 'ambient_shadow_wisps', lightColor: VIOLET },
   bati_kanadi: { ambientVfx: 'ambient_shadow_wisps', lightColor: VIOLET },
   k_bati_kuzey: { ambientVfx: 'ambient_shadow_wisps' },
-  nefris_odasi: { explicitDecor: true, ambientVfx: 'ambient_shadow_wisps', lightColor: VIOLET, zones: [sealRune(4.5, 9, 3.0, BLOOD, 0x14060c, 0.7)] },
+  nefris_odasi: { explicitDecor: true, ambientVfx: 'ambient_shadow_wisps', lightColor: VIOLET, zones: [sealRune(...R.at2(4.5, 9), 3.0, BLOOD, 0x14060c, 0.7)] },
   k_dogu: {
     ambientVfx: 'ambient_shadow_wisps', lightColor: BLOODFIRE,
-    zones: [sealRune(27, 29.5, 0.95, BLOOD, 0x14060c, 1.2), sealRune(29.3, 29.5, 0.95, BLOOD, 0x14060c, 1.2), rectZone('rune', 26, 29, 5, 2, { color: 0x14060c, glow: BLOOD, glowIntensity: 0.35 })],
+    zones: [sealRune(...R.at2(27, 29.5), 0.95, BLOOD, 0x14060c, 1.2), sealRune(...R.at2(29.3, 29.5), 0.95, BLOOD, 0x14060c, 1.2), rectZone('rune', 26, 30, 5, 4, { color: 0x14060c, glow: BLOOD, glowIntensity: 0.35 })],
   },
-  dogu_kanadi: { ambientVfx: 'ambient_shadow_wisps', lightColor: BLOODFIRE, zones: [sealRune(35, 27.5, 0.75, BLOOD, 0x14060c, 1.4), sealRune(35, 27.5, 1.25, BLOOD, 0x14060c, 0.5)] },
+  dogu_kanadi: { ambientVfx: 'ambient_shadow_wisps', lightColor: BLOODFIRE, zones: [sealRune(...R.at2(35, 27.5), 0.75, BLOOD, 0x14060c, 1.4), sealRune(...R.at2(35, 27.5), 1.25, BLOOD, 0x14060c, 0.5)] },
   k_dogu_kuzey: {
     ambientVfx: 'ambient_shadow_wisps',
-    zones: [rectZone('rune', 33.55, 17, 0.25, 5, { color: 0x0c0614, glow: VOID, glowIntensity: 1.0 }), rectZone('rune', 35.2, 17, 0.25, 5, { color: 0x0c0614, glow: VOID, glowIntensity: 1.0 })],
+    // the two rune strips run along the corridor's walls (the corridor is 4 wide now)
+    zones: [rectZone('rune', 33.6, 19, 0.25, 5, { color: 0x0c0614, glow: VOID, glowIntensity: 1.0 }), rectZone('rune', 36.9, 19, 0.25, 5, { color: 0x0c0614, glow: VOID, glowIntensity: 1.0 })],
   },
   kevvas_cukuru: {
     explicitDecor: true, ambientVfx: 'ambient_shadow_wisps', lightColor: VOID,
     zones: [
-      circleZone('void', 35, 7.5, 0.75, { blocked: true, color: 0x000000, glow: VOID, glowIntensity: 1.6, vfx: 'portal_swirl' }),
-      ...RIFT_SPOTS.map(([x, z]) => sealRune(x, z, 0.75)),
+      circleZone('void', ...R.at2(35, 7.5), 0.75, { blocked: true, color: 0x000000, glow: VOID, glowIntensity: 1.6, vfx: 'portal_swirl' }),
+      ...RIFT_SPOTS.map(([x, z]) => sealRune(...R.at2(x, z), 0.75)),
     ],
   },
   k_merkez_bati: { ambientVfx: 'ambient_shadow_wisps' },
@@ -443,10 +477,10 @@ const PACK_EXTRA: Record<string, Partial<PackDef>> = {
 };
 
 const EXTRAS: NonNullable<DungeonDef['extras']> = {
-  fontOfPower: pt(19.5, 35),
-  shrines: [{ type: 'shrine_haste', pos: pt(1, 33) }, { type: 'shrine_power', pos: pt(25, 33) }],
-  riftSpots: ([[19.5, 31], [4.5, 27], [35, 27], [19.5, 21], [12, 29.5], [28, 29.5]] as [number, number][]).map(([x, z]) => pt(x, z)),
-  chests: [{ pos: pt(38, 33), kind: 'chest_gold' }],
+  fontOfPower: pt(...R.at2(19.5, 35)),
+  shrines: [{ type: 'shrine_haste', pos: pt(...R.at2(1, 33)) }, { type: 'shrine_power', pos: pt(...R.at2(25, 33)) }],
+  riftSpots: ([[19.5, 31], [4.5, 27], [35, 27], [19.5, 21], [12, 29.5], [28, 29.5]] as [number, number][]).map(([x, z]) => pt(...R.at2(x, z))),
+  chests: [{ pos: pt(...R.at2(38, 33)), kind: 'chest_gold' }],
 };
 
 export const GOLGE_TAPINAGI: DungeonDef = {
@@ -455,16 +489,16 @@ export const GOLGE_TAPINAGI: DungeonDef = {
   shortName: 'Tapınak',
   lore: 'Gölge Tarikatı, yüzyıllardır mühürlü olan tapınağı yeniden açtı. Müritler gece gündüz ayin yapıyor; amaçları, tapınağın derinliklerinde uyuyan İblis Lordu Zakhar\'ı uyandırmak. Gözcü Nefris gölgelerden izler, Yutucu Kevvas boşluk çukurunda açlıkla bekler. Mühürler zayıflıyor. Zaman daralıyor.',
   levelRange: [42, 52],
-  timerSec: 900,
+  timerSec: 910,
   forcesRequired: 210,
   theme: THEME,
-  grid: { w: 40, h: 40 },
+  grid: { w: 40, h: 42 },
   rooms: withProps(ROOMS.map((r) => ({ ...r, ...ROOM_EXTRA[r.id] })), D.out),
   doors: DOORS,
   packs: PACKS.map((p) => (PACK_EXTRA[p.id] ? { ...p, ...PACK_EXTRA[p.id] } : p)),
   bosses: BOSSES,
-  start: { pos: shPt(START[0], START[1]), facing: 180 },
-  exit: { pos: shPt(EXIT[0], EXIT[1]) },
+  start: { pos: shPt(...R.at2(START[0], START[1])), facing: 180 },
+  exit: { pos: shPt(...R.at2(EXIT[0], EXIT[1])) },
   extras: EXTRAS,
 };
 
