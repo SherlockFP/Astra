@@ -55,6 +55,10 @@ Evaluation docs: `docs/MMO_PILLARS.md` (scorecard + WP-01..14), `docs/UI_WOW_CLA
 - **Public channels:** `src/net/Channels.ts` + `NetSession.enterScene`: auto-join `zone:<id>:ch<N>` (cap 12, PvP 8), host election/migration (fights in progress lost on host loss), interest mgmt (150 m full / 400 m 2 Hz), /kanal. Host upload ≈260 KB/s at 12 players.
 - **Dev server:** `vite.config.ts` ignores .claude/docs/sims; never leave agent worktrees around (they were pegging the PC).
 
+- **Real-browser QA without the app pane:** headless Chrome via `playwright-core` (installed outside the repo; Chrome at `C:/Program Files/Google/Chrome/Application/chrome.exe`, args `--use-angle=d3d11 --enable-gpu --ignore-gpu-blocklist`). Load `/dev/scenes.html?scene=dungeon&dungeon=<zone>&lvl=N&class=X`, wait ~14 s, read `G.engine.renderer.info` + fps, screenshot. Measured (owner GPU): town ~270 fps / 380 calls, Sisli 155, Karakır 120-345, Ayaz 359, Kızıl Sınır 360.
+- **Two-client smoke:** `tools/qa/mp-smoke.mjs` (dev server on 5181, `MP_PW=<dir with node_modules/playwright-core>`; `?net=local&name=..&nation=..` per tab) — channels, chat/whisper, party room, full 1v1 ranked arena: 39/39.
+- **Arena polish open:** the proposer gets no "found" toast; no season names ("Sezon N"); presence carries no ratings; no re-queue button.
+
 ## 5. Next steps (priority order)
 0. **Sprint-1 QA in the browser** (visible pane): FPS/calls in Karakır + town, ElvUI HUD/windows at 800×450 and 1920×1080, mount, pets, PvP gate, guild panel, achievements spam on first load (5 lines at once — batch them), streaming pop-in. Then WP-14 castle siege (`docs/MMO_PILLARS.md`), terrain heights for open world (ground is y=0), minimap presence list, camp id space > 2079 per zone (`HOST_DYNAMIC_ID_BASE`).
 1. **Nekromant** is playable (Mage rig); kit leftovers: `necro_ghoul` `taunt` row, `necro_lichborne` SkillDef.
