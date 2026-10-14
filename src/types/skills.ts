@@ -194,6 +194,10 @@ export type StatusId =
   | 'ghost_wolf' | 'stormkeeper' | 'unleash' | 'bloodlust' | 'swiftness' | 'riptide' | 'rain_hot' | 'stream_totem'
   // Şaman rework (append-only): Astral Shift (40 % damage reduction) and Hex (hard incapacitate)
   | 'astral_shift' | 'hex'
+  // Şaman procs (append-only): Rüzgar Silahı (windfury) and Lav Dalgası (lava_surge), StatusDefs in data/statuses_kit_shaman.ts
+  | 'windfury' | 'lava_surge'
+  // Keşiş (Sheilun's Gift stacks, Mistweaver) and Okçu (Vahşi Öfke / frenzy: pet attack speed stacks), StatusDefs in the kit status files.
+  | 'sheilun_gift' | 'frenzy'
   // AE-3 (docs/kits/agile-evoker.md §3, WoW Midnight Devourer added): İblis Avcısı. StatusDefs in data/statuses_kit_demonhunter.ts.
   | 'metamorphosis' | 'metamorphosis_v' | 'void_meta' | 'initiative' | 'exergy' | 'essence_break' | 'chaos_brand' | 'blur'
   | 'soul_overflow' | 'demon_spikes' | 'fiery_brand' | 'frailty' | 'the_hunt' | 'collapsing_star' | 'darkness' | 'sigil_flame'

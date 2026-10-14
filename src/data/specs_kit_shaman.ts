@@ -14,6 +14,8 @@ export const SPECS_KIT_SHAMAN: Partial<Record<SpecId, SpecDef>> = {
     specials: [
       { id: 'trait_elemental', desc: 'Yıldırım Ustası: büyü hasarın %8 artar.', params: { dealtMore: 0.08 } },
     ],
+    // Lav Dalgası: a Alev Şoku cast has a 30 % chance (2 s icd) to make the next Lav Patlaması instant
+    fx: 'T cast:shaman_flame_shock ch=.3 icd=2 => st(self,lava_surge,8)',
     skills: [
       'shaman_flame_shock', 'shaman_lava_burst', 'shaman_earth_shock', 'shaman_chain_lightning', 'shaman_elemental_blast', 'shaman_earthquake',
       'shaman_totem_earthbind', 'shaman_stormkeeper', 'shaman_totem_fire', 'shaman_ascendance', 'shaman_earth_elemental',
@@ -41,6 +43,8 @@ export const SPECS_KIT_SHAMAN: Partial<Record<SpecId, SpecDef>> = {
     specials: [
       { id: 'trait_enhancement', desc: 'Girdap Silahı: silah vuruşların Girdap kazandırır.', params: { maelstromOnHit: 1 } },
     ],
+    // Rüzgar Silahı: a melee hit has a 20 % chance (1 s icd) to empower the next Fırtına Vuruşu
+    fx: 'T hit:@melee ch=.2 icd=1 => st(self,windfury,6)',
     skills: [
       'shaman_stormstrike', 'shaman_lava_lash', 'shaman_crash_lightning', 'shaman_maelstrom_spender', 'shaman_frost_shock',
       'shaman_enh_unleash', 'shaman_feral_spirit', 'shaman_enh_ascendance',

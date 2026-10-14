@@ -190,7 +190,31 @@ const revival: Behavior = {
   },
 };
 
+// ---- Sheilun'un Armağanı (Mistweaver): spends every sheilun_gift stack; each of the (up to) maxTargets most injured allies within
+// the radius (the caster included) is healed for perStack x stacks. Nothing to spend fails the cast (no cost, no cooldown).
+const sheilunGift: Behavior = {
+  begin(c) {
+    if (c.remote) return true;
+    if (c.caster.statuses.stacks('sheilun_gift') <= 0) { c.sys.fail('target'); return false; }
+    return true;
+  },
+  fire(c) {
+    if (c.remote) return;
+    const stacks = c.caster.statuses.stacks('sheilun_gift');
+    if (stacks <= 0) return;
+    c.caster.statuses.remove('sheilun_gift');
+    const p = c.def.params ?? {};
+    const pool: Actor[] = [c.caster, ...alliesInRange(c.caster, p.radius ?? 25)]
+      .filter((a, i, arr) => arr.indexOf(a) === i && !a.isDead && !a.removed && a.hp < a.maxHp)
+      .sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)
+      .slice(0, Math.max(1, Math.round(p.maxTargets ?? 5)));
+    for (const a of pool) healAlly(c.caster, a as Player, (p.perStack ?? 0.6) * stacks);
+    c.sys.sfx('buff', c.caster.position);
+  },
+};
+
 export const BEHAVIORS_MONK: Record<string, Behavior> = {
+  monk_sheilun_gift: sheilunGift,
   monk_torpedo: torpedo,
   monk_keg: keg,
   monk_fists: fists,

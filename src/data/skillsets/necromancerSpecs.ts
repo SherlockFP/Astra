@@ -114,6 +114,16 @@ export function registerNecromancerSpecs(add: SkillAdd): void {
     tags: ['spell', 'dot', 'shadow', 'poison'], vfx: { cast: 'poison_projectile', impact: 'poison_cloud' }, sfx: { cast: 'shadow_cast', impact: 'poison_impact' },
     params: { end: 0.7, chain: 0.06, move: 0.12, stagger: 2, proc: 0.5, weight: 0 },
   });
+  // Kıyamet (Apocalypse, Ordu Efendisi): spends every Çürük Bulaşı stack on the target (up to 8); a Kemik Ghul per stack.
+  add({
+    id: 'necro_apocalypse', classId: 'necromancer', spec: 'necromancer_summoner', name: 'Kıyamet (Apocalypse)', icon: I('skill-summon-skeleton'), unlockLevel: 20,
+    desc: 'Bar yuvası yoktur (ikinci bar). Hedefteki Çürük Bulaşı yüklerini (en çok 8) harcarsın: her yük için bir Kemik Ghul doğar ve her yük başına %25 gölge hasarı verirsin. 1 Rün harcar, 20 saniye bekleme vardır.',
+    cost: 0, cooldown: 20, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 1.4, hitTime: 0.5, targeting: 'target_instant', behavior: 'apocalypse',
+    range: 25, damage: { coef: 0.25, type: 'shadow' }, pip: { id: 'rune', cost: 1 }, tags: ['spell', 'shadow', 'minion', 'spender'],
+    minion: { id: 'necro_lesser_ghoul', count: 1, cap: 8, group: 'lesser', life: 15, ignoreCap: true },
+    vfx: { cast: 'curse_ring', impact: 'grave_rise' }, sfx: { cast: 'curse_cast', impact: 'bone_impact' },
+    params: { maxStacks: 8, coef: 0.25 },
+  });
   add({
     id: 'necro_epidemic', classId: 'necromancer', spec: 'necromancer_summoner', name: 'Salgın (Epidemic)', icon: I('skill-poison-cloud'), unlockLevel: 15, defaultSlot: 's1',
     desc: 'Hedefe ve çevresindeki 8 metrelik alanda en fazla 8 düşmana %160 gölge hasarı verirsin; hedefteki Zehirli Veba kalan süresiyle hepsine yayılır. 20 Öz harcar; Ani Kıyamet varken bedavadır. Karanlık Dönüşüm sırasında %20 güçlüdür.',

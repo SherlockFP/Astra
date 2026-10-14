@@ -29,10 +29,10 @@ export const PROC_DEFS_KIT_NECROMANCER: ProcDef[] = [
  */
 export const PROC_MODS_KIT_NECROMANCER: ProcMod[] = [
   { status: 'sudden_doom', skills: ['necro_death_coil', 'necro_epidemic'], costMult: 0, consume: 'cast' },
-  // Öldürücü Makine: the next Yok Edici Darbe is a forced crit (its rune discount is not in the proc layer, see the report)
-  { status: 'killing_machine', skills: ['necro_obliterate'], forceCrit: true, consume: 'cast' },
-  // Kırağı: the next Uluyan Patlama deals +50 % (its free rune is not in the proc layer, see the report)
-  { status: 'rime', skills: ['necro_howling_blast'], more: 1.5, consume: 'cast' },
+  // Öldürücü Makine: the next Yok Edici Darbe is free (no rune) and a forced crit
+  { status: 'killing_machine', skills: ['necro_obliterate'], forceCrit: true, pipFree: true, consume: 'cast' },
+  // Kırağı: the next Uluyan Patlama is free (no rune) and deals +50 %
+  { status: 'rime', skills: ['necro_howling_blast'], more: 1.5, pipFree: true, consume: 'cast' },
 ];
 
 /** Ölüm Darbesi glows from 75 Öz (Kemik Muhafızı, §8a "resource90 glow (>= 75 Öz)"; the other spec has no Ölüm Darbesi on its bar). */

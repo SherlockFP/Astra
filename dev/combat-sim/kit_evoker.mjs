@@ -141,7 +141,7 @@ ok('ae4.ids SPECS holds the three evoker specs and ClassDef.specs lists them', A
 }
 ok('ae4.ids every evoker row has Turkish text and a registered behaviour', EVOKER_ROWS.every((d) => d.name.length > 2 && d.desc.length > 10 && (!d.behavior || d.behavior === 'combo' || !!BEHAVIORS[d.behavior])),
   EVOKER_ROWS.filter((d) => d.behavior && d.behavior !== 'combo' && !BEHAVIORS[d.behavior]).map((d) => `${d.id}:${d.behavior}`).join(','));
-ok('ae4.ids 31 distinct rows (chain + 3 steps, 9 class rows, 18 spec rows incl. Kırıcı Yıldız, Geri Sarma)', EVOKER_ROWS.length === 31, `rows=${EVOKER_ROWS.length}`);
+ok('ae4.ids 32 distinct rows (chain + 3 steps, 9 class rows, 18 spec rows incl. Kırıcı Yıldız, Geri Sarma, Zaman Atlatma)', EVOKER_ROWS.length === 32, `rows=${EVOKER_ROWS.length}`);
 
 // ---- ae4.apl: skill and status names in the APL rows resolve -------------------------------------------------------------------------
 for (const spec of ALL) {

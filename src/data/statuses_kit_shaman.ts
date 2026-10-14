@@ -12,8 +12,12 @@ const I = (n: string) => `/assets/icons/${n}.svg`;
 export const STATUSES_KIT_SHAMAN: Partial<Record<StatusId, StatusDef>> = {
   // Hayalet Kurt (shaman_ghost_wolf): +40 % move speed for 15 s
   ghost_wolf: { id: 'ghost_wolf', name: 'Hayalet Kurt', icon: I('buff-haste'), kind: 'buff', stats: { moveSpeedPct: 0.4 }, dispellable: true },
-  // Fırtına Bekçisi (shaman_stormkeeper, m45): cast speed +100 % for 12 s (approximates the next-two-instant rule)
-  stormkeeper: { id: 'stormkeeper', name: 'Fırtına Bekçisi', icon: I('buff-haste'), kind: 'buff', stats: { castSpeed: 1.0 }, dispellable: true },
+  // Fırtına Bekçisi (shaman_stormkeeper, m45): 2 stacks, each Yıldırım Oku spends one (instant + empowered, procs_kit_shaman.ts)
+  stormkeeper: { id: 'stormkeeper', name: 'Fırtına Bekçisi', icon: I('buff-haste'), kind: 'buff', maxStacks: 2, dispellable: true },
+  // Rüzgar Silahı (Windfury, Geliştirme): a melee hit may grant the next Fırtına Vuruşu a second strike (procs_kit_shaman.ts)
+  windfury: { id: 'windfury', name: 'Rüzgar Silahı', icon: I('buff-strength'), kind: 'buff', dispellable: false },
+  // Lav Dalgası (Lava Surge, Elementel): a Alev Şoku cast may grant it; the next Lav Patlaması is instant (procs_kit_shaman.ts)
+  lava_surge: { id: 'lava_surge', name: 'Lav Dalgası', icon: I('buff-haste'), kind: 'buff', dispellable: false },
   // Doğal Öfke (shaman_enh_unleash, m45): +30 % attack speed for 12 s
   unleash: { id: 'unleash', name: 'Doğal Öfke', icon: I('buff-strength'), kind: 'buff', stats: { attackSpeed: 0.3 }, dispellable: true },
   // Kan Coşkusu (shaman_bloodlust, party): +30 % attack speed and +20 % move speed for 30 s
@@ -34,7 +38,9 @@ export const STATUSES_KIT_SHAMAN: Partial<Record<StatusId, StatusDef>> = {
 
 export const STATUS_RULES_KIT_SHAMAN: Partial<Record<StatusId, StatusRule>> = {
   ghost_wolf: { stack: 'refresh' },
-  stormkeeper: { stack: 'refresh' },
+  stormkeeper: { stack: 'stack' },
+  windfury: { stack: 'refresh' },
+  lava_surge: { stack: 'refresh' },
   unleash: { stack: 'refresh' },
   bloodlust: { stack: 'refresh' },
   swiftness: { stack: 'refresh' },

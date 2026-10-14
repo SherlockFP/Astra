@@ -19,6 +19,8 @@ export const STATUSES_KIT_ARCHER: Partial<Record<StatusId, StatusDef>> = {
   wild_wrath: { id: 'wild_wrath', name: 'Vahşi Gazap', icon: I('buff-strength'), kind: 'buff', stats: { damagePct: 0.25 }, vfx: 'enrage_aura', defaultDuration: 10 },
   // ---- Geri Sıçrayış window (2.5 s): the next Nişanlı Atış is a full draw
   quick_draw: { id: 'quick_draw', name: 'Hızlı Çekiş', icon: I('buff-haste'), kind: 'buff', maxStacks: 1, defaultDuration: 2.5 },
+  // Vahşi Öfke (Frenzy, Dikenli Atış): up to 3 stacks; each stack speeds up the pets' attacks by 10 % (MinionAI.update)
+  frenzy: { id: 'frenzy', name: 'Vahşi Öfke', icon: I('buff-strength'), kind: 'buff', maxStacks: 3, defaultDuration: 8, dispellable: false },
   // ---- Son Siper (Hayatta Kalma m90, 12 s): -25 % damage taken
   survivor_ward: { id: 'survivor_ward', name: 'Son Siper', icon: I('buff-defense'), kind: 'buff', stats: { damageReductionPct: 0.25 }, vfx: 'shield_bubble', defaultDuration: 12 },
 };
@@ -29,5 +31,6 @@ export const STATUS_RULES_KIT_ARCHER: Partial<Record<StatusId, StatusRule>> = {
   trueshot: { stack: 'refresh' },
   wild_wrath: { stack: 'refresh' },
   quick_draw: { stack: 'refresh' },
+  frenzy: { stack: 'stack' },
   survivor_ward: { stack: 'refresh' },
 };

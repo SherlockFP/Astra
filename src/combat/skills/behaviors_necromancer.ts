@@ -278,6 +278,39 @@ const scourgeStrike: Behavior = {
 };
 
 // ---------------------------------------------------------------------------------------------------------
+// apocalypse: Kıyamet (Ordu Efendisi, Festering Wounds = vile_contagion)
+// ---------------------------------------------------------------------------------------------------------
+
+/** Spends up to `max` vile_contagion stacks of an enemy (one spendStack per stack); returns how many were spent. */
+function spendStacksUpTo(e: Enemy, id: StatusId, max: number): number {
+  let n = 0;
+  while (n < max && spendStack(e, id)) n++;
+  return n;
+}
+
+/** Kıyamet: spends every Çürük Bulaşı stack on the target (up to params.maxStacks), one Kemik Ghul per stack and a hit per stack. */
+const apocalypse: Behavior = {
+  begin: targetInstantBegin,
+  fire(c) {
+    if (c.remote) return;
+    const { caster, sys, def } = c;
+    const p = def.params ?? {};
+    const t = enemyTarget(c);
+    if (!t) { sys.whiff(c); return; }
+    const spent = spendStacksUpTo(t, 'vile_contagion', Math.max(1, Math.round(p.maxStacks ?? 8)));
+    if (spent === 0) { sys.whiff(c); return; }
+    const dir = sys.dirTo(caster, t);
+    const r = sys.strike(c, t, { dir, coef: (p.coef ?? 0.25) * spent });
+    sys.vfx('corpse_explosion', at(t, t.height * 0.5), { scale: 0.3 + 0.05 * spent });
+    const md = rowDef(c);
+    const row = def.minion;
+    if (md && row && G.minions) G.minions.summon(caster, md, { count: spent, cap: row.cap, group: row.group, life: row.life, ignoreCap: row.ignoreCap });
+    if (r) sys.afterHits(c, [r]); else sys.whiff(c);
+    sys.applySelf(c, def.selfStatuses ?? []);
+  },
+};
+
+// ---------------------------------------------------------------------------------------------------------
 // death_coil: Ölüm Sarmalı
 // ---------------------------------------------------------------------------------------------------------
 
@@ -614,6 +647,7 @@ Object.assign(BEHAVIORS_NECROMANCER, {
   strike_self_buff: strikeSelfBuff,
   multi_cleave: multiCleave,
   scourge_strike: scourgeStrike,
+  apocalypse,
   death_coil: deathCoil,
   spread_aoe: spreadAoe,
   death_order: deathOrder,

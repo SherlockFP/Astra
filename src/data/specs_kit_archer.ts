@@ -39,6 +39,8 @@ export const SPECS_KIT_ARCHER: Partial<Record<SpecId, SpecDef>> = {
     unlock: { archer_exhilaration: 10, archer_misdirection: 10,  archer_kill_command: 1, archer_serpent_sting: 15, archer_bm_bestial_wrath: 10, archer_bm_pack_hunt: 20,
       archer_cobra_shot: 1, archer_barbed_shot: 10, archer_counter_shot: 1, archer_freezing_trap: 15 },
     majors: { m45: 'archer_bm_bestial_wrath', m90: 'archer_bm_pack_hunt' },
+    // Vahşi Öfke: every Dikenli Atış cast adds one frenzy stack (up to 3, 8 s)
+    fx: 'T cast:archer_barbed_shot => st(self,frenzy,8)',
     mods: [],
     weaponArt: 'wa_piercing_bolt',
     defaultBar: {

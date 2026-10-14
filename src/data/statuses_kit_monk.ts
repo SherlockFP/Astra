@@ -12,6 +12,8 @@ import type { StatusRule } from './statuses';
 const I = (n: string) => `/assets/icons/${n}.svg`;
 
 export const STATUSES_KIT_MONK: Partial<Record<StatusId, StatusDef>> = {
+  // Sheilun'un Armağanı (Mistweaver): one stack per Canlandırma / Sarmalayan Sis cast (proc st(self,...)); up to 5, spent by monk_mw_sheilun_gift
+  sheilun_gift: { id: 'sheilun_gift', name: "Sheilun'un Armağanı", icon: I('buff-regen'), kind: 'buff', maxStacks: 5, defaultDuration: 30, dispellable: false },
   // ---- Akış (trait_flow) and the Çi Torpedo self-buff: +20 % attack speed for 2.5 s
   chi_flow: { id: 'chi_flow', name: 'Çi Akışı', icon: I('buff-haste'), kind: 'buff', stats: { attackSpeed: 0.2 } },
   // ---- Kaplan Hırsı (monk_tigers_lust): +35 % move speed, +15 % attack speed for 6 s (slow and root are cleansed by the skill)
@@ -37,6 +39,7 @@ export const STATUSES_KIT_MONK: Partial<Record<StatusId, StatusDef>> = {
 };
 
 export const STATUS_RULES_KIT_MONK: Partial<Record<StatusId, StatusRule>> = {
+  sheilun_gift: { stack: 'stack' },
   chi_flow: { stack: 'refresh' },
   tigerlust: { stack: 'refresh' },
   tigerfury: { stack: 'refresh' },
