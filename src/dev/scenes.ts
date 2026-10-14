@@ -72,6 +72,8 @@ async function main(): Promise<void> {
     }
     const forceLvl = Number(q.get('lvl') ?? 0);
     if (forceLvl > 0) save.level = forceLvl;
+    // enemy level of the direct dungeon jump: elvl=N, else follows lvl (the character's level), else 10
+    const enemyLvl = Math.max(1, Math.min(70, Number(q.get('elvl') ?? 0) || forceLvl || 10));
     G.character = new CharacterState(save);
     G.character.recomputeStats();
     const townParams = q.get('portal') ? { spawnAt: 'portal' } : q.get('south') ? { spawnAt: 'south' } : undefined;
@@ -86,7 +88,7 @@ async function main(): Promise<void> {
       const lvl = Number(q.get('key') ?? 0);
       const dif = (['heroic', 'mythic'] as const).find((d) => d === q.get('dif')) ?? 'normal';
       await G.scenes.go('dungeon', {
-        dungeonId: id, difficulty: lvl > 0 ? 'mythicplus' : dif, keyLevel: lvl, seed: 12345, affixes: [], enemyLevel: 10, partySize: 1, keyOwner: G.net.selfId,
+        dungeonId: id, difficulty: lvl > 0 ? 'mythicplus' : dif, keyLevel: lvl, seed: 12345, affixes: [], enemyLevel: enemyLvl, partySize: 1, keyOwner: G.net.selfId,
       });
     }
   }
