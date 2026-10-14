@@ -136,7 +136,7 @@ G.events.emit('chat:line', { from: 'Ben', text: 'fısıltı', channel: 'whisper'
 ok('ev.whisper-local', A.isUnlocked(G.character.save, 'sos_whisper1'));
 
 // Party: an unlock is broadcast when online (once), not offline
-G.net = { isOnline: true, sendChat: (t) => sent.push(t) };
+G.net = { isOnline: true, inParty: true, sendChat: (t) => sent.push(t) };
 clearLogs();
 G.events.emit('player:levelup', { level: 60 });
 // a jump to level 60 unlocks every level milestone at once: one broadcast per unlock
@@ -202,7 +202,7 @@ ok('save.backfill-idempotent', A.backfill(legacy, 6).length === 0 && legacy.achi
 {
   await wait(WINDOW); // flush toasts queued by the stages above
   const main = G.character;
-  G.net = { isOnline: true, sendChat: (t) => sent.push(t) };
+  G.net = { isOnline: true, inParty: true, sendChat: (t) => sent.push(t) };
   const legacyCh = CharacterState.create('Toplu', 'knight');
   delete legacyCh.save.achievements;
   legacyCh.save.level = 30;

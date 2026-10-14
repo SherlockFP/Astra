@@ -204,6 +204,8 @@
 .efs-dice:hover { border-color: #ffd982; box-shadow: 0 0 12px rgba(255,190,80,.4); }
 .efs-err { min-height: 20px; margin-top: 6px; font-size: 14px; color: #ff8a7a; }
 .efs-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+/* the creation panel scrolls on short screens (7 classes + variants + nation + name): name + Oluştur / Geri stay pinned at its bottom edge */
+.efs-createfoot { position: sticky; bottom: -16px; z-index: 9; margin: 0 -18px -16px; padding: 2px 18px 16px; background: linear-gradient(180deg, rgba(14,9,6,0), #0e0906 14px); }
 .efs-detail-hd { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 .efs-detail-hd .nm { font-family: var(--font-head); font-weight: 700; font-size: 26px; letter-spacing: .08em; color: var(--c); text-shadow: 0 0 14px color-mix(in srgb, var(--c) 60%, transparent), 0 2px 3px #000; line-height: 1; }
 .efs-detail-hd .tg { font-size: 15px; color: #d6c196; font-style: italic; }
@@ -261,6 +263,7 @@
   .efs-input { font-size: 16px; }
   .efs-err { min-height: 16px; margin-top: 3px; font-size: 13px; }
   .efs-actions { gap: 6px; margin-top: 4px; }
+  .efs-createfoot { bottom: -12px; margin: 0 -14px -12px; padding: 2px 14px 12px; }
   .efs-create-r { padding: 12px 14px; }
   .efs-desc { font-size: 14.5px; line-height: 1.3; margin-bottom: 8px; }
   .efs-hl li { font-size: 13.5px; padding: 2px 0 2px 16px; }

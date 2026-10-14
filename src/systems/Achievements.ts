@@ -174,7 +174,9 @@ function announceLive(defs: AchievementDef[]): void {
   }
   for (const def of defs) {
     ev.emit('net:chat', { from: '', text: `${def.name} başarımını kazandın!`, channel: 'system' });
-    if (G.net?.isOnline) G.net.sendChat(`${ch.save.name}: ${def.name} başarımını kazandı!`);
+    // party echo only inside a private party room: in a public channel sendChat() would turn it into a /say line (+ speech bubble over
+    // the player); the chat line already carries the sender name, so the text must not repeat it ("Kaan: Kaan: ...")
+    if (G.net?.inParty) G.net.sendChat(`${def.name} başarımını kazandı!`);
     ev.emit('achievement:unlocked', { id: def.id, name: def.name, points: def.points, title: def.title });
   }
   queueToast(defs);

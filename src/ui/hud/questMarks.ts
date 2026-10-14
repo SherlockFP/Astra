@@ -234,7 +234,14 @@ export function townNpcPos(id: string): Pt | null {
 
 /** Name of a town NPC, or the id. */
 export function townNpcName(id: string): string {
-  return TOWN.npcs.find((x) => x.id === id)?.name ?? id;
+  const t = TOWN.npcs.find((x) => x.id === id)?.name;
+  if (t) return t;
+  // open-world village NPCs (Muhtar Ferhat ...) live in the map's village list, not in the town: never show the raw id on the arrow
+  for (const v of worldExtras()?.villages ?? []) {
+    const n = v.npcs.find((x) => x.id === id);
+    if (n) return n.name;
+  }
+  return id;
 }
 
 /** The open-world maps and the town gate each one is entered by (TOWN.exits, data/town.ts). */
@@ -358,8 +365,11 @@ export function guideTarget(recommendedGiver: string | null): GuideTarget | null
   if (q && G.character) {
     try {
       const pinned = getPinnedQuest();
-      const pdef = pinned ? q.def(pinned) : undefined;
-      if (pdef && q.state(pdef.id) === 'active') {
+      let pdef = pinned ? q.def(pinned) : undefined;
+      // nothing is pinned automatically on accept: follow the first active quest (the same fallback the HUD tracker shows),
+      // otherwise the arrow keeps pointing at the guide NPC the player already talked to
+      if (!pdef || q.state(pdef.id) !== 'active') pdef = q.active().find((d) => q.state(d.id) === 'active');
+      if (pdef) {
         const rows = q.progressRows(pdef.id);
         for (let k = 0; k < pdef.objectives.length; k++) {
           const o = pdef.objectives[k];
