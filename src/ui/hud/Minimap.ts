@@ -30,6 +30,12 @@ function bandTone(p: number, [lo, hi]: [number, number]): string {
   return TONE_YELLOW;
 }
 
+/** True in an open-world zone (an `outdoor` def run in the dungeon scene): those maps have no fog of war (GDD_OPENWORLD §5.9). */
+function inOpenZone(): boolean {
+  const id = G.mplus?.params?.dungeonId ?? G.mplus?.state?.dungeonId;
+  return !!id && !!getDungeon(id)?.outdoor;
+}
+
 /** A point on the minimap disc: screen position and distance from the centre (px). */
 interface ScreenPt {
   sx: number;
@@ -417,7 +423,7 @@ export class Minimap implements HudWidget {
     }
     const now = ctx.now;
     if (!this.mapCanvas || now - this.mapBuiltAt > 2500) this.refreshMap(nav, now);
-    const useFog = ctx.mode === 'dungeon';
+    const useFog = ctx.mode === 'dungeon' && !inOpenZone();
     if (useFog) this.ensureFog();
     const px = p.position.x, pz = p.position.z;
     if (useFog) this.reveal(nav, px, pz);

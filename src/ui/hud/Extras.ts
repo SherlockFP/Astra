@@ -138,9 +138,10 @@ export class AimHint implements HudWidget {
   private active = false;
 
   constructor() {
-    this.el = div('ah');
-    this.nameEl = div('ah-name', this.el);
-    const keys = div('ah-keys', this.el);
+    // not 'ah': arena.css styles the arena scoreboard as .ah (absolute, always shown); this hint is .aimh and shows only with .on
+    this.el = div('aimh');
+    this.nameEl = div('aimh-name', this.el);
+    const keys = div('aimh-keys', this.el);
     keys.innerHTML = '<span><b>Bırak</b> / <b>Sol Tık</b> Yerleştir</span><span><b>Boşluk</b> İptal</span>';
     G.events.on('skill:aimStart', ({ skillId }) => {
       let name = '';

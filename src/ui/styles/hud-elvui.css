@@ -142,6 +142,10 @@
 .hud .ab-btn.is-ghost > * { display: none !important; }
 /* the ornaments at the bar ends (retail gold diamonds) are gone */
 .hud .actionbar::before, .hud .actionbar::after { content: none; }
+/* the bar frame: hud-bottom.css paints the gold-brown gradient, double bevel and gold divider on .actionbar; ElvUI has one flat
+   backdrop per bar (.ab-row above, #1a1a1a .8 with a 1 px black border), so the outer frame goes */
+.hud .actionbar { padding: 0; gap: 0; background: none; border: 0; border-radius: 0; box-shadow: none; }
+.hud .ab-group.potions { padding-left: 6px; border-left: 1px solid #000; box-shadow: none; }
 /* majors: a plain white tone line instead of the gold hairline (defensive blue and heal green stay) */
 .hud .ab-btn[data-tone='gold'], .hud .ab-btn[data-tone='gold2'] { --tone-c: rgba(255, 255, 255, 0.45); }
 .hud .ab-new { padding: 0 4px; font: 700 11px/14px var(--font-body); color: #fff; background: #000; border: 1px solid var(--ac, #fff); }

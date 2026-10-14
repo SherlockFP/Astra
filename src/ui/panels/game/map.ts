@@ -548,7 +548,9 @@ export class MapPanel extends GamePanel {
       return;
     }
     const fog = !town;
-    if (!this.terrain || this.terrainNav !== nav || this.terrainVer !== version || this.terrainFog !== fog) this.buildTerrain(nav, fog);
+    // open world (outdoor def): the walkable map is drawn in full, like the town one; exploration still gates the points below
+    const terrainFog = fog && !def?.outdoor;
+    if (!this.terrain || this.terrainNav !== nav || this.terrainVer !== version || this.terrainFog !== terrainFog) this.buildTerrain(nav, terrainFog);
 
     const p = G.player ?? world.localPlayer;
     const k = 1 - Math.exp(-10 * dt);
