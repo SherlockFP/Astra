@@ -428,7 +428,7 @@ const tredAbilities: Record<string, BossHandler> = {
   tred_consume: {
     start(c, b: Busy) {
       b.total = b.delay + 14.5;
-      const cocoon = c.gdd(61.5, 56);
+      const cocoon = c.gdd(61.5, 58);
       c.teleport(cocoon.x, cocoon.z - 3);
       c.freeze(true);
       bossShield(c, 0.06);

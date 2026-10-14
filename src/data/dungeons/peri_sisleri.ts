@@ -175,12 +175,13 @@ const ROOMS: RoomDef[] = [
     zones: [acid(64, 27.5, 1.5), acid(70, 25.5, 1.4), acid(66.5, 30.5, 1.2)],
     props: [P(gp('rock_cliff'), 60, 25), P(gp('rock_cliff'), 71, 31), P(gp('bone_pile'), 60, 30, { tint: 0x8a8a50 })],
   }),
-  room('yuva_koprusu', 'Çürük Köprü', 60, 32, 3, 6, 'gorm', 'cave', 0.2, {
+  // written in widened coordinates already (not in WIDENED): 4 wide, bridge on the two middle columns
+  room('yuva_koprusu', 'Çürük Köprü', 60, 33, 4, 6, 'gorm', 'cave', 0.2, {
     floorY: 1.2, ceiling: 20, fog: fog(0x142418, 5, 30),
-    tiers: [tier('beams', 19.0, 60, 32, 3, 6)],
-    zones: [rectZone('bridge', 61, 32, 1, 6, { y: 1.2 }), rectZone('void', 60, 32, 1, 6, CHASM), rectZone('void', 62, 32, 1, 6, CHASM)],
+    tiers: [tier('beams', 19.0, 60, 33, 4, 6)],
+    zones: [rectZone('bridge', 61, 33, 2, 6, { y: 1.2 }), rectZone('void', 60, 33, 1, 6, CHASM), rectZone('void', 63, 33, 1, 6, CHASM)],
     props: [
-      ...[0, 1, 2].map((i) => P(kn('bridge_woodNarrow'), 61.5, 33 + i * 2, { rot: 90, scale: 4 })),
+      ...[0, 1, 2].map((i) => P(kn('bridge_woodNarrow'), 61.5, 34 + i * 2, { rot: 90, scale: 4 })),
     ],
   }),
   room('yan_tunel', 'Kök Kestirmesi', 58, 32, 2, 6, 'dirt', 'cave', 0.4, {
@@ -217,6 +218,7 @@ const ROOMS: RoomDef[] = [
 
 // ---- doors (29) -----------------------------------------------------------------------------------------------------------
 // Doors 6 and 25 would be channel gates (Kök Kapısı, ChannelGate not built yet): they are open for now.
+// (widened coordinates: the tile sits on the room's own edge, as before)
 const DOORS: DoorDef[] = [
   door('giris', 'k_patika', 10, 53, 'e', 2, 'none'),
   door('k_patika', 'drust_kampi', 14, 53, 'e', 2, 'none'),
@@ -224,27 +226,27 @@ const DOORS: DoorDef[] = [
   door('k_ritual', 'ingra_arena', 21, 42, 'n', 2, 'boss_lock'),
   door('ingra_arena', 'kok_salonu', 21, 29, 'n', 2, 'boss_exit'),
   door('kok_salonu', 'mantar_korusu', 16, 22, 'w', 2, 'none'),
-  door('kok_salonu', 'm1', 19, 21, 'n', 2, 'none'),
-  door('m1', 'm2', 23, 10, 'e', 2, 'none'), door('m1', 'm2', 23, 13, 'e', 2, 'none'),
-  door('m1', 'm2', 23, 16, 'e', 2, 'none'), door('m1', 'm2', 23, 19, 'e', 2, 'none'),
-  door('m2', 'm3', 31, 10, 'e', 2, 'none'), door('m2', 'm3', 31, 13, 'e', 2, 'none'),
-  door('m2', 'm3', 31, 16, 'e', 2, 'none'), door('m2', 'm3', 31, 19, 'e', 2, 'none'),
-  door('m3', 'm4', 39, 10, 'e', 2, 'none'), door('m3', 'm4', 39, 13, 'e', 2, 'none'),
-  door('m3', 'm4', 39, 16, 'e', 2, 'none'), door('m3', 'm4', 39, 19, 'e', 2, 'none'),
-  door('m4', 'sis_cagiran_cayiri', 47, 14, 'e', 2, 'boss_lock'),
-  door('sis_cagiran_cayiri', 'selale_kenari', 60, 13, 'e', 2, 'boss_exit'),
-  door('selale_kenari', 'havuz', 62, 17, 's', 2, 'none'),
-  door('havuz', 'yuva_magarasi', 62, 23, 's', 2, 'none'),
-  door('yuva_magarasi', 'yuva_koprusu', 61, 31, 's', 1, 'none'),
-  door('yuva_magarasi', 'yan_tunel', 58, 31, 's', 2, 'none'),
-  door('yuva_koprusu', 'yuva_kuyusu', 61, 37, 's', 1, 'none'),
-  door('yan_tunel', 'yuva_kuyusu', 58, 37, 's', 2, 'none'),
-  door('yuva_kuyusu', 'tredova_magarasi', 59, 45, 's', 2, 'boss_lock'),
-  door('yuva_magarasi', 'peri_halkasi', 72, 26, 'e', 2, 'none'),
+  door('kok_salonu', 'm1', 19, 19, 'n', 2, 'none'),
+  door('m1', 'm2', 24, 9, 'e', 2, 'none'), door('m1', 'm2', 24, 11, 'e', 2, 'none'),
+  door('m1', 'm2', 24, 13, 'e', 2, 'none'), door('m1', 'm2', 24, 15, 'e', 2, 'none'),
+  door('m2', 'm3', 33, 9, 'e', 2, 'none'), door('m2', 'm3', 33, 11, 'e', 2, 'none'),
+  door('m2', 'm3', 33, 13, 'e', 2, 'none'), door('m2', 'm3', 33, 15, 'e', 2, 'none'),
+  door('m3', 'm4', 42, 9, 'e', 2, 'none'), door('m3', 'm4', 42, 11, 'e', 2, 'none'),
+  door('m3', 'm4', 42, 13, 'e', 2, 'none'), door('m3', 'm4', 42, 15, 'e', 2, 'none'),
+  door('m4', 'sis_cagiran_cayiri', 51, 14, 'e', 2, 'boss_lock'),
+  door('sis_cagiran_cayiri', 'selale_kenari', 64, 13, 'e', 2, 'boss_exit'),
+  door('selale_kenari', 'havuz', 66, 17, 's', 2, 'none'),
+  door('havuz', 'yuva_magarasi', 66, 23, 's', 2, 'none'),
+  door('yuva_magarasi', 'yuva_koprusu', 61, 32, 's', 2, 'none'),
+  door('yuva_magarasi', 'yan_tunel', 58, 32, 's', 2, 'none'),
+  door('yuva_koprusu', 'yuva_kuyusu', 61, 38, 's', 2, 'none'),
+  door('yan_tunel', 'yuva_kuyusu', 58, 38, 's', 2, 'none'),
+  door('yuva_kuyusu', 'tredova_magarasi', 59, 47, 's', 2, 'boss_lock'),
+  door('yuva_magarasi', 'peri_halkasi', 74, 26, 'e', 2, 'none'),
 ];
 
 // ---- packs (30; forces are the member sums, 463 in total) --------------------------------------------------------------
-const BRIDGE_LANE = (): PackDef => pack('ps_p25', 'yuva_koprusu', 61.5, 34.5, undefined, [
+const BRIDGE_LANE = (): PackDef => pack('ps_p25', 'yuva_koprusu', 61.5, 35.5, undefined, [
   ['ps_gorger', 0, -1.75], ['ps_gorger', 0, -1.25],
   ['ps_larva', 0, -0.75], ['ps_larva', 0, -0.25], ['ps_larva', 0, 0.25], ['ps_larva', 0, 0.75], ['ps_larva', 0, 1.25], ['ps_larva', 0, 1.75],
 ]);
@@ -286,6 +288,82 @@ const PACKS: PackDef[] = [
   ], { optional: true }),
 ];
 
+// ---- widening pass (scale pass, same method as the kemik_mahzeni and buzul_tahti pilots) -------------------------------
+// Rooms, props, zones, slopes, tiers, packs, bosses and extras are written in the OLD layout and remapped here into the
+// widened rects. Helper copied from rescale.ts (not imported): a room edge sits at centre - 0.5 for points, rect edges map
+// edge to edge. Rooms not listed in WIDENED keep their rect (their literals are already final).
+type R4 = [number, number, number, number];
+const WIDENED: Record<string, R4> = {
+  k_patika: [11, 51, 4, 4], k_ritual: [20, 42, 4, 4], kok_salonu: [16, 19, 12, 10], mantar_korusu: [6, 19, 10, 10],
+  m1: [16, 9, 9, 10], m2: [25, 9, 9, 10], m3: [34, 9, 9, 10], m4: [43, 9, 9, 10],
+  sis_cagiran_cayiri: [52, 6, 13, 15], selale_kenari: [65, 12, 6, 6], havuz: [65, 18, 6, 6],
+  yuva_magarasi: [58, 24, 17, 9], peri_halkasi: [75, 24, 9, 9], yan_tunel: [58, 33, 2, 6],
+  yuva_kuyusu: [56, 39, 9, 9], tredova_magarasi: [54, 48, 16, 13],
+};
+const OLD_RECT: Record<string, R4> = {};
+for (const r of ROOMS) OLD_RECT[r.id] = [r.rect.x, r.rect.z, r.rect.w, r.rect.h];
+const newRect = (id: string): R4 => WIDENED[id] ?? OLD_RECT[id];
+const r05 = (v: number): number => Math.round(v * 2) / 2;
+
+/** Old-layout point -> new-layout point inside room `id`. */
+function mapPt(id: string, x: number, z: number): [number, number] {
+  const [ox, oz, ow, oh] = OLD_RECT[id];
+  const [nx, nz, nw, nh] = newRect(id);
+  return [nx - 0.5 + (x - ox + 0.5) * (nw / ow), nz - 0.5 + (z - oz + 0.5) * (nh / oh)];
+}
+/** The room whose old rect is nearest to an old-layout point (points on a wall line go to the room they sit in). */
+function roomOf(x: number, z: number): string {
+  let best = ROOMS[0].id;
+  let bd = Infinity;
+  for (const id of Object.keys(OLD_RECT)) {
+    const [ox, oz, ow, oh] = OLD_RECT[id];
+    const dx = Math.max(ox - 0.5 - x, 0, x - (ox + ow - 0.5));
+    const dz = Math.max(oz - 0.5 - z, 0, z - (oz + oh - 0.5));
+    const d = Math.hypot(dx, dz);
+    if (d < bd) { bd = d; best = id; }
+  }
+  return best;
+}
+const wpt = (x: number, z: number): [number, number] => mapPt(roomOf(x, z), x, z);
+/** Rect in room `id` mapped edge to edge (tile multiples of 0.5). */
+function mapRect(id: string, r: TileRect): TileRect {
+  const [ox, oz, ow, oh] = OLD_RECT[id];
+  const [nx, nz, nw, nh] = newRect(id);
+  const sx = nw / ow, sz = nh / oh;
+  return { x: r05(nx + (r.x - ox) * sx), z: r05(nz + (r.z - oz) * sz), w: r05(r.w * sx), h: r05(r.h * sz) };
+}
+/** Circle zones keep their shape (centre mapped, radius scaled by the smaller axis factor). */
+function mapZone(id: string, z: ZoneDef): ZoneDef {
+  if (z.shape !== 'circle') return { ...z, rect: mapRect(id, z.rect) };
+  const [ox, oz, ow, oh] = OLD_RECT[id];
+  const [, , nw, nh] = newRect(id);
+  const cx = z.rect.x + z.rect.w / 2 - 0.5;
+  const cz = z.rect.z + z.rect.h / 2 - 0.5;
+  const [x2, z2] = mapPt(id, cx, cz);
+  const r = (z.rect.w / 2) * Math.min(nw / ow, nh / oh);
+  return { ...z, rect: { x: x2 + 0.5 - r, z: z2 + 0.5 - r, w: 2 * r, h: 2 * r } };
+}
+/** Boss placement written in old coordinates. */
+const bossW = (bossId: string, roomId: string, x: number, z: number, facing: number, order: number) => {
+  const [nx, nz] = mapPt(roomId, x, z);
+  return bossAt(bossId, roomId, nx, nz, facing, order);
+};
+
+for (const r of ROOMS) {
+  const id = r.id;
+  const [nx, nz, nw, nh] = newRect(id);
+  r.rect = { x: nx, z: nz, w: nw, h: nh };
+  if (r.props) for (const p of r.props) p.pos = mapPt(id, p.pos[0], p.pos[1]);
+  if (r.zones) r.zones = r.zones.map((z) => mapZone(id, z));
+  if (r.heightAreas) r.heightAreas = r.heightAreas.map((a) => ({ ...a, rect: mapRect(id, a.rect) }));
+  if (r.slopes) r.slopes = r.slopes.map((s) => ({ ...s, rect: mapRect(id, s.rect) }));
+  if (r.tiers) r.tiers = r.tiers.map((t) => ({ ...t, rect: mapRect(id, t.rect) }));
+}
+for (const p of PACKS) {
+  p.center = mapPt(p.roomId, p.center[0], p.center[1]);
+  if (p.patrol) p.patrol = p.patrol.map(([x, z]) => mapPt(p.roomId, x, z));
+}
+
 // ---- dungeon ----------------------------------------------------------------------------------------------------------
 const THEME: DungeonTheme = {
   fogColor: 0x1b2a2e, fogNear: 7, fogFar: 36,
@@ -301,26 +379,27 @@ export const PERI_SISLERI: DungeonDef = {
   shortName: 'Sisler',
   lore: 'Kadim Diyar\'ın Gümüş Ormanı\'nda, dünya meşesinin son dalı bir kovuk saklar: Peri Sisleri. Boynuzlu Ahali kovuğa sızdı; Ingra Malok peri ruhlarının animasını kara büyüyle çekiyor, kuraklık sisleri yutuyor. Sisin ortasındaki labirent yanlış adımı affetmez, yuvanın dibinde ise Tred\'ova, Lakali\'nin tohumunu yuttu. Zaman daralıyor.',
   levelRange: [60, 60],
-  timerSec: 1680,
+  timerSec: 1770,
   forcesRequired: 370,
   theme: THEME,
-  grid: { w: 76, h: 60 },
+  grid: { w: 84, h: 62 },
   rooms: ROOMS,
   doors: DOORS,
   packs: PACKS,
   bosses: [
-    bossAt('boss_ingra_malok', 'ingra_arena', 21.5, 33, 0, 1),
-    bossAt('boss_sis_cagiran', 'sis_cagiran_cayiri', 56.5, 13, -90, 2),
-    bossAt('boss_tredova', 'tredova_magarasi', 61.5, 53, 180, 3),
+    bossW('boss_ingra_malok', 'ingra_arena', 21.5, 33, 0, 1),
+    bossW('boss_sis_cagiran', 'sis_cagiran_cayiri', 56.5, 13, -90, 2),
+    bossW('boss_tredova', 'tredova_magarasi', 61.5, 53, 180, 3),
   ],
   start: { pos: [4, 54], facing: 90 },
-  exit: { pos: [64, 48] },
+  exit: { pos: wpt(64, 48) },
   extras: {
-    fontOfPower: pt(6.5, 51.5),
-    shrines: [{ type: 'shrine_power', pos: pt(10.5, 24.5) }, { type: 'shrine_haste', pos: pt(74.5, 28) }],
-    riftSpots: [[26.5, 47.5], [26.5, 27.5], [17, 19], [29.5, 20], [37.5, 12], [64, 14.5], [70.5, 25.5], [59.5, 30.5]],
-    chests: [{ pos: pt(8, 22.5), kind: 'chest_wood' }, { pos: pt(74.5, 29.8), kind: 'chest_gold' }],
-    checkpoints: [pt(63.5, 38.5)],
+    fontOfPower: wpt(6.5, 51.5),
+    shrines: [{ type: 'shrine_power', pos: wpt(10.5, 24.5) }, { type: 'shrine_haste', pos: wpt(74.5, 28) }],
+    riftSpots: ([[26.5, 47.5], [26.5, 27.5], [17, 19], [29.5, 20], [37.5, 12], [64, 14.5], [70.5, 25.5], [59.5, 30.5]] as [number, number][])
+      .map(([x, z]) => wpt(x, z)),
+    chests: [{ pos: wpt(8, 22.5), kind: 'chest_wood' }, { pos: wpt(74.5, 29.8), kind: 'chest_gold' }],
+    checkpoints: [wpt(63.5, 44.5)],
   },
   season: 1,
   endgame: true,
