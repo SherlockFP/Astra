@@ -24,6 +24,7 @@ export const ROTATIONS_KIT_DEMONHUNTER: Record<string, KitApl> = {
       'demonhunter_basic',
     ],
     aoe: [
+      'demonhunter_chaos_nova if cd_ready(demonhunter_chaos_nova) && targets >= 3',
       'demonhunter_the_hunt if cd_ready(demonhunter_the_hunt)',
       'demonhunter_immolation_aura if charges(demonhunter_immolation_aura) >= 1',
       'demonhunter_blade_dance if cd_ready(demonhunter_blade_dance) && targets >= 3',
@@ -37,6 +38,7 @@ export const ROTATIONS_KIT_DEMONHUNTER: Record<string, KitApl> = {
   demonhunter_vengeance: {
     st: [
       'demonhunter_fiery_brand if charges(demonhunter_fiery_brand) >= 2 || (charges(demonhunter_fiery_brand) >= 1 && !status:demon_spikes)',
+      'demonhunter_sigil_of_flame if cd_ready(demonhunter_sigil_of_flame)',
       'demonhunter_demon_spikes if !status:demon_spikes && charges(demonhunter_demon_spikes) >= 1',
       'demonhunter_metamorphosis if hp% < 40 || (cd_ready(demonhunter_metamorphosis) && status:demon_spikes)',
       'demonhunter_fel_devastation if cd_ready(demonhunter_fel_devastation) && res >= 30 && target.remaining:fiery_brand >= 2',
@@ -48,6 +50,7 @@ export const ROTATIONS_KIT_DEMONHUNTER: Record<string, KitApl> = {
       'demonhunter_basic',
     ],
     aoe: [
+      'demonhunter_sigil_of_flame if cd_ready(demonhunter_sigil_of_flame) && targets >= 2',
       'demonhunter_immolation_aura if charges(demonhunter_immolation_aura) >= 1',
       'demonhunter_demon_spikes if !status:demon_spikes && charges(demonhunter_demon_spikes) >= 1',
       'demonhunter_soul_cleave if status:soul_overflow && res >= 25',

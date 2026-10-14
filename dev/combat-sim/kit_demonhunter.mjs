@@ -1,9 +1,9 @@
 // KIT AE-3 checks (docs/kits/agile-evoker.md §3 + the WoW Midnight Yutucu spec) that need no browser.
 // Run: node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/kit_demonhunter.mjs
-// Covered: aedh.ids, aedh.apl, aedh.status, aedh.fx, aedh.procs, aedh.fury, aedh.chain, aedh.rows (Kaos Darbesi / Yok Ediş replace, Bıçak
-//          Dansı / Ölüm Süpürmesi, Göz Işını channel + Kör Gazap, Yakıp Yok Etme Aurası, Fel Atılışı, Av, Metamorfoz, Öz Kırılması window),
-//          aedh.souls (fragments, soul_overflow, Ruh Yarma -> Ruh Bombası, Fel Kanı), aedh.veng (Ateş Mührü, Şeytan Dikenleri refund, Fel Yıkımı heal),
-//          aedh.devourer (Tüket, Biç, Boşluk Metamorfozu, Boşluk Fırtınası, Çöken Yıldız series, kill fragment), aedh.cast (every demonhunter row casts),
+// Covered: aedh.ids, aedh.apl, aedh.status, aedh.fx, aedh.procs, aedh.fury, aedh.chain, aedh.rows (Kaos Darbesi (Chaos Strike) / Yok Ediş (Annihilation) replace, Bıçak
+//          Dansı / Ölüm Süpürmesi (Death Sweep), Göz Işını (Eye Beam) channel + Kör Gazap, Yakıcı Aura (Immolation Aura), Fel Atılışı (Fel Rush), Av, Metamorfoz (Metamorphosis), Öz Kırılması (Essence Break) window),
+//          aedh.souls (fragments, soul_overflow, Ruh Yarma (Soul Cleave) -> Ruh Bombası (Spirit Bomb), Fel Kanı), aedh.veng (Ateş Mührü (Fiery Brand), Şeytan Dikenleri (Demon Spikes) refund, Fel Yıkımı (Fel Devastation) heal),
+//          aedh.devourer (Tüket, Biç, Boşluk Metamorfozu (Void Metamorphosis), Boşluk Fırtınası (Void Storm), Çöken Yıldız (Collapsing Star) series, kill fragment), aedh.cast (every demonhunter row casts),
 //          aedh.ledger (60 s APL runs of the three specs), aedh.l1 (level-1 bar, start gear, playable registration, movement).
 // Every cast goes through the real SkillSystem (pip costs, GCD, cooldowns, proc mods, behaviours) on dev dummies. Not covered here
 // (browser / SimBench): feel, VFX, double jump / glide (PlayerController).
@@ -147,7 +147,7 @@ for (const spec of ALL) {
     const r = parseFx(spec.fx, ctx);
     ok(`aedh.fx ${spec.id} fx parses and validates`, r.errors.length === 0, r.errors.join(' | '));
   }
-  ok('aedh.fx İntikam has 5 trigger rows (chaos_brand, finisher soul, Fel Kanı tick, two Şeytan Dikenleri refunds)', parseFx(VENG.fx).items.filter((i) => i.k === 'T').length === 5);
+  ok('aedh.fx İntikam has 5 trigger rows (chaos_brand, finisher soul, Fel Kanı tick, two Şeytan Dikenleri (Demon Spikes) refunds)', parseFx(VENG.fx).items.filter((i) => i.k === 'T').length === 5);
   ok('aedh.fx Yutucu has the kill-fragment row', /T kill ch=1 => pip\(soul,1\)/.test(DEVO.fx));
 }
 
@@ -159,7 +159,7 @@ for (const spec of ALL) {
   const { p } = newDh(DEVO, { dummy: false });
   p.statuses.apply('void_meta', 30, { sourceId: p.id });
   const glow = glowSkillsOf(p.statuses, { resourcePct: 0.5, bestSpender: null, pips: 0, combo: 0, arcane: 0, targetHpPct: null, stealthed: false, riposteOpen: false, targetGuardBroken: false, bleedingEnemies: 0 });
-  ok('aedh.procs void_meta lights Çöken Yıldız', glow.has('demonhunter_collapsing_star'));
+  ok('aedh.procs void_meta lights Çöken Yıldız (Collapsing Star)', glow.has('demonhunter_collapsing_star'));
 }
 
 // ---- helpers for the dynamic sections ---------------------------------------------------------------------------------------------------------------
@@ -186,10 +186,10 @@ const keepCombat = (p) => { p.combatTimer = 0; };
   p.statuses.apply('void_meta', 90, { magnitude: 5, sourceId: p.id });
   p.statuses.apply('collapsing_star', 60, { stacks: 3, sourceId: p.id });
   for (let i = 0; i < 120; i++) { keepCombat(p); H.step(1); }
-  ok('aedh.fury Boşluk Metamorfozu drains its magnitude (5/s) while up', p.resource > 18 && p.resource < 21.5 && p.statuses.has('void_meta'), `after 2 s = ${p.resource.toFixed(1)}`);
+  ok('aedh.fury Boşluk Metamorfozu (Void Metamorphosis) drains its magnitude (5/s) while up', p.resource > 18 && p.resource < 21.5 && p.statuses.has('void_meta'), `after 2 s = ${p.resource.toFixed(1)}`);
   p.resource = 3;
   for (let i = 0; i < 40; i++) { keepCombat(p); H.step(1); }
-  ok('aedh.fury the form ends when Gazap runs out and the Çöken Yıldız series is dropped', !p.statuses.has('void_meta') && !p.statuses.has('collapsing_star') && p.resource === 0);
+  ok('aedh.fury the form ends when Gazap runs out and the Çöken Yıldız (Collapsing Star) series is dropped', !p.statuses.has('void_meta') && !p.statuses.has('collapsing_star') && p.resource === 0);
 }
 
 // ---- aedh.chain: Fel Bıçakları ------------------------------------------------------------------------------------------------------------------
@@ -228,65 +228,65 @@ const keepCombat = (p) => { p.combatTimer = 0; };
 
 // ---- aedh.rows (Kaos) -------------------------------------------------------------------------------------------------------------------------------
 {
-  // Kaos Darbesi / Yok Ediş
+  // Kaos Darbesi (Chaos Strike) / Yok Ediş (Annihilation)
   const a = newDh(CHAOS); flat(a.p); a.p.resource = 100;
   H.clearEvents();
-  ok('aedh.rows Kaos Darbesi casts, pays 20 Gazap and hits for ~0.72 coef', cast(a.p, 'rmb', a.e) && (H.stepSec(1.2), true) && near(a.p.resource, 80, 1.5) && dmgTo(a.e, /chaos_strike/).length === 1,
+  ok('aedh.rows Kaos Darbesi (Chaos Strike) casts, pays 20 Gazap and hits for ~0.72 coef', cast(a.p, 'rmb', a.e) && (H.stepSec(1.2), true) && near(a.p.resource, 80, 1.5) && dmgTo(a.e, /chaos_strike/).length === 1,
     `res=${a.p.resource.toFixed(1)} hits=${dmgTo(a.e, /chaos_strike/).length}`);
   const dChaos = sumDmg(a.e, /chaos_strike/);
   const m = newDh(CHAOS); flat(m.p); m.p.resource = 100; m.p.statuses.apply('metamorphosis', 24, { sourceId: m.p.id });
-  ok('aedh.rows Metamorfoz turns Kaos Darbesi into Yok Ediş (replaces) and Bıçak Dansı into Ölüm Süpürmesi', G.skills.replacementFor(m.p, 'demonhunter_chaos_strike') === 'demonhunter_annihilation'
+  ok('aedh.rows Metamorfoz (Metamorphosis) turns Kaos Darbesi (Chaos Strike) into Yok Ediş (replaces) and Bıçak Dansı (Blade Dance) into Ölüm Süpürmesi (Death Sweep)', G.skills.replacementFor(m.p, 'demonhunter_chaos_strike') === 'demonhunter_annihilation'
     && G.skills.replacementFor(m.p, 'demonhunter_blade_dance') === 'demonhunter_death_sweep' && G.skills.replacementFor(a.p, 'demonhunter_chaos_strike') === null);
   H.clearEvents();
   cast(m.p, 'rmb', m.e); H.stepSec(1.2);
   const dAnn = sumDmg(m.e, /annihilation/);
-  ok('aedh.rows Yok Ediş hits ~1.3x Kaos Darbesi', dAnn / dChaos > 1.15 && dAnn / dChaos < 1.45, `ratio=${(dAnn / dChaos).toFixed(2)}`);
-  // Bıçak Dansı: AoE over several dummies, cooldown 15 (9 as Ölüm Süpürmesi)
+  ok('aedh.rows Yok Ediş (Annihilation) hits ~1.3x Kaos Darbesi (Chaos Strike)', dAnn / dChaos > 1.15 && dAnn / dChaos < 1.45, `ratio=${(dAnn / dChaos).toFixed(2)}`);
+  // Bıçak Dansı (Blade Dance): AoE over several dummies, cooldown 15 (9 as Ölüm Süpürmesi (Death Sweep))
   const b = newDh(CHAOS); flat(b.p); b.p.resource = 100;
   H.addEnemy(3, 0, { hp: 1e9 }); H.addEnemy(-3, 0, { hp: 1e9 }); H.addEnemy(0, -3, { hp: 1e9 });
   H.clearEvents();
-  cast(b.p, 'q', b.e); H.stepSec(1.5);
+  cast(b.p, 's1', b.e); H.stepSec(1.5);
   const hitIds = new Set(events['damage'].filter((d) => /blade_dance/.test(d.skillId ?? '') && d.amount > 0).map((d) => d.targetId));
-  ok('aedh.rows Bıçak Dansı hits every enemy within 6 m, costs 18, cd 15', hitIds.size === 4 && near(b.p.resource, 82, 1.5) && near(G.skills.getCooldown(b.p, 'demonhunter_blade_dance').total, 15, 0.01),
+  ok('aedh.rows Bıçak Dansı (Blade Dance) hits every enemy within 6 m, costs 18, cd 15', hitIds.size === 4 && near(b.p.resource, 82, 1.5) && near(G.skills.getCooldown(b.p, 'demonhunter_blade_dance').total, 15, 0.01),
     `targets=${hitIds.size} res=${b.p.resource.toFixed(1)} cd=${G.skills.getCooldown(b.p, 'demonhunter_blade_dance').total}`);
   const ds = newDh(CHAOS); ds.p.resource = 100; ds.p.statuses.apply('metamorphosis', 24, { sourceId: ds.p.id });
-  cast(ds.p, 'q', ds.e); H.stepSec(1.2);
-  ok('aedh.rows Ölüm Süpürmesi has its own 9 s cooldown', near(G.skills.getCooldown(ds.p, 'demonhunter_death_sweep').total, 9, 0.01), `${G.skills.getCooldown(ds.p, 'demonhunter_death_sweep').total}`);
+  cast(ds.p, 's1', ds.e); H.stepSec(1.2);
+  ok('aedh.rows Ölüm Süpürmesi (Death Sweep) has its own 9 s cooldown', near(G.skills.getCooldown(ds.p, 'demonhunter_death_sweep').total, 9, 0.01), `${G.skills.getCooldown(ds.p, 'demonhunter_death_sweep').total}`);
 }
 {
-  // Göz Işını
+  // Göz Işını (Eye Beam)
   const a = newDh(CHAOS); flat(a.p); a.p.resource = 50;
   H.clearEvents();
-  const started = cast(a.p, 'e', a.e);
+  const started = cast(a.p, 'r', a.e);
   H.stepSec(3.2);
   const hits = dmgTo(a.e, /eye_beam/);
-  ok('aedh.rows Göz Işını: 4 ticks, 15 Gazap paid, Kör Gazap +12 on a full channel', started && hits.length === 4 && near(a.p.resource, 47, 1.5), `hits=${hits.length} res=${a.p.resource.toFixed(1)}`);
+  ok('aedh.rows Göz Işını (Eye Beam): 4 ticks, 15 Gazap paid, Kör Gazap +12 on a full channel', started && hits.length === 4 && near(a.p.resource, 47, 1.5), `hits=${hits.length} res=${a.p.resource.toFixed(1)}`);
   const dBeam = sumDmg(a.e, /eye_beam/);
   const c = newDh(CHAOS); flat(c.p); c.p.resource = 100; cast(c.p, 'rmb', c.e); H.stepSec(1.2);
   const dCs = sumDmg(c.e, /chaos_strike/);
-  ok('aedh.rows Göz Işını total ~6.2 coef (8.6 Kaos Darbesi)', dBeam / dCs > 6.5 && dBeam / dCs < 11, `ratio=${(dBeam / dCs).toFixed(1)}`);
+  ok('aedh.rows Göz Işını (Eye Beam) total ~6.2 coef (8.6 Kaos Darbesi (Chaos Strike))', dBeam / dCs > 6.5 && dBeam / dCs < 11, `ratio=${(dBeam / dCs).toFixed(1)}`);
   const i = newDh(CHAOS); flat(i.p); i.p.resource = 50;
-  cast(i.p, 'e', i.e); H.stepSec(0.5); i.p.statuses.apply('stun', 1, { sourceId: i.p.id }); H.stepSec(1);
-  ok('aedh.rows an interrupted Göz Işını pays no Kör Gazap', i.p.resource < 40, `res=${i.p.resource.toFixed(1)}`);
-  const f = newDh(CHAOS); f.p.resource = 50; cast(f.p, 'e', f.e); H.stepSec(0.5);
+  cast(i.p, 'r', i.e); H.stepSec(0.5); i.p.statuses.apply('stun', 1, { sourceId: i.p.id }); H.stepSec(1);
+  ok('aedh.rows an interrupted Göz Işını (Eye Beam) pays no Kör Gazap', i.p.resource < 40, `res=${i.p.resource.toFixed(1)}`);
+  const f = newDh(CHAOS); f.p.resource = 50; cast(f.p, 'r', f.e); H.stepSec(0.5);
   ok('aedh.rows the beam slows the caster 70 % and makes it cc-immune while it runs', f.p.getActionMoveMul() <= 0.35 && f.p.statuses.immune.cc > 0);
 }
 {
-  // Yakıp Yok Etme Aurası
+  // Yakıcı Aura (Immolation Aura)
   const a = newDh(CHAOS); flat(a.p); a.p.resource = 0;
   H.clearEvents();
-  cast(a.p, 's1', a.e); H.stepSec(7.5);
+  cast(a.p, 'e', a.e); H.stepSec(7.5);
   const hits = dmgTo(a.e, /immolation_aura/);
-  ok('aedh.rows Yakıp Yok Etme Aurası: +20 Gazap on cast, 6 pulses, 2 charges', hits.length === 6 && a.p.resource >= 19 && G.skills.getCooldown(a.p, 'demonhunter_immolation_aura').maxCharges === 2, `hits=${hits.length} res=${a.p.resource.toFixed(1)}`);
+  ok('aedh.rows Yakıcı Aura (Immolation Aura): +20 Gazap on cast, 6 pulses, 2 charges', hits.length === 6 && a.p.resource >= 19 && G.skills.getCooldown(a.p, 'demonhunter_immolation_aura').maxCharges === 2, `hits=${hits.length} res=${a.p.resource.toFixed(1)}`);
   const a2 = newDh(CHAOS); a2.p.resource = 0;
-  cast(a2.p, 's1', a2.e); H.step(2); a2.p.position.set(10, 0, 0); H.stepSec(1.5);
+  cast(a2.p, 'e', a2.e); H.step(2); a2.p.position.set(10, 0, 0); H.stepSec(1.5);
   ok('aedh.rows the aura follows the caster (an enemy left behind is no longer hit)', events['damage'].filter((d) => d.targetId === a2.e.id).length <= 3);
 }
 {
-  // Fel Atılışı, Av, İntikam Geri Çekilişi, Metamorfoz, Öz Kırılması
+  // Fel Atılışı (Fel Rush), Av, İntikam Geri Çekilişi (Vengeful Retreat), Metamorfoz (Metamorphosis), Öz Kırılması (Essence Break)
   const a = newDh(CHAOS, { dummy: false }); a.p.resource = 100;
   cast(a.p, 's2', null); H.stepSec(1);
-  ok('aedh.rows Fel Atılışı dashes ~9.6 m forward (12 m * 0.8)', a.p.position.z > 8 && a.p.position.z < 13, `z=${a.p.position.z.toFixed(1)}`);
+  ok('aedh.rows Fel Atılışı (Fel Rush) dashes ~9.6 m forward (12 m * 0.8)', a.p.position.z > 8 && a.p.position.z < 13, `z=${a.p.position.z.toFixed(1)}`);
   const h = newDh(CHAOS, { dist: 20 }); flat(h.p);
   H.clearEvents();
   cast(h.p, 'm180', h.e); H.stepSec(1.2);
@@ -294,24 +294,24 @@ const keepCombat = (p) => { p.combatTimer = 0; };
     `z=${h.p.position.z.toFixed(1)} the_hunt=${h.e.statuses.has('the_hunt')}`);
   const r = newDh(CHAOS); r.p.resource = 0;
   H.clearEvents();
-  cast(r.p, 'r', r.e); H.stepSec(0.6);
-  ok('aedh.rows İntikam Geri Çekilişi hops back ~8 m, strikes the take-off spot and grants Girişim', r.p.position.z < -5 && r.p.statuses.has('initiative') && dmgTo(r.e, /vengeful_retreat/).length === 1 && G.skills.getCooldown(r.p, 'demonhunter_vengeful_retreat').total === 25,
+  G.character.save.skillBar = { ...G.character.save.skillBar, r: 'demonhunter_vengeful_retreat' }; cast(r.p, 'r', r.e); H.stepSec(0.6);
+  ok('aedh.rows İntikam Geri Çekilişi (Vengeful Retreat) hops back ~8 m, strikes the take-off spot and grants Girişim', r.p.position.z < -5 && r.p.statuses.has('initiative') && dmgTo(r.e, /vengeful_retreat/).length === 1 && G.skills.getCooldown(r.p, 'demonhunter_vengeful_retreat').total === 25,
     `z=${r.p.position.z.toFixed(1)}`);
   const mm = newDh(CHAOS); flat(mm.p);
   const as0 = mm.p.getStat('attackSpeed');
   H.clearEvents();
   cast(mm.p, 'm90', mm.e); H.stepSec(1.5);
-  ok('aedh.rows Metamorfoz: status 24 s, +25 % attack speed, impact strike', mm.p.statuses.has('metamorphosis') && near(mm.p.getStat('attackSpeed') - as0, 0.25, 0.01) && dmgTo(mm.e, /metamorphosis/).length === 1, `d=${(mm.p.getStat('attackSpeed') - as0).toFixed(2)}`);
+  ok('aedh.rows Metamorfoz (Metamorphosis): status 24 s, +25 % attack speed, impact strike', mm.p.statuses.has('metamorphosis') && near(mm.p.getStat('attackSpeed') - as0, 0.25, 0.01) && dmgTo(mm.e, /metamorphosis/).length === 1, `d=${(mm.p.getStat('attackSpeed') - as0).toFixed(2)}`);
   const eb = newDh(CHAOS); flat(eb.p); eb.p.resource = 100;
   H.clearEvents();
   cast(eb.p, 'm45', eb.e); H.stepSec(1.4);
-  ok('aedh.rows Öz Kırılması hits hard and marks the target for 4 s', eb.e.statuses.has('essence_break') && dmgTo(eb.e, /essence_break/).length === 1 && eb.e.statuses.get('essence_break').remaining > 1.5);
+  ok('aedh.rows Öz Kırılması (Essence Break) hits hard and marks the target for 4 s', eb.e.statuses.has('essence_break') && dmgTo(eb.e, /essence_break/).length === 1 && eb.e.statuses.get('essence_break').remaining > 1.5);
   const w1 = newDh(CHAOS); flat(w1.p); w1.p.resource = 100; cast(w1.p, 'rmb', w1.e); H.stepSec(1.2);
   const base = sumDmg(w1.e, /chaos_strike/);
   const w2 = newDh(CHAOS); flat(w2.p); w2.p.resource = 100; w2.e.statuses.apply('essence_break', 4, { sourceId: w2.p.id }); cast(w2.p, 'rmb', w2.e); H.stepSec(1.2);
-  ok('aedh.rows inside the Öz Kırılması window Kaos Darbesi hits +60 %', near(sumDmg(w2.e, /chaos_strike/) / base, 1.6, 0.08), `ratio=${(sumDmg(w2.e, /chaos_strike/) / base).toFixed(2)}`);
+  ok('aedh.rows inside the Öz Kırılması (Essence Break) window Kaos Darbesi (Chaos Strike) hits +60 %', near(sumDmg(w2.e, /chaos_strike/) / base, 1.6, 0.08), `ratio=${(sumDmg(w2.e, /chaos_strike/) / base).toFixed(2)}`);
   const bl = newDh(CHAOS); cast(bl.p, 's3', null); H.stepSec(0.6);
-  ok('aedh.rows Bulanıklık: -35 % damage taken, +30 % dodge, 2 charges', bl.p.statuses.has('blur') && near(bl.p.getStat('damageReductionPct'), 0.35, 0.01) && G.skills.getCooldown(bl.p, 'demonhunter_blur').maxCharges === 2);
+  ok('aedh.rows Bulanıklık (Blur): -35 % damage taken, +30 % dodge, 2 charges', bl.p.statuses.has('blur') && near(bl.p.getStat('damageReductionPct'), 0.35, 0.01) && G.skills.getCooldown(bl.p, 'demonhunter_blur').maxCharges === 2);
 }
 
 // ---- aedh.veng (İntikam) --------------------------------------------------------------------------------------------------------------------------
@@ -322,7 +322,7 @@ const keepCombat = (p) => { p.combatTimer = 0; };
   ok('aedh.souls the second Kırılma charge casts, the third is on cooldown', cast(a.p, 'rmb', a.e) && (H.stepSec(1.2), true) && souls(a.p) === 4 && !cast(a.p, 'rmb', a.e));
   const b = newDh(VENG); flat(b.p); b.p.stats.resourceRegen = 0; keepCombat(b.p);
   G.skills.addPip(b.p, 'soul', 4);
-  ok('aedh.souls 4 fragments do not light Ruh Bombası, 5 do (soul_overflow)', !b.p.statuses.has('soul_overflow') && G.skills.replacementFor(b.p, 'demonhunter_soul_cleave') === null
+  ok('aedh.souls 4 fragments do not light Ruh Bombası (Spirit Bomb), 5 do (soul_overflow)', !b.p.statuses.has('soul_overflow') && G.skills.replacementFor(b.p, 'demonhunter_soul_cleave') === null
     && (G.skills.addPip(b.p, 'soul', 1), b.p.statuses.has('soul_overflow')) && G.skills.replacementFor(b.p, 'demonhunter_soul_cleave') === 'demonhunter_spirit_bomb');
   G.skills.spendPip(b.p, 'soul', 1);
   ok('aedh.souls the soul_overflow status falls away below 5', !b.p.statuses.has('soul_overflow'));
@@ -332,7 +332,7 @@ const keepCombat = (p) => { p.combatTimer = 0; };
   const c1 = newDh(VENG); flat(c1.p); c1.p.resource = 100; c1.p.hp = c1.p.maxHp * 0.5; keepCombat(c1.p); G.skills.addPip(c1.p, 'soul', 3);
   cast(c1.p, 'q', c1.e); H.stepSec(1.2);
   const withSoul = sumDmg(c1.e, /soul_cleave/), healYes = c1.p.hp - c1.p.maxHp * 0.5;
-  ok('aedh.souls Ruh Yarma eats ONE fragment: +40 % damage and heal, 22 Gazap', near(withSoul / noSoul, 1.4, 0.07) && souls(c1.p) === 2 && near(c1.p.resource, 78, 1.5) && healYes > healNo * 1.25 && healNo > c0.p.maxHp * 0.025,
+  ok('aedh.souls Ruh Yarma (Soul Cleave) eats ONE fragment: +40 % damage and heal, 22 Gazap', near(withSoul / noSoul, 1.4, 0.07) && souls(c1.p) === 2 && near(c1.p.resource, 78, 1.5) && healYes > healNo * 1.25 && healNo > c0.p.maxHp * 0.025,
     `dmg ratio=${(withSoul / noSoul).toFixed(2)} souls=${souls(c1.p)} heal=${healNo.toFixed(0)}/${healYes.toFixed(0)}`);
   const d = newDh(VENG); flat(d.p); d.p.resource = 100; d.p.hp = d.p.maxHp * 0.5; keepCombat(d.p);
   H.addEnemy(2, 0, { hp: 1e9 }); H.addEnemy(-2, 0, { hp: 1e9 });
@@ -352,7 +352,7 @@ const keepCombat = (p) => { p.combatTimer = 0; };
   flat(a.p); a.p.stats.resourceRegen = 0;
   for (let i = 0; i < 60 * 22; i++) { if (i % 60 === 0) keepCombat(a.p); H.step(1); }
   ok('aedh.souls Fel Kanı: +1 fragment every 10 s on its own (tick:10)', souls(a.p) >= 2 && souls(a.p) <= 3, `souls after 22 s = ${souls(a.p)}`);
-  // Şeytan Dikenleri refund
+  // Şeytan Dikenleri (Demon Spikes) refund
   const b = newDh(VENG); flat(b.p);
   const eng2 = seededEngine(); G.procs = eng2; eng2.setEntries(collectProcs(parseFx(VENG.fx).items, `spec:${VENG.id}`));
   cast(b.p, 's3', null); H.stepSec(0.6);
@@ -360,7 +360,7 @@ const keepCombat = (p) => { p.combatTimer = 0; };
   const before = due();
   cast(b.p, 'rmb', b.e); H.stepSec(0.6);
   const after = due();
-  ok('aedh.souls Kırılma shortens the Şeytan Dikenleri recharge by 0.5 s (cdr)', before - after > 1.0 && before - after < 1.25, `before=${before.toFixed(2)} after=${after.toFixed(2)}`);
+  ok('aedh.souls Kırılma shortens the Şeytan Dikenleri (Demon Spikes) recharge by 0.5 s (cdr)', before - after > 1.0 && before - after < 1.25, `before=${before.toFixed(2)} after=${after.toFixed(2)}`);
   G.procs = undefined;
 }
 {
@@ -368,38 +368,38 @@ const keepCombat = (p) => { p.combatTimer = 0; };
   const base = sumDmg(k0.e, /fracture/);
   const k1 = newDh(VENG); flat(k1.p); k1.p.resource = 100;
   H.clearEvents();
-  cast(k1.p, 'e', k1.e); H.stepSec(1);
-  ok('aedh.veng Ateş Mührü: 8 s brand, the target hits 40 % softer, 2 charges / 30 s', k1.e.statuses.has('fiery_brand') && near(k1.e.getStat('damagePct'), -0.4, 0.01) && G.skills.getCooldown(k1.p, 'demonhunter_fiery_brand').maxCharges === 2
+  cast(k1.p, 'r', k1.e); H.stepSec(1);
+  ok('aedh.veng Ateş Mührü (Fiery Brand): 8 s brand, the target hits 40 % softer, 2 charges / 30 s', k1.e.statuses.has('fiery_brand') && near(k1.e.getStat('damagePct'), -0.4, 0.01) && G.skills.getCooldown(k1.p, 'demonhunter_fiery_brand').maxCharges === 2
     && near(G.skills.getCooldown(k1.p, 'demonhunter_fiery_brand').total, 30, 0.01));
   H.clearEvents();
   G.skills.tryCast(k1.p, 'demonhunter_fracture', H.aimFor(k1.p, k1.e)); H.stepSec(1.2);
   ok('aedh.veng a branded target takes +10 % from the demon hunter', near(sumDmg(k1.e, /fracture/) / base, 1.1, 0.06), `ratio=${(sumDmg(k1.e, /fracture/) / base).toFixed(2)}`);
-  const t = newDh(VENG); cast(t.p, 'r', t.e); H.stepSec(0.5);
-  ok('aedh.veng İşkence taunts the target (8 s cd)', t.e.statuses.has('taunt') && G.skills.getCooldown(t.p, 'demonhunter_torment').total === 8);
+  const t = newDh(VENG); G.character.save.skillBar = { ...G.character.save.skillBar, r: 'demonhunter_torment' }; cast(t.p, 'r', t.e); H.stepSec(0.5);
+  ok('aedh.veng İşkence (Torment) taunts the target (8 s cd)', t.e.statuses.has('taunt') && G.skills.getCooldown(t.p, 'demonhunter_torment').total === 8);
   const sp = newDh(VENG); cast(sp.p, 's3', null); H.stepSec(0.5);
-  ok('aedh.veng Şeytan Dikenleri: +100 % armour, +30 % parry for 8 s', sp.p.statuses.has('demon_spikes') && near(sp.p.getStat('armorPct'), 1.0, 0.01) && near(sp.p.getStat('parryWindow'), 0.3, 0.01));
+  ok('aedh.veng Şeytan Dikenleri (Demon Spikes): +100 % armour, +30 % parry for 8 s', sp.p.statuses.has('demon_spikes') && near(sp.p.getStat('armorPct'), 1.0, 0.01) && near(sp.p.getStat('parryWindow'), 0.3, 0.01));
   const fd = newDh(VENG); flat(fd.p); fd.p.resource = 100; fd.p.hp = fd.p.maxHp * 0.5; keepCombat(fd.p);
   H.clearEvents();
   cast(fd.p, 'm45', fd.e);
   for (let i = 0; i < 200; i++) { keepCombat(fd.p); H.step(1); }
   const healed = (fd.p.hp - fd.p.maxHp * 0.5) / fd.p.maxHp;
-  ok('aedh.veng Fel Yıkımı: 30 Gazap, 4 ticks, heals ~12 % max HP over the channel', near(fd.p.resource, 70, 1.5) && dmgTo(fd.e, /fel_devastation/).length === 4 && healed > 0.1 && healed < 0.14,
+  ok('aedh.veng Fel Yıkımı (Fel Devastation): 30 Gazap, 4 ticks, heals ~12 % max HP over the channel', near(fd.p.resource, 70, 1.5) && dmgTo(fd.e, /fel_devastation/).length === 4 && healed > 0.1 && healed < 0.14,
     `res=${fd.p.resource.toFixed(0)} hits=${dmgTo(fd.e, /fel_devastation/).length} heal=${(healed * 100).toFixed(1)}%`);
   const mt = newDh(VENG); mt.p.hp = mt.p.maxHp * 0.5; keepCombat(mt.p);
   cast(mt.p, 'm90', mt.e); H.stepSec(1.2);
-  ok('aedh.veng Metamorfoz: metamorphosis_v 15 s (+40 % max HP), instant heal, fire impact', mt.p.statuses.has('metamorphosis_v') && !mt.p.statuses.has('metamorphosis') && hpFrac(mt.p) > 0.7, `hp=${hpFrac(mt.p).toFixed(2)}`);
+  ok('aedh.veng Metamorfoz (Metamorphosis): metamorphosis_v 15 s (+40 % max HP), instant heal, fire impact', mt.p.statuses.has('metamorphosis_v') && !mt.p.statuses.has('metamorphosis') && hpFrac(mt.p) > 0.7, `hp=${hpFrac(mt.p).toFixed(2)}`);
   const sc = newDh(VENG); flat(sc.p);
   H.clearEvents();
   cast(sc.p, 'm180', sc.e); H.stepSec(1.2);
-  ok('aedh.veng Ruh Oyucu: +3 fragments, burns the target, 60 s cd', souls(sc.p) === 3 && sc.e.statuses.has('burn') && near(G.skills.getCooldown(sc.p, 'demonhunter_soul_carver').total, 60, 0.01));
+  ok('aedh.veng Ruh Oyucu (Soul Carver): +3 fragments, burns the target, 60 s cd', souls(sc.p) === 3 && sc.e.statuses.has('burn') && near(G.skills.getCooldown(sc.p, 'demonhunter_soul_carver').total, 60, 0.01));
   const is = newDh(VENG, { dummy: false }); flat(is.p);
   const far = H.addEnemy(0, 12, { hp: 1e9 }); H.setAimTarget(null);
   H.clearEvents();
   G.skills.tryCastSlot(is.p, 's2', aimAt(is.p, 0, 12)); H.stepSec(3);
   ok('aedh.veng İnfernal Atılış leaps ~12 m, lands a strike and a delayed Alev Mührü pulse', is.p.position.z > 10 && dmgTo(far, /infernal_strike/).length === 2, `z=${is.p.position.z.toFixed(1)} hits=${dmgTo(far, /infernal_strike/).length}`);
   const ia = newDh(VENG); ia.p.resource = 0;
-  cast(ia.p, 's1', ia.e); H.stepSec(0.4);
-  ok('aedh.veng Yakıp Yok Etme Aurası patched: +16 Gazap (not 20)', near(ia.p.resource, 16, 0.6), `res=${ia.p.resource.toFixed(1)}`);
+  cast(ia.p, 'e', ia.e); H.stepSec(0.4);
+  ok('aedh.veng Yakıcı Aura (Immolation Aura) patched: +16 Gazap (not 20)', near(ia.p.resource, 16, 0.6), `res=${ia.p.resource.toFixed(1)}`);
 }
 
 // ---- aedh.devourer (Yutucu, Midnight) -------------------------------------------------------------------------------------------------------------------
@@ -419,23 +419,23 @@ const keepCombat = (p) => { p.combatTimer = 0; };
   ok('aedh.devourer Biç swallows every fragment: damage 0.9 + 0.55 each, +4 Gazap each', souls(r5.p) === 0 && near(r5.p.resource, 20, 1) && near(five / one, (0.9 + 0.55 * 5) / (0.9 + 0.55), 0.12) && near(G.skills.getCooldown(r5.p, 'demonhunter_reap').total, 5, 0.01),
     `ratio=${(five / one).toFixed(2)} res=${r5.p.resource.toFixed(1)} souls=${souls(r5.p)}`);
   const m3 = newDh(DEVO); G.skills.addPip(m3.p, 'soul', 3);
-  ok('aedh.devourer Boşluk Metamorfozu is refused below 4 fragments', !cast(m3.p, 'm90', m3.e));
+  ok('aedh.devourer Boşluk Metamorfozu (Void Metamorphosis) is refused below 4 fragments', !cast(m3.p, 'm90', m3.e));
   const m = newDh(DEVO); flat(m.p); m.p.stats.resourceRegen = 0; keepCombat(m.p); G.skills.addPip(m.p, 'soul', 5); m.p.statuses.apply('collapsing_star', 60, { stacks: 4, sourceId: m.p.id });
   H.clearEvents(); cast(m.p, 'm90', m.e); H.stepSec(1.4);
-  ok('aedh.devourer Boşluk Metamorfozu: pays 4 fragments, +40 Gazap (minus the drain), void_meta, resets the Çöken Yıldız series, nova hit',
+  ok('aedh.devourer Boşluk Metamorfozu (Void Metamorphosis): pays 4 fragments, +40 Gazap (minus the drain), void_meta, resets the Çöken Yıldız (Collapsing Star) series, nova hit',
     souls(m.p) === 1 && m.p.statuses.has('void_meta') && !m.p.statuses.has('collapsing_star') && near(m.p.resource, 40 - 10 * 1.4, 3.5) && dmgTo(m.e, /void_metamorphosis/).length === 1 && SKILLS.demonhunter_void_metamorphosis.cooldown <= 3,
     `souls=${souls(m.p)} res=${m.p.resource.toFixed(1)}`);
-  ok('aedh.devourer in the form Boşluk Işını becomes Boşluk Fırtınası (replaces void_meta)', G.skills.replacementFor(m.p, 'demonhunter_void_ray') === 'demonhunter_void_storm' && G.skills.replacementFor(a.p, 'demonhunter_void_ray') === null);
+  ok('aedh.devourer in the form Boşluk Işını (Void Ray) becomes Boşluk Fırtınası (replaces void_meta)', G.skills.replacementFor(m.p, 'demonhunter_void_ray') === 'demonhunter_void_storm' && G.skills.replacementFor(a.p, 'demonhunter_void_ray') === null);
   const v = newDh(DEVO); flat(v.p); v.p.stats.resourceRegen = 0; keepCombat(v.p); v.p.resource = 40;
   H.clearEvents(); cast(v.p, 'e', v.e); for (let i = 0; i < 150; i++) { keepCombat(v.p); H.step(1); }
-  ok('aedh.devourer Boşluk Işını: 20 Gazap, 4 ticks of 1.4 coef, line hit, 10 s cd', near(v.p.resource, 20, 1.5) && dmgTo(v.e, /void_ray/).length === 4 && near(G.skills.getCooldown(v.p, 'demonhunter_void_ray').total, 10, 0.01), `res=${v.p.resource.toFixed(1)} hits=${dmgTo(v.e, /void_ray/).length}`);
+  ok('aedh.devourer Boşluk Işını (Void Ray): 20 Gazap, 4 ticks of 1.4 coef, line hit, 10 s cd', near(v.p.resource, 20, 1.5) && dmgTo(v.e, /void_ray/).length === 4 && near(G.skills.getCooldown(v.p, 'demonhunter_void_ray').total, 10, 0.01), `res=${v.p.resource.toFixed(1)} hits=${dmgTo(v.e, /void_ray/).length}`);
   const s = newDh(DEVO); flat(s.p); s.p.stats.resourceRegen = 0; keepCombat(s.p); s.p.resource = 60;
   s.p.statuses.apply('void_meta', 60, { magnitude: 0.0001, sourceId: s.p.id }); // drain neutral here: Combat reads magnitude>0 as drain, 0.0001 ~ none
   H.clearEvents(); cast(s.p, 'e', s.e); for (let i = 0; i < 330; i++) { keepCombat(s.p); H.step(1); }
   const hs = dmgTo(s.e, /void_storm/);
-  ok('aedh.devourer Boşluk Fırtınası channels 4 s, ~9 ticks, pays 4 Gazap per second', hs.length >= 8 && hs.length <= 11 && s.p.resource < 60 - 12 && s.p.resource > 60 - 20, `hits=${hs.length} res=${s.p.resource.toFixed(1)}`);
+  ok('aedh.devourer Boşluk Fırtınası (Void Storm) channels 4 s, ~9 ticks, pays 4 Gazap per second', hs.length >= 8 && hs.length <= 11 && s.p.resource < 60 - 12 && s.p.resource > 60 - 20, `hits=${hs.length} res=${s.p.resource.toFixed(1)}`);
   const noMeta = newDh(DEVO); noMeta.p.resource = 100;
-  ok('aedh.devourer Çöken Yıldız is refused outside the form', !cast(noMeta.p, 'r', noMeta.e));
+  ok('aedh.devourer Çöken Yıldız (Collapsing Star) is refused outside the form', !cast(noMeta.p, 'r', noMeta.e));
   const cs = newDh(DEVO); flat(cs.p); cs.p.stats.resourceRegen = 0; cs.p.statuses.apply('void_meta', 60, { magnitude: 0.0001, sourceId: cs.p.id });
   const dm = [];
   for (let i = 0; i < 4; i++) {
@@ -445,10 +445,10 @@ const keepCombat = (p) => { p.combatTimer = 0; };
     H.stepSec(3);
     dm.push(sumDmg(cs.e, /collapsing_star/));
   }
-  ok('aedh.devourer Çöken Yıldız grows +15 % per earlier use', near(dm[1] / dm[0], 1.15, 0.06) && near(dm[2] / dm[0], 1.3, 0.08) && near(dm[3] / dm[0], 1.45, 0.1) && cs.p.statuses.stacks('collapsing_star') === 4, dm.map((x) => Math.round(x)).join('/'));
+  ok('aedh.devourer Çöken Yıldız (Collapsing Star) grows +15 % per earlier use', near(dm[1] / dm[0], 1.15, 0.06) && near(dm[2] / dm[0], 1.3, 0.08) && near(dm[3] / dm[0], 1.45, 0.1) && cs.p.statuses.stacks('collapsing_star') === 4, dm.map((x) => Math.round(x)).join('/'));
   const vn = newDh(DEVO); flat(vn.p); vn.p.stats.resourceRegen = 0; keepCombat(vn.p);
   cast(vn.p, 's1', vn.e); H.stepSec(1.4);
-  ok('aedh.devourer Boşluk Girdabı: +2 fragments, +10 Gazap, 12 s cd', souls(vn.p) === 2 && near(vn.p.resource, 10, 0.8) && near(G.skills.getCooldown(vn.p, 'demonhunter_void_nova').total, 12, 0.01));
+  ok('aedh.devourer Boşluk Girdabı (Void Nova): +2 fragments, +10 Gazap, 12 s cd', souls(vn.p) === 2 && near(vn.p.resource, 10, 0.8) && near(G.skills.getCooldown(vn.p, 'demonhunter_void_nova').total, 12, 0.01));
   const dk = newDh(DEVO); cast(dk.p, 'm45', null); H.stepSec(1.2);
   ok('aedh.devourer Karanlık: ground zone gives the caster -20 % damage taken', dk.p.statuses.has('darkness') && near(dk.p.getStat('damageReductionPct'), 0.2, 0.01) && near(G.skills.getCooldown(dk.p, 'demonhunter_darkness').total, 45, 0.01));
 }
@@ -482,7 +482,7 @@ const keepCombat = (p) => { p.combatTimer = 0; };
         const r = cast(p, 'e', e);
         if (r) casted++;
         for (let i = 0; i < 60; i++) { keepCombat(p); H.step(3); }
-        if (!r && !['demonhunter_disrupt'].includes(d.id)) failed.push(`${spec.id}:${d.id}`);
+        if (!r && !['demonhunter_disrupt', 'demonhunter_silence'].includes(d.id)) failed.push(`${spec.id}:${d.id}`);
       } catch (err) {
         failed.push(`${spec.id}:${d.id} THREW ${err?.message ?? err}`);
       }
@@ -549,7 +549,7 @@ function runApl(spec, seconds, { warmup = 0, incoming = false } = {}) {
     ST: (id) => p.statuses.stacks(id),
     REM: (id) => p.statuses.get(id)?.remaining ?? 0,
   };
-  // the APL names the BASE skill: the bar holds the base id even while a transform (Ruh Bombası, Yok Ediş...) is up
+  // the APL names the BASE skill: the bar holds the base id even while a transform (Ruh Bombası (Spirit Bomb), Yok Ediş (Annihilation)...) is up
   const slotOf = (id) => {
     if (id === spec.basic || id === 'demonhunter_basic') return 'lmb';
     for (const s of SLOTS) if (s !== 'lmb' && G.character.save.skillBar[s] === id) return s;
@@ -590,19 +590,19 @@ for (const spec of ALL) {
 }
 {
   const c = LEDGER.demonhunter_chaos, v = LEDGER.demonhunter_vengeance, d = LEDGER.demonhunter_devourer;
-  ok('aedh.ledger Kaos spends Gazap mostly on Kaos Darbesi / Yok Ediş (>= 25 per minute) and presses Göz Işını twice per minute', ((c.casts.demonhunter_chaos_strike ?? 0) + (c.casts.demonhunter_annihilation ?? 0)) >= 25 && (c.casts.demonhunter_eye_beam ?? 0) >= 1,
+  ok('aedh.ledger Kaos spends Gazap mostly on Kaos Darbesi (Chaos Strike) / Yok Ediş (>= 25 per minute) and presses Göz Işını (Eye Beam) twice per minute', ((c.casts.demonhunter_chaos_strike ?? 0) + (c.casts.demonhunter_annihilation ?? 0)) >= 25 && (c.casts.demonhunter_eye_beam ?? 0) >= 1,
     `strikes=${(c.casts.demonhunter_chaos_strike ?? 0) + (c.casts.demonhunter_annihilation ?? 0)} beams=${c.casts.demonhunter_eye_beam ?? 0}`);
-  ok('aedh.ledger İntikam keeps fragments flowing: Ruh Yarma and Ruh Bombası both cast, Kırılma ~13 per minute', (v.casts.demonhunter_soul_cleave ?? 0) >= 12 && (v.casts.demonhunter_fracture ?? 0) >= 9 && v.soulIn >= 20,
+  ok('aedh.ledger İntikam keeps fragments flowing: Ruh Yarma (Soul Cleave) and Ruh Bombası (Spirit Bomb) both cast, Kırılma ~13 per minute', (v.casts.demonhunter_soul_cleave ?? 0) >= 12 && (v.casts.demonhunter_fracture ?? 0) >= 9 && v.soulIn >= 20,
     `cleave=${v.casts.demonhunter_soul_cleave ?? 0} fracture=${v.casts.demonhunter_fracture ?? 0} soulIn=${v.soulIn}`);
   ok('aedh.ledger İntikam survives its boss swings on the APL', v.hpLow > 0.3, `hpLow=${v.hpLow.toFixed(2)}`);
-  ok('aedh.ledger Yutucu cycles Tüket -> Biç / form: casts Tüket, Boşluk Işını or Fırtınası and the Çöken Yıldız', (d.casts.demonhunter_consume ?? 0) >= 8 && ((d.casts.demonhunter_void_ray ?? 0) + (d.casts.demonhunter_void_storm ?? 0)) >= 2 && (d.casts.demonhunter_collapsing_star ?? 0) >= 1,
+  ok('aedh.ledger Yutucu cycles Tüket -> Biç / form: casts Tüket, Boşluk Işını (Void Ray) or Fırtınası and the Çöken Yıldız (Collapsing Star)', (d.casts.demonhunter_consume ?? 0) >= 8 && ((d.casts.demonhunter_void_ray ?? 0) + (d.casts.demonhunter_void_storm ?? 0)) >= 2 && (d.casts.demonhunter_collapsing_star ?? 0) >= 1,
     `consume=${d.casts.demonhunter_consume ?? 0} meta=${d.casts.demonhunter_void_metamorphosis ?? 0} ray=${(d.casts.demonhunter_void_ray ?? 0) + (d.casts.demonhunter_void_storm ?? 0)} star=${d.casts.demonhunter_collapsing_star ?? 0}`);
   const rr = [c.dmg, d.dmg].sort((x, y) => x - y);
   ok('aedh.ledger the two dps specs deal damage within 45 % of each other (Kaos vs Yutucu)', rr[0] / rr[1] > 0.55, `kaos=${(c.dmg / LEDGER_SEC).toFixed(0)} yutucu=${(d.dmg / LEDGER_SEC).toFixed(0)} dps`);
   ok('aedh.ledger the tank deals 30-90 % of a dps spec', v.dmg / c.dmg > 0.3 && v.dmg / c.dmg < 0.9, `${(v.dmg / c.dmg).toFixed(2)}`);
 }
 
-// ---- aedh.l1 (WP-01 pattern): a level-1 demon hunter with no spec has a working bar (chain + Kaos Darbesi + Yakıp Yok Etme Aurası + Fel Atılışı), start gear, moveset
+// ---- aedh.l1 (WP-01 pattern): a level-1 demon hunter with no spec has a working bar (chain + Kaos Darbesi (Chaos Strike) + Yakıcı Aura (Immolation Aura) + Fel Atılışı (Fel Rush)), start gear, moveset
 {
   const { CharacterState } = await H.imp('systems/CharacterState.ts');
   const { HEAVY_BY_CLASS, RIPOSTE_BY_CLASS, KRT_BY_CLASS } = await H.imp('combat/heavy.ts');
@@ -612,8 +612,8 @@ for (const spec of ALL) {
   const msgs = await H.imp('net/messages.ts');
   const pvpSets = await H.imp('data/pvp/sets.ts');
   const bar1 = CharacterState.defaultBar('demonhunter', 1);
-  ok('aedh.l1 level-1 bar = lmb chain, rmb Kaos Darbesi, s1 Yakıp Yok Etme Aurası, s2 Fel Atılışı', JSON.stringify(bar1) === JSON.stringify({
-    lmb: 'demonhunter_basic', rmb: 'demonhunter_chaos_strike', s1: 'demonhunter_immolation_aura', s2: 'demonhunter_fel_rush',
+  ok('aedh.l1 level-1 bar = lmb chain, rmb Kaos Darbesi (Chaos Strike), s1 Yakıcı Aura (Immolation Aura), s2 Fel Atılışı (Fel Rush)', JSON.stringify(bar1) === JSON.stringify({
+    lmb: 'demonhunter_basic', rmb: 'demonhunter_chaos_strike', e: 'demonhunter_immolation_aura', s2: 'demonhunter_fel_rush',
   }), JSON.stringify(bar1));
   ok('aedh.l1 the creation list offers the demon hunter', PLAYABLE_CLASSES.includes('demonhunter') && menu.CLASS_ORDER.includes('demonhunter') && !!menu.classPresentation('demonhunter').highlights.length);
   ok('aedh.l1 start gear (twin daggers) is usable by a demon hunter and not by a knight', ['dagger_t1'].every((id) => items.ITEM_BASES[id] && items.classCanUseBase('demonhunter', items.ITEM_BASES[id])) && !items.classCanUseBase('knight', items.ITEM_BASES.dagger_t1)
@@ -639,9 +639,9 @@ for (const spec of ALL) {
   const hitBy = (re) => events['damage'].filter((d) => re.test(d.skillId ?? '') && d.amount > 0 && d.targetId === foe.id);
   const failed = () => events['skill:fail'].map((f) => f.reason ?? f.why ?? '?').join(',');
   ok('aedh.l1 lmb: the Fel Bıçakları chain swings and hits', fire('lmb') === true && hitBy(/^demonhunter_basic/).length >= 1, `hits=${hitBy(/^demonhunter_basic/).length} fail=${failed()}`);
-  ok('aedh.l1 rmb: Kaos Darbesi casts and hits without a spec', fire('rmb') === true && hitBy(/^demonhunter_chaos_strike$/).length >= 1, `hits=${hitBy(/^demonhunter_chaos_strike$/).length} fail=${failed()}`);
-  ok('aedh.l1 s1: Yakıp Yok Etme Aurası pulses without a spec', fire('s1') === true && hitBy(/^demonhunter_immolation_aura$/).length >= 1, `hits=${hitBy(/^demonhunter_immolation_aura$/).length} fail=${failed()}`);
-  ok('aedh.l1 s2: Fel Atılışı dashes without a spec', fire('s2') === true && p.position.z > 0.1, `z=${p.position.z.toFixed(1)} fail=${failed()}`);
+  ok('aedh.l1 rmb: Kaos Darbesi (Chaos Strike) casts and hits without a spec', fire('rmb') === true && hitBy(/^demonhunter_chaos_strike$/).length >= 1, `hits=${hitBy(/^demonhunter_chaos_strike$/).length} fail=${failed()}`);
+  ok('aedh.l1 s1: Yakıcı Aura (Immolation Aura) pulses without a spec', fire('e') === true && hitBy(/^demonhunter_immolation_aura$/).length >= 1, `hits=${hitBy(/^demonhunter_immolation_aura$/).length} fail=${failed()}`);
+  ok('aedh.l1 s2: Fel Atılışı (Fel Rush) dashes without a spec', fire('s2') === true && p.position.z > 0.1, `z=${p.position.z.toFixed(1)} fail=${failed()}`);
   ok('aedh.l1 level-1 bar has three non-basic skills', Object.keys(bar1).filter((k) => k !== 'lmb').length === 3);
   ok('aedh.l1 the movement signature exists (PlayerController double jump + glide are class gated, no sim)', true);
 }

@@ -445,7 +445,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
   // (Yıkım Nefesi, Koruyucu Nefes, Yüceltme). Registry rows; both classes are in PLAYABLE_CLASSES below.
   demonhunter: {
     id: 'demonhunter',
-    name: 'İblis Avcısı',
+    name: 'İblis Avcısı (Demon Hunter)',
     desc: 'Gözleri bağlı, ruhu uyanık şeytani gazap avcısı. Kaos ile iki hançerle doğrar ve Göz Işını saçar, İntikam ile ruh parçacıklarını yutup en önde durur, Yutucu ile boşluğu çağırıp ruhları biçer. Çift zıplama ve süzülmeyle haritayı aşar.',
     role: 'Hız · Gazap Savaşçısı · Tank',
     model: '/assets/models/characters/Rogue_Hooded.glb',

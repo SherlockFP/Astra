@@ -30,6 +30,7 @@ export const STATUSES_KIT_DEMONHUNTER: Partial<Record<StatusId, StatusDef>> = {
   collapsing_star: { id: 'collapsing_star', name: 'Çöken Yıldız', icon: I('buff-crit'), kind: 'buff', maxStacks: 6, defaultDuration: 60 },
   // ---- Karanlık: allies inside the zone take 20 % less damage (re-applied each second)
   darkness: { id: 'darkness', name: 'Karanlık', icon: I('buff-stealth'), kind: 'buff', stats: { damageReductionPct: 0.20 }, defaultDuration: 1.6 },
+  sigil_flame: { id: 'sigil_flame', name: 'Alev Mührü', icon: I('debuff-burn'), kind: 'debuff', dotType: 'fire', defaultDuration: 6 },
 };
 
 export const STATUS_RULES_KIT_DEMONHUNTER: Partial<Record<StatusId, StatusRule>> = {
@@ -51,4 +52,5 @@ export const STATUS_RULES_KIT_DEMONHUNTER: Partial<Record<StatusId, StatusRule>>
   void_meta: { stack: 'refresh' },
   collapsing_star: { stack: 'stack' },
   darkness: { stack: 'refresh' },
+  sigil_flame: { stack: 'refresh' },
 };
