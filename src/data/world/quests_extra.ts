@@ -41,6 +41,7 @@ const kill = (target: string, count: number, text: string): QuestObjective => ({
 const collect = (target: string, count: number, text: string): QuestObjective => ({ kind: 'collect', target, count, text });
 const metin = (target: string, count: number, text: string): QuestObjective => ({ kind: 'metin', target, count, text });
 const talk = (target: string, text: string): QuestObjective => ({ kind: 'talk', target, count: 1, text });
+const explore = (target: string, text: string): QuestObjective => ({ kind: 'explore', target, count: 1, text });
 /** Av Mührü (daily currency, data/materials.ts av_muhru). */
 const mu = (count: number): { id: string; count: number } => ({ id: 'av_muhru', count });
 
@@ -465,6 +466,59 @@ const R6: Spec[] = [
     offer: 'Mahzenlerden gelen gulyabaniler ve gölgeler bugün de sızdı. Mahzeni temizle.', progress: 'Gulyabani (4) ve Gölge (6) öldür.', done: 'Mahzen bugünlük temiz. Yarın yeniden gel.' },
 ];
 
+// ---------------------------------------------------------------------------------------------------------------------
+// 1600 m haritası: 15 yeni bölge görevi (2-3 / bölge). Seviye boşlukları kalmasın diye 1-30 arasına dağıtıldı. Verenler: yeni karakol
+// NPC'leri (npc_t_*, npc_gc_*, npc_bk_*) ve mevcut köy / kamp NPC'leri. Hedefler mevcut kamp, devriye, nadir ve metin düşmanlarıdır.
+// ---------------------------------------------------------------------------------------------------------------------
+const NEW15: Spec[] = [
+  { id: 'sq_r1_n01_tarla_domuzlari', name: 'Tarla Domuzları', level: 2, region: 'r1', giver: 'npc_g_ciftci', xpPct: 2, goldPerLevel: 1,
+    objectives: [kill('ow_boar', 6, 'Yaban Domuzu öldür')],
+    offer: 'Yaban domuzları Gümüşdere tarlalarını ezip geçiyor. Altı tanesini indir.', progress: 'Yaban Domuzu öldür (6).', done: 'Tarlalar yeniden ekilebilir.' },
+  { id: 'sq_r1_n02_goblin_seferi', name: 'Goblin Seferi', level: 4, region: 'r1', giver: 'npc_g_muhtar', xpPct: 2, goldPerLevel: 2,
+    objectives: [kill('ow_goblin', 8, 'Goblin öldür'), kill('ow_goblin_shaman', 2, 'Goblin Şamanı öldür')], items: [{ id: 'pot_hp_1', count: 2 }],
+    offer: 'Goblinler köy yolunu kesmeye başladı. Şamanlarını da bulup indir.', progress: 'Goblin (8) ve Goblin Şamanı (2) öldür.', done: 'Yol yeniden kervanlara açık.' },
+  { id: 'sq_r2_n03_tarla_kervani', name: 'Tarla Kervanı', level: 6, region: 'r2', giver: 'npc_c_riza', xpPct: 3, goldPerLevel: 2,
+    objectives: [kill('ow_boar', 8, 'Yaban Domuzu öldür'), kill('ow_scarecrow', 4, 'Korkuluk öldür')],
+    offer: 'Kervanlar Altın Tarlalar üzerinden geçiyor ama domuzlar yolu kesti.', progress: 'Yaban Domuzu (8) ve Korkuluk (4) öldür.', done: 'Kervan yoluna döndü.' },
+  { id: 'sq_r2_n04_cadi_otu_tarlasi', name: 'Karakola Ot', level: 7, region: 'r2', giver: 'npc_t_komutan', xpPct: 3, goldPerLevel: 2,
+    objectives: [collect('item_cadi_otu', 5, 'Cadı Otu topla'), talk('npc_t_komutan', "Tarla Kenarı Karakolu'nda Komutan Şahin'e teslim et")],
+    turnIn: 'npc_t_komutan', items: [{ id: 'buyulu_toz', count: 2 }],
+    offer: 'Karakolun eczacısı bataklık otu istiyor. Otları topla ve komutana getir.', progress: "Cadı Otu (5) topla ve Komutan Şahin'e teslim et.", done: 'Eczacı otları aldı. Karakolun iksirleri artık daha iyi.' },
+  { id: 'sq_r2_n05_haydut_izleri', name: 'Haydut İzleri', level: 9, region: 'r2', giver: 'npc_t_komutan', xpPct: 3, goldPerLevel: 2,
+    objectives: [kill('ow_bandit', 10, 'Haydut öldür'), kill('ow_bandit_archer', 4, 'Haydut okçusu öldür')], items: [{ id: 'pot_hp_2', count: 2 }],
+    offer: 'Karakolun doğusundan haydut izleri geliyor. Okçularını da indir.', progress: 'Haydut (10) ve okçu (4) öldür.', done: 'Haydutların izi kayboldu.' },
+  { id: 'sq_r3_n06_gecit_nobeti', name: 'Geçit Nöbeti', level: 11, region: 'r3', giver: 'npc_gc_komutan', xpPct: 4, goldPerLevel: 3,
+    objectives: [kill('ow_bandit', 10, 'Haydut öldür'), kill('ow_wolf', 6, 'Kurt öldür')],
+    offer: 'Haydut Geçidi\'ni kurtlar ve haydutlar tutuyor. Nöbeti geri al.', progress: 'Haydut (10) ve Kurt (6) öldür.', done: 'Geçit yeniden bizim.' },
+  { id: 'sq_r3_n07_bozkurt_izi', name: 'Bozkurt İzi', level: 13, region: 'r3', giver: 'npc_gc_avci', xpPct: 4, goldPerLevel: 3,
+    objectives: [kill('ow_wolf_dire', 3, 'Dehşet Kurdu öldür'), explore('wp_gecit_karakol', "Haydut Geçidi Karakol Taşı'nı bul")],
+    offer: 'Dehşet kurtlarının sürüsü geçidin kuzeyinde dolaşıyor. Üçünü indir, sonra karakol taşını bul.', progress: "Dehşet Kurdu (3) öldür, Geçit Karakol Taşı'nı bul.", done: 'Bozkurt izleri temizlendi.' },
+  { id: 'sq_r3_n08_nefret_metini', name: 'Nefret Taşları', level: 15, region: 'r3', giver: 'npc_gc_komutan', xpPct: 4, goldPerLevel: 3,
+    objectives: [metin('metin_nefret', 2, 'Nefret Metini yık')], generic: [{ rarity: 'uncommon', slot: 'weapon' }],
+    offer: 'Haydut Tepeleri\'nde nefret taşları çoğalıyor. İkisini yık.', progress: 'Nefret Metini (2) yık.', done: 'Taşlar çatladı. Kalıntılar senin.' },
+  { id: 'sq_r4_n09_sulu_yavrular', name: 'Sülük Yavruları', level: 16, region: 'r4', giver: 'npc_bk_nobetci', xpPct: 5, goldPerLevel: 3,
+    objectives: [kill('ow_ooze', 8, 'Sülük öldür'), kill('ow_will', 6, 'Bataklık Işığı öldür')],
+    offer: 'Ağıt Bataklığı\'nda sülükler yuvalanıyor. Yavruları ve ışıkları temizle.', progress: 'Sülük (8) ve Bataklık Işığı (6) öldür.', done: 'Bataklık sakinleşti.' },
+  { id: 'sq_r4_n10_olu_kokusu', name: 'Ölü Kokusu', level: 18, region: 'r4', giver: 'npc_bk_nobetci', xpPct: 5, goldPerLevel: 3,
+    objectives: [kill('ow_wraith', 6, 'Hayalet öldür'), kill('ow_ghoul', 6, 'Gulyabani öldür')], items: [{ id: 'pot_hp_2', count: 3 }],
+    offer: 'Bataklıkta hayaletler ve gulyabaniler dolaşıyor. Ölü kokusunu kesmek için hepsini indir.', progress: 'Hayalet (6) ve Gulyabani (6) öldür.', done: 'Koku dağıldı.' },
+  { id: 'sq_r4_n11_otacinin_sepeti', name: 'Otacının Sepeti', level: 20, region: 'r4', giver: 'npc_bk_eczaci', xpPct: 5, goldPerLevel: 3,
+    objectives: [collect('item_cadi_otu', 8, 'Cadı Otu topla'), kill('ow_spider', 6, 'Örümcek öldür')], items: [{ id: 'pot_res_1', count: 3 }],
+    offer: 'Otacı Filiz bataklık otlarını istiyor. Otları topla, yoldaki örümcekleri de temizle.', progress: 'Cadı Otu (8) topla, Örümcek (6) öldür.', done: 'Otacı teşekkür etti. Sepet dolu.' },
+  { id: 'sq_r5_n12_kanyon_pusu', name: 'Kanyon Pususu', level: 22, region: 'r5', giver: 'npc_c_deniz', xpPct: 6, goldPerLevel: 4,
+    objectives: [kill('ow_orc', 8, 'Ork Savaşçısı öldür'), kill('ow_orc_shaman', 3, 'Ork Şamanı öldür')],
+    offer: 'Orklar kanyon yolunda pusu kurdu. Şamanlarını avla, geçidi aç.', progress: 'Ork Savaşçısı (8) ve Ork Şamanı (3) öldür.', done: 'Kanyon yolu güvende.' },
+  { id: 'sq_r5_n13_golem_tasi', name: 'Golem Taşları', level: 24, region: 'r5', giver: 'npc_c_deniz', xpPct: 6, goldPerLevel: 4,
+    objectives: [kill('ow_golem', 2, 'Kanyon Golemi öldür'), kill('ow_imp', 6, 'Kanyon İblisçiği öldür')], items: [{ id: 'buyulu_toz', count: 6 }],
+    offer: 'Taş ocağındaki golemler iblisçiklerle birlikte geziyor. İkisini de indir.', progress: 'Kanyon Golemi (2) ve İblisçik (6) öldür.', done: 'Taş ocağı yeniden çalışıyor.' },
+  { id: 'sq_r6_n14_kemik_tarlasi', name: 'Kemik Tarlası', level: 26, region: 'r6', giver: 'npc_s_nobetci', xpPct: 7, goldPerLevel: 4,
+    objectives: [kill('skel_minion', 10, 'İskelet Er öldür'), kill('crypt_ghoul', 4, 'Gulyabani öldür')], items: [{ id: 'buyulu_toz', count: 5 }],
+    offer: 'Harabelerin ortasında kemik tarlası büyüyor. Kökünü kaz.', progress: 'İskelet Er (10) ve Gulyabani (4) öldür.', done: 'Kemik tarlası temizlendi.' },
+  { id: 'sq_r6_n15_lanetli_kitap', name: 'Lanetli Kitap', level: 29, region: 'r6', giver: 'npc_s_nobetci', xpPct: 7, goldPerLevel: 5,
+    objectives: [kill('shade', 8, 'Gölge öldür'), kill('cult_acolyte', 6, 'Tarikat Müridi öldür')], generic: [{ rarity: 'rare' }],
+    offer: 'Kütüphanedeki lanetli kitap gölgeleri çağırıyor. Gölgeleri ve müritleri yok et.', progress: 'Gölge (8) ve Tarikat Müridi (6) öldür.', done: 'Kitap kapandı. Gölgeler dağıldı.' },
+];
+
 /** Quest definition from a table row (the same shape as the layout-driven quests in quests.ts). */
 function toDef(s: Spec): QuestDef {
   const reward: QuestReward = { xpPct: s.xpPct };
@@ -481,5 +535,5 @@ function toDef(s: Spec): QuestDef {
   return def;
 }
 
-/** All region quests (6 regions x 21: 9 kill, 3 collect, 2 hunt, 1 metin, 3 chain steps, 3 daily). */
-export const REGION_QUESTS: QuestDef[] = [...R1, ...R2, ...R3, ...R4, ...R5, ...R6].map(toDef);
+/** All region quests (6 regions x 21: 9 kill, 3 collect, 2 hunt, 1 metin, 3 chain steps, 3 daily) and the 15 quests of the 1600 m map. */
+export const REGION_QUESTS: QuestDef[] = [...R1, ...R2, ...R3, ...R4, ...R5, ...R6, ...NEW15].map(toDef);

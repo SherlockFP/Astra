@@ -812,6 +812,55 @@ derive('rare_sessiz_rahip', 'Sessiz Rahip', 'cult_summoner', {
 });
 
 // ---- mini-bosses (GDD_OPENWORLD §3.6): fixed lairs, leash to the camp (ai.homeRadius), 20 min respawn (MiniBossDirector)
+// Sisli Vadi rares, second set (1600 m map, two per region; the spots are in sisli_vadi.layout.json, loot tables in loot.ts)
+derive('rare_keseli_goblin', 'Keseli Goblin Reisi', 'ow_goblin', {
+  scale: 1.5, tint: 0x7a9a40, hp: 9, rank: 'elite', xp: 10, loot: 'loot_rare_keseli_goblin',
+  abilities: [summonAb('rare_keseli_goblin_call', 'Gırtlak Çağrısı', 'ow_goblin', 3, 25, 'Attack', 0.6)],
+});
+derive('rare_tarla_yirtici', 'Tarla Yırtıcısı', 'ow_boar', {
+  scale: 1.6, tint: 0x8a6a40, hp: 9, rank: 'elite', xp: 10, loot: 'loot_rare_tarla_yirtici',
+  abilities: [charge('rare_tarla_yirtici_rush', 'Hücum', 7, 8, 0.6, 1.3, 'Lunge', 0.85)],
+});
+derive('rare_ala_domuz', 'Ala Domuz Ana', 'ow_boar', {
+  scale: 1.5, tint: 0xd8c0a0, hp: 9, rank: 'elite', xp: 10, loot: 'loot_rare_ala_domuz',
+  abilities: [summonAb('rare_ala_domuz_herd', 'Sürü Çağrısı', 'ow_boar', 3, 30, 'Attack', 0.6)],
+});
+derive('rare_puglin_agasi', 'Puglin Ağası', 'ow_puglin_chief', {
+  scale: 1.35, tint: 0x607030, hp: 9, rank: 'elite', xp: 10, loot: 'loot_rare_puglin_agasi',
+  abilities: [summonAb('rare_puglin_agasi_gang', 'Yağma Çağrısı', 'ow_puglin', 3, 25, 'Attack', 0.6)],
+});
+derive('rare_bozkurt_reisi', 'Bozkurt Reisi', 'ow_wolf_dire', {
+  scale: 1.3, tint: 0xb0b0c0, hp: 8, rank: 'elite', xp: 10, loot: 'loot_rare_bozkurt_reisi',
+  abilities: [summonAb('rare_bozkurt_reisi_pack', 'Sürü Uluması', 'ow_wolf', 3, 25, 'Howl', 0.7)],
+});
+derive('rare_haydut_tirani', 'Haydut Tiranı', 'ow_bandit_brute', {
+  scale: 1.4, tint: 0x5a3a2a, hp: 9, rank: 'elite', xp: 10, loot: 'loot_rare_haydut_tirani',
+  abilities: [summonAb('rare_haydut_tirani_band', 'Haydut Çağrısı', 'ow_bandit', 3, 30, 'Attack', 0.6)],
+});
+derive('rare_sulu_kralice', 'Sülük Kraliçesi', 'ow_ooze', {
+  scale: 1.5, tint: 0x304a30, hp: 10, rank: 'elite', xp: 10, loot: 'loot_rare_sulu_kralice',
+  abilities: [summonAb('rare_sulu_kralice_brood', 'Yavru Bölünme', 'ow_ooze', 4, 22, 'Attack', 0.5)],
+});
+derive('rare_isik_avcisi', 'Işık Avcısı', 'ow_will', {
+  scale: 1.3, tint: 0x40e0c0, hp: 8, rank: 'elite', xp: 10, loot: 'loot_rare_isik_avcisi',
+  abilities: [summonAb('rare_isik_avcisi_flare', 'Alev Çağrısı', 'ow_will', 3, 25, 'Cast', 0.6)],
+});
+derive('rare_kara_disli_aga', 'Kara Dişli Ork Ağası', 'ow_orc_brute', {
+  scale: 1.45, tint: 0x403020, hp: 9, rank: 'elite', xp: 10, loot: 'loot_rare_kara_disli_aga',
+  abilities: [summonAb('rare_kara_disli_aga_horde', 'Ork Çağrısı', 'ow_orc', 3, 30, 'Attack', 0.6)],
+});
+derive('rare_kul_kertenkelesi', 'Kül Kertenkelesi', 'ow_ember', {
+  scale: 1.4, tint: 0x905040, hp: 8, rank: 'elite', xp: 10, loot: 'loot_rare_kul_kertenkelesi',
+  abilities: [summonAb('rare_kul_kertenkelesi_eggs', 'Kor Yumurtası', 'ow_imp', 3, 25, 'Cast', 0.5)],
+});
+derive('rare_hayalet_sovalye', 'Hayalet Şövalye', 'ow_grave_knight', {
+  scale: 1.4, tint: 0x6060a0, hp: 9, rank: 'elite', xp: 10, loot: 'loot_rare_hayalet_sovalye',
+  abilities: [summonAb('rare_hayalet_sovalye_grave', 'Mezar Çağrısı', 'skel_minion', 3, 28, 'Attack', 0.6)],
+});
+derive('rare_kara_rahibe', 'Kara Rahibe Ruhu', 'shadow_priest', {
+  scale: 1.35, tint: 0x402050, hp: 8, rank: 'elite', xp: 10, loot: 'loot_rare_kara_rahibe',
+  abilities: [summonAb('rare_kara_rahibe_rite', 'Kara Ayin', 'shade', 2, 30, 'Cast', 0.5)],
+});
 derive('mb_girtlak', 'Yağmacı Başı Gırtlak', 'ow_puglin_chief', {
   scale: 1.25, hp: 14, rank: 'miniboss', xp: 25, loot: 'loot_mb_r1', ai: { homeRadius: 30 },
   abilities: [

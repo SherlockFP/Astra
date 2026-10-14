@@ -16,6 +16,9 @@ const VILLAGE_OF_WAYPOINT: Record<string, string> = {
   wp_son_ocak: 'kamp_son_ocak',
   wp_ciftlik: 'kamp_ciftlik',
   wp_kanyon: 'kamp_kanyon',
+  wp_tarla_karakol: 'kamp_tarla_karakol',
+  wp_gecit_karakol: 'kamp_gecit_karakol',
+  wp_bataklik_konak: 'kamp_bataklik_konak',
 };
 
 export const WAYPOINTS: WaypointDef[] = LAYOUT.waypoints.map((w) => ({
@@ -63,7 +66,7 @@ export const HIDDEN: HiddenAreaDef[] = LAYOUT.hiddenAreas.map((h) => ({
 /** Vistas (§5.8): first visit keşif XP 6%. */
 export const VISTAS: VistaDef[] = LAYOUT.vistas.map((v) => ({ id: v.id, name: v.name, regionId: v.region, pos: v.pos, xpPct: 6 }));
 
-/** Rares (§3.5, 16): rare_* enemy defs (WP3) are copies of a base def; loot tables loot_rare_<name> (WP4). */
+/** Rares (§3.5, 28 on the 1600 m map): rare_* enemy defs (WP3) are copies of a base def; loot tables loot_rare_<name> (WP4). */
 export const RARES: RareSpawnDef[] = LAYOUT.rares.map((r) => ({
   id: r.id, enemyId: r.id, level: r.level, spots: r.spots, respawnMin: r.respawnMin, announce: true,
   lootTable: `loot_rare_${r.id.replace(/^rare_/, '')}`,
@@ -87,4 +90,4 @@ export const WORLD_BOSSES: WorldBossSched[] = [
 ];
 
 /** Hayalet Kayık (§5.6): the ghost boat on the lake's east shore, reaching the island mabed (hd_r6). */
-export const GHOST_BOAT = { id: 'hayalet_kayik', pos: [101, 86] as [number, number], island: [79, 82] as [number, number] };
+export const GHOST_BOAT = { id: 'hayalet_kayik', pos: [249.5, 215] as [number, number], island: [197.5, 205] as [number, number] };

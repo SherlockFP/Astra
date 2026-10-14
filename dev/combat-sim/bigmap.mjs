@@ -226,7 +226,7 @@ function avoidOf(def) {
 // ---------------------------------------------------------------------------------------------------------------------
 {
   const cfg = SC.streamConfig(SISLI_VADI, null);
-  ok('cfg.sisli.classic', cfg.on === false, 'Sisli Vadi (640 m): stream off by default');
+  ok('cfg.sisli.stream', cfg.on === true, 'Sisli Vadi (1600 m, zone block): streams by default (?stream=0 gives the classic path)');
   ok('cfg.sisli.forceable', SC.streamConfig(SISLI_VADI, true).on === true && SC.streamConfig(SISLI_VADI, false).on === false, '?stream=1 / ?stream=0');
   ok('cfg.sisli.view', cfg.viewM >= 96 && cfg.viewM <= 320, `view ${cfg.viewM} m, drop ${cfg.dropM} m, chunk ${cfg.chunkM} m, <= ${cfg.maxResident} chunks`);
   const big = { ...SISLI_VADI, grid: { w: 512, h: 512 } };
@@ -256,7 +256,9 @@ const hash = (c) => JSON.stringify([c.instances.map((i) => [i.url, +i.x.toFixed(
   const scatterA = new CScat.ChunkScatter(chunkHost(def, tiles, avoid, splats, 64));
   const scatterB = new CScat.ChunkScatter(chunkHost(def, tiles, avoid, splats, 64));
   const keys = [];
-  for (let cz = -3; cz <= 12; cz++) for (let cx = -3; cx <= 12; cx++) keys.push([cx, cz]);
+  // the chunks of the zone (1600 m = 25 x 64 m): the chunked sum then covers exactly what the whole-map scatter covers
+  const NC = Math.ceil((def.grid.w * T) / 64);
+  for (let cz = 0; cz < NC; cz++) for (let cx = 0; cx < NC; cx++) keys.push([cx, cz]);
   const t0 = performance.now();
   const A = new Map();
   for (const [cx, cz] of keys) A.set(`${cx},${cz}`, scatterA.generate(cx, cz));
@@ -288,8 +290,12 @@ const hash = (c) => JSON.stringify([c.instances.map((i) => [i.url, +i.x.toFixed(
     for (const i of c.instances) chunked[i.layer ?? 'other'] = (chunked[i.layer ?? 'other'] ?? 0) + 1;
   }
   const bands = { tuft: [0.85, 1.2], flower: [0.8, 1.25], bush: [0.75, 1.3], tree: [0.7, 1.4], rock: [0.6, 1.5], border: [0.7, 1.3] };
+  // The whole-map scatter places the void / backdrop forest (tree, bush) as FIXED totals (WorldScenery voidForest(900), beyondForest(760):
+  // ENGINE_BIGMAPS #11), so on a zone well above the 640 m Sisli size those two layers cannot match a per-m2 density: reported, not asserted.
+  const fixedTotals = def.grid.w * T > 800 ? new Set(['tree', 'bush']) : new Set();
   for (const [layer, [lo, hi]] of Object.entries(bands)) {
     const r = (chunked[layer] ?? 0) / Math.max(1, legacy[layer] ?? 0);
+    if (fixedTotals.has(layer)) { report(`scatter.parity.${layer} (fixed legacy total, not asserted)`, `chunked ${chunked[layer] ?? 0} vs whole-map ${legacy[layer] ?? 0} (x${r.toFixed(2)})`); continue; }
     ok(`scatter.parity.${layer}`, r >= lo && r <= hi, `chunked ${chunked[layer] ?? 0} vs whole-map ${legacy[layer] ?? 0} (x${r.toFixed(2)})`);
   }
   report('scatter Sisli Vadi', `whole-map ${tLegacy.toFixed(0)} ms | chunked ${tGen.toFixed(0)} ms for ${keys.length} chunks, ${colliders} colliders`);

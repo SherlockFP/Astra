@@ -35,6 +35,9 @@ const GATES: Record<string, VillageDef['gates']> = {
   kamp_son_ocak: [{ id: 'guney', pos: [0, 12], rot: 0, width: 8 }],
   kamp_ciftlik: [{ id: 'guney', pos: [0, 12], rot: 0, width: 8 }],
   kamp_kanyon: [{ id: 'guney', pos: [0, 10], rot: 0, width: 8 }],
+  kamp_tarla_karakol: [{ id: 'guney', pos: [0, 12], rot: 0, width: 8 }],
+  kamp_gecit_karakol: [{ id: 'guney', pos: [0, 12], rot: 0, width: 8 }],
+  kamp_bataklik_konak: [{ id: 'guney', pos: [0, 12], rot: 0, width: 8 }],
 };
 
 /** Hand-placed dressing from the layout rows (metres, rot in degrees). */

@@ -1377,7 +1377,7 @@ function worldIssues(
   // a map without metin tiers has no spots to count; the spot count per region is the GDD's 4 (Sisli Vadi), Karakır Bozkırı has 3
   // Karakır Bozkırı: 20 spots, at least three per region (three in r7..r10, four in r11..r12); Sisli Vadi has four per region
   const karakir = def.id === 'karakir_bozkiri';
-  const perRegion = karakir ? 3 : 4;
+  const perRegion = karakir ? 3 : 8; // Sisli Vadi (1600 m map): 8 metin spots per region (2x the 640 m map)
   if (w.metin.tiers.length) for (const r of w.regions) { const n = spotsIn.get(r.id) ?? 0; if (karakir ? n < perRegion : n !== perRegion) warn(`region ${r.id}`, `${n} metin spots (${karakir ? 'at least ' : ''}${perRegion} per region)`); }
   if (karakir && w.metin.spots.length !== 20) warn(`metin ${def.id}`, `${w.metin.spots.length} spots (Karakır Bozkırı: 20)`);
   for (const t of w.metin.tiers) {
