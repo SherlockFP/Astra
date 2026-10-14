@@ -178,19 +178,34 @@ const FALLBACK: Record<ClassId, ClassPresentation> = {
     id: 'priest', name: 'Rahip', tagline: 'Kutsal Işık ve Gölge', role: 'Şifa · Gölge', resource: 'Mana', resourceColor: '#3d7bd9',
     desc: 'Kutsal ışığı şifa için, gölgeyi ise zihin ve hasar için kullanan rahip. Yoldaşlarını ayakta tutar; Gölge yolunda zihni ayartır ve Delilik biriktirir.',
     highlights: [], stats: { dayaniklilik: 2, hasar: 3, hareket: 2, menzil: 4 }, color: '#ffffff', icon: '/assets/icons/skill-holy-light.svg', idle: 'Idle',
-    showcase: [],
+    showcase: [
+      { clip: 'Spellcast_Shoot', vfx: 'holy_burst', vfxAt: 0.37, offset: [0, 1.5, 1.4], sfx: 'holy_cast' },
+      { clip: 'Spellcast_Raise', vfx: 'heal_burst', vfxAt: 0.9, offset: [0, 0.2, 1.8], sfx: 'heal', speed: 2.0 },
+      { clip: 'Spellcast_Long', vfx: 'shadow_burst', vfxAt: 1.2, offset: [0, 1.6, 1.4], sfx: 'shadow_cast' },
+      { clip: 'Cheer' },
+    ],
   },
   shaman: {
     id: 'shaman', name: 'Şaman', tagline: 'Ruhların ve Elementlerin Sesi', role: 'Elementler · Geliştirme · Şifa', resource: 'Mana', resourceColor: '#3d7bd9',
     desc: 'Elementlerin ve ruhların sesini duyan şaman. Yıldırım ve toprağı savurur, geliştirme yolunda silahına elementleri üfler, restorasyonda ruhları şifaya çağırır.',
     highlights: [], stats: { dayaniklilik: 4, hasar: 4, hareket: 2, menzil: 3 }, color: '#0070dd', icon: '/assets/icons/skill-lightning-bolt.svg', idle: 'Idle',
-    showcase: [],
+    showcase: [
+      { clip: 'Spellcast_Shoot', vfx: 'lightning_projectile', vfxAt: 0.37, offset: [0, 1.5, 1.4], sfx: 'lightning_cast' },
+      { clip: 'Spellcasting', vfx: 'chain_lightning', vfxAt: 0.3, offset: [0, 1.4, 1.6], sfx: 'lightning_impact' },
+      { clip: 'Spellcast_Raise', vfx: 'ground_slam', vfxAt: 0.9, offset: [0, 0.1, 1.6], sfx: 'ground_slam' },
+      { clip: 'Cheer' },
+    ],
   },
   druid: {
     id: 'druid', name: 'Druid', tagline: 'Doğanın Biçim Değiştireni', role: 'Biçim Değiştiren · Hibrit', resource: 'Mana', resourceColor: '#3d7bd9',
     desc: 'Doğanın ve biçim değiştirmenin ustası. Ay ışığıyla büyü yapar, kediye, ayıya ya da baykuşa dönüşür; yıkıcı bir yol da iyileştiren bir yol da seçebilir.',
     highlights: ['Kedi, Ayı, Yolcu ve Ay Baykuşu biçimleri: kaynak ve düğmeler değişir', 'Denge · Vahşi · Koruyucu · Restorasyon', 'Kanamalar, Astral Güç ve üst üste binen şifa'], stats: { dayaniklilik: 4, hasar: 3, hareket: 4, menzil: 2 }, color: '#ff7c0a', icon: '/assets/icons/buff-regen.svg', idle: 'Idle',
-    showcase: [],
+    showcase: [
+      { clip: 'Spellcast_Shoot', vfx: 'arcane_burst', vfxAt: 0.37, offset: [0, 1.5, 1.4], sfx: 'spell_cast' },
+      { clip: 'Unarmed_Melee_Attack_Punch_A', vfx: 'hit_blood', vfxAt: 0.4, offset: [0, 1.2, 1.1], sfx: 'punch_hit' },
+      { clip: 'Spellcast_Long', vfx: 'heal_pillar', vfxAt: 1.3, offset: [0, 0.1, 1.8], sfx: 'heal' },
+      { clip: 'Cheer' },
+    ],
   },
 };
 

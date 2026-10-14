@@ -16,6 +16,12 @@ interface QueuedBanner {
 /** Queue length cap (§2.11): the oldest banner of the lowest rank is dropped past this. */
 const QUEUE_MAX = 3;
 
+/** Zone title on screen: at most 3 s, so it never sits on nameplates and combat text for long. */
+const ZONE_BANNER_MS = 3000;
+
+/** True while the local player is in combat (Actor.inCombat: hit or hitting within 5 s). */
+const inCombat = (): boolean => !!G.player?.inCombat;
+
 /**
  * Serialises the big centre banners of ranks 2–5 (§2.11): one plays at a time, the queue is ordered by rank then age, a
  * lower-rank banner waits for the higher one to end, and past three waiting banners the oldest lowest-rank one is dropped.
@@ -85,10 +91,14 @@ export class ZoneBanner implements HudWidget {
     div('zone-orn bot', this.el);
     G.events.on('ui:zoneName', (z) => {
       if (!G.ui?.mode || (G.ui.mode !== 'town' && G.ui.mode !== 'dungeon')) return;
+      // never over a fight: the title is dropped when it arrives mid-combat
+      if (inCombat()) return;
       this.queue.push(
         BANNER_RANK.zone,
-        4300,
+        ZONE_BANNER_MS,
         () => {
+          // the queue may hand over a turn after combat began: the title stays off then too
+          if (inCombat()) return;
           setText(this.title, z.title);
           setText(this.sub, z.subtitle ?? '');
           this.sub.style.display = z.subtitle ? '' : 'none';
@@ -102,7 +112,8 @@ export class ZoneBanner implements HudWidget {
   }
 
   update(_ctx: HudCtx): void {
-    /* timing is owned by the queue */
+    // a fight that starts while the title is up takes it down at once; the queue still times out its slot
+    if (inCombat() && this.el.classList.contains('on')) setClass(this.el, 'on', false);
   }
 }
 

@@ -23,6 +23,8 @@ export interface BonePile {
 }
 
 const CELL = 3;
+/** WoW-style social aggro: a pack-less neighbour pulls in only within this many metres of the puller, and only when it is already inside its own aggro range of the target. */
+export const SOCIAL_AGGRO_M = 10;
 const key = (cx: number, cz: number) => (cx + 2048) * 4096 + (cz + 2048);
 
 /**
@@ -185,30 +187,45 @@ export class EnemyDirector {
         const oa = o.ai;
         if (!oa || oa === ai || oa.aggroed || o.def.ai?.summoned || o.def.ai?.flee) continue;
         if (o.def.aggroRange <= 0) continue;
+        // a touch-pull reaches the camp, or a pack-less neighbour already in aggro range of the target (no chain across the room)
+        if (!this.campMates(ai.e, o) && !this.inAggroRangeOf(o, ai.target)) continue;
         this.pullPack(oa, ai.target);
       }
     }
   }
 
-  /** Aggro `ai`, its whole pack, linked packs and (for pack-less enemies) everything within 8 m. */
+  /** Same camp: both have a packId and the packs are equal or linked by a dungeon (linkPacks). */
+  private campMates(a: Enemy, b: Enemy): boolean {
+    const pa = a.packId, pb = b.packId;
+    if (!pa || !pb) return false;
+    return pa === pb || !!this.packLinks.get(pa)?.has(pb);
+  }
+
+  /** `e` stands within its own aggro range of `target` (it could already see the target; the social pull needs that). */
+  private inAggroRangeOf(e: Enemy, target: Actor): boolean {
+    return e.def.aggroRange > 0 && Math.hypot(e.position.x - target.position.x, e.position.z - target.position.z) <= e.def.aggroRange;
+  }
+
+  /**
+   * Aggro `ai` and the enemies it pulls. Only its own camp (same packId, plus packs a dungeon linked to it) comes along at any
+   * distance; other packs are never pulled. A pack-less neighbour is social-pulled only within SOCIAL_AGGRO_M (10 m) of the puller,
+   * on the same level, and only when it is already inside its own aggro range of the target. A social pull never sweeps the room.
+   */
   pullPack(ai: EnemyAI, target: Actor | null): void {
     if (!target) return;
     ai.acquire(target, true);
-    const pid = ai.e.packId;
-    const packs = new Set<string>();
-    if (pid) {
-      packs.add(pid);
-      for (const l of this.packLinks.get(pid) ?? []) packs.add(l);
-    }
     for (const o of this.ais.slice()) {
       if (o === ai || o.aggroed || o.e.isDead) continue;
       const op = o.e.packId;
-      if (op && packs.has(op)) o.acquire(target, true);
-      else if (!pid && !op && o.e.def.aggroRange > 0 && !o.e.def.ai?.summoned) {
-        // vertical: a pack-less neighbour on another level (balcony / pit) is not pulled (ENGINE_VERTICALITY §12)
-        const nav = this.world.nav;
-        if (Math.hypot(o.e.position.x - ai.e.position.x, o.e.position.z - ai.e.position.z) <= 8 && (!nav.vertical || nav.sameRegion(o.e.position, ai.e.position))) o.acquire(target, true);
+      if (op) {
+        if (this.campMates(ai.e, o.e)) o.acquire(target, true);
+        continue;
       }
+      if (o.e.def.aggroRange <= 0 || o.e.def.ai?.summoned) continue;
+      // vertical: a pack-less neighbour on another level (balcony / pit) is not pulled (ENGINE_VERTICALITY §12)
+      const nav = this.world.nav;
+      const d = Math.hypot(o.e.position.x - ai.e.position.x, o.e.position.z - ai.e.position.z);
+      if (d <= SOCIAL_AGGRO_M && (!nav.vertical || nav.sameRegion(o.e.position, ai.e.position)) && this.inAggroRangeOf(o.e, target)) o.acquire(target, true);
     }
   }
 
