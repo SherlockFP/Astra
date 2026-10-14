@@ -50,6 +50,8 @@ export interface SettingsData {
   settingsVersion: number;
   /** M+ nameplate forces tag (GDD_V2 §8.1). */
   showForces: boolean;
+  /** Enemy nameplates: always (within 40 m) · combat only (in a fight, aggro or target) · off (the target still shows). */
+  nameplates: 'always' | 'combat' | 'off';
   /** Kick tracker widget (GDD_V2 §8.4). */
   kickTracker: boolean;
   /** Tank route overlay (GDD_V2 §8.2 / §8.3). */
@@ -215,6 +217,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   autoCombo: true,
   settingsVersion: SETTINGS_VERSION,
   showForces: true,
+  nameplates: 'always',
   kickTracker: true,
   showTankRoute: true,
   autoApplyPassives: true,
