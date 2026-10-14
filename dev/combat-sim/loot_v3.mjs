@@ -288,7 +288,7 @@ if (!filter) {
       const it = generateItem({ itemLevel: 80, rarity: i % 2 ? 'rare' : 'epic', classId: cls, smart: true }, rng);
       const base = baseOf(it);
       if (SL.classCanUseItem(cls, it)) usable++;
-      if (base.armorWeight) { armour++; if (base.armorWeight === IB.CLASS_ARMOR_WEIGHT[cls]) armourOk++; }
+      if (base.armorWeight && base.category !== 'shield') { armour++; if (base.armorWeight === IB.CLASS_ARMOR_WEIGHT[cls]) armourOk++; } // shields: off-hand list, not the armour weight
       if (it.affixes.length >= 2) { mainN++; if (it.affixes.some((a) => a.stat === mainStatOf(cls)) || (it.implicit?.[mainStatOf(cls)] ?? 0) > 0) mainOk++; }
     }
     ok(`smart.forced ${cls}: 100 % of smart items are usable (${usable}/${N})`, usable === N);
@@ -672,6 +672,27 @@ if (!filter) {
   ok(`loot.autosalvage off: low-rarity items still drop (${lowOff})`, lowOff > 0);
   ok('loot.system no console errors / warnings during the kills', errors.length === 0, errors.slice(0, 2).join(' | ').slice(0, 300));
   G.loot = { onEnemyKilled() {}, contributed: () => true };
+}
+
+// ================================================================================================ equip.weapons
+// every playable class can equip at least one weapon from its own list (real CharacterState.equip on a level 1 item of each category)
+{
+  const { CharacterState } = await H.imp('systems/CharacterState.ts');
+  const { generateItem } = await H.imp('systems/ItemGen.ts');
+  const { CLASS_WEAPONS } = await H.imp('data/itemBases.ts');
+  const { PLAYABLE_CLASSES } = await H.imp('data/classes.ts');
+  const noWeapon = [];
+  for (const cls of PLAYABLE_CLASSES) {
+    let can = false;
+    for (const cat of CLASS_WEAPONS[cls]) {
+      const ch = CharacterState.create('Eq', cls);
+      const item = generateItem({ itemLevel: 1, rarity: 'common', classId: cls, category: cat, smart: true }, new RNG(7));
+      ch.addItem(item);
+      if (ch.equip(item.uid)) { can = true; break; }
+    }
+    if (!can) noWeapon.push(cls);
+  }
+  ok(`equip.weapons all ${PLAYABLE_CLASSES.length} playable classes can equip a weapon`, PLAYABLE_CLASSES.length === 14 && noWeapon.length === 0, noWeapon.join(','));
 }
 
 console.log(`\nloot_v3: ${passes} checks passed, ${fails} failed`);

@@ -12,9 +12,10 @@ import { baseOf } from './ItemGen';
 
 /** Armour needs the class's weight; weapons and off-hands must be in the class lists; jewellery and belts fit everyone. */
 export function classCanUseBase(classId: ClassId, base: ItemBaseDef): boolean {
+  // off-hands first: a shield carries armorWeight (heavy) for its stats, but its usability is the class's off-hand list (shamans wear medium armour and shields)
+  if (base.category === 'shield' || base.category === 'tome' || base.category === 'quiver') return CLASS_OFFHANDS[classId].includes(base.category);
   if (base.armorWeight) return CLASS_ARMOR_WEIGHT[classId] === base.armorWeight;
   if (isWeaponCategory(base.category)) return CLASS_WEAPONS[classId].includes(base.category);
-  if (base.category === 'shield' || base.category === 'tome' || base.category === 'quiver') return CLASS_OFFHANDS[classId].includes(base.category);
   return true;
 }
 

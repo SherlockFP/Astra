@@ -57,6 +57,7 @@ const { ROTATIONS_KIT_SHAMAN } = await H.imp('data/rotations_kit_shaman.ts');
 const { ROTATIONS_KIT_WARLOCK } = await H.imp('data/rotations_kit_warlock.ts');
 const { SKILLS } = await H.imp('data/skills.ts');
 const { stasisStored } = await H.imp('combat/skills/evokerKit.ts');
+const { tuneOf } = await H.imp('data/specTuning.ts'); // the calibration table (CM1): dmg / heal / taken per spec
 
 const ROT = { ...ROTATIONS_KIT_ARCHER, ...ROTATIONS_KIT_BARBARIAN, ...ROTATIONS_KIT_DEMONHUNTER, ...ROTATIONS_KIT_DRUID, ...ROTATIONS_KIT_EVOKER, ...ROTATIONS_KIT_KNIGHT, ...ROTATIONS_KIT_MAGE, ...ROTATIONS_KIT_MONK, ...ROTATIONS_KIT_NECROMANCER, ...ROTATIONS_KIT_PALADIN, ...ROTATIONS_KIT_PRIEST, ...ROTATIONS_KIT_ROGUE, ...ROTATIONS_KIT_SHAMAN, ...ROTATIONS_KIT_WARLOCK };
 
@@ -194,6 +195,7 @@ function setupFight(spec, L, key, scenario) {
   p.position.set(0, 0, 0);
   p.resource = p.maxResource;
   takenLog = [];
+  EMP.slot = null;
   return { ch, p };
 }
 
@@ -284,7 +286,9 @@ function compile(line, spec) {
   } catch (e) {
     throw new Error(`${spec.id}: APL condition does not parse "${c}" (from "${line}"): ${e.message}`);
   }
-  return { skill: self, line, fn };
+  // empowered holds (kit_empower, Evoker): `@rank=N` names the rank the cast is released at; a bare empower line casts at rank 3
+  const rk = m[1].match(/@rank=(\d)/);
+  return { skill: self, line, fn, rank: rk ? Number(rk[1]) : null, empower: SKILLS[self]?.behavior === 'kit_empower' };
 }
 
 /** APL lines the sim does not model (free text without `if`): reported in the output for data review, never guessed. */
@@ -347,14 +351,41 @@ function slotOf(p, id) {
   return null;
 }
 
+// Empowered hold (kit_empower): the sim has no key, so the held key reads as down while the cast is inside its hold window, and the
+// release comes when the window closes (rank = the hold threshold reached). Holds are the real channel: the same release rule as a player.
+const HOLD_DEFAULT = [0.67, 1.33, 2.0]; // evokerKit.ts HOLD_DEFAULT (seconds, divided by haste)
+const EMP = { slot: null, secs: 0 };
+const baseDown = G.input.down;
+G.input.down = (a) => (EMP.slot && a === `skill_${EMP.slot}` && empHolding() ? true : baseDown(a));
+function empHolding() {
+  const act = G.skills.getAction(G.player);
+  return !!act && act.channel && act.elapsed < EMP.secs;
+}
+/** A fresh empower cast: the key is held for the rank's hold time (+0.15 s so the threshold is crossed before the release). */
+function startHold(p, slot, l) {
+  const act = G.skills.getAction(p);
+  if (!act || act.skillId !== l.skill || act.elapsed > 0.1) return;
+  const def = SKILLS[l.skill];
+  const r = l.rank ?? 3;
+  const sec = (def.params?.[`hold${r}`] ?? HOLD_DEFAULT[r - 1]) / (G.skills.speedFactor(p, def) || 1);
+  EMP.slot = slot;
+  EMP.secs = sec + 0.15;
+}
+
 /** One frame of the rotation: the first castable line wins; with nothing castable the basic chain fills (a player holding LMB). */
 function pressApl(p, lines, env, aim) {
+  let gcdWait = false; // a ready line blocked only by the GCD: the player waits for the GCD instead of spending it on the filler
   for (const l of lines) {
     const slot = slotOf(p, l.skill);
     if (!slot) continue;
     if (!l.fn(env)) continue;
-    if (G.skills.tryCastSlot(p, slot, aim)) return true;
+    if (G.skills.tryCastSlot(p, slot, aim)) {
+      if (l.empower) startHold(p, slot, l);
+      return true;
+    }
+    if (G.skills.state(p).gcdUntil > G.skills.now) gcdWait = true;
   }
+  if (gcdWait) return false;
   if (G.skills.getSlotSkill(p, 'lmb') && p.canAct()) return G.skills.tryCastSlot(p, 'lmb', aim);
   return false;
 }
@@ -396,9 +427,10 @@ function installHealSpy(p, allies) {
     }
     if (allies.includes(tgt)) {
       const before = tgt.hp;
-      tgt.hp = Math.min(tgt.maxHp, tgt.hp + amount);
+      const amt = amount * tuneOf(src, 'heal'); // ally heals bypass Combat.healPlayer here, so the heal factor is applied the same way
+      tgt.hp = Math.min(tgt.maxHp, tgt.hp + amt);
       const eff = tgt.hp - before;
-      led.effective += eff; led.raw += amount;
+      led.effective += eff; led.raw += amt;
       return;
     }
     orig.call(this, src, tgt, amount, opts);
@@ -457,7 +489,7 @@ function runTank(spec, L, key) {
     H.setAimTarget(boss);
     pressApl(p, lines, makeEnv(p, boss, [boss, ...adds], []), aim);
     for (const hit of dueHits(sched, boss.id, adds.map((a) => a.id), ref)) {
-      taken.raw += hit.amount; taken.hits++;
+      taken.raw += hit.amount * tuneOf(p, 'taken'); taken.hits++;
       const r = G.combat.hitLocalPlayer(hit);
       if (!r) continue;
       if (r.amount > 0) taken.mit += r.amount; else taken.avoided++;
@@ -483,7 +515,7 @@ function runHeal(spec, L, key) {
   const party = [];
   for (let i = 0; i < 4; i++) {
     const a = new H.FakePlayer('knight', L);
-    a.id = 900 + i; a.isLocal = false; a.maxHp = ref.hp; a.hp = ref.hp; a.position.set(3 + i, 0, -2 - i);
+    a.id = 900 + i; a.isLocal = true; // statuses apply here (a remote ally's status goes to its peer, and the sim has none); heals still go through the spy a.maxHp = ref.hp; a.hp = ref.hp; a.position.set(3 + i, 0, -2 - i);
     a.stats = { ...a.stats, armor: i === 0 ? ref.armor : 0 };
     H.world.add(a);
     party.push(a);
@@ -513,6 +545,8 @@ function runHeal(spec, L, key) {
       for (const a of party.slice(1)) a.hp -= G.combat.mitigate(a, PROFILE.partyFrac * PROFILE.swing * ref.hp, 'physical', L);
     }
     if (tank.hp <= 0 && tankDownAt === null) tankDownAt = f * DT;
+    // the party's own statuses (heal-over-time such as Geri Dönüş) tick on their owners' machines; the sim ticks them here
+    for (const a of party) a.statuses.update(DT);
     frame();
   }
   spy.restore();

@@ -151,3 +151,41 @@ The failing count rises because the harness now measures and checks the mage, mo
 5. Tank deaths in the tank profile at L10 / L30 and the protector's permanent block: §4.2 and §4.3, unchanged.
 
 **Decisions needed:** a usable weapon base for priest and shaman (cause 1); model the Fire Breath hold in the harness (cause 2); the pinned kit values (§4.2).
+
+## 8. Pass 3: calibration (`tools/calibrate-balance.mjs`)
+
+**Harness and data fixes first.** Each one changes what the sim measures, so the "before" below already includes them.
+
+1. **Priest and shaman had no usable weapon.** `CLASS_WEAPONS` and the base `classes` lists disagreed, so `canEquip` rejected every candidate (wMin 31 = unarmed). Priest: staff, wand, mace, dagger (+ tome). Shaman: mace, 1H axe, fist (+ shield). New `axe1h` base for the shaman. Mace, axe1h and fist join the random-drop pool. `SmartLoot.classCanUseBase` checks off-hands before armour weight, because a shield carries `heavy`. `loot_v3` gains `equip.weapons`: 14 of 14 playable classes equip a weapon.
+2. **Evoker empowered holds.** `@rank=N` lines release at rank N, and a bare empower casts at rank 3. The sim holds the key for the rank's hold time. Before, every empower released at rank 0 or 1 (Devastation 139 DPS).
+3. **Healer fight.** A ready line blocked only by the GCD waits for it instead of spending it on the filler (all specs). Party statuses tick, and party members are local for status purposes, because a remote ally's status goes to a peer the sim does not have. Before, Evoker heal-over-time never reached an ally (HPS 0).
+
+**Calibration.** `src/data/specTuning.ts` holds `{ dmg, heal, taken }` per spec, default 1, for players only. The three factors apply at one choke point each: `Combat.rollOutgoing` (dmg), `Combat.healPlayer` (heal, by source), `Combat.hitLocalPlayer` (taken, by the local player's spec). The script runs `balance.mjs --level=60` and moves the table per pass:
+
+- DPS: `dmg *= median ST / ST`.
+- Tanks: `dmg *= 0.75 x median / ST`, and `taken *= TTD / median TTD`.
+- Healers: `heal *= 1.2 x reference-tank DTPS / HPS`.
+
+Each step is clamped to 0.5 to 2.0 per pass, and the stored factor to 0.25 to 4.0. Four passes ran. The mechanics sims (`kit_*`, `wow_core`, ...) run with the table cleared (`harness.mjs`), because they check raw coefficients. Balance keeps it.
+
+**Before / after at L60** (before = the neutral table, all factors 1, after the fixes above):
+
+| measure | before | after |
+|---|---|---|
+| DPS ST, % of median | 8 % to 370 % | 31 % to 100 % |
+| DPS within ±8 % | 3 of 27 | 24 of 27 |
+| tank ST within 70-80 % | 1 of 7 | 7 of 7 |
+| healers keep the reference tank alive | 4 of 7 | 2 of 7 |
+
+Calibration passes: failing bands 43, then 22, 15, 15 (stopped at the cap).
+
+**L30 and L10** (table calibrated at L60 only): DPS outside ±25 % of median at L30 for 13 of 27 (priest_shadow 52 %, evoker_devastation 44 %, evoker_augmentation 56 %, others 130 % to 159 %); at L10 for 12 of 27 (evoker_devastation 27 %, priest_shadow 63 %, necromancer_summoner 192 %, others 126 % to 148 %). The ±25 % check is **not met**.
+
+**Still failing at L60 (15 checks):**
+- Healers that let the reference tank die: priest_holy (heal factor at its 4.0 bound), monk_mistweaver, shaman_restoration, priest_discipline and druid_restoration. The 1.2 x DTPS target uses average effective HPS, which does not capture timing, so priest_discipline and druid_restoration went from surviving to dying as their heal factors came down from overheal.
+- Priest shadow, evoker devastation and augmentation: DPS at the factor bound (priest_shadow 68 %, evoker_devastation 31 %, evoker_augmentation 82 %). These are kit-data problems, not tuning ones.
+- knight_protector: takes no net damage in the tank profile (100 % mitigation, TTD infinite; see section 4.3). The `taken` factor cannot move it.
+- paladin_protection (TTD 5 x median) and druid_guardian (dies in the tank profile): TTD matching does not converge within four passes.
+- AoE above 1.35 x median (not gated): knight_blademaster 1.36, mage_fire 2.17, evoker_augmentation 1.87.
+
+**Verification.** `tsc --noEmit` exit 0. `content-check` exit 0. All kit sims, `wow_core`, `pips`, `beta`, `loot_v3` (1074 checks) and `pvpgear` (78) pass. The kit sims failed once with the table active (demonhunter ledger, necro absorb, paladin reflect, shaman spirit link). They pass with the table cleared, so the calibrated factors are what changed those checks.

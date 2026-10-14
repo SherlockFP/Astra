@@ -15,6 +15,7 @@ import { COMBAT_FEEL, FEEL, FEEL_TABLE, KNOCKBACK, SLOWMO, SLOWMO_GAP, TYPE_COLO
 import { DeathLog } from './deathLog';
 import { GUARD_BREAK_STUN, PARRY_WINDOW, GuardState, guardCost, guardProfileOf } from './guard';
 import { blockChanceCap, protectorCheat, specOf, warlordRageMult } from './specs';
+import { tuneOf } from '../data/specTuning';
 import { weaknessOf } from '../data/families';
 import { breakLock, breakSeconds, finisherPctMaxHp, hyperArmorOf, isSwarm, parryPoise, poiseDelay, poiseMax, poiseRegenRate } from './poise';
 import { CombatMeters } from './meters';
@@ -673,7 +674,9 @@ export class Combat {
         base *= mult;
       }
     }
-    return { amount: base, crit, base: W, noCrit };
+    // calibration (specTuning.ts): a player's outgoing hit scales by its spec's dmg factor, last in the chain
+    const k = tuneOf(attacker, 'dmg');
+    return { amount: base * k, crit, base: W, noCrit: noCrit * k };
   }
 
   /** Target-side mitigation (armor for physical, resists for elemental). */
@@ -1694,7 +1697,8 @@ export class Combat {
       return { amount: 0, crit: false, type, killed: false, parried: true };
     }
 
-    let amount = Math.max(0, hit.amount);
+    // calibration (specTuning.ts): the local player's spec scales what it takes (PvE, PvP, DoT, environment)
+    let amount = Math.max(0, hit.amount) * tuneOf(p, 'taken');
     const rawIn = amount;
     const lvlSrc = hit.sourceLevel ?? 1;
     amount *= this.levelDiffIn(hit.sourceLevel, p.level);
@@ -2065,6 +2069,7 @@ export class Combat {
   /** Heal a player (routes to the owning peer if remote). */
   healPlayer(source: Actor | null, target: Player, amount: number, opts?: { raw?: boolean; quiet?: boolean }): void {
     if (!target || target.isDead || amount <= 0) return;
+    amount *= tuneOf(source, 'heal'); // calibration (specTuning.ts): a healing player's spec scales its heals
     if (target.isLocal) {
       this.applyHeal(target, amount, source?.id ?? null, opts);
       this.healProc(source, target, amount);
