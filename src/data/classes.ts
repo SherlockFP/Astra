@@ -200,7 +200,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     weapons: ['fist'],
     offhands: [],
     secondary: { id: 'chi', name: 'Çi', max: 5, color: '#5de0a8', icon: 'buff-haste', decay: { after: 8, every: 4 } },
-    specs: ['monk_brewmaster', 'monk_windwalker'],
+    specs: ['monk_brewmaster', 'monk_windwalker', 'monk_mistweaver'],
     visual: {
       url: '/assets/models/characters/Barbarian.glb',
       paletteClass: 'barbarian',
@@ -252,7 +252,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     armorWeight: 'medium',
     weapons: ['bow'],
     offhands: ['quiver'],
-    specs: ['archer_marksman', 'archer_beastmaster'],
+    specs: ['archer_marksman', 'archer_beastmaster', 'archer_survival'],
     visual: {
       url: '/assets/models/characters/Rogue.glb',
       paletteClass: 'rogue',
@@ -267,6 +267,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     voice: { pack: 'warrior', pitch: 1.18 },
     anims: { idle: 'Idle' },
     cameraProfile: 'ranged',
+    autoAttack: 'ranged',
     trait: {
       id: 'trait_hawkeye',
       name: 'Şahin Gözü',
@@ -535,7 +536,7 @@ export const CLASS_IDS: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue'];
  * necromancer (Mage rig) and the warlock (Rogue rig), WP-01. The other new classes join when their skills, model and items are merged
  * (GDD_CLASSES_V2 §13.1 / NC60).
  */
-export const PLAYABLE_CLASSES: readonly ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock'];
+export const PLAYABLE_CLASSES: readonly ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer'];
 export const isPlayableClass = (id: ClassId): boolean => (PLAYABLE_CLASSES as readonly string[]).includes(id);
 export const getClass = (id: ClassId): ClassDefX => CLASSES[id];
 

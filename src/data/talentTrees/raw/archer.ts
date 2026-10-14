@@ -1,5 +1,5 @@
 // GENERATED from docs/GDD_TALENTS.*.json by tools/gen-talent-data.mjs — do not edit
-// Source: docs/GDD_TALENTS.trees.json · class:archer + archer_marksman, archer_beastmaster. Row = [slot, opt, name, desc, fx] (GDD_TALENTS §2.9).
+// Source: docs/GDD_TALENTS.trees.json · class:archer + archer_marksman, archer_beastmaster, archer_survival. Row = [slot, opt, name, desc, fx] (GDD_TALENTS §2.9).
 import type { SlotId } from '../../../types/talents';
 import type { SpecId } from '../../../types/v2';
 import type { StatId } from '../../../types/stats';
@@ -95,6 +95,35 @@ const data: { class: RawTree; specs: Partial<Record<SpecId, RawTree>> } = {
         ['s29', '', 'Yaban Kalbi', 'Hasar +%6. Yoldaşın kritik vuruşları %20 şansla +4 Odak verir.', 'S damagePct=.06 ;; T crit:@pet ch=.2 => res(4)'],
         ['s30', 'A', 'Hayvanlar Efendisi', 'Yoldaş hasarı +%25, canı +%20; Av Emri hasarı +%20.', 'S minionDamagePct=.25 minionHpPct=.20 ;; M archer_kill_command dmgx=1.2'],
         ['s30', 'B', 'Zehir Avcısı', 'Zehir hasarı +%25, zamanla hasar +%10; Zehirli Ok hasarı +%20.', 'S poisonDamagePct=.25 dotPct=.10 ;; M archer_serpent_sting dmgx=1.2'],
+      ],
+    },
+    archer_survival: {
+      palette: ['str', 'maxHpPct', 'damagePct', 'meleeDamagePct', 'physicalDamagePct', 'trapDamagePct', 'resourceRegenPct', 'costReductionPct', 'critChance', 'critDamage', 'attackSpeed', 'cdr'],
+      rows: [
+        ['s02', 'A', 'Çevik Tuzakçı', 'Pençe Tuzağı bekleme −2 sn.', 'M archer_snare_trap cd=-2'],
+        ['s02', 'B', 'Yakın Savunma', 'Yırtıcı Vuruş hasarı +%10.', 'M archer_sv_raptor_strike dmgx=1.1'],
+        ['s04', '', 'Keskin Kenar', 'Yırtıcı Vuruş hasarı +%15.', 'M archer_sv_raptor_strike dmgx=1.15'],
+        ['s05', '', null, null, 'G archer_sv_raptor_strike'],
+        ['s09', 'A', 'Sağlam Gövde', 'Maks. can +%6.', 'S maxHpPct=.06'],
+        ['s09', 'B', 'Kalkan Refleksi', 'Hasar alınca %10 şansla 3 sn hasar azaltma +%10 (6 sn bekleme).', 'T hurt ch=.1 icd=6 => buff(lean_guard,3,{damageReductionPct=.1})'],
+        ['s11', '', 'Geniş Bomba', 'Yangın Bombası alanı +%20.', 'M archer_sv_wildfire_bomb radx=1.2'],
+        ['s12', '', 'Ağır Tuzak', 'Pençe Tuzağı hasarı +%20, aynı anda +1 tuzak kurulabilir.', 'M archer_snare_trap dmgx=1.2 p.trapMax+=1'],
+        ['s13', '', 'Kıvılcım', 'Yangın Bombası yanma süresi +2 sn.', 'M archer_sv_wildfire_bomb sdur=burn:+2'],
+        ['s15', 'A', 'Yırtıcı Kas', 'Yırtıcı Vuruş Odak maliyeti −%25.', 'M archer_sv_raptor_strike costx=.75'],
+        ['s15', 'B', 'Namlu Ustası', 'Namlu Patlatıcı bekleme −6 sn.', 'M archer_sv_boomstick cd=-6'],
+        ['s17', 'A', 'Sabit Odak', 'Odak yenilenmesi +%20.', 'S resourceRegenPct=.20'],
+        ['s17', 'B', 'Tuzak Hırsı', 'Yırtıcı Vuruş ve tuzak vuruşları %10 şansla +5 Odak verir.', 'T hit ch=.1 => res(5)'],
+        ['s18', '', 'Ateşli Tuzak', 'Pençe Tuzağı hedefi 6 sn yakar.', 'M archer_snare_trap dotx=1.3'],
+        ['s20', '', 'Sığınak Ustası', 'Son Siper bekleme −%15.', 'M archer_sv_last_stand cdx=.85'],
+        ['s21', '', 'Yırtıcı Fırtına', 'Namlu Patlatıcı ve Yırtıcı Vuruş hasarı +%10.', 'M archer_sv_boomstick+archer_sv_raptor_strike dmgx=1.1'],
+        ['s25', '', 'Patlayıcı Tuzak', 'Patlayıcı Ok hasarı +%20.', 'M archer_explosive_arrow dmgx=1.2'],
+        ['s26', 'A', 'Hayatta Kalan', 'Son Siper kullanınca 6 sn grup güçlenir.', 'T cast:archer_sv_last_stand => st(party,empower,6)'],
+        ['s26', 'B', 'Tuzak Ağı', 'Pençe Tuzağı hedefi 1.5 sn daha uzun köklü tutar.', 'M archer_snare_trap sdur=root:+1.5'],
+        ['s27', '', 'Ateş Yağmuru', 'Ok Fırtınası alanı +%20.', 'M archer_arrow_storm radx=1.2'],
+        ['s28', '', 'Hayatta Kalma Ustası', 'Maks. can +%8. Ölümcül darbede %20 canla ayakta kalırsın (90 sn bekleme).', 'S maxHpPct=.08 ;; T lethal icd=90 => heal(.2) ; st(self,invulnerable,1.5)'],
+        ['s29', '', 'Sert Deri', 'Hasar azaltma +%4; yakın dövüş hasarı +%6.', 'S damageReductionPct=.04 meleeDamagePct=.06'],
+        ['s30', 'A', 'Patlama Ustası', 'Yangın Bombası ve Namlu Patlatıcı hasarı +%20.', 'M archer_sv_wildfire_bomb+archer_sv_boomstick dmgx=1.2'],
+        ['s30', 'B', 'Tuzak Ustası Hamlesi', 'Pençe Tuzağı bekleme −%20.', 'M archer_snare_trap cdx=.8'],
       ],
     },
   },

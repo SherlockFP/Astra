@@ -82,7 +82,7 @@ export const SLOTS_FOR_CATEGORY: Partial<Record<ItemCategory, EquipSlot[]>> = {
   helm: ['helm'], shoulders: ['shoulders'], chest: ['chest'], gloves: ['gloves'], legs: ['legs'], boots: ['boots'], belt: ['belt'],
   amulet: ['amulet'], ring: ['ring1', 'ring2'],
   sword1h: ['weapon'], sword2h: ['weapon'], axe1h: ['weapon'], axe2h: ['weapon'], mace: ['weapon'], staff: ['weapon'], wand: ['weapon'],
-  dagger: ['weapon', 'offhand'], crossbow: ['weapon'], bow: ['weapon'], shield: ['offhand'], tome: ['offhand'], quiver: ['offhand'],
+  dagger: ['weapon', 'offhand'], crossbow: ['weapon'], bow: ['weapon'], fist: ['weapon'], shield: ['offhand'], tome: ['offhand'], quiver: ['offhand'],
 };
 export const slotsForCategory = (c: ItemCategory): EquipSlot[] => SLOTS_FOR_CATEGORY[c] ?? [];
 

@@ -112,6 +112,44 @@ export const GUARD_COUNTER_CD = 0.6;
   KRT_BY_CLASS.necromancer = { ...KRT_BY_CLASS.mage!, classId: 'necromancer', id: 'necro_basic_krt', type: 'shadow' };
 }
 
+// WP-02 Keşiş (GDD_CLASSES_V2 §2.4 / §2.6 / §4.3): the fist heavy "Ejder Yumruğu" (cross, hit 0.50), "Çi Karşılığı" riposte (poise 55,
+// +2 Çi on the forced crit), the palm KRT and the hand-guard counter; tier 2 = the fist art wa_tiger_barrage.
+{
+  const bb = HEAVY_BY_CLASS.barbarian!;
+  HEAVY_BY_CLASS.monk = {
+    ...bb, classId: 'monk', id: 'monk_basic_heavy', name: 'Ejder Yumruğu', anim: 'Unarmed_Melee_Attack_Punch_B', animSpeed: 1.2,
+    holdFrame: 0.18, hitTime: 0.5, endTime: 0.9, range: 3.0, arc: 100, coef: 2.6, type: 'physical', poise: 30, knockback: 1.6,
+    targeting: 'melee_arc', art: 'wa_tiger_barrage',
+  };
+  RIPOSTE_BY_CLASS.monk = {
+    classId: 'monk', id: 'monk_basic_riposte', name: 'Çi Karşılığı', anim: 'Dualwield_Melee_Attack_Stab', animSpeed: 1.3, hitTime: 0.35, endTime: 0.7,
+    range: 2.8, arc: 90, coef: 3.5, type: 'physical', poise: 55, knockback: 0.5, targeting: 'melee_arc',
+  };
+  KRT_BY_CLASS.monk = {
+    classId: 'monk', id: 'monk_basic_krt', name: 'Kritik Vuruş', anim: 'Unarmed_Melee_Attack_Kick', animSpeed: 1.3, hitTime: 0.2, endTime: 0.55,
+    range: 3.0, arc: 180, coef: 5.0, type: 'physical', poise: 0, knockback: 0, targeting: 'melee_arc',
+  };
+  GUARD_COUNTER_BY_CLASS.monk = {
+    classId: 'monk', id: 'monk_basic_counter', name: 'Siper Karşılığı', anim: 'Unarmed_Melee_Attack_Punch_A', animSpeed: 1.6, hitTime: 0.22, endTime: 0.5,
+    range: 2.4, arc: 90, coef: 1.2, type: 'physical', poise: 30, knockback: 0.8, targeting: 'melee_arc',
+  };
+}
+
+// WP-02 Okçu (GDD_CLASSES_V2 §3.3 / §3.6): "Yüklü Ok" (hold the aim, release the shot, pierce 2) and the backstep riposte
+// "Gölge Adımı Atışı" (point-blank piercing arrow, poise 45, forced crit). Tier 2 = the bow art wa_piercing_bolt (crossbow family).
+{
+  HEAVY_BY_CLASS.archer = {
+    classId: 'archer', id: 'archer_basic_heavy', name: 'Yüklü Ok', anim: '2H_Ranged_Shoot', animSpeed: 1.0,
+    holdFrame: 0.3, hitTime: 0.32, endTime: 0.8, range: 0, arc: 0, coef: 3.0, type: 'physical', poise: 24, knockback: 0.6,
+    targeting: 'projectile', projectile: { speed: 70, radius: 0.4, pierce: 2, vfx: 'arrow_projectile' }, art: 'wa_piercing_bolt',
+  };
+  RIPOSTE_BY_CLASS.archer = {
+    classId: 'archer', id: 'archer_basic_riposte', name: 'Gölge Adımı Atışı', anim: '2H_Ranged_Shoot', animSpeed: 1.2, hitTime: 0.3, endTime: 0.6,
+    range: 3.0, arc: 0, coef: 3.5, type: 'physical', poise: 45, knockback: 0.5, targeting: 'projectile',
+    projectile: { speed: 60, radius: 0.4, pierce: 99, vfx: 'arrow_projectile' },
+  };
+}
+
 /** Weapon art (tier 2) ids per class (WEAPON_ARTS). */
 export function weaponArtVfx(artId: string): VfxId {
   return `weapon_art_${artId}` as VfxId;

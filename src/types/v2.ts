@@ -18,6 +18,8 @@ export type SpecId = 'knight_protector' | 'knight_blademaster' | 'barbarian_warl
   | 'mage_fire' | 'mage_frost' | 'mage_arcane'
   // GDD_TALENTS OT1: monk_mistweaver is a listed spec (its tree is authored; kit rows are wave 2)
   | 'monk_mistweaver'
+  // WP-02 (Midnight-aligned): Okçu's melee Hayatta Kalma spec (Survival) joins the archer's wave-1 specs
+  | 'archer_survival'
   // CORE_MECHANICS §2 / CM1 (append-only): İblis Avcısı (Kaos, İntikam), Ejderhasoy (Yıkım Nefesi, Koruyucu Nefes, Yüceltme),
   // and the Gölge spec of the rogue (CM12 kit). Ids only; SPECS rows arrive with the kit packages.
   | 'demonhunter_chaos' | 'demonhunter_vengeance' | 'evoker_devastation' | 'evoker_preservation' | 'evoker_augmentation'

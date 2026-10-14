@@ -19,6 +19,8 @@ export const WEAPON_ARTS: Readonly<Record<string, WeaponArtDef>> = {
   wa_piercing_bolt: ART({ id: 'wa_piercing_bolt', name: 'Delici Ok', category: 'crossbow', chargeSec: 1.0, coef: 3.0, poise: 40, kick: true, kickLockout: 10, params: { range: 30 } }),
   wa_dawn_wave: ART({ id: 'wa_dawn_wave', name: 'Şafak Dalgası', category: 'staff', chargeSec: 0.75, coef: 1.6, poise: 20, kick: true, kickLockout: 12, params: { cone: 8, allyHeal: 1.4 } }),
   wa_twin_vials: ART({ id: 'wa_twin_vials', name: 'Çift Şişe', category: 'dagger', chargeSec: 0.75, coef: 2.0, poise: 20, kick: true, kickLockout: 10, params: { vials: 2 } }),
+  // WP-02 Keşiş: the fist art, a flurry of 7 alternating punches in a 90° cone and a final kick (GDD_CLASSES_V2 §4.3)
+  wa_tiger_barrage: ART({ id: 'wa_tiger_barrage', name: 'Kaplan Yağmuru', category: 'fist', chargeSec: 0.75, coef: 0.6, poise: 36, kick: true, kickLockout: 8, params: { strikes: 7, duration: 0.9, cone: 90, range: 3.2, finalCoef: 1.6, chiPerHits: 3 } }),
 };
 
 /** Weapon art by id; undefined while the id is unknown. */
@@ -39,4 +41,5 @@ export const ART_BY_CATEGORY: Partial<Record<ItemCategory, string>> = {
   dagger: 'wa_flurry',
   crossbow: 'wa_piercing_bolt',
   bow: 'wa_piercing_bolt',
+  fist: 'wa_tiger_barrage',
 };

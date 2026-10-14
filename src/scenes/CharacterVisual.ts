@@ -30,6 +30,8 @@ const MODEL_FILE: Partial<Record<ClassId, string>> = {
   knight: 'Knight', barbarian: 'Barbarian', mage: 'Mage', rogue: 'Rogue',
   // WP-01: the necromancer is the Mage rig (bone palette), the warlock the hooded Rogue rig
   necromancer: 'Mage', warlock: 'Rogue_Hooded',
+  // WP-02: the keşiş is the bare-fisted Barbarian rig (no cape/axe), the okçu the unhooded Rogue rig (bow + quiver attach at equip time)
+  monk: 'Barbarian', archer: 'Rogue',
 };
 
 const ACCESSORY_NAMES = CHARACTER_ACCESSORY_NODES;
@@ -41,6 +43,8 @@ const DEFAULT_VISIBLE: Partial<Record<ClassId, string[]>> = {
   rogue: ['Knife', 'Knife_Offhand', 'Rogue_Cape'],
   necromancer: ['2H_Staff', 'Mage_Cape'],
   warlock: ['Rogue_Cape'],
+  monk: [],
+  archer: ['Rogue_Cape'],
 };
 
 export const classModelUrl = (classId: ClassId): string => `/assets/models/characters/${MODEL_FILE[classId] ?? MODEL_FILE.knight}.glb`;

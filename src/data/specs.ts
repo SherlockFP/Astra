@@ -17,6 +17,9 @@ import { TALENT_SPECS } from './specs_talents';
 import { SPECS_KIT_MAGE } from './specs_kit_mage';
 import { SPECS_KIT_ROGUE } from './specs_kit_rogue';
 import { SPECS_KIT_WARLOCK } from './specs_kit_warlock';
+// WP-02 (Keşiş / Okçu): the two kit spec tables (filled by the monk and archer packages).
+import { SPECS_KIT_MONK } from './specs_kit_monk';
+import { SPECS_KIT_ARCHER } from './specs_kit_archer';
 import { KNIGHT_SPECS } from './specs_kit_knight';
 import { BARBARIAN_SPECS } from './specs_barbarian';
 import { PALADIN_SPECS } from './specs_paladin';
@@ -65,7 +68,7 @@ export const SPECS: Partial<Record<SpecId, SpecDef>> = {};
 Object.assign(SPECS, KNIGHT_SPECS, BARBARIAN_SPECS, PALADIN_SPECS, NECRO_SPECS);
 for (const s of SPEC_LIST) SPECS[s.id] = s;
 Object.assign(SPECS, TALENT_SPECS);
-Object.assign(SPECS, SPECS_KIT_MAGE, SPECS_KIT_ROGUE, SPECS_KIT_WARLOCK);
+Object.assign(SPECS, SPECS_KIT_MAGE, SPECS_KIT_ROGUE, SPECS_KIT_WARLOCK, SPECS_KIT_MONK, SPECS_KIT_ARCHER);
 
 /** Spec definition by id; undefined while the registry is empty or the id is unknown. */
 export function getSpec(id: SpecId | null | undefined): SpecDef | undefined {

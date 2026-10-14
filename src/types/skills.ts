@@ -169,7 +169,13 @@ export type StatusId =
   | 'battlelord' | 'colossus' | 'sweeping' | 'avatar' | 'die_by_sword' | 'rend' | 'meat_cleaver' | 'gore'
   | 'gory_maul' | 'gory_iron' | 'ursoc_form' | 'shining_light' | 'infusion_of_light' | 'art_of_war' | 'hammer_window'
   | 'templar_combo' | 'divine_steed' | 'blood_plague' | 'vampiric_blood' | 'dancing_rune_weapon' | 'icebound'
-  | 'anti_magic_shell' | 'deaths_advance' | 'vile_contagion' | 'virulent_plague' | 'sudden_doom' | 'dark_transformation' | 'army';
+  | 'anti_magic_shell' | 'deaths_advance' | 'vile_contagion' | 'virulent_plague' | 'sudden_doom' | 'dark_transformation' | 'army'
+  // WP-02 Okçu kit (append-only): quick_draw (Geri Sıçrayış window for a full-charge Nişanlı Atış), survivor_ward (Son Siper).
+  // hunters_mark, deadeye, trueshot, wild_wrath are in the union above. StatusDefs in data/statuses_kit_archer.ts.
+  | 'quick_draw' | 'survivor_ward'
+  // KIT Keşiş (monk, append-only): the chi/stagger statuses already above (chi_flow, tigerlust, tigerfury, fortifying, brewed,
+  // stagger_pool) get StatusDefs in data/statuses_kit_monk.ts; these five are new monk-only ids.
+  | 'fists_guard' | 'rising_sun' | 'thunder_tea' | 'renewing_mist' | 'enveloping_mist';
 
 export interface StatusDef {
   id: StatusId;

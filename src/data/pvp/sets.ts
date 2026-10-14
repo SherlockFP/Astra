@@ -31,8 +31,9 @@ export interface PvpSetDef extends SetDef {
 }
 
 /** The seven playable classes (GDD_PVP_FINDER §4.3). Turkish class nouns come from the GDD list. */
-const CLASS_NOUN: Record<'knight' | 'barbarian' | 'mage' | 'rogue' | 'paladin' | 'warlock' | 'necromancer', string> = {
+const CLASS_NOUN: Record<'knight' | 'barbarian' | 'mage' | 'rogue' | 'paladin' | 'warlock' | 'necromancer' | 'monk' | 'archer', string> = {
   knight: 'Şövalye', barbarian: 'Barbar', mage: 'Büyücü', rogue: 'Haydut', paladin: 'Paladin', warlock: 'Warlock', necromancer: 'Nekromant',
+  monk: 'Keşiş', archer: 'Okçu',
 };
 
 const SAVAS_RUHU = {
@@ -91,5 +92,11 @@ export const PVP_SPEC_TRAITS: Partial<Record<SpecId, PvpSpecTrait>> = {
   necromancer_bone: { specId: 'necromancer_bone', name: 'Kemik Ustası', desc: 'Arenada maksimum can +%2.', stats: { maxHpPct: 0.02 } },
   warlock_affliction: { specId: 'warlock_affliction', name: 'Azap Ustası', desc: 'Arenada zamanla hasar +%5.', stats: { dotPct: 0.05 } },
   warlock_destruction: { specId: 'warlock_destruction', name: 'Yıkım', desc: 'Arenada gölge hasarı +%5.', stats: { shadowDamagePct: 0.05 } },
+  monk_brewmaster: { specId: 'monk_brewmaster', name: 'Demci', desc: 'Arenada alınan hasar -%3 (Sarsma havuzu).', stats: { damageReductionPct: 0.03 } },
+  monk_windwalker: { specId: 'monk_windwalker', name: 'Rüzgâr Yürüyen', desc: 'Arenada saldırı hızı +%3.', stats: { attackSpeed: 0.03 } },
+  monk_mistweaver: { specId: 'monk_mistweaver', name: 'Sis Dokuyan', desc: 'Arenada aldığın iyileşme +%3.', stats: { healReceivedPct: 0.03 } },
+  archer_marksman: { specId: 'archer_marksman', name: 'Nişancı', desc: 'Arenada kritik şansı +%3.', stats: { critChance: 0.03 } },
+  archer_beastmaster: { specId: 'archer_beastmaster', name: 'Av Ustası', desc: 'Arenada yoldaş hasarı +%5.', stats: { minionDamagePct: 0.05 } },
+  archer_survival: { specId: 'archer_survival', name: 'Hayatta Kalma', desc: 'Arenada maksimum can +%2.', stats: { maxHpPct: 0.02 } },
 };
 

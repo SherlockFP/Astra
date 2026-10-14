@@ -6,6 +6,9 @@ import { STATUSES_KIT_MAGE, STATUS_RULES_KIT_MAGE } from './statuses_kit_mage';
 import { STATUSES_KIT_ROGUE, STATUS_RULES_KIT_ROGUE } from './statuses_kit_rogue';
 import { STATUSES_KIT_WARLOCK, STATUS_RULES_KIT_WARLOCK } from './statuses_kit_warlock';
 import { STATUSES_KIT_PLATE, STATUS_RULES_KIT_PLATE } from './statuses_kit_plate';
+// WP-02 (Keşiş / Okçu): kit statuses of the monk and archer packages.
+import { STATUSES_KIT_MONK, STATUS_RULES_KIT_MONK } from './statuses_kit_monk';
+import { STATUSES_KIT_ARCHER, STATUS_RULES_KIT_ARCHER } from './statuses_kit_archer';
 import { WATCHER_STATUSES } from './watchers';
 
 /**
@@ -426,6 +429,9 @@ Object.assign(STATUS_RULES, STATUS_RULES_KIT_MAGE, STATUS_RULES_KIT_ROGUE, STATU
 // PM-00a (plate-melee §g): plate kit statuses (32 ids, 10 pending defs). Merged last: sudden_death overrides the talent stub.
 Object.assign(STATUSES, STATUSES_KIT_PLATE);
 Object.assign(STATUS_RULES, STATUS_RULES_KIT_PLATE);
+// WP-02: monk and archer kit statuses (merged after the shared rows, like the other kits).
+Object.assign(STATUSES, STATUSES_KIT_MONK, STATUSES_KIT_ARCHER);
+Object.assign(STATUS_RULES, STATUS_RULES_KIT_MONK, STATUS_RULES_KIT_ARCHER);
 
 /** Statuses that are crowd control on the "hard" scale (cannot act). */
 export const HARD_CC: StatusId[] = ['stun', 'freeze', 'knockdown', 'fear', 'petrify'];

@@ -40,6 +40,7 @@ export const SPEC_ICON: Record<SpecId, string> = {
   monk_mistweaver: CLASS_ICON_PATH.monk,
   archer_marksman: CLASS_ICON_PATH.archer,
   archer_beastmaster: CLASS_ICON_PATH.archer,
+  archer_survival: CLASS_ICON_PATH.archer,
   paladin_protection: CLASS_ICON_PATH.paladin,
   paladin_holy: CLASS_ICON_PATH.paladin,
   paladin_retribution: CLASS_ICON_PATH.paladin,

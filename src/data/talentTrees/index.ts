@@ -70,6 +70,8 @@ const SPEC_TABLE: readonly SpecEntry[] = [
   // KIT PK-0 (index 21, appended so existing export strings stay valid). Its raw tree arrives with the T-step (gen-talent-data):
   // until then getTree returns null and specsOfClass omits it.
   { id: 'rogue_subtlety', classId: 'rogue', name: 'Gölge' },
+  // WP-02 Okçu (index 22, appended): Hayatta Kalma. Its raw tree is at the end of raw/archer.ts.
+  { id: 'archer_survival', classId: 'archer', name: 'Hayatta Kalma' },
 ];
 
 /** Class ids in canonical order (§1.2). */

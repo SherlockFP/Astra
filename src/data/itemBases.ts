@@ -45,7 +45,7 @@ export const CLASS_NAMES_TR: Record<ClassId, string> = {
   demonhunter: 'İblis Avcısı', evoker: 'Ejderhasoy', // CM1
 };
 
-export const WEAPON_CATEGORIES: ItemCategory[] = ['sword1h', 'sword2h', 'axe1h', 'axe2h', 'mace', 'staff', 'wand', 'dagger', 'crossbow', 'bow'];
+export const WEAPON_CATEGORIES: ItemCategory[] = ['sword1h', 'sword2h', 'axe1h', 'axe2h', 'mace', 'staff', 'wand', 'dagger', 'crossbow', 'bow', 'fist'];
 export const ARMOR_SLOT_CATEGORIES: ItemCategory[] = ['helm', 'shoulders', 'chest', 'gloves', 'legs', 'boots'];
 export const OFFHAND_CATEGORIES: ItemCategory[] = ['shield', 'tome', 'quiver'];
 export const JEWELRY_CATEGORIES: ItemCategory[] = ['amulet', 'ring'];
@@ -59,7 +59,7 @@ export const isEquipmentCategory = (c: ItemCategory) =>
 export const CATEGORY_NAMES_TR: Partial<Record<ItemCategory, string>> = {
   helm: 'Kask', shoulders: 'Omuzluk', chest: 'Zırh', gloves: 'Eldiven', legs: 'Pantolon', boots: 'Çizme', belt: 'Kemer', amulet: 'Kolye', ring: 'Yüzük',
   sword1h: 'Tek El Kılıç', sword2h: 'Çift El Kılıç', axe1h: 'Tek El Balta', axe2h: 'Çift El Balta', mace: 'Topuz', staff: 'Asa', wand: 'Değnek',
-  dagger: 'Hançer', crossbow: 'Arbalet', bow: 'Yay', shield: 'Kalkan', tome: 'Büyü Kitabı', quiver: 'Okluk',
+  dagger: 'Hançer', crossbow: 'Arbalet', bow: 'Yay', shield: 'Kalkan', tome: 'Büyü Kitabı', quiver: 'Okluk', fist: 'Yumruk Silahı',
   material: 'Malzeme', consumable: 'Kullanılabilir', keystone: 'Anahtar Taşı', gem: 'Taş', junk: 'Hurda',
 };
 
@@ -138,6 +138,29 @@ const WEAPON_TYPES: WeaponTypeDef[] = [
     models: [GEN + 'shield_round_wood.glb', GEN + 'shield_kite_crest.glb', GEN + 'shield_tower.glb', GEN + 'shield_demon_spiked.glb', GEN + 'shield_demon_spiked.glb'],
     implicit: [0.12, 0.14, 0.16, 0.18, 0.2].map((v) => ({ blockChance: v })),
     icons: ['item-shield-round', 'item-shield', 'item-shield-tower', 'item-shield-tower', 'item-shield-tower'],
+  },
+  {
+    // Keşiş (CLASS_WEAPONS.monk = fist): no mesh, the fists are the Barbarian rig's arms (hands tinted by the glow tier)
+    category: 'fist', hands: 1, aps: 1.5, typeMult: 0.95, classes: ['monk'], maxSockets: 2,
+    names: ['Sarılı Yumruk', 'Deri Sargı', 'Pirinç Yumruk', 'Ejder Pençesi', 'Kadim Yumruk'],
+    models: ['', '', '', '', ''],
+    implicit: [0.03, 0.04, 0.05, 0.06, 0.07].map((v) => ({ attackSpeed: v })),
+    icons: ['item-gloves-leather', 'item-gloves-leather', 'item-gloves', 'item-gloves', 'item-gloves'],
+  },
+  {
+    // Okçu (CLASS_WEAPONS.archer = bow, CLASS_OFFHANDS.archer = quiver): bow_short T1-2, bow_composite T3-5 (GDD_CLASSES_V2 §3.2)
+    category: 'bow', hands: 2, aps: 1.0, typeMult: 1.5, classes: ['archer'], maxSockets: 3,
+    names: ['Meşe Yay', 'Kısa Yay', 'Bozkır Yayı', 'Kompozit Yay', 'Kadim Yay'],
+    models: [GEN + 'bow_short.glb', GEN + 'bow_short.glb', GEN + 'bow_composite.glb', GEN + 'bow_composite.glb', GEN + 'bow_composite.glb'],
+    implicit: [0.1, 0.15, 0.2, 0.25, 0.3].map((v) => ({ critDamage: v })),
+    icons: ['item-bow', 'item-bow', 'item-bow-long', 'item-bow-long', 'item-bow-long'],
+  },
+  {
+    category: 'quiver', hands: 0, classes: ['archer'], maxSockets: 1,
+    names: ['Deri Okluk', 'Kirişli Okluk', 'Kemik Okluk', 'Rüzgâr Okluğu', 'Kadim Okluk'],
+    models: [KK + 'quiver.gltf', KK + 'quiver.gltf', KK + 'quiver.gltf', KK + 'quiver.gltf', KK + 'quiver.gltf'],
+    implicit: [0.08, 0.1, 0.12, 0.14, 0.16].map((v) => ({ resourceRegenPct: v })),
+    icons: ['item-quiver', 'item-quiver', 'item-quiver', 'item-quiver', 'item-quiver'],
   },
   {
     category: 'tome', hands: 0, classes: ['mage', 'necromancer', 'warlock'], maxSockets: 1,

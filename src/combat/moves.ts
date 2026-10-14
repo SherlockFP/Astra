@@ -138,9 +138,42 @@ const NE_RUN: MoveProfile = { ...MG_RUN, classId: 'necromancer', id: 'necro_basi
 const NE_JUMP: MoveProfile = { ...MG_JUMP, classId: 'necromancer', id: 'necro_basic_jump', name: 'Süzülen Kemik Salvosu', type: 'shadow' };
 const NE_ROLL: MoveProfile = { ...MG_ROLL, classId: 'necromancer', id: 'necro_basic_roll', name: 'Çapraz Kemik', type: 'shadow' };
 
-export const RUN_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_RUN, barbarian: BB_RUN, mage: MG_RUN, rogue: RG_RUN, paladin: PL_RUN, warlock: WL_RUN, necromancer: NE_RUN };
-export const JUMP_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_JUMP, barbarian: BB_JUMP, mage: MG_JUMP, rogue: RG_JUMP, paladin: PL_JUMP, warlock: WL_JUMP, necromancer: NE_JUMP };
-export const ROLL_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_ROLL, barbarian: BB_ROLL, mage: MG_ROLL, rogue: RG_ROLL, paladin: PL_ROLL, warlock: WL_ROLL, necromancer: NE_ROLL };
+// WP-02 Keşiş (fists, kicks: Ejder Dalışı, Dönen Tekme) and Okçu (bow volleys: Koşarak Atış, Süzülen Ok, Takla Atışı), GDD_CLASSES_V2 §2.4 / §3.3
+const MK_RUN: MoveProfile = {
+  classId: 'monk', id: 'monk_basic_run', name: 'Kayan Tekme', anim: 'Unarmed_Melee_Attack_Kick', animSpeed: 1.2,
+  hitTime: 0.3, endTime: 0.7, range: 4.0, arc: 90, coef: 1.4, type: 'physical', poise: 14, knockback: 0.7,
+  lunge: 3, token: 'RUN', nextStep: 1, feel: 'runAttack',
+};
+const MK_JUMP: MoveProfile = {
+  classId: 'monk', id: 'monk_basic_jump', name: 'Ejder Dalışı', anim: 'Unarmed_Melee_Attack_Kick', animSpeed: 1.0,
+  hitTime: 0.3, endTime: 0.6, range: 2.4, arc: 360, coef: 1.8, type: 'physical', poise: 22, knockback: 1.2,
+  radius: 2.4, landing: true, token: 'JMP', feel: 'jumpLand',
+};
+const MK_ROLL: MoveProfile = {
+  classId: 'monk', id: 'monk_basic_roll', name: 'Dönen Tekme', anim: 'Unarmed_Melee_Attack_Kick', animSpeed: 1.2,
+  hitTime: 0.3, endTime: 0.7, range: 2.4, arc: 360, coef: 1.5, type: 'physical', poise: 18, knockback: 0.8,
+  token: 'ROL', nextStep: 2, feel: 'rollAttack',
+};
+
+const AR_RUN: MoveProfile = {
+  classId: 'archer', id: 'archer_basic_run', name: 'Koşarak Atış', anim: '2H_Ranged_Shoot', animSpeed: 1.2,
+  hitTime: 0.3, endTime: 0.6, range: 28, arc: 0, coef: 0.6, type: 'physical', poise: 8, knockback: 0,
+  projectile: { count: 3, spread: 10, speed: 55, pierce: 0, vfx: 'arrow_projectile' }, token: 'RUN', nextStep: 1, feel: 'runAttack',
+};
+const AR_JUMP: MoveProfile = {
+  classId: 'archer', id: 'archer_basic_jump', name: 'Süzülen Ok', anim: '2H_Ranged_Shoot', animSpeed: 1.0,
+  hitTime: 0.05, endTime: 0.5, range: 28, arc: 0, coef: 0.7, type: 'physical', poise: 8, knockback: 0,
+  projectile: { count: 3, spread: 10, speed: 55, pierce: 0, vfx: 'arrow_projectile' }, landing: false, token: 'JMP', feel: 'runAttack',
+};
+const AR_ROLL: MoveProfile = {
+  classId: 'archer', id: 'archer_basic_roll', name: 'Takla Atışı', anim: '2H_Ranged_Shoot', animSpeed: 1.2,
+  hitTime: 0.3, endTime: 0.6, range: 28, arc: 0, coef: 1.0, type: 'physical', poise: 10, knockback: 0.5,
+  projectile: { count: 2, spread: 4, speed: 60, pierce: 2, vfx: 'arrow_projectile' }, token: 'ROL', feel: 'rollAttack',
+};
+
+export const RUN_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_RUN, barbarian: BB_RUN, mage: MG_RUN, rogue: RG_RUN, paladin: PL_RUN, warlock: WL_RUN, necromancer: NE_RUN, monk: MK_RUN, archer: AR_RUN };
+export const JUMP_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_JUMP, barbarian: BB_JUMP, mage: MG_JUMP, rogue: RG_JUMP, paladin: PL_JUMP, warlock: WL_JUMP, necromancer: NE_JUMP, monk: MK_JUMP, archer: AR_JUMP };
+export const ROLL_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_ROLL, barbarian: BB_ROLL, mage: MG_ROLL, rogue: RG_ROLL, paladin: PL_ROLL, warlock: WL_ROLL, necromancer: NE_ROLL, monk: MK_ROLL, archer: AR_ROLL };
 export const MOVE_BY_KIND: Record<MoveKind, Partial<Record<ClassId, MoveProfile>>> = { run: RUN_BY_CLASS, jump: JUMP_BY_CLASS, roll: ROLL_BY_CLASS };
 
 function toSkillDef(p: MoveProfile): SkillDef {
@@ -161,7 +194,7 @@ function toSkillDef(p: MoveProfile): SkillDef {
 
 /** Every move def, merged into the shared registry (remote replays look them up by id). */
 export const MOVE_SKILLS: Record<string, SkillDef> = {};
-for (const p of [KN_RUN, KN_JUMP, KN_ROLL, BB_RUN, BB_JUMP, BB_ROLL, MG_RUN, MG_JUMP, MG_ROLL, RG_RUN, RG_JUMP, RG_ROLL, PL_RUN, PL_JUMP, PL_ROLL, WL_RUN, WL_JUMP, WL_ROLL, NE_RUN, NE_JUMP, NE_ROLL]) {
+for (const p of [KN_RUN, KN_JUMP, KN_ROLL, BB_RUN, BB_JUMP, BB_ROLL, MG_RUN, MG_JUMP, MG_ROLL, RG_RUN, RG_JUMP, RG_ROLL, PL_RUN, PL_JUMP, PL_ROLL, WL_RUN, WL_JUMP, WL_ROLL, NE_RUN, NE_JUMP, NE_ROLL, MK_RUN, MK_JUMP, MK_ROLL, AR_RUN, AR_JUMP, AR_ROLL]) {
   MOVE_SKILLS[p.id] = toSkillDef(p);
 }
 Object.assign(SKILLS, MOVE_SKILLS);
