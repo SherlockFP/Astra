@@ -5,7 +5,7 @@
  *
  *   src/data/talentTrees/raw/<class>.ts   9 files: { class: RawTree, specs: { <specId>: RawTree } }     docs/GDD_TALENTS.trees.json
  *   src/data/skillSpecs.ts                SKILL_SPEC_ROWS (162), SIGNATURE_SKILLS, skillSpecsOf()        trees.json  skillSpecs[]
- *   src/data/passiveExtra.ts              SECTOR_ROWS (122), CLUSTER_ROWS (36), MASTERY_ROWS (14),
+ *   src/data/passiveExtra.ts              SECTOR_ROWS (162), CLUSTER_ROWS (36), MASTERY_ROWS (14),
  *                                         SOCKET_ROWS (9), NC_CONNECTORS (2)                             docs/GDD_TALENTS.web.json
  *
  *   node tools/gen-talent-data.mjs            write the files (unchanged files are not rewritten), print the counts
@@ -31,10 +31,10 @@ const HEADER = '// GENERATED from docs/GDD_TALENTS.*.json by tools/gen-talent-da
 
 /** Class order of the 14 raw files (the 9 classes, the CLASS SCAFFOLD trio, then İblis Avcısı and Ejderhasoy) and of the signature table (GDD_TALENTS §1.2). */
 const CLASSES = ['knight', 'barbarian', 'mage', 'rogue', 'monk', 'archer', 'paladin', 'necromancer', 'warlock', 'priest', 'shaman', 'druid', 'demonhunter', 'evoker'];
-/** Sector ids of the five new sectors: starts, entry notable, arm nodes and the two Nekromant connectors (nc_c1, nc_c2). */
-const SECTOR_ID = /^(pl|mk|ar|wl|nc)_/;
-/** Sector notables and keystones (n_mk_*, ks_mk_empty_hand, n_pl_gate, ...). */
-const SECTOR_NOTABLE_ID = /^(n|ks)_(pl|mk|ar|wl|nc)_/;
+/** Sector ids: the five sectors (starts, entry notable, arm nodes, the two Nekromant connectors nc_c1 / nc_c2) and the five mini sectors (pr, sh, dr, dh, ev: start, shape nodes). */
+const SECTOR_ID = /^(pl|mk|ar|wl|nc|pr|sh|dr|dh|ev)_/;
+/** Sector notables and keystones (n_mk_*, ks_mk_empty_hand, n_pl_gate, n_pr_healing_channel, ...). */
+const SECTOR_NOTABLE_ID = /^(n|ks)_(pl|mk|ar|wl|nc|pr|sh|dr|dh|ev)_/;
 const CLUSTER_ID = /^cl_/;
 const SLOT_ID = /^s(0[1-9]|[12][0-9]|30)$/;
 const OPTS = ['', 'A', 'B'];
@@ -50,8 +50,8 @@ const EXPECT = {
   /** KIT Druid: +class:druid (25) and four spec trees (24 each). */
   rows: 1262,
   skillSpecRows: 162,
-  webNodes: 306,
-  sectors: 122,
+  webNodes: 346,
+  sectors: 162,
   clusters: 36,
   masteries: 14,
   masteryChoices: 42,
@@ -64,7 +64,7 @@ const PENDING_SPEC_TREES = ['rogue_subtlety'];
 const SCAFFOLD_CLASSES = ['priest', 'shaman', 'druid'];
 /** CM12 classes whose signature skills (SIGNATURE_SKILLS) are not authored yet: the empty list is the answer, not an error. */
 const NO_SIGNATURE_CLASSES = ['demonhunter', 'evoker'];
-const WEB_KINDS ={ start: 9, small: 178, notable: 80, keystone: 16, mastery: 14, socket: 9 };
+const WEB_KINDS = { start: 14, small: 203, notable: 90, keystone: 16, mastery: 14, socket: 9 };
 
 const fail = (msg) => {
   throw new Error(`gen-talent-data: ${msg}`);
@@ -324,7 +324,7 @@ function buildWeb(W) {
     }
     return row;
   });
-  if (sectorRows.filter((r) => r.kind === 'start').length !== 5) fail('sectors must contain 5 starts');
+  if (sectorRows.filter((r) => r.kind === 'start').length !== 10) fail('sectors must contain 10 starts (5 sectors + 5 mini sectors)');
 
   // Cluster nodes: id / kind / name / desc / fx.
   const clusterRows = groups.cluster.map((n) => {
@@ -377,7 +377,7 @@ function passiveFile(web) {
   const table = (name, rows, type) => `export const ${name}: ${type}[] = ${lit(rows)};`;
   return [
     HEADER,
-    '// Source: docs/GDD_TALENTS.web.json, the 306-node golden web minus the 125 base nodes of data/talents.ts (RAW_BASE).',
+    '// Source: docs/GDD_TALENTS.web.json, the 346-node golden web minus the 125 base nodes of data/talents.ts (RAW_BASE).',
     "// Content only: no x/y and no links. T2 buildPassiveWeb builds the geometry (GDD_TALENTS §3.3). `off` = degrees from the parent's radial direction.",
     "import type { ClassId } from '../types/common';",
     "import type { StatBlock } from '../types/stats';",
@@ -398,7 +398,7 @@ function passiveFile(web) {
     'export interface SocketRow { id: string; parent: string; off: number; name: string; desc: string }',
     'export interface ConnectorRow { from: string; to: string }',
     '',
-    '/** The 122 sector nodes of the five new sectors (GDD_CLASSES_V2 §12, GDD_TALENTS §3.4). */',
+    '/** The 162 sector nodes: the five sectors (122, GDD_CLASSES_V2 §12, GDD_TALENTS §3.4) and the five mini sectors (40) of the classes without a start. */',
     table('SECTOR_ROWS', web.sectorRows, 'SectorRow'),
     '',
     '/** The 36 outer cluster nodes (GDD_TALENTS §3.5). */',

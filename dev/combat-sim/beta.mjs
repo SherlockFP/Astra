@@ -70,9 +70,7 @@ for (const classId of CLASS_ORDER) {
   } else {
     ok(`${tag} class without a spec tree has no spec and no loadout`, !spec && !loadout);
   }
-  // classes whose passive-web start sector is not designed yet (druid, priest, shaman, demonhunter, evoker) keep only the start node
-  const NO_WEB_START = ['druid', 'priest', 'shaman', 'demonhunter', 'evoker'];
-  if (!NO_WEB_START.includes(classId)) ok(`${tag} passive web grew past the class start`, s.talents.length > 1, `passive=${s.talents.length}`);
+  ok(`${tag} passive web grew past the class start`, s.talents.length > 1, `passive=${s.talents.length}`);
   ok(`${tag} passive web is within the cap`, s.talents.length <= BT.BETA_PASSIVE_POINTS + 1);
 
   // skill bar: the game's own default bar at the cap (8 slots: the bar cannot hold a whole skill list), every class skill unlocked by the cap
