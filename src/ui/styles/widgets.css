@@ -170,6 +170,8 @@
    ========================================================================== */
 .loading { position: absolute; inset: 0; pointer-events: auto; background: radial-gradient(ellipse at 50% 38%, #2a1c12 0%, #120b07 55%, #040201 100%); overflow: hidden; transition: opacity 0.5s; }
 .loading.out { opacity: 0; pointer-events: none; }
+.loading:not(.out) { animation: ldfadein 0.45s ease-out; }
+@keyframes ldfadein { from { opacity: 0; } to { opacity: 1; } }
 .loading::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
   background:
     radial-gradient(ellipse 22% 38% at 9% 64%, rgba(255, 140, 40, 0.30), rgba(255, 140, 40, 0) 70%),

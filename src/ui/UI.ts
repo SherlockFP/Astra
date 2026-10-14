@@ -22,6 +22,7 @@ import { runNumFormatAsserts } from './widgets/numFormat';
 import { Toasts, type ToastKind } from './widgets/Toasts';
 import { Modal } from './widgets/Modal';
 import { LoadingScreen } from './widgets/Loading';
+import type { LoadingZone } from './widgets/loadingZone';
 import { TooltipLayer } from './widgets/TooltipLayer';
 import { WorldLabels } from './widgets/WorldLabels';
 import { BubbleLayer, type BubbleHandle, type BubbleOpts } from './widgets/Bubbles';
@@ -451,6 +452,12 @@ export class UI {
   /** Loading screen with progress 0..1. */
   showLoading(progress: number, label?: string, image?: string): void {
     this.loading.show(progress, label, image);
+  }
+
+  /** Scene-change loading: the zone's name, level band and backdrop, then the usual progress (0..1). */
+  showZoneLoading(zone: LoadingZone | null, progress: number, label?: string): void {
+    this.loading.setZone(zone);
+    this.loading.show(progress, label ?? zone?.name ?? '');
   }
 
   hideLoading(): void {

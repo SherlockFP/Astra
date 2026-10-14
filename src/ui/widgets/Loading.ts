@@ -1,6 +1,7 @@
 import { G } from '../../game/G';
 import { ICON, div, iconEl, setStyle, setText, approach } from './dom';
 import { resolveHint, type SchemeText } from './controlHints';
+import type { LoadingZone } from './loadingZone';
 
 /** Key names are `{k:action}` tokens (resolved from the live bindings when shown); scheme-dependent tips have one text per scheme. */
 export const LOADING_TIPS: SchemeText[] = [
@@ -33,8 +34,13 @@ export const LOADING_TIPS: SchemeText[] = [
 ];
 
 const LORE = 'Kuzgunkale\'nin altında, unutulmuş kralların kemikleri yatar. Kadim zindanlar yeniden uyanıyor...';
+const BOOT_TITLE = 'EFSUN ONLINE';
+const BOOT_SUB = 'Kadim Zindanlar';
 
-/** Full-screen loading overlay: crest art, ornate progress bar, rotating Turkish tips, drifting embers. */
+/**
+ * Full-screen loading overlay (WoW-style): zone art, zone name and level band, ornate progress bar driven by the real
+ * load steps, rotating Turkish tips and drifting embers. Boot uses the crest; scene changes call setZone() first.
+ */
 export class LoadingScreen {
   readonly el: HTMLElement;
   private bar: HTMLElement;
@@ -42,6 +48,8 @@ export class LoadingScreen {
   private labelEl: HTMLElement;
   private tipEl: HTMLElement;
   private art: HTMLElement;
+  private titleEl: HTMLElement;
+  private subEl: HTMLElement;
   private shown = 0;
   private target = 0;
   private visible = false;
@@ -64,8 +72,10 @@ export class LoadingScreen {
     const center = div('ld-center', this.el);
     const crest = div('ld-crest', center);
     iconEl(ICON('ui-dungeon'), 'ld-crest-ico', crest);
-    div('ld-title', center).textContent = 'EFSUN ONLINE';
-    div('ld-sub', center).textContent = 'Kadim Zindanlar';
+    this.titleEl = div('ld-title', center);
+    this.titleEl.textContent = BOOT_TITLE;
+    this.subEl = div('ld-sub', center);
+    this.subEl.textContent = BOOT_SUB;
     const foot = div('ld-foot', this.el);
     this.labelEl = div('ld-label', foot);
     const track = div('ld-track', foot);
@@ -84,6 +94,13 @@ export class LoadingScreen {
 
   get isVisible(): boolean {
     return this.visible;
+  }
+
+  /** Zone header and backdrop for the next show(); null restores the boot title. */
+  setZone(zone: LoadingZone | null): void {
+    setText(this.titleEl, zone ? zone.name : BOOT_TITLE);
+    setText(this.subEl, zone ? zone.band : BOOT_SUB);
+    this.art.style.backgroundImage = zone ? `url("${zone.art}")` : '';
   }
 
   show(progress: number, label?: string, image?: string): void {

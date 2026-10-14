@@ -18,7 +18,7 @@ import { siegeCrossings, type SiegeCrossing } from '../../systems/SiegeRules';
 /**
  * Open-world event calendar (MMO pillars WP-04). The schedule is a pure function of the wall clock: a 30-minute slot k
  * (UTC epoch) runs `EVENT_IDS[k % 4]`, so every client derives the same events, sites and phases with no network.
- * Announcements are local (banner, toast, chat line, `world:event`). The spawning is host-only, like the other directors:
+ * Announcements are local (banner, chat line, `world:event`; no toast, the banner is the one on-screen copy). The spawning is host-only, like the other directors:
  * the metin storm (MetinDirector.setStorm), the world boss (BossSchedule.expedite), the village raid waves and the goblin
  * caravan (spawnEnemy with tags `ev:*`). Rewards are local: a participant (damage dealt to an event unit, or presence in the
  * event radius for 60 s) gets gold, exploration XP and a roll from the elite table.
@@ -392,7 +392,6 @@ export class EventCalendar {
     else text = `${def.name} sona erdi.`;
     G.events.emit('world:event', { id: c.id, phase: c.phase, at: c.at, zone: c.occ.site.id });
     G.events.emit('world:announce', { text, kind: 'info' });
-    toast(text, c.phase === 'start' ? 'boss' : 'info');
     G.events.emit('net:chat', { from: '', text, channel: 'system' });
   }
 
@@ -404,7 +403,6 @@ export class EventCalendar {
         ? `Kale Kuşatması başladı! ${SIEGE_FORT.name}: bayrağı 60 sn tut.`
         : 'Kale Kuşatması sona erdi.';
     G.events.emit('world:announce', { text, kind: 'info' });
-    toast(text, c.phase === 'start' ? 'boss' : 'info');
     G.events.emit('net:chat', { from: '', text, channel: 'system' });
   }
 

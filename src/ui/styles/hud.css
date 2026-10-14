@@ -29,7 +29,7 @@
 .layer-top { z-index: 300; }
 .layer-modal { z-index: 400; }
 .layer-tooltip { z-index: 500; }
-.layer-loading { z-index: 800; }
+.layer-loading { z-index: 9001; } /* above the scene fade (9000): the zone screen is what the player sees while a scene loads */
 .panel-host { position: absolute; inset: 0; pointer-events: none; }
 .panel-host > * { pointer-events: auto; }
 

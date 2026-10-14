@@ -25,7 +25,7 @@ export class SceneManager {
   private emptyScene = new THREE.Scene();
   private emptyCam = new THREE.PerspectiveCamera();
   /** Fired before the old scene's exit() (services clear scene-scoped state). */
-  onLeaving: ((from: SceneId | null, to: SceneId) => void) | null = null;
+  onLeaving: ((from: SceneId | null, to: SceneId, params?: unknown) => void) | null = null;
   onChange: ((from: SceneId | null, to: SceneId) => void) | null = null;
   onView: ((scene: THREE.Scene, camera: THREE.Camera) => void) | null = null;
   /** enter() threw: return a fallback scene id to go to (or null to stay black). */
@@ -66,7 +66,7 @@ export class SceneManager {
     let failed: unknown = null;
     try {
       await this.fade(1);
-      this.onLeaving?.(from, id);
+      this.onLeaving?.(from, id, params);
       if (this.current) {
         try {
           this.current.exit();

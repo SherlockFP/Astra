@@ -29,6 +29,7 @@ import { installDailyLoop } from '../systems/DailyLoop';
 import { installGuild } from '../systems/Guild';
 import { installArena } from '../systems/ArenaInstall';
 import { LoadingScene } from '../scenes/LoadingScene';
+import { zoneFor } from '../ui/widgets/loadingZone';
 import { MenuScene } from '../scenes/MenuScene';
 import { TownScene } from '../scenes/TownScene';
 import { DungeonScene } from '../scenes/DungeonScene';
@@ -138,8 +139,13 @@ export async function bootGame(): Promise<void> {
     G.input.gameScene = to === 'town' || to === 'dungeon'; // GDD_V2: F2-F5 party keys are swallowed only in game scenes
     G.events.emit('scene:changed', { from, to });
   };
-  G.scenes.onLeaving = (from, to) => G.events.emit('scene:leaving', { from, to });
+  G.scenes.onLeaving = (from, to, params) => {
+    G.events.emit('scene:leaving', { from, to });
+    // WoW-style zone screen for every change into a playable scene; the scene's own enter() drives the bar and hides it
+    if (to === 'town' || to === 'dungeon') G.ui.showZoneLoading(zoneFor(to, params), 0, 'Yükleniyor...');
+  };
   G.scenes.onError = (id) => {
+    G.ui.hideLoading();
     G.ui.toast(`Sahne yüklenemedi (${id}). Geri dönülüyor...`, 'error');
     return id === 'menu' ? null : G.character ? (id === 'town' ? 'menu' : 'town') : 'menu';
   };
