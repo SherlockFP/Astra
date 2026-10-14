@@ -198,6 +198,7 @@ function setupFight(spec, L, key, scenario) {
   p.position.set(0, 0, 0);
   p.resource = p.maxResource;
   takenLog = [];
+  DUMMIES.length = 0;
   EMP.slot = null;
   return { ch, p };
 }
@@ -212,6 +213,8 @@ function rangeOf(spec) {
 function dummy(x, z, L, armor = 0) {
   const hp = 1e12;
   const e = H.addEnemy(x, z, { hp });
+  e.home = [x, z];
+  DUMMIES.push(e);
   e.level = L;
   e.maxHp = hp;
   e.hp = hp;
@@ -296,6 +299,8 @@ function compile(line, spec) {
 
 /** APL lines the sim does not model (free text without `if`): reported in the output for data review, never guessed. */
 const APL_NOTES = new Set();
+/** APL lines whose skill is not on the spec's bar (the player cannot press them, so the sim skips them): reported for data review. */
+const OFF_BAR = new Set();
 /** The compiled lines of a list: `lmb` lines are the filler (LMB is always pressed when nothing else casts); other lines must name a known skill. */
 function aplFor(spec, list) {
   const out = [];
@@ -380,8 +385,13 @@ function pressApl(p, lines, env, aim) {
   let gcdWait = false; // a ready line blocked only by the GCD: the player waits for the GCD instead of spending it on the filler
   for (const l of lines) {
     const slot = slotOf(p, l.skill);
-    if (!slot) continue;
-    if (!l.fn(env)) continue;
+    if (!slot) { OFF_BAR.add(`${p.spec}: ${l.skill} (line "${l.line}") is not on the bar, so the line never fires`); continue; }
+    const condOk = l.fn(env);
+    if (!condOk) continue;
+    // a timed cast that is already running is not pressed again (a re-press cancels and restarts it, so it never lands). Channels keep
+    // the re-issued key: that is what holds the channel and the empower.
+    const cur = G.skills.state(p).cur;
+    if (cur && cur.def.id === l.skill && !cur.def.channel && !cur.channel?.active) return true;
     if (G.skills.tryCastSlot(p, slot, aim)) {
       if (l.empower) startHold(p, slot, l);
       return true;
@@ -398,7 +408,22 @@ function pressApl(p, lines, env, aim) {
 function frame() {
   G.procs.update(DT);
   H.step(1);
+  pinDummies();
   G.minions?.update(DT);
+}
+
+/** Training dummies stand still: a knockback or stagger moves one only for the frame it lands, then it returns to its spawn point. */
+const DUMMIES = [];
+/** The local player stands on its spawn point (movement is not modelled, see the header): a dash or leap moves it for that frame only. */
+function pinDummies() {
+  for (const d of DUMMIES) {
+    if (d.removed) continue;
+    d.forcedMove = null;
+    d.position.x = d.home[0];
+    d.position.z = d.home[1];
+  }
+  const p = G.player;
+  if (p && !p.removed) { p.forcedMove = null; p.position.x = 0; p.position.z = 0; }
 }
 
 /** Damage p deals to enemies (sourced to p, or to a minion owned by p). */
@@ -411,21 +436,29 @@ function damageMeter(p, enemyIds) {
     const k = ev.skillId ?? '?';
     m.byAbility[k] = (m.byAbility[k] ?? 0) + ev.amount;
   });
-  m.stop = off;
+  // casts the player started, by skill (the breakdown shows how often each line fired, not only the damage it did)
+  m.casts = {};
+  const offCast = G.events.on('skill:cast', (ev) => { if (ev?.casterId === p.id) m.casts[ev.skillId] = (m.casts[ev.skillId] ?? 0) + 1; });
+  // a cast cut short (a later press, a stagger, a move) is counted under "!<skill>"
+  const offInt = G.events.on('skill:castInterrupted', (ev) => { if (ev && ev.casterId === p.id) { const key = '!' + ev.skillId; m.casts[key] = (m.casts[key] ?? 0) + 1; } });
+  m.stop = () => { off(); offCast(); offInt(); };
   return m;
 }
 
 /** Heals: self heals keep the real path (applyHeal); ally heals are applied here (non-local actors have no network path). */
 function installHealSpy(p, allies) {
-  const led = { effective: 0, raw: 0, self: 0 };
+  // byAbility: effective heal per skill; toTank: effective heal that reached the reference tank (allies[0]); byTarget: per ally slot
+  const led = { effective: 0, raw: 0, self: 0, byAbility: {}, toTank: 0, byTarget: {} };
   const orig = G.combat.healPlayer;
   G.combat.healPlayer = function (src, tgt, amount, opts) {
     if (!tgt || tgt.isDead || !(amount > 0)) return;
+    const ab = opts?.skillId ?? '?';
     if (tgt === p) {
       const before = p.hp;
       orig.call(this, src, tgt, amount, opts);
       const eff = Math.max(0, p.hp - before);
       led.self += eff; led.effective += eff; led.raw += amount;
+      led.byAbility[ab] = (led.byAbility[ab] ?? 0) + eff;
       return;
     }
     if (allies.includes(tgt)) {
@@ -434,6 +467,10 @@ function installHealSpy(p, allies) {
       tgt.hp = Math.min(tgt.maxHp, tgt.hp + amt);
       const eff = tgt.hp - before;
       led.effective += eff; led.raw += amt;
+      led.byAbility[ab] = (led.byAbility[ab] ?? 0) + eff;
+      const slot = allies.indexOf(tgt);
+      led.byTarget[slot] = (led.byTarget[slot] ?? 0) + eff;
+      if (slot === 0) led.toTank += eff;
       return;
     }
     orig.call(this, src, tgt, amount, opts);
@@ -442,6 +479,18 @@ function installHealSpy(p, allies) {
 }
 
 // ---------------------------------------------------------------------------------------------------------------- scenarios
+/**
+ * A pet the player summons by hand before the pull. When the spec's kit has a pet command (a skill tagged `pet`, such as the Beastmaster's
+ * Kill Command), the bench summon (`archer_call_pet`, not on the bar) is cast once before the fight and the pet stays alive; without it
+ * the command has no pet and does nothing.
+ */
+function prePull(p, spec, target) {
+  if (!spec.skills?.some((id) => SKILLS[id]?.tags?.includes('pet'))) return;
+  const summon = 'archer_call_pet';
+  if (!SKILLS[summon] || !G.skills.tryCast(p, summon, H.aimFor(p, target))) return;
+  for (let f = 0; f < Math.round(3 / DT); f++) frame(); // the summon's cast and the pet's arrival
+}
+
 function runDps(spec, L, key, scenario) {
   const { p } = setupFight(spec, L, key, scenario);
   const r = rangeOf(spec);
@@ -449,6 +498,7 @@ function runDps(spec, L, key, scenario) {
   const pack = r < 3 ? [[0, 1.8], [0.8, 2.1], [-0.8, 2.1], [0, 2.5]] : [[0, r], [1, r + 0.5], [-1, r + 0.5], [0, r + 1.2]];
   const enemies = (scenario === 'aoe' ? pack : [[0, r]]).map(([x, z]) => dummy(x, z, L));
   p.targetId = enemies[0].id;
+  prePull(p, spec, enemies[0]);
   const meter = damageMeter(p, new Set(enemies.map((e) => e.id)));
   const lines = aplFor(spec, scenario === 'aoe' ? ROT[spec.id].aoe : ROT[spec.id].st);
   const seconds = DURATION[scenario];
@@ -459,7 +509,7 @@ function runDps(spec, L, key, scenario) {
     frame();
   }
   meter.stop();
-  return { dealt: meter.dealt, dps: meter.dealt / seconds, byAbility: meter.byAbility };
+  return { dealt: meter.dealt, dps: meter.dealt / seconds, byAbility: meter.byAbility, casts: meter.casts };
 }
 
 /** Incoming hits due this frame: the boss (melee swings, periodic magic) and the adds. */
@@ -529,15 +579,21 @@ function runHeal(spec, L, key) {
   const boss = dummy(0, 2.2, L);
   p.targetId = boss.id;
   const spy = installHealSpy(p, party);
+  const casts = {}; // casts the healer started, by skill (a cut-short cast counted under "!<skill>")
+  const offCast = G.events.on('skill:cast', (ev) => { if (ev?.casterId === p.id) casts[ev.skillId] = (casts[ev.skillId] ?? 0) + 1; });
+  const offInt = G.events.on('skill:castInterrupted', (ev) => { if (ev?.casterId === p.id) casts[`!${ev.skillId}`] = (casts[`!${ev.skillId}`] ?? 0) + 1; });
   const lines = aplFor(spec, ROT[spec.id].st);
   const sched = { L, clock: 0, swing: 0.5, magic: 2, add: 1, party: 0.5 };
   const tankTaken = { raw: 0, mit: 0 };
   let tankDownAt = null;
   const aim = H.aimFor(p, boss);
+  // the healer's aim: the crosshair stays on the boss (damage lines), and the friendly aim is the most injured ally (heal bolts bend to it and
+  // the smart heal target picks it first, as a player's would)
+  const mostInjured = () => party.reduce((m, a) => (a.hp / a.maxHp < m.hp / m.maxHp ? a : m));
   for (let f = 0; f < Math.round(DURATION.heal / DT); f++) {
     sched.clock = f * DT;
     H.setAimTarget(boss);
-    pressApl(p, lines, makeEnv(p, boss, [boss], party), aim);
+    pressApl(p, lines, makeEnv(p, boss, [boss], party), { ...aim, allyId: mostInjured().id });
     // the reference tank takes the boss profile through its own armour; DPS allies take the party stream
     for (const hit of dueHits(sched, boss.id, [boss.id], ref)) {
       const lost = G.combat.mitigate(tank, hit.amount, hit.type, L);
@@ -555,10 +611,13 @@ function runHeal(spec, L, key) {
     frame();
   }
   spy.restore();
+  offCast();
+  offInt();
   return {
     hps: spy.led.effective / DURATION.heal, overhealPct: spy.led.raw > 0 ? 1 - spy.led.effective / spy.led.raw : 0,
     tankDtpsRaw: tankTaken.raw / DURATION.heal, tankDtps: tankTaken.mit / DURATION.heal, tankSurvived: tankDownAt === null,
     tankMinPct: Math.max(0, tank.hp) / ref.hp, refHp: ref.hp,
+    healByAbility: spy.led.byAbility, healToTank: spy.led.toTank / DURATION.heal, healByTarget: spy.led.byTarget, casts,
   };
 }
 
@@ -590,11 +649,11 @@ for (const L of LEVELS) {
     try {
       if (spec.role === 'healer') {
         const h = runHeal(spec, L, key);
-        Object.assign(row, { hps: h.hps, overheal: h.overhealPct, dtps: h.tankDtps, dtpsRaw: h.tankDtpsRaw, tankSurvived: h.tankSurvived, tankMinPct: h.tankMinPct });
+        Object.assign(row, { hps: h.hps, overheal: h.overhealPct, dtps: h.tankDtps, dtpsRaw: h.tankDtpsRaw, tankSurvived: h.tankSurvived, tankMinPct: h.tankMinPct, healByAbility: h.healByAbility, healToTank: h.healToTank, healByTarget: h.healByTarget, casts: h.casts });
       } else {
         const st = runDps(spec, L, key, 'st');
         const aoe = runDps(spec, L, key, 'aoe');
-        Object.assign(row, { dpsSt: st.dps, dpsAoe: aoe.dps, byAbility: st.byAbility });
+        Object.assign(row, { dpsSt: st.dps, dpsAoe: aoe.dps, byAbility: st.byAbility, casts: st.casts });
         if (spec.role === 'tank') {
           const t = runTank(spec, L, key);
           Object.assign(row, { dtps: t.dtps, dtpsRaw: t.dtpsRaw, selfHps: t.selfHps, mitigation: t.mitigation, ttd: t.ttd, died: t.died });
@@ -646,6 +705,25 @@ for (const r of rows) {
 }
 console.log(out.join('\n'));
 if (APL_NOTES.size) console.log('\nAPL lines not modelled by the sim (data review):\n' + [...APL_NOTES].join('\n'));
+if (OFF_BAR.size) console.log('\nAPL lines whose skill is not on the default bar (data review):\n' + [...OFF_BAR].join('\n'));
+if (args.breakdown) {
+  for (const r of rows) {
+    if (r.healByAbility) {
+      const hTotal = Object.values(r.healByAbility).reduce((s, x) => s + x, 0) || 1;
+      const hTop = Object.entries(r.healByAbility).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${(100 * v / hTotal).toFixed(1)}%`).join(', ');
+      const perSlot = Object.entries(r.healByTarget ?? {}).map(([k, v]) => `slot${k} ${Math.round(v / DURATION.heal)}`).join(', ');
+      console.log(`heal L${r.level} ${r.id}: HPS ${Math.round(r.hps)}, to tank ${Math.round(r.healToTank)} (${perSlot}); ${hTop}`);
+      console.log(`casts L${r.level} ${r.id} (heal fight): ${Object.entries(r.casts ?? {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', ')}`);
+      continue;
+    }
+    if (!r.byAbility) continue;
+    const total = Object.values(r.byAbility).reduce((s, x) => s + x, 0) || 1;
+    const top = Object.entries(r.byAbility).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${(100 * v / total).toFixed(1)}%`).join(', ');
+    console.log(`breakdown L${r.level} ${r.id}: ${top}`);
+    const casts = Object.entries(r.casts ?? {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', ');
+    console.log(`casts L${r.level} ${r.id} (ST fight): ${casts}`);
+  }
+}
 if (args.json) console.log(JSON.stringify(rows));
 if (errorsSeen.length) console.log('\nERRORS:\n' + errorsSeen.join('\n'));
 if (args['no-check']) process.exit(errorsSeen.length ? 1 : 0);

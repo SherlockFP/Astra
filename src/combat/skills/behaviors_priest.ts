@@ -33,6 +33,7 @@
 import { BEHAVIORS, TARGETING_BEHAVIORS, castTarget, type Behavior, type CastCtx } from './behaviors';
 import { HEAL_RANGE, addAbsorb, alliesInRange, dispelUpTo, healAlly, healAmount, healFormula, resolveHealTarget } from '../healing';
 import { specOf } from '../specs';
+import { STATUSES } from '../../data/statuses';
 import { G } from '../../game/G';
 import type { Actor } from '../../entities/Actor';
 import type { Enemy } from '../../entities/Enemy';
@@ -126,7 +127,13 @@ const dot: Behavior = {
     if (c.remote) return;
     const t = castTarget(c);
     if (!t || t.kind !== 'enemy') return;
-    c.sys.statusOnly(c, t as Enemy, c.def.statuses ?? []);
+    // A DoT ticks from a dps snapshot (Combat.resolveStatuses sets it on the hit path); statusOnly skips that, so the snapshot is taken
+    // here: the caster's base roll (coefficient 1, a DoT) x the row's magnitude (the total share of it) over the duration.
+    const base = G.combat.rollOutgoing(c.caster, { skillId: c.def.id, coef: 1, type: 'shadow', isSpell: true, isDot: true, tags: c.def.tags }, t as Enemy).noCrit;
+    const statuses = (c.def.statuses ?? []).map((s) => (
+      STATUSES[s.status]?.dotType && s.dps === undefined ? { ...s, dps: Math.max(0.5, (base * (s.magnitude ?? 1)) / Math.max(0.5, s.duration)) } : s
+    ));
+    c.sys.statusOnly(c, t as Enemy, statuses);
   },
 };
 
