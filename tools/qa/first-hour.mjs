@@ -53,9 +53,9 @@ const pwMod = await import(pathToFileURL(req.resolve('playwright-core')).href);
 const chromium = pwMod.chromium ?? pwMod.default.chromium;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const CLASS_LABEL = { knight: 'Şövalye', barbarian: 'Barbar', mage: 'Büyücü', rogue: 'Haydut', paladin: 'Paladin', necromancer: 'Nekromant', warlock: 'Warlock' };
-const CLASS_NAME = { knight: 'Kaan', barbarian: 'Barkın', mage: 'Bilge', rogue: 'Ozan', paladin: 'Alper', necromancer: 'Nehir', warlock: 'Varlık' };
-const MELEE = new Set(['knight', 'barbarian', 'rogue', 'paladin']);
+const CLASS_LABEL = { knight: 'Şövalye', barbarian: 'Barbar', mage: 'Büyücü', rogue: 'Haydut', paladin: 'Paladin', necromancer: 'Nekromant', warlock: 'Warlock', priest: 'Rahip', druid: 'Druid' };
+const CLASS_NAME = { knight: 'Kaan', barbarian: 'Barkın', mage: 'Bilge', rogue: 'Ozan', paladin: 'Alper', necromancer: 'Nehir', warlock: 'Varlık', priest: 'Tanrı', druid: 'Orman' };
+const MELEE = new Set(['knight', 'barbarian', 'rogue', 'paladin', 'druid']);
 /** console noise that is not a game bug: blocked fonts (junction node_modules), relay sockets of the P2P layer, favicon, 403 of @fs. */
 const NOISE = /WebSocket|nostr|satellite|ERR_|favicon|net::|Failed to load resource|@fontsource|A network error occurred/i;
 
