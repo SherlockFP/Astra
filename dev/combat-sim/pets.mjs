@@ -33,15 +33,15 @@ const ok = (name, cond, info = '') => {
 {
   const ids = D.PETS.map((p) => p.id);
   const SHAPES = ['quad', 'bird', 'orb', 'turtle', 'dragon'];
-  ok('cat.count', D.PETS.length === 12, `${D.PETS.length} pets`);
+  ok('cat.count', D.PETS.length === 13, `${D.PETS.length} pets`);
   ok('cat.unique-ids', new Set(ids).size === ids.length);
   ok('cat.ids-snake', ids.every((id) => /^[a-z0-9_]+$/.test(id)));
   ok('cat.names-tr', D.PETS.every((p) => p.name && p.desc && p.source.text), 'name, desc and source line');
   ok('cat.shapes', D.PETS.every((p) => SHAPES.includes(p.shape)));
   ok('cat.model-values', D.PETS.every((p) => p.scale > 0 && p.scale <= 1.2 && Number.isInteger(p.color) && Number.isInteger(p.accent)));
   const kinds = (k) => D.PETS.filter((p) => p.source.kind === k).length;
-  ok('cat.sources', kinds('drop') === 4 && kinds('ach') === 4 && kinds('event') === 4, `drop ${kinds('drop')} ach ${kinds('ach')} event ${kinds('event')}`);
-  ok('cat.by-id', D.PET_BY_ID.kuzgun?.name === 'Kuzgun' && Object.keys(D.PET_BY_ID).length === 12);
+  ok('cat.sources', kinds('drop') === 5 && kinds('ach') === 4 && kinds('event') === 4, `drop ${kinds('drop')} ach ${kinds('ach')} event ${kinds('event')}`);
+  ok('cat.by-id', D.PET_BY_ID.kuzgun?.name === 'Kuzgun' && Object.keys(D.PET_BY_ID).length === 13);
 }
 
 // every pet has its teaching item (a consumable that names the pet)
@@ -168,7 +168,7 @@ ok('event.unknown-event', P.eventPetItem('bilinmeyen_olay', 0) === null);
   // a pet item is only ever a bonus roll of its own pet's table (no stray pet items in the tables)
   const all = [...Object.entries(LOOT.RARE_TABLES), ...Object.entries(LOOT.WORLD_BOSS_TABLES)];
   const petRolls = all.flatMap(([name, t]) => (t.bonus ?? []).filter((b) => String(b.id).startsWith('pet_')).map((b) => [name, b.id]));
-  ok('loot.no-stray', petRolls.length === 4 && petRolls.every(([name, id]) => D.PETS.some((p) => D.petItemId(p.id) === id && p.source.table === name)), petRolls.map((x) => x.join(':')).join(' '));
+  ok('loot.no-stray', petRolls.length === 5 &&petRolls.every(([name, id]) => D.PETS.some((p) => D.petItemId(p.id) === id && p.source.table === name)), petRolls.map((x) => x.join(':')).join(' '));
 }
 
 // ------------------------------------------------------------------------------------------------ save.*

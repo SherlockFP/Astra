@@ -252,6 +252,5 @@ const metinSpawns = (): Record<string, string[]> => {
 export const WORLD_SPAWNS: Record<string, string[]> = {
   wb_curukkok: ['ow_mushnub'],
   wb_alevkanat: ['ow_imp', 'ow_ember'],
-  wb_ulu_boz: ['kb_ayaz_kurdu'], // generic ability rows (data/enemies_karakir.ts), no script
   ...metinSpawns(),
 };

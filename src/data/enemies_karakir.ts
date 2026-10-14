@@ -1,5 +1,5 @@
 import type { EnemyDef } from '../types/enemies';
-import { ENEMIES, A_WOLF, cone, aoe, line, buff, charge, summonAb, derive, boss, bp } from './enemyKit';
+import { ENEMIES, A_WOLF, cone, aoe, line, buff, charge, summonAb, derive, boss, bp, custom, MECH } from './enemyKit';
 import { ITCH } from './enemyModels';
 
 /**
@@ -180,22 +180,25 @@ export function registerKarakirEnemies(): void {
     ],
   });
 
-  // ---- world boss: Ulu-Boz, Kadim Mamut (GDD 1.8). Generic ability rows only (BossController runs them through EnemyAI) ------
+  // ---- world boss: Ulu-Boz, Kadim Mamut (GDD 1.8). Scripted in ai/bosses/world_steppe_ice.ts (custom rows, 5-10 players) ------
+  // Rocks and totems (the sandstorm cover, spawned at phase 2) are stationary mechanic bodies; the rock is a nav blocker.
+  MECH('ulu_kaya', 'Kaya Siperi', 'crystal_shard', 3, { radius: 1.2, visual: { blocker: 1.2 }, ai: { stationary: true } });
+  MECH('ulu_totem', 'Toz Totemi', 'beacon', 1, { radius: 0.9, ai: { stationary: true } });
   boss({
     id: 'wb_ulu_boz', name: 'Ulu-Boz', title: 'Kadim Mamut', model: ITCH('mammoth'), scale: 1.05, role: 'melee',
     hp: 150, dmg: 2.7, speed: 4.8, radius: 2.8, enrage: 36000, arenaR: 28, loot: 'loot_wb_ulu_boz', anims: A_WOLF,
     resist: { frost: 0.5, physical: 0.05 }, armor: 1.4, visual: { glow: 0x9ad0ff },
     basic: cone('ulu_boz_tusk', 'Diş Savurma', 7, 120, 2.7, 1.0, 'TuskSwipe', 0.5, { windup: 0.8, telegraph: true }),
     abilities: [
-      aoe('ulu_boz_stomp', 'Yer Sarsıntısı', 'self_aoe', 9, 9, 12, 1.4, 2.2, 'physical', 'Stomp', 0.55, { initialCooldown: 6 }),
-      charge('ulu_boz_charge', 'Buz Hücumu', 24, 16, 1.4, 2.8, 'Charge', 0.5, { shape: { type: 'line', length: 24, width: 4 }, statuses: [{ status: 'knockdown', duration: 1 }] }),
-      summonAb('ulu_boz_trumpet', 'Sürü Borusu', 'kb_ayaz_kurdu', 4, 28, 'Trumpet', 0.8, { params: { radius: 18 } }),
-      aoe('ulu_boz_frost', 'Don Çemberi', 'ground_aoe', 5, 20, 14, 1.6, 1.8, 'frost', 'Trumpet', 0.8),
+      // Toynak Sarsıntısı (frontal cone + shock rings), Toz Fırtınası (arena sandstorm), Öfke Hücumu (20 % charge + kurt adds)
+      custom('ulu_boz_hoof', 'Toynak Sarsıntısı', 9, 6, 1.2, 'Stomp', { sfx: 'boss_cast', range: 10, params: { impact: 0.55 } }),
+      custom('ulu_boz_storm', 'Toz Fırtınası', 30, 14, 2.0, 'Trumpet', { sfx: 'boss_roar', range: 60, params: { impact: 0.8 } }),
+      custom('ulu_boz_enrage', 'Öfke Hücumu', 40, undefined, 1.2, 'Charge', { sfx: 'boss_roar', range: 40, params: { impact: 0.8 } }),
     ],
     phases: [
-      bp('p1', 1.01, ['ulu_boz_stomp', 'ulu_boz_charge']),
-      bp('p2', 0.65, ['ulu_boz_stomp', 'ulu_boz_charge', 'ulu_boz_trumpet'], { yell: 'Sürü, bana!' }),
-      bp('p3', 0.3, ['ulu_boz_stomp', 'ulu_boz_charge', 'ulu_boz_trumpet', 'ulu_boz_frost'], { yell: 'Ayaz her şeyi donduracak!' }),
+      bp('p1', 1.01, ['ulu_boz_hoof']),
+      bp('p2', 0.65, ['ulu_boz_hoof', 'ulu_boz_storm'], { yell: 'Rüzgâr dönüyor, toz kalkıyor!' }),
+      bp('p3', 0.2, ['ulu_boz_hoof', 'ulu_boz_storm', 'ulu_boz_enrage'], { yell: 'Sürü, bana! Son hücum!', ability: 'ulu_boz_enrage' }),
     ],
     intro: 'Bu buzullar benden eski. Gidin, yoksa donarsınız!', death: 'Buz... eriyor...',
     // Buzul Canağı: tile (276, 222) = world (1106, 890), r 7 tiles = 28 m (WorldDecor places the BossPlacement at the same point)
