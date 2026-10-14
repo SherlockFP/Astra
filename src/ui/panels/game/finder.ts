@@ -17,6 +17,7 @@ import {
 } from './finderModel';
 import { buildParams, partyLevels, startRun } from './runStart';
 import { FissureTab } from './finderFissure';
+import { PvpTab } from './finderPvp';
 import type { DungeonParams } from '../../../scenes/scenes';
 import '../../styles/panels-finder.css';
 
@@ -27,7 +28,7 @@ import '../../styles/panels-finder.css';
  * Rules live in finderModel.ts, the run start in runStart.ts. OWNER: panels-game module.
  */
 
-type Tab = 'dungeons' | 'fissure' | 'raid' | 'groups';
+type Tab = 'dungeons' | 'fissure' | 'raid' | 'pvp' | 'groups';
 type Mode = 'solo' | 'party' | 'lfg';
 type QState = 'idle' | 'listing' | 'proposal' | 'entering' | 'inrun' | 'failed';
 
@@ -56,6 +57,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'dungeons', label: 'Zindan' },
   { id: 'fissure', label: 'Kadim Yarıklar' },
   { id: 'raid', label: 'Raid' },
+  { id: 'pvp', label: 'Oyuncuya Karşı' },
   { id: 'groups', label: 'Gruplar' },
 ];
 const MODES: { id: Mode; label: string }[] = [
@@ -67,6 +69,7 @@ const PIP: Record<LadderDiff, string> = { normal: 'N', heroic: 'K', mythic: 'M',
 const KEYS_HINTS = ['↑↓: zindan', '←→: zorluk', 'Enter: başla'];
 const GROUP_HINTS = ['Katıl: listedeki satırdan'];
 const FISSURE_HINTS = ['Tema ve zorluk seç', 'Yeniden Çevir: yeni yarık'];
+const PVP_HINTS = ['Kartta: Kuyruğa Gir / Kuyruktan Çık', 'Sıralama: ayrıntılı tablo'];
 const REWARDS: Record<LadderDiff, string[]> = {
   normal: ['Eşya', 'Deneyim (XP)', 'Altın'],
   heroic: ['Eşya', 'Deneyim (XP)', 'Altın', 'Set eşyası'],
@@ -93,6 +96,8 @@ export class FinderPanel extends GamePanel {
   private groupsEl!: HTMLElement;
   private raidEl!: HTMLElement;
   private fissure!: FissureTab;
+  private pvp!: PvpTab;
+  private pvpPoll = 0;
   private strip!: HTMLElement;
   private modeBtns = new Map<Mode, HTMLButtonElement>();
   private statusEl!: HTMLElement;
@@ -142,6 +147,7 @@ export class FinderPanel extends GamePanel {
       inDungeon: () => this.inDungeon(),
       launch: (params, label) => this.launchFissure(params, label),
     });
+    this.pvp = new PvpTab({ openRank: () => openPanel('arenaRank') });
 
     for (const m of MODES) {
       const b = h('button.k-btn.fd-mode', { type: 'button' }, m.label) as HTMLButtonElement;
@@ -194,6 +200,7 @@ export class FinderPanel extends GamePanel {
   protected onClose(): void {
     window.removeEventListener('keydown', this.onKey);
     this.stopBrowsing();
+    this.stopPvpPoll();
   }
 
   /* ------------------------------------------------------------ state helpers */
@@ -286,7 +293,21 @@ export class FinderPanel extends GamePanel {
     this.tabs.select(id, true);
     if (id === 'groups') this.startBrowsing();
     else this.stopBrowsing();
+    if (id === 'pvp') this.startPvpPoll();
+    else this.stopPvpPoll();
     this.render();
+  }
+
+  /** The PvP tab refreshes its timers and buttons once a second while it is the visible tab. */
+  private startPvpPoll(): void {
+    if (!this.pvpPoll) this.pvpPoll = window.setInterval(() => this.isOpen && this.tab === 'pvp' && this.pvp.tick(), 1000);
+  }
+
+  private stopPvpPoll(): void {
+    if (this.pvpPoll) {
+      window.clearInterval(this.pvpPoll);
+      this.pvpPoll = 0;
+    }
   }
 
   private setMode(m: Mode): void {
@@ -469,9 +490,12 @@ export class FinderPanel extends GamePanel {
     const c = this.chrome;
     c.body.textContent = '';
     this.strip.hidden = this.tab !== 'dungeons';
-    c.setHints(this.tab === 'groups' ? GROUP_HINTS : this.tab === 'fissure' ? FISSURE_HINTS : KEYS_HINTS);
+    c.setHints(this.tab === 'groups' ? GROUP_HINTS : this.tab === 'fissure' ? FISSURE_HINTS : this.tab === 'pvp' ? PVP_HINTS : KEYS_HINTS);
     if (this.tab === 'dungeons') this.renderDungeons();
-    else if (this.tab === 'fissure') {
+    else if (this.tab === 'pvp') {
+      c.body.append(this.pvp.el);
+      this.pvp.render();
+    } else if (this.tab === 'fissure') {
       c.body.append(this.fissure.el);
       this.fissure.render();
     } else if (this.tab === 'groups') {
@@ -880,7 +904,7 @@ export class FinderPanel extends GamePanel {
 
   private primary(): Primary {
     const none: Primary = { label: '', show: false, disabled: true, reason: '', run: NOOP };
-    if (this.tab === 'groups') return none;
+    if (this.tab === 'groups' || this.tab === 'pvp') return none;
     if (this.tab === 'fissure') return this.fissure.primary();
     if (this.tab === 'raid') {
       return { label: "Raid'e Gir", show: true, disabled: true, reason: 'Efsun Kalesi henüz açılmadı.', run: NOOP };

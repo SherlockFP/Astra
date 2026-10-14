@@ -18,6 +18,8 @@ import { ExtraBars, EXTRA_BARS } from './ExtraBars';
 import { AimHint, DamageDirection, DodgeCharges, PerfectDodgeText, ReadyCheck } from './Extras';
 import { Minimap } from './Minimap';
 import { MinionFrames } from './MinionFrames';
+import { ArenaHud } from './ArenaHud';
+import { MatchFoundPopup, QueueBar } from './QueueBar';
 import { MythicTracker } from './MythicTracker';
 import { QuestTracker } from './QuestTracker';
 import { Vignette } from './Overlays';
@@ -137,6 +139,9 @@ export function createHUD(ui: UI): HudApi {
   const tr = div('hud-tr', root);
   const minimap = add(new Minimap());
   tr.appendChild(minimap.el);
+  // GDD_PVP_FINDER §5.3: the arena queue bar sits under the minimap (hidden while no arena queue runs)
+  const queueBar = add(new QueueBar());
+  tr.appendChild(queueBar.el);
   // ElvUI default: the player's buffs and debuffs sit left of the minimap (hud-elvui.css .hud-auras), not on the player frame
   const auraHost = div('hud-auras', minimap.el);
   auraHost.appendChild(player.buffs.el);
@@ -242,6 +247,11 @@ export function createHUD(ui: UI): HudApi {
   const dmgDir = add(new DamageDirection());
   root.appendChild(dmgDir.el);
   for (const w of [new AimHint(), new PerfectDodgeText(), new ReadyCheck()]) {
+    add(w);
+    root.appendChild(w.el);
+  }
+  // GDD_PVP_FINDER §5.5 / §5.3: arena HUD (top centre, results card) and the match-found popup (with the queue bar's state)
+  for (const w of [new ArenaHud(), new MatchFoundPopup()]) {
     add(w);
     root.appendChild(w.el);
   }

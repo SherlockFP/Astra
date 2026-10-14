@@ -12,6 +12,21 @@ import { statusView } from './status';
 import { StatusRow } from './StatusRow';
 import { selectedTitleName } from '../../systems/Achievements';
 import { nationColor, nationTag } from '../../data/nations';
+import { arenaController } from '../../scenes/arena/ArenaController';
+
+/** GDD_PVP_FINDER §5.5: arena team colours (red A, blue B); the letter is also written in the name, so colour is not the only cue. */
+const ARENA_TEAM_COLOR: Record<'A' | 'B', string> = { A: '#ff5a4a', B: '#4aa3ff' };
+
+/** Arena team of a player plate while an arena runs (null outside arenas or for non-players). Local player: the team list has the self id. */
+function arenaTeamOf(a: Actor): 'A' | 'B' | null {
+  if (a.kind !== 'player') return null;
+  const ac = arenaController();
+  if (!ac) return null;
+  const peer = (a as Player).isLocal ? G.net?.selfId ?? '' : (a as Player).peerId;
+  if (!peer) return null;
+  const t = ac.params.teams;
+  return t.A.includes(peer) ? 'A' : t.B.includes(peer) ? 'B' : null;
+}
 
 const _v = new THREE.Vector3();
 const _p = { x: 0, y: 0 };
@@ -149,10 +164,11 @@ class Plate {
     const isPlayer = a.kind === 'player';
     // WP-06: a player's plate takes its nation's colour (Gök Kartal blue, Kızıl Kurt red); the nation is part of the key so a late-known nation repaints
     const nation = isPlayer ? (a as Player).nation : null;
-    const flavor = isPlayer ? 'player' + (nation ?? '') : isMechanic(a) ? 'mech' : isChampion(a) ? 'champ' : this.rank;
+    const team = arenaTeamOf(a);
+    const flavor = team ? 'arena' + team : isPlayer ? 'player' + (nation ?? '') : isMechanic(a) ? 'mech' : isChampion(a) ? 'champ' : this.rank;
     if (flavor === this.flavor) return;
     this.flavor = flavor;
-    const col = this.opts.color ?? (isPlayer ? nationColor(nation) : flavor === 'champ' ? CHAMPION_COLOR : flavor === 'mech' ? MECH_COLOR : RANK_NAME_COLOR[this.rank] ?? '#f1e6cf');
+    const col = this.opts.color ?? (team ? ARENA_TEAM_COLOR[team] : isPlayer ? nationColor(nation) : flavor === 'champ' ? CHAMPION_COLOR : flavor === 'mech' ? MECH_COLOR : RANK_NAME_COLOR[this.rank] ?? '#f1e6cf');
     this.el.style.setProperty('--nc', col);
     if (flavor === 'champ' || flavor === 'mech') this.el.dataset.flavor = flavor;
     else delete this.el.dataset.flavor;
@@ -171,7 +187,8 @@ class Plate {
   update(ctx: { now: number; world: number; casts: CastTracker; isTarget: boolean; isSoft: boolean; playerLevel: number; selfTitle: string }): void {
     const a = this.actor;
     this.applyFlavor();
-    const tag = a.kind === 'player' ? nationTag((a as Player).nation) : '';
+    const team = arenaTeamOf(a);
+    const tag = team ?? (a.kind === 'player' ? nationTag((a as Player).nation) : '');
     setText(this.nameEl, tag ? `[${tag}] ${a.name}` : a.name);
     setDisplay(this.nameEl, this.opts.showName !== false);
     setDisplay(this.lvlEl, this.flavor !== 'mech');

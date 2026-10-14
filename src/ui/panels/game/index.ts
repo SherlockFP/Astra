@@ -23,6 +23,7 @@ import { CollectionPanel } from './collection';
 import { ProfessionsPanel } from './professions';
 import { GuildPanel } from './guild';
 import { PvpBoardPanel } from './pvpBoard';
+import { ArenaRankPanel } from './arenaRank';
 
 /**
  * OWNER: panels-game module.
@@ -30,7 +31,7 @@ import { PvpBoardPanel } from './pvpBoard';
  * questlog (quest log), dialog (quest giver, Av Defteri), waypoints (Işınlayıcı, fast travel),
  * finder (Grup Bulucu, I), guide (Ne Yapmalıyım?, .), welcome (Hoş Geldin; UX-02 stubs),
  * marketOpen (Tezgâh kur / yönet + Bohça Al), marketStall (alıcı penceresi), marketSearch (Pazar Arama) - CM14 Pazar, ./market/*,
- * guild (Lonca: kur / üye listesi / davet; WP-05, ./guild.ts).
+ * guild (Lonca: kur / üye listesi / davet; WP-05, ./guild.ts), arenaRank (Sıralama: arena kademeleri, sezon geçmişi; ./arenaRank.ts).
  * Besides registering the panels this module reacts to a few game events on its own:
  *   player:died (local)   -> opens 'death' after a short beat; player:revived / scene:leaving -> closes it
  *   run:started           -> remembers the M+ rating (for the summary's rating gain)
@@ -77,6 +78,7 @@ export function registerGamePanels(ui: UI): void {
     new ProfessionsPanel(),
     new GuildPanel(),
     new PvpBoardPanel(),
+    new ArenaRankPanel(),
   ];
   for (const p of panels) {
     registry.set(p.id, p);
