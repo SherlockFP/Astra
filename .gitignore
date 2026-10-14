@@ -9,3 +9,4 @@ browser-out
 .claude/settings.local.json
 __pycache__/
 *.pyc
+tools/qa/out
