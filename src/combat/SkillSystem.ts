@@ -1416,6 +1416,13 @@ export class SkillSystem {
     const costMul = (mm?.costMult ?? 1) * (pm?.costMult ?? 1);
     const castMul = (mm?.castTimeMult ?? 1) * (pm?.castTimeMult ?? 1);
     if (costMul !== 1 || castMul !== 1) def = { ...def, cost: def.cost * costMul, castTime: def.castTime * castMul };
+    // WoW feel (retail rules): a hard cast or a channel cannot start on the move; instants always can, and never slow, root or turn the runner.
+    const wowMove = p.isLocal && G.input?.scheme === 'wow';
+    const hardCast = def.castTime > 0 || !!def.channel;
+    if (wowMove && hardCast && p.moveIntent && def.lockMovement !== false && !p.statuses.has('hover')) {
+      this.fail('moving');
+      return false;
+    }
     const c = this.makeCtx(p, def, aim, false);
     if (mm) {
       c.more *= mm.more;
@@ -1447,7 +1454,10 @@ export class SkillSystem {
     const leadSkip = G.settings?.data.leadSkip === false ? 0 : leadSkipSec(hit, leadTarget);
     hit -= leadSkip; end -= leadSkip; chain -= leadSkip; move -= leadSkip;
     const moving = p.isLocal && (G.input?.moveAxis?.().x !== 0 || G.input?.moveAxis?.().y !== 0);
-    const upper = params.upper === 1 && !!moving;
+    // WoW: an instant used on the move plays on the upper body, so the legs keep their run cycle (no foot sliding, no pose pop)
+    const wowNoTurn = wowMove && !movement; // WoW never turns or lunges the character for a cast (RMB mouselook is the only auto-turn)
+    const wowKeepRun = wowNoTurn && p.moveIntent && !hardCast && !def.tags.includes('finisher');
+    const upper = (params.upper === 1 && !!moving) || wowKeepRun;
 
     const a: Action = {
       def, slot, aim, start: this.now, speed: animSpeed, hitAt: hit, endAt: end, chainAt: chain, moveAt: move,
@@ -1472,8 +1482,10 @@ export class SkillSystem {
     if (p.classId === 'mage' && params.element) this.elementBalance(p, st, params.element);
 
     // facing + step-in lunge
-    p.yaw = a.faceYaw!;
-    if (def.targeting === 'melee_arc' && params.lunge && !upper) {
+    // WoW: no cast turns the character; the hit still goes to the aim (PlayerController checks "target in front 180 deg" first)
+    if (!wowNoTurn) p.yaw = a.faceYaw!;
+    else a.faceYaw = null;
+    if (def.targeting === 'melee_arc' && params.lunge && !upper && !wowNoTurn) {
       const t = c.target;
       let lunge = 0;
       if (t) {
@@ -1487,7 +1499,7 @@ export class SkillSystem {
 
     // movement lock
     // AE-4 (agile-evoker §g.2 #7): Süzül (hover) lets hard casts run without the movement slow
-    if (!isChannel) {
+    if (!isChannel && !wowMove) { // WoW: neither instants nor hard casts slow or root (moving cuts a cast instead)
       if (params.root === 1 || def.lockMovement) this.actRoot(p, move);
       else if (!(p.statuses.has('hover') && def.castTime > 0)) this.actSlow(p, params.slow ?? (basic ? 0.5 : 0.55), move);
     }
@@ -1928,7 +1940,7 @@ export class SkillSystem {
     // jump attack in the air: nothing happens until the landing (resolveLanding); a safety cut keeps it from hanging
     if (a.airborne) { if (this.now - a.start > 3) this.endAction(st, 'cancel', true); return; }
     const el = this.now - a.start;
-    if (a.faceYaw !== null && el <= a.faceUntil) p.yaw = a.faceYaw;
+    if (a.faceYaw !== null && el <= a.faceUntil && !(p.moveIntent && G.input?.scheme === 'wow' && p.isLocal && !a.def.castTime && !a.def.channel && !a.airborne && a.def.targeting !== 'dash' && a.def.targeting !== 'leap' && a.def.targeting !== 'teleport')) p.yaw = a.faceYaw;
     try { a.beh.frame?.(a.ctx, dt, el); } catch (e) { console.error('[skills] frame failed', a.def.id, e); }
     if (st.cur !== a) return;
 
@@ -2760,7 +2772,7 @@ export class SkillSystem {
     return softStat(a, key);
   }
 
-  fail(reason: 'cooldown' | 'resource' | 'range' | 'target' | 'stunned' | 'casting' | 'silenced' | 'lockout', remaining?: number): void {
+  fail(reason: 'cooldown' | 'resource' | 'range' | 'target' | 'stunned' | 'casting' | 'silenced' | 'lockout' | 'moving' | 'facing', remaining?: number): void {
     // the controller re-issues held keys every 0.05 s: only report on the press edge (and for non-key casts)
     if (this.quiet) return;
     G.events.emit('skill:fail', remaining !== undefined ? { reason, remaining } : { reason });

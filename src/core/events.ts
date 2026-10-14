@@ -34,7 +34,7 @@ export interface GameEvents {
   'skill:cast': { casterId: EntityId; skillId: string; castTime: number };
   'skill:castInterrupted': { casterId: EntityId; skillId: string };
   /** COMBAT_WOW CW-01: `remaining` (seconds) is set on 'cooldown'; 'lockout' = the school is locked by an interrupt (skill:lockout). */
-  'skill:fail': { reason: 'cooldown' | 'resource' | 'range' | 'target' | 'stunned' | 'casting' | 'silenced' | 'lockout'; remaining?: number };
+  'skill:fail': { reason: 'cooldown' | 'resource' | 'range' | 'target' | 'stunned' | 'casting' | 'silenced' | 'lockout' | 'moving' | 'facing'; remaining?: number };
   'status:applied': { targetId: EntityId; status: string; duration: number; stacks: number };
   'status:removed': { targetId: EntityId; status: string; reason?: StatusRemoveReason };
   'target:changed': { targetId: EntityId | null };

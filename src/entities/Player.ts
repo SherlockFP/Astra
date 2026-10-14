@@ -47,6 +47,8 @@ const EXTRAPOLATE_MAX = 0.25;
  */
 export class Player extends Actor {
   readonly isLocal: boolean;
+  /** WoW: the local player holds a movement key this frame (cuts hard casts, blocks casting on the move) */
+  moveIntent = false;
   peerId: string;
   slot: number;
   classId: ClassId;
