@@ -54,6 +54,8 @@ interface Camp {
 }
 
 const TICK = 0.5;
+/** Key of a camp in the channel ledger (NetSession.ledgerNote / ledgerRemaining). */
+const ledgerKey = (packId: string): string => `camp:${packId}`;
 /** A camp only refreshes when no player stands within radius + this (m). */
 const REFRESH_CLEAR_M = 30;
 
@@ -65,6 +67,7 @@ export class CampDirector {
   private readonly refreshing = new Set<number>();
   private timer = 0;
   private warned = false;
+  private ledgerRestored = false;
 
   constructor(private readonly ctx: WorldCtx, private readonly perf: WorldPerf) {
     ctx.def.packs.forEach((pk, index) => {
@@ -148,8 +151,25 @@ export class CampDirector {
     }
   }
 
+  /**
+   * Public channels (net/Channels.ts): a host that took over a channel starts with every camp alive - the world was re-seeded from the
+   * data. Camps that were wiped before the old host left are still on their respawn timer in the channel ledger (wall clock): mark
+   * them dead again, `respawnSec - remaining` ago, so they come back on schedule. Runs once, on the first tick.
+   */
+  private restoreFromLedger(now: number): void {
+    this.ledgerRestored = true;
+    for (const c of this.camps) {
+      const rem = G.net.ledgerRemaining(ledgerKey(c.pack.id));
+      if (rem <= 0) continue;
+      for (const m of c.members) c.dead.add(m.k);
+      c.lastKillAt = now - Math.max(0, c.respawnSec - rem);
+      this.refreshing.add(c.slot);
+    }
+  }
+
   private tick(now: number): void {
     const { ctx, perf } = this;
+    if (!this.ledgerRestored) this.restoreFromLedger(now);
     const cap = perf.maxActiveEnemies;
     const budget = { n: cap - ctx.aliveEnemies() };
     // only the camps that can act: active, waiting for the respawn timer, or with a player within activation reach
@@ -204,6 +224,8 @@ export class CampDirector {
         if (c.dead.size >= c.members.length) {
           c.lastKillAt = now;
           this.refreshing.add(c.slot);
+          // public channel: remember the wipe by WALL CLOCK so a host that takes over (re-seeded world) keeps the timer running
+          G.net.ledgerNote(ledgerKey(c.pack.id), c.respawnSec);
         }
       } else if (e.removed) {
         c.live.delete(k);

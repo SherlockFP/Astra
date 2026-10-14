@@ -785,7 +785,7 @@ export class LootSystem {
     // open world (Sisli Koru) -> the town's south gate, dungeons -> the portal hall
     const zoneId = G.mplus?.params?.dungeonId ?? G.mplus?.state?.dungeonId;
     const outdoor = !!zoneId && !!getDungeon(zoneId)?.outdoor;
-    void G.scenes.go('town', { spawnAt: outdoor ? 'south' : 'portal' }).catch((e) => console.error('[loot] town scroll failed', e));
+    void G.net.enterScene('town', { spawnAt: outdoor ? 'south' : 'portal' }).catch((e) => console.error('[loot] town scroll failed', e)); // (a party room keeps its own direct entry; otherwise the town channel)
   }
 
   // ======================================================================== chests & vendors

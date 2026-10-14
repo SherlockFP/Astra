@@ -41,6 +41,12 @@ export const GAME_ROOM_PREFIX = `efsun-g${PROTOCOL_VERSION}-`;
 export const MAX_PARTY_SIZE = 5;
 /** GDD_LIFE §7.5 (L-00): room size of the `pvp` room mode (team skirmish). `coop` rooms stay at MAX_PARTY_SIZE. */
 export const MAX_ROOM_SIZE = 8;
+/**
+ * Hard ceiling of players in ONE room: player entity ids are PARTY_ID_BASE + slot and must stay below the dungeon-enemy range
+ * (types/common.ts: ids 1..15), so slots are 0..14. Public zone channels (net/Channels.ts) use up to this; party rooms keep
+ * MAX_PARTY_SIZE / MAX_ROOM_SIZE. Wire sanitisers clamp slots / member lists to it.
+ */
+export const MAX_SLOTS = 15;
 
 /** Room codes: 6 chars without look-alikes (0/O, 1/I/L). 31^6 ~ 8.9e8 combinations. */
 export const ROOM_CODE_LENGTH = 6;
@@ -202,6 +208,13 @@ export interface LobbyPresenceMsg {
   g?: string;
   gid?: string;
   gv?: number;
+  /**
+   * Public zone channel (net/Channels.ts): zone id (`cz`) and channel number (`ch`, 1..) of the room the sender is in; absent = no public
+   * channel (party room, dungeon, offline). `pl` = character name of the party leader the sender follows (soft party, NetSession.partyLeader).
+   */
+  cz?: string;
+  ch?: number;
+  pl?: string;
 }
 
 /** Social: whisper, sent to ONE peer id (never broadcast). `to` is the target's character name (receiver checks it against its own). */
@@ -250,6 +263,8 @@ export interface PartyMemberMsg {
   ready: boolean;
   /** Scene the member finished loading for the host's current scene sequence. */
   ls: SceneId | null;
+  /** Public channels: join sequence assigned by the host (oldest = lowest). Host migration picks the lowest `js` among the survivors. */
+  js?: number;
 }
 
 export interface PartyStateMsg {
@@ -261,29 +276,36 @@ export interface PartyStateMsg {
   maxPlayers: number;
   /** WP-06: room mode ('pvp' = both nations may join, up to MAX_ROOM_SIZE). Absent = coop. */
   mode?: 'pvp';
+  /** Public channel key (`zone:<id>:ch<N>`); absent = a party room. */
+  ch?: string;
   members: PartyMemberMsg[];
 }
 
 export type CtlMsg =
   // client -> host
-  | { t: 'hello'; proto: number; gameVersion: string; summary: CharacterSummary; keystone: KeystoneData | null }
+  | { t: 'hello'; proto: number; gameVersion: string; summary: CharacterSummary; keystone: KeystoneData | null; /** public channel key the sender wants (absent = party room) */ ch?: string; /** re-handshake with a new host after a migration / merge */ rh?: boolean }
   | { t: 'char'; summary: CharacterSummary; keystone: KeystoneData | null }
   | { t: 'ready'; id: number; ready: boolean }
   | { t: 'loaded'; seq: number; scene: SceneId }
   | { t: 'bye' }
   // host -> client(s)
-  | { t: 'welcome'; hostId: string; slot: number; roomName: string; code: string; maxPlayers: number; sceneSeq: number; scene: { scene: SceneId; params: unknown } | null; party: PartyStateMsg }
+  | { t: 'welcome'; hostId: string; slot: number; roomName: string; code: string; maxPlayers: number; sceneSeq: number; scene: { scene: SceneId; params: unknown } | null; party: PartyStateMsg; ch?: string }
   | { t: 'reject'; reason: RejectReason; detail?: string }
   | PartyStateMsg
   | { t: 'readyCheck'; id: number; timeoutMs: number; by: string; /** what is being confirmed (keystone / dungeon choice): shown in the toast and G.net.readyCheck.label */ label?: string }
   | { t: 'readyResult'; id: number; ok: boolean; notReady: string[] }
   | { t: 'pings'; p: Record<string, number> }
   | { t: 'kick'; reason: KickReason }
-  | { t: 'closed' };
+  | { t: 'closed' }
+  // public channels (net/Channels.ts): election, migration, camp ledger. Any peer may send `cpeer`; the others are host -> member.
+  | { t: 'cpeer'; st: 'settle' | 'host'; since: number }
+  | { t: 'rehome'; to: string }
+  | { t: 'hostleft'; next: string | null }
+  | { t: 'cledger'; e: [string, number][] };
 
 export type CtlTag = CtlMsg['t'];
-export const CLIENT_CTL_TAGS: ReadonlySet<string> = new Set<CtlTag>(['hello', 'char', 'ready', 'loaded', 'bye']);
-export const HOST_CTL_TAGS: ReadonlySet<string> = new Set<CtlTag>(['welcome', 'reject', 'party', 'readyCheck', 'readyResult', 'pings', 'kick', 'closed']);
+export const CLIENT_CTL_TAGS: ReadonlySet<string> = new Set<CtlTag>(['hello', 'char', 'ready', 'loaded', 'bye', 'cpeer']);
+export const HOST_CTL_TAGS: ReadonlySet<string> = new Set<CtlTag>(['welcome', 'reject', 'party', 'readyCheck', 'readyResult', 'pings', 'kick', 'closed', 'rehome', 'hostleft', 'cledger', 'cpeer']);
 
 /* ================================================================================================
  * Generic gameplay envelope 'g' (carries NetChannels)
@@ -440,7 +462,8 @@ export function sanitizePartyMember(x: unknown): PartyMemberMsg | null {
   if (!summary || !id) return null;
   return {
     id,
-    slot: int(x.slot, 0, MAX_ROOM_SIZE - 1, 0),
+    slot: int(x.slot, 0, MAX_SLOTS - 1, 0),
+    ...(typeof x.js === 'number' ? { js: int(x.js, 0, 2 ** 31, 0) } : {}),
     host: x.host === true,
     summary,
     ks: sanitizeKeystone(x.ks),
@@ -453,7 +476,7 @@ export function sanitizeParty(x: unknown): PartyStateMsg | null {
   if (!isObj(x) || x.t !== 'party' || !Array.isArray(x.members)) return null;
   const members: PartyMemberMsg[] = [];
   const slots = new Set<number>();
-  for (const m of x.members.slice(0, MAX_ROOM_SIZE)) {
+  for (const m of x.members.slice(0, MAX_SLOTS)) {
     const pm = sanitizePartyMember(m);
     if (pm && !slots.has(pm.slot)) {
       slots.add(pm.slot);
@@ -467,8 +490,9 @@ export function sanitizeParty(x: unknown): PartyStateMsg | null {
     hostId: ident(x.hostId, 40),
     roomName: text(x.roomName, NET.MAX_ROOM_NAME_LEN, 'Oda'),
     code: ident(x.code, 12),
-    maxPlayers: int(x.maxPlayers, 1, MAX_ROOM_SIZE, MAX_PARTY_SIZE),
+    maxPlayers: int(x.maxPlayers, 1, MAX_SLOTS, MAX_PARTY_SIZE),
     ...(x.mode === 'pvp' ? { mode: 'pvp' as const } : {}),
+    ...(typeof x.ch === 'string' && ident(x.ch, 64) ? { ch: ident(x.ch, 64) } : {}),
     members,
   };
 }

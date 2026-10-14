@@ -28,6 +28,11 @@ export interface DungeonParams {
   spawn?: WorldSpawn;
   /** Set by a world entrance: the exit portal of this dungeon sends the party back to that open-world spawn. */
   returnTo?: { dungeonId: string; spawn: WorldSpawn };
+  /**
+   * Open world: re-enter the map where the player stands (x, z in metres) instead of at the map start. Set by NetSession when a zone
+   * channel is switched or its world is re-seeded after a host migration (net/Channels.ts); the spot is snapped to walkable ground.
+   */
+  resumeAt?: { x: number; z: number };
   /** GDD_ITEMS_V2 §5.2.7 (IT-00): house visit. Entity id (`CampMsg.o` / `HomeMsg.o` style) of the house owner; the interior shows their layout. */
   homeOwner?: number;
   /**

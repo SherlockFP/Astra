@@ -259,7 +259,7 @@ export class FissureTab {
     const none: FissurePrimary = { label: 'Yarığa Gir', show: true, disabled: true, reason: '', run: () => undefined };
     if (!G.character) return { ...none, reason: 'Karakter yok.' };
     if (this.deps.inDungeon()) return { ...none, label: 'Zindandasın', reason: 'Zindan içindeyken yeni koşu başlatılamaz.' };
-    if (G.net.isOnline && !G.net.isAuthority) return { ...none, label: 'Yarığı oda sahibi açar', reason: 'Yarığı yalnızca oda sahibi (grup lideri) başlatabilir.' };
+    if (G.net.inParty && !G.net.isPartyLeader) return { ...none, label: 'Yarığı oda sahibi açar', reason: 'Yarığı yalnızca oda sahibi (grup lideri) başlatabilir.' };
     const un = this.unlock(this.tier);
     if (!un.ok) return { ...none, reason: un.reason };
     const spec = this.spec();

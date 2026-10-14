@@ -202,6 +202,7 @@
 .hud .mm-ribbon { left: 2px; right: 2px; top: 2px; bottom: auto; min-width: 0; max-width: none; transform: none; padding: 1px 4px 2px; border: 0; box-shadow: none; clip-path: none; background: rgba(0, 0, 0, 0.55); }
 .hud .mm-zone { font: 700 12px/1.2 var(--font-body); color: #fff; text-shadow: var(--elv-outline); }
 .hud .mm-sub { font: 400 11px/1.1 var(--font-body); text-shadow: var(--elv-outline); }
+.hud .mm-ch { right: 5px; top: 2px; font: 700 10px/1.2 var(--font-body); color: #9fd0ff; text-shadow: var(--elv-outline); }
 .hud .mm-info { top: calc(100% + 16px); bottom: auto; font: 700 12px/1 var(--font-body); color: #fff; text-shadow: var(--elv-outline); }
 /* online count under the ring (flat, left-aligned like the zone ribbon); the clock line sits one row lower */
 .hud .mm-online { left: 0; right: 0; top: calc(100% + 2px); bottom: auto; width: auto; height: auto; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; font: 700 12px/1 var(--font-body); color: #d9d9d9; text-shadow: var(--elv-outline); text-align: left; cursor: pointer; }

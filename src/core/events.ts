@@ -103,6 +103,8 @@ export interface GameEvents {
   'net:status': { role: 'offline' | 'host' | 'client'; connected: boolean; roomId: string | null };
   'net:peerJoined': { peerId: string; name: string };
   'net:peerLeft': { peerId: string; name: string };
+  /** Public channels (net/Channels.ts): the room has a new host (host migration or split-brain merge); `self` = this peer is it. */
+  'net:hostChanged': { hostId: string; self: boolean };
   /** GDD_LIFE §3.8 (L-00): `channel` widened (old `party` / `system` lines unchanged). `to` = whisper target name, `links` ≤ 2. */
   'net:chat': { from: string; text: string; channel: ChatChannel; to?: string; links?: ChatLink[] };
   'net:rooms': Record<string, never>;            // room browser list updated

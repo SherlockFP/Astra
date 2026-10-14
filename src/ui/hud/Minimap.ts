@@ -58,6 +58,9 @@ export class Minimap implements HudWidget {
   private ctx: CanvasRenderingContext2D | null;
   private zoneEl: HTMLElement;
   private subEl: HTMLElement;
+  /** "CH2": the public zone channel (NetSession.channelTag), right of the zone name; hidden outside a channel. */
+  private chEl: HTMLElement;
+  private chShown = '';
   private northEl: HTMLElement;
   private nav: NavGrid | null = null;
   /** Grid the map image is drawn from: the nav grid, or a downsampled copy above MAP_MAX_PX cells per side (ENGINE_BIGMAPS #22). */
@@ -112,6 +115,9 @@ export class Minimap implements HudWidget {
     const ribbon = div('mm-ribbon', this.el);
     this.zoneEl = div('mm-zone', ribbon);
     this.subEl = div('mm-sub', ribbon);
+    this.chEl = div('mm-ch', ribbon);
+    this.chEl.title = 'Bölge kanalı (/kanal)';
+    setDisplay(this.chEl, false);
     // LFG eye at 7 o'clock on the ring (visible while the finder lists or has a proposal)
     this.eyeEl = h('button', 'mm-eye hud-interactive', this.el);
     this.eyeEl.type = 'button';
@@ -378,6 +384,12 @@ export class Minimap implements HudWidget {
       sub = '';
     }
     setText(this.zoneEl, title);
+    const chTag = G.net?.channelTag ?? '';
+    if (chTag !== this.chShown) {
+      this.chShown = chTag;
+      setText(this.chEl, chTag);
+      setDisplay(this.chEl, chTag !== '');
+    }
     this.updateBand(ctx, sub);
     this.updateEye();
     if (!this.onlineShown && G.presence) this.setOnline(G.presence.count());

@@ -45,7 +45,7 @@ export const monsterDmg = (L: number) => Math.round(14 + 4.5 * L);
 
 /** GDD §0.3 party scaling of HP outside Mythic+ (runs include it in G.mplus.enemyScaling). */
 export function partyHpMult(n?: number): number {
-  const members = n ?? Math.max(1, G.net?.members().length ?? 1);
+  const members = n ?? Math.max(1, G.net?.partySize ?? 1);
   return 1 + 0.6 * (Math.max(1, members) - 1);
 }
 

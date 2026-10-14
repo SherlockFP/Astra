@@ -12,6 +12,7 @@ import { activePetId } from './Pets';
 import { PET_BY_ID } from '../data/pets';
 import { cleanGuildName, isGid } from './GuildCore';
 import { NATIONS, cleanNation, nationOfSave, nationTag, type NationId } from '../data/nations';
+import { CHANNELS } from '../net/Channels';
 
 /**
  * SOCIAL - the world feels shared even when the party is empty. OWNER: net module.
@@ -115,6 +116,10 @@ export interface PresenceEntry {
   guild?: { name: string; gid: string; gv: number };
   /** WP-12: summoned cosmetic pet of the peer (data/pets.ts id), absent = none. Replicated in lpres. */
   pet?: string;
+  /** Public zone channel the peer is in (net/Channels.ts), absent = none (party room, dungeon, offline). Self-asserted. */
+  ch?: { zone: string; num: number };
+  /** Soft party: character name of the leader the peer follows (own name = leads), absent = none. */
+  leader?: string;
 }
 
 /** What the local player announces about their guild on the presence (systems/Guild.ts presenceInfo). */
@@ -133,6 +138,10 @@ export interface SocialSelf {
   nation?: NationId;
   /** WP-12: summoned cosmetic pet (absent = none). */
   pet?: string;
+  /** Public zone channel of the local player (G.net.channel), absent = none. */
+  channel?: { zone: string; num: number };
+  /** Party leader name the local player follows (G.net.partyLeader). */
+  leader?: string;
 }
 
 export interface SocialCtx {
@@ -180,6 +189,8 @@ const defaultCtx: SocialCtx = {
       zoneName: regionNow.id === zone ? regionNow.name : zoneLabel(zone),
       nation: nationOfSave(ch.save),
       pet: activePetId(ch.save) ?? undefined,
+      channel: G.net?.channel ? { zone: G.net.channel.zone, num: G.net.channel.num } : undefined,
+      leader: G.net?.partyLeader ?? undefined,
     };
   },
   now: () => Date.now(),
@@ -214,6 +225,7 @@ const HELP_LINES = [
   '/ticaret veya /2 mesaj - Ticaret kanalı',
   '/w isim mesaj - fısıltı;  /r mesaj - son fısıldayana yanıt',
   '/kim - çevrimiçi oyuncuları listele ([GK] Gök Kartal, [KK] Kızıl Kurt)',
+  '/kanal - bölge kanalları ve doluluk;  /kanal 2 - kanal değiştir (savaş dışında)',
   '/skor veya /pvp - Kızıl Sınır skor tablosu;  /ulus - ulusun',
   '/temizle, /arayuz, /zindan - diğer komutlar',
 ];
@@ -380,7 +392,7 @@ export class Social implements PresenceApi {
     if (this.tr) this.announce(false);
   }
 
-  private presenceMsg(): { t: 'lpres'; name: string; cls: ClassId; lvl: number; zone: string; zn?: string; g?: string; gid?: string; gv?: number; nat?: NationId; pet?: string } | null {
+  private presenceMsg(): { t: 'lpres'; name: string; cls: ClassId; lvl: number; zone: string; zn?: string; g?: string; gid?: string; gv?: number; nat?: NationId; pet?: string; cz?: string; ch?: number; pl?: string } | null {
     const s = this.ctx.self();
     if (!s) return null;
     const g = this.ctx.guild?.() ?? null;
@@ -390,6 +402,8 @@ export class Social implements PresenceApi {
       ...(g ? { g: g.name, gid: g.gid, gv: g.gv } : {}),
       ...(s.nation ? { nat: s.nation } : {}),
       ...(s.pet ? { pet: s.pet } : {}),
+      ...(s.channel ? { cz: s.channel.zone, ch: s.channel.num } : {}),
+      ...(s.leader ? { pl: s.leader } : {}),
     };
   }
 
@@ -397,7 +411,7 @@ export class Social implements PresenceApi {
     const msg = this.presenceMsg();
     if (!msg || !this.tr) return;
     const now = this.ctx.now();
-    const key = `${msg.name}|${msg.cls}|${msg.lvl}|${msg.zone}|${msg.gid ?? ''}|${msg.gv ?? 0}|${msg.nat ?? ''}|${msg.pet ?? ''}`;
+    const key = `${msg.name}|${msg.cls}|${msg.lvl}|${msg.zone}|${msg.gid ?? ''}|${msg.gv ?? 0}|${msg.nat ?? ''}|${msg.pet ?? ''}|${msg.cz ?? ''}${msg.ch ?? ''}|${msg.pl ?? ''}`;
     const changed = key !== this.lastSentKey;
     const due = now - this.lastAnnounceAt >= SOCIAL.PRESENCE_EVERY_MS;
     if (!force && !due && !(changed && now - this.lastAnnounceAt >= SOCIAL.CHANGE_GAP_MS)) return;
@@ -429,6 +443,10 @@ export class Social implements PresenceApi {
     e.nat = s.nation;
     if (s.pet) e.pet = s.pet;
     else delete e.pet;
+    if (s.channel) e.ch = { zone: s.channel.zone, num: s.channel.num };
+    else delete e.ch;
+    if (s.leader) e.leader = s.leader;
+    else delete e.leader;
     e.seen = this.ctx.now();
     const g = this.ctx.guild?.() ?? null;
     if (g) e.guild = { name: g.name, gid: g.gid, gv: g.gv };
@@ -478,7 +496,7 @@ export class Social implements PresenceApi {
   }
 
   private touch(): void {
-    const sig = this.entries().map((e) => `${e.id}|${e.name}|${e.cls}|${e.lvl}|${e.zone}|${e.guild?.gid ?? ''}${e.guild?.gv ?? ''}`).join(';');
+    const sig = this.entries().map((e) => `${e.id}|${e.name}|${e.cls}|${e.lvl}|${e.zone}|${e.guild?.gid ?? ''}${e.guild?.gv ?? ''}|${e.ch ? e.ch.zone + e.ch.num : ''}`).join(';');
     if (sig === this.listSig) return;
     this.listSig = sig;
     this.ctx.changed(this.count());
@@ -562,6 +580,16 @@ export class Social implements PresenceApi {
       else delete e.pet;
       this.touch();
     }
+    // public channel + soft party leader (strict: a bad value just means "none")
+    const cz = ident(d.cz, 32);
+    const chn = typeof d.ch === 'number' && Number.isInteger(d.ch) && d.ch >= 1 && d.ch <= CHANNELS.MAX_CHANNELS ? d.ch : 0;
+    const leader = cleanName(d.pl);
+    const chSig = e.ch ? `${e.ch.zone}:${e.ch.num}` : '';
+    if (cz && chn) e.ch = { zone: cz, num: chn };
+    else delete e.ch;
+    if (leader) e.leader = leader;
+    else delete e.leader;
+    if ((e.ch ? `${e.ch.zone}:${e.ch.num}` : '') !== chSig) this.touch();
     // WP-05 Lonca: strict validation of the guild fields (a bad one just means "no guild")
     const gname = cleanGuildName(d.g);
     const gid = isGid(d.gid) ? d.gid : '';
@@ -728,6 +756,9 @@ export class Social implements PresenceApi {
       case 'kim': case 'who':
         this.who();
         return true;
+      case 'kanal': case 'channel': case 'ch':
+        for (const l of G.net?.channelCommand?.(rest) ?? ['Kanal sistemi kullanılamıyor.']) this.sys(l);
+        return true;
       case 'skor': case 'pvp': case 'siralama':
         try { G.ui?.openPanel('pvpBoard'); } catch { /* ui not ready */ }
         return true;
@@ -767,7 +798,7 @@ export class Social implements PresenceApi {
     this.sys(`Çevrimiçi oyuncular (${list.length}):`);
     for (const e of list.slice(0, SOCIAL.WHO_MAX)) {
       const cn = e.cls ? CLASSES[e.cls]?.name ?? '' : '';
-      this.sys(`${e.nat ? `[${nationTag(e.nat)}] ` : ''}${e.name} - Sv ${e.lvl}${cn ? ' ' + cn : ''}${e.zoneName || e.zone ? ' - ' + (e.zoneName || e.zone) : ''}`);
+      this.sys(`${e.nat ? `[${nationTag(e.nat)}] ` : ''}${e.name} - Sv ${e.lvl}${cn ? ' ' + cn : ''}${e.zoneName || e.zone ? ' - ' + (e.zoneName || e.zone) + (e.ch ? ' CH' + e.ch.num : '') : ''}`);
     }
     if (list.length > SOCIAL.WHO_MAX) this.sys(`... ve ${list.length - SOCIAL.WHO_MAX} oyuncu daha.`);
   }

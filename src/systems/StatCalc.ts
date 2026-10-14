@@ -291,7 +291,7 @@ function registerSpecial(into: Record<string, SpecialEntry>, id: string, desc: s
 // ================================================================================================ solo-aware roles
 /** Party size StatCalc uses (read on every computeStats call, so it is never stale). NetSession.peers always holds the local peer; no party or offline = 1. */
 export function localPartySize(): number {
-  return Math.max(1, G.net?.peers.size || 1);
+  return Math.max(1, G.net?.partySize || 1);
 }
 
 /**

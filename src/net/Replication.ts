@@ -249,7 +249,9 @@ export class Replication {
       }
       if (net.role === 'host' && now >= this.nextSnap) {
         this.nextSnap = now + 1 / NET.SNAPSHOT_HZ - 0.002;
-        this.safe(() => this.sendSnap(world, now));
+        // a public channel streams per peer (each client only gets the enemies near ITS player); party rooms keep the shared stream
+        if (net.channel) this.safe(() => this.sendSnapChannel(world, now));
+        else this.safe(() => this.sendSnap(world, now));
       }
       if (this.gearDirtyAt >= 0 && now >= this.gearDirtyAt) {
         this.gearDirtyAt = -1;
@@ -582,6 +584,102 @@ export class Replication {
       this.stats.snapEnemiesSent += enemies.length;
       net.broadcast('snap', { t: now, enemies });
     }
+  }
+
+  /**
+   * Host of a PUBLIC CHANNEL (net/Channels.ts): the snapshot stream per peer. sendSnap() sends every client every enemy that is near ANY
+   * of the up-to-11 other players; with a spread-out crowd that multiplies the stream by the room size. Here a peer only receives the
+   * enemies within the relevance radius of its OWN player (nearest first, at most MAX_SNAP_ENEMIES), and only it is announced a
+   * host-spawned enemy it has not seen. Change detection stays global: an enemy counts as sent once every near peer that needed it got it
+   * (a peer cut by the cap keeps it due for the next tick, the others may see one repeat).
+   */
+  private sendSnapChannel(world: World, now: number): void {
+    const net = this.net;
+    const r2max = NET.OPEN_WORLD_RELEVANCE_RADIUS * NET.OPEN_WORLD_RELEVANCE_RADIUS;
+    const targets: { peer: PeerInfo; x: number; z: number }[] = [];
+    for (const p of world.players) {
+      if (p.isLocal || p.removed) continue;
+      const peer = net.peers.get(p.peerId);
+      if (peer && peer.peerId !== net.selfId) targets.push({ peer, x: p.position.x, z: p.position.z });
+    }
+    if (targets.length === 0) return;
+    /** One enemy of this tick, shared by the peers that want it. */
+    interface Item { e: Enemy; q: EnemySyncState; sig: string; wanted: number; sent: number }
+    /** One enemy as one peer sees it. */
+    interface Slot { it: Item; d2: number; missing: boolean }
+    const lists: Slot[][] = targets.map(() => []);
+    const items: Item[] = [];
+    const alive = new Set<number>();
+    for (const e of world.enemies) {
+      if (e.removed) continue;
+      alive.add(e.id);
+      const ex = e.position.x, ez = e.position.z;
+      const nearIdx: number[] = [];
+      const nearD2: number[] = [];
+      for (let i = 0; i < targets.length; i++) {
+        const dx = targets[i].x - ex, dz = targets[i].z - ez;
+        const dd = dx * dx + dz * dz;
+        if (dd <= r2max) {
+          nearIdx.push(i);
+          nearD2.push(dd);
+        }
+      }
+      if (nearIdx.length === 0) continue;
+      // Sleeping enemies are not streamed; they wake into the stream (and get announced then).
+      if (e.dormant) {
+        this.snapSigs.delete(e.id);
+        continue;
+      }
+      let st: EnemySyncState;
+      try {
+        st = e.getSyncState();
+      } catch {
+        continue;
+      }
+      const q = quantizeEnemy(st);
+      const sig = enemySig(q);
+      const dynamic = !e.isDead && (e.id >= HOST_DYNAMIC_ID_BASE || e.packId !== null);
+      const due = now - (this.sentAt.get(e.id) ?? -Infinity) >= NET.KEYFRAME_INTERVAL_S;
+      const changed = this.snapSigs.get(e.id) !== sig;
+      const it: Item = { e, q, sig, wanted: 0, sent: 0 };
+      for (let k = 0; k < nearIdx.length; k++) {
+        const i = nearIdx[k];
+        const missing = dynamic && this.announced.get(targets[i].peer.peerId)?.has(e.id) !== true;
+        if (!missing && !due && !changed) continue;
+        it.wanted++;
+        lists[i].push({ it, d2: nearD2[k], missing });
+      }
+      if (it.wanted > 0) items.push(it);
+    }
+    for (let i = 0; i < targets.length; i++) {
+      const list = lists[i];
+      if (list.length === 0) continue;
+      if (list.length > 1) list.sort((a, b) => a.d2 - b.d2);
+      const out: EnemySyncState[] = [];
+      const n = Math.min(list.length, NET.MAX_SNAP_ENEMIES);
+      for (let k = 0; k < n; k++) {
+        const slot = list[k];
+        if (slot.missing) this.announce(slot.it.e, [targets[i].peer]); // before the entry: same ordered channel, the peer spawns first
+        slot.it.sent++;
+        out.push(slot.it.q);
+      }
+      for (let k = 0; k < out.length; k += NET.SNAP_CHUNK) {
+        const enemies = out.slice(k, k + NET.SNAP_CHUNK);
+        this.stats.snapSent++;
+        this.stats.snapEnemiesSent += enemies.length;
+        net.sendTo(targets[i].peer.peerId, 'snap', { t: now, enemies });
+      }
+    }
+    for (const it of items) {
+      if (it.sent >= it.wanted) {
+        this.snapSigs.set(it.e.id, it.sig);
+        this.sentAt.set(it.e.id, now);
+      }
+    }
+    // Forget enemies that were removed from the world.
+    for (const id of this.sentAt.keys()) if (!alive.has(id)) this.sentAt.delete(id);
+    for (const id of this.snapSigs.keys()) if (!alive.has(id)) this.snapSigs.delete(id);
+    for (const set of this.announced.values()) for (const id of set) if (!alive.has(id)) set.delete(id);
   }
 
   /** Host, open world: tells each remote peer that does not know `e` yet (receivers ignore a spawn for an id they have). */

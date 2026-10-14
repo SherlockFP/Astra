@@ -110,7 +110,7 @@ export class KeystonePanel extends GamePanel {
     const out: Holder[] = [];
     const mk = this.myKey();
     if (mk) out.push({ peerId: G.net.selfId, name: G.character?.save.name ?? 'Sen', classId: G.character?.classId ?? null, key: mk, isSelf: true });
-    for (const p of G.net.peers.values()) {
+    for (const p of G.net.partyMembers()) {
       if (p.peerId === G.net.selfId || !p.keystone) continue;
       out.push({ peerId: p.peerId, name: p.name, classId: p.summary?.classId ?? null, key: p.keystone, isSelf: false });
     }
@@ -120,7 +120,7 @@ export class KeystonePanel extends GamePanel {
   private partyInfo(): { size: number; avgLevel: number } {
     const levels: number[] = [G.character?.level ?? 1];
     // a peer whose summary has not arrived yet counts as the local level (never as level 1: that would drag the enemy level down)
-    for (const p of G.net.peers.values()) if (p.peerId !== G.net.selfId) levels.push(p.summary?.level ?? levels[0]);
+    for (const p of G.net.partyMembers()) if (p.peerId !== G.net.selfId) levels.push(p.summary?.level ?? levels[0]);
     return { size: levels.length, avgLevel: Math.round(levels.reduce((a, b) => a + b, 0) / levels.length) };
   }
 
@@ -278,7 +278,7 @@ export class KeystonePanel extends GamePanel {
     main.append(alist);
 
     // party keys
-    if (holders.length > 1 || G.net.isOnline) {
+    if (holders.length > 1 || G.net.inParty) {
       main.append(h('div.pg-h', null, 'Grup Anahtarları'));
       const list = h('div.pg-ks-party');
       for (const ho of holders) {
@@ -292,7 +292,7 @@ export class KeystonePanel extends GamePanel {
           h('span.pg-ks-pkey', null, `${d?.shortName ?? ho.key.dungeonId} +${ho.key.level}`),
           ho.key.depleted ? h('span.pg-pill.pg-dim', null, 'Tükenmiş') : null,
         );
-        if (G.net.isAuthority) {
+        if (G.net.isPartyLeader) {
           row.addEventListener('click', () => {
             sfx('ui_tab');
             this.selKeyOwner = ho.peerId;
@@ -303,12 +303,12 @@ export class KeystonePanel extends GamePanel {
         list.append(row);
       }
       main.append(list);
-      if (!G.net.isAuthority) main.append(h('div.pg-dim.pg-small', null, 'Başkasının anahtarını yalnızca oda lideri seçebilir. Kendi anahtarını yerleştirebilirsin.'));
+      if (!G.net.isPartyLeader) main.append(h('div.pg-dim.pg-small', null, 'Başkasının anahtarını yalnızca oda lideri seçebilir. Kendi anahtarını yerleştirebilirsin.'));
     }
 
     // start button
     const mp = this.partyInfo();
-    const canStart = G.net.isAuthority || sel.isSelf;
+    const canStart = G.net.isPartyLeader || sel.isSelf;
     const label = sel.isSelf ? 'Anahtarı Yerleştir' : 'Bu Anahtarla Git';
     const btn = button(label, () => this.startMythicPlus(sel), { variant: 'primary', cls: 'pg-big', icon: '/assets/icons/item-keystone.svg', disabled: !canStart });
     this.footEl.append(h('span.pg-ks-footnote', null, mp.size > 1 ? `${mp.size} kişilik grup` : 'Tek başına'), btn, button('Kapat', () => this.requestClose(), { variant: 'ghost' }));
@@ -329,7 +329,7 @@ export class KeystonePanel extends GamePanel {
       return;
     }
     // the leader may start with any member's key; everybody else only with their own
-    const party = G.net.isAuthority ? this.holders().filter((ho) => !ho.isSelf).map((ho) => ho.key) : [];
+    const party = G.net.isPartyLeader ? this.holders().filter((ho) => !ho.isSelf).map((ho) => ho.key) : [];
 
     main.append(
       h('div.pg-ks-banner', null, h('span', null, "Grupla girmek mi istiyorsun? Zindan Bulucu'yu kullan."), button('Zindan Bulucu', () => openPanel('finder'), { variant: 'ghost', icon: '/assets/icons/ui-dungeon.svg' })),
@@ -429,13 +429,13 @@ export class KeystonePanel extends GamePanel {
     // per-member level gate: every member must meet it (the start button stays disabled)
     const need = requiredLevel(def, cur.ladder);
     const gates: string[] = [];
-    for (const p of G.net.peers.values()) {
+    for (const p of G.net.partyMembers()) {
       if (p.peerId === G.net.selfId || !p.summary) continue;
       if (p.summary.level < need) gates.push(`${p.name} için seviye yetersiz (${need} gerekli).`);
     }
     for (const g of gates) main.append(h('div.pg-bad.pg-small', null, g));
 
-    const canHost = G.net.isAuthority;
+    const canHost = G.net.isPartyLeader;
     const isMp = cur.ladder === 'mythicplus';
     const mpHolder = isMp ? this.holders().find((ho) => ho.key.dungeonId === def.id && (ho.isSelf || canHost)) : undefined;
     if (isStartable(cur.st)) {

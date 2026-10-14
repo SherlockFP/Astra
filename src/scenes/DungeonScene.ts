@@ -225,11 +225,13 @@ export class DungeonScene implements GameScene {
     // ---- player ----
     // open world: a run that came back from a world entrance appears in front of that entrance (GDD_OPENWORLD §9.3)
     const arrival = this.isWorld ? this.arrivalOf(def, built, params) : null;
+    // zone channels: a channel switch / host re-seed re-enters the map where the player stood (no slot offset: it is a continuation)
+    const resume = this.isWorld && params.resumeAt && Number.isFinite(params.resumeAt.x) && Number.isFinite(params.resumeAt.z) ? params.resumeAt : null;
     const startYaw = arrival?.yaw ?? built.startYaw;
     const slot = G.net.localSlot;
     const right = new THREE.Vector3(Math.cos(startYaw), 0, -Math.sin(startYaw));
-    const off = ((slot % 5) - 2) * 1.6;
-    const origin = arrival ?? { x: built.start.x, z: built.start.z };
+    const off = resume ? 0 : ((slot % 5) - 2) * 1.6;
+    const origin = resume ?? arrival ?? { x: built.start.x, z: built.start.z };
     let sx = origin.x + right.x * off, sz = origin.z + right.z * off;
     const fix = built.nav.nearestWalkable(sx, sz);
     if (fix) {
