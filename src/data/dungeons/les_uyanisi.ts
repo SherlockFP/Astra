@@ -1,8 +1,8 @@
-import type { DungeonDef, PackDef, RoomDef, TileRect } from '../../types/dungeons';
+import type { DoorDef, DungeonDef, PackDef, PropPlacement, RoomDef, TileRect } from '../../types/dungeons';
 import { GEN } from '../enemyModels';
 import {
   bossAt, chandelier, circleZone, decorator, dg, door, gp, kc, kf, kg, ks, lt, makeCtx, pack, pk, plateau, pt, Props, ramp, rectsOf,
-  rectZone, room, shPt, stairs, withProps, banner, hw, ip,
+  rectZone, room, shPt, stairs, withProps, banner, hw, ip, type KitCtx,
 } from './kit';
 
 /**
@@ -75,34 +75,135 @@ const FB = {
 const rect = (x: number, z: number, w: number, h: number): TileRect => ({ x, z, w, h });
 
 // ---------------------------------------------------------------------------------------------------------------------
+// SCALE PASS (docs/SCALE_REFERENCE.md section 3, same method as the kemik_mahzeni and buzul_tahti pilots). The rooms were widened,
+// so the hand placed props, packs, anchors and extras are still written in the OLD layout (OLD_RECT). They are remapped
+// proportionally into the new room rects (each room on its own axes), so every prop keeps its place relative to its room and
+// walls keep their edges. Rect-valued items (slopes, zones, plateaus, doors, bridges) are written directly in the new layout.
+// ---------------------------------------------------------------------------------------------------------------------
+type Rect4 = [number, number, number, number];
+
+const OLD_RECT: Record<string, Rect4> = {
+  giris: [4, 54, 8, 8], k_giris: [12, 57, 4, 2], meydan: [16, 48, 14, 14], ambar: [20, 42, 8, 6], k_hasat: [30, 54, 4, 2],
+  hasat_cukuru: [34, 46, 14, 14], k_toll_a: [40, 42, 2, 4], toll_kapisi: [36, 36, 10, 6], son_can: [30, 24, 22, 12],
+  can_kulesi: [52, 29, 8, 8], k_toll_b: [26, 29, 4, 2], kisayol: [26, 36, 10, 2], dus_meydan: [6, 22, 20, 16], k_kopru: [12, 18, 6, 4],
+  dikis_kapi: [8, 10, 16, 8], vana_odasi: [0, 10, 8, 8], kan_havuzu: [8, 2, 12, 8], k_atolye: [24, 12, 4, 2], dikis_atolye: [28, 2, 18, 14],
+  k_yukari: [46, 8, 4, 2], zolramus_kapi: [50, 2, 14, 14], k_nef_a: [56, 16, 2, 4], kemik_nef: [52, 20, 16, 8],
+  heykel_galerisi: [68, 16, 12, 16], k_cikis: [72, 32, 2, 4], buz_tepe: [62, 36, 18, 18],
+};
+
+interface RescaleOpts {
+  seed: string;
+  oldRect: Record<string, Rect4>;
+  rooms: RoomDef[];
+  doors: DoorDef[];
+  packsRaw: PackDef[];
+  /** Old-layout reserved anchors (start, font, exit, bosses, shrines, devices): x, z, radius. */
+  anchors: { x: number; z: number; r: number }[];
+}
+
+function makeRescale(o: RescaleOpts) {
+  type Area = { x0: number; z0: number; x1: number; z1: number };
+  const newRect = (id: string): Rect4 => {
+    const r = o.rooms.find((q) => q.id === id)?.rect;
+    if (!r) throw new Error(`[content] rescale: unknown room ${id}`);
+    return [r.x, r.z, r.w, r.h];
+  };
+  /** Old-layout point -> new-layout point inside the same room. A room edge sits at centre - 0.5. */
+  const toNew = (roomId: string, x: number, z: number): [number, number] => {
+    const [ox, oz, ow, oh] = o.oldRect[roomId];
+    const [nx, nz, nw, nh] = newRect(roomId);
+    return [nx - 0.5 + (x - ox + 0.5) * (nw / ow), nz - 0.5 + (z - oz + 0.5) * (nh / oh)];
+  };
+  /** Old-layout point -> the room that contains it (nearest rect when it sits on a wall line), mapped into that room. */
+  const at2 = (x: number, z: number): [number, number] => {
+    let best = Object.keys(o.oldRect)[0];
+    let bd = Infinity;
+    for (const id of Object.keys(o.oldRect)) {
+      const [ox, oz, ow, oh] = o.oldRect[id];
+      const dx = Math.max(ox - 0.5 - x, 0, x - (ox + ow - 0.5));
+      const dz = Math.max(oz - 0.5 - z, 0, z - (oz + oh - 0.5));
+      const d = Math.hypot(dx, dz);
+      if (d < bd) { bd = d; best = id; }
+    }
+    return toNew(best, x, z);
+  };
+  const near = (x: number, z: number, r: number): { x: number; z: number; r: number } => {
+    const [nx, nz] = at2(x, z);
+    return { x: nx, z: nz, r };
+  };
+  const remapPack = (p: PackDef): PackDef => {
+    const [cx, cz] = toNew(p.roomId, p.center[0], p.center[1]);
+    return { ...p, center: [cx, cz], ...(p.patrol ? { patrol: p.patrol.map(([x, z]) => toNew(p.roomId, x, z)) } : {}) };
+  };
+  const packs = o.packsRaw.map(remapPack);
+  const ctx: KitCtx = makeCtx(o.seed, o.doors, packs, o.anchors.map((a) => near(a.x, a.z, a.r)));
+  const decor = decorator(ctx, rectsOf(o.rooms));
+
+  /** Props for one room: at() and scatter() take old-layout coordinates; the decorator's collision lists stay in new coordinates. */
+  const remapProps = (p: Props, roomId: string): Props => {
+    const host = p as unknown as { at: Props['at']; scatter: Props['scatter'] };
+    const rawAt = host.at.bind(p);
+    const rawScatter = host.scatter.bind(p);
+    let raw = false;
+    host.at = (model, x, z, opt) => {
+      if (raw) return rawAt(model, x, z, opt);
+      const [nx, nz] = toNew(roomId, x, z);
+      return rawAt(model, nx, nz, opt);
+    };
+    host.scatter = (count, models, area: Area, opt, sopt) => {
+      const [x0, z0] = toNew(roomId, area.x0, area.z0);
+      const [x1, z1] = toNew(roomId, area.x1, area.z1);
+      raw = true;
+      try {
+        return rawScatter(count, models, { x0, z0, x1, z1 }, opt, sopt);
+      } finally {
+        raw = false;
+      }
+    };
+    return p;
+  };
+  const D = {
+    out: decor.out,
+    room(id: string, fn: (p: Props, r: TileRect) => void): void {
+      const [x, z, w, h] = o.oldRect[id];
+      decor.room(id, (p) => fn(remapProps(p, id), { x, z, w, h }));
+    },
+  };
+  /** Wall banners and chandeliers come back from kit.ts as finished placements: map their old-layout positions. */
+  const mapOld = (roomId: string, pls: PropPlacement[]): PropPlacement[] =>
+    pls.map((pl) => ({ ...pl, pos: toNew(roomId, pl.pos[0], pl.pos[1]) }));
+  return { packs, ctx, toNew, at2, near, D, mapOld };
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
 // Rooms (base data). Floors and walls per section 3.2; the Dark Exile room is kept out of this list (see header).
 // ---------------------------------------------------------------------------------------------------------------------
 const ROOM_BASE: RoomDef[] = [
   room('giris', 'Cesaret Kapısı', 4, 54, 8, 8, 'tiles', 'stone', 0.3, { floorY: 0, openAir: true, ceiling: 10 }),
-  room('k_giris', 'Nöbetçi Yolu', 12, 57, 4, 2, 'tiles', 'stone', 0.4, { floorY: 1.2, ceiling: 8 }),
+  room('k_giris', 'Nöbetçi Yolu', 12, 56, 4, 4, 'tiles', 'stone', 0.4, { floorY: 1.2, ceiling: 8 }),
   room('meydan', 'Cesaret Meydanı', 16, 48, 14, 14, 'tiles', 'stone', 0.5, { floorY: 0, openAir: true, ceiling: 9 }),
-  room('ambar', 'Hasat Ambarı', 20, 42, 8, 6, 'wood', 'brick', 0.6, { optional: true, floorY: 0, ceiling: 7 }),
-  room('k_hasat', 'Hasat Yolu', 30, 54, 4, 2, 'dirt', 'cave', 0.4, { floorY: 0, ceiling: 9 }),
+  room('ambar', 'Hasat Ambarı', 20, 39, 9, 9, 'wood', 'brick', 0.6, { optional: true, floorY: 0, ceiling: 7 }),
+  room('k_hasat', 'Hasat Yolu', 30, 53, 4, 4, 'dirt', 'cave', 0.4, { floorY: 0, ceiling: 9 }),
   room('hasat_cukuru', 'Hasat Çukuru', 34, 46, 14, 14, 'dirt', 'cave', 0.15, { boss: 1, floorY: -5.2, openAir: true, ceiling: 6 }),
-  room('k_toll_a', 'Çürük Merdiven', 40, 42, 2, 4, 'stone', 'brick', 0.3, { ceiling: 8 }),
-  room('toll_kapisi', 'Çan Kapısı', 36, 36, 10, 6, 'stone', 'brick', 0.5, { floorY: 1.4, ceiling: 12 }),
-  room('son_can', 'Son Çan Avlusu', 30, 24, 22, 12, 'stone', 'brick', 0.5, { floorY: 2.4, openAir: true, ceiling: 16 }),
-  room('can_kulesi', 'Çan Kulesi', 52, 29, 8, 8, 'stone', 'brick', 0.5, { optional: true, floorY: 2.4, ceiling: 18 }),
-  room('k_toll_b', 'Yıkık Geçit', 26, 29, 4, 2, 'stone', 'stone', 0.3, { ceiling: 8 }),
+  room('k_toll_a', 'Çürük Merdiven', 39, 42, 4, 4, 'stone', 'brick', 0.3, { ceiling: 8 }),
+  room('toll_kapisi', 'Çan Kapısı', 36, 33, 10, 9, 'stone', 'brick', 0.5, { floorY: 1.4, ceiling: 12 }),
+  room('son_can', 'Son Çan Avlusu', 30, 24, 22, 9, 'stone', 'brick', 0.5, { floorY: 2.4, openAir: true, ceiling: 16 }),
+  room('can_kulesi', 'Çan Kulesi', 52, 30, 9, 9, 'stone', 'brick', 0.5, { optional: true, floorY: 2.4, ceiling: 18 }),
+  room('k_toll_b', 'Yıkık Geçit', 26, 28, 4, 4, 'stone', 'stone', 0.3, { ceiling: 8 }),
   room('kisayol', 'Servis Geçidi', 26, 36, 10, 2, 'stone_dark', 'stone', 0.3, { skip: true, ceiling: 7 }),
   room('dus_meydan', "Cesaret'in Düşüşü", 6, 22, 20, 16, 'tiles', 'stone', 0.15, { boss: 2, floorY: 6.0, openAir: true, ceiling: 18 }),
   room('k_kopru', 'Kemik Köprü', 12, 18, 6, 4, 'stone_dark', 'temple', 0.1, { ceiling: 10 }),
-  room('dikis_kapi', 'Dikişhane Girişi', 8, 10, 16, 8, 'stone_dark', 'forge', 0.5, { floorY: 14.8, ceiling: 14 }),
-  room('vana_odasi', 'Yaratım Odası', 0, 10, 8, 8, 'stone_dark', 'forge', 0.5, { optional: true, floorY: 14.8, ceiling: 9 }),
-  room('kan_havuzu', 'Kan Havuzu', 8, 2, 12, 8, 'stone_dark', 'forge', 0.5, { optional: true, floorY: 14.8, ceiling: 12 }),
-  room('k_atolye', 'Ameliyat Koridoru', 24, 12, 4, 2, 'stone_dark', 'forge', 0.3, { ceiling: 7 }),
+  room('dikis_kapi', 'Dikişhane Girişi', 9, 9, 15, 9, 'stone_dark', 'forge', 0.5, { floorY: 14.8, ceiling: 14 }),
+  room('vana_odasi', 'Yaratım Odası', 0, 9, 9, 9, 'stone_dark', 'forge', 0.5, { optional: true, floorY: 14.8, ceiling: 9 }),
+  room('kan_havuzu', 'Kan Havuzu', 8, 0, 12, 9, 'stone_dark', 'forge', 0.5, { optional: true, floorY: 14.8, ceiling: 12 }),
+  room('k_atolye', 'Ameliyat Koridoru', 24, 11, 4, 4, 'stone_dark', 'forge', 0.3, { ceiling: 7 }),
   room('dikis_atolye', 'Dikiş Atölyesi', 28, 2, 18, 14, 'stone_dark', 'forge', 0.1, { boss: 3, floorY: 17.4, ceiling: 18 }),
-  room('k_yukari', 'Yukarı Merdiven', 46, 8, 4, 2, 'stone_dark', 'temple', 0.3, { ceiling: 10 }),
+  room('k_yukari', 'Yukarı Merdiven', 46, 5, 4, 4, 'stone_dark', 'temple', 0.3, { ceiling: 10 }),
   room('zolramus_kapi', 'Zolramus Kapısı', 50, 2, 14, 14, 'stone_dark', 'temple', 0.5, { floorY: 22.6, ceiling: 24 }),
-  room('k_nef_a', 'Kemik Basamaklar', 56, 16, 2, 4, 'stone_dark', 'temple', 0.3, { ceiling: 14 }),
-  room('kemik_nef', 'Kemik Nef', 52, 20, 16, 8, 'stone_dark', 'temple', 0.5, { floorY: 27.8, ceiling: 28 }),
+  room('k_nef_a', 'Kemik Basamaklar', 54, 16, 4, 4, 'stone_dark', 'temple', 0.3, { ceiling: 14 }),
+  room('kemik_nef', 'Kemik Nef', 52, 20, 16, 9, 'stone_dark', 'temple', 0.5, { floorY: 27.8, ceiling: 28 }),
   room('heykel_galerisi', 'Heykeltıraş Galerisi', 68, 16, 12, 16, 'stone_dark', 'temple', 0.5, { floorY: 30.6, ceiling: 22 }),
-  room('k_cikis', 'Buzlu Merdiven', 72, 32, 2, 4, 'ice', 'ice', 0.1, { ceiling: 12 }),
+  room('k_cikis', 'Buzlu Merdiven', 70, 32, 4, 4, 'ice', 'ice', 0.1, { ceiling: 12 }),
   room('buz_tepe', 'Buzlu Tepe', 62, 36, 18, 18, 'ice', 'ice', 0.1, { boss: 4, floorY: 36.0, openAir: true }),
 ];
 
@@ -126,7 +227,7 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
   giris: {
     atmosphere: 'forecourt', ambientVfx: 'ambient_dust', lightColor: 0xffd070,
     zones: [circleZone('rune', 8, 56, 1.0, { color: GOLD, glow: GOLD, glowIntensity: 0.4 })],
-    slopes: [stairs(rect(9, 57, 3, 2), 'x', 0, 1.2, { id: 'kemer_basamaklari' })],
+    slopes: [stairs(rect(9, 56, 3, 4), 'x', 0, 1.2, { id: 'kemer_basamaklari' })],
     heightAreas: [plateau(rect(6, 54, 4, 4), 0.4, 'none', 'font_terrace')],
   },
   k_giris: { atmosphere: 'forecourt' },
@@ -136,7 +237,7 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
       circleZone('pool', 22.5, 54.5, 2.0, { blocked: true, color: 0x3a78c8, glow: ANIMA, glowIntensity: 0.9 }),
       circleZone('dais', 17.5, 55.5, 1.5, { blocked: false, y: 0.4, color: 0x3a2a18, glow: GOLD, glowIntensity: 0.4 }),
     ],
-    slopes: [stairs(rect(16, 57, 4, 2), 'x', 1.2, 0, { id: 'meydan_basamaklari' })],
+    slopes: [stairs(rect(16, 56, 4, 4), 'x', 1.2, 0, { id: 'meydan_basamaklari' })],
   },
   ambar: { atmosphere: 'plague' },
   k_hasat: { atmosphere: 'plague' },
@@ -149,30 +250,30 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
       rectZone('vent', 36, 57, 2, 2, { blocked: false, color: 0x2a3a10, glow: GREEN, glowIntensity: 0.4 }),
     ],
     slopes: [
-      ramp(rect(34, 54, 6, 2), 'x', 0, -5.2, { id: 'cukur_rampasi' }),
-      stairs(rect(40, 46, 2, 4), 'z', -1.6, -5.2, { id: 'cukur_cikis_merdiveni' }),
+      ramp(rect(34, 53, 6, 4), 'x', 0, -5.2, { id: 'cukur_rampasi' }),
+      stairs(rect(39, 46, 4, 4), 'z', -1.6, -5.2, { id: 'cukur_cikis_merdiveni' }),
     ],
   },
   k_toll_a: {
-    slopes: [stairs(rect(40, 42, 2, 4), 'z', 1.4, -1.6, { id: 'curuk_merdiven' })],
+    slopes: [stairs(rect(39, 42, 4, 4), 'z', 1.4, -1.6, { id: 'curuk_merdiven' })],
   },
   toll_kapisi: { atmosphere: 'toll' },
   son_can: {
     explicitDecor: true, atmosphere: 'toll', ambientVfx: 'ambient_dust',
     zones: [
-      circleZone('dais', 41, 29.5, 2.0, { blocked: false, y: 0.4, color: 0x4a4030, glow: GOLD, glowIntensity: 0.3 }),
-      circleZone('dais', 41, 29.5, 1.0, { blocked: false, y: 0.8, color: 0x4a4030, glow: GOLD, glowIntensity: 0.5 }),
+      circleZone('dais', 41, 28, 2.0, { blocked: false, y: 0.4, color: 0x4a4030, glow: GOLD, glowIntensity: 0.3 }),
+      circleZone('dais', 41, 28, 1.0, { blocked: false, y: 0.8, color: 0x4a4030, glow: GOLD, glowIntensity: 0.5 }),
     ],
     hazards: [{ kind: 'debris_fall', interval: 9, warn: 1.4, radius: 2.5, coef: 1.6 }],
-    slopes: [stairs(rect(40, 33, 3, 3), 'z', 2.4, 1.4, { id: 'can_basamaklari' })],
+    slopes: [stairs(rect(39, 30, 4, 3), 'z', 2.4, 1.4, { id: 'can_basamaklari' })],
   },
   can_kulesi: {
     atmosphere: 'toll',
-    heightAreas: [plateau(rect(56, 29, 4, 4), 5.4, 'rail', 'kule_terasi')],
-    slopes: [stairs(rect(53, 29, 3, 4), 'x', 2.4, 5.4, { id: 'kule_merdiveni' })],
+    heightAreas: [plateau(rect(56, 30, 4, 4), 5.4, 'rail', 'kule_terasi')],
+    slopes: [stairs(rect(53, 30, 3, 4), 'x', 2.4, 5.4, { id: 'kule_merdiveni' })],
   },
   k_toll_b: {
-    slopes: [stairs(rect(26, 29, 4, 2), 'x', 6.0, 2.4, { id: 'yikik_gecit_rampasi' })],
+    slopes: [stairs(rect(26, 28, 4, 4), 'x', 6.0, 2.4, { id: 'yikik_gecit_rampasi' })],
   },
   kisayol: {
     atmosphere: 'fall',
@@ -199,17 +300,17 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
   },
   dikis_kapi: {
     explicitDecor: true, atmosphere: 'stitch', ambientVfx: 'ambient_shadow_wisps', lightColor: GREEN,
-    zones: [circleZone('rune', 8.5, 16, 1.0, { color: 0x1a2a10, glow: GREEN, glowIntensity: 0.5 })],
+    zones: [circleZone('rune', 10.5, 16, 1.0, { color: 0x1a2a10, glow: GREEN, glowIntensity: 0.5 })],
     hazards: [{ kind: 'plague_vent', interval: 8, warn: 1.2, radius: 2, coef: 0.6, vfx: 'poison_cloud' }],
   },
   vana_odasi: { atmosphere: 'stitch' },
   kan_havuzu: {
     atmosphere: 'stitch',
-    zones: [rectZone('pool', 12, 3, 6, 3, { blocked: true, color: 0x6a1a1a, glow: 0xaa2020, glowIntensity: 0.5 })],
+    zones: [rectZone('pool', 12, 1, 6, 3, { blocked: true, color: 0x6a1a1a, glow: 0xaa2020, glowIntensity: 0.5 })],
   },
   k_atolye: {
     atmosphere: 'stitch',
-    slopes: [stairs(rect(24, 12, 4, 2), 'x', 14.8, 17.4, { id: 'ameliyat_rampasi' })],
+    slopes: [stairs(rect(24, 11, 4, 4), 'x', 14.8, 17.4, { id: 'ameliyat_rampasi' })],
   },
   dikis_atolye: {
     explicitDecor: true, atmosphere: 'stitch', ambientVfx: 'ambient_shadow_wisps', lightColor: GREEN,
@@ -224,7 +325,7 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
   },
   k_yukari: {
     atmosphere: 'zol', ambientVfx: 'ambient_shadow_wisps', lightColor: VIOLET,
-    slopes: [stairs(rect(46, 8, 4, 2), 'x', 17.4, 22.6, { id: 'yukari_merdiven' })],
+    slopes: [stairs(rect(46, 5, 4, 4), 'x', 17.4, 22.6, { id: 'yukari_merdiven' })],
   },
   zolramus_kapi: {
     atmosphere: 'zol', ambientVfx: 'ambient_shadow_wisps', lightColor: VIOLET,
@@ -232,12 +333,12 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
   },
   k_nef_a: {
     atmosphere: 'zol',
-    slopes: [stairs(rect(56, 16, 2, 4), 'z', 22.6, 27.8, { id: 'kemik_basamaklar' })],
+    slopes: [stairs(rect(54, 16, 4, 4), 'z', 22.6, 27.8, { id: 'kemik_basamaklar' })],
   },
   kemik_nef: {
     explicitDecor: true, atmosphere: 'zol', ambientVfx: 'ambient_shadow_wisps', lightColor: VIOLET,
     zones: [circleZone('rune', 60, 24, 2.0, { color: 0x2a1a40, glow: VIOLET, glowIntensity: 0.6 })],
-    slopes: [stairs(rect(64, 20, 4, 8), 'x', 27.8, 30.6, { id: 'heykeltiras_merdiveni' })],
+    slopes: [stairs(rect(64, 20, 4, 9), 'x', 27.8, 30.6, { id: 'heykeltiras_merdiveni' })],
   },
   heykel_galerisi: {
     explicitDecor: true, atmosphere: 'zol', ambientVfx: 'ambient_shadow_wisps', lightColor: VIOLET,
@@ -246,13 +347,13 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
   },
   k_cikis: {
     atmosphere: 'top', ambientVfx: 'ambient_snow',
-    slopes: [stairs(rect(72, 32, 2, 4), 'z', 32.4, 36.0, { id: 'buzlu_merdiven' })],
+    slopes: [stairs(rect(70, 32, 4, 4), 'z', 32.4, 36.0, { id: 'buzlu_merdiven' })],
   },
   buz_tepe: {
     explicitDecor: true, atmosphere: 'top', ambientVfx: 'ambient_snow',
     zones: [
       rectZone('void', 62, 36, 18, 18, { blocked: true, fall: 'open', depth: 20, look: 'cloud', color: 0xdcdce4 }),
-      rectZone('bridge', 72, 36, 2, 2, { blocked: false, color: 0xbfe0ff }),
+      rectZone('bridge', 70, 36, 4, 2, { blocked: false, color: 0xbfe0ff }),
       circleZone('dais', 70.5, 44.5, 7.5, { blocked: false, y: 0, color: FROST, glow: 0x80d0ff, glowIntensity: 0.5 }),
       circleZone('dais', 70.5, 46, 3.0, { blocked: false, y: 0.4, color: FROST, glow: 0x80d0ff, glowIntensity: 0.4 }),
     ],
@@ -262,33 +363,33 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
 // ---------------------------------------------------------------------------------------------------------------------
 // Doors (tile on the shared edge in room a). The doc's section 3.3 list; height steps per door are within 0.05 m.
 // ---------------------------------------------------------------------------------------------------------------------
-const DOORS = [
-  door('giris', 'k_giris', 11, 57, 'e', 2, 'none'),
-  door('k_giris', 'meydan', 15, 57, 'e', 2, 'none'),
+const DOORS: DoorDef[] = [
+  door('giris', 'k_giris', 11, 56, 'e', 4, 'none'),
+  door('k_giris', 'meydan', 15, 56, 'e', 4, 'none'),
   door('meydan', 'ambar', 22, 48, 'n', 2, 'none'),
-  door('meydan', 'k_hasat', 29, 54, 'e', 2, 'none'),
-  door('k_hasat', 'hasat_cukuru', 33, 54, 'e', 2, 'boss_lock'),
-  door('hasat_cukuru', 'k_toll_a', 40, 46, 'n', 2, 'boss_exit'),
-  door('k_toll_a', 'toll_kapisi', 40, 42, 'n', 2, 'none'),
-  door('toll_kapisi', 'son_can', 40, 36, 'n', 2, 'none'),
+  door('meydan', 'k_hasat', 29, 53, 'e', 4, 'none'),
+  door('k_hasat', 'hasat_cukuru', 33, 53, 'e', 4, 'boss_lock'),
+  door('hasat_cukuru', 'k_toll_a', 39, 46, 'n', 4, 'boss_exit'),
+  door('k_toll_a', 'toll_kapisi', 39, 42, 'n', 4, 'none'),
+  door('toll_kapisi', 'son_can', 39, 33, 'n', 4, 'none'),
   door('son_can', 'can_kulesi', 51, 30, 'e', 2, 'none'),
-  door('son_can', 'k_toll_b', 30, 29, 'w', 2, 'none'),
-  door('k_toll_b', 'dus_meydan', 26, 29, 'w', 2, 'boss_lock'),
+  door('son_can', 'k_toll_b', 30, 28, 'w', 4, 'none'),
+  door('k_toll_b', 'dus_meydan', 26, 28, 'w', 4, 'boss_lock'),
   { ...door('toll_kapisi', 'kisayol', 36, 36, 'w', 2, 'device_lock'), device: 'dev_gd2' },
   door('kisayol', 'dus_meydan', 26, 36, 'w', 2, 'boss_lock'),
   door('dus_meydan', 'k_kopru', 14, 22, 'n', 2, 'boss_exit'),
   door('k_kopru', 'dikis_kapi', 14, 18, 'n', 2, 'none'),
-  door('dikis_kapi', 'vana_odasi', 8, 13, 'w', 2, 'none'),
-  door('dikis_kapi', 'kan_havuzu', 12, 10, 'n', 2, 'none'),
-  door('dikis_kapi', 'k_atolye', 23, 12, 'e', 2, 'none'),
-  door('k_atolye', 'dikis_atolye', 27, 12, 'e', 2, 'boss_lock'),
-  door('dikis_atolye', 'k_yukari', 45, 8, 'e', 2, 'boss_exit'),
-  door('k_yukari', 'zolramus_kapi', 49, 8, 'e', 2, 'none'),
-  door('zolramus_kapi', 'k_nef_a', 56, 15, 's', 2, 'none'),
-  door('k_nef_a', 'kemik_nef', 56, 19, 's', 2, 'none'),
+  door('dikis_kapi', 'vana_odasi', 9, 13, 'w', 2, 'none'),
+  door('dikis_kapi', 'kan_havuzu', 12, 9, 'n', 2, 'none'),
+  door('dikis_kapi', 'k_atolye', 23, 11, 'e', 4, 'none'),
+  door('k_atolye', 'dikis_atolye', 27, 11, 'e', 4, 'boss_lock'),
+  door('dikis_atolye', 'k_yukari', 45, 5, 'e', 4, 'boss_exit'),
+  door('k_yukari', 'zolramus_kapi', 49, 5, 'e', 4, 'none'),
+  door('zolramus_kapi', 'k_nef_a', 54, 15, 's', 4, 'none'),
+  door('k_nef_a', 'kemik_nef', 54, 19, 's', 4, 'none'),
   door('kemik_nef', 'heykel_galerisi', 67, 23, 'e', 2, 'none'),
-  door('heykel_galerisi', 'k_cikis', 72, 31, 's', 2, 'none'),
-  door('k_cikis', 'buz_tepe', 72, 35, 's', 2, 'boss_lock'),
+  door('heykel_galerisi', 'k_cikis', 70, 31, 's', 4, 'none'),
+  door('k_cikis', 'buz_tepe', 70, 35, 's', 4, 'boss_lock'),
 ];
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -311,7 +412,7 @@ const KF = 'les_kafatasi';
 // ---------------------------------------------------------------------------------------------------------------------
 // Packs (section 4.3). `pk(id, room, cx, cz, forces, front, back, extra)`; forces are the sums of the member forces.
 // ---------------------------------------------------------------------------------------------------------------------
-const PACKS: PackDef[] = [
+const PACKS_RAW: PackDef[] = [
   pack('les_p01', 'k_giris', 13.5, 57.5, undefined, [[KS, -1, 0], [KS, 0, 0], [KB, 1, 0]]),
   pk('les_p02', 'meydan', 19, 52, 13, [[KS, 3]], [[KB, 1]]),
   pk('les_p03', 'meydan', 22.5, 50, 14, [[KS, 2]], [[AR, 2]]),
@@ -458,7 +559,7 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.at(kc('siege-trebuchet-demolished'), 41.5, 40, { scale: 1 });
     q.at(dg('rubble_large'), 37.5, 41, {});
     q.at(dg('rubble_large'), 45, 37.5, {});
-    q.list.push(...banner(rect(36, 36, 10, 6), 'e', [38, 40], { model: M_BANNER_GOLD, y: 5 }));
+    q.list.push(...mapOld('toll_kapisi', banner(rect(36, 36, 10, 6), 'e', [38, 40], { model: M_BANNER_GOLD, y: 5 })));
     q.torches(rect(36, 36, 10, 6), 'n', [38, 44], GOLD);
   });
 
@@ -475,9 +576,9 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.at(kc('siege-catapult-demolished'), 49.5, 33, { scale: 1 });
     q.at(dg('rubble_large'), 35, 31, {});
     q.at(dg('rubble_large'), 47, 26, {});
-    q.at(M_BRAZIER, 33.5, 30.5, { scale: 1.2, collide: true, light: lt(0xffb060, 1.4, 8, true) });
+    q.at(M_BRAZIER, 31.5, 34.5, { scale: 1.2, collide: true, light: lt(0xffb060, 1.4, 8, true) });
     q.at(M_BRAZIER, 47.5, 30.5, { scale: 1.2, collide: true, light: lt(0xffb060, 1.4, 8, true) });
-    q.list.push(...banner(rect(30, 24, 22, 12), 'n', [34, 40, 46], { model: M_BANNER_GOLD, y: 8, scale: 1.4 }));
+    q.list.push(...mapOld('son_can', banner(rect(30, 24, 22, 12), 'n', [34, 40, 46], { model: M_BANNER_GOLD, y: 8, scale: 1.4 })));
     q.torches(rect(30, 24, 22, 12), 'w', [26, 30], GOLD);
   });
 
@@ -488,7 +589,7 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.at(dg('chest'), 56.5, 36.4, { id: 'chest_kule', light: lt(GOLD, 0.8, 5, true) });
     q.at(M_BRAZIER, 53.5, 36.5, { scale: 1, collide: true, light: lt(0xffb060, 1.4, 8, true) });
     q.at(M_BRAZIER, 59.5, 36.5, { scale: 1, collide: true, light: lt(0xffb060, 1.4, 8, true) });
-    q.list.push(...banner(rect(52, 29, 8, 8), 'w', [31, 35], { model: M_BANNER_GOLD, y: 10 }));
+    q.list.push(...mapOld('can_kulesi', banner(rect(52, 29, 8, 8), 'w', [31, 35], { model: M_BANNER_GOLD, y: 10 })));
   });
 
   p('k_toll_b', (q) => {
@@ -533,7 +634,7 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.at(M_CAULDRON, 10, 12, { scale: 1, tint: GREEN, light: lt(GREEN, 1.2, 6, true) });
     q.at(M_CAULDRON, 18.5, 12.5, { scale: 1, tint: GREEN, light: lt(GREEN, 1.2, 6, true) });
     q.at(ip('psx-dungeon', 'chandelier'), 16, 14, { y: 7, scale: 1, tint: 0xd8ff80, light: lt(0xd8ff80, 1.0, 9, true) });
-    q.list.push(...chandelier(12, 13, 7, { light: true, color: 0xd8ff80 }));
+    q.list.push(...mapOld('dikis_kapi', chandelier(12, 13, 7, { light: true, color: 0xd8ff80 })));
     q.torches(rect(8, 10, 16, 8), 'n', [10, 16, 22], GREEN);
   });
 
@@ -598,7 +699,7 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     }
     q.at(M_STATUE, 56, 20.5, { scale: 2.2, tint: 0x6a5a98, y: 9 });
     q.at(M_STATUE, 64, 20.5, { scale: 2.2, tint: 0x6a5a98, y: 9 });
-    q.list.push(...banner(rect(52, 20, 16, 8), 'n', [56, 60, 64], { model: M_BANNER, y: 14, tint: 0x4a2870, scale: 1.6 }));
+    q.list.push(...mapOld('kemik_nef', banner(rect(52, 20, 16, 8), 'n', [60, 64], { model: M_BANNER, y: 14, tint: 0x4a2870, scale: 1.6 })));
   });
 
   p('heykel_galerisi', (q) => {
@@ -633,29 +734,32 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
 // Assemble: room props from the decorator, then the dungeon definition.
 // ---------------------------------------------------------------------------------------------------------------------
 const ROOMS_BASE: RoomDef[] = ROOM_BASE.map((r) => ({ ...r, ...ROOM_EXTRA[r.id] }));
-const RECTS = rectsOf(ROOMS_BASE);
-const CTX = makeCtx('les_uyanisi', DOORS, PACKS, [
-  { x: START[0], z: START[1], r: 2.0 },
-  { x: FONT[0], z: FONT[1], r: 1.6 },
-  { x: EXIT[0], z: EXIT[1], r: 2.8 },
-  ...BOSSES.map((b) => ({ x: b.pos[0], z: b.pos[1], r: 4.5 })),
-  ...DEV_GD.map(([x, z]) => ({ x, z, r: 1.8 })),
-  { x: 8.5, z: 16, r: 1.5 },
-  { x: 74, z: 22, r: 1.5 },
-]);
-const DECOR = decorator(CTX, RECTS);
-dressRooms((id, fn) => DECOR.room(id, fn));
+const R = makeRescale({
+  seed: 'les_uyanisi', oldRect: OLD_RECT, rooms: ROOMS_BASE, doors: DOORS, packsRaw: PACKS_RAW,
+  anchors: [
+    { x: START[0], z: START[1], r: 2.0 },
+    { x: FONT[0], z: FONT[1], r: 1.6 },
+    { x: EXIT[0], z: EXIT[1], r: 2.8 },
+    ...BOSSES.map((b) => ({ x: b.pos[0], z: b.pos[1], r: 4.5 })),
+    ...DEV_GD.map(([x, z]) => ({ x, z, r: 1.8 })),
+    { x: 8.5, z: 16, r: 1.5 },
+    { x: 74, z: 22, r: 1.5 },
+  ],
+});
+const PACKS = R.packs;
+const { mapOld, D } = R;
+dressRooms((id, fn) => D.room(id, fn));
 
-export const LES_UYANISI_ROOMS: RoomDef[] = withProps(ROOMS_BASE, DECOR.out);
+export const LES_UYANISI_ROOMS: RoomDef[] = withProps(ROOMS_BASE, D.out);
 
 const EXTRAS: NonNullable<DungeonDef['extras']> = {
   fontOfPower: pt(FONT[0], FONT[1]),
   shrines: [
-    { type: 'shrine_power', pos: pt(8.5, 16) },   // Kudret
+    { type: 'shrine_power', pos: pt(...R.at2(8.5, 16)) },   // Kudret
     { type: 'shrine_ward', pos: pt(74, 22) },     // Koruma
   ],
   riftSpots: [],
-  chests: [{ pos: pt(26.4, 43.4), kind: 'chest_wood' }, { pos: pt(56.5, 36.4), kind: 'chest_gold' }],
+  chests: [{ pos: pt(...R.at2(26.4, 43.4)), kind: 'chest_wood' }, { pos: pt(...R.at2(56.5, 36.4)), kind: 'chest_gold' }],
 };
 
 export const LES_UYANISI: DungeonDef = {
@@ -664,7 +768,7 @@ export const LES_UYANISI: DungeonDef = {
   shortName: 'Leş Uyanışı',
   lore: "Kadim Diyar'ın üstündeki Cesaret Tapınağı yüzyıllardır Kadim Mühür'ü kapalı tutar. Leş Tarikatı, Azrakel'in son meclisi, tapınağın üzerine uçan bir kemik zigurat kaldırdı: Gökbekçilerin ruhları hasat ediliyor, ölüler dikişle birbirine bağlanıyor, Ayazbağlayan Nalthor mührü kıran buzu hazırlıyor.",
   levelRange: [50, 60],
-  timerSec: 1800,
+  timerSec: 1780,
   forcesRequired: 430,
   theme: {
     fogColor: 0xd8e6f2, fogNear: 22, fogFar: 90,
