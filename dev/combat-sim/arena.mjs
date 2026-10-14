@@ -301,9 +301,13 @@ function makeLobby(ids, o = {}) {
   // 2v2, four peers enter 10 ms apart: p1 is the earliest and must be the only proposer
   const L = makeLobby(['p1', 'p2', 'p3', 'p4']);
   const rat = { p1: 1500, p2: 1510, p3: 1490, p4: 1500 };
+  // notices per peer: the proposer and the members all get the same "found" notice (toast + match-found popup)
+  const notes = new Map();
+  for (const [id, c] of L.cores) c.onChange((s, n) => { if (n) notes.set(id, [...(notes.get(id) ?? []), n.k]); });
   for (const id of L.cores.keys()) { L.clock.wall += 10; const r = L.cores.get(id).enter('arena:2v2:r', { rating: rat[id], mmr: rat[id] }); if (!r.ok) ok('que.enter ' + id, false, r.reason); }
   L.deliver();
   await L.run(6000);
+  ok('que.found notice on every side, the proposer included', ['p1', 'p2', 'p3', 'p4'].every((id) => (notes.get(id) ?? []).includes('found')), JSON.stringify([...notes]));
   ok('que.exactly one host() call, by the earliest queuer', L.log.host.length === 1 && L.log.host[0].id === 'p1', JSON.stringify(L.log.host.map((h) => h.id)));
   ok('que.the other three joined the proposer', L.log.join.length === 3 && L.log.join.every((j) => j.proposer === 'p1' && j.p.code === 'ABCDEF' && j.p.mid === L.log.host[0].p.mid));
   const pr = L.log.host[0].p;
@@ -933,6 +937,24 @@ function clearWorld() {
   net.role = 'offline'; net.lastLeave = 'host_closed';
   cl.dispose();
   ok('rt.host closed the room mid-match: a void result (no loss, no penalty)', applied.length === 1 && applied[0].why === 'void' && !applied[0].leaver && net.penalised === false, JSON.stringify(applied));
+}
+
+// ====================================================================================================================
+// que.requeue  (RequeueGate behind "Kuyruğa Tekrar Gir": the same key is queued once the player is back in town)
+// ====================================================================================================================
+{
+  const { RequeueGate } = await H.imp('net/queue/QueueCore.ts');
+  const g = new RequeueGate(30000);
+  ok('que.requeue: nothing armed, nothing queued', g.onScene('town', 0) === null);
+  g.arm('arena:3v3:u', 1000);
+  ok('que.requeue waits for the town (the arena exit leaves the arena first)', g.onScene('dungeon', 1500) === null && g.onScene('arena', 1600) === null);
+  ok('que.requeue queues the same bracket / mode in town', g.onScene('town', 2000) === 'arena:3v3:u');
+  ok('que.requeue is one-shot (the next town visit has nothing pending)', g.onScene('town', 2500) === null);
+  g.arm('arena:1v1:r', 10000);
+  ok('que.requeue expires after the ttl (a failed exit does not queue later)', g.onScene('town', 40001) === null);
+  g.arm('arena:2v2:r', 50000);
+  g.clear();
+  ok('que.requeue clear() drops the pending key', g.onScene('town', 50100) === null);
 }
 
 console.warn = origWarn;

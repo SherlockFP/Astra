@@ -57,7 +57,7 @@ class FakeTr {
   hasPeer(p) { return this.net.trs.has(p); }
   send(channel, data, opts = {}) {
     const json = JSON.stringify(data);
-    this.net.sent.push({ channel, bytes: json.length, from: this.selfId, to: opts.to ?? null });
+    this.net.sent.push({ channel, bytes: json.length, from: this.selfId, to: opts.to ?? null, json });
     const targets = opts.to ? [].concat(opts.to) : this.getPeers();
     for (const to of targets) this.net.queue.push({ to, from: this.selfId, channel, json });
   }
@@ -366,6 +366,68 @@ async function world(names) {
   for (let i = 0; i < SOCIAL.MAX_PEERS + 50; i++) net.inject('x' + i, 'p1', 'lpres', { t: 'lpres', name: 'Bot' + i, cls: 'mage', lvl: 3, zone: 'town' });
   await net.flush();
   ok('presence.peer table capped', A2.count() <= SOCIAL.MAX_PEERS + 1, 'count ' + A2.count());
+}
+
+// ================================================================================================ presence.pvp (lpres `ar`)
+{
+  const R = await H.imp('scenes/arena/arenaRules.ts');
+  const { presenceOf } = R;
+  const { net, peers } = await world(['Alp', 'Bora']);
+  const [A, B] = peers;
+  // the announce carries the best of 2v2 / 3v3 (not 1v1) as { r, b }; the tier is derived by the receiver and never sent
+  const best = presenceOf({ '1v1': 1900, '2v2': 1720, '3v3': 1810 });
+  ok('presence.pvp best of 2v2 / 3v3 (1v1 ignored), tier derived', best.rating === 1810 && best.bracket === '3v3' && best.tier === 'gladyator', JSON.stringify(best));
+  ok('presence.pvp a tie goes to 2v2', presenceOf({ '1v1': 1500, '2v2': 1600, '3v3': 1600 }).bracket === '2v2');
+  B.me.arena = best;
+  clock.t += 1500;
+  B.s.poke();
+  await net.flush();
+  const sentB = net.sent.filter((m) => m.channel === 'lpres' && m.from === 'p2' && m.to === null).pop();
+  const wire = JSON.parse(sentB.json);
+  ok('presence.pvp wire field ar = { r, b }, no tier on the wire', JSON.stringify(wire.ar) === '{"r":1810,"b":"3v3"}', JSON.stringify(wire.ar));
+  const bora = () => A.s.find('Bora');
+  ok('presence.pvp received with the derived tier', bora().pvp?.rating === 1810 && bora().pvp?.tier === 'gladyator' && bora().pvp?.bracket === '3v3', JSON.stringify(bora().pvp));
+
+  // an old client (no ar) clears the rating; the other fields still apply
+  net.inject('p2', 'p1', 'lpres', { t: 'lpres', name: 'Bora', cls: 'knight', lvl: 10, zone: 'town' });
+  await net.flush();
+  ok('presence.pvp absent ar = no rating (old client), other fields kept', bora().pvp === undefined && bora().lvl === 10);
+
+  // validation: clamp to 0..5000, rounding, derived tier, bad bracket / type dropped
+  // (each send waits 3 s: the incoming presence bucket refills at 0.5 / s)
+  const send = async (ar) => { clock.t += 3000; net.inject('p2', 'p1', 'lpres', { t: 'lpres', name: 'Bora', cls: 'knight', lvl: 10, zone: 'town', ar }); await net.flush(); return bora().pvp; };
+  let v = await send({ r: 99999, b: '2v2' });
+  ok('presence.pvp rating clamped to the top (5000, kadim)', v?.rating === 5000 && v?.tier === 'kadim', JSON.stringify(v));
+  v = await send({ r: -50, b: '3v3' });
+  ok('presence.pvp negative clamped to 0 (acemi)', v?.rating === 0 && v?.tier === 'acemi', JSON.stringify(v));
+  v = await send({ r: 1099.6, b: '2v2' });
+  ok('presence.pvp rounded, 1100 boundary is savasci', v?.rating === 1100 && v?.tier === 'savasci', JSON.stringify(v));
+  v = await send({ r: 1500, b: '1v1' });
+  ok('presence.pvp 1v1 is not a presence bracket: dropped', v === undefined, JSON.stringify(v));
+  v = await send({ r: '1800', b: '2v2' });
+  ok('presence.pvp string rating dropped', v === undefined);
+  v = await send('2v2');
+  ok('presence.pvp non-object dropped', v === undefined);
+  v = await send({ r: 1700, b: '3v3', tier: 'kadim', extra: 'x' });
+  ok('presence.pvp extra keys ignored, tier from the rating (1700 = duellocu)', v?.rating === 1700 && v?.tier === 'duellocu' && v?.bracket === '3v3', JSON.stringify(v));
+
+  // a rating change is a presence change (presence:changed fires)
+  const before = A.changes.length;
+  await send({ r: 1800, b: '3v3' });
+  ok('presence.pvp a rating change fires presence:changed', A.changes.length > before);
+
+  // the local player: no ladder = no rating; with a ladder the entry carries the best 2v2 / 3v3 and its tier
+  ok('presence.pvp self without a ladder has no rating', A.s.find('Alp').pvp === undefined);
+  A.me.arena = presenceOf({ '1v1': 1500, '2v2': 1210, '3v3': 1000 });
+  clock.t += 1500;
+  A.s.tick();
+  ok('presence.pvp self rating from the ladder (2v2 1210 = savasci)', A.s.find('Alp').pvp?.rating === 1210 && A.s.find('Alp').pvp?.tier === 'savasci' && A.s.find('Alp').pvp?.bracket === '2v2');
+  ok('presence.pvp list carries the ratings of both players', A.s.list().filter((e) => e.pvp).map((e) => e.name).sort().join() === 'Alp,Bora');
+
+  // season table: start dates are the ladder season starts (8 weeks from 2024-01-01); names unique; unnamed seasons read "Sezon N"
+  ok('presence.season table start dates = ladder season starts', R.ARENA_SEASONS.every((s) => new Date(s.start + 'T00:00:00Z').getTime() === R.seasonStartMs(s.n)));
+  ok('presence.season table names unique and non-empty', new Set(R.ARENA_SEASONS.map((s) => s.name)).size === R.ARENA_SEASONS.length && R.ARENA_SEASONS.every((s) => s.name.trim().length > 0));
+  ok('presence.season title: named season, and "Sezon N" past the table', R.seasonTitle(1) === 'Sezon 1: Kızıl Kum' && R.seasonTitle(2) === 'Sezon 2: Ayaz Kılıcı' && R.seasonTitle(19) === 'Sezon 19');
 }
 
 // ================================================================================================ offline.*

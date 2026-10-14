@@ -96,6 +96,54 @@ export const isMuhruWeek = (wis: number): boolean => wis >= PVP_SEASON_WEEKS - 1
 
 export const softReset = (rating: number): number => Math.max(0, Math.round(RATING.START + (rating - RATING.START) * RATING.SEASON_KEEP));
 
+/**
+ * Season names (GDD_PVP_FINDER §3.4 season line). Season n (1-based) runs from `start` for PVP_SEASON_WEEKS weeks, on the same week origin
+ * as seasonOfWeek (core/utils weekIndex, Mondays 2024-01-01 + 8 weeks per season). Seasons past the table show "Sezon N" until a name is
+ * added here. The dates are the table's own labels and the sim checks them against seasonStartMs.
+ */
+export interface ArenaSeasonDef { n: number; name: string; start: string }
+export const ARENA_SEASONS: readonly ArenaSeasonDef[] = [
+  { n: 1, name: 'Kızıl Kum', start: '2024-01-01' },
+  { n: 2, name: 'Ayaz Kılıcı', start: '2024-02-26' },
+  { n: 3, name: 'Kadim Alev', start: '2024-04-22' },
+  { n: 4, name: 'Gölge Kapısı', start: '2024-06-17' },
+  { n: 5, name: 'Zümrüt Ova', start: '2024-08-12' },
+  { n: 6, name: 'Demir Fırtına', start: '2024-10-07' },
+  { n: 7, name: 'Kara Kurt', start: '2024-12-02' },
+  { n: 8, name: 'Kehanet Yıldızı', start: '2025-01-27' },
+];
+/** Start of season n (1-based) in ms, same origin and week length as core/utils weekIndex. */
+export const seasonStartMs = (n: number): number => Date.UTC(2024, 0, 1) + (Math.max(1, Math.floor(n)) - 1) * PVP_SEASON_WEEKS * 7 * 24 * 3600 * 1000;
+/** Season label for the UI: "Sezon 1: Kızıl Kum", or "Sezon 19" when the table has no name for it. */
+export function seasonTitle(n: number): string {
+  const d = ARENA_SEASONS.find((s) => s.n === n);
+  return d ? `Sezon ${n}: ${d.name}` : `Sezon ${n}`;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// presence rating (lpres `ar`, systems/Social.ts): the best 2v2 / 3v3 rating of a player and its tier
+// ---------------------------------------------------------------------------------------------------------------------
+
+export type PresenceBracket = '2v2' | '3v3';
+export interface ArenaPresence { rating: number; bracket: PresenceBracket; tier: string }
+
+/** The presence line of a player: the higher of 2v2 / 3v3 (2v2 on a tie). The tier is derived from the rating, never sent. */
+export function presenceOf(rating: Record<ArenaBracket, number>): ArenaPresence {
+  const bracket: PresenceBracket = rating['3v3'] > rating['2v2'] ? '3v3' : '2v2';
+  const r = Math.max(0, Math.min(RATING.MAX, Math.round(rating[bracket])));
+  return { rating: r, bracket, tier: tierOf(r).id };
+}
+
+/** Strict receipt check of the wire field `ar` ({ r, b }): a bad value means "no rating" (null). Rating clamped to 0..RATING.MAX. */
+export function sanitizePresence(raw: unknown): ArenaPresence | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as { r?: unknown; b?: unknown };
+  if (typeof o.r !== 'number' || !Number.isFinite(o.r)) return null;
+  if (o.b !== '2v2' && o.b !== '3v3') return null;
+  const r = Math.max(0, Math.min(RATING.MAX, Math.round(o.r)));
+  return { rating: r, bracket: o.b, tier: tierOf(r).id };
+}
+
 // ---------------------------------------------------------------------------------------------------------------------
 // Elo
 // ---------------------------------------------------------------------------------------------------------------------

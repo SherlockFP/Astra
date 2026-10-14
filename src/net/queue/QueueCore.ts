@@ -463,7 +463,8 @@ export class QueueCore {
     this.me = { ...me, busy: true };
     for (const id of pending) this.io.sendTo('qprop', id, p);
     this.announce(true);
-    this.notify();
+    // the proposer gets the same "found" notice as the members (toast + match-found popup); the popup reads phase 'proposed' too
+    this.notify({ k: 'found', mid, key: me.key });
   }
 
   private async startHosting(o: Outgoing): Promise<void> {
@@ -604,6 +605,35 @@ export class QueueCore {
         console.error('[queue] listener error', e);
       }
     }
+  }
+}
+
+/**
+ * Results card "Kuyruğa Tekrar Gir" (pure, clock passed in): the key to queue again once the player is back in town. The arena exit leaves
+ * the arena first and the queue is refused outside town, so the key waits for the town scene. Expires after `ttlMs`, so a failed exit does
+ * not queue the player later by surprise. QueueService wires it to the scene events.
+ */
+export class RequeueGate {
+  private key: QueueKey | null = null;
+  private until = 0;
+
+  constructor(private readonly ttlMs: number = 30000) {}
+
+  arm(key: QueueKey, now: number): void {
+    this.key = key;
+    this.until = now + this.ttlMs;
+  }
+
+  /** A scene change to `to`: the key to queue now, or null. A pending key is consumed by the first town visit (expired ones too). */
+  onScene(to: string, now: number): QueueKey | null {
+    const k = this.key;
+    if (!k || to !== 'town') return null;
+    this.key = null;
+    return now <= this.until ? k : null;
+  }
+
+  clear(): void {
+    this.key = null;
   }
 }
 

@@ -1,6 +1,8 @@
 import { G } from '../../../game/G';
 import type { ArenaBracket } from '../../../types/finder';
-import { ARENA_MIN_LEVEL, PVP_SEASON_WEEKS, arenaTitleName, seasonOfWeek, tierOf, weekInSeason, type ArenaTier } from '../../../scenes/arena/arenaRules';
+import {
+  ARENA_MIN_LEVEL, PVP_SEASON_WEEKS, arenaTitleName, seasonOfWeek, seasonTitle, tierOf, weekInSeason, type ArenaTier,
+} from '../../../scenes/arena/arenaRules';
 import { currentWeek, weekStartMs } from '../../../data/mythicAffixes';
 import { ARENA_TEAM_SIZE } from '../../../net/queue/matcher';
 
@@ -18,7 +20,7 @@ export const ARENA_TR = {
   ranked: 'Dereceli',
   unranked: 'Derecesiz',
   rating: 'Puanın',
-  season: 'Sezon {n} · Hafta {k}/8',
+  season: '{title} · Hafta {k}/8',
   seasonLeft: 'Sezonun bitmesine',
   onur: 'Onur',
   onurToday: 'bugün',
@@ -48,12 +50,13 @@ export const ARENA_TR = {
   matchFoundAccept: 'Kabul',
   matchFoundDecline: 'Reddet',
   matchFoundTitle: 'MAÇ BULUNDU',
-  matchFoundText: 'Rakip takım hazır. Odaya katılmak için kabul et.',
+  matchFoundText: 'Eşleşme tamam. Odaya katılmak için kabul et.',
   secLeft: (s: number) => `${s} sn`,
   won: 'Kazandın!',
   lost: 'Kaybettin',
   draw: 'Maç berabere',
   exitBtn: 'Arenadan Çık',
+  requeue: 'Kuyruğa Tekrar Gir',
   exitIn: (s: number) => `${s} sn sonra kasabaya dönülür`,
   rankBtn: 'Sıralama',
   rankTitle: 'Sıralama',
@@ -64,7 +67,8 @@ export const ARENA_TR = {
   rankBest: 'en iyi',
   rankSeasonPeak: 'Bu sezon en yüksek',
   rankNoHistory: 'Henüz tamamlanmış sezon yok.',
-  rankOnline: 'Çevrimiçi oyuncuların puanları henüz yayınlanmıyor.',
+  rankOnline: 'En iyi 2v2 / 3v3 puanı (yalnızca çevrimiçi oyuncular, puana göre):',
+  rankOnlineNone: 'Şu an puanını yayınlayan çevrimiçi oyuncu yok.',
   titles: 'Unvanlar',
   noTitles: 'Henüz arena unvanın yok.',
   reqFail: 'Kuyruğa girmek için şartları karşıla.',
@@ -105,19 +109,20 @@ export function timeLeftText(ms: number): string {
   return `${Math.max(0, mm)} dk`;
 }
 
-export interface SeasonView { n: number; week: number; left: string; leftMs: number }
+export interface SeasonView { n: number; title: string; week: number; left: string; leftMs: number }
 
-/** Season number (1-based), week in season and the time until the season ends (the next season's first week start). */
+/** Season number (1-based), its name line ("Sezon 1: Kızıl Kum"), week in season and the time until the season ends (the next season's first week start). */
 export function seasonView(now: number = Date.now()): SeasonView {
   const week = currentWeek();
   const idx = seasonOfWeek(week);
   const endMs = weekStartMs((idx + 1) * PVP_SEASON_WEEKS);
   const leftMs = Math.max(0, endMs - now);
-  return { n: idx + 1, week: weekInSeason(week), left: timeLeftText(leftMs), leftMs };
+  return { n: idx + 1, title: seasonTitle(idx + 1), week: weekInSeason(week), left: timeLeftText(leftMs), leftMs };
 }
 
+/** "Sezon 1: Kızıl Kum · Hafta 3/8" (finder PvP tab, Sıralama panel, results card). */
 export function seasonLine(v: SeasonView): string {
-  return ARENA_TR.season.replace('{n}', String(v.n)).replace('{k}', String(v.week));
+  return ARENA_TR.season.replace('{title}', v.title).replace('{k}', String(v.week));
 }
 
 /** Visible bracket rating (1500 start) from the ladder. */

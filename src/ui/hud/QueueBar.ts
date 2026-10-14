@@ -68,8 +68,8 @@ export class QueueBar implements HudWidget {
 }
 
 /**
- * Match-found popup (GDD_PVP_FINDER §5.3 / §2.9.4): appears when the local peer is in a handshake (`joining`) and shows the countdown to
- * the join deadline (QUEUE_TIMING.joinMs). Kabul hides it (the handshake goes on); Reddet cancels the queue through `G.net.queue.cancel()`.
+ * Match-found popup (GDD_PVP_FINDER §5.3 / §2.9.4): appears on BOTH sides of a handshake (the proposer while it waits for the acks, phase
+ * `proposed`; the members and the hosting proposer in `joining`) and shows the countdown to the deadline (ackMs, then joinMs). Kabul hides it (the handshake goes on); Reddet cancels the queue through `G.net.queue.cancel()`.
  * The core acknowledges a proposal on its own when it arrives, so Kabul is a local acknowledgement, not a second protocol step.
  */
 export class MatchFoundPopup implements HudWidget {
@@ -77,6 +77,7 @@ export class MatchFoundPopup implements HudWidget {
   private timeEl: HTMLElement;
   private fillEl: HTMLElement;
   private mid = '';
+  private stage = '';
   private accepted = '';
   private started = 0;
 
@@ -110,16 +111,20 @@ export class MatchFoundPopup implements HudWidget {
 
   update(ctx: HudCtx): void {
     const st = G.net?.queue?.state();
-    if (!st || st.phase !== 'joining' || !st.mid || st.mid === this.accepted) {
+    // both sides: the members in 'joining' and the proposer while the acks are out ('proposed')
+    const found = st?.phase === 'joining' || st?.phase === 'proposed';
+    if (!st || !found || !st.mid || st.mid === this.accepted) {
       setDisplay(this.el, false);
       return;
     }
-    if (st.mid !== this.mid) {
+    const stage = `${st.mid}|${st.phase}`;
+    if (stage !== this.stage) {
+      if (st.mid !== this.mid) uiSound('ready_check', 0.8);
       this.mid = st.mid;
+      this.stage = stage;
       this.started = ctx.now;
-      uiSound('ready_check', 0.8);
     }
-    const total = QUEUE_TIMING.joinMs / 1000;
+    const total = (st.phase === 'proposed' ? QUEUE_TIMING.ackMs : QUEUE_TIMING.joinMs) / 1000;
     const left = Math.max(0, total - (ctx.now - this.started) / 1000);
     setDisplay(this.el, true);
     setText(this.timeEl, ARENA_TR.secLeft(Math.ceil(left)));

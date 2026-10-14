@@ -144,4 +144,6 @@ export interface FinderApi {
   onChange(cb: (s: QueueState, notice?: QueueNotice) => void): () => void;
   /** The arena match is over (ArenaController calls it on exit): the queue goes back to idle. */
   matchOver?(): void;
+  /** Results card "Kuyruğa Tekrar Gir": the arena exit runs first, then the same key is queued once the player is in town. */
+  requeueAfterMatch?(key: QueueKey): void;
 }

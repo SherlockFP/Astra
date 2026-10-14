@@ -4,7 +4,7 @@ import type { ArenaBracket, FinderApi, MatchProposal, QueueEnterOpts, QueueKey, 
 import type { ArenaParams } from '../../types/arena';
 import type { DungeonParams } from '../../scenes/scenes';
 import { GAME_VERSION, PROTOCOL_VERSION, makeRoomCode } from '../messages';
-import { QueueCore, QUEUE_TIMING, type QueueIO } from './QueueCore';
+import { QueueCore, QUEUE_TIMING, RequeueGate, type QueueIO } from './QueueCore';
 import { parseQueueKey, arenaKey } from './matcher';
 import { pickArena } from '../../scenes/arena/arenaMaps';
 import { arenaActive } from '../../scenes/arena/ArenaController';
@@ -55,6 +55,8 @@ export class QueueService implements FinderApi {
   private readonly offs: (() => void)[] = [];
   private attaching = false;
   private disposed = false;
+  /** Results card "Kuyruğa Tekrar Gir": the key to queue again once the player is back in town (QueueCore.RequeueGate). */
+  private readonly requeue = new RequeueGate();
 
   constructor() {
     this.core = new QueueCore(this.makeIO());
@@ -64,6 +66,12 @@ export class QueueService implements FinderApi {
       ev.on('scene:changed', (e) => {
         const ph = this.core.state().phase;
         if ((ph === 'searching' || ph === 'proposed') && e.to !== 'town') this.cancel();
+      }),
+      ev.on('scene:changed', (e) => {
+        const key = this.requeue.onScene(e.to, performance.now());
+        if (!key) return;
+        const r = this.enter(key, {});
+        if (!r.ok) G.ui?.toast(r.reason ?? 'Kuyruğa girilemedi.', 'warning');
       }),
       ev.on('net:status', (e) => {
         // a match room that closed before the arena started (the proposer failed to launch): back to idle
@@ -78,6 +86,7 @@ export class QueueService implements FinderApi {
 
   dispose(): void {
     this.disposed = true;
+    this.requeue.clear();
     for (const o of this.offs.splice(0)) o();
     this.core.cancel();
     this.detach();
@@ -118,6 +127,11 @@ export class QueueService implements FinderApi {
     if (this.core.state().phase === 'idle') return;
     this.core.finish();
     this.detach();
+  }
+
+  /** Results card "Kuyruğa Tekrar Gir": queue again for the same key once the player is back in town (see RequeueGate). */
+  requeueAfterMatch(key: QueueKey): void {
+    this.requeue.arm(key, performance.now());
   }
 
   // ---------------------------------------------------------------------------------------------------------------------
@@ -166,8 +180,8 @@ export class QueueService implements FinderApi {
   private detach(): void {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
-    // the lobby handlers were registered after the constructor ones: drop everything except the two scene listeners (first two offs)
-    const keep = 2;
+    // the lobby handlers were registered after the constructor ones: drop everything except the three scene listeners (first three offs)
+    const keep = 3;
     for (const o of this.offs.splice(keep)) o();
     this.tr = null;
     const rel = this.release;

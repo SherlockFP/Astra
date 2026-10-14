@@ -228,6 +228,8 @@ export interface LobbyPresenceMsg {
   cz?: string;
   ch?: number;
   pl?: string;
+  /** Append-only (GDD_PVP_FINDER §3.4): best 2v2 / 3v3 rating `r` and its bracket `b`; absent = not announced. Receiver validates (arenaRules sanitizePresence). */
+  ar?: { r: number; b: '2v2' | '3v3' };
 }
 
 /** Social: whisper, sent to ONE peer id (never broadcast). `to` is the target's character name (receiver checks it against its own). */

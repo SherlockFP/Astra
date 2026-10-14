@@ -2,7 +2,9 @@ import { G } from '../../game/G';
 import type { Player } from '../../entities/Player';
 import { arenaActive, arenaController, type ArenaSnapshot } from '../../scenes/arena/ArenaController';
 import { tierOf } from '../../scenes/arena/arenaRules';
-import { ARENA_TR, clockText, TIER_TONE } from '../panels/game/arenaShared';
+import { ARENA_TR, clockText, seasonLine, seasonView, TIER_TONE } from '../panels/game/arenaShared';
+import { arenaKey } from '../../net/queue/matcher';
+import type { QueueKey } from '../../types/finder';
 import { classColor } from '../widgets/classColors';
 import { div, setDisplay, setText, uiSound } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
@@ -38,12 +40,16 @@ export class ArenaHud implements HudWidget {
   private prepTxt: HTMLElement;
   private framesEl: HTMLElement;
   private resultEl: HTMLElement;
+  private resSeason: HTMLElement;
   private resTitle: HTMLElement;
   private resScore: HTMLElement;
   private resRating: HTMLElement;
   private resRewards: HTMLElement;
   private resExit: HTMLElement;
   private exitBtn: HTMLButtonElement;
+  private requeueBtn: HTMLButtonElement;
+  /** Queue key of the match on the results card (snapshot bracket + ranked), for "Kuyruğa Tekrar Gir". */
+  private requeueKey: QueueKey | null = null;
   private acc = 0;
   private shown = false;
   private result: ResultInfo | null = null;
@@ -75,10 +81,24 @@ export class ArenaHud implements HudWidget {
     this.framesEl = div('ah-frames', this.el);
 
     this.resultEl = div('ah-result', this.el);
+    this.resSeason = div('ah-res-season', this.resultEl);
     this.resTitle = div('ah-res-title', this.resultEl);
     this.resScore = div('ah-res-score', this.resultEl);
     this.resRating = div('ah-res-rating', this.resultEl);
     this.resRewards = div('ah-res-rewards', this.resultEl);
+    this.requeueBtn = document.createElement('button');
+    this.requeueBtn.className = 'ah-exit ah-requeue';
+    this.requeueBtn.type = 'button';
+    this.requeueBtn.textContent = ARENA_TR.requeue;
+    this.requeueBtn.addEventListener('click', () => {
+      uiSound('ui_click', 0.6);
+      const key = this.requeueKey;
+      if (!key) return;
+      // leave the arena (the queue goes back to idle there), then queue the same bracket / mode once back in town
+      G.net?.queue?.requeueAfterMatch?.(key);
+      this.requeueBtn.disabled = true;
+      arenaController()?.exit();
+    });
     this.exitBtn = document.createElement('button');
     this.exitBtn.className = 'ah-exit';
     this.exitBtn.type = 'button';
@@ -88,7 +108,7 @@ export class ArenaHud implements HudWidget {
       arenaController()?.exit();
     });
     this.resExit = div('ah-res-exit', this.resultEl);
-    this.resultEl.appendChild(this.exitBtn);
+    this.resultEl.append(this.requeueBtn, this.exitBtn);
 
     setDisplay(this.el, false);
   }
@@ -130,6 +150,8 @@ export class ArenaHud implements HudWidget {
   private hide(): void {
     this.shown = false;
     this.result = null;
+    this.requeueKey = null;
+    this.requeueBtn.disabled = false;
     setDisplay(this.el, false);
   }
 
@@ -191,8 +213,10 @@ export class ArenaHud implements HudWidget {
     const title = won === null ? ARENA_TR.draw : won ? ARENA_TR.won : ARENA_TR.lost;
     this.resultEl.classList.toggle('is-win', won === true);
     this.resultEl.classList.toggle('is-loss', won === false);
+    setText(this.resSeason, seasonLine(seasonView()));
     setText(this.resTitle, title);
     setText(this.resScore, ARENA_TR.score(s.score[0], s.score[1]));
+    this.requeueKey = arenaKey(s.bracket, s.ranked);
     const info = this.result;
     if (info?.rating) {
       const { before, after, delta } = info.rating;

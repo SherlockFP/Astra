@@ -1,6 +1,6 @@
 import { G } from '../../../game/G';
 import { ARENA_BRACKETS, type ArenaBracket } from '../../../types/finder';
-import { ARENA_TIERS } from '../../../scenes/arena/arenaRules';
+import { ARENA_TIERS, seasonTitle } from '../../../scenes/arena/arenaRules';
 import { GamePanel, button, h, tabs, windowFrame, type TabsHandle } from './base';
 import { ARENA_TR, TIER_TONE, bracketName, ratingOf, seasonLine, seasonView, tierView } from './arenaShared';
 import '../../styles/arena.css';
@@ -85,11 +85,26 @@ export class ArenaRankPanel extends GamePanel {
     const hist = profile.history.filter((x) => x.best[b] !== undefined);
     if (!hist.length) el.append(h('div.ar-line.fd-dim', null, ARENA_TR.rankNoHistory));
     else {
-      for (const s of hist.slice(-8).reverse()) el.append(h('div.ar-line', null, `Sezon ${s.season + 1}: ${ARENA_TR.rankBest} ${s.best[b]}`));
+      for (const s of hist.slice(-8).reverse()) el.append(h('div.ar-line', null, `${seasonTitle(s.season + 1)}: ${ARENA_TR.rankBest} ${s.best[b]}`));
     }
     el.append(h('div.ar-line', null, `${ARENA_TR.rankSeasonPeak}: ${profile.peak[b]}`));
 
+    // presence ratings (lpres `ar`): the best 2v2 / 3v3 of every online player that announced one, highest first (self included)
+    const online = (G.presence?.list() ?? [])
+      .filter((e) => e.pvp)
+      .sort((a, b) => (b.pvp!.rating - a.pvp!.rating) || a.name.localeCompare(b.name, 'tr'))
+      .slice(0, 20);
     el.append(h('div.fd-h', null, 'ÇEVRİMİÇİ OYUNCULAR'), h('div.ar-line.fd-dim', null, ARENA_TR.rankOnline));
+    if (!online.length) el.append(h('div.ar-line.fd-dim', null, ARENA_TR.rankOnlineNone));
+    for (const e of online) {
+      const t = ARENA_TIERS.find((x) => x.id === e.pvp!.tier);
+      el.append(
+        h('div.ar-line', null,
+          h('span', { style: { color: TIER_TONE[e.pvp!.tier] ?? '#fff' } }, e.name),
+          h('span.fd-dim', null, ` · ${e.pvp!.bracket} · ${t?.name ?? ''} · ${e.pvp!.rating}${e.self ? ' (sen)' : ''}`),
+        ),
+      );
+    }
   }
 
   private placeLine(text: string, index: number, rating: number): HTMLElement {

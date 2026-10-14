@@ -13,6 +13,7 @@ import { PET_BY_ID } from '../data/pets';
 import { cleanGuildName, isGid } from './GuildCore';
 import { NATIONS, cleanNation, nationOfSave, nationTag, type NationId } from '../data/nations';
 import { CHANNELS } from '../net/Channels';
+import { presenceOf, sanitizePresence, type ArenaPresence } from '../scenes/arena/arenaRules';
 
 /**
  * SOCIAL - the world feels shared even when the party is empty. OWNER: net module.
@@ -120,6 +121,8 @@ export interface PresenceEntry {
   ch?: { zone: string; num: number };
   /** Soft party: character name of the leader the peer follows (own name = leads), absent = none. */
   leader?: string;
+  /** Arena presence (lpres `ar`, append-only): best 2v2 / 3v3 rating and its tier, absent = not announced (old client or no ladder). */
+  pvp?: ArenaPresence;
 }
 
 /** What the local player announces about their guild on the presence (systems/Guild.ts presenceInfo). */
@@ -142,6 +145,8 @@ export interface SocialSelf {
   channel?: { zone: string; num: number };
   /** Party leader name the local player follows (G.net.partyLeader). */
   leader?: string;
+  /** Best 2v2 / 3v3 rating of the local player (G.arenaLadder), absent before the ladder exists. */
+  arena?: ArenaPresence;
 }
 
 export interface SocialCtx {
@@ -181,7 +186,9 @@ const defaultCtx: SocialCtx = {
     const zone = regionNow.id && (scene === 'dungeon' || scene === 'town') ? regionNow.id : scene;
     const name = cleanName(ch.save.name);
     if (!name) return null;
+    const ladder = G.arenaLadder?.profile() ?? null;
     return {
+      arena: ladder ? presenceOf(ladder.rating) : undefined,
       name,
       cls: cleanClass(ch.save.classId) || 'knight',
       level: Math.max(1, Math.min(LEVEL_CAP, Math.floor(ch.save.level || 1))),
@@ -392,7 +399,7 @@ export class Social implements PresenceApi {
     if (this.tr) this.announce(false);
   }
 
-  private presenceMsg(): { t: 'lpres'; name: string; cls: ClassId; lvl: number; zone: string; zn?: string; g?: string; gid?: string; gv?: number; nat?: NationId; pet?: string; cz?: string; ch?: number; pl?: string } | null {
+  private presenceMsg(): { t: 'lpres'; name: string; cls: ClassId; lvl: number; zone: string; zn?: string; g?: string; gid?: string; gv?: number; nat?: NationId; pet?: string; cz?: string; ch?: number; pl?: string; ar?: { r: number; b: '2v2' | '3v3' } } | null {
     const s = this.ctx.self();
     if (!s) return null;
     const g = this.ctx.guild?.() ?? null;
@@ -404,6 +411,8 @@ export class Social implements PresenceApi {
       ...(s.pet ? { pet: s.pet } : {}),
       ...(s.channel ? { cz: s.channel.zone, ch: s.channel.num } : {}),
       ...(s.leader ? { pl: s.leader } : {}),
+      // append-only (GDD_PVP_FINDER §3.4): best 2v2 / 3v3 rating; the tier is derived by the receiver, never sent
+      ...(s.arena ? { ar: { r: s.arena.rating, b: s.arena.bracket } } : {}),
     };
   }
 
@@ -411,7 +420,7 @@ export class Social implements PresenceApi {
     const msg = this.presenceMsg();
     if (!msg || !this.tr) return;
     const now = this.ctx.now();
-    const key = `${msg.name}|${msg.cls}|${msg.lvl}|${msg.zone}|${msg.gid ?? ''}|${msg.gv ?? 0}|${msg.nat ?? ''}|${msg.pet ?? ''}|${msg.cz ?? ''}${msg.ch ?? ''}|${msg.pl ?? ''}`;
+    const key = `${msg.name}|${msg.cls}|${msg.lvl}|${msg.zone}|${msg.gid ?? ''}|${msg.gv ?? 0}|${msg.nat ?? ''}|${msg.pet ?? ''}|${msg.cz ?? ''}${msg.ch ?? ''}|${msg.pl ?? ''}|${msg.ar ? msg.ar.b + msg.ar.r : ''}`;
     const changed = key !== this.lastSentKey;
     const due = now - this.lastAnnounceAt >= SOCIAL.PRESENCE_EVERY_MS;
     if (!force && !due && !(changed && now - this.lastAnnounceAt >= SOCIAL.CHANGE_GAP_MS)) return;
@@ -447,6 +456,8 @@ export class Social implements PresenceApi {
     else delete e.ch;
     if (s.leader) e.leader = s.leader;
     else delete e.leader;
+    if (s.arena) e.pvp = s.arena;
+    else delete e.pvp;
     e.seen = this.ctx.now();
     const g = this.ctx.guild?.() ?? null;
     if (g) e.guild = { name: g.name, gid: g.gid, gv: g.gv };
@@ -496,7 +507,7 @@ export class Social implements PresenceApi {
   }
 
   private touch(): void {
-    const sig = this.entries().map((e) => `${e.id}|${e.name}|${e.cls}|${e.lvl}|${e.zone}|${e.guild?.gid ?? ''}${e.guild?.gv ?? ''}|${e.ch ? e.ch.zone + e.ch.num : ''}`).join(';');
+    const sig = this.entries().map((e) => `${e.id}|${e.name}|${e.cls}|${e.lvl}|${e.zone}|${e.guild?.gid ?? ''}${e.guild?.gv ?? ''}|${e.ch ? e.ch.zone + e.ch.num : ''}|${e.pvp ? e.pvp.bracket + e.pvp.rating : ''}`).join(';');
     if (sig === this.listSig) return;
     this.listSig = sig;
     this.ctx.changed(this.count());
@@ -590,6 +601,12 @@ export class Social implements PresenceApi {
     if (leader) e.leader = leader;
     else delete e.leader;
     if ((e.ch ? `${e.ch.zone}:${e.ch.num}` : '') !== chSig) this.touch();
+    // append-only arena presence (`ar`): clamped / validated by sanitizePresence; a bad value just means "no rating"
+    const pvBefore = e.pvp ? `${e.pvp.bracket}${e.pvp.rating}` : '';
+    const pv = sanitizePresence(d.ar);
+    if (pv) e.pvp = pv;
+    else delete e.pvp;
+    if ((e.pvp ? `${e.pvp.bracket}${e.pvp.rating}` : '') !== pvBefore) this.touch();
     // WP-05 Lonca: strict validation of the guild fields (a bad one just means "no guild")
     const gname = cleanGuildName(d.g);
     const gid = isGid(d.gid) ? d.gid : '';
