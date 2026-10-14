@@ -20,6 +20,9 @@ import { SPECS_KIT_WARLOCK } from './specs_kit_warlock';
 // WP-02 (Keşiş / Okçu): the two kit spec tables (filled by the monk and archer packages).
 import { SPECS_KIT_MONK } from './specs_kit_monk';
 import { SPECS_KIT_ARCHER } from './specs_kit_archer';
+// AE-3 / AE-4 (docs/kits/agile-evoker.md): İblis Avcısı (Kaos, İntikam, Yutucu) and Ejderhasoy (Yıkım Nefesi, Koruyucu Nefes, Yüceltme)
+import { SPECS_KIT_DEMONHUNTER } from './specs_kit_demonhunter';
+import { SPECS_KIT_EVOKER } from './specs_kit_evoker';
 import { KNIGHT_SPECS } from './specs_kit_knight';
 import { BARBARIAN_SPECS } from './specs_barbarian';
 import { PALADIN_SPECS } from './specs_paladin';
@@ -68,7 +71,7 @@ export const SPECS: Partial<Record<SpecId, SpecDef>> = {};
 Object.assign(SPECS, KNIGHT_SPECS, BARBARIAN_SPECS, PALADIN_SPECS, NECRO_SPECS);
 for (const s of SPEC_LIST) SPECS[s.id] = s;
 Object.assign(SPECS, TALENT_SPECS);
-Object.assign(SPECS, SPECS_KIT_MAGE, SPECS_KIT_ROGUE, SPECS_KIT_WARLOCK, SPECS_KIT_MONK, SPECS_KIT_ARCHER);
+Object.assign(SPECS, SPECS_KIT_MAGE, SPECS_KIT_ROGUE, SPECS_KIT_WARLOCK, SPECS_KIT_MONK, SPECS_KIT_ARCHER, SPECS_KIT_DEMONHUNTER, SPECS_KIT_EVOKER);
 
 /** Spec definition by id; undefined while the registry is empty or the id is unknown. */
 export function getSpec(id: SpecId | null | undefined): SpecDef | undefined {
@@ -98,6 +101,7 @@ export const SPEC_ROLE_OVERRIDES: Partial<Record<SpecId, RoleId>> = {
   evoker_preservation: 'healer',
   evoker_augmentation: 'dps',
   rogue_subtlety: 'dps',
+  demonhunter_devourer: 'dps',
 };
 
 /**
@@ -111,6 +115,7 @@ export const NEW_SPEC_NAMES_TR: Partial<Record<SpecId, { classId: ClassId; name:
   evoker_preservation: { classId: 'evoker', name: 'Koruyucu Nefes' },
   evoker_augmentation: { classId: 'evoker', name: 'Yüceltme' },
   rogue_subtlety: { classId: 'rogue', name: 'Gölge' },
+  demonhunter_devourer: { classId: 'demonhunter', name: 'Yutucu' },
 };
 
 /** Role of a spec: its SpecDef.role when registered, else SPEC_ROLE_OVERRIDES (undefined for unknown ids). */

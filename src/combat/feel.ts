@@ -150,7 +150,7 @@ export function feelWeaponOfCategory(category: string | undefined): FeelWeapon |
 /** Class default when no weapon is equipped (new classes map to their kit weapon). */
 const CLASS_WEAPON: Record<string, FeelWeapon> = {
   knight: 'sword1h', barbarian: 'axe2h', rogue: 'dagger', mage: 'staff', monk: 'fist', archer: 'bow', paladin: 'mace',
-  necromancer: 'staff', warlock: 'staff',
+  necromancer: 'staff', warlock: 'staff', demonhunter: 'dagger', evoker: 'staff',
 };
 
 /** weaponKind of an actor: the equipped main hand (local: save equipment, remote: visible gear), else the class default. */

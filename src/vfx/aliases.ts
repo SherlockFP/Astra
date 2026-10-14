@@ -123,6 +123,20 @@ export const VFX_ALIASES: Record<string, VfxAlias> = {
   ancestor_bear: { id: 'enrage_aura', scale: 1.5, extra: [{ id: 'carnage_aura' }] },
   ancient_guardian: { id: 'shield_bubble', color: 0xffe9a0, extra: [{ id: 'wings_aura' }] },
   dawn_dome: { id: 'aura_ring', scale: 3, extra: [{ id: 'heal_burst' }] },
+  // ---- AE-0 (docs/kits/agile-evoker.md §g.3): İblis Avcısı / Ejderhasoy presets, alias targets until real presets exist.
+  empower_charge: { id: 'charge_ring', scale: 1.1, extra: [{ id: 'buff_aura', scale: 0.5 }] },
+  dragon_breath_cone: { id: 'fire_burst', scale: 2.4, extra: [{ id: 'burn_loop', scale: 1.4 }] },
+  essence_beam: { id: 'chain_lightning', color: 0x7fe3c4, scale: 1.2 },
+  glaive_trail: { id: 'slash_arc', color: 0xb06bff },
+  fel_wings: { id: 'wings_aura', color: 0x9cff4a },
+  soul_fragment_orb: { id: 'soul_orb', scale: 0.5 },
+  sigil_ground: { id: 'fire_ground', color: 0xff7a30, extra: [{ id: 'ground_slam', scale: 0.3 }] },
+  ebon_wings: { id: 'wings_gold', color: 0x9cd070 },
+  prescience_rune: { id: 'chain_lightning', color: 0xd9a441, scale: 0.8 },
+  temporal_wound: { id: 'ground_slam', color: 0xd9a441, scale: 0.35 },
+  time_ripple: { id: 'buff_aura', color: 0xd9a441, extra: [{ id: 'ambient_dust', color: 0xd9a441 }] },
+  void_ray: { id: 'drain_beam', color: 0xb06bff, scale: 1.2 },
+  void_burst: { id: 'shadow_burst', color: 0xb06bff, extra: [{ id: 'arcane_burst', color: 0x6a3ab0, scale: 0.8 }] },
 };
 
 /** Alias entry for a VFX id, or undefined. Never throws (unknown ids are silently nothing). */

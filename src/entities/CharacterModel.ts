@@ -82,7 +82,7 @@ export const CLASS_VISUALS: Record<ClassId, ClassVisual> = {
   warlock: { url: KAYKIT + 'Rogue_Hooded.glb', resource: 'mana', main: [], off: [], helm: null, shield: null },
   // CORE_MECHANICS §2 (CM1): stand-in recipes of the two new classes (ClassDefX.visual is the real recipe, CM10 / CM12)
   demonhunter: { url: KAYKIT + 'Rogue_Hooded.glb', resource: 'fury', main: [], off: [], helm: null, shield: null },
-  evoker: { url: KAYKIT + 'Mage.glb', resource: 'essence', main: ['2H_Staff'], off: [], helm: 'Mage_Hat', shield: null },
+  evoker: { url: KAYKIT + 'Mage.glb', resource: 'mana', main: ['2H_Staff'], off: [], helm: 'Mage_Hat', shield: null },
 };
 
 /** Every toggleable weapon-ish node on the KayKit rigs (capes are never toggled). */

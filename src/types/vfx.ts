@@ -69,6 +69,9 @@ export const VFX_IDS = [
   // vfx/aliases.ts until its real preset exists (the vfx owner implements them later).
   'colossus_smash', 'blood_burst', 'hammer_of_light', 'wake_of_ashes', 'divine_toll', 'ancestral_beam', 'ancestor_bear',
   'ancient_guardian', 'dawn_dome',
+  // ---- AE-0 (docs/kits/agile-evoker.md §g.3, append-only): İblis Avcısı / Ejderhasoy presets. Each has an alias in vfx/aliases.ts until its real preset exists.
+  'empower_charge', 'dragon_breath_cone', 'essence_beam', 'glaive_trail', 'fel_wings', 'soul_fragment_orb', 'sigil_ground',
+  'ebon_wings', 'prescience_rune', 'temporal_wound', 'time_ripple', 'void_ray', 'void_burst',
 ] as const;
 
 export type VfxId = (typeof VFX_IDS)[number];

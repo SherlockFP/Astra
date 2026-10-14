@@ -25,6 +25,9 @@ import { PROC_DEFS_KIT_KNIGHT } from './procs_kit_knight';
 import { PROC_DEFS_KIT_PALADIN } from './procs_kit_paladin';
 // KIT PM-NE (docs/kits/plate-melee.md §8b / §9b): necromancer proc rows (sudden_doom, army, ...) and the Ölüm Darbesi glow rule.
 import { PROC_DEFS_KIT_NECROMANCER, GLOW_RULES_KIT_NECROMANCER } from './procs_kit_necromancer';
+// AE-3 / AE-4 (docs/kits/agile-evoker.md): İblis Avcısı and Ejderhasoy proc rows and glow rules.
+import { PROC_DEFS_KIT_DEMONHUNTER, GLOW_RULES_KIT_DEMONHUNTER } from './procs_kit_demonhunter';
+import { PROC_DEFS_KIT_EVOKER, GLOW_RULES_KIT_EVOKER } from './procs_kit_evoker';
 
 export type ProcOverlay = 'top' | 'left' | 'right' | 'center' | 'both';
 
@@ -113,7 +116,7 @@ export function getProcDef(id: string): ProcDef | undefined {
 }
 
 // KIT PK-0: one merge line per kit file (rows are empty until PK-MAGE / PK-ROGUE / PK-WARLOCK fill them).
-registerProcDefs([...PROC_DEFS_KIT_MAGE, ...PROC_DEFS_KIT_ROGUE, ...PROC_DEFS_KIT_WARLOCK, ...PROC_DEFS_KIT_KNIGHT, ...PROC_DEFS_KIT_BARBARIAN, ...PROC_DEFS_KIT_PALADIN, ...PROC_DEFS_KIT_NECROMANCER]);
+registerProcDefs([...PROC_DEFS_KIT_MAGE, ...PROC_DEFS_KIT_ROGUE, ...PROC_DEFS_KIT_WARLOCK, ...PROC_DEFS_KIT_KNIGHT, ...PROC_DEFS_KIT_BARBARIAN, ...PROC_DEFS_KIT_PALADIN, ...PROC_DEFS_KIT_NECROMANCER, ...PROC_DEFS_KIT_DEMONHUNTER, ...PROC_DEFS_KIT_EVOKER]);
 
 /** Overlay position for a proc at a given stack count (falls back to the row's `overlay`). */
 export function procOverlayFor(def: ProcDef, stacks: number): ProcOverlay {
@@ -214,7 +217,7 @@ export const GLOW_RULES: Record<GlowRuleId, GlowRule> = {
   bloodbath3: { id: 'bloodbath3', test: (s) => s.bleedingEnemies >= 3, skills: () => ['barbarian_bloodbath'] },
 };
 // KIT PK-0: kit glow rules (empty until the class packages fill them).
-Object.assign(GLOW_RULES, GLOW_RULES_KIT_MAGE, GLOW_RULES_KIT_ROGUE, GLOW_RULES_KIT_WARLOCK, GLOW_RULES_KIT_NECROMANCER);
+Object.assign(GLOW_RULES, GLOW_RULES_KIT_MAGE, GLOW_RULES_KIT_ROGUE, GLOW_RULES_KIT_WARLOCK, GLOW_RULES_KIT_NECROMANCER, GLOW_RULES_KIT_DEMONHUNTER, GLOW_RULES_KIT_EVOKER);
 
 // ------------------------------------------------------------------------------------------------------------
 // Read-only helpers

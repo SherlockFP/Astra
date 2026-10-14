@@ -171,9 +171,17 @@ const AR_ROLL: MoveProfile = {
   projectile: { count: 2, spread: 4, speed: 60, pierce: 2, vfx: 'arrow_projectile' }, token: 'ROL', feel: 'rollAttack',
 };
 
-export const RUN_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_RUN, barbarian: BB_RUN, mage: MG_RUN, rogue: RG_RUN, paladin: PL_RUN, warlock: WL_RUN, necromancer: NE_RUN, monk: MK_RUN, archer: AR_RUN };
-export const JUMP_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_JUMP, barbarian: BB_JUMP, mage: MG_JUMP, rogue: RG_JUMP, paladin: PL_JUMP, warlock: WL_JUMP, necromancer: NE_JUMP, monk: MK_JUMP, archer: AR_JUMP };
-export const ROLL_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_ROLL, barbarian: BB_ROLL, mage: MG_ROLL, rogue: RG_ROLL, paladin: PL_ROLL, warlock: WL_ROLL, necromancer: NE_ROLL, monk: MK_ROLL, archer: AR_ROLL };
+// AE-3 / AE-4: İblis Avcısı (the Rogue's dual-glaive run / jump / roll under its own ids, typed shadow) and Ejderhasoy (the Mage's projectile moves, frost)
+const DH_RUN: MoveProfile = { ...RG_RUN, classId: 'demonhunter', id: 'demonhunter_basic_run', name: 'Kayan Glaive', type: 'shadow' };
+const DH_JUMP: MoveProfile = { ...RG_JUMP, classId: 'demonhunter', id: 'demonhunter_basic_jump', name: 'Kanat Çırpışı', type: 'shadow' };
+const DH_ROLL: MoveProfile = { ...RG_ROLL, classId: 'demonhunter', id: 'demonhunter_basic_roll', name: 'Gölge Dönüşü', type: 'shadow' };
+const EV_RUN: MoveProfile = { ...MG_RUN, classId: 'evoker', id: 'evoker_basic_run', name: 'Koşarak Nefes', type: 'frost' };
+const EV_JUMP: MoveProfile = { ...MG_JUMP, classId: 'evoker', id: 'evoker_basic_jump', name: 'Süzülen Nefes', type: 'frost' };
+const EV_ROLL: MoveProfile = { ...MG_ROLL, classId: 'evoker', id: 'evoker_basic_roll', name: 'Çapraz Nefes', type: 'frost' };
+
+export const RUN_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_RUN, barbarian: BB_RUN, mage: MG_RUN, rogue: RG_RUN, paladin: PL_RUN, warlock: WL_RUN, necromancer: NE_RUN, monk: MK_RUN, archer: AR_RUN, demonhunter: DH_RUN, evoker: EV_RUN };
+export const JUMP_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_JUMP, barbarian: BB_JUMP, mage: MG_JUMP, rogue: RG_JUMP, paladin: PL_JUMP, warlock: WL_JUMP, necromancer: NE_JUMP, monk: MK_JUMP, archer: AR_JUMP, demonhunter: DH_JUMP, evoker: EV_JUMP };
+export const ROLL_BY_CLASS: Partial<Record<ClassId, MoveProfile>> = { knight: KN_ROLL, barbarian: BB_ROLL, mage: MG_ROLL, rogue: RG_ROLL, paladin: PL_ROLL, warlock: WL_ROLL, necromancer: NE_ROLL, monk: MK_ROLL, archer: AR_ROLL, demonhunter: DH_ROLL, evoker: EV_ROLL };
 export const MOVE_BY_KIND: Record<MoveKind, Partial<Record<ClassId, MoveProfile>>> = { run: RUN_BY_CLASS, jump: JUMP_BY_CLASS, roll: ROLL_BY_CLASS };
 
 function toSkillDef(p: MoveProfile): SkillDef {
@@ -194,7 +202,7 @@ function toSkillDef(p: MoveProfile): SkillDef {
 
 /** Every move def, merged into the shared registry (remote replays look them up by id). */
 export const MOVE_SKILLS: Record<string, SkillDef> = {};
-for (const p of [KN_RUN, KN_JUMP, KN_ROLL, BB_RUN, BB_JUMP, BB_ROLL, MG_RUN, MG_JUMP, MG_ROLL, RG_RUN, RG_JUMP, RG_ROLL, PL_RUN, PL_JUMP, PL_ROLL, WL_RUN, WL_JUMP, WL_ROLL, NE_RUN, NE_JUMP, NE_ROLL, MK_RUN, MK_JUMP, MK_ROLL, AR_RUN, AR_JUMP, AR_ROLL]) {
+for (const p of [KN_RUN, KN_JUMP, KN_ROLL, BB_RUN, BB_JUMP, BB_ROLL, MG_RUN, MG_JUMP, MG_ROLL, RG_RUN, RG_JUMP, RG_ROLL, PL_RUN, PL_JUMP, PL_ROLL, WL_RUN, WL_JUMP, WL_ROLL, NE_RUN, NE_JUMP, NE_ROLL, MK_RUN, MK_JUMP, MK_ROLL, AR_RUN, AR_JUMP, AR_ROLL, DH_RUN, DH_JUMP, DH_ROLL, EV_RUN, EV_JUMP, EV_ROLL]) {
   MOVE_SKILLS[p.id] = toSkillDef(p);
 }
 Object.assign(SKILLS, MOVE_SKILLS);

@@ -71,6 +71,10 @@ export const SFX_ALIASES: Record<string, SfxAlias> = {
   arcane_missile_hit: { id: 'arcane_impact', pitch: 1.3 },
   ice_shatter: { id: 'frost_impact' },
   shadowstep_snap: { id: 'whoosh', pitch: 0.8 },
+  // ---- AE-0 (docs/kits/agile-evoker.md §g.3)
+  empower_charge: { id: 'ui_tab', pitch: 1.2 },
+  dragon_breath: { id: 'fire_whoosh' },
+  eye_beam_loop: { id: 'drain_loop' },
 };
 
 /**

@@ -46,7 +46,9 @@ export type PipId = 'combo' | 'adalet' | 'karisim' | 'chi' | 'holypower' | 'shar
   // GDD_TALENTS §0.4 (T0): Gizem Yükü (mage_arcane), max 4, #b78cff
   | 'arcane'
   // PM-00a (docs/kits/plate-melee.md §g need 1): Death Knight rune pip (max 6, timed regen via PipDef.regen).
-  | 'rune';
+  | 'rune'
+  // AE-3 / AE-4 (docs/kits/agile-evoker.md §3 / §4): İblis Avcısı Ruh Parçacığı (soul fragments), Ejderhasoy Öz (essence pips; not the Nekromant's `essence` ResourceType).
+  | 'soul' | 'essence';
 
 export type DamageType = 'physical' | 'fire' | 'frost' | 'lightning' | 'shadow' | 'poison' | 'holy' | 'arcane' | 'true';
 

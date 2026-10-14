@@ -49,11 +49,13 @@ export const SPEC_ICON: Record<SpecId, string> = {
   warlock_affliction: CLASS_ICON_PATH.warlock,
   warlock_destruction: CLASS_ICON_PATH.warlock,
   // CM1 stubs: the six new spec ids fall back to their class icon (the SPEC_ICON contract: every SpecId has a path)
-  demonhunter_chaos: CLASS_ICON_PATH.demonhunter,
-  demonhunter_vengeance: CLASS_ICON_PATH.demonhunter,
+  // AE-3 / AE-4: own spec icons for the new classes
+  demonhunter_chaos: '/assets/icons/skill-blade-storm.svg',
+  demonhunter_vengeance: '/assets/icons/skill-iron-skin.svg',
+  demonhunter_devourer: '/assets/icons/skill-life-drain.svg',
   evoker_devastation: CLASS_ICON_PATH.evoker,
-  evoker_preservation: CLASS_ICON_PATH.evoker,
-  evoker_augmentation: CLASS_ICON_PATH.evoker,
+  evoker_preservation: '/assets/icons/skill-regeneration.svg',
+  evoker_augmentation: '/assets/icons/buff-haste.svg',
   rogue_subtlety: CLASS_ICON_PATH.rogue,
 };
 

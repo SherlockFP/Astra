@@ -9,6 +9,9 @@ import { STATUSES_KIT_PLATE, STATUS_RULES_KIT_PLATE } from './statuses_kit_plate
 // WP-02 (Keşiş / Okçu): kit statuses of the monk and archer packages.
 import { STATUSES_KIT_MONK, STATUS_RULES_KIT_MONK } from './statuses_kit_monk';
 import { STATUSES_KIT_ARCHER, STATUS_RULES_KIT_ARCHER } from './statuses_kit_archer';
+// AE-3 / AE-4 (docs/kits/agile-evoker.md): İblis Avcısı and Ejderhasoy statuses
+import { STATUSES_KIT_DEMONHUNTER, STATUS_RULES_KIT_DEMONHUNTER } from './statuses_kit_demonhunter';
+import { STATUSES_KIT_EVOKER, STATUS_RULES_KIT_EVOKER } from './statuses_kit_evoker';
 import { WATCHER_STATUSES } from './watchers';
 
 /**
@@ -432,6 +435,8 @@ Object.assign(STATUS_RULES, STATUS_RULES_KIT_PLATE);
 // WP-02: monk and archer kit statuses (merged after the shared rows, like the other kits).
 Object.assign(STATUSES, STATUSES_KIT_MONK, STATUSES_KIT_ARCHER);
 Object.assign(STATUS_RULES, STATUS_RULES_KIT_MONK, STATUS_RULES_KIT_ARCHER);
+Object.assign(STATUSES, STATUSES_KIT_DEMONHUNTER, STATUSES_KIT_EVOKER);
+Object.assign(STATUS_RULES, STATUS_RULES_KIT_DEMONHUNTER, STATUS_RULES_KIT_EVOKER);
 
 /** Statuses that are crowd control on the "hard" scale (cannot act). */
 export const HARD_CC: StatusId[] = ['stun', 'freeze', 'knockdown', 'fear', 'petrify'];

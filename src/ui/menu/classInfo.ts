@@ -149,18 +149,30 @@ const FALLBACK: Record<ClassId, ClassPresentation> = {
       { clip: 'Cheer' },
     ],
   },
-  // CORE_MECHANICS §2 (CM1): presentation stubs of the two new classes. Not in CLASS_ORDER (not selectable); no showcase yet.
+  // AE-3 / AE-4 (WoW Midnight 12.0): İblis Avcısı (Kaos / İntikam / Yutucu) and Ejderhasoy (Yıkım Nefesi / Koruyucu Nefes / Yüceltme)
   demonhunter: {
-    id: 'demonhunter', name: 'İblis Avcısı', tagline: 'Şeytani Öfkenin Avcısı', role: 'Hız · Gazap', resource: 'Gazap', resourceColor: '#b8ff3a',
-    desc: 'Gözünü şeytani bir nefretle açan avcı. İki hançerle ve kanatlarıyla hızlıca yer değiştirir; düşman ateşiyle beslenir.',
-    highlights: [], stats: { dayaniklilik: 3, hasar: 5, hareket: 5, menzil: 1 }, color: '#a330c9', icon: '/assets/icons/skill-claw-strike.svg', idle: 'Idle',
-    showcase: [],
+    id: 'demonhunter', name: 'İblis Avcısı', tagline: 'Gözleri Bağlı, Ruhu Uyanık', role: 'Hız · Gazap · Tank', resource: 'Gazap + Ruh Parçacığı', resourceColor: '#9cff4a',
+    desc: 'Gözleri bağlı, ruhu uyanık şeytani gazap avcısı. Kaos ile iki hançerle doğrar ve Göz Işını saçar, İntikam ile ruh parçacıklarını yutup en önde durur, Yutucu ile boşluğu çağırıp ruhları biçer. Çift zıplama ve süzülmeyle haritayı aşar.',
+    highlights: ['Kaos: Göz Işını, Öz Kırılması ve Metamorfoz patlama penceresi', 'İntikam: Kırılma ile ruh topla, Ruh Bombası ile en önde dur', 'Yutucu (Midnight): menzilli boşluk, Boşluk Metamorfozu ve Çöken Yıldız', 'Çift zıplama ve düşerken süzülme'],
+    stats: { dayaniklilik: 3, hasar: 5, hareket: 5, menzil: 2 }, color: '#a330c9', icon: '/assets/icons/skill-claw-strike.svg', idle: 'Idle',
+    showcase: [
+      { clip: 'Dualwield_Melee_Attack_Slice', vfx: 'glaive_trail', vfxAt: 0.41, offset: [0, 1.2, 1.2], sfx: 'swing_light', speed: 1.6 },
+      { clip: '2H_Melee_Attack_Spin', vfx: 'spin_slash', vfxAt: 0.6, offset: [0, 1.0, 0.4], sfx: 'swing_heavy', speed: 1.8 },
+      { clip: 'Spellcast_Long', vfx: 'essence_beam', vfxAt: 0.3, offset: [0, 1.5, 2.6], sfx: 'fel_cast', speed: 1.2 },
+      { clip: 'Cheer' },
+    ],
   },
   evoker: {
-    id: 'evoker', name: 'Ejderhasoy', tagline: 'Ejderhanın Nefesi', role: 'Ejderha Nefesi · Destek', resource: 'Öz', resourceColor: '#d9a441',
-    desc: 'Ejderha soyunun son büyücüsü. Tunç ve yeşil nefesiyle yakın ve uzak düşmanları yakar; müttefiklerini kanatlarının altına alır.',
-    highlights: [], stats: { dayaniklilik: 3, hasar: 4, hareket: 2, menzil: 4 }, color: '#33937f', icon: '/assets/icons/skill-fire-breath.svg', idle: 'Idle',
-    showcase: [],
+    id: 'evoker', name: 'Ejderhasoy', tagline: 'Alevin ve Zamanın Çocuğu', role: 'Menzilli · Yıkım / Şifa / Destek', resource: 'Mana + Öz', resourceColor: '#4f8bff',
+    desc: 'Ejderha soyunun çocuğu. Tuş basılı tutulan güçlendirilmiş nefesleriyle (Ateş Nefesi, Rüya Nefesi) hasar ve şifa saçar: Yıkım Nefesi ile ateş ve Öz ışınları, Koruyucu Nefes ile Geri Dönüş ve Yankı ağı, Yüceltme ile en iyi iki dostunun hasarını büyütür.',
+    highlights: ['Güçlendirilmiş nefes: tuşu tut, 3 kademe, bırakınca patlat', 'Öz: Parçala ve Pyre ile ışın ve patlama', 'Koruyucu: Geri Dönüş, Yankı, Rüya Nefesi ve Durgunluk', 'Yüceltme: Abanoz Kudret ve Öngörü ile dostlarını büyüt'],
+    stats: { dayaniklilik: 3, hasar: 4, hareket: 2, menzil: 5 }, color: '#33937f', icon: '/assets/icons/skill-fire-breath.svg', idle: 'Idle',
+    showcase: [
+      { clip: 'Spellcast_Shoot', vfx: 'fire_burst', vfxAt: 0.37, offset: [0, 1.5, 1.4], sfx: 'fire_cast' },
+      { clip: 'Spellcasting', vfx: 'dragon_breath_cone', vfxAt: 0.3, offset: [0, 1.4, 2.2], sfx: 'fire_whoosh', speed: 1.0 },
+      { clip: 'Spellcast_Raise', vfx: 'heal_burst', vfxAt: 0.9, offset: [0, 0.2, 1.8], sfx: 'heal', speed: 2.0 },
+      { clip: 'Cheer' },
+    ],
   },
 };
 
@@ -177,7 +189,7 @@ export function classPresentation(id: ClassId): ClassPresentation {
   };
 }
 
-export const CLASS_ORDER: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer'];
+export const CLASS_ORDER: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer', 'demonhunter', 'evoker'];
 
 export interface VariantDef { name: string; css: string; tint: number }
 /** Colour variants (appearance.variant index). `tint` is only used by the scenes-side fallback model loader. */

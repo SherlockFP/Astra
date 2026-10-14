@@ -175,7 +175,15 @@ export type StatusId =
   | 'quick_draw' | 'survivor_ward'
   // KIT Keşiş (monk, append-only): the chi/stagger statuses already above (chi_flow, tigerlust, tigerfury, fortifying, brewed,
   // stagger_pool) get StatusDefs in data/statuses_kit_monk.ts; these five are new monk-only ids.
-  | 'fists_guard' | 'rising_sun' | 'thunder_tea' | 'renewing_mist' | 'enveloping_mist';
+  | 'fists_guard' | 'rising_sun' | 'thunder_tea' | 'renewing_mist' | 'enveloping_mist'
+  // AE-3 (docs/kits/agile-evoker.md §3, WoW Midnight Devourer added): İblis Avcısı. StatusDefs in data/statuses_kit_demonhunter.ts.
+  | 'metamorphosis' | 'metamorphosis_v' | 'void_meta' | 'initiative' | 'exergy' | 'essence_break' | 'chaos_brand' | 'blur'
+  | 'soul_overflow' | 'demon_spikes' | 'fiery_brand' | 'frailty' | 'the_hunt' | 'collapsing_star' | 'darkness' | 'sigil_flame'
+  | 'immolation' | 'void_ray_mark' | 'fel_rush_guard' | 'soul_feast'
+  // AE-4 (docs/kits/agile-evoker.md §4): Ejderhasoy. StatusDefs in data/statuses_kit_evoker.ts.
+  | 'essence_burst' | 'leaping_flames' | 'burnout' | 'iridescence' | 'tip_scales' | 'dragonrage' | 'unbound_flame' | 'hover'
+  | 'obsidian' | 'merithras_blessing' | 'echo' | 'twin_echoes' | 'lifebind' | 'stasis' | 'time_dilation' | 'ebon_might'
+  | 'prescience' | 'temporal_wound' | 'bronze_blessing' | 'reversion' | 'dream_breath' | 'empowering' | 'fire_breath_burn';
 
 export interface StatusDef {
   id: StatusId;
