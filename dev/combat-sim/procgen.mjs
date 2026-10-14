@@ -498,7 +498,7 @@ for (const theme of THEMES_ALL) {
     ok('ui.Kahramanlik launch maps to heroic', launched.p.difficulty === 'heroic' && P.parseFissureId(launched.p.dungeonId).tier === 'h');
     G.net.isOnline = true; G.net.isAuthority = false; G.net.inParty = true; G.net.isPartyLeader = false; // channels: the party leader (not the channel host) opens runs
     ok('ui.a non-leader party member cannot open the Yarik', tab.primary().disabled && /oda sahibi/i.test(tab.primary().label));
-    G.net.isOnline = false; G.net.isAuthority = true;
+    G.net.isOnline = false; G.net.isAuthority = true; G.net.inParty = false; G.net.isPartyLeader = true;
     G.character.save.flags = {};
     tab.open();
     ok('ui.Kahramanlik locked without a Normal clear', !tab.primary().disabled && (tab.tier === 'n'));
