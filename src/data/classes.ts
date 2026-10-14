@@ -46,6 +46,8 @@ export interface ClassDefX extends ClassDef {
   cameraProfile?: 'melee' | 'ranged' | 'caster';
   /** WoW auto-attack mode override (CONTROLS_WOW §8.3). Unset = derived from the basic step and cameraProfile. */
   autoAttack?: 'melee' | 'ranged' | 'off';
+  /** Auto-attack swing row for a class whose LMB basic is a single cast (no combo): SKILLS id, used by SkillSystem.autoChain. */
+  autoSwing?: string;
   /** Class trait (GDD_CLASSES_V2 §x.1 "trait_*"). */
   trait?: { id: string; name: string; desc: string };
   /** Resource regen behaviour (GDD_CLASSES_V2 §1.2; replaces the mage/barbarian special cases in Combat). */
@@ -578,6 +580,8 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
       hide: ['1H_Wand', 'Spellbook', 'Spellbook_open', 'Mage_Hat'],
     },
     basicAttack: 'priest_basic',
+    autoAttack: 'melee',
+    autoSwing: 'priest_basic_swing',
     skills: ['priest_power_word_shield', 'priest_flash_heal', 'priest_smite', 'priest_renew', 'priest_dispel', 'priest_psychic_scream', 'priest_desperate_prayer', 'priest_fade'],
     startingItems: ['staff_t1'],
     color: '#ffffff',

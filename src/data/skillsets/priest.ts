@@ -20,6 +20,17 @@ export function registerPriest(add: SkillAdd): void {
     params: { end: 0.6, chain: 0.03, move: 0.1, stagger: 2, proc: 0.5, weight: 0 },
   });
 
+  // ---- Auto-attack swing (ClassDef.autoSwing): the priest's WoW Auto Attack. A weak staff swing while a foe is in melee reach; the
+  // LMB stays the holy bolt cast. Not a bar row (the `_basic` id keeps it out of the skill book lists).
+  add({
+    id: 'priest_basic_swing', classId: 'priest', name: 'Asa Vuruşu (Auto Attack)', icon: I('skill-holy-light'), unlockLevel: 1,
+    desc: 'Asanla yakın vuruş yaparsın. Rahip oto saldırısı: zayıf, ama düşman menzilindeyken hep vurur.',
+    anim: '2H_Melee_Attack_Chop', animSpeed: 1.2, hitTime: 0.25, cost: 0, cooldown: 0, castTime: 0,
+    targeting: 'melee_arc', range: 2.4, arc: 120, damage: { coef: 0.45, type: 'physical' },
+    tags: ['melee', 'basic', 'auto'], vfx: { impact: 'hit_spark' }, sfx: {},
+    params: { end: 0.7, chain: 0.5, move: 0.1, stagger: 1, weight: 0 },
+  });
+
   // ---- Core (ClassDef.skills). unlockLevel 1 rows make the level-1 bar (basic + Güç Kalkanı, Hızlı Şifa, Kutsal Ceza).
   add({
     id: 'priest_power_word_shield', classId: 'priest', name: 'Güç Kalkanı (Power Word: Shield)', icon: I('skill-healing-shield'), unlockLevel: 1, defaultSlot: 'rmb',

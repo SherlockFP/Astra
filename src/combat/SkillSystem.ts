@@ -475,7 +475,13 @@ export class SkillSystem {
     const base = id ? SKILLS[id] : undefined;
     if (!base) return { parent: null, steps: [], idx: 0 };
     const parent = this.resolveSkill(base, p);
-    if (parent.behavior !== 'combo') return { parent: null, steps: [], idx: 0 };
+    if (parent.behavior !== 'combo') {
+      // a single-cast basic (priest holy bolt) swings through its class's auto-attack row (ClassDef.autoSwing), like WoW's Auto Attack
+      const swing = CLASSES[p.classId]?.autoSwing;
+      const swingDef = swing ? SKILLS[swing] : undefined;
+      if (!swingDef) return { parent: null, steps: [], idx: 0 };
+      return { parent, steps: [swingDef], idx: 0 };
+    }
     const steps = comboSteps(parent.id);
     const reset = parent.params?.reset ?? 0.85;
     let idx = st.combo.next;

@@ -15,7 +15,10 @@
 //   DP_URL=http://127.0.0.1:5190 MP_PW=<dir with node_modules/playwright-core> node tools/qa/dungeon-pack.mjs
 // Env: DP_CLASSES=priest,knight  DP_LVL=15  DP_DUNGEON=kemik_mahzeni  DP_PACK=0 (index into the dungeon's packs)
 //      DP_CAP=150 (seconds allowed for the fight of one class)  MP_CHROME (chrome.exe)  DP_VIEW=1280x720  DP_HEADED=1 (watch it)
-// Exit code: 0 = every class cleared the pack without a death, dealt damage, enemies at the run level, no console / page errors.
+//      DP_SPECS=priest=priest_shadow (default; class=spec pairs set before the walk, the spec's own default bar)
+//      DP_SURVIVE_SEC=20 DP_MIN_DEALT=150 (casters: alive after 20 s of the fight with >= 150 damage dealt is a pass; melee: clear only)
+// Casters back off from the nearest body under 5 m, shield themselves first, heal / defend under 70 % HP, and keep Potion at 40 %.
+// Exit code: 0 = every class cleared the pack without a death (or, casters, survived the window with damage), no console / page errors.
 //            1 = anything else (the reason is printed per class). Plain numbers are informational.
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -32,6 +35,11 @@ const PACK_IDX = Number(process.env.DP_PACK ?? 0);
 const CAP_MS = Number(process.env.DP_CAP ?? 150) * 1000;
 const [VW, VH] = (process.env.DP_VIEW ?? '1280x720').split('x').map(Number);
 const MELEE = new Set(['knight', 'barbarian', 'rogue', 'paladin', 'druid']);
+/** casters (not MELEE) have no clear-or-die rule: alive after this many seconds of the fight with DP_MIN_DEALT damage dealt is a pass */
+const SURVIVE_SEC = Number(process.env.DP_SURVIVE_SEC ?? 20);
+const MIN_DEALT = Number(process.env.DP_MIN_DEALT ?? 150);
+/** class=spec pairs set before the walk (DP_SPECS="priest=priest_shadow,mage=", empty value = the class's bare bar) */
+const SPECS = Object.fromEntries((process.env.DP_SPECS ?? 'priest=priest_shadow').split(',').map((s) => s.split('=').map((x) => x.trim())).filter(([c, sp]) => c && sp));
 /** console noise that is not a game bug: blocked fonts (junction node_modules), relay sockets of the P2P layer, favicon, 403 of @fs. */
 const NOISE = /WebSocket|nostr|satellite|ERR_|favicon|net::|Failed to load resource|@fontsource|A network error occurred/i;
 
@@ -114,12 +122,29 @@ async function journey(page, cls, errors) {
           selected: pc.localHardTargetId() === e.id,
         };
       }
-      return { alive: alive.length, near, hp: p.hp, maxHp: p.maxHp, dead: !!p.isDead, x: p.position.x, z: p.position.z, yaw: p.yaw };
+      return { alive: alive.length, near, hp: p.hp, maxHp: p.maxHp, dead: !!p.isDead, x: p.position.x, z: p.position.z, yaw: p.yaw, shield: p.statuses.has('shield') };
     }, ids);
 
   await page.goto(`${BASE}/dev/scenes.html?scene=dungeon&dungeon=${DUNGEON}&lvl=${LVL}&class=${cls}`, { waitUntil: 'load', timeout: 90000 });
   await page.waitForFunction(() => window.G?.scenes?.current?.id === 'dungeon' && !!window.G?.player && !!window.G?.world, null, { timeout: 120000, polling: 250 });
   await sleep(3000);
+
+  // the class's spec (DP_SPECS, default priest=priest_shadow): the spec's own default bar, passives and stats, as a player's spec pick sets them
+  const specId = SPECS[cls];
+  if (specId) {
+    const ok = await page.evaluate(async (sid) => {
+      const G = window.G;
+      const { getSpec } = await import('/src/data/specs.ts');
+      const sp = getSpec(sid);
+      if (!sp) return false;
+      G.character.save.spec = sid;
+      G.character.save.skillBar = { ...sp.defaultBar };
+      G.character.recomputeStats();
+      G.player.spec = sid;
+      return true;
+    }, specId);
+    if (!ok) return { cls, ok: false, why: `spec ${specId} does not exist` };
+  }
 
   // turn calibration (ArrowLeft should raise the yaw, else the walk keys are mirrored)
   const y0 = (await state()).yaw;
@@ -152,11 +177,15 @@ async function journey(page, cls, errors) {
   // every damage / death the player is part of, read off the game's event bus (listeners only, no game state is written)
   await page.evaluate(() => {
     const G = window.G;
-    const st = { dealt: 0, taken: 0, kills: 0, deaths: 0, pid: G.player.id, src: {} };
+    const st = { dealt: 0, taken: 0, kills: 0, deaths: 0, pid: G.player.id, src: {}, bySkill: {} };
     window.__dp = st;
     G.events.on('damage', (e) => {
       if (e.kind === 'absorb') return;
-      if (e.sourceId === st.pid && e.targetId !== st.pid) st.dealt += e.amount ?? 0;
+      if (e.sourceId === st.pid && e.targetId !== st.pid) {
+        st.dealt += e.amount ?? 0;
+        const k = e.skillId ?? e.kind;
+        st.bySkill[k] = (st.bySkill[k] ?? 0) + (e.amount ?? 0);
+      }
       if (e.targetId === st.pid) {
         st.taken += e.amount ?? 0;
         const src = G.world.entities.get(e.sourceId)?.def?.id ?? 'env';
@@ -232,7 +261,8 @@ async function journey(page, cls, errors) {
       const key = kb('skill_' + slot);
       if (!def || !key || taken.has(key) || (def.unlockLevel ?? 1) > lvl) continue;
       taken.add(key);
-      keys.push({ slot, id, key, heal: (def.tags ?? []).some((t) => t === 'heal' || t === 'shield') });
+      // defensive = a self buff (Dispersion, Fade, Ice Block ...): only pressed below half HP, never in the damage rotation
+      keys.push({ slot, id, key, heal: (def.tags ?? []).some((t) => t === 'heal' || t === 'shield'), shield: (def.tags ?? []).includes('shield'), defensive: def.targeting === 'self_buff' });
     }
     return { keys, potion };
   }, LVL);
@@ -264,11 +294,14 @@ async function journey(page, cls, errors) {
     if (s.maxHp > 0) minHp = Math.min(minHp, s.hp / s.maxHp);
     if (s.dead) { outcome = 'died'; break; }
     if (!s.alive || !s.near) { outcome = 'cleared'; break; }
+    if (!MELEE.has(cls) && Date.now() - tFight >= SURVIVE_SEC * 1000) { outcome = 'survived'; break; }
     const near = s.near;
     const err = wrap(Math.atan2(near.x - s.x, near.z - s.z) - s.yaw);
     const mv = [];
     if (Math.abs(err) > 0.1) mv.push((err > 0) === turnLeftIncreasesYaw ? 'ArrowLeft' : 'ArrowRight');
     if (near.d > (melee ? 2.2 : 14) && Math.abs(err) < 0.9) mv.push('KeyW');
+    // casters back off from the nearest body (keeps facing it), so the pack reaches them later
+    else if (!melee && near.d < 5 && Math.abs(err) < 1.2) mv.push('KeyS');
     await setKeys(mv);
     const now = Date.now();
     if (!near.selected && now - lastClick > 1500) {
@@ -285,9 +318,11 @@ async function journey(page, cls, errors) {
     if (near.selected && near.d < (melee ? 4 : 26) && now - lastCast > 450) {
       lastCast = now;
       // below half HP the rotation is the heals and shields, otherwise the damage and utility keys (a heal with no ally is a self cast)
-      const low = s.hp < s.maxHp * 0.5;
-      const pool = plan.keys.filter((x) => x.heal === low);
-      const k = (pool.length ? pool : plan.keys)[rot++ % (pool.length ? pool.length : plan.keys.length)];
+      const low = s.hp < s.maxHp * (melee ? 0.5 : 0.7);
+      const pool = plan.keys.filter((x) => (low ? x.heal || x.defensive : !x.heal && !x.defensive));
+      // casters keep their own shield up first (a player's pre-fight Power Word: Shield), then the rotation
+      const shieldFirst = !melee && !s.shield ? plan.keys.find((x) => x.shield) : null;
+      const k = shieldFirst ?? (pool.length ? pool : plan.keys)[rot++ % (pool.length ? pool.length : plan.keys.length)];
       pressed[k.key] = (pressed[k.key] ?? 0) + 1;
       await tap(k.key, 40);
     }
@@ -312,13 +347,16 @@ async function journey(page, cls, errors) {
   const lvls = [...new Set(pack.levels)];
   const hpLost = maxHp0 ? Math.round((100 * st.taken) / maxHp0) : 0;
   const reasons = [];
-  if (outcome !== 'cleared') reasons.push(outcome === 'died' ? 'the character died' : `pack not cleared in ${CAP_MS / 1000} s`);
+  if (outcome === 'died') reasons.push('the character died');
+  else if (outcome === 'timeout') reasons.push(`pack not cleared in ${CAP_MS / 1000} s`);
+  else if (outcome === 'survived' && st.dealt < MIN_DEALT) reasons.push(`alive at ${SURVIVE_SEC} s but dealt only ${Math.round(st.dealt)} (need ${MIN_DEALT})`);
   if (st.dealt <= 0) reasons.push('no damage dealt');
   if (lvls.some((l) => l !== LVL)) reasons.push(`pack enemies at levels ${lvls.join('/')} (expected ${LVL})`);
   if (errors.length) reasons.push(`${errors.length} console / page error(s): ${errors.slice(0, 2).join(' || ')}`);
   console.log(`PACK [${cls}] lvl${LVL} ${pack.id} (${pack.members.length} members, enemy levels ${lvls.join('/')}) walk=${walk}`);
   console.log(`     cleared=${outcome === 'cleared' ? 'yes' : 'no (' + outcome + ')'} deaths=${st.deaths} kills=${st.kills} hpLost=${hpLost}% minHp=${Math.round(minHp * 100)}% dealt=${Math.round(st.dealt)} time=${secs}s`);
   console.log(`     keys pressed: ${Object.entries(pressed).map(([k, n]) => `${k}:${n}`).join(' ') || '-'}`);
+  console.log(`     dealt by skill: ${Object.entries(st.bySkill).map(([k, v]) => `${k}=${Math.round(v)}`).join(' ') || '-'}`);
   console.log(`     taken by source: ${Object.entries(st.src).map(([k, v]) => `${k}=${Math.round(v)}`).join(' ') || '-'}`);
   for (const n of notes) console.log(`     note: ${n}`);
   for (const e of errors.slice(0, 4)) console.log(`     ERR ${e}`);
