@@ -40,7 +40,7 @@ export const CLASS_OFFHANDS: Record<ClassId, ItemCategory[]> = {
   knight: ['shield'], barbarian: [], mage: ['tome'], rogue: ['dagger'],
   monk: [], archer: ['quiver'], paladin: ['shield'], necromancer: ['tome'], warlock: ['tome'],
   demonhunter: ['dagger'], evoker: ['tome'], // CM1 stubs
-  priest: ['tome'], shaman: ['shield'], druid: [], // CLASS SCAFFOLD stubs
+  priest: ['tome'], shaman: [], druid: [], // CLASS SCAFFOLD stubs
 };
 export const CLASS_NAMES_TR: Record<ClassId, string> = {
   knight: 'Şövalye', barbarian: 'Barbar', mage: 'Büyücü', rogue: 'Haydut',

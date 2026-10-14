@@ -124,4 +124,8 @@ export const CLASS_AFFINITY: Record<string, StatId[]> = {
   warlock: ['int', 'shadowDamagePct', 'fireDamagePct', 'dotPct', 'castSpeed', 'lifeSteal', 'resourceRegenPct', 'cdr', 'maxHp'],
   demonhunter: ['dex', 'shadowDamagePct', 'fireDamagePct', 'critChance', 'critDamage', 'attackSpeed', 'dodgeChance', 'moveSpeedPct'],
   evoker: ['int', 'fireDamagePct', 'arcaneDamagePct', 'castSpeed', 'healingPct', 'cdr', 'resourceRegenPct', 'maxResource'],
+  // CLASS SCAFFOLD stubs (Loot V3 §4.1): priest = int / cloth; shaman = int + agi by spec (mail); druid = int + agi by form (leather)
+  priest: ['int', 'holyDamagePct', 'shadowDamagePct', 'healingPct', 'healReceivedPct', 'castSpeed', 'resourceRegenPct', 'maxResource', 'cdr', 'maxHp'],
+  shaman: ['int', 'dex', 'lightningDamagePct', 'frostDamagePct', 'attackSpeed', 'meleeDamagePct', 'healingPct', 'resourceRegenPct', 'maxResource', 'cdr', 'maxHp'],
+  druid: ['int', 'dex', 'physicalDamagePct', 'healingPct', 'castSpeed', 'critChance', 'dodgeChance', 'resourceRegenPct', 'maxResource', 'cdr', 'maxHp'],
 };
