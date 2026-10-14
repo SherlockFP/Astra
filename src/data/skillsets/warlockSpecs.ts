@@ -5,10 +5,13 @@
  * OWNER: combat (data).
  */
 import type { SkillAdd } from './types';
+import { registerWarlockExtras } from './warlockDemonology';
 
 const I = (n: string) => `/assets/icons/${n}.svg`;
 
 export function registerWarlockSpecs(add: SkillAdd): void {
+  // WoW Midnight rework: Demonology rows, Malefic Rapture, Havoc, Cataclysm and the shared Shadowfury / Mortal Coil / Healthstone
+  registerWarlockExtras(add);
   // =====================================================================================================
   // Azap (warlock_affliction), §10a
   // =====================================================================================================
@@ -37,7 +40,7 @@ export function registerWarlockSpecs(add: SkillAdd): void {
     desc: 'Bir tohum bırakırsın: 12 saniye sonra 10 metrelik alanda patlar ve herkese Yozlaşma uygular. Üç veya daha fazla düşman varken Dengesiz Azap yerine gelir.',
     cost: 8, cooldown: 0, castTime: 1.6, hitTime: 1.6, anim: 'Spellcast_Shoot', animSpeed: 1.3, targeting: 'projectile', range: 30, speed: 22, homing: 5,
     pip: { id: 'shard', cost: 10 }, damage: { coef: 4.6, type: 'shadow' },
-    replaces: { skill: 'warlock_unstable_affliction', whileStatus: 'aoe_mode' },
+    replaces: { skill: 'warlock_malefic_rapture', whileStatus: 'aoe_mode' },
     tags: ['aoe', 'spell', 'shadow', 'spec'], behavior: 'kit_seed',
     params: { fuse: 12, radius: 10, coef: 4.6 },
     vfx: { projectile: 'shadow_projectile', impact: 'curse_ring' }, sfx: { cast: 'curse_cast', impact: 'explosion' },

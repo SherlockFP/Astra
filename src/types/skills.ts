@@ -165,6 +165,8 @@ export type StatusId =
   | 'innervate' | 'stampeding_roar' // KIT Druid (append-only): Innervate (Restorasyon), Stampeding Roar (Vahşi)
   | 'haunt' | 'malevolence' | 'darkglare_active' | 'backdraft' | 'fiendish_cruelty' | 'dark_pact'
   | 'aoe_mode' | 'exec_window'
+  // KIT Warlock Demonology (append-only): Demonik Tiran empower (minion damage). StatusDef in data/statuses_kit_warlock.ts.
+  | 'demonic_power'
   // Kibir Tecessumu (P-27, append-only): Kibirli elite buff (+dmg, +move speed). StatusDef + STATUS_RULES registered by systems/Affixes.ts.
   | 'kibirli'
   // Taşkasa (SP-21, append-only): boss and mechanic statuses, StatusDefs + STATUS_RULES rows in data/statuses.ts (docs/dungeons/taskasa.md §9).

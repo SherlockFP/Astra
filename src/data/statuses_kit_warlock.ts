@@ -26,6 +26,10 @@ export const STATUSES_KIT_WARLOCK: Partial<Record<StatusId, StatusDef>> = {
   dark_pact: { id: 'dark_pact', name: 'Karanlık Pakt', icon: I('buff-invulnerable'), kind: 'buff' },
   // ---- Bitmeyen Kararlılık (§9 m180): -25 % damage taken (talent row had -30 %)
   resolve_pact: { id: 'resolve_pact', name: 'Bitmeyen Kararlılık', icon: I('buff-strength'), kind: 'buff', stats: { damageReductionPct: 0.25 } },
+  // ---- Demonology (WoW Midnight rework): Demonik Tiran empower (+25 % minion damage while the tyrant lives)
+  demonic_power: { id: 'demonic_power', name: 'Demonik Güç', icon: I('buff-strength'), kind: 'buff', stats: { minionDamagePct: 0.25 } },
+  // ---- Kargaşa (Havoc): the target is marked; the cleave of the other spells is not wired (see docs/WOW_ABILITY_MAP.md report)
+  havoc: { id: 'havoc', name: 'Kargaşa', icon: I('debuff-poison'), kind: 'debuff' },
 };
 
 export const STATUS_RULES_KIT_WARLOCK: Partial<Record<StatusId, StatusRule>> = {
@@ -42,4 +46,6 @@ export const STATUS_RULES_KIT_WARLOCK: Partial<Record<StatusId, StatusRule>> = {
   fiendish_cruelty: { stack: 'refresh' },
   dark_pact: { stack: 'refresh' },
   resolve_pact: { stack: 'refresh' },
+  demonic_power: { stack: 'refresh' },
+  havoc: { stack: 'refresh' },
 };

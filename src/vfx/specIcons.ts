@@ -51,6 +51,7 @@ export const SPEC_ICON: Record<SpecId, string> = {
   necromancer_bone: CLASS_ICON_PATH.necromancer,
   warlock_affliction: CLASS_ICON_PATH.warlock,
   warlock_destruction: CLASS_ICON_PATH.warlock,
+  warlock_demonology: CLASS_ICON_PATH.warlock,
   // CM1 stubs: the six new spec ids fall back to their class icon (the SPEC_ICON contract: every SpecId has a path)
   // AE-3 / AE-4: own spec icons for the new classes
   demonhunter_chaos: '/assets/icons/skill-blade-storm.svg',

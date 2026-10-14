@@ -17,7 +17,7 @@ const ok = (name, cond, info = '') => {
 };
 
 // ---- kit.warlock.ids: every id on the two warlock specs resolves to a skill
-for (const sid of ['warlock_affliction', 'warlock_destruction']) {
+for (const sid of ['warlock_affliction', 'warlock_destruction', 'warlock_demonology']) {
   const s = SPECS[sid];
   ok(`kit.warlock.ids ${sid} spec exists`, !!s);
   if (!s) continue;
@@ -48,9 +48,9 @@ for (const [sid, apl] of Object.entries(ROTATIONS_KIT_WARLOCK)) {
   const sb = SKILLS.warlock_shadowburn?.replaces;
   const seed = SKILLS.warlock_seed_of_corruption?.replaces;
   ok('kit.warlock.replaces Gölge Yakma swaps Kaos Oku while exec_window', sb?.skill === 'warlock_chaos_bolt' && sb?.whileStatus === 'exec_window');
-  ok('kit.warlock.replaces Yozlaşma Tohumu swaps Dengesiz Azap while aoe_mode', seed?.skill === 'warlock_unstable_affliction' && seed?.whileStatus === 'aoe_mode');
+  ok('kit.warlock.replaces Yozlaşma Tohumu swaps Kötücül Coşku while aoe_mode', seed?.skill === 'warlock_malefic_rapture' && seed?.whileStatus === 'aoe_mode');
   ok('kit.warlock.replaces Kaos Oku is the q slot of Yıkım', SPECS.warlock_destruction?.defaultBar.q === 'warlock_chaos_bolt');
-  ok('kit.warlock.replaces Dengesiz Azap is the q slot of Azap', SPECS.warlock_affliction?.defaultBar.q === 'warlock_unstable_affliction');
+  ok('kit.warlock.replaces Kötücül Coşku is the q slot of Azap', SPECS.warlock_affliction?.defaultBar.q === 'warlock_malefic_rapture');
 }
 
 // ---- kit.warlock.shards: fragments (max 50, 10 per shown pip), costs and gains from the rows
@@ -211,6 +211,19 @@ ok('kit.warlock.resolve resolve_pact is -25 % damage taken', STATUSES.resolve_pa
   const usable = L1_CLS.skills.filter((id) => SKILLS[id] && SKILLS[id].unlockLevel <= 1 && !id.includes('_basic'));
   ok('kit.warlock.l1 4+ usable core skills at level 1', usable.length >= 4, usable.join(','));
   ok('kit.warlock.l1 basic attack resolves', !!SKILLS[L1_CLS.basicAttack]);
+}
+
+// ---- WoW Midnight rework: Demonology spec, minion rows, behaviours of the new rows, Demonology APL
+{
+  const { BEHAVIORS } = await H.imp('combat/skills/behaviors.ts');
+  const { MINION_DEFS } = await H.imp('data/minions.ts');
+  const D = SPECS.warlock_demonology;
+  ok('kit.warlock.demonology spec on the class list', (await H.imp('data/classes.ts')).CLASSES.warlock.specs.includes('warlock_demonology'));
+  ok('kit.warlock.demonology bar has the Felguard and Tyrant majors', D?.defaultBar.s1 === 'warlock_summon_felguard' && D?.defaultBar.m90 === 'warlock_summon_demonic_tyrant');
+  for (const id of ['warlock_wild_imp', 'warlock_dreadstalker', 'warlock_felguard', 'warlock_demonic_tyrant']) ok(`kit.warlock.minion ${id} registered`, !!MINION_DEFS[id]);
+  for (const b of ['kit_implosion', 'kit_tyrant', 'kit_malefic', 'kit_cataclysm', 'kit_shadowfury', 'kit_mortal_coil', 'kit_healthstone']) ok(`kit.warlock.behaviour ${b} installed`, !!BEHAVIORS[b]);
+  for (const id of ['warlock_demonbolt', 'warlock_hand_of_guldan', 'warlock_call_dreadstalkers', 'warlock_implosion', 'warlock_summon_demonic_tyrant', 'warlock_summon_felguard', 'warlock_malefic_rapture', 'warlock_havoc', 'warlock_cataclysm', 'warlock_shadowfury', 'warlock_mortal_coil', 'warlock_healthstone']) ok(`kit.warlock.skill ${id} defined`, !!SKILLS[id]);
+  ok('kit.warlock.apl demonology st/aoe rows', (ROTATIONS_KIT_WARLOCK.warlock_demonology?.st.length ?? 0) > 0 && (ROTATIONS_KIT_WARLOCK.warlock_demonology?.aoe?.length ?? 0) > 0);
 }
 
 console.log(fails === 0 ? '\nkit.warlock: all checks PASS' : `\nkit.warlock: ${fails} FAIL`);

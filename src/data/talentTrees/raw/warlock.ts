@@ -1,5 +1,5 @@
 // GENERATED from docs/GDD_TALENTS.*.json by tools/gen-talent-data.mjs — do not edit
-// Source: docs/GDD_TALENTS.trees.json · class:warlock + warlock_affliction, warlock_destruction. Row = [slot, opt, name, desc, fx] (GDD_TALENTS §2.9).
+// Source: docs/GDD_TALENTS.trees.json · class:warlock + warlock_affliction, warlock_destruction, warlock_demonology. Row = [slot, opt, name, desc, fx] (GDD_TALENTS §2.9).
 import type { SlotId } from '../../../types/talents';
 import type { SpecId } from '../../../types/v2';
 import type { StatId } from '../../../types/stats';
@@ -95,6 +95,35 @@ const data: { class: RawTree; specs: Partial<Record<SpecId, RawTree>> } = {
         ['s29', '', 'Alev Ritmi', 'Hasar +%6, kritik hasarı +%15. Ateş kritikleri 5 sn boyunca +%5 büyü hızı yığar (en fazla 4).', 'S damagePct=.06 critDamage=.15 ;; T crit:@fire => buff(flame_rhythm,5,{castSpeed=.05},max=4)'],
         ['s30', 'A', 'Yıkım Hükümdarı', 'Ateş hasarı +%25; Kaos Oku hasarı +%25.', 'S fireDamagePct=.25 ;; M warlock_chaos_bolt dmgx=1.25'],
         ['s30', 'B', 'Kıyamet Kralı', 'Kritik hasarı +%25, kritik şansı +%2; Kıyamet Yağmuru bekleme −%20.', 'S critDamage=.25 critChance=.02 ;; M warlock_ds_cataclysm cdx=.8'],
+      ],
+    },
+    warlock_demonology: {
+      palette: ['minionDamagePct', 'minionHpPct', 'damagePct', 'critChance', 'castSpeed', 'resourceRegenPct', 'maxHpPct', 'int', 'shadowDamagePct', 'fireDamagePct', 'cdr', 'critDamage'],
+      rows: [
+        ['s02', 'A', 'Cehennem Gözcüsü', 'Felguard hasarı +%15.', 'S minionDamagePct=.15'],
+        ['s02', 'B', 'Yoldaş Dayanıklılığı', 'Yoldaşların canı +%10.', 'S minionHpPct=.10'],
+        ['s04', '', 'Ruh Kesesi', 'Hand of Gul\'dan maliyeti −%10, +1 Vahşi Cin doğurur.', 'M warlock_hand_of_guldan costx=.9 cnt=+1'],
+        ['s05', '', null, null, 'G warlock_implosion'],
+        ['s09', 'A', 'Kan Sözleşmesi', 'Kritik vuruşta %20 şansla 1 Ruh Parçası kazanırsın.', 'T crit ch=.2 => pip(shard,1)'],
+        ['s09', 'B', 'Kükürt Kalkanı', 'Dreadstalker çağırınca 4 sn %10 hasar azaltma kazanırsın.', 'T cast:warlock_call_dreadstalkers ch=1 => buff(shadow_ward,4,{damageReductionPct=.1})'],
+        ['s11', '', 'Dreadstalker Ustası', 'Dreadstalker sayısı +1, süresi +2 sn.', 'M warlock_call_dreadstalkers cnt=+1 dur=+2'],
+        ['s12', '', 'Vahşi Sürü', 'Hand of Gul\'dan %20 şansla 4 sn yoldaşların hasarını artırır.', 'T cast:warlock_hand_of_guldan ch=.2 => st(party,empower,4)'],
+        ['s13', '', 'Tiran Hızı', 'Demonik Tiran bekleme −%10.', 'M warlock_summon_demonic_tyrant cdx=.9'],
+        ['s15', 'A', 'Dehşet Tiranı', 'Demonik Tiran 3 sn daha uzun sürer.', 'M warlock_summon_demonic_tyrant dur=+3'],
+        ['s15', 'B', 'Felguard Savaşçısı', 'Felguard bekleme −%20.', 'M warlock_summon_felguard cdx=.8'],
+        ['s17', 'A', 'Mana Akışı', 'Mana yenilenmesi +%15.', 'S resourceRegenPct=.15'],
+        ['s17', 'B', 'Cehennem Kanı', 'Implosion her kullanımda 1 Ruh Parçası verir.', 'T cast:warlock_implosion ch=1 => pip(shard,1)'],
+        ['s18', '', 'Demir Gövde', 'Maksimum can +%5.', 'S maxHpPct=.05'],
+        ['s20', '', 'Tiran Yoldaşları', 'Demonik Tiran ve Felguard bekleme −%10.', 'M warlock_summon_demonic_tyrant+warlock_summon_felguard cdx=.9'],
+        ['s21', '', 'Patlama Ateşi', 'Implosion hasarı +%25.', 'M warlock_implosion dmgx=1.25'],
+        ['s25', '', 'Kıyamet Ritmi', 'Implosion bekleme −4 sn.', 'M warlock_implosion cd=-4'],
+        ['s26', 'A', 'Yoldaş Coşkusu', 'Demonik Tiran kullanınca grup 6 sn güçlenir.', 'T cast:warlock_summon_demonic_tyrant => st(party,empower,6)'],
+        ['s26', 'B', 'Felguard Öfkesi', 'Felguard çağırınca +2 Ruh Parçası kazanırsın.', 'T cast:warlock_summon_felguard => pip(shard,2)'],
+        ['s27', '', 'Çifte Çağrı', 'Dreadstalker %20 şansla fazladan bir kez daha çağrılır.', 'T cast:warlock_call_dreadstalkers ch=.2 => echo(warlock_call_dreadstalkers,.5,.4)'],
+        ['s28', '', 'Sonsuz Pakt', 'Hasar +%10, büyü hızı +%3. Ölümcül darbede %20 canla ayakta kalırsın (90 sn bekleme).', 'S damagePct=.10 castSpeed=.03 ;; T lethal icd=90 => heal(.2)'],
+        ['s29', '', 'Demir İrade', 'Hasar +%6, kritik şansı +%2.', 'S damagePct=.06 critChance=.02'],
+        ['s30', 'A', 'Cehennem Hükümdarı', 'Yoldaş hasarı +%30; Demonik Tiran hasarı +%20.', 'S minionDamagePct=.30 ;; M warlock_summon_demonic_tyrant dmgx=1.2'],
+        ['s30', 'B', 'İblis Sürüsü', 'Yoldaş hasarı +%20; Implosion bekleme −%20.', 'S minionDamagePct=.20 ;; M warlock_implosion cdx=.8'],
       ],
     },
   },

@@ -11,7 +11,8 @@
  *   kit_rain_of_fire   Ateş Yağmuru: 8 ticks over 8 s in r 6, crowd-scaled
  */
 import { BEHAVIORS, crowdFactor, groundAt, type Behavior, type CastCtx } from './behaviors';
-import { addAbsorb } from '../healing';
+import { addAbsorb, healAmount } from '../healing';
+import { minionDef } from '../../data/minions';
 import { G } from '../../game/G';
 import type { Enemy } from '../../entities/Enemy';
 import type { StatusId } from '../../types/skills';
@@ -221,7 +222,116 @@ const rainOfFire: Behavior = {
   },
 };
 
+/** Implosion (Demonology): every own Wild Imp bursts on the enemies within its radius, then it is gone (no respawn). */
+const implosion: Behavior = {
+  fire(c) {
+    if (c.remote || !G.minions) return;
+    const p = c.def.params ?? {};
+    for (const m of G.minions.ownedBy(c.caster.id)) {
+      if (m.def.id !== 'warlock_wild_imp') continue;
+      for (const e of c.sys.enemiesNear(m.position.x, m.position.z, p.radius ?? 4, m.position.y)) {
+        if (e.isDead) continue;
+        c.sys.strike(c, e, { coef: p.coef ?? 0.6, noGain: true, statuses: [] });
+      }
+      G.minions.despawn(m, 'owner');
+    }
+  },
+};
+
+/** Demonic Tyrant (Demonology): the tyrant joins the caster for its life, and the caster gains the empower status. */
+const tyrant: Behavior = {
+  fire(c) {
+    if (c.remote) return;
+    const row = c.def.minion;
+    const def = minionDef('warlock_demonic_tyrant');
+    if (def && row && G.minions) G.minions.summon(c.caster, def, { count: row.count, group: row.group, life: row.life });
+    c.sys.applySelf(c, c.def.selfStatuses ?? []);
+  },
+};
+
+/** Malefic Rapture (Affliction): spends every fragment (at least one shard); each enemy with one of your DoTs takes per-shard damage. */
+const malefic: Behavior = {
+  begin(c) {
+    if (c.remote) return true;
+    if (c.sys.pipCount(c.caster, 'shard') < 10) { c.sys.fail('resource'); return false; }
+    const me = c.caster.position;
+    const p = c.def.params ?? {};
+    if (!c.sys.enemiesNear(me.x, me.z, p.radius ?? 12).some((e) => !e.isDead && dotCount(e) > 0)) { c.sys.fail('target'); return false; }
+    return true;
+  },
+  fire(c) {
+    if (c.remote) return;
+    const shards = Math.floor(c.sys.consumePips(c.caster, 'shard') / 10);
+    if (shards <= 0) return;
+    const me = c.caster.position;
+    const p = c.def.params ?? {};
+    for (const e of c.sys.enemiesNear(me.x, me.z, p.radius ?? 12)) {
+      if (e.isDead || dotCount(e) === 0) continue;
+      c.sys.strike(c, e, { coef: (p.perShard ?? 0.5) * shards, noGain: true, statuses: [] });
+    }
+  },
+};
+
+/** Cataclysm (Destruction): one strike on every enemy in the ground radius; the def's statuses (Yakıp Yıkma) apply to each. */
+const cataclysm: Behavior = {
+  fire(c) {
+    if (c.remote) return;
+    const x = c.point[0], z = c.point[1];
+    const y = groundAt(x, z) ?? c.caster.position.y;
+    c.sys.vfx('fire_rain', [x, y, z], { scale: 1 });
+    for (const e of c.sys.enemiesNear(x, z, c.def.params?.radius ?? 8, y)) {
+      if (!e.isDead) c.sys.strike(c, e, {});
+    }
+  },
+};
+
+/** Shadowfury: a shadow burst in the ground radius that stuns every enemy in it. */
+const shadowfury: Behavior = {
+  fire(c) {
+    if (c.remote) return;
+    const p = c.def.params ?? {};
+    const x = c.point[0], z = c.point[1];
+    const y = groundAt(x, z) ?? c.caster.position.y;
+    for (const e of c.sys.enemiesNear(x, z, p.radius ?? 8, y)) {
+      if (e.isDead) continue;
+      c.sys.strike(c, e, {});
+      c.sys.statusOnly(c, e, [{ status: 'stun', duration: p.stun ?? 3 }]);
+    }
+  },
+};
+
+/** Mortal Coil: a strike and a fear on the soft target, and the caster heals a share of max HP. */
+const mortalCoil: Behavior = {
+  begin(c) {
+    return needTarget(c);
+  },
+  fire(c) {
+    if (c.remote) return;
+    const t = c.target as Enemy | null;
+    if (!t || t.isDead) { c.sys.whiff(c); return; }
+    const p = c.def.params ?? {};
+    c.sys.strike(c, t, {});
+    c.sys.statusOnly(c, t, [{ status: 'fear', duration: p.fear ?? 4 }]);
+    healAmount(c.caster, c.caster, c.caster.maxHp * (p.healPct ?? 0.2));
+  },
+};
+
+/** Healthstone: heals the caster for a share of max HP (charges and cooldown come from the def). */
+const healthstone: Behavior = {
+  fire(c) {
+    if (c.remote) return;
+    healAmount(c.caster, c.caster, c.caster.maxHp * (c.def.params?.healPct ?? 0.3));
+  },
+};
+
 BEHAVIORS_KIT_WARLOCK.kit_target_spell = targetSpell;
+BEHAVIORS_KIT_WARLOCK.kit_implosion = implosion;
+BEHAVIORS_KIT_WARLOCK.kit_tyrant = tyrant;
+BEHAVIORS_KIT_WARLOCK.kit_malefic = malefic;
+BEHAVIORS_KIT_WARLOCK.kit_cataclysm = cataclysm;
+BEHAVIORS_KIT_WARLOCK.kit_shadowfury = shadowfury;
+BEHAVIORS_KIT_WARLOCK.kit_mortal_coil = mortalCoil;
+BEHAVIORS_KIT_WARLOCK.kit_healthstone = healthstone;
 BEHAVIORS_KIT_WARLOCK.kit_darkglare = darkglare;
 BEHAVIORS_KIT_WARLOCK.kit_infernal = infernal;
 BEHAVIORS_KIT_WARLOCK.kit_dot_pulse = dotPulse;
