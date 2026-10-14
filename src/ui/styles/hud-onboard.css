@@ -23,7 +23,7 @@
 
 /* ---- tip cards: one at a time, above the chat (.hud-tip) ---- */
 .tip-cards { position: relative; width: var(--tip-w); pointer-events: none; }
-.tip-card { position: relative; display: flex; gap: 10px; box-sizing: border-box; width: 100%; padding: 10px 12px 12px 14px; pointer-events: auto;
+.tip-card { position: relative; display: flex; gap: 10px; box-sizing: border-box; width: 100%; padding: 10px 12px 12px 14px; pointer-events: none;
   background: var(--bg-plate); border: 1px solid var(--ink); border-radius: var(--r-0); box-shadow: inset 0 1px 0 var(--hi);
   opacity: 0; transform: translateX(-16px); transition: opacity 200ms linear, transform 240ms ease-out; }
 .tip-card.on { opacity: 1; transform: none; }
@@ -33,7 +33,7 @@
 .tip-title { font: 700 15px/1.2 var(--font-body); color: #fff; }
 .tip-text { margin-top: 3px; font: 15px/1.35 var(--font-body); color: var(--text-1); }
 .tip-keys { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
-.tip-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+.tip-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; pointer-events: auto; }
 .tip-never { padding: 0; background: none; border: 0; font: 13px var(--font-body); color: var(--text-3); text-decoration: underline; cursor: pointer; }
 .tip-never:hover { color: var(--text-1); }
 .tip-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: #fff; transform-origin: left center; }

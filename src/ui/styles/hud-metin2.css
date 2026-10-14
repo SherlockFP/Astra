@@ -45,7 +45,6 @@
 .hud[data-hudstyle='metin2'] .hb-cluster { display: none; }
 .hud[data-hudstyle='metin2'] .hud-bc { bottom: 6px; }
 /* room for the dodge / combo-point row that sits just above the slots */
-.hud[data-hudstyle='metin2'] .ab-error { margin-bottom: 18px; }
 
 /* recessed carved wells */
 .m2-well {

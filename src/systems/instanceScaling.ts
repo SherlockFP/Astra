@@ -16,10 +16,13 @@ export type ScaleMode = 'normal' | 'heroic' | 'mythic' | 'mythicplus';
 
 export type PartyCount = 1 | 2 | 3 | 4 | 5;
 
-/** Solo curve on top of the old party HP factor (1 player 0.45, 5 players 1.0 = unchanged). */
-export const PARTY_HP_SHAPE: Readonly<Record<PartyCount, number>> = { 1: 0.45, 2: 0.6, 3: 0.75, 4: 0.88, 5: 1 };
-/** Enemy damage by party size (5 players 1.0 = unchanged). */
-export const PARTY_DAMAGE: Readonly<Record<PartyCount, number>> = { 1: 0.6, 2: 0.7, 3: 0.8, 4: 0.9, 5: 1 };
+/**
+ * Solo curve on top of the old party HP factor (5 players 1.0 = unchanged). Retuned after the solo playtest (a level-15 solo knight
+ * lost 58 of 810 HP to a Normal pack): solo / duo enemies now hit harder and last longer, so one trash pack costs ~25-55 % HP.
+ */
+export const PARTY_HP_SHAPE: Readonly<Record<PartyCount, number>> = { 1: 0.9, 2: 0.8, 3: 0.75, 4: 0.88, 5: 1 };
+/** Enemy damage by party size, non-increasing towards 5 players (5 players 1.0 = unchanged; 3 and 4 raised to keep the curve monotone). */
+export const PARTY_DAMAGE: Readonly<Record<PartyCount, number>> = { 1: 1.4, 2: 1.2, 3: 1.0, 4: 1.0, 5: 1 };
 /** Extra boss damage reduction when the party is alone or a pair (the solo mechanic relief; 3+ players 1.0). */
 export const SOLO_BOSS_DAMAGE: Readonly<Record<PartyCount, number>> = { 1: 0.8, 2: 0.9, 3: 1, 4: 1, 5: 1 };
 

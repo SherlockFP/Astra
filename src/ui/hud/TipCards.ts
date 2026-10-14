@@ -13,8 +13,8 @@ import type { HudCtx, HudWidget } from './types';
 const TICK_S = 0.5;
 /** Minimum gap between two tips (ms). */
 const GAP_MS = 25_000;
-/** Life of a card (ms); hover pauses it. */
-const LIFE_MS = 9_000;
+/** Life of a card (ms): it auto-hides after this, no click needed. */
+const LIFE_MS = 8_000;
 /** Combat counts as "in combat" this long after the last hit either way (ms). */
 const COMBAT_HOLD_MS = 6_000;
 /** Enemy distance that counts as "first enemy" (m), and loot distance (m). */
@@ -24,7 +24,8 @@ const DROP_NEAR_M = 8;
 const WELCOME_FLAG = 'onb.welcome';
 
 /**
- * One-time tip card (§4.7): anchored in `.hud-tip` (bottom-left, above the chat), one at a time, 9 s life, hover pauses it,
+ * One-time tip card (§4.7): anchored in `.hud-tip` (bottom-left, above the chat), one at a time, 8 s life, click-through (it never
+ * blocks the play area; only its buttons take clicks),
  * `✓ Anladım` dismisses, `Bir daha gösterme` sets Settings.showTips to false. The scheduler runs every 0.5 s, picks the
  * highest-priority tip whose condition holds and whose flag `tip.<id>` is unset, and never shows one while a panel is open,
  * the player is dead, or during combat unless the tip allows it. The condition inputs come from game events and the
@@ -39,7 +40,6 @@ export class TipCards implements HudWidget {
   private readonly keys: HTMLElement;
   private cur: { def: TipDef; left: number } | null = null;
   private acc = 0;
-  private hovered = false;
   private lastShownAt = -Infinity;
   private sceneStart = 0;
   private startPos: { x: number; z: number } | null = null;
@@ -76,14 +76,6 @@ export class TipCards implements HudWidget {
       this.hide();
     });
     div('tip-bar', this.card);
-    this.card.addEventListener('mouseenter', () => {
-      this.hovered = true;
-      setClass(this.card, 'paused', true);
-    });
-    this.card.addEventListener('mouseleave', () => {
-      this.hovered = false;
-      setClass(this.card, 'paused', false);
-    });
 
     G.events.on('scene:changed', () => {
       this.sceneStart = performance.now();
@@ -126,7 +118,7 @@ export class TipCards implements HudWidget {
 
     // a running card counts down (hover pauses it) and leaves when a panel opens or the player turns the tips off
     if (this.cur) {
-      if (!this.hovered) this.cur.left -= dt * 1000;
+      this.cur.left -= dt * 1000;
       if (this.cur.left <= 0 || ctx.ui.wantsCursor() || G.settings?.data.showTips === false) this.hide();
       return;
     }
@@ -213,8 +205,6 @@ export class TipCards implements HudWidget {
     for (const k of view.keys) span('k-key k-key--dim', this.keys, k);
     setDisplay(this.keys, view.keys.length > 0, 'flex');
     this.cur = { def, left: LIFE_MS };
-    this.hovered = false;
-    setClass(this.card, 'paused', false);
     setStyle(this.card, '--life', `${LIFE_MS}ms`);
     setDisplay(this.card, true, 'flex');
     // restart the hairline animation and the slide-in

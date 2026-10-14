@@ -9,17 +9,18 @@
 .cc-flash.go { animation: ccFlash 0.45s ease-out; }
 @keyframes ccFlash { 0% { opacity: 1; transform: scale(0.4); } 100% { opacity: 0; transform: scale(1.7); } }
 
-/* callouts above the reticle: SAVUŞTURMA!, KARŞI VURUŞ!, KRİTİK VURUŞ! */
-.cc-callout { position: absolute; left: 0; top: -84px; transform: translateX(-50%); white-space: nowrap; font: 700 30px/1 var(--font-title); color: #fff6d8; text-shadow: 0 3px 6px rgba(0, 0, 0, 0.45), 0 0 18px rgba(255, 220, 120, 0.7); opacity: 0; pointer-events: none; }
+/* callouts in the upper third of the screen (SAVUŞTURMA!, KARŞI VURUŞ!, KRİTİK VURUŞ!, SENDELEDİ!): clear of the target nameplate, 0.55 s */
+.cc-callout { position: absolute; left: 0; top: -17vh; transform: translateX(-50%); white-space: nowrap; font: 700 21px/1 var(--font-title); color: #fff6d8; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45), 0 0 12px rgba(255, 220, 120, 0.6); opacity: 0; pointer-events: none; }
 .cc-callout[data-kind='parry'] { color: #d8f0ff; text-shadow: 0 3px 6px rgba(0, 0, 0, 0.45), 0 0 20px rgba(120, 190, 255, 0.95); }
 .cc-callout[data-kind='riposte'] { color: #ffd6a8; text-shadow: 0 3px 6px rgba(0, 0, 0, 0.45), 0 0 20px rgba(255, 140, 60, 0.95); }
-.cc-callout[data-kind='finisher'] { color: #ffe27a; text-shadow: 0 3px 6px rgba(0, 0, 0, 0.45), 0 0 24px rgba(255, 200, 40, 0.95); font-size: 34px; }
-.cc-callout.go { animation: ccCallout 0.75s cubic-bezier(0.2, 1.5, 0.4, 1); }
+.cc-callout[data-kind='finisher'] { color: #ffe27a; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45), 0 0 16px rgba(255, 200, 40, 0.9); font-size: 25px; }
+.cc-callout[data-kind='poise'] { color: #fff0a8; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45), 0 0 14px rgba(255, 200, 60, 0.9); }
+.cc-callout.go { animation: ccCallout 0.55s cubic-bezier(0.2, 1.4, 0.4, 1); }
 @keyframes ccCallout {
-  0% { opacity: 0; transform: translate(-50%, 12px) scale(1.7); }
-  22% { opacity: 1; transform: translate(-50%, 0) scale(1); }
-  70% { opacity: 1; transform: translate(-50%, -4px) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -18px) scale(1); }
+  0% { opacity: 0; transform: translate(-50%, 8px) scale(1.4); }
+  20% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  65% { opacity: 1; transform: translate(-50%, -2px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -8px) scale(1); }
 }
 
 /* guard gauge arc under the reticle */
@@ -52,6 +53,12 @@
 .cc-prompt.riposte .cc-ptxt { color: #ffd6a8; }
 .cc-prompt.finisher .cc-ptxt { color: #ffe27a; }
 @keyframes ccPrompt { from { scale: 1; } to { scale: 1.07; } }
+
+/* failed-cast error line (CastErrors): WoW error text in red, top centre (upper third), 1.5 s; not on the action bar */
+.cast-err { position: absolute; left: 0; right: 0; top: 20vh; text-align: center; pointer-events: none; }
+.cast-err-text { display: inline-block; font: 700 17px/1.2 var(--font-head); color: #ff5a46; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75); opacity: 0; }
+.cast-err.show .cast-err-text { animation: castErr 1.5s ease-out; }
+@keyframes castErr { 0% { opacity: 0; transform: translateY(6px); } 8% { opacity: 1; transform: none; } 70% { opacity: 1; } 100% { opacity: 0; } }
 
 /* lock-on ring on the hard target (projected each frame, scaled by distance) */
 .cc-lock { position: absolute; left: 0; top: 0; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; border: 2px dashed rgba(255, 90, 70, 0.95); box-shadow: 0 0 10px rgba(255, 60, 40, 0.55), inset 0 0 8px rgba(255, 60, 40, 0.35); opacity: 0; transition: opacity 0.15s; animation: ccLockSpin 3s linear infinite; }

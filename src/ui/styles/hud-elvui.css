@@ -152,7 +152,6 @@
 .hud .ab-btn[data-tone='gold'], .hud .ab-btn[data-tone='gold2'] { --tone-c: rgba(255, 255, 255, 0.45); }
 .hud .ab-new { padding: 0 4px; font: 700 11px/14px var(--font-body); color: #fff; background: var(--elv-backdrop-solid); border: 1px solid var(--ac, #fff); border-radius: var(--ui-r-btn); }
 .hud .k-sated, .hud .k-school { text-shadow: var(--elv-outline); }
-.hud-bc > .ab-error { font: 700 15px/18px var(--font-body); text-shadow: var(--elv-outline); }
 .hud .actionbar > .tb-badge { height: 18px; padding: 0 6px 0 3px; border-radius: var(--ui-r-pill); border: 1px solid var(--elv-border); background: var(--elv-backdrop-solid); box-shadow: none; }
 .hud .actionbar > .tb-badge:hover { border-color: #fff; }
 .hud .actionbar > .tb-badge.pulsing { animation: tb-flash 1.1s steps(2) infinite; }

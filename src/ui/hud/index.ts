@@ -35,6 +35,7 @@ import { ObjectiveArrow } from './ObjectiveArrow';
 import { QuestFeed } from './QuestFeed';
 import { adviceLine } from '../panels/game/guideEngine';
 import { TipCards } from './TipCards';
+import { CastErrors } from './CastErrors';
 import { GuideCard } from './Onboarding';
 import { ControlsOverlay } from './ControlsOverlay';
 import { XpStrip } from './XpStrip';
@@ -130,6 +131,8 @@ export function createHUD(ui: UI): HudApi {
 
   // ---- top-centre: boss + target ----
   const tc = div('hud-tc', root);
+  // failed-cast error line (WoW error text): top centre, not on the action bar
+  root.appendChild(add(new CastErrors()).el);
   const boss = add(new BossFrame());
   tc.appendChild(boss.el);
   root.appendChild(boss.yellEl);
@@ -179,7 +182,6 @@ export function createHUD(ui: UI): HudApi {
   const xpStrip = add(new XpStrip(ui));
   zXp.appendChild(xpStrip.el);
   bc.appendChild(pcast.el);
-  bc.appendChild(bar.errorEl);
   const extras = div('hb-extras', bc);
   const dodge = add(new DodgeCharges());
   extras.appendChild(dodge.el);

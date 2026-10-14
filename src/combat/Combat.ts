@@ -1052,7 +1052,7 @@ export class Combat {
     }
     this.onHardCC(e, by);
     if (e.isBoss && e.def.stanceBreakable !== false) this.breakBossCast(e, by);
-    this.numberAt(e, 0, 'crit', 'SENDELEDİ!');
+    // the SENDELEDİ callout is the upper-third banner (CombatCues, on poise:break), not a floating number over the nameplate
     if (by !== null && G.world?.localPlayer?.id === by) this.meters.add('poiseBreak');
     G.events.emit('poise:break', { enemyId: e.id });
     feelBeat('poiseBreak', { pos: this.impactPos(e), sfx: 'stance_break', vfx: 'stance_break_shards' });

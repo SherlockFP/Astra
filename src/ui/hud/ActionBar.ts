@@ -66,19 +66,6 @@ const MAJOR_LABEL: Record<string, string> = { m45: '45 sn', m90: '90 sn', m180: 
 /** The YENİ chip stays this long after a cell is revealed (ms), unless the cell is hovered or used. */
 const YENI_MS = 30000;
 
-const FAIL_TEXT: Record<string, string> = {
-  cooldown: 'Henüz hazır değil',
-  resource: 'Yeterli kaynak yok',
-  range: 'Menzil dışı',
-  target: 'Geçerli bir hedef yok',
-  facing: 'Hedef önünde değil',
-  moving: 'Hareket halindeyken kullanılamaz',
-  stunned: 'Sersemlemiş durumdasın',
-  casting: 'Zaten bir yetenek kullanıyorsun',
-  silenced: 'Susturuldun',
-  lockout: 'Okul kilitli',
-};
-
 /** Short school glyphs for the `.locked` state (CW-08 / UI §2.6.8: grey icon + school glyph + seconds). */
 const SCHOOL_GLYPH: Record<string, string> = {
   fire: 'ATE', frost: 'BUZ', arcane: 'ARK', holy: 'KUT', shadow: 'GÖL', poison: 'ZEH',
@@ -594,9 +581,6 @@ export class ActionBar implements HudWidget {
   private potSlots: Slot[] = [];
   private lastFailFrame = -10;
   private hasFail = false;
-  private lastFailReason = '';
-  private lastFailRemaining: number | undefined;
-  private errEl: HTMLElement;
   /** Spell queue (skill:queued): the queued skill / slot and when the entry expires (performance.now ms). */
   private queued: { skillId: string | null; slot: string | null; until: number } | null = null;
   /** Local school lock (skill:lockout): school and when it ends (performance.now ms). */
@@ -634,14 +618,11 @@ export class ActionBar implements HudWidget {
       this.potSlots.push(s);
       cons.appendChild(s.el);
     }
-    this.errEl = div('ab-error');
     this.talentBadge = new TalentBadge(ui);
     this.el.appendChild(this.talentBadge.el);
-    G.events.on('skill:fail', ({ reason, remaining }) => {
+    G.events.on('skill:fail', () => {
       this.lastFailFrame = G.engine.frame;
       this.hasFail = true;
-      this.lastFailReason = reason;
-      this.lastFailRemaining = remaining;
     });
     G.events.on('skill:queued', ({ skillId, slot }) => {
       // both null = the queue was cleared
@@ -655,16 +636,6 @@ export class ActionBar implements HudWidget {
     bus.on(AUTO_STATE_EVENT, (p) => {
       this.autoArmed = !!p?.armed;
     });
-  }
-
-  /** Error text line mounted by the HUD above the bar. */
-  get errorEl(): HTMLElement {
-    return this.errEl;
-  }
-
-  private showError(text: string): void {
-    this.errEl.textContent = text;
-    pulse(this.errEl, 'show');
   }
 
   /** Clears the transient queue / lockout state (scene change, HUD hidden). */
@@ -753,12 +724,7 @@ export class ActionBar implements HudWidget {
         if (this.hasFail && G.engine.frame - this.lastFailFrame <= 1) {
           s.setFlash('fail');
           s.failUntil = ctx.now + 260;
-          const base = FAIL_TEXT[this.lastFailReason] ?? 'Şu an kullanılamaz';
-          // lockout carries the time left on the school lock
-          const lockLeft = this.lastFailRemaining ?? ctx.player?.statuses.get('lockout')?.remaining;
-          const left = this.lastFailReason === 'lockout' && lockLeft !== undefined ? ` (${Math.ceil(lockLeft)} sn)` : '';
-          this.showError(base + left);
-          // (the 'ui_error' sound itself is played by the audio module on 'skill:fail')
+          // the reason text is CastErrors (top centre, WoW error line); the sound is the audio module's ('skill:fail')
           this.hasFail = false;
         }
       }

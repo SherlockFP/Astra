@@ -34,15 +34,6 @@ export const EXTRA_BARS: readonly ExtraBarDef[] = [
 /** UI §2.6.6: each extra bar is 12 cells (a 3 x 12 block with the main row); cells 1-8 are keyed, 9-12 are mouse-only. */
 const SLOTS = BAR_CELLS;
 const KEYED = 8;
-const FAIL_TEXT: Record<string, string> = {
-  cooldown: 'Henüz hazır değil',
-  resource: 'Yeterli kaynak yok',
-  range: 'Hedef menzil dışında',
-  target: 'Geçerli bir hedef yok',
-  stunned: 'Sersemlemiş durumdasın',
-  casting: 'Zaten bir yetenek kullanıyorsun',
-  silenced: 'Susturuldun',
-};
 
 class XCell {
   readonly el: HTMLElement;
@@ -242,13 +233,9 @@ class XBar {
 /** Owns the two extra bars: slot display, drag & drop, casting and keybinds. The contents live in the character save. */
 export class ExtraBars {
   private readonly bars: XBar[];
-  private lastFail = { frame: -1, reason: '' };
 
   constructor(private readonly ui: UI) {
     this.bars = EXTRA_BARS.map((d) => new XBar(d, this, ui));
-    G.events.on('skill:fail', ({ reason }) => {
-      this.lastFail = { frame: G.engine.frame, reason };
-    });
     window.addEventListener('keydown', (e) => this.onKey(e), true);
     window.addEventListener(
       'pointerdown',
@@ -390,8 +377,6 @@ export class ExtraBars {
       return;
     }
     cell.setFlash('fail');
-    const reason = this.lastFail.frame === G.engine.frame ? this.lastFail.reason : '';
-    this.ui.toast(FAIL_TEXT[reason] ?? 'Şu an kullanılamaz', 'warning');
   }
 
   /** The controller's aim (soft target / ground point) when it is active, else the player's facing direction. */

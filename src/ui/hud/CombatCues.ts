@@ -75,13 +75,14 @@ export class CombatCues implements HudWidget {
     G.events.on('parry', () => this.say('SAVUŞTURMA!', 'parry', true));
     G.events.on('riposte', () => this.say('KARŞI VURUŞ!', 'riposte', false));
     G.events.on('crit:finisher', () => this.say('KRİTİK VURUŞ!', 'finisher', false));
+    G.events.on('poise:break', () => this.say('SENDELEDİ!', 'poise', false));
     G.events.on('guard:broke', () => {
       this.shatterAt = performance.now();
     });
     G.events.on('scene:leaving', () => this.reset());
   }
 
-  /** Short centre callout above the reticle (one at a time: a new one replaces the old). */
+  /** Short callout in the upper third of the screen (one at a time: a new one replaces the old), clear of the target nameplate. */
   private say(text: string, kind: string, ring: boolean): void {
     setText(this.callout, text);
     this.callout.dataset.kind = kind;

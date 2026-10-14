@@ -152,9 +152,10 @@
 .hud-yell b { display: block; font: 700 15px var(--font-head); font-style: normal; color: #ff7a5a; margin-bottom: 2px; }
 .hud-yell.show { animation: bfyell 5.5s ease-out forwards; }
 @keyframes bfyell { 0% { opacity: 0; transform: scale(1.12); } 7% { opacity: 1; transform: scale(1); } 86% { opacity: 1; } 100% { opacity: 0; transform: translateY(-8px); } }
-.bf-banner { position: absolute; left: 0; right: 0; top: 100%; margin-top: 8px; text-align: center; font: 700 30px var(--font-title); color: var(--hud-gold-l); text-shadow: 0 3px 6px rgba(0, 0, 0, 0.45), 0 0 22px rgba(255, 200, 80, 0.8); opacity: 0; }
-.bf-banner.go { animation: bfbanner 4s ease-out forwards; }
-@keyframes bfbanner { 0% { opacity: 0; transform: scale(1.8); } 10% { opacity: 1; transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-8px); } }
+/* boss banner (PATRON YENİLDİ): upper third of the screen, not under the boss frame, so it stays clear of nameplates */
+.bf-banner { position: fixed; left: 0; right: 0; top: 22vh; margin: 0; text-align: center; pointer-events: none; font: 700 22px var(--font-title); color: var(--hud-gold-l); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45), 0 0 14px rgba(255, 200, 80, 0.7); opacity: 0; }
+.bf-banner.go { animation: bfbanner 2.2s ease-out forwards; }
+@keyframes bfbanner { 0% { opacity: 0; transform: scale(1.4); } 12% { opacity: 1; transform: scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px); } }
 
 /* ---- minion frames (NC44): the local player's minions under the party frames ---- */
 .mfr { display: none; flex-direction: column; gap: 1px; pointer-events: none; }
