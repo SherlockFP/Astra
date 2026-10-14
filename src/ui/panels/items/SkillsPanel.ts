@@ -11,6 +11,8 @@ import { ROLE_TR } from '../../../combat/specs';
 import { ItemPanel, makeTabs } from './PanelBase';
 import { bindTip, drag, esc, fmt, h, iconUrl, sfx, toast } from './common';
 import { slotKeyLabel } from '../../widgets/controlHints';
+import { SKILL_RANK_CAP, skillRankCooldownMultOf, skillRankDamageMultOf } from '../../../combat/skillRanks';
+import { skillPointsFree, skillRankCapAt, skillResetCost } from '../../../systems/SkillPoints';
 
 const DMG_COLOR: Record<string, string> = {
   physical: '#e6e6ee', fire: '#ff7a2a', frost: '#6fd8ff', lightning: '#ffe84a', shadow: '#b060ff', poison: '#7cd23a', holy: '#ffe08a', arcane: '#ff6ad8', true: '#ffffff',
@@ -143,7 +145,7 @@ export class SkillsPanel extends ItemPanel {
   }
 
   protected subscribe(s: EventScope): void {
-    s.on('skillbar:changed', this.safeRefresh).on('player:levelup', this.safeRefresh).on('player:stats', this.safeRefresh).on('equipment:changed', this.safeRefresh).on('materials:changed', this.safeRefresh)
+    s.on('skillbar:changed', this.safeRefresh).on('skillpoints:changed', this.safeRefresh).on('player:levelup', this.safeRefresh).on('player:stats', this.safeRefresh).on('equipment:changed', this.safeRefresh).on('materials:changed', this.safeRefresh)
       .on('talents:changed', this.safeRefresh).on('talents:committed', this.safeRefresh).on('spec:changed', this.safeRefresh).on('loadout:changed', this.safeRefresh);
   }
 
@@ -487,6 +489,7 @@ export class SkillsPanel extends ItemPanel {
       skills.length,
       JSON.stringify(c.stats.weaponMax ?? 0),
       JSON.stringify(c.save.skillRanks),
+      JSON.stringify(c.save.skillPts ?? null),
       SKILL_BOOKS.map((b) => c.material(b.id)).join(','),
       Array.from(granted).join(','),
       this.pickSig(),
@@ -498,7 +501,7 @@ export class SkillsPanel extends ItemPanel {
 
     const def = CLASSES[c.classId];
     const unlocked = skills.filter((s) => this.isUnlocked(s)).length;
-    this.header.replaceChildren(h('span', 'pi-sk-class', def?.name ?? c.classId), h('span', 'pi-sk-count', `${unlocked} / ${skills.length} yetenek açık`));
+    this.header.replaceChildren(h('span', 'pi-sk-class', def?.name ?? c.classId), h('span', 'pi-sk-count', `${unlocked} / ${skills.length} yetenek açık`), this.pointsRow());
 
     this.renderGroups(skills, granted);
 
@@ -608,13 +611,14 @@ export class SkillsPanel extends ItemPanel {
   private rankPips(skillId: string): HTMLElement {
     const c = G.character;
     const rank = c?.save.skillRanks[skillId] ?? 1;
-    const cap = Math.min(6, Math.ceil((c?.level ?? 1) / 6) + 1);
+    const cap = skillRankCapAt(c?.level ?? 1);
     const wrap = h('div', 'pi-sk-ranks');
-    for (let i = 1; i <= 6; i++) {
+    wrap.append(h('span', 'pi-sk-rlabel', `Sv. ${rank}/${SKILL_RANK_CAP}`));
+    for (let i = 1; i <= SKILL_RANK_CAP; i++) {
       const pip = h('span', `pi-sk-pip${i <= rank ? ' on' : ''}${i > cap ? ' off' : ''}`);
       wrap.append(pip);
     }
-    wrap.title = `Kademe ${rank} / ${cap} (en fazla ${cap} kademeye kadar)`;
+    wrap.title = `Sv. ${rank} / ${SKILL_RANK_CAP} (seviyen için en fazla ${cap})`;
     return wrap;
   }
 
@@ -637,6 +641,80 @@ export class SkillsPanel extends ItemPanel {
     }
     wrap.append(row);
     return wrap;
+  }
+
+  /** Header line: unspent Yetenek Puanı, the rank cap of this level, and Sıfırla (refund all, small gold cost). */
+  private pointsRow(): HTMLElement {
+    const c = G.character;
+    const wrap = h('span', 'pi-sk-pts');
+    if (!c) return wrap;
+    const free = skillPointsFree(c.save);
+    const cap = skillRankCapAt(c.level);
+    wrap.append(h('span', `pi-sk-count${free > 0 ? ' pi-sk-free' : ''}`, `Yetenek Puanı: ${free} · Kademe sınırı ${cap}/${SKILL_RANK_CAP}`));
+    const spent = c.save.skillPts?.spent ?? 0;
+    const reset = h('button', 'pi-chip warn', `Sıfırla (${skillResetCost(c.level)} altın)`) as HTMLButtonElement;
+    reset.type = 'button';
+    reset.disabled = spent <= 0;
+    reset.title = spent > 0 ? `Harcanan ${spent} yetenek puanını geri al. Beceri Kitabı kademeleri kalır.` : 'Harcanmış yetenek puanı yok.';
+    reset.addEventListener('click', () => this.resetPoints());
+    wrap.append(reset);
+    return wrap;
+  }
+
+  /** Detail card: "Sv. 3/10", the "+" that spends a point, and the effect of the next rank. */
+  private rankRow(s: SkillDef): HTMLElement {
+    const c = G.character;
+    const wrap = h('div', 'pi-sk-rankrow');
+    if (!c) return wrap;
+    const fx = (v: number) => v.toFixed(2).replace('.', ',');
+    const rank = c.save.skillRanks[s.id] ?? 1;
+    const cap = skillRankCapAt(c.level);
+    const free = skillPointsFree(c.save);
+    const next = Math.min(SKILL_RANK_CAP, rank + 1);
+    const effects: string[] = [];
+    if (s.damage) effects.push(`Hasar x${fx(skillRankDamageMultOf(rank))} → x${fx(skillRankDamageMultOf(next))}`);
+    if (s.cooldown) effects.push(`Bekleme x${fx(skillRankCooldownMultOf(rank))} → x${fx(skillRankCooldownMultOf(next))}`);
+    const atCap = rank >= cap;
+    const plus = h('button', 'pi-chip on', '+') as HTMLButtonElement;
+    plus.type = 'button';
+    plus.disabled = atCap || free <= 0;
+    plus.title = atCap
+      ? `Seviye ${c.level} için en yüksek kademe ${cap}. Daha yüksek seviyede devam eder.`
+      : free <= 0 ? 'Harcanacak yetenek puanın yok. Seviye atladıkça kazanırsın.' : `Bir yetenek puanı harca: kademe ${next}${effects.length ? ' (' + effects.join(' · ') + ')' : ''}`;
+    plus.addEventListener('click', () => this.spendPoint(s));
+    wrap.append(h('b', '', `Sv. ${rank}/${SKILL_RANK_CAP}`), h('span', 'pi-tip-dim', ` sınır ${cap}`), plus);
+    if (effects.length && !atCap) wrap.append(h('div', 'pi-hint', `Sonraki kademe (${next}): ${effects.join(' · ')}`));
+    return wrap;
+  }
+
+  private spendPoint(s: SkillDef): void {
+    const c = G.character;
+    if (!c) return;
+    const r = c.spendSkillPoint(s.id);
+    if (r.ok) {
+      sfx('equip');
+      toast(`${s.name} kademe ${r.rank}.`, 'success');
+    } else {
+      sfx('ui_error');
+      toast(r.reason ?? 'Yetenek puanı harcanamadı.', 'warning');
+    }
+    this.sig = '';
+    this.refresh();
+  }
+
+  private resetPoints(): void {
+    const c = G.character;
+    if (!c) return;
+    const r = c.resetSkillPoints();
+    if (r.ok) {
+      sfx('unequip');
+      toast(`${r.refunded} yetenek puanı geri alındı (−${r.cost} altın).`, 'success');
+    } else {
+      sfx('ui_error');
+      toast(r.reason ?? 'Sıfırlanamadı.', 'warning');
+    }
+    this.sig = '';
+    this.refresh();
   }
 
   private readBook(s: SkillDef, bookId: string): void {
@@ -678,6 +756,7 @@ export class SkillsPanel extends ItemPanel {
     const d = this.fillDesc(s);
     const desc = h('div', 'pi-sd-desc', d);
     this.detail.append(head, body, desc);
+    if (unlocked) this.detail.append(this.rankRow(s));
     const picks = this.specChips(s.id);
     if (picks) this.detail.append(h('div', 'pi-qtylabel', 'Uzmanlık seçimleri'), picks);
 
