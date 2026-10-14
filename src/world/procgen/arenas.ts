@@ -43,12 +43,12 @@ const SOURCES: { def: DungeonDef; home: FissureThemeId; bossIds: string[] }[] = 
   { def: GOLGE_TAPINAGI, home: 'shadow', bossIds: ['boss_nefris', 'boss_kevvas', 'boss_zakhar'] },
 ];
 
-/** The original doors of a room as anchors seen from inside the room (width 2 only). */
+/** The original doors of a room as anchors seen from inside the room (openings 2 tiles wide or more; the anchor is the first tile). */
 function anchorsOf(def: DungeonDef, room: RoomDef): Anchor[] {
   const out: Anchor[] = [];
   const seen = new Set<string>();
   for (const d of def.doors) {
-    if ((d.width ?? 1) !== 2) continue;
+    if ((d.width ?? 1) < 2) continue;
     let side: Side;
     let along: number;
     if (d.a === room.id) {
