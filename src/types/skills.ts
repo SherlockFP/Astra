@@ -185,7 +185,9 @@ export type StatusId =
   // AE-4 (docs/kits/agile-evoker.md §4): Ejderhasoy. StatusDefs in data/statuses_kit_evoker.ts.
   | 'essence_burst' | 'leaping_flames' | 'burnout' | 'iridescence' | 'tip_scales' | 'dragonrage' | 'unbound_flame' | 'hover'
   | 'obsidian' | 'merithras_blessing' | 'echo' | 'twin_echoes' | 'lifebind' | 'stasis' | 'time_dilation' | 'ebon_might'
-  | 'prescience' | 'temporal_wound' | 'bronze_blessing' | 'reversion' | 'dream_breath' | 'empowering' | 'fire_breath_burn';
+  | 'prescience' | 'temporal_wound' | 'bronze_blessing' | 'reversion' | 'dream_breath' | 'empowering' | 'fire_breath_burn'
+  // KIT Rahip (priest, append-only): Atonement mark, Acı Bastırma, the two Shadow DoTs and Boşluk Formu. StatusDefs in data/statuses_kit_priest.ts.
+  | 'atonement' | 'pain_suppression' | 'shadow_word_pain' | 'vampiric_touch' | 'voidform';
 
 export interface StatusDef {
   id: StatusId;

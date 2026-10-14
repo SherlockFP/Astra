@@ -46,7 +46,8 @@ const EXPECT = {
   specs: 25,
   /** KIT PK-0: SPEC_TABLE entries (src/data/talentTrees/index.ts). The JSON holds `specs` of them plus PENDING_SPEC_TREES. */
   registrySpecs: 26,
-  rows: 850,
+  /** PRIEST kit: class:priest carries 25 rows. */
+  rows: 875,
   skillSpecRows: 162,
   webNodes: 306,
   sectors: 122,
