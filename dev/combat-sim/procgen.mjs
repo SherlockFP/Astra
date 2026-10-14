@@ -470,7 +470,7 @@ for (const theme of THEMES_ALL) {
   const { G } = await imp('game/G.ts');
   const toasts = [];
   G.character = { level: 35, classId: 'knight', save: { flags: { 'fis.clear.n': 2 } }, itemLevel: () => 40 };
-  G.net = { isOnline: false, isAuthority: true, selfId: 'me', peers: new Map(), remotePeers: () => [] };
+  G.net = { isOnline: false, isAuthority: true, selfId: 'me', peers: new Map(), remotePeers: () => [], partyMembers: () => [] };
   G.audio = { play() {} };
   G.ui = { toast: (t) => toasts.push(t) };
   try {
@@ -496,8 +496,8 @@ for (const theme of THEMES_ALL) {
     btns[1].click();
     tab.primary().run();
     ok('ui.Kahramanlik launch maps to heroic', launched.p.difficulty === 'heroic' && P.parseFissureId(launched.p.dungeonId).tier === 'h');
-    G.net.isOnline = true; G.net.isAuthority = false;
-    ok('ui.a client cannot open the Yarik (host only)', tab.primary().disabled && /oda sahibi/i.test(tab.primary().label));
+    G.net.isOnline = true; G.net.isAuthority = false; G.net.inParty = true; G.net.isPartyLeader = false; // channels: the party leader (not the channel host) opens runs
+    ok('ui.a non-leader party member cannot open the Yarik', tab.primary().disabled && /oda sahibi/i.test(tab.primary().label));
     G.net.isOnline = false; G.net.isAuthority = true;
     G.character.save.flags = {};
     tab.open();

@@ -127,6 +127,7 @@ ok('ach.gold-not-enough', !P.hasPet(aSave, 'altin_sincap'));
 toasts.length = 0;
 G.events.emit('player:gold', { gold: 1000000, delta: 1000000 });
 ok('ach.teaches-on-unlock', A.isUnlocked(aSave, 'eko_gold1m') && P.hasPet(aSave, 'altin_sincap'));
+await new Promise((r) => setTimeout(r, 2100)); // unlock toasts are merged over a 2 s window (Achievements.feed)
 ok('ach.toast', toasts.some((t) => /Evcil hayvan ödülü: Altın Sincap/.test(t)), toasts.join(' | '));
 ok('ach.unlock-with-title', (aSave.titles ?? []).includes('eko_gold1m'));
 // the pure path (sim without events): a kill count teaches the cat
