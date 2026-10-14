@@ -41,8 +41,10 @@ export class MinionAI {
 
   update(m: Minion, dt: number): void {
     if (m.isDead || m.removed) return;
-    for (const [k, v] of this.cd) if (v > 0) this.cd.set(k, v - dt);
     const owner = m.owner;
+    // Vahşi Öfke (owner status frenzy): each stack speeds the pet's recovery by 10 % (attack cadence)
+    const haste = 1 + 0.1 * (owner?.statuses.stacks('frenzy') ?? 0);
+    for (const [k, v] of this.cd) if (v > 0) this.cd.set(k, v - dt * haste);
     if (!owner || owner.isDead) {
       this.target = null;
       this.swing = null;

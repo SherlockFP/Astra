@@ -111,6 +111,13 @@ export function registerEvokerSpecs(add: SkillAdd): void {
     params: { gap: 0.35, end: 0.8, chain: 0.1, move: 0.15, weight: 1 },
   });
   // Geri Sarma (WoW major heal): 40 m around the chosen ally, the 5 most injured heal for 2.8 (blossom model). No bar slot (Shift+).
+  // Zaman Atlatma (Time Skip, Koruyucu): every other cooldown of the caster is reset. No bar slot (second bar).
+  add({
+    id: 'evoker_time_skip', classId: 'evoker', spec: 'evoker_preservation', name: 'Zaman Atlatma (Time Skip)', icon: I('skill-resurrect'), unlockLevel: 15,
+    desc: 'Zamanı ileri sararsın: kendisi hariç bütün yeteneklerinin bekleme süresi sıfırlanır. 150 saniye bekleme. Bar yuvası yoktur (ikinci bar).',
+    cost: 0, cooldown: 150, castTime: 0, anim: 'Cheer', animSpeed: 1.2, hitTime: 0.3, targeting: 'self_buff', behavior: 'kit_time_skip',
+    tags: ['major', 'utility', 'spec'], vfx: { cast: 'time_ripple' }, sfx: { cast: 'time_warp' },
+  });
   add({
     id: 'evoker_rewind', classId: 'evoker', spec: 'evoker_preservation', name: 'Geri Sarma (Rewind)', icon: I('skill-resurrect'), unlockLevel: 15,
     desc: 'Zamanı geri sarar: 40 metre içindeki en yaralı 5 müttefiki %280 iyileştirir. 180 saniye bekleme. Bar yuvası yoktur (ikinci bar).',

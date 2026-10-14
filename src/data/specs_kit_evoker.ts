@@ -55,11 +55,11 @@ const SPEC_LIST: SpecDef[] = [
     ],
     skills: [
       'evoker_living_flame', 'evoker_reversion', 'evoker_dream_breath', 'evoker_echo', 'evoker_emerald_blossom', 'evoker_verdant_embrace',
-      'evoker_obsidian_scales', 'evoker_quell', 'evoker_rewind',
+      'evoker_obsidian_scales', 'evoker_quell', 'evoker_rewind', 'evoker_time_skip',
     ],
     unlock: {
       evoker_living_flame: 1, evoker_reversion: 10, evoker_dream_breath: 10, evoker_echo: 10, evoker_emerald_blossom: 10, evoker_verdant_embrace: 10,
-      evoker_obsidian_scales: 15, evoker_quell: 10, evoker_rewind: 15,
+      evoker_obsidian_scales: 15, evoker_quell: 10, evoker_rewind: 15, evoker_time_skip: 15,
     },
     majors: { m45: 'evoker_time_dilation', m90: 'evoker_stasis', m180: 'evoker_fury_of_aspects' },
     fx: [

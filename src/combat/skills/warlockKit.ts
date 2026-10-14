@@ -70,7 +70,22 @@ function needTarget(c: CastCtx): boolean {
   return true;
 }
 
-/** Single-target instant spell: strikes the resolved target (the def's coefficient and statuses apply). */
+/**
+ * Havoc (Kargaşa): a single-target spell that hits an enemy also hits the caster's Havoc mark (the `havoc` status on another
+ * enemy, 15 s) for `params.havocCoef` of the spell's damage. The mark is the second target; the spell's own target never copies.
+ */
+function havocCopy(c: CastCtx, struck: Enemy): void {
+  const w = G.world;
+  if (!w) return;
+  const coef = c.def.params?.havocCoef ?? 0.5;
+  for (const e of w.enemies) {
+    if (e === struck || e.isDead || e.removed) continue;
+    if (e.statuses.get('havoc')?.sourceId !== c.caster.id) continue;
+    c.sys.strike(c, e, { coef, noGain: true, statuses: [] });
+  }
+}
+
+/** Single-target instant spell: strikes the resolved target (the def's coefficient and statuses apply); Havoc copies the hit. */
 const targetSpell: Behavior = {
   begin(c) {
     return needTarget(c);
@@ -80,6 +95,7 @@ const targetSpell: Behavior = {
     const t = c.target as Enemy | null;
     if (!t || t.isDead) { c.sys.whiff(c); return; }
     c.sys.strike(c, t, {});
+    havocCopy(c, t);
     c.sys.applySelf(c, c.def.selfStatuses ?? []);
   },
 };
@@ -238,6 +254,29 @@ const implosion: Behavior = {
   },
 };
 
+/**
+ * Hand of Gul'dan (Demonology): spends 1-3 shards (10 fragments each, params.maxShards) and summons one Vahşi Cin per shard spent.
+ * The shards are spent here (the row has no pip cost), so the cast needs at least one.
+ */
+const hog: Behavior = {
+  begin(c) {
+    if (c.remote) return true;
+    if (c.sys.pipCount(c.caster, 'shard') < 10) { c.sys.fail('resource'); return false; }
+    return true;
+  },
+  fire(c) {
+    if (c.remote || !G.minions) return;
+    const p = c.def.params ?? {};
+    const have = c.sys.pipCount(c.caster, 'shard');
+    const n = Math.min(Math.max(1, Math.round(p.maxShards ?? 3)), Math.floor(have / 10));
+    if (n <= 0) return;
+    c.sys.spendPip(c.caster, 'shard', n * 10);
+    const row = c.def.minion;
+    const def = minionDef(row?.id ?? 'warlock_wild_imp');
+    if (def && row) G.minions.summon(c.caster, def, { count: n, group: row.group, life: row.life });
+  },
+};
+
 /** Demonic Tyrant (Demonology): the tyrant joins the caster for its life, and the caster gains the empower status. */
 const tyrant: Behavior = {
   fire(c) {
@@ -327,6 +366,7 @@ const healthstone: Behavior = {
 BEHAVIORS_KIT_WARLOCK.kit_target_spell = targetSpell;
 BEHAVIORS_KIT_WARLOCK.kit_implosion = implosion;
 BEHAVIORS_KIT_WARLOCK.kit_tyrant = tyrant;
+BEHAVIORS_KIT_WARLOCK.kit_hog = hog;
 BEHAVIORS_KIT_WARLOCK.kit_malefic = malefic;
 BEHAVIORS_KIT_WARLOCK.kit_cataclysm = cataclysm;
 BEHAVIORS_KIT_WARLOCK.kit_shadowfury = shadowfury;

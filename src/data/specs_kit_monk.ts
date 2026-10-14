@@ -65,18 +65,23 @@ export const SPECS_KIT_MONK: Partial<Record<SpecId, SpecDef>> = {
     specials: [
       { id: 'trait_mistweaver', desc: 'Sis Örgüsü: vuruşların %60 ile hasar verir; fazla iyileşme koruyucu kalkana döner (%40); Kara Tekme ve Dönen Turna, bir sis ile en düşük canlı müttefiki iyileştirir (vuruş hasarının %40\'ı).', params: { moreDamage: 0.6, overhealWard: 0.4, smartHeal: 1, mistLeech: 0.4 } },
     ],
-    skills: ['monk_life_cocoon', 'monk_mw_soothing_mist', 'monk_mw_renewing_mist', 'monk_mw_detox', 'monk_mw_enveloping_mist', 'monk_mw_vivify', 'monk_mw_thunder_tea', 'monk_mw_revival', 'monk_essence_font'],
+    skills: ['monk_life_cocoon', 'monk_mw_soothing_mist', 'monk_mw_renewing_mist', 'monk_mw_detox', 'monk_mw_enveloping_mist', 'monk_mw_vivify', 'monk_mw_thunder_tea', 'monk_mw_revival', 'monk_essence_font', 'monk_mw_sheilun_gift'],
     unlock: { monk_life_cocoon: 20, 
       monk_mw_basic: 1, monk_mw_soothing_mist: 10, monk_mw_renewing_mist: 1, monk_mw_detox: 12, monk_mw_enveloping_mist: 1,
-      monk_mw_vivify: 1, monk_mw_thunder_tea: 10, monk_mw_revival: 20, monk_essence_font: 1,
+      monk_mw_vivify: 1, monk_mw_thunder_tea: 10, monk_mw_revival: 20, monk_essence_font: 1, monk_mw_sheilun_gift: 10,
     },
     majors: { m45: 'monk_mw_thunder_tea', m90: 'monk_mw_revival' },
+    // Sheilun'un Armağanı: every Canlandırma and Sarmalayan Sis cast adds one stack (up to 5)
+    fx: [
+      'T cast:monk_mw_vivify => st(self,sheilun_gift,30)',
+      'T cast:monk_mw_enveloping_mist => st(self,sheilun_gift,30)',
+    ].join(' ;; '),
     mods: [],
     basic: 'monk_mw_basic',
     weaponArt: 'wa_tiger_barrage',
     defaultBar: {
       lmb: 'monk_mw_basic', rmb: 'monk_mw_vivify', q: 'monk_mw_enveloping_mist', e: 'monk_mw_renewing_mist',
-      r: 'monk_mw_soothing_mist', s1: 'monk_essence_font', s3: 'monk_mw_detox',
+      r: 'monk_mw_soothing_mist', s1: 'monk_essence_font', s2: 'monk_mw_sheilun_gift', s3: 'monk_mw_detox',
       m45: 'monk_mw_thunder_tea', m90: 'monk_mw_revival',
     },
   },

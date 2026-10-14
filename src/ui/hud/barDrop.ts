@@ -1,5 +1,6 @@
 import { G } from '../../game/G';
 import { MATERIALS } from '../../data/materials';
+import { DEFAULT_BAR2_BY_SPEC } from '../../data/defaultExtraBar';
 import type { SkillDef, SkillSlotKey } from '../../types/skills';
 import type { BarLayoutSave } from '../../types/character';
 import type { CharacterState } from '../../systems/CharacterState';
@@ -46,6 +47,9 @@ export function readBars(): BarsState {
   if (!ch) return emptyState();
   const save = ch.save;
   if (!save.barLayout) save.barLayout = legacyBars(save.id) ?? {};
+  // second-bar defaults of the spec (defensive rows), seeded once: a save with a bar2 entry is never touched
+  const seed = save.spec ? DEFAULT_BAR2_BY_SPEC[save.spec] : undefined;
+  if (seed && save.barLayout.bar2 === undefined) save.barLayout.bar2 = seed.map((id) => ({ k: 'skill' as const, id }));
   const parsed = parseBarLayout(save.barLayout);
   return { main: buildMainRow(save.skillBar, parsed.main), bar2: parsed.bar2, bar3: parsed.bar3 };
 }

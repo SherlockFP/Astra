@@ -103,12 +103,12 @@ export function registerShamanSpecs(add: SkillAdd): void {
     tags: ['totem', 'summon', 'root', 'spec'], vfx: { cast: 'pet_summon' }, sfx: { cast: 'chi_cast' },
     params: { end: 0.6, chain: 0.05, move: 0.1, weight: 0 },
   });
-  // Fırtına Bekçisi (m45): 12 s, the next casts are twice as fast (approximated by castSpeed +100 %; the 2-cast counter is not modelled)
+  // Fırtına Bekçisi (m45): the next 2 Lightning Bolts are instant and empowered (status stormkeeper, 2 stacks, one spent per bolt; proc mod)
   add({
     id: 'shaman_stormkeeper', classId: 'shaman', spec: 'shaman_elemental', name: 'Fırtına Bekçisi (Stormkeeper)', icon: I('skill-thunderstorm'), unlockLevel: 10, defaultSlot: 'm45',
-    desc: '12 saniye boyunca büyülerin iki kat hızlı yapılır (Büyü Hızı +%100).',
+    desc: 'Sonraki iki Yıldırım Okunu anında ve güçlendirilmiş atarsın. 20 saniye içinde kullanılmazsa biter.',
     cost: 0, cooldown: 60, castTime: 0, hitTime: 0.3, anim: 'Cheer', animSpeed: 1.6,
-    targeting: 'self_buff', selfStatuses: [{ status: 'stormkeeper', duration: 12 }],
+    targeting: 'self_buff', selfStatuses: [{ status: 'stormkeeper', duration: 20, stacks: 2 }],
     tags: ['major', 'buff', 'spec'], vfx: { cast: 'buff_aura' }, sfx: { cast: 'chi_cast' },
     params: { major: 45, end: 0.7, chain: 0.1, move: 0.15, weight: 1 },
   });

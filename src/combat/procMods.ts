@@ -27,6 +27,8 @@ import { PROC_MODS_KIT_NECROMANCER } from '../data/procs_kit_necromancer';
 // AE-3 / AE-4 (docs/kits/agile-evoker.md): İblis Avcısı and Ejderhasoy proc mods.
 import { PROC_MODS_KIT_DEMONHUNTER } from '../data/procs_kit_demonhunter';
 import { PROC_MODS_KIT_EVOKER } from '../data/procs_kit_evoker';
+// KIT ŞAMAN (Fırtına Bekçisi, Rüzgar Silahı, Lav Dalgası): proc mods.
+import { PROC_MODS_KIT_SHAMAN } from '../data/procs_kit_shaman';
 
 export interface ProcMod {
   /** Proc status that enables this mod. Also the key of PROC_MODS. */
@@ -89,7 +91,7 @@ export function registerProcMods(rows: readonly ProcMod[]): void {
 }
 
 // KIT PK-0: one merge line for the three kit files (empty until PK-MAGE / PK-ROGUE / PK-WARLOCK).
-registerProcMods([...PROC_MODS_KIT_MAGE, ...PROC_MODS_KIT_ROGUE, ...PROC_MODS_KIT_WARLOCK, ...PROC_MODS_KIT_KNIGHT, ...PROC_MODS_KIT_BARBARIAN, ...PROC_MODS_KIT_PALADIN, ...PROC_MODS_KIT_NECROMANCER, ...PROC_MODS_KIT_DEMONHUNTER, ...PROC_MODS_KIT_EVOKER]);
+registerProcMods([...PROC_MODS_KIT_MAGE, ...PROC_MODS_KIT_ROGUE, ...PROC_MODS_KIT_WARLOCK, ...PROC_MODS_KIT_KNIGHT, ...PROC_MODS_KIT_BARBARIAN, ...PROC_MODS_KIT_PALADIN, ...PROC_MODS_KIT_NECROMANCER, ...PROC_MODS_KIT_DEMONHUNTER, ...PROC_MODS_KIT_EVOKER, ...PROC_MODS_KIT_SHAMAN]);
 
 /** Merged effect of every active proc mod that applies to one skill. */
 export interface ResolvedProcMods {

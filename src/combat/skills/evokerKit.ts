@@ -974,7 +974,17 @@ const prescience: Behavior = {
   },
 };
 
+/** Zaman Atlatma (Time Skip): resets every other cooldown of the caster (SkillSystem.resetAllCooldowns). */
+const timeSkip: Behavior = {
+  fire(c) {
+    if (c.remote) return;
+    c.sys.resetAllCooldowns(c.caster, c.def.id);
+    c.sys.sfx('buff', c.caster.position);
+  },
+};
+
 Object.assign(BEHAVIORS_KIT_EVOKER, {
+  kit_time_skip: timeSkip,
   kit_empower: empower,
   kit_living_flame: livingFlame,
   kit_essence_beam: essenceBeam,

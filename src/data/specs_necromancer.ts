@@ -56,11 +56,11 @@ const NECRO_SPEC_LIST: SpecDef[] = [
       { id: 'trait_summoner', desc: 'Kemik Ghul\'u her zaman yanındadır (ölürse 10 saniyede, sahne değişince 2 saniyede geri döner). Küçük Ghul sınırı 3.', params: { lesserGhoulCap: 3, ghoulRevive: 0, pet: 1 } },
     ],
     skills: [
-      'necro_scourge_strike', 'necro_death_coil', 'necro_festering_strike', 'necro_outbreak',
+      'necro_scourge_strike', 'necro_death_coil', 'necro_festering_strike', 'necro_outbreak', 'necro_apocalypse',
       'necro_deaths_advance', 'necro_anti_magic_shell', 'necro_mind_freeze', 'necro_death_and_decay', 'necro_raise_dead',
     ],
     unlock: {
-      necro_scourge_strike: 1, necro_death_coil: 1, necro_festering_strike: 1, necro_outbreak: 10,
+      necro_scourge_strike: 1, necro_death_coil: 1, necro_festering_strike: 1, necro_outbreak: 10, necro_apocalypse: 20,
       necro_mind_freeze: 1, necro_anti_magic_shell: 15, necro_deaths_advance: 1, necro_death_and_decay: 12, necro_raise_dead: 20,
     },
     treeSkills: { necro_epidemic: 's05' },

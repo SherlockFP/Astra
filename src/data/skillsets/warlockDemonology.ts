@@ -26,9 +26,9 @@ export function registerWarlockExtras(add: SkillAdd): void {
   add({
     id: 'warlock_hand_of_guldan', classId: 'warlock', spec: 'warlock_demonology', name: "Gul'dan'ın Eli (Hand of Gul'dan)", icon: I('skill-curse'),
     unlockLevel: 10, defaultSlot: 'q',
-    desc: "3 Ruh Parçası harcayarak 3 Vahşi Cin çağırırsın. Cinler 20 saniye sonra kaybolur.",
+    desc: "1-3 Ruh Parçası harcarsın; harcadığın her parça için bir Vahşi Cin çağırırsın. Cinler 20 saniye sonra kaybolur.",
     cost: 0, cooldown: 0, castTime: 1.2, hitTime: 1.2, anim: 'Spellcast_Summon', animSpeed: 1.4, targeting: 'summon',
-    behavior: 'minion_summon', pip: { id: 'shard', cost: 30 }, minion: { id: 'warlock_wild_imp', count: 3, life: 20 },
+    behavior: 'kit_hog', minion: { id: 'warlock_wild_imp', count: 1, life: 20 }, params: { maxShards: 3 },
     tags: ['summon', 'spec'], vfx: { cast: 'darkglare_eye' }, sfx: { cast: 'demon_summon' },
   });
 
@@ -91,6 +91,7 @@ export function registerWarlockExtras(add: SkillAdd): void {
     cost: 4, cooldown: 30, castTime: 0, hitTime: 0.3, anim: 'Spellcast_Shoot', animSpeed: 1.6, targeting: 'custom', range: 30,
     behavior: 'kit_target_spell', damage: { coef: 0.4, type: 'fire' }, statuses: [{ status: 'havoc', duration: 15 }],
     tags: ['spell', 'fire', 'instant', 'spec'], vfx: { cast: 'fire_burst', impact: 'hit_spark' }, sfx: { cast: 'fire_cast', impact: 'fire_impact' },
+    params: { havocCoef: 0.5 },
   });
 
   add({

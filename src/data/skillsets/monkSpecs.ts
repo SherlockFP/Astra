@@ -169,6 +169,15 @@ export function registerMonkSpecs(add: SkillAdd): void {
     params: { end: 0.7, chain: 0.1, move: 0.2, weight: 0, hotCoef: 0.2, tick: 1 },
   });
   // Canlandırma (pick shape): a cone of heal 1.6 around the picked ally (radius 8, 120 deg, up to 5 allies, injured first)
+  // Sheilun'un Armağanı (Mistweaver, s2): spends the sheilun_gift stacks (Canlandırma / Sarmalayan Sis add one each) on the injured party
+  add({
+    id: 'monk_mw_sheilun_gift', classId: 'monk', spec: 'monk_mistweaver', name: "Sheilun'un Armağanı (Sheilun's Gift)", icon: I('skill-regeneration'), unlockLevel: 10, defaultSlot: 's2',
+    desc: "Biriken Sheilun'un Armağanı yüklerini harcarsın (en çok 5): en yaralı 5 müttefik, yük başına %60 iyileşir. Yük yoksa kullanılamaz. Bekleme yoktur.",
+    cost: 0, cooldown: 0, castTime: 0, hitTime: 0.4, anim: 'Spellcast_Raise', animSpeed: 1.2,
+    targeting: 'self_buff', behavior: 'monk_sheilun_gift', tags: ['spell', 'heal', 'aoe', 'spec'],
+    vfx: { cast: 'heal_loop', impact: 'heal_burst' }, sfx: { cast: 'chi_cast', impact: 'buff' },
+    params: { perStack: 0.6, radius: 25, maxTargets: 5 },
+  });
   add({
     id: 'monk_mw_vivify', classId: 'monk', spec: 'monk_mistweaver', name: 'Canlandırma (Vivify)', icon: I('skill-holy-nova'), unlockLevel: 1,
     desc: 'Seçtiğin müttefikin çevresindeki yaralı en çok 5 kişiyi iyileştirirsin.',

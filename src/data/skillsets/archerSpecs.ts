@@ -166,7 +166,7 @@ export function registerArcherSpecs(add: SkillAdd): void {
   // Dikenli Atış (Barbed Shot), Av Ustası: builder on a cooldown (the pet frenzy is a hook, see the report)
   add({
     id: 'archer_barbed_shot', classId: 'archer', spec: 'archer_beastmaster', name: 'Dikenli Atış (Barbed Shot)', icon: I('skill-claw-strike'), unlockLevel: 10,
-    desc: 'Dikenli bir ok atarsın: %90 hasar verir ve 5 Odak kazandırır. 8 saniye bekleme.',
+    desc: 'Dikenli bir ok atarsın: %90 hasar verir ve 5 Odak kazandırır. Vahşi Öfke yığını (en çok 3, 8 sn) kazanırsın: her yığın yoldaşlarının saldırı hızını %10 artırır. 8 saniye bekleme.',
     cost: 0, cooldown: 8, castTime: 0, anim: '2H_Ranged_Shoot', animSpeed: 1.6, hitTime: 0.32, targeting: 'projectile', range: 28,
     speed: 60, radius: 0.3, count: 1, pierce: 0, damage: { coef: 0.9, type: 'physical' },
     tags: ['spec', 'ranged', 'projectile', 'physical', 'builder'], vfx: { projectile: 'arrow_projectile', impact: 'hit_spark' },

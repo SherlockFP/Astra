@@ -769,6 +769,13 @@ export class SkillSystem {
     }
   }
 
+  /** Time Skip (Zaman Atlatma): every cooldown of the actor is made ready again, except `except` (the skill that resets them). */
+  resetAllCooldowns(actor: Actor, except?: string): void {
+    const st = this.states.get(actor.id);
+    if (!st) return;
+    for (const [id, c] of st.cds) if (id !== except) c.charges = c.max;
+  }
+
   /** Make a skill instantly ready again (set bonuses). */
   resetCooldown(actor: Actor, skillId: string): void {
     const c = this.states.get(actor.id)?.cds.get(skillId);
