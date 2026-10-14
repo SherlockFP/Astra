@@ -48,6 +48,8 @@ export class NavGrid {
   region: Uint16Array | null = null;
   /** Live height source (lifts, analytic slopes). null on flat grids. */
   hf: NavHeightSource | null = null;
+  /** Open-world rolling terrain (attachTerrain): raycastY also stops a ray that dips under the ground. */
+  terrain = false;
 
   constructor(opts: { originX: number; originZ: number; width: number; depth: number; cellSize?: number; walkable?: boolean }) {
     this.cellSize = opts.cellSize ?? 1;
@@ -205,6 +207,26 @@ export class NavGrid {
     this.buildRegions();
   }
 
+  /**
+   * Open-world terrain (docs/ENGINE_BIGMAPS.md section 10): fills `floor` from the relief (1 m cell centres), no flags, no rim pass,
+   * no regions. The relief's grade limit (<= 0.4) keeps every 1 m step under VERT.STEP_UP, so nothing needs rails or cliffs, and
+   * skipping the rim pass and the flood fill keeps a 1.9 M cell grid at about 100 ms. Makes `vertical` true (walkLine, resolveMove,
+   * raycastY and the rise rule of findPath apply); sameRegion is always true.
+   */
+  attachTerrain(src: NavHeightSource): void {
+    const N = this.cols * this.rows;
+    const floor = new Float32Array(N);
+    for (let r = 0; r < this.rows; r++) {
+      const z = this.centerZ(r);
+      for (let c = 0; c < this.cols; c++) floor[r * this.cols + c] = src.groundY(this.centerX(c), z);
+    }
+    this.hf = src;
+    this.floor = floor;
+    this.flags = new Uint8Array(N);
+    this.region = null;
+    this.terrain = true;
+  }
+
   /** Open, not void/slope/lift: a cell the rim pass may act on. */
   private rimEligible(c: number, r: number): boolean {
     if (this.cell(c, r) <= 0) return false;
@@ -314,10 +336,13 @@ export class NavGrid {
     if (len < 1e-6) return 1;
     const step = this.cellSize * 0.25;
     const n = Math.ceil(len / step);
+    // rolling terrain (Relief): the ground itself blocks a ray that dips under it (a hill between an enemy and a player)
+    const ground = this.terrain ? this.floor : null;
     for (let i = 1; i <= n; i++) {
       const t = i / n;
       const x = ax + dx * t, z = az + dz * t;
       const c = this.cx(x), r = this.cz(z);
+      if (ground && this.inBounds(c, r) && ay + (by - ay) * t < ground[r * this.cols + c] - 0.1) return (i - 1) / n;
       if (this.cell(c, r)) continue;
       if (!this.flags || !this.inBounds(c, r)) return (i - 1) / n;
       const idx = r * this.cols + c;

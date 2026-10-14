@@ -62,8 +62,12 @@ export class LightPool {
     }
   }
 
+  /** Rolling terrain (world/Relief.ts): when set, `add` treats y as an offset above the ground under (x, z). Null = absolute. */
+  groundY: ((x: number, z: number) => number) | null = null;
+
   add(pos: THREE.Vector3 | [number, number, number], spec: TorchSpec): number {
     const p = Array.isArray(pos) ? new THREE.Vector3(pos[0], pos[1], pos[2]) : pos.clone();
+    if (this.groundY) p.y += this.groundY(p.x, p.z);
     this.torches.push({ ...spec, pos: p, phase: Math.random() * 100, slot: -1, scale: 1 });
     return this.torches.length - 1;
   }

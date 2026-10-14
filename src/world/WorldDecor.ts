@@ -11,6 +11,7 @@ import { designToPhysical, type LightPool } from './LightPool';
 import { Sky, makeMountainRing } from './Sky';
 import { DEFAULT_BLEND_M, RegionAtmosphere, atmoOf } from './RegionAtmosphere';
 import { createTerrain, type SplatOp, type Terrain } from './Terrain';
+import type { Relief } from './Relief';
 import { ChunkedTerrain } from './TerrainChunks';
 import { WorldStream, type WorldStreamStats } from './WorldStream';
 import { getGfxQuality, lodPlans } from './WorldPerf';
@@ -64,6 +65,8 @@ export interface WorldDecorHost {
   onFog?(near: number, far: number): void;
   /** Streaming configuration (docs/ENGINE_BIGMAPS.md). `stream.on` = chunked terrain + scenery instead of one build-everything pass. */
   stream?: StreamConfig;
+  /** Rolling terrain (world/Relief.ts); the ground meshes are built from it. Null / absent = flat ground. */
+  relief?: Relief | null;
 }
 
 export interface WorldDecorHandle {
@@ -289,7 +292,8 @@ class OpenWorld implements WorldDecorHandle {
     const pick = this.atmo.pickAmbient(this.rng.next());
     if (!pick) return;
     const a = this.rng.range(0, PI * 2), d = this.rng.range(4, 24);
-    const pos: [number, number, number] = [this.px + Math.cos(a) * d, this.rng.range(0.8, 3), this.pz + Math.sin(a) * d];
+    const ax = this.px + Math.cos(a) * d, az = this.pz + Math.sin(a) * d;
+    const pos: [number, number, number] = [ax, (this.host.relief ? this.host.relief.groundY(ax, az) : 0) + this.rng.range(0.8, 3), az];
     try {
       const h = G.vfx.spawn(pick.id, pos, { scale: 1, color: pick.color }) as VfxLike;
       this.ambient.push({ h, t: 9 });
@@ -323,7 +327,7 @@ function sampleRoad(pts: [number, number][], step: number): Sample[] {
   return out;
 }
 
-function buildWater(id: string, rect: { x: number; z: number; w: number; h: number }, seed: string, colour: number, host: WorldDecorHost, waters: { tex: THREE.Texture; speed: number }[]): void {
+function buildWater(id: string, rect: { x: number; z: number; w: number; h: number }, seed: string, colour: number, host: WorldDecorHost, waters: { tex: THREE.Texture; speed: number }[], y = 0.03): void {
   const w = rect.w * T, d = rect.h * T;
   const base = surfaceTexture('water', seed + id, 64);
   const tex = base.clone();
@@ -334,7 +338,7 @@ function buildWater(id: string, rect: { x: number; z: number; w: number; h: numb
   const geo = new THREE.PlaneGeometry(w, d);
   geo.rotateX(-PI / 2);
   const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set((rect.x + rect.w / 2) * T, 0.03, (rect.z + rect.h / 2) * T);
+  mesh.position.set((rect.x + rect.w / 2) * T, y, (rect.z + rect.h / 2) * T);
   mesh.name = `water:${id}`;
   host.root.add(mesh);
   host.disposables.push({ dispose() { geo.dispose(); mat.dispose(); tex.dispose(); } });
@@ -519,14 +523,16 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
     // big zone: one flat quad + one small splat per chunk, built when the streamer asks (WorldStream)
     chunkTerrain = new ChunkedTerrain({
       seed: def.id, ops, mapCx: cx, mapCz: cz, chunkM: stream.chunkM, grassTint: 0xffffff,
-      tint: { w: tint.w, h: tint.h, rgb: tint.rgb, half: Math.max(cx, cz) }, parent: host.root,
+      tint: { w: tint.w, h: tint.h, rgb: tint.rgb, half: Math.max(cx, cz) }, parent: host.root, relief: host.relief ?? null,
     });
     const ct = chunkTerrain;
     weights = (x, z) => ct.weights(x, z);
   } else {
     const terrain: Terrain = createTerrain({
-      half: 480, splatHalf: Math.max(cx, cz) + 6, splatRes: 2048, seed: def.id, ops, cell: 10, grassTint: 0xffffff,
+      // rolling terrain: 440 m around the centre (80k triangles at 4 m cells; the fog hides what is beyond); flat ground keeps 480 m / 10 m cells
+      half: host.relief ? 440 : 480, splatHalf: Math.max(cx, cz) + 6, splatRes: 2048, seed: def.id, ops, cell: 10, grassTint: 0xffffff,
       tint: { w: tint.w, h: tint.h, rgb: tint.rgb, half: Math.max(cx, cz) },
+      relief: host.relief ? { relief: host.relief, centreX: cx, centreZ: cz } : undefined,
     });
     terrain.mesh.position.set(cx, 0, cz);
     host.root.add(terrain.mesh);
@@ -559,11 +565,12 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
   // every optional block below degrades to a warning: a broken scenery entry must not fail the map load
   const waters: { tex: THREE.Texture; speed: number }[] = [];
   guard('water', () => {
-    for (const wt of world.water) {
+    world.water.forEach((wt, wi) => {
       const i = Math.floor((wt.rect.x + wt.rect.w / 2)), j = Math.floor((wt.rect.z + wt.rect.h / 2));
       const reg = regionAtTile(i, j) ?? regionAtTile(i - 1, j);
-      buildWater(wt.id, wt.rect, def.id, reg?.id === 'r4' ? 0x3f7a5a : 0x3f7f9a, host, waters);
-    }
+      // rolling terrain: each lake lies at the height of its valley (Relief.waterLevels); flat zones keep the plane at 0.03
+      buildWater(wt.id, wt.rect, def.id, reg?.id === 'r4' ? 0x3f7a5a : 0x3f7f9a, host, waters, host.relief ? host.relief.waterY(wi) : 0.03);
+    });
   });
 
   // ---- roads: bridge deck and boardwalks (dirt / cobble are splat only) ----

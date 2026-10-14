@@ -39,7 +39,28 @@ const BOSSES: BossPlacement[] = LAYOUT.arenas.map((a, i) => ({
 /** Streaming / AI budgets (GDD_OPENWORLD §1.5): activation 70 m, deactivation 110 m, AI sleep 45 m, 240 active mobs, 40 m chunks. */
 const PERF: WorldExtras['perf'] = { activateM: 70, deactivateM: 110, aiSleepM: 45, maxActiveEnemies: 240, chunkM: 40 };
 
+/**
+ * Rolling terrain (opt-in, docs/ENGINE_BIGMAPS.md section 10): modest relief of 2-5 m. 4 m cells (rivers 1-2 tiles wide need them); the
+ * classic one-mesh ground is then about 80k triangles (WorldDecor builds it 440 m around the map centre, the fog hides the rest).
+ * Haydut Tepeleri (the bandit hills) are the liveliest, the marsh and the ruins lie flatter; hills frame the map edge.
+ */
+const RELIEF: WorldExtras['relief'] = {
+  seed: 'sisli_vadi',
+  cellM: 4,
+  profile: { amp: 4, scale: 110 },
+  regions: {
+    r1: { amp: 3.5, scale: 120 },
+    r2: { amp: 3, scale: 140 },
+    r3: { amp: 5, scale: 100, base: 1 },
+    r4: { amp: 1.6, scale: 90 },
+    r5: { amp: 4.5, scale: 90, ridged: 0.3 },
+    r6: { amp: 3, scale: 100 },
+  },
+  edge: { rise: 9, width: 70 },
+};
+
 const WORLD: WorldExtras = {
+  relief: RELIEF,
   regions: REGIONS,
   villages: VILLAGES,
   waypoints: WAYPOINTS,

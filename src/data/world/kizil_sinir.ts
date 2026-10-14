@@ -217,7 +217,26 @@ export const VILLAGES: VillageDef[] = [mkBase('gok_kartal'), mkBase('kizil_kurt'
 /** Chunk streaming is explicit ('on'), view radius = widest fog far + 64 m. */
 const PERF: WorldExtras['perf'] = { activateM: 70, deactivateM: 110, aiSleepM: 45, maxActiveEnemies: 240, chunkM: 40, stream: 'on', streamChunkM: 64 };
 
+/**
+ * Rolling terrain (docs/ENGINE_BIGMAPS.md section 10): moderate hills of the border plain, mirrored in x and z so both nations face the
+ * same map, with the contested keep on a raised plateau (the three capture points, the obelisk rings and the watch towers stand on it).
+ */
+const RELIEF: WorldExtras['relief'] = {
+  seed: 'kizil_sinir',
+  cellM: 4,
+  symmetric: 'xz',
+  profile: { amp: 5, scale: 150 },
+  regions: {
+    r13: { amp: 3, scale: 150 },
+    r14: { amp: 3, scale: 150 },
+    r15: { amp: 14, scale: 140, base: 1 },
+  },
+  edge: { rise: 14, width: 80 },
+  plateaus: [{ pos: [150, 150], radius: 78, height: 14, falloff: 64 }],
+};
+
 const WORLD: WorldExtras = {
+  relief: RELIEF,
   regions: REGIONS,
   villages: VILLAGES,
   waypoints: [],

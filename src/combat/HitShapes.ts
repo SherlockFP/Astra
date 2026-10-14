@@ -350,7 +350,7 @@ export class HitShapes {
    */
   private inReach(a: ActiveShape, feetY: number): boolean {
     const world = G.world;
-    if (!world || !world.vertical || a.spec.vert === 'free') return true;
+    if (!world || !world.vertical || world.terrain || a.spec.vert === 'free') return true; // rolling terrain: no stacked floors, the plane under the origin is not the player's
     const plane = world.groundY(a.ox, a.oz);
     return Math.abs(feetY - plane) <= (a.spec.vert ?? VERT.TOL_MELEE);
   }

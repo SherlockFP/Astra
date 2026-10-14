@@ -3,6 +3,9 @@ import { patchPSX } from '../render/psx';
 import { surfaceTexture } from './ProceduralAssets';
 import type { TerrainTint } from './Terrain';
 import { ChunkSplats, type SplatOp } from './chunks/SplatPaint';
+import type { Relief } from './Relief';
+import { reliefChunkGeometry } from './ReliefMesh';
+import { SLOPE_FRAG, SLOPE_VARYING_FRAG, SLOPE_VARYING_VERT, SLOPE_VERT } from './TerrainSlope';
 
 /**
  * Chunked terrain for big open-world zones (docs/ENGINE_BIGMAPS.md): the ground is one flat quad per chunk (shared geometry), each
@@ -24,12 +27,16 @@ export interface ChunkedTerrainOptions {
   grassTint?: number;
   tint?: TerrainTint;
   parent: THREE.Object3D;
+  /** Rolling terrain (world/Relief.ts): every chunk gets its own geometry from the relief grid instead of the shared flat quad. */
+  relief?: Relief | null;
 }
 
 export interface TerrainChunk {
   mesh: THREE.Mesh;
   material: THREE.MeshStandardMaterial;
   splat: THREE.DataTexture;
+  /** Own geometry of a relief chunk (disposed with it); null = the shared flat quad. */
+  geo: THREE.BufferGeometry | null;
 }
 
 export class ChunkedTerrain {
@@ -126,13 +133,14 @@ export class ChunkedTerrain {
       shader.uniforms.uTintHalf = { value: tintHalf };
       shader.uniforms.uHasTint = { value: hasTint };
       shader.vertexShader = shader.vertexShader
-        .replace('#include <common>', '#include <common>\nvarying vec2 vTerrainXZ;\nuniform vec2 uChunkOrigin;')
-        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTerrainXZ = position.xz + uChunkOrigin;');
+        .replace('#include <common>', `#include <common>\nvarying vec2 vTerrainXZ;\nuniform vec2 uChunkOrigin;\n${SLOPE_VARYING_VERT}`)
+        .replace('#include <begin_vertex>', `#include <begin_vertex>\nvTerrainXZ = position.xz + uChunkOrigin;\n${SLOPE_VERT}`);
       shader.fragmentShader = shader.fragmentShader
         .replace(
           '#include <common>',
           `#include <common>
 varying vec2 vTerrainXZ;
+${SLOPE_VARYING_FRAG}
 uniform sampler2D uSplat; uniform sampler2D uGrass; uniform sampler2D uDirt; uniform sampler2D uCobble; uniform sampler2D uMoss;
 uniform vec2 uChunkOrigin; uniform float uChunkSize;
 uniform sampler2D uTintMap; uniform float uTintHalf; uniform float uHasTint;`,
@@ -150,6 +158,7 @@ vec3 base = mix(g1, g2 * 0.92, 0.3);
 base = mix(base, ms, sp.b);
 base = mix(base, dt, sp.r);
 base = mix(base, cb, sp.g);
+${SLOPE_FRAG}
 vec2 ts = (vTerrainXZ + vec2(uTintHalf)) / (2.0 * uTintHalf);
 vec3 tc = texture2D(uTintMap, clamp(ts, 0.0, 1.0)).rgb;
 float inside = step(0.0, ts.x) * step(ts.x, 1.0) * step(0.0, ts.y) * step(ts.y, 1.0) * uHasTint;
@@ -159,7 +168,8 @@ diffuseColor.rgb *= base * tintC;`,
     };
     patchPSX(material, { affine: false });
 
-    const mesh = new THREE.Mesh(this.geo, material);
+    const geo = o.relief ? reliefChunkGeometry(o.relief, cx, cz, size) : null;
+    const mesh = new THREE.Mesh(geo ?? this.geo, material);
     mesh.receiveShadow = true;
     mesh.name = `terrain:${cx},${cz}`;
     mesh.position.set(cx * size + size / 2, 0, cz * size + size / 2);
@@ -167,13 +177,14 @@ diffuseColor.rgb *= base * tintC;`,
     mesh.updateMatrix();
     o.parent.add(mesh);
     this.live++;
-    return { mesh, material, splat };
+    return { mesh, material, splat, geo };
   }
 
   unload(_cx: number, _cz: number, c: TerrainChunk): void {
     c.mesh.removeFromParent();
     c.material.dispose();
     c.splat.dispose();
+    c.geo?.dispose();
     this.live--;
   }
 

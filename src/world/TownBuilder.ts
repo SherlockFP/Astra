@@ -1388,7 +1388,7 @@ export async function placeTownProps(props: TownProp[], origin: { x: number; z: 
       if (p.emissive !== undefined || isAnimatedModel(p.model)) {
         const obj = await spawnStaticObject(p.model, { tint: p.tint, emissive: p.emissive, emissiveIntensity: p.emissiveIntensity });
         if (obj) {
-          obj.position.set(wx, y, wz);
+          obj.position.set(wx, y + (host.batcher.groundY ? host.batcher.groundY(wx, wz) : 0), wz); // open world with relief: y is an offset
           obj.rotation.y = rot;
           obj.scale.setScalar(s);
           host.root.add(obj);

@@ -27,7 +27,29 @@ import { perfOf } from './layout';
 /** Streaming / AI budgets (GDD_OPENWORLD section 1.5), the same as Sisli Vadi; the zone block of karakir_world.ts sets the size. */
 const PERF: WorldExtras['perf'] = perfOf(KARAKIR_ZONE_SRC, { activateM: 70, deactivateM: 110, aiSleepM: 45, maxActiveEnemies: 240, chunkM: 40 });
 
+/**
+ * Rolling terrain (docs/ENGINE_BIGMAPS.md section 10), 4 m cells: steppe hills of 8-15 m in the west, badlands with sharper crests, the
+ * Rüzgâr plateau raised 8 m, Ayaz foothills climbing east, a flat ash plain and the Kartal Sırtı ridge (about 20 m above its valley).
+ * Villages, roads, landmarks, camps' stones and POIs are flattened by the engine (world/Relief.ts); the two lakes sit in basins.
+ */
+const RELIEF: WorldExtras['relief'] = {
+  seed: 'karakir_bozkiri',
+  cellM: 4,
+  profile: { amp: 8, scale: 150 },
+  regions: {
+    r7: { amp: 12, scale: 150 },
+    r8: { amp: 12, scale: 120, ridged: 0.35 },
+    r9: { amp: 7, scale: 190, base: 8 },
+    r10: { amp: 14, scale: 140, base: 6, ridged: 0.25 },
+    r11: { amp: 4, scale: 210 },
+    r12: { amp: 11, scale: 150, base: 6, ridged: 0.5 },
+  },
+  edge: { rise: 18, width: 90 },
+  ridges: [{ pts: [[386, 16], [382, 56], [388, 96], [380, 138]], height: 20, width: 60 }],
+};
+
 const WORLD: WorldExtras = {
+  relief: RELIEF,
   regions: REGIONS,
   villages: VILLAGES,
   waypoints: WAYPOINTS,

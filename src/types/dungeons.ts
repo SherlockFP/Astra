@@ -541,7 +541,43 @@ export interface WorldPerf {
   viewM?: number;
 }
 
+/**
+ * Terrain profile of a region (docs/ENGINE_BIGMAPS.md section 10): `amp` = height range of the rolling noise (m), `scale` = wavelength of the
+ * broadest hills (m), `base` = region-wide raise (m, plateaus / foothills), `ridged` 0..1 = how much the noise turns into sharp crests.
+ */
+export interface ReliefProfile { amp: number; scale: number; base?: number; ridged?: number }
+
+/**
+ * Rolling terrain of an open-world zone (OPTIONAL: a zone without it stays flat, y = 0). A pure, seeded height function of this data
+ * (world/Relief.ts): same heights on every peer. Roads, villages, landmarks, bosses, POIs and the start / exit are flattened with a
+ * smooth falloff, lakes (`world.water`) sit in basins, the walkable area is bounded by hills (`edge`), the slope never exceeds `maxGrade`.
+ */
+export interface WorldRelief {
+  /** Noise seed (default: the dungeon id). */
+  seed?: string;
+  /** Height grid and terrain mesh cell (m): 2, 4 or 8. Default 4 (8 for a classic, non-streamed zone). */
+  cellM?: number;
+  /** Profile of rooms / void without their own entry in `regions`. */
+  profile?: ReliefProfile;
+  /** Profile per region id (WorldRegion.id); blended across region borders over ~24 m. */
+  regions?: Record<string, ReliefProfile>;
+  /** Map-edge hills: the void around the walkable area rises by `rise` metres over `width` metres. Default 14 / 80. */
+  edge?: { rise: number; width: number };
+  /** Steepest allowed grade of the ground (m rise per m run). Default 0.34, hard limit 0.4 (nav STEP_UP is 0.45 per 1 m cell). */
+  maxGrade?: number;
+  /** Mirror the noise so the terrain is symmetric (fair PvP maps): 'x', 'z' or 'xz' (the mirror axis is the zone centre line). */
+  symmetric?: 'x' | 'z' | 'xz';
+  /** Raised flat-topped plateaus (absolute height, tile centre): the flat disc is `radius` m, the slope is `falloff` m wide. */
+  plateaus?: { pos: [number, number]; radius: number; height: number; falloff?: number }[];
+  /** Ridges (smooth crests along a tile-coordinate polyline): `height` metres above the surrounding ground, `width` = half width (m). */
+  ridges?: { pts: [number, number][]; height: number; width: number }[];
+  /** Extra flat pads (tile centre, radius m) for content the zone data does not list by itself. */
+  flat?: { pos: [number, number]; radius: number }[];
+}
+
 export interface WorldExtras {
+  /** Rolling terrain (see WorldRelief). Absent = flat ground. */
+  relief?: WorldRelief;
   regions: WorldRegion[];
   villages: VillageDef[];
   waypoints: WaypointDef[];

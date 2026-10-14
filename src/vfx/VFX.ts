@@ -784,6 +784,15 @@ export class VFX {
     const o: SpawnVfxOpts = opts ?? {};
     const p = Array.isArray(pos) ? new THREE.Vector3(pos[0], pos[1], pos[2]) : pos.clone();
     if (o.follow && o.follow.parent) o.follow.getWorldPosition(p);
+    else {
+      // rolling terrain (World.terrain): an effect placed with a flat-world height (a ground slam at y 0.05, a burst at 1.2) that lies far
+      // under the ground at that point is lifted onto it. Heights at or above the ground (entity positions, chests, projectiles) are kept.
+      const w = G.world;
+      if (w?.terrain) {
+        const gy = w.groundY(p.x, p.z);
+        if (p.y < gy - 0.5) p.y += gy;
+      }
+    }
     const dir3 = new THREE.Vector3(0, 0, 1);
     let hasDir = false;
     if (o.dir && o.dir[0] * o.dir[0] + o.dir[1] * o.dir[1] + o.dir[2] * o.dir[2] > 1e-8) {

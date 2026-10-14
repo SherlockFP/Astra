@@ -348,7 +348,16 @@ export class DungeonScene implements GameScene {
    */
   private setupVertical(world: World, built: BuiltDungeon): void {
     const hf = (built as unknown as { hf?: Heightfield | null }).hf ?? null;
-    if (!hf) return;
+    if (!hf) {
+      // open-world rolling terrain (world/Relief.ts): the same vertical machinery (ground follow, step rule, height gates) with no ceilings,
+      // voids or lifts; `terrain` switches on the ground-contact helpers (VFX lift, ground-hugging shots, ground pick)
+      const relief = built.relief;
+      if (!relief) return;
+      world.heights = relief;
+      world.vertical = true;
+      world.terrain = true;
+      return;
+    }
     world.heights = hf;
     world.vertical = true;
     try {
