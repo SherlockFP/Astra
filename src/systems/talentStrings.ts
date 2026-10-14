@@ -8,10 +8,10 @@
  *   4   = base64url of 3 bytes: 9 skill-specialisation picks × 2 bits (18 bits padded to 24)
  *   CC  = CRC-8 (poly 0x07, init 0) over the 18 payload bytes (SS byte + 14 + 3), two upper-case hex digits
  *
- * Web string: `EFP1-<classIndex 1 digit>-<52 chars>-<6 chars>-<CC>` (§3.9)
- *   52  = base64url of 39 bytes: one bit per web node in TALENT_LIST order (306 bits padded to 312)
+ * Web string: `EFP1-<classIndex 1-2 digits>-<59 chars>-<6 chars>-<CC>` (§3.9)
+ *   59  = base64url of 44 bytes: one bit per web node in TALENT_LIST order (346 bits padded to 352)
  *   6   = base64url of 4 bytes: the mastery picks (2 bits each, in TALENT_LIST order of the `mastery` nodes)
- *   CC  = CRC-8 over the 43 payload bytes (39 + 4)
+ *   CC  = CRC-8 over the 48 payload bytes (44 + 4)
  */
 import type { ClassId } from '../types/common';
 import type { SpecId } from '../types/v2';
@@ -215,7 +215,7 @@ export function decodeWeb(str: string): WebDecode {
   const { nodeBytes, pickBytes, masteries } = webSizes();
   const aLen = Math.ceil((nodeBytes * 8) / 6);
   const pLen = Math.ceil((pickBytes * 8) / 6);
-  const re = new RegExp(`^EFP1-(\\d)-([A-Za-z0-9_-]{${aLen}})-([A-Za-z0-9_-]{${pLen}})-([0-9A-F]{2})$`);
+  const re = new RegExp(`^EFP1-(\\d{1,2})-([A-Za-z0-9_-]{${aLen}})-([A-Za-z0-9_-]{${pLen}})-([0-9A-F]{2})$`);
   const m = re.exec(str.trim());
   if (!m) return { ok: false, error: 'format' };
   const classId = CLASS_ORDER[Number(m[1])];

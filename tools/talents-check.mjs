@@ -514,7 +514,7 @@ function stageSkillSpecs() {
 // ============================================================================ stage: web
 
 const WEB_GOLDEN = JSON.parse(fs.readFileSync(`${ROOT}/docs/GDD_TALENTS.web.json`, 'utf8'));
-const WEB_KIND_COUNTS = { start: 9, small: 178, notable: 80, keystone: 16, mastery: 14, socket: 9 };
+const WEB_KIND_COUNTS = { start: 14, small: 203, notable: 90, keystone: 16, mastery: 14, socket: 9 };
 
 function stageWeb() {
   const st = makeStage('web');
@@ -525,7 +525,7 @@ function stageWeb() {
   for (const [k, want] of Object.entries(WEB_KIND_COUNTS)) {
     if (kinds[k] !== want) st.err('web', `${kinds[k] ?? 0} ${k} nodes, expected ${want}`);
   }
-  if (TALENT_LIST.length !== 306) st.err('web', `${TALENT_LIST.length} nodes, expected 306`);
+  if (TALENT_LIST.length !== 346) st.err('web', `${TALENT_LIST.length} nodes, expected 346`);
 
   // golden file: same ids, kinds, positions and link sets (Δ = 0)
   if (WEB_GOLDEN.length !== TALENT_LIST.length) st.err('web', `golden has ${WEB_GOLDEN.length} nodes`);
