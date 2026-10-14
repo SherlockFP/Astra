@@ -8,8 +8,9 @@ import { MONK_MINIONS } from './minions/monk';
 import { ARCHER_MINIONS } from './minions/archer';
 import { NECRO_MINIONS } from './minions/necromancer';
 import { WARLOCK_MINIONS } from './minions/warlock';
+import { PRIEST_MINIONS } from './minions/priest';
 
-const ALL: MinionDef[] = [...MONK_MINIONS, ...ARCHER_MINIONS, ...NECRO_MINIONS, ...WARLOCK_MINIONS];
+const ALL: MinionDef[] = [...MONK_MINIONS, ...ARCHER_MINIONS, ...NECRO_MINIONS, ...WARLOCK_MINIONS, ...PRIEST_MINIONS];
 
 export const MINION_DEFS: Record<string, MinionDef> = {};
 for (const d of ALL) {
