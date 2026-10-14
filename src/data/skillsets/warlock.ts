@@ -55,7 +55,7 @@ export function registerWarlock(add: SkillAdd): void {
 
   // ---- Gölge Oku (§10a rmb): projectile, 10 mana, 1.6 s cast (WoW 2.0 x 0.8)
   add({
-    id: 'warlock_shadow_bolt', classId: 'warlock', name: 'Gölge Oku', icon: I('skill-shadow-grasp'), unlockLevel: 1, defaultSlot: 'rmb',
+    id: 'warlock_shadow_bolt', classId: 'warlock', name: 'Gölge Oku (Shadow Bolt)', icon: I('skill-shadow-grasp'), unlockLevel: 1, defaultSlot: 'rmb',
     desc: 'Hedefe giden bir gölge oku fırlatırsın. 10 mana.', cost: 10, cooldown: 0, castTime: 1.6, hitTime: 1.6,
     anim: 'Spellcast_Shoot', animSpeed: 1.15, targeting: 'projectile', range: 30, speed: 28, homing: 5,
     damage: { coef: 0.95, type: 'shadow' }, tags: ['spell', 'projectile', 'shadow'],
@@ -64,7 +64,7 @@ export function registerWarlock(add: SkillAdd): void {
 
   // ---- Azap (§10a e): DoT whose stacks ramp per tick (one stack per cast here; the per-tick ramp is a hook, see report)
   add({
-    id: 'warlock_agony', classId: 'warlock', name: 'Azap', icon: I('skill-curse'), unlockLevel: 1, defaultSlot: 'e',
+    id: 'warlock_agony', classId: 'warlock', name: 'Azap (Agony)', icon: I('skill-curse'), unlockLevel: 1, defaultSlot: 'e',
     desc: 'Hedefe Azap bırakırsın: 18 saniye boyunca gölge hasarı verir. Her yığın hasarı artırır (en çok 8).',
     cost: 5, cooldown: 0, castTime: 0, hitTime: 0.3, anim: 'Spellcast_Shoot', animSpeed: 1.7, targeting: 'custom', behavior: 'kit_target_spell',
     range: 35, damage: { coef: 0.25, type: 'shadow' },
@@ -74,7 +74,7 @@ export function registerWarlock(add: SkillAdd): void {
 
   // ---- Yozlaşma (§10a r): instant DoT
   add({
-    id: 'warlock_corruption', classId: 'warlock', name: 'Yozlaşma', icon: I('skill-curse'), unlockLevel: 6, defaultSlot: 'r',
+    id: 'warlock_corruption', classId: 'warlock', name: 'Yozlaşma (Corruption)', icon: I('skill-curse'), unlockLevel: 6, defaultSlot: 'r',
     desc: 'Hedefe Yozlaşma bırakırsın: 14 saniye boyunca gölge hasarı verir.',
     cost: 5, cooldown: 0, castTime: 0, hitTime: 0.3, anim: 'Spellcast_Shoot', animSpeed: 1.6, targeting: 'custom', behavior: 'kit_target_spell',
     range: 35, damage: { coef: 0.2, type: 'shadow' }, statuses: [{ status: 'corruption', duration: 14, stacks: 1, magnitude: 8 }],
@@ -83,7 +83,7 @@ export function registerWarlock(add: SkillAdd): void {
 
   // ---- İblis Çemberi (§9 s2, shared): teleport 14 m, removes roots and slows, off-GCD, CD 30
   add({
-    id: 'warlock_demonic_circle', classId: 'warlock', name: 'İblis Çemberi', icon: I('skill-shadow-step'), unlockLevel: 1, defaultSlot: 's2',
+    id: 'warlock_demonic_circle', classId: 'warlock', name: 'İblis Çemberi (Demonic Circle)', icon: I('skill-shadow-step'), unlockLevel: 1, defaultSlot: 's2',
     desc: '14 metre ileri ışınlanırsın (hareket yönüne, yoksa nişana). Köklenmeyi ve yavaşlatmayı kaldırır; 6 saniye yerde bir çember bırakır.',
     cost: 0, cooldown: 30, castTime: 0, offGcd: true, anim: 'Dodge_Forward', animSpeed: 1.6, hitTime: 0.1, targeting: 'teleport', range: 14,
     tags: ['offgcd', 'movement', 'teleport'], vfx: { cast: 'curse_ring', impact: 'demon_portal' }, sfx: { cast: 'fel_cast', impact: 'blink' },
@@ -92,7 +92,7 @@ export function registerWarlock(add: SkillAdd): void {
 
   // ---- Karanlık Pakt (§9 s3, shared): sacrifice 20 % of current HP, absorb 200 % of it for 20 s, CD 60, off-GCD
   add({
-    id: 'warlock_dark_pact', classId: 'warlock', name: 'Karanlık Pakt', icon: I('skill-mana-shield'), unlockLevel: 15, defaultSlot: 's3',
+    id: 'warlock_dark_pact', classId: 'warlock', name: 'Karanlık Pakt (Dark Pact)', icon: I('skill-mana-shield'), unlockLevel: 15, defaultSlot: 's3',
     desc: 'Mevcut canının %20\'sini feda edersin; feda ettiğinin 2 katı kadar 20 saniyelik emilim kalkanı alırsın. Öldürmez.',
     cost: 0, cooldown: 60, castTime: 0, offGcd: true, anim: 'Use_Item', animSpeed: 2.0, hitTime: 0.2, targeting: 'self_buff',
     behavior: 'kit_dark_pact', tags: ['defensive', 'shield', 'offgcd'], vfx: { cast: 'shield_bubble' }, sfx: { cast: 'curse_cast', impact: 'life_leech' },
