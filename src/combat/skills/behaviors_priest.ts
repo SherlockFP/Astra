@@ -15,12 +15,16 @@
  * priest_penance      priest_disc_penance (2 s channel)                      tick; enemy aim = damage (Keffara heal), else heal (no Keffara, 12.1.0)
  * priest_radiance     priest_disc_radiance                                   maxTargets, def.radius (Keffara spread)
  * priest_hymn         priest_holy_hymn (3 s channel)                         def.heal.coef per tick, def.radius
- * priest_rapture      priest_disc_rapture (m45)                              pct (max HP share), dur, def.radius
- * priest_evangelism   priest_disc_evangelism (m90)                           extend (s), def.heal.coef, def.radius
+ * priest_rapture      priest_disc_rapture (m90)                              pct (max HP share), dur, def.radius
+ * priest_evangelism   priest_disc_evangelism (m45)                           extend (s), def.heal.coef, def.radius
+ * priest_execute      priest_shadow_death                                    execute (HP share), executeMult; strike with the row's coef
+ * priest_self         priest_desperate_prayer                                def.heal.coef on the caster
+ * priest_mending      priest_holy_mending (bounce applied at once, no jumps) maxTargets, bounceRange, def.heal.coef per target
  *
  * Reused from other files (BEHAVIORS keys, no copy): heal_target (priest_holy_serenity), heal_aoe (priest_holy_prayer,
- * priest_holy_sanctify, priest_holy_circle), heal_bolt (priest_holy_basic), minion_summon (priest_shadow_fiend), self_buff
- * (priest_shadow_voidform, priest_psychic_scream: the damage and fear come from the row).
+ * priest_holy_sanctify, priest_holy_circle), heal_bolt (priest_holy_basic), minion_summon (priest_shadow_fiend), interrupt
+ * (priest_shadow_silence, utilities.ts), self_buff (priest_shadow_voidform, priest_fade, priest_shadow_dispersion: the statuses come
+ * from the row's selfStatuses).
  *
  * Keffara (Atonement, Disciplin only): the caster's damage heals every living ally marked by `atonement` within HEAL_RANGE, for
  * 46 % of the damage dealt; beyond 5 marked allies the share is halved (warcraft.wiki.gg/wiki/Atonement). Keffara is kept in
@@ -265,6 +269,60 @@ const evangelism: Behavior = {
   },
 };
 
+// ---- Gölge Ölümü (Shadow Word: Death): the target_instant pick, then the strike; below `execute` (HP share) the coef is `executeMult` times.
+const execute: Behavior = {
+  begin(c) {
+    return TARGETING_BEHAVIORS.target_instant?.begin?.(c);
+  },
+  frame(c, dt, elapsed) {
+    TARGETING_BEHAVIORS.target_instant?.frame?.(c, dt, elapsed);
+  },
+  fire(c) {
+    if (c.remote) return;
+    const t = castTarget(c);
+    if (!t || t.kind !== 'enemy') return;
+    const p = c.def.params ?? {};
+    const low = t.hp / Math.max(1, t.maxHp) < (p.execute ?? 0.2);
+    strikeAtone(c, t, (c.def.damage?.coef ?? 1) * (low ? (p.executeMult ?? 3) : 1));
+  },
+};
+
+// ---- Desperate Prayer: the caster is healed for heal.coef (no ally pick).
+const self: Behavior = {
+  begin() {
+    return true;
+  },
+  fire(c) {
+    if (c.remote) return;
+    const { caster, def } = c;
+    if (def.heal?.coef) healAlly(caster, caster, def.heal.coef);
+    c.sys.sfx('buff', caster.position);
+  },
+};
+
+// ---- Onarım Duası (Prayer of Mending): the picked ally, then up to `maxTargets` - 1 injured allies within `bounceRange` of it
+// are healed for heal.coef each. The jumps are applied at once (no bounce hook on hit yet).
+const mending: Behavior = {
+  begin(c) {
+    if (!c.remote) c.data.ally = healPick(c);
+    return true;
+  },
+  fire(c) {
+    if (c.remote) return;
+    const { caster, def } = c;
+    const p = def.params ?? {};
+    const target = pickedAlly(c);
+    const coef = def.heal?.coef ?? 1.0;
+    healAlly(caster, target, coef);
+    const others = alliesInRange(target, p.bounceRange ?? 15)
+      .filter((a) => a !== target && a.hp < a.maxHp)
+      .sort((x, y) => x.hp / x.maxHp - y.hp / y.maxHp)
+      .slice(0, Math.max(0, (p.maxTargets ?? 5) - 1));
+    for (const a of others) healAlly(caster, a, coef);
+    c.sys.sfx('buff', caster.position);
+  },
+};
+
 export const BEHAVIORS_PRIEST: Record<string, Behavior> = {
   priest_strike: strike,
   priest_dot: dot,
@@ -276,6 +334,9 @@ export const BEHAVIORS_PRIEST: Record<string, Behavior> = {
   priest_hymn: hymn,
   priest_rapture: rapture,
   priest_evangelism: evangelism,
+  priest_execute: execute,
+  priest_self: self,
+  priest_mending: mending,
 };
 
 function installPriest(): void {

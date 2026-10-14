@@ -578,7 +578,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
       hide: ['1H_Wand', 'Spellbook', 'Spellbook_open', 'Mage_Hat'],
     },
     basicAttack: 'priest_basic',
-    skills: ['priest_power_word_shield', 'priest_flash_heal', 'priest_smite', 'priest_renew', 'priest_dispel', 'priest_psychic_scream'],
+    skills: ['priest_power_word_shield', 'priest_flash_heal', 'priest_smite', 'priest_renew', 'priest_dispel', 'priest_psychic_scream', 'priest_desperate_prayer', 'priest_fade'],
     startingItems: ['staff_t1'],
     color: '#ffffff',
     resourceColor: '#3d7bd9',
