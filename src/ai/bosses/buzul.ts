@@ -142,7 +142,7 @@ const akpence: BossScript = {
 // ---------------------------------------------------------------------------------------------------------------------
 // Boss 2: Ayaz Ana
 // ---------------------------------------------------------------------------------------------------------------------
-const PYLONS: [number, number][] = [[17, 2], [23, 2], [17, 8], [23, 8]];
+const PYLONS: [number, number][] = [[17.5, 2.5], [24.7, 2.5], [17.5, 9.7], [24.7, 9.7]];
 
 interface Blizzard { pid: number; x: number; z: number; t: number; next: number }
 
@@ -238,7 +238,7 @@ const ayazana: BossScript = {
         c.setImmune(true);
       },
       resolve(c) {
-        const ctr = c.gdd(19.5, 4.5);
+        const ctr = c.gdd(20.5, 5.5);
         c.teleport(ctr.x, ctr.z);
         c.schedule(1.0, () => c.setImmune(false), 'imm');
         const order = PYLONS.slice().sort(() => Math.random() - 0.5).slice(0, 3);

@@ -1195,7 +1195,7 @@ boss({
     bp('p2', 0.3, ['akpence_frost_cleave', 'akpence_avalanche', 'akpence_charge'], { ability: 'akpence_frenzy' }),
   ],
   intro: '*Ak Pençe öfkeyle kükrüyor!*', death: '*Ak Pençe son kez inleyip karlara yığılıyor.*',
-  arena: { cx: 16, cz: 82, w: 32, h: 44, homeX: 16, homeZ: 84 },
+  arena: { cx: 24, cz: 80, w: 48, h: 48, homeX: 24, homeZ: 82 },
 });
 
 boss({
@@ -1215,7 +1215,7 @@ boss({
     bp('p3', 0.4, ['ayazana_nova', 'ayazana_ice_tomb', 'ayazana_blizzard'], { yell: 'Hangisi gerçek? Hiçbiri... hepsi!', ability: 'ayazana_mirror' }),
   ],
   intro: 'Ayaz sizi öpecek, çocuklar. Bir daha uyanmamak üzere...', death: 'Bahar... gelmeyecek... asla...',
-  arena: { cx: 80, cz: 20, w: 40, h: 40, homeX: 80, homeZ: 20 },
+  arena: { cx: 84, cz: 24, w: 48, h: 48, homeX: 84, homeZ: 24 },
 });
 
 // Image of Ayaz Ana (mirror phase) and Frost King's dragon

@@ -2,6 +2,7 @@ import type { DoorDef, DungeonDef, DungeonTheme, PackDef, RoomDef, ZoneDef } fro
 import {
   GRID_SHIFT, MOUNT_Y, Props, bossAt, circleZone, decorator, door, dg, fu, gp, hw, kf, kg, ks, lt, makeCtx, pack, rectZone, rectsOf, pt, room, shPt, skl, chr, tw, withProps,
 } from './kit';
+import { makeRescale, type Rect4 } from './rescale';
 
 /**
  * BUZUL TAHTI (frost throne) - GDD_CONTENT 4.3. Level 30-40, M+ 14:00, 250 forces (309 available).
@@ -10,45 +11,54 @@ import {
  */
 
 // ---- GENERATED from docs/GDD_CONTENT.layout.json (rooms, doors, packs, bosses) ----
+// SCALE PASS: corridors widened to 4 (secret / side passages stay 2), pull rooms >= 9 short side, boss arenas 12x12.
+// OLD_RECT keeps the pre-pass rects; hand placed content is written in those coordinates and remapped by rescale.ts.
+const OLD_RECT: Record<string, Rect4> = {
+  giris: [17, 34, 6, 5], k_giris: [19, 29, 2, 5], buz_avlusu: [12, 17, 16, 12], k_bati: [8, 21, 4, 2], yeti_magarasi: [0, 15, 8, 11],
+  k_kuzeybati: [3, 10, 2, 5], buz_kutuphane: [0, 0, 10, 10], k_kuzey: [10, 4, 5, 2], merdiven: [19, 10, 2, 7], cadi_kulesi: [15, 0, 10, 10],
+  k_dogu: [25, 4, 4, 2], kristal_galeri: [29, 0, 10, 11], k_guneydogu: [33, 11, 2, 4], sovalye_salonu: [29, 15, 11, 9], k_taht: [33, 24, 2, 3],
+  buzul_tahti: [28, 27, 12, 12],
+};
+
 const ROOMS: RoomDef[] = [
   room('giris', 'Donmuş Kapı', 17, 34, 6, 5, 'ice', 'ice', 0.3),
-  room('k_giris', 'Kar Geçidi', 19, 29, 2, 5, 'ice', 'ice', 0.4),
-  room('buz_avlusu', 'Donmuş Avlu', 12, 17, 16, 12, 'ice', 'ice', 0.5),
-  room('k_bati', 'Yeti Patikası', 8, 21, 4, 2, 'dirt', 'cave', 0.5),
-  room('yeti_magarasi', 'Yeti İni', 0, 15, 8, 11, 'dirt', 'cave', 0.3, { boss: 1 }),
-  room('k_kuzeybati', 'Buzlu Merdiven', 3, 10, 2, 5, 'ice', 'ice', 0.3),
+  room('k_giris', 'Kar Geçidi', 18, 29, 4, 5, 'ice', 'ice', 0.4),
+  room('buz_avlusu', 'Donmuş Avlu', 16, 17, 12, 12, 'ice', 'ice', 0.5),
+  room('k_bati', 'Yeti Patikası', 12, 20, 4, 4, 'dirt', 'cave', 0.5),
+  room('yeti_magarasi', 'Yeti İni', 0, 14, 12, 12, 'dirt', 'cave', 0.3, { boss: 1 }),
+  room('k_kuzeybati', 'Buzlu Merdiven', 2, 10, 4, 4, 'ice', 'ice', 0.3),
   room('buz_kutuphane', 'Buz Kütüphanesi', 0, 0, 10, 10, 'wood', 'ice', 0.6),
-  room('k_kuzey', 'Kristal Koridor', 10, 4, 5, 2, 'ice', 'ice', 0.4),
-  room('merdiven', 'Donmuş Şelale Yolu', 19, 10, 2, 7, 'ice', 'ice', 0.3, { skip: true }),
-  room('cadi_kulesi', 'Cadı Kulesi', 15, 0, 10, 10, 'tiles', 'ice', 0.2, { boss: 2 }),
-  room('k_dogu', 'Ayaz Köprüsü', 25, 4, 4, 2, 'ice', 'ice', 0.3),
-  room('kristal_galeri', 'Kristal Galeri', 29, 0, 10, 11, 'ice', 'ice', 0.6),
-  room('k_guneydogu', 'Şövalye Yolu', 33, 11, 2, 4, 'tiles', 'ice', 0.3),
-  room('sovalye_salonu', 'Ayaz Şövalyeleri Salonu', 29, 15, 11, 9, 'tiles', 'ice', 0.4),
-  room('k_taht', 'Taht Kapısı', 33, 24, 2, 3, 'tiles', 'ice', 0.2),
+  room('k_kuzey', 'Kristal Koridor', 10, 3, 5, 4, 'ice', 'ice', 0.4),
+  room('merdiven', 'Donmuş Şelale Yolu', 19, 12, 2, 5, 'ice', 'ice', 0.3, { skip: true }),
+  room('cadi_kulesi', 'Cadı Kulesi', 15, 0, 12, 12, 'tiles', 'ice', 0.2, { boss: 2 }),
+  room('k_dogu', 'Ayaz Köprüsü', 27, 3, 4, 4, 'ice', 'ice', 0.3),
+  room('kristal_galeri', 'Kristal Galeri', 31, 0, 10, 11, 'ice', 'ice', 0.6),
+  room('k_guneydogu', 'Şövalye Yolu', 34, 11, 4, 4, 'tiles', 'ice', 0.3),
+  room('sovalye_salonu', 'Ayaz Şövalyeleri Salonu', 30, 15, 11, 9, 'tiles', 'ice', 0.4),
+  room('k_taht', 'Taht Kapısı', 34, 24, 4, 3, 'tiles', 'ice', 0.2),
   room('buzul_tahti', 'Buzul Tahtı', 28, 27, 12, 12, 'ice', 'ice', 0.1, { boss: 3 }),
 ];
 
 const DOORS: DoorDef[] = [
-  door('giris', 'k_giris', 19, 34, 'n', 2, 'none'),
-  door('k_giris', 'buz_avlusu', 19, 29, 'n', 2, 'none'),
-  door('buz_avlusu', 'k_bati', 12, 21, 'w', 2, 'none'),
-  door('k_bati', 'yeti_magarasi', 8, 21, 'w', 2, 'boss_lock'),
-  door('yeti_magarasi', 'k_kuzeybati', 3, 15, 'n', 2, 'boss_exit'),
-  door('k_kuzeybati', 'buz_kutuphane', 3, 10, 'n', 2, 'none'),
-  door('buz_kutuphane', 'k_kuzey', 9, 4, 'e', 2, 'none'),
-  door('k_kuzey', 'cadi_kulesi', 14, 4, 'e', 2, 'boss_lock'),
+  door('giris', 'k_giris', 18, 34, 'n', 4, 'none'),
+  door('k_giris', 'buz_avlusu', 18, 29, 'n', 4, 'none'),
+  door('buz_avlusu', 'k_bati', 16, 20, 'w', 4, 'none'),
+  door('k_bati', 'yeti_magarasi', 12, 20, 'w', 4, 'boss_lock'),
+  door('yeti_magarasi', 'k_kuzeybati', 2, 14, 'n', 4, 'boss_exit'),
+  door('k_kuzeybati', 'buz_kutuphane', 2, 10, 'n', 4, 'none'),
+  door('buz_kutuphane', 'k_kuzey', 9, 3, 'e', 4, 'none'),
+  door('k_kuzey', 'cadi_kulesi', 14, 3, 'e', 4, 'boss_lock'),
   door('buz_avlusu', 'merdiven', 19, 17, 'n', 2, 'none'),
-  door('merdiven', 'cadi_kulesi', 19, 10, 'n', 2, 'boss_lock'),
-  door('cadi_kulesi', 'k_dogu', 24, 4, 'e', 2, 'boss_exit'),
-  door('k_dogu', 'kristal_galeri', 28, 4, 'e', 2, 'none'),
-  door('kristal_galeri', 'k_guneydogu', 33, 10, 's', 2, 'none'),
-  door('k_guneydogu', 'sovalye_salonu', 33, 14, 's', 2, 'none'),
-  door('sovalye_salonu', 'k_taht', 33, 23, 's', 2, 'none'),
-  door('k_taht', 'buzul_tahti', 33, 26, 's', 2, 'boss_lock'),
+  door('merdiven', 'cadi_kulesi', 19, 12, 'n', 2, 'boss_lock'),
+  door('cadi_kulesi', 'k_dogu', 26, 3, 'e', 4, 'boss_exit'),
+  door('k_dogu', 'kristal_galeri', 30, 3, 'e', 4, 'none'),
+  door('kristal_galeri', 'k_guneydogu', 34, 10, 's', 4, 'none'),
+  door('k_guneydogu', 'sovalye_salonu', 34, 14, 's', 4, 'none'),
+  door('sovalye_salonu', 'k_taht', 34, 23, 's', 4, 'none'),
+  door('k_taht', 'buzul_tahti', 34, 26, 's', 4, 'boss_lock'),
 ];
 
-const PACKS: PackDef[] = [
+const PACKS_RAW: PackDef[] = [
   pack('d3_p01', 'k_giris', 19.5, 31, 10, [['frost_dead', 0.24, 0], ['frost_dead', -0.3, 0.35], ['frost_dead', 0.05, -0.66], ['ice_bat', 0.38, 0.62], ['ice_bat', -0.7, -0.16], ['ice_bat', 0.66, -0.53], ['ice_bat', -0.22, 1.03]]),
   pack('d3_p02', 'buz_avlusu', 14.5, 26, 12, [['frost_dead', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66], ['frost_dead', 0.48, 0.62], ['frost_wraith', -1.12, -0.56]]),
   pack('d3_p03', 'buz_avlusu', 25, 26, 14, [['yeti_brute', 0, 0], ['snow_spider', 0.95, -0.93], ['snow_spider', 1.32, -0.11]]),
@@ -76,10 +86,29 @@ const PACKS: PackDef[] = [
   pack('d3_p25', 'k_taht', 33.5, 25, 12, [['frost_knight', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66]]),
 ];
 
+const START: [number, number] = [19.5, 37];
+const FONT: [number, number] = [19.5, 35];
+const EXIT: [number, number] = [33.5, 29];
+
+const R = makeRescale({
+  seed: 'buzul_tahti', oldRect: OLD_RECT, rooms: ROOMS, doors: DOORS, packsRaw: PACKS_RAW,
+  anchors: [
+    { x: START[0], z: START[1], r: 2.0 },
+    { x: FONT[0], z: FONT[1], r: 1.6 },
+    { x: EXIT[0], z: EXIT[1], r: 2.8 },
+    { x: 3.5, z: 20.5, r: 4.5 },     // Ak Pence
+    { x: 19.5, z: 4.5, r: 4.5 },     // Ayaz Ana
+    { x: 33.5, z: 34, r: 5.0 },      // Tugrul
+    { x: 27, z: 28, r: 1.5 },        // Kudret Sunagi
+    { x: 39, z: 22, r: 1.5 },        // Koruma Sunagi
+  ],
+});
+const { at2, near } = R;
+const PACKS = R.packs;
 const BOSSES = [
-  bossAt('boss_ak_pence', 'yeti_magarasi', 3.5, 20.5, 90, 1),
-  bossAt('boss_ayaz_ana', 'cadi_kulesi', 19.5, 4.5, 180, 2),
-  bossAt('boss_tugrul', 'buzul_tahti', 33.5, 34, 180, 3),
+  R.bossAtNew('boss_ak_pence', 'yeti_magarasi', 3.5, 20.5, 90, 1),
+  R.bossAtNew('boss_ayaz_ana', 'cadi_kulesi', 19.5, 4.5, 180, 2),
+  R.bossAtNew('boss_tugrul', 'buzul_tahti', 33.5, 34, 180, 3),
 ];
 
 const THEME: DungeonTheme = { fogColor: 0xa8c8e0, fogNear: 12, fogFar: 55, ambient: 0x9ab8d8, ambientIntensity: 0.6, hemiSky: 0xdff0ff, hemiGround: 0x405060, torchColor: 0x80c8ff, bloomStrength: 0.35, music: 'dungeon_frost', palette: [0xeaf6ff, 0x9fd8ff, 0x4a7aa0, 0x203a5a, 0xffd8a0], tint: 0xc8e0ff };
@@ -92,21 +121,7 @@ const ICE = 0x80c8ff;     // blue braziers / crystals
 const FROST = 0xbfe8ff;   // frozen tint
 const SNOW = 0xeef6ff;    // snow drifts
 
-const START: [number, number] = [19.5, 37];
-const FONT: [number, number] = [19.5, 35];
-const EXIT: [number, number] = [33.5, 29];
-
-const ctx = makeCtx('buzul_tahti', DOORS, PACKS, [
-  { x: START[0], z: START[1], r: 2.0 },
-  { x: FONT[0], z: FONT[1], r: 1.6 },
-  { x: EXIT[0], z: EXIT[1], r: 2.8 },
-  { x: 3.5, z: 20.5, r: 4.5 },     // Ak Pence
-  { x: 19.5, z: 4.5, r: 4.5 },     // Ayaz Ana
-  { x: 33.5, z: 34, r: 5.0 },      // Tugrul
-  { x: 27, z: 28, r: 1.5 },        // Kudret Sunagi
-  { x: 39, z: 22, r: 1.5 },        // Koruma Sunagi
-]);
-const D = decorator(ctx, rectsOf(ROOMS));
+const D = R.D;
 
 const shrine = (p: Props, x: number, z: number, crystal: 'crystal_blue' | 'crystal_purple', color: number, id: string): void => {
   p.at(kg('altar-stone'), x, z, { scale: 3, collide: true, tint: FROST, id, tag: 'shrine' });
@@ -157,13 +172,13 @@ D.room('buz_avlusu', (p, r) => {
     p.at(kg('pillar-obelisk'), x, z, { scale: 3.5, tint: FROST, collide: true });                       // statues
     p.at(gp('crystal_blue'), x, z, { y: 3.5, scale: 0.4, light: lt(ICE, 1.2, 7, false, 0.3) });
   }
-  [[rockS('A'), 14.2, 16.9, 0.5], [rockS('C'), 22.8, 17.1, 20], [rockS('E'), 12.3, 23.8, 70], [rockS('B'), 26.8, 24.6, 130], [rockS('D'), 17.0, 27.6, 200], [rockS('A'), 23.8, 27.7, 40], [rockS('C'), 11.9, 20.6, 90], [rockS('E'), 27.0, 20.2, 150]].forEach(([m, x, z, rot]) => {
+  [[rockS('A'), 12.6, 16.6, 0.5], [rockS('C'), 22.8, 17.1, 20], [rockS('E'), 12.3, 23.8, 70], [rockS('B'), 26.8, 24.6, 130], [rockS('D'), 17.0, 27.6, 200], [rockS('A'), 23.8, 27.7, 40], [rockS('C'), 11.9, 20.6, 90], [rockS('E'), 27.0, 20.2, 150]].forEach(([m, x, z, rot]) => {
     p.at(m as string, x as number, z as number, { scale: 6, tint: SNOW, rot: rot as number, collide: true });
   });
-  for (const [x, z, rot] of [[12.4, 18.6, 0], [15.8, 16.8, 40], [24.0, 16.8, 100], [26.9, 18.8, 200], [12.3, 26.4, 70], [27.0, 26.6, 250]] as [number, number, number][]) {
+  for (const [x, z, rot] of [[12.4, 18.6, 0], [24.0, 16.8, 100], [26.9, 18.8, 200], [12.3, 26.4, 70]] as [number, number, number][]) {
     p.at(hw('tree_pine_yellow_large'), x, z, { tint: 0xdfefff, rot, scale: 0.9, collide: true });
   }
-  for (const [x, z] of [[14.0, 28.0], [25.0, 28.0], [12.0, 22.0], [27.0, 22.0], [19.5, 17.0], [17.6, 17.0]] as [number, number][]) {
+  for (const [x, z] of [[14.0, 28.0], [25.0, 28.0], [12.0, 22.0], [27.0, 22.0], [19.5, 19.5], [17.6, 19.5]] as [number, number][]) {
     p.at(dg('column'), x, z, { collide: true, tint: FROST });
     p.at(kg('fire-basket'), x, z, { y: 1.4, scale: 3, emissive: ICE, light: lt(ICE, 2.0, 11, true, 0.7) });                 // blue braziers
   }
@@ -347,9 +362,9 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
     ambientVfx: 'ambient_snow', lightColor: 0x9fd8ff,
     hazards: [{ kind: 'icicle_drop', interval: 3, warn: 1.0, radius: 1.5, coef: 1.5, stun: 0.5 }],
   },
-  cadi_kulesi: { explicitDecor: true, lightColor: ICE, ambientVfx: 'ambient_snow', zones: [rune(19.5, 4.5, 3.5, ICE, 1.1)] },
+  cadi_kulesi: { explicitDecor: true, lightColor: ICE, ambientVfx: 'ambient_snow', zones: [rune(...at2(19.5, 4.5), 3.5, ICE, 1.1)] },
   k_dogu: { ambientVfx: 'ambient_snow' },
-  kristal_galeri: { ambientVfx: 'ambient_snow', lightColor: ICE, zones: [{ kind: 'ice', shape: 'rect', rect: { x: 29, z: 0, w: 10, h: 11 }, color: 0x9fd8ff, glow: 0x204060, glowIntensity: 0.4 }] },
+  kristal_galeri: { ambientVfx: 'ambient_snow', lightColor: ICE, zones: [{ kind: 'ice', shape: 'rect', rect: { x: 31, z: 0, w: 10, h: 11 }, color: 0x9fd8ff, glow: 0x204060, glowIntensity: 0.4 }] },
   k_guneydogu: { ambientVfx: 'ambient_snow' },
   sovalye_salonu: { ambientVfx: 'ambient_snow' },
   k_taht: { ambientVfx: 'ambient_snow' },
@@ -363,10 +378,10 @@ const PACK_EXTRA: Record<string, Partial<PackDef>> = {
 };
 
 const EXTRAS: NonNullable<DungeonDef['extras']> = {
-  fontOfPower: pt(19.5, 35),
-  shrines: [{ type: 'shrine_power', pos: pt(27, 28) }, { type: 'shrine_ward', pos: pt(39, 22) }],
-  riftSpots: ([[19.5, 26], [5, 5], [12, 4.5], [34, 5], [34, 18], [22, 19]] as [number, number][]).map(([x, z]) => pt(x, z)),
-  chests: [{ pos: pt(38, 10), kind: 'chest_gold' }],
+  fontOfPower: pt(...at2(19.5, 35)),
+  shrines: [{ type: 'shrine_power', pos: pt(...at2(27, 28)) }, { type: 'shrine_ward', pos: pt(...at2(39, 22)) }],
+  riftSpots: ([[19.5, 26], [5, 5], [12, 4.5], [34, 5], [34, 18], [22, 19]] as [number, number][]).map(([x, z]) => pt(...at2(x, z))),
+  chests: [{ pos: pt(...at2(38, 10)), kind: 'chest_gold' }],
 };
 
 export const BUZUL_TAHTI: DungeonDef = {
@@ -375,15 +390,15 @@ export const BUZUL_TAHTI: DungeonDef = {
   shortName: 'Buzul',
   lore: 'Kuzeyin ötesinde, bir zamanlar adil bir kral olan Tuğrul, ölümsüzlük uğruna kalbini buza sattı. Sarayı donmuş bir mezara, şövalyeleri buz heykellere döndü. Buz Cadısı Ayaz Ana kulesinden fırtınaları yönetirken, Kırağı adlı ejder tahtın üzerinde süzülür. Ak Pençe ise mağarasında yeni kemikler bekler.',
   levelRange: [30, 40],
-  timerSec: 840,
+  timerSec: 870,
   forcesRequired: 250,
   theme: THEME,
-  grid: { w: 40, h: 40 },
+  grid: { w: 42, h: 40 },
   rooms: withProps(ROOMS.map((r) => ({ ...r, ...ROOM_EXTRA[r.id] })), D.out),
   doors: DOORS,
   packs: PACKS.map((p) => (PACK_EXTRA[p.id] ? { ...p, ...PACK_EXTRA[p.id] } : p)),
   bosses: BOSSES,
-  start: { pos: shPt(START[0], START[1]), facing: 180 },
-  exit: { pos: shPt(EXIT[0], EXIT[1]) },
+  start: { pos: shPt(...at2(START[0], START[1])), facing: 180 },
+  exit: { pos: shPt(...at2(EXIT[0], EXIT[1])) },
   extras: EXTRAS,
 };
