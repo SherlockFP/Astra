@@ -94,6 +94,9 @@ export const LANDMARKS: LandmarkDef[] = [
   { id: 'lm_zirve_anit', name: 'Zirve Anıtı', regionId: 'r21', pos: [370, 300], recipe: 'obelisk_shrine' },
 ];
 
+/** The whole zone is snow: the grass is replaced by the snow texture; the splat paths (rock, dirt) show through it. */
+const SNOW_COVER = 0.92;
+
 export const REGIONS: WorldRegion[] = REGION_SPECS.map((r): WorldRegion => {
   const theme: RegionTheme = {
     fogColor: r.fog[0], fogNear: r.fog[1], fogFar: r.fog[2],
@@ -102,6 +105,7 @@ export const REGIONS: WorldRegion[] = REGION_SPECS.map((r): WorldRegion => {
     skyZenith: r.hemi[0], skyHorizon: r.fog[0],
     groundTex: { grass: texUrl(r.tex[0]), dirt: texUrl(r.tex[1]), cobble: texUrl(r.tex[2]), dark: texUrl(r.tex[3]) },
     groundTint: r.tint,
+    snowCover: SNOW_COVER,
     music: r.music,
     ambientVfx: r.vfx, ambientColor: r.vfxColor,
   };

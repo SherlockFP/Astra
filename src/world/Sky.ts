@@ -292,5 +292,33 @@ export function makeMountainRing(o: RingOptions): THREE.Mesh {
   const mesh = new THREE.Mesh(g, m);
   mesh.frustumCulled = false;
   mesh.name = 'horizon_ring';
+  // the unlifted heights, for liftRingToGround (the ring's vertices are radial, so their angle picks the segment)
+  const pa = g.attributes.position as THREE.BufferAttribute;
+  const baseY = new Float32Array(pa.count);
+  for (let k = 0; k < pa.count; k++) baseY[k] = pa.getY(k);
+  const lift: RingLift = { baseY, radius: o.radius, segments: N };
+  mesh.userData.ringLift = lift;
   return mesh;
+}
+
+/** Data kept on a makeMountainRing mesh: the heights at y = 0 ring base, the radius and the segment count. */
+interface RingLift { baseY: Float32Array; radius: number; segments: number }
+
+/**
+ * Relief follow: the ring stays centred on the camera, so its wall is lifted per segment to the ground at its radius (`groundAt` in
+ * world metres, the Relief height grid). Without it the wall stands at y = 0 while the relief's edge hills rise through it.
+ * `cx`, `cz` is the ring centre (the camera). Rings without the data (flat zones) are left alone.
+ */
+export function liftRingToGround(mesh: THREE.Mesh, groundAt: (x: number, z: number) => number, cx: number, cz: number): void {
+  const lift = mesh.userData.ringLift as RingLift | undefined;
+  if (!lift) return;
+  const pa = mesh.geometry.attributes.position as THREE.BufferAttribute;
+  const N = lift.segments, step = (Math.PI * 2) / N;
+  const seg = new Float32Array(N);
+  for (let i = 0; i < N; i++) seg[i] = groundAt(cx + lift.radius * Math.cos(i * step), cz + lift.radius * Math.sin(i * step));
+  for (let k = 0; k < pa.count; k++) {
+    const i = ((Math.round(Math.atan2(pa.getZ(k), pa.getX(k)) / step) % N) + N) % N;
+    pa.setY(k, lift.baseY[k] + seg[i]);
+  }
+  pa.needsUpdate = true;
 }

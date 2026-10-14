@@ -202,6 +202,56 @@ export const PALETTES: Record<string, Palette> = {
     rocks: [gp('rock_small'), gp('rock_medium'), ...ROCK_SINGLE],
     mult: { tree: 0.14, bush: 0.7, rock: 1.4, tuft: 1.1, flower: 0.3 }
   },
+  // ---- Ayaz Dağları (data/world/ayaz_daglari.ts): the snow zone, every region is snow-covered (no flowers, sparse tufts).
+  // Snowy pines (the winter tree models), dead trees on the frozen valleys, ice-grey boulders.
+  r16: { // Buz Geçidi: the pass band, a few snowy pines and wind-bent scrub
+    trees: [RPN('tree01_winter'), RPN('tree03_winter'), gp('tree_pine_a')],
+    deadTrees: [TREE_DEAD],
+    deadShare: 0.05,
+    bushes: [gp('bush_b')],
+    rocks: [...ROCK_SINGLE, kn('stone_largeA')],
+    mult: { tree: 0.35, bush: 0.2, rock: 1.2, tuft: 0.35, flower: 0 },
+  },
+  r17: { // Kırağı Vadisi: the frozen valley, dead trees and rime-hung stumps
+    trees: [RPN('tree03_winter')],
+    deadTrees: [TREE_DEAD, hw('tree_dead_large'), TREE_DEAD_M],
+    deadShare: 0.45,
+    bushes: [gp('bush_b')],
+    rocks: [gp('rock_small'), gp('rock_medium'), ...ROCK_SINGLE],
+    mult: { tree: 0.15, bush: 0.1, rock: 1.4, tuft: 0.25, flower: 0 },
+  },
+  r18: { // Donmuş Göl Yaylası: the frozen lake plateau, snowy pines by the ice
+    trees: [RPN('tree01_winter'), gp('tree_pine_a'), gp('tree_pine_b')],
+    deadTrees: [TREE_DEAD],
+    deadShare: 0.05,
+    bushes: [gp('bush_b')],
+    rocks: [gp('rock_small'), gp('rock_medium'), kn('stone_largeC')],
+    mult: { tree: 0.3, bush: 0.15, rock: 1.0, tuft: 0.3, flower: 0 },
+  },
+  r19: { // Fırtına Sırtı: the wind-scoured ridge, a few pines and big boulders
+    trees: [gp('tree_pine_b')],
+    deadTrees: [TREE_DEAD],
+    deadShare: 0.2,
+    bushes: [gp('bush_b')],
+    rocks: [...ROCK_SINGLE, kn('stone_largeA'), kn('stone_largeC')],
+    mult: { tree: 0.12, bush: 0.1, rock: 2.0, tuft: 0.2, flower: 0 },
+  },
+  r20: { // Zemheri Yaylası: the deep-winter highland, snowy pines and grave-dead trees
+    trees: [RPN('tree01_winter'), gp('tree_pine_a')],
+    deadTrees: [TREE_DEAD, TREE_DEAD_M],
+    deadShare: 0.2,
+    bushes: [gp('bush_b')],
+    rocks: [...ROCK_SINGLE, kn('stone_largeA')],
+    mult: { tree: 0.22, bush: 0.15, rock: 1.4, tuft: 0.3, flower: 0 },
+  },
+  r21: { // Zirve Kuşağı: the summit belt, bare rock with a few stunted pines
+    trees: [gp('tree_pine_b')],
+    deadTrees: [TREE_DEAD],
+    deadShare: 0.1,
+    bushes: [gp('bush_b')],
+    rocks: [...ROCK_SINGLE, kn('stone_largeC')],
+    mult: { tree: 0.08, bush: 0.05, rock: 2.2, tuft: 0.15, flower: 0 },
+  },
 };
 
 /** Props scattered at random spots of a region (count per region room). */
@@ -226,6 +276,9 @@ export const SPRINKLES: Record<string, Sprinkle[]> = {
   // Kızıl Sınır: the field is dressed with both nations' banners, old camps and bones
   r13: [{ urls: [gp('banner_blue')], n: 3, s: [1.2, 1.5], layer: 'prop' }, { urls: [gp('banner_red')], n: 3, s: [1.2, 1.5], layer: 'prop' },
     { urls: [gp('bone_pile')], n: 3, s: [1, 1.3], layer: 'prop' }, { urls: [gp('tent')], n: 2, s: [0.9, 1.1], layer: 'prop' }],
+  // Ayaz Dağları: the frozen valley's dead (r17), the cursed graves of the deep winter highland (r20)
+  r17: [{ urls: [gp('bone_pile')], n: 6, s: [1, 1.3], layer: 'prop' }],
+  r20: [{ urls: [kg('gravestone-round'), kg('gravestone-cross')], n: 8, s: [0.9, 1.1], layer: 'prop' }],
 };
 
 /** Ground patches per region (splat channel, one per `every` m2, radius range). GDD §8.3: R4 ~40% dark, R5 red dirt, R6 dark. */
@@ -245,6 +298,25 @@ const PATCHES: Record<string, { ch: SplatChannel; every: number; r: [number, num
   r13: { ch: 'dirt', every: 2200, r: [3, 6] },
   r14: { ch: 'dirt', every: 1200, r: [3, 6] },
   r15: { ch: 'dirt', every: 1400, r: [3, 7] },
+  // Ayaz Dağları: frozen rock outcrops (cobble, grey under the snow) and tundra dirt
+  r16: { ch: 'cobble', every: 1300, r: [3, 6] },
+  r17: { ch: 'dirt', every: 1800, r: [3, 6] },
+  r18: { ch: 'cobble', every: 1600, r: [3, 7] },
+  r19: { ch: 'cobble', every: 900, r: [3, 6] },
+  r20: { ch: 'dirt', every: 1500, r: [3, 6] },
+  r21: { ch: 'cobble', every: 1100, r: [2.5, 5] },
+};
+
+/**
+ * Region-wide ground cover (one soft rect over the whole room): the dry steppe of Karakır (r8 red badlands, r9 windswept plateau,
+ * r11 ash flats, r12 the dry ridge) lies as dirt, so the grass only shows in tufts. `amount` is the channel strength (0..1); the
+ * colour comes from the region tint (groundTint, data/world/karakir_world.ts). Snow is not here: it is RegionTheme.snowCover.
+ */
+const COVER: Record<string, { ch: SplatChannel; amount: number }> = {
+  r8: { ch: 'dirt', amount: 0.85 },
+  r9: { ch: 'dirt', amount: 0.6 },
+  r11: { ch: 'dirt', amount: 0.8 },
+  r12: { ch: 'dirt', amount: 0.5 },
 };
 
 /** Region tint (multiplied into the ground colour, GDD §8.3). Used when the region theme has no `groundTint`. */
@@ -367,6 +439,11 @@ export function worldSplatOps(def: DungeonDef, cx: number, cz: number): SplatOp[
   const regs = regionsByRoom(def);
   def.rooms.forEach((room, ri) => {
     const reg = regs[ri];
+    const cover = reg ? COVER[reg.id] : undefined;
+    if (cover) {
+      const { rect } = room;
+      ops.push({ t: 'rect', ch: cover.ch, x: (rect.x + rect.w / 2) * T - cx, z: (rect.z + rect.h / 2) * T - cz, hw: (rect.w * T) / 2, hd: (rect.h * T) / 2, soft: 3, amount: cover.amount });
+    }
     const spec = reg ? PATCHES[reg.id] : undefined;
     if (!spec) return;
     const area = room.rect.w * room.rect.h * T * T;
@@ -380,8 +457,12 @@ export function worldSplatOps(def: DungeonDef, cx: number, cz: number): SplatOp[
   return ops;
 }
 
-/** Region tint texels (one per tile, row-major, row 0 = north edge) for createTerrain. */
-export function worldTintRGB(def: DungeonDef): { w: number; h: number; rgb: Uint8Array } {
+/**
+ * Region tint texels (one per tile, row-major, row 0 = north edge) for createTerrain: rgb = the ground tint, snow = the snow cover
+ * (0..255) of the tile: its region's RegionTheme.snowCover, or DungeonTheme.snowCover for the tiles outside every region (the
+ * passes and the void mountains between regions).
+ */
+export function worldTintRGB(def: DungeonDef): { w: number; h: number; rgb: Uint8Array; snow: Uint8Array } {
   const W = def.grid.w, H = def.grid.h;
   const regs = regionsByRoom(def);
   const base = def.theme.tint ?? 0xffffff;
@@ -391,14 +472,18 @@ export function worldTintRGB(def: DungeonDef): { w: number; h: number; rgb: Uint
       for (let i = Math.max(0, room.rect.x); i < Math.min(W, room.rect.x + room.rect.w); i++) roomAt[j * W + i] = ri;
   });
   const rgb = new Uint8Array(W * H * 3);
+  const snow = new Uint8Array(W * H);
   for (let k = 0; k < W * H; k++) {
     const ri = roomAt[k];
-    const c = hexToRGB(regionTintColor(ri >= 0 ? regs[ri] : null, base));
+    const reg = ri >= 0 ? regs[ri] : null;
+    const c = hexToRGB(regionTintColor(reg, base));
     rgb[k * 3] = c[0];
     rgb[k * 3 + 1] = c[1];
     rgb[k * 3 + 2] = c[2];
+    const cover = reg ? (reg.theme.snowCover ?? 0) : (def.theme.snowCover ?? 0);
+    snow[k] = Math.round(255 * Math.max(0, Math.min(1, cover)));
   }
-  return { w: W, h: H, rgb };
+  return { w: W, h: H, rgb, snow };
 }
 
 // ---------------------------------------------------------------------------

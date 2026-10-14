@@ -46,6 +46,7 @@ export class ChunkedTerrain {
   private readonly dirt: THREE.Texture;
   private readonly cobble: THREE.Texture;
   private readonly moss: THREE.Texture;
+  private readonly snow: THREE.Texture;
   private readonly tintTex: THREE.DataTexture;
   private readonly tintHalf: number;
   private readonly hasTint: boolean;
@@ -61,6 +62,7 @@ export class ChunkedTerrain {
     this.dirt = surfaceTexture('dirt', o.seed, 64);
     this.cobble = surfaceTexture('cobble', o.seed, 64);
     this.moss = surfaceTexture('moss', o.seed, 64);
+    this.snow = surfaceTexture('snow', o.seed, 64);
     // region tint map (shared by every chunk): bilinear, sRGB; a 1x1 white texel and uHasTint = 0 without one
     const src: TerrainTint = o.tint ?? { w: 1, h: 1, rgb: new Uint8Array([255, 255, 255]), half: 1 };
     this.hasTint = !!o.tint;
@@ -70,7 +72,7 @@ export class ChunkedTerrain {
       rgba[i * 4] = src.rgb[i * 3];
       rgba[i * 4 + 1] = src.rgb[i * 3 + 1];
       rgba[i * 4 + 2] = src.rgb[i * 3 + 2];
-      rgba[i * 4 + 3] = 255;
+      rgba[i * 4 + 3] = src.snow ? src.snow[i] : 0; // alpha = snow cover (see Terrain.ts)
     }
     const t = new THREE.DataTexture(rgba, src.w, src.h, THREE.RGBAFormat);
     t.magFilter = THREE.LinearFilter;
@@ -120,13 +122,14 @@ export class ChunkedTerrain {
     const material = new THREE.MeshStandardMaterial({ color: o.grassTint ?? 0xffffff, roughness: 1, metalness: 0 });
     const hasTint = this.hasTint ? 1 : 0;
     const tintHalf = this.tintHalf;
-    const { grass, dirt, cobble, moss, tintTex } = this;
+    const { grass, dirt, cobble, moss, snow, tintTex } = this;
     material.onBeforeCompile = (shader) => {
       shader.uniforms.uSplat = { value: splat };
       shader.uniforms.uGrass = { value: grass };
       shader.uniforms.uDirt = { value: dirt };
       shader.uniforms.uCobble = { value: cobble };
       shader.uniforms.uMoss = { value: moss };
+      shader.uniforms.uSnow = { value: snow };
       shader.uniforms.uChunkOrigin = { value: origin };
       shader.uniforms.uChunkSize = { value: size };
       shader.uniforms.uTintMap = { value: tintTex };
@@ -141,7 +144,7 @@ export class ChunkedTerrain {
           `#include <common>
 varying vec2 vTerrainXZ;
 ${SLOPE_VARYING_FRAG}
-uniform sampler2D uSplat; uniform sampler2D uGrass; uniform sampler2D uDirt; uniform sampler2D uCobble; uniform sampler2D uMoss;
+uniform sampler2D uSplat; uniform sampler2D uGrass; uniform sampler2D uDirt; uniform sampler2D uCobble; uniform sampler2D uMoss; uniform sampler2D uSnow;
 uniform vec2 uChunkOrigin; uniform float uChunkSize;
 uniform sampler2D uTintMap; uniform float uTintHalf; uniform float uHasTint;`,
         )
@@ -155,14 +158,16 @@ vec3 ms = texture2D(uMoss, vTerrainXZ / 5.0).rgb;
 vec3 dt = texture2D(uDirt, vTerrainXZ / 3.0).rgb;
 vec3 cb = texture2D(uCobble, vTerrainXZ / 4.0).rgb;
 vec3 base = mix(g1, g2 * 0.92, 0.3);
+// region tint map: its alpha is the snow cover, applied before the splat paths (see Terrain.ts)
+vec2 ts = (vTerrainXZ + vec2(uTintHalf)) / (2.0 * uTintHalf);
+vec4 tm = texture2D(uTintMap, clamp(ts, 0.0, 1.0));
+float inside = step(0.0, ts.x) * step(ts.x, 1.0) * step(0.0, ts.y) * step(ts.y, 1.0) * uHasTint;
+base = mix(base, texture2D(uSnow, vTerrainXZ / 4.0).rgb, tm.a * inside);
 base = mix(base, ms, sp.b);
 base = mix(base, dt, sp.r);
 base = mix(base, cb, sp.g);
 ${SLOPE_FRAG}
-vec2 ts = (vTerrainXZ + vec2(uTintHalf)) / (2.0 * uTintHalf);
-vec3 tc = texture2D(uTintMap, clamp(ts, 0.0, 1.0)).rgb;
-float inside = step(0.0, ts.x) * step(ts.x, 1.0) * step(0.0, ts.y) * step(ts.y, 1.0) * uHasTint;
-vec3 tintC = mix(vec3(1.0), tc, inside);
+vec3 tintC = mix(vec3(1.0), tm.rgb, inside);
 diffuseColor.rgb *= base * tintC;`,
         );
     };

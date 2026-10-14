@@ -88,7 +88,7 @@ export const AYAZ_DAGLARI: DungeonDef = {
   forcesRequired: 0,
   theme: {
     fogColor: 0xc8d8e8, fogNear: 22, fogFar: 105, ambient: 0x5a6878, ambientIntensity: 0.3, hemiSky: 0xdce8f4, hemiGround: 0x3c4658,
-    torchColor: 0xa8d0ff, bloomStrength: 0.35, music: 'dungeon_frost', palette: [0x3c4658, 0x7a8ea4, 0xc8d8e8, 0xf0f4ff, 0x80c8ff], tint: 0xe6f0ff,
+    torchColor: 0xa8d0ff, bloomStrength: 0.35, music: 'dungeon_frost', palette: [0x3c4658, 0x7a8ea4, 0xc8d8e8, 0xf0f4ff, 0x80c8ff], tint: 0xe6f0ff, snowCover: 0.92,
   },
   grid: { w: AYAZ_GRID.w, h: AYAZ_GRID.h },
   rooms: ROOMS,

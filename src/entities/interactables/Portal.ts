@@ -143,16 +143,21 @@ export class ExitPortal extends InteractableProp {
   /** Run started from a world entrance (GDD_OPENWORLD §9.3): the exit goes back to that open-world spot, not to town. */
   private readonly returnTo: DungeonParams['returnTo'];
 
-  /** Zone pass (EntranceDef.toZone): the portal's own name, and the level the other zone asks for (0 = no gate). */
+  /**
+   * Zone pass (EntranceDef.toZone): the portal's own name, the level the other zone asks for (0 = no gate, enforced by interact), and
+   * the line under the name (the target zone's level band; none = no line). A pass shows no dungeon recommended level.
+   */
   private readonly passName?: string;
   private readonly passLevel: number;
+  private readonly passSub?: string;
 
-  constructor(id: number, opts: { spawnAt?: 'portal' | 'south'; returnTo?: DungeonParams['returnTo']; name?: string; minLevel?: number } = {}) {
+  constructor(id: number, opts: { spawnAt?: 'portal' | 'south'; returnTo?: DungeonParams['returnTo']; name?: string; minLevel?: number; sub?: string } = {}) {
     super(id);
     this.spawnAt = opts.spawnAt ?? 'portal';
     this.returnTo = opts.returnTo;
     this.passName = opts.name;
     this.passLevel = opts.minLevel ?? 0;
+    this.passSub = opts.sub;
     this.interactRange = 4.6;
     this.radius = 1.6;
     this.height = 5;
@@ -167,7 +172,7 @@ export class ExitPortal extends InteractableProp {
     this.surface = preparePortalSurface(m, this.tint);
     this.lightRef = this.addLight(this.tint, 22, 13, this.nodeLocal('light_0', new THREE.Vector3(0, 2.2, 0.2)));
     const label = this.passName
-      ? `<div class="efs-wl"><div class="n" style="color:#c8e8ff">${this.passName}</div><div class="s" style="color:#d6c196">Önerilen seviye ${this.passLevel || 1}</div></div>`
+      ? `<div class="efs-wl"><div class="n" style="color:#c8e8ff">${this.passName}</div>${this.passSub ? `<div class="s" style="color:#d6c196">${this.passSub}</div>` : ''}</div>`
       : '<div class="efs-wl"><div class="n" style="color:#70ffd0">Çıkış Portalı</div><div class="s" style="color:#d6c196">Kuzgunkale\'ye dön</div></div>';
     this.setLabel(label, 5, 'efs-wl-wrap', 50);
   }
