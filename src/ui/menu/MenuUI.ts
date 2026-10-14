@@ -250,7 +250,8 @@ export class MenuUI {
       l.append(card);
     }
 
-    l.append(h('div.efs-label', null, 'Kahraman Adı'));
+    // name + Oluştur / Geri live in a footer that stays pinned at the bottom of the (scrollable) panel on short screens
+    const foot = h('div.efs-createfoot', null, h('div.efs-label', null, 'Kahraman Adı'));
     this.nameInput = h('input.efs-input', { type: 'text', maxLength: 14, placeholder: 'Bir isim seç...', spellcheck: false, autocomplete: 'off' }) as HTMLInputElement;
     this.nameInput.addEventListener('input', () => {
       const v = this.nameInput.value;
@@ -271,12 +272,13 @@ export class MenuUI {
       },
     }, '⚄');
     this.errEl = h('div.efs-err');
-    l.append(h('div.efs-namerow', null, this.nameInput, dice), this.errEl);
+    foot.append(h('div.efs-namerow', null, this.nameInput, dice), this.errEl);
 
     this.createBtn = this.btn('Oluştur', () => this.submit(), 'primary');
     this.createBtn.style.minHeight = '54px';
     this.createBtn.style.fontSize = '20px';
-    l.append(h('div.efs-actions', null, this.createBtn, this.btn('Geri', () => this.cb.onBackFromCreate(), 'small')));
+    foot.append(h('div.efs-actions', null, this.createBtn, this.btn('Geri', () => this.cb.onBackFromCreate(), 'small')));
+    l.append(foot);
 
     this.createWrap.append(this.createL, this.createR, this.dragHint);
   }

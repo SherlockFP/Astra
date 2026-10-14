@@ -18,10 +18,14 @@ export function questMarkFor(npcId: string): NpcQuestMark | null {
   if (!q || !ch) return null;
   let best: NpcQuestMark | null = null;
   for (const def of q.all()) {
-    if (def.giver !== npcId && def.turnIn !== npcId) continue;
+    const talkIdx = def.objectives.findIndex((o) => o.kind === 'talk' && o.target === npcId);
+    if (def.giver !== npcId && def.turnIn !== npcId && talkIdx < 0) continue;
     const s = q.state(def.id);
     let mark: NpcQuestMark | null = null;
     if (s === 'ready' && (def.turnIn ?? def.giver) === npcId) mark = 'turnin';
+    // an active quest whose open objective is "talk to this NPC" (Kuzgun'un Çağrısı -> Muhtar Ferhat): the talk completes it, so this NPC
+    // is where the quest goes next; without this it showed a grey "locked" mark (or none) and the arrow was the only hint
+    else if (s === 'active' && talkIdx >= 0 && !q.progressRows(def.id)[talkIdx]?.done) mark = 'turnin';
     else if (s === 'available' && def.giver === npcId) mark = 'offer';
     else if (s === 'locked' && def.giver === npcId && ch.level < def.level && (def.prereq ?? []).every((p) => q.state(p) === 'done')) {
       mark = 'locked';
