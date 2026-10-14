@@ -63,8 +63,9 @@ const SPEC_LIST = [BUTCHER, LORD];
   }
   ok('pmba.bars Kasap bar: rmb bloodthirst, q rampage, e raging blow', BUTCHER.defaultBar.rmb === 'barbarian_bloodthirst'
     && BUTCHER.defaultBar.q === 'barbarian_rampage' && BUTCHER.defaultBar.e === 'barbarian_raging_blow');
-  ok('pmba.bars Lord bar: rmb cleave, q maul, e iron stance, s1 thrash', LORD.defaultBar.rmb === 'barbarian_cleave'
-    && LORD.defaultBar.q === 'barbarian_maul' && LORD.defaultBar.e === 'barbarian_iron_stance' && LORD.defaultBar.s1 === 'barbarian_thrash');
+  // Warrior rework (docs/WOW_ABILITY_MAP.md §3.2): Warlord bar moved to Protection keys; Yarma and Paralama are no longer on it.
+  ok('pmba.bars Lord bar: rmb shield block, q shield slam, e revenge, s1 thunder clap', LORD.defaultBar.rmb === 'barbarian_iron_stance'
+    && LORD.defaultBar.q === 'barbarian_shield_slam' && LORD.defaultBar.e === 'barbarian_revenge' && LORD.defaultBar.s1 === 'barbarian_thunder_clap');
   ok('pmba.bars pummel is s4 on both specs', BUTCHER.defaultBar.s4 === 'barbarian_pummel' && LORD.defaultBar.s4 === 'barbarian_pummel');
 }
 

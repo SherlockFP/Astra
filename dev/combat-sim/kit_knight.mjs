@@ -43,7 +43,8 @@ for (const spec of [ARMS, PROT]) {
   const bar = Object.values(spec.defaultBar);
   ok(`pmkn.ids ${spec.id} bar has no duplicate skill`, new Set(bar).size === bar.length);
 }
-ok('pmkn.ids protector majors m45 challenge / m90 avatar / m180 bastion', PROT.majors.m45 === 'knight_challenge' && PROT.majors.m90 === 'knight_avatar' && PROT.majors.m180 === 'knight_unbroken_bastion');
+// Warrior rework (WoW Midnight Protection): m45 Last Stand, m90 Avatar, m180 Shield Wall. Demoralizing Shout is no longer a major.
+ok('pmkn.ids protector majors m45 last stand / m90 avatar / m180 shield wall', PROT.majors.m45 === 'knight_unbroken_bastion' && PROT.majors.m90 === 'knight_avatar' && PROT.majors.m180 === 'knight_shield_wall');
 ok('pmkn.ids blademaster majors m45 colossus / m90 avatar / m180 bladestorm', ARMS.majors.m45 === 'knight_colossus_smash' && ARMS.majors.m90 === 'knight_avatar' && ARMS.majors.m180 === 'knight_bladestorm');
 
 // ---- pmkn.apl: skill and status names in the APL rows resolve
@@ -83,7 +84,8 @@ ok('pmkn.cd shield_bash 9 s', K('knight_shield_bash').cooldown === 9);
 ok('pmkn.cd colossus_smash 45 s', K('knight_colossus_smash').cooldown === 45);
 ok('pmkn.cd avatar 90 s', K('knight_avatar').cooldown === 90);
 ok('pmkn.cd bladestorm 180 s', K('knight_bladestorm').cooldown === 180);
-ok('pmkn.cd bastion 180 s', K('knight_unbroken_bastion').cooldown === 180);
+ok('pmkn.cd last stand 45 s (Warrior rework, was the 180 s bastion)', K('knight_unbroken_bastion').cooldown === 45);
+ok('pmkn.cd shield wall 180 s', K('knight_shield_wall').cooldown === 180);
 ok('pmkn.cd overpower 12 s, 2 charges', K('knight_overpower').cooldown === 12 && K('knight_overpower').charges === 2);
 ok('pmkn.cd shield_block 9 s, 2 charges', K('knight_shield_block').cooldown === 9 && K('knight_shield_block').charges === 2);
 ok('pmkn.cd thunder_clap 6 s', K('knight_thunder_clap').cooldown === 6);
@@ -153,7 +155,7 @@ ok('pmkn.coef bladestorm 0.9 per tick x 8 ticks', K('knight_bladestorm').damage.
 }
 
 // ---- pmkn.anger: spent rage cuts the m45 major (Anger Management, angerPer 20) for both specs
-for (const [specId, slotSkill] of [['knight_blademaster', 'knight_colossus_smash'], ['knight_protector', 'knight_challenge']]) {
+for (const [specId, slotSkill] of [['knight_blademaster', 'knight_colossus_smash'], ['knight_protector', 'knight_unbroken_bastion']]) {
   const p = H.addPlayer('knight');
   p.spec = specId;
   G.character.save.skillBar.m45 = slotSkill;
@@ -217,8 +219,10 @@ for (const [specId, slotSkill] of [['knight_blademaster', 'knight_colossus_smash
   ok('pmkn.mods protector charge: stun 1.5 s, revenge_ready on landing, r 3', charge.statuses?.[0]?.status === 'stun'
     && charge.statuses[0].duration === 1.5 && charge.selfStatuses?.[0]?.status === 'revenge_ready' && charge.radius === 3);
   ok('pmkn.mods blademaster has no mods', ARMS.mods.length === 0);
-  ok('pmkn.mods bastion: 8 s, no heal, no major-180 param', K('knight_unbroken_bastion').selfStatuses[0].duration === 8
-    && K('knight_unbroken_bastion').params.healPct === 0 && K('knight_unbroken_bastion').params.major === undefined);
+  ok('pmkn.mods last stand: 8 s last_stand status, no heal', K('knight_unbroken_bastion').selfStatuses[0].duration === 8
+    && K('knight_unbroken_bastion').selfStatuses[0].status === 'last_stand' && K('knight_unbroken_bastion').params.healPct === undefined);
+  ok('pmkn.mods shield wall: 8 s bastion, no heal, no major-180 param', K('knight_shield_wall').selfStatuses[0].duration === 8
+    && K('knight_shield_wall').selfStatuses[0].status === 'bastion' && K('knight_shield_wall').params.healPct === 0 && K('knight_shield_wall').params.major === undefined);
   ok('pmkn.mods avatar: +20 % damage, 20 s', K('knight_avatar').selfStatuses[0].status === 'avatar'
     && K('knight_avatar').selfStatuses[0].duration === 20 && K('knight_avatar').selfStatuses[0].magnitude === 0.2);
   ok('pmkn.mods interrupt row is knight_pummel with behaviour interrupt', K('knight_pummel').behavior === 'interrupt' && typeof BEHAVIORS.interrupt?.fire === 'function');
@@ -227,7 +231,7 @@ for (const [specId, slotSkill] of [['knight_blademaster', 'knight_colossus_smash
 // ---- pmkn.dropped: retired ids keep their rows but have no slot and sit in no spec list or bar
 {
   const retired = ['knight_zeal', 'knight_wings_of_judgment', 'knight_heroism_call', 'knight_oath_aegis', 'knight_consecration',
-    'knight_shield_wall', 'knight_heavens_judgment', 'knight_war_banner', 'knight_templar_verdict', 'knight_wake_of_flames'];
+    'knight_heavens_judgment', 'knight_war_banner', 'knight_templar_verdict', 'knight_wake_of_flames'];
   const slotted = retired.filter((id) => K(id)?.defaultSlot);
   ok('pmkn.dropped retired rows have no defaultSlot', slotted.length === 0, slotted.join(','));
   const inUse = retired.filter((id) => [ARMS, PROT].some((s) => Object.values(s.defaultBar).includes(id) || s.skills.includes(id)));
