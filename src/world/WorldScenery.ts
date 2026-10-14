@@ -18,6 +18,8 @@ const T = TILE_SIZE;
 const PI = Math.PI;
 /** Tile coordinate -> world metres at the tile centre (packs, POIs, villages, road points). */
 export const tileCentre = (c: number): number => (c + 0.5) * T;
+/** Trees keep this many metres clear of the start, exit and zone entrances. */
+const GATE_CLEAR = 16;
 
 // ---------------------------------------------------------------------------
 // Model urls (kit helpers; all verified against public/assets/models)
@@ -517,6 +519,8 @@ export class WorldScatter {
   protected regs: (WorldRegion | null)[];
   protected waterTiles: Uint8Array;
   protected styleOverride = new Map<string, BorderStyle>();
+  /** Start / exit / zone entrances: trees leave a clearing here (a wall of 14 m crowns beside the camera blacks out the sky). */
+  protected gates: { x: number; z: number }[] = [];
 
   constructor(protected h: WorldScatterHost) {
     const def = h.def;
@@ -535,6 +539,8 @@ export class WorldScatter {
           bx: tileCentre(r.pts[k + 1][0]), bz: tileCentre(r.pts[k + 1][1]),
           hw: r.width / 2,
         });
+    this.gates.push({ x: tileCentre(def.start.pos[0]), z: tileCentre(def.start.pos[1]) }, { x: tileCentre(def.exit.pos[0]), z: tileCentre(def.exit.pos[1]) });
+    for (const e of w?.entrances ?? []) this.gates.push({ x: tileCentre(e.pos[0]), z: tileCentre(e.pos[1]) });
     for (const p of def.packs) this.camps.push({ x: tileCentre(p.center[0]), z: tileCentre(p.center[1]), r: p.radius ?? 9 });
     for (const b of w?.borders ?? []) {
       if (b.a[0] === b.b[0]) for (let j = Math.min(b.a[1], b.b[1]); j < Math.max(b.a[1], b.b[1]); j++) this.styleOverride.set(`v:${b.a[0]}:${j}`, b.style);
@@ -604,10 +610,17 @@ export class WorldScatter {
 
   /** Tree: dim colour jitter, optional trunk block on the nav. Layer 'tree' (or 'border'). */
   protected tree(url: string, x: number, z: number, s: number, block: boolean, layer: CullLayer): void {
+    if (this.nearGate(x, z)) return;
     const dim = 0.86 - this.rng.next() * 0.12;
     this.h.batcher.add(url, x, 0, z, this.rng.range(0, 2 * PI), s, new THREE.Color(0xffffff).multiplyScalar(dim + this.rng.next() * 0.2), { cast: true, receive: true, layer });
     if (block) this.h.nav.setCircle(x, z, 0.7 * s, false);
     this.occ.add(x, z, 1.4 * s);
+  }
+
+  /** True within GATE_CLEAR metres of a start / exit / entrance (see `gates`). */
+  protected nearGate(x: number, z: number): boolean {
+    for (const g of this.gates) if (Math.hypot(g.x - x, g.z - z) < GATE_CLEAR) return true;
+    return false;
   }
 
   // ---- borders ----

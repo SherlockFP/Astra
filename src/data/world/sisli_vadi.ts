@@ -94,7 +94,7 @@ export const SISLI_VADI: DungeonDef = {
   timerSec: 0,
   forcesRequired: 0,
   theme: {
-    fogColor: 0x9aa890, fogNear: 15, fogFar: 70, ambient: 0x607060, ambientIntensity: 0.3, hemiSky: 0xc0d0b0, hemiGround: 0x303820,
+    fogColor: 0x9aa890, fogNear: 35, fogFar: 150, ambient: 0x607060, ambientIntensity: 0.3, hemiSky: 0xc0d0b0, hemiGround: 0x303820,
     torchColor: 0xffa050, bloomStrength: 0.3, music: 'world_vale', palette: [0x303820, 0x6a7a58, 0x9aa890, 0xc0d0b0, 0xffa050], tint: 0xdde4d0,
   },
   grid: gridOf(LAYOUT),
