@@ -93,6 +93,7 @@ export const PVP_SPEC_TRAITS: Partial<Record<SpecId, PvpSpecTrait>> = {
   paladin_retribution: { specId: 'paladin_retribution', name: 'İntikam', desc: 'Arenada kutsal hasar +%5.', stats: { holyDamagePct: 0.05 } },
   necromancer_summoner: { specId: 'necromancer_summoner', name: 'Çağırıcı', desc: 'Arenada yaratık hasarı +%5.', stats: { minionDamagePct: 0.05 } },
   necromancer_bone: { specId: 'necromancer_bone', name: 'Kemik Ustası', desc: 'Arenada maksimum can +%2.', stats: { maxHpPct: 0.02 } },
+  necromancer_frost: { specId: 'necromancer_frost', name: 'Buz Kıyıcısı', desc: 'Arenada kritik şansı +%2.', stats: { critChance: 0.02 } },
   warlock_affliction: { specId: 'warlock_affliction', name: 'Azap Ustası', desc: 'Arenada zamanla hasar +%5.', stats: { dotPct: 0.05 } },
   warlock_destruction: { specId: 'warlock_destruction', name: 'Yıkım', desc: 'Arenada gölge hasarı +%5.', stats: { shadowDamagePct: 0.05 } },
   monk_brewmaster: { specId: 'monk_brewmaster', name: 'Demci', desc: 'Arenada alınan hasar -%3 (Sarsma havuzu).', stats: { damageReductionPct: 0.03 } },

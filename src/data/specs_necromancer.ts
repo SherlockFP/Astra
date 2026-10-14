@@ -26,11 +26,11 @@ const NECRO_SPEC_LIST: SpecDef[] = [
     ],
     skills: [
       'necro_heart_strike', 'necro_death_strike', 'necro_marrowrend', 'necro_deaths_grip', 'necro_blood_boil',
-      'necro_deaths_advance', 'necro_anti_magic_shell', 'necro_mind_freeze',
+      'necro_deaths_advance', 'necro_anti_magic_shell', 'necro_mind_freeze', 'necro_death_and_decay', 'necro_raise_dead',
     ],
     unlock: {
       necro_heart_strike: 10, necro_death_strike: 10, necro_mind_freeze: 1, necro_marrowrend: 12, necro_blood_boil: 12,
-      necro_deaths_grip: 15, necro_anti_magic_shell: 15, necro_deaths_advance: 1,
+      necro_deaths_grip: 15, necro_anti_magic_shell: 15, necro_deaths_advance: 1, necro_death_and_decay: 12, necro_raise_dead: 20,
     },
     treeSkills: { necro_marrowrend: 's05' },
     majors: { m45: 'necro_vampiric_blood', m90: 'necro_dancing_rune_weapon', m180: 'necro_icebound_fortitude' },
@@ -57,11 +57,11 @@ const NECRO_SPEC_LIST: SpecDef[] = [
     ],
     skills: [
       'necro_scourge_strike', 'necro_death_coil', 'necro_festering_strike', 'necro_outbreak',
-      'necro_deaths_advance', 'necro_anti_magic_shell', 'necro_mind_freeze',
+      'necro_deaths_advance', 'necro_anti_magic_shell', 'necro_mind_freeze', 'necro_death_and_decay', 'necro_raise_dead',
     ],
     unlock: {
       necro_scourge_strike: 1, necro_death_coil: 1, necro_festering_strike: 1, necro_outbreak: 10,
-      necro_mind_freeze: 1, necro_anti_magic_shell: 15, necro_deaths_advance: 1,
+      necro_mind_freeze: 1, necro_anti_magic_shell: 15, necro_deaths_advance: 1, necro_death_and_decay: 12, necro_raise_dead: 20,
     },
     treeSkills: { necro_epidemic: 's05' },
     majors: { m45: 'necro_dark_transformation', m90: 'necro_army_of_the_dead', m180: 'necro_icebound_fortitude' },
@@ -76,6 +76,35 @@ const NECRO_SPEC_LIST: SpecDef[] = [
       lmb: 'necro_basic', rmb: 'necro_scourge_strike', q: 'necro_death_coil', e: 'necro_festering_strike', r: 'necro_outbreak',
       s1: 'necro_epidemic', s2: 'necro_deaths_advance', s3: 'necro_anti_magic_shell', s4: 'necro_mind_freeze',
       m45: 'necro_dark_transformation', m90: 'necro_army_of_the_dead', m180: 'necro_icebound_fortitude',
+    },
+  },
+  {
+    id: 'necromancer_frost', classId: 'necromancer', name: 'Buz Kıyıcısı', role: 'dps', mainStat: 'str', basic: 'necro_basic',
+    desc: 'Yok Edici Darbe ve Buz Darbesi ile savaşan buz ölüm şövalyesi. Öldürücü Makine kesin kritik, Kırağı Uluyan Patlama\'yı güçlendirir; Buz Sütunu ve Buz Ejderi Öfkesi büyük patlama pencereleridir.',
+    stats: { critChance: 0.05, damagePct: 0.10 },
+    specials: [],
+    skills: [
+      'necro_obliterate', 'necro_frost_strike', 'necro_howling_blast', 'necro_remorseless_winter', 'necro_chains_of_ice',
+      'necro_deaths_advance', 'necro_icebound_fortitude', 'necro_mind_freeze', 'necro_empower_rune_weapon', 'necro_pillar_of_frost',
+      'necro_frostwyrms_fury', 'necro_death_and_decay', 'necro_raise_dead',
+    ],
+    unlock: {
+      necro_obliterate: 1, necro_frost_strike: 1, necro_mind_freeze: 1, necro_deaths_advance: 1, necro_howling_blast: 10,
+      necro_chains_of_ice: 10, necro_empower_rune_weapon: 10, necro_remorseless_winter: 12, necro_death_and_decay: 12,
+      necro_pillar_of_frost: 20, necro_raise_dead: 20, necro_icebound_fortitude: 30, necro_frostwyrms_fury: 30,
+    },
+    treeSkills: { necro_obliterate: 's05' },
+    majors: { m45: 'necro_empower_rune_weapon', m90: 'necro_pillar_of_frost', m180: 'necro_frostwyrms_fury' },
+    // Öldürücü Makine (Killing Machine): Frost Strike crit (15 %) -> next Yok Edici Darbe forced crit; Kırağı (Rime): Obliterate 20 % -> next Uluyan Patlama +50 %
+    fx: [
+      'T hit:necro_frost_strike ch=.15 icd=2 => st(self,killing_machine,8)',
+      'T hit:necro_obliterate ch=.2 icd=1 => st(self,rime,15)',
+    ].join(' ;; '),
+    mods: [],
+    defaultBar: {
+      lmb: 'necro_basic', rmb: 'necro_obliterate', q: 'necro_frost_strike', e: 'necro_howling_blast', r: 'necro_chains_of_ice',
+      s1: 'necro_remorseless_winter', s2: 'necro_deaths_advance', s3: 'necro_icebound_fortitude', s4: 'necro_mind_freeze',
+      m45: 'necro_empower_rune_weapon', m90: 'necro_pillar_of_frost', m180: 'necro_frostwyrms_fury',
     },
   },
 ];

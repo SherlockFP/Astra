@@ -27,10 +27,10 @@ const SPEC_LIST: SpecDef[] = [
     specials: [
       { id: 'trait_devastation', desc: 'Güçlendirilmiş nefesler: tuşu bırakmadan 0.67 / 1.33 / 2 saniyede üç kademe dolar; Süzül hareketi yavaşlatmaz. Ejder Öfkesi ve Terazi Eğimi son kademeyi bekletmeden verir.', params: { empower: 1 } },
     ],
-    skills: ['evoker_living_flame', 'evoker_disintegrate', 'evoker_fire_breath', 'evoker_eternity_surge', 'evoker_pyre', 'evoker_hover', 'evoker_obsidian_scales', 'evoker_quell'],
+    skills: ['evoker_living_flame', 'evoker_disintegrate', 'evoker_fire_breath', 'evoker_eternity_surge', 'evoker_pyre', 'evoker_hover', 'evoker_obsidian_scales', 'evoker_quell', 'evoker_shattering_star'],
     unlock: {
       evoker_living_flame: 1, evoker_disintegrate: 1, evoker_fire_breath: 1, evoker_eternity_surge: 10, evoker_pyre: 6,
-      evoker_hover: 1, evoker_obsidian_scales: 15, evoker_quell: 10,
+      evoker_hover: 1, evoker_obsidian_scales: 15, evoker_quell: 10, evoker_shattering_star: 10,
     },
     majors: { m45: 'evoker_deep_breath', m90: 'evoker_dragonrage', m180: 'evoker_fury_of_aspects' },
     fx: [
@@ -55,11 +55,11 @@ const SPEC_LIST: SpecDef[] = [
     ],
     skills: [
       'evoker_living_flame', 'evoker_reversion', 'evoker_dream_breath', 'evoker_echo', 'evoker_emerald_blossom', 'evoker_verdant_embrace',
-      'evoker_obsidian_scales', 'evoker_quell',
+      'evoker_obsidian_scales', 'evoker_quell', 'evoker_rewind',
     ],
     unlock: {
       evoker_living_flame: 1, evoker_reversion: 10, evoker_dream_breath: 10, evoker_echo: 10, evoker_emerald_blossom: 10, evoker_verdant_embrace: 10,
-      evoker_obsidian_scales: 15, evoker_quell: 10,
+      evoker_obsidian_scales: 15, evoker_quell: 10, evoker_rewind: 15,
     },
     majors: { m45: 'evoker_time_dilation', m90: 'evoker_stasis', m180: 'evoker_fury_of_aspects' },
     fx: [

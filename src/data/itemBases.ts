@@ -23,7 +23,7 @@ export const ARMOR_WEIGHT_NAMES_TR: Record<ArmorWeight, string> = { heavy: 'AÄŸÄ
 export const CLASS_ARMOR_WEIGHT: Record<ClassId, ArmorWeight> = {
   knight: 'heavy', barbarian: 'heavy', mage: 'light', rogue: 'medium',
   monk: 'medium', archer: 'medium', paladin: 'heavy', necromancer: 'light', warlock: 'light',
-  demonhunter: 'medium', evoker: 'light', // CM1 stubs (mirror the registry rows of data/classes.ts)
+  demonhunter: 'medium', evoker: 'medium', // CM1 stubs (mirror the registry rows of data/classes.ts)
   priest: 'light', shaman: 'medium', druid: 'medium', // CLASS SCAFFOLD stubs
 };
 // Loot V3 F6 fix: derived from CLASS_ARMOR_WEIGHT, so the 7 newer classes can use (and be dropped) armour too

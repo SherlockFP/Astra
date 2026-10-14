@@ -1,5 +1,5 @@
 // GENERATED from docs/GDD_TALENTS.*.json by tools/gen-talent-data.mjs — do not edit
-// Source: docs/GDD_TALENTS.trees.json · class:necromancer + necromancer_summoner, necromancer_bone. Row = [slot, opt, name, desc, fx] (GDD_TALENTS §2.9).
+// Source: docs/GDD_TALENTS.trees.json · class:necromancer + necromancer_summoner, necromancer_bone, necromancer_frost. Row = [slot, opt, name, desc, fx] (GDD_TALENTS §2.9).
 import type { SlotId } from '../../../types/talents';
 import type { SpecId } from '../../../types/v2';
 import type { StatId } from '../../../types/stats';
@@ -15,7 +15,7 @@ const data: { class: RawTree; specs: Partial<Record<SpecId, RawTree>> } = {
       ['s02', 'B', 'Ruh Adımı', 'Hasar alınca %10 şansla 3 sn hareket hızı +%20 (6 sn bekleme).', 'T hurt ch=.1 icd=6 => buff(spirit_dash,3,{moveSpeedPct=.2})'],
       ['s04', '', 'Keskin Mızrak', 'Ölüm Sarmalı hasarı +%15, menzil +4 m.', 'M necro_death_coil dmgx=1.15 rng=+4'],
       ['s05', 'A', null, null, 'G necro_deaths_grip'],
-      ['s05', 'B', null, null, 'G necro_spirit_walk'],
+      ['s05', 'B', null, null, 'G necro_chains_of_ice'],
       ['s09', 'A', 'Kemik Kalkanı', 'Büyü Karşıtı Kalkan kullanınca 10 sn maks. canının %10\'u kadar kalkan kazanırsın.', 'T cast:necro_anti_magic_shell => abs(.1,10)'],
       ['s09', 'B', 'Ruh Direnci', 'Canın %35 altına düşünce %15 can yenilenir ve 15 m içindeki yoldaşlar 4 sn güçlenir (60 sn bekleme).', 'T hurt if=hp<.35 icd=60 => heal(.15) ; st(near(15),empower,4)'],
       ['s11', '', 'Kalkan Ustası', 'Büyü Karşıtı Kalkan bekleme −%15; yoldaş canı +%10.', 'M necro_anti_magic_shell cdx=.85 ;; S minionHpPct=.10'],
@@ -95,6 +95,35 @@ const data: { class: RawTree; specs: Partial<Record<SpecId, RawTree>> } = {
         ['s29', '', 'Kemik Ritmi', 'Hasar +%6, kritik hasarı +%15. Kritik vuruşlar 5 sn boyunca +%5 büyü hızı yığar (en fazla 4).', 'S damagePct=.06 critDamage=.15 ;; T crit => buff(bone_rhythm,5,{castSpeed=.05},max=4)'],
         ['s30', 'A', 'Kemik Hükümdarı', 'Fiziksel hasar +%25; Kalp Darbesi hasarı +%25.', 'S physicalDamagePct=.25 ;; M necro_heart_strike dmgx=1.25'],
         ['s30', 'B', 'Lich Kralı', 'Gölge hasarı +%20, büyü hızı +%5; Hayalet Orak Dansı bekleme −%20.', 'S shadowDamagePct=.20 castSpeed=.05 ;; M necro_dancing_rune_weapon cdx=.8'],
+      ],
+    },
+    necromancer_frost: {
+      palette: ['physicalDamagePct', 'shadowDamagePct', 'castSpeed', 'critChance', 'critDamage', 'int', 'damagePct', 'resourceRegenPct', 'aoePct', 'dotPct', 'cdr', 'lifeSteal'],
+      rows: [
+        ['s02', 'A', 'Yok Edici Ustası', 'Yok Edici Darbe hasarı +%10.', 'M necro_obliterate dmgx=1.1'],
+        ['s02', 'B', 'Soğuk Nefes', 'Savaşta 3 sn\'de bir otomatik Buz Darbesi yankısı (%50 hasar) atılır.', 'T tick:3 if=inCombat => echo(necro_frost_strike,.5,.1)'],
+        ['s04', '', 'Geniş Kırağı', 'Uluyan Patlama yarıçapı +1 m.', 'M necro_howling_blast rad=+1'],
+        ['s05', '', null, null, 'G necro_obliterate'],
+        ['s09', 'A', 'Buz Kalkanı', 'Uluyan Patlama sonrası 6 sn %12 hasar azaltma kazanırsın.', 'T cast:necro_howling_blast => buff(blood_ward,6,{damageReductionPct=.12})'],
+        ['s09', 'B', 'Buz Zırhı', 'Buz Darbesi sonrası 4 sn %10 hasar azaltma kazanırsın.', 'T cast:necro_frost_strike => buff(storm_ward,4,{damageReductionPct=.1})'],
+        ['s11', '', 'Geniş Dalga', 'Acımasız Kış yarıçap +2 m, hasarı +%15.', 'M necro_remorseless_winter rad=+2 dmgx=1.15'],
+        ['s12', '', 'Delici Buz', 'Buz Darbesi hasarı +%10.', 'M necro_frost_strike dmgx=1.1'],
+        ['s13', '', 'Donmuş Kan', 'Uluyan Patlama hasarı +%20.', 'M necro_howling_blast dmgx=1.2'],
+        ['s15', 'A', 'Buz Humması Ustası', 'Buz Humması süresi +4 sn.', 'M necro_howling_blast sdur=frost_fever:+4'],
+        ['s15', 'B', 'Yıkıcı Ustalık', 'Yok Edici Darbe hasarı +%8.', 'M necro_obliterate dmgx=1.08'],
+        ['s17', 'A', 'Buz Pınarı', 'Öz yenilenmesi +%20.', 'S resourceRegenPct=.20'],
+        ['s17', 'B', 'Ruh Hasadı', 'Buz Darbesi kritik vurduğunda %10 şansla 4 Öz kazanırsın.', 'T hit:necro_frost_strike ch=.1 => res(4)'],
+        ['s18', '', 'Buz Kemiği', 'Buz Zincirleri bekleme −3 sn, hasarı +%20.', 'M necro_chains_of_ice cd=-3 dmgx=1.2'],
+        ['s20', '', 'Buz Zamanı', 'Buz Sütunu ve Buz Ejderi Öfkesi bekleme süreleri %10 kısalır.', 'M necro_pillar_of_frost+necro_frostwyrms_fury cdx=.9'],
+        ['s21', '', 'Darbe Emişi', 'Buz Darbesi hasarı +%15, Öz maliyeti −%10.', 'M necro_frost_strike dmgx=1.15 costx=.9'],
+        ['s25', '', 'Yıkıcı Yok Edici', 'Yok Edici Darbe hasarı +%25.', 'M necro_obliterate dmgx=1.25'],
+        ['s26', 'A', 'Buz Çağrısı', 'Rün Silahı Güçlendirme kullanınca yoldaşların 6 sn güçlenir.', 'T cast:necro_empower_rune_weapon => st(party,empower,6)'],
+        ['s26', 'B', 'Soğuk Koruma', 'Buz Sütunu kullanınca %5 can yenilenir.', 'T cast:necro_pillar_of_frost => heal(.05)'],
+        ['s27', '', 'Donma Yankısı', 'Uluyan Patlamada %15 şansla bir Uluyan Patlama yankısı (%50 hasar) atılır.', 'T cast:necro_howling_blast ch=.15 => echo(necro_howling_blast,.5,.5)'],
+        ['s28', '', 'Buz Yürek', 'Fiziksel hasar +%10, kritik şansı +%2; ölümcül darbede 90 sn\'de bir %20 can yenilenir ve 1.5 sn ölmezsin.', 'S physicalDamagePct=.10 critChance=.02 ;; T lethal icd=90 => heal(.2) ; st(self,invulnerable,1.5)'],
+        ['s29', '', 'Buz Ritmi', 'Hasar +%6, kritik hasarı +%15; kritik vuruşta 5 sn boyunca yetenek hızı +%5 (en çok 4 yük).', 'S damagePct=.06 critDamage=.15 ;; T crit => buff(bone_rhythm,5,{castSpeed=.05},max=4)'],
+        ['s30', 'A', 'Buz Hükümdarı', 'Fiziksel hasar +%25; Yok Edici Darbe hasarı +%25.', 'S physicalDamagePct=.25 ;; M necro_obliterate dmgx=1.25'],
+        ['s30', 'B', 'Buz Kralı', 'Gölge hasarı +%20, yetenek hızı +%5; Buz Sütunu bekleme −%20.', 'S shadowDamagePct=.20 castSpeed=.05 ;; M necro_pillar_of_frost cdx=.8'],
       ],
     },
   },

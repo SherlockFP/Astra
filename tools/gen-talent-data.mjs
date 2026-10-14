@@ -42,13 +42,13 @@ const OPTS = ['', 'A', 'B'];
 /** Counts the document fixes (GDD_TALENTS §0, §3.2, §4.5); a mismatch means the JSON changed and the doc must be reconciled. */
 const EXPECT = {
   /** WP-02: +spec:archer_survival (24 rows, Hayatta Kalma) on top of the GDD count of 30 trees / 21 specs / 729 rows. */
-  trees: 42,
-  specs: 30,
+  trees: 43,
+  specs: 31,
   /** KIT PK-0: SPEC_TABLE entries (src/data/talentTrees/index.ts). The JSON holds `specs` of them plus PENDING_SPEC_TREES. */
-  registrySpecs: 31,
+  registrySpecs: 32,
   /** PRIEST kit: class:priest carries 25 rows. */
   /** KIT Druid: +class:druid (25) and four spec trees (24 each). */
-  rows: 1020,
+  rows: 1044,
   skillSpecRows: 162,
   webNodes: 306,
   sectors: 122,

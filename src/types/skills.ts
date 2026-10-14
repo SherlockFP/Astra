@@ -180,6 +180,7 @@ export type StatusId =
   | 'gory_maul' | 'gory_iron' | 'ursoc_form' | 'shining_light' | 'infusion_of_light' | 'art_of_war' | 'hammer_window'
   | 'templar_combo' | 'divine_steed' | 'blood_plague' | 'vampiric_blood' | 'dancing_rune_weapon' | 'icebound'
   | 'anti_magic_shell' | 'deaths_advance' | 'vile_contagion' | 'virulent_plague' | 'sudden_doom' | 'dark_transformation' | 'army'
+  | 'killing_machine' | 'rime' | 'frost_fever' | 'death_and_decay' | 'pillar_of_frost'
   // WP-02 Okçu kit (append-only): quick_draw (Geri Sıçrayış window for a full-charge Nişanlı Atış), survivor_ward (Son Siper).
   // hunters_mark, deadeye, trueshot, wild_wrath are in the union above. StatusDefs in data/statuses_kit_archer.ts.
   | 'quick_draw' | 'survivor_ward'

@@ -88,6 +88,8 @@ const SPEC_TABLE: readonly SpecEntry[] = [
   { id: 'druid_feral', classId: 'druid', name: 'Vahşi' },
   { id: 'druid_guardian', classId: 'druid', name: 'Koruyucu' },
   { id: 'druid_restoration', classId: 'druid', name: 'Restorasyon' },
+  // Nekromant Frost (index 30, appended). Raw tree is in raw/necromancer.ts (generated from docs/GDD_TALENTS.trees.json).
+  { id: 'necromancer_frost', classId: 'necromancer', name: 'Buz Kıyıcısı' },
 ];
 
 /** Class ids in canonical order (§1.2). */

@@ -137,4 +137,76 @@ export function registerNecromancerSpecs(add: SkillAdd): void {
     selfStatuses: [{ status: 'army', duration: 30 }], tags: ['offgcd', 'major', 'offensive', 'summon', 'minion', 'shadow'],
     vfx: { cast: 'grave_rise' }, sfx: { cast: 'raise_dead' }, params: { ringRadius: 4.5, end: 1.4, chain: 0.1, move: 0.2, weight: 3 },
   });
+
+  // ======================================================================================================
+  // BUZ KIYICISI (necromancer_frost): Obliterate / Frost Strike builders and spenders, Howling Blast AoE, Killing Machine and Rime procs
+  // (WoW Frost Death Knight, docs/WOW_ABILITY_MAP.md; the Frost tree and APL are in talentTrees/raw and rotations_kit_necromancer.ts)
+  // ======================================================================================================
+  add({
+    id: 'necro_obliterate', classId: 'necromancer', spec: 'necromancer_frost', name: 'Yok Edici Darbe (Obliterate)', icon: I('skill-sword-slash'), unlockLevel: 1, defaultSlot: 'rmb',
+    desc: 'Önündeki düşmana %100 fiziksel hasar verirsin. 1 Rün harcar, 15 Öz kazandırır. Öldürücü Makine varken bir sonraki Yok Edici Darbe kesin kritik vurur.',
+    cost: 0, cooldown: 0, castTime: 0, anim: '2H_Melee_Attack_Slice', animSpeed: 1.6, hitTime: 0.44, targeting: 'target_instant',
+    range: 3.2, arc: 90, damage: { coef: 1.0, type: 'physical' }, pip: { id: 'rune', cost: 1 }, tags: ['melee', 'builder', 'physical'],
+    vfx: { cast: 'slash_arc', impact: 'hit_blood' }, sfx: { cast: 'swing_heavy', impact: 'hit_flesh' },
+    params: { gain: 15, end: 0.9, chain: 0.06, move: 0.15, stagger: 8, proc: 1, weight: 1, lunge: 0.8 },
+  });
+  add({
+    id: 'necro_frost_strike', classId: 'necromancer', spec: 'necromancer_frost', name: 'Buz Darbesi (Frost Strike)', icon: I('skill-thrust'), unlockLevel: 1, defaultSlot: 'q',
+    desc: 'Önündeki düşmana %130 buz hasarı verirsin. 30 Öz harcar. Kritik vuruşta Öldürücü Makine kazanırsın.',
+    cost: 30, cooldown: 0, castTime: 0, anim: '2H_Melee_Attack_Stab', animSpeed: 1.6, hitTime: 0.56, targeting: 'target_instant',
+    range: 3.2, arc: 90, damage: { coef: 1.3, type: 'frost' }, tags: ['melee', 'spender', 'frost'],
+    vfx: { cast: 'frost_burst', impact: 'hit_magic' }, sfx: { cast: 'swing_heavy', impact: 'frost_impact' },
+    params: { end: 0.9, chain: 0.08, move: 0.18, stagger: 10, proc: 1, weight: 2, lunge: 1.0 },
+  });
+  add({
+    id: 'necro_howling_blast', classId: 'necromancer', spec: 'necromancer_frost', name: 'Uluyan Patlama (Howling Blast)', icon: I('skill-ice-bolt'), unlockLevel: 10, defaultSlot: 'e',
+    desc: 'Çevrendeki 8 metrelik alanda en fazla 8 düşmana %60 buz hasarı verirsin ve hepsine 24 saniye süren Buz Humması bırakırsın. 1 Rün harcar. Kırağı varken hasar %50 artar.',
+    cost: 0, cooldown: 0, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 2.0, hitTime: 0.95, targeting: 'self_aoe', radius: 8,
+    damage: { coef: 0.6, type: 'frost' }, pip: { id: 'rune', cost: 1 }, statuses: [{ status: 'frost_fever', duration: 24, magnitude: 1 }],
+    tags: ['spell', 'aoe', 'frost', 'dot', 'builder'],
+    vfx: { cast: 'frost_burst', impact: 'hit_magic' }, sfx: { cast: 'ice_chime', impact: 'frost_impact' },
+    params: { maxTargets: 8, end: 1.0, chain: 0.1, move: 0.2, stagger: 4, proc: 0.6, weight: 1 },
+  });
+  add({
+    id: 'necro_remorseless_winter', classId: 'necromancer', spec: 'necromancer_frost', name: 'Acımasız Kış (Remorseless Winter)', icon: I('skill-ground-slam'), unlockLevel: 12, defaultSlot: 's1',
+    desc: 'Çevrendeki 8 metrelik alanda en fazla 8 düşmana %40 buz hasarı verirsin ve hepsini 8 saniye %20 yavaşlatırsın. 25 saniye bekleme.',
+    cost: 0, cooldown: 25, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 1.8, hitTime: 0.9, targeting: 'self_aoe', radius: 8,
+    damage: { coef: 0.4, type: 'frost' }, statuses: [{ status: 'slow', duration: 8, magnitude: 0.2 }], tags: ['spell', 'aoe', 'frost', 'slow'],
+    vfx: { cast: 'frost_nova', impact: 'frost_burst' }, sfx: { cast: 'ice_chime', impact: 'frost_impact' },
+    params: { maxTargets: 8, end: 1.0, chain: 0.1, move: 0.2, stagger: 4, proc: 0.6, weight: 1 },
+  });
+  add({
+    id: 'necro_empower_rune_weapon', classId: 'necromancer', spec: 'necromancer_frost', name: 'Rün Silahı Güçlendirme (Empower Rune Weapon)', icon: I('skill-war-cry'), unlockLevel: 10, defaultSlot: 'm45',
+    desc: 'Rünlerini anında altı rüne tamamlarsın. 60 saniye bekleme.',
+    cost: 0, cooldown: 60, castTime: 0, anim: 'Cheer', animSpeed: 1.6, hitTime: 0.3, targeting: 'self_buff', offGcd: true,
+    pip: { id: 'rune', cost: 0, gain: 6 }, tags: ['offgcd', 'major', 'buff', 'rune'],
+    vfx: { cast: 'enrage_aura' }, sfx: { cast: 'buff' }, params: { end: 0.9, chain: 0.1, move: 0.2, weight: 1 },
+  });
+  add({
+    id: 'necro_pillar_of_frost', classId: 'necromancer', spec: 'necromancer_frost', name: 'Buz Sütunu (Pillar of Frost)', icon: I('skill-berserk'), unlockLevel: 20, defaultSlot: 'm90',
+    desc: '12 saniye boyunca hasarın %20 artar. 60 saniye bekleme.',
+    cost: 0, cooldown: 60, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 1.6, hitTime: 0.6, targeting: 'self_buff', offGcd: true,
+    selfStatuses: [{ status: 'pillar_of_frost', duration: 12 }], tags: ['offgcd', 'major', 'offensive', 'buff', 'frost'],
+    vfx: { cast: 'frost_nova' }, sfx: { cast: 'ice_chime' }, params: { end: 1.0, chain: 0.1, move: 0.2, weight: 3 },
+  });
+  add({
+    id: 'necro_frostwyrms_fury', classId: 'necromancer', spec: 'necromancer_frost', name: 'Buz Ejderi Öfkesi (Frostwyrm\'s Fury)', icon: I('skill-curse'), unlockLevel: 30, defaultSlot: 'm180',
+    desc: '1.2 saniyelik büyüden sonra 10 metrelik alandaki en fazla 10 düşmana %250 buz hasarı verirsin ve 6 saniye %30 yavaşlatırsın. 180 saniye bekleme.',
+    cost: 0, cooldown: 180, castTime: 1.2, anim: 'Spellcast_Long', animSpeed: 1.0, hitTime: 1.2, targeting: 'self_aoe', radius: 10, offGcd: true,
+    damage: { coef: 2.5, type: 'frost' }, statuses: [{ status: 'slow', duration: 6, magnitude: 0.3 }], tags: ['offgcd', 'major', 'offensive', 'spell', 'frost', 'aoe'],
+    vfx: { cast: 'frost_nova', impact: 'frost_burst' }, sfx: { cast: 'ice_chime', impact: 'frost_impact' },
+    params: { maxTargets: 10, end: 1.4, chain: 0.1, move: 0.2, weight: 3 },
+  });
+
+  // ======================================================================================================
+  // ORTAK (all three specs): Ölüm ve Çürüme (Death and Decay) AoE, unslotted in the spec lists
+  // ======================================================================================================
+  add({
+    id: 'necro_death_and_decay', classId: 'necromancer', name: 'Ölüm ve Çürüme (Death and Decay)', icon: I('skill-poison-cloud'), unlockLevel: 12,
+    desc: 'Çevrendeki 8 metrelik alanda en fazla 8 düşmana %60 gölge hasarı verirsin ve hepsine 10 saniye süren Ölüm ve Çürüme bırakırsın. 1 Rün harcar.',
+    cost: 0, cooldown: 0, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 1.6, hitTime: 0.8, targeting: 'self_aoe', radius: 8,
+    damage: { coef: 0.6, type: 'shadow' }, pip: { id: 'rune', cost: 1 }, statuses: [{ status: 'death_and_decay', duration: 10, magnitude: 1 }],
+    tags: ['spell', 'aoe', 'shadow', 'dot'], vfx: { cast: 'death_nova', impact: 'shadow_burst' }, sfx: { cast: 'shadow_cast', impact: 'shadow_impact' },
+    params: { maxTargets: 8, end: 1.0, chain: 0.1, move: 0.2, stagger: 4, proc: 0.6, weight: 1 },
+  });
 }

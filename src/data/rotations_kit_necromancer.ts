@@ -61,4 +61,26 @@ export const ROTATIONS_KIT_NECROMANCER: Record<string, KitApl> = {
       'necro_basic',
     ],
   },
+  necromancer_frost: {
+    st: [
+      'necro_pillar_of_frost if cd_ready(necro_pillar_of_frost)',
+      'necro_frostwyrms_fury if cd_ready(necro_frostwyrms_fury) && cd_ready(necro_pillar_of_frost)',
+      'necro_empower_rune_weapon if cd_ready(necro_empower_rune_weapon) && pips:rune <= 1',
+      'necro_obliterate if status:killing_machine',
+      'necro_howling_blast if status:rime',
+      'necro_chains_of_ice if !target.status:slow',
+      'necro_howling_blast if !target.status:frost_fever',
+      'necro_frost_strike if res >= 60',
+      'necro_obliterate if pips:rune >= 1',
+      'necro_frost_strike if res >= 30',
+      'necro_basic',
+    ],
+    aoe: [
+      'necro_remorseless_winter if cd_ready(necro_remorseless_winter)',
+      'necro_howling_blast if status:rime || pips:rune >= 2',
+      'necro_frost_strike if res >= 60',
+      'necro_obliterate if pips:rune >= 1',
+      'necro_basic',
+    ],
+  },
 };

@@ -1,24 +1,37 @@
 /**
- * Nekromant class utility rows (necro_soul_snap, necro_spirit_walk). OWNER: PM-NE.
- * PM-00c split of data/skills_class_utils.ts (rows verbatim). Merged into CLASS_UTIL_SKILLS by data/skills_class_utils.ts.
+ * Nekromant class utility rows (necro_raise_dead, necro_chains_of_ice). OWNER: PM-NE.
+ * PM-00c split of data/skills_class_utils.ts. Merged into CLASS_UTIL_SKILLS by data/skills_class_utils.ts.
+ * WoW pass (docs/WOW_ABILITY_MAP.md 7.1 / 7.2): the two non-WoW extras are replaced. Ruh Koparma (interrupt + Öz refund, a copy of
+ * Mind Freeze) becomes Raise Dead (Ölüleri Diriltme: a timed ghoul). Ruh Yürüyüşü (movement + damage reduction, a copy of Death's
+ * Advance) becomes Chains of Ice (Buz Zincirleri: a single-target snare, Frost). The ids necro_soul_snap / necro_spirit_walk are retired.
+ * The rows are plain literals (not row()) because they carry minion / sfx fields that the shared row() helper does not type.
+ * Level: unlockLevel 99 (granted by the node, as every util row); the spec unlock tables in specs_necromancer.ts set the level-gated copies.
  */
 import type { SkillDef } from '../types/skills';
-import { I, row } from './skills_class_utils_row';
+
+const I = (n: string) => `/assets/icons/${n}.svg`;
 
 export const NECROMANCER_UTIL_ROWS: SkillDef[] = [
   // ---- Nekromant ----
-  row({
-    id: 'necro_soul_snap', classId: 'necromancer', name: 'Ruh Koparma', icon: I('skill-curse'),
-    desc: '20 metre içindeki büyü yapan bir düşmanın büyüsünü keser ve 3 saniye sessizlik verir (boss hariç). Başarılı kesmede 10 Öz geri kazanırsın.',
-    cost: 10, cooldown: 20, targeting: 'custom', range: 20, arc: 360, anim: 'Spellcast_Shoot', animSpeed: 1.5,
-    behavior: 'interrupt', tags: ['offgcd', 'spell', 'kick'],
-    params: { silence: 3, gainRes: 10 },
-  }),
-  row({
-    id: 'necro_spirit_walk', classId: 'necromancer', name: 'Ruh Yürüyüşü', icon: I('skill-teleport'),
-    desc: '4 saniye boyunca hareketin %40 artar, düşmanların içinden geçersin ve fiziksel hasarın %30 azalır.',
-    cost: 15, cooldown: 45, targeting: 'self_buff', anim: 'Spellcast_Raise', animSpeed: 1.6, vfx: { cast: 'buff_aura' },
-    behavior: 'spirit_walk', tags: ['movement', 'defensive'],
-    selfStatuses: [{ status: 'spirit_walk', duration: 4 }],
-  }),
+  {
+    id: 'necro_raise_dead', classId: 'necromancer', name: 'Ölüleri Diriltme (Raise Dead)', icon: I('skill-summon-skeleton'),
+    unlockLevel: 99, castTime: 0.6, hitTime: 0.6, animSpeed: 1.2,
+    desc: 'Yanında 60 saniye kalacak bir Kemik Ghul çağırırsın. Ordu Efendisi\'nin kalıcı ghulu varken bile ek bir ghul doğar. 1 Rün harcar.',
+    cost: 0, cooldown: 0, targeting: 'self_buff', anim: 'Spellcast_Raise',
+    behavior: 'summon_ring', tags: ['spell', 'summon', 'minion', 'shadow'],
+    pip: { id: 'rune', cost: 1 }, minion: { id: 'necro_ghoul', count: 1, life: 60, ignoreCap: true, group: 'lesser' },
+    vfx: { cast: 'grave_rise' }, sfx: { cast: 'raise_dead' },
+    params: { ringRadius: 1.5, end: 0.6, chain: 0.05, move: 0.1, weight: 0 },
+  },
+  {
+    id: 'necro_chains_of_ice', classId: 'necromancer', name: 'Buz Zincirleri (Chains of Ice)', icon: I('skill-ice-bolt'),
+    unlockLevel: 99, castTime: 0, hitTime: 0.373, animSpeed: 1.5,
+    desc: 'Bir düşmanı buz zincirleriyle 8 saniye %50 yavaşlatırsın. 1 Rün harcar.',
+    cost: 0, cooldown: 0, targeting: 'target_instant', range: 25, anim: 'Spellcast_Shoot',
+    pip: { id: 'rune', cost: 1 },
+    statuses: [{ status: 'slow', duration: 8, magnitude: 0.5 }],
+    tags: ['spell', 'frost', 'cc', 'slow'],
+    vfx: { cast: 'frost_burst', impact: 'hit_magic' }, sfx: { cast: 'frost_cast', impact: 'frost_impact' },
+    params: { end: 0.7, chain: 0.05, move: 0.1, weight: 0 },
+  },
 ];

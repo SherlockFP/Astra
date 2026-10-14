@@ -49,6 +49,7 @@ export const SPEC_ICON: Record<SpecId, string> = {
   paladin_retribution: CLASS_ICON_PATH.paladin,
   necromancer_summoner: CLASS_ICON_PATH.necromancer,
   necromancer_bone: CLASS_ICON_PATH.necromancer,
+  necromancer_frost: CLASS_ICON_PATH.necromancer,
   warlock_affliction: CLASS_ICON_PATH.warlock,
   warlock_destruction: CLASS_ICON_PATH.warlock,
   warlock_demonology: CLASS_ICON_PATH.warlock,

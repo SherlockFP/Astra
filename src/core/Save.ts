@@ -57,7 +57,7 @@ export function normaliseCharacterSave(raw: unknown): CharacterSave | null {
 /** PM-00a (docs/kits/plate-melee.md §g need 9 / f4): the nine plate-melee specs. */
 const PLATE_SPEC_IDS: SpecId[] = [
   'knight_protector', 'knight_blademaster', 'barbarian_warlord', 'barbarian_butcher',
-  'paladin_protection', 'paladin_holy', 'paladin_retribution', 'necromancer_bone', 'necromancer_summoner',
+  'paladin_protection', 'paladin_holy', 'paladin_retribution', 'necromancer_bone', 'necromancer_summoner', 'necromancer_frost',
 ];
 
 /**
