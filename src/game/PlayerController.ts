@@ -179,6 +179,8 @@ export class PlayerController {
   /** Tab hold (lock-on, GDD_LIFE §4.7): when it went down, and whether the hold already toggled the lock. */
   private tabDownAt = -1;
   private tabLocked = false;
+  /** Side (+1 / -1) the body slid to around a blocking collider last time: the slide keeps it, so it never flip-flops on an edge. */
+  private slideSide = 1;
   /** Shoulder key hold (GDD_LIFE §4.5): when it went down, and whether the hold already centred the camera. */
   private shoulderDownAt = -1;
   private shoulderHeld = false;
@@ -789,6 +791,31 @@ export class PlayerController {
       p.position.x += v.x * dt;
       p.position.z += v.z * dt;
       const hit = world.nav.resolveMove(p.position, ox, oz, p.radius, p.position.y, !this.grounded);
+      if (hit) {
+        // head-on into a circular collider (tree trunk, pillar, a staircase of blocked cells): the push cancels the step and the body
+        // sticks. Turn the step by 35 / 65 / 90 deg towards the side it slid to last time (no flip-flop on an edge), else the other side.
+        // Every candidate goes through resolveMove, so walls and floors still hold.
+        const sx = v.x * dt, sz = v.z * dt;
+        const stepLen = Math.hypot(sx, sz);
+        const blockedLen = Math.hypot(p.position.x - ox, p.position.z - oz);
+        if (stepLen > 1e-4 && blockedLen < stepLen * 0.5) {
+          const a0 = Math.atan2(sz, sx);
+          search: for (const side of [this.slideSide, -this.slideSide]) {
+            for (const deg of [35, 65, 90]) {
+              const a = a0 + (side * deg * Math.PI) / 180;
+              const cand = new THREE.Vector3(ox + Math.cos(a) * stepLen, p.position.y, oz + Math.sin(a) * stepLen);
+              world.nav.resolveMove(cand, ox, oz, p.radius, p.position.y, !this.grounded);
+              const len = Math.hypot(cand.x - ox, cand.z - oz);
+              if (len >= stepLen * 0.5 && len > blockedLen + 0.02) {
+                p.position.x = cand.x;
+                p.position.z = cand.z;
+                this.slideSide = side;
+                break search;
+              }
+            }
+          }
+        }
+      }
       if (hit && dt > 1e-4) {
         // slide: report the speed we actually achieved so animation/footsteps/network stay truthful
         const ax = (p.position.x - ox) / dt, az = (p.position.z - oz) / dt;

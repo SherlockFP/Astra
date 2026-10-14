@@ -187,6 +187,12 @@
 .efs-class.sel { border-color: var(--c); background: linear-gradient(90deg, rgba(90,66,30,.85), rgba(34,22,10,.85)); box-shadow: 0 0 16px color-mix(in srgb, var(--c) 55%, transparent), inset 0 0 0 1px #000; }
 .efs-class .nm { font-family: var(--font-head); font-weight: 700; font-size: 18px; letter-spacing: .08em; color: #fff0c8; line-height: 1.05; }
 .efs-class .tg { font-size: 14px; color: var(--c); margin-top: 2px; }
+/* nation tiles: two compact cards side by side (the creation list must stay on screen at 720p) */
+.efs-nations { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 2px; }
+.efs-nations .efs-class { margin-bottom: 0; padding: 6px 8px; flex-direction: column; align-items: flex-start; gap: 1px; }
+.efs-nations .efs-class:hover { transform: none; }
+.efs-nations .efs-class .nm { font-size: 16px; }
+.efs-nations .efs-class .tg { font-size: 12px; line-height: 1.2; margin-top: 0; }
 .efs-label { font-family: var(--font-head); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: #c99a45; margin: 12px 0 6px; }
 .efs-swatches { display: flex; gap: 6px; flex-wrap: nowrap; padding: 2px 0; }
 .efs-sw { pointer-events: auto; width: 24px; height: 24px; cursor: pointer; border: 2px solid #2a1c0e; background: var(--c); transform: rotate(45deg) scale(.82); box-shadow: 0 0 0 1px #6b5530; transition: all .12s; position: relative; margin: 3px 5px; }

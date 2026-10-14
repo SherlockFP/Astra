@@ -146,8 +146,34 @@ function enemyIdsOf(o: QuestObjective, tiers: { id: string; enemyId: string }[])
   return tier ? [tier.enemyId] : [o.target];
 }
 
-/** Where one unfinished objective points, or null when it has no place on the map. */
-export function objectivePos(o: QuestObjective): Pt | null {
+/**
+ * Camp (or patrol) of the open-world map that spawns one of the ids: the quest's own place (layout `place`) when it holds one,
+ * else the nearest to the player. The fallback of a kill objective whose enemy is not streamed in (the arrow would hide).
+ */
+function campPos(ids: string[], place?: string): Pt | null {
+  const def = worldDef();
+  if (!def || !ids.length) return null;
+  const holds = (pk: { members: { enemyId: string }[] }): boolean => pk.members.some((m) => ids.includes(m.enemyId));
+  const own = place ? def.packs.find((pk) => pk.id === place) : undefined;
+  if (own && holds(own)) return { x: tileCentreM(own.center[0]), z: tileCentreM(own.center[1]) };
+  const p = G.player ?? G.world?.localPlayer;
+  let best: Pt | null = null;
+  let bestD = Infinity;
+  for (const pk of def.packs) {
+    if (!holds(pk)) continue;
+    const x = tileCentreM(pk.center[0]);
+    const z = tileCentreM(pk.center[1]);
+    const d = p ? Math.hypot(x - p.position.x, z - p.position.z) : 0;
+    if (d < bestD) {
+      bestD = d;
+      best = { x, z };
+    }
+  }
+  return best;
+}
+
+/** Where one unfinished objective points, or null when it has no place on the map. `place` is the quest's layout place (camp fallback). */
+export function objectivePos(o: QuestObjective, place?: string): Pt | null {
   switch (o.kind) {
     case 'talk':
       return o.target ? npcWorldPos(o.target) : null;
@@ -158,7 +184,7 @@ export function objectivePos(o: QuestObjective): Pt | null {
     case 'kill':
     case 'boss':
     case 'metin':
-      return nearestLiveEnemy(killIds(o));
+      return nearestLiveEnemy(killIds(o)) ?? campPos(killIds(o), place);
     default:
       return null;
   }
@@ -175,7 +201,7 @@ export function questTargetMarks(): QuestMark[] {
       const rows = q.progressRows(def.id);
       def.objectives.forEach((o, k) => {
         if (rows[k]?.done) return;
-        const p = objectivePos(o);
+        const p = objectivePos(o, def.place);
         if (p) out.push({ ...p, questId: def.id, label: o.text, kind: o.kind });
       });
     }
@@ -304,10 +330,10 @@ export function worldZoneOf(o: QuestObjective, questRegion?: string): string | n
  * open-world map points at that map's gate (Karakır Bozkırı: the East Gate; Sisli Vadi: the South Gate), dungeons at their portal.
  * On the world map it is the objective's own position. Null when there is no place to point at.
  */
-export function guideTargetPos(o: QuestObjective, inTown: boolean, questRegion?: string): (Pt & { label: string }) | null {
+export function guideTargetPos(o: QuestObjective, inTown: boolean, questRegion?: string, place?: string): (Pt & { label: string }) | null {
   const tgt = o.target ?? '';
   if (!inTown) {
-    const p = objectivePos(o);
+    const p = objectivePos(o, place);
     return p ? { ...p, label: o.text } : null;
   }
   const zone = worldZoneOf(o, questRegion);
@@ -374,7 +400,7 @@ export function guideTarget(recommendedGiver: string | null): GuideTarget | null
         for (let k = 0; k < pdef.objectives.length; k++) {
           const o = pdef.objectives[k];
           if (rows[k]?.done) continue;
-          const p = guideTargetPos(o, inTown, pdef.region);
+          const p = guideTargetPos(o, inTown, pdef.region, pdef.place);
           if (p) return { x: p.x, z: p.z, label: p.label, kind: objectiveKind(o), key: `${pdef.id}#${k}` };
         }
       }

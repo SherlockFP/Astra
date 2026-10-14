@@ -28,6 +28,8 @@ export interface QuestDef {
   main?: boolean;
   level: number;
   region?: string;
+  /** Layout place (camp / region / village id). The objective arrow points at its camp while no enemy of a kill objective is streamed in. */
+  place?: string;
   /** TownNpc id that offers the quest. */
   giver: string;
   /** TownNpc id that turns it in (default: giver). */

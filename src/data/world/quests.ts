@@ -280,7 +280,7 @@ const XP_PCT: Record<string, number> = {
 
 /** Build a QuestDef from layout fields + the extra table. */
 function quest(
-  p: { id: string; name: string; level: number; giver: string; xpPct: number; goldPerLevel?: number; region?: string; main: boolean; prereq?: string },
+  p: { id: string; name: string; level: number; giver: string; xpPct: number; goldPerLevel?: number; region?: string; place?: string; main: boolean; prereq?: string },
   x: Extra,
 ): QuestDef {
   const reward: QuestReward = { xpPct: p.xpPct };
@@ -293,6 +293,7 @@ function quest(
   };
   if (p.main) def.main = true;
   if (p.region) def.region = p.region;
+  if (p.place) def.place = p.place;
   if (p.prereq) def.prereq = [p.prereq];
   if (x.turnIn) def.turnIn = x.turnIn;
   if (x.unlocks) def.unlocks = x.unlocks;
@@ -303,7 +304,7 @@ function quest(
 export const MAIN_QUESTS: QuestDef[] = LAYOUT.quests.main.map((q, i) =>
   quest(
     {
-      id: q.id, name: q.name, level: q.level, giver: q.giver, xpPct: XP_PCT[q.id] ?? q.xpPct, goldPerLevel: q.goldPerLevel, main: true,
+      id: q.id, name: q.name, level: q.level, giver: q.giver, xpPct: XP_PCT[q.id] ?? q.xpPct, goldPerLevel: q.goldPerLevel, main: true, place: q.place,
       prereq: i > 0 ? LAYOUT.quests.main[i - 1].id : undefined,
     },
     EXTRA_MAIN[q.id] ?? { objectives: [], offer: q.goal, progress: q.goal, done: q.goal },
@@ -313,7 +314,7 @@ export const MAIN_QUESTS: QuestDef[] = LAYOUT.quests.main.map((q, i) =>
 /** Side quests: the region is the first `rN` token of the place (camp id or "r1 ambient"). */
 export const SIDE_QUESTS: QuestDef[] = LAYOUT.quests.side.map((q) =>
   quest(
-    { id: q.id, name: q.name, level: q.level, giver: q.giver, xpPct: XP_PCT[q.id] ?? q.xpPct, region: /^(r\d)/.exec(q.place)?.[1], main: false },
+    { id: q.id, name: q.name, level: q.level, giver: q.giver, xpPct: XP_PCT[q.id] ?? q.xpPct, region: /^(r\d)/.exec(q.place)?.[1], place: q.place, main: false },
     EXTRA_SIDE[q.id] ?? { objectives: [], offer: q.goal, progress: q.goal, done: q.goal },
   ),
 );

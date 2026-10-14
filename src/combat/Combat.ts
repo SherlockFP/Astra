@@ -103,6 +103,15 @@ export interface DamageResult {
   parried?: boolean;
 }
 
+/**
+ * New-player shield: monster damage taken by the local player is cut by this share at levels 1-5, so the first camps are survivable
+ * for casters (mage base HP is the lowest). Levels 6+ get nothing. PvP starts at level 35 (data/pvpZone PVP_MIN_LEVEL), never here.
+ */
+const NEW_PLAYER_DR = [0.3, 0.25, 0.2, 0.12, 0.06];
+export function newPlayerDr(level: number): number {
+  return NEW_PLAYER_DR[Math.floor(level) - 1] ?? 0;
+}
+
 /** Damage arriving at the LOCAL player from enemies/hazards (raw, before the player's own mitigation). */
 export interface IncomingHit {
   sourceId: EntityId | null;
@@ -1743,6 +1752,7 @@ export class Combat {
     // 4. armour / resist, damage reduction buffs, takenMore, absorb shields
     amount = this.mitigate(p, amount, type, lvlSrc);
     amount *= 1 - clamp(p.getStat('damageReductionPct'), 0, 0.9);
+    amount *= 1 - newPlayerDr(p.level);
     // KIT PK-ROGUE Aldatma (§5): −40 % from area hits (circle / ring telegraphs arrive with melee === false), −15 % from the rest
     if (amount > 0 && p.statuses.has('feint')) amount *= hit.melee === false && !dot ? 0.6 : 0.85;
     // Savaş Lordu Öfke Zırhı (GDD_V2 §1.3.3): -0.25% damage taken per rage point, up to -25%

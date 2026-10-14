@@ -32,6 +32,8 @@ export class DeathPanel extends GamePanel {
   private releaseBtn!: HTMLButtonElement;
   private hereBtn!: HTMLButtonElement;
   private hereLabel!: HTMLElement;
+  /** Visible reason under "Burada Diril" while it is grey (wait / gold); hidden when the button is usable or not offered. */
+  private reasonEl!: HTMLElement;
   private t0 = 0;
   private timer = 0;
   private labelAcc = 0;
@@ -55,6 +57,8 @@ export class DeathPanel extends GamePanel {
     this.noteEl = h('div.pg-death-note');
     this.reviveEl = h('div.pg-death-revive');
     this.tipEl = h('div.pg-death-tip');
+    this.reasonEl = h('div.pg-death-reason');
+    this.reasonEl.style.display = 'none';
     this.releaseBtn = button('Ruhunu Serbest Bırak', () => this.release(), { variant: 'danger', cls: 'pg-big', icon: '/assets/icons/ui-tombstone.svg' });
     this.hereBtn = button('Burada Diril', () => this.reviveHere(), { variant: 'normal', icon: '/assets/icons/ui-hourglass.svg', cls: 'pg-death-here' });
     this.hereLabel = this.hereBtn.querySelector('span') as HTMLElement;
@@ -67,6 +71,7 @@ export class DeathPanel extends GamePanel {
       this.reviveEl,
       this.releaseBtn,
       this.hereBtn,
+      this.reasonEl,
       this.tipEl,
     );
     this.card.classList.add('panel');
@@ -173,6 +178,7 @@ export class DeathPanel extends GamePanel {
       this.reviveEl.style.display = 'none';
     }
     this.hereBtn.style.display = this.canReviveHere() ? '' : 'none';
+    if (!this.canReviveHere()) this.setReason('');
     this.tipEl.textContent = 'İpucu: ' + expandKeys(TIPS[Math.floor(Math.random() * TIPS.length)]);
   }
 
@@ -203,7 +209,15 @@ export class DeathPanel extends GamePanel {
     const poor = gold < cost;
     this.hereBtn.disabled = wait > 0 || poor;
     this.hereBtn.title = poor ? 'Yeterli altının yok.' : '';
+    this.setReason(wait > 0 ? `Dirilmek için ${Math.ceil(wait)} sn daha bekle.` : poor ? `Yeterli altın yok: ${fmtInt(cost)} altın gerekli, sende ${fmtInt(gold)} var.` : '');
     this.hereLabel.textContent = wait > 0 ? `Burada Diril (${Math.ceil(wait)})` : `Burada Diril · ${fmtInt(cost)} altın`;
+  }
+
+  /** Shows the reason text under "Burada Diril" (empty = hidden). */
+  private setReason(text: string): void {
+    if (this.reasonEl.textContent === text) return;
+    this.reasonEl.textContent = text;
+    this.reasonEl.style.display = text ? '' : 'none';
   }
 
   private release(): void {

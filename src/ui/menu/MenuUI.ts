@@ -212,25 +212,10 @@ export class MenuUI {
       this.classCards.set(id, card);
       l.append(card);
     }
-    l.append(h('div.efs-label', null, 'Renk Varyantı'));
-    const sw = h('div.efs-swatches');
-    VARIANTS.forEach((v, i) => {
-      const e = h('div.efs-sw', {
-        style: `--c:${v.css}`,
-        title: v.name,
-        onclick: () => {
-          this.cb.onUiSound('click');
-          this.cb.onPickVariant(i);
-        },
-      });
-      this.swatchEls.push(e);
-      sw.append(e);
-    });
-    this.variantName = h('div.efs-vname');
-    l.append(sw, this.variantName);
-
-    // WP-06: nation (cannot be changed later; hostile only inside the Kızıl Sınır PvP zone)
+    // WP-06: nation (cannot be changed later; hostile only inside the Kızıl Sınır PvP zone). Right under the classes and as two compact
+    // tiles: the long list used to push it below the fold of the scrolling panel at 720p.
     l.append(h('div.efs-label', null, 'Ulus'));
+    const nations = h('div.efs-nations');
     for (const id of NATION_IDS) {
       const n = NATIONS[id];
       const card = h(
@@ -247,8 +232,25 @@ export class MenuUI {
         h('div', null, h('div.nm', null, n.name), h('div.tg', null, id === 'gok_kartal' ? 'Mavi bayrak · Kuzey sınırı' : 'Kızıl bayrak · Güney bozkırı')),
       );
       this.nationCards.set(id, card);
-      l.append(card);
+      nations.append(card);
     }
+    l.append(nations);
+    l.append(h('div.efs-label', null, 'Renk Varyantı'));
+    const sw = h('div.efs-swatches');
+    VARIANTS.forEach((v, i) => {
+      const e = h('div.efs-sw', {
+        style: `--c:${v.css}`,
+        title: v.name,
+        onclick: () => {
+          this.cb.onUiSound('click');
+          this.cb.onPickVariant(i);
+        },
+      });
+      this.swatchEls.push(e);
+      sw.append(e);
+    });
+    this.variantName = h('div.efs-vname');
+    l.append(sw, this.variantName);
 
     // name + Oluştur / Geri live in a footer that stays pinned at the bottom of the (scrollable) panel on short screens
     const foot = h('div.efs-createfoot', null, h('div.efs-label', null, 'Kahraman Adı'));

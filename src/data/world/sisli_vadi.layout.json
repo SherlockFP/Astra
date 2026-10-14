@@ -748,7 +748,7 @@
    "members": [
     {
      "enemyId": "ow_rat",
-     "count": 7
+     "count": 3
     }
    ],
    "flags": [
@@ -2903,14 +2903,11 @@
    "respawnSec": 55,
    "members": [
     {
-     "enemyId": "ow_wolf",
-     "count": 4
-    },
-    {
      "enemyId": "ow_rat",
      "count": 3
     }
-   ]
+   ],
+   "flags": []
   },
   {
    "id": "r1_g010",
@@ -3392,14 +3389,11 @@
    "respawnSec": 50,
    "members": [
     {
-     "enemyId": "ow_wolf",
-     "count": 4
-    },
-    {
      "enemyId": "ow_rat",
      "count": 3
     }
-   ]
+   ],
+   "flags": []
   },
   {
    "id": "r1_g031",
@@ -3829,20 +3823,17 @@
    ],
    "radius": 14,
    "levelRange": [
-    3,
-    4
+    1,
+    2
    ],
    "respawnSec": 55,
    "members": [
     {
-     "enemyId": "ow_wolf",
-     "count": 4
-    },
-    {
      "enemyId": "ow_rat",
      "count": 3
     }
-   ]
+   ],
+   "flags": []
   },
   {
    "id": "r1_g050",
@@ -4197,20 +4188,17 @@
    ],
    "radius": 12,
    "levelRange": [
-    2,
-    4
+    1,
+    2
    ],
    "respawnSec": 60,
    "members": [
     {
-     "enemyId": "ow_wolf",
+     "enemyId": "ow_rat",
      "count": 3
-    },
-    {
-     "enemyId": "ow_boar",
-     "count": 2
     }
-   ]
+   ],
+   "flags": []
   },
   {
    "id": "r1_g066",
@@ -4298,19 +4286,16 @@
    "radius": 14,
    "levelRange": [
     1,
-    3
+    2
    ],
    "respawnSec": 40,
    "members": [
     {
-     "enemyId": "ow_wolf",
+     "enemyId": "ow_rat",
      "count": 3
-    },
-    {
-     "enemyId": "ow_boar",
-     "count": 2
     }
-   ]
+   ],
+   "flags": []
   },
   {
    "id": "r1_g070",
@@ -4443,16 +4428,17 @@
    ],
    "radius": 14,
    "levelRange": [
-    3,
-    4
+    1,
+    2
    ],
    "respawnSec": 55,
    "members": [
     {
-     "enemyId": "ow_slime",
-     "count": 5
+     "enemyId": "ow_rat",
+     "count": 3
     }
-   ]
+   ],
+   "flags": []
   },
   {
    "id": "r1_g076",
@@ -4965,20 +4951,17 @@
    ],
    "radius": 14,
    "levelRange": [
-    3,
-    4
+    1,
+    2
    ],
    "respawnSec": 70,
    "members": [
     {
-     "enemyId": "ow_wolf",
-     "count": 4
-    },
-    {
-     "enemyId": "ow_boar",
-     "count": 2
+     "enemyId": "ow_rat",
+     "count": 3
     }
-   ]
+   ],
+   "flags": []
   },
   {
    "id": "r1_g098",
@@ -4990,16 +4973,17 @@
    ],
    "radius": 14,
    "levelRange": [
-    3,
-    5
+    1,
+    2
    ],
    "respawnSec": 40,
    "members": [
     {
-     "enemyId": "ow_wasp",
-     "count": 6
+     "enemyId": "ow_rat",
+     "count": 3
     }
-   ]
+   ],
+   "flags": []
   },
   {
    "id": "r1_g099",
@@ -5011,16 +4995,17 @@
    ],
    "radius": 12,
    "levelRange": [
-    4,
-    5
+    1,
+    2
    ],
    "respawnSec": 55,
    "members": [
     {
-     "enemyId": "ow_boar",
-     "count": 4
+     "enemyId": "ow_rat",
+     "count": 3
     }
-   ]
+   ],
+   "flags": []
   },
   {
    "id": "r1_g100",
@@ -5358,16 +5343,17 @@
    ],
    "radius": 14,
    "levelRange": [
-    3,
-    5
+    1,
+    2
    ],
    "respawnSec": 70,
    "members": [
     {
-     "enemyId": "ow_slime",
-     "count": 6
+     "enemyId": "ow_rat",
+     "count": 3
     }
-   ]
+   ],
+   "flags": []
   },
   {
    "id": "r1_g115",
@@ -5617,20 +5603,17 @@
    ],
    "radius": 14,
    "levelRange": [
-    3,
-    5
+    1,
+    2
    ],
    "respawnSec": 40,
    "members": [
     {
-     "enemyId": "ow_spider",
-     "count": 3
-    },
-    {
      "enemyId": "ow_rat",
-     "count": 4
+     "count": 3
     }
-   ]
+   ],
+   "flags": []
   },
   {
    "id": "r1_g126",
@@ -5797,20 +5780,17 @@
    ],
    "radius": 14,
    "levelRange": [
-    2,
-    4
+    1,
+    2
    ],
    "respawnSec": 50,
    "members": [
     {
-     "enemyId": "ow_wolf",
-     "count": 4
-    },
-    {
      "enemyId": "ow_rat",
-     "count": 2
+     "count": 3
     }
-   ]
+   ],
+   "flags": []
   },
   {
    "id": "r1_g134",
@@ -6075,14 +6055,11 @@
    "respawnSec": 55,
    "members": [
     {
-     "enemyId": "ow_wolf",
-     "count": 4
-    },
-    {
      "enemyId": "ow_rat",
-     "count": 4
+     "count": 3
     }
-   ]
+   ],
+   "flags": []
   },
   {
    "id": "r1_g146",
