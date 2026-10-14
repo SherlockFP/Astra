@@ -59,9 +59,10 @@ export const ROTATIONS_KIT_DRUID: Record<string, KitApl> = {
     st: [
       'druid_growl if cd_ready(druid_growl) && !target.status:taunt',
       'druid_survival_instincts if cd_ready(druid_survival_instincts) && hp% < 50',
+      'druid_barkskin if cd_ready(druid_barkskin)',
       'druid_sleeper_rage if cd_ready(druid_sleeper_rage)',
       'druid_frenzied_regen if charges(druid_frenzied_regen) >= 1 && hp% < 70',
-      'druid_ironfur if !status:ironfur',
+      'druid_ironfur if stacks:ironfur < 4',
       'druid_thrash if cd_ready(druid_thrash)',
       'druid_mangle if cd_ready(druid_mangle)',
       'druid_basic',
@@ -69,8 +70,9 @@ export const ROTATIONS_KIT_DRUID: Record<string, KitApl> = {
     aoe: [
       'druid_growl if cd_ready(druid_growl) && !target.status:taunt',
       'druid_survival_instincts if cd_ready(druid_survival_instincts) && hp% < 50',
+      'druid_barkskin if cd_ready(druid_barkskin)',
       'druid_thrash if cd_ready(druid_thrash)',
-      'druid_ironfur if !status:ironfur',
+      'druid_ironfur if stacks:ironfur < 4',
       'druid_frenzied_regen if charges(druid_frenzied_regen) >= 1 && hp% < 70',
       'druid_mangle if cd_ready(druid_mangle)',
       'druid_basic',

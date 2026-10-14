@@ -524,6 +524,7 @@ function compile(line) {
     .replace(/\bcd\((\w+)\)/g, "CD('$1')")
     .replace(/pips:(\w+)/g, "PIP('$1')")
     .replace(/target\.status:(\w+)/g, "TS('$1')")
+    .replace(/stacks:(\w+)/g, "STK('$1')")
     .replace(/!status:(\w+)/g, "!S('$1')")
     .replace(/status:(\w+)/g, "S('$1')")
     .replace(/\bhp%/g, 'HPP')
@@ -532,7 +533,7 @@ function compile(line) {
     .replace(/allies\.debuffed/g, 'ADEB')
     .replace(/\btargets\b/g, 'TG');
   // eslint-disable-next-line no-new-func
-  return { skill: m[1], fn: new Function('S', 'TS', 'CDR', 'CH', 'CD', 'PIP', 'HPP', 'ALOW', 'AINJ', 'ADEB', 'TG', `return (${cond});`) };
+  return { skill: m[1], fn: new Function('S', 'STK', 'TS', 'CDR', 'CH', 'CD', 'PIP', 'HPP', 'ALOW', 'AINJ', 'ADEB', 'TG', `return (${cond});`) };
 }
 function runApl(spec, seconds, list = 'st') {
   const p = newDruid(spec);
@@ -560,13 +561,13 @@ function runApl(spec, seconds, list = 'st') {
     if (foe.hp < 1e8) foe.hp = 1e9;
     if (f % 6 === 0 && !p.cast) { // a hard cast in progress is not cancelled by the APL
       const env = {
-        S: (id) => p.statuses.has(id), TS: (id) => foe.statuses.has(id), CDR, CH, CD,
+        S: (id) => p.statuses.has(id), STK: (id) => p.statuses.stacks(id), TS: (id) => foe.statuses.has(id), CDR, CH, CD,
         PIP: (id) => G.skills.pipCount(p, id), HPP: 100 * p.hp / p.maxHp, ALOW: p.hp / p.maxHp, AINJ: list === 'aoe' ? 3 : 0, ADEB: false, TG: list === 'aoe' ? 3 : 1,
       };
       for (const line of compiled) {
         const slot = slotOf(line.skill);
         if (!slot) continue;
-        if (!line.fn(env.S, env.TS, env.CDR, env.CH, env.CD, env.PIP, env.HPP, env.ALOW, env.AINJ, env.ADEB, env.TG)) continue;
+        if (!line.fn(env.S, env.STK, env.TS, env.CDR, env.CH, env.CD, env.PIP, env.HPP, env.ALOW, env.AINJ, env.ADEB, env.TG)) continue;
         if (line.skill !== 'druid_basic' && !String(line.skill).endsWith('_basic') && !CDR(line.skill)) continue;
         if (G.skills.tryCastSlot(p, slot, H.aimFor(p, foe))) break;
       }

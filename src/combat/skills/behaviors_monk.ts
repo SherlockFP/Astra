@@ -30,9 +30,7 @@ import { minionDef } from '../../data/minions';
 import type { Actor } from '../../entities/Actor';
 import type { Player } from '../../entities/Player';
 import type { StatusId } from '../../types/skills';
-
-/** The Sarsma pool status (data/statuses_kit_monk.ts): the magnitude is the pool in HP. */
-const POOL: StatusId = 'stagger_pool';
+import { sarsmaPurge } from '../sarsma';
 
 /** Friendly pick of a heal (friendly target, crosshair ally, lowest HP in range, else the caster; healing.ts resolver). */
 function healPick(c: CastCtx): Player {
@@ -55,13 +53,9 @@ function giveStatus(c: CastCtx, target: Actor, status: StatusId, duration: numbe
   target.statuses.apply(status, duration, { magnitude, sourceId: c.caster.id });
 }
 
-/** Removes `pct` of the Sarsma pool (GDD §1.11: Arındırıcı İksir takes 55 %). The pool is overwritten, its duration kept. */
+/** Removes `pct` of the Sarsma pool (GDD §1.11: Arındırıcı İksir takes 55 %). The pool lives in sarsma.ts; its drain is cut by the same share. */
 function purgePool(a: Actor, pct: number): void {
-  const st = a.statuses.get(POOL);
-  if (!st || st.magnitude <= 0) return;
-  const left = st.magnitude * (1 - pct);
-  if (left < 1) a.statuses.remove(POOL);
-  else a.statuses.apply(POOL, st.remaining, { magnitude: left, sourceId: st.sourceId });
+  sarsmaPurge(a, pct);
 }
 
 // ---- Çi Torpedo: the dash of TARGETING dash, plus its self status (chi_flow 2.5 s). The dash fires no selfStatuses itself.

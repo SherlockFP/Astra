@@ -15,6 +15,7 @@ const { CLASSES } = await H.imp('data/classes.ts');
 const { CharacterState } = await H.imp('systems/CharacterState.ts');
 const { MONK_KIT_SPEC_IDS } = await H.imp('data/specs_kit_monk.ts');
 const { Minions } = await H.imp('combat/Minions.ts');
+const { sarsmaAccrue, sarsmaPool } = await H.imp('combat/sarsma.ts');
 G.minions = new Minions();
 
 let fails = 0;
@@ -188,15 +189,16 @@ const foeAt = (z = 2.2) => {
   const p = newMonk(bm);
   H.step(2);
   p.hp = p.maxHp * 0.5;
-  p.statuses.apply('stagger_pool', 12, { magnitude: 100, sourceId: p.id });
+  sarsmaAccrue(p, 250, 'physical'); // the real pool: 40 % of 250 = 100 HP, draining over 10 s
   p.pips = { chi: 5 };
   p.resource = 100;
   const hp0 = p.hp;
   const started = G.skills.tryCast(p, 'monk_purifying_brew', H.aimFor(p, foeAt(3)), 's2');
   H.stepSec(1.2);
-  const pool = p.statuses.get('stagger_pool')?.magnitude ?? 0;
+  const pool = sarsmaPool(p);
   ok('kit.monk.cast Arındırıcı İksir cast starts', started === true, `tryCast=${started}`);
-  ok('kit.monk.cast Arındırıcı İksir leaves 45 % of the pool', Math.abs(pool - 45) < 1, `pool=${pool.toFixed(1)}`);
+  // 55 % goes at the cast's hit (0.72 s in), so 45 HP remain, less the drain of the 0.48 s after it
+  ok('kit.monk.cast Arındırıcı İksir leaves 45 % of the pool (net of the drain)', pool > 30 && pool <= 45, `pool=${pool.toFixed(1)}`);
   ok('kit.monk.cast Arındırıcı İksir heals about 6 % max HP', p.hp - hp0 > p.maxHp * 0.05, `hp ${hp0.toFixed(0)} -> ${p.hp.toFixed(0)}`);
 }
 {

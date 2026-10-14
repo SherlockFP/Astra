@@ -27,6 +27,7 @@ import { absorbMagicShell } from './magicShell';
 import { applyAlchemyLink } from './link';
 import { SHADOW_TECHNIQUE } from '../data/procs_kit_rogue';
 import { formRegen } from './Forms';
+import { sarsmaAccrue, sarsmaTick } from './sarsma';
 import './statusesFeel'; // marked_crit / riposte / critbuff defs (side-effect merge into the shared registries)
 import { PARTY_ID_BASE, type DamageType, type EntityId } from '../types/common';
 import type { StatusApply, StatusId } from '../types/skills';
@@ -316,6 +317,10 @@ export class Combat {
   private fxList: HitFx[] = [];
   private reactCd = new Map<EntityId, number>();
   private stagger = new Map<EntityId, StaggerState>();
+  /** Sarsma drain not yet shown as a damage number (whole HP are shown; the HP itself drains every frame). */
+  private sarsmaShown = 0;
+  /** Seconds since the last Sarsma number: shown as one tick every 0.5 s, like WoW's Stagger. */
+  private sarsmaTimer = 0;
   /** enemy -> the `reviveCount` it already died at (a Diriltici champion brings enemies back: their next death must count again). */
   private deadEnemies = new WeakMap<object, number>();
   private corpses: { enemy: Enemy; t: number }[] = [];
@@ -1809,6 +1814,8 @@ export class Combat {
     // 4b. Koruyucu Son Savunma (GDD_V2 §1.3.1): a lethal hit leaves the protector at 15% max HP (once per 90 s)
     if (amount > 0 && !dot && protectorCheat(p, amount)) amount = 0;
 
+    // Sarsma (Demci, sarsma.ts): the Brewmaster's share of this hit goes into the pool and drains back over 10 s
+    if (amount > 0 && !dot) amount = Math.max(0, Math.round(amount - sarsmaAccrue(p, amount, type)));
     // 5. apply HP
     const hpBefore = p.hp;
     if (amount > 0) {
@@ -2293,6 +2300,7 @@ export class Combat {
     this.updateFx(dt);
     this.updateFlashQueue();
     this.updateStagger(dt);
+    this.updateSarsma(dt);
     this.updateCorpses(dt);
     this.updateSlams();
     this.flushFeel();
@@ -2470,6 +2478,26 @@ export class Combat {
         console.error('[combat] wall slam failed', err);
       }
     }
+  }
+
+  /** Sarsma drain (Demci): the pool's HP leaves the local Brewmaster every frame, as damage that no armour, block or dodge reduces. */
+  private updateSarsma(dt: number): void {
+    const p = G.world?.localPlayer ?? G.player;
+    if (!p || p.isDead || !p.isLocal) return;
+    const drain = sarsmaTick(p, dt);
+    if (drain <= 0) return;
+    const before = p.hp;
+    p.hp = Math.max(0, p.hp - drain);
+    this.recordTaken(p, drain);
+    this.sarsmaShown += drain;
+    this.sarsmaTimer += dt;
+    if ((this.sarsmaShown >= 1 && this.sarsmaTimer >= 0.5) || p.hp <= 0) {
+      this.sarsmaTimer = 0;
+      const shown = Math.floor(this.sarsmaShown);
+      this.sarsmaShown -= shown;
+      if (shown > 0) G.events.emit('damage', { targetId: p.id, sourceId: null, amount: shown, crit: false, type: 'true', kind: 'dot', pos: [p.position.x, p.position.y + p.height * 0.7, p.position.z], overkill: Math.max(0, shown - before) });
+    }
+    if (p.hp <= 0) this.killLocalPlayer(null, { by: 'Sarsma' });
   }
 
   private updateStagger(dt: number): void {

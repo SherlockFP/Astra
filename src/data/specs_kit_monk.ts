@@ -12,7 +12,7 @@ export const SPECS_KIT_MONK: Partial<Record<SpecId, SpecDef>> = {
     desc: 'Ertelenmiş Hasar: alınan hasarın bir kısmı Sarsma havuzuna gider ve yavaşça sızar. Fıçı Darbesi ile tehdit üretir, Arındırıcı İksir ile havuzu boşaltırsın.',
     stats: { maxHpPct: 0.30, armorPct: 0.25, dodgeChance: 0.08, threatPct: 1.5 },
     specials: [
-      { id: 'trait_brewmaster', desc: 'Ertelenmiş Hasar: alınan hasarın %40\'ı Sarsma havuzuna gider (havuz yarılanma süresi ~4 sn); başarılı parry havuzun %15\'ini temizler.', params: { moreDamage: 0.75, staggerAbsorb: 0.4, parryPurge: 0.15 } },
+      { id: 'trait_brewmaster', desc: 'Ertelenmiş Hasar: alınan fiziksel hasarın %40\'ı, büyü hasarının %20\'si Sarsma havuzuna gider ve 10 saniyede hasar olarak geri akar; Arındırıcı İksir havuzun %55\'ini temizler.', params: { moreDamage: 0.75, staggerAbsorb: 0.4, staggerMagic: 0.2, parryPurge: 0.15 } },
     ],
     skills: ['monk_celestial_brew', 'monk_provoke', 'monk_keg_smash', 'monk_purifying_brew', 'monk_bm_fortifying_brew', 'monk_bm_black_ox',
       'monk_breath_of_fire', 'monk_expel_harm', 'monk_exploding_keg', 'monk_spear_hand_strike'],

@@ -24,7 +24,7 @@ export const STATUSES_KIT_MONK: Partial<Record<StatusId, StatusDef>> = {
   fortifying: { id: 'fortifying', name: 'Güçlendirici İksir', icon: I('buff-defense'), kind: 'buff', stats: { maxHpPct: 0.2 } },
   // ---- Fıçı Darbesi mark (6 s on the enemy). The GDD names the status but gives no effect; kept as a marker (see report).
   brewed: { id: 'brewed', name: 'Demlenmiş', icon: I('debuff-poison'), kind: 'debuff' },
-  // ---- Sarsma pool (§1.11, Demci): the pool value is the magnitude (HP). Hidden; the HUD bar reads stagger:changed.
+  // ---- Sarsma pool (§1.11, Demci): the mirror of the pool in combat/sarsma.ts (magnitude = pool HP). Hidden; the APL reads it.
   stagger_pool: { id: 'stagger_pool', name: 'Sarsma', icon: I('buff-absorb'), kind: 'buff', hidden: true },
   // ---- Monk-only ids appended to the union (see types/skills.ts)
   // Cennet Yumrukları (monk_fists_of_fury): -30 % damage taken while the channel runs
@@ -46,7 +46,7 @@ export const STATUS_RULES_KIT_MONK: Partial<Record<StatusId, StatusRule>> = {
   // -20 % damage taken: x(1 + value) = x0.80
   fortifying: { stack: 'refresh', takenMore: -0.2 },
   brewed: { stack: 'refresh' },
-  // the pool value is overwritten by Arındırıcı İksir and by the accrual hook (magnitude exact, duration kept)
+  // the pool value is written by combat/sarsma.ts (accrual, drain, Arındırıcı İksir); a single apply replaces it
   stagger_pool: { stack: 'override' },
   // -30 % damage taken while Cennet Yumrukları runs
   fists_guard: { stack: 'refresh', takenMore: -0.3 },
