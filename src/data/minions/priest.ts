@@ -13,7 +13,7 @@ const MAGE = '/assets/models/characters/Mage.glb';
 export const PRIEST_MINIONS: MinionDef[] = [
   {
     // Gölge Canavarı (priest_shadow_fiend, m90): a shadow pet that bites and hurls a shadow bolt, 15 s
-    id: 'priest_shadowfiend', name: 'Gölge Canavarı', ownerClass: 'priest', role: 'caster', group: 'pet',
+    id: 'priest_shadowfiend', name: 'Gölge Canavarı (Shadowfiend)', ownerClass: 'priest', role: 'caster', group: 'pet',
     model: MAGE, scale: 0.9, tint: 0x3a1f5c, emissive: 0x2a0a4a, ghost: 0.7,
     anims: { idle: 'Idle', walk: 'Walking_A', run: 'Running_A', hit: 'Hit_A', death: 'Death_A', spawn: 'Spellcast_Raise' },
     radius: 0.6, height: 1.8, speed: 6.0,

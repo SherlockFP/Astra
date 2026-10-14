@@ -196,7 +196,9 @@ export type StatusId =
   // KIT Rahip (priest, append-only): Atonement mark, Acı Bastırma, the two Shadow DoTs and Boşluk Formu. StatusDefs in data/statuses_kit_priest.ts.
   | 'atonement' | 'pain_suppression' | 'shadow_word_pain' | 'vampiric_touch' | 'voidform'
   // KIT Büyücü (mage, append-only): Zaman Bükme and Büyü Çağırma. StatusDefs in data/statuses_kit_mage.ts.
-  | 'time_warp' | 'evocation';
+  | 'time_warp' | 'evocation'
+  // KIT Rahip (priest, append-only, WoW Midnight rework): Güç Aşılama, Dağılma, Solma, Yiyici Veba. StatusDefs in data/statuses_kit_priest.ts.
+  | 'power_infusion' | 'dispersion' | 'fade' | 'devouring_plague';
 
 export interface StatusDef {
   id: StatusId;

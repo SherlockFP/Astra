@@ -41,7 +41,7 @@ for (const sid of PRIEST_KIT_SPEC_IDS) {
 ok('kit.priest.ids roles: Disiplin and Kutsal healers, Gölge dps',
   SPECS.priest_discipline?.role === 'healer' && SPECS.priest_holy?.role === 'healer' && SPECS.priest_shadow?.role === 'dps');
 ok('kit.priest.ids ClassDef.specs lists the three specs', (CLASSES.priest?.specs ?? []).join() === PRIEST_KIT_SPEC_IDS.join());
-ok('kit.priest.ids ClassDef.skills is the 6-id core list', (CLASSES.priest?.skills ?? []).length === 6 && CLASSES.priest.skills.every((id) => !!SKILLS[id]));
+ok('kit.priest.ids ClassDef.skills is the 8-id core list', (CLASSES.priest?.skills ?? []).length === 8&& CLASSES.priest.skills.every((id) => !!SKILLS[id]));
 ok('kit.priest.ids priest is a playable class', H.imp && (await H.imp('data/classes.ts')).PLAYABLE_CLASSES.includes('priest'));
 
 // ---- kit.priest.basic: Kutsal Ok is the class basic; the holy spec swaps in its heal bolt
@@ -184,14 +184,14 @@ const allyAt = (x, z, hpFrac = 1) => {
   H.step(2);
   H.setAimTarget(foe);
   p.resource = 100;
-  G.skills.tryCast(p, 'priest_shadow_mind_blast', H.aimFor(p, foe), 'e'); H.stepSec(2.0);
+  G.skills.tryCast(p, 'priest_shadow_mind_blast', H.aimFor(p, foe), 'rmb'); H.stepSec(2.0);
   ok('kit.priest.cast Zihin Patlaması adds 20 Delilik', G.skills.pipCount(p, 'insanity') === 20, `insanity=${G.skills.pipCount(p, 'insanity')}`);
   p.resource = 100;
-  G.skills.tryCastSlot(p, 'rmb', H.aimFor(p, foe)); H.stepSec(0.8);
+  G.skills.tryCastSlot(p, 'e', H.aimFor(p, foe)); H.stepSec(0.8);
   ok('kit.priest.cast Gölge Acısı is on the foe', foe.statuses.has('shadow_word_pain'));
   p.pips = { insanity: 40 };
   p.resource = 100;
-  G.skills.tryCastSlot(p, 's2', H.aimFor(p, foe)); H.stepSec(1.0);
+  G.skills.tryCastSlot(p, 'q', H.aimFor(p, foe)); H.stepSec(1.0);
   ok('kit.priest.cast Boşluk Oku spends 40 Delilik', G.skills.pipCount(p, 'insanity') === 0, `insanity=${G.skills.pipCount(p, 'insanity')}`);
   p.resource = 100;
   const vf = G.skills.tryCast(p, 'priest_shadow_voidform', H.aimFor(p, foe), 'm45'); H.stepSec(1.6);
@@ -209,12 +209,12 @@ const allyAt = (x, z, hpFrac = 1) => {
   H.step(2);
   p.resource = 100;
   p.hp = p.maxHp * 0.5;
-  G.skills.tryCastSlot(p, 'rmb', H.aimFor(p, foe)); H.stepSec(0.8);
+  G.skills.tryCastSlot(p, 's2', H.aimFor(p, foe)); H.stepSec(0.8);
   ok('kit.priest.cast Yenileme puts the HoT on the healed ally', p.statuses.has('renew'));
   p.hp = p.maxHp * 0.5;
   const hp1 = p.hp;
   p.resource = 100;
-  G.skills.tryCast(p, 'priest_holy_serenity', H.aimFor(p, foe), 's1'); H.stepSec(1.0);
+  G.skills.tryCast(p, 'priest_holy_serenity', H.aimFor(p, foe), 'rmb'); H.stepSec(1.0);
   ok('kit.priest.cast Kutsal Söz: Huzur heals', p.hp > hp1, `hp ${hp1.toFixed(0)} -> ${p.hp.toFixed(0)}`);
   ok('kit.priest.cast Kutsal basic is the healer basic', G.character.save.skillBar.lmb === 'priest_holy_basic');
 }
