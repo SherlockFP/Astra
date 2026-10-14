@@ -435,7 +435,7 @@ export class TownScene implements GameScene {
       return;
     }
     // only the room host moves a party; guests are asked to stay (the host decides together with everybody)
-    if (G.net.role === 'client') {
+    if (G.net.isPartyGuest) {
       G.ui.toast('Güney Kapısı\'ndan yalnızca oda sahibi çıkış başlatabilir.', 'info');
       return;
     }
@@ -453,7 +453,7 @@ export class TownScene implements GameScene {
       ? openWorldParams(to, { type: 'gate', id: to === 'karakir_bozkiri' ? 'dogu_kapisi' : to === PVP_ZONE_ID ? 'bati_kapisi' : SOUTH_GATE_ID })
       : {
           dungeonId: to, difficulty: 'normal', keyLevel: 0, seed: (Math.random() * 0x7fffffff) >>> 0 || 1, affixes: [],
-          enemyLevel: Math.max(lo, Math.min(hi, lvl)), partySize: Math.max(1, G.net.peers.size || 1), keyOwner: G.net.selfId,
+          enemyLevel: Math.max(lo, Math.min(hi, lvl)), partySize: Math.max(1, G.net.partySize || 1), keyOwner: G.net.selfId,
         };
     try {
       G.net.requestScene('dungeon', params);

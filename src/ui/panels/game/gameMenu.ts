@@ -56,6 +56,10 @@ export class GameMenuPanel extends GamePanel {
     }
     this.roomEl.style.display = 'flex';
     const n = net.peers.size;
+    if (net.channel) {
+      this.roomEl.append(icon('/assets/icons/ui-party.svg'), h('span', null, 'Kanal ', h('b', null, net.channelTag), ` · ${n}/${net.maxPlayers} oyuncu (/kanal)`));
+      return;
+    }
     this.roomEl.append(icon('/assets/icons/ui-party.svg'), h('span', null, `${net.role === 'host' ? 'Lider' : 'Üye'} · Oda `, h('b', null, net.roomId ?? '?'), ` · ${n}/${net.maxPlayers}`));
   }
 
@@ -122,20 +126,20 @@ export class GameMenuPanel extends GamePanel {
     const mplus = !!st && st.difficulty === 'mythicplus' && !st.completed;
     // open world (Sisli Koru): back through the town's south gate, nothing is lost
     const open = inOpenWorld();
-    const wholeParty = G.net.isOnline && G.net.isAuthority && G.net.peers.size > 1;
+    const wholeParty = G.net.inParty && G.net.isPartyLeader && G.net.peers.size > 1;
     let text = open
       ? 'Sisli Koru\'dan ayrılıp şehre dönmek istiyor musun?'
       : mplus
         ? 'Zindandan ayrılırsan Mitik+ koşusu terk edilmiş sayılır: anahtarın 1 seviye düşer, puan ve ödül alamazsın. Emin misin?'
         : 'Zindandan ayrılıp şehre dönmek istediğine emin misin? İlerleme kaybolur.';
     if (wholeParty) text += ' Oda lideri olduğun için tüm grup şehre döner.';
-    else if (G.net.isOnline && !G.net.isAuthority) text += ' Grup zindanda kalır, sen tek başına şehre dönersin.';
+    else if (G.net.isPartyGuest) text += ' Grup zindanda kalır, sen tek başına şehre dönersin.';
     if (!(await askConfirm(this.el, text, open ? 'Şehre Dön' : 'Ayrıl', 'Kal', !open))) return;
     this.requestClose();
     sfx('portal_enter');
     const spawnAt = open ? 'south' : 'portal';
     try {
-      if (G.net.isAuthority) G.net.requestScene('town', { spawnAt });
+      if (!G.net.isPartyGuest) G.net.requestScene('town', { spawnAt }); // offline, party host or channel player (a channel is left by itself)
       else void G.scenes.go('town', { spawnAt });
     } catch (e) {
       console.error('[gameMenu] leave dungeon failed', e);
@@ -144,11 +148,11 @@ export class GameMenuPanel extends GamePanel {
   }
 
   private async toCharSelect(): Promise<void> {
-    const online = G.net.isOnline;
+    const online = G.net.inParty;
     const text = online ? 'Karakter seçimine dönersen odadan da ayrılırsın. Emin misin?' : 'Karakter seçimine dönmek istediğine emin misin?';
     if (!(await askConfirm(this.el, text, 'Evet, dön', 'Vazgeç'))) return;
     try {
-      if (online) G.net.leaveRoom();
+      if (G.net.isOnline) G.net.leaveRoom(); // a public channel too (hands the host role over)
       G.character?.persist(true);
     } catch (e) {
       console.warn('[gameMenu] cleanup failed', e);

@@ -31,6 +31,7 @@
 .mm-ribbon { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); min-width: 176px; max-width: 240px; padding: 3px 18px 4px; text-align: center; background: #1a1a1a; border: 2px solid #050302; box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 3px 0 #000; clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); pointer-events: none; }
 .mm-zone { font: 700 14px var(--font-head); color: var(--hud-gold-l); text-shadow: var(--shade); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mm-sub { font: 11px var(--font-ui); color: var(--text-dim); text-shadow: var(--shade); }
+.mm-ch { position: absolute; right: 22px; top: 5px; font: 700 11px/1 var(--font-ui); color: #9fe3ff; text-shadow: var(--shade); pointer-events: none; }
 .mm-sub:empty { display: none; }
 
 /* ---- Mythic+ tracker ---- */

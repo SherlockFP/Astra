@@ -15,7 +15,7 @@ import { difficultyOfTier, fissureId, type FissureSpec } from '../../../world/pr
 /** Party size and average level: the local player plus every peer (a peer without a summary counts as the local level). */
 export function partyLevels(): { size: number; avgLevel: number } {
   const levels: number[] = [G.character?.level ?? 1];
-  for (const p of G.net.peers.values()) if (p.peerId !== G.net.selfId) levels.push(p.summary?.level ?? levels[0]);
+  for (const p of G.net.partyMembers()) if (p.peerId !== G.net.selfId) levels.push(p.summary?.level ?? levels[0]);
   return { size: levels.length, avgLevel: Math.round(levels.reduce((a, b) => a + b, 0) / levels.length) };
 }
 
@@ -78,7 +78,7 @@ export function buildFissureParams(spec: FissureSpec): DungeonParams {
 /** Sends the run to the host (authority) or asks the host to start it. Returns false (toast shown) on failure. */
 export function startRun(params: DungeonParams): boolean {
   try {
-    if (G.net.isAuthority) G.net.requestScene('dungeon', params);
+    if (G.net.isPartyLeader) G.net.requestScene('dungeon', params);
     else G.net.requestSceneFromHost('dungeon', params);
     return true;
   } catch (e) {

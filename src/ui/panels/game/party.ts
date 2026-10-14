@@ -304,7 +304,7 @@ export class PartyPanel extends GamePanel {
     toast('Odaya bağlanılıyor...', 'info');
     try {
       await G.net.joinRoom(code, { password, transport: this.localTransport ? 'local' : undefined });
-      if (G.net.isOnline) {
+      if (G.net.inParty) {
         sfx('party_join');
         toast('Odaya katıldın!', 'success');
       } else {
@@ -323,7 +323,7 @@ export class PartyPanel extends GamePanel {
 
   private async createRoom(): Promise<void> {
     if (this.busy) return;
-    if (G.net.isOnline) return void toast('Zaten bir odadasın. Önce ayrıl.', 'warning');
+    if (G.net.inParty) return void toast('Zaten bir odadasın. Önce ayrıl.', 'warning');
     const name = this.nameIn.value.trim() || `${G.character?.save.name ?? 'Oyuncu'}'in Odası`;
     this.busy = true;
     toast('Oda kuruluyor...', 'info');
@@ -367,7 +367,7 @@ export class PartyPanel extends GamePanel {
   /* ---------------------------------------------------------------- party */
 
   private members(): PeerInfo[] {
-    const list = [...G.net.peers.values()];
+    const list = [...G.net.partyMembers()];
     if (!list.some((p) => p.peerId === G.net.selfId) && G.character) {
       list.push({ peerId: G.net.selfId, slot: G.net.localSlot, name: G.character.save.name, summary: G.character.summary(), ready: true, ping: 0, isHost: G.net.role !== 'client', keystone: G.character.save.mythic.keystone, loadedScene: null });
     }
@@ -389,11 +389,11 @@ export class PartyPanel extends GamePanel {
     const net = G.net;
     const members = this.members();
     const me = members.find((p) => p.peerId === net.selfId);
-    const online = net.isOnline;
+    const online = net.inParty;
 
     // status line
     this.statusEl.innerHTML = '';
-    const roleTxt = net.isJoining ? 'Odaya bağlanılıyor...' : !online ? 'Çevrimdışı · tek başınasın' : net.role === 'host' ? 'Oda lideri sensin' : 'Odadasın';
+    const roleTxt = net.isJoining ? 'Odaya bağlanılıyor...' : !online ? (net.channel ? `Kanal ${net.channelTag} · grup yok (grup kurmak için Oda Kur)` : 'Çevrimdışı · tek başınasın') : net.role === 'host' ? 'Oda lideri sensin' : 'Odadasın';
     this.statusEl.append(h('span.pg-pt-role' + (online ? '.on' : ''), null, h('i'), roleTxt));
     if (online && net.roomId) {
       const copy = h('button.pg-pt-code', { type: 'button', title: 'Kopyala' }, h('small', null, 'ODA KODU'), h('b', null, net.roomId), h('span', null, '⧉')) as HTMLButtonElement;

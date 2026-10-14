@@ -71,7 +71,7 @@ class PartyFrame {
     setClass(this.frame, 'targeted', targeted);
     setClass(this.hp.el, 'is-dead', dead);
     const peer = G.net?.peerBySlot(p.slot);
-    setDisplay(this.crown, !!peer?.isHost && G.net.isOnline);
+    setDisplay(this.crown, !!peer?.isHost && G.net.inParty);
     const pct = p.maxHp > 0 ? Math.max(0, Math.min(1, p.hp / p.maxHp)) : 0;
     setClass(this.hp.el, 'is-low', !dead && pct < 0.3);
     setText(this.valT, dead ? 'Öldü' : fmtHealth(Math.max(0, p.hp)));
@@ -105,6 +105,8 @@ export class PartyFrames implements HudWidget {
       const target = ctx.player?.targetId ?? null;
       for (const p of w.players) {
         if (p.isLocal) continue;
+        // a public channel is a crowd, not a party: only the soft party (followed leader + followers) gets a frame
+        if (G.net?.channel && !G.net.isPartyMate(p.peerId)) continue;
         let f = this.frames.get(p.id);
         if (!f) {
           f = new PartyFrame(p.id, this.ui);
@@ -127,6 +129,7 @@ export class PartyFrames implements HudWidget {
     if (net && net.isOnline) {
       for (const peer of net.peers.values()) {
         if (peer.peerId === net.selfId) continue;
+        if (net.channel && !net.isPartyMate(peer.peerId)) continue;
         const eid = PARTY_ID_BASE + peer.slot;
         if (this.frames.has(eid)) continue;
         seenPeers.add(peer.peerId);

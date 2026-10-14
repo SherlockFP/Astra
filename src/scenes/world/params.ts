@@ -20,7 +20,7 @@ export function openWorldParams(dungeonId: string, spawn: WorldSpawn, returnTo?:
     seed: worldSeedOf(dungeonId),
     affixes: [],
     enemyLevel: Math.max(lo, Math.min(hi, lvl)),
-    partySize: Math.max(1, G.net.peers.size || 1),
+    partySize: Math.max(1, G.net.partySize || 1),
     keyOwner: G.net.selfId,
     spawn,
     ...(returnTo ? { returnTo } : {}),

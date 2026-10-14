@@ -178,7 +178,7 @@ export class FinderPanel extends GamePanel {
     if (d.dungeonId && list.some((x) => x.id === d.dungeonId)) this.selId = d.dungeonId;
     if (!list.some((x) => x.id === this.selId)) this.selId = (recommendedDungeon(list, G.character?.level ?? 1) ?? list[0])?.id ?? '';
     this.pickDiff();
-    this.mode = this.queue.state === 'listing' ? 'lfg' : G.net.isOnline && G.net.remotePeers().length > 0 ? 'party' : 'solo';
+    this.mode = this.queue.state === 'listing' ? 'lfg' : G.net.inParty && G.net.partyRemotePeers().length > 0 ? 'party' : 'solo';
     for (const ev of ['net:status', 'keystone:changed', 'player:levelup'] as const) this.listen(ev, () => this.render());
     this.listen('party:changed', () => {
       this.refreshListingNeed();
@@ -202,8 +202,8 @@ export class FinderPanel extends GamePanel {
     const ch = G.character;
     if (!ch) return null;
     const party: KeystoneData[] = [];
-    if (G.net.isAuthority) {
-      for (const p of G.net.peers.values()) {
+    if (G.net.isPartyLeader) {
+      for (const p of G.net.partyMembers()) {
         const k = p.keystone;
         if (p.peerId !== G.net.selfId && k) party.push(k);
       }
@@ -216,15 +216,15 @@ export class FinderPanel extends GamePanel {
   }
 
   private isLeader(): boolean {
-    return !G.net.isOnline || G.net.isAuthority;
+    return !G.net.inParty || G.net.isPartyLeader;
   }
 
   /** The key the run would use for this dungeon: the own key, else (leader only) a member's key for the same dungeon. */
   private keyHolder(def: DungeonDef): { key: KeystoneData; owner: string } | null {
     const own = G.character?.save.mythic.keystone ?? null;
     if (own && own.dungeonId === def.id) return { key: own, owner: G.net.selfId };
-    if (G.net.isAuthority) {
-      for (const p of G.net.peers.values()) {
+    if (G.net.isPartyLeader) {
+      for (const p of G.net.partyMembers()) {
         const k = p.keystone;
         if (p.peerId !== G.net.selfId && k && k.dungeonId === def.id) return { key: k, owner: p.peerId };
       }
@@ -328,7 +328,7 @@ export class FinderPanel extends GamePanel {
   private startSelected(def: DungeonDef, diff: LadderDiff): void {
     const holder = diff === 'mythicplus' ? this.keyHolder(def) : null;
     const pend: Pending = { def, diff, keyLevel: holder?.key.level ?? 0, owner: holder?.owner ?? G.net.selfId };
-    if (this.mode === 'party' && G.net.isOnline && G.net.remotePeers().length > 0) {
+    if (this.mode === 'party' && G.net.inParty && G.net.partyRemotePeers().length > 0) {
       if (G.net.readyCheck?.active) return;
       this.pending = pend;
       this.setQueue('proposal', def.id);
@@ -367,7 +367,7 @@ export class FinderPanel extends GamePanel {
 
   /** Grup Ara: a solo player hosts a room first; the listing carries the open slots by role. */
   private async startLfg(def: DungeonDef, diff: LadderDiff): Promise<void> {
-    if (G.net.isOnline && !G.net.isAuthority) {
+    if (G.net.inParty && !G.net.isPartyLeader) {
       toast('Grubu yalnızca lider listeleyebilir.', 'warning');
       return;
     }
@@ -376,7 +376,7 @@ export class FinderPanel extends GamePanel {
       toast('Bu anahtarla yalnızca oda lideri başlatabilir.', 'warning');
       return;
     }
-    if (!G.net.isOnline) {
+    if (!G.net.inParty) {
       const code = await G.net.hostRoom({ name: `Zindan: ${def.name} (${DIFF_NAME[diff]})`, maxPlayers: GROUP_SIZE });
       if (!code) return;
     }
@@ -400,9 +400,9 @@ export class FinderPanel extends GamePanel {
 
   /** Re-announces the listing when the party changes (open slots follow the members' roles). */
   private refreshListingNeed(force = false): void {
-    if (!this.listing || this.queue.state !== 'listing' || !G.net.isOnline || !G.net.isAuthority) return;
+    if (!this.listing || this.queue.state !== 'listing' || !G.net.inParty || !G.net.isPartyLeader) return;
     const members: RoleId[][] = [this.roles];
-    for (const p of G.net.remotePeers()) members.push([p.summary?.role ?? 'dps']);
+    for (const p of G.net.partyRemotePeers()) members.push([p.summary?.role ?? 'dps']);
     const l = this.listing;
     const lf: LfgListing = listingFor(l.def, l.diff, l.keyLevel, members);
     const key = JSON.stringify([lf.dungeon, lf.diff, lf.need]);
@@ -622,7 +622,7 @@ export class FinderPanel extends GamePanel {
     const low = isUnderGeared(il, rec);
     const wrap = h('div.fd-lines');
     wrap.append(h('div.fd-recline' + (low ? '.is-low' : ''), null, `Önerilen eşya seviyesi ${rec} · Sen: ${il}`, low ? h('span', null, ' — eşyaların zayıf') : null));
-    const members = G.net.isOnline ? G.net.remotePeers().filter((p) => !!p.summary).map((p) => ({ name: p.name, level: p.summary?.level ?? 0 })) : [];
+    const members = G.net.inParty ? G.net.partyRemotePeers().filter((p) => !!p.summary).map((p) => ({ name: p.name, level: p.summary?.level ?? 0 })) : [];
     const gate = memberGate(def, row.diff, members);
     if (gate) wrap.append(h('div.fd-warn', null, gate));
     return wrap;
@@ -840,16 +840,16 @@ export class FinderPanel extends GamePanel {
       case 'failed':
         return 'Başlatılamadı';
       case 'listing': {
-        const n = G.net.isOnline ? G.net.members().length : 1;
+        const n = G.net.inParty ? G.net.partyMembers().length : 1;
         return `Grubun listelendi · ${n} / ${GROUP_SIZE} · aranıyor`;
       }
       default:
         break;
     }
     if (this.inDungeon()) return 'Zindandasın';
-    if (this.mode === 'lfg') return G.net.isOnline ? 'Grup aramak için bir zindan ve zorluk seç.' : 'Çevrimiçi değilsin: O → Oda Kur ile grup aç.';
+    if (this.mode === 'lfg') return G.net.inParty ? 'Grup aramak için bir zindan ve zorluk seç.' : 'Çevrimiçi değilsin: O → Oda Kur ile grup aç.';
     if (this.mode === 'party') {
-      const n = G.net.isOnline ? G.net.members().length : 1;
+      const n = G.net.inParty ? G.net.partyMembers().length : 1;
       return n > 1 ? `Grup: ${n} / ${GROUP_SIZE} · lider başlatır` : 'Grupta değilsin: Oda kurup arkadaşlarını davet et.';
     }
     return 'Tek başına';
@@ -859,7 +859,7 @@ export class FinderPanel extends GamePanel {
   private renderParty(): void {
     const el = this.partyEl;
     el.textContent = '';
-    const members = G.net.isOnline ? G.net.members() : [];
+    const members = G.net.inParty ? G.net.partyMembers() : [];
     const slots = members.length
       ? members.map((p) => ({ name: p.peerId === G.net.selfId ? (G.character?.save.name ?? p.name) : p.name, cls: p.summary?.classId ?? null, role: (p.summary?.role ?? 'dps') as RoleId, lead: p.isHost }))
       : [{ name: G.character?.save.name ?? 'Sen', cls: G.character?.classId ?? null, role: this.roles[0], lead: true }];
@@ -891,8 +891,8 @@ export class FinderPanel extends GamePanel {
     if (this.inDungeon()) return { label: 'Zindandasın', show: true, disabled: true, reason: 'Zindan içindeyken yeni koşu başlatılamaz.', run: NOOP };
 
     // a member of a led group only answers the ready check
-    if (G.net.isOnline && !G.net.isAuthority) {
-      const me = G.net.members().find((p) => p.peerId === G.net.selfId);
+    if (G.net.inParty && !G.net.isPartyLeader) {
+      const me = G.net.partyMembers().find((p) => p.peerId === G.net.selfId);
       const ready = !!me?.ready;
       return { label: ready ? 'Hazır Değilim' : 'Hazırım', show: true, disabled: false, reason: 'Lider hazır kontrolünü başlatır.', run: () => G.net.setReady(!ready) };
     }
@@ -906,8 +906,8 @@ export class FinderPanel extends GamePanel {
       return { label: 'Grup Ara', show: true, disabled: !!gate, reason: gate, run: () => void this.startLfg(def, row.diff) };
     }
 
-    const party = this.mode === 'party' && G.net.isOnline && G.net.remotePeers().length > 0;
-    const members = G.net.remotePeers().filter((p) => !!p.summary).map((p) => ({ name: p.name, level: p.summary?.level ?? 0 }));
+    const party = this.mode === 'party' && G.net.inParty && G.net.partyRemotePeers().length > 0;
+    const members = G.net.partyRemotePeers().filter((p) => !!p.summary).map((p) => ({ name: p.name, level: p.summary?.level ?? 0 }));
     const holderBlock = row.diff === 'mythicplus' && !this.keyHolder(def) ? 'Bu anahtarla yalnızca oda lideri başlatabilir.' : '';
     const gate = row.startable ? '' : rowGateText(def, row);
     const levelGate = memberGate(def, row.diff, members) ?? '';

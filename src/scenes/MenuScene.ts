@@ -679,7 +679,7 @@ export class MenuScene implements GameScene {
       const clip = a.pick('Cheer');
       if (clip) a.playOnce(clip, { speed: 1.4 });
     }
-    void G.scenes.go('town').finally(() => {
+    void G.net.enterScene('town').finally(() => { // the town's public channel (net/Channels.ts) or, offline, the town itself
       this.leaving = false;
     });
   }
