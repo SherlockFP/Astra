@@ -1,4 +1,4 @@
-# Balance pass: 17 specs at levels 10 / 30 / 60
+# Balance pass: the playable specs (41 since pass 2, §7; 17 in pass 1) at levels 10 / 30 / 60
 
 Tool: `dev/combat-sim/balance.mjs` (headless, seeded, real CharacterState / SkillSystem / Combat / Procs / Minions; no browser, no server).
 
@@ -125,3 +125,29 @@ Also reported by the gate: tanks die in the tank profile at some levels (level 1
 - Pinned kit values (§4.2) and the protector block (§4.3): change them and their assertions, or accept the spread.
 - Weapon damage per category and the main-stat term (§4.1): an engine / item-data decision.
 - Rogue alchemist healing (§4.4) and the butcher's AoE list (§4.5): data work in the kit tables.
+
+## 7. Pass 2: every playable spec (41 specs)
+
+**Harness.** `balance.mjs` covers the playable roster: the specs listed in `classes.ts` (the mage has no list and takes its three registered specs). That is 41 specs: 27 DPS, 7 tanks, 7 healers. `rogue_alchemist` is a removed stub and is skipped. It wires the rotations of all 14 kits (7 before). New APL tokens: `@rank=N` (the bar slot is the skill), `tank.hp%`, `lowest.hp%`, `lowest.status:X`, `injured`, `stored` (evoker stasis store). In the healer fight the APL sees the party, the reference tank first.
+
+**Data.** No balance number changed in this pass. Each lever in §4 and below is an engine, item-data or pin decision, not a free coefficient. All kit sims, `wow_core`, `pips` and `beta` still pass; `tsc` and `content-check` are at 0.
+
+**Before / after at L60** (same data; "before" = the original harness, "after" = this harness):
+
+| measure | before | after |
+|---|---|---|
+| specs with numbers at L60 | 18 of 41 (the rest threw) | 41 of 41 |
+| DPS ST, % of median | 24.7 % to 309.3 % (14 DPS measured), 3 within ±8 % | 0.8 % to 405.7 % (27 DPS), 1 within ±8 % |
+| tank ST, band 70-80 % | 29 % to 191 % (4 tanks measured) | 39 % to 251 % (7 tanks) |
+| band checks failing, L10 / L30 / L60 | 144 | 194 |
+
+The failing count rises because the harness now measures and checks the mage, monk, archer, priest, shaman, druid, demon hunter and evoker specs that were skipped before.
+
+**Causes, from the per-ability breakdown (not changed):**
+1. Priest and shaman cannot equip a weapon. `CLASS_WEAPONS` lists staff, wand, mace and axe1h for them, but no base in `itemBases.ts` admits those classes, so `canEquip` rejects every candidate. Weapon damage stays at 31 to 51 (190 to 420 for the others). Priest shadow 2 %, shaman elemental 4 %, shaman enhancement 21 % of median at L60. Item-data decision.
+2. Evoker Fire Breath is a held-key empower (`kit_empower`). The sim presses it once, so no rank lights and the evoker DPS is 0.8 to 1 % of median. Harness gap: the hold is not modelled.
+3. Class gear scaling (two-hander and staff ranges, main-stat term): §4.1, unchanged.
+4. Healers do not sustain the reference tank at any level: `monk_mistweaver`, `priest_discipline`, `priest_holy`, `shaman_restoration`, `druid_restoration` and `evoker_preservation` (HPS 0 at every level, so its heal path does not fire in the sim). Heal rows, not tuned; priest and shaman may share cause 1 (not verified).
+5. Tank deaths in the tank profile at L10 / L30 and the protector's permanent block: §4.2 and §4.3, unchanged.
+
+**Decisions needed:** a usable weapon base for priest and shaman (cause 1); model the Fire Breath hold in the harness (cause 2); the pinned kit values (§4.2).
