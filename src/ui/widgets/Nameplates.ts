@@ -62,11 +62,14 @@ const RANK_NAME_COLOR: Record<string, string> = { trash: '#f1e6cf', elite: '#ffd
 /** Şampiyon (champion pack leader) plates are blue (WoW rare-elite style); boss mechanic entities use a cold steel tint. */
 const CHAMPION_COLOR = '#58b0ff';
 const MECH_COLOR = '#9fd8ff';
+/** Named rares (rare_* enemies) are silver: the dragon marker and the name. */
+const RARE_COLOR = '#d6e2f0';
 /** proc_* mechanic entities that can be smashed (HP bar shown); proc_soul_orb / proc_rift are projectiles / hazards without a plate. */
 const MECH_WITH_HP = new Set(['proc_phylactery', 'proc_bone_cage', 'proc_ice_tomb', 'proc_ice_pillar']);
 
 const isMechanic = (a: Actor): boolean => a.kind !== 'player' && ((a as Enemy).def?.id ?? '').startsWith('proc_');
 const isChampion = (a: Actor): boolean => a.kind !== 'player' && !!(a as Enemy).champion;
+const isRare = (a: Actor): boolean => a.kind !== 'player' && ((a as Enemy).def?.id ?? '').startsWith('rare_');
 
 interface Box {
   x0: number;
@@ -186,15 +189,15 @@ class Plate {
     // WP-06: a player's plate takes its nation's colour (Gök Kartal blue, Kızıl Kurt red); the nation is part of the key so a late-known nation repaints
     const nation = isPlayer ? (a as Player).nation : null;
     const team = arenaTeamOf(a);
-    const flavor = team ? 'arena' + team : isPlayer ? 'player' + (nation ?? '') : isMechanic(a) ? 'mech' : isChampion(a) ? 'champ' : this.rank;
+    const flavor = team ? 'arena' + team : isPlayer ? 'player' + (nation ?? '') : isMechanic(a) ? 'mech' : isChampion(a) ? 'champ' : isRare(a) ? 'rare' : this.rank;
     if (flavor === this.flavor) return;
     this.flavor = flavor;
-    const col = this.opts.color ?? (team ? ARENA_TEAM_COLOR[team] : isPlayer ? nationColor(nation) : flavor === 'champ' ? CHAMPION_COLOR : flavor === 'mech' ? MECH_COLOR : RANK_NAME_COLOR[this.rank] ?? '#f1e6cf');
+    const col = this.opts.color ?? (team ? ARENA_TEAM_COLOR[team] : isPlayer ? nationColor(nation) : flavor === 'champ' ? CHAMPION_COLOR : flavor === 'mech' ? MECH_COLOR : flavor === 'rare' ? RARE_COLOR : RANK_NAME_COLOR[this.rank] ?? '#f1e6cf');
     this.el.style.setProperty('--nc', col);
     if (flavor === 'champ' || flavor === 'mech') this.el.dataset.flavor = flavor;
     else delete this.el.dataset.flavor;
     const showIco = !isPlayer && (flavor === 'champ' || this.rank === 'boss' || this.rank === 'elite' || this.rank === 'miniboss') && flavor !== 'mech';
-    if (showIco) this.rankIco.style.setProperty('--i', `url("${ICON(this.rank === 'boss' ? 'ui-boss' : 'ui-elite')}")`);
+    if (showIco) this.rankIco.style.setProperty('--i', `url("${ICON(flavor === 'rare' ? 'ui-rare-dragon' : this.rank === 'boss' ? 'ui-boss' : 'ui-elite')}")`);
     setDisplay(this.rankIco, showIco);
   }
 

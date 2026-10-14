@@ -35,6 +35,8 @@ export interface QuestReward {
   goldPerLevel?: number;
   items?: { id: string; count: number }[];
   generic?: { rarity: 'uncommon' | 'rare' | 'epic'; slot?: 'weapon' | 'armor' | 'jewelry' }[];
+  /** WoW-style choice: one class-appropriate item per listed slot is offered when the quest is turned in; the player keeps one. */
+  choice?: { rarity: 'uncommon' | 'rare' | 'epic'; slots: ('weapon' | 'armor' | 'jewelry')[] };
 }
 
 export interface QuestDef {

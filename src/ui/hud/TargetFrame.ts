@@ -21,6 +21,8 @@ export function enemyRank(a: Actor): string {
 
 /** Şampiyon pack leader (flag set by ai/champion.ts). */
 export const isChampion = (a: Actor): boolean => a.kind !== 'player' && !!(a as Enemy).champion;
+/** Named rare (enemy ids rare_*, WoW rare-elite): silver dragon marker. */
+export const isRareEnemy = (a: Actor): boolean => a.kind !== 'player' && ((a as Enemy).def?.id ?? '').startsWith('rare_');
 /** Boss mechanic entity (bone cage, ice tomb, phylactery...). */
 export const isMechanic = (a: Actor): boolean => a.kind !== 'player' && ((a as Enemy).def?.id ?? '').startsWith('proc_');
 
@@ -29,6 +31,7 @@ export function nameColor(a: Actor): string {
   if (a.kind === 'player') return '#7fe08a';
   if (isMechanic(a)) return '#9fd8ff';
   if (isChampion(a)) return '#58b0ff';
+  if (isRareEnemy(a)) return '#d6e2f0';
   switch (enemyRank(a)) {
     case 'boss': return '#ff6a52';
     case 'miniboss': return '#ffa040';
@@ -150,6 +153,7 @@ export class TargetFrame implements HudWidget {
     const isPlayer = a.kind === 'player';
     const rank = isPlayer ? 'player' : enemyRank(a);
     const champ = isChampion(a);
+    const rare = isRareEnemy(a);
     if (this.curId !== a.id || this.curChamp !== champ) {
       this.curId = a.id;
       this.curChamp = champ;
@@ -157,7 +161,7 @@ export class TargetFrame implements HudWidget {
       this.el.dataset.rank = champ ? 'elite' : rank;
       this.hp.el.dataset.kind = isPlayer ? 'class' : 'hostile';
       if (isPlayer) setStyle(this.hp.el, '--cls', classColor((a as unknown as { classId?: ClassId }).classId));
-      setText(this.clsEl, champ ? 'Şampiyon' : RANK_TEXT[rank] ?? '');
+      setText(this.clsEl, champ ? 'Şampiyon' : rare ? 'Nadir Elit' : RANK_TEXT[rank] ?? '');
     }
     setText(this.nameEl, a.name);
     const pl = ctx.player?.level ?? 1;

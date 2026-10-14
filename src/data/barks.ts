@@ -348,6 +348,11 @@ export const ENEMY_AGGRO_LINES: string[] = [
   'Hadi, bakalım kemiklerin ne kadar dayanacak.',
 ];
 
+/** Named rares (enemy ids rare_*) with their own aggro bark; the others use ENEMY_AGGRO_LINES. */
+export const RARE_AGGRO_LINES: Partial<Record<string, string[]>> = {
+  rare_gumus_yele: ['Gümüş dişlerim sana doğru!', 'Vadinin gümüşü benim, sıra sende.', 'Kokunu aldım, avcı.'],
+};
+
 /** Death line of an elite or mini-boss killed by the local player (Söylenti chat line). */
 export const ENEMY_DEATH_LINES: string[] = [
   'Bu kadar mı? Yazık.',
