@@ -47,6 +47,8 @@ export const STATUSES_KIT_DRUID: Partial<Record<StatusId, StatusDef>> = {
   wild_growth: { id: 'wild_growth', name: 'Yabani Büyüme', icon: I('buff-regen'), kind: 'buff', vfx: 'heal_loop' },
   ironbark: { id: 'ironbark', name: 'Demir Kabuk', icon: I('skill-iron-skin'), kind: 'buff' },
   omen_clarity: { id: 'omen_clarity', name: 'Berraklık Alameti', icon: I('buff-mana-regen'), kind: 'buff' },
+  innervate: { id: 'innervate', name: 'İlham (Innervate)', icon: I('buff-mana-regen'), kind: 'buff', stats: { resourceRegenPct: 1.0 } },
+  stampeding_roar: { id: 'stampeding_roar', name: 'Coşkun Kükreme (Stampeding Roar)', icon: I('buff-haste'), kind: 'buff', stats: { moveSpeedPct: 0.3 } },
 };
 
 export const STATUS_RULES_KIT_DRUID: Partial<Record<StatusId, StatusRule>> = {
@@ -76,4 +78,6 @@ export const STATUS_RULES_KIT_DRUID: Partial<Record<StatusId, StatusRule>> = {
   wild_growth: { stack: 'refresh', hot: true },
   ironbark: { stack: 'refresh', takenMore: -0.2 },
   omen_clarity: { stack: 'refresh' },
+  innervate: { stack: 'refresh' },
+  stampeding_roar: { stack: 'refresh' },
 };

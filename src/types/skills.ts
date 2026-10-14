@@ -162,6 +162,7 @@ export type StatusId =
   | 'form_moonkin' | 'form_cat' | 'form_bear' | 'form_travel' | 'eclipse_solar' | 'eclipse_lunar' | 'moonfire' | 'sunfire'
   | 'celestial_alignment' | 'rake' | 'rip' | 'thrash' | 'feral_fury' | 'berserk' | 'cat_dash' | 'ironfur' | 'barkskin' | 'frenzied'
   | 'survival_instincts' | 'sleeper_rage' | 'rejuvenation' | 'regrowth' | 'lifebloom' | 'wild_growth' | 'ironbark' | 'omen_clarity'
+  | 'innervate' | 'stampeding_roar' // KIT Druid (append-only): Innervate (Restorasyon), Stampeding Roar (Vahşi)
   | 'haunt' | 'malevolence' | 'darkglare_active' | 'backdraft' | 'fiendish_cruelty' | 'dark_pact'
   | 'aoe_mode' | 'exec_window'
   // Kibir Tecessumu (P-27, append-only): Kibirli elite buff (+dmg, +move speed). StatusDef + STATUS_RULES registered by systems/Affixes.ts.
