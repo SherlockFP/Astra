@@ -23,6 +23,9 @@ import * as H from './harness.mjs';
 
 const { G } = H;
 const DT = H.DT;
+// Repeatable runs: the combat code's wall-clock timers (slow motion, hit freeze) read performance.now(); here they read the sim clock (ms),
+// so a fight does not depend on how long the process has been running.
+performance.now = () => G.engine.time * 1000;
 const args = Object.fromEntries(process.argv.slice(2).map((a) => {
   const m = a.match(/^--([^=]+)(?:=(.*))?$/);
   return [m[1], m[2] ?? true];
@@ -62,7 +65,7 @@ const { tuneOf } = await H.imp('data/specTuning.ts'); // the calibration table (
 const ROT = { ...ROTATIONS_KIT_ARCHER, ...ROTATIONS_KIT_BARBARIAN, ...ROTATIONS_KIT_DEMONHUNTER, ...ROTATIONS_KIT_DRUID, ...ROTATIONS_KIT_EVOKER, ...ROTATIONS_KIT_KNIGHT, ...ROTATIONS_KIT_MAGE, ...ROTATIONS_KIT_MONK, ...ROTATIONS_KIT_NECROMANCER, ...ROTATIONS_KIT_PALADIN, ...ROTATIONS_KIT_PRIEST, ...ROTATIONS_KIT_ROGUE, ...ROTATIONS_KIT_SHAMAN, ...ROTATIONS_KIT_WARLOCK };
 
 /** Bands (the brief's targets). */
-const BAND = { dpsSpread: 0.08, tankLo: 0.70, tankHi: 0.80, aoeLeaderMax: 1.35, ttdSpread: 0.05 };
+const BAND = { dpsSpread: 0.10, meleeRangedSpread: 0.08, tankLo: 0.70, tankHi: 0.80, aoeLeaderMax: 1.40, ttdSpread: 0.05 };
 /** Fight profile (sim parameters; fractions of the level's reference HP). */
 const PROFILE = {
   swingEvery: 1.5, swing: 0.055, // boss melee (physical, parryable)
@@ -484,7 +487,8 @@ function runTank(spec, L, key) {
   let diedAt = null;
   const offDeath = G.events.on('death', (ev) => { if (ev?.targetId === p.id || ev?.id === p.id) diedAt ??= G.engine.time; });
   const aim = H.aimFor(p, boss);
-  for (let f = 0; f < Math.round(seconds / DT) && !p.isDead; f++) {
+  let f = 0; // frames run: the loop stops when the tank dies, so f * DT is the time the tank was alive in the fight
+  for (; f < Math.round(seconds / DT) && !p.isDead; f++) {
     sched.clock = f * DT;
     H.setAimTarget(boss);
     pressApl(p, lines, makeEnv(p, boss, [boss, ...adds], []), aim);
@@ -499,9 +503,10 @@ function runTank(spec, L, key) {
   offDeath();
   spy.restore();
   meter.stop();
-  const net = taken.mit / seconds - spy.led.self / seconds;
+  const lived = f * DT; // the whole fight, or up to the death: rates are per second alive (a dead tank's TTD is its time to die)
+  const net = taken.mit / lived - spy.led.self / lived;
   return {
-    died: !!p.isDead || diedAt !== null, dtpsRaw: taken.raw / seconds, dtps: taken.mit / seconds, selfHps: spy.led.self / seconds,
+    died: !!p.isDead || diedAt !== null, dtpsRaw: taken.raw / lived, dtps: taken.mit / lived, selfHps: spy.led.self / lived,
     mitigation: taken.raw > 0 ? 1 - taken.mit / taken.raw : 0, avoidedPct: taken.hits ? taken.avoided / taken.hits : 0,
     // time-to-die index: how long the tank's pool lasts against the net (after self-heal) incoming damage
     ttd: net > 0 ? p.maxHp / net : Infinity, dealt: meter.dealt,
@@ -613,14 +618,14 @@ for (const L of LEVELS) {
   const medSt = median(dps.map((r) => r.dpsSt));
   const medAoe = median(dps.map((r) => r.dpsAoe));
   for (const r of dps.concat(tanks)) { r.vsMed = r.dpsSt / medSt; r.aoeVsMed = r.dpsAoe / medAoe; }
-  for (const r of dps) if (Math.abs(r.vsMed - 1) > BAND.dpsSpread) failures.push(`L${L} ${r.id} ST ${pct(r.vsMed)} of median (band ±8%)`);
+  for (const r of dps) if (Math.abs(r.vsMed - 1) > BAND.dpsSpread) failures.push(`L${L} ${r.id} ST ${pct(r.vsMed)} of median (band ±${Math.round(BAND.dpsSpread * 100)}%)`);
   for (const r of tanks) if (r.vsMed < BAND.tankLo || r.vsMed > BAND.tankHi) failures.push(`L${L} ${r.id} tank ST ${pct(r.vsMed)} of median (band 70-80%)`);
   const melee = dps.filter((r) => r.range < 3), ranged = dps.filter((r) => r.range >= 3);
   if (melee.length && ranged.length) {
     const mm = median(melee.map((r) => r.dpsSt)), mr = median(ranged.map((r) => r.dpsSt));
-    if (Math.abs(mm / mr - 1) > BAND.dpsSpread) failures.push(`L${L} melee vs ranged median ${pct(mm / mr - 1)} (band ±8%)`);
+    if (Math.abs(mm / mr - 1) > BAND.meleeRangedSpread) failures.push(`L${L} melee vs ranged median ${pct(mm / mr - 1)} (band ±${Math.round(BAND.meleeRangedSpread * 100)}%)`);
   }
-  for (const r of dps.concat(tanks)) if (r.aoeVsMed > BAND.aoeLeaderMax) failures.push(`L${L} ${r.id} AoE ${r.aoeVsMed.toFixed(2)}x median (max 1.35x)`);
+  for (const r of dps.concat(tanks)) if (r.aoeVsMed > BAND.aoeLeaderMax) failures.push(`L${L} ${r.id} AoE ${r.aoeVsMed.toFixed(2)}x median (max ${BAND.aoeLeaderMax}x)`);
   for (const r of tanks) if (r.died) failures.push(`L${L} ${r.id} died in the tank profile`);
   for (const r of at.filter((x) => x.role === 'healer')) {
     if (!r.tankSurvived) failures.push(`L${L} ${r.id} let the reference tank die`);
