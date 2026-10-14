@@ -58,7 +58,7 @@ const RELIEF: WorldExtras['relief'] = {
     r5: { amp: 4.5, scale: 90, ridged: 0.3 },
     r6: { amp: 3, scale: 100 },
   },
-  edge: { rise: 9, width: 70 },
+  edge: { rise: 20, width: 60 },
 };
 
 const WORLD: WorldExtras = {
