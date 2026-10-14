@@ -13,6 +13,7 @@ import type { ThirdPersonCamera } from '../camera/ThirdPersonCamera';
 import type { InputAction } from '../core/Input';
 import { WowMouse, type WowMouseOut } from './WowMouse';
 import { pickAtNdc, type PickHit } from './ClickPick';
+import { setTargetRim } from '../vfx/TargetRim';
 import { AutoAttack, AUTO, type AutoTarget } from './AutoAttack';
 import { VERT } from '../world/Heightfield';
 import { FallHandler, VOID_FADE_IN, VOID_FADE_OUT, VOID_INPUT_LOCK, VOID_INVULN_SEC, type FallEnv, type Spot } from './FallHandler';
@@ -167,6 +168,9 @@ export class PlayerController {
   private inputLockUntil = -1;
   private landUntil = 0;
   private faceHold = 0;
+  /** Readability rim (vfx/TargetRim): the hover under the cursor is re-picked every 0.1 s, the target is read every frame. */
+  private rimT = 0;
+  private rimHover: PickHit | null = null;
   /** walkToggle state (walk / run toggle). */
   private walkOn = false;
   /** Autorun state: forward input is injected until W / S is pressed (or the player dies / a panel opens). */
@@ -413,6 +417,7 @@ export class PlayerController {
     this.time += dt;
     this.timeSinceCast += dt;
     this.faceHold = Math.max(0, this.faceHold - dt);
+    this.updateRim(dt);
 
     const input = G.input;
     this.cam.handleInput(dt);
@@ -1701,6 +1706,25 @@ export class PlayerController {
     if (this.time - this.wowToastAt < WOW_TOAST_EVERY) return;
     this.wowToastAt = this.time;
     G.events.emit('ui:toast', { text, kind: 'warning' });
+  }
+
+  /** Rim on one entity: a hovered NPC (yellow), else the hovered or targeted enemy (red). Nothing while the cursor is over UI. */
+  private updateRim(dt: number): void {
+    const input = G.input;
+    this.rimT -= dt;
+    if (this.rimT <= 0) {
+      this.rimT = 0.1;
+      const cursorFree = !!input && !input.pointerOverUI && !G.ui?.wantsCursor?.() && !document.pointerLockElement;
+      this.rimHover = cursorFree ? this.wowPick(input.ndcX, input.ndcY) : null;
+    }
+    const hov = this.rimHover;
+    if (hov?.kind === 'npc' && !hov.entity.removed) {
+      setTargetRim(hov.entity.object3d, 'friendly');
+      return;
+    }
+    const enemy = hov?.kind === 'enemy' ? hov.entity : this.currentTarget();
+    if (enemy && enemy.alive && !enemy.removed) setTargetRim(enemy.object3d, 'hostile');
+    else setTargetRim(null, null);
   }
 
   private wowPick(ndcX: number, ndcY: number): PickHit | null {

@@ -159,6 +159,8 @@ export interface SettingsData {
   barGhostRev: number;
   /** Görüntü Kalitesi (world/WorldPerf): scenery draw distances, voxel LOD tiers and ground-cover density. Visual only; same world on every peer. 'mid' (Orta) is the default. */
   graphicsQuality: 'low' | 'mid' | 'high';
+  /** Revision of the crisp-look defaults (psx off, no jitter / affine / dither). Stored files below 1 get them once (see the constructor). */
+  gfxLookRev: number;
 }
 
 /**
@@ -168,8 +170,9 @@ export interface SettingsData {
  *     their own revisions (uiRev, bindingsRev, settingsVersion < 2), so a v2 file runs only the ones it still needs.
  * 4 = CONTROLS_WOW fields (controlScheme, controlsRev, schemeBindings, WoW camera and auto-attack flags).
  *     The scheme migration is keyed on controlsRev (see migrateControlsRev).
+ * 5 = crisp default look (gfxLookRev): PSX filter off by default, stored files below rev 1 are switched once.
  */
-export const SETTINGS_VERSION = 4;
+export const SETTINGS_VERSION = 5;
 
 /** Key codes of the guard and inventory defaults before CM1 / UX-00 (used only by the one-time bindings migration). */
 const LEGACY_GUARD = ['KeyG', 'Mouse3'];
@@ -181,11 +184,12 @@ function sameCodes(a: string[] | undefined, b: string[]): boolean {
 }
 
 export const DEFAULT_SETTINGS: SettingsData = {
-  psx: true,
+  // Crisp by default: the PSX filter (pixel downscale, snapping, affine, dither) is opt-in ('PSX Filtresi' in Görüntü).
+  psx: false,
   psxPixelScale: 3,
-  psxJitter: 0.6,
-  psxAffine: true,
-  psxDither: true,
+  psxJitter: 0,
+  psxAffine: false,
+  psxDither: false,
   psxColorDepth: 5,
   bloom: true,
   bloomStrength: 0.6,
@@ -269,6 +273,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   controlsHintShown: true,
   barGhostRev: 1,
   graphicsQuality: 'mid',
+  gfxLookRev: 1,
 };
 
 /**
@@ -360,6 +365,12 @@ export class Settings {
       if ((stored.barGhostRev ?? 0) < 1) {
         this.data.barGhostSlots = true;
         this.data.barGhostRev = 1;
+        changed = true;
+      }
+      // Crisp look (gfxLookRev 0 → 1): the PSX filter and its wobble / dither go off for stored files once. A choice made
+      // afterwards (the Görüntü toggle or sliders) is kept by the rev flag.
+      if ((stored.gfxLookRev ?? 0) < 1) {
+        Object.assign(this.data, { psx: false, psxJitter: 0, psxAffine: false, psxDither: false, gfxLookRev: 1 });
         changed = true;
       }
     }
