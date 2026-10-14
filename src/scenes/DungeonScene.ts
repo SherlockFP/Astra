@@ -45,6 +45,9 @@ import type { DungeonParams } from './scenes';
 import { attachYildizSpy } from '../data/dungeons/yildiz_divani';
 import { PVP_BASES, PVP_ZONE_ID } from '../data/pvpZone';
 import { startPvp, pvp, type PvpRuntime } from '../systems/Pvp';
+import { startArena, arenaSpawnFor, type ArenaController } from './arena/ArenaController';
+import { arenaDungeon, getArenaDef, pickArena } from './arena/arenaMaps';
+import type { ArenaDef } from '../types/arena';
 
 const tileToWorld = (c: number): number => (c + 0.5) * TILE_SIZE;
 
@@ -130,6 +133,9 @@ export class DungeonScene implements GameScene {
   private worldRt: WorldRuntime | null = null;
   /** WP-07: the Kızıl Sınır PvP runtime (only in that zone). */
   private pvpRt: PvpRuntime | null = null;
+  /** GDD_PVP_FINDER: the arena match runtime (only when DungeonParams.arena is set: rounds, gates, results, hit rules). */
+  private arenaCtl: ArenaController | null = null;
+  private arenaDef: ArenaDef | null = null;
   private isWorld = false;
   private timeouts: ReturnType<typeof setTimeout>[] = [];
   /** Host: has G.mplus.begin() been requested (or is the run already counting)? */
@@ -159,7 +165,9 @@ export class DungeonScene implements GameScene {
     G.ui.setMode('dungeon');
     const ch = G.character;
     if (!ch) throw new Error('dungeon: no character selected');
-    const def = params ? getDungeon(params.dungeonId) : undefined;
+    // PvP arena: the map comes from the arena catalogue (content maps, else the built-in fallback), never from DUNGEONS
+    this.arenaDef = params?.arena ? getArenaDef(params.arena.arenaId) ?? pickArena(params.arena.matchId, params.arena.bracket) : null;
+    const def = params ? (this.arenaDef ? arenaDungeon(this.arenaDef) : getDungeon(params.dungeonId)) : undefined;
     if (!params || !def) {
       G.ui.toast('Bilinmeyen zindan. Şehre dönülüyor...', 'error');
       throw new Error(`dungeon: unknown dungeon ${params?.dungeonId}`);
@@ -220,18 +228,19 @@ export class DungeonScene implements GameScene {
     this.setupVertical(world, built);
 
     // run state must exist on EVERY peer before enemies spawn (scaling, affixes)
-    G.mplus.prepare(params);
+    if (!params.arena) G.mplus.prepare(params);
 
     // ---- player ----
     // open world: a run that came back from a world entrance appears in front of that entrance (GDD_OPENWORLD §9.3)
     const arrival = this.isWorld ? this.arrivalOf(def, built, params) : null;
     // zone channels: a channel switch / host re-seed re-enters the map where the player stood (no slot offset: it is a continuation)
     const resume = this.isWorld && params.resumeAt && Number.isFinite(params.resumeAt.x) && Number.isFinite(params.resumeAt.z) ? params.resumeAt : null;
-    const startYaw = arrival?.yaw ?? built.startYaw;
+    const arenaSp = params.arena && this.arenaDef ? arenaSpawnFor(params.arena, this.arenaDef, G.net.selfId) : null;
+    const startYaw = arenaSp?.yaw ?? arrival?.yaw ?? built.startYaw;
     const slot = G.net.localSlot;
     const right = new THREE.Vector3(Math.cos(startYaw), 0, -Math.sin(startYaw));
     const off = resume ? 0 : ((slot % 5) - 2) * 1.6;
-    const origin = resume ?? arrival ?? { x: built.start.x, z: built.start.z };
+    const origin = arenaSp ?? resume ?? arrival ?? { x: built.start.x, z: built.start.z };
     let sx = origin.x + right.x * off, sz = origin.z + right.z * off;
     const fix = built.nav.nearestWalkable(sx, sz);
     if (fix) {
@@ -257,7 +266,7 @@ export class DungeonScene implements GameScene {
     this.disposeCheck();
 
     // ---- start checkpoint stone (always active) ----
-    if (!this.outdoor) await this.spawnWaypoint(built.start.x - Math.sin(startYaw) * 3.2, built.start.z - Math.cos(startYaw) * 3.2, startYaw, true);
+    if (!this.outdoor && !params.arena) await this.spawnWaypoint(built.start.x - Math.sin(startYaw) * 3.2, built.start.z - Math.cos(startYaw) * 3.2, startYaw, true);
 
     dbg('player ready');
     // ---- enemies & bosses: deterministic ids on every peer ----
@@ -265,11 +274,11 @@ export class DungeonScene implements GameScene {
     this.packWatch = watch;
     world.addSystem(watch);
     // open world: nothing is spawned up front, WorldRuntime streams camps and the other populations from the host
-    if (!this.isWorld) await this.spawnEnemies(world, built, params);
+    if (!this.isWorld && !params.arena) await this.spawnEnemies(world, built, params);
     watch.arm();
     this.disposeCheck();
     // seeded champion packs: Normal / Heroic / Mythic 0 only (never Mythic+, never the open world), identical on every peer
-    if (!this.outdoor && params.difficulty !== 'mythicplus') {
+    if (!this.outdoor && !params.arena && params.difficulty !== 'mythicplus') {
       try {
         assignChampions(world, params.seed);
       } catch (e) {
@@ -281,11 +290,13 @@ export class DungeonScene implements GameScene {
 
     dbg('enemies spawned');
     // ---- props: shrines, chests, ambience ----
-    await this.spawnExtras(world, built, params);
-    await this.spawnZoneExtras(world, built, params);
-    this.spawnAmbient(def, built);
-    this.spawnPropSystems(world, built, params);
-    this.initGates();
+    if (!params.arena) {
+      await this.spawnExtras(world, built, params);
+      await this.spawnZoneExtras(world, built, params);
+      this.spawnAmbient(def, built);
+      this.spawnPropSystems(world, built, params);
+      this.initGates();
+    }
     if (this.isWorld) {
       this.spawnWorldEntrances(world, built, def);
       // the local player exists by now (world.localPlayer), the camera does not yet: travel reads it at call time
@@ -320,6 +331,13 @@ export class DungeonScene implements GameScene {
       void this.spawnSecondExitPortal();
     }
 
+    // GDD_PVP_FINDER: arena match (rounds, gates, hit rules, results). Every peer runs it; the host steps the round machine.
+    if (params.arena && this.arenaDef) {
+      this.arenaCtl = startArena({
+        world, scene: this.scene, built, params: params.arena, def: this.arenaDef, teleport: (x, z, yaw) => this.controller?.teleport(x, z, yaw),
+      });
+    }
+
     // ---- events + net ----
     this.hookEvents();
 
@@ -339,7 +357,8 @@ export class DungeonScene implements GameScene {
       // the guard is the scene's own `ready` flag, never `G.scenes.current === this` (that made offline runs never start).
       void G.net.waitForPartyLoaded('dungeon').then(() => {
         this.broadcastEvents();
-        this.tryBegin();
+        if (this.arenaCtl) this.arenaCtl.hostBegin();
+        else this.tryBegin();
       });
     }
   }
@@ -1256,6 +1275,8 @@ export class DungeonScene implements GameScene {
       if (!p?.isDead) return;
       // WP-07 Kızıl Sınır: no early release; the dead come back at their own fort when PVP.RESPAWN_SEC are up
       if (this.pvpRt?.releaseBlocked()) return;
+      // GDD_PVP_FINDER: no release inside an arena; the next round's prep revives everybody at the team spawn
+      if (this.arenaCtl) return;
       const st = G.mplus.state;
       // Mythic+ releases at the latest checkpoint whose boss is dead, else the dungeon start (P-28; GDD_CONTENT 0.7);
       // other modes at the latest checkpoint
@@ -1466,9 +1487,10 @@ export class DungeonScene implements GameScene {
     this.tickScene(dt);
     this.worldRt?.update(dt);
     this.pvpRt?.update(dt);
+    this.arenaCtl?.update(dt);
     this.reaper.update(this.scene, dt);
     // offline safety net: the run clock must start even if the party-loaded promise was swallowed (host runs wait for it instead)
-    if (!this.beginTried && !G.net.isOnline) {
+    if (!this.beginTried && !G.net.isOnline && !this.arenaCtl) {
       this.beginClock += dt;
       if (this.beginClock > 1.5) this.tryBegin();
     }
@@ -1505,6 +1527,9 @@ export class DungeonScene implements GameScene {
     this.worldRt = null;
     this.pvpRt?.dispose();
     this.pvpRt = null;
+    this.arenaCtl?.dispose();
+    this.arenaCtl = null;
+    this.arenaDef = null;
     this.controller?.dispose();
     this.controller = null;
     this.cam?.dispose();

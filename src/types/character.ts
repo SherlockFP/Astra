@@ -9,6 +9,7 @@ import type { ProfessionId, ProfessionSave } from './professions';
 import type { GuildSave } from './guild';
 import type { NationId } from '../data/nations';
 import type { SiegeHolderRec } from '../data/siege';
+import type { ArenaProfile } from './finder';
 
 export const BAG_SIZE = 48;
 export const STASH_SIZE = 120;
@@ -104,6 +105,8 @@ export interface CharacterSave {
   nation?: NationId;
   /** PvP record of the character (owner-stored, like every personal counter). */
   pvp?: PvpSave;
+  /** GDD_PVP_FINDER §3.4: arena ratings, MMR, season, weekly Fetih and the queue lock (systems/ArenaLadder.ts). OPTIONAL, created on first read. */
+  arena?: ArenaProfile;
   // ---- WP-10 daily loop (systems/DailyLoop.ts). OPTIONAL, created on first use. Daily progress flags live in `flags` (wq.*, gd.*).
   /** Rested XP pool, login streak. */
   daily?: DailySave;

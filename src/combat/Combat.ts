@@ -20,6 +20,7 @@ import { breakLock, breakSeconds, finisherPctMaxHp, hyperArmorOf, isSwarm, parry
 import { CombatMeters } from './meters';
 import { vetHit, vetPlayerDeath } from '../net/guard';
 import { pvp } from '../systems/Pvp';
+import { arenaCombatActive, arenaHealMult } from './pvp';
 import { Prd } from './prd';
 import { absorbMagicShell } from './magicShell';
 import { applyAlchemyLink } from './link';
@@ -1751,6 +1752,8 @@ export class Combat {
     const before = amount;
     amount = absorbMagicShell(p, amount, type); // NC52 Büyü Karşıtı Kalkan: magic-only absorb, before the type-blind shield
     amount = p.statuses.absorb(amount);
+    // GDD_PVP_FINDER §3.3.2 Yıpranma: absorbs are worth less as the round drags on (the soaked part leaks through by the dampening share)
+    if (arenaCombatActive() && before > amount) amount += (before - amount) * (1 - arenaHealMult());
     const absorbed = before - amount;
     // non-lethal floor (Kirlenme): clipped before the mana shield so no mana is spent on damage that never lands
     // lethal:false (fall damage) adds the 1 HP floor on top of any explicit floorHp
@@ -2075,6 +2078,7 @@ export class Combat {
     let a = amount;
     if (!opts?.raw) a *= 1 + softStat(p, 'healReceivedPct');
     a *= p.statuses.healMult();
+    a *= arenaHealMult(); // GDD_PVP_FINDER §3.3.2 Yıpranma (1 outside arenas)
     const eff = Math.min(a, p.maxHp - p.hp);
     if (eff > 0) p.hp += eff;
     if (p.isLocal) this.deathLog.recordHeal({ t: this.clock, source: sourceId, amount: Math.max(0, eff), overheal: Math.max(0, a - Math.max(0, eff)) });

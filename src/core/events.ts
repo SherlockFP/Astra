@@ -233,6 +233,24 @@ export interface GameEvents {
   'pvp:duel': { state: 'invited' | 'accepted' | 'declined' | 'started' | 'ended'; with?: string; winner?: string };
   /** Honor (Onur) gained (GDD_LIFE §7.7): amount added, new total, rank index. */
   'pvp:honor': { amount: number; total: number; rank: number };
+  // ---- GDD_PVP_FINDER §6 (PV-00, append-only): matchmaking queue + arena match + rating.
+  /** The local ARENA queue changed (QueueState phase / pool) or produced a notice (found, declined, timeout, joinFail, cooldown). The older 'finder:queue' below belongs to the Zindan Bulucu UI. */
+  'arena:queue': { state: import('../types/finder').QueueState; key: import('../types/finder').QueueKey | null; notice?: import('../types/finder').QueueNotice };
+  /** Arena phase change (every peer): prep / live / round_end / match_end, the round (1..), seconds left in the phase and the round score [A, B]. */
+  'arena:phase': { ph: 'prep' | 'live' | 'round_end' | 'match_end'; round: number; left: number; score: [number, number]; rw?: 'A' | 'B' | 'draw' };
+  /** Dampening (Yıpranma) percentage changed (1 Hz while live). */
+  'arena:damp': { pct: number };
+  /** A fighter fell (arena:out). `local` = the local player. */
+  'arena:out': { peer: string; name: string; team: 'A' | 'B'; local: boolean };
+  /** The match is over: winner team, whether the local team won, reason, local rating change and rewards (ranked only change rating). */
+  'arena:result': {
+    winner: 'A' | 'B' | 'draw'; won: boolean | null; why: 'normal' | 'forfeit' | 'draw' | 'void'; score: [number, number];
+    bracket: import('../types/finder').ArenaBracket; ranked: boolean;
+    rating: { before: number; after: number; delta: number } | null;
+    rewards: { onur: number; fetih: number; muhru: number };
+  };
+  /** A bracket rating changed (ranked result applied / season soft reset). */
+  'pvp:rating': { bracket: import('../types/finder').ArenaBracket; before: number; after: number };
 
   // ---- combat (append-only). Emitted by Combat on the LOCAL player's death; the death panel's "Ölüm Özeti" tab reads it.
   /** Death recap of the local player (GDD_V2 §8.5): last 10 s of hits and heals, the killing blow, top sources. */

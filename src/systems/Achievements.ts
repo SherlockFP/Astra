@@ -3,6 +3,7 @@ import type { AchievementSave, CharacterSave } from '../types/character';
 import { ACHIEVEMENTS, ACHIEVEMENT_BY_ID, METRIC_KIND, type AchMetric, type AchievementDef } from '../data/achievements';
 import { PET_BY_ID } from '../data/pets';
 import { toast } from './notify';
+import { arenaTitleName } from '../scenes/arena/arenaRules';
 import { learnPet } from './Pets';
 
 /**
@@ -101,21 +102,21 @@ export function chooseTitle(save: CharacterSave, id: string | null): boolean {
     delete save.title;
     return true;
   }
-  if (!(save.titles ?? []).includes(id) || !ACHIEVEMENT_BY_ID[id]?.title) return false;
+  if (!(save.titles ?? []).includes(id) || !(ACHIEVEMENT_BY_ID[id]?.title || arenaTitleName(id))) return false;
   save.title = id;
   return true;
 }
 
 /** Display text of a title id (the achievement's title). */
 export function titleName(id: string): string {
-  return ACHIEVEMENT_BY_ID[id]?.title ?? id;
+  return ACHIEVEMENT_BY_ID[id]?.title ?? arenaTitleName(id) ?? id;
 }
 
 /** The title a character shows (nameplate, character header): '' when none is chosen or it is no longer earned. */
 export function selectedTitleName(save: CharacterSave | undefined): string {
   const id = save?.title;
   if (!id || !(save?.titles ?? []).includes(id)) return '';
-  return ACHIEVEMENT_BY_ID[id]?.title ?? '';
+  return ACHIEVEMENT_BY_ID[id]?.title ?? arenaTitleName(id) ?? '';
 }
 
 /**

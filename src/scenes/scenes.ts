@@ -41,4 +41,9 @@ export interface DungeonParams {
    * (data/dungeons getDungeon -> world/procgen). Seed = DungeonParams.seed, level = enemyLevel, tier n/h/m = difficulty.
    */
   fissure?: { theme: string; tier: 'n' | 'h' | 'm'; level: number; seed: number; v: number };
+  /**
+   * PvP arena match (GDD_PVP_FINDER §3.2): presence makes DungeonScene arena-mode (map from scenes/arena/arenaMaps, no packs, no run clock,
+   * ArenaController owns rounds / gates / results). `dungeonId` is the arena map id; `difficulty` / `keyLevel` / `affixes` are unused.
+   */
+  arena?: import('../types/arena').ArenaParams;
 }

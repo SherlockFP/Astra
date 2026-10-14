@@ -10,39 +10,21 @@
  * data/dungeons/kit.ts). `arenaToDungeonDef()` shifts every point by -0.5 and keeps rects as they are; a wall cell becomes a prop at
  * its centre (integer coordinates in the kit).
  *
- * The arena types are kept here until src/types/arena.ts (ArenaDef) lands; the shapes match GDD §3.2.1 (except `brackets`, which
- * uses the bracket union of §2.8).
+ * The arena types live in src/types/arena.ts (ArenaDef); ArenaMapData is an alias kept for the map files.
  */
 import type { DoorDef, DungeonDef, DungeonTheme, FloorStyle, PropPlacement, RoomDef, TileRect, WallStyle } from '../../types/dungeons';
 import { hashString } from '../../core/utils';
+import type { ArenaDef } from '../../types/arena';
+import type { ArenaBracket } from '../../types/finder';
 import { dg } from '../dungeons/kit';
 import { KIRIK_KEMER } from './kirik_kemer';
 import { KIZIL_HALKA } from './kizil_halka';
 import { BUZ_HAVUZU } from './buz_havuzu';
 
-export type ArenaBracket = '1v1' | '2v2' | '3v3';
+export type { ArenaBracket };
 
-/** One arena map (GDD §3.2.1). Spawn and pillar points use the GDD cell-edge convention (see above). */
-export interface ArenaMapData {
-  id: string;
-  name: string;
-  brackets: ArenaBracket[];
-  grid: { w: number; h: number };
-  floor: FloorStyle;
-  wall: WallStyle;
-  theme: DungeonTheme;
-  lightColor: number;
-  /** Blocking rectangles (cover). */
-  walls: TileRect[];
-  /** Pillars: centre (GDD coords) and radius in tiles. Block projectiles and ground-AoE line of sight. */
-  pillars: { pos: [number, number]; r: number }[];
-  /** Spawn points, 3 per team (1v1 uses index 0). */
-  spawns: { A: [number, number][]; B: [number, number][] };
-  /** Team gates, closed during prep. Visual and logic are the arena scene's. */
-  gates: { team: 'A' | 'B'; rect: TileRect }[];
-  /** Visual only (never blocked). */
-  zones?: { kind: 'ice'; rect: TileRect }[];
-}
+/** One arena map (GDD §3.2.1): the shared contract lives in types/arena.ts. Spawn and pillar points use the GDD cell-edge convention (see above). */
+export type ArenaMapData = ArenaDef;
 
 /** Arena id → map. Ids: kirik_kemer, kizil_halka, buz_havuzu. */
 export const ARENAS: Record<string, ArenaMapData> = {
