@@ -213,6 +213,35 @@ function regionCounts(quests) {
   return [...rows].map(([r, c]) => `${r}: kill ${c.k}, collect ${c.c}, hunt ${c.h}, metin ${c.m}, chain ${c.ch}, daily ${c.daily}`);
 }
 
+/**
+ * Starting-zone camp rings (Sisli Koru, r1, WoW-style). Camps and patrols are tile centres (1 tile = 4 m). A quest camp is a camp whose
+ * lowest level is 1 or 2. HARD errors: (1) no camp or patrol of the region whose lowest level is 2 or more above a quest camp stands
+ * within 40 m of it; (2) quest camps keep 25 m apart (the inner ring of level 1-2 camps).
+ */
+function campRingIssues(packs, roomId) {
+  const out = [];
+  const err = (where, msg) => out.push({ level: 'error', where, msg });
+  const TILE_M = 4, RING_M = 40, INNER_M = 25;
+  const camps = (packs ?? []).filter((p) => p.roomId === roomId && p.center);
+  const quest = camps.filter((p) => p.levelRange[0] <= 2);
+  const gap = (a, b) => Math.hypot(a.center[0] - b.center[0], a.center[1] - b.center[1]) * TILE_M;
+  for (const a of quest) {
+    for (const c of camps) {
+      if (c === a) continue;
+      const m = gap(a, c);
+      if (m < RING_M && c.levelRange[0] >= a.levelRange[0] + 2) {
+        err(`camp ${c.id}`, `level ${c.levelRange[0]}+ camp ${Math.round(m)} m from quest camp ${a.id} (level ${a.levelRange[0]}): keep it 40 m away`);
+      }
+    }
+  }
+  for (let i = 0; i < quest.length; i++) {
+    for (let j = i + 1; j < quest.length; j++) {
+      const m = gap(quest[i], quest[j]);
+      if (m < INNER_M) err(`camp ${quest[j].id}`, `quest camp ${Math.round(m)} m from ${quest[i].id}: level 1-2 camps keep 25 m apart`);
+    }
+  }
+  return out;
+}
 // registries for the season rules (P-29): ids resolve against the real data modules, not a copy
 const { STATUSES } = await imp('src/data/statuses.ts');
 const { DEVICES, PROFESSION_NAMES } = await imp('src/data/devices.ts');
@@ -289,6 +318,18 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id)) || want.includes('
   console.log(`\n== quest reachability: ${xe.length} errors, ${xw.length} warns | ${QUESTS.length} quests, ${spawnIndex(world, ALL_WORLD_PACKS).size} spawnable ids`);
   for (const i of xe) console.log('  ERR ', i.where, '-', i.msg);
   for (const i of xw) console.log('  warn', i.where, '-', i.msg);
+}
+// starting-zone camp rings (Sisli Vadi r1): the level 1-2 camps keep 25 m apart, and no level 2+ jump within 40 m of a quest camp
+if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
+  for (const id of WORLD_IDS) {
+    const r1 = ALL[id].world?.regions?.find((r) => r.id === 'r1');
+    if (!r1) continue;
+    const ri = campRingIssues(ALL[id].packs, r1.roomId);
+    const e = ri.filter((i) => i.level === 'error');
+    totalErr += e.length;
+    console.log(`\n== camp rings ${id} r1: ${e.length} errors | ${ALL[id].packs.filter((p) => p.roomId === r1.roomId).length} camps and patrols`);
+    for (const i of e) console.log('  ERR ', i.where, '-', i.msg);
+  }
 }
 if (!want.length || want.includes('town')) {
   // season dungeons (DungeonDef.season / endgame) enter through the world (src/data/world/entrances.ts), not a town portal
