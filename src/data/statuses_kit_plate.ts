@@ -63,6 +63,12 @@ export const STATUSES_KIT_PLATE: Partial<Record<StatusId, StatusDef>> = {
   sudden_doom: { id: 'sudden_doom', name: 'Ani Kıyamet', icon: I('buff-mana-regen'), kind: 'buff', defaultDuration: 12 },
   dark_transformation: { id: 'dark_transformation', name: 'Karanlık Dönüşüm', icon: I('buff-strength'), kind: 'buff', defaultDuration: 15 },
   army: { id: 'army', name: 'Ölüler Ordusu', icon: I('buff-aura'), kind: 'buff', defaultDuration: 30 },
+  // ---- Buz Kıyıcısı (Frost) rows: procs are read by procs_kit_necromancer.ts
+  killing_machine: { id: 'killing_machine', name: 'Öldürücü Makine', icon: I('buff-crit'), kind: 'buff', defaultDuration: 8 },
+  rime: { id: 'rime', name: 'Kırağı', icon: I('buff-aura'), kind: 'buff', defaultDuration: 15 },
+  frost_fever: { id: 'frost_fever', name: 'Buz Humması', icon: I('debuff-poison'), kind: 'debuff', dotType: 'frost', defaultDuration: 24 },
+  death_and_decay: { id: 'death_and_decay', name: 'Ölüm ve Çürüme', icon: I('debuff-curse'), kind: 'debuff', dotType: 'shadow', defaultDuration: 10 },
+  pillar_of_frost: { id: 'pillar_of_frost', name: 'Buz Sütunu', icon: I('buff-strength'), kind: 'buff', stats: { damagePct: 0.2 }, defaultDuration: 12 },
 };
 
 export const STATUS_RULES_KIT_PLATE: Partial<Record<StatusId, StatusRule>> = {
@@ -112,4 +118,9 @@ export const STATUS_RULES_KIT_PLATE: Partial<Record<StatusId, StatusRule>> = {
   sudden_doom: { stack: 'refresh' },
   dark_transformation: { stack: 'refresh' },
   army: { stack: 'refresh' },
+  killing_machine: { stack: 'refresh' },
+  rime: { stack: 'refresh' },
+  frost_fever: { stack: 'refresh', pandemic: 0.3 },
+  death_and_decay: { stack: 'refresh' },
+  pillar_of_frost: { stack: 'refresh' },
 };

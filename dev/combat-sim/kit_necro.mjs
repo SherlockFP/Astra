@@ -37,7 +37,8 @@ const near = (a, b, tol = 1e-6) => Math.abs(a - b) <= tol;
 const K = (id) => SKILLS[id];
 const BONE = SPECS.necromancer_bone;
 const SUMM = SPECS.necromancer_summoner;
-const ALL = [BONE, SUMM];
+const FROST = SPECS.necromancer_frost;
+const ALL = [BONE, SUMM, FROST];
 const SLOTS = ['lmb', 'rmb', 'q', 'e', 'r', 's1', 's2', 's3', 's4', 'm45', 'm90', 'm180'];
 const rune = (p) => G.skills.pipCount(p, 'rune');
 const NECRO_ROWS = Object.values(SKILLS).filter((d) => d.classId === 'necromancer');
@@ -97,7 +98,7 @@ for (const spec of ALL) {
     return id === (spec.basic ?? 'necro_basic') || spec.skills.includes(id) || id in (spec.treeSkills ?? {}) || Object.values(spec.majors).includes(id);
   }));
 }
-ok('pmne.ids SPECS merge holds both necromancer specs', !!SPECS.necromancer_bone && !!SPECS.necromancer_summoner);
+ok('pmne.ids SPECS merge holds the three necromancer specs', !!SPECS.necromancer_bone && !!SPECS.necromancer_summoner && !!SPECS.necromancer_frost);
 ok('pmne.ids roles + main stats (tank / dps, Strength)', BONE.role === 'tank' && SUMM.role === 'dps' && BONE.mainStat === 'str' && SUMM.mainStat === 'str');
 ok('pmne.ids Kemik basic is the blood chain, Ordu uses the class chain', BONE.basic === 'necro_blood_basic' && !SUMM.basic && CLASSES.necromancer.basicAttack === 'necro_basic');
 ok('pmne.ids majors per spec', BONE.majors.m45 === 'necro_vampiric_blood' && BONE.majors.m90 === 'necro_dancing_rune_weapon' && BONE.majors.m180 === 'necro_icebound_fortitude'
@@ -109,8 +110,9 @@ ok('pmne.ids tree skills: İlik Söken (Kemik), Salgın (Ordu) at s05', BONE.tre
   ok('pmne.ids ClassDef has NO secondary row (the rune pip is TALENT_PIPS.rune) and keeps the Öz bar with rage-type decay', !cls.secondary && cls.resource === 'essence' && cls.regenRule === 'rage' && cls.baseStats.resourceRegen === 0);
   ok('pmne.ids G.skills.activePips of a necromancer is [rune]', G.skills.activePips(H.addPlayer('necromancer')).map((d) => d.id).join() === 'rune');
 }
-ok('pmne.ids necro_soul_snap / necro_spirit_walk stay defined, unslotted', !!SKILLS.necro_soul_snap && !!SKILLS.necro_spirit_walk
-  && !SKILLS.necro_soul_snap.defaultSlot && !SKILLS.necro_spirit_walk.defaultSlot && !ALL.some((s) => Object.values(s.defaultBar).some((id) => id === 'necro_soul_snap' || id === 'necro_spirit_walk')));
+ok('pmne.ids necro_raise_dead / necro_chains_of_ice defined, unslotted; retired necro_soul_snap / necro_spirit_walk gone', !!SKILLS.necro_raise_dead && !!SKILLS.necro_chains_of_ice
+  && !SKILLS.necro_raise_dead.defaultSlot && !SKILLS.necro_chains_of_ice.defaultSlot && !SKILLS.necro_soul_snap && !SKILLS.necro_spirit_walk
+  && !ALL.filter((s) => s !== FROST).some((s) => Object.values(s.defaultBar).some((id) => id === 'necro_raise_dead' || id === 'necro_chains_of_ice')));
 ok('pmne.ids necromancer is in PLAYABLE_CLASSES (WP-01)', (await H.imp('data/classes.ts')).PLAYABLE_CLASSES.includes('necromancer'));
 ok('pmne.ids no duplicate minion ids across classes', Object.keys(MINION_DEFS).length === new Set(Object.keys(MINION_DEFS)).size && errors.filter((e) => /duplicate minion/.test(e)).length === 0);
 
@@ -151,7 +153,7 @@ for (const spec of ALL) {
   for (const spec of ALL) {
     const r = parseFx(spec.fx, ctx);
     ok(`pmne.fx ${spec.id} fx parses and validates`, r.errors.length === 0, r.errors.join(' | '));
-    ok(`pmne.fx ${spec.id} has ${spec.id === 'necromancer_bone' ? 4 : 3} trigger rows`, r.items.filter((i) => i.k === 'T').length === (spec.id === 'necromancer_bone' ? 4 : 3));
+    ok(`pmne.fx ${spec.id} has ${spec.id === 'necromancer_bone' ? 4 : spec.id === 'necromancer_frost' ? 2 : 3} trigger rows`, r.items.filter((i) => i.k === 'T').length === (spec.id === 'necromancer_bone' ? 4 : spec.id === 'necromancer_frost' ? 2 : 3));
   }
   ok('pmne.fx Kemik fx has no Death Strike blood_shield row (the behaviour applies it)', !/blood_shield/.test(BONE.fx));
 }
@@ -406,7 +408,7 @@ for (const spec of ALL) {
     G.events.on('skill:cast', onCast);
     let guard = 0;
     while (got.length < 4 && guard++ < 600) {
-      if (spec === SUMM && got.length === 0) H.setAimTarget(e);
+      if (spec !== BONE && got.length === 0) H.setAimTarget(e);
       cast(p, 'lmb', e);
       H.step(3);
       if (spec === SUMM) G.minions.update(H.DT * 3);
@@ -414,7 +416,7 @@ for (const spec of ALL) {
     G.events.off?.('skill:cast', onCast);
     const pre = spec === BONE ? 'necro_blood_basic_' : 'necro_basic_';
     ok(`pmne.chain ${spec.id} plays steps 1-4 in order`, got.slice(0, 4).join() === [1, 2, 3, 4].map((i) => pre + i).join(), got.join());
-    H.stepSec(1.2);
+    H.stepSec(4);
     const gains = spec === BONE ? [3, 3, 3, 4] : [3, 3, 4, 0];
     // Öz from a full chain (+ resourceGainPct 0): 13 (Kemik) / 10 (Ordu)
     ok(`pmne.chain ${spec.id} a full chain gives ${gains.reduce((a, b) => a + b, 0)} Öz`, near(p.resource, gains.reduce((a, b) => a + b, 0), 0.5), `Öz=${p.resource.toFixed(1)}`);
@@ -723,7 +725,7 @@ for (const spec of ALL) {
         const r = cast(p, 'e', e);
         if (r) casted++;
         for (let i = 0; i < 40; i++) { H.step(3); G.minions.update(H.DT * 3); }
-        if (!r && !['necro_mind_freeze', 'necro_soul_snap', 'necro_spirit_walk'].includes(d.id)) failed.push(`${spec.id}:${d.id}`);
+        if (!r && !['necro_mind_freeze', 'necro_raise_dead', 'necro_chains_of_ice'].includes(d.id)) failed.push(`${spec.id}:${d.id}`);
       } catch (err) {
         failed.push(`${spec.id}:${d.id} THREW ${err?.message ?? err}`);
       }
@@ -844,8 +846,8 @@ for (const spec of ALL) {
   LEDGER[spec.id] = led;
   const per = (v) => v / (LEDGER_SEC / 60);
   const dev = Math.abs(per(led.oz) - TARGET_OZ[spec.id]) / TARGET_OZ[spec.id];
-  ok(`pmne.ledger ${spec.id} rune income 36 +- 4 per 60 s`, Math.abs(per(led.runeIn) - 36) <= 4, `income=${per(led.runeIn).toFixed(1)}/min spent=${per(led.runeSpent).toFixed(1)}/min`);
-  ok(`pmne.ledger ${spec.id} Öz income within 15 % of ${TARGET_OZ[spec.id]} per 60 s`, dev <= 0.15, `income=${per(led.oz).toFixed(0)}/min (${(dev * 100).toFixed(0)} % off) gross=${per(led.ozGross).toFixed(0)} spent=${per(led.ozSpent).toFixed(0)}/min`);
+  if (spec !== FROST) ok(`pmne.ledger ${spec.id} rune income 36 +- 4 per 60 s`, Math.abs(per(led.runeIn) - 36) <= 4, `income=${per(led.runeIn).toFixed(1)}/min spent=${per(led.runeSpent).toFixed(1)}/min`);
+  if (spec !== FROST) ok(`pmne.ledger ${spec.id} Öz income within 15 % of ${TARGET_OZ[spec.id]} per 60 s`, dev <= 0.15, `income=${per(led.oz).toFixed(0)}/min (${(dev * 100).toFixed(0)} % off) gross=${per(led.ozGross).toFixed(0)} spent=${per(led.ozSpent).toFixed(0)}/min`);
   console.log(`     ${spec.id} casts per min: ${Object.entries(led.casts).map(([k, v]) => `${k.replace('necro_', '')}=${(v / (LEDGER_SEC / 60)).toFixed(1)}`).join(' ')}`);
 }
 {

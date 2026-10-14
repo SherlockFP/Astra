@@ -19,6 +19,8 @@ export const PROC_DEFS_KIT_NECROMANCER: ProcDef[] = [
   { id: 'dark_transformation', status: 'dark_transformation', name: 'Karanlık Dönüşüm', school: 'shadow', overlay: 'both', glow: [], durationHint: 15, priority: 1, ...FX },
   { id: 'vampiric_blood', status: 'vampiric_blood', name: 'Vampirik Kan', school: 'bleed', overlay: 'center', glow: [], durationHint: 10, priority: 1, ...FX },
   { id: 'dancing_rune_weapon', status: 'dancing_rune_weapon', name: 'Hayalet Orak', school: 'physical', overlay: 'both', glow: [], durationHint: 12, priority: 1, ...FX },
+  { id: 'killing_machine', status: 'killing_machine', name: 'Öldürücü Makine', school: 'frost', overlay: 'center', glow: ['necro_obliterate'], durationHint: 8, priority: 3, ...FX },
+  { id: 'rime', status: 'rime', name: 'Kırağı', school: 'frost', overlay: 'top', glow: ['necro_howling_blast'], durationHint: 15, priority: 2, ...FX },
 ];
 
 /**
@@ -27,6 +29,10 @@ export const PROC_DEFS_KIT_NECROMANCER: ProcDef[] = [
  */
 export const PROC_MODS_KIT_NECROMANCER: ProcMod[] = [
   { status: 'sudden_doom', skills: ['necro_death_coil', 'necro_epidemic'], costMult: 0, consume: 'cast' },
+  // Öldürücü Makine: the next Yok Edici Darbe is a forced crit (its rune discount is not in the proc layer, see the report)
+  { status: 'killing_machine', skills: ['necro_obliterate'], forceCrit: true, consume: 'cast' },
+  // Kırağı: the next Uluyan Patlama deals +50 % (its free rune is not in the proc layer, see the report)
+  { status: 'rime', skills: ['necro_howling_blast'], more: 1.5, consume: 'cast' },
 ];
 
 /** Ölüm Darbesi glows from 75 Öz (Kemik Muhafızı, §8a "resource90 glow (>= 75 Öz)"; the other spec has no Ölüm Darbesi on its bar). */

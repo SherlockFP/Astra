@@ -13,7 +13,7 @@ export type SpecId = 'knight_protector' | 'knight_blademaster' | 'barbarian_warl
   | 'mage_elementalist' | 'mage_lightbringer' | 'rogue_assassin' | 'rogue_alchemist'
   // GDD_CLASSES_V2 §1.1 (NC01): the 11 wave-1 specs of the five new classes (wave-2 seeds are not listed yet)
   | 'monk_brewmaster' | 'monk_windwalker' | 'archer_marksman' | 'archer_beastmaster' | 'paladin_protection' | 'paladin_holy'
-  | 'paladin_retribution' | 'necromancer_summoner' | 'necromancer_bone' | 'warlock_affliction' | 'warlock_destruction'
+  | 'paladin_retribution' | 'necromancer_summoner' | 'necromancer_bone' | 'warlock_affliction' | 'warlock_destruction' | 'necromancer_frost'
   // GDD_TALENTS (T0, append-only): mage_elementalist / mage_lightbringer stay in the union until the migration ships (OT1).
   | 'mage_fire' | 'mage_frost' | 'mage_arcane'
   // GDD_TALENTS OT1: monk_mistweaver is a listed spec (its tree is authored; kit rows are wave 2)

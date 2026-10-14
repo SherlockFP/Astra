@@ -36,6 +36,15 @@ export function registerEvokerSpecs(add: SkillAdd): void {
     vfx: { cast: 'wings_aura', trail: 'fire_ground', impact: 'meteor_fall' }, sfx: { cast: 'fire_whoosh', impact: 'boss_roar' },
     params: { speed: 22, pathCoef: 3.2, pathWidth: 5, end: 1.0, chain: 0.1, move: 0.2, weight: 2, stagger: 6 },
   });
+  // Kırıcı Yıldız (WoW builder): a star lands on the reticle, 8 m fire burst, +1 Öz. No free bar slot (Shift+ bar not in code).
+  add({
+    id: 'evoker_shattering_star', classId: 'evoker', spec: 'evoker_devastation', name: 'Kırıcı Yıldız (Shattering Star)', icon: I('skill-meteor-impact'), unlockLevel: 10,
+    desc: 'İmlece bir yıldız düşürür: 8 metre içindeki en çok 5 düşmana %150 ateş hasarı verir ve 1 Öz kazandırır. Bedava, bekleme yok.',
+    cost: 0, cooldown: 0, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 1.6, hitTime: 0.5, targeting: 'target_instant', behavior: 'kit_aoe_strike',
+    range: 25, radius: 8, damage: { coef: 1.5, type: 'fire' }, pip: { id: 'essence', gain: 1 },
+    tags: ['spell', 'fire', 'aoe', 'builder'], vfx: { cast: 'meteor_fall', impact: 'fire_burst', ground: 'fire_ground' }, sfx: { cast: 'fire_cast', impact: 'explosion' },
+    params: { maxTargets: 5, falloff: 0.9, stagger: 4, weight: 1, proc: 1, end: 1.0, chain: 0.08, move: 0.15 },
+  });
 
   // ======================================================================================================
   // KORUYUCU NEFES (evoker_preservation): every heal runs on kit_heal / the empower channel; HoTs are `reversion` / `dream_breath` (rule hot)
@@ -100,6 +109,15 @@ export function registerEvokerSpecs(add: SkillAdd): void {
     cost: 0, cooldown: 0, castTime: 0, anim: 'Cheer', animSpeed: 1.6, hitTime: 0.3, targeting: 'custom', behavior: 'kit_stasis_release', offGcd: true,
     replaces: { skill: 'evoker_stasis', whileStatus: 'stasis' }, tags: ['offgcd', 'buff', 'heal', 'frost'], vfx: { cast: 'time_ripple' }, sfx: { cast: 'heal_big' },
     params: { gap: 0.35, end: 0.8, chain: 0.1, move: 0.15, weight: 1 },
+  });
+  // Geri Sarma (WoW major heal): 40 m around the chosen ally, the 5 most injured heal for 2.8 (blossom model). No bar slot (Shift+).
+  add({
+    id: 'evoker_rewind', classId: 'evoker', spec: 'evoker_preservation', name: 'Geri Sarma (Rewind)', icon: I('skill-resurrect'), unlockLevel: 15,
+    desc: 'Zamanı geri sarar: 40 metre içindeki en yaralı 5 müttefiki %280 iyileştirir. 180 saniye bekleme. Bar yuvası yoktur (ikinci bar).',
+    cost: 0, cooldown: 180, castTime: 0, anim: 'Cheer', animSpeed: 1.4, hitTime: 0.3, targeting: 'custom', behavior: 'kit_blossom', offGcd: true, allyTarget: 'friendly',
+    range: 30, radius: 40, heal: { coef: 2.8 }, tags: ['offgcd', 'major', 'heal', 'holy', 'aoe'],
+    vfx: { cast: 'time_ripple', impact: 'heal_burst' }, sfx: { cast: 'time_warp', impact: 'heal' },
+    params: { maxTargets: 5, end: 0.8, chain: 0.1, move: 0.15, weight: 1, stagger: 0 },
   });
 
   // ======================================================================================================

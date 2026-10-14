@@ -368,7 +368,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     armorWeight: 'light',
     weapons: ['staff', 'wand'],
     offhands: ['tome'],
-    specs: ['necromancer_summoner', 'necromancer_bone'],
+    specs: ['necromancer_summoner', 'necromancer_bone', 'necromancer_frost'],
     visual: {
       url: '/assets/models/characters/Mage.glb',
       paletteClass: 'mage',
