@@ -45,6 +45,8 @@ const CLASS_TABLE: readonly ClassEntry[] = [
   { id: 'paladin', name: 'Paladin' },
   { id: 'necromancer', name: 'Nekromant' },
   { id: 'warlock', name: 'Warlock' },
+  // KIT Druid (appended): class tree + the four spec trees below. No passive-web sector yet (CLASS_START_NODE dr_start has no nodes).
+  { id: 'druid', name: 'Druid' },
 ];
 
 /** §1.2 table order (index 0–20 = `SPEC_ORDER`, used by the export string `SS` of §2.7). */
@@ -79,6 +81,11 @@ const SPEC_TABLE: readonly SpecEntry[] = [
   { id: 'shaman_elemental', classId: 'shaman', name: 'Elementel' },
   { id: 'shaman_enhancement', classId: 'shaman', name: 'Geliştirme' },
   { id: 'shaman_restoration', classId: 'shaman', name: 'Restorasyon' },
+  // KIT Druid (indices 26-29, appended): Denge, Vahşi, Koruyucu, Restorasyon. Raw trees are in raw/druid.ts.
+  { id: 'druid_balance', classId: 'druid', name: 'Denge' },
+  { id: 'druid_feral', classId: 'druid', name: 'Vahşi' },
+  { id: 'druid_guardian', classId: 'druid', name: 'Koruyucu' },
+  { id: 'druid_restoration', classId: 'druid', name: 'Restorasyon' },
 ];
 
 /** Class ids in canonical order (§1.2). */

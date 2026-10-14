@@ -54,6 +54,7 @@ const { SLOT_ORDER } = LAYOUT;
 const { CLASS_ORDER, SPEC_ORDER, classOfSpec, getTree } = TREE;
 const { parseFx, fxContext } = FX;
 const { TALENT_LIST, TALENT_NODES, CLASS_START_NODE } = TALENTS;
+const TALENT_NODES_BY_ID = TALENT_NODES;
 const { validateWeb } = PASSIVE_WEB;
 const { encodeBuild, decodeBuild, encodeWeb, decodeWeb } = STRINGS;
 const { autoBuildTree } = TALENT_SYS;
@@ -608,6 +609,8 @@ function stageStrings() {
   // web plan string (EFP1): round trip of the first 70 nodes of a start, and CRC rejection
   for (const cls of CLASS_ORDER) {
     const start = CLASS_START_NODE[cls];
+    // CLASS SCAFFOLD (KIT Druid): a class whose passive-web sector is not authored yet has a start id with no node; nothing to round-trip
+    if (!TALENT_NODES_BY_ID[start]) { st.warn(`web:${cls}`, `no web sector yet (${start} is not a node)`); continue; }
     const ids = TALENT_LIST.slice(0, 70).map((n) => n.id);
     if (!ids.includes(start)) ids.push(start);
     const web = encodeWeb(cls, ids, { [TALENT_LIST.find((n) => n.kind === 'mastery').id]: 2 });
@@ -745,7 +748,8 @@ function stageBench() {
   }
 
   const webRows = [];
-  for (const cls of CLASS_ORDER) {
+  // CLASS SCAFFOLD (KIT Druid): classes without a passive-web sector (start id is not a node) have no web benchmark
+  for (const cls of CLASS_ORDER.filter((c) => TALENT_NODES[CLASS_START_NODE[c]])) {
     const v89 = greedyWeb(cls, 89);
     const v70 = greedyWeb(cls, 70);
     webRows.push({ cls, v89, v70 });

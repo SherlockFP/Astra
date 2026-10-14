@@ -306,6 +306,8 @@ export interface GameEvents {
   // ---- Binek (WoW ground mount, append-only). Local player only; emitted by game/Mount.ts.
   /** The local player mounted (`on: true`) or dismounted. */
   'player:mounted': { on: boolean };
+  /** KIT Druid (combat/Forms.ts): the local player entered (`form` = id) or left (null) a shapeshift form. */
+  'form:changed': { casterId: EntityId; form: string | null };
 
   // ---- WP-08 achievements (append-only). Emitted by systems/Achievements.ts once per unlock; the achievements panel listens.
   /** An achievement was unlocked by the LOCAL character (`title` = the title it grants, if any). */

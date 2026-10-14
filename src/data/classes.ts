@@ -663,7 +663,13 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
       hide: ['Knife', 'Knife_Offhand', '1H_Crossbow', '2H_Crossbow', 'Throwable'],
     },
     basicAttack: 'druid_basic',
-    skills: [],
+    // KIT Druid: the 8 core skills in default-bar order (rmb wrath, q moonfire, e rejuvenation, s1 cat form, s2 regrowth, s3 bear form,
+    // bench barkskin, r travel form), then the form sets that replace the caster buttons in Kedi / Ayı (data/skillsets/druid.ts). L1 bar:
+    // basic + Güneş Gazabı + Ay Ateşi + Gençleşme + Kedi Biçimi.
+    skills: [
+      'druid_wrath', 'druid_moonfire', 'druid_rejuvenation', 'druid_cat_form', 'druid_regrowth', 'druid_bear_form', 'druid_barkskin', 'druid_travel_form',
+      'druid_shred', 'druid_rake', 'druid_ferocious_bite', 'druid_mangle', 'druid_thrash', 'druid_ironfur',
+    ],
     startingItems: ['staff_t1'],
     color: '#ff7c0a',
     resourceColor: '#3d7bd9',
@@ -697,7 +703,7 @@ export const CLASS_IDS: ClassId[] = ['knight', 'barbarian', 'mage', 'rogue'];
  * necromancer (Mage rig) and the warlock (Rogue rig), WP-01. The other new classes join when their skills, model and items are merged
  * (GDD_CLASSES_V2 §13.1 / NC60).
  */
-export const PLAYABLE_CLASSES: readonly ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer', 'shaman', 'demonhunter', 'evoker', 'priest'];
+export const PLAYABLE_CLASSES: readonly ClassId[] = ['knight', 'barbarian', 'mage', 'rogue', 'paladin', 'necromancer', 'warlock', 'monk', 'archer', 'shaman', 'demonhunter', 'evoker', 'priest', 'druid'];
 export const isPlayableClass = (id: ClassId): boolean => (PLAYABLE_CLASSES as readonly string[]).includes(id);
 export const getClass = (id: ClassId): ClassDefX => CLASSES[id];
 
