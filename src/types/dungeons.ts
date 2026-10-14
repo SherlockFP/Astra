@@ -500,6 +500,10 @@ export interface EntranceDef {
   id: string; name: string; dungeonId: string; pos: [number, number]; facing: number; minLevel: number; regionId: string;
   /** P-10: closed union widened append-only; recipes in src/data/world/entrances.ts. `temple_large` = the large temple variant. */
   look: 'crypt' | 'forge' | 'cave' | 'ice' | 'temple' | 'palace' | 'arcane' | 'grove' | 'web' | 'valor' | 'temple_large';
+  /** Zone link (a pass, not a dungeon door): the entrance opens a portal into another open-world zone instead of the keystone panel. */
+  toZone?: string;
+  /** Zone link: the entrance id in `toZone` where the party appears (DungeonScene.arrivalOf). */
+  toEntrance?: string;
 }
 export interface RoadDef { id: string; kind: 'dirt' | 'cobble' | 'boardwalk' | 'bridge'; width: number; pts: [number, number][] }
 export interface LandmarkDef { id: string; name: string; regionId: string; pos: [number, number]; recipe: string }

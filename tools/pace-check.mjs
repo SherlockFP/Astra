@@ -55,7 +55,7 @@ const avg = (xs) => (xs.length ? sum(xs) / xs.length : 0);
 const range = (lo, hi) => Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
 const finite = (n) => (isFinite(n) ? n : 0);
 
-const kindOf = (q) => (q.daily ? 'daily' : q.main ? 'main' : /^sq_r\d_/.test(q.id) ? 'region' : /^sq_[gcks]_/.test(q.id) ? 'side' : 'other');
+const kindOf = (q) => (q.daily ? 'daily' : q.main ? 'main' : /^sq_r\d+_/.test(q.id) ? 'region' : /^sq_[gcks]_/.test(q.id) ? 'side' : 'other');
 const questXp = (q) => Math.round((q.reward.xpPct / 100) * xpToNext(q.level));
 
 /** Monster level of a kill target: lowest levelRange of the camps that spawn it, else miniboss / rare / metin tier level. */

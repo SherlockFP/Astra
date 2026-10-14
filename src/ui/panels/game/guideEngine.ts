@@ -24,6 +24,7 @@ export interface GuideAdvice {
 /** Open-world zones past the last region (§4.6). They are listed until their content exists. */
 const EXTRA_ZONES: { id: string; name: string; levels: [number, number] }[] = [
   { id: 'karakir_bozkiri', name: 'Karakır Bozkırı', levels: [30, 45] }, // built: data/world/karakir*.ts (r7..r12, Ayaz Eteği is its r10)
+  { id: 'ayaz_daglari', name: 'Ayaz Dağları', levels: [45, 60] }, // built: data/world/ayaz*.ts (r16..r21, Kartal Geçidi from Karakır r12)
   { id: 'ayaz_eteği', name: 'Ayaz Eteği (devamı)', levels: [41, 45] },
 ];
 

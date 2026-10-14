@@ -899,6 +899,20 @@ export class DungeonScene implements GameScene {
       const band = getDungeon(e.dungeonId)?.levelRange;
       const tx = tileToWorld(e.pos[0]), tz = tileToWorld(e.pos[1]);
       const s = built.nav.nearestWalkable(tx, tz, 6) ?? { x: tx, z: tz };
+      // zone pass (Kartal Geçidi): a portal into another open-world map, level-gated; the arrival is that map's entrance `toEntrance`
+      if (e.toZone) {
+        const pass = new ExitPortal(world.allocLocalId(), {
+          spawnAt: 'south', name: e.name, minLevel: e.minLevel,
+          returnTo: { dungeonId: e.toZone, spawn: { type: 'entrance', id: e.toEntrance ?? e.id } },
+        });
+        pass.position.set(s.x, world.groundY(s.x, s.z), s.z);
+        pass.object3d.rotation.y = (e.facing * Math.PI) / 180;
+        void pass.load().then(
+          () => void world.add(pass),
+          (err) => console.warn('[dungeon] zone pass failed', err),
+        );
+        continue;
+      }
       const door = new PanelProp(world.allocLocalId(), {
         parts: [{ url: propUrl('mplus_portal'), scale: 0.5 }],
         name: e.name,

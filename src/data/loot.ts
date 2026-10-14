@@ -302,6 +302,19 @@ export const METIN_TABLES: Record<string, LootTableDef> = {
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [40, 40] }, { id: 'beceri_kitabi_3', chance: 0.2 }, { id: 'gem_random_4', chance: 0.09 }, { id: 'efsun_nesnesi', chance: 0.13 }, { id: 'kutsama_kagidi', chance: 0.08 }, { id: 'oyma_kalemi', chance: 0.07 }, { id: 'takviye_nesnesi', chance: 0.09 }] },
   loot_metin_t12: { ...METIN_BASE, items: [4, 6], minRarity: 'rare', minRarityCount: 2, goldMult: 32,
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [44, 44] }, { id: 'beceri_kitabi_3', chance: 0.22 }, { id: 'gem_random_4', chance: 0.1 }, { id: 'efsun_nesnesi', chance: 0.14 }, { id: 'kutsama_kagidi', chance: 0.09 }, { id: 'oyma_kalemi', chance: 0.08 }, { id: 'takviye_nesnesi', chance: 0.1 }] },
+  // Ayaz Dağları stones (tiers 1-6 = r16..r21, levels 45-60): the Karakır curve continued
+  loot_metin_ad_t1: { ...METIN_BASE, items: [3, 5], minRarity: 'rare', minRarityCount: 2, goldMult: 34,
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [48, 48] }, { id: 'beceri_kitabi_3', chance: 0.2 }, { id: 'gem_random_3', chance: 0.4 }, { id: 'gem_random_4', chance: 0.08 }, { id: 'efsun_nesnesi', chance: 0.12 }, { id: 'kutsama_kagidi', chance: 0.07 }, { id: 'oyma_kalemi', chance: 0.06 }, { id: 'takviye_nesnesi', chance: 0.09 }] },
+  loot_metin_ad_t2: { ...METIN_BASE, items: [3, 5], minRarity: 'rare', minRarityCount: 2, goldMult: 36,
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [52, 52] }, { id: 'beceri_kitabi_3', chance: 0.2 }, { id: 'gem_random_3', chance: 0.4 }, { id: 'gem_random_4', chance: 0.09 }, { id: 'efsun_nesnesi', chance: 0.12 }, { id: 'kutsama_kagidi', chance: 0.08 }, { id: 'oyma_kalemi', chance: 0.07 }, { id: 'takviye_nesnesi', chance: 0.09 }] },
+  loot_metin_ad_t3: { ...METIN_BASE, items: [4, 5], minRarity: 'rare', minRarityCount: 2, goldMult: 38,
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [56, 56] }, { id: 'beceri_kitabi_3', chance: 0.18 }, { id: 'gem_random_4', chance: 0.1 }, { id: 'efsun_nesnesi', chance: 0.13 }, { id: 'kutsama_kagidi', chance: 0.08 }, { id: 'oyma_kalemi', chance: 0.07 }, { id: 'takviye_nesnesi', chance: 0.09 }] },
+  loot_metin_ad_t4: { ...METIN_BASE, items: [4, 5], minRarity: 'rare', minRarityCount: 2, goldMult: 40,
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [60, 60] }, { id: 'beceri_kitabi_3', chance: 0.18 }, { id: 'gem_random_4', chance: 0.11 }, { id: 'efsun_nesnesi', chance: 0.13 }, { id: 'kutsama_kagidi', chance: 0.09 }, { id: 'oyma_kalemi', chance: 0.08 }, { id: 'takviye_nesnesi', chance: 0.1 }] },
+  loot_metin_ad_t5: { ...METIN_BASE, items: [4, 6], minRarity: 'rare', minRarityCount: 2, goldMult: 42,
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [64, 64] }, { id: 'beceri_kitabi_3', chance: 0.2 }, { id: 'gem_random_4', chance: 0.12 }, { id: 'efsun_nesnesi', chance: 0.14 }, { id: 'kutsama_kagidi', chance: 0.09 }, { id: 'oyma_kalemi', chance: 0.08 }, { id: 'takviye_nesnesi', chance: 0.1 }] },
+  loot_metin_ad_t6: { ...METIN_BASE, items: [4, 6], minRarity: 'rare', minRarityCount: 2, goldMult: 44,
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [68, 68] }, { id: 'beceri_kitabi_3', chance: 0.22 }, { id: 'gem_random_4', chance: 0.14 }, { id: 'efsun_nesnesi', chance: 0.14 }, { id: 'kutsama_kagidi', chance: 0.1 }, { id: 'oyma_kalemi', chance: 0.09 }, { id: 'takviye_nesnesi', chance: 0.1 }] },
 };
 
 /** Ara Patron (GDD 3.6): the miniboss rank table + Metin Kalintisi x(4 + level/3) + themed focus. */
@@ -317,6 +330,10 @@ export const MINIBOSS_TABLES: Record<string, LootTableDef> = {
   // Karakır Bozkırı (levels 30-40)
   loot_mb_kb_horgan: { base: 'miniboss', focus: ['axe2h', 'helm', 'shoulders', 'chest', 'boots'], bonus: [{ id: 'metin_kalintisi', chance: 1, count: [16, 16] }] },
   loot_mb_kb_kul_efendisi: { base: 'miniboss', focus: ['axe2h', 'helm', 'shoulders', 'chest', 'boots'], bonus: [{ id: 'metin_kalintisi', chance: 1, count: [20, 20] }] },
+  // Ayaz Dağları (levels 45-60)
+  loot_mb_ad_buz_dev: { base: 'miniboss', focus: ['axe2h', 'helm', 'shoulders', 'chest', 'boots'], bonus: [{ id: 'metin_kalintisi', chance: 1, count: [30, 30] }, { id: 'gem_sapphire_2', chance: 0.2 }] },
+  loot_mb_ad_kar_alfa: { base: 'miniboss', focus: ['dagger', 'sword1h', 'gloves', 'legs'], bonus: [{ id: 'metin_kalintisi', chance: 1, count: [34, 34] }, { id: 'gem_sapphire_2', chance: 0.25 }] },
+  loot_mb_ad_zirve_muhafizi: { base: 'miniboss', focus: ['chest', 'helm', 'shield', 'legs', 'ring'], bonus: [{ id: 'metin_kalintisi', chance: 1, count: [40, 40] }, { id: 'gem_diamond_2', chance: 0.15 }] },
 };
 
 /** Named rares (GDD 3.5): Nadir x1-2 guaranteed, Metin Kalintisi, one themed bonus; four of them carry a Vadi Efsanevisi (15%). */
@@ -376,6 +393,13 @@ export const RARE_TABLES: Record<string, LootTableDef> = {
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [18, 18] }, { id: 'gem_topaz_2', chance: 0.3 }, { id: 'buyulu_toz', chance: 1, count: [8, 8] }] },
   loot_rare_kb_kartal_kral: { ...RARE_BASE, items: [2, 3],
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [20, 20] }, { id: 'ejderha_pulu', chance: 0.6, count: [1, 1] }, { id: 'gem_topaz_2', chance: 0.25 }] },
+  // Ayaz Dağları (levels 45-60): Nadir x2, Metin Kalıntısı and one themed bonus
+  loot_rare_ad_kiragi_kurdu: { ...RARE_BASE, items: [2, 2], bonus: [{ id: 'metin_kalintisi', chance: 1, count: [22, 22] }, { id: 'gem_sapphire_2', chance: 0.3 }] },
+  loot_rare_ad_buz_aga: { ...RARE_BASE, items: [2, 2], bonus: [{ id: 'metin_kalintisi', chance: 1, count: [24, 24] }, { id: 'gem_sapphire_2', chance: 0.3 }, { id: 'buyulu_toz', chance: 1, count: [8, 8] }] },
+  loot_rare_ad_kar_yeti: { ...RARE_BASE, items: [2, 2], bonus: [{ id: 'metin_kalintisi', chance: 1, count: [26, 26] }, { id: 'gem_diamond_2', chance: 0.2 }] },
+  loot_rare_ad_firtina_kartali: { ...RARE_BASE, items: [2, 3], bonus: [{ id: 'metin_kalintisi', chance: 1, count: [28, 28] }, { id: 'ejderha_pulu', chance: 0.6, count: [1, 1] }, { id: 'gem_topaz_3', chance: 0.25 }] },
+  loot_rare_ad_don_kral: { ...RARE_BASE, items: [2, 2], bonus: [{ id: 'metin_kalintisi', chance: 1, count: [30, 30] }, { id: 'gem_amethyst_3', chance: 0.3 }] },
+  loot_rare_ad_donmus_sovalye: { ...RARE_BASE, items: [2, 2], bonus: [{ id: 'metin_kalintisi', chance: 1, count: [32, 32] }, { id: 'gem_diamond_3', chance: 0.25 }, { id: 'ejderha_pulu', chance: 0.5, count: [1, 1] }] },
 };
 
 /** World bosses (GDD 3.8): boss rank table (item level = level + 3) plus extra Metin Kalintisi. */
@@ -383,6 +407,8 @@ export const WORLD_BOSS_TABLES: Record<string, LootTableDef> = {
   loot_wb_curukkok: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [8, 12] }, { id: 'pet_tas_kaplumbaga', chance: 0.05 }] },
   loot_wb_alevkanat: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [12, 18] }] },
   loot_wb_ulu_boz: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [20, 28] }, { id: 'pet_ejder_yavrusu', chance: 0.05 }] },
+  // Ayaz Dağları (levels 45-60): Zemheri, the r20 arena
+  loot_wb_ad_zemheri: { base: 'boss', bonus: [{ id: 'metin_kalintisi', chance: 1, count: [30, 40] }] },
 };
 
 /** Gather nodes (GDD 5.5): one harvest rolls every entry. Ore = Kara Demir / Buyulu Toz, herb = potions. */
@@ -412,6 +438,19 @@ export const GATHER_TABLES: Record<string, GatherTableDef> = {
   gather_herb_r11: { entries: [{ id: 'pot_hp_3', chance: 1, count: [1, 2] }, { id: 'pot_res_3', chance: 0.6, count: [1, 2] }] },
   gather_ore_r12: { entries: [{ id: 'buyulu_toz', chance: 1, count: [3, 6] }, { id: 'ejderha_pulu', chance: 0.12, count: [1, 1] }] },
   gather_herb_r12: { entries: [{ id: 'pot_hp_3', chance: 1, count: [1, 2] }, { id: 'pot_res_3', chance: 0.7, count: [1, 2] }] },
+  // Ayaz Dağları (r16..r21): ore tier 4 (r16-r17), 5 (r18-r19), 6 (r20-r21); herbs on the same tiers (professions.ts NODE_TYPES)
+  gather_ore_r16: { entries: [{ id: 'ore_gold', chance: 1, count: [2, 4] }] },
+  gather_herb_r16: { entries: [{ id: 'herb_dragontongue', chance: 1, count: [1, 2] }] },
+  gather_ore_r17: { entries: [{ id: 'ore_gold', chance: 1, count: [3, 5] }] },
+  gather_herb_r17: { entries: [{ id: 'herb_dragontongue', chance: 1, count: [2, 3] }] },
+  gather_ore_r18: { entries: [{ id: 'ore_dragon', chance: 1, count: [2, 4] }] },
+  gather_herb_r18: { entries: [{ id: 'herb_moonviolet', chance: 1, count: [1, 2] }] },
+  gather_ore_r19: { entries: [{ id: 'ore_dragon', chance: 1, count: [3, 5] }] },
+  gather_herb_r19: { entries: [{ id: 'herb_moonviolet', chance: 1, count: [2, 3] }] },
+  gather_ore_r20: { entries: [{ id: 'ore_ancient', chance: 1, count: [2, 3] }] },
+  gather_herb_r20: { entries: [{ id: 'herb_lotus', chance: 1, count: [1, 2] }] },
+  gather_ore_r21: { entries: [{ id: 'ore_ancient', chance: 1, count: [3, 4] }] },
+  gather_herb_r21: { entries: [{ id: 'herb_lotus', chance: 1, count: [2, 3] }] },
 };
 
 /** Every open-world table is also reachable through the shared registry (LootSystem looks named tables up there). */

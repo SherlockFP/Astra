@@ -3,6 +3,8 @@ import { gemId } from '../materials'; // gem grades are 1-based there: 1 Kırık
 import { LAYOUT } from './layout';
 import { REGION_QUESTS } from './quests_extra';
 import { KARAKIR_QUESTS } from './karakir_quests';
+import { KARAKIR_PACE_QUESTS } from './karakir_quests_pace';
+import { AYAZ_QUESTS } from './ayaz_quests';
 
 /**
  * Sisli Vadi quest DATA (GDD_OPENWORLD §6.2-6.4). OWNER: content module. The runtime is systems/Quests.ts (WP4).
@@ -318,7 +320,7 @@ export const SIDE_QUESTS: QuestDef[] = LAYOUT.quests.side.map((q) =>
 
 /** Region quests (kill / collect / hunt / metin / chain / daily per region, data/world/quests_extra.ts). */
 /** Karakır Bozkırı (mq_20..22 continue the main chain after mq_19, 9 zone quests): data/world/karakir_quests.ts. */
-export const QUESTS: QuestDef[] = [...MAIN_QUESTS, ...SIDE_QUESTS, ...REGION_QUESTS, ...KARAKIR_QUESTS];
+export const QUESTS: QuestDef[] = [...MAIN_QUESTS, ...SIDE_QUESTS, ...REGION_QUESTS, ...KARAKIR_QUESTS, ...KARAKIR_PACE_QUESTS, ...AYAZ_QUESTS];
 
 /** Quest ids an NPC offers or turns in (TownNpc.quests). */
 export function questIdsFor(npcId: string): string[] {

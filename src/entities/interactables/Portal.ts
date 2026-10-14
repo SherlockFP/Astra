@@ -143,24 +143,33 @@ export class ExitPortal extends InteractableProp {
   /** Run started from a world entrance (GDD_OPENWORLD §9.3): the exit goes back to that open-world spot, not to town. */
   private readonly returnTo: DungeonParams['returnTo'];
 
-  constructor(id: number, opts: { spawnAt?: 'portal' | 'south'; returnTo?: DungeonParams['returnTo'] } = {}) {
+  /** Zone pass (EntranceDef.toZone): the portal's own name, and the level the other zone asks for (0 = no gate). */
+  private readonly passName?: string;
+  private readonly passLevel: number;
+
+  constructor(id: number, opts: { spawnAt?: 'portal' | 'south'; returnTo?: DungeonParams['returnTo']; name?: string; minLevel?: number } = {}) {
     super(id);
     this.spawnAt = opts.spawnAt ?? 'portal';
     this.returnTo = opts.returnTo;
+    this.passName = opts.name;
+    this.passLevel = opts.minLevel ?? 0;
     this.interactRange = 4.6;
     this.radius = 1.6;
     this.height = 5;
   }
 
   get interactPrompt(): string {
-    return 'Kuzgunkale\'ye Dön';
+    return this.passName ? `${this.passName}: Geçide Gir` : 'Kuzgunkale\'ye Dön';
   }
 
   async load(scale = 0.62): Promise<void> {
     const m = await this.loadModel(propUrl('mplus_portal'), { scale, ownMaterials: true });
     this.surface = preparePortalSurface(m, this.tint);
     this.lightRef = this.addLight(this.tint, 22, 13, this.nodeLocal('light_0', new THREE.Vector3(0, 2.2, 0.2)));
-    this.setLabel('<div class="efs-wl"><div class="n" style="color:#70ffd0">Çıkış Portalı</div><div class="s" style="color:#d6c196">Kuzgunkale\'ye dön</div></div>', 5, 'efs-wl-wrap', 50);
+    const label = this.passName
+      ? `<div class="efs-wl"><div class="n" style="color:#c8e8ff">${this.passName}</div><div class="s" style="color:#d6c196">Önerilen seviye ${this.passLevel || 1}</div></div>`
+      : '<div class="efs-wl"><div class="n" style="color:#70ffd0">Çıkış Portalı</div><div class="s" style="color:#d6c196">Kuzgunkale\'ye dön</div></div>';
+    this.setLabel(label, 5, 'efs-wl-wrap', 50);
   }
 
   onAdded(world: import('../../world/World').World): void {
@@ -183,6 +192,11 @@ export class ExitPortal extends InteractableProp {
 
   interact(_player: Player): void {
     if (this.used) return;
+    // zone pass: the other zone's level gate (Ayaz Dağları asks for 45)
+    if (this.passLevel > 0 && (G.character?.level ?? 1) < this.passLevel) {
+      G.ui.toast(`${this.passName ?? 'Bu geçit'}: seviye ${this.passLevel} gerekli.`, 'info');
+      return;
+    }
     this.used = true;
     G.audio.play('portal_enter');
     if (this.returnTo) {

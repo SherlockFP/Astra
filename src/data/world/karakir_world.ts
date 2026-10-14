@@ -173,20 +173,17 @@ export const WAYPOINTS: WaypointDef[] = [
   { id: 'wp_karakir_kartal_sirt', name: 'Kartal Sırt Taşı', pos: [372, 120], regionId: 'r12' },
 ];
 
-/** Open-world dungeon entrances of the zone: Buzul Tahtı (ice cave mouth at the Ayaz Geçidi), Gölge Tapınağı and the eight season dungeons. */
+/**
+ * Open-world dungeon entrances of the zone: Buzul Tahtı (ice cave mouth at the Ayaz Geçidi), Gölge Tapınağı (42-52, stays here) and the
+ * Kartal Geçidi pass into Ayaz Dağları (zone link, gate level 45). The eight season dungeons (50-60) moved to Ayaz Dağları, into the
+ * regions of their bands (ayaz_daglari.ts ENTRANCES).
+ */
 export const ENTRANCES: EntranceDef[] = [
   { id: 'ent_buzul_tahti', name: 'Buzul Tahtı Girişi', dungeonId: 'buzul_tahti', pos: [285, 84], facing: -90, minLevel: 30, regionId: 'r10', look: 'ice' },
-  // Gölge Tapınağı (42-52) and the eight season dungeons (50-60, Mythic+ pool). The band of a dungeon is its levelRange; the
-  // sign shows it (DungeonScene). The zone tops out at 45, so the 50+ doors are visible from the zone and open at their band.
   { id: 'ent_golge_tapinagi', name: 'Gölge Tapınağı Girişi', dungeonId: 'golge_tapinagi', pos: [327, 269], facing: 177, minLevel: 42, regionId: 'r11', look: 'temple' },
-  { id: 'ent_peri_sisleri', name: 'Peri Sisleri Girişi', dungeonId: 'peri_sisleri', pos: [47, 95], facing: 45, minLevel: 60, regionId: 'r7', look: 'grove' },
-  { id: 'ent_yanki_agi', name: 'Yankı Ağı Girişi', dungeonId: 'yanki_agi', pos: [40, 183], facing: -164, minLevel: 60, regionId: 'r7', look: 'web' },
-  { id: 'ent_taskasa', name: 'Taşkasa Kapısı', dungeonId: 'taskasa', pos: [206, 216], facing: -176, minLevel: 56, regionId: 'r8', look: 'forge' },
-  { id: 'ent_kefaret_salonlari', name: 'Kefaret Salonları Girişi', dungeonId: 'kefaret_salonlari', pos: [138, 155], facing: 0, minLevel: 60, regionId: 'r9', look: 'temple_large' },
-  { id: 'ent_buyucu_terasi', name: 'Büyücüler Terası', dungeonId: 'buyucu_terasi', pos: [281, 181], facing: -21, minLevel: 60, regionId: 'r10', look: 'arcane' },
-  { id: 'ent_les_uyanisi', name: 'Leş Uyanışı Girişi', dungeonId: 'les_uyanisi', pos: [359, 177], facing: -29, minLevel: 50, regionId: 'r11', look: 'temple' },
-  { id: 'ent_yildiz_divani', name: 'Yıldız Kapısı', dungeonId: 'yildiz_divani', pos: [368, 79], facing: -71, minLevel: 55, regionId: 'r12', look: 'palace' },
-  { id: 'ent_yigitler_sarayi', name: 'Yiğitler Sarayı Girişi', dungeonId: 'yigitler_sarayi', pos: [324, 139], facing: 112, minLevel: 60, regionId: 'r12', look: 'valor' },
+  // Kartal Geçidi: the mountain pass out of r12 into Ayaz Dağları (level 45). The arrival is the Ayaz side's `ent_karakir_gecidi`.
+  { id: 'ent_ayaz_gecidi', name: 'Kartal Geçidi (Ayaz Dağları)', dungeonId: 'ayaz_daglari', pos: [388, 76], facing: -90, minLevel: 45, regionId: 'r12', look: 'cave',
+    toZone: 'ayaz_daglari', toEntrance: 'ent_karakir_gecidi' },
 ];
 
 export const WORLD_BOSS_ID = 'wb_ulu_boz';

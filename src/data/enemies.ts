@@ -14,6 +14,7 @@ import './enemies_yanki_agi';
 import './enemies_buyucu_terasi';
 import { TASKASA_ENEMIES, TASKASA_BOSSES } from './enemies_taskasa';
 import { registerKarakirEnemies } from './enemies_karakir';
+import { registerAyazEnemies, AYAZ_METIN_SPECS } from './enemies_ayaz';
 export { ENEMIES, BOSSES };
 Object.assign(ENEMIES, TASKASA_ENEMIES);
 Object.assign(BOSSES, TASKASA_BOSSES);
@@ -1370,5 +1371,8 @@ boss({
 
 // Karakır Bozkırı (levels 30-40): kb_* variants of the ow_* / skel_* bases above, rares, mini-boss and the world boss Ulu-Boz
 registerKarakirEnemies();
+// Ayaz Dağları (levels 45-60): mobs, rares, mini-bosses, world boss and the six metin stones; their tier scripts join METIN_SPECS
+registerAyazEnemies();
+Object.assign(METIN_SPECS, AYAZ_METIN_SPECS);
 
 export const getEnemyDef = (id: string): EnemyDef | undefined => ENEMIES[id] ?? BOSSES[id];
