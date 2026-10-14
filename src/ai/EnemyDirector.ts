@@ -25,6 +25,9 @@ export interface BonePile {
 const CELL = 3;
 /** WoW-style social aggro: a pack-less neighbour pulls in only within this many metres of the puller, and only when it is already inside its own aggro range of the target. */
 export const SOCIAL_AGGRO_M = 10;
+/** Low-level pull cap: a trash / elite target at level <= PULL_CAP_LEVEL has at most PULL_CAP enemies engaged on it at once (WoW-style small pulls). Bosses are exempt. */
+export const PULL_CAP_LEVEL = 5;
+export const PULL_CAP = 3;
 const key = (cx: number, cz: number) => (cx + 2048) * 4096 + (cz + 2048);
 
 /**
@@ -187,8 +190,9 @@ export class EnemyDirector {
         const oa = o.ai;
         if (!oa || oa === ai || oa.aggroed || o.def.ai?.summoned || o.def.ai?.flee) continue;
         if (o.def.aggroRange <= 0) continue;
-        // a touch-pull reaches the camp, or a pack-less neighbour already in aggro range of the target (no chain across the room)
-        if (!this.campMates(ai.e, o) && !this.inAggroRangeOf(o, ai.target)) continue;
+        // a touch reaches its own camp only: another camp is never pulled by touch (no chain across camps). A pack-less neighbour
+        // joins only from inside its own aggro range of the target (no chain across the room).
+        if (o.packId ? !this.campMates(ai.e, o) : !this.inAggroRangeOf(o, ai.target)) continue;
         this.pullPack(oa, ai.target);
       }
     }
@@ -210,23 +214,41 @@ export class EnemyDirector {
    * Aggro `ai` and the enemies it pulls. Only its own camp (same packId, plus packs a dungeon linked to it) comes along at any
    * distance; other packs are never pulled. A pack-less neighbour is social-pulled only within SOCIAL_AGGRO_M (10 m) of the puller,
    * on the same level, and only when it is already inside its own aggro range of the target. A social pull never sweeps the room.
+   * Low-level cap (hasRoom): a new engagement (a sight pull, a touch, a call for help) is refused once the target already has
+   * PULL_CAP engaged enemies; the pulled mates are taken nearest first. `answering` = the enemy was hit by the target, which always
+   * gets its answer.
    */
-  pullPack(ai: EnemyAI, target: Actor | null): void {
+  pullPack(ai: EnemyAI, target: Actor | null, answering = false): void {
     if (!target) return;
+    if (!answering && !this.hasRoom(ai.e, target)) return;
     ai.acquire(target, true);
+    const mates: { ai: EnemyAI; d: number }[] = [];
     for (const o of this.ais.slice()) {
       if (o === ai || o.aggroed || o.e.isDead) continue;
       const op = o.e.packId;
+      const d = Math.hypot(o.e.position.x - ai.e.position.x, o.e.position.z - ai.e.position.z);
       if (op) {
-        if (this.campMates(ai.e, o.e)) o.acquire(target, true);
+        if (this.campMates(ai.e, o.e)) mates.push({ ai: o, d });
         continue;
       }
       if (o.e.def.aggroRange <= 0 || o.e.def.ai?.summoned) continue;
       // vertical: a pack-less neighbour on another level (balcony / pit) is not pulled (ENGINE_VERTICALITY §12)
       const nav = this.world.nav;
-      const d = Math.hypot(o.e.position.x - ai.e.position.x, o.e.position.z - ai.e.position.z);
-      if (d <= SOCIAL_AGGRO_M && (!nav.vertical || nav.sameRegion(o.e.position, ai.e.position)) && this.inAggroRangeOf(o.e, target)) o.acquire(target, true);
+      if (d <= SOCIAL_AGGRO_M && (!nav.vertical || nav.sameRegion(o.e.position, ai.e.position)) && this.inAggroRangeOf(o.e, target)) mates.push({ ai: o, d });
     }
+    mates.sort((a, b) => a.d - b.d);
+    for (const m of mates) {
+      if (!this.hasRoom(m.ai.e, target)) break;
+      m.ai.acquire(target, true);
+    }
+  }
+
+  /** Low-level cap: a trash / elite enemy at level <= PULL_CAP_LEVEL may engage `target` only while fewer than PULL_CAP enemies are engaged on it. Bosses are never capped. */
+  hasRoom(e: Enemy, target: Actor): boolean {
+    if (e.level > PULL_CAP_LEVEL || e.def.rank === 'boss') return true;
+    let n = 0;
+    for (const o of this.ais) if (o.aggroed && !o.e.isDead && o.target === target) n++;
+    return n < PULL_CAP;
   }
 
   /**

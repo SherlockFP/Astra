@@ -82,7 +82,7 @@ add({
   id: 'ow_slime', name: 'Yeşil Balçık', model: GEN('slime_green'), scale: 1.07, role: 'melee', rank: 'trash', hp: 0.8, dmg: 0.7, speed: 4.8, radius: 0.65, aggro: 8, forces: 0, leash: 40,
   anims: A_GEN,
   basic: cone('ow_slime_hit', 'Gövde Çarpması', 1.5, 100, 1.8, 1.0, 'Attack', 0.57),
-  abilities: [onDeath({ id: 'ow_slime_split', name: 'Bölünme', kind: 'summon', range: 0, cooldown: 0, windup: 0, anim: '', summon: { enemyId: 'ow_slimelet', count: 2 }, vfx: 'add_spawn' })],
+  abilities: [onDeath({ id: 'ow_slime_split', name: 'Bölünme', kind: 'summon', range: 0, cooldown: 0, windup: 0, anim: '', summon: { enemyId: 'ow_slimelet', count: 2 }, vfx: 'add_spawn', params: { minLevel: 6 } })],
 });
 add({
   id: 'ow_slimelet', name: 'Küçük Balçık', model: GEN('slime_green'), scale: 0.64, role: 'swarm', rank: 'trash', hp: 0.24, dmg: 0.5, speed: 5.4, radius: 0.4, aggro: 10, forces: 0, leash: 40,
@@ -509,7 +509,7 @@ add({
   anims: A_GEN, resist: { fire: 0.75, frost: -0.25 },
   basic: cone('lava_slime_hit', 'Kızgın Çarpma', 1.6, 100, 1.8, 1.0, 'Attack', 0.57, { damage: { coef: 1.0, type: 'fire' } } as Ab),
   abilities: [
-    onDeath({ id: 'lava_slime_split', name: 'Bölünme', kind: 'summon', range: 0, cooldown: 0, windup: 0, anim: '', summon: { enemyId: 'lava_slimelet', count: 2 }, vfx: 'add_spawn' }),
+    onDeath({ id: 'lava_slime_split', name: 'Bölünme', kind: 'summon', range: 0, cooldown: 0, windup: 0, anim: '', summon: { enemyId: 'lava_slimelet', count: 2 }, vfx: 'add_spawn', params: { minLevel: 6 } }),
     onDeath(aoe('lava_slime_puddle', 'Lav Birikintisi', 'self_aoe', 2, 0, 0, 0.3, 0.4, 'fire', '', 0, { telegraph: false, vfx: 'fire_ground', params: { persist: 5, tick: 0.5 } })),
   ],
 });

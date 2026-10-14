@@ -300,6 +300,8 @@ export function runOnDeath(ai: EnemyAI, ab: EnemyAbility): void {
   const p = ab.params ?? {};
   switch (ab.kind) {
     case 'summon':
+      // a split with params.minLevel does nothing below that level (slimes: no split before level 6)
+      if (p.minLevel && e.level < p.minLevel) return;
       if (ab.summon) ai.spawnAdds(ab.summon.enemyId, ab.summon.count, { x, z, radius: 1.6 });
       G.vfx.spawn(ab.vfx ?? 'add_spawn', [x, 0.3, z]);
       return;

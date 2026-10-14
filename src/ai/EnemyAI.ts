@@ -444,10 +444,10 @@ export class EnemyAI {
       const mis = (src as Player).statuses.get('misdirection');
       this.addThreat(mis && mis.sourceId != null && mis.sourceId !== src.id ? mis.sourceId : src.id, th);
       if (this.e.def.ai?.flee) this.onHurtFlee(amount);
-      if (!this.aggroed) this.dir.pullPack(this, src);
+      if (!this.aggroed) this.dir.pullPack(this, src, true);
     } else if (!this.aggroed) {
       const p = this.nearestPlayer(60);
-      if (p) this.dir.pullPack(this, p);
+      if (p) this.dir.pullPack(this, p, true);
     }
     if (this.e.dormant) this.wake(src ?? null);
     this.revealIfHidden();
@@ -569,7 +569,7 @@ export class EnemyAI {
     } catch { /* ignore */ }
     if (!this.aggroed) {
       const p = by && by.kind === 'player' ? by : this.nearestPlayer(60);
-      if (p) this.dir.pullPack(this, p);
+      if (p) this.dir.pullPack(this, p, true);
     }
   }
 
@@ -1600,7 +1600,7 @@ export class EnemyAI {
       if (Math.hypot(ox - e.position.x, oz - e.position.z) > radius) continue;
       if (sameRoom && !this.world.nav.lineOfSight(e.position.x, e.position.z, ox, oz)) continue;
       this.dir.pullPack(o, target);
-      called++;
+      if (o.aggroed) called++;
     }
     return called;
   }

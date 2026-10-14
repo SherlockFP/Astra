@@ -11,7 +11,8 @@
  * aggro range; no sweep, no chain past the aggro range) | leash.* (a chase past the leash evades home with a full reset) | caster.* (keeps range,
  * casts an interruptible spell with a cast bar, a heavy hit cuts it) | healer.* (heals a hurt ally, ignores a healthy one) |
  * flee.* (humanoid at 20 % HP runs and calls its pack; a swarm beast does not) | elite.* (elite specials telegraphed, windup
- * >= 0.9 s; trash not) | stuck.* (no route to the target = evade, not a stand-off) | wall.* (a charge stops at a wall).
+ * >= 0.9 s; trash not) | stuck.* (no route to the target = evade, not a stand-off) | wall.* (a charge stops at a wall) |
+ * cap.* (a level-2 priest in the Balçık Gölü slime camps: at most 3 engaged, a touch never pulls another camp, no level-2 split).
  * Exit 0 = all PASS.
  */
 import * as H from './harness.mjs';
@@ -44,6 +45,7 @@ function mob(defId, x, z, o = {}) {
   e.homeX = x;
   e.homeZ = z;
   e.packId = o.packId ?? null;
+  if (o.level) e.level = o.level;
   world.add(e);
   const ai = new EnemyAI(e, getDirector(world));
   e.ai = ai;
@@ -51,10 +53,10 @@ function mob(defId, x, z, o = {}) {
   return e;
 }
 /** Fresh world: every entity gone (their brains disposed), a knight at the origin, and a walkable grid. */
-function reset() {
+function reset(classId = 'knight', level = 10) {
   for (const ai of mobs.splice(0)) ai.dispose();
   world.nav.setRect(-99, -99, 99, 99, true);
-  const p = H.addPlayer('knight', 10);
+  const p = H.addPlayer(classId, level);
   p.position.set(0, 0, 0);
   p.hp = p.maxHp = 1e9;
   return p;
@@ -128,6 +130,72 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
   pa.ai.acquire(p);
   ok('social.camp mate joins at any distance', camp.ai.aggroed, `dist ${Math.round(dist(camp, pa))} m`);
   ok('social.another camp is never pulled', !other.ai.aggroed);
+}
+
+// ==================================================================================================================
+// cap.* a level-2 priest in the Balçık Gölü slime camps (r1_c02 and two slime camps 9-10 m away, layout offsets): at most 3
+// enemies engaged at once; a touch never pulls another camp; a level-2 slime splits into nothing (level 6+ splits)
+// ==================================================================================================================
+{
+  const p = reset('priest', 2);
+  const slimes = [];
+  const sl = (x, z, packId) => {
+    const m = mob('ow_slime', x, z, { packId, level: 2 });
+    slimes.push(m);
+    return m;
+  };
+  // r1_c02 at the player: 2 slimes 3-4 m away (inside a slime's 8 m aggro)
+  sl(3, 0, 'r1_c02');
+  sl(4.2, 1.3, 'r1_c02');
+  // r1_g003 (9.3 m off c02): 2 slimes 7.6-8 m from the player
+  sl(-5.25, 5.5, 'r1_g003');
+  sl(-4.1, 6.4, 'r1_g003');
+  // r1_g108 (9.3 m off c02): 2 slimes ~9.5 m from the player, outside their aggro
+  sl(9.5, -1.5, 'r1_g108');
+  sl(10.5, -0.5, 'r1_g108');
+  let maxEngaged = 0;
+  for (let i = 0; i < sec(12); i++) {
+    H.step(1);
+    maxEngaged = Math.max(maxEngaged, slimes.filter((m) => m.ai.aggroed && m.ai.target === p).length);
+  }
+  ok('cap.level-2 slime camps: the pull engages', maxEngaged >= 1, "max " + maxEngaged);
+  ok('cap.level-2 slime camps: at most 3 engaged at once', maxEngaged <= 3, "max " + maxEngaged);
+
+  // a touch never pulls another camp: camp A's slime is 6 m from the player (sight), camp B's slime stands 2.5 m off it, inside
+  // B's aggro range of the player but behind a wall corner (no sight line); B's camp mate is 16 m from the player
+  reset('priest', 2);
+  const pp = world.localPlayer;
+  pp.position.set(-6, 0, 0);
+  world.nav.setRect(-1.5, 0.5, -0.5, 1.5, false);
+  const a1 = mob('ow_slime', 0, 0, { packId: 'cA', level: 2 });
+  mob('ow_slime', 0, -3, { packId: 'cA', level: 2 });
+  const b1 = mob('ow_slime', 1.5, 2, { packId: 'cB', level: 2 });
+  const b2 = mob('ow_slime', 10, 0, { packId: 'cB', level: 2 });
+  H.step(sec(2));
+  world.nav.setRect(-1.5, 0.5, -0.5, 1.5, true);
+  ok('cap.touch: the near camp engages', a1.ai.aggroed);
+  ok('cap.touch: another camp is never pulled by touch', !b1.ai.aggroed && !b2.ai.aggroed, "b1 " + b1.ai.aggroed + " b2 " + b2.ai.aggroed);
+
+  // above level 5 the cap is off: a 4-slime camp pulled from one spot comes in whole
+  reset('priest', 8);
+  const big = [mob('ow_slime', 3, 0, { packId: 'cD', level: 8 }), mob('ow_slime', 4, 1, { packId: 'cD', level: 8 }), mob('ow_slime', 3, -1, { packId: 'cD', level: 8 }), mob('ow_slime', 4, -2, { packId: 'cD', level: 8 })];
+  H.step(sec(1));
+  ok('cap.above level 5: the whole camp engages', big.every((m) => m.ai.aggroed), big.filter((m) => m.ai.aggroed).length + "/4");
+
+  // a level-2 slime does not split; a level-6 slime does (two slimelets)
+  reset('priest', 2);
+  const s2 = mob('ow_slime', 0, 0, { packId: 'cC', level: 2 });
+  const s6 = mob('ow_slime', 0, 0, { packId: 'cC', level: 6 });
+  const adds = new Map();
+  for (const m of [s2, s6]) {
+    const rec = [];
+    adds.set(m, rec);
+    m.ai.spawnAdds = (...args) => rec.push(args);
+    m.ai.runDeathEffects(null);
+  }
+  ok('cap.level-2 slime: no split on death', adds.get(s2).length === 0, adds.get(s2).length + " summons");
+  const split = adds.get(s6);
+  ok('cap.level-6 slime: splits into two slimelets', split.length === 1 && split[0][0] === 'ow_slimelet' && split[0][1] === 2, JSON.stringify(split.map((a) => a.slice(0, 2))));
 }
 
 // ==================================================================================================================
