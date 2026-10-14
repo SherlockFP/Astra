@@ -3571,8 +3571,8 @@
     ]
    ],
    "respawnMin": [
-    8,
-    12
+    5,
+    5
    ],
    "special": "Uluma: %70 canda 3 kurt çağırır",
    "drop": "Büyülü+ x2 · Kalıntı x3 · `leg_vadi_gumus_pence` %15"

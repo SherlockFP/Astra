@@ -1,7 +1,7 @@
 import { G } from '../game/G';
 import type { Enemy } from '../entities/Enemy';
 import type { EnemyRank } from '../types/enemies';
-import type { ItemCategory } from '../types/items';
+import type { ItemCategory, ItemInstance } from '../types/items';
 import type { QuestDef, QuestKind, QuestObjective, QuestState } from '../types/quests';
 import { RNG } from '../core/utils';
 import { MATERIALS } from '../data/materials';
@@ -96,6 +96,8 @@ export class QuestSystem {
   private sigOwner: string | undefined;
   private rng = new RNG(((Date.now() ^ (Math.random() * 2 ** 32)) >>> 0) || 1);
   private warned = new Set<string>();
+  /** Choice-reward options rolled for ready quests (one set per quest, dropped on turn-in). */
+  private choiceRolls = new Map<string, ItemInstance[]>();
 
   constructor() {
     // Sisli Vadi quest data (content module, data/world/quests.ts); more defs can be added with registerDefs()
@@ -237,11 +239,16 @@ export class QuestSystem {
     return true;
   }
 
-  /** Turn in a 'ready' quest and pay the reward. Returns false when it is not ready. */
-  turnIn(questId: string): boolean {
+  /** Turn in a 'ready' quest and pay the reward. `pick` is the index of the item the player takes from choiceOptions (choice quests only). Returns false when it is not ready or no valid pick is given. */
+  turnIn(questId: string, pick?: number): boolean {
     const def = this.defs.get(questId);
     const ch = G.character;
     if (!def || !ch || this.stateOf(def) !== 'ready') return false;
+    let chosen: ItemInstance | undefined;
+    if (def.reward.choice) {
+      chosen = pick === undefined ? undefined : this.choiceOptions(questId)[pick];
+      if (!chosen) return false;
+    }
     // flag first: the materials listener must not announce 'ready' again while the items are consumed
     ch.save.flags[qKey(def.id)] = 'done';
     if (def.daily) ch.save.flags[qDay(def.id)] = dayKey();
@@ -249,7 +256,8 @@ export class QuestSystem {
       if (BAG_KINDS.includes(o.kind) && o.target) ch.useMaterial(o.target, o.count);
       delete ch.save.flags[pKey(def.id, k)];
     });
-    this.grantRewards(def);
+    this.grantRewards(def, chosen);
+    this.choiceRolls.delete(questId);
     for (const u of def.unlocks ?? []) if (!this.defs.has(u)) ch.save.flags[u] = true;
     ch.persist(true);
     this.notify(def, true);
@@ -259,7 +267,20 @@ export class QuestSystem {
     return true;
   }
 
-  private grantRewards(def: QuestDef): void {
+  /** The items a choice quest offers at turn-in: one class-appropriate item per slot, rolled once per ready state. Empty when not ready or no choice. */
+  choiceOptions(questId: string): ItemInstance[] {
+    const def = this.defs.get(questId);
+    const choice = def?.reward.choice;
+    if (!def || !choice || this.stateOf(def) !== 'ready') return [];
+    let opts = this.choiceRolls.get(questId);
+    if (!opts) {
+      opts = choice.slots.map((slot) => this.rollGeneric(def, { rarity: choice.rarity, slot })).filter((it): it is ItemInstance => it !== null);
+      this.choiceRolls.set(questId, opts);
+    }
+    return opts;
+  }
+
+  private grantRewards(def: QuestDef, chosen?: ItemInstance): void {
     const ch = G.character;
     if (!ch) return;
     const r = def.reward;
@@ -271,19 +292,33 @@ export class QuestSystem {
       else this.warnOnce(`reward:${it.id}`, `[quests] reward "${it.id}" of ${def.id} is not a material`);
     }
     for (const g of r.generic ?? []) this.giveGenericItem(def, g);
+    if (chosen) this.giveItem(chosen);
   }
 
   private giveGenericItem(def: QuestDef, g: { rarity: 'uncommon' | 'rare' | 'epic'; slot?: 'weapon' | 'armor' | 'jewelry' }): void {
+    const item = this.rollGeneric(def, g);
+    if (item) this.giveItem(item);
+  }
+
+  /** Rolls a bound item of the quest's level for the local class; a slot group limits the category. Null without loot or character. */
+  private rollGeneric(def: QuestDef, g: { rarity: 'uncommon' | 'rare' | 'epic'; slot?: 'weapon' | 'armor' | 'jewelry' }): ItemInstance | null {
     const loot = G.loot;
     const ch = G.character;
-    if (!loot || !ch) return;
+    if (!loot || !ch) return null;
     let category: ItemCategory | undefined;
     if (g.slot) {
       const allowed = new Set<ItemCategory>(categoriesForClass(ch.classId));
       const pool = SLOT_GROUPS[g.slot].filter((c) => allowed.has(c));
       if (pool.length) category = this.rng.pick(pool);
     }
-    const item = loot.rollItem({ itemLevel: Math.max(1, def.level), rarity: g.rarity, classId: ch.classId, category, bound: true });
+    return loot.rollItem({ itemLevel: Math.max(1, def.level), rarity: g.rarity, classId: ch.classId, category, bound: true });
+  }
+
+  /** Bag first; a full bag drops the item at the player's feet. */
+  private giveItem(item: ItemInstance): void {
+    const loot = G.loot;
+    const ch = G.character;
+    if (!loot || !ch) return;
     if (!ch.addItem(item) && G.player) loot.dropItem(item, G.player.position);
   }
 

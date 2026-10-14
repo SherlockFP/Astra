@@ -32,7 +32,7 @@ const GIVER_ID: Record<string, string> = {
   'Avcı Karaca': 'npc_k_avci',
 };
 
-type Reward = { items?: { id: string; count: number }[]; generic?: NonNullable<QuestReward['generic']> };
+type Reward = { items?: { id: string; count: number }[]; generic?: NonNullable<QuestReward['generic']>; choice?: QuestReward['choice'] };
 interface Extra extends Reward {
   objectives: QuestObjective[];
   offer: string;
@@ -61,7 +61,7 @@ const EXTRA_MAIN: Record<string, Extra> = {
     progress: "Gümüşdere Köyü'nde Muhtar Ferhat ile konuş.", done: 'Muhtar Ferhat seni bekliyordu. Vadinin işi uzun olacak.',
   },
   mq_02_fare_yuvasi: {
-    objectives: [kill('ow_rat', 10, 'Orman Sıçanı öldür')], generic: [{ rarity: 'uncommon', slot: 'weapon' }],
+    objectives: [kill('ow_rat', 10, 'Orman Sıçanı öldür')], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
     offer: "Fareler tarlaları bastı. Fare Yuvası'nı temizle.", progress: 'Orman Sıçanı öldür (10).', done: 'Tarlalar yeniden güvende.',
   },
   mq_03_balcik_temizligi: {
@@ -69,11 +69,11 @@ const EXTRA_MAIN: Record<string, Extra> = {
     offer: 'Göl kıyısındaki balçıklar köye doğru sızıyor.', progress: 'Yeşil Balçık öldür (8).', done: 'Balçıklar geri çekildi.',
   },
   mq_04_samani_sustur: {
-    objectives: [skill('ow_goblin_shaman', 3, "Goblin Şamanı'nın Şifa Duası'nı 3 kez kes")], generic: [{ rarity: 'uncommon', slot: 'weapon' }],
+    objectives: [skill('ow_goblin_shaman', 3, "Goblin Şamanı'nın Şifa Duası'nı 3 kez kes")], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
     offer: 'Goblin Şamanı şifa duaları okuyor. Duasını kesmelisin.', progress: "Şifa Duası'nı 3 kez kes.", done: 'Şaman bir daha dua okuyamayacak.',
   },
   mq_05_yagmaci_kampi: {
-    objectives: [boss('mb_girtlak', 1, "Yağmacı Başı Gırtlak'ı öldür")], generic: [{ rarity: 'uncommon', slot: 'armor' }],
+    objectives: [boss('mb_girtlak', 1, "Yağmacı Başı Gırtlak'ı öldür")], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
     offer: 'Yağmacılar kuzeydeki kampı ele geçirdi. Başlarını getir.', progress: "Yağmacı Başı Gırtlak'ı öldür.", done: 'Yağmacılar dağıldı. Köy rahat nefes alıyor.',
   },
   mq_06_ilk_metin: {
@@ -288,6 +288,7 @@ function quest(
   if (p.goldPerLevel !== undefined) reward.goldPerLevel = p.goldPerLevel;
   if (x.items) reward.items = x.items;
   if (x.generic) reward.generic = x.generic;
+  if (x.choice) reward.choice = x.choice;
   const def: QuestDef = {
     id: p.id, name: p.name, level: p.level, giver: GIVER_ID[p.giver] ?? p.giver, objectives: x.objectives, reward,
     text: { offer: x.offer, progress: x.progress, done: x.done },

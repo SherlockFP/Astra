@@ -6,6 +6,7 @@ import { AV_DEFTERI } from '../../../data/avDefteri';
 import { getPinnedQuest, setPinnedQuest, worldExtras } from '../../hud/questMarks';
 import { GamePanel, bar, button, fmtInt, h, mmss, openPanel, sfx, tabs, windowFrame, type TabsHandle } from './base';
 import { emptyState } from '../../kit';
+import { describe } from '../items/common';
 
 /**
  * Quest log (`questlog`: hotkey L = Input action 'quests', mapped to this id in UI HOTKEYS; the HUD quest tracker opens it on click)
@@ -35,7 +36,19 @@ export function rewardLine(def: QuestDef): string {
   if (r.goldPerLevel) parts.push(`${fmtInt(r.goldPerLevel * def.level)} altın`);
   for (const it of r.items ?? []) parts.push(`${it.count}× ${MATERIALS[it.id]?.name ?? it.id}`);
   for (const g of r.generic ?? []) parts.push(`${RARITY_TR[g.rarity] ?? 'Eşya'} ${SLOT_TR[g.slot ?? 'armor'] ?? 'eşya'}`);
+  if (r.choice) parts.push(`1 seçim: ${RARITY_TR[r.choice.rarity] ?? 'Eşya'} ${r.choice.slots.map((s) => SLOT_TR[s]).join(' / ')}`);
   return parts.join(' · ');
+}
+
+/** WoW-style reward choice: one button per rolled item (the quest turns in with the one picked). */
+function choiceButtons(def: QuestDef, done: () => void): HTMLElement[] {
+  const q = G.quests;
+  return q.choiceOptions(def.id).map((it, i) => {
+    const d = describe(it);
+    return button(`${d.name} (${d.slotLabel})`, () => {
+      if (q.turnIn(def.id, i)) done();
+    }, { variant: 'primary' });
+  });
 }
 
 /** Turkish quest status badge text and class. */
@@ -187,6 +200,8 @@ export class QuestLogPanel extends GamePanel {
           if (q.accept(def.id)) this.render();
         }, { variant: 'primary' }),
       );
+    } else if (state === 'ready' && def.reward.choice) {
+      acts.append(h('span.pg-dim', null, 'Bir ödül seç:'), ...choiceButtons(def, () => this.render()));
     } else if (state === 'ready') {
       acts.append(
         button('Teslim et', () => {
@@ -303,15 +318,12 @@ export class QuestDialogPanel extends GamePanel {
     }
     if (state === 'ready') {
       block.append(h('p', null, def.text.done), h('div.pg-ql-rew', null, rewardLine(def)));
-      block.append(
-        h(
-          'div.pg-ql-acts',
-          null,
-          button('Teslim Et', () => {
-            if (q.turnIn(def.id)) this.render();
-          }, { variant: 'primary' }),
-        ),
-      );
+      const acts = h('div.pg-ql-acts');
+      if (def.reward.choice) acts.append(h('span.pg-dim', null, 'Bir ödül seç:'), ...choiceButtons(def, () => this.render()));
+      else acts.append(button('Teslim Et', () => {
+        if (q.turnIn(def.id)) this.render();
+      }, { variant: 'primary' }));
+      block.append(acts);
       return block;
     }
     // active

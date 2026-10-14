@@ -765,7 +765,7 @@ Rare loot (personal, `lootTable: loot_rare_<id>`): `Nadir x1-2` (guaranteed, ilv
 
 | id | Ad | taban def · ölçek | ton | Sv. | HP x | doğuş noktaları (karo) | yeniden doğuş | özel yetenek | ganimet |
 |---|---|---|---|---|---|---|---|---|---|
-| `rare_gumus_yele` | Gümüş Yele | `ow_wolf` x1.35 | tint 0xe8e8f0 | 4 | 9 | (66,26) · (92,40) · (48,30) | 8-12 dk | Uluma: %70 canda 3 kurt çağırır | Büyülü+ x2 · Kalıntı x3 · `leg_vadi_gumus_pence` %15 |
+| `rare_gumus_yele` | Gümüş Yele | `ow_wolf` x1.35 | tint 0xe8e8f0 | 4 | 9 | (66,26) · (92,40) · (48,30) | 5 dk | Uluma: %70 canda 3 kurt çağırır | Büyülü+ x2 · Kalıntı x3 · `leg_vadi_gumus_pence` %15 |
 | `rare_kizil_kuyruk` | Kızıl Kuyruk | `ow_rat` x2.2 | tint 0xa04030 | 3 | 10 | (56,14) · (44,38) · (66,12) | 8-12 dk | Veba Sürüsü: her 10 sn 3 `ow_rat` çağırır | Büyülü+ x2 · Kara Demir x8 · Kalıntı x2 |
 | `rare_korkuluk_kral` | Korkuluk Kral | `ow_scarecrow` x1.5 | tint 0xe0c060 | 8 | 9 | (140,30) · (122,46) · (148,38) | 10-14 dk | Karga Sürüsü: 4 `ow_bat` çağırır (cd 20) · Saman Fırtınası: r 6 kör | Nadir x1 · Kalıntı x4 · Büyülü Toz x3 |
 | `rare_buyuk_boz` | Büyük Boz | `ow_bear` x1.15 | tint 0xb8a898 | 9 | 9 | (152,22) · (148,48) · (154,12) | 10-14 dk | Yaralı Öfke: %40 canın altında +%40 hasar, CC bağışık | Nadir x1 · Kalıntı x4 · `leg_vadi_boz_postu` %15 |

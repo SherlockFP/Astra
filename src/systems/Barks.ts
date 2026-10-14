@@ -1,7 +1,7 @@
 import type { Object3D } from 'three';
 import { G } from '../game/G';
 import { DUNGEONS } from '../data/dungeons';
-import { CLASS_LINES, ENEMY_AGGRO_LINES, ENEMY_DEATH_LINES, FAMILY_NAMES, PLAYER_LINES, ROLE_LINES, type BarkTrigger } from '../data/barks';
+import { CLASS_LINES, ENEMY_AGGRO_LINES, ENEMY_DEATH_LINES, FAMILY_NAMES, PLAYER_LINES, RARE_AGGRO_LINES, ROLE_LINES, type BarkTrigger } from '../data/barks';
 import type { SettingsData } from '../core/Settings';
 import type { BossDef, EnemyDef } from '../types/enemies';
 import type { TownNpcRole } from '../types/dungeons';
@@ -227,7 +227,7 @@ export function installBarks(rng: () => number = Math.random): BarkService {
       const e = entity(enemyId);
       const def = e?.def;
       if (!e || !def || !hasWorldLines(def)) return;
-      worldSpeak(e, def, 'aggro', ENEMY_AGGRO_LINES, 'enemy_aggro');
+      worldSpeak(e, def, 'aggro', RARE_AGGRO_LINES[def.id] ?? ENEMY_AGGRO_LINES, 'enemy_aggro');
     }),
     ev.on('damage', ({ targetId }) => {
       if (isPlayer(targetId)) lastHurt = t;
