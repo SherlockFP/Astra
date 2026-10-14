@@ -118,6 +118,8 @@ export class MenuScene implements GameScene {
   private pedVariant = 0;
   /** WP-06: nation picked on the creation screen (default: the one the player has fewer characters in, ties by hash). */
   private pedNation: NationId = 'gok_kartal';
+  /** Beta test toggle of the creation screen (CharacterState.create opts.beta). */
+  private pedBeta = false;
   private pedYawOffset = 0;
   private pedPop = 1;
   private pedStep = 0;
@@ -174,6 +176,7 @@ export class MenuScene implements GameScene {
       onPickClass: (id) => this.pickClass(id),
       onPickVariant: (i) => this.pickVariant(i),
       onPickNation: (id) => this.pickNation(id),
+      onPickBeta: (on) => { this.pedBeta = on; },
       onSubmitCreate: (name) => this.submitCreate(name),
       onValidateName: (name) => validateName(name, this.existingNames()),
       onBackFromCreate: () => this.endCreate(),
@@ -607,6 +610,7 @@ export class MenuScene implements GameScene {
   private saveRows(): CharRow[] {
     return this.stands.map((s) => ({
       id: s.save!.id, name: s.save!.name, classId: s.save!.classId, level: s.save!.level, rating: s.save!.mythic?.rating ?? 0, lastPlayed: s.save!.lastPlayed,
+      beta: !!s.save!.beta,
     }));
   }
 
@@ -620,7 +624,8 @@ export class MenuScene implements GameScene {
     for (const st of this.stands) {
       const p = classPresentation(st.save!.classId);
       const r = st.save!.mythic?.rating ?? 0;
-      this.ui.ensurePlate(st.key, st.save!.name, `Sv. ${st.save!.level} ${p.name}`, r > 0 ? `Mitik+ Puanı ${Math.round(r)}` : 'Henüz Mitik+ puanı yok', p.color);
+      const rating = r > 0 ? `Mitik+ Puanı ${Math.round(r)}` : 'Henüz Mitik+ puanı yok';
+      this.ui.ensurePlate(st.key, st.save!.name, `Sv. ${st.save!.level} ${p.name}`, st.save!.beta ? `BETA · ${rating}` : rating, p.color);
     }
     this.ui.setServersEnabled(true);
   }
@@ -770,6 +775,7 @@ export class MenuScene implements GameScene {
     for (const st of this.stands) { if (!st.save) continue; const n = nationOfSave(st.save); counts[n] = (counts[n] ?? 0) + 1; }
     this.pedNation = pickNation(counts, String(Date.now()));
     this.ui.setCreateNation(this.pedNation);
+    this.ui.setBeta(this.pedBeta);
     this.pedYawOffset = 0;
     this.ui.setMode('create');
     this.ui.setCreateSelection(this.pedClass, this.pedVariant);
@@ -977,7 +983,7 @@ export class MenuScene implements GameScene {
     if (this.stands.length >= MAX_CHARACTERS) return 'Karakter yuvaları dolu.';
     let cs: CharacterState;
     try {
-      cs = CharacterState.create(name, this.pedClass, this.pedVariant, this.pedNation);
+      cs = CharacterState.create(name, this.pedClass, this.pedVariant, this.pedNation, { beta: this.pedBeta });
     } catch (e) {
       console.error('[menu] create failed', e);
       return 'Karakter oluşturulamadı. Lütfen tekrar dene.';
