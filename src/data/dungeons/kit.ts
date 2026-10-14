@@ -435,9 +435,9 @@ export function dressRoom(rect: TileRect, r: DressRecipe): PropPlacement[] {
 // and tile rects follow the same tile-corner convention as RoomDef.rect. Only read when DungeonDef.vertical is set.
 // ---------------------------------------------------------------------------------------------------------------------
 /** Default ceiling for vertical rooms (ENGINE_VERTICALITY §2 CEIL_NEW_DEFAULT). Absent `ceiling` keeps legacy 4 m geometry. */
-export const TALL_CEIL_DEFAULT = 6;
+export const TALL_CEIL_DEFAULT = 8;
 
-/** Sets the clear height of a room above its highest floor (metres). Halls 12..30; defaults to 6. */
+/** Sets the clear height of a room above its highest floor (metres). Halls 12..30; defaults to 8. */
 export const tall = (room: RoomDef, ceiling: number = TALL_CEIL_DEFAULT): RoomDef => ({ ...room, ceiling });
 
 /** Raised floor area inside a room (absolute `y`). `rim` omitted = builder default ('rail'). */
