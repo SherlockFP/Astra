@@ -30,6 +30,7 @@ import { clearSceneAnchors, setSceneAnchors } from './anchors';
 import { sceneFlow } from './flow';
 import { World } from '../world/World';
 import { buildDungeon, dungeonAssetUrls, type BuiltDungeon, type BuiltProp, type DungeonGate } from '../world/DungeonBuilder';
+import { primeZoneMap } from '../ui/hud/zoneMap';
 import type { Heightfield } from '../world/Heightfield';
 import { LiftSystem } from '../world/Lifts';
 import { DEVICE_FLAG_PREFIX, DungeonEventStore, pickCheckpoint, resolveGate, type GateFacts } from '../systems/DungeonEvents';
@@ -226,6 +227,8 @@ export class DungeonScene implements GameScene {
     this.world = world;
     // vertical dungeons: heights before any spawn so groundY is real; legacy dungeons keep the flat world (no-op)
     this.setupVertical(world, built);
+    // open world: the zone picture is baked once here, with the relief the builder just made (minimap and map panel read it)
+    if (this.outdoor) primeZoneMap(def, built.relief);
 
     // run state must exist on EVERY peer before enemies spawn (scaling, affixes)
     if (!params.arena) G.mplus.prepare(params);

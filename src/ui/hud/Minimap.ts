@@ -1,6 +1,7 @@
 import { G } from '../../game/G';
 import { TOWN } from '../../data/town';
 import { getDungeon } from '../../data/dungeons';
+import type { DungeonDef } from '../../types/dungeons';
 import type { Entity } from '../../entities/Entity';
 import type { Enemy } from '../../entities/Enemy';
 import { mapGridOf, type MapGrid, type NavGrid } from '../../world/NavGrid';
@@ -10,6 +11,7 @@ import type { HudCtx, HudWidget } from './types';
 import { inWorldMap, questGiverMarks, questTargetMarks, tileCentreM, waypointKnown, worldExtras } from './questMarks';
 import { activeEventPins } from '../../scenes/world/EventCalendar';
 import { getSocial } from '../../systems/Social';
+import { zoneMapCanvas } from './zoneMap';
 
 const SIZE = 192;
 const R = SIZE / 2;
@@ -34,6 +36,13 @@ function bandTone(p: number, [lo, hi]: [number, number]): string {
 function inOpenZone(): boolean {
   const id = G.mplus?.params?.dungeonId ?? G.mplus?.state?.dungeonId;
   return !!id && !!getDungeon(id)?.outdoor;
+}
+
+/** The open-world map def being played (outdoor with a world map), or null: its picture comes from the zone data (world/MapImage.ts). */
+function openZoneDef(): DungeonDef | null {
+  const id = G.mplus?.params?.dungeonId ?? G.mplus?.state?.dungeonId;
+  const d = id ? getDungeon(id) : undefined;
+  return d?.outdoor && d.world ? d : null;
 }
 
 /** A point on the minimap disc: screen position and distance from the centre (px). */
@@ -422,7 +431,10 @@ export class Minimap implements HudWidget {
       this.fogCanvas = null;
     }
     const now = ctx.now;
-    if (!this.mapCanvas || now - this.mapBuiltAt > 2500) this.refreshMap(nav, now);
+    // open world: the zone picture (zone data + relief, baked once at load); the nav grid is only filled per streamed chunk there
+    const zoneDef = openZoneDef();
+    const zone = zoneDef ? zoneMapCanvas(zoneDef) : null;
+    if (!zone && (!this.mapCanvas || now - this.mapBuiltAt > 2500)) this.refreshMap(nav, now);
     const useFog = ctx.mode === 'dungeon' && !inOpenZone();
     if (useFog) this.ensureFog();
     const px = p.position.x, pz = p.position.z;
@@ -441,7 +453,12 @@ export class Minimap implements HudWidget {
     ctx2.rotate(a);
     ctx2.scale(S, S);
     ctx2.translate(-px, -pz);
-    if (this.mapCanvas) ctx2.drawImage(this.mapCanvas, nav.originX, nav.originZ, nav.cols * nav.cellSize, nav.rows * nav.cellSize);
+    if (zone) {
+      // world metres: the picture starts at (0, 0); smoothed, it is a picture rather than walkability cells
+      ctx2.imageSmoothingEnabled = true;
+      ctx2.drawImage(zone.canvas, 0, 0, zone.widthM, zone.heightM);
+      ctx2.imageSmoothingEnabled = false;
+    } else if (this.mapCanvas) ctx2.drawImage(this.mapCanvas, nav.originX, nav.originZ, nav.cols * nav.cellSize, nav.rows * nav.cellSize);
     if (useFog && this.fogCanvas) ctx2.drawImage(this.fogCanvas, nav.originX, nav.originZ, nav.cols * nav.cellSize, nav.rows * nav.cellSize);
     ctx2.restore();
 

@@ -8,6 +8,7 @@ import { CLASS_META, GamePanel, button, clampN, h, icon, sfx, windowFrame } from
 import type { Enemy } from '../../../entities/Enemy';
 import { questGiverMarks, questTargetMarks, regionKnown, waypointKnown } from '../../hud/questMarks';
 import { peekMarket } from '../../../systems/Market';
+import { zoneMapCanvas } from '../../hud/zoneMap';
 
 /* ------------------------------------------------------------------ */
 /* Exploration tracking (fog of war) — runs even while the panel is closed */
@@ -550,7 +551,9 @@ export class MapPanel extends GamePanel {
     const fog = !town;
     // open world (outdoor def): the walkable map is drawn in full, like the town one; exploration still gates the points below
     const terrainFog = fog && !def?.outdoor;
-    if (!this.terrain || this.terrainNav !== nav || this.terrainVer !== version || this.terrainFog !== terrainFog) this.buildTerrain(nav, terrainFog);
+    // open world: the zone picture (zone data + relief, world/MapImage.ts); the nav grid is only filled per streamed chunk there
+    const zone = def?.world ? zoneMapCanvas(def) : null;
+    if (!zone && (!this.terrain || this.terrainNav !== nav || this.terrainVer !== version || this.terrainFog !== terrainFog)) this.buildTerrain(nav, terrainFog);
 
     const p = G.player ?? world.localPlayer;
     const k = 1 - Math.exp(-10 * dt);
@@ -566,14 +569,19 @@ export class MapPanel extends GamePanel {
     const toX = (wx: number) => ((wx - nav.originX) / nav.cellSize - this.view.cx) * s + W / 2;
     const toY = (wz: number) => ((wz - nav.originZ) / nav.cellSize - this.view.cz) * s + H / 2;
 
-    // terrain
-    ctx.imageSmoothingEnabled = false;
+    // terrain: the zone picture (world metres from (0, 0), smoothed) or the nav cells (crisp)
+    const src = zone ? zone.canvas : this.terrain!;
+    const tx0 = zone ? toX(0) : toX(nav.originX), tz0 = zone ? toY(0) : toY(nav.originZ);
+    const tw = zone ? (zone.widthM / nav.cellSize) * s : nav.cols * s;
+    const th = zone ? (zone.heightM / nav.cellSize) * s : nav.rows * s;
+    ctx.imageSmoothingEnabled = !!zone;
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,0.8)';
     ctx.shadowBlur = 14;
-    ctx.drawImage(this.terrain!, toX(nav.originX), toY(nav.originZ), nav.cols * s, nav.rows * s);
+    ctx.drawImage(src, tx0, tz0, tw, th);
     ctx.restore();
-    ctx.drawImage(this.terrain!, toX(nav.originX), toY(nav.originZ), nav.cols * s, nav.rows * s);
+    ctx.drawImage(src, tx0, tz0, tw, th);
+    ctx.imageSmoothingEnabled = false;
 
     // rooms (dungeon)
     const ex = exploredOf(nav);
