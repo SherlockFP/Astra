@@ -1,8 +1,13 @@
 /**
- * KIT PK-MAGE (docs/kits/casters-rogue.md §2 / §3 / §4 SpecDef wiring, §10.1 bar layout). SpecDef rows of the three mage specs,
- * merged into SPECS by data/specs.ts after the talent rows (they replace `mage_fire`, `mage_frost`, `mage_arcane` by id).
- * defaultBar: lmb = the chain, rmb = the filler / builder, q = spender or proc button, e / r = rotational cooldowns,
- * s1 = AoE, s2 = mobility (Blink), s3 = defensive, s4 = Counterspell (KeyG), m45 / m90 / m180 = majors (X V T).
+ * KIT PK-MAGE (docs/kits/casters-rogue.md §2 / §3 / §4 SpecDef wiring; bar layout, unlock levels and majors per
+ * docs/WOW_ABILITY_MAP.md §14 and §16). SpecDef rows of the three mage specs, merged into SPECS by data/specs.ts after the
+ * talent rows (they replace `mage_fire`, `mage_frost`, `mage_arcane` by id).
+ *
+ * defaultBar (WoW layout): lmb = the chain (Oto), 1 (rmb) = core builder / filler, 2 (q) = main spender, 3 (e) = second builder,
+ * spender or DoT, 4 (r) = long cooldown / filler, 5 (s1) = AoE, Q (s2) = Blink, E (s3) = personal defensive, R (s4) = Counterspell,
+ * X / V / T (m45 / m90 / m180) = majors. Time Warp is the T major of Ateş and Gizem; Buz uses Icy Veins on T, so Time Warp is
+ * not on the Buz bar (it stays in the spec pool). Shift+ extras (Ejderha Nefesi, Canlı Bomba, Buz Halkası, Büyü Çağırma, ...)
+ * are in `skills` but not bound: the second bar does not exist in code yet.
  * OWNER: combat (data).
  */
 import type { SpecDef, SpecId } from '../types/v2';
@@ -17,12 +22,16 @@ export const SPECS_KIT_MAGE: Partial<Record<SpecId, SpecDef>> = {
       id: 'trait_pyromancer', params: { streakDur: 8, streakCrit: 0.25, burnCrit: 0.5 },
       desc: 'Bir ateş kritiği Isınıyor başlatır (10 sn). Isınıyor varken bir kritik daha Sıcak Seri\'ye (8 sn) çevirir: Piroblast ve Alev Sütunu anında ve bedava olur, +%25 kritik şansı alır. Kritik olmayan vuruş Isınıyor\'u silmez. Yanma tikleri kritik yapabilir (kritik şansının %50\'si).',
     }],
-    skills: ['mage_pyroblast', 'mage_fire_blast', 'mage_scorch', 'mage_flamestrike', 'mage_combustion'],
-    unlock: { mage_fireball: 1, mage_pyroblast: 3, mage_fire_blast: 6, mage_scorch: 10, mage_flamestrike: 12, mage_blazing_barrier: 15, mage_combustion: 20 },
-    // the s05 tree row is Anka Alevleri (talent tree, T-step); the kit doc's Meteor-on-s05 needs a tree change
+    skills: ['mage_scorch', 'mage_living_bomb', 'mage_pyroblast', 'mage_fire_blast', 'mage_flamestrike', 'mage_dragons_breath',
+      'mage_blazing_barrier', 'mage_phoenix_flames', 'mage_combustion', 'mage_time_warp'],
+    unlock: {
+      mage_fireball: 1, mage_scorch: 4, mage_living_bomb: 8, mage_pyroblast: 10, mage_fire_blast: 10, mage_flamestrike: 12,
+      mage_dragons_breath: 14, mage_blazing_barrier: 15, mage_phoenix_flames: 15, mage_combustion: 20, mage_time_warp: 25,
+    },
+    // the s05 tree row is Anka Alevleri (talent tree, T-step)
     treeSkills: { mage_phoenix_flames: 's05' },
     majors: { m45: 'mage_meteor', m90: 'mage_combustion', m180: 'mage_time_warp' },
-    mods: [{ skill: 'mage_basic', patch: { name: 'Ateş Oku' } }],
+    mods: [{ skill: 'mage_basic', patch: { name: 'Ateş Oku (Fire Bolt)' } }],
     defaultBar: {
       lmb: 'mage_basic', rmb: 'mage_fireball', q: 'mage_pyroblast', e: 'mage_fire_blast', r: 'mage_scorch', s1: 'mage_flamestrike',
       s2: 'mage_blink', s3: 'mage_blazing_barrier', s4: 'mage_counterspell', m45: 'mage_meteor', m90: 'mage_combustion', m180: 'mage_time_warp',
@@ -38,15 +47,19 @@ export const SPECS_KIT_MAGE: Partial<Record<SpecId, SpecDef>> = {
       id: 'trait_cryomancer', params: { fofChance: 0.15, fofMax: 2, fofDur: 15, fofCrit: 0.5 },
       desc: 'Buz isabetleri Buz Parmağı verir (en çok 2, 15 sn). Buz Mızrağı Donmuş hedefe, Buz Parmağı varken veya Donma 6 iken x3 vurur ve +%50 kritik alır. Buz Halkası her donmuş düşman için bir Buz Parmağı verir.',
     }],
-    skills: ['mage_frostbolt', 'mage_ice_lance', 'mage_flurry', 'mage_ice_barrier', 'mage_ray_of_frost', 'mage_glacial_spike', 'mage_comet_storm'],
-    unlock: { mage_frostbolt: 1, mage_ice_lance: 3, mage_flurry: 6, mage_frost_nova: 10, mage_blizzard: 12, mage_ice_barrier: 15, mage_frozen_orb: 20, mage_ray_of_frost: 20 },
-    // the s05 tree row is Dondurucu Sağanak (talent tree, T-step); the kit doc's Buz Sarkıtı-on-s05 needs a tree change
+    skills: ['mage_frostbolt', 'mage_ice_lance', 'mage_flurry', 'mage_frost_nova', 'mage_ice_barrier', 'mage_ray_of_frost',
+      'mage_glacial_spike', 'mage_comet_storm', 'mage_frozen_orb', 'mage_icy_veins'],
+    unlock: {
+      mage_frostbolt: 1, mage_ice_lance: 3, mage_frost_nova: 3, mage_flurry: 6, mage_blizzard: 15, mage_ice_barrier: 15,
+      mage_glacial_spike: 15, mage_frozen_orb: 20, mage_ray_of_frost: 20, mage_comet_storm: 20, mage_icy_veins: 20,
+    },
+    // the s05 tree row is Dondurucu Sağanak (talent tree, T-step)
     treeSkills: { mage_flurry: 's05' },
-    majors: { m45: 'mage_ray_of_frost', m90: 'mage_frozen_orb', m180: 'mage_time_warp' },
-    mods: [{ skill: 'mage_basic', patch: { name: 'Buz Oku' } }],
+    majors: { m45: 'mage_ray_of_frost', m90: 'mage_frozen_orb', m180: 'mage_icy_veins' },
+    mods: [{ skill: 'mage_basic', patch: { name: 'Buz Oku (Ice Bolt)' } }],
     defaultBar: {
-      lmb: 'mage_basic', rmb: 'mage_frostbolt', q: 'mage_ice_lance', e: 'mage_flurry', r: 'mage_frost_nova', s1: 'mage_blizzard',
-      s2: 'mage_blink', s3: 'mage_ice_barrier', s4: 'mage_counterspell', m45: 'mage_ray_of_frost', m90: 'mage_frozen_orb', m180: 'mage_time_warp',
+      lmb: 'mage_basic', rmb: 'mage_frostbolt', q: 'mage_ice_lance', e: 'mage_flurry', r: 'mage_glacial_spike', s1: 'mage_blizzard',
+      s2: 'mage_blink', s3: 'mage_ice_barrier', s4: 'mage_counterspell', m45: 'mage_ray_of_frost', m90: 'mage_frozen_orb', m180: 'mage_icy_veins',
     },
   },
 
@@ -59,8 +72,12 @@ export const SPECS_KIT_MAGE: Partial<Record<SpecId, SpecDef>> = {
       id: 'trait_arcanist', params: { chargeMax: 4, chargeDmg: 0.12, chargeCost: 0.25, manaFloor: 0.4, manaSlope: 0.003, chargeDecay: 5, chargeDecayDelay: 8 },
       desc: 'Gizem Yükü (0–4): her yük gizem hasarını %12 artırır. Gizem Patlaması ve Prizma Oku her yük için mana maliyetini %25 artırır (Baraj hepsini harcar). Manan %40\'ın üzerinde her %1 için gizem hasarı +%0.3 (tam manada +%18). Yükler 8 sn savaş dışı kalınca 5 sn\'de bir azalır.',
     }],
-    skills: ['mage_arcane_missiles', 'mage_arcane_barrage', 'mage_arcane_pulse', 'mage_prismatic_barrier'],
-    unlock: { mage_arcane_blast: 1, mage_arcane_missiles: 3, mage_arcane_barrage: 6, mage_arcane_orb: 10, mage_arcane_pulse: 12, mage_prismatic_barrier: 15 },
+    skills: ['mage_arcane_missiles', 'mage_arcane_barrage', 'mage_arcane_pulse', 'mage_prismatic_barrier', 'mage_arcane_orb',
+      'mage_touch_of_magi', 'mage_arcane_surge', 'mage_evocation', 'mage_time_warp'],
+    unlock: {
+      mage_arcane_blast: 1, mage_arcane_missiles: 3, mage_arcane_barrage: 6, mage_touch_of_magi: 10, mage_arcane_pulse: 12,
+      mage_evocation: 12, mage_prismatic_barrier: 15, mage_arcane_orb: 20, mage_arcane_surge: 20, mage_time_warp: 25,
+    },
     treeSkills: { mage_arcane_barrage: 's05' },
     majors: { m45: 'mage_touch_of_magi', m90: 'mage_arcane_surge', m180: 'mage_time_warp' },
     mods: [],

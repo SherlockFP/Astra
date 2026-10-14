@@ -13,6 +13,9 @@
  *   glacial_spike     Buz Sarkıtı: needs glacial_ready, spends the icicles, x1.5 on Donma >= 6, splash
  *   ward_barrier      Buz / Prizmatik Bariyeri: absorb + status
  *   arcane_pulse      Arkan Nabzı: r 8 crowd-scaled damage, +1 Gizem Yükü per enemy struck (max 4)
+ *   living_bomb       Canlı Bomba: bolt, 12 s burn fuse, explosion at the last point (or on the target's death)
+ *   dragons_breath    Ejderha Nefesi: every enemy inside the 60 degree cone within r 8
+ *   evocation         Büyü Çağırma: 6 s channel, mana tick every 1 s
  * plus the charge-orb sync (one `arcane_charge_orb` loop per arcane charge). Installed into BEHAVIORS as a side effect of the
  * import at the end of behaviors.ts; the module cycle can leave BEHAVIORS in its temporal dead zone, so installation falls
  * back to a microtask (the same pattern as utilities.ts). OWNER: combat (kit).
@@ -547,6 +550,95 @@ const arcanePulse: Behavior = {
   },
 };
 
+// ---------------------------------------------------------------------------------------------------------------
+// Ejderha Nefesi (cone), Canlı Bomba (fuse), Büyü Çağırma (mana channel)
+// ---------------------------------------------------------------------------------------------------------------
+
+/** Ejderha Nefesi: every enemy inside the caster's cone (params.cone degrees, full angle) within def.radius takes the hit. */
+const dragonsBreath: Behavior = {
+  fire(c) {
+    const { caster, sys } = c;
+    const p = c.def.params ?? {};
+    const cosHalf = Math.cos(((p.cone ?? 60) / 2) * Math.PI / 180);
+    const reach = c.def.radius ?? 8;
+    const [fx, fz] = c.dir;
+    sys.vfx('fire_burst', [caster.position.x + fx * 2, caster.position.y + 1, caster.position.z + fz * 2], { scale: 1.2 });
+    if (c.remote) return;
+    const list = G.world ? G.world.enemiesInRadius({ x: caster.position.x, z: caster.position.z }, reach, caster.position.y) : [];
+    const res = [];
+    for (const e of list) {
+      const dx = e.position.x - caster.position.x;
+      const dz = e.position.z - caster.position.z;
+      const d = Math.hypot(dx, dz);
+      if (d < 1e-4 || (dx * fx + dz * fz) / d < cosHalf) continue;
+      const hit = sys.strike(c, e, { dir: norm(dx, dz) });
+      if (hit) res.push(hit);
+    }
+    sys.afterHits(c, res);
+    sys.shake(0.06);
+  },
+};
+
+/**
+ * Canlı Bomba: a bolt at the target (the row's coefficient and burn). The bomb keeps the target's last point and explodes there
+ * when params.fuse (12 s) ends or the target dies: params.explodeCoef on every enemy within params.explodeR. One bomb per cast.
+ */
+const livingBomb: Behavior = {
+  begin(c) {
+    castHands(c.sys, c.caster, 'fire');
+    return true;
+  },
+  fire(c) {
+    const { sys } = c;
+    const p = c.def.params ?? {};
+    if (!primaryTarget(c)) {
+      sys.whiff(c);
+      return;
+    }
+    spawnBolt(c, boltDir(c), (e) => {
+      if (c.remote) return;
+      const hit = sys.strike(c, e, {});
+      if (hit) sys.afterHits(c, [hit]);
+      const until = (G.world?.time ?? 0) + (p.fuse ?? 12);
+      let lx = e.position.x;
+      let lz = e.position.z;
+      sys.addTask(() => {
+        if (!e.isDead) {
+          lx = e.position.x;
+          lz = e.position.z;
+        }
+        if (!e.isDead && (G.world?.time ?? 0) < until) return false;
+        sys.vfx('fire_burst', [lx, 0.6, lz], { scale: 1.4 });
+        const res = [];
+        for (const x of enemiesAt(lx, lz, p.explodeR ?? 3)) {
+          const h = sys.strike(c, x, { coef: p.explodeCoef ?? 1.2, dir: norm(x.position.x - lx, x.position.z - lz) });
+          if (h) res.push(h);
+        }
+        sys.afterHits(c, res);
+        return true;
+      });
+    }, c.def.speed ?? 26, c.def.range ?? 30);
+  },
+};
+
+/** Büyü Çağırma: a channel (def.channel 6 s); each tick (params.tick = 1 s) restores params.manaPct of max mana. */
+const evocation: Behavior = {
+  begin(c) {
+    castHands(c.sys, c.caster, 'arcane');
+    return true;
+  },
+  fire(c) {
+    c.caster.statuses.apply('evocation', c.def.channel ?? 6, { sourceId: c.caster.id });
+  },
+  tick(c) {
+    if (!c.remote) c.sys.addResource(c.caster, c.caster.maxResource * (c.def.params?.manaPct ?? 0.16));
+    return true;
+  },
+  end(c) {
+    c.caster.statuses.remove('evocation');
+  },
+};
+
 export const BEHAVIORS_KIT_MAGE: Record<string, Behavior> = {
   homing_missiles: homingMissiles,
   arcane_blast: arcaneBlast,
@@ -561,6 +653,9 @@ export const BEHAVIORS_KIT_MAGE: Record<string, Behavior> = {
   glacial_spike: glacialSpike,
   ward_barrier: wardBarrier,
   arcane_pulse: arcanePulse,
+  living_bomb: livingBomb,
+  dragons_breath: dragonsBreath,
+  evocation,
 };
 
 function installKitMage(): void {

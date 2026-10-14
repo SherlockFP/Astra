@@ -75,27 +75,27 @@ registerBarbarian(add);
 // BÜYÜCÜ (mage) — Mana
 // ======================================================================================================
 add({
-  id: 'mage_basic', classId: 'mage', name: 'Gizem Oku', icon: I('skill-arcane-missiles'), defaultSlot: 'lmb',
+  id: 'mage_basic', classId: 'mage', name: 'Gizem Oku (Arcane Bolt)', icon: I('skill-arcane-missiles'), defaultSlot: 'lmb',
   desc: 'Asandan gizem okları fırlatırsın. Üçüncü atış üç ok birden gönderir. Her isabet Mana kazandırır.',
   anim: 'Spellcast_Shoot', targeting: 'projectile', range: 25, tags: ['spell', 'basic', 'combo', 'projectile', 'arcane'],
   behavior: 'combo', params: { steps: 3, reset: 0.8 },
 });
 add({
-  id: 'mage_basic_1', classId: 'mage', name: 'Gizem Oku', icon: I('skill-arcane-missiles'),
+  id: 'mage_basic_1', classId: 'mage', name: 'Gizem Oku (Arcane Bolt)', icon: I('skill-arcane-missiles'),
   desc: 'Tek bir gizem oku.', anim: 'Spellcast_Shoot', animSpeed: 1.3, hitTime: 0.373, targeting: 'projectile', range: 25, speed: 30, radius: 0.35, count: 1, pierce: 0,
   damage: { coef: 0.95, type: 'arcane' }, tags: ['spell', 'basic', 'projectile', 'arcane'],
   vfx: { projectile: 'arcane_projectile', impact: 'arcane_burst' }, sfx: { cast: 'spell_cast' },
   params: { end: 0.7, chain: 0.05, move: 0.1, stagger: 2, gain: 2, proc: 0.7, weight: 0, upper: 1, slow: 0.4, step: 1, hand: 0 },
 });
 add({
-  id: 'mage_basic_2', classId: 'mage', name: 'Gizem Oku', icon: I('skill-arcane-missiles'),
+  id: 'mage_basic_2', classId: 'mage', name: 'Gizem Oku (Arcane Bolt)', icon: I('skill-arcane-missiles'),
   desc: 'İkinci gizem oku.', anim: 'Spellcast_Shoot', animSpeed: 1.3, hitTime: 0.373, targeting: 'projectile', range: 25, speed: 30, radius: 0.35, count: 1, pierce: 0,
   damage: { coef: 0.95, type: 'arcane' }, tags: ['spell', 'basic', 'projectile', 'arcane'],
   vfx: { projectile: 'arcane_projectile', impact: 'arcane_burst' }, sfx: { cast: 'spell_cast' },
   params: { end: 0.7, chain: 0.05, move: 0.1, stagger: 2, gain: 2, proc: 0.7, weight: 0, upper: 1, slow: 0.4, step: 2, hand: 1 },
 });
 add({
-  id: 'mage_basic_3', classId: 'mage', name: 'Gizem Oku', icon: I('skill-arcane-missiles'),
+  id: 'mage_basic_3', classId: 'mage', name: 'Gizem Oku (Arcane Bolt)', icon: I('skill-arcane-missiles'),
   desc: 'Üç gizem oku birden.', anim: 'Spellcast_Shoot', animSpeed: 1.0, hitTime: 0.373, targeting: 'projectile', range: 25, speed: 32, radius: 0.35, count: 3, spread: 10, pierce: 0,
   damage: { coef: 0.65, type: 'arcane' }, tags: ['spell', 'basic', 'projectile', 'arcane', 'finisher'],
   vfx: { projectile: 'arcane_projectile', impact: 'arcane_burst' }, sfx: { cast: 'spell_cast' },
@@ -110,7 +110,7 @@ add({
   params: { end: 0.7, chain: 0.1, move: 0.2, stagger: 8, proc: 1, hitstop: 52, shake: 0.22, explode: 2.5, slow: 0.5, element: 1 },
 });
 add({
-  id: 'mage_frost_nova', classId: 'mage', name: 'Buz Halkası', icon: I('skill-frost-nova'), unlockLevel: 3, defaultSlot: 'q',
+  id: 'mage_frost_nova', classId: 'mage', name: 'Buz Halkası (Frost Nova)', icon: I('skill-frost-nova'), unlockLevel: 3,
   desc: 'Çevrendeki düşmanları dondurup %120 buz hasarı verirsin. Güçlü düşmanlar ağır şekilde yavaşlar.',
   cost: 18, cooldown: 9, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 2.6, hitTime: 0.95, targeting: 'self_aoe', radius: 5,
   damage: { coef: 1.2, type: 'frost' }, statuses: [{ status: 'freeze', duration: 2 }, { status: 'chill', duration: 3, stacks: 5 }],
@@ -118,7 +118,7 @@ add({
   params: { end: 1.4, chain: 0.1, move: 0.2, stagger: 20, proc: 1, weight: 2, slow: 0.7, element: 2 },
 });
 add({
-  id: 'mage_blink', classId: 'mage', name: 'Işınlanma', icon: I('skill-blink'), unlockLevel: 6, defaultSlot: 'e',
+  id: 'mage_blink', classId: 'mage', name: 'Işınlanma (Blink)', icon: I('skill-blink'), unlockLevel: 6, defaultSlot: 's2',
   desc: 'Kısa bir mesafeye ışınlanırsın; ayrıldığın yerde düşmanlara hasar veren bir gizem patlaması bırakırsın.',
   cost: 10, cooldown: 5, castTime: 0, anim: 'Dodge_Forward', animSpeed: 1.0, hitTime: 0.05, targeting: 'teleport', range: 10, radius: 2.5,
   damage: { coef: 0.8, type: 'arcane' }, statuses: [{ status: 'slow', duration: 2, magnitude: 0.3 }], selfStatuses: [{ status: 'iframes', duration: 0.25 }],
@@ -126,7 +126,7 @@ add({
   params: { end: 0.3, chain: 0.0, move: 0.0, stagger: 5, proc: 0.5, weight: 0, element: 3 },
 });
 add({
-  id: 'mage_meteor', classId: 'mage', name: 'Meteor', icon: I('skill-meteor'), unlockLevel: 10, defaultSlot: 's1',
+  id: 'mage_meteor', classId: 'mage', name: 'Meteor (Meteor)', icon: I('skill-meteor'), unlockLevel: 10, defaultSlot: 'm45',
   desc: 'Hedef noktaya bir meteor çağırırsın: %500 ateş hasarı verir ve yerde 3 saniye yanan bir alan bırakır.',
   cost: 35, cooldown: 8, castTime: 0.6, anim: 'Spellcast_Raise', animSpeed: 1.75, hitTime: 1.05, targeting: 'ground_aoe', range: 25, radius: 4, duration: 3, ticks: 6,
   damage: { coef: 5.0, type: 'fire' }, knockback: 2, statuses: [{ status: 'burn', duration: 3, magnitude: 0.3 }],
@@ -135,7 +135,7 @@ add({
   params: { end: 1.4, chain: 0.1, move: 0.0, stagger: 50, proc: 1, weight: 2, delay: 0.9, groundCoef: 0.4, groundRadius: 3, groundTick: 0.5, root: 1, element: 1 },
 });
 add({
-  id: 'mage_blizzard', classId: 'mage', name: 'Kar Fırtınası', icon: I('skill-blizzard'), unlockLevel: 15, defaultSlot: 's2',
+  id: 'mage_blizzard', classId: 'mage', name: 'Kar Fırtınası (Blizzard)', icon: I('skill-blizzard'), unlockLevel: 15, defaultSlot: 's1',
   desc: 'Tuşu basılı tutarak hedef bölgeye sürekli buz yağdırırsın. Düşmanlar yavaşlar ve sonunda donar. Büyü yaparken yerinde durursun.',
   cost: 15, cooldown: 0, castTime: 0, channel: 5, anim: 'Spellcasting', animSpeed: 1.0, hitTime: 0.1, targeting: 'custom', behavior: 'blizzard', range: 25, radius: 5,
   damage: { coef: 0.55, type: 'frost', perTick: true }, statuses: [{ status: 'slow', duration: 0.8, magnitude: 0.4 }, { status: 'chill', duration: 3 }],
@@ -143,7 +143,7 @@ add({
   params: { end: 0.3, chain: 0.1, stagger: 1, proc: 0.25, weight: 0, tick: 0.25, costPerSec: 10, followSpeed: 6, element: 2, root: 1 },
 });
 add({
-  id: 'mage_arcane_orb', classId: 'mage', name: 'Gizemli Küre', icon: I('skill-arcane-orb'), unlockLevel: 20, defaultSlot: 's3',
+  id: 'mage_arcane_orb', classId: 'mage', name: 'Gizemli Küre (Arcane Orb)', icon: I('skill-arcane-orb'), unlockLevel: 20, defaultSlot: 'r',
   desc: 'Yavaşça ilerleyen, yolundaki her şeyi delen ve sonunda patlayan bir gizem küresi gönderirsin.',
   cost: 25, cooldown: 4, castTime: 0, anim: 'Spellcast_Shoot', animSpeed: 1.0, hitTime: 0.373, targeting: 'projectile', range: 20, speed: 7, radius: 0.7, count: 1, pierce: 99,
   damage: { coef: 0.5, type: 'arcane' }, tags: ['spell', 'arcane', 'projectile', 'aoe'], vfx: { projectile: 'arcane_projectile', impact: 'arcane_burst' }, sfx: { cast: 'spell_cast', impact: 'explosion' },
@@ -151,7 +151,7 @@ add({
   params: { end: 0.7, chain: 0.1, move: 0.2, stagger: 2, proc: 0.3, weight: 0, pulse: 0.25, pulseRadius: 2.5, endCoef: 3.0, endRadius: 4, endStagger: 20, slow: 0.5, element: 3 },
 });
 add({
-  id: 'mage_mana_barrier', classId: 'mage', name: 'Büyü Kalkanı', icon: I('skill-mana-shield'), unlockLevel: 25,
+  id: 'mage_mana_barrier', classId: 'mage', name: 'Mana Kalkanı (Mana Shield)', icon: I('skill-mana-shield'), unlockLevel: 25,
   desc: '8 saniye boyunca hasarı emen bir büyü kalkanıyla korunursun; kalkan dayanırken daha hızlı büyü yaparsın. Kalkan kırılınca çevreye buz patlaması yayılır.',
   cost: 30, cooldown: 25, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 1.8, hitTime: 0.6, targeting: 'self_buff',
   damage: { coef: 1.0, type: 'frost' }, selfStatuses: [{ status: 'shield', duration: 8 }],
@@ -160,7 +160,7 @@ add({
   params: { end: 0.8, chain: 0.1, move: 0.1, stagger: 10, proc: 1, weight: 1, hpPct: 0.25, intMult: 3, breakRadius: 4, castSpeedBonus: 0.2, slow: 0.4 },
 });
 add({
-  id: 'mage_arcane_cataclysm', classId: 'mage', name: 'Kadim Kıyamet', icon: I('skill-arcane-explosion'), unlockLevel: 30, defaultSlot: 'r',
+  id: 'mage_arcane_cataclysm', classId: 'mage', name: 'Kadim Kıyamet (Arcane Cataclysm)', icon: I('skill-arcane-explosion'), unlockLevel: 30,
   desc: 'Gökten yıldızlar yağdırarak çevrendeki düşmanları dövüp son olarak büyük bir gizem dalgasıyla savurursun.',
   cost: 50, cooldown: 70, castTime: 0, channel: 3, anim: 'Spellcast_Long', animSpeed: 0.85, hitTime: 0.4, targeting: 'custom', behavior: 'cataclysm', range: 14, radius: 2, ticks: 15,
   damage: { coef: 1.3, type: 'arcane', perTick: true }, knockback: 5,
