@@ -257,6 +257,14 @@
 .np-st { justify-content: center; margin-top: 1px; }
 .np-st .st-icon { width: 16px; height: 16px; border-width: 1px; }
 .np-st .st-stack { font-size: 9px; }
+/* HP text "8,2M | 36%" centred on the bar (drawn above the fill) */
+.np-hp { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 700 9px/1 var(--font-body); color: #fff; text-shadow: var(--elv-outline); white-space: nowrap; pointer-events: none; }
+/* bar row: the target's side arrows sit beside the bar, outside its clipping box */
+.np-barrow { position: relative; }
+.np-arrow { display: none; position: absolute; top: 50%; width: 0; height: 0; margin-top: -6px; border-style: solid; border-color: transparent; filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9)); }
+.np-arrow-l { left: -13px; border-width: 6px 0 6px 8px; border-left-color: var(--nc, #fff); }
+.np-arrow-r { right: -13px; border-width: 6px 8px 6px 0; border-right-color: var(--nc, #fff); }
+.np.target .np-arrow { display: block; }
 
 /* boot loading (mode 'loading'): the LoadingScene renders its own 3D rune seal + embers, so the overlay becomes a transparent frame */
 [data-mode='loading'] .loading { background: radial-gradient(ellipse at 50% 46%, rgba(10, 6, 3, 0) 16%, rgba(4, 2, 1, 0.6) 62%, rgba(2, 1, 0, 0.93) 100%); }

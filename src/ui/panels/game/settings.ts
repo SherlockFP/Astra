@@ -689,6 +689,19 @@ export class SettingsPanel extends GamePanel {
           ),
           'Otomatik: grupta, zindanda ve savaştan sonra 15 sn açık',
         ),
+        row(
+          'İsim Plakaları',
+          selectBox<SettingsData['nameplates']>(
+            [
+              { value: 'always', label: 'Her zaman' },
+              { value: 'combat', label: 'Savaşta' },
+              { value: 'off', label: 'Kapalı' },
+            ],
+            G.settings.get('nameplates'),
+            (v) => G.settings.set('nameplates', v),
+          ),
+          'Düşman plakaları: 40 m içinde her zaman, yalnız savaşta ya da kapalı (hedef her zaman görünür)',
+        ),
         this.flag('barGhostSlots', 'Boş Yuvaları Göster', 'Yetenek çubuğunda boş kareler görünür'),
         this.flag('barLock', 'Barları Kilitle', 'Açıkken çubuktaki bir eşyayı almak için Shift basılı tutulur'),
         this.flag('ufIcon', 'Oyuncu Simgesi', 'Oyuncu çerçevesinde sınıf simgesi'),

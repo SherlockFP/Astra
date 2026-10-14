@@ -8,6 +8,8 @@ import { localHardTargetId } from '../../game/PlayerController';
 import type { UI } from '../UI';
 import { UNINTERRUPTIBLE_ICON, type CastTracker } from './CastBar';
 import { ICON, clamp01, clampN, div, iconEl, pulse, setClass, setDisplay, setStyle, setText } from './dom';
+import { isSkullLevel, levelColor } from './levelColor';
+import { fmtHealth } from './numFormat';
 import { statusView } from './status';
 import { StatusRow } from './StatusRow';
 import { selectedTitleName } from '../../systems/Achievements';
@@ -46,6 +48,12 @@ const MEASURE_EVERY = 500;
 const HOT_SECONDS = 3;
 /** Anchors this far (px) outside the window are off screen: no plate (they are not pinned to the edge). */
 const OFFSCREEN = 60;
+/** Enemy plates show within this distance (m) in the "always" and "combat" modes. */
+const ENEMY_RANGE = 40;
+/** The current target's plate is this much bigger (side arrows drawn by CSS). */
+const TARGET_SCALE = 1.2;
+/** Distance (m) where the plate starts to fade out. */
+const FADE_FROM = 28;
 
 const RANK_NAME_COLOR: Record<string, string> = { trash: '#f1e6cf', elite: '#ffd36a', miniboss: '#ffa040', boss: '#ff6a52' };
 /** Şampiyon (champion pack leader) plates are blue (WoW rare-elite style); boss mechanic entities use a cold steel tint. */
@@ -80,6 +88,11 @@ class Plate {
   private barEl: HTMLElement;
   private fill: HTMLElement;
   private ghost: HTMLElement;
+  /** "8,2M | 36%" text on the HP bar. */
+  private hpEl: HTMLElement;
+  /** Side arrows of the current target (shown by the `.target` class). */
+  private arrowL: HTMLElement;
+  private arrowR: HTMLElement;
   /** Poise (Duruş) bar under the HP bar: shown while the enemy builds poise and gold + "SENDELEDİ!" while broken. */
   private poiseEl: HTMLElement;
   private poiseFill: HTMLElement;
@@ -112,11 +125,18 @@ class Plate {
     // WP-05 Lonca: `<Lonca Adı>` under the name of another player (G.guild.tagOf, from the lobby presence)
     this.guildEl = div('np-guild', this.el);
     this.guildEl.style.cssText = 'display:none;align-self:center;margin-top:-1px;font:600 10px/12px var(--font-body, sans-serif);color:#40ff40;text-shadow:-1px 0 #000,1px 0 #000,0 -1px #000,0 1px #000;white-space:nowrap;pointer-events:none;';
-    const bar = div('np-bar', this.el);
+    // debuff icons sit above the HP bar (Plater style)
+    this.status = new StatusRow(ui, 'debuff', 4, 'np-st', false);
+    this.el.appendChild(this.status.el);
+    const barRow = div('np-barrow', this.el);
+    this.arrowL = div('np-arrow np-arrow-l', barRow);
+    const bar = div('np-bar', barRow);
+    this.arrowR = div('np-arrow np-arrow-r', barRow);
     this.barEl = bar;
     this.ghost = div('np-ghost', bar);
     this.fill = div('np-fill', bar);
     div('np-gloss', bar);
+    this.hpEl = div('np-hp', bar);
     this.poiseEl = div('np-poise', this.el);
     this.poiseFill = div('np-poise-fill', this.poiseEl);
     this.poiseTag = div('np-poise-tag', this.poiseEl, 'SENDELEDİ!');
@@ -132,12 +152,10 @@ class Plate {
     this.dispelEl = div('np-dispel', this.el);
     this.dispelEl.style.cssText = 'align-self:flex-start;margin-top:2px;padding:0 4px;font:700 9px/13px var(--font-head, sans-serif);color:#d8ffc8;background:#1f6a2a;border:1px solid #7ee862;border-radius:2px;white-space:nowrap;box-shadow:0 0 4px rgba(126,232,98,0.6);';
     setDisplay(this.dispelEl, false);
-    this.status = new StatusRow(ui, 'debuff', 4, 'np-st', false);
-    this.el.appendChild(this.status.el);
     this.el.style.display = 'none';
     if (this.self) {
       // own plate: name + level + title only (no HP bar, cast, poise, dispel or debuffs)
-      for (const part of [bar, this.poiseEl, this.castWrap, this.dispelEl, this.status.el]) setDisplay(part, false);
+      for (const part of [barRow, this.poiseEl, this.castWrap, this.dispelEl, this.status.el]) setDisplay(part, false);
     }
     const isPlayer = actor.kind === 'player';
     // click-to-select: the name and the HP bar take the mouse (the rest of the plate stays click-through); other players are not selectable.
@@ -192,7 +210,9 @@ class Plate {
     setText(this.nameEl, tag ? `[${tag}] ${a.name}` : a.name);
     setDisplay(this.nameEl, this.opts.showName !== false);
     setDisplay(this.lvlEl, this.flavor !== 'mech');
-    setText(this.lvlEl, String(a.level));
+    // WoW: a unit 10+ levels above the player shows a skull (here "??"); colour by difficulty (levelColor)
+    const skull = a.kind !== 'player' && isSkullLevel(ctx.playerLevel, a.level);
+    setText(this.lvlEl, skull ? '??' : String(a.level));
     if (a.kind === 'player') {
       const tag = G.guild?.tagOf(a.name) ?? '';
       if (tag !== this.guildTxt) {
@@ -202,8 +222,7 @@ class Plate {
         this.w = 0; // the box grew / shrank: measure again
       }
     }
-    const diff = a.level - ctx.playerLevel;
-    setStyle(this.lvlEl, 'color', a.kind === 'player' ? '#ffffff' : diff >= 5 ? '#ff4a3a' : diff >= 3 ? '#ff9a3a' : diff >= -2 ? '#ffe050' : '#9ad86a');
+    setStyle(this.lvlEl, 'color', a.kind === 'player' ? '#ffffff' : levelColor(ctx.playerLevel, a.level));
     if (this.self) {
       // beta test character: a BETA badge under the name (the own plate shows for it even without a title)
       const betaTag = G.character?.save.beta ? 'BETA' : '';
@@ -222,6 +241,7 @@ class Plate {
       const w = (frac * 100).toFixed(1) + '%';
       this.fill.style.width = w;
       this.ghost.style.width = w;
+      setText(this.hpEl, `${fmtHealth(a.hp)} | ${Math.round(frac * 100)}%`);
     }
     this.updatePoise(a);
     setClass(this.el, 'target', ctx.isTarget);
@@ -273,9 +293,10 @@ class Plate {
   }
 
   /** Anchor the plate at (x, y) (bottom centre, screen px), lifted `lift` px, scaled by `scale`. */
-  place(x: number, y: number, scale: number, lift: number, z: number): void {
+  place(x: number, y: number, scale: number, lift: number, z: number, alpha = 1): void {
     setStyle(this.el, 'transform', `translate(${Math.round(x)}px, ${Math.round(y - lift)}px) translate(-50%, -100%) scale(${scale.toFixed(2)})`);
     setStyle(this.el, 'zIndex', String(z));
+    setStyle(this.el, 'opacity', alpha.toFixed(2));
   }
 
   dispose(): void {
@@ -295,6 +316,8 @@ interface Laid {
   d: number;
   /** Scale of the plate. */
   k: number;
+  /** Opacity (distance fade). */
+  alpha: number;
   /** Anchor (bottom centre, screen px), clamped into the window. */
   x: number;
   y: number;
@@ -374,6 +397,8 @@ export class Nameplates {
     const hardTarget = me.targetId;
     // the Tab-locked target only: a hovered (soft) enemy is brighter and gets the ring
     const hardId = localHardTargetId();
+    // Settings.nameplates: always (default) · combat (only in a fight) · off (the target still shows)
+    const npMode = G.settings?.data.nameplates ?? 'always';
     type Cand = { a: Actor; d: number; always: boolean; hot: boolean };
     const cands: Cand[] = [];
     const px = me.position.x, pz = me.position.z;
@@ -390,9 +415,10 @@ export class Nameplates {
         const rank = e.def?.rank ?? 'trash';
         const isTarget = a.id === hardTarget || a === hover;
         if (isMechanic(a)) show = MECH_WITH_HP.has(e.def.id) && (d < 32 || isTarget);
+        else if (npMode === 'off') show = isTarget && d < ENEMY_RANGE;
         else if (rank === 'boss') show = d < 70 && a.id !== bossEntity;
-        else if (rank === 'elite' || rank === 'miniboss' || e.champion) show = d < 34 || isTarget;
-        else show = (d < 22 && (a.hp < a.maxHp || e.aggroed)) || (isTarget && d < 40);
+        else if (npMode === 'combat') show = d < ENEMY_RANGE && (isTarget || e.aggroed || a.combatTimer < 8);
+        else show = d < ENEMY_RANGE;
       }
       if (show) cands.push({ a, d, always: manual || a.id === hardTarget, hot: a.id === hardTarget || a === hover || a.combatTimer < HOT_SECONDS });
     };
@@ -428,9 +454,13 @@ export class Nameplates {
       }
       plate.seen = this.tick;
       plate.setShown(true);
-      plate.update({ now, world: wt, casts, isTarget: a.id === hardTarget || a === hover, isSoft: a === hover && a.id !== hardId, playerLevel: me.level, selfTitle });
+      const isTarget = a.id === hardTarget;
+      plate.update({ now, world: wt, casts, isTarget: isTarget || a === hover, isSoft: a === hover && a.id !== hardId, playerLevel: me.level, selfTitle });
+      // the target is drawn larger; distance fade from 28 m (45 % at 48 m), never below 45 %
+      const k = Math.max(0.68, Math.min(1.05, 1.18 - c.d / 55)) * (isTarget ? TARGET_SCALE : 1);
+      const alpha = c.always ? 1 : clampN(1 - (c.d - FADE_FROM) / 20, 0.45, 1);
       laid.push({
-        plate, d: c.d, k: Math.max(0.68, Math.min(1.05, 1.18 - c.d / 55)),
+        plate, d: c.d, k, alpha,
         x: _p.x, y: _p.y, exempt: c.always || c.hot, lift: 0, show: true,
       });
     }
@@ -479,7 +509,7 @@ export class Nameplates {
         e.plate.setShown(false);
         continue;
       }
-      e.plate.place(e.x, e.y, e.k, e.lift, Math.max(1, (e.exempt ? 700 : 500) - Math.round(e.d * 4)));
+      e.plate.place(e.x, e.y, e.k, e.lift, Math.max(1, (e.exempt ? 700 : 500) - Math.round(e.d * 4)), e.alpha);
     }
 
     this.placeRing(hover, hardId);
