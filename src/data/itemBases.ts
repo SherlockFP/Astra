@@ -116,7 +116,7 @@ const WEAPON_TYPES: WeaponTypeDef[] = [
     icons: ['item-axe-2h', 'item-axe-2h', 'item-axe-2h', 'item-axe-2h', 'item-axe-2h'],
   },
   {
-    category: 'staff', hands: 2, aps: 1.1, typeMult: 1.45, classes: ['mage', 'necromancer', 'warlock', 'evoker'], maxSockets: 3,
+    category: 'staff', hands: 2, aps: 1.1, typeMult: 1.45, classes: ['mage', 'necromancer', 'warlock', 'evoker', 'druid'], maxSockets: 3,
     names: ['Meşe Asa', 'Kemik Asa', 'Kristal Asa', 'Ejder Asası', 'Kadim Asa'],
     models: [GEN + 'staff_wood.glb', GEN + 'staff_skull.glb', GEN + 'staff_crystal.glb', GEN + 'staff_fire.glb', GEN + 'staff_frost.glb'],
     implicit: [0.1, 0.15, 0.2, 0.25, 0.3].map((v) => ({ resourceRegenPct: v })),
