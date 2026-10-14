@@ -174,8 +174,8 @@ ok('kit.warlock.resolve resolve_pact is -25 % damage taken', STATUSES.resolve_pa
   const menu = await H.imp('ui/menu/classInfo.ts');
   const cls = await H.imp('data/classes.ts');
   const bar1 = CharacterState.defaultBar('warlock', 1);
-  ok('wlk.l1 level-1 bar = lmb chain, rmb Gölge Oku, e Azap, s2 İblis Çemberi', JSON.stringify(bar1) === JSON.stringify({
-    lmb: 'warlock_basic', rmb: 'warlock_shadow_bolt', e: 'warlock_agony', s2: 'warlock_demonic_circle',
+  ok('wlk.l1 level-1 bar = lmb chain, rmb Gölge Oku, e Azap, s2 İblis Çemberi, s4 Büyü Kilidi', JSON.stringify(bar1) === JSON.stringify({
+    lmb: 'warlock_basic', rmb: 'warlock_shadow_bolt', e: 'warlock_agony', s2: 'warlock_demonic_circle', s4: 'warlock_spell_lock',
   }), JSON.stringify(bar1));
   ok('wlk.l1 warlock is playable and offered by the creation list', cls.isPlayableClass('warlock') && menu.CLASS_ORDER.includes('warlock'));
   ok('wlk.l1 start gear (staff, wand, tome) is usable by a warlock and not by a knight',
@@ -203,6 +203,14 @@ ok('kit.warlock.resolve resolve_pact is -25 % damage taken', STATUSES.resolve_pa
   ok('wlk.l1 lmb: the warlock chain casts and hits', fire('lmb') === true && hitBy(/^warlock_basic/).length >= 1, `hits=${hitBy(/^warlock_basic/).length} fail=${failed()}`);
   ok('wlk.l1 rmb: Gölge Oku casts and hits without a spec', fire('rmb') === true && hitBy(/^warlock_shadow_bolt$/).length >= 1, `hits=${hitBy(/^warlock_shadow_bolt$/).length} fail=${failed()}`);
   ok('wlk.l1 e: Azap casts and applies agony without a spec', fire('e') === true && foe.statuses.has('agony'), `agony=${foe.statuses.has('agony')} fail=${failed()}`);
+}
+
+// ---- kit.warlock.l1: the level-1 pre-spec bar has at least 4 usable core skills (owner rule), and the basic attack resolves ----
+{
+  const L1_CLS = (await H.imp('data/classes.ts')).CLASSES.warlock;
+  const usable = L1_CLS.skills.filter((id) => SKILLS[id] && SKILLS[id].unlockLevel <= 1 && !id.includes('_basic'));
+  ok('kit.warlock.l1 4+ usable core skills at level 1', usable.length >= 4, usable.join(','));
+  ok('kit.warlock.l1 basic attack resolves', !!SKILLS[L1_CLS.basicAttack]);
 }
 
 console.log(fails === 0 ? '\nkit.warlock: all checks PASS' : `\nkit.warlock: ${fails} FAIL`);

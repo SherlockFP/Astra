@@ -20,7 +20,7 @@ export function registerEvoker(add: SkillAdd): void {
   // 0.10 / 0.10 / 0.14 = 0.34 per chain (doc 4.0). Finisher 6 % +1 Öz and the 1 % Öz Patlaması are spec fx rows.
   // ======================================================================================================
   add({
-    id: 'evoker_basic', classId: 'evoker', name: 'Azur Darbesi', icon: I('skill-ice-lance'), defaultSlot: 'lmb',
+    id: 'evoker_basic', classId: 'evoker', name: 'Azur Darbesi (Azure Strike)', icon: I('skill-ice-lance'), defaultSlot: 'lmb',
     desc: 'Asandan üç hilal şeklinde mavi dalga fırlatırsın: her dalga hedefin ve arkasındaki iki düşmanın içinden geçer. Son vuruş %6 ihtimalle 1 Öz kazandırır.',
     anim: 'Spellcast_Shoot', targeting: 'projectile', range: 25, tags: ['spell', 'basic', 'combo', 'projectile', 'frost', 'ranged'],
     behavior: 'combo', params: { steps: 3, reset: 0.8 },
@@ -54,7 +54,7 @@ export function registerEvoker(add: SkillAdd): void {
   // Rmb: Yaşayan Alev (class row = Yıkım Nefesi's damage form; Koruyucu patches in the heal half, Yüceltme the 0.75 + Öz gain)
   // ======================================================================================================
   add({
-    id: 'evoker_living_flame', classId: 'evoker', name: 'Yaşayan Alev', icon: I('skill-fireball'), unlockLevel: 1, defaultSlot: 'rmb',
+    id: 'evoker_living_flame', classId: 'evoker', name: 'Yaşayan Alev (Living Flame)', icon: I('skill-fireball'), unlockLevel: 1, defaultSlot: 'rmb',
     desc: '1.6 saniyelik büyüyle hedefi izleyen bir ateş topu fırlatırsın: %100 ateş hasarı verir. Sıçrayan Alevler yükü başına bir düşmana daha uçar. Alev Tükenişi varken anında ve %30 güçlü atılır. %2.5 Mana harcar.',
     cost: 2.5, cooldown: 0, castTime: 1.6, anim: 'Spellcast_Shoot', animSpeed: 1.15, hitTime: 0.373, targeting: 'target_projectile', behavior: 'kit_living_flame',
     range: 25, speed: 28, radius: 0.45, homing: 5, damage: { coef: 1.0, type: 'fire' }, allyTarget: 'any',
@@ -66,7 +66,7 @@ export function registerEvoker(add: SkillAdd): void {
   // Q: Parçala (channel 2.4 s, 3 Öz, 2.9 arcane in total over the ticks; Öz Patlaması makes it free)
   // ======================================================================================================
   add({
-    id: 'evoker_disintegrate', classId: 'evoker', name: 'Parçala', icon: I('skill-arcane-missiles'), unlockLevel: 1, defaultSlot: 'q',
+    id: 'evoker_disintegrate', classId: 'evoker', name: 'Parçala (Disintegrate)', icon: I('skill-arcane-missiles'), unlockLevel: 1, defaultSlot: 'q',
     desc: '2.4 saniye boyunca hedefine kesintisiz bir Öz ışını yöneltirsin: toplam %290 gizem hasarı. 3 Öz harcar; Öz Patlaması varken bedavadır. Gökkuşağı yükü hasarı %20 artırır. Süzül varken yürüyerek de kanalize edebilirsin.',
     cost: 0, cooldown: 0, castTime: 0, channel: 2.4, anim: 'Spellcasting', animSpeed: 1, hitTime: 0.1, targeting: 'custom', behavior: 'kit_essence_beam',
     range: 25, radius: 1.0, damage: { coef: 2.9, type: 'arcane' }, pip: { id: 'essence', cost: 3 },
@@ -78,7 +78,7 @@ export function registerEvoker(add: SkillAdd): void {
   // E: Ateş Nefesi (empowered hold, kind 1). Initial 2.4 fire + burn 3.2 (magnitude 1.333) = 5.6; ranks x1 / x1.25 / x1.55
   // ======================================================================================================
   add({
-    id: 'evoker_fire_breath', classId: 'evoker', name: 'Ateş Nefesi', icon: I('skill-fire-breath'), unlockLevel: 1, defaultSlot: 'e',
+    id: 'evoker_fire_breath', classId: 'evoker', name: 'Ateş Nefesi (Fire Breath)', icon: I('skill-fire-breath'), unlockLevel: 1, defaultSlot: 'e',
     desc: 'Tuşu basılı tut: nefesin üç kademe güçlenir (0.67 / 1.33 / 2 saniye). Bırakınca önündeki konide ateş yağar: 14 / 18 / 22 m, 50 / 60 / 70 derece, hasar x1 / x1.25 / x1.55 ve yanma. Her nefes bir Öz Patlaması ve kademe kadar Sıçrayan Alevler verir. 30 saniye, 2 yük. %1.8 Mana.',
     cost: 1.8, cooldown: 30, charges: 2, castTime: 0, channel: 2.0, anim: 'Spellcasting', animSpeed: 1, hitTime: 0.05, targeting: 'custom', behavior: 'kit_empower',
     range: 22, arc: 70, damage: { coef: 2.4, type: 'fire' }, tags: ['spell', 'fire', 'channel', 'aoe', 'empower'],
@@ -94,7 +94,7 @@ export function registerEvoker(add: SkillAdd): void {
   // S1: Pyre (class row, Yıkım). 3 Öz, 2.10 fire to every enemy within 8 m of the target
   // ======================================================================================================
   add({
-    id: 'evoker_pyre', classId: 'evoker', name: 'Pyre', icon: I('skill-fire-nova'), unlockLevel: 6, defaultSlot: 's1',
+    id: 'evoker_pyre', classId: 'evoker', name: 'Alev Çığlığı (Pyre)', icon: I('skill-fire-nova'), unlockLevel: 6, defaultSlot: 's1',
     desc: 'Hedefte patlayan bir ateş küresi: 8 metre içindeki her düşmana %210 ateş hasarı verir. 3 Öz harcar; Öz Patlaması varken bedavadır. Gökkuşağı yükü hasarı %20 artırır.',
     cost: 0, cooldown: 0, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 1.8, hitTime: 0.5, targeting: 'target_instant', behavior: 'kit_aoe_strike',
     range: 25, radius: 8, damage: { coef: 2.1, type: 'fire' }, pip: { id: 'essence', cost: 3 },
@@ -106,21 +106,21 @@ export function registerEvoker(add: SkillAdd): void {
   // S2 / S3 / S4 and the majors shared by the specs
   // ======================================================================================================
   add({
-    id: 'evoker_hover', classId: 'evoker', name: 'Süzül', icon: I('skill-leap'), unlockLevel: 10, defaultSlot: 's2',
+    id: 'evoker_hover', classId: 'evoker', name: 'Süzül (Hover)', icon: I('skill-leap'), unlockLevel: 1, defaultSlot: 's2',
     desc: '6 saniye boyunca hareket hızın %30 artar ve büyü yaparken yavaşlamazsın. 35 saniye bekleme, 2 yük.',
     cost: 0, cooldown: 35, charges: 2, castTime: 0, anim: 'Jump_Start', animSpeed: 1.5, hitTime: 0.2, targeting: 'self_buff', offGcd: true,
     selfStatuses: [{ status: 'hover', duration: 6 }], tags: ['offgcd', 'movement', 'buff', 'utility'],
     vfx: { cast: 'wings_aura' }, sfx: { cast: 'whoosh' }, params: { end: 0.6, chain: 0.05, move: 0.05, weight: 0 },
   });
   add({
-    id: 'evoker_obsidian_scales', classId: 'evoker', name: 'Obsidyen Pullar', icon: I('skill-iron-skin'), unlockLevel: 15, defaultSlot: 's3',
+    id: 'evoker_obsidian_scales', classId: 'evoker', name: 'Obsidyen Pullar (Obsidian Scales)', icon: I('skill-iron-skin'), unlockLevel: 15, defaultSlot: 's3',
     desc: '12 saniye boyunca aldığın hasar %30 azalır. 90 saniye bekleme, 2 yük.',
     cost: 0, cooldown: 90, charges: 2, castTime: 0, anim: 'Cheer', animSpeed: 2.0, hitTime: 0.3, targeting: 'self_buff', offGcd: true,
     selfStatuses: [{ status: 'obsidian', duration: 12 }], tags: ['offgcd', 'defensive', 'buff'],
     vfx: { cast: 'shield_bubble' }, sfx: { cast: 'buff' }, params: { end: 0.7, chain: 0.05, move: 0.1, weight: 0 },
   });
   add({
-    id: 'evoker_quell', classId: 'evoker', name: 'Bastır', icon: I('skill-thunderclap'), unlockLevel: 10, defaultSlot: 's4',
+    id: 'evoker_quell', classId: 'evoker', name: 'Bastır (Quell)', icon: I('skill-thunderclap'), unlockLevel: 10, defaultSlot: 's4',
     desc: '25 metre içindeki büyü yapan bir düşmanın büyüsünü keser ve 3 saniye susturur (boss: yalnızca büyü kesilir). 40 saniye bekleme.',
     cost: 0, cooldown: 40, castTime: 0, anim: 'Spellcast_Shoot', animSpeed: 2.0, hitTime: 0.2, targeting: 'target_instant', behavior: 'interrupt', range: 25, offGcd: true,
     tags: ['offgcd', 'spell', 'kick', 'frost'], vfx: { cast: 'shockwave', impact: 'interrupt_burst' }, sfx: { cast: 'interrupt', impact: 'frost_impact' },
@@ -130,7 +130,7 @@ export function registerEvoker(add: SkillAdd): void {
   // Ejder Öfkesi (m90 of Yıkım Nefesi; class row so a spec-less level-20 character has it): 2.0 impact in 8 m, 18 s +15 % damage, Öz regen x2,
   // Ateş Nefesi / Ebedi Dalga cooldowns halved (STATUS_RULES cdMult), a Terazi Eğimi charge, +1 Öz Patlaması; after the window 4 Serbest Alev
   add({
-    id: 'evoker_dragonrage', classId: 'evoker', name: 'Ejder Öfkesi', icon: I('skill-berserk'), unlockLevel: 20, defaultSlot: 'm90',
+    id: 'evoker_dragonrage', classId: 'evoker', name: 'Ejder Öfkesi (Dragonrage)', icon: I('skill-berserk'), unlockLevel: 20, defaultSlot: 'm90',
     desc: 'Etrafında 8 metrelik bir alev dalgası patlatır (%200 ateş hasarı). 18 saniye boyunca hasarın %15 artar, Öz yenilenmesi iki katına çıkar, Ateş Nefesi ve Ebedi Dalga %50 daha hızlı dolar. Terazi Eğimi ve Öz Patlaması kazanırsın; bitince 4 Serbest Alev verilir. 90 saniye bekleme.',
     cost: 0, cooldown: 90, castTime: 0, anim: 'Cheer', animSpeed: 1.6, hitTime: 0.3, targeting: 'custom', behavior: 'kit_dragonrage', offGcd: true,
     radius: 8, damage: { coef: 2.0, type: 'fire' }, selfStatuses: [{ status: 'dragonrage', duration: 18 }, { status: 'tip_scales', duration: 30 }],
@@ -140,7 +140,7 @@ export function registerEvoker(add: SkillAdd): void {
 
   // Aspectlerin Öfkesi (m180, all three specs): Kurt Narası family (major_hero), sated 600 s as the doc states
   add({
-    id: 'evoker_fury_of_aspects', classId: 'evoker', name: 'Aspectlerin Öfkesi', icon: I('skill-battle-shout'), unlockLevel: 30, defaultSlot: 'm180',
+    id: 'evoker_fury_of_aspects', classId: 'evoker', name: 'Aspectlerin Öfkesi (Fury of the Aspects)', icon: I('skill-battle-shout'), unlockLevel: 30, defaultSlot: 'm180',
     desc: 'Grubuna 40 saniye boyunca %30 saldırı/büyü hızı ve %10 hareket hızı veren bir ejder narası atarsın. Etkilenenler 10 dakika Yorgun kalır. 180 saniye bekleme.',
     cost: 0, cooldown: 180, castTime: 0, anim: 'Cheer', animSpeed: 1.2, hitTime: 0.3, targeting: 'custom', behavior: 'major_hero', offGcd: true,
     tags: ['offgcd', 'major', 'hero', 'buff'], vfx: { cast: 'hero_wave' }, sfx: { cast: 'hero_horn' }, params: { major: 180, range: 40, dur: 40, sated: 600 },

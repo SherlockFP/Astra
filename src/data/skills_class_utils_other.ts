@@ -63,21 +63,4 @@ export const OTHER_UTIL_ROWS: SkillDef[] = [
     behavior: 'feign', tags: ['utility', 'stealth'],
     selfStatuses: [{ status: 'stealth', duration: 4 }, { status: 'feign_death', duration: 4 }],
   }),
-
-  // ---- Warlock ----
-  row({
-    id: 'warlock_spell_lock', classId: 'warlock', name: 'Büyü Kilidi', icon: I('skill-curse'),
-    desc: '30 metre içindeki büyü yapan bir düşmanın büyüsünü keser ve 3 saniye sessizlik verir (boss hariç).',
-    cost: 10, cooldown: 24, targeting: 'custom', range: 30, arc: 360, anim: 'Spellcast_Shoot', animSpeed: 1.5,
-    behavior: 'interrupt', tags: ['offgcd', 'spell', 'kick'],
-    params: { silence: 3 },
-  }),
-  row({
-    id: 'warlock_unending_resolve', classId: 'warlock', name: 'Dayanıklılık Sözleşmesi', icon: I('skill-iron-skin'),
-    desc: '8 saniye boyunca aldığın hasar %30 azalır ve kontrol etkilerine karşı bağışık olursun.',
-    cost: 0, cooldown: 60, targeting: 'self_buff', anim: 'Cheer', animSpeed: 1.6, vfx: { cast: 'buff_aura' },
-    behavior: 'status_self', tags: ['defensive'],
-    selfStatuses: [{ status: 'resolve_pact', duration: 8 }],
-    params: { ccImmune: 8 },
-  }),
 ];

@@ -920,8 +920,8 @@ for (const spec of ALL) {
 {
   const { CharacterState } = await H.imp('systems/CharacterState.ts');
   const bar1 = CharacterState.defaultBar('evoker', 1);
-  ok('ae4.l1 level-1 bar = lmb chain, rmb Yaşayan Alev, q Parçala, e Ateş Nefesi', JSON.stringify(bar1) === JSON.stringify({ lmb: 'evoker_basic', rmb: 'evoker_living_flame', q: 'evoker_disintegrate', e: 'evoker_fire_breath' }), JSON.stringify(bar1));
-  ok('ae4.l1 level-1 bar has three non-basic skills', Object.keys(bar1).filter((k) => k !== 'lmb').length === 3);
+  ok('ae4.l1 level-1 bar = lmb chain, rmb Yaşayan Alev, q Parçala, e Ateş Nefesi, s2 Süzül', JSON.stringify(bar1) === JSON.stringify({ lmb: 'evoker_basic', rmb: 'evoker_living_flame', q: 'evoker_disintegrate', e: 'evoker_fire_breath', s2: 'evoker_hover' }), JSON.stringify(bar1));
+  ok('ae4.l1 level-1 bar has four non-basic skills', Object.keys(bar1).filter((k) => k !== 'lmb').length === 4);
   const bar30 = CharacterState.defaultBar('evoker', 30);
   ok('ae4.l1 level-30 spec-less bar adds Pyre s1, Süzül s2, Obsidyen s3, Bastır s4, Ejder Öfkesi m90', bar30.s1 === 'evoker_pyre' && bar30.s2 === 'evoker_hover' && bar30.s3 === 'evoker_obsidian_scales' && bar30.s4 === 'evoker_quell' && bar30.m90 === 'evoker_dragonrage', JSON.stringify(bar30));
 
@@ -950,6 +950,14 @@ for (const spec of ALL) {
 }
 
 console.log(fails === 0 ? '\nkit.evoker (ae4): all checks PASS' : `\nkit.evoker (ae4): ${fails} FAIL`);
+// ---- ae4.l1core: the level-1 pre-spec bar has at least 4 usable core skills (owner rule), and the basic attack resolves ----
+{
+  const L1_CLS = (await H.imp('data/classes.ts')).CLASSES.evoker;
+  const usable = L1_CLS.skills.filter((id) => SKILLS[id] && SKILLS[id].unlockLevel <= 1 && !id.includes('_basic'));
+  ok('ae4.l1core 4+ usable core skills at level 1', usable.length >= 4, usable.join(','));
+  ok('ae4.l1core basic attack resolves', !!SKILLS[L1_CLS.basicAttack]);
+}
+
 const engineErrors = errors.filter((m) => m.startsWith('ERR'));
 if (engineErrors.length) console.log(`engine console errors (${engineErrors.length}): ${[...new Set(engineErrors)].slice(0, 5).join(' | ')}`);
 H.restoreConsole?.();

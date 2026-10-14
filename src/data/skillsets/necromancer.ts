@@ -96,28 +96,28 @@ export function registerNecromancer(add: SkillAdd): void {
   // Shared utility rows (Kemik Muhafızı s2 / s3 / s4 / m180 and Ordu Efendisi s2 / s3 / s4 / m180)
   // ======================================================================================================
   add({
-    id: 'necro_deaths_advance', classId: 'necromancer', name: 'Ölüm Atılışı', icon: I('skill-dash'), unlockLevel: 6, defaultSlot: 's2',
+    id: 'necro_deaths_advance', classId: 'necromancer', name: 'Ölüm Atılışı (Death’s Advance)', icon: I('skill-dash'), unlockLevel: 1, defaultSlot: 's2',
     desc: '6 saniye boyunca hareket hızın %40 artar ve geri savrulmaya bağışık olursun. 25 saniye bekleme.',
     cost: 0, cooldown: 25, castTime: 0, anim: 'Running_A', animSpeed: 2.0, hitTime: 0.2, targeting: 'self_buff', offGcd: true,
     selfStatuses: [{ status: 'deaths_advance', duration: 6 }], tags: ['offgcd', 'movement', 'buff', 'shadow'],
     vfx: { cast: 'shadow_burst', trail: 'charge_trail' }, sfx: { cast: 'whoosh' }, params: { end: 0.6, chain: 0.05, move: 0.05, weight: 0 },
   });
   add({
-    id: 'necro_anti_magic_shell', classId: 'necromancer', name: 'Büyü Karşıtı Kalkan', icon: I('skill-mana-shield'), unlockLevel: 15, defaultSlot: 's3',
+    id: 'necro_anti_magic_shell', classId: 'necromancer', name: 'Büyü Karşıtı Kalkan (Anti-Magic Shell)', icon: I('skill-mana-shield'), unlockLevel: 15, defaultSlot: 's3',
     desc: '8 saniye boyunca büyü hasarının canının %30\'una kadarını emersin (fiziksel hasar emilmez). Emilen her %1 can için 1 Öz kazanırsın (en çok 20). 60 saniye bekleme.',
     cost: 0, cooldown: 60, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 2.2, hitTime: 0.6, targeting: 'self_buff', behavior: 'magic_shell', offGcd: true,
     selfStatuses: [{ status: 'anti_magic_shell', duration: 8 }], tags: ['offgcd', 'defensive', 'buff', 'shadow'],
     vfx: { cast: 'shield_bubble' }, sfx: { cast: 'buff' }, params: { absorbPct: 0.3, rpPerPct: 1, rpCap: 20, end: 0.9, chain: 0.05, move: 0.1, weight: 0 },
   });
   add({
-    id: 'necro_mind_freeze', classId: 'necromancer', name: 'Zihin Dondurma', icon: I('skill-ice-bolt'), unlockLevel: 10, defaultSlot: 's4',
+    id: 'necro_mind_freeze', classId: 'necromancer', name: 'Zihin Dondurma (Mind Freeze)', icon: I('skill-ice-bolt'), unlockLevel: 1, defaultSlot: 's4',
     desc: '15 metre içindeki büyü yapan bir düşmanın büyüsünü keser ve 3 saniye susturur (boss: yalnızca büyü kesilir). 15 saniye bekleme.',
     cost: 0, cooldown: 15, castTime: 0, anim: 'Spellcast_Shoot', animSpeed: 2.0, hitTime: 0.2, targeting: 'target_instant', behavior: 'interrupt', range: 15, offGcd: true,
     tags: ['offgcd', 'spell', 'kick', 'frost'], vfx: { cast: 'frost_burst', impact: 'interrupt_burst' }, sfx: { cast: 'interrupt', impact: 'frost_impact' },
     params: { silence: 3, end: 0.5, chain: 0.05, move: 0.1, weight: 0 },
   });
   add({
-    id: 'necro_icebound_fortitude', classId: 'necromancer', name: 'Buz Gibi Sebat', icon: I('skill-ice-block'), unlockLevel: 30, defaultSlot: 'm180',
+    id: 'necro_icebound_fortitude', classId: 'necromancer', name: 'Buz Gibi Sebat (Icebound Fortitude)', icon: I('skill-ice-block'), unlockLevel: 30, defaultSlot: 'm180',
     desc: '8 saniye boyunca aldığın hasar %30 azalır ve sersemletme / korku gibi kontrol etkilerine bağışık olursun. 180 saniye bekleme.',
     cost: 0, cooldown: 180, castTime: 0, anim: 'Cheer', animSpeed: 1.8, hitTime: 0.3, targeting: 'self_buff', offGcd: true,
     selfStatuses: [{ status: 'icebound', duration: 8 }], tags: ['offgcd', 'major', 'defensive', 'buff', 'frost'],

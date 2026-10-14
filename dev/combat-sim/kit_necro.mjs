@@ -873,8 +873,8 @@ for (const spec of ALL) {
   const menu = await H.imp('ui/menu/classInfo.ts');
   const cls = await H.imp('data/classes.ts');
   const bar1 = CharacterState.defaultBar('necromancer', 1);
-  ok('pmne.l1 level-1 bar = lmb chain, rmb Ölüm Kırbacı, q Ölüm Sarmalı, e Çürüten Darbe', JSON.stringify(bar1) === JSON.stringify({
-    lmb: 'necro_basic', rmb: 'necro_scourge_strike', q: 'necro_death_coil', e: 'necro_festering_strike',
+  ok('pmne.l1 level-1 bar = lmb chain, rmb Ölüm Kırbacı, q Ölüm Sarmalı, e Çürüten Darbe, s2 Ölüm Atılışı, s4 Zihin Dondurma', JSON.stringify(bar1) === JSON.stringify({
+    lmb: 'necro_basic', rmb: 'necro_scourge_strike', q: 'necro_death_coil', e: 'necro_festering_strike', s2: 'necro_deaths_advance', s4: 'necro_mind_freeze',
   }), JSON.stringify(bar1));
   ok('pmne.l1 necromancer is playable and offered by the creation list', cls.isPlayableClass('necromancer') && menu.CLASS_ORDER.includes('necromancer'));
   ok('pmne.l1 start gear (staff, wand, tome) is usable by a necromancer and not by a knight',
@@ -903,10 +903,18 @@ for (const spec of ALL) {
   ok('pmne.l1 rmb: Ölüm Kırbacı casts and hits without a spec', fire('rmb') === true && hitBy(/^necro_scourge_strike$/).length >= 1, `hits=${hitBy(/^necro_scourge_strike$/).length} fail=${failed()}`);
   ok('pmne.l1 q: Ölüm Sarmalı casts and hits without a spec', fire('q') === true && hitBy(/^necro_death_coil$/).length >= 1, `hits=${hitBy(/^necro_death_coil$/).length} fail=${failed()}`);
   ok('pmne.l1 e: Çürüten Darbe casts and hits without a spec', fire('e') === true && hitBy(/^necro_festering_strike$/).length >= 1, `hits=${hitBy(/^necro_festering_strike$/).length} fail=${failed()}`);
-  ok('pmne.l1 level-1 bar has three non-basic skills', Object.keys(bar1).filter((k) => k !== 'lmb').length === 3);
+  ok('pmne.l1 level-1 bar has five non-basic skills', Object.keys(bar1).filter((k) => k !== 'lmb').length === 5);
 }
 
 console.log(fails === 0 ? '\nkit.necro (pmne): all checks PASS' : `\nkit.necro (pmne): ${fails} FAIL`);
+// ---- pmne.l1core: the level-1 pre-spec bar has at least 4 usable core skills (owner rule), and the basic attack resolves ----
+{
+  const L1_CLS = (await H.imp('data/classes.ts')).CLASSES.necromancer;
+  const usable = L1_CLS.skills.filter((id) => SKILLS[id] && SKILLS[id].unlockLevel <= 1 && !id.includes('_basic'));
+  ok('pmne.l1core 4+ usable core skills at level 1', usable.length >= 4, usable.join(','));
+  ok('pmne.l1core basic attack resolves', !!SKILLS[L1_CLS.basicAttack]);
+}
+
 const engineErrors = errors.filter((m) => m.startsWith('ERR'));
 if (engineErrors.length) console.log(`engine console errors (${engineErrors.length}): ${[...new Set(engineErrors)].slice(0, 5).join(' | ')}`);
 H.restoreConsole?.();
