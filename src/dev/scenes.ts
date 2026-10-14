@@ -18,6 +18,8 @@ import type { DungeonDef } from '../types/dungeons';
  *   seed=N      make sure N characters exist (cycling classes)
  *   scene=...   jump into the scene with the first/selected character (omit to follow the normal flow)
  *   class=...   class of the character used for a direct jump (creates one when none exists)
+ *   nation=gok_kartal|kizil_kurt  nation of a newly created character (default: hashed from its id; coop parties are single-nation)
+ *   name=...    character name for a direct jump (selects the saved character of that name, else creates it); lets two tabs run different identities
  *   dungeon=id  dungeon for scene=dungeon ("dev_test" is a tiny built-in layout used when content has none; "sisli_koru" = open world)
  *   key=N       Mythic+ key level (0 = Normal);  dif=heroic|mythic  difficulty without a key;  lvl=N  character level
  *   portal=1 / south=1   town arrival point (portal hall / south gate)
@@ -59,9 +61,12 @@ async function main(): Promise<void> {
     G.save.write(cs.save);
   }
   if (scene && scene !== 'menu') {
-    let save = G.save.list()[0];
+    // net=local goes through G.net.enterScene (async): let the loading scene finish first, or its hand-over to the menu clears the character
+    if (q.get('net') === 'local') for (let i = 0; i < 600 && G.scenes.current?.id !== 'menu'; i++) await new Promise((r) => setTimeout(r, 100));
+    const wantName = q.get('name'); // two-tab QA (tools/qa/mp-smoke.mjs): each tab picks / creates its own character by name
+    let save = wantName ? G.save.list().find((s) => s.name === wantName) : G.save.list()[0];
     if (!save || (cls && save.classId !== cls)) {
-      const cs = CharacterState.create('Deneme', cls ?? 'knight', 0);
+      const cs = CharacterState.create(wantName ?? 'Deneme', cls ?? 'knight', 0, q.get('nation') === 'gok_kartal' || q.get('nation') === 'kizil_kurt' ? (q.get('nation') as 'gok_kartal' | 'kizil_kurt') : undefined);
       G.save.write(cs.save);
       save = cs.save;
     }
@@ -69,7 +74,9 @@ async function main(): Promise<void> {
     if (forceLvl > 0) save.level = forceLvl;
     G.character = new CharacterState(save);
     G.character.recomputeStats();
-    if (scene === 'town') await G.scenes.go('town', q.get('portal') ? { spawnAt: 'portal' } : q.get('south') ? { spawnAt: 'south' } : undefined);
+    const townParams = q.get('portal') ? { spawnAt: 'portal' } : q.get('south') ? { spawnAt: 'south' } : undefined;
+    // net=local: enter the town like the menu does (G.net.enterScene -> public channel); otherwise the plain scene jump (no network)
+    if (scene === 'town') await (q.get('net') === 'local' ? G.net.enterScene('town', townParams) : G.scenes.go('town', townParams));
     if (scene === 'dungeon') {
       const id = q.get('dungeon') ?? DUNGEON_IDS[0] ?? 'dev_test';
       if (!DUNGEONS[id] && id === 'dev_test') {

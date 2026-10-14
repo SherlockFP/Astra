@@ -680,7 +680,9 @@ export class NetSession {
     if (was === 'host') this.sendCtl({ t: 'closed' }, this.remoteMemberIds());
     else if (was === 'client') this.sendCtl({ t: 'bye' }, [this.hostId]);
     this.teardown();
-    if (was === 'client') this.returnToTown();
+    // a client always goes back to the town / its public channel; a host does so only from the town (the arena and the dungeon exits place the host themselves)
+    // - otherwise the host that disbanded the party would sit alone in a private offline town, invisible to the public channel
+    if (was === 'client' || this.g.scenes?.current?.id === 'town') this.returnToTown();
   }
 
   /* ================================================================================================

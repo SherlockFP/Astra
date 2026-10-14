@@ -262,6 +262,7 @@ function makeLobby(ids, o = {}) {
         const okHost = o.hostOk ? o.hostOk(id, p) : true;
         // the room exists now: every pending joinRoom of this match completes
         if (okHost) for (const j of pendingJoins.filter((x) => x.mid === p.mid)) j.res({ ok: true });
+        if (o.hostWait) await o.hostWait; // the proposer is still opening / waiting for its room while the member is already in it
         return okHost;
       },
       // joinRoom only completes once the proposer's room is up (default); o.joinOk overrides
@@ -372,6 +373,22 @@ function makeLobby(ids, o = {}) {
   await L.run(3000);
   ok('que.host failure: joinFail notice, back to searching', notices.includes('joinFail') && L.cores.get('p1').state().phase !== 'in_match');
   ok('que.host failure: the member was released (qdecl cancel)', L.log.sent.some((s) => s.ch === 'qdecl' && s.from === 'p1'));
+}
+{
+  // the member joins the proposer's room first and then cancels its entry (it leaves the lobby pools): a proposer that is still hosting keeps the match
+  let gate;
+  const hostWait = new Promise((r) => { gate = r; });
+  const L = makeLobby(['p1', 'p2'], { hostWait });
+  for (const id of L.cores.keys()) { L.clock.wall += 10; L.cores.get(id).enter('arena:1v1:r', { rating: 1500 }); }
+  L.deliver();
+  const notices = [];
+  L.cores.get('p1').onChange((s, n) => { if (n) notices.push(n.k); });
+  await L.run(3000);
+  ok('que.member entered the match and cancelled its entry while the proposer is still hosting', L.cores.get('p2').state().phase === 'in_match' && L.log.sent.some((s) => s.ch === 'qcancel' && s.from === 'p2'));
+  ok("que.the hosting proposer is not thrown back to the queue by the member's qcancel", L.cores.get('p1').state().phase === 'joining' && !notices.includes('declined'), L.cores.get('p1').state().phase + ' ' + notices.join());
+  gate();
+  await L.run(1000);
+  ok('que.... and reaches in_match once its room is ready', L.cores.get('p1').state().phase === 'in_match' && !notices.includes('declined'));
 }
 {
   // member cannot join the room: joinFail + re-queue at the old position

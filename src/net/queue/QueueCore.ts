@@ -252,7 +252,9 @@ export class QueueCore {
       this.noteDecline(peer);
       o.pending.delete(peer);
       this.failProposal([peer]);
-    } else if (o && o.p.members.some((m) => m.peerId === peer)) {
+    } else if (o && this.st.phase !== 'joining' && o.p.members.some((m) => m.peerId === peer)) {
+      // (in 'joining' we are hosting: an acked member that joined the room sends qcancel and leaves the lobby right away, which would
+      // otherwise withdraw a healthy match; a member that really vanished is caught by the host loop (members never show up in the room))
       this.failProposal([peer]);
     }
     // a proposer that leaves while we are joining is handled by the join timeout (joinResult / inc.deadline)
