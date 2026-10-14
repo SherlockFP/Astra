@@ -766,7 +766,9 @@ Test: `node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/
 - the status is a `kind: 'debuff'` with `dispellable` (data/statuses.ts), and the owner's last pstate lists it (the host's own character is read live);
 - caster and owner are within 36 m (heal range 30 plus a lag margin), and the owner is alive.
 
-The host then sends the host-only channel `cleanse {id, status, by}` to the owner. The owner applies it to its own StatusEffects only if it comes from the host, names its own entity id and the status is a removable debuff. The owner's next pstate drops the status from every copy. A host casting on a party member runs the same path locally, and the host's own character is the owner in the same way.
+A named dispel type is the same request with `type` instead of `status` (`req 'cleanse' {target, type}`; `type` is a key of `DISPEL_TYPES` in data/statuses.ts, own keys only). Its one use is Özgürlük Duası: `cleanseMovement` (combat/skills/sharedBehaviors.ts) takes the `movement` locks (root, slow, act_root) off a remote ally's copy at once and sends one request. The host accepts a type when the owner has at least one of its statuses; the owner removes all of them.
+
+The host then sends the host-only channel `cleanse {id, status | type, by}` to the owner. The owner applies it to its own StatusEffects only if it comes from the host, names its own entity id and the status is a removable debuff. The owner's next pstate drops the status from every copy. A host casting on a party member runs the same path locally, and the host's own character is the owner in the same way.
 
 Wire: `cleanse` is in `KNOWN_CHANNELS` and `HOST_ONLY_CHANNELS` (messages.ts); the typed payload is `NetChannels['cleanse']` (types/net.ts). The pstate flag is bit 4. `PROTOCOL_VERSION` is unchanged: both changes are append-only, and an older client drops the unknown channel.
 

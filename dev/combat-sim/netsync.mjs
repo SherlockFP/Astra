@@ -5,6 +5,8 @@
 //   pet.*      presence `pet` -> remote follower: appears, follows its owner, hides with it, goes away with the presence
 //   cleanse.*  a dispel on a REMOTE party member asks the host; the host validates (caster in party, rate, owner really has a
 //              dispellable debuff, range, not self-cleanse) and sends `cleanse` to the owner; the owner removes it; refusals
+//   movement.* Özgürlük Duası's `movement` dispel type: one `cleanse {type}` request for a remote ally (the copy loses the locks
+//              at once), the host checks the type and that the owner has one of its statuses, the owner removes them all
 // Run: node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/netsync.mjs      (V=1 prints every PASS)
 import * as H from './harness.mjs';
 
@@ -16,6 +18,7 @@ const { MOUNT_LIFT } = await H.imp('game/Mount.ts');
 const { encodePayload, decodePayload } = await H.imp('net/codec.ts');
 const { Social } = await H.imp('systems/Social.ts');
 const { PARTY_ID_BASE } = await H.imp('types/common.ts');
+const { cleanseMovement } = await H.imp('combat/skills/sharedBehaviors.ts');
 
 let fails = 0;
 let passes = 0;
@@ -435,6 +438,114 @@ const SLOW = 'slow';
   ok('cleanse.copy follows the owner: the removed debuff leaves the remote copy', copy.statuses.get(SLOW) === undefined && copy.statuses.get('poison') !== undefined);
   rep.dispose();
   world.remove(copy);
+}
+
+// ================================================================================================ movement.*
+{
+  // ---- caster side (Özgürlük Duası on a remote ally): one typed request, the copy loses the locks at once
+  H.addPlayer('paladin');
+  const me = G.player;
+  localSync(me);
+  const net = fakeNet({
+    self: 'p1', role: 'client', hostId: 'p3',
+    members: [{ peerId: 'p1', slot: 0 }, { peerId: 'p2', slot: 1 }, { peerId: 'p3', slot: 2 }], localSlot: 0,
+  });
+  const rep = new Replication(net);
+  rep.setActive(true);
+  const copy = remotePlayer(PARTY_ID_BASE + 1, 1, 'Bora', [20, 20], true);
+  copy.statuses.apply(SLOW, 5);
+  copy.statuses.apply('root', 4);
+  copy.statuses.apply('stun', 2);
+  copy.statuses.apply('poison', 5);
+  const prevNet = G.net;
+  G.net = net;
+  cleanseMovement(copy);
+  const r1 = cleanseRequests(net);
+  ok('movement.caster: a remote ally gets one request, typed movement', r1.length === 1 && r1[0].data.target === PARTY_ID_BASE + 1 && r1[0].data.type === 'movement' && r1[0].data.status === undefined, JSON.stringify(r1));
+  ok('movement.caster: the copy loses root and slow at once, keeps stun and poison', copy.statuses.get(SLOW) === undefined && copy.statuses.get('root') === undefined && copy.statuses.get('stun') !== undefined && copy.statuses.get('poison') !== undefined);
+  net.sent.length = 0;
+  cleanseMovement(copy);
+  ok('movement.caster: nothing left to remove, nothing sent', cleanseRequests(net).length === 0 && net.sent.length === 0);
+  me.statuses.apply(SLOW, 5);
+  cleanseMovement(me);
+  ok('movement.caster: a local ally is a plain removal, no request', me.statuses.get(SLOW) === undefined && net.sent.length === 0);
+  G.net = prevNet;
+  rep.dispose();
+  world.remove(copy);
+}
+
+{
+  // ---- host side: a typed request passes when the owner has ANY status of the type; unknown and inherited types are refused
+  H.addPlayer('paladin');
+  const stub = new H.FakePlayer('paladin');   // the host's own character: slot 2 (entity id 3), not in the world
+  stub.id = PARTY_ID_BASE + 2;
+  stub.position.set(20, 0, 20);
+  stub.statuses.apply(SLOW, 5);
+  stub.statuses.apply('root', 5);
+  G.player = stub;
+  const net = fakeNet({
+    self: 'p3', role: 'host', hostId: 'p3', localSlot: 2,
+    members: [{ peerId: 'p1', slot: 0 }, { peerId: 'p2', slot: 1 }, { peerId: 'p3', slot: 2 }],
+  });
+  const rep = new Replication(net);
+  rep.setActive(true);
+  const owner = remotePlayer(PARTY_ID_BASE + 1, 1, 'Bora', [20, 20]);
+  attachRemote(rep, 'p2', owner);
+  attachRemote(rep, 'p1', remotePlayer(PARTY_ID_BASE, 0, 'Alp', [25, 20]));
+  rep.onPState(pstate({ x: 20, z: 20, statuses: [SLOW, 'stun', 'poison'] }), 'p2');
+  rep.onPState(pstate({ x: 25, z: 20 }), 'p1');
+  const ask = (data, from = 'p1') => { net.sent.length = 0; net.request('cleanse', data, from); return cleanseSends(net); };
+  const at = (dt) => { G.engine.time += dt; };
+
+  let s = ask({ target: PARTY_ID_BASE + 1, type: 'movement' });
+  ok('movement.host valid: the owner gets `cleanse` with the type', s.length === 1 && s[0].to === 'p2' && s[0].payload.id === PARTY_ID_BASE + 1 && s[0].payload.type === 'movement' && s[0].payload.status === undefined && s[0].payload.by === PARTY_ID_BASE, JSON.stringify(s));
+  const refused = (name, data, from = 'p1') => { at(0.5); ok(`movement.refused ${name}`, ask(data, from).length === 0); };
+  refused('an unknown type', { target: PARTY_ID_BASE + 1, type: 'nope' });
+  refused('an inherited key as type (constructor)', { target: PARTY_ID_BASE + 1, type: 'constructor' });
+  refused('an inherited key as type (__proto__)', { target: PARTY_ID_BASE + 1, type: '__proto__' });
+  refused('a status id given as a type (stun)', { target: PARTY_ID_BASE + 1, type: 'stun' });
+  refused('a non-string type', { target: PARTY_ID_BASE + 1, type: 42 });
+  rep.onPState(pstate({ x: 20, z: 20, statuses: ['stun', 'poison'] }), 'p2');
+  refused('an owner with no status of the type', { target: PARTY_ID_BASE + 1, type: 'movement' });
+  rep.onPState(pstate({ x: 20, z: 20, statuses: ['root'] }), 'p2');
+  ok('movement.host: one status of the type (root alone) is enough', ask({ target: PARTY_ID_BASE + 1, type: 'movement' }).length === 1);
+
+  // the host's own character: removed on the host itself, nothing on the wire
+  at(10);
+  net.sent.length = 0;
+  net.request('cleanse', { target: PARTY_ID_BASE + 2, type: 'movement' }, 'p1');
+  ok('movement.host owner: the host removes the locks itself, nothing sent', stub.statuses.get(SLOW) === undefined && stub.statuses.get('root') === undefined && cleanseSends(net).length === 0);
+  rep.dispose();
+  G.player = undefined;
+}
+
+{
+  // ---- owner side: the host's typed `cleanse` removes every status of the type from our own character, and only that
+  const me = H.addPlayer('priest');
+  world.remove(me);
+  world.update(0);
+  me.id = PARTY_ID_BASE + 1;
+  world.add(me);
+  localSync(me);
+  me.statuses.apply(SLOW, 5);
+  me.statuses.apply('root', 4);
+  me.statuses.apply('stun', 2);
+  me.statuses.apply('poison', 5);
+  const net = fakeNet({ self: 'p2', role: 'client', hostId: 'p3', members: [{ peerId: 'p2', slot: 1 }, { peerId: 'p3', slot: 2 }], localSlot: 1 });
+  const rep = new Replication(net);
+  rep.setActive(true);
+
+  net.deliver('cleanse', { id: PARTY_ID_BASE + 1, type: 'movement', by: PARTY_ID_BASE }, 'p1');
+  ok('movement.owner refused when it is not from the host', me.statuses.get(SLOW) !== undefined && me.statuses.get('root') !== undefined);
+  net.deliver('cleanse', { id: PARTY_ID_BASE + 2, type: 'movement', by: PARTY_ID_BASE }, 'p3');
+  ok('movement.owner refused for another entity', me.statuses.get(SLOW) !== undefined);
+  net.deliver('cleanse', { id: PARTY_ID_BASE + 1, type: 'constructor', by: PARTY_ID_BASE }, 'p3');
+  net.deliver('cleanse', { id: PARTY_ID_BASE + 1, type: 'stun', by: PARTY_ID_BASE }, 'p3');
+  net.deliver('cleanse', { id: PARTY_ID_BASE + 1, type: 42, by: PARTY_ID_BASE }, 'p3');
+  ok('movement.owner refused for an unknown or junk type', me.statuses.get(SLOW) !== undefined && me.statuses.get('stun') !== undefined);
+  net.deliver('cleanse', { id: PARTY_ID_BASE + 1, type: 'movement', by: PARTY_ID_BASE }, 'p3');
+  ok('movement.owner removes root and slow, keeps stun and poison', me.statuses.get(SLOW) === undefined && me.statuses.get('root') === undefined && me.statuses.get('stun') !== undefined && me.statuses.get('poison') !== undefined);
+  rep.dispose();
 }
 
 // ---------------------------------------------------------------------------------------------- report
