@@ -421,7 +421,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     weapons: ['staff', 'wand'],
     offhands: ['tome'],
     secondary: { id: 'shard', name: 'Ruh Parçası', max: 50, scale: 10, color: '#b06bff', icon: 'skill-curse' },
-    specs: ['warlock_affliction', 'warlock_destruction'],
+    specs: ['warlock_affliction', 'warlock_destruction', 'warlock_demonology'],
     visual: {
       url: '/assets/models/characters/Rogue_Hooded.glb',
       paletteClass: 'rogue',

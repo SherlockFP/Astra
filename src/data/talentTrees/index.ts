@@ -72,6 +72,8 @@ const SPEC_TABLE: readonly SpecEntry[] = [
   { id: 'necromancer_bone', classId: 'necromancer', name: 'Kemik Ustası' },
   { id: 'warlock_affliction', classId: 'warlock', name: 'Azap' },
   { id: 'warlock_destruction', classId: 'warlock', name: 'Yıkım' },
+  // KIT Warlock (index 30, appended): İblis Ustalığı. Its raw tree is in raw/warlock.ts (gen-talent-data).
+  { id: 'warlock_demonology', classId: 'warlock', name: 'İblis Ustalığı' },
   // KIT PK-0 (index 21, appended so existing export strings stay valid). Its raw tree arrives with the T-step (gen-talent-data):
   // until then getTree returns null and specsOfClass omits it.
   { id: 'rogue_subtlety', classId: 'rogue', name: 'Gölge' },
