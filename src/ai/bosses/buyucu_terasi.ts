@@ -22,14 +22,14 @@ type Pt = { x: number; z: number };
 
 /** GDD tile centre to world metres (same mapping as DungeonScene, world = (tile + 0.5) * 4). */
 const W = (t: number): number => (t + 0.5) * 4;
-/** Seranel dome centre and radius (world metres): tile (50.5, 24.5), 2 tiles. */
-const DOME: Pt & { r: number } = { x: W(50.5), z: W(24.5), r: 8 };
+/** Seranel dome centre and radius (world metres): tile (56.5, 24.5), 2 tiles. */
+const DOME: Pt & { r: number } = { x: W(56.5), z: W(24.5), r: 8 };
 /** Degentrius hub centre (world): the dais, and the hub radius where beams start. */
 const HUB_R = 5;
 /** Arkanotron wall ports (world metres): the orb spawn points, skipping door gaps (design ORB_PORTS). */
-const ORB_PORTS: Pt[] = [[24, 2], [29.5, 2], [35, 2], [20, 6], [20, 13], [39, 5.5], [39, 14], [23, 17], [36, 17]].map(([x, z]) => ({ x: W(x), z: W(z) }));
+const ORB_PORTS: Pt[] = [[30, 7], [35.5, 7], [41, 7], [26, 11], [26, 18], [45, 10.5], [45, 19], [29, 22], [42, 22]].map(([x, z]) => ({ x: W(x), z: W(z) }));
 /** Degentrius soak slots (world): N, E, S, W at 3.2 tiles from the dais, radius 3 m. */
-const SOAK: Pt[] = [{ x: W(34.5), z: W(59.3) }, { x: W(37.7), z: W(62.5) }, { x: W(34.5), z: W(65.7) }, { x: W(31.3), z: W(62.5) }];
+const SOAK: Pt[] = [{ x: W(40.5), z: W(63.3) }, { x: W(43.7), z: W(66.5) }, { x: W(40.5), z: W(69.7) }, { x: W(37.3), z: W(66.5) }];
 
 const dist = (a: Pt, b: Pt): number => Math.hypot(b.x - a.x, b.z - a.z);
 const tankOf = (c: BossController): Player | null => c.playersInArena().find((p) => isTank(p)) ?? c.nearestPlayer() ?? null;
