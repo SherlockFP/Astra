@@ -22,6 +22,10 @@ export const STATUSES_KIT_MAGE: Partial<Record<StatusId, StatusDef>> = {
   // Shields (HUD labels of the absorb)
   ice_barrier: { id: 'ice_barrier', name: 'Buz Bariyeri', icon: I('skill-ice-block'), kind: 'buff', defaultDuration: 60 },
   prismatic_barrier: { id: 'prismatic_barrier', name: 'Prizmatik Bariyer', icon: I('skill-mana-shield'), kind: 'buff', defaultDuration: 30 },
+  // Zaman Bükme (shared major): +30 % büyü ve saldırı hızı
+  time_warp: { id: 'time_warp', name: 'Zaman Bükme', icon: I('skill-arcane-orb'), kind: 'buff', stats: { castSpeed: 0.30, attackSpeed: 0.30 }, vfx: 'haste_trail', dispellable: true, defaultDuration: 40 },
+  // Büyü Çağırma (channel): the mana tick runs in combat/skills/mageKit.ts; the status only marks the channel for the HUD
+  evocation: { id: 'evocation', name: 'Büyü Çağırma', icon: I('skill-mana-shield'), kind: 'buff', vfx: 'buff_aura', defaultDuration: 6 },
 };
 
 export const STATUS_RULES_KIT_MAGE: Partial<Record<StatusId, StatusRule>> = {
