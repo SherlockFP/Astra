@@ -8,6 +8,7 @@ import type { Actor } from '../../entities/Actor';
 import { esc, fmtNum, iconHTML, ICON, DAMAGE_COLORS } from './dom';
 import type { StatusView } from './status';
 import { trackInfo } from '../../systems/Track';
+import { skillDisplayName } from '../../data/skillNamesEn';
 
 const TAG_TR: Record<string, string> = {
   melee: 'Yakın Dövüş', spell: 'Büyü', aoe: 'Alan', projectile: 'Mermi', movement: 'Hareket', fire: 'Ateş', frost: 'Buz',
@@ -173,12 +174,12 @@ export function skillDescription(def: SkillDef, actor: Actor | null): string {
     .replace(/\{dur\}/g, dur > 0 ? `<b class="tt-num">${trim(dur)}</b> sn` : 'kısa bir süre');
 }
 
-export function skillTooltipHTML(def: SkillDef, actor: Actor | null, bindLabel?: string): string {
+export function skillTooltipHTML(def: SkillDef, actor: Actor | null, bindLabel?: string, rank?: number): string {
   const dtype = def.damage?.type;
   const col = dtype ? DAMAGE_COLORS[dtype] ?? '#f0e0b0' : '#e8c46a';
   const resType = actor?.resourceType ?? 'mana';
   const resName = RES_NAME[resType] ?? 'Kaynak';
-  let h = `<div class="sk" style="--sc:${col}"><div class="sk-head">${iconHTML(def.icon, 'sk-ico')}<div><div class="sk-name">${esc(def.name)}</div>`;
+  let h = `<div class="sk" style="--sc:${col}"><div class="sk-head">${iconHTML(def.icon, 'sk-ico')}<div><div class="sk-name">${esc(skillDisplayName(def.id, def.name))}</div>`;
   const tags = def.tags.map((t) => TAG_TR[t]).filter(Boolean).slice(0, 4);
   h += `<div class="sk-tags">${esc(tags.join(' · '))}</div></div></div>`;
   h += '<div class="sk-row">';
@@ -186,6 +187,7 @@ export function skillTooltipHTML(def: SkillDef, actor: Actor | null, bindLabel?:
   else if (def.cost < 0) h += `<span class="sk-gain">+${fmtNum(-def.cost)} ${resName}</span>`;
   else h += '<span class="sk-cost free">Bedava</span>';
   if (def.cooldown > 0) h += `<span class="sk-cd">${trim(def.cooldown)} sn bekleme</span>`;
+  if (rank !== undefined) h += `<span class="sk-rank">Sv. ${Math.max(1, Math.floor(rank))}</span>`;
   h += '</div>';
   const meta: string[] = [];
   if (def.castTime > 0) meta.push(`${trim(def.castTime)} sn büyü süresi`);

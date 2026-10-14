@@ -35,6 +35,8 @@ import { ObjectiveArrow } from './ObjectiveArrow';
 import { QuestFeed } from './QuestFeed';
 import { adviceLine } from '../panels/game/guideEngine';
 import { TipCards } from './TipCards';
+import { GuideCard } from './Onboarding';
+import { ControlsOverlay } from './ControlsOverlay';
 import { XpStrip } from './XpStrip';
 import type { HudCtx, HudDensity, HudWidget, HudZones } from './types';
 // last on purpose: the ElvUI skin overrides every earlier HUD sheet (docs/UI_WOW_CLASSIC.md)
@@ -219,6 +221,10 @@ export function createHUD(ui: UI): HudApi {
   // ---- onboarding (§4.4, §4.7): tip cards above the chat, the objective arrow over the centre ----
   const tips = add(new TipCards(ui));
   zTip.appendChild(tips.el);
+  // first-10-minutes guide (systems/onboarding.ts): the card takes the tip slot while it runs; "?" opens the controls sheet
+  const guide = add(new GuideCard(ui));
+  zTip.appendChild(guide.el);
+  root.appendChild(new ControlsOverlay().el);
   const arrow = add(new ObjectiveArrow(ui));
   root.appendChild(arrow.el);
   const feed = new QuestFeed();

@@ -6,6 +6,7 @@ import { expandKeys, isWowScheme, keyLabel } from '../widgets/controlHints';
 import type { UI } from '../UI';
 import { ICON, div, h, iconEl, setDisplay, setClass, setStyle, setText, span, uiSound } from '../widgets/dom';
 import { unspentTalentPoints } from './Extras';
+import { guideWanted } from '../../systems/onboarding';
 import type { HudCtx, HudWidget } from './types';
 
 /** Scheduler period (s): tips are picked twice a second, never per frame (§4.7). */
@@ -136,6 +137,8 @@ export class TipCards implements HudWidget {
     if (ctx.mode !== 'town' && ctx.mode !== 'dungeon') return;
     if (p.isDead || ctx.ui.wantsCursor()) return;
     if (ch.save.level <= 2 && !ch.save.flags[WELCOME_FLAG]) return;
+    // the first-10-minutes guide (ui/hud/Onboarding.ts) owns the tip slot while it runs
+    if (guideWanted(ch.save)) return;
     if (now - this.lastShownAt < GAP_MS) return;
 
     if (!this.startPos) this.startPos = { x: p.position.x, z: p.position.z };

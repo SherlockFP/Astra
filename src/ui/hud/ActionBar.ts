@@ -260,7 +260,7 @@ class Slot {
       this.ui.showTooltip(`<div class="sk"><div class="sk-name">Boş Yuva</div><div class="sk-desc">Yetenek Kitabı'ndan (${esc(G.input?.bindingLabel('skills') ?? 'K')}) bir yetenek sürükle.</div></div>`, x, y);
       return;
     }
-    let html = skillTooltipHTML(this.def, G.player, bind);
+    let html = skillTooltipHTML(this.def, G.player, bind, G.character?.save.skillRanks?.[this.def.id] ?? 1);
     if (this.spec.major) {
       html += `<div class="sk"><div class="sk-desc">Büyük Yetenek · Bekleme ${esc(MAJOR_LABEL[this.spec.id] ?? '')}</div></div>`;
     }
