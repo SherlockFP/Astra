@@ -64,7 +64,7 @@ export function registerKnight(add: SkillAdd): void {
     vfx: { cast: 'zeal_aura' }, sfx: { cast: 'buff' },
   });
   add({
-    id: 'knight_charge', classId: 'knight', name: 'Hücum (Charge)', icon: I('skill-charge'), unlockLevel: 3, defaultSlot: 's2',
+    id: 'knight_charge', classId: 'knight', name: 'Hücum (Charge)', icon: I('skill-charge'), unlockLevel: 1, defaultSlot: 's2',
     desc: 'Hedefe doğru 12 metreye kadar hücum edersin ve %100 silah hasarı verip hedefi kısa süre köklendirirsin. 20 Kararlılık kazandırır.',
     cost: -20, cooldown: 20, castTime: 0, anim: 'Running_A', animSpeed: 2.0, targeting: 'dash', range: 12, duration: 0.4, hitTime: 0.4,
     damage: { coef: 1.0, type: 'physical' }, knockback: 1.5, statuses: [{ status: 'root', duration: 1 }], offGcd: true,
@@ -74,7 +74,7 @@ export function registerKnight(add: SkillAdd): void {
 
   // ---- Kılıç Ustası (knight_blademaster, Arms) ----
   add({
-    id: 'knight_mortal_strike', classId: 'knight', spec: 'knight_blademaster', name: 'Ölümcül Darbe (Mortal Strike)', icon: I('skill-sword-slash'), unlockLevel: 10,
+    id: 'knight_mortal_strike', classId: 'knight', spec: 'knight_blademaster', name: 'Ölümcül Darbe (Mortal Strike)', icon: I('skill-sword-slash'), unlockLevel: 1,
     desc: 'Hedefe %340 fiziksel hasar verirsin ve 10 saniye boyunca hedefin aldığı iyileşme %50 azalır. 25 Kararlılık harcarsın.',
     cost: 25, cooldown: 6, castTime: 0, anim: '1H_Melee_Attack_Chop', animSpeed: 1.25, hitTime: 0.45, targeting: 'target_instant', range: 3.2,
     damage: { coef: 3.4, type: 'physical' }, statuses: [{ status: 'mortal_wound', duration: 10 }], tags: ['melee', 'physical'],
@@ -89,7 +89,7 @@ export function registerKnight(add: SkillAdd): void {
     params: { stagger: 20, execBonus: 1.25, threshold: 0.2, cull: 0, refund: 0 },
   });
   add({
-    id: 'knight_overpower', classId: 'knight', spec: 'knight_blademaster', name: 'Üstün Vuruş (Overpower)', icon: I('skill-sword-slash'), unlockLevel: 10,
+    id: 'knight_overpower', classId: 'knight', spec: 'knight_blademaster', name: 'Üstün Vuruş (Overpower)', icon: I('skill-sword-slash'), unlockLevel: 1,
     desc: 'Hedefe %220 fiziksel hasar verirsin. İki yük vardır, her biri 12 saniyede dolar. Savaş Efendisi aktifken bedavadır.',
     cost: 0, cooldown: 12, charges: 2, castTime: 0, anim: '1H_Melee_Attack_Slice_Diagonal', animSpeed: 1.5, hitTime: 0.3,
     targeting: 'target_instant', range: 3.0, damage: { coef: 2.2, type: 'physical' }, tags: ['melee', 'physical'],
@@ -104,7 +104,7 @@ export function registerKnight(add: SkillAdd): void {
     params: { stagger: 4 },
   });
   add({
-    id: 'knight_radiant_cleave', classId: 'knight', name: 'Çelik Girdap (Whirlwind)', icon: I('skill-cleave'), unlockLevel: 6, defaultSlot: 's1',
+    id: 'knight_radiant_cleave', classId: 'knight', name: 'Çelik Girdap (Whirlwind)', icon: I('skill-cleave'), unlockLevel: 1, defaultSlot: 's1',
     desc: 'Önündeki 180 derecelik yayda her düşmana %200 fiziksel hasar verirsin. Her vurduğun düşman için 2 Kararlılık geri kazanırsın (en fazla 8 düşman). 20 Kararlılık harcarsın.',
     cost: 20, cooldown: 0, castTime: 0, anim: '2H_Melee_Attack_Spin', animSpeed: 2.0, hitTime: 0.427, targeting: 'melee_arc',
     range: 4.5, arc: 180, damage: { coef: 2.0, type: 'physical' },
@@ -171,7 +171,7 @@ export function registerKnight(add: SkillAdd): void {
     params: { end: 0.64, chain: 0.08, move: 0.18, stagger: 25, proc: 1, weight: 2, lunge: 0.6, slow: 0.7 },
   });
   add({
-    id: 'knight_revenge', classId: 'knight', spec: 'knight_protector', name: 'İntikam (Revenge)', icon: I('skill-cleave'), unlockLevel: 12,
+    id: 'knight_revenge', classId: 'knight', spec: 'knight_protector', name: 'İntikam (Revenge)', icon: I('skill-cleave'), unlockLevel: 1,
     desc: '150 derecelik önündeki en fazla 5 düşmana %200 fiziksel hasar verirsin. İntikam Hazır aktifken bedavadır ve %25 daha fazla vurur. 20 Kararlılık harcarsın.',
     cost: 20, cooldown: 0, castTime: 0, anim: '1H_Melee_Attack_Slice_Horizontal', animSpeed: 1.3, hitTime: 0.427, targeting: 'melee_arc',
     range: 3.4, arc: 150, damage: { coef: 2.0, type: 'physical' }, tags: ['melee', 'physical', 'aoe'],
@@ -179,7 +179,7 @@ export function registerKnight(add: SkillAdd): void {
     params: { stagger: 12, maxTargets: 5, threatMult: 2 },
   });
   add({
-    id: 'knight_thunder_clap', classId: 'knight', spec: 'knight_protector', name: 'Gök Gürültüsü (Thunder Clap)', icon: I('skill-hammer-of-justice'), unlockLevel: 12,
+    id: 'knight_thunder_clap', classId: 'knight', spec: 'knight_protector', name: 'Gök Gürültüsü (Thunder Clap)', icon: I('skill-hammer-of-justice'), unlockLevel: 1,
     desc: '5 metre içindeki düşmanlara %100 fiziksel hasar verir, 15 saniye süren kanama ve 6 saniye %20 yavaşlatma bırakırsın. 5 Kararlılık kazandırır.',
     cost: -5, cooldown: 6, castTime: 0, anim: '1H_Melee_Attack_Stab', animSpeed: 1.8, hitTime: 0.5, targeting: 'self_aoe', radius: 5,
     damage: { coef: 1.0, type: 'physical' },
@@ -187,7 +187,7 @@ export function registerKnight(add: SkillAdd): void {
     tags: ['aoe', 'physical', 'bleed'], vfx: { impact: 'shockwave' }, sfx: { cast: 'ground_slam' }, params: { stagger: 12 },
   });
   add({
-    id: 'knight_shield_block', classId: 'knight', spec: 'knight_protector', name: 'Kalkan Kaldırma (Shield Block)', icon: I('skill-shield-wall'), unlockLevel: 10, defaultSlot: 'e',
+    id: 'knight_shield_block', classId: 'knight', spec: 'knight_protector', name: 'Kalkan Kaldırma (Shield Block)', icon: I('skill-shield-wall'), unlockLevel: 1, defaultSlot: 'rmb',
     desc: '6 saniye boyunca önden gelen saldırıların tamamını engellersin ve engellenen hasarın %15\'ini depolarsın. Süre bitince ya da yeniden kullanınca depolanan hasar bir şok dalgası olarak patlar. İki yük, her biri 9 saniyede dolar.',
     cost: 30, cooldown: 9, charges: 2, castTime: 0, anim: 'Block_Attack', animSpeed: 1.0, hitTime: 0.2, targeting: 'custom', behavior: 'shield_block',
     offGcd: true, tags: ['offgcd', 'defensive', 'mitigation', 'spec'],
@@ -230,7 +230,7 @@ export function registerKnight(add: SkillAdd): void {
     vfx: { trail: 'slash_arc' }, sfx: { cast: 'swing_heavy', impact: 'hit_flesh' }, params: { stagger: 8 },
   });
   add({
-    id: 'knight_shield_slam', classId: 'knight', spec: 'knight_protector', name: 'Kalkan Vuruşu (Shield Slam)', icon: I('skill-shield-bash'), unlockLevel: 10, defaultSlot: 'q',
+    id: 'knight_shield_slam', classId: 'knight', spec: 'knight_protector', name: 'Kalkan Vuruşu (Shield Slam)', icon: I('skill-shield-bash'), unlockLevel: 1, defaultSlot: 'q',
     desc: 'Kalkanınla hedefe %180 fiziksel hasar verirsin ve 15 Kararlılık kazanırsın. Tehdit üretir.',
     cost: -15, cooldown: 9, castTime: 0, anim: 'Block_Attack', animSpeed: 1.3, hitTime: 0.3, targeting: 'target_instant', range: 3.2,
     damage: { coef: 1.8, type: 'physical' }, tags: ['melee', 'physical', 'shield', 'builder', 'spec'],

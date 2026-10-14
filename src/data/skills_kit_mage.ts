@@ -33,7 +33,7 @@ export const SKILLS_KIT_MAGE: Record<string, SkillDef> = {
     params: { element: 1, end: 0.7, chain: 0.1, move: 0.2, stagger: 4, proc: 1, weight: 0, upper: 0 },
   }),
   mage_pyroblast: row({
-    id: 'mage_pyroblast', name: 'Piroblast (Pyroblast)', icon: I('skill-fire-wave'), spec: 'mage_fire', unlockLevel: 10,
+    id: 'mage_pyroblast', name: 'Piroblast (Pyroblast)', icon: I('skill-fire-wave'), spec: 'mage_fire', unlockLevel: 1,
     desc: '%280 ateş hasarı verir ve yakar. Sıcak Seri varken anında ve bedavadır; kritik vuruşlar Piroklazm\'ı tetikleyebilir.',
     cost: 10, castTime: 3.2, anim: 'Spellcast_Raise', animSpeed: 1, hitTime: 0.5,
     targeting: 'projectile', behavior: 'fire_cast', range: 35, speed: 18, radius: 0.5, count: 1, pierce: 0,
@@ -63,7 +63,7 @@ export const SKILLS_KIT_MAGE: Record<string, SkillDef> = {
     params: { element: 1, slow: 0, end: 0.6, chain: 0.1, move: 0.2, stagger: 2, proc: 0.5, weight: 0, upper: 1 },
   }),
   mage_flamestrike: row({
-    id: 'mage_flamestrike', name: 'Alev Sütunu (Flamestrike)', icon: I('skill-firewall'), spec: 'mage_fire', unlockLevel: 12,
+    id: 'mage_flamestrike', name: 'Alev Sütunu (Flamestrike)', icon: I('skill-firewall'), spec: 'mage_fire', unlockLevel: 1,
     desc: 'Hedef noktada r 6 alana %280 ateş hasarı (8 hedefe kadar, hedef sayısına göre azalarak) ve yanma. Sıcak Seri varken anında ve bedavadır.',
     cost: 12, castTime: 2.8, anim: 'Spellcast_Raise', animSpeed: 1.4, hitTime: 0.5,
     targeting: 'ground_aoe', behavior: 'flamestrike', range: 35, radius: 6, count: 1,
@@ -146,7 +146,7 @@ export const SKILLS_KIT_MAGE: Record<string, SkillDef> = {
     params: { element: 2, end: 0.8, chain: 0.1, move: 0.2, stagger: 6, proc: 1, weight: 2, upper: 0 },
   }),
   mage_ice_barrier: row({
-    id: 'mage_ice_barrier', name: 'Buz Bariyeri (Ice Barrier)', icon: I('skill-ice-block'), spec: 'mage_frost', unlockLevel: 15,
+    id: 'mage_ice_barrier', name: 'Buz Bariyeri (Ice Barrier)', icon: I('skill-ice-block'), spec: 'mage_frost', unlockLevel: 1,
     desc: 'Maks. canının %25\'i + 2 x W kadar 60 sn kalkan verir. 30 sn bekleme süresi vardır.',
     cost: 0, cooldown: 30, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 1.8, hitTime: 0.3,
     targeting: 'self_buff', behavior: 'ward_barrier',
@@ -175,7 +175,7 @@ export const SKILLS_KIT_MAGE: Record<string, SkillDef> = {
     params: { comets: 7, gap: 0.1, cometR: 1.5, element: 2, end: 1, chain: 0.1, move: 0.2, weight: 2, stagger: 3, upper: 0 },
   }),
   mage_glacial_spike: row({
-    id: 'mage_glacial_spike', name: 'Buz Sarkıtı (Glacial Spike)', icon: I('skill-ice-lance'), spec: 'mage_frost', unlockLevel: 15,
+    id: 'mage_glacial_spike', name: 'Buz Sarkıtı (Glacial Spike)', icon: I('skill-ice-lance'), spec: 'mage_frost', unlockLevel: 1,
     desc: 'Hedefe %330 buz hasarı; Donması 6 veya üstüyse x1,5. Hedefin yanındaki 3 düşmana %50 sıçrar. Yalnızca Buz Sarkıtı Hazır iken; tüm Sarkıtları harcar.',
     cost: 10, castTime: 1.4, anim: 'Spellcast_Raise', animSpeed: 1.4, hitTime: 0.5,
     targeting: 'projectile', behavior: 'glacial_spike', range: 35, speed: 20, radius: 0.5, count: 1, pierce: 0,
@@ -224,7 +224,7 @@ export const SKILLS_KIT_MAGE: Record<string, SkillDef> = {
 
   // ------------------------------------------------------------------ Gizem (mage_arcane, §2a)
   mage_arcane_pulse: row({
-    id: 'mage_arcane_pulse', name: 'Arkan Nabzı (Arcane Pulse)', icon: I('skill-arcane-explosion'), spec: 'mage_arcane', unlockLevel: 12,
+    id: 'mage_arcane_pulse', name: 'Arkan Nabzı (Arcane Pulse)', icon: I('skill-arcane-explosion'), spec: 'mage_arcane', unlockLevel: 1,
     desc: 'r 8 içindeki düşmanlara gizem hasarı verir (çok hedefte azalarak); vurduğun her düşman için +1 Gizem Yükü (en çok +4).',
     cost: 14, cooldown: 15, castTime: 1.6, anim: 'Spellcast_Raise', animSpeed: 1.3, hitTime: 0.5,
     targeting: 'self_aoe', behavior: 'arcane_pulse', radius: 8,
@@ -234,7 +234,7 @@ export const SKILLS_KIT_MAGE: Record<string, SkillDef> = {
     params: { element: 3, pipPerEnemy: 1, pipMax: 4, end: 0.9, chain: 0.1, move: 0.2, stagger: 6, weight: 2, upper: 0 },
   }),
   mage_prismatic_barrier: row({
-    id: 'mage_prismatic_barrier', name: 'Prizmatik Bariyer (Prismatic Barrier)', icon: I('skill-mana-shield'), spec: 'mage_arcane', unlockLevel: 15,
+    id: 'mage_prismatic_barrier', name: 'Prizmatik Bariyer (Prismatic Barrier)', icon: I('skill-mana-shield'), spec: 'mage_arcane', unlockLevel: 1,
     desc: 'Maks. canının %25\'i + 2 x W kadar 30 sn kalkan verir. 30 sn bekleme süresi vardır.',
     cost: 0, cooldown: 30, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 1.8, hitTime: 0.3,
     targeting: 'self_buff', behavior: 'ward_barrier',

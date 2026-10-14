@@ -25,8 +25,8 @@ export const SPECS_KIT_MAGE: Partial<Record<SpecId, SpecDef>> = {
     skills: ['mage_scorch', 'mage_living_bomb', 'mage_pyroblast', 'mage_fire_blast', 'mage_flamestrike', 'mage_dragons_breath',
       'mage_blazing_barrier', 'mage_phoenix_flames', 'mage_combustion', 'mage_time_warp'],
     unlock: {
-      mage_fireball: 1, mage_scorch: 4, mage_living_bomb: 8, mage_pyroblast: 10, mage_fire_blast: 10, mage_flamestrike: 12,
-      mage_dragons_breath: 14, mage_blazing_barrier: 15, mage_phoenix_flames: 15, mage_combustion: 20, mage_time_warp: 25,
+      mage_fireball: 1, mage_scorch: 4, mage_living_bomb: 8, mage_pyroblast: 1, mage_fire_blast: 10, mage_flamestrike: 1,
+      mage_dragons_breath: 14, mage_blazing_barrier: 1, mage_phoenix_flames: 15, mage_combustion: 20, mage_time_warp: 25,
     },
     // the s05 tree row is Anka Alevleri (talent tree, T-step)
     treeSkills: { mage_phoenix_flames: 's05' },
@@ -50,8 +50,8 @@ export const SPECS_KIT_MAGE: Partial<Record<SpecId, SpecDef>> = {
     skills: ['mage_frostbolt', 'mage_ice_lance', 'mage_flurry', 'mage_frost_nova', 'mage_ice_barrier', 'mage_ray_of_frost',
       'mage_glacial_spike', 'mage_comet_storm', 'mage_frozen_orb', 'mage_icy_veins'],
     unlock: {
-      mage_frostbolt: 1, mage_ice_lance: 3, mage_frost_nova: 3, mage_flurry: 6, mage_blizzard: 15, mage_ice_barrier: 15,
-      mage_glacial_spike: 15, mage_frozen_orb: 20, mage_ray_of_frost: 20, mage_comet_storm: 20, mage_icy_veins: 20,
+      mage_frostbolt: 1, mage_ice_lance: 3, mage_frost_nova: 3, mage_flurry: 6, mage_blizzard: 1, mage_ice_barrier: 1,
+      mage_glacial_spike: 1, mage_frozen_orb: 20, mage_ray_of_frost: 20, mage_comet_storm: 20, mage_icy_veins: 20,
     },
     // the s05 tree row is Dondurucu Sağanak (talent tree, T-step)
     treeSkills: { mage_flurry: 's05' },
@@ -75,8 +75,8 @@ export const SPECS_KIT_MAGE: Partial<Record<SpecId, SpecDef>> = {
     skills: ['mage_arcane_missiles', 'mage_arcane_barrage', 'mage_arcane_pulse', 'mage_prismatic_barrier', 'mage_arcane_orb',
       'mage_touch_of_magi', 'mage_arcane_surge', 'mage_evocation', 'mage_time_warp'],
     unlock: {
-      mage_arcane_blast: 1, mage_arcane_missiles: 3, mage_arcane_barrage: 6, mage_touch_of_magi: 10, mage_arcane_pulse: 12,
-      mage_evocation: 12, mage_prismatic_barrier: 15, mage_arcane_orb: 20, mage_arcane_surge: 20, mage_time_warp: 25,
+      mage_arcane_blast: 1, mage_arcane_missiles: 1, mage_arcane_barrage: 6, mage_touch_of_magi: 10, mage_arcane_pulse: 1,
+      mage_evocation: 12, mage_prismatic_barrier: 1, mage_arcane_orb: 20, mage_arcane_surge: 20, mage_time_warp: 25,
     },
     treeSkills: { mage_arcane_barrage: 's05' },
     majors: { m45: 'mage_touch_of_magi', m90: 'mage_arcane_surge', m180: 'mage_time_warp' },

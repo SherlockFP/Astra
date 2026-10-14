@@ -19,7 +19,7 @@ const BARBARIAN_SPEC_LIST: SpecDef[] = [
       { id: 'ursoc_fury', desc: 'Paralama ve Ezici Balta hasarının %35\'i kalkan olarak geri döner (en fazla maks. canın %20\'si, 8 saniye).', params: { absorb: 0.35, cap: 0.20, dur: 8 } },
     ],
     skills: ['barbarian_shield_slam', 'barbarian_revenge', 'barbarian_thunder_clap', 'barbarian_iron_stance', 'barbarian_blood_shield', 'barbarian_shield_wall', 'barbarian_provoke', 'barbarian_maul', 'barbarian_thrash', 'barbarian_pummel'],
-    unlock: { barbarian_shield_slam: 10, barbarian_revenge: 12, barbarian_thunder_clap: 12, barbarian_iron_stance: 10, barbarian_blood_shield: 15, barbarian_shield_wall: 15, barbarian_provoke: 10, barbarian_maul: 15, barbarian_thrash: 12, barbarian_pummel: 10 },
+    unlock: { barbarian_shield_slam: 1, barbarian_revenge: 1, barbarian_thunder_clap: 1, barbarian_iron_stance: 1, barbarian_blood_shield: 15, barbarian_shield_wall: 15, barbarian_provoke: 10, barbarian_maul: 15, barbarian_thrash: 12, barbarian_pummel: 10 },
     majors: { m45: 'barbarian_last_stand', m90: 'barbarian_rallying_roar', m180: 'barbarian_incarnation' },
     mods: [
       { skill: 'barbarian_cleave', params: { threatMult: 1.5 } },
@@ -41,7 +41,7 @@ const BARBARIAN_SPEC_LIST: SpecDef[] = [
     stats: { executeDamagePct: 0.40, attackSpeed: 0.05, resourceGainPct: 0.20, critChance: 0.05 },
     specials: [{ id: 'trait_anger', desc: 'Öfke Yönetimi: her 20 Öfke harcandığında majorlerin kalan bekleme süresi 1 saniye kısalır.', params: { angerPer: 20 } }],
     skills: ['barbarian_bloodthirst', 'barbarian_rampage', 'barbarian_raging_blow', 'barbarian_crushing_blow', 'barbarian_bloodbath', 'barbarian_execute', 'barbarian_enraged_regeneration', 'barbarian_intimidating_shout', 'barbarian_pummel'],
-    unlock: { barbarian_bloodthirst: 10, barbarian_pummel: 10, barbarian_raging_blow: 12, barbarian_rampage: 15, barbarian_crushing_blow: 12, barbarian_bloodbath: 10, barbarian_execute: 15, barbarian_enraged_regeneration: 15, barbarian_intimidating_shout: 10 },
+    unlock: { barbarian_bloodthirst: 1, barbarian_pummel: 10, barbarian_raging_blow: 12, barbarian_rampage: 1, barbarian_crushing_blow: 12, barbarian_bloodbath: 10, barbarian_execute: 15, barbarian_enraged_regeneration: 15, barbarian_intimidating_shout: 10 },
     majors: { m45: 'barbarian_avatar', m90: 'barbarian_carnage', m180: 'barbarian_wolf_howl' },
     mods: [],
     // treeSkills: İdam is granted by the class s05 node

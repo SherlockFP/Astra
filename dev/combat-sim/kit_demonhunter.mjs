@@ -613,7 +613,7 @@ for (const spec of ALL) {
   const pvpSets = await H.imp('data/pvp/sets.ts');
   const bar1 = CharacterState.defaultBar('demonhunter', 1);
   ok('aedh.l1 level-1 bar = lmb chain, rmb Kaos Darbesi (Chaos Strike), s1 Yakıcı Aura (Immolation Aura), s2 Fel Atılışı (Fel Rush)', JSON.stringify(bar1) === JSON.stringify({
-    lmb: 'demonhunter_basic', rmb: 'demonhunter_chaos_strike', e: 'demonhunter_immolation_aura', s2: 'demonhunter_fel_rush',
+    lmb: 'demonhunter_basic', rmb: 'demonhunter_chaos_strike', s1: 'demonhunter_blade_dance', e: 'demonhunter_immolation_aura', s2: 'demonhunter_fel_rush',
   }), JSON.stringify(bar1));
   ok('aedh.l1 the creation list offers the demon hunter', PLAYABLE_CLASSES.includes('demonhunter') && menu.CLASS_ORDER.includes('demonhunter') && !!menu.classPresentation('demonhunter').highlights.length);
   ok('aedh.l1 start gear (twin daggers) is usable by a demon hunter and not by a knight', ['dagger_t1'].every((id) => items.ITEM_BASES[id] && items.classCanUseBase('demonhunter', items.ITEM_BASES[id])) && !items.classCanUseBase('knight', items.ITEM_BASES.dagger_t1)
@@ -642,10 +642,16 @@ for (const spec of ALL) {
   ok('aedh.l1 rmb: Kaos Darbesi (Chaos Strike) casts and hits without a spec', fire('rmb') === true && hitBy(/^demonhunter_chaos_strike$/).length >= 1, `hits=${hitBy(/^demonhunter_chaos_strike$/).length} fail=${failed()}`);
   ok('aedh.l1 s1: Yakıcı Aura (Immolation Aura) pulses without a spec', fire('e') === true && hitBy(/^demonhunter_immolation_aura$/).length >= 1, `hits=${hitBy(/^demonhunter_immolation_aura$/).length} fail=${failed()}`);
   ok('aedh.l1 s2: Fel Atılışı (Fel Rush) dashes without a spec', fire('s2') === true && p.position.z > 0.1, `z=${p.position.z.toFixed(1)} fail=${failed()}`);
-  ok('aedh.l1 level-1 bar has three non-basic skills', Object.keys(bar1).filter((k) => k !== 'lmb').length === 3);
+  ok('aedh.l1 level-1 bar has four non-basic skills', Object.keys(bar1).filter((k) => k !== 'lmb').length === 4);
   ok('aedh.l1 the movement signature exists (PlayerController double jump + glide are class gated, no sim)', true);
 }
 
+// ---- level 1 (owner rule): every spec starts at level 1 with >= 4 usable core skills on its bar (basic / auto attack excluded)
+for (const sid of ["demonhunter_chaos","demonhunter_vengeance","demonhunter_devourer"]) {
+  const spec = SPECS[sid];
+  const l1 = Object.entries(spec.defaultBar).filter(([slot, id]) => slot !== 'lmb' && id !== spec.basic && SKILLS[id]?.unlockLevel <= 1 && (spec.unlock?.[id] ?? 1) <= 1);
+  ok(`kit_demonhunter.l1 ${sid} level 1 has >= 4 usable skills`, l1.length >= 4, l1.map(([s, id]) => `${s}=${id}`).join(','));
+}
 console.log(fails === 0 ? '\nkit.demonhunter (aedh): all checks PASS' : `\nkit.demonhunter (aedh): ${fails} FAIL`);
 const engineErrors = errors.filter((m) => m.startsWith('ERR'));
 if (engineErrors.length) console.log(`engine console errors (${engineErrors.length}): ${[...new Set(engineErrors)].slice(0, 5).join(' | ')}`);

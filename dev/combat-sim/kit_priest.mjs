@@ -304,6 +304,12 @@ for (const sid of PRIEST_KIT_SPEC_IDS) {
   ok(`kit.priest.rotation ${sid} runs without script errors`, errors.length === 0, errors.slice(0, 2).map((m) => m.slice(0, 160)).join(' | '));
 }
 
+// ---- level 1 (owner rule): every spec starts at level 1 with >= 4 usable core skills on its bar (basic / auto attack excluded)
+for (const sid of ["priest_discipline","priest_holy","priest_shadow"]) {
+  const spec = SPECS[sid];
+  const l1 = Object.entries(spec.defaultBar).filter(([slot, id]) => slot !== 'lmb' && id !== spec.basic && SKILLS[id]?.unlockLevel <= 1 && (spec.unlock?.[id] ?? 1) <= 1);
+  ok(`kit_priest.l1 ${sid} level 1 has >= 4 usable skills`, l1.length >= 4, l1.map(([s, id]) => `${s}=${id}`).join(','));
+}
 console.log(fails === 0 ? '\nkit.priest: all checks PASS' : `\nkit.priest: ${fails} FAIL`);
 H.restoreConsole?.();
 process.exit(fails === 0 ? 0 : 1);

@@ -23,9 +23,9 @@ const PALADIN_SPEC_LIST: SpecDef[] = [
     ],
     skills: ['paladin_reckoning', 'paladin_shield_of_righteous', 'paladin_blessed_hammer', 'paladin_word_of_glory', 'paladin_avengers_shield', 'paladin_consecration', 'paladin_divine_steed', 'paladin_hammer_of_justice', 'paladin_rebuke'],
     unlock: {
-      paladin_reckoning: 10, paladin_shield_of_righteous: 10, paladin_avengers_shield: 10, paladin_consecration: 12,
-      paladin_blessed_hammer: 10, paladin_word_of_glory: 1, paladin_divine_steed: 6,
-      paladin_rebuke: 10, paladin_prot_ardent: 20, paladin_prot_bulwark: 30, paladin_avenging_wrath: 10, paladin_hammer_of_justice: 10,
+      paladin_reckoning: 10, paladin_shield_of_righteous: 1, paladin_avengers_shield: 10, paladin_consecration: 1,
+      paladin_blessed_hammer: 10, paladin_word_of_glory: 1, paladin_divine_steed: 1,
+      paladin_rebuke: 1, paladin_prot_ardent: 20, paladin_prot_bulwark: 30, paladin_avenging_wrath: 10, paladin_hammer_of_justice: 10,
     },
     majors: { m45: 'paladin_avenging_wrath', m90: 'paladin_prot_ardent', m180: 'paladin_prot_bulwark' },
     fx: [
@@ -61,8 +61,8 @@ const PALADIN_SPEC_LIST: SpecDef[] = [
       'paladin_divine_steed', 'paladin_rebuke', 'paladin_divine_shield', 'paladin_holy_light', 'paladin_lay_on_hands', 'paladin_divine_toll', 'paladin_holy_aura_mastery',
     ],
     unlock: {
-      paladin_holy_shock: 10, paladin_flash_of_light: 1, paladin_rebuke: 10, paladin_cleanse: 12, paladin_word_of_glory: 1,
-      paladin_light_of_dawn: 15, paladin_divine_shield: 15, paladin_divine_steed: 6, paladin_holy_light: 20, paladin_lay_on_hands: 25,
+      paladin_holy_shock: 1, paladin_flash_of_light: 1, paladin_rebuke: 1, paladin_cleanse: 12, paladin_word_of_glory: 1,
+      paladin_light_of_dawn: 15, paladin_divine_shield: 15, paladin_divine_steed: 1, paladin_holy_light: 20, paladin_lay_on_hands: 25,
       paladin_divine_toll: 10, paladin_holy_aura_mastery: 30,
     },
     majors: { m45: 'paladin_divine_toll', m90: 'paladin_avenging_wrath', m180: 'paladin_holy_aura_mastery' },
@@ -97,8 +97,8 @@ const PALADIN_SPEC_LIST: SpecDef[] = [
       'paladin_wake_of_ashes', 'paladin_divine_steed', 'paladin_rebuke', 'paladin_hammer_of_justice',
     ],
     unlock: {
-      paladin_crusader_strike: 1, paladin_verdict: 10, paladin_divine_storm: 10, paladin_rebuke: 10, paladin_blade_of_justice: 12,
-      paladin_judgement: 1, paladin_wake_of_ashes: 15, paladin_divine_steed: 6,
+      paladin_crusader_strike: 1, paladin_verdict: 1, paladin_divine_storm: 1, paladin_rebuke: 1, paladin_blade_of_justice: 12,
+      paladin_judgement: 1, paladin_wake_of_ashes: 15, paladin_divine_steed: 1,
       paladin_hammer_of_wrath: 15, paladin_ret_execution: 10, paladin_avenging_wrath: 10, paladin_divine_shield: 15, paladin_hammer_of_justice: 10,
     },
     treeSkills: { paladin_hammer_of_wrath: 's05' },

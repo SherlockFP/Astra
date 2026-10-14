@@ -28,7 +28,7 @@ export function registerShamanSpecs(add: SkillAdd): void {
     params: { end: 0.6, chain: 0.05, move: 0.1, stagger: 2, weight: 0 },
   });
   add({
-    id: 'shaman_lava_burst', classId: 'shaman', spec: 'shaman_elemental', name: 'Lav Patlaması (Lava Burst)', icon: I('skill-fireball'), unlockLevel: 10, defaultSlot: 'e',
+    id: 'shaman_lava_burst', classId: 'shaman', spec: 'shaman_elemental', name: 'Lav Patlaması (Lava Burst)', icon: I('skill-fireball'), unlockLevel: 1, defaultSlot: 'e',
     desc: 'Lav topu fırlatırsın: %300 ateş hasarı verir ve 10 Girdap kazandırır. 8 saniyelik bekleme süresi vardır.',
     cost: 14, cooldown: 8, castTime: 1.8, hitTime: 1.8, anim: 'Spellcast_Shoot', animSpeed: 1.0,
     targeting: 'projectile', range: 30, speed: 30, radius: 0.5, count: 1,
@@ -181,7 +181,7 @@ export function registerShamanSpecs(add: SkillAdd): void {
   });
   // Girdap Patlaması (Maelstrom Weapon, s1, L10): spends 50+ Girdap; the hit grows with the spent stacks (0.01 per Girdap point)
   add({
-    id: 'shaman_maelstrom_spender', classId: 'shaman', spec: 'shaman_enhancement', name: 'Girdap Patlaması (Maelstrom Weapon)', icon: I('skill-chain-lightning'), unlockLevel: 10, defaultSlot: 's1',
+    id: 'shaman_maelstrom_spender', classId: 'shaman', spec: 'shaman_enhancement', name: 'Girdap Patlaması (Maelstrom Weapon)', icon: I('skill-chain-lightning'), unlockLevel: 1, defaultSlot: 's1',
     desc: '50 Girdap harcarsın; harcadığın her Girdap noktası için hasar artar (taban %260 yıldırım hasarı).',
     cost: 0, cooldown: 0, castTime: 0, hitTime: 0.4, anim: 'Spellcast_Shoot', animSpeed: 1.5,
     targeting: 'projectile', range: 25, speed: 40, radius: 0.4, count: 1,
@@ -259,7 +259,7 @@ export function registerShamanSpecs(add: SkillAdd): void {
   });
   // Zincir Şifa (Chain Heal): 3 targets, 1.2 s cast; each bounce heals 70 % of the one before (bounces 2)
   add({
-    id: 'shaman_chain_heal', classId: 'shaman', spec: 'shaman_restoration', name: 'Zincir Şifa (Chain Heal)', icon: I('skill-holy-nova'), unlockLevel: 10, defaultSlot: 'e',
+    id: 'shaman_chain_heal', classId: 'shaman', spec: 'shaman_restoration', name: 'Zincir Şifa (Chain Heal)', icon: I('skill-holy-nova'), unlockLevel: 1, defaultSlot: 'e',
     desc: 'Bir müttefikini iyileştirir; iyileşme yakındaki iki yaralı müttefike sıçrar ve her sıçrayışta %30 azalır.',
     cost: 18, cooldown: 0, castTime: 1.2, hitTime: 1.2, anim: 'Spellcasting', animSpeed: 1.1,
     targeting: 'custom', behavior: 'shaman_chain_heal', heal: { coef: 1.4 }, allyTarget: 'friendly',

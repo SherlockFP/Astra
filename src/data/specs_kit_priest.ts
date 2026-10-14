@@ -18,7 +18,7 @@ export const SPECS_KIT_PRIEST: Partial<Record<SpecId, SpecDef>> = {
     ],
     skills: ['priest_disc_penance', 'priest_disc_radiance', 'priest_disc_pain_suppression', 'priest_disc_rapture', 'priest_disc_evangelism', 'priest_disc_power_infusion'],
     unlock: {
-      priest_disc_penance: 10, priest_disc_radiance: 15, priest_disc_pain_suppression: 12,
+      priest_disc_penance: 1, priest_disc_radiance: 1, priest_disc_pain_suppression: 12,
       priest_disc_rapture: 10, priest_disc_evangelism: 20, priest_disc_power_infusion: 14,
     },
     majors: { m45: 'priest_disc_evangelism', m90: 'priest_disc_rapture', m180: 'priest_disc_power_infusion' },
@@ -41,7 +41,7 @@ export const SPECS_KIT_PRIEST: Partial<Record<SpecId, SpecDef>> = {
     ],
     skills: ['priest_holy_prayer', 'priest_holy_serenity', 'priest_holy_sanctify', 'priest_holy_circle', 'priest_holy_mending', 'priest_holy_hymn', 'priest_holy_guardian'],
     unlock: {
-      priest_holy_basic: 1, priest_holy_prayer: 10, priest_holy_serenity: 10, priest_holy_sanctify: 15, priest_holy_circle: 15,
+      priest_holy_basic: 1, priest_holy_prayer: 1, priest_holy_serenity: 1, priest_holy_sanctify: 15, priest_holy_circle: 15,
       priest_holy_mending: 10, priest_holy_hymn: 10, priest_holy_guardian: 20,
     },
     majors: { m45: 'priest_holy_hymn', m90: 'priest_holy_guardian' },
@@ -65,8 +65,8 @@ export const SPECS_KIT_PRIEST: Partial<Record<SpecId, SpecDef>> = {
     ],
     skills: ['priest_shadow_mind_blast', 'priest_shadow_swp', 'priest_shadow_vt', 'priest_shadow_mind_flay', 'priest_shadow_void_bolt', 'priest_shadow_devouring', 'priest_shadow_death', 'priest_shadow_dispersion', 'priest_shadow_silence', 'priest_shadow_voidform', 'priest_shadow_fiend'],
     unlock: {
-      priest_shadow_mind_blast: 10, priest_shadow_swp: 10, priest_shadow_vt: 12, priest_shadow_mind_flay: 12, priest_shadow_void_bolt: 15,
-      priest_shadow_devouring: 12, priest_shadow_death: 14, priest_shadow_dispersion: 16, priest_shadow_silence: 10,
+      priest_shadow_mind_blast: 1, priest_shadow_swp: 10, priest_shadow_vt: 12, priest_shadow_mind_flay: 12, priest_shadow_void_bolt: 1,
+      priest_shadow_devouring: 12, priest_shadow_death: 14, priest_shadow_dispersion: 1, priest_shadow_silence: 1,
       priest_shadow_voidform: 10, priest_shadow_fiend: 20,
     },
     majors: { m45: 'priest_shadow_voidform', m90: 'priest_shadow_fiend' },

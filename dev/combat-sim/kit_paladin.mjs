@@ -790,7 +790,7 @@ function runApl(spec, seconds, { allies = 0, chainsPerMin = Infinity } = {}) {
   const { CharacterState } = await H.imp('systems/CharacterState.ts');
   const bar1 = CharacterState.defaultBar('paladin', 1);
   ok('pmpa.l1 creation bar at level 1 = lmb chain, rmb Yargı, q Haçlı Darbesi, e Işığın Sözü', JSON.stringify(bar1) === JSON.stringify({
-    lmb: 'paladin_basic', rmb: 'paladin_judgement', q: 'paladin_crusader_strike', e: 'paladin_word_of_glory',
+    lmb: 'paladin_basic', rmb: 'paladin_judgement', q: 'paladin_crusader_strike', e: 'paladin_word_of_glory', s1: 'paladin_rebuke', s2: 'paladin_divine_steed',
   }), JSON.stringify(bar1));
   const bar10 = CharacterState.defaultBar('paladin', 10);
   ok('pmpa.l1 level-10 bar adds Azarlama s1, İlahi Binek s2 (no slot clash), İntikamcı Kalkan s3, Kanatlar m90',
@@ -970,6 +970,12 @@ for (const spec of ALL) {
   console.log(`     pmpa.mana Kutsal faith over the 60 s run: ${l.faith0.toFixed(0)} -> ${l.faithEnd.toFixed(0)} (informational only: the dummy party never rises above 60 %, so the APL spams the panic Işık Parlaması; the kit's +10 per minute ledger belongs to SimBench)`);
 }
 
+// ---- level 1 (owner rule): every spec starts at level 1 with >= 4 usable core skills on its bar (basic / auto attack excluded)
+for (const sid of ["paladin_protection","paladin_holy","paladin_retribution"]) {
+  const spec = SPECS[sid];
+  const l1 = Object.entries(spec.defaultBar).filter(([slot, id]) => slot !== 'lmb' && id !== spec.basic && SKILLS[id]?.unlockLevel <= 1 && (spec.unlock?.[id] ?? 1) <= 1);
+  ok(`kit_paladin.l1 ${sid} level 1 has >= 4 usable skills`, l1.length >= 4, l1.map(([s, id]) => `${s}=${id}`).join(','));
+}
 console.log(fails === 0 ? '\nkit.paladin (pmpa): all checks PASS' : `\nkit.paladin (pmpa): ${fails} FAIL`);
 const engineErrors = H.errors.filter((m) => m.startsWith('ERR'));
 if (engineErrors.length) console.log(`engine console errors (${engineErrors.length}): ${[...new Set(engineErrors)].slice(0, 5).join(' | ')}`);

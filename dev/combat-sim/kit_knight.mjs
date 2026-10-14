@@ -429,6 +429,12 @@ const tagsOf = (id) => SKILLS[id].tags;
   ok('pmkn.avatar cleanses root and slow, grants avatar', !p.statuses.has('root') && !p.statuses.has('slow') && p.statuses.has('avatar'));
 }
 
+// ---- level 1 (owner rule): every spec starts at level 1 with >= 4 usable core skills on its bar (basic / auto attack excluded)
+for (const sid of ["knight_protector","knight_blademaster"]) {
+  const spec = SPECS[sid];
+  const l1 = Object.entries(spec.defaultBar).filter(([slot, id]) => slot !== 'lmb' && id !== spec.basic && SKILLS[id]?.unlockLevel <= 1 && (spec.unlock?.[id] ?? 1) <= 1);
+  ok(`kit_knight.l1 ${sid} level 1 has >= 4 usable skills`, l1.length >= 4, l1.map(([s, id]) => `${s}=${id}`).join(','));
+}
 console.log(fails === 0 ? '\nkit.knight (pmkn): all checks PASS' : `\nkit.knight (pmkn): ${fails} FAIL`);
 H.restoreConsole?.();
 process.exit(fails === 0 ? 0 : 1);
