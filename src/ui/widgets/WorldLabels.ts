@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { UI, WorldLabelHandle } from '../UI';
+import { G } from '../../game/G';
 import { clampN, div, setClass, setStyle } from './dom';
 
 /** Labels are fully opaque up to this fraction of their maxDistance and fade out linearly to 0 at maxDistance. */
@@ -16,13 +17,35 @@ const SMOOTH = 14;
 const MEASURE_EVERY = 500;
 /** Labels (NPC names, speech bubbles, loot names) keep this many px inside the viewport: clamped, not clipped at the edge. */
 const EDGE = 8;
+/** Non-quest NPC name labels are fully opaque to NPC_FADE_FROM m and gone at NPC_MAX_M. */
+const NPC_FADE_FROM = 25;
+const NPC_MAX_M = 30;
+/** Quest givers keep their name label out to QUEST_MAX_M (the same range as their quest marker). */
+const QUEST_MAX_M = 40;
+/** HUD panels no label is drawn under: the same selector and re-read interval as Nameplates.ts. */
+const HUD_SEL = '.qt, .trk, .mm';
+const HUD_RECT_EVERY = 150;
+/** Enemy nameplates are DOM `.np` plates in the same layer: a prop label is hidden while one overlaps it. */
+const PLATE_SEL = '.np';
+/** Quest markers and guide tags are labels of their NPC (`qm ...` / `guide-tag`); an NPC with one shown is a quest giver. */
+const QUEST_HTML = /class="(?:qm |guide-tag)/;
+
+/** How a label is treated by the distance rules of update(). */
+type Role = 'quest' | 'questNpc' | 'npc' | 'prop' | 'other';
 
 interface Entry {
   obj: THREE.Object3D;
   el: HTMLElement;
   handle: WorldLabelHandle;
   offsetY: number;
+  /** Distance limit given by the owner (m). */
+  baseMax: number;
+  /** Effective distance limit and fade start (m) for this frame, set by applyRole(). */
   maxDist: number;
+  fadeFrom: number;
+  /** Entity kind of `obj` ('' until the entity is registered). */
+  kind: string;
+  role: Role;
   visible: boolean;
   orphanAt: number;
   html: string;
@@ -37,7 +60,7 @@ interface Entry {
   depth: number;
   /** Hovered or the current hover / Tab target: wins the declutter and is drawn on top. */
   focused: boolean;
-  /** Opacity wanted this frame (distance fade; 0 when behind the camera, too far, or declutter-hidden). */
+  /** Opacity wanted this frame (distance fade; 0 when behind the camera, too far, hidden by a rule or declutter-hidden). */
   wantAlpha: number;
   /** Displayed opacity and lift (px above the anchor), smoothed toward wantAlpha / liftTarget. */
   alpha: number;
@@ -73,6 +96,13 @@ export class WorldLabels {
   /** Scratch lists for the measure pass (reused every frame). */
   private readonly stale: Entry[] = [];
   private readonly revealed: Entry[] = [];
+  /** Objects whose quest marker or guide tag is shown this frame (their NPC is a quest giver). */
+  private readonly questObjs = new Set<THREE.Object3D>();
+  /** Screen boxes of the enemy nameplates drawn this frame (read only when a prop label needs them). */
+  private readonly plates: Box[] = [];
+  /** Screen rects of the HUD panels in layer px (see HUD_SEL); a hard blocker for every label. */
+  private hud: Box[] = [];
+  private hudAt = -1e9;
 
   constructor(private ui: UI, private layer: HTMLElement) {}
 
@@ -90,10 +120,11 @@ export class WorldLabels {
         opts.onClick!();
       });
     }
+    const baseMax = Math.max(1, opts.maxDistance ?? 28);
     const entry: Entry = {
       obj: object, el, handle: null as unknown as WorldLabelHandle,
-      offsetY: opts.offsetY ?? 2.4, maxDist: Math.max(1, opts.maxDistance ?? 28), visible: true,
-      orphanAt: 0, html, w: 0, h: 0, measuredAt: -1e9, x: 0, y: 0, depth: 0, focused: false,
+      offsetY: opts.offsetY ?? 2.4, baseMax, maxDist: baseMax, fadeFrom: baseMax * FADE_START, kind: '', role: 'other',
+      visible: true, orphanAt: 0, html, w: 0, h: 0, measuredAt: -1e9, x: 0, y: 0, depth: 0, focused: false,
       wantAlpha: 0, alpha: 0, lift: 0, liftTarget: 0,
     };
     entry.handle = {
@@ -122,10 +153,12 @@ export class WorldLabels {
   }
 
   /**
-   * Per-frame layout. Visible labels are projected, faded by distance (opaque to 70 % of maxDistance, gone at maxDistance),
-   * hidden when behind the camera, then decluttered: nearest first (focused label first), a label whose box overlaps an
-   * already placed one is lifted in steps (max MAX_NUDGE_STEPS), and hidden if it still does not fit. Lift and opacity are
-   * lerped so the labels glide rather than jump.
+   * Per-frame layout. Visible labels are projected and faded by distance, hidden when behind the camera, then decluttered:
+   * nearest first (focused label first), a label whose box overlaps an already placed one or a HUD panel is lifted in steps
+   * (max MAX_NUDGE_STEPS), and hidden if it still does not fit. Distance rules by role (applyRole): non-quest NPC names fade
+   * out from NPC_FADE_FROM m, quest givers keep their name out to QUEST_MAX_M m, and a prop label is hidden while an enemy
+   * nameplate overlaps it. Lift and opacity are lerped so the labels glide rather than jump.
+   * Call after the nameplates are laid out for the frame (the prop rule reads their rects).
    */
   update(now: number, dt: number, focus: LabelFocus = {}): void {
     const ui = this.ui;
@@ -133,7 +166,12 @@ export class WorldLabels {
     if (!cam) return;
     _c.setFromMatrixPosition(cam.matrixWorld);
 
-    // 1. project + distance fade + behind-camera cull
+    // 0. the NPCs that have a quest marker or guide tag shown this frame
+    const questObjs = this.questObjs;
+    questObjs.clear();
+    for (const e of this.entries) if (e.visible && QUEST_HTML.test(e.html)) questObjs.add(e.obj);
+
+    // 1. project + role distance fade + behind-camera cull
     const cands = this.cands;
     cands.length = 0;
     for (const e of this.entries) {
@@ -154,14 +192,14 @@ export class WorldLabels {
       // view space looks down -Z: anything at z >= 0 is behind the camera
       _v.copy(_w).applyMatrix4(cam.matrixWorldInverse);
       if (_v.z >= 0) continue;
+      this.applyRole(e, questObjs);
       const d = _w.distanceTo(_c);
-      const t = d / e.maxDist;
-      if (t >= 1) continue;
+      if (d >= e.maxDist) continue;
       if (!ui.projectWorld(_w.x, _w.y, _w.z, _p)) continue;
       e.x = _p.x;
       e.y = _p.y;
       e.depth = d;
-      e.wantAlpha = t <= FADE_START ? 1 : (1 - t) / (1 - FADE_START);
+      e.wantAlpha = d <= e.fadeFrom ? 1 : (e.maxDist - d) / (e.maxDist - e.fadeFrom);
       const id = e.obj.userData.entityId as number | undefined;
       e.focused = (id !== undefined && (id === focus.hoverId || id === focus.targetId)) || e.el.matches(':hover');
       cands.push(e);
@@ -174,9 +212,10 @@ export class WorldLabels {
     if (stale.length) this.measureAll(stale, now);
 
     // 2b. keep the labels inside the window: a label partly off screen is pulled in by EDGE px (no clipping at the edge);
-    // a label fully off screen is hidden instead of being pinned to the edge
+    // a label fully off screen is hidden instead of being pinned to the edge; a prop label under an enemy plate is hidden
     const vw = ui.viewW;
     const vh = ui.viewH;
+    const plates = cands.some((e) => e.role === 'prop') ? this.readPlates() : null;
     let kept = 0;
     for (const e of cands) {
       const hw = e.w / 2;
@@ -186,11 +225,18 @@ export class WorldLabels {
       }
       e.x = clampN(e.x, EDGE + hw, vw - EDGE - hw);
       e.y = clampN(e.y, EDGE + e.h, vh - EDGE);
+      if (e.role === 'prop' && plates && plates.some((p) => overlaps(boxOf(e, 0), p))) {
+        e.wantAlpha = 0;
+        continue;
+      }
       cands[kept++] = e;
     }
     cands.length = kept;
 
-    // 3. declutter: focused first, then nearest first; nudge up in steps until the box is free
+    // 3. declutter: focused first, then nearest first; nudge up in steps until the box is free of labels and HUD panels
+    this.refreshHud(now);
+    const hud = this.hud;
+    const onHud = (b: Box): boolean => hud.some((h) => overlaps(b, h));
     cands.sort((a, b) => (a.focused !== b.focused ? (a.focused ? -1 : 1) : a.depth - b.depth));
     const placed = this.placed;
     placed.length = 0;
@@ -202,6 +248,7 @@ export class WorldLabels {
         // a lifted label keeps its top inside the window
         if (s > 0 && e.y - lift - e.h < EDGE) break;
         const box = boxOf(e, lift);
+        if (onHud(box)) continue;
         let hit = false;
         for (const p of placed) {
           if (overlaps(box, p)) {
@@ -239,6 +286,67 @@ export class WorldLabels {
       setStyle(e.el, 'zIndex', String(e.focused ? 1001 : Math.max(1, 1000 - Math.round(e.depth))));
       setClass(e.el, 'far', e.depth > e.maxDist * 0.6);
     }
+  }
+
+  /** Sets the role of a label and its distance limit / fade start for this frame (see the Role type). */
+  private applyRole(e: Entry, questObjs: Set<THREE.Object3D>): void {
+    const quest = QUEST_HTML.test(e.html);
+    // speech bubbles are anchored on their speaker (an NPC object): they are not NPC names
+    const kind = quest || e.el.classList.contains('wl-bubble') ? '' : this.kindOf(e);
+    let role: Role;
+    if (quest) role = 'quest';
+    else if (kind === 'npc') role = questObjs.has(e.obj) ? 'questNpc' : 'npc';
+    else if (kind === 'interactable' || kind === 'prop') role = 'prop';
+    else role = 'other';
+    e.role = role;
+    if (role === 'npc') {
+      e.maxDist = NPC_MAX_M;
+      e.fadeFrom = NPC_FADE_FROM;
+    } else if (role === 'questNpc') {
+      e.maxDist = QUEST_MAX_M;
+      e.fadeFrom = QUEST_MAX_M * FADE_START;
+    } else {
+      e.maxDist = e.baseMax;
+      e.fadeFrom = e.baseMax * FADE_START;
+    }
+  }
+
+  /** Entity kind of the label's object, looked up once the entity is registered ('' while it is not). */
+  private kindOf(e: Entry): string {
+    if (e.kind) return e.kind;
+    const id = e.obj.userData.entityId as number | undefined;
+    const ent = id === undefined ? undefined : G.world?.entities.get(id);
+    if (ent) e.kind = ent.kind;
+    return e.kind;
+  }
+
+  /** Re-read the HUD panel rects (quest tracker, minimap) every HUD_RECT_EVERY ms; hidden panels (zero size) are skipped. */
+  private refreshHud(now: number): void {
+    if (now - this.hudAt < HUD_RECT_EVERY) return;
+    this.hudAt = now;
+    const lr = this.layer.getBoundingClientRect();
+    const out: Box[] = [];
+    document.querySelectorAll<HTMLElement>(HUD_SEL).forEach((el) => {
+      if (this.layer.contains(el)) return;
+      const r = el.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1) return;
+      out.push({ x0: r.left - lr.left, y0: r.top - lr.top, x1: r.right - lr.left, y1: r.bottom - lr.top });
+    });
+    this.hud = out;
+  }
+
+  /** Screen boxes of the enemy nameplates that are drawn now (display:none plates are skipped). */
+  private readPlates(): Box[] {
+    const lr = this.layer.getBoundingClientRect();
+    const out = this.plates;
+    out.length = 0;
+    this.layer.querySelectorAll<HTMLElement>(PLATE_SEL).forEach((el) => {
+      if (el.style.display === 'none') return;
+      const r = el.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1) return;
+      out.push({ x0: r.left - lr.left, y0: r.top - lr.top, x1: r.right - lr.left, y1: r.bottom - lr.top });
+    });
+    return out;
   }
 
   /**
