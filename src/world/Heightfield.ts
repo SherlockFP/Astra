@@ -28,7 +28,7 @@ export const VERT = {
   TOL_MELEE: 2.5,       // combat height gate (CM §13): |feetY − planeY| ≤ this
   LOW_RAIL: 1.2,        // projectiles/camera rays pass over LOW cells above floor + this
   CEIL_LEGACY: 4.0,     // wall piece height / legacy geometry (rock mass sits at 3.86)
-  CEIL_NEW_DEFAULT: 6,  // kit tall() helper default
+  CEIL_NEW_DEFAULT: 8,  // kit tall() helper default (WoW scale: 8 m = 4.3 x 1.85 m character)
   CEIL_MIN: 3.0,        // validator: ceiling − highest floor in room
   HEAD_H: 2.4,          // jump head clearance uses actor.height
   FALL_FREE: 4.0,       // landing drop that costs nothing (m)
