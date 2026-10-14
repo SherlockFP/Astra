@@ -896,12 +896,13 @@ export class DungeonScene implements GameScene {
    */
   private spawnWorldEntrances(world: World, built: BuiltDungeon, def: DungeonDef): void {
     for (const e of def.world?.entrances ?? []) {
+      const band = getDungeon(e.dungeonId)?.levelRange;
       const tx = tileToWorld(e.pos[0]), tz = tileToWorld(e.pos[1]);
       const s = built.nav.nearestWalkable(tx, tz, 6) ?? { x: tx, z: tz };
       const door = new PanelProp(world.allocLocalId(), {
         parts: [{ url: propUrl('mplus_portal'), scale: 0.5 }],
         name: e.name,
-        sub: `Önerilen seviye ${e.minLevel}+`,
+        sub: `Önerilen seviye ${band && band[0] !== band[1] ? `${band[0]}-${band[1]}` : band?.[0] ?? e.minLevel}`,
         prompt: `${e.name}: Zindana Gir`,
         panel: 'keystone',
         data: { dungeonId: e.dungeonId, returnTo: { dungeonId: def.id, spawn: { type: 'entrance', id: e.id } } },
