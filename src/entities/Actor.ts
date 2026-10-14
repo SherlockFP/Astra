@@ -81,7 +81,11 @@ export abstract class Actor extends Entity {
 
   /** Final value of a stat = computed stats + active status modifiers. Combat/AI read stats through this. */
   getStat(id: StatId): number {
-    return (this.stats[id] ?? 0) + (this.statuses.getStatMods()[id] ?? 0);
+    const mods = this.statuses.getStatMods();
+    const v = (this.stats[id] ?? 0) + (mods[id] ?? 0);
+    // status armour percentages (Ayı Biçimi, Demir Post, Doğruluk) scale the armour the actor has; they were never folded before
+    if (id === 'armor') return v * (1 + (mods.armorPct ?? 0));
+    return v;
   }
 
   /** Called by StatusEffects whenever statuses are added/removed/stack-changed (Player refreshes stats). */

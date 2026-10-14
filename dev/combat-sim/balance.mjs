@@ -530,6 +530,9 @@ function runTank(spec, L, key) {
   p.targetId = boss.id;
   const meter = damageMeter(p, new Set([boss.id, ...adds.map((a) => a.id)]));
   const spy = installHealSpy(p, []);
+  // the Sarsma pool drains back as damage (kind dot, no source): it is taken damage too, so it counts in DTPS and the time to die
+  const drained = { hp: 0 };
+  const offDrain = G.events.on('damage', (ev) => { if (ev && ev.targetId === p.id && ev.sourceId === null && ev.kind === 'dot' && ev.amount > 0) drained.hp += ev.amount; });
   const lines = aplFor(spec, ROT[spec.id].st);
   const sched = { L, clock: 0, swing: 0.5, magic: 2, add: 1 };
   const taken = { raw: 0, mit: 0, hits: 0, avoided: 0 };
@@ -551,6 +554,8 @@ function runTank(spec, L, key) {
     frame();
   }
   offDeath();
+  offDrain();
+  taken.mit += drained.hp;
   spy.restore();
   meter.stop();
   const lived = f * DT; // the whole fight, or up to the death: rates are per second alive (a dead tank's TTD is its time to die)
