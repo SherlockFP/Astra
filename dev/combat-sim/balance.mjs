@@ -1,4 +1,4 @@
-// BALANCE PASS (docs/BALANCE.md): headless, deterministic per-spec sim of the 17 registered specs (7 classes) at levels 10 / 30 / 60.
+// BALANCE PASS (docs/BALANCE.md): headless, deterministic per-spec sim of the 41 playable specs (classes.ts `specs`) at levels 10 / 30 / 60.
 // Run:   node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/balance.mjs [--level=30] [--spec=knight_protector] [--quick] [--no-check] [--json] [--gear]
 //        --quick shortens every fight (smoke run); --no-check prints the table without the band gate; --gear prints the generated gear only.
 //        Exit code 1 when a band check fails (or a fight throws).
@@ -41,16 +41,24 @@ const { Combat } = await H.imp('combat/Combat.ts');
 const { SkillSystem } = await H.imp('combat/SkillSystem.ts');
 const { HitShapes } = await H.imp('combat/HitShapes.ts');
 const { Minions } = await H.imp('combat/Minions.ts');
-const { ROTATIONS_KIT_KNIGHT } = await H.imp('data/rotations_kit_knight.ts');
+const { ROTATIONS_KIT_ARCHER } = await H.imp('data/rotations_kit_archer.ts');
 const { ROTATIONS_KIT_BARBARIAN } = await H.imp('data/rotations_kit_barbarian.ts');
+const { ROTATIONS_KIT_DEMONHUNTER } = await H.imp('data/rotations_kit_demonhunter.ts');
+const { ROTATIONS_KIT_DRUID } = await H.imp('data/rotations_kit_druid.ts');
+const { ROTATIONS_KIT_EVOKER } = await H.imp('data/rotations_kit_evoker.ts');
+const { ROTATIONS_KIT_KNIGHT } = await H.imp('data/rotations_kit_knight.ts');
 const { ROTATIONS_KIT_MAGE } = await H.imp('data/rotations_kit_mage.ts');
-const { ROTATIONS_KIT_ROGUE } = await H.imp('data/rotations_kit_rogue.ts');
-const { ROTATIONS_KIT_PALADIN } = await H.imp('data/rotations_kit_paladin.ts');
-const { ROTATIONS_KIT_WARLOCK } = await H.imp('data/rotations_kit_warlock.ts');
+const { ROTATIONS_KIT_MONK } = await H.imp('data/rotations_kit_monk.ts');
 const { ROTATIONS_KIT_NECROMANCER } = await H.imp('data/rotations_kit_necromancer.ts');
+const { ROTATIONS_KIT_PALADIN } = await H.imp('data/rotations_kit_paladin.ts');
+const { ROTATIONS_KIT_PRIEST } = await H.imp('data/rotations_kit_priest.ts');
+const { ROTATIONS_KIT_ROGUE } = await H.imp('data/rotations_kit_rogue.ts');
+const { ROTATIONS_KIT_SHAMAN } = await H.imp('data/rotations_kit_shaman.ts');
+const { ROTATIONS_KIT_WARLOCK } = await H.imp('data/rotations_kit_warlock.ts');
 const { SKILLS } = await H.imp('data/skills.ts');
+const { stasisStored } = await H.imp('combat/skills/evokerKit.ts');
 
-const ROT = { ...ROTATIONS_KIT_KNIGHT, ...ROTATIONS_KIT_BARBARIAN, ...ROTATIONS_KIT_MAGE, ...ROTATIONS_KIT_ROGUE, ...ROTATIONS_KIT_PALADIN, ...ROTATIONS_KIT_WARLOCK, ...ROTATIONS_KIT_NECROMANCER };
+const ROT = { ...ROTATIONS_KIT_ARCHER, ...ROTATIONS_KIT_BARBARIAN, ...ROTATIONS_KIT_DEMONHUNTER, ...ROTATIONS_KIT_DRUID, ...ROTATIONS_KIT_EVOKER, ...ROTATIONS_KIT_KNIGHT, ...ROTATIONS_KIT_MAGE, ...ROTATIONS_KIT_MONK, ...ROTATIONS_KIT_NECROMANCER, ...ROTATIONS_KIT_PALADIN, ...ROTATIONS_KIT_PRIEST, ...ROTATIONS_KIT_ROGUE, ...ROTATIONS_KIT_SHAMAN, ...ROTATIONS_KIT_WARLOCK };
 
 /** Bands (the brief's targets). */
 const BAND = { dpsSpread: 0.08, tankLo: 0.70, tankHi: 0.80, aoeLeaderMax: 1.35, ttdSpread: 0.05 };
@@ -225,7 +233,7 @@ function compile(line, spec) {
     .trim();
   const m = clean.match(/^(\S+)(?:\s+if\s+(.*))?$/);
   if (!m) throw new Error(`${spec.id}: bad APL line "${line}"`);
-  const self = m[1];
+  const self = m[1].replace(/@.*$/, ''); // evoker_fire_breath@rank=1: the rank suffix selects a rank, the bar slot is the skill
   let c = (m[2] ?? 'true');
   // bare cd / charges name the line's own skill (cd == 0, charges >= 1)
   c = c.replace(/\bcd\b(?!\s*\()/g, `E.cd('${self}')`).replace(/\bcharges\b(?!\s*\()/g, `E.charges('${self}')`);
@@ -236,6 +244,8 @@ function compile(line, spec) {
     [/cd_ready\((\w+)\)/g, "E.cdReady('$1')"],
     [/charges\((\w+)\)/g, "E.charges('$1')"],
     [/\bcd\((\w+)\)/g, "E.cd('$1')"],
+    [/lowest\.status:(\w+)/g, "E.lowestStatus('$1')"], // healer fight: the most injured ally carries the status
+    [/lowest\.hp%/g, 'E.allyLowPct'],
     [/target\.status:(\w+)/g, "E.tStatus('$1')"],
     [/target\.stacks:(\w+)/g, "E.tStacks('$1')"],
     [/target\.remaining:(\w+)/g, "E.tRemaining('$1')"],
@@ -250,12 +260,15 @@ function compile(line, spec) {
     [/ally\.low%/g, 'E.allyLowPct'],
     [/allies\.injured/g, 'E.alliesInjured'],
     [/allies\.linked/g, 'E.alliesLinked'],
+    [/tank\.hp%/g, 'E.tankHpPct'],
     [/\bhp%/g, 'E.hpPct'],
     [/\bres%/g, 'E.resPct'],
     [/\bmoving\b/g, 'E.moving'],
     [/\bbehind\b/g, 'E.behind'],
     [/\b(?:resource|res)\b/g, 'E.res'],
     [/\bhp\b/g, 'E.hpFrac'],
+    [/\binjured\b/g, 'E.alliesInjured'], // bare `injured`: allies below 90 % (as allies.injured)
+    [/\bstored\b/g, 'E.stored'], // evoker Durgunluk store (heals held by stasis)
     [/\btargets\b/g, 'E.targets'],
     [/\btgt\b/g, 'E.targets'],
   ];
@@ -280,7 +293,7 @@ const APL_NOTES = new Set();
 function aplFor(spec, list) {
   const out = [];
   for (const line of list) {
-    const first = line.split(/\s/)[0];
+    const first = line.split(/\s/)[0].replace(/@.*$/, '');
     if (first === 'lmb') continue;
     if (!SKILLS[first]) throw new Error(`${spec.id}: APL names an unknown skill "${first}"`);
     if (/\s/.test(line.trim()) && !/\sif\s/.test(stripAnnotations(line))) { APL_NOTES.add(`${spec.id}: not modelled "${line}"`); continue; }
@@ -306,6 +319,8 @@ function makeEnv(p, e, enemies, allies) {
     pips: (id) => G.skills.pipCount(p, id),
     tHpPct: e ? (e.hp / e.maxHp) * 100 : 0,
     tHpFrac: e ? e.hp / e.maxHp : 0,
+    lowestStatus: (id) => { const a = allies.length ? allies.reduce((m, x) => (x.hp / x.maxHp < m.hp / m.maxHp ? x : m)) : null; return !!a && a.statuses.has(id); },
+    tankHpPct: allies.length ? (allies[0].hp / allies[0].maxHp) * 100 : 100, // healer fight: allies[0] is the reference tank
     allyLowPct: allies.length ? Math.min(...allies.map((a) => (a.hp / a.maxHp) * 100)) : 100,
     alliesInjured: allies.filter((a) => a.hp < a.maxHp * 0.9).length,
     alliesLinked: 0,
@@ -319,6 +334,7 @@ function makeEnv(p, e, enemies, allies) {
     resPct: (p.resource / Math.max(1, p.maxResource)) * 100,
     moving: false,
     behind: false,
+    stored: stasisStored(p),
     targets: enemies.filter((x) => !x.isDead && !x.removed).length,
   };
 }
@@ -484,7 +500,7 @@ function runHeal(spec, L, key) {
   for (let f = 0; f < Math.round(DURATION.heal / DT); f++) {
     sched.clock = f * DT;
     H.setAimTarget(boss);
-    pressApl(p, lines, makeEnv(p, boss, [boss], party.slice(1)), aim);
+    pressApl(p, lines, makeEnv(p, boss, [boss], party), aim);
     // the reference tank takes the boss profile through its own armour; DPS allies take the party stream
     for (const hit of dueHits(sched, boss.id, [boss.id], ref)) {
       const lost = G.combat.mitigate(tank, hit.amount, hit.type, L);
@@ -512,7 +528,8 @@ const median = (xs) => { const s = [...xs].sort((a, b) => a - b); return s[Math.
 const pct = (x) => (x * 100).toFixed(1) + '%';
 const fmt = (x) => (Number.isFinite(x) ? Math.round(x).toLocaleString('en-US').replace(/,/g, ' ') : '-');
 
-const specs = Object.values(SPECS).filter((s) => (s.classId in CLASSES) && (!SPEC_FILTER || SPEC_FILTER.includes(s.id)));
+// playable = listed in its class (classes.ts `specs`; a class with no list, the mage, takes all its registered specs); legacy stubs such as rogue_alchemist are registered but not pickable
+const specs = Object.values(SPECS).filter((s) => (s.classId in CLASSES) && (CLASSES[s.classId].specs ? CLASSES[s.classId].specs.includes(s.id) : true) && (!SPEC_FILTER || SPEC_FILTER.includes(s.id)));
 const rangeFor = (id) => rangeOf(SPECS[id]);
 
 if (args.gear) { // gear report: what the best-in-slot policy equipped per spec and level (no fights)
