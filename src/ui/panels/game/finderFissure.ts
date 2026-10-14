@@ -77,17 +77,22 @@ export class FissureTab {
     return out;
   }
 
+  /** The theme the rift will use ('random' resolves from the seed). */
+  private themeId(): FissureThemeId {
+    return this.theme === 'random' ? FISSURE_THEMES[this.seed % FISSURE_THEMES.length] : this.theme;
+  }
+
   private unlock(t: FissureTier): { ok: boolean; reason: string } {
     const lvl = G.character?.level ?? 1;
-    return fissureUnlock(t, lvl, this.clears(), CLEAR_GATES_OFF);
+    return fissureUnlock(t, lvl, this.clears(), CLEAR_GATES_OFF, THEMES[this.themeId()]?.level);
   }
 
   private level(t: FissureTier = this.tier): number {
-    return fissureEnemyLevel(t, partyLevels().avgLevel);
+    return fissureEnemyLevel(t, partyLevels().avgLevel, THEMES[this.themeId()]?.level);
   }
 
   private spec(): FissureSpec {
-    const theme: FissureThemeId = this.theme === 'random' ? FISSURE_THEMES[this.seed % FISSURE_THEMES.length] : this.theme;
+    const theme = this.themeId();
     return { theme, tier: this.tier, level: this.level(), seed: this.seed, v: FISSURE_VERSION };
   }
 

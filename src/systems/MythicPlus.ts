@@ -10,6 +10,7 @@ import type { Enemy } from '../entities/Enemy';
 import type { Player } from '../entities/Player';
 import type { HitShapeSpec } from '../combat/HitShapes';
 import { Affixes, isAffixUnit } from './Affixes';
+import { partyScales } from './instanceScaling';
 import {
   COUNTDOWN_SEC, DEATH_PENALTY_SEC, DIFFICULTY_MULT, MAX_KEY_LEVEL, MIN_KEY_LEVEL, MPLUS_TR, MYTHIC_AFFIXES,
   affixesForWeek, computeRunScore, currentWeek, dungeonScore, isAffixId, keystoneTitle, upgradeLevelsFor,
@@ -51,11 +52,6 @@ export function mplusLevelMult(level: number): number {
   return 1.08 ** 9 * 1.1 ** (L - 10);
 }
 
-/** Enemy HP multiplier for the party size (Mythic+ only). Index = player count 1..5. */
-export const MPLUS_PARTY_HP: Readonly<Record<1 | 2 | 3 | 4 | 5, number>> = { 1: 0.45, 2: 0.62, 3: 0.78, 4: 0.89, 5: 1.0 };
-
-/** Enemy damage multiplier for the party size: x0.85 for 1-2 players, 1 otherwise (Mythic+ only). */
-export const mplusPartyDmg = (partySize: number): number => (partySize <= 2 ? 0.85 : 1);
 
 /**
  * Encounter adds (rank 'miniboss' or tag 'encounter_boss', spawned by a boss encounter) take Tyrannical and not Fortified
@@ -186,7 +182,7 @@ export class MythicPlus {
       dungeonId: params.dungeonId, difficulty: params.difficulty, keyLevel, affixes: [...affixes], seed: (params.seed >>> 0) || 1,
       started: false, startTime: 0, elapsed: 0, timerSec: mplus ? def?.timerSec ?? 0 : 0, deaths: 0, deathPenaltySec: 0,
       forces: 0, forcesRequired: def?.forcesRequired ?? 0, bossesKilled: [], bossesTotal: def?.bosses.length ?? 0,
-      completed: false, failed: false, inTime: false, upgradeLevels: 0, countdown: 0,
+      completed: false, failed: false, inTime: false, upgradeLevels: 0, countdown: 0, partySize: this.params.partySize,
     };
     this.begun = false;
     this.keyHandled = false;
@@ -309,30 +305,66 @@ export class MythicPlus {
   }
 
   /**
-   * HP/damage multipliers for enemies in the current run (1/1 outside runs). Party HP scaling is NOT included (see partyHpMult).
-   * Mythic+ damage also takes the x0.85 for 1-2 players. `encounterAdd`: rank 'miniboss' / tag 'encounter_boss' adds (isEncounterAdd).
+   * HP/damage multipliers for enemies in the current run (1/1 outside runs). Party HP scaling is NOT included (see partyHpMult),
+   * the party damage factor IS (partyFactors). `encounterAdd`: rank 'miniboss' / tag 'encounter_boss' adds (isEncounterAdd).
    */
   enemyScaling(isBoss: boolean, encounterAdd = false): { hp: number; dmg: number } {
     const s = this.state;
     if (!s) return { hp: 1, dmg: 1 };
+    const party = this.partyFactors(isBoss);
     if (s.difficulty === 'mythicplus') {
       const sc = this.scalingFor(s.keyLevel, s.affixes, isBoss, encounterAdd);
-      return { hp: sc.hp, dmg: sc.dmg * mplusPartyDmg(this.params?.partySize ?? 1) };
+      return { hp: sc.hp, dmg: sc.dmg * party.dmg };
     }
-    if (this.fissure) return fissureScaling(this.fissure, isBoss);
+    if (this.fissure) {
+      const f = fissureScaling(this.fissure, isBoss);
+      return { hp: f.hp, dmg: f.dmg * party.dmg };
+    }
     const d = DIFFICULTY_MULT[s.difficulty as 'normal' | 'heroic' | 'mythic'] ?? DIFFICULTY_MULT.normal;
-    return { hp: d.hp, dmg: d.dmg };
+    return { hp: d.hp, dmg: d.dmg * party.dmg };
   }
 
-  /**
-   * HP multiplier for the party size of the current run: Mythic+ table {1: 0.45, 2: 0.62, 3: 0.78, 4: 0.89, 5: 1.0};
-   * other modes x(1 + 0.6 (n-1)). 1 outside runs.
-   */
+  /** Party-size factors of the current run (instanceScaling.partyScales): Mythic+ 1 / 1, the rest by party size (solo bosses too). */
+  partyFactors(isBoss: boolean): { hp: number; dmg: number } {
+    const p = this.params;
+    if (!p) return { hp: 1, dmg: 1 };
+    const s = partyScales(p.partySize, p.difficulty === 'mythicplus' ? 'mythicplus' : 'normal');
+    return { hp: s.hp, dmg: s.dmg * (isBoss ? s.bossDmg : 1) };
+  }
+
+  /** HP multiplier for the party size of the current run (instanceScaling.partyScales). 1 outside runs and in Mythic+. */
   partyHpMult(): number {
     const p = this.params;
     if (!p) return 1;
-    if (p.difficulty === 'mythicplus') return MPLUS_PARTY_HP[clamp(Math.floor(p.partySize) || 1, 1, 5) as 1 | 2 | 3 | 4 | 5];
-    return 1 + 0.6 * (clamp(Math.floor(p.partySize) || 1, 1, 5) - 1);
+    return partyScales(p.partySize, p.difficulty === 'mythicplus' ? 'mythicplus' : 'normal').hp;
+  }
+
+  /**
+   * HOST: the party size changed during the run (a member joined or left). Every live enemy spawned with party factors is rescaled
+   * by the ratio (its HP keeps its fraction) and the new size is replicated with the run state, so peers spawn the same numbers.
+   */
+  syncPartySize(n: number): void {
+    const p = this.params;
+    if (!p || !this.state || !this.isHost) return;
+    const size = clamp(Math.floor(n) || 1, 1, 5);
+    if (size === p.partySize) return;
+    p.partySize = size;
+    this.state.partySize = size;
+    const world = G.world;
+    if (world) {
+      for (const e of world.entities.values()) {
+        const en = e as Enemy;
+        if (en.kind !== 'enemy' || !en.partyScale || en.isDead) continue;
+        const next = this.partyFactors(en.def.rank === 'boss');
+        const ratioHp = next.hp / en.partyScale.hp;
+        const ratioDmg = next.dmg / en.partyScale.dmg;
+        en.maxHp = Math.max(1, Math.round(en.maxHp * ratioHp));
+        en.hp = Math.max(1, Math.min(en.maxHp, Math.round(en.hp * ratioHp)));
+        en.baseDamage *= ratioDmg;
+        en.partyScale = next;
+      }
+    }
+    this.commit(true);
   }
 
   /**
@@ -838,7 +870,7 @@ export class MythicPlus {
     if (!s) return;
     this.emitDiff();
     if (!this.isHost) return;
-    const sig = `${+s.started}|${Math.ceil(s.countdown)}|${s.forces}|${s.bossesKilled.length}|${s.deaths}|${+s.completed}|${+s.failed}|${s.upgradeLevels}`;
+    const sig = `${+s.started}|${Math.ceil(s.countdown)}|${s.forces}|${s.bossesKilled.length}|${s.deaths}|${+s.completed}|${+s.failed}|${s.upgradeLevels}|${s.partySize ?? 0}`;
     const now = this.clock();
     if (force || sig !== this.lastSig || now - this.lastSend >= 1) {
       this.lastSig = sig;
@@ -864,6 +896,8 @@ export class MythicPlus {
     cur.bossesKilled = Array.isArray(raw.bossesKilled) ? raw.bossesKilled.filter((b) => typeof b === 'string').slice(0, 32).map((b) => b.slice(0, 64)) : cur.bossesKilled;
     cur.inTime = !!raw.inTime;
     cur.upgradeLevels = n(raw.upgradeLevels, 0, 3, 0);
+    cur.partySize = n(raw.partySize, 1, 5, cur.partySize ?? 1);
+    if (this.params) this.params.partySize = cur.partySize;
     cur.countdown = n(raw.countdown, 0, 60, 0);
     cur.completed = !!raw.completed;
     cur.failed = !!raw.failed;
@@ -881,6 +915,9 @@ export class MythicPlus {
     const now = this.clock();
     try {
       if (this.isHost) {
+        // a member joined or left: rescale the run (Normal / Heroic / Mitik; Mythic+ takes no party factor)
+        const size = G.net?.partySize ?? 0;
+        if (size > 0 && this.params && size !== this.params.partySize) this.syncPartySize(size);
         if (!s.completed && !s.failed) {
           if (!s.started) {
             if (s.countdown > 0) {

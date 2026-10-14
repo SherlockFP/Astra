@@ -108,6 +108,8 @@ export class Enemy extends Actor {
   readonly interp: Interpolator;
   /** Base damage per hit before ability coefficients (level + rank + M+ scaling applied). */
   baseDamage = 10;
+  /** Party-size factors this enemy was spawned with (instance runs; null = unscaled). MythicPlus.syncPartySize rescales them. */
+  partyScale: { hp: number; dmg: number } | null = null;
   /** Whether the enemy counted for M+ forces already (summoned / split / raised adds are created with this = true). */
   forcesCounted = false;
   /** Extra visual scale multiplier (bolstering etc.). */

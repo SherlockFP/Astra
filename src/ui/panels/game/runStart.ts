@@ -5,6 +5,7 @@ import type { DungeonParams } from '../../../scenes/scenes';
 import { affixesForLevel, clampN, toast } from './base';
 import { HEROIC_LEVEL, type LadderDiff } from './ladder';
 import { difficultyOfTier, fissureId, type FissureSpec } from '../../../world/procgen';
+import { normalEnemyLevel } from '../../../systems/instanceScaling';
 
 /**
  * Run start shared by the Zindan Bulucu (finder) and, later, the keystone panel (UX-52a). Ported from keystone.ts
@@ -19,13 +20,13 @@ export function partyLevels(): { size: number; avgLevel: number } {
   return { size: levels.length, avgLevel: Math.round(levels.reduce((a, b) => a + b, 0) / levels.length) };
 }
 
-/** Enemy level for the run (GDD_CONTENT 6): Normal clamp(avg, min, min + 10), Kahramanlık clamp(avg, 50, 60), Mitik 0 / Mitik+ 60. */
+/**
+ * Enemy level for the run (instanceScaling): Normal = the party average clamped to the dungeon's band [min, max]; Kahramanlık
+ * and Mitik / Mitik+ keep fixed levels (Kahramanlık = the band top, Mitik / Mitik+ 60).
+ */
 export function enemyLevelFor(def: DungeonDef | undefined, diff: LadderDiff, partyAvgLevel: number): number {
-  if (diff === 'normal') {
-    const min = def?.levelRange?.[0] ?? 1;
-    return clampN(partyAvgLevel, min, Math.min(60, min + 10));
-  }
-  if (diff === 'heroic') return clampN(partyAvgLevel, HEROIC_LEVEL, 60);
+  if (diff === 'normal') return normalEnemyLevel(def?.levelRange, partyAvgLevel);
+  if (diff === 'heroic') return clampN(def?.levelRange?.[1] ?? 60, HEROIC_LEVEL, 60);
   return 60;
 }
 

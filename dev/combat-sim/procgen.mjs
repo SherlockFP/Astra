@@ -400,7 +400,7 @@ for (const theme of THEMES_ALL) {
   ok('rules.unlock: normal open, heroic needs level 30 + a normal clear, mitik needs 60 + 3 heroic clears',
     P.fissureUnlock('n', 1, {}).ok && !P.fissureUnlock('h', 29, { n: 5 }).ok && !P.fissureUnlock('h', 30, {}).ok && P.fissureUnlock('h', 30, { n: 1 }).ok
     && !P.fissureUnlock('m', 60, { h: 2 }).ok && P.fissureUnlock('m', 60, { h: 3 }).ok && P.fissureUnlock('m', 60, {}, true).ok);
-  ok('rules.enemy level: normal follows the party, heroic >= 30, mitik 60', P.fissureEnemyLevel('n', 12) === 12 && P.fissureEnemyLevel('h', 12) === 30 && P.fissureEnemyLevel('h', 44) === 44 && P.fissureEnemyLevel('m', 20) === 60 && P.fissureEnemyLevel('n', 99) === 60);
+  ok('rules.enemy level: normal clamps to the band, heroic = band top, mitik 60', P.fissureEnemyLevel('n', 12) === 12 && P.fissureEnemyLevel('n', 12, [15, 60]) === 15 && P.fissureEnemyLevel('n', 12, [1, 35]) === 12 && P.fissureEnemyLevel('h', 12, [1, 35]) === 35 && P.fissureEnemyLevel('h', 12) === 60 && P.fissureEnemyLevel('m', 20) === 60 && P.fissureEnemyLevel('n', 99) === 60); // instanceScaling: fixed levels per band, party level clamped to it
   ok('rules.item level caps 62 / 64 / 68', P.fissureItemLevel('n', 60, true) === 62 && P.fissureItemLevel('h', 60, true) === 64 && P.fissureItemLevel('m', 60, true) === 68 && P.fissureItemLevel('n', 10, false) === 11);
   ok('rules.end rewards scale with tier', P.fissureEndRewards('n', 20, []).gold === 800 && P.fissureEndRewards('m', 60, ['fm_bereket']).gold === Math.round(60 * 160 * 1.25) && P.fissureEndRewards('m', 60, []).dragonCoins === 2);
   const lvl = (l) => P.generateFissure({ theme: 'crypt', tier: 'n', level: l, seed: 5, v: V }).packs.reduce((n, p) => n + p.members.length, 0);

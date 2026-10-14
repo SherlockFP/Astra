@@ -10,7 +10,7 @@ import {
   mmss, openPanel, pct, sfx, tabs, toast, windowFrame, type TabsHandle,
 } from './base';
 import { emptyState } from '../../kit';
-import { startRun } from './runStart';
+import { enemyLevelFor, startRun } from './runStart';
 import {
   HEROIC_LEVEL, bestM0Sec, cardText, difficultyState, gateToast, isStartable, isUnderGeared, recommendedIlvl, requiredLevel, type DiffKind, type DiffState, type LadderDiff,
 } from './ladder';
@@ -124,15 +124,9 @@ export class KeystonePanel extends GamePanel {
     return { size: levels.length, avgLevel: Math.round(levels.reduce((a, b) => a + b, 0) / levels.length) };
   }
 
-  /** Enemy level for the run (GDD_CONTENT 6): Normal clamp(avg, min, min + 10), Kahramanlık clamp(avg, 50, 60), Mitik 0 / Mitik+ 60. */
+  /** Enemy level for the run (runStart.enemyLevelFor, the one rule of the finder and the keystone panel). */
   private enemyLevelFor(def: DungeonDef | undefined, diff: Diff | 'mythicplus'): number {
-    const avg = this.partyInfo().avgLevel;
-    if (diff === 'normal') {
-      const min = def?.levelRange?.[0] ?? 1;
-      return clampN(avg, min, Math.min(60, min + 10));
-    }
-    if (diff === 'heroic') return clampN(avg, HEROIC_LEVEL, 60);
-    return 60;
+    return enemyLevelFor(def, diff === 'mplus' || diff === 'mythicplus' ? 'mythicplus' : diff === 'mythic' ? 'mythic' : diff, this.partyInfo().avgLevel);
   }
 
   protected onOpen(data?: unknown): void {

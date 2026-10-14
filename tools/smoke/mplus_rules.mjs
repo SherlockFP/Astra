@@ -4,7 +4,7 @@
  *   - HP/damage level multiplier x1.08^(L-1) up to +10 (x2.0 at +10), then x1.10 per level;
  *   - Fortified on trash only (+20 % HP, +30 % damage); Tyrannical on bosses and encounter adds (+30 % HP, +15 % damage);
  *   - encounter adds (rank 'miniboss' or tag 'encounter_boss') take Tyrannical, not Fortified;
- *   - party HP table {1: 0.45, 2: 0.62, 3: 0.78, 4: 0.89, 5: 1.0}; damage x0.85 for 1-2 players;
+ *   - Mythic+: no party-size factor (instanceScaling: Normal / Heroic / Mitik only);
  *   - grantForces(n, reason): host only, adds to forces, capped at forcesRequired in Mythic+, calls fx.onForces, toast.
  *
  *   node tools/smoke/mplus_rules.mjs      exit 0 = ok, 1 = failures (each printed)
@@ -39,7 +39,8 @@ register('data:text/javascript,' + encodeURIComponent(hooks));
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
 const M = await import(pathToFileURL(root + 'src/systems/MythicPlus.ts').href);
-const { MythicPlus, mplusLevelMult, mplusPartyDmg, isEncounterAdd, MPLUS_PARTY_HP } = M;
+const { MythicPlus, mplusLevelMult, isEncounterAdd } = M;
+const { partyScales } = await import(pathToFileURL(root + "src/systems/instanceScaling.ts").href);
 
 const failures = [];
 const expect = (cond, msg) => { if (!cond) failures.push(msg); };
@@ -54,9 +55,7 @@ near(mplusLevelMult(11), 1.08 ** 9 * 1.1, 'level 11 multiplier (x1.10 above +10)
 near(mplusLevelMult(12), 1.08 ** 9 * 1.1 ** 2, 'level 12 multiplier');
 
 // party tables
-expect(MPLUS_PARTY_HP[1] === 0.45 && MPLUS_PARTY_HP[2] === 0.62 && MPLUS_PARTY_HP[3] === 0.78 && MPLUS_PARTY_HP[4] === 0.89 && MPLUS_PARTY_HP[5] === 1, 'party HP table values');
-expect(mplusPartyDmg(1) === 0.85 && mplusPartyDmg(2) === 0.85, 'party damage x0.85 for 1-2 players');
-expect(mplusPartyDmg(3) === 1 && mplusPartyDmg(5) === 1, 'party damage x1 for 3-5 players');
+for (const n of [1, 2, 3, 4, 5]) expect(partyScales(n, 'mythicplus').hp === 1 && partyScales(n, 'mythicplus').dmg === 1, 'Mythic+ takes no party-size factor (' + n + ' players)');
 
 // encounter adds
 expect(isEncounterAdd('miniboss') === true, "rank 'miniboss' is an encounter add");
@@ -74,13 +73,13 @@ const start = (over) => {
   globalThis.__toasts = []; globalThis.__onForces = [];
 };
 
-// party HP through the class
-for (const [n, want] of [[1, 0.45], [2, 0.62], [3, 0.78], [4, 0.89], [5, 1.0]]) {
+// party HP through the class: Mythic+ takes no party-size factor
+for (const n of [1, 2, 3, 4, 5]) {
   mp.prepare(params({ partySize: n }));
-  near(mp.partyHpMult(), want, `Mythic+ partyHpMult for ${n} players`);
+  near(mp.partyHpMult(), 1, `Mythic+ partyHpMult for ${n} players`);
 }
 mp.prepare(params({ difficulty: 'normal', keyLevel: 0, affixes: [], partySize: 3 }));
-near(mp.partyHpMult(), 1 + 0.6 * 2, 'non-Mythic+ partyHpMult for 3 players keeps x(1 + 0.6 (n-1))');
+near(mp.partyHpMult(), (1 + 0.6 * 2) * 0.75, 'non-Mythic+ partyHpMult for 3 players: (1 + 0.6 (n-1)) x solo curve 0.75');
 
 // scalingFor: trash gets Fortified, bosses and encounter adds get Tyrannical (not Fortified)
 const L5 = mplusLevelMult(5);
@@ -94,12 +93,12 @@ near(sc.hp, L5 * 1.3, 'encounter add HP takes Tyrannical'); near(sc.dmg, L5 * 1.
 sc = mp.scalingFor(5, ['fortified'], false, true);
 near(sc.hp, L5, 'encounter add does NOT take Fortified (fortified-only key)'); near(sc.dmg, L5, 'encounter add dmg no Fortified');
 
-// enemyScaling: party damage x0.85 at 1-2 players, encounter add flag wired through
+// enemyScaling: Mythic+ takes no party damage at any size, encounter add flag wired through
 start({ partySize: 2 });
 let es = mp.enemyScaling(false, true);
-near(es.hp, L5 * 1.3, 'enemyScaling encounter add HP'); near(es.dmg, L5 * 1.15 * 0.85, 'enemyScaling encounter add dmg incl. x0.85');
+near(es.hp, L5 * 1.3, 'enemyScaling encounter add HP'); near(es.dmg, L5 * 1.15, 'enemyScaling encounter add dmg (no party factor)');
 es = mp.enemyScaling(false);
-near(es.dmg, L5 * 1.3 * 0.85, 'enemyScaling trash dmg incl. x0.85');
+near(es.dmg, L5 * 1.3, 'enemyScaling trash dmg (no party factor)');
 start({ partySize: 4 });
 near(mp.enemyScaling(true).dmg, L5 * 1.15, 'enemyScaling boss dmg at 4 players (no party damage cut)');
 
