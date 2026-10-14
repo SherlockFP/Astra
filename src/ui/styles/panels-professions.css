@@ -5,7 +5,7 @@
 .pg-prof-head span { font-size: 13px; color: #9a8a6a; }
 .pg-prof-desc { font-size: 13.5px; color: #cdbf9d; }
 .pg-prof-sub { font: 700 13px var(--font-head); color: var(--gold, #c9a24a); letter-spacing: 0.04em; margin-top: 4px; }
-.pg-prof-recipe { display: flex; align-items: center; gap: 10px; padding: 7px 10px; background: rgba(12, 8, 6, 0.6); border: 1px solid #3a2c18; }
+.pg-prof-recipe { display: flex; align-items: center; gap: 10px; padding: 7px 10px; background: rgba(12, 8, 6, 0.6); border: 1px solid var(--elv-border); }
 .pg-prof-rmain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .pg-prof-rmain b { font: 700 14.5px var(--font-head); }
 .pg-prof-rmain > span { color: #cdbf9d; font-size: 13px; }

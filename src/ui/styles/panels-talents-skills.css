@@ -4,7 +4,7 @@
 
 .pt-tab-skills { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 8px; overflow: auto; padding: 2px 2px 6px; }
 
-.pt-sk-note { flex: none; font-size: 12px; line-height: 1.4; color: var(--pt-pale); border: 1px solid #474747; background: rgba(0, 0, 0, 0.35); padding: 6px 10px; }
+.pt-sk-note { flex: none; font-size: 12px; line-height: 1.4; color: var(--pt-pale); border: 1px solid #474747; background: var(--ui-well); padding: 6px 10px; }
 .pt-sk-note.is-warn { color: #e0a060; border-color: #7a5a2a; }
 
 .pt-sk-cards { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
@@ -16,19 +16,19 @@
 /* ---- card ---- */
 .pt-sk-card {
   min-width: 0; display: flex; flex-direction: column; gap: 8px; padding: 10px;
-  border: 1px solid #474747; background: #191919; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.7);
+  border: 1px solid #474747; background: var(--ui-well-deep); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.7);
   transition: box-shadow 0.3s ease;
 }
 .pt-sk-card.is-focus { box-shadow: 0 0 0 1px var(--pt-gold); }
 
 .pt-sk-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.pt-sk-ico { width: 40px; height: 40px; flex: none; padding: 4px; border: 1px solid #474747; background: #0b0805; image-rendering: pixelated; }
+.pt-sk-ico { width: 40px; height: 40px; flex: none; padding: 4px; border: 1px solid #474747; background: var(--ui-well-deep); image-rendering: pixelated; }
 .pt-sk-title { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
 .pt-sk-name { font-family: var(--font-head); font-size: 15px; font-weight: 600; color: #e9e9e9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pt-sk-rank { font-size: 11px; color: var(--pt-dim); }
 
 /* mastery bar (Ustalık) */
-.pt-sk-bar { position: relative; height: 16px; flex: none; background: #0a0705; border: 1px solid #474747; overflow: hidden; }
+.pt-sk-bar { position: relative; height: 16px; flex: none; background: var(--ui-well-deep); border: 1px solid #474747; overflow: hidden; }
 .pt-sk-bar-fill { position: absolute; top: 0; bottom: 0; left: 0; width: 0; background: #f0d27a; transition: width 0.4s ease; }
 .pt-sk-bar-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #f2f2f2; text-shadow: var(--sh-text); white-space: nowrap; }
 
@@ -39,7 +39,7 @@
 
 /* ---- tier rungs ---- */
 .pt-sk-rungs { display: flex; flex-direction: column; gap: 6px; }
-.pt-sk-rung { display: flex; flex-direction: column; gap: 4px; padding: 6px; border: 1px solid #343434; background: rgba(0, 0, 0, 0.3); }
+.pt-sk-rung { display: flex; flex-direction: column; gap: 4px; padding: 6px; border: 1px solid var(--elv-border); background: var(--ui-well); }
 .pt-sk-rung.is-open { border-color: #474747; }
 .pt-sk-rung.is-focus { border-color: var(--pt-gold); box-shadow: none; }
 
@@ -50,14 +50,14 @@
 .pt-sk-status { margin-left: auto; color: var(--pt-dim); white-space: nowrap; }
 .pt-sk-rung.is-open .pt-sk-status { color: var(--pt-pale); }
 
-.pt-sk-rung.is-locked { background: rgba(0, 0, 0, 0.45); }
+.pt-sk-rung.is-locked { background: var(--ui-well); }
 .pt-sk-rung.is-locked .pt-sk-tier { color: var(--pt-dim); }
 
 /* A | B choosers */
 .pt-sk-opts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px; }
 .pt-sk-opt {
   display: flex; align-items: flex-start; gap: 6px; min-width: 0; padding: 6px; text-align: left;
-  font: inherit; color: var(--pt-pale); background: rgba(0, 0, 0, 0.35); border: 1px solid #343434; cursor: pointer;
+  font: inherit; color: var(--pt-pale); background: var(--ui-well); border: 1px solid var(--elv-border); cursor: pointer;
 }
 .pt-sk-opt:hover:not(.is-off) { border-color: var(--pt-gold); color: #e9e9e9; }
 .pt-sk-opt.is-off { opacity: 0.5; cursor: default; }
@@ -66,7 +66,7 @@
 .pt-sk-opt.is-picked { opacity: 1; }
 .pt-sk-letter {
   flex: none; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
-  font-family: var(--font-head); font-size: 11px; color: #e9e9e9; border: 1px solid #474747; background: #0b0805;
+  font-family: var(--font-head); font-size: 11px; color: #e9e9e9; border: 1px solid #474747; background: var(--ui-well-deep);
 }
 .pt-sk-opt.is-a .pt-sk-letter { border-color: var(--pt-gold); }
 .pt-sk-opt.is-b .pt-sk-letter { border-color: var(--pt-rune); }

@@ -78,3 +78,17 @@ border. No parchment, no gold, no ornaments.
 - W2 windows: `ui/kit/chrome.ts` shell, buttons, tabs, combined bag, character, spellbook, talents, quest log, chat.
 - W3 menu screens in the same language (the logo keeps its fantasy font).
 Every wave keeps element ids, classes queried by TS and event contracts: skin + default positions only.
+
+## 6. 2026-10-14 owner revision: translucent + rounded
+
+Owner playtest, verbatim: "UI çok siyah — şeffaf iyi, round olsun" (the UI is too black; the translucency is good, make it round).
+This revision overrides §2 and §4 where they say flat, square, black or no blur. Layout, ids and event contracts do not change.
+
+- Glass, not black: `--ui-glass-hud` `rgba(16, 20, 28, 0.55)` for HUD frames, `--ui-glass-win` `rgba(18, 22, 30, 0.72)` for windows, panels and tooltips, `--ui-well` for wells inside a frame. No `#000`, `#111` or `#1a1a1a` fills are left in the skin.
+- Border: `--ui-border` `rgba(255, 255, 255, 0.10)`, 1 px light hairline everywhere (was `#000`).
+- Blur: `backdrop-filter: blur(6px)` on windows and tooltips only, never on per-frame HUD parts. Without backdrop-filter support the glass is more opaque (`@supports` fallback in `kit.css`).
+- Shadow: windows get `0 4px 14px rgba(0, 0, 0, 0.35)`. Hard black offset shadows are softened.
+- Corners: windows, panels, tooltips and modals 8 px; unit frames, cast bars, minimap frame and tracker chips 6 px; buttons, action-bar slots and keycaps 4 px; bars inside frames 3 px; badges, count chips and portraits round.
+- Text: white with a soft shadow `0 1px 2px rgba(0, 0, 0, 0.9), 0 0 4px rgba(0, 0, 0, 0.55)` (replaces the 1 px black outline). Headers and quest titles are warm light gold `#f5d68a` (`--ui-head`), not dark brown.
+- Where it lives: every value is a `--ui-*` token in `ui/styles/tokens.css`. Change the look there. `hud-elvui.css`, `kit.css`, `widgets.css` and the `panels-*` sheets read those tokens.
+- Not covered yet: the boot loading screen keeps its own art, and the gold-brown bevels of the older HUD sheets (`hud-bottom`, `hud-frames`, `hud-extras`, `hud-metin2`) still show where `hud-elvui.css` does not override them.

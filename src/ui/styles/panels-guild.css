@@ -11,7 +11,7 @@
 
 .gd-head {
   display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; padding: 6px 8px;
-  background: var(--elv-backdrop); border: 1px solid var(--elv-border); border-radius: 0; box-shadow: none;
+  background: var(--elv-backdrop); border: 1px solid var(--elv-border); border-radius: var(--ui-r-frame); box-shadow: none;
 }
 .gd-name { font: 700 var(--fs-20)/1.1 var(--font-body); color: var(--elv-green); text-shadow: var(--elv-outline); }
 .gd-name.gd-dim { color: var(--text-3); }
@@ -26,7 +26,7 @@
 .gd-bar { display: flex; align-items: center; gap: 6px; }
 .gd-input {
   flex: 0 1 240px; height: 26px; padding: 0 6px; color: #fff; font: 400 var(--fs-13) var(--font-body);
-  background: var(--elv-backdrop-solid); border: 1px solid var(--elv-border); border-radius: 0; box-shadow: none; outline: none; user-select: text;
+  background: var(--elv-backdrop-solid); border: 1px solid var(--elv-border); border-radius: var(--ui-r-frame); box-shadow: none; outline: none; user-select: text;
 }
 .gd-input:focus { border-color: var(--elv-title); }
 
@@ -50,7 +50,7 @@
 .gd-r0 { color: var(--elv-title); font-weight: 700; }
 .gd-r1 { color: var(--rar-rare-text); font-weight: 700; }
 .gd-r2 { color: #d9d9d9; }
-.gd-dot { display: inline-block; width: 6px; height: 6px; margin-right: 6px; background: var(--elv-grey); border: 1px solid #000; vertical-align: middle; }
+.gd-dot { display: inline-block; width: 6px; height: 6px; margin-right: 6px; background: var(--elv-grey); border: 1px solid var(--elv-border); vertical-align: middle; }
 .gd-dot.on { background: var(--react-friendly); }
 .gd-acts { display: flex; justify-content: flex-end; gap: 3px; }
-.gd-mini.pg-btn { height: 20px; min-width: 24px; padding: 0 5px; font-size: var(--fs-12); border-radius: 0; }
+.gd-mini.pg-btn { height: 20px; min-width: 24px; padding: 0 5px; font-size: var(--fs-12); border-radius: var(--ui-r-btn); }

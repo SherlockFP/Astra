@@ -51,7 +51,7 @@
 .lvlup-card { position: absolute; left: -260px; top: -120px; width: 520px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .lvlup.go .lvlup-card { animation: lvlpop 0.7s cubic-bezier(0.2, 1.4, 0.4, 1); }
 @keyframes lvlpop { 0% { transform: scale(0.3); } 100% { transform: scale(1); } }
-.lvlup-ico { width: 56px; height: 56px; background: #fff; filter: drop-shadow(0 1px 0 #000); animation: lvlbob 1s ease-in-out infinite alternate; }
+.lvlup-ico { width: 56px; height: 56px; background: #fff; filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.45)); animation: lvlbob 1s ease-in-out infinite alternate; }
 @keyframes lvlbob { to { transform: translateY(-8px); } }
 .lvlup-title { font: 700 40px var(--font-body); color: #fff; text-shadow: var(--elv-outline); }
 .lvlup-num { font: 700 96px/1 var(--font-body); color: #fff; text-shadow: var(--elv-outline); }
@@ -64,15 +64,15 @@
 .ip.hidden { opacity: 0; }
 .ip.pop { animation: ippop 0.18s ease-out; }
 @keyframes ippop { 0% { transform: translateX(-50%) scale(0.85); } 100% { transform: translateX(-50%) scale(1); } }
-.ip-key { min-width: 34px; height: 34px; padding: 0 8px; display: flex; align-items: center; justify-content: center; font: 700 18px var(--font-body); color: #fff; background: var(--elv-backdrop-solid); border: 1px solid #000; border-radius: 0; box-shadow: none; animation: ipkey 1.2s ease-in-out infinite; }
+.ip-key { min-width: 34px; height: 34px; padding: 0 8px; display: flex; align-items: center; justify-content: center; font: 700 18px var(--font-body); color: #fff; background: var(--elv-backdrop-solid); border: 1px solid var(--elv-border); border-radius: var(--ui-r-btn); box-shadow: none; animation: ipkey 1.2s ease-in-out infinite; }
 @keyframes ipkey { 50% { transform: translateY(-2px); } }
 .ip-text { font: 700 19px var(--font-body); color: #fff; text-shadow: var(--elv-outline); white-space: nowrap; }
 
 /* ---- crosshair ---- */
 .xh { position: absolute; left: 50%; top: 50%; width: 0; height: 0; opacity: 0; transition: opacity 0.12s; pointer-events: none; }
 .xh.on { opacity: 0.92; }
-.xh-dot { position: absolute; left: -2px; top: -2px; width: 4px; height: 4px; background: #fff6d8; box-shadow: 0 0 0 1px #000; border-radius: 1px; transition: background 0.1s; }
-.xh-t { position: absolute; background: #fff6d8; box-shadow: 0 0 0 1px #000; transition: transform 0.12s, background 0.12s; }
+.xh-dot { position: absolute; left: -2px; top: -2px; width: 4px; height: 4px; background: #fff6d8; box-shadow: 0 0 0 1px var(--elv-border); border-radius: 1px; transition: background 0.1s; }
+.xh-t { position: absolute; background: #fff6d8; box-shadow: 0 0 0 1px var(--elv-border); transition: transform 0.12s, background 0.12s; }
 .xh-t.t1 { left: -1px; top: -16px; width: 2px; height: 8px; }
 .xh-t.t2 { left: -1px; top: 8px; width: 2px; height: 8px; }
 .xh-t.t3 { left: -16px; top: -1px; width: 8px; height: 2px; }
@@ -84,7 +84,7 @@
 .xh.hover .xh-t.t4 { transform: translateX(-5px); }
 .xh.boss .xh-dot, .xh.boss .xh-t { background: #ff9a2a; }
 .xh-hit { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; }
-.xh-m { position: absolute; width: 10px; height: 2px; background: #fff; box-shadow: 0 0 0 1px #000; }
+.xh-m { position: absolute; width: 10px; height: 2px; background: #fff; box-shadow: 0 0 0 1px var(--elv-border); }
 .xh-m.m1 { left: -17px; top: -17px; transform: rotate(45deg); transform-origin: left center; }
 .xh-m.m2 { left: 7px; top: -17px; transform: rotate(135deg); transform-origin: left center; margin-left: 10px; }
 .xh-m.m3 { left: -17px; top: 17px; transform: rotate(-45deg); transform-origin: left center; }
@@ -115,7 +115,7 @@
 .cb-label { font: 700 14px var(--font-body); color: var(--c2); text-shadow: var(--elv-outline); margin-top: 2px; }
 .cb-bonus { margin-top: 1px; font: 700 12px var(--font-body); color: var(--elv-title); text-shadow: var(--elv-outline); }
 .cb-bonus:empty { display: none; }
-.cb-bar { height: 6px; margin: 6px 0 0 0; width: 220px; background: rgba(0, 0, 0, 0.6); border: 1px solid #000; border-radius: 3px; overflow: hidden; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12); }
+.cb-bar { height: 6px; margin: 6px 0 0 0; width: 220px; background: var(--ui-well); border: 1px solid var(--elv-border); border-radius: 3px; overflow: hidden; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12); }
 .cb-barfill { height: 100%; width: 100%; background: var(--c1); }
 .cb.low .cb-barfill { animation: cblow 0.3s infinite alternate; }
 @keyframes cblow { to { opacity: 0.45; } }
@@ -132,9 +132,9 @@
    The text is pass-through; only the Kopyala button takes the mouse. */
 .perf {
   align-self: flex-start; margin-left: 4px; padding: 4px 8px 5px;
-  font: 600 11px/1.4 ui-monospace, Consolas, 'Courier New', monospace; color: #bfe8a8; text-shadow: 0 1px 0 #000;
-  background: rgba(6, 4, 2, 0.8); border: 2px solid #050302; border-radius: 3px;
-  box-shadow: inset 0 0 0 1px rgba(155, 123, 54, 0.6), 0 2px 0 #000; pointer-events: none;
+  font: 600 11px/1.4 ui-monospace, Consolas, 'Courier New', monospace; color: #bfe8a8; text-shadow: var(--sh-text);
+  background: rgba(6, 4, 2, 0.8); border: 2px solid var(--elv-border); border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(155, 123, 54, 0.6), 0 2px 6px rgba(0, 0, 0, 0.45); pointer-events: none;
 }
 .perf-body { white-space: pre; }
 .perf.warn { color: #ffd24a; }
@@ -142,20 +142,20 @@
 .perf-copy {
   display: inline-block; margin-top: 4px; padding: 0 8px; pointer-events: auto; cursor: pointer;
   font: 700 11px/1.5 ui-monospace, Consolas, 'Courier New', monospace; color: #fff; text-shadow: var(--elv-outline);
-  background: var(--elv-backdrop-solid); border: 1px solid #000; border-radius: 0;
+  background: var(--elv-backdrop-solid); border: 1px solid var(--elv-border); border-radius: var(--ui-r-frame);
   box-shadow: none;
 }
 .perf-copy:hover { filter: brightness(1.12); }
-.perf-copy:active { transform: translateY(1px); box-shadow: 0 1px 0 #000; }
+.perf-copy:active { transform: translateY(1px); box-shadow: 0 1px 6px rgba(0, 0, 0, 0.45); }
 
 /* ---- UX-13 (§2.11): quest accepted / completed banner, rank 3 (queued by Banners.ts) ---- */
 .qbanner { position: absolute; left: 50%; top: 17%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; box-sizing: border-box;
-  padding: 10px 20px 10px 12px; background: var(--bg-scrim); border: 1px solid var(--ink); border-left: 1px solid #000; border-radius: var(--r-0);
+  padding: 10px 20px 10px 12px; background: var(--bg-scrim); border: 1px solid var(--ink); border-left: 1px solid var(--elv-border); border-radius: var(--r-0);
   opacity: 0; pointer-events: none; transition: opacity 250ms linear; white-space: nowrap; }
 .qbanner.on { opacity: 1; }
 .qbanner.show { animation: qbpop 0.35s ease-out; }
 @keyframes qbpop { 0% { transform: translate(-50%, -8px); } 100% { transform: translate(-50%, 0); } }
 .qb-medal { flex: none; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; box-sizing: border-box; border-radius: 50%;
-  background: var(--bg-3); border: 1px solid #000; box-shadow: none; font: 900 20px/1 var(--font-body); color: #fff; }
+  background: var(--bg-3); border: 1px solid var(--elv-border); box-shadow: none; font: 900 20px/1 var(--font-body); color: #fff; }
 .qb-title { font: 700 13px/1 var(--font-body); color: var(--elv-title); }
 .qb-name { margin-top: 4px; font: 22px/1 var(--font-body); color: var(--text-1); text-shadow: var(--sh-text); }

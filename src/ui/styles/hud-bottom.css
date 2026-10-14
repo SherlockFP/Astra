@@ -17,7 +17,7 @@
 .orb.dead { filter: grayscale(1) brightness(0.55); }
 @keyframes orbhit { 0% { transform: scale(1.06); } 100% { transform: scale(1); } }
 @keyframes orblow { 0%, 100% { filter: drop-shadow(0 0 3px rgba(255, 30, 30, 0.2)); } 50% { filter: drop-shadow(0 0 14px rgba(255, 30, 30, 0.95)); transform: scale(1.025); } }
-.orb-back { position: absolute; inset: 2px; border-radius: 50%; background: #070403; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.75), inset 0 0 22px #000; }
+.orb-back { position: absolute; inset: 2px; border-radius: 50%; background: var(--ui-well-deep); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.75), inset 0 0 22px rgba(0, 0, 0, 0.5); }
 .orb-canvas { position: absolute; inset: 9px; width: calc(100% - 18px); height: calc(100% - 18px); border-radius: 50%; image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: pixelated; }
 .orb-glass {
   position: absolute; inset: 9px; border-radius: 50%; pointer-events: none;
@@ -32,9 +32,9 @@
     #1a1a1a;
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 10px), #000 calc(100% - 9px), #000 calc(100% - 1px), transparent 100%);
   mask: radial-gradient(farthest-side, transparent calc(100% - 10px), #000 calc(100% - 9px), #000 calc(100% - 1px), transparent 100%);
-  filter: drop-shadow(0 0 1px #000) drop-shadow(0 2px 0 #000);
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.5)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
 }
-.orb::after { content: ''; position: absolute; inset: 8px; border-radius: 50%; box-shadow: inset 0 0 0 2px #000, inset 0 0 0 3px rgba(255, 231, 163, 0.18); pointer-events: none; }
+.orb::after { content: ''; position: absolute; inset: 8px; border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.5), inset 0 0 0 3px rgba(255, 231, 163, 0.18); pointer-events: none; }
 .orb-text { position: absolute; left: 0; right: 0; bottom: 30px; text-align: center; pointer-events: none; z-index: 3; line-height: 1.05; }
 .orb-val { font: 700 13px var(--font-head); color: #fff; text-shadow: var(--shade); font-variant-numeric: tabular-nums; }
 .orb-lbl { font: 700 9px var(--font-head); color: rgba(255, 255, 255, 0.62); text-shadow: var(--shade); margin-top: 1px; }
@@ -42,18 +42,18 @@
 /* ---- action bar ---- */
 .actionbar {
   position: relative; display: flex; align-items: flex-end; gap: 14px; padding: 9px 26px 9px 26px;
-  background: linear-gradient(180deg, #2f2216 0%, #1a120b 55%, #0f0a06 100%);
-  border: 2px solid #050302; border-radius: 7px;
-  box-shadow: inset 0 0 0 1px var(--hud-gold-d), inset 0 1px 0 2px rgba(255, 231, 163, 0.1), inset 0 0 0 4px #150e08, inset 0 0 0 5px var(--hud-gold-dd), 0 4px 0 #000, 0 10px 22px rgba(0, 0, 0, 0.65);
+  background: var(--elv-backdrop);
+  border: 2px solid var(--elv-border); border-radius: 7px;
+  box-shadow: inset 0 0 0 1px var(--hud-gold-d), inset 0 1px 0 2px rgba(255, 231, 163, 0.1), inset 0 0 0 4px rgba(0, 0, 0, 0.5), inset 0 0 0 5px var(--hud-gold-dd), 0 4px 6px rgba(0, 0, 0, 0.45), 0 10px 22px rgba(0, 0, 0, 0.65);
 }
 .actionbar::before, .actionbar::after {
   content: ''; position: absolute; top: 50%; width: 14px; height: 14px; transform: translateY(-50%) rotate(45deg);
-  background: #262626; border: 2px solid #050302; box-shadow: 0 0 6px rgba(232, 196, 106, 0.4);
+  background: var(--elv-backdrop-solid); border: 2px solid var(--elv-border); box-shadow: 0 0 6px rgba(232, 196, 106, 0.4);
 }
 .actionbar::before { left: -9px; }
 .actionbar::after { right: -9px; }
 .ab-group { display: flex; align-items: flex-end; gap: 7px; }
-.ab-group.potions { gap: 6px; padding-left: 14px; border-left: 2px solid rgba(155, 123, 54, 0.5); box-shadow: -1px 0 0 #000; }
+.ab-group.potions { gap: 6px; padding-left: 14px; border-left: 2px solid rgba(155, 123, 54, 0.5); box-shadow: -1px 0 0 rgba(0, 0, 0, 0.5); }
 .ab-gap { width: 6px; flex: none; }
 
 .slot { position: relative; width: 56px; height: 56px; flex: none; border-radius: 4px; cursor: pointer; pointer-events: auto; }
@@ -65,10 +65,10 @@
 @keyframes slotpress { 0% { transform: scale(0.86); } 55% { transform: scale(1.07); } 100% { transform: scale(1); } }
 @keyframes slotfail { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-3px); } 60% { transform: translateX(3px); } }
 @keyframes slotready { 0% { box-shadow: 0 0 0 0 rgba(255, 231, 163, 0.95); } 100% { box-shadow: 0 0 0 16px rgba(255, 231, 163, 0); } }
-.slot-bg { position: absolute; inset: 0; border-radius: 3px; background: color-mix(in srgb, var(--ac, #e8c46a) 22%, #1a1a1a); }
+.slot-bg { position: absolute; inset: 0; border-radius: 3px; background: color-mix(in srgb, var(--ac, #e8c46a) 22%, var(--ui-glass-solid)); }
 /* empty slots (no skill bound, or an empty potion stack) are dark sunken sockets: inner shadow, faint gold rim, dim keybind */
-.slot.noskill .slot-bg, .slot.empty .slot-bg { background: #111; box-shadow: inset 0 3px 6px #000; }
-.slot-ico { position: absolute; inset: 8px; background: linear-gradient(180deg, #ffffff 0%, var(--ac, #e8c46a) 100%); filter: drop-shadow(0 1px 0 #000) drop-shadow(0 0 5px color-mix(in srgb, var(--ac, #e8c46a) 55%, transparent)); transition: filter 0.12s; }
+.slot.noskill .slot-bg, .slot.empty .slot-bg { background: var(--ui-well-deep); box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.5); }
+.slot-ico { position: absolute; inset: 8px; background: linear-gradient(180deg, #ffffff 0%, var(--ac, #e8c46a) 100%); filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 5px color-mix(in srgb, var(--ac, #e8c46a) 55%, transparent)); transition: filter 0.12s; }
 .slot.sz-lg .slot-ico { inset: 9px; }
 .slot.sz-sm .slot-ico { inset: 6px; }
 .slot.potion.hp { --ac: #ff6a5a; }
@@ -87,14 +87,14 @@
 .slot-flash { position: absolute; inset: -3px; border-radius: 6px; pointer-events: none; opacity: 0; background: radial-gradient(circle, rgba(255, 244, 210, 0.95), rgba(255, 220, 130, 0) 72%); }
 .slot-flash.go { animation: slotflash 0.3s ease-out; }
 @keyframes slotflash { 0% { opacity: 1; transform: scale(0.8); } 100% { opacity: 0; transform: scale(1.35); } }
-.slot-frame { position: absolute; inset: 0; border-radius: 4px; pointer-events: none; border: 2px solid #050302; box-shadow: inset 0 0 0 1px #8a6b2e, inset 0 0 0 2px #2a1c0e, 0 1px 0 rgba(255, 231, 163, 0.22); }
+.slot-frame { position: absolute; inset: 0; border-radius: 4px; pointer-events: none; border: 2px solid var(--elv-border); box-shadow: inset 0 0 0 1px #8a6b2e, inset 0 0 0 2px #2a1c0e, 0 1px 0 rgba(255, 231, 163, 0.22); }
 .slot:hover .slot-frame { box-shadow: inset 0 0 0 1px var(--hud-gold-l), inset 0 0 0 2px #3a2a14, 0 0 8px rgba(255, 231, 163, 0.45); }
-.slot.noskill .slot-frame, .slot.empty .slot-frame { border-color: #020101; box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.95), inset 0 0 0 1px rgba(155, 123, 54, 0.34), 0 1px 0 rgba(255, 231, 163, 0.1); }
+.slot.noskill .slot-frame, .slot.empty .slot-frame { border-color: var(--elv-border); box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.95), inset 0 0 0 1px rgba(155, 123, 54, 0.34), 0 1px 0 rgba(255, 231, 163, 0.1); }
 .slot.noskill:hover .slot-frame, .slot.empty:hover .slot-frame { box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.95), inset 0 0 0 1px var(--hud-gold), 0 0 6px rgba(255, 231, 163, 0.22); }
 .slot.noskill .slot-key, .slot.empty .slot-key { background: none; color: rgba(255, 231, 163, 0.42); text-shadow: none; }
 .slot.casting .slot-frame { box-shadow: inset 0 0 0 2px var(--hud-gold-l), 0 0 14px var(--ac, #ffe7a3); }
 .slot.failing .slot-frame { box-shadow: inset 0 0 0 2px #ff3a2a, 0 0 8px rgba(255, 40, 20, 0.7); }
-.slot-key { position: absolute; left: 2px; top: 1px; padding: 0 3px; font: 700 10px var(--font-head); color: var(--hud-gold-l); background: rgba(0, 0, 0, 0.72); border-radius: 2px; line-height: 13px; pointer-events: none; text-shadow: 0 1px 0 #000; }
+.slot-key { position: absolute; left: 2px; top: 1px; padding: 0 3px; font: 700 10px var(--font-head); color: var(--hud-gold-l); background: var(--ui-well); border-radius: 2px; line-height: 13px; pointer-events: none; text-shadow: var(--sh-text); }
 .slot-charges { position: absolute; right: 3px; bottom: 0; font: 700 15px var(--font-head); color: #fff; text-shadow: var(--shade); pointer-events: none; }
 .slot-charges.zero { color: #ff7a6a; }
 .slot.potion .slot-charges { font-size: 13px; }
@@ -104,7 +104,7 @@
 @keyframes aberr { 0% { opacity: 0; transform: translateY(8px); } 8% { opacity: 1; transform: translateY(0); } 70% { opacity: 1; } 100% { opacity: 0; } }
 
 /* ---- xp bar ---- */
-.xpbar { position: relative; height: 15px; background: #070403; border: 2px solid #050302; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(155, 123, 54, 0.8), 0 2px 0 #000; overflow: hidden; pointer-events: auto; }
+.xpbar { position: relative; height: 15px; background: var(--ui-well-deep); border: 2px solid var(--elv-border); border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(155, 123, 54, 0.8), 0 2px 6px rgba(0, 0, 0, 0.45); overflow: hidden; pointer-events: auto; }
 .xp-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(#cf9bff 0 28%, #9a4ee0 28% 62%, #5f2899 62%); }
 .xp-glow { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0)); opacity: 0; }
 .xp-glow.go { animation: xpglow 0.7s ease-out; }
@@ -133,7 +133,7 @@
 /* the bar root: column, the main row is the bottom row (column-reverse: extra rows stack above it) */
 .hud .actionbar { position: relative; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
 .hud .ab-bars { display: flex; flex-direction: column-reverse; align-items: center; gap: var(--ab-gap, 1px); }
-.hud .ab-row { display: flex; align-items: flex-end; justify-content: center; gap: 1px; padding: 2px; background: rgba(0, 0, 0, 0.35); border: 1px solid #000; pointer-events: auto; }
+.hud .ab-row { display: flex; align-items: flex-end; justify-content: center; gap: 1px; padding: 2px; background: var(--ui-well); border: 1px solid var(--elv-border); pointer-events: auto; }
 .hud .ab-row .k-slot { pointer-events: auto; }
 
 /* progressive reveal (§2.6.4): absent cells take no room; ghost cells keep the 12-column silhouette */
@@ -145,11 +145,11 @@
 .hud .k-plus { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; font: 400 22px/1 var(--font-body); color: var(--text-4, #7a7a80); pointer-events: none; }
 
 /* the art: a tinted glyph mask, 8 % zoom crop, never scaled (§3.6); the kit rule is overridden here on purpose */
-.hud .ab-btn > .k-art { position: absolute; inset: 1px; -webkit-mask-size: 108% 108%; mask-size: 108% 108%; background: var(--ac, #e8c46a); filter: drop-shadow(0 1px 0 #000); }
+.hud .ab-btn > .k-art { position: absolute; inset: 1px; -webkit-mask-size: 108% 108%; mask-size: 108% 108%; background: var(--ac, #e8c46a); filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.45)); }
 .hud .ab-btn.empty > .k-art { opacity: 0.35; filter: grayscale(1); }
 
 /* YENİ chip (§2.6.4): 12 px gold text on black above the cell, shown for 30 s after a reveal */
-.hud .ab-new { display: none; position: absolute; left: 50%; top: -15px; transform: translateX(-50%); z-index: 4; padding: 0 4px; background: rgba(0, 0, 0, 0.8);
+.hud .ab-new { display: none; position: absolute; left: 50%; top: -15px; transform: translateX(-50%); z-index: 4; padding: 0 4px; background: var(--ui-well);
   font: 700 12px/14px var(--font-body); color: var(--gold-1, #ffe7a3); text-shadow: var(--sh-text); white-space: nowrap; pointer-events: none; }
 
 /* majors: the 1 px inner tone line (§2.6.4); the hero slot T is always gold */
@@ -183,10 +183,10 @@
 .hud .flask.empty > .k-art { opacity: 0.5; }
 
 /* XP strip on the bottom edge (§2.6.7): flat fill, three notches, 14 px hit area, "+N XP" floaters */
-.hud .xp-strip { position: relative; width: 100%; height: var(--xp-h); background: rgba(0, 0, 0, 0.6); border-top: 1px solid #000; pointer-events: auto; }
+.hud .xp-strip { position: relative; width: 100%; height: var(--xp-h); background: var(--ui-well); border-top: 1px solid var(--elv-border); pointer-events: auto; }
 .hud .xp-strip::before { content: ''; position: absolute; left: 0; right: 0; top: -7px; bottom: -7px; }
 .hud .xp-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--res-xp, #6aa8ff); }
-.hud .xp-notch { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(0, 0, 0, 0.55); pointer-events: none; }
+.hud .xp-notch { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--ui-well); pointer-events: none; }
 .hud .xp-notch.n25 { left: 25%; }
 .hud .xp-notch.n50 { left: 50%; }
 .hud .xp-notch.n75 { left: 75%; }
