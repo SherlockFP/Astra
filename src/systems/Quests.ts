@@ -69,7 +69,9 @@ export interface AvDefteriStatus {
 /** Chance per kill that a `collect` item drops while its quest is active (swarm: lower). */
 const COLLECT_CHANCE = 0.4;
 const COLLECT_CHANCE_SWARM = 0.15;
-const KILL_KINDS: readonly QuestKind[] = ['kill', 'boss', 'metin'];
+const KILL_KINDS: readonly QuestKind[] = ['kill', 'boss', 'metin', 'elite'];
+/** Bag-based objectives: progress is the number of items in the bag and they are consumed on turn-in. */
+const BAG_KINDS: readonly QuestKind[] = ['collect', 'drop'];
 
 /** Generic reward slots -> item categories (intersected with the class's usable categories). */
 const SLOT_GROUPS: Record<'weapon' | 'armor' | 'jewelry', ItemCategory[]> = {
@@ -156,7 +158,7 @@ export class QuestSystem {
     const ch = G.character;
     const o = def.objectives[k];
     if (!ch || !o) return 0;
-    if (o.kind === 'collect') return o.target ? Math.min(o.count, ch.material(o.target)) : 0;
+    if (BAG_KINDS.includes(o.kind)) return o.target ? Math.min(o.count, ch.material(o.target)) : 0;
     return Math.min(o.count, Number(ch.save.flags[pKey(def.id, k)] ?? 0));
   }
 
@@ -238,7 +240,7 @@ export class QuestSystem {
     ch.save.flags[qKey(def.id)] = 'done';
     if (def.daily) ch.save.flags[qDay(def.id)] = dayKey();
     def.objectives.forEach((o, k) => {
-      if (o.kind === 'collect' && o.target) ch.useMaterial(o.target, o.count);
+      if (BAG_KINDS.includes(o.kind) && o.target) ch.useMaterial(o.target, o.count);
       delete ch.save.flags[pKey(def.id, k)];
     });
     this.grantRewards(def);
@@ -284,7 +286,7 @@ export class QuestSystem {
   private bump(def: QuestDef, k: number, amount: number): void {
     const ch = G.character;
     const o = def.objectives[k];
-    if (!ch || !o || o.kind === 'collect') return;
+    if (!ch || !o || BAG_KINDS.includes(o.kind)) return;
     const cur = Number(ch.save.flags[pKey(def.id, k)] ?? 0);
     if (cur >= o.count) return;
     ch.save.flags[pKey(def.id, k)] = Math.min(o.count, cur + amount);
@@ -329,6 +331,9 @@ export class QuestSystem {
         return t ? info.enemyId === t : info.rank === 'boss' || info.rank === 'miniboss';
       case 'metin':
         return t ? info.enemyId === t || info.family === t : info.family === 'metin';
+      case 'elite':
+        // named: the target id is required, and trash never counts (a rare / miniboss / boss stands in for an elite)
+        return !!t && info.enemyId === t && info.rank !== 'trash';
       default:
         return false;
     }
@@ -346,7 +351,8 @@ export class QuestSystem {
   }
 
   /**
-   * Non-kill objective event: talk (npcId), explore (placeId), skill, metin (tierId), dungeon (id[:difficulty]).
+   * Non-kill objective event: talk (npcId), explore (placeId), skill, metin (tierId), dungeon (id[:difficulty]),
+   * interact (world object id, one per interaction).
    * An objective without target matches any event of its kind; `dungeon` objectives without a difficulty match any difficulty.
    */
   onEvent(kind: QuestKind, target: string, count = 1): void {
@@ -372,6 +378,57 @@ export class QuestSystem {
         this.bump(def, k, 1);
       });
     }
+  }
+
+  /**
+   * Quest item used on a target (place / npc / object id): one item is consumed per use of an active `use` objective.
+   * Returns false when the bag has no such item or no active objective takes it on that target.
+   */
+  useItem(itemId: string, targetId: string): boolean {
+    const ch = G.character;
+    if (!ch || ch.material(itemId) < 1) return false;
+    let used = false;
+    for (const def of this.all()) {
+      if (this.stateOf(def) !== 'active') continue;
+      def.objectives.forEach((o, k) => {
+        if (o.kind !== 'use' || o.item !== itemId || (o.target && o.target !== targetId)) return;
+        if (this.progressAt(def, k) >= o.count || ch.material(itemId) < 1) return;
+        ch.useMaterial(itemId, 1);
+        this.bump(def, k, 1);
+        used = true;
+      });
+    }
+    return used;
+  }
+
+  /**
+   * Escort objective tick: `seconds` survived beside the escorted NPC (call about once a second). `alive` false = the NPC fell,
+   * which resets the escort timer of every active escort objective (the quest stays active).
+   */
+  tickEscort(seconds: number, alive: boolean): void {
+    const ch = G.character;
+    if (!ch || !(seconds > 0)) return;
+    for (const def of this.all()) {
+      if (this.stateOf(def) !== 'active') continue;
+      def.objectives.forEach((o, k) => {
+        if (o.kind !== 'escort') return;
+        const cur = Number(ch.save.flags[pKey(def.id, k)] ?? 0);
+        if (cur >= o.count) return;
+        if (alive) return this.bump(def, k, seconds);
+        if (cur <= 0) return;
+        ch.save.flags[pKey(def.id, k)] = 0;
+        ch.persist();
+        this.notify(def);
+      });
+    }
+  }
+
+  /** Shared progress bar of a quest in 0..100: the mean of its objectives' progress (bonus objectives mix kinds). */
+  progressPct(questId: string): number {
+    const def = this.defs.get(questId);
+    if (!def || !def.objectives.length) return 0;
+    const sum = def.objectives.reduce((s, o, k) => s + Math.min(1, this.progressAt(def, k) / o.count), 0);
+    return Math.round((100 * sum) / def.objectives.length);
   }
 
   // ======================================================================== drops
@@ -402,10 +459,15 @@ export class QuestSystem {
     for (const def of this.all()) {
       if (this.stateOf(def) !== 'active') continue;
       for (const o of def.objectives) {
-        if (o.kind !== 'collect' || !o.target) continue;
+        if (!BAG_KINDS.includes(o.kind) || !o.target) continue;
         if (ch.material(o.target) >= o.count) continue;
-        if (!this.sourceMatches(def, info)) continue;
-        if (this.rng.chance(info.swarm ? COLLECT_CHANCE_SWARM : COLLECT_CHANCE)) out.push({ id: o.target, count: 1 });
+        if (o.kind === 'drop' && o.from?.length) {
+          if (!o.from.some((id) => info.enemyId === id || info.family === id)) continue;
+        } else if (!this.sourceMatches(def, info)) continue;
+        // drop: its own chance; collect: the shared chance. Swarm members scale both down by the collect ratio.
+        const base = o.kind === 'drop' && o.chance !== undefined ? o.chance : COLLECT_CHANCE;
+        const chance = info.swarm ? base * (COLLECT_CHANCE_SWARM / COLLECT_CHANCE) : base;
+        if (this.rng.chance(chance)) out.push({ id: o.target, count: 1 });
       }
     }
     const step = this.activeAvStep();

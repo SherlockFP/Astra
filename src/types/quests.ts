@@ -3,15 +3,30 @@
  * Quests are one-time per character (flags `q.<id>`), progress is local per peer.
  */
 
-export type QuestKind = 'talk' | 'kill' | 'collect' | 'skill' | 'boss' | 'metin' | 'dungeon' | 'explore';
+/**
+ * talk, kill, collect, skill, boss, metin, dungeon, explore: the original kinds.
+ * elite: one named elite (rank elite / miniboss) by id.
+ * drop: `count` items of `target` roll from the kills in `from` (chance `chance` per kill); bag-based like collect.
+ * interact: `count` world objects (target = object id) reported through onEvent('interact', id).
+ * use: the quest item `item` used on `target` (place / npc / object id) through QuestSystem.useItem; one item per use.
+ * escort: stay alive near the escorted NPC for `count` seconds (QuestSystem.tickEscort).
+ */
+export type QuestKind = 'talk' | 'kill' | 'collect' | 'skill' | 'boss' | 'metin' | 'dungeon' | 'explore'
+  | 'elite' | 'drop' | 'interact' | 'use' | 'escort';
 
 export interface QuestObjective {
   kind: QuestKind;
-  /** enemyId | family | itemId | npcId | placeId | dungeonId[:difficulty] */
+  /** enemyId | family | itemId | npcId | placeId | dungeonId[:difficulty] | object id (interact) */
   target?: string;
   count: number;
   /** Turkish objective line shown in the tracker / questlog. */
   text: string;
+  /** drop: enemy ids / families the item rolls from. Without it the source is the quest's kill objectives (collect rule). */
+  from?: string[];
+  /** drop: chance per matching kill (0..1). Default: the collect chance (systems/Quests.ts). */
+  chance?: number;
+  /** use: the quest item consumed by each use (data/materials.ts id). */
+  item?: string;
 }
 
 export interface QuestReward {
@@ -43,6 +58,8 @@ export interface QuestDef {
   unlocks?: string[];
   /** Repeatable once per local calendar day: a turned-in daily is offered again on the next day (systems/Quests.ts). */
   daily?: boolean;
+  /** Bonus objective of a region: mixed objectives, one shared progress bar (QuestSystem.progressPct). */
+  bonus?: boolean;
 }
 
 /** locked = prerequisites not met yet; available = can be accepted; active = in progress; ready = turn in; done = finished. */
