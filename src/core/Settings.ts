@@ -172,6 +172,9 @@ export interface SettingsData {
   uiHoverSfx: boolean;
   /** Revision of the calmer audio mix (audio levels, hover off). Stored files below 1 get the new defaults once. */
   audioRev: number;
+  // ---- Karakter sözleri (systems/Barks.ts, append-only). Speech bubbles and the Söylenti chat line of the barks.
+  /** Karakter sözleri: 'on' (Açık, default) · 'few' (Az: only the important moments, longer cooldowns, no NPC / enemy lines) · 'off' (Kapalı). */
+  characterBarks: 'on' | 'few' | 'off';
 }
 
 /**
@@ -292,6 +295,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   combatSoundLevel: 'normal',
   uiHoverSfx: false,
   audioRev: 1,
+  characterBarks: 'on',
 };
 
 /**

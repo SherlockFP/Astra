@@ -319,7 +319,6 @@ export class NPC extends Entity implements Interactable {
   private time = Math.random() * 5;
   private nextPeriodic: number;
   private barkCooldown = 8 + Math.random() * 10;
-  private barkIdx = 0;
   private shoutIdx = 0;
   private nextShout = 0;
   private busyUntil = 0;
@@ -651,11 +650,14 @@ export class NPC extends Entity implements Interactable {
         this.nextShout = t + 60 + Math.random() * 60;
       } else this.nextShout = t + 5;
     }
-    if (player && this.barkCooldown <= 0 && p.barks?.length && !this.bubble) {
+    // karakter sözleri (systems/Barks.ts): own lines first, else the role's greeting; the setting can silence them
+    if (player && this.barkCooldown <= 0 && !this.bubble) {
       const d = dist2D(player.position, this.position);
-      if (d < 8) {
+      const line = d < 8 ? G.barks?.npcLine(this.def.id, this.def.role, p.barks ?? []) : null;
+      if (line) {
         this.barkCooldown = 28 + Math.random() * 20;
-        this.say(p.barks[this.barkIdx++ % p.barks.length], 4.2);
+        this.say(line, 4.2);
+        G.barks?.rumor(this.def.name, line);
       }
     }
     void this.moving;

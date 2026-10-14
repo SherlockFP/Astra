@@ -690,6 +690,19 @@ export class SettingsPanel extends GamePanel {
         this.flag('questArrow', 'Görev Oku', 'Takip edilen görevin hedefine ekran oku'),
         this.flag('showMapInfo', 'Minimap Saati', 'Haritada yerel saat (FPS göstergesi açıksa kare hızı da)'),
         this.flag('showStats', 'İstatistik Satırı', 'Sohbette kritik, hız, soğuma ve kaçınma özeti'),
+        row(
+          'Karakter Sözleri',
+          selectBox<SettingsData['characterBarks']>(
+            [
+              { value: 'on', label: 'Açık' },
+              { value: 'few', label: 'Az' },
+              { value: 'off', label: 'Kapalı' },
+            ],
+            G.settings.get('characterBarks'),
+            (v) => G.settings.set('characterBarks', v),
+          ),
+          'Karakterlerin söyledikleri: üstlerinde balon ve sohbette Söylenti satırı. Az: yalnız önemli anlar',
+        ),
       ),
       this.section(
         'Savaş ve Çubuklar',
