@@ -39,7 +39,7 @@ for (const sid of SHAMAN_KIT_SPEC_IDS) {
 ok('kit.shaman.ids roles: Elementel dps, Geliştirme dps, Restorasyon healer',
   SPECS.shaman_elemental?.role === 'dps' && SPECS.shaman_enhancement?.role === 'dps' && SPECS.shaman_restoration?.role === 'healer');
 ok('kit.shaman.ids ClassDef.specs lists the three specs', (CLASSES.shaman?.specs ?? []).join() === SHAMAN_KIT_SPEC_IDS.join());
-ok('kit.shaman.ids ClassDef.skills are the four class skills', (CLASSES.shaman?.skills ?? []).length === 4 && CLASSES.shaman.skills.every((id) => !!SKILLS[id]));
+ok('kit.shaman.ids ClassDef.skills are the six class skills', (CLASSES.shaman?.skills ?? []).length === 6 && CLASSES.shaman.skills.every((id) => !!SKILLS[id]));
 
 // ---- kit.shaman.basic: the Geliştirme chain has three steps, Girdap 4 / 4 / 6
 {
@@ -58,7 +58,7 @@ ok('kit.shaman.ids ClassDef.skills are the four class skills', (CLASSES.shaman?.
   ok('kit.shaman.l1 lmb is the Şimşek basic', bar1.lmb === 'shaman_basic', JSON.stringify(bar1));
   const usable = Object.values(bar1).filter((id) => id !== 'shaman_basic' && SKILLS[id]?.unlockLevel <= 1);
   ok('kit.shaman.l1 at least 3 usable skills at unlock 1', usable.length >= 3, usable.join(','));
-  ok('kit.shaman.l1 bar is rmb lightning bolt, q ghost wolf, s1 wind shear', bar1.rmb === 'shaman_lightning_bolt' && bar1.q === 'shaman_ghost_wolf' && bar1.s1 === 'shaman_wind_shear', JSON.stringify(bar1));
+  ok('kit.shaman.l1 bar is rmb lightning bolt, q ghost wolf, s4 wind shear', bar1.rmb === 'shaman_lightning_bolt' && bar1.q === 'shaman_ghost_wolf' && bar1.s4 === 'shaman_wind_shear', JSON.stringify(bar1));
   ok('kit.shaman.l1 the shaman has its basic resolved', !!SKILLS.shaman_basic && CLASSES.shaman.basicAttack === 'shaman_basic');
 }
 
@@ -74,11 +74,11 @@ ok('kit.shaman.ids ClassDef.skills are the four class skills', (CLASSES.shaman?.
 
 // ---- kit.shaman.minions: totems and wolves registered; the lesser group cap is 3, the pack cap 2; totems do not move
 {
-  ok('kit.shaman.minions the five shaman minions are registered',
-    ['shaman_fire_totem', 'shaman_earthbind_totem', 'shaman_stream_totem', 'shaman_tide_totem', 'shaman_spirit_wolf'].every((id) => !!MINION_DEFS[id]));
+  ok('kit.shaman.minions the seven shaman minions are registered',
+    ['shaman_fire_elemental', 'shaman_earth_elemental', 'shaman_earthbind_totem', 'shaman_stream_totem', 'shaman_tide_totem', 'shaman_spirit_wolf'].every((id) => !!MINION_DEFS[id]));
   ok('kit.shaman.minions the lesser cap is 3 and the pack cap is 2', MINION_GROUP_CAPS.lesser === 3 && MINION_GROUP_CAPS.pack === 2);
   ok('kit.shaman.minions totems are stationary (speed 0, follow 0)',
-    ['shaman_fire_totem', 'shaman_earthbind_totem', 'shaman_stream_totem', 'shaman_tide_totem'].every((id) => MINION_DEFS[id]?.speed === 0 && MINION_DEFS[id]?.follow?.[1] === 0));
+    ['shaman_earthbind_totem', 'shaman_stream_totem', 'shaman_tide_totem'].every((id) => MINION_DEFS[id]?.speed === 0 && MINION_DEFS[id]?.follow?.[1] === 0));
   ok('kit.shaman.minions Feral Spirit names the wolves (pack, cap 2, 15 s)',
     SKILLS.shaman_feral_spirit?.minion?.id === 'shaman_spirit_wolf' && SKILLS.shaman_feral_spirit.minion.count === 2 && SKILLS.shaman_feral_spirit.minion.group === 'pack' && SKILLS.shaman_feral_spirit.minion.life === 15);
 }
@@ -172,10 +172,10 @@ const foeAt = (z = 2.2) => {
   const foe = foeAt(3);
   H.step(2);
   p.resource = 100;
-  const started = G.skills.tryCastSlot(p, 's3', H.aimFor(p, foe));
+  const started = G.skills.tryCastSlot(p, 'r', H.aimFor(p, foe));
   H.stepSec(1.5);
   const owned = G.minions.ownedBy(p.id).map((m) => m.def?.id);
-  ok('kit.shaman.cast Ateş Totemi places shaman_fire_totem', started === true && owned.includes('shaman_fire_totem'), `owned=${owned.join(',')}`);
+  ok('kit.shaman.cast Ateş Elementali summons shaman_fire_elemental', started === true && owned.includes('shaman_fire_elemental'), `owned=${owned.join(',')}`);
 }
 {
   // Restorasyon: Riptide heals the caster and leaves the riptide HoT on them

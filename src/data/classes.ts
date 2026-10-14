@@ -622,7 +622,7 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
       hide: ['2H_Staff', '1H_Wand', 'Spellbook', 'Spellbook_open', 'Mage_Hat'],
     },
     basicAttack: 'shaman_basic',
-    skills: ['shaman_lightning_bolt', 'shaman_ghost_wolf', 'shaman_wind_shear', 'shaman_bloodlust'],
+    skills: ['shaman_lightning_bolt', 'shaman_ghost_wolf', 'shaman_wind_shear', 'shaman_bloodlust', 'shaman_astral_shift', 'shaman_hex'],
     startingItems: ['mace_t1'],
     color: '#0070dd',
     resourceColor: '#3d7bd9',
