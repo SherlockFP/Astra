@@ -72,9 +72,9 @@ const ROOMS: RoomDef[] = [
     ],
     heightAreas: [area('high_table', 38, 27, 2, 6, 4.1, 'ledge')],
   }),
-  room('bal_mahzeni', 'Bal Mahzeni', 40, 28, 6, 5, 'dirt', 'brick', 0.35, {
+  room('bal_mahzeni', 'Bal Mahzeni', 40, 28, 9, 9, 'dirt', 'brick', 0.35, {
     optional: true, floorY: 1.9, ceiling: 5.5, lightColor: 0xffa050, ambientVfx: 'ambient_embers', fog: { color: 0x2a2016, near: 8, far: 36 },
-    slopes: [stairs(rect(40, 28, 3, 5), 'x', 4.1, 1.9, { id: 'bm_merdiven' })],
+    slopes: [stairs(rect(40, 28, 3, 9), 'x', 4.1, 1.9, { id: 'bm_merdiven' })],
   }),
   room('k_yukselis', 'Valkyr Galerisi', 25, 22, 6, 4, 'stone', 'stone', 0.2, {
     floorY: 3.2, ceiling: 12, lightColor: 0xe8e0c0, ambientVfx: 'ambient_dust', fog: { color: 0x4a4a58, near: 10, far: 44 },
@@ -84,15 +84,15 @@ const ROOMS: RoomDef[] = [
   room('yukselis_koltugu', 'Yükseliş Koltuğu', 21, 8, 14, 14, 'stone', 'stone', 0.1, {
     boss: 2, floorY: 6.2, ceiling: 26, lightColor: 0xcfe0ff, ambientVfx: 'ambient_dust', fog: { color: 0x6a7288, near: 14, far: 62 },
   }),
-  room('k_av_yolu', 'Av Patikası', 30, 35, 4, 3, 'dirt', 'cave', 0.3, {
+  room('k_av_yolu', 'Av Patikası', 30, 35, 4, 4, 'dirt', 'cave', 0.3, {
     openAir: true, sky: SKY_FIELD, floorY: 3.2, ceiling: 30, lightColor: 0xffc080, ambientVfx: 'ambient_embers', fog: { color: 0xb89868, near: 18, far: 80 },
-    slopes: [ramp(rect(30, 35, 4, 3), 'z', 3.2, 0.0, { id: 'ka_patika' })],
+    slopes: [ramp(rect(30, 35, 4, 4), 'z', 3.2, 0.0, { id: 'ka_patika' })],
   }),
-  room('av_meydani', 'Ebedi Av Meydanları', 20, 38, 24, 18, 'dirt', 'cave', 0.5, {
+  room('av_meydani', 'Ebedi Av Meydanları', 20, 39, 24, 18, 'dirt', 'cave', 0.5, {
     openAir: true, sky: SKY_FIELD, floorY: 0, ceiling: 30, lightColor: 0xffc080, ambientVfx: 'ambient_embers', fog: { color: 0xd8b080, near: 22, far: 100 },
     // lookout hill x 38..42, z 39..42 at 1.4, reached by the ramp x 36..37
-    heightAreas: [area('av_tepesi', 38, 39, 5, 4, 1.4, 'ledge')],
-    slopes: [ramp(rect(36, 40, 2, 2), 'x', 0.0, 1.4, { id: 'am_tepe_rampasi' })],
+    heightAreas: [area('av_tepesi', 38, 40, 5, 4, 1.4, 'ledge')],
+    slopes: [ramp(rect(36, 41, 2, 2), 'x', 0.0, 1.4, { id: 'am_tepe_rampasi' })],
   }),
   room('fenrur_ini', 'Fenrür İni', 44, 42, 14, 12, 'dirt', 'cave', 0.15, {
     boss: 2, floorY: 0, ceiling: 14, lightColor: 0xff6040, ambientVfx: 'ambient_embers', fog: { color: 0x2a1a1a, near: 10, far: 46 },
@@ -139,8 +139,8 @@ const DOORS: DoorDef[] = [
   door('solen_ocagi', 'k_yukselis', 27, 26, 'n', 2, 'none'),
   door('k_yukselis', 'yukselis_koltugu', 27, 22, 'n', 2, 'boss_lock'),
   door('solen_ocagi', 'k_av_yolu', 31, 34, 's', 2, 'none'),
-  door('k_av_yolu', 'av_meydani', 31, 37, 's', 2, 'none'),
-  door('av_meydani', 'fenrur_ini', 43, 47, 'e', 2, 'boss_lock'),
+  door('k_av_yolu', 'av_meydani', 30, 38, 's', 4, 'none'),
+  door('av_meydani', 'fenrur_ini', 43, 48, 'e', 2, 'boss_lock'),
   door('yukselis_koltugu', 'k_hyrja_dogu', 34, 17, 'e', 2, 'boss_exit'),
   door('k_hyrja_dogu', 'salon_esigi', 45, 19, 'e', 2, 'none'),
   door('fenrur_ini', 'efemer_yol', 51, 42, 'n', 2, 'boss_exit'),
@@ -183,11 +183,11 @@ const PACKS: PackDef[] = [
   P_PACK('yg_p13', 'bal_mahzeni', 43.5, 30, [['yg_revel', 12], ['yg_sentinel', 1]], { optional: true }),
   P_PACK('yg_p14', 'k_yukselis', 27.5, 23.5, [['yg_shieldmaiden', 2], ['yg_runecarver', 1]]),
   P_PACK('yg_p15', 'k_av_yolu', 31.5, 36, [['yg_worg', 4], ['yg_trapper', 1]]),
-  P_PACK('yg_p16', 'av_meydani', 25, 42, [['yg_worg', 4], ['yg_stag', 1], ['yg_trapper', 1]]),
-  P_PACK('yg_p17', 'av_meydani', 25, 51, [['yg_trapper', 3], ['yg_worg', 2]]),
-  P_PACK('yg_p18', 'av_meydani', 31.5, 41, [['yg_grizzly', 1]], { optional: true }),
-  P_PACK('yg_p19', 'av_meydani', 40, 40.5, [['yg_thundercaller', 1], ['yg_stag', 1], ['yg_worg', 2]]),
-  P_PACK('yg_p22', 'av_meydani', 32, 46.5, [['yg_worg', 2], ['yg_trapper', 2]], { patrol: [[26, 46.5], [38, 46.5]] }),
+  P_PACK('yg_p16', 'av_meydani', 25, 43, [['yg_worg', 4], ['yg_stag', 1], ['yg_trapper', 1]]),
+  P_PACK('yg_p17', 'av_meydani', 25, 52, [['yg_trapper', 3], ['yg_worg', 2]]),
+  P_PACK('yg_p18', 'av_meydani', 31.5, 42, [['yg_grizzly', 1]], { optional: true }),
+  P_PACK('yg_p19', 'av_meydani', 40, 41.5, [['yg_thundercaller', 1], ['yg_stag', 1], ['yg_worg', 2]]),
+  P_PACK('yg_p22', 'av_meydani', 32, 47.5, [['yg_worg', 2], ['yg_trapper', 2]], { patrol: [[26, 47.5], [38, 47.5]] }),
   P_PACK('yg_p23', 'k_hyrja_dogu', 37.5, 18.5, [['yg_shieldmaiden', 2], ['yg_thundercaller', 1], ['yg_mystic', 1]]),
   P_PACK('yg_p24', 'k_hyrja_dogu', 42.5, 18.5, [['yg_tideskorn', 1], ['yg_trapper', 2]]),
   P_PACK('yg_p25', 'efemer_yol', 51.5, 39.5, [['yg_tideskorn', 1], ['yg_shieldmaiden', 1]]),
@@ -239,9 +239,9 @@ const PROPS: Record<string, PropPlacement[]> = {
   ],
   k_av_yolu: [P(gp('brazier'), 31.5, 35.5, { light: LIGHT_BRAZIER(0xffc080) }), P(gp('brazier'), 33.5, 37.5, { light: LIGHT_BRAZIER(0xffc080) })],
   av_meydani: [
-    P(gp('tent'), 23, 44),
-    P(gp('tent'), 27, 50),
-    P(gp('brazier'), 39.5, 41.5, { light: LIGHT_BRAZIER(0xffc080) }),
+    P(gp('tent'), 23, 45),
+    P(gp('tent'), 27, 51),
+    P(gp('brazier'), 39.5, 42.5, { light: LIGHT_BRAZIER(0xffc080) }),
   ],
   fenrur_ini: [
     // kiting stumps around the den (Fenrür's arena is 14 x 12 tiles)
@@ -299,7 +299,7 @@ export const YIGITLER_SARAYI: DungeonDef = {
   shortName: 'Yiğitler',
   lore: "Kadimler, ölen yiğitlerin ruhlarını sınamak için fırtınanın üstüne bir saray kaldırdı: Yiğitler Sarayı. Titan kemerleri bulutların üzerinde yüzüyor, Odyn'in ebedi şölenine açılıyor. Yüksek Kapı'da Heymdal'ın borusu çalıyor; Eyra'nın Seçilmişi Hirya yükseliş koltuğunu bekliyor; Fenrür Sonsuz Av'da kan kokusu alıyor. Ama Gelgitkıran Kralı Skovald, Kadim Zindanlar'ın gölgesinden gelen bir fısıltıya kulak verdi ve kutsal Aegis'i çalmak için Şan Salonu'na daldı. Sınav başladı. Layık olan, Odyn'in sofrasına oturur.",
   levelRange: [60, 60],
-  timerSec: 1500,
+  timerSec: 1515,
   forcesRequired: 325,
   theme: THEME,
   grid: { w: 64, h: 60 },

@@ -320,7 +320,7 @@ export const TASKASA_BOSSES: Record<string, BossDef> = index<BossDef>([
       bp('p2', 0.4, SEDA_KIT, { yell: 'AŞIRI YÜK UYARISI.' }),
     ],
     intro: 'SİSTEM UYANDI. İZİNSİZ GİRİŞ TESPİT EDİLDİ.', death: 'Çekirdek... durduruluyor...',
-    arena: { cx: 144, cz: 132, w: 66, h: 50, homeX: 144, homeZ: 122 },
+    arena: { cx: 144, cz: 134, w: 66, h: 48, homeX: 144, homeZ: 122 },
   }),
   // ---- 5.2 Kristal Golem Skarmorak ----
   bossDef({
