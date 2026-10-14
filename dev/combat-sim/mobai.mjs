@@ -1,0 +1,281 @@
+#!/usr/bin/env node
+/**
+ * WoW-style trash AI checks (src/ai/EnemyAI.ts + src/ai/trash/roles.ts), headless through the REAL brain: a real Enemy entity
+ * and a real EnemyAI ticked by world.update, with the real EnemyDirector (pack pulls, calls for help). Only the player is a
+ * harness actor (FakePlayer). No browser, no server.
+ *
+ *   node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/mobai.mjs      (V=1 prints every PASS)
+ *
+ * Stages: roles.* (pure role rules: humanoid flee, kite bands, spell casts, heal threshold, default leash) | pack.* (one pull aggroes
+ * the whole pack, not the next pack) | leash.* (a chase past the leash evades home with a full reset) | caster.* (keeps range,
+ * casts an interruptible spell with a cast bar, a heavy hit cuts it) | healer.* (heals a hurt ally, ignores a healthy one) |
+ * flee.* (humanoid at 20 % HP runs and calls its pack; a swarm beast does not) | elite.* (elite specials telegraphed, windup
+ * >= 0.9 s; trash not) | stuck.* (no route to the target = evade, not a stand-off) | wall.* (a charge stops at a wall).
+ * Exit 0 = all PASS.
+ */
+import * as H from './harness.mjs';
+
+const { G, world, errors, events } = H;
+const { ENEMIES } = await H.imp('data/enemies.ts');
+const { Enemy } = await H.imp('entities/Enemy.ts');
+const { EnemyAI } = await H.imp('ai/EnemyAI.ts');
+const { getDirector } = await H.imp('ai/EnemyDirector.ts');
+const R = await H.imp('ai/trash/roles.ts');
+
+let fails = 0;
+let passes = 0;
+const ok = (name, cond, info = '') => {
+  if (cond) passes++;
+  else fails++;
+  if (!cond || process.env.V) console.log(`${cond ? 'PASS' : 'FAIL'} ${name}${info ? ' - ' + info : ''}`);
+};
+const dist = (a, b) => Math.hypot(a.position.x - b.position.x, a.position.z - b.position.z);
+const sec = H.sec;
+
+// ---- fixtures -------------------------------------------------------------------------------------------------------------
+const mobs = [];
+let nextId = 7000;
+/** A real Enemy + real EnemyAI at (x, z). `def` overrides the roster def (synthetic elite clones). */
+function mob(defId, x, z, o = {}) {
+  const def = o.def ?? ENEMIES[defId];
+  const e = new Enemy(nextId++, def);
+  e.position.set(x, 0, z);
+  e.homeX = x;
+  e.homeZ = z;
+  e.packId = o.packId ?? null;
+  world.add(e);
+  const ai = new EnemyAI(e, getDirector(world));
+  e.ai = ai;
+  mobs.push(ai);
+  return e;
+}
+/** Fresh world: every entity gone (their brains disposed), a knight at the origin, and a walkable grid. */
+function reset() {
+  for (const ai of mobs.splice(0)) ai.dispose();
+  world.nav.setRect(-99, -99, 99, 99, true);
+  const p = H.addPlayer('knight', 10);
+  p.position.set(0, 0, 0);
+  p.hp = p.maxHp = 1e9;
+  return p;
+}
+const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
+
+// ==================================================================================================================
+// roles.* pure rules (no world): these are the data-level assignments the brain reads
+// ==================================================================================================================
+{
+  const guard = ENEMIES.ys_nobet_muhafizi;
+  const caster = ENEMIES.ys_nobet_buyucusu;
+  const swarm = ENEMIES.ys_mana_yutan;
+  const boss = Object.values(ENEMIES).find((d) => d.rank === 'boss');
+  ok('roles.humanoid caster is humanoid', R.isHumanoid(caster), caster.model);
+  ok('roles.swarm beast is not humanoid', !R.isHumanoid(swarm), swarm.model);
+  ok('roles.humanoid trash flees', R.fleesAtLowHp(caster) && R.fleesAtLowHp(guard));
+  ok('roles.swarm does not flee', !R.fleesAtLowHp(swarm));
+  ok('roles.boss never flees', !boss || !R.fleesAtLowHp(boss));
+  ok('roles.caster keeps range 9-15', JSON.stringify(R.kiteBandFor(caster)) === '[9,15]', String(R.kiteBandFor(caster)));
+  // a ranged trash def with no kite band of its own (the roster's archers all carry one): the role default applies
+  const archer = { ...ENEMIES.ys_dehset_gozu, ai: undefined, flying: false };
+  ok('roles.archer kites slightly (7-11)', JSON.stringify(R.kiteBandFor(archer)) === '[7,11]', String(R.kiteBandFor(archer)));
+  ok('roles.melee has no kite band', R.kiteBandFor(guard) === null);
+  const bolt = caster.abilities.find((a) => a.kind === 'projectile' && !a.castTime);
+  ok('roles.trash caster spell gets a 1.2 s cast', bolt && R.spellCastTime(caster, bolt, false) === R.SPELL_CAST_S);
+  ok('roles.caster basic stays instant', R.spellCastTime(caster, caster.basicAttack, true) === 0);
+  ok('roles.trash melee specials not cast', R.spellCastTime(guard, guard.abilities[0], false) === 0);
+  ok('roles.heal threshold trash 80 %, boss 97 %', R.healBelow(caster) === 0.8 && (!boss || R.healBelow(boss) === 0.97));
+  ok('roles.default leash 30 m for trash', R.defaultLeashFor(guard) === 30);
+  ok('roles.summons and stationary keep no leash', R.defaultLeashFor({ ...guard, ai: { summoned: true } }) === 0 && R.defaultLeashFor({ ...guard, ai: { stationary: true } }) === 0);
+}
+
+// ==================================================================================================================
+// pack.* one pull aggroes the whole pack, not the pack next door
+// ==================================================================================================================
+{
+  reset();
+  const a = mob('ys_nobet_muhafizi', 12, 0, { packId: 'pk1' });
+  const b = mob('ys_nobet_muhafizi', 14, 2, { packId: 'pk1' });
+  const c = mob('ys_nobet_muhafizi', 13, -3, { packId: 'pk1' });
+  const far = mob('ys_nobet_muhafizi', 60, 0, { packId: 'pk2' });
+  H.step(sec(0.6));
+  ok('pack.one pull aggroes the whole pack', a.ai.aggroed && b.ai.aggroed && c.ai.aggroed);
+  ok('pack.other pack stays asleep', !far.ai.aggroed);
+}
+
+// ==================================================================================================================
+// leash.* a chase past the leash evades home: full reset (HP, DoTs, cooldowns, threat)
+// ==================================================================================================================
+{
+  const p = reset();
+  p.position.set(-8, 0, 0);
+  const m = mob('ys_nobet_muhafizi', 0, 0);
+  H.step(sec(0.5));
+  // pull it, then drag the player away (3 m/s) until the body is past its leash (home is the spawn at 0,0)
+  ok('leash.pulled before the drag', m.ai.aggroed, `mode ${m.ai.mode}`);
+  m.hp = m.maxHp * 0.4;
+  m.statuses.apply('burn', 30, { sourceId: m.id });
+  let sawReturn = false;
+  for (let i = 0; i < sec(25) && !sawReturn; i++) {
+    p.position.x -= 0.05;
+    H.step(1);
+    if (m.ai.mode === 'return') sawReturn = true;
+  }
+  ok('leash.chase past 30 m starts an evade', sawReturn, `at ${m.position.x.toFixed(1)} m`);
+  const hpDuringReturn = m.hp;
+  let home = false;
+  for (let i = 0; i < sec(15) && !home; i++) {
+    H.step(1);
+    if (m.ai.mode === 'idle') home = true;
+  }
+  ok('leash.evade reaches home', home && dist(m, { position: { x: m.homeX, z: m.homeZ } }) < 1.5, `at ${m.position.x.toFixed(1)},${m.position.z.toFixed(1)}`);
+  ok('leash.full reset: HP restored', m.hp === m.maxHp, `hp ${m.hp}/${m.maxHp} (was ${hpDuringReturn.toFixed(0)} on the way)`);
+  ok('leash.full reset: DoTs and debuffs gone', m.statuses.ids().filter((s) => s !== 'invulnerable').length === 0, m.statuses.ids().join(','));
+  ok('leash.full reset: no threat, no cooldowns, not aggroed', m.ai.threat.size === 0 && m.ai.readyAt.size === 0 && !m.ai.aggroed);
+}
+
+// ==================================================================================================================
+// caster.* keeps range, casts an interruptible spell with a cast bar, a heavy hit cuts the cast
+// ==================================================================================================================
+{
+  const p = reset();
+  const c = mob('ys_nobet_buyucusu', 12, 0);
+  let minD = Infinity, sawBar = false, sawInterruptible = false;
+  for (let i = 0; i < sec(9); i++) {
+    H.step(1);
+    if (i > sec(2) && c.ai.aggroed) minD = Math.min(minD, dist(c, p));
+    if (c.cast) sawBar = true;
+    if (c.cast?.interruptible) sawInterruptible = true;
+  }
+  ok('caster.keeps range (never closer than 7.5 m after the first 2 s)', minD >= 7.5, `closest ${minD.toFixed(2)} m`);
+  ok('caster.casts with a cast bar', sawBar);
+  ok('caster.cast bar is interruptible', sawInterruptible);
+
+  // a heavy hit (crit) cuts whatever cast is up
+  let cut = false;
+  for (let i = 0; i < sec(6) && !cut; i++) {
+    H.step(1);
+    if (c.ai.busy?.castId) {
+      c.ai.onDamageEvent({ sourceId: p.id, amount: c.maxHp * 0.3, crit: true });
+      cut = !c.cast && !c.ai.busy;
+    }
+  }
+  ok('caster.heavy hit interrupts the cast', cut);
+}
+
+// ==================================================================================================================
+// healer.* heals a hurt ally, leaves a healthy one alone
+// ==================================================================================================================
+{
+  const p = reset();
+  const h = mob('ys_gece_rahibi', 10, 0, { packId: 'pk3' });
+  const hurt = mob('ys_nobet_muhafizi', 12, 3, { packId: 'pk3' });
+  hurt.hp = hurt.maxHp * 0.4;
+  H.step(sec(9)); // kit stagger: the heal is first ready at 4 s, then casts 2 s
+  ok('healer.heals a hurt ally', healsTo(hurt.id) > 0 && hurt.hp > hurt.maxHp * 0.4, `hp ${(hurt.hp / hurt.maxHp * 100).toFixed(0)} %`);
+
+  reset();
+  const h2 = mob('ys_gece_rahibi', 10, 0, { packId: 'pk4' });
+  const fine = mob('ys_nobet_muhafizi', 12, 3, { packId: 'pk4' });
+  fine.hp = fine.maxHp * 0.9;
+  const before = healsTo(fine.id);
+  H.step(sec(6));
+  ok('healer.ignores an ally at 90 %', healsTo(fine.id) === before && before === 0, `heals ${healsTo(fine.id) - before}`);
+  void h2;
+}
+
+// ==================================================================================================================
+// flee.* a humanoid at 20 % HP runs off and calls the pack within 14 m; a swarm beast does not run
+// ==================================================================================================================
+{
+  const p = reset();
+  const caster = mob('ys_nobet_buyucusu', 10, 0, { packId: 'pk5' });
+  const ally = mob('ys_nobet_muhafizi', 20, 6); // 11.7 m from the caster: outside the 8 m pack-less pull, inside the 14 m call
+  H.step(sec(0.5));
+  ok('flee.setup: caster aggroed, ally still idle', caster.ai.aggroed && !ally.ai.aggroed, `ally aggroed ${ally.ai.aggroed}`);
+  caster.hp = caster.maxHp * 0.15;
+  caster.ai.onDamageEvent({ sourceId: p.id, amount: 10, crit: false });
+  ok('flee.humanoid at 15 % HP starts fleeing', caster.ai.fleeing);
+  ok('flee.calls the nearby ally onto the attacker', ally.ai.aggroed);
+  const d0 = dist(caster, p);
+  H.step(sec(3));
+  const d1 = dist(caster, p);
+  ok('flee.runs away from the player', d1 > d0 + 2, `${d0.toFixed(1)} m -> ${d1.toFixed(1)} m`);
+  H.step(sec(6));
+  ok('flee.stops after its window and fights again', !caster.ai.fleeing);
+
+  reset();
+  const swarm = mob('ys_mana_yutan', -8, 0, { packId: 'pk6' });
+  H.step(sec(0.5));
+  ok('flee.setup: swarm beast aggroed', swarm.ai.aggroed);
+  swarm.hp = swarm.maxHp * 0.1;
+  swarm.ai.onDamageEvent({ sourceId: p.id, amount: 10, crit: false });
+  ok('flee.swarm beast does not flee', !swarm.ai.fleeing);
+}
+
+// ==================================================================================================================
+// elite.* elite specials are telegraphed with a windup of at least 0.9 s; trash specials are not
+// ==================================================================================================================
+{
+  const p = reset();
+  const special = ENEMIES.ys_nobet_muhafizi.abilities.find((a) => a.kind === 'melee');
+  const eliteDef = { ...ENEMIES.ys_nobet_muhafizi, id: 'test_elite_guard', rank: 'elite' };
+  const trash = mob('ys_nobet_muhafizi', 0, 0);
+  const elite = mob(null, 0, 8, { def: eliteDef });
+  const rec = new Map();
+  for (const ai of [trash.ai, elite.ai]) {
+    const orig = ai.shape.bind(ai);
+    rec.set(ai, []);
+    ai.shape = (o) => { rec.get(ai).push(o); return orig(o); };
+  }
+  trash.ai.startAbility(special, p);
+  elite.ai.startAbility(special, p);
+  const tb = trash.ai.busy, eb = elite.ai.busy;
+  ok('elite.trash special: no telegraph', rec.get(trash.ai).every((o) => !o.telegraph));
+  ok('elite.elite special: telegraphed', rec.get(elite.ai).some((o) => o.telegraph));
+  ok('elite.elite windup at least 0.9 s', !!eb && eb.delay >= 0.9 - 1e-6, eb ? `delay ${eb.delay.toFixed(2)}` : 'no busy');
+  ok('elite.trash windup not stretched', !!tb && tb.delay < 0.9, tb ? `delay ${tb.delay.toFixed(2)}` : 'no busy');
+}
+
+// ==================================================================================================================
+// stuck.* no route to the target: the body repaths, then evades home (not a stand-off forever)
+// ==================================================================================================================
+{
+  const p = reset();
+  p.position.set(10, 0, 0);
+  world.nav.setRect(4.5, -99, 5.5, 99, false); // a wall the whole length of the map: no route, no sight line
+  const m = mob('ys_nobet_muhafizi', 0, 0);
+  m.ai.acquire(p, true);
+  let evaded = false;
+  for (let i = 0; i < sec(7) && !evaded; i++) {
+    H.step(1);
+    if (m.ai.mode === 'return') evaded = true;
+  }
+  world.nav.setRect(4.5, -99, 5.5, 99, true);
+  ok('stuck.no route: evades home within ~6 s', evaded, `mode ${m.ai.mode}`);
+}
+
+// ==================================================================================================================
+// wall.* a charge stops at the wall on its line, the body never ends up inside it
+// ==================================================================================================================
+{
+  const p = reset();
+  p.position.set(14, 0, 0);
+  world.nav.setRect(6.5, -99, 7.5, 99, false);
+  const m = mob('ys_zumrut_kopek', 0, 0);
+  m.ai.acquire(p, true);
+  const charge = ENEMIES.ys_zumrut_kopek.abilities.find((a) => a.kind === 'charge');
+  m.ai.startAbility(charge, p);
+  let maxX = -Infinity;
+  for (let i = 0; i < sec(3) && (m.ai.busy || m.forcedMove); i++) {
+    H.step(1);
+    maxX = Math.max(maxX, m.position.x);
+  }
+  world.nav.setRect(6.5, -99, 7.5, 99, true);
+  ok('wall.charge stops before the wall (x < 6.5)', maxX < 6.5, `max x ${maxX.toFixed(2)}`);
+  ok('wall.charge really moved (x > 1)', maxX > 1, `max x ${maxX.toFixed(2)}`);
+}
+
+// ---- report ---------------------------------------------------------------------------------------------------------------
+const hard = errors.filter((e) => e.startsWith('ERR'));
+ok('no engine errors during the run', hard.length === 0, hard.slice(0, 3).join(' | '));
+console.log(fails === 0 ? `ALL PASS (${passes} passed, ${fails} failed)` : `FAILED (${passes} passed, ${fails} failed)`);
+process.exit(fails === 0 ? 0 : 1);
