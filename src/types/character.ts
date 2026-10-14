@@ -39,6 +39,8 @@ export interface CharacterSave {
   talentRefunds: number;
   skillBar: Partial<Record<SkillSlotKey, string>>; // slot -> skill id
   skillRanks: Record<string, number>;              // optional skill ranks (future)
+  /** Yetenek Puanı (append-only): earned = 1 per level-up (+ one-time migration, see systems/SkillPoints.ts); spent = points put into ranks with "+"; by = points per skill (refund). */
+  skillPts?: { earned: number; spent: number; by: Record<string, number> };
   mythic: MythicProfile;
   flags: Record<string, number | boolean | string>; // tutorial, unlocked dungeons, bounties progress...
   stats: { kills: number; deaths: number; bossKills: number; dungeonsCompleted: number; highestKey: number; legendaryFound: number };

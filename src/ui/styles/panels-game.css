@@ -562,6 +562,11 @@
 .pi-sk-pip { width: 12px; height: 6px; border-radius: var(--ui-r-bar); background: var(--ui-well-deep); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5); }
 .pi-sk-pip.on { background: #e8e8e8; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5); }
 .pi-sk-pip.off { opacity: 0.35; }
+.pi-sk-pip { width: 9px; }
+.pi-sk-rlabel { font-size: 11px; color: var(--text-dim); margin-right: 4px; align-self: center; }
+.pi-sk-pts { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pi-sk-free { color: #ffe08a; }
+.pi-sk-rankrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0; }
 .pi-sk-book { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; padding: 8px 10px; border: 1px dashed rgba(201, 162, 74, 0.45); border-radius: var(--ui-r-frame); }
 
 @media (max-width: 900px) {

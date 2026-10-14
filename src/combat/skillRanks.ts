@@ -30,12 +30,27 @@ export function localSkillRank(skillId: string | null | undefined): number {
   }
 }
 
+/** Clamp any number to a valid rank (1..SKILL_RANK_CAP). */
+export function clampSkillRank(rank: number): number {
+  return Math.min(SKILL_RANK_CAP, Math.max(1, Math.floor(Number.isFinite(rank) ? rank : 1)));
+}
+
+/** Damage multiplier of a rank (x1.00 at rank 1, +5% per extra rank). Pure: used by the Yetenek Kitabı preview too. */
+export function skillRankDamageMultOf(rank: number): number {
+  return 1 + SKILL_RANK_DAMAGE_PER * (clampSkillRank(rank) - 1);
+}
+
+/** Cooldown multiplier of a rank (x1.00 at rank 1, -2% per extra rank). Pure. */
+export function skillRankCooldownMultOf(rank: number): number {
+  return 1 - SKILL_RANK_COOLDOWN_PER * (clampSkillRank(rank) - 1);
+}
+
 /** Outgoing damage multiplier of a local skill hit (x1.00 at rank 1, +5% per extra rank). */
 export function skillRankDamageMult(skillId: string | null | undefined): number {
-  return 1 + SKILL_RANK_DAMAGE_PER * (localSkillRank(skillId) - 1);
+  return skillRankDamageMultOf(localSkillRank(skillId));
 }
 
 /** Cooldown multiplier of a local skill (x1.00 at rank 1, -2% per extra rank). */
 export function skillRankCooldownMult(skillId: string | null | undefined): number {
-  return 1 - SKILL_RANK_COOLDOWN_PER * (localSkillRank(skillId) - 1);
+  return skillRankCooldownMultOf(localSkillRank(skillId));
 }

@@ -10,6 +10,7 @@ import type { UI } from '../UI';
 import { equippedCounterpart } from '../panels/game/base';
 import { ICON, div, esc, fmtNum, iconEl, pulse, setClass, setDisplay, setText, uiSound } from '../widgets/dom';
 import { unspentTalentPoints } from './Extras';
+import { skillPointsFree } from '../../systems/SkillPoints';
 import type { HudCtx, HudDensity, HudWidget } from './types';
 
 /** Lines on screen per HUD density (§2.10: 5 / 4 / 3). */
@@ -204,6 +205,8 @@ interface MicroState {
   level: number;
   bagFull: boolean;
   unspent: number;
+  /** Unspent Yetenek Puanı (SkillsPanel). */
+  skillPts: number;
   skillOff: boolean;
   questStarted: boolean;
   questReady: boolean;
@@ -234,7 +237,7 @@ const MICRO: MicroDef[] = [
   },
   {
     panel: 'skills', icon: 'ui-spellbook', action: 'skills', label: 'Yetenek Kitabı', minLevel: 3,
-    badge: (s) => (s.skillOff ? { kind: 'num', text: '!' } : null),
+    badge: (s) => (s.skillPts > 0 ? { kind: 'num', text: String(s.skillPts) } : s.skillOff ? { kind: 'num', text: '!' } : null),
   },
   {
     panel: 'questlog', icon: 'ui-quest', action: 'quests', label: 'Görevler', minLevel: 1,
@@ -247,7 +250,7 @@ const MICRO: MicroDef[] = [
 
 /**
  * Micro menu (§2.10): one row of flat square buttons, revealed progressively by level and progress. Clicking toggles the panel
- * (also reachable with the keys). Badges: bag ≥ 90 % full (dot), unspent talent points, a learned skill that is not on the bar
+ * (also reachable with the keys). Badges: bag ≥ 90 % full (dot), unspent talent points, unspent Yetenek Puanı (count), a learned skill that is not on the bar
  * (`!`), a ready quest (`?`).
  * OWNER: hud module.
  */
@@ -327,6 +330,7 @@ export class MicroMenu implements HudWidget {
       level: save?.level ?? 1,
       bagFull: bag.length > 0 && filled / BAG_SIZE >= 0.9,
       unspent: unspentTalentPoints(),
+      skillPts: save ? skillPointsFree(save) : 0,
       skillOff: learned.some((id) => !onBar.has(id)),
       questStarted,
       questReady,

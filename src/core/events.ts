@@ -70,6 +70,8 @@ export interface GameEvents {
   'materials:changed': Record<string, never>;
   'talents:changed': Record<string, never>;
   'skillbar:changed': Record<string, never>;
+  /** Yetenek Puanı earned or spent / refunded (SkillsPanel, micro-menu badge). */
+  'skillpoints:changed': Record<string, never>;
   /** GDD_ITEMS_V2 §A (IT-00): `outcome` (stay / success / down1 / down3 / destroy / break / protected / pity), stacks before / after are optional additions. */
   'item:upgraded': { item: ItemInstance; success: boolean; destroyed: boolean; newLevel: number; outcome?: string; stacksBefore?: number; stacksAfter?: number };
 

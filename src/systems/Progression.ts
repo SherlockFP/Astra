@@ -152,6 +152,9 @@ export class Progression {
     const from = levels[0] - 1;
     const to = levels[levels.length - 1];
     ch.recomputeStats();
+    // Yetenek Puanı: one point per level gained (Yetenek Kitabı, K)
+    ch.grantSkillPoints(levels.length);
+    toast(`${levels.length > 1 ? `+${levels.length} ` : ''}Yetenek puanı kazandın! (${G.input?.bindingLabel('skills') ?? 'K'})`, 'levelup');
     for (const l of levels) {
       G.events.emit('player:levelup', { level: l });
     }

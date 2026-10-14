@@ -24,6 +24,7 @@ import { activeElixirs, computeStats, emptyFx, type SpecialEntry } from './StatC
 import { baseOf, buildFromBase, defaultRng, isEquipmentItem, itemDisplayName, rarityIndex, requiredLevelOf, sellValue, slotsForCategory } from './ItemGen';
 import { applyBetaPreset, BETA_GOLD, BETA_LEVEL } from './BetaTest';
 import { SKILL_MAX } from '../data/professions';
+import { migrateSkillPoints, skillPointsFree, skillRankCapAt, skillResetCost, SKILL_POINTS_PER_LEVEL } from './SkillPoints';
 
 export type ItemLocation =
   | { where: 'bag'; index: number }
@@ -162,6 +163,7 @@ export class CharacterState {
     // WP-06: old saves get the deterministic hash default of their id once; creation stores the player's choice
     if (!isNationId(save.nation)) save.nation = hashNation(save.id);
     migrateTalents(save);
+    migrateSkillPoints(save);
     return save;
   }
 
@@ -700,7 +702,7 @@ export class CharacterState {
   // ======================================================================== skills
   /**
    * Read a skill book (GDD_OPENWORLD 4.6): raises the rank of one unlocked skill by 1 and consumes the book.
-   * Book I caps at rank 3, II at 5, III at 6; a rank never exceeds ceil(level / 6) + 1.
+   * Book I caps at rank 3, II at 5, III at 6; a rank never exceeds the level cap (skillRankCapAt, shared with Yetenek Puanı).
    * Combat reads `save.skillRanks` (+5% damage, -2% cooldown per rank above 1) once it is wired.
    */
   readSkillBook(bookId: string, skillId: string): { ok: boolean; reason?: string; rank?: number } {
@@ -711,12 +713,60 @@ export class CharacterState {
     const unlocked = G.progression?.unlockedSkills(this.classId, this.level) ?? [];
     if (!unlocked.includes(skillId)) return { ok: false, reason: 'Bu beceri henüz açık değil.' };
     const current = this.save.skillRanks[skillId] ?? 1;
-    const max = Math.min(cap, Math.ceil(this.level / 6) + 1, 6);
+    const max = Math.min(cap, skillRankCapAt(this.level));
     if (current >= max) return { ok: false, reason: `Bu beceri en fazla ${max}. kademeye kadar yükseltilebilir.` };
     this.useMaterial(bookId, 1);
     this.save.skillRanks[skillId] = current + 1;
     this.persist();
     return { ok: true, rank: current + 1 };
+  }
+
+  /** Yetenek Puanı: grants `levels` points (one per level-up). Called by Progression.onLevelUp. */
+  grantSkillPoints(levels: number): void {
+    if (!(levels > 0)) return;
+    const p = (this.save.skillPts ??= { earned: 0, spent: 0, by: {} });
+    p.earned += Math.floor(levels) * SKILL_POINTS_PER_LEVEL;
+    emit('skillpoints:changed', {});
+  }
+
+  /** Yetenek Puanı: one rank on an unlocked skill, within the level cap (skillRankCapAt). */
+  spendSkillPoint(skillId: string): { ok: boolean; reason?: string; rank?: number } {
+    if (skillPointsFree(this.save) <= 0) return { ok: false, reason: 'Harcanacak yetenek puanın yok. Seviye atladıkça kazanırsın.' };
+    const unlocked = G.progression?.unlockedSkills(this.classId, this.level) ?? [];
+    if (!unlocked.includes(skillId)) return { ok: false, reason: 'Bu beceri henüz açık değil.' };
+    const current = this.save.skillRanks[skillId] ?? 1;
+    const max = skillRankCapAt(this.level);
+    if (current >= max) return { ok: false, reason: `Seviye ${this.level} için en fazla ${max}. kademe. Daha yüksek seviyede devam eder.` };
+    const p = this.save.skillPts!;
+    this.save.skillRanks[skillId] = current + 1;
+    p.spent += 1;
+    p.by[skillId] = (p.by[skillId] ?? 0) + 1;
+    emit('skillpoints:changed', {});
+    this.persist();
+    return { ok: true, rank: current + 1 };
+  }
+
+  /**
+   * Sıfırla: takes back every point spent with "+" (ranks from Beceri Kitapları stay). Costs skillResetCost(level) gold.
+   * Nothing changes when the gold is missing or no point was spent.
+   */
+  resetSkillPoints(): { ok: boolean; reason?: string; refunded: number; cost: number } {
+    const cost = skillResetCost(this.level);
+    const p = this.save.skillPts;
+    const refunded = p ? Object.values(p.by).reduce((a, n) => a + n, 0) : 0;
+    if (!p || refunded <= 0) return { ok: false, reason: 'Sıfırlanacak yetenek puanı yok.', refunded: 0, cost };
+    if (this.save.gold < cost) return { ok: false, reason: `Sıfırlamak için ${cost} altın gerekir.`, refunded: 0, cost };
+    this.spendGold(cost);
+    for (const [id, n] of Object.entries(p.by)) {
+      const r = Math.max(1, (this.save.skillRanks[id] ?? 1) - n);
+      if (r <= 1) delete this.save.skillRanks[id];
+      else this.save.skillRanks[id] = r;
+    }
+    p.spent = 0;
+    p.by = {};
+    emit('skillpoints:changed', {});
+    this.persist();
+    return { ok: true, refunded, cost };
   }
 
   setSkillSlot(slot: SkillSlotKey, skillId: string | null): void {
