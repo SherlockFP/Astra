@@ -166,6 +166,7 @@ export const CLASS_START_NODE: Record<ClassId, string> = {
   monk: 'mk_start', archer: 'ar_start', paladin: 'pl_start', necromancer: 'nc_start', warlock: 'wl_start',
   // CORE_MECHANICS §2 (CM1): placeholder start nodes of the two new classes (no nodes yet; the class is not playable).
   demonhunter: 'dh_start', evoker: 'ev_start',
+  priest: 'pr_start', shaman: 'sh_start', druid: 'dr_start', // CLASS SCAFFOLD (no nodes yet, not playable)
 };
 /** Tree bounds for the UI. */
 export const TALENT_BOUNDS = { minX: -1500, maxX: 1500, minY: -1500, maxY: 1500 };

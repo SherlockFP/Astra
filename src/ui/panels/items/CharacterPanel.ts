@@ -24,16 +24,19 @@ const CLASS_TR: Record<ClassId, string> = {
   knight: 'Şövalye', barbarian: 'Barbar', mage: 'Büyücü', rogue: 'Haydut',
   monk: 'Keşiş', archer: 'Okçu', paladin: 'Paladin', necromancer: 'Nekromant', warlock: 'Warlock',
   demonhunter: 'İblis Avcısı', evoker: 'Ejderhasoy', // CM1
+  priest: 'Rahip', shaman: 'Şaman', druid: 'Druid', // CLASS SCAFFOLD
 };
 const RESOURCE_TR: Record<ClassId, string> = {
   knight: 'Kararlılık', barbarian: 'Öfke', mage: 'Mana', rogue: 'Enerji',
   monk: 'Enerji', archer: 'Odak', paladin: 'İnanç', necromancer: 'Öz', warlock: 'Mana',
   demonhunter: 'Gazap', evoker: 'Öz', // CM1
+  priest: 'Mana', shaman: 'Mana', druid: 'Mana', // CLASS SCAFFOLD
 };
 const MAIN_STAT: Record<ClassId, StatId> = {
   knight: 'str', barbarian: 'str', mage: 'int', rogue: 'dex',
   monk: 'dex', archer: 'dex', paladin: 'str', necromancer: 'int', warlock: 'int',
   demonhunter: 'dex', evoker: 'int', // CM1
+  priest: 'int', shaman: 'int', druid: 'int', // CLASS SCAFFOLD
 };
 
 /** Turkish explanations shown when hovering a stat row. */

@@ -162,6 +162,24 @@ const FALLBACK: Record<ClassId, ClassPresentation> = {
     highlights: [], stats: { dayaniklilik: 3, hasar: 4, hareket: 2, menzil: 4 }, color: '#33937f', icon: '/assets/icons/skill-fire-breath.svg', idle: 'Idle',
     showcase: [],
   },
+  priest: {
+    id: 'priest', name: 'Rahip', tagline: 'Kutsal Işık ve Gölge', role: 'Şifa · Gölge', resource: 'Mana', resourceColor: '#3d7bd9',
+    desc: 'Kutsal ışığı şifa için, gölgeyi ise zihin ve hasar için kullanan rahip. Yoldaşlarını ayakta tutar; Gölge yolunda zihni ayartır ve Delilik biriktirir.',
+    highlights: [], stats: { dayaniklilik: 2, hasar: 3, hareket: 2, menzil: 4 }, color: '#ffffff', icon: '/assets/icons/skill-holy-light.svg', idle: 'Idle',
+    showcase: [],
+  },
+  shaman: {
+    id: 'shaman', name: 'Şaman', tagline: 'Ruhların ve Elementlerin Sesi', role: 'Elementler · Geliştirme · Şifa', resource: 'Mana', resourceColor: '#3d7bd9',
+    desc: 'Elementlerin ve ruhların sesini duyan şaman. Yıldırım ve toprağı savurur, geliştirme yolunda silahına elementleri üfler, restorasyonda ruhları şifaya çağırır.',
+    highlights: [], stats: { dayaniklilik: 4, hasar: 4, hareket: 2, menzil: 3 }, color: '#0070dd', icon: '/assets/icons/skill-lightning-bolt.svg', idle: 'Idle',
+    showcase: [],
+  },
+  druid: {
+    id: 'druid', name: 'Druid', tagline: 'Doğanın Biçim Değiştireni', role: 'Biçim Değiştiren · Hibrit', resource: 'Mana', resourceColor: '#3d7bd9',
+    desc: 'Doğanın ve biçim değiştirmenin ustası. Ay ışığıyla büyü yapar, ayıya, kurda ya da kuşa dönüşür; yıkıcı bir yol da iyileştiren bir yol da seçebilir.',
+    highlights: [], stats: { dayaniklilik: 4, hasar: 3, hareket: 4, menzil: 2 }, color: '#ff7c0a', icon: '/assets/icons/buff-regen.svg', idle: 'Idle',
+    showcase: [],
+  },
 };
 
 export function classPresentation(id: ClassId): ClassPresentation {

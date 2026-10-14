@@ -15,6 +15,10 @@ export const CLASS_COLORS: Record<string, string> = {
   warlock: '#8788ee',
   demonhunter: '#a330c9',
   evoker: '#33937f',
+  // CLASS SCAFFOLD (must equal the --cls-* tokens in styles/tokens.css)
+  priest: '#ffffff',
+  shaman: '#0070dd',
+  druid: '#ff7c0a',
 };
 
 const FALLBACK = '#e8c46a';

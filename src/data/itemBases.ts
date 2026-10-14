@@ -24,6 +24,7 @@ export const CLASS_ARMOR_WEIGHT: Record<ClassId, ArmorWeight> = {
   knight: 'heavy', barbarian: 'heavy', mage: 'light', rogue: 'medium',
   monk: 'medium', archer: 'medium', paladin: 'heavy', necromancer: 'light', warlock: 'light',
   demonhunter: 'medium', evoker: 'light', // CM1 stubs (mirror the registry rows of data/classes.ts)
+  priest: 'light', shaman: 'medium', druid: 'medium', // CLASS SCAFFOLD stubs
 };
 // Loot V3 F6 fix: derived from CLASS_ARMOR_WEIGHT, so the 7 newer classes can use (and be dropped) armour too
 const classesOfWeight = (w: ArmorWeight): ClassId[] => (Object.keys(CLASS_ARMOR_WEIGHT) as ClassId[]).filter((c) => CLASS_ARMOR_WEIGHT[c] === w);
@@ -33,16 +34,19 @@ export const CLASS_WEAPONS: Record<ClassId, ItemCategory[]> = {
   knight: ['sword1h'], barbarian: ['axe2h'], mage: ['staff', 'wand'], rogue: ['dagger'],
   monk: ['fist'], archer: ['bow'], paladin: ['sword1h', 'mace'], necromancer: ['staff', 'wand'], warlock: ['staff', 'wand'],
   demonhunter: ['sword1h', 'dagger'], evoker: ['staff', 'wand'], // CM1 stubs
+  priest: ['staff', 'wand', 'mace'], shaman: ['mace', 'axe1h'], druid: ['staff', 'dagger', 'mace'], // CLASS SCAFFOLD stubs
 };
 export const CLASS_OFFHANDS: Record<ClassId, ItemCategory[]> = {
   knight: ['shield'], barbarian: [], mage: ['tome'], rogue: ['dagger'],
   monk: [], archer: ['quiver'], paladin: ['shield'], necromancer: ['tome'], warlock: ['tome'],
   demonhunter: ['dagger'], evoker: ['tome'], // CM1 stubs
+  priest: ['tome'], shaman: ['shield'], druid: [], // CLASS SCAFFOLD stubs
 };
 export const CLASS_NAMES_TR: Record<ClassId, string> = {
   knight: 'Şövalye', barbarian: 'Barbar', mage: 'Büyücü', rogue: 'Haydut',
   monk: 'Keşiş', archer: 'Okçu', paladin: 'Paladin', necromancer: 'Nekromant', warlock: 'Warlock',
   demonhunter: 'İblis Avcısı', evoker: 'Ejderhasoy', // CM1
+  priest: 'Rahip', shaman: 'Şaman', druid: 'Druid', // CLASS SCAFFOLD
 };
 
 export const WEAPON_CATEGORIES: ItemCategory[] = ['sword1h', 'sword2h', 'axe1h', 'axe2h', 'mace', 'staff', 'wand', 'dagger', 'crossbow', 'bow', 'fist'];

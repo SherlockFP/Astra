@@ -93,6 +93,9 @@ export const CLASS_META: Record<ClassId, { name: string; icon: string; color: st
   warlock: { name: 'Warlock', icon: '/assets/icons/skill-curse.svg', color: '#c05ae0' },
   demonhunter: { name: 'İblis Avcısı', icon: '/assets/icons/skill-claw-strike.svg', color: '#a330c9' }, // CM1 stub
   evoker: { name: 'Ejderhasoy', icon: '/assets/icons/skill-fire-breath.svg', color: '#33937f' },        // CM1 stub
+  priest: { name: 'Rahip', icon: '/assets/icons/skill-holy-light.svg', color: '#ffffff' },      // CLASS SCAFFOLD
+  shaman: { name: 'Şaman', icon: '/assets/icons/skill-lightning-bolt.svg', color: '#0070dd' }, // CLASS SCAFFOLD
+  druid: { name: 'Druid', icon: '/assets/icons/buff-regen.svg', color: '#ff7c0a' },           // CLASS SCAFFOLD
 };
 
 export const DIFFICULTY_NAMES: Record<string, string> = {

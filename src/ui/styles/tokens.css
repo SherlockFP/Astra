@@ -38,6 +38,8 @@
   --cls-warlock: #8788ee;      /* Warlock violet     */  --cls-demonhunter: #a330c9; /* Demon Hunter      */
   --cls-evoker: #33937f;       /* Evoker teal        */
 
+  /* CLASS SCAFFOLD tokens (Rahip white, Şaman blue, Druid orange) */  --cls-priest: #ffffff; --cls-shaman: #0070dd; --cls-druid: #ff7c0a;
+
   /* ---- resources (WoW power colours) ---- */
   --res-hp: #d23a3a;  --res-mana: #0070de;  --res-rage: #c41f3b;  --res-energy: #fff569;
   --res-focus: #ff7d0a;  --res-faith: #f5e6a0;  --res-essence: #4fd6c0;  --res-fury: #c842fc;  --res-xp: #8a4fe0;

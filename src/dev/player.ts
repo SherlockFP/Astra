@@ -107,6 +107,7 @@ const GEAR_SETS: Record<ClassId, (Partial<Record<'weapon' | 'offhand' | 'helm', 
   // GDD_CLASSES_V2 (NC04): dev gear for the new classes comes with their bases (NC09); one empty set keeps indexing safe
   monk: [undefined], archer: [undefined], paladin: [undefined], necromancer: [undefined], warlock: [undefined],
   demonhunter: [undefined], evoker: [undefined], // CM1 stubs
+  priest: [undefined], shaman: [undefined], druid: [undefined], // CLASS SCAFFOLD
 };
 
 // ---- player management ----

@@ -31,9 +31,11 @@ export interface PvpSetDef extends SetDef {
 }
 
 /** The seven playable classes (GDD_PVP_FINDER §4.3). Turkish class nouns come from the GDD list. */
-const CLASS_NOUN: Record<'knight' | 'barbarian' | 'mage' | 'rogue' | 'paladin' | 'warlock' | 'necromancer' | 'monk' | 'archer', string> = {
+const CLASS_NOUN: Record<'knight' | 'barbarian' | 'mage' | 'rogue' | 'paladin' | 'warlock' | 'necromancer' | 'monk' | 'archer' | 'priest' | 'shaman' | 'druid', string> = {
   knight: 'Şövalye', barbarian: 'Barbar', mage: 'Büyücü', rogue: 'Haydut', paladin: 'Paladin', warlock: 'Warlock', necromancer: 'Nekromant',
   monk: 'Keşiş', archer: 'Okçu',
+  // CLASS SCAFFOLD (PvP set stubs; the sets are derived from this map)
+  priest: 'Rahip', shaman: 'Şaman', druid: 'Druid',
 };
 
 const SAVAS_RUHU = {

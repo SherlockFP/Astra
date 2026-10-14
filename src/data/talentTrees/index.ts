@@ -19,6 +19,9 @@ import archer from './raw/archer';
 import paladin from './raw/paladin';
 import necromancer from './raw/necromancer';
 import warlock from './raw/warlock';
+import priest from './raw/priest';
+import shaman from './raw/shaman';
+import druid from './raw/druid';
 
 interface ClassEntry {
   id: ClassId;
@@ -114,6 +117,10 @@ const RAW_FILES: Record<ClassId, RawClassFile> = {
   paladin,
   necromancer,
   warlock,
+  // CLASS SCAFFOLD: generated raw trees (an empty class tree; spec trees come with the kits, see tools/gen-talent-data.mjs).
+  priest,
+  shaman,
+  druid,
   // CORE_MECHANICS §2 (CM1): empty stand-ins until the CM12 talent trees of the new classes are generated (no tree rows yet).
   demonhunter: { class: { palette: [], rows: [] }, specs: {} },
   evoker: { class: { palette: [], rows: [] }, specs: {} },

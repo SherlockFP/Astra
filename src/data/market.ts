@@ -216,6 +216,7 @@ export const DEFAULT_TITLES = ['Ucuz Mal Bol Çeşit', 'Acil Satılık', 'Zindan
 export const CLASS_BODY_COLOR: Record<ClassId, number> = {
   knight: 0x9aa8c4, barbarian: 0xb8532e, mage: 0x5d6bd6, rogue: 0x4f9e63, monk: 0x3fb0a6, archer: 0xc09a38,
   paladin: 0xd8c880, necromancer: 0x7aa860, warlock: 0x9a4cba, demonhunter: 0x8a2aaa, evoker: 0x2c8a78,
+  priest: 0xffffff, shaman: 0x0070dd, druid: 0xff7c0a, // CLASS SCAFFOLD
 };
 /** Canopy cloth colours, picked by the seller's hash so a stall keeps its colour on every client. */
 export const CANOPY_COLORS = [0xb03a2e, 0x2e6db0, 0x3a8a4a, 0xc8a02c, 0x8a3ab0, 0xd0702a, 0x2aa0a0, 0xc04a7a];

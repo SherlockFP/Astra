@@ -83,6 +83,10 @@ export const CLASS_VISUALS: Record<ClassId, ClassVisual> = {
   // CORE_MECHANICS §2 (CM1): stand-in recipes of the two new classes (ClassDefX.visual is the real recipe, CM10 / CM12)
   demonhunter: { url: KAYKIT + 'Rogue_Hooded.glb', resource: 'fury', main: [], off: [], helm: null, shield: null },
   evoker: { url: KAYKIT + 'Mage.glb', resource: 'essence', main: ['2H_Staff'], off: [], helm: 'Mage_Hat', shield: null },
+  // CLASS SCAFFOLD stand-in recipes (Rahip / Şaman on the Mage rig, Druid on the hooded Rogue rig)
+  priest: { url: KAYKIT + 'Mage.glb', resource: 'mana', main: ['2H_Staff'], off: [], helm: 'Mage_Hat', shield: null },
+  shaman: { url: KAYKIT + 'Mage.glb', resource: 'mana', main: [], off: [], helm: 'Mage_Hat', shield: null },
+  druid: { url: KAYKIT + 'Rogue_Hooded.glb', resource: 'mana', main: [], off: [], helm: null, shield: null },
 };
 
 /** Every toggleable weapon-ish node on the KayKit rigs (capes are never toggled). */
@@ -177,6 +181,8 @@ const ANCHOR_HUE: Record<ClassId, number> = {
   monk: 212, archer: 152, paladin: 355, necromancer: 252, warlock: 152,
   // CM1: demonhunter paletteClass rogue (152), evoker paletteClass mage (252)
   demonhunter: 152, evoker: 252,
+  // CLASS SCAFFOLD: paletteClass mage (252) for priest and shaman, rogue (152) for druid
+  priest: 252, shaman: 252, druid: 152,
 };
 
 export const CHARACTER_VARIANTS: VariantDef[] = [
