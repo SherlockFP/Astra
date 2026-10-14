@@ -21,10 +21,11 @@ const PALADIN_SPEC_LIST: SpecDef[] = [
     specials: [
       { id: 'trait_protection', desc: 'Blok +4 İnanç ve %20 ihtimalle +1 Kutsal Güç kazandırır; kusursuz savuşturma +1 Kutsal Güç verir.', params: { blockFaith: 4, blockHolyPower: 0.2 } },
     ],
-    skills: ['paladin_reckoning', 'paladin_shield_of_righteous', 'paladin_blessed_hammer', 'paladin_word_of_glory', 'paladin_avengers_shield', 'paladin_consecration', 'paladin_divine_steed'],
+    skills: ['paladin_reckoning', 'paladin_shield_of_righteous', 'paladin_blessed_hammer', 'paladin_word_of_glory', 'paladin_avengers_shield', 'paladin_consecration', 'paladin_divine_steed', 'paladin_hammer_of_justice', 'paladin_rebuke'],
     unlock: {
       paladin_reckoning: 10, paladin_shield_of_righteous: 10, paladin_avengers_shield: 10, paladin_consecration: 12,
       paladin_blessed_hammer: 10, paladin_word_of_glory: 1, paladin_divine_steed: 6,
+      paladin_rebuke: 10, paladin_prot_ardent: 20, paladin_prot_bulwark: 30, paladin_avenging_wrath: 10, paladin_hammer_of_justice: 10,
     },
     majors: { m45: 'paladin_avenging_wrath', m90: 'paladin_prot_ardent', m180: 'paladin_prot_bulwark' },
     fx: [
@@ -43,8 +44,8 @@ const PALADIN_SPEC_LIST: SpecDef[] = [
       { skill: 'paladin_hammer_of_wrath_exec', patch: { damage: { coef: 2.8, type: 'holy' } } },
     ],
     defaultBar: {
-      lmb: 'paladin_basic', rmb: 'paladin_blessed_hammer', q: 'paladin_shield_of_righteous', e: 'paladin_judgement', r: 'paladin_avengers_shield',
-      s1: 'paladin_consecration', s2: 'paladin_divine_steed', s3: 'paladin_word_of_glory', s4: 'paladin_reckoning',
+      lmb: 'paladin_basic', rmb: 'paladin_avengers_shield', q: 'paladin_shield_of_righteous', e: 'paladin_judgement', r: 'paladin_blessed_hammer',
+      s1: 'paladin_consecration', s2: 'paladin_divine_steed', s3: 'paladin_word_of_glory', s4: 'paladin_rebuke',
       m45: 'paladin_avenging_wrath', m90: 'paladin_prot_ardent', m180: 'paladin_prot_bulwark',
     },
   },
@@ -57,11 +58,12 @@ const PALADIN_SPEC_LIST: SpecDef[] = [
     ],
     skills: [
       'paladin_holy_shock', 'paladin_flash_of_light', 'paladin_cleanse', 'paladin_word_of_glory', 'paladin_light_of_dawn',
-      'paladin_divine_steed', 'paladin_rebuke', 'paladin_divine_shield',
+      'paladin_divine_steed', 'paladin_rebuke', 'paladin_divine_shield', 'paladin_holy_light', 'paladin_lay_on_hands', 'paladin_divine_toll', 'paladin_holy_aura_mastery',
     ],
     unlock: {
-      paladin_holy_shock: 10, paladin_flash_of_light: 10, paladin_rebuke: 10, paladin_cleanse: 12, paladin_word_of_glory: 1,
-      paladin_light_of_dawn: 15, paladin_divine_shield: 15, paladin_divine_steed: 6,
+      paladin_holy_shock: 10, paladin_flash_of_light: 1, paladin_rebuke: 10, paladin_cleanse: 12, paladin_word_of_glory: 1,
+      paladin_light_of_dawn: 15, paladin_divine_shield: 15, paladin_divine_steed: 6, paladin_holy_light: 20, paladin_lay_on_hands: 25,
+      paladin_divine_toll: 10, paladin_holy_aura_mastery: 30,
     },
     majors: { m45: 'paladin_divine_toll', m90: 'paladin_avenging_wrath', m180: 'paladin_holy_aura_mastery' },
     fx: [
@@ -78,8 +80,8 @@ const PALADIN_SPEC_LIST: SpecDef[] = [
       { skill: 'paladin_divine_shield', patch: { cooldown: 300 } },
     ],
     defaultBar: {
-      lmb: 'paladin_holy_basic', rmb: 'paladin_holy_shock', q: 'paladin_flash_of_light', e: 'paladin_word_of_glory', r: 'paladin_cleanse',
-      s1: 'paladin_light_of_dawn', s2: 'paladin_divine_steed', s3: 'paladin_divine_shield', s4: 'paladin_rebuke',
+      lmb: 'paladin_holy_basic', rmb: 'paladin_holy_shock', q: 'paladin_flash_of_light', e: 'paladin_light_of_dawn', r: 'paladin_word_of_glory',
+      s1: 'paladin_cleanse', s2: 'paladin_divine_steed', s3: 'paladin_divine_shield', s4: 'paladin_rebuke',
       m45: 'paladin_divine_toll', m90: 'paladin_avenging_wrath', m180: 'paladin_holy_aura_mastery',
     },
   },
@@ -92,11 +94,12 @@ const PALADIN_SPEC_LIST: SpecDef[] = [
     ],
     skills: [
       'paladin_crusader_strike', 'paladin_verdict', 'paladin_divine_storm', 'paladin_blade_of_justice', 'paladin_judgement',
-      'paladin_wake_of_ashes', 'paladin_divine_steed', 'paladin_rebuke',
+      'paladin_wake_of_ashes', 'paladin_divine_steed', 'paladin_rebuke', 'paladin_hammer_of_justice',
     ],
     unlock: {
       paladin_crusader_strike: 1, paladin_verdict: 10, paladin_divine_storm: 10, paladin_rebuke: 10, paladin_blade_of_justice: 12,
       paladin_judgement: 1, paladin_wake_of_ashes: 15, paladin_divine_steed: 6,
+      paladin_hammer_of_wrath: 15, paladin_ret_execution: 10, paladin_avenging_wrath: 10, paladin_divine_shield: 15, paladin_hammer_of_justice: 10,
     },
     treeSkills: { paladin_hammer_of_wrath: 's05' },
     majors: { m45: 'paladin_ret_execution', m90: 'paladin_avenging_wrath', m180: 'paladin_divine_shield' },
@@ -120,8 +123,8 @@ const PALADIN_SPEC_LIST: SpecDef[] = [
       { skill: 'paladin_avengers_shield', params: { tauntDur: 0 } },
     ],
     defaultBar: {
-      lmb: 'paladin_basic', rmb: 'paladin_crusader_strike', q: 'paladin_verdict', e: 'paladin_blade_of_justice', r: 'paladin_judgement',
-      s1: 'paladin_divine_storm', s2: 'paladin_divine_steed', s3: 'paladin_wake_of_ashes', s4: 'paladin_rebuke',
+      lmb: 'paladin_basic', rmb: 'paladin_crusader_strike', q: 'paladin_verdict', e: 'paladin_judgement', r: 'paladin_wake_of_ashes',
+      s1: 'paladin_blade_of_justice', s2: 'paladin_divine_steed', s3: 'paladin_divine_storm', s4: 'paladin_rebuke',
       m45: 'paladin_ret_execution', m90: 'paladin_avenging_wrath', m180: 'paladin_divine_shield',
     },
   },

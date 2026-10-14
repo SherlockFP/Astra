@@ -37,6 +37,7 @@ export const ROTATIONS_KIT_PALADIN: Record<string, KitApl> = {
   },
   paladin_holy: {
     st: [
+      'paladin_divine_shield if hp% < 25 && cd_ready(paladin_divine_shield)',
       'paladin_cleanse if allies.debuffed >= 1 && cd_ready(paladin_cleanse)',
       'paladin_divine_toll if cd_ready(paladin_divine_toll) && (allies.injured >= 3 || pips:holypower <= 1)',
       'paladin_avenging_wrath if cd_ready(paladin_avenging_wrath) && cd(paladin_divine_toll) > 30',
@@ -45,6 +46,7 @@ export const ROTATIONS_KIT_PALADIN: Record<string, KitApl> = {
       'paladin_holy_shock if cd_ready(paladin_holy_shock)',
       'paladin_light_of_dawn if pips:holypower >= 3 && allies.injured >= 3',
       'paladin_word_of_glory if pips:holypower >= 5 || (pips:holypower >= 3 && ally.low% < 60)',
+      'paladin_holy_light if ally.low% < 35 && !status:infusion_of_light',
       'paladin_flash_of_light if ally.low% < 60',
       'paladin_holy_basic',
     ],
