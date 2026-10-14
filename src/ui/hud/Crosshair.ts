@@ -92,7 +92,9 @@ export class Crosshair implements HudWidget {
   }
 
   update(ctx: HudCtx): void {
-    const show = (ctx.mode === 'town' || ctx.mode === 'dungeon') && reticleAtCentre() && !ctx.ui.wantsCursor() && !!ctx.player && !ctx.player.isDead;
+    // WoW has no crosshair: the reticle stays an aim point (reticleAtCentre) but is never drawn in the WoW scheme
+    const wow = G.settings.data.controlScheme === 'wow';
+    const show = !wow && (ctx.mode === 'town' || ctx.mode === 'dungeon') && reticleAtCentre() && !ctx.ui.wantsCursor() && !!ctx.player && !ctx.player.isDead;
     setClass(this.el, 'on', show);
     setClass(this.el, 'hover', show && !!ctx.hover);
     const boss = ctx.hover && (ctx.hover as unknown as { isBoss?: boolean }).isBoss;
