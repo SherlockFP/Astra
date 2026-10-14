@@ -202,7 +202,7 @@ boss({
       { yell: 'AŞIRI YÜK PROTOKOLÜ.' }),
   ],
   intro: 'KURALLAR BELİRLİ. İHLAL EDEN İMHA EDİLİR.', death: 'Kural... ihlal... edildi...',
-  arena: { cx: 120, cz: 40, w: 80, h: 64, homeX: 120, homeZ: 26 },
+  arena: { cx: 144, cz: 60, w: 80, h: 64, homeX: 144, homeZ: 46 },
 });
 poise('boss_arkanotron', 600);
 // energy hooks are BossScript method names (BossController.hook), see ai/bosses/buyucu_terasi.ts
@@ -227,7 +227,7 @@ boss({
     bp('p2', 0.5, ['seranel_flurry', 'seranel_dash', 'seranel_leap', 'seranel_glaive', 'seranel_hastening'], { yell: 'Büyülerin burada işe yaramaz!' }),
   ],
   intro: "Fener'e yaklaşan her büyü susar.", death: 'Fener... sönmesin...',
-  arena: { cx: 204, cz: 100, w: 72, h: 56, homeX: 204, homeZ: 112 },
+  arena: { cx: 228, cz: 100, w: 72, h: 56, homeX: 228, homeZ: 112 },
 });
 poise('boss_seranel', 500);
 BOSSES.boss_seranel.energy = { max: 100, start: 0, regen: 2.6, onFull: 'waveFromFull' };
@@ -252,7 +252,7 @@ boss({
       { yell: 'Daha çok... daha çok biz!', ability: 'gemellus_triplicate' }),
   ],
   intro: 'Biz çoğuz. Siz azsınız.', death: 'Bir... olduk...',
-  arena: { cx: 204, cz: 180, w: 72, h: 56, homeX: 204, homeZ: 168 },
+  arena: { cx: 228, cz: 190, w: 72, h: 56, homeX: 228, homeZ: 180 },
 });
 poise('boss_gemellus', 600);
 
@@ -278,6 +278,6 @@ boss({
       { yell: 'Gökler yırtılsın!' }),
   ],
   intro: 'Yörünge tamamlanıyor. Siz eksik parçasınız.', death: 'Yörünge... kırıldı...',
-  arena: { cx: 140, cz: 252, w: 72, h: 56, homeX: 140, homeZ: 252 },
+  arena: { cx: 164, cz: 268, w: 72, h: 56, homeX: 164, homeZ: 268 },
 });
 poise('boss_degentrius', 700);
