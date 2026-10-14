@@ -1,0 +1,11 @@
+{
+  "_source": "Class leftovers (mage): the removed Kadim Kıyamet (mage_arcane_cataclysm) is no longer on any bar. Each node that referenced it points to an existing mage skill, same effect shape. PM-TAL format; applied by tools/apply-talent-patch.mjs, then tools/gen-talent-data.mjs regenerates src/data/talentTrees/raw/mage.ts.",
+  "_format": "node = tree / slot+option; oldFx -> newFx; newName null = keep the old Turkish name; newDesc = Turkish description for the new fx.",
+  "nodes": [
+    { "tree": "class:mage", "node": "s25", "oldFx": "M mage_arcane_cataclysm cdx=.85 p.strikes+=3", "newFx": "M mage_arcane_surge cdx=.85 radx=1.1", "newName": "Dalga Çağrısı", "newDesc": "Gizem Dalgalanması bekleme −%15, alanı +%10." },
+    { "tree": "class:mage", "node": "s30B", "oldFx": "S arcaneDamagePct=.25 ;; M mage_arcane_cataclysm dmgx=1.25", "newFx": "S arcaneDamagePct=.25 ;; M mage_arcane_barrage dmgx=1.25", "newName": null, "newDesc": "Gizem hasarı +%25; Gizem Barajı hasarı +%25." },
+    { "tree": "spec:mage_fire", "node": "s27", "oldFx": "M mage_arcane_cataclysm dmgx=1.15 st=burn:4:.5", "newFx": "M mage_flamestrike dmgx=1.15 st=burn:4:.5", "newName": "Alev Kıvılcımı", "newDesc": "Alev Sütunu hasarı +%15 ve yanma bırakır." },
+    { "tree": "spec:mage_frost", "node": "s27", "oldFx": "M mage_arcane_cataclysm dmgx=1.15 st=chill:4:1", "newFx": "M mage_blizzard dmgx=1.15 st=chill:4:1", "newName": "Kutup Soğuğu", "newDesc": "Kar Fırtınası hasarı +%15 ve donmuş hedefleri üşütür." },
+    { "tree": "spec:mage_arcane", "node": "s21", "oldFx": "T cast:mage_arcane_cataclysm => pip(arcane,2)", "newFx": "T cast:mage_arcane_surge => pip(arcane,2)", "newName": "Yüklü Dalga", "newDesc": "Gizem Dalgalanması 2 Gizem Yükü verir." }
+  ]
+}

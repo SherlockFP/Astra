@@ -468,7 +468,9 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
 
 // ---- kit.druid.resto.new: Yeniden Doğuş (battle res: refused without a dead ally, accepted with one) and Çiçeklenme (ground heal zone)
 {
+  errors.length = 0;
   const p = newDruid(SPECS.druid_restoration);
+  p.position.set(400, 0, 400); // far from the other sim actors: no leftover dead ally can be in range
   H.step(2);
   p.resource = 200;
   ok('kit.druid.resto Yeniden Doğuş is refused with no dead ally in range', G.skills.tryCast(p, 'druid_rebirth', H.aimFor(p, null)) === false);
@@ -479,6 +481,7 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
 }
 {
   const q = newDruid(SPECS.druid_restoration);
+  q.position.set(-400, 0, -400);
   H.step(2);
   q.resource = 200;
   const ally = new H.FakePlayer('druid', 30); ally.id = 94; H.world.add(ally);
