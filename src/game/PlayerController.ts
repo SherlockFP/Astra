@@ -4,7 +4,7 @@ import { isInteractable, type Interactable } from '../entities/Interactable';
 import { angleDiff, clamp } from '../core/utils';
 import { getItemBase } from '../data/items';
 import { FEEL } from '../combat/feel';
-import { SKILL_SLOT_KEYS, type AimInfo, type SkillSlotKey } from '../types/skills';
+import { SKILL_SLOT_KEYS, type AimInfo, type SkillDef, type SkillSlotKey } from '../types/skills';
 import { cycleFriendly, friendlyTargetId, selectPartySlot } from '../combat/healing';
 import type { Player } from '../entities/Player';
 import type { Enemy } from '../entities/Enemy';
@@ -33,6 +33,9 @@ const WALK_MUL = 0.45;
 const BACKPEDAL_MUL = 0.643;      // WoW: back-pedal 4.5 / run 7
 const JUMP_V = 9.3;               // 1.5 m apex, ~0.65 s airtime
 const GRAVITY = 28.5;
+// WoW retail jump: 1.6 m apex in 0.58 s airtime (apex = g t^2 / 8, v = g t / 2). Aksiyon keeps JUMP_V / GRAVITY above.
+const WOW_JUMP_V = 11;
+const WOW_GRAVITY = 38;
 // AE-3 (agile-evoker §3.0): İblis Avcısı movement signature. A second jump in the air (+60 % height) and a glide while jump is held on the way down.
 const AIR_JUMP_V = JUMP_V * 1.265;   // sqrt(1.6): +60 % apex height
 const GLIDE_FALL = 3.2;              // m/s terminal fall speed while gliding (about a quarter of a long fall)
@@ -77,6 +80,18 @@ const WOW_CURSOR: Record<'enemy' | 'interact' | 'loot', string> = {
 /** Roll speed at normalised time u: fast burst that eases out to ~run speed (integrates to DODGE_DIST over DODGE_TIME). */
 function dodgeSpeed(u: number): number {
   return (DODGE_DIST / DODGE_TIME) * (1.1 * (1 - u) + 0.45);
+}
+
+/** WoW targeting: what kind of enemy-targeting offensive ability a skill is (null = not one: buffs, heals, ground / self effects, movement). */
+function offensiveKind(def: SkillDef): 'melee' | 'ranged' | null {
+  if (def.heal || def.allyTarget === 'friendly' || def.requires?.target === 'ally') return null;
+  if (!def.damage && !(def.statuses && def.statuses.length)) return null;
+  switch (def.targeting) {
+    case 'melee_arc': return 'melee';
+    case 'target_instant': return def.tags.includes('melee') ? 'melee' : 'ranged';
+    case 'projectile': case 'target_projectile': case 'beam': return 'ranged';
+    default: return null;
+  }
 }
 
 function turnToward(cur: number, want: number, lambda: number, maxRate: number, dt: number): number {
@@ -655,7 +670,8 @@ export class PlayerController {
     const p = this.player;
     let mul = p.getActionMoveMul();
     const cast = p.cast;
-    if (cast) {
+    // WoW: casting never roots or slows. Moving cuts a hard cast / channel instead (stepMovement), like retail
+    if (cast && !this.wow) {
       const def = G.skills?.getDef(cast.skillId);
       if (def?.lockMovement) mul = 0;
       else if (cast.channel) mul *= 0.5;
@@ -663,6 +679,19 @@ export class PlayerController {
     }
     // Siper (GDD_V2 §3.4): guarding walks at x0.6
     return G.combat?.isGuarding(p) ? mul * 0.6 : mul;
+  }
+
+  /**
+   * WoW: moving (or jumping) interrupts a hard cast or a channel, unless the skill is castable on the move (`lockMovement: false`) or
+   * the caster hovers (Süzül). Instants are never touched: they run while the character keeps moving.
+   */
+  private cutCastOnMove(): void {
+    const p = this.player;
+    const cast = p.cast;
+    if (!cast || p.isDead) return;
+    const def = G.skills?.getDef(cast.skillId);
+    if (def?.lockMovement === false || p.statuses.has('hover')) return;
+    G.skills.interrupt(p);
   }
 
   private stepMovement(dt: number, axis: { x: number; y: number }, canInput: boolean, action: boolean): void {
@@ -676,6 +705,8 @@ export class PlayerController {
     this.moveBasis(_f, _r);
     let wx = 0, wz = 0;
     const hasInput = steering && (axis.x !== 0 || axis.y !== 0);
+    p.moveIntent = hasInput;
+    if (this.wow && hasInput) this.cutCastOnMove();
     // WoW air momentum: the jump commits its horizontal velocity, and the keys nudge along the take-off heading. Turning the
     // character / camera mid-air (mouselook, turn keys) must not redirect the velocity, so the basis freezes at take-off.
     const wowAir = this.wow && !this.grounded;
@@ -698,19 +729,17 @@ export class PlayerController {
     const rmbSteer = !action && this.cam.orbiting;
     let want: number | null = null;
     let lambda = 14, maxRate = 11;
+    let snapFace = false;
     if (this.wow) {
       // CONTROLS_WOW §5 facing table, first match wins. Movement input alone never turns the character (row 7).
       const turnL = !!input.down('turnLeft'), turnR = !!input.down('turnRight');
       if (this.dodge) {
         want = null; // row 1: the roll decides
       } else if (this.wowOut.mouseLook) {
-        want = this.cam.faceYaw; // row 2: mouselook
-        lambda = 40; maxRate = 30;
-      } else if (!!p.cast || (this.faceHold > 0 && !(steering && turnL !== turnR))) {
-        // row 3: a hard cast keeps facing the aim point. The 0.55 s post-cast hold yields to the turn keys (arrow turns win)
-        want = this.aimYaw;
-        lambda = 42; maxRate = 24;
+        want = this.cam.faceYaw; // row 2: mouselook. 1:1 like retail: the character takes the camera heading in the same frame
+        snapFace = true;
       } else if (G.combat?.isGuarding(p)) {
+        // (row 3, "a cast faces the aim point", is gone: retail WoW never turns the character for a cast or an auto-attack)
         want = this.cam.faceYaw; // row 4: guard
         lambda = 30; maxRate = 14;
       } else if (steering && turnL !== turnR) {
@@ -743,8 +772,17 @@ export class PlayerController {
       want = Math.atan2(wx, wz);
       lambda = 16; maxRate = 12;
     }
-    if (want !== null && p.canMove() && !forced) p.yaw = turnToward(p.yaw, want, lambda, maxRate, dt);
+    if (want !== null && snapFace && p.canMove() && !forced) p.yaw = want;
+    else if (want !== null && p.canMove() && !forced) p.yaw = turnToward(p.yaw, want, lambda, maxRate, dt);
     else if (want !== null && forced && busy) p.yaw = turnToward(p.yaw, want, lambda, maxRate, dt);
+    // WoW: movement is character-relative, so a turn made this frame (mouselook, turn keys) steers this frame's step, not the next one
+    if (this.wow && hasInput && !wowAir) {
+      this.moveBasis(_f, _r);
+      wx = _f.x * axis.y + _r.x * axis.x;
+      wz = _f.z * axis.y + _r.z * axis.x;
+      const l2 = Math.hypot(wx, wz) || 1;
+      wx /= l2; wz /= l2;
+    }
 
     // ---- speed ----
     let maxSpeed = p.moveSpeed();
@@ -773,6 +811,8 @@ export class PlayerController {
       const dl = Math.hypot(dvx, dvz);
       let rate = hasInput ? accel : decel;
       if (hasInput && v.x * tx + v.z * tz < 0) rate *= 1.4;      // quick reversals
+      // WoW on the ground: full speed on the first frame and a dead stop on release (no ramp, no slide, whatever the frame time)
+      if (this.wow && this.grounded) rate = Number.POSITIVE_INFINITY;
       if (!this.grounded) {
         // WoW: no braking in the air (released keys keep the momentum), a small steer while keys are held. Aksiyon keeps AIR_CONTROL.
         if (this.wow) rate = hasInput ? accel * WOW_AIR_CONTROL : 0;
@@ -927,7 +967,7 @@ export class PlayerController {
       this.vy = fm.vy;
       this.grounded = pos.y - gy <= 0.001;
     } else if (!this.grounded) {
-      this.vy -= GRAVITY * dt;
+      this.vy -= (this.wow ? WOW_GRAVITY : GRAVITY) * dt;
       // AE-3: İblis Avcısı glide: holding jump while falling caps the fall speed; a glide also forgets the fall height (no landing damage)
       if (p.classId === 'demonhunter' && this.vy < -GLIDE_FALL && G.input?.down('jump') && !p.isDead && !this.dodge) {
         this.vy = -GLIDE_FALL;
@@ -1007,7 +1047,7 @@ export class PlayerController {
       const fm = p.forcedMove;
       if (fm && p.world && p.world.time < fm.until) return;
       this.airJumps++;
-      this.vy = AIR_JUMP_V;
+      this.vy = this.wow ? WOW_JUMP_V * 1.265 : AIR_JUMP_V;
       p.jumping = true;
       this.fallStartY = p.position.y;
       const a = p.anim;
@@ -1024,9 +1064,10 @@ export class PlayerController {
     if (!this.grounded || p.isDead || p.dodging || !p.canMove()) return;
     const world = p.world;
     if (p.forcedMove && world && world.time < p.forcedMove.until) return;
+    if (this.wow) this.cutCastOnMove(); // retail: a jump cuts a hard cast
     this.grounded = false;
     p.jumping = true;
-    this.vy = JUMP_V;
+    this.vy = this.wow ? WOW_JUMP_V : JUMP_V;
     const gy = world?.groundY(p.position.x, p.position.z) ?? 0;
     this.fallStartY = gy;
     p.position.y = gy + 0.001;
@@ -1231,14 +1272,101 @@ export class PlayerController {
 
   }
 
+  /**
+   * WoW (Midnight retail) ability targeting, run before a bar skill is cast. Returns false = refuse (a "Hedef yok" / "Menzil dışı" /
+   * "Hedef önünde değil" error was reported), null = nothing to do (not an offensive target ability, or a free-aimed spell),
+   * else the enemy the ability will hit.
+   *  - no hard target: the best enemy in front is acquired and selected (mouseover first, then the nearest in a 90 deg cone);
+   *  - melee abilities need the target in range and inside the front 180 deg of the character (nothing ever turns the character);
+   *  - the caller arms the auto-attack after a successful cast.
+   */
+  private wowPreCast(slot: SkillSlotKey): { target: Enemy; reaimed: boolean } | null | false {
+    const p = this.player;
+    const sk = G.skills;
+    const id = sk.getSlotSkill(p, slot);
+    const def = id ? sk.getDef(id) : undefined;
+    const kind = def ? offensiveKind(def) : null;
+    if (!def || !kind) return null;
+    const act = SLOT_ACTION[slot];
+    const edge = !!act && G.input.pressed(act);
+    const reach = kind === 'melee' ? (def.range ?? 2.5) + AUTO.meleeSlack + (def.params?.lunge ? 1 : 0) : Math.min(def.range ?? AUTO.rangedMax, WOW_TAB_RANGE + 5);
+    let tgt = this.hardTarget;
+    let reaimed = false;
+    if (!tgt || tgt.isDead || tgt.removed) {
+      tgt = this.acquireEnemy(kind, reach + (kind === 'melee' ? 3 : 0));
+      if (!tgt) {
+        if (kind === 'melee') {
+          if (edge) sk.fail('target');
+          return false;
+        }
+        return null; // a free-aimed projectile still flies along the aim
+      }
+      this.selectEnemy(tgt);
+      this.aimFrame = -1;
+      reaimed = true;
+    }
+    const dx = tgt.position.x - p.position.x, dz = tgt.position.z - p.position.z;
+    if (Math.hypot(dx, dz) - tgt.radius > reach) {
+      if (edge) sk.fail('range');
+      return false;
+    }
+    if (kind === 'melee') {
+      const heading = this.wowOut.mouseLook ? this.cam.faceYaw : p.yaw;
+      if (Math.abs(angleDiff(heading, Math.atan2(dx, dz))) > Math.PI / 2) {
+        if (edge) sk.fail('facing');
+        return false;
+      }
+    }
+    return { target: tgt, reaimed };
+  }
+
+  /**
+   * Retail "auto target enemy": the enemy under the cursor if it is within `radius`, else the nearest living hostile within `radius`
+   * (edge distance) in a 90 deg cone in front of the character (melee) or of the camera (ranged, with line of sight).
+   */
+  private acquireEnemy(kind: 'melee' | 'ranged', radius: number): Enemy | null {
+    const p = this.player;
+    const world = p.world;
+    if (!world) return null;
+    const near = (e: Enemy) => !e.isDead && !e.removed && e.alive && Math.hypot(e.position.x - p.position.x, e.position.z - p.position.z) - e.radius <= radius;
+    const over = this.softTarget;
+    if (over && near(over) && (kind === 'melee' || world.nav.lineOfSight(p.position.x, p.position.z, over.position.x, over.position.z))) return over;
+    if (kind === 'melee') this.moveBasis(_f, _r);
+    else this.cam.getBasis(_f, _r);
+    const fl = Math.hypot(_f.x, _f.z) || 1;
+    const fx = _f.x / fl, fz = _f.z / fl;
+    let best: Enemy | null = null;
+    let bestD = Infinity;
+    for (const e of world.enemies) {
+      if (!near(e)) continue;
+      const dx = e.position.x - p.position.x, dz = e.position.z - p.position.z;
+      const d = Math.hypot(dx, dz);
+      if (d > 0.01 && (dx * fx + dz * fz) / d < Math.SQRT1_2) continue;
+      if (kind === 'ranged' && !world.nav.lineOfSight(p.position.x, p.position.z, e.position.x, e.position.z)) continue;
+      if (d < bestD) { bestD = d; best = e; }
+    }
+    return best;
+  }
+
   private fireSlot(slot: SkillSlotKey, aim: AimInfo): boolean {
     const p = this.player;
     let ok = false;
+    // WoW targeting (retail): auto-acquire an enemy in front, range / facing errors, auto-attack from the ability
+    let wowTarget: Enemy | null = null;
+    if (this.wow && slot !== 'lmb') {
+      const pre = this.wowPreCast(slot);
+      if (pre === false) return false;
+      if (pre) {
+        wowTarget = pre.target;
+        if (pre.reaimed) aim = this.getAim();
+      }
+    }
     try {
       ok = G.skills.tryCastSlot(p, slot, aim);
     } catch (e) {
       console.error('[controller] tryCastSlot failed', e);
     }
+    if (ok && wowTarget && !wowTarget.isDead && !wowTarget.removed) this.armAuto(wowTarget.id); // an offensive ability starts the auto-attack
     if (ok) {
       this.timeSinceCast = 0;
       this.faceHold = FACE_HOLD;
@@ -1276,7 +1404,8 @@ export class PlayerController {
       }
       if (drop && (hard.isDead || hard.removed)) {
         // GDD_LIFE §4.7: the locked target died -> pick the nearest one within 8 m and the cone, else release
-        const alt = this.nearestInCone(60, 8, hard);
+        // WoW default: the corpse is simply dropped, the next offensive ability auto-acquires (acquireEnemy)
+        const alt = this.wow ? null : this.nearestInCone(60, 8, hard);
         this.hardTarget = alt;
         this.losLost = 0;
         this.setLock(alt);
@@ -1769,9 +1898,8 @@ export class PlayerController {
         valid: !tgt.isDead && !tgt.removed && tgt.alive,
       };
     }
-    const nearestId = !target || !target.valid
-      ? (this.nearestInCone(AUTO.retargetCone, AUTO.retargetRange, null)?.id ?? null)
-      : null;
+    // WoW default: a dead target is NOT replaced. The driver disarms; the next offensive ability auto-acquires (acquireEnemy)
+    const nearestId: number | null = null;
     // stun, hard cast, charge, ground aim, roll before its attack window, !canAct, panels, chat: pause (never disarm)
     const paused = !canInput || p.statuses.stunned || !!p.cast || !p.canAct() || sk.isAiming(p) || sk.isCharging(p)
       || (!!this.dodge && this.dodge.t < DODGE_ATTACK_AT);
@@ -1789,8 +1917,8 @@ export class PlayerController {
       inCombat: p.inCombat,
     });
     if (out.toast) this.wowToast(out.toast);
-    // idle and in reach: the character turns to the target (facing table row 6)
-    if (out.faceTarget && target && tgt) this.autoFaceWant = Math.atan2(tgt.position.x - p.position.x, tgt.position.z - p.position.z);
+    // WoW never turns the character on its own (only RMB mouselook does): out.faceTarget is ignored, an off-facing target gets the
+    // "Hedef önünde değil" toast from the driver instead
     if (out.swing && target && tgt) {
       const dx = tgt.position.x - p.position.x, dz = tgt.position.z - p.position.z;
       const len = Math.hypot(dx, dz) || 1;
@@ -2148,6 +2276,7 @@ export class PlayerController {
     this.hardTarget = null;
     this.losLost = 0;
     this.setLock(null);
+    if (this.wow) this.disarmAuto(); // Esc stops the auto-attack with the target
     this.emitTarget();
     return true;
   }

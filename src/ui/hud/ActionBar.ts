@@ -66,8 +66,10 @@ const YENI_MS = 30000;
 const FAIL_TEXT: Record<string, string> = {
   cooldown: 'Henüz hazır değil',
   resource: 'Yeterli kaynak yok',
-  range: 'Hedef menzil dışında',
+  range: 'Menzil dışı',
   target: 'Geçerli bir hedef yok',
+  facing: 'Hedef önünde değil',
+  moving: 'Hareket halindeyken kullanılamaz',
   stunned: 'Sersemlemiş durumdasın',
   casting: 'Zaten bir yetenek kullanıyorsun',
   silenced: 'Susturuldun',
