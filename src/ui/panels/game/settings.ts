@@ -9,7 +9,7 @@ type BoolKeys = { [K in keyof SettingsData]: SettingsData[K] extends boolean ? K
 
 const PRESETS: { id: string; name: string; desc: string; values: Partial<SettingsData> }[] = [
   { id: 'ps1', name: 'PS1 Klasik', desc: 'İri pikseller, titreyen köşeler, dithering', values: { psx: true, psxPixelScale: 4, psxJitter: 0.85, psxAffine: true, psxDither: true, psxColorDepth: 5, bloom: true, bloomStrength: 0.5, shadows: false } },
-  { id: 'balanced', name: 'Dengeli', desc: 'Varsayılan Efsun görünümü', values: { psx: true, psxPixelScale: DEFAULT_SETTINGS.psxPixelScale, psxJitter: DEFAULT_SETTINGS.psxJitter, psxAffine: true, psxDither: true, psxColorDepth: 5, bloom: true, bloomStrength: 0.6, shadows: true } },
+  { id: 'balanced', name: 'Dengeli', desc: 'Varsayılan Efsun görünümü (keskin)', values: { psx: false, psxPixelScale: DEFAULT_SETTINGS.psxPixelScale, psxJitter: 0, psxAffine: false, psxDither: false, psxColorDepth: 5, bloom: true, bloomStrength: 0.6, shadows: true } },
   { id: 'clean', name: 'Temiz', desc: 'Modern, keskin görüntü', values: { psx: false, psxPixelScale: 1, psxJitter: 0, psxAffine: false, psxDither: false, psxColorDepth: 8, bloom: true, bloomStrength: 0.4, shadows: true } },
 ];
 
@@ -176,16 +176,16 @@ export class SettingsPanel extends GamePanel {
       this.num('psxColorDepth', 'Renk Derinliği', 3, 8, 1, (v) => `${v} bit`, 'Kanal başına bit sayısı'),
     );
     const psxRow = row(
-      'PSX Görünümü',
+      'PSX Filtresi',
       toggle(psxOn, (v) => {
         G.settings.set('psx', v);
         psxRows.classList.toggle('is-off', !v);
       }),
-      'Tüm PS1 efektlerini aç/kapat',
+      'PS1 piksel ve titreme efektlerini aç/kapat (varsayılan kapalı)',
     );
     this.bodyEl.append(
       this.section('Hazır Ayarlar', presets),
-      this.section('PSX Görünümü', psxRow, psxRows),
+      this.section('PSX Filtresi', psxRow, psxRows),
       this.section('Modeller', this.voxelRow()),
       this.section(
         'Işık ve Efektler',

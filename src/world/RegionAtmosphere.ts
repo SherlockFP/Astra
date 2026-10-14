@@ -33,11 +33,22 @@ export interface Atmo {
   cloudS: THREE.Color;
 }
 
+/**
+ * Look pass on the region fog: the tint (hue) stays, the colour gets a little more saturated and less milky (lighter fog
+ * washed out the enemies), and the fog starts later so the nearby world stays crisp.
+ */
+function fogLook(c: THREE.Color): THREE.Color {
+  const hsl = { h: 0, s: 0, l: 0 };
+  c.getHSL(hsl);
+  return c.setHSL(hsl.h, Math.min(1, hsl.s * 1.25), hsl.l * 0.9);
+}
+
 export function atmoOf(t: RegionTheme): Atmo {
-  const fog = new THREE.Color(t.fogColor);
+  const fog = fogLook(new THREE.Color(t.fogColor));
   const hemiSky = new THREE.Color(t.hemiSky);
+  const far = t.fogFar;
   return {
-    fog, near: t.fogNear, far: t.fogFar,
+    fog, near: Math.min(t.fogNear * 1.6, far * 0.6), far,
     hemiSky, hemiGround: new THREE.Color(t.hemiGround), hemiI: t.hemiIntensity,
     sunC: new THREE.Color(t.sunColor), sunI: t.sunIntensity,
     zen: new THREE.Color(t.skyZenith), mid: fog.clone().lerp(hemiSky, 0.35), hor: new THREE.Color(t.skyHorizon),

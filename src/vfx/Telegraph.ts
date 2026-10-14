@@ -65,11 +65,12 @@ void main() {
   float pulse = 0.82 + 0.18 * sin(uTime * 9.0 + uKind);
   if (uKind > 0.5 && uKind < 1.5) pulse = 0.85 + 0.15 * sin(uTime * 4.0); // soak: calmer
 
-  float a = 0.14 + hatch * 0.07;                      // base
-  a = mix(a, 0.46 + 0.1 * sin(uTime * 14.0 + fc * 9.0), filled); // filled part
-  a += rim * 0.34 * pulse + rimHard * 0.4;
+  float a = 0.35 + hatch * 0.07;                      // base: 35 % fill so the area reads at a glance
+  a = mix(a, 0.6 + 0.1 * sin(uTime * 14.0 + fc * 9.0), filled); // filled part
+  a += rim * 0.2 * pulse;
+  a = mix(a, 1.0, rimHard);                           // opaque edge
   a += front * 0.5;
-  a = clamp(a, 0.0, 0.92);
+  a = clamp(a, 0.0, 1.0);
 
   vec3 col = mix(uColor, uHot, clamp(rim * 0.6 + front * 0.8 + filled * 0.25, 0.0, 1.0));
   col = mix(col, vec3(1.0), uFlash);
