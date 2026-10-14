@@ -10,15 +10,15 @@ import type { SpecDef, SpecId } from '../types/v2';
 const KNIGHT_SPEC_LIST: SpecDef[] = [
   {
     id: 'knight_protector', classId: 'knight', name: 'Koruyucu', role: 'tank',
-    desc: 'Kalkan Kaldır ve Yemin Siperi ile aktif azaltma. Kalkan Darbesi, Gök Gürültüsü ve İntikam ile tehdit üretir.',
+    desc: 'Kalkan Kaldırma ve Acı Yutma ile aktif azaltma. Kalkan Vuruşu, Gök Gürültüsü ve İntikam ile tehdit üretir.',
     stats: { maxHpPct: 0.30, armorPct: 0.40, blockChance: 0.15, blockAmount: 0.10, threatPct: 2.0, parryWindow: 0.07 },
     specials: [
       { id: 'protector_cheat', desc: '90 saniyede bir ölümcül darbe canını %15\'e indirir ve 1.5 saniye dokunulmazlık verir (Son Savunma).', params: { cooldown: 90, hpLeft: 0.15, invul: 1.5 } },
       { id: 'trait_anger', desc: 'Harcanan her 20 Kararlılık, majör bekleme sürelerini 1 saniye azaltır (Öfke Yönetimi).', params: { angerPer: 20 } },
     ],
-    skills: ['knight_provoke', 'knight_shield_block', 'knight_ward_of_oath', 'knight_revenge', 'knight_thunder_clap', 'knight_pummel'],
-    unlock: { knight_provoke: 10, knight_shield_block: 10, knight_pummel: 10, knight_revenge: 12, knight_thunder_clap: 12, knight_ward_of_oath: 15 },
-    majors: { m45: 'knight_challenge', m90: 'knight_avatar', m180: 'knight_unbroken_bastion' },
+    skills: ['knight_shield_slam', 'knight_revenge', 'knight_thunder_clap', 'knight_ward_of_oath', 'knight_shield_block', 'knight_provoke', 'knight_heroic_throw', 'knight_unbroken_bastion', 'knight_shield_wall', 'knight_challenge', 'knight_pummel'],
+    unlock: { knight_shield_slam: 10, knight_revenge: 12, knight_thunder_clap: 12, knight_ward_of_oath: 15, knight_shield_block: 10, knight_provoke: 10, knight_heroic_throw: 12, knight_unbroken_bastion: 10, knight_shield_wall: 30, knight_challenge: 10, knight_pummel: 10 },
+    majors: { m45: 'knight_unbroken_bastion', m90: 'knight_avatar', m180: 'knight_shield_wall' },
     // Blok (30 %, icd 1.5 s) and perfect parry (100 %) light İntikam Hazır (6 s: the next İntikam is free, +25 %, threat x2)
     fx: 'T block ch=.30 icd=1.5 => st(self,revenge_ready,6) ;; T parry => st(self,revenge_ready,6)',
     mods: [
@@ -37,9 +37,9 @@ const KNIGHT_SPEC_LIST: SpecDef[] = [
       { skill: 'knight_basic_4', params: { gainPerTarget: 0 } },
     ],
     defaultBar: {
-      lmb: 'knight_basic', rmb: 'knight_shield_bash', q: 'knight_revenge', e: 'knight_shield_block', r: 'knight_provoke',
+      lmb: 'knight_basic', rmb: 'knight_shield_block', q: 'knight_shield_slam', e: 'knight_revenge', r: 'knight_provoke',
       s1: 'knight_thunder_clap', s2: 'knight_charge', s3: 'knight_ward_of_oath', s4: 'knight_pummel',
-      m45: 'knight_challenge', m90: 'knight_avatar', m180: 'knight_unbroken_bastion',
+      m45: 'knight_unbroken_bastion', m90: 'knight_avatar', m180: 'knight_shield_wall',
     },
   },
   {
@@ -49,14 +49,14 @@ const KNIGHT_SPEC_LIST: SpecDef[] = [
     specials: [
       { id: 'trait_anger', desc: 'Harcanan her 20 Kararlılık, majör bekleme sürelerini 1 saniye azaltır (Öfke Yönetimi).', params: { angerPer: 20 } },
     ],
-    skills: ['knight_mortal_strike', 'knight_overpower', 'knight_rend', 'knight_die_by_sword', 'knight_pummel'],
-    unlock: { knight_mortal_strike: 10, knight_overpower: 10, knight_pummel: 10, knight_rend: 12, knight_die_by_sword: 15 },
+    skills: ['knight_mortal_strike', 'knight_overpower', 'knight_execute', 'knight_slam', 'knight_rend', 'knight_heroic_leap', 'knight_die_by_sword', 'knight_pummel'],
+    unlock: { knight_mortal_strike: 10, knight_overpower: 10, knight_execute: 10, knight_slam: 10, knight_rend: 12, knight_heroic_leap: 25, knight_die_by_sword: 15, knight_pummel: 10 },
     majors: { m45: 'knight_colossus_smash', m90: 'knight_avatar', m180: 'knight_bladestorm' },
     // Ani Ölüm: weapon chain hit 10 % (icd 3 s, max 2 stacks); Savaş Efendisi: Ölümcül Darbe hit 25 %
     fx: 'T hit:@basic ch=.10 icd=3 => st(self,sudden_death,12) ;; T hit:knight_mortal_strike ch=.25 => st(self,battlelord,8)',
     mods: [],
     defaultBar: {
-      lmb: 'knight_basic', rmb: 'knight_mortal_strike', q: 'knight_execute', e: 'knight_overpower', r: 'knight_rend',
+      lmb: 'knight_basic', rmb: 'knight_overpower', q: 'knight_mortal_strike', e: 'knight_execute', r: 'knight_slam',
       s1: 'knight_radiant_cleave', s2: 'knight_charge', s3: 'knight_die_by_sword', s4: 'knight_pummel',
       m45: 'knight_colossus_smash', m90: 'knight_avatar', m180: 'knight_bladestorm',
     },

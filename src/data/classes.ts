@@ -76,8 +76,8 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     },
     basicAttack: 'knight_basic',
     skills: [
-      'knight_shield_bash', 'knight_charge', 'knight_radiant_cleave', 'knight_challenge',
-      'knight_shield_wall', 'knight_consecration', 'knight_war_banner', 'knight_heavens_judgment',
+      'knight_charge', 'knight_heroic_leap', 'knight_pummel', 'knight_avatar', 'knight_radiant_cleave',
+      'knight_thunder_clap', 'knight_revenge', 'knight_shield_slam',
     ],
     startingItems: ['sword1h_t1', 'shield_t1'],
     color: '#e8c15a',
@@ -103,8 +103,8 @@ export const CLASSES: Record<ClassId, ClassDefX> = {
     },
     basicAttack: 'barbarian_basic',
     skills: [
-      'barbarian_cleave', 'barbarian_leap', 'barbarian_whirlwind', 'barbarian_war_cry',
-      'barbarian_fissure', 'barbarian_axe_throw', 'barbarian_blood_rage', 'barbarian_ancestral_tempest',
+      'barbarian_leap', 'barbarian_whirlwind', 'barbarian_pummel', 'barbarian_intimidating_shout', 'barbarian_execute',
+      'barbarian_shield_slam', 'barbarian_revenge', 'barbarian_thunder_clap',
     ],
     startingItems: ['axe2h_t1'],
     color: '#d6452e',
