@@ -582,7 +582,8 @@ export class ThirdPersonCamera {
         const yawPx = base * prec * accel(dx);
         const pitchPx = base * prec * accel(dy) * (s?.cameraSensYRatio ?? 0.85);
         let ex = dx, ey = dy;
-        const tau = (s?.cameraSmoothing ?? 0) * 0.1;
+        // WoW (classic): mouselook is 1:1, no smoothing (CONTROLS_WOW: the camera follows the mouse exactly)
+        const tau = this.mode === 'classic' ? 0 : (s?.cameraSmoothing ?? 0) * 0.1;
         if (tau > 0.001) {
           const kk = 1 - Math.exp(-dt / tau);
           this.smDx += (dx - this.smDx) * kk;
@@ -698,7 +699,10 @@ export class ThirdPersonCamera {
 
       // follow: horizontal faster when slow, lagging a touch at speed (GDD_LIFE §4.1); vertical slower, dead zone in the air
       const kRate = 13 - 3 * clamp((sp - 5) / 4, 0, 1);
-      const kx = 1 - Math.exp(-kRate * dt);
+      // WoW (classic): the pivot sits on the character (no rubber-band lag at run speed); only the vertical eases, so stairs and relief
+      // step in a low-passed way instead of jerking the lens.
+      const wowCam = this.mode === 'classic';
+      const kx = wowCam ? 1 : 1 - Math.exp(-kRate * dt);
       this.pivot.x += (px + this.laX - this.pivot.x) * kx;
       this.pivot.z += (pz + this.laZ - this.pivot.z) * kx;
       const zs = smoothstep(3, 14, this.zoomCur);
@@ -706,7 +710,8 @@ export class ThirdPersonCamera {
       const airborne = t.position.y - this.groundAt(px, pz) > 0.15;
       let ey = wantY - this.pivot.y;
       if (airborne) ey = Math.sign(ey) * Math.max(0, Math.abs(ey) - 0.35);
-      this.pivot.y += ey * (1 - Math.exp(-(airborne ? 5.5 : 6.5) * dt));
+      const kyWow = airborne ? 5.5 : 3.5;
+      this.pivot.y += ey * (1 - Math.exp(-(wowCam ? kyWow : (airborne ? 5.5 : 6.5)) * dt));
       // never drift far from the target (teleports, forced moves)
       const ex = px - this.pivot.x, ez = pz - this.pivot.z;
       const e2 = ex * ex + ez * ez;
