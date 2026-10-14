@@ -168,6 +168,7 @@ const ALL_PICK_CATEGORIES: { c: ItemCategory; w: number }[] = [
   { c: 'helm', w: 1 }, { c: 'shoulders', w: 1 }, { c: 'chest', w: 1 }, { c: 'gloves', w: 1 }, { c: 'legs', w: 1 }, { c: 'boots', w: 1 },
   { c: 'belt', w: 0.8 }, { c: 'amulet', w: 0.7 }, { c: 'ring', w: 1 },
   { c: 'sword1h', w: 1 }, { c: 'axe2h', w: 1 }, { c: 'staff', w: 1 }, { c: 'wand', w: 0.8 }, { c: 'dagger', w: 1 },
+  { c: 'mace', w: 0.6 }, { c: 'axe1h', w: 0.6 }, { c: 'fist', w: 0.5 },
   { c: 'shield', w: 0.7 }, { c: 'tome', w: 0.7 },
 ];
 

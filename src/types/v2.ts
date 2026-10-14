@@ -54,10 +54,12 @@ export interface SpecDef {
 }
 /**
  * CORE_MECHANICS §1.1 / §5.4 (CM1, append-only): generated per-spec correction factors (`src/data/specTuning.ts`, written by
- * tools/simbench.mjs --tune). Applied as the last multiplier in Combat.rollOutgoing (`dmg`), heal paths (`heal`) and shields (`absorb`).
- * Neutral value = 1 for each factor.
+ * tools/calibrate-balance.mjs from dev/combat-sim/balance.mjs at L60). PLAYERS ONLY, neutral value = 1 for each factor:
+ *   dmg    scales a player's outgoing hits (Combat.rollOutgoing, the last multiplier; PvE and PvP)
+ *   heal   scales the heals a player applies (Combat.healPlayer, by source)
+ *   taken  scales the damage a player takes (Combat.hitLocalPlayer, by the local player's spec)
  */
-export interface SpecTuning { dmg: number; heal: number; absorb: number }
+export interface SpecTuning { dmg: number; heal: number; taken: number }
 
 export type FamilyId = 'beast'|'undead_bone'|'undead_flesh'|'ghost'|'insect'|'slime'|'fungus'|'humanoid'|'cultist'|'golem'|'demon'|'elemental_fire'|'elemental_frost'|'dragon';
 export interface FamilyDef { id: FamilyId; name: string; resist: Partial<Record<DamageType, number>>; immune: StatusId[]; takenMore?: Partial<Record<StatusId, number>>; poiseMult: number; icon: string }

@@ -34,13 +34,13 @@ export const CLASS_WEAPONS: Record<ClassId, ItemCategory[]> = {
   knight: ['sword1h'], barbarian: ['axe2h'], mage: ['staff', 'wand'], rogue: ['dagger'],
   monk: ['fist'], archer: ['bow'], paladin: ['sword1h', 'mace'], necromancer: ['staff', 'wand'], warlock: ['staff', 'wand'],
   demonhunter: ['dagger'], evoker: ['staff', 'wand'], // AE-3 / AE-4
-  priest: ['staff', 'wand', 'mace'], shaman: ['mace', 'axe1h'], druid: ['staff', 'dagger', 'mace'], // CLASS SCAFFOLD stubs
+  priest: ['staff', 'wand', 'mace', 'dagger'], shaman: ['mace', 'axe1h', 'fist'], druid: ['staff', 'dagger', 'mace'], // CLASS SCAFFOLD stubs
 };
 export const CLASS_OFFHANDS: Record<ClassId, ItemCategory[]> = {
   knight: ['shield'], barbarian: [], mage: ['tome'], rogue: ['dagger'],
   monk: [], archer: ['quiver'], paladin: ['shield'], necromancer: ['tome'], warlock: ['tome'],
   demonhunter: ['dagger'], evoker: ['tome'], // CM1 stubs
-  priest: ['tome'], shaman: [], druid: [], // CLASS SCAFFOLD stubs
+  priest: ['tome'], shaman: ['shield'], druid: [], // CLASS SCAFFOLD stubs
 };
 export const CLASS_NAMES_TR: Record<ClassId, string> = {
   knight: 'Şövalye', barbarian: 'Barbar', mage: 'Büyücü', rogue: 'Haydut',
@@ -102,11 +102,19 @@ const WEAPON_TYPES: WeaponTypeDef[] = [
   },
   {
     // Paladin weapon (CLASS_WEAPONS.paladin = sword1h + mace): holy-damage implicit, the `mace` weapon art (wa_crushing_blow)
-    category: 'mace', hands: 1, aps: 1.3, typeMult: 1.05, classes: ['paladin'], maxSockets: 2,
+    category: 'mace', hands: 1, aps: 1.3, typeMult: 1.05, classes: ['paladin', 'priest', 'shaman'], maxSockets: 2,
     names: ['Demir Topuz', 'Dikenli Topuz', 'Kutsal Gürz', 'Işık Gürzü', 'Kadim Gürz'],
     models: [GEN + 'mace_flanged.glb', GEN + 'mace_flanged.glb', GEN + 'mace_morningstar.glb', GEN + 'mace_morningstar.glb', GEN + 'mace_morningstar.glb'],
     implicit: [0.03, 0.04, 0.05, 0.06, 0.07].map((v) => ({ holyDamagePct: v })),
     icons: ['item-mace', 'item-mace', 'item-mace-spiked', 'item-mace-spiked', 'item-mace-spiked'],
+  },
+  {
+    // Şaman tek el baltası (CLASS_WEAPONS.shaman = mace + axe1h + fist; shield off-hand): axe_1h models, crit implicit
+    category: 'axe1h', hands: 1, aps: 1.3, typeMult: 1.2, classes: ['shaman'], maxSockets: 2,
+    names: ['Av Baltası', 'El Baltası', 'Sakallı Balta', 'Hilal Balta', 'Kadim Tek Balta'],
+    models: [GEN + 'axe_1h_hatchet.glb', GEN + 'axe_1h_hatchet.glb', GEN + 'axe_1h_bearded.glb', GEN + 'axe_1h_crescent.glb', GEN + 'axe_1h_crescent.glb'],
+    implicit: [0.01, 0.015, 0.02, 0.025, 0.03].map((v) => ({ critChance: v })),
+    icons: ['item-axe', 'item-axe', 'item-axe', 'item-axe', 'item-axe'],
   },
   {
     category: 'axe2h', hands: 2, aps: 1.0, typeMult: 1.55, classes: ['barbarian'], maxSockets: 3,
@@ -116,28 +124,28 @@ const WEAPON_TYPES: WeaponTypeDef[] = [
     icons: ['item-axe-2h', 'item-axe-2h', 'item-axe-2h', 'item-axe-2h', 'item-axe-2h'],
   },
   {
-    category: 'staff', hands: 2, aps: 1.1, typeMult: 1.45, classes: ['mage', 'necromancer', 'warlock', 'evoker', 'druid'], maxSockets: 3,
+    category: 'staff', hands: 2, aps: 1.1, typeMult: 1.45, classes: ['mage', 'necromancer', 'warlock', 'evoker', 'druid', 'priest'], maxSockets: 3,
     names: ['Meşe Asa', 'Kemik Asa', 'Kristal Asa', 'Ejder Asası', 'Kadim Asa'],
     models: [GEN + 'staff_wood.glb', GEN + 'staff_skull.glb', GEN + 'staff_crystal.glb', GEN + 'staff_fire.glb', GEN + 'staff_frost.glb'],
     implicit: [0.1, 0.15, 0.2, 0.25, 0.3].map((v) => ({ resourceRegenPct: v })),
     icons: ['item-staff', 'item-staff-skull', 'item-staff', 'item-staff', 'item-staff'],
   },
   {
-    category: 'wand', hands: 1, aps: 1.4, typeMult: 1.0, classes: ['mage', 'necromancer', 'warlock', 'evoker'], maxSockets: 2,
+    category: 'wand', hands: 1, aps: 1.4, typeMult: 1.0, classes: ['mage', 'necromancer', 'warlock', 'evoker', 'priest'], maxSockets: 2,
     names: ['Söğüt Değnek', 'Kemik Değnek', 'Kristal Değnek', 'Yıldız Değneği', 'Kadim Değnek'],
     models: [KK + 'wand.gltf', GEN + 'wand_bone.glb', GEN + 'wand_arcane.glb', GEN + 'wand_arcane.glb', GEN + 'wand_arcane.glb'],
     implicit: [0.04, 0.06, 0.08, 0.1, 0.12].map((v) => ({ castSpeed: v })),
     icons: ['item-wand', 'item-wand', 'item-wand-orb', 'item-wand-orb', 'item-wand-orb'],
   },
   {
-    category: 'dagger', hands: 1, aps: 1.7, typeMult: 0.85, classes: ['rogue', 'demonhunter'], maxSockets: 2,
+    category: 'dagger', hands: 1, aps: 1.7, typeMult: 0.85, classes: ['rogue', 'demonhunter', 'priest'], maxSockets: 2,
     names: ['Hançer', 'Kama', 'Gölge Hançeri', 'Yılan Dişi', 'Kadim Hançer'],
     models: [GEN + 'dagger_iron.glb', GEN + 'dagger_curved.glb', GEN + 'dagger_assassin.glb', GEN + 'dagger_ritual.glb', GEN + 'dagger_ritual.glb'],
     implicit: [0.02, 0.025, 0.03, 0.035, 0.04].map((v) => ({ critChance: v })),
     icons: ['item-dagger', 'item-dagger-curved', 'item-dagger-curved', 'item-dagger-curved', 'item-dagger-curved'],
   },
   {
-    category: 'shield', hands: 0, classes: ['knight', 'paladin'], maxSockets: 1,
+    category: 'shield', hands: 0, classes: ['knight', 'paladin', 'shaman'], maxSockets: 1,
     names: ['Yuvarlak Kalkan', 'Armalı Kalkan', 'Kule Kalkanı', 'Dikenli Kalkan', 'Kadim Kalkan'],
     models: [GEN + 'shield_round_wood.glb', GEN + 'shield_kite_crest.glb', GEN + 'shield_tower.glb', GEN + 'shield_demon_spiked.glb', GEN + 'shield_demon_spiked.glb'],
     implicit: [0.12, 0.14, 0.16, 0.18, 0.2].map((v) => ({ blockChance: v })),
@@ -145,7 +153,7 @@ const WEAPON_TYPES: WeaponTypeDef[] = [
   },
   {
     // Keşiş (CLASS_WEAPONS.monk = fist): no mesh, the fists are the Barbarian rig's arms (hands tinted by the glow tier)
-    category: 'fist', hands: 1, aps: 1.5, typeMult: 0.95, classes: ['monk'], maxSockets: 2,
+    category: 'fist', hands: 1, aps: 1.5, typeMult: 0.95, classes: ['monk', 'shaman'], maxSockets: 2,
     names: ['Sarılı Yumruk', 'Deri Sargı', 'Pirinç Yumruk', 'Ejder Pençesi', 'Kadim Yumruk'],
     models: ['', '', '', '', ''],
     implicit: [0.03, 0.04, 0.05, 0.06, 0.07].map((v) => ({ attackSpeed: v })),
