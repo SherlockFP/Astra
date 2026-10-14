@@ -15,6 +15,28 @@ const I = (n: string) => `/assets/icons/${n}.svg`;
 const CHAIN = 'Otomatik Saldırı (Auto Attack)';
 
 export function registerShamanSpecs(add: SkillAdd): void {
+  // Ruh Bağı Totemi (Spirit Link Totem), Restorasyon: a 6 s totem; every second the allies within 10 m are lifted to their shared HP share
+  // (behaviour hp_redistribute: heal-up only, nobody loses HP; see the Midnight report).
+  add({
+    id: 'shaman_spirit_link', classId: 'shaman', spec: 'shaman_restoration', name: 'Ruh Bağı Totemi (Spirit Link Totem)', icon: I('skill-regeneration'), unlockLevel: 20,
+    desc: 'Yere bir ruh bağı totemi dikersin; 6 saniye boyunca 10 metre içindeki müttefiklerin canı, grubun ortalama can oranına doğru yükselir. 120 saniye bekleme.',
+    cost: 15, cooldown: 120, castTime: 0, hitTime: 0.5, anim: 'Spellcast_Raise', animSpeed: 1.2,
+    targeting: 'custom', behavior: 'hp_redistribute', radius: 10, duration: 6,
+    minion: { id: 'shaman_spirit_link_totem', count: 1, group: 'lesser', life: 6 },
+    tags: ['totem', 'heal', 'spec', 'defensive'], vfx: { cast: 'pet_summon', impact: 'heal_burst' }, sfx: { cast: 'chi_cast' },
+    params: { end: 0.6, chain: 0.05, move: 0.1, weight: 0 },
+  });
+  // Toprak Duvarı Totemi (Earthen Wall), Restorasyon, T (m180): a 15 s totem; allies within 10 m get an absorb of 10 % of max HP (cap 20 %)
+  add({
+    id: 'shaman_earthen_wall', classId: 'shaman', spec: 'shaman_restoration', name: 'Toprak Duvarı Totemi (Earthen Wall)', icon: I('skill-shield-wall'), unlockLevel: 16,
+    desc: 'Yere bir toprak duvarı totemi dikersin; 15 saniye boyunca 10 metre içindeki müttefiklerin maks. canının %10\'u kadar emici kalkan alır (en fazla %20).',
+    cost: 20, cooldown: 90, castTime: 0, hitTime: 0.5, anim: 'Spellcast_Raise', animSpeed: 1.2,
+    targeting: 'custom', behavior: 'absorb_ally', range: 25,
+    minion: { id: 'shaman_earthen_wall_totem', count: 1, group: 'lesser', life: 15 },
+    statuses: [{ status: 'earthen_wall', duration: 15 }],
+    tags: ['totem', 'defensive', 'spec', 'absorb'], vfx: { cast: 'pet_summon', impact: 'shield_bubble' }, sfx: { cast: 'chi_cast', impact: 'buff' },
+    params: { radius: 10, absorbPct: 0.1, capPct: 0.2, end: 0.6, chain: 0.05, move: 0.1, weight: 0 },
+  });
   // =====================================================================================================
   // Elementel (shaman_elemental, DPS, ranged). Girdap is spent by Toprak Şoku and Deprem, grown by Yıldırım Oku and Lav Patlaması.
   // =====================================================================================================

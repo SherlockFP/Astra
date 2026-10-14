@@ -11,6 +11,15 @@ import type { SkillAdd } from './types';
 const I = (n: string) => `/assets/icons/${n}.svg`;
 
 export function registerPriestSpecs(add: SkillAdd): void {
+  // Kutsal Ateş (Holy Fire), Kutsal: an instant holy strike on the target (no pips, no heal)
+  add({
+    id: 'priest_holy_fire', classId: 'priest', spec: 'priest_holy', name: 'Kutsal Ateş (Holy Fire)', icon: I('skill-holy-nova'), unlockLevel: 6,
+    desc: 'Hedefe anında kutsal ateş fırlatırsın: kutsal hasar verir. 8 saniye bekleme.',
+    cost: 16, cooldown: 8, castTime: 0, hitTime: 0.4, anim: 'Spellcast_Shoot', animSpeed: 1.2,
+    targeting: 'target_instant', range: 25, damage: { coef: 1.4, type: 'holy' },
+    tags: ['spell', 'holy', 'damage'], vfx: { impact: 'holy_hammer' }, sfx: { cast: 'chi_cast' },
+    params: { end: 0.6, chain: 0.05, move: 0.1, weight: 0 },
+  });
   // =====================================================================================================
   // Disiplin (priest_discipline, healer): Keffara (Atonement) turns damage into healing
   // =====================================================================================================

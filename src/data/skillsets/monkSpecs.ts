@@ -11,6 +11,25 @@ import type { SkillAdd } from './types';
 const I = (n: string) => `/assets/icons/${n}.svg`;
 
 export function registerMonkSpecs(add: SkillAdd): void {
+  // Yaşam Kozası (Life Cocoon), Sis Dokuyan: an absorb of 30 % of an ally's max HP for 12 s (the caster when no ally is picked).
+  add({
+    id: 'monk_life_cocoon', classId: 'monk', spec: 'monk_mistweaver', name: 'Yaşam Kozası (Life Cocoon)', icon: I('skill-healing-shield'), unlockLevel: 20,
+    desc: 'Seçtiğin müttefikini 12 saniye boyunca bir koza ile sararsın: maks. canının %30\'u kadar hasarı emer. Seçili müttefik yoksa kendini sarar. 120 saniye bekleme.',
+    cost: 15, cooldown: 120, castTime: 0, hitTime: 0.4, anim: 'Spellcast_Shoot', animSpeed: 1.2,
+    targeting: 'custom', behavior: 'absorb_ally', allyTarget: 'friendly', range: 25,
+    statuses: [{ status: 'life_cocoon', duration: 12 }],
+    tags: ['spell', 'defensive', 'absorb', 'ally'], vfx: { cast: 'buff_aura', impact: 'shield_bubble' }, sfx: { cast: 'chi_cast', impact: 'buff' },
+    params: { absorbPct: 0.3, capPct: 0.3, end: 0.6, chain: 0.1, move: 0.1, weight: 0 },
+  });
+  // Göksel Karışım (Celestial Brew), Demci: a self absorb of 20 % of max HP (cap 40 %) for 8 s
+  add({
+    id: 'monk_celestial_brew', classId: 'monk', spec: 'monk_brewmaster', name: 'Göksel Karışım (Celestial Brew)', icon: I('skill-iron-skin'), unlockLevel: 15,
+    desc: 'Kendine 8 saniye boyunca maks. canının %20\'si kadar emici kalkan verirsin (en fazla %40). 45 saniye bekleme.',
+    cost: 0, cooldown: 45, castTime: 0, hitTime: 0.2, anim: 'Cheer', animSpeed: 1.2,
+    targeting: 'self_buff', behavior: 'absorb_self', selfStatuses: [{ status: 'celestial_brew', duration: 8 }],
+    tags: ['spell', 'defensive', 'absorb', 'spec'], vfx: { cast: 'buff_aura' }, sfx: { cast: 'chi_cast' },
+    params: { absorbPct: 0.2, capPct: 0.4, end: 0.5, chain: 0.1, move: 0.1, weight: 0 },
+  });
   // =====================================================================================================
   // Rüzgâr Yürüyen (monk_windwalker, DPS), §2.5
   // =====================================================================================================
@@ -180,14 +199,15 @@ export function registerMonkSpecs(add: SkillAdd): void {
   // =====================================================================================================
   // Added rows (Midnight core list, docs/WOW_ABILITY_MAP.md §4). Keys: see the bars in specs_kit_monk.ts.
   // =====================================================================================================
-  // Ölüm Dokunuşu (Touch of Death), Rüzgâr Yürüyen: melee burst. Execute threshold NOT in the engine yet (hook, see the report).
+  // Ölüm Dokunuşu (Touch of Death), Rüzgâr Yürüyen: melee burst. behavior execute_threshold: kills a target with less HP than the caster's max HP
+  // (a boss below bossPct of its own max HP); otherwise the strike lands.
   add({
     id: 'monk_touch_of_death', classId: 'monk', spec: 'monk_windwalker', name: 'Ölüm Dokunuşu (Touch of Death)', icon: I('skill-smite'), unlockLevel: 25,
     desc: 'Yakındaki bir düşmana büyük fiziksel hasar verir. 90 saniye bekleme.',
     cost: 0, cooldown: 90, castTime: 0, hitTime: 0.4, anim: 'Unarmed_Melee_Attack_Kick', animSpeed: 1.2,
-    targeting: 'melee_arc', range: 3.2, arc: 120, damage: { coef: 4.5, type: 'physical' }, knockback: 1.5,
+    targeting: 'melee_arc', behavior: 'execute_threshold', range: 3.2, arc: 120, damage: { coef: 4.5, type: 'physical' }, knockback: 1.5,
     tags: ['melee', 'kick', 'spec', 'unarmed'], vfx: { trail: 'kick_arc', impact: 'chi_burst' }, sfx: { cast: 'swing_heavy', impact: 'kick_hit' },
-    params: { end: 0.9, chain: 0.1, move: 0.2, stagger: 20, proc: 1, weight: 3 },
+    params: { end: 0.9, chain: 0.1, move: 0.2, stagger: 20, proc: 1, weight: 3, bossPct: 0.15 },
   });
   // Ateş Nefesi (Breath of Fire), Demci: cone fire, slow 6 s
   add({

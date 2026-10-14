@@ -17,10 +17,12 @@
  */
 import { G } from '../../game/G';
 import { Projectile } from '../../entities/Projectile';
-import { healAmount } from '../healing';
+import { addAbsorb, alliesInRange, friendlyTargetId, healAlly, healAmount, healFormula } from '../healing';
 import { aimSlope, clearSight, BEHAVIORS, castTarget, dist2, enemiesIn, impactVfx, muzzle, strikeMany, swingVfx, type Behavior, type CastCtx } from './behaviors';
 import type { Actor } from '../../entities/Actor';
 import type { Enemy } from '../../entities/Enemy';
+import type { Player } from '../../entities/Player';
+import type { StatusId } from '../../types/skills';
 import type { DamageResult } from '../Combat';
 import type { VfxId } from '../../types/vfx';
 
@@ -333,6 +335,212 @@ const orbitHammers: Behavior = {
   },
 };
 
+// ---- Midnight defensive / utility rows -----------------------------------------------------------------------------------
+// Generic: each reads its numbers from params, statuses, selfStatuses or a minion, so a new row of the same shape is data only.
+
+/** Movement locks that Özgürlük Duası (`params.cleanse`) removes from its ally. */
+const MOVE_LOCKS: StatusId[] = ['root', 'slow', 'act_root'];
+
+/**
+ * The ally a support row targets: the aimed ally (aim.allyId), else the selected friendly (U / F1-F5). Null when neither is alive,
+ * in reach and not the caster.
+ */
+function supportAlly(c: CastCtx, range: number): Player | null {
+  const w = G.world;
+  if (!w) return null;
+  const me = c.caster;
+  const ok = (p: Player | undefined): p is Player =>
+    !!p && p.kind === 'player' && p !== me && !p.isDead && !p.removed && dist2(p.position, me.position) <= range + p.radius;
+  const aimed = c.aim.allyId != null ? w.get<Player>(c.aim.allyId) : undefined;
+  if (ok(aimed)) return aimed;
+  const sel = friendlyTargetId();
+  const picked = sel != null ? w.get<Player>(sel) : undefined;
+  return ok(picked) ? picked : null;
+}
+
+/** Gives a status to an actor. A remote player gets the 'pstatus' message its owner applies (the utilities giveStatus pattern). */
+function giveSupportStatus(c: CastCtx, target: Actor, status: StatusId, duration: number, magnitude: number): void {
+  if (target.kind === 'player' && !(target as Player).isLocal) {
+    const peer = G.net?.peerOfEntity(target.id);
+    if (peer) G.net?.sendTo(peer, 'pstatus', { targetId: target.id, status, duration, magnitude, sourceId: c.caster.id });
+    return;
+  }
+  target.statuses.apply(status, duration, { magnitude, sourceId: c.caster.id });
+}
+
+/**
+ * Ally buff (Işık Mekanı, Koruma Duası, Özgürlük Duası): the picked ally (the caster when `params.self` and no ally is picked) gets
+ * the row's `statuses` (magnitude = the status's magnitude). `params.cleanse` removes the movement locks from it. `params.forbearance`
+ * refuses a target that still has `forbearance`. `params.exclusive` removes the caster's previous copy of the first status from the
+ * other local allies (one Beacon of Light at a time; a remote ally's copy is left to its owner).
+ */
+const allyBuff: Behavior = {
+  begin(c) {
+    if (c.remote) return true;
+    const p = c.def.params ?? {};
+    const target: Actor | null = supportAlly(c, c.def.range ?? 25) ?? (p.self ? c.caster : null);
+    if (!target) { c.sys.fail('target'); return false; }
+    if (p.forbearance && target.statuses.has('forbearance')) { c.sys.fail('target'); return false; }
+    c.data.target = target;
+    return true;
+  },
+  fire(c) {
+    const { caster, def, sys } = c;
+    const p = def.params ?? {};
+    if (c.remote) return;
+    const target = c.data.target as Actor | undefined;
+    if (!target || target.isDead) return;
+    const own = def.statuses?.[0]?.status;
+    if (p.exclusive && own) {
+      for (const b of G.world?.players ?? []) if (b !== target && b.statuses.get(own)?.sourceId === caster.id) b.statuses.remove(own);
+    }
+    if (p.cleanse) for (const id of MOVE_LOCKS) if (target.statuses.has(id)) target.statuses.remove(id);
+    for (const s of def.statuses ?? []) giveSupportStatus(c, target, s.status, s.duration, s.magnitude ?? 0);
+    sys.vfx(def.vfx?.cast ?? 'shield_bubble', [target.position.x, target.position.y + 1.1, target.position.z], { follow: target.object3d, duration: 1.2, scale: 1.0 });
+    sys.sfx('buff', caster.position);
+  },
+};
+
+/**
+ * Absorb (Yaşam Kozası, Toprak Duvarı Totemi): an absorb shield of `params.absorbPct` x max HP (ceiling `params.capPct`, default the
+ * same) for statuses[0].duration seconds, on the picked ally or the caster. With `params.radius` every living ally in that radius
+ * (caster included) gets one: a party shield. `def.minion` (a totem) is summoned first through minion_summon. A remote ally gets its
+ * shield from its owner ('pstatus' with the amount), since addAbsorb works on local actors only.
+ */
+const absorbAlly: Behavior = {
+  begin(c) {
+    if (c.remote) return true;
+    if (!c.def.params?.radius) c.data.target = supportAlly(c, c.def.range ?? 25) ?? c.caster;
+    return true;
+  },
+  fire(c) {
+    const { caster, def, sys } = c;
+    const p = def.params ?? {};
+    if (c.remote) return;
+    if (def.minion) BEHAVIORS.minion_summon?.fire?.(c);
+    const st = def.statuses?.[0];
+    const dur = st?.duration ?? 8;
+    const targets: Actor[] = p.radius ? [caster, ...alliesInRange(caster, p.radius)] : [(c.data.target as Actor | undefined) ?? caster];
+    const seen = new Set<Actor>();
+    for (const a of targets) {
+      if (seen.has(a) || a.isDead) continue;
+      seen.add(a);
+      const amount = a.maxHp * (p.absorbPct ?? 0.2);
+      const cap = a.maxHp * (p.capPct ?? p.absorbPct ?? 0.2);
+      if (a.kind === 'player' && !(a as Player).isLocal) giveSupportStatus(c, a, 'shield', dur, amount);
+      else addAbsorb(a, amount, cap, dur, st?.status, caster.id);
+    }
+    sys.sfx('buff', caster.position);
+  },
+};
+
+/**
+ * Ruh Bağı (Spirit Link): summons the totem (def.minion), then every second for def.duration (6 s) the living allies in def.radius
+ * (caster included) are lifted to the party's HP share (sum of HP / sum of max HP). Only allies below that share gain HP (healPlayer,
+ * raw); nobody loses HP. Approximation: the heal-up half of the Midnight redistribution (see the Midnight report).
+ */
+const hpRedistribute: Behavior = {
+  fire(c) {
+    if (c.remote) return;
+    const { caster, def, sys } = c;
+    if (def.minion) BEHAVIORS.minion_summon?.fire?.(c);
+    const r = def.radius ?? 10;
+    const dur = def.duration ?? 6;
+    const tick = (): void => {
+      const seen = new Set<Actor>();
+      const party: Player[] = [];
+      for (const a of [caster, ...alliesInRange(caster, r)]) {
+        if (seen.has(a) || a.isDead) continue;
+        seen.add(a);
+        party.push(a);
+      }
+      const hp = party.reduce((s, a) => s + a.hp, 0);
+      const mx = party.reduce((s, a) => s + a.maxHp, 0);
+      if (mx <= 0) return;
+      const share = hp / mx;
+      for (const a of party) {
+        const want = share * a.maxHp;
+        if (a.hp < want - 0.5) G.combat.healPlayer(caster, a, want - a.hp, { raw: true, quiet: true });
+      }
+    };
+    tick();
+    for (let i = 1; i < Math.ceil(dur); i++) sys.schedule(i, tick);
+    sys.sfx('buff', caster.position);
+  },
+};
+
+/**
+ * Ölüm Dokunuşu (Touch of Death): the melee target dies outright when it has less HP than the caster's max HP. A boss or miniboss
+ * dies below `params.bossPct` of its own max HP (default 0.15). Otherwise the row's strike lands with damage.coef.
+ */
+const executeThreshold: Behavior = {
+  begin(c) {
+    if (c.remote) return true;
+    const t = singleTarget(c, c.def.range ?? 3.2);
+    if (!t) { c.sys.fail('target'); return false; }
+    c.data.target = t;
+    return true;
+  },
+  fire(c) {
+    const { caster, def, sys } = c;
+    const p = def.params ?? {};
+    swingVfx(c, def.range ?? 3.2, def.arc ?? 120, true);
+    if (c.remote) return;
+    const t = c.data.target as Enemy | undefined;
+    if (!t || t.isDead) return;
+    const boss = t.def.rank === 'boss' || t.def.rank === 'miniboss';
+    const lethal = boss ? t.hp / Math.max(1, t.maxHp) < (p.bossPct ?? 0.15) : t.hp < caster.maxHp;
+    if (lethal) {
+      if (def.vfx?.impact) sys.vfx(def.vfx.impact, [t.position.x, t.position.y + 1.2, t.position.z], { scale: 1.0 });
+      G.combat.killEnemy(t, caster.id);
+      return;
+    }
+    sys.strike(c, t, { coef: def.damage?.coef ?? 4.5, stagger: p.stagger ?? 20, weight: 'heavy' });
+  },
+};
+
+/**
+ * Coşku (Exhilaration): heals the caster for def.heal.coef and its living pet (minion group 'pet') for params.petCoef (default the same
+ * coef). The pet belongs to this peer, so it is healed directly.
+ */
+const healSelfPet: Behavior = {
+  fire(c) {
+    const { caster, def, sys } = c;
+    if (c.remote) return;
+    const p = def.params ?? {};
+    const coef = def.heal?.coef ?? 0.5;
+    healAlly(caster, caster, coef);
+    for (const pet of G.minions?.ownedBy(caster.id, (m) => m.def.group === 'pet') ?? []) {
+      if (pet.isDead) continue;
+      pet.hp = Math.min(pet.maxHp, pet.hp + healFormula(caster, p.petCoef ?? coef).amount);
+    }
+    sys.vfx(def.vfx?.cast ?? 'shield_bubble', [caster.position.x, caster.position.y + 1.1, caster.position.z], { follow: caster.object3d, duration: 1.2, scale: 1.0 });
+    sys.sfx('buff', caster.position);
+  },
+};
+
+/**
+ * Tehdit Saptırma (Misdirection): for selfStatuses[0].duration seconds (8 s) the caster's threat is booked on the picked ally, the tank.
+ * The `misdirection` status's sourceId is that ally; EnemyAI.onDamaged reads it. No ally in reach: the row fails before paying.
+ */
+const misdirect: Behavior = {
+  begin(c) {
+    if (c.remote) return true;
+    const ally = supportAlly(c, c.def.range ?? 25);
+    if (!ally) { c.sys.fail('target'); return false; }
+    c.data.target = ally;
+    return true;
+  },
+  fire(c) {
+    const { caster, def, sys } = c;
+    if (c.remote) return;
+    const ally = c.data.target as Actor | undefined;
+    if (!ally || ally.isDead) return;
+    caster.statuses.apply('misdirection', def.selfStatuses?.[0]?.duration ?? 8, { sourceId: ally.id });
+    sys.sfx('buff', caster.position);
+  },
+};
+
 Object.assign(BEHAVIORS_SHARED, {
   chain_projectile: chainProjectile,
   pip_finisher: pipFinisher,
@@ -340,6 +548,12 @@ Object.assign(BEHAVIORS_SHARED, {
   channel_cone: channelCone,
   beam_drain: beamDrain,
   orbit_hammers: orbitHammers,
+  ally_buff: allyBuff,
+  absorb_ally: absorbAlly,
+  hp_redistribute: hpRedistribute,
+  execute_threshold: executeThreshold,
+  heal_self_pet: healSelfPet,
+  misdirect,
 });
 
 function installShared(): void {

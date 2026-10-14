@@ -410,7 +410,9 @@ export class EnemyAI {
         this.addThreat(via.id, th * 0.4);
         th *= 0.6;
       }
-      this.addThreat(src.id, th);
+      // Midnight Tehdit Saptırma (misdirection): while the status is up, the caster's threat is booked on its redirect target (sourceId)
+      const mis = (src as Player).statuses.get('misdirection');
+      this.addThreat(mis && mis.sourceId != null && mis.sourceId !== src.id ? mis.sourceId : src.id, th);
       if (this.e.def.ai?.flee) this.onHurtFlee(amount);
       if (!this.aggroed) this.dir.pullPack(this, src);
     } else if (!this.aggroed) {

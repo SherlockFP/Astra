@@ -310,6 +310,17 @@ for (const sid of ["priest_discipline","priest_holy","priest_shadow"]) {
   const l1 = Object.entries(spec.defaultBar).filter(([slot, id]) => slot !== 'lmb' && id !== spec.basic && SKILLS[id]?.unlockLevel <= 1 && (spec.unlock?.[id] ?? 1) <= 1);
   ok(`kit_priest.l1 ${sid} level 1 has >= 4 usable skills`, l1.length >= 4, l1.map(([s, id]) => `${s}=${id}`).join(','));
 }
+// ---- kit.defensive: Kutsal Ateş (Holy Fire, instant holy strike)
+{
+  const p = newPriest(SPECS.priest_holy);
+  const foe = foeAt(2.2);
+  G.skills.addResource(p, 300);
+  const c = G.skills.tryCast(p, 'priest_holy_fire', H.aimFor(p, foe));
+  H.stepSec(0.9);
+  ok('kit.defensive priest_holy_fire strikes the target with holy damage', c === true && foe.hp < 1e9 && SKILLS.priest_holy_fire?.damage?.type === 'holy', `hp=${foe.hp}`);
+  ok('kit.defensive priest_holy_fire is on the Kutsal list at unlock 6', SPECS.priest_holy.skills.includes('priest_holy_fire') && SPECS.priest_holy.unlock.priest_holy_fire === 6);
+}
+
 console.log(fails === 0 ? '\nkit.priest: all checks PASS' : `\nkit.priest: ${fails} FAIL`);
 H.restoreConsole?.();
 process.exit(fails === 0 ? 0 : 1);

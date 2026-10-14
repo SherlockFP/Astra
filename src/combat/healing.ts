@@ -130,11 +130,25 @@ export function healAlly(caster: Player, target: Player, coef: number, opts: { f
   return healAmount(caster, target, amount, opts.quiet ?? true);
 }
 
+/**
+ * Beacon of Light (Işık Mekanı): a heal the caster gives another ally is copied to the caster's beacon holder at the status's
+ * magnitude (the share). The copy goes straight to healPlayer, so it is not copied again; a heal on the holder itself is not copied.
+ */
+function beaconCopy(caster: Player, target: Player, amount: number): void {
+  if (target === caster) return;
+  for (const b of G.world?.players ?? []) {
+    const st = b.statuses.get('beacon_of_light');
+    if (!st || b === target || b.isDead || st.sourceId !== caster.id) continue;
+    G.combat.healPlayer(caster, b, amount * st.magnitude, { quiet: true });
+  }
+}
+
 /** Heals a precomputed amount (HoT ticks, flat effects). Returns the overheal amount. */
 export function healAmount(caster: Player, target: Player, amount: number, quiet = true): number {
   if (!target || target.isDead || amount <= 0 || !G.combat) return 0;
   const missing = Math.max(0, target.maxHp - target.hp);
   G.combat.healPlayer(caster, target, amount, { quiet });
+  beaconCopy(caster, target, amount);
   return Math.max(0, amount - missing);
 }
 

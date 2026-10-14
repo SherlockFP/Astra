@@ -9,6 +9,17 @@ import type { SkillAdd } from './types';
 const I = (n: string) => `/assets/icons/${n}.svg`;
 
 export function registerPaladinHoly(add: SkillAdd): void {
+  // Işık Mekanı (Beacon of Light): one ally holds the beacon; 15 % of each heal you give another ally is copied to it (healing.ts
+  // beaconCopy). One beacon at a time (params.exclusive). Duration is open-ended (3600 s) until a new beacon replaces it.
+  add({
+    id: 'paladin_beacon_of_light', classId: 'paladin', spec: 'paladin_holy', name: 'Işık Mekanı (Beacon of Light)', icon: I('skill-holy-light'), unlockLevel: 10,
+    desc: 'Bir müttefike Işık Mekanı koyarsın. Ona verdiğin iyileştirmelerin %15\'i, Işık Mekanı taşıyan müttefike de kopyalanır. Aynı anda yalnızca bir Işık Mekanı olabilir.',
+    cost: 10, cooldown: 0, castTime: 0, hitTime: 0.3, anim: 'Spellcast_Shoot', animSpeed: 1.2,
+    targeting: 'custom', behavior: 'ally_buff', allyTarget: 'friendly', range: 25,
+    tags: ['spell', 'holy', 'buff', 'ally'], vfx: { cast: 'buff_aura', impact: 'shield_bubble' }, sfx: { cast: 'chi_cast', impact: 'buff' },
+    statuses: [{ status: 'beacon_of_light', duration: 3600, magnitude: 0.15 }],
+    params: { exclusive: 1, end: 0.5, chain: 0.1, move: 0.1, weight: 0 },
+  });
   // ======================================================================================================
   // Işık Oku (Kutsal chain): heals the first ally a bolt touches, damages the first enemy. Σ damage 4.8 (Yargı folded into step 3),
   // Σ heal 1.55, faith +2/+2/+4, +1 Kutsal Güç on steps 2 and 3. Step 3 bolts apply `judged`.

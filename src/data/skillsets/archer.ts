@@ -9,6 +9,25 @@ const I = (n: string) => `/assets/icons/${n}.svg`;
 const BASIC = 'Ok Serisi (Auto Shot)';
 
 export function registerArcher(add: SkillAdd): void {
+  // Coşku (Exhilaration): heals you and your pet
+  add({
+    id: 'archer_exhilaration', classId: 'archer', name: 'Coşku (Exhilaration)', icon: I('skill-heal'), unlockLevel: 10,
+    desc: 'Kendini ve yoldaşını iyileştirirsin: sen maks. canının, yoldaşın da kendi canının bir kısmını geri kazanır. 90 saniye bekleme.',
+    cost: 20, cooldown: 90, castTime: 0, hitTime: 0.2, anim: 'Spellcast_Shoot', animSpeed: 1.2,
+    targeting: 'self_buff', behavior: 'heal_self_pet', heal: { coef: 0.8 },
+    tags: ['spell', 'heal', 'defensive'], vfx: { cast: 'heal_burst' }, sfx: { cast: 'chi_cast' },
+    params: { petCoef: 0.8, end: 0.5, chain: 0.1, move: 0.1, weight: 0 },
+  });
+  // Yanıltma (Misdirection): 8 s threat redirect to the picked ally (the tank); needs an ally in reach
+  add({
+    id: 'archer_misdirection', classId: 'archer', name: 'Yanıltma (Misdirection)', icon: I('skill-taunt'), unlockLevel: 10,
+    desc: '25 metre içindeki seçtiğin müttefike 8 saniye boyunca tehdidini yönlendirirsin: senin verdiğin tehdit onun üstüne yazılır. Seçili müttefik yoksa kullanılamaz. 30 saniye bekleme.',
+    cost: 0, cooldown: 30, castTime: 0, hitTime: 0.2, anim: 'Cheer', animSpeed: 1.4,
+    targeting: 'custom', behavior: 'misdirect', allyTarget: 'friendly', range: 25,
+    selfStatuses: [{ status: 'misdirection', duration: 8 }],
+    tags: ['spell', 'utility', 'threat', 'ally'], vfx: { cast: 'buff_aura' }, sfx: { cast: 'chi_cast' },
+    params: { end: 0.5, chain: 0.1, move: 0.1, weight: 0 },
+  });
   // ---- LMB chain (GDD §3.3): 4 steps, cadence 0.220 + 0.190 + 0.243 + 0.467 = 1.120 s, sum of coef 3.59
   add({
     id: 'archer_basic', classId: 'archer', name: BASIC, icon: I('skill-piercing-shot'), defaultSlot: 'lmb',

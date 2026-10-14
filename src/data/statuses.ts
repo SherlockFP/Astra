@@ -16,6 +16,7 @@ import { STATUSES_KIT_ARCHER, STATUS_RULES_KIT_ARCHER } from './statuses_kit_arc
 import { STATUSES_KIT_DEMONHUNTER, STATUS_RULES_KIT_DEMONHUNTER } from './statuses_kit_demonhunter';
 import { STATUSES_KIT_EVOKER, STATUS_RULES_KIT_EVOKER } from './statuses_kit_evoker';
 import { WATCHER_STATUSES } from './watchers';
+import { STATUSES_DEFENSIVE, STATUS_RULES_DEFENSIVE } from './statuses_defensive';
 
 /**
  * OWNER: combat module. A StatusDef for every StatusId (GDD_SYSTEMS 1.8) + extra runtime rules (STATUS_RULES).
@@ -442,6 +443,9 @@ Object.assign(STATUS_RULES, STATUS_RULES_KIT_MONK, STATUS_RULES_KIT_ARCHER);
 Object.assign(STATUS_RULES, STATUS_RULES_KIT_PRIEST, STATUS_RULES_KIT_SHAMAN, STATUS_RULES_KIT_DRUID);
 Object.assign(STATUSES, STATUSES_KIT_DEMONHUNTER, STATUSES_KIT_EVOKER);
 Object.assign(STATUS_RULES, STATUS_RULES_KIT_DEMONHUNTER, STATUS_RULES_KIT_EVOKER);
+// Midnight defensive group (Beacon of Light, Blessing of Protection, Spell Reflection, Misdirection, absorb labels).
+Object.assign(STATUSES, STATUSES_DEFENSIVE);
+Object.assign(STATUS_RULES, STATUS_RULES_DEFENSIVE);
 
 /** Statuses that are crowd control on the "hard" scale (cannot act). */
 export const HARD_CC: StatusId[] = ['stun', 'freeze', 'knockdown', 'fear', 'petrify'];
