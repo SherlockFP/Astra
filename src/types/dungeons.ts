@@ -285,6 +285,8 @@ export interface DungeonTheme {
   music: MusicId;
   palette?: number[];
   tint?: number;              // multiply tint for KayKit dungeon textures
+  /** Open world: snow cover (0..1) of the rooms that belong to no region (passes, bridges); region rooms use RegionTheme.snowCover. */
+  snowCover?: number;
   // --- shared primitives (K1; all optional) ---
   /** P-08: sky backdrop for the whole dungeon (RoomDef.sky overrides per room). */
   sky?: DungeonSkyDef;
@@ -469,6 +471,7 @@ export interface RegionTheme {
   skyZenith: number; skyHorizon: number; skyImage?: string;            // optional PSX panorama url
   groundTex: { grass: string; dirt: string; cobble: string; dark: string };   // /assets/textures/itch/... urls
   groundTint?: number;                                                  // value written into the region tint map
+  snowCover?: number;                                                   // 0..1: the grass reads as snow (written to the tint map's alpha; splat paths show through)
   music: MusicId | 'world_vale' | 'world_hills' | 'world_marsh' | 'world_canyon' | 'world_ruins';   // see audio addition
   musicVolume?: number; ambience?: string;
   ambientVfx?: VfxId; ambientColor?: number;

@@ -922,8 +922,13 @@ export class DungeonScene implements GameScene {
       const s = built.nav.nearestWalkable(tx, tz, 6) ?? { x: tx, z: tz };
       // zone pass (Kartal Geçidi): a portal into another open-world map, level-gated; the arrival is that map's entrance `toEntrance`
       if (e.toZone) {
+        // the line under the name is the target zone's level band (a pass is not a dungeon: no recommended level of its own)
+        const target = getDungeon(e.toZone);
+        const lr = target?.levelRange;
+        const lv = lr ? (lr[0] === lr[1] ? `${lr[0]}` : `${lr[0]}–${lr[1]}`) : '';
         const pass = new ExitPortal(world.allocLocalId(), {
           spawnAt: 'south', name: e.name, minLevel: e.minLevel,
+          sub: target ? `${target.name}${lv ? ` · Sv. ${lv}` : ''}` : undefined,
           returnTo: { dungeonId: e.toZone, spawn: { type: 'entrance', id: e.toEntrance ?? e.id } },
         });
         pass.position.set(s.x, world.groundY(s.x, s.z), s.z);

@@ -23,6 +23,8 @@ export interface TerrainTint {
   h: number;
   /** 3 bytes per texel. */
   rgb: Uint8Array;
+  /** Optional snow cover per texel (0..255, 1 byte): the snow texture replaces the grass under the splat paths and patches. */
+  snow?: Uint8Array;
   half: number;
 }
 
@@ -130,7 +132,7 @@ export function createTerrain(o: TerrainOptions): Terrain {
     tintRGBA[i * 4] = tintSrc.rgb[i * 3];
     tintRGBA[i * 4 + 1] = tintSrc.rgb[i * 3 + 1];
     tintRGBA[i * 4 + 2] = tintSrc.rgb[i * 3 + 2];
-    tintRGBA[i * 4 + 3] = 255;
+    tintRGBA[i * 4 + 3] = tintSrc.snow ? tintSrc.snow[i] : 0; // alpha = snow cover (the tint's rgb is unchanged)
   }
   const tintTex = new THREE.DataTexture(tintRGBA, tintSrc.w, tintSrc.h, THREE.RGBAFormat);
   tintTex.magFilter = THREE.LinearFilter;
@@ -145,6 +147,7 @@ export function createTerrain(o: TerrainOptions): Terrain {
   const dirt = surfaceTexture('dirt', o.seed, 64);
   const cobble = surfaceTexture('cobble', o.seed, 64);
   const moss = surfaceTexture('moss', o.seed, 64);
+  const snowTex = surfaceTexture('snow', o.seed, 64);
 
   const mat = new THREE.MeshStandardMaterial({ color: o.grassTint ?? 0xffffff, roughness: 1, metalness: 0 });
   mat.onBeforeCompile = (shader) => {
@@ -153,6 +156,7 @@ export function createTerrain(o: TerrainOptions): Terrain {
     shader.uniforms.uDirt = { value: dirt };
     shader.uniforms.uCobble = { value: cobble };
     shader.uniforms.uMoss = { value: moss };
+    shader.uniforms.uSnow = { value: snowTex };
     shader.uniforms.uSplatHalf = { value: o.splatHalf };
     shader.uniforms.uTintMap = { value: tintTex };
     shader.uniforms.uTintHalf = { value: tintSrc.half };
@@ -166,7 +170,7 @@ export function createTerrain(o: TerrainOptions): Terrain {
         `#include <common>
 varying vec2 vTerrainXZ;
 ${SLOPE_VARYING_FRAG}
-uniform sampler2D uSplat; uniform sampler2D uGrass; uniform sampler2D uDirt; uniform sampler2D uCobble; uniform sampler2D uMoss;
+uniform sampler2D uSplat; uniform sampler2D uGrass; uniform sampler2D uDirt; uniform sampler2D uCobble; uniform sampler2D uMoss; uniform sampler2D uSnow;
 uniform float uSplatHalf;
 uniform sampler2D uTintMap; uniform float uTintHalf; uniform float uHasTint;`,
       )
@@ -181,15 +185,17 @@ vec3 ms = texture2D(uMoss, vTerrainXZ / 5.0).rgb;
 vec3 dt = texture2D(uDirt, vTerrainXZ / 3.0).rgb;
 vec3 cb = texture2D(uCobble, vTerrainXZ / 4.0).rgb;
 vec3 base = mix(g1, g2 * 0.92, 0.3);
+// region tint: sampled unconditionally (clamped), then masked outside the tint area. Its alpha is the snow cover: the snow
+// replaces the grass first, so the splat paths (dirt, cobble) and the dark patches still show through it
+vec2 ts = (vTerrainXZ + vec2(uTintHalf)) / (2.0 * uTintHalf);
+vec4 tm = texture2D(uTintMap, clamp(ts, 0.0, 1.0));
+float inside = step(0.0, ts.x) * step(ts.x, 1.0) * step(0.0, ts.y) * step(ts.y, 1.0) * uHasTint;
+base = mix(base, texture2D(uSnow, vTerrainXZ / 4.0).rgb, tm.a * inside);
 base = mix(base, ms, sp.b);
 base = mix(base, dt, sp.r);
 base = mix(base, cb, sp.g);
 ${SLOPE_FRAG}
-// region tint: sampled unconditionally (clamped), then masked outside the tint area
-vec2 ts = (vTerrainXZ + vec2(uTintHalf)) / (2.0 * uTintHalf);
-vec3 tc = texture2D(uTintMap, clamp(ts, 0.0, 1.0)).rgb;
-float inside = step(0.0, ts.x) * step(ts.x, 1.0) * step(0.0, ts.y) * step(ts.y, 1.0) * uHasTint;
-vec3 tintC = mix(vec3(1.0), tc, inside);
+vec3 tintC = mix(vec3(1.0), tm.rgb, inside);
 diffuseColor.rgb *= base * tintC;`,
       );
   };

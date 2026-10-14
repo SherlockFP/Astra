@@ -70,6 +70,8 @@ interface RegionSpec {
   music: MusicId;
   vfx: VfxId;
   vfxColor?: number;
+  /** Snow cover 0..1 (the snow foothills); absent = bare ground. */
+  snow?: number;
 }
 
 const REGION_SPECS: RegionSpec[] = [
@@ -78,13 +80,13 @@ const REGION_SPECS: RegionSpec[] = [
   { id: 'r8', roomId: 'k2_kizil_corak', name: 'Kızıl Çorak', levels: [33, 36], fog: [0xc89a78, 26, 105], hemi: [0xf0c8a0, 0x4a2c1c, 1.3], sun: [0xffc890, 1.25],
     tex: ['tt3-terrain-05', 'tt2-dirt-01', 'tt2-stone-17', 'tt2-dirt-09'], tint: 0xffd8b8, music: 'world_canyon', vfx: 'ambient_dust', vfxColor: 0xc88858 },
   { id: 'r9', roomId: 'k3_ruzgar_yaylasi', name: 'Rüzgâr Yaylası', levels: [36, 38], fog: [0xb8c4c0, 32, 105], hemi: [0xd0dce0, 0x3c4438, 1.3], sun: [0xf0f0e0, 1.1],
-    tex: ['tt3-terrain-10', 'tt2-dirt-19', 'tt3-stone-23', 'tt3-terrain-17'], tint: 0xe8ecd8, music: 'world_vale', vfx: 'ambient_dust', vfxColor: 0xc8d0c0 },
+    tex: ['tt3-terrain-10', 'tt2-dirt-19', 'tt3-stone-23', 'tt3-terrain-17'], tint: 0xf2dc9c, music: 'world_vale', vfx: 'ambient_dust', vfxColor: 0xc8d0c0 },
   { id: 'r10', roomId: 'k4_ayaz_etegi', name: 'Ayaz Eteği', levels: [38, 40], fog: [0xc4d4e4, 22, 95], hemi: [0xd8e8ff, 0x384050, 1.35], sun: [0xe8f0ff, 1.0],
-    tex: ['tt2-stone-15', 'tt2-stone-07', 'tt3-stone-21', 'tt3-stone-09'], tint: 0xe0ecff, music: 'dungeon_frost', vfx: 'ambient_snow' },
+    tex: ['tt2-stone-15', 'tt2-stone-07', 'tt3-stone-21', 'tt3-stone-09'], tint: 0xe0ecff, music: 'dungeon_frost', vfx: 'ambient_snow', snow: 0.55 },
   { id: 'r11', roomId: 'k5_kul_ovasi', name: 'Kül Ovası', levels: [40, 43], fog: [0xa8a296, 24, 100], hemi: [0xd0ccc0, 0x46423c, 1.25], sun: [0xe0d8c8, 1.05],
     tex: ['tt2-dirt-19', 'tt2-dirt-09', 'tt2-stone-07', 'tt2-dirt-01'], tint: 0xd0ccc0, music: 'world_ruins', vfx: 'ambient_dust', vfxColor: 0x9a9288 },
   { id: 'r12', roomId: 'k6_kartal_sirti', name: 'Kartal Sırtı', levels: [43, 45], fog: [0xa8c0d8, 30, 115], hemi: [0xd8e4f0, 0x485060, 1.3], sun: [0xf4f4ff, 1.15],
-    tex: ['tt3-stone-21', 'tt3-stone-23', 'tt3-terrain-17', 'tt2-stone-15'], tint: 0xe4ecf8, music: 'world_hills', vfx: 'ambient_snow' },
+    tex: ['tt3-stone-21', 'tt3-stone-23', 'tt3-terrain-17', 'tt2-stone-15'], tint: 0xe6dcc4, music: 'world_hills', vfx: 'ambient_snow' },
 ];
 
 /** Signature silhouette per region: existing landmark recipes of WorldDecor (windmill, watch tower, red castle, obelisk ring). */
@@ -109,6 +111,7 @@ export const REGIONS: WorldRegion[] = REGION_SPECS.map((r): WorldRegion => {
     skyZenith: r.hemi[0], skyHorizon: r.fog[0],
     groundTex: { grass: texUrl(r.tex[0]), dirt: texUrl(r.tex[1]), cobble: texUrl(r.tex[2]), dark: texUrl(r.tex[3]) },
     groundTint: r.tint,
+    snowCover: r.snow,
     music: r.music,
     ambientVfx: r.vfx, ambientColor: r.vfxColor,
   };

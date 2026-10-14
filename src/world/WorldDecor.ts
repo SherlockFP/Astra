@@ -8,7 +8,7 @@ import { gp, hw, ip, kc, kf, kg, kn, tw } from '../data/dungeons/kit';
 import type { NavGrid } from './NavGrid';
 import { ChunkCuller, type CullLayer, type InstanceBatcher } from './Instancing';
 import { designToPhysical, type LightPool } from './LightPool';
-import { Sky, makeMountainRing } from './Sky';
+import { Sky, liftRingToGround, makeMountainRing } from './Sky';
 import { DEFAULT_BLEND_M, RegionAtmosphere, atmoOf } from './RegionAtmosphere';
 import { createTerrain, type SplatOp, type Terrain } from './Terrain';
 import type { Relief } from './Relief';
@@ -143,6 +143,8 @@ class OpenWorld implements WorldDecorHandle {
   /** Streamed zone: the fog never reaches past the built ring, so chunks never pop in view (content sets fogFar; this is the safety net). */
   private readonly fogFarCap: number;
   private streamFailed = false;
+  /** Camera position the sky rings were last lifted for (relief zones). */
+  private ringAt = { x: NaN, z: NaN };
 
   constructor(
     private readonly def: DungeonDef,
@@ -219,9 +221,20 @@ class OpenWorld implements WorldDecorHandle {
     if (cam) {
       this.sky.update(cam, this.time);
       for (const ring of this.rings) ring.position.set(cam.position.x, 0, cam.position.z);
+      this.followRings(cam.position.x, cam.position.z);
     }
     for (const w of this.waters) w.tex.offset.x += dt * w.speed / 8;
     this.updateAmbient(dt);
+  }
+
+  /** Relief zones: the sky rings stand on the ground under their radius; re-lifted every 4 m of camera travel (cheap: 72 samples). */
+  private followRings(x: number, z: number): void {
+    const relief = this.host.relief;
+    if (!relief || this.rings.length === 0) return;
+    if (Math.hypot(x - this.ringAt.x, z - this.ringAt.z) < 4) return;
+    this.ringAt.x = x;
+    this.ringAt.z = z;
+    for (const ring of this.rings) liftRingToGround(ring, (px, pz) => relief.groundY(px, pz), x, z);
   }
 
   dispose(): void {
@@ -523,7 +536,7 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
     // big zone: one flat quad + one small splat per chunk, built when the streamer asks (WorldStream)
     chunkTerrain = new ChunkedTerrain({
       seed: def.id, ops, mapCx: cx, mapCz: cz, chunkM: stream.chunkM, grassTint: 0xffffff,
-      tint: { w: tint.w, h: tint.h, rgb: tint.rgb, half: Math.max(cx, cz) }, parent: host.root, relief: host.relief ?? null,
+      tint: { w: tint.w, h: tint.h, rgb: tint.rgb, snow: tint.snow, half: Math.max(cx, cz) }, parent: host.root, relief: host.relief ?? null,
     });
     const ct = chunkTerrain;
     weights = (x, z) => ct.weights(x, z);
@@ -531,7 +544,7 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
     const terrain: Terrain = createTerrain({
       // rolling terrain: 440 m around the centre (80k triangles at 4 m cells; the fog hides what is beyond); flat ground keeps 480 m / 10 m cells
       half: host.relief ? 440 : 480, splatHalf: Math.max(cx, cz) + 6, splatRes: 2048, seed: def.id, ops, cell: 10, grassTint: 0xffffff,
-      tint: { w: tint.w, h: tint.h, rgb: tint.rgb, half: Math.max(cx, cz) },
+      tint: { w: tint.w, h: tint.h, rgb: tint.rgb, snow: tint.snow, half: Math.max(cx, cz) },
       relief: host.relief ? { relief: host.relief, centreX: cx, centreZ: cz } : undefined,
     });
     terrain.mesh.position.set(cx, 0, cz);
@@ -558,8 +571,9 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
     rings.push(m);
     host.disposables.push({ dispose: () => { m.geometry.dispose(); (m.material as THREE.Material).dispose(); } });
   };
-  ring(430, 20, 60, 0x2a3a2a, 0.55, ':far');
-  ring(380, 6, 20, 0x233222, 0.4, ':near');
+  // less haze than before: the rings read as dark forested hills against the fog instead of grey slabs
+  ring(430, 20, 60, 0x2a3a2a, 0.35, ':far');
+  ring(380, 6, 20, 0x233222, 0.25, ':near');
 
   // ---- water ----
   // every optional block below degrades to a warning: a broken scenery entry must not fail the map load
