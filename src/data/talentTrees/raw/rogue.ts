@@ -1,5 +1,5 @@
 // GENERATED from docs/GDD_TALENTS.*.json by tools/gen-talent-data.mjs — do not edit
-// Source: docs/GDD_TALENTS.trees.json · class:rogue + rogue_assassin, rogue_alchemist. Row = [slot, opt, name, desc, fx] (GDD_TALENTS §2.9).
+// Source: docs/GDD_TALENTS.trees.json · class:rogue + rogue_assassin, rogue_alchemist, rogue_outlaw. Row = [slot, opt, name, desc, fx] (GDD_TALENTS §2.9).
 import type { SlotId } from '../../../types/talents';
 import type { SpecId } from '../../../types/v2';
 import type { StatId } from '../../../types/stats';
@@ -95,6 +95,35 @@ const data: { class: RawTree; specs: Partial<Record<SpecId, RawTree>> } = {
         ['s29', '', 'Kadim Formül', 'Şifa gücü +%8. 5 Karışım Puanı ile Mucize Damla en yaralı müttefiği ek %10 iyileştirir.', 'S healingPct=.08 ;; T cast:rogue_mending_draught if=pips>=5:karisim => healally(.1)'],
         ['s30', 'A', 'Büyük Simyager', 'Şifa gücü +%20; Hayat İksiri Yağmuru bekleme −%15.', 'S healingPct=.20 ;; M rogue_elixir_of_life cdx=.85'],
         ['s30', 'B', 'Zehirli Şifa', 'Zehir hasarı +%25, şifa gücü +%8; şifalar %10 şansla düşmanlara zehir bulutu bırakır.', 'S poisonDamagePct=.25 healingPct=.08 ;; T heal ch=.1 => exp(.6,4,poison)'],
+      ],
+    },
+    rogue_outlaw: {
+      palette: ['critChance', 'critDamage', 'attackSpeed', 'dex', 'damagePct', 'physicalDamagePct', 'resourceRegenPct', 'moveSpeedPct', 'dodgeChance', 'maxHpPct', 'cdr', 'finisherPct'],
+      rows: [
+        ['s02', 'A', 'Keskin Göz (Keen Eye)', 'Tabanca Atışı hasarı +%15.', 'M rogue_crossbow_shot dmgx=1.15'],
+        ['s02', 'B', 'Kalleş Ritim (Sinister Rhythm)', 'Kalleş Darbe hasarı +%10.', 'M rogue_sinister_strike dmgx=1.1'],
+        ['s04', '', 'Gözler Arası (Between Eyes)', 'Gözler Arası hasarı +%15.', 'M rogue_between_the_eyes dmgx=1.15'],
+        ['s05', '', null, null, 'G rogue_roll_the_bones'],
+        ['s09', 'A', 'Kombo Ruhu (Combo Spirit)', 'Kritik vuruşta %20 şansla 1 Kombo Puanı kazanırsın.', 'T crit ch=.2 => pip(combo,1)'],
+        ['s09', 'B', 'Son Kaçış (Last Escape)', 'Canın %35 altına düşünce 60 sn’de bir %15 can yenilenir.', 'T hurt if=hp<.35 icd=60 => heal(.15)'],
+        ['s11', '', 'Dilimleme Ustası (Slice)', 'Dilimleme 3 sn uzar.', 'M rogue_slice_and_dice dur=+3'],
+        ['s12', '', 'Bıçak Ustalığı (Blade Mastery)', 'Bıçak Fırtınası bekleme −%10.', 'M rogue_blade_flurry cdx=.9'],
+        ['s13', '', 'Adrenalin Ritmi (Adrenaline)', 'Adrenalin Dürtüsü 4 sn uzar.', 'M rogue_adrenaline_rush dur=+4'],
+        ['s15', 'A', 'Kesin Hasar (Precise Damage)', 'Kesin Darbe hasarı +%15.', 'M rogue_dispatch dmgx=1.15'],
+        ['s15', 'B', 'Zar Şansı (Dice Luck)', 'Kritik şansı +%2.', 'S critChance=.02'],
+        ['s17', 'A', 'Enerji Akışı (Energy Flow)', 'Enerji yenilenmesi +%15.', 'S resourceRegenPct=.15'],
+        ['s17', 'B', 'Kanlı Av (Bloody Hunt)', 'Öldürmede %20 şansla 1 Kombo Puanı kazanırsın.', 'T kill ch=.2 => pip(combo,1)'],
+        ['s18', '', 'Keskin Gövde (Keen Body)', 'Maksimum can +%5.', 'S maxHpPct=.05'],
+        ['s20', '', 'Kombo Ritmi (Combo Rhythm)', 'Kesin Darbe ve Gözler Arası maliyeti −%10.', 'M rogue_dispatch+rogue_between_the_eyes costx=.9'],
+        ['s21', '', 'Bıçak Yağmuru (Blade Rain)', 'Bıçak Fırtınası alanı +%25.', 'M rogue_blade_flurry radx=1.25'],
+        ['s25', '', 'Katliam Ritmi (Spree Rhythm)', 'Katliam bekleme −15 sn.', 'M rogue_killing_spree cd=-15'],
+        ['s26', 'A', 'Korsan Ruhu (Pirate Spirit)', 'Adrenalin Dürtüsü kullanınca grup 6 sn güçlenir.', 'T cast:rogue_adrenaline_rush => st(party,empower,6)'],
+        ['s26', 'B', 'Kaçış Ustası (Escape Master)', 'Katliam kullanınca 3 sn hareket hızı +%15.', 'T cast:rogue_killing_spree ch=1 => buff(haste,3,{moveSpeedPct=.15})'],
+        ['s27', '', 'Çifte Kılıç (Double Blade)', 'Kalleş Darbe %15 şansla tekrarlanır.', 'T cast:rogue_sinister_strike ch=.15 => echo(rogue_sinister_strike,.5,.4)'],
+        ['s28', '', 'Gölge Derisi (Shadow Hide)', 'Kaçınma şansı +%2. Ölümcül darbede %20 canla ayakta kalırsın (90 sn bekleme).', 'S dodgeChance=.02 ;; T lethal icd=90 => heal(.2)'],
+        ['s29', '', 'Kan Ritmi (Blood Rhythm)', 'Saldırı hızı +%3, kritik hasarı +%5.', 'S attackSpeed=.03 critDamage=.05'],
+        ['s30', 'A', 'Katil Ustası (Killer Master)', 'Hasar +%8; Katliam hasarı +%15.', 'S damagePct=.08 ;; M rogue_killing_spree dmgx=1.15'],
+        ['s30', 'B', 'Yağmacı (Plunderer)', 'Adrenalin Dürtüsü bekleme −%10.', 'M rogue_adrenaline_rush cdx=.9'],
       ],
     },
   },

@@ -29,8 +29,8 @@ const PASSIVE_EXTRA_FILE = path.join(ROOT, 'src', 'data', 'passiveExtra.ts');
 
 const HEADER = '// GENERATED from docs/GDD_TALENTS.*.json by tools/gen-talent-data.mjs — do not edit';
 
-/** Class order of the 12 raw files (the 9 classes, then the CLASS SCAFFOLD trio) and of the signature table (GDD_TALENTS §1.2). */
-const CLASSES = ['knight', 'barbarian', 'mage', 'rogue', 'monk', 'archer', 'paladin', 'necromancer', 'warlock', 'priest', 'shaman', 'druid'];
+/** Class order of the 14 raw files (the 9 classes, the CLASS SCAFFOLD trio, then İblis Avcısı and Ejderhasoy) and of the signature table (GDD_TALENTS §1.2). */
+const CLASSES = ['knight', 'barbarian', 'mage', 'rogue', 'monk', 'archer', 'paladin', 'necromancer', 'warlock', 'priest', 'shaman', 'druid', 'demonhunter', 'evoker'];
 /** Sector ids of the five new sectors: starts, entry notable, arm nodes and the two Nekromant connectors (nc_c1, nc_c2). */
 const SECTOR_ID = /^(pl|mk|ar|wl|nc)_/;
 /** Sector notables and keystones (n_mk_*, ks_mk_empty_hand, n_pl_gate, ...). */
@@ -42,13 +42,13 @@ const OPTS = ['', 'A', 'B'];
 /** Counts the document fixes (GDD_TALENTS §0, §3.2, §4.5); a mismatch means the JSON changed and the doc must be reconciled. */
 const EXPECT = {
   /** WP-02: +spec:archer_survival (24 rows, Hayatta Kalma) on top of the GDD count of 30 trees / 21 specs / 729 rows. */
-  trees: 43,
-  specs: 31,
+  trees: 52,
+  specs: 38,
   /** KIT PK-0: SPEC_TABLE entries (src/data/talentTrees/index.ts). The JSON holds `specs` of them plus PENDING_SPEC_TREES. */
-  registrySpecs: 32,
+  registrySpecs: 39,
   /** PRIEST kit: class:priest carries 25 rows. */
   /** KIT Druid: +class:druid (25) and four spec trees (24 each). */
-  rows: 1044,
+  rows: 1262,
   skillSpecRows: 162,
   webNodes: 306,
   sectors: 122,
@@ -62,6 +62,8 @@ const EXPECT = {
 const PENDING_SPEC_TREES = ['rogue_subtlety'];
 /** CLASS SCAFFOLD: classes whose class tree is an empty stand-in; their spec trees (and spec rows) arrive with the kits. */
 const SCAFFOLD_CLASSES = ['priest', 'shaman', 'druid'];
+/** CM12 classes whose signature skills (SIGNATURE_SKILLS) are not authored yet: the empty list is the answer, not an error. */
+const NO_SIGNATURE_CLASSES = ['demonhunter', 'evoker'];
 const WEB_KINDS ={ start: 9, small: 178, notable: 80, keystone: 16, mastery: 14, socket: 9 };
 
 const fail = (msg) => {
@@ -230,7 +232,7 @@ function buildSkillSpecs(T) {
     if (tiers !== '1A,1B,2A,2B,3A,3B') fail(`${skill}: tiers/opts are ${tiers}`);
     signature[info.classId].push(skill);
   }
-  for (const c of CLASSES) if (!SCAFFOLD_CLASSES.includes(c) && signature[c].length !== 3) fail(`class ${c} has ${signature[c].length} signature skills, expected 3`);
+  for (const c of CLASSES) if (!SCAFFOLD_CLASSES.includes(c) && !NO_SIGNATURE_CLASSES.includes(c) && signature[c].length !== 3) fail(`class ${c} has ${signature[c].length} signature skills, expected 3`);
   if (bySkill.size !== 27) fail(`expected 27 signature skills, got ${bySkill.size}`);
   return { rows, signature };
 }
@@ -246,11 +248,8 @@ function skillSpecsFile({ rows, signature }) {
     `export const SKILL_SPEC_ROWS: SkillSpecRow[] = ${lit(rows)};`,
     '',
     '/** The three signature skills of each class, in §4.5 table order (the three cards of the Beceri Uzmanlıkları tab, §5.4). */',
-    // ClassId also holds demonhunter / evoker (CM1 registry rows): Record<ClassId, ...> needs their empty stubs.
-    `export const SIGNATURE_SKILLS: Record<ClassId, string[]> = ${lit(signature).replace(
-      /\n\}$/,
-      "\n  // CM1 stubs: the new classes' signature skills come with their kits (CM10 / CM12).\n  demonhunter: [],\n  evoker: [],\n}",
-    )};`,
+    // Every ClassId has a key (demonhunter / evoker: [] until their signature skills are authored, NO_SIGNATURE_CLASSES).
+    `export const SIGNATURE_SKILLS: Record<ClassId, string[]> = ${lit(signature)};`,
     '',
     '/** The six options (tier 1 A, 1 B, 2 A, 2 B, 3 A, 3 B) of one signature skill; [] for an unknown skill id. */',
     'export function skillSpecsOf(skillId: string): SkillSpecRow[] {',

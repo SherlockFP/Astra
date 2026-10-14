@@ -22,6 +22,8 @@ import warlock from './raw/warlock';
 import priest from './raw/priest';
 import shaman from './raw/shaman';
 import druid from './raw/druid';
+import demonhunter from './raw/demonhunter';
+import evoker from './raw/evoker';
 
 interface ClassEntry {
   id: ClassId;
@@ -47,6 +49,9 @@ const CLASS_TABLE: readonly ClassEntry[] = [
   { id: 'warlock', name: 'Warlock' },
   // KIT Druid (appended): class tree + the four spec trees below. No passive-web sector yet (CLASS_START_NODE dr_start has no nodes).
   { id: 'druid', name: 'Druid' },
+  // KIT Demon Hunter / Evoker (appended, CM12 talent trees): class tree + spec trees below. Raw trees in raw/demonhunter.ts, raw/evoker.ts.
+  { id: 'demonhunter', name: 'İblis Avcısı (Demon Hunter)' },
+  { id: 'evoker', name: 'Ejderhasoy (Evoker)' },
 ];
 
 /** §1.2 table order (index 0–20 = `SPEC_ORDER`, used by the export string `SS` of §2.7). */
@@ -90,6 +95,16 @@ const SPEC_TABLE: readonly SpecEntry[] = [
   { id: 'druid_restoration', classId: 'druid', name: 'Restorasyon' },
   // Nekromant Frost (index 30, appended). Raw tree is in raw/necromancer.ts (generated from docs/GDD_TALENTS.trees.json).
   { id: 'necromancer_frost', classId: 'necromancer', name: 'Buz Kıyıcısı' },
+  // Demon Hunter (appended). Raw trees in raw/demonhunter.ts.
+  { id: 'demonhunter_chaos', classId: 'demonhunter', name: 'Kaos (Havoc)' },
+  { id: 'demonhunter_vengeance', classId: 'demonhunter', name: 'İntikam (Vengeance)' },
+  { id: 'demonhunter_devourer', classId: 'demonhunter', name: 'Yutucu (Devourer)' },
+  // Evoker (appended). Raw trees in raw/evoker.ts.
+  { id: 'evoker_devastation', classId: 'evoker', name: 'Yıkım Nefesi (Devastation)' },
+  { id: 'evoker_preservation', classId: 'evoker', name: 'Koruyucu Nefes (Preservation)' },
+  { id: 'evoker_augmentation', classId: 'evoker', name: 'Yüceltme (Augmentation)' },
+  // Rogue Outlaw (appended): Kanun Kaçağı. Its raw tree is at the end of raw/rogue.ts; the tree makes the spec pickable.
+  { id: 'rogue_outlaw', classId: 'rogue', name: 'Kanun Kaçağı (Outlaw)' },
 ];
 
 /** Class ids in canonical order (§1.2). */
@@ -136,9 +151,9 @@ const RAW_FILES: Record<ClassId, RawClassFile> = {
   priest,
   shaman,
   druid,
-  // CORE_MECHANICS §2 (CM1): empty stand-ins until the CM12 talent trees of the new classes are generated (no tree rows yet).
-  demonhunter: { class: { palette: [], rows: [] }, specs: {} },
-  evoker: { class: { palette: [], rows: [] }, specs: {} },
+  // CM12 (generated): İblis Avcısı and Ejderhasoy.
+  demonhunter,
+  evoker,
 };
 
 const TREE_DESCS: readonly TreeDesc[] = [

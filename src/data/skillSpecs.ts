@@ -1479,7 +1479,6 @@ export const SIGNATURE_SKILLS: Record<ClassId, string[]> = {
   priest: [],
   shaman: [],
   druid: [],
-  // CM1 stubs: the new classes' signature skills come with their kits (CM10 / CM12).
   demonhunter: [],
   evoker: [],
 };
