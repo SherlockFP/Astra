@@ -7,6 +7,7 @@ import { F, VERT } from '../world/Heightfield';
 import { getDirector, hooks, isHeavyHit, type EnemyDirector } from './EnemyDirector';
 import { bossMsg, bossText } from './bossNet';
 import { CUSTOM, PASSIVES, runOnDeath, type CustomHandler, type PassiveHandler } from './abilities';
+import { defaultLeashFor, fleesAtLowHp, healBelow, kiteBandFor, spellCastTime } from './trash/roles';
 import type { Actor } from '../entities/Actor';
 import type { Enemy } from '../entities/Enemy';
 import type { Minion } from '../entities/Minion';
@@ -182,6 +183,15 @@ export class EnemyAI {
   /** Current basic attack (boss scripts may swap it, e.g. Zakhar's trident -> claw combo). */
   basic: EnemyAbility;
   basicCd: number;
+  /** WoW fleeing (humanoids below 20 % HP): runs until fleeUntil, then fights again; fleeAgainAt = next allowed flee. */
+  protected fleeing = false;
+  protected fleeUntil = 0;
+  protected fleeAgainAt = 0;
+  /** Stuck check (WoW evade for a body that cannot reach its target): last sample and consecutive stuck samples. */
+  protected stuckAt = 0;
+  protected stuckX = 0;
+  protected stuckZ = 0;
+  protected stuckCount = 0;
 
   constructor(e: Enemy, dir: EnemyDirector) {
     this.e = e;
@@ -194,7 +204,7 @@ export class EnemyAI {
       if (ab.params?.passive) {
         const h = PASSIVES[ab.id];
         if (h) this.passives.push({ ab, h, state: {} });
-      } else if (!ab.params?.onDeath) this.abilityList.push(ab);
+      } else if (!ab.params?.onDeath) this.abilityList.push(this.tuned(ab, false));
     }
     const bp = def.basicAttack;
     if (bp.params?.passive) {
@@ -241,6 +251,15 @@ export class EnemyAI {
     const state: Record<string, number> = {};
     this.passives.push({ ab, h, state });
     h.init?.(this, ab, state);
+  }
+
+  /**
+   * This brain's copy of an ability: trash casters and healers get an interruptible cast bar on their spells (trash/roles.ts).
+   * The def itself is never changed, so other brains and the data stay as authored.
+   */
+  protected tuned(ab: EnemyAbility, isBasic: boolean): EnemyAbility {
+    const ct = spellCastTime(this.e.def, ab, isBasic);
+    return ct > 0 && ct !== ab.castTime ? { ...ab, castTime: ct, interruptible: true } : ab;
   }
 
   /** Pusu: the next basic attack uses its firstCoef again (Gölge Suikastçısı after the smoke bomb). */
@@ -302,7 +321,7 @@ export class EnemyAI {
   /** True when a basic-attack style melee enemy should queue for one of the 6 slots around its target. */
   wantsSlot(): boolean {
     const e = this.e;
-    return this.aggroed && this.mode === 'chase' && !e.def.flying && !e.def.ai?.kite && e.def.attackRange < 5 && !e.def.ai?.stationary;
+    return this.aggroed && this.mode === 'chase' && !this.fleeing && !e.def.flying && !kiteBandFor(e.def) && e.def.attackRange < 5 && !e.def.ai?.stationary;
   }
 
   // ===================================================================================================================
@@ -357,6 +376,17 @@ export class EnemyAI {
     }
   }
 
+  /**
+   * Elite and miniboss specials (anything but the basic attack, of a melee / area / line / charge kind) are telegraphed: the
+   * ground shape shows during the windup and the windup is at least 0.9 s (WoW elite casts you can see and dodge).
+   */
+  protected eliteSpecial(ab: EnemyAbility): boolean {
+    const r = this.e.def.rank;
+    if (r !== 'elite' && r !== 'miniboss') return false;
+    if (ab === this.basic || ab.params?.passive || ab.params?.onDeath) return false;
+    return ab.kind === 'melee' || ab.kind === 'cone' || ab.kind === 'self_aoe' || ab.kind === 'ground_aoe' || ab.kind === 'line' || ab.kind === 'charge';
+  }
+
   /** Shape for an ability whose geometry comes from `ab.shape` (cone/circle/line). */
   protected abilityShape(ab: EnemyAbility, b: Busy, extra: Partial<ShapeOpts> = {}): number {
     const e = this.e;
@@ -373,7 +403,7 @@ export class EnemyAI {
     if (kind === 'line' || kind === 'charge') {
       shape = ab.shape ?? { type: 'line', length: ab.range, width: 2 };
     }
-    const tel = ab.telegraph ?? (kind === 'ground_aoe' || kind === 'line' || kind === 'charge' || kind === 'self_aoe');
+    const tel = this.eliteSpecial(ab) || (ab.telegraph ?? (kind === 'ground_aoe' || kind === 'line' || kind === 'charge' || kind === 'self_aoe'));
     const type = ab.damage?.type ?? 'physical';
     // GDD_V2 §3.12 flags: melee-style abilities are parryable by default; tank busters and perilous hits never are
     const parryable = ab.tankBuster || ab.perilous ? false : ab.parryable ?? (kind === 'melee' || kind === 'cone' || kind === 'charge');
@@ -432,6 +462,8 @@ export class EnemyAI {
     const b = this.busy;
     if (b && b.castId && b.ab.interruptible && e.cast && (e.def.rank === 'trash') && isHeavyHit(d, e.maxHp)) this.interrupt('flinch', d.sourceId);
     for (const p of this.passives) p.h.onHp?.(this, p.ab, p.state);
+    // runs after Combat applied the hit, so the HP read is the new one
+    if (this.aggroed) this.maybeFlee(this.now);
   }
 
   onAllyDied(dead: Enemy): void {
@@ -936,7 +968,7 @@ export class EnemyAI {
       return;
     }
     // open-world leash: ai.homeRadius (camp leash) or leashRange; stationary bodies never leash
-    const leash = def.ai?.homeRadius ?? def.leashRange ?? 0;
+    const leash = def.ai?.homeRadius ?? def.leashRange ?? defaultLeashFor(def);
     if (!def.ai?.stationary && leash > 0 && Math.hypot(e.position.x - e.homeX, e.position.z - e.homeZ) > leash) {
       this.startReturn();
       return;
@@ -955,6 +987,16 @@ export class EnemyAI {
     this.lastTargetPos.x = tx;
     this.lastTargetPos.z = tz;
 
+    // WoW fleeing: a humanoid below 20 % HP keeps running for its flee window, then fights again
+    if (this.fleeing) {
+      if (now < this.fleeUntil) {
+        this.fleeCombat(dt, now);
+        return;
+      }
+      this.fleeing = false;
+      this.path = null;
+    }
+
     if (now < this.reactUntil) {
       this.faceTo(dx, dz, 14, dt);
       this.halt(dt);
@@ -970,7 +1012,56 @@ export class EnemyAI {
       this.startAbility(ab, target, dist);
       return;
     }
+    if (this.checkStuck(now, edge, target)) return;
     this.moveOrHold(dt, now, target, dist, edge);
+  }
+
+  /**
+   * Stuck recovery (WoW: a mob that cannot reach its target does not stand in a corner forever). While the enemy wants to close
+   * in and has not moved 0.2 m in the last 0.5 s, it repaths after 1.5 s and evades home after 4 s (startReturn: full reset).
+   * Waiting for a melee slot, kiting in the sweet spot, and bodies jammed in a crowd or against a player do not count.
+   * Returns true when it started the evade.
+   */
+  protected checkStuck(now: number, edge: number, target: Actor): boolean {
+    const e = this.e;
+    if (now < this.stuckAt) return false;
+    this.stuckAt = now + 0.5;
+    const kite = kiteBandFor(e.def);
+    const reach = Math.max(1.2, this.basic.range * 0.9);
+    let wantsIn = edge > reach && (!kite || edge > kite[1] || !this.hasLos(target)) && this.canAttackMelee();
+    // a body jammed in a crowd (allies or a player in the way) is not stuck on the map: it is blocked, and the crowd moves
+    if (wantsIn && this.dir.near(e.position.x, e.position.z, 2.5).some((o) => o !== e && !o.isDead)) wantsIn = false;
+    if (wantsIn && this.world.players.some((p) => !p.isDead && Math.hypot(p.position.x - e.position.x, p.position.z - e.position.z) < 2.5)) wantsIn = false;
+    // position delta, not velocity: a body pressed into a wall keeps its velocity but does not move
+    const moved = Math.hypot(e.position.x - this.stuckX, e.position.z - this.stuckZ);
+    this.stuckX = e.position.x;
+    this.stuckZ = e.position.z;
+    if (!wantsIn || moved >= 0.2) {
+      this.stuckCount = 0;
+      return false;
+    }
+    this.stuckCount++;
+    if (this.stuckCount === 3) this.path = null;
+    if (this.stuckCount >= 8) {
+      this.stuckCount = 0;
+      this.startReturn();
+      return true;
+    }
+    return false;
+  }
+
+  /** WoW fleeing mob: a humanoid trash / elite at low HP runs for 7 s and calls the pack within 14 m onto its attacker. */
+  protected maybeFlee(now: number): void {
+    const e = this.e;
+    if (this.fleeing || now < this.fleeAgainAt || !this.target || e.isDead || !fleesAtLowHp(e.def)) return;
+    if (e.hpFrac >= 0.2) return;
+    this.fleeing = true;
+    this.fleeUntil = now + 7;
+    this.fleeAgainAt = now + 25;
+    this.fleeT = 0;
+    this.path = null;
+    if (this.busy) this.abortBusy('external');
+    this.callForHelp(14);
   }
 
   // ---- ability selection -------------------------------------------------------------------------------------------
@@ -1062,6 +1153,9 @@ export class EnemyAI {
       if (this.usable(ab, now, target, dist, edge)) cands.push(ab);
     }
     if (cands.length) {
+      // WoW healer priority: a heal on an ally below 50 % HP goes before any damage spell
+      const urgent = cands.find((c) => c.kind === 'heal_ally' && (this.findHealTarget(c)?.hpFrac ?? 1) < 0.5);
+      if (urgent) return urgent;
       let total = 0;
       for (const c of cands) total += c.weight ?? 1;
       let r = Math.random() * total;
@@ -1088,7 +1182,7 @@ export class EnemyAI {
   protected moveForRole(dt: number, now: number, target: Actor, dist: number, edge: number): void {
     const e = this.e;
     const def = e.def;
-    const kite = def.ai?.kite;
+    const kite = kiteBandFor(def);
     const speed = e.moveSpeed();
     const px = e.position.x, pz = e.position.z;
     const tx = target.position.x, tz = target.position.z;
@@ -1322,9 +1416,13 @@ export class EnemyAI {
 
   protected startReturn(): void {
     const e = this.e;
+    // WoW evade: the cast in progress is dropped at once, the body walks home
+    if (this.busy) this.abortBusy('external');
     this.mode = 'return';
     this.returning = true;
     this.aggroed = false;
+    this.fleeing = false;
+    this.stuckCount = 0;
     e.aggroed = false;
     this.target = null;
     e.targetId = null;
@@ -1333,12 +1431,33 @@ export class EnemyAI {
     e.statuses.apply('invulnerable', 30, { sourceId: e.id });
   }
 
+  /**
+   * WoW evade reset, on arrival home: full HP, every DoT / debuff / buff gone, all cooldowns and pending timers cleared, and
+   * the next pull starts from a clean brain. Bosses keep their statuses and timers (their scripts own them); they only get the
+   * HP restore the leash always gave.
+   */
+  protected evadeReset(): void {
+    const e = this.e;
+    e.hp = e.maxHp;
+    e.cast = null;
+    if (!e.isBoss) {
+      e.statuses.clear();
+      this.readyAt.clear();
+      this.basicReadyAt = this.now + 1;
+      this.timers = [];
+      this.threat.clear();
+    }
+    e.statuses.remove('invulnerable');
+    this.fleeing = false;
+    this.stuckCount = 0;
+    this.path = null;
+  }
+
   protected returnTick(dt: number, _now: number): void {
     const e = this.e;
     const dx = e.homeX - e.position.x, dz = e.homeZ - e.position.z;
     if (Math.hypot(dx, dz) < 1.0) {
-      e.statuses.remove('invulnerable');
-      e.hp = e.maxHp;
+      this.evadeReset();
       this.returning = false;
       this.mode = 'idle';
       this.halt(dt);
@@ -1494,7 +1613,7 @@ export class EnemyAI {
     const isBasic = ab === this.basic;
     const isCast = (ab.castTime ?? 0) > 0;
     const rate = Math.max(0.4, 1 + e.getStat(isCast ? 'castSpeed' : 'attackSpeed')) * this.atkMul;
-    const windup = Math.max(0.05, ab.windup / (isCast ? 1 : rate));
+    const windup = Math.max(this.eliteSpecial(ab) ? 0.9 : 0.05, ab.windup / (isCast ? 1 : rate));
     const castTime = isCast ? (ab.castTime as number) / Math.max(0.5, 1 + e.getStat('castSpeed')) : 0;
     const delay = Math.max(windup, castTime, ab.params?.delay !== undefined ? ab.params.delay : 0);
     const channel = ab.params?.channel ?? 0;
@@ -1665,6 +1784,23 @@ export class EnemyAI {
     b.data.hitscan = 1;
   }
 
+  /**
+   * Longest walkable run (m, at most `max`, sampled every 0.5 m) from the enemy along (dx, dz) with a clear line. Charges and
+   * leaps use it so the body stops at a wall instead of passing through it. Vertical worlds use the walk line.
+   */
+  protected clearRun(dx: number, dz: number, max: number): number {
+    const nav = this.world.nav;
+    const px = this.e.position.x, pz = this.e.position.z;
+    let best = 0;
+    for (let d = 0.5; d <= max + 1e-6; d += 0.5) {
+      const x = px + dx * d, z = pz + dz * d;
+      const clear = nav.vertical ? nav.walkLine(px, pz, x, z) : nav.lineOfSight(px, pz, x, z);
+      if (!clear || !nav.isWalkable(x, z)) break;
+      best = d;
+    }
+    return Math.min(best, max);
+  }
+
   /** The windup is over: the effect lands (or the projectile leaves). */
   protected resolveAbility(b: Busy): void {
     const e = this.e;
@@ -1743,7 +1879,8 @@ export class EnemyAI {
           G.audio.play(ab.sfx ?? 'swing_heavy', { pos: [e.position.x, 1.2, e.position.z], pitchVar: 0.06 });
           break;
         case 'charge': {
-          const len = ab.shape && ab.shape.type === 'line' ? ab.shape.length : ab.range;
+          // no wall clipping: the dash stops at the first wall on its line
+          const len = this.clearRun(b.dx, b.dz, ab.shape && ab.shape.type === 'line' ? ab.shape.length : ab.range);
           const dash = ab.params?.dash ?? 0.35;
           e.forcedMove = { vx: (b.dx * len) / dash, vz: (b.dz * len) / dash, until: this.now + dash };
           G.vfx.spawn('charge_trail', e.pointAt(0.3), { dir: [b.dx, 0, b.dz], duration: dash });
@@ -1799,7 +1936,8 @@ export class EnemyAI {
   protected findHealTarget(ab: EnemyAbility): Enemy | null {
     const e = this.e;
     let best: Enemy | null = null;
-    let bf = 0.97;
+    // WoW healers top up what is hurt: trash / elite healers only act on allies below 80 % (bosses keep 97 %)
+    let bf = healBelow(e.def);
     for (const o of this.world.enemies) {
       if (o.isDead || o.removed || o.team !== 'enemy' || o.def.ccImmune && o.def.rank === 'trash' && o.def.speed === 0) continue;
       if (o.def.id.startsWith('proc_')) continue;
@@ -1915,8 +2053,10 @@ export class EnemyAI {
       b.data.leaped = true;
       const ldx = b.tx - e.position.x, ldz = b.tz - e.position.z;
       const ld = Math.hypot(ldx, ldz);
-      if (ld > 0.8) {
-        e.forcedMove = { vx: ldx / 0.4, vz: ldz / 0.4, until: now + 0.4 };
+      // the leap lands short of a wall instead of inside it
+      const run = ld > 0.8 ? this.clearRun(ldx / ld, ldz / ld, ld) : 0;
+      if (run > 0.8) {
+        e.forcedMove = { vx: (ldx / ld) * run / 0.4, vz: (ldz / ld) * run / 0.4, until: now + 0.4 };
         e.yaw = yawFromDir(ldx, ldz);
       }
     }
