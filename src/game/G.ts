@@ -21,6 +21,7 @@ import type { TalentSystem } from '../systems/Talents';
 import type { Professions } from '../systems/Professions';
 import type { PresenceApi } from '../systems/Social';
 import type { Guild } from '../systems/Guild';
+import type { ArenaLadder } from '../systems/ArenaLadder';
 import type { ProcEngine } from '../combat/Procs';
 import type { Auras } from '../combat/Auras';
 import type { Corpses } from '../combat/Corpses';
@@ -73,6 +74,8 @@ export interface Services {
   presence?: PresenceApi;
   /** WP-05 Lonca (systems/Guild.ts): guild roster, ranks, invites, guild chat; `G.guild.tagOf(peerName)` = guild tag. Created by Game.ts; undefined in sims. */
   guild?: Guild;
+  /** GDD_PVP_FINDER §3.4 (systems/ArenaLadder.ts, installed by systems/ArenaInstall.ts): bracket ratings, MMR, season, tiers, weekly Fetih, queue lock. Undefined in sims. */
+  arenaLadder?: ArenaLadder;
   character: CharacterState | null;
   world: World | null;
   player: Player | null;

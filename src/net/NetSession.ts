@@ -281,6 +281,10 @@ export class NetSession {
   readyCheck: ReadyCheckState | null = null;
   /** Last join/host failure message (Turkish), null after a success. */
   lastError: string | null = null;
+  /** GDD_PVP_FINDER: matchmaking (net/queue/QueueService.ts, installed by systems/ArenaInstall.ts). Undefined until installed / in sims. */
+  queue?: import('../types/finder').FinderApi;
+  /** Why the last room was left: 'self' (leaveRoom), 'host_closed' (the host closed it), 'kicked'. Reset when a room is hosted / joined. The arena reads it to tell a forfeit from a void match. */
+  lastLeave: 'self' | 'host_closed' | 'kicked' | null = null;
   /** Transport the current room uses (null offline). */
   transportKind: NetKind | null = null;
   replication: Replication | null = null;
@@ -542,7 +546,7 @@ export class NetSession {
   private lastBrowseKind: NetKind | null = null;
 
   /** Open a room (you become the leader/host). Resolves to the 6-letter room code, or '' on failure (toast shown). */
-  async hostRoom(opts: { name: string; password?: string; maxPlayers?: number; transport?: NetKind; public?: boolean; mode?: 'coop' | 'pvp' }): Promise<string> {
+  async hostRoom(opts: { name: string; password?: string; maxPlayers?: number; transport?: NetKind; public?: boolean; mode?: 'coop' | 'pvp'; /** matchmaking: the room code the proposer announced (qprop) */ code?: string }): Promise<string> {
     // a public channel is left for a private party room (the town scene is re-entered below: the slot, so the Player id, changes)
     const fromChannel = this.channel !== null && !this.chBusy;
     if (!fromChannel && (this.role !== 'offline' || this.joinPending || this.busy)) {
@@ -558,7 +562,8 @@ export class NetSession {
     if (fromChannel) this.leaveChannel();
     this.busy = true;
     try {
-      const code = makeRoomCode();
+      const code = (opts.code ? normalizeRoomCode(opts.code) : null) ?? makeRoomCode();
+      this.lastLeave = null;
       const tr = await this.openTransport(kind, code, opts.password);
       this.tr = tr;
       this.transportKind = kind;
@@ -671,6 +676,7 @@ export class NetSession {
       return;
     }
     const was = this.role;
+    this.lastLeave = 'self';
     if (was === 'host') this.sendCtl({ t: 'closed' }, this.remoteMemberIds());
     else if (was === 'client') this.sendCtl({ t: 'bye' }, [this.hostId]);
     this.teardown();
@@ -1364,6 +1370,7 @@ export class NetSession {
     this.sceneSeq = Math.round(clampNum(msg.sceneSeq, 0, 2 ** 31, 0));
     this.readyCheck = null;
     this.lastError = null;
+    this.lastLeave = null;
     this.buffer = [];
     this.nextPing = 0;
     this.peers.clear();
@@ -1439,6 +1446,7 @@ export class NetSession {
       case 'kick':
         this.toast('Gruptan çıkarıldın.', 'error');
         if (this.channel) return this.leaveChannelAndRejoin();
+        this.lastLeave = 'kicked';
         this.teardown();
         this.returnToTown();
         return;
@@ -1446,6 +1454,7 @@ export class NetSession {
         // a channel host never closes the room, it hands it over (hostleft); a stray `closed` is treated as that
         if (this.channel) return this.onChannelHostLost(this.hostId, null);
         this.toast('Lider odayı kapattı. Kasabaya dönülüyor...', 'warning');
+        this.lastLeave = 'host_closed';
         this.teardown();
         this.returnToTown();
         return;

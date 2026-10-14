@@ -1,5 +1,5 @@
 /**
- * EFSUN ONLINE - wire protocol (PROTOCOL_VERSION 2). ARCHITECTURE.md "Net channels" + "Precedence" are normative.
+ * EFSUN ONLINE - wire protocol (PROTOCOL_VERSION 3). ARCHITECTURE.md "Net channels" + "Precedence" are normative.
  *
  * Topology: logical STAR over trystero's physical mesh. Every message goes client <-> host; the host relays
  * client -> client traffic. Two physical channels in the game room:
@@ -23,6 +23,9 @@ import type { NetChannel, ShopAnnounce, ShopBuyMsg, ShopSoldMsg } from '../types
 import type { WorldSpawn } from '../scenes/scenes';
 import type { GuildChatMsg, GuildInviteMsg, GuildSyncMsg } from '../types/guild';
 import { cleanNation } from '../data/nations';
+import type { MatchAck, MatchProposal, QueueAnnounce, QueueCancel, QueueKey } from '../types/finder';
+import { ARENA_BRACKETS } from '../types/finder';
+import type { ArenaMsg } from '../types/net';
 
 export type { EntityId, Vec2, Vec3 };
 
@@ -31,7 +34,7 @@ export type { EntityId, Vec2, Vec3 };
  * ============================================================================================== */
 
 /** Bump on ANY wire-format change. Lobby and game rooms are namespaced by it. */
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 /** Bump when gameplay data that must match between peers changes (dungeon defs, enemy tables, skill ids). */
 export const GAME_VERSION = '0.1.0';
 
@@ -93,6 +96,16 @@ export const NET = {
   MAX_CHAT_LEN: 200,
   /** Chat rate limit enforced by the host: messages per 10 s per peer. */
   CHAT_BURST: 8,
+  // ---- GDD_PVP_FINDER §8.1: matchmaking queue (lobby channels qann / qcancel / qprop / qack / qdecl) and arena rounds.
+  QUEUE_ANN_MS: 3000,
+  QUEUE_TTL_MS: 12000,
+  QUEUE_SHARD_CAP: 30,
+  QUEUE_ACK_TIMEOUT_MS: 8000,
+  QUEUE_MAX_WAIT_MS: 900000,
+  ARENA_PREP_SEC: 30,
+  ARENA_ROUND_SEC: 300,
+  ARENA_INTERMISSION_SEC: 15,
+  PHIT_MAX_PER_SEC: 12,
 } as const;
 
 /* Entity ids (see src/types/common.ts):
@@ -242,8 +255,20 @@ export type LobbyChannels = {
   ginv: GuildInviteMsg;
   gsync: GuildSyncMsg;
   gchat: GuildChatMsg;
+  /**
+   * GDD_PVP_FINDER §2.9 matchmaking (net/queue/QueueService.ts). Design delta: the queue rides on this GLOBAL lobby, not on per-key shard
+   * rooms (one fewer WebRTC mesh; the lobby is already open for Social / Pazar / Lonca). `qann` is broadcast every QUEUE_ANN_MS; `qprop` /
+   * `qack` / `qdecl` are always sent to single peer ids; `qcancel` is broadcast.
+   */
+  qann: QueueAnnounce;
+  qcancel: QueueCancel;
+  qprop: MatchProposal;
+  qack: MatchAck;
+  qdecl: MatchAck;
 };
-export const LOBBY_CHANNELS = ['ann', 'unann', 'lchat', 'lpres', 'lwhis', 'shop', 'shopBuy', 'shopSold', 'ginv', 'gsync', 'gchat'] as const satisfies readonly (keyof LobbyChannels)[];
+export const LOBBY_CHANNELS = ['ann', 'unann', 'lchat', 'lpres', 'lwhis', 'shop', 'shopBuy', 'shopSold', 'ginv', 'gsync', 'gchat', 'qann', 'qcancel', 'qprop', 'qack', 'qdecl'] as const satisfies readonly (keyof LobbyChannels)[];
+/** The queue subset of LOBBY_CHANNELS (GDD §2.9.1 name). */
+export const QUEUE_CHANNELS = ['qann', 'qcancel', 'qprop', 'qack', 'qdecl'] as const satisfies readonly (keyof LobbyChannels)[];
 
 /* ================================================================================================
  * Control channel 'ctl'
@@ -339,12 +364,14 @@ export const KNOWN_CHANNELS: ReadonlySet<string> = new Set<NetChannel>([
   'threat', 'kick', 'spec', // GDD_V2 WP1 (threat = host -> all)
   'camp', 'home', 'pvp', // GDD_ITEMS_V2 / GDD_LIFE contracts
   'dungeon_event', // K8 (P-12): host-authoritative dungeon event flags
+  'arena', // GDD_PVP_FINDER §3.5.2: host-authored arena state (start, phase, damp, out, forfeit, result)
 ]);
 
 /** Channels only the HOST may originate: a client's envelope on these is dropped by the host, and clients ignore relayed copies. */
 export const HOST_ONLY_CHANNELS: ReadonlySet<string> = new Set<NetChannel>([
   'snap', 'spawn', 'dmg', 'death', 'estatus', 'ecast', 'hitshape', 'hitshape_x', 'run', 'affix', 'scene', 'threat', 'dungeon_event',
   'pvp', // WP-07: hit delivery, capture state, scoreboard and kill feed are host-authored; clients ask through the existing `hit` channel
+  'arena',
 ]);
 
 /**
@@ -550,4 +577,160 @@ export function sanitizeAnnouncement(x: unknown): RoomAnnouncement | null {
     ...(x.mode === 'pvp' ? { mode: 'pvp' as const } : {}),
     ...(lfg ? { lfg } : {}),
   };
+}
+
+/* ================================================================================================
+ * GDD_PVP_FINDER §8.2: matchmaking and arena sanitisers (PV-02). Lobby peers are strangers: every field is clamped or dropped.
+ * ============================================================================================== */
+
+const ROLE_IDS = ['tank', 'healer', 'dps'] as const;
+const QUEUE_KEY_RE = /^(arena:(1v1|2v2|3v3):[ru]|dun:rnd:(normal|heroic|mythic|mplus):b\d{1,2}|dun:[A-Za-z0-9_.-]{1,40}:(normal|heroic|mythic|mplus):\d{1,2})$/;
+const MID_RE = /^[A-Za-z0-9]{8}$/;
+
+/** A queue key in one of the three known formats (<= 64 chars), else null. */
+export function sanitizeQueueKey(x: unknown): QueueKey | null {
+  return typeof x === 'string' && x.length <= 64 && QUEUE_KEY_RE.test(x) ? (x as QueueKey) : null;
+}
+
+const roleList = (x: unknown): ('tank' | 'healer' | 'dps')[] => {
+  if (!Array.isArray(x)) return [];
+  const out: ('tank' | 'healer' | 'dps')[] = [];
+  for (const r of x.slice(0, 8)) {
+    const role = ROLE_IDS.find((q) => q === r);
+    if (role && !out.includes(role)) out.push(role);
+    if (out.length >= 3) break;
+  }
+  return out;
+};
+
+export function sanitizeQueueAnnounce(x: unknown): QueueAnnounce | null {
+  if (!isObj(x) || x.t !== 'qann') return null;
+  const key = sanitizeQueueKey(x.key);
+  const classId = CLASS_IDS.find((c) => c === x.classId);
+  if (!key || !classId) return null;
+  if (typeof x.since !== 'number' || !Number.isFinite(x.since)) return null;
+  const spec = typeof x.spec === 'string' ? ident(x.spec, 32) : '';
+  const dungeons = identList(x.dungeons, 4);
+  const out: QueueAnnounce = {
+    t: 'qann',
+    proto: int(x.proto, 0, 1e6, 0),
+    gameVersion: ident(x.gameVersion, 16),
+    key,
+    shard: int(x.shard, 1, 99, 1),
+    name: text(x.name, NET.MAX_NAME_LEN, 'Maceracı'),
+    classId,
+    level: int(x.level, 1, 60, 1),
+    ilvl: int(x.ilvl, 0, 999, 0),
+    roles: roleList(x.roles),
+    rating: int(x.rating, 0, 5000, 0),
+    since: x.since,
+    rev: int(x.rev, 0, 2 ** 31, 0),
+  };
+  if (spec) out.spec = spec as QueueAnnounce['spec'];
+  if (typeof x.mmr === 'number') out.mmr = int(x.mmr, 0, 5000, 0);
+  if (dungeons.length) out.dungeons = dungeons;
+  if (typeof x.keyLevel === 'number') out.keyLevel = int(x.keyLevel, 2, 30, 2);
+  if (x.busy === true) out.busy = true;
+  return out;
+}
+
+export function sanitizeQueueCancel(x: unknown): QueueCancel | null {
+  if (!isObj(x) || x.t !== 'qcancel') return null;
+  const key = sanitizeQueueKey(x.key);
+  return key ? { t: 'qcancel', key, shard: int(x.shard, 1, 99, 1) } : null;
+}
+
+export function sanitizeMatchAck(x: unknown): MatchAck | null {
+  if (!isObj(x) || (x.t !== 'qack' && x.t !== 'qdecl')) return null;
+  const mid = typeof x.mid === 'string' && MID_RE.test(x.mid) ? x.mid : '';
+  if (!mid) return null;
+  const reason = x.reason === 'busy' || x.reason === 'moved' || x.reason === 'cancel' ? x.reason : undefined;
+  return { t: x.t, mid, ...(reason ? { reason } : {}) };
+}
+
+export function sanitizeMatchProposal(x: unknown): MatchProposal | null {
+  if (!isObj(x) || x.t !== 'qprop') return null;
+  const key = sanitizeQueueKey(x.key);
+  const mid = typeof x.mid === 'string' && MID_RE.test(x.mid) ? x.mid : '';
+  const code = typeof x.code === 'string' ? normalizeRoomCode(x.code) : null;
+  if (!key || !mid || !code || !Array.isArray(x.members)) return null;
+  const members: MatchProposal['members'] = [];
+  for (const m of x.members.slice(0, 6)) {
+    if (!isObj(m)) continue;
+    const peerId = ident(m.peerId, 40);
+    const classId = CLASS_IDS.find((c) => c === m.classId);
+    if (!peerId || !classId || members.some((q) => q.peerId === peerId)) continue;
+    const role = ROLE_IDS.find((r) => r === m.role) ?? null;
+    members.push({ peerId, role, classId, level: int(m.level, 1, 60, 1), ilvl: int(m.ilvl, 0, 999, 0), rating: int(m.rating, 0, 5000, 0) });
+  }
+  if (members.length < 2) return null;
+  let teams: MatchProposal['teams'] = null;
+  const bracket = ARENA_BRACKETS.find((b) => b === x.bracket) ?? null;
+  if (isObj(x.teams)) {
+    const side = (v: unknown): string[] => (Array.isArray(v) ? v.slice(0, 4).map((p) => ident(p, 40)).filter((p) => p.length > 0) : []);
+    const A = side(x.teams.A), B = side(x.teams.B);
+    if (A.length && B.length && A.length + B.length <= MAX_ROOM_SIZE) teams = { A, B };
+  }
+  if (key.startsWith('arena:') && (!teams || !bracket)) return null;
+  return {
+    t: 'qprop',
+    mid,
+    key,
+    shard: int(x.shard, 1, 99, 1),
+    code,
+    mode: x.mode === 'pvp' ? 'pvp' : 'coop',
+    dungeonId: ident(x.dungeonId) || null,
+    diff: x.diff === 'normal' || x.diff === 'heroic' || x.diff === 'mythic' || x.diff === 'mplus' ? x.diff : null,
+    keyLevel: int(x.keyLevel, 0, 30, 0),
+    bracket,
+    ranked: x.ranked === true,
+    teams,
+    arenaId: ident(x.arenaId, 32),
+    members,
+    affixes: identList(x.affixes, 6) as MatchProposal['affixes'],
+  };
+}
+
+const arenaTeam = (x: unknown): 'A' | 'B' | null => (x === 'A' || x === 'B' ? x : null);
+
+/** Host-authored arena state (channel `arena`). Unknown / malformed messages give null. */
+export function sanitizeArenaMsg(x: unknown): ArenaMsg | null {
+  if (!isObj(x) || typeof x.k !== 'string') return null;
+  const m = typeof x.m === 'string' && MID_RE.test(x.m) ? x.m : '';
+  if (!m) return null;
+  const score = (v: unknown): [number, number] => (Array.isArray(v) ? [int(v[0], 0, 2, 0), int(v[1], 0, 2, 0)] : [0, 0]);
+  switch (x.k) {
+    case 'start': {
+      const bracket = ARENA_BRACKETS.find((b) => b === x.bracket);
+      if (!bracket || !isObj(x.teams)) return null;
+      const side = (v: unknown): string[] => (Array.isArray(v) ? v.slice(0, 4).map((p) => ident(p, 40)).filter((p) => p.length > 0) : []);
+      return { k: 'start', m, arenaId: ident(x.arenaId, 32), bracket, ranked: x.ranked === true, teams: { A: side(x.teams.A), B: side(x.teams.B) }, seed: int(x.seed, 0, 2 ** 31, 0) };
+    }
+    case 'phase': {
+      const ph = x.ph === 'prep' || x.ph === 'live' || x.ph === 'round_end' || x.ph === 'match_end' ? x.ph : null;
+      if (!ph) return null;
+      const rw = x.rw === 'A' || x.rw === 'B' || x.rw === 'draw' ? x.rw : undefined;
+      return { k: 'phase', m, ph, round: int(x.round, 1, 9, 1), left: clampNum(x.left, 0, 600, 0), score: score(x.score), ...(rw ? { rw } : {}) };
+    }
+    case 'damp':
+      return { k: 'damp', m, pct: clampNum(x.pct, 0, 50, 0) };
+    case 'out': {
+      const team = arenaTeam(x.team);
+      const peer = ident(x.peer, 40);
+      return team && peer ? { k: 'out', m, peer, team } : null;
+    }
+    case 'forfeit': {
+      const peer = ident(x.peer, 40);
+      return peer ? { k: 'forfeit', m, peer } : null;
+    }
+    case 'result': {
+      const winner = x.winner === 'A' || x.winner === 'B' || x.winner === 'draw' ? x.winner : null;
+      const why = x.why === 'normal' || x.why === 'forfeit' || x.why === 'draw' || x.why === 'void' ? x.why : null;
+      if (!winner || !why) return null;
+      const mean: [number, number] = Array.isArray(x.mean) ? [int(x.mean[0], 0, 5000, 1500), int(x.mean[1], 0, 5000, 1500)] : [1500, 1500];
+      return { k: 'result', m, winner, why, score: score(x.score), mean };
+    }
+    default:
+      return null;
+  }
 }

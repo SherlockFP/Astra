@@ -10,6 +10,7 @@ import type { MinionSync } from './minions';
 import type { StatBlock } from './stats';
 import type { CampMsg, ChatAnn, HomeMsg } from './itemsV2';
 import type { BannerWire, BannerHolder } from '../systems/SiegeRules';
+import type { ArenaBracket } from './finder';
 
 /** GDD_LIFE §3.1 (L-00): chat channel of a `net:chat` line. `party` and `system` are the original two. */
 export type ChatChannel = 'party' | 'system' | 'say' | 'yell' | 'whisper' | 'global' | 'trade' | 'emote' | 'boss' | 'loot' | 'guild';
@@ -54,6 +55,22 @@ export type PvpMsg =
   | ({ k: 'sg' } & BannerWire)
   /** The window ended: `h` = the holder at the end (null: nobody), `w` = week index, `n` = winning nation (null: none). */
   | { k: 'sgend'; w: number; h: BannerHolder | null; n: 'gok_kartal' | 'kizil_kurt' | null };
+
+/**
+ * GDD_PVP_FINDER §3.5.2 (PV-00): host-authored arena state (channel `arena`, HOST_ONLY). Design delta: player hits ride the EXISTING vetted
+ * PvP path (`hit` -> host vetPvpHit -> `pvp {k:'hit'}` -> victim mitigation, see systems/Pvp.ts and scenes/arena/ArenaController.ts), so there
+ * are no `phit` / `phack` channels. `result` carries the team mean MMRs; every peer computes its OWN rating change and rewards from them
+ * (the owner is the only authority over its saved profile, NETCODE §5).
+ */
+export type ArenaMsg =
+  | { k: 'start'; m: string; arenaId: string; bracket: ArenaBracket; ranked: boolean; teams: { A: string[]; B: string[] }; seed: number }
+  /** `left` = seconds left in the phase; `rw` = winner of the round that just ended (round_end / match_end). */
+  | { k: 'phase'; m: string; ph: 'prep' | 'live' | 'round_end' | 'match_end'; round: number; left: number; score: [number, number]; rw?: 'A' | 'B' | 'draw' }
+  | { k: 'damp'; m: string; pct: number }
+  | { k: 'out'; m: string; peer: string; team: 'A' | 'B' }
+  | { k: 'forfeit'; m: string; peer: string }
+  /** `why`: normal (rounds decided), forfeit (a member left), draw (two draw rounds), void (host left: no rating, no rewards). */
+  | { k: 'result'; m: string; winner: 'A' | 'B' | 'draw'; why: 'normal' | 'forfeit' | 'draw' | 'void'; score: [number, number]; mean: [number, number] };
 
 /**
  * CM14 Pazar (CORE_MECHANICS §11). The three shop channels travel on the LOBBY room (net/messages.ts LobbyChannels), not the party
@@ -150,6 +167,8 @@ export interface NetChannels {
   shop: ShopAnnounce;
   shopBuy: ShopBuyMsg;
   shopSold: ShopSoldMsg;
+  // ---- GDD_PVP_FINDER (PV-00/PV-04). Owner: scenes/arena/ArenaController.ts (sends AND registers). Host-only origin.
+  arena: ArenaMsg;
 }
 
 export type NetChannel = keyof NetChannels;
