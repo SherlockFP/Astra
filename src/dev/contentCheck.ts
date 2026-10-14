@@ -358,7 +358,7 @@ export const BOSS_ANCHORS: Record<string, Record<string, [number, number]>> = {
     priest_platform_1: [15, 3], priest_platform_2: [24, 3], priest_platform_3: [15, 10], priest_platform_4: [24, 10],
     rift_spot_1: [32, 10], rift_spot_2: [38, 10], rift_spot_3: [35, 15],
   },
-  kemik_mahzeni: { phylactery_1: [15.5, 31], phylactery_2: [25, 31], phylactery_3: [20, 37], soul_well: [33, 21] },
+  kemik_mahzeni: { phylactery_1: [15.5, 31.5], phylactery_2: [25, 31.5], phylactery_3: [20, 38.7], soul_well: [34.1, 22.1] },
   buzul_tahti: {
     pylon_1: [17, 2], pylon_2: [23, 2], pylon_3: [17, 8], pylon_4: [23, 8],
     ice_pillar_1: [30.5, 30.5], ice_pillar_2: [36.5, 30.5], ice_pillar_3: [30.5, 35], ice_pillar_4: [36.5, 35],

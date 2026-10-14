@@ -1,7 +1,7 @@
-import type { DoorDef, DungeonDef, DungeonTheme, PackDef, RoomDef } from '../../types/dungeons';
+import type { DoorDef, DungeonDef, DungeonTheme, PackDef, RoomDef, TileRect } from '../../types/dungeons';
 import type { ZoneDef } from '../../types/dungeons';
 import {
-  GRID_SHIFT, MOUNT_Y, Props, bossAt, circleZone, decorator, door, dg, fu, gp, hw, kg, lt, makeCtx, pack, rectsOf, pt, room, shPt, withProps,
+  GRID_SHIFT, MOUNT_Y, Props, type PO, bossAt, circleZone, decorator, door, dg, fu, gp, hw, kg, lt, makeCtx, pack, rectsOf, pt, room, shPt, withProps,
 } from './kit';
 
 /**
@@ -13,45 +13,105 @@ import {
 // ---- GENERATED from docs/GDD_CONTENT.layout.json (rooms, doors, packs, bosses) ----
 const ROOMS: RoomDef[] = [
   room('giris', 'Mahzen Kapısı', 4, 33, 6, 5, 'stone_dark', 'stone', 0.3),
-  room('k_giris', 'Mezar Taşları Geçidi', 6, 28, 2, 5, 'stone_dark', 'stone', 0.5),
+  room('k_giris', 'Mezar Taşları Geçidi', 5, 28, 4, 5, 'stone_dark', 'stone', 0.5),
   room('kemik_salonu', 'Kemik Salonu', 2, 17, 11, 11, 'stone', 'stone', 0.6),
-  room('k_bekci', 'Bekçi Geçidi', 6, 13, 2, 4, 'stone', 'stone', 0.3),
-  room('bekci_odasi', 'Bekçi Odası', 2, 2, 10, 11, 'tiles', 'stone', 0.2, { boss: 1 }),
-  room('k_fener', 'Fenerli Dehliz', 12, 6, 5, 2, 'stone_dark', 'stone', 0.4),
-  room('lahit_galerisi', 'Lahit Galerisi', 17, 2, 10, 12, 'stone', 'stone', 0.6),
-  room('k_mum', 'Mum Yolu', 27, 6, 4, 2, 'stone_dark', 'stone', 0.4),
-  room('mum_odasi', 'Mum Şapeli', 31, 3, 7, 8, 'tiles', 'brick', 0.5),
-  room('k_kuyu', 'Kuyuya İniş', 33, 11, 2, 5, 'dirt', 'cave', 0.4),
-  room('ruh_kuyusu', 'Ruh Kuyusu', 28, 16, 10, 10, 'stone_dark', 'stone', 0.2, { boss: 2 }),
-  room('unutulmus_mezarlar', 'Unutulmuş Mezarlar', 29, 26, 9, 8, 'dirt', 'cave', 0.7, { optional: true }),
-  room('k_cukur', 'Çukur Geçidi', 24, 19, 4, 2, 'stone_dark', 'stone', 0.3),
-  room('ceset_cukuru', 'Ceset Çukuru', 15, 17, 9, 8, 'dirt', 'cave', 0.6),
-  room('cokuk_tunel', 'Çöken Tünel', 20, 14, 2, 3, 'dirt', 'cave', 0.6, { skip: true }),
-  room('k_taht', 'Taht Merdivenleri', 18, 25, 2, 4, 'tiles', 'brick', 0.2),
-  room('kemik_taht', 'Kemik Taht', 14, 29, 13, 10, 'tiles', 'brick', 0.15, { boss: 3 }),
+  room('k_bekci', 'Bekçi Geçidi', 5, 13, 4, 4, 'stone', 'stone', 0.3),
+  room('bekci_odasi', 'Bekçi Odası', 2, 1, 12, 12, 'tiles', 'stone', 0.2, { boss: 1 }),
+  room('k_fener', 'Fenerli Dehliz', 14, 5, 5, 4, 'stone_dark', 'stone', 0.4),
+  room('lahit_galerisi', 'Lahit Galerisi', 19, 2, 10, 12, 'stone', 'stone', 0.6),
+  room('k_mum', 'Mum Yolu', 29, 5, 4, 4, 'stone_dark', 'stone', 0.4),
+  room('mum_odasi', 'Mum Şapeli', 33, 2, 9, 9, 'tiles', 'brick', 0.5),
+  room('k_kuyu', 'Kuyuya İniş', 35, 11, 4, 5, 'dirt', 'cave', 0.4),
+  room('ruh_kuyusu', 'Ruh Kuyusu', 28, 16, 12, 12, 'stone_dark', 'stone', 0.2, { boss: 2 }),
+  room('unutulmus_mezarlar', 'Unutulmuş Mezarlar', 29, 28, 9, 9, 'dirt', 'cave', 0.7, { optional: true }),
+  room('k_cukur', 'Çukur Geçidi', 24, 19, 4, 4, 'stone_dark', 'stone', 0.3),
+  room('ceset_cukuru', 'Ceset Çukuru', 15, 16, 9, 9, 'dirt', 'cave', 0.6),
+  room('cokuk_tunel', 'Çöken Tünel', 20, 14, 2, 2, 'dirt', 'cave', 0.6, { skip: true }),
+  room('k_taht', 'Taht Merdivenleri', 17, 25, 4, 4, 'tiles', 'brick', 0.2),
+  room('kemik_taht', 'Kemik Taht', 14, 29, 13, 12, 'tiles', 'brick', 0.15, { boss: 3 }),
 ];
+
+// ---- SCALE PILOT (docs/SCALE_REFERENCE.md section 3). Corridors were widened in cross-section and the boss / pull rooms
+// enlarged. Hand placed decoration, packs, bosses and extras are still written in the OLD layout coordinates (OLD_RECT);
+// they are remapped here proportionally into the new room rects (each room is scaled on its own axes), so every prop
+// keeps its place relative to its room and walls keep their edges. Corridor lengths are unchanged.
+type Rect4 = [number, number, number, number];
+const OLD_RECT: Record<string, Rect4> = {
+  giris: [4, 33, 6, 5], k_giris: [6, 28, 2, 5], kemik_salonu: [2, 17, 11, 11], k_bekci: [6, 13, 2, 4], bekci_odasi: [2, 2, 10, 11],
+  k_fener: [12, 6, 5, 2], lahit_galerisi: [17, 2, 10, 12], k_mum: [27, 6, 4, 2], mum_odasi: [31, 3, 7, 8], k_kuyu: [33, 11, 2, 5],
+  ruh_kuyusu: [28, 16, 10, 10], unutulmus_mezarlar: [29, 26, 9, 8], k_cukur: [24, 19, 4, 2], ceset_cukuru: [15, 17, 9, 8],
+  cokuk_tunel: [20, 14, 2, 3], k_taht: [18, 25, 2, 4], kemik_taht: [14, 29, 13, 10],
+};
+const newRect = (id: string): Rect4 => {
+  const r = ROOMS.find((q) => q.id === id)?.rect;
+  if (!r) throw new Error(`[content] kemik_mahzeni: unknown room ${id}`);
+  return [r.x, r.z, r.w, r.h];
+};
+/** Old-layout point -> new-layout point inside the same room. Tile centres: a room edge sits at centre - 0.5. */
+function toNew(roomId: string, x: number, z: number): [number, number] {
+  const [ox, oz, ow, oh] = OLD_RECT[roomId];
+  const [nx, nz, nw, nh] = newRect(roomId);
+  return [nx - 0.5 + (x - ox + 0.5) * (nw / ow), nz - 0.5 + (z - oz + 0.5) * (nh / oh)];
+}
+/** Old-layout point -> the room that contains it (nearest rect when it sits on a wall line), mapped into that room. */
+function at2(x: number, z: number): [number, number] {
+  let best = 'giris';
+  let bd = Infinity;
+  for (const id of Object.keys(OLD_RECT)) {
+    const [ox, oz, ow, oh] = OLD_RECT[id];
+    const dx = Math.max(ox - 0.5 - x, 0, x - (ox + ow - 0.5));
+    const dz = Math.max(oz - 0.5 - z, 0, z - (oz + oh - 0.5));
+    const d = Math.hypot(dx, dz);
+    if (d < bd) { bd = d; best = id; }
+  }
+  return toNew(best, x, z);
+}
+type Area = { x0: number; z0: number; x1: number; z1: number };
+/** Props for one room: at() and scatter() take old-layout coordinates; the decorator's collision and reservation lists stay in new coordinates. */
+function remapProps(p: Props, roomId: string): Props {
+  const host = p as unknown as { at: Props['at']; scatter: Props['scatter'] };
+  const rawAt = host.at.bind(p);
+  const rawScatter = host.scatter.bind(p);
+  let raw = false;
+  host.at = (model, x, z, o) => {
+    if (raw) return rawAt(model, x, z, o);
+    const [nx, nz] = toNew(roomId, x, z);
+    return rawAt(model, nx, nz, o);
+  };
+  host.scatter = (count, models, area: Area, o, opt) => {
+    const [x0, z0] = toNew(roomId, area.x0, area.z0);
+    const [x1, z1] = toNew(roomId, area.x1, area.z1);
+    raw = true;
+    try {
+      return rawScatter(count, models, { x0, z0, x1, z1 }, o, opt);
+    } finally {
+      raw = false;
+    }
+  };
+  return p;
+}
 
 const DOORS: DoorDef[] = [
-  door('giris', 'k_giris', 6, 33, 'n', 2, 'none'),
-  door('k_giris', 'kemik_salonu', 6, 28, 'n', 2, 'none'),
-  door('kemik_salonu', 'k_bekci', 6, 17, 'n', 2, 'none'),
-  door('k_bekci', 'bekci_odasi', 6, 13, 'n', 2, 'boss_lock'),
-  door('bekci_odasi', 'k_fener', 11, 6, 'e', 2, 'boss_exit'),
-  door('k_fener', 'lahit_galerisi', 16, 6, 'e', 2, 'none'),
-  door('lahit_galerisi', 'k_mum', 26, 6, 'e', 2, 'none'),
-  door('k_mum', 'mum_odasi', 30, 6, 'e', 2, 'none'),
-  door('mum_odasi', 'k_kuyu', 33, 10, 's', 2, 'none'),
-  door('k_kuyu', 'ruh_kuyusu', 33, 15, 's', 2, 'boss_lock'),
-  door('ruh_kuyusu', 'unutulmus_mezarlar', 32, 25, 's', 2, 'boss_lock'),
-  door('ruh_kuyusu', 'k_cukur', 28, 19, 'w', 2, 'boss_lock'),
-  door('k_cukur', 'ceset_cukuru', 24, 19, 'w', 2, 'none'),
+  door('giris', 'k_giris', 5, 33, 'n', 4, 'none'),
+  door('k_giris', 'kemik_salonu', 5, 28, 'n', 4, 'none'),
+  door('kemik_salonu', 'k_bekci', 5, 17, 'n', 4, 'none'),
+  door('k_bekci', 'bekci_odasi', 5, 13, 'n', 4, 'boss_lock'),
+  door('bekci_odasi', 'k_fener', 13, 5, 'e', 4, 'boss_exit'),
+  door('k_fener', 'lahit_galerisi', 18, 5, 'e', 4, 'none'),
+  door('lahit_galerisi', 'k_mum', 28, 5, 'e', 4, 'none'),
+  door('k_mum', 'mum_odasi', 32, 5, 'e', 4, 'none'),
+  door('mum_odasi', 'k_kuyu', 35, 10, 's', 4, 'none'),
+  door('k_kuyu', 'ruh_kuyusu', 35, 15, 's', 4, 'boss_lock'),
+  door('ruh_kuyusu', 'unutulmus_mezarlar', 32, 27, 's', 3, 'boss_lock'),
+  door('ruh_kuyusu', 'k_cukur', 28, 19, 'w', 4, 'boss_lock'),
+  door('k_cukur', 'ceset_cukuru', 24, 19, 'w', 4, 'none'),
   door('lahit_galerisi', 'cokuk_tunel', 20, 13, 's', 2, 'none'),
-  door('cokuk_tunel', 'ceset_cukuru', 20, 16, 's', 2, 'none'),
-  door('ceset_cukuru', 'k_taht', 18, 24, 's', 2, 'none'),
-  door('k_taht', 'kemik_taht', 18, 28, 's', 2, 'boss_lock'),
+  door('cokuk_tunel', 'ceset_cukuru', 20, 15, 's', 2, 'none'),
+  door('ceset_cukuru', 'k_taht', 17, 24, 's', 4, 'none'),
+  door('k_taht', 'kemik_taht', 17, 28, 's', 4, 'boss_lock'),
 ];
 
-const PACKS: PackDef[] = [
+const PACKS_RAW: PackDef[] = [
   pack('d1_p01', 'k_giris', 6.5, 30, 9, [['skel_minion', 0.3, 0], ['skel_minion', -0.38, 0.35], ['skel_minion', 0.06, -0.66], ['skel_archer', 0, -1.25]]),
   pack('d1_p02', 'kemik_salonu', 4.5, 25, 8, [['skel_rattler', 0.3, 0], ['skel_rattler', -0.38, 0.35], ['skel_rattler', 0.06, -0.66], ['skel_rattler', 0.48, 0.62], ['skel_rattler', -0.88, -0.16], ['skel_rattler', 0.83, -0.53], ['skel_rattler', -0.28, 1.03], ['skel_rattler', -0.53, -1.02]]),
   pack('d1_p03', 'kemik_salonu', 10, 25, 10, [['skel_minion', 0.3, 0], ['skel_minion', -0.38, 0.35], ['skel_minion', 0.06, -0.66], ['skel_mage', 1.02, -0.73]]),
@@ -81,10 +141,21 @@ const PACKS: PackDef[] = [
   pack('d1_p27', 'k_taht', 18.5, 26.5, 12, [['skel_warrior', 0.3, 0], ['skel_warrior', -0.38, 0.35]]),
 ];
 
+/** Pack centres and patrol points are old-layout coordinates; members are offsets from the centre and stay as they are. */
+const remapPack = (p: PackDef): PackDef => {
+  const [cx, cz] = toNew(p.roomId, p.center[0], p.center[1]);
+  return { ...p, center: [cx, cz], ...(p.patrol ? { patrol: p.patrol.map(([x, z]) => toNew(p.roomId, x, z)) } : {}) };
+};
+const PACKS: PackDef[] = PACKS_RAW.map(remapPack);
+
+const bossAtNew = (id: string, roomId: string, x: number, z: number, facing: number, order: number) => {
+  const [nx, nz] = toNew(roomId, x, z);
+  return bossAt(id, roomId, nx, nz, facing, order);
+};
 const BOSSES = [
-  bossAt('boss_bekci_kaldur', 'bekci_odasi', 6.5, 6, 0, 1),
-  bossAt('boss_olucagiran_morkan', 'ruh_kuyusu', 33, 18.5, 0, 2),
-  bossAt('boss_azrakel', 'kemik_taht', 20, 34.5, 180, 3),
+  bossAtNew('boss_bekci_kaldur', 'bekci_odasi', 6.5, 6, 0, 1),
+  bossAtNew('boss_olucagiran_morkan', 'ruh_kuyusu', 33, 18.5, 0, 2),
+  bossAtNew('boss_azrakel', 'kemik_taht', 20, 34.5, 180, 3),
 ];
 
 // fog colour (= background) lifted a step so the entry room is readable on the first frame; the void behind the walls stays dark
@@ -101,17 +172,29 @@ const START: [number, number] = [7, 36.5];
 const FONT: [number, number] = [7, 34.2];
 const EXIT: [number, number] = [20, 31];
 
+const near = (x: number, z: number, r: number): { x: number; z: number; r: number } => {
+  const [nx, nz] = at2(x, z);
+  return { x: nx, z: nz, r };
+};
 const ctx = makeCtx('kemik_mahzeni', DOORS, PACKS, [
-  { x: START[0], z: START[1], r: 2.0 },
-  { x: FONT[0], z: FONT[1], r: 1.6 },
-  { x: EXIT[0], z: EXIT[1], r: 2.8 },
-  { x: 6.5, z: 6, r: 4.5 },    // Bekci Kaldur
-  { x: 33, z: 18.5, r: 4.5 },  // Olucagiran Morkan
-  { x: 20, z: 34.5, r: 4.5 },  // Kemik Lordu Azrakel
-  { x: 26, z: 2.5, r: 1.5 },   // Kudret Sunagi
-  { x: 37, z: 33, r: 1.5 },    // Ruzgar Sunagi
+  near(START[0], START[1], 2.0),
+  near(FONT[0], FONT[1], 1.6),
+  near(EXIT[0], EXIT[1], 2.8),
+  near(6.5, 6, 4.5),    // Bekci Kaldur
+  near(33, 18.5, 4.5),  // Olucagiran Morkan
+  near(20, 34.5, 4.5),  // Kemik Lordu Azrakel
+  near(26, 2.5, 1.5),   // Kudret Sunagi
+  near(37, 33, 1.5),    // Ruzgar Sunagi
 ]);
-const D = decorator(ctx, rectsOf(ROOMS));
+const decor = decorator(ctx, rectsOf(ROOMS));
+/** Room callbacks get the OLD rect (their coordinates are old-layout) and a Props whose at()/scatter() remap them. */
+const D = {
+  out: decor.out,
+  room(id: string, fn: (p: Props, r: TileRect) => void): void {
+    const [x, z, w, h] = OLD_RECT[id];
+    decor.room(id, (p) => fn(remapProps(p, id), { x, z, w, h }));
+  },
+};
 
 /** A small cluster of ghost-green candles (one real light). */
 const candles = (p: Props, x: number, z: number, color = GHOST, strong = 1.0): void => {
@@ -122,7 +205,7 @@ const candles = (p: Props, x: number, z: number, color = GHOST, strong = 1.0): v
 
 /** Bone piles exactly under the members of a dormant pack. */
 const piles = (p: Props, packId: string, model = gp('bone_pile')): void => {
-  const pk = PACKS.find((q) => q.id === packId);
+  const pk = PACKS_RAW.find((q) => q.id === packId);
   if (!pk) return;
   const cx = pk.center[0], cz = pk.center[1];
   for (const m of pk.members) p.at(model, cx + m.offset[0], cz + m.offset[1], { rot: p.rnd(0, 360), tag: 'wake' });
@@ -414,16 +497,16 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
   k_kuyu: { ambientVfx: 'ambient_dust' },
   ruh_kuyusu: {
     explicitDecor: true, lightColor: 0x60ff90, ambientVfx: 'ambient_shadow_wisps',
-    zones: [circleZone('pit', 33, 21, 0.875, { blocked: true, color: 0x050806, glow: 0x60ff90, glowIntensity: 1.4, vfx: 'ambient_shadow_wisps' })],
+    zones: [circleZone('pit', ...at2(33, 21), 0.875 * 1.2, { blocked: true, color: 0x050806, glow: 0x60ff90, glowIntensity: 1.4, vfx: 'ambient_shadow_wisps' })],
   },
   unutulmus_mezarlar: { ambientVfx: 'ambient_dust' },
   k_cukur: {},
-  ceset_cukuru: { ambientVfx: 'ambient_shadow_wisps', zones: [{ kind: 'pit', shape: 'rect', rect: { x: 19, z: 20, w: 2, h: 2 }, color: 0x0a0e0a, glow: 0x4a8a30, glowIntensity: 0.5 }] },
+  ceset_cukuru: { ambientVfx: 'ambient_shadow_wisps', zones: [{ kind: 'pit', shape: 'rect', rect: { x: 19, z: 19, w: 2, h: 2 }, color: 0x0a0e0a, glow: 0x4a8a30, glowIntensity: 0.5 }] },
   cokuk_tunel: { ambientVfx: 'ambient_dust' },
   k_taht: {},
   kemik_taht: {
     explicitDecor: true, lightColor: GHOST, ambientVfx: 'ambient_dust',
-    zones: [rune(15.5, 31, 1.1), rune(25, 31, 1.1), rune(20, 37, 1.1), circleZone('rune', 20, 33.5, 5.2, { color: 0x101a16, glow: GHOST, glowIntensity: 0.55 })],
+    zones: [rune(...at2(15.5, 31), 1.1), rune(...at2(25, 31), 1.1), rune(...at2(20, 37), 1.1), circleZone('rune', ...at2(20, 33.5), 5.2, { color: 0x101a16, glow: GHOST, glowIntensity: 0.55 })],
   },
 };
 
@@ -439,9 +522,9 @@ const PACK_EXTRA: Record<string, Partial<PackDef>> = {
 
 const EXTRAS: NonNullable<DungeonDef['extras']> = {
   fontOfPower: pt(7, 34.2),
-  shrines: [{ type: 'shrine_power', pos: pt(26, 2.5) }, { type: 'shrine_haste', pos: pt(37, 33) }],
-  riftSpots: ([[8, 24], [21, 6], [34, 7], [33, 30], [19, 20], [6.5, 30]] as [number, number][]).map(([x, z]) => pt(x, z)),
-  chests: [{ pos: pt(11.7, 17.4), kind: 'chest_wood' }, { pos: pt(37, 28), kind: 'chest_gold' }],
+  shrines: [{ type: 'shrine_power', pos: pt(...at2(26, 2.5)) }, { type: 'shrine_haste', pos: pt(...at2(37, 33)) }],
+  riftSpots: ([[8, 24], [21, 6], [34, 7], [33, 30], [19, 20], [6.5, 30]] as [number, number][]).map(([x, z]) => pt(...at2(x, z))),
+  chests: [{ pos: pt(11.7, 17.4), kind: 'chest_wood' }, { pos: pt(...at2(37, 28)), kind: 'chest_gold' }],
 };
 
 export const KEMIK_MAHZENI: DungeonDef = {
@@ -450,15 +533,15 @@ export const KEMIK_MAHZENI: DungeonDef = {
   shortName: 'Mahzen',
   lore: 'Kuzgunkale\'nin altında, unutulmuş kralların kemikleri yatar. Kemik Lordu Azrakel, ölümsüzlüğü filakterlerine bağladı ve mahzenin her köşesinde ölüleri yeniden ayağa kaldırdı. Bekçi Kaldur hâlâ kapıyı tutar; ruh kuyusu ise diriler için açlıkla fokurdar.',
   levelRange: [8, 18],
-  timerSec: 780,
+  timerSec: 790,
   forcesRequired: 250,
   theme: THEME,
-  grid: { w: 40, h: 40 },
+  grid: { w: 44, h: 44 },
   rooms: withProps(ROOMS.map((r) => ({ ...r, ...ROOM_EXTRA[r.id] })), D.out),
   doors: DOORS,
   packs: PACKS.map((p) => (PACK_EXTRA[p.id] ? { ...p, ...PACK_EXTRA[p.id] } : p)),
   bosses: BOSSES,
   start: { pos: shPt(START[0], START[1]), facing: 180 },
-  exit: { pos: shPt(EXIT[0], EXIT[1]) },
+  exit: { pos: shPt(...at2(EXIT[0], EXIT[1])) },
   extras: EXTRAS,
 };

@@ -107,7 +107,7 @@ const kaldur: BossScript = {
 // ---------------------------------------------------------------------------------------------------------------------
 // Boss 2: Ölüçağıran Morkan
 // ---------------------------------------------------------------------------------------------------------------------
-const well = (c: BossController) => c.gdd(33, 21);
+const well = (c: BossController) => c.gdd(34.1, 22.1);
 
 function endStorm(c: BossController): void {
   const st = c.state;
@@ -288,11 +288,11 @@ function beginPhylactery(c: BossController): void {
   if (!ph || ph.begun) return;
   ph.begun = true;
   const e = c.e;
-  const throne = c.gdd(20, 36);
+  const throne = c.gdd(20, 37.5);
   c.teleport(throne.x, throne.z);
   e.playShot('Cast', 1, { loop: true, loopFor: 42, fade: 0.1 });
   const hp = 10 * partyHp(c);
-  for (const [x, z] of [[15.5, 31], [25, 31], [20, 37]] as [number, number][]) spawnMech(c, 'proc_phylactery', c.gdd(x, z), { hpMult: hp, tag: 'phyl' });
+  for (const [x, z] of [[15.5, 31.5], [25, 31.5], [20, 38.7]] as [number, number][]) spawnMech(c, 'proc_phylactery', c.gdd(x, z), { hpMult: hp, tag: 'phyl' });
   bossMsg('boss_toast', {}, { text: 'Filakterleri 40 saniye içinde yok et!' });
   G.events.emit('camera:shake', { intensity: 0.4, duration: 0.5 });
 }

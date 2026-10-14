@@ -1074,7 +1074,7 @@ boss({
     bp('p3', 0.35, ['kaldur_shield_slam', 'kaldur_whirl', 'kaldur_shield_wall'], { yell: 'Kalkın, kardeşlerim!', ability: 'kaldur_call' }),
   ],
   intro: 'Mahzenin kapısını hiçbir canlı geçemez!', death: 'Nöbetim... sona erdi...',
-  arena: { cx: 28, cz: 30, w: 40, h: 44, homeX: 28, homeZ: 26 },
+  arena: { cx: 32, cz: 28, w: 48, h: 48, homeX: 32, homeZ: 23.64 },
 });
 
 boss({
@@ -1094,7 +1094,7 @@ boss({
     bp('p2', 0.4, ['morkan_raise', 'morkan_prison', 'morkan_corpse_explosion'], { yell: 'Kuyu! Bana güç ver!', ability: 'morkan_soul_storm' }),
   ],
   intro: 'Ruhlarınız kuyuyu besleyecek!', death: 'Ölüm... beni de... çağırıyor...',
-  arena: { cx: 132, cz: 84, w: 40, h: 40, homeX: 134, homeZ: 76 },
+  arena: { cx: 136, cz: 88, w: 48, h: 48, homeX: 138.4, homeZ: 78.4 },
 });
 
 boss({
@@ -1116,7 +1116,7 @@ boss({
     bp('p4', 0.3, ['azrakel_spears', 'azrakel_grave_chill', 'azrakel_soul_reap', 'azrakel_death_rings'], { yell: 'Kemiklerinizi tahtıma ekleyeceğim!', ability: 'azrakel_last_breath' }),
   ],
   intro: 'Diriler... Mahzenime hoş geldiniz. Bir daha asla çıkamayacaksınız!', death: 'İmkânsız... ben... ölümsüzdüm...',
-  arena: { cx: 82, cz: 136, w: 52, h: 40, homeX: 82, homeZ: 140 },
+  arena: { cx: 82, cz: 140, w: 52, h: 48, homeX: 82, homeZ: 144.8 },
 });
 
 // ---------------------------------------------------------------- 4.2 Kızıl Dökümhane
