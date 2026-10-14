@@ -1238,9 +1238,10 @@ export class MenuScene implements GameScene {
     a.update(dt);
     const p = classPresentation(this.pedClass);
     if (!a.isPlayingOneShot && t >= this.pedNext) {
-      const step = p.showcase[this.pedStep % p.showcase.length];
+      // an empty showcase (a class without clips yet) idles instead of reading undefined.clip every frame
+      const step = p.showcase.length ? p.showcase[this.pedStep % p.showcase.length] : undefined;
       this.pedStep++;
-      if (a.has(step.clip)) {
+      if (step && a.has(step.clip)) {
         a.playOnce(step.clip, {
           speed: step.speed ?? 1,
           fade: 0.12,

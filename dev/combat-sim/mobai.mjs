@@ -7,7 +7,8 @@
  *   node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/mobai.mjs      (V=1 prints every PASS)
  *
  * Stages: roles.* (pure role rules: humanoid flee, kite bands, spell casts, heal threshold, default leash) | pack.* (one pull aggroes
- * the whole pack, not the next pack) | leash.* (a chase past the leash evades home with a full reset) | caster.* (keeps range,
+ * the whole pack, not the next pack) | social.* (pack aggro is the camp only; pack-less neighbours join within 10 m and inside their own
+ * aggro range; no sweep, no chain past the aggro range) | leash.* (a chase past the leash evades home with a full reset) | caster.* (keeps range,
  * casts an interruptible spell with a cast bar, a heavy hit cuts it) | healer.* (heals a hurt ally, ignores a healthy one) |
  * flee.* (humanoid at 20 % HP runs and calls its pack; a swarm beast does not) | elite.* (elite specials telegraphed, windup
  * >= 0.9 s; trash not) | stuck.* (no route to the target = evade, not a stand-off) | wall.* (a charge stops at a wall).
@@ -102,6 +103,34 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
 }
 
 // ==================================================================================================================
+// social.* pack aggro is the camp only: a pack-less neighbour joins within 10 m AND inside its own aggro range of the target;
+// a body pull never chains past that range; another camp is never pulled, the camp mate is pulled at any distance
+// ==================================================================================================================
+{
+  const p = reset();
+  const def = { ...ENEMIES.ys_nobet_muhafizi, aggroRange: 14 };
+  const pl = mob(null, 12, 0, { def }); // pack-less puller, 12 m from the player
+  const near = mob(null, 12, 7, { def }); // 7 m from the puller, 13.9 m from the player: joins
+  const edge = mob(null, 20, 0, { def }); // 8 m from the puller, 20 m from the player: outside its aggro range, stays
+  const chain = mob(null, 12, 10.5, { def }); // 3.5 m from `near` (body-pull reach), 16 m from the player: stays
+  const far = mob(null, 43, 0, { def }); // 31 m from the puller: stays
+  pl.ai.acquire(p);
+  ok('social.pack-less neighbour 7 m off, inside its aggro range, joins', near.ai.aggroed);
+  ok('social.neighbour 8 m off but outside its aggro range stays idle', !edge.ai.aggroed);
+  ok('social.no pull at 31 m for a pack-less mob', !far.ai.aggroed);
+  H.step(sec(1));
+  ok('social.body pull does not chain past the aggro range', !chain.ai.aggroed, `chain ${chain.ai.aggroed}`);
+
+  reset();
+  const pa = mob(null, 12, 0, { def, packId: 'cA' });
+  const camp = mob(null, 40, 0, { def, packId: 'cA' }); // same camp, 28 m from the puller
+  const other = mob(null, 13, 2, { def, packId: 'cB' }); // another camp 1 m away
+  pa.ai.acquire(p);
+  ok('social.camp mate joins at any distance', camp.ai.aggroed, `dist ${Math.round(dist(camp, pa))} m`);
+  ok('social.another camp is never pulled', !other.ai.aggroed);
+}
+
+// ==================================================================================================================
 // leash.* a chase past the leash evades home: full reset (HP, DoTs, cooldowns, threat)
 // ==================================================================================================================
 {
@@ -188,7 +217,7 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
 {
   const p = reset();
   const caster = mob('ys_nobet_buyucusu', 10, 0, { packId: 'pk5' });
-  const ally = mob('ys_nobet_muhafizi', 20, 6); // 11.7 m from the caster: outside the 8 m pack-less pull, inside the 14 m call
+  const ally = mob('ys_nobet_muhafizi', 20, 6); // 11.7 m from the caster: outside the 10 m social pull, inside the 14 m call
   H.step(sec(0.5));
   ok('flee.setup: caster aggroed, ally still idle', caster.ai.aggroed && !ally.ai.aggroed, `ally aggroed ${ally.ai.aggroed}`);
   caster.hp = caster.maxHp * 0.15;
