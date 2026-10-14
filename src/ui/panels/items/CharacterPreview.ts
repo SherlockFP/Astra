@@ -34,6 +34,9 @@ const CLASS_GLB: Record<ClassId, string> = {
   // CORE_MECHANICS §2 (CM1) stubs: same KayKit rigs as data/classes.ts `visual.url` (not selectable yet)
   demonhunter: '/assets/models/characters/Rogue_Hooded.glb',
   evoker: '/assets/models/characters/Mage.glb',
+  priest: '/assets/models/characters/Mage.glb',
+  shaman: '/assets/models/characters/Mage.glb',
+  druid: '/assets/models/characters/Rogue_Hooded.glb',
 };
 
 /** Fallback only (used if loadCharacterModel returns an empty model): accessory meshes + the default visible subset. */
@@ -83,6 +86,19 @@ const ACCESSORIES: Record<ClassId, { all: string[]; show: string[] }> = {
   evoker: {
     all: ['2H_Staff', '1H_Wand', 'Spellbook', 'Spellbook_open', 'Mage_Hat', 'Mage_Cape'],
     show: ['2H_Staff', 'Mage_Cape'],
+  },
+  // CLASS SCAFFOLD fallback accessories
+  priest: {
+    all: ['2H_Staff', '1H_Wand', 'Spellbook', 'Spellbook_open', 'Mage_Hat', 'Mage_Cape'],
+    show: ['2H_Staff', 'Mage_Cape'],
+  },
+  shaman: {
+    all: ['2H_Staff', '1H_Wand', 'Spellbook', 'Spellbook_open', 'Mage_Hat'],
+    show: [],
+  },
+  druid: {
+    all: ['Knife', 'Knife_Offhand', 'Rogue_Cape', '1H_Crossbow', '2H_Crossbow', 'Throwable'],
+    show: ['Rogue_Cape'],
   },
 };
 

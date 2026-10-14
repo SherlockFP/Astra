@@ -20,6 +20,9 @@ export const CLASS_ICON_PATH: Record<ClassId, string> = {
   warlock: '/assets/icons/skill-curse.svg',
   demonhunter: '/assets/icons/skill-claw-strike.svg', // CM1 stub (İblis Avcısı)
   evoker: '/assets/icons/skill-fire-breath.svg',      // CM1 stub (Ejderhasoy)
+  priest: '/assets/icons/skill-holy-light.svg',      // CLASS SCAFFOLD (Rahip)
+  shaman: '/assets/icons/skill-lightning-bolt.svg', // CLASS SCAFFOLD (Şaman)
+  druid: '/assets/icons/buff-regen.svg',            // CLASS SCAFFOLD (Druid)
 };
 
 /** Icon path of every spec id (the whole SpecId union; the legacy mage specs keep the mage icon). */
@@ -55,6 +58,17 @@ export const SPEC_ICON: Record<SpecId, string> = {
   evoker_preservation: CLASS_ICON_PATH.evoker,
   evoker_augmentation: CLASS_ICON_PATH.evoker,
   rogue_subtlety: CLASS_ICON_PATH.rogue,
+  // CLASS SCAFFOLD: the ten new spec ids fall back to their class icon
+  priest_discipline: CLASS_ICON_PATH.priest,
+  priest_holy: CLASS_ICON_PATH.priest,
+  priest_shadow: CLASS_ICON_PATH.priest,
+  shaman_elemental: CLASS_ICON_PATH.shaman,
+  shaman_enhancement: CLASS_ICON_PATH.shaman,
+  shaman_restoration: CLASS_ICON_PATH.shaman,
+  druid_balance: CLASS_ICON_PATH.druid,
+  druid_feral: CLASS_ICON_PATH.druid,
+  druid_guardian: CLASS_ICON_PATH.druid,
+  druid_restoration: CLASS_ICON_PATH.druid,
 };
 
 /** Role tint of a spec icon (GDD_TALENTS §5.7): tank blue, healer green, DPS red. */

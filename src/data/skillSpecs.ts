@@ -1476,6 +1476,9 @@ export const SIGNATURE_SKILLS: Record<ClassId, string[]> = {
   paladin: ['paladin_crusader_strike', 'paladin_judgement', 'paladin_avengers_shield'],
   necromancer: ['necro_death_coil', 'necro_scourge_strike', 'necro_blood_boil'],
   warlock: ['warlock_shadow_bolt', 'warlock_corruption', 'warlock_drain_life'],
+  priest: [],
+  shaman: [],
+  druid: [],
   // CM1 stubs: the new classes' signature skills come with their kits (CM10 / CM12).
   demonhunter: [],
   evoker: [],

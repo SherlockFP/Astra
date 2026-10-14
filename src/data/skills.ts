@@ -6,6 +6,12 @@ import { registerPaladin } from './skillsets/paladin';
 import { registerNecromancer } from './skillsets/necromancer';
 import { registerWarlock } from './skillsets/warlock';
 import { registerMonkSpecs } from './skillsets/monkSpecs';
+import { registerPriest } from './skillsets/priest';
+import { registerPriestSpecs } from './skillsets/priestSpecs';
+import { registerShaman } from './skillsets/shaman';
+import { registerShamanSpecs } from './skillsets/shamanSpecs';
+import { registerDruid } from './skillsets/druid';
+import { registerDruidSpecs } from './skillsets/druidSpecs';
 import { registerArcherSpecs } from './skillsets/archerSpecs';
 import { registerPaladinSpecs } from './skillsets/paladinSpecs';
 import { registerPaladinHoly } from './skillsets/paladinHoly';
@@ -261,6 +267,9 @@ add({
 // The stubs are empty; NC10–NC20 and NC31–NC32 fill their own files only.
 // ======================================================================================================
 registerMonk(add);
+registerPriest(add);
+registerShaman(add);
+registerDruid(add);
 // ======================================================================================================
 // GDD_V2 WP5: spec skills (§1.3, non-mage) and the 15 non-mage majors (§2.2). Mage rows belong to T8 (GDD_TALENTS).
 // ======================================================================================================
@@ -350,6 +359,9 @@ registerPaladin(add);
 registerNecromancer(add);
 registerWarlock(add);
 registerMonkSpecs(add);
+registerPriestSpecs(add);
+registerShamanSpecs(add);
+registerDruidSpecs(add);
 registerArcherSpecs(add);
 registerPaladinSpecs(add);
 registerPaladinHoly(add);

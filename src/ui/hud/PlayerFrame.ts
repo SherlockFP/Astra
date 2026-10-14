@@ -30,6 +30,9 @@ export const CLASS_META: Record<ClassId, { name: string; color: string }> = {
   warlock: { name: 'Warlock', color: CLASS_COLORS.warlock },
   demonhunter: { name: 'İblis Avcısı', color: CLASS_COLORS.demonhunter },
   evoker: { name: 'Ejderhasoy', color: CLASS_COLORS.evoker },
+  priest: { name: 'Rahip', color: CLASS_COLORS.priest },
+  shaman: { name: 'Şaman', color: CLASS_COLORS.shaman },
+  druid: { name: 'Druid', color: CLASS_COLORS.druid },
 };
 
 export function classNameTr(id: ClassId | undefined): string {

@@ -44,6 +44,9 @@ const START_GEAR: Record<ClassId, string[]> = {
   warlock: ['staff_t1', 'chest_light_t1', 'boots_light_t1'],
   demonhunter: ['dagger_t1', 'dagger_t1', 'chest_medium_t1', 'boots_medium_t1'], // CM1 stub (not playable yet)
   evoker: ['staff_t1', 'chest_light_t1', 'boots_light_t1'],                     // CM1 stub
+  priest: ['staff_t1', 'chest_light_t1', 'boots_light_t1'],   // CLASS SCAFFOLD stub
+  shaman: ['mace_t1', 'shield_t1', 'chest_medium_t1', 'boots_medium_t1'], // CLASS SCAFFOLD stub
+  druid: ['staff_t1', 'chest_medium_t1', 'boots_medium_t1'],  // CLASS SCAFFOLD stub
 };
 /** Extra pieces every class gets so the first minutes already feel like dressing up a hero. */
 const START_EXTRA_GEAR: Record<ClassId, string[]> = {
@@ -58,12 +61,16 @@ const START_EXTRA_GEAR: Record<ClassId, string[]> = {
   warlock: ['helm_light_t1', 'gloves_light_t1'],
   demonhunter: ['helm_medium_t1', 'gloves_medium_t1'], // CM1 stub
   evoker: ['helm_light_t1', 'gloves_light_t1'],         // CM1 stub
+  priest: ['helm_light_t1', 'gloves_light_t1'],         // CLASS SCAFFOLD stub
+  shaman: ['helm_medium_t1', 'gloves_medium_t1'],       // CLASS SCAFFOLD stub
+  druid: ['helm_medium_t1', 'gloves_medium_t1'],        // CLASS SCAFFOLD stub
 };
 /** Spare gear in the bag (Mage can switch to wand + tome). */
 const START_BAG: Record<ClassId, string[]> = {
   knight: [], barbarian: [], mage: ['wand_t1', 'tome_t1'], rogue: [],
   monk: [], archer: [], paladin: ['sword1h_t1'], necromancer: ['wand_t1', 'tome_t1'], warlock: ['wand_t1', 'tome_t1'],
   demonhunter: [], evoker: ['wand_t1', 'tome_t1'], // CM1 stubs
+  priest: ['wand_t1', 'tome_t1'], shaman: [], druid: [], // CLASS SCAFFOLD stubs
 };
 
 /** Bag sort order: weapons, off-hands, armour, belt, jewelry; then rarity, item level, upgrade, name. */

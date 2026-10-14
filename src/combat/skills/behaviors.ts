@@ -1675,6 +1675,9 @@ import './plateKit';
 // orbit_hammers) and the per-class behaviour stubs NC49-NC53 fill (monk, archer, paladin, necromancer, warlock).
 import './sharedBehaviors';
 import './behaviors_monk';
+import './behaviors_priest';
+import './behaviors_shaman';
+import './behaviors_druid';
 import './behaviors_archer';
 import './behaviors_paladin';
 import './behaviors_necromancer';

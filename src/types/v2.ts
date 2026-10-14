@@ -23,7 +23,11 @@ export type SpecId = 'knight_protector' | 'knight_blademaster' | 'barbarian_warl
   // CORE_MECHANICS §2 / CM1 (append-only): İblis Avcısı (Kaos, İntikam), Ejderhasoy (Yıkım Nefesi, Koruyucu Nefes, Yüceltme),
   // and the Gölge spec of the rogue (CM12 kit). Ids only; SPECS rows arrive with the kit packages.
   | 'demonhunter_chaos' | 'demonhunter_vengeance' | 'evoker_devastation' | 'evoker_preservation' | 'evoker_augmentation'
-  | 'rogue_subtlety';
+  | 'rogue_subtlety'
+  // CLASS SCAFFOLD (append-only): Rahip (priest_*), Şaman (shaman_*), Druid (druid_*). Ids only; SPECS rows arrive with the kits.
+  | 'priest_discipline' | 'priest_holy' | 'priest_shadow'
+  | 'shaman_elemental' | 'shaman_enhancement' | 'shaman_restoration'
+  | 'druid_balance' | 'druid_feral' | 'druid_guardian' | 'druid_restoration';
 export interface SpecDef {
   id: SpecId; classId: ClassId; name: string; role: RoleId; desc: string;
   stats: StatBlock;                                   // folded like a keystone (threatPct, maxHpPct, ...)

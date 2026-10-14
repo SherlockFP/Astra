@@ -32,11 +32,13 @@ const MAIN_STAT: Record<ClassId, 'str' | 'dex' | 'int'> = {
   knight: 'str', barbarian: 'str', mage: 'int', rogue: 'dex',
   monk: 'dex', archer: 'dex', paladin: 'str', necromancer: 'int', warlock: 'int',
   demonhunter: 'dex', evoker: 'int', // CM1 stubs
+  priest: 'int', shaman: 'int', druid: 'int', // CLASS SCAFFOLD stubs
 };
 const RESOURCE_TR: Record<ClassId, string> = {
   knight: 'Kararlılık', barbarian: 'Öfke', mage: 'Mana', rogue: 'Enerji',
   monk: 'Enerji', archer: 'Odak', paladin: 'İnanç', necromancer: 'Öz', warlock: 'Mana',
   demonhunter: 'Gazap', evoker: 'Öz', // CM1 stubs
+  priest: 'Mana', shaman: 'Mana', druid: 'Mana', // CLASS SCAFFOLD stubs
 };
 const TAG_TR: Record<string, string> = {
   melee: 'Yakın', spell: 'Büyü', aoe: 'Alan', projectile: 'Mermi', movement: 'Hareket', fire: 'Ateş', frost: 'Buz', arcane: 'Gizem', lightning: 'Şimşek', shadow: 'Gölge',

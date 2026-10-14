@@ -31,7 +31,10 @@ export type EntityKind = 'player' | 'enemy' | 'npc' | 'projectile' | 'loot' | 'p
 export type ClassId = 'knight' | 'barbarian' | 'mage' | 'rogue'
   | 'monk' | 'archer' | 'paladin' | 'necromancer' | 'warlock'
   // CORE_MECHANICS §2 / CM1 (append-only): İblis Avcısı and Ejderhasoy. Registry rows only; not in PLAYABLE_CLASSES yet.
-  | 'demonhunter' | 'evoker';
+  | 'demonhunter' | 'evoker'
+  // CLASS SCAFFOLD (append-only): Rahip (priest), Şaman (shaman), Druid (druid). Registry rows + empty kit stubs only; not in
+  // PLAYABLE_CLASSES until their kit packages land.
+  | 'priest' | 'shaman' | 'druid';
 /**
  * Resource bars. `focus` (Okçu), `faith` (Paladin), `essence` (Nekromant) are GDD_CLASSES_V2 §1.2 additions (NC01).
  */
@@ -46,7 +49,9 @@ export type PipId = 'combo' | 'adalet' | 'karisim' | 'chi' | 'holypower' | 'shar
   // GDD_TALENTS §0.4 (T0): Gizem Yükü (mage_arcane), max 4, #b78cff
   | 'arcane'
   // PM-00a (docs/kits/plate-melee.md §g need 1): Death Knight rune pip (max 6, timed regen via PipDef.regen).
-  | 'rune';
+  | 'rune'
+  // CLASS SCAFFOLD (append-only): secondary pips of Rahip (insanity), Şaman (maelstrom), Druid (astral_power).
+  | 'insanity' | 'maelstrom' | 'astral_power';
 
 export type DamageType = 'physical' | 'fire' | 'frost' | 'lightning' | 'shadow' | 'poison' | 'holy' | 'arcane' | 'true';
 
