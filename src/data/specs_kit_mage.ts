@@ -5,9 +5,10 @@
  *
  * defaultBar (WoW layout): lmb = the chain (Oto), 1 (rmb) = core builder / filler, 2 (q) = main spender, 3 (e) = second builder,
  * spender or DoT, 4 (r) = long cooldown / filler, 5 (s1) = AoE, Q (s2) = Blink, E (s3) = personal defensive, R (s4) = Counterspell,
- * X / V / T (m45 / m90 / m180) = majors. Time Warp is the T major of Ateş and Gizem; Buz uses Icy Veins on T, so Time Warp is
- * not on the Buz bar (it stays in the spec pool). Shift+ extras (Ejderha Nefesi, Canlı Bomba, Buz Halkası, Büyü Çağırma, ...)
- * are in `skills` but not bound: the second bar does not exist in code yet.
+ * X / V / T (m45 / m90 / m180) = majors. Time Warp is the T major of all three specs (Buz too). The three specs bind their
+ * displaced builders / fillers to the free-standing skills: Ateş puts Ejderha Nefesi on R (cone, 20 s) and Canlı Bomba on 5
+ * (Alev Sütunu leaves the bar); Buz puts Buz Damarları (Icy Veins) on R (Buz Sarkıtı leaves the bar); Gizem puts Büyü Çağırma
+ * (Evocation) on R (Gizemli Küre leaves the bar). Displaced skills stay in `skills`. The second bar does not exist in code yet.
  * OWNER: combat (data).
  */
 import type { SpecDef, SpecId } from '../types/v2';
@@ -33,7 +34,7 @@ export const SPECS_KIT_MAGE: Partial<Record<SpecId, SpecDef>> = {
     majors: { m45: 'mage_meteor', m90: 'mage_combustion', m180: 'mage_time_warp' },
     mods: [{ skill: 'mage_basic', patch: { name: 'Ateş Oku (Fire Bolt)' } }],
     defaultBar: {
-      lmb: 'mage_basic', rmb: 'mage_fireball', q: 'mage_pyroblast', e: 'mage_fire_blast', r: 'mage_scorch', s1: 'mage_flamestrike',
+      lmb: 'mage_basic', rmb: 'mage_fireball', q: 'mage_pyroblast', e: 'mage_fire_blast', r: 'mage_dragons_breath', s1: 'mage_living_bomb',
       s2: 'mage_blink', s3: 'mage_blazing_barrier', s4: 'mage_counterspell', m45: 'mage_meteor', m90: 'mage_combustion', m180: 'mage_time_warp',
     },
   },
@@ -48,18 +49,18 @@ export const SPECS_KIT_MAGE: Partial<Record<SpecId, SpecDef>> = {
       desc: 'Buz isabetleri Buz Parmağı verir (en çok 2, 15 sn). Buz Mızrağı Donmuş hedefe, Buz Parmağı varken veya Donma 6 iken x3 vurur ve +%50 kritik alır. Buz Halkası her donmuş düşman için bir Buz Parmağı verir.',
     }],
     skills: ['mage_frostbolt', 'mage_ice_lance', 'mage_flurry', 'mage_frost_nova', 'mage_ice_barrier', 'mage_ray_of_frost',
-      'mage_glacial_spike', 'mage_comet_storm', 'mage_frozen_orb', 'mage_icy_veins'],
+      'mage_glacial_spike', 'mage_comet_storm', 'mage_frozen_orb', 'mage_icy_veins', 'mage_time_warp'],
     unlock: {
       mage_frostbolt: 1, mage_ice_lance: 3, mage_frost_nova: 3, mage_flurry: 6, mage_blizzard: 1, mage_ice_barrier: 1,
-      mage_glacial_spike: 1, mage_frozen_orb: 20, mage_ray_of_frost: 20, mage_comet_storm: 20, mage_icy_veins: 20,
+      mage_glacial_spike: 1, mage_frozen_orb: 20, mage_ray_of_frost: 20, mage_comet_storm: 20, mage_icy_veins: 20, mage_time_warp: 25,
     },
     // the s05 tree row is Dondurucu Sağanak (talent tree, T-step)
     treeSkills: { mage_flurry: 's05' },
-    majors: { m45: 'mage_ray_of_frost', m90: 'mage_frozen_orb', m180: 'mage_icy_veins' },
+    majors: { m45: 'mage_ray_of_frost', m90: 'mage_frozen_orb', m180: 'mage_time_warp' },
     mods: [{ skill: 'mage_basic', patch: { name: 'Buz Oku (Ice Bolt)' } }],
     defaultBar: {
-      lmb: 'mage_basic', rmb: 'mage_frostbolt', q: 'mage_ice_lance', e: 'mage_flurry', r: 'mage_glacial_spike', s1: 'mage_blizzard',
-      s2: 'mage_blink', s3: 'mage_ice_barrier', s4: 'mage_counterspell', m45: 'mage_ray_of_frost', m90: 'mage_frozen_orb', m180: 'mage_icy_veins',
+      lmb: 'mage_basic', rmb: 'mage_frostbolt', q: 'mage_ice_lance', e: 'mage_flurry', r: 'mage_icy_veins', s1: 'mage_blizzard',
+      s2: 'mage_blink', s3: 'mage_ice_barrier', s4: 'mage_counterspell', m45: 'mage_ray_of_frost', m90: 'mage_frozen_orb', m180: 'mage_time_warp',
     },
   },
 
@@ -82,7 +83,7 @@ export const SPECS_KIT_MAGE: Partial<Record<SpecId, SpecDef>> = {
     majors: { m45: 'mage_touch_of_magi', m90: 'mage_arcane_surge', m180: 'mage_time_warp' },
     mods: [],
     defaultBar: {
-      lmb: 'mage_basic', rmb: 'mage_arcane_blast', q: 'mage_arcane_missiles', e: 'mage_arcane_barrage', r: 'mage_arcane_orb', s1: 'mage_arcane_pulse',
+      lmb: 'mage_basic', rmb: 'mage_arcane_blast', q: 'mage_arcane_missiles', e: 'mage_arcane_barrage', r: 'mage_evocation', s1: 'mage_arcane_pulse',
       s2: 'mage_blink', s3: 'mage_prismatic_barrier', s4: 'mage_counterspell', m45: 'mage_touch_of_magi', m90: 'mage_arcane_surge', m180: 'mage_time_warp',
     },
   },

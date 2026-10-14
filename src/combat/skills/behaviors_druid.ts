@@ -349,6 +349,69 @@ const tranq: Behavior = {
   },
 };
 
+// ---------------------------------------------------------------------------------------------------------------------
+// Yeniden Doğuş (Rebirth) and Çiçeklenme (Efflorescence)
+// ---------------------------------------------------------------------------------------------------------------------
+
+/** Yeniden Doğuş: battle res of the aimed dead ally in range, else the nearest one. The owner of a remote ally gets the 'revive'
+ *  message (PlayerController pattern: the owner's Combat.reviveLocalPlayer runs on its machine). */
+const rebirth: Behavior = {
+  begin(c) {
+    if (c.remote) return true;
+    const { caster, def } = c;
+    const range = def.range ?? 30;
+    const dist = (p: Actor): number => Math.hypot(p.position.x - caster.position.x, p.position.z - caster.position.z);
+    const dead = (G.world?.players ?? []).filter((p) => p.isDead && !p.removed && dist(p) <= range + p.radius);
+    const aimedId = c.aim?.targetId;
+    const aimed = aimedId != null ? dead.find((p) => p.id === aimedId) : undefined;
+    const pick = aimed ?? dead.sort((a, b) => dist(a) - dist(b) || a.id - b.id)[0];
+    if (!pick) { c.sys.fail('target'); return false; }
+    c.data.ally = pick;
+    return true;
+  },
+  fire(c) {
+    const { caster, def, sys } = c;
+    if (c.remote) { sys.vfx('heal_pillar', at(caster, 0.1), { scale: 0.8 }); return; }
+    const ally = c.data.ally as Player | undefined;
+    if (!ally || !ally.isDead || ally.removed) { sys.whiff(c); return; }
+    const hpFrac = def.params?.hpFrac ?? 0.35;
+    if (!ally.isLocal) {
+      const peer = G.net?.peerOfEntity(ally.id);
+      if (peer) G.net?.sendTo(peer, 'revive', { targetId: ally.id, hpFrac, sourceId: caster.id });
+    }
+    sys.vfx('heal_pillar', at(ally, 0.1), { scale: 1 });
+    sys.sfx('heal_big', ally.position);
+  },
+};
+
+/** Çiçeklenme: a ground heal zone on the aimed point. Every interval s for pulses pulses each living ally inside the radius
+ *  is healed (def.heal.coef per pulse, Harmony applies). Remote casts heal nothing here (the owner's machine does it). */
+const efflorescence: Behavior = {
+  fire(c) {
+    const { caster, def, sys } = c;
+    if (c.remote) return;
+    const p = def.params ?? {};
+    const x = c.point[0], z = c.point[1];
+    const y = groundAt(x, z) ?? caster.position.y;
+    const radius = (def.radius ?? 6) * (1 + sys.softStat(caster, 'aoeRadiusPct'));
+    const pulses = Math.max(1, Math.round(p.pulses ?? 6));
+    const interval = p.interval ?? 2;
+    sys.vfx('heal_loop', [x, y, z], { scale: radius / 3, duration: pulses * interval });
+    for (let n = 0; n < pulses; n++) {
+      sys.schedule(n * interval + 0.05, () => {
+        if (caster.isDead) return;
+        for (const a of G.world?.players ?? []) {
+          if (a.isDead || a.removed) continue;
+          if (Math.hypot(a.position.x - x, a.position.z - z) > radius + a.radius) continue;
+          healAmount(caster, a, healFormula(caster, (def.heal?.coef ?? 0.6) * harmonyMul(caster, a) * c.more).amount);
+          sys.vfx('heal_burst', at(a, a.height * 0.6), { scale: 0.5 });
+        }
+      });
+    }
+    sys.sfx('heal_big', [x, y, z]);
+  },
+};
+
 Object.assign(BEHAVIORS_DRUID, {
   kit_druid_shift: shift,
   kit_druid_dot: dot,
@@ -360,6 +423,8 @@ Object.assign(BEHAVIORS_DRUID, {
   kit_druid_wild_growth: wildGrowth,
   kit_druid_swiftmend: swiftmend,
   kit_druid_tranq: tranq,
+  kit_druid_rebirth: rebirth,
+  kit_druid_efflorescence: efflorescence,
 });
 
 function installDruid(): void {

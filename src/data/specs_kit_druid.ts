@@ -89,17 +89,17 @@ export const SPECS_KIT_DRUID: Partial<Record<SpecId, SpecDef>> = {
     specials: [
       { id: 'trait_restoration', desc: 'Armoni: üzerinde kendi iyileştirme etkilerinden (en çok 5) olan hedefe yaptığın her şifa etki başına %6 daha güçlüdür.', params: { harmony: 0.06, harmonyCap: 5 } },
     ],
-    skills: ['druid_resto_basic', 'druid_lifebloom', 'druid_swiftmend', 'druid_wild_growth', 'druid_natures_cure', 'druid_ironbark', 'druid_tranquility', 'druid_innervate'],
+    skills: ['druid_resto_basic', 'druid_lifebloom', 'druid_swiftmend', 'druid_wild_growth', 'druid_natures_cure', 'druid_ironbark', 'druid_tranquility', 'druid_innervate', 'druid_rebirth', 'druid_efflorescence'],
     unlock: {
       druid_resto_basic: 1, druid_lifebloom: 1, druid_swiftmend: 1, druid_ironbark: 10, druid_wild_growth: 1, druid_natures_cure: 12, druid_tranquility: 20,
-      druid_innervate: 10,
+      druid_innervate: 10, druid_rebirth: 15, druid_efflorescence: 20,
     },
     majors: { m45: 'druid_ironbark', m90: 'druid_tranquility' },
     mods: [],
     basic: 'druid_resto_basic',
     defaultBar: {
       lmb: 'druid_resto_basic', rmb: 'druid_rejuvenation', q: 'druid_lifebloom', e: 'druid_swiftmend', s1: 'druid_wild_growth', s2: 'druid_regrowth', s3: 'druid_natures_cure',
-      m45: 'druid_ironbark', m90: 'druid_tranquility',
+      m45: 'druid_ironbark', m90: 'druid_tranquility', r: 'druid_rebirth', s4: 'druid_efflorescence',
     },
   },
 };

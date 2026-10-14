@@ -16,10 +16,10 @@ const CHAIN = 'Otomatik Saldırı (Auto Attack)';
 
 export function registerShamanSpecs(add: SkillAdd): void {
   // Ruh Bağı Totemi (Spirit Link Totem), Restorasyon: a 6 s totem; every second the allies within 10 m are lifted to their shared HP share
-  // (behaviour hp_redistribute: heal-up only, nobody loses HP; see the Midnight report).
+  // (behaviour hp_redistribute: equalises the party; local allies above the share come down; see the Midnight report).
   add({
     id: 'shaman_spirit_link', classId: 'shaman', spec: 'shaman_restoration', name: 'Ruh Bağı Totemi (Spirit Link Totem)', icon: I('skill-regeneration'), unlockLevel: 20,
-    desc: 'Yere bir ruh bağı totemi dikersin; 6 saniye boyunca 10 metre içindeki müttefiklerin canı, grubun ortalama can oranına doğru yükselir. 120 saniye bekleme.',
+    desc: 'Yere bir ruh bağı totemi dikersin; 6 saniye boyunca 10 metre içindeki müttefiklerin canı, grubun ortalama can oranına doğru yükselir; en canlı müttefikin canı ise o orana iner. 120 saniye bekleme.',
     cost: 15, cooldown: 120, castTime: 0, hitTime: 0.5, anim: 'Spellcast_Raise', animSpeed: 1.2,
     targeting: 'custom', behavior: 'hp_redistribute', radius: 10, duration: 6,
     minion: { id: 'shaman_spirit_link_totem', count: 1, group: 'lesser', life: 6 },
