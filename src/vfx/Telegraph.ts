@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { G } from '../game/G';
 import type { TelegraphKind, TelegraphShape } from '../types/vfx';
 import type { TelegraphHandle } from './VFX';
 
@@ -89,6 +90,9 @@ const KIND_COLORS: Record<TelegraphKind, { base: number; hot: number; id: number
 const planeGeo = new THREE.PlaneGeometry(1, 1);
 planeGeo.rotateX(-Math.PI / 2);
 
+/** Segments per side of the draped telegraph quad on rolling terrain (World.terrain); flat worlds keep the shared 1-quad plane. */
+const DRAPE_SEG = 20;
+
 function layout(shape: TelegraphShape): { size: [number, number]; center: [number, number]; id: number; p: [number, number, number, number] } {
   switch (shape.type) {
     case 'circle':
@@ -112,6 +116,10 @@ export class TelegraphFx implements TelegraphHandle {
   readonly group = new THREE.Group();
   private mesh: THREE.Mesh;
   private mat: THREE.ShaderMaterial;
+  private size: [number, number] = [1, 1];
+  private center: [number, number] = [0, 0];
+  private drapeGeo: THREE.BufferGeometry | null = null;
+  private unitXZ: Float32Array | null = null;
   private t = 0;
   private manual = false;
   private fading = false;
@@ -152,7 +160,16 @@ export class TelegraphFx implements TelegraphHandle {
       polygonOffsetFactor: -3,
       polygonOffsetUnits: -3,
     });
-    this.mesh = new THREE.Mesh(planeGeo, this.mat);
+    // rolling terrain: a subdivided quad whose vertices follow the ground (setTransform drapes it), so no corner sinks into a hill
+    this.size = lay.size;
+    this.center = lay.center;
+    if (G.world?.terrain) {
+      const g = new THREE.PlaneGeometry(1, 1, DRAPE_SEG, DRAPE_SEG);
+      g.rotateX(-Math.PI / 2);
+      this.drapeGeo = g;
+      this.unitXZ = Float32Array.from(g.getAttribute('position').array);
+    }
+    this.mesh = new THREE.Mesh(this.drapeGeo ?? planeGeo, this.mat);
     this.mesh.scale.set(lay.size[0], 1, lay.size[1]);
     this.mesh.position.set(lay.center[0], 0, lay.center[1]);
     this.mesh.renderOrder = 6;
@@ -169,6 +186,23 @@ export class TelegraphFx implements TelegraphHandle {
   setTransform(origin: [number, number, number], dir: [number, number]): void {
     this.group.position.set(origin[0], origin[1] + 0.07, origin[2]);
     if (Math.abs(dir[0]) + Math.abs(dir[1]) > 1e-5) this.group.rotation.y = Math.atan2(dir[0], dir[1]);
+    if (this.drapeGeo) this.drape(origin);
+  }
+
+  /** Rolling terrain: puts every vertex of the quad 7 cm above the ground under it (the origin's own y is ignored). */
+  private drape(origin: [number, number, number]): void {
+    const w = G.world;
+    const geo = this.drapeGeo, unit = this.unitXZ;
+    if (!w || !geo || !unit) return;
+    const gy0 = w.groundY(origin[0], origin[2]);
+    this.group.position.y = gy0 + 0.07;
+    const th = this.group.rotation.y, c = Math.cos(th), s = Math.sin(th);
+    const pos = geo.getAttribute('position') as THREE.BufferAttribute;
+    for (let i = 0; i < pos.count; i++) {
+      const lx = unit[i * 3] * this.size[0] + this.center[0], lz = unit[i * 3 + 2] * this.size[1] + this.center[1];
+      pos.setY(i, w.groundY(origin[0] + lx * c + lz * s, origin[2] - lx * s + lz * c) - gy0);
+    }
+    pos.needsUpdate = true;
   }
 
   cancel(): void {
@@ -208,5 +242,6 @@ export class TelegraphFx implements TelegraphHandle {
     this.alive = false;
     this.group.removeFromParent();
     this.mat.dispose();
+    this.drapeGeo?.dispose();
   }
 }

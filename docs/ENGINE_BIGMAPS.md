@@ -44,7 +44,7 @@ Zone edge 640 m (Sisli Vadi) / 2,048 m / 4,096 m = 160 / 512 / 1,024 tiles; 1 ti
 | 11 | `voidForest(900)` / `beyondForest(760)`: fixed totals, density collapses with size | `WorldScenery.ts:370-371` | fine | thin | bare | SOFT. Streamed: per-m2 densities taken from Sisli Vadi |
 | 12 | `isAvoided` is a linear scan of the avoid list; scatter calls it hundreds of thousands of times | `DungeonBuilder.ts` `isAvoided` | 200 circles | 3.5k | 14k (*sim*) | SOFT. Streamed: `chunks/AvoidIndex.ts` bucket hash |
 | 13 | `ZoneField` allocates 3 arrays of `4 x tiles` cells although the open world has no zones | `Zones.ts:212-214` | 0.4 MB | 4.2 MB | 16.8 MB | SOFT, not changed (unused memory) |
-| 14 | Heightfield: **the open world has none**, ground is the plane y = 0 (`hf` is null for outdoor builds) | `DungeonBuilder.ts:760` | - | - | - | NOT SUPPORTED: no hills. A vertical-dungeon style heightfield would cost 44 B/tile (46 MB at 4 km). See section 8 |
+| 14 | Heightfield: **the open world has none**, ground is the plane y = 0 (`hf` is null for outdoor builds) | `DungeonBuilder.ts:760` | - | - | - | Flat unless the zone opts in with `world.relief`: then `Relief` (a 4 m height grid, 4 B per vertex) drives mesh, `groundY` and nav floor, see **section 10** |
 | 15 | Shadow box 40 m x 40 m, 1024 map, follows the focus | `ShadowFollow.ts:13-15`, `DungeonBuilder.ts:906`, `:2227` | same | same | same | independent of size |
 | 16 | Fog far 55-100 m per region, camera far 600 m, sky dome 380 m, mountain rings 430 / 380 m (they follow the camera) | `DungeonScene.ts:92`, `Sky.ts:119`, `WorldDecor.ts:552` | fine | fine | fine | independent of size. A region `fogFar` above about 250 m would show the ring edge: the streamed path caps the fog at `viewM - 24` as a net, content-check warns above 250 |
 | 17 | Float32 precision of world coordinates | all vertex / instance data | 0.06 mm | 0.12 mm | 0.24 mm (0.49 mm at the far edge) | fine up to about 16 km (2 mm). Terrain UVs are chunk-local + origin, texel error 6e-5 |
@@ -125,7 +125,7 @@ camp bucket indexes, camp tick on awake camps only, occluder refresh, fog cap, l
 Deferred (owner in brackets):
 * Minimap / world map for large nav grids: use `nav.downsample(4)` (UI team).
 * Camp id space (#18): decision for netcode.
-* Terrain heights (hills): needs a chunked heightmap, nav floor and a ground-Y that is no longer 0 (section 8).
+* Terrain heights (hills): done as an opt-in, see section 10 (`world.relief`). Not done: cliffs / caves (the slope is clamped, there is no unwalkable ground), the minimap / map panel do not draw the relief.
 * Static content in the streamed path that is still unconditionally resident: water planes (one quad per `water` rect), village NPCs, waypoint
   stones, shrines, chests (entities, a few hundred at most). Villages' props and palisades stream with their chunk.
 * `ZoneField` allocation (#13) and `Heightfield` for a vertical open world.
@@ -180,7 +180,7 @@ Rules and numbers for big zones:
 * **Roads / water / borders**: polylines and rects may be as long as you like; a long road is painted per chunk, not as one huge box.
 * **Villages / landmarks / POIs** are hand-placed, built at load and streamed with the chunk they stand in. Everything that needs ground (NPCs, stones, chests) is placed by tile coordinate as before.
 * **Density guide** (resident ring is about 35 chunks of 64 m): trees about 8, bushes 6, rocks 3, tufts about 200, flowers about 25 per chunk at palette 1.0; keep hand-placed props under a few hundred per village.
-* **No hills yet**: the ground is flat (#14).
+* **Hills are opt-in**: without `world.relief` the ground is flat; with it, see section 10 (one `relief` block in the zone data).
 * `node tools/content-check.mjs <zone>` prints `NNNN m zone, chunk streaming on (chunk 64 m, view 164 m, <= 81 chunks resident)` and errors / warns on the rules above.
 * Preview in the browser: add `?stream=1` to force streaming on any zone, `?stream=0` to force the classic path.
 
@@ -207,3 +207,51 @@ Measured headless by `dev/combat-sim/tribudget.mjs` (real scatter, real batcher 
 * `Instancing.ts` `LodSet`: scatter layers (tree, border, bush, rock, tuft, flower) are drawn in three distance tiers per (chunk, model); the culler re-sorts them (at most every 0.25 s, after the focus moved 1.5 m) and fits each tier mesh's bounding sphere to what it holds, so frustum and shadow culling work per tier. Only tiers 0 and 1 cast shadows (not the border forest's tier 1). Far ground cover is thinned by a fixed per-instance rank. Colliders and chunk content are untouched (visual only, every peer builds the same world).
 * `WorldPerf.ts`: the tier distances per layer and "Görüntü Kalitesi" (Düşük / Orta / Yüksek, `graphicsQuality` in Settings, default Orta). Nothing is drawn beyond the fog (`end` = fog far + 4).
 * Karakir spawn (Orta): 1.78 M -> 123 k triangles (worst sampled point 205 k, map-edge forest); Yüksek worst 307 k; Düşük worst 118 k.
+
+## 10. Rolling terrain (hills, valleys, plateaus)
+
+Opt-in per zone: `world.relief` in the zone data (`types/dungeons.ts` `WorldRelief`). Without it nothing changes (the ground stays y = 0, `World.terrain` false). Sisli Vadi (modest, 2-5 m), Karakir Bozkiri (steppe 8-15 m, Kartal Sirti ridge about 20 m) and Kizil Sinir (moderate, symmetric, raised keep plateau) use it.
+
+```
+node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/terrain.mjs        # 99 checks, exit 1 on failure
+```
+
+### 10.1 The height function (`world/Relief.ts`, pure, no three.js)
+
+* The ground IS a height grid (`cellM` 2 / 4 / 8 m, default 4; 497 x 397 vertices = 0.8 MB for Karakir) plus a fixed triangle rule: cells with (i + j) even are split along the (0,0)-(1,1) diagonal, odd cells along (1,0)-(0,1). `Relief.groundY(x, z)` evaluates exactly that surface; `ReliefMesh.ts` puts mesh vertices on the grid with the same diagonals, so the drawn ground, `World.groundY`, the nav floor, props and characters share one surface (the sim checks vertices and random points against the mesh triangles). Outside the zone the grid continues 192 m (the streamed terrain reaches 160 m past the edge); beyond that the border value continues.
+* **Deterministic**: integer-hash value noise (quintic), only `+ - * / sqrt floor min max abs` on doubles, no `Math.random`, no trigonometry / `pow` (the sim greps the source for them), no clock. Same data, same bits on every peer and in any bake order. Bake time: Karakir 190 ms, Sisli 90 ms, Kizil Sinir 130 ms.
+* **Bake order** (each step reads what the earlier ones left): (1) rolling noise with the region profile `{ amp, scale, base, ridged }` blended across region borders over about 40 m, void tiles take the profile of the nearest room; the map edge rises (`edge: { rise, width }`, default 14 m over 80 m, with a wobble); `symmetric` ('x' | 'z' | 'xz') averages the mirrored samples (Kizil Sinir: fair for both nations); (2) `ridges` (smooth crests along a tile polyline) and `plateaus` (absolute height, flat top, pinned); (3) water levels, bridges, lakes, pads, roads (below); (4) slope clamp.
+* **Flat pads**: start, exit, villages (box + 5 m), landmarks (radius per recipe), bosses, entrances, mini-boss lairs, metin spots, rare spots, waypoints, shrines, chests, cursed chests, `relief.flat[]`. The pad height is the mean of the grid under it; every vertex within 1.5 cells of the pad is set to it exactly and pinned, so ANY point inside the pad shape is on the plane (exact, asserted); outside it the ground blends back over 8-28 m. A pad that overlaps an earlier pad's flat core joins its plane (a waypoint inside a village); a pad close to another is limited to a height the slope allows.
+* **Lakes** (`world.water`): each rect has its own level, the lower part of the ground around it (`Relief.waterLevels[i]`, the plane stands at level + 0.03: `WorldDecor.buildWater`). Over void tiles the bed is 2.4 m deep, over walkable tiles (Karakir's lakes lie inside the steppe room) 0.9 m deep (wading), the shore rises 0.15 per m. A walkable room entirely inside a rect is an island: a low mound with a beach. The bed is a hard constraint, the banks give way.
+* **Roads**: smoothed along their length (30 m window, grade <= 0.22) and flattened across (core = half width + 1.5 cells, 12 m falloff). **Bridges** are pinned to their lake level (a waypoint on the deck joins that plane).
+* **Slope clamp**: `|dh| <= maxGrade * distance` for all 8 neighbours (default 0.34, hard limit 0.4); pinned vertices never move; the steepest triangle is `maxGrade * sqrt 2` = 0.48 (26 degrees). Every 1 m nav step is below `VERT.STEP_UP` (0.45), so there are no cliffs: ground never becomes unwalkable. `stats.overGrade` counts vertex pairs above the limit (0 in the shipped zones; the content check warns when two pads sit too close for the slope).
+
+### 10.2 Where it is wired
+
+* `DungeonBuilder.setupRelief()` (outdoor builds with `world.relief`; failures fall back to flat with a warning): bakes, `NavGrid.attachTerrain` (1 m floor from `groundY`, no flags / rim pass / regions, 18 ms for Karakir, 7.3 MB), `InstanceBatcher.groundY` and `LightPool.groundY` (every hand-placed prop, village building, landmark, bridge deck, boardwalk lantern and every streamed scatter instance takes `y` as an OFFSET above the ground; the shadow-caster rule uses the height above ground), start / exit y, `BuiltDungeon.relief`, the shadow box follows the ground under the focus.
+* Meshes: streamed zones build a 17 x 17 vertex chunk mesh per 64 m chunk (512 triangles, ring of 35-81 chunks = 18k-41k triangles; `TerrainChunks.ts`), classic zones one mesh 440 m around the map centre (Sisli: 97k triangles, was 18k; `Terrain.ts`). Smooth vertex normals come from the whole grid, so chunk seams shade alike. The terrain shader blends the region's dirt over grass on steep ground (`TerrainSlope.ts`, 0 on flat ground).
+* `DungeonScene.setupVertical`: `world.heights = relief`, `world.vertical = true`, `world.terrain = true`. The existing vertical machinery then does the rest (enemy / minion / pet / loot ground follow, camera floor clamp and `groundFrac`, projectile ground cull, `walkLine` / `resolveMove` / `findPath` rise rule). Terrain-specific: no ceilings, no voids, no lifts; `World.sameLevel`, `HitShapes.inReach` and the soft-target height test are off (no stacked floors: area skills reach across a slope); `clearSight` is a ground-only eye-to-chest test and `NavGrid.raycastY` also stops a ray that dips under the ground (enemy aggro, aimed shots, hostile aim: a hill hides what is behind it); `World.rayToGround` marches the relief (1 m steps, 8 bisections); `PlayerController` sticks to the ground on steep downhill steps at slow frame rates.
+* Effects: `VFX.spawn` lifts an effect whose y lies more than 0.5 m under the ground at that point (a `ground_slam` at y 0.05) onto it; telegraphs drape a 20 x 20 quad over the ground (`Telegraph.ts`); straight shots with no aim slope keep their launch height above the ground (`Projectile.hug`), `aimSlope` returns undefined for them in terrain worlds; the boltRain lob lands on the ground under the point.
+
+### 10.3 Authoring (`world.relief`)
+
+```ts
+relief: {
+  seed: 'karakir_bozkiri',            // default: the zone id
+  cellM: 4,                           // 2 | 4 | 8; 4 m is the default (rivers 1-2 tiles wide need it)
+  profile: { amp: 8, scale: 150 },    // fallback profile
+  regions: { r7: { amp: 12, scale: 150 }, r12: { amp: 11, scale: 150, base: 6, ridged: 0.5 } },   // per region id; amp = height range (m), scale = wavelength of the broad hills (m)
+  edge: { rise: 18, width: 90 },      // the void around the walkable area rises into hills
+  ridges: [{ pts: [[386, 16], [382, 56]], height: 20, width: 60 }],   // tile polyline, crest height and half width
+  plateaus: [{ pos: [150, 150], radius: 78, height: 14, falloff: 64 }],  // absolute height, flat top
+  flat: [{ pos: [100, 100], radius: 12 }],                            // extra pads
+  maxGrade: 0.34, symmetric: 'xz',
+}
+```
+
+`node tools/content-check.mjs <zone>` validates the block, bakes it and prints the grid, height range, pad count and bake time; it warns when two pads are closer than the slope allows and for a pad inside a lake.
+
+### 10.4 Costs and limits
+
+* Memory: heights 4 B per vertex (0.8 MB for 1.6 x 1.2 km), nav floor 4 B + flags 1 B per 1 m cell (9 MB for Karakir; 97 MB at the 4.4 km limit: use Int16 floors before shipping a zone that big).
+* Visual risks (not covered by the sim): the sky mountain rings follow the camera at y = 0 and the edge hills can rise above their silhouette; trees and tufts are not skipped on steep ground; the 40 m shadow box is centred on the ground under the player but shadow bias on steep ground is not tuned; the minimap and the world map are flat; a flat (non-draped) decal or ground sprite spawned by a system other than `VFX.spawn` / telegraphs sits at its own y.

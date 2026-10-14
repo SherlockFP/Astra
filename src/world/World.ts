@@ -33,6 +33,11 @@ export class World {
    */
   vertical = false;
   heights: WorldHeights | null = null;
+  /**
+   * Open-world rolling terrain (world/Relief.ts, docs/ENGINE_BIGMAPS.md section 10). Implies `vertical` and `heights`; there are no
+   * ceilings, voids or cliffs. Ground-contact effects, straight shots and the ground-pick ray use the relief instead of the plane y = 0.
+   */
+  terrain = false;
   /** Seconds since the world was created (scaled by hit-stop). */
   time = 0;
   readonly entities = new Map<EntityId, Entity>();
@@ -124,7 +129,8 @@ export class World {
    * Feet-height gate (§6): true when the world is not vertical, `y` is omitted, or the actor's feet are within `tol` of `y`.
    */
   sameLevel(a: { position: { y: number } }, y: number, tol = TOL_MELEE): boolean {
-    return !this.vertical || Math.abs(a.position.y - y) <= tol;
+    // rolling terrain has no stacked floors: a hill must not hide an enemy 10 m up the slope from an area skill (like the flat world: XZ only)
+    return !this.vertical || this.terrain || Math.abs(a.position.y - y) <= tol;
   }
 
   /**
@@ -209,6 +215,7 @@ export class World {
    */
   rayToGround(ray: THREE.Ray, out = new THREE.Vector3()): THREE.Vector3 | null {
     const o = ray.origin, d = ray.direction;
+    if (this.terrain && this.heights) return this.rayToTerrain(ray, out);
     if (Math.abs(d.y) < 1e-5) return null;
     const t0 = (0 - o.y) / d.y;
     if (t0 < 0) return null;
@@ -235,6 +242,35 @@ export class World {
         return out.copy(o).addScaledVector(d, hi);
       }
       tPrev = t;
+    }
+    return null;
+  }
+
+  /**
+   * Ground pick over rolling terrain: marches the ray 1 m at a time (at most 400 m) until it is at or below the surface, then bisects
+   * 8 times. Rays that start under the ground, point away from it or miss within 400 m return null (callers fall back to the
+   * flat estimate or ignore the click).
+   */
+  private rayToTerrain(ray: THREE.Ray, out: THREE.Vector3): THREE.Vector3 | null {
+    const o = ray.origin, d = ray.direction;
+    const h = this.heights!;
+    const f = (t: number): number => o.y + t * d.y - h.groundY(o.x + t * d.x, o.z + t * d.z);
+    if (f(0) <= 0) return null;
+    // a near-horizontal ray looks 400 m along the ground; a steep one reaches it in a few steps: step 1 m of ray length
+    const maxT = 400;
+    let tPrev = 0;
+    for (let t = 1; t <= maxT; t += 1) {
+      if (f(t) <= 0) {
+        let lo = tPrev, hi = t;
+        for (let k = 0; k < 8; k++) {
+          const m = (lo + hi) / 2;
+          if (f(m) > 0) lo = m; else hi = m;
+        }
+        return out.copy(o).addScaledVector(d, hi);
+      }
+      tPrev = t;
+      // a ray climbing away from every possible ground (above the highest relief and still rising) cannot hit
+      if (d.y > 0 && o.y + t * d.y > 200) return null;
     }
     return null;
   }

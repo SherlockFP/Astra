@@ -162,13 +162,26 @@ export const groundAt = (x: number, z: number): number | null => (G.world ? G.wo
 export function clearSight(from: Actor, to: Actor): boolean {
   const w = G.world;
   if (!w || !w.vertical) return true;
+  if (w.terrain) {
+    // rolling terrain: only the ground itself blocks the eye-to-chest line (a hill between the two); trees never did in the flat world
+    const ax = from.position.x, az = from.position.z, ay = from.position.y + from.height * 0.8;
+    const bx = to.position.x, bz = to.position.z, by = to.position.y + to.height * 0.6;
+    const len = Math.hypot(bx - ax, bz - az);
+    for (let s = 1.5; s < len - 1; s += 1.5) {
+      const t = s / len;
+      if (ay + (by - ay) * t < w.groundY(ax + (bx - ax) * t, az + (bz - az) * t) + 0.05) return false;
+    }
+    return true;
+  }
   return w.nav.raycastY(from.position.x, from.position.y + from.height * 0.8, from.position.z, to.position.x, to.position.y + to.height * 0.6, to.position.z) >= 1;
 }
 
 /** Projectile slope toward a target's chest (rise per metre of XZ travel, clamped to ±0.6, §12). 0 in flat worlds or without a target. */
-export function aimSlope(from: Actor, originY: number, to: Actor | null): number {
+export function aimSlope(from: Actor, originY: number, to: Actor | null): number | undefined {
   const w = G.world;
-  if (!w || !w.vertical || !to) return 0;
+  if (!w || !w.vertical) return 0;
+  // rolling terrain, no target: undefined lets the shot keep its height above the ground and follow the hills (Projectile.hug)
+  if (!to) return w.terrain ? undefined : 0;
   const run = Math.hypot(to.position.x - from.position.x, to.position.z - from.position.z);
   if (run < 0.5) return 0;
   return clamp((to.position.y + to.height * 0.6 - originY) / run, -0.6, 0.6);
@@ -1255,9 +1268,9 @@ const boltRain: Behavior = {
           const bx = z.x + Math.cos(a) * r, bz = z.z + Math.sin(a) * r;
           Projectile.spawn({
             mode: 'visual', owner: caster, vfx: (def.vfx?.projectile as VfxId) ?? 'arrow_projectile', scale: 0.9,
-            origin: [bx, 9, bz], dir: [0, 1], speed: 1, radius: 0.1, range: 1, pitch: Math.PI / 2,
+            origin: [bx, (groundAt(bx, bz) ?? 0) + 9, bz], dir: [0, 1], speed: 1, radius: 0.1, range: 1, pitch: Math.PI / 2,
             lob: { to: [bx, bz], duration: 0.2, arc: 0 },
-            onEnd: (pr, reason) => { if (reason === 'arrive') sys.vfx('hit_spark', [bx, 0.15, bz], { scale: 0.5 }); },
+            onEnd: (pr, reason) => { if (reason === 'arrive') sys.vfx('hit_spark', [bx, (groundAt(bx, bz) ?? 0) + 0.15, bz], { scale: 0.5 }); },
           });
         }
         if (c.remote) return;

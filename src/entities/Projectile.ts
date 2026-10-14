@@ -94,6 +94,8 @@ export class Projectile extends Entity {
   private baseY: number;
   /** KIT PK-MAGE curve: parameter u of the Bezier (0 = spawn, 1 = target). */
   private curveU = 0;
+  /** Rolling terrain: launch height above the ground, kept by shots with no aim slope (null until the first step). */
+  private hug: number | null = null;
 
   private constructor(id: EntityId, opts: ProjectileOpts) {
     super(id, 'projectile');
@@ -283,7 +285,12 @@ export class Projectile extends Entity {
     const nz = p.z + this.dirZ * step;
     if (world.vertical) {
       // §12: height-aware shot ray (low rails are shot over, walls/pillars block at any height)
-      const ny = p.y + this.dirY * step;
+      let ny = p.y + this.dirY * step;
+      if (world.terrain && this.opts.dirY === undefined) {
+        // rolling terrain, a shot with no aim slope: it keeps its launch height above the ground under it, so it follows the hills
+        if (this.hug === null) this.hug = Math.max(0.35, p.y - world.groundY(p.x, p.z));
+        ny = world.groundY(nx, nz) + this.hug;
+      }
       const f = world.nav.raycastY(p.x, p.y, p.z, nx, ny, nz);
       if (f < 1) {
         p.x += this.dirX * step * f;
@@ -379,10 +386,13 @@ export class Projectile extends Entity {
     const t = Math.min(1, this.age / l.duration);
     this.position.x = this.startX + (l.to[0] - this.startX) * t;
     this.position.z = this.startZ + (l.to[1] - this.startZ) * t;
-    this.position.y = l.arc === 0 ? this.baseY * (1 - t) : this.baseY + Math.sin(t * Math.PI) * l.arc;
+    // vertical worlds land on the ground under the target point (flat worlds: y = 0, as before)
+    const w = this.world;
+    const gyT = w?.vertical ? w.groundY(l.to[0], l.to[1]) : 0;
+    this.position.y = l.arc === 0 ? gyT + (this.baseY - gyT) * (1 - t) : this.baseY + Math.sin(t * Math.PI) * l.arc;
     if (l.arc !== 0) this.object3d.rotation.x += dt * 8;
     if (t >= 1) {
-      this.position.y = 0;
+      this.position.y = gyT;
       this.end('arrive');
     }
   }

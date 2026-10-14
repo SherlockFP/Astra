@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { patchPSX } from '../render/psx';
 import { TileNoise, makeCanvas, surfaceTexture } from './ProceduralAssets';
 import { EDGE_NOISE_MAX, SPLAT_CH_INDEX, opBounds, opRaw, type SplatChannel, type SplatOp } from './chunks/SplatPaint';
+import type { Relief } from './Relief';
+import { reliefTerrainGeometry } from './ReliefMesh';
+import { SLOPE_FRAG, SLOPE_VARYING_FRAG, SLOPE_VARYING_VERT, SLOPE_VERT } from './TerrainSlope';
 
 /**
  * Terrain: one big ground mesh shaded with a splat map (dirt / cobble / dark patches painted from shape ops) over
@@ -37,6 +40,11 @@ export interface TerrainOptions {
   cell?: number;
   /** Optional region tint map multiplied into the ground colour. */
   tint?: TerrainTint;
+  /**
+   * Rolling terrain (world/Relief.ts): the mesh is built from the relief grid inside `half` metres around (centreX, centreZ) (the
+   * mesh position) instead of a flat plane. `cell` is then the relief's.
+   */
+  relief?: { relief: Relief; centreX: number; centreZ: number };
 }
 
 export interface Terrain {
@@ -150,13 +158,14 @@ export function createTerrain(o: TerrainOptions): Terrain {
     shader.uniforms.uTintHalf = { value: tintSrc.half };
     shader.uniforms.uHasTint = { value: tintHasData ? 1 : 0 };
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec2 vTerrainXZ;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTerrainXZ = position.xz;');
+      .replace('#include <common>', `#include <common>\nvarying vec2 vTerrainXZ;\n${SLOPE_VARYING_VERT}`)
+      .replace('#include <begin_vertex>', `#include <begin_vertex>\nvTerrainXZ = position.xz;\n${SLOPE_VERT}`);
     shader.fragmentShader = shader.fragmentShader
       .replace(
         '#include <common>',
         `#include <common>
 varying vec2 vTerrainXZ;
+${SLOPE_VARYING_FRAG}
 uniform sampler2D uSplat; uniform sampler2D uGrass; uniform sampler2D uDirt; uniform sampler2D uCobble; uniform sampler2D uMoss;
 uniform float uSplatHalf;
 uniform sampler2D uTintMap; uniform float uTintHalf; uniform float uHasTint;`,
@@ -175,6 +184,7 @@ vec3 base = mix(g1, g2 * 0.92, 0.3);
 base = mix(base, ms, sp.b);
 base = mix(base, dt, sp.r);
 base = mix(base, cb, sp.g);
+${SLOPE_FRAG}
 // region tint: sampled unconditionally (clamped), then masked outside the tint area
 vec2 ts = (vTerrainXZ + vec2(uTintHalf)) / (2.0 * uTintHalf);
 vec3 tc = texture2D(uTintMap, clamp(ts, 0.0, 1.0)).rgb;
@@ -185,10 +195,16 @@ diffuseColor.rgb *= base * tintC;`,
   };
   patchPSX(mat, { affine: false });
 
-  const cell = o.cell ?? 10;
-  const segs = Math.round((o.half * 2) / cell);
-  const geo = new THREE.PlaneGeometry(o.half * 2, o.half * 2, segs, segs);
-  geo.rotateX(-Math.PI / 2);
+  let geo: THREE.BufferGeometry;
+  if (o.relief) {
+    geo = reliefTerrainGeometry(o.relief.relief, o.relief.centreX, o.relief.centreZ, o.half);
+  } else {
+    const cell = o.cell ?? 10;
+    const segs = Math.round((o.half * 2) / cell);
+    const plane = new THREE.PlaneGeometry(o.half * 2, o.half * 2, segs, segs);
+    plane.rotateX(-Math.PI / 2);
+    geo = plane;
+  }
   const mesh = new THREE.Mesh(geo, mat);
   mesh.receiveShadow = true;
   mesh.name = 'terrain';

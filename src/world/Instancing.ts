@@ -369,6 +369,11 @@ export class InstanceBatcher {
    * frees them. The batcher's chunk size is then the streaming chunk size.
    */
   deferred = false;
+  /**
+   * Rolling terrain (world/Relief.ts): when set, every instance's y is an OFFSET from the ground under it (`groundY(x, z) + y`), for the
+   * hand-placed adds and the generated chunk scatter alike. Null = y is absolute (dungeons, towns, flat zones).
+   */
+  groundY: ((x: number, z: number) => number) | null = null;
   private staged = new Map<string, Group[]>();
   private chunkMeshes = new Map<string, Bag>();
   /** Distance-tiered groups (LodSet) of everything resident; the ChunkCuller updates them. */
@@ -414,7 +419,9 @@ export class InstanceBatcher {
       g = { url, chunk: `${cx},${cz}`, cx, cz, cast, receive, variant, skip: opts.skip ?? null, layer, recs: [] };
       this.groups.set(key, g);
     }
-    g.recs.push({ m: m.clone(), c: color == null ? null : new THREE.Color(color) });
+    const rec = m.clone();
+    if (this.groundY) rec.elements[13] += this.groundY(e[12], e[14]);
+    g.recs.push({ m: rec, c: color == null ? null : new THREE.Color(color) });
     this.count++;
   }
 
@@ -456,7 +463,8 @@ export class InstanceBatcher {
     let plainTall = false;
     for (const r of g.recs) {
       const s = matrixScale(r.m);
-      const top = r.m.elements[13] + piece.box.max.y * s;
+      // height of the top above the ground (the caster rule excludes ground-level meshes: on rolling terrain y includes the hill)
+      const top = r.m.elements[13] - (this.groundY ? this.groundY(r.m.elements[12], r.m.elements[14]) : 0) + piece.box.max.y * s;
       if (canCast && isShadowCaster(radius * s, top)) casters.push(r);
       else {
         plain.push(r);
@@ -483,7 +491,7 @@ export class InstanceBatcher {
     if (generated?.length) {
       const byKey = new Map<string, Group>();
       for (const gi of generated) {
-        _p.set(gi.x, gi.y, gi.z);
+        _p.set(gi.x, this.groundY ? gi.y + this.groundY(gi.x, gi.z) : gi.y, gi.z);
         _q.setFromAxisAngle(_Y, gi.rot);
         _s.set(gi.scale, gi.scale, gi.scale);
         _m.compose(_p, _q, _s);

@@ -132,6 +132,9 @@ export class PlayerController {
 
   private time = 0;
   private vy = 0;
+  /** Position at the previous stepVertical (rolling terrain: how far the player moved this frame). */
+  private svX = 0;
+  private svZ = 0;
   /** Height the current airborne spell started from (grounded height at take-off / walk-off): drop = fallStartY - groundY. */
   private fallStartY = 0;
   /** Falls and drops (§11): safe history, void trigger, landing damage, respawn after the fade. */
@@ -883,6 +886,9 @@ export class PlayerController {
     const pos = p.position;
     const gy = world.groundY(pos.x, pos.z);
     const fm = p.forcedMove;
+    const stepX = this.svX, stepZ = this.svZ;
+    this.svX = pos.x;
+    this.svZ = pos.z;
     if (fm && fm.vy !== undefined && world.time < fm.until) {
       // skill-driven vertical motion (leaps): SkillSystem owns the arc, no landing call
       pos.y = Math.max(gy, pos.y + fm.vy * dt);
@@ -908,9 +914,11 @@ export class PlayerController {
       }
     } else {
       const d = pos.y - gy;
+      // rolling terrain: running down a 0.48 grade at a slow frame rate drops more than 0.3 m per frame; that is a slope, not a ledge
+      const stick = world.terrain ? 0.3 + 0.7 * Math.hypot(pos.x - stepX, pos.z - stepZ) : 0.3;
       if (d <= 0) {
         pos.y = gy; // ground rose (rise <= STEP_UP is guaranteed by resolveMove)
-      } else if (d <= 0.3) {
+      } else if (d <= stick) {
         pos.y = Math.max(gy, pos.y - 12 * dt); // stick to the ground: stairs down, descending lift
       } else {
         // walked off a ledge / the lift dropped away
@@ -1234,7 +1242,7 @@ export class PlayerController {
       const pd = Math.hypot(e.position.x - px, e.position.z - pz);
       if (pd > SOFT_TARGET_RANGE) continue;
       // §10.1: a body more than TOL_MELEE above/below needs a clear height-aware sight line (eye to chest)
-      if (world.vertical && Math.abs(e.position.y - p.position.y) > VERT.TOL_MELEE) {
+      if (world.vertical && !world.terrain && Math.abs(e.position.y - p.position.y) > VERT.TOL_MELEE) {
         const eyeY = p.position.y + p.height * 0.9, chestY = e.position.y + e.height * 0.6;
         if (world.nav.raycastY(px, eyeY, pz, e.position.x, chestY, e.position.z) < 1) continue;
       }

@@ -5,6 +5,7 @@ import { MUSIC_IDS, SFX_IDS } from '../types/audio';
 import { VFX_IDS } from '../types/vfx';
 import { GDD_BOSSES, GDD_ROSTER, GDD_SUMMONS } from './contentRoster';
 import { MAX_ZONE_M, STREAM_AUTO_M, VIEW_MAX_M, VIEW_MIN_M, streamConfig, widestFogFar } from '../world/chunks/StreamConfig';
+import { HARD_MAX_GRADE, buildRelief } from '../world/Relief';
 
 /**
  * Pure validation logic for the content module (dev/content.html). No DOM here.
@@ -959,6 +960,64 @@ export function checkDungeon(def: DungeonDef, models: ModelDb, knownEnemy?: (id:
     if (widestFogFar(def) > 250) warn(id, `fogFar ${widestFogFar(def)} m: the camera far plane is 500 m and the streamed ring stays below ${VIEW_MAX_M} m, keep region fogFar <= 250 m`);
     const cfg = streamConfig(def, null);
     info(id, `${sizeM} m zone, chunk streaming ${cfg.on ? `on (chunk ${cfg.chunkM} m, view ${cfg.viewM} m, <= ${cfg.maxResident} chunks resident)` : 'off'}`);
+
+    // ---- rolling terrain (world/Relief.ts, docs/ENGINE_BIGMAPS.md section 10) ----
+    const rl = def.world.relief;
+    if (rl) {
+      const where = `${id} relief`;
+      const regIds = new Set(def.world.regions.map((r) => r.id));
+      const profileOk = (p: { amp: number; scale: number }, label: string): void => {
+        if (!(p.amp >= 0 && p.amp <= 40)) err(where, `${label}: amp ${p.amp} must be 0..40 m`);
+        if (!(p.scale >= 30 && p.scale <= 1000)) err(where, `${label}: scale ${p.scale} must be 30..1000 m (the wavelength of the broadest hills)`);
+      };
+      if (rl.cellM !== undefined && rl.cellM !== 2 && rl.cellM !== 4 && rl.cellM !== 8) err(where, `cellM ${rl.cellM} must be 2, 4 or 8`);
+      if (rl.maxGrade !== undefined && !(rl.maxGrade >= 0.05 && rl.maxGrade <= HARD_MAX_GRADE)) err(where, `maxGrade ${rl.maxGrade} must be 0.05..${HARD_MAX_GRADE} (1 m nav steps must stay below VERT.STEP_UP 0.45)`);
+      if (rl.profile) profileOk(rl.profile, 'profile');
+      for (const [rid, p] of Object.entries(rl.regions ?? {})) {
+        if (!regIds.has(rid)) err(where, `regions.${rid} is not a region of this zone`);
+        profileOk(p, `regions.${rid}`);
+      }
+      for (const r of def.world.regions) if (!rl.regions?.[r.id] && !rl.profile) warn(where, `region ${r.id} has no relief profile (default 4 m / 120 m)`);
+      const inZone = (p: [number, number]): boolean => p[0] >= 0 && p[1] >= 0 && p[0] < def.grid.w && p[1] < def.grid.h;
+      (rl.plateaus ?? []).forEach((p, n) => { if (!inZone(p.pos)) err(where, `plateaus[${n}] lies outside the zone`); });
+      (rl.flat ?? []).forEach((p, n) => { if (!inZone(p.pos)) err(where, `flat[${n}] lies outside the zone`); });
+      (rl.ridges ?? []).forEach((rd, n) => {
+        if (rd.pts.length < 2) err(where, `ridges[${n}] needs at least 2 points`);
+        if (rd.pts.some((p) => !inZone(p))) err(where, `ridges[${n}] has a point outside the zone`);
+      });
+      if (rl.symmetric && !['x', 'z', 'xz'].includes(rl.symmetric)) err(where, `symmetric must be 'x', 'z' or 'xz'`);
+      try {
+        const rel = buildRelief(def);
+        if (rel) {
+          const st = rel.stats;
+          info(where, `${rel.nx}x${rel.nz} grid at ${rel.cell} m (${(rel.h.byteLength / 1048576).toFixed(1)} MB), ground ${st.minY.toFixed(1)}..${st.maxY.toFixed(1)} m, ${rel.pads.length} flat pads, baked in ${st.buildMs.toFixed(0)} ms, ${(st.clampedFraction * 100).toFixed(1)} % of vertices moved by the slope clamp`);
+          if (st.overGrade > 0) warn(where, `${st.overGrade} neighbouring vertex pairs are steeper than maxGrade (steepest ${st.maxStep.toFixed(2)}): two flat pads (village, landmark, chest...) sit closer together than the slope allows`);
+          if (st.maxStep > HARD_MAX_GRADE + 1e-3) err(where, `steepest step ${st.maxStep.toFixed(2)} exceeds the hard limit ${HARD_MAX_GRADE}`);
+          if (!cfg.on) {
+            const tris = Math.round(((2 * 440) / rel.cell) ** 2 * 2);
+            if (tris > 150000) warn(where, `the classic one-mesh ground would be about ${(tris / 1000).toFixed(0)}k triangles at ${rel.cell} m cells: use cellM 4 or 8, or stream the zone`);
+          }
+          // a stone on a bridge deck is meant to be there: pads within 12 m of a bridge road are not reported
+          const nearBridge = (x: number, z: number): boolean => def.world!.roads.some((r) => r.kind === 'bridge' && r.pts.some((q, k) => {
+            const nx = (q[0] + 0.5) * T, nz = (q[1] + 0.5) * T;
+            const nxt = r.pts[k + 1];
+            if (!nxt) return Math.hypot(nx - x, nz - z) < 12;
+            const ex = (nxt[0] + 0.5) * T - nx, ez = (nxt[1] + 0.5) * T - nz, l2 = ex * ex + ez * ez;
+            const t = l2 > 0 ? Math.max(0, Math.min(1, ((x - nx) * ex + (z - nz) * ez) / l2)) : 0;
+            return Math.hypot(nx + ex * t - x, nz + ez * t - z) < 12;
+          }));
+          for (const wt of def.world.water) {
+            for (const p of rel.pads) {
+              if (p.kind === 'island' || nearBridge(p.x, p.z)) continue;
+              const px = p.x / T, pz = p.z / T;
+              if (px >= wt.rect.x && px < wt.rect.x + wt.rect.w && pz >= wt.rect.z && pz < wt.rect.z + wt.rect.h) warn(`${where} pad ${p.kind}:${p.id}`, `stands inside the water rect ${wt.id} (the flat pad pins the lake bed)`);
+            }
+          }
+        }
+      } catch (e) {
+        err(where, `bake failed: ${String(e)}`);
+      }
+    }
   }
 
   // ---- doors on shared boundaries ----

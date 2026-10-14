@@ -16,6 +16,7 @@ import type { SfxId } from '../types/audio';
 import { Sky, type SkyOptions } from './Sky';
 import { NavGrid, type NavHeightSource } from './NavGrid';
 import { buildHeightfield, F, VERT, type Heightfield } from './Heightfield';
+import { buildRelief, type Relief } from './Relief';
 import { cliffGeometry, railGeometry, slopeGeometry, tierGeometry } from './VerticalGeo';
 import { InstanceBatcher } from './Instancing';
 import { getPiece, loadPieces } from './Pieces';
@@ -151,6 +152,8 @@ export interface BuiltDungeon {
   // ---- vertical dungeons (docs/ENGINE_VERTICALITY.md §16) ----
   /** Heightfield of a `vertical` dungeon; null for legacy and open-world builds. */
   readonly hf: Heightfield | null;
+  /** Rolling terrain of an open-world zone with `world.relief` (docs/ENGINE_BIGMAPS.md section 10); null = flat ground. */
+  readonly relief: Relief | null;
   /** Floor height under a world point (0 on legacy builds). */
   groundY(x: number, z: number): number;
   /** Absolute ceiling above a world point (Infinity on legacy builds). */
@@ -568,6 +571,8 @@ class DungeonBuild {
   zf!: ZoneField;
   /** Heightfield of a `vertical` dungeon (null otherwise: every height-aware branch below is skipped). */
   hf: Heightfield | null = null;
+  /** Rolling terrain of an open-world zone with `world.relief` (null = flat ground, y = 0). Baked in build() before anything is placed. */
+  relief: Relief | null = null;
   /** Open-world mode (DungeonDef.outdoor): terrain + tree walls instead of tiles + stone walls. */
   readonly outdoor: boolean;
   /** Chunk streaming of a big open-world zone (docs/ENGINE_BIGMAPS.md); `stream.on` false = the classic build-everything path. */
@@ -659,7 +664,7 @@ class DungeonBuild {
   // ---- vertical helpers (every one returns the legacy value when hf is null) ----
   /** Floor height under a world point: the heightfield when vertical, 0 otherwise. */
   floorAt(x: number, z: number): number {
-    return this.hf ? this.hf.groundY(x, z) : 0;
+    return this.hf ? this.hf.groundY(x, z) : this.relief ? this.relief.groundY(x, z) : 0;
   }
 
   /** Attaches the heightfield to the nav grid (floors, flags, rim pass, regions) and sets the start / exit heights. */
@@ -672,6 +677,30 @@ class DungeonBuild {
       rimAt: (x, z) => this.rimAt(x, z),
     };
     this.nav.attachHeights(src);
+  }
+
+  /**
+   * Open-world rolling terrain (docs/ENGINE_BIGMAPS.md section 10): bakes the relief, gives the nav grid its floor, and makes every
+   * batched instance and light use its y as an offset above the ground. A zone without `world.relief` returns at once (flat world).
+   * A failing bake falls back to the flat ground with a warning, never a broken map.
+   */
+  private setupRelief(): void {
+    if (!this.def.world?.relief) return;
+    try {
+      const relief = buildRelief(this.def);
+      if (!relief) return;
+      this.relief = relief;
+      this.nav.attachTerrain({ groundY: (x, z) => relief.groundY(x, z), flagsAt: () => 0 });
+      this.batcher.groundY = (x, z) => relief.groundY(x, z);
+      this.lights.groundY = (x, z) => relief.groundY(x, z);
+      this.startPos.y = relief.groundY(this.startPos.x, this.startPos.z);
+      this.exitPos.y = relief.groundY(this.exitPos.x, this.exitPos.z);
+    } catch (e) {
+      console.warn('[world] relief failed, the zone stays flat', e);
+      this.relief = null;
+      this.batcher.groundY = null;
+      this.lights.groundY = null;
+    }
   }
 
   /** HeightArea.rim of the area owning a world point (last area wins, like the floor); 'rail' when no area covers it. */
@@ -758,6 +787,7 @@ class DungeonBuild {
     this.buildGrid();
     // vertical dungeons only (buildHeightfield returns null otherwise); outdoor builds ignore the vertical fields in v1
     this.hf = this.outdoor ? null : buildHeightfield(this.def, (i, j) => this.tileRoom(i, j));
+    if (this.outdoor) this.setupRelief();
     this.zf = new ZoneField(this);
     if (this.hf) this.attachVerticalNav(this.hf);
     this.setupTheme();
@@ -813,6 +843,7 @@ class DungeonBuild {
       hemi: this.hemi,
       sun: this.moon,
       stream: this.stream,
+      relief: this.relief,
       onFog: (near, far) => {
         this.halo.setFog(near * 0.9, far * 1.1);
         this.flames.setFog(near * 0.9, far * 1.1);
@@ -2224,10 +2255,11 @@ class DungeonBuild {
       this.worldDecor.setPlayerPos(this.focus.x, this.focus.z);
       this.worldDecor.update(dt);
     }
-    if (this.moon) followShadowBox(this.moon, this.focus, this.moonDir, 50);
+    const gy = this.relief ? this.relief.groundY(this.focus.x, this.focus.z) : 0;
+    if (this.moon) followShadowBox(this.moon, this.focus, this.moonDir, 50, gy);
     if (this.fill) {
-      this.fill.target.position.set(this.focus.x, 0, this.focus.z);
-      this.fill.position.set(this.focus.x + this.rimDir.x * 50, this.rimDir.y * 50, this.focus.z + this.rimDir.z * 50);
+      this.fill.target.position.set(this.focus.x, gy, this.focus.z);
+      this.fill.position.set(this.focus.x + this.rimDir.x * 50, gy + this.rimDir.y * 50, this.focus.z + this.rimDir.z * 50);
       this.fill.target.updateMatrixWorld();
     }
     for (const a of this.gateAnims) {
@@ -2337,7 +2369,10 @@ export async function buildDungeon(def: DungeonDef, scene: THREE.Scene): Promise
   // preload everything we know we need (also warms the loading screen cache)
   await loadPieces(dungeonAssetUrls(def));
   await b.build();
-  const bounds = new THREE.Box3(new THREE.Vector3(b.walkMin.x, 0, b.walkMin.y), new THREE.Vector3(b.walkMax.x, 4, b.walkMax.y));
+  const bounds = new THREE.Box3(
+    new THREE.Vector3(b.walkMin.x, b.relief ? Math.min(0, b.relief.stats.minY) : 0, b.walkMin.y),
+    new THREE.Vector3(b.walkMax.x, b.relief ? b.relief.stats.maxY + 4 : 4, b.walkMax.y),
+  );
   const built: BuiltDungeon = {
     root: b.root,
     nav: b.nav,
@@ -2365,6 +2400,7 @@ export async function buildDungeon(def: DungeonDef, scene: THREE.Scene): Promise
     get fog() { return b.fog; },
     world: b.worldDecor,
     hf: b.hf,
+    relief: b.relief,
     groundY: (x, z) => b.floorAt(x, z),
     ceilingY: (x, z) => (b.hf ? b.hf.ceilingY(x, z) : Infinity),
     roomTop: (idx) => (b.hf ? (b.hf.roomTop[idx] ?? Infinity) : Infinity),
