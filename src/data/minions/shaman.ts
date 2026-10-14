@@ -12,15 +12,26 @@ const WOLF_ANIMS = { idle: 'Idle', walk: 'Walk', run: 'Run', hit: 'Hit', death: 
 
 export const SHAMAN_MINIONS: MinionDef[] = [
   {
-    // Ateş Totemi (shaman_totem_fire): pulses fire on enemies within 8 m
-    id: 'shaman_fire_totem', name: 'Ateş Totemi', ownerClass: 'shaman', role: 'caster', group: 'lesser',
-    model: TOTEM_MODEL, scale: 0.9, tint: 0xff5a20, emissive: 0x602000,
-    anims: TOTEM_ANIMS, radius: 0.5, height: 2.0, speed: 0,
-    hpFrac: 0.3, armorFrac: 0.2,
+    // Ateş Elementali (shaman_totem_fire skill): a mobile fire elemental for 30 s; fire bolts at enemies within 18 m
+    id: 'shaman_fire_elemental', name: 'Ateş Elementali', ownerClass: 'shaman', role: 'caster', group: 'infernal',
+    model: TOTEM_MODEL, scale: 1.3, tint: 0xff5a20, emissive: 0x602000,
+    anims: TOTEM_ANIMS, radius: 0.6, height: 2.4, speed: 4.0,
+    hpFrac: 0.6, armorFrac: 0.2,
     attacks: [
-      { id: 'shaman_fire_totem_pulse', name: 'Ateş Dalgası', kind: 'aoe', range: 8, radius: 3.5, cooldown: 2.0, hitTime: 0.6, anim: 'Spellcast_Shoot', animSpeed: 1.0, coef: 0.7, type: 'fire' },
+      { id: 'shaman_fire_elemental_bolt', name: 'Ateş Atışı', kind: 'projectile', range: 18, cooldown: 2.0, hitTime: 0.6, anim: 'Spellcast_Shoot', animSpeed: 1.0, coef: 1.0, type: 'fire', speed: 25 },
     ],
-    aggro: 14, follow: [0, 0], leash: 30,
+    aggro: 14, follow: [5, 8], leash: 30, life: 30,
+  },
+  {
+    // Toprak Elementali (shaman_earth_elemental skill): a tank elemental for 60 s; it hits hard and draws the enemies
+    id: 'shaman_earth_elemental', name: 'Toprak Elementali', ownerClass: 'shaman', role: 'tank', group: 'golem',
+    model: TOTEM_MODEL, scale: 1.5, tint: 0x8a6a3a,
+    anims: TOTEM_ANIMS, radius: 0.7, height: 2.6, speed: 3.5,
+    hpFrac: 1.2, armorFrac: 0.4,
+    attacks: [
+      { id: 'shaman_earth_elemental_smash', name: 'Toprak Yumruğu', kind: 'melee', range: 2.6, cooldown: 1.8, hitTime: 0.5, anim: 'Attack', animSpeed: 1.0, coef: 1.2, type: 'physical', stagger: 2 },
+    ],
+    aggro: 16, follow: [2, 5], leash: 30, life: 60,
   },
   {
     // Toprak Bağlama Totemi (shaman_totem_earthbind): roots enemies within 8 m for 2 s

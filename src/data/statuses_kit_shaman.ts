@@ -24,6 +24,10 @@ export const STATUSES_KIT_SHAMAN: Partial<Record<StatusId, StatusDef>> = {
   riptide: { id: 'riptide', name: 'Gel-Git Dalgası', icon: I('buff-regen'), kind: 'buff', vfx: 'heal_loop', dispellable: true },
   // Yağmur Fırtınası (shaman_healing_rain): HoT on each ally inside the rain, 8 s
   rain_hot: { id: 'rain_hot', name: 'Yağmur', icon: I('buff-regen'), kind: 'buff', vfx: 'heal_loop', dispellable: true },
+  // Astral Kayma (shaman_astral_shift, s3): 40 % damage reduction for 8 s
+  astral_shift: { id: 'astral_shift', name: 'Astral Kayma', icon: I('buff-absorb'), kind: 'buff', stats: { damageReductionPct: 0.4 }, dispellable: false },
+  // Lanet (shaman_hex): hard incapacitate for 6 s (a frog)
+  hex: { id: 'hex', name: 'Lanet', icon: I('debuff-silence'), kind: 'debuff', cc: true, dispellable: true },
   // Şifa Akıntısı (shaman_stream_totem, shaman_tide_totem): HoT on allies inside the totem's radius
   stream_totem: { id: 'stream_totem', name: 'Şifa Akıntısı', icon: I('buff-regen'), kind: 'buff', vfx: 'heal_loop', dispellable: true },
 };
@@ -37,4 +41,6 @@ export const STATUS_RULES_KIT_SHAMAN: Partial<Record<StatusId, StatusRule>> = {
   riptide: { stack: 'refresh', hot: true },
   rain_hot: { stack: 'refresh', hot: true },
   stream_totem: { stack: 'refresh', hot: true },
+  astral_shift: { stack: 'refresh' },
+  hex: { stack: 'strongest', group: 'hard', hard: true },
 };
