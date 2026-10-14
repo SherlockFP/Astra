@@ -7,7 +7,7 @@
 //   DPS specs    dmg   *= median(ST) / ST                    -> single-target DPS lands on the median
 //   tanks        dmg   *= 0.75 x median(ST) / ST             -> tank ST at 0.75 of the median (middle of the 70-80 % band)
 //   tanks        taken *= TTD / median(TTD)                  -> time-to-die index equal across tanks (TTD ~ 1 / incoming damage)
-//   healers      heal  *= 1.2 x reference-tank DTPS / HPS    -> the healer out-heals the reference tank with a 20 % margin
+//   healers      heal  *= 1.2 x reference-tank DTPS / healToTank -> the heals reaching the reference tank cover its damage with a 20 % margin
 // Each target is clamped to a 0.5-2.0 ratio, then damped: a knot moves DAMP (60 %) of the way to its target per pass, so the update does not
 // oscillate. The stored knot stays in 0.25-4.0. A level stops when its bands pass (DPS ST +-10 %, tank ST 70-80 %, tank TTD +-5 %, healers keep
 // the reference tank alive and out-heal it) or after --passes updates; each level is measured once more after its last update. The table is
@@ -21,7 +21,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TABLE = path.join(ROOT, 'src', 'data', 'specTuning.ts');
 const args = Object.fromEntries(process.argv.slice(2).map((a) => { const m = a.match(/^--([^=]+)(?:=(.*))?$/); return [m[1], m[2] ?? true]; }));
 const PASSES = Number(args.passes ?? 4);
-const LEVELS = [60, 30, 10];          // fitted in this order; each level owns one knot (index in TUNE_LEVELS = [10, 30, 60])
+const LEVELS = args.levels ? String(args.levels).split(',').map(Number) : [60, 30, 10]; // fitted in this order (--levels=60 to fit one); each level owns one knot (index in TUNE_LEVELS = [10, 30, 60])
 const KNOT = { 10: 0, 30: 1, 60: 2 };
 const STEP = [0.5, 2.0];              // one update moves a factor's target by at most this ratio
 const DAMP = 0.6;                     // the knot moves this share of the way to its target per pass
@@ -103,7 +103,9 @@ function update(t, a, i) {
     // a tank immortal in the tank profile: the incoming knot is raised at the largest step (it may not be the lever)
     t[r.id].taken[i] = Number.isFinite(ttdOf(r)) ? move(t[r.id].taken[i], ttdOf(r) / a.medTtd) : move(t[r.id].taken[i], STEP[1]);
   }
-  for (const r of a.healers) t[r.id].heal[i] = move(t[r.id].heal[i], (HEAL_MARGIN * r.dtps) / Math.max(r.hps, 1));
+  // healers: the heals that reach the reference tank (healToTank) must cover its damage. Total HPS also pays for the DPS allies, so it
+  // overstated the healing the tank gets and the knot fell while the tank still died (BALANCE.md §9).
+  for (const r of a.healers) t[r.id].heal[i] = move(t[r.id].heal[i], (HEAL_MARGIN * r.dtps) / Math.max(r.healToTank ?? r.hps, 1));
 }
 
 // ----------------------------------------------------------------------------------------------------------------- driver
