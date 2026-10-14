@@ -1,0 +1,127 @@
+# Balance pass: 17 specs at levels 10 / 30 / 60
+
+Tool: `dev/combat-sim/balance.mjs` (headless, seeded, real CharacterState / SkillSystem / Combat / Procs / Minions; no browser, no server).
+
+```
+node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/balance.mjs [--level=30] [--spec=a,b] [--quick] [--no-check] [--json] [--gear]
+```
+
+Exit code 1 when a band check fails. Current state: **the band gate fails (74 checks on the data as it stands)**. Section 4 explains why and what is needed to close it.
+
+## 1. What the tool measures
+
+| Scenario | Fight | Output |
+|---|---|---|
+| `st` | one dummy, 180 s, the spec's `st` APL | DPS ST |
+| `aoe` | four dummies in a pack, 60 s, the `aoe` APL | DPS AoE (total damage / 60 s) |
+| `tank` (tank specs) | boss melee every 1.5 s, boss magic every 4 s (not blockable), three adds every 2.5 s; 180 s | DTPS after mitigation, self-heal, mitigation %, time-to-die index |
+| `heal` (healer specs) | 5-man party: the reference tank takes the boss profile, three DPS allies take half a swing every 2 s; 180 s | effective HPS, overheal %, reference-tank damage after mitigation, survival |
+
+Setup per fight: real `CharacterState` at the level, the spec's passive folded by `recomputeStats`, gear chosen **best-in-slot** from six generated candidates per slot (`ItemGen.generateItem`, rarity by level, smart rolls), scored by role (weapon damage x main stat; tanks also HP and armour). The spec's default bar and the APL from `data/rotations_kit_*.ts`. Every fight reseeds `Math.random`, the combat RNG and the proc PRD, and runs on fresh combat systems.
+
+Not modelled (documented in the tool header): talent trees, movement (`moving` false, `behind` false), enemy armour and enemy AI (dummies never die), the APL `@each` modifier (applied to the primary target), and free-text APL lines (`barbarian_iron_stance (as ST)`, `barbarian_carnage + barbarian_avatar on cd`, `barbarian_whirlwind (filler)` and similar; the tool prints them under "APL lines not modelled").
+
+## 2. Bands
+
+| Check | Band (brief / CORE_MECHANICS §5.3) |
+|---|---|
+| DPS specs, ST | within ±8 % of the median ST DPS of the DPS specs at each level |
+| Tanks, ST | 70–80 % of that median |
+| Melee vs ranged DPS median | within ±8 % |
+| AoE, DPS and tank specs | at most 1.35 x the median AoE of the DPS specs |
+| Tank survival in the tank profile | the tank does not die in 180 s |
+| TTD index across tanks | within ±5 % of the tank median (CORE_MECHANICS §5.3) |
+| Healers | HPS >= the reference tank's damage after mitigation; the reference tank survives |
+
+## 3. Before / after
+
+**Before** = repository data at `adb13b9` with the harness above. **After** = the same numbers: no balance-affecting data change is kept (see §4). The one data edit is the removal of two dead `mage_prismatic_bolt` APL lines (`src/data/rotations_kit_mage.ts`): that skill does not exist and is not on the `mage_arcane` bar, so the lines never fired.
+
+Columns: DPS ST and AoE in damage per second; `% med` is against the median of the DPS specs at that level; for healers the DTPS column is the reference tank's damage after mitigation (what the healer must sustain).
+
+| level | spec | role | DPS ST | % med | DPS AoE (4 tgt) | AoE % med | HPS | DTPS (after mit.) | self-HPS | mitigation | TTD (s) |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 10 | knight_protector | tank | 239 | 52.4% | 499 | 66.6% | - | 7 | 0 | 71.8% | 158 |
+| 10 | knight_blademaster | dps | 625 | 137.0% | 2 614 | 349.1% | - | - | - | - | - |
+| 10 | barbarian_warlord | tank | 389 | 85.4% | 1 010 | 134.9% | - | 10 | 0 | 67.8% | 100 |
+| 10 | barbarian_butcher | dps | 456 | 100.0% | 2 538 | 339.0% | - | - | - | - | - |
+| 10 | paladin_protection | tank | 277 | 60.8% | 584 | 78.0% | - | 41 | 39 | 55.2% | 498 |
+| 10 | paladin_holy | healer | - | - | - | - | 94 | 55 | - | - | - |
+| 10 | paladin_retribution | dps | 477 | 104.5% | 1 418 | 189.4% | - | - | - | - | - |
+| 10 | necromancer_bone | tank | 136 | 29.7% | 342 | 45.7% | - | 8 | 3 | 21.0% | 165 |
+| 10 | necromancer_summoner | dps | 264 | 57.9% | 361 | 48.2% | - | - | - | - | - |
+| 10 | rogue_assassin | dps | 764 | 167.4% | 2 141 | 286.0% | - | - | - | - | - |
+| 10 | rogue_alchemist | healer | - | - | - | - | 13 | 55 | - | - | - |
+| 10 | mage_fire | dps | 233 | 51.0% | 731 | 97.7% | - | - | - | - | - |
+| 10 | mage_frost | dps | 379 | 83.1% | 674 | 90.0% | - | - | - | - | - |
+| 10 | mage_arcane | dps | 568 | 124.5% | 749 | 100.0% | - | - | - | - | - |
+| 10 | rogue_subtlety | dps | 555 | 121.7% | 2 241 | 299.3% | - | - | - | - | - |
+| 10 | warlock_affliction | dps | 322 | 70.5% | 175 | 23.4% | - | - | - | - | - |
+| 10 | warlock_destruction | dps | 255 | 55.9% | 212 | 28.3% | - | - | - | - | - |
+| 30 | knight_protector | tank | 1 411 | 49.5% | 7 639 | 73.4% | - | 0 | 0 | 100.0% | inf |
+| 30 | knight_blademaster | dps | 3 967 | 139.1% | 19 255 | 185.0% | - | - | - | - | - |
+| 30 | barbarian_warlord | tank | 2 946 | 103.3% | 3 322 | 31.9% | - | 75 | 2 | 70.3% | 48 |
+| 30 | barbarian_butcher | dps | 10 765 | 377.6% | 26 981 | 259.2% | - | - | - | - | - |
+| 30 | paladin_protection | tank | 1 578 | 55.4% | 3 520 | 33.8% | - | 97 | 90 | 61.8% | 460 |
+| 30 | paladin_holy | healer | - | - | - | - | 272 | 143 | - | - | - |
+| 30 | paladin_retribution | dps | 2 758 | 96.7% | 7 578 | 72.8% | - | - | - | - | - |
+| 30 | necromancer_bone | tank | 609 | 21.4% | 1 821 | 17.5% | - | 25 | 9 | 39.4% | 146 |
+| 30 | necromancer_summoner | dps | 1 190 | 41.7% | 3 345 | 32.1% | - | - | - | - | - |
+| 30 | rogue_assassin | dps | 4 853 | 170.2% | 16 324 | 156.8% | - | - | - | - | - |
+| 30 | rogue_alchemist | healer | - | - | - | - | 116 | 143 | - | - | - |
+| 30 | mage_fire | dps | 2 851 | 100.0% | 10 612 | 101.9% | - | - | - | - | - |
+| 30 | mage_frost | dps | 2 015 | 70.7% | 6 299 | 60.5% | - | - | - | - | - |
+| 30 | mage_arcane | dps | 3 936 | 138.1% | 10 411 | 100.0% | - | - | - | - | - |
+| 30 | rogue_subtlety | dps | 3 946 | 138.4% | 14 369 | 138.0% | - | - | - | - | - |
+| 30 | warlock_affliction | dps | 2 089 | 73.3% | 1 842 | 17.7% | - | - | - | - | - |
+| 30 | warlock_destruction | dps | 2 171 | 76.1% | 3 963 | 38.1% | - | - | - | - | - |
+| 60 | knight_protector | tank | 5 825 | 34.3% | 26 014 | 55.5% | - | 0 | 0 | 100.0% | inf |
+| 60 | knight_blademaster | dps | 15 452 | 91.0% | 67 618 | 144.3% | - | - | - | - | - |
+| 60 | barbarian_warlord | tank | 31 915 | 188.0% | 36 628 | 78.1% | - | 185 | 6 | 72.4% | 46 |
+| 60 | barbarian_butcher | dps | 56 587 | 333.3% | 643 | 1.4% | - | - | - | - | - |
+| 60 | paladin_protection | tank | 14 017 | 82.6% | 33 480 | 71.4% | - | 248 | 188 | 62.9% | 142 |
+| 60 | paladin_holy | healer | - | - | - | - | 665 | 321 | - | - | - |
+| 60 | paladin_retribution | dps | 16 976 | 100.0% | 46 872 | 100.0% | - | - | - | - | - |
+| 60 | necromancer_bone | tank | 5 375 | 31.7% | 13 137 | 28.0% | - | 297 | 88 | 55.6% | 29 |
+| 60 | necromancer_summoner | dps | 4 522 | 26.6% | 13 384 | 28.6% | - | - | - | - | - |
+| 60 | rogue_assassin | dps | 22 488 | 132.5% | 78 377 | 167.2% | - | - | - | - | - |
+| 60 | rogue_alchemist | healer | - | - | - | - | 299 | 321 | - | - | - |
+| 60 | mage_fire | dps | 21 029 | 123.9% | 97 864 | 208.8% | - | - | - | - | - |
+| 60 | mage_frost | dps | 10 518 | 62.0% | 32 975 | 70.4% | - | - | - | - | - |
+| 60 | mage_arcane | dps | 19 978 | 117.7% | 48 851 | 104.2% | - | - | - | - | - |
+| 60 | rogue_subtlety | dps | 36 874 | 217.2% | 124 246 | 265.1% | - | - | - | - | - |
+| 60 | warlock_affliction | dps | 10 837 | 63.8% | 11 328 | 24.2% | - | - | - | - | - |
+| 60 | warlock_destruction | dps | 7 206 | 42.5% | 13 210 | 28.2% | - | - | - | - | - |
+
+## 4. Findings and what closes the gap
+
+The gate fails 74 checks. They come from five sources, and only some are data levers.
+
+1. **Class power scales with gear at different rates.** Damage goes as weapon damage x (1 + main stat / 100) (`Combat.rollOutgoing`). Best-in-slot gear gives a 2-hander (butcher, warlord) or a staff (mage) a much larger weapon range than a 1-hander and shield, and the main-stat term compounds it. Spread of the DPS specs (ST, % of median): level 10 51 % to 167 %, level 30 42 % to 378 %, level 60 27 % to 333 %. Per-level skill coefficients cannot fix a gap that grows with level. Needs a design decision on weapon damage per category or on the main-stat term. **Engine / item-data, out of this pass's scope.**
+2. **Kit pins.** `kit_knight`, `kit_paladin`, `kit_necro` and `kit_barbarian` pin most of the coefficients and cooldowns of the knight blademaster, the three paladins, both necromancers and parts of the barbarians (for example `pmba.specs`: no `damagePct` on either barbarian spec; `pmkn.cd shield_block 9 s, 2 charges`; `pmne.coef` sums; `pmpa.hol` ratios). A trial that tuned the free skills only (none of the pinned ones) did not converge (worst deviation 228 % to 278 % over 12 iterations, oscillating). Closing these requires changing pinned numbers and updating their assertions: a designer decision, not taken here.
+3. **Protector mitigation.** `knight_shield_block` gives 6 s of full frontal block, 9 s cooldown per charge, two charges. Two charges overlap, so the block is up almost permanently: at levels 30 and 60 the protector takes no physical damage in the profile (mitigation 100 %, TTD infinite). Pinned by `pmkn.cd`. Options for the owner: a longer cooldown or a single charge.
+4. **Rogue alchemist cannot sustain the reference tank.** HPS 13 / 116 / 299 against 55 / 143 / 321 after mitigation at levels 10 / 30 / 60. Healing coefficients are not in the damage-coefficient tables this pass tunes; the fix is in the heal rows of `skills_kit_rogue.ts` and the `healingPct` passive (`specs_kit_rogue.ts`).
+5. **Butcher AoE at level 60** is 643 DPS against 56 587 ST (1.4 %). The `aoe` list of `barbarian_butcher` does not produce AoE damage at that level; its free-text lines (`carnage + avatar on cd`, `whirlwind (filler)`) are not modelled. Needs a data review of the list, not a coefficient change.
+
+Also reported by the gate: tanks die in the tank profile at some levels (level 10 has no tank sustain; a 180 s fight at level 30 kills the bone tank), and the TTD index is infinite where block is permanent.
+
+**Tuning experiment, not kept.** An automated per-skill coefficient tuner (damped correction per spec, per unlock tier, clamp 0.5x to 2x of the original value) was run in three variants: all owned skills (broke 29 pinned kit assertions), free skills only with the first pin list (broke 4), free skills only with the full pin list (stalled between 228 % and 278 % worst deviation). None converged to the bands, so none was kept. The tuner is not in the repository.
+
+## 5. Verification (final state)
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | exit 0 |
+| `node tools/content-check.mjs` | exit 0 |
+| `node tools/talents-check.mjs` | exit 1: the known single bench error (`bench 30 trees, 9 web starts`) |
+| kit_barbarian / kit_knight / kit_necro / kit_paladin / kit_plate / kit_rogue / kit_warlock | all pass (138 / 113 / 233 / 246 / 42 / 19 / 43) |
+| wow_core / pips / nc48 / nc51 / nc52 / minions | all pass |
+| `balance.mjs` band gate | **fails** (74 checks, §4) |
+
+`kit_warlock` showed one failure (`kit.warlock.shards`, fragments 3 instead of 2) in the first baseline run and passed in the final run; the check depends on a seeded RNG path that the baseline did not pin. Worth a look by the warlock owner.
+
+## 6. Decisions needed
+
+- Pinned kit values (§4.2) and the protector block (§4.3): change them and their assertions, or accept the spread.
+- Weapon damage per category and the main-stat term (§4.1): an engine / item-data decision.
+- Rogue alchemist healing (§4.4) and the butcher's AoE list (§4.5): data work in the kit tables.
