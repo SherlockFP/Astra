@@ -34,8 +34,8 @@ const BACKPEDAL_MUL = 0.643;      // WoW: back-pedal 4.5 / run 7
 const JUMP_V = 9.3;               // 1.5 m apex, ~0.65 s airtime
 const GRAVITY = 28.5;
 // WoW retail jump: 1.6 m apex in 0.58 s airtime (apex = g t^2 / 8, v = g t / 2). Aksiyon keeps JUMP_V / GRAVITY above.
-const WOW_JUMP_V = 11;
-const WOW_GRAVITY = 38;
+export const WOW_JUMP_V = 11;
+export const WOW_GRAVITY = 38;
 // AE-3 (agile-evoker §3.0): İblis Avcısı movement signature. A second jump in the air (+60 % height) and a glide while jump is held on the way down.
 const AIR_JUMP_V = JUMP_V * 1.265;   // sqrt(1.6): +60 % apex height
 const GLIDE_FALL = 3.2;              // m/s terminal fall speed while gliding (about a quarter of a long fall)
@@ -83,7 +83,7 @@ function dodgeSpeed(u: number): number {
 }
 
 /** WoW targeting: what kind of enemy-targeting offensive ability a skill is (null = not one: buffs, heals, ground / self effects, movement). */
-function offensiveKind(def: SkillDef): 'melee' | 'ranged' | null {
+export function offensiveKind(def: SkillDef): 'melee' | 'ranged' | null {
   if (def.heal || def.allyTarget === 'friendly' || def.requires?.target === 'ally') return null;
   if (!def.damage && !(def.statuses && def.statuses.length)) return null;
   switch (def.targeting) {
@@ -94,7 +94,7 @@ function offensiveKind(def: SkillDef): 'melee' | 'ranged' | null {
   }
 }
 
-function turnToward(cur: number, want: number, lambda: number, maxRate: number, dt: number): number {
+export function turnToward(cur: number, want: number, lambda: number, maxRate: number, dt: number): number {
   const diff = angleDiff(cur, want);
   let step = diff * (1 - Math.exp(-lambda * dt));
   const lim = maxRate * dt;
@@ -967,6 +967,7 @@ export class PlayerController {
       this.vy = fm.vy;
       this.grounded = pos.y - gy <= 0.001;
     } else if (!this.grounded) {
+      const vPrev = this.vy;
       this.vy -= (this.wow ? WOW_GRAVITY : GRAVITY) * dt;
       // AE-3: İblis Avcısı glide: holding jump while falling caps the fall speed; a glide also forgets the fall height (no landing damage)
       if (p.classId === 'demonhunter' && this.vy < -GLIDE_FALL && G.input?.down('jump') && !p.isDead && !this.dodge) {
@@ -975,7 +976,8 @@ export class PlayerController {
         const a = p.anim;
         if (a && a.has('Jump_Idle')) a.setBase('Jump_Idle', { fade: 0.1 });
       }
-      let ny = pos.y + this.vy * dt;
+      // WoW: trapezoidal step (exact for constant gravity), so the jump apex and airtime do not depend on the frame rate
+      let ny = pos.y + (this.wow ? 0.5 * (vPrev + this.vy) : this.vy) * dt;
       if (world.vertical) {
         // head clearance under a low ceiling: bonk and fall
         const ce = world.ceilingY(pos.x, pos.z);
@@ -2167,11 +2169,11 @@ export class PlayerController {
     }
     if (speed < 1.2 && !wantsMove) {
       if (this.loco !== 'idle') this.loco = 'idle';
-      a.setBase(this.idleClip(a), { fade: 0.14, speed: 1 });
+      a.setBase(this.idleClip(a), { fade: 0.15, speed: 1 });
       return;
     }
     if (speed < 0.35) {
-      a.setBase(this.idleClip(a), { fade: 0.14, speed: 1 });
+      a.setBase(this.idleClip(a), { fade: 0.15, speed: 1 });
       return;
     }
     // direction of travel relative to the facing
@@ -2205,13 +2207,13 @@ export class PlayerController {
       }
     } else if (st === 'back') {
       name = a.pick('Walking_Backwards') ?? 'Idle';
-      ts = clamp(speed / LOCO_REF.back, 0.7, 2.2);
+      ts = clamp(speed / LOCO_REF.back, 0.7, 2.4);
     } else {
       const want = st === 'left' ? 'Running_Strafe_Left' : 'Running_Strafe_Right';
       name = a.has(want) ? want : a.pick('Running_A') ?? 'Idle';
       ts = clamp(speed / LOCO_REF.strafe, 0.6, 1.9);
     }
-    a.setBase(name, { fade: name === 'Walking_A' || st === 'back' ? 0.14 : 0.12, speed: ts });
+    a.setBase(name, { fade: 0.15, speed: ts });
     // two footfalls per clip cycle: ground covered between foot plants at the applied playback speed
     const dur = a.clipDuration(name);
     if (dur > 0.1) this.strideLen = clamp((speed / ts) * dur * 0.5, 0.6, 3.2);
