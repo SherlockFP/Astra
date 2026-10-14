@@ -9,6 +9,9 @@
 //   5  accept "Fare Yuvası" (kill 10 Orman Sıçanı): walk to the nearest rat, right-click it (target + auto-attack), skills 1-5,
 //      pick up the loot (F), repeat until the objective is done, release the spirit when it dies, turn in => first kill quest, level 2
 //      then "Balçık Temizliği" (kill 8 Yeşil Balçık, needs level 2)                                       => level 3
+//   5b Sisli Vadi side chain: Balçık Avı (Ferhat): F on 4 crystal props (qo_crystal, the prop objective), 6 slimes, turn-in;
+//      Muhtarın Haberi (Ferhat) -> talk to Avcı Yıldız (turn-in) -> Gözcü Avı (level 3, the ESCORT quest) accepted there
+//      (the escort walk is not played; the check is that it starts)                                      => prop + escort starts
 //   6  equip the first equipment drop / quest reward from the bag (right-click in the B panel)
 //   7  open the B / C / N / M / K / L panels once each (real hotkeys), screenshot, close them
 //   8  report: FPS samples, console / page errors, blockers, UX notes
@@ -347,6 +350,13 @@ async function journey(cls) {
   C('entered Kuzgunkale as level 1', s0.scene === 'town' && s0.lvl === 1, `scene=${s0.scene} lvl=${s0.lvl}`);
   const gotCls = await page.evaluate(() => window.G.character.save.classId);
   C('character class is ' + cls, gotCls === cls, gotCls);
+  // barks (systems/Barks.ts): every bark also writes a 'Söylenti' (rumor) line into the chat; count the lines added from now on
+  await page.evaluate(() => {
+    window.__barks = 0;
+    new MutationObserver((ms) => {
+      for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1 && (n.classList?.contains('rumor') || n.querySelector?.('.rumor'))) window.__barks++;
+    }).observe(document.body, { childList: true, subtree: true });
+  });
 
   // =============================================================== 2. welcome card
   await page.waitForFunction(() => window.G.ui.isPanelOpen('welcome'), null, { timeout: 15000 }).catch(() => {});
@@ -690,6 +700,21 @@ async function journey(cls) {
   };
 
   /** Turn a ready quest in at Ferhat (walk back with the arrow's help when needed). */
+  /** Bag items (the slots the character carries). */
+  const bagCount = () => page.evaluate(() => window.G.character.allItems().filter((x) => x.loc.where === 'bag').length);
+  /**
+   * Turn-in button of a quest card: "Teslim Et"; a reward-choice card ("Bir ödül seç:") has item buttons in `.pg-ql-acts` instead,
+   * so the first one is taken. Returns 'Teslim Et' | 'reward choice' | null.
+   */
+  const turnInCard = async (questId) => {
+    const name = await page.evaluate((id) => window.G.quests.def(id)?.name ?? '', questId);
+    const card = page.locator('.pg-dlg-q', { hasText: name }).first();
+    const btn = card.locator('button:has-text("Teslim Et")');
+    if ((await btn.count()) > 0) { await btn.click(); return 'Teslim Et'; }
+    const choice = card.locator('.pg-ql-acts button').first();
+    if ((await choice.count()) > 0) { await choice.click(); return 'reward choice'; }
+    return null;
+  };
   const turnInAtFerhat = async (questId, label) => {
     let g = null;
     let w = null;
@@ -710,13 +735,15 @@ async function journey(cls) {
     await sleep(700);
     console.log(`  turn-in: guide=${JSON.stringify(g)} walk=${JSON.stringify(w)} top=${await page.evaluate(() => window.G.ui.topPanelId?.() ?? null)}`);
     await shot('turnin_attempt');
-    const name = await page.evaluate((id) => window.G.quests.def(id)?.name ?? '', questId);
-    const card = page.locator('.pg-dlg-q', { hasText: name }).first();
-    const btn = card.locator('button:has-text("Teslim Et")');
-    if ((await btn.count()) > 0) await btn.click();
+    const bagBefore = await bagCount();
+    const how = await turnInCard(questId);
     await sleep(900);
     const st = await qState(questId);
     C(`${label}: turned in`, st === 'done', st);
+    if (how === 'reward choice') {
+      const bagAfter = await bagCount();
+      C(`${label}: the chosen reward item landed in the bags`, bagAfter > bagBefore, `bag ${bagBefore}->${bagAfter}`);
+    }
     return st === 'done';
   };
 
@@ -751,6 +778,74 @@ async function journey(cls) {
   }
   const sLvl = await snap();
   C('level 2-3 reached', sLvl.lvl >= 2 && sLvl.lvl <= 4, `lvl=${sLvl.lvl}`);
+
+  // =============================================================== 5b. Sisli Vadi side chain: a prop objective and the escort quest
+  // Balçık Avı (sq_r1_k02, Ferhat, level 2): F on 4 crystal props (qo_crystal = the interact objective), then 6 slimes.
+  // Muhtarın Haberi (sq_r1_ch01, Ferhat) -> talk to Avcı Yıldız (turn-in there, she offers the next step) -> Gözcü Avı (sq_r1_ch02,
+  // level 3): the ESCORT quest of the first chain. It has to START here (accepted at Avcı Yıldız); the escort walk itself is not played.
+  const PROP_Q = 'sq_r1_k02_balcik_avi';
+  const CH1 = 'sq_r1_ch01_muhtarin_haberi';
+  const ESC_Q = 'sq_r1_ch02_gozcu_avi';
+  const dlgButton = async (questId, btnText) => {
+    const name = await page.evaluate((q) => window.G.quests.def(q)?.name ?? '', questId);
+    const btn = page.locator('.pg-dlg-q', { hasText: name }).first().locator(`button:has-text("${btnText}")`);
+    if ((await btn.count()) === 0) return false;
+    await btn.click();
+    await sleep(700);
+    return true;
+  };
+  const talkTo = async (npcId, label) => {
+    const at = await page.evaluate((nid) => {
+      const e = [...window.G.world.entities.values()].find((n) => n.kind === 'npc' && n.def?.id === nid);
+      return e ? { x: e.position.x, z: e.position.z } : null;
+    }, npcId);
+    if (!at) { B(`${label} is not in the open world`); return false; }
+    await walkTo(at.x, at.z, { stop: 2.4, label });
+    await closePanels();
+    await tap('KeyF');
+    await sleep(700);
+    return page.evaluate(() => window.G.ui.isPanelOpen('dialog'));
+  };
+
+  // 5b.1 prop objective: F on the crystals; a prop is empty for 60 s after each use, so walk to the nearest one that still has a charge
+  if ((await acceptFromFerhat(PROP_Q, 'Balçık Avı')) === 'active') {
+    for (let i = 0; i < 12; i++) {
+      const row0 = (await page.evaluate((q) => window.G.quests.progressRows(q), PROP_Q))[0];
+      if (!row0 || row0.have >= row0.need) break;
+      const spot = await page.evaluate(() => {
+        const G = window.G;
+        const p = G.player.position;
+        let best = null;
+        for (const e of G.world.entities.values()) {
+          if (e.propKind !== 'crystal' || e.target !== 'qo_crystal' || e.removed || e.isEmpty()) continue;
+          const d = Math.hypot(e.position.x - p.x, e.position.z - p.z);
+          if (!best || d < best.d) best = { x: e.position.x, z: e.position.z, d, prompt: e.interactPrompt, wants: G.quests.wants('interact', 'qo_crystal'), kind: e.propKind };
+        }
+        return best;
+      });
+      if (!spot) { B('no crystal prop with a charge left for the Balçık Avı interact objective'); break; }
+      console.log(`  crystal #${i}: ${JSON.stringify(spot)} progress=${row0.have}/${row0.need}`);
+      if (spot.d > 1.8) await walkTo(spot.x, spot.z, { stop: 1.6, timeout: 60000, label: 'qo_crystal' });
+      await tap('KeyF');
+      await sleep(600);
+    }
+    const rows = await page.evaluate((q) => window.G.quests.progressRows(q).map((r) => `${r.have}/${r.need}`).join(' '), PROP_Q);
+    C('PROP objective: 4 crystals interacted with F (qo_crystal)', rows.startsWith('4/4'), rows);
+    if (await killQuest(PROP_Q, 'Balçık Avı')) await turnInAtFerhat(PROP_Q, 'Balçık Avı');
+  }
+
+  // 5b.2 escort quest: Muhtarın Haberi (Ferhat) -> talk to Avcı Yıldız (turn-in) -> Gözcü Avı is offered there and must be accepted
+  if ((await acceptFromFerhat(CH1, 'Muhtarın Haberi')) === 'active') {
+    if (await talkTo('npc_g_avci', 'Avcı Yıldız')) {
+      await turnInCard(CH1);
+      await sleep(700);
+      C('Muhtarın Haberi turned in at Avcı Yıldız', (await qState(CH1)) === 'done', await qState(CH1));
+      await dlgButton(ESC_Q, 'Görevi Kabul Et');
+    } else B('Avcı Yıldız: F did not open a dialog');
+  }
+  const escState = await qState(ESC_Q);
+  C('ESCORT quest Gözcü Avı can be started (accepted at Avcı Yıldız)', escState === 'active', escState);
+  await closePanels();
 
   // =============================================================== 6. equipment
   await closePanels();
@@ -811,6 +906,8 @@ async function journey(cls) {
   // =============================================================== 8. report
   const fpsMin = Math.min(...fpsSamples.map((f) => f.fps));
   console.log(`  FPS samples: ${fpsSamples.map((f) => `${f.where}=${f.fps}`).join(', ')}`);
+  const barks = await page.evaluate(() => window.__barks ?? 0);
+  C('at least one bark (Söylenti line in the chat, speech bubble over the speaker) during the run', barks >= 1, `${barks} bark line(s)`);
   C('FPS >= 30 in every sample', fpsMin >= 30, `min ${fpsMin}`);
   C('no console / page errors', errors.length === 0, errors.slice(0, 4).join(' || '));
   for (const e of errors) console.log('   ERR', e);
