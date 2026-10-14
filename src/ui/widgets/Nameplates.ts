@@ -37,7 +37,10 @@ const MAX_PLATES = 40;
 /** Plates keep this many px inside the viewport (clamped instead of clipped at the edge). */
 const EDGE = 8;
 /** Declutter: a plate may be lifted this many steps (one plate height + gap each) to clear the plates in front of it. */
-const MAX_NUDGE_STEPS = 2;
+const MAX_NUDGE_STEPS = 3;
+/** HUD panels no plate is drawn under: the quest tracker, the objective tracker and the minimap (screen rects, re-read this often in ms). */
+const HUD_SEL = '.qt, .trk, .mm';
+const HUD_RECT_EVERY = 150;
 /** Gap between stacked plates (px). */
 const STEP_GAP = 4;
 /** Padding added around each box for the overlap test (px). */
@@ -343,6 +346,9 @@ export class Nameplates {
   private readonly placed: Box[] = [];
   /** Soft target ring (CW-16 §2.14): a flat ellipse at the hovered enemy's feet. */
   private readonly ring: HTMLElement;
+  /** Screen rects of the HUD panels in layer px (see HUD_SEL); a hard blocker, even for the target and hot plates. */
+  private hud: Box[] = [];
+  private hudAt = -1e9;
 
   constructor(private ui: UI, private layer: HTMLElement) {
     this.ring = div('np-soft-ring', layer);
@@ -381,6 +387,21 @@ export class Nameplates {
     }
     setStyle(this.ring, 'transform', `translate(${Math.round(_p.x)}px, ${Math.round(_p.y)}px) translate(-50%, -50%)`);
     setDisplay(this.ring, true);
+  }
+
+  /** Re-read the HUD panel rects (quest tracker, minimap) every HUD_RECT_EVERY ms; hidden panels (zero size) are skipped. */
+  private refreshHud(now: number): void {
+    if (now - this.hudAt < HUD_RECT_EVERY) return;
+    this.hudAt = now;
+    const lr = this.layer.getBoundingClientRect();
+    const out: Box[] = [];
+    document.querySelectorAll<HTMLElement>(HUD_SEL).forEach((el) => {
+      if (this.layer.contains(el)) return;
+      const r = el.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1) return;
+      out.push({ x0: r.left - lr.left, y0: r.top - lr.top, x1: r.right - lr.left, y1: r.bottom - lr.top });
+    });
+    this.hud = out;
   }
 
   update(now: number, casts: CastTracker, hover: Actor | null, bossEntity: EntityId | null): void {
@@ -475,6 +496,10 @@ export class Nameplates {
       e.x = clampN(e.x, EDGE + hw, vw - EDGE - hw);
       e.y = clampN(e.y, EDGE + ph, vh - EDGE);
     }
+    // HUD panels are hard blockers: a plate never lands under the quest tracker or the minimap, not even the target
+    this.refreshHud(now);
+    const hud = this.hud;
+    const onHud = (b: Box): boolean => hud.some((h) => overlaps(b, h));
     const placed = this.placed;
     placed.length = 0;
     for (const e of laid) {
@@ -488,18 +513,18 @@ export class Nameplates {
         if (s > 0 && e.y - lift - ph < EDGE) break;
         last = lift;
         const box = boxOf(e, lift);
-        if (!placed.some((p) => overlaps(box, p))) {
-          e.lift = lift;
-          placed.push(box);
-          fitted = true;
-          break;
-        }
+        if (onHud(box) || placed.some((p) => overlaps(box, p))) continue;
+        e.lift = lift;
+        placed.push(box);
+        fitted = true;
+        break;
       }
       if (fitted) continue;
-      if (e.exempt) {
-        // target / hot plates are always drawn, at the highest lift they reached
+      const lastBox = boxOf(e, last);
+      if (e.exempt && !onHud(lastBox)) {
+        // target / hot plates are drawn over their neighbours, at the highest lift they reached (never under a HUD panel)
         e.lift = last;
-        placed.push(boxOf(e, last));
+        placed.push(lastBox);
       } else e.show = false;
     }
 

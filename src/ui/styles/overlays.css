@@ -58,7 +58,8 @@
 .lvlup-hint { font: 700 15px var(--font-body); color: #fff; text-shadow: var(--elv-outline); }
 
 /* ---- interaction prompt ---- */
-.ip { position: absolute; left: 50%; bottom: 31%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 6px 22px 6px 8px; opacity: 0; pointer-events: none; transition: opacity 0.12s;
+/* WoW-like: below the screen centre (not over the character's nameplate above the head); max-width keeps it off the side unit frames */
+.ip { position: absolute; left: 50%; top: 64%; max-width: 70vw; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 6px 22px 6px 8px; opacity: 0; pointer-events: none; transition: opacity 0.12s;
   background: linear-gradient(90deg, rgba(8, 5, 3, 0), rgba(12, 8, 5, 0.9) 14%, rgba(12, 8, 5, 0.9) 86%, rgba(8, 5, 3, 0)); border-top: 1px solid rgba(155, 123, 54, 0.6); border-bottom: 1px solid rgba(155, 123, 54, 0.6); }
 .ip.on { opacity: 1; }
 .ip.hidden { opacity: 0; }

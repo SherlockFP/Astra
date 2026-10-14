@@ -89,6 +89,11 @@ const _fwd = new THREE.Vector3();
 const _right = new THREE.Vector3();
 const _pos = new THREE.Vector3();
 const _look = new THREE.Vector3();
+const _lookDir = new THREE.Vector3();
+/** Dungeons: the pivot (the player) is drawn this far below the screen centre (NDC, 0.25 = 62.5 % down). */
+const DUNGEON_PIVOT_NDC = 0.25;
+/** Dungeons: the zoom cap never drops under this (m), so the default distance (8..10 m) holds in low rooms; the ceiling still stops the lens (collision). */
+const DUNGEON_MIN_ZOOM_CAP = 8;
 const _ray = new THREE.Raycaster();
 const _ndc = new THREE.Vector2();
 const _occRay = new THREE.Raycaster();
@@ -365,7 +370,22 @@ export class ThirdPersonCamera {
     const gy = this.groundAt(_pos.x, _pos.z) + 0.35;
     if (_pos.y < gy) _pos.y = gy;
     this.aimOrigin.copy(_pos);
-    this.aimDir.copy(_fwd);
+    this.aimDir.copy(this.lookDirection());
+  }
+
+  /**
+   * Look direction for the current yaw / pitch. Dungeons (vertical maps, not in the boss intro or the death cam): the look rises by
+   * the angle that draws the pivot DUNGEON_PIVOT_NDC below the centre, so the player sits about 62 % down the screen. The camera
+   * position does not change (ceilings and walls still apply); the aim follows this direction, so the crosshair stays truthful.
+   */
+  private lookDirection(): THREE.Vector3 {
+    const vert = G.world?.vertical === true;
+    const lift = vert && this.cine === null && !this.deathCam
+      ? Math.atan(DUNGEON_PIVOT_NDC * Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2))
+      : 0;
+    const el = -this.pitch + lift;
+    const cel = Math.cos(el);
+    return _lookDir.set(-Math.sin(this.yaw) * cel, Math.sin(el), -Math.cos(this.yaw) * cel);
   }
 
   /** Horizontal forward/right vectors of the camera (movement basis). */
@@ -831,6 +851,7 @@ export class ThirdPersonCamera {
     const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
     _fwd.set(-Math.sin(this.yaw) * cp, -sp, -Math.cos(this.yaw) * cp);
     _right.set(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
+    const lookDir = this.lookDirection();
 
     // shoulder: the offset lerps to 0 when the effective distance is under 1.8 m, so the lens never clips a wall (GDD_LIFE §4.2)
     const near = smoothstep(1.0, 1.8, this.zoomCur * this.colFrac);
@@ -921,7 +942,7 @@ export class ThirdPersonCamera {
 
     // clean pose = aiming pose (no shake, no kick)
     this.aimOrigin.copy(_pos);
-    this.aimDir.copy(_fwd);
+    this.aimDir.copy(lookDir);
 
     // directional kick spring (visual only, applied after the aim pose is stored)
     if (!instant) {
@@ -935,7 +956,7 @@ export class ThirdPersonCamera {
     if (Math.abs(this.kickX) > 1e-4 || Math.abs(this.kickY) > 1e-4) _pos.addScaledVector(_right, this.kickX).addScaledVector(_fwd, this.kickY);
 
     // camera pose: normal, blended toward the boss-intro framing while it plays
-    _look.copy(_pos).add(_fwd);
+    _look.copy(_pos).add(lookDir);
     let cineFov = 0;
     if (this.cine) {
       const c = this.cine;
@@ -1108,7 +1129,7 @@ export class ThirdPersonCamera {
       goal = ceil === Infinity ? p.zoomMaxIndoor : clamp(1.35 * ceil, 6, p.zoomMaxIndoor);
     }
     // §14.4 per-room zoom ceiling: the headroom under the pivot caps the zoom (vertical dungeons, both schemes)
-    if (capY !== Infinity) goal = Math.min(goal, clamp((capY - this.pivot.y) * 2.2 + 2, 5, 18));
+    if (capY !== Infinity) goal = Math.min(goal, clamp((capY - this.pivot.y) * 2.2 + 2, DUNGEON_MIN_ZOOM_CAP, 18));
     return goal;
   }
 
