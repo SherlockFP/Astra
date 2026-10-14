@@ -48,6 +48,8 @@ export interface CharacterSave {
   spec?: SpecId;
   /** Per-spec saved skill bars (O8). */
   specBars?: Partial<Record<SpecId, Partial<Record<SkillSlotKey, string>>>>;
+  /** Action bar contents (WoW drag & drop, append-only). Main-bar skills stay in skillBar; `main` holds main-bar consumables by slot id; bar2 / bar3 are the 12-cell extra bars. */
+  barLayout?: BarLayoutSave;
   /** Support runes socketed per skill id; null = empty socket. */
   skillRunes?: Record<string, (string | null)[]>;
   /** Şişe Kemeri: 5 flask slots (flask1..flask5). */
@@ -118,6 +120,14 @@ export interface CharacterSave {
 }
 
 /** WP-10: rested XP (accrues logged out or resting in a village / town, see DailyLoop) and the daily login streak. */
+/** One action bar cell: a skill id or a consumable material id. */
+export type BarCell = { k: 'skill'; id: string } | { k: 'mat'; id: string };
+export interface BarLayoutSave {
+  bar2?: (BarCell | null)[];
+  bar3?: (BarCell | null)[];
+  main?: Partial<Record<string, BarCell>>;
+}
+
 export interface DailySave {
   /** XP in the rested pool (kills give bonus XP from it until it is used up). */
   rested: number;

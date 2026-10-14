@@ -278,8 +278,10 @@ export class InventoryPanel extends ItemPanel {
         if (vendorSells() && r.info.sellPrice) s += `<div class="pi-tip-hint">Shift + Sağ tık: 1 adet sat · Ctrl + Shift + Sağ tık: hepsini sat</div>`;
         return s;
       });
-      row.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
+      // a consumable row drags onto an action bar cell (WoW drag & drop); right click keeps its use / sell action
+      drag.bindSource(row, {
+        payload: () => (r.info.kind === 'consumable' ? { kind: 'mat', id: r.id } : null),
+        onContext: (e) => {
         if (e.shiftKey && vendorSells()) {
           const n = e.ctrlKey ? r.n : 1;
           const res = vendorApi.sellMaterial(r.id, n);
@@ -296,6 +298,7 @@ export class InventoryPanel extends ItemPanel {
           sfx('potion_drink');
           this.refresh();
         }
+        },
       });
       this.pouchList.append(row);
     }

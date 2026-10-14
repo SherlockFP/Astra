@@ -741,6 +741,7 @@ export class CharacterState {
       // a skill lives in one slot only
       for (const [k, v] of Object.entries(this.save.skillBar)) if (v === skillId && k !== slot) delete this.save.skillBar[k as SkillSlotKey];
       this.save.skillBar[slot] = skillId;
+      if (this.save.barLayout?.main) delete this.save.barLayout.main[slot];
     } else delete this.save.skillBar[slot];
     emit('skillbar:changed', {});
     this.persist();

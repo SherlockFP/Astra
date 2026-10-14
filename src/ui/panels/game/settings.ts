@@ -690,6 +690,7 @@ export class SettingsPanel extends GamePanel {
           'Otomatik: grupta, zindanda ve savaştan sonra 15 sn açık',
         ),
         this.flag('barGhostSlots', 'Boş Yuvaları Göster', 'Yetenek çubuğunda boş kareler görünür'),
+        this.flag('barLock', 'Barları Kilitle', 'Açıkken çubuktaki bir eşyayı almak için Shift basılı tutulur'),
         this.flag('ufIcon', 'Oyuncu Simgesi', 'Oyuncu çerçevesinde sınıf simgesi'),
       ),
       this.section(
