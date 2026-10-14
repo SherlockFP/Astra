@@ -8,13 +8,13 @@ import type { World } from '../world/World';
 import { HOST_DYNAMIC_ID_BASE, MINION_ID_BASE, PARTY_ID_BASE, RARITY_ORDER, type EntityId } from '../types/common';
 import type { EquipSlot, ItemInstance } from '../types/items';
 import type { NetChannels } from '../types/net';
-import type { StatusId } from '../types/skills';
+import type { DispelType, StatusId } from '../types/skills';
 import type { NetSession, PeerInfo } from './NetSession';
 import { MAX_SLOTS, NET, clampNum, ident, isObj, sanitizeText } from './messages';
 import { syncYOk } from './guard';
 import { PetFollower } from '../game/Pet';
 import { setRemoteMounted } from '../game/Mount';
-import { STATUSES } from '../data/statuses';
+import { DISPEL_TYPES, STATUSES, isDispelType } from '../data/statuses';
 
 /**
  * Replication (net module): turns the typed `pstate` / `gear` / `snap` channels into entities.
@@ -39,7 +39,8 @@ import { STATUSES } from '../data/statuses';
  *  - pets: remote pets follow the lobby presence (`pet`), once a second; a hidden owner hides its pet (game/Pet.ts).
  *  - cleanse: a dispel on a REMOTE party member (dispelUpTo on an ally) is a request to the host (`req` kind 'cleanse'). The host
  *    validates it (caster and owner in the party, dispellable debuff that the owner really has, range, rate limit) and sends the
- *    `cleanse` channel to the owner, which removes the status from its own character.
+ *    `cleanse` channel to the owner, which removes the status from its own character. A named dispel type (`type`, e.g. the
+ *    `movement` locks of Özgürlük Duası: cleanseMovement in combat/skills/sharedBehaviors.ts) is one request for every status of that type.
  * Everything received is untrusted: values are clamped / sanitised before touching entities. Nothing here throws
  * from the frame loop.
  */
@@ -105,6 +106,18 @@ function isRemovableDebuff(id: string): boolean {
   const def = STATUSES[id as StatusId];
   return !!def && def.kind === 'debuff' && def.dispellable === true;
 }
+
+/** What one cleanse removes: one removable debuff (`status`) or every status of a named dispel type (`type`, data/statuses.ts). */
+type Removal = { status: StatusId } | { type: DispelType };
+
+/** The removal a request or a `cleanse` message asks for: a `type` when given, else one `status` that is a removable debuff. Null if neither. */
+function removalOf(data: Record<string, unknown>): Removal | null {
+  if (data.type !== undefined) return isDispelType(data.type) ? { type: data.type } : null;
+  return typeof data.status === 'string' && isRemovableDebuff(data.status) ? { status: data.status as StatusId } : null;
+}
+
+/** The status ids a removal takes off: the host checks that the owner has at least one of them. */
+const removalIds = (r: Removal): readonly StatusId[] => ('type' in r ? DISPEL_TYPES[r.type] : [r.status]);
 
 const VISIBLE_SLOTS: EquipSlot[] = ['weapon', 'offhand', 'helm'];
 const TELEPORT_DIST = 10;
@@ -597,31 +610,36 @@ export class Replication {
     if (!caster || caster.dead) return;
     if (!this.takeCleanseToken(from)) return;
     const target = typeof data.target === 'number' && Number.isInteger(data.target) ? data.target : NaN;
-    const status = typeof data.status === 'string' ? data.status : '';
-    if (!isRemovableDebuff(status)) return;
+    const removal = removalOf(data);
+    if (!removal) return;
     if (!(target >= PARTY_ID_BASE && target < PARTY_ID_BASE + MAX_SLOTS) || target === caster.id) return;
     const owner = this.net.peerOfEntity(target);
     if (!owner) return;
     const view = this.memberView(owner);
-    if (!view || view.dead || !view.statuses.has(status)) return;
+    if (!view || view.dead || !removalIds(removal).some((id) => view.statuses.has(id))) return;
     if (Math.hypot(caster.x - view.x, caster.z - view.z) > CLEANSE_RANGE) return;
-    if (owner === this.net.selfId) this.applyCleanse(status);
-    else this.net.sendTo(owner, 'cleanse', { id: target as EntityId, status: status as StatusId, by: caster.id as EntityId });
+    if (owner === this.net.selfId) this.applyRemoval(removal);
+    else this.net.sendTo(owner, 'cleanse', { id: target as EntityId, ...removal, by: caster.id as EntityId });
   }
 
-  /** Owner-authoritative removal on our own StatusEffects. Only a dispellable debuff; a dead character keeps its statuses. */
-  private applyCleanse(status: string): void {
+  /** Owner-authoritative removal on our own StatusEffects: one removable debuff, or every status of a dispel type. A dead character keeps its statuses. */
+  private applyRemoval(r: Removal): void {
     const me = G.player;
-    if (!me || me.isDead || !isRemovableDebuff(status)) return;
-    me.statuses.dispel(status as StatusId);
+    if (!me || me.isDead) return;
+    if ('type' in r) {
+      for (const id of DISPEL_TYPES[r.type]) me.statuses.dispel(id);
+      return;
+    }
+    if (isRemovableDebuff(r.status)) me.statuses.dispel(r.status);
   }
 
-  /** Owner: the host passed a validated cleanse on. Accept it only from the host, for our own entity, for a removable debuff. */
+  /** Owner: the host passed a validated cleanse on. Accept it only from the host, for our own entity, for a removable debuff or a dispel type. */
   private onCleanse(p: unknown, from: string): void {
     if (!this.active || this.net.role !== 'client' || from !== this.net.hostId || !isObj(p)) return;
     const me = G.player;
-    if (!me || p.id !== me.id || typeof p.status !== 'string') return;
-    this.applyCleanse(p.status);
+    if (!me || p.id !== me.id) return;
+    const removal = removalOf(p);
+    if (removal) this.applyRemoval(removal);
   }
 
   /* ================================================================================================

@@ -1,7 +1,7 @@
 import type { ClassId, DamageType, EntityId, Rarity, SceneId } from './common';
 import type { KeystoneData, ItemInstance, EquipSlot } from './items';
 import type { RunState } from './mythic';
-import type { AimInfo, StatusApply, StatusId } from './skills';
+import type { AimInfo, DispelType, StatusApply, StatusId } from './skills';
 import type { PlayerSyncState } from '../entities/Player';
 import type { EnemySyncState } from '../entities/Enemy';
 import type { HitShapeSpec } from '../combat/HitShapes';
@@ -171,7 +171,8 @@ export interface NetChannels {
   arena: ArenaMsg;
   // ---- sprint1 (append-only). Owner: net (Replication). Host -> owner only: remove one dispellable debuff from the owner's own character
   // after a dispel on that party member was validated by the host (range, rate, caster). Never a client origin.
-  cleanse: { id: EntityId; status: StatusId; by: EntityId };
+  // `type` (a DispelType, data/statuses.ts DISPEL_TYPES) removes every status of that type instead of one `status`.
+  cleanse: { id: EntityId; status?: StatusId; type?: DispelType; by: EntityId };
 }
 
 export type NetChannel = keyof NetChannels;

@@ -213,6 +213,9 @@ export type StatusId =
   // KIT Rahip (priest, append-only, WoW Midnight rework): Güç Aşılama, Dağılma, Solma, Yiyici Veba. StatusDefs in data/statuses_kit_priest.ts.
   | 'power_infusion' | 'dispersion' | 'fade' | 'devouring_plague';
 
+/** A named group of debuffs one net `cleanse` removes at once (data/statuses.ts DISPEL_TYPES). Append new types there. */
+export type DispelType = 'movement';
+
 export interface StatusDef {
   id: StatusId;
   name: string;               // Turkish

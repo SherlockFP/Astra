@@ -1,5 +1,5 @@
 import type { DamageType } from '../types/common';
-import type { StatusDef, StatusId } from '../types/skills';
+import type { DispelType, StatusDef, StatusId } from '../types/skills';
 import { TALENT_STATUSES } from './statuses_talents';
 // KIT PK-0 (docs/kits/casters-rogue.md §h): empty kit tables until the class packages fill them (merged at the end of this file).
 import { STATUSES_KIT_MAGE, STATUS_RULES_KIT_MAGE } from './statuses_kit_mage';
@@ -490,6 +490,18 @@ export const stacksAfterLoss = (stacks: number, loss: number): number => Math.ma
 
 /** onExpire fires only for a natural expiry. A dispel or any other removal never fires it. */
 export const shouldFireOnExpire = (reason: StatusRemoveReason): boolean => reason === 'expire';
+
+/**
+ * Dispel types (sprint1 net cleanse): the statuses one cleanse removes from a party member, by name. A remote ally's dispel travels
+ * as one request `{ type }` and the owner removes every listed status it has. `movement` = the movement locks of Özgürlük Duası
+ * (act_root is internal and not dispellable: it is listed so a local ally loses it the same way).
+ */
+export const DISPEL_TYPES: Readonly<Record<DispelType, readonly StatusId[]>> = {
+  movement: ['root', 'slow', 'act_root'],
+};
+
+/** True for a key of DISPEL_TYPES (own keys only: `constructor` or `__proto__` are not types). */
+export const isDispelType = (s: unknown): s is DispelType => typeof s === 'string' && Object.prototype.hasOwnProperty.call(DISPEL_TYPES, s);
 
 /** The onExpire burst of a status, if its rule has one. */
 export const expireBurstOf = (id: StatusId): StatusExpireBurst | undefined => STATUS_RULES[id]?.onExpire;

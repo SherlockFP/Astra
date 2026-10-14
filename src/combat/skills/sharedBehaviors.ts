@@ -16,6 +16,7 @@
  * Minion hooks (Kan Emişi `healMinion`, Ölüm Mührü-style minion effects) are NOT implemented here: the minion agent owns them.
  */
 import { G } from '../../game/G';
+import { DISPEL_TYPES } from '../../data/statuses';
 import { Projectile } from '../../entities/Projectile';
 import { addAbsorb, alliesInRange, friendlyTargetId, healAlly, healAmount, healFormula } from '../healing';
 import { aimSlope, clearSight, BEHAVIORS, castTarget, dist2, enemiesIn, impactVfx, muzzle, strikeMany, swingVfx, type Behavior, type CastCtx } from './behaviors';
@@ -338,8 +339,18 @@ const orbitHammers: Behavior = {
 // ---- Midnight defensive / utility rows -----------------------------------------------------------------------------------
 // Generic: each reads its numbers from params, statuses, selfStatuses or a minion, so a new row of the same shape is data only.
 
-/** Movement locks that Özgürlük Duası (`params.cleanse`) removes from its ally. */
-const MOVE_LOCKS: StatusId[] = ['root', 'slow', 'act_root'];
+/**
+ * Movement locks off an ally (Özgürlük Duası, `params.cleanse`; the `movement` dispel type of data/statuses.ts). A local ally loses
+ * them at once. A remote ally's copy loses them at once as well, and the owner gets one `cleanse {type: 'movement'}` request: the host
+ * checks the caster, the range and that the owner really has one of them, then the owner removes them from its own character
+ * (net/Replication.ts). A plain local removal would stay on the copy only.
+ */
+export function cleanseMovement(target: Actor): void {
+  const locks = DISPEL_TYPES.movement.filter((id) => target.statuses.has(id));
+  if (locks.length === 0) return;
+  for (const id of locks) target.statuses.remove(id);
+  if (target.kind === 'player' && !(target as Player).isLocal) G.net?.sendRequest('cleanse', { target: target.id, type: 'movement' });
+}
 
 /**
  * The ally a support row targets: the aimed ally (aim.allyId), else the selected friendly (U / F1-F5). Null when neither is alive,
@@ -394,7 +405,7 @@ const allyBuff: Behavior = {
     if (p.exclusive && own) {
       for (const b of G.world?.players ?? []) if (b !== target && b.statuses.get(own)?.sourceId === caster.id) b.statuses.remove(own);
     }
-    if (p.cleanse) for (const id of MOVE_LOCKS) if (target.statuses.has(id)) target.statuses.remove(id);
+    if (p.cleanse) cleanseMovement(target);
     for (const s of def.statuses ?? []) giveSupportStatus(c, target, s.status, s.duration, s.magnitude ?? 0);
     sys.vfx(def.vfx?.cast ?? 'shield_bubble', [target.position.x, target.position.y + 1.1, target.position.z], { follow: target.object3d, duration: 1.2, scale: 1.0 });
     sys.sfx('buff', caster.position);
