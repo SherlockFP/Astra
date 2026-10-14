@@ -507,5 +507,41 @@ for (const theme of THEMES_ALL) {
   }
 }
 
+// ================================================================================================ UI: finder difficulty rows (Zindan Bulucu, fake DOM globals from the block above)
+// The finder rows are pure (ui/panels/game/finderModel.ts). Season pool dungeons must offer Normal, so the chain Normal -> Kahramanlık
+// -> Mitik 0 -> Mitik+ can be walked from the finder alone (the Normal clear is what unlocks Kahramanlık).
+{
+  const FM = await imp('ui/panels/game/finderModel.ts');
+  const RS = await imp('ui/panels/game/runStart.ts');
+  const { MPLUS_POOL, DUNGEON_IDS } = await imp('data/dungeons/index.ts');
+  const { clearFlag } = await imp('systems/Bounties.ts');
+  const { G: G2 } = await imp('game/G.ts');
+  try {
+    const def = DUNGEONS[MPLUS_POOL[0]];
+    const ch = { level: 60, classId: 'knight', save: { flags: {}, mythic: { keystone: null } }, itemLevel: () => 60 };
+    G2.character = ch;
+    const ctx = { ch, level: 60, party: [], avgLevel: 60, clearGatesOff: false };
+    const at = (rows, d) => rows.find((r) => r.diff === d);
+    const rows0 = FM.diffRows(def, ctx);
+    ok('finder.season rows: Normal, Kahramanlik, Mitik 0, Mitik+ in order', rows0.map((r) => r.diff).join() === 'normal,heroic,mythic,mythicplus', rows0.map((r) => r.diff).join());
+    const n0 = at(rows0, 'normal');
+    ok('finder.season Normal row is named Normal and startable before any clear', !!n0 && n0.name === 'Normal' && n0.startable && n0.st.kind === 'open', JSON.stringify(n0?.st));
+    const h0 = at(rows0, 'heroic');
+    ok('finder.season Kahramanlik is locked until a Normal clear', !!h0 && !h0.startable && h0.st.kind === 'locked_clear' && h0.st.need === 'normal', JSON.stringify(h0?.st));
+    ok('finder.season Mitik 0 stays locked behind Kahramanlik', !at(rows0, 'mythic').startable && at(rows0, 'mythic').st.need === 'heroic');
+    const p = RS.buildParams(def, 'normal', { keyOwner: 'me' });
+    ok('finder.season Normal launch = door Normal (normal, no key, no affixes, enemy level clamp)', p.difficulty === 'normal' && p.keyLevel === 0 && p.affixes.length === 0 && p.enemyLevel === RS.enemyLevelFor(def, 'normal', 60) && p.enemyLevel === 60, JSON.stringify(p));
+    G2.character.save.flags[clearFlag(def.id, 'normal')] = true;
+    const rows1 = FM.diffRows(def, ctx);
+    ok('finder.Normal clear unlocks Kahramanlik in the finder', at(rows1, 'heroic').startable && at(rows1, 'heroic').st.kind === 'open');
+    ok('finder.Normal row shows cleared after its clear and stays startable', at(rows1, 'normal').st.kind === 'cleared' && at(rows1, 'normal').startable);
+    ok('finder.Mitik 0 still needs a Kahramanlik clear', !at(rows1, 'mythic').startable && at(rows1, 'mythic').st.need === 'heroic');
+    const basic = FM.difficultiesFor(DUNGEONS[DUNGEON_IDS[0]]);
+    ok('finder.levelling dungeons keep Normal, Kahramanlik, Mitik (no Mitik+)', basic.join() === 'normal,heroic,mythic', basic.join());
+  } catch (e) {
+    ok('finder.difficulty rows run', false, String(e.stack).split(String.fromCharCode(10)).slice(0, 4).join(' | '));
+  }
+}
+
 console.log(`${fails ? 'FAILED' : 'PASS'}: ${passes} checks passed, ${fails} failed (${SEEDS} seeds x ${THEMES_ALL.length} themes x ${TIERS.length} tiers)`);
 process.exit(fails ? 1 : 0);

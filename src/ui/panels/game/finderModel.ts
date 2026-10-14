@@ -40,9 +40,12 @@ export function finderDungeons(): DungeonDef[] {
   return out.sort((a, b) => (a.levelRange?.[0] ?? 0) - (b.levelRange?.[0] ?? 0));
 }
 
-/** Season pool dungeons offer Kahramanlık, Mitik 0 and Mitik+ (no Normal); every other dungeon Normal, Kahramanlık, Mitik 0. */
+/**
+ * Every dungeon offers Normal, Kahramanlık and Mitik 0; season pool dungeons add Mitik+. Normal is listed for the season pool too: it is the
+ * clear that unlocks Kahramanlık (ladder.ts difficultyState), and the keystone door's Normal card starts the same run (buildParams).
+ */
 export function difficultiesFor(def: DungeonDef): LadderDiff[] {
-  return MPLUS_POOL.includes(def.id) ? ['heroic', 'mythic', 'mythicplus'] : ['normal', 'heroic', 'mythic'];
+  return MPLUS_POOL.includes(def.id) ? ['normal', 'heroic', 'mythic', 'mythicplus'] : ['normal', 'heroic', 'mythic'];
 }
 
 /** Pinned "ÖNERİLEN" dungeon: the highest one the character's level already meets (the first one otherwise). */
