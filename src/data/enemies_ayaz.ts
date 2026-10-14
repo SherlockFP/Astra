@@ -201,7 +201,7 @@ export function registerAyazEnemies(): void {
     ],
     intro: 'Kışın en derin gecesinde uyandım. Ayazımdan kaçamazsınız!', death: 'Kış... nihayet çözüldü...',
     // Zemheri Yatağı in r20: placeholder centre (world m); the zone layout decides the final spot (see the enemies report)
-    arena: { cx: 1400, cz: 1000, w: 56, h: 56, homeX: 1400, homeZ: 1000 },
+    arena: { cx: 1402, cz: 1002, w: 56, h: 56, homeX: 1402, homeZ: 1002 },
   });
 
   // ---- metin stones (six, one per tier, tiers 1..6 = r16..r21). Shape copied from the Karakir stones (enemies.ts section 4) ----
