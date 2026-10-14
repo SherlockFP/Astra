@@ -271,6 +271,37 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   qs.turnIn('t_altar2');
 }
 
+// ------------------------------------------------------------------------------------------------ chain.* (real Sisli content)
+// The first-hour QA's side chain: the Balçık Avı crystal objective (real def, real QuestProp.interact) and the Gözcü Avı escort gate.
+{
+  const p = { id: 42 };
+  const PROP_Q = 'sq_r1_k02_balcik_avi';
+  ch.save.level = 2;
+  ok('chain.prop-available', qs.state(PROP_Q) === 'available', qs.state(PROP_Q));
+  ok('chain.prop-accept', qs.accept(PROP_Q) && qs.state(PROP_Q) === 'active');
+  const crystals = [0, 1, 2, 3].map((i) => new QuestProp(9100 + i, { key: `sim:crystal:${i}`, target: 'qo_crystal', kind: 'crystal' }));
+  for (const c of crystals) await c.load();
+  ok('chain.crystal-prompt', crystals[0].interactPrompt.includes('incele [F]'), crystals[0].interactPrompt);
+  ok('chain.crystal-can-interact', crystals.every((c) => c.canInteract(p)));
+  for (const c of crystals) c.interact(p);
+  const row = qs.progressRows(PROP_Q)[0];
+  ok('chain.crystals-count', row.have === 4 && row.need === 4 && row.done && qs.state(PROP_Q) === 'active', `${row.have}/${row.need} ${qs.state(PROP_Q)}`);
+
+  // Gözcü Avı (level 3, prereq Muhtarın Haberi, giver Avcı Yıldız): locked by the prereq, then by the level, then offered
+  const CH1 = 'sq_r1_ch01_muhtarin_haberi';
+  const ESC = 'sq_r1_ch02_gozcu_avi';
+  ch.save.level = 2;
+  ok('chain.esc-prereq-id', qs.def(ESC)?.prereq?.[0] === CH1 && !!qs.def(CH1), JSON.stringify(qs.def(ESC)?.prereq));
+  ok('chain.esc-locked-by-prereq', qs.state(ESC) === 'locked');
+  ok('chain.ch1-accept', qs.accept(CH1));
+  qs.onEvent('talk', 'npc_g_avci');
+  ok('chain.ch1-ready', qs.state(CH1) === 'ready' && qs.turnIn(CH1));
+  ok('chain.esc-locked-by-level', qs.state(ESC) === 'locked', `at level 2: ${qs.state(ESC)}`);
+  ch.save.level = 3;
+  ok('chain.esc-offered-lvl3', qs.state(ESC) === 'available' && qs.accept(ESC) && qs.state(ESC) === 'active', qs.state(ESC));
+  ch.save.level = 1;
+}
+
 // ------------------------------------------------------------------------------------------------ escort.run (state machine, fake deps)
 {
   const log = { ticks: [], ambush: [], alive: 0, dist: 0 };
