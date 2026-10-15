@@ -958,7 +958,15 @@ export class EnemyAI {
   protected combatTick(dt: number, now: number): void {
     const e = this.e;
     const def = e.def;
-    if (def.ai?.flee) return this.fleeCombat(dt, now);
+    if (def.ai?.flee) {
+      // a fleeing mob with a camp leash (deer) runs home once it is pulled out of it, instead of running off across the map
+      const leash = def.ai.homeRadius ?? def.leashRange ?? 0;
+      if (leash > 0 && Math.hypot(e.position.x - e.homeX, e.position.z - e.homeZ) > leash) {
+        this.startReturn();
+        return;
+      }
+      return this.fleeCombat(dt, now);
+    }
     // retarget
     this.targetT -= dt;
     if (this.targetT <= 0 || !this.validTarget(this.target)) {
@@ -1559,7 +1567,7 @@ export class EnemyAI {
       this.fleeZ = best.z;
       this.path = null;
     }
-    this.steerTo(this.fleeX, this.fleeZ, e.moveSpeed() * 1.05, dt, 'run');
+    this.steerTo(this.fleeX, this.fleeZ, e.moveSpeed() * (e.def.ai?.fleeMul ?? 1.05), dt, 'run');
   }
 
   protected onHurtFlee(_amount: number): void {

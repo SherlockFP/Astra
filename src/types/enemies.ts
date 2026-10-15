@@ -196,6 +196,8 @@ export interface EnemyAiHints {
   summoned?: boolean;
   /** Walk speed while patrolling as a fraction of def.speed (default 0.45). */
   patrolMul?: number;
+  /** Flee speed (flee mobs) as a fraction of def.speed (default 1.05, the Hazine Goblini run). Below a walking player's pace, a fleeing deer can be caught. */
+  fleeMul?: number;
   /** Bone pile: leaves a corpse that stays this long (seconds) and can be raised / exploded. */
   bonePile?: number;
   /** Stealth: invisible until a player is within this distance or it takes damage (Gölge Suikastçısı). */

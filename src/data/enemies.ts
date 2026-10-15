@@ -193,7 +193,7 @@ add({
 });
 add({
   id: 'ow_deer', name: 'Geyik', model: ITCH('deer'), scale: 0.8, role: 'support', rank: 'trash', hp: 0.5, dmg: 0.6, speed: 9.5, radius: 0.7, aggro: 14, forces: 0, xp: 0, leash: 40,
-  anims: A_WOLF, resist: R_BEAST, ai: { flee: true, neutral: true, sleepRange: 30 },
+  anims: A_WOLF, resist: R_BEAST, ai: { flee: true, neutral: true, sleepRange: 30, fleeMul: 0.5 },
   basic: cone('ow_deer_horn', 'Boynuz Vuruşu', 2.0, 100, 2.0, 0.6, 'Attack', 0.5),
 });
 add({
