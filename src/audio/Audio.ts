@@ -5,7 +5,7 @@ import type { MusicId, PlaySfxOpts, SfxId } from '../types/audio';
 import { AMBIENCE_MANIFEST, MUSIC_MANIFEST, SFX_MANIFEST, type SfxEntry } from './manifest';
 import { MUSIC_ALIASES, resolveSfxAlias } from './aliases';
 import { getProcDef } from '../data/procs';
-import { COMBAT_LOW_CAP, COMBAT_LOW_GAIN, COMBAT_LOW_GAP, COMBAT_RX, MAX_SEC, mixTrim } from './mix';
+import { COMBAT_LOW_CAP, COMBAT_LOW_GAIN, COMBAT_LOW_GAP, COMBAT_RX, MAX_SEC, UI_BUS_SCALE, UI_CLICK_GAP, UI_HOVER_GAP, UI_MAX_SEC, UI_TONE_HZ, isUiClickSound, mixTrim, uiBurstAllowed } from './mix';
 
 /**
  * WebAudio sound manager: sfx (variants, pitch variation, per-id rate limits and voice caps, distance attenuation + stereo pan
@@ -138,6 +138,9 @@ export class Audio {
   private musicDuck: GainNode | null = null;
   private sfxBus: GainNode | null = null;
   private uiBus: GainNode | null = null;
+  private uiTone: BiquadFilterNode | null = null;
+  /** start time of the last UI click sound that played (one sound per click, see uiBurstAllowed) */
+  private lastUiAt = -9;
   private ambBus: GainNode | null = null;
 
   private buffers = new Map<string, AudioBuffer>();
@@ -275,11 +278,17 @@ export class Audio {
       const musicDuck = ctx.createGain();
       const sfxBus = ctx.createGain();
       const uiBus = ctx.createGain();
+      // UI bus tone: a gentle low-pass takes the bright top off clicks, panel open / close and tabs
+      const uiTone = ctx.createBiquadFilter();
+      uiTone.type = 'lowpass';
+      uiTone.frequency.value = UI_TONE_HZ;
+      uiTone.Q.value = 0.6;
       const ambBus = ctx.createGain();
       musicDuck.connect(musicBus);
       musicBus.connect(master);
       sfxBus.connect(master);
-      uiBus.connect(master);
+      uiBus.connect(uiTone);
+      uiTone.connect(master);
       ambBus.connect(master);
       this.master = master;
       this.comp = comp;
@@ -287,6 +296,7 @@ export class Audio {
       this.musicDuck = musicDuck;
       this.sfxBus = sfxBus;
       this.uiBus = uiBus;
+      this.uiTone = uiTone;
       this.ambBus = ambBus;
       this.applyVolumes();
       ctx.onstatechange = () => {
@@ -375,7 +385,7 @@ export class Audio {
       this.master.gain.setTargetAtTime(v(s?.masterVolume, 0.8), t, 0.03);
       this.musicBus.gain.setTargetAtTime(v(s?.musicVolume, 0.35) * 0.7, t, 0.05);
       this.sfxBus.gain.setTargetAtTime(v(s?.sfxVolume, 0.5), t, 0.03);
-      this.uiBus.gain.setTargetAtTime(v(s?.uiVolume, 0.35), t, 0.03);
+      this.uiBus.gain.setTargetAtTime(v(s?.uiVolume, 0.35) * UI_BUS_SCALE, t, 0.03);
       this.ambBus?.gain.setTargetAtTime(v(s?.ambienceVolume, 0.4), t, 0.03);
     } catch {
       /* ignore */
@@ -454,7 +464,8 @@ export class Audio {
     if (id.startsWith('hit_') || id === 'block' || id === 'shield_bash') return 0.07;
     if (id.startsWith('footstep')) return 0.1;
     if (id.startsWith('swing') || id === 'whoosh' || id === 'dodge') return 0.12;
-    if (id === 'ui_hover') return 0.06;
+    if (id === 'ui_hover') return UI_HOVER_GAP;
+    if (id === 'ui_click') return UI_CLICK_GAP;
     if (id.startsWith('upgrade_')) return 0.4;
     if (id === 'level_up' || id === 'mplus_start' || id === 'mplus_complete' || id === 'mplus_fail') return 0.5;
     if (id === 'gold_pickup') return 0.045;
@@ -522,6 +533,9 @@ export class Audio {
     const combat = COMBAT_RX.test(id);
     const low = combat && this.lowCombat();
     if (t0 - (this.lastPlay.get(id) ?? -9) < this.gapFor(id) * (low ? COMBAT_LOW_GAP : 1)) return false;
+    // one UI click sound per click: a second one inside the same burst (button + handler) is dropped
+    const uiClick = isUiClickSound(id);
+    if (uiClick && !uiBurstAllowed(this.lastUiAt, t0)) return false;
     if (!ui) {
       if (this.frameCount >= 14) return false;
       if (impact && !this.impactAllowed(t0)) return false;
@@ -562,7 +576,8 @@ export class Audio {
     const pv = Math.max(0.05, opts?.pitchVar ?? def.pv);
     const rate = (opts?.pitch ?? 1) * (def.p ?? 1) * (1 + (Math.random() * 2 - 1) * pv);
     const bus = ui ? this.uiBus : this.sfxBus;
-    const maxSec = MAX_SEC[id] ?? 0;
+    const maxSec = MAX_SEC[id] ?? (uiClick ? UI_MAX_SEC : 0);
+    if (uiClick) this.lastUiAt = t0;
 
     const idx = this.pick(id, def.f);
     const file = def.f[idx];
@@ -572,14 +587,14 @@ export class Audio {
       const asked = t0;
       void this.load(file).then((b) => {
         if (!b || now() - asked > 0.35) return;
-        this.fire(id, b, vol * (def.fg?.[idx] ?? 1), rate, pan, bus, true, maxSec);
+        this.fire(id, b, vol * (def.fg?.[idx] ?? 1), rate, pan, bus, true, maxSec, uiClick);
       });
       this.lastPlay.set(id, t0);
       if (impact && !ui) this.impactTimes.push(t0);
       return true;
     }
     this.lastPlay.set(id, t0);
-    this.fire(id, buf, vol * (def.fg?.[idx] ?? 1), rate, pan, bus, true, maxSec);
+    this.fire(id, buf, vol * (def.fg?.[idx] ?? 1), rate, pan, bus, true, maxSec, uiClick);
     if (!ui) {
       this.frameCount++;
       if (impact) this.impactTimes.push(t0);
@@ -593,14 +608,18 @@ export class Audio {
     return true;
   }
 
-  private fire(id: string, buf: AudioBuffer, gain: number, rate: number, pan: number, bus: GainNode, count: boolean, maxSec = 0): void {
+  private fire(id: string, buf: AudioBuffer, gain: number, rate: number, pan: number, bus: GainNode, count: boolean, maxSec = 0, soft = false): void {
     const ctx = this.ctx;
     if (!ctx || gain <= 0.002) return;
     const src = ctx.createBufferSource();
     src.buffer = buf;
     src.playbackRate.value = Math.max(0.25, Math.min(4, rate));
     const g = ctx.createGain();
-    g.gain.value = gain;
+    if (soft) {
+      // soft attack: a 4 ms ramp takes the click transient off the front of a UI sound
+      g.gain.setValueAtTime(0, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(gain, ctx.currentTime + 0.004);
+    } else g.gain.value = gain;
     src.connect(g);
     let tail: AudioNode = g;
     let panner: StereoPannerNode | null = null;
