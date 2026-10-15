@@ -89,3 +89,5 @@ Known kit simplifications still open: Ani Ölüm rolls 8–10 % (engine multipli
 - Balance: sim honours status max-HP; Brewmaster Sarsma (Stagger) wired; Ward of Oath 40% DR; failing bands L10 20 / L30 14 / L60 9.
 - UI: windows never block movement/skills (src/core/inputGate.ts), ElvUI frame positions (player 36% / target 64%), one toast lane, clarity defaults (native 2x render).
 - New sims: solo_lowlevel.mjs; QA: tools/qa/dungeon-pack.mjs, tools/qa/classes.mjs.
+
+- Gate added (2026-10-15): node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/chain_e2e.mjs (Sisli first chain end-to-end, ~8 s). Run it on every quest/layout/NPC change; also tools/xp-ledger.mjs (via pace-check), tools/icon-check.mjs, dev/combat-sim/solo_lowlevel.mjs, camp_respawn.mjs, heights.mjs.
