@@ -1062,6 +1062,9 @@ export class EnemyAI {
    */
   protected checkStuck(now: number, edge: number, target: Actor): boolean {
     const e = this.e;
+    // a body that cannot move (a metin stone, a totem: stationary or speed 0) cannot be stuck: a player at range is its fight, not a
+    // blocked path, and an evade here would reset its HP every few seconds
+    if (e.def.ai?.stationary || !(e.def.speed > 0)) return false;
     if (now < this.stuckAt) return false;
     this.stuckAt = now + 0.5;
     const kite = kiteBandFor(e.def);

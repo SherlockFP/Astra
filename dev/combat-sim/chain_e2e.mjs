@@ -393,6 +393,27 @@ function kill(defId, pos, opt) {
 
 // ------------------------------------------------------------------------------------------------ sources of a target
 const TILE_CENTRE = (p) => ({ x: sceneW(p[0]), z: sceneW(p[1]) });
+/**
+ * Metin spot clearance (content-check's rule, GDD_OPENWORLD §4): a stone of Sisli Koru (r1, tier level 1-5) keeps 30 m edge to edge from
+ * every camp (centre distance less the camp radius and its 8 m wander). A metin objective is only playable if every spot of its tier holds.
+ */
+const METIN_CLEAR_M = 30;
+function metinClearanceAssert(tierId, label) {
+  const tier = (W.metin?.tiers ?? []).find((t) => t.id === tierId);
+  if (!tier || tier.regionId !== 'r1' || tier.level > 5) return;
+  for (const s of LAYOUT.metinSpots) {
+    if (s.tier !== tierId) continue;
+    const a = TILE_CENTRE(s.pos);
+    let m = Infinity;
+    for (const p of SV.packs) {
+      if (!p.center) continue;
+      const c = TILE_CENTRE(p.center);
+      m = Math.min(m, Math.hypot(c.x - a.x, c.z - a.z) - (p.radius ?? 8) - 8);
+    }
+    if (m < METIN_CLEAR_M) blocker(`${label}: metin spot ${s.id} is ${Math.round(m)} m clear of a camp (keep ${METIN_CLEAR_M} m edge to edge)`);
+  }
+}
+
 /** Every place that spawns one of `ids` on this map: camps / patrols (members), rares (spots), mini-bosses (lair), metin stones (spots). */
 function sourcesOf(ids) {
   const out = [];
@@ -478,6 +499,7 @@ async function doObjective(def, k) {
     }
     case 'kill': case 'boss': case 'metin': case 'elite': {
       if (o.kind === 'boss') bossLairAssert(o.target, label);
+      if (o.kind === 'metin') metinClearanceAssert(o.target, label);
       const ids = [o.target];
       const src = goToSource(ids, band, label);
       farm(src, done, label, 60 * o.count + 60, status);

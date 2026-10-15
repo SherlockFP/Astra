@@ -932,7 +932,8 @@ const metinStone = (id: string, name: string, tint: number, hp: number, armor: n
     anims: { idle: 'Idle', walk: 'Idle', run: 'Idle', death: 'Death' },
     basic: NOOP(`${id}_none`), abilities: [METIN_CORE()], ai: { stationary: true },
   });
-metinStone('metin_keder', 'Keder Metini', 0x60a0ff, 28, 1.5, 'loot_metin_t1');
+// tutorial stone (mq_06, level 5): HP x14 = 420 at L5 (the other tiers keep their multiplier); scripted in METIN_SPECS below
+metinStone('metin_keder', 'Keder Metini', 0x60a0ff, 14, 1.5, 'loot_metin_t1');
 metinStone('metin_hirs', 'Hırs Metini', 0xffc040, 34, 1.7, 'loot_metin_t2');
 metinStone('metin_nefret', 'Nefret Metini', 0xff6040, 40, 1.9, 'loot_metin_t3');
 metinStone('metin_aci', 'Acı Metini', 0x40ffa0, 46, 2.1, 'loot_metin_t4');
@@ -954,6 +955,8 @@ export interface MetinWaveSpec { hpBelow: number; members: { enemyId: string; co
  */
 export interface MetinSpec {
   waves: MetinWaveSpec[];
+  /** wave mobs spawn at the stone's level + this (tutorial stone: -1, L4 mobs under a L5 stone) */
+  waveLevelOffset?: number;
   add: { enemyId: string; count: number; everySec: number; cap: number };
   aura: { radius: number; slowPct: number; curse?: boolean; dotPctPerSec?: number };
   pulse?: { everySec: number; coef: number; rMax: number };
@@ -963,12 +966,15 @@ const metinWaves = (rows: [string, number][][]): MetinWaveSpec[] =>
   rows.map((members, i) => ({ hpBelow: METIN_WAVE_HP[i], members: members.map(([enemyId, count]) => ({ enemyId, count })) }));
 
 export const METIN_SPECS: Record<string, MetinSpec> = {
+  // tutorial stone (mq_06, quest level 5): two small waves of normal mobs one level below the stone (L4), no add stream, a short aura
   metin_keder: {
-    waves: metinWaves([
-      [['ow_wolf', 6]], [['ow_goblin', 4], ['ow_goblin_shaman', 1]], [['ow_rat', 8]], [['ow_boar', 4], ['ow_puglin_chief', 1]], [['ow_mushnub', 10]],
-    ]),
-    add: { enemyId: 'ow_rat', count: 2, everySec: 20, cap: 12 },
-    aura: { radius: 10, slowPct: 0.15 },
+    waves: [
+      { hpBelow: 0.85, members: [{ enemyId: 'ow_rat', count: 3 }] },
+      { hpBelow: 0.45, members: [{ enemyId: 'ow_mushnub', count: 2 }] },
+    ],
+    waveLevelOffset: -1,
+    add: { enemyId: 'ow_rat', count: 0, everySec: 20, cap: 0 },
+    aura: { radius: 6, slowPct: 0.15 },
   },
   metin_hirs: {
     waves: metinWaves([

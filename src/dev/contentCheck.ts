@@ -1516,6 +1516,24 @@ function worldIssues(
     const [mx, mz] = tileM(s.pos);
     if (!reachable(mx, mz)) err(where, `at ${s.pos} is not reachable`);
   }
+  // metin clearance (GDD_OPENWORLD §4): a stone keeps 30 m edge to edge from every camp (centre distance less the camp's radius and its
+  // 8 m wander). HARD error for the Sisli Koru (r1) stones of level 1-5 (the mq_06 tutorial stone is one of them; its giver's 150 m
+  // placement is the r1 placement rule above); every other stone is counted in one warning, not moved.
+  const clearOf = (p: [number, number]): number => {
+    let m = Infinity;
+    for (const c of def.packs) if (c.center) m = Math.min(m, Math.hypot(c.center[0] - p[0], c.center[1] - p[1]) * 4 - (c.radius ?? 8) - 8);
+    return m;
+  };
+  const METIN_CLEAR_M = 30;
+  let uncounted = 0;
+  for (const s of w.metin.spots) {
+    const tier = w.metin.tiers.find((t) => t.regionId === s.regionId);
+    const m = clearOf(s.pos);
+    if (m >= METIN_CLEAR_M) continue;
+    if (s.regionId === 'r1' && (tier?.level ?? 99) <= 5) err(`metin spot ${s.id}`, `${Math.round(m)} m clear of a camp (edge to edge): keep ${METIN_CLEAR_M} m (Sisli r1 stones, level 1-5)`);
+    else uncounted++;
+  }
+  if (uncounted) warn(`metin ${def.id}`, `${uncounted} metin spot(s) within ${METIN_CLEAR_M} m of a camp (count only, not enforced here)`);
   // a map without metin tiers has no spots to count; the spot count per region is the GDD's 4 (Sisli Vadi), Karakır Bozkırı has 3
   // Karakır Bozkırı: 20 spots, at least three per region (three in r7..r10, four in r11..r12); Sisli Vadi has four per region
   const karakir = def.id === 'karakir_bozkiri';
@@ -1526,7 +1544,9 @@ function worldIssues(
     const where = `metin ${t.id}`;
     if (!regionIds.has(t.regionId)) err(where, `unknown region ${t.regionId}`);
     if (knownForces(t.enemyId) === undefined) err(where, `stone enemy ${t.enemyId} is not defined (enemies module)`);
-    if (t.waves.length !== 5) err(where, `${t.waves.length} waves (GDD: 5)`);
+    // GDD: five waves; the mq_06 tutorial stone (level 1-5 metin, METIN_SPECS) has two
+    const tutorialWaves = t.level <= 5 && t.waves.length === 2;
+    if (t.waves.length !== 5 && !tutorialWaves) err(where, `${t.waves.length} waves (GDD: 5, tutorial stone level 1-5: 2)`);
     for (const wv of t.waves) for (const m of wv.members) if (knownForces(m.enemyId) === undefined) err(where, `wave mob ${m.enemyId} is not defined`);
     if (knownForces(t.add.enemyId) === undefined) err(where, `periodic add ${t.add.enemyId} is not defined`);
   }

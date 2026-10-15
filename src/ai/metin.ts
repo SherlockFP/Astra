@@ -71,7 +71,7 @@ function spawnWave(ai: EnemyAI, spec: MetinSpec, k: number): void {
   const wave = spec.waves[k];
   if (!wave || e.isDead || e.removed) return;
   for (const m of wave.members) {
-    if (m.count > 0) ai.spawnAdds(m.enemyId, m.count, { radius: 9, aggro: true, tag: 'metin_wave' });
+    if (m.count > 0) ai.spawnAdds(m.enemyId, m.count, { radius: 9, aggro: true, tag: 'metin_wave', level: e.level + (spec.waveLevelOffset ?? 0) });
   }
   const x = e.position.x, z = e.position.z;
   bossFx('add_spawn', x, z, { scale: 2.2 });
