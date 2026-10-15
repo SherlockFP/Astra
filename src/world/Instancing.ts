@@ -92,7 +92,15 @@ export function setVoxelLodEnabled(on: boolean): void {
  * coarser copy, [d1, end) the 4x copy, beyond `end` nothing is drawn. keep1 / keep2 are the shares of the instances kept in tiers 1 / 2
  * (a fixed per-instance rank, so the same trees stay and the same ones thin out; every peer's colliders are unaffected: this is visual only).
  */
-export interface LodPlan { d0: number; d1: number; end: number; keep1: number; keep2: number }
+export interface LodPlan {
+  d0: number; d1: number; end: number; keep1: number; keep2: number;
+  /**
+   * Angular rule (optional): the same tiers at the 1x scale, before the fog cap (d0 / d1 / end above are these capped by `cap`).
+   * A voxel copy is built at the instance's scale, so each threshold of an instance scales with its scale: a 2.8x tree takes its 2x
+   * copy at 2.8 times the distance, and its voxels read the same size on screen as a 1x tree's. No threshold passes `cap` (the fog).
+   */
+  angular?: { d0: number; d1: number; end: number; cap: number };
+}
 
 const lodCache = new WeakMap<THREE.BufferGeometry, THREE.BufferGeometry[] | null>();
 
@@ -192,6 +200,8 @@ export class LodSet {
   private readonly col: Float32Array | null;
   private readonly rank: Uint8Array;
   private readonly maxScale: number;
+  /** Per-instance scale (largest axis): the angular tier rule scales the thresholds with it. */
+  private readonly sc: Float32Array;
   private readonly tiers: (THREE.InstancedMesh | null)[][] = [];
 
   constructor(
@@ -213,11 +223,14 @@ export class LodSet {
     const anyColor = recs.some((r) => r.c);
     this.col = anyColor ? new Float32Array(n * 3) : null;
     this.rank = new Uint8Array(n);
+    this.sc = new Float32Array(n);
     let ms = 0;
     for (let i = 0; i < n; i++) {
       const e = recs[i].m.elements;
       for (let j = 0; j < 16; j++) this.m[i * 16 + j] = e[j];
-      ms = Math.max(ms, matrixScale(recs[i].m));
+      const si = matrixScale(recs[i].m);
+      this.sc[i] = si;
+      ms = Math.max(ms, si);
       this.rank[i] = rankOf(e[12], e[14]);
       if (this.col) {
         const c = recs[i].c ?? WHITE;
@@ -262,7 +275,8 @@ export class LodSet {
 
   update(fx: number, fz: number, plan: LodPlan, force: boolean): void {
     const dc = Math.hypot(this.cx - fx, this.cz - fz);
-    if (dc - this.chunkR > plan.end) {
+    const reach = plan.angular ? plan.angular.cap : plan.end;
+    if (dc - this.chunkR > reach) {
       this.hide();
       return;
     }
@@ -278,13 +292,21 @@ export class LodSet {
     tierCount[0] = tierCount[1] = tierCount[2] = 0;
     const k1 = plan.keep1 * 256, k2 = plan.keep2 * 256;
     const d0s = plan.d0 * plan.d0, d1s = plan.d1 * plan.d1, es = plan.end * plan.end;
+    const ang = plan.angular;
     for (let i = 0; i < n; i++) {
       const dx = m[i * 16 + 12] - fx, dz = m[i * 16 + 14] - fz;
       const dd = dx * dx + dz * dz;
       let t = -1;
-      if (dd < d0s) t = 0;
-      else if (dd < d1s) t = this.rank[i] < k1 ? 1 : -1;
-      else if (dd < es) t = this.rank[i] < k2 ? 2 : -1;
+      let a0 = d0s, a1 = d1s, ae = es;
+      if (ang) {
+        // the tier edges of this instance: the 1x edges times its scale, never past the fog cap
+        const s = this.sc[i];
+        const e = Math.min(ang.end * s, ang.cap), x0 = Math.min(ang.d0 * s, e), x1 = Math.min(Math.max(ang.d1 * s, x0), e);
+        a0 = x0 * x0; a1 = x1 * x1; ae = e * e;
+      }
+      if (dd < a0) t = 0;
+      else if (dd < a1) t = this.rank[i] < k1 ? 1 : -1;
+      else if (dd < ae) t = this.rank[i] < k2 ? 2 : -1;
       tierOf[i] = t;
       if (t >= 0) tierCount[t]++;
     }
