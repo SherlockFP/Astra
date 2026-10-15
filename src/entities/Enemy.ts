@@ -162,6 +162,9 @@ export class Enemy extends Actor {
   /** Home position (leash). */
   homeX = 0;
   homeZ = 0;
+  /** Open-world camp centre this member spawned in (host AI only): its ambient wander stays within CAMP_WANDER_M of it. null = none. */
+  campX: number | null = null;
+  campZ: number | null = null;
   /** Host-side AI brain (null on clients). */
   ai: EnemyAI | null = null;
   readonly interp: Interpolator;

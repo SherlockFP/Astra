@@ -15,7 +15,7 @@ export const lowLevelHpMult = (L: number): number => {
 };
 
 /** Trash damage x monsterDmg on L1-10 (tapers to x1 at L20). */
-export const LOW_LEVEL_DMG_MULT = 1;
+export const LOW_LEVEL_DMG_MULT = 1.1;
 export const lowLevelDmgMult = (L: number): number => {
   if (L <= 10) return LOW_LEVEL_DMG_MULT;
   if (L >= 20) return 1;

@@ -294,6 +294,8 @@ export class CampDirector {
         world.remove(e);
         return;
       }
+      e.campX = c.cx;
+      e.campZ = c.cz;
       c.live.set(m.k, e);
       try {
         G.net.broadcast('spawn', spawnPayloadOf(e));
