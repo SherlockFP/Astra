@@ -29,8 +29,11 @@
 //   npx vite --port 5182 --strictPort
 //   FH_URL=http://127.0.0.1:5182 MP_PW=<dir that has node_modules/playwright-core> node tools/qa/first-hour.mjs
 // Env: FH_URL (default http://127.0.0.1:5182), MP_PW / QA_DIR (playwright-core dir, default ./tools/qa), MP_CHROME (chrome.exe),
-//      FH_CLASSES=knight,mage,paladin (comma list of class ids; any of knight barbarian mage rogue paladin necromancer warlock),
-//      FH_VIEW=1280x720 (viewport), FH_HEADED=1 (watch it). One class takes about 4-5 minutes.
+//      FH_CLASSES=knight,mage,paladin (comma list: any id of src/net/messages.ts CLASS_IDS, or a WoW alias: hunter=archer,
+//      warrior=knight, dh=demonhunter; see classes.mjs), FH_VIEW=1280x720 (viewport), FH_HEADED=1 (watch it).
+//      FH_RARE=1 adds the optional rare step (after the Sisli side chain): dev-teleport next to the named rare Gümüş Yele, assert its
+//      nameplate shows the rare marker, kill it, assert it drops loot. One class takes about 4-5 minutes (+ ~2 min with FH_RARE=1).
+// Screenshots always taken: the level-up banner (levelup_L<n>) and the reward-choice dialog (reward_choice) of Fare Yuvası.
 // Output: screenshots in tools/qa/out/fh_<class>_<nn>_<label>.png (gitignored), then a SUMMARY with BLOCKERS and UX notes.
 // Exit code 0 = every check passed for every class (journey milestones, no console / page errors, FPS >= 30 in every sample) and no
 // HARD blocker was recorded. Plain BLOCKER lines (deaths, a stuck spot, ...) and UX notes are informational.
@@ -41,6 +44,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { resolveClassList } from './classes.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(HERE, 'out');
@@ -48,7 +52,9 @@ fs.mkdirSync(OUT, { recursive: true });
 const BASE = process.env.FH_URL ?? 'http://127.0.0.1:5182';
 const PW_DIR = process.env.MP_PW ?? process.env.QA_DIR ?? HERE;
 const CHROME = process.env.MP_CHROME ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const CLASSES = (process.env.FH_CLASSES ?? 'knight,mage,paladin').split(',').map((s) => s.trim()).filter(Boolean);
+/** class ids from src/net/messages.ts CLASS_IDS (WoW aliases accepted); labels, names of the card and melee come from the game in-page */
+const CLASSES = resolveClassList(process.env.FH_CLASSES ?? 'knight,mage,paladin');
+const RARE_STEP = process.env.FH_RARE === '1';
 const [VW, VH] = (process.env.FH_VIEW ?? '1280x720').split('x').map(Number);
 
 const req = createRequire(path.join(path.resolve(PW_DIR), 'noop.js'));
@@ -56,9 +62,8 @@ const pwMod = await import(pathToFileURL(req.resolve('playwright-core')).href);
 const chromium = pwMod.chromium ?? pwMod.default.chromium;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const CLASS_LABEL = { knight: 'Şövalye', barbarian: 'Barbar', mage: 'Büyücü', rogue: 'Haydut', paladin: 'Paladin', necromancer: 'Nekromant', warlock: 'Warlock', priest: 'Rahip', druid: 'Druid' };
-const CLASS_NAME = { knight: 'Kaan', barbarian: 'Barkın', mage: 'Bilge', rogue: 'Ozan', paladin: 'Alper', necromancer: 'Nehir', warlock: 'Varlık', priest: 'Tanrı', druid: 'Orman' };
-const MELEE = new Set(['knight', 'barbarian', 'rogue', 'paladin', 'druid']);
+/** character name for a class: the name validator accepts letters, digits and spaces (classInfo.ts NAME_RE), max 20 chars */
+const charName = (cls) => `FH ${cls}`.slice(0, 20);
 /** console noise that is not a game bug: blocked fonts (junction node_modules), relay sockets of the P2P layer, favicon, 403 of @fs. */
 const NOISE = /WebSocket|nostr|satellite|ERR_|favicon|net::|Failed to load resource|@fontsource|A network error occurred/i;
 
@@ -141,6 +146,13 @@ async function journey(cls) {
   const B = (msg, hard = false) => blocker(cls, msg, hard);
   const X = (msg) => ux(cls, msg);
   const C = (name, ok, info) => check(`[${cls}] ${name}`, ok, info);
+  /** true for the melee fight distance (classes whose auto-attack mode is 'melee'); set after the character is in the town */
+  let melee = false;
+  const levelUps = [];
+  await page.exposeFunction('__fhLevelUp', (level) => {
+    levelUps.push(level);
+    shot(`levelup_L${level}`).catch(() => {});
+  });
   const sampleFps = async (where) => {
     const fps = await page.evaluate(
       () => new Promise((res) => {
@@ -327,21 +339,28 @@ async function journey(cls) {
   C('main menu shows the title', /EFSUN/i.test(menuTitle), menuTitle);
   await page.click('button:has-text("Yeni Karakter")');
   await sleep(1200);
-  // the class list: every playable class card exists with Turkish text
+  // the card text of this class comes from the game (classInfo.ts classPresentation / CLASS_ORDER), not from a list here
+  const card = await page.evaluate(async (id) => {
+    const ci = await import('/src/ui/menu/classInfo.ts');
+    return { label: ci.classPresentation(id).name, all: ci.CLASS_ORDER.map((c) => ci.classPresentation(c).name) };
+  }, cls);
+  // the class list: a card per class of the game (the nation cards share the .efs-class markup, so every class name is looked up)
   const cards = await page.evaluate(() => [...document.querySelectorAll('.efs-class .nm')].map((e) => e.textContent));
-  C('creation screen lists the classes', cards.length >= 7, cards.join(','));
-  await page.click(`.efs-class:has-text("${CLASS_LABEL[cls]}")`);
+  const missing = card.all.filter((n) => !cards.includes(n));
+  C('creation screen lists every class card', missing.length === 0, missing.length ? `missing: ${missing.join(',')}` : `${card.all.length} classes`);
+  C(`class card "${card.label}" exists`, cards.includes(card.label), cls);
+  await page.click(`.efs-class:has-text("${card.label.replace(/"/g, '')}")`);
   await sleep(900);
   await shot('create');
   const createBtn = page.locator('button:has-text("Oluştur")');
   const cb = await createBtn.boundingBox();
   if (!cb || cb.y + cb.height > VH + 1 || cb.y < 0) X(`Oluştur button is outside the ${VW}x${VH} viewport (y=${cb ? Math.round(cb.y) : '?'}): the creation panel is taller than the screen`);
-  await page.fill('.efs-input', CLASS_NAME[cls]);
+  await page.fill('.efs-input', charName(cls));
   await sleep(200);
   await createBtn.click();
   await sleep(2200);
   const created = await page.evaluate(() => [...document.querySelectorAll('.efs-char .nm')].map((e) => e.textContent));
-  C('character appears in the list after Oluştur', created.includes(CLASS_NAME[cls]), created.join(','));
+  C('character appears in the list after Oluştur', created.includes(charName(cls)), created.join(','));
   await shot('created');
   await page.click('button:has-text("Oyna")');
   await waitScene('town');
@@ -357,6 +376,12 @@ async function journey(cls) {
       for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1 && (n.classList?.contains('rumor') || n.querySelector?.('.rumor'))) window.__barks++;
     }).observe(document.body, { childList: true, subtree: true });
   });
+
+  // melee or caster, read from the game's own auto-attack mode of this character (SkillSystem.autoInfo: the basic step's range)
+  melee = (await page.evaluate(() => window.G.skills.autoInfo(window.G.player).mode)) === 'melee';
+  console.log(`  [${cls}] auto-attack mode: ${melee ? 'melee' : 'ranged/off'}`);
+  // every player:levelup fires a screenshot at once (the banner shows the new level for a few seconds)
+  await page.evaluate(() => window.G.events.on('player:levelup', ({ level }) => window.__fhLevelUp(level)));
 
   // =============================================================== 2. welcome card
   await page.waitForFunction(() => window.G.ui.isPanelOpen('welcome'), null, { timeout: 15000 }).catch(() => {});
@@ -570,7 +595,6 @@ async function journey(cls) {
     return 'timeout';
   };
 
-  const melee = MELEE.has(cls);
   let kills = 0;
   let deaths = 0;
   /** Play a kill quest through: find enemies by the objective's target ids, fight, loot, until `ready`. */
@@ -712,7 +736,14 @@ async function journey(cls) {
     const btn = card.locator('button:has-text("Teslim Et")');
     if ((await btn.count()) > 0) { await btn.click(); return 'Teslim Et'; }
     const choice = card.locator('.pg-ql-acts button').first();
-    if ((await choice.count()) > 0) { await choice.click(); return 'reward choice'; }
+    if ((await choice.count()) > 0) {
+      // the reward-choice dialog as the player sees it, before one of the rewards is taken
+      const txt = await card.innerText().catch(() => '');
+      C(`${questId}: reward-choice card says "Bir ödül seç"`, /Bir ödül seç/.test(txt), txt.slice(0, 60).replace(/\n/g, ' | '));
+      await shot('reward_choice');
+      await choice.click();
+      return 'reward choice';
+    }
     return null;
   };
   const turnInAtFerhat = async (questId, label) => {
@@ -848,6 +879,108 @@ async function journey(cls) {
   C('ESCORT quest Gözcü Avı can be started (accepted at Avcı Yıldız)', escState === 'active', escState);
   await closePanels();
 
+  // =============================================================== 5c. optional (FH_RARE=1): the named rare Gümüş Yele
+  // Dev-teleport to its layout spot (RARES in data/world/pois.ts, tiles -> metres with scenes/world/util.ts tileToWorld), wait for the
+  // rare director to spawn it (it spawns on a free spot 40 m+ from the players, after its respawn timer); when it does not come within
+  // 60 s the enemy is spawned by the dev hook spawnEnemy (EnemyFactory.ts) and that is noted. Then: nameplate check, kill with the
+  // normal fight loop, loot check at the corpse.
+  if (RARE_STEP) {
+    const RARE = 'rare_gumus_yele';
+    const spot = await page.evaluate(async (rid) => {
+      const G = window.G;
+      const { RARES } = await import('/src/data/world/pois.ts');
+      const u = await import('/src/scenes/world/util.ts');
+      const r = RARES.find((x) => x.id === rid);
+      if (!r || !r.spots.length) return null;
+      const x = u.tileToWorld(r.spots[0][0]);
+      const z = u.tileToWorld(r.spots[0][1]);
+      const w = G.world.nav.nearestWalkable(x, z, 8) ?? { x, z };
+      return { x: w.x, z: w.z };
+    }, RARE);
+    C('Gümüş Yele has a layout spot in Sisli Vadi', !!spot, JSON.stringify(spot));
+    const findRare = () =>
+      page.evaluate((rid) => {
+        const G = window.G;
+        for (const e of G.world.enemies) if (e.def?.id === rid && !e.isDead && !e.removed) return { id: e.id, x: e.position.x, z: e.position.z };
+        return null;
+      }, RARE);
+    if (spot) {
+      await page.evaluate(([x, z]) => { const G = window.G; G.player.position.set(x, G.player.position.y, z); }, [spot.x, spot.z]);
+      console.log(`  dev teleport to the ${RARE} spot (${Math.round(spot.x)},${Math.round(spot.z)})`);
+      let rare = null;
+      for (let i = 0; i < 120 && !rare; i++) {
+        rare = await findRare();
+        if (!rare) await sleep(500);
+      }
+      if (!rare) {
+        X(`${RARE} did not spawn within 60 s of standing on its layout spot (rare director timer): spawned with the dev hook spawnEnemy`);
+        rare = await page.evaluate(async ([rid, x, z]) => {
+          const G = window.G;
+          const { spawnEnemy } = await import('/src/entities/EnemyFactory.ts');
+          const { RARES } = await import('/src/data/world/pois.ts');
+          const e = await spawnEnemy(G.world, rid, { x: x + 3, z }, { level: RARES.find((q) => q.id === rid).level, aggro: false });
+          return e ? { id: e.id, x: e.position.x, z: e.position.z } : null;
+        }, [RARE, spot.x, spot.z]);
+      }
+      C(`${RARE} is alive in the world`, !!rare, JSON.stringify(rare));
+      if (rare) {
+        // dev-teleport beside the rare and face it (yaw convention of the fight loop: atan2(dx, dz))
+        await page.evaluate(([rx, rz]) => {
+          const G = window.G;
+          const p = G.player;
+          const w = G.world.nav.nearestWalkable(rx - 4, rz, 8) ?? { x: rx - 4, z: rz };
+          p.position.set(w.x, p.position.y, w.z);
+          p.yaw = Math.atan2(rx - w.x, rz - w.z);
+        }, [rare.x, rare.z]);
+        await sleep(1200);
+        const readPlate = () =>
+          page.evaluate(() => {
+            const el = [...document.querySelectorAll('.np')].find((n) => n.querySelector('.np-name')?.textContent?.trim() === 'Gümüş Yele');
+            if (!el) return null;
+            const ic = el.querySelector('.np-rank');
+            return {
+              rank: el.dataset.rank ?? null,
+              nc: el.style.getPropertyValue('--nc'),
+              icon: ic?.style.getPropertyValue('--i') ?? '',
+              iconShown: !!ic && ic.style.display !== 'none',
+              shown: el.style.display !== 'none',
+            };
+          });
+        let plate = null;
+        for (let i = 0; i < 12 && !(plate && plate.shown && plate.iconShown); i++) {
+          plate = await readPlate();
+          if (!(plate && plate.shown)) await sleep(500);
+        }
+        C('Gümüş Yele nameplate shows the rare marker (elite rank, silver dragon icon)', !!plate && plate.rank === 'elite' && plate.iconShown && /ui-rare-dragon/.test(plate.icon) && !!plate.nc, JSON.stringify(plate));
+        await shot('rare_nameplate');
+
+        // kill it with the normal fight loop (target, skills, potion); a death releases the spirit and tries again
+        let corpse = null;
+        for (let attempt = 0; attempt < 2 && !corpse; attempt++) {
+          const en = await nearestEnemy([RARE]);
+          if (!en) break;
+          if (en.d > 20) await walkTo(en.x, en.z, { stop: 14, timeout: 30000, label: RARE });
+          const res = await fight(en.id, 150000);
+          if (res === 'dead') corpse = await enemyState(en.id);
+          else if (res === 'died') { deaths++; B(`${RARE}: the player died while fighting it (attempt ${attempt + 1})`); await handleDeath(); }
+          else { B(`${RARE}: fight timed out (attempt ${attempt + 1})`); await closePanels(); }
+        }
+        C(`${RARE} killed by the player`, !!corpse, corpse ? `at (${Math.round(corpse.x)},${Math.round(corpse.z)})` : 'not killed');
+        if (corpse) {
+          await sleep(900);
+          const drops = await page.evaluate(([x, z]) => {
+            const G = window.G;
+            return [...G.world.entities.values()].filter((e) => e.kind === 'loot' && !e.removed && Math.hypot(e.position.x - x, e.position.z - z) < 10).map((e) => e.displayName || '?');
+          }, [corpse.x, corpse.z]);
+          C(`${RARE} drops loot on kill`, drops.length > 0, drops.join(' | ') || 'no loot entity near the corpse');
+          await collectLoot();
+          await shot('rare_loot');
+        }
+      }
+    }
+    await closePanels();
+  }
+
   // =============================================================== 6. equipment
   await closePanels();
   const eq = await page.evaluate(() => {
@@ -909,6 +1042,7 @@ async function journey(cls) {
   console.log(`  FPS samples: ${fpsSamples.map((f) => `${f.where}=${f.fps}`).join(', ')}`);
   const barks = await page.evaluate(() => window.__barks ?? 0);
   C('at least one bark (Söylenti line in the chat, speech bubble over the speaker) during the run', barks >= 1, `${barks} bark line(s)`);
+  C('level-up banner event fired (levelup_L<n> screenshot)', levelUps.length >= 1, `levels ${levelUps.join(',') || '-'}`);
   C('FPS >= 30 in every sample', fpsMin >= 30, `min ${fpsMin}`);
   C('no console / page errors', errors.length === 0, errors.slice(0, 4).join(' || '));
   for (const e of errors) console.log('   ERR', e);
