@@ -23,7 +23,22 @@ export function getPinnedQuest(): string | null {
     return null;
   }
 }
+/**
+ * Objective the player clicked in the tracker: the arrow points at it first (over the pinned quest's first open objective). Session
+ * state only; it ends when the objective is done or another quest is pinned.
+ */
+let focus: { questId: string; k: number } | null = null;
+export function focusObjective(questId: string, k: number): void {
+  focus = { questId, k };
+  setPinnedQuest(questId);
+}
+/** The objective the tracker focused, or null. */
+export function focusedObjective(): { questId: string; k: number } | null {
+  return focus;
+}
+
 export function setPinnedQuest(id: string | null): void {
+  if (focus && focus.questId !== id) focus = null;
   G.events?.emit('quest:pinned', { questId: id });
   try {
     if (id) window.localStorage.setItem(PIN_KEY, id);
@@ -37,8 +52,9 @@ export interface Pt { x: number; z: number }
 
 /** Quest target on the map (blue ring). */
 export interface QuestMark extends Pt { questId: string; label: string; kind: QuestKind }
-/** Quest giver marker over a village NPC: gold `!` (offer) or `?` (turn in). */
-export interface QuestGiverMark extends Pt { npcId: string; kind: 'offer' | 'turnin' }
+/** Quest giver marker over a village NPC: gold `!` (offer), `?` (turn in) or grey `!` (the next quest waits for the level). */
+export interface QuestGiverMark extends Pt { npcId: string; kind: GiverKind }
+export type GiverKind = 'offer' | 'turnin' | 'locked';
 
 /** Tile centre (tile index -> metres). */
 export const tileCentreM = (t: number): number => (t + 0.5) * TILE_SIZE;
@@ -249,26 +265,90 @@ export function questTargetMarks(): QuestMark[] {
   return out;
 }
 
-/** Quest markers over the village NPCs that offer or take in a quest. */
+/**
+ * The marker of one quest giver: `turnin` (a ready quest is handed in here, or an active quest's open talk objective is this NPC),
+ * `offer` (an available quest), `locked` (the giver's next quest waits for the level), or null. Mirrors questMarkFor in
+ * scenes/world/QuestMarks.ts, the marker over the NPC's head, so the minimap and the map agree with it.
+ */
+export function giverKind(npcId: string): GiverKind | null {
+  const q = G.quests;
+  const ch = G.character;
+  if (!q || !ch) return null;
+  let best: GiverKind | null = null;
+  const rank: Record<GiverKind, number> = { turnin: 3, offer: 2, locked: 1 };
+  for (const def of q.all()) {
+    const talkIdx = def.objectives.findIndex((o) => o.kind === 'talk' && o.target === npcId);
+    if (def.giver !== npcId && def.turnIn !== npcId && talkIdx < 0) continue;
+    const s = q.state(def.id);
+    let mark: GiverKind | null = null;
+    if (s === 'ready' && (def.turnIn ?? def.giver) === npcId) mark = 'turnin';
+    else if (s === 'active' && talkIdx >= 0 && !q.progressRows(def.id)[talkIdx]?.done) mark = 'turnin';
+    else if (s === 'available' && def.giver === npcId) mark = 'offer';
+    else if (s === 'locked' && def.giver === npcId && ch.level < def.level && (def.prereq ?? []).every((p) => q.state(p) === 'done')) mark = 'locked';
+    if (mark && (!best || rank[mark] > rank[best])) best = mark;
+  }
+  return best;
+}
+
+/** Quest markers over the village NPCs that offer, take in or wait on a quest (the open world). */
 export function questGiverMarks(): QuestGiverMark[] {
   const out: QuestGiverMark[] = [];
-  const q = G.quests;
-  if (!q || !G.character || !inWorldMap()) return out;
+  if (!G.quests || !G.character || !inWorldMap()) return out;
   try {
     for (const v of worldExtras()?.villages ?? []) {
       for (const n of v.npcs) {
         if (!n.quests?.length) continue;
-        const defs = q.offered(n.id);
-        if (!defs.length) continue;
-        const kind = defs.some((d) => q.state(d.id) === 'ready') ? 'turnin' : 'offer';
-        const p = npcWorldPos(n.id);
-        if (p) out.push({ ...p, npcId: n.id, kind });
+        const kind = giverKind(n.id);
+        const p = kind ? npcWorldPos(n.id) : null;
+        if (kind && p) out.push({ ...p, npcId: n.id, kind });
       }
     }
   } catch (err) {
     console.warn('[ui] quest data not ready', err);
   }
   return out;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/* Quest mobs and quest props (HUD marks: nameplate quest icon, objective focus)                                       */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+/** Enemies an unfinished objective of an active quest still wants: `ids` (their def ids), inside the quest `area` (camp packs) when set. */
+export interface QuestMobRule { ids: string[]; area: Set<string> | null }
+
+/**
+ * Enemy rules of the active quests: the kill / boss / metin targets of the unfinished objectives and the drop / collect sources
+ * (`from`, or the quest's kill targets when the objective names none). Only active quests (not ready, not available), never throws.
+ */
+export function questMobRules(): QuestMobRule[] {
+  const out: QuestMobRule[] = [];
+  const q = G.quests;
+  if (!q || !G.character) return out;
+  try {
+    for (const def of q.active()) {
+      if (q.state(def.id) !== 'active') continue;
+      const rows = q.progressRows(def.id);
+      const area = questArea({ level: def.level, region: def.region }, def.place);
+      const killTargets = def.objectives.filter((o) => o.kind === 'kill' || o.kind === 'boss' || o.kind === 'metin').flatMap((o) => killIds(o));
+      def.objectives.forEach((o, k) => {
+        if (rows[k]?.done) return;
+        let ids: string[] = [];
+        if (o.kind === 'kill' || o.kind === 'boss' || o.kind === 'metin') ids = killIds(o);
+        else if (o.kind === 'drop' || o.kind === 'collect') ids = o.from?.length ? o.from : killTargets;
+        if (ids.length) out.push({ ids, area });
+      });
+    }
+  } catch (err) {
+    console.warn('[ui] quest data not ready', err);
+  }
+  return out;
+}
+
+/** True when an enemy is a quest mob of one of the rules: its def id is in the rule and (a camp mob) its pack is in the quest area. */
+export function isQuestMob(e: { def?: { id: string } | null; packId?: string | null }, rules: QuestMobRule[]): boolean {
+  const id = e.def?.id;
+  if (!id || !rules.length) return false;
+  return rules.some((r) => r.ids.includes(id) && (!r.area || !e.packId || r.area.has(e.packId)));
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -435,6 +515,14 @@ export function guideTarget(recommendedGiver: string | null): GuideTarget | null
   const q = G.quests;
   if (q && G.character) {
     try {
+      // a tracker click (focusObjective) wins while that objective is still open
+      const f = focus;
+      const fdef = f ? q.def(f.questId) : undefined;
+      if (f && fdef && q.state(fdef.id) === 'active' && !q.progressRows(fdef.id)[f.k]?.done) {
+        const fo = fdef.objectives[f.k];
+        const fp = fo ? guideTargetPos(fo, inTown, fdef.region, fdef.place, fdef.level) : null;
+        if (fp) return { x: fp.x, z: fp.z, label: fp.label, kind: objectiveKind(fo), key: `${fdef.id}#${f.k}` };
+      }
       const pinned = getPinnedQuest();
       let pdef = pinned ? q.def(pinned) : undefined;
       // nothing is pinned automatically on accept: follow the first active quest (the same fallback the HUD tracker shows),

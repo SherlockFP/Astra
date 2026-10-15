@@ -232,6 +232,9 @@
 /* chosen achievement title (local player only), small grey text under the name */
 .np-title { font: 400 11px/1.1 var(--font-body); color: #9d9d9d; text-align: center; text-shadow: var(--elv-outline); white-space: nowrap; max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
 .np-rank { width: 12px; height: 12px; background: var(--nc); filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.45)); }
+/* quest badge (WoW Midnight style): a small gold scroll with "!" after the name of a quest target / drop source; it pulses softly */
+.np-qobj { flex: none; display: flex; align-items: center; justify-content: center; width: 13px; height: 15px; box-sizing: border-box; border: 1px solid #5a3806; border-radius: 3px; background: linear-gradient(#fff2a0, #f2b02a 60%, #d68a14); box-shadow: 0 0 6px rgba(255, 205, 70, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.7); font: 900 11px/1 var(--font-body); color: #3a2200; text-shadow: none; animation: npqobj 1.4s ease-in-out infinite; }
+@keyframes npqobj { 0%, 100% { box-shadow: 0 0 4px rgba(255, 205, 70, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.7); } 50% { box-shadow: 0 0 9px rgba(255, 220, 90, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.7); } }
 .np-bar { position: relative; border-radius: var(--ui-r-bar); height: 10px; background: var(--elv-backdrop-solid, var(--ui-glass-solid)); border: 1px solid var(--elv-border); overflow: hidden; }
 .np-fill, .np-ghost { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; }
 .np-fill { background: var(--react-hostile, #c73b3b); transition: width 0.09s linear; }
