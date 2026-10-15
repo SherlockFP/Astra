@@ -27238,8 +27238,8 @@
    "name": "Geyik Çayırı",
    "region": "r1",
    "center": [
-    190,
-    41
+    192.5,
+    62.5
    ],
    "radius": 6,
    "levelRange": [
@@ -27254,7 +27254,7 @@
     }
    ],
    "flags": [],
-   "note": "Geyik sürüsü: kaçar, Geyik Derisi düşürür (sq_g_02); Kurt Açıklığı'nın ~60 m doğusu"
+   "note": "Geyik sürüsü: kaçar, Geyik Derisi düşürür (sq_g_02); Gümüşdere'nin ~110 m güneyinde açık çayır (yapı ve duvar yok)"
   }
  ],
  "patrols": [

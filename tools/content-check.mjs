@@ -941,6 +941,23 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id)) || want.includes('
     for (const i of w) console.log('  warn', i.where, '-', i.msg);
   }
 }
+// quest camps (every open-world map): every member spawn point and the wander area of each camp a quest targets are path-reachable from the
+// map start, on the nav the game builds (rooms, collide props, palisades). Edge: error on Sisli Vadi, warn elsewhere (edgeSev).
+if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
+  const { QUESTS: CAMP_QUESTS } = await imp('src/data/world/quests.ts');
+  const { familyOf: famOf } = await imp('src/data/families.ts');
+  for (const z of ZONES) {
+    if (want.length && !want.includes(z.id)) continue;
+    const zoneQuests = CAMP_QUESTS.filter((q) => (q.region && z.regions.has(q.region)) || z.npcIds.has(q.giver));
+    const nav = cc.navFlooded(ALL[z.id], models);
+    const cr = cc.campReachIssues(nav, z.packs, cc.questTargetOf(zoneQuests, famOf), edgeSev(z.id));
+    const e = cr.issues.filter((i) => i.level === 'error'), w = cr.issues.filter((i) => i.level === 'warn');
+    totalErr += e.length;
+    console.log(`\n== quest camp reach ${z.id}: ${e.length} errors, ${w.length} warns | ${cr.checked} quest-targeted camps and patrols, ${cr.failing} with a member spawn or wander area cut off from the start`);
+    for (const i of e) console.log('  ERR ', i.where, '-', i.msg);
+    for (const i of w) console.log('  warn', i.where, '-', i.msg);
+  }
+}
 if (!want.length || want.includes('town')) {
   // season dungeons (DungeonDef.season / endgame) enter through the world (src/data/world/entrances.ts), not a town portal
   const portalDungeons = DUNGEON_ALL.filter((id) => !ALL[id].season && !ALL[id].endgame);

@@ -20,6 +20,8 @@
  * Stand-ins (documented, not gates): the town Kuzgunkale has no nav mask (its walks are straight lines); quest drops are picked up
  * into the bag at once (the ground pickup is not played); a kill's enemy is a harness Actor with the real EnemyDef; escort ambushers
  * die to the real kill path without a model (the harness has no model loader).
+ * Camp reach gate (content-check campReachIssues, the same nav flooded from the zone start): every camp or patrol a quest targets has its
+ * member spawn points and its wander area walkable and reached from the start, before the chain runs (a centre-only check is not enough).
  * A blocker stops the run at the first failure and names quest, objective (or turn-in) and position. Exit 0 = PASS (one line).
  */
 import fs from 'node:fs';
@@ -56,6 +58,7 @@ const { QuestProp, QUEST_PROP_RESPAWN_SEC } = await H.imp('entities/interactable
 const { WorldQuestProps, escortRoute } = await H.imp('scenes/world/WorldQuestProps.ts');
 const { minibossRespawnSec, QUEST_RESPAWN_SEC } = await H.imp('scenes/world/MiniBossDirector.ts');
 const cc = await H.imp('dev/contentCheck.ts');
+const { familyOf } = await H.imp('data/families.ts');
 
 // ------------------------------------------------------------------------------------------------ data
 const SV = OPEN_ZONES.sisli_vadi;
@@ -77,7 +80,7 @@ for (const u of new Set([...cc.dungeonUrls(SV), ...cc.townUrls(TOWN)])) {
     models.set(u, b ? { exists: true, box: b.box ?? undefined, skinned: b.skinned } : { exists: /\.gltf$/.test(u) });
   } catch { models.set(u, { exists: true }); }
 }
-const nav = cc.buildNav(SV, models);
+const nav = cc.navFlooded(SV, models); // the nav the game builds, flooded from the zone start (camp reach gate)
 const NW = nav.w, NH = nav.h, WALK = nav.walk;
 
 // ------------------------------------------------------------------------------------------------ nav: A* over the mask
@@ -712,7 +715,21 @@ const CHAIN = [];
   }
 }
 
+/**
+ * Camp reach gate: every camp or patrol a quest targets on this map (kill / boss / elite / metin targets, drop / collect sources) has each
+ * member spawn point and its wander area (camp radius + 8 m) walkable and reached from the zone start. A camp whose centre sits behind a
+ * ruin wall fails here even when the other members are reachable: the quest then stalls in play.
+ */
+function campGate() {
+  const local = new Set(SV.world.villages.flatMap((v) => v.npcs.map((n) => n.id)));
+  const zoneQuests = QUESTS.filter((q) => (q.region && regionMap.has(q.region)) || local.has(q.giver));
+  const { issues, checked, failing } = cc.campReachIssues(nav, SV.packs, cc.questTargetOf(zoneQuests, familyOf), 'error');
+  if (VERBOSE) console.log(`camp reach: ${checked} quest-targeted camps and patrols, ${failing} cut off from the start`);
+  if (issues.length) blocker(`${issues.length} quest camp(s) cut off from the start (camp reach gate), first ${issues[0].where}: ${issues[0].msg}`);
+}
+
 async function run() {
+  campGate();
   if (CHAIN.length !== 7) blocker(`the chain from mq_01 does not reach mq_07 (${CHAIN.map((q) => q.id).join(', ')})`);
   // pass 1: the main chain alone, as its level gates allow (a gate above the chain's own XP is met by grinding, counted)
   const villages = new Set();
