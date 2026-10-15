@@ -101,6 +101,12 @@ export class WorldCtx {
     return this.built.nav.nearestWalkable(x, z, radius) ?? { x, z };
   }
 
+  /** Nav path from a to b (both walkable): the points after a, ending at b (NavGrid.findPath); null when no path exists. */
+  navPath(a: Pt, b: Pt): Pt[] | null {
+    const path = this.built.nav.findPath(a, b, 20000);
+    return path ? path.map((p) => ({ x: p.x, z: p.z })) : null;
+  }
+
   /** Distance (m) from (x,z) to the nearest player entity of this world; Infinity when there is none. Dead players count. */
   nearestPlayerDist(x: number, z: number): number {
     let best = Infinity;

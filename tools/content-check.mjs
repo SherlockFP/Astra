@@ -580,6 +580,35 @@ function escortRouteIssues(routes, quests, packs, roomId, hub) {
 }
 
 /**
+ * Escort routes on the nav mask (dev/contentCheck navReach, the headless stand-in for NavGrid.findPath; WorldQuestProps.escortRoute at
+ * load). HARD errors: every waypoint snaps to walkable ground within 6 m; every segment between two waypoints has a nav path (the escort
+ * walks it, a segment without one would stall the escort); the nav path of the whole route is at most ESCORT_MAX_M long.
+ */
+function escortNavIssues(routes, reach) {
+  const out = [];
+  const err = (where, msg) => out.push({ level: 'error', where, msg });
+  let maxLen = 0;
+  for (const r of Object.values(routes)) {
+    const where = `escort ${r.quest}`;
+    const wps = r.route.map(([x, z]) => reach.snap(x, z, 6));
+    let bad = false;
+    wps.forEach((p, i) => {
+      if (!p) { bad = true; err(`${where} [waypoint ${i}]`, `no walkable ground within 6 m of ${r.route[i][0]}, ${r.route[i][1]}`); }
+    });
+    if (bad) continue;
+    let total = 0;
+    for (let i = 1; i < wps.length; i++) {
+      const path = reach.navPath(wps[i - 1], wps[i]);
+      if (!path) { err(`${where} [segment ${i}]`, `no nav path from waypoint ${i - 1} to ${i}: the escort cannot walk it`); continue; }
+      for (let k = 1; k < path.length; k++) total += Math.hypot(path[k].x - path[k - 1].x, path[k].z - path[k - 1].z);
+    }
+    maxLen = Math.max(maxLen, total);
+    if (total > ESCORT_MAX_M) err(where, `nav route ${Math.round(total)} m long (max ${ESCORT_MAX_M} m)`);
+  }
+  return { issues: out, maxLen };
+}
+
+/**
  * Solo main quests (layout quests.main `solo`: the chain quests a lone level 1-4 player finishes). HARD error: the quest area (its
  * `place`, a layout pack id) is never an elite-flagged pack. The elite camp (r1_c04) is the mini-boss area of mq_05, a group fight.
  */
@@ -816,9 +845,10 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
     const hub = layout.settlements?.find((x) => x.id === 'koy_gumusdere')?.center;
     if (!hub) throw new Error('settlement koy_gumusdere (the ring hub) is missing from the layout');
     const ei = escortRouteIssues(ESCORT_ROUTES, ESC_QUESTS, ALL[id].packs, r1.roomId, hub);
-    const e = ei.issues.filter((i) => i.level === 'error');
+    const ni = escortNavIssues(ESCORT_ROUTES, cc.navReach(ALL[id], models));
+    const e = [...ei.issues, ...ni.issues].filter((i) => i.level === 'error');
     totalErr += e.length;
-    console.log(`\n== escort routes ${id} r1: ${e.length} errors | ${ei.routes} routes, longest ${Math.round(ei.maxLen)} m (max ${ESCORT_MAX_M} m), closest camp 2+ levels higher ${ei.minClear === null ? '-' : Math.round(ei.minClear) + ' m edge'}`);
+    console.log(`\n== escort routes ${id} r1: ${e.length} errors | ${ei.routes} routes, longest ${Math.round(ei.maxLen)} m straight / ${Math.round(ni.maxLen)} m nav (max ${ESCORT_MAX_M} m), closest camp 2+ levels higher ${ei.minClear === null ? '-' : Math.round(ei.minClear) + ' m edge'}`);
     for (const i of e) console.log('  ERR ', i.where, '-', i.msg);
   }
 }

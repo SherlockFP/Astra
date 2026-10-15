@@ -10,6 +10,8 @@
  *   interact targets            -> PlayerController.updateInteract's pick (nearest entity in reach that canInteract) and the entities'
  *                                  own canInteract (EscortNpc: active quest only; QuestProp: wanted by an active quest)
  *   props and escorts           -> scenes/world/WorldQuestProps.place() on a World with the Sisli map, escort walk + ambush (QuestEscortRun)
+ *   escort routes               -> escortRoute (WorldQuestProps): each segment routed on the nav mask (navCells); a segment without a nav
+ *                                  path blocks the run. The escort walks that polyline and the player walks it 2 m behind (no teleport)
  *   walkability                 -> dev/contentCheck buildNav (rooms, collide props, village palisades and gates), A* over its mask
  * Two passes: (1) mq_01..mq_07 alone, a level gate above the chain's own XP is met by grinding the nearest trash camp in band (counted);
  * (2) the side quests of the chain's villages (Gümüşdere, Orta Karakol), each taken when the level allows, in level order.
@@ -51,7 +53,7 @@ const { isInteractable } = await H.imp('entities/Interactable.ts');
 const { NPC } = await H.imp('entities/NPC.ts');
 const { EscortNpc } = await H.imp('entities/interactables/EscortNpc.ts');
 const { QuestProp, QUEST_PROP_RESPAWN_SEC } = await H.imp('entities/interactables/QuestProp.ts');
-const { WorldQuestProps, escortPath } = await H.imp('scenes/world/WorldQuestProps.ts');
+const { WorldQuestProps, escortRoute } = await H.imp('scenes/world/WorldQuestProps.ts');
 const cc = await H.imp('dev/contentCheck.ts');
 
 // ------------------------------------------------------------------------------------------------ data
@@ -101,6 +103,7 @@ function snapCell(x, z, r) {
   return null;
 }
 const cellPos = (c) => ({ x: c.i + 0.5, z: c.j + 0.5 });
+const parentOf = new Int32Array(NW * NH); // A* parent of each cell (valid for the last astar run's relaxed cells)
 
 /** A* (8-way, no corner cutting) between two cells. Returns the path length (m) or null. */
 function astar(a, b) {
@@ -147,12 +150,26 @@ function astar(a, b) {
       if (di && dj && (!WALK[j * NW + ni] || !WALK[nj * NW + i])) continue;
       const g = gCost[idx] + c;
       if (openStamp[nidx] !== stampNo || g < gCost[nidx]) {
-        openStamp[nidx] = stampNo; gCost[nidx] = g;
+        openStamp[nidx] = stampNo; gCost[nidx] = g; parentOf[nidx] = idx;
         push(g + h(ni, nj), nidx);
       }
     }
   }
   return null;
+}
+
+/**
+ * The nav path from cell a to cell b as the cell centres after a, ending at b (the NavGrid.findPath convention), or null when
+ * unreachable. The escort routes walk these: a route segment without one is a hard failure (the sim blocks on it).
+ */
+function navCells(a, b) {
+  const res = astar(a, b);
+  if (!res) return null;
+  const s = a.j * NW + a.i;
+  if (s === b.j * NW + b.i) return [cellPos(b)];
+  const out = [];
+  for (let k = b.j * NW + b.i; k !== s; k = parentOf[k]) out.push({ x: (k % NW) + 0.5, z: Math.floor(k / NW) + 0.5 });
+  return out.reverse();
 }
 
 // ------------------------------------------------------------------------------------------------ run state
@@ -207,6 +224,8 @@ const ctx = {
   regionAtTile,
   snapTile: (tx, tz, r = 8) => { const c = snapCell(sceneW(tx), sceneW(tz), r); return c ? cellPos(c) : { x: sceneW(tx), z: sceneW(tz) }; },
   snapWorld: (x, z, r = 12) => { const c = snapCell(x, z, r); return c ? cellPos(c) : { x, z }; },
+  // the nav path of one escort segment (WorldQuestProps.escortRoute): A* over the same mask; null when none
+  navPath: (a, b) => { const ca = snapCell(a.x, a.z, 1), cb = snapCell(b.x, b.z, 1); return ca && cb ? navCells(ca, cb) : null; },
 };
 
 // village NPCs: the entity spawnVillageNpcs builds (positions as it computes them), without the model load
@@ -241,10 +260,13 @@ const placed = await placer.place();
 if (placed === 0) blocker('no quest prop or escort NPC was placed on the Sisli map (WorldQuestProps.place)');
 log(`placed ${placed} quest props and escort NPCs`);
 const escortOwner = new Map(); // escort NPC entity -> quest id (position of its path start, WorldQuestProps.place)
+const escortRoutes = new Map(); // quest id -> escortRoute result: the nav polyline of its route, or the error of a segment with no nav path
 for (const d of QUESTS) {
   if (!d.region || !regionMap.has(d.region) || !d.objectives.some((o) => o.kind === 'escort')) continue;
-  const path = escortPath(ctx, d.id, d.region);
-  if (!path) continue;
+  const built = escortRoute(ctx, d.id);
+  escortRoutes.set(d.id, built);
+  if ('error' in built) continue;
+  const path = built.route.path;
   const npc = [...world.entities.values()].find((e) => e instanceof EscortNpc && Math.hypot(e.position.x - path[0].x, e.position.z - path[0].z) < 0.01);
   if (npc) escortOwner.set(npc, d.id);
 }
@@ -484,6 +506,14 @@ async function doObjective(def, k) {
       fOn(npc, label, 'sisli');
       npc.interact(player);
       if (!/yolda/.test(npc.interactPrompt)) blocker(`${label}: F did not start the escort (prompt "${npc.interactPrompt}")`);
+      // the escort walks the nav polyline of its route (every segment between two waypoints has a nav path, else blocked above); the
+      // player walks the same polyline 2 m behind it, so every step of both is on walkable cells
+      const built = escortRoutes.get(def.id);
+      if (!built || 'error' in built) blocker(`${label}: escort route has no nav path (${built ? built.error : 'no route in the data'})`);
+      const P = built.route.path;
+      const arc = [0];
+      for (let i = 1; i < P.length; i++) arc.push(arc[i - 1] + Math.hypot(P[i].x - P[i - 1].x, P[i].z - P[i - 1].z));
+      let ni = 0;
       let frames = 0;
       let last = { x: npc.position.x, z: npc.position.z };
       while (!done()) {
@@ -494,7 +524,12 @@ async function doObjective(def, k) {
         const np = npc.position;
         S.walkM += Math.hypot(np.x - last.x, np.z - last.z);
         last = { x: np.x, z: np.z };
-        S.pos = { x: np.x + 2, z: np.z }; movePlayer(); player.position.x = np.x + 2;
+        const dn = (i) => Math.hypot(P[i].x - np.x, P[i].z - np.z);
+        while (ni + 1 < P.length && dn(ni + 1) <= dn(ni)) ni++; // the escort's place on its polyline, never back
+        const target = Math.max(0, arc[ni] - 2);
+        let j = 0;
+        while (j + 1 < P.length && arc[j + 1] <= target) j++;
+        S.pos = { x: P[j].x, z: P[j].z }; movePlayer();
         // ambushers arrive in the open world: they die to the real kill path (their XP is open-world XP)
         for (const e of [...world.enemies]) {
           if (e.kind !== 'enemy' || e.isDead || e.removed) continue;
@@ -506,6 +541,8 @@ async function doObjective(def, k) {
         }
         pickUp();
       }
+      // the protection time runs out at the end of the route: the escort must have walked every segment to its last waypoint
+      if (Math.hypot(last.x - P[P.length - 1].x, last.z - P[P.length - 1].z) > 1.5) blocker(`${label}: escort completed at ${at(last)}, short of its route end ${at(P[P.length - 1])}`);
       break;
     }
     case 'explore': {

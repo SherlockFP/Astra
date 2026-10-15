@@ -366,17 +366,32 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   ok('esc.hp-zero-fails-run', hrun.state === 'idle' && hrun.hp === 100 && hrun.pos.x === 0 && hl.ticks.some((t) => t[1] === false), `state ${hrun.state}, hp ${hrun.hp}`);
   ok('esc.hp-pct', new EscortRun({ path, triggers: [], speed: 1, leash: 25, failSec: 3 }, hdeps).hpPct === 1 && hrun.hpPct === 1);
 
-  const far = { ticks: [], ambush: 0, dist: 40 };
-  const fdeps = { playerDist: () => far.dist, ambush: () => { far.ambush++; }, ambushAlive: () => 0, tick: (s, a) => far.ticks.push([s, a]), done: () => false };
+  // WoW escort rules: beyond leash (25 m) the escort stands still; the keep-up hint shows after 5 s; only beyond failDist (60 m)
+  // for failSec the run fails (reset to the start, failed reason 'far')
+  const far = { ticks: [], ambush: 0, dist: 40, failed: [] };
+  const fdeps = { playerDist: () => far.dist, ambush: () => { far.ambush++; }, ambushAlive: () => 0, tick: (s, a) => far.ticks.push([s, a]), done: () => false, failed: (r) => far.failed.push(r) };
   const frun = new EscortRun({ path, triggers: [1, 2], speed: 10, leash: 25, failSec: 3 }, fdeps);
   frun.start();
   frun.update(1);
   frun.update(1);
-  ok('esc.out-of-range-pauses', frun.state === 'walking' && frun.pos.x === 0 && far.ticks.length === 0);
+  ok('esc.out-of-range-pauses', frun.state === 'walking' && frun.pos.x === 0 && frun.paused && far.ticks.length === 0);
+  ok('esc.no-hint-before-5s', !frun.hint);
   frun.update(1);
-  ok('esc.fails-and-resets', frun.state === 'idle' && frun.pos.x === 0 && far.ticks.length === 1 && far.ticks[0][1] === false);
+  frun.update(1);
+  frun.update(1);
+  ok('esc.keep-up-hint-after-5s', frun.hint && frun.state === 'walking' && frun.pos.x === 0, `hint ${frun.hint}`);
+  ok('esc.no-fail-inside-60m', far.failed.length === 0 && far.ticks.length === 0);
+  far.dist = 70;
+  frun.update(1);
+  frun.update(1);
+  ok('esc.far-not-yet', frun.state === 'walking' && far.failed.length === 0);
+  frun.update(1);
+  ok('esc.fails-and-resets', frun.state === 'idle' && frun.pos.x === 0 && far.ticks.length === 1 && far.ticks[0][1] === false && far.failed[0] === 'far');
+  ok('esc.hint-cleared-on-fail', !frun.hint && !frun.paused);
   far.dist = 0;
   ok('esc.restart-after-fail', frun.start());
+  frun.update(1);
+  ok('esc.walks-again-in-leash', frun.pos.x > 0 && !frun.paused);
 }
 
 // ------------------------------------------------------------------------------------------------ placement (stub context)
@@ -402,7 +417,8 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   const real = questPropSpots(stub, QUESTS.filter((q) => q.region && /^r[123]$/.test(q.region)));
   ok('place.real-quests', real.length >= 20 && real.every((s) => questPropKind(s.target)), `${real.length} real spots`);
   // escort routes are fixed data (data/world/escort_routes.ts): the runtime only snaps each waypoint to walkable ground (snapWorld)
-  const snapStub = { ...stub, snapWorld: (x, z) => ({ x: x + 1, z }) };
+  // the stub world has no nav grid: each segment is its straight line (the real route is checked by chain_e2e and content-check)
+  const snapStub = { ...stub, snapWorld: (x, z) => ({ x: x + 1, z }), navPath: (a, b) => [b] };
   const escRoutes = ['mq_04_samani_sustur', 'sq_r1_ch02_gozcu_avi'].map((id) => escortPath(snapStub, id));
   ok('place.escort-routes', escRoutes.every((p) => !!p && p.length >= 3), escRoutes.map((p) => p?.length ?? 0).join('/') + ' waypoints');
   ok('place.escort-snapped', !!escRoutes[0] && escRoutes[0][0].x === 778 && escRoutes[0][0].z === 245, JSON.stringify(escRoutes[0]?.[0]));
@@ -482,6 +498,7 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
     regionAtTile: () => ({ id: 'r1' }),
     snapTile: (tx, tz) => ({ x: tx * 4 + 2, z: tz * 4 + 2 }),
     snapWorld: (x, z) => ({ x, z }),
+    navPath: (a, b) => [b], // straight segments: the stub world has no nav grid
   };
   // the ambush is spawned by the host (spawnEnemy only spawns on the authority): this stage plays the host
   const netWas = G.net;

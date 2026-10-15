@@ -318,7 +318,13 @@ function palisadeBlocks(v: { bounds: [number, number]; gates: { pos: [number, nu
  * village palisades), flooded from its start. walkable(wx, wz, r): every cell within r m is open. reachable(wx, wz): a walkable cell
  * within one cell of (wx, wz) is reached from the start.
  */
-export function navReach(def: DungeonDef, models: ModelDb): { walkable: (wx: number, wz: number, r: number) => boolean; reachable: (wx: number, wz: number) => boolean; snap: (wx: number, wz: number, rad: number) => { x: number; z: number } | null } {
+export function navReach(def: DungeonDef, models: ModelDb): {
+  walkable: (wx: number, wz: number, r: number) => boolean;
+  reachable: (wx: number, wz: number) => boolean;
+  snap: (wx: number, wz: number, rad: number) => { x: number; z: number } | null;
+  /** A* path over the mask from a to b (cell centres, a first), null when none: the escort routes (escortRoute) must have one per segment. */
+  navPath: (a: { x: number; z: number }, b: { x: number; z: number }) => { x: number; z: number }[] | null;
+} {
   const nav = buildNav(def, models);
   flood(nav, sceneW(def.start.pos[0]), sceneW(def.start.pos[1]));
   const reachable = (wx: number, wz: number): boolean => {
@@ -338,7 +344,87 @@ export function navReach(def: DungeonDef, models: ModelDb): { walkable: (wx: num
     }
     return null;
   };
-  return { walkable: (wx, wz, r) => clearAt(nav, wx, wz, r), reachable, snap };
+  return { walkable: (wx, wz, r) => clearAt(nav, wx, wz, r), reachable, snap, navPath: (a, b) => maskPath(nav, a, b) };
+}
+
+/**
+ * A* over the nav mask (8-way, no corner cutting, one cell = 1 m): the cell centres from a to b, both cells walkable (the caller snaps
+ * them). Null when no path exists within maxNodes expansions. The content check's stand-in for NavGrid.findPath (runtime).
+ */
+function maskPath(nav: NavMask, a: { x: number; z: number }, b: { x: number; z: number }, maxNodes = 400000): { x: number; z: number }[] | null {
+  const W = nav.w, H = nav.h;
+  const open = (i: number, j: number): boolean => i >= 0 && j >= 0 && i < W && j < H && !!nav.walk[j * W + i];
+  const si = Math.floor(a.x), sj = Math.floor(a.z), gi = Math.floor(b.x), gj = Math.floor(b.z);
+  if (!open(si, sj) || !open(gi, gj)) return null;
+  const start = sj * W + si, goal = gj * W + gi;
+  const g = new Map<number, number>([[start, 0]]);
+  const came = new Map<number, number>();
+  const closed = new Set<number>();
+  const h = (i: number, j: number): number => {
+    const dx = Math.abs(i - gi), dz = Math.abs(j - gj);
+    return Math.max(dx, dz) + (Math.SQRT2 - 1) * Math.min(dx, dz);
+  };
+  // binary min-heap of [f, cell]
+  const heap: [number, number][] = [[h(si, sj), start]];
+  const pushH = (e: [number, number]): void => {
+    heap.push(e);
+    let k = heap.length - 1;
+    while (k > 0) {
+      const p = (k - 1) >> 1;
+      if (heap[p][0] <= heap[k][0]) break;
+      [heap[p], heap[k]] = [heap[k], heap[p]];
+      k = p;
+    }
+  };
+  const popH = (): number => {
+    const top = heap[0];
+    const last = heap.pop()!;
+    if (heap.length) {
+      heap[0] = last;
+      let k = 0;
+      for (;;) {
+        const l = 2 * k + 1, r = l + 1;
+        let m = k;
+        if (l < heap.length && heap[l][0] < heap[m][0]) m = l;
+        if (r < heap.length && heap[r][0] < heap[m][0]) m = r;
+        if (m === k) break;
+        [heap[m], heap[k]] = [heap[k], heap[m]];
+        k = m;
+      }
+    }
+    return top[1];
+  };
+  let expanded = 0;
+  while (heap.length) {
+    const cur = popH();
+    if (cur === goal) break;
+    if (closed.has(cur)) continue;
+    closed.add(cur);
+    if (++expanded > maxNodes) return null;
+    const ci = cur % W, cj = (cur - ci) / W;
+    for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
+      if (!di && !dj) continue;
+      const ni = ci + di, nj = cj + dj;
+      if (!open(ni, nj)) continue;
+      if (di && dj && (!open(ci + di, cj) || !open(ci, cj + dj))) continue;
+      const n = nj * W + ni;
+      if (closed.has(n)) continue;
+      const ng = g.get(cur)! + (di && dj ? Math.SQRT2 : 1);
+      if (ng < (g.get(n) ?? Infinity)) {
+        g.set(n, ng);
+        came.set(n, cur);
+        pushH([ng + h(ni, nj), n]);
+      }
+    }
+  }
+  if (start !== goal && !came.has(goal)) return null;
+  const cells: { x: number; z: number }[] = [];
+  for (let k = goal; ; ) {
+    cells.push({ x: (k % W) + 0.5, z: Math.floor(k / W) + 0.5 });
+    if (k === start) break;
+    k = came.get(k)!;
+  }
+  return cells.reverse();
 }
 
 function flood(nav: NavMask, sx: number, sz: number): void {

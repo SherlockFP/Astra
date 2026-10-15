@@ -7,7 +7,7 @@ import { spawnEnemy } from '../../entities/EnemyFactory';
 import type { Enemy } from '../../entities/Enemy';
 import { RNG, hashString } from '../../core/utils';
 import { toast } from '../../systems/notify';
-import { EscortRun, type EscortDeps, type Pt2 } from './QuestEscortRun';
+import { EscortRun, ESCORT_FAIL_DIST_M, ESCORT_HINT_SEC, type EscortDeps, type EscortFailReason, type Pt2 } from './QuestEscortRun';
 import { ESCORT_ROUTES } from '../../data/world/escort_routes';
 import { distM, type Pt, type WorldCtx } from './util';
 
@@ -33,8 +33,8 @@ export interface PropSpot {
 
 /** The part of WorldCtx the placement needs (a test can pass a stub). */
 export type SpotCtx = Pick<WorldCtx, 'regionRect' | 'regionAtTile' | 'snapTile' | 'seed'>;
-/** The part of WorldCtx an escort route needs (snapping its waypoints to walkable ground). */
-export type EscortCtx = Pick<WorldCtx, 'snapWorld'>;
+/** The part of WorldCtx an escort route needs (snapping its waypoints to walkable ground, routing each segment on the nav grid). */
+export type EscortCtx = Pick<WorldCtx, 'snapWorld' | 'navPath'>;
 
 /** Walkable point of a random tile of the region, deterministic for (seed, key). Null when no tile of the region was found. */
 function pickPoint(ctx: SpotCtx, region: string, key: string): Pt | null {
@@ -79,22 +79,47 @@ export function questPropSpots(ctx: SpotCtx, defs: readonly QuestDef[]): PropSpo
   return out;
 }
 
-/** Route of an escort quest (data/world/escort_routes.ts): every waypoint snapped to walkable ground near its spot (6 m). Null for a quest
- *  without a route. The routes are fixed data, checked by tools/content-check.mjs (ring band, length, camp clearance). */
-export function escortPath(ctx: EscortCtx, questId: string): Pt2[] | null {
+/** A built escort route: the nav polyline (path[0] is the start) and the indices of its trigger waypoints in that polyline. */
+export interface EscortRoute {
+  path: Pt2[];
+  triggers: number[];
+}
+
+/**
+ * Route of an escort quest (data/world/escort_routes.ts): every waypoint snapped to walkable ground near its spot (6 m), then each
+ * segment routed on the nav grid (ctx.navPath), so the escort walks around fences and rocks like the player can. Fails with the first
+ * segment that has no nav path (or a route missing from the data): the escort then gets no NPC, and the content check reports it.
+ */
+export function escortRoute(ctx: EscortCtx, questId: string): { route: EscortRoute } | { error: string } {
   const def = ESCORT_ROUTES[questId];
-  if (!def) return null;
-  const path = def.route.map(([x, z]) => {
+  if (!def) return { error: 'no route in data/world/escort_routes.ts' };
+  const wps = def.route.map(([x, z]) => {
     const p = ctx.snapWorld(x, z, 6);
     return { x: p.x, z: p.z };
   });
-  return path.length >= 2 ? path : null;
+  if (wps.length < 2) return { error: 'route has fewer than 2 waypoints' };
+  const path: Pt2[] = [wps[0]];
+  const at: number[] = [0]; // polyline index of each waypoint
+  for (let i = 1; i < wps.length; i++) {
+    const seg = ctx.navPath(wps[i - 1], wps[i]);
+    if (!seg || seg.length === 0) return { error: `segment ${i - 1}-${i} (${Math.round(wps[i - 1].x)},${Math.round(wps[i - 1].z)} to ${Math.round(wps[i].x)},${Math.round(wps[i].z)}) has no nav path` };
+    for (const p of seg) path.push({ x: p.x, z: p.z });
+    at[i] = path.length - 1;
+  }
+  const triggers = def.triggers.filter((i) => i > 0 && i < wps.length).map((i) => at[i]);
+  return { route: { path, triggers } };
 }
 
-/** Walking speed (m/s), leash (m) and fail time (s) of an escort. */
+/** The nav polyline of an escort route (escortRoute), or null when the route is missing or a segment has no nav path. */
+export function escortPath(ctx: EscortCtx, questId: string): Pt2[] | null {
+  const r = escortRoute(ctx, questId);
+  return 'route' in r ? r.route.path : null;
+}
+
+/** Walking speed (m/s), leash (m) and fail time (s) of an escort: WoW rules, see QuestEscortRun.ts. */
 const ESCORT_SPEED = 2;
 const ESCORT_LEASH_M = 25;
-const ESCORT_FAIL_SEC = 8;
+const ESCORT_FAIL_SEC = 20;
 
 interface EscortUnit {
   questId: string;
@@ -108,6 +133,8 @@ interface EscortUnit {
   /** Ambushers still spawning. */
   pending: number;
   rng: RNG;
+  /** The keep-up toast is out for the current wait (reset when the player is back in leash). */
+  hintShown: boolean;
 }
 
 export class WorldQuestProps {
@@ -141,11 +168,12 @@ export class WorldQuestProps {
     for (const d of defs) {
       if (!d.objectives.some((o) => o.kind === 'escort')) continue;
       const route = ESCORT_ROUTES[d.id];
-      const path = escortPath(ctx, d.id);
-      if (!route || !path) {
-        console.warn(`[world] escort quest ${d.id} has no route (data/world/escort_routes.ts)`);
+      const built = escortRoute(ctx, d.id);
+      if (!route || 'error' in built) {
+        console.error(`[world] escort quest ${d.id}: ${'error' in built ? built.error : 'no route'} (data/world/escort_routes.ts)`);
         continue;
       }
+      const { path, triggers } = built.route;
       const unit: EscortUnit = {
         questId: d.id,
         level: Math.max(1, d.level),
@@ -156,6 +184,7 @@ export class WorldQuestProps {
         enemies: [],
         pending: 0,
         rng: new RNG(`${d.id}:ambush`),
+        hintShown: false,
       };
       const deps: EscortDeps = {
         playerDist: (x, z) => {
@@ -167,14 +196,17 @@ export class WorldQuestProps {
         attackersNear: (x, z, reach) => this.attackersNear(unit, x, z, reach),
         tick: (seconds, alive) => G.quests?.tickEscort(seconds, alive),
         done: () => !!G.quests?.progressRows(d.id).some((r) => r.kind === 'escort' && r.done),
+        failed: (reason) => this.escortFailed(reason),
       };
       unit.run = new EscortRun(
         {
           path,
-          triggers: route.triggers.filter((i) => i > 0 && i < path.length),
+          triggers,
           speed: ESCORT_SPEED,
           leash: ESCORT_LEASH_M,
+          failDist: ESCORT_FAIL_DIST_M,
           failSec: ESCORT_FAIL_SEC,
+          hintSec: ESCORT_HINT_SEC,
           hp: route.hp,
           attackerDps: route.attackerDps,
           regen: route.regen,
@@ -209,9 +241,21 @@ export class WorldQuestProps {
   update(dt: number): void {
     for (const u of this.escorts) {
       u.run.update(dt);
+      if (u.run.hint) {
+        if (!u.hintShown) toast('Gözcü bekliyor! Yetiş, yoksa görev başarısız olur.', 'info');
+        u.hintShown = true;
+      } else u.hintShown = false;
       const { x, z } = u.run.pos;
       u.npc.position.set(x, this.ctx.world.groundY(x, z), z);
     }
+  }
+
+  /** The escort run failed (the player stayed out too long, or the escort fell): back at its start, F starts it again there. */
+  private escortFailed(reason: EscortFailReason): void {
+    toast(
+      reason === 'far' ? 'Gözcü yanından ayrıldın: görev başarısız. Gözcüyü başlangıçta yeniden başlat.' : 'Gözcü düştü: görev başarısız. Gözcüyü başlangıçta yeniden başlat.',
+      'info',
+    );
   }
 
   private startEscort(u: EscortUnit): void {
@@ -225,6 +269,7 @@ export class WorldQuestProps {
   private promptOf(u: EscortUnit): string {
     if (u.run.state === 'idle') return 'eskortu başlat [F]';
     if (u.run.state === 'done') return 'görev tamam';
+    if (u.run.hint) return `gözcü bekliyor, yetiş · can %${Math.round(u.run.hpPct * 100)}`;
     return `yolda · can %${Math.round(u.run.hpPct * 100)}`;
   }
 

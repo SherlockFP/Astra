@@ -1,12 +1,17 @@
 /**
- * Escort run of one quest (`escort` objective), pure state machine: the walk along a short path, the ambush at the trigger
+ * Escort run of one quest (`escort` objective), pure state machine: the walk along a nav path, the ambush at the trigger
  * waypoints, the escort NPC's HP and the protection timer. The world code (WorldQuestProps.ts) supplies the distances, the ambush
  * spawns and the QuestSystem.tickEscort call through EscortDeps, so this file runs headless in the sims.
  *
- * Rules: the escort walks only while the local player stays within `leash` metres. Beyond it the escort stops; after `failSec`
- * seconds out of range the run fails (timer reset, escort back to the start). At a trigger waypoint the ambush spawns once per run
- * and the escort waits until the ambushers are dead (no protection time counts meanwhile). One protection second is counted per
- * second of walking (or standing at the end of the path) while the player is in range.
+ * WoW escort rules:
+ *  - the escort walks `path`, the nav polyline of the route (WorldQuestProps.escortRoute: every segment between two waypoints is a
+ *    NavGrid path, so it never walks through a fence or a rock), only while the local player stays within `leash` metres. Beyond it
+ *    the escort stands still; after `hintSec` seconds `hint` is true (the "keep up" hint). It resumes as soon as the player is back;
+ *  - beyond `failDist` metres for `failSec` seconds the run fails: the protection timer resets and the escort goes back to the start
+ *    at full HP. Between `leash` and `failDist` the escort only waits;
+ *  - at a trigger waypoint the ambush spawns once per run and the escort waits until the ambushers are dead (no protection time counts
+ *    meanwhile). One protection second is counted per second of walking (or standing at the end of the path) while the player is in
+ *    range.
  * HP (optional, `hp` > 0): ambushers within CONTACT_M of the escort hit it (`attackerDps` each, at every moment of the run, waiting
  * included); it regenerates `regen` HP/s while no ambusher is alive. At 0 HP the escort falls: the run fails like an out-of-range
  * run (timer reset, back to the start, full HP).
@@ -16,6 +21,13 @@ export interface Pt2 { x: number; z: number }
 
 /** Reach (m) of an ambusher's hit on the escort. */
 export const CONTACT_M = 4;
+/** Default fail distance (m) of a run: beyond it for failSec the run fails (WoW escort rule). */
+export const ESCORT_FAIL_DIST_M = 60;
+/** Default seconds out of leash before the keep-up hint shows (WoW escort rule). */
+export const ESCORT_HINT_SEC = 5;
+
+/** Why a run failed: the player stayed beyond failDist too long, or the escort fell. */
+export type EscortFailReason = 'far' | 'fell';
 
 export interface EscortDeps {
   /** Distance (m) from (x, z) to the local player. */
@@ -30,19 +42,25 @@ export interface EscortDeps {
   tick(seconds: number, alive: boolean): void;
   /** True when the escort objective is complete. */
   done(): boolean;
+  /** Optional: the run failed (called after the reset). */
+  failed?(reason: EscortFailReason): void;
 }
 
 export interface EscortOpts {
-  /** Waypoints; path[0] is the start. */
+  /** Nav polyline; path[0] is the start, triggers index into it. */
   path: Pt2[];
-  /** Waypoint indices where the ambush fires (first arrival only). */
+  /** Indices of `path` where the ambush fires (first arrival only). */
   triggers: number[];
   /** Walking speed (m/s). */
   speed: number;
-  /** Max distance (m) to the local player while the escort walks. */
+  /** Max distance (m) to the local player while the escort walks; beyond it the escort stands still. */
   leash: number;
-  /** Seconds out of range before the run fails. */
+  /** Distance (m) beyond which the player is too far for the escort (default ESCORT_FAIL_DIST_M). */
+  failDist?: number;
+  /** Seconds beyond failDist before the run fails. */
   failSec: number;
+  /** Seconds out of leash before `hint` turns true (default ESCORT_HINT_SEC). */
+  hintSec?: number;
   /** Max HP of the escort NPC (0 or missing = no HP model). */
   hp?: number;
   /** HP lost per second per ambusher in contact. */
@@ -58,10 +76,13 @@ export class EscortRun {
   pos: Pt2;
   /** Current HP of the escort NPC (0 when the run has no HP model). */
   hp: number;
-  /** Index of the next waypoint to reach. */
+  /** Index of the next path point to reach. */
   private wp = 1;
   private readonly fired = new Set<number>();
+  /** Seconds beyond failDist (the fail clock). */
   private far = 0;
+  /** Seconds beyond leash (the pause and the keep-up hint clock). */
+  private away = 0;
   private acc = 0;
 
   constructor(private readonly o: EscortOpts, private readonly d: EscortDeps) {
@@ -75,6 +96,16 @@ export class EscortRun {
     return max > 0 ? Math.max(0, this.hp / max) : 1;
   }
 
+  /** True while the escort waits for the player to come back within leash. */
+  get paused(): boolean {
+    return this.away > 0;
+  }
+
+  /** The "keep up" hint: the escort has waited for the player for hintSec seconds. */
+  get hint(): boolean {
+    return this.away >= (this.o.hintSec ?? ESCORT_HINT_SEC);
+  }
+
   /** Start the walk (F on the escort). False when a run is already going or finished. */
   start(): boolean {
     if (this.state !== 'idle') return false;
@@ -85,12 +116,16 @@ export class EscortRun {
   /** Advance the run by `dt` seconds. */
   update(dt: number): void {
     if (this.state === 'idle' || this.state === 'done') return;
-    if (this.d.playerDist(this.pos.x, this.pos.z) > this.o.leash) {
+    const dist = this.d.playerDist(this.pos.x, this.pos.z);
+    this.away = dist > this.o.leash ? this.away + dt : 0;
+    if (dist > (this.o.failDist ?? ESCORT_FAIL_DIST_M)) {
       this.far += dt;
-      if (this.far >= this.o.failSec) this.fail();
-      return;
-    }
-    this.far = 0;
+      if (this.far >= this.o.failSec) {
+        this.fail('far');
+        return;
+      }
+    } else this.far = 0;
+    if (this.away > 0) return;
     if (this.tendHp(dt)) return;
     if (this.state === 'ambush') {
       if (this.d.ambushAlive() === 0) this.state = 'walking';
@@ -114,7 +149,7 @@ export class EscortRun {
     if (near > 0) this.hp -= near * (this.o.attackerDps ?? 0) * dt;
     else if (this.d.ambushAlive() === 0) this.hp = Math.min(this.o.hp, this.hp + (this.o.regen ?? 0) * dt);
     if (this.hp > 0) return false;
-    this.fail();
+    this.fail('fell');
     return true;
   }
 
@@ -144,8 +179,8 @@ export class EscortRun {
     }
   }
 
-  /** Out of range for too long, or the escort fell: the protection timer resets and the escort returns to the start at full HP. */
-  private fail(): void {
+  /** The run failed: the protection timer resets and the escort returns to the start at full HP. */
+  private fail(reason: EscortFailReason): void {
     this.d.tick(1, false);
     this.state = 'idle';
     this.pos = { ...this.o.path[0] };
@@ -153,6 +188,8 @@ export class EscortRun {
     this.wp = 1;
     this.fired.clear();
     this.far = 0;
+    this.away = 0;
     this.acc = 0;
+    this.d.failed?.(reason);
   }
 }

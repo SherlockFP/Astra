@@ -4,11 +4,13 @@
  * Rules (tools/content-check.mjs checks them, HARD errors):
  *  - the route stays inside the quest's level ring (Sisli Vadi: level 1-2 inside 132 m of the ring hub koy_gumusdere, level 3 inside 195 m,
  *    level 4-5 beyond); the hub is (800, 140) m;
- *  - the route is at most 180 m long in total (the protection timer of a 90 s quest is 180 m of walking at 2 m/s);
+ *  - every segment between two waypoints has a nav path (NavGrid, the escort walks it, never a straight line through obstacles);
+ *    the route is at most 180 m long in total along those nav paths (the protection timer of a 90 s quest is 180 m of walking at 2 m/s);
  *  - the route never passes within 25 m (edge to edge) of a camp or patrol 2 or more levels above the quest;
  *  - every ambush wave fires at a waypoint in `triggers` (first arrival) and has 1-2 ambushers of the quest's level;
  *  - the escort NPC has `hp`, takes `attackerDps` per ambusher in contact and regenerates `regen` HP/s between waves.
- * Coordinates are world metres (x, z); the runtime snaps each waypoint to the nearest walkable ground within 6 m.
+ * Coordinates are world metres (x, z); the runtime snaps each waypoint to the nearest walkable ground within 6 m, then routes each
+ * segment on the nav grid (WorldQuestProps.escortRoute). `triggers` are waypoint indices, not nav indices.
  */
 
 export interface EscortRoute {
