@@ -46,8 +46,10 @@ const BASE: Partial<Record<CullLayer, Base>> = {
   // the voxel copies of trees read as large pale translucent blocks in the sky line past ~80 m (a 4x copy of a tall pine): full
   // models to 60 m, the 2x copy to 100 m, and no 4x copy (nothing is drawn beyond 100 m, the fog is already ~40 % there)
   tree: { d0: 60, d1: 100, end: 100, keep1: 1, keep2: 0, fog: 0 },
-  border: { d0: 18, d1: 44, end: 1e9, keep1: 1, keep2: 0.4, fog: 0 },
-  bush: { d0: 24, d1: 56, end: 70, keep1: 0.8, keep2: 0.5 },
+  // dense forest edge: full models to 18 m, the 2x copy out to the fog, no 4x copy (a 4x voxel of a 2.8x border tree was a 6 m block
+  // at 40-60 m); bush likewise (its 4x copy ended at 56 m with 2 m voxels). The tiers scale with each instance (LodPlan.angular).
+  border: { d0: 18, d1: 1e9, end: 1e9, keep1: 1, keep2: 0, fog: 0 },
+  bush: { d0: 24, d1: 70, end: 70, keep1: 0.8, keep2: 0 },
   rock: { d0: 24, d1: 55, end: 95, keep1: 1, keep2: 0.8 },
   // ground cover: short range, thinned with distance
   // (their 4x copy is empty: the 2x copy runs out to the end distance)
@@ -72,7 +74,11 @@ export function lodPlans(fogFar: number, q: GfxQuality = current): Partial<Recor
     const end = Math.min(cap, b.end * sc.dist);
     const d0 = Math.min(b.d0 * sc.dist, end);
     const d1 = Math.min(Math.max(b.d1 * sc.dist, d0), end);
-    out[layer] = { d0, d1, end, keep1: Math.min(1, b.keep1 * sc.keep), keep2: Math.min(1, b.keep2 * sc.keep) };
+    // the tiers scale with each instance (LodPlan.angular): a voxel copy keeps its on-screen size at any tree scale
+    out[layer] = {
+      d0, d1, end, keep1: Math.min(1, b.keep1 * sc.keep), keep2: Math.min(1, b.keep2 * sc.keep),
+      angular: { d0: b.d0 * sc.dist, d1: b.d1 * sc.dist, end: b.end * sc.dist, cap },
+    };
   }
   if (planCache.size > 64) planCache.clear();
   planCache.set(key, out);
