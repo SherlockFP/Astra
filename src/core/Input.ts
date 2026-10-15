@@ -32,7 +32,9 @@ export type InputAction =
   // CONTROLS_WOW fixes (appended): walk is a toggle (held Ctrl fights browser shortcuts), autorun runs forward until W / S is pressed
   | 'walkToggle' | 'autorun'
   // Binek (WoW ground mount, appended): F9
-  | 'mount';
+  | 'mount'
+  // First person (camera/FirstPerson.ts, appended): toggles the eye view. Insert is free in both schemes (no browser default, not a letter or digit).
+  | 'firstPerson';
 
 /** CONTROLS_WOW D1: the control scheme. 'wow' is the default; 'aksiyon' is the pre-WoW layout. */
 export type ControlScheme = 'wow' | 'aksiyon';
@@ -133,6 +135,7 @@ export const DEFAULT_BINDINGS: Record<InputAction, string[]> = {
   // laptops without a numpad ('[' / ']' sit on the Turkish-Q ğ / ü keys). None of these codes has a browser default.
   walkToggle: ['NumpadDivide', 'BracketLeft'],
   autorun: ['NumLock', 'BracketRight'],
+  firstPerson: ['Insert'],
 };
 
 /**
@@ -199,7 +202,7 @@ export const ACTION_NAMES_TR: Record<InputAction, string> = {
   professions: 'Meslekler', camShoulder: 'Omuz Değiştir', heavyAttack: 'Ağır Saldırı',
   skill_s4: 'Beceri G', groupFinder: 'Grup Bulucu', guide: 'Ne Yapmalıyım?', focusTarget: 'Odak Hedef', targetPrev: 'Önceki Hedef',
   autoAttack: 'Otomatik Saldırı', turnLeft: 'Sola Dön', turnRight: 'Sağa Dön',
-  walkToggle: 'Yürü / Koş (aç/kapat)', autorun: 'Otomatik Koşu', mount: 'Binek',
+  walkToggle: 'Yürü / Koş (aç/kapat)', autorun: 'Otomatik Koşu', mount: 'Binek', firstPerson: 'Birinci Şahıs Görünüm',
 };
 
 export class Input {

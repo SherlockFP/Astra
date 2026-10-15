@@ -205,6 +205,42 @@ for (const a of Object.keys(SCHEME_BINDINGS.wow)) check(SCHEME_ACTIONS.includes(
   check(GATE.skillKeysBlocked({ ...town, uiMode: 'loading' }) === true, 'skill gate: the loading screen must block casting');
 }
 
+// ---- first person (camera/FirstPerson.ts): the keybind, and the zoom threshold that enters and leaves it ----
+{
+  const FP = await imp('src/camera/FirstPerson.ts');
+  const { ACTION_NAMES_TR, codeLabel } = INPUT;
+  for (const s of SCHEMES) {
+    check(same(tables[s].firstPerson, ['Insert']), `[${s}] firstPerson must default to Insert, got ${tables[s].firstPerson}`);
+    check(maps[s].get('Insert')?.size === 1, `[${s}] Insert is bound to ${[...(maps[s].get('Insert') ?? [])].join(', ') || 'nothing'}`);
+    check(codeLabel('Insert') !== 'Insert', 'Insert needs a short label (codeLabel)');
+  }
+  check(!SCHEME_ACTIONS.includes('firstPerson'), 'firstPerson must be shared (not in SCHEME_ACTIONS)');
+  check(typeof ACTION_NAMES_TR.firstPerson === 'string' && ACTION_NAMES_TR.firstPerson.length > 0, 'firstPerson needs a Turkish label');
+  const MIN = 2; // WoW zoomMin (CAM_PROFILES.classic)
+  const st = (zoom, dir, fp = false, wheelEnters = true) => FP.stepFirstPersonZoom({ zoom, zoomMin: MIN, fp, wheelEnters }, dir);
+  // zoom in: only the step that starts at the minimum enters first person
+  check(same(st(9, -1), { fp: false, consumed: false }), 'zoom: 9 m wheel in is a normal zoom step');
+  check(same(st(2.5, -1), { fp: false, consumed: false }), 'zoom: 2.5 m wheel in is still a normal zoom step');
+  check(same(st(MIN, -1), { fp: true, consumed: true }), 'zoom: wheel in at the minimum enters first person');
+  check(same(st(MIN + 0.03, -1), { fp: true, consumed: true }), 'zoom: within 0.05 m of the minimum counts as all the way in');
+  check(same(st(MIN, -1, false, false), { fp: false, consumed: false }), 'zoom: with Tekerlekle birinci şahıs off the wheel never enters');
+  // inside first person: zoom in stays, zoom out leaves (back to the orbit lens)
+  check(same(st(MIN, -1, true), { fp: true, consumed: true }), 'zoom: wheel in inside first person stays in');
+  check(same(st(MIN, -1, true, false), { fp: true, consumed: true }), 'zoom: the option off does not drop an active first person');
+  check(same(st(MIN, 1, true), { fp: false, consumed: true }), 'zoom: wheel out from first person returns to third person');
+  check(same(st(MIN, 1, false), { fp: false, consumed: false }), 'zoom: wheel out in third person is a normal zoom step');
+  // eye and pitch constants
+  check(Math.abs(FP.fpEyeHeight(2.3) - 2.0) < 0.05, `eye height of a 2.3 m model must be about 2.0 m, got ${FP.fpEyeHeight(2.3)}`);
+  check(FP.fpEyeHeight(NaN) === FP.FP_EYE_FALLBACK, 'eye height without a model uses the fallback');
+  check(Math.abs(FP.FP_PITCH_MAX - 85 * Math.PI / 180) < 1e-9, 'first-person pitch clamp must be 85 deg');
+  check(FP.FP_NEAR <= 0.1 && FP.FP_NEAR >= 0.05, 'first-person near plane must be 0.05..0.1 m');
+  // the third-person default distance moved to 13 m (WoW), max zoom-out 35 m, migration of the old 10 m default
+  const { DEFAULT_SETTINGS } = SETTINGS;
+  check(DEFAULT_SETTINGS.cameraDistanceWow === 13, `WoW default camera distance must be 13 m, got ${DEFAULT_SETTINGS.cameraDistanceWow}`);
+  const camSrc = (await import('node:fs')).readFileSync(`${ROOT}/src/camera/ThirdPersonCamera.ts`, 'utf8');
+  check(camSrc.includes('classic: { zoomMin: 2, zoomMaxOutdoor: 35, zoomMaxIndoor: 18, zoomDefault: 13,'), 'CAM_PROFILES.classic must have zoomMaxOutdoor 35 and zoomDefault 13');
+}
+
 if (failures.length) {
   for (const f of failures) console.error(`FAIL ${f}`);
   console.error(`controls-check: ${failures.length} failure(s) in ${checks} checks`);
