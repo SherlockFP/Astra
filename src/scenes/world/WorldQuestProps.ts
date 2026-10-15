@@ -7,7 +7,7 @@ import { spawnEnemy } from '../../entities/EnemyFactory';
 import type { Enemy } from '../../entities/Enemy';
 import { RNG, hashString } from '../../core/utils';
 import { toast } from '../../systems/notify';
-import { EscortRun, ESCORT_FAIL_DIST_M, ESCORT_HINT_SEC, type EscortDeps, type EscortFailReason, type Pt2 } from './QuestEscortRun';
+import { EscortRun, ESCORT_FAIL_DIST_M, ESCORT_FORGIVE_FAILS, ESCORT_HINT_SEC, type EscortDeps, type EscortFailReason, type Pt2 } from './QuestEscortRun';
 import { ESCORT_ROUTES } from '../../data/world/escort_routes';
 import { QUEST_PROP_SPOTS } from '../../data/world/quest_prop_spots';
 import { distM, type Pt, type WorldCtx } from './util';
@@ -145,6 +145,8 @@ interface EscortUnit {
   enemies: Enemy[];
   /** Ambushers still spawning. */
   pending: number;
+  /** Bumped by a failed run: the ambushers of the old run that spawn late are removed at once. */
+  gen: number;
   rng: RNG;
   /** The keep-up toast is out for the current wait (reset when the player is back in leash). */
   hintShown: boolean;
@@ -196,6 +198,7 @@ export class WorldQuestProps {
         run: null as unknown as EscortRun,
         enemies: [],
         pending: 0,
+        gen: 0,
         rng: new RNG(`${d.id}:ambush`),
         hintShown: false,
       };
@@ -209,7 +212,9 @@ export class WorldQuestProps {
         attackersNear: (x, z, reach) => this.attackersNear(unit, x, z, reach),
         tick: (seconds, alive) => G.quests?.tickEscort(seconds, alive),
         done: () => !!G.quests?.progressRows(d.id).some((r) => r.kind === 'escort' && r.done),
-        failed: (reason) => this.escortFailed(reason),
+        failed: (reason) => this.escortFailed(unit, reason),
+        charge: () => this.escortCharge(unit),
+        complete: () => G.quests?.completeEscort(d.id),
       };
       unit.run = new EscortRun(
         {
@@ -263,12 +268,30 @@ export class WorldQuestProps {
     }
   }
 
-  /** The escort run failed (the player stayed out too long, or the escort fell): back at its start, F starts it again there. */
-  private escortFailed(reason: EscortFailReason): void {
-    toast(
-      reason === 'far' ? 'Gözcü yanından ayrıldın: görev başarısız. Gözcüyü başlangıçta yeniden başlat.' : 'Gözcü düştü: görev başarısız. Gözcüyü başlangıçta yeniden başlat.',
-      'info',
-    );
+  /**
+   * The escort run failed (the player stayed out too long, or the escort fell): back at its start, F starts it again there. The
+   * ambushers of the old run are removed (a restart spawns its own waves); after ESCORT_FORGIVE_FAILS failures the toast says the
+   * objective completes at the end point.
+   */
+  private escortFailed(u: EscortUnit, reason: EscortFailReason): void {
+    u.gen++;
+    for (const e of u.enemies) if (!e.isDead && !e.removed) e.escape();
+    u.enemies.length = 0;
+    const why = reason === 'far' ? 'Gözcü yanından ayrıldın: görev başarısız.' : 'Gözcü düştü: görev başarısız.';
+    const next = u.run.fails >= ESCORT_FORGIVE_FAILS
+      ? 'Gözcüyü başlangıçta yeniden başlat [F]: bitiş noktasına ulaşınca görev tamamlanır.'
+      : 'Gözcüyü başlangıçta yeniden başlat [F].';
+    toast(`${why} ${next}`, 'info');
+  }
+
+  /** The wave did not die in time: its ambushers charge the escort (EnemyAI.scriptGoal follows the escort while the run charges). */
+  private escortCharge(u: EscortUnit): void {
+    if (u.enemies.some((e) => !e.isDead && !e.removed)) toast('Pusudakiler gözcüye saldırıyor! Onları öldür.', 'info');
+  }
+
+  /** The escort run of a quest (null when the quest has no escort on this map); the tests and the content sims read its wait. */
+  escortRun(questId: string): EscortRun | null {
+    return this.escorts.find((u) => u.questId === questId)?.run ?? null;
   }
 
   private startEscort(u: EscortUnit): void {
@@ -293,17 +316,29 @@ export class WorldQuestProps {
     return n;
   }
 
-  /** Ambush of one trigger waypoint: `waveSize` enemies around it. Peers that cannot spawn enemies get null and no ambushers. */
+  /**
+   * Ambush of one trigger waypoint: `waveSize` enemies around it. A scripted encounter (WoW scripted aggro): they engage the nearest
+   * player at once, whatever the pull cap and the village boxes say; while the escort waits they stand next to it, and if the wave
+   * is still alive after AMBUSH_CHARGE_SEC they charge the escort (scriptGoal). Peers that cannot spawn enemies get null and no ambushers.
+   */
   private ambush(u: EscortUnit, x: number, z: number): void {
+    const gen = u.gen;
     for (let i = 0; i < u.waveSize; i++) {
       const a = (i / u.waveSize) * Math.PI * 2 + u.rng.next();
       const p = this.ctx.snapWorld(x + Math.cos(a) * 6, z + Math.sin(a) * 6, 6);
       u.pending++;
       // open-world trash: the low-level curve of the quest level (a same-level solo fight, as the camps), not the dungeon HP
-      spawnEnemy(this.ctx.world, u.ambushDef, p, { level: u.level, aggro: true, openWorld: true }).then(
+      spawnEnemy(this.ctx.world, u.ambushDef, p, { level: u.level, aggro: true, openWorld: true, scripted: true }).then(
         (e) => {
           u.pending--;
-          if (e) u.enemies.push(e);
+          if (!e) return;
+          // the run failed while this one spawned: it belongs to the old run
+          if (gen !== u.gen) {
+            e.escape();
+            return;
+          }
+          if (e.ai) e.ai.scriptGoal = () => (u.run.charging ? { x: u.run.pos.x, z: u.run.pos.z } : null);
+          u.enemies.push(e);
         },
         (err) => {
           u.pending--;

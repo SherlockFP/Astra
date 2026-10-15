@@ -11,7 +11,10 @@
  *    at full HP. Between `leash` and `failDist` the escort only waits;
  *  - at a trigger waypoint the ambush spawns once per run and the escort waits until the ambushers are dead (no protection time counts
  *    meanwhile). One protection second is counted per second of walking (or standing at the end of the path) while the player is in
- *    range.
+ *    range. A wave never blocks the chain: after AMBUSH_CHARGE_SEC the ambushers still alive charge the escort (`charge`), and after
+ *    AMBUSH_RESUME_SEC the escort walks on whatever is alive (the charge goes on until they are dead);
+ *  - a failed run (far or fell) counts; after ESCORT_FORGIVE_FAILS failed runs the objective completes on reaching the end point with
+ *    the escort alive (WoW forgiving rule, `complete`).
  * HP (optional, `hp` > 0): ambushers within CONTACT_M of the escort hit it (`attackerDps` each, at every moment of the run, waiting
  * included); it regenerates `regen` HP/s while no ambusher is alive. At 0 HP the escort falls: the run fails like an out-of-range
  * run (timer reset, back to the start, full HP).
@@ -25,6 +28,12 @@ export const CONTACT_M = 4;
 export const ESCORT_FAIL_DIST_M = 60;
 /** Default seconds out of leash before the keep-up hint shows (WoW escort rule). */
 export const ESCORT_HINT_SEC = 5;
+/** Seconds of an ambush wave before the ambushers still alive charge the escort (a wave that does not die in time). */
+export const AMBUSH_CHARGE_SEC = 25;
+/** Seconds of an ambush wave before the escort walks on, whatever is still alive (the escort never waits longer). */
+export const AMBUSH_RESUME_SEC = 35;
+/** Failed runs after which the escort objective completes on reaching the end point with the escort alive (WoW forgiving rule). */
+export const ESCORT_FORGIVE_FAILS = 2;
 
 /** Why a run failed: the player stayed beyond failDist too long, or the escort fell. */
 export type EscortFailReason = 'far' | 'fell';
@@ -44,6 +53,10 @@ export interface EscortDeps {
   done(): boolean;
   /** Optional: the run failed (called after the reset). */
   failed?(reason: EscortFailReason): void;
+  /** Optional: a wave did not die in AMBUSH_CHARGE_SEC: its ambushers charge the escort (called once per wave). */
+  charge?(): void;
+  /** Optional: the escort reached its end after ESCORT_FORGIVE_FAILS failed runs: complete the objective (QuestSystem.completeEscort). */
+  complete?(): void;
 }
 
 export interface EscortOpts {
@@ -84,6 +97,14 @@ export class EscortRun {
   /** Seconds beyond leash (the pause and the keep-up hint clock). */
   private away = 0;
   private acc = 0;
+  /** Seconds of the current ambush wave (the wave clock: charge, then resume). */
+  private waited = 0;
+  /** The current wave has charged the escort (once per wave). */
+  private charged = false;
+  /** The ambushers alive charge the escort (set by the charge, cleared when none is alive). */
+  charging = false;
+  /** Failed runs so far (the forgiving rule, ESCORT_FORGIVE_FAILS). */
+  fails = 0;
 
   constructor(private readonly o: EscortOpts, private readonly d: EscortDeps) {
     this.pos = { ...o.path[0] };
@@ -106,6 +127,11 @@ export class EscortRun {
     return this.away >= (this.o.hintSec ?? ESCORT_HINT_SEC);
   }
 
+  /** Seconds the escort has waited on the current ambush wave (0 outside an ambush). Never above AMBUSH_RESUME_SEC. */
+  get ambushWaitSec(): number {
+    return this.state === 'ambush' ? this.waited : 0;
+  }
+
   /** Start the walk (F on the escort). False when a run is already going or finished. */
   start(): boolean {
     if (this.state !== 'idle') return false;
@@ -125,6 +151,9 @@ export class EscortRun {
         return;
       }
     } else this.far = 0;
+    if (this.charging && this.d.ambushAlive() === 0) this.charging = false;
+    // the wave clock runs whatever the leash says: a wave never holds the escort longer than AMBUSH_RESUME_SEC
+    if (this.state === 'ambush') this.waveClock(dt);
     if (this.away > 0) return;
     if (this.tendHp(dt)) return;
     if (this.state === 'ambush') {
@@ -134,6 +163,8 @@ export class EscortRun {
     this.move(dt);
     // move() may have fired an ambush (state changes inside the call, so TypeScript does not see it)
     if ((this.state as EscortState) === 'ambush') return;
+    // forgiving rule: after ESCORT_FORGIVE_FAILS failed runs, reaching the end point with the escort alive completes the objective
+    if (this.fails >= ESCORT_FORGIVE_FAILS && this.wp >= this.o.path.length) this.d.complete?.();
     this.acc += dt;
     while (this.acc >= 1) {
       this.acc -= 1;
@@ -172,6 +203,8 @@ export class EscortRun {
       this.wp++;
       if (this.o.triggers.includes(idx) && !this.fired.has(idx)) {
         this.fired.add(idx);
+        this.waited = 0;
+        this.charged = false;
         this.d.ambush(this.pos.x, this.pos.z);
         this.state = 'ambush';
         return;
@@ -179,9 +212,21 @@ export class EscortRun {
     }
   }
 
+  /** The ambush wave's clock: the ambushers charge the escort after AMBUSH_CHARGE_SEC, the escort walks on after AMBUSH_RESUME_SEC. */
+  private waveClock(dt: number): void {
+    this.waited += dt;
+    if (!this.charged && this.waited >= AMBUSH_CHARGE_SEC) {
+      this.charged = true;
+      this.charging = true;
+      this.d.charge?.();
+    }
+    if (this.waited >= AMBUSH_RESUME_SEC) this.state = 'walking';
+  }
+
   /** The run failed: the protection timer resets and the escort returns to the start at full HP. */
   private fail(reason: EscortFailReason): void {
     this.d.tick(1, false);
+    this.fails++;
     this.state = 'idle';
     this.pos = { ...this.o.path[0] };
     this.hp = this.o.hp ?? 0;
@@ -190,6 +235,9 @@ export class EscortRun {
     this.far = 0;
     this.away = 0;
     this.acc = 0;
+    this.waited = 0;
+    this.charged = false;
+    this.charging = false;
     this.d.failed?.(reason);
   }
 }

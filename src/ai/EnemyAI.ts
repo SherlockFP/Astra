@@ -133,6 +133,13 @@ export class EnemyAI {
   dmgMul = 1;
   /** Attack-speed multiplier set by passives (Kızgınlık). */
   atkMul = 1;
+  /**
+   * Scripted encounter (an escort ambush, WoW scripted aggro): it engages the nearest player at once, ignores the low-level pull cap
+   * and the village safe boxes (a wave spawned inside a village still fights; it used to drop its target there and idle).
+   */
+  scripted = false;
+  /** Scripted charge: while it returns a point, the enemy walks to it and holds there (an escort wave that did not die in time). */
+  scriptGoal: (() => { x: number; z: number } | null) | null = null;
 
   /** Per-instance cooldown overrides (boss phases: "cd -> 12 s"). */
   readonly cdOverride = new Map<string, number>();
@@ -509,7 +516,7 @@ export class EnemyAI {
       return;
     }
     // the low-level pull cap is a hard rule at the one place every engagement passes (hits, sight, summons, respawns, revives)
-    if (!answering && !this.dir.hasRoom(e, target)) return;
+    if (!answering && !this.scripted && !this.dir.hasRoom(e, target)) return;
     this.aggroed = true;
     e.aggroed = true;
     this.target = target;
@@ -674,6 +681,14 @@ export class EnemyAI {
     const a = e.anim;
     if (a && a.isPlayingOneShot && a.oneShotName === e.def.anims.hit) {
       this.halt(dt);
+      return;
+    }
+
+    // scripted charge (an escort wave that did not die in time): walks to the goal and holds there; contact hurts the escort
+    const goal = this.scriptGoal?.();
+    if (goal) {
+      if (Math.hypot(goal.x - e.position.x, goal.z - e.position.z) > 2.5) this.steerTo(goal.x, goal.z, e.moveSpeed(), dt, 'run');
+      else this.halt(dt);
       return;
     }
 
@@ -915,8 +930,8 @@ export class EnemyAI {
 
   protected validTarget(a: Actor | null | undefined): a is Actor {
     if (!a || a.isDead || a.removed || a.team !== 'player') return false;
-    // safe zones (villages): enemies never pick a player standing inside one
-    if (this.dir.inSafeZone(a.position.x, a.position.z)) return false;
+    // safe zones (villages): enemies never pick a player standing inside one (a scripted ambush does)
+    if (!this.scripted && this.dir.inSafeZone(a.position.x, a.position.z)) return false;
     return true;
   }
 
@@ -953,7 +968,7 @@ export class EnemyAI {
     if (!best) {
       // nothing on the table (everyone stealthed or dead): nearest living player in range keeps us honest
       const p = this.nearestPlayer(e.def.aggroRange * 2.5);
-      return p && !this.dir.inSafeZone(p.position.x, p.position.z) ? p : null;
+      return p && (this.scripted || !this.dir.inSafeZone(p.position.x, p.position.z)) ? p : null;
     }
     void now;
     return best;
