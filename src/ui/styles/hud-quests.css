@@ -94,7 +94,10 @@
   align-items: center;
   gap: 6px;
   pointer-events: none;
+  transition: opacity 0.25s linear;
 }
+/* hidden while a centre banner holds the lane (the rows keep their time, see WorldAnnounce) */
+.wa.hold { opacity: 0; }
 .wa-row {
   padding: 5px 18px;
   font: 700 16px var(--font-head);

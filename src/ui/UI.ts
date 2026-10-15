@@ -28,7 +28,7 @@ import { TooltipLayer } from './widgets/TooltipLayer';
 import { WorldLabels } from './widgets/WorldLabels';
 import { BubbleLayer, type BubbleHandle, type BubbleOpts } from './widgets/Bubbles';
 import { ChatBubbles } from './hud/ChatBubbles';
-import { levelUpBannerBusy, levelUpBannerSwallows } from './hud/Banners';
+import { bannerLaneBusy, levelUpBannerSwallows } from './hud/Banners';
 import { Nameplates } from './widgets/Nameplates';
 import { CastTracker } from './widgets/CastBar';
 import { itemTooltipHTML, skillTooltipHTML } from './widgets/tooltips';
@@ -61,12 +61,14 @@ interface PanelRec {
   openedAt: number;
 }
 
-/** Quest messages (accept / ready / done, bounties, world quests, Av Defteri) use the quest toast slot under the zone title. */
+/** Quest messages (accept / ready / done, bounties, world quests, Av Defteri) use the quest toast lane (upper centre, above the banner lane). */
 const QUEST_TOAST_RE = /^(Görev|Dünya görevi|Av Defteri)/;
-/** Quest toasts held back while a window covers their slot: at most this many, each for at most this long. */
+/** Achievement unlocks ("Başarım kazanıldı: …", "3 başarım kazanıldı: …") use their own lane at the bottom centre. */
+const ACH_TOAST_RE = /^(\d+ )?[Bb]aşarım kazanıldı/;
+/** Quest toasts held back while a window covers their slot or a centre banner shows: at most this many, each for at most this long. */
 const QUEST_PENDING_MAX = 3;
 const QUEST_PENDING_MS = 15000;
-/** Toasts held back while a level-up banner shows (one HUD toast lane): at most this many, each for at most this long, shown one per LANE_STAGGER_MS. */
+/** Toasts held back while a centre banner shows (the generic toast lane never overlaps the banner lane): at most this many, each for at most this long, shown one per LANE_STAGGER_MS. */
 const LANE_HELD_MAX = 4;
 const LANE_HELD_MS = 15000;
 const LANE_STAGGER_MS = 350;
@@ -127,8 +129,10 @@ export class UI {
   /** Quest toasts: own top-centre slot (under the zone title), shown only while no window covers it. */
   private questToasts!: Toasts;
   private questToastLayer!: HTMLElement;
+  /** Achievement toasts: own bottom-centre lane, never held (it is clear of the banner lane). */
+  private achToasts!: Toasts;
   private questPending: { text: string; kind: ToastKind; at: number }[] = [];
-  /** Non-quest toasts held while a level-up banner shows; they follow it one by one. */
+  /** Non-quest toasts held while a centre banner shows; they follow it one by one. */
   private laneHeld: { text: string; kind: ToastKind; at: number }[] = [];
   private laneNextAt = 0;
   private questCheckAt = 0;
@@ -186,6 +190,7 @@ export class UI {
     const toastLayer = div('toasts', this.topLayer);
     this.questToastLayer = div('toasts toasts-quest', this.topLayer);
     this.questToasts = new Toasts(this.questToastLayer);
+    this.achToasts = new Toasts(div('toasts toasts-ach', this.topLayer));
     const modalLayer = div('layer layer-modal', root);
     const ttLayer = div('layer layer-tooltip', root);
     const loadLayer = div('layer layer-loading', root);
@@ -433,7 +438,9 @@ export class UI {
     if (QUEST_TOAST_RE.test(text)) {
       this.questPending.push({ text, kind, at: performance.now() });
       while (this.questPending.length > QUEST_PENDING_MAX) this.questPending.shift();
-    } else if (kind === 'levelup' || levelUpBannerBusy()) {
+    } else if (ACH_TOAST_RE.test(text)) {
+      this.achToasts.show(text, kind);
+    } else if (kind === 'levelup' || bannerLaneBusy()) {
       // level-up toasts come before the level banner is queued (Progression), so they wait for the lane too
       this.laneHeld.push({ text, kind, at: performance.now() });
       while (this.laneHeld.length > LANE_HELD_MAX) this.laneHeld.shift();
@@ -447,7 +454,7 @@ export class UI {
   private flushLaneToasts(now: number): void {
     if (!this.laneHeld.length) return;
     this.laneHeld = this.laneHeld.filter((t) => now - t.at < LANE_HELD_MS);
-    if (!this.laneHeld.length || levelUpBannerBusy() || now < this.laneNextAt) return;
+    if (!this.laneHeld.length || bannerLaneBusy() || now < this.laneNextAt) return;
     const t = this.laneHeld.shift()!;
     this.toasts.show(t.text, t.kind);
     this.laneNextAt = now + LANE_STAGGER_MS;
@@ -458,7 +465,7 @@ export class UI {
     if (!this.questPending.length || now < this.questCheckAt) return;
     this.questCheckAt = now + 200;
     this.questPending = this.questPending.filter((t) => now - t.at < QUEST_PENDING_MS);
-    if (!this.questPending.length || this.questSlotCovered() || levelUpBannerBusy()) return;
+    if (!this.questPending.length || this.questSlotCovered() || bannerLaneBusy()) return;
     for (const t of this.questPending.splice(0)) this.questToasts.show(t.text, t.kind);
   }
 
@@ -738,6 +745,7 @@ export class UI {
       this.labels.update(now, rdt, { hoverId: hud.hover?.id ?? null, targetId: G.player?.targetId ?? null });
     }
     this.toasts.update(now);
+    this.achToasts.update(now);
     this.flushQuestToasts(now);
     this.flushLaneToasts(now);
     this.loading.update(rdt);

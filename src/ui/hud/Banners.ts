@@ -9,14 +9,21 @@ export const BANNER_RANK = { levelUp: 2, quest: 3, zone: 4 } as const;
 
 /** Default skill unlock levels in class order when SkillDef.unlockLevel is missing (same table as Progression). */
 const DEFAULT_UNLOCKS = [1, 3, 6, 10, 15, 20, 25, 30];
-/** The queue that holds the level-up banners (set by LevelUpBanner). */
-let levelQueue: BannerQueue | null = null;
+/** The one centre banner lane (zone title, quest banner, level-up): every big banner goes through it (set by BannerQueue). */
+let laneQueue: BannerQueue | null = null;
+/** Duration of every big centre banner (~2.5 s): one plays at a time, so each gets the same slot. */
+export const BIG_BANNER_MS = 2500;
 /** Ability names listed in the level-up banners of the current lane; their "Yeni beceri öğrendin" toasts are not shown twice. */
 const levelAbilityNames = new Set<string>();
 
-/** True while a level-up banner shows or waits: the HUD toast lane holds its toasts until it ends, so none overlaps it. */
+/** True while a level-up banner shows or waits. */
 export function levelUpBannerBusy(): boolean {
-  return !!levelQueue && levelQueue.hasRank(BANNER_RANK.levelUp);
+  return !!laneQueue && laneQueue.hasRank(BANNER_RANK.levelUp);
+}
+
+/** True while any big centre banner shows or waits: the toast lanes and the world announce hold until the lane is free. */
+export function bannerLaneBusy(): boolean {
+  return !!laneQueue && laneQueue.busy();
 }
 
 /** True for a toast whose content the level-up banner already shows (the "SEVİYE N!" line, a listed new ability). */
@@ -55,15 +62,13 @@ interface QueuedBanner {
   rank: number;
   ms: number;
   seq: number;
+  key: string | undefined;
   show: () => void;
   hide: () => void;
 }
 
 /** Queue length cap (§2.11): the oldest banner of the lowest rank is dropped past this. */
 const QUEUE_MAX = 3;
-
-/** Zone title on screen: at most 3 s, so it never sits on nameplates and combat text for long. */
-const ZONE_BANNER_MS = 3000;
 
 /** True while the local player is in combat (Actor.inCombat: hit or hitting within 5 s). */
 const inCombat = (): boolean => !!G.player?.inCombat;
@@ -76,16 +81,30 @@ const inCombat = (): boolean => !!G.player?.inCombat;
 export class BannerQueue implements HudWidget {
   readonly el: HTMLElement = div('banner-queue');
   private waiting: QueuedBanner[] = [];
-  private current: { rank: number; end: number; hide: () => void } | null = null;
+  private current: { rank: number; end: number; key: string | undefined; hide: () => void } | null = null;
   private seq = 0;
 
   constructor() {
     setDisplay(this.el, false);
+    laneQueue = this;
   }
 
-  /** Queues one banner: `show` runs when its turn comes, `hide` runs `ms` later. */
-  push(rank: number, ms: number, show: () => void, hide: () => void): void {
-    this.waiting.push({ rank, ms, seq: this.seq++, show, hide });
+  /**
+   * Queues one banner: `show` runs when its turn comes, `hide` runs `ms` later. A `key` collapses duplicates: a waiting banner with
+   * the same key takes the newer content in place, and a repeat of the banner on screen is dropped.
+   */
+  push(rank: number, ms: number, show: () => void, hide: () => void, key?: string): void {
+    if (key !== undefined) {
+      if (this.current?.key === key) return;
+      const dup = this.waiting.find((w) => w.key === key);
+      if (dup) {
+        dup.show = show;
+        dup.hide = hide;
+        dup.ms = ms;
+        return;
+      }
+    }
+    this.waiting.push({ rank, ms, seq: this.seq++, key, show, hide });
     this.waiting.sort((a, b) => a.rank - b.rank || a.seq - b.seq);
     while (this.waiting.length > QUEUE_MAX) {
       let worst = 0;
@@ -103,6 +122,11 @@ export class BannerQueue implements HudWidget {
     return this.current?.rank === rank || this.waiting.some((w) => w.rank === rank);
   }
 
+  /** True while any banner shows or waits in the lane. */
+  busy(): boolean {
+    return !!this.current || this.waiting.length > 0;
+  }
+
   /** Ends the running banner and forgets the waiting ones (scene change). */
   clear(): void {
     this.current?.hide();
@@ -118,7 +142,7 @@ export class BannerQueue implements HudWidget {
     }
     if (!this.current && this.waiting.length) {
       const next = this.waiting.shift()!;
-      this.current = { rank: next.rank, end: ctx.now + next.ms, hide: next.hide };
+      this.current = { rank: next.rank, end: ctx.now + next.ms, key: next.key, hide: next.hide };
       next.show();
     }
   }
@@ -146,7 +170,7 @@ export class ZoneBanner implements HudWidget {
       if (inCombat()) return;
       this.queue.push(
         BANNER_RANK.zone,
-        ZONE_BANNER_MS,
+        BIG_BANNER_MS,
         () => {
           // the queue may hand over a turn after combat began: the title stays off then too
           if (inCombat()) return;
@@ -157,6 +181,7 @@ export class ZoneBanner implements HudWidget {
           setClass(this.el, 'on', true);
         },
         () => setClass(this.el, 'on', false),
+        `zone:${z.title}`,
       );
     });
     G.events.on('scene:leaving', () => setClass(this.el, 'on', false));
@@ -241,14 +266,13 @@ export class LevelUpBanner implements HudWidget {
     this.num = div('lvlup-num', card);
     div('lvlup-hint', card).textContent = 'Canın ve kaynakların yenilendi';
     this.abil = div('lvlup-abil', card);
-    levelQueue = queue;
     G.events.on('player:levelup', ({ level }) => {
       // the new abilities of this level are listed inside the banner (icon + name), not in a separate toast
       const abilities = abilitiesAt(level);
       for (const a of abilities) levelAbilityNames.add(a.name);
       this.queue.push(
         BANNER_RANK.levelUp,
-        4200,
+        BIG_BANNER_MS,
         () => {
           setText(this.num, String(level));
           this.showAbilities(abilities);
@@ -259,6 +283,7 @@ export class LevelUpBanner implements HudWidget {
           setClass(this.el, 'on', false);
           if (!levelUpBannerBusy()) levelAbilityNames.clear();
         },
+        `levelup:${level}`,
       );
     });
     G.events.on('scene:leaving', () => setClass(this.el, 'on', false));
@@ -306,16 +331,16 @@ export class QuestBanner implements HudWidget {
       const name = G.quests?.def(questId)?.name ?? questId;
       // accepted: available -> active, or the first sight of an active quest that has no progress yet (a fresh accept)
       const fresh = (prev === undefined || prev === 'available') && (G.quests?.progressRows(questId) ?? []).every((r) => r.have === 0);
-      if (state === 'active' && fresh) this.fire('Görev Alındı', name, '!');
-      else if (state === 'done' && (prev === 'ready' || prev === 'active')) this.fire('Görev Tamamlandı', name, '✓');
+      if (state === 'active' && fresh) this.fire('Görev Alındı', name, '!', `quest:${questId}:active`);
+      else if (state === 'done' && (prev === 'ready' || prev === 'active')) this.fire('Görev Tamamlandı', name, '✓', `quest:${questId}:done`);
     });
     G.events.on('scene:leaving', () => setClass(this.el, 'on', false));
   }
 
-  private fire(title: string, name: string, glyph: string): void {
+  private fire(title: string, name: string, glyph: string, key: string): void {
     this.queue.push(
       BANNER_RANK.quest,
-      2400,
+      BIG_BANNER_MS,
       () => {
         setText(this.medal, glyph);
         setText(this.title, title + ':');
@@ -324,6 +349,7 @@ export class QuestBanner implements HudWidget {
         setClass(this.el, 'on', true);
       },
       () => setClass(this.el, 'on', false),
+      key,
     );
   }
 
@@ -378,6 +404,7 @@ export class InteractPrompt implements HudWidget {
 export class WorldAnnounce implements HudWidget {
   readonly el: HTMLElement;
   private items: { el: HTMLElement; until: number }[] = [];
+  private lastNow = 0;
 
   constructor() {
     this.el = div('wa');
@@ -391,6 +418,12 @@ export class WorldAnnounce implements HudWidget {
   }
 
   update(ctx: HudCtx): void {
+    // the stack hides under a centre banner and its lines keep their time while it does
+    const busy = bannerLaneBusy();
+    const dt = this.lastNow ? Math.max(0, ctx.now - this.lastNow) : 0;
+    this.lastNow = ctx.now;
+    setClass(this.el, 'hold', busy);
+    if (busy) for (const it of this.items) it.until += dt;
     for (let i = this.items.length - 1; i >= 0; i--) {
       if (ctx.now > this.items[i].until) {
         this.items[i].el.remove();

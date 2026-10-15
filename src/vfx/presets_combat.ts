@@ -400,22 +400,24 @@ export const combatPresets: Record<string, Preset> = {
     const col = c.color(0xffd24a);
     const s = c.s;
     const g = v3(c.p.x, 0.08, c.p.z);
-    const h = fx.pillar(g, col, 10 * s, 0.75 * s, 2.2, { rise: true, follow: c.follow, fadeIn: 0.18, hot: 0.1, alpha: 0.7 });
-    ringFlat(fx, g, 0.5, 4 * s, 0xfff2b0, 0.7, { tex: 'ring-04', glow: 1.5, a: 0.85 });
-    ringFlat(fx, g, 0.3, 2.6 * s, col, 0.9, { tex: 'magic-circle-01', glow: 1.6, a: 0.8, ease: 1, spin: 1.5 });
+    // HDR clamp (bloom threshold 1.0, strength capped in Engine.ts): the glow stays under ~1.0 per channel so the column reads as
+    // gold and does not white out the frame; the white cores are tinted gold and their additive alpha is kept low
+    const h = fx.pillar(g, col, 10 * s, 0.75 * s, 2.2, { rise: true, follow: c.follow, fadeIn: 0.18, hot: 0.1, alpha: 0.5 });
+    ringFlat(fx, g, 0.5, 4 * s, 0xfff2b0, 0.7, { tex: 'ring-04', glow: 0.9, a: 0.55 });
+    ringFlat(fx, g, 0.3, 2.6 * s, col, 0.9, { tex: 'magic-circle-01', glow: 0.95, a: 0.55, ease: 1, spin: 1.5 });
     for (let i = 0; i < 4; i++) {
       fx.after(i * 0.17, () => {
-        fx.add.spawn({ tex: 'ring-02', mode: 'flat', at: [g.x, 0.2, g.z], vel: [0, 3.4, 0], size: 3.4 * s, size1: 1.2 * s, life: 0.95, c0: 0xfff2b0, c1: col, glow: 2.2, a: 0.9, fi: 0.04, fp: 1.4 });
+        fx.add.spawn({ tex: 'ring-02', mode: 'flat', at: [g.x, 0.2, g.z], vel: [0, 3.4, 0], size: 3.4 * s, size1: 1.2 * s, life: 0.95, c0: 0xfff2b0, c1: col, glow: 0.9, a: 0.55, fi: 0.04, fp: 1.4 });
         const n = 10;
         for (let k = 0; k < n; k++) {
           const a = (k / n) * TAU + i;
-          fx.add.spawn({ tex: ['star-01', 'cross', 'flare-01'], at: [g.x + Math.cos(a) * 1.3 * s, 0.2, g.z + Math.sin(a) * 1.3 * s], vel: [-Math.sin(a) * 1.2, rnd(2.5, 4.5), Math.cos(a) * 1.2], life: [0.8, 1.4], size: [0.16, 0.32], grow: 0.3, c0: 0xffffff, c1: col, glow: 2.6, fi: 0.1, fp: 1 });
+          fx.add.spawn({ tex: ['star-01', 'cross', 'flare-01'], at: [g.x + Math.cos(a) * 1.3 * s, 0.2, g.z + Math.sin(a) * 1.3 * s], vel: [-Math.sin(a) * 1.2, rnd(2.5, 4.5), Math.cos(a) * 1.2], life: [0.8, 1.4], size: [0.16, 0.32], grow: 0.3, c0: 0xfff2b0, c1: col, glow: 0.95, fi: 0.1, fp: 1 });
         }
       });
     }
-    flare(fx, up(c.p, 1.3), 4 * s, col, 0.32, 'star-05', 3, 1);
-    flare(fx, up(c.p, 1.3), 2.6 * s, 0xffffff, 0.2, 'magic-flare-01', 3, -2);
-    fx.light(up(c.p, 1.5), col, 90, 0.9, 14);
+    flare(fx, up(c.p, 1.3), 4 * s, col, 0.32, 'star-05', 1.0, 1);
+    flare(fx, up(c.p, 1.3), 2.6 * s, 0xfff2b0, 0.2, 'magic-flare-01', 0.9, -2);
+    fx.light(up(c.p, 1.5), col, 30, 0.9, 14);
     return h;
   },
 
