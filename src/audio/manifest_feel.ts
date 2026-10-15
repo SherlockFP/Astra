@@ -57,4 +57,19 @@ export const SFX_FEEL_MANIFEST: Record<string, SfxEntry> = {
   proc_use: { f: ['sfx/magic/spell_02.ogg'], v: 0.8, pv: 0.04, mv: 2, p: 1.4, np: 1 },
   cd_ready: { f: ['sfx/magic/shimmer_01.mp3'], v: 0.4, pv: 0.03, mv: 2, p: 1.3, np: 1 },
   cast_pushback: { f: ['sfx/melee/hit_plate_light_04.ogg'], v: 0.5, pv: 0.05, mv: 2, p: 0.7, np: 1 },
+
+  // ---- UI soft set (owner: menu click sounds too harsh). Replaces the generated pools for these ids: the bright files (open / close
+  // hiss at 9-12 kHz, tab / party / tick above 3 kHz, the 0.5 s confirm tails) are dropped. Checked by tools/ui-sound-check.mjs.
+  ui_click: { f: ['sfx/ui/click_01.ogg', 'sfx/ui/click_soft_01.ogg', 'sfx/ui/click_soft_02.ogg', 'sfx/ui/click_soft_05.ogg'], v: 0.5, pv: 0.02, mv: 2, np: 1 },
+  ui_hover: { f: ['sfx/ui/hover_02.ogg'], v: 0.25, pv: 0.02, mv: 2, np: 1 },
+  ui_open: { f: ['sfx/ui/back_02.ogg', 'sfx/ui/back_04.ogg'], v: 0.5, pv: 0.02, mv: 2, np: 1 },
+  ui_close: { f: ['sfx/ui/back_01.ogg', 'sfx/ui/back_03.ogg'], v: 0.5, pv: 0.02, mv: 2, np: 1 },
+  ui_tab: { f: ['sfx/ui/toggle_01.ogg', 'sfx/ui/select_01.ogg', 'sfx/ui/select_02.ogg'], v: 0.45, pv: 0.02, mv: 2, np: 1 },
+  ui_error: { f: ['sfx/ui/error_04.ogg', 'sfx/ui/error_08.ogg'], v: 0.5, pv: 0.02, mv: 2, np: 1 },
+  ui_drop: { f: ['sfx/ui/drop_02.ogg', 'sfx/ui/drop_03.ogg', 'sfx/ui/drop_04.ogg'], v: 0.5, pv: 0.02, mv: 2, np: 1 },
+  ui_confirm: { f: ['sfx/ui/confirm_02.ogg', 'sfx/ui/confirm_04.ogg'], v: 0.45, pv: 0.02, mv: 2, np: 1 },
+  party_join: { f: ['sfx/ui/maximize_09.ogg'], v: 0.5, pv: 0.02, mv: 2, np: 1 },
+  party_leave: { f: ['sfx/ui/minimize_09.ogg'], v: 0.5, pv: 0.02, mv: 2, np: 1 },
+  countdown_tick: { f: ['sfx/ui/tick_01.ogg', 'sfx/ui/tick_02.ogg'], v: 0.6, pv: 0.02, mv: 2, np: 1 },
+  passive_allocate: { f: ['sfx/ui/glass_02.ogg', 'sfx/ui/glass_03.ogg'], v: 0.6, pv: 0.02, mv: 2, np: 1 },
 };
