@@ -32,7 +32,7 @@ export const STATUSES_KIT_PLATE: Partial<Record<StatusId, StatusDef>> = {
   ursoc_form: { id: 'ursoc_form', name: 'Ata Kılığı', icon: I('buff-defense'), kind: 'buff', stats: { maxHpPct: 0.15, damageReductionPct: 0.15 }, defaultDuration: 20 },
 
   // ---- Koruma / Kutsal / Ceza (paladin) rows
-  shining_light: { id: 'shining_light', name: 'Parlak Işık', icon: I('buff-blessing'), kind: 'buff', defaultDuration: 15 },
+  shining_light: { id: 'shining_light', name: 'Parlak Işık', icon: I('buff-blessing'), kind: 'buff', maxStacks: 3, defaultDuration: 15 },
   infusion_of_light: { id: 'infusion_of_light', name: 'Işık Aşısı', icon: I('buff-blessing'), kind: 'buff', defaultDuration: 15 },
   art_of_war: { id: 'art_of_war', name: 'Adalet Savaşı', icon: I('buff-crit'), kind: 'buff', defaultDuration: 12 },
   hammer_window: { id: 'hammer_window', name: 'Işık Çekici Hazır', icon: I('buff-blessing'), kind: 'buff', maxStacks: 2, defaultDuration: 12 },
@@ -88,7 +88,7 @@ export const STATUS_RULES_KIT_PLATE: Partial<Record<StatusId, StatusRule>> = {
   gory_iron: { stack: 'refresh' },
   // Yarma (barbarian_cleave) and Paralama (barbarian_thrash) cooldowns x0.5
   ursoc_form: { stack: 'refresh', cdMult: { mult: 0.5, skills: ['barbarian_cleave', 'barbarian_thrash'] } },
-  shining_light: { stack: 'refresh' },
+  shining_light: { stack: 'stack' },
   infusion_of_light: { stack: 'refresh' },
   art_of_war: { stack: 'refresh' },
   hammer_window: { stack: 'stack' },

@@ -4,7 +4,7 @@
  *
  * Own-damage handicaps of the GDD_CLASSES_V2 sketch (`moreDamage 0.75` / `0.60`) are dropped (G10: the coefficients are final).
  * Spec `fx` rows (§5b-§7b) are chance / PRD triggers read by StatCalc.collectFx -> ProcEngine (combat/Procs.ts):
- *   Koruma  righteous 6 s + 50 % PRD shining_light per Doğruluk Kalkanı; block = +4 İnanç (class trait), 20 % of blocks and every
+ *   Koruma  righteous 6 s + shining_light stack (max 3) per Doğruluk Kalkanı cast (its Holy Power spend); block = +4 İnanç (class trait), 20 % of blocks and every
  *           perfect parry +1 Kutsal Güç; Yılmaz Savunucu lethal save (heal 25 %, the status is cut to 0.2 s so no expiry heal follows).
  *   Kutsal  infusion_of_light: Kutsal Şok 25 % (icd 3 s), Üçlü Işık 15 % (İlahi Çınlama rolls its own 15 % in its behaviour).
  *   Ceza    templar_combo 4 s after Haçlı Darbesi, art_of_war 12 % per chain hit (icd 2 s) / 8 % per Haçlı Darbesi,

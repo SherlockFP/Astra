@@ -21,14 +21,14 @@ export const PROC_DEFS_KIT_PALADIN: ProcDef[] = [
 
 /**
  * Proc mods:
- *  - Parlak Işık: the next Işığın Sözü costs no Kutsal Güç (`pipFree`, ProcMod addition of PM-PA) and no faith.
+ *  - Parlak Işık (max 3 stacks): each Işığın Sözü costs no Kutsal Güç (`pipFree`, ProcMod addition of PM-PA) and no faith; it uses one stack.
  *  - Işık Aşısı: the next Işık Parlaması is instant, free, +20 % and gives +1 Kutsal Güç (`procInstant` on the skill row).
  *  - Adalet Savaşı: the next Adalet Bıçağı resets its own cooldown and hits +25 %.
  *  - Işık Çekici Hazır (2 stacks): one stack per Işık Çekici cast (the row replaces Kutsal Hüküm while the status is up).
  *  - Tapınakçı Zinciri: consumed by the Tapınakçı Kılıcı cast (the row replaces Haçlı Darbesi while the status is up).
  */
 export const PROC_MODS_KIT_PALADIN: ProcMod[] = [
-  { status: 'shining_light', skills: ['paladin_word_of_glory'], costMult: 0, pipFree: true, consume: 'cast' },
+  { status: 'shining_light', skills: ['paladin_word_of_glory'], costMult: 0, pipFree: true, consume: 'cast', consumeOne: true },
   { status: 'infusion_of_light', skills: ['paladin_flash_of_light'], costMult: 0, castTimeMult: 0, more: 1.2, bonusPips: { id: 'holypower', n: 1 }, consume: 'cast' },
   { status: 'art_of_war', skills: ['paladin_blade_of_justice'], cdReset: true, more: 1.25, consume: 'cast' },
   { status: 'hammer_window', skills: ['paladin_hammer_of_light'], consume: 'cast', consumeOne: true },
