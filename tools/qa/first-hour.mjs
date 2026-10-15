@@ -1164,6 +1164,9 @@ async function journey(cls) {
       C(`${d.name}: reward-choice card says "Bir ödül seç"`, /Bir ödül seç/.test(txt), txt.slice(0, 60).replace(/\n/g, ' | '));
       await shot('reward_choice');
       await choice.click();
+      // the card preselects the upgrade; 'Ödülü al' confirms the pick and turns the quest in
+      const take = card.locator('button:has-text("Ödülü al")');
+      if ((await take.count()) > 0) await take.first().click();
       return 'reward choice';
     }
     return null;
