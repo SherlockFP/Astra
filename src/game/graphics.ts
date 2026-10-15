@@ -4,20 +4,21 @@ import { DEFAULT_SETTINGS } from '../core/Settings';
 import { PSXPostPass, patchObjectPSX, setPSXAffine, setPSXJitter } from '../render/psx';
 import { requestShadowMapUpdate, scheduleShadowMap } from '../render/shadowPolicy';
 import { setGfxQuality } from '../world/WorldPerf';
+import { BLOOM_THRESHOLD } from '../core/Engine';
 
 let psxPass: PSXPostPass | null = null;
 
-/** Bloom luminance threshold used for scenes that set no override (UnrealBloomPass default in core/Engine). */
+/** Bloom luminance threshold used for scenes that set no override (BLOOM_THRESHOLD in core/Engine). */
 let baseBloomThreshold: number | null = null;
 /** Scene-level bloom override (dungeon builders): strength is a theme value, scaled by the player's bloom setting. */
 let sceneBloom: { strength: number; threshold: number } | null = null;
 
 /**
- * Per-scene bloom. Dungeons pass their theme strength (~0.3-0.45) with a higher threshold so only real emissives
- * (torch flames, magic cores) bloom and enemies keep their colours. `null` restores the player's settings.
+ * Per-scene bloom. Dungeons pass their theme strength (~0.3-0.45); the threshold stays at 1.0 HDR so only real emissives
+ * (torch flames, magic cores, spell cores) bloom and lit enemies keep their colours. `null` restores the player's settings.
  * The player's bloom slider scales the scene value (the default slider position leaves it unchanged).
  */
-export function setSceneBloom(strength: number | null, threshold = 0.92): void {
+export function setSceneBloom(strength: number | null, threshold = BLOOM_THRESHOLD): void {
   sceneBloom = strength === null ? null : { strength, threshold };
   try { applyBloom(); } catch { /* engine not ready (harness) */ }
 }

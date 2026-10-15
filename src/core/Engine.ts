@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import type { Pass } from 'three/examples/jsm/postprocessing/Pass.js';
@@ -17,6 +18,39 @@ const PROFILE_WINDOW = 120;
 const PROFILE_EMA = 0.1;
 /** Unresolved GPU timer queries kept at most; the oldest is dropped beyond this. */
 const GPU_MAX_PENDING = 8;
+/**
+ * Bloom: only values above 1.0 (linear HDR) glow, so lit surfaces and the sky (<= 1) stay out of it. Strength is capped so
+ * no single source can wash the frame, however the settings or a scene theme push it.
+ */
+export const BLOOM_THRESHOLD = 1.0;
+export const BLOOM_MAX_STRENGTH = 1.0;
+/** Per-channel ceiling of the bloom input. One emissive sprite stack can reach hundreds in HDR; the glow only needs a few. */
+const HDR_CEILING = 10.0;
+
+/**
+ * Input guard in front of the bloom. A NaN or Inf texel is spread over the whole frame by the blur mip chain (the screen
+ * goes flat grey), so non-finite and negative values become 0 and everything above HDR_CEILING is clamped.
+ * `v >= 0.0` is false for NaN, so NaN takes the 0 branch on every driver.
+ */
+const HDR_GUARD_SHADER = {
+  uniforms: { tDiffuse: { value: null }, uMax: { value: HDR_CEILING } },
+  vertexShader: /* glsl */ `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}`,
+  fragmentShader: /* glsl */ `
+uniform sampler2D tDiffuse;
+uniform float uMax;
+varying vec2 vUv;
+float guard(float v) { return v >= 0.0 ? min(v, uMax) : 0.0; }
+void main() {
+  vec4 t = texture2D(tDiffuse, vUv);
+  float a = t.a >= 0.0 ? min(t.a, 1.0) : 0.0;
+  gl_FragColor = vec4(guard(t.r), guard(t.g), guard(t.b), a);
+}`,
+};
 
 /** Average and worst case of one timed section, in ms. */
 export interface ProfileStat {
@@ -170,13 +204,14 @@ class GpuTimer {
 /**
  * Owns the WebGLRenderer, the post-processing chain and the main loop.
  * Scenes don't render themselves: the Engine renders `activeScene` with `activeCamera` every frame.
- * Post chain: RenderPass -> UnrealBloom -> [PSX pass] -> OutputPass.
+ * Post chain: RenderPass -> HDR guard -> UnrealBloom -> [PSX pass] -> OutputPass.
  */
 export class Engine {
   readonly canvas: HTMLCanvasElement;
   readonly renderer: THREE.WebGLRenderer;
   readonly composer: EffectComposer;
   readonly renderPass: RenderPass;
+  readonly hdrGuard: ShaderPass;
   readonly bloomPass: UnrealBloomPass;
   readonly outputPass: OutputPass;
   private psxPass: Pass | null = null;
@@ -228,9 +263,11 @@ export class Engine {
 
     this.composer = new EffectComposer(this.renderer);
     this.renderPass = new RenderPass(this.activeScene, this.activeCamera);
-    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.4, 0.85);
+    this.hdrGuard = new ShaderPass(HDR_GUARD_SHADER);
+    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.4, BLOOM_THRESHOLD);
     this.outputPass = new OutputPass();
     this.composer.addPass(this.renderPass);
+    this.composer.addPass(this.hdrGuard);
     this.composer.addPass(this.bloomPass);
     this.composer.addPass(this.outputPass);
 
@@ -269,7 +306,7 @@ export class Engine {
 
   setBloom(enabled: boolean, strength?: number): void {
     this.bloomPass.enabled = enabled;
-    if (strength !== undefined) this.bloomPass.strength = strength;
+    if (strength !== undefined) this.bloomPass.strength = Math.min(Math.max(strength, 0), BLOOM_MAX_STRENGTH);
   }
 
   setPixelRatio(ratio: number): void {

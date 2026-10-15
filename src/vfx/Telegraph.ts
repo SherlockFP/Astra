@@ -76,7 +76,7 @@ void main() {
   col = mix(col, vec3(1.0), uFlash);
   a = mix(a, 1.0, uFlash * 0.7);
   // HDR boost so bloom catches the rim
-  col *= 1.0 + rim * 0.9 + front * 0.8 + uFlash * 1.5;
+  col *= min(1.0 + rim * 0.9 + front * 0.8 + uFlash * 1.5, 2.5);
   gl_FragColor = vec4(col, a * uAlpha);
 }
 `;

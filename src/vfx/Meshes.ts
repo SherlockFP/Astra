@@ -158,7 +158,8 @@ void main() {
   vec3 n = normalize(vN);
   if (uFlat > 0.5) n = normalize(cross(dFdx(vMV), dFdy(vMV)));
   vec3 v = normalize(-vMV);
-  float fres = pow(1.0 - abs(dot(n, v)), uPower);
+  // clamp the base: |dot| can land a hair above 1 on a face-on fragment, and pow(negative, p) is NaN, which the bloom spreads over the screen
+  float fres = pow(clamp(1.0 - abs(dot(n, v)), 0.0, 1.0), uPower);
   float pulse = 1.0 - uPulse + uPulse * (0.5 + 0.5 * sin(uTime * 4.0));
   float a = (uBase + fres) * pulse;
   a += uScan * smoothstep(0.82, 1.0, sin(vP.y * 7.0 - uTime * 3.0)) * 0.5;
@@ -167,7 +168,7 @@ void main() {
   if (a < 0.004) discard;
   vec3 col = uColor;
   if (uRainbow > 0.5) col = 0.55 + 0.45 * cos(6.2832 * (uTime * 0.28 + vec3(0.0, 0.33, 0.67)));
-  gl_FragColor = vec4(col * (1.0 + fres * 1.2 + uHit), a);
+  gl_FragColor = vec4(col * min(1.0 + fres * 1.2 + uHit, 2.5), a); // HDR boost capped: a rim never exceeds 2.5x its colour
 }
 `;
 

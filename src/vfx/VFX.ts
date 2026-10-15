@@ -68,6 +68,12 @@ export function vfxResolves(id: string): boolean {
 }
 
 const LIGHT_SCALE = 0.32;
+/**
+ * Peak of a pooled flash light. Intensity falls off with the square of the distance, so a strong flash (a holy cast: 80 x 0.32
+ * = 25.6) at arm's length over-exposes every surface it lights and floods the bloom. Capped here.
+ */
+const LIGHT_PEAK_MAX = 8;
+const lightPeak = (intensity: number): number => Math.min(intensity * LIGHT_SCALE, LIGHT_PEAK_MAX);
 
 // ---------------------------------------------------------------------------
 // small helpers
@@ -515,14 +521,14 @@ class LightPool {
         best = i;
       }
     }
-    if (bestScore > intensity * LIGHT_SCALE * 1.2) return;
+    if (bestScore > lightPeak(intensity) * 1.2) return;
     const l = this.lights[best];
     if (Array.isArray(pos)) l.position.set(pos[0], pos[1], pos[2]);
     else l.position.copy(pos);
     l.color.setHex(color);
     l.distance = dist;
-    this.st[best] = { t: 0, dur: Math.max(0.05, dur), peak: intensity * LIGHT_SCALE };
-    l.intensity = intensity * LIGHT_SCALE;
+    this.st[best] = { t: 0, dur: Math.max(0.05, dur), peak: lightPeak(intensity) };
+    l.intensity = lightPeak(intensity);
   }
   update(dt: number): void {
     for (let i = 0; i < this.lights.length; i++) {
