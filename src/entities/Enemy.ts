@@ -165,6 +165,8 @@ export class Enemy extends Actor {
   /** Open-world camp centre this member spawned in (host AI only): its ambient wander stays within CAMP_WANDER_M of it. null = none. */
   campX: number | null = null;
   campZ: number | null = null;
+  /** Radius (m) of that camp: the camp leash is campR + CAMP_LEASH_PAD_M from its centre (EnemyAI.pastLeash). */
+  campR = 0;
   /** Host-side AI brain (null on clients). */
   ai: EnemyAI | null = null;
   readonly interp: Interpolator;

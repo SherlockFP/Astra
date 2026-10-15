@@ -33,24 +33,25 @@ export interface EscortRoute {
 }
 
 export const ESCORT_ROUTES: Record<string, EscortRoute> = {
-  // mq_04 (level 2, 90 s, three waves): from the south-west road into the village, 144 m
+  // mq_04 (level 2, 90 s, three waves): from the south-west road into the village, 144 m. One ambusher per wave: two at once take a
+  // level-2 priest or mage to 0-20 % HP (dev/combat-sim/solo_lowlevel.mjs escort waves), one leaves them at 75-90 %
   mq_04_samani_sustur: {
     quest: 'mq_04_samani_sustur',
     route: [[777, 245], [770, 207], [802, 188], [829, 161], [800, 154]],
     triggers: [1, 2, 3],
     ambushDef: 'ow_goblin',
-    waveSize: 2,
+    waveSize: 1,
     hp: 180,
     attackerDps: 4,
     regen: 5,
   },
-  // sq_r1_ch02_gozcu_avi (level 2, 40 s, one wave): the same road, shorter, 70 m
+  // sq_r1_ch02_gozcu_avi (level 2, 40 s, one wave): the same road, shorter, 70 m; one ambusher (see mq_04 above)
   sq_r1_ch02_gozcu_avi: {
     quest: 'sq_r1_ch02_gozcu_avi',
     route: [[779, 232], [782, 199], [799, 166]],
     triggers: [1],
     ambushDef: 'ow_goblin',
-    waveSize: 2,
+    waveSize: 1,
     hp: 150,
     attackerDps: 4,
     regen: 5,

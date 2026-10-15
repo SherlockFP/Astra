@@ -101,6 +101,8 @@ const SLEEP_DIST = 45;
 const NOPATH_LEASH = 6;
 /** Open-world trash ambient wander: every point stays within this (m) of its camp centre (the camp's members spread up to ~6.6 m from it). */
 const CAMP_WANDER_M = 8;
+/** WoW camp leash: a camp member chases only within its camp radius + this many m of the camp centre; past it the body evades home. */
+export const CAMP_LEASH_PAD_M = 20;
 /** ENGINE_VERTICALITY §10.2: lastSafe sampling period (s). */
 const SAFE_SAMPLE_EVERY = 0.5;
 /** Ability kinds a blinded enemy can miss with (mechanic scripts / custom casts are never nullified). */
@@ -450,7 +452,9 @@ export class EnemyAI {
       if (this.e.def.ai?.flee) this.onHurtFlee(amount);
       if (!this.aggroed) this.dir.pullPack(this, src, true);
     } else if (!this.aggroed) {
-      const p = this.nearestPlayer(60);
+      // a hit from a non-player source (pet, minion, hazard, DoT without a source) pulls only a player inside this mob's own aggro
+      // range: an unaware camp never gets pulled across the map (a 60 m pull used to drag the whole camp to the hitter's side)
+      const p = this.nearestPlayer(this.e.def.aggroRange);
       if (p) this.dir.pullPack(this, p);
     }
     if (this.e.dormant) this.wake(src ?? null);
@@ -960,8 +964,7 @@ export class EnemyAI {
     const def = e.def;
     if (def.ai?.flee) {
       // a fleeing mob with a camp leash (deer) runs home once it is pulled out of it, instead of running off across the map
-      const leash = def.ai.homeRadius ?? def.leashRange ?? 0;
-      if (leash > 0 && Math.hypot(e.position.x - e.homeX, e.position.z - e.homeZ) > leash) {
+      if (this.pastLeash(def.ai.homeRadius ?? def.leashRange ?? 0)) {
         this.startReturn();
         return;
       }
@@ -987,9 +990,9 @@ export class EnemyAI {
       this.halt(dt);
       return;
     }
-    // open-world leash: ai.homeRadius (camp leash) or leashRange; stationary bodies never leash
+    // open-world leash (pastLeash): a camp member within its camp reach, else ai.homeRadius / leashRange from its spawn; stationary bodies never leash
     const leash = def.ai?.homeRadius ?? def.leashRange ?? defaultLeashFor(def);
-    if (!def.ai?.stationary && leash > 0 && Math.hypot(e.position.x - e.homeX, e.position.z - e.homeZ) > leash) {
+    if (!def.ai?.stationary && this.pastLeash(leash)) {
       this.startReturn();
       return;
     }
@@ -1434,6 +1437,18 @@ export class EnemyAI {
   }
 
   // ---- leash / return -----------------------------------------------------------------------------------------------
+
+  /**
+   * True when the body is past its leash (WoW: a chase ends at the leash, the body evades home). A camp member is leashed to its
+   * camp: its camp centre + camp radius + CAMP_LEASH_PAD_M (it never walks out of the camp to a fight across the map). Any other
+   * body is leashed `leash` m from its spawn point. `leash` <= 0 = no leash.
+   */
+  protected pastLeash(leash: number): boolean {
+    if (!(leash > 0)) return false;
+    const e = this.e;
+    if (e.campX !== null && e.campZ !== null && e.campR > 0) return Math.hypot(e.position.x - e.campX, e.position.z - e.campZ) > e.campR + CAMP_LEASH_PAD_M;
+    return Math.hypot(e.position.x - e.homeX, e.position.z - e.homeZ) > leash;
+  }
 
   protected startReturn(): void {
     const e = this.e;

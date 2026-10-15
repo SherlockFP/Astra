@@ -316,6 +316,7 @@ export class CampDirector {
       }
       e.campX = c.cx;
       e.campZ = c.cz;
+      e.campR = c.radius;
       c.live.set(m.k, e);
       try {
         G.net.broadcast('spawn', spawnPayloadOf(e));

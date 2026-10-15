@@ -40,6 +40,7 @@ const ok = (name, cond, info = '') => {
 };
 const dist = (a, b) => Math.hypot(a.position.x - b.position.x, a.position.z - b.position.z);
 const sec = H.sec;
+const DT = H.DT;
 
 // ---- fixtures -------------------------------------------------------------------------------------------------------------
 const mobs = [];
@@ -446,6 +447,61 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
     maxSight = Math.max(maxSight, pack.filter((m) => m.ai.aggroed && m.ai.target === p2).length);
   }
   ok('cap.engage.sight pull of six level-3 mobs holds at most 3', maxSight >= 1 && maxSight <= 3, `max ${maxSight}`);
+}
+
+// ==================================================================================================================
+// camp.* a camp member's chase ends at its camp (centre + radius + 20 m), not 40 m from its spawn; an escort NPC walking by
+// 15 m away does not pull the camp; a hit from a non-player source does not pull a player outside the mob's own aggro range
+// ==================================================================================================================
+{
+  const { EscortNpc } = await H.imp('entities/interactables/EscortNpc.ts');
+  const CAMP_R = 6;
+  const CAP = CAMP_R + 20 + 2; // camp leash + 2 m for the last step of the chase
+  /** Three level-3 goblins of one camp at the origin (camp centre (0, 0), radius 6): each member's camp fields set as CampDirector does. */
+  const camp = (packId) => {
+    const ms = [[3, 0], [-2, 2.5], [0.5, -3.5]].map(([x, z]) => mob('ow_goblin', x, z, { packId, level: 3 }));
+    for (const m of ms) { m.campX = 0; m.campZ = 0; m.campR = CAMP_R; }
+    return ms;
+  };
+  const campDist = (m) => Math.hypot(m.position.x, m.position.z);
+
+  // chase: the player pulls a member from 5 m and walks off at 6 m/s; the whole camp stays inside its leash
+  const p1 = reset('knight', 2);
+  const c1 = camp('camp_leash');
+  p1.position.set(8, 0, 0);
+  let engaged = false, farthest = 0;
+  for (let i = 0; i < sec(30); i++) {
+    p1.position.x += 6 * DT;
+    H.step(1);
+    engaged ||= c1.some((m) => m.ai.aggroed);
+    for (const m of c1) farthest = Math.max(farthest, campDist(m));
+  }
+  ok('camp.leash.the camp engages when its member is pulled', engaged);
+  ok('camp.leash.a chasing member never leaves its camp past radius + 20 m', farthest <= CAP, `farthest ${farthest.toFixed(1)} m (cap ${CAP} m)`);
+  H.step(sec(12)); // the player is now ~200 m away: every member evades home
+  ok('camp.leash.the camp evades home once the player is gone', c1.every((m) => !m.ai.aggroed && campDist(m) <= CAMP_R + 1), c1.map((m) => `${campDist(m).toFixed(1)}m/${m.ai.mode}`).join(' '));
+
+  // an escort NPC walks past the camp 15 m away (2 m/s): no member aggroes, none moves off its spot
+  const p2 = reset('knight', 2);
+  p2.position.set(-60, 0, 0); // 60 m from the camp: outside every aggro range
+  const c2 = camp('camp_escort');
+  const home2 = c2.map((m) => [m.position.x, m.position.z]);
+  const npc = new EscortNpc(H.world.allocLocalId(), 'Yaralı Gözcü', () => {}, () => 'eskortu başlat [F]', () => true);
+  npc.position.set(-30, 0, 15);
+  H.world.add(npc);
+  for (let i = 0; i < sec(20); i++) {
+    npc.position.x += 2 * DT;
+    H.step(1);
+  }
+  ok('camp.escort.an escort NPC walking 15 m off does not pull the camp', c2.every((m) => !m.ai.aggroed), c2.map((m) => m.ai.mode).join(','));
+  ok('camp.escort.the camp stays on its spots while the escort walks by', c2.every((m, i) => Math.hypot(m.position.x - home2[i][0], m.position.z - home2[i][1]) < 1), 'a member moved');
+
+  // a non-player hit (a pet, a minion, a hazard with no source) on an unaware camp: no player 50 m away is pulled
+  const p3 = reset('knight', 2);
+  p3.position.set(50, 0, 0);
+  const c3 = camp('camp_hit');
+  c3[0].ai.onDamaged(null, 5);
+  ok('camp.hit.a non-player hit does not pull a player 50 m away', c3.every((m) => !m.ai.aggroed), `aggroed ${c3.filter((m) => m.ai.aggroed).length}/3`);
 }
 
 // ---- report ---------------------------------------------------------------------------------------------------------------
