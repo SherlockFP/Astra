@@ -19,8 +19,13 @@ const OLD_KEY = 'efsun.uiLayout.v1';
  * without this stamp keeps its grid / lock / extra-bar choices and the frames that did not move, and drops the offsets of
  * SKIN_MOVED_FRAMES once; the stamp is written with every save.
  */
-const SKIN = 2;
+const SKIN = 3;
 const SKIN_MOVED_FRAMES = ['player', 'party', 'minions', 'target', 'minimap', 'tracker', 'bottom', 'corner', 'bar2', 'bar3'];
+
+/** An offset that is still the default spot (no drag, no scale): the only kind a default-generation change may drop. */
+function isDefaultOffset(o: FrameOffset | undefined): boolean {
+  return !o || (o.x === 0 && o.y === 0 && o.s === 1);
+}
 
 /** v1 frames whose offsets carry over. bottom, player, buffs, target, meter and corner changed anatomy and are dropped. */
 const V1_KEPT_FRAMES = ['boss', 'minimap', 'combo', 'chat', 'loot', 'party', 'bar2', 'bar3'];
@@ -96,7 +101,7 @@ function fromV2(p: Record<string, unknown>): UiLayout {
   l.locked = p.locked === true;
   l.bars = sanitizeBars(p.bars);
   l.frames = sanitizeFrames(p.frames);
-  if (p.skin !== SKIN) for (const id of SKIN_MOVED_FRAMES) delete l.frames[id];
+  if (p.skin !== SKIN) for (const id of SKIN_MOVED_FRAMES) if (isDefaultOffset(l.frames[id])) delete l.frames[id];
   return l;
 }
 

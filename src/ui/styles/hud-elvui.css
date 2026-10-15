@@ -66,7 +66,7 @@
 .hud .uf-cast .castbar.interrupted .cb-fill, .hud .uf-target .uf-cast .castbar.interrupted .cb-fill { background: #c41f1f !important; }
 
 /* consumables (potions + flasks) hang under the player frame's cast bar */
-.hud .hud-uf > .uf-cons { position: absolute; right: calc(50% + var(--uf-gap)); top: calc(var(--uf-top) + var(--uf-hp-p) + var(--uf-strip) + 27px); justify-content: flex-end; gap: 2px; }
+.hud .hud-uf > .uf-cons { position: absolute; right: calc(100% - var(--uf-in)); top: calc(var(--uf-top) + var(--uf-hp-p) + var(--uf-strip) + 27px); justify-content: flex-end; gap: 2px; }
 .hud .flask-row { margin-left: 4px; gap: 2px; }
 
 /* resource pips (Kombo, Çi, Kutsal Güç, Rün ...): flat bars above the player frame, no diamonds or glow */

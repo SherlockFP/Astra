@@ -23,12 +23,12 @@
 
 /* ==========================================================================
    UX-11 unit frames (UI_REDESIGN §2.7, §2.8): ElvUI centre cluster. The player frame sits left of the screen centre, the
-   target frame right of it, both 57 % down (--uf-top). Flat kit bars (kit.css .k-bar), no ornament. The roots position
+   target frame right of it, both 72 % down at 16:9 (--uf-top), inner edges at 36 % / 64 % (--uf-in). Flat kit bars (kit.css .k-bar), no ornament. The roots position
    themselves inside .hud-uf (UX-10 mounts them there).
    ========================================================================== */
 .uf-player, .uf-target { position: absolute; top: var(--uf-top); width: var(--uf-w); pointer-events: none; font-family: var(--font-body); }
-.uf-player { right: calc(50% + var(--uf-gap)); }
-.uf-target { left: calc(50% + var(--uf-gap)); display: flex; flex-direction: column; gap: 3px; }
+.uf-player { right: calc(100% - var(--uf-in)); }
+.uf-target { left: calc(100% - var(--uf-in)); display: flex; flex-direction: column; gap: 3px; }
 .uf-player.dead { filter: grayscale(0.9) brightness(0.7); }
 
 /* shared: a flat bar inside a frame draws no border of its own (the 1 px black gap is the divider) */
