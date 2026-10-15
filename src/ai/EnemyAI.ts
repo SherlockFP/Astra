@@ -447,7 +447,7 @@ export class EnemyAI {
       if (!this.aggroed) this.dir.pullPack(this, src, true);
     } else if (!this.aggroed) {
       const p = this.nearestPlayer(60);
-      if (p) this.dir.pullPack(this, p, true);
+      if (p) this.dir.pullPack(this, p);
     }
     if (this.e.dormant) this.wake(src ?? null);
     this.revealIfHidden();
@@ -492,14 +492,16 @@ export class EnemyAI {
     return this.world.nearest(this.world.players, this.e.position, maxDist, (p) => !p.isDead);
   }
 
-  /** Become hostile toward `target`. `pulled` = came from a pack/link/body pull (no further propagation). */
-  acquire(target: Actor, pulled = false): void {
+  /** Become hostile toward `target`. `pulled` = came from a pack/link/body pull (no further propagation). `answering` = `target` hit this enemy (WoW: an attacked mob always fights back, the pull cap only stops unprompted aggro). */
+  acquire(target: Actor, pulled = false, answering = false): void {
     const e = this.e;
     if (this.disposed || e.isDead || !target) return;
     if (this.aggroed) {
       if (!this.threat.has(target.id)) this.addThreat(target.id, 1);
       return;
     }
+    // the low-level pull cap is a hard rule at the one place every engagement passes (hits, sight, summons, respawns, revives)
+    if (!answering && !this.dir.hasRoom(e, target)) return;
     this.aggroed = true;
     e.aggroed = true;
     this.target = target;
@@ -569,7 +571,7 @@ export class EnemyAI {
     } catch { /* ignore */ }
     if (!this.aggroed) {
       const p = by && by.kind === 'player' ? by : this.nearestPlayer(60);
-      if (p) this.dir.pullPack(this, p, true);
+      if (p) this.dir.pullPack(this, p);
     }
   }
 

@@ -242,6 +242,67 @@ function campRingIssues(packs, roomId) {
   }
   return out;
 }
+/**
+ * Starting-ring density and quest areas (Sisli Vadi r1, WoW spacing). Mob counts are the expanded camp members (patrols count
+ * as camps with a centre). HARD errors:
+ *  (1) density: a camp centre of level 1-3 has at most 6 mobs within 25 m (every camp centre within 25 m counts, itself included);
+ *  (2) a level 3+ camp keeps 25 m clear of every level 1-2 camp (the L1-2 quest area of the starting ring);
+ *  (3) quest-target areas: a quest of level q <= 3 has target camps (camps spawning its kill / drop targets, band overlapping
+ *      q-1..q+1). A camp within 25 m of a target camp holds levels q-1..q+1 only; a camp 2+ levels above q keeps 40 m from every
+ *      target camp;
+ *  (4) a side quest placed at a camp (layout quests.side `place`, level <= 3): its kill / drop targets that spawn within 60 m of
+ *      the place stand in camps of its own level and the next one (the Kurt Tehlikesi wolves sit in the L2-3 band).
+ * Returns the issues plus the max mobs-within-25-m per band (info line).
+ */
+function ringDensityIssues(packs, roomId, quests, sideQuests) {
+  const out = [];
+  const err = (where, msg) => out.push({ level: 'error', where, msg });
+  const R = 25, OUTER = 40, PLACE = 60;
+  const TILE_M = 4;
+  const camps = (packs ?? []).filter((p) => p.roomId === roomId && p.center);
+  const xy = (p) => [p.center[0] * TILE_M, p.center[1] * TILE_M];
+  const gap = (a, b) => { const [ax, az] = xy(a), [bx, bz] = xy(b); return Math.hypot(ax - bx, az - bz); };
+  const mobs = (p) => p.members.length;
+  const lo = (p) => p.levelRange[0], hi = (p) => p.levelRange[1];
+  const spot = (a) => camps.filter((b) => gap(a, b) <= R).reduce((s, b) => s + mobs(b), 0);
+  const band = new Map([['L1-2', 0], ['L3', 0], ['L4-5', 0]]);
+  for (const a of camps) {
+    const s = spot(a);
+    const key = lo(a) <= 2 ? 'L1-2' : lo(a) === 3 ? 'L3' : 'L4-5';
+    band.set(key, Math.max(band.get(key), s));
+    if (lo(a) <= 3 && s > 6) err(`camp ${a.id}`, `${s} mobs within ${R} m (at most 6 in the L1-3 rings)`);
+  }
+  for (const c of camps.filter((c) => lo(c) >= 3)) {
+    for (const q of camps.filter((q) => hi(q) <= 2)) {
+      if (gap(c, q) < R) { err(`camp ${c.id}`, `level ${lo(c)} camp ${Math.round(gap(c, q))} m from level 1-2 camp ${q.id}: keep ${R} m clear of the quest area`); break; }
+    }
+  }
+  for (const q of quests) {
+    if (q.level > 3) continue;
+    const tids = new Set(q.objectives.filter((o) => o.kind === 'kill' || o.kind === 'metin').map((o) => o.target).filter(Boolean));
+    for (const o of q.objectives) if (o.kind === 'drop') for (const f of o.from ?? []) tids.add(f);
+    if (!tids.size) continue;
+    const T = camps.filter((c) => c.members.some((m) => tids.has(m.enemyId)) && hi(c) >= q.level - 1 && lo(c) <= q.level + 1);
+    if (!T.length) continue;
+    for (const c of camps) {
+      if (T.includes(c)) continue;
+      const nearT = T.some((t) => gap(c, t) < R);
+      if (nearT && (lo(c) < q.level - 1 || hi(c) > q.level + 1)) err(`quest ${q.id}`, `camp ${c.id} (L${lo(c)}-${hi(c)}) inside its target area: only levels ${q.level - 1}-${q.level + 1}`);
+      else if (lo(c) >= q.level + 2 && T.some((t) => gap(c, t) < OUTER)) err(`quest ${q.id}`, `camp ${c.id} (L${lo(c)}-${hi(c)}) is ${Math.round(Math.min(...T.map((t) => gap(c, t))))} m from a target camp: keep ${OUTER} m`);
+    }
+  }
+  for (const sq of sideQuests ?? []) {
+    const q = quests.find((x) => x.id === sq.id);
+    const place = camps.find((c) => c.id === sq.place);
+    if (!q || !place || q.level > 3) continue;
+    const tids = new Set(q.objectives.filter((o) => o.kind === 'kill' || o.kind === 'metin').map((o) => o.target).filter(Boolean));
+    for (const o of q.objectives) if (o.kind === 'drop') for (const f of o.from ?? []) tids.add(f);
+    const near = camps.filter((c) => gap(c, place) <= PLACE && c.members.some((m) => tids.has(m.enemyId)));
+    if (!near.length) { err(`quest ${sq.id}`, `no target camp within ${PLACE} m of ${sq.place}`); continue; }
+    for (const c of near) if (lo(c) < q.level || hi(c) > q.level + 1) err(`quest ${sq.id}`, `target camp ${c.id} (L${lo(c)}-${hi(c)}) is outside the L${q.level}-${q.level + 1} band of ${sq.place}`);
+  }
+  return { issues: out, band };
+}
 // registries for the season rules (P-29): ids resolve against the real data modules, not a copy
 const { STATUSES } = await imp('src/data/statuses.ts');
 const { DEVICES, PROFESSION_NAMES } = await imp('src/data/devices.ts');
@@ -325,9 +386,12 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
     const r1 = ALL[id].world?.regions?.find((r) => r.id === 'r1');
     if (!r1) continue;
     const ri = campRingIssues(ALL[id].packs, r1.roomId);
-    const e = ri.filter((i) => i.level === 'error');
+    const { QUESTS: RING_QUESTS } = await imp('src/data/world/quests.ts');
+    const sideQuests = JSON.parse(fs.readFileSync(`${ROOT}/src/data/world/sisli_vadi.layout.json`, 'utf8').replace(/^﻿/, '')).quests?.side ?? [];
+    const dn = ringDensityIssues(ALL[id].packs, r1.roomId, RING_QUESTS, sideQuests);
+    const e = [...ri, ...dn.issues].filter((i) => i.level === 'error');
     totalErr += e.length;
-    console.log(`\n== camp rings ${id} r1: ${e.length} errors | ${ALL[id].packs.filter((p) => p.roomId === r1.roomId).length} camps and patrols`);
+    console.log(`\n== camp rings ${id} r1: ${e.length} errors | ${ALL[id].packs.filter((p) => p.roomId === r1.roomId).length} camps and patrols | max mobs within 25 m: L1-2 ${dn.band.get('L1-2')}, L3 ${dn.band.get('L3')}, L4-5 ${dn.band.get('L4-5')}`);
     for (const i of e) console.log('  ERR ', i.where, '-', i.msg);
   }
 }
