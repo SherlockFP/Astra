@@ -13,7 +13,8 @@
 // after changing src/):
 //   npx vite --port 5190 --strictPort --host 127.0.0.1
 //   DP_URL=http://127.0.0.1:5190 MP_PW=<dir with node_modules/playwright-core> node tools/qa/dungeon-pack.mjs
-// Env: DP_CLASSES=priest,knight  DP_LVL=15  DP_DUNGEON=kemik_mahzeni  DP_PACK=0 (index into the dungeon's packs)
+// Env: DP_CLASSES=priest,knight (any id of src/net/messages.ts CLASS_IDS or a WoW alias: hunter=archer, dh=demonhunter)
+//      DP_LVL=15  DP_DUNGEON=kemik_mahzeni  DP_PACK=0 (index into the dungeon's packs)
 //      DP_CAP=150 (seconds allowed for the fight of one class)  MP_CHROME (chrome.exe)  DP_VIEW=1280x720  DP_HEADED=1 (watch it)
 //      DP_SPECS=priest=priest_shadow (default; class=spec pairs set before the walk, the spec's own default bar)
 //      DP_SURVIVE_SEC=20 DP_MIN_DEALT=150 (casters: alive after 20 s of the fight with >= 150 damage dealt is a pass; melee: clear only)
@@ -23,19 +24,20 @@
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { resolveClassList } from './classes.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BASE = process.env.DP_URL ?? 'http://127.0.0.1:5190';
 const PW_DIR = process.env.MP_PW ?? process.env.QA_DIR ?? HERE;
 const CHROME = process.env.MP_CHROME ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const CLASSES = (process.env.DP_CLASSES ?? 'priest,knight').split(',').map((s) => s.trim()).filter(Boolean);
+/** class ids from src/net/messages.ts CLASS_IDS (WoW aliases accepted, see classes.mjs); melee / caster comes from the game (autoInfo) */
+const CLASSES = resolveClassList(process.env.DP_CLASSES ?? 'priest,knight');
 const LVL = Number(process.env.DP_LVL ?? 15);
 const DUNGEON = process.env.DP_DUNGEON ?? 'kemik_mahzeni';
 const PACK_IDX = Number(process.env.DP_PACK ?? 0);
 const CAP_MS = Number(process.env.DP_CAP ?? 150) * 1000;
 const [VW, VH] = (process.env.DP_VIEW ?? '1280x720').split('x').map(Number);
-const MELEE = new Set(['knight', 'barbarian', 'rogue', 'paladin', 'druid']);
-/** casters (not MELEE) have no clear-or-die rule: alive after this many seconds of the fight with DP_MIN_DEALT damage dealt is a pass */
+/** casters (not melee) have no clear-or-die rule: alive after this many seconds of the fight with DP_MIN_DEALT damage dealt is a pass */
 const SURVIVE_SEC = Number(process.env.DP_SURVIVE_SEC ?? 20);
 const MIN_DEALT = Number(process.env.DP_MIN_DEALT ?? 150);
 /** class=spec pairs set before the walk (DP_SPECS="priest=priest_shadow,mage=", empty value = the class's bare bar) */
@@ -277,7 +279,9 @@ async function journey(page, cls, errors) {
   console.log(`  [${cls}] start: maxHp=${diag0.maxHp} lmb=${diag0.lmb} auto=${JSON.stringify(diag0.auto)}`);
 
   // ---- 3 fight
-  const melee = MELEE.has(cls);
+  // melee or caster from the game's own auto-attack mode of this character (SkillSystem.autoInfo: the basic step's range)
+  const melee = (await page.evaluate(() => window.G.skills.autoInfo(window.G.player).mode)) === 'melee';
+  console.log(`  [${cls}] auto-attack mode: ${melee ? 'melee' : 'ranged/off (caster rule)'}`);
   const pressed = {};
   let rot = 0;
   let lastCast = 0;
@@ -294,7 +298,7 @@ async function journey(page, cls, errors) {
     if (s.maxHp > 0) minHp = Math.min(minHp, s.hp / s.maxHp);
     if (s.dead) { outcome = 'died'; break; }
     if (!s.alive || !s.near) { outcome = 'cleared'; break; }
-    if (!MELEE.has(cls) && Date.now() - tFight >= SURVIVE_SEC * 1000) { outcome = 'survived'; break; }
+    if (!melee && Date.now() - tFight >= SURVIVE_SEC * 1000) { outcome = 'survived'; break; }
     const near = s.near;
     const err = wrap(Math.atan2(near.x - s.x, near.z - s.z) - s.yaw);
     const mv = [];
