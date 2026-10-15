@@ -1,4 +1,4 @@
-import type { QuestDef, QuestKind, QuestObjective, QuestReward } from '../../types/quests';
+import { QUEST_DROP_CHANCE, type QuestDef, type QuestKind, type QuestObjective, type QuestReward } from '../../types/quests';
 import { gemId } from '../materials'; // gem grades are 1-based there: 1 Kırık, 2 Kusurlu, 3 normal, 4 Kusursuz
 import { LAYOUT } from './layout';
 import { REGION_QUESTS } from './quests_extra';
@@ -52,7 +52,7 @@ const metin = (target: string, text: string): QuestObjective => obj('metin', tar
 const dungeon = (target: string, text: string): QuestObjective => obj('dungeon', target, 1, text);
 const collect = (target: string, count: number, text: string): QuestObjective => obj('collect', target, count, text);
 const explore = (target: string, text: string): QuestObjective => obj('explore', target, 1, text);
-const drop = (target: string, count: number, from: string[], text: string): QuestObjective => ({ kind: 'drop', target, count, from, chance: 0.6, text });
+const drop = (target: string, count: number, from: string[], text: string): QuestObjective => ({ kind: 'drop', target, count, from, chance: QUEST_DROP_CHANCE, text });
 
 /** Main chain "Kadim Mühür" (§6.2). Rewards: items as the layout text names them, generic = "Büyülü / Nadir / Destansı" drops. */
 const EXTRA_MAIN: Record<string, Extra> = {

@@ -3,7 +3,7 @@
  * Quest objective types headless check (WoW-style variety, data/world/quests_variety.ts + systems/Quests.ts).
  *   node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/questtypes.mjs     (V=1 prints every PASS)
  * Stages: cat.*    the converted levelling quests and bonus quests of the real content (ids, kinds, drop sources, elite ranks, share)
- *         drop.*   kind 'drop': chance per matching kill, `from` filter (id or family), swarm scaling, bag progress, turn-in consumes
+ *         drop.*   kind 'drop': chance per matching kill, `from` filter (id or family), swarm at the same rate, bag progress, turn-in consumes
  *         collect.from.*  kind 'collect' with `from`: rolls from the listed enemies only, at the collect rate (no kill objective)
  *         elite.*  kind 'elite': named id and rank above trash
  *         int.*    kind 'interact' (onEvent) progresses and completes
@@ -21,6 +21,7 @@ const { QUESTS } = await H.imp('data/world/quests.ts');
 const { VARIETY, BONUS_QUESTS } = await H.imp('data/world/quests_variety.ts');
 const { ENEMIES, BOSSES } = await H.imp('data/enemies.ts');
 const { MATERIALS } = await H.imp('data/materials.ts');
+const { QUEST_DROP_CHANCE } = await H.imp('types/quests.ts');
 const { G } = H;
 const { QuestProp, questPropKind, QUEST_PROP_RESPAWN_SEC } = await H.imp('entities/interactables/QuestProp.ts');
 const { questPropSpots, escortPath } = await H.imp('scenes/world/WorldQuestProps.ts');
@@ -95,17 +96,17 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   addDrops([{ id: 'item_kurt_postu', count: 1 }]); // the family quest is ready; it stays out of the next stages (own item)
 }
 {
-  // collect with a named source (`from`): no kill objective needed; rolls only from the listed enemies, at the collect rate 0.4
+  // collect with a named source (`from`): no kill objective needed; rolls only from the listed enemies, at the collect rate (QUEST_DROP_CHANCE)
   qs.registerDefs([T('t_cfrom', 1, [{ kind: 'collect', target: 'item_geyik_derisi', count: 1000000, from: ['ow_wolf'], text: 'x' }])]);
   qs.accept('t_cfrom');
   const geyik = (list) => list.filter((d) => d.id === 'item_geyik_derisi').length;
   ok('collect.from-other', geyik(qs.rollDrops({ enemyId: 'ow_boar', rank: 'trash' })) === 0, 'a boar is not in from');
   let hits = 0;
   for (let i = 0; i < 2000; i++) hits += geyik(qs.rollDrops({ enemyId: 'ow_wolf', rank: 'trash' }));
-  ok('collect.from-rate-0.4', Math.abs(hits / 2000 - 0.4) < 0.04, `${(hits / 2000).toFixed(3)} per kill`);
+  ok(`collect.from-rate-${QUEST_DROP_CHANCE}`, Math.abs(hits / 2000 - QUEST_DROP_CHANCE) < 0.04, `${(hits / 2000).toFixed(3)} per kill`);
 }
 {
-  // rates: chance 0.6 over 2000 kills; chance 0 never (own item); swarm scales the chance by 0.15 / 0.4
+  // rates: chance 0.6 over 2000 kills; chance 0 never (own item); swarm rolls the same chance (no scaling)
   qs.registerDefs([
     T('t_rate', 1, [drop('item_puglin_disi', 1000000, ['ow_puglin'], 0.6)]),
     T('t_zero', 1, [drop('item_tarikat_muhru', 1000000, ['ow_puglin'], 0)]),
@@ -126,7 +127,7 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   for (let i = 0; i < 4000; i++) {
     for (const d of qs.rollDrops({ enemyId: 'ow_puglin', rank: 'trash', swarm: true })) if (d.id === 'item_puglin_disi') swarm++;
   }
-  ok('drop.swarm-scale', Math.abs(swarm / 4000 - 0.6 * (0.15 / 0.4)) < 0.03, `${(swarm / 4000).toFixed(3)} per swarm kill`);
+  ok('drop.swarm-same-rate', Math.abs(swarm / 4000 - 0.6) < 0.03, `${(swarm / 4000).toFixed(3)} per swarm kill`);
   G.character.save.flags['q.t_rate'] = 'done';
   G.character.save.flags['q.t_zero'] = 'done';
 }

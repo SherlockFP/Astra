@@ -1,10 +1,10 @@
-import type { QuestDef, QuestObjective } from '../../types/quests';
+import { QUEST_DROP_CHANCE, type QuestDef, type QuestObjective } from '../../types/quests';
 
 /**
  * Sisli Vadi görev çeşitliliği (WoW tarzı). OWNER: content module.
  *
  * Seviye 1-15 görevlerinin bir kısmı "N yaratık öldür" yerine yeni hedef türlerini kullanır (systems/Quests.ts):
- *  - drop: N eşya, belirli yaratıklardan yüzde şansla düşer (öldürme sayısı kabaca eskisiyle aynı: N / 0.6 ≈ eski sayı).
+ *  - drop: N eşya, belirli yaratıklardan yüzde şansla düşer (öldürme sayısı kabaca eskisiyle aynı: N / 0.7 ≈ öldürme sayısı, QUEST_DROP_CHANCE).
  *  - elite: adlandırılmış bir elit (rare) avı (rare_* id, rank elite).
  *  - bonus (BONUS_QUESTS): bir bölgenin bonus görevi; karışık hedefler, tek ilerleme çubuğu (progressPct).
  * Bu dosya görev verisini `VARIETY` ile üzerine yazar (applyVariety, data/world/quests.ts). Ödül ve XP yüzdeleri değişmez;
@@ -15,7 +15,7 @@ import type { QuestDef, QuestObjective } from '../../types/quests';
  */
 
 const drop = (target: string, count: number, from: string[], text: string): QuestObjective =>
-  ({ kind: 'drop', target, count, from, chance: 0.6, text });
+  ({ kind: 'drop', target, count, from, chance: QUEST_DROP_CHANCE, text });
 const kill = (target: string, count: number, text: string): QuestObjective => ({ kind: 'kill', target, count, text });
 const elite = (target: string, text: string): QuestObjective => ({ kind: 'elite', target, count: 1, text });
 const boss = (target: string, count: number, text: string): QuestObjective => ({ kind: 'boss', target, count, text });

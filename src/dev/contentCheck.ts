@@ -1,5 +1,5 @@
 import { TILE_SIZE, WORLD_PACK_STRIDE, type BossPlacement, type DoorDef, type DungeonDef, type HeightArea, type PropPlacement, type RoomDef, type TileRect, type TownDef, type ZoneDef } from '../types/dungeons';
-import type { QuestDef } from '../types/quests';
+import { QUEST_DROP_CHANCE, type QuestDef } from '../types/quests';
 import type { EnemyAbility, EnemyDef } from '../types/enemies';
 import { MUSIC_IDS, SFX_IDS } from '../types/audio';
 import { VFX_IDS } from '../types/vfx';
@@ -1432,6 +1432,9 @@ function worldIssues(
  * Quest data checks (GDD_OPENWORLD §6): unique ids, prerequisites, givers / turn-ins that exist as NPCs (hub NPCs without a
  * layout entry are warnings), objective targets (enemy ids via `knownEnemy`, dungeon ids, places, items), reward items.
  */
+/** Max expected kills per quest item, as a multiple of the item count (drop rule of checkQuests). */
+const DROP_KILLS_MAX = 1.6;
+
 export function checkQuests(
   quests: QuestDef[],
   opts: { npcIds: Set<string>; knownEnemy: (id: string) => number | undefined; hasItem: (id: string) => boolean; dungeonIds: string[]; placeIds: Set<string> },
@@ -1452,6 +1455,11 @@ export function checkQuests(
       const ow = `${where} [${o.kind} ${o.target ?? ''}]`;
       if (!(o.count >= 1)) err(ow, 'count below 1');
       if (!o.text.trim()) err(ow, 'empty objective text');
+      // drop rate (QuestSystem.rollDrops): expected kills per quest item = count / chance must stay <= 1.6 x count (a chance >= 0.625)
+      if (o.kind === 'collect' || o.kind === 'drop') {
+        const chance = o.chance ?? QUEST_DROP_CHANCE;
+        if (!(chance >= 1 / DROP_KILLS_MAX)) err(ow, `expected kills ${(o.count / chance).toFixed(1)} for ${o.count} items (chance ${chance}) are above ${DROP_KILLS_MAX} x count`);
+      }
       if (!o.target) continue;
       if (o.kind === 'kill' || o.kind === 'boss' || o.kind === 'skill' || o.kind === 'metin') {
         if (opts.knownEnemy(o.target) === undefined) err(ow, `enemy / stone ${o.target} is not defined (enemies module)`);

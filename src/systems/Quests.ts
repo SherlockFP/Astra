@@ -2,7 +2,7 @@ import { G } from '../game/G';
 import type { Enemy } from '../entities/Enemy';
 import type { EnemyRank } from '../types/enemies';
 import type { ItemCategory, ItemInstance } from '../types/items';
-import type { QuestDef, QuestKind, QuestObjective, QuestState } from '../types/quests';
+import { QUEST_DROP_CHANCE, type QuestDef, type QuestKind, type QuestObjective, type QuestState } from '../types/quests';
 import { RNG } from '../core/utils';
 import { MATERIALS } from '../data/materials';
 import { QUESTS } from '../data/world/quests';
@@ -29,7 +29,7 @@ export interface QuestKillInfo {
   /** Enemy family (objective `kill` may target a family instead of an id). */
   family?: string;
   rank?: EnemyRank;
-  /** Kill came from a swarm member (lower drop chances). */
+  /** Kill came from a swarm member (quest drops do not scale with it). */
   swarm?: boolean;
   /** Region of the camp / patrol ("r1"), when known. */
   regionId?: string;
@@ -66,9 +66,8 @@ export interface AvDefteriStatus {
   canDeliver: boolean;
 }
 
-/** Chance per kill that a `collect` item drops while its quest is active (swarm: lower). */
-const COLLECT_CHANCE = 0.4;
-const COLLECT_CHANCE_SWARM = 0.15;
+/** Chance per kill that a `collect` item drops while its quest is active (types/quests.ts). Swarm kills roll the same chance. */
+const COLLECT_CHANCE = QUEST_DROP_CHANCE;
 const KILL_KINDS: readonly QuestKind[] = ['kill', 'boss', 'metin', 'elite'];
 /** Bag-based objectives: progress is the number of items in the bag and they are consumed on turn-in. */
 const BAG_KINDS: readonly QuestKind[] = ['collect', 'drop'];
@@ -508,9 +507,8 @@ export class QuestSystem {
         if (o.from?.length) {
           if (!o.from.some((id) => info.enemyId === id || info.family === id)) continue;
         } else if (!this.sourceMatches(def, info)) continue;
-        // its own chance when set, else the shared collect chance. Swarm members scale both down by the collect ratio.
-        const base = o.chance !== undefined ? o.chance : COLLECT_CHANCE;
-        const chance = info.swarm ? base * (COLLECT_CHANCE_SWARM / COLLECT_CHANCE) : base;
+        // its own chance when set, else the shared collect chance (no swarm scaling: the 1.6 x count kill rule, dev/contentCheck.ts)
+        const chance = o.chance !== undefined ? o.chance : COLLECT_CHANCE;
         if (this.rng.chance(chance)) out.push({ id: o.target, count: 1 });
       }
     }

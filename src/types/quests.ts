@@ -68,3 +68,10 @@ export interface QuestDef {
 
 /** locked = prerequisites not met yet; available = can be accepted; active = in progress; ready = turn in; done = finished. */
 export type QuestState = 'locked' | 'available' | 'active' | 'ready' | 'done';
+
+/**
+ * Chance per matching kill that a quest item (`collect`, `drop`) drops while its quest is active. WoW low-level quest items drop
+ * 60-80 % per kill from the right mob. At 0.7 the expected kills per objective are count / 0.7 (~1.43 x count); content-check
+ * (dev/contentCheck.ts checkQuests) fails any objective above 1.6 x count, i.e. a chance below 0.625.
+ */
+export const QUEST_DROP_CHANCE = 0.7;
