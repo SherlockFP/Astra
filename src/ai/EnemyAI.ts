@@ -2066,6 +2066,30 @@ export class EnemyAI {
     G.vfx.spawn(ab.vfx ?? 'add_spawn', this.e.position);
   }
 
+  /**
+   * The actor a summon engages: this summoner's current target while it lives, else the nearest living player inside the summoner's
+   * leash, measured as pastLeash measures it (a camp member: its camp circle + CAMP_LEASH_PAD_M; any other body: its home point, `leash`
+   * m). A summoner with no leash reads the 400 m engage reach from its home. null = no one: the summon waits until something pulls it.
+   */
+  protected summonTarget(): Actor | null {
+    const t = this.target;
+    if (t && !t.isDead && !t.removed) return t;
+    const e = this.e;
+    const leash = e.def.ai?.homeRadius ?? e.def.leashRange ?? defaultLeashFor(e.def);
+    let cx = e.homeX, cz = e.homeZ;
+    let reach = leash > 0 ? leash : 400;
+    if (leash > 0 && e.campX !== null && e.campZ !== null && e.campR > 0) { cx = e.campX; cz = e.campZ; reach = e.campR + CAMP_LEASH_PAD_M; }
+    let best: Player | null = null;
+    let bestD = Infinity;
+    for (const p of this.world.players) {
+      if (p.isDead || p.removed) continue;
+      if (Math.hypot(p.position.x - cx, p.position.z - cz) > reach) continue;
+      const d = Math.hypot(p.position.x - e.position.x, p.position.z - e.position.z);
+      if (d < bestD) { bestD = d; best = p; }
+    }
+    return best;
+  }
+
   /** Spawn dynamic adds around (x,z) (host): deterministic ids from world.allocHostId, replicated through the 'spawn' channel. */
   spawnAdds(defId: string, count: number, o: { x?: number; z?: number; radius?: number; aggro?: boolean; tag?: string; hpFrac?: number; hpMult?: number; positions?: { x: number; z: number }[]; facing?: number; level?: number } = {}): void {
     const e = this.e;
@@ -2073,6 +2097,8 @@ export class EnemyAI {
     if (!spawn) return;
     const cx = o.x ?? e.position.x, cz = o.z ?? e.position.z;
     const rad = o.radius ?? 2.2;
+    // a summon (aggro) engages what its summoner fights: the target is read now, at the summon
+    const engage = o.aggro !== false ? this.summonTarget() : undefined;
     for (let i = 0; i < count; i++) {
       let x = cx, z = cz;
       if (o.positions?.[i]) {
@@ -2091,7 +2117,7 @@ export class EnemyAI {
           }
         }
       }
-      void spawn(this.world, defId, { x, z }, { level: o.level ?? e.level, packId: e.packId, aggro: o.aggro !== false, owner: e.id, tag: o.tag, hpFrac: o.hpFrac, hpMult: o.hpMult, facing: o.facing });
+      void spawn(this.world, defId, { x, z }, { level: o.level ?? e.level, packId: e.packId, aggro: o.aggro !== false, aggroTo: engage, owner: e.id, tag: o.tag, hpFrac: o.hpFrac, hpMult: o.hpMult, facing: o.facing });
     }
   }
 

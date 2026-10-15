@@ -64,6 +64,7 @@ export const LOW_LEVEL_DMG: Record<string, number> = {
   knight_protector: 0.6, archer_marksman: 0.55, demonhunter_chaos: 0.84, evoker_devastation: 0.3, necromancer_summoner: 0.35,
   paladin_protection: 0.60, priest_discipline: 1.92, warlock_affliction: 1.15,
   mage_fire: 1.50,
+  shaman_elemental: 1.15,
 };
 
 /** The factor `k` at character level `level`: linear between the knots, held at the end knots outside 10-60. */

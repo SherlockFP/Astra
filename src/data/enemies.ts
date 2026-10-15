@@ -869,7 +869,8 @@ derive('mb_girtlak_add', 'Gırtlak Yağmacısı', 'ow_goblin', {
   abilities: [],
 });
 derive('mb_girtlak', 'Yağmacı Başı Gırtlak', 'ow_puglin_chief', {
-  scale: 1.25, hp: 18, rank: 'miniboss', xp: 25, loot: 'loot_mb_r1', ai: { homeRadius: 30 },
+  // dmg 1.35 (the base's 1.5, -10 %): the quest sim's weakest L4 fight (an evoker on its L4 bar) ends at ~7 % HP left (dev/combat-sim/quest_boss.mjs)
+  scale: 1.25, hp: 18, dmg: 1.35, rank: 'miniboss', xp: 25, loot: 'loot_mb_r1', ai: { homeRadius: 30 },
   // sustained damage ~half of the first pass: a slower, lighter swing; the heavy one is the telegraphed special below
   basic: cone('mb_girtlak_club', 'Sopa', 3.2, 110, 3.6, 0.15, 'Attack_1H_2', 0.35),
   abilities: [
