@@ -113,6 +113,50 @@ export const RECIPES: Record<string, Recipe> = {
     if (r.next() < 0.4) out.push({ url: gp('rock_large'), dx: -1.8, dz: -1.1, yaw: r.range(0, Math.PI * 2), s: 0.8, solid: 1.2 });
     return out;
   },
+  // a grove: 6-9 trees in a 4-12 m ring-and-core scatter, a bush or two at the edge (the open meadow gets a destination)
+  grove: (r) => {
+    const trees = [gp('tree_oak_a'), gp('tree_oak_b'), gp('tree_pine_a'), gp('tree_autumn')];
+    const out: Piece[] = [];
+    const n = 6 + r.int(0, 3);
+    for (let i = 0; i < n; i++) {
+      const core = i < 2;
+      const a = r.range(0, Math.PI * 2), d = core ? r.range(0, 2.5) : r.range(4, 11);
+      out.push({ url: pickOf(r, trees), dx: Math.cos(a) * d, dz: Math.sin(a) * d, yaw: r.range(0, Math.PI * 2), s: r.range(1.5, 2.1), solid: 0.8 });
+    }
+    out.push({ url: gp('bush_a'), dx: r.range(-3, 3), dz: r.range(-3, 3), yaw: r.range(0, 3), s: 1.1 });
+    out.push({ url: gp('bush_b'), dx: r.range(-6, 6), dz: r.range(-6, 6), yaw: r.range(0, 3), s: 1 });
+    return out;
+  },
+  // an outcrop: a boulder field of 4-6 rocks and a dead stump, breaks a bare slope
+  outcrop: (r) => {
+    const out: Piece[] = [
+      { url: gp('rock_large'), dx: 0, dz: 0, yaw: r.range(0, Math.PI * 2), s: 1.6, solid: 1.8 },
+      { url: gp('rock_medium'), dx: 2.6, dz: 1.4, yaw: r.range(0, Math.PI * 2), s: 1.2, solid: 0.9 },
+      { url: gp('rock_medium'), dx: -2.2, dz: 2.1, yaw: r.range(0, Math.PI * 2), solid: 0.9 },
+    ];
+    for (let i = 0; i < 2 + r.int(0, 2); i++) out.push({ url: gp('rock_small'), dx: r.range(-4, 4), dz: r.range(-4, 4), yaw: r.range(0, Math.PI * 2) });
+    if (r.next() < 0.5) out.push({ url: gp('tree_dead'), dx: r.range(-3, 3), dz: -2.8, yaw: r.range(0, 3), s: 1.2, solid: 0.7 });
+    return out;
+  },
+  // fallen logs: two or three logs lying across the meadow (no nav block, so they never close a path)
+  fallen_logs: (r) => {
+    const out: Piece[] = [];
+    for (let i = 0; i < 2 + r.int(0, 1); i++) {
+      out.push({ url: kn('log'), dx: r.range(-3, 3), dz: r.range(-3, 3) + i * 2, yaw: r.range(0, Math.PI * 2), s: 1.4 });
+    }
+    return out;
+  },
+  // a dense carpet of grass, flowers and a few small bushes over ~12 m (filler: no nav, drawn in the short-distance layers)
+  meadow_carpet: (r) => {
+    const flora = [gp('grass_tuft'), gp('grass_tuft'), gp('grass_tuft'), gp('flowers'), gp('flowers'), gp('bush_b')];
+    const n = 14 + r.int(0, 6);
+    const out: Piece[] = [];
+    for (let i = 0; i < n; i++) {
+      const a = r.range(0, Math.PI * 2), d = Math.sqrt(r.next()) * 6;
+      out.push({ url: pickOf(r, flora), dx: Math.cos(a) * d, dz: Math.sin(a) * d, yaw: r.range(0, Math.PI * 2), s: r.range(0.9, 1.4) });
+    }
+    return out;
+  },
 };
 
 /** Recipe pieces for one entry, in the anchor's frame: x / z in metres from the anchor's centre, yaw in radians (anchor included). */

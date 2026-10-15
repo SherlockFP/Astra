@@ -15,7 +15,7 @@ import { piecesOf, tileC } from './decorRecipes';
 
 const CULL: { cast: boolean; receive: boolean; layer: CullLayer } = { cast: true, receive: true, layer: 'prop' };
 /** Scatter keeps this many metres clear of each decor anchor (by kind). */
-const AVOID: Record<DecorDef['kind'], number> = { vignette: 6, field: 10, signpost: 2, flora: 2.5, rocks: 3 };
+const AVOID: Record<DecorDef['kind'], number> = { vignette: 6, field: 10, signpost: 2, flora: 2.5, rocks: 3, grove: 4 };
 
 /**
  * Culling layer of a decor piece by its model, so filler uses the open-world distance limits of the scatter layers (tuft 55 m,
@@ -27,6 +27,8 @@ function layerOf(url: string): CullLayer {
   if (url.includes('grass_tuft')) return 'tuft';
   if (url.includes('bush')) return 'bush';
   if (url.includes('rock')) return 'rock';
+  // grove trees take the scatter's tree tiers (LOD, far limit) instead of one full-detail prop mesh per tree
+  if (url.includes('tree_')) return 'tree';
   return 'prop';
 }
 

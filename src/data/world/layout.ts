@@ -63,7 +63,7 @@ export interface LLandmark { id: string; name: string; region: string; pos: [num
  * pos in tiles, rot in degrees.
  */
 export interface LDecor {
-  id: string; kind: 'vignette' | 'field' | 'signpost' | 'flora' | 'rocks'; recipe: string; region: string;
+  id: string; kind: 'vignette' | 'field' | 'signpost' | 'flora' | 'rocks' | 'grove'; recipe: string; region: string;
   pos: [number, number]; rot: number; lines?: string[];
 }
 export interface LFarm { id: string; name: string; pack: string; region: string; lootTable: string; focus: string }
