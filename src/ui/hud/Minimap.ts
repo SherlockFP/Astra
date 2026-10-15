@@ -11,7 +11,7 @@ import type { HudCtx, HudWidget } from './types';
 import { inWorldMap, questGiverMarks, questTargetMarks, tileCentreM, waypointKnown, worldExtras } from './questMarks';
 import { activeEventPins } from '../../scenes/world/EventCalendar';
 import { getSocial } from '../../systems/Social';
-import { zoneMapCanvas } from './zoneMap';
+import { zoneMapCanvas, type ZoneMapCanvas } from './zoneMap';
 
 const SIZE = 192;
 const R = SIZE / 2;
@@ -36,6 +36,25 @@ function bandTone(p: number, [lo, hi]: [number, number]): string {
 function inOpenZone(): boolean {
   const id = G.mplus?.params?.dungeonId ?? G.mplus?.state?.dungeonId;
   return !!id && !!getDungeon(id)?.outdoor;
+}
+
+/** Off-picture fill: the zone's own void tone (world/MapImage MAP_COLOR.void), dimmed; never solid black. */
+const VOID_FILL = '#2a3026';
+/** How far (m) the picture's edge pixels are stretched outward, so the map runs on past the zone border (the minimap shows ~100 m). */
+const EDGE_EXT_M = 400;
+
+/**
+ * Continues the zone picture past its four borders: each edge row/column is stretched outward, so a spawn at the zone edge (the
+ * picture starts at world z = 0) shows the land beyond instead of an empty well. Called inside the minimap's world transform.
+ */
+function drawZoneEdges(g: CanvasRenderingContext2D, zone: ZoneMapCanvas): void {
+  const cv = zone.canvas, W = zone.widthM, H = zone.heightM, E = EDGE_EXT_M;
+  const cw = cv.width, ch = cv.height;
+  g.imageSmoothingEnabled = false;
+  g.drawImage(cv, 0, 0, cw, 1, 0, -E, W, E); // north
+  g.drawImage(cv, 0, ch - 1, cw, 1, 0, H, W, E); // south
+  g.drawImage(cv, 0, 0, 1, ch, -E, 0, E, H); // west
+  g.drawImage(cv, cw - 1, 0, 1, ch, W, 0, E, H); // east
 }
 
 /** The open-world map def being played (outdoor with a world map), or null: its picture comes from the zone data (world/MapImage.ts). */
@@ -417,7 +436,8 @@ export class Minimap implements HudWidget {
     ctx2.beginPath();
     ctx2.rect(0, 0, SIZE, SIZE);
     ctx2.clip();
-    ctx2.fillStyle = '#0c0c0c';
+    // off the zone picture (a spawn at the edge of the zone): the void tone, never a solid black well
+    ctx2.fillStyle = VOID_FILL;
     ctx2.fillRect(0, 0, SIZE, SIZE);
     if (!w || !p) {
       ctx2.restore();
@@ -458,6 +478,7 @@ export class Minimap implements HudWidget {
       ctx2.imageSmoothingEnabled = true;
       ctx2.drawImage(zone.canvas, 0, 0, zone.widthM, zone.heightM);
       ctx2.imageSmoothingEnabled = false;
+      drawZoneEdges(ctx2, zone);
     } else if (this.mapCanvas) ctx2.drawImage(this.mapCanvas, nav.originX, nav.originZ, nav.cols * nav.cellSize, nav.rows * nav.cellSize);
     if (useFog && this.fogCanvas) ctx2.drawImage(this.fogCanvas, nav.originX, nav.originZ, nav.cols * nav.cellSize, nav.rows * nav.cellSize);
     ctx2.restore();

@@ -137,7 +137,11 @@
 .hud .ab-btn.is-hidden { display: none; }
 .hud .ab-btn.is-ghost { opacity: 0.4; pointer-events: none; }
 .hud .ab-btn.noskill > .k-art { display: none; }
-.hud .ab-btn.is-socket > .k-plus { display: flex; }
+/* WoW: an empty (unlocked) socket is invisible; the grid and its "+" appear only while an icon is dragged (body.pi-dragging). The cell
+   stays in the layout and keeps receiving the drop, it is just not painted. */
+.hud .ab-btn.is-socket { opacity: 0; }
+body.pi-dragging .hud .ab-btn.is-socket { opacity: 1; }
+body.pi-dragging .hud .ab-btn.is-socket > .k-plus { display: flex; }
 .hud .ab-btn.is-socket > .k-key-lbl { opacity: 0.5; }
 .hud .k-plus { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; font: 400 22px/1 var(--font-body); color: var(--text-4, #7a7a80); pointer-events: none; }
 

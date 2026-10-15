@@ -82,9 +82,26 @@ function foliageMaterial(base: THREE.Material): THREE.Material {
 const packBase = new Map<PackId, THREE.Material>();
 const packVariants = new Map<string, THREE.Material>();
 
+/**
+ * A voxel palette is a few dozen flat colours, one texel each: a mip chain averages neighbouring palette entries, so the far copies
+ * (the 2x / 4x voxel LOD tiers) turned into blurry mud. Nearest sampling, no mips: every face keeps its exact colour at any distance.
+ */
+function crispPalette(m: THREE.Material): void {
+  const map = (m as THREE.MeshStandardMaterial).map;
+  if (!map || map.userData.crispPalette) return;
+  map.magFilter = THREE.NearestFilter;
+  map.minFilter = THREE.NearestFilter;
+  map.generateMipmaps = false;
+  map.userData.crispPalette = true;
+  map.needsUpdate = true;
+}
+
 function packMaterial(pack: PackId, struct: boolean, base: THREE.Material): THREE.Material {
   // Voxel palette materials are their own (one 24-colour image per file): a shared pack atlas would recolour them.
-  if (pack === 'voxel') return base;
+  if (pack === 'voxel') {
+    crispPalette(base);
+    return base;
+  }
   if (!packBase.has(pack)) packBase.set(pack, base);
   const key = `${pack}|${struct ? 's' : 'p'}`;
   let m = packVariants.get(key);

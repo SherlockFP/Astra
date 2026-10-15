@@ -42,9 +42,10 @@ const SCALE: Record<GfxQuality, { dist: number; keep: number }> = {
 interface Base { d0: number; d1: number; end: number; keep1: number; keep2: number; fog?: number }
 const BASE: Partial<Record<CullLayer, Base>> = {
   // trees: the full model near (and the only shadow caster), a 2x voxel copy to mid range, a 4x copy out to the fog
-  tree: { d0: 24, d1: 52, end: 1e9, keep1: 1, keep2: 1, fog: 4 },
+  // (pushed out: the 2x copy read as blurry blocks at 24-52 m, so the real meshes now hold to 40 m and the 2x copy runs to 90 m)
+  tree: { d0: 40, d1: 90, end: 1e9, keep1: 1, keep2: 1, fog: 4 },
   border: { d0: 18, d1: 44, end: 1e9, keep1: 1, keep2: 0.6, fog: 4 },
-  bush: { d0: 16, d1: 38, end: 70, keep1: 0.8, keep2: 0.5 },
+  bush: { d0: 24, d1: 56, end: 70, keep1: 0.8, keep2: 0.5 },
   rock: { d0: 24, d1: 55, end: 95, keep1: 1, keep2: 0.8 },
   // ground cover: short range, thinned with distance
   // (their 4x copy is empty: the 2x copy runs out to the end distance)
