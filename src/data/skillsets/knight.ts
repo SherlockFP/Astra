@@ -204,9 +204,9 @@ export function registerKnight(add: SkillAdd): void {
   });
   add({
     id: 'knight_ward_of_oath', classId: 'knight', spec: 'knight_protector', name: 'Acı Yutma (Ignore Pain)', icon: I('skill-holy-light'), unlockLevel: 15,
-    desc: '8 saniye boyunca maks. canının %22\'si kadar bir kalkan kazanırsın. Üst üste kullanınca kalkan birikir (en fazla %45). 35 Kararlılık harcarsın.',
-    cost: 35, cooldown: 1.5, castTime: 0, anim: 'Use_Item', animSpeed: 2.5, hitTime: 0.25, targeting: 'custom', behavior: 'absorb_self',
-    selfStatuses: [{ status: 'oath_ward', duration: 8 }], params: { absorbPct: 0.22, capPct: 0.45 }, tags: ['defensive', 'absorb', 'spec'],
+    desc: '8 saniye boyunca aldığın hasar %40 azalır (dokunulmazlık değil). 35 Kararlılık harcarsın.',
+    cost: 35, cooldown: 1.5, castTime: 0, anim: 'Use_Item', animSpeed: 2.5, hitTime: 0.25, targeting: 'custom', behavior: 'self_buff',
+    selfStatuses: [{ status: 'oath_ward', duration: 8 }], tags: ['defensive', 'mitigation', 'spec'],
     vfx: { cast: 'shield_bubble' }, sfx: { cast: 'buff' },
   });
   add({

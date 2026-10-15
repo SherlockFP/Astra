@@ -119,7 +119,7 @@ const V2_STATUSES: Partial<Record<StatusId, StatusDef>> = {
   critbuff: { id: 'critbuff', name: 'Kritik Gücü', icon: I('buff-crit'), kind: 'buff' },
   // PM-00a retune (plate-melee 2b): 6 s; blockAmount +0.25 kept.
   shield_block: { id: 'shield_block', name: 'Kalkan Kaldır', icon: I('buff-defense'), kind: 'buff', stats: { blockAmount: 0.25 }, vfx: 'shield_bubble', defaultDuration: 6 },
-  oath_ward: { id: 'oath_ward', name: 'Yemin Siperi', icon: I('buff-absorb'), kind: 'buff', vfx: 'shield_bubble' },
+  oath_ward: { id: 'oath_ward', name: 'Yemin Siperi', icon: I('buff-defense'), kind: 'buff', stats: { damageReductionPct: 0.40 }, vfx: 'shield_bubble', defaultDuration: 8 },
   bastion: { id: 'bastion', name: 'Sarsılmaz Bastion', icon: I('buff-defense'), kind: 'buff', stats: { damageReductionPct: 0.40 }, vfx: 'shield_bubble', defaultDuration: 8 },
   aegis: { id: 'aegis', name: "Yemin Aegis'i", icon: I('buff-defense'), kind: 'buff', stats: { damageReductionPct: 0.25 }, vfx: 'buff_aura' },
   // PM-00a retune (plate-melee 3b / 4b): +13 % damage reduction per stack, max 3 stacks, 7 s.

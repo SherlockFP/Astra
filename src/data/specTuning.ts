@@ -29,7 +29,7 @@ export const SPEC_TUNING: Record<string, LevelTuning> = {
   evoker_devastation: { dmg: [3.481, 2.681, 3.665], heal: [1.000, 1.000, 1.000], taken: [1.000, 1.000, 1.000] },
   evoker_preservation: { dmg: [1.000, 1.000, 1.000], heal: [0.587, 0.660, 0.611], taken: [1.000, 1.000, 1.000] },
   knight_blademaster: { dmg: [0.371, 0.402, 0.565], heal: [1.000, 1.000, 1.000], taken: [1.000, 1.000, 1.000] },
-  knight_protector: { dmg: [0.651, 1.895, 2.311], heal: [1.000, 1.000, 1.000], taken: [2.034, 4.000, 4.000] },
+  knight_protector: { dmg: [0.651, 1.895, 2.311], heal: [1.000, 1.000, 1.000], taken: [2.034, 0.250, 0.700] },
   mage_arcane: { dmg: [0.746, 0.757, 0.821], heal: [1.000, 1.000, 1.000], taken: [1.000, 1.000, 1.000] },
   mage_fire: { dmg: [3.411, 1.259, 0.890], heal: [1.000, 1.000, 1.000], taken: [1.000, 1.000, 1.000] },
   mage_frost: { dmg: [1.042, 1.436, 1.371], heal: [1.000, 1.000, 1.000], taken: [1.000, 1.000, 1.000] },

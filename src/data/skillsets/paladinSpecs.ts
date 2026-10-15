@@ -21,7 +21,7 @@ export function registerPaladinSpecs(add: SkillAdd): void {
   });
   add({
     id: 'paladin_shield_of_righteous', classId: 'paladin', spec: 'paladin_protection', name: 'Doğruluk Kalkanı (Shield of the Righteous)', icon: I('skill-shield-wall'), unlockLevel: 1,
-    desc: 'Kalkanınla önündeki en fazla 5 düşmana %200 kutsal hasar verirsin ve 6 saniye boyunca zırhın %40, blok şansın %20 artar. 3 Kutsal Güç harcar. Her kullanımda %50 ihtimalle bir sonraki Işığın Sözü bedavaya gelir (Parlak Işık).',
+    desc: 'Kalkanınla önündeki en fazla 5 düşmana %200 kutsal hasar verirsin ve 6 saniye boyunca zırhın %40, blok şansın %20 artar. 3 Kutsal Güç harcar. Her kullanımda %50 ihtimalle bir Parlak Işık yükü kazanırsın (en fazla 3); her yük bir sonraki Işığın Sözü\'nü bedavaya getirir.',
     cost: 0, cooldown: 0, castTime: 0, anim: 'Block_Attack', animSpeed: 1.5, hitTime: 0.427, targeting: 'melee_arc', range: 3.0, arc: 120, offGcd: true,
     damage: { coef: 2.0, type: 'holy' }, pip: { id: 'holypower', cost: 3 }, tags: ['offgcd', 'melee', 'holy', 'shield', 'defensive', 'spender'],
     vfx: { cast: 'shield_bubble', impact: 'holy_burst' }, sfx: { cast: 'shield_bash', impact: 'holy_impact' },
