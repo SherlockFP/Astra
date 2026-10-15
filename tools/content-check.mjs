@@ -362,12 +362,15 @@ function campRingIssues(packs, roomId) {
  *      target camp;
  *  (4) a side quest placed at a camp (layout quests.side `place`, level <= 3): its kill / drop targets that spawn within 60 m of
  *      the place stand in camps of its own level and the next one (the Kurt Tehlikesi wolves sit in the L2-3 band).
+ *  (5) L1-3 quest areas: a target camp of level 1-3 keeps 30 m from every camp of a higher level (the L2 slime camps of mq_03 stood
+ *      1-17 m from L3 goblins); a higher camp that spawns no target still counts.
  * Returns the issues plus the max mobs-within-25-m per band (info line).
  */
 function ringDensityIssues(packs, roomId, quests, sideQuests) {
   const out = [];
   const err = (where, msg) => out.push({ level: 'error', where, msg });
-  const R = 25, OUTER = 40, PLACE = 60;
+  const R = 25, OUTER = 40, PLACE = 60, HIGHER = 30;
+  const higherSeen = new Set();
   const TILE_M = 4;
   const camps = (packs ?? []).filter((p) => p.roomId === roomId && p.center);
   const xy = (p) => [p.center[0] * TILE_M, p.center[1] * TILE_M];
@@ -394,6 +397,14 @@ function ringDensityIssues(packs, roomId, quests, sideQuests) {
     if (!tids.size) continue;
     const T = camps.filter((c) => c.members.some((m) => tids.has(m.enemyId)) && hi(c) >= q.level - 1 && lo(c) <= q.level + 1);
     if (!T.length) continue;
+    for (const t of T.filter((t) => lo(t) <= 3)) {
+      for (const c of camps) {
+        if (c === t || lo(c) <= lo(t) || higherSeen.has(t.id + '|' + c.id)) continue;
+        higherSeen.add(t.id + '|' + c.id);
+        const m = gap(c, t);
+        if (m < HIGHER) err(`quest ${q.id}`, `target camp ${t.id} (L${lo(t)}) is ${Math.round(m)} m from ${c.id} (L${lo(c)}, higher): keep ${HIGHER} m in the L1-3 quest areas`);
+      }
+    }
     for (const c of camps) {
       if (T.includes(c)) continue;
       const nearT = T.some((t) => gap(c, t) < R);
@@ -412,6 +423,20 @@ function ringDensityIssues(packs, roomId, quests, sideQuests) {
     for (const c of near) if (lo(c) < q.level || hi(c) > q.level + 1) err(`quest ${sq.id}`, `target camp ${c.id} (L${lo(c)}-${hi(c)}) is outside the L${q.level}-${q.level + 1} band of ${sq.place}`);
   }
   return { issues: out, band };
+}
+/**
+ * Solo main quests (layout quests.main `solo`: the chain quests a lone level 1-4 player finishes). HARD error: the quest area (its
+ * `place`, a layout pack id) is never an elite-flagged pack. The elite camp (r1_c04) is the mini-boss area of mq_05, a group fight.
+ */
+function soloQuestIssues(layoutPacks, layoutMain) {
+  const out = [];
+  const err = (where, msg) => out.push({ level: 'error', where, msg });
+  for (const m of (layoutMain ?? []).filter((x) => x.solo)) {
+    const place = (layoutPacks ?? []).find((p) => p.id === m.place);
+    if (!place) err(`quest ${m.id}`, `solo quest area ${m.place} is no camp of the layout`);
+    else if ((place.flags ?? []).includes('elite')) err(`quest ${m.id}`, `solo quest area ${place.id} is an elite pack: point it at a non-elite camp`);
+  }
+  return out;
 }
 /**
  * Graveyards (WoW spirit healers, data/world/graveyards.ts). HARD errors on a map that declares graveyards:
@@ -549,9 +574,10 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
     if (!r1) continue;
     const ri = campRingIssues(ALL[id].packs, r1.roomId);
     const { QUESTS: RING_QUESTS } = await imp('src/data/world/quests.ts');
-    const sideQuests = JSON.parse(fs.readFileSync(`${ROOT}/src/data/world/sisli_vadi.layout.json`, 'utf8').replace(/^﻿/, '')).quests?.side ?? [];
-    const dn = ringDensityIssues(ALL[id].packs, r1.roomId, RING_QUESTS, sideQuests);
-    const e = [...ri, ...dn.issues].filter((i) => i.level === 'error');
+    const layout = JSON.parse(fs.readFileSync(`${ROOT}/src/data/world/sisli_vadi.layout.json`, 'utf8').replace(/^﻿/, ''));
+    const dn = ringDensityIssues(ALL[id].packs, r1.roomId, RING_QUESTS, layout.quests?.side ?? []);
+    const si = soloQuestIssues(layout.packs, layout.quests?.main ?? []);
+    const e = [...ri, ...dn.issues, ...si].filter((i) => i.level === 'error');
     totalErr += e.length;
     console.log(`\n== camp rings ${id} r1: ${e.length} errors | ${ALL[id].packs.filter((p) => p.roomId === r1.roomId).length} camps and patrols | max mobs within 25 m: L1-2 ${dn.band.get('L1-2')}, L3 ${dn.band.get('L3')}, L4-5 ${dn.band.get('L4-5')}`);
     for (const i of e) console.log('  ERR ', i.where, '-', i.msg);

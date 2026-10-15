@@ -74,7 +74,7 @@ const EXTRA_MAIN: Record<string, Extra> = {
   },
   mq_04_samani_sustur: {
     // kill, not the Şifa Duası interrupt: the shaman casts its heal only when an ally is below 80 % HP and kites at 7-13 m, so the
-    // interrupt could not be counted in play. Shamans spawn in the level 3 band (r1_c04, r1_p01, r1_pg1 in sisli_vadi.layout.json).
+    // interrupt could not be counted in play. Shamans spawn in the level 3 band; the quest area is the non-elite camp r1_c11 (r1_c04 is the elite mq_05 camp).
     objectives: [kill('ow_goblin_shaman', 3, "Goblin Şamanı'nı öldür (3)")], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
     giver: 'npc_g_rahibe', turnIn: 'npc_g_muhtar',
     offer: 'Goblin Şamanları yaralılara şifa okuyup yağmacıları ayakta tutuyor. Üç şamanı yere ser; sonra Muhtar Ferhat\'a dön.', progress: "Goblin Şamanı'nı öldür (3).", done: 'Şamanlar susturuldu. Yağmacılar artık dua okuyamayacak.',

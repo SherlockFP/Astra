@@ -2754,8 +2754,8 @@
    "name": "Kum Çukuru 3",
    "region": "r1",
    "center": [
-    199.75,
-    65.75
+    199,
+    65
    ],
    "radius": 12,
    "levelRange": [
@@ -3270,8 +3270,8 @@
    "name": "Kırık Köprü 26",
    "region": "r1",
    "center": [
-    182.5,
-    48.5
+    183.25,
+    48.25
    ],
    "radius": 16,
    "levelRange": [
@@ -3341,8 +3341,8 @@
    "name": "Kum Çukuru 29",
    "region": "r1",
    "center": [
-    183,
-    31.25
+    184,
+    30.25
    ],
    "radius": 16,
    "levelRange": [
@@ -3727,8 +3727,8 @@
    "name": "Taş Yatağı 46",
    "region": "r1",
    "center": [
-    208.5,
-    21
+    208.75,
+    21.5
    ],
    "radius": 16,
    "levelRange": [
@@ -3854,7 +3854,7 @@
    "name": "Kum Çukuru 52",
    "region": "r1",
    "center": [
-    175.75,
+    176.75,
     52
    ],
    "radius": 12,
@@ -4241,7 +4241,7 @@
    "region": "r1",
    "center": [
     211.75,
-    15
+    11
    ],
    "radius": 14,
    "levelRange": [
@@ -4362,8 +4362,8 @@
    "name": "Mağara Ağzı 74",
    "region": "r1",
    "center": [
-    171,
-    22.5
+    172,
+    21.5
    ],
    "radius": 14,
    "levelRange": [
@@ -5156,8 +5156,8 @@
    "name": "Taşlık 108",
    "region": "r1",
    "center": [
-    218.25,
-    58.5
+    217.25,
+    57.5
    ],
    "radius": 12,
    "levelRange": [
@@ -5572,8 +5572,8 @@
    "name": "Mağara Ağzı 126",
    "region": "r1",
    "center": [
-    227.25,
-    46.75
+    226.5,
+    46
    ],
    "radius": 12,
    "levelRange": [
@@ -27324,6 +27324,87 @@
      "count": 2
     }
    ]
+  },
+  {
+   "id": "r1_c11",
+   "name": "Goblin Şaman Kampı I",
+   "region": "r1",
+   "center": [
+    233,
+    30
+   ],
+   "radius": 12,
+   "levelRange": [
+    3,
+    3
+   ],
+   "respawnSec": 60,
+   "members": [
+    {
+     "enemyId": "ow_goblin",
+     "count": 1
+    },
+    {
+     "enemyId": "ow_goblin_shaman",
+     "count": 1
+    }
+   ],
+   "flags": [],
+   "note": "Küçük goblin çadırı; Şamanı Sustur (mq_04) alanı; seçkin değil"
+  },
+  {
+   "id": "r1_c12",
+   "name": "Goblin Şaman Kampı II",
+   "region": "r1",
+   "center": [
+    236,
+    33.5
+   ],
+   "radius": 12,
+   "levelRange": [
+    3,
+    3
+   ],
+   "respawnSec": 60,
+   "members": [
+    {
+     "enemyId": "ow_goblin",
+     "count": 1
+    },
+    {
+     "enemyId": "ow_goblin_shaman",
+     "count": 1
+    }
+   ],
+   "flags": [],
+   "note": "Küçük goblin çadırı; Şamanı Sustur (mq_04) alanı; seçkin değil"
+  },
+  {
+   "id": "r1_c13",
+   "name": "Goblin Şaman Kampı III",
+   "region": "r1",
+   "center": [
+    236.5,
+    26.5
+   ],
+   "radius": 12,
+   "levelRange": [
+    3,
+    3
+   ],
+   "respawnSec": 60,
+   "members": [
+    {
+     "enemyId": "ow_goblin",
+     "count": 1
+    },
+    {
+     "enemyId": "ow_goblin_shaman",
+     "count": 1
+    }
+   ],
+   "flags": [],
+   "note": "Küçük goblin çadırı; Şamanı Sustur (mq_04) alanı; seçkin değil"
   }
  ],
  "patrols": [
@@ -32789,7 +32870,8 @@
     "xpPct": 20,
     "goldPerLevel": 4,
     "items": "-",
-    "next": "mq_03"
+    "next": "mq_03",
+    "solo": true
    },
    {
     "id": "mq_03_balcik_temizligi",
@@ -32802,20 +32884,22 @@
     "xpPct": 20,
     "goldPerLevel": 4,
     "items": "Küçük Can İksiri x3",
-    "next": "mq_04"
+    "next": "mq_04",
+    "solo": true
    },
    {
     "id": "mq_04_samani_sustur",
     "name": "Şamanı Sustur",
     "giver": "Muhtar Ferhat",
-    "place": "r1_c04",
+    "place": "r1_c11",
     "level": 3,
     "kind": "skill",
     "goal": "Goblin Şamanı'nın Şifa Duası'nı 3 kez kes (kesme: sersemletme/vuruş sendeletmesi)",
     "xpPct": 25,
     "goldPerLevel": 5,
     "items": "Büyülü silah",
-    "next": "mq_05"
+    "next": "mq_05",
+    "solo": true
    },
    {
     "id": "mq_05_yagmaci_kampi",
