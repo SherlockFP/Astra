@@ -152,10 +152,21 @@ function syncPlayer(p, ch, spec) {
   p.resourceType = CLASSES[p.classId].resource;
   const baseHp = (st.maxHp ?? 0) > 0 ? st.maxHp : 100 + p.level * 20;
   const baseRes = (st.maxResource ?? 0) > 0 ? st.maxResource : 100;
-  p.maxHp = Math.max(1, Math.round(baseHp));
+  p.baseMaxHp = Math.max(1, Math.round(baseHp));
+  p.maxHp = p.baseMaxHp;
   p.hp = p.maxHp;
   p.maxResource = Math.max(1, Math.round(baseRes));
   p.resource = p.resourceType === 'rage' ? 0 : p.maxResource;
+  // status max-HP mods (Bear Form +25%, Vampiric Blood ...) fold on every status change, as Player.refreshStats does
+  p.onStatusesChanged = () => foldMaxHp(p);
+  foldMaxHp(p);
+}
+
+/** Player.refreshStats max-HP fold: (base + status maxHp) x (1 + status maxHpPct); hp only clamps to the new max, as in the game. */
+function foldMaxHp(p) {
+  const mods = p.statuses.getStatMods();
+  p.maxHp = Math.max(1, Math.round((p.baseMaxHp + (mods.maxHp ?? 0)) * (1 + (mods.maxHpPct ?? 0))));
+  p.hp = Math.min(p.hp, p.maxHp);
 }
 
 /** Reference values at a level: the median tank (max HP and armour) sets the incoming profile and the reference tank of the healer fight. */
