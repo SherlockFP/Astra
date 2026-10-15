@@ -98,7 +98,7 @@ const R1: Spec[] = [
   { id: 'sq_r1_ch01_muhtarin_haberi', name: 'Muhtarın Haberi', level: 2, region: 'r1', giver: 'npc_g_muhtar', turnIn: 'npc_g_avci', xpPct: 2, goldPerLevel: 1,
     objectives: [talk('npc_g_avci', 'Avcı Yıldız ile konuş')],
     offer: 'Goblin gözcüleri köyün çevresinde dolaşıyor. Bu haberi Avcı Yıldız\'a ilet.', progress: 'Avcı Yıldız ile konuş.', done: 'Avcı Yıldız haberi duydu. İşin devamı var.' },
-  { id: 'sq_r1_ch02_gozcu_avi', name: 'Gözcü Avı', level: 3, region: 'r1', giver: 'npc_g_avci', prereq: 'sq_r1_ch01_muhtarin_haberi', xpPct: 2, goldPerLevel: 2,
+  { id: 'sq_r1_ch02_gozcu_avi', name: 'Gözcü Avı', level: 2, region: 'r1', giver: 'npc_g_avci', prereq: 'sq_r1_ch01_muhtarin_haberi', xpPct: 2, goldPerLevel: 2,
     objectives: [kill('ow_goblin', 10, 'Goblin Gözcüsü öldür')],
     offer: 'Yol kenarındaki gözcüleri temizle ve bana geri dön.', progress: 'Goblin Gözcüsü öldür (10).', done: 'Yol kenarı temiz.' },
   { id: 'sq_r1_ch03_saman_raporu', name: 'Şaman Raporu', level: 4, region: 'r1', giver: 'npc_g_avci', turnIn: 'npc_g_muhtar', prereq: 'sq_r1_ch02_gozcu_avi', xpPct: 4, goldPerLevel: 4,

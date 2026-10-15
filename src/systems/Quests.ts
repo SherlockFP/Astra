@@ -345,6 +345,8 @@ export class QuestSystem {
     }
     const state = this.stateOf(def);
     if (state === 'locked') return;
+    // WoW bonus objective: the area completes by itself when its last objective is done (no turn-in); turnIn re-enters notify as 'done'
+    if (def.bonus && state === 'ready') { this.turnIn(def.id); return; }
     const progress = def.objectives.reduce((s, _, k) => s + this.progressAt(def, k), 0);
     const sig = `${state}:${progress}`;
     if (!force && this.lastSig.get(def.id) === sig) return;

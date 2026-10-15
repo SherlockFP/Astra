@@ -193,7 +193,7 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   qs.onKill({ enemyId: 'ow_wolf', rank: 'trash' });
   addDrops(qs.rollDrops({ enemyId: 'ow_wolf', rank: 'trash' }));
   qs.onKill({ enemyId: 'rare_gumus_yele', rank: 'elite' });
-  ok('bonus.complete', qs.state('t_bonus') === 'ready' && qs.progressPct('t_bonus') === 100, `${qs.progressPct('t_bonus')} %`);
+  ok('bonus.auto-complete', qs.state('t_bonus') === 'done', qs.state('t_bonus'));
 }
 
 // ------------------------------------------------------------------------------------------------ real Sisli bonus quest, end to end
@@ -209,10 +209,9 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   }
   ok('real.bonus-drops', ch.material('item_goblin_kulagi') === 4, `${rolls} goblin kills to 4 ears`);
   ok('real.bonus-pct-two-thirds', qs.progressPct(bd.id) === 67, `${qs.progressPct(bd.id)} %`);
-  qs.onKill({ enemyId: 'rare_kizil_kuyruk', rank: 'elite' });
-  ok('real.bonus-ready', qs.state(bd.id) === 'ready' && qs.progressPct(bd.id) === 100);
   const before = ch.material('pot_hp_1');
-  ok('real.bonus-turn-in', qs.turnIn(bd.id) && qs.state(bd.id) === 'done' && ch.material('item_goblin_kulagi') === 0);
+  qs.onKill({ enemyId: 'rare_kizil_kuyruk', rank: 'elite' });
+  ok('real.bonus-auto-complete', qs.state(bd.id) === 'done' && ch.material('item_goblin_kulagi') === 0, qs.state(bd.id));
   ok('real.bonus-reward', ch.material('pot_hp_1') === before + 2, `pot_hp_1 ${before} -> ${ch.material('pot_hp_1')}`);
 }
 
@@ -296,7 +295,7 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   ok('chain.ch1-accept', qs.accept(CH1));
   qs.onEvent('talk', 'npc_g_avci');
   ok('chain.ch1-ready', qs.state(CH1) === 'ready' && qs.turnIn(CH1));
-  ok('chain.esc-locked-by-level', qs.state(ESC) === 'locked', `at level 2: ${qs.state(ESC)}`);
+  ok('chain.esc-open-at-lvl2', qs.state(ESC) === 'available', `at level 2: ${qs.state(ESC)}`);
   ch.save.level = 3;
   ok('chain.esc-offered-lvl3', qs.state(ESC) === 'available' && qs.accept(ESC) && qs.state(ESC) === 'active', qs.state(ESC));
   ch.save.level = 1;

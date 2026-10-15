@@ -39,6 +39,8 @@ interface Extra extends Reward {
   progress: string;
   done: string;
   turnIn?: string;
+  /** NPC id that offers the quest when it differs from the layout giver (second hub NPC, so the chain does not walk back to Ferhat). */
+  giver?: string;
   unlocks?: string[];
 }
 
@@ -51,6 +53,7 @@ const dungeon = (target: string, text: string): QuestObjective => obj('dungeon',
 const collect = (target: string, count: number, text: string): QuestObjective => obj('collect', target, count, text);
 const explore = (target: string, text: string): QuestObjective => obj('explore', target, 1, text);
 const skill = (target: string, count: number, text: string): QuestObjective => obj('skill', target, count, text);
+const drop = (target: string, count: number, from: string[], text: string): QuestObjective => ({ kind: 'drop', target, count, from, chance: 0.6, text });
 
 /** Main chain "Kadim Mühür" (§6.2). Rewards: items as the layout text names them, generic = "Büyülü / Nadir / Destansı" drops. */
 const EXTRA_MAIN: Record<string, Extra> = {
@@ -61,16 +64,19 @@ const EXTRA_MAIN: Record<string, Extra> = {
     progress: "Gümüşdere Köyü'nde Muhtar Ferhat ile konuş.", done: 'Muhtar Ferhat seni bekliyordu. Vadinin işi uzun olacak.',
   },
   mq_02_fare_yuvasi: {
-    objectives: [kill('ow_rat', 10, 'Orman Sıçanı öldür')], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
-    offer: "Fareler tarlaları bastı. Fare Yuvası'nı temizle.", progress: 'Orman Sıçanı öldür (10).', done: 'Tarlalar yeniden güvende.',
+    objectives: [kill('ow_rat', 10, 'Orman Sıçanı öldür')], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] }, turnIn: 'npc_g_ciftci',
+    offer: "Fareler tarlaları bastı. Fare Yuvası'nı temizle, sonra Çiftçi Hatice'ye haber ver.", progress: 'Orman Sıçanı öldür (10).', done: 'Tarlalar yeniden güvende.',
   },
   mq_03_balcik_temizligi: {
-    objectives: [kill('ow_slime', 8, 'Yeşil Balçık öldür')], items: [{ id: 'pot_hp_1', count: 3 }],
-    offer: 'Göl kıyısındaki balçıklar köye doğru sızıyor.', progress: 'Yeşil Balçık öldür (8).', done: 'Balçıklar geri çekildi.',
+    objectives: [drop('item_camur_kesesi', 5, ['ow_slime'], 'Yeşil Balçıktan Çamur Kesesi topla (5)')], items: [{ id: 'pot_hp_1', count: 3 }],
+    giver: 'npc_g_ciftci', turnIn: 'npc_g_rahibe',
+    offer: 'Göl kıyısındaki balçıklar köye doğru sızıyor. Balçıkların çamur keselerini topla; Rahibe Meryem bununla merhem yapacak.',
+    progress: 'Yeşil Balçıktan Çamur Kesesi topla (5).', done: 'Balçıklar geri çekildi. Merhem hazır.',
   },
   mq_04_samani_sustur: {
     objectives: [skill('ow_goblin_shaman', 3, "Goblin Şamanı'nın Şifa Duası'nı 3 kez kes")], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
-    offer: 'Goblin Şamanı şifa duaları okuyor. Duasını kesmelisin.', progress: "Şifa Duası'nı 3 kez kes.", done: 'Şaman bir daha dua okuyamayacak.',
+    giver: 'npc_g_rahibe', turnIn: 'npc_g_muhtar',
+    offer: 'Goblin Şamanı şifa duaları okuyor. Duasını kesmelisin; sonra Muhtar Ferhat\'a dön.', progress: "Şifa Duası'nı 3 kez kes.", done: 'Şaman bir daha dua okuyamayacak.',
   },
   mq_05_yagmaci_kampi: {
     objectives: [boss('mb_girtlak', 1, "Yağmacı Başı Gırtlak'ı öldür")], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
@@ -261,12 +267,12 @@ const EXTRA_SIDE: Record<string, Extra> = {
  * One-time quest XP (F3 first 10 minutes + XP parity, 2026-10-13): xpPct of the 19 main and 24 side quests, replacing the layout
  * values. Bands 6+ give ~35 % of their XP to one-time quests (region quests in quests_extra.ts follow the same factor). Band 1-5 is
  * the tutorial band and may take up to 60 %: mq_03..mq_07 are 15-25 % each. mq_03 + mq_04 stay below the level 3 threshold before
- * the mq_05 boss (Gırtlak), so mq_04 is 15 %, or level 3 would land before 210 s. mq_01 / mq_02 are 8.5x / 3x their layout value:
- * level 2 then arrives at ~76 s. Level 3 is set by the mq_05 boss kill.
+ * the mq_05 boss (Gırtlak), so mq_04 (skill quest, level 3) is 26 %: level 3 lands right after quest 4 (first-hour target, pace-check). mq_01 / mq_02 are 8.5x / 3x their layout value:
+ * level 2 lands right after quest 2 (EARLY_NEED_MULT in systems/Progression.ts doubles the levels 1-5 needs; quest XP % is of that need).
  * Check with `node tools/pace-check.mjs`. docs/GDD_OPENWORLD.layout.json (and its §6.2-6.3 tables) still show the layout values.
  */
 const XP_PCT: Record<string, number> = {
-  mq_01_kuzgunun_cagrisi: 85, mq_02_fare_yuvasi: 60, mq_03_balcik_temizligi: 20, mq_04_samani_sustur: 15,
+  mq_01_kuzgunun_cagrisi: 85, mq_02_fare_yuvasi: 60, mq_03_balcik_temizligi: 20, mq_04_samani_sustur: 26,
   mq_05_yagmaci_kampi: 20, mq_06_ilk_metin: 25, mq_07_kopruyu_gec: 20, mq_08_ciftlik_isgali: 6,
   mq_09_mezarligin_sirri: 7, mq_10_kemik_mahzeni: 13, mq_11_curukkok: 13, mq_12_haydut_kalesi: 11,
   mq_13_kizilkaya_haberi: 9, mq_14_bataklik_cadisi: 14, mq_15_kor_ocagi: 15, mq_16_ork_istilasi: 16,
@@ -290,7 +296,7 @@ function quest(
   if (x.generic) reward.generic = x.generic;
   if (x.choice) reward.choice = x.choice;
   const def: QuestDef = {
-    id: p.id, name: p.name, level: p.level, giver: GIVER_ID[p.giver] ?? p.giver, objectives: x.objectives, reward,
+    id: p.id, name: p.name, level: p.level, giver: x.giver ?? GIVER_ID[p.giver] ?? p.giver, objectives: x.objectives, reward,
     text: { offer: x.offer, progress: x.progress, done: x.done },
   };
   if (p.main) def.main = true;
