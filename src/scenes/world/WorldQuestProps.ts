@@ -9,12 +9,14 @@ import { RNG, hashString } from '../../core/utils';
 import { toast } from '../../systems/notify';
 import { EscortRun, ESCORT_FAIL_DIST_M, ESCORT_HINT_SEC, type EscortDeps, type EscortFailReason, type Pt2 } from './QuestEscortRun';
 import { ESCORT_ROUTES } from '../../data/world/escort_routes';
+import { QUEST_PROP_SPOTS } from '../../data/world/quest_prop_spots';
 import { distM, type Pt, type WorldCtx } from './util';
 
 /**
  * Quest props and escorts of the open world (WoW-style objectives, data/world/quests_variety.ts):
- * - interact props (qo_sack / qo_crystal / qo_banner) and use altars (qt_*) per quest region, at deterministic spots
- *   (questPropSpots): max(count) + 1 interact props per (region, target), one altar per (region, target);
+ * - interact props (qo_sack / qo_crystal / qo_banner) and use altars (qt_*) at deterministic spots (questPropSpots): hand-placed
+ *   near the giver for the Sisli level 1-5 quests (data/world/quest_prop_spots.ts); the others max(count) + 1 per (region, target),
+ *   one altar per (region, target) on random tiles of the quest region;
  * - escort quests: an escort NPC at the start of its route (data/world/escort_routes.ts, inside the quest's level ring); F starts
  *   the walk (QuestEscortRun), each trigger waypoint spawns a wave of 1-2 quest-level ambushers (host only: other peers have no
  *   enemy spawns, so they walk without ambushers). The ambushers hit the escort while they stand next to it.
@@ -49,9 +51,13 @@ function pickPoint(ctx: SpotCtx, region: string, key: string): Pt | null {
   return null;
 }
 
-/** Spots of the interact and use objectives of `defs`: interact = max(count) + 1 per (region, target), use = one altar. */
+/**
+ * Spots of the interact and use objectives of `defs`. A quest objective with hand-placed spots (data/world/quest_prop_spots.ts) gets
+ * its own tiles, one per spot. The others share one random spot set per (region, target): interact = max(count) + 1, use = one altar.
+ */
 export function questPropSpots(ctx: SpotCtx, defs: readonly QuestDef[]): PropSpot[] {
   const need = new Map<string, { region: string; target: string; kind: QuestPropKind; item?: string; n: number }>();
+  const out: PropSpot[] = [];
   for (const d of defs) {
     if (!d.region) continue;
     for (const o of d.objectives) {
@@ -59,6 +65,14 @@ export function questPropSpots(ctx: SpotCtx, defs: readonly QuestDef[]): PropSpo
       const kind = questPropKind(o.target);
       if (!kind) continue;
       const n = o.kind === 'interact' ? o.count + 1 : 1;
+      const placed = QUEST_PROP_SPOTS[d.id]?.[o.target];
+      if (placed) {
+        for (let i = 0; i < n && i < placed.length; i++) {
+          const pt = ctx.snapTile(placed[i][0], placed[i][1], 8);
+          out.push({ key: `${d.id}:${o.target}:${i}`, region: d.region, target: o.target, kind, item: o.item, x: pt.x, z: pt.z });
+        }
+        continue;
+      }
       const key = `${d.region}|${o.target}`;
       const cur = need.get(key);
       if (!cur) need.set(key, { region: d.region, target: o.target, kind, item: o.item, n });
@@ -68,7 +82,6 @@ export function questPropSpots(ctx: SpotCtx, defs: readonly QuestDef[]): PropSpo
       }
     }
   }
-  const out: PropSpot[] = [];
   for (const e of need.values()) {
     for (let i = 0; i < e.n; i++) {
       const key = `${e.region}:${e.target}:${i}`;

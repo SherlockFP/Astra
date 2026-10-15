@@ -434,7 +434,7 @@ function ringDensityIssues(packs, roomId, quests, sideQuests) {
  *  (A) objective distance: every kill / boss / elite / metin / drop / collect-from objective has a spawn within 150 m (centre to centre)
  *      of the quest's giver or turn-in NPC. The spawn is the nearest one of its target that stands in the quest's level band (q-1..q+1):
  *      a camp or patrol (members), a rare (spots), a mini-boss (lair) or, for metin, a metin spot of r1. A side quest's place camp
- *      (layout `place`) must be within 150 m too. Props (interact / use / escort, placed at random in the region) and explores are not measured.
+ *      (layout `place`) must be within 150 m too. Interact / use props and explores are measured by r1PropIssues; escort routes by escortRouteIssues.
  *  (B) side quests of level 1-3 placed at a camp: that camp has at most 4 mobs within 25 m (itself included).
  *  (C) no side quest repeats the objective kind + target of a main quest of its own level (the main quest the player is on at that level).
  */
@@ -525,6 +525,80 @@ function ringBandIssues(packs, roomId, hub) {
     if (q) err(`camp ${c.id}`, `levels ${c.levelRange[0]}-${c.levelRange[1]} slime camp ${Math.round(centreM(q, c))} m from the level 1-2 slime quest camp ${q.id}: keep ${SLIME_AREA_M} m`);
   }
   return out;
+}
+/**
+ * Sisli r1 prop and explore placement (WoW quest hubs), quests of level 1-5 (scope of r1PlacementIssues). HARD errors:
+ *  (P1) every interact / use objective has its hand-placed spots (data/world/quest_prop_spots.ts QUEST_PROP_SPOTS): one tile per spot,
+ *       interact count + 1, use 1, and no other spot (the runtime places exactly these, scenes/world/WorldQuestProps.ts questPropSpots);
+ *  (P2) every spot lies in the r1 room and snaps to ground the map start reaches (the prop reachability rule);
+ *  (P3) every spot is within PLACE_GIVER_M of the quest's giver or turn-in NPC;
+ *  (P4) every spot is in the quest's ring band: its ring (hub koy_gumusdere, inner / middle / outer as RING_BAND) holds a level within 1
+ *       of the quest level (the same band as the spawn rule of the camps);
+ *  (E)  an explore objective with a point (hidden area, vista, waypoint, landmark) is within PLACE_GIVER_M of the giver or turn-in and in
+ *       the quest's ring band; a region target is measured to its nearest edge.
+ */
+function r1PropIssues(quests, world, rooms, reach, hub, table) {
+  const out = [];
+  const err = (where, msg) => out.push({ level: 'error', where, msg });
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  const rectOfRegion = new Map((world.regions ?? []).map((r) => [r.id, rooms.find((x) => x.id === r.roomId)?.rect]).filter(([, rc]) => rc));
+  const r1Rect = rectOfRegion.get('r1');
+  if (!r1Rect) throw new Error('region r1 has no room in the map');
+  const hubM = [hub[0] * TILE_M, hub[1] * TILE_M];
+  const ringAt = (p) => { const d = dist(p, hubM); return d <= RING_INNER_M ? 'inner' : d <= RING_MIDDLE_M ? 'middle' : 'outer'; };
+  const ringOk = (ring, q) => { const [lo, hi] = RING_BAND[ring]; return hi >= q - 1 && lo <= q + 1; };
+  const inRect = (tx, tz) => tx >= r1Rect.x && tx < r1Rect.x + r1Rect.w && tz >= r1Rect.z && tz < r1Rect.z + r1Rect.h;
+  const npcAt = new Map();
+  for (const v of world.villages ?? []) for (const n of v.npcs ?? []) npcAt.set(n.id, [(v.center[0] + 0.5) * TILE_M + n.pos[0], (v.center[1] + 0.5) * TILE_M + n.pos[2]]);
+  const pointOf = new Map([...(world.hidden ?? []), ...(world.vistas ?? []), ...(world.landmarks ?? []), ...(world.waypoints ?? [])]
+    .map((p) => [p.id, [(p.pos[0] + 0.5) * TILE_M, (p.pos[1] + 0.5) * TILE_M]]));
+  let spots = 0, objectives = 0, explores = 0;
+  for (const q of quests.filter((x) => x.level <= 5 && (x.region === 'r1' || /^r1_/.test(x.place ?? '')))) {
+    const where = `quest ${q.id}`;
+    const anchors = [q.giver, q.turnIn].filter(Boolean).map((id) => npcAt.get(id)).filter(Boolean);
+    const nearAnchor = (p) => Math.min(...anchors.map((a) => dist(a, p)));
+    for (const o of q.objectives) {
+      const ow = `${where} [${o.kind} ${o.target ?? ''}]`;
+      if ((o.kind === 'interact' || o.kind === 'use') && o.target && q.region === 'r1') {
+        objectives++;
+        const want = o.kind === 'interact' ? o.count + 1 : 1;
+        const tiles = table[q.id]?.[o.target];
+        if (!tiles) { err(ow, 'no hand-placed spots in data/world/quest_prop_spots.ts'); continue; }
+        if (tiles.length !== want) err(ow, `${tiles.length} spots placed, the objective needs ${want}`);
+        if (!anchors.length) err(ow, 'the quest has no giver or turn-in NPC in a village to measure from');
+        tiles.forEach(([tx, tz], i) => {
+          const sw = `${ow} [spot ${i}]`;
+          spots++;
+          if (!inRect(tx, tz)) { err(sw, `tile ${tx},${tz} is outside the r1 room`); return; }
+          const s = reach.snap((tx + 0.5) * TILE_M, (tz + 0.5) * TILE_M, 8);
+          if (!s || !reach.reachable(s.x, s.z)) { err(sw, `tile ${tx},${tz} snaps to no ground the map start reaches`); return; }
+          const p = [s.x, s.z];
+          const d = nearAnchor(p);
+          if (d > PLACE_GIVER_M) err(sw, `${Math.round(d)} m from the giver or turn-in (max ${PLACE_GIVER_M} m)`);
+          const ring = ringAt(p);
+          if (!ringOk(ring, q.level)) err(sw, `the ${ring} ring (levels ${RING_BAND[ring].join('-')}) holds no level of L${q.level - 1}-${q.level + 1}`);
+        });
+      }
+      if (o.kind === 'explore' && o.target) {
+        explores++;
+        if (pointOf.has(o.target)) {
+          const p = pointOf.get(o.target);
+          const d = nearAnchor(p);
+          if (d > PLACE_GIVER_M) err(ow, `${Math.round(d)} m from the giver or turn-in (max ${PLACE_GIVER_M} m)`);
+          const ring = ringAt(p);
+          if (!ringOk(ring, q.level)) err(ow, `the ${ring} ring (levels ${RING_BAND[ring].join('-')}) holds no level of L${q.level - 1}-${q.level + 1}`);
+        } else if (rectOfRegion.has(o.target)) {
+          const rc = rectOfRegion.get(o.target);
+          const [rx0, rz0] = [rc.x * TILE_M, rc.z * TILE_M];
+          const [rx1, rz1] = [(rc.x + rc.w) * TILE_M, (rc.z + rc.h) * TILE_M];
+          const edge = (a) => Math.hypot(Math.max(rx0 - a[0], 0, a[0] - rx1), Math.max(rz0 - a[1], 0, a[1] - rz1));
+          const d = Math.min(...anchors.map(edge));
+          if (d > PLACE_GIVER_M) err(ow, `region ${o.target} is ${Math.round(d)} m from the giver or turn-in (max ${PLACE_GIVER_M} m)`);
+        }
+      }
+    }
+  }
+  return { issues: out, spots, objectives, explores };
 }
 /**
  * Escort routes (data/world/escort_routes.ts, WoW escort rules; Sisli Vadi r1, world metres, the hub is the ring centre). HARD errors:
@@ -828,9 +902,12 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
     if (!hub) throw new Error('settlement koy_gumusdere (the ring hub) is missing from the layout');
     const rb = ringBandIssues(ALL[id].packs, r1.roomId, hub);
     const pl = r1PlacementIssues(RING_QUESTS, ALL[id].world, r1.roomId, ALL[id].packs);
-    const e = [...ri, ...dn.issues, ...si, ...rb, ...pl.issues].filter((i) => i.level === 'error');
+    const { QUEST_PROP_SPOTS } = await imp('src/data/world/quest_prop_spots.ts');
+    const pp = r1PropIssues(RING_QUESTS, ALL[id].world, ALL[id].rooms, cc.navReach(ALL[id], models), hub, QUEST_PROP_SPOTS);
+    const e = [...ri, ...dn.issues, ...si, ...rb, ...pl.issues, ...pp.issues].filter((i) => i.level === 'error');
     totalErr += e.length;
     console.log(`\n== camp rings ${id} r1: ${e.length} errors | ${ALL[id].packs.filter((p) => p.roomId === r1.roomId).length} camps and patrols | max mobs within 25 m: L1-2 ${dn.band.get('L1-2')}, L3 ${dn.band.get('L3')}, L4-5 ${dn.band.get('L4-5')} | r1 placement: ${pl.checked} quests L1-5 within ${PLACE_GIVER_M} m of their giver`);
+    console.log(`== r1 props and explores: ${pp.objectives} prop objectives (${pp.spots} hand-placed spots), ${pp.explores} explore objectives, checked against the giver or turn-in (${PLACE_GIVER_M} m) and the ring band`);
     for (const i of e) console.log('  ERR ', i.where, '-', i.msg);
   }
 }
