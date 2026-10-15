@@ -233,9 +233,9 @@ function star(ctx: CanvasRenderingContext2D, x: number, y: number, col: string, 
 }
 
 /** Gold quest marker: `!` available, `?` ready to turn in. */
-function badge(ctx: CanvasRenderingContext2D, x: number, y: number, ch: string): void {
+function badge(ctx: CanvasRenderingContext2D, x: number, y: number, ch: string, fill = '#e8c46a'): void {
   ctx.save();
-  ctx.fillStyle = '#e8c46a';
+  ctx.fillStyle = fill;
   ctx.strokeStyle = '#000';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
@@ -849,7 +849,7 @@ export class MapPanel extends GamePanel {
       }
       for (const g of questGiverMarks()) {
         const p = at(g.x, g.z, '');
-        badge(ctx, p.px, p.py - 14, g.kind === 'turnin' ? '?' : '!');
+        badge(ctx, p.px, p.py - 14, g.kind === 'turnin' ? '?' : '!', g.kind === 'locked' ? '#8d939c' : '#e8c46a');
       }
     }
 

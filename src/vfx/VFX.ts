@@ -27,6 +27,7 @@ import { ProjectileVisual, isProjectileId } from './Projectiles';
 import { Ribbon, TrailRibbon, jaggedPath } from './Ribbon';
 import { TelegraphFx } from './Telegraph';
 import { WeaponGlows } from './WeaponGlow';
+import { QuestSparkles } from './QuestSparkle';
 import { combatPresets, type Preset } from './presets_combat';
 import { elementalPresets } from './presets_elemental';
 import { BEAM_TIERS, lootBeamFx, worldPresets } from './presets_world';
@@ -661,6 +662,8 @@ export class VFX {
   private lights: LightPool;
   private numbers = new DamageNumbers();
   private glows: WeaponGlows;
+  /** Golden halos on the quest props an active objective wants (vfx/QuestSparkle.ts). */
+  private questSparkles = new QuestSparkles();
 
   private loops: LoopFx[] = [];
   private timers: { t: number; fn: () => void; owner?: LoopHandle }[] = [];
@@ -1092,6 +1095,7 @@ export class VFX {
     this.time += dt;
     this.hitBudget = 14;
     this.updateLowHp(dt);
+    this.questSparkles.update(dt);
     const cam = this.camera;
     if (cam) {
       cam.updateMatrixWorld();

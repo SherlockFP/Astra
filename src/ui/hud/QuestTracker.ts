@@ -2,7 +2,7 @@ import '../styles/hud-quests.css';
 import { G } from '../../game/G';
 import { div, pulse, setClass, setText } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
-import { getPinnedQuest } from './questMarks';
+import { focusObjective, focusedObjective, getPinnedQuest } from './questMarks';
 
 /**
  * Quest pane of the context tracker (GDD_OPENWORLD §6.1, UI_REDESIGN §2.9): the pinned active quest (or the first active
@@ -37,6 +37,10 @@ export class QuestTracker implements HudWidget {
       }
     });
     G.events.on('quest:updated', () => {
+      this.dirty = true;
+    });
+    // a tracker click pins the quest it focuses (setPinnedQuest), which also marks the focused row
+    G.events.on('quest:pinned', () => {
       this.dirty = true;
     });
     G.events.on('scene:leaving', () => {
@@ -84,7 +88,9 @@ export class QuestTracker implements HudWidget {
     const def = act.find((d) => d.id === pinned) ?? act[0];
     const state = q.state(def.id);
     const rows = q.progressRows(def.id);
-    const sig = [def.id, state, act.length, ...rows.map((r) => `${r.have}/${r.need}`)].join('|');
+    const fo = focusedObjective();
+    const fk = fo && fo.questId === def.id ? fo.k : -1;
+    const sig = [def.id, state, act.length, fk, ...rows.map((r) => `${r.have}/${r.need}`)].join('|');
     setClass(this.el, 'on', true);
     if (sig === this.sig) return;
     this.sig = sig;
@@ -95,9 +101,16 @@ export class QuestTracker implements HudWidget {
     this.lastQuest = def.id;
     this.lastHave = [];
     this.list.textContent = '';
-    const open = rows.filter((r) => !r.done);
-    (open.length ? open : rows).slice(0, 3).forEach((r, i) => {
-      const row = div('qt-row' + (r.done ? ' done' : ''), this.list);
+    // open objectives first; a finished one stays in the list (green, struck through) while there is room for it
+    const shown = rows.map((r, k) => ({ r, k })).sort((a, b) => Number(a.r.done) - Number(b.r.done)).slice(0, 3);
+    for (const { r, k } of shown) {
+      const row = div('qt-row' + (r.done ? ' done' : '') + (k === fk ? ' focus' : ''), this.list);
+      // click: the arrow and the pinned quest go to this objective (the quest log stays shut)
+      row.title = 'Hedefe odaklan';
+      row.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!(fo && fo.questId === def.id && fo.k === k)) focusObjective(def.id, k);
+      });
       const line = div('qt-line', row);
       const t = div('', line);
       setText(t, r.text);
@@ -108,15 +121,17 @@ export class QuestTracker implements HudWidget {
       const to = r.need > 0 ? Math.min(1, r.have / r.need) * 100 : 0;
       fill.style.setProperty('--to', `${to.toFixed(1)}%`);
       fill.style.width = `${to.toFixed(1)}%`;
-      const before = prev[i];
+      const before = prev[k];
       if (before !== undefined && r.have > before) {
         const from = r.need > 0 ? Math.min(1, before / r.need) * 100 : 0;
         fill.style.setProperty('--from', `${from.toFixed(1)}%`);
         fill.classList.add('grow');
         pulse(row, 'flash');
       }
-      this.lastHave.push(r.have);
-    });
+      // the objective completes on this rebuild: the X/Y count pops (green, scaled up once)
+      if (before !== undefined && r.done && before < r.need) pulse(n, 'pop');
+      this.lastHave[k] = r.have;
+    }
     const extra = act.length - 1;
     setText(this.more, extra > 0 ? `+${extra} görev daha` : '');
     this.more.style.display = extra > 0 ? '' : 'none';

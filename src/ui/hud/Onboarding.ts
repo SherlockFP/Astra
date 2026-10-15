@@ -10,6 +10,8 @@ import type { HudCtx, HudWidget } from './types';
 
 /** The card re-reads the save at this period (s); the events do the real work. */
 const TICK_S = 0.25;
+/** The card of one step leaves the screen after this long (s); it stays away until the step changes or the guide ends. */
+const DISMISS_S = 60;
 
 /**
  * The skills step names the keys of the bar abilities the character has at its level (WoW: the L1 kit sits on 1, 2, 3 and Q),
@@ -53,6 +55,10 @@ export class GuideCard implements HudWidget {
   private spFree = -1;
   private hl: Element | null = null;
   private shown = false;
+  /** Seconds on the active step, and the step whose card the 60 s rule has dismissed (empty = none). */
+  private stepId = '';
+  private stepTime = 0;
+  private dismissedId = '';
 
   constructor(private readonly ui: UI) {
     this.el = div('guide-card k-plate');
@@ -106,6 +112,7 @@ export class GuideCard implements HudWidget {
   }
 
   update(ctx: HudCtx): void {
+    this.stepTime += ctx.dt;
     this.acc += ctx.dt;
     if (this.acc < TICK_S) return;
     this.acc = 0;
@@ -127,6 +134,16 @@ export class GuideCard implements HudWidget {
     this.walked += Math.hypot(p.position.x - this.lastPos.x, p.position.z - this.lastPos.z);
     this.lastPos = { x: p.position.x, z: p.position.z };
     if (this.walked >= GUIDE_WALK_M) this.feed({ k: 'move' });
+
+    // the bag step completes however the bag opens (B, the bag button, a loot window that opens it), not only on the B key
+    if (activeStep(this.state, ch.save.level)?.id === 'bag' && this.ui.isPanelOpen('inventory')) this.feed({ k: 'panel', panel: 'inventory', open: true });
+    // a card that has stood for DISMISS_S on one step leaves the screen (render keeps it away until the step changes)
+    const step = activeStep(this.state, ch.save.level);
+    if (step && step.id !== this.stepId) {
+      this.stepId = step.id;
+      this.stepTime = 0;
+    }
+    if (step && this.stepTime >= DISMISS_S) this.dismissedId = step.id;
 
     this.render(ch.save.level);
   }
@@ -176,7 +193,7 @@ export class GuideCard implements HudWidget {
     const st = this.state;
     if (!st) return;
     const step = activeStep(st, level);
-    if (!step) return this.hide();
+    if (!step || step.id === this.dismissedId) return this.hide();
     const prog = progressOf(st, level);
     setText(this.count, `${prog.done} / ${prog.total}`);
     if (step.id !== this.shownId) {

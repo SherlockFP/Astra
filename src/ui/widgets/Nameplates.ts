@@ -15,6 +15,7 @@ import { StatusRow } from './StatusRow';
 import { selectedTitleName } from '../../systems/Achievements';
 import { nationColor, nationTag } from '../../data/nations';
 import { arenaController } from '../../scenes/arena/ArenaController';
+import { isQuestMob, questMobRules, type QuestMobRule } from '../hud/questMarks';
 
 /** GDD_PVP_FINDER §5.5: arena team colours (red A, blue B); the letter is also written in the name, so colour is not the only cue. */
 const ARENA_TEAM_COLOR: Record<'A' | 'B', string> = { A: '#ff5a4a', B: '#4aa3ff' };
@@ -57,6 +58,8 @@ const ENEMY_RANGE = 40;
 const TARGET_SCALE = 1.2;
 /** Distance (m) where the plate starts to fade out. */
 const FADE_FROM = 28;
+/** Quest mob rules are re-read this often (ms). */
+const QUEST_RULES_EVERY = 500;
 
 const RANK_NAME_COLOR: Record<string, string> = { trash: '#f1e6cf', elite: '#ffd36a', miniboss: '#ffa040', boss: '#ff6a52' };
 /** Şampiyon (champion pack leader) plates are blue (WoW rare-elite style); boss mechanic entities use a cold steel tint. */
@@ -88,6 +91,9 @@ class Plate {
   /** The local player's own plate: shown only while a title is chosen; name, level and title, no bars. */
   private readonly self: boolean;
   private lvlEl: HTMLElement;
+  /** Yellow quest badge after the name: the enemy is a target (or a drop source) of an unfinished objective of an active quest. */
+  private questEl: HTMLElement;
+  private questOn = false;
   private guildEl: HTMLElement;
   private guildTxt = '';
   private rankIco: HTMLElement;
@@ -124,6 +130,8 @@ class Plate {
     const top = div('np-top', this.el);
     this.lvlEl = div('np-lvl', top);
     this.nameEl = div('np-name', top);
+    this.questEl = div('np-qobj', top, '!');
+    setDisplay(this.questEl, false);
     this.rankIco = iconEl(null, 'np-rank', top);
     this.titleEl = div('np-title', this.el);
     setDisplay(this.titleEl, false);
@@ -208,13 +216,20 @@ class Plate {
   }
 
   /** Content (name, level, HP, cast, debuffs). The position is set by place(), once the declutter has run. */
-  update(ctx: { now: number; world: number; casts: CastTracker; isTarget: boolean; isSoft: boolean; playerLevel: number; selfTitle: string }): void {
+  update(ctx: { now: number; world: number; casts: CastTracker; isTarget: boolean; isSoft: boolean; playerLevel: number; selfTitle: string; quest: boolean }): void {
     const a = this.actor;
     this.applyFlavor();
     const team = arenaTeamOf(a);
     const tag = team ?? (a.kind === 'player' ? nationTag((a as Player).nation) : '');
     setText(this.nameEl, tag ? `[${tag}] ${a.name}` : a.name);
     setDisplay(this.nameEl, this.opts.showName !== false);
+    // quest badge: its width changes the plate, so the box is measured again (like the guild tag)
+    const quest = ctx.quest && a.kind !== 'player';
+    if (quest !== this.questOn) {
+      this.questOn = quest;
+      this.w = 0;
+    }
+    setDisplay(this.questEl, quest, 'flex');
     setDisplay(this.lvlEl, this.flavor !== 'mech');
     // WoW: a unit 10+ levels above the player shows a skull (here "??"); colour by difficulty (levelColor)
     const skull = a.kind !== 'player' && isSkullLevel(ctx.playerLevel, a.level);
@@ -352,6 +367,9 @@ export class Nameplates {
   /** Screen rects of the HUD panels in layer px (see HUD_SEL); a hard blocker, even for the target and hot plates. */
   private hud: Box[] = [];
   private hudAt = -1e9;
+  /** Quest mob rules of the active quests, re-read every QUEST_RULES_EVERY ms (they change with kills and quest state). */
+  private questRules: QuestMobRule[] = [];
+  private questAt = -1e9;
 
   constructor(private ui: UI, private layer: HTMLElement) {
     this.ring = div('np-soft-ring', layer);
@@ -423,7 +441,12 @@ export class Nameplates {
     const hardId = localHardTargetId();
     // Settings.nameplates: always (default) · combat (only in a fight) · off (the target still shows)
     const npMode = G.settings?.data.nameplates ?? 'always';
-    type Cand = { a: Actor; d: number; always: boolean; hot: boolean };
+    if (now - this.questAt >= QUEST_RULES_EVERY) {
+      this.questAt = now;
+      this.questRules = questMobRules();
+    }
+    const rules = this.questRules;
+    type Cand = { a: Actor; d: number; always: boolean; hot: boolean; quest: boolean };
     const cands: Cand[] = [];
     const px = me.position.x, pz = me.position.z;
     const consider = (a: Actor, isPlayer: boolean) => {
@@ -432,6 +455,7 @@ export class Nameplates {
       const d = Math.hypot(dx, dz);
       const manual = this.manual.has(a.id);
       let show = false;
+      let quest = false;
       if (manual) show = d < 80;
       else if (isPlayer) show = d < 45;
       else {
@@ -443,8 +467,11 @@ export class Nameplates {
         else if (rank === 'boss') show = d < 70 && a.id !== bossEntity;
         else if (npMode === 'combat') show = d < ENEMY_RANGE && (isTarget || e.aggroed || a.combatTimer < 8);
         else show = d < ENEMY_RANGE;
+        // WoW: a quest target shows its plate (and the quest badge) in range even outside a fight, unless plates are off
+        quest = !isMechanic(a) && isQuestMob(e, rules);
+        if (quest && npMode !== 'off' && d < ENEMY_RANGE) show = true;
       }
-      if (show) cands.push({ a, d, always: manual || a.id === hardTarget, hot: a.id === hardTarget || a === hover || a.combatTimer < HOT_SECONDS });
+      if (show) cands.push({ a, d, always: manual || a.id === hardTarget, hot: a.id === hardTarget || a === hover || a.combatTimer < HOT_SECONDS, quest });
     };
     for (const e of w.enemies) consider(e, false);
     for (const p of w.players) if (!p.isLocal) consider(p as Player, true);
@@ -479,7 +506,7 @@ export class Nameplates {
       plate.seen = this.tick;
       plate.setShown(true);
       const isTarget = a.id === hardTarget;
-      plate.update({ now, world: wt, casts, isTarget: isTarget || a === hover, isSoft: a === hover && a.id !== hardId, playerLevel: me.level, selfTitle });
+      plate.update({ now, world: wt, casts, isTarget: isTarget || a === hover, isSoft: a === hover && a.id !== hardId, playerLevel: me.level, selfTitle, quest: c.quest });
       // the target is drawn larger; distance fade from 28 m (45 % at 48 m), never below 45 %
       const k = Math.max(0.68, Math.min(1.05, 1.18 - c.d / 55)) * (isTarget ? TARGET_SCALE : 1);
       const alpha = c.always ? 1 : clampN(1 - (c.d - FADE_FROM) / 20, 0.45, 1);

@@ -25,8 +25,10 @@
   text-overflow: ellipsis;
 }
 .qt-list { display: flex; flex-direction: column; gap: 6px; }
-.qt-row { display: flex; flex-direction: column; gap: 3px; }
+.qt-row { display: flex; flex-direction: column; gap: 3px; cursor: pointer; }
 .qt-row.flash { animation: qt-flash 600ms ease-out; }
+/* the objective the arrow points at (a click on its row): a gold rule on the left */
+.qt-row.focus { box-shadow: inset 2px 0 0 var(--gold-1, #e0b050); padding-left: 5px; }
 .qt-line {
   display: flex;
   justify-content: space-between;
@@ -48,6 +50,13 @@
 @keyframes qt-flash {
   0% { background: rgba(255, 255, 255, 0.2); }
   100% { background: transparent; }
+}
+/* an objective completes: its X/Y count pops (scale up, green) once */
+.qt-line > div.pop { animation: qt-pop 500ms ease-out; }
+@keyframes qt-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.55); color: var(--ok); }
+  100% { transform: scale(1); }
 }
 @keyframes qt-grow {
   from { width: var(--from, 0%); }
