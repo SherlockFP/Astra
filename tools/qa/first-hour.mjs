@@ -16,6 +16,7 @@
 //      interrupt skill; none on the bar = BLOCKER), interact / use (QuestProp: F; use needs the item), escort (EscortNpc: F to start,
 //      then follow it, fighting what attacks it). dungeon has no handler: HARD blocker.
 //   4. a quest whose open objective does not change for 4 steps is a HARD blocker (the chain is stuck) and ends the journey.
+//   5. a SIDE quest that the watchdog fired on twice is abandoned (dropped from the log, never taken again; the chain goes on): a BLOCKER.
 //
 // Keys come from the game: src/core/Input.ts SCHEME_BINDINGS.wow (scheme 'wow' = the default) over DEFAULT_BINDINGS; the skill
 // slots from G.character.save.skillBar; the interrupt skill is the bar skill whose SKILLS[id].behavior === 'interrupt'.
@@ -173,6 +174,10 @@ async function journey(cls) {
   let wdTimer = null;
   let wdBusy = false;
   let wdFires = 0;
+  // side quests the watchdog fired on: two fires drop the quest (the game has no abandon action: it leaves the log the way a player's
+  // drop would, and the bot never takes it again). BLOCKER lines record each drop for the report.
+  const wdFiresBy = new Map();
+  const abandoned = new Set();
   let wdAnchor = { t: 0, x: 0, z: 0 };
   let wdLast = null;
   let wdLabel = 'setup'; // the chain step in progress (quest + state)
@@ -234,13 +239,34 @@ async function journey(cls) {
       const q = ge.recommend(window.G.character).quest;
       return q ? { id: q.id, name: q.name, state: q.state, giver: q.giverNpcId ?? null } : null;
     });
+  /** The guide's pick, minus the side quests this run abandoned (the guide would hand them back): ready > lowest active > main chain
+   * within 2 levels > a side quest of the dropped one's zone. */
+  const recommendedNow = async () => {
+    const r = await recommended();
+    if (!r || !abandoned.has(r.id)) return r;
+    return page.evaluate((skip) => {
+      const q = window.G.quests;
+      const L = window.G.character.save.level;
+      const zone = q.def(skip[skip.length - 1])?.region ?? null;
+      const all = q.all().filter((d) => !skip.includes(d.id));
+      const pick = (d, state) => ({ id: d.id, name: d.name, state, giver: d.giver ?? null });
+      const ready = all.find((d) => q.state(d.id) === 'ready');
+      if (ready) return pick(ready, 'ready');
+      const act = all.filter((d) => q.state(d.id) === 'active').sort((a, b) => a.level - b.level);
+      if (act[0]) return pick(act[0], 'active');
+      const mains = all.filter((d) => q.state(d.id) === 'available' && d.main && d.level <= L + 2).sort((a, b) => a.level - b.level);
+      if (mains[0]) return pick(mains[0], 'available');
+      const side = all.filter((d) => q.state(d.id) === 'available' && !d.main && d.region === zone).sort((a, b) => a.level - b.level);
+      return side[0] ? pick(side[0], 'available') : null;
+    }, [...abandoned, r.id]);
+  };
   /** Static quest data the steps need (from G.quests, no ids written here). */
   const questDef = (id) =>
     page.evaluate((qid) => {
       const d = window.G.quests.def(qid);
       if (!d) return null;
       return {
-        id: d.id, name: d.name, level: d.level, giver: d.giver, turnIn: d.turnIn ?? null, bonus: !!d.bonus, region: d.region ?? null, place: d.place ?? null,
+        id: d.id, name: d.name, level: d.level, main: !!d.main, giver: d.giver, turnIn: d.turnIn ?? null, bonus: !!d.bonus, region: d.region ?? null, place: d.place ?? null,
         objectives: d.objectives.map((o) => ({ kind: o.kind, target: o.target ?? null, count: o.count, text: o.text, from: o.from ?? null, item: o.item ?? null })),
       };
     }, id);
@@ -936,6 +962,7 @@ async function journey(cls) {
   };
   /** Watchdog fire: BLOCKER with the state dump (json file) and a screenshot. */
   const wdDump = async (s) => {
+    if (curQuest) wdFiresBy.set(curQuest, (wdFiresBy.get(curQuest) ?? 0) + 1);
     const n = wdFires;
     const ev = (f, ms = 4000) => withTimeout(f(), ms, null);
     const dump = {
@@ -1113,10 +1140,26 @@ async function journey(cls) {
         await sampleFps('sisli vadi spawn');
         C('arrived in the open world', true, `at ${mins()} min`);
       }
-      const rec = await recommended();
+      const rec = await recommendedNow();
       if (!rec) { B(`the guide recommends no quest at level ${s.lvl} (${mins()} min): the chain ends or has a gap`, true); end = 'no recommendation'; break; }
       const d = await questDef(rec.id);
       if (!d) { B(`recommended quest ${rec.id} has no definition`, true); end = 'no definition'; break; }
+      // two watchdog fires on a side quest that is still being worked: drop it and carry on with the chain (BLOCKER for the report)
+      if (!d.main && rec.state === 'active' && (wdFiresBy.get(d.id) ?? 0) >= 2 && !abandoned.has(d.id)) {
+        const fires = wdFiresBy.get(d.id);
+        const left = await page.evaluate((qid) => {
+          const ch = window.G.character;
+          const f = ch.save.flags;
+          for (const k of Object.keys(f)) if (k === `q.${qid}` || k.startsWith(`q.${qid}.n`)) delete f[k];
+          ch.persist();
+          window.G.events?.emit('quest:updated', { questId: qid, state: window.G.quests.state(qid), progress: 0 });
+          return window.G.quests.state(qid);
+        }, d.id);
+        abandoned.add(d.id);
+        B(`side quest "${d.name}" abandoned after ${fires} watchdog fires (no in-game abandon action: dropped from the quest log, now "${left}"); the chain goes on`);
+        wdAnchor = { t: Date.now(), x: wdAnchor.x, z: wdAnchor.z };
+        continue;
+      }
       const failKey = `${d.id}:${rec.state}`;
       curQuest = d.id;
       wdLabel = `${d.name} / ${rec.state}`;

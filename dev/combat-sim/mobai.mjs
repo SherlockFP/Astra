@@ -10,7 +10,7 @@
  * the whole pack, not the next pack) | social.* (pack aggro is the camp only; pack-less neighbours join within 10 m and inside their own
  * aggro range; no sweep, no chain past the aggro range) | leash.* (a chase past the leash evades home with a full reset) | caster.* (keeps range,
  * casts an interruptible spell with a cast bar, a heavy hit cuts it) | healer.* (heals a hurt ally, ignores a healthy one) |
- * flee.* (humanoid at 20 % HP runs and calls its pack; a swarm beast does not) | elite.* (elite specials telegraphed, windup
+ * flee.* (humanoid at 20 % HP runs and calls its pack; a swarm beast does not) | flee.ground.* (run points on reachable ground only; a mob on a stone step evades home) | elite.* (elite specials telegraphed, windup
  * >= 0.9 s; trash not) | stuck.* (no route to the target = evade, not a stand-off) | wall.* (a charge stops at a wall) |
  * cap.* (a level-2 priest in the Balçık Gölü slime camps: at most 3 engaged, a touch never pulls another camp, no level-2 split).
  * Exit 0 = all PASS.
@@ -502,6 +502,61 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
   const c3 = camp('camp_hit');
   c3[0].ai.onDamaged(null, 5);
   ok('camp.hit.a non-player hit does not pull a player 50 m away', c3.every((m) => !m.ai.aggroed), `aggroed ${c3.filter((m) => m.ai.aggroed).length}/3`);
+}
+
+// ==================================================================================================================
+// flee.ground.* a fleeing neutral deer (camp leash) runs only to ground its camp can walk to. A stone step (a plateau 1.2 m high,
+// standable in the grid but above the 0.45 m step rule, in the deer's line of sight) is never a run point, and a deer that ends up
+// on one evades home (a body it cannot walk off).
+// ==================================================================================================================
+{
+  const nav = world.nav;
+  // plateau x 6..14, z -7..7 at 1.2 m; the flat ground is 0 m. Terrain grid: nav.floor is set, nav.region stays null
+  const stepH = (x, z) => (x >= 6 && x <= 14 && Math.abs(z) <= 7 ? 1.2 : 0);
+  const onStep = (x, z) => stepH(x, z) > 0.5;
+  const terrain = () => nav.attachTerrain({ groundY: stepH, flagsAt: () => 0 });
+  const flat = () => { nav.floor = null; nav.hf = null; nav.flags = null; nav.terrain = false; };
+
+  reset();
+  terrain();
+  const p = reset('knight', 10); // reset() re-lays the flat walkable cells; the terrain heights stay
+  p.position.set(-4, 0, 0);
+  const deer = mob('ow_deer', 0, 0);
+  deer.campX = 0;
+  deer.campZ = 0;
+  deer.campR = 4;
+  deer.ai.onDamaged(p.id, 5);
+  H.step(sec(0.5));
+  ok('flee.ground.setup: hit deer is aggroed and running', deer.ai.aggroed, `mode ${deer.ai.mode}`);
+  const d0 = dist(deer, p);
+  let dPeak = d0, badTargets = 0, onStepSamples = 0;
+  for (let i = 0; i < 100; i++) {
+    H.step(sec(0.1));
+    dPeak = Math.max(dPeak, dist(deer, p));
+    if (deer.ai.aggroed && onStep(deer.ai.fleeX, deer.ai.fleeZ)) badTargets++;
+    if (onStep(deer.position.x, deer.position.z)) onStepSamples++;
+  }
+  ok('flee.ground.the deer runs away from the player', dPeak > d0 + 2, `${d0.toFixed(1)} m -> peak ${dPeak.toFixed(1)} m`);
+  ok('flee.ground.no run point is on the stone step', badTargets === 0, `${badTargets} of 100 samples aimed at the step`);
+  ok('flee.ground.the deer never stands on the stone step', onStepSamples === 0, `${onStepSamples} of 100 samples on the step`);
+
+  // a deer that ends up on the step (no route off it by its own pick) evades home instead of standing there
+  reset();
+  const p2 = reset('knight', 10);
+  p2.position.set(-4, 0, 0);
+  const stuck = mob('ow_deer', 10, 0);
+  stuck.position.y = 1.2; // standing on the step (the body rides the floor height)
+  stuck.homeX = 0; // its camp centre (the home it evades to), not the step it was spawned on
+  stuck.homeZ = 0;
+  stuck.campX = 0;
+  stuck.campZ = 0;
+  stuck.campR = 4;
+  stuck.ai.onDamaged(p2.id, 5);
+  H.step(sec(2));
+  const left = !onStep(stuck.position.x, stuck.position.z) && Math.hypot(stuck.position.x - 10, stuck.position.z) > 3;
+  ok('flee.ground.a deer on an unreachable step evades home, off the step', left, `mode ${stuck.ai.mode} at ${stuck.position.x.toFixed(1)},${stuck.position.z.toFixed(1)}`);
+  flat();
+  reset();
 }
 
 // ---- report ---------------------------------------------------------------------------------------------------------------

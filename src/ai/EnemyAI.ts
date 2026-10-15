@@ -4,6 +4,7 @@ import type { HitShapeSpec } from '../combat/HitShapes';
 import { hyperArmorOf } from '../combat/poise';
 import { clamp, dampAngle, yawFromDir } from '../core/utils';
 import { F, VERT } from '../world/Heightfield';
+import type { ReachMask } from '../world/NavGrid';
 import { getDirector, hooks, isHeavyHit, type EnemyDirector } from './EnemyDirector';
 import { bossMsg, bossText } from './bossNet';
 import { CUSTOM, PASSIVES, runOnDeath, type CustomHandler, type PassiveHandler } from './abilities';
@@ -101,6 +102,8 @@ const SLEEP_DIST = 45;
 const NOPATH_LEASH = 6;
 /** Open-world trash ambient wander: every point stays within this (m) of its camp centre (the camp's members spread up to ~6.6 m from it). */
 const CAMP_WANDER_M = 8;
+/** Fleeing / wandering run points come from ground the camp can walk to, inside this box (m) around the camp centre (leash + flee reach). */
+const CAMP_REACH_M = 90;
 /** WoW camp leash: a camp member chases only within its camp radius + this many m of the camp centre; past it the body evades home. */
 export const CAMP_LEASH_PAD_M = 20;
 /** ENGINE_VERTICALITY §10.2: lastSafe sampling period (s). */
@@ -891,9 +894,11 @@ export class EnemyAI {
       if (this.wanderT <= 0 && !this.path) {
         this.wanderT = 4 + Math.random() * 6;
         // a camp member wanders around its camp centre (<= CAMP_WANDER_M); a loose spawn keeps its own 4 m around home
+        const reach = this.campReach();
+        const onReach = (x: number, z: number): boolean => reach.has(x, z);
         const p = e.campX !== null && e.campZ !== null
-          ? this.world.nav.randomNear(e.campX, e.campZ, CAMP_WANDER_M)
-          : this.world.nav.randomNear(e.homeX, e.homeZ, 4);
+          ? this.world.nav.randomNear(e.campX, e.campZ, CAMP_WANDER_M, Math.random, onReach)
+          : this.world.nav.randomNear(e.homeX, e.homeZ, 4, Math.random, onReach);
         this.fleeX = p.x;
         this.fleeZ = p.z;
         this.fleeT = 3.5;
@@ -1468,6 +1473,12 @@ export class EnemyAI {
     return Math.hypot(e.position.x - e.homeX, e.position.z - e.homeZ) > leash;
   }
 
+  /** Ground the camp can walk to: the mask that flee and wander run points are drawn from (anchor: camp centre, else spawn). */
+  protected campReach(): ReachMask {
+    const e = this.e;
+    return this.world.nav.reachFrom(e.campX ?? e.homeX, e.campZ ?? e.homeZ, CAMP_REACH_M);
+  }
+
   protected startReturn(): void {
     const e = this.e;
     // WoW evade: the cast in progress is dropped at once, the body walks home
@@ -1580,13 +1591,19 @@ export class EnemyAI {
       this.halt(dt);
       return;
     }
+    // a fleeing body on ground its camp cannot walk (a stone step, an island) has no run to make from there: it evades home
+    const reach = this.campReach();
+    if (!reach.near(px, pz)) {
+      this.startReturn();
+      return;
+    }
     if (this.fleeT <= 0 || Math.hypot(this.fleeX - px, this.fleeZ - pz) < 1.5) {
       this.fleeT = 1.3;
-      // pick the random nav point (within 22 m) that is farthest from every player
+      // pick the random nav point (within 22 m) that is farthest from every player; only ground the camp can walk to
       let best = { x: px, z: pz };
       let bd = -1;
       for (let i = 0; i < 8; i++) {
-        const c = this.world.nav.randomNear(px, pz, 22);
+        const c = this.world.nav.randomNear(px, pz, 22, Math.random, (x, z) => reach.has(x, z));
         let dmin = Infinity;
         for (const p of this.world.players) if (!p.isDead) dmin = Math.min(dmin, Math.hypot(p.position.x - c.x, p.position.z - c.z));
         // a fleeing mob stays in its attacker's reach (casters hit to 30 m): it does not run off out of range

@@ -33,6 +33,14 @@ export function mapGridOf(nav: NavGrid): MapGrid {
   return { ...nav.downsample(f, 0.5), factor: f };
 }
 
+/** Cells a walker can reach from an anchor (NavGrid.reachFrom), limited to a square box around it. */
+export interface ReachMask {
+  /** True when (x, z) is a reachable cell inside the box. */
+  has(x: number, z: number): boolean;
+  /** True when (x, z) or a cell beside it is reachable (the tolerance a body standing between two cells needs). Outside the box: true (no verdict). */
+  near(x: number, z: number): boolean;
+}
+
 export class NavGrid {
   readonly cellSize: number;
   readonly cols: number;
@@ -50,6 +58,9 @@ export class NavGrid {
   hf: NavHeightSource | null = null;
   /** Open-world rolling terrain (attachTerrain): raycastY also stops a ray that dips under the ground. */
   terrain = false;
+  /** Bumped by every setCell write: cached reach masks rebuild when props, blockers or barriers change the grid. */
+  private cellVersion = 0;
+  private reachCache: { key: string; v: number; floor: Float32Array | null; flags: Uint8Array | null; mask: ReachMask }[] = [];
 
   constructor(opts: { originX: number; originZ: number; width: number; depth: number; cellSize?: number; walkable?: boolean }) {
     this.cellSize = opts.cellSize ?? 1;
@@ -73,7 +84,10 @@ export class NavGrid {
     return this.inBounds(c, r) ? this.cells[r * this.cols + c] : 0;
   }
   setCell(c: number, r: number, v: number): void {
-    if (this.inBounds(c, r)) this.cells[r * this.cols + c] = v;
+    if (this.inBounds(c, r)) {
+      this.cells[r * this.cols + c] = v;
+      this.cellVersion++;
+    }
   }
 
   /** Raw collision walkability. VOID cells (vertical) are walkable for physics (players fall) but not for planning. */
@@ -420,14 +434,73 @@ export class NavGrid {
     return null;
   }
 
-  /** Random walkable point within radius (for wander/scatter). rand() in [0,1). */
-  randomNear(x: number, z: number, radius: number, rand: () => number = Math.random): { x: number; z: number } {
+  /** Random walkable point within radius (for wander/scatter). rand() in [0,1). `ok` (optional) filters the candidates further. */
+  randomNear(x: number, z: number, radius: number, rand: () => number = Math.random, ok?: (px: number, pz: number) => boolean): { x: number; z: number } {
     for (let i = 0; i < 20; i++) {
       const a = rand() * Math.PI * 2, d = Math.sqrt(rand()) * radius;
       const px = x + Math.cos(a) * d, pz = z + Math.sin(a) * d;
-      if (this.isStandable(px, pz) && this.lineOfSight(x, z, px, pz)) return { x: px, z: pz };
+      if (this.isStandable(px, pz) && (!ok || ok(px, pz)) && this.lineOfSight(x, z, px, pz)) return { x: px, z: pz };
     }
     return { x, z };
+  }
+
+  /**
+   * Ground a walker can reach from (x, z) within `r` m: the moves of findPath (8-neighbour, no corner cutting, the rise rule
+   * on vertical grids, pathCell only), flooded inside the square box of half-size `r` around the anchor. A point on a stone
+   * step, a ledge or an island the anchor cannot walk to is outside the mask. Cached per anchor cell and radius; a grid change
+   * (setCell), or a new height / flag array, rebuilds it.
+   */
+  reachFrom(x: number, z: number, r: number): ReachMask {
+    const seed = this.nearestWalkable(x, z, 4);
+    if (!seed) return { has: () => false, near: () => false };
+    const c0 = this.cx(seed.x), r0 = this.cz(seed.z);
+    const R = Math.max(1, Math.ceil(r / this.cellSize));
+    const key = `${c0},${r0},${R}`;
+    const hit = this.reachCache.find((e) => e.key === key && e.v === this.cellVersion && e.floor === this.floor && e.flags === this.flags);
+    if (hit) return hit.mask;
+    const mask = this.buildReach(c0, r0, R);
+    this.reachCache.push({ key, v: this.cellVersion, floor: this.floor, flags: this.flags, mask });
+    if (this.reachCache.length > 24) this.reachCache.shift();
+    return mask;
+  }
+
+  private buildReach(c0: number, r0: number, R: number): ReachMask {
+    const cA = Math.max(0, c0 - R), cB = Math.min(this.cols - 1, c0 + R);
+    const rA = Math.max(0, r0 - R), rB = Math.min(this.rows - 1, r0 + R);
+    const w = cB - cA + 1, h = rB - rA + 1;
+    const seen = new Uint8Array(w * h);
+    const queue = new Int32Array(w * h);
+    let head = 0, tail = 0;
+    seen[(r0 - rA) * w + (c0 - cA)] = 1;
+    queue[tail++] = (r0 - rA) * w + (c0 - cA);
+    while (head < tail) {
+      const cur = queue[head++];
+      const cc = (cur % w) + cA, cr = Math.floor(cur / w) + rA;
+      for (let dz = -1; dz <= 1; dz++)
+        for (let dx = -1; dx <= 1; dx++) {
+          if (!dx && !dz) continue;
+          const nc = cc + dx, nr = cr + dz;
+          if (nc < cA || nc > cB || nr < rA || nr > rB) continue;
+          if (!this.pathCell(nc, nr)) continue;
+          if (dx && dz && (this.cell(cc + dx, cr) <= 0 || this.cell(cc, cr + dz) <= 0)) continue;
+          const ni = (nr - rA) * w + (nc - cA);
+          if (seen[ni]) continue;
+          if (this.floor && !this.canStep(cr * this.cols + cc, nr * this.cols + nc)) continue;
+          seen[ni] = 1;
+          queue[tail++] = ni;
+        }
+    }
+    const reached = (c: number, r: number): boolean => c >= cA && c <= cB && r >= rA && r <= rB && seen[(r - rA) * w + (c - cA)] === 1;
+    const inBox = (c: number, r: number): boolean => c >= cA && c <= cB && r >= rA && r <= rB;
+    return {
+      has: (x, z) => reached(this.cx(x), this.cz(z)),
+      near: (x, z) => {
+        const c = this.cx(x), r = this.cz(z);
+        if (!inBox(c, r)) return true;
+        for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) if (reached(c + dx, r + dz)) return true;
+        return false;
+      },
+    };
   }
 
   /**
