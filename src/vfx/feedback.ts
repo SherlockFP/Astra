@@ -57,6 +57,15 @@ function isDry(e: Entity | undefined): boolean {
   if (!def) return false;
   return DRY.test(`${def.id ?? ''} ${def.model ?? ''}`);
 }
+/**
+ * Where floating numbers start on a target: the lower body (40 % of the entity height), well below the nameplate (the plate sits
+ * over the head, at the entity height + 0.35 m, see widgets/Nameplates). The number then drifts up a little and sideways (DamageNumbers).
+ */
+const NUMBER_ORIGIN_FRAC = 0.4;
+function bodyCentreY(target: Entity): number {
+  return target.position.y + target.height * NUMBER_ORIGIN_FRAC;
+}
+
 function isUndeadBones(e: Entity | undefined): boolean {
   const def = (e as unknown as { def?: { id?: string; model?: string } } | undefined)?.def;
   return !!def && /skelet|bone/i.test(`${def.id ?? ''} ${def.model ?? ''}`);
@@ -73,7 +82,7 @@ export function subscribeFeedback(vfx: VFX): void {
       const src = entity(e.sourceId);
       const pos: [number, number, number] = e.pos;
       // ---- floating number
-      const headY = target ? target.position.y + target.height * 1.02 : pos[1] + 0.6;
+      const headY = target ? bodyCentreY(target) : pos[1] + 0.6;
       const nx = (target ? target.position.x : pos[0]) + (Math.random() - 0.5) * 0.5;
       const nz = target ? target.position.z : pos[2];
       if (e.kind === 'immune' || e.kind === 'dodge' || e.kind === 'block') {
@@ -144,7 +153,7 @@ export function subscribeFeedback(vfx: VFX): void {
     try {
       if (e.amount <= 0.5) return;
       const target = entity(e.targetId);
-      const headY = target ? target.position.y + target.height * 1.02 : e.pos[1] + 0.6;
+      const headY = target ? bodyCentreY(target) : e.pos[1] + 0.6;
       vfx.damageNumber([target ? target.position.x : e.pos[0], headY, target ? target.position.z : e.pos[2]], e.amount, 'heal');
       if (vfx.hitBudget > 0) {
         vfx.hitBudget -= 2;

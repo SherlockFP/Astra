@@ -63,11 +63,11 @@ const RESIST_COLOR = '#8fa6bd';
 const RESIST_GLOW = '#1d2b3a';
 
 const STYLES: Record<DamageNumberKind, Style> = {
-  normal: { color: '#fff4d6', glow: '#ffb347', size: NORMAL_SIZE, life: 0.95, vy: 170, pop: 1.7 },
-  crit: { color: '#ffd23a', glow: '#ff5a00', size: Math.round(NORMAL_SIZE * CRIT_MUL), life: 1.35, vy: 210, pop: 2.4, weight: 900 },
-  heal: { color: '#6dff7a', glow: '#12a82a', size: 27, life: 1.1, vy: 120, pop: 1.5 },
-  player_hurt: { color: '#ff4d4d', glow: '#7a0000', size: 31, life: 1.15, vy: 150, pop: 1.9, weight: 800 },
-  dot: { color: '#ffb066', glow: '#a0390a', size: 18, life: 0.7, vy: 90, pop: 1.25 },
+  normal: { color: '#fff4d6', glow: '#ffb347', size: NORMAL_SIZE, life: 0.95, vy: 80, pop: 1.7 },
+  crit: { color: '#ffd23a', glow: '#ff5a00', size: Math.round(NORMAL_SIZE * CRIT_MUL), life: 1.35, vy: 100, pop: 1.9, weight: 900 },
+  heal: { color: '#6dff7a', glow: '#12a82a', size: 27, life: 1.1, vy: 70, pop: 1.5 },
+  player_hurt: { color: '#ff4d4d', glow: '#7a0000', size: 31, life: 1.15, vy: 80, pop: 1.9, weight: 800 },
+  dot: { color: '#ffb066', glow: '#a0390a', size: 18, life: 0.7, vy: 50, pop: 1.25 },
   // status words (BAĞIŞIK / KAÇINDI / BLOKLANDI): short, small, fast fade so they never linger over a fight
   immune: { color: '#c9d4e0', glow: '#556', size: 16, life: 0.6, vy: 70, pop: 1.2, italic: true, fade: 0.3 },
   dodge: { color: '#9fe3ff', glow: '#1a6a99', size: 16, life: 0.6, vy: 70, pop: 1.2, italic: true, fade: 0.3 },
@@ -86,6 +86,11 @@ const STYLES: Record<DamageNumberKind, Style> = {
 const TEXTS: Partial<Record<DamageNumberKind, string>> = {
   immune: 'Bağışık', dodge: 'Kaçındı', block: 'Bloklandı', miss: 'Iskaladı', interrupt: 'Kesildi',
 };
+
+/** Gravity (px/s^2) of the arc; hit numbers (they start on the body, under the nameplate) fall more slowly, so they drift up gently. */
+const ARC_GRAVITY = 430;
+const HIT_GRAVITY = 300;
+const HIT_KINDS: ReadonlySet<DamageNumberKind> = new Set<DamageNumberKind>(['normal', 'crit', 'dot', 'player_hurt', 'heal']);
 
 /** Kinds that show only their number/word (no hit sparks, no model flash). Used by feedback.ts. */
 export const NUMBER_ONLY_KINDS: ReadonlySet<DamageNumberKind> = new Set<DamageNumberKind>(['miss', 'absorb', 'resist', 'interrupt']);
@@ -330,8 +335,9 @@ export class DamageNumbers {
     stack = Math.min(stack, 5);
     const side = (Math.random() < 0.5 ? -1 : 1) * (stack % 2 ? 1 : -1);
     it.ox = side * (8 + stack * 10) + (Math.random() - 0.5) * 16;
-    it.oy = -stack * 18;
-    it.vx = side * (30 + Math.random() * 40) * (kind === 'crit' ? 1.3 : 1);
+    // stacked numbers fan out sideways; they only lift a little, so they never climb into the nameplate above the target
+    it.oy = -Math.min(stack, 2) * 6;
+    it.vx = side * (40 + Math.random() * 40) * (kind === 'crit' ? 1.3 : 1);
     it.vy = -st.vy * (0.85 + Math.random() * 0.3);
     const cam = this.camera.position;
     it.dist = Math.hypot(cam.x - x, cam.y - y, cam.z - z);
@@ -445,7 +451,7 @@ export class DamageNumbers {
         continue;
       }
       // 2D ballistic arc (merged ticks hover: no gravity, vy is 0)
-      if (!it.hover) it.vy += 430 * dt;
+      if (!it.hover) it.vy += (HIT_KINDS.has(it.kind) ? HIT_GRAVITY : ARC_GRAVITY) * dt;
       it.oy += it.vy * dt;
       it.ox += it.vx * dt;
       it.vx *= Math.exp(-2.2 * dt);

@@ -27,7 +27,13 @@ const MAX_RADIUS = 40;
 /** Hits closer than this (m) to the pivot are the player's own surroundings. */
 const MIN_HIT = 0.5;
 
+/** Body sample rays (lateral metres, height offset): the pivot, both sides of it (the body half-width), and the chest. */
+const BODY_HALF = 0.6;
+const BODY_RAYS: ReadonlyArray<readonly [number, number]> = [[0, 0], [1, 0], [-1, 0], [0, -1.2]];
+
 const _dir = new THREE.Vector3();
+const _o = new THREE.Vector3();
+const _side = new THREE.Vector3();
 const ZERO_MATRIX = new THREE.Matrix4().makeScale(0, 0, 0);
 const _c = new THREE.Color();
 
@@ -78,6 +84,7 @@ export function collectFadeOccluders(root: THREE.Object3D): THREE.Object3D[] {
   root.traverse((o) => {
     const m = o as THREE.Mesh;
     if (!m.isMesh || !m.geometry || m.userData.noFade) return;
+    if ((m as THREE.SkinnedMesh).isSkinnedMesh) return; // characters are never scenery
     const flagged = m.userData.fadeable === true;
     if (!flagged && !m.castShadow) return;
     const mat = m.material as THREE.Material | THREE.Material[] | undefined;
@@ -138,6 +145,25 @@ export class OccluderFader {
   }
 
   private sample(candidates: THREE.Object3D[], from: THREE.Vector3, to: THREE.Vector3): void {
+    const list = this.list;
+    list.length = 0;
+    for (const c of candidates) if (c.visible) list.push(c);
+    for (const g of this.ghostOwner.keys()) list.push(g);
+    // the body is not one point: rays also run from both sides of the pivot and from the chest, so a prop that covers the
+    // body but not the centre line (an arch, a pillar edge) fades too
+    _dir.subVectors(to, from);
+    _side.set(-_dir.z, 0, _dir.x);
+    const sl = _side.length();
+    if (sl > 1e-6) _side.multiplyScalar(BODY_HALF / sl);
+    else _side.set(0, 0, 0);
+    for (const [a, dy] of BODY_RAYS) {
+      _o.copy(from).addScaledVector(_side, a);
+      _o.y += dy;
+      this.castOne(list, _o, to);
+    }
+  }
+
+  private castOne(list: THREE.Object3D[], from: THREE.Vector3, to: THREE.Vector3): void {
     _dir.subVectors(to, from);
     const len = _dir.length();
     if (len < 0.3) return;
@@ -146,10 +172,6 @@ export class OccluderFader {
     ray.set(from, _dir);
     ray.near = MIN_HIT;
     ray.far = len;
-    const list = this.list;
-    list.length = 0;
-    for (const c of candidates) if (c.visible) list.push(c);
-    for (const g of this.ghostOwner.keys()) list.push(g);
     const hits = ray.intersectObjects(list, false);
     const now = this.clock;
     for (const h of hits) {

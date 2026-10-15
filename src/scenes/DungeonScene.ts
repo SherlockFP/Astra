@@ -4,6 +4,7 @@ import { G } from '../game/G';
 import { PlayerController } from '../game/PlayerController';
 import { ThirdPersonCamera } from '../camera/ThirdPersonCamera';
 import { collectFadeOccluders } from '../camera/OccluderFade';
+import { obstaclesOf, openGroundYaw } from '../world/OpenFacing';
 import { Player } from '../entities/Player';
 import { characterAssetUrls } from '../entities/CharacterModel';
 import { enemyAssetUrls, spawnEnemy } from '../entities/EnemyFactory';
@@ -239,7 +240,8 @@ export class DungeonScene implements GameScene {
     // zone channels: a channel switch / host re-seed re-enters the map where the player stood (no slot offset: it is a continuation)
     const resume = this.isWorld && params.resumeAt && Number.isFinite(params.resumeAt.x) && Number.isFinite(params.resumeAt.z) ? params.resumeAt : null;
     const arenaSp = params.arena && this.arenaDef ? arenaSpawnFor(params.arena, this.arenaDef, G.net.selfId) : null;
-    const startYaw = arenaSp?.yaw ?? arrival?.yaw ?? built.startYaw;
+    // open world: the map start looks at open ground (the exit portal stands a few metres ahead of it); arrivals keep their door facing
+    const startYaw = arenaSp?.yaw ?? arrival?.yaw ?? (this.outdoor ? this.openStartYaw(world, built) : built.startYaw);
     const slot = G.net.localSlot;
     const right = new THREE.Vector3(Math.cos(startYaw), 0, -Math.sin(startYaw));
     const off = resume ? 0 : ((slot % 5) - 2) * 1.6;
@@ -320,7 +322,7 @@ export class DungeonScene implements GameScene {
     cam.yaw = startYaw + Math.PI;
     // solid scenery (walls, pillars, trees, rocks, cliffs, buildings) between the lens and the player fades out instead of
     // filling the screen; floors and grass never do (camera/OccluderFade.ts)
-    cam.occluders = collectFadeOccluders(built.root);
+    cam.occluders = this.fadeCandidates(world, built);
     cam.occluderMode = 'fade';
     this.cam = cam;
     this.controller = new PlayerController(player, cam);
@@ -1479,11 +1481,42 @@ export class DungeonScene implements GameScene {
 
   /** Streamed open-world zone: chunks came or went, so the camera's fade candidates (collected once from the built root) are rebuilt. */
   private occVersion = 0;
+  private occProps = -1;
   private refreshOccluders(): void {
-    const v = this.built?.world?.streamVersion ?? 0;
-    if (v === this.occVersion || !this.cam || !this.built) return;
+    if (!this.cam || !this.built) return;
+    const v = this.built.world?.streamVersion ?? 0;
+    const props = this.countFadeProps();
+    if (v === this.occVersion && props === this.occProps) return;
     this.occVersion = v;
-    this.cam.occluders = collectFadeOccluders(this.built.root);
+    this.occProps = props;
+    this.cam.occluders = this.fadeCandidates(this.world, this.built);
+  }
+
+  /** Fade candidates of the level: the built scenery, plus the static props and interactables standing in the world (portals, chests, shrines). */
+  private fadeCandidates(world: World | null, built: BuiltDungeon): THREE.Object3D[] {
+    const out = collectFadeOccluders(built.root);
+    if (world) {
+      for (const e of world.entities.values()) {
+        if (!e.removed && (e.kind === 'prop' || e.kind === 'interactable')) out.push(...collectFadeOccluders(e.object3d));
+      }
+    }
+    return out;
+  }
+
+  private countFadeProps(): number {
+    let n = 0;
+    if (this.world) for (const e of this.world.entities.values()) if (!e.removed && (e.kind === 'prop' || e.kind === 'interactable')) n++;
+    return n;
+  }
+
+  /**
+   * Open world map start: the facing with the least clutter in view (world/OpenFacing). The exit portal is not spawned yet, so its
+   * place (built.exit) stands in as an obstacle.
+   */
+  private openStartYaw(world: World, built: BuiltDungeon): number {
+    built.root.updateMatrixWorld(true);
+    const obstacles = [...obstaclesOf(this.fadeCandidates(world, built)), { x: built.exit.x, z: built.exit.z, r: 1.2 }];
+    return openGroundYaw(built.nav, built.start.x, built.start.z, obstacles, built.startYaw);
   }
 
   update(dt: number): void {
