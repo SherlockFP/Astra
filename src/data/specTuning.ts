@@ -1,3 +1,5 @@
+import type { ClassId } from '../types/common';
+import { CLASSES } from './classes';
 // Per-spec calibration factors (CORE_MECHANICS §1.1 / §5.4, CM1). Players only; neutral = 1 (a spec not listed is 1).
 // Level-aware: each factor is a knot triple [L10, L30, L60]; a character's factor is linearly interpolated by its level between the knots and
 // held at the end knots outside 10-60. A plain number applies at every level. Written by tools/calibrate-balance.mjs, which fits each knot at
@@ -59,8 +61,9 @@ export const SPEC_TUNING: Record<string, LevelTuning> = {
 /** Player outgoing damage below L10 only (x on the L10 knot, which the L10 balance gate measures; the gate is not touched). The low-level
  *  solo fights (dev/combat-sim/solo_lowlevel.mjs) had these two overperforming: a 1-2 s kill at L1-9. */
 export const LOW_LEVEL_DMG: Record<string, number> = {
-  knight_protector: 0.6, archer_marksman: 0.55, demonhunter_chaos: 0.55, evoker_devastation: 0.3, necromancer_summoner: 0.35,
-  paladin_protection: 0.85, priest_discipline: 1.4, warlock_affliction: 1.4,
+  knight_protector: 0.6, archer_marksman: 0.55, demonhunter_chaos: 0.84, evoker_devastation: 0.3, necromancer_summoner: 0.35,
+  paladin_protection: 0.60, priest_discipline: 1.92, warlock_affliction: 1.15,
+  mage_fire: 1.50,
 };
 
 /** The factor `k` at character level `level`: linear between the knots, held at the end knots outside 10-60. */
@@ -72,13 +75,16 @@ export function tuneAt(k: TuneKnots, level: number): number {
   return k[1] + ((k[2] - k[1]) * (L - l30)) / (l60 - l30);
 }
 
-/** The factor `key` for an actor: only a player with a spec is tuned; everything else (enemies, minions, environment) is 1.
- *  A player with no level reads the L60 knot (the level the table was first calibrated at). */
-export function tuneOf(a: { kind?: string; spec?: string | null; level?: number } | null | undefined, key: keyof LevelTuning): number {
-  if (!a || a.kind !== 'player' || !a.spec) return 1;
-  const t = SPEC_TUNING[a.spec];
-  if (!t) return 1;
+/** The factor `key` for an actor: only a player is tuned (enemies, minions and the environment are 1). Below L10 a character has no spec
+ *  yet (the choice is made at L10, CharacterState.spec): it is tuned as the first spec of its class, and below L10 only its damage factor
+ *  (LOW_LEVEL_DMG on the L10 knot) applies, the way the solo sim (dev/combat-sim/solo_lowlevel.mjs) assumes. A player with no level reads the L60 knot. */
+export function tuneOf(a: { kind?: string; spec?: string | null; level?: number; classId?: ClassId } | null | undefined, key: keyof LevelTuning): number {
+  if (!a || a.kind !== 'player') return 1;
   const lvl = typeof a.level === 'number' && Number.isFinite(a.level) ? a.level : TUNE_LEVELS[2];
-  const base = tuneAt(t[key], lvl);
-  return key === 'dmg' && lvl < TUNE_LEVELS[0] ? base * (LOW_LEVEL_DMG[a.spec] ?? 1) : base;
+  const spec = a.spec ?? (lvl < TUNE_LEVELS[0] && a.classId ? CLASSES[a.classId]?.specs?.[0] ?? null : null);
+  if (!spec) return 1;
+  const t = SPEC_TUNING[spec];
+  if (!t) return 1;
+  if (lvl < TUNE_LEVELS[0]) return key === 'dmg' ? tuneAt(t.dmg, lvl) * (LOW_LEVEL_DMG[spec] ?? 1) : 1; // L1-9: the solo damage factor only
+  return tuneAt(t[key], lvl);
 }
