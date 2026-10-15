@@ -35,6 +35,7 @@ export function spawnPayloadOf(e: Enemy): NetChannels['spawn'] {
     facing: e.yaw,
     tag: e.tag || undefined,
     hpFrac: e.hpFrac,
+    openWorld: e.openWorld || undefined,
   };
 }
 

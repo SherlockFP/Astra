@@ -2,6 +2,7 @@ import type * as THREE from 'three';
 import { G } from '../game/G';
 import { Enemy } from './Enemy';
 import { getEnemyDef } from '../data/enemies';
+import { isLowLevelTrashRank, lowLevelDmgMult, lowLevelHpMult } from '../data/lowLevelScaling';
 import { EnemyAI } from '../ai/EnemyAI';
 import { BossController, BOSS_SPAWNS } from '../ai/BossController';
 import { getDirector, hooks } from '../ai/EnemyDirector';
@@ -16,6 +17,8 @@ export interface SpawnEnemyOpts {
   facing?: number;              // radians
   /** Apply current M+ scaling (default true). */
   scaled?: boolean;
+  /** Open-world camp spawn: trash / swarm take the low-level curve (data/lowLevelScaling.ts). Clients get it on the 'spawn' payload. */
+  openWorld?: boolean;
   /** Spawned mid-fight (adds): aggro immediately on the nearest player. */
   aggro?: boolean;
   // ---- enemies module additions ----
@@ -73,7 +76,7 @@ function ensureNetHandlers(): void {
       world.noteHostId(id);
       void spawnEnemy(world, p.defId, { x: p.x, z: p.z }, {
         id, level: Math.max(1, Math.min(200, Math.round(p.level) || 1)), packId: typeof p.packId === 'string' ? p.packId : null, facing: typeof p.facing === 'number' ? p.facing : undefined,
-        aggro: !!p.aggro, owner: typeof p.owner === 'number' ? p.owner : null, tag: typeof p.tag === 'string' ? p.tag.slice(0, 24) : undefined, hpFrac: typeof p.hpFrac === 'number' ? p.hpFrac : undefined,
+        openWorld: !!p.openWorld, aggro: !!p.aggro, owner: typeof p.owner === 'number' ? p.owner : null, tag: typeof p.tag === 'string' ? p.tag.slice(0, 24) : undefined, hpFrac: typeof p.hpFrac === 'number' ? p.hpFrac : undefined,
       });
     } catch (e) {
       console.error('[enemy] spawn receiver failed', e);
@@ -135,7 +138,7 @@ export async function spawnEnemy(world: World, defId: string, pos: THREE.Vector3
     try {
       G.net?.broadcast('spawn', {
         id, defId, x: pos.x, z: pos.z, level, packId: opts.packId ?? null, facing: opts.facing, aggro: !!opts.aggro,
-        owner: opts.owner ?? undefined, tag: opts.tag, hpFrac: opts.hpFrac,
+        owner: opts.owner ?? undefined, tag: opts.tag, hpFrac: opts.hpFrac, openWorld: opts.openWorld || undefined,
       });
     } catch { /* offline */ }
   }
@@ -182,10 +185,13 @@ export async function spawnEnemy(world: World, defId: string, pos: THREE.Vector3
     }
   }
   e.partyScale = partyScale;
-  const baseHp = monsterHP(level) * (opts.hpMult ?? def.hpMult) * (opts.hpMult !== undefined ? 1 : hpScale);
+  // open-world trash / swarm: the low-level HP and damage curve (no effect from L20 up, and never on instances / bosses)
+  const lowMobs = !!opts.openWorld && isLowLevelTrashRank(def.rank, def.role);
+  e.openWorld = lowMobs;
+  const baseHp = monsterHP(level) * (opts.hpMult ?? def.hpMult) * (opts.hpMult !== undefined ? 1 : hpScale) * (lowMobs ? lowLevelHpMult(level) : 1);
   e.maxHp = Math.max(1, Math.round(baseHp));
   e.hp = Math.max(1, Math.round(e.maxHp * (opts.hpFrac ?? 1)));
-  e.baseDamage = monsterDmg(level) * def.dmgMult * dmgScale;
+  e.baseDamage = monsterDmg(level) * def.dmgMult * dmgScale * (lowMobs ? lowLevelDmgMult(level) : 1);
   e.stats = {};
   if (def.armorMult) e.stats.armor = 10 * level * def.armorMult;
 

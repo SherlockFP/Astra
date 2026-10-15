@@ -1107,6 +1107,7 @@ function spawnPayload(e: Enemy): NetChannels['spawn'] {
   };
   if (e.ownerId !== null) out.owner = e.ownerId;
   if (e.tag) out.tag = e.tag;
+  if (e.openWorld) out.openWorld = true;
   if (e.maxHp > 0) out.hpFrac = Math.round((e.hp / e.maxHp) * 100) / 100;
   return out;
 }

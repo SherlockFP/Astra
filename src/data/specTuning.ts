@@ -56,6 +56,10 @@ export const SPEC_TUNING: Record<string, LevelTuning> = {
   warlock_destruction: { dmg: [1.520, 1.693, 2.208], heal: [1.000, 1.000, 1.000], taken: [1.000, 1.000, 1.000] },
 };
 
+/** Player outgoing damage below L10 only (x on the L10 knot, which the L10 balance gate measures; the gate is not touched). The low-level
+ *  solo fights (dev/combat-sim/solo_lowlevel.mjs) had these two overperforming: a 1-2 s kill at L1-9. */
+export const LOW_LEVEL_DMG: Record<string, number> = { evoker_devastation: 0.5, necromancer_summoner: 0.5, warlock_affliction: 1.4 };
+
 /** The factor `k` at character level `level`: linear between the knots, held at the end knots outside 10-60. */
 export function tuneAt(k: TuneKnots, level: number): number {
   if (typeof k === 'number') return k;
@@ -71,5 +75,7 @@ export function tuneOf(a: { kind?: string; spec?: string | null; level?: number 
   if (!a || a.kind !== 'player' || !a.spec) return 1;
   const t = SPEC_TUNING[a.spec];
   if (!t) return 1;
-  return tuneAt(t[key], typeof a.level === 'number' && Number.isFinite(a.level) ? a.level : TUNE_LEVELS[2]);
+  const lvl = typeof a.level === 'number' && Number.isFinite(a.level) ? a.level : TUNE_LEVELS[2];
+  const base = tuneAt(t[key], lvl);
+  return key === 'dmg' && lvl < TUNE_LEVELS[0] ? base * (LOW_LEVEL_DMG[a.spec] ?? 1) : base;
 }

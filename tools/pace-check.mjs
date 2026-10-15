@@ -15,7 +15,7 @@
  *
  * First chain = main quests mq_01..mq_07 in chain order (the player's first quests), then every other one-time quest of level 1-5
  * (side, region, chains, bonus) in level order: what a player does in the first hour. Assumptions (edit the constants if the design
- * changes): 1 kill / 4 s (a drop objective needs count / chance kills), talk / explore 30 s, boss / elite / metin 60 s, collect and
+ * changes): 1 kill / 9 s (solo_lowlevel median fight ~6 s + pull / walk; a drop objective needs count / chance kills), talk / explore 30 s, boss / elite / metin 60 s, collect and
  * skill casts 4 s each, interact 6 s, use 4 s, escort its seconds, turn-in 10 s, a walk of 45 s between quests, dungeon 600 s.
  *   Monster level = the lowest levelRange of the camps that spawn it (conservative), else the miniboss / rare / metin tier level.
  *   Quest XP is granted at turn-in exactly as systems/Quests.ts grantRewards does. Targets:
@@ -36,6 +36,7 @@ const rootPath = fileURLToPath(new URL('..', import.meta.url)).split(String.from
 const ROOT = rootPath.endsWith('/') ? rootPath.slice(0, -1) : rootPath;
 const imp = (p) => import(pathToFileURL(`${ROOT}/${p}`).href);
 const { Progression } = await imp('src/systems/Progression.ts');
+const { lowLevelKillXpMult } = await imp('src/data/lowLevelScaling.ts');
 const { LEVEL_CAP } = await imp('src/types/character.ts');
 const { QUESTS } = await imp('src/data/world/quests.ts');
 const { ENEMIES, BOSSES } = await imp('src/data/enemies.ts');
@@ -44,10 +45,11 @@ const { DUNGEONS, OPEN_ZONES } = await imp('src/data/dungeons/index.ts');
 // ---- XP curve: the real methods (they use no instance state), so the audit matches addXp / grantKillXp / grantRewards
 const P = Progression.prototype;
 const xpToNext = (L) => P.xpToNext.call({}, L);
-const monsterXp = (lvl, rank, xpMult, playerLvl) => P.monsterXp.call({}, lvl, rank, xpMult, playerLvl);
+// open-world trash / swarm kills take the low-level kill XP multiplier (data/lowLevelScaling.ts)
+const monsterXp = (lvl, rank, xpMult, playerLvl) => Math.round(P.monsterXp.call({}, lvl, rank, xpMult, playerLvl) * (rank === 'trash' || rank === 'swarm' ? lowLevelKillXpMult(lvl) : 1));
 
 // ---- pace assumptions (seconds)
-const KILL_S = 4, TALK_S = 30, EXPLORE_S = 30, BOSS_S = 60, METIN_S = 60, COLLECT_S = 4, SKILL_S = 4, TURN_IN_S = 10, DUNGEON_S = 600;
+const KILL_S = 9, TALK_S = 30, EXPLORE_S = 30, BOSS_S = 60, METIN_S = 60, COLLECT_S = 4, SKILL_S = 4, TURN_IN_S = 10, DUNGEON_S = 600;
 const INTERACT_S = 6, USE_S = 4, TRAVEL_S = 45;
 /** First chain milestones: level 2 right after chain quest 2, level 3 right after chain quest 4, level 5 at about 35 min. */
 const TARGET_L5_S = 2100, TARGET_L5_TOL_S = 300;

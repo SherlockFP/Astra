@@ -171,6 +171,8 @@ export class Enemy extends Actor {
   partyScale: { hp: number; dmg: number } | null = null;
   /** Whether the enemy counted for M+ forces already (summoned / split / raised adds are created with this = true). */
   forcesCounted = false;
+  /** Open-world trash / swarm that took the low-level curve (data/lowLevelScaling.ts): its kill XP gets the low-level multiplier. */
+  openWorld = false;
   /** Extra visual scale multiplier (bolstering etc.). */
   visualScale = 1;
   aggroed = false;

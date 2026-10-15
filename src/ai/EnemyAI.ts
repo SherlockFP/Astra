@@ -170,6 +170,8 @@ export class EnemyAI {
   protected spawnAt = 0;
   protected moveSpeedNow = 0;
   protected returning = false;
+  /** A fleeing trash mob that goes home returns at no more than half HP (no full heal on the run home or at the reset). */
+  protected fledSinceReturn = false;
   protected wakePending: Actor | null = null;
   protected escapeAt = 0;
   /** When this summoned mob's owner (a metin stone) was first seen gone; -1 while the owner lives. */
@@ -1061,6 +1063,7 @@ export class EnemyAI {
     if (this.fleeing || now < this.fleeAgainAt || !this.target || e.isDead || !fleesAtLowHp(e.def)) return;
     if (e.hpFrac >= 0.2) return;
     this.fleeing = true;
+    this.fledSinceReturn = true;
     this.fleeUntil = now + 7;
     this.fleeAgainAt = now + 25;
     this.fleeT = 0;
@@ -1443,7 +1446,8 @@ export class EnemyAI {
    */
   protected evadeReset(): void {
     const e = this.e;
-    e.hp = e.maxHp;
+    e.hp = this.fledSinceReturn ? Math.max(e.hp, e.maxHp * 0.5) : e.maxHp;
+    this.fledSinceReturn = false;
     e.cast = null;
     if (!e.isBoss) {
       e.statuses.clear();
@@ -1469,7 +1473,7 @@ export class EnemyAI {
       return;
     }
     // heal while running home
-    e.hp = Math.min(e.maxHp, e.hp + e.maxHp * 0.25 * dt);
+    if (!this.fledSinceReturn) e.hp = Math.min(e.maxHp, e.hp + e.maxHp * 0.25 * dt);
     this.steerTo(e.homeX, e.homeZ, e.moveSpeed() * 1.15, dt, 'run');
   }
 
@@ -1539,7 +1543,8 @@ export class EnemyAI {
         const c = this.world.nav.randomNear(px, pz, 22);
         let dmin = Infinity;
         for (const p of this.world.players) if (!p.isDead) dmin = Math.min(dmin, Math.hypot(p.position.x - c.x, p.position.z - c.z));
-        const score = dmin - Math.hypot(c.x - px, c.z - pz) * 0.15;
+        // a fleeing mob stays in its attacker's reach (casters hit to 30 m): it does not run off out of range
+        const score = dmin - Math.hypot(c.x - px, c.z - pz) * 0.15 - Math.max(0, dmin - 18) * 10;
         if (score > bd) {
           bd = score;
           best = c;

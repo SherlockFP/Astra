@@ -6,9 +6,17 @@
  * filler. Fight: one same-level Sisli trash mob (ow_rat, ow_slime, ow_wolf) as a real Enemy with its real EnemyAI, at the level's
  * monster HP / damage (monsterHP / monsterDmg x the def's multipliers, as EnemyFactory sets them). The player stands still.
  * Pre-pull: a pet summon on the bar (tag 'pet') is cast and given 3 s to arrive.
- * PASS per class and level = every mob is killed within 20 s with >= 50 % HP left. The spec tuning table (CM1) applies (see harness).
+ * Fight pace (WoW retail low levels: a same-level normal mob takes a solo player 5-11 s, ending at 50-100 % HP (plate tanks and pet classes barely scratched, as in WoW), so abilities, procs and
+ * positioning matter). Mobs: rat, slime, wolf, goblin (ow_goblin). Levels L1 / L3 / L5 / L8 / L10. Melee characters (basic range
+ * <= 3.5 m) walk to their mob; the others stand still. Mobs use the open-world low-level curve (data/lowLevelScaling.ts). Every fight prints its TTK (sim seconds to the mob's death) and the player's
+ * HP left. Per class, over its fights (levels x mobs). ASSERTS (exit 1 when one fails):
+ *   - every fight is won inside the 20 s limit (no timeout, no death, no throw)
+ *   - median TTK across the classes in 5-11 s
+ *   - each class's median TTK in 3-15 s
+ *   - each class's median HP left in 50-100 %
+ * The spec tuning table (CM1) applies (see harness).
  *
- *   node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/solo_lowlevel.mjs [--class=warlock,knight] [--level=2] [--verbose]
+ *   node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/solo_lowlevel.mjs [--class=warlock,knight] [--level=1,3] [--verbose]
  *   --verbose prints the bar and the casts per fight. Exit 0 = all pass.
  */
 import * as H from './harness.mjs';
@@ -22,19 +30,25 @@ const args = Object.fromEntries(process.argv.slice(2).map((a) => {
   const m = a.match(/^--([^=]+)(?:=(.*))?$/);
   return [m[1], m[2] ?? true];
 }));
-const LEVELS = args.level ? [Number(args.level)] : [1, 2, 3, 5];
+const LEVELS = args.level ? String(args.level).split(',').map(Number) : [1, 3, 5, 8, 10];
 const CLASS_FILTER = args.class ? String(args.class).split(',') : null;
 const VERBOSE = !!args.verbose;
-const MOBS = ['ow_rat', 'ow_slime', 'ow_wolf'];
+const MOBS = ['ow_rat', 'ow_slime', 'ow_wolf', 'ow_goblin'];
 const TIME_LIMIT = 20;
-const MIN_HP = 0.5;
+const TTK_CLASS = [3, 15]; // a class's median fight TTK (s)
+const TTK_MEDIAN = [5, 11]; // median TTK across the classes (s)
+const HP_LEFT = [0.5, 1.0]; // a class's median player HP left
 const SPAWN_DIST = 8;
+const PLAYER_RUN = 7; // m/s: a melee character (basic range <= 3.5 m) walks to its mob, a kiting goblin cannot keep it out of reach
+let CHASE = null; // the mob the character closes on in the current fight (null: the player stands still)
+let CHASE_STOP = 2.2; // melee stops at 2.2 m; a ranged character only follows a mob that gets out of spell range (18 m)
 
 const { ENEMIES } = await H.imp('data/enemies.ts');
 const { Enemy } = await H.imp('entities/Enemy.ts');
 const { EnemyAI } = await H.imp('ai/EnemyAI.ts');
 const { getDirector } = await H.imp('ai/EnemyDirector.ts');
 const { monsterHP, monsterDmg } = await H.imp('data/mythicAffixes.ts');
+const { isLowLevelTrashRank, lowLevelHpMult, lowLevelDmgMult } = await H.imp('data/lowLevelScaling.ts');
 const { SPECS } = await H.imp('data/specs.ts');
 const { CLASSES, PLAYABLE_CLASSES } = await H.imp('data/classes.ts');
 const { CharacterState } = await H.imp('systems/CharacterState.ts');
@@ -232,7 +246,14 @@ function frame() {
   H.step(1);
   G.minions?.update(DT);
   const p = G.player;
-  if (p && !p.removed) { p.forcedMove = null; p.position.x = 0; p.position.z = 0; }
+  if (!p || p.removed) return;
+  p.forcedMove = null;
+  const m = CHASE;
+  if (!m) { p.position.x = 0; p.position.z = 0; return; }
+  if (m.isDead || m.removed) return;
+  const d = Math.hypot(m.position.x - p.position.x, m.position.z - p.position.z);
+  const step = Math.min(Math.max(0, d - CHASE_STOP), PLAYER_RUN * DT);
+  if (step > 0) { p.position.x += ((m.position.x - p.position.x) / d) * step; p.position.z += ((m.position.z - p.position.z) / d) * step; }
 }
 
 let fightNo = 0;
@@ -286,9 +307,11 @@ function fight(classId, L, mobId) {
   mob.position.set(0, 0, SPAWN_DIST);
   mob.homeX = 0;
   mob.homeZ = SPAWN_DIST;
-  mob.maxHp = Math.max(1, Math.round(monsterHP(L) * def.hpMult));
+  // the open-world camp spawn path (EnemyFactory openWorld): trash / swarm take the low-level curve
+  const low = isLowLevelTrashRank(def.rank, def.role);
+  mob.maxHp = Math.max(1, Math.round(monsterHP(L) * def.hpMult * (low ? lowLevelHpMult(L) : 1)));
   mob.hp = mob.maxHp;
-  mob.baseDamage = monsterDmg(L) * def.dmgMult;
+  mob.baseDamage = monsterDmg(L) * def.dmgMult * (low ? lowLevelDmgMult(L) : 1);
   mob.stats = { armor: def.armorMult ? 10 * L * def.armorMult : 0 };
   mob.authority = true;
   world.add(mob);
@@ -296,18 +319,23 @@ function fight(classId, L, mobId) {
   mob.ai.acquire(p, true);
   p.targetId = mob.id;
 
+  const melee = (SKILLS[ch.save.skillBar.lmb]?.range ?? 99) <= 3.5;
+  CHASE = melee ? mob : null;
+  CHASE_STOP = melee ? 2.2 : 10;
   const lines = aplFor(spec, ROT[spec.id]?.st ?? []);
   const maxFrames = Math.round(TIME_LIMIT / DT);
   let outcome = 'timeout';
   let time = TIME_LIMIT;
   for (let f = 0; f < maxFrames; f++) {
     H.setAimTarget(mob);
+    p.yaw = Math.atan2(mob.position.x - p.position.x, mob.position.z - p.position.z); // a real player turns to its target
     pressApl(p, lines, makeEnv(p, mob, [mob]), H.aimFor(p, mob));
     frame();
     if (mob.isDead) { outcome = 'win'; time = (f + 1) * DT; break; }
     if (p.isDead) { outcome = 'dead'; time = (f + 1) * DT; break; }
   }
   H.setAimTarget(null);
+  CHASE = null;
   return {
     spec: spec.id, bar: { ...ch.save.skillBar }, outcome, time, hpLeft: p.maxHp > 0 ? Math.max(0, p.hp) / p.maxHp : 0,
     mobHpLeft: mob.maxHp > 0 ? Math.max(0, mob.hp) / mob.maxHp : 0, casts: { ...castLog },
@@ -333,45 +361,79 @@ for (const c of classes) {
     }
   }
 }
-const passOf = (r) => r.outcome === 'win' && r.hpLeft >= MIN_HP && r.time <= TIME_LIMIT;
-const cellOf = (byMob) => {
-  const rs = MOBS.map((m) => ({ m, r: byMob[m] }));
-  const bad = rs.find(({ r }) => !passOf(r));
-  if (!bad) {
-    const worst = rs.reduce((a, b) => (b.r.hpLeft < a.r.hpLeft ? b : a));
-    return { pass: true, text: `ok ${Math.round(worst.r.hpLeft * 100)}%` };
-  }
-  const { m, r } = bad;
-  const tag = m.replace('ow_', '');
-  const what = r.outcome === 'win' ? `${Math.round(r.hpLeft * 100)}%` : r.outcome === 'throw' ? 'THROW' : r.outcome;
-  return { pass: false, text: `FAIL ${tag} ${what}` };
+const median = (xs) => {
+  const v = xs.filter(Number.isFinite).sort((a, b) => a - b);
+  if (!v.length) return NaN;
+  const m = v.length >> 1;
+  return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
 };
+const fights = [];
+for (const c of classes) for (const L of LEVELS) for (const mob of MOBS) {
+  const r = results[c]?.[L]?.[mob];
+  if (!r) continue;
+  fights.push({ c, L, mob, r, ttk: r.outcome === 'win' ? r.time : NaN, hp: r.hpLeft ?? 0 });
+}
 const pad = (s, n) => String(s).padEnd(n);
-console.log(`solo low-level: ${classes.length} classes x L${LEVELS.join('/')} vs ${MOBS.join(', ')} (pass = all mobs killed, >= ${MIN_HP * 100}% HP, <= ${TIME_LIMIT} s)`);
-console.log(pad('class', 12) + pad('spec', 22) + LEVELS.map((L) => pad('L' + L, 26)).join(''));
-const failing = [];
+const pct = (x) => `${Math.round(x * 100)}%`;
+const sec = (x) => (Number.isFinite(x) ? `${x.toFixed(1)}s` : '--');
+const cls = Object.fromEntries(classes.map((c) => {
+  const fs = fights.filter((f) => f.c === c);
+  return [c, { ttk: median(fs.map((f) => f.ttk)), hp: median(fs.map((f) => f.hp)), lost: fs.filter((f) => !Number.isFinite(f.ttk)).length }];
+}));
+console.log(`solo low-level: ${classes.length} classes x L${LEVELS.join('/')} x ${MOBS.map((m) => m.replace('ow_', '')).join('/')} (same level)`);
+console.log(`cell = median TTK over the mobs / median HP left of the player; * = a fight of the cell is not won`);
+console.log(pad('class', 12) + pad('spec', 22) + LEVELS.map((L) => pad('L' + L, 14)).join('') + pad('class median', 16));
 for (const c of classes) {
   if (!results[c]) continue;
   let line = pad(c, 12) + pad(specOf(c).id, 22);
   for (const L of LEVELS) {
-    const cell = cellOf(results[c][L]);
-    if (!cell.pass) failing.push(`${c}@L${L}`);
-    line += pad(cell.text, 26);
+    const cell = fights.filter((f) => f.c === c && f.L === L);
+    const ttk = median(cell.map((f) => f.ttk));
+    const hp = median(cell.map((f) => f.hp));
+    const lost = cell.some((f) => !Number.isFinite(f.ttk));
+    line += pad(`${sec(ttk)} ${pct(hp)}${lost ? ' *' : ''}`, 14);
   }
+  line += pad(`${sec(cls[c].ttk)} ${pct(cls[c].hp)}`, 16);
   console.log(line);
 }
+console.log('');
+const byLevel = LEVELS.map((L) => {
+  const fs = fights.filter((f) => f.L === L);
+  return { L, ttk: median(fs.map((f) => f.ttk)), hp: median(fs.map((f) => f.hp)) };
+});
+console.log('median per level: ' + byLevel.map((x) => `L${x.L} ${sec(x.ttk)} ${pct(x.hp)}`).join(' | '));
+console.log('median per mob: ' + MOBS.map((m) => `${m.replace('ow_', '')} ${sec(median(fights.filter((f) => f.mob === m).map((f) => f.ttk)))}`).join(' | '));
+const won = fights.filter((f) => Number.isFinite(f.ttk));
+if (won.length) {
+  const lo = won.reduce((a, b) => (b.ttk < a.ttk ? b : a));
+  const hi = won.reduce((a, b) => (b.ttk > a.ttk ? b : a));
+  console.log(`fight TTK min ${sec(lo.ttk)} (${lo.c}@L${lo.L} ${lo.mob}), max ${sec(hi.ttk)} (${hi.c}@L${hi.L} ${hi.mob})`);
+}
+const classTtkMedian = median(classes.map((c) => cls[c].ttk));
+
 if (VERBOSE) {
-  for (const c of classes) for (const L of LEVELS) for (const mob of MOBS) {
-    const r = results[c]?.[L]?.[mob];
-    if (!r) continue;
-    const casts = Object.entries(r.casts ?? {}).map(([k, v]) => `${k.replace(/^[a-z]+_/, '')}x${v}`).join(' ');
-    console.log(`  ${c}@L${L} ${mob}: ${r.outcome} t=${(r.time ?? 0).toFixed(1)}s hp=${Math.round((r.hpLeft ?? 0) * 100)}% mobHp=${r.mobHp} mobDmg=${r.mobDmg} maxHp=${r.maxHp} | ${casts || '(no casts)'}${r.error ? ' | ' + r.error : ''}`);
+  for (const f of fights) {
+    const casts = Object.entries(f.r.casts ?? {}).map(([k, v]) => `${k.replace(/^[a-z]+_/, '')}x${v}`).join(' ');
+    console.log(`  ${f.c}@L${f.L} ${f.mob}: ${f.r.outcome} t=${(f.r.time ?? 0).toFixed(1)}s hp=${Math.round((f.r.hpLeft ?? 0) * 100)}% mobHp=${f.r.mobHp} mobDmg=${f.r.mobDmg} maxHp=${f.r.maxHp} | ${casts || '(no casts)'}${f.r.error ? ' | ' + f.r.error : ''}`);
   }
   for (const c of classes) for (const L of LEVELS) console.log(`  bar ${c}@L${L}: ${Object.entries(results[c]?.[L]?.ow_rat?.bar ?? {}).map(([s, id]) => `${s}=${id}`).join(' ')}`);
 }
 if (specErrors.length) console.log('spec errors: ' + specErrors.join('; '));
 const engineErrs = errors.filter((e) => /ERR/.test(e));
 if (engineErrs.length) console.log(`engine errors logged: ${engineErrs.length} (first: ${engineErrs[0].slice(0, 160)})`);
-const pass = failing.length === 0 && specErrors.length === 0;
-console.log(pass ? 'SOLO LOW-LEVEL: all pass' : `SOLO LOW-LEVEL: ${failing.length} class-level(s) fail: ${failing.join(' ')}`);
-process.exit(pass ? 0 : 1);
+
+const notWon = fights.filter((f) => !Number.isFinite(f.ttk));
+const checks = [
+  ['every fight won in time', notWon.map((f) => `${f.c}@L${f.L} ${f.mob} ${f.r.outcome}`)],
+  [`median TTK across classes ${TTK_MEDIAN[0]}-${TTK_MEDIAN[1]} s`, !(classTtkMedian >= TTK_MEDIAN[0] && classTtkMedian <= TTK_MEDIAN[1]) ? [`${sec(classTtkMedian)}`] : []],
+  [`every class median TTK ${TTK_CLASS[0]}-${TTK_CLASS[1]} s`, classes.filter((c) => !(cls[c].ttk >= TTK_CLASS[0] && cls[c].ttk <= TTK_CLASS[1])).map((c) => `${c} ${sec(cls[c].ttk)}`)],
+  [`every class median HP left ${pct(HP_LEFT[0])}-${pct(HP_LEFT[1])}`, classes.filter((c) => !(cls[c].hp >= HP_LEFT[0] && cls[c].hp <= HP_LEFT[1])).map((c) => `${c} ${pct(cls[c].hp)}`)],
+];
+let allOk = specErrors.length === 0;
+for (const [name, bad] of checks) {
+  const ok = bad.length === 0;
+  if (!ok) allOk = false;
+  console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}${ok ? '' : ': ' + bad.length + ' (' + bad.slice(0, 8).join('; ') + (bad.length > 8 ? '; ...' : '') + ')'}`);
+}
+console.log(allOk ? 'SOLO LOW-LEVEL: all pass' : 'SOLO LOW-LEVEL: fail');
+process.exit(allOk ? 0 : 1);

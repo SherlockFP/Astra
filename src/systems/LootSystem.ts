@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { G } from '../game/G';
 import { toast } from './notify';
 import { restedKillBonus } from './DailyLoop';
+import { isLowLevelTrashRank, lowLevelKillXpMult } from '../data/lowLevelScaling';
 import { RNG, TAU, clamp, hashString } from '../core/utils';
 import { RARITY_COLORS, type ClassId, type Rarity } from '../types/common';
 import type { ItemCategory, ItemInstance } from '../types/items';
@@ -210,6 +211,7 @@ export class LootSystem {
     const def = enemy.def;
     const lvl = Math.max(1, enemy.level || ch.level);
     let xp = G.progression.monsterXp(lvl, def.role === 'swarm' ? 'swarm' : (def.rank as EnemyRank), def.xp, ch.level);
+    if (enemy.openWorld && isLowLevelTrashRank(def.rank, def.role)) xp = Math.round(xp * lowLevelKillXpMult(lvl));
     if (!keyLevel) xp *= 1 + (ch.stats.xpPct ?? 0);
     const n = Math.max(1, world.players.length);
     xp *= 1 + 0.05 * (n - 1);

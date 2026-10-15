@@ -282,6 +282,7 @@ export class CampDirector {
           stealth: pk.stealth,
           wakeRadius: pk.dormant?.wakeRadius,
           linkedTo: pk.linkedTo,
+          openWorld: true,
         });
       } catch (err) {
         console.warn(`[camps] ${m.defId} failed to spawn`, err);
