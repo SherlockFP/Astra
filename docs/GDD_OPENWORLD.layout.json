@@ -29163,6 +29163,10 @@
     [
      120,
      75
+    ],
+    [
+     240,
+     62
     ]
    ],
    "respawnMin": [
@@ -33067,8 +33071,8 @@
    {
     "id": "sq_g_03_orumcek_aglari",
     "name": "Ağ Ustaları",
-    "giver": "Çiftçi Hatice",
-    "place": "r1_c06",
+    "giver": "Gözcü Selim (Orta Karakol)",
+    "place": "r1_g053",
     "level": 4,
     "goal": "8 Orman Örümceği öldür (ağ atışlarından yuvarlan)",
     "xpPct": 15,
@@ -33077,8 +33081,8 @@
    {
     "id": "sq_g_04_ari_yuvasi",
     "name": "Arı Yuvası",
-    "giver": "Çiftçi Hatice",
-    "place": "r1_c07",
+    "giver": "Gözcü Selim (Orta Karakol)",
+    "place": "r1_g090",
     "level": 4,
     "goal": "10 Orman Arısı öldür",
     "xpPct": 15,
@@ -33087,8 +33091,8 @@
    {
     "id": "sq_g_05_mantar_halkasi",
     "name": "Mantar Halkası",
-    "giver": "Rahibe Meryem",
-    "place": "r1_c05",
+    "giver": "Gözcü Selim (Orta Karakol)",
+    "place": "r1_g123",
     "level": 4,
     "goal": "12 Mantarcık öldür; ölünce zehir bulutundan kaç",
     "xpPct": 15,
@@ -33097,8 +33101,8 @@
    {
     "id": "sq_g_06_degirmen",
     "name": "Eski Değirmen",
-    "giver": "Muhtar Ferhat",
-    "place": "r1_c10",
+    "giver": "Gözcü Selim (Orta Karakol)",
+    "place": "r1_g095",
     "level": 5,
     "goal": "Değirmendeki kurt ini'ni temizle (3 kurt + 2 domuz) ve Gümüş Yele'yi bul",
     "xpPct": 15,

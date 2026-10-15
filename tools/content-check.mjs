@@ -430,6 +430,73 @@ function ringDensityIssues(packs, roomId, quests, sideQuests) {
   return { issues: out, band };
 }
 /**
+ * Sisli r1 quest placement (WoW quest hubs). Scope: quests of level 1-5 in region r1 (region r1 or a place of r1). HARD errors:
+ *  (A) objective distance: every kill / boss / elite / metin / drop / collect-from objective has a spawn within 150 m (centre to centre)
+ *      of the quest's giver or turn-in NPC. The spawn is the nearest one of its target that stands in the quest's level band (q-1..q+1):
+ *      a camp or patrol (members), a rare (spots), a mini-boss (lair) or, for metin, a metin spot of r1. A side quest's place camp
+ *      (layout `place`) must be within 150 m too. Props (interact / use / escort, placed at random in the region) and explores are not measured.
+ *  (B) side quests of level 1-3 placed at a camp: that camp has at most 4 mobs within 25 m (itself included).
+ *  (C) no side quest repeats the objective kind + target of a main quest of its own level (the main quest the player is on at that level).
+ */
+const PLACE_GIVER_M = 150, PLACE_L13_MOBS = 4;
+function r1PlacementIssues(quests, world, roomId, packs) {
+  const out = [];
+  const err = (where, msg) => out.push({ level: 'error', where, msg });
+  const camps = (packs ?? []).filter((p) => p.roomId === roomId && p.center);
+  const xy = (x, z) => [x * TILE_M, z * TILE_M];
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  const npcAt = new Map();
+  for (const v of world.villages ?? []) for (const n of v.npcs ?? []) npcAt.set(n.id, [(v.center[0] + 0.5) * TILE_M + n.pos[0], (v.center[1] + 0.5) * TILE_M + n.pos[2]]);
+  // spawns of the zone: id, centre (m), level band, enemy ids it holds
+  const spawns = camps.map((c) => ({ id: c.id, at: xy(c.center[0], c.center[1]), lo: c.levelRange[0], hi: c.levelRange[1], enemies: new Set(c.members.map((m) => m.enemyId)) }));
+  for (const r of world.rares ?? []) for (const s of r.spots ?? []) spawns.push({ id: `${r.id}`, at: xy(s[0], s[1]), lo: r.level, hi: r.level, enemies: new Set([r.enemyId]) });
+  for (const m of world.minibosses ?? []) if (m.lair) spawns.push({ id: m.id, at: xy(m.lair[0], m.lair[1]), lo: m.level, hi: m.level, enemies: new Set([m.enemyId]) });
+  const metinSpots = (world.metin?.spots ?? []).filter((s) => s.regionId === 'r1').map((s) => ({ id: s.id, at: xy(s.pos[0], s.pos[1]) }));
+  const mobsWithin = (c, R = 25) => camps.filter((o) => dist(xy(o.center[0], o.center[1]), xy(c.center[0], c.center[1])) <= R).reduce((s, o) => s + o.members.length, 0);
+  const inScope = (q) => q.level <= 5 && (q.region === 'r1' || /^r1_/.test(q.place ?? ''));
+  const mains = quests.filter((q) => q.main);
+  for (const q of quests.filter(inScope)) {
+    const where = `quest ${q.id}`;
+    const anchors = [q.giver, q.turnIn].filter(Boolean).map((id) => npcAt.get(id)).filter(Boolean);
+    const from = (d) => Math.min(...anchors.map((a) => dist(a, d)));
+    // (C) a side quest may not repeat a main quest's objective of its own level
+    if (!q.main) {
+      for (const o of q.objectives) {
+        if (!o.target) continue;
+        const dup = mains.find((m) => m.level === q.level && m.objectives.some((mo) => mo.kind === o.kind && mo.target === o.target));
+        if (dup) err(where, `objective ${o.kind} ${o.target} repeats the main quest ${dup.id} of level ${q.level}: pick another objective type`);
+      }
+    }
+    // (A) every spawn-bound objective has a spawn within PLACE_GIVER_M of the giver or turn-in
+    for (const o of q.objectives) {
+      const ids = new Set([o.target, ...(o.from ?? [])].filter(Boolean));
+      let cands;
+      if (o.kind === 'metin') cands = metinSpots;
+      else if (['kill', 'boss', 'elite', 'drop', 'collect'].includes(o.kind)) {
+        if (o.kind === 'collect' && !o.from?.length) continue; // collect without a source is checked by the reachability rules
+        cands = spawns.filter((s) => [...ids].some((id) => s.enemies.has(id)) && s.hi >= q.level - 1 && s.lo <= q.level + 1);
+      } else continue;
+      if (!anchors.length) continue;
+      if (!cands.length) { err(where, `${o.kind} ${o.target ?? ''}: no spawn in the L${q.level - 1}-${q.level + 1} band of r1`); continue; }
+      const d = Math.min(...cands.map((c) => from(c.at)));
+      if (d > PLACE_GIVER_M) err(where, `${o.kind} ${o.target ?? ''}: nearest in-band spawn is ${Math.round(d)} m from the giver or turn-in (max ${PLACE_GIVER_M} m)`);
+    }
+    // (A) and (B) for the side quest's place camp
+    const place = q.place ? camps.find((c) => c.id === q.place) : null;
+    if (place && !q.main) {
+      if (anchors.length) {
+        const d = from(xy(place.center[0], place.center[1]));
+        if (d > PLACE_GIVER_M) err(where, `place ${place.id} is ${Math.round(d)} m from the giver or turn-in (max ${PLACE_GIVER_M} m)`);
+      }
+      if (q.level <= 3) {
+        const n = mobsWithin(place);
+        if (n > PLACE_L13_MOBS) err(where, `place ${place.id} has ${n} mobs within 25 m (at most ${PLACE_L13_MOBS} for levels 1-3)`);
+      }
+    }
+  }
+  return { issues: out, checked: quests.filter(inScope).length };
+}
+/**
  * Starting-zone ring bands (Sisli Vadi r1, WoW-style). The rings are centred on the starting village (layout settlement koy_gumusdere)
  * and measured by centre distance in metres: inner (level 1-2) up to RING_INNER_M, middle (level 3) up to RING_MIDDLE_M, outer (level 4-5)
  * beyond. The bounds sit in the gaps of the 7ef67e2 layout (inner camps end at 127 m, middle camps run 137-184 m, outer camps start at
@@ -647,9 +714,10 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
     const hub = layout.settlements?.find((x) => x.id === 'koy_gumusdere')?.center;
     if (!hub) throw new Error('settlement koy_gumusdere (the ring hub) is missing from the layout');
     const rb = ringBandIssues(ALL[id].packs, r1.roomId, hub);
-    const e = [...ri, ...dn.issues, ...si, ...rb].filter((i) => i.level === 'error');
+    const pl = r1PlacementIssues(RING_QUESTS, ALL[id].world, r1.roomId, ALL[id].packs);
+    const e = [...ri, ...dn.issues, ...si, ...rb, ...pl.issues].filter((i) => i.level === 'error');
     totalErr += e.length;
-    console.log(`\n== camp rings ${id} r1: ${e.length} errors | ${ALL[id].packs.filter((p) => p.roomId === r1.roomId).length} camps and patrols | max mobs within 25 m: L1-2 ${dn.band.get('L1-2')}, L3 ${dn.band.get('L3')}, L4-5 ${dn.band.get('L4-5')}`);
+    console.log(`\n== camp rings ${id} r1: ${e.length} errors | ${ALL[id].packs.filter((p) => p.roomId === r1.roomId).length} camps and patrols | max mobs within 25 m: L1-2 ${dn.band.get('L1-2')}, L3 ${dn.band.get('L3')}, L4-5 ${dn.band.get('L4-5')} | r1 placement: ${pl.checked} quests L1-5 within ${PLACE_GIVER_M} m of their giver`);
     for (const i of e) console.log('  ERR ', i.where, '-', i.msg);
   }
 }

@@ -25,6 +25,7 @@ const GIVER_ID: Record<string, string> = {
   'Komutan Aslan': 'npc_k_komutan',
   'Kanyon Girişi Kampı (Teğmen Deniz)': 'npc_c_deniz',
   'Teğmen Deniz': 'npc_c_deniz',
+  'Gözcü Selim (Orta Karakol)': 'npc_o_gozcu',
   'Nöbetçi Başı Talha': 'npc_s_nobetci',
   'Avcı Yıldız': 'npc_g_avci',
   'Çiftçi Hatice': 'npc_g_ciftci',
@@ -179,19 +180,19 @@ const EXTRA_SIDE: Record<string, Extra> = {
     offer: 'Geyik Çayırı\'nda bir sürü geyik otluyor. Kaçarlar, peşlerinden git ve beş deri getir.', progress: 'Geyiklerden Geyik Derisi topla (5).', done: 'Gümüş Yüzük senin olsun.',
   },
   sq_g_03_orumcek_aglari: {
-    objectives: [kill('ow_spider', 8, 'Orman Örümceği öldür')],
+    giver: 'npc_o_gozcu', objectives: [kill('ow_spider', 8, 'Orman Örümceği öldür')],
     offer: 'Örümcekler ağlarını tarlaların üstüne ördü.', progress: 'Orman Örümceği öldür (8).', done: 'Ağlar temizlendi.',
   },
   sq_g_04_ari_yuvasi: {
-    objectives: [kill('ow_wasp', 10, 'Orman Arısı öldür')], items: [{ id: 'buyulu_toz', count: 2 }],
+    giver: 'npc_o_gozcu', objectives: [kill('ow_wasp', 10, 'Orman Arısı öldür')], items: [{ id: 'buyulu_toz', count: 2 }],
     offer: 'Arılar yuvasını büyüttü. Kovanı dağıt.', progress: 'Orman Arısı öldür (10).', done: 'Kovan dağıldı.',
   },
   sq_g_05_mantar_halkasi: {
-    objectives: [kill('ow_mushnub', 12, 'Mantarcık öldür')], items: [{ id: 'pot_res_1', count: 3 }],
+    giver: 'npc_o_gozcu', objectives: [kill('ow_mushnub', 12, 'Mantarcık öldür')], items: [{ id: 'pot_res_1', count: 3 }],
     offer: 'Mantar halkası zehirli bulut saçıyor. Dikkatli ol.', progress: 'Mantarcık öldür (12).', done: 'Halka sönük. Teşekkür ederim.',
   },
   sq_g_06_degirmen: {
-    objectives: [kill('ow_wolf', 3, 'Kurt öldür'), kill('ow_boar', 2, 'Domuz öldür'), kill('rare_gumus_yele', 1, 'Gümüş Yele öldür')],
+    giver: 'npc_o_gozcu', objectives: [kill('ow_wolf', 3, 'Kurt öldür'), kill('ow_boar', 2, 'Domuz öldür'), kill('rare_gumus_yele', 1, 'Gümüş Yele öldür')],
     generic: [{ rarity: 'rare', slot: 'jewelry' }],
     offer: 'Eski değirmende kurt ini var. Gümüş Yele de orada dolaşıyor.', progress: 'Kurt (3), domuz (2) ve Gümüş Yele öldür.', done: 'Değirmen yeniden çalışabilir.',
   },

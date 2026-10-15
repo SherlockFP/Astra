@@ -162,10 +162,17 @@ export const VARIETY: Record<string, VarietyPatch> = {
   },
 
   // ---- interact / use / escort conversions (levels 1-10; props and escort NPCs are placed by scenes/world/WorldQuestProps.ts)
+  // no rat kill here: Fare Yuvası (mq_02, level 1) already kills rats; this one only opens the sacks
   sq_r1_k01_ambar_sicanlari: {
-    objectives: [interact('qo_sack', 4, 'Ambardaki sıçan yuvası çuvallarını aç (4)'), kill('ow_rat', 8, 'Orman Sıçanı öldür (8)')],
-    offer: 'Ambardaki sıçanlar buğdayın yarısını yedi. Yuvaladıkları çuvalları aç ve sıçanları dağıt.',
-    progress: 'Ambar çuvallarını aç (4). Orman Sıçanı öldür (8).',
+    objectives: [interact('qo_sack', 5, 'Ambardaki yuvalanmış çuvalları aç (5)')],
+    offer: 'Ambardaki sıçanlar buğdayın yarısını yuvaladıkları çuvallara doldurdu. Çuvalları aç ve buğdayı geri getir.',
+    progress: 'Ambar çuvallarını aç (5).',
+  },
+  // metin is the objective of mq_06 (level 5): this quest opens the Keder crystals instead
+  sq_r1_m01_keder_metinleri: {
+    objectives: [interact('qo_crystal', 3, 'Keder kristallerini kır (3)')],
+    offer: "Vadinin kara taşlarını besleyen kristaller var. Kristalleri kır ki taşların gücü kırılsın.",
+    progress: 'Keder kristallerini kır (3).',
   },
   sq_r1_k02_balcik_avi: {
     objectives: [interact('qo_crystal', 4, 'Balçık kristallerini kır (4)'), kill('ow_slime', 6, 'Yeşil Balçık öldür (6)')],
@@ -248,7 +255,7 @@ export const VARIETY: Record<string, VarietyPatch> = {
  */
 export const BONUS_QUESTS: QuestDef[] = [
   {
-    id: 'sq_r1_b01_kizil_kuyruk_pususu', name: 'Kızıl Kuyruk Pususu', level: 4, region: 'r1', place: 'r1_c07', giver: 'npc_g_avci', bonus: true,
+    id: 'sq_r1_b01_kizil_kuyruk_pususu', name: 'Kızıl Kuyruk Pususu', level: 4, region: 'r1', place: 'r1_g014', giver: 'npc_g_avci', bonus: true,
     objectives: [
       kill('ow_goblin', 6, 'Goblin Yağmacı öldür'),
       drop('item_goblin_kulagi', 4, ['ow_goblin'], 'Goblin Kulağı topla (4)'),
