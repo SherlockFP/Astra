@@ -138,6 +138,8 @@ function injectStyle(): void {
   const s = document.createElement('style');
   s.textContent = `
 .vfx-dmg-layer{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:4}
+/* the numbers sit above the whole HUD layer (z 10): combat text is never painted under a banner, frame or nameplate */
+.vfx-num-layer{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:11}
 .vfx-dmg{position:absolute;left:0;top:0;white-space:nowrap;font-family:var(--font-head,'Cinzel',serif);font-weight:800;line-height:1;
   transform-origin:50% 100%;will-change:transform,opacity;user-select:none;letter-spacing:.5px;
   text-shadow:-2px 0 #1a0d05,2px 0 #1a0d05,0 -2px #1a0d05,0 2px #1a0d05,-1px -1px #1a0d05,1px 1px #1a0d05,-1px 1px #1a0d05,1px -1px #1a0d05,0 0 10px var(--g,#000)}
@@ -152,6 +154,22 @@ function injectStyle(): void {
 }
 
 const _v = new THREE.Vector3();
+
+/** A centre banner's box in viewport px. */
+export interface BannerBox { left: number; right: number; top: number; bottom: number }
+let bannerBox: BannerBox | null = null;
+/** Gap kept below a centre banner: a number that would sit inside its box is moved to just under it. */
+const BANNER_GAP = 6;
+
+/** Set by the banner lane (ui/hud/Banners.ts) while a centre banner is on screen; null when none is. */
+export function setBannerKeepOut(box: BannerBox | null): void {
+  bannerBox = box;
+}
+
+/** The centre banner box in viewport px, or null (the combo counter and the floating numbers keep clear of it). */
+export function bannerKeepOut(): BannerBox | null {
+  return bannerBox;
+}
 
 /** 'school' (default) or 'classic' (one colour, no amount scale). */
 function numberStyle(): 'school' | 'classic' {
@@ -195,6 +213,7 @@ function numberLabel(kind: DamageNumberKind, amount: number, body: string): stri
 
 export class DamageNumbers {
   private layer: HTMLDivElement | null = null;
+  private numLayer: HTMLDivElement | null = null;
   private pool: Item[] = [];
   private active: Item[] = [];
   camera: THREE.Camera | null = null;
@@ -206,6 +225,7 @@ export class DamageNumbers {
   /** Running average of normal player hits (playerAvgHit for the amount scale). */
   private avgHit = 0;
 
+  /** Screen flashes (under the HUD). */
   private ensureLayer(): HTMLDivElement | null {
     if (typeof document === 'undefined') return null;
     injectStyle();
@@ -220,6 +240,18 @@ export class DamageNumbers {
     return this.layer;
   }
 
+  /** The floating numbers: above the HUD layer, so no banner or frame paints over them. */
+  private ensureNumLayer(): HTMLDivElement | null {
+    if (typeof document === 'undefined') return null;
+    injectStyle();
+    if (!this.numLayer) {
+      this.numLayer = document.createElement('div');
+      this.numLayer.className = 'vfx-num-layer';
+    }
+    if (!this.numLayer.isConnected) (document.getElementById('ui-root') ?? document.body).appendChild(this.numLayer);
+    return this.numLayer;
+  }
+
   spawn(
     pos: THREE.Vector3 | [number, number, number],
     amount: number,
@@ -228,7 +260,7 @@ export class DamageNumbers {
     opts?: DamageNumberOpts,
   ): void {
     if (G.settings && G.settings.data.damageNumbers === false) return;
-    const layer = this.ensureLayer();
+    const layer = this.ensureNumLayer();
     if (!layer || !this.camera) return;
     const x = Array.isArray(pos) ? pos[0] : pos.x;
     const y = Array.isArray(pos) ? pos[1] : pos.y;
@@ -426,7 +458,14 @@ export class DamageNumbers {
     const alpha = t < fade ? 1 : Math.max(0, 1 - (t - fade) / (1 - fade));
     const behind = _v.z > 1 || _v.z < -1;
     const x = it.sx + it.ox + shx;
-    const y = it.sy + it.oy + shy - bounce;
+    let y = it.sy + it.oy + shy - bounce;
+    // a number that rises into a centre banner's box is held just under it (the banner is never covered, the text is never under it)
+    const box = bannerBox;
+    if (box && x > box.left - 30 && x < box.right + 30) {
+      // the text hangs from y: its box is about 1.2 x its (scaled) font size tall
+      const h = it.baseSize * sc * 1.2;
+      if (y > box.top && y - h < box.bottom) y = box.bottom + h + BANNER_GAP;
+    }
     it.el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) translate(-50%,-100%) scale(${sc.toFixed(3)})`;
     it.el.style.opacity = behind ? '0' : alpha.toFixed(2);
     void dt;

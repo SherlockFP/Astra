@@ -88,6 +88,9 @@ const COMMANDS: readonly { cmd: string; hint: string }[] = [
   ...Object.keys(EMOTES).map((id) => ({ cmd: id, hint: EMOTES[id].hint })),
 ];
 
+/** Line styles beside the channel: 'rumor' = NPC / world gossip (Söylenti), 'says' = the player's own bark (diyor). */
+type LineVariant = 'rumor' | 'says';
+
 interface TabState {
   def: TabDef;
   btn: HTMLButtonElement;
@@ -370,7 +373,7 @@ export class Chat implements HudWidget {
   }
 
   /** One line into every tab that lists its channel. `local` = our own message (typing / own bubble). Emits `chat:line`. */
-  addLine(from: string, text: string, channel: ChatChannel, local = false, to?: string, links?: ChatLink[], variant?: 'rumor'): void {
+  addLine(from: string, text: string, channel: ChatChannel, local = false, to?: string, links?: ChatLink[], variant?: LineVariant): void {
     const now = performance.now();
     let placed = false;
     for (const t of this.tabs) {
@@ -387,7 +390,8 @@ export class Chat implements HudWidget {
       } else t.unread = true;
     }
     if (placed) this.renderTabs();
-    G.events?.emit('chat:line', { from, text, channel, local });
+    // a bark is not typed chat: no chat:line (no second speech bubble, no chat achievement count)
+    if (variant !== 'says') G.events?.emit('chat:line', { from, text, channel, local });
   }
 
   /** Barks (systems/Barks.ts): a faint italic 'Söylenti' line in the tabs that list system lines. Not our own chat, so no chat:line count. */
@@ -395,7 +399,12 @@ export class Chat implements HudWidget {
     this.addLine(from, text, 'system', false, undefined, undefined, 'rumor');
   }
 
-  private makeLine(from: string, text: string, channel: ChatChannel, local = false, to?: string, links?: ChatLink[], variant?: 'rumor'): HTMLElement {
+  /** The player's own bark (systems/Barks.ts): a Say line in Genel, "<name> diyor: <text>". The speech bubble is drawn by the barks. */
+  addBark(from: string, text: string): void {
+    this.addLine(from, text, 'say', false, undefined, undefined, 'says');
+  }
+
+  private makeLine(from: string, text: string, channel: ChatChannel, local = false, to?: string, links?: ChatLink[], variant?: LineVariant): HTMLElement {
     const el = div('cl ' + channel + (variant ? ' ' + variant : ''));
     // WP-13: `[Name]` tags that match a link become quality-coloured tooltips (the message body only, never the names)
     const matched: ChatLink[] = [];
@@ -413,6 +422,8 @@ export class Chat implements HudWidget {
       html += local
         ? `<span class="cl-from">${esc(to ?? '')}</span> kişisine fısıldadın: ${body(text)}`
         : `<span class="cl-from">${esc(from)}</span> sana fısıldıyor: ${body(text)}`;
+    } else if (from && variant === 'says') {
+      html += `<span class="cl-from">${esc(from)}</span> diyor: ${body(text)}`;
     } else if (from) {
       const cls = this.classOf(from);
       const style = cls ? ` style="color:${classColor(cls)}"` : '';

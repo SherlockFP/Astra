@@ -701,7 +701,7 @@ export class SettingsPanel extends GamePanel {
             G.settings.get('characterBarks'),
             (v) => G.settings.set('characterBarks', v),
           ),
-          'Karakterlerin söyledikleri: üstlerinde balon ve sohbette Söylenti satırı. Az: yalnız önemli anlar',
+          'Karakterlerin söyledikleri: üstlerinde balon; kendi sözlerin sohbette (Genel) "diyor" satırı, diğerleri Söylenti. Az: yalnız önemli anlar',
         ),
       ),
       this.section(

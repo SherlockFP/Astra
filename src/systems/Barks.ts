@@ -12,7 +12,8 @@ import type { TownNpcRole } from '../types/dungeons';
  *    creature family, low HP once per fight, resurrection, quest, achievement, long idle in town, mount, PvP zone, arena win).
  *  - Elites, mini-bosses and bosses without a yell table speak their aggro and death lines.
  *  - Town NPCs with no lines of their own greet a walking player through npcLine() (NPC.ts walk-by).
- * Every line is a speech bubble over the speaker (G.ui.say, the chat bubble layer) plus a faint italic 'Söylenti' chat line.
+ * The player's own line is a speech bubble over the player plus a say line in Genel ("<name> diyor: ...", Chat.addBark). NPC and
+ * enemy lines are a speech bubble over the speaker plus a faint italic 'Söylenti' rumour line.
  * Pacing: player barks share a 20 s global gap, world lines (NPC / enemy) an 8 s gap, every trigger has its own cooldown,
  * a line never repeats the previous one from the same pool. Setting `characterBarks`: on (Açık), few (Az: only the
  * important moments, cooldowns x3, no world lines), off (Kapalı).
@@ -184,7 +185,8 @@ export function installBarks(rng: () => number = Math.random): BarkService {
     const text = fillLine(raw, vars);
     const p = G.player;
     if (p?.object3d) G.ui?.say(p.object3d, { kind: 'say', text, own: true, offsetY: (p.height ?? 2) + 0.5 });
-    rumor(G.character?.save.name ?? 'Sen', text);
+    // our own line is a say line in the chat (not a rumour): "<name> diyor: ..." in Genel
+    G.ui?.hud?.chat?.addBark(G.character?.save.name ?? 'Sen', text);
   };
 
   const worldSpeak = (e: Speaker, def: EnemyDef, key: string, pool: string[], poolKey: string): void => {
