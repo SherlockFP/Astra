@@ -739,7 +739,7 @@
     215.75,
     22.75
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     1,
     2
@@ -761,10 +761,10 @@
    "name": "Balçık Gölü",
    "region": "r1",
    "center": [
-    209,
-    60.25
+    211.5,
+    60.75
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     2,
     2
@@ -784,10 +784,10 @@
    "name": "Kurt Açıklığı",
    "region": "r1",
    "center": [
-    176,
-    45.5
+    173,
+    43
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     2,
     2
@@ -807,8 +807,8 @@
    "name": "Yağmacı Kampı",
    "region": "r1",
    "center": [
-    238.25,
-    47.25
+    240.5,
+    50
    ],
    "radius": 16,
    "levelRange": [
@@ -841,8 +841,8 @@
    "name": "Mantar Halkası",
    "region": "r1",
    "center": [
-    158.25,
-    66.75
+    133.25,
+    89.75
    ],
    "radius": 14,
    "levelRange": [
@@ -864,8 +864,8 @@
    "name": "Örümcek Korusu",
    "region": "r1",
    "center": [
-    125.5,
-    76.25
+    121.75,
+    78
    ],
    "radius": 14,
    "levelRange": [
@@ -914,8 +914,8 @@
    "name": "Yaban Domuzu Çalılığı",
    "region": "r1",
    "center": [
-    254.75,
-    40
+    255.5,
+    32.5
    ],
    "radius": 12,
    "levelRange": [
@@ -937,8 +937,8 @@
    "name": "Kesik Kütükler",
    "region": "r1",
    "center": [
-    184,
-    65.5
+    174.25,
+    71.75
    ],
    "radius": 12,
    "levelRange": [
@@ -964,8 +964,8 @@
    "name": "Eski Değirmen",
    "region": "r1",
    "center": [
-    187,
-    93.25
+    194,
+    98.75
    ],
    "radius": 12,
    "levelRange": [
@@ -2708,8 +2708,8 @@
    "name": "Kum Çukuru 1",
    "region": "r1",
    "center": [
-    197.5,
-    94.75
+    197.75,
+    93.75
    ],
    "radius": 12,
    "levelRange": [
@@ -2733,8 +2733,8 @@
    "name": "Çalılık 2",
    "region": "r1",
    "center": [
-    227,
-    56.25
+    234.5,
+    62
    ],
    "radius": 12,
    "levelRange": [
@@ -2754,10 +2754,10 @@
    "name": "Kum Çukuru 3",
    "region": "r1",
    "center": [
-    199,
-    65
+    198.75,
+    66.75
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     2,
     2
@@ -2775,8 +2775,8 @@
    "name": "Harabe Avlusu 4",
    "region": "r1",
    "center": [
-    167,
-    75.5
+    160.5,
+    80.5
    ],
    "radius": 16,
    "levelRange": [
@@ -2803,7 +2803,7 @@
     223,
     68
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -2821,8 +2821,8 @@
    "name": "Sazlık 6",
    "region": "r1",
    "center": [
-    230.25,
-    12.75
+    234.5,
+    10
    ],
    "radius": 12,
    "levelRange": [
@@ -2846,8 +2846,8 @@
    "name": "Ağaç Gölgesi 7",
    "region": "r1",
    "center": [
-    161.25,
-    57
+    158.5,
+    56.75
    ],
    "radius": 16,
    "levelRange": [
@@ -2867,8 +2867,8 @@
    "name": "Kesik Dere 8",
    "region": "r1",
    "center": [
-    193.75,
-    87.5
+    199.25,
+    91.75
    ],
    "radius": 14,
    "levelRange": [
@@ -2889,9 +2889,9 @@
    "region": "r1",
    "center": [
     201.5,
-    56.5
+    56.25
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     1,
     2
@@ -2910,8 +2910,8 @@
    "name": "Yaban Otlağı 10",
    "region": "r1",
    "center": [
-    194,
-    92
+    198.25,
+    93.5
    ],
    "radius": 14,
    "levelRange": [
@@ -2931,10 +2931,10 @@
    "name": "Çalılık 11",
    "region": "r1",
    "center": [
-    172.75,
-    61.75
+    171.25,
+    65.25
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -2956,10 +2956,10 @@
    "name": "Kırık Köprü 12",
    "region": "r1",
    "center": [
-    239.5,
+    240,
     13.75
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -2981,10 +2981,10 @@
    "name": "Yaban Otlağı 13",
    "region": "r1",
    "center": [
-    183.5,
+    183.75,
     21.5
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     1,
     2
@@ -3002,10 +3002,10 @@
    "name": "Kesik Dere 14",
    "region": "r1",
    "center": [
-    166.75,
-    51.5
+    163.25,
+    35.75
    ],
-   "radius": 16,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -3027,10 +3027,10 @@
    "name": "Kum Çukuru 15",
    "region": "r1",
    "center": [
-    227.25,
-    73.25
+    227.75,
+    73.5
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -3049,7 +3049,7 @@
    "region": "r1",
    "center": [
     239.25,
-    105.5
+    105
    ],
    "radius": 14,
    "levelRange": [
@@ -3069,8 +3069,8 @@
    "name": "Kara Kaya 17",
    "region": "r1",
    "center": [
-    143,
-    50
+    141,
+    48.75
    ],
    "radius": 12,
    "levelRange": [
@@ -3090,10 +3090,10 @@
    "name": "Mağara Ağzı 18",
    "region": "r1",
    "center": [
-    163.25,
-    48.25
+    157,
+    49
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -3111,8 +3111,8 @@
    "name": "Kum Çukuru 19",
    "region": "r1",
    "center": [
-    145.75,
-    57.25
+    121.75,
+    51.75
    ],
    "radius": 14,
    "levelRange": [
@@ -3136,10 +3136,10 @@
    "name": "Çalılık 20",
    "region": "r1",
    "center": [
-    169.5,
-    44
+    167.5,
+    46.25
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     2,
     2
@@ -3157,8 +3157,8 @@
    "name": "Sazlık 21",
    "region": "r1",
    "center": [
-    110,
-    80.25
+    110.25,
+    80.5
    ],
    "radius": 16,
    "levelRange": [
@@ -3182,8 +3182,8 @@
    "name": "Taş Yatağı 22",
    "region": "r1",
    "center": [
-    115.5,
-    76.5
+    116.5,
+    77
    ],
    "radius": 16,
    "levelRange": [
@@ -3203,7 +3203,7 @@
    "name": "Yaban Otlağı 23",
    "region": "r1",
    "center": [
-    245.75,
+    245,
     100.75
    ],
    "radius": 12,
@@ -3228,8 +3228,8 @@
    "name": "Harabe Avlusu 24",
    "region": "r1",
    "center": [
-    149.5,
-    15
+    149.25,
+    14.75
    ],
    "radius": 12,
    "levelRange": [
@@ -3245,35 +3245,14 @@
    ]
   },
   {
-   "id": "r1_g025",
-   "name": "Kuru Kanal 25",
-   "region": "r1",
-   "center": [
-    229.5,
-    23
-   ],
-   "radius": 14,
-   "levelRange": [
-    2,
-    2
-   ],
-   "respawnSec": 70,
-   "members": [
-    {
-     "enemyId": "ow_boar",
-     "count": 2
-    }
-   ]
-  },
-  {
    "id": "r1_g026",
    "name": "Kırık Köprü 26",
    "region": "r1",
    "center": [
-    183.25,
-    48.25
+    182.25,
+    48.75
    ],
-   "radius": 16,
+   "radius": 6,
    "levelRange": [
     1,
     2
@@ -3291,8 +3270,8 @@
    "name": "Kara Kaya 27",
    "region": "r1",
    "center": [
-    164.25,
-    23
+    161,
+    26.25
    ],
    "radius": 14,
    "levelRange": [
@@ -3317,7 +3296,7 @@
    "region": "r1",
    "center": [
     242.5,
-    82.25
+    82.5
    ],
    "radius": 16,
    "levelRange": [
@@ -3337,35 +3316,14 @@
    ]
   },
   {
-   "id": "r1_g029",
-   "name": "Kum Çukuru 29",
-   "region": "r1",
-   "center": [
-    184,
-    30.25
-   ],
-   "radius": 16,
-   "levelRange": [
-    1,
-    2
-   ],
-   "respawnSec": 55,
-   "members": [
-    {
-     "enemyId": "ow_slime",
-     "count": 2
-    }
-   ]
-  },
-  {
    "id": "r1_g030",
    "name": "Mağara Ağzı 30",
    "region": "r1",
    "center": [
-    220.25,
-    39.5
+    219.5,
+    39.25
    ],
-   "radius": 16,
+   "radius": 6,
    "levelRange": [
     1,
     2
@@ -3384,8 +3342,8 @@
    "name": "Dere Kenarı 31",
    "region": "r1",
    "center": [
-    107,
-    31.75
+    106.25,
+    30.5
    ],
    "radius": 12,
    "levelRange": [
@@ -3426,10 +3384,10 @@
    "name": "Dere Kenarı 33",
    "region": "r1",
    "center": [
-    103,
+    102.5,
     67.25
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     4,
     5
@@ -3447,8 +3405,8 @@
    "name": "Dere Kenarı 34",
    "region": "r1",
    "center": [
-    101.25,
-    59.5
+    100.5,
+    58.75
    ],
    "radius": 14,
    "levelRange": [
@@ -3472,7 +3430,7 @@
    "name": "Kum Çukuru 35",
    "region": "r1",
    "center": [
-    221.5,
+    220.75,
     107.25
    ],
    "radius": 14,
@@ -3497,10 +3455,10 @@
    "name": "Kızıl Tepe 36",
    "region": "r1",
    "center": [
-    194,
-    14
+    190.75,
+    14.5
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     1,
     2
@@ -3518,10 +3476,10 @@
    "name": "Taşlık 37",
    "region": "r1",
    "center": [
-    169,
-    52
+    135.75,
+    75.25
    ],
-   "radius": 16,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -3543,7 +3501,7 @@
    "name": "Harabe Avlusu 38",
    "region": "r1",
    "center": [
-    253.75,
+    253.5,
     91.25
    ],
    "radius": 16,
@@ -3568,8 +3526,8 @@
    "name": "Taş Yatağı 39",
    "region": "r1",
    "center": [
-    138.75,
-    76
+    148.25,
+    81
    ],
    "radius": 12,
    "levelRange": [
@@ -3593,10 +3551,10 @@
    "name": "Yaban Otlağı 40",
    "region": "r1",
    "center": [
-    222,
-    30.5
+    221.5,
+    30.25
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     1,
     2
@@ -3614,8 +3572,8 @@
    "name": "Dere Kenarı 41",
    "region": "r1",
    "center": [
-    222.5,
-    101.75
+    223,
+    102
    ],
    "radius": 12,
    "levelRange": [
@@ -3631,33 +3589,12 @@
    ]
   },
   {
-   "id": "r1_g042",
-   "name": "Kesik Dere 42",
-   "region": "r1",
-   "center": [
-    179.75,
-    15
-   ],
-   "radius": 16,
-   "levelRange": [
-    2,
-    2
-   ],
-   "respawnSec": 55,
-   "members": [
-    {
-     "enemyId": "ow_boar",
-     "count": 2
-    }
-   ]
-  },
-  {
    "id": "r1_g043",
    "name": "Taş Yatağı 43",
    "region": "r1",
    "center": [
-    153.25,
-    13.25
+    153,
+    12
    ],
    "radius": 12,
    "levelRange": [
@@ -3677,8 +3614,8 @@
    "name": "Taş Yatağı 44",
    "region": "r1",
    "center": [
-    160.25,
-    42.25
+    155.75,
+    39
    ],
    "radius": 16,
    "levelRange": [
@@ -3702,8 +3639,8 @@
    "name": "Kurt İni 45",
    "region": "r1",
    "center": [
-    168.5,
-    107.75
+    168.75,
+    108
    ],
    "radius": 12,
    "levelRange": [
@@ -3728,9 +3665,9 @@
    "region": "r1",
    "center": [
     208.75,
-    21.5
+    21.75
    ],
-   "radius": 16,
+   "radius": 6,
    "levelRange": [
     1,
     2
@@ -3748,10 +3685,10 @@
    "name": "Çalılık 47",
    "region": "r1",
    "center": [
-    182.25,
-    38.25
+    180.75,
+    35.25
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     1,
     2
@@ -3769,10 +3706,10 @@
    "name": "Sazlık 48",
    "region": "r1",
    "center": [
-    169,
-    59
+    164.75,
+    61.5
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -3790,10 +3727,10 @@
    "name": "Taşlık 49",
    "region": "r1",
    "center": [
-    218.25,
-    48.5
+    216.75,
+    49
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     1,
     2
@@ -3812,8 +3749,8 @@
    "name": "Taş Yatağı 50",
    "region": "r1",
    "center": [
-    112,
-    24.75
+    111.75,
+    25.5
    ],
    "radius": 16,
    "levelRange": [
@@ -3833,8 +3770,8 @@
    "name": "Mağara Ağzı 51",
    "region": "r1",
    "center": [
-    122,
-    28.75
+    122.5,
+    28.25
    ],
    "radius": 16,
    "levelRange": [
@@ -3854,10 +3791,10 @@
    "name": "Kum Çukuru 52",
    "region": "r1",
    "center": [
-    176.75,
-    52
+    172.75,
+    54
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     2,
     2
@@ -3875,8 +3812,8 @@
    "name": "Taşlık 53",
    "region": "r1",
    "center": [
-    227.25,
-    83.5
+    248.25,
+    69.75
    ],
    "radius": 14,
    "levelRange": [
@@ -3901,7 +3838,7 @@
    "region": "r1",
    "center": [
     164,
-    85.75
+    100
    ],
    "radius": 12,
    "levelRange": [
@@ -3925,8 +3862,8 @@
    "name": "Taşlık 55",
    "region": "r1",
    "center": [
-    117.25,
-    18
+    117.5,
+    18.25
    ],
    "radius": 16,
    "levelRange": [
@@ -3947,7 +3884,7 @@
    "region": "r1",
    "center": [
     242.25,
-    97
+    96.75
    ],
    "radius": 16,
    "levelRange": [
@@ -3967,10 +3904,10 @@
    "name": "Kuru Kanal 57",
    "region": "r1",
    "center": [
-    186.75,
-    55.25
+    188,
+    58
    ],
-   "radius": 16,
+   "radius": 6,
    "levelRange": [
     2,
     2
@@ -3988,7 +3925,7 @@
    "name": "Harabe Avlusu 58",
    "region": "r1",
    "center": [
-    110.5,
+    110.25,
     64
    ],
    "radius": 16,
@@ -4009,8 +3946,8 @@
    "name": "Kesik Dere 59",
    "region": "r1",
    "center": [
-    250.75,
-    77.5
+    250,
+    75.75
    ],
    "radius": 12,
    "levelRange": [
@@ -4034,10 +3971,10 @@
    "name": "Kırık Köprü 60",
    "region": "r1",
    "center": [
-    232.75,
-    53.75
+    233.5,
+    55.75
    ],
-   "radius": 16,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -4055,10 +3992,10 @@
    "name": "Yaban Otlağı 61",
    "region": "r1",
    "center": [
-    228.75,
-    36.5
+    230.25,
+    37
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     2,
     2
@@ -4076,8 +4013,8 @@
    "name": "Yaban Otlağı 62",
    "region": "r1",
    "center": [
-    190.5,
-    68.75
+    184.75,
+    84.5
    ],
    "radius": 14,
    "levelRange": [
@@ -4101,10 +4038,10 @@
    "name": "Kum Çukuru 63",
    "region": "r1",
    "center": [
-    219,
-    13.75
+    222.25,
+    14
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     2,
     2
@@ -4122,8 +4059,8 @@
    "name": "Kızıl Tepe 64",
    "region": "r1",
    "center": [
-    148.5,
-    85.5
+    133.5,
+    89
    ],
    "radius": 12,
    "levelRange": [
@@ -4139,34 +4076,12 @@
    ]
   },
   {
-   "id": "r1_g065",
-   "name": "Yaban Otlağı 65",
-   "region": "r1",
-   "center": [
-    195,
-    57.25
-   ],
-   "radius": 12,
-   "levelRange": [
-    1,
-    2
-   ],
-   "respawnSec": 60,
-   "members": [
-    {
-     "enemyId": "ow_rat",
-     "count": 2
-    }
-   ],
-   "flags": []
-  },
-  {
    "id": "r1_g066",
    "name": "Taşlık 66",
    "region": "r1",
    "center": [
     259.5,
-    99.75
+    100
    ],
    "radius": 14,
    "levelRange": [
@@ -4190,8 +4105,8 @@
    "name": "Kara Kaya 67",
    "region": "r1",
    "center": [
-    214.25,
-    87
+    216.5,
+    91
    ],
    "radius": 14,
    "levelRange": [
@@ -4215,8 +4130,8 @@
    "name": "Taş Yatağı 68",
    "region": "r1",
    "center": [
-    109.75,
-    91
+    109.25,
+    90.75
    ],
    "radius": 14,
    "levelRange": [
@@ -4240,10 +4155,10 @@
    "name": "Mağara Ağzı 69",
    "region": "r1",
    "center": [
-    211.75,
-    11
+    212,
+    10.5
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     1,
     2
@@ -4265,7 +4180,7 @@
     194.5,
     76.75
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -4287,8 +4202,8 @@
    "name": "Taşlık 71",
    "region": "r1",
    "center": [
-    244.25,
-    42.5
+    243.5,
+    43.25
    ],
    "radius": 16,
    "levelRange": [
@@ -4313,7 +4228,7 @@
    "region": "r1",
    "center": [
     129.5,
-    13.75
+    14
    ],
    "radius": 12,
    "levelRange": [
@@ -4337,8 +4252,8 @@
    "name": "Kuru Kanal 73",
    "region": "r1",
    "center": [
-    206,
-    93.5
+    205.25,
+    93.75
    ],
    "radius": 12,
    "levelRange": [
@@ -4358,35 +4273,14 @@
    ]
   },
   {
-   "id": "r1_g074",
-   "name": "Mağara Ağzı 74",
-   "region": "r1",
-   "center": [
-    172,
-    21.5
-   ],
-   "radius": 14,
-   "levelRange": [
-    2,
-    2
-   ],
-   "respawnSec": 50,
-   "members": [
-    {
-     "enemyId": "ow_slime",
-     "count": 2
-    }
-   ]
-  },
-  {
    "id": "r1_g075",
    "name": "Sazlık 75",
    "region": "r1",
    "center": [
     207,
-    50.75
+    50.5
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     1,
     2
@@ -4406,7 +4300,7 @@
    "region": "r1",
    "center": [
     102.5,
-    85.25
+    85
    ],
    "radius": 16,
    "levelRange": [
@@ -4430,8 +4324,8 @@
    "name": "Çalılık 77",
    "region": "r1",
    "center": [
-    261.75,
-    89.75
+    261.25,
+    90
    ],
    "radius": 16,
    "levelRange": [
@@ -4455,8 +4349,8 @@
    "name": "Kuru Kanal 78",
    "region": "r1",
    "center": [
-    159.75,
-    96.5
+    159.5,
+    95.5
    ],
    "radius": 16,
    "levelRange": [
@@ -4480,8 +4374,8 @@
    "name": "Çalılık 79",
    "region": "r1",
    "center": [
-    258.75,
-    60.75
+    259.5,
+    61.5
    ],
    "radius": 12,
    "levelRange": [
@@ -4505,8 +4399,8 @@
    "name": "Kızıl Tepe 80",
    "region": "r1",
    "center": [
-    148.75,
-    67
+    147.75,
+    67.75
    ],
    "radius": 12,
    "levelRange": [
@@ -4530,10 +4424,10 @@
    "name": "Mağara Ağzı 81",
    "region": "r1",
    "center": [
-    204.5,
-    70.5
+    208,
+    72.75
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -4555,8 +4449,8 @@
    "name": "Taşlık 82",
    "region": "r1",
    "center": [
-    136.5,
-    62
+    135.75,
+    60.5
    ],
    "radius": 14,
    "levelRange": [
@@ -4576,8 +4470,8 @@
    "name": "Kuru Kanal 83",
    "region": "r1",
    "center": [
-    174.25,
-    82
+    169,
+    86
    ],
    "radius": 12,
    "levelRange": [
@@ -4622,10 +4516,10 @@
    "name": "Ağaç Gölgesi 85",
    "region": "r1",
    "center": [
-    169.75,
-    62.75
+    168.75,
+    64.25
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -4647,10 +4541,10 @@
    "name": "Kızıl Tepe 86",
    "region": "r1",
    "center": [
-    204.75,
-    14.75
+    201.5,
+    13.5
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     2,
     2
@@ -4668,7 +4562,7 @@
    "name": "Yaban Otlağı 87",
    "region": "r1",
    "center": [
-    189,
+    188.5,
     102.5
    ],
    "radius": 16,
@@ -4693,10 +4587,10 @@
    "name": "Kurt İni 88",
    "region": "r1",
    "center": [
-    226,
-    66
+    225,
+    65.75
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -4710,37 +4604,12 @@
    ]
   },
   {
-   "id": "r1_g089",
-   "name": "Dere Kenarı 89",
-   "region": "r1",
-   "center": [
-    199.75,
-    79.25
-   ],
-   "radius": 12,
-   "levelRange": [
-    3,
-    3
-   ],
-   "respawnSec": 60,
-   "members": [
-    {
-     "enemyId": "ow_goblin",
-     "count": 2
-    },
-    {
-     "enemyId": "ow_slime",
-     "count": 1
-    }
-   ]
-  },
-  {
    "id": "r1_g090",
    "name": "Sazlık 90",
    "region": "r1",
    "center": [
-    243.75,
-    81.75
+    243,
+    82
    ],
    "radius": 12,
    "levelRange": [
@@ -4756,32 +4625,11 @@
    ]
   },
   {
-   "id": "r1_g091",
-   "name": "Kum Çukuru 91",
-   "region": "r1",
-   "center": [
-    168.75,
-    35.75
-   ],
-   "radius": 14,
-   "levelRange": [
-    2,
-    2
-   ],
-   "respawnSec": 40,
-   "members": [
-    {
-     "enemyId": "ow_rat",
-     "count": 2
-    }
-   ]
-  },
-  {
    "id": "r1_g092",
    "name": "Kum Çukuru 92",
    "region": "r1",
    "center": [
-    102.25,
+    102.5,
     71.5
    ],
    "radius": 16,
@@ -4806,8 +4654,8 @@
    "name": "Taşlık 93",
    "region": "r1",
    "center": [
-    232.25,
-    67.25
+    231.75,
+    67.75
    ],
    "radius": 16,
    "levelRange": [
@@ -4827,7 +4675,7 @@
    "name": "Kızıl Tepe 94",
    "region": "r1",
    "center": [
-    125.75,
+    126.25,
     34.75
    ],
    "radius": 14,
@@ -4848,8 +4696,8 @@
    "name": "Harabe Avlusu 95",
    "region": "r1",
    "center": [
-    252.5,
-    49.25
+    257.5,
+    53.75
    ],
    "radius": 16,
    "levelRange": [
@@ -4873,10 +4721,10 @@
    "name": "Kırık Köprü 96",
    "region": "r1",
    "center": [
-    234.25,
-    47
+    238.5,
+    47.25
    ],
-   "radius": 16,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -4898,10 +4746,10 @@
    "name": "Çalılık 97",
    "region": "r1",
    "center": [
-    170.25,
-    97
+    170.75,
+    97.25
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     4,
     5
@@ -4920,10 +4768,10 @@
    "name": "Kurt İni 98",
    "region": "r1",
    "center": [
-    211.75,
-    97
+    211.5,
+    97.25
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     4,
     5
@@ -4942,10 +4790,10 @@
    "name": "Taşlık 99",
    "region": "r1",
    "center": [
-    249.5,
-    12
+    252.25,
+    10.75
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     4,
     5
@@ -4964,8 +4812,8 @@
    "name": "Kara Kaya 100",
    "region": "r1",
    "center": [
-    102.75,
-    44.5
+    103,
+    44.75
    ],
    "radius": 14,
    "levelRange": [
@@ -4989,8 +4837,8 @@
    "name": "Kesik Dere 101",
    "region": "r1",
    "center": [
-    197.75,
-    102.75
+    198.5,
+    102
    ],
    "radius": 16,
    "levelRange": [
@@ -5014,8 +4862,8 @@
    "name": "Kızıl Tepe 102",
    "region": "r1",
    "center": [
-    143.5,
-    94
+    147.75,
+    103
    ],
    "radius": 12,
    "levelRange": [
@@ -5039,10 +4887,10 @@
    "name": "Dere Kenarı 103",
    "region": "r1",
    "center": [
-    176.25,
-    31
+    174,
+    26.5
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     2,
     2
@@ -5086,9 +4934,9 @@
    "region": "r1",
    "center": [
     219.25,
-    76.5
+    76.25
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -5106,8 +4954,8 @@
    "name": "Kırık Köprü 106",
    "region": "r1",
    "center": [
-    129.25,
-    66.25
+    131.75,
+    55.25
    ],
    "radius": 16,
    "levelRange": [
@@ -5131,8 +4979,8 @@
    "name": "Taş Yatağı 107",
    "region": "r1",
    "center": [
-    137,
-    90
+    140,
+    89.25
    ],
    "radius": 16,
    "levelRange": [
@@ -5152,33 +5000,12 @@
    ]
   },
   {
-   "id": "r1_g108",
-   "name": "Taşlık 108",
-   "region": "r1",
-   "center": [
-    217.25,
-    57.5
-   ],
-   "radius": 12,
-   "levelRange": [
-    2,
-    2
-   ],
-   "respawnSec": 50,
-   "members": [
-    {
-     "enemyId": "ow_slime",
-     "count": 2
-    }
-   ]
-  },
-  {
    "id": "r1_g109",
    "name": "Sazlık 109",
    "region": "r1",
    "center": [
-    220.5,
-    95.25
+    221.5,
+    94.75
    ],
    "radius": 14,
    "levelRange": [
@@ -5199,7 +5026,7 @@
    "region": "r1",
    "center": [
     110.5,
-    91.5
+    92
    ],
    "radius": 16,
    "levelRange": [
@@ -5219,7 +5046,7 @@
    "name": "Taşlık 111",
    "region": "r1",
    "center": [
-    136.75,
+    137,
     99.75
    ],
    "radius": 12,
@@ -5244,8 +5071,8 @@
    "name": "Çalılık 112",
    "region": "r1",
    "center": [
-    140.75,
-    104.75
+    141,
+    105
    ],
    "radius": 16,
    "levelRange": [
@@ -5269,10 +5096,10 @@
    "name": "Kara Kaya 113",
    "region": "r1",
    "center": [
-    209,
+    208.75,
     74.75
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -5290,10 +5117,10 @@
    "name": "Ağaç Gölgesi 114",
    "region": "r1",
    "center": [
-    131.5,
-    81
+    128.5,
+    86.5
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     4,
     5
@@ -5312,8 +5139,8 @@
    "name": "Çalılık 115",
    "region": "r1",
    "center": [
-    139,
-    48.5
+    139.5,
+    47.75
    ],
    "radius": 16,
    "levelRange": [
@@ -5333,10 +5160,10 @@
    "name": "Harabe Avlusu 116",
    "region": "r1",
    "center": [
-    235.75,
-    18
+    267.75,
+    39.5
    ],
-   "radius": 16,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -5358,8 +5185,8 @@
    "name": "Taşlık 117",
    "region": "r1",
    "center": [
-    205.25,
-    107.5
+    204.5,
+    107.75
    ],
    "radius": 12,
    "levelRange": [
@@ -5383,10 +5210,10 @@
    "name": "Ağaç Gölgesi 118",
    "region": "r1",
    "center": [
-    222.25,
-    63.75
+    223.25,
+    63.25
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -5404,8 +5231,8 @@
    "name": "Harabe Avlusu 119",
    "region": "r1",
    "center": [
-    244,
-    72
+    249.25,
+    82.75
    ],
    "radius": 14,
    "levelRange": [
@@ -5429,8 +5256,8 @@
    "name": "Çalılık 120",
    "region": "r1",
    "center": [
-    131.75,
-    90.75
+    127.75,
+    93.5
    ],
    "radius": 16,
    "levelRange": [
@@ -5454,8 +5281,8 @@
    "name": "Harabe Avlusu 121",
    "region": "r1",
    "center": [
-    100,
-    78.5
+    100.25,
+    78.75
    ],
    "radius": 12,
    "levelRange": [
@@ -5479,8 +5306,8 @@
    "name": "Ağaç Gölgesi 122",
    "region": "r1",
    "center": [
-    138.5,
-    66.25
+    140.75,
+    62
    ],
    "radius": 14,
    "levelRange": [
@@ -5504,8 +5331,8 @@
    "name": "Dere Kenarı 123",
    "region": "r1",
    "center": [
-    260.25,
-    49.25
+    263.75,
+    54.5
    ],
    "radius": 14,
    "levelRange": [
@@ -5550,10 +5377,10 @@
    "name": "Harabe Avlusu 125",
    "region": "r1",
    "center": [
-    170.5,
-    93.75
+    170,
+    94.5
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     4,
     5
@@ -5572,10 +5399,10 @@
    "name": "Mağara Ağzı 126",
    "region": "r1",
    "center": [
-    226.5,
-    46
+    227.5,
+    46.5
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     2,
     2
@@ -5619,7 +5446,7 @@
    "region": "r1",
    "center": [
     134.75,
-    99.25
+    100.25
    ],
    "radius": 14,
    "levelRange": [
@@ -5639,7 +5466,7 @@
    "name": "Harabe Avlusu 129",
    "region": "r1",
    "center": [
-    181.5,
+    180.75,
     106.25
    ],
    "radius": 14,
@@ -5660,8 +5487,8 @@
    "name": "Kurt İni 130",
    "region": "r1",
    "center": [
-    112.75,
-    82
+    113.5,
+    80.75
    ],
    "radius": 12,
    "levelRange": [
@@ -5685,7 +5512,7 @@
    "name": "Harabe Avlusu 131",
    "region": "r1",
    "center": [
-    252.5,
+    253.75,
     30
    ],
    "radius": 12,
@@ -5728,9 +5555,9 @@
    "region": "r1",
    "center": [
     249,
-    63.75
+    63
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     4,
     5
@@ -5749,8 +5576,8 @@
    "name": "Kızıl Tepe 134",
    "region": "r1",
    "center": [
-    117.25,
-    94.5
+    117.5,
+    95
    ],
    "radius": 14,
    "levelRange": [
@@ -5771,7 +5598,7 @@
    "region": "r1",
    "center": [
     121,
-    12.75
+    12.5
    ],
    "radius": 12,
    "levelRange": [
@@ -5795,8 +5622,8 @@
    "name": "Taş Yatağı 136",
    "region": "r1",
    "center": [
-    124.75,
-    106.5
+    124,
+    106.25
    ],
    "radius": 12,
    "levelRange": [
@@ -5816,8 +5643,8 @@
    "name": "Taşlık 137",
    "region": "r1",
    "center": [
-    236.25,
-    78.25
+    237.25,
+    84.75
    ],
    "radius": 16,
    "levelRange": [
@@ -5837,7 +5664,7 @@
    "name": "Kızıl Tepe 138",
    "region": "r1",
    "center": [
-    127.25,
+    127,
     96.5
    ],
    "radius": 14,
@@ -5862,7 +5689,7 @@
    "name": "Ağaç Gölgesi 139",
    "region": "r1",
    "center": [
-    104,
+    103.75,
     21.5
    ],
    "radius": 14,
@@ -5883,8 +5710,8 @@
    "name": "Kurt İni 140",
    "region": "r1",
    "center": [
-    129.5,
-    84
+    126,
+    87
    ],
    "radius": 14,
    "levelRange": [
@@ -5904,8 +5731,8 @@
    "name": "Kuru Kanal 141",
    "region": "r1",
    "center": [
-    178,
-    88.25
+    171.75,
+    93.25
    ],
    "radius": 12,
    "levelRange": [
@@ -5925,8 +5752,8 @@
    "name": "Ağaç Gölgesi 142",
    "region": "r1",
    "center": [
-    121.25,
-    81.5
+    111.25,
+    73.5
    ],
    "radius": 12,
    "levelRange": [
@@ -5950,10 +5777,10 @@
    "name": "Kırık Köprü 143",
    "region": "r1",
    "center": [
-    215.5,
-    71.5
+    215.25,
+    71.25
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -5975,8 +5802,8 @@
    "name": "Ağaç Gölgesi 144",
    "region": "r1",
    "center": [
-    124.5,
-    33
+    124.75,
+    33.5
    ],
    "radius": 14,
    "levelRange": [
@@ -5996,10 +5823,10 @@
    "name": "Sazlık 145",
    "region": "r1",
    "center": [
-    131.5,
-    80
+    129,
+    85.75
    ],
-   "radius": 14,
+   "radius": 6,
    "levelRange": [
     4,
     5
@@ -6018,8 +5845,8 @@
    "name": "Kurt İni 146",
    "region": "r1",
    "center": [
-    212.75,
-    103.25
+    212.5,
+    103.75
    ],
    "radius": 14,
    "levelRange": [
@@ -27330,10 +27157,10 @@
    "name": "Goblin Şaman Kampı I",
    "region": "r1",
    "center": [
-    233,
-    30
+    233.75,
+    26
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -27357,10 +27184,10 @@
    "name": "Goblin Şaman Kampı II",
    "region": "r1",
    "center": [
-    236,
-    33.5
+    239.75,
+    31.5
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -27384,10 +27211,10 @@
    "name": "Goblin Şaman Kampı III",
    "region": "r1",
    "center": [
-    236.5,
-    26.5
+    236.25,
+    26
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     3,
     3
@@ -27414,7 +27241,7 @@
     190,
     41
    ],
-   "radius": 12,
+   "radius": 6,
    "levelRange": [
     2,
     2

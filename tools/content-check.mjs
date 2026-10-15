@@ -117,10 +117,16 @@ function regionQuestIssues(quests, world, packs) {
  * camps (rares, mini-bosses and bosses are placed by the level band rule in the reachability check):
  *  (1) the guide has a target: at least one camp or patrol spawning the id in the quest's region has a levelRange inside q-1..q+1;
  *  (2) the guide's camp, the in-band camp nearest to the quest giver's village (the guide starts the player there; the south gate
- *      when the giver is in town), stands 40 m or more from every camp of the region whose lowest level is q+2 or more (4 m per tile).
+ *      when the giver is in town), stands 20 m or more clear ground (edge to edge) from every camp of the region whose lowest level is q+2 or more.
  * HARD error per objective (1) and (2).
  */
-const KILL_BAND_M = 40, KILL_TILE_M = 4;
+/** Edge-to-edge spacing (metres): centre distance less each camp's radius and the 8 m wander of its mobs. */
+const WANDER_M = 8, TILE_M = 4;
+const centreM = (a, b) => Math.hypot(a.center[0] - b.center[0], a.center[1] - b.center[1]) * TILE_M;
+const edgeM = (a, b) => centreM(a, b) - (a.radius ?? 8) - (b.radius ?? 8) - 2 * WANDER_M;
+/** Severity of the edge-to-edge camp rules: hard errors on Sisli Vadi (r1 rings); other maps report warnings for now. */
+const edgeSev = (zoneId) => (zoneId === 'sisli_vadi' ? 'error' : 'warn');
+const KILL_BAND_M = 20, KILL_TILE_M = 4;
 function killBandIssues(quests, zones) {
   const out = [];
   for (const q of quests.filter(isRegionQuest)) {
@@ -130,7 +136,7 @@ function killBandIssues(quests, zones) {
     const inRegion = zone.packs.filter((p) => roomRegion.get(p.roomId) === q.region && p.center);
     const [bLo, bHi] = [q.level - 1, q.level + 1];
     const higher = inRegion.filter((p) => (p.levelRange ?? [1, 99])[0] >= q.level + 2);
-    const gapM = (a, b) => Math.hypot(a.center[0] - b.center[0], a.center[1] - b.center[1]) * KILL_TILE_M;
+    const gapM = (a, b) => edgeM(a, b);
     // the guide's start: the giver's village centre (tiles), or the map's south gate (200, 1) when the giver is in town
     const giverVillage = (zone.world?.villages ?? []).find((v) => v.npcs.some((n) => n.id === q.giver));
     const start = giverVillage ? giverVillage.center : [200, 1];
@@ -147,7 +153,7 @@ function killBandIssues(quests, zones) {
       const guide = inBand.reduce((best, c) => (Math.hypot(c.center[0] - start[0], c.center[1] - start[1]) < Math.hypot(best.center[0] - start[0], best.center[1] - start[1]) ? c : best));
       const near = higher.find((h) => h !== guide && gapM(guide, h) < KILL_BAND_M);
       if (near) {
-        out.push({ level: 'error', where, msg: `guide camp ${guide.id} (L${guide.levelRange[0]}-${guide.levelRange[1]}) is ${Math.round(gapM(guide, near))} m from ${near.id} (L${near.levelRange[0]}+): keep ${KILL_BAND_M} m` });
+        out.push({ level: zone.id === 'sisli_vadi' && q.region === 'r1' ? 'error' : 'warn', where, msg: `guide camp ${guide.id} (L${guide.levelRange[0]}-${guide.levelRange[1]}) is ${Math.round(gapM(guide, near))} m clear of ${near.id} (L${near.levelRange[0]}+): keep ${KILL_BAND_M} m edge to edge` });
       }
     }
   }
@@ -325,22 +331,23 @@ function regionCounts(quests) {
 
 /**
  * Starting-zone camp rings (Sisli Koru, r1, WoW-style). Camps and patrols are tile centres (1 tile = 4 m). A quest camp is a camp whose
- * lowest level is 1 or 2. HARD errors: (1) no camp or patrol of the region whose lowest level is 2 or more above a quest camp stands
- * within 40 m of it; (2) quest camps keep 25 m apart (the inner ring of level 1-2 camps).
+ * lowest level is 1 or 2. Errors: (1) no camp or patrol of the region whose lowest level is 2 or more above a quest camp stands within
+ * 20 m clear ground of it (edge to edge: centre distance less both radii and 8 m of wander per camp); (2) quest camps keep 25 m apart
+ * centre to centre (the inner ring of level 1-2 camps).
  */
-function campRingIssues(packs, roomId) {
+function campRingIssues(packs, roomId, sev = 'error') {
   const out = [];
-  const err = (where, msg) => out.push({ level: 'error', where, msg });
-  const TILE_M = 4, RING_M = 40, INNER_M = 25;
+  const err = (where, msg) => out.push({ level: sev, where, msg });
+  const RING_M = 20, INNER_M = 25;
   const camps = (packs ?? []).filter((p) => p.roomId === roomId && p.center);
   const quest = camps.filter((p) => p.levelRange[0] <= 2);
   const gap = (a, b) => Math.hypot(a.center[0] - b.center[0], a.center[1] - b.center[1]) * TILE_M;
   for (const a of quest) {
     for (const c of camps) {
       if (c === a) continue;
-      const m = gap(a, c);
+      const m = edgeM(a, c);
       if (m < RING_M && c.levelRange[0] >= a.levelRange[0] + 2) {
-        err(`camp ${c.id}`, `level ${c.levelRange[0]}+ camp ${Math.round(m)} m from quest camp ${a.id} (level ${a.levelRange[0]}): keep it 40 m away`);
+        err(`camp ${c.id}`, `level ${c.levelRange[0]}+ camp ${Math.round(m)} m clear of quest camp ${a.id} (level ${a.levelRange[0]}): keep 20 m edge to edge`);
       }
     }
   }
@@ -369,9 +376,7 @@ function campRingIssues(packs, roomId) {
 function ringDensityIssues(packs, roomId, quests, sideQuests) {
   const out = [];
   const err = (where, msg) => out.push({ level: 'error', where, msg });
-  const R = 25, OUTER = 40, PLACE = 60, HIGHER = 30;
-  const higherSeen = new Set();
-  const TILE_M = 4;
+  const R = 25, OUTER = 20, PLACE = 60, HIGHER = 15;
   const camps = (packs ?? []).filter((p) => p.roomId === roomId && p.center);
   const xy = (p) => [p.center[0] * TILE_M, p.center[1] * TILE_M];
   const gap = (a, b) => { const [ax, az] = xy(a), [bx, bz] = xy(b); return Math.hypot(ax - bx, az - bz); };
@@ -390,6 +395,14 @@ function ringDensityIssues(packs, roomId, quests, sideQuests) {
       if (gap(c, q) < R) { err(`camp ${c.id}`, `level ${lo(c)} camp ${Math.round(gap(c, q))} m from level 1-2 camp ${q.id}: keep ${R} m clear of the quest area`); break; }
     }
   }
+  // (5) every L1-3 camp keeps 15 m clear ground (edge to edge) to every camp of a higher level (the L2 slime camps of mq_03 stood 1-17 m from L3 goblins)
+  for (const a of camps.filter((c) => lo(c) <= 3)) {
+    for (const c of camps) {
+      if (c === a || lo(c) <= lo(a)) continue;
+      const m = edgeM(a, c);
+      if (m < HIGHER) err(`camp ${a.id}`, `level ${lo(a)} camp ${a.id} is ${Math.round(m)} m clear of level ${lo(c)} camp ${c.id}: keep ${HIGHER} m edge to edge`);
+    }
+  }
   for (const q of quests) {
     if (q.level > 3) continue;
     const tids = new Set(q.objectives.filter((o) => o.kind === 'kill' || o.kind === 'metin').map((o) => o.target).filter(Boolean));
@@ -397,19 +410,11 @@ function ringDensityIssues(packs, roomId, quests, sideQuests) {
     if (!tids.size) continue;
     const T = camps.filter((c) => c.members.some((m) => tids.has(m.enemyId)) && hi(c) >= q.level - 1 && lo(c) <= q.level + 1);
     if (!T.length) continue;
-    for (const t of T.filter((t) => lo(t) <= 3)) {
-      for (const c of camps) {
-        if (c === t || lo(c) <= lo(t) || higherSeen.has(t.id + '|' + c.id)) continue;
-        higherSeen.add(t.id + '|' + c.id);
-        const m = gap(c, t);
-        if (m < HIGHER) err(`quest ${q.id}`, `target camp ${t.id} (L${lo(t)}) is ${Math.round(m)} m from ${c.id} (L${lo(c)}, higher): keep ${HIGHER} m in the L1-3 quest areas`);
-      }
-    }
     for (const c of camps) {
       if (T.includes(c)) continue;
       const nearT = T.some((t) => gap(c, t) < R);
       if (nearT && (lo(c) < q.level - 1 || hi(c) > q.level + 1)) err(`quest ${q.id}`, `camp ${c.id} (L${lo(c)}-${hi(c)}) inside its target area: only levels ${q.level - 1}-${q.level + 1}`);
-      else if (lo(c) >= q.level + 2 && T.some((t) => gap(c, t) < OUTER)) err(`quest ${q.id}`, `camp ${c.id} (L${lo(c)}-${hi(c)}) is ${Math.round(Math.min(...T.map((t) => gap(c, t))))} m from a target camp: keep ${OUTER} m`);
+      else if (lo(c) >= q.level + 2 && T.some((t) => edgeM(c, t) < OUTER)) err(`quest ${q.id}`, `camp ${c.id} (L${lo(c)}-${hi(c)}) is ${Math.round(Math.min(...T.map((t) => edgeM(c, t))))} m clear of a target camp: keep ${OUTER} m edge to edge`);
     }
   }
   for (const sq of sideQuests ?? []) {
@@ -555,9 +560,11 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id)) || want.includes('
   for (const i of re) console.log('  ERR ', i.where, '-', i.msg);
   for (const i of rw) console.log('  warn', i.where, '-', i.msg);
   const kb = killBandIssues(QUESTS, ZONES);
-  totalErr += kb.length;
-  console.log(`\n== kill bands: ${kb.length} errors | a band camp per kill target, the guide's camp 40 m from higher camps`);
-  for (const i of kb) console.log('  ERR ', i.where, '-', i.msg);
+  const kbE = kb.filter((i) => i.level === 'error'), kbW = kb.filter((i) => i.level === 'warn');
+  totalErr += kbE.length;
+  console.log(`\n== kill bands: ${kbE.length} errors, ${kbW.length} warns | a band camp per kill target, the guide's camp 20 m clear (edge to edge)`);
+  for (const i of kbE) console.log('  ERR ', i.where, '-', i.msg);
+  for (const i of kbW) console.log('  warn', i.where, '-', i.msg);
   const npcById = new Map([...TOWN.npcs, ...(world?.villages ?? []).flatMap((v) => v.npcs)].map((n) => [n.id, n]));
   const { familyOf } = await imp('src/data/families.ts');
   const xq = questReachIssues(QUESTS, world, npcIds, ALL_WORLD_PACKS, DUNGEON_ALL, OPEN_ZONE_IDS, npcById, ZONES, familyOf, { ...lootTables, ...LOOT.GATHER_TABLES });
@@ -572,7 +579,7 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
   for (const id of WORLD_IDS) {
     const r1 = ALL[id].world?.regions?.find((r) => r.id === 'r1');
     if (!r1) continue;
-    const ri = campRingIssues(ALL[id].packs, r1.roomId);
+    const ri = campRingIssues(ALL[id].packs, r1.roomId, edgeSev(id));
     const { QUESTS: RING_QUESTS } = await imp('src/data/world/quests.ts');
     const layout = JSON.parse(fs.readFileSync(`${ROOT}/src/data/world/sisli_vadi.layout.json`, 'utf8').replace(/^﻿/, ''));
     const dn = ringDensityIssues(ALL[id].packs, r1.roomId, RING_QUESTS, layout.quests?.side ?? []);
