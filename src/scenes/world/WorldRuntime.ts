@@ -17,6 +17,7 @@ import { MiniBossDirector } from './MiniBossDirector';
 import { BossSchedule } from './BossSchedule';
 import { SafeZones } from './SafeZones';
 import { WaypointNetwork } from './WaypointNetwork';
+import { GraveyardNetwork } from './Graveyards';
 import { spawnVillageNpcs } from './VillageSpawner';
 import { WorldPois } from './WorldPois';
 import { WorldGather } from './WorldGather';
@@ -63,6 +64,7 @@ export class WorldRuntime {
   private readonly ext: WorldExtras;
   private readonly safe: SafeZones;
   private readonly waypoints: WaypointNetwork;
+  private readonly graveyards: GraveyardNetwork;
   private readonly camps: CampDirector;
   private readonly metin: MetinDirector;
   private readonly rares: RareDirector;
@@ -92,6 +94,7 @@ export class WorldRuntime {
     this.ctx.ev = (key: string) => this.announce(key);
     this.safe = new SafeZones(this.ctx);
     this.waypoints = new WaypointNetwork(this.ctx, (x, z, yaw) => o.teleport?.(x, z, yaw));
+    this.graveyards = new GraveyardNetwork(this.ctx);
     this.camps = new CampDirector(this.ctx, this.ext.perf);
     this.metin = new MetinDirector(this.ctx);
     this.rares = new RareDirector(this.ctx);
@@ -108,6 +111,7 @@ export class WorldRuntime {
     await Promise.all([
       this.guard('npcs', () => spawnVillageNpcs(this.ctx)),
       this.guard('waypoints', () => this.waypoints.place()),
+      this.guard('graveyards', () => this.graveyards.place()),
       this.guard('shrines and chests', () => this.pois.place()),
       this.guard('gathering nodes', () => this.gather.place()),
       this.guard('quest props', () => this.questProps.place()),
@@ -170,9 +174,12 @@ export class WorldRuntime {
     return this.safe.isSafe(x, z);
   }
 
-  /** Where a dead player is revived: the last waypoint stone this character activated, else the map start. */
-  respawnPoint(): { x: number; z: number; yaw: number } {
-    const pt: Pt = this.waypoints.respawnPoint() ?? { x: this.o.built.start.x, z: this.o.built.start.z };
+  /**
+   * Where a dead player is released (WoW spirit healer): the graveyard nearest the body `from` that no living camp stands within 35 m
+   * of. A map without graveyards falls back to the last waypoint stone this character activated, else the map start.
+   */
+  respawnPoint(from: Pt): { x: number; z: number; yaw: number } {
+    const pt: Pt = this.graveyards.release(from, this.camps.livingCenters()) ?? this.waypoints.respawnPoint() ?? { x: this.o.built.start.x, z: this.o.built.start.z };
     const fix = this.o.built.nav.nearestWalkable(pt.x, pt.z, 6) ?? pt;
     return { x: fix.x, z: fix.z, yaw: this.o.built.startYaw };
   }

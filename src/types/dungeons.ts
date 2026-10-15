@@ -499,6 +499,12 @@ export interface VillageDef {
   waypointId?: string;
 }
 export interface WaypointDef { id: string; name: string; pos: [number, number]; regionId: string; villageId?: string }
+/**
+ * Mezarlık (WoW graveyard, spirit healer): where a dead player is released. pos = tile coords. The release goes to the graveyard nearest
+ * the body that no living hostile camp stands within 35 m of (src/scenes/world/Graveyards.ts). tools/content-check.mjs holds the map's
+ * quest areas to a graveyard within 250 m.
+ */
+export interface GraveyardDef { id: string; name: string; pos: [number, number]; regionId: string; villageId?: string }
 export interface EntranceDef {
   id: string; name: string; dungeonId: string; pos: [number, number]; facing: number; minLevel: number; regionId: string;
   /** P-10: closed union widened append-only; recipes in src/data/world/entrances.ts. `temple_large` = the large temple variant. */
@@ -588,6 +594,8 @@ export interface WorldExtras {
   regions: WorldRegion[];
   villages: VillageDef[];
   waypoints: WaypointDef[];
+  /** Release points of the dead (spirit healers). Absent = the stone / map-start fallback (no graveyard authored yet). */
+  graveyards?: GraveyardDef[];
   entrances: EntranceDef[];
   roads: RoadDef[];
   water: { id: string; rect: TileRect }[];

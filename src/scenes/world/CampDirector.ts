@@ -118,6 +118,16 @@ export class CampDirector {
     return this.camps.length;
   }
 
+  /**
+   * Centres (world m) of the camps and patrols that still have a member alive: every camp not wiped since its last refresh. Known
+   * exactly on the host; a client knows only its own kills, so it counts every camp (the stricter answer for a release point).
+   */
+  livingCenters(): Pt[] {
+    const out: Pt[] = [];
+    for (const c of this.camps) if (c.dead.size < c.members.length) out.push({ x: c.cx, z: c.cz });
+    return out;
+  }
+
   /** Per-frame: runs the streaming tick every 0.5 s on the host. Never throws. */
   update(dt: number): void {
     if (!G.net.isAuthority) return;

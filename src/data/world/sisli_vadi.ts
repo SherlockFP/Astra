@@ -5,6 +5,7 @@ import { WORLD_PACKS } from './camps';
 import { VILLAGES } from './villages';
 import { CHESTS, CURSED, ENTRANCES, GATHER, GHOST_BOAT, HIDDEN, MINIBOSSES, RARES, SHRINES, VISTAS, WAYPOINTS, WORLD_BOSSES } from './pois';
 import { METIN_SPOTS, METIN_TIERS } from './metin';
+import { GRAVEYARDS } from './graveyards';
 
 /**
  * SISLI VADI, the open-world map (GDD_OPENWORLD §1, §9.1). OWNER: content module. Levels 1-30, 400 x 400 tiles (1600 m), a streamed
@@ -20,6 +21,7 @@ import { METIN_SPOTS, METIN_TIERS } from './metin';
  *                           mini-bosses, world boss schedules, ghost boat
  *  - metin.ts               six metin tiers (waves, adds, aura, pulse, respawn) and 24 spots
  *  - quests.ts              main chain (19), side quests (24), Av Defteri (6)
+ *  - graveyards.ts          release points of the dead (spirit healers): hubs, camp rings, quest areas (250 m rule)
  * Other districts: karakir.ts (skeleton, map 2), sisli_koru.ts (deprecated predecessor, recipes only).
  *
  * Entry: tile (200, 1) facing 0 (+z, into the map) from the Kuzgunkale south gate (the 640 m entry tile (80, 1) x 2.5); the return portal
@@ -66,6 +68,7 @@ const WORLD: WorldExtras = {
   regions: REGIONS,
   villages: VILLAGES,
   waypoints: WAYPOINTS,
+  graveyards: GRAVEYARDS,
   entrances: ENTRANCES,
   roads: ROADS,
   water: WATER,

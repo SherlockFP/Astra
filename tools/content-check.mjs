@@ -413,6 +413,53 @@ function ringDensityIssues(packs, roomId, quests, sideQuests) {
   }
   return { issues: out, band };
 }
+/**
+ * Graveyards (WoW spirit healers, data/world/graveyards.ts). HARD errors on a map that declares graveyards:
+ *  (1) each graveyard stands in a region of its map and 35 m or more from every camp and patrol centre (tiles, 1 tile = 4 m);
+ *  (2) every quest area of the map has a graveyard within 250 m. A quest area is the quest giver's village (when the giver stands in
+ *      one) and each in-band camp (levels q-1..q+1 of the quest's region) that spawns a kill / metin / elite / boss / skill target.
+ * A map with region quests but no graveyards yet is a warning (its quests use the stone / map-start fallback).
+ */
+const GY_CAMP_M = 35, GY_SERVE_M = 250, GY_TILE_M = 4;
+function graveyardIssues(zone, quests) {
+  const out = [];
+  const err = (where, msg) => out.push({ level: 'error', where, msg });
+  const warn = (where, msg) => out.push({ level: 'warn', where, msg });
+  const xy = (p) => ({ x: p[0] * GY_TILE_M, z: p[1] * GY_TILE_M });
+  const gap = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+  const graves = (zone.world?.graveyards ?? []).map((g) => ({ id: g.id, region: g.regionId, ...xy(g.pos) }));
+  const regQuests = quests.filter((q) => q.region && zone.regions.has(q.region));
+  if (!graves.length) {
+    if (regQuests.length) warn(`map ${zone.id}`, `no graveyards authored: ${regQuests.length} region quests use the stone / map-start fallback`);
+    return out;
+  }
+  const seen = new Set();
+  for (const g of graves) {
+    if (seen.has(g.id)) err(`graveyard ${g.id}`, 'duplicate id');
+    seen.add(g.id);
+    if (!zone.regions.has(g.region)) err(`graveyard ${g.id}`, `region ${g.region} is not a region of ${zone.id}`);
+    const camp = zone.packs.find((p) => p.center && gap(g, xy(p.center)) < GY_CAMP_M);
+    if (camp) err(`graveyard ${g.id}`, `camp ${camp.id} is ${Math.round(gap(g, xy(camp.center)))} m away: keep ${GY_CAMP_M} m from every camp`);
+  }
+  for (const q of regQuests) {
+    const areas = [];
+    const giverV = (zone.world?.villages ?? []).find((v) => v.npcs.some((n) => n.id === q.giver));
+    if (giverV) areas.push({ where: `village ${giverV.id}`, p: xy(giverV.center) });
+    const reg = (zone.world?.regions ?? []).find((r) => r.id === q.region);
+    const lo = q.level - 1, hi = q.level + 1;
+    for (const o of q.objectives) {
+      if (!o.target || !['kill', 'metin', 'elite', 'boss', 'skill'].includes(o.kind) || !reg) continue;
+      for (const p of zone.packs) {
+        if (!p.center || p.roomId !== reg.roomId || !p.members.some((m) => m.enemyId === o.target)) continue;
+        if (p.levelRange[0] > hi || p.levelRange[1] < lo) continue;
+        areas.push({ where: `camp ${p.id}`, p: xy(p.center) });
+      }
+    }
+    const far = areas.find((a) => !graves.some((g) => gap(g, a.p) <= GY_SERVE_M));
+    if (far) err(`quest ${q.id}`, `${far.where} has no graveyard within ${GY_SERVE_M} m`);
+  }
+  return out;
+}
 // registries for the season rules (P-29): ids resolve against the real data modules, not a copy
 const { STATUSES } = await imp('src/data/statuses.ts');
 const { DEVICES, PROFESSION_NAMES } = await imp('src/data/devices.ts');
@@ -508,6 +555,18 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
     totalErr += e.length;
     console.log(`\n== camp rings ${id} r1: ${e.length} errors | ${ALL[id].packs.filter((p) => p.roomId === r1.roomId).length} camps and patrols | max mobs within 25 m: L1-2 ${dn.band.get('L1-2')}, L3 ${dn.band.get('L3')}, L4-5 ${dn.band.get('L4-5')}`);
     for (const i of e) console.log('  ERR ', i.where, '-', i.msg);
+  }
+}
+// graveyards (WoW spirit healers): every open-world map that declares them; every region quest of the map has one within 250 m
+if (!want.length || WORLD_IDS.some((id) => want.includes(id)) || want.includes('graveyards')) {
+  const { QUESTS: GY_QUESTS } = await imp('src/data/world/quests.ts');
+  for (const z of ZONES) {
+    const gi = graveyardIssues(z, GY_QUESTS);
+    const e = gi.filter((i) => i.level === 'error'), w = gi.filter((i) => i.level === 'warn');
+    totalErr += e.length;
+    console.log(`\n== graveyards ${z.id}: ${e.length} errors, ${w.length} warns | ${z.world?.graveyards?.length ?? 0} graveyards, ${GY_QUESTS.filter((q) => q.region && z.regions.has(q.region)).length} region quests`);
+    for (const i of e) console.log('  ERR ', i.where, '-', i.msg);
+    for (const i of w) console.log('  warn', i.where, '-', i.msg);
   }
 }
 if (!want.length || want.includes('town')) {

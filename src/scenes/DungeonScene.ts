@@ -1292,7 +1292,7 @@ export class DungeonScene implements GameScene {
       // other modes at the latest checkpoint
       // open world: the last waypoint stone / village this character activated (WorldRuntime.respawnPoint)
       const cp = pvp.respawnPoint() ?? (this.worldRt
-        ? this.worldRt.respawnPoint()
+        ? this.worldRt.respawnPoint({ x: p.position.x, z: p.position.z })
         : st && st.difficulty === 'mythicplus' && this.built ? this.mythicRelease(this.built) : this.checkpoint);
       const fix = this.built?.nav.nearestWalkable(cp.x, cp.z, 6);
       releaseLocalPlayer(this.controller, p, fix?.x ?? cp.x, fix?.z ?? cp.z, cp.yaw);
