@@ -60,6 +60,12 @@ interface PanelRec {
   openedAt: number;
 }
 
+/** Quest messages (accept / ready / done, bounties, world quests, Av Defteri) use the quest toast slot under the zone title. */
+const QUEST_TOAST_RE = /^(Görev|Dünya görevi|Av Defteri)/;
+/** Quest toasts held back while a window covers their slot: at most this many, each for at most this long. */
+const QUEST_PENDING_MAX = 3;
+const QUEST_PENDING_MS = 15000;
+
 /** Input action -> panel id for the global hotkeys handled in UI.update(). */
 const HOTKEYS: { action: 'inventory' | 'character' | 'talents' | 'skills' | 'map' | 'party' | 'mplus' | 'quests' | 'groupFinder' | 'guide'; panel: string }[] = [
   { action: 'inventory', panel: 'inventory' },
@@ -113,6 +119,11 @@ export class UI {
   private openOrder: string[] = [];
   private tooltip!: TooltipLayer;
   private toasts!: Toasts;
+  /** Quest toasts: own top-centre slot (under the zone title), shown only while no window covers it. */
+  private questToasts!: Toasts;
+  private questToastLayer!: HTMLElement;
+  private questPending: { text: string; kind: ToastKind; at: number }[] = [];
+  private questCheckAt = 0;
   private modal!: Modal;
   private loading!: LoadingScreen;
   private labels!: WorldLabels;
@@ -165,6 +176,8 @@ export class UI {
     this.panelLayer = div('layer layer-panels', root);
     this.topLayer = div('layer layer-top', root);
     const toastLayer = div('toasts', this.topLayer);
+    this.questToastLayer = div('toasts toasts-quest', this.topLayer);
+    this.questToasts = new Toasts(this.questToastLayer);
     const modalLayer = div('layer layer-modal', root);
     const ttLayer = div('layer layer-tooltip', root);
     const loadLayer = div('layer layer-loading', root);
@@ -407,8 +420,40 @@ export class UI {
   // ---- toasts ----
 
   toast(text: string, kind: ToastKind = 'info'): void {
-    this.toasts.show(text, kind);
+    if (QUEST_TOAST_RE.test(text)) {
+      this.questPending.push({ text, kind, at: performance.now() });
+      while (this.questPending.length > QUEST_PENDING_MAX) this.questPending.shift();
+    } else {
+      this.toasts.show(text, kind);
+    }
     if (kind === 'error') this.playSfx('ui_error', 0.5);
+  }
+
+  /** Shows held quest toasts once no open window (the docked quest log aside) covers their slot; stale ones are dropped. */
+  private flushQuestToasts(now: number): void {
+    if (!this.questPending.length || now < this.questCheckAt) return;
+    this.questCheckAt = now + 200;
+    this.questPending = this.questPending.filter((t) => now - t.at < QUEST_PENDING_MS);
+    if (!this.questPending.length || this.questSlotCovered()) return;
+    for (const t of this.questPending.splice(0)) this.questToasts.show(t.text, t.kind);
+  }
+
+  /** True when an open window sits over the quest toast slot (a dialog must never be covered by a quest toast). */
+  private questSlotCovered(): boolean {
+    const at = this.questToastLayer.getBoundingClientRect();
+    const cx = at.left + at.width / 2;
+    const x0 = cx - 300;
+    const x1 = cx + 300;
+    const y0 = at.top;
+    const y1 = at.top + 72;
+    for (const rec of this.panels.values()) {
+      if (!rec.panel.isOpen || rec.panel.id === 'questlog') continue;
+      for (const w of Array.from(rec.host.querySelectorAll<HTMLElement>('.pg-win'))) {
+        const r = w.getBoundingClientRect();
+        if (r.left < x1 && r.right > x0 && r.top < y1 && r.bottom > y0) return true;
+      }
+    }
+    return false;
   }
 
   /** Toast with trusted HTML (rarity-coloured spans). */
@@ -669,6 +714,7 @@ export class UI {
       this.labels.update(now, rdt, { hoverId: hud.hover?.id ?? null, targetId: G.player?.targetId ?? null });
     }
     this.toasts.update(now);
+    this.flushQuestToasts(now);
     this.loading.update(rdt);
 
     // a tooltip whose owner element vanished or a locked pointer must not linger
