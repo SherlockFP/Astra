@@ -5,7 +5,7 @@ import {
 } from './kit';
 
 /**
- * KEMIK MAHZENI (skeleton crypt) - GDD_CONTENT 4.1. Level 8-18, M+ 13:00, 250 forces (314 available).
+ * KEMIK MAHZENI (skeleton crypt) - GDD_CONTENT 4.1. Level 8-18, M+ 13:00, 235 forces required (295 available; pack-size pass: required packs 3-6 members).
  * Layout (rooms / doors / packs / bosses) is generated from docs/GDD_CONTENT.layout.json; decoration is hand placed.
  * Positions are written in GDD coordinates (see the COORDINATES note in kit.ts).
  */
@@ -113,29 +113,29 @@ const DOORS: DoorDef[] = [
 
 const PACKS_RAW: PackDef[] = [
   pack('d1_p01', 'k_giris', 6.5, 30, 9, [['skel_minion', 0.3, 0], ['skel_minion', -0.38, 0.35], ['skel_minion', 0.06, -0.66], ['skel_archer', 0, -1.25]]),
-  pack('d1_p02', 'kemik_salonu', 4.5, 25, 8, [['skel_rattler', 0.3, 0], ['skel_rattler', -0.38, 0.35], ['skel_rattler', 0.06, -0.66], ['skel_rattler', 0.48, 0.62], ['skel_rattler', -0.88, -0.16], ['skel_rattler', 0.83, -0.53], ['skel_rattler', -0.28, 1.03], ['skel_rattler', -0.53, -1.02]]),
-  pack('d1_p03', 'kemik_salonu', 10, 25, 10, [['skel_minion', 0.3, 0], ['skel_minion', -0.38, 0.35], ['skel_minion', 0.06, -0.66], ['skel_mage', 1.02, -0.73]]),
-  pack('d1_p04', 'kemik_salonu', 4, 20, 14, [['crypt_ghoul', 0.3, 0], ['crypt_ghoul', -0.38, 0.35], ['skel_archer', -0.82, -1.04], ['skel_archer', 0.03, -1.33]]),
-  pack('d1_p05', 'kemik_salonu', 10, 19.5, 14, [['skel_warrior', 0.3, 0], ['skel_minion', -0.38, 0.35], ['skel_minion', 0.06, -0.66], ['skel_mage', 0.5, -1.15]]),
-  pack('d1_p06', 'kemik_salonu', 7, 22, 8, [['crypt_ghoul', 0.3, 0], ['skel_minion', -0.38, 0.35], ['skel_minion', 0.06, -0.66]], { patrol: [[7, 26], [7, 18.5]] }),
+  pack('d1_p02', 'kemik_salonu', 3.5, 25.5, 5, [['skel_rattler', 0.3, 0], ['skel_rattler', -0.38, 0.35], ['skel_rattler', 0.06, -0.66], ['skel_rattler', 0.48, 0.62], ['skel_rattler', -0.88, -0.16]]),
+  pack('d1_p03', 'kemik_salonu', 10.5, 25.5, 10, [['skel_minion', 0.3, 0], ['skel_minion', -0.38, 0.35], ['skel_minion', 0.06, -0.66], ['skel_mage', 1.02, -0.73]]),
+  pack('d1_p04', 'kemik_salonu', 3.5, 19, 14, [['crypt_ghoul', 0.3, 0], ['crypt_ghoul', -0.38, 0.35], ['skel_archer', -0.82, -1.04], ['skel_archer', 0.03, -1.33]]),
+  pack('d1_p05', 'kemik_salonu', 10.5, 19, 14, [['skel_warrior', 0.3, 0], ['skel_minion', -0.38, 0.35], ['skel_minion', 0.06, -0.66], ['skel_mage', 0.5, -1.15]]),
+  pack('d1_p06', 'kemik_salonu', 7, 22, 8, [['crypt_ghoul', 0.3, 0], ['skel_minion', -0.38, 0.35], ['skel_minion', 0.06, -0.66]]),
   pack('d1_p07', 'k_bekci', 6.5, 14.8, 9, [['skel_warrior', 0, 0], ['skel_archer', 0, -1.25]]),
   pack('d1_p08', 'k_fener', 14, 6.5, 6, [['bone_skull', 0.3, 0], ['bone_skull', -0.38, 0.35], ['bone_skull', 0.06, -0.66], ['bone_skull', 0.48, 0.62], ['bone_skull', -0.88, -0.16], ['bone_skull', 0.83, -0.53]]),
   pack('d1_p09', 'lahit_galerisi', 19.5, 4.5, 12, [['skel_minion', 0.3, 0], ['skel_minion', -0.38, 0.35], ['skel_minion', 0.06, -0.66], ['skel_minion', 0.48, 0.62], ['skel_mage', 1.04, -0.69]]),
   pack('d1_p10', 'lahit_galerisi', 24.5, 4.5, 13, [['crypt_ghoul', 0.3, 0], ['crypt_ghoul', -0.38, 0.35], ['crypt_wraith', 1.21, -0.3]]),
-  pack('d1_p11', 'lahit_galerisi', 21.5, 8, 12, [['crypt_rat', 0.3, 0], ['crypt_rat', -0.38, 0.35], ['crypt_rat', 0.06, -0.66], ['crypt_rat', 0.48, 0.62], ['crypt_rat', -0.88, -0.16], ['crypt_rat', 0.83, -0.53], ['crypt_rat', -0.28, 1.03], ['crypt_rat', -0.53, -1.02], ['crypt_rat', 1.15, 0.42], ['crypt_rat', -1.2, 0.49], ['crypt_rat', 0.58, -1.23], ['crypt_rat', 0.43, 1.36]]),
+  pack('d1_p11', 'lahit_galerisi', 21.5, 8, 5, [['crypt_rat', 0.3, 0], ['crypt_rat', -0.38, 0.35], ['crypt_rat', 0.06, -0.66], ['crypt_rat', 0.48, 0.62], ['crypt_rat', -0.88, -0.16]]),
   pack('d1_p12', 'lahit_galerisi', 19.5, 11.5, 12, [['bone_golem', 0, 0]]),
   pack('d1_p13', 'lahit_galerisi', 24.5, 11.5, 14, [['skel_minion', 0.3, 0], ['skel_minion', -0.38, 0.35], ['skel_archer', 1.54, -0.1], ['skel_archer', 1.06, 0.66], ['skel_mage', 0.58, 1.43]]),
   pack('d1_p14', 'k_mum', 28.5, 6.5, 7, [['skel_minion', 0.3, 0], ['skel_minion', -0.38, 0.35], ['skel_archer', 1.25, 0]]),
   pack('d1_p15', 'mum_odasi', 33, 5, 14, [['skel_minion', 0.3, 0], ['skel_minion', -0.38, 0.35], ['crypt_wraith', 0.84, -1.03], ['crypt_wraith', 1.3, -0.26]]),
   pack('d1_p16', 'mum_odasi', 36, 8.5, 14, [['skel_warrior', 0, 0], ['skel_mage', 1.2, 0], ['skel_mage', 0.92, 0.85]]),
-  pack('d1_p17', 'mum_odasi', 32.5, 8.5, 10, [['skel_rattler', 0.3, 0], ['skel_rattler', -0.38, 0.35], ['skel_rattler', 0.06, -0.66], ['skel_rattler', 0.48, 0.62], ['skel_rattler', -0.88, -0.16], ['skel_rattler', 0.83, -0.53], ['skel_rattler', -0.28, 1.03], ['skel_rattler', -0.53, -1.02], ['skel_rattler', 1.15, 0.42], ['skel_rattler', -1.2, 0.49]]),
+  pack('d1_p17', 'mum_odasi', 32.5, 8.5, 5, [['skel_rattler', 0.3, 0], ['skel_rattler', -0.38, 0.35], ['skel_rattler', 0.06, -0.66], ['skel_rattler', 0.48, 0.62], ['skel_rattler', -0.88, -0.16]]),
   pack('d1_p18', 'k_kuyu', 33.5, 13, 11, [['crypt_ghoul', 0.24, 0], ['crypt_ghoul', -0.3, 0.35], ['bone_skull', 0.05, -0.66], ['bone_skull', 0.38, 0.62], ['bone_skull', -0.7, -0.16]]),
   pack('d1_p19', 'unutulmus_mezarlar', 31.5, 29, 14, [['skel_minion', 0.3, 0], ['skel_minion', -0.38, 0.35], ['skel_minion', 0.06, -0.66], ['skel_minion', 0.48, 0.62], ['skel_archer', 0.09, 1.33], ['skel_archer', -0.78, 1.08]], { optional: true }),
   pack('d1_p20', 'unutulmus_mezarlar', 35.5, 31, 18, [['bone_golem', 0.3, 0], ['skel_rattler', -0.38, 0.35], ['skel_rattler', 0.06, -0.66], ['skel_rattler', 0.48, 0.62], ['skel_rattler', -0.88, -0.16], ['skel_rattler', 0.83, -0.53], ['skel_rattler', -0.28, 1.03]], { optional: true }),
   pack('d1_p21', 'unutulmus_mezarlar', 31.5, 32.3, 18, [['crypt_ghoul', 0.3, 0], ['crypt_ghoul', -0.38, 0.24], ['crypt_wraith', 0.26, 0.9], ['crypt_wraith', -0.63, 0.81]], { optional: true }),
   pack('d1_p22', 'k_cukur', 25.5, 19.5, 6, [['skel_archer', 0, 0.45], ['skel_archer', 0, -0.45]]),
   pack('d1_p23', 'ceset_cukuru', 17, 18.5, 16, [['crypt_ghoul', 0.3, 0], ['crypt_ghoul', -0.38, 0.35], ['crypt_ghoul', 0.06, -0.66], ['skel_mage', -1.24, -0.19]]),
-  pack('d1_p24', 'ceset_cukuru', 21.5, 22, 12, [['skel_rattler', 0.3, 0], ['skel_rattler', -0.38, 0.35], ['skel_rattler', 0.06, -0.66], ['skel_rattler', 0.48, 0.62], ['skel_rattler', -0.88, -0.16], ['skel_rattler', 0.83, -0.53], ['skel_rattler', -0.28, 1.03], ['skel_rattler', -0.53, -1.02], ['skel_mage', -0.78, 0.98]]),
+  pack('d1_p24', 'ceset_cukuru', 21.5, 22, 8, [['skel_rattler', 0.3, 0], ['skel_rattler', -0.38, 0.35], ['skel_rattler', 0.06, -0.66], ['skel_rattler', 0.48, 0.62], ['skel_mage', -0.78, 0.98]]),
   pack('d1_p25', 'ceset_cukuru', 16.8, 22.8, 15, [['skel_warrior', 0.3, 0], ['skel_minion', -0.38, 0.35], ['skel_minion', 0.06, -0.66], ['crypt_wraith', -1.12, 0.55]]),
   pack('d1_p26', 'cokuk_tunel', 20.5, 15, 6, [['crypt_rat', 0.24, 0], ['crypt_rat', -0.3, 0.35], ['crypt_rat', 0.05, -0.66], ['crypt_rat', 0.38, 0.62], ['crypt_rat', -0.7, -0.16], ['crypt_rat', 0.66, -0.53]], { optional: true }),
   pack('d1_p27', 'k_taht', 18.5, 26.5, 12, [['skel_warrior', 0.3, 0], ['skel_warrior', -0.38, 0.35]]),
@@ -514,7 +514,7 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
 const PACK_EXTRA: Record<string, Partial<PackDef>> = {
   d1_p02: { dormant: { kind: 'bones', wakeRadius: 6 }, big: true, note: 'Bone piles wake when a player comes within 6 m (Skeletons_Awaken_Floor).' },
   d1_p04: { big: true },
-  d1_p06: { big: true, note: 'Patrol walks N-S through the hall (12 s per leg) and body-pulls into p03/p05.' },
+  d1_p06: { big: true, note: 'Stands at the hall centre (no patrol since the pull-spacing pass: the patrol crossed the pull lanes of p02-p05).' },
   d1_p09: { big: true },
   d1_p11: { dormant: { kind: 'coffin', wakeRadius: 5 }, big: true, note: 'Bursts out of 3 coffins when any player enters the middle row.' },
   d1_p17: { dormant: { kind: 'bones', wakeRadius: 6 }, note: 'Dormant bone piles under the pews.' },
@@ -534,7 +534,7 @@ export const KEMIK_MAHZENI: DungeonDef = {
   lore: 'Kuzgunkale\'nin altında, unutulmuş kralların kemikleri yatar. Kemik Lordu Azrakel, ölümsüzlüğü filakterlerine bağladı ve mahzenin her köşesinde ölüleri yeniden ayağa kaldırdı. Bekçi Kaldur hâlâ kapıyı tutar; ruh kuyusu ise diriler için açlıkla fokurdar.',
   levelRange: [8, 18],
   timerSec: 790,
-  forcesRequired: 250,
+  forcesRequired: 235,
   theme: THEME,
   grid: { w: 44, h: 44 },
   rooms: withProps(ROOMS.map((r) => ({ ...r, ...ROOM_EXTRA[r.id] })), D.out),
