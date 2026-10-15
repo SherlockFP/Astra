@@ -37,7 +37,7 @@ interface VarietyPatch {
 
 /** Quest id -> new objectives (and flavour text) for levelling quests (levels 1-15 of Sisli Vadi). */
 export const VARIETY: Record<string, VarietyPatch> = {
-  // ---- main chain (mq_01..mq_06 keep their objectives: the first-10-minutes path in tools/pace-check.mjs)
+  // ---- main chain (mq_01..mq_07 objectives live in quests.ts EXTRA_MAIN: the first-10-minutes path in tools/pace-check.mjs)
   mq_08_ciftlik_isgali: {
     objectives: [kill('ow_boar', 12, 'Yaban Domuzu öldür'), drop('item_saman_cobani', 5, ['ow_scarecrow'], 'Korkuluklardan Saman Demeti topla (5)')],
     offer: 'Domuzlar tarlaları ezdi, korkuluklar da yerinden oynadı. Domuzları durdur, korkuluklardan düşen samanla ekinleri yeniden dik.',

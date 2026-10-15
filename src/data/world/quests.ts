@@ -39,6 +39,10 @@ interface Extra extends Reward {
   progress: string;
   done: string;
   turnIn?: string;
+  /** Region of a main quest (use / interact props, escort path and hidden areas are placed in it). */
+  region?: string;
+  /** Quest items handed over on accept (use objectives need them in the bag). */
+  startItems?: { id: string; count: number }[];
   /** NPC id that offers the quest when it differs from the layout giver (second hub NPC, so the chain does not walk back to Ferhat). */
   giver?: string;
   unlocks?: string[];
@@ -53,45 +57,47 @@ const dungeon = (target: string, text: string): QuestObjective => obj('dungeon',
 const collect = (target: string, count: number, text: string): QuestObjective => obj('collect', target, count, text);
 const explore = (target: string, text: string): QuestObjective => obj('explore', target, 1, text);
 const drop = (target: string, count: number, from: string[], text: string): QuestObjective => ({ kind: 'drop', target, count, from, chance: QUEST_DROP_CHANCE, text });
+const use = (item: string, target: string, count: number, text: string): QuestObjective => ({ kind: 'use', item, target, count, text });
+/** escort = the defend event: stay beside the escorted NPC while its ambushers attack (QuestSystem.tickEscort). */
+const escort = (seconds: number, text: string): QuestObjective => ({ kind: 'escort', count: seconds, text });
 
 /** Main chain "Kadim Mühür" (§6.2). Rewards: items as the layout text names them, generic = "Büyülü / Nadir / Destansı" drops. */
 const EXTRA_MAIN: Record<string, Extra> = {
   mq_01_kuzgunun_cagrisi: {
     objectives: [talk('npc_g_muhtar', "Gümüşdere Köyü'nde Muhtar Ferhat ile konuş")], turnIn: 'npc_g_muhtar',
     items: [{ id: 'scroll_town', count: 2 }, { id: 'pot_hp_1', count: 3 }],
-    offer: "Kadim Mühür çatlıyor. Güney Kapısı'ndan çık ve Gümüşdere Köyü'nde Muhtar Ferhat'ı bul.",
-    progress: "Gümüşdere Köyü'nde Muhtar Ferhat ile konuş.", done: 'Muhtar Ferhat seni bekliyordu. Vadinin işi uzun olacak.',
+    offer: "Kuzgunkale'nin surlarında bir gölge belirdi. Güney Kapısı'ndan çık, Gümüşdere'de Muhtar Ferhat seni bekliyor.",
+    progress: "Gümüşdere Köyü'nde Muhtar Ferhat ile konuş.", done: 'Ferhat gölgeyi de görmüş. Vadinin işi uzun olacak.',
   },
   mq_02_fare_yuvasi: {
     objectives: [kill('ow_rat', 10, 'Orman Sıçanı öldür')], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] }, turnIn: 'npc_g_ciftci',
     offer: "Fareler tarlaları bastı. Fare Yuvası'nı temizle, sonra Çiftçi Hatice'ye haber ver.", progress: 'Orman Sıçanı öldür (10).', done: 'Tarlalar yeniden güvende.',
   },
   mq_03_balcik_temizligi: {
-    objectives: [drop('item_camur_kesesi', 5, ['ow_slime'], 'Yeşil Balçıktan Çamur Kesesi topla (5)')], items: [{ id: 'pot_hp_1', count: 3 }],
+    objectives: [use('item_camur_kesesi', 'qt_kutsama_tasi', 4, "Kutsama Taşı'nda Çamur Kesesi kutsat (4)")], startItems: [{ id: 'item_camur_kesesi', count: 4 }], region: 'r1', items: [{ id: 'pot_hp_1', count: 3 }],
     giver: 'npc_g_ciftci', turnIn: 'npc_g_rahibe',
-    offer: 'Göl kıyısındaki balçıklar köye doğru sızıyor. Balçıkların çamur keselerini topla; Rahibe Meryem bununla merhem yapacak.',
-    progress: 'Yeşil Balçıktan Çamur Kesesi topla (5).', done: 'Balçıklar geri çekildi. Merhem hazır.',
+    offer: "Hatice'nin verdiği dört Çamur Kesesi'ni Kutsama Taşı'nda kutsat. Rahibe Meryem bununla merhem yapacak.",
+    progress: "Kutsama Taşı'nda Çamur Kesesi kutsat (4).", done: 'Merhem hazır. Rahibe Meryem teşekkür etti.',
   },
   mq_04_samani_sustur: {
-    // kill, not the Şifa Duası interrupt: the shaman casts its heal only when an ally is below 80 % HP and kites at 7-13 m, so the
-    // interrupt could not be counted in play. Shamans spawn in the level 3 band; the quest area is the non-elite camp r1_c11 (r1_c04 is the elite mq_05 camp).
-    objectives: [kill('ow_goblin_shaman', 3, "Goblin Şamanı'nı öldür (3)")], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
+    // defend (escort, the event of the chain): the scout walks the r1 road while ambushers come in waves. The shaman kills stay in the open world.
+    objectives: [escort(90, 'Yaralı gözcüyü 90 sn koru (üç dalga pusu)')], region: 'r1', choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
     giver: 'npc_g_rahibe', turnIn: 'npc_g_muhtar',
-    offer: 'Goblin Şamanları yaralılara şifa okuyup yağmacıları ayakta tutuyor. Üç şamanı yere ser; sonra Muhtar Ferhat\'a dön.', progress: "Goblin Şamanı'nı öldür (3).", done: 'Şamanlar susturuldu. Yağmacılar artık dua okuyamayacak.',
+    offer: 'Yaralı gözcü kampa dönmek istiyor, yolda goblin pususu var. Onu kampa kadar koru; sonra Muhtar Ferhat\'a dön.', progress: 'Yaralı gözcüyü 90 sn koru.', done: 'Gözcü kurtuldu. Pusuya düşenler dağıldı.',
   },
   mq_05_yagmaci_kampi: {
     objectives: [boss('mb_girtlak', 1, "Yağmacı Başı Gırtlak'ı öldür")], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
-    offer: 'Yağmacılar kuzeydeki kampı ele geçirdi. Başlarını getir.', progress: "Yağmacı Başı Gırtlak'ı öldür.", done: 'Yağmacılar dağıldı. Köy rahat nefes alıyor.',
+    offer: 'Gırtlak kampından kaçtı ama izi taze. Yakala ve başını getir.', progress: "Yağmacı Başı Gırtlak'ı öldür.", done: "Gırtlak'ın gölgesi dağıldı. Köy rahat nefes alıyor.",
   },
   mq_06_ilk_metin: {
     objectives: [metin('metin_keder', "Keder Metini'ni yık")], items: [{ id: 'metin_kalintisi', count: 5 }, { id: 'beceri_kitabi_1', count: 1 }],
     offer: "Vadinin ortasında kara bir taş var. Keder Metini'ni yık.", progress: "Keder Metini'ni yık.", done: 'Taş çatladı. Kalıntılar artık senin.',
   },
   mq_07_kopruyu_gec: {
-    objectives: [explore('r1x_tas_kopru', "Taş Köprü'yü geç"), talk('npc_c_riza', "Altın Ambar Çiftliği'nde Çiftlik Sahibi Rıza ile konuş")],
-    turnIn: 'npc_c_riza', unlocks: ['wp_ciftlik'],
-    offer: 'Köprünün ötesinde bir çiftlik var. Sahibi Rıza yardım bekliyor.', progress: "Taş Köprü'yü geç ve Rıza ile konuş.",
-    done: 'Çiftlik kapısı açıldı. Yeni yardımlar seni bekliyor.',
+    objectives: [explore('hd_r1', "Kurtların Gizli Çayırı'nı bul (sandık)")],
+    turnIn: 'npc_g_muhtar', unlocks: ['wp_ciftlik'], region: 'r1',
+    offer: "Ferhat'ın haritasında Kurtların Gizli Çayırı'nda bir sandık işaretli. Git, bul ve sandığı aç.", progress: "Kurtların Gizli Çayırı'nı bul.",
+    done: "Sandık senin. Rıza'nın çiftliğine giden yol artık açık.",
   },
   mq_08_ciftlik_isgali: {
     objectives: [kill('ow_boar', 12, 'Yaban Domuzu öldür'), kill('ow_scarecrow', 8, 'Korkuluk öldür')], generic: [{ rarity: 'uncommon', slot: 'armor' }],
@@ -268,13 +274,13 @@ const EXTRA_SIDE: Record<string, Extra> = {
  * One-time quest XP (F3 first 10 minutes + XP parity, 2026-10-13): xpPct of the 19 main and 24 side quests, replacing the layout
  * values. Bands 6+ give ~35 % of their XP to one-time quests (region quests in quests_extra.ts follow the same factor). Band 1-5 is
  * the tutorial band and may take up to 60 %: mq_03..mq_07 are 15-25 % each. mq_03 + mq_04 stay below the level 3 threshold before
- * the mq_05 boss (Gırtlak), so mq_04 (skill quest, level 3) is 26 %: level 3 lands right after quest 4 (first-hour target, pace-check). mq_01 / mq_02 are 8.5x / 3x their layout value:
+ * the mq_05 boss (Gırtlak), so mq_04 (escort defend, level 3) is 26 %: level 3 lands right after quest 4 (first-hour target, pace-check). mq_01 / mq_02 are 8.5x / 3x their layout value:
  * level 2 lands right after quest 2 (EARLY_NEED_MULT in systems/Progression.ts doubles the levels 1-5 needs; quest XP % is of that need).
  * Check with `node tools/pace-check.mjs`. docs/GDD_OPENWORLD.layout.json (and its §6.2-6.3 tables) still show the layout values.
  */
 const XP_PCT: Record<string, number> = {
   mq_01_kuzgunun_cagrisi: 85, mq_02_fare_yuvasi: 60, mq_03_balcik_temizligi: 20, mq_04_samani_sustur: 26,
-  mq_05_yagmaci_kampi: 20, mq_06_ilk_metin: 25, mq_07_kopruyu_gec: 20, mq_08_ciftlik_isgali: 6,
+  mq_05_yagmaci_kampi: 20, mq_06_ilk_metin: 25, mq_07_kopruyu_gec: 14, mq_08_ciftlik_isgali: 6,
   mq_09_mezarligin_sirri: 7, mq_10_kemik_mahzeni: 13, mq_11_curukkok: 13, mq_12_haydut_kalesi: 11,
   mq_13_kizilkaya_haberi: 9, mq_14_bataklik_cadisi: 14, mq_15_kor_ocagi: 15, mq_16_ork_istilasi: 16,
   mq_17_lanetli_yol: 10, mq_18_kara_anit: 13, mq_19_kuzgunkaleye_donus: 18,
@@ -305,6 +311,7 @@ function quest(
   if (p.place) def.place = p.place;
   if (p.prereq) def.prereq = [p.prereq];
   if (x.turnIn) def.turnIn = x.turnIn;
+  if (x.startItems) def.startItems = x.startItems;
   if (x.unlocks) def.unlocks = x.unlocks;
   return def;
 }
@@ -313,7 +320,7 @@ function quest(
 export const MAIN_QUESTS: QuestDef[] = LAYOUT.quests.main.map((q, i) =>
   quest(
     {
-      id: q.id, name: q.name, level: q.level, giver: q.giver, xpPct: XP_PCT[q.id] ?? q.xpPct, goldPerLevel: q.goldPerLevel, main: true, place: q.place,
+      id: q.id, name: q.name, level: q.level, giver: q.giver, xpPct: XP_PCT[q.id] ?? q.xpPct, goldPerLevel: q.goldPerLevel, main: true, place: q.place, region: EXTRA_MAIN[q.id]?.region,
       prereq: i > 0 ? LAYOUT.quests.main[i - 1].id : undefined,
     },
     EXTRA_MAIN[q.id] ?? { objectives: [], offer: q.goal, progress: q.goal, done: q.goal },
