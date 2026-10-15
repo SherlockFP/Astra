@@ -38,6 +38,9 @@ const GATES: Record<string, VillageDef['gates']> = {
   kamp_tarla_karakol: [{ id: 'guney', pos: [0, 12], rot: 0, width: 8 }],
   kamp_gecit_karakol: [{ id: 'guney', pos: [0, 12], rot: 0, width: 8 }],
   kamp_bataklik_konak: [{ id: 'guney', pos: [0, 12], rot: 0, width: 8 }],
+  // Orta Karakol (bounds 10 m) had no gate: its palisade closed the ring and cut the camp, its waypoint and quest NPC Gozcu Selim off
+  // from the map. The gate faces west, to the Gumusdere road.
+  kamp_orta_karakol: [{ id: 'bati', pos: [-10, 0], rot: 90, width: 8 }],
 };
 
 /** Hand-placed dressing from the layout rows (metres, rot in degrees). */

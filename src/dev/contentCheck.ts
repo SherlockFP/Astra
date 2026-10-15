@@ -282,7 +282,52 @@ export function buildNav(def: DungeonDef, models: ModelDb): NavMask {
     if (Math.max(f.hx, f.hz) < 0.25) continue;
     blockRect(nav, f.cx, f.cz, f.hx, f.hz, f.rot);
   }
+  // open-world villages and camps: their palisade (world/WorldDecor.ts buildPalisade) closes the ring of the bounds except the gaps
+  // at the gates, so a walled place with no gate is cut off from the rest of the map (the flood below sees that)
+  if (def.world) {
+    for (const v of def.world.villages) {
+      const cx = sceneW(v.center[0]), cz = sceneW(v.center[1]);
+      const R = Math.max(v.bounds[0], v.bounds[1]) + 2;
+      for (let j = Math.floor(cz - R); j <= Math.ceil(cz + R); j++) for (let i = Math.floor(cx - R); i <= Math.ceil(cx + R); i++) {
+        if (i >= 0 && j >= 0 && i < W && j < H && palisadeBlocks(v, i + 0.5 - cx, j + 0.5 - cz)) nav.walk[j * W + i] = 0;
+      }
+    }
+  }
   return nav;
+}
+
+/**
+ * Palisade of a village or camp, local metres from its centre (x east, z south). Walls are 1.2 m thick on the bounds rectangle, corner
+ * towers r 1.2 m; a wall piece is skipped when its centre is within gate width / 2 + 2 m of a gate (piece length about 4 m), so the
+ * gap is the gate width plus about 4 m. Mirrors WorldDecor.buildPalisade.
+ */
+function palisadeBlocks(v: { bounds: [number, number]; gates: { pos: [number, number]; width: number }[] }, x: number, z: number): boolean {
+  const [bx, bz] = v.bounds;
+  const ax = Math.abs(x), az = Math.abs(z);
+  if (Math.hypot(ax - bx, az - bz) <= 1.2) return true;
+  const nsWall = Math.abs(az - bz) <= 0.6 && ax <= bx + 0.6; // north / south wall (z = +-bz)
+  const ewWall = Math.abs(ax - bx) <= 0.6 && az <= bz + 0.6; // east / west wall (x = +-bx)
+  if (!nsWall && !ewWall) return false;
+  // the wall piece centre (on the wall line) against each gate point, as WorldDecor does: a gate may sit a few metres inside the line
+  if (v.gates.some((g) => Math.hypot(x - g.pos[0], z - g.pos[1]) < g.width / 2 + 2)) return false;
+  return true;
+}
+
+/**
+ * Open-world map check helper (tools/content-check.mjs): the walkability of a map as checkDungeon builds it (rooms, collide props,
+ * village palisades), flooded from its start. walkable(wx, wz, r): every cell within r m is open. reachable(wx, wz): a walkable cell
+ * within one cell of (wx, wz) is reached from the start.
+ */
+export function navReach(def: DungeonDef, models: ModelDb): { walkable: (wx: number, wz: number, r: number) => boolean; reachable: (wx: number, wz: number) => boolean } {
+  const nav = buildNav(def, models);
+  flood(nav, sceneW(def.start.pos[0]), sceneW(def.start.pos[1]));
+  const reachable = (wx: number, wz: number): boolean => {
+    for (let j = Math.floor(wz) - 1; j <= Math.floor(wz) + 1; j++) for (let i = Math.floor(wx) - 1; i <= Math.floor(wx) + 1; i++) {
+      if (i >= 0 && j >= 0 && i < nav.w && j < nav.h && nav.reach[j * nav.w + i]) return true;
+    }
+    return false;
+  };
+  return { walkable: (wx, wz, r) => clearAt(nav, wx, wz, r), reachable };
 }
 
 function flood(nav: NavMask, sx: number, sz: number): void {

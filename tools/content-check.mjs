@@ -604,6 +604,36 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id)) || want.includes('
   for (const i of xe) console.log('  ERR ', i.where, '-', i.msg);
   for (const i of xw) console.log('  warn', i.where, '-', i.msg);
 }
+// quest NPCs of the open-world maps: every quest giver, turn-in and talk target (and every 'quest' role NPC) stands on clear ground and is
+// path-reachable from the map's start, on the nav checkDungeon builds (rooms, props, village palisades with their gates)
+if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
+  let gE = 0, gN = 0;
+  const offerers = new Set(); // NPC ids that give, take in or are talked to by a quest
+  const { QUESTS: ALL_QUESTS } = await imp('src/data/world/quests.ts');
+  for (const q of ALL_QUESTS) {
+    if (q.giver) offerers.add(q.giver);
+    if (q.turnIn) offerers.add(q.turnIn);
+    for (const o of q.objectives ?? []) if (o.kind === 'talk' && o.target) offerers.add(o.target);
+  }
+  for (const z of ZONES) {
+    if (want.length && !want.includes(z.id)) continue;
+    const reach = cc.navReach(ALL[z.id], models);
+    for (const v of z.world.villages) {
+      const cx = (v.center[0] + 0.5) * 4, cz = (v.center[1] + 0.5) * 4; // scene tile centre -> metres (contentCheck sceneW)
+      for (const n of v.npcs) {
+        if (!offerers.has(n.id) && n.role !== 'quest') continue;
+        gN++;
+        const wx = cx + n.pos[0], wz = cz + n.pos[2];
+        const where = `npc ${n.id}`;
+        const at = `${v.id} at ${(wx / 4).toFixed(2)},${(wz / 4).toFixed(2)} (world tiles)`;
+        if (!reach.walkable(wx, wz, 0.8)) { gE++; console.log('  ERR ', where, '-', `${at} stands on blocked ground`); }
+        else if (!reach.reachable(wx, wz)) { gE++; console.log('  ERR ', where, '-', `${at} is not reachable from the map start`); }
+      }
+    }
+  }
+  totalErr += gE;
+  console.log(`\n== quest npc ground: ${gE} errors | ${gN} quest NPCs checked on clear, reachable ground`);
+}
 // starting-zone camp rings (Sisli Vadi r1): the level 1-2 camps keep 25 m apart, and no level 2+ jump within 40 m of a quest camp
 if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
   for (const id of WORLD_IDS) {
