@@ -275,18 +275,21 @@ const EXTRA_SIDE: Record<string, Extra> = {
  * One-time quest XP (F3 first 10 minutes + XP parity, 2026-10-13): xpPct of the 19 main and 24 side quests, replacing the layout
  * values. Bands 6+ give ~35 % of their XP to one-time quests (region quests in quests_extra.ts follow the same factor). Band 1-5 is
  * the tutorial band and may take up to 60 %: mq_03..mq_07 are 15-25 % each. mq_03 + mq_04 stay below the level 3 threshold before
- * the mq_05 boss (Gırtlak), so mq_04 (escort defend, level 3) is 26 %: level 3 lands right after quest 4 (first-hour target, pace-check). mq_01 / mq_02 are 8.5x / 3x their layout value:
+ * the mq_05 boss (Gırtlak). mq_04 (escort defend) is level 2 (layout had 3): the level is also the GATE (QuestSystem.stateOf locks a quest
+ * above the player's level), and at level 3 it could not be taken before the level 3 that only its own turn-in gives, so the chain stalled
+ * on 18 grind kills. At level 2 it is taken right after quest 3 and its 43 % of xpToNext(2) (344 XP, the old 26 % of xpToNext(3)) lands level 3
+ * right after quest 4 (first-hour target, pace-check). mq_01 / mq_02 are 8.5x / 3x their layout value:
  * level 2 lands right after quest 2 (EARLY_NEED_MULT in systems/Progression.ts doubles the levels 1-5 needs; quest XP % is of that need).
  * Check with `node tools/pace-check.mjs`. docs/GDD_OPENWORLD.layout.json (and its §6.2-6.3 tables) still show the layout values.
  */
 const XP_PCT: Record<string, number> = {
-  mq_01_kuzgunun_cagrisi: 85, mq_02_fare_yuvasi: 60, mq_03_balcik_temizligi: 20, mq_04_samani_sustur: 26,
-  mq_05_yagmaci_kampi: 20, mq_06_ilk_metin: 25, mq_07_kopruyu_gec: 14, mq_08_ciftlik_isgali: 6,
+  mq_01_kuzgunun_cagrisi: 85, mq_02_fare_yuvasi: 60, mq_03_balcik_temizligi: 20, mq_04_samani_sustur: 43,
+  mq_05_yagmaci_kampi: 12, mq_06_ilk_metin: 25, mq_07_kopruyu_gec: 14, mq_08_ciftlik_isgali: 6,
   mq_09_mezarligin_sirri: 7, mq_10_kemik_mahzeni: 13, mq_11_curukkok: 13, mq_12_haydut_kalesi: 11,
   mq_13_kizilkaya_haberi: 9, mq_14_bataklik_cadisi: 14, mq_15_kor_ocagi: 15, mq_16_ork_istilasi: 16,
   mq_17_lanetli_yol: 10, mq_18_kara_anit: 13, mq_19_kuzgunkaleye_donus: 18,
-  sq_g_01_kurt_tehlikesi: 3, sq_g_02_geyik_derisi: 3, sq_g_03_orumcek_aglari: 3, sq_g_04_ari_yuvasi: 3,
-  sq_g_05_mantar_halkasi: 3, sq_g_06_degirmen: 3, sq_c_01_bugday_hirsizlari: 4, sq_c_02_korkuluk_sirri: 4,
+  sq_g_01_kurt_tehlikesi: 25, sq_g_02_geyik_derisi: 25, sq_g_03_orumcek_aglari: 9, sq_g_04_ari_yuvasi: 12,
+  sq_g_05_mantar_halkasi: 12, sq_g_06_degirmen: 12, sq_c_01_bugday_hirsizlari: 4, sq_c_02_korkuluk_sirri: 4,
   sq_c_03_terk_edilmis_ciftlik: 4, sq_c_04_mantar_kokusu: 4, sq_c_05_haydut_devriyesi: 4, sq_k_01_gol_kiyisi: 5,
   sq_k_02_warg_sürüsü: 5, sq_k_03_gozcu_kulesi: 5, sq_k_04_gergedan: 5, sq_k_05_agit_isigi: 6,
   sq_k_06_zehirli_magara: 8, sq_k_07_ciyan_cukuru: 6, sq_s_01_kanyon_gecidi: 7, sq_s_02_tas_ocagi: 7,

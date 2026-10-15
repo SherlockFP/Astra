@@ -261,7 +261,7 @@ export const BONUS_QUESTS: QuestDef[] = [
       drop('item_goblin_kulagi', 4, ['ow_goblin'], 'Goblin Kulağı topla (4)'),
       elite('rare_kizil_kuyruk', 'Kızıl Kuyruk öldür'),
     ],
-    reward: { xpPct: 3, goldPerLevel: 2, items: [{ id: 'pot_hp_1', count: 2 }] },
+    reward: { xpPct: 16, goldPerLevel: 2, items: [{ id: 'pot_hp_1', count: 2 }] },
     text: {
       offer: 'Goblinler ambarların arkasında pusu kurdu ve Kızıl Kuyruk onlara liderlik ediyor. Pusuyu boz, kulakları topla ve dev sıçanı avla.',
       progress: 'Goblin Yağmacı öldür (6). Goblin Kulağı topla (4). Kızıl Kuyruk öldür.',
