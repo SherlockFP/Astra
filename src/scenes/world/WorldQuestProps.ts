@@ -286,7 +286,8 @@ export class WorldQuestProps {
       const a = (i / u.waveSize) * Math.PI * 2 + u.rng.next();
       const p = this.ctx.snapWorld(x + Math.cos(a) * 6, z + Math.sin(a) * 6, 6);
       u.pending++;
-      spawnEnemy(this.ctx.world, u.ambushDef, p, { level: u.level, aggro: true }).then(
+      // open-world trash: the low-level curve of the quest level (a same-level solo fight, as the camps), not the dungeon HP
+      spawnEnemy(this.ctx.world, u.ambushDef, p, { level: u.level, aggro: true, openWorld: true }).then(
         (e) => {
           u.pending--;
           if (e) u.enemies.push(e);

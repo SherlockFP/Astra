@@ -63,6 +63,8 @@ const { HitShapes } = await H.imp('combat/HitShapes.ts');
 const { Minions } = await H.imp('combat/Minions.ts');
 const { SKILLS } = await H.imp('data/skills.ts');
 const { stasisStored } = await H.imp('combat/skills/evokerKit.ts');
+const { CONTACT_M } = await H.imp('scenes/world/QuestEscortRun.ts');
+const { ESCORT_ROUTES } = await H.imp('data/world/escort_routes.ts');
 // every rotation kit table, keyed by spec id (as balance.mjs merges them)
 const ROT = {};
 for (const f of readdirSync(new URL('../../src/data/', import.meta.url))) {
@@ -254,8 +256,13 @@ function frame() {
   if (step > 0) { p.position.x += ((m.position.x - p.position.x) / d) * step; p.position.z += ((m.position.z - p.position.z) / d) * step; }
 }
 
-/** One fight: a fresh world, the real character on its spec bar at L, a real mob at SPAWN_DIST, aggroed on the player. */
-function fight(classId, L, mobId) {
+/**
+ * One fight: a fresh world, the real character on its spec bar at L, a real mob at SPAWN_DIST, aggroed on the player.
+ * `o.wave` = mobs of the fight (a quest ambush wave: they stand 3 m apart, the nearest living one is the target), `o.escort` = { hp,
+ * dps }: an escort NPC 2 m behind the player takes `dps` per ambusher within CONTACT_M of it (QuestEscortRun), and the fight fails
+ * when it falls. Without `o`: one mob, no escort (the solo report).
+ */
+function fight(classId, L, mobId, o = {}) {
   const spec = specOf(classId);
   const key = `${classId}@${L}:${mobId}`;
   const seed = hashStr(key);
@@ -302,37 +309,53 @@ function fight(classId, L, mobId) {
   // fresh AI director per fight: its AI list and grid would carry the fights before this one into it
   { const dir = getDirector(world); dir.ais.length = 0; dir.piles.length = 0; dir.packLinks.clear(); dir.grid?.clear?.(); }
   const def = ENEMIES[mobId];
-  const mob = new Enemy(9000 + (seed % 900), def);
-  mob.level = L;
-  mob.position.set(0, 0, SPAWN_DIST);
-  mob.homeX = 0;
-  mob.homeZ = SPAWN_DIST;
   // the open-world camp spawn path (EnemyFactory openWorld): trash / swarm take the low-level curve
   const low = isLowLevelTrashRank(def.rank, def.role);
-  mob.maxHp = Math.max(1, Math.round(monsterHP(L) * def.hpMult * (low ? lowLevelHpMult(L) : 1)));
-  mob.hp = mob.maxHp;
-  mob.baseDamage = monsterDmg(L) * def.dmgMult * (low ? lowLevelDmgMult(L) : 1);
-  mob.stats = { armor: def.armorMult ? 10 * L * def.armorMult : 0 };
-  mob.authority = true;
-  world.add(mob);
-  mob.ai = new EnemyAI(mob, getDirector(world));
-  mob.ai.acquire(p, true);
+  const xs = (o.wave ?? 1) > 1 ? [-1.5, 1.5] : [0];
+  const mobs = xs.map((x, i) => {
+    const mob = new Enemy(9000 + (seed % 900) + i, def);
+    mob.level = L;
+    mob.position.set(x, 0, SPAWN_DIST);
+    mob.homeX = x;
+    mob.homeZ = SPAWN_DIST;
+    mob.maxHp = Math.max(1, Math.round(monsterHP(L) * def.hpMult * (low ? lowLevelHpMult(L) : 1)));
+    mob.hp = mob.maxHp;
+    mob.baseDamage = monsterDmg(L) * def.dmgMult * (low ? lowLevelDmgMult(L) : 1);
+    mob.stats = { armor: def.armorMult ? 10 * L * def.armorMult : 0 };
+    mob.authority = true;
+    world.add(mob);
+    mob.ai = new EnemyAI(mob, getDirector(world));
+    mob.ai.acquire(p, true);
+    return mob;
+  });
+  const mob = mobs[0];
   p.targetId = mob.id;
+  // the target: the nearest living mob of the fight (the first one when the fight starts)
+  const target = () => mobs.filter((m) => !m.isDead && !m.removed).reduce((a, b) => (Math.hypot(b.position.x - p.position.x, b.position.z - p.position.z) < Math.hypot(a.position.x - p.position.x, a.position.z - p.position.z) ? b : a), mobs[0]);
+  // the escort NPC stands 2 m behind the player (EscortRun: the ambushers within CONTACT_M of it hit it, it falls at 0 HP)
+  const escort = o.escort ? { hp: o.escort.hp, dps: o.escort.dps, max: o.escort.hp } : null;
 
   const melee = (SKILLS[ch.save.skillBar.lmb]?.range ?? 99) <= 3.5;
-  CHASE = melee ? mob : null;
   CHASE_STOP = melee ? 2.2 : 10;
   const lines = aplFor(spec, ROT[spec.id]?.st ?? []);
   const maxFrames = Math.round(TIME_LIMIT / DT);
   let outcome = 'timeout';
   let time = TIME_LIMIT;
   for (let f = 0; f < maxFrames; f++) {
-    H.setAimTarget(mob);
-    p.yaw = Math.atan2(mob.position.x - p.position.x, mob.position.z - p.position.z); // a real player turns to its target
-    pressApl(p, lines, makeEnv(p, mob, [mob]), H.aimFor(p, mob));
+    const t = target();
+    CHASE = melee ? t : null;
+    H.setAimTarget(t);
+    p.yaw = Math.atan2(t.position.x - p.position.x, t.position.z - p.position.z); // a real player turns to its target
+    pressApl(p, lines, makeEnv(p, t, mobs), H.aimFor(p, t));
     frame();
-    if (mob.isDead) { outcome = 'win'; time = (f + 1) * DT; break; }
+    if (escort) {
+      const ex = p.position.x, ez = p.position.z - 2;
+      const near = mobs.filter((m) => !m.isDead && !m.removed && Math.hypot(m.position.x - ex, m.position.z - ez) <= CONTACT_M).length;
+      escort.hp -= near * escort.dps * DT;
+    }
+    if (mobs.every((m) => m.isDead)) { outcome = 'win'; time = (f + 1) * DT; break; }
     if (p.isDead) { outcome = 'dead'; time = (f + 1) * DT; break; }
+    if (escort && escort.hp <= 0) { outcome = 'escort'; time = (f + 1) * DT; break; }
   }
   H.setAimTarget(null);
   CHASE = null;
@@ -340,6 +363,7 @@ function fight(classId, L, mobId) {
     spec: spec.id, bar: { ...ch.save.skillBar }, outcome, time, hpLeft: p.maxHp > 0 ? Math.max(0, p.hp) / p.maxHp : 0,
     mobHpLeft: mob.maxHp > 0 ? Math.max(0, mob.hp) / mob.maxHp : 0, casts: { ...castLog },
     pet: hasPet(spec), tank: SPECS[spec.id]?.role === 'tank', lines: lines.length, maxHp: p.maxHp, mobDmg: Math.round(mob.baseDamage), mobHp: mob.maxHp,
+    escortHpLeft: escort ? Math.max(0, escort.hp) / escort.max : null,
   };
 }
 
@@ -411,6 +435,31 @@ if (won.length) {
 }
 const classTtkMedian = median(classes.map((c) => cls[c].ttk));
 
+// ---------------------------------------------------------------------------------------------------------------- escort ambush waves
+// The quest ambush (WorldQuestProps.ambush): the route's ambushers at the quest level on the open-world curve, `waveSize` at once,
+// aggroed on the player, while the escort NPC walks 2 m behind the player and takes EscortRun's contact damage. A class that loses,
+// or ends below WAVE_HP_LEFT, or lets the escort fall, fails the check.
+const WAVE_L = 2;
+const WAVE_HP_LEFT = 0.5;
+const WAVE_CLASSES = ['knight', 'priest', 'mage'].filter((c) => PLAYABLE_CLASSES.includes(c));
+const waves = [];
+for (const c of WAVE_CLASSES) for (const q of ['mq_04_samani_sustur', 'sq_r1_ch02_gozcu_avi']) {
+  const r = ESCORT_ROUTES[q];
+  let res;
+  try {
+    res = fight(c, WAVE_L, r.ambushDef, { wave: r.waveSize, escort: { hp: r.hp, dps: r.attackerDps } });
+  } catch (err) {
+    res = { outcome: 'throw', error: String(err?.message ?? err).slice(0, 200), hpLeft: 0, time: 0, casts: {}, escortHpLeft: 0 };
+  }
+  waves.push({ c, q, res });
+}
+const waveOk = (w) => w.res.outcome === 'win' && w.res.hpLeft >= WAVE_HP_LEFT && (w.res.escortHpLeft ?? 0) > 0;
+console.log(`escort ambush waves (L${WAVE_L}, the route waveSize, escort contact on): ${waves.map((w) => `${w.c}/${w.q.startsWith('mq') ? 'mq04' : 'sq'} ${w.res.outcome} ${sec(w.res.time)} player ${pct(w.res.hpLeft)} escort ${pct(w.res.escortHpLeft ?? 0)}`).join(' | ')}`);
+const waveChecks = [[
+  `escort ambush waves at L${WAVE_L}: won with >= ${pct(WAVE_HP_LEFT)} HP and the escort standing`,
+  waves.filter((w) => !waveOk(w)).map((w) => `${w.c} ${w.q} ${w.res.outcome} player ${pct(w.res.hpLeft)} escort ${pct(w.res.escortHpLeft ?? 0)}${w.res.error ? ' ' + w.res.error : ''}`),
+]];
+
 if (VERBOSE) {
   for (const f of fights) {
     const casts = Object.entries(f.r.casts ?? {}).map(([k, v]) => `${k.replace(/^[a-z]+_/, '')}x${v}`).join(' ');
@@ -426,6 +475,7 @@ const notWon = fights.filter((f) => !Number.isFinite(f.ttk));
 /** A class whose default spec is a tank or that summons a pet (its pet takes the hits): the wider HP band. */
 const relaxed = Object.fromEntries(classes.map((c) => [c, fights.some((f) => f.c === c && (f.r.tank || f.r.pet || c === 'archer'))]));
 const checks = [
+  ...waveChecks,
   ['every fight won in time', notWon.map((f) => `${f.c}@L${f.L} ${f.mob} ${f.r.outcome}`)],
   [`median TTK across classes ${TTK_MEDIAN[0]}-${TTK_MEDIAN[1]} s`, !(classTtkMedian >= TTK_MEDIAN[0] && classTtkMedian <= TTK_MEDIAN[1]) ? [`${sec(classTtkMedian)}`] : []],
   [`every class median TTK ${TTK_CLASS[0]}-${TTK_CLASS[1]} s`, classes.filter((c) => !(cls[c].ttk >= TTK_CLASS[0] && cls[c].ttk <= TTK_CLASS[1])).map((c) => `${c} ${sec(cls[c].ttk)}`)],
