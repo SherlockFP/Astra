@@ -201,7 +201,7 @@ export function questFocusPos(questId: string): Pt | null {
   const d = G.quests?.def(questId);
   const o = d?.objectives.find((x, i) => !G.quests?.progressRows(questId)[i]?.done);
   if (!o) return null;
-  const p = guideTargetPos(o, G.ui?.mode === 'town');
+  const p = guideTargetPos(o, G.ui?.mode === 'town', d?.region, d?.place, d?.level);
   return p ? { x: p.x, z: p.z } : null;
 }
 

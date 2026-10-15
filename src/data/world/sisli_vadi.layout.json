@@ -7721,8 +7721,8 @@
    "name": "Yaban Otlağı 71",
    "region": "r2",
    "center": [
-    314.25,
-    66.5
+    314.58,
+    65.83
    ],
    "radius": 16,
    "levelRange": [
@@ -8005,8 +8005,8 @@
    "name": "Ağaç Gölgesi 83",
    "region": "r2",
    "center": [
-    293.5,
-    76.75
+    292.38,
+    73.24
    ],
    "radius": 14,
    "levelRange": [
@@ -8239,8 +8239,8 @@
    "name": "Harabe Avlusu 93",
    "region": "r2",
    "center": [
-    288.25,
-    50.25
+    288.11,
+    49.99
    ],
    "radius": 12,
    "levelRange": [
@@ -9766,8 +9766,8 @@
    "name": "Taş Yatağı 156",
    "region": "r2",
    "center": [
-    311.75,
-    35.5
+    311.07,
+    34.89
    ],
    "radius": 16,
    "levelRange": [
@@ -9933,8 +9933,8 @@
    "name": "Dere Kenarı 163",
    "region": "r2",
    "center": [
-    288.5,
-    81
+    287.38,
+    76.75
    ],
    "radius": 14,
    "levelRange": [
@@ -10619,8 +10619,8 @@
    "name": "Kırık Köprü 17",
    "region": "r3",
    "center": [
-    266.75,
-    203.75
+    268.96,
+    204.98
    ],
    "radius": 16,
    "levelRange": [
@@ -11710,8 +11710,8 @@
    "name": "Dere Kenarı 64",
    "region": "r3",
    "center": [
-    378.25,
-    177.75
+    379.19,
+    175.65
    ],
    "radius": 16,
    "levelRange": [
@@ -12873,8 +12873,8 @@
    "name": "Kurt İni 115",
    "region": "r3",
    "center": [
-    269,
-    241.25
+    268.62,
+    240.91
    ],
    "radius": 12,
    "levelRange": [
@@ -13379,8 +13379,8 @@
    "name": "Çalılık 137",
    "region": "r3",
    "center": [
-    273.25,
-    282.5
+    271.71,
+    283.32
    ],
    "radius": 12,
    "levelRange": [
@@ -13772,8 +13772,8 @@
    "name": "Kurt İni 154",
    "region": "r3",
    "center": [
-    282.75,
-    246
+    286.15,
+    245.09
    ],
    "radius": 14,
    "levelRange": [
@@ -13910,8 +13910,8 @@
    "name": "Mağara Ağzı 160",
    "region": "r3",
    "center": [
-    260.75,
-    206.5
+    261.17,
+    210.18
    ],
    "radius": 14,
    "levelRange": [
@@ -14440,8 +14440,8 @@
    "name": "Kesik Dere 21",
    "region": "r4",
    "center": [
-    261.25,
-    338.5
+    261.49,
+    340.14
    ],
    "radius": 14,
    "levelRange": [
@@ -16555,8 +16555,8 @@
    "name": "Kurt İni 108",
    "region": "r4",
    "center": [
-    301.25,
-    294.5
+    298.73,
+    295.86
    ],
    "radius": 12,
    "levelRange": [
@@ -17637,8 +17637,8 @@
    "name": "Kesik Dere 154",
    "region": "r4",
    "center": [
-    310.25,
-    374.5
+    312.51,
+    376.45
    ],
    "radius": 12,
    "levelRange": [
@@ -18555,8 +18555,8 @@
    "name": "Kırık Köprü 2",
    "region": "r5",
    "center": [
-    139.5,
-    266.25
+    138.3,
+    268.36
    ],
    "radius": 14,
    "levelRange": [
@@ -18605,8 +18605,8 @@
    "name": "Kurt İni 4",
    "region": "r5",
    "center": [
-    136.25,
-    285.75
+    135.52,
+    286.91
    ],
    "radius": 16,
    "levelRange": [
@@ -19080,8 +19080,8 @@
    "name": "Yaban Otlağı 23",
    "region": "r5",
    "center": [
-    31,
-    323.75
+    33.69,
+    325.43
    ],
    "radius": 14,
    "levelRange": [
@@ -20255,8 +20255,8 @@
    "name": "Kesik Dere 70",
    "region": "r5",
    "center": [
-    139.75,
-    259
+    139.87,
+    258.23
    ],
    "radius": 12,
    "levelRange": [
@@ -24130,8 +24130,8 @@
    "name": "Taşlık 49",
    "region": "r6",
    "center": [
-    45.75,
-    234.25
+    45.83,
+    235.22
    ],
    "radius": 14,
    "levelRange": [
@@ -24230,8 +24230,8 @@
    "name": "Mağara Ağzı 53",
    "region": "r6",
    "center": [
-    64,
-    213.75
+    60.37,
+    214.31
    ],
    "radius": 16,
    "levelRange": [
@@ -24855,8 +24855,8 @@
    "name": "Kurt İni 78",
    "region": "r6",
    "center": [
-    81.5,
-    222.5
+    84.57,
+    221.32
    ],
    "radius": 14,
    "levelRange": [
@@ -25105,8 +25105,8 @@
    "name": "Taş Yatağı 88",
    "region": "r6",
    "center": [
-    96.75,
-    161.5
+    96.34,
+    160.43
    ],
    "radius": 16,
    "levelRange": [
@@ -25605,8 +25605,8 @@
    "name": "Taşlık 108",
    "region": "r6",
    "center": [
-    106.75,
-    197.75
+    105.28,
+    198.24
    ],
    "radius": 16,
    "levelRange": [
@@ -26180,8 +26180,8 @@
    "name": "Mağara Ağzı 131",
    "region": "r6",
    "center": [
-    119.25,
-    200.25
+    121.45,
+    202.97
    ],
    "radius": 16,
    "levelRange": [
@@ -26680,8 +26680,8 @@
    "name": "Kara Kaya 151",
    "region": "r6",
    "center": [
-    95,
-    244.25
+    96.29,
+    245.02
    ],
    "radius": 14,
    "levelRange": [
@@ -26730,8 +26730,8 @@
    "name": "Mağara Ağzı 153",
    "region": "r6",
    "center": [
-    58.5,
-    228.5
+    55.6,
+    230.71
    ],
    "radius": 12,
    "levelRange": [
@@ -27205,8 +27205,8 @@
    "name": "Mağara Ağzı 172",
    "region": "r6",
    "center": [
-    69.75,
-    203
+    69.71,
+    202.53
    ],
    "radius": 14,
    "levelRange": [
@@ -27230,8 +27230,8 @@
    "name": "Harabe Avlusu 173",
    "region": "r6",
    "center": [
-    51,
-    227.5
+    54.46,
+    228.94
    ],
    "radius": 12,
    "levelRange": [
@@ -28036,20 +28036,20 @@
    "respawnSec": 110,
    "patrol": [
     [
-     380.25,
-     180.5
+     382.78,
+     178.33
     ],
     [
-     388.25,
-     180.5
+     390.78,
+     178.33
     ],
     [
-     388.25,
-     186.5
+     390.78,
+     184.33
     ],
     [
-     380.25,
-     186.5
+     382.78,
+     184.33
     ]
    ]
   },

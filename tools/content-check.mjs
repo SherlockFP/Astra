@@ -112,6 +112,47 @@ function regionQuestIssues(quests, world, packs) {
   }
   return out;
 }
+/**
+ * Kill-target bands (the quest area, WoW style). For every kill objective of a region quest (sq / dq, level q) whose enemy id spawns in
+ * camps (rares, mini-bosses and bosses are placed by the level band rule in the reachability check):
+ *  (1) the guide has a target: at least one camp or patrol spawning the id in the quest's region has a levelRange inside q-1..q+1;
+ *  (2) the guide's camp, the in-band camp nearest to the quest giver's village (the guide starts the player there; the south gate
+ *      when the giver is in town), stands 40 m or more from every camp of the region whose lowest level is q+2 or more (4 m per tile).
+ * HARD error per objective (1) and (2).
+ */
+const KILL_BAND_M = 40, KILL_TILE_M = 4;
+function killBandIssues(quests, zones) {
+  const out = [];
+  for (const q of quests.filter(isRegionQuest)) {
+    const zone = zones.find((z) => z.regions.has(q.region));
+    if (!zone) continue;
+    const roomRegion = new Map((zone.world?.regions ?? []).map((r) => [r.roomId, r.id]));
+    const inRegion = zone.packs.filter((p) => roomRegion.get(p.roomId) === q.region && p.center);
+    const [bLo, bHi] = [q.level - 1, q.level + 1];
+    const higher = inRegion.filter((p) => (p.levelRange ?? [1, 99])[0] >= q.level + 2);
+    const gapM = (a, b) => Math.hypot(a.center[0] - b.center[0], a.center[1] - b.center[1]) * KILL_TILE_M;
+    // the guide's start: the giver's village centre (tiles), or the map's south gate (200, 1) when the giver is in town
+    const giverVillage = (zone.world?.villages ?? []).find((v) => v.npcs.some((n) => n.id === q.giver));
+    const start = giverVillage ? giverVillage.center : [200, 1];
+    for (const o of q.objectives.filter((x) => x.kind === 'kill' && x.target)) {
+      const where = `quest ${q.id} [kill ${o.target}]`;
+      const spawning = inRegion.filter((p) => p.members.some((m) => m.enemyId === o.target));
+      if (!spawning.length) continue; // rare, mini-boss or boss: placed by level band (the reachability check)
+      // in the band = the camp's levels overlap q-1..q+1 (camps span 2-3 levels, so a containment test would reject them all)
+      const inBand = spawning.filter((p) => (p.levelRange ?? [1, 99])[0] <= bHi && (p.levelRange ?? [1, 99])[1] >= bLo);
+      if (!inBand.length) {
+        out.push({ level: 'error', where, msg: `no camp of ${o.target} in ${q.region} within the quest band L${bLo}-${bHi}` });
+        continue;
+      }
+      const guide = inBand.reduce((best, c) => (Math.hypot(c.center[0] - start[0], c.center[1] - start[1]) < Math.hypot(best.center[0] - start[0], best.center[1] - start[1]) ? c : best));
+      const near = higher.find((h) => h !== guide && gapM(guide, h) < KILL_BAND_M);
+      if (near) {
+        out.push({ level: 'error', where, msg: `guide camp ${guide.id} (L${guide.levelRange[0]}-${guide.levelRange[1]}) is ${Math.round(gapM(guide, near))} m from ${near.id} (L${near.levelRange[0]}+): keep ${KILL_BAND_M} m` });
+      }
+    }
+  }
+  return out;
+}
 /** The main chain (GDD_OPENWORLD §6.2) starts here; every other main quest must be reached from it through prerequisites. */
 const MAIN_ROOT = 'mq_01_kuzgunun_cagrisi';
 /**
@@ -441,6 +482,10 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id)) || want.includes('
   for (const line of regionCounts(QUESTS)) console.log(`   ${line}`);
   for (const i of re) console.log('  ERR ', i.where, '-', i.msg);
   for (const i of rw) console.log('  warn', i.where, '-', i.msg);
+  const kb = killBandIssues(QUESTS, ZONES);
+  totalErr += kb.length;
+  console.log(`\n== kill bands: ${kb.length} errors | a band camp per kill target, the guide's camp 40 m from higher camps`);
+  for (const i of kb) console.log('  ERR ', i.where, '-', i.msg);
   const npcById = new Map([...TOWN.npcs, ...(world?.villages ?? []).flatMap((v) => v.npcs)].map((n) => [n.id, n]));
   const { familyOf } = await imp('src/data/families.ts');
   const xq = questReachIssues(QUESTS, world, npcIds, ALL_WORLD_PACKS, DUNGEON_ALL, OPEN_ZONE_IDS, npcById, ZONES, familyOf, { ...lootTables, ...LOOT.GATHER_TABLES });

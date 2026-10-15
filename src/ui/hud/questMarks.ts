@@ -115,8 +115,30 @@ export function entranceWorldPos(dungeonId: string): Pt | null {
   return e ? { x: tileCentreM(e.pos[0]), z: tileCentreM(e.pos[1]) } : null;
 }
 
-/** Nearest live enemy whose def id matches (ids of camp mobs, rares, bosses, metin stones). Null when none is alive. */
-function nearestLiveEnemy(ids: string[]): Pt | null {
+/** A quest's area (WoW quest area): the camps and patrols of its region whose levels sit inside the band q-1..q+1. */
+export interface QuestArea { level: number; region?: string }
+
+/**
+ * Pack ids of a quest's area, or null when the quest has no area (no region of its own and no camp place in one). The region is the
+ * quest's region, else the region of its layout place (a camp of the map). Camps outside the band are not in the area.
+ */
+export function questArea(area: QuestArea | undefined, place?: string): Set<string> | null {
+  const def = worldDef();
+  const ext = def?.world;
+  if (!area || !def || !ext) return null;
+  const placeRoom = place ? def.packs.find((pk) => pk.id === place)?.roomId : undefined;
+  const region = area.region ?? ext.regions.find((r) => r.roomId === placeRoom)?.id;
+  const room = ext.regions.find((r) => r.id === region)?.roomId;
+  if (!room) return null;
+  const [lo, hi] = [area.level - 1, area.level + 1];
+  return new Set(def.packs.filter((pk) => pk.roomId === room && (pk.levelRange ?? [1, 99])[0] >= lo && (pk.levelRange ?? [1, 99])[1] <= hi).map((pk) => pk.id));
+}
+
+/**
+ * Nearest live enemy whose def id matches (ids of camp mobs, rares, bosses, metin stones). Null when none is alive. With a quest
+ * `area`, a camp enemy outside it never counts as the target (enemies off a camp keep no pack id and are not filtered).
+ */
+function nearestLiveEnemy(ids: string[], area: Set<string> | null): Pt | null {
   const w = G.world;
   const p = G.player ?? w?.localPlayer;
   if (!w || !ids.length) return null;
@@ -124,6 +146,7 @@ function nearestLiveEnemy(ids: string[]): Pt | null {
   let bestD = Infinity;
   for (const e of w.enemies as Enemy[]) {
     if (e.isDead || e.removed || !e.def || !ids.includes(e.def.id)) continue;
+    if (area && e.packId && !area.has(e.packId)) continue;
     const d = p ? Math.hypot(e.position.x - p.position.x, e.position.z - p.position.z) : 0;
     if (d < bestD) {
       bestD = d;
@@ -150,17 +173,17 @@ function enemyIdsOf(o: QuestObjective, tiers: { id: string; enemyId: string }[])
  * Camp (or patrol) of the open-world map that spawns one of the ids: the quest's own place (layout `place`) when it holds one,
  * else the nearest to the player. The fallback of a kill objective whose enemy is not streamed in (the arrow would hide).
  */
-function campPos(ids: string[], place?: string): Pt | null {
+function campPos(ids: string[], place?: string, area: Set<string> | null = null): Pt | null {
   const def = worldDef();
   if (!def || !ids.length) return null;
   const holds = (pk: { members: { enemyId: string }[] }): boolean => pk.members.some((m) => ids.includes(m.enemyId));
   const own = place ? def.packs.find((pk) => pk.id === place) : undefined;
-  if (own && holds(own)) return { x: tileCentreM(own.center[0]), z: tileCentreM(own.center[1]) };
+  if (own && holds(own) && (!area || area.has(own.id))) return { x: tileCentreM(own.center[0]), z: tileCentreM(own.center[1]) };
   const p = G.player ?? G.world?.localPlayer;
   let best: Pt | null = null;
   let bestD = Infinity;
   for (const pk of def.packs) {
-    if (!holds(pk)) continue;
+    if (!holds(pk) || (area && !area.has(pk.id))) continue;
     const x = tileCentreM(pk.center[0]);
     const z = tileCentreM(pk.center[1]);
     const d = p ? Math.hypot(x - p.position.x, z - p.position.z) : 0;
@@ -172,8 +195,11 @@ function campPos(ids: string[], place?: string): Pt | null {
   return best;
 }
 
-/** Where one unfinished objective points, or null when it has no place on the map. `place` is the quest's layout place (camp fallback). */
-export function objectivePos(o: QuestObjective, place?: string): Pt | null {
+/**
+ * Where one unfinished objective points, or null when it has no place on the map. `place` is the quest's layout place (camp fallback).
+ * `area` is the quest's area: a kill objective points only inside it (its camps in the quest's level band), never at an outer-ring camp.
+ */
+export function objectivePos(o: QuestObjective, place?: string, area?: QuestArea): Pt | null {
   switch (o.kind) {
     case 'talk':
       return o.target ? npcWorldPos(o.target) : null;
@@ -184,7 +210,7 @@ export function objectivePos(o: QuestObjective, place?: string): Pt | null {
     case 'kill':
     case 'boss':
     case 'metin':
-      return nearestLiveEnemy(killIds(o)) ?? campPos(killIds(o), place);
+      { const inArea = questArea(area, place); return nearestLiveEnemy(killIds(o), inArea) ?? campPos(killIds(o), place, inArea); }
     default:
       return null;
   }
@@ -201,7 +227,7 @@ export function questTargetMarks(): QuestMark[] {
       const rows = q.progressRows(def.id);
       def.objectives.forEach((o, k) => {
         if (rows[k]?.done) return;
-        const p = objectivePos(o, def.place);
+        const p = objectivePos(o, def.place, { level: def.level, region: def.region });
         if (p) out.push({ ...p, questId: def.id, label: o.text, kind: o.kind });
       });
     }
@@ -330,10 +356,10 @@ export function worldZoneOf(o: QuestObjective, questRegion?: string): string | n
  * open-world map points at that map's gate (Karakır Bozkırı: the East Gate; Sisli Vadi: the South Gate), dungeons at their portal.
  * On the world map it is the objective's own position. Null when there is no place to point at.
  */
-export function guideTargetPos(o: QuestObjective, inTown: boolean, questRegion?: string, place?: string): (Pt & { label: string }) | null {
+export function guideTargetPos(o: QuestObjective, inTown: boolean, questRegion?: string, place?: string, level?: number): (Pt & { label: string }) | null {
   const tgt = o.target ?? '';
   if (!inTown) {
-    const p = objectivePos(o, place);
+    const p = objectivePos(o, place, level === undefined ? undefined : { level, region: questRegion });
     return p ? { ...p, label: o.text } : null;
   }
   const zone = worldZoneOf(o, questRegion);
@@ -400,7 +426,7 @@ export function guideTarget(recommendedGiver: string | null): GuideTarget | null
         for (let k = 0; k < pdef.objectives.length; k++) {
           const o = pdef.objectives[k];
           if (rows[k]?.done) continue;
-          const p = guideTargetPos(o, inTown, pdef.region, pdef.place);
+          const p = guideTargetPos(o, inTown, pdef.region, pdef.place, pdef.level);
           if (p) return { x: p.x, z: p.z, label: p.label, kind: objectiveKind(o), key: `${pdef.id}#${k}` };
         }
       }
