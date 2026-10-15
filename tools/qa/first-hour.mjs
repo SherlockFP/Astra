@@ -35,14 +35,23 @@
 // Exit code 0 = every check passed for every class and no HARD blocker was recorded. Plain BLOCKER lines and UX notes are informational.
 // Player behaviour: below 50% HP the bar's heal / absorb / defensive skills (skills.ts tags) are cast; below 35% the health potion; before a
 // pull below 60% HP the character stands still until 80% (out-of-combat regen). Targets: one camp at a time (the camp being fought first),
-// then the nearest mob within level lvl-3..lvl+2. Fights 1 and 5 of each class get a screenshot ~3 s in (combat_f<n>); every fight is logged
+// then the nearest mob within level lvl-3..lvl. Objective fights 1 and 5 of each class get a screenshot ~3 s in (combat_f<n>); every fight is logged
 // in tools/qa/out/fh_<class>.json (fights: ttk, hpLeft); the end prints one CLASS line per class (deaths, kills, median TTK / HP left, L2-L4).
+// Fight back (every path: a fight, a walk, the wait at a camp, the rest, an escort): an enemy in reach (its attack range + 4 m) that dealt
+// damage to the character in the last 3 s (the game's 'damage' events, see fight-back.mjs) is fought first, nearest first. It is selected
+// through the game's target:select (what a click emits; Tab cycles only the enemies inside the camera frustum, so it cannot reach an
+// off-screen attacker), then turned to face. It is kept while it keeps dealing damage; the fight-back ends when it dies, when it has dealt
+// no damage for 3 s, or after 20 s (it is not picked again for 20 s). The objective or the walk resumes.
+// Rest and routes: after a death (released at the graveyard with half HP) the character rests there to 90% before the walk back. Walks
+// route round the camps of another level band (navRoute: a ring or road point round the camp); a walk's time budget is its route length at
+// 2 m/s (or the step's timeout when longer). A camp for a kill is taken from the character's level band first.
 // Environment note: when node_modules is a junction to another checkout, Vite answers 403 for the @fontsource files; that is noise.
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { resolveClassList } from './classes.mjs';
+import { installHitTracker, hitterSnapshot, recentHitters, pickAttackers, FIGHT_BACK_CAP_MS } from './fight-back.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(HERE, 'out');
@@ -64,6 +73,81 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const charName = (cls) => `FH ${cls}`.slice(0, 20);
 /** console noise that is not a game bug: blocked fonts (junction node_modules), relay sockets of the P2P layer, favicon, 403 of @fs. */
 const NOISE = /WebSocket|nostr|satellite|ERR_|favicon|net::|Failed to load resource|@fontsource|A network error occurred/i;
+/**
+ * Page side, passed to page.evaluate (self-contained). The game's navgrid route from the character to a point:
+ * a = { to: [x, z], zones: [{ id, x, z, r }], detour }. With detour, a route that crosses a zone (a camp of another level band) is re-planned
+ * through a point round that camp: one of 12 ring points at r + 12 m, or one of the 8 road points nearest to the camp outside every zone.
+ * Returns null when unreachable, else { pts: [[x, z], ...] (waypoints after the start), len (m), detour (a re-plan was used),
+ * zone (id of a zone still crossed, else null) }.
+ */
+const navRoute = async (a) => {
+  const G = window.G;
+  const nav = G.world.nav;
+  const ts = (await import('/src/types/dungeons.ts')).TILE_SIZE;
+  const roads = (await import('/src/ui/hud/questMarks.ts')).worldExtras()?.roads ?? [];
+  const pl = G.player.position;
+  const start = [pl.x, pl.z];
+  const dd = (ax, az, bx, bz) => Math.hypot(ax - bx, az - bz);
+  // a zone the character stands in or the target stands in is not avoided (leaving it, or going to it)
+  const zones = (a.zones ?? []).filter((z) => dd(start[0], start[1], z.x, z.z) >= z.r && dd(a.to[0], a.to[1], z.x, z.z) >= z.r);
+  const inZone = (x, z) => zones.find((zn) => dd(x, z, zn.x, zn.z) < zn.r) ?? null;
+  const fp = (from, to) => {
+    const pts = nav.findPath({ x: from[0], z: from[1] }, { x: to[0], z: to[1] }, 60000);
+    return pts ? pts.map((v) => [v.x, v.z]) : null;
+  };
+  const plen = (from, pts) => {
+    let t = 0;
+    let prev = from;
+    for (const p of pts) { t += dd(prev[0], prev[1], p[0], p[1]); prev = p; }
+    return t;
+  };
+  /** the first zone a polyline crosses (sampled every 2 m), else null */
+  const crosses = (from, pts) => {
+    let prev = from;
+    for (const p of pts) {
+      const n = Math.max(1, Math.ceil(dd(prev[0], prev[1], p[0], p[1]) / 2));
+      for (let i = 1; i <= n; i++) {
+        const zn = inZone(prev[0] + ((p[0] - prev[0]) * i) / n, prev[1] + ((p[1] - prev[1]) * i) / n);
+        if (zn) return zn;
+      }
+      prev = p;
+    }
+    return null;
+  };
+  const direct = fp(start, a.to);
+  if (!direct) return null;
+  const blocked = crosses(start, direct);
+  if (!blocked || !a.detour) return { pts: direct, len: plen(start, direct), detour: false, zone: blocked ? blocked.id : null };
+  const cands = [];
+  for (let k = 0; k < 12; k++) {
+    const ang = (k * Math.PI * 2) / 12;
+    cands.push([blocked.x + (blocked.r + 12) * Math.sin(ang), blocked.z + (blocked.r + 12) * Math.cos(ang)]);
+  }
+  const roadPts = [];
+  for (const rd of roads) {
+    for (const q of rd.pts) {
+      const x = (q[0] + 0.5) * ts;
+      const z = (q[1] + 0.5) * ts;
+      const d = dd(x, z, blocked.x, blocked.z);
+      if (d > blocked.r + 12 && d < blocked.r + 160 && !inZone(x, z)) roadPts.push({ p: [x, z], d });
+    }
+  }
+  roadPts.sort((u, v) => u.d - v.d);
+  for (const rp of roadPts.slice(0, 8)) cands.push(rp.p);
+  let best = null;
+  for (const c of cands) {
+    if (inZone(c[0], c[1])) continue;
+    const p1 = fp(start, c);
+    if (!p1 || crosses(start, p1)) continue;
+    const e1 = p1.length ? p1[p1.length - 1] : start;
+    const p2 = fp(e1, a.to);
+    if (!p2 || crosses(e1, p2)) continue;
+    const len = plen(start, p1) + plen(e1, p2);
+    if (!best || len < best.len) best = { pts: [...p1, ...p2], len };
+  }
+  if (!best) return { pts: direct, len: plen(start, direct), detour: false, zone: blocked.id };
+  return { pts: best.pts, len: best.len, detour: true, zone: null };
+};
 
 let NAVS = 0; // main-frame navigations of the current journey; a reload resets the game state
 const results = [];
@@ -116,7 +200,7 @@ for (const s of summaries) {
 const fmtN = (v, u) => (v == null ? '-' : `${v}${u}`);
 const lvT = (n, s) => (s.levelMin[n] != null ? `${s.levelMin[n]}m` : '-');
 for (const s of summaries) {
-  console.log(`CLASS ${s.cls}: deaths ${s.deaths}, kills ${s.kills}, median TTK ${fmtN(s.medianTtk, 's')}, median HP left ${fmtN(s.medianHpLeft, '%')}, L2 ${lvT(2, s)}, L3 ${lvT(3, s)}, L4 ${lvT(4, s)}`);
+  console.log(`CLASS ${s.cls}: deaths ${s.deaths}, kills ${s.kills}, median TTK ${fmtN(s.medianTtk, 's')}, median HP left ${fmtN(s.medianHpLeft, '%')}, L2 ${lvT(2, s)}, L3 ${lvT(3, s)}, L4 ${lvT(4, s)}, fight-backs ${s.fightBacks}, detours ${s.detours}`);
 }
 if (blockers.length) {
   console.log('Blockers / anomalies:');
@@ -167,7 +251,7 @@ async function journey(cls) {
   const levelUps = []; // {level, min}
   const levelMin = {};
   const chainLog = [];
-  const stats = { deaths: 0, teleports: 0, kills: 0, questsDone: 0 };
+  const stats = { deaths: 0, teleports: 0, kills: 0, questsDone: 0, fightBacks: 0, detours: 0 };
   // watchdog state: no progress (level, XP, kills, quest state / progress, HP gain, or a move of more than 5 m) for FH_WD_S seconds
   // = BLOCKER + state dump + screenshot; the step in flight is aborted (stepAbort: every wait loop of a step returns) and the chain moves on.
   const WD_MS = Number(process.env.FH_WD_S ?? 90) * 1000;
@@ -320,35 +404,86 @@ async function journey(cls) {
     }
   };
 
+  /** Camps of another level band than the character's (pickTarget's band lvl-3..lvl) as zones for navRoute: walks go round them. */
+  const avoidZones = (lvl) =>
+    page.evaluate(async (L) => {
+      const qm = await import('/src/ui/hud/questMarks.ts');
+      const ts = (await import('/src/types/dungeons.ts')).TILE_SIZE;
+      const out = [];
+      for (const pk of qm.worldDef()?.packs ?? []) {
+        const lr = pk.levelRange;
+        if (!lr || (lr[1] >= L - 3 && lr[0] <= L)) continue;
+        out.push({ id: pk.id, x: (pk.center[0] + 0.5) * ts, z: (pk.center[1] + 0.5) * ts, r: (pk.radius ?? 18) + 10 });
+      }
+      return out;
+    }, lvl).catch(() => []);
+  /** A wait point R m out from the centre c: of 8 bearings (the character's side first) the one with the shortest route that crosses no
+   *  camp of another level band (a route through one costs 1e6 m). Null when no bearing is reachable. */
+  const waitPoint = async (c, R) => {
+    const zones = await avoidZones((await snap()).lvl);
+    const here = await snap();
+    const base = Math.atan2(here.x - c.x, here.z - c.z);
+    let best = null;
+    for (let k = 0; k < 8; k++) {
+      const a = base + (k % 2 ? -1 : 1) * Math.ceil(k / 2) * (Math.PI / 4);
+      const x = c.x + R * Math.sin(a);
+      const z = c.z + R * Math.cos(a);
+      const r = await page.evaluate(navRoute, { to: [x, z], zones, detour: false });
+      if (!r) continue;
+      const score = (r.zone ? 1e6 : 0) + r.len;
+      if (!best || score < best.score) best = { x, z, score };
+    }
+    return best;
+  };
   /**
    * Walk to (tx, tz) with W + turn arrows. `stop` = distance at which to stop (m). Returns { ok, teleported, dist }.
-   * The path comes from the game's navgrid (waypoints only); unreachable / stuck -> BLOCKER + dev teleport.
+   * The route is the game's navgrid (navRoute: waypoints only, round the camps of another level band unless `avoid: false`). The time
+   * budget is `timeout` or the route length at 2 m/s, whichever is longer. Unreachable / stuck -> BLOCKER + dev teleport.
+   * Fight back on the way (fightBackIfHit): an enemy that hits the character is fought, then the walk re-plans; the fight uses no budget.
    */
   const walkTo = async (tx, tz, o = {}) => {
     const stop = o.stop ?? 2.5;
-    const timeout = o.timeout ?? 90000;
     const label = o.label ?? `(${tx.toFixed(0)},${tz.toFixed(0)})`;
     if (stepAbort) return { ok: false, aborted: true, dist: null };
     wdWalk = { label, x: tx, z: tz };
     const t0 = Date.now();
     if (turnLeftIncreasesYaw === null) await calibrateTurn();
-    const findPath = () => page.evaluate(([x, z]) => {
-      const G = window.G;
-      const pts = G.world.nav.findPath({ x: G.player.position.x, z: G.player.position.z }, { x, z }, 60000);
-      return pts ? pts.map((v) => [v.x, v.z]) : null;
-    }, [tx, tz]);
-    let path = await findPath();
-    if (!path) {
-      B(`no navgrid path to ${label}; trying a straight line`);
-      path = [[tx, tz]];
-    }
+    const zones = o.avoid === false ? [] : await avoidZones((await snap()).lvl);
+    const plan = () => page.evaluate(navRoute, { to: [tx, tz], zones, detour: true });
+    const r0 = await plan();
+    if (!r0) B(`no navgrid path to ${label}; trying a straight line`);
+    if (r0?.detour) { stats.detours++; console.log(`    walk to ${label} goes round a camp (route ${Math.round(r0.len)} m)`); }
+    if (r0?.zone) console.log(`    walk to ${label} crosses the camp ${r0.zone}: no way round it found`);
+    let path = r0 ? r0.pts : [[tx, tz]];
     let wpI = 0;
     let lastPos = await snap();
+    const routeLen = r0 ? r0.len : dev(lastPos, { x: tx, z: tz });
+    const budget = Math.max(o.timeout ?? 90000, Math.round(routeLen * 500) + 10000);
     let lastCheck = Date.now();
     let stuckN = 0;
-    while (Date.now() - t0 < timeout && !stepAbort) {
+    let budgetEnd = t0 + budget;
+    let lastFb = 0;
+    while (Date.now() < budgetEnd && !stepAbort) {
       const s = await snap();
       if (s.dead) { await releaseAll(); return { ok: false, dead: true, dist: dev(s, { x: tx, z: tz }) }; }
+      // fight back on the walk: an enemy in reach that hits the character is fought first (checked every 250 ms); then the walk re-plans
+      if (Date.now() - lastFb > 250) {
+        lastFb = Date.now();
+        const f0 = Date.now();
+        const fb = await fightBackIfHit(60000);
+        if (fb !== 'clear') {
+          await releaseAll();
+          if (fb === 'aborted') return { ok: false, aborted: true, dist: dev(s, { x: tx, z: tz }) };
+          if (fb === 'died') return { ok: false, dead: true, dist: dev(s, { x: tx, z: tz }) };
+          budgetEnd += Date.now() - f0; // the fight does not use up the walk's time budget
+          const np = await plan();
+          if (np) { path = np.pts; wpI = 0; }
+          lastPos = await snap();
+          lastCheck = Date.now();
+          stuckN = 0;
+          continue;
+        }
+      }
       const distFinal = dev(s, { x: tx, z: tz });
       if (distFinal <= stop) { await releaseAll(); return { ok: true, dist: distFinal }; }
       if (s.scene !== (o.scene ?? s.scene)) { await releaseAll(); return { ok: true, sceneChanged: true, dist: distFinal }; }
@@ -374,8 +509,8 @@ async function journey(cls) {
             await tap('Space', 120);
             await sleep(300);
           } else if (stuckN === 3) {
-            const np = await findPath();
-            if (np) { path = np; wpI = 0; }
+            const np = await plan();
+            if (np) { path = np.pts; wpI = 0; }
             await setKeys(['KeyS']);
             await sleep(350);
           } else if (stuckN >= 4) {
@@ -396,7 +531,7 @@ async function journey(cls) {
     await releaseAll();
     const s = await snap();
     if (stepAbort) return { ok: false, aborted: true, dist: dev(s, { x: tx, z: tz }) };
-    B(`walk to ${label} timed out (${Math.round(dev(s, { x: tx, z: tz }))} m left)`);
+    B(`walk to ${label} timed out after ${Math.round(budget / 1000)} s (${Math.round(dev(s, { x: tx, z: tz }))} m left)`);
     return { ok: false, timeout: true, dist: dev(s, { x: tx, z: tz }) };
   };
 
@@ -511,9 +646,17 @@ async function journey(cls) {
       }
       return out.sort((a, b) => a.d - b.d);
     }, ids ?? null);
+  /** Fight back (fight-back.mjs): the enemies that hit the character, read from the game's damage events in the page (one read per call). */
+  const fbCapped = new Map(); // enemy id -> Date.now() ms until which it is not picked again (its fight-back cap)
+  const hitSnapshot = () => page.evaluate(hitterSnapshot);
+  /** The attackers now, nearest first: dealt damage to the character in the last 3 s, in reach, alive, not under the 20 s cap of an earlier fight-back. */
+  const hittersNow = async () => pickAttackers(await hitSnapshot(), { capped: fbCapped, nowMs: Date.now() });
+  /** Fight back on every path (walk, camp wait, rest, escort, fight): 'clear' when no enemy hits the character, else fight(null), which
+   *  returns 'clear' | 'died' | 'aborted' | 'timeout' (the time cap). */
+  const fightBackIfHit = async (maxMs = 60000) => ((await hittersNow()).length ? fight(null, maxMs) : 'clear');
   /**
    * The next pull, one camp at a time: the camp being fought stays the target while one of its members lives within 40 m; otherwise the
-   * nearest in-band camp (mob level lvl-3..lvl+2), else the nearest mob of any level.
+   * nearest in-band mob (level lvl-3..lvl, never above the character's level; no fallback to any other level).
    */
   let campLock = null;
   const pickTarget = async (ids) => {
@@ -614,19 +757,32 @@ async function journey(cls) {
     const s = await snap();
     if (s.dead) B('player stays dead after "Ruhunu Serbest Bırak"', true);
     await closePanels();
+    // the release puts the character at the graveyard with half its HP: rest there to 90% before the walk back (the walk goes round camps of
+    // another level band, see walkTo)
+    const back = await snap();
+    console.log(`  released at the graveyard with ${Math.round((100 * back.hp) / Math.max(1, back.maxHp))}% HP: resting to 90% before the walk back`);
+    await restUp(0.9, 0.9);
   };
 
-  /** Fight one enemy with real input: steer + approach, right-click target + auto-attack, bar skills, heal below 50%, potion below 35%, interrupt casts. */
+  /** Fight one enemy with real input: steer + approach, select, bar skills, heal below 50%, potion below 35%, interrupt casts. `enemyId` is the
+   *  objective; null = a fight back only (walk, camp wait, rest, escort): it returns 'clear' once no enemy hits the character. An attacker
+   *  (fight-back rules, see fightBackIfHit) is fought first, nearest first. It is selected through the game's target:select (what a click emits)
+   *  and turned to face. It is kept while it keeps dealing damage. The fight-back ends when it dies (a kill, counted once), when it has dealt no
+   *  damage for 3 s (a drop) or at its 20 s cap (not picked again for 20 s); the objective resumes after each. */
   let skillIx = 0;
   let healIx = 0;
-  let fightSeq = 0; // fights of this class; fights 1 and 5 get a mid-combat screenshot at ~3 s
+  let fightSeq = 0; // objective fights of this class; fights 1 and 5 get a mid-combat screenshot at ~3 s (fight-back-only fights are not numbered)
   let healCasts = 0;
   let restCount = 0;
-  const fightLog = []; // {n, def, level, res: dead | died | timeout, ttk (s), hpLeft (%)}
+  const fightLog = []; // {n, def, level, res: dead | died | timeout | aborted, ttk (s), hpLeft (%)}
+  /** The game's own targeting: target:select, the event a nameplate click emits (attack: true arms the auto-attack, as a right click does). */
+  const selectByGame = (id) => page.evaluate((eid) => { window.G.events.emit('target:select', { entityId: eid, attack: true }); }, id);
   const fight = async (enemyId, maxMs = 45000, meta = {}) => {
     if (!keys) keys = await loadKeys();
-    const n = ++fightSeq;
+    const n = enemyId != null ? ++fightSeq : 0;
     const t0 = Date.now();
+    const mainId = enemyId; // the objective, or null for a fight back only
+    let tgt = null; // {id, def, level, since}: the enemy fought now
     const rec = (res, st) => fightLog.push({ n, def: meta.def ?? null, level: meta.level ?? null, res, ttk: +((Date.now() - t0) / 1000).toFixed(1), hpLeft: st ? Math.round((100 * st.pHp) / Math.max(1, st.pMax)) : null });
     let lastSkill = 0;
     let lastClick = 0;
@@ -634,11 +790,77 @@ async function journey(cls) {
     let lastHeal = 0;
     let potionAt = 0;
     let shotDone = false;
+    let lastScan = -1e9; // the attacker lists are read again 250 ms after the last read, at once after a kill or after a pick found a dead enemy
+    let attackers = []; // in reach and hitting (the pick rule), nearest first
+    let hitters = []; // hitting within the window, in reach or not (the drop rule)
     while (Date.now() - t0 < maxMs && !stepAbort) {
-      const s = await enemyState(enemyId);
+      const now = Date.now();
+      // the lists are read BEFORE the liveness read below: an attacker that dies after its list was read is seen dead by that read (a kill,
+      // counted once), and is never dropped as a stale list entry
+      if (now - lastScan > 250) {
+        const snapL = await hitSnapshot();
+        const opts = { exceptId: mainId, capped: fbCapped, nowMs: Date.now() };
+        hitters = recentHitters(snapL, opts);
+        attackers = pickAttackers(snapL, opts);
+        lastScan = now;
+      }
+      // the enemy fought now (the objective when none is set) also gives the character's state
+      let s = await enemyState(tgt ? tgt.id : mainId);
       if (s.pDead) { await releaseAll(); rec('died', s); return 'died'; }
-      if (!s.alive) { await releaseAll(); rec('dead', s); return 'dead'; }
-      if (!shotDone && (n === 1 || n === 5) && Date.now() - t0 >= 3000) {
+      const mainS = mainId != null ? (tgt && tgt.id === mainId ? s : await enemyState(mainId)) : null;
+      // the fought attacker ends: a kill when it is dead (it leaves both lists at once, so no later pick sees it), a drop when it has dealt no
+      // damage for the window (the drop is in the else-if chain after the liveness test, so only a live attacker is dropped), or at its 20 s cap
+      if (tgt && tgt.id !== mainId) {
+        if (!s.alive) {
+          stats.kills++;
+          fightLog.push({ n, def: tgt.def, level: tgt.level, res: 'dead', ttk: +((now - tgt.since) / 1000).toFixed(1), hpLeft: Math.round((100 * s.pHp) / Math.max(1, s.pMax)) });
+          console.log(`  kill ${tgt.def} (attacker in the ${meta.def ?? 'fight'} fight, L${tgt.level}, ${mins()} min)`);
+          attackers = attackers.filter((h) => h.id !== tgt.id);
+          hitters = hitters.filter((h) => h.id !== tgt.id);
+          lastScan = -1e9;
+          tgt = null;
+        } else if (now - tgt.since >= FIGHT_BACK_CAP_MS) {
+          fbCapped.set(tgt.id, Date.now() + FIGHT_BACK_CAP_MS);
+          console.log(`    fight back on ${tgt.def} capped at ${FIGHT_BACK_CAP_MS / 1000} s: the ${meta.def ?? 'fight'} resumes`);
+          attackers = attackers.filter((h) => h.id !== tgt.id);
+          hitters = hitters.filter((h) => h.id !== tgt.id);
+          tgt = null;
+        } else if (!hitters.some((h) => h.id === tgt.id)) {
+          console.log(`    fight back on ${tgt.def} dropped: no damage to the character in the last 3 s`);
+          tgt = null;
+        }
+      }
+      // next target: the attacker kept above, else the nearest attacker, else the objective while it lives
+      let nextId = null;
+      if (tgt && tgt.id !== mainId) nextId = tgt.id;
+      else if (attackers.length) nextId = attackers[0].id;
+      else if (mainS?.alive) nextId = mainId;
+      if (nextId == null) {
+        await releaseAll();
+        if (mainId == null) return 'clear';
+        rec('dead', mainS ?? s);
+        return 'dead';
+      }
+      if (!tgt || nextId !== tgt.id) {
+        if (nextId === mainId) tgt = { id: mainId, def: meta.def ?? null, level: meta.level ?? null, since: now };
+        else {
+          const h = attackers.find((a) => a.id === nextId);
+          if (!(await enemyState(h.id)).alive) {
+            // it died after its list was read: no fight, no fight-back count, no kill. The next pass reads the lists again.
+            attackers = attackers.filter((a) => a.id !== h.id);
+            hitters = hitters.filter((a) => a.id !== h.id);
+            lastScan = -1e9;
+            await sleep(70);
+            continue;
+          }
+          stats.fightBacks++;
+          console.log(`    fight back: ${h.def} L${h.level} hits us in the ${meta.def ?? 'fight'} fight (${Math.round(h.d)} m)`);
+          tgt = { id: h.id, def: h.def, level: h.level, since: now };
+        }
+        lastClick = 0;
+        s = await enemyState(tgt.id);
+      }
+      if (!shotDone && (n === 1 || n === 5) && now - t0 >= 3000) {
         shotDone = true;
         await shot(`combat_f${n}`);
       }
@@ -647,16 +869,20 @@ async function journey(cls) {
       const want = kickNow ? 2.5 : melee ? 2.2 : 13;
       const err = wrap(Math.atan2(s.x - s.px, s.z - s.pz) - s.pYaw);
       const mv = [];
-      if (Math.abs(err) > 0.1) mv.push((err > 0) === turnLeftIncreasesYaw ? 'ArrowLeft' : 'ArrowRight');
+      if (Math.abs(err) > 0.1) mv.push((err > 0) === turnLeftIncreasesYaw ? 'ArrowLeft' : 'ArrowRight'); // turn to face the target
       if (s.d > want && Math.abs(err) < 0.9) mv.push('KeyW');
       await setKeys(mv);
-      const now = Date.now();
-      // select + arm auto-attack with a real right click on the enemy (retry every 1.5 s while not selected)
-      if (!s.selected && s.onScreen && s.d < 30 && now - lastClick > 1500) {
+      // select + arm the auto-attack. An attacker is selected through the game's target:select (Tab is not used: it cycles only the enemies
+      // inside the camera frustum). The objective is right-clicked when it is on screen, then selected the same way when that click did not.
+      if (!s.selected && s.d < 30 && now - lastClick > 1500) {
         lastClick = now;
-        await page.mouse.click(s.sx, s.sy, { button: 'right' });
-        await sleep(80);
-        if (!(await enemyState(enemyId)).selected) await tap('Tab');
+        if (tgt.id === mainId) {
+          if (s.onScreen) {
+            await page.mouse.click(s.sx, s.sy, { button: 'right' });
+            await sleep(80);
+          }
+          if (!(await enemyState(tgt.id)).selected) await selectByGame(tgt.id);
+        } else await selectByGame(tgt.id);
       }
       if (s.selected && s.d < (melee ? 4 : 28)) {
         if (kickNow && s.d < 4 && now - lastKick > 1200) {
@@ -685,16 +911,21 @@ async function journey(cls) {
     return 'timeout';
   };
 
-  /** Before a pull: below 60% HP the character stands still (out-of-combat regen runs 5 s after the last hit; the game has no food) until 80%. Aggro that walks in is fought. */
-  const restUp = async () => {
+  /** Before a pull: below 60% HP the character stands still (out-of-combat regen runs 5 s after the last hit; the game has no food) until 80%.
+   *  After a death (released at the graveyard with half its HP) the rest is `below` 90% and runs to 90%. Aggro that walks in is fought. */
+  const restUp = async (below = 0.6, to = 0.8) => {
     const s0 = await snap();
-    if (s0.dead || s0.hp >= s0.maxHp * 0.6) return;
+    if (s0.dead || s0.hp >= s0.maxHp * below) return;
     restCount++;
     await releaseAll();
     const t0 = Date.now();
     while (Date.now() - t0 < 150000 && !stepAbort) {
       const s = await snap();
-      if (s.dead || s.hp >= s.maxHp * 0.8) break;
+      if (s.dead || s.hp >= s.maxHp * to) break;
+      // an enemy that hits the character is fought back first; an aggroed one coming in (within 15 m) is taken as before
+      const fb = await fightBackIfHit(60000);
+      if (fb === 'died') break;
+      if (fb !== 'clear') continue;
       const near = await nearestEnemy(null);
       if (near && near.aggro && near.d < 15) {
         await fight(near.id, 30000);
@@ -721,14 +952,21 @@ async function journey(cls) {
           const def = qm.worldDef();
           const ts = (await import('/src/types/dungeons.ts')).TILE_SIZE;
           const p = G.player.position;
+          const L = G.character.level;
+          const band = (pk) => !pk.levelRange || (pk.levelRange[1] >= L - 3 && pk.levelRange[0] <= L);
           let best = null;
-          for (const pk of def?.packs ?? []) {
-            if (!pk.members.some((m) => idl.includes(m.enemyId))) continue;
-            const x = (pk.center[0] + 0.5) * ts;
-            const z = (pk.center[1] + 0.5) * ts;
-            const d = Math.hypot(x - p.x, z - p.z);
-            const score = d + 150 * Math.max(0, (pk.levelRange?.[0] ?? 1) - G.character.level);
-            if (!best || score < best.score) best = { x, z, score, id: pk.id };
+          // the camps of the character's level band first; a camp of another band only when none of the band holds these mobs
+          for (const inBand of [true, false]) {
+            for (const pk of def?.packs ?? []) {
+              if (inBand && !band(pk)) continue;
+              if (!pk.members.some((m) => idl.includes(m.enemyId))) continue;
+              const x = (pk.center[0] + 0.5) * ts;
+              const z = (pk.center[1] + 0.5) * ts;
+              const d = Math.hypot(x - p.x, z - p.z);
+              const score = d + 150 * Math.max(0, (pk.levelRange?.[0] ?? 1) - L);
+              if (!best || score < best.score) best = { x, z, score, id: pk.id };
+            }
+            if (best) break;
           }
           return best;
         }, [ids]);
@@ -739,24 +977,21 @@ async function journey(cls) {
       // no in-level mob alive at the camp: the game refreshes a camp only while no player is within radius + 30 m of its centre
       // (CampDirector.ts REFRESH_CLEAR_M), so waiting at the camp blocks its own respawn. Walk 40 m out (a navgrid-reachable
       // point), wait there; the next pass walks back when a member is up.
-      const away = await page.evaluate(([cx, cz, R]) => {
-        const G = window.G;
-        const p = G.player.position;
-        const base = Math.atan2(p.x - cx, p.z - cz);
-        for (let k = 0; k < 8; k++) {
-          const a = base + (k % 2 ? -1 : 1) * Math.ceil(k / 2) * (Math.PI / 4);
-          const x = cx + R * Math.sin(a);
-          const z = cz + R * Math.cos(a);
-          const pts = G.world.nav.findPath({ x: p.x, z: p.z }, { x, z }, 60000);
-          if (pts && pts.length) return { x, z };
-        }
-        return null;
-      }, [tx.x, tx.z, 40]);
+      const away = await waitPoint(tx, 40);
       if (away) await walkTo(away.x, away.z, { stop: 3, timeout: 60000, label: 'wait outside camp' });
       else B(`${label}: no navgrid point 40 m from ${tx.id ?? 'the kill area'}; waiting at the camp (its respawn is blocked while a player stands near)`);
       for (let i = 0; i < 300 && !stepAbort; i++) {
+        // fight back while waiting at the camp: an enemy in reach that hits the character is fought first (no objective). A death on the way
+        // here (walkTo returns at once when the character is dead) ends the wait too, not only a fight that found the death.
+        const fb = await fightBackIfHit(60000);
+        if (fb === 'died' || (await snap()).dead) {
+          B(`${label}: the player died at the camp (lvl ${(await snap()).lvl})`);
+          await handleDeath();
+          return 'died';
+        }
+        if (fb === 'aborted') break;
         if (await pickTarget(ids)) break;
-        await sleep(500);
+        if (fb === 'clear') await sleep(500);
       }
       return 'walked';
     }
@@ -875,6 +1110,10 @@ async function journey(cls) {
         const killIds = killTargetsOf(d);
         const t0 = Date.now();
         while (Date.now() - t0 < 90000 && !stepAbort && !(await progressRows(d.id))[k]?.done) {
+          // fight back first: an enemy in reach that hits the character (the ambush pulls below follow)
+          const fb = await fightBackIfHit(60000);
+          if (fb === 'died' || fb === 'aborted') break;
+          if (fb !== 'clear') continue;
           const pool = await aliveEnemies(killIds.length ? killIds : null);
           const en = pool.find((e) => e.d < 15 && (killIds.length || e.aggro));
           if (en) { await fight(en.id, 30000, { def: en.def, level: en.level }); continue; }
@@ -1028,7 +1267,7 @@ async function journey(cls) {
       deaths: stats.deaths, teleports: stats.teleports, kills: stats.kills, questsDone: stats.questsDone, watchdogFires: wdFires,
       levelMin, levelUps, end: endStr || end, chain: chainLog,
       fights: fightLog, medianTtk: fmed(won.map((f) => f.ttk)), medianHpLeft: fmed(won.map((f) => f.hpLeft).filter((v) => v != null)),
-      rests: restCount, healCasts,
+      rests: restCount, healCasts, fightBacks: stats.fightBacks, detours: stats.detours,
       end_level: fin?.lvl ?? null,
     };
     fs.writeFileSync(path.join(OUT, `fh_${cls}.json`), JSON.stringify(summary, null, 2));
@@ -1086,6 +1325,8 @@ async function journey(cls) {
     melee = (await page.evaluate(() => window.G.skills.autoInfo(window.G.player).mode)) === 'melee';
     console.log(`  [${cls}] auto-attack mode: ${melee ? 'melee' : 'ranged/off'}`);
     await page.evaluate(() => window.G.events.on('player:levelup', ({ level }) => window.__fhLevelUp(level)));
+    // fight back (page side): the damage events that hit the character, by source (fight-back.mjs)
+    await page.evaluate(installHitTracker);
     // death recorder (page side): the game's death:recap snapshot, and a 4 Hz sample of HP / resource / position for the last 10 s
     await page.evaluate(() => {
       const G = window.G;
