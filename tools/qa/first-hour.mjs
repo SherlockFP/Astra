@@ -162,6 +162,22 @@ async function journey(cls) {
   const levelMin = {};
   const chainLog = [];
   const stats = { deaths: 0, teleports: 0, kills: 0, questsDone: 0 };
+  // watchdog state: no progress (level, XP, kills, quest state / progress, HP gain, or a move of more than 5 m) for FH_WD_S seconds
+  // = BLOCKER + state dump + screenshot; the step in flight is aborted (stepAbort: every wait loop of a step returns) and the chain moves on.
+  const WD_MS = Number(process.env.FH_WD_S ?? 90) * 1000;
+  let stepAbort = false;
+  let wdTimer = null;
+  let wdBusy = false;
+  let wdFires = 0;
+  let wdAnchor = { t: 0, x: 0, z: 0 };
+  let wdLast = null;
+  let wdLabel = 'setup'; // the chain step in progress (quest + state)
+  let wdWalk = null; // {label, x, z} of the walk in progress
+  let curQuest = null; // id of the quest the chain step works on
+  let end = ''; // how the chain ended (summary)
+  let written = false;
+  let summary = null;
+  let excMsg = '';
   await page.exposeFunction('__fhLevelUp', (level) => {
     levelUps.push({ level, min: mins() });
     if (levelMin[level] == null) levelMin[level] = mins();
@@ -279,6 +295,8 @@ async function journey(cls) {
     const stop = o.stop ?? 2.5;
     const timeout = o.timeout ?? 90000;
     const label = o.label ?? `(${tx.toFixed(0)},${tz.toFixed(0)})`;
+    if (stepAbort) return { ok: false, aborted: true, dist: null };
+    wdWalk = { label, x: tx, z: tz };
     const t0 = Date.now();
     if (turnLeftIncreasesYaw === null) await calibrateTurn();
     const findPath = () => page.evaluate(([x, z]) => {
@@ -295,7 +313,7 @@ async function journey(cls) {
     let lastPos = await snap();
     let lastCheck = Date.now();
     let stuckN = 0;
-    while (Date.now() - t0 < timeout) {
+    while (Date.now() - t0 < timeout && !stepAbort) {
       const s = await snap();
       if (s.dead) { await releaseAll(); return { ok: false, dead: true, dist: dev(s, { x: tx, z: tz }) }; }
       const distFinal = dev(s, { x: tx, z: tz });
@@ -344,6 +362,7 @@ async function journey(cls) {
     }
     await releaseAll();
     const s = await snap();
+    if (stepAbort) return { ok: false, aborted: true, dist: dev(s, { x: tx, z: tz }) };
     B(`walk to ${label} timed out (${Math.round(dev(s, { x: tx, z: tz }))} m left)`);
     return { ok: false, timeout: true, dist: dev(s, { x: tx, z: tz }) };
   };
@@ -372,9 +391,9 @@ async function journey(cls) {
     if (!p) {
       // a village NPC is not in the town: the guide arrow points at the gate that leads to its map; walk there, then retry
       const g = await page.evaluate(async () => (await import('/src/ui/hud/questMarks.ts')).guideTarget(null));
-      if (g && g.kind === 'talk') {
+      if (g && g.kind === 'talk' && !stepAbort) {
         await walkTo(g.x, g.z, { stop: 1.5, timeout: 150000, label: g.label });
-        await waitScene('dungeon', 60000).catch(() => {});
+        if (!stepAbort) await waitScene('dungeon', 60000).catch(() => {});
         await sleep(2500);
         p = await npcPos(npcId);
       }
@@ -582,7 +601,7 @@ async function journey(cls) {
     let lastHeal = 0;
     let potionAt = 0;
     let shotDone = false;
-    while (Date.now() - t0 < maxMs) {
+    while (Date.now() - t0 < maxMs && !stepAbort) {
       const s = await enemyState(enemyId);
       if (s.pDead) { await releaseAll(); rec('died', s); return 'died'; }
       if (!s.alive) { await releaseAll(); rec('dead', s); return 'dead'; }
@@ -628,6 +647,7 @@ async function journey(cls) {
       await sleep(70);
     }
     await releaseAll();
+    if (stepAbort) { rec('aborted', null); return 'aborted'; }
     rec('timeout', null);
     return 'timeout';
   };
@@ -639,7 +659,7 @@ async function journey(cls) {
     restCount++;
     await releaseAll();
     const t0 = Date.now();
-    while (Date.now() - t0 < 150000) {
+    while (Date.now() - t0 < 150000 && !stepAbort) {
       const s = await snap();
       if (s.dead || s.hp >= s.maxHp * 0.8) break;
       const near = await nearestEnemy(null);
@@ -683,15 +703,34 @@ async function journey(cls) {
       }
       if (!tx) { B(`${label}: no ${ids.join('/')} found near the player, the guide arrow or any layout camp`, true); return 'stuck'; }
       await walkTo(tx.x, tx.z, { stop: 14, timeout: 90000, label: 'kill area' });
-      // at the quest camp with no in-level mob alive: wait for the respawn here (a walk-off to another camp is what kills)
-      for (let i = 0; i < 120; i++) {
+      // no in-level mob alive at the camp: the game refreshes a camp only while no player is within radius + 30 m of its centre
+      // (CampDirector.ts REFRESH_CLEAR_M), so waiting at the camp blocks its own respawn. Walk 40 m out (a navgrid-reachable
+      // point), wait there; the next pass walks back when a member is up.
+      const away = await page.evaluate(([cx, cz, R]) => {
+        const G = window.G;
+        const p = G.player.position;
+        const base = Math.atan2(p.x - cx, p.z - cz);
+        for (let k = 0; k < 8; k++) {
+          const a = base + (k % 2 ? -1 : 1) * Math.ceil(k / 2) * (Math.PI / 4);
+          const x = cx + R * Math.sin(a);
+          const z = cz + R * Math.cos(a);
+          const pts = G.world.nav.findPath({ x: p.x, z: p.z }, { x, z }, 60000);
+          if (pts && pts.length) return { x, z };
+        }
+        return null;
+      }, [tx.x, tx.z, 40]);
+      if (away) await walkTo(away.x, away.z, { stop: 3, timeout: 60000, label: 'wait outside camp' });
+      else B(`${label}: no navgrid point 40 m from ${tx.id ?? 'the kill area'}; waiting at the camp (its respawn is blocked while a player stands near)`);
+      for (let i = 0; i < 300 && !stepAbort; i++) {
         if (await pickTarget(ids)) break;
         await sleep(500);
       }
       return 'walked';
     }
     if (en.d > 20) await walkTo(en.x, en.z, { stop: 14, timeout: 30000, label: en.name ?? en.def });
+    if (stepAbort) return 'aborted';
     const res = await fight(en.id, 45000, { def: en.def, level: en.level });
+    if (res === 'aborted') return 'aborted';
     if (res === 'died') {
       const around = await page.evaluate(() => {
         const G = window.G;
@@ -795,12 +834,15 @@ async function journey(cls) {
         await walkTo(e0.x, e0.z, { stop: 2.5, timeout: 90000, label: 'escort NPC' });
         await tap('KeyF'); // F starts the walk
         await sleep(500);
-        // follow it for up to 90 s: walk to the escort, fight what attacks it
+        // follow it for up to 90 s: walk to the escort, fight what attacks it. The ambush (the game's trigger waypoints) is not
+        // always a kill objective of the quest: with no kill target, any aggro mob within 15 m is an ambusher. The escort's
+        // protection timer pauses while ambushers are alive, so an ambush that is never fought stalls the objective for good.
         const killIds = killTargetsOf(d);
         const t0 = Date.now();
-        while (Date.now() - t0 < 90000 && !(await progressRows(d.id))[k]?.done) {
-          const en = await nearestEnemy(killIds);
-          if (en && en.d < 15) { await fight(en.id, 30000); continue; }
+        while (Date.now() - t0 < 90000 && !stepAbort && !(await progressRows(d.id))[k]?.done) {
+          const pool = await aliveEnemies(killIds.length ? killIds : null);
+          const en = pool.find((e) => e.d < 15 && (killIds.length || e.aggro));
+          if (en) { await fight(en.id, 30000, { def: en.def, level: en.level }); continue; }
           const ee = await page.evaluate(async () => {
             const E = await import('/src/entities/interactables/EscortNpc.ts');
             const p = window.G.player.position;
@@ -876,223 +918,305 @@ async function journey(cls) {
     return st === 'done';
   };
 
-  // =============================================================== 1. menu
-  await page.goto(`${BASE}/`, { waitUntil: 'load', timeout: 90000 });
-  await page.waitForFunction(() => window.G?.scenes?.current?.id === 'menu', null, { timeout: 120000 });
-  await sleep(1800);
-  await shot('menu');
-  const menuTitle = await page.evaluate(() => document.querySelector('.efs-title h1')?.textContent ?? '');
-  C('main menu shows the title', /EFSUN/i.test(menuTitle), menuTitle);
-  await page.click('button:has-text("Yeni Karakter")');
-  await sleep(1200);
-  // the card text of this class comes from the game (classInfo.ts classPresentation / CLASS_ORDER), not from a list here
-  const card = await page.evaluate(async (id) => {
-    const ci = await import('/src/ui/menu/classInfo.ts');
-    return { label: ci.classPresentation(id).name, all: ci.CLASS_ORDER.map((c) => ci.classPresentation(c).name) };
-  }, cls);
-  const cards = await page.evaluate(() => [...document.querySelectorAll('.efs-class .nm')].map((e) => e.textContent));
-  const missing = card.all.filter((n) => !cards.includes(n));
-  C('creation screen lists every class card', missing.length === 0, missing.length ? `missing: ${missing.join(',')}` : `${card.all.length} classes`);
-  C(`class card "${card.label}" exists`, cards.includes(card.label), cls);
-  await page.click(`.efs-class:has-text("${card.label.replace(/"/g, '')}")`);
-  await sleep(900);
-  await shot('create');
-  const createBtn = page.locator('button:has-text("Oluştur")');
-  const cb = await createBtn.boundingBox();
-  if (!cb || cb.y + cb.height > VH + 1 || cb.y < 0) X(`Oluştur button is outside the ${VW}x${VH} viewport (y=${cb ? Math.round(cb.y) : '?'}): the creation panel is taller than the screen`);
-  await page.fill('.efs-input', charName(cls));
-  await sleep(200);
-  await createBtn.click();
-  await sleep(2200);
-  const created = await page.evaluate(() => [...document.querySelectorAll('.efs-char .nm')].map((e) => e.textContent));
-  C('character appears in the list after Oluştur', created.includes(charName(cls)), created.join(','));
-  await shot('created');
-  await page.click('button:has-text("Oyna")');
-  await waitScene('town');
-  await sleep(2500);
-  T0 = Date.now();
-  const s0 = await snap();
-  C('entered the first town as level 1', s0.scene === 'town' && s0.lvl === 1, `scene=${s0.scene} lvl=${s0.lvl}`);
-  const gotCls = await page.evaluate(() => window.G.character.save.classId);
-  C('character class is ' + cls, gotCls === cls, gotCls);
-  // barks (systems/Barks.ts): every bark also writes a 'Söylenti' (rumor) line into the chat; count the lines added from now on
-  await page.evaluate(() => {
-    window.__barks = 0;
-    new MutationObserver((ms) => {
-      for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1 && (n.classList?.contains('rumor') || n.querySelector?.('.rumor'))) window.__barks++;
-    }).observe(document.body, { childList: true, subtree: true });
-  });
-  // melee or caster, read from the game's own auto-attack mode of this character (SkillSystem.autoInfo: the basic step's range)
-  melee = (await page.evaluate(() => window.G.skills.autoInfo(window.G.player).mode)) === 'melee';
-  console.log(`  [${cls}] auto-attack mode: ${melee ? 'melee' : 'ranged/off'}`);
-  await page.evaluate(() => window.G.events.on('player:levelup', ({ level }) => window.__fhLevelUp(level)));
-  // death recorder (page side): the game's death:recap snapshot, and a 4 Hz sample of HP / resource / position for the last 10 s
-  await page.evaluate(() => {
-    const G = window.G;
-    window.__fhRecap = null;
-    G.events.on('death:recap', (r) => { window.__fhRecap = r; });
-    window.__fhHist = [];
-    setInterval(() => {
-      const p = window.G?.player;
-      if (!p) return;
-      window.__fhHist.push({ hp: p.hp, maxHp: p.maxHp, res: p.resource, maxRes: p.maxResource, resType: p.resourceType, pos: { x: p.position.x, z: p.position.z } });
-      if (window.__fhHist.length > 40) window.__fhHist.shift();
-    }, 250);
-  });
-
-  // =============================================================== 2. welcome card
-  await page.waitForFunction(() => window.G.ui.isPanelOpen('welcome'), null, { timeout: 15000 }).catch(() => {});
-  const welcomeOpen = await page.evaluate(() => window.G.ui.isPanelOpen('welcome'));
-  C('welcome card opens on first login', welcomeOpen);
-  await shot('welcome');
-  if (welcomeOpen) {
-    await page.click('button:has-text("BAŞLA")');
-    await sleep(600);
-  }
-  C('welcome card closed by BAŞLA', !(await page.evaluate(() => window.G.ui.isPanelOpen('welcome'))));
-  await sampleFps('town spawn');
-  keys = await loadKeys();
-  console.log(`  keys: skills ${keys.skills.map((s) => `${s.slot}=${s.key}`).join(' ')} interrupt=${keys.interrupt ? keys.interrupt.slot + '=' + keys.interrupt.key : 'none'} potion=${keys.potionHp}`);
-
-  // =============================================================== 3. the chain, followed from the game's guide
-  const LEVEL_TARGET = TO_LEVEL;
-  const fails = {};
-  let steps = 0;
-  let worldSeen = false;
-  let end = '';
-  while (true) {
-    steps++;
+  // ---- watchdog helpers ----
+  /** A promise that resolves to `fallback` after `ms` when the page does not answer (a frozen game must not freeze the bot). */
+  const withTimeout = (p, ms, fallback = null) => Promise.race([p.catch(() => fallback), sleep(ms).then(() => fallback)]);
+  const wdSnap = async () => {
     const s = await snap();
-    if (s.lvl >= LEVEL_TARGET) { end = `level ${s.lvl} at ${mins()} min`; break; }
-    if ((Date.now() - T0) / 60000 > MAX_MIN) { end = `time budget ${MAX_MIN} min (level ${s.lvl})`; break; }
-    if (steps > 700) { end = `step cap (level ${s.lvl})`; break; }
-    if (s.dead) { B(`dead at level ${s.lvl} (${mins()} min)`); await handleDeath(); continue; }
-    if (s.scene === 'dungeon' && !worldSeen) {
-      worldSeen = true;
-      await sleep(3000);
-      await shot('world_arrive');
-      await sampleFps('sisli vadi spawn');
-      C('arrived in the open world', true, `at ${mins()} min`);
-    }
-    const rec = await recommended();
-    if (!rec) { B(`the guide recommends no quest at level ${s.lvl} (${mins()} min): the chain ends or has a gap`, true); end = 'no recommendation'; break; }
-    const d = await questDef(rec.id);
-    if (!d) { B(`recommended quest ${rec.id} has no definition`, true); end = 'no definition'; break; }
-    const failKey = `${d.id}:${rec.state}`;
-    let ok = true;
+    const qs = curQuest ? await qState(curQuest).catch(() => null) : null;
+    const rows = curQuest ? await progressRows(curQuest).catch(() => []) : [];
+    return { ...s, qk: `${qs}|${rows.map((r) => `${r.have}/${r.need}`).join(' ')}`, kills: stats.kills, qdone: stats.questsDone };
+  };
+  /** Watchdog fire: BLOCKER with the state dump (json file) and a screenshot. */
+  const wdDump = async (s) => {
+    const n = wdFires;
+    const ev = (f, ms = 4000) => withTimeout(f(), ms, null);
+    const dump = {
+      cls, fire: n, atMin: mins(), step: wdLabel, quest: curQuest,
+      questState: curQuest ? await ev(() => qState(curQuest)) : null,
+      questProgress: curQuest ? await ev(() => progressRows(curQuest)) : null,
+      lastKillStep: lastStep, walk: wdWalk,
+      player: s ? { scene: s.scene, x: +s.x.toFixed(1), z: +s.z.toFixed(1), yaw: +s.yaw.toFixed(2), hp: s.hp, maxHp: s.maxHp, lvl: s.lvl, xp: s.xp, dead: s.dead } : { note: 'page did not answer (evaluate timed out)', lastMove: wdAnchor },
+      distToWalkTarget: s && wdWalk ? Math.round(Math.hypot(wdWalk.x - s.x, wdWalk.z - s.z)) : null,
+      nearbyMobs: await ev(() => aliveEnemies(null).then((a) => a.slice(0, 8).map((e) => ({ def: e.def, L: e.level, d: Math.round(e.d), aggro: e.aggro, camp: e.camp })))),
+      topPanel: s?.top ?? null, wantsCursor: s?.wantsCursor ?? null, keysHeld: [...held],
+      lastErrors: errors.slice(-5),
+    };
+    const jsonPath = path.join(OUT, `fh_${cls}_watchdog_${n}.json`);
+    fs.writeFileSync(jsonPath, JSON.stringify(dump, null, 1));
+    await ev(() => page.screenshot({ path: path.join(OUT, `fh_${cls}_watchdog_${n}.png`), timeout: 8000 }), 10000);
+    const p = dump.player;
+    B(`WATCHDOG: no progress for ${WD_MS / 1000} s in "${wdLabel}" (fire ${n}): pos ${p.x ?? '?'},${p.z ?? '?'} HP ${p.hp ?? '?'}/${p.maxHp ?? '?'}, `
+      + `target ${wdWalk?.label ?? '-'} ${dump.distToWalkTarget ?? '?'} m, quest ${dump.questState ?? '-'}, top panel ${dump.topPanel ?? '-'}, `
+      + `nearest ${(dump.nearbyMobs ?? []).slice(0, 2).map((e) => `${e.def} L${e.L} ${e.d}m`).join(' / ') || 'none'}; dump fh_${cls}_watchdog_${n}.json; step aborted`);
+  };
+  /** Runs once a second while the chain runs: progress resets the window, a full window without progress fires the watchdog. */
+  const wdTick = async () => {
+    if (wdBusy) return;
+    wdBusy = true;
     try {
-      if (rec.state === 'available') {
-        ok = await acceptAt(d);
-      } else if (rec.state === 'ready') {
-        ok = await turnInAt(d);
-      } else {
-        const before = await progressKey(d.id);
-        const r = await stepObjective(d);
-        if (r === 'unsupported' || r === 'stuck') { end = `chain stuck on "${d.name}" (${r})`; break; }
-        const after = await progressKey(d.id);
-        // a kill or a walk is progress of its own: a drop has a chance per kill, and a walk to a far target changes no counter
-        const moved = (['killed', 'walked', 'walked to prop area', 'walked to escort area', 'escorted'].includes(r));
-        ok = moved || after !== before || (await qState(d.id)) !== 'active';
+      const now = Date.now();
+      const s = await withTimeout(wdSnap(), 4000, null);
+      let progress = false;
+      if (s) {
+        const moved = Math.hypot(s.x - wdAnchor.x, s.z - wdAnchor.z);
+        const prev = wdLast ?? {};
+        progress = wdLast === null || prev.lvl !== s.lvl || prev.xp !== s.xp || prev.kills !== s.kills || prev.qdone !== s.qdone
+          || prev.qk !== s.qk || s.hp > (prev.hp ?? s.hp) || moved > 5;
+        wdLast = { lvl: s.lvl, xp: s.xp, kills: s.kills, qdone: s.qdone, qk: s.qk, hp: s.hp };
+        if (progress) wdAnchor = { t: now, x: s.x, z: s.z };
       }
-    } catch (e) {
-      B(`step on "${d.name}" threw: ${String(e?.message ?? e).slice(0, 160)}`, true);
-      end = 'exception';
-      break;
+      if (progress || now - wdAnchor.t < WD_MS) return;
+      wdFires++;
+      wdAnchor = { t: now, x: s?.x ?? wdAnchor.x, z: s?.z ?? wdAnchor.z };
+      stepAbort = true;
+      await wdDump(s);
+    } finally {
+      wdBusy = false;
     }
-    if (!ok) {
-      fails[failKey] = (fails[failKey] ?? 0) + 1;
-      if (fails[failKey] >= 4) {
-        const rows = (await progressRows(d.id)).map((r) => `${r.text}: ${r.have}/${r.need}`).join(' | ');
-        B(`chain stuck: "${d.name}" (${rec.state}) makes no progress after 4 steps [${rows}]`, true);
-        end = `stuck on "${d.name}"`;
+  };
+  /** Per-class summary, written once: on the normal end, the time cap, the step cap, and on an exception (from the finally below). */
+  const writeJson = async (endStr) => {
+    if (written) return summary;
+    written = true;
+    const fin = await withTimeout(snap(), 8000, null);
+    const fmed = (a) => {
+      if (!a.length) return null;
+      const b = [...a].sort((x, y) => x - y);
+      const m = b.length >> 1;
+      return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2;
+    };
+    const won = fightLog.filter((f) => f.res === 'dead');
+    summary = {
+      cls, checks: results.length - checksAtStart, failed: results.slice(checksAtStart).filter((r) => !r.ok).length,
+      deaths: stats.deaths, teleports: stats.teleports, kills: stats.kills, questsDone: stats.questsDone, watchdogFires: wdFires,
+      levelMin, levelUps, end: endStr || end, chain: chainLog,
+      fights: fightLog, medianTtk: fmed(won.map((f) => f.ttk)), medianHpLeft: fmed(won.map((f) => f.hpLeft).filter((v) => v != null)),
+      rests: restCount, healCasts,
+      end_level: fin?.lvl ?? null,
+    };
+    fs.writeFileSync(path.join(OUT, `fh_${cls}.json`), JSON.stringify(summary, null, 2));
+    return summary;
+  };
+
+  try {
+    // =============================================================== 1. menu
+    await page.goto(`${BASE}/`, { waitUntil: 'load', timeout: 90000 });
+    await page.waitForFunction(() => window.G?.scenes?.current?.id === 'menu', null, { timeout: 120000 });
+    await sleep(1800);
+    await shot('menu');
+    const menuTitle = await page.evaluate(() => document.querySelector('.efs-title h1')?.textContent ?? '');
+    C('main menu shows the title', /EFSUN/i.test(menuTitle), menuTitle);
+    await page.click('button:has-text("Yeni Karakter")');
+    await sleep(1200);
+    // the card text of this class comes from the game (classInfo.ts classPresentation / CLASS_ORDER), not from a list here
+    const card = await page.evaluate(async (id) => {
+      const ci = await import('/src/ui/menu/classInfo.ts');
+      return { label: ci.classPresentation(id).name, all: ci.CLASS_ORDER.map((c) => ci.classPresentation(c).name) };
+    }, cls);
+    const cards = await page.evaluate(() => [...document.querySelectorAll('.efs-class .nm')].map((e) => e.textContent));
+    const missing = card.all.filter((n) => !cards.includes(n));
+    C('creation screen lists every class card', missing.length === 0, missing.length ? `missing: ${missing.join(',')}` : `${card.all.length} classes`);
+    C(`class card "${card.label}" exists`, cards.includes(card.label), cls);
+    await page.click(`.efs-class:has-text("${card.label.replace(/"/g, '')}")`);
+    await sleep(900);
+    await shot('create');
+    const createBtn = page.locator('button:has-text("Oluştur")');
+    const cb = await createBtn.boundingBox();
+    if (!cb || cb.y + cb.height > VH + 1 || cb.y < 0) X(`Oluştur button is outside the ${VW}x${VH} viewport (y=${cb ? Math.round(cb.y) : '?'}): the creation panel is taller than the screen`);
+    await page.fill('.efs-input', charName(cls));
+    await sleep(200);
+    await createBtn.click();
+    await sleep(2200);
+    const created = await page.evaluate(() => [...document.querySelectorAll('.efs-char .nm')].map((e) => e.textContent));
+    C('character appears in the list after Oluştur', created.includes(charName(cls)), created.join(','));
+    await shot('created');
+    await page.click('button:has-text("Oyna")');
+    await waitScene('town');
+    await sleep(2500);
+    T0 = Date.now();
+    const s0 = await snap();
+    C('entered the first town as level 1', s0.scene === 'town' && s0.lvl === 1, `scene=${s0.scene} lvl=${s0.lvl}`);
+    const gotCls = await page.evaluate(() => window.G.character.save.classId);
+    C('character class is ' + cls, gotCls === cls, gotCls);
+    // barks (systems/Barks.ts): every bark also writes a 'Söylenti' (rumor) line into the chat; count the lines added from now on
+    await page.evaluate(() => {
+      window.__barks = 0;
+      new MutationObserver((ms) => {
+        for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1 && (n.classList?.contains('rumor') || n.querySelector?.('.rumor'))) window.__barks++;
+      }).observe(document.body, { childList: true, subtree: true });
+    });
+    // melee or caster, read from the game's own auto-attack mode of this character (SkillSystem.autoInfo: the basic step's range)
+    melee = (await page.evaluate(() => window.G.skills.autoInfo(window.G.player).mode)) === 'melee';
+    console.log(`  [${cls}] auto-attack mode: ${melee ? 'melee' : 'ranged/off'}`);
+    await page.evaluate(() => window.G.events.on('player:levelup', ({ level }) => window.__fhLevelUp(level)));
+    // death recorder (page side): the game's death:recap snapshot, and a 4 Hz sample of HP / resource / position for the last 10 s
+    await page.evaluate(() => {
+      const G = window.G;
+      window.__fhRecap = null;
+      G.events.on('death:recap', (r) => { window.__fhRecap = r; });
+      window.__fhHist = [];
+      setInterval(() => {
+        const p = window.G?.player;
+        if (!p) return;
+        window.__fhHist.push({ hp: p.hp, maxHp: p.maxHp, res: p.resource, maxRes: p.maxResource, resType: p.resourceType, pos: { x: p.position.x, z: p.position.z } });
+        if (window.__fhHist.length > 40) window.__fhHist.shift();
+      }, 250);
+    });
+
+    // =============================================================== 2. welcome card
+    await page.waitForFunction(() => window.G.ui.isPanelOpen('welcome'), null, { timeout: 15000 }).catch(() => {});
+    const welcomeOpen = await page.evaluate(() => window.G.ui.isPanelOpen('welcome'));
+    C('welcome card opens on first login', welcomeOpen);
+    await shot('welcome');
+    if (welcomeOpen) {
+      await page.click('button:has-text("BAŞLA")');
+      await sleep(600);
+    }
+    C('welcome card closed by BAŞLA', !(await page.evaluate(() => window.G.ui.isPanelOpen('welcome'))));
+    await sampleFps('town spawn');
+    keys = await loadKeys();
+    console.log(`  keys: skills ${keys.skills.map((s) => `${s.slot}=${s.key}`).join(' ')} interrupt=${keys.interrupt ? keys.interrupt.slot + '=' + keys.interrupt.key : 'none'} potion=${keys.potionHp}`);
+
+    // =============================================================== 3. the chain, followed from the game's guide
+    const LEVEL_TARGET = TO_LEVEL;
+    const fails = {};
+    let steps = 0;
+    let worldSeen = false;
+    wdAnchor = { t: Date.now(), x: 0, z: 0 };
+    wdTimer = setInterval(() => { wdTick().catch(() => {}); }, 1000);
+    while (true) {
+      steps++;
+      stepAbort = false;
+      const s = await snap();
+      if (s.lvl >= LEVEL_TARGET) { end = `level ${s.lvl} at ${mins()} min`; break; }
+      if ((Date.now() - T0) / 60000 > MAX_MIN) { end = `time budget ${MAX_MIN} min (level ${s.lvl})`; break; }
+      if (steps > 700) { end = `step cap (level ${s.lvl})`; break; }
+      if (s.dead) { B(`dead at level ${s.lvl} (${mins()} min)`); await handleDeath(); continue; }
+      if (s.scene === 'dungeon' && !worldSeen) {
+        worldSeen = true;
+        await sleep(3000);
+        await shot('world_arrive');
+        await sampleFps('sisli vadi spawn');
+        C('arrived in the open world', true, `at ${mins()} min`);
+      }
+      const rec = await recommended();
+      if (!rec) { B(`the guide recommends no quest at level ${s.lvl} (${mins()} min): the chain ends or has a gap`, true); end = 'no recommendation'; break; }
+      const d = await questDef(rec.id);
+      if (!d) { B(`recommended quest ${rec.id} has no definition`, true); end = 'no definition'; break; }
+      const failKey = `${d.id}:${rec.state}`;
+      curQuest = d.id;
+      wdLabel = `${d.name} / ${rec.state}`;
+      let ok = true;
+      try {
+        if (rec.state === 'available') {
+          ok = await acceptAt(d);
+        } else if (rec.state === 'ready') {
+          ok = await turnInAt(d);
+        } else {
+          const before = await progressKey(d.id);
+          const r = await stepObjective(d);
+          if (r === 'unsupported' || r === 'stuck') { end = `chain stuck on "${d.name}" (${r})`; break; }
+          const after = await progressKey(d.id);
+          // a kill or a walk is progress of its own: a drop has a chance per kill, and a walk to a far target changes no counter
+          const moved = (['killed', 'walked', 'walked to prop area', 'walked to escort area', 'escorted'].includes(r));
+          ok = moved || after !== before || (await qState(d.id)) !== 'active';
+          // a step the watchdog aborted counts as progress only when the quest itself moved on
+          if (stepAbort) ok = after !== before || (await qState(d.id)) !== 'active';
+        }
+      } catch (e) {
+        B(`step on "${d.name}" threw: ${String(e?.message ?? e).slice(0, 160)}`, true);
+        end = 'exception';
         break;
       }
+      if (!ok) {
+        fails[failKey] = (fails[failKey] ?? 0) + 1;
+        if (fails[failKey] >= 4) {
+          const rows = (await progressRows(d.id)).map((r) => `${r.text}: ${r.have}/${r.need}`).join(' | ');
+          B(`chain stuck: "${d.name}" (${rec.state}) makes no progress after 4 steps [${rows}]`, true);
+          end = `stuck on "${d.name}"`;
+          break;
+        }
+      }
     }
-  }
-  console.log(`  chain end: ${end}`);
-  for (const c of chainLog) console.log(`  CHAIN ${c.min} min L${c.lvl} ${c.ev} ${c.quest}`);
-  await shot('chain_end');
+    clearInterval(wdTimer);
+    wdTimer = null;
+    console.log(`  chain end: ${end}`);
+    for (const c of chainLog) console.log(`  CHAIN ${c.min} min L${c.lvl} ${c.ev} ${c.quest}`);
+    await shot('chain_end');
 
-  // level checks (the time each level was reached is in the summary table)
-  for (let n = 2; n <= LEVEL_TARGET; n++) {
-    C(`reached level ${n}`, levelMin[n] != null, levelMin[n] != null ? `at ${levelMin[n]} min` : `not reached (${end})`);
-  }
-
-  // =============================================================== 4. equipment
-  await closePanels();
-  const eq = await page.evaluate(() => {
-    const ch = window.G.character;
-    const bag = ch.allItems().filter((x) => x.loc.where === 'bag');
-    const cand = bag.filter((x) => ch.canEquip(x.item).ok).map((x) => ({ uid: x.item.uid, name: x.item.baseId, idx: x.loc.index, slot: ch.pickSlot(x.item), cur: !!ch.getEquipped(ch.pickSlot(x.item)) }));
-    return { bagCount: bag.length, cand };
-  });
-  console.log('  equipment state', JSON.stringify(eq));
-  if (eq.cand.length) {
-    await tap('KeyB');
-    await sleep(700);
-    C('B opens the inventory', await page.evaluate(() => window.G.ui.isPanelOpen('inventory')));
-    const pick = eq.cand.find((c) => !c.cur) ?? eq.cand[0];
-    const slotsInfo = await page.evaluate(() => [...document.querySelectorAll('.pi-slot:not(.empty)')].map((e) => { const r = e.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, vis: r.width > 0 }; }));
-    for (const sl of slotsInfo.filter((x) => x.vis)) {
-      await page.mouse.click(sl.x, sl.y, { button: 'right' });
-      await sleep(250);
-      const now = await page.evaluate((slot) => window.G.character.getEquipped(slot)?.uid ?? null, pick.slot);
-      if (now === pick.uid) break;
+    // level checks (the time each level was reached is in the summary table)
+    for (let n = 2; n <= LEVEL_TARGET; n++) {
+      C(`reached level ${n}`, levelMin[n] != null, levelMin[n] != null ? `at ${levelMin[n]} min` : `not reached (${end})`);
     }
-    const nowUid = await page.evaluate((slot) => window.G.character.getEquipped(slot)?.uid ?? null, pick.slot);
-    C(`a bag item equipped (${pick.name} -> ${pick.slot})`, nowUid === pick.uid, `now=${nowUid}`);
-    await shot('equipped');
+
+    // =============================================================== 4. equipment
     await closePanels();
-  } else X('no equippable item in the bag at the end of the chain');
+    const eq = await page.evaluate(() => {
+      const ch = window.G.character;
+      const bag = ch.allItems().filter((x) => x.loc.where === 'bag');
+      const cand = bag.filter((x) => ch.canEquip(x.item).ok).map((x) => ({ uid: x.item.uid, name: x.item.baseId, idx: x.loc.index, slot: ch.pickSlot(x.item), cur: !!ch.getEquipped(ch.pickSlot(x.item)) }));
+      return { bagCount: bag.length, cand };
+    });
+    console.log('  equipment state', JSON.stringify(eq));
+    if (eq.cand.length) {
+      await tap('KeyB');
+      await sleep(700);
+      C('B opens the inventory', await page.evaluate(() => window.G.ui.isPanelOpen('inventory')));
+      const pick = eq.cand.find((c) => !c.cur) ?? eq.cand[0];
+      const slotsInfo = await page.evaluate(() => [...document.querySelectorAll('.pi-slot:not(.empty)')].map((e) => { const r = e.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, vis: r.width > 0 }; }));
+      for (const sl of slotsInfo.filter((x) => x.vis)) {
+        await page.mouse.click(sl.x, sl.y, { button: 'right' });
+        await sleep(250);
+        const now = await page.evaluate((slot) => window.G.character.getEquipped(slot)?.uid ?? null, pick.slot);
+        if (now === pick.uid) break;
+      }
+      const nowUid = await page.evaluate((slot) => window.G.character.getEquipped(slot)?.uid ?? null, pick.slot);
+      C(`a bag item equipped (${pick.name} -> ${pick.slot})`, nowUid === pick.uid, `now=${nowUid}`);
+      await shot('equipped');
+      await closePanels();
+    } else X('no equippable item in the bag at the end of the chain');
 
-  // =============================================================== 5. panels
-  const PANELS = [['KeyB', 'inventory', 'B Çanta'], ['KeyC', 'character', 'C Karakter'], ['KeyN', 'talents', 'N Yetenek Ağacı'], ['KeyM', 'map', 'M Harita'], ['KeyK', 'skills', 'K Yetenek Kitabı'], ['KeyL', 'questlog', 'L Görev Defteri']];
-  for (const [key, id, name] of PANELS) {
-    await closePanels();
-    await tap(key);
-    await sleep(1000);
-    const open = await page.evaluate((pid) => window.G.ui.isPanelOpen(pid), id);
-    C(`${name} panel opens with its hotkey`, open);
-    if (open) {
-      await noteTextIssues(name);
-      const r = await page.evaluate((pid) => {
-        const rec = window.G.ui.panels?.get?.(pid);
-        const el = rec?.host ?? null;
-        const b = el?.firstElementChild?.getBoundingClientRect?.() ?? el?.getBoundingClientRect?.();
-        return b ? { x: b.x, y: b.y, w: b.width, h: b.height, vw: innerWidth, vh: innerHeight } : null;
-      }, id);
-      if (r && (r.x < -12 || r.y < -12 || r.x + r.w > r.vw + 12 || r.y + r.h > r.vh + 12)) X(`${name} panel exceeds the ${r.vw}x${r.vh} viewport (${Math.round(r.x)},${Math.round(r.y)} ${Math.round(r.w)}x${Math.round(r.h)})`);
+    // =============================================================== 5. panels
+    const PANELS = [['KeyB', 'inventory', 'B Çanta'], ['KeyC', 'character', 'C Karakter'], ['KeyN', 'talents', 'N Yetenek Ağacı'], ['KeyM', 'map', 'M Harita'], ['KeyK', 'skills', 'K Yetenek Kitabı'], ['KeyL', 'questlog', 'L Görev Defteri']];
+    for (const [key, id, name] of PANELS) {
+      await closePanels();
+      await tap(key);
+      await sleep(1000);
+      const open = await page.evaluate((pid) => window.G.ui.isPanelOpen(pid), id);
+      C(`${name} panel opens with its hotkey`, open);
+      if (open) {
+        await noteTextIssues(name);
+        const r = await page.evaluate((pid) => {
+          const rec = window.G.ui.panels?.get?.(pid);
+          const el = rec?.host ?? null;
+          const b = el?.firstElementChild?.getBoundingClientRect?.() ?? el?.getBoundingClientRect?.();
+          return b ? { x: b.x, y: b.y, w: b.width, h: b.height, vw: innerWidth, vh: innerHeight } : null;
+        }, id);
+        if (r && (r.x < -12 || r.y < -12 || r.x + r.w > r.vw + 12 || r.y + r.h > r.vh + 12)) X(`${name} panel exceeds the ${r.vw}x${r.vh} viewport (${Math.round(r.x)},${Math.round(r.y)} ${Math.round(r.w)}x${Math.round(r.h)})`);
+      }
     }
-  }
-  await closePanels();
-  await sampleFps('end');
+    await closePanels();
+    await sampleFps('end');
 
-  // =============================================================== 6. report
-  const fpsMin = Math.min(...fpsSamples.map((f) => f.fps));
-  console.log(`  FPS samples: ${fpsSamples.map((f) => `${f.where}=${f.fps}`).join(', ')}`);
-  const barks = await page.evaluate(() => window.__barks ?? 0);
-  C('at least one bark (Söylenti line) during the run', barks >= 1, `${barks} bark line(s)`);
-  C('FPS >= 30 in every sample', fpsMin >= 30, `min ${fpsMin}`);
-  C('no console / page errors', errors.length === 0, errors.slice(0, 4).join(' || '));
-  for (const e of errors) console.log('   ERR', e);
-  const fin = await snap();
-  console.log(`  final: lvl ${fin.lvl} xp ${fin.xp} gold ${fin.gold} kills ${stats.kills} deaths ${stats.deaths} teleports ${stats.teleports}`);
-  const med = (a) => {
-    if (!a.length) return null;
-    const b = [...a].sort((x, y) => x - y);
-    const m = b.length >> 1;
-    return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2;
-  };
-  const won = fightLog.filter((f) => f.res === 'dead');
-  const summary = {
-    cls, checks: results.length - checksAtStart, failed: results.slice(checksAtStart).filter((r) => !r.ok).length,
-    deaths: stats.deaths, teleports: stats.teleports, kills: stats.kills, questsDone: stats.questsDone,
-    levelMin, levelUps, end, chain: chainLog,
-    fights: fightLog, medianTtk: med(won.map((f) => f.ttk)), medianHpLeft: med(won.map((f) => f.hpLeft).filter((v) => v != null)),
-    rests: restCount, healCasts,
-    end_level: fin.lvl,
-  };
-  fs.writeFileSync(path.join(OUT, `fh_${cls}.json`), JSON.stringify(summary, null, 2));
-  await ctx.close();
+    // =============================================================== 6. report
+    const fpsMin = Math.min(...fpsSamples.map((f) => f.fps));
+    console.log(`  FPS samples: ${fpsSamples.map((f) => `${f.where}=${f.fps}`).join(', ')}`);
+    const barks = await page.evaluate(() => window.__barks ?? 0);
+    C('at least one bark (Söylenti line) during the run', barks >= 1, `${barks} bark line(s)`);
+    C('FPS >= 30 in every sample', fpsMin >= 30, `min ${fpsMin}`);
+    C('no console / page errors', errors.length === 0, errors.slice(0, 4).join(' || '));
+    for (const e of errors) console.log('   ERR', e);
+    const fin = await snap();
+    console.log(`  final: lvl ${fin.lvl} xp ${fin.xp} gold ${fin.gold} kills ${stats.kills} deaths ${stats.deaths} teleports ${stats.teleports}`);
+    await writeJson(end);
+  } catch (e) {
+    excMsg = String(e?.stack ?? e).slice(0, 300);
+    throw e;
+  } finally {
+    if (wdTimer) clearInterval(wdTimer);
+    if (!written) await writeJson(`exception: ${excMsg || 'unknown'}`);
+    await ctx.close().catch(() => {});
+  }
   return summary;
 }
