@@ -155,6 +155,7 @@ async function journey(cls) {
   const X = (msg) => ux(cls, msg);
   const C = (name, ok, info) => check(`[${cls}] ${name}`, ok, info);
   let melee = false;
+  let lastStep = null; // the kill step being fought: label, the target ids and how the bot picked its target (death report)
   let T0 = 0; // wall clock when the character entered the world
   const mins = (t = Date.now()) => ((t - T0) / 60000).toFixed(1);
   const levelUps = []; // {level, min}
@@ -469,10 +470,11 @@ async function journey(cls) {
     const lvl = (await snap()).lvl;
     const locked = campLock ? all.filter((e) => e.camp === campLock && e.d <= 40) : [];
     if (locked.length) return locked[0];
-    const band = all.filter((e) => e.level >= lvl - 3 && e.level <= lvl + 2);
-    const pick = (band.length ? band : all)[0];
-    campLock = pick.camp;
-    return pick;
+    // never a camp above the character's level: a level 2 character does not pull level 3 goblin camps (no fallback to any level)
+    const band = all.filter((e) => e.level >= lvl - 3 && e.level <= lvl);
+    if (!band.length) { campLock = null; return null; }
+    campLock = band[0].camp;
+    return band[0];
   };
   const lootAround = () =>
     page.evaluate(() => {
@@ -498,9 +500,59 @@ async function journey(cls) {
       }
     }
   };
+  /** Death report: the game's own death recap (death:recap, last 10 s of hits and heals), the attackers' level / camp / distance
+   *  from the r1_c02 camp, the player's HP and resource over the last 10 s, and how the bot chose the target. Written to fh_<class>_deaths.json. */
+  const deathReport = async () => {
+    const rep = await page.evaluate(async () => {
+      const G = window.G;
+      const qm = await import('/src/ui/hud/questMarks.ts');
+      const { TILE_SIZE: ts } = await import('/src/types/dungeons.ts');
+      const def = qm.worldDef();
+      const packs = def?.packs ?? [];
+      const camp = packs.find((pk) => pk.id === 'r1_c02');
+      const cc = camp ? { x: (camp.center[0] + 0.5) * ts, z: (camp.center[1] + 0.5) * ts } : null;
+      const p = G.player;
+      const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+      const rc = window.__fhRecap;
+      window.__fhRecap = null;
+      const ent = (id) => {
+        if (id == null) return null;
+        let e = null;
+        try { e = G.world.get(id); } catch { e = null; }
+        if (!e) return { id, gone: true };
+        return { id, def: e.def?.id ?? null, level: e.level ?? null, camp: e.packId ?? 'solo', x: +e.position.x.toFixed(1), z: +e.position.z.toFixed(1), campDistM: cc ? Math.round(dist(e.position, cc)) : null };
+      };
+      const hits = (rc?.hits ?? []).map((h) => ({ ago: +(rc.at - h.t).toFixed(1), name: h.sourceName, ability: h.ability, amount: Math.round(h.amount), hpPct: Math.round(h.hpPct * 100), src: ent(h.source) }));
+      const bySrc = {};
+      for (const h of rc?.hits ?? []) { const k = String(h.source); bySrc[k] = (bySrc[k] ?? 0) + h.amount; }
+      const perSource = Object.entries(bySrc).map(([k, v]) => ({ src: ent(k === 'null' ? null : Number(k)), amount: Math.round(v) })).sort((a, b) => b.amount - a.amount);
+      const around = G.world.enemies.filter((e) => !e.isDead && !e.removed && dist(e.position, p.position) < 25).map((e) => ({ def: e.def?.id, level: e.level ?? null, camp: e.packId ?? 'solo', aggro: !!e.aggroed, dM: Math.round(dist(e.position, p.position)), campDistM: cc ? Math.round(dist(e.position, cc)) : null }));
+      const slimesInCamp = G.world.enemies.filter((e) => !e.isDead && !e.removed && e.packId === 'r1_c02').length;
+      const hist = (window.__fhHist ?? []).slice(-40).map((h) => ({ hpPct: Math.round((100 * h.hp) / Math.max(1, h.maxHp)), resPct: h.maxRes ? Math.round((100 * h.res) / h.maxRes) : null, resType: h.resType, campDistM: cc ? Math.round(dist(h.pos, cc)) : null }));
+      return {
+        recapAt: rc?.at ?? null, taken: rc?.taken ?? null, healed: rc?.healed ?? null,
+        killingBlow: rc?.killingBlow ? { ability: rc.killingBlow.ability, name: rc.killingBlow.sourceName, amount: Math.round(rc.killingBlow.amount) } : null,
+        topSources: perSource.slice(0, 3), hits, around,
+        player: { x: +p.position.x.toFixed(1), z: +p.position.z.toFixed(1), lvl: G.character.level, distToR1c02CampM: cc ? Math.round(dist(p.position, cc)) : null, hp: p.hp, maxHp: p.maxHp },
+        campR1c02: { centre: cc, slimesAlive: slimesInCamp, levelRange: camp?.levelRange ?? null, members: camp?.members ?? null },
+        hist,
+      };
+    });
+    rep.step = lastStep;
+    rep.cls = cls;
+    stats.deathReports ??= [];
+    stats.deathReports.push(rep);
+    fs.writeFileSync(path.join(OUT, 'fh_' + cls + '_deaths.json'), JSON.stringify(stats.deathReports, null, 1));
+    console.log('  DEATH ' + stats.deathReports.length + ' [' + cls + '] lvl ' + rep.player.lvl + ' at ' + mins() + ' min, ' + rep.player.distToR1c02CampM + ' m from r1_c02 centre; step: ' + rep.step?.label + ' / how: ' + rep.step?.how);
+    console.log('    taken ' + rep.taken + ' healed ' + rep.healed + '; killing blow ' + JSON.stringify(rep.killingBlow) + '; top ' + rep.topSources.map((t) => (t.src?.def ?? t.src?.id) + '(L' + t.src?.level + ', ' + t.src?.camp + ', ' + t.src?.campDistM + 'm) ' + t.amount).join(' | '));
+    for (const h of rep.hits) console.log('    -' + h.ago + 's ' + h.name + ' / ' + h.ability + ' ' + h.amount + ' dmg -> ' + h.hpPct + '% hp, src ' + (h.src?.def ?? h.src?.id) + ' L' + h.src?.level + ' ' + h.src?.camp + ' ' + h.src?.campDistM + 'm from r1_c02');
+    console.log('    around: ' + (rep.around.map((e) => e.def + ' L' + e.level + ' ' + e.camp + ' ' + e.dM + 'm' + (e.aggro ? '*' : '')).join(', ') || '-') + '; r1_c02 slimes alive ' + rep.campR1c02.slimesAlive);
+    console.log('    hp%/res% last 10 s (oldest first): ' + rep.hist.map((h) => h.hpPct + '/' + (h.resPct ?? '-')).join(' '));
+  };
   const handleDeath = async () => {
     stats.deaths++;
     await sleep(1500);
+    await deathReport().catch((e) => console.log('  death report failed: ' + e));
     await shot('death');
     const respawn = page.locator('button:has-text("Ruhunu Serbest")').first();
     if ((await respawn.count()) > 0) await respawn.click().catch(() => {});
@@ -601,6 +653,7 @@ async function journey(cls) {
   const stepKill = async (d, ids, label) => {
     await restUp();
     const en = await pickTarget(ids);
+    lastStep = { label, ids, how: en && en.d <= 110 ? 'nearest in-band ' + en.def + ' camp=' + en.camp + ' L' + en.level + ' d=' + Math.round(en.d) + 'm (campLock=' + campLock + ')' : 'no target within 110 m: guide arrow / layout camp' };
     if (!en || en.d > 110) {
       const g = await page.evaluate(async () => {
         const qm = await import('/src/ui/hud/questMarks.ts');
@@ -630,7 +683,11 @@ async function journey(cls) {
       }
       if (!tx) { B(`${label}: no ${ids.join('/')} found near the player, the guide arrow or any layout camp`, true); return 'stuck'; }
       await walkTo(tx.x, tx.z, { stop: 14, timeout: 90000, label: 'kill area' });
-      await sleep(1200);
+      // at the quest camp with no in-level mob alive: wait for the respawn here (a walk-off to another camp is what kills)
+      for (let i = 0; i < 120; i++) {
+        if (await pickTarget(ids)) break;
+        await sleep(500);
+      }
       return 'walked';
     }
     if (en.d > 20) await walkTo(en.x, en.z, { stop: 14, timeout: 30000, label: en.name ?? en.def });
@@ -869,6 +926,19 @@ async function journey(cls) {
   melee = (await page.evaluate(() => window.G.skills.autoInfo(window.G.player).mode)) === 'melee';
   console.log(`  [${cls}] auto-attack mode: ${melee ? 'melee' : 'ranged/off'}`);
   await page.evaluate(() => window.G.events.on('player:levelup', ({ level }) => window.__fhLevelUp(level)));
+  // death recorder (page side): the game's death:recap snapshot, and a 4 Hz sample of HP / resource / position for the last 10 s
+  await page.evaluate(() => {
+    const G = window.G;
+    window.__fhRecap = null;
+    G.events.on('death:recap', (r) => { window.__fhRecap = r; });
+    window.__fhHist = [];
+    setInterval(() => {
+      const p = window.G?.player;
+      if (!p) return;
+      window.__fhHist.push({ hp: p.hp, maxHp: p.maxHp, res: p.resource, maxRes: p.maxResource, resType: p.resourceType, pos: { x: p.position.x, z: p.position.z } });
+      if (window.__fhHist.length > 40) window.__fhHist.shift();
+    }, 250);
+  });
 
   // =============================================================== 2. welcome card
   await page.waitForFunction(() => window.G.ui.isPanelOpen('welcome'), null, { timeout: 15000 }).catch(() => {});

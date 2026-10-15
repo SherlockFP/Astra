@@ -135,11 +135,17 @@ export function questArea(area: QuestArea | undefined, place?: string): Set<stri
   return new Set(def.packs.filter((pk) => pk.roomId === room && (pk.levelRange ?? [1, 99])[0] <= hi && (pk.levelRange ?? [1, 99])[1] >= lo).map((pk) => pk.id));
 }
 
+/** Lowest level of a camp (its layout levelRange); 1 for a pack without one. */
+function campMinLevel(packId: string): number {
+  return worldDef()?.packs.find((pk) => pk.id === packId)?.levelRange?.[0] ?? 1;
+}
+
 /**
  * Nearest live enemy whose def id matches (ids of camp mobs, rares, bosses, metin stones). Null when none is alive. With a quest
- * `area`, a camp enemy outside it never counts as the target (enemies off a camp keep no pack id and are not filtered).
+ * `area`, a camp enemy outside it never counts as the target (enemies off a camp keep no pack id and are not filtered). `maxLevel`:
+ * camps whose lowest level is above it are not targets (a level 2 quest's arrow does not walk into a level 3 camp).
  */
-function nearestLiveEnemy(ids: string[], area: Set<string> | null): Pt | null {
+function nearestLiveEnemy(ids: string[], area: Set<string> | null, maxLevel?: number): Pt | null {
   const w = G.world;
   const p = G.player ?? w?.localPlayer;
   if (!w || !ids.length) return null;
@@ -148,6 +154,7 @@ function nearestLiveEnemy(ids: string[], area: Set<string> | null): Pt | null {
   for (const e of w.enemies as Enemy[]) {
     if (e.isDead || e.removed || !e.def || !ids.includes(e.def.id)) continue;
     if (area && e.packId && !area.has(e.packId)) continue;
+    if (maxLevel !== undefined && e.packId && campMinLevel(e.packId) > maxLevel) continue;
     const d = p ? Math.hypot(e.position.x - p.position.x, e.position.z - p.position.z) : 0;
     if (d < bestD) {
       bestD = d;
@@ -211,11 +218,11 @@ export function objectivePos(o: QuestObjective, place?: string, area?: QuestArea
     case 'kill':
     case 'boss':
     case 'metin':
-      { const inArea = questArea(area, place); return nearestLiveEnemy(killIds(o), inArea) ?? campPos(killIds(o), place, inArea); }
+      { const inArea = questArea(area, place); return nearestLiveEnemy(killIds(o), inArea, area?.level) ?? campPos(killIds(o), place, inArea) ?? nearestLiveEnemy(killIds(o), inArea); }
     case 'drop':
     case 'collect':
       // drop / collect hunt the mobs in `from`: the same live-enemy-else-camp fallback as a kill (the WoW objective area, from data)
-      { const inArea = questArea(area, place); const ids = o.from ?? []; return nearestLiveEnemy(ids, inArea) ?? campPos(ids, place, inArea); }
+      { const inArea = questArea(area, place); const ids = o.from ?? []; return nearestLiveEnemy(ids, inArea, area?.level) ?? campPos(ids, place, inArea) ?? nearestLiveEnemy(ids, inArea); }
     default:
       return null;
   }
