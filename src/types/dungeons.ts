@@ -524,7 +524,7 @@ export interface LandmarkDef { id: string; name: string; regionId: string; pos: 
  */
 export interface DecorDef {
   id: string;
-  kind: 'vignette' | 'field' | 'signpost' | 'flora' | 'rocks';
+  kind: 'vignette' | 'field' | 'signpost' | 'flora' | 'rocks' | 'grove';
   recipe: string;
   regionId: string;
   pos: [number, number];

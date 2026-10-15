@@ -391,6 +391,48 @@ for (const [x, z] of fillerTry) {
   pushVisual(x, z);
 }
 
+// ---- 6. groves, outcrops and fallen logs: sight-breakers in every open stretch (kind grove = visual, not filler) --------------
+// The largest gap is filled first, until no walkable sample is more than GROVE_GAP_M from a visual thing (a stretch of open meadow
+// longer than about 30 m reads as empty). A grove keeps 9 m off roads, 14 m off points of interest and other decor.
+const GROVE_GAP_M = 25, GROVE_MAX = 260;
+const GROVE_MIX = [['grove', 0.6], ['outcrop', 0.25], ['fallen_logs', 0.15]];
+let grNo = 0;
+for (let guard = 0; guard < 4000 && grNo < GROVE_MAX; guard++) {
+  let best = null;
+  for (const s of samples) if (!s.dead && (!best || s.g > best.g)) best = s;
+  if (!best || best.g <= GROVE_GAP_M) break;
+  let spot = null, spotG = -1;
+  for (const [R, rules] of [[12, { road: 9, water: 5, poiR: 14, decorR: 14 }], [20, { road: 9, water: 5, poiR: 14, decorR: 14 }], [30, { road: 8, water: 5, poiR: 12, decorR: 12 }]]) {
+    for (let dz = -R; dz <= R && !spot; dz += 4) for (let dx = -R; dx <= R; dx += 4) {
+      const x = best.x + dx, z = best.z + dz;
+      if (Math.hypot(dx, dz) > R || !freeForDecor(x, z, rules)) continue;
+      const g = gapOf(x, z);
+      if (g > spotG) { spotG = g; spot = [x, z]; }
+    }
+    if (spot) break;
+  }
+  if (!spot) { best.dead = true; continue; }
+  let roll = rnd(), recipe = GROVE_MIX[0][0];
+  for (const [name, w] of GROVE_MIX) { if (roll < w) { recipe = name; break; } roll -= w; }
+  grNo++;
+  const region = roomAt(spot[0], spot[1])?.region ?? 'r1';
+  decor.push({ id: `dc_g${String(grNo).padStart(3, '0')}`, kind: 'grove', recipe, region, pos: [toTile(spot[0]), toTile(spot[1])], rot: Math.round(rnd() * 359) });
+  decorM.push({ x: spot[0], z: spot[1], kind: 'grove' });
+  pushVisual(spot[0], spot[1]);
+}
+
+// ---- 7. meadow carpets: dense grass and flowers over open ground (filler, nothing to walk around)
+const CARPET_TARGET = 220;
+let mcNo = 0;
+for (let i = 0; i < 20000 && mcNo < CARPET_TARGET; i++) {
+  const x = rnd() * W_M, z = rnd() * H_M;
+  if (!walkable(x, z) || roadDist(x, z) < 6 || nearest(x, z, poi) < 14 || villageHit(x, z) || !campFree(x, z)) continue;
+  if (nearestD(x, z, decorM) < 9 || nearest(x, z, visual) < 8) continue;
+  mcNo++;
+  decor.push({ id: `dc_m${String(mcNo).padStart(3, '0')}`, kind: 'flora', recipe: 'meadow_carpet', region: roomAt(x, z)?.region ?? 'r1', pos: [toTile(x), toTile(z)], rot: Math.round(rnd() * 359) });
+  decorM.push({ x, z, kind: 'filler' });
+}
+
 // ---- output ------------------------------------------------------------------------------------------------------------------
 function round2(v) { return Math.round(v * 100) / 100; }
 const landmarkAll = [...handLandmarks, ...landmarksNew];

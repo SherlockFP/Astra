@@ -37189,6 +37189,5286 @@
     285.09
    ],
    "rot": 293
+  },
+  {
+   "id": "dc_g001",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    121.63,
+    284.38
+   ],
+   "rot": 209
+  },
+  {
+   "id": "dc_g002",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    377.63,
+    299.63
+   ],
+   "rot": 8
+  },
+  {
+   "id": "dc_g003",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    59.38,
+    227.38
+   ],
+   "rot": 79
+  },
+  {
+   "id": "dc_g004",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r5",
+   "pos": [
+    61.63,
+    359.63
+   ],
+   "rot": 22
+  },
+  {
+   "id": "dc_g005",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r5",
+   "pos": [
+    89.13,
+    323.38
+   ],
+   "rot": 295
+  },
+  {
+   "id": "dc_g006",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    218.38,
+    340.13
+   ],
+   "rot": 111
+  },
+  {
+   "id": "dc_g007",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    7.88,
+    308.88
+   ],
+   "rot": 246
+  },
+  {
+   "id": "dc_g008",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r2",
+   "pos": [
+    390.38,
+    137.38
+   ],
+   "rot": 314
+  },
+  {
+   "id": "dc_g009",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r2",
+   "pos": [
+    304.88,
+    29.63
+   ],
+   "rot": 125
+  },
+  {
+   "id": "dc_g010",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    70.38,
+    350.63
+   ],
+   "rot": 66
+  },
+  {
+   "id": "dc_g011",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    346.38,
+    341.38
+   ],
+   "rot": 178
+  },
+  {
+   "id": "dc_g012",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r2",
+   "pos": [
+    331.88,
+    44.13
+   ],
+   "rot": 248
+  },
+  {
+   "id": "dc_g013",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    96.38,
+    232.63
+   ],
+   "rot": 72
+  },
+  {
+   "id": "dc_g014",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    202.63,
+    299.63
+   ],
+   "rot": 51
+  },
+  {
+   "id": "dc_g015",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r5",
+   "pos": [
+    86.13,
+    349.38
+   ],
+   "rot": 341
+  },
+  {
+   "id": "dc_g016",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    199.63,
+    108.88
+   ],
+   "rot": 106
+  },
+  {
+   "id": "dc_g017",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    302.38,
+    209.38
+   ],
+   "rot": 349
+  },
+  {
+   "id": "dc_g018",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r6",
+   "pos": [
+    121.38,
+    178.88
+   ],
+   "rot": 155
+  },
+  {
+   "id": "dc_g019",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    118.38,
+    248.63
+   ],
+   "rot": 33
+  },
+  {
+   "id": "dc_g020",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r2",
+   "pos": [
+    330.63,
+    11.13
+   ],
+   "rot": 265
+  },
+  {
+   "id": "dc_g021",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r2",
+   "pos": [
+    313.63,
+    171.63
+   ],
+   "rot": 332
+  },
+  {
+   "id": "dc_g022",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    13.13,
+    338.13
+   ],
+   "rot": 38
+  },
+  {
+   "id": "dc_g023",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    213.13,
+    381.88
+   ],
+   "rot": 143
+  },
+  {
+   "id": "dc_g024",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    340.13,
+    67.38
+   ],
+   "rot": 134
+  },
+  {
+   "id": "dc_g025",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    286.13,
+    82.88
+   ],
+   "rot": 189
+  },
+  {
+   "id": "dc_g026",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    85.38,
+    165.88
+   ],
+   "rot": 66
+  },
+  {
+   "id": "dc_g027",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    59.13,
+    187.38
+   ],
+   "rot": 311
+  },
+  {
+   "id": "dc_g028",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r1",
+   "pos": [
+    138.13,
+    67.13
+   ],
+   "rot": 265
+  },
+  {
+   "id": "dc_g029",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    343.63,
+    216.88
+   ],
+   "rot": 187
+  },
+  {
+   "id": "dc_g030",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    193.38,
+    288.13
+   ],
+   "rot": 146
+  },
+  {
+   "id": "dc_g031",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    155.88,
+    311.88
+   ],
+   "rot": 353
+  },
+  {
+   "id": "dc_g032",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    234.88,
+    348.38
+   ],
+   "rot": 8
+  },
+  {
+   "id": "dc_g033",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    204.88,
+    305.88
+   ],
+   "rot": 233
+  },
+  {
+   "id": "dc_g034",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    82.88,
+    226.63
+   ],
+   "rot": 349
+  },
+  {
+   "id": "dc_g035",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    295.88,
+    189.88
+   ],
+   "rot": 158
+  },
+  {
+   "id": "dc_g036",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r1",
+   "pos": [
+    158.88,
+    18.38
+   ],
+   "rot": 140
+  },
+  {
+   "id": "dc_g037",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    136.13,
+    355.88
+   ],
+   "rot": 108
+  },
+  {
+   "id": "dc_g038",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    296.38,
+    7.88
+   ],
+   "rot": 161
+  },
+  {
+   "id": "dc_g039",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r1",
+   "pos": [
+    233.88,
+    91.13
+   ],
+   "rot": 22
+  },
+  {
+   "id": "dc_g040",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r6",
+   "pos": [
+    15.38,
+    147.88
+   ],
+   "rot": 243
+  },
+  {
+   "id": "dc_g041",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r6",
+   "pos": [
+    33.63,
+    228.13
+   ],
+   "rot": 75
+  },
+  {
+   "id": "dc_g042",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r4",
+   "pos": [
+    318.13,
+    308.88
+   ],
+   "rot": 117
+  },
+  {
+   "id": "dc_g043",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r4",
+   "pos": [
+    183.88,
+    393.13
+   ],
+   "rot": 140
+  },
+  {
+   "id": "dc_g044",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    310.88,
+    156.88
+   ],
+   "rot": 35
+  },
+  {
+   "id": "dc_g045",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r3",
+   "pos": [
+    343.13,
+    196.38
+   ],
+   "rot": 268
+  },
+  {
+   "id": "dc_g046",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    267.88,
+    214.88
+   ],
+   "rot": 39
+  },
+  {
+   "id": "dc_g047",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    239.13,
+    294.38
+   ],
+   "rot": 281
+  },
+  {
+   "id": "dc_g048",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    366.13,
+    317.13
+   ],
+   "rot": 350
+  },
+  {
+   "id": "dc_g049",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    181.88,
+    383.88
+   ],
+   "rot": 302
+  },
+  {
+   "id": "dc_g050",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    265.13,
+    380.88
+   ],
+   "rot": 78
+  },
+  {
+   "id": "dc_g051",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r5",
+   "pos": [
+    40.13,
+    391.13
+   ],
+   "rot": 297
+  },
+  {
+   "id": "dc_g052",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    360.88,
+    80.63
+   ],
+   "rot": 149
+  },
+  {
+   "id": "dc_g053",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    306.88,
+    338.13
+   ],
+   "rot": 182
+  },
+  {
+   "id": "dc_g054",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    377.38,
+    38.63
+   ],
+   "rot": 246
+  },
+  {
+   "id": "dc_g055",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r1",
+   "pos": [
+    227.63,
+    105.88
+   ],
+   "rot": 222
+  },
+  {
+   "id": "dc_g056",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    299.13,
+    161.63
+   ],
+   "rot": 278
+  },
+  {
+   "id": "dc_g057",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    90.38,
+    204.13
+   ],
+   "rot": 48
+  },
+  {
+   "id": "dc_g058",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    65.13,
+    324.63
+   ],
+   "rot": 178
+  },
+  {
+   "id": "dc_g059",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    130.88,
+    165.13
+   ],
+   "rot": 107
+  },
+  {
+   "id": "dc_g060",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    114.13,
+    189.13
+   ],
+   "rot": 83
+  },
+  {
+   "id": "dc_g061",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    53.13,
+    375.13
+   ],
+   "rot": 79
+  },
+  {
+   "id": "dc_g062",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    302.63,
+    99.63
+   ],
+   "rot": 121
+  },
+  {
+   "id": "dc_g063",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    371.13,
+    88.63
+   ],
+   "rot": 54
+  },
+  {
+   "id": "dc_g064",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    219.63,
+    320.63
+   ],
+   "rot": 37
+  },
+  {
+   "id": "dc_g065",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    16.88,
+    175.88
+   ],
+   "rot": 273
+  },
+  {
+   "id": "dc_g066",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    308.13,
+    191.88
+   ],
+   "rot": 83
+  },
+  {
+   "id": "dc_g067",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r5",
+   "pos": [
+    144.13,
+    377.63
+   ],
+   "rot": 105
+  },
+  {
+   "id": "dc_g068",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r6",
+   "pos": [
+    60.38,
+    202.38
+   ],
+   "rot": 93
+  },
+  {
+   "id": "dc_g069",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r2",
+   "pos": [
+    343.38,
+    11.13
+   ],
+   "rot": 80
+  },
+  {
+   "id": "dc_g070",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r5",
+   "pos": [
+    36.13,
+    319.38
+   ],
+   "rot": 222
+  },
+  {
+   "id": "dc_g071",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    54.63,
+    331.88
+   ],
+   "rot": 125
+  },
+  {
+   "id": "dc_g072",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r5",
+   "pos": [
+    33.88,
+    255.88
+   ],
+   "rot": 304
+  },
+  {
+   "id": "dc_g073",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    359.13,
+    57.38
+   ],
+   "rot": 224
+  },
+  {
+   "id": "dc_g074",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r1",
+   "pos": [
+    134.88,
+    13.13
+   ],
+   "rot": 126
+  },
+  {
+   "id": "dc_g075",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    36.63,
+    302.38
+   ],
+   "rot": 191
+  },
+  {
+   "id": "dc_g076",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    330.38,
+    202.38
+   ],
+   "rot": 306
+  },
+  {
+   "id": "dc_g077",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    128.13,
+    252.38
+   ],
+   "rot": 154
+  },
+  {
+   "id": "dc_g078",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    30.38,
+    258.63
+   ],
+   "rot": 229
+  },
+  {
+   "id": "dc_g079",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r5",
+   "pos": [
+    90.13,
+    275.38
+   ],
+   "rot": 68
+  },
+  {
+   "id": "dc_g080",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    230.63,
+    292.38
+   ],
+   "rot": 315
+  },
+  {
+   "id": "dc_g081",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    327.63,
+    291.38
+   ],
+   "rot": 282
+  },
+  {
+   "id": "dc_g082",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    338.13,
+    308.88
+   ],
+   "rot": 111
+  },
+  {
+   "id": "dc_g083",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    380.38,
+    359.63
+   ],
+   "rot": 122
+  },
+  {
+   "id": "dc_g084",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    377.63,
+    374.63
+   ],
+   "rot": 118
+  },
+  {
+   "id": "dc_g085",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    265.13,
+    327.63
+   ],
+   "rot": 223
+  },
+  {
+   "id": "dc_g086",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    383.88,
+    7.88
+   ],
+   "rot": 260
+  },
+  {
+   "id": "dc_g087",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    185.88,
+    108.88
+   ],
+   "rot": 251
+  },
+  {
+   "id": "dc_g088",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    124.63,
+    267.13
+   ],
+   "rot": 296
+  },
+  {
+   "id": "dc_g089",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    341.13,
+    290.13
+   ],
+   "rot": 269
+  },
+  {
+   "id": "dc_g090",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    283.88,
+    316.38
+   ],
+   "rot": 24
+  },
+  {
+   "id": "dc_g091",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    227.63,
+    338.13
+   ],
+   "rot": 336
+  },
+  {
+   "id": "dc_g092",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    364.13,
+    344.38
+   ],
+   "rot": 104
+  },
+  {
+   "id": "dc_g093",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    75.63,
+    391.13
+   ],
+   "rot": 288
+  },
+  {
+   "id": "dc_g094",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    94.88,
+    167.88
+   ],
+   "rot": 91
+  },
+  {
+   "id": "dc_g095",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    376.38,
+    196.38
+   ],
+   "rot": 136
+  },
+  {
+   "id": "dc_g096",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    360.63,
+    67.88
+   ],
+   "rot": 194
+  },
+  {
+   "id": "dc_g097",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    31.88,
+    275.38
+   ],
+   "rot": 7
+  },
+  {
+   "id": "dc_g098",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    128.88,
+    271.38
+   ],
+   "rot": 19
+  },
+  {
+   "id": "dc_g099",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    183.88,
+    43.38
+   ],
+   "rot": 338
+  },
+  {
+   "id": "dc_g100",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    327.88,
+    236.63
+   ],
+   "rot": 4
+  },
+  {
+   "id": "dc_g101",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    339.88,
+    247.88
+   ],
+   "rot": 91
+  },
+  {
+   "id": "dc_g102",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    26.88,
+    232.13
+   ],
+   "rot": 178
+  },
+  {
+   "id": "dc_g103",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    361.88,
+    204.88
+   ],
+   "rot": 60
+  },
+  {
+   "id": "dc_g104",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r2",
+   "pos": [
+    305.63,
+    83.88
+   ],
+   "rot": 189
+  },
+  {
+   "id": "dc_g105",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    375.63,
+    206.88
+   ],
+   "rot": 65
+  },
+  {
+   "id": "dc_g106",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    258.88,
+    249.63
+   ],
+   "rot": 313
+  },
+  {
+   "id": "dc_g107",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    315.88,
+    98.13
+   ],
+   "rot": 243
+  },
+  {
+   "id": "dc_g108",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    298.38,
+    175.63
+   ],
+   "rot": 177
+  },
+  {
+   "id": "dc_g109",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    394.13,
+    193.38
+   ],
+   "rot": 149
+  },
+  {
+   "id": "dc_g110",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r6",
+   "pos": [
+    8.88,
+    212.13
+   ],
+   "rot": 57
+  },
+  {
+   "id": "dc_g111",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    249.63,
+    268.13
+   ],
+   "rot": 129
+  },
+  {
+   "id": "dc_g112",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    7.88,
+    294.13
+   ],
+   "rot": 172
+  },
+  {
+   "id": "dc_g113",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    225.63,
+    301.63
+   ],
+   "rot": 181
+  },
+  {
+   "id": "dc_g114",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r4",
+   "pos": [
+    190.13,
+    305.88
+   ],
+   "rot": 42
+  },
+  {
+   "id": "dc_g115",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    392.13,
+    345.38
+   ],
+   "rot": 132
+  },
+  {
+   "id": "dc_g116",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    320.38,
+    353.63
+   ],
+   "rot": 355
+  },
+  {
+   "id": "dc_g117",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    96.38,
+    49.63
+   ],
+   "rot": 272
+  },
+  {
+   "id": "dc_g118",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    265.88,
+    227.13
+   ],
+   "rot": 118
+  },
+  {
+   "id": "dc_g119",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    156.88,
+    288.13
+   ],
+   "rot": 226
+  },
+  {
+   "id": "dc_g120",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    161.13,
+    298.38
+   ],
+   "rot": 142
+  },
+  {
+   "id": "dc_g121",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    27.63,
+    360.88
+   ],
+   "rot": 64
+  },
+  {
+   "id": "dc_g122",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    170.38,
+    375.63
+   ],
+   "rot": 347
+  },
+  {
+   "id": "dc_g123",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r1",
+   "pos": [
+    127.63,
+    68.38
+   ],
+   "rot": 210
+  },
+  {
+   "id": "dc_g124",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r6",
+   "pos": [
+    56.63,
+    239.13
+   ],
+   "rot": 302
+  },
+  {
+   "id": "dc_g125",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    25.63,
+    349.38
+   ],
+   "rot": 77
+  },
+  {
+   "id": "dc_g126",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    298.63,
+    368.38
+   ],
+   "rot": 116
+  },
+  {
+   "id": "dc_g127",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    128.38,
+    288.63
+   ],
+   "rot": 225
+  },
+  {
+   "id": "dc_g128",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r2",
+   "pos": [
+    352.63,
+    10.13
+   ],
+   "rot": 239
+  },
+  {
+   "id": "dc_g129",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    374.38,
+    48.38
+   ],
+   "rot": 321
+  },
+  {
+   "id": "dc_g130",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    267.13,
+    338.13
+   ],
+   "rot": 337
+  },
+  {
+   "id": "dc_g131",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    319.13,
+    385.88
+   ],
+   "rot": 231
+  },
+  {
+   "id": "dc_g132",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    155.63,
+    361.13
+   ],
+   "rot": 217
+  },
+  {
+   "id": "dc_g133",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    52.63,
+    268.38
+   ],
+   "rot": 218
+  },
+  {
+   "id": "dc_g134",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r2",
+   "pos": [
+    304.63,
+    19.38
+   ],
+   "rot": 105
+  },
+  {
+   "id": "dc_g135",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r5",
+   "pos": [
+    84.88,
+    338.13
+   ],
+   "rot": 208
+  },
+  {
+   "id": "dc_g136",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    383.13,
+    157.38
+   ],
+   "rot": 136
+  },
+  {
+   "id": "dc_g137",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    249.63,
+    183.88
+   ],
+   "rot": 255
+  },
+  {
+   "id": "dc_g138",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    283.88,
+    380.63
+   ],
+   "rot": 317
+  },
+  {
+   "id": "dc_g139",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    217.13,
+    26.63
+   ],
+   "rot": 268
+  },
+  {
+   "id": "dc_g140",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    239.13,
+    7.88
+   ],
+   "rot": 299
+  },
+  {
+   "id": "dc_g141",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    8.88,
+    168.38
+   ],
+   "rot": 181
+  },
+  {
+   "id": "dc_g142",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    362.13,
+    171.38
+   ],
+   "rot": 138
+  },
+  {
+   "id": "dc_g143",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r5",
+   "pos": [
+    112.13,
+    305.63
+   ],
+   "rot": 92
+  },
+  {
+   "id": "dc_g144",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r5",
+   "pos": [
+    94.88,
+    339.88
+   ],
+   "rot": 304
+  },
+  {
+   "id": "dc_g145",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    265.13,
+    47.63
+   ],
+   "rot": 218
+  },
+  {
+   "id": "dc_g146",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    133.88,
+    237.13
+   ],
+   "rot": 317
+  },
+  {
+   "id": "dc_g147",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r4",
+   "pos": [
+    311.88,
+    315.13
+   ],
+   "rot": 180
+  },
+  {
+   "id": "dc_g148",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    339.88,
+    164.63
+   ],
+   "rot": 338
+  },
+  {
+   "id": "dc_g149",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r6",
+   "pos": [
+    140.38,
+    197.88
+   ],
+   "rot": 65
+  },
+  {
+   "id": "dc_g150",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    354.63,
+    23.38
+   ],
+   "rot": 229
+  },
+  {
+   "id": "dc_g151",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r2",
+   "pos": [
+    299.38,
+    27.63
+   ],
+   "rot": 319
+  },
+  {
+   "id": "dc_g152",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r1",
+   "pos": [
+    223.38,
+    75.63
+   ],
+   "rot": 259
+  },
+  {
+   "id": "dc_g153",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r6",
+   "pos": [
+    114.88,
+    151.13
+   ],
+   "rot": 321
+  },
+  {
+   "id": "dc_g154",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    269.38,
+    180.63
+   ],
+   "rot": 90
+  },
+  {
+   "id": "dc_g155",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r1",
+   "pos": [
+    119.38,
+    108.88
+   ],
+   "rot": 99
+  },
+  {
+   "id": "dc_g156",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r6",
+   "pos": [
+    125.88,
+    207.13
+   ],
+   "rot": 206
+  },
+  {
+   "id": "dc_g157",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r2",
+   "pos": [
+    343.38,
+    54.88
+   ],
+   "rot": 288
+  },
+  {
+   "id": "dc_g158",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r2",
+   "pos": [
+    330.63,
+    133.88
+   ],
+   "rot": 181
+  },
+  {
+   "id": "dc_g159",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r5",
+   "pos": [
+    26.63,
+    304.88
+   ],
+   "rot": 205
+  },
+  {
+   "id": "dc_g160",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r1",
+   "pos": [
+    244.38,
+    75.63
+   ],
+   "rot": 193
+  },
+  {
+   "id": "dc_g161",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    360.38,
+    177.38
+   ],
+   "rot": 330
+  },
+  {
+   "id": "dc_g162",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    376.63,
+    274.38
+   ],
+   "rot": 22
+  },
+  {
+   "id": "dc_g163",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    393.63,
+    51.88
+   ],
+   "rot": 117
+  },
+  {
+   "id": "dc_g164",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    348.13,
+    48.13
+   ],
+   "rot": 247
+  },
+  {
+   "id": "dc_g165",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r2",
+   "pos": [
+    308.88,
+    163.13
+   ],
+   "rot": 71
+  },
+  {
+   "id": "dc_g166",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    339.88,
+    173.88
+   ],
+   "rot": 140
+  },
+  {
+   "id": "dc_g167",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    7.88,
+    238.13
+   ],
+   "rot": 256
+  },
+  {
+   "id": "dc_g168",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    358.63,
+    43.63
+   ],
+   "rot": 306
+  },
+  {
+   "id": "dc_g169",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r3",
+   "pos": [
+    364.88,
+    188.63
+   ],
+   "rot": 328
+  },
+  {
+   "id": "dc_g170",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    368.38,
+    249.63
+   ],
+   "rot": 62
+  },
+  {
+   "id": "dc_g171",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r3",
+   "pos": [
+    288.13,
+    195.38
+   ],
+   "rot": 222
+  },
+  {
+   "id": "dc_g172",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    96.38,
+    258.88
+   ],
+   "rot": 191
+  },
+  {
+   "id": "dc_g173",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r1",
+   "pos": [
+    128.88,
+    40.13
+   ],
+   "rot": 138
+  },
+  {
+   "id": "dc_g174",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    58.63,
+    258.38
+   ],
+   "rot": 311
+  },
+  {
+   "id": "dc_g175",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    294.38,
+    226.63
+   ],
+   "rot": 213
+  },
+  {
+   "id": "dc_g176",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r2",
+   "pos": [
+    358.88,
+    87.13
+   ],
+   "rot": 40
+  },
+  {
+   "id": "dc_g177",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    208.88,
+    87.13
+   ],
+   "rot": 342
+  },
+  {
+   "id": "dc_g178",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    317.88,
+    127.38
+   ],
+   "rot": 147
+  },
+  {
+   "id": "dc_g179",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    362.38,
+    234.13
+   ],
+   "rot": 218
+  },
+  {
+   "id": "dc_g180",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    338.13,
+    268.38
+   ],
+   "rot": 246
+  },
+  {
+   "id": "dc_g181",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    294.38,
+    391.13
+   ],
+   "rot": 292
+  },
+  {
+   "id": "dc_g182",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r2",
+   "pos": [
+    325.38,
+    42.13
+   ],
+   "rot": 308
+  },
+  {
+   "id": "dc_g183",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    118.38,
+    140.13
+   ],
+   "rot": 76
+  },
+  {
+   "id": "dc_g184",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    78.88,
+    208.88
+   ],
+   "rot": 179
+  },
+  {
+   "id": "dc_g185",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r6",
+   "pos": [
+    108.88,
+    235.13
+   ],
+   "rot": 54
+  },
+  {
+   "id": "dc_g186",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r5",
+   "pos": [
+    71.38,
+    380.88
+   ],
+   "rot": 145
+  },
+  {
+   "id": "dc_g187",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    199.88,
+    377.38
+   ],
+   "rot": 304
+  },
+  {
+   "id": "dc_g188",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    188.13,
+    63.13
+   ],
+   "rot": 7
+  },
+  {
+   "id": "dc_g189",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r6",
+   "pos": [
+    67.13,
+    231.88
+   ],
+   "rot": 55
+  },
+  {
+   "id": "dc_g190",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    127.63,
+    178.88
+   ],
+   "rot": 264
+  },
+  {
+   "id": "dc_g191",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    352.13,
+    260.63
+   ],
+   "rot": 0
+  },
+  {
+   "id": "dc_g192",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r2",
+   "pos": [
+    311.13,
+    41.13
+   ],
+   "rot": 6
+  },
+  {
+   "id": "dc_g193",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    105.13,
+    77.38
+   ],
+   "rot": 178
+  },
+  {
+   "id": "dc_g194",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r1",
+   "pos": [
+    238.13,
+    92.38
+   ],
+   "rot": 7
+  },
+  {
+   "id": "dc_g195",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    270.38,
+    246.38
+   ],
+   "rot": 18
+  },
+  {
+   "id": "dc_g196",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    221.13,
+    355.38
+   ],
+   "rot": 48
+  },
+  {
+   "id": "dc_g197",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    288.13,
+    132.88
+   ],
+   "rot": 224
+  },
+  {
+   "id": "dc_g198",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    12.13,
+    180.88
+   ],
+   "rot": 40
+  },
+  {
+   "id": "dc_g199",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    277.63,
+    174.63
+   ],
+   "rot": 202
+  },
+  {
+   "id": "dc_g200",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    348.63,
+    203.63
+   ],
+   "rot": 201
+  },
+  {
+   "id": "dc_g201",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    81.88,
+    242.13
+   ],
+   "rot": 87
+  },
+  {
+   "id": "dc_g202",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r3",
+   "pos": [
+    298.63,
+    274.63
+   ],
+   "rot": 107
+  },
+  {
+   "id": "dc_g203",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r1",
+   "pos": [
+    198.38,
+    75.63
+   ],
+   "rot": 289
+  },
+  {
+   "id": "dc_g204",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    360.88,
+    261.13
+   ],
+   "rot": 94
+  },
+  {
+   "id": "dc_g205",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    369.88,
+    114.38
+   ],
+   "rot": 354
+  },
+  {
+   "id": "dc_g206",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    356.13,
+    271.88
+   ],
+   "rot": 39
+  },
+  {
+   "id": "dc_g207",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    105.13,
+    208.63
+   ],
+   "rot": 36
+  },
+  {
+   "id": "dc_g208",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r3",
+   "pos": [
+    342.38,
+    254.63
+   ],
+   "rot": 317
+  },
+  {
+   "id": "dc_g209",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    375.63,
+    98.38
+   ],
+   "rot": 219
+  },
+  {
+   "id": "dc_g210",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    294.13,
+    105.63
+   ],
+   "rot": 349
+  },
+  {
+   "id": "dc_g211",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    106.13,
+    171.13
+   ],
+   "rot": 255
+  },
+  {
+   "id": "dc_g212",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r5",
+   "pos": [
+    118.13,
+    329.88
+   ],
+   "rot": 187
+  },
+  {
+   "id": "dc_g213",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r1",
+   "pos": [
+    177.63,
+    30.88
+   ],
+   "rot": 49
+  },
+  {
+   "id": "dc_g214",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r2",
+   "pos": [
+    379.63,
+    109.88
+   ],
+   "rot": 154
+  },
+  {
+   "id": "dc_g215",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r2",
+   "pos": [
+    296.38,
+    62.13
+   ],
+   "rot": 147
+  },
+  {
+   "id": "dc_g216",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    263.13,
+    274.63
+   ],
+   "rot": 20
+  },
+  {
+   "id": "dc_g217",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r5",
+   "pos": [
+    118.13,
+    373.38
+   ],
+   "rot": 300
+  },
+  {
+   "id": "dc_g218",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r5",
+   "pos": [
+    114.13,
+    379.88
+   ],
+   "rot": 268
+  },
+  {
+   "id": "dc_g219",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r1",
+   "pos": [
+    227.63,
+    24.63
+   ],
+   "rot": 13
+  },
+  {
+   "id": "dc_g220",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r2",
+   "pos": [
+    361.88,
+    18.13
+   ],
+   "rot": 176
+  },
+  {
+   "id": "dc_g221",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r2",
+   "pos": [
+    337.38,
+    27.38
+   ],
+   "rot": 319
+  },
+  {
+   "id": "dc_g222",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    107.88,
+    298.38
+   ],
+   "rot": 209
+  },
+  {
+   "id": "dc_g223",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    249.38,
+    292.38
+   ],
+   "rot": 273
+  },
+  {
+   "id": "dc_g224",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r5",
+   "pos": [
+    100.38,
+    323.38
+   ],
+   "rot": 298
+  },
+  {
+   "id": "dc_g225",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    73.63,
+    352.63
+   ],
+   "rot": 356
+  },
+  {
+   "id": "dc_g226",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    17.13,
+    388.13
+   ],
+   "rot": 215
+  },
+  {
+   "id": "dc_g227",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r4",
+   "pos": [
+    376.63,
+    354.63
+   ],
+   "rot": 17
+  },
+  {
+   "id": "dc_g228",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    177.63,
+    87.13
+   ],
+   "rot": 350
+  },
+  {
+   "id": "dc_g229",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    322.38,
+    325.63
+   ],
+   "rot": 303
+  },
+  {
+   "id": "dc_g230",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r4",
+   "pos": [
+    342.88,
+    327.38
+   ],
+   "rot": 179
+  },
+  {
+   "id": "dc_g231",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r3",
+   "pos": [
+    343.38,
+    181.88
+   ],
+   "rot": 160
+  },
+  {
+   "id": "dc_g232",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    381.88,
+    196.38
+   ],
+   "rot": 336
+  },
+  {
+   "id": "dc_g233",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r1",
+   "pos": [
+    251.63,
+    56.88
+   ],
+   "rot": 110
+  },
+  {
+   "id": "dc_g234",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    104.63,
+    129.88
+   ],
+   "rot": 326
+  },
+  {
+   "id": "dc_g235",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r2",
+   "pos": [
+    350.38,
+    90.13
+   ],
+   "rot": 284
+  },
+  {
+   "id": "dc_g236",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    255.63,
+    77.63
+   ],
+   "rot": 297
+  },
+  {
+   "id": "dc_g237",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    86.88,
+    304.88
+   ],
+   "rot": 27
+  },
+  {
+   "id": "dc_g238",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    243.13,
+    378.63
+   ],
+   "rot": 264
+  },
+  {
+   "id": "dc_g239",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r6",
+   "pos": [
+    100.38,
+    155.88
+   ],
+   "rot": 274
+  },
+  {
+   "id": "dc_g240",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r5",
+   "pos": [
+    8.88,
+    270.13
+   ],
+   "rot": 334
+  },
+  {
+   "id": "dc_g241",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    102.63,
+    12.13
+   ],
+   "rot": 174
+  },
+  {
+   "id": "dc_g242",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    208.88,
+    16.38
+   ],
+   "rot": 65
+  },
+  {
+   "id": "dc_g243",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r1",
+   "pos": [
+    122.88,
+    21.13
+   ],
+   "rot": 323
+  },
+  {
+   "id": "dc_g244",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    132.88,
+    48.63
+   ],
+   "rot": 317
+  },
+  {
+   "id": "dc_g245",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    229.63,
+    50.63
+   ],
+   "rot": 19
+  },
+  {
+   "id": "dc_g246",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r1",
+   "pos": [
+    144.63,
+    57.38
+   ],
+   "rot": 93
+  },
+  {
+   "id": "dc_g247",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r1",
+   "pos": [
+    146.38,
+    62.13
+   ],
+   "rot": 70
+  },
+  {
+   "id": "dc_g248",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    190.13,
+    74.63
+   ],
+   "rot": 7
+  },
+  {
+   "id": "dc_g249",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r1",
+   "pos": [
+    140.13,
+    80.88
+   ],
+   "rot": 201
+  },
+  {
+   "id": "dc_g250",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    165.13,
+    93.38
+   ],
+   "rot": 157
+  },
+  {
+   "id": "dc_g251",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    193.88,
+    89.88
+   ],
+   "rot": 204
+  },
+  {
+   "id": "dc_g252",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    103.63,
+    110.88
+   ],
+   "rot": 328
+  },
+  {
+   "id": "dc_g253",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r1",
+   "pos": [
+    163.13,
+    106.88
+   ],
+   "rot": 179
+  },
+  {
+   "id": "dc_g254",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r3",
+   "pos": [
+    387.38,
+    203.38
+   ],
+   "rot": 239
+  },
+  {
+   "id": "dc_g255",
+   "kind": "grove",
+   "recipe": "fallen_logs",
+   "region": "r3",
+   "pos": [
+    254.88,
+    233.88
+   ],
+   "rot": 47
+  },
+  {
+   "id": "dc_g256",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    102.88,
+    267.88
+   ],
+   "rot": 295
+  },
+  {
+   "id": "dc_g257",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    15.13,
+    297.63
+   ],
+   "rot": 30
+  },
+  {
+   "id": "dc_g258",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r4",
+   "pos": [
+    341.88,
+    297.13
+   ],
+   "rot": 2
+  },
+  {
+   "id": "dc_g259",
+   "kind": "grove",
+   "recipe": "grove",
+   "region": "r5",
+   "pos": [
+    127.63,
+    309.88
+   ],
+   "rot": 208
+  },
+  {
+   "id": "dc_g260",
+   "kind": "grove",
+   "recipe": "outcrop",
+   "region": "r5",
+   "pos": [
+    52.88,
+    311.63
+   ],
+   "rot": 194
+  },
+  {
+   "id": "dc_m001",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    252.87,
+    236.43
+   ],
+   "rot": 269
+  },
+  {
+   "id": "dc_m002",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    175.26,
+    306.24
+   ],
+   "rot": 28
+  },
+  {
+   "id": "dc_m003",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r6",
+   "pos": [
+    30.19,
+    244.93
+   ],
+   "rot": 138
+  },
+  {
+   "id": "dc_m004",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    211.31,
+    15.71
+   ],
+   "rot": 145
+  },
+  {
+   "id": "dc_m005",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    149.45,
+    96.59
+   ],
+   "rot": 323
+  },
+  {
+   "id": "dc_m006",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    129.74,
+    29.66
+   ],
+   "rot": 276
+  },
+  {
+   "id": "dc_m007",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    230.17,
+    20.99
+   ],
+   "rot": 348
+  },
+  {
+   "id": "dc_m008",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    327.05,
+    181.86
+   ],
+   "rot": 180
+  },
+  {
+   "id": "dc_m009",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    151.38,
+    316.38
+   ],
+   "rot": 233
+  },
+  {
+   "id": "dc_m010",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    119.86,
+    66.21
+   ],
+   "rot": 315
+  },
+  {
+   "id": "dc_m011",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    150.3,
+    384.9
+   ],
+   "rot": 221
+  },
+  {
+   "id": "dc_m012",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    261.34,
+    290.24
+   ],
+   "rot": 90
+  },
+  {
+   "id": "dc_m013",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    129.18,
+    103.6
+   ],
+   "rot": 10
+  },
+  {
+   "id": "dc_m014",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    97.87,
+    109.6
+   ],
+   "rot": 220
+  },
+  {
+   "id": "dc_m015",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    293.89,
+    9.69
+   ],
+   "rot": 190
+  },
+  {
+   "id": "dc_m016",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    24.53,
+    290.67
+   ],
+   "rot": 8
+  },
+  {
+   "id": "dc_m017",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    298.43,
+    31.71
+   ],
+   "rot": 128
+  },
+  {
+   "id": "dc_m018",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    109.46,
+    48.98
+   ],
+   "rot": 299
+  },
+  {
+   "id": "dc_m019",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    314.75,
+    324.79
+   ],
+   "rot": 50
+  },
+  {
+   "id": "dc_m020",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    154.55,
+    30.59
+   ],
+   "rot": 328
+  },
+  {
+   "id": "dc_m021",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    288.09,
+    111.21
+   ],
+   "rot": 111
+  },
+  {
+   "id": "dc_m022",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    210.47,
+    288.64
+   ],
+   "rot": 245
+  },
+  {
+   "id": "dc_m023",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    227.87,
+    93.24
+   ],
+   "rot": 309
+  },
+  {
+   "id": "dc_m024",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    293.94,
+    43.21
+   ],
+   "rot": 27
+  },
+  {
+   "id": "dc_m025",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    260.43,
+    106.23
+   ],
+   "rot": 177
+  },
+  {
+   "id": "dc_m026",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    17.3,
+    356.8
+   ],
+   "rot": 75
+  },
+  {
+   "id": "dc_m027",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    316.6,
+    358.33
+   ],
+   "rot": 35
+  },
+  {
+   "id": "dc_m028",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    246.85,
+    289.38
+   ],
+   "rot": 81
+  },
+  {
+   "id": "dc_m029",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    21.67,
+    369.53
+   ],
+   "rot": 350
+  },
+  {
+   "id": "dc_m030",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    161.01,
+    20.74
+   ],
+   "rot": 90
+  },
+  {
+   "id": "dc_m031",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    126.47,
+    44.99
+   ],
+   "rot": 296
+  },
+  {
+   "id": "dc_m032",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    253.93,
+    295.04
+   ],
+   "rot": 319
+  },
+  {
+   "id": "dc_m033",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    205.39,
+    101.68
+   ],
+   "rot": 38
+  },
+  {
+   "id": "dc_m034",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    112.25,
+    13.42
+   ],
+   "rot": 50
+  },
+  {
+   "id": "dc_m035",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    268.04,
+    32.87
+   ],
+   "rot": 92
+  },
+  {
+   "id": "dc_m036",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    185.15,
+    333.88
+   ],
+   "rot": 180
+  },
+  {
+   "id": "dc_m037",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    180.93,
+    80.19
+   ],
+   "rot": 150
+  },
+  {
+   "id": "dc_m038",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    307.13,
+    332
+   ],
+   "rot": 10
+  },
+  {
+   "id": "dc_m039",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    215.16,
+    12.11
+   ],
+   "rot": 181
+  },
+  {
+   "id": "dc_m040",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    335.18,
+    10.18
+   ],
+   "rot": 71
+  },
+  {
+   "id": "dc_m041",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    302.06,
+    394.42
+   ],
+   "rot": 257
+  },
+  {
+   "id": "dc_m042",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    284.25,
+    385.01
+   ],
+   "rot": 110
+  },
+  {
+   "id": "dc_m043",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    157.34,
+    349.29
+   ],
+   "rot": 184
+  },
+  {
+   "id": "dc_m044",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    302.37,
+    239.54
+   ],
+   "rot": 299
+  },
+  {
+   "id": "dc_m045",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    76.14,
+    380.04
+   ],
+   "rot": 51
+  },
+  {
+   "id": "dc_m046",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    181.6,
+    28.62
+   ],
+   "rot": 356
+  },
+  {
+   "id": "dc_m047",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    114.34,
+    320.46
+   ],
+   "rot": 198
+  },
+  {
+   "id": "dc_m048",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    148.31,
+    325.67
+   ],
+   "rot": 248
+  },
+  {
+   "id": "dc_m049",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    183.54,
+    76.49
+   ],
+   "rot": 296
+  },
+  {
+   "id": "dc_m050",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    111.52,
+    366.01
+   ],
+   "rot": 131
+  },
+  {
+   "id": "dc_m051",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    231.98,
+    76.26
+   ],
+   "rot": 279
+  },
+  {
+   "id": "dc_m052",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    104.87,
+    9.38
+   ],
+   "rot": 41
+  },
+  {
+   "id": "dc_m053",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    215.59,
+    303.29
+   ],
+   "rot": 155
+  },
+  {
+   "id": "dc_m054",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    281.43,
+    352.07
+   ],
+   "rot": 292
+  },
+  {
+   "id": "dc_m055",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    228.27,
+    112.26
+   ],
+   "rot": 320
+  },
+  {
+   "id": "dc_m056",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    229.7,
+    372.19
+   ],
+   "rot": 151
+  },
+  {
+   "id": "dc_m057",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    184.09,
+    113.67
+   ],
+   "rot": 170
+  },
+  {
+   "id": "dc_m058",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    370.79,
+    171.82
+   ],
+   "rot": 281
+  },
+  {
+   "id": "dc_m059",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    393.63,
+    279.02
+   ],
+   "rot": 73
+  },
+  {
+   "id": "dc_m060",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    180.16,
+    26.42
+   ],
+   "rot": 258
+  },
+  {
+   "id": "dc_m061",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    220.66,
+    83.57
+   ],
+   "rot": 269
+  },
+  {
+   "id": "dc_m062",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    354.47,
+    344.28
+   ],
+   "rot": 123
+  },
+  {
+   "id": "dc_m063",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    378.44,
+    330.51
+   ],
+   "rot": 184
+  },
+  {
+   "id": "dc_m064",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r6",
+   "pos": [
+    102.93,
+    246.56
+   ],
+   "rot": 241
+  },
+  {
+   "id": "dc_m065",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    392.45,
+    173.23
+   ],
+   "rot": 292
+  },
+  {
+   "id": "dc_m066",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    124.53,
+    70.34
+   ],
+   "rot": 104
+  },
+  {
+   "id": "dc_m067",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    148.25,
+    36.61
+   ],
+   "rot": 68
+  },
+  {
+   "id": "dc_m068",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    248.02,
+    106.82
+   ],
+   "rot": 305
+  },
+  {
+   "id": "dc_m069",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    121.2,
+    344.88
+   ],
+   "rot": 234
+  },
+  {
+   "id": "dc_m070",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    19.6,
+    289.11
+   ],
+   "rot": 288
+  },
+  {
+   "id": "dc_m071",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    387.75,
+    63.97
+   ],
+   "rot": 12
+  },
+  {
+   "id": "dc_m072",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    367.07,
+    276.27
+   ],
+   "rot": 110
+  },
+  {
+   "id": "dc_m073",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    143.12,
+    25.19
+   ],
+   "rot": 156
+  },
+  {
+   "id": "dc_m074",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    151.6,
+    98.68
+   ],
+   "rot": 133
+  },
+  {
+   "id": "dc_m075",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    354.97,
+    390.82
+   ],
+   "rot": 139
+  },
+  {
+   "id": "dc_m076",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r6",
+   "pos": [
+    65.52,
+    131.06
+   ],
+   "rot": 200
+  },
+  {
+   "id": "dc_m077",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r6",
+   "pos": [
+    139.84,
+    177.17
+   ],
+   "rot": 290
+  },
+  {
+   "id": "dc_m078",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    42.99,
+    365.6
+   ],
+   "rot": 28
+  },
+  {
+   "id": "dc_m079",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    34.21,
+    365.86
+   ],
+   "rot": 350
+  },
+  {
+   "id": "dc_m080",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    232.79,
+    369.96
+   ],
+   "rot": 320
+  },
+  {
+   "id": "dc_m081",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    167.03,
+    75.63
+   ],
+   "rot": 266
+  },
+  {
+   "id": "dc_m082",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    152.56,
+    96.42
+   ],
+   "rot": 280
+  },
+  {
+   "id": "dc_m083",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r6",
+   "pos": [
+    143.63,
+    131.16
+   ],
+   "rot": 242
+  },
+  {
+   "id": "dc_m084",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    7.59,
+    336.34
+   ],
+   "rot": 2
+  },
+  {
+   "id": "dc_m085",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    181.22,
+    14.86
+   ],
+   "rot": 15
+  },
+  {
+   "id": "dc_m086",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    287.94,
+    349.5
+   ],
+   "rot": 43
+  },
+  {
+   "id": "dc_m087",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    148.06,
+    288.78
+   ],
+   "rot": 156
+  },
+  {
+   "id": "dc_m088",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    303.83,
+    152.35
+   ],
+   "rot": 203
+  },
+  {
+   "id": "dc_m089",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    143.69,
+    287.05
+   ],
+   "rot": 299
+  },
+  {
+   "id": "dc_m090",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    253.94,
+    268.92
+   ],
+   "rot": 70
+  },
+  {
+   "id": "dc_m091",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    373.5,
+    364.41
+   ],
+   "rot": 223
+  },
+  {
+   "id": "dc_m092",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    365.44,
+    201.71
+   ],
+   "rot": 84
+  },
+  {
+   "id": "dc_m093",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    231.93,
+    389.32
+   ],
+   "rot": 77
+  },
+  {
+   "id": "dc_m094",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    251.84,
+    279.99
+   ],
+   "rot": 288
+  },
+  {
+   "id": "dc_m095",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    169.63,
+    47.39
+   ],
+   "rot": 115
+  },
+  {
+   "id": "dc_m096",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    330.3,
+    345.31
+   ],
+   "rot": 333
+  },
+  {
+   "id": "dc_m097",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    107.88,
+    261.86
+   ],
+   "rot": 101
+  },
+  {
+   "id": "dc_m098",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    304.37,
+    326.5
+   ],
+   "rot": 290
+  },
+  {
+   "id": "dc_m099",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    203.97,
+    72.41
+   ],
+   "rot": 169
+  },
+  {
+   "id": "dc_m100",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    174.42,
+    55.6
+   ],
+   "rot": 277
+  },
+  {
+   "id": "dc_m101",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    125.33,
+    19.13
+   ],
+   "rot": 267
+  },
+  {
+   "id": "dc_m102",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    257.91,
+    323.68
+   ],
+   "rot": 296
+  },
+  {
+   "id": "dc_m103",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    393.91,
+    255.47
+   ],
+   "rot": 200
+  },
+  {
+   "id": "dc_m104",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    184.6,
+    38.48
+   ],
+   "rot": 332
+  },
+  {
+   "id": "dc_m105",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    287.97,
+    319.79
+   ],
+   "rot": 136
+  },
+  {
+   "id": "dc_m106",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    202.69,
+    324.27
+   ],
+   "rot": 307
+  },
+  {
+   "id": "dc_m107",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    258.26,
+    77.23
+   ],
+   "rot": 154
+  },
+  {
+   "id": "dc_m108",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    393.21,
+    381.34
+   ],
+   "rot": 59
+  },
+  {
+   "id": "dc_m109",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    10.47,
+    282.03
+   ],
+   "rot": 242
+  },
+  {
+   "id": "dc_m110",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    130.6,
+    71.03
+   ],
+   "rot": 336
+  },
+  {
+   "id": "dc_m111",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    379.71,
+    169.56
+   ],
+   "rot": 200
+  },
+  {
+   "id": "dc_m112",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    190.03,
+    354.6
+   ],
+   "rot": 342
+  },
+  {
+   "id": "dc_m113",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    217.87,
+    12.58
+   ],
+   "rot": 244
+  },
+  {
+   "id": "dc_m114",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    214.67,
+    111.63
+   ],
+   "rot": 180
+  },
+  {
+   "id": "dc_m115",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    170.56,
+    346.14
+   ],
+   "rot": 128
+  },
+  {
+   "id": "dc_m116",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    209.05,
+    8.31
+   ],
+   "rot": 29
+  },
+  {
+   "id": "dc_m117",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    353.72,
+    361.09
+   ],
+   "rot": 206
+  },
+  {
+   "id": "dc_m118",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r6",
+   "pos": [
+    8.3,
+    181.9
+   ],
+   "rot": 281
+  },
+  {
+   "id": "dc_m119",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    276.08,
+    189.55
+   ],
+   "rot": 142
+  },
+  {
+   "id": "dc_m120",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    34.78,
+    370.82
+   ],
+   "rot": 230
+  },
+  {
+   "id": "dc_m121",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    330.48,
+    360.4
+   ],
+   "rot": 255
+  },
+  {
+   "id": "dc_m122",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    254.04,
+    107.84
+   ],
+   "rot": 212
+  },
+  {
+   "id": "dc_m123",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    154.62,
+    88.06
+   ],
+   "rot": 323
+  },
+  {
+   "id": "dc_m124",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    267.18,
+    66.74
+   ],
+   "rot": 149
+  },
+  {
+   "id": "dc_m125",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    18.22,
+    368.6
+   ],
+   "rot": 27
+  },
+  {
+   "id": "dc_m126",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    306.03,
+    238.19
+   ],
+   "rot": 345
+  },
+  {
+   "id": "dc_m127",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    305.09,
+    341.84
+   ],
+   "rot": 349
+  },
+  {
+   "id": "dc_m128",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r6",
+   "pos": [
+    23.33,
+    216.46
+   ],
+   "rot": 143
+  },
+  {
+   "id": "dc_m129",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    249.2,
+    302.58
+   ],
+   "rot": 336
+  },
+  {
+   "id": "dc_m130",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    288.78,
+    202.54
+   ],
+   "rot": 130
+  },
+  {
+   "id": "dc_m131",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    320.12,
+    149.54
+   ],
+   "rot": 136
+  },
+  {
+   "id": "dc_m132",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    191.59,
+    50.05
+   ],
+   "rot": 57
+  },
+  {
+   "id": "dc_m133",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    245.33,
+    112.25
+   ],
+   "rot": 55
+  },
+  {
+   "id": "dc_m134",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    250.99,
+    241.95
+   ],
+   "rot": 292
+  },
+  {
+   "id": "dc_m135",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    362.42,
+    275.48
+   ],
+   "rot": 117
+  },
+  {
+   "id": "dc_m136",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    311.04,
+    353.33
+   ],
+   "rot": 169
+  },
+  {
+   "id": "dc_m137",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r6",
+   "pos": [
+    20.65,
+    154.72
+   ],
+   "rot": 140
+  },
+  {
+   "id": "dc_m138",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    185.23,
+    307.23
+   ],
+   "rot": 322
+  },
+  {
+   "id": "dc_m139",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    169.73,
+    315.47
+   ],
+   "rot": 173
+  },
+  {
+   "id": "dc_m140",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    27.92,
+    376.63
+   ],
+   "rot": 295
+  },
+  {
+   "id": "dc_m141",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    285.73,
+    30.34
+   ],
+   "rot": 298
+  },
+  {
+   "id": "dc_m142",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    64.84,
+    319.58
+   ],
+   "rot": 91
+  },
+  {
+   "id": "dc_m143",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    388.53,
+    290.08
+   ],
+   "rot": 226
+  },
+  {
+   "id": "dc_m144",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    168.82,
+    353.03
+   ],
+   "rot": 135
+  },
+  {
+   "id": "dc_m145",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    246.25,
+    378.41
+   ],
+   "rot": 2
+  },
+  {
+   "id": "dc_m146",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    134.97,
+    386.99
+   ],
+   "rot": 61
+  },
+  {
+   "id": "dc_m147",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    192.45,
+    79.94
+   ],
+   "rot": 114
+  },
+  {
+   "id": "dc_m148",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    285.98,
+    116.46
+   ],
+   "rot": 270
+  },
+  {
+   "id": "dc_m149",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    276.09,
+    348.6
+   ],
+   "rot": 73
+  },
+  {
+   "id": "dc_m150",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    159.94,
+    322.9
+   ],
+   "rot": 72
+  },
+  {
+   "id": "dc_m151",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    306.65,
+    42.73
+   ],
+   "rot": 141
+  },
+  {
+   "id": "dc_m152",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    348.95,
+    323.84
+   ],
+   "rot": 10
+  },
+  {
+   "id": "dc_m153",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    77.78,
+    318.92
+   ],
+   "rot": 100
+  },
+  {
+   "id": "dc_m154",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    129.7,
+    342.34
+   ],
+   "rot": 287
+  },
+  {
+   "id": "dc_m155",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    195.43,
+    311.69
+   ],
+   "rot": 328
+  },
+  {
+   "id": "dc_m156",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    217.53,
+    347.27
+   ],
+   "rot": 200
+  },
+  {
+   "id": "dc_m157",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    109.05,
+    51.2
+   ],
+   "rot": 18
+  },
+  {
+   "id": "dc_m158",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    164.48,
+    110.64
+   ],
+   "rot": 243
+  },
+  {
+   "id": "dc_m159",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    227.29,
+    377.66
+   ],
+   "rot": 332
+  },
+  {
+   "id": "dc_m160",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    389.59,
+    307.48
+   ],
+   "rot": 88
+  },
+  {
+   "id": "dc_m161",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    336.77,
+    319.32
+   ],
+   "rot": 59
+  },
+  {
+   "id": "dc_m162",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    361.39,
+    383.88
+   ],
+   "rot": 254
+  },
+  {
+   "id": "dc_m163",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    146.69,
+    390.01
+   ],
+   "rot": 18
+  },
+  {
+   "id": "dc_m164",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    200.17,
+    59.91
+   ],
+   "rot": 8
+  },
+  {
+   "id": "dc_m165",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    199.23,
+    391.95
+   ],
+   "rot": 277
+  },
+  {
+   "id": "dc_m166",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    208.94,
+    355.07
+   ],
+   "rot": 44
+  },
+  {
+   "id": "dc_m167",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    162.98,
+    17.21
+   ],
+   "rot": 329
+  },
+  {
+   "id": "dc_m168",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    250.13,
+    24.6
+   ],
+   "rot": 216
+  },
+  {
+   "id": "dc_m169",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    148.88,
+    316.12
+   ],
+   "rot": 45
+  },
+  {
+   "id": "dc_m170",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    238.36,
+    338.95
+   ],
+   "rot": 252
+  },
+  {
+   "id": "dc_m171",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    113.7,
+    100.73
+   ],
+   "rot": 211
+  },
+  {
+   "id": "dc_m172",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    23.91,
+    305.14
+   ],
+   "rot": 353
+  },
+  {
+   "id": "dc_m173",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    176.85,
+    92.77
+   ],
+   "rot": 285
+  },
+  {
+   "id": "dc_m174",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    219.81,
+    18.88
+   ],
+   "rot": 157
+  },
+  {
+   "id": "dc_m175",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r6",
+   "pos": [
+    55.64,
+    245.58
+   ],
+   "rot": 192
+  },
+  {
+   "id": "dc_m176",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    232.84,
+    321.78
+   ],
+   "rot": 243
+  },
+  {
+   "id": "dc_m177",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    57.17,
+    267.92
+   ],
+   "rot": 59
+  },
+  {
+   "id": "dc_m178",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    295.19,
+    57.35
+   ],
+   "rot": 214
+  },
+  {
+   "id": "dc_m179",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    393.37,
+    135.58
+   ],
+   "rot": 351
+  },
+  {
+   "id": "dc_m180",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    331.87,
+    8.58
+   ],
+   "rot": 223
+  },
+  {
+   "id": "dc_m181",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    135.85,
+    10.79
+   ],
+   "rot": 2
+  },
+  {
+   "id": "dc_m182",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    221.53,
+    380.22
+   ],
+   "rot": 121
+  },
+  {
+   "id": "dc_m183",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    181.47,
+    53.35
+   ],
+   "rot": 154
+  },
+  {
+   "id": "dc_m184",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    373.83,
+    376.49
+   ],
+   "rot": 181
+  },
+  {
+   "id": "dc_m185",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    269.29,
+    192.99
+   ],
+   "rot": 233
+  },
+  {
+   "id": "dc_m186",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    291.18,
+    322.99
+   ],
+   "rot": 81
+  },
+  {
+   "id": "dc_m187",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    137.58,
+    15.26
+   ],
+   "rot": 38
+  },
+  {
+   "id": "dc_m188",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r6",
+   "pos": [
+    137.47,
+    179.03
+   ],
+   "rot": 272
+  },
+  {
+   "id": "dc_m189",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    179.38,
+    22.05
+   ],
+   "rot": 284
+  },
+  {
+   "id": "dc_m190",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    95.23,
+    17.63
+   ],
+   "rot": 123
+  },
+  {
+   "id": "dc_m191",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    260.87,
+    32.38
+   ],
+   "rot": 98
+  },
+  {
+   "id": "dc_m192",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r6",
+   "pos": [
+    11.15,
+    164.26
+   ],
+   "rot": 190
+  },
+  {
+   "id": "dc_m193",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    99.26,
+    100.08
+   ],
+   "rot": 247
+  },
+  {
+   "id": "dc_m194",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r6",
+   "pos": [
+    36.06,
+    242.83
+   ],
+   "rot": 258
+  },
+  {
+   "id": "dc_m195",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    357.55,
+    291.86
+   ],
+   "rot": 169
+  },
+  {
+   "id": "dc_m196",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    266.27,
+    183.25
+   ],
+   "rot": 52
+  },
+  {
+   "id": "dc_m197",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    373.31,
+    335.47
+   ],
+   "rot": 209
+  },
+  {
+   "id": "dc_m198",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    266.78,
+    346.47
+   ],
+   "rot": 85
+  },
+  {
+   "id": "dc_m199",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    308.02,
+    389.59
+   ],
+   "rot": 93
+  },
+  {
+   "id": "dc_m200",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    374.67,
+    289.75
+   ],
+   "rot": 276
+  },
+  {
+   "id": "dc_m201",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    176.86,
+    58.94
+   ],
+   "rot": 14
+  },
+  {
+   "id": "dc_m202",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    187.58,
+    347.51
+   ],
+   "rot": 149
+  },
+  {
+   "id": "dc_m203",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    202.66,
+    59.85
+   ],
+   "rot": 69
+  },
+  {
+   "id": "dc_m204",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    160.92,
+    389.58
+   ],
+   "rot": 69
+  },
+  {
+   "id": "dc_m205",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    199.15,
+    85.35
+   ],
+   "rot": 277
+  },
+  {
+   "id": "dc_m206",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r2",
+   "pos": [
+    304.52,
+    140.1
+   ],
+   "rot": 353
+  },
+  {
+   "id": "dc_m207",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    289.99,
+    350.47
+   ],
+   "rot": 348
+  },
+  {
+   "id": "dc_m208",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    197.26,
+    330.7
+   ],
+   "rot": 200
+  },
+  {
+   "id": "dc_m209",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r6",
+   "pos": [
+    24.07,
+    195.92
+   ],
+   "rot": 68
+  },
+  {
+   "id": "dc_m210",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    383,
+    282.5
+   ],
+   "rot": 15
+  },
+  {
+   "id": "dc_m211",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    143.93,
+    344.92
+   ],
+   "rot": 282
+  },
+  {
+   "id": "dc_m212",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    188.22,
+    351.51
+   ],
+   "rot": 289
+  },
+  {
+   "id": "dc_m213",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    157.77,
+    299.25
+   ],
+   "rot": 215
+  },
+  {
+   "id": "dc_m214",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r3",
+   "pos": [
+    393.61,
+    177.03
+   ],
+   "rot": 351
+  },
+  {
+   "id": "dc_m215",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r5",
+   "pos": [
+    133.3,
+    355.04
+   ],
+   "rot": 26
+  },
+  {
+   "id": "dc_m216",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    134.45,
+    8.06
+   ],
+   "rot": 72
+  },
+  {
+   "id": "dc_m217",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    262.88,
+    29.75
+   ],
+   "rot": 333
+  },
+  {
+   "id": "dc_m218",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    212.7,
+    54.37
+   ],
+   "rot": 269
+  },
+  {
+   "id": "dc_m219",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r4",
+   "pos": [
+    346.95,
+    361.18
+   ],
+   "rot": 103
+  },
+  {
+   "id": "dc_m220",
+   "kind": "flora",
+   "recipe": "meadow_carpet",
+   "region": "r1",
+   "pos": [
+    235.43,
+    15.08
+   ],
+   "rot": 352
   }
  ],
  "farmSpots": [

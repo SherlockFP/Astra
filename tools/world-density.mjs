@@ -5,6 +5,7 @@
  *
  *   node tools/world-density.mjs            report, biggest empty patches and an ASCII map
  *   node tools/world-density.mjs --json     the same numbers as JSON (stdout)
+ *   node tools/world-density.mjs --radius 25   the same audit with a 25 m radius (open-stretch proxy: what reads as a destination at 20-30 m)
  *
  * Data: src/data/world/sisli_vadi.layout.json (positions in tiles, 1 tile = 4 m; village props / NPCs in metres relative to the
  * village centre). Walkable = the cell centre lies inside a room rect (region rects, bridges, approaches) and outside every water
@@ -22,7 +23,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LAYOUT_PATH = path.join(ROOT, 'src/data/world/sisli_vadi.layout.json');
 const CELL_M = 50;
-const RADIUS_M = 40;
+const radiusIx = process.argv.indexOf('--radius');
+const RADIUS_M = radiusIx >= 0 ? Number(process.argv[radiusIx + 1]) : 40;
 const ROAD_STEP_M = 4;
 
 const args = new Set(process.argv.slice(2));
