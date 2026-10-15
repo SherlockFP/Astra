@@ -13,6 +13,7 @@ import type { DungeonParams } from '../scenes';
 import { CampDirector } from './CampDirector';
 import { MetinDirector } from './MetinDirector';
 import { RareDirector } from './RareDirector';
+import { StoryBeats } from './StoryBeats';
 import { MiniBossDirector } from './MiniBossDirector';
 import { BossSchedule } from './BossSchedule';
 import { SafeZones } from './SafeZones';
@@ -68,6 +69,7 @@ export class WorldRuntime {
   private readonly camps: CampDirector;
   private readonly metin: MetinDirector;
   private readonly rares: RareDirector;
+  private readonly story: StoryBeats;
   private readonly minis: MiniBossDirector;
   private readonly bosses: BossSchedule;
   private readonly pois: WorldPois;
@@ -98,6 +100,7 @@ export class WorldRuntime {
     this.camps = new CampDirector(this.ctx, this.ext.perf);
     this.metin = new MetinDirector(this.ctx);
     this.rares = new RareDirector(this.ctx);
+    this.story = new StoryBeats(this.ctx);
     this.minis = new MiniBossDirector(this.ctx);
     this.bosses = new BossSchedule(this.ctx);
     this.pois = new WorldPois(this.ctx);
@@ -155,6 +158,7 @@ export class WorldRuntime {
     this.run('camps', () => this.camps.update(dt));
     this.run('metin', () => this.metin.update(dt));
     this.run('rares', () => this.rares.update(dt));
+    this.run('story', () => this.story.update(dt));
     this.run('minis', () => this.minis.update(dt));
     this.run('chests', () => this.pois.update(dt));
     this.run('quest props', () => this.questProps.update(dt));
@@ -227,6 +231,7 @@ export class WorldRuntime {
     this.events?.dispose();
     this.events = null;
     this.waypoints.dispose();
+    this.story.dispose();
     this.calendar?.dispose();
     this.calendar = null;
     this.siege?.dispose();

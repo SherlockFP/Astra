@@ -75,28 +75,28 @@ const EXTRA_MAIN: Record<string, Extra> = {
   },
   mq_03_balcik_temizligi: {
     objectives: [use('item_camur_kesesi', 'qt_kutsama_tasi', 4, "Kutsama Taşı'nda Çamur Kesesi kutsat (4)")], startItems: [{ id: 'item_camur_kesesi', count: 4 }], region: 'r1', items: [{ id: 'pot_hp_1', count: 3 }],
-    giver: 'npc_g_ciftci', turnIn: 'npc_g_rahibe',
-    offer: "Hatice'nin verdiği dört Çamur Kesesi'ni Kutsama Taşı'nda kutsat. Rahibe Meryem bununla merhem yapacak.",
-    progress: "Kutsama Taşı'nda Çamur Kesesi kutsat (4).", done: 'Merhem hazır. Rahibe Meryem teşekkür etti.',
+    giver: 'npc_g_ciftci', turnIn: 'npc_o_gozcu',
+    offer: "Hatice'nin verdiği dört Çamur Kesesi'ni Kutsama Taşı'nda kutsat. Merhemi Orta Karakol'daki Gözcü Selim'e götür.",
+    progress: "Kutsama Taşı'nda Çamur Kesesi kutsat (4).", done: 'Merhem hazır. Gözcü Selim cepheye götürdü.',
   },
   mq_04_samani_sustur: {
     // defend (escort, the event of the chain): the scout walks the r1 road while ambushers come in waves. The shaman kills stay in the open world.
     objectives: [escort(90, 'Yaralı gözcüyü 90 sn koru (üç dalga pusu)')], region: 'r1', choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
-    giver: 'npc_g_rahibe', turnIn: 'npc_g_muhtar',
-    offer: 'Yaralı gözcü kampa dönmek istiyor, yolda goblin pususu var. Onu kampa kadar koru; sonra Muhtar Ferhat\'a dön.', progress: 'Yaralı gözcüyü 90 sn koru.', done: 'Gözcü kurtuldu. Pusuya düşenler dağıldı.',
+    giver: 'npc_o_gozcu', turnIn: 'npc_o_gozcu',
+    offer: 'Yaralı gözcü kampa dönmek istiyor, yolda goblin pususu var. Onu Orta Karakol\'a kadar koru; sonra Gözcü Selim\'e dön.', progress: 'Yaralı gözcüyü 90 sn koru.', done: 'Gözcü kurtuldu. Pusuya düşenler dağıldı.',
   },
   mq_05_yagmaci_kampi: {
-    objectives: [boss('mb_girtlak', 1, "Yağmacı Başı Gırtlak'ı öldür")], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
+    giver: 'npc_o_gozcu', turnIn: 'npc_o_gozcu', objectives: [boss('mb_girtlak', 1, "Yağmacı Başı Gırtlak'ı öldür")], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
     offer: 'Gırtlak kampından kaçtı ama izi taze. Yakala ve başını getir.', progress: "Yağmacı Başı Gırtlak'ı öldür.", done: "Gırtlak'ın gölgesi dağıldı. Köy rahat nefes alıyor.",
   },
   mq_06_ilk_metin: {
-    objectives: [metin('metin_keder', "Keder Metini'ni yık")], items: [{ id: 'metin_kalintisi', count: 5 }, { id: 'beceri_kitabi_1', count: 1 }],
-    offer: "Vadinin ortasında kara bir taş var. Keder Metini'ni yık.", progress: "Keder Metini'ni yık.", done: 'Taş çatladı. Kalıntılar artık senin.',
+    giver: 'npc_o_gozcu', turnIn: 'npc_o_gozcu', objectives: [metin('metin_keder', "Keder Metini'ni yık")], items: [{ id: 'metin_kalintisi', count: 5 }, { id: 'beceri_kitabi_1', count: 1 }],
+    offer: "Vadinin ortasında kara bir taş var. Keder Metini'ni yık; yanındaki kayaların arkasında bir sandık da var.", progress: "Keder Metini'ni yık.", done: 'Taş çatladı. Kalıntılar artık senin.',
   },
   mq_07_kopruyu_gec: {
-    objectives: [explore('hd_r1', "Kurtların Gizli Çayırı'nı bul (sandık)")],
+    giver: 'npc_o_gozcu', objectives: [explore('hd_r1', "Kurtların Gizli Çayırı'nı bul (sandık)")],
     turnIn: 'npc_g_muhtar', unlocks: ['wp_ciftlik'], region: 'r1',
-    offer: "Ferhat'ın haritasında Kurtların Gizli Çayırı'nda bir sandık işaretli. Git, bul ve sandığı aç.", progress: "Kurtların Gizli Çayırı'nı bul.",
+    offer: "Gözcü Selim'in haritasında Kurtların Gizli Çayırı'nda bir sandık işaretli. Git, bul ve sandığı aç.", progress: "Kurtların Gizli Çayırı'nı bul.",
     done: "Sandık senin. Rıza'nın çiftliğine giden yol artık açık.",
   },
   mq_08_ciftlik_isgali: {

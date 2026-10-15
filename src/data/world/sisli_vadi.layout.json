@@ -28440,6 +28440,19 @@
     4,
     3.5
    ]
+  },
+  {
+   "id": "kamp_orta_karakol",
+   "name": "Orta Karakol",
+   "kind": "camp",
+   "center": [
+    252,
+    48
+   ],
+   "halfTiles": [
+    4,
+    3
+   ]
   }
  ],
  "arenas": [
@@ -28465,6 +28478,15 @@
   }
  ],
  "waypoints": [
+  {
+   "id": "wp_orta_karakol",
+   "name": "Orta Karakol Taşı",
+   "region": "r1",
+   "pos": [
+    250,
+    46
+   ]
+  },
   {
    "id": "wp_gumusdere",
    "name": "Gümüşdere Taşı",
@@ -32692,6 +32714,80 @@
      "note": "güney kapı"
     }
    ]
+  },
+  {
+   "id": "kamp_orta_karakol",
+   "name": "Orta Karakol",
+   "bounds": [
+    10,
+    10
+   ],
+   "buildings": [
+    {
+     "label": "Gözcü Çadırı",
+     "model": "ks('tent')",
+     "x": 0,
+     "z": -6,
+     "rot": 0,
+     "scale": 3
+    },
+    {
+     "label": "Erzak Çadırı",
+     "model": "ks('tent')",
+     "x": -6,
+     "z": -4,
+     "rot": 90,
+     "scale": 3
+    },
+    {
+     "label": "Kamp Ateşi",
+     "model": "gp('campfire')",
+     "x": 3,
+     "z": 3,
+     "rot": 0,
+     "scale": 1
+    },
+    {
+     "label": "Kırmızı Bayrak",
+     "model": "kc('flag-banner-long')",
+     "x": 7,
+     "z": -7,
+     "rot": 0,
+     "scale": 1.2
+    }
+   ],
+   "npcs": [
+    {
+     "id": "npc_o_gozcu",
+     "name": "Gözcü Selim",
+     "role": "quest",
+     "model": "Barbarian (silahsız, pelerinsiz) tint 0x705030",
+     "x": 0,
+     "z": -2,
+     "rot": 180,
+     "note": "Orta karakol görevleri (`mq_03` teslim, `mq_04`..`mq_07`). \"Burası Orta Karakol. Ön hattaki yaralıları buraya getiriyoruz.\" \"Metinin yanındaki kayaların arkasında ahşap bir sandık var, bilen bilir.\" \"Gırtlak'ın adamları son günlerde hep bu tepeye bakıyor.\""
+    },
+    {
+     "id": "npc_o_muhafiz_1",
+     "name": "Karakol Muhafızı",
+     "role": "guard",
+     "model": "Knight (miğfersiz) tint 0x8090b0",
+     "x": -4,
+     "z": 6,
+     "rot": 180,
+     "note": "güney kapı"
+    },
+    {
+     "id": "npc_o_muhafiz_2",
+     "name": "Karakol Muhafızı",
+     "role": "guard",
+     "model": "Knight (miğfersiz) tint 0x8090b0",
+     "x": 4,
+     "z": 6,
+     "rot": 180,
+     "note": "güney kapı"
+    }
+   ]
   }
  ],
  "quests": {
@@ -32740,7 +32836,7 @@
    {
     "id": "mq_04_samani_sustur",
     "name": "Yaralı Gözcü",
-    "giver": "Muhtar Ferhat",
+    "giver": "Gözcü Selim (Orta Karakol)",
     "place": "r1_c11",
     "level": 3,
     "kind": "escort",
@@ -32754,7 +32850,7 @@
    {
     "id": "mq_05_yagmaci_kampi",
     "name": "Yağmacı Başı",
-    "giver": "Muhtar Ferhat",
+    "giver": "Gözcü Selim (Orta Karakol)",
     "place": "r1_c04",
     "level": 4,
     "kind": "boss",
@@ -32767,7 +32863,7 @@
    {
     "id": "mq_06_ilk_metin",
     "name": "İlk Metin",
-    "giver": "Muhtar Ferhat",
+    "giver": "Gözcü Selim (Orta Karakol)",
     "place": "metin_keder",
     "level": 5,
     "kind": "metin",
@@ -32780,7 +32876,7 @@
    {
     "id": "mq_07_kopruyu_gec",
     "name": "Kurtların Hazinesi",
-    "giver": "Muhtar Ferhat",
+    "giver": "Gözcü Selim (Orta Karakol)",
     "place": "kamp_ciftlik",
     "level": 5,
     "kind": "explore",
