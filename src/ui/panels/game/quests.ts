@@ -99,6 +99,9 @@ export class QuestLogPanel extends GamePanel {
   private listEl!: HTMLElement;
   private sumEl!: HTMLElement;
   private tab: LogTab = 'active';
+  /** Signature of the last rendered header / list (see tick). */
+  private sig = '';
+  private acc = 0;
 
   constructor() {
     super('questlog', { backdropClose: true, modal: false });
@@ -123,6 +126,29 @@ export class QuestLogPanel extends GamePanel {
     this.render();
   }
 
+  protected tick(dt: number): void {
+    // the header and the list follow the live quest state, not only the quest events (an event gap left the header at "0 aktif")
+    this.acc += dt;
+    if (this.acc < 0.25) return;
+    this.acc = 0;
+    if (this.signature() !== this.sig) this.render();
+  }
+
+  /** Counts and active progress: the view is rebuilt only when this changes. */
+  private signature(): string {
+    const q = G.quests;
+    if (!q || !G.character) return '';
+    let avail = 0;
+    let done = 0;
+    for (const d of q.all()) {
+      const s = q.state(d.id);
+      if (s === 'available') avail++;
+      else if (s === 'done') done++;
+    }
+    const act = q.active().map((d) => `${d.id}=${q.state(d.id)}:${q.progressRows(d.id).map((r) => r.have).join('.')}`);
+    return `${avail}/${done}/${act.join('|')}`;
+  }
+
   private inTab(s: QuestState): boolean {
     if (this.tab === 'active') return s === 'active' || s === 'ready';
     if (this.tab === 'available') return s === 'available';
@@ -134,18 +160,21 @@ export class QuestLogPanel extends GamePanel {
     this.tabsH.select(this.tab, true);
     this.listEl.innerHTML = '';
     if (!q || !G.character) {
+      this.sumEl.textContent = '';
+      this.sig = '';
       this.listEl.append(h('div.pg-empty', null, 'Karakter seçilmedi.'));
       return;
     }
     const all = q.all();
-    const counts = { active: 0, available: 0, done: 0 };
+    // same source as the objective tracker (QuestSystem.active()): the header and the tracker always agree
+    const counts = { active: q.active().length, available: 0, done: 0 };
     for (const d of all) {
       const s = q.state(d.id);
-      if (s === 'active' || s === 'ready') counts.active++;
-      else if (s === 'available') counts.available++;
+      if (s === 'available') counts.available++;
       else if (s === 'done') counts.done++;
     }
     this.sumEl.textContent = `${counts.active} aktif · ${counts.available} alınabilir · ${counts.done} tamamlandı`;
+    this.sig = this.signature();
 
     const groups = new Map<string, { label: string; order: number; defs: QuestDef[] }>();
     for (const d of all) {
