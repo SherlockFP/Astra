@@ -318,7 +318,7 @@ function palisadeBlocks(v: { bounds: [number, number]; gates: { pos: [number, nu
  * village palisades), flooded from its start. walkable(wx, wz, r): every cell within r m is open. reachable(wx, wz): a walkable cell
  * within one cell of (wx, wz) is reached from the start.
  */
-export function navReach(def: DungeonDef, models: ModelDb): { walkable: (wx: number, wz: number, r: number) => boolean; reachable: (wx: number, wz: number) => boolean } {
+export function navReach(def: DungeonDef, models: ModelDb): { walkable: (wx: number, wz: number, r: number) => boolean; reachable: (wx: number, wz: number) => boolean; snap: (wx: number, wz: number, rad: number) => { x: number; z: number } | null } {
   const nav = buildNav(def, models);
   flood(nav, sceneW(def.start.pos[0]), sceneW(def.start.pos[1]));
   const reachable = (wx: number, wz: number): boolean => {
@@ -327,7 +327,18 @@ export function navReach(def: DungeonDef, models: ModelDb): { walkable: (wx: num
     }
     return false;
   };
-  return { walkable: (wx, wz, r) => clearAt(nav, wx, wz, r), reachable };
+  // the nearest walkable cell centre within rad cells (NavGrid.nearestWalkable for the headless nav): WorldQuestProps.pickPoint snaps its props here
+  const snap = (wx: number, wz: number, rad: number): { x: number; z: number } | null => {
+    const c0 = Math.floor(wx), r0 = Math.floor(wz);
+    const open = (i: number, j: number): boolean => i >= 0 && j >= 0 && i < nav.w && j < nav.h && !!nav.walk[j * nav.w + i];
+    if (open(c0, r0)) return { x: wx, z: wz };
+    for (let k = 1; k <= rad; k++) for (let dj = -k; dj <= k; dj++) for (let di = -k; di <= k; di++) {
+      if (Math.max(Math.abs(di), Math.abs(dj)) !== k || !open(c0 + di, r0 + dj)) continue;
+      return { x: c0 + di + 0.5, z: r0 + dj + 0.5 };
+    }
+    return null;
+  };
+  return { walkable: (wx, wz, r) => clearAt(nav, wx, wz, r), reachable, snap };
 }
 
 function flood(nav: NavMask, sx: number, sz: number): void {

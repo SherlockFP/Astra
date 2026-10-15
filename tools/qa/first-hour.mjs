@@ -788,7 +788,8 @@ async function journey(cls) {
       case 'drop':
         return stepKill(d, o.from ?? killTargetsOf(d), label);
       case 'collect':
-        return stepKill(d, killTargetsOf(d), label);
+        // collect hunts the mobs of its `from` list (QuestSystem.rollDrops); killTargetsOf is [] for a collect-only objective
+        return stepKill(d, o.from ?? killTargetsOf(d), label);
       case 'interact':
       case 'use': {
         if (o.kind === 'use') {
@@ -814,7 +815,8 @@ async function journey(cls) {
           if (p) await walkTo(p.x, p.z, { stop: 8, timeout: 90000, label: 'prop area' });
           return 'walked to prop area';
         }
-        if (spot.d > 1.8) await walkTo(spot.x, spot.z, { stop: 1.6, timeout: 60000, label: o.target });
+        // the nearest prop can be a few hundred metres away (a quest region is large): the walk budget follows the distance (~2.5 m/s)
+        if (spot.d > 1.8) await walkTo(spot.x, spot.z, { stop: 1.6, timeout: Math.max(60000, Math.round(spot.d * 400)), label: o.target });
         await tap('KeyF');
         await sleep(600);
         return 'used prop';

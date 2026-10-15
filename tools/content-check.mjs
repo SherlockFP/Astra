@@ -701,6 +701,37 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
   totalErr += gE;
   console.log(`\n== quest npc ground: ${gE} errors | ${gN} quest NPCs checked on clear, reachable ground`);
 }
+// quest props of the open-world maps (scenes/world/WorldQuestProps.ts questPropSpots): interact / use props (qo_sack, qo_crystal,
+// qo_banner, qt_*) land on a tile of their quest's region, snapped to the nearest walkable cell (pickPoint + snapTile). Every candidate
+// tile of the region must snap to ground the map start reaches, so no seed can put a prop where the player (or the QA bot) cannot walk.
+if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
+  let pE = 0, pN = 0;
+  const { QUESTS: PROP_QUESTS } = await imp('src/data/world/quests.ts');
+  for (const z of ZONES) {
+    if (want.length && !want.includes(z.id)) continue;
+    const propRegions = new Set(PROP_QUESTS.filter((q) => q.region && q.objectives.some((o) => (o.kind === 'interact' || o.kind === 'use') && o.target)).map((q) => q.region));
+    if (!propRegions.size) continue;
+    const reach = cc.navReach(ALL[z.id], models);
+    for (const rid of propRegions) {
+      const reg = z.world.regions?.find((r) => r.id === rid);
+      const room = reg && ALL[z.id].rooms.find((r) => r.id === reg.roomId);
+      if (!room) continue; // a region of another map
+      let n = 0, bad = 0;
+      const first = [];
+      for (let tz = room.rect.z; tz < room.rect.z + room.rect.h; tz++) for (let tx = room.rect.x; tx < room.rect.x + room.rect.w; tx++) {
+        n++;
+        const s = reach.snap((tx + 0.5) * TILE_M, (tz + 0.5) * TILE_M, 8);
+        if (s && reach.reachable(s.x, s.z)) continue;
+        bad++;
+        if (first.length < 3) first.push(`${((tx + 0.5) * TILE_M).toFixed(0)},${((tz + 0.5) * TILE_M).toFixed(0)}`);
+      }
+      pN += n;
+      if (bad) { pE++; console.log('  ERR ', `region ${rid} (${z.id})`, '-', `${bad} of ${n} candidate prop tiles snap to ground the map start cannot reach (e.g. at x,z ${first.join(' | ')})`); }
+    }
+  }
+  totalErr += pE;
+  console.log(`\n== quest props: ${pE} errors | ${pN} candidate tiles of ${[...new Set(PROP_QUESTS.filter((q) => q.region && q.objectives.some((o) => o.kind === 'interact' || o.kind === 'use')).map((q) => q.region))].length} prop regions checked on reachable ground`);
+}
 // starting-zone camp rings (Sisli Vadi r1): the level 1-2 camps keep 25 m apart, and no level 2+ jump within 40 m of a quest camp
 if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
   for (const id of WORLD_IDS) {
