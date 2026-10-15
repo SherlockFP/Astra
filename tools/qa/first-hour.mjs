@@ -15,8 +15,9 @@
 //      drop / collect (fight the source ids, pick up the loot), skill (fight and interrupt the target's casts with the bar's
 //      interrupt skill; none on the bar = BLOCKER), interact / use (QuestProp: F; use needs the item), escort (EscortNpc: F to start,
 //      then follow it, fighting what attacks it). dungeon has no handler: HARD blocker.
-//   4. a quest whose open objective does not change for 4 steps is a HARD blocker (the chain is stuck) and ends the journey.
-//   5. a SIDE quest that the watchdog fired on twice is abandoned (QuestSystem.abandon, never taken again; the chain goes on): a BLOCKER.
+//   4. a MAIN-chain quest whose open objective does not change for 4 steps is a HARD blocker (the chain is stuck) and ends the journey.
+//   5. a SIDE quest is dropped instead, checked first: two watchdog fires on it (any state) or 4 steps without progress or an
+//      unsupported / stuck step drops it (QuestSystem.abandon for active / ready, never taken again; the chain goes on): a BLOCKER, never HARD.
 //
 // Keys come from the game: src/core/Input.ts SCHEME_BINDINGS.wow (scheme 'wow' = the default) over DEFAULT_BINDINGS; the skill
 // slots from G.character.save.skillBar; the interrupt skill is the bar skill whose SKILLS[id].behavior === 'interrupt'.
@@ -183,6 +184,7 @@ async function journey(cls) {
   let wdLabel = 'setup'; // the chain step in progress (quest + state)
   let wdWalk = null; // {label, x, z} of the walk in progress
   let curQuest = null; // id of the quest the chain step works on
+  let curMain = true; // the chain step in flight is a main-chain quest: its blockers are HARD; a side quest's are dropped instead
   let end = ''; // how the chain ended (summary)
   let written = false;
   let summary = null;
@@ -429,7 +431,7 @@ async function journey(cls) {
         p = await npcPos(npcId);
       }
     }
-    if (!p) { B(`NPC ${npcId} has no position (not streamed in, no data position)`, true); return false; }
+    if (!p) { B(`NPC ${npcId} has no position (not streamed in, no data position)`, curMain); return false; }
     await walkTo(p.x, p.z, { stop: 2.4, label: npcId, timeout: 150000 });
     await closePanels();
     await tap('KeyF');
@@ -732,7 +734,7 @@ async function journey(cls) {
         }, [ids]);
         if (tx) X(`${label}: no ${ids.join('/')} loaded near the player and no objective arrow; walked to the layout camp ${tx.id}`);
       }
-      if (!tx) { B(`${label}: no ${ids.join('/')} found near the player, the guide arrow or any layout camp`, true); return 'stuck'; }
+      if (!tx) { B(`${label}: no ${ids.join('/')} found near the player, the guide arrow or any layout camp`, curMain); return 'stuck'; }
       await walkTo(tx.x, tx.z, { stop: 14, timeout: 90000, label: 'kill area' });
       // no in-level mob alive at the camp: the game refreshes a camp only while no player is within radius + 30 m of its centre
       // (CampDirector.ts REFRESH_CLEAR_M), so waiting at the camp blocks its own respawn. Walk 40 m out (a navgrid-reachable
@@ -800,7 +802,7 @@ async function journey(cls) {
       }
       case 'explore': {
         const p = await placePos(o.target, d.id);
-        if (!p) { B(`${label}: no position for "${o.target}"`, true); return 'stuck'; }
+        if (!p) { B(`${label}: no position for "${o.target}"`, curMain); return 'stuck'; }
         await walkTo(p.x, p.z, { stop: 5, timeout: 150000, label: `${o.target}` });
         await sleep(1500);
         return 'explored';
@@ -820,7 +822,7 @@ async function journey(cls) {
       case 'use': {
         if (o.kind === 'use') {
           const have = await page.evaluate((it) => window.G.character.material(it), o.item);
-          if (have < 1) { B(`${label}: the quest item ${o.item} is not in the bag`, true); return 'stuck'; }
+          if (have < 1) { B(`${label}: the quest item ${o.item} is not in the bag`, curMain); return 'stuck'; }
         }
         const spot = await page.evaluate(async ([t, alt]) => {
           const QP = await import('/src/entities/interactables/QuestProp.ts');
@@ -893,7 +895,7 @@ async function journey(cls) {
         return 'escorted';
       }
       default:
-        B(`${label}: no handler for the "${o.kind}" objective (${o.text})`, true);
+        B(`${label}: no handler for the "${o.kind}" objective (${o.text})`, curMain);
         return 'unsupported';
     }
   };
@@ -1125,6 +1127,17 @@ async function journey(cls) {
       if (!capAt && (Date.now() - T0) / 60000 > MAX_MIN) { capAt = Date.now(); stepAbort = true; }
       if (capAt && !written && Date.now() - capAt > 30000) writeJson(`time budget ${MAX_MIN} min (step did not return)`).catch(() => {});
     }, 1000);
+    /** Drops a side quest (BLOCKER, not HARD): G.quests.abandon for an active / ready one, an available one is only never taken again. */
+    const dropSide = async (d, state, why) => {
+      const left = await page.evaluate((qid) => {
+        const st = window.G.quests.state(qid);
+        if (st === 'active' || st === 'ready') window.G.quests.abandon(qid);
+        return window.G.quests.state(qid);
+      }, d.id);
+      abandoned.add(d.id);
+      B(`side quest "${d.name}" dropped ${why} (was "${state}", now "${left}"); the bot never takes it again; the chain goes on`);
+      wdAnchor = { t: Date.now(), x: wdAnchor.x, z: wdAnchor.z };
+    };
     while (true) {
       steps++;
       stepAbort = false;
@@ -1144,17 +1157,15 @@ async function journey(cls) {
       if (!rec) { B(`the guide recommends no quest at level ${s.lvl} (${mins()} min): the chain ends or has a gap`, true); end = 'no recommendation'; break; }
       const d = await questDef(rec.id);
       if (!d) { B(`recommended quest ${rec.id} has no definition`, true); end = 'no definition'; break; }
-      // two watchdog fires on a side quest that is still being worked: drop it and carry on with the chain (BLOCKER for the report)
-      if (!d.main && rec.state === 'active' && (wdFiresBy.get(d.id) ?? 0) >= 2 && !abandoned.has(d.id)) {
-        const fires = wdFiresBy.get(d.id);
-        const left = await page.evaluate((qid) => (window.G.quests.abandon(qid) ? window.G.quests.state(qid) : 'refused'), d.id);
-        abandoned.add(d.id);
-        B(`side quest "${d.name}" abandoned after ${fires} watchdog fires (G.quests.abandon, now "${left}"); the bot never takes it again; the chain goes on`);
-        wdAnchor = { t: Date.now(), x: wdAnchor.x, z: wdAnchor.z };
+      // side quests first: two watchdog fires on a side quest (in any state: accept walk, active, turn-in walk) drop it and the chain
+      // goes on (BLOCKER for the report, never HARD). The HARD block below is for main-chain steps only.
+      if (!d.main && (wdFiresBy.get(d.id) ?? 0) >= 2 && !abandoned.has(d.id)) {
+        await dropSide(d, rec.state, `after ${wdFiresBy.get(d.id)} watchdog fires`);
         continue;
       }
       const failKey = `${d.id}:${rec.state}`;
       curQuest = d.id;
+      curMain = !!d.main;
       wdLabel = `${d.name} / ${rec.state}`;
       let ok = true;
       try {
@@ -1165,7 +1176,11 @@ async function journey(cls) {
         } else {
           const before = await progressKey(d.id);
           const r = await stepObjective(d);
-          if (r === 'unsupported' || r === 'stuck') { end = `chain stuck on "${d.name}" (${r})`; break; }
+          if (r === 'unsupported' || r === 'stuck') {
+            if (d.main) { end = `chain stuck on "${d.name}" (${r})`; break; }
+            await dropSide(d, rec.state, `(${r})`);
+            continue;
+          }
           const after = await progressKey(d.id);
           // a kill or a walk is progress of its own: a drop has a chance per kill, and a walk to a far target changes no counter
           const moved = (['killed', 'walked', 'walked to prop area', 'walked to escort area', 'escorted'].includes(r));
@@ -1181,6 +1196,7 @@ async function journey(cls) {
       if (!ok) {
         fails[failKey] = (fails[failKey] ?? 0) + 1;
         if (fails[failKey] >= 4) {
+          if (!d.main) { await dropSide(d, rec.state, `after ${fails[failKey]} steps without progress`); fails[failKey] = 0; continue; }
           const rows = (await progressRows(d.id)).map((r) => `${r.text}: ${r.have}/${r.need}`).join(' | ');
           B(`chain stuck: "${d.name}" (${rec.state}) makes no progress after 4 steps [${rows}]`, true);
           end = `stuck on "${d.name}"`;

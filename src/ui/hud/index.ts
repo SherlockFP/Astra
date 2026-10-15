@@ -237,7 +237,13 @@ export function createHUD(ui: UI): HudApi {
   const zoneBanner = new ZoneBanner(banners);
   const levelBanner = new LevelUpBanner(banners);
   const questBanner = new QuestBanner(banners);
-  for (const w of [zoneBanner, new CountdownBanner(), levelBanner, questBanner, new InteractPrompt()]) {
+  // the banner lane sits in the top layer (above the windows, layer-panels 100): a quest dialog never hides a level-up (WoW)
+  const bannerLayer = div('hud-banners', ui.topLayer);
+  for (const w of [zoneBanner, levelBanner, questBanner]) {
+    add(w);
+    bannerLayer.appendChild(w.el);
+  }
+  for (const w of [new CountdownBanner(), new InteractPrompt()]) {
     add(w);
     root.appendChild(w.el);
   }

@@ -17,6 +17,9 @@
 .vig-dead { opacity: 0; transition: opacity 0.9s; background: radial-gradient(ellipse at 50% 50%, rgba(40, 0, 0, 0.2), rgba(20, 0, 0, 0.75)); backdrop-filter: grayscale(0.85) brightness(0.8); -webkit-backdrop-filter: grayscale(0.85) brightness(0.8); }
 .vig.dead .vig-dead { opacity: 1; }
 
+/* ---- banner lane host: top layer (above windows), zoomed like .hud so the banners keep their size ---- */
+.hud-banners { position: absolute; inset: 0; pointer-events: none; zoom: var(--ui-scale, 1); }
+
 /* ---- zone banner ---- (one centre banner lane: zone, quest and level-up banners all anchor at 9 %, the queue plays them one at a time, 2.5 s each) */
 .zone { position: absolute; left: 50%; top: 9%; transform: translateX(-50%); width: 520px; text-align: center; opacity: 0; pointer-events: none; }
 .zone.on { opacity: 1; }
