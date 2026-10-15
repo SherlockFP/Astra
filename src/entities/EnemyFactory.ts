@@ -9,6 +9,7 @@ import { getDirector, hooks } from '../ai/EnemyDirector';
 import { registerBossNet } from '../ai/bossNet';
 import { HOST_DYNAMIC_ID_BASE, type EntityId } from '../types/common';
 import type { World } from '../world/World';
+import type { Actor } from './Actor';
 
 export interface SpawnEnemyOpts {
   id?: EntityId;                // deterministic id (dungeon spawns) — default world.allocHostId()
@@ -19,8 +20,10 @@ export interface SpawnEnemyOpts {
   scaled?: boolean;
   /** Open-world camp spawn: trash / swarm take the low-level curve (data/lowLevelScaling.ts). Clients get it on the 'spawn' payload. */
   openWorld?: boolean;
-  /** Spawned mid-fight (adds): aggro immediately on the nearest player. */
+  /** Spawned mid-fight (adds): aggro immediately on `aggroTo`, else on the nearest player. */
   aggro?: boolean;
+  /** With `aggro`: the actor the spawn engages (a summon engages its summoner's target). null = no one; omitted = the nearest player within 400 m. */
+  aggroTo?: Actor | null;
   /** Scripted encounter (escort ambush): with `aggro` it engages at once, bypassing the pull cap and the village safe boxes (EnemyAI.scripted). */
   scripted?: boolean;
   // ---- enemies module additions ----
@@ -244,7 +247,10 @@ export async function spawnEnemy(world: World, defId: string, pos: THREE.Vector3
   if (authority) {
     if (opts.scripted && e.ai) e.ai.scripted = true;
     if (opts.aggro && e.ai && !e.dormant) {
-      const p = world.nearest(world.players, e.position, 400, (a) => !a.isDead);
+      // a target that died or left while the model loaded is skipped
+      const p = opts.aggroTo !== undefined
+        ? (opts.aggroTo && !opts.aggroTo.isDead && !opts.aggroTo.removed ? opts.aggroTo : null)
+        : world.nearest(world.players, e.position, 400, (a) => !a.isDead);
       if (p) e.ai.acquire(p, true);
     }
   }

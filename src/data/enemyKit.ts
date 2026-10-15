@@ -168,7 +168,7 @@ export const MECH = (id: string, name: string, proc: string, hpMult: number, ext
   });
 // ---- derived defs: a copy of a base def with its own scale / tint / HP / XP and special abilities (GDD_OPENWORLD §3.5-3.6)
 export interface Derive {
-  scale: number; tint?: number; hp: number; rank: EnemyRank; xp: number; loot: string; abilities: EnemyAbility[];
+  scale: number; tint?: number; hp: number; dmg?: number; rank: EnemyRank; xp: number; loot: string; abilities: EnemyAbility[];
   basic?: EnemyAbility; resist?: EnemyDef['resist']; ai?: EnemyDef['ai']; ccImmune?: boolean;
 }
 export function derive(id: string, name: string, base: string, o: Derive): void {
@@ -181,7 +181,7 @@ export function derive(id: string, name: string, base: string, o: Derive): void 
   ENEMIES[id] = {
     ...b, id, name, scale: b.scale * o.scale, tint: o.tint ?? b.tint, rank: o.rank, hpMult: o.hp, forces: 0, xp: o.xp, lootTable: o.loot,
     basicAttack: basic, attackRange: basic.range, attackCooldown: basic.cooldown, abilities: o.abilities,
-    resist: o.resist ?? b.resist, ai: o.ai ?? b.ai, ccImmune: o.ccImmune ?? b.ccImmune, leashRange: 40,
+    resist: o.resist ?? b.resist, ai: o.ai ?? b.ai, ccImmune: o.ccImmune ?? b.ccImmune, leashRange: 40, dmgMult: o.dmg ?? b.dmgMult,
   };
 }
 
