@@ -31,6 +31,10 @@
 // Output: screenshots in tools/qa/out/fh_<class>_<nn>_<label>.png (gitignored), tools/qa/out/fh_<class>.json (machine-readable run
 // summary: levels, quests, deaths, teleports), then a SUMMARY with BLOCKERS and UX notes.
 // Exit code 0 = every check passed for every class and no HARD blocker was recorded. Plain BLOCKER lines and UX notes are informational.
+// Player behaviour: below 50% HP the bar's heal / absorb / defensive skills (skills.ts tags) are cast; below 35% the health potion; before a
+// pull below 60% HP the character stands still until 80% (out-of-combat regen). Targets: one camp at a time (the camp being fought first),
+// then the nearest mob within level lvl-3..lvl+2. Fights 1 and 5 of each class get a screenshot ~3 s in (combat_f<n>); every fight is logged
+// in tools/qa/out/fh_<class>.json (fights: ttk, hpLeft); the end prints one CLASS line per class (deaths, kills, median TTK / HP left, L2-L4).
 // Environment note: when node_modules is a junction to another checkout, Vite answers 403 for the @fontsource files; that is noise.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -102,6 +106,11 @@ console.log('class     checks  deaths  teleports  L2     L3     L4     L5     qu
 for (const s of summaries) {
   const lv = (n) => (s.levelMin[n] != null ? `${s.levelMin[n]}m` : '-').padEnd(7);
   console.log(`${s.cls.padEnd(9)} ${String(s.checks).padEnd(7)} ${String(s.deaths).padEnd(7)} ${String(s.teleports).padEnd(10)} ${lv(2)}${lv(3)}${lv(4)}${lv(5)} ${String(s.questsDone).padEnd(7)} ${s.end}`);
+}
+const fmtN = (v, u) => (v == null ? '-' : `${v}${u}`);
+const lvT = (n, s) => (s.levelMin[n] != null ? `${s.levelMin[n]}m` : '-');
+for (const s of summaries) {
+  console.log(`CLASS ${s.cls}: deaths ${s.deaths}, kills ${s.kills}, median TTK ${fmtN(s.medianTtk, 's')}, median HP left ${fmtN(s.medianHpLeft, '%')}, L2 ${lvT(2, s)}, L3 ${lvT(3, s)}, L4 ${lvT(4, s)}`);
 }
 if (blockers.length) {
   console.log('Blockers / anomalies:');
@@ -379,23 +388,29 @@ async function journey(cls) {
 
   // ---- keys: from the game's binding tables and the character's skill bar ----
   let keys = null;
+  /** Bar skills whose game tags (skills.ts) say heal / absorb / defensive: the survival set. The other bar skills are the damage rotation. */
+  const HEAL_TAGS = ['heal', 'absorb', 'defensive'];
   const loadKeys = () =>
-    page.evaluate(async () => {
+    page.evaluate(async (healTags) => {
       const I = await import('/src/core/Input.ts');
       const S = await import('/src/data/skills.ts');
       const key = (action) => (I.SCHEME_BINDINGS.wow[action] ?? I.DEFAULT_BINDINGS[action] ?? [])[0] ?? null;
       const bar = window.G.character.save.skillBar ?? {};
       const skills = [];
+      const heals = [];
       let interrupt = null;
       for (const slot of ['rmb', 'q', 'e', 'r', 's1', 's2', 's3', 's4']) {
         const id = bar[slot];
         const k = key(`skill_${slot}`);
         if (!id || !k) continue;
-        if (S.SKILLS[id]?.behavior === 'interrupt') interrupt = { slot, key: k, id };
+        const def = S.SKILLS[id];
+        if (def?.behavior === 'interrupt') interrupt = { slot, key: k, id };
+        else if (def?.tags?.some((t) => healTags.includes(t))) heals.push({ slot, key: k, id, cast: def.castTime ?? 0 });
         else skills.push({ slot, key: k, id });
       }
-      return { skills, interrupt, potionHp: key('potionHp') };
-    });
+      heals.sort((a, b) => a.cast - b.cast); // instant heals first
+      return { skills, heals, interrupt, potionHp: key('potionHp') };
+    }, HEAL_TAGS);
 
   // ---- combat ----
   const enemyState = (id) =>
@@ -426,10 +441,39 @@ async function journey(cls) {
         if (e.isDead || e.removed || e.alive === false) continue;
         if (idl && !idl.includes(e.def?.id)) continue;
         const d = Math.hypot(e.position.x - p.x, e.position.z - p.z);
-        if (!best || d < best.d) best = { id: e.id, def: e.def?.id, name: e.def?.name, x: e.position.x, z: e.position.z, d, aggro: !!e.aggroed };
+        if (!best || d < best.d) best = { id: e.id, def: e.def?.id, name: e.def?.name, x: e.position.x, z: e.position.z, d, aggro: !!e.aggroed, level: e.level ?? 1, camp: e.packId ?? `solo:${e.id}` };
       }
       return best;
     }, ids ?? null);
+  /** Every living enemy of `ids` (null = any), nearest first, with its level and camp (packId). */
+  const aliveEnemies = (ids) =>
+    page.evaluate((idl) => {
+      const G = window.G;
+      const p = G.player.position;
+      const out = [];
+      for (const e of G.world.enemies) {
+        if (e.isDead || e.removed || e.alive === false) continue;
+        if (idl && !idl.includes(e.def?.id)) continue;
+        out.push({ id: e.id, def: e.def?.id, name: e.def?.name, x: e.position.x, z: e.position.z, d: Math.hypot(e.position.x - p.x, e.position.z - p.z), aggro: !!e.aggroed, level: e.level ?? 1, camp: e.packId ?? `solo:${e.id}` });
+      }
+      return out.sort((a, b) => a.d - b.d);
+    }, ids ?? null);
+  /**
+   * The next pull, one camp at a time: the camp being fought stays the target while one of its members lives within 40 m; otherwise the
+   * nearest in-band camp (mob level lvl-3..lvl+2), else the nearest mob of any level.
+   */
+  let campLock = null;
+  const pickTarget = async (ids) => {
+    const all = await aliveEnemies(ids);
+    if (!all.length) return null;
+    const lvl = (await snap()).lvl;
+    const locked = campLock ? all.filter((e) => e.camp === campLock && e.d <= 40) : [];
+    if (locked.length) return locked[0];
+    const band = all.filter((e) => e.level >= lvl - 3 && e.level <= lvl + 2);
+    const pick = (band.length ? band : all)[0];
+    campLock = pick.camp;
+    return pick;
+  };
   const lootAround = () =>
     page.evaluate(() => {
       const G = window.G;
@@ -468,19 +512,32 @@ async function journey(cls) {
     await closePanels();
   };
 
-  /** Fight one enemy with real input: steer + approach, right-click target + auto-attack, bar skills, interrupt casts, potion. */
+  /** Fight one enemy with real input: steer + approach, right-click target + auto-attack, bar skills, heal below 50%, potion below 35%, interrupt casts. */
   let skillIx = 0;
-  const fight = async (enemyId, maxMs = 45000) => {
+  let healIx = 0;
+  let fightSeq = 0; // fights of this class; fights 1 and 5 get a mid-combat screenshot at ~3 s
+  let healCasts = 0;
+  let restCount = 0;
+  const fightLog = []; // {n, def, level, res: dead | died | timeout, ttk (s), hpLeft (%)}
+  const fight = async (enemyId, maxMs = 45000, meta = {}) => {
     if (!keys) keys = await loadKeys();
+    const n = ++fightSeq;
     const t0 = Date.now();
+    const rec = (res, st) => fightLog.push({ n, def: meta.def ?? null, level: meta.level ?? null, res, ttk: +((Date.now() - t0) / 1000).toFixed(1), hpLeft: st ? Math.round((100 * st.pHp) / Math.max(1, st.pMax)) : null });
     let lastSkill = 0;
     let lastClick = 0;
     let lastKick = 0;
+    let lastHeal = 0;
     let potionAt = 0;
+    let shotDone = false;
     while (Date.now() - t0 < maxMs) {
       const s = await enemyState(enemyId);
-      if (s.pDead) { await releaseAll(); return 'died'; }
-      if (!s.alive) { await releaseAll(); return 'dead'; }
+      if (s.pDead) { await releaseAll(); rec('died', s); return 'died'; }
+      if (!s.alive) { await releaseAll(); rec('dead', s); return 'dead'; }
+      if (!shotDone && (n === 1 || n === 5) && Date.now() - t0 >= 3000) {
+        shotDone = true;
+        await shot(`combat_f${n}`);
+      }
       // a casting target is closed in on for the interrupt (kick reach is short); otherwise the class's fight distance
       const kickNow = !!keys.interrupt && s.casting;
       const want = kickNow ? 2.5 : melee ? 2.2 : 13;
@@ -507,19 +564,43 @@ async function journey(cls) {
           await tap(keys.skills[skillIx].key, 40);
         }
       }
-      if (s.pHp < s.pMax * 0.4 && now - potionAt > 6000 && keys.potionHp) {
+      if (s.pHp < s.pMax * 0.5 && keys.heals.length && now - lastHeal > 1500) {
+        lastHeal = now;
+        healCasts++;
+        await tap(keys.heals[healIx++ % keys.heals.length].key, 40);
+      }
+      if (s.pHp < s.pMax * 0.35 && now - potionAt > 6000 && keys.potionHp) {
         potionAt = now;
         await tap(keys.potionHp, 40);
       }
       await sleep(70);
     }
     await releaseAll();
+    rec('timeout', null);
     return 'timeout';
   };
 
+  /** Before a pull: below 60% HP the character stands still (out-of-combat regen runs 5 s after the last hit; the game has no food) until 80%. Aggro that walks in is fought. */
+  const restUp = async () => {
+    const s0 = await snap();
+    if (s0.dead || s0.hp >= s0.maxHp * 0.6) return;
+    restCount++;
+    await releaseAll();
+    const t0 = Date.now();
+    while (Date.now() - t0 < 150000) {
+      const s = await snap();
+      if (s.dead || s.hp >= s.maxHp * 0.8) break;
+      const near = await nearestEnemy(null);
+      if (near && near.aggro && near.d < 15) {
+        await fight(near.id, 30000);
+        await releaseAll();
+      } else await sleep(400);
+    }
+  };
   /** One kill: approach the nearest target, fight it, loot. Walks to the game's own kill area (guide arrow, layout camp) when none is loaded. */
   const stepKill = async (d, ids, label) => {
-    const en = await nearestEnemy(ids);
+    await restUp();
+    const en = await pickTarget(ids);
     if (!en || en.d > 110) {
       const g = await page.evaluate(async () => {
         const qm = await import('/src/ui/hud/questMarks.ts');
@@ -553,7 +634,7 @@ async function journey(cls) {
       return 'walked';
     }
     if (en.d > 20) await walkTo(en.x, en.z, { stop: 14, timeout: 30000, label: en.name ?? en.def });
-    const res = await fight(en.id);
+    const res = await fight(en.id, 45000, { def: en.def, level: en.level });
     if (res === 'died') {
       const around = await page.evaluate(() => {
         const G = window.G;
@@ -926,10 +1007,19 @@ async function journey(cls) {
   for (const e of errors) console.log('   ERR', e);
   const fin = await snap();
   console.log(`  final: lvl ${fin.lvl} xp ${fin.xp} gold ${fin.gold} kills ${stats.kills} deaths ${stats.deaths} teleports ${stats.teleports}`);
+  const med = (a) => {
+    if (!a.length) return null;
+    const b = [...a].sort((x, y) => x - y);
+    const m = b.length >> 1;
+    return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2;
+  };
+  const won = fightLog.filter((f) => f.res === 'dead');
   const summary = {
     cls, checks: results.length - checksAtStart, failed: results.slice(checksAtStart).filter((r) => !r.ok).length,
     deaths: stats.deaths, teleports: stats.teleports, kills: stats.kills, questsDone: stats.questsDone,
     levelMin, levelUps, end, chain: chainLog,
+    fights: fightLog, medianTtk: med(won.map((f) => f.ttk)), medianHpLeft: med(won.map((f) => f.hpLeft).filter((v) => v != null)),
+    rests: restCount, healCasts,
     end_level: fin.lvl,
   };
   fs.writeFileSync(path.join(OUT, `fh_${cls}.json`), JSON.stringify(summary, null, 2));
