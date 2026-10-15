@@ -1,5 +1,6 @@
 import { G } from '../../game/G';
 import type { DeathHitEntry, DeathRecap } from '../../types/deathLog';
+import { sourceLabel } from '../../combat/deathLog';
 import { DAMAGE_COLORS, ICON, div, fmtNum, h, iconEl, setClass, setText, span } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
 
@@ -72,7 +73,7 @@ export class DeathRecapBlock {
     const kb = r.killingBlow;
     if (kb) {
       span('', this.foot, 'Son darbe: ');
-      h('b', '', this.foot, `${kb.sourceName} · ${kb.ability}`);
+      h('b', '', this.foot, `${sourceLabel(kb.sourceName, kb.sourceLevel, kb.sourceDist)} · ${kb.ability}`);
       if (kb.avoidable) h('span', 'dr-chip hot', this.foot, 'Kaçınılabilirdi');
     } else span('', this.foot, 'Son darbe belirsiz (süreli hasar).');
     if (r.unused.length) span('dr-unused', this.foot, `Kullanılmayan: ${r.unused.join(', ')}`);
@@ -84,7 +85,7 @@ export class DeathRecapBlock {
     row.style.setProperty('--tc', DAMAGE_COLORS[hit.type] ?? '#d8d8e0');
     span('dr-t', row, fmtAgo(hit.t - r.at));
     const src = div('dr-src', row);
-    h('b', '', src, hit.sourceName);
+    h('b', '', src, sourceLabel(hit.sourceName, hit.sourceLevel, hit.sourceDist));
     span('dr-ab', src, ` · ${hit.ability}`);
     if (hit.avoidable) h('span', 'dr-chip', src, 'Kaçınılabilir');
     span('dr-amt', row, '−' + fmtNum(hit.amount));

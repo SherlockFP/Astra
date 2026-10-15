@@ -12,6 +12,10 @@ export interface DeathHitEntry {
   source: EntityId | null;
   /** Turkish display name of the source (enemy name, "Çevre" for hazards / unknown). */
   sourceName: string;
+  /** Level of the source when it is an enemy (absent for hazards and unknown sources). */
+  sourceLevel?: number;
+  /** Distance (m) from the source to the local player when the hit landed (absent when unknown). */
+  sourceDist?: number;
   /** Ability name of the hit (the enemy ability, or "Saldırı" for a plain attack). */
   ability: string;
   /** Final damage taken. */
@@ -46,7 +50,7 @@ export interface DeathRecap {
   /** The hit that brought the player to 0 HP (null when unknown, e.g. a DoT tick). */
   killingBlow: DeathHitEntry | null;
   /** Top 3 damage sources inside the window, most damage first. */
-  topSources: { source: EntityId | null; name: string; amount: number }[];
+  topSources: { source: EntityId | null; name: string; amount: number; level?: number; dist?: number }[];
   /** Total damage taken inside the window. */
   taken: number;
   /** Total effective healing inside the window. */

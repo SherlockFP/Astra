@@ -5,6 +5,17 @@ import type { DeathHealEntry, DeathHitEntry, DeathRecap } from '../types/deathLo
 export const DEATH_LOG_WINDOW = 10;
 export const DEATH_LOG_MAX = 40;
 
+/**
+ * Label of a damage source in the death recap and the chat death line: "Sv 2 Goblin Yağmacı · 12 m". The level and the distance
+ * are shown only when they are known (hazards and unknown sources have neither); the name falls back to "Düşman".
+ */
+export function sourceLabel(name: string | null | undefined, level?: number | null, dist?: number | null): string {
+  const base = typeof name === 'string' && name.trim() ? name.trim() : 'Düşman';
+  const lv = typeof level === 'number' && Number.isFinite(level) && level > 0 ? `Sv ${Math.round(level)} ` : '';
+  const d = typeof dist === 'number' && Number.isFinite(dist) && dist >= 0 ? ` · ${Math.round(dist)} m` : '';
+  return `${lv}${base}${d}`;
+}
+
 /** Fixed-capacity ring: the oldest entry is overwritten first. `toArray()` returns oldest -> newest. */
 export class RingBuffer<T> {
   private readonly buf: (T | undefined)[];
@@ -74,13 +85,16 @@ export class DeathLog {
     const heals = this.healsSince(now, windowSec);
     const killingBlow = hits.length ? hits[hits.length - 1] : null;
 
-    const bySource = new Map<string, { source: EntityId | null; name: string; amount: number }>();
+    const bySource = new Map<string, { source: EntityId | null; name: string; amount: number; level?: number; dist?: number }>();
     let taken = 0;
     for (const h of hits) {
       taken += h.amount;
       const key = h.source === null ? '#env' : String(h.source);
+      // level and distance come from the latest hit of the source (the enemy may have moved closer or farther)
       const cur = bySource.get(key) ?? { source: h.source, name: h.sourceName, amount: 0 };
       cur.amount += h.amount;
+      if (h.sourceLevel !== undefined) cur.level = h.sourceLevel;
+      if (h.sourceDist !== undefined) cur.dist = h.sourceDist;
       bySource.set(key, cur);
     }
     const topSources = [...bySource.values()].sort((a, b) => b.amount - a.amount).slice(0, 3);

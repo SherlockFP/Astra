@@ -12,7 +12,7 @@ import { ComboTracker } from './ComboTracker';
 import { SpecialState, sp, hasSp, specHooksOf, weaponAvg } from './specials';
 import { skillRankDamageMult } from './skillRanks';
 import { COMBAT_FEEL, FEEL, FEEL_TABLE, KNOCKBACK, SLOWMO, SLOWMO_GAP, TYPE_COLORS, feelBeat, freezeActors, knockbackDuration, massFactor, resolveHitFeel, vfxScale, weaponKindOf, type HitWeight } from './feel';
-import { DeathLog } from './deathLog';
+import { DeathLog, sourceLabel } from './deathLog';
 import { GUARD_BREAK_STUN, PARRY_WINDOW, GuardState, guardCost, guardProfileOf } from './guard';
 import { blockChanceCap, protectorCheat, specOf, warlordRageMult } from './specs';
 import { tuneOf } from '../data/specTuning';
@@ -1871,8 +1871,9 @@ export class Combat {
     // death recap (GDD_V2 §8.5): every hit that landed, with what the mitigation removed and whether it was avoidable
     const avoidable = !hit.unavoidable && !dot && !noDamage;
     if (amount > 0) {
+      const src = this.sourceOf(hit.sourceId, p);
       this.deathLog.recordHit({
-        t: this.clock, source: hit.sourceId, sourceName: this.nameOfSource(hit.sourceId), ability: hit.abilityName ?? 'Saldırı',
+        t: this.clock, source: hit.sourceId, sourceName: src.name, sourceLevel: src.level, sourceDist: src.dist, ability: hit.abilityName ?? 'Saldırı',
         amount, mitigated: Math.max(0, rawIn - amount), type, avoidable, hpPct: p.hp / Math.max(1, p.maxHp),
       });
     }
@@ -2151,7 +2152,7 @@ export class Combat {
       G.events.emit('death:recap', rc);
       // death cause in the chat log (WoW names the killer): the biggest damage source of the window and the killing blow
       const top = rc.topSources[0];
-      if (top) G.events.emit('net:chat', { from: '', text: `Öldün: ${top.name} ${Math.round(top.amount)} hasar verdi (son ${rc.windowSec} sn). Son vuruş: ${rc.killingBlow?.ability ?? '?'}.`, channel: 'system' });
+      if (top) G.events.emit('net:chat', { from: '', text: `Öldün: ${sourceLabel(top.name, top.level, top.dist)}: ${Math.round(top.amount)} hasar (son ${rc.windowSec} sn). Son vuruş: ${rc.killingBlow?.ability ?? '?'}.`, channel: 'system' });
     } catch (e) { console.error('[combat] death recap failed', e); }
     if (!G.net || G.net.isAuthority) {
       try { G.mplus.onPlayerDeath(p); } catch (e) { console.error('[combat] mplus.onPlayerDeath failed', e); }
@@ -2163,15 +2164,19 @@ export class Combat {
     void killerId;
   }
 
-  /** Turkish display name of a damage source for the death recap ("Çevre" for hazards and unknown sources). */
-  private nameOfSource(id: EntityId | null): string {
-    if (id === null) return 'Çevre';
+  /**
+   * Turkish name, level and distance (to `from`) of a damage source for the death recap ("Çevre" for hazards and unknown sources).
+   * Level and distance are only set for an enemy or player entity that is found.
+   */
+  private sourceOf(id: EntityId | null, from: Player): { name: string; level?: number; dist?: number } {
+    if (id === null) return { name: 'Çevre' };
     try {
       const e = G.world?.get<Enemy>(id);
-      if (e && e.kind === 'enemy') return e.def.name || 'Düşman';
-      if (e && e.kind === 'player') return 'Oyuncu';
+      const dist = e ? Math.hypot(e.position.x - from.position.x, e.position.z - from.position.z) : undefined;
+      if (e && e.kind === 'enemy') return { name: e.def.name || 'Düşman', level: e.level, dist };
+      if (e && e.kind === 'player') return { name: 'Oyuncu', dist };
     } catch { /* ignore */ }
-    return 'Düşman';
+    return { name: 'Düşman' };
   }
 
   /** Defensives that were ready at death (GDD_V2 §8.5 "Kullanılmayan:"): a potion with stock and off cooldown, a dodge charge. */

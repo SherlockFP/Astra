@@ -346,6 +346,26 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   ok('esc.completes', run.state === 'done' && log.ambush.length === 2, `ambushes ${log.ambush.length}, state ${run.state}`);
   ok('esc.ticks-only-alive', log.ticks.every((t) => t[1] === true));
 
+  // escort NPC HP: ambushers in contact hit it, it regenerates between waves, at 0 HP the run fails back to the start at full HP
+  const hl = { ticks: [], alive: 0, near: 0, dist: 0 };
+  const hdeps = { playerDist: () => hl.dist, ambush: () => { hl.alive = 2; hl.near = 2; }, ambushAlive: () => hl.alive, attackersNear: () => hl.near, tick: (s, a) => hl.ticks.push([s, a]), done: () => false };
+  const hrun = new EscortRun({ path, triggers: [1], speed: 10, leash: 25, failSec: 3, hp: 100, attackerDps: 5, regen: 10 }, hdeps);
+  hrun.start();
+  hrun.update(3);
+  ok('esc.hp-untouched-before-contact', hrun.hp === 100 && hrun.state === 'ambush', `hp ${hrun.hp}, ${hrun.state}`);
+  hrun.update(2);
+  ok('esc.hp-contact-damage', Math.abs(hrun.hp - 80) < 1e-9, `hp ${hrun.hp} (2 ambushers x 5 dps x 2 s)`);
+  hl.near = 0;
+  hl.alive = 0;
+  hrun.update(1);
+  ok('esc.hp-regen-between-waves', hrun.state === 'walking' && Math.abs(hrun.hp - 90) < 1e-9, `hp ${hrun.hp}, ${hrun.state}`);
+  hl.near = 2;
+  hl.alive = 2;
+  let fallGuard = 0;
+  while (hrun.state !== 'idle' && fallGuard++ < 60) hrun.update(1);
+  ok('esc.hp-zero-fails-run', hrun.state === 'idle' && hrun.hp === 100 && hrun.pos.x === 0 && hl.ticks.some((t) => t[1] === false), `state ${hrun.state}, hp ${hrun.hp}`);
+  ok('esc.hp-pct', new EscortRun({ path, triggers: [], speed: 1, leash: 25, failSec: 3 }, hdeps).hpPct === 1 && hrun.hpPct === 1);
+
   const far = { ticks: [], ambush: 0, dist: 40 };
   const fdeps = { playerDist: () => far.dist, ambush: () => { far.ambush++; }, ambushAlive: () => 0, tick: (s, a) => far.ticks.push([s, a]), done: () => false };
   const frun = new EscortRun({ path, triggers: [1, 2], speed: 10, leash: 25, failSec: 3 }, fdeps);
@@ -381,13 +401,16 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   ok('place.unknown-region-skipped', !a.some((s) => s.region === 'rZ'));
   const real = questPropSpots(stub, QUESTS.filter((q) => q.region && /^r[123]$/.test(q.region)));
   ok('place.real-quests', real.length >= 20 && real.every((s) => questPropKind(s.target)), `${real.length} real spots`);
-  const path = escortPath(stub, 'pe', 'r1');
-  ok('place.escort-path', !!path && path.length >= 2, path ? `${path.length} waypoints` : 'none');
-  ok('place.escort-gaps', !!path && path.every((p, i) => i === 0 || Math.hypot(p.x - path[i - 1].x, p.z - path[i - 1].z) >= 18));
-  // the waves must come inside the 90 s protection: every segment at most 40 m (the 3 real escort paths of the stub region)
-  const short = [0, 1, 2, 3].map((i) => escortPath(stub, `pe_short${i}`, 'r1'));
-  ok('place.escort-short-segments', short.every((p) => !!p && p.slice(1).every((q, k) => Math.hypot(q.x - p[k].x, q.z - p[k].z) <= 40)), short.map((p) => p?.length ?? 0).join('/') + ' waypoints');
-  ok('place.escort-no-region', escortPath(stub, 'pe2', 'rZ') === null);
+  // escort routes are fixed data (data/world/escort_routes.ts): the runtime only snaps each waypoint to walkable ground (snapWorld)
+  const snapStub = { ...stub, snapWorld: (x, z) => ({ x: x + 1, z }) };
+  const escRoutes = ['mq_04_samani_sustur', 'sq_r1_ch02_gozcu_avi'].map((id) => escortPath(snapStub, id));
+  ok('place.escort-routes', escRoutes.every((p) => !!p && p.length >= 3), escRoutes.map((p) => p?.length ?? 0).join('/') + ' waypoints');
+  ok('place.escort-snapped', !!escRoutes[0] && escRoutes[0][0].x === 778 && escRoutes[0][0].z === 245, JSON.stringify(escRoutes[0]?.[0]));
+  ok('place.escort-unknown-quest', escortPath(snapStub, 'pe2') === null);
+  const len = (p) => p.slice(1).reduce((s, q, k) => s + Math.hypot(q.x - p[k].x, q.z - p[k].z), 0);
+  ok('place.escort-length', escRoutes.every((p) => len(p) <= 180), escRoutes.map((p) => Math.round(len(p))).join('/') + ' m (max 180)');
+  // the waves must come inside the protection time: every segment at most 40 m
+  ok('place.escort-segments', escRoutes.every((p) => p.slice(1).every((q, k) => Math.hypot(q.x - p[k].x, q.z - p[k].z) <= 40)));
 }
 
 // ------------------------------------------------------------------------------------------------ wiring (converted quests)
@@ -497,7 +520,7 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   }
   const walked = Math.hypot(live.position.x - start.x, live.position.z - start.z);
   ok('escort.npc-walks', walked > 20, `moved ${walked.toFixed(1)} m`);
-  ok('escort.ambush-spawned', peakAmbush >= 3, `peak ${peakAmbush} ambushers`);
+  ok('escort.ambush-spawned', peakAmbush >= 2, `peak ${peakAmbush} ambushers (a wave is 1-2)`);
   ok('escort.completes', qs.state(MQ) === 'ready' && qs.progressRows(MQ)[0].done, `state ${qs.state(MQ)} after ${frames} steps`);
   ok('escort.decoy-never-moves', decoy.position.x === decoy0.x && decoy.position.z === decoy0.z);
   G.net = netWas;

@@ -84,7 +84,7 @@ const EXTRA_MAIN: Record<string, Extra> = {
     // defend (escort, the event of the chain): the scout walks the r1 road while ambushers come in waves. The shaman kills stay in the open world.
     objectives: [escort(90, 'Yaralı gözcüyü 90 sn koru (üç dalga pusu)')], region: 'r1', choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
     giver: 'npc_o_gozcu', turnIn: 'npc_o_gozcu',
-    offer: 'Yaralı gözcü kampa dönmek istiyor, yolda goblin pususu var. Onu Orta Karakol\'a kadar koru; sonra Gözcü Selim\'e dön.', progress: 'Yaralı gözcüyü 90 sn koru.', done: 'Gözcü kurtuldu. Pusuya düşenler dağıldı.',
+    offer: 'Yaralı gözcü kampa dönmek istiyor, yolda goblin pususu var. Onu Gümüşdere Köyü\'ne kadar koru; sonra Orta Karakol\'da Gözcü Selim\'e dön.', progress: 'Yaralı gözcüyü 90 sn koru.', done: 'Gözcü kurtuldu. Pusuya düşenler dağıldı.',
   },
   mq_05_yagmaci_kampi: {
     giver: 'npc_o_gozcu', turnIn: 'npc_o_gozcu', objectives: [boss('mb_girtlak', 1, "Yağmacı Başı Gırtlak'ı öldür")], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },

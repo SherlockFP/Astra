@@ -8,14 +8,16 @@ import type { Enemy } from '../../entities/Enemy';
 import { RNG, hashString } from '../../core/utils';
 import { toast } from '../../systems/notify';
 import { EscortRun, type EscortDeps, type Pt2 } from './QuestEscortRun';
-import { distM, worldToTile, type Pt, type WorldCtx } from './util';
+import { ESCORT_ROUTES } from '../../data/world/escort_routes';
+import { distM, type Pt, type WorldCtx } from './util';
 
 /**
  * Quest props and escorts of the open world (WoW-style objectives, data/world/quests_variety.ts):
  * - interact props (qo_sack / qo_crystal / qo_banner) and use altars (qt_*) per quest region, at deterministic spots
  *   (questPropSpots): max(count) + 1 interact props per (region, target), one altar per (region, target);
- * - escort quests: an escort NPC at the start of a short path (escortPath); F starts the walk (QuestEscortRun), each trigger
- *   waypoint spawns an ambush of 3 enemies (host only: other peers have no enemy spawns, so they walk without ambushers).
+ * - escort quests: an escort NPC at the start of its route (data/world/escort_routes.ts, inside the quest's level ring); F starts
+ *   the walk (QuestEscortRun), each trigger waypoint spawns a wave of 1-2 quest-level ambushers (host only: other peers have no
+ *   enemy spawns, so they walk without ambushers). The ambushers hit the escort while they stand next to it.
  * Every peer places the same props; progress and the empty timers are per character. OWNER: scenes module.
  */
 
@@ -31,6 +33,8 @@ export interface PropSpot {
 
 /** The part of WorldCtx the placement needs (a test can pass a stub). */
 export type SpotCtx = Pick<WorldCtx, 'regionRect' | 'regionAtTile' | 'snapTile' | 'seed'>;
+/** The part of WorldCtx an escort route needs (snapping its waypoints to walkable ground). */
+export type EscortCtx = Pick<WorldCtx, 'snapWorld'>;
 
 /** Walkable point of a random tile of the region, deterministic for (seed, key). Null when no tile of the region was found. */
 function pickPoint(ctx: SpotCtx, region: string, key: string): Pt | null {
@@ -75,37 +79,15 @@ export function questPropSpots(ctx: SpotCtx, defs: readonly QuestDef[]): PropSpo
   return out;
 }
 
-/** Longest escort segment (m). The protection timer counts walking seconds (the quest's `count`, 90 s on the main chain at 2 m/s = 180 m),
- *  so the waves must come within it: three segments of at most 40 m reach the last wave in about 60 s. */
-const ESCORT_MAX_SEGMENT_M = 40;
-
-/**
- * Escort path of a quest: a start point and `segments` further waypoints, each `minGap`..`maxGap` m from the previous one, all in the
- * region. The ambush waves fire at the waypoints while the escort walks, so the path must reach its last waypoint before the timer
- * ends. A region without a point in the band takes the nearest point beyond minGap.
- */
-export function escortPath(ctx: SpotCtx, questId: string, region: string, segments = 3, minGap = 18, maxGap = ESCORT_MAX_SEGMENT_M): Pt2[] | null {
-  const start = pickPoint(ctx, region, `escort:${questId}:0`);
-  if (!start) return null;
-  const path: Pt2[] = [{ x: start.x, z: start.z }];
-  for (let s = 1; s <= segments; s++) {
-    const prev = path[s - 1];
-    let next: Pt | null = null;
-    // candidates are drawn around the previous waypoint (direction and distance in the band), so a big region cannot leave the band empty
-    for (let t = 0; t < 60 && !next; t++) {
-      const rng = new RNG(hashString(`${ctx.seed}:escort:${questId}:${s}:${t}`));
-      const a = rng.next() * Math.PI * 2;
-      const d = minGap + rng.next() * (maxGap - minGap);
-      const tx = worldToTile(prev.x + Math.cos(a) * d);
-      const tz = worldToTile(prev.z + Math.sin(a) * d);
-      if (ctx.regionAtTile(tx, tz)?.id !== region) continue;
-      const p = ctx.snapTile(tx, tz, 8);
-      const got = distM(p.x, p.z, prev.x, prev.z);
-      if (got >= minGap && got <= maxGap) next = p;
-    }
-    if (!next) break;
-    path.push({ x: next.x, z: next.z });
-  }
+/** Route of an escort quest (data/world/escort_routes.ts): every waypoint snapped to walkable ground near its spot (6 m). Null for a quest
+ *  without a route. The routes are fixed data, checked by tools/content-check.mjs (ring band, length, camp clearance). */
+export function escortPath(ctx: EscortCtx, questId: string): Pt2[] | null {
+  const def = ESCORT_ROUTES[questId];
+  if (!def) return null;
+  const path = def.route.map(([x, z]) => {
+    const p = ctx.snapWorld(x, z, 6);
+    return { x: p.x, z: p.z };
+  });
   return path.length >= 2 ? path : null;
 }
 
@@ -113,13 +95,13 @@ export function escortPath(ctx: SpotCtx, questId: string, region: string, segmen
 const ESCORT_SPEED = 2;
 const ESCORT_LEASH_M = 25;
 const ESCORT_FAIL_SEC = 8;
-/** Ambushers per trigger waypoint. */
-const AMBUSH_SIZE = 3;
 
 interface EscortUnit {
   questId: string;
   level: number;
   ambushDef: string;
+  /** Ambushers per wave (1-2). */
+  waveSize: number;
   npc: EscortNpc;
   run: EscortRun;
   enemies: Enemy[];
@@ -158,13 +140,17 @@ export class WorldQuestProps {
 
     for (const d of defs) {
       if (!d.objectives.some((o) => o.kind === 'escort')) continue;
-      const path = escortPath(ctx, d.id, d.region!);
-      if (!path) continue;
-      const killTarget = d.objectives.find((o) => o.kind === 'kill' && o.target)?.target;
+      const route = ESCORT_ROUTES[d.id];
+      const path = escortPath(ctx, d.id);
+      if (!route || !path) {
+        console.warn(`[world] escort quest ${d.id} has no route (data/world/escort_routes.ts)`);
+        continue;
+      }
       const unit: EscortUnit = {
         questId: d.id,
         level: Math.max(1, d.level),
-        ambushDef: killTarget ?? 'ow_bandit',
+        ambushDef: route.ambushDef,
+        waveSize: Math.max(1, Math.min(2, route.waveSize)),
         npc: null as unknown as EscortNpc,
         run: null as unknown as EscortRun,
         enemies: [],
@@ -178,11 +164,21 @@ export class WorldQuestProps {
         },
         ambush: (x, z) => this.ambush(unit, x, z),
         ambushAlive: () => unit.pending + unit.enemies.filter((e) => !e.isDead && !e.removed).length,
+        attackersNear: (x, z, reach) => this.attackersNear(unit, x, z, reach),
         tick: (seconds, alive) => G.quests?.tickEscort(seconds, alive),
         done: () => !!G.quests?.progressRows(d.id).some((r) => r.kind === 'escort' && r.done),
       };
       unit.run = new EscortRun(
-        { path, triggers: path.map((_, i) => i).slice(1), speed: ESCORT_SPEED, leash: ESCORT_LEASH_M, failSec: ESCORT_FAIL_SEC },
+        {
+          path,
+          triggers: route.triggers.filter((i) => i > 0 && i < path.length),
+          speed: ESCORT_SPEED,
+          leash: ESCORT_LEASH_M,
+          failSec: ESCORT_FAIL_SEC,
+          hp: route.hp,
+          attackerDps: route.attackerDps,
+          regen: route.regen,
+        },
         deps,
       );
       unit.npc = new EscortNpc(
@@ -229,13 +225,20 @@ export class WorldQuestProps {
   private promptOf(u: EscortUnit): string {
     if (u.run.state === 'idle') return 'eskortu başlat [F]';
     if (u.run.state === 'done') return 'görev tamam';
-    return 'yolda';
+    return `yolda · can %${Math.round(u.run.hpPct * 100)}`;
   }
 
-  /** Ambush of one trigger waypoint: AMBUSH_SIZE enemies around it. Peers that cannot spawn enemies get null and no ambushers. */
+  /** Ambushers alive within `reach` m of (x, z): they hit the escort while they stand next to it. */
+  private attackersNear(u: EscortUnit, x: number, z: number, reach: number): number {
+    let n = 0;
+    for (const e of u.enemies) if (!e.isDead && !e.removed && distM(e.position.x, e.position.z, x, z) <= reach) n++;
+    return n;
+  }
+
+  /** Ambush of one trigger waypoint: `waveSize` enemies around it. Peers that cannot spawn enemies get null and no ambushers. */
   private ambush(u: EscortUnit, x: number, z: number): void {
-    for (let i = 0; i < AMBUSH_SIZE; i++) {
-      const a = (i / AMBUSH_SIZE) * Math.PI * 2 + u.rng.next();
+    for (let i = 0; i < u.waveSize; i++) {
+      const a = (i / u.waveSize) * Math.PI * 2 + u.rng.next();
       const p = this.ctx.snapWorld(x + Math.cos(a) * 6, z + Math.sin(a) * 6, 6);
       u.pending++;
       spawnEnemy(this.ctx.world, u.ambushDef, p, { level: u.level, aggro: true }).then(
