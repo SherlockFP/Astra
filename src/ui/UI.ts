@@ -10,6 +10,7 @@ import './styles/hud-meter.css';
 import './styles/hud-bubbles.css';
 import { G } from '../game/G';
 import { clearLocalHardTarget } from '../game/PlayerController';
+import { isTextTarget, keysBlocked, npcTooFar, skillKeysBlocked, type KeysGateState } from '../core/inputGate';
 import type { ItemInstance } from '../types/items';
 import type { SkillDef } from '../types/skills';
 import type { Actor } from '../entities/Actor';
@@ -136,6 +137,8 @@ export class UI {
    * held-key set still holds 'Escape' from a release the page never got (pointer lock exit, focus change); this flag does not.
    */
   private escQueued = false;
+  /** The NPC whose talk window is open (bindNpcPanel); the window closes once the player is out of NPC_TETHER_RANGE. */
+  private npcTether: { panelId: string; npc: { position: { x: number; z: number }; removed?: boolean } } | null = null;
   /** The engine canvas whose size feeds viewW / viewH, and the observer that follows its size changes. */
   private viewCanvas: HTMLCanvasElement | null = null;
   private viewRO: ResizeObserver | null = null;
@@ -355,6 +358,50 @@ export class UI {
     if (this.hud?.editing) return true;
     for (const rec of this.panels.values()) if (rec.panel.isOpen) return true;
     return false;
+  }
+
+  /**
+   * True when the keyboard game actions (movement, F interact) must be ignored. WoW: open windows do NOT block them; only a
+   * text field, the menu / loading screens, the layout editor and a modal confirm box do (inputGate.ts).
+   */
+  gameKeysBlocked(): boolean {
+    return keysBlocked(this.gateState());
+  }
+
+  /** WoW: skill and potion keys (ActionBar hotkeys, casting) follow the movement rules, plus the game menu (inputGate.ts). */
+  skillKeysBlocked(): boolean {
+    return skillKeysBlocked(this.gateState());
+  }
+
+  private gateState(): KeysGateState {
+    return {
+      uiMode: this.mode,
+      editing: !!this.hud?.editing,
+      modal: this.modal.isOpen,
+      chatFocused: !!this.hud?.chat.isFocused,
+      textFocused: isTextTarget(typeof document !== 'undefined' ? document.activeElement : null),
+      panelsOpen: this.openOrder.length,
+      gameMenuOpen: this.isPanelOpen('gameMenu'),
+    };
+  }
+
+  /** WoW: a talk window (gossip, quest, vendor) belongs to the NPC that opened it and closes when the player walks away. */
+  bindNpcPanel(panelId: string, npc: { position: { x: number; z: number }; removed?: boolean }): void {
+    this.npcTether = { panelId, npc };
+  }
+
+  private checkNpcTether(): void {
+    const t = this.npcTether;
+    if (!t) return;
+    if (!this.isPanelOpen(t.panelId) || t.npc.removed) {
+      this.npcTether = null;
+      return;
+    }
+    const p = G.player;
+    if (!p || !npcTooFar(p.position, t.npc.position)) return;
+    this.npcTether = null;
+    this.closePanel(t.panelId);
+    this.toast('Çok uzak', 'warning');
   }
 
   // ---- toasts ----
@@ -593,6 +640,7 @@ export class UI {
     if (cam) cam.updateMatrixWorld();
 
     this.handleHotkeys(now);
+    this.checkNpcTether();
 
     // mirror panel state changes made by the panels themselves; tick open panels
     for (const rec of this.panels.values()) {

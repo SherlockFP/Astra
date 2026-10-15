@@ -8,6 +8,8 @@
  *   is not marked `ui-passthrough`), mouse button presses are NOT delivered to game actions.
  * - While a text field is focused, keyboard actions are suppressed (chat, character name).
  */
+import { isTextTarget } from './inputGate';
+
 export type InputAction =
   | 'moveForward' | 'moveBack' | 'moveLeft' | 'moveRight' | 'jump' | 'dodge' | 'walk'
   | 'skill_lmb' | 'skill_rmb' | 'skill_q' | 'skill_e' | 'skill_r' | 'skill_s1' | 'skill_s2' | 'skill_s3'
@@ -426,12 +428,6 @@ export function codeLabel(code: string): string {
     ScrollLock: 'ScrLk', Pause: 'Pause', ContextMenu: 'Menü',
   };
   return map[code] ?? code;
-}
-
-function isTextTarget(t: EventTarget | null): boolean {
-  const el = t as HTMLElement | null;
-  if (!el || !el.tagName) return false;
-  return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable;
 }
 
 function isUITarget(t: EventTarget | null): boolean {

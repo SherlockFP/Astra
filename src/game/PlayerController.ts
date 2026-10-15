@@ -431,7 +431,10 @@ export class PlayerController {
     this.prevUiOpen = uiOpen;
     this.updatePointerLock(dt, uiOpen, action);
 
-    const canInput = this.enabled && !dead && !uiOpen;
+    // WoW: open windows never stop walking, jump, F interact or mouse-look. Only text fields, menus, the layout editor and a modal
+    // do (G.ui.gameKeysBlocked). Skills, targets, guard and auto-attack still wait for no window (canInput).
+    const moveOk = this.enabled && !dead && !G.ui?.gameKeysBlocked?.();
+    const canInput = moveOk && !uiOpen;
     if (!canInput) {
       this.dodgeBuf = -1;
       this.tabDownAt = -1;
@@ -442,9 +445,11 @@ export class PlayerController {
       this.seenBlur = input.blurSeq;
       this.onWindowBlur();
     }
-    this.updateWalkAndAutorun(canInput);
+    this.updateWalkAndAutorun(moveOk);
     // mouse buttons only act on the world when the cursor is captured (action) or free over the game canvas (classic)
-    const mouseOk = canInput && (action ? input.isLocked() : true);
+    // WoW: skills and potions cast with windows open; only text fields, the game menu, the layout editor and a modal stop them
+    const skillsOk = this.enabled && !dead && !G.ui?.skillKeysBlocked?.();
+    const mouseOk = skillsOk && (action ? input.isLocked() : true);
 
     if (canInput && action && input.pressed('toggleLock')) {
       this.cam.shiftLock = !this.cam.shiftLock;
@@ -453,7 +458,7 @@ export class PlayerController {
 
     // WoW mouse (CONTROLS_WOW §4): gesture flags for the camera and movement, clicks resolved on release, lock, cursor.
     // Runs on dead frames too (canInput is false there), so a held lock is released.
-    if (!action) this.updateWowMouse(dt, canInput, uiOpen);
+    if (!action) this.updateWowMouse(dt, moveOk, uiOpen);
 
     if (dead) {
       this.onDeadFrame(dt);
@@ -478,47 +483,47 @@ export class PlayerController {
     G.combat?.guardInput(p, canInput && input.down('guard'), canInput && input.pressed('guard'), !!G.skills?.isBusy(p));
 
     // ---------------- dodge ----------------
-    if (canInput && input.pressed('dodge')) this.pressDodge(true);
-    else if (canInput && this.dodgeBuf > this.time) this.pressDodge(false);
+    if (moveOk && input.pressed('dodge')) this.pressDodge(true);
+    else if (moveOk && this.dodgeBuf > this.time) this.pressDodge(false);
     this.updateDodge(dt);
 
     // ---------------- jump ----------------
-    if (canInput && input.pressed('jump')) this.tryJump();
+    if (moveOk && input.pressed('jump')) this.tryJump();
 
     // ---------------- movement ----------------
-    let axis = canInput && !this.dodge ? this.moveAxisNow() : { x: 0, y: 0 };
+    let axis = moveOk && !this.dodge ? this.moveAxisNow() : { x: 0, y: 0 };
     if (!action) {
       // WoW (§4.1): LMB + RMB runs forward unless S is held (A/D still strafe)
-      if (canInput && this.wowOut.both && !input.down('moveBack')) axis = { x: axis.x, y: 1 };
+      if (moveOk && this.wowOut.both && !input.down('moveBack')) axis = { x: axis.x, y: 1 };
       // WoW auto-attack driver (§8): arm / disarm / swing decided per frame, before movement and facing
       this.updateAuto(dt, canInput, axis);
       // WoW camera smart pivot (§5, §7.4): only while steering forward (strafe and back-pedal leave it off), and not while one
       // mouse button orbits or mouselooks. A both-button run counts as forward.
       const orbitOnly = this.wowOut.orbit && !this.wowOut.both;
-      this.cam.setFollow(canInput && !this.dodge && axis.y > 0.5 && Math.abs(axis.x) < 0.71 && !orbitOnly && !p.isDead, p.yaw + Math.PI, this.dispSpeed);
+      this.cam.setFollow(moveOk && !this.dodge && axis.y > 0.5 && Math.abs(axis.x) < 0.71 && !orbitOnly && !p.isDead, p.yaw + Math.PI, this.dispSpeed);
     } else {
       // auto-follow (GDD_LIFE §4.4): only while steering straight forward, with nothing locked
-      this.cam.setFollow(canInput && !this.dodge && axis.y > 0.5 && Math.abs(axis.x) < 0.5 && !this.hardTarget && !p.isDead, p.yaw + Math.PI, this.dispSpeed);
+      this.cam.setFollow(moveOk && !this.dodge && axis.y > 0.5 && Math.abs(axis.x) < 0.5 && !this.hardTarget && !p.isDead, p.yaw + Math.PI, this.dispSpeed);
     }
     // void respawn: the held key must not walk the player straight back to the edge (fade-in + 0.4 s, §11)
     if (this.time < this.inputLockUntil) {
       axis = { x: 0, y: 0 };
       this.autoRunOn = false;
     }
-    this.mount.update(dt, canInput, axis.x !== 0 || axis.y !== 0);
+    this.mount.update(dt, moveOk, axis.x !== 0 || axis.y !== 0);
     this.pet.update(dt);
-    this.stepMovement(dt, axis, canInput, action);
+    this.stepMovement(dt, axis, moveOk, action);
     this.updateFall(dt);
 
     // ---------------- skills / potions / interact ----------------
-    if (canInput) {
+    if (skillsOk) {
       this.handleSkills(dt, aim, mouseOk, action);
       if (input.pressed('potionHp')) G.combat.usePotion('hp');
       if (input.pressed('potionMp')) G.combat.usePotion('mp');
     } else {
       this.pending = null;
     }
-    this.updateInteract(dt, canInput);
+    this.updateInteract(dt, moveOk);
 
     // ---------------- animation + sound ----------------
     this.updateLocomotionAnim(dt, axis);
@@ -1750,7 +1755,7 @@ export class PlayerController {
       dy: input.mouseDY,
       ndcX: input.ndcX,
       ndcY: input.ndcY,
-      enabled: canInput && !this.mouseSuspended,
+      enabled: canInput && !this.mouseSuspended, // canInput here is moveOk: mouse-look works with windows open
       aiming: G.skills.isAiming(p),
     });
     this.wowOut = out;
@@ -1759,7 +1764,7 @@ export class PlayerController {
     if (out.cancelAim) G.skills.cancelAim(p);
     if (out.clickL) this.wowClickL(out.clickL.ndcX, out.clickL.ndcY);
     if (out.clickR) this.wowClickR(out.clickR.ndcX, out.clickR.ndcY);
-    this.updateWowLock(out, uiOpen);
+    this.updateWowLock(out);
     this.updateWowCursor(dt, out, uiOpen);
   }
 
@@ -1830,10 +1835,11 @@ export class PlayerController {
   }
 
   /** §4.3: the lock is borrowed while a hold asks for it (once per hold), and released when no hold, a panel or a scheme change needs it. */
-  private updateWowLock(out: WowMouseOut, uiOpen: boolean): void {
+  private updateWowLock(out: WowMouseOut): void {
     const input = G.input;
     const locked = input.isLocked();
-    if (out.wantLock && !uiOpen && this.enabled && !this.mouseSuspended) {
+    // a hold that starts over a window never gets here (pointerOverUI), so an open window alone does not stop the mouse-look
+    if (out.wantLock && this.enabled && !this.mouseSuspended) {
       if (!locked && !this.wowLockAsked && !input.pointerOverUI) {
         this.wowLockAsked = true; // a refused request is not retried within the same hold
         input.lock();

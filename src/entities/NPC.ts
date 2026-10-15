@@ -489,6 +489,7 @@ export class NPC extends Entity implements Interactable {
       // a talk objective of the active quests counts when the dialog opens (systems/Quests.ts)
       if (panel.id === 'dialog') G.quests?.onEvent('talk', this.def.id);
       G.ui.openPanel(panel.id, panel.data);
+      G.ui.bindNpcPanel(panel.id, this); // walking away from this NPC closes its talk window (WoW)
     }
     void player;
   }

@@ -163,6 +163,48 @@ for (const a of Object.keys(SCHEME_BINDINGS.wow)) check(SCHEME_ACTIONS.includes(
   check(same(merged.schemeBindings?.aksiyon?.skill_q, ['KeyF']), 'migrate (c): merged file keeps the Aksiyon rebind');
 }
 
+// ---- WoW input gating (src/core/inputGate.ts): open windows never block movement; text fields, menus, editor, modal do ----
+{
+  const GATE = await imp('src/core/inputGate.ts');
+  const town = { uiMode: 'town', editing: false, modal: false, chatFocused: false, textFocused: false, panelsOpen: 0 };
+  check(GATE.keysBlocked(town) === false, 'gate: plain town must allow movement');
+  check(GATE.keysBlocked({ ...town, panelsOpen: 1 }) === false, 'gate: a panel open (bags, NPC dialog) must NOT block movement');
+  check(GATE.keysBlocked({ ...town, uiMode: 'dungeon', panelsOpen: 4 }) === false, 'gate: several panels in a dungeon must NOT block movement');
+  check(GATE.keysBlocked({ ...town, chatFocused: true, panelsOpen: 1 }) === true, 'gate: chat input focused must block movement');
+  check(GATE.keysBlocked({ ...town, textFocused: true }) === true, 'gate: a focused text field must block movement');
+  check(GATE.keysBlocked({ ...town, uiMode: 'menu' }) === true, 'gate: the menu screen must block movement');
+  check(GATE.keysBlocked({ ...town, uiMode: 'loading' }) === true, 'gate: the loading screen must block movement');
+  check(GATE.keysBlocked({ ...town, editing: true }) === true, 'gate: the HUD layout editor must block movement');
+  check(GATE.keysBlocked({ ...town, modal: true }) === true, 'gate: a modal confirm box must block movement');
+  check(GATE.isTextTarget({ tagName: 'INPUT' }) && GATE.isTextTarget({ tagName: 'TEXTAREA' }), 'isTextTarget: input and textarea are text fields');
+  check(GATE.isTextTarget({ tagName: 'DIV', isContentEditable: true }), 'isTextTarget: contenteditable is a text field');
+  check(!GATE.isTextTarget({ tagName: 'BUTTON' }) && !GATE.isTextTarget(null), 'isTextTarget: a button or nothing is not a text field');
+
+  // NPC talk window: closes once the player is more than NPC_TETHER_RANGE (6 m) from the NPC, on the ground plane
+  const npc = { x: 0, z: 0 };
+  check(GATE.NPC_TETHER_RANGE === 6, 'NPC_TETHER_RANGE must be 6 m');
+  check(!GATE.npcTooFar({ x: 3, z: 0 }, npc), 'tether: 3 m stays open');
+  check(!GATE.npcTooFar({ x: 6, z: 0 }, npc), 'tether: exactly 6 m stays open');
+  check(GATE.npcTooFar({ x: 6.5, z: 0 }, npc), 'tether: 6.5 m closes the talk window');
+  check(GATE.npcTooFar({ x: 5, z: 5 }, npc), 'tether: diagonal 7.07 m closes the talk window');
+}
+
+// ---- WoW skill keys (ActionBar hotkeys, casting): cast with windows open; text fields, game menu, editor, modal stop them ----
+{
+  const GATE = await imp('src/core/inputGate.ts');
+  const town = { uiMode: 'town', editing: false, modal: false, chatFocused: false, textFocused: false, panelsOpen: 0, gameMenuOpen: false };
+  check(GATE.skillKeysBlocked(town) === false, 'skill gate: plain town must allow skill keys');
+  check(GATE.skillKeysBlocked({ ...town, panelsOpen: 2 }) === false, 'skill gate: bags / character / quest log open must NOT block casting');
+  check(GATE.skillKeysBlocked({ ...town, uiMode: 'dungeon', panelsOpen: 1 }) === false, 'skill gate: a dungeon with a window open must allow casting');
+  check(GATE.skillKeysBlocked({ ...town, gameMenuOpen: true }) === true, 'skill gate: the game menu must block casting');
+  check(GATE.skillKeysBlocked({ ...town, chatFocused: true }) === true, 'skill gate: chat input focused must block casting');
+  check(GATE.skillKeysBlocked({ ...town, textFocused: true }) === true, 'skill gate: a focused text field must block casting');
+  check(GATE.skillKeysBlocked({ ...town, editing: true }) === true, 'skill gate: the layout editor must block casting');
+  check(GATE.skillKeysBlocked({ ...town, modal: true }) === true, 'skill gate: a modal must block casting');
+  check(GATE.skillKeysBlocked({ ...town, uiMode: 'menu' }) === true, 'skill gate: the menu screen must block casting');
+  check(GATE.skillKeysBlocked({ ...town, uiMode: 'loading' }) === true, 'skill gate: the loading screen must block casting');
+}
+
 if (failures.length) {
   for (const f of failures) console.error(`FAIL ${f}`);
   console.error(`controls-check: ${failures.length} failure(s) in ${checks} checks`);

@@ -713,7 +713,7 @@ export class ActionBar implements HudWidget {
       s.clicked = false;
       const down = clicked || (G.input && ctx.mode !== 'menu' && G.input.pressed(s.spec.action));
       const swallowed = relock && (s.spec.action === 'skill_lmb' || s.spec.action === 'skill_rmb');
-      if (down && (clicked || (!swallowed && !G.ui.wantsCursor()))) {
+      if (down && (clicked || (!swallowed && !G.ui.skillKeysBlocked()))) {
         // an item cell fires from its key (a skill cell casts through SkillSystem)
         if (s.matId) {
           s.useMat();
@@ -732,7 +732,7 @@ export class ActionBar implements HudWidget {
     // consumable strip: PlayerController keys the two potions; the Panzehir key is read here (flash + drink)
     for (const s of this.potSlots) {
       s.update(ctx, null, false, frame, ghost);
-      const down = G.input && ctx.mode !== 'menu' && G.input.pressed(s.spec.action) && !G.ui.wantsCursor();
+      const down = G.input && ctx.mode !== 'menu' && G.input.pressed(s.spec.action) && !G.ui.skillKeysBlocked();
       if (down) {
         s.setFlash('press');
         if (s.spec.potion === 'cleanse') G.combat?.usePotion('cleanse');
