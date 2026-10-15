@@ -15,6 +15,7 @@ import { inView } from './ViewCull';
 import { charLodPlan, getGfxQuality, type CharLodPlan } from '../world/WorldPerf';
 import { nearerCount, registerCharLod, tierFor, type CharTier } from './CharacterLod';
 import { characterBillboard } from './CharacterBillboard';
+import { ambientLodPlan, sampleRoute } from './AmbientRoute';
 
 export type NpcRole = TownDef['npcs'][number]['role'];
 export type NpcDef = TownDef['npcs'][number];
@@ -341,6 +342,11 @@ export class NPC extends Entity implements Interactable {
   private accShow: string[] | null = null;
   /** The billboard stand-in (tier `billboard`), shown while the model is not. */
   private sprite: THREE.Sprite | null = null;
+  /** Ambient routine (def.routine): the clock time the routine has been held (the NPC stands still while it talks to the player). */
+  private routineHold = 0;
+  /** Ambient routine: the walk clip of this NPC and the clip now set as its base (so the base is only changed on a switch). */
+  private routineWalk = 'Walking_A';
+  private routineShown = '';
 
   constructor(id: number, def: NpcDef) {
     super(id, 'npc');
@@ -378,11 +384,19 @@ export class NPC extends Entity implements Interactable {
     const p = this.preset;
     const url = npcModelUrl(p.base);
     await G.assets.load(url);
+    const cartUrl = this.def.routine?.cart;
+    if (cartUrl) await G.assets.load(cartUrl);
     const obj = G.assets.instantiate(url); // untinted NPCs draw the model's own materials: nothing here mutates them
     const kay = url.includes('/characters/');
     if (kay) setAccessories(obj, p.show ?? []);
     if (p.tint) tintObject(obj, liftNpcTint(p.tint));
     if (p.scale) obj.scale.setScalar(p.scale);
+    if (cartUrl) {
+      // a traveller's cart, pulled 2.6 m behind (it turns with the NPC; it has no collider of its own)
+      const cart = G.assets.instantiate(cartUrl);
+      cart.position.set(0, 0, -2.6);
+      obj.add(cart);
+    }
     this.castMeshes = [];
     obj.traverse((o) => {
       const mm = o as THREE.SkinnedMesh;
@@ -413,6 +427,11 @@ export class NPC extends Entity implements Interactable {
     this.anim.mixer.setTime(Math.random() * 1.2);
     if (p.patrol) this.idleName = this.anim.pick('Walking_A', 'Walk', 'Run') ?? this.idleName;
     if (p.patrol) this.anim.setBase(this.idleName, { fade: 0 });
+    if (this.def.routine) {
+      const r = this.def.routine;
+      const cands = r.walk ? [r.walk] : r.speed >= 3 ? ['Running_A', 'Run', 'Walking_A', 'Walk'] : ['Walking_A', 'Walk', 'Run'];
+      this.routineWalk = this.anim.pick(...cands) ?? 'Walking_A';
+    }
     this.makeLabel();
   }
 
@@ -433,7 +452,8 @@ export class NPC extends Entity implements Interactable {
   onAdded(world: World): void {
     super.onAdded(world);
     this.offs.push(registerCharLod(this));
-    if (!this.preset.patrol) world.nav.setCircle(this.position.x, this.position.z, 0.65, false);
+    // patrolling and routine NPCs walk through the nav (they never block it); a stationary town NPC blocks its own cell
+    if (!this.preset.patrol && !this.def.routine) world.nav.setCircle(this.position.x, this.position.z, 0.65, false);
     if (this.def.role === 'blacksmith') {
       this.offs.push(
         G.events.on('item:upgraded', (e) => {
@@ -448,8 +468,17 @@ export class NPC extends Entity implements Interactable {
   private playOnce(clip: string, speed = 1, hold = 0): void {
     const a = this.anim;
     if (!a || !a.has(clip) || a.isPlayingOneShot || GROUND_CLIP.test(clip)) return;
-    const dur = a.playOnce(clip, { speed, fade: 0.15, onDone: () => a.setBase(this.idleName) });
+    const dur = a.playOnce(clip, { speed, fade: 0.15, onDone: () => { this.routineShown = ''; a.setBase(this.idleName); } });
     this.busyUntil = this.time + dur + hold;
+  }
+
+  /** Ambient routine: sets the base clip (walk / dwell) when it changes. A one-shot in progress keeps the stage. */
+  private setRoutineClip(name: string): void {
+    const a = this.anim;
+    if (!a || a.isPlayingOneShot || name === this.routineShown) return;
+    const clip = a.has(name) && !GROUND_CLIP.test(name) ? name : this.idleName;
+    this.routineShown = name;
+    a.setBase(clip, { fade: 0.2 });
   }
 
   /** Applies a character tier to the model (visibility, shadow casting, attachments, blob shadow). Acts only on a change. */
@@ -597,6 +626,18 @@ export class NPC extends Entity implements Interactable {
       this.position.set(nx, this.world.groundY(nx, nz), nz);
     }
 
+    // ambient routine (types/ambient.ts): where the walk is now, and walk or dwell clip. While the NPC talks to the player the clock holds:
+    // it stands still on its idle (or its stop clip) and turns to the player below
+    if (this.def.routine && this.world) {
+      const talking = t < this.faceUntil;
+      if (talking) this.routineHold += dt;
+      const s = sampleRoute(this.def.routine, this.world.time - this.routineHold);
+      this.position.set(s.x, this.world.groundY(s.x, s.z), s.z);
+      const walking = s.moving && !talking;
+      if (walking) this.baseYaw = s.yaw;
+      this.setRoutineClip(walking ? this.routineWalk : s.clip ?? this.idleName);
+    }
+
     // facing: the player while talking, else the placed direction
     let want = this.baseYaw;
     if (t < this.faceUntil && player) want = Math.atan2(player.position.x - this.position.x, player.position.z - this.position.z);
@@ -605,7 +646,8 @@ export class NPC extends Entity implements Interactable {
     // character LOD (CharacterLod.ts): distance, view and the ambient cap pick the tier. A hidden character is not drawn and its mixer
     // pauses until it comes back (the state machine below still runs)
     let tier: CharTier = 'full';
-    const plan: CharLodPlan = charLodPlan(getGfxQuality());
+    // ambient walkers (routine) stand as billboards early: their models are the costly part of the ambient layer
+    const plan: CharLodPlan = this.def.routine ? ambientLodPlan(charLodPlan(getGfxQuality())) : charLodPlan(getGfxQuality());
     if (this.model) {
       const near = player ? dist2D(player.position, this.position) : 0;
       const s = p.scale ?? 1;
