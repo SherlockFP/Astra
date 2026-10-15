@@ -405,19 +405,19 @@ export const combatPresets: Record<string, Preset> = {
     const h = fx.pillar(g, col, 10 * s, 0.75 * s, 2.2, { rise: true, follow: c.follow, fadeIn: 0.18, hot: 0.1, alpha: 0.5 });
     ringFlat(fx, g, 0.5, 4 * s, 0xfff2b0, 0.7, { tex: 'ring-04', glow: 0.9, a: 0.55 });
     ringFlat(fx, g, 0.3, 2.6 * s, col, 0.9, { tex: 'magic-circle-01', glow: 0.95, a: 0.55, ease: 1, spin: 1.5 });
-    for (let i = 0; i < 4; i++) {
-      fx.after(i * 0.17, () => {
-        fx.add.spawn({ tex: 'ring-02', mode: 'flat', at: [g.x, 0.2, g.z], vel: [0, 3.4, 0], size: 3.4 * s, size1: 1.2 * s, life: 0.95, c0: 0xfff2b0, c1: col, glow: 0.9, a: 0.55, fi: 0.04, fp: 1.4 });
-        const n = 10;
+    // sparkle ring at the feet: a third of the earlier count and size, low alpha, short life (~1.5 s in all)
+    for (let i = 0; i < 2; i++) {
+      fx.after(i * 0.22, () => {
+        fx.add.spawn({ tex: 'ring-02', mode: 'flat', at: [g.x, 0.2, g.z], vel: [0, 1.6, 0], size: 1.8 * s, size1: 0.8 * s, life: 0.6, c0: 0xfff2b0, c1: col, glow: 0.7, a: 0.3, fi: 0.04, fp: 1.4 });
+        const n = 4;
         for (let k = 0; k < n; k++) {
           const a = (k / n) * TAU + i;
-          fx.add.spawn({ tex: ['star-01', 'cross', 'flare-01'], at: [g.x + Math.cos(a) * 1.3 * s, 0.2, g.z + Math.sin(a) * 1.3 * s], vel: [-Math.sin(a) * 1.2, rnd(2.5, 4.5), Math.cos(a) * 1.2], life: [0.8, 1.4], size: [0.16, 0.32], grow: 0.3, c0: 0xfff2b0, c1: col, glow: 0.95, fi: 0.1, fp: 1 });
+          fx.add.spawn({ tex: ['star-01', 'cross', 'flare-01'], at: [g.x + Math.cos(a) * 0.9 * s, 0.15, g.z + Math.sin(a) * 0.9 * s], vel: [-Math.sin(a) * 0.6, rnd(0.8, 1.6), Math.cos(a) * 0.6], life: [0.45, 0.7], size: [0.08, 0.14], grow: 0.1, c0: 0xfff2b0, c1: col, glow: 0.7, a: 0.5, fi: 0.1, fp: 1 });
         }
       });
     }
-    flare(fx, up(c.p, 1.3), 4 * s, col, 0.32, 'star-05', 1.0, 1);
-    flare(fx, up(c.p, 1.3), 2.6 * s, 0xfff2b0, 0.2, 'magic-flare-01', 0.9, -2);
-    fx.light(up(c.p, 1.5), col, 30, 0.9, 14);
+    flare(fx, up(c.p, 0.2), 1.6 * s, col, 0.3, 'star-05', 0.8, 1);
+    fx.light(up(c.p, 0.6), col, 30, 0.9, 14);
     return h;
   },
 

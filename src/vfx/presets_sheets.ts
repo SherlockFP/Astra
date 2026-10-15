@@ -98,9 +98,8 @@ export const sheetOverlays: Record<string, Overlay> = {
     sheet(fx, 'heal', P(c, 1.1), 1.9 * c.s, { color: c.color(0xff9a9a), speed: 1.1 });
   },
   level_up(fx, c) {
-    // clamped: a smaller, dimmer gold burst (the full-size white-ish stack washed the frame into bloom)
-    sheet(fx, 'lightburst', P(c, 1.1), 5.0 * c.s, { color: 0xffd060, speed: 0.95, a: 0.5 });
-    sheet(fx, 'sparkle2', P(c, 1.4), 4.0 * c.s, { color: 0xfff0b0, speed: 0.75, delay: 0.1 });
+    // a modest sparkle ring at the feet, fading fast: the chest-height burst covered the character
+    sheet(fx, 'lightburst', P(c, 0.15), 1.7 * c.s, { color: 0xffd060, speed: 1.6, a: 0.22 });
   },
   respawn(fx, c) {
     sheet(fx, 'lightburst', P(c, 1.0), 6.0 * c.s, { color: c.color(0xbfe0ff), speed: 1.1 });
