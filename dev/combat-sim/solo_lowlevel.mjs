@@ -91,16 +91,8 @@ function specOf(classId) {
 /** A pet class from the spec data: a special with a `pet` param (necromancer_summoner's trait_summoner keeps a ghoul) or a pet-tagged skill on its bar. */
 const hasPet = (spec) => (spec.specials ?? []).some((s) => (s.params?.pet ?? 0) > 0)
   || Object.values(spec.defaultBar ?? {}).some((id) => SKILLS[id]?.tags?.includes('pet'));
-const unlockOf = (spec, id) => spec.unlock?.[id] ?? SKILLS[id]?.unlockLevel ?? 1;
-/** The spec's starting bar at a level: the default bar with every skill above the level removed (LMB always stays). */
-function barFor(spec, L) {
-  const bar = {};
-  for (const [slot, id] of Object.entries(spec.defaultBar)) {
-    if (!id) continue;
-    if (slot === 'lmb' || unlockOf(spec, id) <= L) bar[slot] = id;
-  }
-  return bar;
-}
+/** The class's bar at a level as the game grants it: CharacterState.defaultBar (the opening kit, openingKit.ts). */
+const barFor = (classId, L) => CharacterState.defaultBar(classId, L);
 /** Player.refreshStats for a local actor: maxHp / resource from the final stats. */
 function syncPlayer(p, ch, spec) {
   const st = ch.stats;
@@ -262,12 +254,12 @@ function frame() {
   if (step > 0) { p.position.x += ((m.position.x - p.position.x) / d) * step; p.position.z += ((m.position.z - p.position.z) / d) * step; }
 }
 
-let fightNo = 0;
 /** One fight: a fresh world, the real character on its spec bar at L, a real mob at SPAWN_DIST, aggroed on the player. */
 function fight(classId, L, mobId) {
   const spec = specOf(classId);
   const key = `${classId}@${L}:${mobId}`;
   const seed = hashStr(key);
+  G.engine.time = 0; // each fight on its own clock: a result no longer depends on the fights run before it (order, count)
   mathRng = new RNG(seed);
   for (const e of [...world.entities.values()]) world.remove(e);
   world.update(0);
@@ -288,8 +280,8 @@ function fight(classId, L, mobId) {
 
   const ch = CharacterState.create('Solo', classId);
   ch.save.level = L;
-  ch.save.spec = spec.id;
-  ch.save.skillBar = barFor(spec, L);
+  ch.save.spec = L >= 10 ? spec.id : null; // the spec is picked at L10: no spec passives below it (CharacterState.spec)
+  ch.save.skillBar = barFor(classId, L);
   ch.save.majorCd = { m45: 0, m90: 0, m180: 0 };
   ch.recomputeStats(false);
   G.character = ch;
@@ -307,8 +299,10 @@ function fight(classId, L, mobId) {
   if (pet && G.skills.tryCast(p, pet, H.aimFor(p, null))) for (let f = 0; f < Math.round(3 / DT); f++) frame();
   castLog = {};
 
+  // fresh AI director per fight: its AI list and grid would carry the fights before this one into it
+  { const dir = getDirector(world); dir.ais.length = 0; dir.piles.length = 0; dir.packLinks.clear(); dir.grid?.clear?.(); }
   const def = ENEMIES[mobId];
-  const mob = new Enemy(9000 + ++fightNo, def);
+  const mob = new Enemy(9000 + (seed % 900), def);
   mob.level = L;
   mob.position.set(0, 0, SPAWN_DIST);
   mob.homeX = 0;

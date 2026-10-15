@@ -168,9 +168,14 @@ export async function spawnEnemy(world: World, defId: string, pos: THREE.Vector3
   }
 
   // ---- stats ----
+  // open-world trash / swarm: the low-level HP and damage curve (no effect from L20 up, and never on instances / bosses)
+  const lowMobs = !!opts.openWorld && isLowLevelTrashRank(def.rank, def.role);
+  e.openWorld = lowMobs;
   let hpScale = 1, dmgScale = 1;
   let partyScale: { hp: number; dmg: number } | null = null;
-  if (opts.scaled !== false) {
+  // the low-level curve is the whole open-world trash scaling and is solo-tuned: no run party factor on it (a solo run would add x1.4 damage / x0.9 HP,
+  // so L1-10 trash hit ~40 % harder than lowLevelScaling.ts describes). Instances and every elite / boss keep their party factors.
+  if (opts.scaled !== false && !lowMobs) {
     try {
       // encounter adds (mini-bosses / boss-summoned adds) take Tyrannical, not Fortified (MythicPlus.isEncounterAdd, K16)
       const s = G.mplus.enemyScaling(def.rank === 'boss', def.rank === 'miniboss' || opts.tag === 'encounter_boss');
@@ -185,9 +190,6 @@ export async function spawnEnemy(world: World, defId: string, pos: THREE.Vector3
     }
   }
   e.partyScale = partyScale;
-  // open-world trash / swarm: the low-level HP and damage curve (no effect from L20 up, and never on instances / bosses)
-  const lowMobs = !!opts.openWorld && isLowLevelTrashRank(def.rank, def.role);
-  e.openWorld = lowMobs;
   const baseHp = monsterHP(level) * (opts.hpMult ?? def.hpMult) * (opts.hpMult !== undefined ? 1 : hpScale) * (lowMobs ? lowLevelHpMult(level) : 1);
   e.maxHp = Math.max(1, Math.round(baseHp));
   e.hp = Math.max(1, Math.round(e.maxHp * (opts.hpFrac ?? 1)));
