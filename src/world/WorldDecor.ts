@@ -582,14 +582,14 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
   host.root.add(sky.dome);
   host.disposables.push(sky);
   const rings: THREE.Mesh[] = [];
-  const ring = (radius: number, minH: number, maxH: number, base: number, hazeAmt: number, seed: string): void => {
-    const m = makeMountainRing({ radius, minH, maxH, segments: 72, seed: def.id + seed, baseColor: base, rockColor: base, haze: def.theme.fogColor, hazeAmount: hazeAmt, slope: 1.2 });
+  const ring = (radius: number, minH: number, maxH: number, base: number, hazeAmt: number, seed: string, baseHaze = 0): void => {
+    const m = makeMountainRing({ radius, minH, maxH, segments: 72, seed: def.id + seed, baseColor: base, rockColor: base, haze: def.theme.fogColor, hazeAmount: hazeAmt, baseHaze, slope: 1.2 });
     host.root.add(m);
     rings.push(m);
     host.disposables.push({ dispose: () => { m.geometry.dispose(); (m.material as THREE.Material).dispose(); } });
   };
   // less haze than before: the rings read as dark forested hills against the fog instead of grey slabs
-  ring(430, 20, 60, 0x2a3a2a, 0.35, ':far');
+  ring(430, 20, 60, 0x2a3a2a, 0.35, ':far', 0.85);
   ring(380, 6, 20, 0x233222, 0.25, ':near');
 
   // ---- water ----

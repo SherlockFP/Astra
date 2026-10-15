@@ -217,6 +217,8 @@ export interface RingOptions {
   /** Blend toward this colour (distance haze). */
   haze: number;
   hazeAmount: number;
+  /** Extra haze at the ring base that fades to none at the peaks: a tall far ring then melts into the fog at its foot and keeps dark ridges. */
+  baseHaze?: number;
   /** Ring thickness (how far inwards the slope extends). */
   slope?: number;
   y?: number;
@@ -256,7 +258,8 @@ export function makeMountainRing(o: RingOptions): THREE.Mesh {
       else if (f < (o.snowLine ?? 2)) c.copy(rock).lerp(base, 0.1);
       else c.copy(snow);
       if (o.snowColor && f >= (o.snowLine ?? 0.78)) c.copy(snow);
-      c.lerp(haze, o.hazeAmount);
+      // base rows melt into the fog colour (baseHaze), peaks keep the rock/forest tone: a silhouette, not a flat wall
+      c.lerp(haze, o.hazeAmount + (o.baseHaze ?? 0) * (1 - f) * (1 - o.hazeAmount));
       col.push(c.r, c.g, c.b);
     }
   }

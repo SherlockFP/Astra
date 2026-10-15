@@ -31,6 +31,8 @@ interface Spot {
 
 export class Discoveries {
   private readonly spots: Spot[];
+  /** Discovery banners held back while the local player is in combat. */
+  private readonly pending: { title: string; subtitle?: string }[] = [];
 
   constructor(private readonly ctx: WorldCtx) {
     const ext = ctx.ext;
@@ -69,8 +71,15 @@ export class Discoveries {
         }
       }
       G.quests?.onEvent('explore', s.id);
-      // the zone banner lane: queued, dropped in combat, one at a time (Banners.ts ZoneBanner)
-      G.events.emit('ui:zoneName', { title: `Keşfedildi: ${s.name}`, subtitle: s.xpPct > 0 ? `${s.kind} · keşif XP +%${s.xpPct}` : s.kind });
+      // the flag is already kept; the banner waits for the end of the fight (the zone lane drops titles that arrive in combat)
+      this.pending.push({ title: `Keşfedildi: ${s.name}`, subtitle: s.xpPct > 0 ? `${s.kind} · keşif XP +%${s.xpPct}` : s.kind });
     }
+    this.flush();
+  }
+
+  /** Emits the banners held back by a fight, once the local player is out of combat (WoW-style: announced after the fight). */
+  private flush(): void {
+    if (this.pending.length === 0 || G.player?.inCombat) return;
+    for (const b of this.pending.splice(0)) G.events.emit('ui:zoneName', b);
   }
 }
