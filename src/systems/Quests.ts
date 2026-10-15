@@ -266,6 +266,49 @@ export class QuestSystem {
     return true;
   }
 
+  // ======================================================================== abandon
+  /**
+   * WoW Abandon Quest: an active or ready quest is dropped. Its progress flags are cleared, its quest items leave the bag (items a
+   * running quest still needs stay), and the quest is 'available' again at its giver (a main-chain quest is taken again the same way).
+   * A finished quest cannot be abandoned. Returns false when the quest is neither active nor ready.
+   */
+  abandon(questId: string): boolean {
+    const def = this.defs.get(questId);
+    const ch = G.character;
+    if (!def || !ch) return false;
+    const s = this.stateOf(def);
+    if (s !== 'active' && s !== 'ready') return false;
+    // quest items of this quest: bag objectives, use items and the items handed over on accept (quest-kind materials only)
+    const others = this.active().filter((d) => d.id !== def.id);
+    const need = (id: string): number => others.reduce((sum, d) => sum + d.objectives.reduce((n, o, k) => {
+      if (BAG_KINDS.includes(o.kind) && o.target === id) return n + o.count;
+      if (o.kind === 'use' && o.item === id) return n + Math.max(0, o.count - this.progressAt(d, k));
+      return n;
+    }, 0), 0);
+    const ids = new Set<string>();
+    for (const o of def.objectives) {
+      if (BAG_KINDS.includes(o.kind) && o.target) ids.add(o.target);
+      if (o.kind === 'use' && o.item) ids.add(o.item);
+    }
+    for (const it of def.startItems ?? []) ids.add(it.id);
+    const drops: { id: string; count: number }[] = [];
+    for (const id of ids) {
+      if (MATERIALS[id]?.kind !== 'quest') continue;
+      const extra = ch.material(id) - need(id);
+      if (extra > 0) drops.push({ id, count: extra });
+    }
+    // flags first: the materials listener must not re-announce this quest as active while its items leave the bag
+    const f = ch.save.flags;
+    delete f[qKey(def.id)];
+    def.objectives.forEach((_, k) => delete f[pKey(def.id, k)]);
+    this.choiceRolls.delete(def.id);
+    for (const d of drops) ch.useMaterial(d.id, d.count);
+    ch.persist(true);
+    this.notify(def, true);
+    toast(`Görev bırakıldı: ${def.name}`, 'info');
+    return true;
+  }
+
   /** The items a choice quest offers at turn-in: one class-appropriate item per slot, rolled once per ready state. Empty when not ready or no choice. */
   choiceOptions(questId: string): ItemInstance[] {
     const def = this.defs.get(questId);

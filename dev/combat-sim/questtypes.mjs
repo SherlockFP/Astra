@@ -10,6 +10,7 @@
  *         use.*    kind 'use' (useItem): one item consumed per use, target filter, completes at count
  *         esc.*    kind 'escort' (tickEscort): seconds accrue while alive, a fall resets the timer, completes at count
  *         bonus.*  progressPct over mixed objectives; the real Sisli bonus quest end to end
+ *         abandon.* Abandon Quest (QuestSystem.abandon): progress and quest items cleared, back to 'available', re-taken fresh, items another running quest needs kept, main chain re-taken, a finished quest refused
  *         arrow.*  kill / drop / collect objectives point at their layout camp with no enemy loaded (questMarks objectivePos)
  * No browser, no network. Exit 0 = all PASS.
  */
@@ -628,6 +629,63 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   ok('escort.decoy-never-moves', decoy.position.x === decoy0.x && decoy.position.z === decoy0.z);
   G.net = netWas;
   ch.save.level = 1;
+}
+
+// ------------------------------------------------------------------------------------------------ abandon.* (WoW Abandon Quest)
+{
+  // a clean quest log for this stage: the running quests of the earlier stages leave the save (flags only; their defs stay)
+  for (const d of qs.all()) if (['active', 'ready'].includes(qs.state(d.id))) delete ch.save.flags[`q.${d.id}`];
+  const AB = 'item_goblin_kulagi';
+  const OTHER = 'item_mezar_tozu';
+  delete ch.save.materials[AB];
+  delete ch.save.materials[OTHER];
+  qs.registerDefs([
+    T('t_ab', 1, [{ kind: 'kill', target: 'ow_boar', count: 2, text: 'k' }, drop(AB, 2, ['ow_wolf'], 1)]),
+    T('t_ab_b', 1, [drop(AB, 1, ['ow_wolf'], 1)]),
+  ]);
+  const wolf = { enemyId: 'ow_wolf', rank: 'trash' };
+  const boar = { enemyId: 'ow_boar', rank: 'trash' };
+
+  ok('abandon.setup-accept', qs.accept('t_ab') && qs.state('t_ab') === 'active');
+  qs.onKill(boar);
+  addDrops(qs.rollDrops(wolf));
+  ok('abandon.setup-progress', qs.progressRows('t_ab')[0].have === 1 && ch.material(AB) === 1, `kills ${qs.progressRows('t_ab')[0].have}, bag ${ch.material(AB)}`);
+  ok('abandon.active-quest-can-be-abandoned', qs.abandon('t_ab') === true);
+  ok('abandon.back-to-available', qs.state('t_ab') === 'available', qs.state('t_ab'));
+  ok('abandon.progress-cleared', qs.progressRows('t_ab')[0].have === 0 && qs.progressRows('t_ab')[1].have === 0 && ch.save.flags['q.t_ab'] === undefined);
+  ok('abandon.quest-items-leave-bag', ch.material(AB) === 0, `bag ${ch.material(AB)}`);
+  ok('abandon.refused-when-not-taken', qs.abandon('t_ab') === false && qs.state('t_ab') === 'available');
+  ok('abandon.unknown-quest-refused', qs.abandon('no_such_quest') === false);
+
+  ok('abandon.retake', qs.accept('t_ab') && qs.state('t_ab') === 'active' && qs.progressRows('t_ab')[0].have === 0);
+  qs.onKill(boar);
+  qs.onKill(boar);
+  addDrops(qs.rollDrops(wolf));
+  addDrops(qs.rollDrops(wolf));
+  ok('abandon.ready-quest-can-be-abandoned', qs.state('t_ab') === 'ready' && qs.abandon('t_ab') === true && qs.state('t_ab') === 'available' && ch.material(AB) === 0);
+
+  // shared item: a second running quest still needs one of the two items, so only the surplus leaves the bag
+  ok('abandon.shared.accept', qs.accept('t_ab') && qs.accept('t_ab_b'));
+  ch.addMaterial(AB, 2);
+  ok('abandon.shared.abandon', qs.abandon('t_ab') === true && ch.material(AB) === 1, `bag ${ch.material(AB)} (1 kept for t_ab_b)`);
+  ok('abandon.shared.other-quest-unharmed', qs.state('t_ab_b') === 'ready', qs.state('t_ab_b'));
+  ok('abandon.shared.last-holder-drops-all', qs.abandon('t_ab_b') === true && ch.material(AB) === 0, `bag ${ch.material(AB)}`);
+
+  // main chain: a main quest is abandoned and taken again; a finished quest cannot be abandoned
+  // the main chain starts at level 5 and this character is level 1: raised for this check, then put back
+  const lvl = ch.save.level;
+  ch.save.level = 30;
+  const main = qs.all().find((d) => d.main && qs.state(d.id) === 'available');
+  ok('abandon.main.found', !!main, main?.id ?? 'no available main quest');
+  if (main) {
+    ok('abandon.main.accept', qs.accept(main.id) && qs.state(main.id) === 'active');
+    ok('abandon.main.abandon', qs.abandon(main.id) === true && qs.state(main.id) === 'available');
+    ok('abandon.main.retake', qs.accept(main.id) && qs.state(main.id) === 'active');
+    qs.abandon(main.id);
+  }
+  ch.save.level = lvl;
+  const done = qs.all().find((d) => qs.state(d.id) === 'done');
+  ok('abandon.done-quest-refused', !!done && qs.abandon(done.id) === false && qs.state(done.id) === 'done', done?.id ?? 'no finished quest');
 }
 
 console.log(`questtypes: ${passes} PASS, ${fails} FAIL`);

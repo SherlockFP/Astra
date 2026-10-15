@@ -459,7 +459,7 @@ export class EnemyAI {
       // Midnight Tehdit Saptırma (misdirection): while the status is up, the caster's threat is booked on its redirect target (sourceId)
       const mis = (src as Player).statuses.get('misdirection');
       this.addThreat(mis && mis.sourceId != null && mis.sourceId !== src.id ? mis.sourceId : src.id, th);
-      if (this.e.def.ai?.flee) this.onHurtFlee(amount);
+      if (this.e.def.ai?.flee && !this.e.def.ai.neutral) this.onHurtFlee(amount); // gold piles: treasure goblins only, not deer
       if (!this.aggroed) this.dir.pullPack(this, src, true);
     } else if (!this.aggroed) {
       // a hit from a non-player source (pet, minion, hazard, DoT without a source) pulls only a player inside this mob's own aggro
@@ -841,7 +841,9 @@ export class EnemyAI {
   protected idleTick(dt: number, now: number): void {
     const e = this.e;
     const def = e.def;
-    if (def.ai?.flee) return this.fleeIdle(dt, now);
+    // treasure goblin (flee, not neutral): runs off once a player is near. A neutral flee body (deer) is not a goblin: it idles and
+    // wanders like any critter, and runs only once hit (onDamaged -> acquire -> combatTick's flee branch)
+    if (def.ai?.flee && !def.ai.neutral) return this.fleeIdle(dt, now);
     // perception (throttled)
     this.scanT -= dt;
     // neutral (deer): never picks a fight on sight, only when hit (onDamaged)

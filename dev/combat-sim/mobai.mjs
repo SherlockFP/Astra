@@ -10,7 +10,7 @@
  * the whole pack, not the next pack) | social.* (pack aggro is the camp only; pack-less neighbours join within 10 m and inside their own
  * aggro range; no sweep, no chain past the aggro range) | leash.* (a chase past the leash evades home with a full reset) | caster.* (keeps range,
  * casts an interruptible spell with a cast bar, a heavy hit cuts it) | healer.* (heals a hurt ally, ignores a healthy one) |
- * flee.* (humanoid at 20 % HP runs and calls its pack; a swarm beast does not) | flee.ground.* (run points on reachable ground only; a mob on a stone step evades home) | elite.* (elite specials telegraphed, windup
+ * flee.* (humanoid at 20 % HP runs and calls its pack; a swarm beast does not) | flee.ground.* (run points on reachable ground only; a mob on a stone step evades home) | neutral.* (a deer never aggroes on sight, wanders idly, runs once hit; a treasure goblin still runs off) | elite.* (elite specials telegraphed, windup
  * >= 0.9 s; trash not) | stuck.* (no route to the target = evade, not a stand-off) | wall.* (a charge stops at a wall) |
  * cap.* (a level-2 priest in the Balçık Gölü slime camps: at most 3 engaged, a touch never pulls another camp, no level-2 split).
  * Exit 0 = all PASS.
@@ -557,6 +557,48 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
   ok('flee.ground.a deer on an unreachable step evades home, off the step', left, `mode ${stuck.ai.mode} at ${stuck.position.x.toFixed(1)},${stuck.position.z.toFixed(1)}`);
   flat();
   reset();
+}
+
+// ==================================================================================================================
+// neutral.* a neutral critter (deer: ai.neutral) never aggroes on sight, wanders idly around its home, and runs only once hit.
+// A treasure goblin (ai.flee without neutral) still runs off when a player comes near.
+// ==================================================================================================================
+{
+  reset();
+  const p = reset('knight', 10);
+  p.position.set(-8, 0, 0); // 8 m from the deer: inside its 14 m aggro range
+  const deer = mob('ow_deer', 0, 0);
+  let aggro = false, moved = 0;
+  for (let i = 0; i < 30; i++) {
+    H.step(sec(0.5));
+    aggro = aggro || deer.ai.aggroed;
+    moved = Math.max(moved, Math.hypot(deer.position.x, deer.position.z));
+  }
+  ok('neutral.deer never aggroes on sight', !aggro, `aggroed ${aggro} (15 s, player 8 m away)`);
+  ok('neutral.deer wanders idly around its home', moved > 1, `furthest ${moved.toFixed(1)} m from home`);
+
+  // a fresh deer on a known spot for the hit: the attacker stands 8 m away
+  reset();
+  const p3 = reset('knight', 10);
+  p3.position.set(-8, 0, 0);
+  const hit = mob('ow_deer', 0, 0);
+  const d0 = dist(hit, p3);
+  hit.ai.onDamaged(p3.id, 5); // a hit: the deer runs
+  H.step(sec(0.5));
+  ok('neutral.hit deer is aggroed and runs', hit.ai.aggroed, `mode ${hit.ai.mode}`);
+  let dPeak = dist(hit, p3);
+  for (let i = 0; i < 25; i++) {
+    H.step(sec(0.1));
+    dPeak = Math.max(dPeak, dist(hit, p3));
+  }
+  ok('neutral.hit deer gains distance from the attacker', dPeak > d0 + 2, `${d0.toFixed(1)} m -> peak ${dPeak.toFixed(1)} m`);
+
+  reset();
+  const p2 = reset('knight', 10);
+  p2.position.set(-8, 0, 0);
+  const gob = mob('treasure_goblin', 0, 0);
+  H.step(sec(1));
+  ok('neutral.treasure goblin (flee, not neutral) still runs off near a player', gob.ai.aggroed, `mode ${gob.ai.mode}`);
 }
 
 // ---- report ---------------------------------------------------------------------------------------------------------------
