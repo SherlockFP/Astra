@@ -99,6 +99,8 @@ const MAX_MELEE_SLOTS = 6;
 const SLEEP_DIST = 45;
 /** ENGINE_VERTICALITY §13: a melee/charge unit with no path to its target (other region / unreachable) gives up after this. */
 const NOPATH_LEASH = 6;
+/** Open-world trash ambient wander: every point stays within this (m) of its camp centre (the camp's members spread up to ~6.6 m from it). */
+const CAMP_WANDER_M = 8;
 /** ENGINE_VERTICALITY §10.2: lastSafe sampling period (s). */
 const SAFE_SAMPLE_EVERY = 0.5;
 /** Ability kinds a blinded enemy can miss with (mechanic scripts / custom casts are never nullified). */
@@ -869,7 +871,10 @@ export class EnemyAI {
       this.wanderT -= dt;
       if (this.wanderT <= 0 && !this.path) {
         this.wanderT = 4 + Math.random() * 6;
-        const p = this.world.nav.randomNear(e.homeX, e.homeZ, 4);
+        // a camp member wanders around its camp centre (<= CAMP_WANDER_M); a loose spawn keeps its own 4 m around home
+        const p = e.campX !== null && e.campZ !== null
+          ? this.world.nav.randomNear(e.campX, e.campZ, CAMP_WANDER_M)
+          : this.world.nav.randomNear(e.homeX, e.homeZ, 4);
         this.fleeX = p.x;
         this.fleeZ = p.z;
         this.fleeT = 3.5;

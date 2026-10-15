@@ -58,7 +58,10 @@ export const SPEC_TUNING: Record<string, LevelTuning> = {
 
 /** Player outgoing damage below L10 only (x on the L10 knot, which the L10 balance gate measures; the gate is not touched). The low-level
  *  solo fights (dev/combat-sim/solo_lowlevel.mjs) had these two overperforming: a 1-2 s kill at L1-9. */
-export const LOW_LEVEL_DMG: Record<string, number> = { evoker_devastation: 0.5, necromancer_summoner: 0.5, warlock_affliction: 1.4 };
+export const LOW_LEVEL_DMG: Record<string, number> = {
+  knight_protector: 0.6, archer_marksman: 0.55, demonhunter_chaos: 0.55, evoker_devastation: 0.3, necromancer_summoner: 0.35,
+  paladin_protection: 0.85, priest_discipline: 1.4, warlock_affliction: 1.4,
+};
 
 /** The factor `k` at character level `level`: linear between the knots, held at the end knots outside 10-60. */
 export function tuneAt(k: TuneKnots, level: number): number {
