@@ -221,6 +221,8 @@ export function padDistance(p: { x: number; z: number; hx: number; hz: number; r
 /** Landmark flat radius per recipe (m): what the recipe builds around its centre, plus a little. */
 const LANDMARK_R: Record<string, number> = {
   red_castle_ruin: 19, mushroom_ring: 18, obelisk_shrine: 11, windmill_cluster: 9, watch_tower_ruin: 10, dead_tree_lanterns: 9,
+  // fill pass: the silhouettes drawn by WorldDecorFill.placeNamedLandmark
+  standing_stones: 8, giant_tree: 7, broken_pier: 7, roadside_chapel: 6,
 };
 
 interface PadSpec { kind: string; id: string; x: number; z: number; hx: number; hz: number; rr: number; fall: number; y?: number }

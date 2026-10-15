@@ -6,6 +6,7 @@ import { VFX_IDS } from '../types/vfx';
 import { GDD_BOSSES, GDD_ROSTER, GDD_SUMMONS } from './contentRoster';
 import { MAX_ZONE_M, STREAM_AUTO_M, VIEW_MAX_M, VIEW_MIN_M, streamConfig, widestFogFar } from '../world/chunks/StreamConfig';
 import { HARD_MAX_GRADE, buildRelief } from '../world/Relief';
+import { decorAssetUrls, namedLandmarkUrls } from '../world/decorRecipes';
 
 /**
  * Pure validation logic for the content module (dev/content.html). No DOM here.
@@ -572,6 +573,11 @@ export function dungeonUrls(def: DungeonDef): string[] {
   for (const r of def.world?.regions ?? []) {
     for (const u of Object.values(r.theme.groundTex)) out.add(u);
     if (r.theme.skyImage) out.add(r.theme.skyImage);
+  }
+  // open-world decor (vignettes, fields, signposts, filler) and the landmark silhouettes added with it
+  for (const u of decorAssetUrls(def.world?.decor ?? [])) out.add(u);
+  if ((def.world?.landmarks ?? []).some((l) => l.recipe === 'standing_stones' || l.recipe === 'giant_tree' || l.recipe === 'broken_pier' || l.recipe === 'roadside_chapel')) {
+    for (const u of namedLandmarkUrls()) out.add(u);
   }
   return [...out];
 }
@@ -1536,6 +1542,7 @@ function worldIssues(
   uniq('hidden area', w.hidden.map((x) => x.id));
   uniq('vista', w.vistas.map((x) => x.id));
   uniq('landmark', w.landmarks.map((x) => x.id));
+  uniq('decor', (w.decor ?? []).map((x) => x.id));
 
   // regions: room link, levels, atmosphere; the room centre must be walkable from the start
   for (const r of w.regions) {
@@ -1659,6 +1666,11 @@ function worldIssues(
   for (const x of w.hidden) at(`hidden area ${x.id}`, x.regionId, x.pos);
   for (const x of w.vistas) at(`vista ${x.id}`, x.regionId, x.pos);
   for (const x of w.landmarks) at(`landmark ${x.id}`, x.regionId, x.pos);
+  // decor (vignettes, fields, signposts, filler): every anchor on walkable ground of its region; a signpost names its destinations
+  for (const x of w.decor ?? []) {
+    at(`decor ${x.id}`, x.regionId, x.pos);
+    if (x.kind === 'signpost' && !(x.lines && x.lines.length > 0)) err(`decor ${x.id}`, 'signpost without destination lines');
+  }
   for (const x of w.gather) at(`gather ${x.id}`, x.regionId, x.center);
   for (const x of w.rares) {
     for (const s of x.spots) at(`rare ${x.id}`, undefined, s);

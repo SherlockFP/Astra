@@ -21,6 +21,8 @@ import { surfaceTexture } from './ProceduralAssets';
 import { getPiece } from './Pieces';
 import { placeTownProps } from './TownBuilder';
 import { fitHeight, fitScale, regionsByRoom, tileCentre, WorldScatter, worldSceneryUrls, worldSplatOps, worldTintRGB, yawAlong } from './WorldScenery';
+import { placeDecor, placeNamedLandmark } from './WorldDecorFill';
+import { decorAssetUrls, namedLandmarkUrls } from './decorRecipes';
 
 /**
  * Open-world map decor (GDD_OPENWORLD §8, §9.1, §1.5): splat terrain with the region tint map, water planes, bridge and
@@ -101,6 +103,8 @@ export function worldAssetUrls(def: DungeonDef): string[] {
   out.add(gp('rock_large'));
   out.add(hw('post_skull'));
   for (const v of def.world?.villages ?? []) for (const p of v.props) out.add(p.model);
+  for (const u of decorAssetUrls(def.world?.decor ?? [])) out.add(u);
+  for (const u of namedLandmarkUrls()) out.add(u);
   return [...out];
 }
 
@@ -420,8 +424,11 @@ function buildPalisade(v: VillageDef, ox: number, oz: number, host: WorldDecorHo
 /** Signature landmark per region (GDD_OPENWORLD §8.2), built from existing kit models. Unknown recipes do nothing. */
 function placeLandmark(lm: LandmarkDef, x: number, z: number, host: WorldDecorHost, lightsOn: boolean): void {
   const rng = new RNG(hashString(lm.id + ':landmark'));
-  const add = (url: string, px: number, py: number, pz: number, rot: number, s: number, layer: CullLayer = 'prop'): void =>
-    host.batcher.add(url, px, py, pz, rot, s, null, { cast: true, receive: true, layer });
+  // a landmark of the fill pass (id lm_f*, tools/world-fill.mjs) casts shadow from its tower or castle only (`main`): its other pieces
+  // are many small casters, and those cost the shadow pass (WorldDecorFill.placeNamedLandmark casts none). Hand-placed ones cast as before.
+  const fill = /^lm_f\d+$/.test(lm.id);
+  const add = (url: string, px: number, py: number, pz: number, rot: number, s: number, main = false): void =>
+    host.batcher.add(url, px, py, pz, rot, s, null, { cast: main || !fill, receive: true, layer: 'prop' });
   switch (lm.recipe) {
     case 'windmill_cluster': {
       add(kf('windmill'), x, 0, z, 0, 4);
@@ -440,7 +447,7 @@ function placeLandmark(lm: LandmarkDef, x: number, z: number, host: WorldDecorHo
     }
     case 'watch_tower_ruin': {
       const tower = ip('nocturnal-watch', 'tower');
-      add(tower, x, 0, z, 0, fitHeight(tower, 14));
+      add(tower, x, 0, z, 0, fitHeight(tower, 14), true);
       host.nav.setCircle(x, z, 3, false);
       add(gp('rock_large'), x + 5, 0, z + 3, 0.7, 1.2);
       add(gp('rock_large'), x - 4, 0, z - 4, 2.1, 0.9);
@@ -464,7 +471,7 @@ function placeLandmark(lm: LandmarkDef, x: number, z: number, host: WorldDecorHo
     }
     case 'red_castle_ruin': {
       const castle = tw('buildings/red/building_castle_red');
-      add(castle, x, 0, z, 0.3, fitHeight(castle, 14));
+      add(castle, x, 0, z, 0.3, fitHeight(castle, 14), true);
       host.nav.setCircle(x, z, 6, false);
       for (let k = 0; k < 4; k++) {
         const ang = 0.5 + k * (PI / 2), r = 13;
@@ -484,6 +491,8 @@ function placeLandmark(lm: LandmarkDef, x: number, z: number, host: WorldDecorHo
       return;
     }
     default:
+      // the silhouettes added with the fill pass (standing stones, giant tree, broken pier, roadside chapel)
+      placeNamedLandmark(lm, x, z, host);
       return;
   }
 }
@@ -610,6 +619,8 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
   guard('landmarks', () => {
     for (const lm of world.landmarks) placeLandmark(lm, tileCentre(lm.pos[0]), tileCentre(lm.pos[1]), host, lightsOn);
   });
+  // ---- decor: vignettes, fields, signposts, filler clusters (before scatter, so scatter keeps clear of them) ----
+  guard('decor', () => placeDecor(world.decor ?? [], host));
 
   // ---- scatter (borders, forests, regions, specials) ----
   let worldStream: WorldStream | null = null;
