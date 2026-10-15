@@ -504,11 +504,12 @@ export class QuestSystem {
       for (const o of def.objectives) {
         if (!BAG_KINDS.includes(o.kind) || !o.target) continue;
         if (ch.material(o.target) >= o.count) continue;
-        if (o.kind === 'drop' && o.from?.length) {
+        // an objective with `from` (drop, or collect with a named source) rolls from those enemies / families only
+        if (o.from?.length) {
           if (!o.from.some((id) => info.enemyId === id || info.family === id)) continue;
         } else if (!this.sourceMatches(def, info)) continue;
-        // drop: its own chance; collect: the shared chance. Swarm members scale both down by the collect ratio.
-        const base = o.kind === 'drop' && o.chance !== undefined ? o.chance : COLLECT_CHANCE;
+        // its own chance when set, else the shared collect chance. Swarm members scale both down by the collect ratio.
+        const base = o.chance !== undefined ? o.chance : COLLECT_CHANCE;
         const chance = info.swarm ? base * (COLLECT_CHANCE_SWARM / COLLECT_CHANCE) : base;
         if (this.rng.chance(chance)) out.push({ id: o.target, count: 1 });
       }

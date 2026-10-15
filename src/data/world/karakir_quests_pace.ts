@@ -32,6 +32,8 @@ interface Spec extends Reward {
 
 const kill = (target: string, count: number, text: string): QuestObjective => ({ kind: 'kill', target, count, text });
 const collect = (target: string, count: number, text: string): QuestObjective => ({ kind: 'collect', target, count, text });
+/** collect with a named source: `count` items of `target` roll from the kills of the listed enemies (QuestSystem.rollDrops, collect rate). */
+const collectFrom = (target: string, count: number, from: string[], text: string): QuestObjective => ({ kind: 'collect', target, count, from, text });
 
 const SPECS: Spec[] = [
   // ---- r7 Karakır Otlakları (30-33)
@@ -40,7 +42,7 @@ const SPECS: Spec[] = [
     offer: 'Otlağın ortasındaki obaya toz goblinleri yerleşmiş; sürünün etrafında dolaşıp kuzuları kaçırıyorlar. Obayı dağıt ve on goblini avla.',
     progress: 'Toz Goblini öldür (10).', done: 'Oba dağıldı, sürü rahat otluyor. Bu kuzuların hayatını kurtardın.' },
   { id: 'sq_r7_kurt_postu', name: 'Kurt Postu', level: 31, region: 'r7', giver: 'npc_kk_coban', xpPct: 14, goldPerLevel: 7,
-    objectives: [collect('item_kurt_postu', 6, 'Kurt Postu topla (6)')],
+    objectives: [collectFrom('item_kurt_postu', 6, ['kb_kurt'], 'Kurt Postu topla (6)')],
     offer: 'Kış yaklaşıyor ve çadırların postları eskidi. Otlaktaki kurtların postları kalın olur; altı tane getir, kışlık çadırları yenileyeceğiz.',
     progress: 'Kurt Postu topla (6).', done: 'Postlar kalın ve sağlam. Bu kış çoban ailesi üşümeyecek.' },
   { id: 'sq_r7_haydut_hani', name: 'Yıkık Hanın Haydutları', level: 32, region: 'r7', giver: 'npc_kk_avci', xpPct: 14, goldPerLevel: 8,
@@ -66,7 +68,7 @@ const SPECS: Spec[] = [
     offer: 'Orklar Kızıl Çorak\'ın vadilerinde pusu kurmuş; mızrakçılar tepeden vuruyor, şamanlar da onları iyileştiriyor. Sekiz mızrakçıyı ve üç şamanı avla.',
     progress: 'Çorak Mızrakçısı (8) ve Kızıl Şaman (3) öldür.', done: 'Vadi temizlendi. Kervan Başı Cengiz bu haberi bekliyordu.' },
   { id: 'sq_r8_corak_kristali', name: 'Çorak Kristalleri', level: 34, region: 'r8', giver: 'npc_kv_basi', xpPct: 13, goldPerLevel: 9,
-    objectives: [collect('item_corak_kristali', 6, 'Çorak Kristali topla (6)')],
+    objectives: [collectFrom('item_corak_kristali', 6, ['kb_iblis'], 'Çorak Kristali topla (6)')],
     offer: 'Kızıl Çorak\'ın yaratıkları ölünce sıcak kristaller düşüyor. Işık tüccarları bu kristalleri iyi fiyata alıyor. Altı tane getir.',
     progress: 'Çorak Kristali topla (6).', done: 'Kristaller sıcak ve temiz. Tüccarlara götüreceğim.' },
   { id: 'sq_r8_golem_avi', name: 'Kaya Golemleri', level: 35, region: 'r8', giver: 'npc_kv_basi', xpPct: 14, goldPerLevel: 9,

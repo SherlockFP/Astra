@@ -37,6 +37,22 @@ const ALL_WORLD = {
 };
 const ALL_WORLD_PACKS = WORLD_IDS.flatMap((id) => ALL[id].packs);
 const ALL_WORLD_ROOMS = WORLD_IDS.flatMap((id) => ALL[id].rooms);
+// one slice per open-world map: its regions, places (regions, villages, camps and patrols), NPCs and spawnable enemy ids. A quest's
+// objectives are checked against the map it belongs to (questZone), so a spawn in another map does not satisfy it.
+const ZONES = WORLD_IDS.map((id) => {
+  const w = ALL[id].world;
+  const regions = new Set((w.regions ?? []).map((r) => r.id));
+  // loot tables the map's content rolls: gathering nodes, camps (farm), mini-bosses, rares, metin stones, world bosses, chests
+  const tables = new Set([...(w.gather ?? []), ...(w.minibosses ?? []), ...(w.rares ?? []), ...(w.bosses ?? []), ...(w.chests ?? []),
+    ...(w.metin?.tiers ?? []), ...ALL[id].packs].map((x) => x?.lootTable).filter(Boolean));
+  return {
+    id, regions,
+    places: new Set([...regions, ...(w.villages ?? []).map((v) => v.id), ...ALL[id].packs.map((p) => p.id)]),
+    npcIds: new Set((w.villages ?? []).flatMap((v) => v.npcs.map((n) => n.id))),
+    tables,
+    world: w, packs: ALL[id].packs,
+  };
+});
 const want = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const verbose = process.argv.includes('--v');
 
@@ -102,24 +118,39 @@ const MAIN_ROOT = 'mq_01_kuzgunun_cagrisi';
  * Quest reachability, HARD errors on every quest (GDD_OPENWORLD §6, the runtime rules of systems/Quests.ts):
  *  - giver, turn-in and talk targets are NPCs of some town or village; a talk target is a quest NPC (role 'quest', or it offers
  *    quests) or a dialog NPC (ui.panel 'dialog'), never a plain merchant / guard / citizen;
- *  - a kill / metin / boss target spawns in a camp, patrol, rare, miniboss, metin stone or world boss; a kill, metin or boss
- *    target must spawn in a region whose level band holds the quest level (world bosses roam, so they need only a spawn);
- *  - a collect item has a source: a quest reward, a kill objective that spawns, the quest's region (packs), or any camp when the
- *    quest is region-less (sourceMatches);
+ *  - EVERY objective has a reachable source in the map of its quest (questZone: the map of its region, place or giver), so a
+ *    spawn in another map does not count:
+ *      kill / metin / boss / skill / elite: the target spawns in a camp, patrol, rare, miniboss, metin stone or world boss of that map,
+ *        in a region whose level band holds the quest level (world bosses roam: a spawn is enough);
+ *      drop: one of its `from` enemies or families spawns in band (the others are warnings);
+ *      collect: a quest reward, a drop objective of the same quest, a `from` list with a member that spawns in band (rolled as
+ *        QuestSystem.rollDrops does), a kill objective that spawns (the sourceMatches rule), or a loot table that a map roll uses lists
+ *        the item (gathering nodes: ore_* / herb_*). A region alone is no source;
+ *      use: its item is a start item, a reward or a drop target; interact / use: the prop kind is one scenes/world/WorldQuestProps.ts
+ *        places (qo_sack, qo_crystal, qo_banner, qt_*) in the quest region (placed at run time, so it is checked by kind and region);
+ *      escort: the quest region is a region of a map (the escort path is built from it at run time);
+ *      talk / turn-in: an NPC of the town or a village; explore: an id the game emits (see above);
  *  - prerequisites exist, do not step down in level, form no cycle, and every main quest is reached from MAIN_ROOT (mq_01);
  *  - unlocks that name a waypoint, an entrance or a dungeon must exist (an unregistered zone is only a warning);
  *  - an explore target is a region, waypoint, hidden area, vista or landmark id: the only ids the game emits (Quests.ts listens to
  *    world:regionEntered, waypoint:discovered and scenes/world/Discoveries.ts). Rooms and villages are never emitted.
  */
-function questReachIssues(quests, world, npcIds, packs, dungeonIds, zoneIds, npcById) {
+function questReachIssues(quests, world, npcIds, packs, dungeonIds, zoneIds, npcById, zones, familyOf, lootTables) {
   const out = [];
   const err = (where, msg) => out.push({ level: 'error', where, msg });
   const warn = (where, msg) => out.push({ level: 'warn', where, msg });
-  const spawns = spawnIndex(world, packs);
+  const KILL_KINDS = new Set(['kill', 'boss', 'metin', 'elite']); // the kinds QuestSystem.onKill counts (and collect drops follow)
+  const spawnsAll = spawnIndex(world, packs);
+  // each map's spawns (ZONES): a quest is checked against the map of its region, place or giver
+  for (const z of zones) z.spawns = spawnIndex(z.world, z.packs);
+  const zoneOf = (q) => zones.find((z) => (q.region && z.regions.has(q.region)) || (q.place && z.places.has(q.place)) || z.npcIds.has(q.giver)) ?? null;
+  const zoneRegions = new Set(zones.flatMap((z) => [...z.regions]));
+  const allTables = new Set(zones.flatMap((z) => [...z.tables]));
+  /** a loot table the map rolls lists the item (gathering nodes yield ore_* / herb_* this way) */
+  const tableYields = (zone, item) => [...(zone ? zone.tables : allTables)].some((t) => lootTables[t] && JSON.stringify(lootTables[t]).includes(`"${item}"`));
   const offerers = new Set(quests.flatMap((q) => [q.giver, q.turnIn].filter(Boolean))); // NPCs that give or take in a quest
-  const roomRegion = new Map((world?.regions ?? []).map((r) => [r.roomId, r.id]));
-  const packRegions = new Set((packs ?? []).map((p) => roomRegion.get(p.roomId)).filter(Boolean));
   const bandOf = new Map((world?.regions ?? []).map((r) => [r.id, r.levels]));
+  const allDropTargets = new Set(quests.flatMap((q) => q.objectives.filter((o) => o.kind === 'drop' && o.target).map((o) => o.target)));
   const inBand = (region, lvl) => { const b = bandOf.get(region); return !!b && lvl >= b[0] && lvl <= b[1]; };
   const byId = new Map(quests.map((q) => [q.id, q]));
   const rewardItems = new Set(quests.flatMap((q) => (q.reward?.items ?? []).map((i) => i.id)));
@@ -137,7 +168,29 @@ function questReachIssues(quests, world, npcIds, packs, dungeonIds, zoneIds, npc
       if (!pd) err(where, `unknown prerequisite ${p}`);
       else if (q.level < pd.level) err(where, `level ${q.level} is below its prerequisite ${p} (${pd.level}): chain levels must not drop`);
     }
-    const kills = q.objectives.filter((o) => o.kind === 'kill' || o.kind === 'metin' || o.kind === 'boss');
+    // the map of this quest and its spawns; a target that spawns only in another map is an error (the bot cannot reach it here)
+    const zone = zoneOf(q);
+    const spawns = zone ? zone.spawns : spawnsAll;
+    const at = zone ? `map ${zone.id}` : 'any map';
+    /** kill-type target: spawns in this map, in a region whose level band holds the quest level (world bosses roam: a spawn is enough). */
+    const needSpawn = (ow, id, lvl) => {
+      const regs = spawns.get(id);
+      if (!regs) {
+        err(ow, `${id} spawns in no camp, patrol, rare, miniboss, metin stone or world boss of ${at}${spawnsAll.has(id) ? ' (it spawns in another map)' : ''}`);
+        return;
+      }
+      if (regs.size && ![...regs].some((r) => inBand(r, lvl))) {
+        err(ow, `${id} spawns only in ${[...regs].map((r) => `${r} (${bandOf.get(r)?.join('-')})`).join(', ')}: no level band holds quest level ${lvl}`);
+      }
+    };
+    /** a `from` entry (enemy id or family) with a member that spawns in this map within the quest's level band */
+    const fromSpawns = (f, lvl) => [...spawns.keys()].some((id) => {
+      if (id !== f && familyOf(id) !== f) return false;
+      const r = spawns.get(id);
+      return !r.size || [...r].some((g) => inBand(g, lvl));
+    });
+    const kills = q.objectives.filter((o) => KILL_KINDS.has(o.kind));
+    const dropTargets = new Set(q.objectives.filter((o) => o.kind === 'drop' && o.target).map((o) => o.target));
     for (const o of q.objectives) {
       const ow = `${where} [${o.kind} ${o.target ?? ''}]`;
       if (o.kind === 'talk' && !npcIds.has(o.target)) err(ow, `npc ${o.target} is not in any town or village`);
@@ -149,21 +202,37 @@ function questReachIssues(quests, world, npcIds, packs, dungeonIds, zoneIds, npc
       if (o.kind === 'explore' && !explorePlaces.has(o.target)) {
         err(ow, `${o.target} is no region, waypoint, hidden area, vista or landmark: the game emits explore only for those ids`);
       }
-      if ((o.kind === 'kill' || o.kind === 'metin' || o.kind === 'boss') && o.target) {
-        const regs = spawns.get(o.target);
-        if (!regs) err(ow, `${o.target} spawns in no camp, patrol, rare, miniboss, metin stone or world boss`);
-        else if (regs.size && ![...regs].some((r) => inBand(r, q.level))) {
-          err(ow, `${o.target} spawns only in ${[...regs].map((r) => `${r} (${bandOf.get(r)?.join('-')})`).join(', ')}: no level band holds quest level ${q.level}`);
-        }
+      // kill-type targets: the enemy must stand in this map (skill: the caster that the player interrupts; elite: a named rare)
+      if ((o.kind === 'kill' || o.kind === 'metin' || o.kind === 'boss' || o.kind === 'skill' || o.kind === 'elite') && o.target && o.target !== 'interrupt') {
+        needSpawn(ow, o.target, q.level);
       }
+      // drop: `from` names the enemies / families the item rolls from; one of them must spawn in band (QuestSystem.rollDrops)
+      // drop / collect with `from`: the listed enemies or families roll the item (QuestSystem.rollDrops); one must spawn in band
+      if ((o.kind === 'drop' || o.kind === 'collect') && o.from?.length) {
+        const usable = o.from.filter((f) => fromSpawns(f, q.level));
+        if (o.kind === 'drop' && !usable.length) err(ow, `no drop source: none of ${o.from.join(', ')} spawns in ${at} within level ${q.level}`);
+        for (const f of o.from.filter((x) => !usable.includes(x))) warn(ow, `${f} does not spawn in ${at} within level ${q.level}`);
+      }
+      if (o.kind === 'drop' && !(o.from?.length)) err(ow, 'drop has no source: `from` lists no enemy or family');
+      // collect: a quest reward, a drop objective of this quest, a `from` source in band, a kill objective of this quest whose target
+      // spawns in this map (the QuestSystem.sourceMatches rule), or a loot table the map rolls. A region alone is no source.
       if (o.kind === 'collect' && o.target) {
-        let src;
-        if (rewardItems.has(o.target)) src = 'reward';
-        else if (kills.length) src = kills.some((k) => k.target && spawns.has(k.target)) ? 'kill' : undefined;
-        else if (q.region) src = packRegions.has(q.region) ? 'region' : undefined;
-        else src = (packs ?? []).length ? 'camp' : undefined;
-        if (!src) err(ow, `${o.target} has no source: no quest reward, no spawning kill objective, no camp in ${q.region ?? 'the world'}`);
+        const src = rewardItems.has(o.target) ? 'reward' : dropTargets.has(o.target) ? 'drop'
+          : (o.from ?? []).some((f) => fromSpawns(f, q.level)) ? 'from'
+          : kills.some((k) => k.target && spawns.has(k.target)) ? 'kill' : tableYields(zone, o.target) ? 'table' : undefined;
+        if (!src) err(ow, `${o.target} has no source: no quest reward, no drop objective of this quest, no listed source or kill objective that spawns in ${at}, no loot table of ${at} lists it`);
       }
+      // interact / use: a prop the scenes place in the quest's region (scenes/world/WorldQuestProps.ts questPropSpots)
+      if (o.kind === 'interact' || o.kind === 'use') {
+        if (!/^(qo_(sack|crystal|banner)|qt_)/.test(o.target ?? '')) err(ow, `${o.target} is no quest prop (qo_sack, qo_crystal, qo_banner or qt_*)`);
+        if (!q.region || !zoneRegions.has(q.region)) err(ow, 'the prop is placed in the quest region, which is no region of a map');
+      }
+      if (o.kind === 'use' && o.item) {
+        const has = (q.startItems ?? []).some((i) => i.id === o.item) || rewardItems.has(o.item) || allDropTargets.has(o.item);
+        if (!has) err(ow, `quest item ${o.item} has no source: no start item, no reward, no drop objective`);
+      }
+      // escort: the escorted NPC walks the quest region (scenes/world/WorldQuestProps.ts escortPath)
+      if (o.kind === 'escort' && (!q.region || !zoneRegions.has(q.region))) err(ow, 'escort walks the quest region, which is no region of a map');
     }
     for (const u of q.unlocks ?? []) {
       const uw = `${where} [unlock ${u}]`;
@@ -280,7 +349,7 @@ function ringDensityIssues(packs, roomId, quests, sideQuests) {
   for (const q of quests) {
     if (q.level > 3) continue;
     const tids = new Set(q.objectives.filter((o) => o.kind === 'kill' || o.kind === 'metin').map((o) => o.target).filter(Boolean));
-    for (const o of q.objectives) if (o.kind === 'drop') for (const f of o.from ?? []) tids.add(f);
+    for (const o of q.objectives) if (o.kind === 'drop' || (o.kind === 'collect' && o.from?.length)) for (const f of o.from ?? []) tids.add(f);
     if (!tids.size) continue;
     const T = camps.filter((c) => c.members.some((m) => tids.has(m.enemyId)) && hi(c) >= q.level - 1 && lo(c) <= q.level + 1);
     if (!T.length) continue;
@@ -296,7 +365,7 @@ function ringDensityIssues(packs, roomId, quests, sideQuests) {
     const place = camps.find((c) => c.id === sq.place);
     if (!q || !place || q.level > 3) continue;
     const tids = new Set(q.objectives.filter((o) => o.kind === 'kill' || o.kind === 'metin').map((o) => o.target).filter(Boolean));
-    for (const o of q.objectives) if (o.kind === 'drop') for (const f of o.from ?? []) tids.add(f);
+    for (const o of q.objectives) if (o.kind === 'drop' || (o.kind === 'collect' && o.from?.length)) for (const f of o.from ?? []) tids.add(f);
     const near = camps.filter((c) => gap(c, place) <= PLACE && c.members.some((m) => tids.has(m.enemyId)));
     if (!near.length) { err(`quest ${sq.id}`, `no target camp within ${PLACE} m of ${sq.place}`); continue; }
     for (const c of near) if (lo(c) < q.level || hi(c) > q.level + 1) err(`quest ${sq.id}`, `target camp ${c.id} (L${lo(c)}-${hi(c)}) is outside the L${q.level}-${q.level + 1} band of ${sq.place}`);
@@ -373,7 +442,8 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id)) || want.includes('
   for (const i of re) console.log('  ERR ', i.where, '-', i.msg);
   for (const i of rw) console.log('  warn', i.where, '-', i.msg);
   const npcById = new Map([...TOWN.npcs, ...(world?.villages ?? []).flatMap((v) => v.npcs)].map((n) => [n.id, n]));
-  const xq = questReachIssues(QUESTS, world, npcIds, ALL_WORLD_PACKS, DUNGEON_ALL, OPEN_ZONE_IDS, npcById);
+  const { familyOf } = await imp('src/data/families.ts');
+  const xq = questReachIssues(QUESTS, world, npcIds, ALL_WORLD_PACKS, DUNGEON_ALL, OPEN_ZONE_IDS, npcById, ZONES, familyOf, { ...lootTables, ...LOOT.GATHER_TABLES });
   const xe = xq.filter((i) => i.level === 'error'), xw = xq.filter((i) => i.level === 'warn');
   totalErr += xe.length;
   console.log(`\n== quest reachability: ${xe.length} errors, ${xw.length} warns | ${QUESTS.length} quests, ${spawnIndex(world, ALL_WORLD_PACKS).size} spawnable ids`);

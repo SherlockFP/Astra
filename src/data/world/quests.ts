@@ -52,7 +52,6 @@ const metin = (target: string, text: string): QuestObjective => obj('metin', tar
 const dungeon = (target: string, text: string): QuestObjective => obj('dungeon', target, 1, text);
 const collect = (target: string, count: number, text: string): QuestObjective => obj('collect', target, count, text);
 const explore = (target: string, text: string): QuestObjective => obj('explore', target, 1, text);
-const skill = (target: string, count: number, text: string): QuestObjective => obj('skill', target, count, text);
 const drop = (target: string, count: number, from: string[], text: string): QuestObjective => ({ kind: 'drop', target, count, from, chance: 0.6, text });
 
 /** Main chain "Kadim Mühür" (§6.2). Rewards: items as the layout text names them, generic = "Büyülü / Nadir / Destansı" drops. */
@@ -74,9 +73,11 @@ const EXTRA_MAIN: Record<string, Extra> = {
     progress: 'Yeşil Balçıktan Çamur Kesesi topla (5).', done: 'Balçıklar geri çekildi. Merhem hazır.',
   },
   mq_04_samani_sustur: {
-    objectives: [skill('ow_goblin_shaman', 3, "Goblin Şamanı'nın Şifa Duası'nı 3 kez kes")], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
+    // kill, not the Şifa Duası interrupt: the shaman casts its heal only when an ally is below 80 % HP and kites at 7-13 m, so the
+    // interrupt could not be counted in play. Shamans spawn in the level 3 band (r1_c04, r1_p01, r1_pg1 in sisli_vadi.layout.json).
+    objectives: [kill('ow_goblin_shaman', 3, "Goblin Şamanı'nı öldür (3)")], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
     giver: 'npc_g_rahibe', turnIn: 'npc_g_muhtar',
-    offer: 'Goblin Şamanı şifa duaları okuyor. Duasını kesmelisin; sonra Muhtar Ferhat\'a dön.', progress: "Şifa Duası'nı 3 kez kes.", done: 'Şaman bir daha dua okuyamayacak.',
+    offer: 'Goblin Şamanları yaralılara şifa okuyup yağmacıları ayakta tutuyor. Üç şamanı yere ser; sonra Muhtar Ferhat\'a dön.', progress: "Goblin Şamanı'nı öldür (3).", done: 'Şamanlar susturuldu. Yağmacılar artık dua okuyamayacak.',
   },
   mq_05_yagmaci_kampi: {
     objectives: [boss('mb_girtlak', 1, "Yağmacı Başı Gırtlak'ı öldür")], choice: { rarity: 'uncommon', slots: ['weapon', 'armor', 'jewelry'] },
@@ -168,8 +169,8 @@ const EXTRA_SIDE: Record<string, Extra> = {
     offer: 'Kurtlar yol kenarında dolaşıyor. Sekiz kurdu avla.', progress: 'Orman Kurdu öldür (8).', done: 'Yol yeniden güvenli.',
   },
   sq_g_02_geyik_derisi: {
-    objectives: [collect('item_geyik_derisi', 5, 'Geyik Derisi topla')], generic: [{ rarity: 'uncommon', slot: 'jewelry' }],
-    offer: 'Geyikler çayırda koşuyor. Derilerini getir.', progress: 'Geyik Derisi topla (5).', done: 'Gümüş Yüzük senin olsun.',
+    objectives: [{ kind: 'collect', target: 'item_geyik_derisi', count: 5, from: ['ow_boar', 'ow_wolf'], text: 'Yaban domuzu ve kurtlardan Geyik Derisi topla (5)' }], generic: [{ rarity: 'uncommon', slot: 'jewelry' }],
+    offer: 'Çayırda yaban domuzu ve kurtlar dolaşıyor. Avlarının derisinden beş tane getir.', progress: 'Yaban domuzu ve kurtlardan Geyik Derisi topla (5).', done: 'Gümüş Yüzük senin olsun.',
   },
   sq_g_03_orumcek_aglari: {
     objectives: [kill('ow_spider', 8, 'Orman Örümceği öldür')],

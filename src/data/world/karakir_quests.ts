@@ -39,6 +39,8 @@ interface Spec extends Reward {
 const kill = (target: string, count: number, text: string): QuestObjective => ({ kind: 'kill', target, count, text });
 const boss = (target: string, count: number, text: string): QuestObjective => ({ kind: 'boss', target, count, text });
 const collect = (target: string, count: number, text: string): QuestObjective => ({ kind: 'collect', target, count, text });
+/** collect with a named source: `count` items of `target` roll from the kills of the listed enemies (QuestSystem.rollDrops, collect rate). */
+const collectFrom = (target: string, count: number, from: string[], text: string): QuestObjective => ({ kind: 'collect', target, count, from, text });
 const talk = (target: string, text: string): QuestObjective => ({ kind: 'talk', target, count: 1, text });
 const explore = (target: string, text: string): QuestObjective => ({ kind: 'explore', target, count: 1, text });
 
@@ -64,7 +66,7 @@ const SPECS: Spec[] = [
     offer: "Kervanlar yolda kayboluyor. Karakol'daki Avcı Börte bozkırı iyi bilir; bu mektubu ona ulaştır.",
     progress: 'Avcı Börte ile konuş.', done: "Mektup yerine ulaştı. Cengiz'in derdi bana da dert: kayıp kervanların izini süreceğiz." },
   { id: 'sq_kk_ch02_eski_muhurler', name: 'Eski Kervan Mühürleri', level: 34, region: 'r8', giver: 'npc_kk_avci', prereq: 'sq_kk_ch01_kervan_mektubu', xpPct: 8, goldPerLevel: 8,
-    objectives: [collect('item_kervan_muhru', 6, 'Eski Kervan Mührü topla')],
+    objectives: [collectFrom('item_kervan_muhru', 6, ['kb_ork', 'kb_ork_atici'], 'Eski Kervan Mührü topla')],
     offer: "Kayıp kervanların mühürleri Kızıl Çorak'taki yaratıkların elinde kalmış. Altı mühür getirirsen hangi yolda kaybolduklarını çıkarırım.",
     progress: 'Eski Kervan Mührü topla (6).', done: 'Mühürler yolun orklar tarafından kesildiğini gösteriyor. Şimdi onları vurma zamanı.' },
   { id: 'sq_kk_ch03_kervan_yolu', name: 'Kervan Yolu', level: 36, giver: 'npc_kk_avci', turnIn: 'npc_kv_basi', prereq: 'sq_kk_ch02_eski_muhurler', xpPct: 9, goldPerLevel: 9,
@@ -78,7 +80,7 @@ const SPECS: Spec[] = [
     offer: 'Kurtlar sürüme dadandı, her gece bir koyun eksiliyor. On iki kurdu avla da ağıla huzur gelsin.',
     progress: 'Bozkır Kurdu öldür (12).', done: 'Sürü rahat uyuyabilir. Sağ ol, delikanlı.' },
   { id: 'sq_kk_c01_bozkir_postlari', name: 'Bozkır Postları', level: 31, region: 'r7', giver: 'npc_kk_coban', xpPct: 7, goldPerLevel: 7,
-    objectives: [collect('item_bozkir_postu', 8, 'Bozkır Kurdu Postu topla')],
+    objectives: [collectFrom('item_bozkir_postu', 8, ['kb_kurt'], 'Bozkır Kurdu Postu topla')],
     offer: 'Kış kapıda. Kurt postundan kalın mont olur; ama avlayacak genç kalmadı. Sekiz post getir.',
     progress: 'Bozkır Kurdu Postu topla (8).', done: 'Bu postlarla kimse donmaz. Al, ödülün.' },
   { id: 'sq_kk_h01_alaca_yele', name: 'Alaca Yele Avı', level: 32, region: 'r7', giver: 'npc_kk_avci', xpPct: 13, goldPerLevel: 9,
@@ -90,7 +92,7 @@ const SPECS: Spec[] = [
     offer: 'Kervansaray\'ın güneyindeki çukurdan kızıl çıyanlar taşıyor. Develer bile yaklaşmıyor. Çukuru temizle.',
     progress: 'Kızıl Çıyan öldür (12).', done: 'Çukur sessiz. Develer rahat nefes aldı.' },
   { id: 'sq_kk_c02_corak_kristalleri', name: 'Çorak Kristalleri', level: 35, region: 'r8', giver: 'npc_kv_gozcu', xpPct: 8, goldPerLevel: 9,
-    objectives: [collect('item_corak_kristali', 8, 'Çorak Kristali topla')], items: [{ id: 'buyulu_toz', count: 5 }],
+    objectives: [collectFrom('item_corak_kristali', 8, ['kb_iblis'], 'Çorak Kristali topla')], items: [{ id: 'buyulu_toz', count: 5 }],
     offer: 'Kızıl Çorak\'ın yaratıkları ölünce içlerinden sıcak kristaller düşüyor. Işık tüccarları iyi para ödüyor. Sekiz tane topla.',
     progress: 'Çorak Kristali topla (8).', done: 'Güzel parça! Kervan Başı\'na götürürüm.' },
   { id: 'sq_kk_b01_ulu_boz', name: 'Ulu-Boz', level: 39, region: 'r10', giver: 'npc_kv_gozcu', xpPct: 20, goldPerLevel: 12,
@@ -112,7 +114,7 @@ const SPECS: Spec[] = [
     offer: 'Gece olunca küllerin altından hortlaklar kalkıyor. Tabutları açmadan önce sayılarını azaltmalıyız. On tanesini yok et.',
     progress: 'Kül Hortlağı öldür (10).', done: 'Hortlaklar toprağa döndü. Gece biraz daha sakin.' },
   { id: 'sq_ko_c01_kul_tozu', name: 'Kül Tozu', level: 41, region: 'r11', giver: 'npc_ko_kasif', xpPct: 7, goldPerLevel: 8,
-    objectives: [collect('item_kul_tozu', 8, 'Kül Tozu topla')], items: [{ id: 'buyulu_toz', count: 4 }],
+    objectives: [collectFrom('item_kul_tozu', 8, ['kb_kul_hortlak', 'kb_kul_cin'], 'Kül Tozu topla')], items: [{ id: 'buyulu_toz', count: 4 }],
     offer: 'Kül Ovası\'nın tozu bazı yaratıkların içinde saklı. Onları öldüğünde toz bırakıyor; sekiz avuç topla, analiz edeceğim.',
     progress: 'Kül Tozu topla (8).', done: 'Bu toz ateşe dayanıklı bir kaplama için birebir. Teşekkürler.' },
   { id: 'sq_ko_k03_golem_kiriklari', name: 'Golem Kırıkları', level: 42, region: 'r11', giver: 'npc_ko_kasif', xpPct: 8, goldPerLevel: 9,
@@ -128,7 +130,7 @@ const SPECS: Spec[] = [
     offer: 'Kartal Sırtı\'nda yırtıcılar kayalıkların üstünden atlayıp yolcuları kovalıyor. On iki tanesini yakalayıp sürüyü dağıt.',
     progress: 'Sırt Yırtıcısı öldür (12).', done: 'Sırtlar güvende. Kartal yuvalarına çıkmak artık daha az tehlikeli.' },
   { id: 'sq_kt_c01_kartal_tuyu', name: 'Kartal Tüyü', level: 43, region: 'r12', giver: 'npc_ko_kasif', xpPct: 8, goldPerLevel: 9,
-    objectives: [collect('item_kartal_tuyu', 8, 'Kartal Tüyü topla')], items: [{ id: 'buyulu_toz', count: 4 }],
+    objectives: [collectFrom('item_kartal_tuyu', 8, ['kb_kartal_karakus', 'kb_kartal_gozcu'], 'Kartal Tüyü topla')], items: [{ id: 'buyulu_toz', count: 4 }],
     offer: 'Dev karakuşların tüyleri rüzgârı kesen oklar için aranıyor. Sekiz tüy getir, okçularımıza yeni ok yaptıracağım.',
     progress: 'Kartal Tüyü topla (8).', done: 'Ne güzel tüyler! Oklar bu sırttan da hedefi bulacak.' },
   { id: 'sq_kt_k02_kartal_rahipleri', name: 'Kartal Rahipleri', level: 44, region: 'r12', giver: 'npc_ko_nobetci', xpPct: 9, goldPerLevel: 10,
