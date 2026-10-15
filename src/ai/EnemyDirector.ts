@@ -214,14 +214,13 @@ export class EnemyDirector {
    * Aggro `ai` and the enemies it pulls. Only its own camp (same packId, plus packs a dungeon linked to it) comes along at any
    * distance; other packs are never pulled. A pack-less neighbour is social-pulled only within SOCIAL_AGGRO_M (10 m) of the puller,
    * on the same level, and only when it is already inside its own aggro range of the target. A social pull never sweeps the room.
-   * Low-level cap (hasRoom): a new engagement (a sight pull, a touch, a call for help) is refused once the target already has
-   * PULL_CAP engaged enemies; the pulled mates are taken nearest first. `answering` = the enemy was hit by the target, which always
-   * gets its answer.
+   * Low-level cap (hasRoom, enforced again in EnemyAI.acquire): every engagement (a sight pull, a touch, a hit, a call for help, a
+   * summon or respawn) is refused once the target already has PULL_CAP engaged enemies; the pulled mates are taken nearest first.
    */
   pullPack(ai: EnemyAI, target: Actor | null, answering = false): void {
     if (!target) return;
     if (!answering && !this.hasRoom(ai.e, target)) return;
-    ai.acquire(target, true);
+    ai.acquire(target, true, answering);
     const mates: { ai: EnemyAI; d: number }[] = [];
     for (const o of this.ais.slice()) {
       if (o === ai || o.aggroed || o.e.isDead) continue;

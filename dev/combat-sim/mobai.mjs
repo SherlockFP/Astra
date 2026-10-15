@@ -371,6 +371,36 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
   ok('wall.charge really moved (x > 1)', maxX > 1, `max x ${maxX.toFixed(2)}`);
 }
 
+// ==================================================================================================================
+// cap.engage.* unprompted engagements obey the low-level cap (PULL_CAP 3 engaged on one target, level <= 5): a summon or respawn spawned
+// into combat (acquire) and sight pulls. A mob the player hits always fights back (WoW): the player's own AoE / DoT engages every mob it hits.
+// ==================================================================================================================
+{
+  const p = reset('priest', 2);
+  // 6 idle level-3 mobs, 4 m apart, aggroRange 0 so only a hit can wake them (no sight or touch pull)
+  const quiet = { ...ENEMIES.ys_nobet_muhafizi, aggroRange: 0 };
+  const row = [0, 1, 2, 3, 4, 5].map((i) => mob(null, 12 + i * 4, 0, { def: quiet, level: 3 }));
+  for (const m of row) m.ai.onDamaged(p.id, 5);
+  const hit = row.filter((m) => m.ai.aggroed).length;
+  ok('cap.engage.AoE hit on six idle level-3 mobs: every hit mob fights back', hit === 6, `engaged ${hit}/6`);
+
+  // a summon or respawn spawned into the fight is refused while the target is at the cap
+  const late = mob(null, 40, 0, { def: quiet, level: 3 });
+  late.ai.acquire(p, true);
+  ok('cap.engage.summon / respawn into combat is refused at the cap', !late.ai.aggroed, `late aggroed ${late.ai.aggroed}`);
+
+  // sight pull: six level-3 mobs 8-12 m off, each with its own aggro range: the cap still holds over 2 s
+  const p2 = reset('priest', 2);
+  const seer = { ...ENEMIES.ys_nobet_muhafizi, aggroRange: 14 };
+  const pack = [0, 1, 2, 3, 4, 5].map((i) => mob(null, 8 + i * 0.8, i * 4 - 10, { def: seer, level: 3 }));
+  let maxSight = 0;
+  for (let i = 0; i < sec(2); i++) {
+    H.step(1);
+    maxSight = Math.max(maxSight, pack.filter((m) => m.ai.aggroed && m.ai.target === p2).length);
+  }
+  ok('cap.engage.sight pull of six level-3 mobs holds at most 3', maxSight >= 1 && maxSight <= 3, `max ${maxSight}`);
+}
+
 // ---- report ---------------------------------------------------------------------------------------------------------------
 const hard = errors.filter((e) => e.startsWith('ERR'));
 ok('no engine errors during the run', hard.length === 0, hard.slice(0, 3).join(' | '));
