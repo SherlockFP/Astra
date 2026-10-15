@@ -17,6 +17,7 @@ import { GEM_TYPES, MATERIALS, gemId, potionIds } from '../data/materials';
 import { CLASS_NAMES_TR } from '../data/itemBases';
 import { familyOf, regionOfPack } from '../data/families';
 import { generateItem, generateUnique, itemDisplayName, rarityIndex, sellValue, type RarityCtx } from './ItemGen';
+import { upgradeInfo } from './LootUpgrade';
 import { bountyEvent, initBounties } from './Bounties';
 import { QuestSystem } from './Quests';
 import { isAffixUnit } from './Affixes';
@@ -544,7 +545,9 @@ export class LootSystem {
     // label
     const color = RARITY_COLORS[r];
     const name = drop.displayName;
-    const html = `<span style="display:inline-block;padding:1px 7px;background:rgba(8,6,4,.72);color:${color};border:1px solid ${color}66;border-radius:2px;font:700 13px/1.25 'Alegreya Sans',system-ui,sans-serif;text-shadow:0 1px 0 #000;white-space:nowrap;cursor:pointer">${escapeHtml(name)}</span>`;
+    // an item that beats what is worn in its slot (LootUpgrade: item level, then the main stat) carries a green ▲ on its label
+    const upgMark = d.kind === 'item' && d.item && upgradeInfo(d.item).upgrade ? '<b style="color:#4ade80;margin-right:4px">▲</b>' : '';
+    const html = `<span style="display:inline-block;padding:1px 7px;background:rgba(8,6,4,.72);color:${color};border:1px solid ${color}66;border-radius:2px;font:700 13px/1.25 'Alegreya Sans',system-ui,sans-serif;text-shadow:0 1px 0 #000;white-space:nowrap;cursor:pointer">${upgMark}${escapeHtml(name)}</span>`;
     const dist = d.kind === 'item' ? LABEL_DISTANCE[r] : 14;
     drop.createLabel(html, d.kind === 'item' ? 1.15 : 0.95, dist);
     // epic: soft screen-edge flash
@@ -579,7 +582,7 @@ export class LootSystem {
           return false;
         }
         G.events.emit('loot:pickedUp', { item });
-        if (rarityIndex(item.rarity) >= 2) toast(`Alındı: ${itemDisplayName(item)}`, 'loot');
+        // the pickup card (ui/hud/LootCards, fed from loot:pickedUp) replaces the old "Alındı" toast line
         break;
       }
       case 'gold': {

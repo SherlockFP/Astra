@@ -10,6 +10,7 @@ import { getMaterial } from '../../../data/materials';
 import type { ItemDescription } from '../../../systems/ItemGen';
 import { itemApi } from './backend';
 import type { ItemLocation } from '../../../systems/CharacterState';
+import { upgradeInfo } from '../../../systems/LootUpgrade';
 
 /* ------------------------------------------------------------------ */
 /* tiny DOM + misc helpers                                              */
@@ -465,6 +466,8 @@ export function fallbackItemHTML(item: ItemInstance, cmp?: ItemInstance | null):
 export function bindItemTip(target: HTMLElement, getItem: () => ItemInstance | null | undefined, opts: { compare?: boolean; footer?: () => string } = {}): void {
   let html = '';
   let useHud = false;
+  /** The hovered item with its comparison (equipped) item and footer: the HUD shows both side by side (retail style). */
+  let shown: { item: ItemInstance; cmp: ItemInstance | null; foot: string } | null = null;
   const build = (): boolean => {
     const item = getItem();
     if (!item) return false;
@@ -477,13 +480,15 @@ export function bindItemTip(target: HTMLElement, getItem: () => ItemInstance | n
       hud = '';
     }
     useHud = !!hud;
+    shown = { item, cmp, foot };
     html = (hud || fallbackItemHTML(item, cmp)) + foot;
     return true;
   };
   const put = (x: number, y: number) => {
     if (useHud) {
       try {
-        G.ui.showTooltip(html, x, y);
+        if (shown?.cmp) G.ui.showCompareTooltip(shown.item, shown.cmp, x, y, { extra: shown.foot });
+        else G.ui.showTooltip(html, x, y);
       } catch {
         /* ignore */
       }
@@ -532,6 +537,8 @@ export class ItemSlot {
   item: ItemInstance | null = null;
   private ico: HTMLDivElement;
   private up: HTMLSpanElement;
+  /** Green ▲ when the item beats what is worn in its slot (bags, stash, vendor). */
+  private upgArrow: HTMLSpanElement;
   private qty: HTMLSpanElement;
   private lockEl: HTMLSpanElement;
   private socks: HTMLDivElement;
@@ -542,19 +549,22 @@ export class ItemSlot {
     this.el = h('div', `pi-slot sz-${size}`);
     this.ico = h('div', 'pi-ico');
     this.up = h('span', 'pi-up');
+    this.upgArrow = h('span', 'pi-upg-arrow', '▲');
+    this.upgArrow.title = 'Kuşandığın eşyadan daha iyi';
     this.qty = h('span', 'pi-qty');
     this.lockEl = h('span', 'pi-lockmark');
     this.socks = h('div', 'pi-socks');
     this.label = h('span', 'pi-slot-label', emptyLabel ?? '');
     const bad = h('div', 'pi-bad');
-    this.el.append(this.ico, this.label, this.socks, this.up, this.qty, this.lockEl, bad);
+    this.el.append(this.ico, this.label, this.socks, this.up, this.upgArrow, this.qty, this.lockEl, bad);
     this.set(null);
   }
 
   set(item: ItemInstance | null, extra: SlotExtra = {}): void {
     const usable = item ? isUsable(item) : true;
+    const upg = item ? upgradeInfo(item).upgrade : false;
     const sig = item
-      ? `${itemSig(item)}|${usable ? 1 : 0}|${item.locked ? 1 : 0}|${extra.disabled ? 1 : 0}|${extra.count ?? ''}`
+      ? `${itemSig(item)}|${usable ? 1 : 0}|${item.locked ? 1 : 0}|${extra.disabled ? 1 : 0}|${extra.count ?? ''}|${upg ? 1 : 0}`
       : `empty|${extra.disabled ? 1 : 0}`;
     if (sig === this.sig) return;
     this.sig = sig;
@@ -563,6 +573,8 @@ export class ItemSlot {
     el.classList.toggle('empty', !item);
     el.classList.toggle('disabled', !!extra.disabled);
     el.classList.toggle('unusable', !usable);
+    el.classList.toggle('upg', upg);
+    this.upgArrow.style.display = upg ? 'block' : 'none';
     if (!item) {
       el.className = el.className.replace(/\brar-\w+/g, '').replace(/\bu\d+\b/g, '').trim();
       el.style.removeProperty('--rc');
