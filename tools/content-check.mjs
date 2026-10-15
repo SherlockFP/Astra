@@ -430,6 +430,36 @@ function ringDensityIssues(packs, roomId, quests, sideQuests) {
   return { issues: out, band };
 }
 /**
+ * Starting-zone ring bands (Sisli Vadi r1, WoW-style). The rings are centred on the starting village (layout settlement koy_gumusdere)
+ * and measured by centre distance in metres: inner (level 1-2) up to RING_INNER_M, middle (level 3) up to RING_MIDDLE_M, outer (level 4-5)
+ * beyond. The bounds sit in the gaps of the 7ef67e2 layout (inner camps end at 127 m, middle camps run 137-184 m, outer camps start at
+ * 205 m). HARD errors:
+ *  (6) every camp and patrol of r1 has a level range inside the band of its ring;
+ *  (7) a level 4+ camp that spawns ow_slime keeps SLIME_AREA_M (60 m) centre to centre from every level 1-2 camp that spawns ow_slime
+ *      (the L2 slime quest area of mq_03).
+ */
+const RING_INNER_M = 132, RING_MIDDLE_M = 195, SLIME_AREA_M = 60;
+const RING_BAND = { inner: [1, 2], middle: [3, 3], outer: [4, 5] };
+function ringBandIssues(packs, roomId, hub) {
+  const out = [];
+  const err = (where, msg) => out.push({ level: 'error', where, msg });
+  const camps = (packs ?? []).filter((p) => p.roomId === roomId && p.center);
+  const slime = (p) => p.members.some((m) => m.enemyId === 'ow_slime');
+  for (const p of camps) {
+    const d = Math.hypot(p.center[0] - hub[0], p.center[1] - hub[1]) * TILE_M;
+    const ring = d <= RING_INNER_M ? 'inner' : d <= RING_MIDDLE_M ? 'middle' : 'outer';
+    const [lo, hi] = RING_BAND[ring];
+    const [plo, phi] = p.levelRange;
+    if (plo < lo || phi > hi) err(`camp ${p.id}`, `${Math.round(d)} m from the village is in the ${ring} ring (levels ${lo}-${hi}), but the camp is levels ${plo}-${phi}`);
+  }
+  const questSlime = camps.filter((p) => p.levelRange[1] <= 2 && slime(p));
+  for (const c of camps.filter((p) => p.levelRange[0] >= 4 && slime(p))) {
+    const q = questSlime.find((a) => centreM(a, c) < SLIME_AREA_M);
+    if (q) err(`camp ${c.id}`, `levels ${c.levelRange[0]}-${c.levelRange[1]} slime camp ${Math.round(centreM(q, c))} m from the level 1-2 slime quest camp ${q.id}: keep ${SLIME_AREA_M} m`);
+  }
+  return out;
+}
+/**
  * Solo main quests (layout quests.main `solo`: the chain quests a lone level 1-4 player finishes). HARD error: the quest area (its
  * `place`, a layout pack id) is never an elite-flagged pack. The elite camp (r1_c04) is the mini-boss area of mq_05, a group fight.
  */
@@ -584,7 +614,10 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
     const layout = JSON.parse(fs.readFileSync(`${ROOT}/src/data/world/sisli_vadi.layout.json`, 'utf8').replace(/^﻿/, ''));
     const dn = ringDensityIssues(ALL[id].packs, r1.roomId, RING_QUESTS, layout.quests?.side ?? []);
     const si = soloQuestIssues(layout.packs, layout.quests?.main ?? []);
-    const e = [...ri, ...dn.issues, ...si].filter((i) => i.level === 'error');
+    const hub = layout.settlements?.find((x) => x.id === 'koy_gumusdere')?.center;
+    if (!hub) throw new Error('settlement koy_gumusdere (the ring hub) is missing from the layout');
+    const rb = ringBandIssues(ALL[id].packs, r1.roomId, hub);
+    const e = [...ri, ...dn.issues, ...si, ...rb].filter((i) => i.level === 'error');
     totalErr += e.length;
     console.log(`\n== camp rings ${id} r1: ${e.length} errors | ${ALL[id].packs.filter((p) => p.roomId === r1.roomId).length} camps and patrols | max mobs within 25 m: L1-2 ${dn.band.get('L1-2')}, L3 ${dn.band.get('L3')}, L4-5 ${dn.band.get('L4-5')}`);
     for (const i of e) console.log('  ERR ', i.where, '-', i.msg);

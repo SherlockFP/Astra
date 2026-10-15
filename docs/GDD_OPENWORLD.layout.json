@@ -3136,13 +3136,13 @@
    "name": "Çalılık 20",
    "region": "r1",
    "center": [
-    167.5,
-    46.25
+    162.35,
+    45.16
    ],
    "radius": 6,
    "levelRange": [
-    2,
-    2
+    3,
+    3
    ],
    "respawnSec": 55,
    "members": [
@@ -3481,8 +3481,8 @@
    ],
    "radius": 6,
    "levelRange": [
-    3,
-    3
+    4,
+    5
    ],
    "respawnSec": 70,
    "members": [
@@ -3791,8 +3791,8 @@
    "name": "Kum Çukuru 52",
    "region": "r1",
    "center": [
-    172.75,
-    54
+    171.68,
+    51.94
    ],
    "radius": 6,
    "levelRange": [
@@ -4013,13 +4013,13 @@
    "name": "Yaban Otlağı 62",
    "region": "r1",
    "center": [
-    184.75,
-    84.5
+    184.1,
+    86.61
    ],
    "radius": 14,
    "levelRange": [
-    3,
-    3
+    4,
+    5
    ],
    "respawnSec": 50,
    "members": [
@@ -5165,8 +5165,8 @@
    ],
    "radius": 6,
    "levelRange": [
-    3,
-    3
+    4,
+    5
    ],
    "respawnSec": 50,
    "members": [
