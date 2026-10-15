@@ -827,7 +827,7 @@ async function journey(cls) {
           const p = window.G.player.position;
           let best = null;
           for (const e of window.G.world.entities.values()) {
-            if (!(e instanceof E.EscortNpc)) continue;
+            if (!(e instanceof E.EscortNpc) || !e.canInteract(window.G.player)) continue; // the escort of the active quest only (decoys of locked quests share the name)
             const d = Math.hypot(e.position.x - p.x, e.position.z - p.z);
             if (!best || d < best.d) best = { x: e.position.x, z: e.position.z, d };
           }
@@ -855,7 +855,7 @@ async function journey(cls) {
             const p = window.G.player.position;
             let best = null;
             for (const e of window.G.world.entities.values()) {
-              if (!(e instanceof E.EscortNpc)) continue;
+              if (!(e instanceof E.EscortNpc) || !e.canInteract(window.G.player)) continue; // the escort of the active quest only (decoys of locked quests share the name)
               const dd = Math.hypot(e.position.x - p.x, e.position.z - p.z);
               if (!best || dd < best.d) best = { x: e.position.x, z: e.position.z, d: dd };
             }

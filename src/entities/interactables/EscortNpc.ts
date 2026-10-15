@@ -5,6 +5,8 @@ import type { Player } from '../Player';
 /**
  * Escort NPC of a quest (`escort` objective): a voxel figure that walks a short path once F starts it. The walk, the ambush and
  * the protection timer live in scenes/world/QuestEscortRun.ts; this entity only shows the figure and forwards F. OWNER: scenes module.
+ * Only an escort whose quest is active is interactable (canStart): every escort NPC carries the same name, and a locked or
+ * finished quest's escort used to take F from the real one (nearest-first pick in PlayerController).
  */
 const CUBE = new THREE.BoxGeometry(1, 1, 1);
 
@@ -14,6 +16,7 @@ export class EscortNpc extends InteractableProp {
     private readonly npcName: string,
     private readonly onStart: () => void,
     private readonly promptOf: () => string,
+    private readonly canStart: () => boolean,
   ) {
     super(id, 'interactable');
     this.interactRange = 3.6;
@@ -42,6 +45,11 @@ export class EscortNpc extends InteractableProp {
     block(cloth, 0.3, 0.6, 0, 0.12, 0.8, 0.12);
     this.object3d.add(g);
     this.model = g;
+  }
+
+  /** PlayerController skips an escort whose quest is not active, so F reaches the NPC of the quest the player is on. */
+  canInteract(_p: Player): boolean {
+    return this.canStart();
   }
 
   interact(_p: Player): void {

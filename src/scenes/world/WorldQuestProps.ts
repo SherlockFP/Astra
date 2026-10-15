@@ -8,7 +8,7 @@ import type { Enemy } from '../../entities/Enemy';
 import { RNG, hashString } from '../../core/utils';
 import { toast } from '../../systems/notify';
 import { EscortRun, type EscortDeps, type Pt2 } from './QuestEscortRun';
-import { distM, type Pt, type WorldCtx } from './util';
+import { distM, worldToTile, type Pt, type WorldCtx } from './util';
 
 /**
  * Quest props and escorts of the open world (WoW-style objectives, data/world/quests_variety.ts):
@@ -75,17 +75,33 @@ export function questPropSpots(ctx: SpotCtx, defs: readonly QuestDef[]): PropSpo
   return out;
 }
 
-/** Escort path of a quest: a start point and `segments` further waypoints at least `minGap` m apart, all in the region. */
-export function escortPath(ctx: SpotCtx, questId: string, region: string, segments = 3, minGap = 18): Pt2[] | null {
+/** Longest escort segment (m). The protection timer counts walking seconds (the quest's `count`, 90 s on the main chain at 2 m/s = 180 m),
+ *  so the waves must come within it: three segments of at most 40 m reach the last wave in about 60 s. */
+const ESCORT_MAX_SEGMENT_M = 40;
+
+/**
+ * Escort path of a quest: a start point and `segments` further waypoints, each `minGap`..`maxGap` m from the previous one, all in the
+ * region. The ambush waves fire at the waypoints while the escort walks, so the path must reach its last waypoint before the timer
+ * ends. A region without a point in the band takes the nearest point beyond minGap.
+ */
+export function escortPath(ctx: SpotCtx, questId: string, region: string, segments = 3, minGap = 18, maxGap = ESCORT_MAX_SEGMENT_M): Pt2[] | null {
   const start = pickPoint(ctx, region, `escort:${questId}:0`);
   if (!start) return null;
   const path: Pt2[] = [{ x: start.x, z: start.z }];
   for (let s = 1; s <= segments; s++) {
     const prev = path[s - 1];
     let next: Pt | null = null;
-    for (let t = 0; t < 12 && !next; t++) {
-      const p = pickPoint(ctx, region, `escort:${questId}:${s}:${t}`);
-      if (p && distM(p.x, p.z, prev.x, prev.z) >= minGap) next = p;
+    // candidates are drawn around the previous waypoint (direction and distance in the band), so a big region cannot leave the band empty
+    for (let t = 0; t < 60 && !next; t++) {
+      const rng = new RNG(hashString(`${ctx.seed}:escort:${questId}:${s}:${t}`));
+      const a = rng.next() * Math.PI * 2;
+      const d = minGap + rng.next() * (maxGap - minGap);
+      const tx = worldToTile(prev.x + Math.cos(a) * d);
+      const tz = worldToTile(prev.z + Math.sin(a) * d);
+      if (ctx.regionAtTile(tx, tz)?.id !== region) continue;
+      const p = ctx.snapTile(tx, tz, 8);
+      const got = distM(p.x, p.z, prev.x, prev.z);
+      if (got >= minGap && got <= maxGap) next = p;
     }
     if (!next) break;
     path.push({ x: next.x, z: next.z });
@@ -169,7 +185,13 @@ export class WorldQuestProps {
         { path, triggers: path.map((_, i) => i).slice(1), speed: ESCORT_SPEED, leash: ESCORT_LEASH_M, failSec: ESCORT_FAIL_SEC },
         deps,
       );
-      unit.npc = new EscortNpc(world.allocLocalId(), 'Yaralı Gözcü', () => this.startEscort(unit), () => this.promptOf(unit));
+      unit.npc = new EscortNpc(
+        world.allocLocalId(),
+        'Yaralı Gözcü',
+        () => this.startEscort(unit),
+        () => this.promptOf(unit),
+        () => G.quests?.state(d.id) === 'active',
+      );
       unit.npc.position.set(path[0].x, world.groundY(path[0].x, path[0].z), path[0].z);
       this.escorts.push(unit);
       count++;

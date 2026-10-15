@@ -384,6 +384,9 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   const path = escortPath(stub, 'pe', 'r1');
   ok('place.escort-path', !!path && path.length >= 2, path ? `${path.length} waypoints` : 'none');
   ok('place.escort-gaps', !!path && path.every((p, i) => i === 0 || Math.hypot(p.x - path[i - 1].x, p.z - path[i - 1].z) >= 18));
+  // the waves must come inside the 90 s protection: every segment at most 40 m (the 3 real escort paths of the stub region)
+  const short = [0, 1, 2, 3].map((i) => escortPath(stub, `pe_short${i}`, 'r1'));
+  ok('place.escort-short-segments', short.every((p) => !!p && p.slice(1).every((q, k) => Math.hypot(q.x - p[k].x, q.z - p[k].z) <= 40)), short.map((p) => p?.length ?? 0).join('/') + ' waypoints');
   ok('place.escort-no-region', escortPath(stub, 'pe2', 'rZ') === null);
 }
 
@@ -428,6 +431,77 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   ok('arrow.collect-geyik-derisi', geyik.objectives[0].from.join() === 'ow_deer' && !!gp && gp.x === centreM('r1_c14').x && gp.z === centreM('r1_c14').z, 'collect objective points at the deer camp r1_c14');
   const town = QM.guideTargetPos(kurt.objectives[0], true, kurt.region, kurt.place, kurt.level);
   ok('arrow.town-gate', !!town && town.label === 'Güney Kapısı', `in town a drop objective points at the gate (${town?.label ?? 'none'})`);
+}
+
+// ------------------------------------------------------------------------------------------------ escort.start (real wiring)
+// WorldQuestProps.place() on the real World: the escort NPC of the ACTIVE quest (mq_04, the Sisli main chain) is the only one F reaches.
+// The locked side quest (sq_r1_ch02_gozcu_avi) places a decoy with the same name in r1. F on the NPC walks it (the player follows),
+// the ambush is cleared, the quest becomes ready. The decoy never moves.
+{
+  const { WorldQuestProps } = await H.imp('scenes/world/WorldQuestProps.ts');
+  const { EscortNpc } = await H.imp('entities/interactables/EscortNpc.ts');
+  const MQ = 'mq_04_samani_sustur';
+  const SIDE = 'sq_r1_ch02_gozcu_avi';
+  const RECT = { r1: { x: 0, z: 0, w: 200, h: 200 } };
+  const world = H.world;
+  G.world = world;
+  G.quests = qs;
+  ch.save.level = 2;
+  for (const id of ['mq_01_kuzgunun_cagrisi', 'mq_02_fare_yuvasi', 'mq_03_balcik_temizligi']) ch.save.flags[`q.${id}`] = 'done';
+  // earlier stages took the side escort (level 3): start from a character that has not
+  delete ch.save.flags[`q.${SIDE}`];
+  for (let k = 0; k < 2; k++) delete ch.save.flags[`q.${SIDE}.n${k}`];
+  const ctx = {
+    world,
+    seed: 777,
+    regionById: (id) => (RECT[id] ? { id } : undefined),
+    regionRect: (id) => RECT[id] ?? null,
+    regionAtTile: () => ({ id: 'r1' }),
+    snapTile: (tx, tz) => ({ x: tx * 4 + 2, z: tz * 4 + 2 }),
+    snapWorld: (x, z) => ({ x, z }),
+  };
+  // the ambush is spawned by the host (spawnEnemy only spawns on the authority): this stage plays the host
+  const netWas = G.net;
+  G.net = { isOnline: false, isAuthority: true, broadcast() {}, on() {} };
+  const qp = new WorldQuestProps(ctx);
+  await qp.place();
+  const npcs = [...world.entities.values()].filter((e) => e instanceof EscortNpc);
+  ok('escort.two-npcs', npcs.length === 2, `${npcs.length} escort NPCs in r1 (mq_04 + the side quest's decoy)`);
+  ok('escort.accept-main', qs.accept(MQ) && qs.state(MQ) === 'active', qs.state(MQ));
+  ok('escort.side-not-active', qs.state(SIDE) !== 'active', qs.state(SIDE));
+  const player = { id: 42, kind: 'player', position: { x: 0, y: 0, z: 0 }, removed: false, isDead: false };
+  world.localPlayer = player;
+  G.player = player;
+  const live = npcs.find((n) => n.canInteract(player));
+  const decoy = npcs.find((n) => n !== live);
+  ok('escort.only-active-interactable', !!live && !!decoy && !decoy.canInteract(player) && npcs.filter((n) => n.canInteract(player)).length === 1);
+  const at = (n) => { player.position.x = n.position.x + 2; player.position.z = n.position.z; };
+  // F at the decoy (2 m away): PlayerController skips it, and a direct interact must not start anything
+  at(decoy);
+  decoy.interact(player);
+  const decoy0 = { x: decoy.position.x, z: decoy.position.z };
+  qp.update(0.5);
+  ok('escort.decoy-inert', decoy.position.x === decoy0.x && decoy.position.z === decoy0.z && qs.progressRows(MQ)[0].have === 0);
+  // F at the real escort: it walks, ambushes are cleared as they come, the protection timer runs out
+  const start = { x: live.position.x, z: live.position.z };
+  at(live);
+  live.interact(player);
+  let peakAmbush = 0;
+  let frames = 0;
+  for (; frames < 4000 && qs.state(MQ) !== 'ready'; frames++) {
+    at(live); // the player follows 2 m behind
+    peakAmbush = Math.max(peakAmbush, world.enemies.length);
+    for (const e of [...world.enemies]) world.remove(e);
+    qp.update(0.5);
+    await new Promise((r) => setTimeout(r, 0)); // ambush spawns resolve on the event loop
+  }
+  const walked = Math.hypot(live.position.x - start.x, live.position.z - start.z);
+  ok('escort.npc-walks', walked > 20, `moved ${walked.toFixed(1)} m`);
+  ok('escort.ambush-spawned', peakAmbush >= 3, `peak ${peakAmbush} ambushers`);
+  ok('escort.completes', qs.state(MQ) === 'ready' && qs.progressRows(MQ)[0].done, `state ${qs.state(MQ)} after ${frames} steps`);
+  ok('escort.decoy-never-moves', decoy.position.x === decoy0.x && decoy.position.z === decoy0.z);
+  G.net = netWas;
+  ch.save.level = 1;
 }
 
 console.log(`questtypes: ${passes} PASS, ${fails} FAIL`);
