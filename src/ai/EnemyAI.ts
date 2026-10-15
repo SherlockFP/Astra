@@ -965,7 +965,10 @@ export class EnemyAI {
     }
     const target = this.target;
     if (!target) {
-      this.deaggro();
+      // WoW evade: the fight is over for this mob (its target died, left or hid). It walks home and resets on arrival (full HP,
+      // statuses and cooldowns cleared, see evadeReset) instead of standing damaged where it won. Idle bodies just drop aggro.
+      if (this.aggroed && !e.isBoss) this.startReturn();
+      else this.deaggro();
       this.halt(dt);
       return;
     }
