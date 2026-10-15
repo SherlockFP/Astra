@@ -26,6 +26,9 @@ const DEFAULT_SLOTS: (SkillSlotKey | null)[] = ['rmb', 'q', 'e', 's1', 's2', 's3
 
 const xpMonsterBase = (L: number) => Math.round(5 + 1.2 * L ** 1.5);
 const round10 = (n: number) => Math.round(n / 10) * 10;
+/** XP needs of levels 1-5 (first hour, Sisli Vadi): x EARLY_NEED_MULT of the curve, so the starting chain takes about 35 min to reach level 5. */
+const EARLY_NEED_MULT = 2;
+const EARLY_NEED_MAX_LEVEL = 5;
 
 /** Rank defaults used only when an enemy def gives no xp multiplier (GDD 6.2). */
 const RANK_XP: Record<string, number> = { swarm: 0.35, trash: 1, elite: 5, miniboss: 25, boss: 100 };
@@ -53,7 +56,9 @@ export class Progression {
   xpToNext(level: number): number {
     if (level >= LEVEL_CAP) return Infinity;
     const kills = 30 + 10 * level;
-    return Math.max(10, round10(kills * xpMonsterBase(level)));
+    const need = Math.max(10, round10(kills * xpMonsterBase(level)));
+    // first-hour pace (tools/pace-check.mjs): levels 1-5 need EARLY_NEED_MULT x the curve; quest XP is a % of this need, so it scales too
+    return level <= EARLY_NEED_MAX_LEVEL ? round10(need * EARLY_NEED_MULT) : need;
   }
 
   /** Cumulative XP needed to reach `level` from level 1 (tooltips / dev). */

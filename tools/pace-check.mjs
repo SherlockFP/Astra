@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Pacing audit (OWNER: content module; F3 "first 10 minutes" + XP parity). Reads the real data the way tools/content-check.mjs
+ * Pacing audit (OWNER: content module; first-hour pace + XP parity). Reads the real data the way tools/content-check.mjs
  * does (quests, enemies, Sisli Vadi packs / minibosses / rares / metin tiers) and calls the real XP functions of
  * systems/Progression.ts (xpToNext, monsterXp), so the numbers cannot drift from the game.
  *
- *   node tools/pace-check.mjs            band table + first-10-minutes path
+ *   node tools/pace-check.mjs            band table + first-chain path
  *
  * Band = 5 levels (1-5, 6-10, ..., 56-59). Per band:
  *   XP to cross     sum of xpToNext(L) over the band's levels (the XP that must be earned to cross the band)
@@ -13,13 +13,17 @@
  *   dailies         daily quests of the band: count, XP if every one is done once, average % of a level per daily (target 5-8 %)
  *   kills           Sıradan (rank trash) and Sürü (swarm) kills to cross the band at the same level
  *
- * First 10 minutes = main quests mq_01..mq_06 in chain order. Assumptions (edit the constants if the design changes):
- *   1 kill / 4 s, talk / explore 30 s, boss / metin 60 s, collect and skill casts 4 s each, turn-in 10 s, dungeon 600 s.
+ * First chain = main quests mq_01..mq_07 in chain order (the player's first quests), then every other one-time quest of level 1-5
+ * (side, region, chains, bonus) in level order: what a player does in the first hour. Assumptions (edit the constants if the design
+ * changes): 1 kill / 4 s (a drop objective needs count / chance kills), talk / explore 30 s, boss / elite / metin 60 s, collect and
+ * skill casts 4 s each, interact 6 s, use 4 s, escort its seconds, turn-in 10 s, a walk of 45 s between quests, dungeon 600 s.
  *   Monster level = the lowest levelRange of the camps that spawn it (conservative), else the miniboss / rare / metin tier level.
- *   Quest XP is granted at turn-in exactly as systems/Quests.ts grantRewards does. Targets: level 2 by 90 s, level 3 at about 240 s
- *   (+-30 s). Non-kill XP (discoveries, vistas, dungeons) is not counted, so the path is a lower bound.
+ *   Quest XP is granted at turn-in exactly as systems/Quests.ts grantRewards does. Targets:
+ *     level 2 right after chain quest 2 (not after quest 1), level 3 right after chain quest 4 (not after quest 3),
+ *     level 5 at about 35 min (30-40 min, 1800-2400 s) on the whole path.
+ *   Non-kill XP (discoveries, vistas, dungeons) is not counted, so the path is a lower bound.
  *
- * Needs Node >= 22.18 (native TypeScript type stripping). Exit code 1 when a first-10-minutes target is missed.
+ * Needs Node >= 22.18 (native TypeScript type stripping). Exit code 1 when a first-chain target is missed.
  */
 import { register } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -44,7 +48,9 @@ const monsterXp = (lvl, rank, xpMult, playerLvl) => P.monsterXp.call({}, lvl, ra
 
 // ---- pace assumptions (seconds)
 const KILL_S = 4, TALK_S = 30, EXPLORE_S = 30, BOSS_S = 60, METIN_S = 60, COLLECT_S = 4, SKILL_S = 4, TURN_IN_S = 10, DUNGEON_S = 600;
-const TARGET_L2_S = 90, TARGET_L3_S = 240, TARGET_TOL_S = 30;
+const INTERACT_S = 6, USE_S = 4, TRAVEL_S = 45;
+/** First chain milestones: level 2 right after chain quest 2, level 3 right after chain quest 4, level 5 at about 35 min. */
+const TARGET_L5_S = 2100, TARGET_L5_TOL_S = 300;
 
 const sv = { ...DUNGEONS, ...OPEN_ZONES }.sisli_vadi;
 const world = sv?.world;
@@ -99,8 +105,11 @@ const rows = BANDS.map(([lo, hi]) => {
   };
 });
 
-// ---- first 10 minutes: main chain mq_01..mq_06, 1 kill / 4 s, turn-ins 10 s, quest XP at turn-in
-const PATH = QUESTS.filter((q) => q.main && /^mq_0[1-6]_/.test(q.id)).sort((a, b) => a.id.localeCompare(b.id));
+// ---- first chain: mq_01..mq_07 in chain order, then the other one-time quests of level 1-5 (level order)
+const CHAIN = QUESTS.filter((q) => q.main && /^mq_0[1-7]_/.test(q.id)).sort((a, b) => a.id.localeCompare(b.id));
+const chainIds = new Set(CHAIN.map((q) => q.id));
+const REST = QUESTS.filter((q) => !q.daily && !q.main && !chainIds.has(q.id) && q.level <= 5)
+  .sort((a, b) => a.level - b.level || a.id.localeCompare(b.id));
 let t = 0, lvl = 1, xp = 0;
 const reached = {};
 const gain = (amount) => {
@@ -108,17 +117,29 @@ const gain = (amount) => {
   while (lvl < CAP && xp >= xpToNext(lvl)) { xp -= xpToNext(lvl); lvl++; if (reached[lvl] === undefined) reached[lvl] = t; }
 };
 const timeline = [];
-for (const q of PATH) {
+/** Runs one quest: walk, objectives (kills give XP, drops roll their kills), turn-in, quest XP. */
+function runQuest(q) {
+  t += TRAVEL_S;
   for (const o of q.objectives) {
     const d = o.target ? enemy(o.target) : undefined;
-    if (o.kind === 'kill' || o.kind === 'boss' || o.kind === 'metin') {
+    if (o.kind === 'kill' || o.kind === 'boss' || o.kind === 'metin' || o.kind === 'elite') {
       const mlvl = mobLevel(o.target, q.level);
       const rank = d ? (d.role === 'swarm' ? 'swarm' : d.rank) : 'trash';
       const n = o.kind === 'kill' ? o.count : 1;
-      const secs = o.kind === 'kill' ? KILL_S : o.kind === 'boss' ? BOSS_S : METIN_S;
+      const secs = o.kind === 'kill' ? KILL_S : o.kind === 'metin' ? METIN_S : BOSS_S;
       for (let i = 0; i < n; i++) { t += secs; if (d) gain(monsterXp(mlvl, rank, d.xp, lvl)); }
+    } else if (o.kind === 'drop') {
+      const src = o.from?.[0];
+      const sd = src ? enemy(src) : undefined;
+      const mlvl = src ? mobLevel(src, q.level) : q.level;
+      const rank = sd ? (sd.role === 'swarm' ? 'swarm' : sd.rank) : 'trash';
+      const kills = Math.ceil(o.count / (o.chance ?? 0.6));
+      for (let i = 0; i < kills; i++) { t += KILL_S; if (sd) gain(monsterXp(mlvl, rank, sd.xp, lvl)); }
     } else if (o.kind === 'collect') t += COLLECT_S * o.count;
     else if (o.kind === 'skill') t += SKILL_S * o.count;
+    else if (o.kind === 'interact') t += INTERACT_S * o.count;
+    else if (o.kind === 'use') t += USE_S * o.count;
+    else if (o.kind === 'escort') t += o.count;
     else if (o.kind === 'talk') t += TALK_S;
     else if (o.kind === 'explore') t += EXPLORE_S;
     else if (o.kind === 'dungeon') t += DUNGEON_S;
@@ -128,6 +149,9 @@ for (const q of PATH) {
   gain(qx);
   timeline.push({ id: q.id, t, lvl, xp, qx });
 }
+for (const q of CHAIN) runQuest(q);
+const chainEnd = timeline.length;
+for (const q of REST) runQuest(q);
 
 // ---- report
 const f = (n, w) => String(n).padStart(w);
@@ -145,14 +169,16 @@ console.log(`\nbands outside their one-time quest XP range (25-45 %; band 1-5 25
 console.log(`bands outside 5-8 % per daily: ${badDaily.length ? badDaily.map((r) => r.band).join(', ') : 'none'}`);
 console.log('Sıradan / Sürü = kills to cross the band at the same level (rank trash x1, swarm as the game grants it).');
 
-console.log(`\nFirst 10 minutes: ${PATH.map((q) => q.id.slice(0, 5)).join(' ')} (1 kill / ${KILL_S} s, turn-in ${TURN_IN_S} s)`);
-for (const s of timeline) console.log(`  ${s.id.padEnd(24)} t=${f(s.t, 4)} s  level ${s.lvl}  xp ${f(s.xp, 4)}  (quest +${s.qx})`);
+console.log(`\nFirst chain: ${CHAIN.map((q) => q.id.slice(0, 5)).join(' ')} (then ${REST.length} one-time quests of level 1-5)`);
+for (const s of timeline.slice(0, chainEnd)) console.log(`  ${s.id.padEnd(24)} t=${f(s.t, 4)} s  level ${s.lvl}  xp ${f(s.xp, 4)}  (quest +${s.qx})`);
+console.log(`  then ${REST.length} quests (level 1-5): level 5 at ${reached[5] ?? '-'} s`);
 let bad = 0;
-for (const [L, target, label] of [[2, TARGET_L2_S, 'level 2 by 90 s'], [3, TARGET_L3_S, 'level 3 at about 240 s']]) {
-  const at = reached[L];
-  const ok = at !== undefined && (L === 2 ? at <= target : Math.abs(at - target) <= TARGET_TOL_S);
-  if (!ok) bad++;
-  console.log(`  ${label}: ${at === undefined ? 'not reached on the path' : `${at} s`} ${ok ? 'PASS' : 'FAIL'}`);
-}
+const check = (ok, label, detail) => { if (!ok) bad++; console.log(`  ${label}: ${detail} ${ok ? 'PASS' : 'FAIL'}`); };
+const lvlAfter = (i) => timeline[i - 1]?.lvl ?? 1;
+check(lvlAfter(2) >= 2 && lvlAfter(1) < 2, 'level 2 right after chain quest 2', `level ${lvlAfter(1)} after quest 1, ${lvlAfter(2)} after quest 2`);
+check(lvlAfter(4) >= 3 && lvlAfter(3) < 3, 'level 3 right after chain quest 4', `level ${lvlAfter(3)} after quest 3, ${lvlAfter(4)} after quest 4`);
+const at5 = reached[5];
+check(at5 !== undefined && Math.abs(at5 - TARGET_L5_S) <= TARGET_L5_TOL_S, 'level 5 at about 30-40 min',
+  at5 === undefined ? 'not reached on the path' : `${at5} s (${(at5 / 60).toFixed(1)} min)`);
 bad += badQuest.length + badDaily.length;
 process.exit(bad ? 1 : 0);
