@@ -335,7 +335,7 @@ if (started) {
   ok('dir.roll.anchor-window', d >= VIGNETTE_RULES.anchorMinM - 1 && d <= VIGNETTE_RULES.anchorMaxM + 1, `anchor ${d.toFixed(1)} m from the player`);
   ok('dir.roll.anchor-free', dir.isFree(p) && ctx.regionAt(p.x, p.z)?.id === 'r1');
   const def = DEF(p.defId);
-  const want = { road_ambush: 2, wolf_hunt: 7, goblin_sighting: 1, scout_herbs: 0, stuck_cart: 0 }[def.kind];
+  const want = { road_ambush: 2, wolf_hunt: 6, goblin_sighting: 1, scout_herbs: 0, stuck_cart: 0 }[def.kind];
   const got = tagged(p.id).length;
   ok('dir.roll.units', got === want, `${def.name}: ${got} tagged units (want ${want})`);
   ok('dir.roll.level', spawned.filter((s) => s.tag === `vig:${p.id}`).every((s) => s.level === 1), 'units at the ring level of the player (1)');
@@ -430,7 +430,7 @@ if (started) {
   const pin = slotOf(def.id);
   const wolves = tagged(pin.id).filter((e) => e.def.id === 'ow_wolf');
   const deer = tagged(pin.id).filter((e) => e.def.id === 'ow_deer');
-  ok('flow.kurt.pack', wolves.length === 4 && deer.length === 3 && spawned.filter((s) => s.tag === `vig:${pin.id}` && s.defId === 'ow_wolf').every((s) => s.patrol), `${wolves.length} wolves, ${deer.length} deer`);
+  ok('flow.kurt.pack', wolves.length === 3 && deer.length === 3 && spawned.filter((s) => s.tag === `vig:${pin.id}` && s.defId === 'ow_wolf').every((s) => s.patrol), `${wolves.length} wolves, ${deer.length} deer`);
   const g0 = gold.length;
   kill(deer[0]);
   kill(wolves[0]);

@@ -96,6 +96,9 @@ const GLOW_COLOR: Record<DamageType, number> = {
 };
 
 const MAX_MELEE_SLOTS = 6;
+/** A treasure goblin (ai.flee) trips for FLEE_STUMBLE_SEC every FLEE_STUMBLE_EVERY s of its run, so a player on foot can close in. */
+const FLEE_STUMBLE_EVERY = 5;
+const FLEE_STUMBLE_SEC = 0.9;
 /** Idle enemies farther than this (m) from every living player skip perception and steering (see EnemyAI.canSleep). */
 const SLEEP_DIST = 45;
 /** ENGINE_VERTICALITY §13: a melee/charge unit with no path to its target (other region / unreachable) gives up after this. */
@@ -172,6 +175,9 @@ export class EnemyAI {
   protected aimLos = true;
   protected aimLosAt = -9;
   protected fleeT = 0;
+  /** Flee stumble clock of a treasure goblin: the next trip, and the end of the one under way (s on the brain clock). */
+  protected stumbleAt = 0;
+  protected stumbleUntil = 0;
   protected fleeX = 0;
   protected fleeZ = 0;
   protected backpedal = false;
@@ -337,7 +343,16 @@ export class EnemyAI {
   /** True when a basic-attack style melee enemy should queue for one of the 6 slots around its target. */
   wantsSlot(): boolean {
     const e = this.e;
-    return this.aggroed && this.mode === 'chase' && !this.fleeing && !e.def.flying && !kiteBandFor(e.def) && e.def.attackRange < 5 && !e.def.ai?.stationary;
+    return this.aggroed && this.mode === 'chase' && !this.fleeing && !e.def.flying && !this.kiteBand() && e.def.attackRange < 5 && !e.def.ai?.stationary;
+  }
+
+  /**
+   * The distance band a ranged or caster brain holds (roles.kiteBandFor). A scripted encounter (a vignette or escort ambush) is
+   * fought at melee range: its ranged units close in and do not hold a standoff band (see moveForRole), so the player in reach can
+   * land the auto-attack on them.
+   */
+  protected kiteBand(): [number, number] | null {
+    return this.scripted ? null : kiteBandFor(this.e.def);
   }
 
   // ===================================================================================================================
@@ -1074,7 +1089,7 @@ export class EnemyAI {
     if (e.def.ai?.stationary || !(e.def.speed > 0)) return false;
     if (now < this.stuckAt) return false;
     this.stuckAt = now + 0.5;
-    const kite = kiteBandFor(e.def);
+    const kite = this.kiteBand();
     const reach = Math.max(1.2, this.basic.range * 0.9);
     let wantsIn = edge > reach && (!kite || edge > kite[1] || !this.hasLos(target)) && this.canAttackMelee();
     // a body jammed in a crowd (allies or a player in the way) is not stuck on the map: it is blocked, and the crowd moves
@@ -1231,7 +1246,7 @@ export class EnemyAI {
   protected moveForRole(dt: number, now: number, target: Actor, dist: number, edge: number): void {
     const e = this.e;
     const def = e.def;
-    const kite = kiteBandFor(def);
+    const kite = this.kiteBand();
     const speed = e.moveSpeed();
     const px = e.position.x, pz = e.position.z;
     const tx = target.position.x, tz = target.position.z;
@@ -1279,7 +1294,9 @@ export class EnemyAI {
     }
     // melee-style
     const basicR = this.basic.range;
-    const stand = Math.max(e.radius + target.radius + 0.15, basicR * 0.62);
+    const meleeStand = e.radius + target.radius + 0.15;
+    // a scripted ranged unit closes to melee reach (it does not stand off at its bolt range); every other body keeps its stand distance
+    const stand = this.scripted && kiteBandFor(def) ? meleeStand : Math.max(meleeStand, basicR * 0.62);
     if (!this.canAttackMelee() && def.attackRange < 5 && !def.flying) {
       // no free slot: wait in a ring around the target (3.5-4.5 m), shuffling slowly
       const ring = 3.6 + (this.slotRank % 3) * 0.55;
@@ -1573,6 +1590,8 @@ export class EnemyAI {
     const e = this.e;
     // escape portal
     const portal = e.def.abilities.find((a) => a.id === 'tg_portal');
+    // a goblin first hit from range never went through fleeIdle's aggro branch: start its escape clock now, not at 0
+    if (portal && this.escapeAt === 0) this.escapeAt = now + (G.mplus?.state ? 20 : 30);
     if (portal && now >= this.escapeAt && !this.busy) {
       this.startAbility(portal, this.target ?? e, 99);
       return;
@@ -1618,6 +1637,17 @@ export class EnemyAI {
       this.fleeX = best.x;
       this.fleeZ = best.z;
       this.path = null;
+    }
+    if (e.def.ai?.flee && !e.def.ai.neutral) {
+      if (this.stumbleAt === 0) this.stumbleAt = now + FLEE_STUMBLE_EVERY;
+      if (now >= this.stumbleAt) {
+        this.stumbleUntil = now + FLEE_STUMBLE_SEC;
+        this.stumbleAt = now + FLEE_STUMBLE_EVERY;
+      }
+      if (now < this.stumbleUntil) {
+        this.halt(dt);
+        return;
+      }
     }
     this.steerTo(this.fleeX, this.fleeZ, e.moveSpeed() * (e.def.ai?.fleeMul ?? 1.05), dt, 'run');
   }

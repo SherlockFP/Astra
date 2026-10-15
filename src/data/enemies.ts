@@ -116,8 +116,8 @@ add({
   ],
 });
 add({
-  id: 'treasure_goblin', name: 'Hazine Goblini', model: MON('Goblin'), scale: 0.67, tint: 0xffd040, role: 'support', rank: 'elite', hp: 12, dmg: 0, speed: 7.7, radius: 0.45, aggro: 14, forces: 0, xp: 5, leash: 0,
-  anims: A_ENEMY, ai: { flee: true }, loot: 'treasure_goblin',
+  id: 'treasure_goblin', name: 'Hazine Goblini', model: MON('Goblin'), scale: 0.67, tint: 0xffd040, role: 'support', rank: 'elite', hp: 5, dmg: 0, speed: 6.0, radius: 0.45, aggro: 14, forces: 0, xp: 5, leash: 0,
+  anims: A_ENEMY, ai: { flee: true, fleeMul: 0.85 }, loot: 'treasure_goblin',
   basic: { id: 'tg_none', name: 'Kaçış', kind: 'custom', range: 0, cooldown: 99, windup: 0, anim: '', params: { passive: 1 } },
   abilities: [{ id: 'tg_portal', name: 'Kaçış Portalı', kind: 'custom', range: 0, cooldown: 99, windup: 3.0, castTime: 3.0, interruptible: true, anim: 'Jump', params: { passive: 1, escape: 1 } }],
 });

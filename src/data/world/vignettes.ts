@@ -139,7 +139,7 @@ export const VIGNETTE_DEFS: readonly VignetteDef[] = [
   },
   {
     id: 'vg_kurt_surusu', kind: 'wolf_hunt', name: 'Kurt Sürüsü', regionId: 'r1', durSec: 75, weight: 2, cooldownSec: 600,
-    npc: 'Kurt Sürüsü', enemies: ['ow_wolf'], count: 4, killsNeeded: 3,
+    npc: 'Kurt Sürüsü', enemies: ['ow_wolf'], count: 3, killsNeeded: 3,
     herd: { enemyId: 'ow_deer', count: 3, radius: 8 },
     reward: { goldPerLevel: 35, xpPct: 8 },
     lines: {

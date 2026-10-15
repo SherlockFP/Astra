@@ -332,10 +332,14 @@ export class VignetteDirector {
       }
       const r = def.herd.radius;
       const loop: { x: number; z: number }[] = [];
-      for (let k = 0; k < 8; k++) loop.push({ x: at.x + Math.cos((k / 8) * Math.PI * 2) * r, z: at.z + Math.sin((k / 8) * Math.PI * 2) * r });
+      // the pack walks in from its spawn ring (r) onto an inner loop (0.4 r) around the herd: it closes on the deer, slowly (patrolMul)
+      const inner = r * 0.4;
+      for (let k = 0; k < 8; k++) loop.push({ x: at.x + Math.cos((k / 8) * Math.PI * 2) * inner, z: at.z + Math.sin((k / 8) * Math.PI * 2) * inner });
       for (let i = 0; i < def.count; i++) {
         const a = (i / def.count) * Math.PI * 2;
-        put(def.enemies[0], at.x + Math.cos(a) * r, at.z + Math.sin(a) * r, { patrol: loop });
+        // scripted: the pack takes the encounter at once when the player is near (it bypasses the low-level pull cap that the herd's
+        // engaged deer would fill), so the wolves turn on the player inside their aggro range (10 m) or when hit
+        put(def.enemies[0], at.x + Math.cos(a) * r, at.z + Math.sin(a) * r, { patrol: loop, scripted: true });
       }
     } else if (def.kind === 'goblin_sighting') {
       put(def.enemies[0], at.x + 2, at.z + 1, {});

@@ -601,6 +601,89 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
   ok('neutral.treasure goblin (flee, not neutral) still runs off near a player', gob.ai.aggroed, `mode ${gob.ai.mode}`);
 }
 
+// ==================================================================================================================
+// ranged.* a scripted ranged ambush unit (a vignette / escort ambush: EnemyAI.scripted) closes to melee reach and holds no standoff
+// band, so a melee player in reach lands the auto-attack on it. The live bug: the bandit archers of the yolcu ambush held their 15 m
+// band edge, shot the traveler from there and never came into reach. An open-world archer still kites (its band is unchanged).
+// auto.* the auto-attack driver reports an armed target in reach but off its facing cone in every mode (not only mouselook).
+// ==================================================================================================================
+{
+  const { AutoAttack } = await H.imp('game/AutoAttack.ts');
+  // one auto-attack frame as PlayerController.updateAuto feeds the driver (melee reach, facing cone from the character's yaw)
+  const autoFrame = (auto, p, e) => {
+    const info = G.skills.autoInfo(p);
+    const dx = e.position.x - p.position.x, dz = e.position.z - p.position.z;
+    const d = Math.hypot(dx, dz) || 1;
+    const angleDeg = Math.abs(((p.yaw - Math.atan2(dx, dz) + 3 * Math.PI) % (2 * Math.PI)) - Math.PI) * 180 / Math.PI;
+    const out = auto.tick({
+      dt: DT, mode: info.mode, reach: info.reach, ready: info.ready, paused: false, dead: false,
+      target: { id: e.id, dist: Math.max(0, d - e.radius), angleDeg, los: true, valid: !e.isDead && !e.removed },
+      nearestId: null, moving: false, mouseLook: false, inCombat: p.inCombat,
+    });
+    if (out.swing) G.skills.autoSwing(p, { point: [e.position.x, 0, e.position.z], dir: [dx / d, 0, dz / d], targetId: e.id });
+    return out;
+  };
+  const hitsFrom = (targetId, sourceId) => events.damage.filter((h) => h.targetId === targetId && h.sourceId === sourceId).length;
+
+  // 1) scripted ambush archer at 1.5 m; the knight stands still, faces it, auto-attack armed: it closes in and the hits land
+  const p1 = reset('knight', 3);
+  p1.position.set(0, 0, 0);
+  p1.yaw = Math.PI / 2;
+  const sArcher = mob('ow_bandit_archer', 1.5, 0);
+  sArcher.maxHp = sArcher.hp = 1e6; // long enough to watch the standoff, not the kill
+  sArcher.ai.scripted = true;
+  sArcher.ai.acquire(p1, true);
+  const autoS = new AutoAttack();
+  autoS.arm(sArcher.id);
+  for (let i = 0; i < sec(4); i++) {
+    autoFrame(autoS, p1, sArcher);
+    H.step(1);
+  }
+  const sHits = hitsFrom(sArcher.id, p1.id);
+  ok('ranged.scripted archer at 1.5 m takes the knight\'s melee hits', sHits > 0 && sArcher.hp < sArcher.maxHp, `${sHits} hits, hp ${Math.round(sArcher.hp)}/${sArcher.maxHp}`);
+  ok('ranged.scripted archer stays in melee reach (no standoff band)', dist(sArcher, p1) <= 2.2, `${dist(sArcher, p1).toFixed(2)} m from the knight`);
+
+  // 2) the same archer in the open world (not scripted): it still backs off to its kite band
+  const p2 = reset('knight', 3);
+  p2.position.set(0, 0, 0);
+  p2.yaw = Math.PI / 2;
+  const oArcher = mob('ow_bandit_archer', 1.5, 0);
+  oArcher.maxHp = oArcher.hp = 1e6;
+  oArcher.ai.acquire(p2, true);
+  H.step(sec(3));
+  ok('ranged.open-world archer still kites back out of point-blank', dist(oArcher, p2) - oArcher.radius >= 4, `edge ${(dist(oArcher, p2) - oArcher.radius).toFixed(2)} m after 3 s (from 1.0 m)`);
+
+  // 3) the driver: an armed target in reach but outside the facing cone does not swing and says why (no mouselook needed)
+  const a3 = new AutoAttack();
+  a3.arm(99);
+  const offFace = a3.tick({ dt: 0.1, mode: 'melee', reach: 3.1, ready: true, paused: false, dead: false, target: { id: 99, dist: 1, angleDeg: 150, los: true, valid: true }, nearestId: null, moving: false, mouseLook: false, inCombat: true });
+  ok('auto.off-facing target in reach: no swing and the facing toast', !offFace.swing && offFace.toast === 'Hedefe dönük değilsin', JSON.stringify({ swing: offFace.swing, toast: offFace.toast }));
+  const inFront = new AutoAttack();
+  inFront.arm(99);
+  const front = inFront.tick({ dt: 0.1, mode: 'melee', reach: 3.1, ready: true, paused: false, dead: false, target: { id: 99, dist: 1, angleDeg: 20, los: true, valid: true }, nearestId: null, moving: false, mouseLook: false, inCombat: true });
+  ok('auto.target in front and in reach swings with no toast', front.swing && front.toast === null);
+}
+
+// flee.goblin.* the treasure goblin runs slower than a player on foot (7 m/s) and trips now and then, so the hunt is catchable
+{
+  const g = ENEMIES.treasure_goblin;
+  ok('flee.goblin.flee speed under a player on foot', g.speed * (g.ai?.fleeMul ?? 1) < 7, `${(g.speed * (g.ai?.fleeMul ?? 1)).toFixed(2)} m/s`);
+  reset();
+  const pg = reset('knight', 10);
+  pg.position.set(-6, 0, 0);
+  const runner = mob('treasure_goblin', 0, 0);
+  H.step(sec(1));
+  let stalls = 0;
+  let maxSpeed = 0;
+  for (let i = 0; i < sec(12); i++) {
+    H.step(1);
+    const v = Math.hypot(runner.velocity.x, runner.velocity.z);
+    maxSpeed = Math.max(maxSpeed, v);
+    if (i > sec(1) && v < 0.3) stalls++;
+  }
+  ok('flee.goblin.trips now and then while it flees', runner.ai.aggroed && stalls > sec(0.5), `${stalls} stalled frames in 12 s, peak ${maxSpeed.toFixed(1)} m/s`);
+}
+
 // ---- report ---------------------------------------------------------------------------------------------------------------
 const hard = errors.filter((e) => e.startsWith('ERR'));
 ok('no engine errors during the run', hard.length === 0, hard.slice(0, 3).join(' | '));

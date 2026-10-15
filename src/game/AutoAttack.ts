@@ -154,7 +154,8 @@ export class AutoAttack {
       out.swing = true;
       this.idleT = 0;
     } else {
-      if (inReach && i.mouseLook && !facingOk && this.clock - this.toastAt >= AUTO.toastEvery) {
+      // in reach but off the facing cone: say so in every mode (a silent armed driver looked like a broken attack)
+      if (inReach && !facingOk && this.clock - this.toastAt >= AUTO.toastEvery) {
         out.toast = 'Hedefe dönük değilsin';
         this.toastAt = this.clock;
       }
