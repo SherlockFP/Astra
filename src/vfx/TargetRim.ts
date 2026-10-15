@@ -2,16 +2,18 @@ import * as THREE from 'three';
 import { shellMaterial } from './Meshes';
 
 /**
- * Readability rim on ONE entity at a time: a thin fresnel shell (the same shader as the weapon glow) over every mesh of its
- * model. Hostile enemies (hovered or targeted) get a red rim, friendly NPCs (hovered) a soft yellow one. Shells are added
- * only while the entity is highlighted and removed when it is not, so nothing else pays for it.
+ * Readability rim on up to TWO entities (WoW clarity): the hovered unit and the target, each in its own slot. A thin fresnel
+ * shell (the same shader as the weapon glow) over every mesh of its model. Hostile enemies get a red rim, friendly NPCs a
+ * green one. Shells are added only while the entity is highlighted and removed when it is not.
  */
 
 export type RimKind = 'hostile' | 'friendly';
+/** Two rims can show at once: the one under the cursor (hover) and the selected unit (target). */
+export type RimSlot = 'hover' | 'target';
 
 const RIM = {
-  hostile: { color: 0xff3a2a, power: 2.4, inflate: 0.018, alpha: 0.9 },
-  friendly: { color: 0xffe066, power: 2.8, inflate: 0.016, alpha: 0.7 },
+  hostile: { color: 0xff3a2a, power: 2.4, inflate: 0.022, alpha: 0.95 },
+  friendly: { color: 0x46ff6e, power: 2.4, inflate: 0.022, alpha: 0.9 },
 } as const;
 
 interface Active {
@@ -21,16 +23,17 @@ interface Active {
   mats: THREE.ShaderMaterial[];
 }
 
-let active: Active | null = null;
+const active = new Map<RimSlot, Active>();
 
-/** Puts the rim on `root` (null clears it). Same root and kind is a no-op. */
-export function setTargetRim(root: THREE.Object3D | null, kind: RimKind | null): void {
+/** Puts the rim on `root` in `slot` (null root or kind clears that slot). Same root and kind in the slot is a no-op. */
+export function setRim(slot: RimSlot, root: THREE.Object3D | null, kind: RimKind | null): void {
   if (!root || !kind) {
-    clearTargetRim();
+    clearRim(slot);
     return;
   }
-  if (active && active.root === root && active.kind === kind && active.shells.every((s) => s.parent)) return;
-  clearTargetRim();
+  const cur = active.get(slot);
+  if (cur && cur.root === root && cur.kind === kind && cur.shells.every((s) => s.parent)) return;
+  clearRim(slot);
   const cfg = RIM[kind];
   const shells: THREE.Mesh[] = [];
   const mats: THREE.ShaderMaterial[] = [];
@@ -59,12 +62,16 @@ export function setTargetRim(root: THREE.Object3D | null, kind: RimKind | null):
     shells.push(shell);
     mats.push(mat);
   }
-  active = { root, kind, shells, mats };
+  active.set(slot, { root, kind, shells, mats });
 }
 
-export function clearTargetRim(): void {
-  if (!active) return;
-  for (const s of active.shells) s.removeFromParent();
-  for (const m of active.mats) m.dispose();
-  active = null;
+/** Removes the rim of one slot (default: both). */
+export function clearRim(slot?: RimSlot): void {
+  for (const k of slot ? [slot] : (['hover', 'target'] as const)) {
+    const a = active.get(k);
+    if (!a) continue;
+    for (const s of a.shells) s.removeFromParent();
+    for (const m of a.mats) m.dispose();
+    active.delete(k);
+  }
 }

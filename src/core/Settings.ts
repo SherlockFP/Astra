@@ -163,6 +163,8 @@ export interface SettingsData {
   graphicsQuality: 'low' | 'mid' | 'high';
   /** Revision of the crisp-look defaults (psx off, no jitter / affine / dither). Stored files below 1 get them once (see the constructor). */
   gfxLookRev: number;
+  /** Revision of the WoW-clarity defaults (renderScale 2 = native device pixels). Stored files below 1 get renderScale 2 once. */
+  gfxClarityRev: number;
   // ---- AUDIO_MIX (append-only). Calmer mix: ambience slider, Savaş sesleri Az / Normal, hover blip, and the mix revision.
   /** Ambience bed (wind, dungeon bed) level, 0..1. Separate from the effects slider. */
   ambienceVolume: number;
@@ -186,8 +188,9 @@ export interface SettingsData {
  *     The scheme migration is keyed on controlsRev (see migrateControlsRev).
  * 5 = crisp default look (gfxLookRev): PSX filter off by default, stored files below rev 1 are switched once.
  * 6 = calmer audio mix (audioRev): ambienceVolume, combatSoundLevel, uiHoverSfx; the level defaults move down once.
+ * 7 = WoW-clarity defaults (gfxClarityRev): renderScale 2 = native device pixels (DPR capped at 2), migrated once.
  */
-export const SETTINGS_VERSION = 6;
+export const SETTINGS_VERSION = 7;
 
 /** Key codes of the guard and inventory defaults before CM1 / UX-00 (used only by the one-time bindings migration). */
 const LEGACY_GUARD = ['KeyG', 'Mouse3'];
@@ -209,7 +212,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   bloom: true,
   bloomStrength: 0.6,
   shadows: true,
-  renderScale: 1,
+  renderScale: 2,            // WoW clarity (gfxClarityRev 1): native device pixels, capped at 2
   fov: 60,
   showFps: false,
   damageNumbers: true,
@@ -290,6 +293,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   barGhostRev: 1,
   graphicsQuality: 'mid',
   gfxLookRev: 1,
+  gfxClarityRev: 1,
   // AUDIO_MIX (audioRev 1)
   ambienceVolume: 0.4,
   combatSoundLevel: 'normal',
@@ -393,6 +397,12 @@ export class Settings {
       // afterwards (the Görüntü toggle or sliders) is kept by the rev flag.
       if ((stored.gfxLookRev ?? 0) < 1) {
         Object.assign(this.data, { psx: false, psxJitter: 0, psxAffine: false, psxDither: false, gfxLookRev: 1 });
+        changed = true;
+      }
+      // WoW clarity (gfxClarityRev 0 → 1): the render scale moves from 1x to native device pixels (cap 2) once.
+      // A later choice on the Çözünürlük Ölçeği slider is kept by the rev flag.
+      if ((stored.gfxClarityRev ?? 0) < 1) {
+        Object.assign(this.data, { renderScale: 2, gfxClarityRev: 1 });
         changed = true;
       }
       // AUDIO_MIX (audioRev 0 -> 1): calmer level defaults and the hover blip off, once. A level changed afterwards is kept by the rev flag.

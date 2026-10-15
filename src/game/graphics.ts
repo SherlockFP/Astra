@@ -37,7 +37,11 @@ function applyBloom(): void {
 
 /** Patch a procedurally created object for the PSX look (world builders, generated meshes). */
 export function psxify(root: THREE.Object3D, kind: 'character' | 'world' | 'prop' = 'prop'): void {
-  if (kind === 'character') patchObjectPSX(root, { maxTextureSize: 128, textureColorBits: 5, mipmaps: false });
+  // WoW clarity: the 128 px / 5-bit character texture crush only applies with the PSX filter on (read at model load, so a change needs a reload).
+  if (kind === 'character') {
+    const psxOn = !!G.settings?.data.psx;
+    patchObjectPSX(root, psxOn ? { maxTextureSize: 128, textureColorBits: 5, mipmaps: false } : { maxTextureSize: 512, mipmaps: true });
+  }
   else if (kind === 'world') patchObjectPSX(root, { mipmaps: true, maxTextureSize: 512 });
   else patchObjectPSX(root, { mipmaps: true, maxTextureSize: 256 });
 }

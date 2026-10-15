@@ -56,7 +56,7 @@ void main() {
   if (d < 0.0) discard;
 
   float rim = 1.0 - smoothstep(0.0, 0.28, d);
-  float rimHard = 1.0 - step(0.12, d);
+  float rimHard = 1.0 - step(0.22, d);   // opaque edge band, wider than before (readable at range)
   float filled = step(fc, uProg);
   float front = exp(-abs(fc - uProg) * 22.0) * step(0.001, uProg) * (1.0 - step(0.999, uProg) * 0.0);
 
@@ -65,7 +65,7 @@ void main() {
   float pulse = 0.82 + 0.18 * sin(uTime * 9.0 + uKind);
   if (uKind > 0.5 && uKind < 1.5) pulse = 0.85 + 0.15 * sin(uTime * 4.0); // soak: calmer
 
-  float a = 0.35 + hatch * 0.07;                      // base: 35 % fill so the area reads at a glance
+  float a = 0.25 + hatch * 0.03;                      // base: flat 25 % fill (WoW clarity), the hatch only adds a faint texture
   a = mix(a, 0.6 + 0.1 * sin(uTime * 14.0 + fc * 9.0), filled); // filled part
   a += rim * 0.2 * pulse;
   a = mix(a, 1.0, rimHard);                           // opaque edge

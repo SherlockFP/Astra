@@ -13,7 +13,7 @@ import type { ThirdPersonCamera } from '../camera/ThirdPersonCamera';
 import type { InputAction } from '../core/Input';
 import { WowMouse, type WowMouseOut } from './WowMouse';
 import { pickAtNdc, type PickHit } from './ClickPick';
-import { setTargetRim } from '../vfx/TargetRim';
+import { setRim } from '../vfx/TargetRim';
 import { AutoAttack, AUTO, type AutoTarget } from './AutoAttack';
 import { VERT } from '../world/Heightfield';
 import { FallHandler, VOID_FADE_IN, VOID_FADE_OUT, VOID_INPUT_LOCK, VOID_INVULN_SEC, type FallEnv, type Spot } from './FallHandler';
@@ -1722,14 +1722,14 @@ export class PlayerController {
       const cursorFree = !!input && !input.pointerOverUI && !G.ui?.wantsCursor?.() && !document.pointerLockElement;
       this.rimHover = cursorFree ? this.wowPick(input.ndcX, input.ndcY) : null;
     }
+    // WoW clarity: the hovered unit and the target each keep their own rim (green = friendly NPC, red = hostile enemy).
     const hov = this.rimHover;
-    if (hov?.kind === 'npc' && !hov.entity.removed) {
-      setTargetRim(hov.entity.object3d, 'friendly');
-      return;
-    }
-    const enemy = hov?.kind === 'enemy' ? hov.entity : this.currentTarget();
-    if (enemy && enemy.alive && !enemy.removed) setTargetRim(enemy.object3d, 'hostile');
-    else setTargetRim(null, null);
+    if (hov?.kind === 'npc' && !hov.entity.removed) setRim('hover', hov.entity.object3d, 'friendly');
+    else if (hov?.kind === 'enemy' && hov.entity.alive && !hov.entity.removed) setRim('hover', hov.entity.object3d, 'hostile');
+    else setRim('hover', null, null);
+    const tgt = this.currentTarget();
+    if (tgt && tgt.alive && !tgt.removed && !(hov?.kind === 'enemy' && hov.entity === tgt)) setRim('target', tgt.object3d, 'hostile');
+    else setRim('target', null, null);
   }
 
   private wowPick(ndcX: number, ndcY: number): PickHit | null {

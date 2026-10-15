@@ -40,13 +40,14 @@ export interface Atmo {
 function fogLook(c: THREE.Color): THREE.Color {
   const hsl = { h: 0, s: 0, l: 0 };
   c.getHSL(hsl);
-  return c.setHSL(hsl.h, Math.min(1, hsl.s * 1.25), hsl.l * 0.9);
+  // WoW clarity: a lighter haze (+6 % lightness) and 35 % farther fog (see atmoOf), so the enemies and telegraphs read at range
+  return c.setHSL(hsl.h, Math.min(1, hsl.s * 1.25), Math.min(1, hsl.l * 0.9 + 0.06));
 }
 
 export function atmoOf(t: RegionTheme): Atmo {
   const fog = fogLook(new THREE.Color(t.fogColor));
   const hemiSky = new THREE.Color(t.hemiSky);
-  const far = t.fogFar;
+  const far = t.fogFar * 1.35;
   return {
     fog, near: Math.min(t.fogNear * 1.6, far * 0.6), far,
     hemiSky, hemiGround: new THREE.Color(t.hemiGround), hemiI: t.hemiIntensity,
