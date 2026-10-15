@@ -300,7 +300,8 @@ export class Minimap implements HudWidget {
     const out: Poi[] = [];
     for (const e of world.entities.values()) {
       if (e.removed) continue;
-      if (e.kind === 'npc') out.push({ e, kind: 'npc', color: '#ffd24a' });
+      // ambient walkers (TownNpc.routine, scenes/world/AmbientLife.ts) are life, not quest givers: no marker
+      if (e.kind === 'npc') { if (!(e as unknown as { def?: { routine?: unknown } }).def?.routine) out.push({ e, kind: 'npc', color: '#ffd24a' }); }
       else if (e.kind === 'interactable') out.push({ e, kind: 'interactable', color: '#5fe0ff' });
       else if (e.kind === 'loot') {
         const rar = (e as unknown as { rarity?: Rarity }).rarity;

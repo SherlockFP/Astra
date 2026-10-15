@@ -24,6 +24,7 @@ import { WorldPois } from './WorldPois';
 import { WorldGather } from './WorldGather';
 import { WorldQuestProps } from './WorldQuestProps';
 import { EventCalendar, buildEventSites } from './EventCalendar';
+import { AmbientLife, ambientEnabled } from './AmbientLife';
 import { startSiege, type SiegeRuntime } from '../../systems/Siege';
 import { SIEGE_MAP_ID } from '../../data/siege';
 import { Discoveries } from './Discoveries';
@@ -76,6 +77,8 @@ export class WorldRuntime {
   private readonly gather: WorldGather;
   private readonly questProps: WorldQuestProps;
   private readonly discoveries: Discoveries;
+  /** Ambient life (walkers on routines, critters, deer, cues): null when the map has none or `?ambient=0`. */
+  private ambient: AmbientLife | null = null;
   private events: EventScope | null = null;
   private calendar: EventCalendar | null = null;
   /** WP-14 Kale Kuşatması: the fortress runtime (Karakır only). */
@@ -118,6 +121,7 @@ export class WorldRuntime {
       this.guard('shrines and chests', () => this.pois.place()),
       this.guard('gathering nodes', () => this.gather.place()),
       this.guard('quest props', () => this.questProps.place()),
+      this.guard('ambient life', () => this.startAmbient()),
     ]);
     if (G.net.isAuthority) {
       try {
@@ -164,6 +168,7 @@ export class WorldRuntime {
     this.run('quest props', () => this.questProps.update(dt));
     this.run('events', () => this.calendar?.update(dt));
     this.run('siege', () => this.siege?.update(dt));
+    this.run('ambient', () => this.ambient?.update(dt));
     if (G.net.isAuthority) this.run('goblins', () => this.goblinTick(dt));
     this.regionTimer -= dt;
     if (this.regionTimer <= 0) {
@@ -228,6 +233,8 @@ export class WorldRuntime {
   dispose(): void {
     this.disposed = true;
     if (activeRuntime === this) activeRuntime = null;
+    this.ambient?.dispose();
+    this.ambient = null;
     this.events?.dispose();
     this.events = null;
     this.waypoints.dispose();
@@ -390,6 +397,16 @@ export class WorldRuntime {
   // ================================================================================================
   // helpers
   // ================================================================================================
+
+  /** Ambient life of the map (WorldExtras.ambient): walkers, critters, deer, cues. Off with `?ambient=0`. */
+  private async startAmbient(): Promise<void> {
+    if (!this.ext.ambient || !ambientEnabled()) return;
+    const life = new AmbientLife({
+      world: this.o.world, scene: this.o.scene, decor: this.o.built.world, ext: this.ext, packs: this.o.def.packs, seed: `${this.ctx.seed}`,
+    });
+    this.ambient = life;
+    await life.start();
+  }
 
   private run(name: string, fn: () => void): void {
     try {

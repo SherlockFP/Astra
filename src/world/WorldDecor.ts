@@ -87,6 +87,8 @@ export interface WorldDecorHandle {
   streamStats(): WorldStreamStats | null;
   /** Builds the whole streamed ring around a point now (after the batches are built; a no-op in a small zone). */
   primeStream(x: number, z: number): void;
+  /** True when the chunk under (x, z) is in the resident ring (always true in a small zone). Ambient life streams by it. */
+  streamResident(x: number, z: number): boolean;
 }
 
 /** Every model url the open world needs (villages, roads, landmarks, scenery). Preloaded with the dungeon. */
@@ -181,6 +183,12 @@ class OpenWorld implements WorldDecorHandle {
   primeStream(x: number, z: number): void {
     this.stream?.prime(x, z);
     this.culler.invalidate();
+  }
+
+  streamResident(x: number, z: number): boolean {
+    if (!this.stream || !this.host.stream) return true;
+    const size = this.host.stream.chunkM;
+    return this.stream.visual.has(Math.floor(x / size), Math.floor(z / size));
   }
 
   setPlayerPos(x: number, z: number): void {

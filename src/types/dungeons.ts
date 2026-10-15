@@ -3,6 +3,7 @@ import type { VfxId } from './vfx';
 import type { RaidInfo } from './v2';
 import type { StatusId } from './skills';
 import type { SkyOptions } from '../world/Sky';
+import type { AmbientDef, AmbientRoute } from './ambient';
 
 /**
  * Dungeons are authored on a tile grid (1 tile = TILE_SIZE world units, KayKit floor tiles).
@@ -612,6 +613,8 @@ export interface WorldExtras {
   hidden: HiddenAreaDef[];
   vistas: VistaDef[];
   ghostBoat?: { id: string; pos: [number, number]; island: [number, number] };
+  /** Ambient life: villagers on routines, critters, deer herds, chimney smoke, lit windows (types/ambient.ts). Absent = none. */
+  ambient?: AmbientDef;
   perf: WorldPerf;
 }
 
@@ -655,6 +658,8 @@ export interface TownNpc {
   loop?: { clip: string; every: number; offset?: number };
   /** Walking patrol loop (world metres [x,z]) and lap time in seconds; `phase` 0..1 starts the walk part-way round (default 0). */
   patrol?: { path: [number, number][]; lap: number; phase?: number };
+  /** Open world ambient life (types/ambient.ts): a walking routine with dwells and clips (scenes/world/AmbientLife.ts). World metres. */
+  routine?: AmbientRoute;
   /** Ambient calls (vendors shouting): each line goes into a /say bubble every 60-120 s while the NPC is on screen. */
   shouts?: string[];
   /** Panel to open on interact (G.ui.openPanel id) with an optional tab / data kind. */

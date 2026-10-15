@@ -6,6 +6,7 @@ import { VILLAGES } from './villages';
 import { CHESTS, CURSED, ENTRANCES, GATHER, GHOST_BOAT, HIDDEN, MINIBOSSES, RARES, SHRINES, VISTAS, WAYPOINTS, WORLD_BOSSES } from './pois';
 import { METIN_SPOTS, METIN_TIERS } from './metin';
 import { GRAVEYARDS } from './graveyards';
+import { SISLI_AMBIENT } from './sisli_ambient';
 
 /**
  * SISLI VADI, the open-world map (GDD_OPENWORLD §1, §9.1). OWNER: content module. Levels 1-30, 400 x 400 tiles (1600 m), a streamed
@@ -85,6 +86,7 @@ const WORLD: WorldExtras = {
   hidden: HIDDEN,
   vistas: VISTAS,
   ghostBoat: GHOST_BOAT,
+  ambient: SISLI_AMBIENT,
   perf: PERF,
 };
 
