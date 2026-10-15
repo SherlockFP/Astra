@@ -161,7 +161,7 @@ export function subscribeFeedback(vfx: VFX): void {
       const p: [number, number, number] = [e.pos[0], e.pos[1], e.pos[2]];
       const h = ent ? ent.height : 2;
       const boss = (ent as unknown as { isBoss?: boolean } | undefined)?.isBoss;
-      // the measured height of some small models is far off (a rat measures the 14 m clamp): a normal kill puff stays small, only a boss gets the big one
+      // a normal kill puff stays small (height is the rest-pose size of the visible model); only a boss gets the big one
       const scale = boss ? Math.max(0.7, Math.min(2.6, h / 2.2)) : Math.max(0.6, Math.min(0.9, h / 2.2));
       if (ent?.kind === 'player') return;
       const bones = isUndeadBones(ent);

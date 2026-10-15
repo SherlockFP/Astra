@@ -18,6 +18,13 @@
 import * as H from './harness.mjs';
 
 const { G, world, errors, events } = H;
+// Repeatable runs (as solo_lowlevel.mjs): timers and the wall clock read the sim clock, and Math.random is seeded, so the flee
+// point, the spawn animation phase and every other random pick repeat run to run.
+performance.now = () => G.engine.time * 1000;
+Date.now = () => 1800000000000 + G.engine.time * 1000;
+const { RNG } = await H.imp('core/utils.ts');
+const mathRng = new RNG(7);
+Math.random = () => mathRng.next();
 const { ENEMIES } = await H.imp('data/enemies.ts');
 const { Enemy } = await H.imp('entities/Enemy.ts');
 const { EnemyAI } = await H.imp('ai/EnemyAI.ts');
@@ -326,10 +333,16 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
   caster.ai.onDamageEvent({ sourceId: p.id, amount: 10, crit: false });
   ok('flee.humanoid at 15 % HP starts fleeing', caster.ai.fleeing);
   ok('flee.calls the nearby ally onto the attacker', ally.ai.aggroed);
+  // The flee point is re-picked every 1.3 s, so the gap can wobble while it runs: sample the 3 s window every 0.1 s and pass on the
+  // peak gap (2 m clear of the start at any sample) instead of the end sample alone
   const d0 = dist(caster, p);
-  H.step(sec(3));
+  let dPeak = d0;
+  for (let i = 0; i < 30; i++) {
+    H.step(sec(0.1));
+    dPeak = Math.max(dPeak, dist(caster, p));
+  }
   const d1 = dist(caster, p);
-  ok('flee.runs away from the player', d1 > d0 + 2, `${d0.toFixed(1)} m -> ${d1.toFixed(1)} m`);
+  ok('flee.runs away from the player', dPeak > d0 + 2, `${d0.toFixed(1)} m -> peak ${dPeak.toFixed(1)} m, end ${d1.toFixed(1)} m`);
   H.step(sec(6));
   ok('flee.stops after its window and fights again', !caster.ai.fleeing);
 
