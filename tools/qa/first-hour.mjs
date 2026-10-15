@@ -95,6 +95,10 @@ for (const cls of CLASSES) {
     summaries.push(await journey(cls));
   } catch (e) {
     check(`[${cls}] journey finished without exception`, false, `navigations=${NAVS} (>1 means the page reloaded mid-journey) ` + String(e?.stack ?? e).slice(0, 400));
+  } finally {
+    // every class leaves its fh_<cls>.json, also when journey() threw before it wrote its own summary
+    const file = path.join(OUT, `fh_${cls}.json`);
+    if (!fs.existsSync(file)) fs.writeFileSync(file, JSON.stringify({ cls, end: 'journey threw before its summary' }, null, 2));
   }
 }
 await browser.close();
@@ -178,6 +182,7 @@ async function journey(cls) {
   let written = false;
   let summary = null;
   let excMsg = '';
+  let capAt = 0; // wall clock when the class time cap (FH_MAX_MIN) was seen
   await page.exposeFunction('__fhLevelUp', (level) => {
     levelUps.push({ level, min: mins() });
     if (levelMin[level] == null) levelMin[level] = mins();
@@ -1084,7 +1089,13 @@ async function journey(cls) {
     let steps = 0;
     let worldSeen = false;
     wdAnchor = { t: Date.now(), x: 0, z: 0 };
-    wdTimer = setInterval(() => { wdTick().catch(() => {}); }, 1000);
+    wdTimer = setInterval(() => {
+      wdTick().catch(() => {});
+      // the class time cap is also checked inside a step: the step in flight returns at once (its wait loops check stepAbort), and when
+      // it has not returned 30 s later the summary is written from here, so a capped class always leaves its JSON behind
+      if (!capAt && (Date.now() - T0) / 60000 > MAX_MIN) { capAt = Date.now(); stepAbort = true; }
+      if (capAt && !written && Date.now() - capAt > 30000) writeJson(`time budget ${MAX_MIN} min (step did not return)`).catch(() => {});
+    }, 1000);
     while (true) {
       steps++;
       stepAbort = false;

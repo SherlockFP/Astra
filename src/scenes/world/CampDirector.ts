@@ -14,8 +14,9 @@ import { CampIndex } from './CampIndex';
  * `radius + activateM` and despawned when every player is beyond `radius + deactivateM` and nobody is aggroed.
  * Members have deterministic ids (DUNGEON_ENEMY_ID_BASE + packIndex * WORLD_PACK_STRIDE + memberIndex), so a respawn reuses
  * the same id and clients never invent one: the host announces each spawn on the `spawn` channel with that explicit id, and
- * removes it with `remove: true` (Enemy.escape). A camp refreshes `respawnSec` after its LAST kill, but only when no player is
- * within `radius + 30` m. Above the 240-enemy budget the farthest camps are deactivated first.
+ * removes it with `remove: true` (Enemy.escape). A camp refreshes `respawnSec` after its LAST kill (WoW-style: the timer keeps running
+ * with players around, and shortens when 3+ players are near), but only when no member spawn point has a player within 10 m and the
+ * camp is not in combat. Above the 240-enemy budget the farthest camps are deactivated first.
  * Champions of a camp are rolled once per activation and announced as `ev:champ` so every peer shows the plate.
  * Big zones (docs/ENGINE_BIGMAPS.md): a tick only visits the camps that can act - active ones, ones waiting for their respawn timer
  * (kept by world time, so a camp far away still comes back on schedule) and ones a player is near, found through a bucket index -
@@ -56,8 +57,12 @@ interface Camp {
 const TICK = 0.5;
 /** Key of a camp in the channel ledger (NetSession.ledgerNote / ledgerRemaining). */
 const ledgerKey = (packId: string): string => `camp:${packId}`;
-/** A camp only refreshes when no player stands within radius + this (m). */
-const REFRESH_CLEAR_M = 30;
+/** A camp only refreshes when no player stands within this many m of any member's spawn point (nothing spawns on top of a player). */
+const REFRESH_CLEAR_M = 10;
+/** Dynamic respawn: with RESPAWN_CROWD_N or more players within a camp's reach its timer is cut to RESPAWN_CROWD_MULT (never below the floor). */
+const RESPAWN_CROWD_N = 3;
+const RESPAWN_CROWD_MULT = 0.6;
+const RESPAWN_FLOOR_SEC = 15;
 
 export class CampDirector {
   private readonly camps: Camp[] = [];
@@ -190,8 +195,8 @@ export class CampDirector {
       const c = this.camps[slot];
       this.collectDeaths(c, now);
       const nearest = ctx.nearestPlayerDist(c.cx, c.cz);
-      // refresh: the whole camp comes back `respawnSec` after its last kill, never with a player standing next to it
-      if (c.dead.size >= c.members.length && c.lastKillAt !== null && now - c.lastKillAt >= c.respawnSec && nearest > c.radius + REFRESH_CLEAR_M) {
+      // refresh: the whole camp comes back on its timer after its last kill (cut with a crowd), never with a player on a spawn point or in combat
+      if (c.dead.size >= c.members.length && c.lastKillAt !== null && now - c.lastKillAt >= this.respawnTimeFor(c, pts) && !this.anyAggro(c) && this.spawnPointsClear(c)) {
         c.dead.clear();
         c.lastKillAt = null;
         this.refreshing.delete(c.slot);
@@ -241,6 +246,21 @@ export class CampDirector {
         c.live.delete(k);
       }
     }
+  }
+
+  /** Respawn timer (s) of a camp: its own `respawnSec`, cut to RESPAWN_CROWD_MULT when RESPAWN_CROWD_N players are within its reach. */
+  private respawnTimeFor(c: Camp, pts: Pt[]): number {
+    let near = 0;
+    const reach = c.radius + this.perf.activateM;
+    for (const p of pts) if (Math.hypot(p.x - c.cx, p.z - c.cz) <= reach) near++;
+    if (near < RESPAWN_CROWD_N) return c.respawnSec;
+    return Math.min(c.respawnSec, Math.max(RESPAWN_FLOOR_SEC, c.respawnSec * RESPAWN_CROWD_MULT));
+  }
+
+  /** True when no player stands within REFRESH_CLEAR_M of any member's spawn point. */
+  private spawnPointsClear(c: Camp): boolean {
+    for (const m of c.members) if (this.ctx.nearestPlayerDist(m.x, m.z) < REFRESH_CLEAR_M) return false;
+    return true;
   }
 
   private anyAggro(c: Camp): boolean {
