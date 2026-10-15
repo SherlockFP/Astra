@@ -527,6 +527,59 @@ function ringBandIssues(packs, roomId, hub) {
   return out;
 }
 /**
+ * Escort routes (data/world/escort_routes.ts, WoW escort rules; Sisli Vadi r1, world metres, the hub is the ring centre). HARD errors:
+ *  (1) every escort objective of an r1 quest has a route, and every route belongs to a quest with an escort objective;
+ *  (2) every waypoint is in the quest's level ring (level 1-2 inside RING_INNER_M of the hub, level 3 inside RING_MIDDLE_M, level 4-5 beyond);
+ *  (3) the route is at most ESCORT_MAX_M (180 m) long in total;
+ *  (4) the route never passes within ESCORT_CLEAR_M (25 m) edge to edge of a camp or patrol whose lowest level is the quest's level + 2 or more
+ *      (edge = segment distance less the camp radius and 8 m of wander);
+ *  (5) the triggers are waypoints after the start, a wave holds 1-2 ambushers and the escort NPC has HP.
+ */
+const ESCORT_MAX_M = 180, ESCORT_CLEAR_M = 25;
+const ringAt = (d) => (d <= RING_INNER_M ? 'inner' : d <= RING_MIDDLE_M ? 'middle' : 'outer');
+const ringForLevel = (lv) => (lv <= 2 ? 'inner' : lv === 3 ? 'middle' : 'outer');
+function segDistM(p, a, b) {
+  const abx = b[0] - a[0], abz = b[1] - a[1];
+  const l2 = abx * abx + abz * abz;
+  const t = l2 ? Math.max(0, Math.min(1, ((p[0] - a[0]) * abx + (p[1] - a[1]) * abz) / l2)) : 0;
+  return Math.hypot(a[0] + abx * t - p[0], a[1] + abz * t - p[1]);
+}
+function escortRouteIssues(routes, quests, packs, roomId, hub) {
+  const out = [];
+  const err = (where, msg) => out.push({ level: 'error', where, msg });
+  const hubM = [hub[0] * TILE_M, hub[1] * TILE_M];
+  const camps = (packs ?? []).filter((p) => p.roomId === roomId && p.center).map((p) => ({ id: p.id, at: [p.center[0] * TILE_M, p.center[1] * TILE_M], lo: p.levelRange[0], r: p.radius ?? 8 }));
+  const escortQuests = quests.filter((q) => q.region === 'r1' && q.objectives.some((o) => o.kind === 'escort'));
+  for (const q of escortQuests) if (!routes[q.id]) err(`quest ${q.id}`, 'escort objective has no route in data/world/escort_routes.ts');
+  let maxLen = 0, minClear = Infinity;
+  for (const r of Object.values(routes)) {
+    const where = `escort ${r.quest}`;
+    const q = quests.find((x) => x.id === r.quest);
+    if (!q || !q.objectives.some((o) => o.kind === 'escort')) { err(where, 'route of a quest without an escort objective'); continue; }
+    const want = ringForLevel(q.level);
+    r.route.forEach((p, i) => {
+      const d = Math.hypot(p[0] - hubM[0], p[1] - hubM[1]);
+      if (ringAt(d) !== want) err(`${where} [waypoint ${i}]`, `${Math.round(d)} m from the hub: outside the ${want} ring of level ${q.level}`);
+    });
+    let len = 0;
+    for (let i = 1; i < r.route.length; i++) len += Math.hypot(r.route[i][0] - r.route[i - 1][0], r.route[i][1] - r.route[i - 1][1]);
+    maxLen = Math.max(maxLen, len);
+    if (len > ESCORT_MAX_M) err(where, `route ${Math.round(len)} m long (max ${ESCORT_MAX_M} m)`);
+    for (const c of camps.filter((c) => c.lo >= q.level + 2)) {
+      for (let i = 1; i < r.route.length; i++) {
+        const m = segDistM(c.at, r.route[i - 1], r.route[i]) - c.r - WANDER_M;
+        minClear = Math.min(minClear, m);
+        if (m < ESCORT_CLEAR_M) err(`${where} [segment ${i}]`, `${Math.round(m)} m edge clearance from camp ${c.id} (level ${c.lo}+): keep ${ESCORT_CLEAR_M} m`);
+      }
+    }
+    for (const t of r.triggers) if (!Number.isInteger(t) || t < 1 || t >= r.route.length) err(where, `trigger ${t} is not a waypoint after the start`);
+    if (!(r.waveSize >= 1 && r.waveSize <= 2)) err(where, `wave size ${r.waveSize}: 1-2 ambushers per wave`);
+    if (!(r.hp > 0)) err(where, 'escort NPC has no HP');
+  }
+  return { issues: out, routes: Object.keys(routes).length, maxLen, minClear: Number.isFinite(minClear) ? minClear : null };
+}
+
+/**
  * Solo main quests (layout quests.main `solo`: the chain quests a lone level 1-4 player finishes). HARD error: the quest area (its
  * `place`, a layout pack id) is never an elite-flagged pack. The elite camp (r1_c04) is the mini-boss area of mq_05, a group fight.
  */
@@ -749,6 +802,23 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
     const e = [...ri, ...dn.issues, ...si, ...rb, ...pl.issues].filter((i) => i.level === 'error');
     totalErr += e.length;
     console.log(`\n== camp rings ${id} r1: ${e.length} errors | ${ALL[id].packs.filter((p) => p.roomId === r1.roomId).length} camps and patrols | max mobs within 25 m: L1-2 ${dn.band.get('L1-2')}, L3 ${dn.band.get('L3')}, L4-5 ${dn.band.get('L4-5')} | r1 placement: ${pl.checked} quests L1-5 within ${PLACE_GIVER_M} m of their giver`);
+    for (const i of e) console.log('  ERR ', i.where, '-', i.msg);
+  }
+}
+// escort routes (Sisli Vadi r1): the route stays in the quest's level ring, at most 180 m, 25 m edge clearance from camps 2+ levels higher
+if (!want.length || WORLD_IDS.some((id) => want.includes(id))) {
+  const { ESCORT_ROUTES } = await imp('src/data/world/escort_routes.ts');
+  const { QUESTS: ESC_QUESTS } = await imp('src/data/world/quests.ts');
+  for (const id of WORLD_IDS) {
+    const r1 = ALL[id].world?.regions?.find((r) => r.id === 'r1');
+    if (!r1) continue;
+    const layout = JSON.parse(fs.readFileSync(`${ROOT}/src/data/world/sisli_vadi.layout.json`, 'utf8').replace(/^﻿/, ''));
+    const hub = layout.settlements?.find((x) => x.id === 'koy_gumusdere')?.center;
+    if (!hub) throw new Error('settlement koy_gumusdere (the ring hub) is missing from the layout');
+    const ei = escortRouteIssues(ESCORT_ROUTES, ESC_QUESTS, ALL[id].packs, r1.roomId, hub);
+    const e = ei.issues.filter((i) => i.level === 'error');
+    totalErr += e.length;
+    console.log(`\n== escort routes ${id} r1: ${e.length} errors | ${ei.routes} routes, longest ${Math.round(ei.maxLen)} m (max ${ESCORT_MAX_M} m), closest camp 2+ levels higher ${ei.minClear === null ? '-' : Math.round(ei.minClear) + ' m edge'}`);
     for (const i of e) console.log('  ERR ', i.where, '-', i.msg);
   }
 }
