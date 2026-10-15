@@ -1,4 +1,4 @@
-import { TILE_SIZE, WORLD_PACK_STRIDE, type BossPlacement, type DoorDef, type DungeonDef, type HeightArea, type PropPlacement, type RoomDef, type TileRect, type TownDef, type ZoneDef } from '../types/dungeons';
+import { TILE_SIZE, WORLD_PACK_STRIDE, type BossPlacement, type DoorDef, type DungeonDef, type PackDef, type HeightArea, type PropPlacement, type RoomDef, type TileRect, type TownDef, type ZoneDef } from '../types/dungeons';
 import { QUEST_DROP_CHANCE, type QuestDef } from '../types/quests';
 import type { EnemyAbility, EnemyDef } from '../types/enemies';
 import { MUSIC_IDS, SFX_IDS } from '../types/audio';
@@ -459,6 +459,96 @@ function clearAt(nav: NavMask, x: number, z: number, r: number, mask: Uint8Array
     if (i < 0 || j < 0 || i >= nav.w || j >= nav.h || !mask[j * nav.w + i]) return false;
   }
   return true;
+}
+
+/** The nav the game builds for a map, flooded from its start: `reach` marks the cells the start can walk to (camp reach rule). */
+export function navFlooded(def: DungeonDef, models: ModelDb): NavMask {
+  const nav = buildNav(def, models);
+  flood(nav, sceneW(def.start.pos[0]), sceneW(def.start.pos[1]));
+  return nav;
+}
+
+/** Wander allowance of a camp (m): the disc a camp's mobs roam is its radius plus this (edgeM of content-check, EnemyAI CAMP_WANDER_M). */
+const CAMP_WANDER_ALLOW_M = 8;
+/** Snap radius (m) of a spawn point to walkable ground: CampDirector places members with snapTile(tx, tz, 16), a 1 m nav. */
+export const CAMP_SNAP_M = 16;
+
+/** The enemy ids and families a quest's objectives target: kill / boss / elite / metin targets and the `from` sources of drop / collect. */
+export function questTargetOf(quests: readonly QuestDef[], familyOf: (enemyId: string) => string | undefined): (enemyId: string) => boolean {
+  const ids = new Set<string>();
+  for (const q of quests) for (const o of q.objectives as { kind: string; target?: string; from?: string[] }[]) {
+    if (['kill', 'boss', 'elite', 'metin'].includes(o.kind) && o.target) ids.add(o.target);
+    if (o.kind === 'drop' || o.kind === 'collect') for (const f of o.from ?? []) ids.add(f); // an enemy id or a family name
+  }
+  return (enemyId) => ids.has(enemyId) || ids.has(familyOf(enemyId) ?? '');
+}
+
+/**
+ * Camp reach rule (every open-world map, Sisli Vadi r1 is the gate): for each camp or patrol that a quest targets (a member is a
+ * `questTargetOf` enemy), on the nav the game builds (navFlooded: rooms, collide props, palisades) and flooded from the map start:
+ *  (1) every member spawn point (camp centre + its offset, snapped to walkable ground within CAMP_SNAP_M as CampDirector does) is
+ *      walkable and reached from the start;
+ *  (2) the camp centre is walkable and reached, and so is every walkable cell of its wander area: the disc of radius (camp radius +
+ *      CAMP_WANDER_ALLOW_M) around the centre. A wall, ruin or prop that cuts the disc into pockets fails here;
+ *  (3) a quest-targeted patrol's waypoints are walkable and reached.
+ * One issue per failing camp. `checked` counts the targeted camps, `failing` the ones with an issue.
+ */
+export function campReachIssues(nav: NavMask, packs: readonly PackDef[], isTarget: (enemyId: string) => boolean, sev: Issue['level'] = 'error'): { issues: Issue[]; checked: number; failing: number } {
+  const issues: Issue[] = [];
+  let checked = 0, failing = 0;
+  const cellOf = (wx: number, wz: number): number => {
+    const i = Math.floor(wx), j = Math.floor(wz);
+    return i >= 0 && j >= 0 && i < nav.w && j < nav.h ? j * nav.w + i : -1;
+  };
+  /** nearest walkable cell centre within CAMP_SNAP_M of (wx, wz), or -1 (NavGrid.nearestWalkable on the 1 m nav) */
+  const nearestWalkable = (wx: number, wz: number): number => {
+    let best = -1, bd = Infinity;
+    const i0 = Math.floor(wx), j0 = Math.floor(wz);
+    for (let j = j0 - CAMP_SNAP_M; j <= j0 + CAMP_SNAP_M; j++) for (let i = i0 - CAMP_SNAP_M; i <= i0 + CAMP_SNAP_M; i++) {
+      if (i < 0 || j < 0 || i >= nav.w || j >= nav.h || !nav.walk[j * nav.w + i]) continue;
+      const d = Math.hypot(i + 0.5 - wx, j + 0.5 - wz);
+      if (d <= CAMP_SNAP_M && d < bd) { bd = d; best = j * nav.w + i; }
+    }
+    return best;
+  };
+  const at = (c: number): string => `(${(c % nav.w) + 0.5}, ${Math.floor(c / nav.w) + 0.5})`;
+  for (const p of packs) {
+    if (!p.center || !p.members.some((m) => isTarget(m.enemyId))) continue;
+    checked++;
+    const center = p.center;
+    const fails: string[] = [];
+    p.members.forEach((m, k) => {
+      const c = nearestWalkable(sceneW(center[0] + m.offset[0]), sceneW(center[1] + m.offset[1]));
+      if (c < 0) fails.push(`member ${k} ${m.enemyId}: no walkable ground within ${CAMP_SNAP_M} m`);
+      else if (!nav.reach[c]) fails.push(`member ${k} ${m.enemyId} at ${at(c)}: not reached from the start`);
+    });
+    const cx = sceneW(center[0]), cz = sceneW(center[1]);
+    const c0 = cellOf(cx, cz);
+    if (c0 < 0 || !nav.walk[c0] || !nav.reach[c0]) fails.push('camp centre: blocked or not reached from the start');
+    const R = (p.radius ?? 8) + CAMP_WANDER_ALLOW_M;
+    let walkable = 0, unreached = 0;
+    const pocket: string[] = [];
+    for (let j = Math.floor(cz - R); j <= Math.ceil(cz + R); j++) for (let i = Math.floor(cx - R); i <= Math.ceil(cx + R); i++) {
+      if (i < 0 || j < 0 || i >= nav.w || j >= nav.h || Math.hypot(i + 0.5 - cx, j + 0.5 - cz) > R) continue;
+      const idx = j * nav.w + i;
+      if (!nav.walk[idx]) continue;
+      walkable++;
+      if (!nav.reach[idx]) { unreached++; if (pocket.length < 3) pocket.push(`(${i + 0.5}, ${j + 0.5})`); }
+    }
+    if (unreached) fails.push(`wander area: ${unreached} of ${walkable} walkable cells of its ${R} m disc not reached (e.g. ${pocket.join(' | ')})`);
+    if (p.patrol?.length) {
+      p.patrol.forEach(([tx, tz], k) => {
+        const c = nearestWalkable(sceneW(tx), sceneW(tz));
+        if (c < 0) fails.push(`patrol waypoint ${k}: no walkable ground within ${CAMP_SNAP_M} m`);
+        else if (!nav.reach[c]) fails.push(`patrol waypoint ${k} at ${at(c)}: not reached from the start`);
+      });
+    }
+    if (fails.length) {
+      failing++;
+      issues.push({ level: sev, where: `camp ${p.id}`, msg: fails.slice(0, 3).join('; ') + (fails.length > 3 ? `; +${fails.length - 3} more` : '') });
+    }
+  }
+  return { issues, checked, failing };
 }
 
 export const roomAtTile = (def: DungeonDef, wx: number, wz: number): RoomDef | undefined =>
