@@ -54,6 +54,7 @@ const { NPC } = await H.imp('entities/NPC.ts');
 const { EscortNpc } = await H.imp('entities/interactables/EscortNpc.ts');
 const { QuestProp, QUEST_PROP_RESPAWN_SEC } = await H.imp('entities/interactables/QuestProp.ts');
 const { WorldQuestProps, escortRoute } = await H.imp('scenes/world/WorldQuestProps.ts');
+const { minibossRespawnSec, QUEST_RESPAWN_SEC } = await H.imp('scenes/world/MiniBossDirector.ts');
 const cc = await H.imp('dev/contentCheck.ts');
 
 // ------------------------------------------------------------------------------------------------ data
@@ -408,6 +409,16 @@ function sourcesOf(ids) {
   return out;
 }
 
+/** Mini-boss quest bosses: the lair is a source on this map, a quest-wanted lair refills in <= 90 s, the layout timer is unchanged otherwise. */
+function bossLairAssert(enemyId, label) {
+  const mb = W.minibosses.find((m) => m.enemyId === enemyId);
+  if (!mb) return; // a boss of the boss list, not a lair
+  if (!sourcesOf([enemyId]).some((c) => c.kind === 'lair')) blocker(`${label}: lair of ${enemyId} is not a source`);
+  if (minibossRespawnSec(mb, true) > 90 || QUEST_RESPAWN_SEC > 90) blocker(`${label}: quest respawn of ${enemyId} is over 90 s`);
+  if (minibossRespawnSec(mb, false) !== mb.respawnMin * 60) blocker(`${label}: layout respawn of ${enemyId} changed`);
+  log(`lair boss ${enemyId} at ${mb.lair}: quest respawn ${QUEST_RESPAWN_SEC} s`);
+}
+
 /** Walks to the nearest reachable source of `ids` (in-band sources first). Returns the chosen source. */
 function goToSource(ids, band, label) {
   const cands = sourcesOf(ids);
@@ -457,6 +468,7 @@ async function doObjective(def, k) {
       break;
     }
     case 'kill': case 'boss': case 'metin': case 'elite': {
+      if (o.kind === 'boss') bossLairAssert(o.target, label);
       const ids = [o.target];
       const src = goToSource(ids, band, label);
       farm(src, done, label, 60 * o.count + 60, status);

@@ -100,8 +100,8 @@ export class WorldRuntime {
     this.camps = new CampDirector(this.ctx, this.ext.perf);
     this.metin = new MetinDirector(this.ctx);
     this.rares = new RareDirector(this.ctx);
-    this.story = new StoryBeats(this.ctx);
     this.minis = new MiniBossDirector(this.ctx);
+    this.story = new StoryBeats(this.ctx, (enemyId) => this.minis.summon(enemyId));
     this.bosses = new BossSchedule(this.ctx);
     this.pois = new WorldPois(this.ctx);
     this.gather = new WorldGather(this.ctx);

@@ -13,6 +13,13 @@ import type { Pt, WorldCtx } from './util';
 const LAIR_CLEAR_M = 40;
 /** First spawn after the world starts (s). */
 const FIRST_SEC = 60;
+/** Refill of a lair whose boss an active quest needs: a quest is never blocked by the 20 min layout timer (s). */
+export const QUEST_RESPAWN_SEC = 90;
+
+/** Seconds from the boss's death (or from the world start) until its lair refills. Pure: the layout respawn unless a quest wants the boss. */
+export function minibossRespawnSec(def: MiniBossDef, questWanted: boolean): number {
+  return questWanted ? QUEST_RESPAWN_SEC : def.respawnMin * 60;
+}
 
 interface MbRec {
   def: MiniBossDef;
@@ -45,7 +52,7 @@ export class MiniBossDirector {
         if (rec.enemy) {
           if (rec.enemy.isDead || rec.enemy.removed) {
             rec.enemy = null;
-            rec.nextAt = now + rec.def.respawnMin * 60;
+            rec.nextAt = now + minibossRespawnSec(rec.def, this.wanted(rec.def));
           }
           continue;
         }
@@ -56,6 +63,16 @@ export class MiniBossDirector {
       if (!this.warned) console.warn('[minibosses] tick failed', e);
       this.warned = true;
     }
+  }
+
+  /** An active quest kills this mini-boss (its kill / boss objective names the enemy id). */
+  private wanted(def: MiniBossDef): boolean {
+    return !!G.quests?.wants('boss', def.enemyId) || !!G.quests?.wants('kill', def.enemyId);
+  }
+
+  /** The lair of this enemy refills now (the story villain fled and reappears at its lair). A live boss is left alone. */
+  summon(enemyId: string): void {
+    for (const rec of this.recs) if (rec.def.enemyId === enemyId && !rec.enemy && !rec.pending) rec.nextAt = this.ctx.world.time;
   }
 
   private spawn(rec: MbRec, now: number): void {

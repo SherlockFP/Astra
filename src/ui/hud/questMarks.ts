@@ -197,6 +197,12 @@ function enemyIdsOf(o: QuestObjective, tiers: { id: string; enemyId: string }[])
  * Camp (or patrol) of the open-world map that spawns one of the ids: the quest's own place (layout `place`) when it holds one,
  * else the nearest to the player. The fallback of a kill objective whose enemy is not streamed in (the arrow would hide).
  */
+/** Lair of a mini-boss whose enemy id is in `ids`: a boss objective points at the lair (the mini-boss stands there, not in a camp). */
+function lairPos(ids: string[]): Pt | null {
+  const m = worldDef()?.world?.minibosses?.find((x) => ids.includes(x.enemyId));
+  return m ? { x: tileCentreM(m.lair[0]), z: tileCentreM(m.lair[1]) } : null;
+}
+
 function campPos(ids: string[], place?: string, area: Set<string> | null = null): Pt | null {
   const def = worldDef();
   if (!def || !ids.length) return null;
@@ -234,7 +240,7 @@ export function objectivePos(o: QuestObjective, place?: string, area?: QuestArea
     case 'kill':
     case 'boss':
     case 'metin':
-      { const inArea = questArea(area, place); return nearestLiveEnemy(killIds(o), inArea, area?.level) ?? campPos(killIds(o), place, inArea) ?? nearestLiveEnemy(killIds(o), inArea); }
+      { const inArea = questArea(area, place); return nearestLiveEnemy(killIds(o), inArea, area?.level) ?? lairPos(killIds(o)) ?? campPos(killIds(o), place, inArea) ?? nearestLiveEnemy(killIds(o), inArea); }
     case 'drop':
     case 'collect':
       // drop / collect hunt the mobs in `from`: the same live-enemy-else-camp fallback as a kill (the WoW objective area, from data)

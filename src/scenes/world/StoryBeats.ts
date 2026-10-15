@@ -50,7 +50,8 @@ export class StoryBeats {
   private readonly runs: Run[] = [];
   private off: (() => void) | null = null;
 
-  constructor(private readonly ctx: WorldCtx) {
+  /** `summonLair`: the mini-boss director, so the fleeing villain reappears at its lair (the quest's place). */
+  constructor(private readonly ctx: WorldCtx, private readonly summonLair: (enemyId: string) => void = () => {}) {
     this.off = G.events?.on('quest:updated', ({ questId, state }) => {
       if (state !== 'active' || !G.net?.isAuthority) return;
       const beat = BEATS.find((b) => b.questId === questId);
@@ -80,6 +81,7 @@ export class StoryBeats {
       if (run.t >= leaveAt) {
         e.escape();
         run.done = true;
+        this.summonLair(run.beat.enemyId);
       }
     }
     if (this.runs.some((r) => r.done)) this.runs.splice(0, this.runs.length, ...this.runs.filter((r) => !r.done));
