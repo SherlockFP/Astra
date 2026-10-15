@@ -263,6 +263,15 @@ export class PlayerController {
     document.addEventListener('pointerlockchange', this.onLockChange);
     this.buildMarker();
     cam.setTarget(player.object3d);
+    // first person (FirstPerson.ts): the saved state of this character, the eye at the model height, saved again on every change
+    cam.setFirstPerson(!!G.character?.save.flags?.firstPerson);
+    cam.setEyeHeight(() => this.player.height);
+    cam.onFirstPersonChanged = (on) => {
+      const c = G.character;
+      if (!c) return;
+      c.save.flags.firstPerson = on;
+      try { c.persist(); } catch { /* the in-memory state still applies */ }
+    };
     // hold-to-aim / buffered casts in SkillSystem ask for the live aim
     if (G.skills) (G.skills as unknown as { aimProvider: (() => AimInfo) | null }).aimProvider = this.aimFn;
     // SceneManager.current is still null while a scene's enter() runs, so learn the scene from the 'scene:changed' event
@@ -757,6 +766,10 @@ export class PlayerController {
         const d = (turnL ? 1 : -1) * WOW_TURN_RATE * dt;
         p.yaw += d;
         this.cam.rotateYaw(d);
+      } else if (this.cam.firstPerson) {
+        // first person: the body is the camera (FirstPerson.ts), so casts, auto-attack and moves follow the view
+        want = this.cam.faceYaw;
+        snapFace = true;
       } else if (this.autoFaceWant !== null) {
         want = this.autoFaceWant; // row 6: auto-attack, idle, target in reach
         lambda = WOW_FACE_LAMBDA; maxRate = WOW_FACE_MAX;
@@ -768,6 +781,9 @@ export class PlayerController {
       lambda = 42; maxRate = 24;
     } else if (G.combat?.isGuarding(p)) {
       want = this.cam.faceYaw; // Siper: the guarding character faces the camera (GDD_V2 §3.4)
+      lambda = 30; maxRate = 14;
+    } else if (this.cam.firstPerson) {
+      want = this.cam.faceYaw; // first person: the body follows the view (FirstPerson.ts)
       lambda = 30; maxRate = 14;
     } else if (hard) {
       want = Math.atan2(hard.position.x - p.position.x, hard.position.z - p.position.z);
@@ -2321,6 +2337,7 @@ export class PlayerController {
     for (const off of this.unsubs) off();
     this.unsubs = [];
     document.removeEventListener('pointerlockchange', this.onLockChange);
+    this.cam.onFirstPersonChanged = null;
     if (G.input?.isLocked()) {
       this.expectedUnlock = true;
       G.input.unlock();

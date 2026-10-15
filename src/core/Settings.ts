@@ -149,6 +149,10 @@ export interface SettingsData {
   cameraDistanceWow: number;
   /** WoW smart pivot: the camera eases behind the character while it runs forward. */
   cameraSmartPivot: boolean;
+  /** Revision of the WoW camera distance default (13 m, was 10). Stored files below 1 whose distance is the old 10 m default move to 13 once; a custom distance is kept. */
+  cameraDistRev: number;
+  /** Tekerlekle birinci şahıs: zooming in past the minimum enters first person (FirstPerson.ts). Off = the wheel never enters it. */
+  firstPersonWheel: boolean;
   /** Casters auto-fire their LMB chain at range (CONTROLS_WOW Q1). */
   casterAutoShot: boolean;
   /** Revision of the casterAutoShot default (migrated once: stored files below 1 get casterAutoShot = true). */
@@ -189,8 +193,9 @@ export interface SettingsData {
  * 5 = crisp default look (gfxLookRev): PSX filter off by default, stored files below rev 1 are switched once.
  * 6 = calmer audio mix (audioRev): ambienceVolume, combatSoundLevel, uiHoverSfx; the level defaults move down once.
  * 7 = WoW-clarity defaults (gfxClarityRev): renderScale 2 = native device pixels (DPR capped at 2), migrated once.
+ * 8 = WoW camera distance default 13 m (cameraDistRev) and the first-person wheel option (firstPersonWheel).
  */
-export const SETTINGS_VERSION = 7;
+export const SETTINGS_VERSION = 8;
 
 /** Key codes of the guard and inventory defaults before CM1 / UX-00 (used only by the one-time bindings migration). */
 const LEGACY_GUARD = ['KeyG', 'Mouse3'];
@@ -284,8 +289,10 @@ export const DEFAULT_SETTINGS: SettingsData = {
   controlScheme: 'wow',
   controlsRev: 1,
   schemeBindings: {},
-  cameraDistanceWow: 10,
+  cameraDistanceWow: 13,
+  cameraDistRev: 1,
   cameraSmartPivot: true,
+  firstPersonWheel: true,
   casterAutoShot: true,
   casterAutoShotRev: 1,
   autoAttackFromSkills: true,
@@ -405,6 +412,12 @@ export class Settings {
         Object.assign(this.data, { renderScale: 2, gfxClarityRev: 1 });
         changed = true;
       }
+      // WoW camera distance (cameraDistRev 0 -> 1): the old 10 m default moves to 13 m once. A custom distance is kept.
+      if ((stored.cameraDistRev ?? 0) < 1) {
+        if (this.data.cameraDistanceWow === 10) this.data.cameraDistanceWow = 13;
+        this.data.cameraDistRev = 1;
+        changed = true;
+      }
       // AUDIO_MIX (audioRev 0 -> 1): calmer level defaults and the hover blip off, once. A level changed afterwards is kept by the rev flag.
       if ((stored.audioRev ?? 0) < 1) {
         Object.assign(this.data, { sfxVolume: 0.5, musicVolume: 0.35, uiVolume: 0.35, ambienceVolume: 0.4, uiHoverSfx: false, audioRev: 1 });
@@ -415,7 +428,7 @@ export class Settings {
     if (this.data.controlScheme !== 'wow' && this.data.controlScheme !== 'aksiyon') this.data.controlScheme = 'wow';
     this.data.cameraMode = cameraModeOf(this.data.controlScheme);
     this.data.schemeBindings = this.data.schemeBindings ?? {};
-    this.data.cameraDistanceWow = Number.isFinite(this.data.cameraDistanceWow) ? Math.min(30, Math.max(2, this.data.cameraDistanceWow)) : 10;
+    this.data.cameraDistanceWow = Number.isFinite(this.data.cameraDistanceWow) ? Math.min(35, Math.max(2, this.data.cameraDistanceWow)) : 13;
     if (this.data.graphicsQuality !== 'low' && this.data.graphicsQuality !== 'mid' && this.data.graphicsQuality !== 'high') this.data.graphicsQuality = 'mid';
     if (this.data.combatSoundLevel !== 'low' && this.data.combatSoundLevel !== 'normal') this.data.combatSoundLevel = 'normal';
     this.data.ambienceVolume = Number.isFinite(this.data.ambienceVolume) ? Math.min(1, Math.max(0, this.data.ambienceVolume)) : 0.4;

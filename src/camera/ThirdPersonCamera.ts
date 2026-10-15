@@ -3,6 +3,7 @@ import { G } from '../game/G';
 import { clamp, damp, angleDiff, lerp } from '../core/utils';
 import { OccluderFader } from './OccluderFade';
 import { BODY_KEEP_OUT, NearBodyHider } from './BodyClearance';
+import { FP_BLEND_RATE, FP_BODY_HIDE, FP_CEIL_CLEAR, FP_EYE_FALLBACK, FP_NEAR, FP_PITCH_MAX, stepFirstPersonZoom } from './FirstPerson';
 import type { Actor } from '../entities/Actor';
 import type { Enemy } from '../entities/Enemy';
 import { VERT } from '../world/Heightfield';
@@ -27,7 +28,7 @@ export interface CamProfile {
 }
 export const CAM_PROFILES: Record<CameraMode, CamProfile> = {
   action: { zoomMin: 3, zoomMaxOutdoor: 18, zoomMaxIndoor: 18, zoomDefault: 9, restPitch: NaN, maxPitch: 1.38, shoulder: 0.55, lookAhead: true, combatZoom: true, lockOnFraming: true, pitchAutoReturn: true, wheelPitchPull: true },
-  classic: { zoomMin: 2, zoomMaxOutdoor: 30, zoomMaxIndoor: 18, zoomDefault: 10, restPitch: 0.349, maxPitch: 1.45, shoulder: 0, lookAhead: false, combatZoom: false, lockOnFraming: false, pitchAutoReturn: false, wheelPitchPull: false },
+  classic: { zoomMin: 2, zoomMaxOutdoor: 35, zoomMaxIndoor: 18, zoomDefault: 13, restPitch: 0.349, maxPitch: 1.45, shoulder: 0, lookAhead: false, combatZoom: false, lockOnFraming: false, pitchAutoReturn: false, wheelPitchPull: false },
 };
 /** WoW: the wheel moves the zoom by at least this many metres per notch. */
 const WOW_MIN_ZOOM_STEP = 0.4;
@@ -102,6 +103,7 @@ const _occDir = new THREE.Vector3();
 const _cf = new THREE.Vector3();
 const _cp = new THREE.Vector3();
 const _cl = new THREE.Vector3();
+const _eye = new THREE.Vector3();
 
 /**
  * Cinematic camera pass (GDD_LIFE §4.12): the camera blends from its normal pose to a framing of `focus` and back. The aim pose
@@ -266,6 +268,14 @@ export class ThirdPersonCamera {
   private deathCam = false;
   /** Cinematic boss intro (GDD_LIFE §4.12). */
   private cine: CineState | null = null;
+  /** First person (FirstPerson.ts): the wanted state, its blend (0 = orbit lens, 1 = eye), the eye height source, the hidden body. */
+  private fpWanted = false;
+  private fpB = 0;
+  private fpEye: (() => number) | null = null;
+  private fpBody: THREE.Object3D | null = null;
+  private baseNear = NaN;
+  /** Called when the player changes the first-person state (keybind, wheel). PlayerController saves it per character. */
+  onFirstPersonChanged: ((on: boolean) => void) | null = null;
 
   constructor(camera: THREE.PerspectiveCamera) {
     this.camera = camera;
@@ -288,8 +298,90 @@ export class ThirdPersonCamera {
     );
     // the character's own parts the lens is inside are hidden (BodyClearance.ts). A late updater: it sees the lens where the frame ends
     // (a pinned or teleported lens too), after every system that moves the character or the camera.
-    const offBody = G.engine?.onUpdate(() => this.bodyHider.update(this.target, this.camera.position), 950, 'bodyHide');
+    const offBody = G.engine?.onUpdate(() => this.updateBodyVisibility(), 950, 'bodyHide');
     if (offBody) this.unsubs.push(offBody);
+  }
+
+  /** First person (FirstPerson.ts): the character's whole model is hidden once the lens is at the eye; otherwise the own-body hider runs. */
+  private updateBodyVisibility(): void {
+    const t = this.target;
+    if (this.fpB > FP_BODY_HIDE && t) {
+      this.bodyHider.reset();
+      if (t.visible) {
+        t.visible = false;
+        this.fpBody = t;
+      }
+    } else {
+      this.showFpBody();
+      this.bodyHider.update(t, this.camera.position);
+    }
+  }
+
+  private showFpBody(): void {
+    if (this.fpBody) this.fpBody.visible = true;
+    this.fpBody = null;
+  }
+
+  /** True while the first-person state is wanted (keybind, wheel, or the saved state of the character). */
+  get firstPerson(): boolean {
+    return this.fpWanted;
+  }
+
+  /** Blend between the orbit lens (0) and the eye (1). */
+  get firstPersonBlend(): number {
+    return this.fpB;
+  }
+
+  /** Sets the wanted first-person state without notifying onFirstPersonChanged (a load from the save). */
+  setFirstPerson(on: boolean): void {
+    this.fpWanted = on;
+  }
+
+  /** Pitch clamp: the third-person limits, blended to +-85 deg in first person. */
+  private clampPitch(capY: number, minPitch: number): number {
+    const lo = minPitch, hi = this.pitchUpLimit(capY, minPitch);
+    if (this.fpB <= 0.0005) return clamp(this.pitch, lo, hi);
+    return clamp(this.pitch, lerp(lo, -FP_PITCH_MAX, this.fpB), lerp(hi, FP_PITCH_MAX, this.fpB));
+  }
+
+  /** The eye of the character (feet of the target + eye height, under a ceiling in vertical dungeons). */
+  private eyeInto(out: THREE.Vector3): THREE.Vector3 {
+    const t = this.target!;
+    const h = this.fpEye ? this.fpEye() : FP_EYE_FALLBACK;
+    out.set(t.position.x, t.position.y + h, t.position.z);
+    const c = G.world ? G.world.ceilingY(out.x, out.z) : Infinity;
+    if (c !== Infinity) out.y = Math.min(out.y, c - FP_CEIL_CLEAR);
+    return out;
+  }
+
+  /** Moves the lens from the orbit pose toward the eye by the first-person blend. */
+  private blendToEye(pos: THREE.Vector3): void {
+    if (this.fpB <= 0.0005 || !this.target) return;
+    pos.lerp(this.eyeInto(_eye), this.fpB);
+  }
+
+  /** Eye height source (metres): PlayerController passes the character's height. */
+  setEyeHeight(fn: () => number): void {
+    this.fpEye = fn;
+  }
+
+  private setFpWanted(on: boolean): void {
+    if (on === this.fpWanted) return;
+    this.fpWanted = on;
+    this.onFirstPersonChanged?.(on);
+  }
+
+  /**
+   * One zoom step (dir -1 in, +1 out). Returns true when the step was used by the first-person state (FirstPerson.ts), so the zoom
+   * distance must not change for it. The Ayarlar option "Tekerlekle birinci şahıs" (firstPersonWheel) decides whether zoom in enters it.
+   */
+  private fpZoomStep(dir: -1 | 1): boolean {
+    const r = stepFirstPersonZoom(
+      { zoom: this.zoomTarget, zoomMin: this.profile.zoomMin, fp: this.fpWanted, wheelEnters: G.settings?.data.firstPersonWheel !== false },
+      dir,
+    );
+    this.setFpWanted(r.fp);
+    return r.consumed;
   }
 
   get mode(): CameraMode {
@@ -338,6 +430,7 @@ export class ThirdPersonCamera {
   }
 
   setTarget(obj: THREE.Object3D | null): void {
+    this.showFpBody(); // a hidden body of the old target goes back on
     this.target = obj;
   }
 
@@ -364,7 +457,7 @@ export class ThirdPersonCamera {
     if (!this.pivotReady) return;
     const floorY = this.groundAt(this.pivot.x, this.pivot.z) + 0.45;
     const minPitch = Math.max(-0.95, Math.asin(clamp((floorY - this.pivot.y) / Math.max(1, this.zoomCur), -1, 1)));
-    this.pitch = clamp(this.pitch, minPitch, this.pitchUpLimit(this.ceilCap(), minPitch));
+    this.pitch = this.clampPitch(this.ceilCap(), minPitch);
     const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
     _fwd.set(-Math.sin(this.yaw) * cp, -sp, -Math.cos(this.yaw) * cp);
     _right.set(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
@@ -373,9 +466,10 @@ export class ThirdPersonCamera {
       _v.copy(_pos).sub(this.pivot).multiplyScalar(this.colFrac);
       _pos.copy(this.pivot).add(_v);
     }
-    if (Math.abs(this.punchOff) > 0.001) _pos.addScaledVector(_fwd, this.punchOff);
+    if (Math.abs(this.punchOff) > 0.001) _pos.addScaledVector(_fwd, this.punchOff * (1 - this.fpB));
     const gy = this.groundAt(_pos.x, _pos.z) + 0.35;
     if (_pos.y < gy) _pos.y = gy;
+    this.blendToEye(_pos);
     this.aimOrigin.copy(_pos);
     this.aimDir.copy(this.lookDirection());
   }
@@ -388,7 +482,7 @@ export class ThirdPersonCamera {
   private lookDirection(): THREE.Vector3 {
     const vert = G.world?.vertical === true;
     const lift = vert && this.cine === null && !this.deathCam
-      ? Math.atan(DUNGEON_PIVOT_NDC * Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2))
+      ? Math.atan(DUNGEON_PIVOT_NDC * Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2)) * (1 - this.fpB)
       : 0;
     const el = -this.pitch + lift;
     const cel = Math.cos(el);
@@ -550,6 +644,7 @@ export class ThirdPersonCamera {
     this.zoomCur = this.zoomTarget;
     this.shoulderCur = this.shoulderSide * SHOULDER;
     this.fader.clear(); // a teleport must not leave faded scenery behind
+    this.fpB = this.fpWanted ? 1 : 0;
     this.place(0, true);
   }
 
@@ -566,9 +661,12 @@ export class ThirdPersonCamera {
     const wow = this.mode === 'classic';
     const p = this.profile;
 
+    // first person (FirstPerson.ts): the keybind toggles it; a zoom step past the minimum enters it, a zoom out leaves it
+    if (input.pressed('firstPerson') && !G.ui?.gameKeysBlocked?.()) this.setFpWanted(!this.fpWanted);
+
     // zoom (CONTROLS_WOW §7.1: WoW steps at least 0.4 m per notch)
     const w = input.wheel;
-    if (w !== 0 && !(G.ui?.wantsCursor?.() ?? false)) {
+    if (w !== 0 && !(G.ui?.wantsCursor?.() ?? false) && !this.fpZoomStep(w < 0 ? -1 : 1)) {
       let next = this.zoomTarget * (1 + w * 0.12);
       if (wow && Math.abs(next - this.zoomTarget) < WOW_MIN_ZOOM_STEP) next = this.zoomTarget + Math.sign(w) * WOW_MIN_ZOOM_STEP;
       this.zoomTarget = clamp(next, p.zoomMin, p.zoomMaxOutdoor);
@@ -580,8 +678,8 @@ export class ThirdPersonCamera {
       // a wheel move also stops the WoW smart pivot (CONTROLS_WOW §7.4)
       if (wow) this.idleOrbit = 0;
     }
-    if (input.pressed('zoomIn')) this.zoomTarget = clamp(this.zoomTarget - 1.5, p.zoomMin, p.zoomMaxOutdoor);
-    if (input.pressed('zoomOut')) this.zoomTarget = clamp(this.zoomTarget + 1.5, p.zoomMin, p.zoomMaxOutdoor);
+    if (input.pressed('zoomIn') && !this.fpZoomStep(-1)) this.zoomTarget = clamp(this.zoomTarget - 1.5, p.zoomMin, p.zoomMaxOutdoor);
+    if (input.pressed('zoomOut') && !this.fpZoomStep(1)) this.zoomTarget = clamp(this.zoomTarget + 1.5, p.zoomMin, p.zoomMaxOutdoor);
     if (this.zoomSaveTimer >= 0) {
       this.zoomSaveTimer -= dt;
       if (this.zoomSaveTimer < 0) {
@@ -640,7 +738,8 @@ export class ThirdPersonCamera {
     const lt = this.lockOnTarget;
     const t = this.target;
     if (this.lockSuspendT > 0) this.lockSuspendT -= dt;
-    if (lt && t && p.lockOnFraming) {
+    // (first person: the view is the player's own, so the lock-on framing does not turn it)
+    if (lt && t && p.lockOnFraming && this.fpB < 0.5) {
       if (this.orbiting && Math.abs(angleDiff(this.yaw, this.lockYawWant)) > 14 * Math.PI / 180) this.lockOverT += dt;
       else this.lockOverT = Math.max(0, this.lockOverT - dt * 2);
       if (this.lockOverT > 0.5) { this.lockSuspendT = 1.5; this.lockOverT = 0; }
@@ -824,6 +923,11 @@ export class ThirdPersonCamera {
     const p = this.profile;
     const wow = this.mode === 'classic';
 
+    // first person blend (FirstPerson.ts): eased toward the wanted state; a teleport (instant) jumps
+    const fpGoal = this.fpWanted ? 1 : 0;
+    this.fpB = instant ? fpGoal : damp(this.fpB, fpGoal, FP_BLEND_RATE, dt);
+    if (Math.abs(this.fpB - fpGoal) < 0.0005) this.fpB = fpGoal;
+
     // zoom maximum: WoW indoors follows the ceiling (CONTROLS_WOW §7.1), slewed at 4 m/s; Aksiyon stays at 18 m.
     // Vertical dungeons also cap it by the room's headroom (§14.4), so the slew covers both.
     const world = G.world;
@@ -843,7 +947,7 @@ export class ThirdPersonCamera {
     // pitch: rest pitch by zoom (GDD_LIFE §4.6); pulled toward it after a wheel move, eased after 2 s without orbit when auto-following.
     // WoW has neither (CONTROLS_WOW §7.1): its rest pitch is set on snap() and the player's pitch is kept.
     const restPitch = lerp(0.26, 0.62, zs);
-    if (!instant && !this.orbiting) {
+    if (!instant && !this.orbiting && this.fpB < 0.001) {
       if (p.wheelPitchPull && this.clock - this.lastWheelAt < 0.6) {
         this.pitch += clamp((restPitch - this.pitch) * (1 - Math.exp(-3.5 * dt)) * 0.5, -0.035, 0.035);
       } else if (p.pitchAutoReturn && this.follow.active && this.idleOrbit >= 2) {
@@ -853,7 +957,7 @@ export class ThirdPersonCamera {
     // pitch limits depend on the distance so the camera never dips under the floor
     const floorY = this.groundAt(this.pivot.x, this.pivot.z) + 0.45;
     const minPitch = Math.max(-0.95, Math.asin(clamp((floorY - this.pivot.y) / Math.max(1, this.zoomCur), -1, 1)));
-    this.pitch = clamp(this.pitch, minPitch, this.pitchUpLimit(capY, minPitch));
+    this.pitch = this.clampPitch(capY, minPitch);
 
     const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
     _fwd.set(-Math.sin(this.yaw) * cp, -sp, -Math.cos(this.yaw) * cp);
@@ -945,11 +1049,12 @@ export class ThirdPersonCamera {
       this.punchOff += this.punchVel * dt;
       this.punchOff = clamp(this.punchOff, -0.7, 0.9);
     }
-    if (Math.abs(this.punchOff) > 0.001) _pos.addScaledVector(_fwd, this.punchOff);
+    if (Math.abs(this.punchOff) > 0.001) _pos.addScaledVector(_fwd, this.punchOff * (1 - this.fpB));
 
     // floor clamp
     const gy = this.groundAt(_pos.x, _pos.z) + 0.35;
     if (_pos.y < gy) _pos.y = gy;
+    this.blendToEye(_pos);
 
     // clean pose = aiming pose (no shake, no kick)
     this.aimOrigin.copy(_pos);
@@ -1025,8 +1130,12 @@ export class ThirdPersonCamera {
     }
     const fovBase = (s?.fov ?? 60) + lerp(-4, 6, zs) + (this.deathCam ? 2 : 0);
     const fov = fovBase + this.fovOffset + cineFov;
-    if (Math.abs(cam.fov - fov) > 0.01) {
+    // near plane: the orbit lens keeps its own, the eye uses FP_NEAR so a face or a helmet cannot be clipped open
+    if (Number.isNaN(this.baseNear)) this.baseNear = cam.near;
+    const nearFp = lerp(this.baseNear, Math.min(this.baseNear, FP_NEAR), this.fpB);
+    if (Math.abs(cam.fov - fov) > 0.01 || Math.abs(cam.near - nearFp) > 1e-4) {
       cam.fov = fov;
+      cam.near = nearFp;
       cam.updateProjectionMatrix();
     }
 
@@ -1247,6 +1356,7 @@ export class ThirdPersonCamera {
     this.unsubs = [];
     this.fader.dispose(); // restore faded scenery before the level is disposed
     this.bodyHider.reset(); // and the character's own parts it hid
+    this.showFpBody();
     this.cine = null;
     this.lockOnTarget = null;
     // the canvas cursor is owned (and reset on dispose) by PlayerController
