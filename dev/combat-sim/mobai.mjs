@@ -230,6 +230,40 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
 }
 
 // ==================================================================================================================
+// death.* the player dies to a pulled mob: the mob evades home and resets (WoW), it does not stand damaged where it won
+// ==================================================================================================================
+{
+  const p = reset();
+  p.position.set(-14, 0, 0);
+  const m = mob('ys_nobet_muhafizi', 0, 0);
+  H.step(sec(0.5));
+  ok('death.pulled before the player dies', m.ai.aggroed, `mode ${m.ai.mode}`);
+  // the mob chases the player away from its home (it has to walk back, so the evade is visible)
+  p.position.x = -6;
+  H.step(sec(3));
+  m.hp = m.maxHp * 0.4;
+  m.statuses.apply('burn', 30, { sourceId: m.id });
+  const awayFromHome = dist(m, { position: { x: m.homeX, z: m.homeZ } });
+  ok('death.mob is away from home when the player dies', awayFromHome > 3, `${awayFromHome.toFixed(1)} m`);
+  p.hp = 0;
+  p.alive = false;
+  // the mob may still be in a windup or a reaction when the player dies: wait for its brain to notice (<= 3 s), then check
+  for (let i = 0; i < sec(3) && (m.ai.mode === 'chase' || m.ai.busy); i++) H.step(sec(0.1));
+  ok('death.mob drops the dead player and walks home (return, not idle in place)', m.ai.mode === 'return' && m.ai.returning && !m.ai.aggroed, `mode ${m.ai.mode}, aggroed ${m.ai.aggroed}`);
+  let home = false;
+  for (let i = 0; i < sec(20) && !home; i++) {
+    H.step(1);
+    if (m.ai.mode === 'idle') home = true;
+  }
+  ok('death.mob reaches home', home && dist(m, { position: { x: m.homeX, z: m.homeZ } }) < 1.5, `at ${m.position.x.toFixed(1)},${m.position.z.toFixed(1)}`);
+  ok('death.mob resets to full HP and drops DoTs', m.hp === m.maxHp && m.statuses.ids().filter((s) => s !== 'invulnerable').length === 0, `hp ${m.hp}/${m.maxHp}, ${m.statuses.ids().join(',')}`);
+  // the revived player standing in the camp is a fresh pull, not a fight carried over
+  p.hp = p.maxHp; p.alive = true;
+  H.step(sec(1));
+  ok('death.revived player at the camp: the reset mob is fresh (threat empty before the new pull)', m.ai.threat.size <= 1 && m.hp === m.maxHp);
+}
+
+// ==================================================================================================================
 // caster.* keeps range, casts an interruptible spell with a cast bar, a heavy hit cuts the cast
 // ==================================================================================================================
 {

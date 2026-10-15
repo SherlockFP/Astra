@@ -2147,7 +2147,11 @@ export class Combat {
     G.net?.broadcast('pdeath', { entityId: p.id, dead: true, by: cause?.by, av: cause?.av });
     // death recap (GDD_V2 §8.5): the last 10 s of hits and heals, published for the death panel's "Ölüm Özeti" tab
     try {
-      G.events.emit('death:recap', this.deathLog.recap(this.clock, this.readyDefensives(p)));
+      const rc = this.deathLog.recap(this.clock, this.readyDefensives(p));
+      G.events.emit('death:recap', rc);
+      // death cause in the chat log (WoW names the killer): the biggest damage source of the window and the killing blow
+      const top = rc.topSources[0];
+      if (top) G.events.emit('net:chat', { from: '', text: `Öldün: ${top.name} ${Math.round(top.amount)} hasar verdi (son ${rc.windowSec} sn). Son vuruş: ${rc.killingBlow?.ability ?? '?'}.`, channel: 'system' });
     } catch (e) { console.error('[combat] death recap failed', e); }
     if (!G.net || G.net.isAuthority) {
       try { G.mplus.onPlayerDeath(p); } catch (e) { console.error('[combat] mplus.onPlayerDeath failed', e); }
