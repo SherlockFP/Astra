@@ -2040,12 +2040,12 @@ export class EnemyAI {
   protected doSummon(ab: EnemyAbility): void {
     const s = ab.summon;
     if (!s) return;
-    this.spawnAdds(s.enemyId, s.count, { radius: ab.params?.radius ?? 2.2 });
+    this.spawnAdds(s.enemyId, s.count, { radius: ab.params?.radius ?? 2.2, level: this.e.level + (ab.params?.addLevel ?? 0) });
     G.vfx.spawn(ab.vfx ?? 'add_spawn', this.e.position);
   }
 
   /** Spawn dynamic adds around (x,z) (host): deterministic ids from world.allocHostId, replicated through the 'spawn' channel. */
-  spawnAdds(defId: string, count: number, o: { x?: number; z?: number; radius?: number; aggro?: boolean; tag?: string; hpFrac?: number; hpMult?: number; positions?: { x: number; z: number }[]; facing?: number } = {}): void {
+  spawnAdds(defId: string, count: number, o: { x?: number; z?: number; radius?: number; aggro?: boolean; tag?: string; hpFrac?: number; hpMult?: number; positions?: { x: number; z: number }[]; facing?: number; level?: number } = {}): void {
     const e = this.e;
     const spawn = hooks.spawn;
     if (!spawn) return;
@@ -2069,7 +2069,7 @@ export class EnemyAI {
           }
         }
       }
-      void spawn(this.world, defId, { x, z }, { level: e.level, packId: e.packId, aggro: o.aggro !== false, owner: e.id, tag: o.tag, hpFrac: o.hpFrac, hpMult: o.hpMult, facing: o.facing });
+      void spawn(this.world, defId, { x, z }, { level: o.level ?? e.level, packId: e.packId, aggro: o.aggro !== false, owner: e.id, tag: o.tag, hpFrac: o.hpFrac, hpMult: o.hpMult, facing: o.facing });
     }
   }
 

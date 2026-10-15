@@ -862,12 +862,21 @@ derive('rare_kara_rahibe', 'Kara Rahibe Ruhu', 'shadow_priest', {
   scale: 1.35, tint: 0x402050, hp: 8, rank: 'elite', xp: 10, loot: 'loot_rare_kara_rahibe',
   abilities: [summonAb('rare_kara_rahibe_rite', 'Kara Ayin', 'shade', 2, 30, 'Cast', 0.5)],
 });
+// the boss's adds: a lighter goblin (its swing at ~40 % of the goblin's, no rock throw) so the two adds do not carry the fight
+derive('mb_girtlak_add', 'Gırtlak Yağmacısı', 'ow_goblin', {
+  scale: 1, hp: 0.8, rank: 'trash', xp: 1, loot: '',
+  basic: cone('mb_girtlak_add_hit', 'Pala Darbesi', 2.0, 90, 1.8, 0.25, 'Attack', 0.37),
+  abilities: [],
+});
 derive('mb_girtlak', 'Yağmacı Başı Gırtlak', 'ow_puglin_chief', {
-  scale: 1.25, hp: 14, rank: 'miniboss', xp: 25, loot: 'loot_mb_r1', ai: { homeRadius: 30 },
+  scale: 1.25, hp: 18, rank: 'miniboss', xp: 25, loot: 'loot_mb_r1', ai: { homeRadius: 30 },
+  // sustained damage ~half of the first pass: a slower, lighter swing; the heavy one is the telegraphed special below
+  basic: cone('mb_girtlak_club', 'Sopa', 3.2, 110, 3.6, 0.15, 'Attack_1H_2', 0.35),
   abilities: [
-    aoe('mb_girtlak_rocks', 'Taş Yağmuru', 'ground_aoe', 4, 14, 12, 1.2, 1.2, 'physical', 'Attack_2H', 0.8, { vfx: 'ground_slam' }),
-    summonAb('mb_girtlak_call', 'Gırtlak Çağrısı', 'ow_goblin', 4, 25, 'Attack_1H_2', 0.6),
-    cone('mb_girtlak_combo', 'Sopa Fırtınası', 3.2, 110, 8, 1.0, 'Attack_1H_2', 0.35, { windup: 0.5 }),
+    aoe('mb_girtlak_rocks', 'Taş Yağmuru', 'ground_aoe', 4, 14, 16, 1.2, 0.5, 'physical', 'Attack_2H', 0.8, { vfx: 'ground_slam' }),
+    // two goblins at quest level -1, once per life: the adds never pile up past two
+    summonAb('mb_girtlak_call', 'Gırtlak Çağrısı', 'mb_girtlak_add', 2, 25, 'Attack_1H_2', 0.6, { params: { once: 1, addLevel: -1 } }),
+    cone('mb_girtlak_combo', 'Sopa Fırtınası', 3.2, 110, 14, 0.8, 'Attack_1H_2', 0.35, { windup: 1.6 }),
   ],
 });
 derive('mb_hovardan', 'Mezarlık Bekçisi Hovardan', 'ow_keeper', {
