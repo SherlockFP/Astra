@@ -21,7 +21,7 @@ import { QuestSystem } from './Quests';
 import { isAffixUnit } from './Affixes';
 import { tickUniqueEffects } from './UniqueEffects';
 import { chestCtxOf, rollBossChest } from './ChestRoll';
-import { addPity, eliteGuardDue, noteEliteItem, pityMult, resetPity } from './LootPity'; // Loot V3 §8: the shared legendary pity counter lives in save.flags
+import { addPity, eliteGuardDue, greenGuardDue, noteEliteItem, noteGreenKill, pityMult, resetPity } from './LootPity'; // Loot V3 §8: the shared legendary pity counter lives in save.flags
 import { applyAction as autoApply, decide as autoDecide, tick as autoSalvageTick } from './AutoSalvage';
 import { stampTrack } from './Track';
 import type { BossPlacement } from '../types/dungeons';
@@ -315,6 +315,8 @@ export class LootSystem {
     }
 
     // ---- equipment
+    // First green guard (levels 1-5, LootPity): a kill with no Uncommon+ drop after 15 such kills rolls one, Uncommon at least, never auto-salvaged
+    const greenDue = !chestBoss && greenGuardDue(ch.save.flags, ch.save.level);
     let itemCount = 0;
     if (chestBoss) {
       // rolled by the chest above
@@ -327,6 +329,7 @@ export class LootSystem {
       if (named?.items) itemCount = rng.int(named.items[0], named.items[1]);
       if (named?.extraItems) itemCount += named.extraItems;
       if (enemy.champion) itemCount++;
+      if (greenDue && itemCount === 0) itemCount = 1;
     }
     for (let i = 0; i < itemCount; i++) {
       let minRarity: Rarity | undefined;
@@ -335,6 +338,8 @@ export class LootSystem {
       if (named?.minRarity && i < (named.minRarityCount ?? 1) && (!minRarity || rarityIndex(named.minRarity) > rarityIndex(minRarity))) minRarity = named.minRarity;
       // champion (GDD 1.4): open world = Büyülü+ with a 25% Nadir; dungeons keep the guaranteed Nadir
       if (enemy.champion && i === itemCount - 1) minRarity = openWorld ? (rng.chance(0.25) ? 'rare' : 'uncommon') : 'rare';
+      const greenItem = greenDue && i === 0;
+      if (greenItem && (!minRarity || rarityIndex(minRarity) < rarityIndex('uncommon'))) minRarity = 'uncommon';
       // Seçkin bad-luck guard (§7): 4 elite items in a row below Nadir -> the next one is Nadir or better
       if (rank === 'elite' && eliteGuardDue(ch.save.flags) && (!minRarity || rarityIndex(minRarity) < rarityIndex('rare'))) minRarity = 'rare';
       const item = this.rollItem({
@@ -344,8 +349,9 @@ export class LootSystem {
       });
       if (item.rarity === 'legendary' || item.rarity === 'set') gotLegend = true;
       if (rank === 'elite') noteEliteItem(ch.save.flags, rarityIndex(item.rarity) >= rarityIndex('rare'));
-      pushItem(item);
+      pushItem(item, !greenItem);
     }
+    noteGreenKill(ch.save.flags, ch.save.level, drops.some((d) => d.payload.kind === 'item' && !!d.payload.item && rarityIndex(d.payload.item.rarity) >= rarityIndex('uncommon')));
     // ---- open-world uniques (stat-only Vadi Efsanevileri): one roll per killed member of the table
     if (!chestBoss && named?.uniqueIds?.length && rng.chance(named.uniqueChance ?? 0.15)) pushItem(generateUnique(rng.pick(named.uniqueIds), ilvl, rng, ch.classId));
     // ---- pity (Loot V3 §8.1): elites, mini-bosses and named rares feed the shared counter, a legendary / set resets it (bosses: the chest does)

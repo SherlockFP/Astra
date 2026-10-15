@@ -12,7 +12,7 @@ export const PALADIN_UTIL_ROWS: SkillDef[] = [
   // ---- Paladin ----
   {
     ...row({
-      id: 'paladin_rebuke', classId: 'paladin', name: 'Azarlama', icon: I('skill-smite'),
+      id: 'paladin_rebuke', classId: 'paladin', name: 'Azarlama (Rebuke)', icon: I('skill-smite'),
       desc: '3.5 metre içindeki büyü yapan bir düşmanı azarlarsın: büyüsü kesilir ve 3 saniye sessizlik alır (boss hariç). 15 saniye bekleme. Kutsal ve Ceza için 10. seviyede açılır.',
       cost: 0, cooldown: 15, targeting: 'melee_arc', range: 3.5, arc: 120, anim: 'Unarmed_Melee_Attack_Punch_A', animSpeed: 1.8,
       behavior: 'interrupt', tags: ['offgcd', 'melee', 'kick', 'holy'],
