@@ -9,6 +9,7 @@ import type { StatBlock } from '../types/stats';
 import type { ActiveFx, TalentLoadout } from '../types/talents';
 import type { SpecId } from '../types/v2';
 import { CLASSES } from '../data/classes';
+import { classGrantOrder } from '../data/openingKit';
 import { SKILLS } from '../data/skills';
 import { CLASS_START_NODE, TALENT_NODES } from '../data/talents';
 import { getMaterial, MATERIALS } from '../data/materials';
@@ -214,7 +215,7 @@ export class CharacterState {
     bar.lmb = def?.basicAttack ?? `${classId}_basic`;
     const order: (SkillSlotKey | null)[] = ['rmb', 'q', 'e', 's1', 's2', 's3', null, 'r'];
     const levels = [1, 3, 6, 10, 15, 20, 25, 30];
-    (def?.skills ?? []).forEach((id, i) => {
+    classGrantOrder(classId).forEach((id, i) => {
       const slot = SKILLS[id]?.defaultSlot ?? order[i];
       const unlock = SKILLS[id]?.unlockLevel ?? levels[i];
       if (slot && level >= unlock && (i !== 6 || SKILLS[id]?.defaultSlot)) bar[slot] = id;

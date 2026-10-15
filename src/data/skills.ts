@@ -33,6 +33,7 @@ import { SKILLS_KIT_ROGUE } from './skills_kit_rogue';
 import { SKILLS_KIT_WARLOCK } from './skills_kit_warlock';
 import { registerKnight } from './skillsets/knight';
 import { registerBarbarian } from './skillsets/barbarian';
+import { OPENING_KIT } from './openingKit';
 
 /**
  * OWNER: combat module. Every player skill (basic attack combo steps included) keyed by id. GDD_SYSTEMS 2.1-2.4.
@@ -212,6 +213,16 @@ registerLayerPaladinCasters(add);
 Object.assign(SKILLS, MAGE_SPEC_SKILLS, CLASS_UTIL_SKILLS);
 // KIT PK-0: the kit packages' rows (the warlock file holds only the overrides of the coded class-utility rows).
 Object.assign(SKILLS, SKILLS_KIT_MAGE, SKILLS_KIT_ROGUE, SKILLS_KIT_WARLOCK);
+// OPENING KIT: 4 bar abilities at L1, then one new bar ability at each of L2-L5 (data/openingKit.ts). Writes the row's level and slot
+// readers (CharacterState, Progression, ActionBar) use classGrantOrder() from openingKit.ts for the class list.
+for (const rows of Object.values(OPENING_KIT)) {
+  for (const [id, slot, level] of rows ?? []) {
+    const row = SKILLS[id];
+    if (!row) throw new Error(`openingKit: unknown skill ${id}`);
+    row.unlockLevel = level;
+    row.defaultSlot = slot;
+  }
+}
 
 /** Skill ids of a class in unlock order (8) — convenience for panels. */
 export function classSkillIds(classId: SkillDef['classId']): string[] {

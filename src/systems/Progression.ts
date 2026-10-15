@@ -8,6 +8,7 @@ import type { ClassId } from '../types/common';
 import type { EnemyRank } from '../types/enemies';
 import type { SkillSlotKey } from '../types/skills';
 import { CLASSES } from '../data/classes';
+import { classGrantOrder } from '../data/openingKit';
 import { DUNGEONS } from '../data/dungeons';
 import { SKILLS } from '../data/skills';
 import { CLASS_START_NODE, TALENT_NODES } from '../data/talents';
@@ -196,8 +197,7 @@ export class Progression {
   private autoAssignSkills(fromLevel: number, toLevel: number, announce: boolean): void {
     const ch = G.character;
     if (!ch) return;
-    const def = CLASSES[ch.classId];
-    const ids = def?.skills ?? [];
+    const ids = classGrantOrder(ch.classId);
     ids.forEach((id, i) => {
       const unlock = SKILLS[id]?.unlockLevel ?? DEFAULT_UNLOCKS[i] ?? 99;
       if (unlock <= fromLevel || unlock > toLevel) return;
@@ -217,7 +217,7 @@ export class Progression {
    * the active spec, GDD_TALENTS §2.3) come after them when the class is the character's own.
    */
   unlockedSkills(classId: ClassId, level: number): string[] {
-    const ids = CLASSES[classId]?.skills ?? [];
+    const ids = classGrantOrder(classId);
     const base = ids.filter((id, i) => (SKILLS[id]?.unlockLevel ?? DEFAULT_UNLOCKS[i] ?? 99) <= level);
     if (G.character?.classId !== classId) return base;
     const granted = G.talents?.grantedSkills() ?? [];
@@ -241,7 +241,7 @@ export class Progression {
   }
 
   skillUnlockLevel(classId: ClassId, skillId: string): number {
-    const ids = CLASSES[classId]?.skills ?? [];
+    const ids = classGrantOrder(classId);
     const i = ids.indexOf(skillId);
     return SKILLS[skillId]?.unlockLevel ?? DEFAULT_UNLOCKS[i] ?? 1;
   }

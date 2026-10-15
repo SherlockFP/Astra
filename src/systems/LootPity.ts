@@ -54,6 +54,21 @@ export function noteEliteItem(f: Flags, rareOrBetter: boolean): void {
   f['loot.eliteSinceRare'] = rareOrBetter ? 0 : num(f, 'loot.eliteSinceRare') + 1;
 }
 
+// ---- first green (uncommon) guard, characters up to level 5 (owner playtest 2026-10-14): the first Uncommon item comes by the
+// GREEN_GUARD.kills-th kill that dropped none, at the latest.
+export const GREEN_GUARD = { maxLevel: 5, kills: 15 } as const;
+export const greenGuardDue = (f: Flags, level: number): boolean =>
+  level <= GREEN_GUARD.maxLevel && f['loot.greenDone'] !== 1 && num(f, 'loot.noGreenKills') >= GREEN_GUARD.kills;
+/** A kill with an Uncommon+ drop ends the guard (any level); a kill without one counts while the character is up to level 5. */
+export function noteGreenKill(f: Flags, level: number, gotGreen: boolean): void {
+  if (f['loot.greenDone'] === 1) return;
+  if (gotGreen) {
+    f['loot.greenDone'] = 1;
+    return;
+  }
+  if (level <= GREEN_GUARD.maxLevel) f['loot.noGreenKills'] = num(f, 'loot.noGreenKills') + 1;
+}
+
 // ---- smart anti-streak (§4.2)
 /** True when the next guaranteed item must be smart (2 non-smart in a row). */
 export const smartForced = (f: Flags): boolean => num(f, 'loot.offSmart') >= SMART_STREAK;
