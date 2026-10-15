@@ -1,9 +1,55 @@
 import { G } from '../../game/G';
 import { ICON, div, esc, iconEl, pulse, setClass, setDisplay, setText } from '../widgets/dom';
+import { SKILLS } from '../../data/skills';
+import { classGrantOrder } from '../../data/openingKit';
 import type { HudCtx, HudWidget } from './types';
 
 /** Banner ranks (§2.11): 1 boss intro, 2 level-up, 3 quest accepted / completed, 4 zone title, 5 world announce. */
 export const BANNER_RANK = { levelUp: 2, quest: 3, zone: 4 } as const;
+
+/** Default skill unlock levels in class order when SkillDef.unlockLevel is missing (same table as Progression). */
+const DEFAULT_UNLOCKS = [1, 3, 6, 10, 15, 20, 25, 30];
+/** The queue that holds the level-up banners (set by LevelUpBanner). */
+let levelQueue: BannerQueue | null = null;
+/** Ability names listed in the level-up banners of the current lane; their "Yeni beceri öğrendin" toasts are not shown twice. */
+const levelAbilityNames = new Set<string>();
+
+/** True while a level-up banner shows or waits: the HUD toast lane holds its toasts until it ends, so none overlaps it. */
+export function levelUpBannerBusy(): boolean {
+  return !!levelQueue && levelQueue.hasRank(BANNER_RANK.levelUp);
+}
+
+/** True for a toast whose content the level-up banner already shows (the "SEVİYE N!" line, a listed new ability). */
+export function levelUpBannerSwallows(text: string): boolean {
+  if (!levelUpBannerBusy()) return false;
+  if (/^SEV.YE \d+!$/.test(text)) return true;
+  const m = /^Yeni beceri öğrendin: (.+)$/.exec(text);
+  return !!m && levelAbilityNames.has(m[1]);
+}
+
+/** Abilities a character learns on reaching `level`: the same rule as Progression.autoAssignSkills (unlock === level). */
+function abilitiesAt(level: number): { name: string; icon: string }[] {
+  const ch = G.character;
+  if (!ch) return [];
+  const out: { name: string; icon: string }[] = [];
+  classGrantOrder(ch.classId).forEach((id, i) => {
+    const def = SKILLS[id];
+    const unlock = def?.unlockLevel ?? DEFAULT_UNLOCKS[i] ?? 99;
+    if (unlock === level) out.push({ name: def?.name ?? id, icon: def?.icon ?? '' });
+  });
+  return out;
+}
+
+/** Interact prompt text without the key: the badge already shows the key, so a leading or trailing "F" / "[F]" (the bound key) is dropped. */
+export function stripKeyHint(text: string, key: string): string {
+  const keys = Array.from(new Set([key, 'F'])).map((k) => k.replace(/[.*+?^$()|[\]\\{}]/g, '\\$&'));
+  const alt = keys.join('|');
+  const cleaned = text
+    .replace(new RegExp('^\\s*\\[?(?:' + alt + ')\\]?\\s+'), '')
+    .replace(new RegExp('\\s*\\[(?:' + alt + ')\\]\\s*$'), '')
+    .trim();
+  return cleaned || text;
+}
 
 interface QueuedBanner {
   rank: number;
@@ -50,6 +96,11 @@ export class BannerQueue implements HudWidget {
       }
       this.waiting.splice(worst, 1);
     }
+  }
+
+  /** True while a banner of this rank shows or waits in the queue. */
+  hasRank(rank: number): boolean {
+    return this.current?.rank === rank || this.waiting.some((w) => w.rank === rank);
   }
 
   /** Ends the running banner and forgets the waiting ones (scene change). */
@@ -178,6 +229,7 @@ export class CountdownBanner implements HudWidget {
 export class LevelUpBanner implements HudWidget {
   readonly el: HTMLElement;
   private num: HTMLElement;
+  private abil: HTMLElement;
 
   constructor(private queue: BannerQueue) {
     this.el = div('lvlup');
@@ -188,19 +240,40 @@ export class LevelUpBanner implements HudWidget {
     div('lvlup-title', card).textContent = 'SEVİYE ATLADIN!';
     this.num = div('lvlup-num', card);
     div('lvlup-hint', card).textContent = 'Canın ve kaynakların yenilendi';
+    this.abil = div('lvlup-abil', card);
+    levelQueue = queue;
     G.events.on('player:levelup', ({ level }) => {
+      // the new abilities of this level are listed inside the banner (icon + name), not in a separate toast
+      const abilities = abilitiesAt(level);
+      for (const a of abilities) levelAbilityNames.add(a.name);
       this.queue.push(
         BANNER_RANK.levelUp,
         4200,
         () => {
           setText(this.num, String(level));
+          this.showAbilities(abilities);
           setClass(this.el, 'on', true);
           pulse(this.el, 'go');
         },
-        () => setClass(this.el, 'on', false),
+        () => {
+          setClass(this.el, 'on', false);
+          if (!levelUpBannerBusy()) levelAbilityNames.clear();
+        },
       );
     });
     G.events.on('scene:leaving', () => setClass(this.el, 'on', false));
+  }
+
+  private showAbilities(list: { name: string; icon: string }[]): void {
+    this.abil.replaceChildren();
+    this.abil.style.display = list.length ? '' : 'none';
+    if (!list.length) return;
+    div('lvlup-abil-tag', this.abil).textContent = list.length > 1 ? 'Yeni beceriler' : 'Yeni beceri';
+    for (const a of list) {
+      const row = div('lvlup-ab', this.abil);
+      iconEl(a.icon, 'lvlup-ab-ico', row);
+      div('lvlup-ab-name', row).textContent = a.name;
+    }
   }
 
   update(_ctx: HudCtx): void {
@@ -278,11 +351,12 @@ export class InteractPrompt implements HudWidget {
       }
       const label = key ?? (G.input ? G.input.bindingLabel('interact') : 'F');
       this.key.textContent = label;
-      if (this.current !== text) {
-        this.text.innerHTML = esc(text);
+      const clean = stripKeyHint(text, label);
+      if (this.current !== clean) {
+        this.text.innerHTML = esc(clean);
         pulse(this.el, 'pop');
       }
-      this.current = text;
+      this.current = clean;
       setClass(this.el, 'on', true);
     });
     G.events.on('scene:leaving', () => {

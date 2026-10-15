@@ -56,6 +56,11 @@
 .lvlup-title { font: 700 40px var(--font-body); color: #fff; text-shadow: var(--elv-outline); }
 .lvlup-num { font: 700 96px/1 var(--font-body); color: #fff; text-shadow: var(--elv-outline); }
 .lvlup-hint { font: 700 15px var(--font-body); color: #fff; text-shadow: var(--elv-outline); }
+.lvlup-abil { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 12px; }
+.lvlup-abil-tag { font: 700 13px var(--font-body); color: #ffd100; text-shadow: var(--elv-outline); letter-spacing: 0.08em; text-transform: uppercase; }
+.lvlup-ab { display: flex; align-items: center; gap: 8px; padding: 3px 14px 3px 6px; background: rgba(0, 0, 0, 0.6); border: 1px solid #c9a24a; border-radius: var(--ui-r-frame); }
+.lvlup-ab-ico { width: 30px; height: 30px; background: #fff; }
+.lvlup-ab-name { font: 700 18px var(--font-body); color: #fff; text-shadow: var(--elv-outline); }
 
 /* ---- interaction prompt ---- */
 /* WoW-like: just above the action-bar stack (the three extra bars included), centred. Never over the unit frames (they sit above the

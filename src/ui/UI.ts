@@ -28,6 +28,7 @@ import { TooltipLayer } from './widgets/TooltipLayer';
 import { WorldLabels } from './widgets/WorldLabels';
 import { BubbleLayer, type BubbleHandle, type BubbleOpts } from './widgets/Bubbles';
 import { ChatBubbles } from './hud/ChatBubbles';
+import { levelUpBannerBusy, levelUpBannerSwallows } from './hud/Banners';
 import { Nameplates } from './widgets/Nameplates';
 import { CastTracker } from './widgets/CastBar';
 import { itemTooltipHTML, skillTooltipHTML } from './widgets/tooltips';
@@ -65,6 +66,10 @@ const QUEST_TOAST_RE = /^(Görev|Dünya görevi|Av Defteri)/;
 /** Quest toasts held back while a window covers their slot: at most this many, each for at most this long. */
 const QUEST_PENDING_MAX = 3;
 const QUEST_PENDING_MS = 15000;
+/** Toasts held back while a level-up banner shows (one HUD toast lane): at most this many, each for at most this long, shown one per LANE_STAGGER_MS. */
+const LANE_HELD_MAX = 4;
+const LANE_HELD_MS = 15000;
+const LANE_STAGGER_MS = 350;
 
 /** Input action -> panel id for the global hotkeys handled in UI.update(). */
 const HOTKEYS: { action: 'inventory' | 'character' | 'talents' | 'skills' | 'map' | 'party' | 'mplus' | 'quests' | 'groupFinder' | 'guide'; panel: string }[] = [
@@ -123,6 +128,9 @@ export class UI {
   private questToasts!: Toasts;
   private questToastLayer!: HTMLElement;
   private questPending: { text: string; kind: ToastKind; at: number }[] = [];
+  /** Non-quest toasts held while a level-up banner shows; they follow it one by one. */
+  private laneHeld: { text: string; kind: ToastKind; at: number }[] = [];
+  private laneNextAt = 0;
   private questCheckAt = 0;
   private modal!: Modal;
   private loading!: LoadingScreen;
@@ -420,13 +428,29 @@ export class UI {
   // ---- toasts ----
 
   toast(text: string, kind: ToastKind = 'info'): void {
+    // the level-up banner already lists the level and its new abilities: those toasts are not shown twice
+    if (levelUpBannerSwallows(text)) return;
     if (QUEST_TOAST_RE.test(text)) {
       this.questPending.push({ text, kind, at: performance.now() });
       while (this.questPending.length > QUEST_PENDING_MAX) this.questPending.shift();
+    } else if (kind === 'levelup' || levelUpBannerBusy()) {
+      // level-up toasts come before the level banner is queued (Progression), so they wait for the lane too
+      this.laneHeld.push({ text, kind, at: performance.now() });
+      while (this.laneHeld.length > LANE_HELD_MAX) this.laneHeld.shift();
     } else {
       this.toasts.show(text, kind);
     }
     if (kind === 'error') this.playSfx('ui_error', 0.5);
+  }
+
+  /** Shows held lane toasts (see toast()) one by one once no level-up banner is up. */
+  private flushLaneToasts(now: number): void {
+    if (!this.laneHeld.length) return;
+    this.laneHeld = this.laneHeld.filter((t) => now - t.at < LANE_HELD_MS);
+    if (!this.laneHeld.length || levelUpBannerBusy() || now < this.laneNextAt) return;
+    const t = this.laneHeld.shift()!;
+    this.toasts.show(t.text, t.kind);
+    this.laneNextAt = now + LANE_STAGGER_MS;
   }
 
   /** Shows held quest toasts once no open window (the docked quest log aside) covers their slot; stale ones are dropped. */
@@ -434,7 +458,7 @@ export class UI {
     if (!this.questPending.length || now < this.questCheckAt) return;
     this.questCheckAt = now + 200;
     this.questPending = this.questPending.filter((t) => now - t.at < QUEST_PENDING_MS);
-    if (!this.questPending.length || this.questSlotCovered()) return;
+    if (!this.questPending.length || this.questSlotCovered() || levelUpBannerBusy()) return;
     for (const t of this.questPending.splice(0)) this.questToasts.show(t.text, t.kind);
   }
 
@@ -715,6 +739,7 @@ export class UI {
     }
     this.toasts.update(now);
     this.flushQuestToasts(now);
+    this.flushLaneToasts(now);
     this.loading.update(rdt);
 
     // a tooltip whose owner element vanished or a locked pointer must not linger
