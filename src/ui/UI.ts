@@ -63,6 +63,8 @@ interface PanelRec {
 
 /** Quest messages (accept / ready / done, bounties, world quests, Av Defteri) use the quest toast lane (upper centre, above the banner lane). */
 const QUEST_TOAST_RE = /^(Görev|Dünya görevi|Av Defteri)/;
+/** World announcements (metin / rare / boss spawns, event lines) are toasts in the held toast lane, never a separate stack under the banner. */
+const WORLD_TOAST_KIND: Record<'metin' | 'boss' | 'rare' | 'info', ToastKind> = { metin: 'info', rare: 'warning', boss: 'boss', info: 'info' };
 /** Achievement unlocks ("Başarım kazanıldı: …", "3 başarım kazanıldı: …") use their own lane at the bottom centre. */
 const ACH_TOAST_RE = /^(\d+ )?[Bb]aşarım kazanıldı/;
 /** Quest toasts held back while a window covers their slot or a centre banner shows: at most this many, each for at most this long. */
@@ -126,6 +128,8 @@ export class UI {
   private openOrder: string[] = [];
   private tooltip!: TooltipLayer;
   private toasts!: Toasts;
+  /** Generic toast lane element: hidden while a centre banner holds the lane (world announcements route here too). */
+  private toastLayer!: HTMLElement;
   /** Quest toasts: own top-centre slot (under the zone title), shown only while no window covers it. */
   private questToasts!: Toasts;
   private questToastLayer!: HTMLElement;
@@ -188,6 +192,7 @@ export class UI {
     this.panelLayer = div('layer layer-panels', root);
     this.topLayer = div('layer layer-top', root);
     const toastLayer = div('toasts', this.topLayer);
+    this.toastLayer = toastLayer;
     this.questToastLayer = div('toasts toasts-quest', this.topLayer);
     this.questToasts = new Toasts(this.questToastLayer);
     this.achToasts = new Toasts(div('toasts toasts-ach', this.topLayer));
@@ -214,6 +219,7 @@ export class UI {
 
     const ev = G.events;
     ev.on('ui:toast', ({ text, kind }) => this.toast(text, kind));
+    ev.on('world:announce', ({ text, kind }) => this.toast(text, WORLD_TOAST_KIND[kind]));
     ev.on('ui:openPanel', ({ panel, data }) => this.openPanel(panel, data));
     ev.on('ui:closePanels', () => this.closeAll());
     ev.on('scene:changed', ({ to }) => this.setMode(to));
@@ -745,6 +751,8 @@ export class UI {
       this.labels.update(now, rdt, { hoverId: hud.hover?.id ?? null, targetId: G.player?.targetId ?? null });
     }
     this.toasts.update(now);
+    // the generic lane is hidden while a centre banner holds the lane (its toasts wait in laneHeld and come after it)
+    this.toastLayer.classList.toggle('hold', bannerLaneBusy());
     this.achToasts.update(now);
     this.flushQuestToasts(now);
     this.flushLaneToasts(now);

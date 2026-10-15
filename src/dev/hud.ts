@@ -304,7 +304,7 @@ function bossToggle(on = !bossOn): void {
 
 const KINDS = ['info', 'success', 'warning', 'error', 'loot', 'levelup', 'boss'] as const;
 let kindIdx = 0;
-/** world:announce samples (WorldAnnounce banner stack, GDD_OPENWORLD §9.4). */
+/** world:announce samples (held toast lane, GDD_OPENWORLD §9.4). */
 const ANNOUNCE: { kind: 'metin' | 'rare' | 'boss' | 'info'; text: string }[] = [
   { kind: 'metin', text: 'Keder Metini (Gümüşdere) belirdi!' },
   { kind: 'rare', text: 'Kurt Alfası yakınlarda dolaşıyor!' },
@@ -448,7 +448,7 @@ const dev = {
   partyRevive: () => { deadOne.hp = deadOne.hp > 0 ? 0 : deadOne.maxHp * 0.5; },
   /** Any game panel by id (console: dev.panel('questlog'), dev.panel('dialog', { npcId: 'npc_g_muhtar' }), dev.panel('waypoints')). */
   panel: (id: string, data?: unknown) => G.ui.openPanel(id, data),
-  /** WorldAnnounce: the next sample, or the given kind (console: dev.announce('boss')). Three lines stay on screen at most. */
+  /** World announce: the next sample, or the given kind (console: dev.announce('boss')). Toasts wait while a centre banner shows. */
   announce: (kind?: (typeof ANNOUNCE)[number]['kind']) => {
     const a = ANNOUNCE.find((x) => x.kind === kind) ?? ANNOUNCE[annIdx++ % ANNOUNCE.length];
     G.events.emit('world:announce', { text: a.text, kind: a.kind });
