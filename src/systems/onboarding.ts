@@ -6,8 +6,8 @@
  * Beta characters never get the guide (`beta` in the save), see `guideWanted`.
  */
 
-/** Skill bar slots the skills step counts (WoW: 1-5 = rmb, q, e, r, s1). */
-export const GUIDE_SKILL_SLOTS = ['rmb', 'q', 'e', 'r', 's1'] as const;
+/** Skill bar slots the skills step counts: every main-bar ability slot, since the opening kit fills s2 (WoW Q) at level 1 too. */
+export const GUIDE_SKILL_SLOTS = ['rmb', 'q', 'e', 'r', 's1', 's2', 's3', 's4'] as const;
 /** Distinct bar keys the skills step needs ("4 yeteneğini kullan"). */
 export const GUIDE_SKILL_NEED = 4;
 /** Walking this far (m) counts as the movement step. */

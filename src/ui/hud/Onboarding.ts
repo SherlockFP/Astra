@@ -2,14 +2,33 @@ import '../styles/hud-guide.css';
 import { G } from '../../game/G';
 import type { UI } from '../UI';
 import { div, h, setClass, setDisplay, setText } from '../widgets/dom';
-import { expandKeys, keyLabel } from '../widgets/controlHints';
+import { expandKeys, keyLabel, slotKeyLabel } from '../widgets/controlHints';
 // keyLabel: the key cap of the step's own action (the card shows it under the text)
-import { GUIDE_NPC, GUIDE_WALK_M, activeStep, allDone, applyEvent, flagsToWrite, guideWanted, progressOf, stateFromFlags, type GuideEvent, type GuideState, type GuideStep } from '../../systems/onboarding';
+import { GUIDE_NPC, GUIDE_SKILL_NEED, GUIDE_SKILL_SLOTS, GUIDE_WALK_M, activeStep, allDone, applyEvent, flagsToWrite, guideWanted, progressOf, stateFromFlags, type GuideEvent, type GuideState, type GuideStep } from '../../systems/onboarding';
 import { skillPointsFree } from '../../systems/SkillPoints';
 import type { HudCtx, HudWidget } from './types';
 
 /** The card re-reads the save at this period (s); the events do the real work. */
 const TICK_S = 0.25;
+
+/**
+ * The skills step names the keys of the bar abilities the character has at its level (WoW: the L1 kit sits on 1, 2, 3 and Q),
+ * not fixed keys that may still be locked. Falls back to the static text when the bar holds fewer usable abilities.
+ */
+function skillsText(step: GuideStep): string {
+  const ch = G.character;
+  const level = ch?.level ?? 1;
+  const keys: string[] = [];
+  for (const slot of GUIDE_SKILL_SLOTS) {
+    const id = ch?.save.skillBar[slot];
+    if (!id) continue;
+    if ((G.skills?.getDef(id)?.unlockLevel ?? 1) > level) continue;
+    keys.push(slotKeyLabel(slot));
+    if (keys.length === GUIDE_SKILL_NEED) break;
+  }
+  if (keys.length < GUIDE_SKILL_NEED) return step.text;
+  return `Çubuktaki yetenekleri ${keys.join(' ')} tuşlarıyla dört kez farklı kullan.`;
+}
 /** Welcome card flag (ui/panels/game/welcome.ts): the guide starts after it. */
 const WELCOME_FLAG = 'onb.welcome';
 
@@ -170,7 +189,7 @@ export class GuideCard implements HudWidget {
 
   private setStep(step: GuideStep): void {
     setText(this.title, step.title);
-    setText(this.text, expandKeys(step.text));
+    setText(this.text, expandKeys(step.id === 'skills' ? skillsText(step) : step.text));
     this.keys.textContent = '';
     const action = step.anchor.kind === 'key' ? step.anchor.action : step.anchor.kind === 'panel' ? step.anchor.key : undefined;
     if (action) h('span', 'k-key guide-cap', this.keys, keyLabel(action as never));

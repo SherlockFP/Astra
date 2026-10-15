@@ -112,7 +112,10 @@ export function disposeFlashClones(_root: THREE.Object3D): void {}
 
 /** Flash steps: a hit flash fades through this many variants, so each (material, colour) has only a few. */
 export const FLASH_STEPS = 4;
-const FLASH_GLOW = 1.4;
+/** A hit flash tints the model by at most this share at its peak (a subtle tint; 1 turned the model into an opaque blob). */
+export const FLASH_MAX_TINT = 0.3;
+/** Longest hit flash (s); longer requests are clamped. */
+export const FLASH_MAX_SEC = 0.15;
 
 /** A material a hit flash shades: its emissive, or its colour when it has none. */
 export type Flashable = THREE.Material & { emissive?: THREE.Color; emissiveIntensity?: number; color?: THREE.Color };
@@ -133,23 +136,22 @@ export interface FlashRest {
 export function flashRest(m: Flashable): FlashRest {
   const rest: FlashRest = { emissive: null, intensity: m.emissiveIntensity ?? 1, color: null };
   if (m.emissive) rest.emissive = m.emissive.clone();
-  else if (m.color) rest.color = m.color.clone();
+  if (m.color) rest.color = m.color.clone();
   return rest;
 }
 
-/** Shades `m` toward `colour` by k (0..1). k 0 puts `rest` back exactly. */
+/**
+ * Shades `m` toward `colour` by k (0..1): the flash mixes into the model's own colour (k 0.3 is a 30 % tint), and its glow
+ * stays as it was (adding glow in the flash colour made an opaque blob). Materials without a colour mix into their glow instead.
+ * k 0 puts `rest` back exactly.
+ */
 export function shadeFlash(m: Flashable, rest: FlashRest, colour: THREE.Color, k: number): void {
-  if (rest.emissive && m.emissive) {
-    if (k > 0) {
-      m.emissive.copy(colour);
-      m.emissiveIntensity = rest.intensity + FLASH_GLOW * k;
-    } else {
-      m.emissive.copy(rest.emissive);
-      m.emissiveIntensity = rest.intensity;
-    }
-  } else if (rest.color && m.color) {
+  if (rest.color && m.color) {
     m.color.copy(rest.color);
     if (k > 0) m.color.lerp(colour, k);
+  } else if (rest.emissive && m.emissive) {
+    m.emissive.copy(rest.emissive);
+    if (k > 0) m.emissive.lerp(colour, k);
   }
 }
 
@@ -162,7 +164,7 @@ export function shadeFlash(m: Flashable, rest: FlashRest, colour: THREE.Color, k
 export function flashVariant(origin: Flashable, colour: THREE.Color, step: number): Flashable {
   const v = Assets.sharedMaterial(origin, `flash|${origin.uuid}|${colour.getHex()}|${step}`, () => {});
   v.copy(origin);
-  shadeFlash(v, flashRest(v), colour, step / FLASH_STEPS);
+  shadeFlash(v, flashRest(v), colour, (step / FLASH_STEPS) * FLASH_MAX_TINT);
   flashOrigin.set(v, origin);
   return v;
 }

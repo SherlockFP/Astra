@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { Group } from 'three';
 import {
+  FLASH_MAX_SEC,
+  FLASH_MAX_TINT,
   FLASH_STEPS,
   flashable,
   flashRest,
@@ -994,6 +996,7 @@ export class VFX {
    * shaded in place; every mesh gets its own materials back when the flash ends. Overlapping flashes share one state per mesh.
    */
   flash(model: THREE.Object3D, color = 0xffffff, duration = 0.09): void {
+    duration = Math.min(duration, FLASH_MAX_SEC);
     try {
       model.traverse((o) => {
         const m = o as THREE.Mesh;
@@ -1172,7 +1175,7 @@ export class VFX {
           st.step = step;
           swapFlash(mesh, st, step);
         }
-        for (const s of st.slots) if (s.rest) shadeFlash(s.origin, s.rest, st.color, k);
+        for (const s of st.slots) if (s.rest) shadeFlash(s.origin, s.rest, st.color, k * FLASH_MAX_TINT);
       } catch (e) {
         this.flashes.delete(mesh);
         this.warnOnce('flashFrame', `[vfx] flash update failed: ${String(e)}`);
