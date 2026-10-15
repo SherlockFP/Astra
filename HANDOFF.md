@@ -79,3 +79,13 @@ Known kit simplifications still open: Ani Ölüm rolls 8–10 % (engine multipli
 - Low CPU machine: ≤5 concurrent agents, no per-agent browser tests, one QA pass at the end.
 - Never `git stash` files another agent is editing.
 - Downloads of external assets need the owner's explicit OK.
+
+## Sprint 2 loop (2026-10-14, director): first-hour quality
+
+- Low-level pull cap (3 engaged at L<=5, unprompted aggro only; attacked mobs always answer), mobs evade/reset when their target dies, Sisli L1-3 density <= 6 per 25 m.
+- Quests: generic first-hour QA (tools/qa/first-hour.mjs follows the chain from data), content-check now verifies every objective source, in-band kill camps >= 40 m from camps 2+ levels higher, graveyard within 250 m of every quest area.
+- Opening kit (src/data/openingKit.ts): 4 abilities at L1 + one WoW ability at each of L2-L5 for all 14 classes; loot pity (green by 15 kills at L1-5); 1-of-3 quest reward choice; rare elite marker.
+- Death: revive 50% HP at the nearest graveyard (24 in Sisli Vadi), death cause in chat.
+- Balance: sim honours status max-HP; Brewmaster Sarsma (Stagger) wired; Ward of Oath 40% DR; failing bands L10 20 / L30 14 / L60 9.
+- UI: windows never block movement/skills (src/core/inputGate.ts), ElvUI frame positions (player 36% / target 64%), one toast lane, clarity defaults (native 2x render).
+- New sims: solo_lowlevel.mjs; QA: tools/qa/dungeon-pack.mjs, tools/qa/classes.mjs.
