@@ -1184,7 +1184,7 @@ Side quests are short (3-6 min), teach one mechanic each and pay mostly useful m
 | id | Görev | veren | yer | Sv. | hedef | XP (xpToNext %) | ödül |
 |---|---|---|---|---|---|---|---|
 | `sq_g_01_kurt_tehlikesi` | Kurt Tehlikesi | Avcı Yıldız | `r1_c03` | 2 | 8 Orman Kurdu öldür | %15 | Küçük Can İksiri x2 |
-| `sq_g_02_geyik_derisi` | Geyik Derisi | Avcı Yıldız | r1 ambient | 2 | 5 Geyik Derisi topla (geyik kaçar: kovala) | %15 | Gümüş Yüzük |
+| `sq_g_02_geyik_derisi` | Geyik Derisi | Avcı Yıldız | `r1_c14` (Geyik Çayırı, 3 geyik) | 2 | 5 Geyik Derisi topla (geyik kaçar: kovala) | %15 | Gümüş Yüzük |
 | `sq_g_03_orumcek_aglari` | Ağ Ustaları | Çiftçi Hatice | `r1_c06` | 4 | 8 Orman Örümceği öldür (ağ atışlarından yuvarlan) | %15 | - |
 | `sq_g_04_ari_yuvasi` | Arı Yuvası | Çiftçi Hatice | `r1_c07` | 4 | 10 Orman Arısı öldür | %15 | Büyülü Toz x2 |
 | `sq_g_05_mantar_halkasi` | Mantar Halkası | Rahibe Meryem | `r1_c05` | 4 | 12 Mantarcık öldür; ölünce zehir bulutundan kaç | %15 | Küçük Ruh İksiri x3 |

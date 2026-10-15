@@ -120,7 +120,7 @@ export interface QuestArea { level: number; region?: string }
 
 /**
  * Pack ids of a quest's area, or null when the quest has no area (no region of its own and no camp place in one). The region is the
- * quest's region, else the region of its layout place (a camp of the map). Camps outside the band are not in the area.
+ * quest's region, else the region of its layout place (a camp of the map). Camps whose levels miss the band q-1..q+1 are not in the area.
  */
 export function questArea(area: QuestArea | undefined, place?: string): Set<string> | null {
   const def = worldDef();
@@ -131,7 +131,8 @@ export function questArea(area: QuestArea | undefined, place?: string): Set<stri
   const room = ext.regions.find((r) => r.id === region)?.roomId;
   if (!room) return null;
   const [lo, hi] = [area.level - 1, area.level + 1];
-  return new Set(def.packs.filter((pk) => pk.roomId === room && (pk.levelRange ?? [1, 99])[0] >= lo && (pk.levelRange ?? [1, 99])[1] <= hi).map((pk) => pk.id));
+  // overlap, not containment: camps span two or three levels (the same band test as tools/content-check.mjs killBandIssues)
+  return new Set(def.packs.filter((pk) => pk.roomId === room && (pk.levelRange ?? [1, 99])[0] <= hi && (pk.levelRange ?? [1, 99])[1] >= lo).map((pk) => pk.id));
 }
 
 /**
@@ -211,6 +212,10 @@ export function objectivePos(o: QuestObjective, place?: string, area?: QuestArea
     case 'boss':
     case 'metin':
       { const inArea = questArea(area, place); return nearestLiveEnemy(killIds(o), inArea) ?? campPos(killIds(o), place, inArea); }
+    case 'drop':
+    case 'collect':
+      // drop / collect hunt the mobs in `from`: the same live-enemy-else-camp fallback as a kill (the WoW objective area, from data)
+      { const inArea = questArea(area, place); const ids = o.from ?? []; return nearestLiveEnemy(ids, inArea) ?? campPos(ids, place, inArea); }
     default:
       return null;
   }
@@ -326,6 +331,9 @@ function mapHolds(def: DungeonDef, o: QuestObjective): boolean {
         || ext.bosses.some((b) => ids.has(b.bossId))
         || ext.metin.tiers.some((x) => ids.has(x.enemyId));
     }
+    case 'drop':
+    case 'collect':
+      return !!o.from?.some((f) => def.packs.some((p) => p.members.some((m) => m.enemyId === f)));
     case 'explore':
       return ext.regions.some((x) => x.id === t) || ext.waypoints.some((x) => x.id === t) || ext.vistas.some((x) => x.id === t)
         || ext.landmarks.some((x) => x.id === t) || ext.hidden.some((x) => x.id === t) || ext.entrances.some((x) => x.id === t)
@@ -380,6 +388,8 @@ export function guideTargetPos(o: QuestObjective, inTown: boolean, questRegion?:
     case 'kill':
     case 'boss':
     case 'metin':
+    case 'drop':
+    case 'collect':
       return gateCentre(zone ?? 'sisli_vadi');
     default:
       return null;
@@ -391,6 +401,8 @@ function objectiveKind(o: QuestObjective): GuideTarget['kind'] {
     case 'kill':
     case 'boss':
     case 'metin':
+    case 'drop':
+    case 'collect':
       return 'kill';
     case 'explore':
       return 'explore';

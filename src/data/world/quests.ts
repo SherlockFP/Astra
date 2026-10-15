@@ -169,8 +169,8 @@ const EXTRA_SIDE: Record<string, Extra> = {
     offer: 'Kurtlar yol kenarında dolaşıyor. Sekiz kurdu avla.', progress: 'Orman Kurdu öldür (8).', done: 'Yol yeniden güvenli.',
   },
   sq_g_02_geyik_derisi: {
-    objectives: [{ kind: 'collect', target: 'item_geyik_derisi', count: 5, from: ['ow_boar', 'ow_wolf'], text: 'Yaban domuzu ve kurtlardan Geyik Derisi topla (5)' }], generic: [{ rarity: 'uncommon', slot: 'jewelry' }],
-    offer: 'Çayırda yaban domuzu ve kurtlar dolaşıyor. Avlarının derisinden beş tane getir.', progress: 'Yaban domuzu ve kurtlardan Geyik Derisi topla (5).', done: 'Gümüş Yüzük senin olsun.',
+    objectives: [{ kind: 'collect', target: 'item_geyik_derisi', count: 5, from: ['ow_deer'], text: 'Geyiklerden Geyik Derisi topla (5)' }], generic: [{ rarity: 'uncommon', slot: 'jewelry' }],
+    offer: 'Geyik Çayırı\'nda bir sürü geyik otluyor. Kaçarlar, peşlerinden git ve beş deri getir.', progress: 'Geyiklerden Geyik Derisi topla (5).', done: 'Gümüş Yüzük senin olsun.',
   },
   sq_g_03_orumcek_aglari: {
     objectives: [kill('ow_spider', 8, 'Orman Örümceği öldür')],

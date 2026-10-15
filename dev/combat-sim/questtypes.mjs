@@ -10,6 +10,7 @@
  *         use.*    kind 'use' (useItem): one item consumed per use, target filter, completes at count
  *         esc.*    kind 'escort' (tickEscort): seconds accrue while alive, a fall resets the timer, completes at count
  *         bonus.*  progressPct over mixed objectives; the real Sisli bonus quest end to end
+ *         arrow.*  kill / drop / collect objectives point at their layout camp with no enemy loaded (questMarks objectivePos)
  * No browser, no network. Exit 0 = all PASS.
  */
 import * as H from './harness.mjs';
@@ -393,6 +394,39 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   ok('wire.targets-mapped', withNew.every((q) => q.objectives.every((o) => (o.kind !== 'interact' && o.kind !== 'use') || questPropKind(o.target))));
   ok('wire.escort-regions', withNew.filter((q) => q.objectives.some((o) => o.kind === 'escort')).every((q) => /^r\d$/.test(q.region ?? '')));
   ok('wire.use-items', withNew.filter((q) => q.objectives.some((o) => o.kind === 'use')).every((q) => (q.startItems ?? []).some((it) => q.objectives.find((o) => o.kind === 'use').item === it.id)), 'use quests hand the item out on accept');
+}
+
+// ------------------------------------------------------------------------------------------------ arrow.* (no enemy loaded)
+// The objective arrow and the map rings (ui/hud/questMarks.ts objectivePos) fall back to the layout camp that spawns the objective's
+// mobs when no such enemy is streamed in: kill, drop and collect objectives all point somewhere with an empty G.world.
+{
+  const QM = await H.imp('ui/hud/questMarks.ts');
+  const TS = 4;
+  G.world = { enemies: [] };
+  G.player = { id: 42, position: { x: 0, y: 0, z: 0 } };
+  const ext = QM.worldDef();
+  const campOf = (id) => ext.packs.find((p) => p.id === id);
+  const centreM = (id) => ({ x: (campOf(id).center[0] + 0.5) * TS, z: (campOf(id).center[1] + 0.5) * TS });
+  const miss = [];
+  let checked = 0;
+  for (const q of QUESTS.filter((x) => x.region && /^r[1-4]$/.test(x.region) && !x.daily)) {
+    for (const o of q.objectives) {
+      if (!['kill', 'drop', 'collect'].includes(o.kind)) continue;
+      const ids = o.kind === 'kill' ? [o.target] : o.from ?? [];
+      if (!ext.packs.some((p) => p.members.some((m) => ids.includes(m.enemyId)))) continue; // rares and bosses are placed by the level band
+      checked++;
+      if (!QM.objectivePos(o, q.place, { level: q.level, region: q.region })) miss.push(`${q.id}:${o.kind}`);
+    }
+  }
+  ok('arrow.no-enemy-loaded', checked >= 20 && miss.length === 0, `${checked} camp-held objectives point at a camp${miss.length ? ' - no arrow: ' + miss.join(' ') : ''}`);
+  const kurt = QUESTS.find((q) => q.id === 'sq_g_01_kurt_tehlikesi');
+  const kp = QM.guideTargetPos(kurt.objectives[0], false, kurt.region, kurt.place, kurt.level);
+  ok('arrow.drop-kurt-tehlikesi', kurt.objectives[0].kind === 'drop' && !!kp && kp.x === centreM(kurt.place).x && kp.z === centreM(kurt.place).z, `drop objective points at its camp ${kurt.place}`);
+  const geyik = QUESTS.find((q) => q.id === 'sq_g_02_geyik_derisi');
+  const gp = QM.guideTargetPos(geyik.objectives[0], false, geyik.region, geyik.place, geyik.level);
+  ok('arrow.collect-geyik-derisi', geyik.objectives[0].from.join() === 'ow_deer' && !!gp && gp.x === centreM('r1_c14').x && gp.z === centreM('r1_c14').z, 'collect objective points at the deer camp r1_c14');
+  const town = QM.guideTargetPos(kurt.objectives[0], true, kurt.region, kurt.place, kurt.level);
+  ok('arrow.town-gate', !!town && town.label === 'Güney Kapısı', `in town a drop objective points at the gate (${town?.label ?? 'none'})`);
 }
 
 console.log(`questtypes: ${passes} PASS, ${fails} FAIL`);

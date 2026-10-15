@@ -27405,6 +27405,29 @@
    ],
    "flags": [],
    "note": "Küçük goblin çadırı; Şamanı Sustur (mq_04) alanı; seçkin değil"
+  },
+  {
+   "id": "r1_c14",
+   "name": "Geyik Çayırı",
+   "region": "r1",
+   "center": [
+    190,
+    41
+   ],
+   "radius": 12,
+   "levelRange": [
+    2,
+    2
+   ],
+   "respawnSec": 60,
+   "members": [
+    {
+     "enemyId": "ow_deer",
+     "count": 3
+    }
+   ],
+   "flags": [],
+   "note": "Geyik sürüsü: kaçar, Geyik Derisi düşürür (sq_g_02); Kurt Açıklığı'nın ~60 m doğusu"
   }
  ],
  "patrols": [
@@ -33112,7 +33135,7 @@
     "id": "sq_g_02_geyik_derisi",
     "name": "Geyik Derisi",
     "giver": "Avcı Yıldız",
-    "place": "r1 ambient",
+    "place": "r1_c14",
     "level": 2,
     "goal": "5 Geyik Derisi topla (geyik kaçar: kovala)",
     "xpPct": 15,
