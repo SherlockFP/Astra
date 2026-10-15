@@ -24,6 +24,8 @@ export interface ParticleOpts {
   intensity?: number;
   /** Distance fade start/end (usually from scene fog). */
   fog?: [number, number];
+  /** Near fade (m from the camera): alpha ramps from 0 at [0] to full at [1], so big puffs never sit in front of the lens. */
+  near?: [number, number];
 }
 
 export interface Particle {
@@ -54,6 +56,8 @@ uniform float uAlpha;
 uniform float uSpin;
 uniform float uFogNear;
 uniform float uFogFar;
+uniform float uNearA;
+uniform float uNearB;
 varying vec2 vUv;
 varying vec3 vColor;
 varying float vAlpha;
@@ -83,7 +87,7 @@ void main() {
   gl_Position = projectionMatrix * mv;
   float dist = -mv.z;
   float life = smoothstep(0.0, 0.12, t) * (1.0 - smoothstep(0.55, 1.0, t));
-  vAlpha = uAlpha * life * edge * (1.0 - smoothstep(uFogNear, uFogFar, dist)) * smoothstep(0.4, 2.5, dist);
+  vAlpha = uAlpha * life * edge * (1.0 - smoothstep(uFogNear, uFogFar, dist)) * smoothstep(0.4, 2.5, dist) * smoothstep(uNearA, uNearB + 1e-3, dist);
   vColor = gcolor;
 }
 `;
@@ -128,6 +132,9 @@ export class ParticleField {
         uIntensity: { value: o.intensity ?? 1 },
         uFogNear: { value: o.fog?.[0] ?? 60 },
         uFogFar: { value: o.fog?.[1] ?? 220 },
+        // no near fade unless asked: [0, 0] is a pass-through (smoothstep(0, 0, d) = 1 for d > 0)
+        uNearA: { value: o.near?.[0] ?? 0 },
+        uNearB: { value: o.near?.[1] ?? 0 },
       },
       vertexShader: VERT,
       fragmentShader: FRAG,

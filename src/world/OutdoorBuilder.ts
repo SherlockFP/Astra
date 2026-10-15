@@ -282,7 +282,8 @@ export class OutdoorScenery {
     const soft = glowTexture(32, 6, 1.3);
     const puff = glowTexture(32, 5, 0.9);
     const mistCol = new THREE.Color(th.fogColor).lerp(new THREE.Color(0xffffff), 0.3).getHex();
-    const mist = new ParticleField({ map: puff, blending: 'normal', wrap: [96, 8, 96], alpha: 0.2, fog: [th.fogNear * 1.3, th.fogFar * 1.5] });
+    // the puffs are 7-13 m wide: none may stand within 40 m of the camera (they read as blurry squares), full strength from 80 m
+    const mist = new ParticleField({ map: puff, blending: 'normal', wrap: [96, 8, 96], alpha: 0.16, fog: [th.fogNear * 1.3, th.fogFar * 1.5], near: [40, 80] });
     for (let i = 0; i < 150; i++)
       mist.add({ pos: [rng.range(-48, 48), rng.range(0.2, 2.2), rng.range(-48, 48)], vel: [rng.range(0.2, 0.8), 0, rng.range(-0.3, 0.3)], speed: rng.range(0.012, 0.03), size: rng.range(7, 13), sway: rng.range(1, 3), color: mistCol });
     mist.build();

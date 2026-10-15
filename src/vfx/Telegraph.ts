@@ -75,8 +75,9 @@ void main() {
   vec3 col = mix(uColor, uHot, clamp(rim * 0.6 + front * 0.8 + filled * 0.25, 0.0, 1.0));
   col = mix(col, vec3(1.0), uFlash);
   a = mix(a, 1.0, uFlash * 0.7);
-  // HDR boost so bloom catches the rim
-  col *= min(1.0 + rim * 0.9 + front * 0.8 + uFlash * 1.5, 2.5);
+  // No HDR boost on the red / orange colours: above 1.0 they bloom, and the bloom spread a pink wash over the whole frame.
+  // Only the end-of-telegraph flash goes HDR (a short white pop).
+  col *= 1.0 + uFlash * 1.5;
   gl_FragColor = vec4(col, a * uAlpha);
 }
 `;

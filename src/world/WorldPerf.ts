@@ -43,8 +43,10 @@ interface Base { d0: number; d1: number; end: number; keep1: number; keep2: numb
 const BASE: Partial<Record<CullLayer, Base>> = {
   // trees: the full model near (and the only shadow caster), a 2x voxel copy to mid range, a 4x copy out to the fog
   // (pushed out: the 2x copy read as blurry blocks at 24-52 m, so the real meshes now hold to 40 m and the 2x copy runs to 90 m)
-  tree: { d0: 40, d1: 90, end: 1e9, keep1: 1, keep2: 1, fog: 4 },
-  border: { d0: 18, d1: 44, end: 1e9, keep1: 1, keep2: 0.6, fog: 4 },
+  // the voxel copies of trees read as large pale translucent blocks in the sky line past ~80 m (a 4x copy of a tall pine): full
+  // models to 60 m, the 2x copy to 100 m, and no 4x copy (nothing is drawn beyond 100 m, the fog is already ~40 % there)
+  tree: { d0: 60, d1: 100, end: 100, keep1: 1, keep2: 0, fog: 0 },
+  border: { d0: 18, d1: 44, end: 1e9, keep1: 1, keep2: 0.4, fog: 0 },
   bush: { d0: 24, d1: 56, end: 70, keep1: 0.8, keep2: 0.5 },
   rock: { d0: 24, d1: 55, end: 95, keep1: 1, keep2: 0.8 },
   // ground cover: short range, thinned with distance

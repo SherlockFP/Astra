@@ -211,7 +211,7 @@ class OpenWorld implements WorldDecorHandle {
     this.applyAtmosphere();
 
     const far = Math.min(this.atmo.cur.far, this.fogFarCap);
-    const limits: Partial<Record<CullLayer, number>> = { tuft: 55, flower: 55, bush: 80, rock: 100, prop: 100, tree: far + 20, border: far + 20 };
+    const limits: Partial<Record<CullLayer, number>> = { tuft: 55, flower: 55, bush: 80, rock: 100, prop: 100, tree: far + 20, border: far };
     this.culler.limits = limits;
     // scatter layers draw in distance tiers (voxel LOD, world/Instancing LodSet); the plan object is cached, so it only changes with the fog or the quality
     this.culler.plans = lodPlans(far, getGfxQuality());
@@ -560,7 +560,7 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
   const sky = new Sky({
     zenith: a0?.zen.getHex() ?? 0x8fa090, mid: a0?.mid.getHex() ?? 0x9aa890, horizon: a0?.hor.getHex() ?? def.theme.fogColor,
     sunColor: a0?.sunC.getHex() ?? 0xdce8b8, sunDir: [-0.45, 0.8, -0.4],
-    cloudLight: a0?.cloudL.getHex() ?? 0xdfe6d8, cloudShade: a0?.cloudS.getHex() ?? 0x5c6650, cloudCover: 0.82,
+    cloudLight: a0?.cloudL.getHex() ?? 0xdfe6d8, cloudShade: a0?.cloudS.getHex() ?? 0x5c6650, cloudCover: 0.55,
   });
   host.root.add(sky.dome);
   host.disposables.push(sky);

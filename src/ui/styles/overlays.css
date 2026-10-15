@@ -6,7 +6,7 @@
 /* ---- vignette / flashes ---- */
 .vig { position: absolute; inset: 0; pointer-events: none; }
 .vig > div { position: absolute; inset: 0; }
-.vig-low { opacity: 0; background: radial-gradient(ellipse at 50% 50%, rgba(120, 0, 0, 0) 38%, rgba(150, 0, 0, 0.55) 78%, rgba(90, 0, 0, 0.9) 100%); }
+.vig-low { opacity: 0; background: radial-gradient(ellipse at 50% 50%, rgba(120, 0, 0, 0) 45%, rgba(150, 0, 0, 0.3) 80%, rgba(90, 0, 0, 0.5) 100%); }
 .vig-hit { --a: 0.5; opacity: 0; background: radial-gradient(ellipse at 50% 50%, rgba(255, 0, 0, 0) 30%, rgba(255, 30, 20, 0.85) 100%); }
 .vig-hit.go { animation: vighit 0.42s ease-out; }
 @keyframes vighit { 0% { opacity: var(--a); } 100% { opacity: 0; } }
