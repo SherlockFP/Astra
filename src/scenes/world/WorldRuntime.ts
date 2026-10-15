@@ -24,6 +24,7 @@ import { WorldPois } from './WorldPois';
 import { WorldGather } from './WorldGather';
 import { WorldQuestProps } from './WorldQuestProps';
 import { EventCalendar, buildEventSites } from './EventCalendar';
+import { VignetteDirector } from './Vignettes';
 import { startSiege, type SiegeRuntime } from '../../systems/Siege';
 import { SIEGE_MAP_ID } from '../../data/siege';
 import { Discoveries } from './Discoveries';
@@ -76,6 +77,8 @@ export class WorldRuntime {
   private readonly gather: WorldGather;
   private readonly questProps: WorldQuestProps;
   private readonly discoveries: Discoveries;
+  /** Travel vignettes (data/world/vignettes.ts): roads and POIs of the rings. */
+  private readonly vignettes: VignetteDirector;
   private events: EventScope | null = null;
   private calendar: EventCalendar | null = null;
   /** WP-14 Kale Kuşatması: the fortress runtime (Karakır only). */
@@ -107,6 +110,7 @@ export class WorldRuntime {
     this.gather = new WorldGather(this.ctx);
     this.questProps = new WorldQuestProps(this.ctx);
     this.discoveries = new Discoveries(this.ctx);
+    this.vignettes = new VignetteDirector(this.ctx, (key) => this.announce(key));
   }
 
   /** Spawn the local scenery entities (village NPCs, waypoint stones, shrines, chests) and arm the host's directors. Never throws. */
@@ -133,6 +137,7 @@ export class WorldRuntime {
     // quest markers over the village quest givers (after the NPCs are spawned)
     bindQuestMarks(this.events, this.o.world);
     this.calendar = new EventCalendar(this.ctx, { metin: this.metin, bosses: this.bosses }, buildEventSites(this.ctx));
+    this.vignettes.attach();
     if (this.o.def.id === SIEGE_MAP_ID) this.siege = startSiege({ world: this.o.world, scene: this.o.scene });
     this.started = true;
     activeRuntime = this;
@@ -163,6 +168,7 @@ export class WorldRuntime {
     this.run('chests', () => this.pois.update(dt));
     this.run('quest props', () => this.questProps.update(dt));
     this.run('events', () => this.calendar?.update(dt));
+    this.run('vignettes', () => this.vignettes.update(dt));
     this.run('siege', () => this.siege?.update(dt));
     if (G.net.isAuthority) this.run('goblins', () => this.goblinTick(dt));
     this.regionTimer -= dt;
@@ -210,6 +216,9 @@ export class WorldRuntime {
         case 'boss':
           this.onBoss(p[2] ?? '', p[3] ?? '');
           break;
+        case 'vig':
+          this.vignettes.onMessage(key);
+          break;
         case 'goblin':
           G.audio.play('reward_coin');
           G.ui.toast('Hazine Goblini ortaya çıktı! Kaçmadan yakala!', 'loot');
@@ -234,6 +243,7 @@ export class WorldRuntime {
     this.story.dispose();
     this.calendar?.dispose();
     this.calendar = null;
+    this.vignettes.dispose();
     this.siege?.dispose();
     this.siege = null;
   }
