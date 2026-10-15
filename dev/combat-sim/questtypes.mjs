@@ -472,6 +472,92 @@ const addDrops = (list) => { for (const d of list) ch.addMaterial(d.id, d.count)
   ok('arrow.town-gate', !!town && town.label === 'Güney Kapısı', `in town a drop objective points at the gate (${town?.label ?? 'none'})`);
 }
 
+// ------------------------------------------------------------------------------------------------ escort.wave (fake deps)
+// A wave that never dies: the ambushers charge the escort at 25 s, the escort walks on at 35 s (never longer paused), the charge goes on
+// while they live. Two failed runs make the end point complete the objective (forgiving rule); one failure does not.
+{
+  const cl = { ambush: 0, charge: 0, alive: 0 };
+  const cdeps = { playerDist: () => 0, ambush: () => { cl.ambush++; cl.alive = 2; }, ambushAlive: () => cl.alive, tick: () => {}, done: () => false, charge: () => { cl.charge++; } };
+  const path = [{ x: 0, z: 0 }, { x: 30, z: 0 }, { x: 60, z: 0 }];
+  const wr = new EscortRun({ path, triggers: [1], speed: 10, leash: 25, failSec: 3 }, cdeps);
+  wr.start();
+  let guard = 0;
+  while (wr.state !== 'ambush' && guard++ < 40) wr.update(0.5);
+  let maxWait = 0;
+  let chargingAt25 = null;
+  guard = 0;
+  while (wr.state === 'ambush' && guard++ < 200) {
+    wr.update(0.5);
+    maxWait = Math.max(maxWait, wr.ambushWaitSec);
+    if (chargingAt25 === null && wr.ambushWaitSec >= 25) chargingAt25 = wr.charging;
+  }
+  ok('esc.wave-charges-at-25s', cl.charge === 1 && chargingAt25 === true, `charges ${cl.charge}, charging at 25 s ${chargingAt25}`);
+  ok('esc.wave-resumes-by-35s', wr.state === 'walking' && maxWait <= 35.5 && wr.pos.x > 30, `state ${wr.state}, max wait ${maxWait.toFixed(1)} s`);
+  ok('esc.wave-never-paused-over-40s', maxWait <= 40, `max ambush wait ${maxWait.toFixed(1)} s`);
+  wr.update(0.5);
+  ok('esc.charge-continues-while-alive', wr.charging === true && cl.charge === 1);
+  cl.alive = 0;
+  wr.update(0.5);
+  ok('esc.charge-ends-with-the-wave', wr.charging === false);
+
+  // forgiving rule: far fails are counted; two failed runs, then the end point with the escort alive completes the objective
+  const fz = { dist: 100, done: false, completes: 0, failed: [] };
+  const fdeps = {
+    playerDist: () => fz.dist, ambush: () => {}, ambushAlive: () => 0, tick: () => {}, done: () => fz.done,
+    failed: (r) => fz.failed.push(r), complete: () => { fz.completes++; fz.done = true; },
+  };
+  const frun = new EscortRun({ path, triggers: [], speed: 10, leash: 25, failSec: 3 }, fdeps);
+  const failOnce = () => { frun.start(); for (let i = 0; i < 4 && frun.state !== 'idle'; i++) frun.update(1); };
+  failOnce();
+  ok('esc.one-fail-resets', frun.state === 'idle' && frun.fails === 1 && fz.failed.length === 1, `fails ${frun.fails}`);
+  fz.dist = 0;
+  frun.start();
+  for (let i = 0; i < 20; i++) frun.update(1);
+  ok('esc.one-fail-no-forgive', fz.completes === 0 && !fz.done && frun.state === 'walking', `completes ${fz.completes}, state ${frun.state}`);
+  fz.dist = 100;
+  frun.update(1); frun.update(1); frun.update(1); frun.update(1);
+  ok('esc.two-fails-counted', frun.fails === 2 && frun.state === 'idle', `fails ${frun.fails}, state ${frun.state}`);
+  fz.dist = 0;
+  frun.start();
+  for (let i = 0; i < 30 && frun.state !== 'done'; i++) frun.update(1);
+  ok('esc.forgive-completes-at-end', fz.completes === 1 && fz.done && frun.state === 'done', `completes ${fz.completes}, state ${frun.state}`);
+}
+
+// ------------------------------------------------------------------------------------------------ escort.ambush-ai (real AI, safe box)
+// The third mq_04 ambush (829,161) stands inside Gümüşdere's village box. A scripted ambusher engages the escort's player at once
+// (in combat within 2 s) and keeps the fight inside the box; before the fix it dropped the target there and idled at full HP.
+{
+  const { spawnEnemy } = await H.imp('entities/EnemyFactory.ts');
+  const { getDirector } = await H.imp('ai/EnemyDirector.ts');
+  const inBox = (x, z) => Math.abs(x - 802) <= 40 && Math.abs(z - 142) <= 28;
+  // a stage above replaced G.world and G.character with stubs: a bare FakePlayer (a real Actor, team 'player') in the real world
+  G.world = H.world;
+  // a walkable nav grid over the Sisli route (the stub world has none, the enemy could not walk to the player)
+  const { NavGrid } = await H.imp('world/NavGrid.ts');
+  const navWas = H.world.nav;
+  H.world.nav = new NavGrid({ originX: 560, originZ: 60, width: 420, depth: 360, cellSize: 1, walkable: false });
+  H.world.nav.setRect(560, 60, 980, 420, true);
+  // the host plays here: spawnEnemy only spawns on the authority (the wiring stage below does the same)
+  const netWas = G.net;
+  G.net = { isOnline: false, isAuthority: true, broadcast() {}, on() {} };
+  const p = new H.FakePlayer('knight', 2);
+  H.world.add(p);
+  H.world.localPlayer = G.player = p;
+  p.hp = p.maxHp = 1e9;
+  p.position.set(826, 0, 163);
+  getDirector(H.world).setSafeQuery(inBox);
+  const amb = await spawnEnemy(H.world, 'ow_goblin', { x: 835, z: 161 }, { level: 2, aggro: true, openWorld: true, scripted: true });
+  const engaged = !!amb && amb.ai.aggroed && amb.ai.target === p;
+  ok('escort.ambush-engaged-at-spawn', engaged, `player inside box ${inBox(p.position.x, p.position.z)}`);
+  const hp0 = p.hp;
+  H.step(Math.round(2 / H.DT));
+  ok('escort.ambush-in-combat-2s', !!amb && amb.ai.aggroed && amb.ai.target === p && amb.ai.mode === 'chase', amb ? `mode ${amb.ai.mode}, aggro ${amb.ai.aggroed}` : 'no ambusher');
+  ok('escort.ambush-fights-in-box', p.hp < hp0 && !!amb && amb.ai.aggroed, `player hp ${hp0 - p.hp} lost`);
+  getDirector(H.world).setSafeQuery(null);
+  G.net = netWas;
+  H.world.nav = navWas;
+}
+
 // ------------------------------------------------------------------------------------------------ escort.start (real wiring)
 // WorldQuestProps.place() on the real World: the escort NPC of the ACTIVE quest (mq_04, the Sisli main chain) is the only one F reaches.
 // The locked side quest (sq_r1_ch02_gozcu_avi) places a decoy with the same name in r1. F on the NPC walks it (the player follows),

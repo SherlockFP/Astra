@@ -465,6 +465,15 @@ export class QuestSystem {
     }
   }
 
+  /** Escort objectives of an active quest complete at once: the forgiving rule after two failed escort runs (the escort reached its end). */
+  completeEscort(questId: string): void {
+    const def = this.defs.get(questId);
+    if (!def || this.stateOf(def) !== 'active') return;
+    def.objectives.forEach((o, k) => {
+      if (o.kind === 'escort') this.bump(def, k, o.count);
+    });
+  }
+
   /** Shared progress bar of a quest in 0..100: the mean of its objectives' progress (bonus objectives mix kinds). */
   progressPct(questId: string): number {
     const def = this.defs.get(questId);

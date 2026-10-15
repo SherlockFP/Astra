@@ -21,6 +21,8 @@ export interface SpawnEnemyOpts {
   openWorld?: boolean;
   /** Spawned mid-fight (adds): aggro immediately on the nearest player. */
   aggro?: boolean;
+  /** Scripted encounter (escort ambush): with `aggro` it engages at once, bypassing the pull cap and the village safe boxes (EnemyAI.scripted). */
+  scripted?: boolean;
   // ---- enemies module additions ----
   /** Start dormant (floor pose) until a player gets close / hits it. Default: the def's `ai.dormant` for static spawns. */
   dormant?: boolean;
@@ -240,6 +242,7 @@ export async function spawnEnemy(world: World, defId: string, pos: THREE.Vector3
     console.error('[enemy] mplus.onEnemySpawned failed', err);
   }
   if (authority) {
+    if (opts.scripted && e.ai) e.ai.scripted = true;
     if (opts.aggro && e.ai && !e.dormant) {
       const p = world.nearest(world.players, e.position, 400, (a) => !a.isDead);
       if (p) e.ai.acquire(p, true);

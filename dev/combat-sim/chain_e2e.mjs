@@ -176,7 +176,9 @@ function navCells(a, b) {
 class Blocker extends Error {}
 const blocker = (msg) => { throw new Blocker(msg); };
 const at = (p) => `(${p.x.toFixed(0)}, ${p.z.toFixed(0)})`;
-const S = { map: 'town', pos: { x: TOWN.spawn.pos[0], z: TOWN.spawn.pos[2] }, walkM: 0, kills: 0, grind: 0, processed: new Set() };
+const S = { map: 'town', pos: { x: TOWN.spawn.pos[0], z: TOWN.spawn.pos[2] }, walkM: 0, kills: 0, grind: 0, processed: new Set(), maxWait: 0 };
+/** An escort ambush wave is held this long before the harness kills it (past the 25 s charge, inside the 40 s budget). */
+const WAVE_HOLD_S = 30;
 const log = (msg) => { if (VERBOSE) console.log(`  ${msg}`); };
 
 const ch = CharacterState.create('Sim', 'knight');
@@ -184,6 +186,8 @@ G.input.bindingLabel = () => 'K'; // the level-up toast's key label (HUD input)
 G.character = ch;
 const player = { id: 42, kind: 'player', position: { x: S.pos.x, y: 0, z: S.pos.z }, removed: false, isDead: false, radius: 0.5, refreshStats() {}, pointAt: () => ({ x: 0, y: 1, z: 0 }) };
 world.localPlayer = player;
+// the local player is one of the world's players (an ambush wave aggroes on the nearest one); no world.update runs here, so no add()
+world.players.push(player);
 G.player = player;
 G.net = undefined;
 const qs = new QuestSystem();
@@ -255,6 +259,11 @@ const townList = [...npcs.values()].filter((x) => x.map === 'town').map((x) => x
 const sisliStart = { x: sceneW(SV.start.pos[0]), z: sceneW(SV.start.pos[1]) };
 
 // quest props and escorts: the real placement on the Sisli world
+// the village safe boxes, as WorldRuntime sets them: enemies never pick a player inside one, a scripted escort ambush does (it fights there)
+const { SafeZones } = await H.imp('scenes/world/SafeZones.ts');
+const { getDirector } = await H.imp('ai/EnemyDirector.ts');
+const safeZones = new SafeZones({ ext: { villages: W.villages } });
+getDirector(world).setSafeQuery((x, z) => safeZones.isSafe(x, z));
 const placer = new WorldQuestProps(ctx);
 const placed = await placer.place();
 if (placed === 0) blocker('no quest prop or escort NPC was placed on the Sisli map (WorldQuestProps.place)');
@@ -516,6 +525,9 @@ async function doObjective(def, k) {
       let ni = 0;
       let frames = 0;
       let last = { x: npc.position.x, z: npc.position.z };
+      const run = placer.escortRun(def.id);
+      const seen = new Set();
+      let charged = false;
       while (!done()) {
         if (frames++ > 4000) blocker(`${label}: escort not finished after ${frames} steps (prompt "${npc.interactPrompt}")`);
         placer.update(0.5);
@@ -530,9 +542,18 @@ async function doObjective(def, k) {
         let j = 0;
         while (j + 1 < P.length && arc[j + 1] <= target) j++;
         S.pos = { x: P[j].x, z: P[j].z }; movePlayer();
-        // ambushers arrive in the open world: they die to the real kill path (their XP is open-world XP)
+        // the wave is real EnemyAI: each ambusher must be in combat the first time it is seen (a scripted ambush aggroes at spawn, past
+        // the pull cap and the village boxes). The wave is held WAVE_HOLD_S seconds (past the 25 s charge), then the harness plays the
+        // player and kills it through the real kill path (their XP is open-world XP)
         for (const e of [...world.enemies]) {
           if (e.kind !== 'enemy' || e.isDead || e.removed) continue;
+          if (!seen.has(e)) {
+            seen.add(e);
+            if (!(e.ai?.aggroed && e.ai.target)) blocker(`${label}: ambusher ${who(e)} at ${at(e.position)} is not in combat when it spawns`);
+          }
+          S.maxWait = Math.max(S.maxWait, run.ambushWaitSec);
+          if (run.charging) charged = true;
+          if (run.ambushWaitSec < WAVE_HOLD_S) continue;
           e.openWorld = true;
           loot.chain = { count: 0, timer: 0, xp: 0, paid: 0 };
           loot.onEnemyKilled(e);
@@ -543,6 +564,9 @@ async function doObjective(def, k) {
       }
       // the protection time runs out at the end of the route: the escort must have walked every segment to its last waypoint
       if (Math.hypot(last.x - P[P.length - 1].x, last.z - P[P.length - 1].z) > 1.5) blocker(`${label}: escort completed at ${at(last)}, short of its route end ${at(P[P.length - 1])}`);
+      // a wave never holds the escort past AMBUSH_RESUME_SEC (40 s budget), and a wave held past the charge time was charged
+      if (S.maxWait > 40) blocker(`${label}: escort waited ${S.maxWait.toFixed(1)} s on an ambush (budget 40 s)`);
+      if (S.maxWait >= 25 && !charged) blocker(`${label}: a wave held ${S.maxWait.toFixed(1)} s never charged the escort`);
       break;
     }
     case 'explore': {
