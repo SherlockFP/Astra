@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { G } from '../game/G';
 import { clamp, damp, angleDiff, lerp } from '../core/utils';
 import { OccluderFader } from './OccluderFade';
+import { BODY_KEEP_OUT, NearBodyHider } from './BodyClearance';
 import type { Actor } from '../entities/Actor';
 import type { Enemy } from '../entities/Enemy';
 import { VERT } from '../world/Heightfield';
@@ -227,6 +228,8 @@ export class ThirdPersonCamera {
   private lastWheelAt = -99;
   private unsubs: (() => void)[] = [];
   private readonly fader = new OccluderFader();
+  /** The character's own parts the lens is inside are hidden (BodyClearance.ts). */
+  private readonly bodyHider = new NearBodyHider();
   /** Clean (shake-free) pose used for aiming. */
   private readonly aimOrigin = new THREE.Vector3();
   private readonly aimDir = new THREE.Vector3(0, 0, -1);
@@ -283,6 +286,10 @@ export class ThirdPersonCamera {
       G.events.on('player:revived', (e) => { if (e.local) this.deathCam = false; }),
       G.events.on('boss:engaged', (e) => this.onBossEngaged(e.bossId, e.entityId)),
     );
+    // the character's own parts the lens is inside are hidden (BodyClearance.ts). A late updater: it sees the lens where the frame ends
+    // (a pinned or teleported lens too), after every system that moves the character or the camera.
+    const offBody = G.engine?.onUpdate(() => this.bodyHider.update(this.target, this.camera.position), 950, 'bodyHide');
+    if (offBody) this.unsubs.push(offBody);
   }
 
   get mode(): CameraMode {
@@ -905,7 +912,10 @@ export class ThirdPersonCamera {
     const fracCeil = wow || capY !== Infinity ? this.ceilingFrac(_pos) : 1;
     // raised floors between the pivot and the camera (§14.5); flat maps always 1
     const fracGround = this.groundFrac(_pos);
-    const frac = Math.min(fracNav, fracProp, fracCeil, fracGround);
+    // own-body clearance: in fade mode collision never pulls the lens inside BODY_KEEP_OUT of the pivot (BodyClearance.ts), so the
+    // character the lens follows never fills the view (a pull-in camera, Town, keeps its old stop: a prop it stops behind is not faded)
+    const fracBody = pull ? 0 : Math.min(1, BODY_KEEP_OUT / Math.max(1e-3, _pos.distanceTo(this.pivot)));
+    const frac = Math.max(Math.min(fracNav, fracProp, fracCeil, fracGround), fracBody);
     this.dbgFracCeil = fracCeil;
     // pull in instantly; after the last block hold 0.15 s, then ease out (2.5/s for props, 4/s for nav walls)
     if (instant || frac < this.colFrac) {
@@ -917,6 +927,7 @@ export class ThirdPersonCamera {
     } else {
       this.colFrac += (frac - this.colFrac) * (1 - Math.exp(-(this.colByProp ? 2.5 : 4) * dt));
     }
+    this.colFrac = Math.max(this.colFrac, fracBody); // the easing back out never dips inside the body clearance either
     if (this.colFrac < 0.999) {
       _v.copy(_pos).sub(this.pivot).multiplyScalar(this.colFrac);
       _pos.copy(this.pivot).add(_v);
@@ -1235,6 +1246,7 @@ export class ThirdPersonCamera {
     for (const off of this.unsubs) off();
     this.unsubs = [];
     this.fader.dispose(); // restore faded scenery before the level is disposed
+    this.bodyHider.reset(); // and the character's own parts it hid
     this.cine = null;
     this.lockOnTarget = null;
     // the canvas cursor is owned (and reset on dispose) by PlayerController

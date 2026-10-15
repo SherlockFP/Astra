@@ -104,9 +104,11 @@ console.log(`voxel LOD over ${checked} scenery meshes: ${trisOrig} tris -> merge
   culler.update(1, 0, 0);
   const byTier = (t) => scene.children.find((m) => m.name.endsWith('#t' + t));
   const n = (t) => (byTier(t) && byTier(t).visible ? byTier(t).count : 0);
-  ok('lod.tiers-fill', n(0) > 0 && n(1) > 0 && n(2) > 0 && n(0) + n(1) + n(2) <= 200, `tier counts ${n(0)} / ${n(1)} / ${n(2)} of 200 from (0,0)`);
-  ok('lod.tier-shadows', byTier(0).castShadow === true && byTier(1).castShadow === true && byTier(2).castShadow === false, 'tiers 0 and 1 cast, the 4x copy does not');
-  ok('lod.tier-geometry', byTier(0).geometry !== byTier(1).geometry && byTier(1).geometry.index.count < byTier(0).geometry.index.count && byTier(2).geometry.index.count < byTier(1).geometry.index.count, 'each tier is a smaller geometry');
+  // trees have no 4x copy by design (WorldPerf.ts lodPlans: tree keep2 0, the 2x copy runs to the end distance), so tier 2 is only
+  // expected on the rock layer (checked below)
+  ok('lod.tiers-fill', n(0) > 0 && n(1) > 0 && n(2) === 0 && n(0) + n(1) <= 200, `tree tier counts ${n(0)} / ${n(1)} / ${n(2)} of 200 from (0,0) (no 4x copy for trees)`);
+  ok('lod.tier-shadows', byTier(0).castShadow === true && byTier(1).castShadow === true && !byTier(2), 'tiers 0 and 1 cast; no 4x tier is made for trees');
+  ok('lod.tier-geometry', byTier(0).geometry !== byTier(1).geometry && byTier(1).geometry.index.count < byTier(0).geometry.index.count, 'the 2x copy is a smaller geometry than the full model');
   const s0 = byTier(0).boundingSphere;
   ok('lod.sphere', s0.radius > 0 && s0.radius < 120, `tier 0 sphere r ${s0.radius.toFixed(1)} m (fits what it holds)`);
   ok('lod.colour', !!byTier(0).instanceColor, 'instance tint carried to the tier meshes');
@@ -129,7 +131,32 @@ console.log(`voxel LOD over ${checked} scenery meshes: ${trisOrig} tris -> merge
   // the chunk frees everything it made
   const meshes = b.meshes.length;
   b.unloadChunk(0, 0);
-  ok('lod.unload', meshes >= 3 && b.meshes.length === 0 && scene.children.length === 0 && b.lodSets.length === 0, `${meshes} tier meshes freed with the chunk`);
+  ok('lod.unload', meshes >= 2 && b.meshes.length === 0 && scene.children.length === 0 && b.lodSets.length === 0, `${meshes} tier meshes freed with the chunk`);
+}
+
+// the 4x copy: rocks keep one (WorldPerf.ts lodPlans, rock keep2 0.8 out to 95 m), so tier 2 is built there and is the smallest copy
+{
+  const { ChunkCuller } = await import(root + 'world/Instancing.ts');
+  const { loadPieces } = await import(root + 'world/Pieces.ts');
+  const { lodPlans } = await import(root + 'world/WorldPerf.ts');
+  const rockUrl = '/assets/models/gen/props/rock_medium.glb';
+  await loadPieces([rockUrl]);
+  const scene = new THREE.Group();
+  const rb = new InstanceBatcher(scene, 64);
+  rb.deferred = true;
+  await rb.build();
+  const gen = [];
+  for (let i = 0; i < 200; i++) gen.push({ url: rockUrl, x: 2 + (i % 20) * 3, y: 0, z: 2 + Math.floor(i / 20) * 6, rot: 0, scale: 1.2, tint: 0.9, cast: true, receive: true, layer: 'rock' });
+  rb.loadChunk(0, 0, gen);
+  const culler = new ChunkCuller(rb, 64);
+  culler.plans = lodPlans(110, 'mid');
+  culler.update(1, 0, 0);
+  const byTier = (t) => scene.children.find((m) => m.name.endsWith('#t' + t));
+  const n = (t) => (byTier(t) && byTier(t).visible ? byTier(t).count : 0);
+  ok('lod.rock-tiers', n(0) > 0 && n(1) > 0 && n(2) > 0 && n(0) + n(1) + n(2) <= 200, `rock tier counts ${n(0)} / ${n(1)} / ${n(2)} of 200 from (0,0)`);
+  ok('lod.rock-4x', !!byTier(2) && !byTier(2).castShadow && byTier(2).geometry.index.count < byTier(1).geometry.index.count, '4x copy casts nothing and is the smallest geometry');
+  rb.unloadChunk(0, 0);
+  ok('lod.rock-unload', rb.meshes.length === 0 && scene.children.length === 0, 'the rock chunk frees its tiers');
 }
 
 console.log(`\nvoxellod: ${passes} passed, ${fails} failed`);
