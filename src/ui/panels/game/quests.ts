@@ -7,6 +7,7 @@ import { getPinnedQuest, setPinnedQuest, worldExtras } from '../../hud/questMark
 import { GamePanel, askConfirm, bar, button, fmtInt, h, mmss, openPanel, sfx, tabs, windowFrame, type TabsHandle } from './base';
 import { emptyState } from '../../kit';
 import { describe } from '../items/common';
+import { upgradeInfo } from '../../../systems/LootUpgrade';
 
 /**
  * Quest log (`questlog`: hotkey L = Input action 'quests', mapped to this id in UI HOTKEYS; the HUD quest tracker opens it on click)
@@ -40,15 +41,41 @@ export function rewardLine(def: QuestDef): string {
   return parts.join(' · ');
 }
 
-/** WoW-style reward choice: one button per rolled item (the quest turns in with the one picked). */
+/**
+ * WoW-style reward choice: one card per rolled item. The item that beats what is worn in its slot (▲, LootUpgrade) is
+ * preselected; "Ödülü al" turns the quest in with the picked one and shows its loot card (equip prompt at level 20 and below).
+ */
 function choiceButtons(def: QuestDef, done: () => void): HTMLElement[] {
   const q = G.quests;
-  return q.choiceOptions(def.id).map((it, i) => {
+  const opts = q.choiceOptions(def.id);
+  if (!opts.length) return [];
+  let sel = Math.max(0, opts.findIndex((it) => upgradeInfo(it).upgrade));
+  function paint(): void {
+    cards.forEach((c, i) => c.classList.toggle('is-sel', i === sel));
+  }
+  const cards = opts.map((it, i) => {
     const d = describe(it);
-    return button(`${d.name} (${d.slotLabel})`, () => {
-      if (q.turnIn(def.id, i)) done();
-    }, { variant: 'primary' });
+    const card = h('button.pg-choice', { type: 'button' },
+      h('b', null, d.name),
+      h('small', null, `${d.slotLabel} · Eşya Seviyesi ${it.itemLevel}`),
+      upgradeInfo(it).upgrade ? h('span.pg-choice-up', null, '▲ Kuşandığından iyi') : null,
+    );
+    card.style.setProperty('--rc', d.color);
+    card.addEventListener('click', () => {
+      sel = i;
+      sfx('ui_click');
+      paint();
+    });
+    return card;
   });
+  paint();
+  const go = button('Ödülü al', () => {
+    const chosen = opts[sel];
+    if (!q.turnIn(def.id, sel)) return;
+    G.ui?.showLootCard(chosen, 'reward');
+    done();
+  }, { variant: 'primary' });
+  return [h('div.pg-mi-choices', null, ...cards), go];
 }
 
 /** Turkish quest status badge text and class. */

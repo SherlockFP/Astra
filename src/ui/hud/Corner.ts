@@ -7,7 +7,7 @@ import { BAG_SIZE } from '../../types/character';
 import type { ItemInstance } from '../../types/items';
 import type { InputAction } from '../../core/Input';
 import type { UI } from '../UI';
-import { equippedCounterpart } from '../panels/game/base';
+import { upgradeInfo } from '../../systems/LootUpgrade';
 import { ICON, div, esc, fmtNum, iconEl, pulse, setClass, setDisplay, setText, uiSound } from '../widgets/dom';
 import { unspentTalentPoints } from './Extras';
 import { skillPointsFree } from '../../systems/SkillPoints';
@@ -108,7 +108,11 @@ export class LootFeed implements HudWidget {
       up.textContent = '▲';
       up.title = 'Kuşandığın eşyadan daha yüksek eşya seviyesi';
     }
-    el.addEventListener('mouseenter', (e) => this.ui.showItemTooltip(item, e.clientX, e.clientY));
+    el.addEventListener('mouseenter', (e) => {
+      const cmp = upgradeInfo(item).counterpart;
+      if (cmp) this.ui.showCompareTooltip(item, cmp, e.clientX, e.clientY);
+      else this.ui.showItemTooltip(item, e.clientX, e.clientY);
+    });
     el.addEventListener('mouseleave', () => this.ui.hideTooltip());
     this.push({ el, t: now, life: RARE_PLUS.includes(item.rarity) ? LIFE_RARE_MS : LIFE_MS, key, count: 1, countEl });
     pulse(el, 'in');
@@ -118,11 +122,10 @@ export class LootFeed implements HudWidget {
     } else if (item.rarity === 'epic') this.ui.flashEdge(color, 0.45);
   }
 
-  /** True when the item is equipment with a higher item level than the one in its slot. */
+  /** True when the item beats what is worn in its slot (item level, then the class main stat; LootUpgrade). */
   private isUpgrade(item: ItemInstance): boolean {
     try {
-      const eq = equippedCounterpart(item);
-      return !!eq && item.itemLevel > eq.itemLevel;
+      return upgradeInfo(item).upgrade;
     } catch {
       return false;
     }

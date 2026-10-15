@@ -21,6 +21,7 @@ import { div } from './widgets/dom';
 import { runClassColorAsserts } from './widgets/classColors';
 import { runNumFormatAsserts } from './widgets/numFormat';
 import { Toasts, type ToastKind } from './widgets/Toasts';
+import { LootCards } from './hud/LootCards';
 import { Modal } from './widgets/Modal';
 import { LoadingScreen } from './widgets/Loading';
 import type { LoadingZone } from './widgets/loadingZone';
@@ -128,6 +129,8 @@ export class UI {
   private openOrder: string[] = [];
   private tooltip!: TooltipLayer;
   private toasts!: Toasts;
+  /** Bottom-centre loot cards (pickup card, Equip prompt). */
+  private lootCards!: LootCards;
   /** Generic toast lane element: hidden while a centre banner holds the lane (world announcements route here too). */
   private toastLayer!: HTMLElement;
   /** Quest toasts: own top-centre slot (under the zone title), shown only while no window covers it. */
@@ -202,6 +205,7 @@ export class UI {
 
     this.tooltip = new TooltipLayer(ttLayer);
     this.toasts = new Toasts(toastLayer);
+    this.lootCards = new LootCards(div('loot-cards', this.topLayer));
     this.modal = new Modal(modalLayer);
     this.loading = new LoadingScreen(loadLayer);
     this.labels = new WorldLabels(this, this.worldLayer);
@@ -219,6 +223,9 @@ export class UI {
 
     const ev = G.events;
     ev.on('ui:toast', ({ text, kind }) => this.toast(text, kind));
+    ev.on('loot:pickedUp', ({ item }) => {
+      if (item) this.lootCards.show(item, 'pickup');
+    });
     ev.on('world:announce', ({ text, kind }) => this.toast(text, WORLD_TOAST_KIND[kind]));
     ev.on('ui:openPanel', ({ panel, data }) => this.openPanel(panel, data));
     ev.on('ui:closePanels', () => this.closeAll());
@@ -540,6 +547,26 @@ export class UI {
     this.tooltip.show(html, x, y, { owner: opts.owner, rc, html2, rc2 });
   }
 
+  /**
+   * Side-by-side comparison tooltip (retail style): the hovered item on the left, the equipped item it would replace on the
+   * right, both with their own rarity frame. `extra` (a panel footer hint) goes under the hovered item.
+   */
+  showCompareTooltip(item: ItemInstance, compare: ItemInstance, x: number, y: number, opts: { owner?: object; extra?: string } = {}): void {
+    const html = itemTooltipHTML(item, compare) + (opts.extra ?? '');
+    const html2 = itemTooltipHTML(compare, null, 'Kuşanılmış');
+    this.tooltip.show(html, x, y, {
+      owner: opts.owner,
+      rc: RARITY_COLORS[item.rarity] ?? '',
+      html2,
+      rc2: RARITY_COLORS[compare.rarity] ?? '',
+    });
+  }
+
+  /** Quest reward / loot card for an item that just reached the bag (quest reward choice): same card as a pickup. */
+  showLootCard(item: ItemInstance, source: 'pickup' | 'reward' = 'reward'): void {
+    this.lootCards.show(item, source);
+  }
+
   /** Skill tooltip HTML (cost, cooldown, range, description with estimated numbers). */
   skillTooltipHTML(def: SkillDef, bindLabel?: string): string {
     return skillTooltipHTML(def, G.player, bindLabel);
@@ -751,6 +778,7 @@ export class UI {
       this.labels.update(now, rdt, { hoverId: hud.hover?.id ?? null, targetId: G.player?.targetId ?? null });
     }
     this.toasts.update(now);
+    this.lootCards.update(now);
     // the generic lane is hidden while a centre banner holds the lane (its toasts wait in laneHeld and come after it)
     this.toastLayer.classList.toggle('hold', bannerLaneBusy());
     this.achToasts.update(now);
