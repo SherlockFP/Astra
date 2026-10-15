@@ -94,6 +94,8 @@ export class Projectile extends Entity {
   private baseY: number;
   /** KIT PK-MAGE curve: parameter u of the Bezier (0 = spawn, 1 = target). */
   private curveU = 0;
+  /** The spawn-point hit test ran (player shots). */
+  private spawnChecked = false;
   /** Rolling terrain: launch height above the ground, kept by shots with no aim slope (null until the first step). */
   private hug: number | null = null;
 
@@ -154,6 +156,9 @@ export class Projectile extends Entity {
     const world = this.world;
     if (!world) return;
     this.age += dt;
+    // A player shot starts 0.9 m ahead of the caster (SkillSystem.fireProjectile): a target standing inside that gap (a melee mob on top
+    // of a caster) was passed over, so the spawn point is tested once before the first step.
+    if (!this.spawnChecked && this.opts.mode === 'player') { this.spawnChecked = true; this.checkHits(); if (this.done) return; }
     if (this.opts.lifetime && this.age > this.opts.lifetime) return this.end('expired');
 
     if (this.opts.pulse) {
