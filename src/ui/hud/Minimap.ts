@@ -10,6 +10,7 @@ import { ICON, div, setDisplay, setText, setStyle, clampN, fmtClock, h, iconEl, 
 import type { HudCtx, HudWidget } from './types';
 import { giverKind, inWorldMap, questGiverMarks, questTargetMarks, tileCentreM, waypointKnown, worldExtras, type GiverKind } from './questMarks';
 import { activeEventPins } from '../../scenes/world/EventCalendar';
+import { activeVignettePins } from '../../scenes/world/Vignettes';
 import { getSocial } from '../../systems/Social';
 import { zoneMapCanvas, type ZoneMapCanvas } from './zoneMap';
 
@@ -113,7 +114,7 @@ export class Minimap implements HudWidget {
   private zoneSub = '';
   private lastMode = '';
   /** Open world marks (villages, discovered stones, active metin, quest targets), refreshed twice a second (world metres). */
-  private worldMarks: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' | 'giver' | 'event'; gk?: GiverKind }[] = [];
+  private worldMarks: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' | 'giver' | 'event' | 'vignette'; gk?: GiverKind }[] = [];
   private worldAt = -1e9;
   /** Metin spots currently standing (spot ids from world:metinChanged). */
   private metinOn = new Set<string>();
@@ -313,7 +314,7 @@ export class Minimap implements HudWidget {
 
   /** Villages, discovered stones, standing metin stones and quest targets of the open world, in world metres. */
   private refreshWorldMarks(): void {
-    const out: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' | 'giver' | 'event'; gk?: GiverKind }[] = [];
+    const out: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' | 'giver' | 'event' | 'vignette'; gk?: GiverKind }[] = [];
     const ext = inWorldMap() ? worldExtras() : null;
     if (ext) {
       for (const v of ext.villages) out.push({ x: tileCentreM(v.center[0]), z: tileCentreM(v.center[1]), kind: 'village' });
@@ -323,6 +324,8 @@ export class Minimap implements HudWidget {
     for (const q of questTargetMarks()) out.push({ x: q.x, z: q.z, kind: 'quest' });
     // WP-04 world events: running or starting within 5 minutes (EventCalendar)
     for (const p of activeEventPins()) out.push({ x: p.x, z: p.z, kind: 'event' });
+    // travel vignettes (scenes/world/Vignettes.ts): the running ones on the roads of the ring
+    for (const v of activeVignettePins()) out.push({ x: v.x, z: v.z, kind: 'vignette' });
     // quest givers (UX-21, §4.5): town NPCs with quests in town, village NPCs on the open world; gold ! offer, ? turn-in
     if (!ext && G.ui?.mode === 'town') {
       for (const n of TOWN.npcs) {
@@ -555,6 +558,17 @@ export class Minimap implements HudWidget {
         // grey '!' = the giver's next quest waits for the level (the overhead marker's grey too)
         ctx2.fillStyle = m.gk === 'turnin' ? '#f5b82e' : m.gk === 'locked' ? '#8d939c' : '#ffe14d';
         ctx2.fillText(glyph, x, y + 1);
+      } else if (m.kind === 'vignette') {
+        // a travel vignette: a green pulsing ring with a dot (the events keep their orange diamonds)
+        ctx2.strokeStyle = '#7dff8a';
+        ctx2.lineWidth = 1.8;
+        ctx2.beginPath();
+        ctx2.arc(x, y, 4 + 1.5 * qk, 0, Math.PI * 2);
+        ctx2.stroke();
+        ctx2.fillStyle = '#7dff8a';
+        ctx2.beginPath();
+        ctx2.arc(x, y, 1.6, 0, Math.PI * 2);
+        ctx2.fill();
       } else if (m.kind === 'event') {
         ctx2.fillStyle = '#ff9f1a';
         ctx2.strokeStyle = '#2a1a04';
