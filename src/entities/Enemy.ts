@@ -473,7 +473,7 @@ export class Enemy extends Actor {
     } catch { /* vfx not ready */ }
 
     // measure (cached per def: skinning-accurate bounds are expensive)
-    this.height = clamp(this.measureHeight(holder), 0.8, 14) + this.hover;
+    this.height = clamp(this.measureHeight(holder), 0.3, 14) + this.hover;
 
     if (anim) {
       this.animT = Math.random() * 3;
@@ -558,14 +558,24 @@ export class Enemy extends Actor {
     if (this.proc) return this.proc.height * this.baseScale();
     let h = HEIGHT_CACHE.get(def.id);
     if (h === undefined) {
+      // Rest-pose bounds of the VISIBLE meshes: each mesh's bind geometry x matrixWorld. Not Box3.setFromObject(precise): that reads a
+      // SkinnedMesh through getVertexPosition (the CURRENT bone matrices), and at spawn those are still zero, so rigged enemies
+      // measured thousands of metres and hit the 14 m clamp (rat: 14 m before, 0.79 m after). Meshes hidden under the holder are skipped.
       holder.updateWorldMatrix(true, true);
       _box.makeEmpty();
-      try {
-        _box.setFromObject(holder, true);
-      } catch { /* ignore */ }
+      holder.traverse((o) => {
+        const m = o as THREE.Mesh;
+        const pos = m.geometry?.attributes?.position;
+        if (!m.isMesh || !pos) return;
+        for (let p: THREE.Object3D | null = m; p && p !== holder.parent; p = p.parent) if (!p.visible) return;
+        const el = m.matrixWorld;
+        for (let i = 0; i < pos.count; i++) _box.expandByPoint(_v.fromBufferAttribute(pos, i).applyMatrix4(el));
+      });
       // the box already carries the holder's scale: cache the unscaled height (scaling it again doubled tall enemies' height)
       const s = holder.scale.y || 1;
       h = _box.isEmpty() ? 2 / s : Math.max(0.5, _box.max.y - Math.min(0, _box.min.y)) / s;
+      // guard (dev/combat-sim/heights.mjs): an unscaled rest height over 3x a native 2 m model is a unit or measurement bug
+      if (h > 6) console.warn(`[enemy] ${def.id}: unscaled rest height ${h.toFixed(1)} m is over 3x a 2 m model (${def.model})`);
       HEIGHT_CACHE.set(def.id, h);
     }
     return h * this.baseScale();
