@@ -66,8 +66,9 @@ export class GameMenuPanel extends GamePanel {
   private renderButtons(): void {
     const inDungeon = G.scenes?.current?.id === 'dungeon';
     this.btns.innerHTML = '';
-    const mk = (label: string, fn: () => void, v: 'normal' | 'primary' | 'danger' | 'ghost' = 'normal', ico?: string) =>
-      this.btns.append(button(label, fn, { variant: v, cls: 'pg-gm-btn', icon: ico }));
+    // text-only buttons like WoW's game menu (the icons rendered as plain white squares)
+    const mk = (label: string, fn: () => void, v: 'normal' | 'primary' | 'danger' | 'ghost' = 'normal', _ico?: string) =>
+      this.btns.append(button(label, fn, { variant: v, cls: 'pg-gm-btn' }));
     mk('Devam', () => this.requestClose(), 'primary', '/assets/icons/ui-check.svg');
     mk('Ayarlar', () => openPanel('settings'), 'normal', '/assets/icons/ui-settings.svg');
     mk('Başlangıç Rehberi', () => this.openGuide(), 'normal', '/assets/icons/ui-quest.svg');
