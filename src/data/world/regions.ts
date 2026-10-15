@@ -41,7 +41,7 @@ const LANDMARK_RECIPE: Record<string, string> = {
   lm_kanyon_gozcu: 'watch_tower_ruin',
 };
 export const LANDMARKS: LandmarkDef[] = LAYOUT.landmarks.map((l) => ({
-  id: l.id, name: l.name, regionId: l.region, pos: l.pos, recipe: LANDMARK_RECIPE[l.id] ?? l.id,
+  id: l.id, name: l.name, regionId: l.region, pos: l.pos, recipe: l.recipe ?? LANDMARK_RECIPE[l.id] ?? l.id, rot: l.rot,
 }));
 
 /** Textual theme extras (layout `theme.music`, `theme.sky`, `theme.vfx`). Numeric theme values come from the layout. */

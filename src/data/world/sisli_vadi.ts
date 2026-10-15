@@ -7,6 +7,7 @@ import { CHESTS, CURSED, ENTRANCES, GATHER, GHOST_BOAT, HIDDEN, MINIBOSSES, RARE
 import { METIN_SPOTS, METIN_TIERS } from './metin';
 import { GRAVEYARDS } from './graveyards';
 import { SISLI_AMBIENT } from './sisli_ambient';
+import { DECOR, DECOR_FLATS } from './decor';
 
 /**
  * SISLI VADI, the open-world map (GDD_OPENWORLD §1, §9.1). OWNER: content module. Levels 1-30, 400 x 400 tiles (1600 m), a streamed
@@ -62,6 +63,7 @@ const RELIEF: WorldExtras['relief'] = {
     r6: { amp: 3, scale: 100 },
   },
   edge: { rise: 20, width: 60 },
+  flat: DECOR_FLATS,
 };
 
 const WORLD: WorldExtras = {
@@ -75,6 +77,7 @@ const WORLD: WorldExtras = {
   water: WATER,
   borders: BORDERS,
   landmarks: LANDMARKS,
+  decor: DECOR,
   metin: { tiers: METIN_TIERS, spots: METIN_SPOTS },
   rares: RARES,
   minibosses: MINIBOSSES,

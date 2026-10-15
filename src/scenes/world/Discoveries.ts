@@ -4,15 +4,18 @@ import type { WorldCtx } from './util';
 import { tileToWorld } from './util';
 
 /**
- * Hidden areas, vistas and landmarks of Sisli Vadi (GDD_OPENWORLD §5.6-5.8). OWNER: scenes module.
+ * Hidden areas, vistas and named sub-areas (landmarks) of Sisli Vadi (GDD_OPENWORLD §5.6-5.8). OWNER: scenes module.
  *
  * The first time the local player walks into a spot's trigger circle: the spot is recorded in the save (`world.found.<id>`, so
- * it counts once per character), it gives its exploration XP once (hidden areas 8-10 %, vistas 6 %, landmarks none), a toast,
- * and the `explore` quest objective (G.quests.onEvent). Every peer checks its own player.
+ * it counts once per character), it gives its exploration XP once (hidden areas 8-10 %, vistas 6 %, landmarks 1 %), a banner
+ * "Keşfedildi: <name>" through the zone banner lane (ui:zoneName), and the `explore` quest objective (G.quests.onEvent). The map
+ * (ui/panels/game/map.ts) names the spots from then on. Every peer checks its own player.
  */
 
 /** Trigger radius of vistas and landmarks (tiles). Hidden areas carry their own radius in the layout. */
 const SMALL_RADIUS_TILES = 3;
+/** Landmarks are named sub-areas: a little exploration XP on the first visit (percent of a level). */
+const LANDMARK_XP_PCT = 1;
 
 interface Spot {
   id: string;
@@ -21,7 +24,9 @@ interface Spot {
   /** Trigger radius (m). */
   r: number;
   xpPct: number;
-  toast: string;
+  name: string;
+  /** Subtitle word of the banner: "Gizli bölge", "Manzara noktası", "Ufuk işareti". */
+  kind: string;
 }
 
 export class Discoveries {
@@ -32,15 +37,15 @@ export class Discoveries {
     this.spots = [
       ...ext.hidden.map((h) => ({
         id: h.id, x: tileToWorld(h.pos[0]), z: tileToWorld(h.pos[1]), r: h.radius * TILE_SIZE, xpPct: h.xpPct,
-        toast: `Gizli bölge keşfedildi: ${h.name}!`,
+        name: h.name, kind: 'Gizli bölge',
       })),
       ...ext.vistas.map((v) => ({
         id: v.id, x: tileToWorld(v.pos[0]), z: tileToWorld(v.pos[1]), r: SMALL_RADIUS_TILES * TILE_SIZE, xpPct: v.xpPct,
-        toast: `Manzara noktası: ${v.name}`,
+        name: v.name, kind: 'Manzara noktası',
       })),
       ...ext.landmarks.map((l) => ({
-        id: l.id, x: tileToWorld(l.pos[0]), z: tileToWorld(l.pos[1]), r: SMALL_RADIUS_TILES * TILE_SIZE, xpPct: 0,
-        toast: `Ufuk işareti: ${l.name}`,
+        id: l.id, x: tileToWorld(l.pos[0]), z: tileToWorld(l.pos[1]), r: SMALL_RADIUS_TILES * TILE_SIZE, xpPct: LANDMARK_XP_PCT,
+        name: l.name, kind: 'Ufuk işareti',
       })),
     ];
   }
@@ -64,7 +69,8 @@ export class Discoveries {
         }
       }
       G.quests?.onEvent('explore', s.id);
-      G.ui.toast(s.toast, 'success');
+      // the zone banner lane: queued, dropped in combat, one at a time (Banners.ts ZoneBanner)
+      G.events.emit('ui:zoneName', { title: `Keşfedildi: ${s.name}`, subtitle: s.xpPct > 0 ? `${s.kind} · keşif XP +%${s.xpPct}` : s.kind });
     }
   }
 }

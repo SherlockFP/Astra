@@ -55,7 +55,17 @@ export interface LGather {
 }
 export interface LHidden { id: string; name: string; region: string; pos: [number, number]; radiusTiles: number }
 export interface LVista { id: string; name: string; region: string; pos: [number, number] }
-export interface LLandmark { id: string; name: string; region: string; pos: [number, number] }
+/** Named sub-area: its silhouette is drawn by `recipe` (WorldDecor); the id is the default key when no recipe is given. */
+export interface LLandmark { id: string; name: string; region: string; pos: [number, number]; recipe?: string; rot?: number }
+/**
+ * Decor entry (tools/world-fill.mjs writes them; WorldDecorFill draws them). `kind`: vignette (a small story: camp, cart, grave,
+ * shrine), field (farm beside a village), signpost (a road junction with destination `lines`), flora / rocks (filler clusters).
+ * pos in tiles, rot in degrees.
+ */
+export interface LDecor {
+  id: string; kind: 'vignette' | 'field' | 'signpost' | 'flora' | 'rocks'; recipe: string; region: string;
+  pos: [number, number]; rot: number; lines?: string[];
+}
 export interface LFarm { id: string; name: string; pack: string; region: string; lootTable: string; focus: string }
 export interface LBuilding { label: string; model: string; x: number; z: number; rot: number; scale: number }
 export interface LRow { label: string; model: string; placement: string; count: string }
@@ -112,6 +122,8 @@ export interface LayoutDoc {
   hiddenAreas: LHidden[];
   vistas: LVista[];
   landmarks: LLandmark[];
+  /** Decor entries (see LDecor); absent in maps without the fill pass. */
+  decor?: LDecor[];
   farmSpots: LFarm[];
   villages: LVillage[];
   quests: { main: LQuestMain[]; side: LQuestSide[]; bio: LBio[] };

@@ -516,7 +516,21 @@ export interface EntranceDef {
   toEntrance?: string;
 }
 export interface RoadDef { id: string; kind: 'dirt' | 'cobble' | 'boardwalk' | 'bridge'; width: number; pts: [number, number][] }
-export interface LandmarkDef { id: string; name: string; regionId: string; pos: [number, number]; recipe: string }
+export interface LandmarkDef { id: string; name: string; regionId: string; pos: [number, number]; recipe: string; rot?: number }
+/**
+ * Decor of the open world (layout `decor`, written by tools/world-fill.mjs and drawn by world/WorldDecorFill.ts). `kind`: vignette
+ * (a small story), field (a farm beside a village), signpost (`lines` = destinations with metres and compass letter), flora / rocks
+ * (filler clusters). pos in tiles, rot in degrees.
+ */
+export interface DecorDef {
+  id: string;
+  kind: 'vignette' | 'field' | 'signpost' | 'flora' | 'rocks';
+  recipe: string;
+  regionId: string;
+  pos: [number, number];
+  rot: number;
+  lines?: string[];
+}
 export interface MetinTierDef {
   id: string;                    // 'metin_keder'
   enemyId: string;               // EnemyDef id of the stone
@@ -602,6 +616,8 @@ export interface WorldExtras {
   water: { id: string; rect: TileRect }[];
   borders: BorderSeg[];
   landmarks: LandmarkDef[];
+  /** Open-world decor (DecorDef); absent = none. */
+  decor?: DecorDef[];
   metin: { tiers: MetinTierDef[]; spots: MetinSpotDef[] };
   rares: RareSpawnDef[];
   minibosses: MiniBossDef[];

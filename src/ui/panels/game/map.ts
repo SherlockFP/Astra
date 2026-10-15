@@ -86,7 +86,7 @@ function reveal(): void {
 /* Open world layer: legend filters, live metin stones, glyphs          */
 /* ------------------------------------------------------------------ */
 
-type MapFilter = 'village' | 'waypoint' | 'metin' | 'boss' | 'rare' | 'dungeon' | 'chest' | 'shrine' | 'vista' | 'gather' | 'quest';
+type MapFilter = 'village' | 'waypoint' | 'metin' | 'boss' | 'rare' | 'dungeon' | 'chest' | 'shrine' | 'vista' | 'landmark' | 'gather' | 'quest';
 
 const MAP_FILTERS: { id: MapFilter; label: string; icon: string }[] = [
   { id: 'village', label: 'Köy', icon: '/assets/icons/map-village.svg' },
@@ -98,6 +98,7 @@ const MAP_FILTERS: { id: MapFilter; label: string; icon: string }[] = [
   { id: 'chest', label: 'Sandık', icon: '/assets/icons/map-chest.svg' },
   { id: 'shrine', label: 'Sunak', icon: '/assets/icons/map-shrine.svg' },
   { id: 'vista', label: 'Manzara', icon: '/assets/icons/map-vista.svg' },
+  { id: 'landmark', label: 'Ufuk İşareti', icon: '/assets/icons/map-vista.svg' },
   { id: 'gather', label: 'Toplama', icon: '/assets/icons/map-ore.svg' },
   { id: 'quest', label: 'Görev', icon: '/assets/icons/map-quest.svg' },
 ];
@@ -790,6 +791,23 @@ export class MapPanel extends GamePanel {
         if (!seen(x, z)) continue;
         const p = at(x, z, v.name);
         eye(ctx, p.px, p.py);
+      }
+    }
+    // named sub-areas (landmarks): the name shows once discovered (save flag world.found.<id>); until then a faint dot on explored ground
+    if (on('landmark')) {
+      for (const l of ext.landmarks) {
+        const x = cm(l.pos[0]), z = cm(l.pos[1]);
+        const found = G.character?.save.flags[`world.found.${l.id}`] === true;
+        if (!found && !seen(x, z)) continue;
+        if (found) {
+          const p = at(x, z, l.name);
+          dot(ctx, p.px, p.py, '#e8d6a0', true);
+          ctx.font = `700 ${clampN(s * 2, 9, 12)}px 'Alegreya Sans', sans-serif`;
+          outlined(ctx, l.name, p.px, p.py - 9, '#e8d6a0');
+        } else {
+          const p = at(x, z, '');
+          dot(ctx, p.px, p.py, 'rgba(232,214,160,0.35)', false);
+        }
       }
     }
     if (on('gather')) {

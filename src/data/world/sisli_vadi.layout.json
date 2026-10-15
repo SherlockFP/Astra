@@ -30694,7 +30694,7 @@
    "name": "Yıkık Gözcü Kulesi",
    "region": "r3",
    "pos": [
-    320,
+    317,
     265
    ]
   },
@@ -30796,6 +30796,6399 @@
     112,
     232
    ]
+  },
+  {
+   "id": "lm_f01",
+   "name": "Mantar Çemberi",
+   "region": "r4",
+   "pos": [
+    386.22,
+    384.04
+   ],
+   "recipe": "mushroom_ring",
+   "rot": 0
+  },
+  {
+   "id": "lm_f02",
+   "name": "Gök Çınarı",
+   "region": "r5",
+   "pos": [
+    132.63,
+    382.63
+   ],
+   "recipe": "giant_tree",
+   "rot": 0
+  },
+  {
+   "id": "lm_f03",
+   "name": "Unutulmuş Şapel",
+   "region": "r1",
+   "pos": [
+    192.63,
+    107.63
+   ],
+   "recipe": "roadside_chapel",
+   "rot": 0
+  },
+  {
+   "id": "lm_f04",
+   "name": "Dev Meşe",
+   "region": "r2",
+   "pos": [
+    385.1,
+    110.51
+   ],
+   "recipe": "giant_tree",
+   "rot": 0
+  },
+  {
+   "id": "lm_f05",
+   "name": "Gece Mantarları",
+   "region": "r4",
+   "pos": [
+    387.63,
+    302.63
+   ],
+   "recipe": "mushroom_ring",
+   "rot": 0
+  },
+  {
+   "id": "lm_f06",
+   "name": "Yol Ağzı Mabedi",
+   "region": "r1",
+   "pos": [
+    102.63,
+    92.63
+   ],
+   "recipe": "roadside_chapel",
+   "rot": 0
+  },
+  {
+   "id": "lm_f07",
+   "name": "Kanlı Burç",
+   "region": "r5",
+   "pos": [
+    17.63,
+    382.63
+   ],
+   "recipe": "red_castle_ruin",
+   "rot": 0
+  },
+  {
+   "id": "lm_f08",
+   "name": "Dua Taşı Mabedi",
+   "region": "r1",
+   "pos": [
+    225.46,
+    19.15
+   ],
+   "recipe": "roadside_chapel",
+   "rot": 0
+  },
+  {
+   "id": "lm_f09",
+   "name": "Ateş Kulesi",
+   "region": "r3",
+   "pos": [
+    257.63,
+    192.63
+   ],
+   "recipe": "watch_tower_ruin",
+   "rot": 0
+  },
+  {
+   "id": "lm_f10",
+   "name": "Cadı Ağaçları",
+   "region": "r4",
+   "pos": [
+    204.44,
+    386.19
+   ],
+   "recipe": "dead_tree_lanterns",
+   "rot": 0
+  },
+  {
+   "id": "lm_f11",
+   "name": "Kızıl Kale Kalıntısı",
+   "region": "r5",
+   "pos": [
+    128.23,
+    300.88
+   ],
+   "recipe": "red_castle_ruin",
+   "rot": 0
+  },
+  {
+   "id": "lm_f12",
+   "name": "Unutulmuş Anıt",
+   "region": "r4",
+   "pos": [
+    339.78,
+    339.15
+   ],
+   "recipe": "obelisk_shrine",
+   "rot": 0
+  },
+  {
+   "id": "lm_f13",
+   "name": "Kuru Fenerler",
+   "region": "r6",
+   "pos": [
+    17.63,
+    137.63
+   ],
+   "recipe": "dead_tree_lanterns",
+   "rot": 0
+  },
+  {
+   "id": "lm_f14",
+   "name": "Gözcü Kulesi",
+   "region": "r2",
+   "pos": [
+    388.22,
+    170.34
+   ],
+   "recipe": "watch_tower_ruin",
+   "rot": 0
+  },
+  {
+   "id": "lm_f15",
+   "name": "Eski Yel Değirmeni",
+   "region": "r2",
+   "pos": [
+    294.73,
+    18.65
+   ],
+   "recipe": "windmill_cluster",
+   "rot": 0
+  },
+  {
+   "id": "lm_f16",
+   "name": "Kadim Taş Çemberi",
+   "region": "r5",
+   "pos": [
+    80.73,
+    374.06
+   ],
+   "recipe": "standing_stones",
+   "rot": 0
+  },
+  {
+   "id": "lm_f17",
+   "name": "Yıkık Burç",
+   "region": "r2",
+   "pos": [
+    332.18,
+    90.98
+   ],
+   "recipe": "watch_tower_ruin",
+   "rot": 0
+  },
+  {
+   "id": "lm_f18",
+   "name": "Peri Halkası",
+   "region": "r4",
+   "pos": [
+    249.74,
+    309.24
+   ],
+   "recipe": "mushroom_ring",
+   "rot": 0
+  },
+  {
+   "id": "lm_f19",
+   "name": "Nöbet Kulesi",
+   "region": "r5",
+   "pos": [
+    63.72,
+    249.43
+   ],
+   "recipe": "watch_tower_ruin",
+   "rot": 0
+  },
+  {
+   "id": "lm_f20",
+   "name": "Gece Mantarları II",
+   "region": "r4",
+   "pos": [
+    322.63,
+    387.63
+   ],
+   "recipe": "mushroom_ring",
+   "rot": 0
+  },
+  {
+   "id": "lm_f21",
+   "name": "Harman Değirmeni",
+   "region": "r1",
+   "pos": [
+    192.63,
+    57.63
+   ],
+   "recipe": "windmill_cluster",
+   "rot": 0
+  },
+  {
+   "id": "lm_f22",
+   "name": "Kara Mum Mabedi",
+   "region": "r1",
+   "pos": [
+    242.63,
+    107.63
+   ],
+   "recipe": "roadside_chapel",
+   "rot": 0
+  },
+  {
+   "id": "lm_f23",
+   "name": "Yıkık Kale",
+   "region": "r3",
+   "pos": [
+    384.47,
+    251.19
+   ],
+   "recipe": "red_castle_ruin",
+   "rot": 0
+  },
+  {
+   "id": "lm_f24",
+   "name": "Tepe Karakolu",
+   "region": "r3",
+   "pos": [
+    300.81,
+    214.53
+   ],
+   "recipe": "watch_tower_ruin",
+   "rot": 0
+  },
+  {
+   "id": "lm_f25",
+   "name": "Yel Değirmeni Harabesi",
+   "region": "r1",
+   "pos": [
+    106.26,
+    39.01
+   ],
+   "recipe": "windmill_cluster",
+   "rot": 0
+  },
+  {
+   "id": "lm_f26",
+   "name": "Mantar Çemberi II",
+   "region": "r4",
+   "pos": [
+    163.58,
+    339.05
+   ],
+   "recipe": "mushroom_ring",
+   "rot": 0
+  },
+  {
+   "id": "lm_f27",
+   "name": "Ölü Ağaçlar",
+   "region": "r4",
+   "pos": [
+    300.63,
+    315.33
+   ],
+   "recipe": "dead_tree_lanterns",
+   "rot": 0
+  },
+  {
+   "id": "lm_f28",
+   "name": "Dikilitaşlar",
+   "region": "r1",
+   "pos": [
+    147.3,
+    74.81
+   ],
+   "recipe": "standing_stones",
+   "rot": 0
+  }
+ ],
+ "decor": [
+  {
+   "id": "sg_j01",
+   "kind": "signpost",
+   "recipe": "signpost",
+   "region": "r1",
+   "pos": [
+    201,
+    17
+   ],
+   "rot": -90,
+   "lines": [
+    "Gümüşdere Taşı · 90 m G",
+    "Dua Taşı Mabedi · 100 m D",
+    "Harman Değirmeni · 170 m G"
+   ]
+  },
+  {
+   "id": "sg_j02",
+   "kind": "signpost",
+   "recipe": "signpost",
+   "region": "r1",
+   "pos": [
+    198,
+    52
+   ],
+   "rot": 90,
+   "lines": [
+    "Dua Taşı Mabedi · 170 m KD",
+    "Orta Karakol Taşı · 210 m D",
+    "Gümüşdere Değirmeni · 210 m KB"
+   ]
+  },
+  {
+   "id": "sg_j03",
+   "kind": "signpost",
+   "recipe": "signpost",
+   "region": "r1",
+   "pos": [
+    268.45,
+    70.55
+   ],
+   "rot": 45,
+   "lines": [
+    "Orta Karakol · 110 m KB",
+    "Altın Ambar Çiftliği · 170 m KD",
+    "Kara Mum Mabedi · 180 m GB"
+   ]
+  },
+  {
+   "id": "sg_j04",
+   "kind": "signpost",
+   "recipe": "signpost",
+   "region": "r3",
+   "pos": [
+    273,
+    254.5
+   ],
+   "rot": 90,
+   "lines": [
+    "Bataklık Yolu Taşı · 110 m GD",
+    "Yıkık Gözcü Kulesi · 180 m D",
+    "Tepe Karakolu · 190 m KD"
+   ]
+  },
+  {
+   "id": "sg_j05",
+   "kind": "signpost",
+   "recipe": "signpost",
+   "region": "r4",
+   "pos": [
+    281,
+    289.5
+   ],
+   "rot": -90,
+   "lines": [
+    "Kızılkaya Taşı · 90 m K",
+    "Ölü Ağaçlar · 130 m GD",
+    "Peri Halkası · 150 m GB"
+   ]
+  },
+  {
+   "id": "sg_j06",
+   "kind": "signpost",
+   "recipe": "signpost",
+   "region": "r4",
+   "pos": [
+    144.5,
+    338.5
+   ],
+   "rot": 0,
+   "lines": [
+    "Kızıl Dökümhane Girişi · 140 m GB",
+    "Kızıl Kale Kalıntısı · 160 m KB",
+    "Bataklık Mantar Halkası · 250 m KD"
+   ]
+  },
+  {
+   "id": "sg_j07",
+   "kind": "signpost",
+   "recipe": "signpost",
+   "region": "r6",
+   "pos": [
+    76,
+    247
+   ],
+   "rot": -90,
+   "lines": [
+    "Kanyon Gözcü Kulesi · 160 m KD",
+    "Ork Ağacı Feneri · 260 m GB",
+    "Harabe Anıtı · 260 m KB"
+   ]
+  },
+  {
+   "id": "sg_j08",
+   "kind": "signpost",
+   "recipe": "signpost",
+   "region": "r2",
+   "pos": [
+    309.5,
+    78.5
+   ],
+   "rot": 0,
+   "lines": [
+    "Yıkık Burç · 100 m GD",
+    "Çiftlik Taşı · 110 m K",
+    "Tarla Karakol Taşı · 130 m KD"
+   ]
+  },
+  {
+   "id": "sg_j09",
+   "kind": "signpost",
+   "recipe": "signpost",
+   "region": "r2",
+   "pos": [
+    330.55,
+    60.55
+   ],
+   "rot": -45,
+   "lines": [
+    "Çiftlik Taşı · 100 m B",
+    "Yıkık Burç · 120 m G",
+    "Tarla Gözcü Kulesi · 130 m KD"
+   ]
+  },
+  {
+   "id": "sg_j10",
+   "kind": "signpost",
+   "recipe": "signpost",
+   "region": "r3",
+   "pos": [
+    309.5,
+    231
+   ],
+   "rot": 0,
+   "lines": [
+    "Yıkık Gözcü Kulesi · 140 m G",
+    "Geçit Karakol Taşı · 170 m KB",
+    "Haydut Kalesi Harabesi · 180 m D"
+   ]
+  },
+  {
+   "id": "sg_j11",
+   "kind": "signpost",
+   "recipe": "signpost",
+   "region": "r4",
+   "pos": [
+    258.45,
+    308.45
+   ],
+   "rot": 135,
+   "lines": [
+    "Ölü Ağaçlar · 170 m D",
+    "Kızılkaya Taşı · 180 m KD",
+    "Bataklık Yolu Taşı · 180 m KD"
+   ]
+  },
+  {
+   "id": "dc_fa01",
+   "kind": "field",
+   "recipe": "farm_field",
+   "region": "r1",
+   "pos": [
+    192,
+    21.14
+   ],
+   "rot": 330
+  },
+  {
+   "id": "dc_fa02",
+   "kind": "field",
+   "recipe": "farm_field",
+   "region": "r2",
+   "pos": [
+    295.5,
+    50
+   ],
+   "rot": 270
+  },
+  {
+   "id": "dc_fa03",
+   "kind": "field",
+   "recipe": "farm_field",
+   "region": "r2",
+   "pos": [
+    320.82,
+    54.46
+   ],
+   "rot": 255
+  },
+  {
+   "id": "dc_v001",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    330.88,
+    288.13
+   ],
+   "rot": 0
+  },
+  {
+   "id": "dc_v002",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    95.38,
+    62.13
+   ],
+   "rot": 255
+  },
+  {
+   "id": "dc_v003",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r2",
+   "pos": [
+    339.13,
+    7.88
+   ],
+   "rot": 193
+  },
+  {
+   "id": "dc_v004",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    95.38,
+    7.88
+   ],
+   "rot": 106
+  },
+  {
+   "id": "dc_v005",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    50.63,
+    387.13
+   ],
+   "rot": 116
+  },
+  {
+   "id": "dc_v006",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    141.13,
+    137.13
+   ],
+   "rot": 237
+  },
+  {
+   "id": "dc_v007",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    105.63,
+    389.13
+   ],
+   "rot": 70
+  },
+  {
+   "id": "dc_v008",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    7.88,
+    320.38
+   ],
+   "rot": 257
+  },
+  {
+   "id": "dc_v009",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    155.13,
+    298.13
+   ],
+   "rot": 123
+  },
+  {
+   "id": "dc_v010",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    352.63,
+    298.63
+   ],
+   "rot": 317
+  },
+  {
+   "id": "dc_v011",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    179.63,
+    375.63
+   ],
+   "rot": 316
+  },
+  {
+   "id": "dc_v012",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r3",
+   "pos": [
+    393.13,
+    226.63
+   ],
+   "rot": 311
+  },
+  {
+   "id": "dc_v013",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r2",
+   "pos": [
+    375.13,
+    168.13
+   ],
+   "rot": 328
+  },
+  {
+   "id": "dc_v014",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    235.88,
+    288.13
+   ],
+   "rot": 44
+  },
+  {
+   "id": "dc_v015",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r6",
+   "pos": [
+    55.38,
+    198.63
+   ],
+   "rot": 278
+  },
+  {
+   "id": "dc_v016",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r1",
+   "pos": [
+    172.38,
+    7.88
+   ],
+   "rot": 123
+  },
+  {
+   "id": "dc_v017",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    252.63,
+    386.13
+   ],
+   "rot": 20
+  },
+  {
+   "id": "dc_v018",
+   "kind": "vignette",
+   "recipe": "fishing_spot",
+   "region": "r5",
+   "pos": [
+    142.63,
+    253.38
+   ],
+   "rot": 131
+  },
+  {
+   "id": "dc_v019",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    40.13,
+    129.88
+   ],
+   "rot": 143
+  },
+  {
+   "id": "dc_v020",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    14.13,
+    270.38
+   ],
+   "rot": 246
+  },
+  {
+   "id": "dc_v021",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r1",
+   "pos": [
+    127.63,
+    48.63
+   ],
+   "rot": 216
+  },
+  {
+   "id": "dc_v022",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    321.38,
+    361.13
+   ],
+   "rot": 67
+  },
+  {
+   "id": "dc_v023",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    205.63,
+    288.13
+   ],
+   "rot": 269
+  },
+  {
+   "id": "dc_v024",
+   "kind": "vignette",
+   "recipe": "fishing_spot",
+   "region": "r3",
+   "pos": [
+    249.63,
+    222.38
+   ],
+   "rot": -106
+  },
+  {
+   "id": "dc_v025",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    390.13,
+    354.88
+   ],
+   "rot": 93
+  },
+  {
+   "id": "dc_v026",
+   "kind": "vignette",
+   "recipe": "fishing_spot",
+   "region": "r6",
+   "pos": [
+    143.13,
+    227.63
+   ],
+   "rot": 111
+  },
+  {
+   "id": "dc_v027",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    32.13,
+    180.63
+   ],
+   "rot": 357
+  },
+  {
+   "id": "dc_v028",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r2",
+   "pos": [
+    331.88,
+    25.63
+   ],
+   "rot": 228
+  },
+  {
+   "id": "dc_v029",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r6",
+   "pos": [
+    8.88,
+    223.63
+   ],
+   "rot": 93
+  },
+  {
+   "id": "dc_v030",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    255.13,
+    84.63
+   ],
+   "rot": 111
+  },
+  {
+   "id": "dc_v031",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    146.38,
+    311.13
+   ],
+   "rot": 282
+  },
+  {
+   "id": "dc_v032",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    183.88,
+    73.63
+   ],
+   "rot": 24
+  },
+  {
+   "id": "dc_v033",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    346.38,
+    260.38
+   ],
+   "rot": 163
+  },
+  {
+   "id": "dc_v034",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    316.13,
+    299.63
+   ],
+   "rot": 348
+  },
+  {
+   "id": "dc_v035",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r3",
+   "pos": [
+    308.88,
+    173.63
+   ],
+   "rot": 21
+  },
+  {
+   "id": "dc_v036",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    102.63,
+    361.13
+   ],
+   "rot": 189
+  },
+  {
+   "id": "dc_v037",
+   "kind": "vignette",
+   "recipe": "fishing_spot",
+   "region": "r2",
+   "pos": [
+    284.63,
+    91.63
+   ],
+   "rot": -88
+  },
+  {
+   "id": "dc_v038",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r3",
+   "pos": [
+    390.13,
+    204.88
+   ],
+   "rot": 258
+  },
+  {
+   "id": "dc_v039",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    52.63,
+    280.88
+   ],
+   "rot": 91
+  },
+  {
+   "id": "dc_v040",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    355.63,
+    356.88
+   ],
+   "rot": 314
+  },
+  {
+   "id": "dc_v041",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    123.13,
+    100.88
+   ],
+   "rot": 163
+  },
+  {
+   "id": "dc_v042",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    190.13,
+    86.13
+   ],
+   "rot": 291
+  },
+  {
+   "id": "dc_v043",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r2",
+   "pos": [
+    362.63,
+    147.13
+   ],
+   "rot": 173
+  },
+  {
+   "id": "dc_v044",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r3",
+   "pos": [
+    346.38,
+    229.88
+   ],
+   "rot": 193
+  },
+  {
+   "id": "dc_v045",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    374.88,
+    312.38
+   ],
+   "rot": 36
+  },
+  {
+   "id": "dc_v046",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    215.13,
+    108.88
+   ],
+   "rot": 122
+  },
+  {
+   "id": "dc_v047",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r3",
+   "pos": [
+    346.38,
+    276.63
+   ],
+   "rot": 26
+  },
+  {
+   "id": "dc_v048",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    91.13,
+    212.13
+   ],
+   "rot": 50
+  },
+  {
+   "id": "dc_v049",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    30.88,
+    390.13
+   ],
+   "rot": 175
+  },
+  {
+   "id": "dc_v050",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    392.63,
+    315.88
+   ],
+   "rot": 187
+  },
+  {
+   "id": "dc_v051",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    304.63,
+    387.13
+   ],
+   "rot": 98
+  },
+  {
+   "id": "dc_v052",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    249.63,
+    288.13
+   ],
+   "rot": 132
+  },
+  {
+   "id": "dc_v053",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r2",
+   "pos": [
+    359.63,
+    64.63
+   ],
+   "rot": 139
+  },
+  {
+   "id": "dc_v054",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    170.38,
+    387.13
+   ],
+   "rot": 276
+  },
+  {
+   "id": "dc_v055",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    356.88,
+    172.38
+   ],
+   "rot": 305
+  },
+  {
+   "id": "dc_v056",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    130.88,
+    63.13
+   ],
+   "rot": 266
+  },
+  {
+   "id": "dc_v057",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    53.88,
+    300.38
+   ],
+   "rot": 120
+  },
+  {
+   "id": "dc_v058",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    352.63,
+    311.13
+   ],
+   "rot": 210
+  },
+  {
+   "id": "dc_v059",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    350.88,
+    388.63
+   ],
+   "rot": 154
+  },
+  {
+   "id": "dc_v060",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    372.38,
+    293.38
+   ],
+   "rot": 222
+  },
+  {
+   "id": "dc_v061",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    91.13,
+    164.38
+   ],
+   "rot": 347
+  },
+  {
+   "id": "dc_v062",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    85.88,
+    387.13
+   ],
+   "rot": 223
+  },
+  {
+   "id": "dc_v063",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r3",
+   "pos": [
+    263.13,
+    225.63
+   ],
+   "rot": 181
+  },
+  {
+   "id": "dc_v064",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    7.88,
+    364.13
+   ],
+   "rot": 299
+  },
+  {
+   "id": "dc_v065",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r1",
+   "pos": [
+    268.13,
+    7.88
+   ],
+   "rot": 12
+  },
+  {
+   "id": "dc_v066",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    96.38,
+    104.88
+   ],
+   "rot": 167
+  },
+  {
+   "id": "dc_v067",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    169.38,
+    355.88
+   ],
+   "rot": 11
+  },
+  {
+   "id": "dc_v068",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    133.88,
+    79.88
+   ],
+   "rot": 262
+  },
+  {
+   "id": "dc_v069",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    115.13,
+    54.88
+   ],
+   "rot": 279
+  },
+  {
+   "id": "dc_v070",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    159.88,
+    318.38
+   ],
+   "rot": 208
+  },
+  {
+   "id": "dc_v071",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r2",
+   "pos": [
+    356.88,
+    7.88
+   ],
+   "rot": 218
+  },
+  {
+   "id": "dc_v072",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    99.88,
+    289.13
+   ],
+   "rot": 281
+  },
+  {
+   "id": "dc_v073",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    246.38,
+    367.38
+   ],
+   "rot": 354
+  },
+  {
+   "id": "dc_v074",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    224.63,
+    366.13
+   ],
+   "rot": 178
+  },
+  {
+   "id": "dc_v075",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r6",
+   "pos": [
+    32.13,
+    204.88
+   ],
+   "rot": 186
+  },
+  {
+   "id": "dc_v076",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    131.63,
+    249.88
+   ],
+   "rot": 84
+  },
+  {
+   "id": "dc_v077",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    146.38,
+    54.88
+   ],
+   "rot": 185
+  },
+  {
+   "id": "dc_v078",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    248.38,
+    7.88
+   ],
+   "rot": 138
+  },
+  {
+   "id": "dc_v079",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    177.63,
+    98.63
+   ],
+   "rot": 53
+  },
+  {
+   "id": "dc_v080",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    394.13,
+    95.13
+   ],
+   "rot": 61
+  },
+  {
+   "id": "dc_v081",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    344.13,
+    358.88
+   ],
+   "rot": 52
+  },
+  {
+   "id": "dc_v082",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r2",
+   "pos": [
+    370.38,
+    78.63
+   ],
+   "rot": 94
+  },
+  {
+   "id": "dc_v083",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    96.38,
+    73.63
+   ],
+   "rot": 214
+  },
+  {
+   "id": "dc_v084",
+   "kind": "vignette",
+   "recipe": "fishing_spot",
+   "region": "r6",
+   "pos": [
+    143.13,
+    162.63
+   ],
+   "rot": 133
+  },
+  {
+   "id": "dc_v085",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r3",
+   "pos": [
+    378.63,
+    224.63
+   ],
+   "rot": 35
+  },
+  {
+   "id": "dc_v086",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    392.88,
+    121.63
+   ],
+   "rot": 146
+  },
+  {
+   "id": "dc_v087",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    76.63,
+    344.38
+   ],
+   "rot": 181
+  },
+  {
+   "id": "dc_v088",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    123.13,
+    194.63
+   ],
+   "rot": 76
+  },
+  {
+   "id": "dc_v089",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r6",
+   "pos": [
+    101.63,
+    243.38
+   ],
+   "rot": 54
+  },
+  {
+   "id": "dc_v090",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    21.38,
+    323.63
+   ],
+   "rot": 31
+  },
+  {
+   "id": "dc_v091",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r2",
+   "pos": [
+    357.13,
+    40.38
+   ],
+   "rot": 102
+  },
+  {
+   "id": "dc_v092",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    375.63,
+    368.38
+   ],
+   "rot": 195
+  },
+  {
+   "id": "dc_v093",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    90.13,
+    129.88
+   ],
+   "rot": 56
+  },
+  {
+   "id": "dc_v094",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    265.13,
+    373.63
+   ],
+   "rot": 301
+  },
+  {
+   "id": "dc_v095",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    164.13,
+    369.38
+   ],
+   "rot": 190
+  },
+  {
+   "id": "dc_v096",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    223.13,
+    349.88
+   ],
+   "rot": 142
+  },
+  {
+   "id": "dc_v097",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    204.63,
+    99.38
+   ],
+   "rot": 264
+  },
+  {
+   "id": "dc_v098",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    51.88,
+    343.88
+   ],
+   "rot": 298
+  },
+  {
+   "id": "dc_v099",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    108.88,
+    11.13
+   ],
+   "rot": 224
+  },
+  {
+   "id": "dc_v100",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    221.38,
+    48.63
+   ],
+   "rot": 212
+  },
+  {
+   "id": "dc_v101",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    390.13,
+    261.13
+   ],
+   "rot": 356
+  },
+  {
+   "id": "dc_v102",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    190.13,
+    361.13
+   ],
+   "rot": 220
+  },
+  {
+   "id": "dc_v103",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    193.13,
+    391.13
+   ],
+   "rot": 269
+  },
+  {
+   "id": "dc_v104",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r2",
+   "pos": [
+    352.63,
+    97.88
+   ],
+   "rot": 95
+  },
+  {
+   "id": "dc_v105",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    336.88,
+    300.63
+   ],
+   "rot": 324
+  },
+  {
+   "id": "dc_v106",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    64.13,
+    387.13
+   ],
+   "rot": 4
+  },
+  {
+   "id": "dc_v107",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    347.13,
+    116.63
+   ],
+   "rot": 104
+  },
+  {
+   "id": "dc_v108",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    85.63,
+    248.13
+   ],
+   "rot": 221
+  },
+  {
+   "id": "dc_v109",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    98.63,
+    336.38
+   ],
+   "rot": 115
+  },
+  {
+   "id": "dc_v110",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    237.63,
+    78.38
+   ],
+   "rot": 50
+  },
+  {
+   "id": "dc_v111",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    40.13,
+    341.63
+   ],
+   "rot": 167
+  },
+  {
+   "id": "dc_v112",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    224.38,
+    288.13
+   ],
+   "rot": 339
+  },
+  {
+   "id": "dc_v113",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    235.38,
+    307.13
+   ],
+   "rot": 219
+  },
+  {
+   "id": "dc_v114",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r6",
+   "pos": [
+    40.88,
+    185.38
+   ],
+   "rot": 286
+  },
+  {
+   "id": "dc_v115",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    135.88,
+    262.13
+   ],
+   "rot": 219
+  },
+  {
+   "id": "dc_v116",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    215.13,
+    7.88
+   ],
+   "rot": 300
+  },
+  {
+   "id": "dc_v117",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    7.88,
+    203.63
+   ],
+   "rot": 32
+  },
+  {
+   "id": "dc_v118",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    235.88,
+    337.13
+   ],
+   "rot": 33
+  },
+  {
+   "id": "dc_v119",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    24.63,
+    267.13
+   ],
+   "rot": 40
+  },
+  {
+   "id": "dc_v120",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    8.88,
+    279.88
+   ],
+   "rot": 98
+  },
+  {
+   "id": "dc_v121",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r6",
+   "pos": [
+    56.38,
+    219.13
+   ],
+   "rot": 178
+  },
+  {
+   "id": "dc_v122",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    177.63,
+    17.38
+   ],
+   "rot": 291
+  },
+  {
+   "id": "dc_v123",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    310.88,
+    368.38
+   ],
+   "rot": 159
+  },
+  {
+   "id": "dc_v124",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r1",
+   "pos": [
+    139.13,
+    7.88
+   ],
+   "rot": 22
+  },
+  {
+   "id": "dc_v125",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    257.88,
+    335.88
+   ],
+   "rot": 298
+  },
+  {
+   "id": "dc_v126",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    93.38,
+    367.63
+   ],
+   "rot": 166
+  },
+  {
+   "id": "dc_v127",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r2",
+   "pos": [
+    341.88,
+    22.88
+   ],
+   "rot": 146
+  },
+  {
+   "id": "dc_v128",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    250.63,
+    255.88
+   ],
+   "rot": 11
+  },
+  {
+   "id": "dc_v129",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    131.63,
+    315.13
+   ],
+   "rot": 149
+  },
+  {
+   "id": "dc_v130",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    177.63,
+    54.88
+   ],
+   "rot": 283
+  },
+  {
+   "id": "dc_v131",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    7.88,
+    179.63
+   ],
+   "rot": 270
+  },
+  {
+   "id": "dc_v132",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    362.38,
+    256.13
+   ],
+   "rot": 309
+  },
+  {
+   "id": "dc_v133",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    110.63,
+    214.38
+   ],
+   "rot": 346
+  },
+  {
+   "id": "dc_v134",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r2",
+   "pos": [
+    383.88,
+    72.88
+   ],
+   "rot": 67
+  },
+  {
+   "id": "dc_v135",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    127.63,
+    129.88
+   ],
+   "rot": 358
+  },
+  {
+   "id": "dc_v136",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r2",
+   "pos": [
+    318.13,
+    32.88
+   ],
+   "rot": 175
+  },
+  {
+   "id": "dc_v137",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    96.38,
+    23.63
+   ],
+   "rot": 111
+  },
+  {
+   "id": "dc_v138",
+   "kind": "vignette",
+   "recipe": "fishing_spot",
+   "region": "r3",
+   "pos": [
+    249.63,
+    210.88
+   ],
+   "rot": -94
+  },
+  {
+   "id": "dc_v139",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r3",
+   "pos": [
+    357.63,
+    238.38
+   ],
+   "rot": 231
+  },
+  {
+   "id": "dc_v140",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    78.38,
+    179.13
+   ],
+   "rot": 115
+  },
+  {
+   "id": "dc_v141",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    190.13,
+    317.38
+   ],
+   "rot": 68
+  },
+  {
+   "id": "dc_v142",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    17.63,
+    313.38
+   ],
+   "rot": 6
+  },
+  {
+   "id": "dc_v143",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    334.38,
+    265.88
+   ],
+   "rot": 280
+  },
+  {
+   "id": "dc_v144",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    45.38,
+    328.63
+   ],
+   "rot": 283
+  },
+  {
+   "id": "dc_v145",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    157.88,
+    7.88
+   ],
+   "rot": 70
+  },
+  {
+   "id": "dc_v146",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    7.88,
+    333.88
+   ],
+   "rot": 141
+  },
+  {
+   "id": "dc_v147",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    122.38,
+    390.13
+   ],
+   "rot": 286
+  },
+  {
+   "id": "dc_v148",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r3",
+   "pos": [
+    345.38,
+    236.38
+   ],
+   "rot": 188
+  },
+  {
+   "id": "dc_v149",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    8.88,
+    298.63
+   ],
+   "rot": 240
+  },
+  {
+   "id": "dc_v150",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    39.38,
+    163.63
+   ],
+   "rot": 315
+  },
+  {
+   "id": "dc_v151",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    271.38,
+    236.13
+   ],
+   "rot": 105
+  },
+  {
+   "id": "dc_v152",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r1",
+   "pos": [
+    267.13,
+    93.38
+   ],
+   "rot": 126
+  },
+  {
+   "id": "dc_v153",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r1",
+   "pos": [
+    133.88,
+    105.88
+   ],
+   "rot": 260
+  },
+  {
+   "id": "dc_v154",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    61.38,
+    374.88
+   ],
+   "rot": 335
+  },
+  {
+   "id": "dc_v155",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r6",
+   "pos": [
+    91.38,
+    182.63
+   ],
+   "rot": 270
+  },
+  {
+   "id": "dc_v156",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r2",
+   "pos": [
+    394.13,
+    36.38
+   ],
+   "rot": 99
+  },
+  {
+   "id": "dc_v157",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    317.38,
+    155.13
+   ],
+   "rot": 163
+  },
+  {
+   "id": "dc_v158",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r6",
+   "pos": [
+    31.13,
+    222.38
+   ],
+   "rot": 223
+  },
+  {
+   "id": "dc_v159",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r6",
+   "pos": [
+    24.88,
+    244.63
+   ],
+   "rot": 113
+  },
+  {
+   "id": "dc_v160",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    393.13,
+    370.38
+   ],
+   "rot": 116
+  },
+  {
+   "id": "dc_v161",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r2",
+   "pos": [
+    367.13,
+    53.63
+   ],
+   "rot": 203
+  },
+  {
+   "id": "dc_v162",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    352.63,
+    367.38
+   ],
+   "rot": 50
+  },
+  {
+   "id": "dc_v163",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r3",
+   "pos": [
+    331.38,
+    251.63
+   ],
+   "rot": 306
+  },
+  {
+   "id": "dc_v164",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    169.13,
+    102.63
+   ],
+   "rot": 73
+  },
+  {
+   "id": "dc_v165",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    383.63,
+    256.13
+   ],
+   "rot": 163
+  },
+  {
+   "id": "dc_v166",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    265.13,
+    393.13
+   ],
+   "rot": 175
+  },
+  {
+   "id": "dc_v167",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r6",
+   "pos": [
+    49.38,
+    228.63
+   ],
+   "rot": 57
+  },
+  {
+   "id": "dc_v168",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r2",
+   "pos": [
+    300.63,
+    93.13
+   ],
+   "rot": 200
+  },
+  {
+   "id": "dc_v169",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    85.63,
+    262.63
+   ],
+   "rot": 36
+  },
+  {
+   "id": "dc_v170",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r3",
+   "pos": [
+    296.38,
+    186.13
+   ],
+   "rot": 209
+  },
+  {
+   "id": "dc_v171",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    116.88,
+    261.38
+   ],
+   "rot": 314
+  },
+  {
+   "id": "dc_v172",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    127.63,
+    23.63
+   ],
+   "rot": 205
+  },
+  {
+   "id": "dc_v173",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    354.13,
+    334.63
+   ],
+   "rot": 40
+  },
+  {
+   "id": "dc_v174",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r6",
+   "pos": [
+    143.13,
+    217.13
+   ],
+   "rot": 323
+  },
+  {
+   "id": "dc_v175",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    142.13,
+    240.13
+   ],
+   "rot": 105
+  },
+  {
+   "id": "dc_v176",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r2",
+   "pos": [
+    321.38,
+    7.88
+   ],
+   "rot": 227
+  },
+  {
+   "id": "dc_v177",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    167.13,
+    288.13
+   ],
+   "rot": 250
+  },
+  {
+   "id": "dc_v178",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    143.13,
+    297.38
+   ],
+   "rot": 318
+  },
+  {
+   "id": "dc_v179",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r1",
+   "pos": [
+    160.88,
+    49.63
+   ],
+   "rot": 352
+  },
+  {
+   "id": "dc_v180",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r3",
+   "pos": [
+    327.88,
+    228.63
+   ],
+   "rot": 67
+  },
+  {
+   "id": "dc_v181",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    202.63,
+    355.88
+   ],
+   "rot": 77
+  },
+  {
+   "id": "dc_v182",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    128.63,
+    143.38
+   ],
+   "rot": 88
+  },
+  {
+   "id": "dc_v183",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r2",
+   "pos": [
+    372.13,
+    136.38
+   ],
+   "rot": 144
+  },
+  {
+   "id": "dc_v184",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r3",
+   "pos": [
+    309.38,
+    247.13
+   ],
+   "rot": 87
+  },
+  {
+   "id": "dc_v185",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    40.13,
+    373.63
+   ],
+   "rot": 341
+  },
+  {
+   "id": "dc_v186",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    221.38,
+    391.13
+   ],
+   "rot": 197
+  },
+  {
+   "id": "dc_v187",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    35.88,
+    342.63
+   ],
+   "rot": 90
+  },
+  {
+   "id": "dc_v188",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r6",
+   "pos": [
+    132.13,
+    223.13
+   ],
+   "rot": 348
+  },
+  {
+   "id": "dc_v189",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    171.38,
+    323.63
+   ],
+   "rot": 209
+  },
+  {
+   "id": "dc_v190",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    305.63,
+    7.88
+   ],
+   "rot": 5
+  },
+  {
+   "id": "dc_v191",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r2",
+   "pos": [
+    321.38,
+    172.38
+   ],
+   "rot": 38
+  },
+  {
+   "id": "dc_v192",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    192.13,
+    299.63
+   ],
+   "rot": 200
+  },
+  {
+   "id": "dc_v193",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    57.63,
+    168.63
+   ],
+   "rot": 82
+  },
+  {
+   "id": "dc_v194",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    152.63,
+    86.13
+   ],
+   "rot": 101
+  },
+  {
+   "id": "dc_v195",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    393.63,
+    243.63
+   ],
+   "rot": 149
+  },
+  {
+   "id": "dc_v196",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    50.13,
+    130.38
+   ],
+   "rot": 199
+  },
+  {
+   "id": "dc_v197",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    35.38,
+    150.88
+   ],
+   "rot": 154
+  },
+  {
+   "id": "dc_v198",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    313.13,
+    348.38
+   ],
+   "rot": 151
+  },
+  {
+   "id": "dc_v199",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r3",
+   "pos": [
+    364.63,
+    222.13
+   ],
+   "rot": 42
+  },
+  {
+   "id": "dc_v200",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r1",
+   "pos": [
+    265.13,
+    36.13
+   ],
+   "rot": 19
+  },
+  {
+   "id": "dc_v201",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r2",
+   "pos": [
+    358.88,
+    160.88
+   ],
+   "rot": 148
+  },
+  {
+   "id": "dc_v202",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r3",
+   "pos": [
+    291.63,
+    265.13
+   ],
+   "rot": 264
+  },
+  {
+   "id": "dc_v203",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    116.13,
+    362.13
+   ],
+   "rot": 99
+  },
+  {
+   "id": "dc_v204",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r1",
+   "pos": [
+    96.38,
+    42.38
+   ],
+   "rot": 229
+  },
+  {
+   "id": "dc_v205",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r2",
+   "pos": [
+    350.13,
+    122.13
+   ],
+   "rot": 274
+  },
+  {
+   "id": "dc_v206",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    216.13,
+    296.38
+   ],
+   "rot": 15
+  },
+  {
+   "id": "dc_v207",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r3",
+   "pos": [
+    353.63,
+    174.88
+   ],
+   "rot": 124
+  },
+  {
+   "id": "dc_v208",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    93.38,
+    279.63
+   ],
+   "rot": 205
+  },
+  {
+   "id": "dc_v209",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    243.13,
+    89.13
+   ],
+   "rot": 61
+  },
+  {
+   "id": "dc_v210",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    393.13,
+    325.63
+   ],
+   "rot": 212
+  },
+  {
+   "id": "dc_v211",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    121.88,
+    38.38
+   ],
+   "rot": 39
+  },
+  {
+   "id": "dc_v212",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r1",
+   "pos": [
+    103.38,
+    63.63
+   ],
+   "rot": 303
+  },
+  {
+   "id": "dc_v213",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    154.38,
+    91.88
+   ],
+   "rot": 206
+  },
+  {
+   "id": "dc_v214",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    95.38,
+    130.13
+   ],
+   "rot": 184
+  },
+  {
+   "id": "dc_v215",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    314.13,
+    183.88
+   ],
+   "rot": 295
+  },
+  {
+   "id": "dc_v216",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    10.63,
+    229.38
+   ],
+   "rot": 115
+  },
+  {
+   "id": "dc_v217",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    333.88,
+    348.63
+   ],
+   "rot": 89
+  },
+  {
+   "id": "dc_v218",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    196.38,
+    367.38
+   ],
+   "rot": 248
+  },
+  {
+   "id": "dc_v219",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    333.13,
+    370.88
+   ],
+   "rot": 220
+  },
+  {
+   "id": "dc_v220",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r3",
+   "pos": [
+    348.38,
+    192.13
+   ],
+   "rot": 159
+  },
+  {
+   "id": "dc_v221",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    110.88,
+    377.63
+   ],
+   "rot": 109
+  },
+  {
+   "id": "dc_v222",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    221.38,
+    373.63
+   ],
+   "rot": 217
+  },
+  {
+   "id": "dc_v223",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    249.63,
+    96.38
+   ],
+   "rot": 119
+  },
+  {
+   "id": "dc_v224",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    313.38,
+    286.63
+   ],
+   "rot": 324
+  },
+  {
+   "id": "dc_v225",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    215.13,
+    354.88
+   ],
+   "rot": 71
+  },
+  {
+   "id": "dc_v226",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r2",
+   "pos": [
+    392.63,
+    78.38
+   ],
+   "rot": 113
+  },
+  {
+   "id": "dc_v227",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    383.88,
+    286.13
+   ],
+   "rot": 245
+  },
+  {
+   "id": "dc_v228",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    35.88,
+    360.88
+   ],
+   "rot": 320
+  },
+  {
+   "id": "dc_v229",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r2",
+   "pos": [
+    365.38,
+    56.13
+   ],
+   "rot": 332
+  },
+  {
+   "id": "dc_v230",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    116.13,
+    294.38
+   ],
+   "rot": 211
+  },
+  {
+   "id": "dc_v231",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    364.13,
+    301.63
+   ],
+   "rot": 45
+  },
+  {
+   "id": "dc_v232",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    69.38,
+    336.88
+   ],
+   "rot": 167
+  },
+  {
+   "id": "dc_v233",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    325.63,
+    305.88
+   ],
+   "rot": 160
+  },
+  {
+   "id": "dc_v234",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    7.88,
+    136.38
+   ],
+   "rot": 274
+  },
+  {
+   "id": "dc_v235",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    108.88,
+    338.38
+   ],
+   "rot": 39
+  },
+  {
+   "id": "dc_v236",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r3",
+   "pos": [
+    293.63,
+    252.88
+   ],
+   "rot": 325
+  },
+  {
+   "id": "dc_v237",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r6",
+   "pos": [
+    80.13,
+    140.88
+   ],
+   "rot": 189
+  },
+  {
+   "id": "dc_v238",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r3",
+   "pos": [
+    318.88,
+    281.13
+   ],
+   "rot": 55
+  },
+  {
+   "id": "dc_v239",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    127.63,
+    80.13
+   ],
+   "rot": 358
+  },
+  {
+   "id": "dc_v240",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r6",
+   "pos": [
+    133.88,
+    179.13
+   ],
+   "rot": 269
+  },
+  {
+   "id": "dc_v241",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    76.63,
+    328.63
+   ],
+   "rot": 53
+  },
+  {
+   "id": "dc_v242",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    101.63,
+    164.13
+   ],
+   "rot": 225
+  },
+  {
+   "id": "dc_v243",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    329.88,
+    390.13
+   ],
+   "rot": 177
+  },
+  {
+   "id": "dc_v244",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    7.88,
+    388.13
+   ],
+   "rot": 39
+  },
+  {
+   "id": "dc_v245",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r6",
+   "pos": [
+    52.63,
+    149.38
+   ],
+   "rot": 148
+  },
+  {
+   "id": "dc_v246",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    377.63,
+    342.38
+   ],
+   "rot": 127
+  },
+  {
+   "id": "dc_v247",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    114.88,
+    68.63
+   ],
+   "rot": 193
+  },
+  {
+   "id": "dc_v248",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    7.88,
+    155.63
+   ],
+   "rot": 195
+  },
+  {
+   "id": "dc_v249",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r3",
+   "pos": [
+    252.63,
+    229.88
+   ],
+   "rot": 264
+  },
+  {
+   "id": "dc_v250",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r2",
+   "pos": [
+    374.63,
+    144.38
+   ],
+   "rot": 23
+  },
+  {
+   "id": "dc_v251",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    173.38,
+    299.63
+   ],
+   "rot": 58
+  },
+  {
+   "id": "dc_v252",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    390.13,
+    336.13
+   ],
+   "rot": 332
+  },
+  {
+   "id": "dc_v253",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    290.63,
+    384.63
+   ],
+   "rot": 150
+  },
+  {
+   "id": "dc_v254",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r2",
+   "pos": [
+    315.88,
+    139.63
+   ],
+   "rot": 333
+  },
+  {
+   "id": "dc_v255",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    108.88,
+    248.63
+   ],
+   "rot": 135
+  },
+  {
+   "id": "dc_v256",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    70.63,
+    289.63
+   ],
+   "rot": 163
+  },
+  {
+   "id": "dc_v257",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    16.88,
+    283.38
+   ],
+   "rot": 184
+  },
+  {
+   "id": "dc_v258",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r2",
+   "pos": [
+    359.88,
+    106.13
+   ],
+   "rot": 10
+  },
+  {
+   "id": "dc_v259",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    229.38,
+    8.38
+   ],
+   "rot": 40
+  },
+  {
+   "id": "dc_v260",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    308.88,
+    329.88
+   ],
+   "rot": 72
+  },
+  {
+   "id": "dc_v261",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    330.88,
+    198.88
+   ],
+   "rot": 28
+  },
+  {
+   "id": "dc_v262",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    46.38,
+    289.13
+   ],
+   "rot": 100
+  },
+  {
+   "id": "dc_v263",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r6",
+   "pos": [
+    24.88,
+    180.13
+   ],
+   "rot": 55
+  },
+  {
+   "id": "dc_v264",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    372.38,
+    387.13
+   ],
+   "rot": 39
+  },
+  {
+   "id": "dc_v265",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r6",
+   "pos": [
+    143.13,
+    188.13
+   ],
+   "rot": 139
+  },
+  {
+   "id": "dc_v266",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r2",
+   "pos": [
+    293.13,
+    38.13
+   ],
+   "rot": 90
+  },
+  {
+   "id": "dc_v267",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    214.63,
+    84.63
+   ],
+   "rot": 215
+  },
+  {
+   "id": "dc_v268",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r6",
+   "pos": [
+    115.13,
+    168.13
+   ],
+   "rot": 52
+  },
+  {
+   "id": "dc_v269",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r3",
+   "pos": [
+    342.13,
+    212.13
+   ],
+   "rot": 187
+  },
+  {
+   "id": "dc_v270",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    393.13,
+    7.88
+   ],
+   "rot": 171
+  },
+  {
+   "id": "dc_v271",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    299.63,
+    284.88
+   ],
+   "rot": 241
+  },
+  {
+   "id": "dc_v272",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    355.63,
+    133.88
+   ],
+   "rot": 267
+  },
+  {
+   "id": "dc_v273",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    152.63,
+    323.63
+   ],
+   "rot": 243
+  },
+  {
+   "id": "dc_v274",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    152.63,
+    61.13
+   ],
+   "rot": 323
+  },
+  {
+   "id": "dc_v275",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    103.63,
+    145.38
+   ],
+   "rot": 101
+  },
+  {
+   "id": "dc_v276",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    104.63,
+    50.63
+   ],
+   "rot": 250
+  },
+  {
+   "id": "dc_v277",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r6",
+   "pos": [
+    31.13,
+    190.38
+   ],
+   "rot": 169
+  },
+  {
+   "id": "dc_v278",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    68.13,
+    306.88
+   ],
+   "rot": 60
+  },
+  {
+   "id": "dc_v279",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r1",
+   "pos": [
+    145.63,
+    91.63
+   ],
+   "rot": 136
+  },
+  {
+   "id": "dc_v280",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r3",
+   "pos": [
+    308.63,
+    272.13
+   ],
+   "rot": 258
+  },
+  {
+   "id": "dc_v281",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    244.38,
+    330.88
+   ],
+   "rot": 142
+  },
+  {
+   "id": "dc_v282",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    356.88,
+    343.38
+   ],
+   "rot": 298
+  },
+  {
+   "id": "dc_v283",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    366.63,
+    359.63
+   ],
+   "rot": 56
+  },
+  {
+   "id": "dc_v284",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    367.13,
+    12.13
+   ],
+   "rot": 226
+  },
+  {
+   "id": "dc_v285",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    196.38,
+    344.38
+   ],
+   "rot": 186
+  },
+  {
+   "id": "dc_v286",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    280.88,
+    313.13
+   ],
+   "rot": 172
+  },
+  {
+   "id": "dc_v287",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    61.13,
+    352.63
+   ],
+   "rot": 193
+  },
+  {
+   "id": "dc_v288",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    215.13,
+    96.38
+   ],
+   "rot": 13
+  },
+  {
+   "id": "dc_v289",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r3",
+   "pos": [
+    333.88,
+    278.63
+   ],
+   "rot": 210
+  },
+  {
+   "id": "dc_v290",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    120.38,
+    87.13
+   ],
+   "rot": 199
+  },
+  {
+   "id": "dc_v291",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    121.38,
+    221.38
+   ],
+   "rot": 336
+  },
+  {
+   "id": "dc_v292",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    61.63,
+    180.88
+   ],
+   "rot": 258
+  },
+  {
+   "id": "dc_v293",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r6",
+   "pos": [
+    33.88,
+    130.13
+   ],
+   "rot": 170
+  },
+  {
+   "id": "dc_v294",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r3",
+   "pos": [
+    391.88,
+    208.13
+   ],
+   "rot": 54
+  },
+  {
+   "id": "dc_v295",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    168.13,
+    306.88
+   ],
+   "rot": 43
+  },
+  {
+   "id": "dc_v296",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    393.13,
+    56.88
+   ],
+   "rot": 249
+  },
+  {
+   "id": "dc_v297",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    382.38,
+    65.13
+   ],
+   "rot": 321
+  },
+  {
+   "id": "dc_v298",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r2",
+   "pos": [
+    378.38,
+    68.13
+   ],
+   "rot": 248
+  },
+  {
+   "id": "dc_v299",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    117.88,
+    83.63
+   ],
+   "rot": 61
+  },
+  {
+   "id": "dc_v300",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    114.88,
+    85.63
+   ],
+   "rot": 243
+  },
+  {
+   "id": "dc_v301",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    374.88,
+    121.63
+   ],
+   "rot": 7
+  },
+  {
+   "id": "dc_v302",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    377.88,
+    124.63
+   ],
+   "rot": 186
+  },
+  {
+   "id": "dc_v303",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    30.13,
+    193.38
+   ],
+   "rot": 14
+  },
+  {
+   "id": "dc_v304",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r3",
+   "pos": [
+    385.63,
+    270.13
+   ],
+   "rot": 316
+  },
+  {
+   "id": "dc_v305",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r2",
+   "pos": [
+    287.13,
+    7.88
+   ],
+   "rot": 78
+  },
+  {
+   "id": "dc_v306",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    72.13,
+    150.13
+   ],
+   "rot": 96
+  },
+  {
+   "id": "dc_v307",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    142.13,
+    349.63
+   ],
+   "rot": 117
+  },
+  {
+   "id": "dc_v308",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    283.88,
+    354.88
+   ],
+   "rot": 33
+  },
+  {
+   "id": "dc_v309",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r2",
+   "pos": [
+    394.13,
+    39.38
+   ],
+   "rot": 26
+  },
+  {
+   "id": "dc_v310",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    246.38,
+    17.38
+   ],
+   "rot": 218
+  },
+  {
+   "id": "dc_v311",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    8.13,
+    232.13
+   ],
+   "rot": 35
+  },
+  {
+   "id": "dc_v312",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r3",
+   "pos": [
+    312.38,
+    241.38
+   ],
+   "rot": 136
+  },
+  {
+   "id": "dc_v313",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    177.63,
+    361.13
+   ],
+   "rot": 207
+  },
+  {
+   "id": "dc_v314",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    195.63,
+    375.13
+   ],
+   "rot": 223
+  },
+  {
+   "id": "dc_v315",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r2",
+   "pos": [
+    341.13,
+    82.88
+   ],
+   "rot": 317
+  },
+  {
+   "id": "dc_v316",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    237.63,
+    384.63
+   ],
+   "rot": 212
+  },
+  {
+   "id": "dc_v317",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    144.63,
+    367.63
+   ],
+   "rot": 106
+  },
+  {
+   "id": "dc_v318",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    129.38,
+    157.13
+   ],
+   "rot": 352
+  },
+  {
+   "id": "dc_v319",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r6",
+   "pos": [
+    94.88,
+    215.88
+   ],
+   "rot": 216
+  },
+  {
+   "id": "dc_v320",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r3",
+   "pos": [
+    385.38,
+    228.38
+   ],
+   "rot": 221
+  },
+  {
+   "id": "dc_v321",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    100.88,
+    248.13
+   ],
+   "rot": 84
+  },
+  {
+   "id": "dc_v322",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    235.88,
+    368.38
+   ],
+   "rot": 162
+  },
+  {
+   "id": "dc_v323",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    95.38,
+    386.88
+   ],
+   "rot": 22
+  },
+  {
+   "id": "dc_v324",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r3",
+   "pos": [
+    377.88,
+    218.13
+   ],
+   "rot": 345
+  },
+  {
+   "id": "dc_v325",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    20.13,
+    236.13
+   ],
+   "rot": 337
+  },
+  {
+   "id": "dc_v326",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    58.63,
+    199.88
+   ],
+   "rot": 138
+  },
+  {
+   "id": "dc_v327",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    341.13,
+    31.88
+   ],
+   "rot": 264
+  },
+  {
+   "id": "dc_v328",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    136.13,
+    390.13
+   ],
+   "rot": 79
+  },
+  {
+   "id": "dc_v329",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r3",
+   "pos": [
+    372.88,
+    178.38
+   ],
+   "rot": 352
+  },
+  {
+   "id": "dc_v330",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    50.38,
+    308.88
+   ],
+   "rot": 225
+  },
+  {
+   "id": "dc_v331",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    355.88,
+    314.38
+   ],
+   "rot": 94
+  },
+  {
+   "id": "dc_v332",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    215.13,
+    17.38
+   ],
+   "rot": 158
+  },
+  {
+   "id": "dc_v333",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r1",
+   "pos": [
+    186.88,
+    7.88
+   ],
+   "rot": 63
+  },
+  {
+   "id": "dc_v334",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    142.63,
+    40.88
+   ],
+   "rot": 108
+  },
+  {
+   "id": "dc_v335",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    157.38,
+    72.13
+   ],
+   "rot": 342
+  },
+  {
+   "id": "dc_v336",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    348.38,
+    287.13
+   ],
+   "rot": 314
+  },
+  {
+   "id": "dc_v337",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    142.13,
+    319.38
+   ],
+   "rot": 232
+  },
+  {
+   "id": "dc_v338",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    97.38,
+    354.63
+   ],
+   "rot": 111
+  },
+  {
+   "id": "dc_v339",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    110.88,
+    352.63
+   ],
+   "rot": 206
+  },
+  {
+   "id": "dc_v340",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    248.13,
+    354.38
+   ],
+   "rot": 294
+  },
+  {
+   "id": "dc_v341",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    259.88,
+    368.13
+   ],
+   "rot": 241
+  },
+  {
+   "id": "dc_v342",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r6",
+   "pos": [
+    7.88,
+    188.13
+   ],
+   "rot": 314
+  },
+  {
+   "id": "dc_v343",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    115.13,
+    273.88
+   ],
+   "rot": 155
+  },
+  {
+   "id": "dc_v344",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    119.88,
+    313.38
+   ],
+   "rot": 50
+  },
+  {
+   "id": "dc_v345",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r3",
+   "pos": [
+    252.63,
+    273.63
+   ],
+   "rot": 192
+  },
+  {
+   "id": "dc_v346",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r2",
+   "pos": [
+    314.38,
+    120.13
+   ],
+   "rot": 353
+  },
+  {
+   "id": "dc_v347",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    305.88,
+    306.88
+   ],
+   "rot": 158
+  },
+  {
+   "id": "dc_v348",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r6",
+   "pos": [
+    113.13,
+    200.63
+   ],
+   "rot": 2
+  },
+  {
+   "id": "dc_v349",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    52.63,
+    248.63
+   ],
+   "rot": 199
+  },
+  {
+   "id": "dc_v350",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    29.13,
+    159.63
+   ],
+   "rot": 224
+  },
+  {
+   "id": "dc_v351",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r6",
+   "pos": [
+    78.38,
+    219.88
+   ],
+   "rot": 67
+  },
+  {
+   "id": "dc_v352",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r6",
+   "pos": [
+    47.38,
+    138.13
+   ],
+   "rot": 338
+  },
+  {
+   "id": "dc_v353",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    46.38,
+    160.38
+   ],
+   "rot": 225
+  },
+  {
+   "id": "dc_v354",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    42.38,
+    161.38
+   ],
+   "rot": 237
+  },
+  {
+   "id": "dc_v355",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r6",
+   "pos": [
+    51.38,
+    162.38
+   ],
+   "rot": 348
+  },
+  {
+   "id": "dc_v356",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    49.13,
+    194.38
+   ],
+   "rot": 248
+  },
+  {
+   "id": "dc_v357",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    169.38,
+    74.63
+   ],
+   "rot": 300
+  },
+  {
+   "id": "dc_v358",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    103.88,
+    274.88
+   ],
+   "rot": 196
+  },
+  {
+   "id": "dc_v359",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    292.63,
+    53.38
+   ],
+   "rot": 102
+  },
+  {
+   "id": "dc_v360",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    135.88,
+    230.88
+   ],
+   "rot": 182
+  },
+  {
+   "id": "dc_v361",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    107.13,
+    228.13
+   ],
+   "rot": 204
+  },
+  {
+   "id": "dc_v362",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r3",
+   "pos": [
+    259.63,
+    285.38
+   ],
+   "rot": 128
+  },
+  {
+   "id": "dc_v363",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r2",
+   "pos": [
+    379.88,
+    73.88
+   ],
+   "rot": 310
+  },
+  {
+   "id": "dc_v364",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r2",
+   "pos": [
+    373.88,
+    79.88
+   ],
+   "rot": 290
+  },
+  {
+   "id": "dc_v365",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    49.88,
+    357.13
+   ],
+   "rot": 309
+  },
+  {
+   "id": "dc_v366",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    25.13,
+    143.63
+   ],
+   "rot": 259
+  },
+  {
+   "id": "dc_v367",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    311.38,
+    244.38
+   ],
+   "rot": 74
+  },
+  {
+   "id": "dc_v368",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    101.88,
+    277.88
+   ],
+   "rot": 154
+  },
+  {
+   "id": "dc_v369",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    177.63,
+    79.88
+   ],
+   "rot": 229
+  },
+  {
+   "id": "dc_v370",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    165.13,
+    11.13
+   ],
+   "rot": 294
+  },
+  {
+   "id": "dc_v371",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    81.38,
+    315.88
+   ],
+   "rot": 256
+  },
+  {
+   "id": "dc_v372",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    15.13,
+    367.38
+   ],
+   "rot": 277
+  },
+  {
+   "id": "dc_v373",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r1",
+   "pos": [
+    177.63,
+    23.63
+   ],
+   "rot": 202
+  },
+  {
+   "id": "dc_v374",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    265.13,
+    42.38
+   ],
+   "rot": 118
+  },
+  {
+   "id": "dc_v375",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    177.63,
+    61.13
+   ],
+   "rot": 195
+  },
+  {
+   "id": "dc_v376",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    95.38,
+    80.88
+   ],
+   "rot": 268
+  },
+  {
+   "id": "dc_v377",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    136.38,
+    94.63
+   ],
+   "rot": 238
+  },
+  {
+   "id": "dc_v378",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    190.13,
+    92.38
+   ],
+   "rot": 295
+  },
+  {
+   "id": "dc_v379",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r1",
+   "pos": [
+    155.88,
+    100.63
+   ],
+   "rot": 97
+  },
+  {
+   "id": "dc_v380",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    174.63,
+    106.88
+   ],
+   "rot": 31
+  },
+  {
+   "id": "dc_v381",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    24.38,
+    333.88
+   ],
+   "rot": 38
+  },
+  {
+   "id": "dc_v382",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    331.88,
+    355.88
+   ],
+   "rot": 252
+  },
+  {
+   "id": "dc_v383",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    317.38,
+    361.38
+   ],
+   "rot": 299
+  },
+  {
+   "id": "dc_v384",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    324.38,
+    361.38
+   ],
+   "rot": 320
+  },
+  {
+   "id": "dc_v385",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    314.38,
+    363.38
+   ],
+   "rot": 145
+  },
+  {
+   "id": "dc_v386",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    317.38,
+    364.38
+   ],
+   "rot": 249
+  },
+  {
+   "id": "dc_v387",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    247.38,
+    375.63
+   ],
+   "rot": 221
+  },
+  {
+   "id": "dc_v388",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    352.63,
+    373.63
+   ],
+   "rot": 242
+  },
+  {
+   "id": "dc_v389",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    36.13,
+    373.88
+   ],
+   "rot": 194
+  },
+  {
+   "id": "dc_v390",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    44.13,
+    373.88
+   ],
+   "rot": 344
+  },
+  {
+   "id": "dc_v391",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    33.13,
+    375.88
+   ],
+   "rot": 207
+  },
+  {
+   "id": "dc_v392",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r5",
+   "pos": [
+    41.13,
+    376.88
+   ],
+   "rot": 337
+  },
+  {
+   "id": "dc_v393",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    339.13,
+    392.13
+   ],
+   "rot": 30
+  },
+  {
+   "id": "dc_v394",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r5",
+   "pos": [
+    12.13,
+    256.88
+   ],
+   "rot": 63
+  },
+  {
+   "id": "dc_v395",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    264.13,
+    243.38
+   ],
+   "rot": 293
+  },
+  {
+   "id": "dc_v396",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    227.63,
+    311.13
+   ],
+   "rot": 67
+  },
+  {
+   "id": "dc_v397",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    346.38,
+    323.63
+   ],
+   "rot": 217
+  },
+  {
+   "id": "dc_v398",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r2",
+   "pos": [
+    377.88,
+    33.13
+   ],
+   "rot": 283
+  },
+  {
+   "id": "dc_v399",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r2",
+   "pos": [
+    297.38,
+    75.88
+   ],
+   "rot": 247
+  },
+  {
+   "id": "dc_v400",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r3",
+   "pos": [
+    258.88,
+    205.13
+   ],
+   "rot": 44
+  },
+  {
+   "id": "dc_v401",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    383.88,
+    321.38
+   ],
+   "rot": 257
+  },
+  {
+   "id": "dc_v402",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r4",
+   "pos": [
+    315.13,
+    366.63
+   ],
+   "rot": 105
+  },
+  {
+   "id": "dc_v403",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    314.13,
+    369.63
+   ],
+   "rot": 36
+  },
+  {
+   "id": "dc_v404",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r3",
+   "pos": [
+    385.63,
+    185.63
+   ],
+   "rot": 68
+  },
+  {
+   "id": "dc_v405",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r3",
+   "pos": [
+    375.88,
+    233.13
+   ],
+   "rot": 0
+  },
+  {
+   "id": "dc_v406",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r3",
+   "pos": [
+    376.88,
+    239.13
+   ],
+   "rot": 87
+  },
+  {
+   "id": "dc_v407",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    33.88,
+    286.13
+   ],
+   "rot": 322
+  },
+  {
+   "id": "dc_v408",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    304.63,
+    296.38
+   ],
+   "rot": 351
+  },
+  {
+   "id": "dc_v409",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r2",
+   "pos": [
+    287.63,
+    22.13
+   ],
+   "rot": 80
+  },
+  {
+   "id": "dc_v410",
+   "kind": "vignette",
+   "recipe": "campfire_camp",
+   "region": "r1",
+   "pos": [
+    252.63,
+    104.88
+   ],
+   "rot": 229
+  },
+  {
+   "id": "dc_v411",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    8.88,
+    373.63
+   ],
+   "rot": 91
+  },
+  {
+   "id": "dc_v412",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    325.88,
+    380.13
+   ],
+   "rot": 313
+  },
+  {
+   "id": "dc_v413",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r4",
+   "pos": [
+    204.88,
+    321.38
+   ],
+   "rot": 126
+  },
+  {
+   "id": "dc_v414",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    90.13,
+    366.63
+   ],
+   "rot": 23
+  },
+  {
+   "id": "dc_v415",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r5",
+   "pos": [
+    85.13,
+    382.63
+   ],
+   "rot": 273
+  },
+  {
+   "id": "dc_v416",
+   "kind": "vignette",
+   "recipe": "hunter_camp",
+   "region": "r3",
+   "pos": [
+    341.38,
+    239.38
+   ],
+   "rot": 281
+  },
+  {
+   "id": "dc_v417",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r3",
+   "pos": [
+    322.38,
+    259.63
+   ],
+   "rot": 78
+  },
+  {
+   "id": "dc_v418",
+   "kind": "vignette",
+   "recipe": "abandoned_cart",
+   "region": "r1",
+   "pos": [
+    111.63,
+    16.88
+   ],
+   "rot": 107
+  },
+  {
+   "id": "dc_v419",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r5",
+   "pos": [
+    42.13,
+    268.38
+   ],
+   "rot": 52
+  },
+  {
+   "id": "dc_v420",
+   "kind": "vignette",
+   "recipe": "fishing_spot",
+   "region": "r5",
+   "pos": [
+    143.13,
+    271.38
+   ],
+   "rot": 141
+  },
+  {
+   "id": "dc_v421",
+   "kind": "vignette",
+   "recipe": "graveyard",
+   "region": "r4",
+   "pos": [
+    146.38,
+    386.13
+   ],
+   "rot": 119
+  },
+  {
+   "id": "dc_v422",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r6",
+   "pos": [
+    86.13,
+    130.13
+   ],
+   "rot": 69
+  },
+  {
+   "id": "dc_v423",
+   "kind": "vignette",
+   "recipe": "collapsed_wagon",
+   "region": "r6",
+   "pos": [
+    86.13,
+    149.13
+   ],
+   "rot": 2
+  },
+  {
+   "id": "dc_v424",
+   "kind": "vignette",
+   "recipe": "roadside_shrine",
+   "region": "r4",
+   "pos": [
+    185.88,
+    324.63
+   ],
+   "rot": 148
+  },
+  {
+   "id": "dc_f001",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    216,
+    57.62
+   ],
+   "rot": 262
+  },
+  {
+   "id": "dc_r001",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r4",
+   "pos": [
+    254.25,
+    321.88
+   ],
+   "rot": 20
+  },
+  {
+   "id": "dc_f002",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    60.61,
+    268.85
+   ],
+   "rot": 184
+  },
+  {
+   "id": "dc_f003",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    174.36,
+    336.48
+   ],
+   "rot": 251
+  },
+  {
+   "id": "dc_r002",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r3",
+   "pos": [
+    294.95,
+    237.38
+   ],
+   "rot": 343
+  },
+  {
+   "id": "dc_f004",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    96.2,
+    298.51
+   ],
+   "rot": 47
+  },
+  {
+   "id": "dc_f005",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r3",
+   "pos": [
+    354.84,
+    285.33
+   ],
+   "rot": 232
+  },
+  {
+   "id": "dc_f006",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    153.95,
+    375.52
+   ],
+   "rot": 79
+  },
+  {
+   "id": "dc_f007",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    22.04,
+    373.89
+   ],
+   "rot": 99
+  },
+  {
+   "id": "dc_f008",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r6",
+   "pos": [
+    92.09,
+    208.08
+   ],
+   "rot": 190
+  },
+  {
+   "id": "dc_f009",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    30.86,
+    330.59
+   ],
+   "rot": 311
+  },
+  {
+   "id": "dc_f010",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    28.32,
+    333.46
+   ],
+   "rot": 26
+  },
+  {
+   "id": "dc_f011",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    91.19,
+    392.17
+   ],
+   "rot": 322
+  },
+  {
+   "id": "dc_f012",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    231.53,
+    394.19
+   ],
+   "rot": 312
+  },
+  {
+   "id": "dc_f013",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    22.74,
+    387.62
+   ],
+   "rot": 29
+  },
+  {
+   "id": "dc_r003",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r4",
+   "pos": [
+    276.84,
+    313.92
+   ],
+   "rot": 78
+  },
+  {
+   "id": "dc_r004",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r1",
+   "pos": [
+    181.47,
+    96.57
+   ],
+   "rot": 250
+  },
+  {
+   "id": "dc_r005",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r1",
+   "pos": [
+    196.45,
+    85.43
+   ],
+   "rot": 340
+  },
+  {
+   "id": "dc_f014",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r3",
+   "pos": [
+    365.48,
+    286.42
+   ],
+   "rot": 52
+  },
+  {
+   "id": "dc_f015",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    112.94,
+    46.84
+   ],
+   "rot": 297
+  },
+  {
+   "id": "dc_r006",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r1",
+   "pos": [
+    108.06,
+    57.63
+   ],
+   "rot": 164
+  },
+  {
+   "id": "dc_r007",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r1",
+   "pos": [
+    155.91,
+    65.47
+   ],
+   "rot": 198
+  },
+  {
+   "id": "dc_r008",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r4",
+   "pos": [
+    239.35,
+    333.18
+   ],
+   "rot": 277
+  },
+  {
+   "id": "dc_f016",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    301.95,
+    328.32
+   ],
+   "rot": 134
+  },
+  {
+   "id": "dc_f017",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    48.2,
+    249.54
+   ],
+   "rot": 143
+  },
+  {
+   "id": "dc_f018",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r3",
+   "pos": [
+    380.12,
+    186.1
+   ],
+   "rot": 286
+  },
+  {
+   "id": "dc_f019",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    182.59,
+    301.76
+   ],
+   "rot": 98
+  },
+  {
+   "id": "dc_r009",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r2",
+   "pos": [
+    322.14,
+    50.3
+   ],
+   "rot": 261
+  },
+  {
+   "id": "dc_f020",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    94.56,
+    110.5
+   ],
+   "rot": 259
+  },
+  {
+   "id": "dc_f021",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    147.05,
+    292.74
+   ],
+   "rot": 181
+  },
+  {
+   "id": "dc_r010",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r5",
+   "pos": [
+    47.98,
+    254.19
+   ],
+   "rot": 245
+  },
+  {
+   "id": "dc_f022",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    371.18,
+    326.85
+   ],
+   "rot": 77
+  },
+  {
+   "id": "dc_f023",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r3",
+   "pos": [
+    362.69,
+    243.78
+   ],
+   "rot": 229
+  },
+  {
+   "id": "dc_r011",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r4",
+   "pos": [
+    359.84,
+    389.87
+   ],
+   "rot": 229
+  },
+  {
+   "id": "dc_f024",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r2",
+   "pos": [
+    344.06,
+    140.65
+   ],
+   "rot": 46
+  },
+  {
+   "id": "dc_f025",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    126.63,
+    294.45
+   ],
+   "rot": 147
+  },
+  {
+   "id": "dc_f026",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    391.73,
+    376.39
+   ],
+   "rot": 34
+  },
+  {
+   "id": "dc_r012",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r1",
+   "pos": [
+    241.64,
+    18.35
+   ],
+   "rot": 40
+  },
+  {
+   "id": "dc_f027",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    261.93,
+    45
+   ],
+   "rot": 171
+  },
+  {
+   "id": "dc_r013",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r2",
+   "pos": [
+    365.19,
+    99.58
+   ],
+   "rot": 323
+  },
+  {
+   "id": "dc_f028",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    298.36,
+    379.19
+   ],
+   "rot": 320
+  },
+  {
+   "id": "dc_r014",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r5",
+   "pos": [
+    72.22,
+    309.7
+   ],
+   "rot": 223
+  },
+  {
+   "id": "dc_f029",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    222.04,
+    59.75
+   ],
+   "rot": 82
+  },
+  {
+   "id": "dc_f030",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r2",
+   "pos": [
+    393.99,
+    162.35
+   ],
+   "rot": 57
+  },
+  {
+   "id": "dc_f031",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    203.65,
+    62.52
+   ],
+   "rot": 17
+  },
+  {
+   "id": "dc_r015",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r1",
+   "pos": [
+    139.42,
+    28.71
+   ],
+   "rot": 110
+  },
+  {
+   "id": "dc_f032",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r2",
+   "pos": [
+    367.97,
+    138.21
+   ],
+   "rot": 78
+  },
+  {
+   "id": "dc_r016",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r4",
+   "pos": [
+    288.02,
+    291.81
+   ],
+   "rot": 344
+  },
+  {
+   "id": "dc_f033",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r6",
+   "pos": [
+    138.04,
+    139.5
+   ],
+   "rot": 73
+  },
+  {
+   "id": "dc_f034",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    394.19,
+    332.52
+   ],
+   "rot": 71
+  },
+  {
+   "id": "dc_f035",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    277.05,
+    334.13
+   ],
+   "rot": 26
+  },
+  {
+   "id": "dc_f036",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    279.17,
+    307.36
+   ],
+   "rot": 355
+  },
+  {
+   "id": "dc_f037",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    41.32,
+    250.02
+   ],
+   "rot": 248
+  },
+  {
+   "id": "dc_r017",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r1",
+   "pos": [
+    95.79,
+    11.4
+   ],
+   "rot": 255
+  },
+  {
+   "id": "dc_f038",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    254.43,
+    18.65
+   ],
+   "rot": 227
+  },
+  {
+   "id": "dc_f039",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r2",
+   "pos": [
+    340.94,
+    95.21
+   ],
+   "rot": 92
+  },
+  {
+   "id": "dc_f040",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    188.3,
+    327.22
+   ],
+   "rot": 133
+  },
+  {
+   "id": "dc_f041",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    170.22,
+    38.14
+   ],
+   "rot": 354
+  },
+  {
+   "id": "dc_f042",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    331.59,
+    352.04
+   ],
+   "rot": 305
+  },
+  {
+   "id": "dc_f043",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    370.94,
+    371.82
+   ],
+   "rot": 201
+  },
+  {
+   "id": "dc_f044",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    260.94,
+    83.49
+   ],
+   "rot": 24
+  },
+  {
+   "id": "dc_f045",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r3",
+   "pos": [
+    368.4,
+    245.2
+   ],
+   "rot": 287
+  },
+  {
+   "id": "dc_f046",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r2",
+   "pos": [
+    296.81,
+    42.07
+   ],
+   "rot": 244
+  },
+  {
+   "id": "dc_f047",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    180.92,
+    362.41
+   ],
+   "rot": 299
+  },
+  {
+   "id": "dc_f048",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r6",
+   "pos": [
+    71.28,
+    129.93
+   ],
+   "rot": 23
+  },
+  {
+   "id": "dc_r018",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r1",
+   "pos": [
+    252.49,
+    113.36
+   ],
+   "rot": 64
+  },
+  {
+   "id": "dc_f049",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    247.58,
+    391.05
+   ],
+   "rot": 270
+  },
+  {
+   "id": "dc_f050",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r6",
+   "pos": [
+    21.6,
+    198.56
+   ],
+   "rot": 103
+  },
+  {
+   "id": "dc_r019",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r3",
+   "pos": [
+    308.51,
+    236.58
+   ],
+   "rot": 247
+  },
+  {
+   "id": "dc_f051",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    123.23,
+    352.69
+   ],
+   "rot": 60
+  },
+  {
+   "id": "dc_f052",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r2",
+   "pos": [
+    305.63,
+    38.66
+   ],
+   "rot": 125
+  },
+  {
+   "id": "dc_f053",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    271.84,
+    350.28
+   ],
+   "rot": 302
+  },
+  {
+   "id": "dc_r020",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r4",
+   "pos": [
+    341.67,
+    379.19
+   ],
+   "rot": 329
+  },
+  {
+   "id": "dc_r021",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r4",
+   "pos": [
+    210.89,
+    337.68
+   ],
+   "rot": 296
+  },
+  {
+   "id": "dc_f054",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    140.47,
+    112.97
+   ],
+   "rot": 347
+  },
+  {
+   "id": "dc_f055",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    61.97,
+    378.67
+   ],
+   "rot": 110
+  },
+  {
+   "id": "dc_f056",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    72.84,
+    283.2
+   ],
+   "rot": 248
+  },
+  {
+   "id": "dc_f057",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r3",
+   "pos": [
+    392.32,
+    275.74
+   ],
+   "rot": 287
+  },
+  {
+   "id": "dc_r022",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r1",
+   "pos": [
+    220.38,
+    44.41
+   ],
+   "rot": 52
+  },
+  {
+   "id": "dc_r023",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r4",
+   "pos": [
+    146.35,
+    317.75
+   ],
+   "rot": 40
+  },
+  {
+   "id": "dc_f058",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    20,
+    362.63
+   ],
+   "rot": 305
+  },
+  {
+   "id": "dc_f059",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    182.98,
+    354.01
+   ],
+   "rot": 214
+  },
+  {
+   "id": "dc_r024",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r4",
+   "pos": [
+    341.7,
+    322.79
+   ],
+   "rot": 331
+  },
+  {
+   "id": "dc_f060",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    213.23,
+    287.7
+   ],
+   "rot": 64
+  },
+  {
+   "id": "dc_r025",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r3",
+   "pos": [
+    290.36,
+    206.16
+   ],
+   "rot": 12
+  },
+  {
+   "id": "dc_f061",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    97.89,
+    28.46
+   ],
+   "rot": 138
+  },
+  {
+   "id": "dc_f062",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    308.78,
+    349.35
+   ],
+   "rot": 53
+  },
+  {
+   "id": "dc_f063",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    108.05,
+    313.95
+   ],
+   "rot": 69
+  },
+  {
+   "id": "dc_f064",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    244.67,
+    32.76
+   ],
+   "rot": 269
+  },
+  {
+   "id": "dc_f065",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r3",
+   "pos": [
+    393.67,
+    282.79
+   ],
+   "rot": 263
+  },
+  {
+   "id": "dc_r026",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r4",
+   "pos": [
+    162.29,
+    354.09
+   ],
+   "rot": 39
+  },
+  {
+   "id": "dc_f066",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    252.86,
+    327.58
+   ],
+   "rot": 254
+  },
+  {
+   "id": "dc_r027",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r4",
+   "pos": [
+    309.68,
+    363.68
+   ],
+   "rot": 70
+  },
+  {
+   "id": "dc_f067",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    121.4,
+    340.4
+   ],
+   "rot": 117
+  },
+  {
+   "id": "dc_f068",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    131.87,
+    31.49
+   ],
+   "rot": 330
+  },
+  {
+   "id": "dc_r028",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r1",
+   "pos": [
+    117.45,
+    61.1
+   ],
+   "rot": 144
+  },
+  {
+   "id": "dc_r029",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r3",
+   "pos": [
+    362.6,
+    195.26
+   ],
+   "rot": 303
+  },
+  {
+   "id": "dc_f069",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r3",
+   "pos": [
+    319.03,
+    217.65
+   ],
+   "rot": 283
+  },
+  {
+   "id": "dc_f070",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    145.66,
+    351.39
+   ],
+   "rot": 48
+  },
+  {
+   "id": "dc_f071",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    260.28,
+    11.06
+   ],
+   "rot": 234
+  },
+  {
+   "id": "dc_f072",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    253.54,
+    301.39
+   ],
+   "rot": 310
+  },
+  {
+   "id": "dc_r030",
+   "kind": "rocks",
+   "recipe": "rock_cluster",
+   "region": "r1",
+   "pos": [
+    254,
+    99.36
+   ],
+   "rot": 156
+  },
+  {
+   "id": "dc_f073",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    205.08,
+    75.4
+   ],
+   "rot": 286
+  },
+  {
+   "id": "dc_f074",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r4",
+   "pos": [
+    290.57,
+    315.51
+   ],
+   "rot": 169
+  },
+  {
+   "id": "dc_f075",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r3",
+   "pos": [
+    360.29,
+    272.8
+   ],
+   "rot": 167
+  },
+  {
+   "id": "dc_f076",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    265.16,
+    78.75
+   ],
+   "rot": 265
+  },
+  {
+   "id": "dc_f077",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r5",
+   "pos": [
+    50.91,
+    302.94
+   ],
+   "rot": 262
+  },
+  {
+   "id": "dc_f078",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    183.66,
+    12.24
+   ],
+   "rot": 327
+  },
+  {
+   "id": "dc_f079",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r1",
+   "pos": [
+    235.66,
+    33.42
+   ],
+   "rot": 91
+  },
+  {
+   "id": "dc_f080",
+   "kind": "flora",
+   "recipe": "flora_cluster",
+   "region": "r3",
+   "pos": [
+    389.66,
+    285.09
+   ],
+   "rot": 293
   }
  ],
  "farmSpots": [
