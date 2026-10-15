@@ -3,6 +3,7 @@ import { ICON, div, esc, iconEl, pulse, setClass, setDisplay, setText } from '..
 import { SKILLS } from '../../data/skills';
 import { classGrantOrder } from '../../data/openingKit';
 import type { HudCtx, HudWidget } from './types';
+import { setBannerKeepOut, type BannerBox } from '../../vfx/DamageNumbers';
 
 /** Banner ranks (§2.11): 1 boss intro, 2 level-up, 3 quest accepted / completed, 4 zone title, 5 world announce. */
 export const BANNER_RANK = { levelUp: 2, quest: 3, zone: 4 } as const;
@@ -83,10 +84,17 @@ export class BannerQueue implements HudWidget {
   private waiting: QueuedBanner[] = [];
   private current: { rank: number; end: number; key: string | undefined; hide: () => void } | null = null;
   private seq = 0;
+  /** The lane's banners (zone, quest, level-up): while one is on screen its box is kept clear of floating text. */
+  private boxes: { on: HTMLElement; box: HTMLElement }[] = [];
 
   constructor() {
     setDisplay(this.el, false);
     laneQueue = this;
+  }
+
+  /** A banner of this lane: `on` carries the 'on' class while it shows, `box` is the element measured for the keep-out. */
+  watch(on: HTMLElement, box: HTMLElement = on): void {
+    this.boxes.push({ on, box });
   }
 
   /**
@@ -145,6 +153,21 @@ export class BannerQueue implements HudWidget {
       this.current = { rank: next.rank, end: ctx.now + next.ms, key: next.key, hide: next.hide };
       next.show();
     }
+    this.publishKeepOut();
+  }
+
+  /** The union box of the lane's banners that are on screen (null = none): floating numbers and the combo counter keep clear of it. */
+  private publishKeepOut(): void {
+    let box: BannerBox | null = null;
+    for (const { on, box: el } of this.boxes) {
+      if (!on.classList.contains('on')) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width <= 0 || r.height <= 0) continue;
+      box = box
+        ? { left: Math.min(box.left, r.left), right: Math.max(box.right, r.right), top: Math.min(box.top, r.top), bottom: Math.max(box.bottom, r.bottom) }
+        : { left: r.left, right: r.right, top: r.top, bottom: r.bottom };
+    }
+    setBannerKeepOut(box);
   }
 
   reset(): void {
@@ -160,6 +183,7 @@ export class ZoneBanner implements HudWidget {
 
   constructor(private queue: BannerQueue) {
     this.el = div('zone');
+    this.queue.watch(this.el);
     div('zone-orn top', this.el);
     this.title = div('zone-title', this.el);
     this.sub = div('zone-sub', this.el);
@@ -261,6 +285,7 @@ export class LevelUpBanner implements HudWidget {
     div('lvlup-rays', this.el);
     div('lvlup-glow', this.el);
     const card = div('lvlup-card', this.el);
+    this.queue.watch(this.el, card);
     iconEl(ICON('ui-level-up'), 'lvlup-ico', card);
     div('lvlup-title', card).textContent = 'SEVİYE ATLADIN!';
     this.num = div('lvlup-num', card);
@@ -320,6 +345,7 @@ export class QuestBanner implements HudWidget {
 
   constructor(private queue: BannerQueue) {
     this.el = div('qbanner');
+    this.queue.watch(this.el);
     this.medal = div('qb-medal', this.el);
     const body = div('qb-body', this.el);
     this.title = div('qb-title', body);

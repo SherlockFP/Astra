@@ -12,7 +12,7 @@ export type BarkTrigger =
   | 'levelup' | 'zone' | 'dungeon' | 'loot_rare' | 'loot_epic' | 'boss_kill' | 'family' | 'low_hp' | 'resurrect'
   | 'quest_done' | 'achievement' | 'idle_town' | 'mount' | 'pvp_zone' | 'arena_win';
 
-/** The local player's own lines (speech bubble over the player + Söylenti chat line). */
+/** The local player's own lines (speech bubble over the player + a Genel say line, "<name> diyor: ..."). */
 export const PLAYER_LINES: Record<BarkTrigger, string[]> = {
   levelup: [
     'Bu yol bana yeni bir nefes verdi. Daha uzağa gidebilirim.',

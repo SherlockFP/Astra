@@ -1,4 +1,5 @@
 import { G } from '../../game/G';
+import { bannerKeepOut } from '../../vfx/DamageNumbers';
 import { div, fmtCompact, pulse, setClass, setDisplay, setStyle, setText } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
 
@@ -52,6 +53,8 @@ export class ComboCounter implements HudWidget {
   private hits: { t: number; a: number }[] = [];
   private shownTotal = 0;
   private bestTier = 0;
+  /** Downward offset (viewport px) taken while a centre banner would cover the counter. */
+  private push = 0;
 
   constructor() {
     this.el = div('cb');
@@ -165,6 +168,7 @@ export class ComboCounter implements HudWidget {
     }
     setStyle(this.barFill, 'width', (left * 100).toFixed(1) + '%');
     setClass(this.el, 'low', left < 0.3);
+    this.keepClearOfBanner();
     // shake: strong right after a hit, scaled by tier
     const st = TIERS[this.tier];
     const k = Math.max(0, 1 - (now - this.lastHit) / 260);
@@ -180,6 +184,24 @@ export class ComboCounter implements HudWidget {
     for (const h of this.hits) if (h.t >= this.startT) sum += h.a;
     this.shownTotal += (sum - this.shownTotal) * Math.min(1, ctx.dt * 14);
     setText(this.total, `Toplam hasar  ${fmtCompact(this.shownTotal)}`);
+  }
+
+  /**
+   * While a centre banner (level-up, zone, quest) is on screen and the counter would sit under it, the counter moves down below it.
+   * `push` is kept in viewport px; the margin is written in the HUD's zoomed px (the .hud subtree is zoomed by --ui-scale).
+   */
+  private keepClearOfBanner(): void {
+    const box = bannerKeepOut();
+    let push = 0;
+    if (box) {
+      const r = this.el.getBoundingClientRect();
+      const top = r.top - this.push; // the rect includes the offset already
+      if (r.left < box.right && box.left < r.right && top < box.bottom + 8) push = box.bottom + 8 - top;
+    }
+    if (Math.abs(push - this.push) < 0.5) return;
+    this.push = push;
+    const zoom = parseFloat(getComputedStyle(this.el).getPropertyValue('--ui-scale')) || 1;
+    this.el.style.marginTop = push > 0 ? `${(push / zoom).toFixed(1)}px` : '';
   }
 
   reset(): void {
