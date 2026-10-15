@@ -4,7 +4,7 @@ import { MATERIALS } from '../../../data/materials';
 import { TOWN } from '../../../data/town';
 import { AV_DEFTERI } from '../../../data/avDefteri';
 import { getPinnedQuest, setPinnedQuest, worldExtras } from '../../hud/questMarks';
-import { GamePanel, bar, button, fmtInt, h, mmss, openPanel, sfx, tabs, windowFrame, type TabsHandle } from './base';
+import { GamePanel, askConfirm, bar, button, fmtInt, h, mmss, openPanel, sfx, tabs, windowFrame, type TabsHandle } from './base';
 import { emptyState } from '../../kit';
 import { describe } from '../items/common';
 
@@ -203,6 +203,16 @@ export class QuestLogPanel extends GamePanel {
     }
   }
 
+  /** Abandon Quest (WoW): confirmed first. The quest drops out of the active list and its giver offers it again (QuestSystem.abandon). */
+  private async abandon(def: QuestDef): Promise<void> {
+    const q = G.quests;
+    if (!(await askConfirm(this.el, `"${def.name}" görevi bırakılsın mı? İlerlemen silinir, görev eşyaları çantandan çıkar. Görevi sonra yeniden alabilirsin.`, 'Bırak', 'Vazgeç', true))) return;
+    if (!q.abandon(def.id)) return;
+    if (getPinnedQuest() === def.id) setPinnedQuest(null);
+    sfx('ui_tab');
+    this.render();
+  }
+
   private questRow(def: QuestDef, state: QuestState, pinned: boolean): HTMLElement {
     const q = G.quests;
     const badge = stateBadge(state);
@@ -246,6 +256,9 @@ export class QuestLogPanel extends GamePanel {
           sfx('ui_tab');
           this.render();
         }, { variant: 'ghost' }),
+        button('Görevi Bırak', () => {
+          void this.abandon(def);
+        }, { variant: 'danger' }),
       );
     }
     if (acts.childElementCount) row.append(acts);

@@ -16,7 +16,7 @@
 //      interrupt skill; none on the bar = BLOCKER), interact / use (QuestProp: F; use needs the item), escort (EscortNpc: F to start,
 //      then follow it, fighting what attacks it). dungeon has no handler: HARD blocker.
 //   4. a quest whose open objective does not change for 4 steps is a HARD blocker (the chain is stuck) and ends the journey.
-//   5. a SIDE quest that the watchdog fired on twice is abandoned (dropped from the log, never taken again; the chain goes on): a BLOCKER.
+//   5. a SIDE quest that the watchdog fired on twice is abandoned (QuestSystem.abandon, never taken again; the chain goes on): a BLOCKER.
 //
 // Keys come from the game: src/core/Input.ts SCHEME_BINDINGS.wow (scheme 'wow' = the default) over DEFAULT_BINDINGS; the skill
 // slots from G.character.save.skillBar; the interrupt skill is the bar skill whose SKILLS[id].behavior === 'interrupt'.
@@ -174,8 +174,8 @@ async function journey(cls) {
   let wdTimer = null;
   let wdBusy = false;
   let wdFires = 0;
-  // side quests the watchdog fired on: two fires drop the quest (the game has no abandon action: it leaves the log the way a player's
-  // drop would, and the bot never takes it again). BLOCKER lines record each drop for the report.
+  // side quests the watchdog fired on: two fires abandon the quest through the game's own Abandon Quest (G.quests.abandon: progress and
+  // quest items go, the quest is offered again at its giver), and the bot never takes it again. BLOCKER lines record each abandon.
   const wdFiresBy = new Map();
   const abandoned = new Set();
   let wdAnchor = { t: 0, x: 0, z: 0 };
@@ -1147,16 +1147,9 @@ async function journey(cls) {
       // two watchdog fires on a side quest that is still being worked: drop it and carry on with the chain (BLOCKER for the report)
       if (!d.main && rec.state === 'active' && (wdFiresBy.get(d.id) ?? 0) >= 2 && !abandoned.has(d.id)) {
         const fires = wdFiresBy.get(d.id);
-        const left = await page.evaluate((qid) => {
-          const ch = window.G.character;
-          const f = ch.save.flags;
-          for (const k of Object.keys(f)) if (k === `q.${qid}` || k.startsWith(`q.${qid}.n`)) delete f[k];
-          ch.persist();
-          window.G.events?.emit('quest:updated', { questId: qid, state: window.G.quests.state(qid), progress: 0 });
-          return window.G.quests.state(qid);
-        }, d.id);
+        const left = await page.evaluate((qid) => (window.G.quests.abandon(qid) ? window.G.quests.state(qid) : 'refused'), d.id);
         abandoned.add(d.id);
-        B(`side quest "${d.name}" abandoned after ${fires} watchdog fires (no in-game abandon action: dropped from the quest log, now "${left}"); the chain goes on`);
+        B(`side quest "${d.name}" abandoned after ${fires} watchdog fires (G.quests.abandon, now "${left}"); the bot never takes it again; the chain goes on`);
         wdAnchor = { t: Date.now(), x: wdAnchor.x, z: wdAnchor.z };
         continue;
       }
