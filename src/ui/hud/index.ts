@@ -3,7 +3,7 @@ import type { UI, UIMode } from '../UI';
 import { div, h, setClass, setStyle } from '../widgets/dom';
 import '../styles/hud-edit.css';
 import { ActionBar } from './ActionBar';
-import { BannerQueue, CountdownBanner, InteractPrompt, LevelUpBanner, QuestBanner, WorldAnnounce, ZoneBanner } from './Banners';
+import { BannerQueue, CountdownBanner, InteractPrompt, LevelUpBanner, QuestBanner, ZoneBanner } from './Banners';
 import { BossFrame } from './BossFrame';
 import { Chat } from './Chat';
 import { CombatCues } from './CombatCues';
@@ -237,7 +237,7 @@ export function createHUD(ui: UI): HudApi {
   const zoneBanner = new ZoneBanner(banners);
   const levelBanner = new LevelUpBanner(banners);
   const questBanner = new QuestBanner(banners);
-  for (const w of [zoneBanner, new WorldAnnounce(), new CountdownBanner(), levelBanner, questBanner, new InteractPrompt()]) {
+  for (const w of [zoneBanner, new CountdownBanner(), levelBanner, questBanner, new InteractPrompt()]) {
     add(w);
     root.appendChild(w.el);
   }

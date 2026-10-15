@@ -293,7 +293,6 @@
 .hud .dr { background: var(--elv-backdrop); box-shadow: none; border: 1px solid var(--elv-border); border-radius: var(--ui-r-win); }
 .hud .dr-title { color: #ff8a80; text-shadow: var(--elv-outline); }
 .hud .dr-chip { border-radius: var(--ui-r-pill); }
-.hud .wa-row { border-radius: var(--ui-r-btn); font-family: var(--font-body); background: var(--elv-backdrop); border: 1px solid var(--elv-border); box-shadow: none; text-shadow: var(--elv-outline); }
 .hud .qf-line { background: var(--elv-backdrop); border-left-color: var(--elv-title); border-radius: var(--ui-r-btn); text-shadow: var(--elv-outline); }
 .hud .ah { background: var(--elv-backdrop); border: 1px solid var(--elv-border); border-radius: var(--ui-r-frame); }
 .hud .ah-name { color: #fff; text-shadow: var(--elv-outline); }

@@ -120,11 +120,12 @@ export const combatPresets: Record<string, Preset> = {
 
   death_poof(fx, c) {
     const s = c.s;
-    const ctr = up(c.p, 0.7 * s);
-    smoke(fx, ctr, { n: 11, r: 0.6 * s, c0: 0x8a8498, c1: 0x2c2a38, size: [1.0 * s, 1.7 * s], life: [0.8, 1.5], rise: 1.6, a: 0.8, spread: 1.2 });
-    dust(fx, v3(c.p.x, 0.1, c.p.z), { n: 8, r: 0.5 * s, speed: 2.6 * s, size: [0.6, 1.0] });
-    flare(fx, ctr, 2.2 * s, 0xdfe8ff, 0.15, 'soft', 2.2);
-    ringFlat(fx, c.p, 0.3, 2.6 * s, 0xb8d0ff, 0.45, { glow: 0.9, a: 0.3, tex: 'ring-02' });
+    // subtle kill puff: small, short, <= 40 % alpha, low over the ground so it never covers the player standing next to it
+    const ctr = up(c.p, 0.4 * s);
+    smoke(fx, ctr, { n: 6, r: 0.4 * s, c0: 0x8a8498, c1: 0x2c2a38, size: [0.6 * s, 0.9 * s], life: [0.45, 0.8], rise: 0.8, a: 0.35, spread: 0.6 });
+    dust(fx, v3(c.p.x, 0.1, c.p.z), { n: 5, r: 0.4 * s, speed: 1.6 * s, size: [0.4, 0.6], a: 0.3 });
+    flare(fx, ctr, 1.6 * s, 0xdfe8ff, 0.12, 'soft', 1.6);
+    ringFlat(fx, c.p, 0.3, 1.8 * s, 0xb8d0ff, 0.3, { glow: 0.9, a: 0.25, tex: 'ring-02' });
     motes(fx, ctr, { n: 8, r: 0.5 * s, c0: 0xe0f0ff, c1: 0x88aaff, rise: 2.2, life: [0.9, 1.6], size: [0.14, 0.26], tex: ['star-01', 'flare-01'] });
     fx.alpha.spawn({ tex: 'wisp', n: 2, at: ctr, jit: 0.3, vel: [0, 1.6, 0], speed: [0, 0.4], life: [0.9, 1.4], size: 0.55 * s, asp: 1.6, c0: 0xcfe0ff, c1: 0x7088cc, a: 0.45, fi: 0.2, fp: 1.4 });
     return DONE;
