@@ -203,17 +203,20 @@ function lairPos(ids: string[]): Pt | null {
   return m ? { x: tileCentreM(m.lair[0]), z: tileCentreM(m.lair[1]) } : null;
 }
 
-function campPos(ids: string[], place?: string, area: Set<string> | null = null): Pt | null {
+function campPos(ids: string[], place?: string, area: Set<string> | null = null, maxLevel?: number): Pt | null {
   const def = worldDef();
   if (!def || !ids.length) return null;
   const holds = (pk: { members: { enemyId: string }[] }): boolean => pk.members.some((m) => ids.includes(m.enemyId));
+  // maxLevel (the quest's level band top, q+1): a camp whose lowest level is above it is never the arrow's target, even when the
+  // quest has no area (the same band as questArea)
+  const tooHigh = (id: string): boolean => maxLevel !== undefined && campMinLevel(id) > maxLevel;
   const own = place ? def.packs.find((pk) => pk.id === place) : undefined;
-  if (own && holds(own) && (!area || area.has(own.id))) return { x: tileCentreM(own.center[0]), z: tileCentreM(own.center[1]) };
+  if (own && holds(own) && (!area || area.has(own.id)) && !tooHigh(own.id)) return { x: tileCentreM(own.center[0]), z: tileCentreM(own.center[1]) };
   const p = G.player ?? G.world?.localPlayer;
   let best: Pt | null = null;
   let bestD = Infinity;
   for (const pk of def.packs) {
-    if (!holds(pk) || (area && !area.has(pk.id))) continue;
+    if (!holds(pk) || (area && !area.has(pk.id)) || tooHigh(pk.id)) continue;
     const x = tileCentreM(pk.center[0]);
     const z = tileCentreM(pk.center[1]);
     const d = p ? Math.hypot(x - p.position.x, z - p.position.z) : 0;
@@ -240,11 +243,11 @@ export function objectivePos(o: QuestObjective, place?: string, area?: QuestArea
     case 'kill':
     case 'boss':
     case 'metin':
-      { const inArea = questArea(area, place); return nearestLiveEnemy(killIds(o), inArea, area?.level) ?? lairPos(killIds(o)) ?? campPos(killIds(o), place, inArea) ?? nearestLiveEnemy(killIds(o), inArea); }
+      { const inArea = questArea(area, place); return nearestLiveEnemy(killIds(o), inArea, area?.level) ?? lairPos(killIds(o)) ?? campPos(killIds(o), place, inArea, area && area.level + 1) ?? nearestLiveEnemy(killIds(o), inArea, area?.level); }
     case 'drop':
     case 'collect':
       // drop / collect hunt the mobs in `from`: the same live-enemy-else-camp fallback as a kill (the WoW objective area, from data)
-      { const inArea = questArea(area, place); const ids = o.from ?? []; return nearestLiveEnemy(ids, inArea, area?.level) ?? campPos(ids, place, inArea) ?? nearestLiveEnemy(ids, inArea); }
+      { const inArea = questArea(area, place); const ids = o.from ?? []; return nearestLiveEnemy(ids, inArea, area?.level) ?? campPos(ids, place, inArea, area && area.level + 1) ?? nearestLiveEnemy(ids, inArea, area?.level); }
     default:
       return null;
   }

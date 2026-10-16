@@ -52,6 +52,9 @@ export class GatherNode extends InteractableProp {
     this.height = 1;
   }
 
+  /** F priority 3: below quest NPCs, other NPCs and loot, above stalls and boards (Interactable.interactTier). */
+  readonly interactTier = 3;
+
   get interactPrompt(): string {
     const name = this.type.name + (this.rich ? ' (Zengin)' : '');
     if (this.isDepleted()) return `${name} – Tükendi`;

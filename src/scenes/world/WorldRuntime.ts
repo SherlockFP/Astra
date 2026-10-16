@@ -12,6 +12,7 @@ import { RNG, hashString } from '../../core/utils';
 import { DUNGEON_ENEMY_ID_BASE, MINION_ID_BASE } from '../../types/common';
 import type { DungeonParams } from '../scenes';
 import { CampDirector } from './CampDirector';
+import { CampDanger } from './CampDanger';
 import { MetinDirector } from './MetinDirector';
 import { RareDirector } from './RareDirector';
 import { StoryBeats } from './StoryBeats';
@@ -71,6 +72,7 @@ export class WorldRuntime {
   private readonly waypoints: WaypointNetwork;
   private readonly graveyards: GraveyardNetwork;
   private readonly camps: CampDirector;
+  private readonly campDanger: CampDanger;
   private readonly metin: MetinDirector;
   private readonly rares: RareDirector;
   private readonly story: StoryBeats;
@@ -107,6 +109,7 @@ export class WorldRuntime {
     this.waypoints = new WaypointNetwork(this.ctx, (x, z, yaw) => o.teleport?.(x, z, yaw));
     this.graveyards = new GraveyardNetwork(this.ctx);
     this.camps = new CampDirector(this.ctx, this.ext.perf);
+    this.campDanger = new CampDanger(o.def.packs);
     this.metin = new MetinDirector(this.ctx);
     this.rares = new RareDirector(this.ctx);
     this.minis = new MiniBossDirector(this.ctx);
@@ -170,6 +173,10 @@ export class WorldRuntime {
     if (!this.started || this.disposed) return;
     this.run('bosses', () => this.bosses.update(dt));
     this.run('camps', () => this.camps.update(dt));
+    this.run('camp danger', () => {
+      const lp = this.o.world.localPlayer;
+      if (lp) this.campDanger.update(dt, lp);
+    });
     this.run('metin', () => this.metin.update(dt));
     this.run('rares', () => this.rares.update(dt));
     this.run('story', () => this.story.update(dt));

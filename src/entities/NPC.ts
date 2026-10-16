@@ -380,6 +380,11 @@ export class NPC extends Entity implements Interactable {
     return `${this.def.name} ile konuş`;
   }
 
+  /** F priority (Interactable.interactTier): a quest on offer or ready to turn in here comes first, then other NPCs. */
+  get interactTier(): number {
+    return this.questMarkKind === 'offer' || this.questMarkKind === 'turnin' ? 0 : 1;
+  }
+
   async load(): Promise<void> {
     const p = this.preset;
     const url = npcModelUrl(p.base);

@@ -9,6 +9,12 @@ import type { Player } from './Player';
 export interface Interactable {
   readonly interactPrompt: string;      // Turkish, e.g. "Demirci Hüseyin ile konuş"
   readonly interactRange: number;       // units
+  /**
+   * F priority when several interactables are in reach (lower wins, then the nearer one; ones in front of the player first):
+   * 0 quest giver with an offer / turn-in, 1 other NPC, 2 loot, 3 gather node, 4 stall / board / other objects.
+   * Unset: NPCs 1, loot 2, everything else 4 (PlayerController.interactTier).
+   */
+  readonly interactTier?: number;
   canInteract?(player: Player): boolean;
   interact(player: Player): void;
   // GDD_LIFE §1.6 (L-00, optional): hold-F interaction. holdSeconds > 0 means "hold F for this long" instead of a press.

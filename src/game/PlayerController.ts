@@ -144,6 +144,13 @@ export function clearLocalHardTarget(): boolean {
   return liveController ? liveController.clearHardTarget() : false;
 }
 
+/** F priority of an interactable (Interactable.interactTier; unset: NPC 1, loot 2, anything else 4). Lower wins. */
+function interactTier(e: Interactable): number {
+  if (typeof e.interactTier === 'number') return e.interactTier;
+  const k = (e as unknown as { kind?: string }).kind;
+  return k === 'npc' ? 1 : k === 'loot' ? 2 : 4;
+}
+
 export class PlayerController {
   player: Player;
   cam: ThirdPersonCamera;
@@ -2172,19 +2179,31 @@ export class PlayerController {
     this.interactTimer -= dt;
     if (this.interactTimer <= 0) {
       this.interactTimer = 0.1;
+      // F picks one target: in front of the player first (a thing right beside us counts as in front), then the F priority
+      // tier (quest NPC, other NPC, loot, gather node, stall / board / object), then the nearer one. The prompt names that target.
+      const fx = Math.sin(p.yaw), fz = Math.cos(p.yaw);
       let best: Interactable | null = null;
       let bestD = 1e9;
+      let bestTier = 99;
+      let bestFront = false;
       let bestId = -1;
       for (const e of world.entities.values()) {
         if (e.removed) continue;
         const k = e.kind;
         if (k !== 'npc' && k !== 'interactable' && k !== 'loot') continue;
         if (!isInteractable(e)) continue;
-        const d = Math.hypot(e.position.x - p.position.x, e.position.z - p.position.z);
-        if (d > e.interactRange + e.radius || d >= bestD) continue;
+        const dx = e.position.x - p.position.x, dz = e.position.z - p.position.z;
+        const d = Math.hypot(dx, dz);
+        if (d > e.interactRange + e.radius) continue;
         if (e.canInteract && !e.canInteract(p)) continue;
+        const front = d <= 1.5 || dx * fx + dz * fz >= 0;
+        const tier = interactTier(e);
+        const better = best === null || (front !== bestFront ? front : tier !== bestTier ? tier < bestTier : d < bestD);
+        if (!better) continue;
         best = e;
         bestD = d;
+        bestTier = tier;
+        bestFront = front;
         bestId = (e as unknown as { id: number }).id;
       }
       this.nearest = best;
