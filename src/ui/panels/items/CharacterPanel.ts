@@ -270,7 +270,7 @@ export class CharacterPanel extends ItemPanel {
     super('character', {
       title: 'Karakter',
       icon: 'ui-character.svg',
-      width: 1180,
+      width: 1000,
       height: 720,
       dock: 'left',
       hints: ['Sağ Tık: çıkar', 'Sürükle: eşyayı yuvaya bırak'],
@@ -349,7 +349,7 @@ export class CharacterPanel extends ItemPanel {
     for (const s of LEFT) colL.append(this.makeRow(s, false));
 
     const model = h('div', 'pi-ch-model');
-    this.preview = new CharacterPreview(250, 340);
+    this.preview = new CharacterPreview(220, 300);
     model.append(this.preview.el);
 
     const xp = h('div', 'pi-xp');

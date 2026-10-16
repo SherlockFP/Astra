@@ -375,7 +375,7 @@ body.pi-dragging, body.pi-dragging * { cursor: grabbing !important; }
 .pi-ch-mplus-l { font-size: 13px; color: var(--text-dim); }
 .pi-ch-mplus-v { font-family: var(--font-head); font-weight: 700; font-size: 20px; color: #fff; text-shadow: var(--sh-text); }
 .pi-ch-mplus:hover .pi-ch-mplus-v { text-decoration: underline; }
-.pi-ch-cols { display: grid; grid-template-columns: 272px 250px 272px 1fr; gap: 8px; flex: 1; min-height: 0; }
+.pi-ch-cols { display: grid; grid-template-columns: 236px 220px 236px 1fr; gap: 8px; flex: 1; min-height: 0; }
 .pi-ch-gear { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .pi-gear-row { display: flex; align-items: center; gap: 8px; height: 56px; min-width: 0; }
 .pi-gear-row.is-right { justify-content: flex-end; }
@@ -387,7 +387,7 @@ body.pi-dragging, body.pi-dragging * { cursor: grabbing !important; }
 .pi-gear-row.is-broken .pi-gear-meta { color: var(--pi-bad); }
 .pi-gear-row.is-broken .pi-gear-name { text-decoration: line-through; text-decoration-color: var(--pi-bad); }
 .pi-ch-model { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
-.pi-ch-model .pi-preview { width: 250px; height: 340px; }
+.pi-ch-model .pi-preview { width: 220px; height: 300px; }
 .pi-ch-model .pi-xp { width: 100%; }
 .pi-ch-dur.k-chip { height: auto; padding: 0; background: none; border: 0; color: var(--text-1); cursor: default; }
 .pi-ch-dur.k-chip.is-bad { color: var(--pi-bad); cursor: pointer; }

@@ -57,12 +57,12 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { patchPSX } from '../render/psx';
 
 /**
- * Indoor fill floor (hemisphere, ambient minimum, cool rim). Raised from 1.1 / 0.7 / 0.5: the stone rooms sat on a near-black
- * void and the entry view (Kemik Mahzeni) read as black outside the HUD. The torches stay the key light, so the mood holds.
+ * Indoor fill floor (hemisphere, ambient minimum, cool rim). The 2026-10-16 raise (1.3 / 0.95 / 0.7) made the dungeon interiors
+ * flat and glaring; this sits between that and the old near-black floor (1.1 / 0.7 / 0.5). The torches stay the key light.
  */
-const INDOOR_HEMI = 1.3;
-const INDOOR_AMBIENT_MIN = 0.95;
-const INDOOR_FILL = 0.7;
+const INDOOR_HEMI = 1.15;
+const INDOOR_AMBIENT_MIN = 0.8;
+const INDOOR_FILL = 0.55;
 
 export interface DungeonGate {
   open(): void;
