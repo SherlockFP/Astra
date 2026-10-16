@@ -5,7 +5,7 @@ import type { Player } from '../../entities/Player';
 import { bossFx, bossMsg, bossMsgTo, bossText } from '../bossNet';
 import type { BossScript } from './types';
 import {
-  angleTo, busyTarget, circle, clearPrisons, dashLine, distXZ, makeInvulnerable, partyHp, pickPlayers, rnd, spawnMech, TAU, trapPlayer, updatePrisons, zone, type Pt,
+  angleTo, arenaReach, busyTarget, circle, clearPrisons, dashLine, distXZ, makeInvulnerable, partyHp, pickPlayers, rnd, spawnMech, TAU, trapPlayer, updatePrisons, zone, type Pt,
 } from './kit';
 
 /**
@@ -109,13 +109,17 @@ const akpence: BossScript = {
         const ang = live ? angleTo(e.position.x, e.position.z, live.position.x, live.position.z) : e.yaw;
         b.data.ang = ang;
         e.yaw = ang;
-        dashLine(c, e.position.x, e.position.z, ang, 30, 4, 0.7, 16, 4.0, {
+        // the charge stops at the arena wall: its shapes must not run out through it
+        const len = arenaReach(c, e.position.x, e.position.z, ang, 30);
+        b.data.len = len;
+        dashLine(c, e.position.x, e.position.z, ang, len, 4, 0.7, 16, 4.0, {
           type: 'physical', statuses: [{ status: 'knockdown', duration: 1.5 }], name: 'Öfkeli Hücum',
         });
       },
       resolve(c, b) {
         const ang = (b.data.ang as number | undefined) ?? c.e.yaw;
-        c.dash(Math.sin(ang), Math.cos(ang), 30, 30 / 16);
+        const len = Number(b.data.len ?? 30);
+        c.dash(Math.sin(ang), Math.cos(ang), len, len / 16);
         c.state.charging = { until: c.world.time + 30 / 16 + 0.2, dx: Math.sin(ang), dz: Math.cos(ang) };
         G.vfx.spawn('charge_trail', c.e.pointAt(0.3), { dir: [Math.sin(ang), 0, Math.cos(ang)], duration: 1.9 });
         G.events.emit('camera:shake', { intensity: 0.3, duration: 0.4 });

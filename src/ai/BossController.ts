@@ -474,8 +474,20 @@ export class BossController extends EnemyAI {
     if (this.engaged) {
       const a = this.arena;
       const m = e.radius + 0.5;
+      const x0 = e.position.x, z0 = e.position.z;
       e.position.x = clamp(e.position.x, a.cx - a.w / 2 + m, a.cx + a.w / 2 - m);
       e.position.z = clamp(e.position.z, a.cz - a.h / 2 + m, a.cz + a.h / 2 - m);
+      // the arena rectangle can reach past the floor (a wall or a prop at its edge): the boss stays on walkable ground
+      if (!this.world.nav.isWalkable(e.position.x, e.position.z)) {
+        const p = this.world.nav.nearestWalkable(e.position.x, e.position.z, 3);
+        if (p) {
+          e.position.x = p.x;
+          e.position.z = p.z;
+        } else {
+          e.position.x = x0;
+          e.position.z = z0;
+        }
+      }
     }
   }
 
@@ -544,6 +556,15 @@ export class BossController extends EnemyAI {
 
   protected canAttackMelee(): boolean {
     return true;
+  }
+
+  /**
+   * A boss that can be hurt never evades home for being stuck: the run home heals it (25 % a second) and resets the fight it was
+   * winning. An immune boss (a sleeping or intermission phase) keeps the evade: its run home is the reset of a wiped fight.
+   */
+  protected checkStuck(now: number, edge: number, target: Actor): boolean {
+    if (!this.e.statuses.has('invulnerable')) return false;
+    return super.checkStuck(now, edge, target);
   }
 
   wantsSlot(): boolean {

@@ -174,7 +174,7 @@ const amarth: BossScript = {
           c.schedule(0.6 * i, () => c.spawnAdds(id, 1, { x, z, radius: 2.2, tag: 'minion' }), 'land');
         });
         c.schedule(20, () => {
-          c.castNow('les_amr_final');
+          c.forceAbility('les_amr_final'); // queued: a one-shot timer must not be lost to a busy boss
         }, 'harvest');
       },
     },

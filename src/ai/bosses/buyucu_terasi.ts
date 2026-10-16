@@ -165,7 +165,8 @@ const arkanotron: BossScript = {
   },
   /** Energy hook names (BossDef.energy onEmpty): dispatched by BossController.hook. */
   refuelFromEmpty(c: BossController) {
-    c.castNow('arkanotron_refuel');
+    // queued, not dropped: the empty edge fires once, and a busy boss would otherwise lose the refuel for good
+    c.forceAbility('arkanotron_refuel');
   },
   onBreak(c) {
     c.vulnerable(1.25, 4);
@@ -265,7 +266,8 @@ const seranel: BossScript = {
   },
   /** Energy full hook name (BossDef.energy onFull): dispatched by BossController.hook. */
   waveFromFull(c: BossController) {
-    c.castNow('seranel_wave');
+    // queued, not dropped: the full edge fires once (see arkanotron refuel)
+    c.forceAbility('seranel_wave');
   },
   onBreak(c) {
     c.e.statuses.remove('empower');

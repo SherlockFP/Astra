@@ -357,10 +357,10 @@ lesBoss({
     custom('les_dks_escape', 'Kaçış', 999, 9999, 1.5, 'Jump_Full_Long', { castTime: 1.5, interruptible: false, sfx: 'boss_cast' }),
   ],
   phases: [
-    bp('p1', 1.01, ['les_dks_lamp', 'les_dks_ichor', 'les_dks_needle', 'les_dks_mutilate', 'les_dks_creation', 'les_dks_hook', 'les_dks_sutures', 'les_dks_sever', 'les_dks_lunge']),
-    bp('p2', 0.66, ['les_dks_lamp', 'les_dks_ichor', 'les_dks_needle', 'les_dks_mutilate', 'les_dks_creation', 'les_dks_hook', 'les_dks_sutures', 'les_dks_sever', 'les_dks_lunge'],
+    bp('p1', 1.01, ['les_dks_string', 'les_dks_lamp', 'les_dks_ichor', 'les_dks_needle', 'les_dks_mutilate', 'les_dks_creation', 'les_dks_hook', 'les_dks_sutures', 'les_dks_sever', 'les_dks_lunge']),
+    bp('p2', 0.66, ['les_dks_string', 'les_dks_lamp', 'les_dks_ichor', 'les_dks_needle', 'les_dks_mutilate', 'les_dks_creation', 'les_dks_hook', 'les_dks_sutures', 'les_dks_sever', 'les_dks_lunge'],
       { yell: 'İkinci yaratığı uyandırın!' }),
-    bp('p3', 0.33, ['les_dks_lamp', 'les_dks_ichor', 'les_dks_needle', 'les_dks_mutilate', 'les_dks_creation', 'les_dks_hook', 'les_dks_sutures', 'les_dks_sever', 'les_dks_lunge'],
+    bp('p3', 0.33, ['les_dks_string', 'les_dks_lamp', 'les_dks_ichor', 'les_dks_needle', 'les_dks_mutilate', 'les_dks_creation', 'les_dks_hook', 'les_dks_sutures', 'les_dks_sever', 'les_dks_lunge'],
       { yell: 'Ameliyat daha bitmedi!' }),
   ],
   intro: 'Yeni bir hasta! Ne güzel... Masaya yatın!', death: 'Dikişlerim... çözülüyor... hayır...',

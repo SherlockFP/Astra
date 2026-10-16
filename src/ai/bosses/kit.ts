@@ -59,7 +59,19 @@ export function zone(c: BossController, x: number, z: number, r: number, duratio
  * A charge line whose damage lands segment by segment as the charging boss passes (`speed` m/s), so standing in the line
  * after the boss went by is safe and the telegraph fills like a wave.
  */
-export function dashLine(c: BossController, x: number, z: number, ang: number, length: number, width: number, delay: number, speed: number, coef: number, o: SO = {}): void {
+/** Metres a straight run from (x, z) along `ang` can go before the boss arena's wall (at most `max`, one metre short of the wall). */
+export function arenaReach(c: BossController, x: number, z: number, ang: number, max: number): number {
+  const a = c.arena;
+  const dx = Math.sin(ang), dz = Math.cos(ang);
+  let reach = max;
+  if (Math.abs(dx) > 1e-6) reach = Math.min(reach, dx > 0 ? (a.cx + a.w / 2 - x) / dx : (a.cx - a.w / 2 - x) / dx);
+  if (Math.abs(dz) > 1e-6) reach = Math.min(reach, dz > 0 ? (a.cz + a.h / 2 - z) / dz : (a.cz - a.h / 2 - z) / dz);
+  return Math.max(0, Math.min(max, reach - 1));
+}
+
+/** A charge line stops at the arena wall: its segments must not run out through it (a boss cannot leave its arena). */
+export function dashLine(c: BossController, x: number, z: number, ang: number, length0: number, width: number, delay: number, speed: number, coef: number, o: SO = {}): void {
+  const length = arenaReach(c, x, z, ang, length0);
   const seg = 4;
   const n = Math.max(1, Math.ceil(length / seg));
   const sx = Math.sin(ang), sz = Math.cos(ang);

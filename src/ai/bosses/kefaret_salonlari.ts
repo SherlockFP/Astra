@@ -30,8 +30,14 @@ function randomPlayer(c: BossController, skipTank = false): Player | null {
 }
 
 /** Shards of Halkor's chambers that are dead right now (the awakening counts them). */
-function deadShards(): number {
-  return G.world?.enemies.filter((e) => e.def.id === 'kef_shard' && e.isDead).length ?? 0;
+/**
+ * Shards killed in this fight, counted as they die: a corpse leaves the world 20 s after its death (Combat.corpseLifetime), so a
+ * count of the corpses would lose the first kills when the three come more than 20 s apart. Reset with the fight (init).
+ */
+function recordShardDeaths(c: BossController): number {
+  const seen = (c.state.shardDead ??= []) as number[];
+  for (const e of G.world?.enemies ?? []) if (e.def.id === 'kef_shard' && e.isDead && !seen.includes(e.id)) seen.push(e.id);
+  return seen.length;
 }
 
 // ---- Boss 1: Halkor -----------------------------------------------------------------------------------------------------------
@@ -70,11 +76,12 @@ const halkor: BossScript = {
     c.setImmune(true);
     c.freeze(true);
     c.state.awake = false;
+    c.state.shardDead = [];
   },
 
   update(c, dt) {
     if (!c.state.awake) {
-      if (deadShards() >= 3) {
+      if (recordShardDeaths(c) >= 3) {
         c.state.awake = true;
         c.setImmune(false);
         c.freeze(false);

@@ -138,9 +138,11 @@ function tickHealth(groups: HealthGroup[]): void {
       }
       continue;
     }
-    // a body died: the group dies with it
+    // a body died: the group ends and its other bodies despawn (the clones are the group's extra bodies; the main body keeps
+    // its pool). Killing them must not kill the boss: the first body of a group is the main one (see buyucu_terasi triplicate).
     groups.splice(i, 1);
-    for (const b of live) G.combat.killEnemy(b, null);
+    const main = g.bodies[0];
+    for (const b of live) if (b !== main) b.escape();
   }
 }
 

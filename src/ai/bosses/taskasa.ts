@@ -950,7 +950,10 @@ function socketPt(c: BossController, i: number): Pt {
     { x: a.cx - a.w / 4, z: a.cz - iz }, { x: a.cx + a.w / 4, z: a.cz - iz },
     { x: a.cx - a.w / 4, z: a.cz + iz }, { x: a.cx + a.w / 4, z: a.cz + iz },
   ];
-  return pts[i];
+  // a socket on a prop or a wall (the arena's fixed grid) opens its rift on the nearest floor
+  const p = pts[i];
+  if (c.world.nav.isWalkable(p.x, p.z)) return p;
+  return c.world.nav.nearestWalkable(p.x, p.z, 4) ?? p;
 }
 
 function riftsOf(c: BossController): Rift[] {
