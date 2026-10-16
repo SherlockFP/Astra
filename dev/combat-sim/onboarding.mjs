@@ -39,21 +39,23 @@ const EV = {
   turnin: { k: 'turnin' },
   map: { k: 'panel', panel: 'map', open: true },
   finder: { k: 'panel', panel: 'finder', open: true },
+  flask: { k: 'flask' },
 };
 const SKILL_SEQ = ['rmb', 'q', 'e', 'r'].map((slot) => ({ k: 'cast', slot }));
-const FULL = [EV.move, EV.talk, EV.accept, EV.attack, ...SKILL_SEQ, EV.loot, EV.bag, EV.equip, EV.sp, EV.turnin, EV.map, EV.finder];
+const FULL = [EV.move, EV.talk, EV.accept, EV.attack, ...SKILL_SEQ, EV.flask, EV.loot, EV.bag, EV.equip, EV.sp, EV.turnin, EV.map, EV.finder];
 
 // ------------------------------------------------------------------------------------------------ steps
 {
-  ok('steps.count 12', GUIDE_STEPS.length === 12, `got ${GUIDE_STEPS.length}`);
-  ok('steps.order spec', JSON.stringify(IDS) === JSON.stringify(['move', 'talk', 'accept', 'attack', 'skills', 'loot', 'bag', 'equip', 'sp', 'turnin', 'map', 'finder']), IDS.join(','));
+  ok('steps.count 13', GUIDE_STEPS.length === 13, `got ${GUIDE_STEPS.length}`);
+  ok('steps.order spec', JSON.stringify(IDS) === JSON.stringify(['move', 'talk', 'accept', 'attack', 'skills', 'flask', 'loot', 'bag', 'equip', 'sp', 'turnin', 'map', 'finder']), IDS.join(','));
   ok('steps.ids unique', new Set(IDS).size === IDS.length);
   ok('steps.texts non-empty turkish', GUIDE_STEPS.every((s) => s.title.length > 0 && s.text.length > 0));
-  ok('steps.finder gated at 8', GUIDE_STEPS.find((s) => s.id === 'finder').minLevel === 8);
+  ok('steps.finder waits for the Sis quest', GUIDE_STEPS.find((s) => s.id === 'finder').needsQuest === 'sq_g_07_magaradaki_sis');
+  ok('steps.flask waits for a hit taken', GUIDE_STEPS.find((s) => s.id === 'flask').needsHurt === true);
   const first = activeStep(EMPTY, 1);
   ok('steps.first is move', first?.id === 'move');
-  ok('steps.progress empty 0/11 at level 1', (() => { const p = progressOf(EMPTY, 1); return p.done === 0 && p.total === 11; })());
-  ok('steps.progress full 12 at level 8', progressOf(EMPTY, 8).total === 12);
+  ok('steps.progress empty 0/13 at level 1', (() => { const p = progressOf(EMPTY, 1); return p.done === 0 && p.total === 13; })());
+  ok('steps.progress full 13 at level 8', progressOf(EMPTY, 8).total === 13);
 }
 
 // ------------------------------------------------------------------------------------------------ events: each step on its own event
@@ -93,7 +95,7 @@ for (const id of IDS) {
 // finder is gated: below level 8 the run stops before it and the guide waits (not done)
 {
   const st = run(FULL.slice(0, -1), 5);
-  ok('events.gated finder waits below level 8', activeStep(st, 5) === null && !allDone(st));
+  ok('events.finder is the last active step (level not gated)', activeStep(st, 5)?.id === 'finder' && !allDone(st));
   ok('events.gated finder counts at level 8', (() => {
     const after = run(FULL.slice(0, -1), 8);
     return activeStep(after, 8)?.id === 'finder' && applyEvent(after, EV.finder, 8).done.includes('finder');
@@ -138,7 +140,7 @@ for (const id of IDS) {
   // finishing writes every step flag once
   const all = run(FULL, 8);
   const wa = flagsToWrite({}, all);
-  ok('flags.full run writes 12 step flags + onb.done', wa.filter((f) => f.startsWith('onb.s.')).length === 12 && wa.includes('onb.done'));
+  ok('flags.full run writes 13 step flags + onb.done', wa.filter((f) => f.startsWith('onb.s.')).length === 13 && wa.includes('onb.done'));
   const lastW = flagsToWrite({}, { ...all, skipped: false });
   ok('flags.done flag only when all steps done', !flagsToWrite({}, st).includes('onb.done') && lastW.includes('onb.done'));
   // the flags never contain a key that could clear progress
@@ -153,7 +155,7 @@ for (const id of IDS) {
   ok('gate.skipped stays off', guideWanted({ level: 1, flags: { 'onb.skip': 1 } }) === false);
   ok('gate.finished stays off', guideWanted({ level: 9, flags: { 'onb.done': 1 } }) === false);
   ok('gate.a skipped state ignores events', applyEvent({ done: [], slots: [], skipped: true }, EV.move, LVL).done.length === 0);
-  ok('gate.a finished run ignores events', applyEvent(run(FULL, 8), EV.move, 8).done.length === 12);
+  ok('gate.a finished run ignores events', applyEvent(run(FULL, 8), EV.move, 8).done.length === 13);
   ok('gate.boolean and string flags count as set', stateFromFlags({ 'onb.s.move': true, 'onb.s.talk': '1' }).done.join() === 'move,talk');
 }
 

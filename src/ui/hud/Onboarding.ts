@@ -10,8 +10,8 @@ import type { HudCtx, HudWidget } from './types';
 
 /** The card re-reads the save at this period (s); the events do the real work. */
 const TICK_S = 0.25;
-/** The card of one step leaves the screen after this long (s); it stays away until the step changes or the guide ends. */
-const DISMISS_S = 60;
+/** A step card never times out: a stuck new player needs it most ("Rehberi kapat" ends the guide). */
+const DISMISS_S = Number.POSITIVE_INFINITY;
 
 /**
  * The skills step names the keys of the bar abilities the character has at its level (WoW: the L1 kit sits on 1, 2, 3 and Q),
@@ -33,6 +33,8 @@ function skillsText(step: GuideStep): string {
 }
 /** Welcome card flag (ui/panels/game/welcome.ts): the guide starts after it. */
 const WELCOME_FLAG = 'onb.welcome';
+/** Save flag: the character has taken damage at least once (the flask step waits for it). */
+const HURT_FLAG = 'onb.hurt';
 
 /**
  * First-10-minutes guide card (systems/onboarding.ts holds the steps). One step at a time: a title, short Turkish text with the
@@ -71,7 +73,7 @@ export class GuideCard implements HudWidget {
     this.keys = div('guide-keys', this.el);
     const foot = div('guide-foot', this.el);
     div('guide-hint', foot, 'Kontroller: ?');
-    const skip = h('button', 'guide-skip k-btn k-btn--sm', foot, 'Rehberi Atla');
+    const skip = h('button', 'guide-skip k-btn k-btn--sm', foot, 'Rehberi kapat');
     skip.type = 'button';
     skip.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -89,7 +91,14 @@ export class GuideCard implements HudWidget {
     });
     G.events.on('damage', (e) => {
       if (G.player && e.sourceId === G.player.id) this.feed({ k: 'hit' });
+      // the first hit taken opens the flask step (the flag is saved with the character, so it survives a reload)
+      const ch = G.character;
+      if (G.player && e.targetId === G.player.id && ch && !ch.save.beta && !ch.save.flags[HURT_FLAG]) {
+        ch.save.flags[HURT_FLAG] = 1;
+        ch.persist();
+      }
     });
+    G.events.on('flask:used', () => this.feed({ k: 'flask' }));
     G.events.on('skill:cast', ({ casterId, skillId }) => {
       const ch = G.character;
       if (!G.player || !ch || casterId !== G.player.id) return;
@@ -193,7 +202,7 @@ export class GuideCard implements HudWidget {
     const st = this.state;
     if (!st) return;
     const step = activeStep(st, level);
-    if (!step || step.id === this.dismissedId) return this.hide();
+    if (!step || step.id === this.dismissedId || this.waiting(step)) return this.hide();
     const prog = progressOf(st, level);
     setText(this.count, `${prog.done} / ${prog.total}`);
     if (step.id !== this.shownId) {
@@ -202,6 +211,20 @@ export class GuideCard implements HudWidget {
     }
     this.highlight(step);
     this.show();
+  }
+
+  /**
+   * A step whose trigger has not happened yet waits: its card stays away and the step is not skipped. The flask step waits for
+   * the first hit taken; the finder step waits until its quest (Mağaradaki Sis) is open to the character.
+   */
+  private waiting(step: GuideStep): boolean {
+    const ch = G.character;
+    if (step.needsHurt && !ch?.save.flags[HURT_FLAG]) return true;
+    if (step.needsQuest) {
+      const qs = G.quests?.state(step.needsQuest);
+      if (qs !== 'active' && qs !== 'ready' && qs !== 'done') return true;
+    }
+    return false;
   }
 
   private setStep(step: GuideStep): void {
@@ -219,6 +242,7 @@ export class GuideCard implements HudWidget {
     let el: Element | null = null;
     if (a.kind === 'slot') el = document.querySelector(`.ab-btn[data-slot="${a.slot}"]`);
     else if (a.kind === 'panel') el = document.querySelector(`[data-panel="${a.panel}"]`);
+    else if (a.kind === 'flask') el = [...document.querySelectorAll<HTMLElement>('.flask-row .flask')].find((x) => x.style.display !== 'none') ?? null;
     if (el === this.hl) return;
     this.clearHighlight();
     if (el) {
