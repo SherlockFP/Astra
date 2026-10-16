@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { G } from '../game/G';
+import { SCENE_GRADE } from '../core/Engine';
 import { RNG, hashString } from '../core/utils';
 import type { TownDef, TownProp } from '../types/dungeons';
 import { NavGrid } from './NavGrid';
@@ -675,6 +676,8 @@ class TownBuild {
     const fogCol = lt?.fogColor ?? 0xd8c0a0;
     this.scene.fog = new THREE.Fog(fogCol, lt?.fogNear ?? 34, lt?.fogFar ?? 150);
     this.scene.background = new THREE.Color(fogCol);
+    // the town's own grade (TownDef.lighting.grade): saturated and clear, no milky plaza. Dispose puts the default back.
+    try { G.engine?.setGrade(lt?.grade ?? SCENE_GRADE); } catch { /* engine not ready (harness) */ }
     const hemiK = lt ? THREE.MathUtils.clamp(lt.hemiIntensity * 2, 0.6, 1.6) : 1.2;
     const sunK = lt ? THREE.MathUtils.clamp(lt.sunIntensity * 1.6, 0.8, 2.2) : 1.9;
     this.hemi = new THREE.HemisphereLight(lt?.hemiSky ?? 0xffe4b8, lt?.hemiGround ?? 0x6a5a44, hemiK);
@@ -1363,6 +1366,7 @@ class TownBuild {
     this.sky.dispose();
     this.scene.fog = this.prevFog;
     this.scene.background = this.prevBg;
+    try { G.engine?.setGrade(SCENE_GRADE); } catch { /* engine not ready (harness) */ }
   }
 }
 

@@ -545,8 +545,9 @@ export const TOWN: TownDef = {
   // the stair runs along z from the terrace edge (z -28, y 2) down to the plaza (z -24, y 0)
   stairs: [{ id: 'salon_merdiveni', box: [-6, -28, 6, -24], yFrom: 2, yTo: 0, axis: 'z' }],
   lighting: {
-    hemiSky: 0xffe0b0, hemiGround: 0x504030, hemiIntensity: 0.6, sun: 0xffc890, sunIntensity: 1.2, sunDir: [-0.64, 0.42, 0.64],
-    fogColor: 0xd8c0a0, fogNear: 30, fogFar: 140,
+    // warm key sun from the south-west, a dark warm ground bounce (shadows keep their shape), a clear haze: no milky plaza
+    hemiSky: 0xffd9a0, hemiGround: 0x4a3a2a, hemiIntensity: 0.55, sun: 0xffb674, sunIntensity: 1.3, sunDir: [-0.64, 0.42, 0.64],
+    fogColor: 0xc4a47e, fogNear: 38, fogFar: 140, grade: { sat: 1.14, contrast: 1.08, exposure: 1.06 },
   },
   zones: [
     { id: 'guney_kapisi', name: 'Güney Kapısı', box: [-24, 120, 24, 160] },
