@@ -200,7 +200,7 @@ export class VendorPanel extends ItemPanel {
     this.flavor.textContent = info.line;
     this.flavorIco.style.setProperty('--ico', `url("/assets/icons/${info.icon}")`);
     this.entries = [];
-    const vk = kind === 'merchant' || kind === 'alchemist' || kind === 'bakkal' || kind === 'pvp_honor' || kind === 'pvp_conquest' ? kind : undefined;
+    const vk = kind === 'merchant' || kind === 'alchemist' || kind === 'bakkal' || kind === 'pvp_honor' || kind === 'pvp_conquest' || kind === 'stable' ? kind : undefined;
     if (vk) {
       try {
         this.entries = vendorApi.entries(vk);
@@ -368,8 +368,8 @@ export class VendorPanel extends ItemPanel {
   }
 
   /** Shop list kind for vendorApi.entries (after a purchase the list is rebuilt). */
-  private entriesKind(): 'merchant' | 'alchemist' | 'bakkal' | 'pvp_honor' | 'pvp_conquest' {
-    return this.kind === 'alchemist' || this.kind === 'bakkal' || this.kind === 'pvp_honor' || this.kind === 'pvp_conquest' ? this.kind : 'merchant';
+  private entriesKind(): 'merchant' | 'alchemist' | 'bakkal' | 'pvp_honor' | 'pvp_conquest' | 'stable' {
+    return this.kind === 'alchemist' || this.kind === 'bakkal' || this.kind === 'pvp_honor' || this.kind === 'pvp_conquest' || this.kind === 'stable' ? this.kind : 'merchant';
   }
 
   /** Recolor prices / stock without rebuilding the rows. */

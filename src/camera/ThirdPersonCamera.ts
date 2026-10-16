@@ -45,6 +45,8 @@ const LOOK_SENS = 0.0022;         // rad per pixel at sensitivity 1
 const MAX_SHAKES = 10;
 const OCC_MARGIN = 0.6;           // the camera stops this far (m) in front of a scene mesh that stands between it and the player
 const OCC_MIN_HIT = 0.5;          // scene hits this close to the pivot are ignored (the player's own surroundings)
+const OCC_MIN_FRAC = 0.04;        // the lens never comes closer than 4% of the wanted distance to the pivot (unless the hit is nearer)
+const OCC_HIT_FLOOR = 0.6;        // ...and never past 60% of the way to a hit, so a close wall still stays in front of the lens
 /** GDD_LIFE §4.2: after the last block the camera waits this long before it eases back out. */
 const COL_HOLD = 0.15;
 /** GDD_LIFE §4.11 shake budget. */
@@ -1004,7 +1006,7 @@ export class ThirdPersonCamera {
             const hy = this.pivot.y + (_pos.y - this.pivot.y) * f;
             blocks = hy - this.groundAt(this.pivot.x + dx * f, this.pivot.z + dz * f) <= this.collideMaxRayHeight;
           }
-          if (blocks) fracNav = clamp(f - 0.55 / len, 0.12, 1);
+          if (blocks) fracNav = clamp(f - 0.55 / len, Math.min(OCC_MIN_FRAC, OCC_HIT_FLOOR * f), 1); // same floor rule as occluderFrac
         }
       }
     }
@@ -1347,7 +1349,8 @@ export class ThirdPersonCamera {
     return 1;
   }
 
-  /** Fraction of the pivot -> wanted-camera segment that is clear of `occluders` (1 = clear; never closer than 12% of the distance). */
+  /** Fraction of the pivot -> wanted-camera segment that is clear of `occluders` (1 = clear). The lens stops OCC_MARGIN in front of the
+   *  first hit; the floor is never past the hit itself (a wall closer than the floor used to push the lens inside the house). */
   private occluderFrac(pos: THREE.Vector3): number {
     _occDir.copy(pos).sub(this.pivot);
     const len = _occDir.length();
@@ -1358,7 +1361,9 @@ export class ThirdPersonCamera {
     _occRay.far = len;
     const hits = _occRay.intersectObjects(this.occluders ?? [], false);
     if (!hits.length) return 1;
-    return clamp((hits[0].distance - OCC_MARGIN) / len, 0.12, 1);
+    const hit = hits[0].distance;
+    const floor = Math.min(OCC_MIN_FRAC, (OCC_HIT_FLOOR * hit) / len);
+    return clamp((hit - OCC_MARGIN) / len, floor, 1);
   }
 
   /** Debug numbers for the camera overlay (dev/player.html ?camdebug=1, dev/combat.html telemetry). */

@@ -46,6 +46,8 @@ class DungeonQueueStore {
   private matchAt = 0;
   private readyUntil = 0;
   private timer = 0;
+  /** The scene that was current when the search began: a run-summary requeue starts from the finished dungeon scene itself. */
+  private sceneAtEnter: unknown = null;
 
   get state(): DungeonQueueView {
     return this.view;
@@ -64,6 +66,7 @@ class DungeonQueueStore {
     }
     const now = Date.now();
     this.since = now;
+    this.sceneAtEnter = G.scenes?.current ?? null;
     this.matchAt = now + (MATCH_MIN_SEC + Math.random() * (MATCH_MAX_SEC - MATCH_MIN_SEC)) * 1000;
     this.set({ phase: 'searching', entry, elapsed: 0, readyLeft: 0, readySec: 0 });
     this.start();
@@ -102,8 +105,9 @@ class DungeonQueueStore {
 
   private tick(): void {
     const now = Date.now();
-    // a run started by any other path (party ready check, a portal) ends the queue
-    if (G.scenes?.current?.id === 'dungeon') {
+    // a run started by any other path (party ready check, a portal) ends the queue; the dungeon scene the search began in
+    // (a finished run, "Tekrar Sıraya Gir") does not count
+    if (G.scenes?.current?.id === 'dungeon' && G.scenes.current !== this.sceneAtEnter) {
       this.stop();
       return;
     }
