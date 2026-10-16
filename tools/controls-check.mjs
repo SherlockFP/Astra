@@ -234,9 +234,10 @@ for (const a of Object.keys(SCHEME_BINDINGS.wow)) check(SCHEME_ACTIONS.includes(
   check(FP.fpEyeHeight(NaN) === FP.FP_EYE_FALLBACK, 'eye height without a model uses the fallback');
   check(Math.abs(FP.FP_PITCH_MAX - 85 * Math.PI / 180) < 1e-9, 'first-person pitch clamp must be 85 deg');
   check(FP.FP_NEAR <= 0.1 && FP.FP_NEAR >= 0.05, 'first-person near plane must be 0.05..0.1 m');
-  // the third-person default distance moved to 13 m (WoW), max zoom-out 35 m, migration of the old 10 m default
+  // the third-person default distance is 6.5 m for both schemes (the 1.8 m body), max zoom-out 35 m, migrations of the old 10 / 13 / 9 m defaults
   const { DEFAULT_SETTINGS } = SETTINGS;
-  check(DEFAULT_SETTINGS.cameraDistanceWow === 13, `WoW default camera distance must be 13 m, got ${DEFAULT_SETTINGS.cameraDistanceWow}`);
+  check(DEFAULT_SETTINGS.cameraDistanceWow === 6.5, `WoW default camera distance must be 6.5 m, got ${DEFAULT_SETTINGS.cameraDistanceWow}`);
+  check(DEFAULT_SETTINGS.cameraDistance === 6.5, `Aksiyon default camera distance must be 6.5 m, got ${DEFAULT_SETTINGS.cameraDistance}`);
   const camSrc = (await import('node:fs')).readFileSync(`${ROOT}/src/camera/ThirdPersonCamera.ts`, 'utf8');
   check(camSrc.includes('classic: { zoomMin: 2, zoomMaxOutdoor: 35, zoomMaxIndoor: 18, zoomDefault: 13,'), 'CAM_PROFILES.classic must have zoomMaxOutdoor 35 and zoomDefault 13');
 }

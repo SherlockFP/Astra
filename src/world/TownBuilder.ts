@@ -1227,9 +1227,10 @@ class TownBuild {
     const at = (x: number, z: number): number => this.groundY(x, z);
     // no crystal ring round the fountain any more: its eight lamps (and four lanterns) stood among the benches and flower beds, and one
     // was 1 m from the villager by the fountain. The plaza is lit by the central crystal and the warm posts of town.ts.
-    // the main road: a crystal lamp on each shoulder about every 12 m (z -22, -10, 2, 50). At z 14 only the west post stands (the east one was 5 m
-    // from Muhtar Cemal), and nothing stands between z 14 and 50: the spawn (0, 26) and the camera behind it stay clear.
-    const ROAD_LAMPS: [number, number][] = [[-6.4, -22], [6.4, -22], [-6.4, -10], [6.4, -10], [-6.4, 2], [6.4, 2], [-6.4, 14], [-6.4, 50], [6.4, 50]];
+    // the crystal lamps (dark violet cap, cyan lantern) were a row of nine along the west side and the plaza. Thinned to five: the north gate
+    // pair (z -22), one plaza-edge post on the east shoulder (z -10, about 19 m from the fountain), and the south pair (z 50, behind the spawn
+    // camera). The west posts at z -10, 2, 14 and the east posts at z 2 are gone, so the plaza between the fountain and the spawn is clear of them.
+    const ROAD_LAMPS: [number, number][] = [[-6.4, -22], [6.4, -22], [6.4, -10], [-6.4, 50], [6.4, 50]];
     for (const [x, z] of ROAD_LAMPS) kit.add({ part: 'lamp', x, y: at(x, z), z, s: 1.1 });
     // the four wall-corner spires and the two gate spires (inside the wall, flanking the south gate), banners on the corners
     for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {

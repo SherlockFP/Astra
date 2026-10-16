@@ -200,8 +200,9 @@ export interface SettingsData {
  * 6 = calmer audio mix (audioRev): ambienceVolume, combatSoundLevel, uiHoverSfx; the level defaults move down once.
  * 7 = WoW-clarity defaults (gfxClarityRev): renderScale 2 = native device pixels (DPR capped at 2), migrated once.
  * 8 = WoW camera distance default 13 m (cameraDistRev) and the first-person wheel option (firstPersonWheel).
+ * 9 = camera default 6.5 m for both schemes (cameraDistRev 2): the 1.8 m body. Only the old defaults (9 Aksiyon, 13 WoW) move.
  */
-export const SETTINGS_VERSION = 8;
+export const SETTINGS_VERSION = 9;
 
 /** Key codes of the guard and inventory defaults before CM1 / UX-00 (used only by the one-time bindings migration). */
 const LEGACY_GUARD = ['KeyG', 'Mouse3'];
@@ -232,7 +233,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   cameraMode: 'classic',
   mouseSensitivity: 1,
   invertY: false,
-  cameraDistance: 9,
+  cameraDistance: 6.5,
   autoLoot: true,
   lootFilter: 'all',
   autoSalvage: 'off',
@@ -296,8 +297,8 @@ export const DEFAULT_SETTINGS: SettingsData = {
   controlScheme: 'wow',
   controlsRev: 1,
   schemeBindings: {},
-  cameraDistanceWow: 13,
-  cameraDistRev: 1,
+  cameraDistanceWow: 6.5,
+  cameraDistRev: 2,
   cameraSmartPivot: true,
   firstPersonWheel: true,
   casterAutoShot: true,
@@ -427,6 +428,13 @@ export class Settings {
         this.data.cameraDistRev = 1;
         changed = true;
       }
+      // Camera default 6.5 m (cameraDistRev 1 -> 2): only the old defaults move (9 m Aksiyon, 13 m WoW); any other distance is kept.
+      if ((stored.cameraDistRev ?? 0) < 2) {
+        if (this.data.cameraDistance === 9) this.data.cameraDistance = 6.5;
+        if (this.data.cameraDistanceWow === 13) this.data.cameraDistanceWow = 6.5;
+        this.data.cameraDistRev = 2;
+        changed = true;
+      }
       // AUDIO_MIX (audioRev 0 -> 1): calmer level defaults and the hover blip off, once. A level changed afterwards is kept by the rev flag.
       if ((stored.audioRev ?? 0) < 1) {
         Object.assign(this.data, { sfxVolume: 0.5, musicVolume: 0.35, uiVolume: 0.35, ambienceVolume: 0.4, uiHoverSfx: false, audioRev: 1 });
@@ -437,7 +445,7 @@ export class Settings {
     if (this.data.controlScheme !== 'wow' && this.data.controlScheme !== 'aksiyon') this.data.controlScheme = 'wow';
     this.data.cameraMode = cameraModeOf(this.data.controlScheme);
     this.data.schemeBindings = this.data.schemeBindings ?? {};
-    this.data.cameraDistanceWow = Number.isFinite(this.data.cameraDistanceWow) ? Math.min(35, Math.max(2, this.data.cameraDistanceWow)) : 13;
+    this.data.cameraDistanceWow = Number.isFinite(this.data.cameraDistanceWow) ? Math.min(35, Math.max(2, this.data.cameraDistanceWow)) : 6.5;
     if (this.data.graphicsQuality !== 'low' && this.data.graphicsQuality !== 'mid' && this.data.graphicsQuality !== 'high') this.data.graphicsQuality = 'mid';
     if (!['off', 'low', 'mid', 'high'].includes(this.data.grassDensity as string)) this.data.grassDensity = 'mid';
     if (this.data.dayNightCycle !== 'on' && this.data.dayNightCycle !== 'off') this.data.dayNightCycle = 'on';

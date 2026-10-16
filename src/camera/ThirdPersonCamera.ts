@@ -26,8 +26,10 @@ export interface CamProfile {
   shoulder: number; lookAhead: boolean; combatZoom: boolean; lockOnFraming: boolean;
   pitchAutoReturn: boolean; wheelPitchPull: boolean;
 }
+/** Default third-person distance (m) for both schemes: the 1.8 m body reads at this range (was 9 Aksiyon / 13 WoW). Settings.ts uses the same value. */
+export const CAM_DEFAULT_ZOOM = 6.5;
 export const CAM_PROFILES: Record<CameraMode, CamProfile> = {
-  action: { zoomMin: 3, zoomMaxOutdoor: 18, zoomMaxIndoor: 18, zoomDefault: 9, restPitch: NaN, maxPitch: 1.38, shoulder: 0.55, lookAhead: true, combatZoom: true, lockOnFraming: true, pitchAutoReturn: true, wheelPitchPull: true },
+  action: { zoomMin: 3, zoomMaxOutdoor: 18, zoomMaxIndoor: 18, zoomDefault: CAM_DEFAULT_ZOOM, restPitch: NaN, maxPitch: 1.38, shoulder: 0.55, lookAhead: true, combatZoom: true, lockOnFraming: true, pitchAutoReturn: true, wheelPitchPull: true },
   classic: { zoomMin: 2, zoomMaxOutdoor: 35, zoomMaxIndoor: 18, zoomDefault: 13, restPitch: 0.349, maxPitch: 1.45, shoulder: 0, lookAhead: false, combatZoom: false, lockOnFraming: false, pitchAutoReturn: false, wheelPitchPull: false },
 };
 /** WoW: the wheel moves the zoom by at least this many metres per notch. */
@@ -96,8 +98,8 @@ const _look = new THREE.Vector3();
 const _lookDir = new THREE.Vector3();
 /** Dungeons: the pivot (the player) is drawn this far below the screen centre (NDC, 0.25 = 62.5 % down). */
 const DUNGEON_PIVOT_NDC = 0.25;
-/** Dungeons: the zoom cap never drops under this (m), so the default distance (8..10 m) holds in low rooms; the ceiling still stops the lens (collision). */
-const DUNGEON_MIN_ZOOM_CAP = 8;
+/** Dungeons: the zoom cap never drops under this (m), so the default distance (6.5 m) holds in low rooms; the ceiling still stops the lens (collision). */
+const DUNGEON_MIN_ZOOM_CAP = 6;
 const _ray = new THREE.Raycaster();
 const _ndc = new THREE.Vector2();
 const _occRay = new THREE.Raycaster();
@@ -162,11 +164,11 @@ export class ThirdPersonCamera {
   yaw = 0;
   pitch = 0.45;
   /** Wanted zoom distance (the effective distance is smaller while a wall is behind the camera). */
-  distance = 9;
+  distance = CAM_DEFAULT_ZOOM;
 
   // ---- tunables / state read by PlayerController ----
-  /** Height of the orbit pivot above the target's feet (KayKit is ~2.4 tall). */
-  pivotHeight = 2.0;
+  /** Height of the orbit pivot above the target's feet: the chest of the 1.8 m body (the pivot used to be 2.0 m, for a 2.4 m model). */
+  pivotHeight = 1.5;
   /** Shift-lock (middle mouse toggles, action mode): the character always faces the camera yaw. */
   shiftLock = true;
   /** Which shoulder the action camera sits on: 1 right, -1 left, 0 centred. */
@@ -193,8 +195,8 @@ export class ThirdPersonCamera {
 
   private pivot = new THREE.Vector3();
   private pivotReady = false;
-  private zoomTarget = 9;
-  private zoomCur = 9;
+  private zoomTarget = CAM_DEFAULT_ZOOM;
+  private zoomCur = CAM_DEFAULT_ZOOM;
   /** Effective zoom maximum (CONTROLS_WOW §7.1): 18 in Aksiyon; WoW indoor ceiling-based, slewed at 4 m/s. */
   private zoomMaxCur = 18;
   /** Set by scenes through setEnvironment (CONTROLS_WOW §7.2). */
@@ -443,7 +445,7 @@ export class ThirdPersonCamera {
   private loadZoom(): number {
     const p = this.profile;
     if (this.mode === 'classic') return clamp(wowData()?.cameraDistanceWow ?? p.zoomDefault, p.zoomMin, p.zoomMaxOutdoor);
-    return clamp(G.settings?.data.cameraDistance || 9, p.zoomMin, p.zoomMaxOutdoor);
+    return clamp(G.settings?.data.cameraDistance || CAM_DEFAULT_ZOOM, p.zoomMin, p.zoomMaxOutdoor);
   }
 
   setTarget(obj: THREE.Object3D | null): void {
@@ -642,7 +644,7 @@ export class ThirdPersonCamera {
     const t = this.target;
     if (t) {
       const s = smoothstep(3, 14, this.zoomCur);
-      this.pivot.set(t.position.x, t.position.y + this.pivotHeight + lerp(-0.25, 0.6, s), t.position.z);
+      this.pivot.set(t.position.x, t.position.y + this.pivotHeight + lerp(-0.2, 0.25, s), t.position.z);
       this.yaw = t.rotation.y + Math.PI;
     }
     const rest = this.profile.restPitch;
@@ -849,7 +851,7 @@ export class ThirdPersonCamera {
       this.pivot.x += (px + this.laX - this.pivot.x) * kx;
       this.pivot.z += (pz + this.laZ - this.pivot.z) * kx;
       const zs = smoothstep(3, 14, this.zoomCur);
-      const wantY = t.position.y + this.pivotHeight + lerp(-0.25, 0.6, zs);
+      const wantY = t.position.y + this.pivotHeight + lerp(-0.2, 0.25, zs);
       const airborne = t.position.y - this.groundAt(px, pz) > 0.15;
       let ey = wantY - this.pivot.y;
       if (airborne) ey = Math.sign(ey) * Math.max(0, Math.abs(ey) - 0.35);
