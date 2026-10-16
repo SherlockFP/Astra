@@ -56,32 +56,32 @@ const DOORS: DoorDef[] = [
   door('k_dogu_kuzey', 'kevvas_cukuru', 34, 19, 'n', 4, 'boss_lock'),
   door('kevvas_cukuru', 'k_merkez_dogu', 28, 15, 'w', 4, 'boss_exit'),
   door('k_merkez_dogu', 'kara_hol', 26, 15, 'w', 4, 'none'),
-  door('avlu_giris', 'kara_hol', 19, 27, 'n', 2, 'none'),
-  door('kara_hol', 'k_final', 19, 15, 'n', 2, 'none'),
+  { ...door('avlu_giris', 'kara_hol', 19, 27, 'n', 2, 'kill_lock'), opensOn: { boss: 'boss_nefris' } },
+  { ...door('kara_hol', 'k_final', 19, 15, 'n', 2, 'kill_lock'), opensOn: { boss: 'boss_kevvas' } },
   door('k_final', 'zakhar_sunagi', 19, 14, 'n', 2, 'boss_lock'),
 ];
 
 const PACKS_RAW: PackDef[] = [
-  pack('d4_p01', 'avlu_giris', 16, 30.5, 13, [['cult_acolyte', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_acolyte', 0.48, 0.62], ['cult_acolyte', -0.88, -0.16], ['cult_acolyte', 0.83, -0.53], ['cult_acolyte', -0.28, 1.03], ['cult_acolyte', -0.53, -1.02], ['shadow_priest', -0.95, -0.81]]),
-  pack('d4_p02', 'avlu_giris', 23, 30.5, 13, [['cult_acolyte', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_acolyte', 0.48, 0.62], ['cult_acolyte', -0.88, -0.16], ['cult_acolyte', 0.83, -0.53], ['cult_acolyte', -0.28, 1.03], ['cult_acolyte', -0.53, -1.02], ['cult_summoner', 0.95, -0.81]]),
-  pack('d4_p03', 'avlu_giris', 19.5, 29, 14, [['void_demon', 0, 0], ['shade', -0.45, -1.25], ['shade', 0.45, -1.25]]),
-  pack('d4_p04', 'k_bati', 11, 29.5, 9, [['cult_assassin', 0.3, 0], ['cult_assassin', -0.38, 0.35], ['cult_assassin', 0.06, -0.66]]),
-  pack('d4_p05', 'bati_kanadi', 3, 31, 14, [['shade', 0.36, 1.3], ['shade', 0.12, 0.43], ['shade', -0.12, -0.43], ['shadow_priest', -0.36, -1.3]]),
-  pack('d4_p06', 'bati_kanadi', 6.5, 28, 13, [['shadow_spider', 0.3, 0], ['shadow_spider', -0.38, 0.35], ['shadow_spider', 0.06, -0.66], ['cult_acolyte', 0.48, 0.62], ['cult_acolyte', -0.88, -0.16], ['cult_acolyte', 0.83, -0.53], ['cult_acolyte', -0.28, 1.03]]),
-  pack('d4_p07', 'bati_kanadi', 3, 25, 14, [['void_demon', 0.3, 0], ['cult_assassin', -0.38, 0.35], ['cult_assassin', 0.06, -0.66]]),
-  pack('d4_p08', 'bati_kanadi', 6.5, 23.5, 14, [['cult_acolyte', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_summoner', -1.68, -0.76], ['void_imp', -0.82, -1.04], ['void_imp', 0.03, -1.33], ['void_imp', 0.89, -1.61]]),
-  pack('d4_p09', 'k_bati_kuzey', 4.5, 19, 9, [['cult_assassin', 0, 0], ['shade', -0.45, -1.25], ['shade', 0.45, -1.25]]),
-  pack('d4_p10', 'k_dogu', 28, 29.5, 8, [['void_imp', 0, -0.7], ['void_imp', 0, -0.23], ['void_imp', 0, 0.23], ['void_imp', 0, 0.7]]),
-  pack('d4_p11', 'dogu_kanadi', 36, 31, 16, [['cult_acolyte', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_acolyte', 0.48, 0.62], ['cult_acolyte', -0.88, -0.16], ['cult_acolyte', 0.83, -0.53], ['shadow_priest', 1.32, -0.11], ['cult_summoner', 1.09, 0.76]]),
-  pack('d4_p12', 'dogu_kanadi', 32.5, 28, 12, [['shadow_spider', 0.3, 0], ['shadow_spider', -0.38, 0.35], ['shadow_spider', 0.06, -0.66], ['shadow_spider', 0.48, 0.62]]),
-  pack('d4_p13', 'dogu_kanadi', 36.5, 25, 13, [['void_demon', 0, 0], ['shadow_priest', 1, -0.75]]),
-  pack('d4_p14', 'dogu_kanadi', 32.5, 23.5, 14, [['shade', -1.7, -0.71], ['shade', -1.02, -0.43], ['void_imp', -0.34, -0.14], ['void_imp', 0.34, 0.14], ['void_imp', 1.02, 0.43], ['void_imp', 1.7, 0.71]]),
-  pack('d4_p15', 'k_dogu_kuzey', 34.5, 19, 8, [['void_demon', 0, 0]]),
-  pack('d4_p16', 'kara_hol', 16.5, 24, 15, [['cult_acolyte', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_acolyte', 0.48, 0.62], ['cult_acolyte', -0.88, -0.16], ['cult_acolyte', 0.83, -0.53], ['cult_acolyte', -0.28, 1.03], ['cult_acolyte', -0.53, -1.02], ['cult_acolyte', 1.15, 0.42], ['cult_acolyte', -1.2, 0.49], ['cult_summoner', 0.42, 1.18]]),
-  pack('d4_p17', 'kara_hol', 22.5, 24, 16, [['void_demon', 0, 0], ['shadow_priest', 1.22, 0.53], ['shade', 0.6, 1.19]]),
-  pack('d4_p18', 'kara_hol', 16.5, 18, 12, [['shadow_spider', 0.3, 0], ['shadow_spider', -0.38, 0.35], ['cult_assassin', 0.06, -0.66], ['cult_assassin', 0.48, 0.62]]),
-  pack('d4_p19', 'kara_hol', 22.5, 18, 18, [['cult_summoner', 0.6, -2.17], ['void_imp', 0.36, -1.3], ['void_imp', 0.12, -0.43], ['void_imp', -0.12, 0.43], ['void_imp', -0.36, 1.3], ['shadow_priest', -0.6, 2.17]]),
-  pack('d4_p20', 'kara_hol', 19.5, 21, 12, [['void_demon', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_acolyte', 0.48, 0.62], ['cult_acolyte', -0.88, -0.16]], { patrol: [[15.5, 21], [23.5, 21]] }),
+  pack('d4_p01', 'avlu_giris', 16, 30.5, undefined, [['cult_acolyte', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_acolyte', 0.48, 0.62], ['cult_acolyte', -0.88, -0.16], ['cult_acolyte', 0.83, -0.53], ['cult_acolyte', -0.28, 1.03], ['cult_acolyte', -0.53, -1.02], ['shadow_priest', -0.95, -0.81]]),
+  pack('d4_p02', 'avlu_giris', 23, 30.5, undefined, [['cult_acolyte', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_acolyte', 0.48, 0.62], ['cult_acolyte', -0.88, -0.16], ['cult_acolyte', 0.83, -0.53], ['cult_acolyte', -0.28, 1.03], ['cult_acolyte', -0.53, -1.02], ['cult_summoner', 0.95, -0.81]]),
+  pack('d4_p03', 'avlu_giris', 19.5, 29, undefined, [['void_demon', 0, 0], ['shade', -0.45, -1.25], ['shade', 0.45, -1.25]]),
+  pack('d4_p04', 'k_bati', 11, 29.5, undefined, [['cult_assassin', 0.3, 0], ['cult_assassin', -0.38, 0.35], ['cult_assassin', 0.06, -0.66]]),
+  pack('d4_p05', 'bati_kanadi', 3, 31, undefined, [['shade', 0.36, 1.3], ['shade', 0.12, 0.43], ['shade', -0.12, -0.43], ['shadow_priest', -0.36, -1.3]]),
+  pack('d4_p06', 'bati_kanadi', 6.5, 28, undefined, [['shadow_spider', 0.3, 0], ['shadow_spider', -0.38, 0.35], ['shadow_spider', 0.06, -0.66], ['cult_acolyte', 0.48, 0.62], ['cult_acolyte', -0.88, -0.16], ['cult_acolyte', 0.83, -0.53]]),
+  pack('d4_p07', 'bati_kanadi', 3, 25, undefined, [['void_demon', 0.3, 0], ['cult_assassin', -0.38, 0.35], ['cult_assassin', 0.06, -0.66]]),
+  pack('d4_p08', 'bati_kanadi', 6.5, 23.5, undefined, [['cult_acolyte', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_summoner', -1.68, -0.76], ['void_imp', -0.82, -1.04], ['void_imp', 0.03, -1.33]]),
+  pack('d4_p09', 'k_bati_kuzey', 4.5, 19, undefined, [['cult_assassin', 0, 0], ['shade', -0.45, -1.25], ['shade', 0.45, -1.25]]),
+  pack('d4_p10', 'k_dogu', 28, 29.5, undefined, [['void_imp', 0, -0.7], ['void_imp', 0, -0.23], ['void_imp', 0, 0.23], ['void_imp', 0, 0.7]]),
+  pack('d4_p11', 'dogu_kanadi', 36, 31, undefined, [['cult_acolyte', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_acolyte', 0.83, -0.53], ['shadow_priest', 1.32, -0.11], ['cult_summoner', 1.09, 0.76]]),
+  pack('d4_p12', 'dogu_kanadi', 32.5, 28, undefined, [['shadow_spider', 0.3, 0], ['shadow_spider', -0.38, 0.35], ['shadow_spider', 0.06, -0.66], ['shadow_spider', 0.48, 0.62]], { patrol: [[31.5, 25.5], [35.5, 25.5]] }),
+  pack('d4_p13', 'dogu_kanadi', 36.5, 25, undefined, [['void_demon', 0, 0], ['shadow_priest', 1, -0.75]]),
+  pack('d4_p14', 'dogu_kanadi', 32.5, 23.5, undefined, [['shade', -1.7, -0.71], ['shade', -1.02, -0.43], ['void_imp', -0.34, -0.14], ['void_imp', 0.34, 0.14], ['void_imp', 1.02, 0.43], ['void_imp', 1.7, 0.71]]),
+  pack('d4_p15', 'k_dogu_kuzey', 34.5, 19, undefined, [['void_demon', 0, 0]]),
+  pack('d4_p16', 'kara_hol', 16.5, 24, undefined, [['cult_acolyte', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_acolyte', 0.48, 0.62], ['cult_acolyte', -0.88, -0.16], ['cult_acolyte', 0.83, -0.53], ['cult_acolyte', -0.28, 1.03], ['cult_acolyte', -0.53, -1.02], ['cult_acolyte', 1.15, 0.42], ['cult_acolyte', -1.2, 0.49], ['cult_summoner', 0.42, 1.18]]),
+  pack('d4_p17', 'kara_hol', 22.5, 24, undefined, [['void_demon', 0, 0], ['shadow_priest', 1.22, 0.53], ['shade', 0.6, 1.19]]),
+  pack('d4_p18', 'kara_hol', 16.5, 18, undefined, [['shadow_spider', 0.3, 0], ['shadow_spider', -0.38, 0.35], ['cult_assassin', 0.06, -0.66], ['cult_assassin', 0.48, 0.62]]),
+  pack('d4_p19', 'kara_hol', 22.5, 18, undefined, [['cult_summoner', 0.6, -2.17], ['void_imp', 0.36, -1.3], ['void_imp', 0.12, -0.43], ['void_imp', -0.12, 0.43], ['void_imp', -0.36, 1.3], ['shadow_priest', -0.6, 2.17]]),
+  pack('d4_p20', 'kara_hol', 19.5, 21, undefined, [['void_demon', 0.3, 0], ['cult_acolyte', -0.38, 0.35], ['cult_acolyte', 0.06, -0.66], ['cult_acolyte', 0.48, 0.62], ['cult_acolyte', -0.88, -0.16]], { patrol: [[15.5, 21], [23.5, 21]] }),
 ];
 
 const PACKS: PackDef[] = PACKS_RAW.map(R.remapPack);
@@ -469,12 +469,24 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
 const PACK_EXTRA: Record<string, Partial<PackDef>> = {
   d4_p01: { big: true, note: 'Courtyard big pull: p01 + p02 + the void demon of p03 = 23 enemies (10 m apart).' },
   d4_p02: { big: true },
-  d4_p03: { note: 'Stands in front of the Kara Hol door; link risk with p01/p02 if pulled carelessly.' },
+  d4_p03: { linkedTo: ['d4_p01'], note: 'Stands in front of the Kara Hol door; linked to p01, so a careless pull takes the courtyard along.' },
   d4_p04: { stealth: true, note: 'Assassins wait in stealth in the dark corridor.' },
   d4_p07: { note: 'Two assassins hide in stealth next to the void demon.' },
+  d4_p09: { dormant: { kind: 'statue', wakeRadius: 5 }, note: 'Assassin and two shades as statues on the north stair: they wake within 5 m.' },
+  d4_p15: { dormant: { kind: 'statue', wakeRadius: 6 }, note: 'Void demon statue on the east stair: wakes within 6 m.' },
   d4_p16: { big: true, note: 'Eleven acolytes: Fanatik rewards killing them all at once.' },
   d4_p18: { note: 'Skippable in route B.' },
   d4_p20: { big: true, note: 'Patrol crosses the nave W-E between the four packs. Skippable in route B.' },
+};
+/** Room atmospheres (fog blend): calm in the courtyard, tension in the wings, set piece in the three boss rooms. */
+const ATMOSPHERES = {
+  calm: { color: 0x0a0514, near: 5, far: 28 },
+  tension: { color: 0x14081e, near: 4, far: 24 },
+  set_piece: { color: 0x1e0a2a, near: 6, far: 30 },
+};
+const ATMO: Record<string, string> = {
+  giris: 'calm', avlu_giris: 'calm', bati_kanadi: 'tension', dogu_kanadi: 'tension', kara_hol: 'tension',
+  nefris_odasi: 'set_piece', kevvas_cukuru: 'set_piece', zakhar_sunagi: 'set_piece',
 };
 
 const EXTRAS: NonNullable<DungeonDef['extras']> = {
@@ -482,6 +494,7 @@ const EXTRAS: NonNullable<DungeonDef['extras']> = {
   shrines: [{ type: 'shrine_haste', pos: pt(...R.at2(1, 33)) }, { type: 'shrine_power', pos: pt(...R.at2(25, 33)) }],
   riftSpots: ([[19.5, 31], [4.5, 27], [35, 27], [19.5, 21], [12, 29.5], [28, 29.5]] as [number, number][]).map(([x, z]) => pt(...R.at2(x, z))),
   chests: [{ pos: pt(...R.at2(38, 33)), kind: 'chest_gold' }],
+  checkpoints: [pt(...R.at2(19.5, 22))],
 };
 
 export const GOLGE_TAPINAGI: DungeonDef = {
@@ -491,10 +504,11 @@ export const GOLGE_TAPINAGI: DungeonDef = {
   lore: 'Gölge Tarikatı, yüzyıllardır mühürlü olan tapınağı yeniden açtı. Müritler gece gündüz ayin yapıyor; amaçları, tapınağın derinliklerinde uyuyan İblis Lordu Zakhar\'ı uyandırmak. Gözcü Nefris gölgelerden izler, Yutucu Kevvas boşluk çukurunda açlıkla bekler. Mühürler zayıflıyor. Zaman daralıyor.',
   levelRange: [42, 52],
   timerSec: 910,
-  forcesRequired: 210,
+  forcesRequired: 201, // floor(0.8 x 252 total pack forces, auto sums)
   theme: THEME,
   grid: { w: 40, h: 42 },
-  rooms: withProps(ROOMS.map((r) => ({ ...r, ...ROOM_EXTRA[r.id] })), D.out),
+  rooms: withProps(ROOMS.map((r) => ({ ...r, ...ROOM_EXTRA[r.id], ...(ATMO[r.id] ? { atmosphere: ATMO[r.id] } : {}) })), D.out),
+  atmospheres: ATMOSPHERES,
   doors: DOORS,
   packs: PACKS.map((p) => (PACK_EXTRA[p.id] ? { ...p, ...PACK_EXTRA[p.id] } : p)),
   bosses: BOSSES,
