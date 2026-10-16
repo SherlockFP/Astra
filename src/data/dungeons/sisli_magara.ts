@@ -9,21 +9,21 @@ import { bossAt, door, pack, room } from './kit';
  */
 
 const THEME: DungeonTheme = {
-  fogColor: 0x1e2a2c, fogNear: 10, fogFar: 44, ambient: 0x4a5a58, ambientIntensity: 0.4, hemiSky: 0x7a8c96, hemiGround: 0x2a2418,
+  fogColor: 0x1e2a2c, fogNear: 14, fogFar: 60, ambient: 0x4a5a58, ambientIntensity: 0.4, hemiSky: 0x7a8c96, hemiGround: 0x2a2418,
   torchColor: 0xffb070, bloomStrength: 0.25, music: 'dungeon_crypt', palette: [0x35403e, 0x6f7f78, 0xd6d8cc, 0x9fd8e8, 0xffb070], tint: 0xcfd8d4,
 };
 
 const ROOMS: RoomDef[] = [
-  room('mag_giris', 'Mağara Ağzı', 2, 26, 8, 8, 'dirt', 'cave', 0.4),
-  room('mag_gecit', 'Sis Geçidi', 10, 27, 6, 6, 'dirt', 'cave', 0.3),
-  room('mag_salon', 'Sisli Salon', 16, 20, 10, 12, 'stone_dark', 'cave', 0.5),
-  room('mag_orta', 'Orta Mezar', 14, 10, 14, 10, 'stone', 'cave', 0.4, { boss: 1 }),
-  room('mag_son', 'Kadim Oda', 14, 2, 14, 8, 'tiles', 'stone', 0.3, { boss: 2 }),
+  room('mag_giris', 'Mağara Ağzı', 2, 26, 8, 8, 'dirt', 'cave', 0.4, { ceiling: 10 }),
+  room('mag_gecit', 'Sis Geçidi', 10, 25, 6, 8, 'dirt', 'cave', 0.3, { ceiling: 10 }),
+  room('mag_salon', 'Sisli Salon', 16, 20, 10, 12, 'stone_dark', 'cave', 0.5, { ceiling: 12 }),
+  room('mag_orta', 'Orta Mezar', 14, 10, 14, 10, 'stone', 'cave', 0.4, { boss: 1, ceiling: 12 }),
+  room('mag_son', 'Kadim Oda', 14, 2, 14, 8, 'tiles', 'stone', 0.3, { boss: 2, ceiling: 10 }),
 ];
 
 const DOORS = [
-  door('mag_giris', 'mag_gecit', 9, 28, 'e', 4, 'none'),
-  door('mag_gecit', 'mag_salon', 15, 28, 'e', 4, 'none'),
+  door('mag_giris', 'mag_gecit', 9, 27, 'e', 6, 'none'),
+  door('mag_gecit', 'mag_salon', 15, 25, 'e', 6, 'none'),
   door('mag_salon', 'mag_orta', 20, 20, 'n', 4, 'none'),
   door('mag_orta', 'mag_son', 20, 10, 'n', 4, 'boss_lock'),
 ];
@@ -40,18 +40,22 @@ const PACKS = [
   pack('m_p05', 'mag_salon', 23, 23, undefined, [['crypt_ghoul', 0.3, 0], ['skel_minion', -0.38, 0.35]]),
   pack('m_p06', 'mag_salon', 18, 28, undefined, [['skel_rattler', 0.3, 0], ['skel_rattler', -0.38, 0.35]]),
   pack('m_p07', 'mag_salon', 23, 28, undefined, [['skel_warrior', 0, 0], ['skel_mage', 1.0, -0.6]]),
-  pack('m_p08', 'mag_salon', 20, 25, undefined, [['skel_minion', 0.3, 0], ['skel_minion', -0.38, 0.35]]),
+  pack('m_p08', 'mag_salon', 20, 25, undefined, [['skel_minion', 0.3, 0], ['skel_mage', -0.38, 0.35]]),
   pack('m_p13', 'mag_salon', 17.5, 21.5, undefined, [['skel_minion', 0.3, 0], ['skel_rattler', -0.38, 0.35]]),
   pack('m_p09', 'mag_orta', 24, 13, undefined, [['skel_minion', 0.3, 0], ['skel_archer', -0.82, -1.04]]),
   pack('m_p14', 'mag_orta', 17, 16, undefined, [['skel_rattler', 0.3, 0], ['skel_rattler', -0.38, 0.35]]),
   pack('m_p10', 'mag_son', 18, 5, undefined, [['skel_warrior', 0.3, 0], ['skel_minion', -0.38, 0.35]]),
-  pack('m_p11', 'mag_son', 23, 4, undefined, [['skel_minion', 0.3, 0], ['skel_minion', -0.38, 0.35]]),
+  pack('m_p11', 'mag_son', 23, 4, undefined, [['skel_minion', 0.3, 0], ['skel_mage', -0.38, 0.35]]),
   pack('m_p12', 'mag_son', 16, 4, undefined, [['crypt_ghoul', 0.3, 0], ['skel_rattler', -0.38, 0.35]]),
 ];
 
 const START: [number, number] = [5, 30];
 const FONT: [number, number] = [5, 33];
 const EXIT: [number, number] = [21, 4];
+
+/** Raised boss dais in Orta Mezar: a 2 m platform (6 x 6 tiles) with a stone ramp on its south edge (vertical dungeon). */
+const HEIGHT_AREAS = [{ id: 'orta_dais', rect: { x: 17, z: 11, w: 6, h: 6 }, y: 2, rim: 'rail' as const, floor: 'stone' as const }];
+const SLOPES = [{ id: 'orta_ramp', kind: 'ramp' as const, rect: { x: 17, z: 17, w: 6, h: 2 }, axis: 'z' as const, yFrom: 2, yTo: 0, style: 'stone' as const }];
 
 export const SISLI_MAGARA: DungeonDef = {
   id: 'sisli_magara',
@@ -64,7 +68,8 @@ export const SISLI_MAGARA: DungeonDef = {
   trashDmgMult: 0.45,
   theme: THEME,
   grid: { w: 30, h: 36 },
-  rooms: ROOMS,
+  vertical: true,
+  rooms: ROOMS.map((r) => (r.id === 'mag_orta' ? { ...r, heightAreas: HEIGHT_AREAS, slopes: SLOPES } : r)),
   doors: DOORS,
   packs: PACKS,
   bosses: [
@@ -77,5 +82,7 @@ export const SISLI_MAGARA: DungeonDef = {
     fontOfPower: FONT,
     shrines: [{ type: 'shrine_power', pos: [22, 31] }, { type: 'shrine_ward', pos: [18, 14] }],
     riftSpots: [],
+    /** Optional treasure in the side corners of the gecit and the entry hall (no pack on the route). */
+    chests: [{ pos: [10.5, 25.5], kind: 'chest_wood' }, { pos: [2.5, 26.5], kind: 'chest_iron' }],
   },
 };
