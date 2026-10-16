@@ -1087,15 +1087,17 @@ boss({
   visual: { attach: [...W_BLADE, { url: WPN('Skeleton_Shield_Large_A'), bone: 'handslot.l', pos: [0, 0.017, 0.05] }], eyeEmissive: 0xff5030, runRef: 7, glow: 0xff4020 },
   basic: cone('kaldur_cleave', 'Kesik', 4, 100, 2.2, 1.0, '1H_Melee_Attack_Slice_Horizontal', 0.3, { windup: 0.6, telegraph: true }),
   abilities: [
-    line('kaldur_shield_slam', 'Kalkan Yarması', 8, 3, 16, 1.0, 4.0, 'physical', 'Block_Attack', 0.4, { initialCooldown: 6, knockback: 6, statuses: [{ status: 'sunder', duration: 10 }], sfx: 'shield_bash', perilous: true, params: { impact: 0.4 } }),
+    line('kaldur_shield_slam', 'Kalkan Yarması', 8, 3, 16, 1.0, 4.0, 'physical', 'Block_Attack', 0.4, { initialCooldown: 6, tankBuster: true, knockback: 6, statuses: [{ status: 'sunder', duration: 10 }], sfx: 'shield_bash', perilous: true, params: { impact: 0.4 } }),
     custom('kaldur_whirl', 'Kemik Kasırgası', 30, 15, 1.5, '2H_Melee_Attack_Spinning', { sfx: 'boss_cast', damage: { coef: 0.8, type: 'physical' }, params: { impact: 0.667 } }),
+    // raid beat with a 2.5 s cast bar: a r 9 bone quake around the boss; the ring outside it is the safe spot (and the spin's path)
+    aoe('kaldur_quake', 'Mezar Sarsıntısı', 'self_aoe', 9, 9, 16, 2.5, 0.9, 'physical', 'Taunt', 2.5, { initialCooldown: 12, castTime: 2.5, sfx: 'boss_cast' }),
     custom('kaldur_shield_wall', 'Kalkan Duvarı', 40, 25, 0.3, '', { sfx: 'buff' }),
     custom('kaldur_call', 'Mezarlık Çağrısı', 99, 9999, 1.4, 'Taunt', { sfx: 'boss_roar' }),
   ],
   phases: [
-    bp('p1', 1.01, ['kaldur_shield_slam', 'kaldur_whirl', 'kaldur_shield_wall']),
-    bp('p2', 0.7, ['kaldur_shield_slam', 'kaldur_whirl', 'kaldur_shield_wall'], { yell: 'Kalkın, kardeşlerim!', ability: 'kaldur_call' }),
-    bp('p3', 0.35, ['kaldur_shield_slam', 'kaldur_whirl', 'kaldur_shield_wall'], { yell: 'Kalkın, kardeşlerim!', ability: 'kaldur_call' }),
+    bp('p1', 1.01, ['kaldur_shield_slam', 'kaldur_quake', 'kaldur_whirl', 'kaldur_shield_wall']),
+    bp('p2', 0.7, ['kaldur_shield_slam', 'kaldur_quake', 'kaldur_whirl', 'kaldur_shield_wall'], { yell: 'Kalkın, kardeşlerim!', ability: 'kaldur_call' }),
+    bp('p3', 0.35, ['kaldur_shield_slam', 'kaldur_quake', 'kaldur_whirl', 'kaldur_shield_wall'], { yell: 'Kalkın, kardeşlerim!', ability: 'kaldur_call' }),
   ],
   intro: 'Mahzenin kapısını hiçbir canlı geçemez!', death: 'Nöbetim... sona erdi...',
   arena: { cx: 32, cz: 28, w: 48, h: 48, homeX: 32, homeZ: 23.64 },
@@ -1108,14 +1110,16 @@ boss({
   visual: { attach: [{ url: WPN('Skeleton_Staff'), bone: 'handslot.r', pos: [0, 0, 0], rotY: Math.PI }], eyeEmissive: 0x60ff90, runRef: 7, glow: 0x60ff90 },
   basic: proj('morkan_bolt', 'Gölge Oku', 16, 40, 2.5, 0.8, 1.0, 'shadow', 'shadow_projectile', 'Spellcast_Shoot', 0.3, { sfx: 'shadow_cast' }),
   abilities: [
+    // tank buster: a telegraphed shadow lance from the caster through the tank (not parryable), poison stacks
+    line('morkan_lance', 'Gölge Mızrağı', 12, 2.5, 12, 1.5, 3.0, 'shadow', 'Spellcast_Shoot', 1.2, { initialCooldown: 8, tankBuster: true, statuses: [poison(1, 0.15, 8)], sfx: 'shadow_cast' }),
     custom('morkan_raise', 'Ölüleri Kaldır', 20, 10, 3.0, 'Spellcast_Summon', { castTime: 3.0, interruptible: true, sfx: 'boss_cast', params: { impact: 4.2 } }),
     custom('morkan_prison', 'Kemik Hapsi', 25, 14, 1.5, 'Spellcast_Raise', { sfx: 'boss_cast', params: { impact: 1.0 } }),
     custom('morkan_corpse_explosion', 'Ceset Patlaması', 18, 20, 3.0, 'Spellcast_Long', { sfx: 'boss_cast', params: { impact: 1.55 } }),
     custom('morkan_soul_storm', 'Ruh Fırtınası', 999, 9999, 0.5, 'Spellcasting', { castTime: 0.5, interruptible: false, sfx: 'boss_cast', params: { channel: 8, loop: 1 } }),
   ],
   phases: [
-    bp('p1', 1.01, ['morkan_raise', 'morkan_prison', 'morkan_corpse_explosion']),
-    bp('p2', 0.4, ['morkan_raise', 'morkan_prison', 'morkan_corpse_explosion'], { yell: 'Kuyu! Bana güç ver!', ability: 'morkan_soul_storm' }),
+    bp('p1', 1.01, ['morkan_lance', 'morkan_raise', 'morkan_prison', 'morkan_corpse_explosion']),
+    bp('p2', 0.4, ['morkan_lance', 'morkan_raise', 'morkan_prison', 'morkan_corpse_explosion'], { yell: 'Kuyu! Bana güç ver!', ability: 'morkan_soul_storm' }),
   ],
   intro: 'Ruhlarınız kuyuyu besleyecek!', death: 'Ölüm... beni de... çağırıyor...',
   arena: { cx: 136, cz: 88, w: 48, h: 48, homeX: 138.4, homeZ: 78.4 },
@@ -1167,8 +1171,8 @@ boss({
   ],
   phases: [
     bp('p1', 1.01, ['azrakel_spears', 'azrakel_grave_chill', 'azrakel_soul_reap']),
-    bp('p2', 0.6, [], { yell: 'Filakterlerim beni sonsuza dek yaşatacak!', ability: 'azrakel_phylactery' }),
-    bp('p3', 0.599, ['azrakel_spears', 'azrakel_grave_chill', 'azrakel_soul_reap', 'azrakel_death_rings']),
+    bp('p2', 0.5, [], { yell: 'Filakterlerim beni sonsuza dek yaşatacak!', ability: 'azrakel_phylactery' }),
+    bp('p3', 0.499, ['azrakel_spears', 'azrakel_grave_chill', 'azrakel_soul_reap', 'azrakel_death_rings']),
     bp('p4', 0.3, ['azrakel_spears', 'azrakel_grave_chill', 'azrakel_soul_reap', 'azrakel_death_rings'], { yell: 'Kemiklerinizi tahtıma ekleyeceğim!', ability: 'azrakel_last_breath' }),
   ],
   intro: 'Diriler... Mahzenime hoş geldiniz. Bir daha asla çıkamayacaksınız!', death: 'İmkânsız... ben... ölümsüzdüm...',

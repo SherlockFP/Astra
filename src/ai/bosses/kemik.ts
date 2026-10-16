@@ -336,6 +336,8 @@ const azrakel: BossScript = {
         const pts = [0, 1, 2, 3].map(() => c.randomPoint(4));
         c.spawnAdds('skel_rattler', 4, { positions: pts, tag: 'add' });
         for (const p of pts) bossFx('death_bones', p.x, p.z, { scale: 0.9 });
+        // recombined soak: a Ruh Hasadı marks up to 3 players during each rattler wave
+        c.castNow('azrakel_soul_reap');
       });
       const standing = c.adds('phyl').filter((o) => !o.isDead && !o.removed).length;
       if (ph.t > 2 && (standing === 0 || ph.t >= 40)) endPhylactery(c);
