@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { DONE, TAU, debris, decal, dust, flames, flare, mix, motes, ringFlat, rnd, smoke, sparks, v3, type Ctx, type Fx } from './Fx';
 import type { Preset } from './presets_combat';
+import { G } from '../game/G';
 
 const up = (p: THREE.Vector3, h: number): THREE.Vector3 => new THREE.Vector3(p.x, p.y + h, p.z);
 const gnd = (p: THREE.Vector3, y = 0.08): THREE.Vector3 => new THREE.Vector3(p.x, y, p.z);
@@ -17,7 +18,9 @@ export const elementalPresets: Record<string, Preset> = {
   fire_burst(fx, c) {
     const s = c.s;
     const col = c.color(0xff7a1a);
-    const ctr = up(c.p, c.p.y < 0.4 ? 0.7 : 0);
+    // a ground burst is lifted to chest height: the test is the height above the ground, not above y 0 (rolling terrain)
+    const above = c.p.y - (G.world?.groundY(c.p.x, c.p.z) ?? 0);
+    const ctr = up(c.p, above < 0.4 ? 0.7 : 0);
     flare(fx, ctr, 4.2 * s, col, 0.24, 'explosion-01', 2.8);
     flare(fx, ctr, 2.4 * s, 0xffffff, 0.13, 'star-05', 3.2, 2);
     flames(fx, ctr, { n: 12, r: 0.5 * s, size: [1.2 * s, 1.9 * s], rise: 1.4, spread: 2.8, c0: 0xffa83a, c1: mix(col, 0xb01800, 0.6), life: [0.35, 0.75], tex: ['fire-01', 'fire-02', 'flame-02'] });
@@ -61,12 +64,14 @@ export const elementalPresets: Record<string, Preset> = {
     const s = c.s;
     const fall = c.dur(0.9);
     const d = c.hasDir ? c.dir : v3(0.5, 0, 0.45).normalize();
-    const start = new THREE.Vector3(c.p.x - d.x * 10, 26, c.p.z - d.z * 10);
-    const end = c.p.clone();
-    end.y = 0.2;
+    // The landing point is on the ground under the aim point: VFX.makeCtx lifts the spawn height onto rolling terrain, so the
+    // fall and the landing follow World.groundY (a fixed 0.2 would sink the impact under a hill). Flat maps read 0 here.
+    const gy = G.world?.groundY(c.p.x, c.p.z) ?? 0;
+    const start = new THREE.Vector3(c.p.x - d.x * 10, gy + 26, c.p.z - d.z * 10);
+    const end = new THREE.Vector3(c.p.x, gy + 0.2, c.p.z);
     const c2: Ctx = { ...c, p: start, follow: null };
     // warning glow on the ground
-    fx.add.spawn({ tex: 'aura-02', mode: 'flat', at: [end.x, 0.07, end.z], size: 1, size1: 4.4 * s, life: fall, c0: 0xff4010, glow: 1, a: 0.5, fi: 0.1, fp: 0.4 });
+    fx.add.spawn({ tex: 'aura-02', mode: 'flat', at: [end.x, gy + 0.07, end.z], size: 1, size1: 4.4 * s, life: fall, c0: 0xff4010, glow: 1, a: 0.5, fi: 0.1, fp: 0.4 });
     return fx.loop(
       c2,
       fall,
@@ -86,6 +91,8 @@ export const elementalPresets: Record<string, Preset> = {
         fx.add.spawn({ tex: 'streak', mode: 'stretch', at: L.pos, vel: [-d.x * 14, 8, -d.z * 14], n: L.rate(30, dt), jit: 0.3, life: [0.2, 0.4], size: 0.1, asp: 1.5, c0: 0xffffff, c1: 0xff7a20, glow: 2.4, grav: 6, fi: 0, fp: 1 });
       },
       () => {
+        // the skill path (dropMeteor) plays its own landing at the damage moment: impact:false skips this burst, ring, decals and ground fire
+        if (c.o.impact === false) return;
         fx.spawnId('fire_burst', end, { scale: 1.9 * s });
         ringFlat(fx, gnd(end), 0.5, 7.5 * s, 0xffb060, 0.55, { tex: 'ring-04', glow: 1.5, a: 0.85 });
         ringFlat(fx, gnd(end), 0.4, 5.5 * s, 0xffffff, 0.38, { tex: 'ring-02', glow: 2.2, a: 0.9 });
