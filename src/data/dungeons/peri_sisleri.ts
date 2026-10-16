@@ -185,7 +185,7 @@ const ROOMS: RoomDef[] = [
     ],
   }),
   room('yan_tunel', 'Kök Kestirmesi', 58, 32, 2, 6, 'dirt', 'cave', 0.4, {
-    floorY: 1.2, ceiling: 6, skip: true, optional: true, fog: fog(0x142418, 5, 30),
+    floorY: 1.2, ceiling: 6, skip: true, fog: fog(0x142418, 5, 30),
     props: [P(kn('hanging_moss'), 58.5, 35, { tint: 0x9cff6a })],
   }),
   room('yuva_kuyusu', 'Larva Kuyusu', 56, 38, 9, 8, 'gorm', 'cave', 0.4, {
@@ -196,7 +196,7 @@ const ROOMS: RoomDef[] = [
     props: [P(gp('bone_pile'), 63, 44, { tint: 0x8a8a50 }), P(gp('rock_cliff'), 57, 45)],
   }),
   room('tredova_magarasi', 'Dikenfak Yuvası', 54, 46, 16, 13, 'gorm', 'cave', 0.15, {
-    floorY: -2.4, ceiling: 30, boss: 3, explicitDecor: true, fog: fog(0x0f1c14, 8, 42), slopes: [ST_KOZA],
+    floorY: -2.4, ceiling: 30, boss: 3, explicitDecor: true, lightColor: 0x80ffe0, fog: fog(0x0f1c14, 8, 42), slopes: [ST_KOZA],
     heightAreas: [area('cocoon_dais', 59.5, 55, 4, 3, -1.2, 'rail')],
     tiers: [tier('ring', 8.0, 54, 46, 16, 13, { depth: 3 }), tier('colonnade', 0, 54, 46, 16, 13, { count: 8, spacing: 8 }), tier('beams', 27.0, 54, 46, 16, 13)],
     zones: [
@@ -214,6 +214,8 @@ const ROOMS: RoomDef[] = [
       P(gp('chest_gold'), 74.5, 29.8),
     ],
   }),
+  room('tredova_yolu', 'Dikenfak Geçidi', 58, 48, 2, 6, 'gorm', 'cave', 0.2, { floorY: -2.4, ceiling: 10 }),
+  room('tredova_cikis', 'Yuva Çıkışı', 58, 67, 6, 4, 'gorm', 'cave', 0.2, { floorY: -2.4, ceiling: 8 }),
 ];
 
 // ---- doors (29) -----------------------------------------------------------------------------------------------------------
@@ -223,65 +225,68 @@ const DOORS: DoorDef[] = [
   door('giris', 'k_patika', 10, 53, 'e', 2, 'none'),
   door('k_patika', 'drust_kampi', 14, 53, 'e', 2, 'none'),
   door('drust_kampi', 'k_ritual', 21, 46, 'n', 2, 'none'),
-  door('k_ritual', 'ingra_arena', 21, 42, 'n', 2, 'boss_lock'),
-  door('ingra_arena', 'kok_salonu', 21, 29, 'n', 2, 'boss_exit'),
+  door('k_ritual', 'ingra_arena', 20, 42, 'n', 4, 'boss_lock'),
+  door('ingra_arena', 'kok_salonu', 20, 29, 'n', 4, 'boss_exit'),
   door('kok_salonu', 'mantar_korusu', 16, 22, 'w', 2, 'none'),
   door('kok_salonu', 'm1', 19, 19, 'n', 2, 'none'),
-  door('m1', 'm2', 24, 9, 'e', 2, 'none'), door('m1', 'm2', 24, 11, 'e', 2, 'none'),
-  door('m1', 'm2', 24, 13, 'e', 2, 'none'), door('m1', 'm2', 24, 15, 'e', 2, 'none'),
-  door('m2', 'm3', 33, 9, 'e', 2, 'none'), door('m2', 'm3', 33, 11, 'e', 2, 'none'),
-  door('m2', 'm3', 33, 13, 'e', 2, 'none'), door('m2', 'm3', 33, 15, 'e', 2, 'none'),
-  door('m3', 'm4', 42, 9, 'e', 2, 'none'), door('m3', 'm4', 42, 11, 'e', 2, 'none'),
-  door('m3', 'm4', 42, 13, 'e', 2, 'none'), door('m3', 'm4', 42, 15, 'e', 2, 'none'),
-  door('m4', 'sis_cagiran_cayiri', 51, 14, 'e', 2, 'boss_lock'),
-  door('sis_cagiran_cayiri', 'selale_kenari', 64, 13, 'e', 2, 'boss_exit'),
+  door('m1', 'm2', 23, 11, 'e', 2, 'none'),
+  { ...door('m1', 'm2', 23, 15, 'e', 2, 'kill_lock'), opensOn: { pack: 'ps_p10' } }, // decoy lane: shut until the m1 guardian pack dies
+  door('m2', 'm3', 33, 11, 'e', 2, 'none'),
+  door('m2', 'm3', 33, 15, 'e', 2, 'none'),
+  door('m3', 'm4', 42, 11, 'e', 2, 'none'),
+  door('m3', 'm4', 42, 15, 'e', 2, 'none'),
+  door('m4', 'sis_cagiran_cayiri', 51, 13, 'e', 4, 'boss_lock'),
+  door('sis_cagiran_cayiri', 'selale_kenari', 64, 12, 'e', 4, 'boss_exit'),
   door('selale_kenari', 'havuz', 66, 17, 's', 2, 'none'),
   door('havuz', 'yuva_magarasi', 66, 23, 's', 2, 'none'),
   door('yuva_magarasi', 'yuva_koprusu', 61, 32, 's', 2, 'none'),
-  door('yuva_magarasi', 'yan_tunel', 58, 32, 's', 2, 'none'),
+  { ...door('yuva_magarasi', 'yan_tunel', 58, 32, 's', 2, 'kill_lock'), opensOn: { boss: 'boss_sis_cagiran' } },
   door('yuva_koprusu', 'yuva_kuyusu', 61, 38, 's', 2, 'none'),
   door('yan_tunel', 'yuva_kuyusu', 58, 38, 's', 2, 'none'),
-  door('yuva_kuyusu', 'tredova_magarasi', 59, 47, 's', 2, 'boss_lock'),
+  door('yuva_kuyusu', 'tredova_yolu', 58, 47, 's', 2, 'none'),
+  door('tredova_yolu', 'tredova_magarasi', 58, 53, 's', 2, 'boss_lock'),
+  door('tredova_magarasi', 'tredova_cikis', 58, 66, 's', 4, 'boss_exit'),
   door('yuva_magarasi', 'peri_halkasi', 74, 26, 'e', 2, 'none'),
 ];
 
 // ---- packs (30; forces are the member sums, 463 in total) --------------------------------------------------------------
 const BRIDGE_LANE = (): PackDef => pack('ps_p25', 'yuva_koprusu', 61.5, 35.5, undefined, [
   ['ps_gorger', 0, -1.75], ['ps_gorger', 0, -1.25],
-  ['ps_larva', 0, -0.75], ['ps_larva', 0, -0.25], ['ps_larva', 0, 0.25], ['ps_larva', 0, 0.75], ['ps_larva', 0, 1.25], ['ps_larva', 0, 1.75],
+  ['ps_larva', 0, -0.75], ['ps_larva', 0, -0.25], ['ps_larva', 0, 0.25], ['ps_larva', 0, 0.75],
 ]);
 
 const PACKS: PackDef[] = [
-  packN('ps_p01', 'drust_kampi', 18, 56, [['ps_spiteclaw', 8]], { stealth: true }),
+  packN('ps_p00', 'giris', 7.5, 56, [['ps_villager', 2], ['ps_spiteclaw', 1]]),
+  packN('ps_p01', 'drust_kampi', 18, 56, [['ps_spiteclaw', 4], ['ps_villager', 2]], { stealth: true }),
   packN('ps_p02', 'drust_kampi', 19.5, 50, [['ps_soulcleaver', 2], ['ps_harvester', 1], ['ps_villager', 1]]),
   packN('ps_p03', 'drust_kampi', 24.5, 51, [['ps_soulcleaver', 2], ['ps_harvester', 2]], { big: true }),
-  packN('ps_p04', 'drust_kampi', 22, 47.5, [['ps_boughbreaker', 2]]),
+  packN('ps_p04', 'drust_kampi', 22, 47.5, [['ps_boughbreaker', 1], ['ps_soulcleaver', 1]]),
   packN('ps_p05', 'drust_kampi', 21, 56, [['ps_spiteclaw', 3], ['ps_soulcleaver', 1]], { patrol: [[25.5, 56], [19, 56]] }),
   // two-tile corridor: members in a line along z (the spiral would hug the walls)
-  pack('ps_p06', 'k_ritual', 22, 42.9, undefined, [['ps_harvester', 0, -0.45], ['ps_harvester', 0, 0.45]]),
+  pack('ps_p06', 'k_ritual', 22, 43.6, undefined, [['ps_harvester', 0, -0.45], ['ps_villager', 0, 0.45]]),
   packN('ps_p07', 'kok_salonu', 18.5, 22.5, [['ps_soulcleaver', 1], ['ps_harvester', 1], ['ps_spiteclaw', 4]]),
   packN('ps_p08', 'kok_salonu', 24, 22.5, [['ps_villager', 1], ['ps_harvester', 1]]),
-  packN('ps_p09', 'mantar_korusu', 10.5, 26.8, [['ps_villager', 2]], { optional: true }),
-  packN('ps_p10', 'm1', 19.5, 17, [['ps_guardian', 2], ['ps_shaper', 1], ['ps_stinger', 1]]),
-  packN('ps_p11', 'm1', 20, 12.5, [['ps_stalker', 2], ['ps_villager', 1]]),
+  packN('ps_p09', 'mantar_korusu', 10.5, 26.8, [['ps_villager', 1], ['ps_stalker', 1]], { optional: true }),
+  packN('ps_p10', 'm1', 19.5, 17, [['ps_guardian', 2], ['ps_shaper', 1], ['ps_stinger', 1]], { linkedTo: ['ps_p11'] }),
+  packN('ps_p11', 'm1', 20, 12.5, [['ps_stalker', 2], ['ps_villager', 1]], { linkedTo: ['ps_p10'] }),
   packN('ps_p12', 'm2', 27.5, 15, [['ps_matriarch', 1], ['ps_guardian', 2]], { big: true }),
   packN('ps_p13', 'm2', 27, 11.5, [['ps_tender', 1], ['ps_stinger', 2], ['ps_guardian', 1]]),
-  packN('ps_p14', 'm3', 35.5, 15, [['ps_guardian', 2], ['ps_shaper', 1], ['ps_tender', 1], ['ps_stinger', 2], ['ps_stalker', 1]], { big: true }),
-  packN('ps_p15', 'm3', 35.5, 19, [['ps_nightblossom', 1]]),
+  packN('ps_p14', 'm3', 35.5, 15, [['ps_guardian', 2], ['ps_shaper', 1], ['ps_tender', 1], ['ps_stinger', 1], ['ps_stalker', 1]], { big: true }),
+  packN('ps_p15', 'm3', 35.5, 19, [['ps_nightblossom', 1], ['ps_villager', 1]]),
   packN('ps_p16', 'm3', 34, 11.5, [['ps_stinger', 2], ['ps_guardian', 1]]),
   packN('ps_p17', 'm4', 43.5, 16.5, [['ps_shaper', 1], ['ps_guardian', 2], ['ps_stinger', 1]]),
   packN('ps_p18', 'm4', 43.5, 12, [['ps_villager', 1], ['ps_stalker', 1]]),
-  packN('ps_p19', 'm4', 43.5, 15, [['ps_guardian', 2]], { patrol: [[41, 19], [46, 19], [46, 11], [41, 11]] }),
-  packN('ps_p20', 'havuz', 65, 21, [['ps_gorger', 2]]),
+  packN('ps_p19', 'm4', 43.5, 15, [['ps_guardian', 1], ['ps_stinger', 1]], { patrol: [[41, 19], [46, 19], [46, 11], [41, 11]] }),
+  packN('ps_p20', 'havuz', 65, 21, [['ps_gorger', 1], ['ps_villager', 1]]),
   packN('ps_p21', 'yuva_magarasi', 61, 27.5, [['ps_staghorn', 1], ['ps_gorger', 2]], { stealth: true }),
-  packN('ps_p22', 'yuva_magarasi', 66, 26, [['ps_larva', 8], ['ps_reaver', 1]], { dormant: { kind: 'egg', wakeRadius: 6 } }),
+  packN('ps_p22', 'yuva_magarasi', 66, 26, [['ps_larva', 7], ['ps_reaver', 1]], { dormant: { kind: 'egg', wakeRadius: 6 } }),
   packN('ps_p23', 'yuva_magarasi', 68.5, 29.5, [['ps_gorger', 2], ['ps_reaver', 1], ['ps_staghorn', 1]]),
   packN('ps_p24', 'yuva_magarasi', 63.5, 30, [['ps_reaver', 2], ['ps_gorger', 2]]),
   BRIDGE_LANE(),
-  packN('ps_p26', 'yan_tunel', 58.5, 34.5, [['ps_staghorn', 1]], { optional: true }),
+  packN('ps_p26', 'yan_tunel', 58.5, 34.5, [['ps_staghorn', 1], ['ps_gorger', 1]]),
   packN('ps_p27', 'yuva_kuyusu', 57.5, 42.8, [['ps_staghorn', 1], ['ps_gorger', 2], ['ps_reaver', 1]]),
-  packN('ps_p28', 'yuva_kuyusu', 63, 43.3, [['ps_larva', 8]], { dormant: { kind: 'egg', wakeRadius: 6 } }),
-  packN('ps_p29', 'yuva_kuyusu', 60, 44.6, [['ps_staghorn', 2]]),
+  packN('ps_p28', 'yuva_kuyusu', 63, 43.3, [['ps_larva', 7], ['ps_staghorn', 1]], { dormant: { kind: 'egg', wakeRadius: 6 } }),
+  packN('ps_p29', 'yuva_kuyusu', 60, 44.6, [['ps_staghorn', 1], ['ps_gorger', 1]]),
   // three-tile knoll ramp: explicit offsets inside the 3-tile width
   pack('ps_p30', 'peri_halkasi', 74.5, 27.5, undefined, [
     ['ps_gorger', 0, -1], ['ps_gorger', 0, 1], ['ps_larva', -0.5, 0], ['ps_larva', 0.5, 0], ['ps_larva', -0.5, 1.5], ['ps_larva', 0.5, -1.5],
@@ -295,10 +300,10 @@ const PACKS: PackDef[] = [
 type R4 = [number, number, number, number];
 const WIDENED: Record<string, R4> = {
   k_patika: [11, 51, 4, 4], k_ritual: [20, 42, 4, 4], kok_salonu: [16, 19, 12, 10], mantar_korusu: [6, 19, 10, 10],
-  m1: [16, 9, 9, 10], m2: [25, 9, 9, 10], m3: [34, 9, 9, 10], m4: [43, 9, 9, 10],
+  m1: [16, 11, 8, 8], m2: [24, 9, 10, 9], m3: [34, 9, 9, 11], m4: [43, 9, 9, 8],
   sis_cagiran_cayiri: [52, 6, 13, 15], selale_kenari: [65, 12, 6, 6], havuz: [65, 18, 6, 6],
   yuva_magarasi: [58, 24, 17, 9], peri_halkasi: [75, 24, 9, 9], yan_tunel: [58, 33, 2, 6],
-  yuva_kuyusu: [56, 39, 9, 9], tredova_magarasi: [54, 48, 16, 13],
+  yuva_kuyusu: [56, 39, 9, 9], tredova_magarasi: [54, 54, 16, 13],
 };
 const OLD_RECT: Record<string, R4> = {};
 for (const r of ROOMS) OLD_RECT[r.id] = [r.rect.x, r.rect.z, r.rect.w, r.rect.h];
@@ -364,6 +369,69 @@ for (const p of PACKS) {
   if (p.patrol) p.patrol = p.patrol.map(([x, z]) => mapPt(p.roomId, x, z));
 }
 
+// ---- mood, ambience and dressing (final coordinates; hand placed ring of mushrooms and lily pads, every third one lit) ------
+const CALM = ['giris', 'k_patika', 'drust_kampi', 'kok_salonu', 'mantar_korusu', 'selale_kenari', 'havuz', 'peri_halkasi', 'yan_tunel'];
+const TENSE = ['k_ritual', 'm1', 'm2', 'm3', 'm4', 'yuva_magarasi', 'yuva_koprusu', 'yuva_kuyusu'];
+const SET_PIECE = ['ingra_arena', 'sis_cagiran_cayiri', 'tredova_magarasi'];
+const MOOD: Record<string, string> = Object.fromEntries([
+  ...CALM.map((id) => [id, 'calm']), ...TENSE.map((id) => [id, 'tension']), ...SET_PIECE.map((id) => [id, 'setpiece']),
+]);
+const AMBIENCE: Record<string, NonNullable<RoomDef['ambience']>> = {
+  giris: [{ id: 'whisper', radius: 10, volume: 0.15, loop: true }],
+  drust_kampi: [{ id: 'crowd_murmur', radius: 14, volume: 0.15, loop: true }],
+  kok_salonu: [{ id: 'whisper', radius: 12, volume: 0.2, loop: true }],
+  mantar_korusu: [{ id: 'whisper', radius: 8, volume: 0.15, loop: true }],
+  m1: [{ id: 'whisper', radius: 9, volume: 0.15, loop: true }],
+  m2: [{ id: 'whisper', radius: 9, volume: 0.15, loop: true }],
+  m3: [{ id: 'whisper', radius: 9, volume: 0.15, loop: true }],
+  m4: [{ id: 'whisper', radius: 9, volume: 0.15, loop: true }],
+  sis_cagiran_cayiri: [{ id: 'whisper', radius: 12, volume: 0.25, loop: true }],
+  selale_kenari: [{ id: 'water_lap', radius: 8, volume: 0.3, loop: true }],
+  havuz: [{ id: 'water_lap', radius: 8, volume: 0.35, loop: true }],
+  yuva_magarasi: [{ id: 'rubble', radius: 10, volume: 0.15, loop: true }],
+  yuva_kuyusu: [{ id: 'rubble', radius: 8, volume: 0.2, loop: true }],
+  tredova_magarasi: [{ id: 'whisper', radius: 14, volume: 0.3, loop: true }],
+};
+const DRESS_COLOR: Record<string, number> = {
+  ingra_arena: 0xb060ff, sis_cagiran_cayiri: 0x60c8ff, tredova_magarasi: 0x9cff6a,
+  yuva_magarasi: 0x9cff6a, yuva_kuyusu: 0x9cff6a, yuva_koprusu: 0x9cff6a, yan_tunel: 0x9cff6a,
+};
+/** Points on the inset ring of a room (walked clockwise from the north-west corner), n of them, evenly spaced. */
+function ringPoints(rc: TileRect, n: number, inset: number): [number, number][] {
+  const x0 = rc.x + inset, z0 = rc.z + inset, w = rc.w - 2 * inset, h = rc.h - 2 * inset;
+  const per = 2 * (w + h);
+  return Array.from({ length: n }, (_, i) => {
+    let d = (i / n) * per;
+    if (d < w) return [x0 + d, z0];
+    d -= w;
+    if (d < h) return [x0 + w, z0 + d];
+    d -= h;
+    if (d < w) return [x0 + w - d, z0 + h];
+    d -= w;
+    return [x0, z0 + h - d];
+  });
+}
+const DRESS_MODELS = [kn('mushroom_redGroup'), kn('mushroom_tanGroup'), kn('lily_small'), kn('lily_large')];
+for (const r of ROOMS) {
+  r.atmosphere = MOOD[r.id];
+  if (AMBIENCE[r.id]) r.ambience = AMBIENCE[r.id];
+  r.ambientVfx ??= r.wall === 'cave' ? 'ambient_shadow_wisps' : 'ambient_anima_motes';
+  const n = Math.max(8, Math.min(14, Math.round((2 * (r.rect.w + r.rect.h)) / 3)));
+  const color = DRESS_COLOR[r.id] ?? 0x80ffe0;
+  const extra = ringPoints(r.rect, n, 0.8).map(([x, z], i) => {
+    const model = DRESS_MODELS[i % DRESS_MODELS.length];
+    const mush = model.includes('mushroom');
+    return P(model, x, z, { ...(mush ? { scale: 6 } : {}), ...(i % 3 === 0 ? { light: lt(color, 1.0, 6, true) } : {}) });
+  });
+  r.props = [...(r.props ?? []), ...extra];
+}
+
+// lieutenant packs (elite ids: ps_staghorn, ps_nightblossom); final coordinates, appended after the widening pass
+PACKS.push(
+  packN('ps_p32', 'kok_salonu', 22, 25, [['ps_staghorn', 1], ['ps_guardian', 2]]),
+  packN('ps_p33', 'selale_kenari', 67.5, 14.5, [['ps_nightblossom', 1], ['ps_gorger', 2]]),
+);
+
 // ---- dungeon ----------------------------------------------------------------------------------------------------------
 const THEME: DungeonTheme = {
   fogColor: 0x122428, fogNear: 6, fogFar: 32,
@@ -381,9 +449,9 @@ export const PERI_SISLERI: DungeonDef = {
   lore: 'Kadim Diyar\'ın Gümüş Ormanı\'nda, dünya meşesinin son dalı bir kovuk saklar: Peri Sisleri. Boynuzlu Ahali kovuğa sızdı; Ingra Malok peri ruhlarının animasını kara büyüyle çekiyor, kuraklık sisleri yutuyor. Sisin ortasındaki labirent yanlış adımı affetmez, yuvanın dibinde ise Tred\'ova, Lakali\'nin tohumunu yuttu. Zaman daralıyor.',
   levelRange: [60, 60],
   timerSec: 1770,
-  forcesRequired: 370,
+  forcesRequired: 424, // floor(0.8 x 531 pack forces)
   theme: THEME,
-  grid: { w: 84, h: 62 },
+  grid: { w: 84, h: 72 },
   rooms: ROOMS,
   doors: DOORS,
   packs: PACKS,
@@ -393,7 +461,7 @@ export const PERI_SISLERI: DungeonDef = {
     bossW('boss_tredova', 'tredova_magarasi', 61.5, 53, 180, 3),
   ],
   start: { pos: [4, 54], facing: 90 },
-  exit: { pos: wpt(64, 48) },
+  exit: { pos: pt(60, 69) },
   extras: {
     fontOfPower: wpt(6.5, 51.5),
     shrines: [{ type: 'shrine_power', pos: wpt(10.5, 24.5) }, { type: 'shrine_haste', pos: wpt(74.5, 28) }],
@@ -401,11 +469,18 @@ export const PERI_SISLERI: DungeonDef = {
       .map(([x, z]) => wpt(x, z)),
     chests: [{ pos: wpt(8, 22.5), kind: 'chest_wood' }, { pos: wpt(74.5, 29.8), kind: 'chest_gold' }],
     checkpoints: [wpt(63.5, 44.5)],
+    // spore station in the optional mushroom mound (one use per run per player)
+    stations: [{ id: 'ps_mantar_istasyonu', pos: wpt(10.5, 26.5), status: 'haste', duration: 300, magnitude: 0.1 }],
   },
   season: 1,
   endgame: true,
   vertical: true,
   lifts: [],
+  atmospheres: {
+    calm: { color: 0x122428, near: 6, far: 32 },
+    tension: { color: 0x0f1c14, near: 6, far: 26 },
+    setpiece: { color: 0x261830, near: 9, far: 40 },
+  },
 };
 
 export const PERI_SISLERI_ROOM_COUNT = ROOMS.length;
