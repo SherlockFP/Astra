@@ -176,7 +176,7 @@ const ROOMS: RoomDef[] = [
   }),
 
   room('pismanlik_mahzeni', 'Pişmanlık Mahzeni', 24, 8, 6, 10, 'stone_dark', 'stone', 0.5, {
-    optional: true, floorY: 3.6, ceiling: 8, lightColor: 0xb8b0e0, ambientVfx: 'ambient_shadow_wisps', slopes: [S8],
+    skip: true, floorY: 3.6, ceiling: 8, lightColor: 0xb8b0e0, ambientVfx: 'ambient_shadow_wisps', slopes: [S8],
     props: [P(gp('bone_pile'), 28, 15, { tint: 0x8a8a50 }), P(gp('brazier'), 25, 16, { light: lt(0xb8b0e0, 1.0, 6) })],
   }),
 
@@ -221,12 +221,15 @@ const DOORS: DoorDef[] = [
   door('kiymik_dogu', 'arsiv', 50, 45, 's', 2, 'none'),
   door('halkor_cemberi', 'k_bati', 24, 29, 'w', 4, 'boss_exit'),
   door('k_bati', 'gargoyle_avlusu', 16, 27, 'n', 4, 'none'),
-  door('k_bati', 'servis_gecidi', 4, 30, 'w', 2, 'none'),
+  // the servants' passage opens when the colonnade pack b_p13 is cleared (non-boss gate)
+  { ...door('k_bati', 'servis_gecidi', 4, 30, 'w', 2, 'kill_lock'), opensOn: { pack: 'b_p13' } },
   door('gargoyle_avlusu', 'k_ekelon', 8, 16, 'n', 4, 'none'),
   door('servis_gecidi', 'k_ekelon', 1, 16, 'n', 2, 'none'),
   door('k_ekelon', 'ekelon_terasi', 6, 12, 'n', 4, 'boss_lock'),
   door('ekelon_terasi', 'k_kuzey', 23, 2, 'e', 4, 'boss_exit'),
   door('k_kuzey', 'pismanlik_mahzeni', 25, 7, 's', 4, 'none'),
+  // shortcut after boss 2: the Pismanlik crypt (skip room) links the Agit Koprusu back to the gargoyle courtyard; kill_lock on boss 2
+  { ...door('pismanlik_mahzeni', 'gargoyle_avlusu', 24, 16, 'w', 2, 'kill_lock'), opensOn: { boss: 'boss_ekelon' } },
   door('k_kuzey', 'cemaat_nefi', 29, 2, 'e', 4, 'boss_lock'),
   door('cemaat_nefi', 'kefaret_merdiveni', 46, 13, 's', 4, 'boss_exit'),
   door('kefaret_merdiveni', 'kamarar_salonu', 52, 22, 's', 4, 'boss_lock'),
