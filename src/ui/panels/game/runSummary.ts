@@ -2,15 +2,19 @@ import { G } from '../../../game/G';
 import type { ItemInstance } from '../../../types/items';
 import type { RunRecord, RunState } from '../../../types/mythic';
 import { DUNGEONS, getDungeon } from '../../../data/dungeons';
+import { getMaterial } from '../../../data/materials';
 import {
   FISSURE_TIERS, FISSURE_TIER_ORDER, THEMES, fissureBestFlag, fissureClearFlag, fissureUnlock, isFissureId, parseFissureId,
 } from '../../../world/procgen';
-import { GamePanel, affixView, bindTip, button, dungeonName, esc, h, icon, itemTile, mmss, ratingTier, sfx, windowFrame, DIFFICULTY_NAMES } from './base';
+import { GamePanel, affixView, bindTip, button, dungeonName, esc, h, icon, itemTile, mmss, ratingTier, sfx, toast, windowFrame, DIFFICULTY_NAMES } from './base';
+import { RUN_TALLY, runKeyOf, type RunTallyData, type XpPoint } from './runTally';
 
 export interface RunSummaryData {
   state: RunState;
   record: RunRecord | null;
   rewards: ItemInstance[];
+  /** What the local player gained during the run (XP, gold, pickups). Falls back to the last finished run's tally. */
+  tally?: RunTallyData | null;
   /** Optional extras the mythic module may add. */
   ratingBefore?: number;
   ratingAfter?: number;
@@ -24,6 +28,16 @@ export function noteRunStart(): void {
   ratingAtStart = G.character?.save.mythic.rating ?? null;
 }
 
+/** The local character's level / XP point (the XP bar of the summary and the run tally read it). */
+export function currentXpPoint(): XpPoint | null {
+  const ch = G.character;
+  if (!ch) return null;
+  const needed = G.progression?.xpToNext(ch.save.level) ?? 0;
+  return { level: ch.save.level, xp: ch.save.xp, needed: isFinite(needed) ? needed : 0 };
+}
+
+const fmtInt = (n: number): string => Math.round(n).toLocaleString('tr-TR');
+
 type Step = { at: number; fn: () => void };
 
 export class RunSummaryPanel extends GamePanel {
@@ -31,6 +45,7 @@ export class RunSummaryPanel extends GamePanel {
   private timers: number[] = [];
   private pending: Step[] = [];
   private confetti!: HTMLElement;
+  private footEl!: HTMLElement;
   lastOpened = 0;
   private shown = new Set<string>();
 
@@ -42,7 +57,7 @@ export class RunSummaryPanel extends GamePanel {
   open(data?: unknown): void {
     const d = data as RunSummaryData | undefined;
     if (d?.state && !d.force) {
-      const key = `${d.state.dungeonId}|${d.state.seed}|${d.state.keyLevel}|${Math.round(d.state.elapsed)}`;
+      const key = runKeyOf(d.state);
       if (this.shown.has(key)) return;
       this.shown.add(key);
     }
@@ -54,7 +69,7 @@ export class RunSummaryPanel extends GamePanel {
     this.bodyEl = body;
     this.confetti = h('div.pg-confetti');
     win.append(this.confetti);
-    foot.append(button('Devam', () => this.requestClose(), { variant: 'primary', cls: 'pg-big' }));
+    this.footEl = foot;
     win.addEventListener('click', () => this.skip());
     this.el.append(win);
   }
@@ -65,11 +80,47 @@ export class RunSummaryPanel extends GamePanel {
     this.confetti.innerHTML = '';
     const d = data as RunSummaryData | undefined;
     this.bodyEl.innerHTML = '';
+    this.renderFoot(d?.state ? d : undefined);
     if (!d || !d.state) {
       this.bodyEl.append(h('div.pg-empty', null, 'Koşu bilgisi bulunamadı.'));
       return;
     }
     this.renderSummary(d);
+  }
+
+  /** Footer: "Tekrar Sıraya Gir" (not for Kadim Yarık runs), "Şehre Dön" and "Kapat" (stay in the dungeon to loot). */
+  private renderFoot(d: RunSummaryData | undefined): void {
+    this.footEl.innerHTML = '';
+    if (d?.state && !isFissureId(d.state.dungeonId)) {
+      const st = d.state;
+      this.footEl.append(button('Tekrar Sıraya Gir', () => this.requeue(st), { variant: 'primary', cls: 'pg-big' }));
+    }
+    if (d?.state) {
+      const st = d.state;
+      this.footEl.append(button('Şehre Dön', () => this.backToTown(st), { cls: 'pg-big' }));
+    }
+    this.footEl.append(button('Kapat', () => this.requestClose(), { cls: 'pg-big' }));
+  }
+
+  /** Same dungeon and difficulty again, through the finder (solo, or the same party with its ready check). */
+  private requeue(st: RunState): void {
+    this.requestClose();
+    G.ui?.openPanel('finder', { dungeonId: st.dungeonId, diff: st.difficulty, requeue: true });
+  }
+
+  /** Leaves the dungeon for the town. Same rule as the game menu: a party guest leaves by itself, the rest through the host. */
+  private backToTown(st: RunState): void {
+    this.requestClose();
+    sfx('portal_enter');
+    const outdoor = !!(DUNGEONS[st.dungeonId] ?? getDungeon(st.dungeonId))?.outdoor;
+    const params = { spawnAt: outdoor ? 'south' : 'portal' } as const;
+    try {
+      if (!G.net.isPartyGuest) G.net.requestScene('town', params);
+      else void G.scenes.go('town', params);
+    } catch (e) {
+      console.error('[runSummary] back to town failed', e);
+      toast('Şehre dönülürken bir sorun oluştu.', 'error');
+    }
   }
 
   protected onClose(): void {
@@ -216,6 +267,8 @@ export class RunSummaryPanel extends GamePanel {
       mplus ? cell('Mitik+ Puanı', h('span', null, ratingEl, delta ? h('small.pg-good', null, ` (${delta > 0 ? '+' : ''}${delta.toFixed(1)})`) : null)) : null,
     );
     this.bodyEl.append(stats);
+    const tally = d.tally ?? RUN_TALLY.forKey(runKeyOf(st));
+    if (tally) this.renderTally(tally);
     if (fissure) this.bodyEl.append(fissureProgress(st));
     if (mplus) {
       this.schedule(1500, () => countUp(scoreEl, score, 900, 1));
@@ -255,7 +308,8 @@ export class RunSummaryPanel extends GamePanel {
     }
 
     // ---- rewards
-    const rw = d.rewards ?? [];
+    // ground pickups of the run first, then the end-of-run chest
+    const rw = [...(tally?.items ?? []), ...(d.rewards ?? [])];
     this.bodyEl.append(h('div.pg-h', { style: { marginTop: '14px' } }, fissure ? 'Eşyalar ve ödül sandığı' : `Ödüller (${rw.length})`));
     const grid = h('div.pg-rs-rewards');
     if (!rw.length) grid.append(h('div.pg-empty', null, fissure ? 'Eşyalar patronlardan düştü; sandıktan altın ve malzeme geldi.' : 'Bu koşudan ödül çıkmadı.'));
@@ -270,6 +324,62 @@ export class RunSummaryPanel extends GamePanel {
       });
     });
     this.bodyEl.append(grid);
+  }
+
+  /**
+   * XP and gold of the run: the XP bar fills from the level it started at; a level-up fills it to the top, shows the new level
+   * chip(s) and empties it again. Gold and the materials picked up on the ground are listed under it.
+   */
+  private renderTally(t: RunTallyData): void {
+    const block = h('div.pg-rs-tally');
+    const start = t.start;
+    const end = t.end ?? t.start;
+    const pct = (p: XpPoint): number => (p.needed > 0 ? Math.min(1, p.xp / p.needed) : 1);
+    if (start && end) {
+      const fill = h('div.pg-rs-xpfill');
+      fill.style.width = `${pct(start) * 100}%`;
+      const lvl = h('b', null, `Seviye ${start.level}`);
+      const chips = h('span.pg-rs-lvls');
+      block.append(
+        h('div.pg-rs-xphead', null, h('b.pg-rs-xpgain', null, `+${fmtInt(t.xp)} XP`), lvl, chips),
+        h('div.pg-rs-xptrack', null, fill),
+      );
+      if (t.levelUps.length) {
+        this.schedule(1500, () => {
+          fill.style.transition = 'width 0.8s ease-out';
+          fill.style.width = '100%';
+        });
+        this.schedule(2400, () => {
+          for (const l of t.levelUps) {
+            chips.append(h('span.pg-rs-lvl', null, `Seviye ${l}`));
+          }
+          sfx('level_up', 0.8);
+          lvl.textContent = `Seviye ${end.level}`;
+          fill.style.transition = 'none';
+          fill.style.width = '0%';
+        });
+        this.schedule(2500, () => {
+          fill.style.transition = 'width 0.9s ease-out';
+          fill.style.width = `${pct(end) * 100}%`;
+        });
+      } else {
+        this.schedule(1500, () => {
+          fill.style.transition = 'width 0.9s ease-out';
+          fill.style.width = `${pct(end) * 100}%`;
+        });
+      }
+    }
+    const mats = t.materials.map((m) => `${getMaterial(m.id)?.name ?? m.id}${m.count > 1 ? ` ×${m.count}` : ''}`);
+    block.append(
+      h(
+        'div.pg-rs-grid.pg-rs-grid2',
+        null,
+        cell('Altın', h('b.pg-gold', null, fmtInt(t.gold))),
+        cell('Yerden alınan eşya', h('b', null, String(t.items.length))),
+      ),
+    );
+    if (mats.length) block.append(h('div.pg-rs-mats', null, `Malzeme: ${mats.join(', ')}`));
+    this.bodyEl.append(block);
   }
 
   private burst(strength: number): void {

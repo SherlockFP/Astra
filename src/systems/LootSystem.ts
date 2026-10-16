@@ -433,6 +433,8 @@ export class LootSystem {
 
     // ---- spawn: bosses do a spiral fountain, others scatter with 40 ms stagger
     const fountain = rank === 'boss' || enemy.champion || (rank === 'miniboss' && drops.length > 4) || drops.length > 9;
+    // boss / mini-boss / elite items: a visible beam and sparkle whatever their rarity (read the loot from across the room)
+    const beam = rank === 'boss' || rank === 'miniboss' || rank === 'elite';
     let idx = 0;
     const total = drops.length;
     for (const d of drops) {
@@ -440,8 +442,8 @@ export class LootSystem {
         const ang = (idx / Math.max(6, total)) * TAU * 1.5 + rng.range(-0.2, 0.2);
         const r = 2 + (idx / Math.max(1, total)) * 3;
         const spot = this.findSpot(origin, ang, r, true);
-        this.spawnDrop(d.payload, origin, { delay: 0.45 + idx * 0.12, spot, vy: 8 + rng.range(0, 2) });
-      } else this.spawnDrop(d.payload, origin, { delay: idx * 0.04 });
+        this.spawnDrop(d.payload, origin, { delay: 0.45 + idx * 0.12, spot, vy: 8 + rng.range(0, 2), beam });
+      } else this.spawnDrop(d.payload, origin, { delay: idx * 0.04, beam });
       idx++;
     }
   }
@@ -473,11 +475,11 @@ export class LootSystem {
     return new THREE.Vector3(nx, G.world?.groundY(nx, nz) ?? 0, nz);
   }
 
-  private spawnDrop(payload: DropPayload, origin: THREE.Vector3, opts: { delay?: number; spot?: THREE.Vector3; vy?: number } = {}): LootDrop | null {
+  private spawnDrop(payload: DropPayload, origin: THREE.Vector3, opts: { delay?: number; spot?: THREE.Vector3; vy?: number; beam?: boolean } = {}): LootDrop | null {
     const world = G.world;
     if (!world) return null;
     const spot = opts.spot ?? this.findSpot(origin);
-    const drop = new LootDrop(world.allocLocalId(), payload, { origin, target: spot, delay: opts.delay, vy: opts.vy });
+    const drop = new LootDrop(world.allocLocalId(), payload, { origin, target: spot, delay: opts.delay, vy: opts.vy, beam: opts.beam });
     drop.hiddenByFilter = this.hiddenByFilter(payload);
     world.add(drop);
     this.drops.push(drop);

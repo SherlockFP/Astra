@@ -186,7 +186,7 @@ export class FinderPanel extends GamePanel {
   }
 
   protected onOpen(data?: unknown): void {
-    const d = (data ?? {}) as { dungeonId?: string; tab?: Tab };
+    const d = (data ?? {}) as { dungeonId?: string; tab?: Tab; diff?: LadderDiff; requeue?: boolean };
     this.syncFissureTab();
     this.fissure.open();
     if (!this.rolesManual) this.roles = defaultRoles(G.character?.save.spec as SpecId | undefined);
@@ -205,6 +205,27 @@ export class FinderPanel extends GamePanel {
     });
     window.addEventListener('keydown', this.onKey);
     this.setTab(d.tab ?? this.tab);
+    if (d.requeue && d.dungeonId) window.setTimeout(() => this.requeue(d.dungeonId!, d.diff), 0);
+  }
+
+  /**
+   * Run summary "Tekrar Sıraya Gir": starts the same dungeon and difficulty again through the normal start path (a party leader gets the
+   * ready check, a solo player starts at once). When the run cannot start from here (a guest, a locked difficulty, no key) the finder
+   * only stays open with the dungeon preselected.
+   */
+  private requeue(dungeonId: string, diff?: LadderDiff): void {
+    if (!this.isOpen) return;
+    const def = DUNGEONS[dungeonId];
+    const ctx = this.ctx();
+    if (!def || !ctx) return;
+    this.selId = def.id;
+    const rows = diffRows(def, ctx);
+    const row = rows.find((r) => r.diff === diff);
+    if (row) this.selDiff = row.diff;
+    this.render();
+    if (!row?.startable) return;
+    if (G.net.inParty && !G.net.isPartyLeader) return;
+    this.startSelected(def, row.diff);
   }
 
   protected onClose(): void {
