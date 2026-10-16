@@ -1253,13 +1253,15 @@ boss({
   basic: cone('akpence_claw', 'Pençe', 5, 120, 2.5, 1.0, 'Attack', 0.5, { windup: 0.65, telegraph: true }),
   abilities: [
     cone('akpence_frost_cleave', 'Buz Yarması', 9, 70, 14, 4.0, 'Attack', 0.5, { initialCooldown: 6, windup: 1.2, telegraph: true, tankBuster: true, parryable: false, damage: { coef: 4.0, type: 'frost' }, statuses: [chill(3, 6)], vfx: 'frost_burst', sfx: 'boss_cast' } as Ab),
+    // group beat: a raid-wide frost howl after a 2.5 s cast bar; everyone takes it, the pillars do not shelter from it
+    aoe('akpence_howl', 'Buz Uğultusu', 'self_aoe', 36, 30, 24, 2.5, 0.8, 'frost', 'Attack', 0.8, { initialCooldown: 14, castTime: 2.5, statuses: [chill(1, 4)], sfx: 'frost_cast' }),
     custom('akpence_avalanche', 'Kar Çığı', 25, 12, 2.0, 'Jump', { sfx: 'boss_roar', params: { impact: 0.2 } }),
     custom('akpence_charge', 'Öfkeli Hücum', 30, 18, 3.0, 'Run', { sfx: 'boss_roar' }),
     custom('akpence_frenzy', 'Yaşlı Öfke', 999, 9999, 0, '', {}),
   ],
   phases: [
-    bp('p1', 1.01, ['akpence_frost_cleave', 'akpence_avalanche', 'akpence_charge']),
-    bp('p2', 0.3, ['akpence_frost_cleave', 'akpence_avalanche', 'akpence_charge'], { ability: 'akpence_frenzy' }),
+    bp('p1', 1.01, ['akpence_frost_cleave', 'akpence_howl', 'akpence_avalanche', 'akpence_charge']),
+    bp('p2', 0.3, ['akpence_frost_cleave', 'akpence_howl', 'akpence_avalanche', 'akpence_charge'], { ability: 'akpence_frenzy' }),
   ],
   intro: '*Ak Pençe öfkeyle kükrüyor!*', death: '*Ak Pençe son kez inleyip karlara yığılıyor.*',
   arena: { cx: 24, cz: 80, w: 48, h: 48, homeX: 24, homeZ: 82 },
@@ -1271,15 +1273,19 @@ boss({
   visual: { hide: mageHide('2H_Staff', 'Mage_Hat'), runRef: 7, eyeEmissive: 0x80d0ff, glow: 0x80c8ff },
   basic: proj('ayazana_bolt', 'Buz Oku', 18, 40, 2.2, 0.5, 1.1, 'frost', 'frost_projectile', 'Spellcast_Shoot', 0.3, { sfx: 'frost_cast', projectile: { speed: 18, radius: 0.55, vfx: 'frost_projectile', homing: 0.5 } }),
   abilities: [
+    // tank buster: a 1.8 s frost spike cast on the target (the tank); interruptible, with a ground circle under the target
+    aoe('ayazana_spike', 'Buz Dikeni', 'ground_aoe', 2.5, 30, 14, 1.8, 3.5, 'frost', 'Spellcast_Raise', 1.2, { initialCooldown: 9, castTime: 1.8, interruptible: true, tankBuster: true, sfx: 'frost_cast' }),
+    // group beat: a 3 s arena-wide blizzard cast; the whole group takes it, so the tomb and the chasing storm are the only escapes from the rest of the kit
+    aoe('ayazana_gale', 'Kutup Fırtınası', 'self_aoe', 36, 30, 26, 3.0, 0.7, 'frost', 'Spellcast_Raise', 1.0, { initialCooldown: 18, castTime: 3.0, statuses: [chill(1, 4)], sfx: 'frost_cast' }),
     custom('ayazana_nova', 'Dondurucu Nova', 22, 12, 2.5, 'Spellcast_Raise', { castTime: 2.5, interruptible: false, sfx: 'frost_cast', params: { impact: 1.0 } }),
     custom('ayazana_ice_tomb', 'Buz Mezarı', 28, 15, 1.0, 'Spellcast_Long', { sfx: 'frost_cast', params: { impact: 1.55 } }),
     custom('ayazana_blizzard', 'Kar Fırtınası', 18, 8, 1.0, 'Spellcast_Raise', { sfx: 'frost_cast', params: { impact: 1.0 } }),
     custom('ayazana_mirror', 'Ayna Sureti', 999, 9999, 1.0, 'Spellcast_Raise', { sfx: 'boss_cast', params: { impact: 1.0 } }),
   ],
   phases: [
-    bp('p1', 1.01, ['ayazana_nova', 'ayazana_ice_tomb', 'ayazana_blizzard']),
-    bp('p2', 0.7, ['ayazana_nova', 'ayazana_ice_tomb', 'ayazana_blizzard'], { yell: 'Hangisi gerçek? Hiçbiri... hepsi!', ability: 'ayazana_mirror' }),
-    bp('p3', 0.4, ['ayazana_nova', 'ayazana_ice_tomb', 'ayazana_blizzard'], { yell: 'Hangisi gerçek? Hiçbiri... hepsi!', ability: 'ayazana_mirror' }),
+    bp('p1', 1.01, ['ayazana_spike', 'ayazana_gale', 'ayazana_nova', 'ayazana_ice_tomb', 'ayazana_blizzard']),
+    bp('p2', 0.7, ['ayazana_spike', 'ayazana_gale', 'ayazana_nova', 'ayazana_ice_tomb', 'ayazana_blizzard'], { yell: 'Hangisi gerçek? Hiçbiri... hepsi!', ability: 'ayazana_mirror' }),
+    bp('p3', 0.4, ['ayazana_spike', 'ayazana_gale', 'ayazana_nova', 'ayazana_ice_tomb', 'ayazana_blizzard'], { yell: 'Hangisi gerçek? Hiçbiri... hepsi!', ability: 'ayazana_mirror' }),
   ],
   intro: 'Ayaz sizi öpecek, çocuklar. Bir daha uyanmamak üzere...', death: 'Bahar... gelmeyecek... asla...',
   arena: { cx: 84, cz: 24, w: 48, h: 48, homeX: 84, homeZ: 24 },
@@ -1300,15 +1306,18 @@ boss({
   basic: cone('tugrul_slash', 'Kraliyet Kılıcı', 5, 120, 2.4, 1.0, '2H_Melee_Attack_Slice', 0.4, { windup: 0.6, telegraph: true }),
   abilities: [
     line('tugrul_verdict', 'Kraliyet Hükmü', 10, 3, 16, 1.2, 4.5, 'physical', '2H_Melee_Attack_Chop', 0.72, { initialCooldown: 8, tankBuster: true,statuses: [{ status: 'sunder', duration: 10 }], sfx: 'boss_cast' }),
+    // group beat: a raid-wide royal roar after a 2.5 s cast bar
+    aoe('tugrul_howl', 'Kraliyet Haykırışı', 'self_aoe', 36, 30, 22, 2.5, 0.8, 'physical', 'Attack', 0.8, { initialCooldown: 16, castTime: 2.5, sfx: 'boss_roar' }),
     custom('tugrul_frost_mark', 'Ayaz İşareti', 25, 15, 1.0, 'Taunt', { sfx: 'frost_cast' }),
     custom('tugrul_spin', 'Ölümcül Dönüş', 30, 22, 1.5, 'Taunt', { sfx: 'boss_cast', params: { impact: 1.0 } }),
     custom('tugrul_dragon_phase', 'Kırağı Göklerde', 999, 9999, 1.0, 'Taunt', { sfx: 'boss_roar' }),
     custom('tugrul_wrath', 'Tahtın Gazabı', 999, 9999, 1.0, 'Taunt', { sfx: 'boss_roar' }),
   ],
   phases: [
-    bp('p1', 1.01, ['tugrul_verdict', 'tugrul_frost_mark', 'tugrul_spin']),
-    bp('p2', 0.55, ['tugrul_verdict', 'tugrul_frost_mark'], { yell: 'Kırağı! Göklerden in ve onları dondur!', ability: 'tugrul_dragon_phase' }),
-    bp('p3', 0.25, ['tugrul_verdict', 'tugrul_frost_mark', 'tugrul_spin'], { yell: 'Taht... benimdir! SONSUZA DEK!', ability: 'tugrul_wrath' }),
+    bp('p1', 1.01, ['tugrul_verdict', 'tugrul_howl', 'tugrul_frost_mark', 'tugrul_spin']),
+    // 50 %: the dragon (new object: breath bands behind the pillars) joins the marks, the spin and the roar of the earlier phase
+    bp('p2', 0.5, ['tugrul_verdict', 'tugrul_howl', 'tugrul_frost_mark', 'tugrul_spin'], { yell: 'Kırağı! Göklerden in ve onları dondur!', ability: 'tugrul_dragon_phase' }),
+    bp('p3', 0.25, ['tugrul_verdict', 'tugrul_howl', 'tugrul_frost_mark', 'tugrul_spin'], { yell: 'Taht... benimdir! SONSUZA DEK!', ability: 'tugrul_wrath' }),
   ],
   intro: 'Tahtım buzdan, kalbim buzdan. Sizinki de olacak!', death: 'Sonunda... sıcak... ne kadar... sıcak...',
   arena: { cx: 136, cz: 132, w: 48, h: 48, homeX: 136, homeZ: 138 },
