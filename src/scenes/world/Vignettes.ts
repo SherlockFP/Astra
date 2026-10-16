@@ -3,7 +3,7 @@ import { spawnEnemy, type SpawnEnemyOpts } from '../../entities/EnemyFactory';
 import type { Enemy } from '../../entities/Enemy';
 import type { Player } from '../../entities/Player';
 import { VignetteProp, type VignettePropKind, type VignettePropOpts } from '../../entities/interactables/VignetteProp';
-import { VIGNETTE_DEFS, VIGNETTE_RULES, vignetteDef, type VignetteDef } from '../../data/world/vignettes';
+import { ALL_VIGNETTE_DEFS, VIGNETTE_RULES, vignetteDef, type VignetteDef } from '../../data/world/vignettes';
 import { QUESTS } from '../../data/world/quests';
 import { RNG, hashString } from '../../core/utils';
 import { toast } from '../../systems/notify';
@@ -113,7 +113,7 @@ export class VignetteDirector {
   ) {
     this.spawn = opts.spawn ?? spawnEnemy;
     this.rng = new RNG(hashString(`${ctx.seed}:vignettes`));
-    this.ringIds = new Set(VIGNETTE_DEFS.map((d) => d.regionId).filter((id) => !!ctx.regionById(id)));
+    this.ringIds = new Set(ALL_VIGNETTE_DEFS.map((d) => d.regionId).filter((id) => !!ctx.regionById(id)));
     live = this;
   }
 
@@ -240,7 +240,7 @@ export class VignetteDirector {
       const d = vignetteDef(defId);
       return !d || d.followup !== 'escort' || !!this.escortAt(d, at);
     };
-    const def = pickWeighted(eligibleDefs(VIGNETTE_DEFS, rid, region.levels, p.level, (id) => free(id) && servable(id)), () => this.rng.next());
+    const def = pickWeighted(eligibleDefs(ALL_VIGNETTE_DEFS, rid, region.levels, p.level, (id) => free(id) && servable(id)), () => this.rng.next());
     if (!def) return;
     this.launch(def, at, p, region);
   }

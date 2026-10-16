@@ -4,6 +4,7 @@ import {
   ROOM_OF_REGION, SHRINES, VISTAS, WATER, WAYPOINTS, WORLD_BOSSES, WORLD_BOSS_ID, WORLD_PACKS,
 } from './ayaz_daglari';
 import { AYAZ_VILLAGES } from './ayaz_villages';
+import { AYAZ_AMBIENT } from './ayaz_ambient';
 import { AYAZ_METIN_SPOTS, AYAZ_METIN_TIERS } from './ayaz_metin';
 import { perfOf } from './layout';
 import AYAZ_DECOR from './ayaz_decor.json' with { type: 'json' };
@@ -80,6 +81,7 @@ const WORLD: WorldExtras = {
   shrines: SHRINES,
   hidden: HIDDEN,
   vistas: VISTAS,
+  ambient: AYAZ_AMBIENT,
   perf: PERF,
 };
 
