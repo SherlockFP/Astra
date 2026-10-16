@@ -115,6 +115,8 @@ const SAFE_SAMPLE_EVERY = 0.5;
 /** Ability kinds a blinded enemy can miss with (mechanic scripts / custom casts are never nullified). */
 const MISSABLE = new Set(['melee', 'cone', 'projectile', 'line', 'charge', 'ground_aoe', 'self_aoe']);
 const DOT_STATUSES = new Set(['burn', 'bleed', 'poison']);
+/** Melee / cone windups at least this long (s) draw a ground telegraph: the player can read and step out of them. */
+const SWING_TELEGRAPH_MIN_S = 0.35;
 const _a = new THREE.Vector3();
 
 /**
@@ -435,7 +437,9 @@ export class EnemyAI {
     if (kind === 'line' || kind === 'charge') {
       shape = ab.shape ?? { type: 'line', length: ab.range, width: 2 };
     }
-    const tel = this.eliteSpecial(ab) || (ab.telegraph ?? (kind === 'ground_aoe' || kind === 'line' || kind === 'charge' || kind === 'self_aoe'));
+    // melee swings and cones warn on the ground too when the windup is long enough to read (fast jabs stay silent)
+    const readableSwing = (kind === 'melee' || kind === 'cone') && b.delay >= SWING_TELEGRAPH_MIN_S;
+    const tel = this.eliteSpecial(ab) || (ab.telegraph ?? (kind === 'ground_aoe' || kind === 'line' || kind === 'charge' || kind === 'self_aoe' || readableSwing));
     const type = ab.damage?.type ?? 'physical';
     // GDD_V2 §3.12 flags: melee-style abilities are parryable by default; tank busters and perilous hits never are
     const parryable = ab.tankBuster || ab.perilous ? false : ab.parryable ?? (kind === 'melee' || kind === 'cone' || kind === 'charge');

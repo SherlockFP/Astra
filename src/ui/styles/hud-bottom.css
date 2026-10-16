@@ -166,6 +166,14 @@ body.pi-dragging .hud .ab-btn.is-socket > .k-plus { display: flex; }
 .hud .k-sated { display: none; position: absolute; left: 50%; bottom: 2px; transform: translateX(-50%); white-space: nowrap; z-index: 2;
   font: 700 11px/1 var(--font-body); color: var(--bad, #ff4c3c); text-shadow: var(--sh-text); pointer-events: none; }
 
+/* cooldown kind (ActionBar cdKind): the sweep keeps its shape but takes the skill's side. Blue = defensive, green = heal, red = offensive. */
+.hud .k-slot.oncd.cd-def > .k-sweep { background: conic-gradient(from calc((1 - var(--p, 0)) * 1turn), rgba(26, 78, 170, .6) calc(var(--p, 0) * 1turn), transparent 0); }
+.hud .k-slot.oncd.cd-heal > .k-sweep { background: conic-gradient(from calc((1 - var(--p, 0)) * 1turn), rgba(24, 120, 52, .6) calc(var(--p, 0) * 1turn), transparent 0); }
+.hud .k-slot.oncd.cd-off > .k-sweep { background: conic-gradient(from calc((1 - var(--p, 0)) * 1turn), rgba(150, 30, 20, .6) calc(var(--p, 0) * 1turn), transparent 0); }
+.hud .k-slot.oncd.cd-def { box-shadow: inset 0 0 0 1px rgba(77, 163, 255, .6); }
+.hud .k-slot.oncd.cd-heal { box-shadow: inset 0 0 0 1px rgba(79, 224, 106, .6); }
+.hud .k-slot.oncd.cd-off { box-shadow: inset 0 0 0 1px rgba(255, 76, 60, .5); }
+
 /* cooldown extras: the GCD / cooldown sweep is kit `.k-sweep`; the auto-attack swing reuses its look; the school glyph sits top-centre */
 .hud .k-swing { display: none; position: absolute; inset: 0; pointer-events: none;
   background: conic-gradient(from calc((1 - var(--p, 0)) * 1turn), rgba(0, 0, 0, 0.45) calc(var(--p, 0) * 1turn), transparent 0); }
