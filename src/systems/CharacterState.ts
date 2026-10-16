@@ -21,6 +21,8 @@ import { SAVE_VERSION, migrateTalents } from '../core/Save';
 import { migrationToast } from '../dev/migrate';
 import { emit, toast } from './notify';
 import { teachFromItem } from './Pets';
+import { teachFromMountItem } from './Mounts';
+import { MOUNT_BY_ID } from '../data/mounts';
 import { PET_BY_ID } from '../data/pets';
 import { ensureStarterFlask } from '../data/flasks';
 import { getFood } from '../data/consumables';
@@ -852,6 +854,15 @@ export class CharacterState {
       if (!r.ok || !r.petId) return { ok: false, reason: r.reason ?? 'Kullanılamadı.' };
       this.useMaterial(id, 1);
       toast(`Evcil hayvan öğrenildi: ${PET_BY_ID[r.petId]?.name ?? r.petId}`, 'success');
+      return { ok: true };
+    }
+    if (def.teachesMount) {
+      // sprint2: a mount tasma teaches its mount once; a known mount keeps the item (systems/Mounts.ts)
+      if (this.material(id) <= 0) return { ok: false, reason: 'Tasman yok.' };
+      const r = teachFromMountItem(this.save, id);
+      if (!r.ok || !r.mountId) return { ok: false, reason: r.reason ?? 'Kullanılamadı.' };
+      this.useMaterial(id, 1);
+      toast(`Binek öğrenildi: ${MOUNT_BY_ID[r.mountId]?.name ?? r.mountId}`, 'success');
       return { ok: true };
     }
     if (def.elixir) return this.useElixir(id);

@@ -111,7 +111,8 @@ const cleanseRequests = (net) => net.sent.filter((s) => s.op === 'request' && s.
   rep.setActive(true);
   const owner = remotePlayer(PARTY_ID_BASE + 1, 1, 'Bora', [30, 30]);
   attachRemote(rep, 'p2', owner);
-  const horses = () => owner.object3d.children.filter((c) => c.name === 'mount_horse').length;
+  // sprint2: the model root is named after its mount (mount_<id>, data/mounts.ts); a remote with no mountId rides the starter horse
+  const horses = () => owner.object3d.children.filter((c) => c.name.startsWith('mount_')).length;
 
   // sender: the mounted event reaches the next pstate, and the change is not held for the 1 s keep-alive
   G.events.emit('player:mounted', { on: true });
@@ -156,6 +157,10 @@ const cleanseRequests = (net) => net.sent.filter((s) => s.op === 'request' && s.
   ok('codec.not mounted reads false, dead kept', off.mounted === false && off.dead === true);
   const old = decodePayload('pstate', [1, 2, 3, 0.5, 0, 0, 'Run', 5, 9, 1, 2, 1, null, 3, ['slow'], null, 2, 7.5, 2]);
   ok('codec.old wire (flags without bit 4) decodes unmounted', old.mounted === false && old.dead === true);
+  // sprint2: the mount id rides as element 19 (append-only); absent / null means the starter horse on the receiver
+  const withId = decodePayload('pstate', encodePayload('pstate', { ...base, dead: false, dodging: false, mounted: true, mountId: 'stag_x' }));
+  ok('codec.mountId round trip', withId.mountId === 'stag_x' && encodePayload('pstate', { ...base, mountId: 'kristal_geyik' })[19] === 'kristal_geyik');
+  ok('codec.mountId absent reads null', off.mountId === null && old.mountId === null);
 }
 
 // ================================================================================================ pet.*

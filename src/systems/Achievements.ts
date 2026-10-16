@@ -5,6 +5,7 @@ import { PET_BY_ID } from '../data/pets';
 import { toast } from './notify';
 import { arenaTitleName } from '../scenes/arena/arenaRules';
 import { learnPet } from './Pets';
+import { learnMount } from './Mounts';
 
 /**
  * WP-08 achievements and titles (docs/MMO_PILLARS.md). OWNER: panels-game / items (new system).
@@ -91,6 +92,8 @@ export function checkUnlocks(save: CharacterSave, now = Date.now()): Achievement
     }
     // WP-12: the reward pet is learned with the unlock (no-op when it is already known)
     if (def.pet) learnPet(save, def.pet);
+    // sprint2: the reward mount is learned with the unlock too
+    if (def.mount) learnMount(save, def.mount);
     fresh.push(def);
   }
   return fresh;
@@ -283,6 +286,9 @@ export function installAchievements(): () => void {
       const id = def?.id ?? '';
       if (id.startsWith('metin_') || id.startsWith('proc_')) return; // Metin stones and mechanic units are not kills
       feed((s) => bump(s, 'kills'));
+      // sprint2: the Sisli Vadi open-world zone (same test as DailyLoop.worldZoneNow, inlined to avoid an import cycle)
+      const zone = G.mplus?.params?.dungeonId ?? G.mplus?.state?.dungeonId ?? null;
+      if (G.scenes?.current?.id === 'dungeon' && zone === 'sisli_vadi') feed((s) => bump(s, 'vadiKills'));
     }),
     ev.on('parry', ({ perfect }) => {
       if (perfect) feed((s) => bump(s, 'perfectParry'));

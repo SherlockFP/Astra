@@ -3,6 +3,8 @@ import { RNG, hashString } from '../core/utils';
 import type { ClassId, Rarity } from '../types/common';
 import type { ItemCategory, ItemInstance } from '../types/items';
 import { MATERIALS, GEM_TYPES, gemId } from '../data/materials';
+import { MOUNTS, mountItemId } from '../data/mounts';
+import { hasMount } from './Mounts';
 import { BASES_BY_CATEGORY, CATEGORY_NAMES_TR, classCanUseBase } from '../data/itemBases';
 import { bountyDayKey } from './Bounties';
 import { categoriesForClass, defaultRng, generateItem, itemDisplayName, rollRarity, sellValue } from './ItemGen';
@@ -33,7 +35,7 @@ export interface VendorEntry {
 }
 
 /** Vendor kinds: merchant (Kervancı), alchemist, blacksmith (materials), metin (Kalıntı Tüccarı), weaponsmith / armorsmith. */
-export type VendorKind = 'merchant' | 'alchemist' | 'bakkal' | 'blacksmith' | 'metin' | 'weaponsmith' | 'armorsmith' | 'pvp_honor' | 'pvp_conquest';
+export type VendorKind = 'merchant' | 'alchemist' | 'bakkal' | 'blacksmith' | 'metin' | 'weaponsmith' | 'armorsmith' | 'pvp_honor' | 'pvp_conquest' | 'stable';
 
 const DAILY_LIMITS: Record<string, number> = { efsun_nesnesi: 5 };
 
@@ -161,7 +163,7 @@ export function vendorEntries(kind: VendorKind): VendorEntry[] {
   resetIfCharacterChanged();
   pruneVendorFlags();
   const day = bountyDayKey();
-  const key = `${ch.save.id}:${day}:${ch.level}`;
+  const key = `${ch.save.id}:${day}:${ch.level}:${ch.save.mounts?.known.length ?? 0}`;
   const cached = caches[kind];
   if (cached && cached.key === key) {
     // refresh dynamic stock numbers
@@ -187,6 +189,12 @@ export function vendorEntries(kind: VendorKind): VendorEntry[] {
       // show tiers up to the next unlock so players can see what is coming
       if ((def.requiredLevel ?? 1) > ch.level + 10) continue;
       entries.push(materialEntry(id, def.buyPrice));
+    }
+  } else if (kind === 'stable') {
+    // sprint2 Kuzgunkale Ahır Ustası: the riding lessons (mount teaching items, data/mounts.ts) the character has not learned yet
+    for (const m of MOUNTS) {
+      if (m.source.kind !== 'vendor' || hasMount(ch.save, m.id) || ch.level < m.source.level - 5) continue;
+      entries.push(materialEntry(mountItemId(m.id), m.source.price));
     }
   } else if (kind === 'bakkal') {
     // Gümüşdere bakkal: bread, spring water and the hunter's stew (data/consumables.ts)

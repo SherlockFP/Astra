@@ -214,6 +214,8 @@ export interface GatherTableDef {
 }
 export const LOOT_TABLES: Record<string, LootTableDef> = {
   loot_d1_b1: { focus: ['sword1h', 'shield', 'helm', 'shoulders'], setChance: 0.15 },
+  // sprint2: Sisli Mağara son boss (Kadim Bekçi): same focus as loot_d1_b1 plus the Sisli Kurt taming item (data/mounts.ts)
+  loot_mag_bekci: { focus: ['sword1h', 'shield', 'helm', 'shoulders'], setChance: 0.15, bonus: [{ id: 'mount_sisli_kurt', chance: 0.05 }] },
   loot_d1_b2: { focus: ['staff', 'wand', 'amulet', 'chest', 'gloves'], setChance: 0.15 },
   loot_d1_b3: { focus: ['chest', 'legs', 'amulet'], setChance: 0.2, extraItems: 1 },
   loot_d2_b1: { focus: ['axe2h', 'gloves', 'belt'], setChance: 0.15 },
@@ -358,7 +360,7 @@ export const RARE_TABLES: Record<string, LootTableDef> = {
   loot_rare_zehir_ana: { ...RARE_BASE, items: [2, 2],
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [8, 8] }, { id: 'gem_emerald_2', chance: 0.35 }] },
   loot_rare_gumus_ejder: { ...RARE_BASE, items: [2, 2],
-    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [4, 4] }, { id: 'gem_sapphire_1', chance: 0.3 }] },
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [4, 4] }, { id: 'gem_sapphire_1', chance: 0.3 }, { id: 'mount_gumus_ejder', chance: 0.1 }] },
   loot_rare_camur_baba: { ...RARE_BASE, items: [2, 2],
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [7, 7] }, { id: 'gem_topaz_2', chance: 0.3 }] },
   loot_rare_kor_efendisi: { ...RARE_BASE, items: [2, 2],

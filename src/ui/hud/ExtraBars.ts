@@ -146,10 +146,12 @@ class XCell {
       total = cd.total;
     }
     setClass(this.el, 'noskill', !c || (c.k === 'skill' && !def));
-    setClass(this.el, 'empty', c?.k === 'mat' && count <= 0);
+    // sprint2: a mount cell summons the mount (not a pouch stack), so it is never shown as empty and has no count
+    const mountCell = c?.k === 'mat' && !!getMaterial(c.id)?.teachesMount;
+    setClass(this.el, 'empty', c?.k === 'mat' && !mountCell && count <= 0);
     // counts: > 1, or 0 on an empty consumable / a charge skill (`.is-zero`); exactly 1 shows nothing (UI §2.6.3)
     const countN = c?.k === 'mat' ? count : charges;
-    const countOn = c?.k === 'mat' ? true : maxCharges > 1;
+    const countOn = mountCell ? false : c?.k === 'mat' ? true : maxCharges > 1;
     setText(this.charges, String(countN));
     setClass(this.charges, 'is-zero', countN <= 0);
     setDisplay(this.charges, countOn && (countN > 1 || countN <= 0));

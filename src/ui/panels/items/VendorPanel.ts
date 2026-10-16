@@ -9,9 +9,10 @@ import { sellItem } from './actions';
 import { CATEGORY_ICON, ItemSlot, bindItemTip, bindTip, describe, drag, esc, fmt, h, iconUrl, materialInfo, sfx, toast } from './common';
 
 /** merchant / alchemist: classic shops. gamble: Gizemli Tüccar (blind boxes). seal_vendor: Mühürdar (Av Mührü shop). */
-type Kind = 'merchant' | 'alchemist' | 'bakkal' | 'gamble' | 'seal_vendor' | 'pvp_honor' | 'pvp_conquest';
+type Kind = 'merchant' | 'alchemist' | 'bakkal' | 'gamble' | 'seal_vendor' | 'pvp_honor' | 'pvp_conquest' | 'stable';
 
 const KIND_INFO: Record<Kind, { title: string; icon: string; line: string }> = {
+  stable: { title: 'Ahır Ustası', icon: 'item-trinket.svg', line: 'At sever misin? Binicilik dersi al, dağ keçisini de getirebilirim. Binek, F9 ile çağrılır.' },
   merchant: { title: 'Tüccar', icon: 'ui-shop.svg', line: 'Hoş geldin, maceracı! Kaliteli mallarım var; satacaklarını da buraya bırakabilirsin.' },
   alchemist: { title: 'Simyacı', icon: 'item-potion-flask.svg', line: 'İksirler, tozlar, merhemler... Zindanlara hazırlıksız girme!' },
   bakkal: { title: 'Bakkal', icon: 'ui-shop.svg', line: 'Kızarmış ekmek, kaynak suyu, bir de güveç... Yolun için yeterli.' },
@@ -29,7 +30,7 @@ const isPvpKind = (k: Kind): boolean => k === 'pvp_honor' || k === 'pvp_conquest
 
 function parseKind(d: { kind?: unknown; npcId?: unknown; npc?: unknown; id?: unknown } | undefined): Kind {
   const v = d?.kind;
-  if (v === 'alchemist' || v === 'bakkal' || v === 'gamble' || v === 'seal_vendor' || v === 'merchant' || v === 'pvp_honor' || v === 'pvp_conquest') return v;
+  if (v === 'alchemist' || v === 'bakkal' || v === 'gamble' || v === 'seal_vendor' || v === 'merchant' || v === 'pvp_honor' || v === 'pvp_conquest' || v === 'stable') return v;
   const hint = [d?.npcId, d?.npc, d?.id].find((x) => typeof x === 'string') as string | undefined;
   if (hint) {
     if (/gizemli|kumar|gamble/i.test(hint)) return 'gamble';

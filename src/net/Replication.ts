@@ -225,6 +225,8 @@ export class Replication {
   private readonly remoteMinions = new Map<number, RemoteMinion>();
   /** sprint1: the local character rides a mount (`player:mounted`), sent as the pstate `mounted` flag. */
   private localMounted = false;
+  /** sprint2: the mount the local character rides (`player:mounted` payload), sent as the pstate `mountId`. */
+  private localMountId: string | null = null;
   /** sprint1 host: last pstate view of every peer, for cleanse validation. */
   private readonly peerView = new Map<string, PeerView>();
   /** sprint1 host: cleanse token bucket per requesting peer. */
@@ -237,8 +239,9 @@ export class Replication {
     const ev = G.events;
     this.unsubs.push(
       ev.on('scene:leaving', () => this.onSceneLeaving()),
-      ev.on('player:mounted', ({ on }) => {
+      ev.on('player:mounted', ({ on, mountId }) => {
         this.localMounted = on === true;
+        this.localMountId = on === true ? mountId ?? null : null;
       }),
       // sprint1 cleanse: a dispel that took a debuff off a REMOTE party member's copy is asked of the host (caster side)
       ev.on('status:removed', (e) => this.onStatusRemoved(e)),
@@ -525,7 +528,7 @@ export class Replication {
       rec.hasPos = true;
       pl.object3d.visible = true;
     }
-    setRemoteMounted(pl, st.mounted === true); // sprint1: the replicated ride state (no-op when unchanged)
+    setRemoteMounted(pl, st.mounted === true, st.mountId); // sprint1: the replicated ride state (no-op when unchanged); sprint2: which mount
     pl.applySyncState(st, mapped);
   }
 
@@ -541,9 +544,9 @@ export class Replication {
       x: r2(s.x), y: r2(s.y), z: r2(s.z), yaw: r2(s.yaw), vx: r1(s.vx), vz: r1(s.vz), anim: s.anim,
       hp: Math.round(s.hp), maxHp: Math.round(s.maxHp), res: Math.round(s.res), maxRes: Math.round(s.maxRes), dead: s.dead,
       casting: s.casting ?? null, level: s.level, dodging: s.dodging ?? false, statuses: s.statuses ?? [],
-      shot: s.shot ?? null, shotSeq: s.shotSeq ?? 0, mounted: this.localMounted,
+      shot: s.shot ?? null, shotSeq: s.shotSeq ?? 0, mounted: this.localMounted, mountId: this.localMountId,
     };
-    const sig = `${q.x}|${q.y}|${q.z}|${q.yaw}|${q.anim}|${q.hp}|${q.maxHp}|${q.res}|${q.dead}|${q.casting}|${q.level}|${q.dodging}|${q.shot}|${q.shotSeq}|${q.mounted}|${q.statuses!.join(',')}`;
+    const sig = `${q.x}|${q.y}|${q.z}|${q.yaw}|${q.anim}|${q.hp}|${q.maxHp}|${q.res}|${q.dead}|${q.casting}|${q.level}|${q.dodging}|${q.shot}|${q.shotSeq}|${q.mounted}|${q.mountId}|${q.statuses!.join(',')}`;
     if (sig === this.lastPSig && now - this.lastPAt < NET.IDLE_STATE_INTERVAL_S) return;
     this.lastPSig = sig;
     this.lastPAt = now;
@@ -1077,6 +1080,7 @@ function cleanPState(p: unknown): PStateIn | null {
     level: Math.round(fin(p.level, 1, 60, 1)),
     dodging: p.dodging === true,
     mounted: p.mounted === true,
+    mountId: typeof p.mountId === 'string' ? ident(p.mountId, 32) || null : null,
     statuses,
     shot: typeof p.shot === 'string' ? clip(p.shot, 64) || null : null,
     shotSeq: Math.round(fin(p.shotSeq, 0, 2 ** 31, 0)),

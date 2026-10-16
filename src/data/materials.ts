@@ -2,6 +2,7 @@ import type { Rarity } from '../types/common';
 import type { StatBlock } from '../types/stats';
 import { BOHCA_DEFS } from './market';
 import { PETS, petItemId } from './pets';
+import { MOUNTS, mountItemId } from './mounts';
 
 export interface MaterialDef {
   id: string;
@@ -28,6 +29,8 @@ export interface MaterialDef {
   market?: { slots: number };
   /** WP-12: a pet teaching item (kind consumable). Using it teaches the pet once (systems/Pets.ts). */
   teachesPet?: string;
+  /** Binek koleksiyonu: a mount teaching item (kind consumable). Using it teaches the mount once (systems/Mounts.ts). */
+  teachesMount?: string;
 }
 
 export const MATERIALS: Record<string, MaterialDef> = {};
@@ -212,6 +215,15 @@ add(GATHER_MAT('pollen', 'Çiçek Tozu', 'Herhangi bir çiçekten düşen toz. N
 // One teaching item per pet: drops and event participants get it, using it from the pouch teaches the pet once.
 for (const p of PETS) {
   add({ id: petItemId(p.id), name: `${p.name} Yumurtası`, desc: `Kullanınca ${p.name} evcil hayvanını öğretir. Bir kez kullanılır.`, icon: ic('item-trinket'), rarity: 'rare', sellPrice: 60, kind: 'consumable', maxStack: 99, teachesPet: p.id });
+}
+
+// ------------------------------------------------------------------ mounts (sprint2, data/mounts.ts)
+// One teaching item per mount (vendor, drop or achievement). Using it from the pouch teaches the mount once; on the action bar
+// the same id summons the mount (useBarMat), so a mount can be dragged from the Binekler tab onto a bar.
+for (const m of MOUNTS) {
+  const vendor = m.source.kind === 'vendor' ? m.source : null;
+  add({ id: mountItemId(m.id), name: `${m.name} Tasması`, desc: `Kullanınca ${m.name} binekini öğretir. Öğrenilen binek F9 ile çağrılır.`, icon: ic('item-trinket'), rarity: 'rare', sellPrice: 60,
+    ...(vendor ? { buyPrice: vendor.price, requiredLevel: vendor.level } : {}), kind: 'consumable', maxStack: 99, teachesMount: m.id });
 }
 
 // ------------------------------------------------------------------ helpers

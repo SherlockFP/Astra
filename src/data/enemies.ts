@@ -1139,7 +1139,7 @@ boss({
 
 boss({
   id: 'boss_mag_bekci', name: 'Kadim Bekçi', title: 'Kadim Odanın Son Bekçisi', model: SKEL('Skeleton_Warrior'), scale: 1.5, tint: 0xd8d0c0, role: 'tank',
-  hp: 12, dmg: 0.7, speed: 4.5, radius: 1.2, enrage: 240, arenaR: 14, loot: 'loot_d1_b1',
+  hp: 12, dmg: 0.7, speed: 4.5, radius: 1.2, enrage: 240, arenaR: 14, loot: 'loot_mag_bekci',
   anims: { idle: 'Idle_Combat', walk: 'Walking_A', run: 'Running_A', hit: 'Hit_A', death: 'Death_C_Skeletons' }, resist: R_SKELETON,
   visual: { attach: [...W_BLADE, { url: WPN('Skeleton_Shield_Large_A'), bone: 'handslot.l', pos: [0, 0.017, 0.05] }], eyeEmissive: 0xff8050, runRef: 7, glow: 0xff6040 },
   // starter final boss: a long telegraph (step out of the arc) and a slow swing

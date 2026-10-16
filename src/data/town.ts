@@ -357,6 +357,10 @@ for (const [id, name, x, z, rot, lvl, col] of PORTALS) {
   }, 2);
 }
 // Egitim Alani
+// sprint2 binek: the stable master sells the riding lessons and mounts (VendorPanel kind 'stable', data/mounts.ts)
+npc('npc_ahir_ustasi', 'Ahır Ustası Kazım', 'stable', 'Barbarian', -32, 20, 90, {
+  title: 'Ahır Ustası', show: ['1H_Axe'], tint: 0xa08060, idle: 'Idle', ui: { panel: 'vendor', kind: 'stable' }, lines: ['Atın yoksa yürümek zorundasın, evlat.', 'Binicilik dersi, Sv 10. Altın getir, at getir.'],
+});
 npc('npc_egitmen', 'Eğitmen Kaya', 'trainer', 'Knight', -24, 32, -90, {
   title: 'Eğitmen', show: ['2H_Sword'], tint: 0xb0b0b0, idle: '2H_Melee_Idle', loop: { clip: '2H_Melee_Attack_Slice', every: 5, offset: 1 }, ui: { panel: 'trainer' },
   lines: ['Ağacın köklerini söküp yeniden dikmek mi? Bedeli var.', 'Kuklalara vur, öğren!', 'Kombo yapmayı unutma.'],

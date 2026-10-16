@@ -117,6 +117,8 @@ export interface CharacterSave {
   // ---- WP-12 pets (systems/Pets.ts). OPTIONAL, created on first use. Append-only.
   /** Learned cosmetic pets (data/pets.ts ids) and the summoned one (absent = none). */
   pets?: PetSave;
+  /** Binek koleksiyonu (data/mounts.ts, systems/Mounts.ts). OPTIONAL, created on first use. Append-only. */
+  mounts?: MountSave;
   /** Beta test character (systems/BetaTest.ts): created at the level cap with the tester kit. Shows the BETA badge. Append-only. */
   beta?: boolean;
 }
@@ -145,6 +147,13 @@ export interface DailySave {
 export interface PetSave {
   known: string[];
   active?: string;
+}
+
+/** Binek koleksiyonu: `known` never shrinks; `chosen` is the mount F9 summons; `favs` feeds the "Rastgele binek" pick. */
+export interface MountSave {
+  known: string[];
+  chosen?: string;
+  favs?: string[];
 }
 
 /** WP-07: lifetime PvP record. `honour` is the spendable Onur balance, `honourTotal` the lifetime sum (achievement metric). */

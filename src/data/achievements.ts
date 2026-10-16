@@ -34,6 +34,7 @@ export const METRIC_KIND = {
   mplusInTime: 'add',
   mythicClears: 'add',
   kills: 'add',
+  vadiKills: 'add',
   perfectParry: 'add',
   finishers: 'add',
   majors: 'add',
@@ -73,6 +74,8 @@ export interface AchievementDef {
   title?: string;
   /** WP-12: pet taught on unlock (data/pets.ts id). */
   pet?: string;
+  /** sprint2: mount taught on unlock (data/mounts.ts id). */
+  mount?: string;
 }
 
 export const ACHIEVEMENTS: AchievementDef[] = [
@@ -134,6 +137,9 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'sav_major50', cat: 'savas', name: 'Büyük Hamle', desc: '50 büyük yeteneği kullan.', points: 10, metric: 'majors', target: 50 },
   { id: 'sav_honor500', cat: 'savas', name: 'Onurlu', desc: '500 Onur kazan.', points: 10, metric: 'honor', target: 500 },
   { id: 'sav_rota3', cat: 'savas', name: 'Rota Ustası', desc: '3 farklı savaş rotasını tamamla.', points: 10, metric: 'routes', target: 3 },
+  // sprint2 mounts (data/mounts.ts): the achievement teaches the mount on unlock
+  { id: 'sav_vadi100', cat: 'savas', name: 'Vadi Avcısı', desc: 'Sisli Vadi\'de 100 düşman öldür.', points: 10, metric: 'vadiKills', target: 100, mount: 'altin_domuz' },
+  { id: 'mag_sis', cat: 'zindan', name: 'Mağaradaki Sis', desc: '3 zindan temizle (Sisli Mağara\'nın sisi çağırır).', points: 10, metric: 'dungeonClears', target: 3, mount: 'kristal_geyik' },
 
   // ---- Toplama / Ekonomi (gold, upgrades, gathering, market, loot)
   { id: 'eko_gold1k', cat: 'ekonomi', name: 'Küçük Kese', desc: 'Toplam 1.000 altın kazan.', points: 5, metric: 'goldEarned', target: 1000 },

@@ -310,8 +310,12 @@ export interface GameEvents {
   /** The player clicked a unit in the HUD: select it. `attack` = right click (select and arm the auto-attack, WoW). */
   'target:select': { entityId: EntityId; attack?: boolean };
   // ---- Binek (WoW ground mount, append-only). Local player only; emitted by game/Mount.ts.
-  /** The local player mounted (`on: true`) or dismounted. */
-  'player:mounted': { on: boolean };
+  /** The local player mounted (`on: true`, with the mount id) or dismounted. */
+  'player:mounted': { on: boolean; mountId?: string | null };
+  /** The summoned mount changed (systems/Mounts.ts setChosenMount) or a favourite was toggled (id = that mount). */
+  'mount:changed': { id: string | null };
+  /** A mount is summoned or dismissed from the action bar (the chosen mount is set first). game/Mount.ts acts on it like F9. */
+  'mount:summon': Record<string, never>;
   /** KIT Druid (combat/Forms.ts): the local player entered (`form` = id) or left (null) a shapeshift form. */
   'form:changed': { casterId: EntityId; form: string | null };
 

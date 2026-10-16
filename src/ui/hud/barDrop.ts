@@ -5,6 +5,7 @@ import { isFlaskBase } from '../../data/flasks';
 import type { SkillDef, SkillSlotKey } from '../../types/skills';
 import type { BarLayoutSave } from '../../types/character';
 import type { CharacterState } from '../../systems/CharacterState';
+import { setChosenMount } from '../../systems/Mounts';
 import type { DragPayload } from '../panels/items/common';
 import {
   type BarCell,
@@ -143,6 +144,13 @@ export function useBarMat(id: string): boolean {
   const ch = G.character;
   const p = G.player;
   if (!ch || !p) return false;
+  // sprint2: a mount cell summons (or dismisses) that mount, like F9; it is not consumed and needs no pouch item
+  const mountId = MATERIALS[id]?.teachesMount;
+  if (mountId) {
+    if (!setChosenMount(mountId)) return false;
+    G.events.emit('mount:summon', {});
+    return true;
+  }
   // a flask on the bar drinks from its belt slot on its own cooldown (not the shared potion one)
   if (isFlaskBase(id)) return G.combat?.useFlask(ch.save.flasks?.findIndex((f) => f?.baseId === id) ?? -1) ?? false;
   const cd = p.statuses.get('potion_cd');

@@ -31,6 +31,8 @@ export interface PlayerSyncState {
   shotSeq?: number;             // increments each time a new one-shot starts
   /** Append-only (sprint1): the owner is riding a mount (game/Mount.ts). Wire: bit 4 of the pstate flags (net/codec.ts). */
   mounted?: boolean;
+  /** Append-only (sprint2): the mount id the owner rides (data/mounts.ts); absent or unknown = the starter horse. */
+  mountId?: string | null;
 }
 
 const VISIBLE_SLOTS: EquipSlot[] = ['weapon', 'offhand', 'helm'];
