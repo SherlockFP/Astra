@@ -188,11 +188,11 @@ boss({
   anims: A_GEN, resist: { physical: 0.3, arcane: 0.5, lightning: -0.25 }, visual: { emissiveIntensity: 0.4, eyeEmissive: 0x80e8ff },
   basic: cone('arkanotron_fist', 'Kural Dizisi', 4.5, 100, 2.4, 1.0, 'Attack', 0.5, { windup: wu(1.0) }),
   abilities: [
-    custom('arkanotron_slam', 'İtici Darbe', 18, 7, 1.2, 'Attack', { params: { hold: 0.45, coef: 4.5, knockback: 14 } }),
+    custom('arkanotron_slam', 'İtici Darbe', 18, 7, 1.2, 'Attack', { tankBuster: true, params: { hold: 0.45, coef: 4.5, knockback: 14 } }),
     custom('arkanotron_spin', 'Dönen Çevirim', 26, 16, 0.95, 'Attack2', { params: { coef: 1.2, ring: 6.5 } }),
     custom('arkanotron_judgment', 'Hüküm Yakalaması', 34, 21, 1.2, 'Attack', { params: { range: 8, root: 1.1, coef: 2.4 } }),
     custom('arkanotron_lunge', 'Sıçrayıp Ez', 24, 8, 1.05, 'Jump', { params: { airtime: 0.55, radius: 3.4, coef: 2.4 } }),
-    custom('arkanotron_expulsion', 'Arkan Püskürtme', 26, 14, 2.0, 'Attack2', { params: { radius: 12, coef: 2.2, knockback: 9 } }),
+    custom('arkanotron_expulsion', 'Arkan Püskürtme', 26, 14, 2.0, 'Attack2', { castTime: 2.0, params: { radius: 12, coef: 2.2, knockback: 9 } }),
     custom('arkanotron_shackles', 'Eterik Prangalar', 30, 10, 1.5, 'Cast', { castTime: 1.5, interruptible: true, kick: 2, params: { count: 3, root: 15 } }),
     custom('arkanotron_refuel', 'Yenileme Protokolü', 999, 9999, 1.0, 'Enrage', { params: { volleys: 3 } }),
   ],
@@ -215,6 +215,8 @@ boss({
   visual: { hide: KNIGHT_HIDE.filter((n) => n !== 'Knight_Helmet' && n !== 'Rectangle_Shield'), eyeEmissive: 0x5fd3e8, runRef: 7 },
   basic: cone('seranel_slash', 'Rün Dizisi', 3.8, 110, 2.2, 1.0, '1H_Melee_Attack_Slice_Horizontal', 0.6, { windup: wu(1.0) }),
   abilities: [
+    // tank buster: a telegraphed rune cleave on the tank (not parryable), sunder stacks
+    cone('seranel_rune_cleave', 'Rün Yarması', 4.5, 80, 12, 4.0, '1H_Melee_Attack_Slice_Horizontal', 0.9, { initialCooldown: 8, windup: 1.4, telegraph: true, tankBuster: true, parryable: false, statuses: [{ status: 'sunder', duration: 10 }] }),
     custom('seranel_flurry', 'Rün Fırtınası', 16, 9, 0.7, '1H_Melee_Attack_Slice_Horizontal', { params: { hold: 0.35, coef: 2.2, lunge: 3 } }),
     custom('seranel_dash', 'Atılış', 22, 13, 0.9, 'Running_A', { params: { length: 12, width: 2.2, speed: 18, coef: 1.8 } }),
     custom('seranel_leap', 'Sıçrayan Mızrak', 24, 6, 1.1, 'Jump_Full_Long', { params: { airtime: 0.55, radius: 3.0, coef: 2.6 } }),
@@ -223,8 +225,8 @@ boss({
     custom('seranel_hastening', 'Hızlandıran Koruma', 32, 16, 1.0, 'Spellcast_Raise', { castTime: 1.0, params: { seconds: 15 } }),
   ],
   phases: [
-    bp('p1', 1.01, ['seranel_flurry', 'seranel_dash', 'seranel_glaive', 'seranel_hastening']),
-    bp('p2', 0.5, ['seranel_flurry', 'seranel_dash', 'seranel_leap', 'seranel_glaive', 'seranel_hastening'], { yell: 'Büyülerin burada işe yaramaz!' }),
+    bp('p1', 1.01, ['seranel_rune_cleave', 'seranel_flurry', 'seranel_dash', 'seranel_glaive', 'seranel_hastening']),
+    bp('p2', 0.5, ['seranel_rune_cleave', 'seranel_flurry', 'seranel_dash', 'seranel_leap', 'seranel_glaive', 'seranel_hastening'], { yell: 'Büyülerin burada işe yaramaz!' }),
   ],
   intro: "Fener'e yaklaşan her büyü susar.", death: 'Fener... sönmesin...',
   arena: { cx: 228, cz: 100, w: 72, h: 56, homeX: 228, homeZ: 112 },
@@ -239,6 +241,10 @@ boss({
   visual: { opacity: 0.9, eyeEmissive: 0xc080ff, hoverBob: 0.2 },
   basic: cone('gemellus_touch', 'Çifte Dokunuş', 4.0, 100, 2.2, 1.0, 'Attack', 0.5, { windup: wu(1.0) }),
   abilities: [
+    // tank buster: a telegraphed shadow line through the tank from the clone-linked body (not parryable)
+    line('gemellus_rend', 'Kopya Yarması', 12, 2.6, 12, 1.5, 3.8, 'shadow', 'Attack2', 1.2, { initialCooldown: 8, tankBuster: true, parryable: false, sfx: 'swing_heavy' }),
+    // raid beat with a 2.5 s cast bar: a r 11 cosmic burst from the boss; the far side of the room is the safe spot
+    aoe('gemellus_nova', 'Kozmik Patlama', 'self_aoe', 11, 11, 16, 2.5, 0.9, 'arcane', 'Cast', 2.5, { initialCooldown: 12, castTime: 2.5, sfx: 'boss_cast' }),
     custom('gemellus_triplicate', 'Üçleme', 999, 9999, 1.2, 'Cast', { castTime: 1.2 }),
     custom('gemellus_lash', 'Üçlü Kamçı', 20, 8, 0.7, 'Attack', { params: { coef: 1.0, echo: 1.2 } }),
     custom('gemellus_dive', 'Boşluğa Dalış', 26, 12, 1.15, 'Attack2', { params: { airtime: 0.6, radius: 3.2, coef: 2.8 } }),
@@ -247,8 +253,8 @@ boss({
     custom('gemellus_sting', 'Kozmik Iğne', 16, 6, 1.4, 'Attack2', { castTime: 1.4, params: { coef: 3.2 } }),
   ],
   phases: [
-    bp('p1', 1.01, ['gemellus_lash', 'gemellus_dive', 'gemellus_link', 'gemellus_grasp', 'gemellus_sting'], { ability: 'gemellus_triplicate' }),
-    bp('p2', 0.5, ['gemellus_lash', 'gemellus_dive', 'gemellus_link', 'gemellus_grasp', 'gemellus_sting'],
+    bp('p1', 1.01, ['gemellus_rend', 'gemellus_nova', 'gemellus_lash', 'gemellus_dive', 'gemellus_link', 'gemellus_grasp', 'gemellus_sting'], { ability: 'gemellus_triplicate' }),
+    bp('p2', 0.5, ['gemellus_rend', 'gemellus_nova', 'gemellus_lash', 'gemellus_dive', 'gemellus_link', 'gemellus_grasp', 'gemellus_sting'],
       { yell: 'Daha çok... daha çok biz!', ability: 'gemellus_triplicate' }),
   ],
   intro: 'Biz çoğuz. Siz azsınız.', death: 'Bir... olduk...',
@@ -262,17 +268,17 @@ boss({
   anims: A_CHAR, resist: { shadow: 0.5, physical: 0.1, holy: -0.25 }, visual: { emissiveIntensity: 0.5, eyeEmissive: 0xc080ff },
   basic: cone('degentrius_blast', 'Parça Süpürmesi', 5.0, 100, 3.2, 1.6, 'Attack', 0.5, { windup: wu(1.6), knockback: 3 }),
   abilities: [
-    custom('degentrius_fragment', 'Dev Parça', 26, 6, 1.2, 'Attack', { params: { hold: 0.4, radius: 8, coef: 1.0, knockback: 9, tankCoef: 4.2 } }),
+    custom('degentrius_fragment', 'Dev Parça', 26, 6, 1.2, 'Attack', { tankBuster: true, params: { hold: 0.4, radius: 8, coef: 1.0, knockback: 9, tankCoef: 4.2 } }),
     custom('degentrius_reach', 'Boşluk Eli', 38, 18, 1.2, 'Wave', { params: { range: 12, root: 1.5, coef: 2.6 } }),
     custom('degentrius_waves', 'Üç Dalga', 30, 14, 0.9, 'Wave', { params: { coef: 1.6 } }),
     custom('degentrius_entropy', 'Yutan Entropi', 42, 12, 1.6, 'Wave', { castTime: 1.6, params: { coef: 1.4 } }),
     custom('degentrius_torrent', 'Boşluk Seli', 46, 22, 2.5, 'Wave', { castTime: 2.5, params: { coef: 2.0, sweep: 14 } }),
-    custom('degentrius_essence', 'Kararsız Boşluk Özü', 52, 36, 2.0, 'Wave', { params: { coef: 1.8, raid: 2.5 } }),
+    custom('degentrius_essence', 'Kararsız Boşluk Özü', 52, 36, 2.0, 'Wave', { castTime: 2.0, params: { coef: 1.8, raid: 2.5 } }),
     custom('degentrius_nullbomb', 'Boşluk Bombası', 48, 30, 1.2, 'Wave', { params: { coef: 3.5, fuse: 5 } }),
   ],
   phases: [
     bp('p1', 1.01, ['degentrius_fragment', 'degentrius_reach', 'degentrius_waves', 'degentrius_entropy', 'degentrius_torrent', 'degentrius_essence', 'degentrius_nullbomb']),
-    bp('p2', 0.6, ['degentrius_fragment', 'degentrius_reach', 'degentrius_waves', 'degentrius_entropy', 'degentrius_torrent', 'degentrius_essence', 'degentrius_nullbomb'],
+    bp('p2', 0.5, ['degentrius_fragment', 'degentrius_reach', 'degentrius_waves', 'degentrius_entropy', 'degentrius_torrent', 'degentrius_essence', 'degentrius_nullbomb'],
       { yell: 'Mercekler hizalanıyor!' }),
     bp('p3', 0.3, ['degentrius_fragment', 'degentrius_reach', 'degentrius_waves', 'degentrius_entropy', 'degentrius_torrent', 'degentrius_essence', 'degentrius_nullbomb'],
       { yell: 'Gökler yırtılsın!' }),
