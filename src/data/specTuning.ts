@@ -63,8 +63,8 @@ export const SPEC_TUNING: Record<string, LevelTuning> = {
  *  flat factor the L1-9 solo sims were tuned on; L1 and L5 are fitted to dev/combat-sim/class_ttk.mjs (every class's same-level normal mob
  *  dies in 6-10 s at L1 and L5). A spec not listed is 1. */
 export const LOW_LEVEL_DMG: Record<string, readonly [number, number, number]> = {
-  knight_protector: [1.37, 0.72, 0.6], barbarian_warlord: [0.76, 0.93, 1], mage_fire: [1.09, 1.20, 1.5], rogue_assassin: [0.89, 1.13, 1],
-  paladin_protection: [0.85, 0.68, 0.6], necromancer_summoner: [0.27, 0.41, 0.35], warlock_affliction: [1.54, 0.85, 1.15], monk_brewmaster: [0.56, 0.69, 1],
+  knight_protector: [1.37, 0.72, 0.6], barbarian_warlord: [1.15, 0.93, 1], mage_fire: [1.09, 1.20, 1.5], rogue_assassin: [0.89, 1.13, 1],
+  paladin_protection: [0.85, 0.68, 0.6], necromancer_summoner: [0.27, 0.33, 0.35], warlock_affliction: [1.54, 0.85, 1.15], monk_brewmaster: [0.56, 0.69, 1],
   archer_marksman: [0.50, 0.58, 0.55], shaman_elemental: [0.89, 1.24, 1.15], demonhunter_chaos: [0.65, 0.76, 0.84], evoker_devastation: [0.31, 0.30, 0.30],
   priest_discipline: [0.88, 1.22, 1.12], druid_balance: [0.79, 1.01, 1],
 };

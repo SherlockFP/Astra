@@ -24,7 +24,7 @@ export const SPECS_KIT_DRUID: Partial<Record<SpecId, SpecDef>> = {
     ],
     skills: ['druid_bal_basic', 'druid_sunfire', 'druid_starfire', 'druid_starsurge', 'druid_eclipse', 'druid_starfall', 'druid_celestial_alignment', 'druid_fury_of_elune'],
     unlock: {
-      druid_bal_basic: 1, druid_sunfire: 1, druid_starfire: 1, druid_celestial_alignment: 10, druid_starsurge: 12, druid_eclipse: 15,
+      druid_bal_basic: 1, druid_sunfire: 1, druid_starfire: 1, druid_celestial_alignment: 5, druid_starsurge: 12, druid_eclipse: 15,
       druid_starfall: 20, druid_fury_of_elune: 20,
     },
     majors: { m45: 'druid_celestial_alignment', m90: 'druid_fury_of_elune' },

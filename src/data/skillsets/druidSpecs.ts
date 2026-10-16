@@ -69,7 +69,7 @@ export function registerDruidSpecs(add: SkillAdd): void {
     desc: '12 saniye boyunca hem Güneş hem Ay Tutulması etkin olur; büyü hızın ve hasarın %10 artar. +40 Astral Güç verir.',
     cost: 0, cooldown: 45, castTime: 0, anim: 'Spellcast_Raise', animSpeed: 1.4, hitTime: 0.3, targeting: 'custom', behavior: 'kit_druid_self',
     selfStatuses: [{ status: 'celestial_alignment', duration: 12 }, { status: 'eclipse_solar', duration: 12 }, { status: 'eclipse_lunar', duration: 12 }],
-    tags: ['major', 'buff', 'f_moon', 'spec'], vfx: { cast: 'buff_aura' }, sfx: { cast: 'buff' },
+    tags: ['major', 'offensive', 'buff', 'f_moon', 'spec'], vfx: { cast: 'buff_aura' }, sfx: { cast: 'buff' },
     params: { major: 45, end: 0.9, chain: 0.1, move: 0.15, weight: 1, ap: 40 },
   });
   add({

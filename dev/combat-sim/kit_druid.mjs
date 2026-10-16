@@ -177,7 +177,8 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   G.character.save.skillBar = { ...G.character.save.skillBar, s2: 'druid_shred' };
   cast(p, 's2', foe, 0.8);
   ok('kit.druid.forms an f_cat skill auto-shifts Ayı -> Kedi and resources follow', Forms.formOf(p) === 'cat' && p.resourceType === 'energy');
-  // travel form
+  // travel form: the L5 kit slot is Celestial Alignment (m45), so the travel form is bound on s1 for this check
+  G.character.save.skillBar = { ...G.character.save.skillBar, s1: 'druid_travel_form' };
   p.statuses.remove('form_cat');
   H.step(2);
   cast(p, 's1', foe, 0.8);
