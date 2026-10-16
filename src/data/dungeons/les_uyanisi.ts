@@ -19,6 +19,15 @@ import {
  * are device props with ids only, the spear / hammer / orb / shield pickups are not placed), NEW hazard and prop kinds are used only
  * where the union already has them, no `atmosphere` presets in the engine (fog values are in DungeonDef.atmospheres), no
  * `nocollide` / `hang` flags (upper-layer props are placed with `y` only), NEW models use the doc's fallbacks (section 2.6, 2.7).
+ * Blueprint pass (docs/ref/dungeons/WOW_DUNGEON_BLUEPRINT.md 7.9, checklist 6): forcesRequired = floor(0.8 x 551) = 440; pack
+ * links les_p02/p03 and dormant les_p07 (bones) / les_p18 (coffin); checkpoints after boss 2 and boss 3; one boon pad (Cesaret
+ * Meydani); positional ambience in 13 rooms; connector dressing. Boss arenas, boss positions and dev spots are unchanged (boss
+ * script).
+ * Restructure pass 2: 22 rooms (ambar, can_kulesi, vana_odasi and kan_havuzu were optional dead ends and are merged out, with
+ * their five optional packs); optional forces 0 %; forcesRequired = floor(0.8 x 451) = 360; the service passage kisayol is a
+ * kill_lock opened by boss 2 (it runs into the Dus Meydani arena, so it saves the walk back after boss 2 only); k_cikis is a 2 wide
+ * approach into the largest room (buz_tepe, 18 x 18). Boss arenas are unchanged (no boss script constants moved).
+ * Open: the approach is 4 tiles long (not 6), props average 9 (target 12), a single chest, no station.
  * OWNER: content module.
  */
 
@@ -83,10 +92,10 @@ const rect = (x: number, z: number, w: number, h: number): TileRect => ({ x, z, 
 type Rect4 = [number, number, number, number];
 
 const OLD_RECT: Record<string, Rect4> = {
-  giris: [4, 54, 8, 8], k_giris: [12, 57, 4, 2], meydan: [16, 48, 14, 14], ambar: [20, 42, 8, 6], k_hasat: [30, 54, 4, 2],
+  giris: [4, 54, 8, 8], k_giris: [12, 57, 4, 2], meydan: [16, 48, 14, 14], k_hasat: [30, 54, 4, 2],
   hasat_cukuru: [34, 46, 14, 14], k_toll_a: [40, 42, 2, 4], toll_kapisi: [36, 36, 10, 6], son_can: [30, 24, 22, 12],
-  can_kulesi: [52, 29, 8, 8], k_toll_b: [26, 29, 4, 2], kisayol: [26, 36, 10, 2], dus_meydan: [6, 22, 20, 16], k_kopru: [12, 18, 6, 4],
-  dikis_kapi: [8, 10, 16, 8], vana_odasi: [0, 10, 8, 8], kan_havuzu: [8, 2, 12, 8], k_atolye: [24, 12, 4, 2], dikis_atolye: [28, 2, 18, 14],
+  k_toll_b: [26, 29, 4, 2], kisayol: [26, 36, 10, 2], dus_meydan: [6, 22, 20, 16], k_kopru: [12, 18, 6, 4],
+  dikis_kapi: [8, 10, 16, 8], k_atolye: [24, 12, 4, 2], dikis_atolye: [28, 2, 18, 14],
   k_yukari: [46, 8, 4, 2], zolramus_kapi: [50, 2, 14, 14], k_nef_a: [56, 16, 2, 4], kemik_nef: [52, 20, 16, 8],
   heykel_galerisi: [68, 16, 12, 16], k_cikis: [72, 32, 2, 4], buz_tepe: [62, 36, 18, 18],
 };
@@ -182,20 +191,16 @@ const ROOM_BASE: RoomDef[] = [
   room('giris', 'Cesaret Kapısı', 4, 54, 8, 8, 'tiles', 'stone', 0.3, { floorY: 0, openAir: true, ceiling: 10 }),
   room('k_giris', 'Nöbetçi Yolu', 12, 56, 4, 4, 'tiles', 'stone', 0.4, { floorY: 1.2, ceiling: 8 }),
   room('meydan', 'Cesaret Meydanı', 16, 48, 14, 14, 'tiles', 'stone', 0.5, { floorY: 0, openAir: true, ceiling: 9 }),
-  room('ambar', 'Hasat Ambarı', 20, 39, 9, 9, 'wood', 'brick', 0.6, { optional: true, floorY: 0, ceiling: 7 }),
   room('k_hasat', 'Hasat Yolu', 30, 53, 4, 4, 'dirt', 'cave', 0.4, { floorY: 0, ceiling: 9 }),
   room('hasat_cukuru', 'Hasat Çukuru', 34, 46, 14, 14, 'dirt', 'cave', 0.15, { boss: 1, floorY: -5.2, openAir: true, ceiling: 6 }),
   room('k_toll_a', 'Çürük Merdiven', 39, 42, 4, 4, 'stone', 'brick', 0.3, { ceiling: 8 }),
   room('toll_kapisi', 'Çan Kapısı', 36, 33, 10, 9, 'stone', 'brick', 0.5, { floorY: 1.4, ceiling: 12 }),
   room('son_can', 'Son Çan Avlusu', 30, 24, 22, 9, 'stone', 'brick', 0.5, { floorY: 2.4, openAir: true, ceiling: 16 }),
-  room('can_kulesi', 'Çan Kulesi', 52, 30, 9, 9, 'stone', 'brick', 0.5, { optional: true, floorY: 2.4, ceiling: 18 }),
   room('k_toll_b', 'Yıkık Geçit', 26, 28, 4, 4, 'stone', 'stone', 0.3, { ceiling: 8 }),
   room('kisayol', 'Servis Geçidi', 26, 36, 10, 2, 'stone_dark', 'stone', 0.3, { skip: true, ceiling: 7 }),
   room('dus_meydan', "Cesaret'in Düşüşü", 6, 22, 20, 16, 'tiles', 'stone', 0.15, { boss: 2, floorY: 6.0, openAir: true, ceiling: 18 }),
   room('k_kopru', 'Kemik Köprü', 12, 18, 6, 4, 'stone_dark', 'temple', 0.1, { ceiling: 10 }),
   room('dikis_kapi', 'Dikişhane Girişi', 9, 9, 15, 9, 'stone_dark', 'forge', 0.5, { floorY: 14.8, ceiling: 14 }),
-  room('vana_odasi', 'Yaratım Odası', 0, 9, 9, 9, 'stone_dark', 'forge', 0.5, { optional: true, floorY: 14.8, ceiling: 9 }),
-  room('kan_havuzu', 'Kan Havuzu', 8, 0, 12, 9, 'stone_dark', 'forge', 0.5, { optional: true, floorY: 14.8, ceiling: 12 }),
   room('k_atolye', 'Ameliyat Koridoru', 24, 11, 4, 4, 'stone_dark', 'forge', 0.3, { ceiling: 7 }),
   room('dikis_atolye', 'Dikiş Atölyesi', 28, 2, 18, 14, 'stone_dark', 'forge', 0.1, { boss: 3, floorY: 17.4, ceiling: 18 }),
   room('k_yukari', 'Yukarı Merdiven', 46, 5, 4, 4, 'stone_dark', 'temple', 0.3, { ceiling: 10 }),
@@ -203,7 +208,7 @@ const ROOM_BASE: RoomDef[] = [
   room('k_nef_a', 'Kemik Basamaklar', 54, 16, 4, 4, 'stone_dark', 'temple', 0.3, { ceiling: 14 }),
   room('kemik_nef', 'Kemik Nef', 52, 20, 16, 9, 'stone_dark', 'temple', 0.5, { floorY: 27.8, ceiling: 28 }),
   room('heykel_galerisi', 'Heykeltıraş Galerisi', 68, 16, 12, 16, 'stone_dark', 'temple', 0.5, { floorY: 30.6, ceiling: 22 }),
-  room('k_cikis', 'Buzlu Merdiven', 70, 32, 4, 4, 'ice', 'ice', 0.1, { ceiling: 12 }),
+  room('k_cikis', 'Buzlu Merdiven', 70, 32, 2, 4, 'ice', 'ice', 0.1, { ceiling: 12 }),
   room('buz_tepe', 'Buzlu Tepe', 62, 36, 18, 18, 'ice', 'ice', 0.1, { boss: 4, floorY: 36.0, openAir: true }),
 ];
 
@@ -239,7 +244,6 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
     ],
     slopes: [stairs(rect(16, 56, 4, 4), 'x', 1.2, 0, { id: 'meydan_basamaklari' })],
   },
-  ambar: { atmosphere: 'plague' },
   k_hasat: { atmosphere: 'plague' },
   hasat_cukuru: {
     explicitDecor: true, atmosphere: 'plague', ambientVfx: 'ambient_shadow_wisps', lightColor: GREEN,
@@ -266,11 +270,6 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
     ],
     hazards: [{ kind: 'debris_fall', interval: 9, warn: 1.4, radius: 2.5, coef: 1.6 }],
     slopes: [stairs(rect(39, 30, 4, 3), 'z', 2.4, 1.4, { id: 'can_basamaklari' })],
-  },
-  can_kulesi: {
-    atmosphere: 'toll',
-    heightAreas: [plateau(rect(56, 30, 4, 4), 5.4, 'rail', 'kule_terasi')],
-    slopes: [stairs(rect(53, 30, 3, 4), 'x', 2.4, 5.4, { id: 'kule_merdiveni' })],
   },
   k_toll_b: {
     slopes: [stairs(rect(26, 28, 4, 4), 'x', 6.0, 2.4, { id: 'yikik_gecit_rampasi' })],
@@ -302,11 +301,6 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
     explicitDecor: true, atmosphere: 'stitch', ambientVfx: 'ambient_shadow_wisps', lightColor: GREEN,
     zones: [circleZone('rune', 10.5, 16, 1.0, { color: 0x1a2a10, glow: GREEN, glowIntensity: 0.5 })],
     hazards: [{ kind: 'plague_vent', interval: 8, warn: 1.2, radius: 2, coef: 0.6, vfx: 'poison_cloud' }],
-  },
-  vana_odasi: { atmosphere: 'stitch' },
-  kan_havuzu: {
-    atmosphere: 'stitch',
-    zones: [rectZone('pool', 12, 1, 6, 3, { blocked: true, color: 0x6a1a1a, glow: 0xaa2020, glowIntensity: 0.5 })],
   },
   k_atolye: {
     atmosphere: 'stitch',
@@ -347,7 +341,7 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
   },
   k_cikis: {
     atmosphere: 'top', ambientVfx: 'ambient_snow',
-    slopes: [stairs(rect(70, 32, 4, 4), 'z', 32.4, 36.0, { id: 'buzlu_merdiven' })],
+    slopes: [stairs(rect(70, 32, 2, 4), 'z', 32.4, 36.0, { id: 'buzlu_merdiven' })],
   },
   buz_tepe: {
     explicitDecor: true, atmosphere: 'top', ambientVfx: 'ambient_snow',
@@ -366,21 +360,18 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
 const DOORS: DoorDef[] = [
   door('giris', 'k_giris', 11, 56, 'e', 4, 'none'),
   door('k_giris', 'meydan', 15, 56, 'e', 4, 'none'),
-  door('meydan', 'ambar', 22, 48, 'n', 2, 'none'),
   door('meydan', 'k_hasat', 29, 53, 'e', 4, 'none'),
   door('k_hasat', 'hasat_cukuru', 33, 53, 'e', 4, 'boss_lock'),
   door('hasat_cukuru', 'k_toll_a', 39, 46, 'n', 4, 'boss_exit'),
   door('k_toll_a', 'toll_kapisi', 39, 42, 'n', 4, 'none'),
   door('toll_kapisi', 'son_can', 39, 33, 'n', 4, 'none'),
-  door('son_can', 'can_kulesi', 51, 30, 'e', 2, 'none'),
   door('son_can', 'k_toll_b', 30, 28, 'w', 4, 'none'),
   door('k_toll_b', 'dus_meydan', 26, 28, 'w', 4, 'boss_lock'),
-  { ...door('toll_kapisi', 'kisayol', 36, 36, 'w', 2, 'device_lock'), device: 'dev_gd2' },
+  // shortcut: a kill_lock opened by boss 2 (Hasatci Amarth) replaces the device lock on the service passage
+  { ...door('toll_kapisi', 'kisayol', 36, 36, 'w', 2, 'kill_lock'), opensOn: { boss: 'les_boss_hasatci_amarth' } },
   door('kisayol', 'dus_meydan', 26, 36, 'w', 2, 'boss_lock'),
   door('dus_meydan', 'k_kopru', 14, 22, 'n', 2, 'boss_exit'),
   door('k_kopru', 'dikis_kapi', 14, 18, 'n', 2, 'none'),
-  door('dikis_kapi', 'vana_odasi', 9, 13, 'w', 2, 'none'),
-  door('dikis_kapi', 'kan_havuzu', 12, 9, 'n', 2, 'none'),
   door('dikis_kapi', 'k_atolye', 23, 11, 'e', 4, 'none'),
   door('k_atolye', 'dikis_atolye', 27, 11, 'e', 4, 'boss_lock'),
   door('dikis_atolye', 'k_yukari', 45, 5, 'e', 4, 'boss_exit'),
@@ -388,8 +379,8 @@ const DOORS: DoorDef[] = [
   door('zolramus_kapi', 'k_nef_a', 54, 15, 's', 4, 'none'),
   door('k_nef_a', 'kemik_nef', 54, 19, 's', 4, 'none'),
   door('kemik_nef', 'heykel_galerisi', 67, 23, 'e', 2, 'none'),
-  door('heykel_galerisi', 'k_cikis', 70, 31, 's', 4, 'none'),
-  door('k_cikis', 'buz_tepe', 70, 35, 's', 4, 'boss_lock'),
+  door('heykel_galerisi', 'k_cikis', 70, 31, 's', 2, 'none'),
+  door('k_cikis', 'buz_tepe', 70, 35, 's', 2, 'boss_lock'),
 ];
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -414,14 +405,12 @@ const KF = 'les_kafatasi';
 // ---------------------------------------------------------------------------------------------------------------------
 const PACKS_RAW: PackDef[] = [
   pack('les_p01', 'k_giris', 13.5, 57.5, undefined, [[KS, -1, 0], [KS, 0, 0], [KB, 1, 0]]),
-  pk('les_p02', 'meydan', 19, 52, 13, [[KS, 3]], [[KB, 1]]),
-  pk('les_p03', 'meydan', 22.5, 50, 14, [[KS, 2]], [[AR, 2]]),
+  pk('les_p02', 'meydan', 19, 52, 13, [[KS, 3]], [[KB, 1]], { linkedTo: ['les_p03'] }),
+  pk('les_p03', 'meydan', 22.5, 50, 14, [[KS, 2]], [[AR, 2]], { linkedTo: ['les_p02'] }),
   pk('les_p04', 'meydan', 26.5, 57, 14, [[KS, 2]], [[KB, 1], [AR, 1]]),
   pack('les_p05', 'meydan', 17.5, 60.8, 5, [[VT, 0.3, 0]], { patrol: [[17.5, 60.8], [29, 60.8], [29, 61.1], [17.5, 61.1]] }),
   pk('les_p06', 'meydan', 23, 57.5, 15, [[CN, 1], [KS, 1]], [], { big: true }),
-  pack('les_p07', 'k_hasat', 32, 54.5, undefined, [[KS, -1.5, 0], [KS, -0.5, 0], [AR, 0.5, 0]]),
-  pk('les_p08', 'ambar', 21.5, 44.5, 17, [[KS, 3]], [[KB, 1], [AR, 1]], { optional: true }),
-  pk('les_p09', 'ambar', 25.5, 45, 16, [[CN, 1]], [[KB, 1]], { optional: true }),
+  pack('les_p07', 'k_hasat', 32, 54.5, undefined, [[KS, -1.5, 0], [KS, -0.5, 0], [AR, 0.5, 0]], { dormant: { kind: 'bones', wakeRadius: 6 } }),
   pk('les_p10', 'k_toll_a', 40.5, 43.5, 11, [[KS, 1]], [[KB, 1], [AR, 1]]),
   pk('les_p11', 'toll_kapisi', 39.5, 39, 14, [[KS, 2]], [[AR, 2]]),
   pack('les_p12', 'toll_kapisi', 44.5, 39.5, undefined, [[KS, 0.3, 0.8], [KS, -0.4, 0.8], [KB, 0.3, -0.8], [KB, -0.4, -0.8]]),
@@ -429,15 +418,12 @@ const PACKS_RAW: PackDef[] = [
   pack('les_p14', 'son_can', 40.5, 33.5, undefined, [[CN, 0.3, 1.2], [KB, 0.3, -1.2], [KB, -0.39, -0.86]], { big: true }),
   pk('les_p15', 'son_can', 47, 27, 18, [[KS, 2]], [[AR, 2], [KB, 1]]),
   pack('les_p16', 'son_can', 33, 33, 5, [[VT, 0.3, 0]], { patrol: [[32.5, 33], [36.5, 33], [36.5, 34], [32.5, 34]] }),
-  pk('les_p17', 'can_kulesi', 54.5, 33, 22, [[CN, 1], [KS, 2]], [[AR, 1]], { optional: true }),
-  pack('les_p18', 'k_toll_b', 27.6, 29.5, undefined, [[KS, -1.2, 0], [KS, -0.4, 0], [KB, 0.4, 0], [AR, 1.2, 0]]),
+  pack('les_p18', 'k_toll_b', 27.6, 29.5, undefined, [[KS, -1.2, 0], [KS, -0.4, 0], [KB, 0.4, 0], [AR, 1.2, 0]], { dormant: { kind: 'coffin', wakeRadius: 5 } }),
   pack('les_p19', 'k_kopru', 15, 19.5, undefined, [[KB, -0.9, 0], [AR, -0.3, -0.6], [AR, 0.1, 0.5]]),
   pk('les_p20', 'dikis_kapi', 11, 14, 25, [[DO, 3]], [[LT, 1], [EZ, 1]], { big: true }),
   pk('les_p21', 'dikis_kapi', 17.5, 12, 25, [[DO, 2]], [[LT, 2], [EZ, 1]], { big: true }),
   pk('les_p22', 'dikis_kapi', 21, 14.8, 10, [[VT, 2]], [], { patrol: [[21, 14.8], [23, 14.8], [23, 16.6], [21, 16.6]] }),
   pack('les_p23', 'k_atolye', 26, 12.5, undefined, [[DO, -1.6, 0], [DO, -0.8, 0], [LT, 0, 0], [EZ, 0.8, 0]]),
-  pk('les_p24', 'vana_odasi', 3.5, 12, 20, [[DO, 3]], [[EZ, 1]], { optional: true, dormant: { kind: 'egg', wakeRadius: 6 } }),
-  pk('les_p25', 'kan_havuzu', 10, 7, 25, [[DO, 2]], [[LT, 2], [EZ, 1]], { optional: true }),
   pk('les_p26', 'zolramus_kapi', 53, 6, 17, [[ZB, 1]], [[ZS, 2]]),
   pk('les_p27', 'zolramus_kapi', 60, 6, 17, [[ZB, 1]], [[ZS, 1], [ZF, 1]]),
   pk('les_p28', 'zolramus_kapi', 56.5, 11.5, 15, [[ZH, 1]], [[ZS, 1]]),
@@ -485,6 +471,7 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
 
   p('k_giris', (q) => {
     q.torches(rect(12, 57, 4, 2), 'n', [13, 15], GOLD);
+    q.at(hw('skull'), 12.8, 57.6).at(dg('candle_lit'), 15.4, 57.6, { light: lt(GOLD, 0.9, 5, true, 1.1) });
   });
 
   p('meydan', (q) => {
@@ -514,16 +501,6 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.torches(rect(16, 48, 14, 14), 'e', [50, 54], GOLD);
   });
 
-  p('ambar', (q) => {
-    q.row(M_BARREL, 23.5, 43.2, 27.5, 43.2, 3, { collide: true, tint: 0x90b060 });
-    q.at(M_CRATES, 26.5, 47, { collide: true });
-    q.at(M_SACKS, 22.5, 47, {});
-    q.at(dg('shelf_large'), 20.5, 45.5, { rot: 90, collide: true });
-    q.at(hw('coffin'), 24.5, 46.5, { y: 0 });
-    q.at(hw('coffin'), 24.5, 46.5, { y: 0.9, rot: 15 });
-    q.at(dg('chest'), 26.4, 43.4, { id: 'chest_ambar' });
-    q.torches(rect(20, 42, 8, 6), 'n', [22, 26], GOLD);
-  });
 
   p('hasat_cukuru', (q) => {
     // Pit walls: spike ring, corpse heaps, hooks, cauldrons, the well is a blocked zone (45.5, 52.5)
@@ -549,6 +526,8 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
   p('k_toll_a', (q) => {
     q.at(M_BROKEN_PILLAR, 41.5, 45, { scale: 1, collide: true });
     q.at(M_BONE_PILE, 40.5, 43.5, { scale: 1.2, tint: 0xd8d0b8 });
+    q.at(hw('bone_C'), 40.2, 43.6, { rot: 40 });
+    q.at(dg('candle_lit'), 40.3, 42.5, { light: lt(GOLD, 0.9, 5, true, 1.1) });
   });
 
   p('toll_kapisi', (q) => {
@@ -582,18 +561,21 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.torches(rect(30, 24, 22, 12), 'w', [26, 30], GOLD);
   });
 
-  p('can_kulesi', (q) => {
-    q.at(kc('tower-square-base'), 56, 33, { scale: 1, collide: false });
-    q.at(kc('tower-square-roof'), 53.5, 30.5, { scale: 1, rot: 35 });
-    q.at(M_ALTAR, 59, 29.5, { scale: 0.8, tint: 0x8a7a68 });
-    q.at(dg('chest'), 56.5, 36.4, { id: 'chest_kule', light: lt(GOLD, 0.8, 5, true) });
-    q.at(M_BRAZIER, 53.5, 36.5, { scale: 1, collide: true, light: lt(0xffb060, 1.4, 8, true) });
-    q.at(M_BRAZIER, 59.5, 36.5, { scale: 1, collide: true, light: lt(0xffb060, 1.4, 8, true) });
-    q.list.push(...mapOld('can_kulesi', banner(rect(52, 29, 8, 8), 'w', [31, 35], { model: M_BANNER_GOLD, y: 10 })));
-  });
 
+  p('k_hasat', (q) => {
+    // Connector dressing (blueprint 6 item 12): bones and a candle, off the door lanes
+    q.at(hw('skull'), 31, 54.5).at(M_BONE_PILE, 33, 55.2, { scale: 1.2, tint: 0xd8d0b8 });
+    q.at(dg('candle_lit'), 30.6, 55.4, { light: lt(GOLD, 0.9, 5, true, 1.1) });
+    q.at(M_CHAINS, 33.5, 54.5, { y: 0 });
+  });
+  p('kisayol', (q) => {
+    // Service passage (skip room): candle and skulls along the north wall, clear of both door lanes
+    q.at(dg('candle_lit'), 28.5, 36.6, { light: lt(GOLD, 0.8, 5, true, 1.1) });
+    q.at(hw('skull'), 33.4, 36.6).at(hw('bone_B'), 31.2, 36.9, { rot: 20 }).at(hw('bone_A'), 34.6, 36.8, { rot: 60 });
+  });
   p('k_toll_b', (q) => {
     q.at(M_BONE_PILE, 28, 30, { scale: 1.2, tint: 0xd8d0b8 });
+    q.at(hw('skull'), 27.2, 29.6).at(dg('candle_lit'), 26.6, 29.4, { light: lt(GOLD, 0.9, 5, true, 1.1) }).at(hw('bone_C'), 29.4, 30.6, { rot: 30 });
   });
 
   p('dus_meydan', (q) => {
@@ -638,21 +620,11 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.torches(rect(8, 10, 16, 8), 'n', [10, 16, 22], GREEN);
   });
 
-  p('vana_odasi', (q) => {
-    // Dormant vats of p24: broken shells wake on approach (tag 'wake')
-    for (const [x, z] of [[1.5, 12], [4, 9.5], [5.5, 13], [2.5, 14.5], [6, 11]] as [number, number][]) {
-      q.at(FB.vana.model, x, z, { scale: FB.vana.scale, tint: FB.vana.tint, emissive: GREEN, emissiveIntensity: 0.8, tag: 'wake', collide: true });
-    }
-  });
 
-  p('kan_havuzu', (q) => {
-    q.at(hw('floor_dirt_grave'), 14, 5, { scale: 2, tint: 0x6a1a1a });
-    q.at(M_CAULDRON, 9, 4, { scale: 1, tint: 0x6a1a1a });
-    q.at(M_CHAINS, 18, 9, { y: 0 });
-  });
 
   p('k_atolye', (q) => {
     q.at(M_CAGE, 26.5, 13.5, { scale: 1 });
+    q.at(hw('skull'), 24.6, 11.8).at(M_BONE_A, 25.2, 12.4, { rot: 70 }).at(M_BONE_PILE, 26.3, 11.6, { scale: 1 });
   });
 
   p('dikis_atolye', (q) => {
@@ -670,6 +642,8 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
 
   p('k_yukari', (q) => {
     q.at(M_STATUE, 48, 9, { scale: 1.4, tint: 0x4a3a68, collide: true });
+    q.at(hw('bone_A'), 46.6, 8.6, { rot: 20 }).at(hw('skull'), 46.4, 9.6);
+    q.at(dg('candle_lit'), 46.6, 8.2, { light: lt(VIOLET, 0.9, 5, true, 1.1) });
   });
 
   p('zolramus_kapi', (q) => {
@@ -688,6 +662,8 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
 
   p('k_nef_a', (q) => {
     q.at(hw('skull_candle'), 57, 17, { scale: 1, light: lt(VIOLET, 0.8, 5, true) });
+    q.at(hw('bone_C'), 56.6, 18.8, { rot: 30 }).at(hw('skull'), 56.4, 19.4);
+    q.at(gp('bone_pile'), 56.8, 16.6, { scale: 1 });
   });
 
   p('kemik_nef', (q) => {
@@ -718,6 +694,8 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
 
   p('k_cikis', (q) => {
     q.at(M_CRYSTAL, 73.5, 34, { scale: 1, tint: FROST, collide: false });
+    q.at(hw('bone_A'), 72.4, 32.4, { rot: 40 }).at(hw('skull'), 72.6, 33.3);
+    q.at(dg('candle_lit'), 72.5, 35, { light: lt(FROST, 1.0, 6, true, 1.1) });
   });
 
   p('buz_tepe', (q) => {
@@ -733,7 +711,23 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
 // ---------------------------------------------------------------------------------------------------------------------
 // Assemble: room props from the decorator, then the dungeon definition.
 // ---------------------------------------------------------------------------------------------------------------------
-const ROOMS_BASE: RoomDef[] = ROOM_BASE.map((r) => ({ ...r, ...ROOM_EXTRA[r.id] }));
+/** Positional ambience (blueprint 5.3): one emitter in each landmark room (about half the rooms). */
+const AMBIENCE: Record<string, NonNullable<RoomDef['ambience']>> = {
+  giris: [{ id: 'crowd_murmur', radius: 10, volume: 0.12, loop: true }],
+  toll_kapisi: [{ id: 'whisper', radius: 8, volume: 0.15, loop: true }],
+  k_kopru: [{ id: 'whisper', radius: 6, volume: 0.15, loop: true }],
+  meydan: [{ id: 'water_lap', pos: [22.5, 54.5], radius: 8, volume: 0.25, loop: true }],
+  hasat_cukuru: [{ id: 'whisper', radius: 12, volume: 0.2, loop: true }],
+  son_can: [{ id: 'whisper', radius: 12, volume: 0.15, loop: true }],
+  dus_meydan: [{ id: 'whisper', radius: 12, volume: 0.15, loop: true }],
+  dikis_kapi: [{ id: 'whisper', radius: 10, volume: 0.2, loop: true }],
+  dikis_atolye: [{ id: 'whisper', radius: 12, volume: 0.2, loop: true }],
+  zolramus_kapi: [{ id: 'whisper', radius: 10, volume: 0.2, loop: true }],
+  kemik_nef: [{ id: 'whisper', radius: 10, volume: 0.2, loop: true }],
+  heykel_galerisi: [{ id: 'whisper', radius: 12, volume: 0.15, loop: true }],
+  buz_tepe: [{ id: 'water_lap', radius: 10, volume: 0.1, loop: true }],
+};
+const ROOMS_BASE: RoomDef[] = ROOM_BASE.map((r) => ({ ...r, ...ROOM_EXTRA[r.id], ...(AMBIENCE[r.id] ? { ambience: AMBIENCE[r.id] } : {}) }));
 const R = makeRescale({
   seed: 'les_uyanisi', oldRect: OLD_RECT, rooms: ROOMS_BASE, doors: DOORS, packsRaw: PACKS_RAW,
   anchors: [
@@ -759,7 +753,11 @@ const EXTRAS: NonNullable<DungeonDef['extras']> = {
     { type: 'shrine_ward', pos: pt(74, 22) },     // Koruma
   ],
   riftSpots: [],
-  chests: [{ pos: pt(...R.at2(26.4, 43.4)), kind: 'chest_wood' }, { pos: pt(...R.at2(56.5, 36.4)), kind: 'chest_gold' }],
+  // M+ release points: one after boss 2 (the Dikis Kapi lobby), one after boss 3 (the Zolramus gate hall)
+  checkpoints: [pt(...R.at2(16, 12)), pt(...R.at2(58, 11))],
+  // one boon pad on the main route, in the Cesaret Meydani between the first two packs and the wing
+  boons: [{ id: 'boon_meydan', pos: pt(...R.at2(26, 54)), status: 'ay_cesmesi', duration: 60, magnitude: 0.1, oncePerPlayer: true, persistOnDeath: false }],
+  chests: [{ pos: pt(...R.at2(12.5, 27.5)), kind: 'chest_gold' }],
 };
 
 export const LES_UYANISI: DungeonDef = {
@@ -769,7 +767,7 @@ export const LES_UYANISI: DungeonDef = {
   lore: "Kadim Diyar'ın üstündeki Cesaret Tapınağı yüzyıllardır Kadim Mühür'ü kapalı tutar. Leş Tarikatı, Azrakel'in son meclisi, tapınağın üzerine uçan bir kemik zigurat kaldırdı: Gökbekçilerin ruhları hasat ediliyor, ölüler dikişle birbirine bağlanıyor, Ayazbağlayan Nalthor mührü kıran buzu hazırlıyor.",
   levelRange: [50, 60],
   timerSec: 1780,
-  forcesRequired: 430,
+  forcesRequired: 360,
   theme: {
     fogColor: 0x161a24, fogNear: 8, fogFar: 40,
     ambient: 0x4a5068, ambientIntensity: 0.35,

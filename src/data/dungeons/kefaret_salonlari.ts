@@ -12,8 +12,9 @@ import { makeRescale, remapRoomGeometry, type Rect4 } from './rescale';
  *
  * NOT YET REGISTERED: this file is not in dungeons/index.ts. Registration lines are listed in the report.
  * Deviations from the design, all for the content-check forces band (115 to 130 %) and the engine today:
- *  - forcesRequired is 340 (design 380) and the timer 29:35 (design 29:00), so the mandatory route (route A, 393) is 115.6 %
- *    and every non-optional pack (route A plus the servants' passage, 417) is 122.6 %. Design totals (493 forces) would be
+ *  - forcesRequired is 349 (blueprint 6 item 18: floor(0.8 x 437); design 380) and the timer 29:35 (design 29:00), so the mandatory
+ *    route (route A, 393) is 112.6 % and every non-optional pack (route A plus the servants' passage, 417) is 119.5 %. Total 437 is
+ *    125 % of required, inside the 115 to 130 % band. Design totals (493 forces) would be
  *    145 % of 340: the optional Archive keeps one pack (20 forces) and the Pişmanlık crypt has no pack (its 36 forces are cut).
  *  - Kibir spawns use `extras.riftSpots` only (no kibirSpots field in the types yet). No `kibirCanon`.
  *  - The Ekelon door is an ordinary boss_lock door (no DoorDef.model, no `gothic_door` prop, no `pull: 'interact'`).
@@ -175,7 +176,7 @@ const ROOMS: RoomDef[] = [
   }),
 
   room('pismanlik_mahzeni', 'Pişmanlık Mahzeni', 24, 8, 6, 10, 'stone_dark', 'stone', 0.5, {
-    optional: true, floorY: 3.6, ceiling: 8, lightColor: 0xb8b0e0, ambientVfx: 'ambient_shadow_wisps', slopes: [S8],
+    skip: true, floorY: 3.6, ceiling: 8, lightColor: 0xb8b0e0, ambientVfx: 'ambient_shadow_wisps', slopes: [S8],
     props: [P(gp('bone_pile'), 28, 15, { tint: 0x8a8a50 }), P(gp('brazier'), 25, 16, { light: lt(0xb8b0e0, 1.0, 6) })],
   }),
 
@@ -204,6 +205,7 @@ const ROOMS: RoomDef[] = [
       P(gp('statue_hooded'), 50.5, 24.5, { scale: 1.3, tint: 0x6a6878 }), P(gp('statue_hooded'), 60.5, 24.5, { scale: 1.3, tint: 0x6a6878 }),
       P(gp('statue_hooded'), 50.5, 34.5, { scale: 1.3, tint: 0x6a6878 }), P(gp('statue_hooded'), 60.5, 34.5, { scale: 1.3, tint: 0x6a6878 }),
       ...chandelier(55.5, 36, 20, { color: RED }),
+      P(gp('brazier'), 49.5, 36.5, { light: lt(RED, 1.6, 9) }), P(gp('brazier'), 62.5, 36.5, { light: lt(RED, 1.6, 9) }),
     ],
   }),
 ];
@@ -219,12 +221,15 @@ const DOORS: DoorDef[] = [
   door('kiymik_dogu', 'arsiv', 50, 45, 's', 2, 'none'),
   door('halkor_cemberi', 'k_bati', 24, 29, 'w', 4, 'boss_exit'),
   door('k_bati', 'gargoyle_avlusu', 16, 27, 'n', 4, 'none'),
-  door('k_bati', 'servis_gecidi', 4, 30, 'w', 2, 'none'),
+  // the servants' passage opens when the colonnade pack b_p13 is cleared (non-boss gate)
+  { ...door('k_bati', 'servis_gecidi', 4, 30, 'w', 2, 'kill_lock'), opensOn: { pack: 'b_p13' } },
   door('gargoyle_avlusu', 'k_ekelon', 8, 16, 'n', 4, 'none'),
   door('servis_gecidi', 'k_ekelon', 1, 16, 'n', 2, 'none'),
   door('k_ekelon', 'ekelon_terasi', 6, 12, 'n', 4, 'boss_lock'),
   door('ekelon_terasi', 'k_kuzey', 23, 2, 'e', 4, 'boss_exit'),
   door('k_kuzey', 'pismanlik_mahzeni', 25, 7, 's', 4, 'none'),
+  // shortcut after boss 2: the Pismanlik crypt (skip room) links the Agit Koprusu back to the gargoyle courtyard; kill_lock on boss 2
+  { ...door('pismanlik_mahzeni', 'gargoyle_avlusu', 24, 16, 'w', 2, 'kill_lock'), opensOn: { boss: 'boss_ekelon' } },
   door('k_kuzey', 'cemaat_nefi', 29, 2, 'e', 4, 'boss_lock'),
   door('cemaat_nefi', 'kefaret_merdiveni', 46, 13, 's', 4, 'boss_exit'),
   door('kefaret_merdiveni', 'kamarar_salonu', 52, 22, 's', 4, 'boss_lock'),
@@ -249,11 +254,11 @@ const PACKS_RAW: PackDef[] = [
   packS('b_p12', 'k_bati', 12, 30.5, [['kef_darkblade', 2], ['kef_rahip', 1]]),
   packS('b_p13', 'k_bati', 19, 31, [['kef_yagmaci', 1], ['kef_kiyici', 1]]),
   // courtyard (99 forces)
-  packS('c_p14', 'gargoyle_avlusu', 8, 24, [['kef_bahcivan', 2], ['kef_kemirgen', 3]]),
+  packS('c_p14', 'gargoyle_avlusu', 8, 24, [['kef_bahcivan', 2], ['kef_kemirgen', 3]], { linkedTo: ['c_p18'] }),
   packS('c_p15', 'gargoyle_avlusu', 15, 24.5, [['kef_gargon', 3], ['kef_tazici', 1], ['kef_rahip', 1]]),
   packS('c_p16', 'gargoyle_avlusu', 20, 21, [['kef_parcalayici', 2], ['kef_kemirgen', 2]]),
   packS('c_p17', 'gargoyle_avlusu', 11, 20.5, [['kef_yagmaci', 1], ['kef_kiyici', 2]], { dormant: { kind: 'statue', wakeRadius: 7 }, big: true }),
-  packS('c_p18', 'gargoyle_avlusu', 6, 18.5, [['kef_darkblade', 2], ['kef_obliterator', 1], ['kef_toplayici', 1]], { big: true }),
+  packS('c_p18', 'gargoyle_avlusu', 6, 18.5, [['kef_darkblade', 2], ['kef_obliterator', 1], ['kef_toplayici', 1]], { big: true, linkedTo: ['c_p14'] }),
   packS('c_p19', 'gargoyle_avlusu', 17, 17.5, [['kef_darkblade', 2], ['kef_kemirgen', 1]], { patrol: [[17, 17.5], [17, 25]] }),
   // Gozcu stair hall
   packS('e_p20', 'k_ekelon', 4, 13.5, [['kef_darkblade', 1], ['kef_tazici', 1], ['kef_rahip', 1]]),
@@ -263,8 +268,8 @@ const PACKS_RAW: PackDef[] = [
   pack('a_p23', 'k_kuzey', 26, 6.4, undefined, [['kef_rahip', 0, -0.3], ['kef_gargon', -0.9, 0.4], ['kef_gargon', 0.9, 0.4], ['kef_gargon', 0, 0.6]]),
   // grand staircase
   packS('m_p24', 'kefaret_merdiveni', 52, 16.5, [['kef_sigar', 1], ['kef_tormented', 3], ['kef_obliterator', 1]]),
-  packS('m_p25', 'kefaret_merdiveni', 58, 16.5, [['kef_yagmaci', 1], ['kef_kiyici', 1], ['kef_rahip', 1]]),
-  packS('m_p26', 'kefaret_merdiveni', 53, 19.5, [['kef_gargon', 3], ['kef_tazici', 1], ['kef_rahip', 1]]),
+  packS('m_p25', 'kefaret_merdiveni', 58, 16.5, [['kef_yagmaci', 1], ['kef_kiyici', 1], ['kef_rahip', 1]], { linkedTo: ['m_p26'] }),
+  packS('m_p26', 'kefaret_merdiveni', 53, 19.5, [['kef_gargon', 3], ['kef_tazici', 1], ['kef_rahip', 1]], { linkedTo: ['m_p25'] }),
   packS('m_p27', 'kefaret_merdiveni', 60, 19.5, [['kef_sigar', 1], ['kef_tormented', 3], ['kef_toplayici', 1]]),
   packS('m_p28', 'kefaret_merdiveni', 56, 16, [['kef_darkblade', 2], ['kef_tazici', 1], ['kef_gargon', 1]], { patrol: [[50, 16], [61, 16]] }),
   // servants' passage (route B, 24 forces)
@@ -311,6 +316,19 @@ const LANDMARKS: Record<string, PropPlacement[]> = {
 };
 const withLandmarks = (r: RoomDef): RoomDef => (LANDMARKS[r.id] ? { ...r, props: [...(r.props ?? []), ...LANDMARKS[r.id]] } : r);
 const ROOMS_R: RoomDef[] = ROOMS.map((r) => (EXEMPT_ROOMS.has(r.id) ? r : remapRoomGeometry(R, withLandmarks(r))));
+/** Blueprint 5.2 / 5.3: positional ambience in half the rooms, ambientVfx in 40 %+ (8 of 18). */
+const AMBIENT: Record<string, Partial<RoomDef>> = {
+  giris: { ambience: [{ id: 'whisper', radius: 10, volume: 0.15, loop: true }] },
+  narteks: { ambientVfx: 'ambient_dust', ambience: [{ id: 'whisper', radius: 10, volume: 0.15, loop: true }] },
+  tas_galerisi: { ambientVfx: 'ambient_dust', ambience: [{ id: 'whisper', radius: 14, volume: 0.2, loop: true }] },
+  halkor_cemberi: { ambientVfx: 'ambient_embers', ambience: [{ id: 'whisper', radius: 12, volume: 0.25, loop: true }] },
+  gargoyle_avlusu: { ambience: [{ id: 'water_lap', pos: [8, 24], radius: 8, volume: 0.2, loop: true }] },
+  kefaret_merdiveni: { ambience: [{ id: 'whisper', radius: 12, volume: 0.15, loop: true }] },
+  kamarar_salonu: { ambience: [{ id: 'whisper', radius: 12, volume: 0.25, loop: true }] },
+  cemaat_nefi: { ambience: [{ id: 'whisper', radius: 12, volume: 0.15, loop: true }] },
+  ekelon_terasi: { ambience: [{ id: 'whisper', radius: 10, volume: 0.15, loop: true }] },
+};
+const ROOMS_A: RoomDef[] = ROOMS_R.map((r) => (AMBIENT[r.id] ? { ...r, ...AMBIENT[r.id] } : r));
 const PACKS: PackDef[] = PACKS_RAW.map((p, i) => (EXEMPT_PACKS.has(p.id) ? p : R.packs[i]));
 const at2 = R.at2;
 
@@ -331,10 +349,10 @@ export const KEFARET_SALONLARI: DungeonDef = {
   lore: "Kadim Diyar'ın kızıl tepelerinde, Kefaret Salonları yüzyıllarca kibirli ruhları arındırmak için kullanıldı: yargılanan ruhlar Günah Taşları'na mühürlenir, tövbe edenler Kefaret Kapları'ndan yeniden doğardı. Ta ki Baş Kamarar Velkaan salonları ele geçirip ruhları arındırmak yerine kibirlerini hasat edene kadar. Şimdi taşlar canlanıyor, bekçiler taşlaşıyor ve Kadim Anahtar Taşı bu karanlık katedralin kapısını açıyor.",
   levelRange: [60, 60],
   timerSec: 1775,
-  forcesRequired: 340,
+  forcesRequired: 349,
   theme: THEME,
   grid: { w: 64, h: 64 },
-  rooms: ROOMS_R,
+  rooms: ROOMS_A,
   doors: DOORS,
   packs: PACKS,
   bosses: [
@@ -352,6 +370,8 @@ export const KEFARET_SALONLARI: DungeonDef = {
     riftSpots: ([[18, 44], [44.5, 45.5], [10, 31.5], [6.5, 25.5], [27, 11.2], [62, 14.5]] as [number, number][]).map(([x, z]) => pt(...at2(x, z))),
     chests: [{ pos: pt(...at2(28.2, 52.8)), kind: 'chest_wood' }, { pos: pt(...at2(55.6, 49.2)), kind: 'chest_gold' }],
     checkpoints: [pt(...at2(33, 9))],
+    // one boon in the optional Pismanlik crypt (the dead end's payoff; its forces were cut for the band)
+    boons: [{ id: 'boon_pismanlik', pos: pt(...at2(27, 13)), status: 'ay_cesmesi', duration: 60, magnitude: 0.1, oncePerPlayer: true, persistOnDeath: false }],
   },
   season: 1,
   endgame: true,

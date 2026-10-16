@@ -276,7 +276,7 @@ const ROOMS: RoomDef[] = [
       P(kf('hedge-large'), 49, 39.75, { tint: 0x2a3a40 }), P(kf('hedge-large'), 64, 39.75, { tint: 0x2a3a40 }),
     ],
   }),
-  room('takimyildiz', 'Takımyıldız Odası', 48, 41, 18, 14, 'temple', 'temple', 0.1, {
+  room('takimyildiz', 'Takımyıldız Odası', 48, 41, 20, 14, 'temple', 'temple', 0.1, {
     floorY: L1, ceiling: 30, boss: 3, openAir: true, explicitDecor: true, lightColor: 0x5fd3e8, fog: fog(0x0e1238, 12, 70),
     tiers: [
       tier('gallery', 9, 48, 41, 18, 14, { depth: 3 }), tier('colonnade', 9, 50, 43, 14, 10, { count: 12 }),
@@ -326,7 +326,7 @@ const ROOMS: RoomDef[] = [
     ],
   }),
   room('hizmet_koridoru', 'Hizmet Koridoru', 26, 62, 6, 2, 'temple', 'temple', 0, {
-    floorY: L0, ceiling: 7, explicitDecor: true, lightColor: 0xf2a14a,
+    floorY: L0, ceiling: 7, explicitDecor: true, lightColor: 0xf2a14a, skip: true,
     heightAreas: [area('east_end', 30, 62, 2, 2, L3, 'rail')],
     props: [
       P(dg('torch_mounted'), 27, 61.6, { y: 2.5, light: lt(0xf2a14a, 1.8, 9, true) }), P(dg('torch_mounted'), 31, 63.6, { y: 2.5, light: lt(0xf2a14a, 1.8, 9, true) }),
@@ -380,7 +380,8 @@ const DOORS: DoorDef[] = [
 ];
 
 // ---- packs (29; forces are the member sums) ---------------------------------------------------------------------------------------
-const BIG = new Set(['mt_p01', 'mt_p02', 'mt_p03', 'mt_p07', 'mt_p09', 'mt_p14', 'mt_p15', 'mt_p17', 'mt_p18']);
+// big pulls: one or two per boss segment (before boss 1: p01 and p07b; boss 1 to 2: p17; boss 2 to 3: p18)
+const BIG = new Set(['mt_p01', 'mt_p07b', 'mt_p17', 'mt_p18']);
 
 const PACKS: PackDef[] = [
   packN('mt_p01', 'guney_antre', 17, 57, [['mt_sunblade', 2], ['mt_magister', 2]]),
@@ -389,7 +390,8 @@ const PACKS: PackDef[] = [
   packN('mt_p04', 'guney_antre', 19, 56, [['mt_sentry', 1]], { patrol: [[14.5, 59], [25, 59], [25, 51.5], [14.5, 51.5]] }),
   packN('mt_p05', 'lycaneum', 20, 43.5, [['mt_codex', 5]], { dormant: { kind: 'ceiling', wakeRadius: 8 } }),
   packN('mt_p06', 'gizem_arsivi', 16, 32, [['mt_codex', 4], ['mt_pyromancer', 1]]),
-  packN('mt_p07', 'gizem_arsivi', 21.5, 36.5, [['mt_voidling', 6], ['mt_voidling_unstable', 2], ['mt_infuser', 2]]),
+  packN('mt_p07', 'gizem_arsivi', 18.5, 34.5, [['mt_voidling', 3], ['mt_infuser', 1]]),
+  packN('mt_p07b', 'gizem_arsivi', 23.5, 38.5, [['mt_voidling', 3], ['mt_voidling_unstable', 2], ['mt_infuser', 1]]),
   packN('mt_p08', 'gizem_arsivi', 12, 29.5, [['mt_spellbreaker', 1], ['mt_magister', 2]]),
   packN('mt_p09', 'gizem_arsivi', 21, 30, [['mt_codex', 6], ['mt_sifaci', 1]]),
   packN('mt_p10', 'yasak_raflar', 5, 31, [['mt_codex', 4], ['mt_pyromancer', 1]], { optional: true }),
@@ -409,10 +411,12 @@ const PACKS: PackDef[] = [
   packN('mt_p23', 'teras_yolu', 59, 33.75, [['mt_magister', 3], ['mt_sifaci', 2]]),
   packN('mt_p24', 'teras_yolu', 64, 33.75, [['mt_spellbreaker', 1], ['mt_infuser', 2]]),
   packN('mt_p25', 'teras_yolu', 56, 36, [['mt_sentry', 1]], { patrol: [[50, 36], [63.5, 36]] }),
-  packN('mt_p26', 'kule_tabani', 39.5, 44, [['mt_tyrant', 1], ['mt_voidling', 4], ['mt_voidling_unstable', 1], ['mt_infuser', 2]]),
+  packN('mt_p26', 'kule_tabani', 38, 43.5, [['mt_tyrant', 1], ['mt_voidling', 2]]),
+  packN('mt_p26b', 'kule_tabani', 39.5, 47.5, [['mt_voidling', 2], ['mt_voidling_unstable', 1], ['mt_infuser', 2]]),
   packN('mt_p27', 'kule_tabani', 44.5, 47.5, [['mt_tyrant', 1], ['mt_magister', 2]]),
   packN('mt_p28', 'kule_merdiveni', 39.4, 52.75, [['mt_tyrant', 1], ['mt_voidling', 2], ['mt_voidling_unstable', 1], ['mt_voidcaller', 1], ['mt_infuser', 1]]),
-  packN('mt_p29', 'kule_merdiveni', 44, 52.75, [['mt_voidling', 4], ['mt_voidling_unstable', 2], ['mt_infuser', 2]]),
+  packN('mt_p29', 'kule_merdiveni', 44, 52.75, [['mt_voidling', 2], ['mt_voidling_unstable', 1], ['mt_infuser', 1]]),
+  packN('mt_p29b', 'kule_merdiveni', 45.5, 57, [['mt_voidling', 2], ['mt_voidling_unstable', 1], ['mt_infuser', 1]]),
 ].map((p): PackDef => (BIG.has(p.id) ? { ...p, big: true } : p));
 
 // ---- lifts (players only, mode 'call': the pad holds a player for 0.6 s) ----------------------------------------------------
@@ -425,9 +429,23 @@ const LIFTS: LiftDef[] = [
 const BOSSES = [
   bossAt('boss_arkanotron', 'gozlemevi', 35.5, 11, 0, 1),
   bossAt('boss_seranel', 'siginak', 56.5, 27.5, 180, 2),
-  bossAt('boss_gemellus', 'takimyildiz', 56.5, 44.5, 0, 3),
+  bossAt('boss_gemellus', 'takimyildiz', 58, 48, 0, 3),
   bossAt('boss_degentrius', 'goksel_yorunge', 40.5, 66.5, 0, 4),
 ];
+
+/** Blueprint 5.2 / 5.3: positional ambience in 9 rooms and ambientVfx in 8 of 18 (the Magisters' library and orrery). */
+const AMBIENT: Record<string, Partial<RoomDef>> = {
+  guney_antre: { ambientVfx: 'ambient_dust', ambience: [{ id: 'whisper', radius: 12, volume: 0.15, loop: true }] },
+  lycaneum: { ambience: [{ id: 'whisper', radius: 10, volume: 0.2, loop: true }] },
+  gizem_arsivi: { ambience: [{ id: 'whisper', radius: 12, volume: 0.2, loop: true }] },
+  ust_kutuphane: { ambientVfx: 'ambient_dust', ambience: [{ id: 'whisper', radius: 12, volume: 0.2, loop: true }] },
+  meydan: { ambientVfx: 'ambient_dust', ambience: [{ id: 'water_lap', radius: 10, volume: 0.15, loop: true }] },
+  enerji_avlusu: { ambience: [{ id: 'whisper', radius: 12, volume: 0.2, loop: true }] },
+  teras_yolu: { ambientVfx: 'ambient_dust', ambience: [{ id: 'whisper', radius: 10, volume: 0.15, loop: true }] },
+  kule_tabani: { ambience: [{ id: 'whisper', radius: 10, volume: 0.2, loop: true }] },
+  kule_merdiveni: { ambience: [{ id: 'whisper', radius: 8, volume: 0.2, loop: true }] },
+};
+const ROOMS_A: RoomDef[] = ROOMS.map((r) => (AMBIENT[r.id] ? { ...r, ...AMBIENT[r.id] } : r));
 
 const THEME: DungeonTheme = {
   fogColor: 0x0c0a22, fogNear: 8, fogFar: 40,
@@ -446,10 +464,10 @@ export const BUYUCU_TERASI: DungeonDef = {
   lore: 'Yıldızburnu\'nun en ucunda, Güneş Kuyusu\'nun parıltısını gözetlemek için kurulan Büyücüler Terası, yüzyıllardır Yıldız Büyücüleri\'nin akademisi ve gözlemevi. Terasın kalbinde Alacakaranlık Feneri saklı. Kadim Zindanların mühürleri çatlayınca Boşluk raflardan, mercek yuvalarından ve kürelerin çatlaklarından sızmaya başladı. Büyücülerin yarısı kaçtı, yarısı Boşluk\'a teslim oldu; nöbetçi otomatlar hâlâ kurallara uyuyor. Fener sönmeden Teras\'a çık.',
   levelRange: [60, 60],
   timerSec: 1920,
-  forcesRequired: 400,
+  forcesRequired: 394,
   theme: THEME,
   grid: { w: 80, h: 74 },
-  rooms: ROOMS,
+  rooms: ROOMS_A,
   doors: DOORS,
   packs: PACKS,
   bosses: BOSSES,
@@ -460,6 +478,8 @@ export const BUYUCU_TERASI: DungeonDef = {
     shrines: [{ type: 'shrine_haste', pos: pt(27, 34) }, { type: 'shrine_ward', pos: pt(37, 48.5) }],
     riftSpots: [pt(22, 56.5), pt(17, 35), pt(36, 34), pt(56, 12), pt(59, 36.75), pt(46, 43)],
     chests: [{ pos: pt(76, 10), kind: 'chest_gold' }, { pos: pt(3.88, 34.5), kind: 'chest_iron' }],
+    // M+ release points: after boss 2 (Siginak, the north-east terrace) and after boss 3 (Takimyildiz)
+    checkpoints: [pt(58, 22), pt(50, 48)],
     boons: [
       { id: 'boon_tome', pos: pt(14.2, 42.45), status: 'haste', duration: 1800, magnitude: 0.05, persistOnDeath: true, oncePerPlayer: true },
     ],
