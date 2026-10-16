@@ -4,11 +4,12 @@ import { G } from './G';
 import type { Player } from '../entities/Player';
 import { psxMaterial } from '../world/ProceduralAssets';
 import { MOUNT_BY_ID, STARTER_MOUNT_ID, type MountDef, type MountShape } from '../data/mounts';
-import { chosenMountId } from '../systems/Mounts';
+import { chosenMountId, learnMount } from '../systems/Mounts';
 import { isOpenWorld } from '../scenes/flow';
 
 /**
- * WoW-style ground mount (local player only). Unlocked at MOUNT_LEVEL. Mounting is a MOUNT_CAST_SEC cast that is
+ * WoW-style ground mount (local player only). The starter mount is known from Sv 1 (granted by the rider); the others need their
+ * own level (MountDef.level, default MOUNT_LEVEL). Mounting is a MOUNT_CAST_SEC cast that is
  * cancelled by a move, damage, a skill or attack, or by entering combat. Mounted: +MOUNT_SPEED_MUL run speed (PlayerController
  * applies it), the character is lifted onto the voxel mount of the chosen one (data/mounts.ts, six shapes) and the mount
  * drops on attack / skill cast, taking damage, entering combat, death, a scene change, or pressing the mount key again. Jumping
@@ -27,6 +28,9 @@ const RIDER_SEAT = 0.9;
 export const MOUNT_CAST_SEC = 1.5;
 export const MOUNT_LEVEL = 10;
 export const MOUNT_SPEED_MUL = 1.6;
+/** A mount's own level gate (MountDef.level) or MOUNT_LEVEL; a mount's own speed (MountDef.speed) or MOUNT_SPEED_MUL. */
+export const mountLevelOf = (def: MountDef): number => def.level ?? MOUNT_LEVEL;
+export const mountSpeedOf = (def: MountDef): number => def.speed ?? MOUNT_SPEED_MUL;
 /** Rise a mounted rider steps over without stopping (walkers: VERT.STEP_UP 0.45 m). Curbs, roots and rubble stalled the ride. */
 export const MOUNT_STEP_UP = 0.7;
 
@@ -516,9 +520,12 @@ export class MountRider {
   private active: Model | null = null;
   /** A summon from the action bar (`mount:summon`) counts like the mount key once. */
   private pendingSummon = false;
+  /** The starter mount is granted once per rider (the first frame with a character). */
+  private starterChecked = false;
   private unsubs: (() => void)[] = [];
 
   constructor(private readonly player: Player) {
+    this.grantStarter();
     this.unsubs.push(
       // a skill or basic attack cancels a mount cast and drops the mount (attack / skill cast)
       G.events.on('skill:cast', (e) => {
@@ -541,9 +548,16 @@ export class MountRider {
     );
   }
 
-  /** Run speed multiplier for PlayerController (walking is not boosted). */
+  /** Every character knows the starter mount from Sv 1 (no purchase). Saved once; a no-op after the first grant. */
+  private grantStarter(): void {
+    if (this.starterChecked || !G.character) return;
+    this.starterChecked = true;
+    if (learnMount(G.character.save, STARTER_MOUNT_ID)) G.character.persist();
+  }
+
+  /** Run speed multiplier for PlayerController (walking is not boosted). The mount's own speed (the starter is a little slower). */
   speedMul(): number {
-    return this.state === 'mounted' ? MOUNT_SPEED_MUL : 1;
+    return this.state === 'mounted' ? mountSpeedOf(MOUNT_BY_ID[this.activeId ?? STARTER_MOUNT_ID]) : 1;
   }
 
   get mounted(): boolean {
@@ -559,6 +573,7 @@ export class MountRider {
   /** Called once per frame by PlayerController before movement. `moving`: a move key is held this frame. */
   update(dt: number, canInput: boolean, moving: boolean): void {
     const p = this.player;
+    this.grantStarter();
     const press = (canInput && G.input.pressed('mount')) || this.pendingSummon;
     this.pendingSummon = false;
     const inCombat = p.inCombat;
@@ -584,11 +599,13 @@ export class MountRider {
 
   private tryStart(): void {
     const p = this.player;
-    if (p.level < MOUNT_LEVEL) {
-      G.events.emit('ui:toast', { text: `Binek Sv ${MOUNT_LEVEL}'da açılır`, kind: 'info' });
+    const chosen = G.character ? chosenMountId(G.character.save) : null;
+    const need = chosen && MOUNT_BY_ID[chosen] ? mountLevelOf(MOUNT_BY_ID[chosen]) : MOUNT_LEVEL;
+    if (p.level < need) {
+      G.events.emit('ui:toast', { text: `Binek Sv ${need}'da açılır`, kind: 'info' });
       return;
     }
-    if (!G.character || !chosenMountId(G.character.save)) {
+    if (!G.character || !chosen) {
       G.events.emit('ui:toast', { text: 'Henüz binek öğrenmedin — Kuzgunkale ahırı', kind: 'info' });
       return;
     }

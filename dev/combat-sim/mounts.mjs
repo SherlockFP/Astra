@@ -204,7 +204,15 @@ ok('rider.next-summon-uses-choice', rider.mountId === 'kir_at' && !!fp.object3d.
 summon();
 frames(1);
 ok('rider.dismount-again', rider.mounted === false);
-// the level gate still applies
+// the starter mount (kir_at) is open from Sv 1 and a little slower; the other mounts keep the Sv 10 gate
+S.chooseMount(G.character.save, 'kir_at');
+fp.level = 1;
+summon();
+frames(sec(1.6));
+ok('rider.starter-at-1', rider.mountId === 'kir_at' && rider.speedMul() === 1.4, `speed ${rider.speedMul()}`);
+summon();
+frames(1);
+S.chooseMount(G.character.save, 'kristal_geyik');
 fp.level = 9;
 summon();
 frames(1);
