@@ -686,6 +686,12 @@ function startSlide(c: BossController, dir: number): void {
   if (cubeOf(c)) c.state.slide = { dir };
 }
 
+/** A walkable point inside the arena (margin -1) nearest to (x, z), or null. Snaps destinations off blocked nav cells. */
+function arenaSpot(c: BossController, x: number, z: number): { x: number; z: number } | null {
+  const p = c.world.nav.nearestWalkable(x, z, 6);
+  return p && c.insideArena(p.x, p.z, -1) ? p : null;
+}
+
 function blinkAway(c: BossController): void {
   const t = c.target;
   if (!t || c.e.statuses.stunned) return;
@@ -894,7 +900,8 @@ const brokk: BossScript = {
     brokk_scrap_song: {
       start(c, b) {
         const side = Math.random() < 0.5 ? -1 : 1;
-        c.teleport(c.arena.cx + side * (c.arena.w / 2 - 3), c.arena.cz);
+        const spot = arenaSpot(c, c.arena.cx + side * (c.arena.w / 2 - 3), c.arena.cz);
+        if (spot) c.teleport(spot.x, spot.z);
         band(c, c.arena.cx, c.arena.cz, Math.PI / 2, 44, 6, b.delay, 3.0, {
           type: 'physical', knockback: 8, statuses: [{ status: 'stun', duration: 1.5 }], name: 'Hurda Şarkısı',
         });

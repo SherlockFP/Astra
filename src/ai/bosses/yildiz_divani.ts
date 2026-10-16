@@ -520,9 +520,11 @@ const melandros: BossScript = {
     melandros_winds: {
       resolve(c) {
         const cx = c.arena.cx, cz = c.arena.cz;
+        // a wall's first piece sits 3.5 m past its start (half the 7 m width): keep that origin 1 m inside the west edge
+        const west = cx - c.arena.w / 2 + 1 - 3.5;
         for (let k = 0; k < 3; k++) {
           const off = -12 * k;
-          movingBand(c, { x: cx - 18 + off, z: cz }, { x: cx + 18 + off, z: cz }, {
+          movingBand(c, { x: Math.max(cx - 18 + off, west), z: cz }, { x: cx + 18 + off, z: cz }, {
             speed: 8, width: 7, coef: 1.6, stun: 1.5, name: 'Kusatan Ruzgarlar',
           });
         }

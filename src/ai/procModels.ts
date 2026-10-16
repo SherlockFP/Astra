@@ -490,6 +490,25 @@ const BUILDERS: Record<string, Builder> = {
       dispose: finish([s1, s2, s3, tip], [stone, gold]),
     };
   },
+  /** Hurda Küpü (proc_scrap_cube): a riveted scrap-metal block with a rust cap and a pulsing gold core. */
+  scrap_cube: () => {
+    const root = new THREE.Group();
+    const metal = lambert(0x7a7f88);
+    const rust = lambert(0x6a3a22);
+    const core = lambert(0xffc040, 0xffa020, 0.9);
+    const body = voxMesh(box(0.8, 0, 1.5, 0.8), metal);
+    const cap = voxMesh(box(0.85, 1.5, 1.6, 0.85), rust);
+    const gem = voxMesh(diamond(0.14, 0.2, 0.14), core, 0, 1.8, 0);
+    root.add(body, cap, gem);
+    return {
+      root, height: 2.0,
+      update(_dt, t) {
+        core.emissiveIntensity = 0.9 + Math.sin(t * 5) * 0.3;
+        gem.rotation.y = t * 1.5;
+      },
+      dispose: finish([body, cap, gem], [metal, rust, core]),
+    };
+  },
   /** Kristal Parçası (proc_crystal_shard): two faceted violet crystals on a stone base, breathing glow. */
   crystal_shard: (tint = 0xb080ff) => {
     const root = new THREE.Group();
