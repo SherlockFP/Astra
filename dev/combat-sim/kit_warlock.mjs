@@ -174,8 +174,9 @@ ok('kit.warlock.resolve resolve_pact is -25 % damage taken', STATUSES.resolve_pa
   const menu = await H.imp('ui/menu/classInfo.ts');
   const cls = await H.imp('data/classes.ts');
   const bar1 = CharacterState.defaultBar('warlock', 1);
-  ok('wlk.l1 level-1 bar = lmb chain, rmb Gölge Oku, e Azap, s2 İblis Çemberi, s4 Büyü Kilidi', JSON.stringify(bar1) === JSON.stringify({
-    lmb: 'warlock_basic', rmb: 'warlock_shadow_bolt', e: 'warlock_agony', s2: 'warlock_demonic_circle', s4: 'warlock_spell_lock',
+  // expectation follows data/openingKit.ts (Büyü Kilidi on s3; s4 is Karanlık Anlaşma from L4)
+  ok('wlk.l1 level-1 bar = lmb chain, rmb Gölge Oku, e Azap, s2 İblis Çemberi, s3 Büyü Kilidi', JSON.stringify(bar1) === JSON.stringify({
+    lmb: 'warlock_basic', rmb: 'warlock_shadow_bolt', e: 'warlock_agony', s2: 'warlock_demonic_circle', s3: 'warlock_spell_lock',
   }), JSON.stringify(bar1));
   ok('wlk.l1 warlock is playable and offered by the creation list', cls.isPlayableClass('warlock') && menu.CLASS_ORDER.includes('warlock'));
   ok('wlk.l1 start gear (staff, wand, tome) is usable by a warlock and not by a knight',

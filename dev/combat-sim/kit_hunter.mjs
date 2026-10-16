@@ -328,7 +328,8 @@ ok('kit.hunter.apl every archer spec has an APL', SPEC_IDS.every((sid) => !!ROTA
   foe.ai = ai;
   ai.onDamaged(p.id, 500);
   ok('kit.defensive misdirection books the caster hits on the tank, not on the caster', (ai.threat.get(tank.id) ?? 0) > 0 && !(ai.threat.get(p.id) > 0), `tank=${ai.threat.get(tank.id)} self=${ai.threat.get(p.id)}`);
-  ok('kit.defensive the hunter rows sit on the archer class skills (unlock 10)', SKILLS.archer_exhilaration?.unlockLevel === 10 && SKILLS.archer_misdirection?.unlockLevel === 10);
+  // Exhilaration is on the archer opening kit at L3 (first early heal, direction from the class audit); misdirection stays at 10
+  ok('kit.defensive the hunter rows sit on the archer class skills (exhilaration L3 from the opening kit, misdirection 10)', SKILLS.archer_exhilaration?.unlockLevel === 3 && SKILLS.archer_misdirection?.unlockLevel === 10);
 }
 
 console.log(fails === 0 ? '\nkit.hunter: all checks PASS' : `\nkit.hunter: ${fails} FAIL`);
