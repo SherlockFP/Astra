@@ -33,7 +33,7 @@ export interface VendorEntry {
 }
 
 /** Vendor kinds: merchant (Kervancı), alchemist, blacksmith (materials), metin (Kalıntı Tüccarı), weaponsmith / armorsmith. */
-export type VendorKind = 'merchant' | 'alchemist' | 'blacksmith' | 'metin' | 'weaponsmith' | 'armorsmith' | 'pvp_honor' | 'pvp_conquest';
+export type VendorKind = 'merchant' | 'alchemist' | 'bakkal' | 'blacksmith' | 'metin' | 'weaponsmith' | 'armorsmith' | 'pvp_honor' | 'pvp_conquest';
 
 const DAILY_LIMITS: Record<string, number> = { efsun_nesnesi: 5 };
 
@@ -187,6 +187,12 @@ export function vendorEntries(kind: VendorKind): VendorEntry[] {
       // show tiers up to the next unlock so players can see what is coming
       if ((def.requiredLevel ?? 1) > ch.level + 10) continue;
       entries.push(materialEntry(id, def.buyPrice));
+    }
+  } else if (kind === 'bakkal') {
+    // Gümüşdere bakkal: bread, spring water and the hunter's stew (data/consumables.ts)
+    for (const id of ['food_kizarmis_ekmek', 'food_kaynak_suyu', 'food_avci_guvec']) {
+      const def = MATERIALS[id];
+      if (def?.buyPrice) entries.push(materialEntry(id, def.buyPrice));
     }
   } else if (kind === 'metin') {
     entries = metinShopEntries(ch.level, hashString(ch.save.id) ^ day);

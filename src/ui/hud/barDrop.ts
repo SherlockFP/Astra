@@ -1,6 +1,7 @@
 import { G } from '../../game/G';
 import { MATERIALS } from '../../data/materials';
 import { DEFAULT_BAR2_BY_SPEC } from '../../data/defaultExtraBar';
+import { isFlaskBase } from '../../data/flasks';
 import type { SkillDef, SkillSlotKey } from '../../types/skills';
 import type { BarLayoutSave } from '../../types/character';
 import type { CharacterState } from '../../systems/CharacterState';
@@ -142,6 +143,8 @@ export function useBarMat(id: string): boolean {
   const ch = G.character;
   const p = G.player;
   if (!ch || !p) return false;
+  // a flask on the bar drinks from its belt slot on its own cooldown (not the shared potion one)
+  if (isFlaskBase(id)) return G.combat?.useFlask(ch.save.flasks?.findIndex((f) => f?.baseId === id) ?? -1) ?? false;
   const cd = p.statuses.get('potion_cd');
   if (cd && cd.remaining > 0.05) {
     G.events.emit('ui:toast', { text: 'Henüz hazır değil.', kind: 'warning' });

@@ -126,6 +126,8 @@ export type StatusId =
   | 'blessing_kor' | 'blessing_ayaz' | 'blessing_golge' | 'efsunlu'
   // combat module addition (append-only): Metin tier 5-6 rot, 1% max HP/s per stack, non-lethal below 25% HP (data/statuses.ts)
   | 'kirlenme'
+  // consumables (append-only): food hot-regen (broken by damage) and the Well Fed food buff
+  | 'food_regen' | 'well_fed'
   // GDD_V2 §0.3 (WP1 contracts): every id needs a StatusDef in data/statuses.ts (WP5). Durations/numbers live in the doc.
   | 'guard' | 'riposte' | 'guard_broken' | 'critbuff' | 'shield_block' | 'oath_ward' | 'bastion' | 'aegis' | 'iron_stance'
   | 'blood_shield' | 'last_stand' | 'rally' | 'zeal' | 'wings' | 'carnage' | 'icy_veins' | 'combustion' | 'shadow_blades'
@@ -219,6 +221,7 @@ export type DispelType = 'movement';
 export interface StatusDef {
   id: StatusId;
   name: string;               // Turkish
+  desc?: string;              // Turkish tooltip line (buff row)
   icon: string;
   kind: 'buff' | 'debuff';
   cc?: boolean;               // crowd control (blocked on bosses unless flagged)

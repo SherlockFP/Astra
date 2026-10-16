@@ -22,6 +22,8 @@ import { migrationToast } from '../dev/migrate';
 import { emit, toast } from './notify';
 import { teachFromItem } from './Pets';
 import { PET_BY_ID } from '../data/pets';
+import { ensureStarterFlask } from '../data/flasks';
+import { getFood } from '../data/consumables';
 import { activeElixirs, computeStats, emptyFx, type SpecialEntry } from './StatCalc';
 import { baseOf, buildFromBase, defaultRng, isEquipmentItem, itemDisplayName, rarityIndex, requiredLevelOf, sellValue, slotsForCategory } from './ItemGen';
 import { applyBetaPreset, BETA_GOLD, BETA_LEVEL } from './BetaTest';
@@ -205,6 +207,12 @@ export class CharacterState {
     }
     // new-player kit (data/lowLevelScaling.ts): five small health potions in the pouch, so the first pulls can be walked back from
     if (!beta) ch.addMaterial('pot_hp_1', 5);
+    // starter food in the bags (data/consumables.ts): two bread and two spring water
+    if (!beta) {
+      ch.addMaterial('food_kizarmis_ekmek', 2);
+      ch.addMaterial('food_kaynak_suyu', 2);
+    }
+    ensureStarterFlask(save);
     save.skillBar = CharacterState.defaultBar(classId, beta ? BETA_LEVEL : 1);
     if (beta) applyBetaPreset(ch, { skillMax: SKILL_MAX, rng, now });
     ch.recomputeStats(false);
@@ -847,6 +855,10 @@ export class CharacterState {
       return { ok: true };
     }
     if (def.elixir) return this.useElixir(id);
+    if (getFood(id)) {
+      const ok = G.combat?.useFood(id) ?? false;
+      return ok ? { ok: true } : { ok: false, reason: 'Şu anda yenilemez.' };
+    }
     if (def.potion) {
       const ok = G.combat?.usePotion(def.potion.kind) ?? false;
       return ok ? { ok: true } : { ok: false, reason: 'İksir şu anda kullanılamaz.' };
