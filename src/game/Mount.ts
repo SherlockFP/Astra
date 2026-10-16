@@ -27,6 +27,8 @@ const RIDER_SEAT = 0.9;
 export const MOUNT_CAST_SEC = 1.5;
 export const MOUNT_LEVEL = 10;
 export const MOUNT_SPEED_MUL = 1.6;
+/** Rise a mounted rider steps over without stopping (walkers: VERT.STEP_UP 0.45 m). Curbs, roots and rubble stalled the ride. */
+export const MOUNT_STEP_UP = 0.7;
 
 type MountState = 'idle' | 'casting' | 'mounted';
 type DismountReason = 'key' | 'attack' | 'damage' | 'combat' | 'death' | 'scene';

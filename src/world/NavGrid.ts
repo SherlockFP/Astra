@@ -401,12 +401,13 @@ export class NavGrid {
   /**
    * Move-and-collide for actors (§5.2). Runs resolveCircle, then on vertical grids refuses floors higher than feetY + step
    * (AIR_STEP when airborne): the offending axis is reverted, trying the x-only then the z-only slide.
+   * `stepUp` overrides VERT.STEP_UP for a grounded actor (a mount steps over curbs and roots a walker cannot).
    * Returns true on any collision. Flat grid = resolveCircle.
    */
-  resolveMove(pos: THREE.Vector3, prevX: number, prevZ: number, radius: number, feetY: number, airborne = false): boolean {
+  resolveMove(pos: THREE.Vector3, prevX: number, prevZ: number, radius: number, feetY: number, airborne = false, stepUp: number = VERT.STEP_UP): boolean {
     const hit = this.resolveCircle(pos, radius);
     if (!this.floor) return hit;
-    const lim = feetY + (airborne ? VERT.AIR_STEP : VERT.STEP_UP);
+    const lim = feetY + (airborne ? VERT.AIR_STEP : stepUp);
     const mx = pos.x - prevX, mz = pos.z - prevZ;
     const ml = Math.hypot(mx, mz);
     const ux = ml > 1e-6 ? mx / ml : 0, uz = ml > 1e-6 ? mz / ml : 0;

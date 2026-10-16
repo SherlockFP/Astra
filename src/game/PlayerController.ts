@@ -18,7 +18,7 @@ import { setRim, setFarRim, cullFarRims, type RimKind } from '../vfx/TargetRim';
 import { AutoAttack, AUTO, type AutoTarget } from './AutoAttack';
 import { VERT } from '../world/Heightfield';
 import { FallHandler, VOID_FADE_IN, VOID_FADE_OUT, VOID_INPUT_LOCK, VOID_INVULN_SEC, type FallEnv, type Spot } from './FallHandler';
-import { MountRider } from './Mount';
+import { MountRider, MOUNT_STEP_UP } from './Mount';
 import { PetFollower } from './Pet';
 
 /** Black-out / fade-back of the void fall (§11 screen:fade; the HUD listens, unknown events are a no-op). */
@@ -892,7 +892,8 @@ export class PlayerController {
     if (!this.dodge && !forced) {
       p.position.x += v.x * dt;
       p.position.z += v.z * dt;
-      const hit = world.nav.resolveMove(p.position, ox, oz, p.radius, p.position.y, !this.grounded);
+      const stepUp = this.mount.mounted ? MOUNT_STEP_UP : undefined;
+      const hit = world.nav.resolveMove(p.position, ox, oz, p.radius, p.position.y, !this.grounded, stepUp);
       if (hit) {
         // head-on into a circular collider (tree trunk, pillar, a staircase of blocked cells): the push cancels the step and the body
         // sticks. Turn the step by 35 / 65 / 90 deg towards the side it slid to last time (no flip-flop on an edge), else the other side.
@@ -906,7 +907,7 @@ export class PlayerController {
             for (const deg of [35, 65, 90]) {
               const a = a0 + (side * deg * Math.PI) / 180;
               const cand = new THREE.Vector3(ox + Math.cos(a) * stepLen, p.position.y, oz + Math.sin(a) * stepLen);
-              world.nav.resolveMove(cand, ox, oz, p.radius, p.position.y, !this.grounded);
+              world.nav.resolveMove(cand, ox, oz, p.radius, p.position.y, !this.grounded, stepUp);
               const len = Math.hypot(cand.x - ox, cand.z - oz);
               if (len >= stepLen * 0.5 && len > blockedLen + 0.02) {
                 p.position.x = cand.x;
