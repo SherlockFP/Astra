@@ -78,6 +78,34 @@ export const FEEL = {
 /** Small shove (m) on every melee light step (chain steps 1-2 had none). */
 export const MELEE_LIGHT_KNOCK = 0.35;
 
+/**
+ * Chunky voxel impact (vfx/Chunks.ts, Trove look): cube count, cube size (m) and launch speed (m/s) by hit weight.
+ * Tiers read light < medium < finisher / heavy < crit (crit = 14 cubes, the cap). Lifetime is CHUNK_LIFE_S.
+ */
+export const CHUNK_BURST: Record<HitWeight, { n: number; size: number; speed: number }> = {
+  light: { n: 6, size: 0.085, speed: 4.5 },
+  medium: { n: 9, size: 0.1, speed: 5.2 },
+  finisher: { n: 12, size: 0.12, speed: 6 },
+  heavy: { n: 12, size: 0.13, speed: 6.5 },
+  ultimate: { n: 14, size: 0.14, speed: 7 },
+  projectile: { n: 7, size: 0.09, speed: 5 },
+  tick: { n: 0, size: 0, speed: 0 },
+  parry: { n: 9, size: 0.1, speed: 5 },
+  stagger_break: { n: 12, size: 0.13, speed: 6 },
+  backstab: { n: 8, size: 0.1, speed: 5.5 },
+};
+export const CHUNK_LIFE_S = 0.42;
+export const CHUNK_MAX_N = 14;
+
+/** One impact's chunk burst: a crit is the top tier, a spell hit is bigger (more size and speed, still at most 14 cubes). */
+export function chunkBurstOf(weight: HitWeight | undefined, crit: boolean, spell: boolean): { n: number; size: number; speed: number; life: number } {
+  const row = CHUNK_BURST[weight ?? 'light'] ?? CHUNK_BURST.light;
+  let n = row.n, size = row.size, speed = row.speed;
+  if (crit) { n = CHUNK_MAX_N; size = Math.max(size, 0.14); speed = Math.max(speed, 7); }
+  if (spell) { size *= 1.3; speed *= 1.15; n = Math.max(n, 12); }
+  return { n: Math.min(CHUNK_MAX_N, n), size, speed, life: CHUNK_LIFE_S };
+}
+
 /** Feel row of one hit weight (GDD_LIFE §5.2). `flash.c2` = 'type' uses the damage-type colour. */
 export interface FlashSpec { c1: number | 'type'; ms1: number; c2: number | 'type' | null; ms2: number }
 export interface WeightRow {

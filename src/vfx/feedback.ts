@@ -7,7 +7,10 @@ import type { DamageType } from '../types/common';
 import type { StatusId } from '../types/skills';
 import type { VfxId } from '../types/vfx';
 import { NUMBER_ONLY_KINDS, type DamageNumberOpts } from './DamageNumbers';
+import { CHUNK_OF_TYPE } from './Chunks';
+import { ringFlat } from './Fx';
 import type { VFX, VfxHandle } from './VFX';
+import { chunkBurstOf, type HitWeight } from '../combat/feel';
 
 /**
  * Default feedback subscriptions (ARCHITECTURE.md "Default feedback subscriptions"):
@@ -64,6 +67,24 @@ function isDry(e: Entity | undefined): boolean {
 const NUMBER_ORIGIN_FRAC = 0.4;
 function bodyCentreY(target: Entity): number {
   return target.position.y + target.height * NUMBER_ORIGIN_FRAC;
+}
+
+/** Low graphics quality is the FX density control (there is no separate effects setting): the cube count drops to 60 %. */
+const LOW_DENSITY = 0.6;
+
+/**
+ * Trove-style chunky impact for one landed hit (not DoT ticks). Counts and sizes by weight / crit / spell: feel.ts chunkBurstOf.
+ * Spells also flash one pooled point light (VFX.LightPool holds 2, so at most two lights are live at once).
+ */
+function chunkImpact(vfx: VFX, e: { type: DamageType; crit: boolean; weight?: string; spell?: boolean }, pos: [number, number, number], dir: [number, number, number] | undefined, hurt: boolean): void {
+  const b = chunkBurstOf(e.weight as HitWeight | undefined, e.crit, !!e.spell);
+  const density = G.settings?.data.graphicsQuality === 'low' ? LOW_DENSITY : 1;
+  const n = Math.max(1, Math.round(b.n * density * (hurt ? 0.7 : 1)));
+  const col = CHUNK_OF_TYPE[e.type] ?? CHUNK_OF_TYPE.physical;
+  vfx.burstChunks(e.type, pos, dir, n, b.size, b.speed, b.life);
+  const s = e.spell ? 1.3 : 1;
+  ringFlat(vfx.fxApi, pos, 0.12 * s, (e.crit ? 0.95 : 0.6) * s, 0xffffff, 0.14, { tex: 'ring-02', glow: 2.2, c1: col.color });
+  if (e.spell) vfx.fxApi.light(pos, col.color, 40, 0.18, 7);
 }
 
 function isUndeadBones(e: Entity | undefined): boolean {
@@ -135,6 +156,8 @@ export function subscribeFeedback(vfx: VFX): void {
         if (e.type === 'lightning' && !dot) vfx.spawn('hit_spark', pos, { dir, scale: 0.6, color: 0xcfe4ff });
       }
       if (e.crit && !dot) vfx.spawn('crit_burst', pos, { dir, color: t.crit, scale: hurt ? 0.8 : 1 });
+      // ---- chunky voxel impact: element-coloured cubes, a contact ring, spells add a light flash
+      if (!dot) chunkImpact(vfx, e, pos, dir, hurt);
       // ---- model flash
       if (target && !dot) {
         if (hurt) vfx.flash(target.object3d, 0xff2410, 0.16);

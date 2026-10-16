@@ -14,9 +14,10 @@ import {
   type FlashRest,
 } from '../entities/sharedMaterials';
 import { G } from '../game/G';
-import type { Rarity } from '../types/common';
+import type { DamageType, Rarity } from '../types/common';
 import { VFX_IDS, type DamageNumberKind, type SpawnVfxOpts, type TelegraphKind, type TelegraphShape, type VfxId } from '../types/vfx';
 import { DamageNumbers, type DamageNumberOpts } from './DamageNumbers';
+import { ChunkBursts } from './Chunks';
 import { DONE, setGroundOf, type Ctx, type Fx, type LoopCtl, type LoopHandle } from './Fx';
 import { resolveVfxAlias, type VfxAlias, type VfxAliasPart } from './aliases';
 import { Pillar, shellGeometry, shellMaterial } from './Meshes';
@@ -661,6 +662,8 @@ export class VFX {
   private layers: { add: ParticleLayer; alpha: ParticleLayer; decal: ParticleLayer; sheetA: ParticleLayer; sheetAdd: ParticleLayer };
   private lights: LightPool;
   private numbers = new DamageNumbers();
+  /** chunky voxel impact cubes (one instanced pool per element family) */
+  private chunks: ChunkBursts;
   private glows: WeaponGlows;
   /** Golden halos on the quest props an active objective wants (vfx/QuestSparkle.ts). */
   private questSparkles = new QuestSparkles();
@@ -747,6 +750,7 @@ export class VFX {
       frame: () => G.engine?.frame ?? 0,
     };
     this.glows = new WeaponGlows(this.fxApi);
+    this.chunks = new ChunkBursts(this.root);
   }
 
   // ------------------------------------------------------------------ lifecycle
@@ -1091,6 +1095,14 @@ export class VFX {
     return m;
   }
 
+  /**
+   * Chunky voxel impact (feedback.ts): `n` cubes of the damage type's element colour fly out of `p` along the hit direction
+   * (dir[0], dir[2] horizontal). Capped by CHUNK_CAP; returns the number spawned.
+   */
+  burstChunks(type: DamageType, p: readonly [number, number, number], dir: readonly number[] | undefined, n: number, size: number, speed: number, life: number): number {
+    return this.chunks.burst(type, p, dir?.[0] ?? 0, dir?.[2] ?? 0, n, size, speed, life);
+  }
+
   // ------------------------------------------------------------------ frame
 
   update(dt: number): void {
@@ -1146,6 +1158,7 @@ export class VFX {
     this.layers.sheetA.update(dt);
     this.layers.sheetAdd.update(dt);
     this.lights.update(dt);
+    this.chunks.update(dt);
     this.numbers.update(dt);
     if (this.unique.size > 64) for (const [k, h] of this.unique) if (!h.alive) this.unique.delete(k);
   }
@@ -1213,6 +1226,7 @@ export class VFX {
     for (const v of [...this.visuals]) v.dispose();
     this.visuals.clear();
     this.unique.clear();
+    this.chunks.clear();
     this.status.clear();
     this.lowHpT = 0;
     this.layers.add.clear();

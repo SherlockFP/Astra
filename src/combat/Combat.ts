@@ -159,6 +159,8 @@ export interface ApplyDamageOpts {
   /** The hit came from another peer (no local hit-stop / shake). */
   remote?: boolean;
   weight?: HitWeight;
+  /** spell hit (the impact burst is bigger, vfx/feedback.ts) */
+  isSpell?: boolean;
   stagger?: number;
   knockup?: number;
   fling?: boolean;
@@ -450,7 +452,7 @@ export class Combat {
     attacker.combatTimer = 0;
 
     let killed = false;
-    const opts: ApplyDamageOpts = { skillId: spec.skillId, dot: spec.isDot, weight, stagger, knockup: spec.knockup, pos, noReact: spec.noReact, tick: spec.tick, threatMult: spec.threatMult, viaId: spec.viaId };
+    const opts: ApplyDamageOpts = { skillId: spec.skillId, dot: spec.isDot, weight, isSpell: spec.isSpell, stagger, knockup: spec.knockup, pos, noReact: spec.noReact, tick: spec.tick, threatMult: spec.threatMult, viaId: spec.viaId };
     if (!G.net || G.net.isAuthority) {
       this.applyDamageToEnemy(target, amount, roll.crit, spec.type, attacker.id, statuses, spec.skillId, spec.knockback, dir, opts);
       killed = target.isDead;
@@ -1378,7 +1380,7 @@ export class Combat {
         targetId: target.id, sourceId, amount, crit, type,
         kind: opts.dot || opts.tick ? 'dot' : crit ? 'crit' : 'normal',
         pos, overkill: Math.max(0, amount - effective), skillId: opts.skillId,
-        weak, resisted,
+        weak, resisted, weight: opts.weight, spell: opts.isSpell,
       });
     } catch (e) {
       console.error('[combat] damage event failed', e);

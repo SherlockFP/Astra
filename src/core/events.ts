@@ -24,7 +24,7 @@ export interface GameEvents {
   'game:paused': { paused: boolean };
 
   // combat
-  'damage': { targetId: EntityId; sourceId: EntityId | null; amount: number; crit: boolean; type: DamageType; kind: DamageNumberKind; pos: [number, number, number]; skillId?: string; overkill?: number; /** GDD_V2 §7.3: ZAYIF! (weak) and Dirençli (resisted) flags */ weak?: boolean; resisted?: boolean };
+  'damage': { targetId: EntityId; sourceId: EntityId | null; amount: number; crit: boolean; type: DamageType; kind: DamageNumberKind; pos: [number, number, number]; skillId?: string; overkill?: number; /** GDD_V2 §7.3: ZAYIF! (weak) and Dirençli (resisted) flags */ weak?: boolean; resisted?: boolean; /** hit weight (feel.ts HitWeight) and spell flag: chunky impact size (vfx/feedback.ts) */ weight?: string; spell?: boolean };
   'heal': { targetId: EntityId; sourceId: EntityId | null; amount: number; pos: [number, number, number] };
   'death': { entityId: EntityId; killerId: EntityId | null; pos: [number, number, number] };
   'player:died': { entityId: EntityId; local: boolean };
