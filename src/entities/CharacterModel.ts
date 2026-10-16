@@ -3,6 +3,8 @@ import { G } from '../game/G';
 import { Assets } from '../core/Assets';
 import { applyPSXTexture } from '../render/psx';
 import { shellMaterial } from '../vfx/Meshes';
+import { registerClassRim } from '../vfx/TargetRim';
+import { charLodPlan, getGfxQuality } from '../world/WorldPerf';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { AnimController } from './AnimController';
 import { disposeFlashClones, mapMeshMaterials } from './sharedMaterials';
@@ -119,17 +121,22 @@ export const CLASS_LOOK: Record<ClassId, ClassLook> = {
 };
 
 const classRimMats = new Map<number, THREE.ShaderMaterial>();
+/** Class rim range of a player model (m): a remote player beyond it shows no class rim (TargetRim cullClassRims). */
+export const PLAYER_RIM_RANGE = 25;
 /**
  * Class rim: a thin fresnel shell in the class accent over every skinned mesh of a KayKit body, so the silhouette reads against the
  * voxel world (the same shell the target rim uses, bound to the body's own skeleton). Shells are `vfxShell`, so variant swaps,
  * hit flashes and material copies leave them alone. Used by the player models and the town NPCs.
+ * The shells are drawn only inside `range` metres of the local player and in view, and for CLASS_RIM_BODIES bodies at once
+ * (TargetRim). 'lod' (the town NPCs) = the full character tier of CharacterLod: a mid or far NPC shows no rim.
  */
-export function addClassRim(body: THREE.Object3D, accent: number): void {
+export function addClassRim(body: THREE.Object3D, accent: number, range: number | 'lod' = 'lod'): void {
   let mat = classRimMats.get(accent);
   if (!mat) {
     mat = shellMaterial(accent, { power: 2.6, inflate: 0.012, alpha: 0.5, base: 0, additive: false });
     classRimMats.set(accent, mat);
   }
+  const shells: THREE.Mesh[] = [];
   body.traverse((o) => {
     const sm = o as THREE.SkinnedMesh;
     if (!sm.isSkinnedMesh || !sm.skeleton || o.userData.vfxShell) return;
@@ -141,7 +148,9 @@ export function addClassRim(body: THREE.Object3D, accent: number): void {
     shell.castShadow = false;
     shell.receiveShadow = false;
     sm.add(shell);
+    shells.push(shell);
   });
+  registerClassRim(body, shells, typeof range === 'number' ? () => range : () => charLodPlan(getGfxQuality()).full);
 }
 
 /** Every toggleable weapon-ish node on the KayKit rigs (capes are never toggled). */
@@ -439,7 +448,7 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
   });
   holder.add(body);
   const look = CLASS_LOOK[classId] ?? CLASS_LOOK.knight;
-  addClassRim(body, look.accent);
+  addClassRim(body, look.accent, PLAYER_RIM_RANGE);
   const anim = new AnimController(body, asset.clips);
 
   const hand = { r: findBone(body, 'handslot.r'), l: findBone(body, 'handslot.l') };

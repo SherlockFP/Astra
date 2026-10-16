@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Actor } from './Actor';
 import { Interpolator } from './Interpolator';
 import { G } from '../game/G';
-import { loadCharacterModel, classResource, type CharacterModel, type GearMap } from './CharacterModel';
+import { CHARACTER_HEIGHT, loadCharacterModel, classResource, type CharacterModel, type GearMap } from './CharacterModel';
 import { syncFormResources, formResourceOf } from '../combat/Forms';
 import { updateFormBody, disposeFormBody } from '../combat/FormBody';
 import { siegeGlow } from '../systems/SiegeRules';
@@ -51,6 +51,8 @@ const EXTRAPOLATE_MAX = 0.25;
  */
 export class Player extends Actor {
   readonly isLocal: boolean;
+  /** UI anchor height (m) of the 1.8 m model: nameplate, chat bubble and selection marker ride on it. Combat, aim and hit shapes keep `height`. */
+  visualHeight = CHARACTER_HEIGHT + 0.1;
   /** WoW: the local player holds a movement key this frame (cuts hard casts, blocks casting on the move) */
   moveIntent = false;
   peerId: string;
