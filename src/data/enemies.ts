@@ -1150,7 +1150,7 @@ boss({
   // starter final boss: a long telegraph (step out of the arc) and a slow swing
   basic: cone('mag_bekci_cleave', 'Kesik', 4, 100, 3.2, 1.0, '1H_Melee_Attack_Slice_Horizontal', 0.3, { windup: 1.4, telegraph: true }),
   abilities: [
-    line('mag_bekci_slam', 'Kalkan Yarması', 8, 3, 16, 1.0, 4.0, 'physical', 'Block_Attack', 0.4, { initialCooldown: 8, knockback: 4, sfx: 'shield_bash', params: { impact: 0.4 } }),
+    line('mag_bekci_slam', 'Kalkan Yarması', 8, 3, 16, 1.0, 4.0, 'physical', 'Block_Attack', 0.4, { initialCooldown: 4, knockback: 4, sfx: 'shield_bash', params: { impact: 0.4 } }),
   ],
   phases: [bp('p1', 1.01, ['mag_bekci_slam'])],
   intro: 'Kadim odaya kimse giremez!', death: 'Nöbetim... bitti...',
