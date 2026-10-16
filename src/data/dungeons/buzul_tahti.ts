@@ -48,42 +48,42 @@ const DOORS: DoorDef[] = [
   door('k_kuzeybati', 'buz_kutuphane', 2, 10, 'n', 4, 'none'),
   door('buz_kutuphane', 'k_kuzey', 9, 3, 'e', 4, 'none'),
   door('k_kuzey', 'cadi_kulesi', 14, 3, 'e', 4, 'boss_lock'),
-  door('buz_avlusu', 'merdiven', 19, 17, 'n', 2, 'none'),
+  { ...door('buz_avlusu', 'merdiven', 19, 17, 'n', 2, 'kill_lock'), opensOn: { boss: 'boss_ak_pence' } },
   door('merdiven', 'cadi_kulesi', 19, 12, 'n', 2, 'boss_lock'),
   door('cadi_kulesi', 'k_dogu', 26, 3, 'e', 4, 'boss_exit'),
   door('k_dogu', 'kristal_galeri', 30, 3, 'e', 4, 'none'),
   door('kristal_galeri', 'k_guneydogu', 34, 10, 's', 4, 'none'),
   door('k_guneydogu', 'sovalye_salonu', 34, 14, 's', 4, 'none'),
-  door('sovalye_salonu', 'k_taht', 34, 23, 's', 4, 'none'),
+  { ...door('sovalye_salonu', 'k_taht', 34, 23, 's', 4, 'kill_lock'), opensOn: { pack: 'd3_p23' } },
   door('k_taht', 'buzul_tahti', 34, 26, 's', 4, 'boss_lock'),
 ];
 
 const PACKS_RAW: PackDef[] = [
-  pack('d3_p01', 'k_giris', 19.5, 31, 10, [['frost_dead', 0.24, 0], ['frost_dead', -0.3, 0.35], ['frost_dead', 0.05, -0.66], ['ice_bat', 0.38, 0.62], ['ice_bat', -0.7, -0.16], ['ice_bat', 0.66, -0.53], ['ice_bat', -0.22, 1.03]]),
-  pack('d3_p02', 'buz_avlusu', 14.5, 26, 12, [['frost_dead', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66], ['frost_dead', 0.48, 0.62], ['frost_wraith', -1.12, -0.56]]),
-  pack('d3_p03', 'buz_avlusu', 25, 26, 14, [['yeti_brute', 0, 0], ['snow_spider', 0.95, -0.93], ['snow_spider', 1.32, -0.11]]),
-  pack('d3_p04', 'buz_avlusu', 23.5, 22.5, 10, [['ice_bat', 0.3, 0], ['ice_bat', -0.38, 0.35], ['ice_bat', 0.06, -0.66], ['ice_bat', 0.48, 0.62], ['ice_bat', -0.88, -0.16], ['ice_bat', 0.83, -0.53], ['ice_bat', -0.28, 1.03], ['ice_bat', -0.53, -1.02], ['ice_bat', 1.15, 0.42], ['ice_bat', -1.2, 0.49]]),
-  pack('d3_p05', 'buz_avlusu', 14.5, 19.5, 14, [['frost_slime', 0.3, 0], ['frost_slime', -0.38, 0.35], ['frost_slime', 0.06, -0.66], ['frost_slime', 0.48, 0.62], ['ice_elemental', -0.61, -1.09]]),
-  pack('d3_p06', 'buz_avlusu', 25, 19.5, 14, [['frost_knight', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66], ['frost_dead', 0.48, 0.62]]),
-  pack('d3_p07', 'buz_avlusu', 16, 23, 8, [['yeti_brute', 0, 0]], { patrol: [[14, 23], [26, 23]] }),
-  pack('d3_p08', 'buz_avlusu', 19.5, 19, 14, [['frost_wraith', -1.35, 0], ['frost_wraith', -0.45, 0], ['snow_spider', 0.45, 0], ['snow_spider', 1.35, 0]]),
-  pack('d3_p09', 'k_bati', 10, 21.5, 9, [['ice_bat', 0.3, 0], ['ice_bat', -0.38, 0.35], ['ice_bat', 0.06, -0.66], ['snow_spider', -1.25, 0.45], ['snow_spider', -1.25, -0.45]]),
-  pack('d3_p10', 'k_kuzeybati', 3.5, 12.5, 6, [['frost_slime', 0.3, 0], ['frost_slime', -0.38, 0.35], ['frost_slime', 0.06, -0.66]]),
-  pack('d3_p11', 'buz_kutuphane', 2.5, 2.5, 14, [['frost_dead', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66], ['frost_wraith', -0.62, -1.17], ['frost_wraith', 0.27, -1.3]]),
-  pack('d3_p12', 'buz_kutuphane', 7, 2.5, 14, [['ice_bat', 0.3, 0], ['ice_bat', -0.38, 0.35], ['ice_bat', 0.06, -0.66], ['ice_bat', 0.48, 0.62], ['ice_elemental', 0.16, -1.32], ['frost_wraith', 0.96, -0.92]]),
-  pack('d3_p13', 'buz_kutuphane', 5, 7, 14, [['frost_knight', 0.3, 0], ['frost_slime', -0.38, 0.35], ['frost_slime', 0.06, -0.66], ['frost_slime', 0.48, 0.62]]),
-  pack('d3_p14', 'k_kuzey', 12, 4.5, 8, [['frost_dead', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66], ['frost_dead', 0.48, 0.62]]),
-  pack('d3_p15', 'merdiven', 19.5, 13.5, 6, [['ice_elemental', 0, 0]], { optional: true }),
-  pack('d3_p16', 'k_dogu', 26.5, 4.5, 9, [['snow_spider', 0, -0.7], ['snow_spider', 0, 0], ['snow_spider', 0, 0.7]]),
-  pack('d3_p17', 'kristal_galeri', 31.5, 2.5, 16, [['frost_slime', 0.3, 0], ['frost_slime', -0.38, 0.35], ['ice_elemental', 0.79, -1.07], ['ice_elemental', 1.29, -0.32]]),
-  pack('d3_p18', 'kristal_galeri', 36.5, 2.5, 14, [['yeti_brute', 0.3, 0], ['ice_bat', -0.38, 0.35], ['ice_bat', 0.06, -0.66], ['ice_bat', 0.48, 0.62], ['ice_bat', -0.88, -0.16], ['ice_bat', 0.83, -0.53], ['ice_bat', -0.28, 1.03]]),
-  pack('d3_p19', 'kristal_galeri', 31.5, 8, 16, [['frost_dead', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66], ['frost_dead', 0.48, 0.62], ['frost_wraith', 1.16, 0.66], ['frost_wraith', 0.47, 1.24]]),
-  pack('d3_p20', 'kristal_galeri', 36.5, 7.5, 17, [['frost_knight', 0, 0], ['ice_elemental', 1.33, 0.02], ['snow_spider', 1.01, 0.86]]),
-  pack('d3_p21', 'k_guneydogu', 33.5, 12.5, 8, [['frost_dead', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_slime', 0.06, -0.66], ['frost_slime', 0.48, 0.62]]),
-  pack('d3_p22', 'sovalye_salonu', 31.5, 17, 16, [['frost_knight', 0.3, 0], ['frost_knight', -0.38, 0.35]]),
-  pack('d3_p23', 'sovalye_salonu', 37, 17, 16, [['frost_knight', 0, 0], ['frost_wraith', 1.28, 0.36], ['frost_wraith', 0.76, 1.09]]),
-  pack('d3_p24', 'sovalye_salonu', 34, 21, 18, [['frost_dead', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66], ['frost_dead', 0.48, 0.62], ['frost_dead', -0.88, -0.16], ['frost_dead', 0.83, -0.53], ['ice_elemental', 0.1, 1.25]]),
-  pack('d3_p25', 'k_taht', 33.5, 25, 12, [['frost_knight', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66]]),
+  pack('d3_p01', 'k_giris', 19.5, 31, undefined, [['frost_dead', 0.24, 0], ['frost_dead', -0.3, 0.35], ['frost_dead', 0.05, -0.66], ['ice_bat', 0.38, 0.62], ['ice_bat', -0.7, -0.16], ['ice_bat', 0.66, -0.53]]),
+  pack('d3_p02', 'buz_avlusu', 14.5, 26, undefined, [['frost_dead', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66], ['frost_dead', 0.48, 0.62], ['frost_wraith', -1.12, -0.56]]),
+  pack('d3_p03', 'buz_avlusu', 25, 26, undefined, [['yeti_brute', 0, 0], ['snow_spider', 0.95, -0.93], ['snow_spider', 1.32, -0.11]]),
+  pack('d3_p04', 'buz_avlusu', 23.5, 22.5, undefined, [['ice_bat', 0.3, 0], ['ice_bat', -0.38, 0.35], ['ice_bat', 0.06, -0.66], ['ice_bat', 0.48, 0.62], ['ice_bat', -0.88, -0.16], ['ice_bat', 0.83, -0.53], ['ice_bat', -0.28, 1.03], ['ice_bat', -0.53, -1.02], ['ice_bat', 1.15, 0.42], ['ice_bat', -1.2, 0.49]]),
+  pack('d3_p05', 'buz_avlusu', 14.5, 19.5, undefined, [['frost_slime', 0.3, 0], ['frost_slime', -0.38, 0.35], ['frost_slime', 0.06, -0.66], ['frost_slime', 0.48, 0.62], ['ice_elemental', -0.61, -1.09]]),
+  pack('d3_p06', 'buz_avlusu', 25, 19.5, undefined, [['frost_knight', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66], ['frost_dead', 0.48, 0.62]]),
+  pack('d3_p07', 'buz_avlusu', 16, 23, undefined, [['yeti_brute', 0, 0]], { patrol: [[14, 23], [26, 23]] }),
+  pack('d3_p08', 'buz_avlusu', 19.5, 19, undefined, [['frost_wraith', -1.35, 0], ['frost_wraith', -0.45, 0], ['snow_spider', 0.45, 0], ['snow_spider', 1.35, 0]]),
+  pack('d3_p09', 'k_bati', 10, 21.5, undefined, [['ice_bat', 0.3, 0], ['ice_bat', -0.38, 0.35], ['ice_bat', 0.06, -0.66], ['snow_spider', -1.25, 0.45], ['snow_spider', -1.25, -0.45]]),
+  pack('d3_p10', 'k_kuzeybati', 3.5, 12.5, undefined, [['frost_slime', 0.3, 0], ['frost_slime', -0.38, 0.35], ['frost_slime', 0.06, -0.66]]),
+  pack('d3_p11', 'buz_kutuphane', 2.5, 2.5, undefined, [['frost_dead', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66], ['frost_wraith', -0.62, -1.17], ['frost_wraith', 0.27, -1.3]]),
+  pack('d3_p12', 'buz_kutuphane', 7, 2.5, undefined, [['ice_bat', 0.3, 0], ['ice_bat', -0.38, 0.35], ['ice_bat', 0.06, -0.66], ['ice_bat', 0.48, 0.62], ['ice_elemental', 0.16, -1.32], ['frost_wraith', 0.96, -0.92]]),
+  pack('d3_p13', 'buz_kutuphane', 5, 7, undefined, [['frost_knight', 0.3, 0], ['frost_slime', -0.38, 0.35], ['frost_slime', 0.06, -0.66], ['frost_slime', 0.48, 0.62]]),
+  pack('d3_p14', 'k_kuzey', 12, 4.5, undefined, [['frost_dead', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66], ['frost_dead', 0.48, 0.62]]),
+  pack('d3_p15', 'merdiven', 19.5, 13.5, undefined, [['ice_elemental', 0, 0]], { optional: true }),
+  pack('d3_p16', 'k_dogu', 26.5, 4.5, undefined, [['snow_spider', 0, -0.7], ['snow_spider', 0, 0], ['snow_spider', 0, 0.7]]),
+  pack('d3_p17', 'kristal_galeri', 31.5, 2.5, undefined, [['frost_slime', 0.3, 0], ['frost_slime', -0.38, 0.35], ['ice_elemental', 0.79, -1.07], ['ice_elemental', 1.29, -0.32]]),
+  pack('d3_p18', 'kristal_galeri', 36.5, 2.5, undefined, [['yeti_brute', 0.3, 0], ['ice_bat', -0.38, 0.35], ['ice_bat', 0.06, -0.66], ['ice_bat', 0.48, 0.62], ['ice_bat', -0.88, -0.16], ['ice_bat', 0.83, -0.53]]),
+  pack('d3_p19', 'kristal_galeri', 31.5, 8, undefined, [['frost_dead', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66], ['frost_dead', 0.48, 0.62], ['frost_wraith', 1.16, 0.66], ['frost_wraith', 0.47, 1.24]]),
+  pack('d3_p20', 'kristal_galeri', 36.5, 7.5, undefined, [['frost_knight', 0, 0], ['ice_elemental', 1.33, 0.02], ['snow_spider', 1.01, 0.86]]),
+  pack('d3_p21', 'k_guneydogu', 33.5, 12.5, undefined, [['frost_dead', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_slime', 0.06, -0.66], ['frost_slime', 0.48, 0.62]], { patrol: [[33, 12], [33, 14]] }),
+  pack('d3_p22', 'sovalye_salonu', 31.5, 17, undefined, [['frost_knight', 0.3, 0], ['frost_knight', -0.38, 0.35]]),
+  pack('d3_p23', 'sovalye_salonu', 37, 17, undefined, [['frost_knight', 0, 0], ['frost_wraith', 1.28, 0.36], ['frost_wraith', 0.76, 1.09]]),
+  pack('d3_p24', 'sovalye_salonu', 34, 21, undefined, [['frost_dead', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66], ['frost_dead', 0.48, 0.62], ['frost_dead', -0.88, -0.16], ['ice_elemental', 0.1, 1.25]]),
+  pack('d3_p25', 'k_taht', 33.5, 25, undefined, [['frost_knight', 0.3, 0], ['frost_dead', -0.38, 0.35], ['frost_dead', 0.06, -0.66]]),
 ];
 
 const START: [number, number] = [19.5, 37];
@@ -376,9 +376,14 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
 };
 
 const PACK_EXTRA: Record<string, Partial<PackDef>> = {
-  d3_p02: { big: true }, d3_p04: { big: true, note: 'Circles the frozen fountain in a 4 m loop; aggro range 11 m.' }, d3_p05: { big: true },
-  d3_p07: { big: true, note: 'Lone Yeti patrol walks W-E right through the courtyard (14 s per leg).' },
+  d3_p04: { big: true, note: 'Ten ice bats over the frozen fountain: the one designed big pull, a 4 m loop around the fountain.' },
+  d3_p06: { linkedTo: ['d3_p03'], note: 'Linked pair with the yeti pack: the courtyard knight pulls the yeti too.' },
+  d3_p07: { note: 'Lone Yeti patrol walks W-E right through the courtyard (14 s per leg).' },
   d3_p08: { note: 'Guards the frozen-waterfall skip.' },
+  d3_p13: { dormant: { kind: 'statue', wakeRadius: 6 }, note: 'Frozen knight statue in the library: wakes when a player comes within 6 m.' },
+  d3_p21: { note: 'Patrols the Ayaz Sovalyesi antechamber.' },
+  d3_p22: { dormant: { kind: 'statue', wakeRadius: 5 }, note: 'Two frozen knights in the throne hall: dormant statues.' },
+  d3_p23: { note: 'Gate pack: the throne hall door opens when this pack is dead.' },
 };
 
 const EXTRAS: NonNullable<DungeonDef['extras']> = {
@@ -386,6 +391,17 @@ const EXTRAS: NonNullable<DungeonDef['extras']> = {
   shrines: [{ type: 'shrine_power', pos: pt(...at2(27, 28)) }, { type: 'shrine_ward', pos: pt(...at2(39, 22)) }],
   riftSpots: ([[19.5, 26], [5, 5], [12, 4.5], [34, 5], [34, 18], [22, 19]] as [number, number][]).map(([x, z]) => pt(...at2(x, z))),
   chests: [{ pos: pt(...at2(38, 10)), kind: 'chest_gold' }],
+  checkpoints: [pt(...at2(27, 4.5))],
+};
+
+/** Room atmospheres (fog blend): calm at the frozen gate, tension in the courtyard, set piece in the three boss rooms. */
+const ATMOSPHERES = {
+  calm: { color: 0x14283c, near: 8, far: 40 },
+  tension: { color: 0x0e1e30, near: 7, far: 32 },
+  set_piece: { color: 0x1a3050, near: 9, far: 44 },
+};
+const ATMO: Record<string, string> = {
+  giris: 'calm', k_giris: 'calm', buz_avlusu: 'tension', yeti_magarasi: 'set_piece', cadi_kulesi: 'set_piece', buzul_tahti: 'set_piece',
 };
 
 export const BUZUL_TAHTI: DungeonDef = {
@@ -395,10 +411,11 @@ export const BUZUL_TAHTI: DungeonDef = {
   lore: 'Kuzeyin ötesinde, bir zamanlar adil bir kral olan Tuğrul, ölümsüzlük uğruna kalbini buza sattı. Sarayı donmuş bir mezara, şövalyeleri buz heykellere döndü. Buz Cadısı Ayaz Ana kulesinden fırtınaları yönetirken, Kırağı adlı ejder tahtın üzerinde süzülür. Ak Pençe ise mağarasında yeni kemikler bekler.',
   levelRange: [30, 40],
   timerSec: 870,
-  forcesRequired: 250,
+  forcesRequired: 244, // floor(0.8 x 305 total pack forces, auto sums)
   theme: THEME,
   grid: { w: 42, h: 40 },
-  rooms: withProps(ROOMS.map((r) => ({ ...r, ...ROOM_EXTRA[r.id] })), D.out),
+  rooms: withProps(ROOMS.map((r) => ({ ...r, ...ROOM_EXTRA[r.id], ...(ATMO[r.id] ? { atmosphere: ATMO[r.id] } : {}) })), D.out),
+  atmospheres: ATMOSPHERES,
   doors: DOORS,
   packs: PACKS.map((p) => (PACK_EXTRA[p.id] ? { ...p, ...PACK_EXTRA[p.id] } : p)),
   bosses: BOSSES,
