@@ -263,9 +263,9 @@ D.room('merdiven', (p, r) => {
 D.room('cadi_kulesi', (p, r) => {
   // blue-fire cauldron at the centre (does not collide)
   p.at(ks('campfire-stand'), 19.5, 4.5, { scale: 3, light: lt(ICE, 2.6, 14, true, 1.2), emissive: ICE }).at(ks('bucket'), 19.5, 4.6, { scale: 3, y: 0.9, tint: ICE, emissive: ICE });
-  // four crystal pylons = mirror image spawn points
+  // four crystal pylons = mirror image spawn points (walkable: the boss spawns and teleports onto them)
   [[17, 2], [23, 2], [17, 8], [23, 8]].forEach(([x, z], i) => {
-    p.at(gp('crystal_blue'), x, z, { scale: 1.4, collide: true, tag: 'socket', id: `pylon_${i + 1}`, light: lt(ICE, 2.0, 10, false, 1.3) });
+    p.at(gp('crystal_blue'), x, z, { scale: 1.4, collide: false, tag: 'socket', id: `pylon_${i + 1}`, light: lt(ICE, 2.0, 10, false, 1.3) });
   });
   p.torches(r, 'n', [15.4, 18.0, 21.0, 23.6], ICE).torches(r, 's', [15.4, 21.0, 23.6], ICE).torches(r, 'w', [1.6, 7.8], ICE).torches(r, 'e', [1.6, 7.8], ICE);
   drift(p, 15.2, 0.8, 0.8).at(gp('rock_medium'), 23.9, 8.9, { tint: SNOW, scale: 0.9 });

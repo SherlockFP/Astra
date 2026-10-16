@@ -197,8 +197,9 @@ const anubzek: BossScript = {
 // ---- Boss 3: Hasatçı Kikatal ----------------------------------------------------------------------------------------------------
 
 /** Spider spots and runner lanes (GDD tile coordinates, section 5.3). */
-const KK_SPINNER_SPOTS: [number, number][] = [[49, 29], [61, 29], [55, 22.5]];
-const KK_RUNNER_LANES: [number, number][] = [[48.5, 25], [61.5, 26.5], [48.5, 32.5]];
+// kikatal_deposu (dungeon file) moved +6 tiles in z: spots shifted with it; spinner 3 sits at z 30 (not 28.5) to stay inside the room (z 29-42)
+const KK_SPINNER_SPOTS: [number, number][] = [[49, 35], [61, 35], [55, 30]];
+const KK_RUNNER_LANES: [number, number][] = [[48.5, 31], [61.5, 32.5], [48.5, 38.5]];
 
 const kikatalAbilities: Record<string, BossHandler> = {
   yk_kk_string: {

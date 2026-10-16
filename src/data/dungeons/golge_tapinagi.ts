@@ -93,7 +93,7 @@ const bossAtNew = (id: string, roomId: string, x: number, z: number, facing: num
 
 const BOSSES = [
   bossAtNew('boss_nefris', 'nefris_odasi', 4.5, 9, 0, 1),
-  bossAtNew('boss_kevvas', 'kevvas_cukuru', 34.5, 11, 0, 1),
+  bossAtNew('boss_kevvas', 'kevvas_cukuru', 34.5, 11, 0, 2),
   bossAt('boss_zakhar', 'zakhar_sunagi', 19.5, 6, 0, 3),
 ];
 

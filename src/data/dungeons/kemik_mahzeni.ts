@@ -333,7 +333,7 @@ D.room('kemik_salonu', (p, r) => {
 // ---- ruh_kuyusu: Boss 2 arena (Olucagiran Morkan), the soul well (34.1, 22.1 is fixed by the boss script) -------------
 D.room('ruh_kuyusu', (p, r) => {
   const [wx, wz] = SOUL_WELL;
-  p.at(dg('floor_tile_extralarge_grates_open'), wx, wz, { y: 0.02, collide: true, id: 'soul_well', light: lt(0x60ff90, 2.0, 14, true, 0.4), vfx: 'ambient_shadow_wisps' });
+  p.at(dg('floor_tile_extralarge_grates_open'), wx, wz, { y: 0.02, collide: false, id: 'soul_well', light: lt(0x60ff90, 2.0, 14, true, 0.4), vfx: 'ambient_shadow_wisps' });
   for (const [x, z] of [[30.5, 14.5], [37.5, 14.5], [30.5, 20.5], [37.5, 19.5]] as [number, number][]) p.at(dg('pillar'), x, z, { collide: true, tag: 'pillar' });
   p.ring(hw('candle_triple'), wx, wz, 1.9, 10, { light: lt(0x60ff90, 0.7, 5, true, 0.9) }, 'out');
   p.torches(r, 'n', [29.5, 37.5], 0x60ff90).torches(r, 'w', [15.5, 21.5], 0x60ff90).torches(r, 'e', [10.5, 20.5], 0x60ff90).torches(r, 's', [28.5, 34.8], 0x60ff90);
@@ -480,7 +480,7 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
   kemik_salonu: { ambientVfx: 'ambient_dust', ceiling: 10 },
   ruh_kuyusu: {
     explicitDecor: true, lightColor: 0x60ff90, ambientVfx: 'ambient_shadow_wisps',
-    zones: [circleZone('pit', SOUL_WELL[0], SOUL_WELL[1], 0.875 * 1.2, { blocked: true, color: 0x050806, glow: 0x60ff90, glowIntensity: 1.4, vfx: 'ambient_shadow_wisps' })],
+    zones: [circleZone('pit', SOUL_WELL[0], SOUL_WELL[1], 0.875 * 1.2, { blocked: false, /* the floor grate covers the shaft: walkable */ color: 0x050806, glow: 0x60ff90, glowIntensity: 1.4, vfx: 'ambient_shadow_wisps' })],
   },
   k_kuyu: { ambientVfx: 'ambient_dust' },
   unutulmus_mezarlar: { ambientVfx: 'ambient_dust' },

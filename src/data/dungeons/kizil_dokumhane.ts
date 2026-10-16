@@ -81,7 +81,7 @@ const PACKS_RAW: PackDef[] = [
   pack('d2_p15', 'kalip_atolyesi', 32.5, 6.5, undefined, [['magma_golem', 0, 0], ['fire_priest', 1.17, 0.44]]),
   pack('d2_p16', 'k_inis', 29.5, 11, undefined, [['forge_demon', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62]]),
   pack('d2_p17', 'lav_kanali', 26, 15.8, undefined, [['forge_orc', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['forge_goblin', 0.83, -0.53]]),
-  pack('d2_p18', 'lav_kanali', 30, 18.5, undefined, [['forge_imp', 1.34, -0.13], ['forge_imp', 0.45, -0.04], ['forge_imp', -0.45, 0.04], ['forge_imp', -1.34, 0.13]], { patrol: [[27, 18.5], [33, 18.5]] }),
+  pack('d2_p18', 'lav_kanali', 30, 20.5, undefined, [['forge_imp', 1.34, -0.13], ['forge_imp', 0.45, -0.04], ['forge_imp', -0.45, 0.04], ['forge_imp', -1.34, 0.13]], { patrol: [[27, 20.5], [33, 20.5]] }),
   pack('d2_p19', 'lav_kanali', 33.5, 15.8, undefined, [['magma_golem', 0.3, 0], ['lava_slime', -0.38, 0.35], ['lava_slime', 0.06, -0.66]]),
   pack('d2_p20', 'lav_kanali', 26.5, 21.5, undefined, [['forge_demon', 0, 0], ['fire_priest', -0.02, 1.33], ['fire_priest', -0.86, 1.01]]),
   pack('d2_p21', 'lav_kanali', 33, 21.5, undefined, [['flame_skull', 0.3, 0], ['flame_skull', -0.38, 0.35], ['flame_skull', 0.06, -0.66], ['flame_skull', 0.48, 0.62], ['flame_skull', -0.88, -0.16], ['forge_orc', -0.28, 1.03]]),

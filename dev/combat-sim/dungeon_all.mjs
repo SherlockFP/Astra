@@ -81,8 +81,8 @@ const ANCHOR_TABLES = {
   yanki_agi: [ // yanki_agi.ts: AV_EGGS, the web-mage spots (line 178), KK_SPINNER_SPOTS, KK_RUNNER_LANES
     ...[[35.5, 35], [35.8, 40], [45.5, 35], [45.5, 40.5], [37.5, 34], [43.5, 42.4]].map(([x, z], i) => [`av_egg_${i + 1}`, x, z]),
     ...[[23.3, 6.3], [30.7, 6.3], [23.3, 13.7], [30.7, 13.7]].map(([x, z], i) => [`web_spot_${i + 1}`, x, z]),
-    ...[[49, 29], [61, 29], [55, 22.5]].map(([x, z], i) => [`kk_spinner_${i + 1}`, x, z]),
-    ...[[48.5, 25], [61.5, 26.5], [48.5, 32.5]].map(([x, z], i) => [`kk_runner_${i + 1}`, x, z]),
+    ...[[49, 35], [61, 35], [55, 30]].map(([x, z], i) => [`kk_spinner_${i + 1}`, x, z]),
+    ...[[48.5, 31], [61.5, 32.5], [48.5, 38.5]].map(([x, z], i) => [`kk_runner_${i + 1}`, x, z]),
   ],
   yigitler_sarayi: [ // yigitler_sarayi.ts: SOLSTEN, OLMYR, PAD_TILES, PEDESTAL, SKOVALD_GATE, DAIS_TELEPORT, OBLITERATOR_RIM, ledge
     ['solsten', 23.5, 14.5], ['olmyr', 31.5, 14.5],
