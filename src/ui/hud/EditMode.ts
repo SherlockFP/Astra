@@ -1,7 +1,7 @@
 import { G } from '../../game/G';
 import type { UI } from '../UI';
 import { div, h } from '../widgets/dom';
-import { SCALE_MAX, SCALE_MIN, readLayout, writeLayout, type FrameOffset } from './layoutStore';
+import { SCALE_MAX, SCALE_MIN, barShown, readLayout, writeLayout, type FrameOffset } from './layoutStore';
 
 /**
  * WoW-style layout editor (hud module). Every registered HUD frame gets a dashed box with its Turkish name; the box
@@ -478,7 +478,7 @@ export class EditMode {
 
   private flipBar(id: string): void {
     const l = readLayout();
-    writeLayout({ ...l, bars: { ...l.bars, [id]: l.bars[id] !== true } });
+    writeLayout({ ...l, bars: { ...l.bars, [id]: !barShown(l, id) } });
     this.syncToolbar();
   }
 
@@ -503,7 +503,7 @@ export class EditMode {
     if (this.densityEl) this.densityEl.textContent = 'Yoğunluk: ' + DENSITY_TR[this.root.dataset.density ?? 'lg'];
     const l = readLayout();
     this.setOn('grid', l.grid);
-    for (const b of this.bars) this.setOn('bar:' + b.id, l.bars[b.id] === true);
+    for (const b of this.bars) this.setOn('bar:' + b.id, barShown(l, b.id));
     this.setOn('locked', l.locked);
     const lock = this.toggles.get('locked');
     if (lock) lock.textContent = l.locked ? 'Kilidi Aç' : 'Çubukları Kilitle';

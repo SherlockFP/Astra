@@ -9,7 +9,7 @@ import { drag, type DragPayload } from '../panels/items/common';
 import { DAMAGE_COLORS, ICON, div, esc, fmtCd, fmtNum, h, iconEl, pulse, setClass, setDisplay, setIconUrl, setStyle, setText } from '../widgets/dom';
 import { skillTooltipHTML } from '../widgets/tooltips';
 import type { EditFrame } from './EditMode';
-import { readLayout } from './layoutStore';
+import { barShown, readLayout } from './layoutStore';
 import { applyBarDrop, barAccepts, barDropOutside, barPayload, placeBarCell, readBars, useBarMat } from './barDrop';
 import { BAR_CELLS, canPickUp, cellAt, sharedCooldown, itemCount, type BarRow } from './barModel';
 import type { HudCtx } from './types';
@@ -269,7 +269,7 @@ export class ExtraBars {
     const lock = G.settings?.data.barLock === true;
     const l = readLayout();
     for (const b of this.bars) {
-      const shown = l.bars[b.def.id] === true;
+      const shown = barShown(l, b.def.id);
       setDisplay(b.el, shown, 'flex');
       if (!shown) continue;
       b.setLocked(lock);
@@ -349,7 +349,7 @@ export class ExtraBars {
     const ctrl = e.ctrlKey && !e.shiftKey;
     if (!shift && !ctrl) return;
     const bar = this.bars.find((b) => b.def.mod === (shift ? 'shift' : 'ctrl'));
-    if (!bar || readLayout().bars[bar.def.id] !== true) return;
+    if (!bar || !barShown(readLayout(), bar.def.id)) return;
     if (!G.player || this.ui.wantsCursor() || (this.ui.mode !== 'town' && this.ui.mode !== 'dungeon')) return;
     const t = e.target as HTMLElement | null;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;

@@ -118,6 +118,14 @@ function fromV1(p: Record<string, unknown>): UiLayout {
   return l;
 }
 
+/** Extra bars shown unless the player turned them off: bar2 carries the mount cell, bar3 stays opt-in. */
+const BARS_ON_BY_DEFAULT = new Set(['bar2']);
+
+/** Is the extra bar `id` shown in layout `l`? An unset entry falls back to BARS_ON_BY_DEFAULT. */
+export function barShown(l: UiLayout, id: string): boolean {
+  return l.bars[id] ?? BARS_ON_BY_DEFAULT.has(id);
+}
+
 /**
  * The current layout (cached after the first read). Treat it as read-only: build a new object and pass it to
  * writeLayout, so the cache and the store never disagree.
