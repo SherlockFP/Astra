@@ -40,10 +40,10 @@ export const OPENING_KIT: Partial<Record<ClassId, readonly OpeningRow[]>> = {
     ['mage_fireball', 'rmb', 1], ['mage_frostbolt', 'q', 1], ['mage_arcane_missiles', 'e', 1], ['mage_blizzard', 'r', 1],
     ['mage_ice_barrier', 's4', 1], ['mage_frost_nova', 's2', 2], ['mage_blink', 's3', 3], ['mage_pyroblast', 's1', 5],
   ],
-  // Rogue (Haydut): L1 Mutilate, Envenom, Shadowstep, Kick; L2 Stealth; L3 Slice and Dice; L4 Sprint; L5 Garrote.
+  // Rogue (Haydut): L1 Mutilate, Envenom, Shadowstep, Kick; L2 Stealth; L3 Slice and Dice; L4 Crimson Vial (the first defensive, was L10; Sprint leaves the kit, Shadowstep stays the mobility); L5 Garrote.
   rogue: [
     ['rogue_mutilate', 'rmb', 1], ['rogue_envenom', 'q', 1], ['rogue_shadow_step', 's2', 1], ['rogue_kick', 's3', 1],
-    ['rogue_stealth', 'e', 2], ['rogue_slice_and_dice', 'r', 3], ['rogue_sprint', 's4', 4], ['rogue_garrote', 's1', 5],
+    ['rogue_stealth', 'e', 2], ['rogue_slice_and_dice', 'r', 3], ['rogue_crimson_vial', 's4', 4], ['rogue_garrote', 's1', 5],
   ],
   // Paladin (Paladin): L1 Judgment, Crusader Strike, Word of Glory, Divine Steed; L2 Rebuke; L3 Avenger's Shield; L4 Consecration; L5 Hammer of Justice.
   paladin: [
@@ -75,9 +75,9 @@ export const OPENING_KIT: Partial<Record<ClassId, readonly OpeningRow[]>> = {
     ['shaman_lightning_bolt', 'rmb', 1], ['shaman_ghost_wolf', 's2', 1], ['shaman_wind_shear', 's3', 1], ['shaman_astral_shift', 's4', 1],
     ['shaman_flame_shock', 'e', 2], ['shaman_lava_burst', 'r', 3], ['shaman_earth_shock', 'q', 4], ['shaman_frost_shock', 's1', 5],
   ],
-  // Demon Hunter (İblis Avcısı): L1 Chaos Strike, Blade Dance, Immolation Aura, Fel Rush; L2 Demon Spikes; L3 Disrupt; L4 Eye Beam; L5 Torment.
+  // Demon Hunter (İblis Avcısı): L1 Chaos Strike, Blade Dance, Immolation Aura, Fel Rush (slots = the Chaos spec bar; the L1 bar itself is placed by barLayout); L2 Demon Spikes; L3 Disrupt; L4 Eye Beam; L5 Torment.
   demonhunter: [
-    ['demonhunter_chaos_strike', 'q', 1], ['demonhunter_blade_dance', 'e', 1], ['demonhunter_immolation_aura', 'rmb', 1], ['demonhunter_fel_rush', 's2', 1],
+    ['demonhunter_chaos_strike', 'rmb', 1], ['demonhunter_blade_dance', 's1', 1], ['demonhunter_immolation_aura', 'e', 1], ['demonhunter_fel_rush', 's2', 1],
     ['demonhunter_demon_spikes', 's3', 2], ['demonhunter_disrupt', 's4', 3], ['demonhunter_eye_beam', 'r', 4], ['demonhunter_torment', 's1', 5],
   ],
   // Evoker (Ejderha Çağırıcı): L1 Living Flame, Disintegrate, Fire Breath, Hover; L2 Pyre; L3 Quell; L4 Obsidian Scales; L5 Eternity Surge.

@@ -30,7 +30,7 @@ export const SPECS_KIT_SHAMAN: Partial<Record<SpecId, SpecDef>> = {
     basic: 'shaman_basic',
     defaultBar: {
       lmb: 'shaman_basic', rmb: 'shaman_lightning_bolt', q: 'shaman_flame_shock', e: 'shaman_lava_burst', s1: 'shaman_earth_shock',
-      s2: 'shaman_chain_lightning', s3: 'shaman_astral_shift', r: 'shaman_totem_fire', s4: 'shaman_wind_shear',
+      s2: 'shaman_ghost_wolf', s3: 'shaman_astral_shift', r: 'shaman_totem_fire', s4: 'shaman_wind_shear',
       m45: 'shaman_stormkeeper', m90: 'shaman_ascendance', m180: 'shaman_earth_elemental',
     },
   },

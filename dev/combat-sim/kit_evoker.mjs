@@ -224,8 +224,8 @@ for (const spec of ALL) {
   ok('ae4.coef Ateş Nefesi (Yüceltme patch) 3.40 total, s1', near(AUG.mods.find((m) => m.skill === 'evoker_fire_breath').patch.damage.coef * (1 + K('evoker_fire_breath').params.burnMag), 3.4, 0.01) && AUG.mods.find((m) => m.skill === 'evoker_fire_breath').patch.defaultSlot === 's1');
   ok('ae4.coef Ebedi Dalga 4.0 frost, 1.2 %, 1 / 3 / 5 targets', K('evoker_eternity_surge').damage.coef === 4 && K('evoker_eternity_surge').cost === 1.2 && [1, 2, 3].map((r) => K('evoker_eternity_surge').params[`targets${r}`]).join() === '1,3,5');
   ok('ae4.coef Pyre 2.1 fire r 8, 3 Öz; Püskürme 2.0 fire cast 2.0, 3 Öz', K('evoker_pyre').damage.coef === 2.1 && K('evoker_pyre').radius === 8 && K('evoker_pyre').pip.cost === 3 && K('evoker_eruption').damage.coef === 2 && K('evoker_eruption').castTime === 2 && K('evoker_eruption').pip.cost === 3);
-  ok('ae4.coef Serbest Alev 1.75, replaces Yaşayan Alev while unbound_flame; Derin Nefes 6.4 (3.2 + 3.2) r 6', K('evoker_unbound_flame').damage.coef === 1.75 && K('evoker_unbound_flame').replaces.whileStatus === 'unbound_flame'
-    && K('evoker_deep_breath').params.pathCoef + K('evoker_deep_breath').damage.coef === 6.4 && K('evoker_deep_breath').radius === 6);
+  ok('ae4.coef Serbest Alev 1.75, replaces Yaşayan Alev while unbound_flame; Derin Nefes 3.2 (1.6 + 1.6, trimmed from 6.4 in 2354c9a) r 6', K('evoker_unbound_flame').damage.coef === 1.75 && K('evoker_unbound_flame').replaces.whileStatus === 'unbound_flame'
+    && K('evoker_deep_breath').params.pathCoef + K('evoker_deep_breath').damage.coef === 3.2 && K('evoker_deep_breath').radius === 6);
   ok('ae4.coef Geri Dönüş HoT 3.0 / 12 s +10 % absorb, 2.2 %; Rüya Nefesi 4.9 %, HoT 4 / 8 / 12 s, 12 / 15 / 18 m; Yankı 2 Öz; Zümrüt Çiçek 3 Öz 5 %, 2.3 x 3',
     K('evoker_reversion').params.hotCoef === 3 && K('evoker_reversion').params.hotDur === 12 && K('evoker_reversion').params.absorbPct === 0.1 && K('evoker_reversion').cost === 2.2
     && K('evoker_dream_breath').cost === 4.9 && [1, 2, 3].map((r) => K('evoker_dream_breath').params[`hot${r}`]).join() === '4,8,12' && [1, 2, 3].map((r) => K('evoker_dream_breath').params[`range${r}`]).join() === '12,15,18'
@@ -652,8 +652,8 @@ ok('ae4.unit a Yaşayan Alev hit is a measurable unit', UNIT > 50, `unit=${UNIT}
   const { p, e } = newEvoker(DEV, { essence: 0 });
   H.clearEvents();
   cast(p, 'm90', e); H.stepSec(0.6);
-  ok('ae4.dragonrage: 18 s window, +15 % damage, Terazi Eğimi, an Öz Patlaması, impact damage 2.0 x the unit', p.statuses.has('dragonrage') && near(p.statuses.get('dragonrage').remaining, 18, 1) && p.statuses.has('tip_scales') && p.statuses.stacks('essence_burst') === 1
-    && near(sumDmg('evoker_dragonrage', e.id) / UNIT, 2, 0.5), `impact x${(sumDmg('evoker_dragonrage', e.id) / UNIT).toFixed(2)}`);
+  ok('ae4.dragonrage: 18 s window, +15 % damage, Terazi Eğimi, an Öz Patlaması, impact damage ~0.57 x the unit (trimmed from 2.0 in 2354c9a for the class TTK band)', p.statuses.has('dragonrage') && near(p.statuses.get('dragonrage').remaining, 18, 1) && p.statuses.has('tip_scales') && p.statuses.stacks('essence_burst') === 1
+    && near(sumDmg('evoker_dragonrage', e.id) / UNIT, 0.57, 0.1), `impact x${(sumDmg('evoker_dragonrage', e.id) / UNIT).toFixed(2)}`);
   G.skills.spendPip(p, 'essence', ess(p));
   H.stepSec(10.5);
   ok('ae4.dragonrage Öz regen is doubled: >= 3 pips in 10.5 s instead of ~1.5', ess(p) >= 3, `essence=${ess(p)}`);
@@ -920,10 +920,10 @@ for (const spec of ALL) {
 {
   const { CharacterState } = await H.imp('systems/CharacterState.ts');
   const bar1 = CharacterState.defaultBar('evoker', 1);
-  ok('ae4.l1 level-1 bar = lmb chain, rmb Yaşayan Alev, q Parçala, e Ateş Nefesi, s2 Süzül', JSON.stringify(bar1) === JSON.stringify({ lmb: 'evoker_basic', rmb: 'evoker_living_flame', q: 'evoker_disintegrate', e: 'evoker_fire_breath', s2: 'evoker_hover' }), JSON.stringify(bar1));
+  ok('ae4.l1 level-1 bar = lmb chain, rmb Yaşayan Alev, q Parçala, s2 Ateş Nefesi, s3 Süzül (barLayout rule)', JSON.stringify(bar1) === JSON.stringify({ lmb: 'evoker_basic', rmb: 'evoker_living_flame', q: 'evoker_disintegrate', s2: 'evoker_fire_breath', s3: 'evoker_hover' }), JSON.stringify(bar1));
   ok('ae4.l1 level-1 bar has four non-basic skills', Object.keys(bar1).filter((k) => k !== 'lmb').length === 4);
   const bar30 = CharacterState.defaultBar('evoker', 30);
-  ok('ae4.l1 level-30 spec-less bar adds Pyre s1, Süzül s2, Obsidyen s3, Bastır s4, Ejder Öfkesi m90', bar30.s1 === 'evoker_pyre' && bar30.s2 === 'evoker_hover' && bar30.s3 === 'evoker_obsidian_scales' && bar30.s4 === 'evoker_quell' && bar30.m90 === 'evoker_dragonrage', JSON.stringify(bar30));
+  ok('ae4.l1 level-30 spec-less bar adds Pyre e, Süzül s3, Obsidyen r, Bastır s4, Ebedi Dalga s1, Ejder Öfkesi m90', bar30.e === 'evoker_pyre' && bar30.s3 === 'evoker_hover' && bar30.r === 'evoker_obsidian_scales' && bar30.s4 === 'evoker_quell' && bar30.s1 === 'evoker_eternity_surge' && bar30.m90 === 'evoker_dragonrage', JSON.stringify(bar30));
 
   const p = H.addPlayer('evoker', 1);
   resetEvokerKit();

@@ -875,8 +875,9 @@ for (const spec of ALL) {
   const menu = await H.imp('ui/menu/classInfo.ts');
   const cls = await H.imp('data/classes.ts');
   const bar1 = CharacterState.defaultBar('necromancer', 1);
-  ok('pmne.l1 level-1 bar = lmb chain, rmb Ölüm Kırbacı, q Ölüm Sarmalı, e Çürüten Darbe, s2 Ölüm Atılışı, s4 Zihin Dondurma', JSON.stringify(bar1) === JSON.stringify({
-    lmb: 'necro_basic', rmb: 'necro_scourge_strike', q: 'necro_death_coil', e: 'necro_festering_strike', s2: 'necro_deaths_advance', s4: 'necro_mind_freeze',
+  // Four L1 skills per the openingKit rule: Zihin Dondurma (Mind Freeze) is an L2 kit row, not on the L1 bar.
+  ok('pmne.l1 level-1 bar = lmb chain, rmb Ölüm Kırbacı, q Ölüm Sarmalı, e Çürüten Darbe, s2 Ölüm Atılışı', JSON.stringify(bar1) === JSON.stringify({
+    lmb: 'necro_basic', rmb: 'necro_scourge_strike', e: 'necro_festering_strike', q: 'necro_death_coil', s2: 'necro_deaths_advance',
   }), JSON.stringify(bar1));
   ok('pmne.l1 necromancer is playable and offered by the creation list', cls.isPlayableClass('necromancer') && menu.CLASS_ORDER.includes('necromancer'));
   ok('pmne.l1 start gear (staff, wand, tome) is usable by a necromancer and not by a knight',
@@ -905,7 +906,7 @@ for (const spec of ALL) {
   ok('pmne.l1 rmb: Ölüm Kırbacı casts and hits without a spec', fire('rmb') === true && hitBy(/^necro_scourge_strike$/).length >= 1, `hits=${hitBy(/^necro_scourge_strike$/).length} fail=${failed()}`);
   ok('pmne.l1 q: Ölüm Sarmalı casts and hits without a spec', fire('q') === true && hitBy(/^necro_death_coil$/).length >= 1, `hits=${hitBy(/^necro_death_coil$/).length} fail=${failed()}`);
   ok('pmne.l1 e: Çürüten Darbe casts and hits without a spec', fire('e') === true && hitBy(/^necro_festering_strike$/).length >= 1, `hits=${hitBy(/^necro_festering_strike$/).length} fail=${failed()}`);
-  ok('pmne.l1 level-1 bar has five non-basic skills', Object.keys(bar1).filter((k) => k !== 'lmb').length === 5);
+  ok('pmne.l1 level-1 bar has four non-basic skills', Object.keys(bar1).filter((k) => k !== 'lmb').length === 4);
 }
 
 console.log(fails === 0 ? '\nkit.necro (pmne): all checks PASS' : `\nkit.necro (pmne): ${fails} FAIL`);
