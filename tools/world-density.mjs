@@ -6,6 +6,7 @@
  *   node tools/world-density.mjs            report, biggest empty patches and an ASCII map
  *   node tools/world-density.mjs --json     the same numbers as JSON (stdout)
  *   node tools/world-density.mjs --radius 25   the same audit with a 25 m radius (open-stretch proxy: what reads as a destination at 20-30 m)
+ *   node tools/world-density.mjs --zone karakir   another open-world zone (sisli | karakir | ayaz | kizil); see tools/world-zones.mjs
  *
  * Data: src/data/world/sisli_vadi.layout.json (positions in tiles, 1 tile = 4 m; village props / NPCs in metres relative to the
  * village centre). Walkable = the cell centre lies inside a room rect (region rects, bridges, approaches) and outside every water
@@ -16,12 +17,14 @@
  * signpost, field), roads and water. FILLER = decor kinds flora and rocks; they are counted separately so a flora pass cannot hide
  * an empty map. Empty = no STORY thing within RADIUS_M of the cell centre.
  */
-import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { loadZone, ROOT } from './world-zones.mjs';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const LAYOUT_PATH = path.join(ROOT, 'src/data/world/sisli_vadi.layout.json');
+// --zone <sisli|karakir|ayaz|kizil>  the zone to audit (default sisli). The typed zones are read through tools/world-zones.mjs.
+// Before/after per zone: run once before a fill pass, once after, and compare the "empty" lines.
+const argv = process.argv.slice(2);
+const zoneIx = argv.indexOf('--zone');
+const ZONE_KEY = zoneIx >= 0 ? argv[zoneIx + 1] : 'sisli';
 const CELL_M = 50;
 const radiusIx = process.argv.indexOf('--radius');
 const RADIUS_M = radiusIx >= 0 ? Number(process.argv[radiusIx + 1]) : 40;
@@ -30,8 +33,9 @@ const ROAD_STEP_M = 4;
 const args = new Set(process.argv.slice(2));
 const asJson = args.has('--json');
 
-const raw = fs.readFileSync(LAYOUT_PATH, 'utf8').replace(/^﻿/, '');
-const L = JSON.parse(raw);
+const Z = await loadZone(ZONE_KEY);
+const LAYOUT_PATH = Z.out;
+const L = Z.L;
 const T = L.tileSize || 4;
 const W_M = L.grid.w * T, H_M = L.grid.h * T;
 const NC = Math.ceil(W_M / CELL_M), NR = Math.ceil(H_M / CELL_M);
@@ -59,6 +63,7 @@ for (const l of L.landmarks) add('poi', l.pos[0], l.pos[1], l.id);
 for (const v of L.vistas) add('poi', v.pos[0], v.pos[1], v.id);
 for (const h of L.hiddenAreas) add('poi', h.pos[0], h.pos[1], h.id);
 for (const s of L.shrines) add('poi', s.pos[0], s.pos[1], s.id);
+for (const g of L.graveyards ?? []) add('poi', g.pos[0], g.pos[1], g.id);
 for (const w of L.waypoints) add('poi', w.pos[0], w.pos[1], w.id);
 for (const e of L.entrances) add('poi', e.pos[0], e.pos[1], e.id);
 for (const c of L.chests) add('chest', c.pos[0], c.pos[1], c.id);

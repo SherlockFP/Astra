@@ -4,6 +4,8 @@ import type {
 import { gp, hw, ks, tw } from '../dungeons/kit';
 import { CAPTURE_POINTS, PVP_BASES, PVP_CAMP_QUADRANT, PVP_MIN_LEVEL, PVP_TILES, PVP_ZONE_ID, PVP_ZONE_M, mirrorTile } from '../pvpZone';
 import { texUrl } from './layout';
+import KIZIL_DECOR from './kizil_sinir_decor.json' with { type: 'json' };
+import { zoneDecor, zoneFlats, zoneLandmarks } from './decor_zones';
 
 /**
  * KIZIL SINIR (WP-07), the PvP zone. OWNER: content module.
@@ -221,6 +223,9 @@ const PERF: WorldExtras['perf'] = { activateM: 70, deactivateM: 110, aiSleepM: 4
  * Rolling terrain (docs/ENGINE_BIGMAPS.md section 10): moderate hills of the border plain, mirrored in x and z so both nations face the
  * same map, with the contested keep on a raised plateau (the three capture points, the obelisk rings and the watch towers stand on it).
  */
+/** Generated life of the zone (tools/world-fill.mjs --zone kizil, the red badlands palette). */
+const DECOR = zoneDecor(KIZIL_DECOR, 'kizil');
+
 const RELIEF: WorldExtras['relief'] = {
   seed: 'kizil_sinir',
   cellM: 4,
@@ -233,6 +238,7 @@ const RELIEF: WorldExtras['relief'] = {
   },
   edge: { rise: 14, width: 80 },
   plateaus: [{ pos: [150, 150], radius: 78, height: 14, falloff: 64 }],
+  flat: zoneFlats(DECOR),
 };
 
 const WORLD: WorldExtras = {
@@ -249,7 +255,8 @@ const WORLD: WorldExtras = {
   ],
   water: [],
   borders: BORDERS,
-  landmarks: LANDMARKS,
+  landmarks: [...LANDMARKS, ...zoneLandmarks(KIZIL_DECOR)],
+  decor: DECOR,
   metin: { tiers: [], spots: [] },
   rares: [],
   minibosses: [],

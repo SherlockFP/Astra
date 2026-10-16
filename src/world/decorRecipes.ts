@@ -13,8 +13,28 @@ import { gp, hw, ip, kf, kg, kn, ks } from '../data/dungeons/kit';
 const T = TILE_SIZE;
 
 /** One model of a recipe: metres from the anchor, local yaw (rad), scale, and the nav radius it blocks (m). */
-export interface Piece { url: string; dx: number; dz: number; yaw?: number; s?: number; solid?: number }
+export interface Piece { url: string; dx: number; dz: number; yaw?: number; s?: number; solid?: number; tint?: number }
 export type Recipe = (r: RNG) => Piece[];
+
+/**
+ * Biome palettes of the typed open-world zones (tools/world-zones.mjs biome names). Every piece of a decor entry with the biome gets
+ * `tint` (a colour multiplied into the model: dark rock, cold snow, red badlands) and the `swap` models (dead trees on the barren
+ * zones, grass where nothing blooms). A landmark silhouette keeps its own colours. The Sisli meadow has no biome (no tint, no swap).
+ */
+export const BIOME_PALETTE: Record<string, { tint: number; swap: Record<string, string> }> = {
+  karakir: {
+    tint: 0x6f6a62,
+    swap: { [gp('tree_oak_a')]: gp('tree_dead'), [gp('tree_oak_b')]: gp('tree_dead'), [gp('tree_pine_a')]: gp('tree_dead'), [gp('tree_autumn')]: gp('tree_dead'), [gp('flowers')]: gp('grass_tuft') },
+  },
+  ayaz: {
+    tint: 0xdde9f5,
+    swap: { [gp('tree_autumn')]: gp('tree_pine_a'), [gp('flowers')]: gp('grass_tuft') },
+  },
+  kizil: {
+    tint: 0xd9906a,
+    swap: { [gp('tree_oak_a')]: gp('tree_dead'), [gp('tree_oak_b')]: gp('tree_dead'), [gp('tree_pine_a')]: gp('tree_dead'), [gp('tree_autumn')]: gp('tree_dead'), [gp('flowers')]: gp('grass_tuft') },
+  },
+};
 
 const jit = (r: RNG, a: number): number => r.range(-a, a);
 const pickOf = <T,>(r: RNG, xs: readonly T[]): T => xs[Math.floor(r.next() * xs.length)];
@@ -167,12 +187,16 @@ export function piecesOf(d: DecorDef): { x: number; z: number; yaw: number; p: P
   const a = (d.rot * Math.PI) / 180;
   const ca = Math.cos(a), sa = Math.sin(a);
   const ax = tileC(d.pos[0]), az = tileC(d.pos[1]);
-  return recipe(r).map((p) => ({
-    x: ax + p.dx * ca + p.dz * sa,
-    z: az - p.dx * sa + p.dz * ca,
-    yaw: (p.yaw ?? 0) + a,
-    p,
-  }));
+  const pal = d.biome ? BIOME_PALETTE[d.biome] : undefined;
+  return recipe(r).map((p0) => {
+    const p: Piece = pal ? { ...p0, url: pal.swap[p0.url] ?? p0.url, tint: pal.tint } : p0;
+    return {
+      x: ax + p.dx * ca + p.dz * sa,
+      z: az - p.dx * sa + p.dz * ca,
+      yaw: (p.yaw ?? 0) + a,
+      p,
+    };
+  });
 }
 
 /** Every model url the decor needs (the placement and the content check both read this list). */

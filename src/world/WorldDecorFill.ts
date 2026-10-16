@@ -41,7 +41,7 @@ export function placeDecor(defs: readonly DecorDef[], host: WorldDecorHost): voi
         continue;
       }
       for (const e of piecesOf(d)) {
-        host.batcher.add(e.p.url, e.x, 0, e.z, e.yaw, e.p.s ?? 1, null, { cast: false, receive: true, layer: layerOf(e.p.url) });
+        host.batcher.add(e.p.url, e.x, 0, e.z, e.yaw, e.p.s ?? 1, e.p.tint ?? null, { cast: false, receive: true, layer: layerOf(e.p.url) });
         if (e.p.solid) host.nav.setCircle(e.x, e.z, e.p.solid, false);
       }
       host.avoid.push({ x: tileC(d.pos[0]), z: tileC(d.pos[1]), r: AVOID[d.kind] });

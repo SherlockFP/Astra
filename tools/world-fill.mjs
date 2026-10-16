@@ -17,14 +17,18 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { loadZone, writeZoneDecor, ROOT } from './world-zones.mjs';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const LAYOUT_PATH = path.join(ROOT, 'src/data/world/sisli_vadi.layout.json');
+// --zone <sisli|karakir|ayaz|kizil>: the zone to fill (default sisli). A typed zone (Karakır, Ayaz, Kızıl Sınır) gets the same passes,
+// with its biome's landmark and vignette pools, and writes <zone>_decor.json (decor + generated landmarks) instead of the layout.
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
 const gapIx = args.indexOf('--gap');
 const GAP_M = gapIx >= 0 ? Number(args[gapIx + 1]) : 40;
+const zoneIx = args.indexOf('--zone');
+const ZONE_KEY = zoneIx >= 0 ? args[zoneIx + 1] : 'sisli';
+const Z = await loadZone(ZONE_KEY);
+const LAYOUT_PATH = Z.out;
 const T = 4;
 /** Tile coordinate of a point (tile centre convention, as tileToWorld in the engine) -> metres. */
 const C = (v) => (v + 0.5) * T;
@@ -44,8 +48,7 @@ const rnd = () => {
 const pick = (xs) => xs[Math.floor(rnd() * xs.length)];
 
 // ---- load -------------------------------------------------------------------------------------------------------------------
-const rawText = fs.readFileSync(LAYOUT_PATH, 'utf8');
-const L = JSON.parse(rawText.replace(/^﻿/, ''));
+const L = Z.L;
 const W_M = L.grid.w * T, H_M = L.grid.h * T;
 const isGenLandmark = (l) => /^lm_f\d+$/.test(l.id);
 // a rerun starts from the hand-authored content only: generated landmarks and decor are dropped from the working copy
@@ -85,12 +88,12 @@ const roomAt = (x, z) => rooms.find((r) => x >= r.x0 && x < r.x1 && z >= r.z0 &&
 const walkable = (x, z) => { const r = roomAt(x, z); return !!r && !inWater(x, z) && waterDist(x, z) >= 3; };
 
 // keep-out points (metres) and rectangles from the hand-authored content
-const POI_KEYS = ['arenas', 'landmarks', 'vistas', 'hiddenAreas', 'shrines', 'waypoints', 'entrances', 'chests', 'cursedChests', 'gatherFields', 'metinSpots', 'minibosses'];
+const POI_KEYS = ['arenas', 'landmarks', 'vistas', 'hiddenAreas', 'shrines', 'waypoints', 'entrances', 'chests', 'cursedChests', 'gatherFields', 'metinSpots', 'minibosses', 'graveyards'];
 const poi = [];
 const visual = []; // points that make a cell "visual" (POI, nodes, chests, villages, buildings, npcs)
 const pushP = (arr, x, z) => arr.push([x, z]);
 for (const k of POI_KEYS) {
-  for (const p of L[k]) {
+  for (const p of L[k] ?? []) {
     const c = p.center ?? p.pos ?? p.lair;
     if (!c) continue;
     pushP(poi, C(c[0]), C(c[1]));
@@ -207,7 +210,7 @@ for (;;) {
   if (!best || bestD < LM_SPACING) break;
   const region = roomAt(best[0], best[1])?.region ?? 'r1';
   // the spot must be valid for one of the region's recipes; try the candidate first, then nearby points
-  const recipes = [...LM_RECIPES[region]];
+  const recipes = [...(Z.lmPool ?? LM_RECIPES[region] ?? LM_RECIPES.r1)];
   let placed = false;
   for (let tries = 0; tries < 40 && !placed; tries++) {
     const recipe = pick(recipes);
@@ -358,7 +361,7 @@ for (let guard = 0; guard < 2000; guard++) {
   }
   if (!spot) { best.dead = true; continue; }
   const region = roomAt(spot[0], spot[1])?.region ?? 'r1';
-  let recipe = pick(VIGNETTE_BY_REGION[region]);
+  let recipe = pick(Z.vigPool ?? VIGNETTE_BY_REGION[region]);
   if (recipe === 'campfire_camp' && rnd() < 0.5 && waterDist(spot[0], spot[1]) < 12) recipe = 'fishing_spot';
   if (waterDist(spot[0], spot[1]) < 9 && rnd() < 0.7) recipe = 'fishing_spot';
   vgNo++;
@@ -439,6 +442,7 @@ const landmarkAll = [...handLandmarks, ...landmarksNew];
 const counts = {};
 for (const d of decor) counts[d.kind] = (counts[d.kind] ?? 0) + 1;
 const summary = {
+  zone: Z.key,
   landmarks: { hand: handLandmarks.length, generated: landmarksNew.length, total: landmarkAll.length },
   decor: counts, vignetteRecipes: recipeCount, signs: signs.length, samples: samples.length,
   remainingGapSamples: samples.filter((s) => s.g > GAP_M).length,
@@ -446,6 +450,12 @@ const summary = {
 console.log(JSON.stringify(summary, null, 2));
 if (DRY) process.exit(0);
 
+if (Z.typed) {
+  // a typed zone: its generated life only (the zone module maps it, src/data/world/decor_zones.ts)
+  writeZoneDecor(LAYOUT_PATH, { decor, landmarks: landmarksNew });
+  console.log(`wrote ${path.relative(ROOT, LAYOUT_PATH).replace(/\\/g, '/')} (${decor.length} decor, ${landmarksNew.length} new landmarks)`);
+  process.exit(0);
+}
 // keep the layout's key order, put landmarks first and decor right after them
 const out = {};
 for (const [k, v] of Object.entries(L)) {

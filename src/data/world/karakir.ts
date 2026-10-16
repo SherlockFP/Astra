@@ -6,6 +6,8 @@ import {
 import { VILLAGES } from './karakir_villages';
 import { KARAKIR_METIN_SPOTS, KARAKIR_METIN_TIERS } from './karakir_metin';
 import { perfOf } from './layout';
+import KARAKIR_DECOR from './karakir_decor.json' with { type: 'json' };
+import { zoneDecor, zoneFlats, zoneLandmarks } from './decor_zones';
 
 /**
  * KARAKIR BOZKIRI, open-world map 2 (levels 30-45, GDD_OPENWORLD section 1.8). OWNER: content module.
@@ -32,6 +34,9 @@ const PERF: WorldExtras['perf'] = perfOf(KARAKIR_ZONE_SRC, { activateM: 70, deac
  * Rüzgâr plateau raised 8 m, Ayaz foothills climbing east, a flat ash plain and the Kartal Sırtı ridge (about 20 m above its valley).
  * Villages, roads, landmarks, camps' stones and POIs are flattened by the engine (world/Relief.ts); the two lakes sit in basins.
  */
+/** Generated life of the zone (tools/world-fill.mjs --zone karakir, the dark rock palette). */
+const DECOR = zoneDecor(KARAKIR_DECOR, 'karakir');
+
 const RELIEF: WorldExtras['relief'] = {
   seed: 'karakir_bozkiri',
   cellM: 4,
@@ -46,6 +51,7 @@ const RELIEF: WorldExtras['relief'] = {
   },
   edge: { rise: 18, width: 90 },
   ridges: [{ pts: [[386, 16], [382, 56], [388, 96], [380, 138]], height: 20, width: 60 }],
+  flat: zoneFlats(DECOR),
 };
 
 const WORLD: WorldExtras = {
@@ -57,7 +63,8 @@ const WORLD: WorldExtras = {
   roads: ROADS,
   water: WATER,
   borders: BORDERS,
-  landmarks: LANDMARKS,
+  landmarks: [...LANDMARKS, ...zoneLandmarks(KARAKIR_DECOR)],
+  decor: DECOR,
   metin: { tiers: KARAKIR_METIN_TIERS, spots: KARAKIR_METIN_SPOTS },
   rares: RARES,
   minibosses: MINIBOSSES,

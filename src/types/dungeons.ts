@@ -530,6 +530,8 @@ export interface DecorDef {
   pos: [number, number];
   rot: number;
   lines?: string[];
+  /** Biome palette of a typed zone (src/world/decorRecipes.ts BIOME_PALETTE: tint and model swaps). Absent = the Sisli meadow. */
+  biome?: string;
 }
 export interface MetinTierDef {
   id: string;                    // 'metin_keder'

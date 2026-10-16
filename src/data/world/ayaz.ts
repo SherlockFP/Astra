@@ -6,6 +6,8 @@ import {
 import { AYAZ_VILLAGES } from './ayaz_villages';
 import { AYAZ_METIN_SPOTS, AYAZ_METIN_TIERS } from './ayaz_metin';
 import { perfOf } from './layout';
+import AYAZ_DECOR from './ayaz_decor.json' with { type: 'json' };
+import { zoneDecor, zoneFlats, zoneLandmarks } from './decor_zones';
 
 /**
  * AYAZ DAGLARI, open-world map 3 (levels 45-60, GDD_OPENWORLD section 1.8 successor). OWNER: content module.
@@ -33,6 +35,9 @@ const PERF: WorldExtras['perf'] = perfOf(AYAZ_ZONE_SRC, { activateM: 70, deactiv
  * is a broad plateau with the boss arena on top. Two ridges wall the valley and the lake from the east. Villages, roads, landmarks,
  * camps and POIs are flattened by the engine (world/Relief.ts); the two lakes sit in basins.
  */
+/** Generated life of the zone (tools/world-fill.mjs --zone ayaz, the snow and ice palette). */
+const DECOR = zoneDecor(AYAZ_DECOR, 'ayaz');
+
 const RELIEF: WorldExtras['relief'] = {
   seed: 'ayaz_daglari',
   cellM: 4,
@@ -51,6 +56,7 @@ const RELIEF: WorldExtras['relief'] = {
     { pts: [[250, 240], [250, 300]], height: 16, width: 28 },
   ],
   plateaus: [{ pos: [350, 250], radius: 22, height: 12, falloff: 14 }],
+  flat: zoneFlats(DECOR),
 };
 
 const WORLD: WorldExtras = {
@@ -62,7 +68,8 @@ const WORLD: WorldExtras = {
   roads: ROADS,
   water: WATER,
   borders: BORDERS,
-  landmarks: LANDMARKS,
+  landmarks: [...LANDMARKS, ...zoneLandmarks(AYAZ_DECOR)],
+  decor: DECOR,
   metin: { tiers: AYAZ_METIN_TIERS, spots: AYAZ_METIN_SPOTS },
   rares: RARES,
   minibosses: MINIBOSSES,
