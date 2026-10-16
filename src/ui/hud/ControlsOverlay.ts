@@ -1,5 +1,6 @@
 import '../styles/hud-guide.css';
 import { ACTION_NAMES_TR, type InputAction } from '../../core/Input';
+import { G } from '../../game/G';
 import { div, h } from '../widgets/dom';
 import { isWowScheme, keyLabel } from '../widgets/controlHints';
 
@@ -57,6 +58,14 @@ export class ControlsOverlay {
       if (e.target === this.el) this.hide();
     });
     window.addEventListener('keydown', this.onKey, true);
+    // a transient overlay never survives a scene change or a loading screen (the playtest kept it over the dungeon)
+    try {
+      G.events.on('scene:leaving', () => this.hide());
+      G.events.on('scene:changed', () => this.hide());
+      G.events.on('loading:progress', () => this.hide());
+    } catch {
+      /* no event bus (dev harness) */
+    }
   }
 
   /** Toggles the overlay (the "?" key does the same). */

@@ -126,7 +126,9 @@
 .hud .ab-row { gap: var(--ab-gap); padding: 2px; background: var(--elv-backdrop); border: 1px solid var(--elv-border); border-radius: var(--ui-r-frame); }
 .hud .k-slot { background: var(--ui-well); border: 1px solid var(--elv-border); box-shadow: none; }
 .hud .k-slot:hover { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75); }
-.hud .k-slot > .k-key-lbl { top: 1px; right: 2px; font: 700 11px/1 var(--font-body); color: #fff; text-shadow: var(--elv-outline); }
+/* keybind: readable at a glance (playtest), a full dark outline instead of the soft shadow */
+.hud .k-slot > .k-key-lbl { top: 2px; right: 3px; font: 800 13px/1 var(--font-body); color: #fff; letter-spacing: 0.02em;
+  text-shadow: 0 0 2px #000, 0 0 3px #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; }
 .hud .k-slot > .k-count { right: 2px; bottom: 1px; font: 700 12px/1 var(--font-body); text-shadow: var(--elv-outline); }
 .hud .k-slot > .k-cdnum { font: 700 14px/1 var(--font-body); text-shadow: var(--elv-outline); }
 /* range / resource states: the whole icon turns red (out of range, the key too) or blue (not enough resource) */

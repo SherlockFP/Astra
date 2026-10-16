@@ -8,6 +8,7 @@ import { GamePanel, askConfirm, bar, button, fmtInt, h, mmss, openPanel, sfx, ta
 import { emptyState } from '../../kit';
 import { describe } from '../items/common';
 import { upgradeInfo } from '../../../systems/LootUpgrade';
+import { recommend } from './guideEngine';
 
 /**
  * Quest log (`questlog`: hotkey L = Input action 'quests', mapped to this id in UI HOTKEYS; the HUD quest tracker opens it on click)
@@ -211,7 +212,9 @@ export class QuestLogPanel extends GamePanel {
       rec.defs.push(d);
       groups.set(g.key, rec);
     }
-    if (!groups.size) {
+    // the offer the tracker's "Alınacak" line names is listed here too, so the log and the tracker never disagree
+    const offer = this.tab === 'active' ? this.offerDef() : null;
+    if (!groups.size && !offer) {
       // section 7.5 copy table
       this.listEl.append(
         this.tab === 'active'
@@ -227,6 +230,22 @@ export class QuestLogPanel extends GamePanel {
     for (const g of ordered) {
       this.listEl.append(h('div.pg-h', null, g.label));
       for (const d of g.defs) this.listEl.append(this.questRow(d, q.state(d.id), pinned === d.id));
+    }
+    if (offer) {
+      this.listEl.append(h('div.pg-h.is-avail', null, 'Alınabilir'));
+      this.listEl.append(this.questRow(offer, 'available', false));
+    }
+  }
+
+  /** The guide's next offer (not accepted yet), or null. Same source as the tracker's "Alınacak" line. */
+  private offerDef(): QuestDef | null {
+    try {
+      const ch = G.character;
+      const a = ch ? recommend(ch) : null;
+      if (a?.quest?.state !== 'available') return null;
+      return G.quests?.def(a.quest.id) ?? null;
+    } catch {
+      return null;
     }
   }
 

@@ -11,7 +11,7 @@ import type { UI } from '../UI';
 import { UNINTERRUPTIBLE_ICON, type CastTracker } from './CastBar';
 import { ICON, clamp01, clampN, div, iconEl, pulse, setClass, setDisplay, setStyle, setText, uiSound } from './dom';
 import { isSkullLevel, levelColor } from './levelColor';
-import { fmtHealth } from './numFormat';
+import { DUMMY_HP_TEXT, fmtHealth, isTrainingDummy } from './numFormat';
 import { statusView } from './status';
 import { StatusRow } from './StatusRow';
 import { selectedTitleName } from '../../systems/Achievements';
@@ -280,7 +280,7 @@ class Plate {
       const w = (frac * 100).toFixed(1) + '%';
       this.fill.style.width = w;
       this.ghost.style.width = w;
-      setText(this.hpEl, `${fmtHealth(a.hp)} | ${Math.round(frac * 100)}%`);
+      setText(this.hpEl, isTrainingDummy(a) ? DUMMY_HP_TEXT : `${fmtHealth(a.hp)} | ${Math.round(frac * 100)}%`);
     }
     this.updatePoise(a);
     setClass(this.el, 'target', ctx.isTarget);

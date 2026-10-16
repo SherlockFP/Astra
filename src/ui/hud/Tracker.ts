@@ -213,10 +213,16 @@ export class ContextTracker {
 
   private updateHint(): void {
     const adv = this.ui.hud?.adviceLine?.() ?? '';
+    const avail = !!adv && !!this.ui.hud?.adviceAvailable?.();
     const text = adv || HINT_FALLBACK;
-    if (text === this.hintText) return;
-    this.hintText = text;
-    setText(this.hintBody, text);
+    const sig = (avail ? '!' : '') + text;
+    if (sig === this.hintText) return;
+    this.hintText = sig;
+    // an offer the player has not accepted is labelled "Alınacak" with a "!" (it is not an active quest yet)
+    this.hintBody.textContent = '';
+    if (avail) span('trk-hint-tag', this.hintBody, '! Alınacak');
+    this.hintBody.append(avail ? ` ${text}` : text);
+    setClass(this.hintBody, 'avail', avail);
   }
 
   private openFor(mode: Mode): void {

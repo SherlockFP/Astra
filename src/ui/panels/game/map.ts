@@ -141,6 +141,57 @@ function outlined(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   ctx.fillText(text, x, y);
 }
 
+/** A map name waiting for placement. `base` is the text baseline the caller uses ('bottom' above the point, 'middle' centred). */
+interface PlaceLabel {
+  text: string;
+  x: number;
+  y: number;
+  font: string;
+  col: string;
+  prio: number;
+  base: 'bottom' | 'middle';
+}
+
+/**
+ * Label collision for the map (WoW: no stacked names): labels are placed by priority (highest first) and a label whose box
+ * overlaps an already placed one is hidden. The hovered name uses prio 999 so the cursor always reveals it.
+ */
+function drawLabels(ctx: CanvasRenderingContext2D, labels: PlaceLabel[]): void {
+  const placed: { x0: number; y0: number; x1: number; y1: number }[] = [];
+  const saveAlign = ctx.textBaseline;
+  for (const l of [...labels].sort((a, b) => b.prio - a.prio)) {
+    ctx.font = l.font;
+    const w = ctx.measureText(l.text).width;
+    const size = parseFloat(/([\d.]+)px/.exec(l.font)?.[1] ?? '12');
+    const x0 = l.x - w / 2 - 3;
+    const x1 = l.x + w / 2 + 3;
+    const y0 = l.base === 'bottom' ? l.y - size - 2 : l.y - size / 2 - 2;
+    const y1 = l.base === 'bottom' ? l.y + 2 : l.y + size / 2 + 2;
+    if (placed.some((b) => x0 < b.x1 && x1 > b.x0 && y0 < b.y1 && y1 > b.y0)) continue;
+    placed.push({ x0, y0, x1, y1 });
+    ctx.textBaseline = l.base;
+    outlined(ctx, l.text, l.x, l.y, l.col);
+  }
+  ctx.textBaseline = saveAlign;
+}
+
+/** Town map priority: quest givers > dungeon portals > waypoints / lobby > the rest (the overlap rule). */
+function townLabelPrio(role: string): number {
+  if (role === 'quest') return 100;
+  if (role === 'portal') return 90;
+  if (role === 'teleporter' || role === 'lobby') return 80;
+  return 40;
+}
+
+/** Open-world map priority: quest > dungeon entrance > village > waypoint > landmarks > farming spots. */
+function pinLabelPrio(kind: string): number {
+  if (kind === 'entrance') return 90;
+  if (kind === 'village') return 80;
+  if (kind === 'waypoint') return 70;
+  if (kind === 'landmark' || kind === 'vista' || kind === 'shrine') return 50;
+  return 35;
+}
+
 /** Called once from registerGamePanels. Returns a disposer. */
 export function installMapTracker(): () => void {
   const offMetin = G.events.on('world:metinChanged', ({ id, active }) => {
@@ -604,18 +655,30 @@ export class MapPanel extends GamePanel {
       }
     } else if (town) {
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'bottom';
-      ctx.font = `700 ${clampN(s * 2.4, 10, 15)}px 'Alegreya Sans', sans-serif`;
+      const font = `700 ${clampN(s * 2.4, 10, 15)}px 'Alegreya Sans', sans-serif`;
+      const labels: PlaceLabel[] = [];
+      // quest givers with an open offer or a ready turn-in win the overlap test (quest > dungeon > village > NPC)
+      const givers = new Set<string>();
+      try {
+        for (const d of G.quests?.all() ?? []) {
+          const st = G.quests?.state(d.id);
+          if ((st === 'available' || st === 'ready') && d.giver) givers.add(d.giver);
+        }
+      } catch {
+        /* quest data not ready: plain priorities */
+      }
       for (const npc of TOWN.npcs ?? []) {
         if (npc.role === 'citizen' || npc.role === 'guard') continue;
         const x = toX(npc.pos[0]), y = toY(npc.pos[2]);
         this.marker(ctx, x, y, npc.role === 'portal' ? '#c9a8ff' : '#ffd36a', 'diamond', 5, t);
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = 'rgba(0,0,0,0.9)';
-        ctx.fillStyle = '#f1e6cf';
-        ctx.strokeText(npc.name, x, y - 8);
-        ctx.fillText(npc.name, x, y - 8);
+        // the cursor on an NPC always shows its name (WoW: the hovered label wins the overlap test)
+        const hovered = !!this.mouse && Math.hypot(this.mouse.x - (npc.pos[0] - nav.originX) / nav.cellSize, this.mouse.z - (npc.pos[2] - nav.originZ) / nav.cellSize) * s < 14;
+        const prio = hovered ? 999 : givers.has(npc.id) ? 100 : townLabelPrio(npc.role);
+        labels.push({ text: npc.name, x, y: y - 8, font, col: '#f1e6cf', prio, base: 'bottom' });
       }
+      const mkT = peekMarket();
+      if (mkT?.origin) labels.push({ text: 'Pazar', x: toX(mkT.origin.x), y: toY(mkT.origin.z) - 8, font, col: '#f1e6cf', prio: 45, base: 'bottom' });
+      drawLabels(ctx, labels);
     }
 
     // CM14 Pazar: the market square and the "Göster" pin of Pazar Arama
@@ -625,12 +688,15 @@ export class MapPanel extends GamePanel {
       this.marker(ctx, ox, oy, '#e8c46a', 'diamond', 5, t);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
-      ctx.font = `700 ${clampN(s * 2.4, 10, 15)}px 'Alegreya Sans', sans-serif`;
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = 'rgba(0,0,0,0.9)';
-      ctx.fillStyle = '#f1e6cf';
-      ctx.strokeText('Pazar', ox, oy - 8);
-      ctx.fillText('Pazar', ox, oy - 8);
+      // the square's name is placed with the town labels (collision); a dungeon map has no such labels
+      if (!town) {
+        ctx.font = `700 ${clampN(s * 2.4, 10, 15)}px 'Alegreya Sans', sans-serif`;
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(0,0,0,0.9)';
+        ctx.fillStyle = '#f1e6cf';
+        ctx.strokeText('Pazar', ox, oy - 8);
+        ctx.fillText('Pazar', ox, oy - 8);
+      }
       const pin = mk.pin;
       if (pin && pin.zone === mk.origin.zone) {
         const px = toX(pin.x), py = toY(pin.z);
@@ -763,16 +829,16 @@ export class MapPanel extends GamePanel {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
+    // every name of this frame (regions, pins) is collected and placed together, so overlapping names are hidden by priority
+    const names: PlaceLabel[] = [];
     // region names once discovered, with the level band (undiscovered regions stay in the fog)
     for (const r of ext.regions) {
       if (!regionKnown(r.id)) continue;
       const room = def.rooms.find((rm) => rm.id === r.roomId);
       if (!room) continue;
       const cx = toX((room.rect.x + room.rect.w / 2) * TILE_SIZE), cy = toY((room.rect.z + room.rect.h / 2) * TILE_SIZE);
-      ctx.font = `700 ${clampN(s * 90, 11, 22)}px Cinzel, serif`;
-      outlined(ctx, r.name, cx, cy - 6, '#e9d8a8');
-      ctx.font = `700 ${clampN(s * 70, 9, 15)}px 'Alegreya Sans', sans-serif`;
-      outlined(ctx, `Seviye ${r.levels[0]}-${r.levels[1]}`, cx, cy + 12, '#cdbf9d');
+      names.push({ text: r.name, x: cx, y: cy - 6, font: `700 ${clampN(s * 90, 11, 22)}px Cinzel, serif`, col: '#e9d8a8', prio: 60, base: 'middle' });
+      names.push({ text: `Seviye ${r.levels[0]}-${r.levels[1]}`, x: cx, y: cy + 12, font: `700 ${clampN(s * 70, 9, 15)}px 'Alegreya Sans', sans-serif`, col: '#cdbf9d', prio: 59, base: 'middle' });
     }
 
     // quest areas: soft yellow shaded zones round the unfinished targets of the tracked quests (WoW Midnight style)
@@ -820,8 +886,7 @@ export class MapPanel extends GamePanel {
       }
       glyph(ctx, pin.kind, x, y, r0, { col: pin.col, known: pin.known, locked: pin.locked, num: pin.num });
       if (pin.label && (pin.kind === 'farm' || pin.kind === 'elite') && s >= 0.35) {
-        ctx.font = `700 ${clampN(s * 30, 10, 13)}px 'Alegreya Sans', sans-serif`;
-        outlined(ctx, pin.label, x, y + r0 + 8, '#f1e6cf');
+        names.push({ text: pin.label, x, y: y + r0 + 8, font: `700 ${clampN(s * 30, 10, 13)}px 'Alegreya Sans', sans-serif`, col: '#f1e6cf', prio: pinLabelPrio(pin.kind), base: 'middle' });
       }
     }
     for (const ev of this.eventMarks) {
@@ -838,13 +903,17 @@ export class MapPanel extends GamePanel {
 
     // names of the discovered points at a closer zoom
     if (s >= 0.45) {
-      ctx.font = `700 ${clampN(s * 40, 9, 13)}px 'Alegreya Sans', sans-serif`;
+      const pinFont = `700 ${clampN(s * 40, 9, 13)}px 'Alegreya Sans', sans-serif`;
       for (const pin of this.pins) {
         if (pin.quest || !pin.known || !this.pinVisible(pin, mode)) continue;
         if (!['village', 'entrance', 'waypoint', 'landmark', 'vista', 'shrine'].includes(pin.kind)) continue;
-        outlined(ctx, pin.tip.split(' · ')[0], toX(pin.x), toY(pin.z) - r0 - 6, '#f1e6cf');
+        const px = toX(pin.x), py = toY(pin.z);
+        // the cursor on a point always reveals its name (highest priority in the overlap test)
+        const hovered = !!this.mouse && Math.hypot(toX(this.mouse.x) - px, toY(this.mouse.z) - py) < 12;
+        names.push({ text: pin.tip.split(' · ')[0], x: px, y: py - r0 - 6, font: pinFont, col: '#f1e6cf', prio: hovered ? 999 : pinLabelPrio(pin.kind), base: 'bottom' });
       }
     }
+    drawLabels(ctx, names);
 
     // the player's waypoint (a map click)
     const wpt = getWaypoint(def.id);

@@ -4,7 +4,6 @@ import type { InputAction } from '../../../core/Input';
 import { buildChrome, keyCap } from '../../kit';
 import { ICON, div, h, setText } from '../../widgets/dom';
 import { formatDistance } from '../../hud/ObjectiveArrow';
-import { isWowScheme } from '../../widgets/controlHints';
 import { GamePanel, button } from './base';
 import { giverPosition, recommend } from './guideEngine';
 
@@ -25,24 +24,6 @@ function key(action: InputAction): string {
 }
 
 /**
- * WoW "Savaş" rows (CONTROLS_WOW): the mouse gestures are hard-wired (no binding to read); the skill keys come from the live
- * bindings, and the five bar keys collapse to a range ("1-5") only while they are still the consecutive digits.
- */
-function wowCombatRows(): [string, string][] {
-  const bar: InputAction[] = ['skill_rmb', 'skill_q', 'skill_e', 'skill_r', 'skill_s1'];
-  const consecutive = bar.every((a, i) => G.input?.bindings[a]?.[0] === `Digit${i + 1}`);
-  const barKeys = consecutive ? `${key(bar[0])}-${key(bar[bar.length - 1])}` : bar.map(key).join(' ');
-  const more = (['skill_s2', 'skill_s3', 'skill_s4'] as InputAction[]).map(key).join(' ');
-  return [
-    ['Sağ Tık', 'hedef seç + otomatik saldırı'],
-    ['Sol Tık', 'sürükle: kamera'],
-    ['Sağ Tık', 'sürükle: dön'],
-    [`${barKeys} / ${more}`, 'yetenekler'],
-    [key('targetNext'), 'sıradaki düşman'],
-  ];
-}
-
-/**
  * Hoş Geldin card (§4.2, UX-21): a modal card with the controls cheat-sheet and the first goal. Shown once, on entering the
  * town at level 2 or below, when `onb.welcome` is unset. Başla (or Enter / Space / Esc) closes it, sets the guide target to
  * Muhtar Cemal and writes the flag. Its distance line is live.
@@ -52,8 +33,10 @@ export class WelcomePanel extends GamePanel {
   private questName!: HTMLElement;
   private distEl!: HTMLElement;
   private acc = 0;
+  /** Only Esc dismisses the card. Enter, Space and the other game keys are NOT taken here: Enter must reach the chat (WoW). */
   private readonly onKey = (e: KeyboardEvent): void => {
-    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+    // while the chat line is open, Esc belongs to the chat (it cancels the message), not to this card
+    if (e.key === 'Escape' && !G.ui.hud?.chat.isFocused) {
       e.preventDefault();
       e.stopPropagation();
       this.begin();
@@ -61,7 +44,8 @@ export class WelcomePanel extends GamePanel {
   };
 
   constructor() {
-    super('welcome', { cls: 'gd-welcome' });
+    // passthrough: a small top card, the world and its clicks stay usable behind it (only the card itself takes the mouse)
+    super('welcome', { cls: 'gd-welcome', passthrough: true });
     // onb.metCemal (§4.3): the first quest of the guide NPC has left `available`
     G.events.on('quest:updated', ({ questId, state }) => {
       const ch = G.character;
@@ -86,32 +70,30 @@ export class WelcomePanel extends GamePanel {
 
   protected build(): void {
     const c = buildChrome({
-      title: "Kuzgunkale'ye Hoş Geldin, Gölge Avcısı",
+      title: 'Hoş Geldin, Gölge Avcısı',
       icon: ICON('ui-star'),
-      size: 'M',
-      modal: true,
-      closable: false,
+      size: 'S',
+      modal: false,
+      closable: true,
       onClose: () => this.begin(),
     });
     c.body.classList.add('gd-welcome-body');
-    div('gd-intro', c.body, 'Kadim Mühür çatlıyor. Vadiyi ve zindanları kurtaracak kişi sen olabilirsin.');
+    div('gd-intro', c.body, 'Kadim Mühür çatlıyor. Vadiyi kurtaracak kişi sen olabilirsin.');
 
-    const cols = div('gd-cols', c.body);
-    this.column(cols, 'Hareket', [
+    // the full cheat-sheet is the Kontroller (?); the card keeps one line of the keys a new player needs first
+    const keys = div('gd-keys', c.body);
+    const pairs: [string, string][] = [
       [`${key('moveForward')} ${key('moveLeft')} ${key('moveBack')} ${key('moveRight')}`, 'yürü'],
       [key('jump'), 'zıpla'],
-      [key('dodge'), 'yuvarlan'],
-    ]);
-    this.column(cols, 'Savaş', isWowScheme() ? wowCombatRows() : [
-      [key('skill_lmb'), 'saldır'],
-      [key('skill_rmb'), 'yetenek'],
-      [`${key('skill_q')} ${key('skill_e')} ${key('skill_s1')} ${key('skill_s2')} ${key('skill_s3')}`, 'beceriler'],
-    ]);
-    this.column(cols, 'Etkileşim', [
-      [key('interact'), 'konuş / al'],
-      [key('inventory'), 'çanta'],
-      [`${key('map')} · ${key('quests')}`, 'harita · görevler'],
-    ]);
+      [key('chat'), 'sohbet'],
+      ['?', 'kontroller'],
+    ];
+    for (const [k, text] of pairs) {
+      const kc = keyCap(k, false);
+      kc.classList.add('gd-key');
+      const item = div('gd-key-item', keys);
+      item.append(kc, ' ' + text);
+    }
 
     const first = div('k-card gd-first', c.body);
     div('gd-first-t', first, 'İLK GÖREVİN');
@@ -131,17 +113,6 @@ export class WelcomePanel extends GamePanel {
     foot.append(go);
 
     this.el.append(c.root);
-  }
-
-  private column(parent: HTMLElement, title: string, rows: [string, string][]): void {
-    const card = div('k-card gd-col', parent);
-    div('gd-col-t', card, title);
-    for (const [k, text] of rows) {
-      const r = div('gd-col-row', card);
-      const kc = keyCap(k, false);
-      kc.classList.add('gd-key');
-      r.append(kc, ' ' + text);
-    }
   }
 
   protected onOpen(): void {

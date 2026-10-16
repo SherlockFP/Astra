@@ -70,3 +70,11 @@ export function runNumFormatAsserts(): void {
     if (got !== want) console.warn(`[numFormat] got "${got}", expected "${want}"`);
   }
 }
+
+/** Training dummies (entities/interactables/TrainingDummy.ts) never die: their HP is shown as an infinity sign, not a pool. */
+export function isTrainingDummy(a: object): boolean {
+  return ((a as { def?: { id?: string } }).def?.id ?? '').startsWith('training_dummy_');
+}
+
+/** The HP text of a training dummy (its name carries the label; there is no number to read). */
+export const DUMMY_HP_TEXT = '∞ HP';

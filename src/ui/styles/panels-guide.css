@@ -1,15 +1,15 @@
 /* =====================================================================
    panels-guide.css — Hoş Geldin card (§4.2) and Ne Yapmalıyım? (§4.6), UX-21. Flat, tokens only.
    ===================================================================== */
-.gd-welcome .k-win { width: 640px; max-width: calc(100vw - 32px); }
-.gd-welcome-body { display: flex; flex-direction: column; gap: 12px; }
-.gd-intro { text-align: center; font: 17px/1.4 var(--font-body); color: var(--text-2); }
-.gd-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.gd-col { padding: 10px 12px; }
-.gd-col-t { font: 700 13px var(--font-body); color: var(--elv-value); margin-bottom: 6px; }
-.gd-col-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 24px; font: 15px/1.2 var(--font-body); color: var(--text-1); }
-.gd-col-row .k-key { font-size: 13px; }
-.gd-first { padding: 10px 12px; }
+/* small top-centre card: it never covers the screen centre (the player) and the world stays clickable behind it */
+.pg-root.gd-welcome { align-items: flex-start; justify-content: center; padding-top: 64px; }
+.gd-welcome .k-win { width: 420px; max-width: calc(100vw - 32px); }
+.gd-welcome-body { display: flex; flex-direction: column; gap: 8px; }
+.gd-intro { font: 14px/1.35 var(--font-body); color: var(--text-2); }
+.gd-keys { display: flex; flex-wrap: wrap; gap: 6px 14px; font: 14px/1.2 var(--font-body); color: var(--text-1); }
+.gd-key-item { display: flex; align-items: center; gap: 5px; }
+.gd-key-item .k-key { font-size: 13px; }
+.gd-first { padding: 8px 10px; }
 .gd-first-t { font: 700 13px var(--font-body); color: var(--elv-value); }
 .gd-first-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; font: 700 17px var(--font-body); color: var(--text-1); }
 .gd-first-ico { color: var(--elv-value); }

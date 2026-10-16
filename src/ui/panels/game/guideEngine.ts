@@ -212,22 +212,38 @@ export function zoneWaypointKnown(waypointId: string | undefined): boolean {
 
 let lineAt = -Infinity;
 let line = '';
+let lineAvail = false;
+/** Refreshes the cached advice (at most once a second). */
+function refreshAdvice(): void {
+  const now = performance.now();
+  if (now - lineAt < 1000) return;
+  lineAt = now;
+  const ch = G.character;
+  line = '';
+  lineAvail = false;
+  if (ch) {
+    try {
+      const a = recommend(ch);
+      line = adviceSummary(a);
+      // a quest the player has not accepted yet: the tracker labels it "Alınacak"
+      lineAvail = a.quest?.state === 'available';
+    } catch {
+      line = '';
+    }
+  }
+}
+
 /**
  * The tracker's `hint` line (HudApi.adviceLine). The tracker asks every frame, so the advice is recomputed at most once a
  * second.
  */
 export function adviceLine(): string {
-  const now = performance.now();
-  if (now - lineAt < 1000) return line;
-  lineAt = now;
-  const ch = G.character;
-  line = '';
-  if (ch) {
-    try {
-      line = adviceSummary(recommend(ch));
-    } catch {
-      line = '';
-    }
-  }
+  refreshAdvice();
   return line;
+}
+
+/** True when adviceLine() names a quest that is not accepted yet (shown as "Alınacak", never as an active quest). */
+export function adviceAvailable(): boolean {
+  refreshAdvice();
+  return lineAvail;
 }

@@ -246,10 +246,11 @@ export class Chat implements HudWidget {
   focus(): void {
     if (this.isFocused) return;
     G.input?.unlock();
-    this.input.focus();
-    this.input.value = '';
+    // the input row is display:none until .typing is set, and a hidden input cannot take focus: open the row first
     this.focused = true;
     setClass(this.el, 'typing', true);
+    this.input.focus();
+    this.input.value = '';
     this.updateHint();
     this.scrollEnd();
   }
@@ -331,9 +332,9 @@ export class Chat implements HudWidget {
     }
     if (!this.isFocused) {
       G.input?.unlock();
-      this.input.focus();
       this.focused = true;
       setClass(this.el, 'typing', true);
+      this.input.focus();
       this.scrollEnd();
     }
     this.input.value = `${cur}${sep ? ' ' : ''}${made.tag} `;

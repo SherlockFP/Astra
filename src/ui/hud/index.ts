@@ -33,7 +33,7 @@ import { ContextTracker } from './Tracker';
 import { FlaskRow } from './FlaskRow';
 import { ObjectiveArrow } from './ObjectiveArrow';
 import { QuestFeed } from './QuestFeed';
-import { adviceLine } from '../panels/game/guideEngine';
+import { adviceAvailable, adviceLine } from '../panels/game/guideEngine';
 import { TipCards } from './TipCards';
 import { CastErrors } from './CastErrors';
 import { FirstKillHint } from './FirstKillHint';
@@ -62,6 +62,8 @@ export interface HudApi {
   setGuideTarget(npcId: string | null): void;
   /** One-line advice for the tracker `hint` pane. Assigned by the guide module (UX-21); absent until then. */
   adviceLine?: () => string;
+  /** True when the advice is a quest not accepted yet ("Alınacak" in the tracker). */
+  adviceAvailable?: () => boolean;
   /** Entity id of the boss shown in the boss frame, if any. */
   readonly bossEntityId: number | null;
   readonly root: HTMLElement;
@@ -311,6 +313,7 @@ export function createHUD(ui: UI): HudApi {
     tracker,
     tips,
     adviceLine,
+    adviceAvailable,
     get guideTarget() {
       return guideTarget;
     },

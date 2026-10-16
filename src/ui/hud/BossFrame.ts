@@ -2,7 +2,7 @@ import { G } from '../../game/G';
 import type { Enemy } from '../../entities/Enemy';
 import type { EntityId } from '../../types/common';
 import { ICON, div, esc, fmtClock, iconEl, pulse, setClass, setDisplay, setStyle, setText } from '../widgets/dom';
-import { fmtHealth } from '../widgets/numFormat';
+import { DUMMY_HP_TEXT, fmtHealth, isTrainingDummy } from '../widgets/numFormat';
 import { CastBarEl } from '../widgets/CastBar';
 import { bossEnergyView } from '../../ai/bossNet';
 import { Bar } from './PlayerFrame';
@@ -134,7 +134,7 @@ export class BossFrame implements HudWidget {
     setText(this.titleEl, def?.title ?? '');
     setText(this.phaseEl, this.phase ? this.phaseLabel(this.phase) : '');
     const frac = boss.maxHp > 0 ? boss.hp / boss.maxHp : 0;
-    this.hp.set(frac, ctx.dt, `${fmtHealth(Math.max(0, boss.hp))} / ${fmtHealth(boss.maxHp)}`);
+    this.hp.set(frac, ctx.dt, isTrainingDummy(boss) ? DUMMY_HP_TEXT : `${fmtHealth(Math.max(0, boss.hp))} / ${fmtHealth(boss.maxHp)}`);
     setText(this.pctEl, `${Math.max(0, frac * 100).toFixed(frac < 0.1 ? 1 : 0).replace('.', ',')}%`);
     setClass(this.el, 'defeated', defeated);
     this.updatePoise(boss);
