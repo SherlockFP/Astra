@@ -11,7 +11,7 @@ import { applyDynamicBuff } from './StatusEffects';
 import { xpFor } from '../systems/SkillMastery';
 import { TALENT_PIPS } from '../data/specs_talents';
 import { MAJOR_BASE, MAJOR_SLOTS, readMajorCd, writeMajorCd, resetMajorCooldowns } from './majors';
-import { COMBAT_FEEL, FEEL, WOW, TYPE_COLORS, feelBeat, vfxScale, isAreaVfx, freezeActors, weaponTempoOf, weightFromParam, leadSkipSec, type HitWeight } from './feel';
+import { COMBAT_FEEL, FEEL, WOW, TYPE_COLORS, feelBeat, vfxScale, isAreaVfx, freezeActors, weaponTempoOf, weightFromParam, leadSkipSec, MELEE_LIGHT_KNOCK, type HitWeight } from './feel';
 import { gcdFor, isOffGcd } from './gcd';
 import { beforeCast as beforeFormCast, formBasic } from './Forms';
 import { resolveProcMods, consumeProcMods, cdMultFor, cleaveRidersOf, type CleaveRider, type ResolvedProcMods } from './procMods';
@@ -2880,7 +2880,8 @@ export class SkillSystem {
       canCrit: o.canCrit,
       critBonus: (pr.critBonus ?? 0) + (mage?.critBonus ?? 0) + (pm?.critBonus ?? 0),
       statuses: o.tick ? (o.statuses ?? d.statuses) : this.tauntRule(d, e, o.statuses ?? d.statuses),
-      knockback: o.knockback ?? (o.tick ? 0 : d.knockback),
+      // melee light steps get a small shove (MELEE_LIGHT_KNOCK) so every swing visibly moves the target
+      knockback: o.knockback ?? (o.tick ? 0 : d.knockback ?? (weight === 'light' && d.tags.includes('melee') ? MELEE_LIGHT_KNOCK : undefined)),
       threatMult: o.threatMult ?? pr.threatMult,
       tags: d.tags,
       dir: o.dir ?? this.dirTo(c.caster, e),

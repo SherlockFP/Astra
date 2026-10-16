@@ -24,7 +24,7 @@ export type HitWeight =
 
 export const FEEL = {
   /** Base hit-stop (ms) by weight (GDD_LIFE §5.2). */
-  hitstop: { light: 50, medium: 62, finisher: 90, heavy: 115, ultimate: 150, projectile: 0, tick: 0, parry: 70, stagger_break: 160, backstab: 80 } as Record<HitWeight, number>,
+  hitstop: { light: 50, medium: 62, finisher: 100, heavy: 115, ultimate: 150, projectile: 0, tick: 0, parry: 70, stagger_break: 160, backstab: 80 } as Record<HitWeight, number>,
   hitstopCrit: 40,          // crit: +40 ms (WoW-style hit-stop 30-50 ms)
   hitstopKill: 25,
   hitstopBossCap: 70,       // boss hits: capped for light..heavy (ultimate and stagger_break are exempt)
@@ -40,7 +40,7 @@ export const FEEL = {
   /** Clip / forced-move time scale of a frozen actor (AnimController / Actor). */
   freezeScale: 0.04,
   /** Camera trauma by weight (GDD_LIFE §5.2). The camera module maps trauma -> shake. */
-  shake: { light: 0.04, medium: 0.08, finisher: 0.32, heavy: 0.5, ultimate: 0.7, projectile: 0.05, tick: 0.02, parry: 0.3, stagger_break: 0.7, backstab: 0.2 } as Record<HitWeight, number>,
+  shake: { light: 0.04, medium: 0.08, finisher: 0.36, heavy: 0.5, ultimate: 0.7, projectile: 0.05, tick: 0.02, parry: 0.3, stagger_break: 0.7, backstab: 0.2 } as Record<HitWeight, number>,
   shakeCrit: 0.12,
   shakeKill: 0.10,
   shakeHurt: 0.32,
@@ -75,6 +75,9 @@ export const FEEL = {
   corpseLifetime: 20,
 };
 
+/** Small shove (m) on every melee light step (chain steps 1-2 had none). */
+export const MELEE_LIGHT_KNOCK = 0.35;
+
 /** Feel row of one hit weight (GDD_LIFE §5.2). `flash.c2` = 'type' uses the damage-type colour. */
 export interface FlashSpec { c1: number | 'type'; ms1: number; c2: number | 'type' | null; ms2: number }
 export interface WeightRow {
@@ -88,9 +91,9 @@ const GOLD = 0xffd24a;
 const CRIT_GOLD = 0xfff0a0;
 
 export const WEIGHT_ROWS: Record<HitWeight, WeightRow> = {
-  light: { shakeDur: 0.19, kick: 0, fov: 0, knock: 0.6, knockDur: 0.2, flinch: 0.4,
+  light: { shakeDur: 0.19, kick: 0, fov: 0, knock: 0.6, knockDur: 0.2, flinch: 0.75,
     flash: { c1: WHITE, ms1: 115, c2: null, ms2: 0 }, jiggle: 1, squash: 1, sparks: 6, chips: 3, layers: 'material impact 0.9' },
-  medium: { shakeDur: 0.22, kick: 0.02, fov: 0.8, knock: 1.3, knockDur: 0.22, flinch: 0.6,
+  medium: { shakeDur: 0.22, kick: 0.02, fov: 0.8, knock: 1.3, knockDur: 0.22, flinch: 0.9,
     flash: { c1: WHITE, ms1: 125, c2: null, ms2: 0 }, jiggle: 1.15, squash: 1.2, sparks: 9, chips: 5, layers: 'impact 1.0 + hit_blunt thump 0.3' },
   finisher: { shakeDur: 0.29, kick: 0.14, fov: 2.0, knock: 2.0, knockDur: 0.26, flinch: 1,
     flash: { c1: WHITE, ms1: 55, c2: 'type', ms2: 55 }, jiggle: 1.5, squash: 1.6, sparks: 14, chips: 8, layers: 'impact 1.0 + ground_slam 0.35 @0.85 + voice 45% + shockwave r1.2' },
@@ -114,7 +117,7 @@ export const WEIGHT_ROWS: Record<HitWeight, WeightRow> = {
  * GDD_LIFE §5.2 "Modifiers": crit and kill. Hit-stop / trauma of the modifiers are FEEL.hitstopCrit / shakeCrit / hitstopKill / shakeKill
  * (they follow the v1/v2 toggle); the kick, FOV and flash values are here.
  */
-export const CRIT_MOD = { kick: 0.04, fov: 1.0, flashC: CRIT_GOLD, flashMs: 120, knockMul: 1.15, numberMul: 1.5 };
+export const CRIT_MOD = { kick: 0.04, fov: 1.0, flashC: 0xfff7d0, flashMs: 150, knockMul: 1.15, numberMul: 1.5 };
 export const KILL_MOD = { kick: 0.04, fov: 1.0 };
 export const BOSS_MOD = { kickMul: 0.8, trauma: 1.0, jiggle: 0.3 };
 

@@ -149,7 +149,7 @@ export const combatPresets: Record<string, Preset> = {
     const d = c.hasDir ? c.dir : v3(0, 0, 1);
     const y = c.p.y < 0.4 ? c.p.y + 1.0 : c.p.y;
     const at: [number, number, number] = [c.p.x + d.x * 1.0 * s, y, c.p.z + d.z * 1.0 * s];
-    fx.add.spawn({ tex: 'slash-04', mode: 'flat', at, rot: rot(d.x, d.z), size: 3.2 * s, asp: 0.95, size1: 4.2 * s, ease: 1, life: 0.22, c0: mix(col, 0xffffff, 0.6), c1: col, glow: 1.5, fi: 0, fp: 1.3 });
+    fx.add.spawn({ tex: 'slash-04', mode: 'flat', at, rot: rot(d.x, d.z), size: 3.6 * s, asp: 0.95, size1: 5.0 * s, ease: 1, life: 0.3, c0: mix(col, 0xffffff, 0.6), c1: col, glow: 1.5, fi: 0, fp: 1.3 });
     fx.add.spawn({ tex: 'slash-01', mode: 'flat', at: [at[0] - d.x * 0.2, y - 0.05, at[2] - d.z * 0.2], rot: rot(d.x, d.z) + Math.PI, size: 3.4 * s, size1: 4.3 * s, ease: 1, life: 0.26, c0: col, c1: mix(col, 0xff8040, 0.5), glow: 1.1, a: 0.6, fi: 0, fp: 1.5 });
     for (let k = 0; k < 5; k++) {
       const a = -0.95 + (1.9 * k) / 4;
