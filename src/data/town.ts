@@ -530,7 +530,8 @@ export const TOWN: TownDef = {
   id: 'town_kuzgunkale',
   name: 'Kuzgunkale',
   size: [320, 320],
-  spawn: { pos: [0, 0, 26], facing: 180 },
+  // facing 128 (yaw 2.23 rad, forward = (sin, cos)): the first W walks north-east, at Muhtar Cemal (10, 18); 180 walked into the fountain (0, 8)
+  spawn: { pos: [0, 0, 26], facing: 128 },
   arrival: { pos: [0, 2, -38], facing: 0 },
   // South Gate -> Sisli Vadi (open-world map, WP2). East Gate -> Karakır Bozkırı (map 2, skeleton; the entry is locked in TownScene
   // until flag q.mq_19_kuzgunkaleye_donus is done or level >= 30, GDD_OPENWORLD §9.3).

@@ -208,6 +208,11 @@ export class MagitechKit {
     if (inst.part === 'lamp') this.lamps.push([inst.x, inst.y, inst.z]);
   }
 
+  /** Every placed instance, in add() order (the town gives the solid ones a walk footprint). */
+  instances(): MagiInstance[] {
+    return [...this.lists.values()].flat();
+  }
+
   /** Ground positions of the crystal lamps (the night light pools are laid under them, see NightLight.ts). */
   lampSpots(): [number, number, number][] {
     return this.lamps;

@@ -280,7 +280,8 @@ function layout(half: number): Item[] {
   // braziers (portal hall + road)
   for (const [x, z] of [[14, -30], [-14, -30], [6, -20], [-6, -20], [6, 38], [-6, 38], [6, 50], [-6, 50]]) L.push({ m: GP('brazier'), x, z, tag: 'brazier', collide: 0.8 });
   // plaza
-  L.push({ m: KFT('fountain-round-detail'), x: 0, z: 8, s: 4, tag: 'fountain', collide: 4.4 });
+  // the basin is a 1 m radius model at s 4 (fountain-round-detail.glb): the footprint is its radius, not an oversized ring
+  L.push({ m: KFT('fountain-round-detail'), x: 0, z: 8, s: 4, tag: 'fountain', collide: 4.0 });
   for (let k = 0; k < 4; k++) {
     const a = PI / 4 + (k * PI) / 2;
     const x = Math.sin(a) * 8.6, z = 8 + Math.cos(a) * 8.6;
@@ -1260,6 +1261,12 @@ class TownBuild {
     kit.add({ part: 'machine', x: fx - 6, y: at(fx - 6, fz), z: fz - 6, rotY: PI / 4 });
     // the central arcane crystal over the fountain: visible above the roofs from the spawn and the road
     kit.add({ part: 'crystal', x: fx, y: at(fx, fz) + 2.2, z: fz });
+    // the solid parts get a footprint that matches their visible base (the plinth of a lamp is 0.9 m square, the machine 2 x 1.6 m):
+    // the walker goes round the pillar instead of through it, and no wider than it is drawn (lanterns and the crystal hang above)
+    for (const it of kit.instances()) {
+      if (it.part === 'lamp') this.nav.setCircle(it.x, it.z, 0.5 * (it.s ?? 1), false);
+      else if (it.part === 'machine') this.nav.setCircle(it.x, it.z, 1.0 * (it.s ?? 1), false);
+    }
     kit.build();
     this.root.add(kit.root);
     this.magitech = kit;

@@ -26,6 +26,10 @@ export type BarkLevel = SettingsData['characterBarks'];
 export const PLAYER_GAP = 20;
 /** Seconds between two world lines (NPC greeting or enemy line), global. */
 export const WORLD_GAP = 8;
+/** Ambient world lines (NPC walk-by, enemy lines) reach the chat only this close (m); farther ones are bubble-only. */
+export const AMBIENT_CHAT_M = 25;
+/** The same ambient line is printed to the chat at most once per this many seconds (any speaker). */
+export const AMBIENT_DEDUPE_SEC = 20;
 /** Enemy line cooldown per creature (seconds). */
 export const ENEMY_CD = 90;
 /** Az: every cooldown is multiplied by this. */
@@ -124,6 +128,11 @@ export interface BarkService {
   npcLine(id: string, role: TownNpcRole, own: string[]): string | null;
   /** The faint italic 'Söylenti' chat line. */
   rumor(from: string, text: string): void;
+  /**
+   * An ambient world line (NPC walk-by, enemy aggro / death) heard `dist` metres from the player: the chat line only within
+   * AMBIENT_CHAT_M, and the same text at most once per AMBIENT_DEDUPE_SEC. The bubble is drawn by the caller.
+   */
+  ambient(from: string, text: string, dist: number): void;
   dispose(): void;
 }
 
@@ -161,6 +170,14 @@ export function installBarks(rng: () => number = Math.random): BarkService {
   const rumor = (from: string, text: string): void => {
     G.ui?.hud?.chat?.addRumor(from, text);
   };
+  const ambientPrinted = new Map<string, number>();
+  const ambient = (from: string, text: string, dist: number): void => {
+    if (!(dist <= AMBIENT_CHAT_M)) return;
+    const last = ambientPrinted.get(text) ?? -Infinity;
+    if (t - last < AMBIENT_DEDUPE_SEC) return;
+    ambientPrinted.set(text, t);
+    rumor(from, text);
+  };
   /** Once per character: the flag is written when the event happens, whether or not the line is heard. */
   const firstTime = (key: string): boolean => {
     const save = G.character?.save;
@@ -193,7 +210,9 @@ export function installBarks(rng: () => number = Math.random): BarkService {
     const text = picker.take({ key: `${key}:${def.id}`, pool, high: false, world: true, cd: ENEMY_CD }, t, level(), poolKey);
     if (!text) return;
     if (e.object3d) G.ui?.say(e.object3d, { kind: 'npc', text, name: def.name, color: '#ff9a7a', seconds: 4.5, offsetY: (e.height ?? 2) + 1.2 });
-    rumor(def.name, text);
+    const pp = G.player?.position;
+    const ep = e.object3d?.position;
+    ambient(def.name, text, pp && ep ? Math.hypot(pp.x - ep.x, pp.z - ep.z) : 0);
   };
 
   const isPlayer = (id: number | string | null | undefined): boolean => !!G.player && id === G.player.id;
@@ -298,6 +317,7 @@ export function installBarks(rng: () => number = Math.random): BarkService {
       return picker.next(`npc:${own.length ? id : role}`, pool);
     },
     rumor,
+    ambient,
     dispose(): void {
       for (const off of offs) off();
     },

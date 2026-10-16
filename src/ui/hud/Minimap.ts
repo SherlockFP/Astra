@@ -8,7 +8,7 @@ import { mapGridOf, type MapGrid, type NavGrid } from '../../world/NavGrid';
 import { RARITY_COLORS, type Rarity } from '../../types/common';
 import { ICON, div, setDisplay, setText, setStyle, clampN, fmtClock, h, iconEl, uiSound } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
-import { questTargetMarks } from './questMarks';
+import { giverKind, questTargetMarks } from './questMarks';
 import { activeEventPins } from '../../scenes/world/EventCalendar';
 import { getSocial } from '../../systems/Social';
 import { atlasFor, heightsOf } from '../map/atlas';
@@ -58,10 +58,22 @@ interface Poi {
   e: Entity;
   kind: 'npc' | 'interactable' | 'loot';
   color: string;
+  /** A plain townsfolk dot: hidden at the default zoom (quest givers and vendors stay). */
+  minor: boolean;
 }
 
 /** Pins that stay on the edge of the disc when they lie outside it (quests, gates, bosses, waypoints). */
 const EDGE_PRIO = 60;
+/** Default zoom (the minimap's +/- buttons and the wheel start at 1): at or below it the minor icons are left off. */
+const DENSE_ZOOM = 1.05;
+/** Icon kinds left off at the default zoom: the small finds and the camp dots (quest rings and the key kinds are never minor). */
+const MINOR_PIN_KINDS = new Set<string>(['gather', 'vista', 'landmark', 'hidden', 'graveyard', 'cursed', 'chest', 'shrine', 'camp', 'farm', 'patrol', 'elite']);
+/** Icons that are never clustered away nor left off: the gates, bosses and waypoints. */
+const KEY_PIN_KINDS = new Set<string>(['boss', 'entrance', 'waypoint']);
+/** Two icons closer than this (px on the disc) are drawn as one: the more important one wins. */
+const CLUSTER_PX = 9;
+/** Vendor-type townsfolk (their role): always shown on the minimap. */
+const VENDOR_ROLES = new Set<string>(['blacksmith', 'merchant', 'alchemist', 'stash', 'keystone', 'trainer', 'bounty', 'stable', 'codex', 'tierset', 'crafting', 'home', 'pvp', 'teleporter', 'portal']);
 
 /**
  * Square rotating minimap (ElvUI style). Open world: the painted zone atlas (world/atlas) with the exploration fog, quest rings and
@@ -98,6 +110,8 @@ export class Minimap implements HudWidget {
   private lastMode = '';
   /** Open-world pins (world metres): static points, quest rings and givers, live bosses, refreshed twice a second. */
   private pins: Pin[] = [];
+  /** The same pins, most important first (the clustering pass places them in this order). */
+  private pinsDesc: Pin[] = [];
   /** WP-04 events (orange) and travel vignettes (green ring) running or starting: world metres. */
   private eventMarks: { x: number; z: number; vig: boolean }[] = [];
   private pinsAt = -1e9;
@@ -323,11 +337,18 @@ export class Minimap implements HudWidget {
     for (const e of world.entities.values()) {
       if (e.removed) continue;
       // ambient walkers (TownNpc.routine, scenes/world/AmbientLife.ts) are life, not quest givers: no marker
-      if (e.kind === 'npc') { if (!(e as unknown as { def?: { routine?: unknown } }).def?.routine) out.push({ e, kind: 'npc', color: '#ffd24a' }); }
-      else if (e.kind === 'interactable') out.push({ e, kind: 'interactable', color: '#5fe0ff' });
+      if (e.kind === 'npc') {
+        const def = (e as unknown as { def?: { id?: string; role?: string; routine?: unknown } }).def;
+        if (!def?.routine) {
+          // quest givers and vendors are always shown; plain townsfolk are minor dots
+          const minor = !(def?.id && giverKind(def.id)) && !VENDOR_ROLES.has(def?.role ?? '');
+          out.push({ e, kind: 'npc', color: '#ffd24a', minor });
+        }
+      }
+      else if (e.kind === 'interactable') out.push({ e, kind: 'interactable', color: '#5fe0ff', minor: false });
       else if (e.kind === 'loot') {
         const rar = (e as unknown as { rarity?: Rarity }).rarity;
-        if (rar && (rar === 'rare' || rar === 'epic' || rar === 'legendary' || rar === 'set')) out.push({ e, kind: 'loot', color: RARITY_COLORS[rar] });
+        if (rar && (rar === 'rare' || rar === 'epic' || rar === 'legendary' || rar === 'set')) out.push({ e, kind: 'loot', color: RARITY_COLORS[rar], minor: false });
       }
     }
     this.pois = out;
@@ -343,6 +364,7 @@ export class Minimap implements HudWidget {
     } catch {
       this.pins = [];
     }
+    this.pinsDesc = [...this.pins].sort((a, b) => b.prio - a.prio);
     try {
       this.eventMarks = [
         ...activeEventPins().map((p) => ({ x: p.x, z: p.z, vig: false })),
@@ -351,6 +373,35 @@ export class Minimap implements HudWidget {
     } catch {
       this.eventMarks = [];
     }
+  }
+
+  /**
+   * Which pins are drawn this frame (open world). At the default zoom the minor kinds are left off; a non-key icon that would sit
+   * within CLUSTER_PX of an already placed, more important one is dropped. Quest pins are not handled here (always drawn).
+   */
+  private declutter(toScreen: (x: number, z: number) => ScreenPt, edge: number, mode: TrackMode, dense: boolean): Set<Pin> {
+    const shown = new Set<Pin>();
+    const placed: number[] = [];
+    for (const pin of this.pinsDesc) {
+      if (pin.quest || !pinTracked(pin, mode)) continue;
+      if (dense && MINOR_PIN_KINDS.has(pin.kind)) continue;
+      const s = toScreen(pin.x, pin.z);
+      const outside = s.d > edge;
+      if (outside && pin.prio < EDGE_PRIO) continue;
+      if (outside && !KEY_PIN_KINDS.has(pin.kind)) continue;
+      const k = outside ? edge / s.d : 1;
+      const x = R + (s.sx - R) * k, y = R + (s.sy - R) * k;
+      if (!KEY_PIN_KINDS.has(pin.kind)) {
+        let hit = false;
+        for (let i = 0; i < placed.length; i += 2) {
+          if (Math.abs(placed[i] - x) < CLUSTER_PX && Math.abs(placed[i + 1] - y) < CLUSTER_PX) { hit = true; break; }
+        }
+        if (hit) continue;
+      }
+      placed.push(x, y);
+      shown.add(pin);
+    }
+    return shown;
   }
 
   /** Ribbon second line: the level band in its relative colour, or the zone subtitle when there is no band. */
@@ -592,6 +643,7 @@ export class Minimap implements HudWidget {
           glyph(ctx2, 'metin', x, y, 4.5, { col: '#ff9f1a' });
         }
       }
+      const shown = this.declutter(toScreen, edge, mode, this.zoomK <= DENSE_ZOOM);
       for (const pin of this.pins) {
         if (!pinTracked(pin, mode)) continue;
         const s = toScreen(pin.x, pin.z);
@@ -615,8 +667,8 @@ export class Minimap implements HudWidget {
           }
           continue;
         }
-        // farming spots and camps only inside the disc (they are too many to clamp)
-        if (outside && pin.kind !== 'boss' && pin.kind !== 'entrance' && pin.kind !== 'waypoint') continue;
+        // farming spots and camps only inside the disc (they are too many to clamp), minor kinds off at the default zoom, clustered icons
+        if (!shown.has(pin)) continue;
         // camps and farming spots a little larger, so they read as dots on the ring
         const rr = pin.kind === 'camp' || pin.kind === 'farm' || pin.kind === 'elite' ? 5.5 : 4.2;
         glyph(ctx2, pin.kind, x, y, rr, { col: pin.col, known: pin.known, locked: pin.locked, num: pin.num });
@@ -637,8 +689,10 @@ export class Minimap implements HudWidget {
         this.poiAt = now;
         this.refreshPois(w);
       }
+      const dense = this.zoomK <= DENSE_ZOOM;
       for (const poi of this.pois) {
         if (poi.e.removed) continue;
+        if (dense && poi.minor) continue;
         const s = toScreen(poi.e.position.x, poi.e.position.z);
         if (s.d > edge && poi.kind === 'loot') continue;
         const k = s.d > edge ? edge / s.d : 1;

@@ -4,7 +4,7 @@ import { ENEMIES } from '../../../data/enemyKit';
 import type { CharacterState } from '../../../systems/CharacterState';
 import type { QuestObjectiveRow } from '../../../systems/Quests';
 import type { DungeonDef } from '../../../types/dungeons';
-import { getPinnedQuest, guideTargetPos, npcWorldPos, townNpcPos, waypointKnown, worldDef, worldExtras, type Pt } from '../../hud/questMarks';
+import { getPinnedQuest, guideTargetPos, npcWorldPos, townNpcName, townNpcPos, waypointKnown, worldDef, worldExtras, type Pt } from '../../hud/questMarks';
 import { dungeonList } from './base';
 import { unspentTalentPoints } from '../../hud/Extras';
 
@@ -191,6 +191,10 @@ export function recommend(ch: CharacterState): GuideAdvice {
 /** One line for the tracker `hint` pane and the welcome card (`Yağmacı Başı: Gırtlak'ı öldür`). */
 export function adviceSummary(a: GuideAdvice): string {
   if (a.quest) {
+    // not accepted yet: point at the GIVER (WoW: an available quest's "!" is its giver), never at the objective's NPC
+    if (a.quest.state === 'available') {
+      return a.quest.giverNpcId ? `${a.quest.name}: ${townNpcName(a.quest.giverNpcId)}'den al` : a.quest.name;
+    }
     const open = a.quest.rows.find((r) => !r.done);
     return open ? `${a.quest.name}: ${open.text}` : a.quest.name;
   }

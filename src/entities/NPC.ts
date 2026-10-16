@@ -705,7 +705,7 @@ export class NPC extends Entity implements Interactable {
       if (line) {
         this.barkCooldown = 28 + Math.random() * 20;
         this.say(line, 4.2);
-        G.barks?.rumor(this.def.name, line);
+        G.barks?.ambient(this.def.name, line, d);
       }
     }
     void this.moving;
