@@ -104,7 +104,7 @@ interface TipUi {
 /** Stands in for the skill id of an item cell, so the next skill frame refreshes the icon. */
 const MAT_SENTINEL = '\u0000mat';
 /** Classes a skill cell paints that an item cell must not show. */
-const ITEM_OFF = ['auto', 'armed', 'queued', 'oor', 'glow', 'spend', 'is-disabled', 'locked', 'casting', 'nores', 'slot-gcd'];
+const ITEM_OFF = ['auto', 'armed', 'queued', 'oor', 'glow', 'spend', 'is-disabled', 'locked', 'casting', 'nores', 'k-gcd'];
 
 /** Cooldown number colour: white, red under 3 s (docs/UI_WOW_CLASSIC.md §2). */
 function cdColor(sec: number): string {
@@ -358,7 +358,7 @@ class Slot {
       setDisplay(this.sated, false);
       setDisplay(this.count, false);
       setClass(this.el, 'oncd', false);
-      setClass(this.el, 'slot-gcd', false);
+      setClass(this.el, 'k-gcd', false);
       this.prevCd = 0;
       return;
     }
@@ -425,7 +425,7 @@ class Slot {
       if (this.def && (this.spec.major || total >= READY_EVENT_CD)) G.events.emit('skill:ready', { skillId: this.def.id, major: !!this.spec.major });
     }
     this.prevCd = rem;
-    // global cooldown sweep (skills only, when the own cooldown is not longer); drawn by the kit's `.slot-gcd` sweep
+    // global cooldown sweep (skills only, when the own cooldown is not longer); drawn by the kit's `.k-gcd` sweep
     let gcdOn = false;
     if (!this.spec.potion && this.def && p) {
       const g = G.skills.getGcd(p);
@@ -434,7 +434,7 @@ class Slot {
         gcdOn = true;
       }
     }
-    setClass(this.el, 'slot-gcd', gcdOn);
+    setClass(this.el, 'k-gcd', gcdOn);
     setDisplay(this.sweep, onCd || gcdOn, 'block');
     setClass(this.el, 'nores', noRes);
     setClass(this.el, 'casting', casting);

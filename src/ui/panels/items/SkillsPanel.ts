@@ -64,8 +64,7 @@ function isUltimate(s: SkillDef): boolean {
 /** Slot rule: which slots may hold which skill. */
 function slotAllows(slot: SkillSlotKey, s: SkillDef, basicId: string | undefined): boolean {
   if (slot === 'lmb') return s.id === basicId || s.tags.includes('basic');
-  if (slot === 'r') return isUltimate(s);
-  if (isUltimate(s)) return false;
+  // WoW layout (barLayout.ts): key 4 = r is a rotation key too, so an ultimate or a rotation skill may sit on any key but lmb
   if (s.id === basicId || s.tags.includes('basic')) return false;
   return true;
 }

@@ -2,6 +2,8 @@ import type { CharacterSave, CharacterSummary } from '../types/character';
 import type { SkillSlotKey } from '../types/skills';
 import type { SpecId } from '../types/v2';
 import { SKILLS } from '../data/skills';
+import { OPENING_KIT, classGrantOrder } from '../data/openingKit';
+import { LEGACY_KIT_SLOTS, MAJOR_SLOTS, barCandidates, layoutDefaultBar } from '../data/barLayout';
 import { getSpec } from '../data/specs';
 import { migrationToast } from '../dev/migrate';
 import { CLASS_ORDER, validateName } from '../ui/menu/classInfo';
@@ -51,7 +53,30 @@ export function normaliseCharacterSave(raw: unknown): CharacterSave | null {
   if (c.mythic && !c.mythic.seasons) c.mythic.seasons = {};
   migrateTalents(c);
   migratePlateBars(c);
+  migrateDefaultBar(c);
   return c;
+}
+
+/**
+ * Bar layout rev 1 (data/barLayout.ts; flags['bar.layoutRev']): a bar whose kit rows still hold exactly the OLD default (LEGACY_KIT_SLOTS
+ * up to the save's level, and nothing else off the default) moves its kit rows to the new default. Any other bar (the player's own
+ * arrangement, a talent skill, a spec bar, a major) is kept as it is. Runs once per save.
+ */
+function migrateDefaultBar(save: CharacterSave): void {
+  save.flags ??= {};
+  if (save.flags['bar.layoutRev']) return;
+  save.flags['bar.layoutRev'] = 1;
+  const kit = OPENING_KIT[save.classId] ?? [];
+  if (!kit.length || !save.skillBar) return;
+  const majorKeys = new Set<string>(MAJOR_SLOTS);
+  const legacy = kit.filter(([id]) => (SKILLS[id]?.unlockLevel ?? 1) <= save.level && LEGACY_KIT_SLOTS[id]).map(([id]) => `${LEGACY_KIT_SLOTS[id]}=${id}`).sort();
+  const current = Object.entries(save.skillBar).filter(([k, id]) => id && k !== 'lmb' && !majorKeys.has(k)).map(([k, id]) => `${k}=${id}`).sort();
+  if (legacy.length !== current.length || legacy.some((x, i) => x !== current[i])) return;
+  const { candidates, majors } = barCandidates(kit, classGrantOrder(save.classId), SKILLS);
+  const next = layoutDefaultBar(save.skillBar.lmb ?? '', candidates, save.level, majors);
+  const kitIds = new Set(kit.map(([id]) => id));
+  for (const [k, id] of Object.entries(save.skillBar)) if (id && kitIds.has(id) && !majorKeys.has(k)) delete save.skillBar[k as SkillSlotKey];
+  for (const [k, id] of Object.entries(next)) if (k !== 'lmb' && id && kitIds.has(id)) save.skillBar[k as SkillSlotKey] = id;
 }
 
 /** PM-00a (docs/kits/plate-melee.md §g need 9 / f4): the nine plate-melee specs. */

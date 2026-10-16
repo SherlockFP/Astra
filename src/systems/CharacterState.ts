@@ -9,7 +9,8 @@ import type { StatBlock } from '../types/stats';
 import type { ActiveFx, TalentLoadout } from '../types/talents';
 import type { SpecId } from '../types/v2';
 import { CLASSES } from '../data/classes';
-import { classGrantOrder } from '../data/openingKit';
+import { OPENING_KIT, classGrantOrder } from '../data/openingKit';
+import { barCandidates, layoutDefaultBar } from '../data/barLayout';
 import { SKILLS } from '../data/skills';
 import { CLASS_START_NODE, TALENT_NODES } from '../data/talents';
 import { getMaterial, MATERIALS } from '../data/materials';
@@ -210,17 +211,8 @@ export class CharacterState {
 
   /** Default skill bar of a class at a level: lmb = basic attack; unlocked skills fill rmb,q,e,s1,s2,s3 (L25 skill is benched), r = ultimate. */
   static defaultBar(classId: ClassId, level: number): Partial<Record<SkillSlotKey, string>> {
-    const bar: Partial<Record<SkillSlotKey, string>> = {};
-    const def = CLASSES[classId];
-    bar.lmb = def?.basicAttack ?? `${classId}_basic`;
-    const order: (SkillSlotKey | null)[] = ['rmb', 'q', 'e', 's1', 's2', 's3', null, 'r'];
-    const levels = [1, 3, 6, 10, 15, 20, 25, 30];
-    classGrantOrder(classId).forEach((id, i) => {
-      const slot = SKILLS[id]?.defaultSlot ?? order[i];
-      const unlock = SKILLS[id]?.unlockLevel ?? levels[i];
-      if (slot && level >= unlock && (i !== 6 || SKILLS[id]?.defaultSlot)) bar[slot] = id;
-    });
-    return bar;
+    const { candidates, majors } = barCandidates(OPENING_KIT[classId] ?? [], classGrantOrder(classId), SKILLS);
+    return layoutDefaultBar(CLASSES[classId]?.basicAttack ?? `${classId}_basic`, candidates, level, majors);
   }
 
   get classId(): ClassId {
@@ -777,15 +769,6 @@ export class CharacterState {
         if (def.classId !== 'common' && def.classId !== this.classId) return;
         if (def.unlockLevel > this.level) {
           err('Bu beceri henüz açılmadı.');
-          return;
-        }
-        const ultimate = def.tags.includes('ultimate');
-        if (slot === 'r' && !ultimate) {
-          err('R yuvası yalnızca büyük beceri içindir.');
-          return;
-        }
-        if (ultimate && slot !== 'r') {
-          err('Büyük beceri yalnızca R yuvasına konabilir.');
           return;
         }
       }
