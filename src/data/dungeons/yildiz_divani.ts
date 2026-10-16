@@ -1,4 +1,4 @@
-import type { DecorTier, DoorDef, DungeonDef, DungeonNpcDef, DungeonTheme, HeightArea, PackDef, RoomDef, SlopeDef, ZoneDef } from '../../types/dungeons';
+import type { DecorTier, DoorDef, DungeonDef, DungeonNpcDef, DungeonTheme, HeightArea, PackDef, PropPlacement, RoomDef, SlopeDef, TileRect, ZoneDef } from '../../types/dungeons';
 import { TILE_SIZE } from '../../types/dungeons';
 import '../enemies_yildiz_divani';
 import { G } from '../../game/G';
@@ -108,7 +108,7 @@ const DOORS: DoorDef[] = [
   { ...door('kule_merdiveni', 'balkon', 29, 14, 'n', 2, 'boss_lock'), gateStyle: 'arcane' },
   { ...door('gece_mahkemesi', 'servis_a', 44, 37, 'w', 2, 'boss_exit'), gateStyle: 'wood' },
   door('servis_a', 'servis_b', 38, 37, 'n', 2, 'none'),
-  { ...door('servis_b', 'ziyafet_salonu', 38, 32, 'n', 2, 'event_lock'), event: 'servis_kilidi', gateStyle: 'wood' },
+  { ...door('servis_b', 'ziyafet_salonu', 38, 32, 'n', 2, 'kill_lock'), opensOn: { boss: 'boss_taliksa' }, gateStyle: 'wood' },
 ];
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -135,40 +135,38 @@ function members(spec: string): MemberTuple[] {
 
 type PackRow = [id: string, room: string, cx: number, cz: number, spec: string, extra?: Partial<PackDef>];
 const PACK_ROWS: PackRow[] = [
-  ['ys_p01', 'iskele', 22.5, 71.5, 'W2'],
+  ['ys_p01', 'iskele', 22.5, 71.5, 'W2 E1'],
   ['ys_p02', 'iskele', 26.5, 67.5, 'G2 A1', { patrol: [[21.5, 67.5], [31.5, 67.5]] }],
-  ['ys_p03', 'bahce_yolu', 26.5, 63, 'G2'],
+  ['ys_p03', 'bahce_yolu', 26.5, 63, 'G2 F1'],
   ['ys_p04', 'bahce', 24, 55.5, 'C1 S2', { big: true }],
   ['ys_p05', 'bahce', 20, 55, 'A1 R1 G1', { big: true }],
   ['ys_p06', 'bahce', 34, 55, 'E1 G1', { big: true }],
   ['ys_p07', 'bahce', 27, 59.5, 'S2', { patrol: [[18, 59.5], [37, 59.5]] }],
   ['ys_p08', 'hizmetci_avlusu', 47, 56, 'F1 H1', { optional: true }],
   ['ys_p09', 'hizmetci_avlusu', 43, 54, 'M1 W2', { optional: true }],
-  ['ys_p10', 'hizmetci_avlusu', 51, 59, 'H1', { optional: true }],
-  ['ys_p11', 'kanal_kemeri', 16.5, 69.5, 'P4'],
-  ['ys_p12', 'kanallar', 6, 71, 'P6', { dormant: { kind: 'egg', wakeRadius: 6 } }],
+  ['ys_p10', 'hizmetci_avlusu', 51, 59, 'H1 R1', { optional: true }],
+  ['ys_p11', 'kanal_kemeri', 16.5, 69.5, 'P3 G1'],
+  ['ys_p12', 'kanallar', 6, 71, 'P5 W1', { dormant: { kind: 'egg', wakeRadius: 6 } }],
   ['ys_p13', 'kanallar', 8, 66, 'E1 W1'],
-  ['ys_p14', 'su_kemeri', 7.5, 56.5, 'G1'],
+  ['ys_p14', 'su_kemeri', 7.5, 56.5, 'G1 A1'],
   ['ys_p15', 'kemer_avlusu', 5, 48, 'A1 E1'],
-  ['ys_p16', 'mana_yuvasi', 17, 64, 'P8', { dormant: { kind: 'egg', wakeRadius: 6 }, optional: true }],
+  ['ys_p16', 'mana_yuvasi', 17, 64, 'P6 W2', { dormant: { kind: 'egg', wakeRadius: 6 }, optional: true }],
   ['ys_p17', 'yaldizli_carsi', 19, 46, 'G2 A2 E1', { big: true }],
   ['ys_p18', 'yaldizli_carsi', 33, 46, 'F1 H2'],
   ['ys_p19', 'yaldizli_carsi', 22, 41, 'W4 E1 S1', { big: true }],
   ['ys_p20', 'yaldizli_carsi', 30, 45, 'G3 M1', { big: true, patrol: [[30, 49.5], [30, 40.5]] }],
   ['ys_p21', 'yaldizli_carsi', 33, 41, 'D1 R1 G1'],
-  ['ys_p22', 'fel_gecidi', 39.5, 42.5, 'H4', { linkedTo: ['ys_p23'] }],
-  ['ys_p23', 'fel_gecidi', 42, 42.5, 'F1 H3', { linkedTo: ['ys_p22'] }],
+  ['ys_p22', 'fel_gecidi', 39.5, 42.5, 'H5 F2 A1'],
   ['ys_p24', 'gece_mahkemesi', 46, 48, 'M2 H2'],
   ['ys_p25', 'gece_mahkemesi', 55, 48, 'F2 G1'],
   ['ys_p26', 'kuzey_kemeri', 50.5, 33, 'E1 A1 W1'],
-  ['ys_p27', 'ev_girisi', 46.5, 25.5, 'C2'],
+  ['ys_p27', 'ev_girisi', 46.5, 25.5, 'C2 G1'],
   ['ys_p28', 'ev_girisi', 56, 25, 'A2 G2 E1'],
   ['ys_p29', 'ev_girisi', 51.5, 23.5, 'G2', { patrol: [[46, 23.5], [57, 23.5]] }],
   ['ys_p30', 'ev_girisi', 56, 28.5, 'D1 R1'],
-  ['ys_p31', 'ziyafet_salonu', 18, 29, 'M2 A1', { big: true, linkedTo: ['ys_p34'] }],
+  ['ys_p31', 'ziyafet_salonu', 18, 29, 'M3 A1 F1', { big: true }],
   ['ys_p32', 'ziyafet_salonu', 30, 29, 'G2 A2 R1', { big: true }],
   ['ys_p33', 'ziyafet_salonu', 37.5, 29, 'C1 W3', { big: true }],
-  ['ys_p34', 'ziyafet_salonu', 24, 29.5, 'F1 M1', { big: true, linkedTo: ['ys_p31'] }],
   ['ys_p35', 'ziyafet_salonu', 29, 24.5, 'G3 D1', { big: true, patrol: [[17, 24.5], [41, 24.5]] }],
   ['ys_p36', 'ziyafet_salonu', 20, 22, 'D1 R1 G1'],
   ['ys_p37', 'ziyafet_salonu', 38, 23, 'D2 E1'],
@@ -177,7 +175,7 @@ const PACK_ROWS: PackRow[] = [
   ['ys_p40', 'servis_a', 40.5, 37.5, 'G2 M1', { linkedTo: ['ys_p41'], note: 'skip route' }],
   ['ys_p41', 'servis_b', 38.5, 35, 'E1 A1 W2', { linkedTo: ['ys_p40'], note: 'skip route' }],
   ['ys_p42', 'rasathane', 51, 16, 'A1 E1', { optional: true }],
-  ['ys_p43', 'kule_merdiveni', 29.5, 17.6, 'G2', { note: 'lower landing row only: the lift cage takes rows 16-17' }],
+  ['ys_p43', 'kule_merdiveni', 29.5, 17.6, 'G2 R1', { note: 'lower landing row only: the lift cage takes rows 16-17' }],
   ['ys_p44', 'kule_merdiveni', 29.5, 15, 'D1 A1 E1', { note: 'lift arrival aggroes this pack within 12 m' }],
 ];
 const PACKS: PackDef[] = PACK_ROWS.map(([id, roomId, cx, cz, spec, extra]) => pack(id, roomId, cx, cz, undefined, members(spec), extra ?? {}));
@@ -769,7 +767,6 @@ const EXTRAS: NonNullable<DungeonDef['extras']> = {
   shrines: [
     { type: 'shrine_power', pos: pt(22.5, 59.5) },
     { type: 'shrine_haste', pos: pt(52.5, 53.5) },
-    { type: 'shrine_ward', pos: pt(58, 29) },
   ],
   riftSpots: ([[31, 53], [8, 46.5], [9, 71], [51.5, 27.5], [21, 26.5], [47, 58.5]] as [number, number][]).map(([x, z]) => pt(x, z)),
   chests: [
@@ -777,6 +774,7 @@ const EXTRAS: NonNullable<DungeonDef['extras']> = {
     { pos: pt(52.8, 56.5), kind: 'chest_gold' },
     { pos: pt(18.5, 62.5), kind: 'chest_iron' },
   ],
+  checkpoints: [pt(51, 33.5)],
   dropProps: [
     { id: 'kandil_1', pos: pt(24, 29.5), winch: pt(24, 31), ...DROP },
     { id: 'kandil_2', pos: pt(30, 29), winch: pt(30, 31), ...DROP },
@@ -803,6 +801,43 @@ const rooms: RoomDef[] = withProps(
   D.out,
 );
 
+const CALM_YD = ['iskele', 'kanal_kemeri', 'kanallar', 'su_kemeri', 'kemer_avlusu', 'mana_yuvasi', 'bahce_yolu', 'bahce', 'hizmetci_avlusu', 'bati_salonu'];
+const TENSE_YD = ['fel_gecidi', 'servis_a', 'servis_b', 'kuzey_kemeri', 'ev_girisi', 'rasathane', 'kule_merdiveni'];
+const SET_YD = ['yaldizli_carsi', 'gece_mahkemesi', 'ziyafet_salonu', 'balkon'];
+const MOOD_YD: Record<string, string> = Object.fromEntries([
+  ...CALM_YD.map((id) => [id, 'calm']), ...TENSE_YD.map((id) => [id, 'tension']), ...SET_YD.map((id) => [id, 'setpiece']),
+]);
+/** Points on the inset ring of a room (walked clockwise from the north-west corner), n of them, evenly spaced. */
+function ringYd(rc: TileRect, n: number, inset: number): [number, number][] {
+  const x0 = rc.x + inset, z0 = rc.z + inset, w = rc.w - 2 * inset, h = rc.h - 2 * inset;
+  const per = 2 * (w + h);
+  return Array.from({ length: n }, (_, i) => {
+    let d = (i / n) * per;
+    if (d < w) return [x0 + d, z0];
+    d -= w;
+    if (d < h) return [x0 + w, z0 + d];
+    d -= h;
+    if (d < w) return [x0 + w - d, z0 + h];
+    d -= w;
+    return [x0, z0 + h - d];
+  });
+}
+const DRESS_YD = [gp('lamp_post'), gp('crystal_blue'), kg('urn-round')];
+const finishRoom = (r: RoomDef): RoomDef => {
+  const out: RoomDef = { ...r, atmosphere: MOOD_YD[r.id] };
+  const have = (r.props ?? []).length;
+  const n = Math.max(0, 12 - have);
+  if (n === 0) return out;
+  const extra: PropPlacement[] = ringYd(r.rect, n, 0.8).map(([x, z], i) => {
+    const model = DRESS_YD[i % DRESS_YD.length];
+    if (model === gp('lamp_post')) return { model, pos: [x, z], light: lt(CYAN, 1.0, 7, true, 2.2) };
+    if (model === gp('crystal_blue')) return { model, pos: [x, z], scale: 0.6, emissive: CYAN, emissiveIntensity: 0.5 };
+    return { model, pos: [x, z], scale: 1.0, tint: GOLD };
+  });
+  out.props = [...(r.props ?? []), ...extra];
+  return out;
+};
+
 export const YILDIZ_DIVANI: DungeonDef = {
   id: 'yildiz_divani',
   name: 'Yıldız Divanı',
@@ -810,19 +845,24 @@ export const YILDIZ_DIVANI: DungeonDef = {
   lore: "Kadim Diyar'ın en yüksek terasında Gecedoğan soyluları, Gece Pınarı'nın gücüyle zamanı durdurdu ve o gece bir daha bitmeyen bir balo başladı. Şimdi Zümrüt Alev Ordusu davetsiz bir konuk olarak konağın kapılarında. Devriye Kaptanı Gerdan kapıları tutuyor, Taliksa Alevçelenk Gece Mahkemesi'ni ele geçirdi, Danışman Melandros ise Müneccim'in sırrını düşmana satmaya hazırlanıyor. Maskeni tak, casusu bul ve Pınar'ı kurtar.",
   levelRange: [55, 60],
   timerSec: 1800,
-  forcesRequired: 450,
+  forcesRequired: 492, // floor(0.8 x 615 pack forces)
   season: 1,
   endgame: true,
   theme: THEME,
   grid: { w: 62, h: 77 },
   vertical: true,
-  rooms,
+  rooms: rooms.map(finishRoom),
   doors: DOORS,
   packs: PACKS,
   bosses: BOSSES,
   start: { pos: shPt(START[0], START[1]), facing: 180 },
   exit: { pos: shPt(EXIT[0], EXIT[1]) },
   extras: EXTRAS,
-  events: { spy_armed: false, spy_hunting: false, spy_solved: false, servis_kilidi: false, nightwell_poisoned: false },
+  events: { spy_armed: false, spy_hunting: false, spy_solved: false, nightwell_poisoned: false },
+  atmospheres: {
+    calm: { color: 0x101c44, near: 16, far: 70 },
+    tension: { color: 0x161c40, near: 12, far: 60 },
+    setpiece: { color: 0x2a2250, near: 22, far: 90 },
+  },
   lifts: [lift('kule_lift', 'kule_merdiveni', { x: 29, z: 16, w: 2, h: 2 }, [7.2, 16.8], { speed: 1.6, mode: 'call', start: 0 })],
 };
