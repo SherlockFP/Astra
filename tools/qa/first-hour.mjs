@@ -1194,10 +1194,16 @@ async function journey(cls) {
   };
 
   // ---- accept / turn in, at the NPCs the game data names ----
+  /** The dialog card whose title is EXACTLY the quest name. A substring match is not enough: a locked quest with a longer or
+   * equal-looking title (a duplicate name at the same giver) would shadow the offered card, so callers also filter by their button. */
+  const dialogCard = (name) => {
+    const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return page.locator('.pg-dlg-q').filter({ has: page.locator('.pg-dlg-qtop b', { hasText: new RegExp(`^${esc}$`) }) });
+  };
   const acceptAt = async (d) => {
     for (let i = 0; i < 2; i++) {
       if (!(await talkNpc(d.giver))) continue;
-      const btn = page.locator('.pg-dlg-q', { hasText: d.name }).first().locator('button:has-text("Görevi Kabul Et")');
+      const btn = dialogCard(d.name).filter({ has: page.locator('button:has-text("Görevi Kabul Et")') }).first().locator('button:has-text("Görevi Kabul Et")');
       if ((await btn.count()) > 0) { await btn.click(); await sleep(600); }
       await closePanels();
       if ((await qState(d.id)) === 'active') break;
@@ -1209,7 +1215,7 @@ async function journey(cls) {
   };
   /** Turn-in button of the quest card: "Teslim Et"; a reward-choice card takes its first item. Returns 'Teslim Et' | 'reward choice' | null. */
   const turnInCard = async (d) => {
-    const card = page.locator('.pg-dlg-q', { hasText: d.name }).first();
+    const card = dialogCard(d.name).filter({ has: page.locator('.pg-ql-acts button') }).first();
     const btn = card.locator('button:has-text("Teslim Et")');
     if ((await btn.count()) > 0) { await btn.click(); return 'Teslim Et'; }
     const choice = card.locator('.pg-ql-acts button').first();
