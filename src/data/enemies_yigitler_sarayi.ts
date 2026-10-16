@@ -285,7 +285,7 @@ boss({
   basic: cone('fen_bite', 'Parçalayan Isırık', 4.5, 110, 2.2, 1.0, 'Attack', 0.45, { windup: 0.7, telegraph: true, statuses: [bleed(1, 0.2, 6)] }),
   abilities: [
     custom('fen_string', 'Av Üçlüsü', 11, 5, 1.0, 'Attack', { sfx: 'boss_cast' }),
-    custom('fen_frenzy', 'Pençe Çılgınlığı', 16, 9, 1.2, 'Attack', { tankBuster: true, telegraph: true, sfx: 'boss_cast' }),
+    custom('fen_frenzy', 'Pençe Çılgınlığı', 16, 9, 1.2, 'Attack', { sfx: 'boss_cast' }),
     custom('fen_howl', 'Sessiz Uluma', 24, 14, 1.4, 'Attack', { sfx: 'wolf_howl' }),
     custom('fen_leap', 'Çifte Atılış', 14, 6, 1.2, 'Attack', { sfx: 'boss_cast' }),
     custom('fen_scent', 'Kan Kokusu', 28, 20, 1.0, 'Attack', { sfx: 'boss_roar' }),
