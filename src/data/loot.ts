@@ -357,6 +357,8 @@ export const RARE_TABLES: Record<string, LootTableDef> = {
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [8, 8] }, { id: 'gem_amethyst_2', chance: 0.3 }] },
   loot_rare_zehir_ana: { ...RARE_BASE, items: [2, 2],
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [8, 8] }, { id: 'gem_emerald_2', chance: 0.35 }] },
+  loot_rare_gumus_ejder: { ...RARE_BASE, items: [2, 2],
+    bonus: [{ id: 'metin_kalintisi', chance: 1, count: [4, 4] }, { id: 'gem_sapphire_1', chance: 0.3 }] },
   loot_rare_camur_baba: { ...RARE_BASE, items: [2, 2],
     bonus: [{ id: 'metin_kalintisi', chance: 1, count: [7, 7] }, { id: 'gem_topaz_2', chance: 0.3 }] },
   loot_rare_kor_efendisi: { ...RARE_BASE, items: [2, 2],

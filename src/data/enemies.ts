@@ -811,6 +811,14 @@ derive('rare_sessiz_rahip', 'Sessiz Rahip', 'cult_summoner', {
     summonAb('rare_sessiz_rahip_shades', 'Gölge Çağrısı', 'shade', 2, 18, 'Spellcast_Summon', 0.6),
   ],
 });
+// Sisli Koru / Altın Tarlalar (level 7): silver dragon whelp, recoloured Kızıl Ejder model. Telegraphed frost breath (cone, windup 1.2 s, not parryable).
+// The silver nameplate is the rare_ default (TargetFrame.isRareEnemy); the guaranteed blue drop and the 35-45 min respawn are in loot.ts and the layout.
+add({
+  id: 'rare_gumus_ejder', name: 'Gümüş Ejder Yavrusu', model: GENB('kizil_ejder'), scale: 0.42, tint: 0xd8e4f4, role: 'melee', rank: 'elite', hp: 8, dmg: 1.3, speed: 6.5, radius: 0.8, aggro: 12, forces: 0, leash: 40, xp: 10, loot: 'loot_rare_gumus_ejder',
+  anims: A_EJDER, resist: { frost: 0.5, fire: -0.2 }, visual: { glow: 0xd8e8ff, eyeEmissive: 0x9fd8ff },
+  basic: cone('rare_gumus_ejder_claw', 'Pençe', 2.4, 100, 1.8, 1.0, 'Attack', 0.5),
+  abilities: [cone('rare_gumus_ejder_breath', 'Buz Nefesi', 5, 60, 14, 1.4, 'Attack', 0.6, { windup: 1.2, telegraph: true, parryable: false, damage: { coef: 1.4, type: 'frost' }, statuses: [chill(2, 4)] } as Ab)],
+});
 
 // ---- mini-bosses (GDD_OPENWORLD §3.6): fixed lairs, leash to the camp (ai.homeRadius), 20 min respawn (MiniBossDirector)
 // Sisli Vadi rares, second set (1600 m map, two per region; the spots are in sisli_vadi.layout.json, loot tables in loot.ts)
