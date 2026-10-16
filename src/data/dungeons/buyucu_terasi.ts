@@ -430,12 +430,13 @@ const BOSSES = [
 ];
 
 const THEME: DungeonTheme = {
-  fogColor: 0x14123a, fogNear: 10, fogFar: 48,
-  ambient: 0x4a4478, ambientIntensity: 0.42,
-  hemiSky: 0x6a74c8, hemiGround: 0x2a1a38,
+  fogColor: 0x0c0a22, fogNear: 8, fogFar: 40,
+  ambient: 0x2a2468, ambientIntensity: 0.42,
+  hemiSky: 0x4a4ea8, hemiGround: 0x1a1028,
   torchColor: 0xf2a14a, bloomStrength: 0.55,
   music: 'dungeon_buyucu_terasi', tint: 0xb8aed8,
   palette: [0x1d1a46, 0x3a2350, 0x6e1b2b, 0xf2a14a, 0x5fd3e8, 0x7c7396, 0xd6d0f0, 0x2a0f3a],
+  moon: { color: 0x8a7cff, intensity: 0.45 }, rim: { color: 0x5fd3e8, intensity: 0.5 },
 };
 
 export const BUYUCU_TERASI: DungeonDef = {

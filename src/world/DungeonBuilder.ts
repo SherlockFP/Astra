@@ -931,7 +931,9 @@ class DungeonBuild {
     this.ambient = new THREE.AmbientLight(th.ambient, this.outdoor ? th.ambientIntensity * 1.4 : Math.max(INDOOR_AMBIENT_MIN, th.ambientIntensity * 2.0));
     this.root.add(this.hemi, this.ambient);
     // ONE shadow caster: a cool "moonlight" (outdoors: the dimmed, green-grey sun) that follows the player/camera
-    const moon = new THREE.DirectionalLight(this.outdoor ? 0xdfe8c8 : new THREE.Color(th.hemiSky).lerp(new THREE.Color(0xffffff), 0.35), this.outdoor ? 1.05 : 0.55);
+    // indoor moon: theme moon if authored, else the hemisphere sky lightened (the pre-theme look); outdoor keeps the sun tint
+    const indoorMoonColor = th.moon?.color ?? new THREE.Color(th.hemiSky).lerp(new THREE.Color(0xffffff), 0.35).getHex();
+    const moon = new THREE.DirectionalLight(this.outdoor ? 0xdfe8c8 : indoorMoonColor, this.outdoor ? 1.05 : (th.moon?.intensity ?? 0.55));
     if (this.outdoor) this.moonDir.set(-0.45, 0.8, -0.4).normalize();
     // 40 m box that follows the focus (ShadowFollow), 1024 texels: the same caster budget indoors and outdoors
     configureShadowBox(moon, { near: 1, far: this.outdoor ? 160 : 130 });
@@ -940,7 +942,7 @@ class DungeonBuild {
     this.root.add(moon, moon.target);
     this.moon = moon;
     // ONE extra light, no shadows: a cool rim from the far side (see rimDir), placed with the focus in update()
-    const rim = new THREE.DirectionalLight(0xb8d0ff, this.outdoor ? 0.2 : INDOOR_FILL);
+    const rim = new THREE.DirectionalLight(th.rim?.color ?? 0xb8d0ff, this.outdoor ? 0.2 : (th.rim?.intensity ?? INDOOR_FILL));
     rim.castShadow = false;
     this.root.add(rim, rim.target);
     this.fill = rim;

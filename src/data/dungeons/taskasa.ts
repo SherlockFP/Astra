@@ -667,12 +667,13 @@ const EXTRAS: NonNullable<DungeonDef['extras']> = {
 };
 
 const THEME: DungeonDef['theme'] = {
-  fogColor: 0x2a150d, fogNear: 12, fogFar: 56,
-  ambient: 0x5a3a2c, ambientIntensity: 0.42,
-  hemiSky: 0xc88a50, hemiGround: 0x1a0c08,
+  fogColor: 0x1a0d07, fogNear: 9, fogFar: 42,
+  ambient: 0x4a2e22, ambientIntensity: 0.42,
+  hemiSky: 0x9a6034, hemiGround: 0x140804,
   torchColor: 0xffa43c, bloomStrength: 0.42, music: 'dungeon_taskasa',
   palette: [0x3a1f15, 0x6b3a24, 0xff8c1a, 0xffd54a, 0xa8301c, 0x5b5352, 0x3c1d5e, 0x3fe0c8],
   tint: 0xd8b49a,
+  moon: { color: 0xffb070, intensity: 0.4 }, rim: { color: 0x3fe0c8, intensity: 0.4 },
 };
 
 export const TASKASA: DungeonDef = {

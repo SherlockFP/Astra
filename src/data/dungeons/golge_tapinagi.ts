@@ -98,8 +98,9 @@ const BOSSES = [
 ];
 
 const THEME: DungeonTheme = {
-  fogColor: 0x140a20, fogNear: 6, fogFar: 34, ambient: 0x302048, ambientIntensity: 0.3, hemiSky: 0x6040a0, hemiGround: 0x100818,
+  fogColor: 0x0a0514, fogNear: 5, fogFar: 28, ambient: 0x2a1a48, ambientIntensity: 0.3, hemiSky: 0x3c2470, hemiGround: 0x0a0412,
   torchColor: 0xb060ff, bloomStrength: 0.4, music: 'dungeon_shadow', palette: [0x0e0814, 0x3a1050, 0x8040ff, 0xb060ff, 0x801020], tint: 0x9080b0,
+  moon: { color: 0x8040ff, intensity: 0.35 }, rim: { color: 0x7088ff, intensity: 0.35 },
 };
 
 // ---------------------------------------------------------------------------------------------------------------------

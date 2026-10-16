@@ -293,6 +293,8 @@ export interface DungeonTheme {
   sky?: DungeonSkyDef;
   /** P-08: moon light. */
   moon?: { color: number; intensity: number; dir?: [number, number, number] };
+  /** Indoor cool rim/fill from the far side of the camera (defaults: 0xb8d0ff at the indoor fill level). Lifts silhouettes in dark rooms. */
+  rim?: { color: number; intensity?: number };
   /** P-08: cloud sea below open-air rooms. */
   cloudSea?: { y: number; color: number; speed: number };
 }

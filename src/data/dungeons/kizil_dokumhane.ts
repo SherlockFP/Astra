@@ -106,7 +106,11 @@ const BOSSES = [
   bossAtNew('boss_ignaroth', 'mavi_alev_sunagi', 3.5, 33, 90, 3),
 ];
 
-const THEME: DungeonTheme = { fogColor: 0x240b05, fogNear: 8, fogFar: 40, ambient: 0x803020, ambientIntensity: 0.4, hemiSky: 0xff7040, hemiGround: 0x200800, torchColor: 0xff6a20, bloomStrength: 0.35, music: 'dungeon_fire', palette: [0x1a0c08, 0x4a2418, 0xff4a10, 0xffb040, 0x3070ff], tint: 0xd8a090 };
+const THEME: DungeonTheme = {
+  fogColor: 0x1a0503, fogNear: 6, fogFar: 34, ambient: 0x4a1a10, ambientIntensity: 0.4, hemiSky: 0x8a2a14, hemiGround: 0x180400,
+  torchColor: 0xff6a20, bloomStrength: 0.35, music: 'dungeon_fire', palette: [0x1a0c08, 0x4a2418, 0xff4a10, 0xffb040, 0x3070ff], tint: 0xd8a090,
+  moon: { color: 0xff4a20, intensity: 0.35 }, rim: { color: 0x4a68c0, intensity: 0.35 },
+};
 
 
 // ---------------------------------------------------------------------------------------------------------------------

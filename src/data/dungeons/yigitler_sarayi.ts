@@ -284,13 +284,14 @@ const BOSSES = [
 
 // ---- theme ----------------------------------------------------------------------------------------------------------------------
 const THEME: DungeonTheme = {
-  fogColor: 0x56626e, fogNear: 16, fogFar: 70,
-  ambient: 0x7c88a0, ambientIntensity: 0.5, hemiSky: 0xa4b4d0, hemiGround: 0x2c2a30,
+  fogColor: 0x3a424e, fogNear: 14, fogFar: 60,
+  ambient: 0x5a6478, ambientIntensity: 0.5, hemiSky: 0x7c8aa8, hemiGround: 0x1e1c24,
   torchColor: 0xffb060, bloomStrength: 0.5,
   music: 'dungeon_frost',     // existing MusicId (file dungeon_cold_sanctuary.mp3); the bosses use the existing 'boss' track in the script
   palette: [0x2b2f38, 0x56626e, 0x9aa8bc, 0xd9b45a, 0xb87a3a, 0xeaf2ff, 0x7a5cff, 0xffa850], tint: 0xb4bccc,
   sky: SKY_DUSK,
   cloudSea: { y: -6, color: 0x6a7686, speed: 0.04 },
+  rim: { color: 0xaec4ff, intensity: 0.4 },
 };
 
 export const YIGITLER_SARAYI: DungeonDef = {

@@ -315,11 +315,12 @@ const PACKS: PackDef[] = [
 
 // ---- theme ----------------------------------------------------------------------------------------------------------------
 const THEME: DungeonTheme = {
-  fogColor: 0x0a1218, fogNear: 8, fogFar: 40,
-  ambient: 0x2c4256, ambientIntensity: 0.3,
-  hemiSky: 0x5aa8c0, hemiGround: 0x0c1218,
+  fogColor: 0x081016, fogNear: 7, fogFar: 36,
+  ambient: 0x1e3446, ambientIntensity: 0.3,
+  hemiSky: 0x3d7a90, hemiGround: 0x0a1014,
   torchColor: AMBER, bloomStrength: 0.55,
   music: 'dungeon_crypt', palette: [0x0d1620, 0x2a3a52, TEAL, 0xb9c6d8, 0xd6dfae, GREEN, 0x3a1245, AMBER], tint: 0x7f93b0,
+  moon: { color: 0x7fe0e0, intensity: 0.4 }, rim: { color: 0x5ad8d0, intensity: 0.45 },
 };
 
 export const YANKI_AGI: DungeonDef = {

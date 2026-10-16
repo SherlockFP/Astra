@@ -111,7 +111,11 @@ const BOSSES = [
   R.bossAtNew('boss_tugrul', 'buzul_tahti', 33.5, 34, 180, 3),
 ];
 
-const THEME: DungeonTheme = { fogColor: 0xa8c8e0, fogNear: 12, fogFar: 55, ambient: 0x9ab8d8, ambientIntensity: 0.6, hemiSky: 0xdff0ff, hemiGround: 0x405060, torchColor: 0x80c8ff, bloomStrength: 0.35, music: 'dungeon_frost', palette: [0xeaf6ff, 0x9fd8ff, 0x4a7aa0, 0x203a5a, 0xffd8a0], tint: 0xc8e0ff };
+const THEME: DungeonTheme = {
+  fogColor: 0x14283c, fogNear: 8, fogFar: 40, ambient: 0x3a6088, ambientIntensity: 0.6, hemiSky: 0x7fb0d8, hemiGround: 0x1c2c3c,
+  torchColor: 0xffd8a0, bloomStrength: 0.35, music: 'dungeon_frost', palette: [0xeaf6ff, 0x9fd8ff, 0x4a7aa0, 0x203a5a, 0xffd8a0], tint: 0xc8e0ff,
+  moon: { color: 0xdff0ff, intensity: 0.45 }, rim: { color: 0x9fd8ff, intensity: 0.5 },
+};
 
 
 // ---------------------------------------------------------------------------------------------------------------------

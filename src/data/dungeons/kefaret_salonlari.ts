@@ -300,11 +300,12 @@ const at2 = R.at2;
 
 // ---- dungeon ----------------------------------------------------------------------------------------------------------------
 const THEME: DungeonTheme = {
-  fogColor: 0x1d1626, fogNear: 9, fogFar: 42,
-  ambient: 0x4a3f58, ambientIntensity: 0.42,
-  hemiSky: 0x6e7fa8, hemiGround: 0x2a1418,
+  fogColor: 0x130e1a, fogNear: 7, fogFar: 34,
+  ambient: 0x3a2e48, ambientIntensity: 0.42,
+  hemiSky: 0x5a4a78, hemiGround: 0x1e0e12,
   torchColor: 0xffa86a, bloomStrength: 0.45,
   music: 'dungeon_shadow', palette: [0x1d1826, 0x4e4b55, 0x8e1b24, 0xc8382f, 0xc9a24a, 0xd7cdba], tint: 0xcdbfd0,
+  moon: { color: 0xc8a0d0, intensity: 0.4 }, rim: { color: 0x8aa0d0, intensity: 0.4 },
 };
 
 export const KEFARET_SALONLARI: DungeonDef = {

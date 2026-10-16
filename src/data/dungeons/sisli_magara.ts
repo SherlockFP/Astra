@@ -9,8 +9,9 @@ import { bossAt, door, pack, room } from './kit';
  */
 
 const THEME: DungeonTheme = {
-  fogColor: 0x1e2a2c, fogNear: 14, fogFar: 60, ambient: 0x4a5a58, ambientIntensity: 0.4, hemiSky: 0x7a8c96, hemiGround: 0x2a2418,
-  torchColor: 0xffb070, bloomStrength: 0.25, music: 'dungeon_crypt', palette: [0x35403e, 0x6f7f78, 0xd6d8cc, 0x9fd8e8, 0xffb070], tint: 0xcfd8d4,
+  fogColor: 0x0d1a1c, fogNear: 9, fogFar: 46, ambient: 0x23434a, ambientIntensity: 0.4, hemiSky: 0x4c7480, hemiGround: 0x161a18,
+  torchColor: 0xffa858, bloomStrength: 0.25, music: 'dungeon_crypt', palette: [0x35403e, 0x6f7f78, 0xd6d8cc, 0x9fd8e8, 0xffb070], tint: 0xcfd8d4,
+  moon: { color: 0x9ee6f0, intensity: 0.45 }, rim: { color: 0x6fd8e8, intensity: 0.45 },
 };
 
 const ROOMS: RoomDef[] = [

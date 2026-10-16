@@ -366,11 +366,12 @@ for (const p of PACKS) {
 
 // ---- dungeon ----------------------------------------------------------------------------------------------------------
 const THEME: DungeonTheme = {
-  fogColor: 0x1b2a2e, fogNear: 7, fogFar: 36,
-  ambient: 0x4a5c78, ambientIntensity: 0.38,
-  hemiSky: 0x7a92c8, hemiGround: 0x1c2a1c,
+  fogColor: 0x122428, fogNear: 6, fogFar: 32,
+  ambient: 0x2e4262, ambientIntensity: 0.38,
+  hemiSky: 0x5a7098, hemiGround: 0x122014,
   torchColor: 0xb878ff, bloomStrength: 0.55,
   music: 'dungeon_peri_sisleri', palette: [0x10201f, 0x2f5a3c, 0x7ab0d8, 0xffd060, 0x60ffd8, 0xb060ff], tint: 0xb8d0b0,
+  moon: { color: 0xa0ffe0, intensity: 0.4 }, rim: { color: 0x60ffd8, intensity: 0.4 },
 };
 
 export const PERI_SISLERI: DungeonDef = {
