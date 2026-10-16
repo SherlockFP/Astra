@@ -16,7 +16,7 @@ export const GUIDE_WALK_M = 3;
 export const GUIDE_NPC = 'npc_muhtar';
 
 /** Where the on-screen highlight points. `key` = an action's key cap, `slot` = an action bar cell, `panel` = a micro-menu button. */
-export type GuideAnchor = { kind: 'none' } | { kind: 'key'; action: string } | { kind: 'slot'; slot: string } | { kind: 'panel'; panel: string; key?: string };
+export type GuideAnchor = { kind: 'none' } | { kind: 'key'; action: string } | { kind: 'slot'; slot: string } | { kind: 'panel'; panel: string; key?: string } | { kind: 'flask' };
 
 export interface GuideStep {
   id: string;
@@ -27,21 +27,26 @@ export interface GuideStep {
   anchor: GuideAnchor;
   /** Not shown (and not counted) below this level. */
   minLevel?: number;
+  /** The card waits (and the highlight stays off) until the character has taken damage (flag `onb.hurt`). */
+  needsHurt?: boolean;
+  /** The card waits until this quest is active (the step is about a quest that unlocks later). */
+  needsQuest?: string;
 }
 
 export const GUIDE_STEPS: readonly GuideStep[] = [
   { id: 'move', title: 'Hareket', text: 'Yürümek için {k:moveForward} {k:moveLeft} {k:moveBack} {k:moveRight}. Kamerayı çevirmek için sol tuşu basılı tutup sürükle.', anchor: { kind: 'none' } },
   { id: 'talk', title: 'Muhtar ile konuş', text: 'Haritadaki ! işaretine git ve {k:interact} ile Muhtar Cemal ile konuş.', anchor: { kind: 'key', action: 'interact' } },
   { id: 'accept', title: 'Görev al', text: 'Muhtar Cemal’in görevini kabul et. Görev takipçisinde hedefini göreceksin.', anchor: { kind: 'none' } },
-  { id: 'attack', title: 'Düşman seç ve saldır', text: 'Bir düşmana sağ tıkla ya da yeteneğe bas: hedef otomatik seçilir ve saldırı başlar.', anchor: { kind: 'none' } },
+  { id: 'attack', title: 'Düşman seç ve saldır', text: 'Bir düşmana sağ tıkla ya da yeteneğe bas: hedef otomatik seçilir ve saldırı başlar.', anchor: { kind: 'slot', slot: 'rmb' } },
   { id: 'skills', title: '4 yeteneğini kullan', text: 'Çubuktaki yetenekleri {k:skill_rmb} {k:skill_q} {k:skill_e} {k:skill_r} tuşlarıyla dört kez farklı kullan.', anchor: { kind: 'slot', slot: 'q' } },
+  { id: 'flask', title: 'İksir kullan', text: 'Bir düşman sana vurdu. Can düşünce iksir kemerindeki şişeye tıkla ya da {k:flask1} bas.', anchor: { kind: 'flask' }, needsHurt: true },
   { id: 'loot', title: 'Ganimet topla', text: 'Yere düşen eşyaya ya da altına yaklaş; topladığında bu adım tamamlanır.', anchor: { kind: 'none' } },
   { id: 'bag', title: 'Çantanı aç', text: 'Çantanı açmak için {k:inventory} tuşuna bas.', anchor: { kind: 'panel', panel: 'inventory', key: 'inventory' } },
   { id: 'equip', title: 'Eşya giy', text: 'Çantadaki bir eşyaya çift tıkla ya da sürükleyip ekipman yuvasına bırak.', anchor: { kind: 'panel', panel: 'inventory' } },
-  { id: 'sp', title: 'Yetenek puanı harca', text: 'Kazandığın puanı Yetenek Kitabı’nda ({k:skills}) bir beceriye harca.', anchor: { kind: 'panel', panel: 'skills', key: 'skills' } },
-  { id: 'turnin', title: 'Görevi teslim et', text: 'Görev hedefini tamamla, sonra görevi ilgili NPC’ye teslim et.', anchor: { kind: 'none' } },
+  { id: 'sp', title: 'Yeni yetenek', text: 'Seviye atlayınca Yetenek Kitabı’nı ({k:skills}) aç, puanını bir beceriye harca ve yeni yeteneği çubuğa sürükle.', anchor: { kind: 'panel', panel: 'skills', key: 'skills' } },
+  { id: 'turnin', title: 'Görevi teslim et', text: 'Görev hedefini tamamla, sonra görevi Muhtar Cemal’e teslim et ve ödülünü seç.', anchor: { kind: 'none' } },
   { id: 'map', title: 'Harita', text: 'Dünya haritasını {k:map} ile aç; bölgeler, zindanlar ve ışınlanma noktaları orada.', anchor: { kind: 'panel', panel: 'map', key: 'map' } },
-  { id: 'finder', title: 'Zindan Bulucu', text: 'Zindanlara grupla gir: Zindan Bulucu’yu {k:groupFinder} ile aç.', anchor: { kind: 'panel', panel: 'finder', key: 'groupFinder' }, minLevel: 8 },
+  { id: 'finder', title: 'Zindan Bulucu', text: 'Mağaradaki Sis görevi açıldı. Zindan Bulucu’yu {k:groupFinder} ile aç ve girişi bul.', anchor: { kind: 'panel', panel: 'finder', key: 'groupFinder' }, needsQuest: 'sq_g_07_magaradaki_sis' },
 ];
 
 /** Events the HUD feeds in. `move` = walked GUIDE_WALK_M, `talk` = the NPC dialog opened, `accept` / `turnin` = the Muhtar quest. */
@@ -55,7 +60,8 @@ export type GuideEvent =
   | { k: 'panel'; panel: string; open: boolean }
   | { k: 'equip' }
   | { k: 'sp' }
-  | { k: 'turnin' };
+  | { k: 'turnin' }
+  | { k: 'flask' };
 
 /** Save-derived state. `done` = completed step ids, `slots` = bar keys used in the skills step. */
 export interface GuideState {
@@ -121,6 +127,7 @@ function completes(id: string, ev: GuideEvent, state: GuideState): boolean {
     case 'accept': return ev.k === 'accept';
     case 'attack': return ev.k === 'hit';
     case 'skills': return ev.k === 'cast' && (GUIDE_SKILL_SLOTS as readonly string[]).includes(ev.slot) && new Set([...state.slots, ev.slot]).size >= GUIDE_SKILL_NEED;
+    case 'flask': return ev.k === 'flask';
     case 'loot': return ev.k === 'loot';
     case 'bag': return ev.k === 'panel' && ev.panel === 'inventory' && ev.open;
     case 'equip': return ev.k === 'equip';

@@ -13,6 +13,8 @@ const WELCOME_FLAG = 'onb.welcome';
 const WELCOME_MAX_LEVEL = 2;
 /** The first guide NPC (§4.3). */
 const GUIDE_NPC = 'npc_muhtar';
+/** How long after entering the town the card keeps waiting for a free screen (ms). */
+const AUTO_OPEN_WAIT_MS = 300_000;
 
 /** Binding label of an action, or a placeholder when the input layer is not ready. */
 function key(action: InputAction): string {
@@ -57,15 +59,30 @@ export class WelcomePanel extends GamePanel {
     // first login: the town at level 1-2, once per character
     G.events.on('scene:changed', ({ to }) => {
       if (to !== 'town') return;
-      setTimeout(() => this.autoOpen(), 1000);
+      this.waitAutoOpen(performance.now());
     });
   }
 
-  private autoOpen(): void {
+  /**
+   * The town is entered behind the loading screen, which holds the input for a while: a single timer can fire before the UI is
+   * in town mode and the card would never show (the new player then has no guide). Retry for a while instead.
+   */
+  private waitAutoOpen(since: number): void {
+    const tryOpen = (): void => {
+      if (this.autoOpen() || performance.now() - since > AUTO_OPEN_WAIT_MS) return;
+      setTimeout(tryOpen, 500);
+    };
+    setTimeout(tryOpen, 1000);
+  }
+
+  /** True when the question is settled (the card opened, or it is not needed); false while the town is not ready for it. */
+  private autoOpen(): boolean {
     const ch = G.character;
-    if (!ch || ch.save.level > WELCOME_MAX_LEVEL || ch.save.flags[WELCOME_FLAG]) return;
-    if (G.ui.mode !== 'town' || G.ui.wantsCursor()) return;
+    if (!ch) return false;
+    if (ch.save.level > WELCOME_MAX_LEVEL || ch.save.flags[WELCOME_FLAG]) return true;
+    if (G.ui.mode !== 'town' || G.ui.wantsCursor()) return false;
     G.ui.openPanel('welcome');
+    return true;
   }
 
   protected build(): void {
