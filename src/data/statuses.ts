@@ -147,6 +147,10 @@ const V2_STATUSES: Partial<Record<StatusId, StatusDef>> = {
   weakness_chain: { id: 'weakness_chain', name: 'Sömürü', icon: I('buff-crit'), kind: 'buff', maxStacks: 5, stats: { damagePct: 0.04 } },
   shielded_poise: { id: 'shielded_poise', name: 'Duruş Zırhı', icon: I('buff-defense'), kind: 'buff', hidden: true },
   marked_crit: { id: 'marked_crit', name: 'Kritik Fırsatı', icon: I('debuff-marked'), kind: 'debuff' },
+  // ---- food (data/consumables.ts): hot regen out of combat (any damage removes it) and the Well Fed buff
+  food_regen: { id: 'food_regen', name: 'Yemek Yenilenmesi', icon: I('buff-regen'), kind: 'buff', desc: 'Yemekten gelen can yenilenmesi. Hasar alınca kesilir.', vfx: 'heal_loop' },
+  well_fed: { id: 'well_fed', name: 'Tok Karnı', icon: I('buff-defense'), kind: 'buff', desc: 'Avcı Güveci: maksimum canın %3 artar (30 dk).', stats: { maxHpPct: 0.03 } },
+
   armored: { id: 'armored', name: 'Zırhlı', icon: I('buff-defense'), kind: 'buff', hidden: true },
   cursed_zone: { id: 'cursed_zone', name: 'Lanet Alanı', icon: I('debuff-curse'), kind: 'debuff', hidden: true },
 };
@@ -251,6 +255,8 @@ export const STATUS_RULES: Partial<Record<StatusId, StatusRule>> = {
   // PM-00a retune (plate-melee 3b): called with magnitude 0.15 (Kudurma), default magnitude 0.15.
   enrage: { stack: 'strongest', perMag: true, defMag: 0.15, dealtMore: 1 },
   regen: { stack: 'strongest', hot: true, defMag: 5 },
+  food_regen: { stack: 'refresh', hot: true },
+  well_fed: { stack: 'refresh' },
   fortify: { stack: 'strongest', perMag: true, defMag: 0.2 },
   invulnerable: { stack: 'refresh' },
   stealth: { stack: 'refresh' },

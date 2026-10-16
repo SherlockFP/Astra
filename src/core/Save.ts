@@ -2,6 +2,7 @@ import type { CharacterSave, CharacterSummary } from '../types/character';
 import type { SkillSlotKey } from '../types/skills';
 import type { SpecId } from '../types/v2';
 import { SKILLS } from '../data/skills';
+import { ensureStarterFlask } from '../data/flasks';
 import { OPENING_KIT, classGrantOrder } from '../data/openingKit';
 import { LEGACY_KIT_SLOTS, MAJOR_SLOTS, barCandidates, layoutDefaultBar } from '../data/barLayout';
 import { getSpec } from '../data/specs';
@@ -38,6 +39,7 @@ export function normaliseCharacterSave(raw: unknown): CharacterSave | null {
   c.skillRunes ??= {};
   c.flasks ??= [null, null, null, null, null]; // Şişe Kemeri: 5 slots (flask1..flask5)
   c.flaskCharges ??= [0, 0, 0, 0, 0];
+  ensureStarterFlask(c); // every character gets its Sisli Matara once (data/flasks.ts)
   c.codex ??= {};
   c.bestiary ??= {};
   c.paragon ??= { ks: 0, xp: 0, points: 0, boards: [], cells: [], glyphs: [] };

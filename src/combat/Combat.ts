@@ -5,7 +5,10 @@ import { CLASSES } from '../data/classes';
 import { newPlayerOocDelay, newPlayerOocHpMult, newPlayerOocResMult } from '../data/lowLevelScaling';
 import { SKILLS } from '../data/skills';
 import { MATERIALS } from '../data/materials';
-import { OPEN_ZONES } from '../data/dungeons';
+import { flaskMaxCharges, getFlaskBase, hasFlaskUpgrade } from '../data/flasks';
+import { getFood } from '../data/consumables';
+import { inVillageBox, worldZoneNow } from '../systems/DailyLoop';
+import { OPEN_ZONES, getDungeon } from '../data/dungeons';
 import {
   DODGE_STACK_IDS, STATUSES, STATUS_RULES, dodgeStackLoss, stacksAfterLoss, takenPerStackTotal,
 } from '../data/statuses';
@@ -329,6 +332,10 @@ export class Combat {
   private seenPlayers = new WeakSet<object>();
   private localDead = false;
   private potionCd = { hp: 0, mp: 0, cleanse: 0 };
+  /** Şişe Kemeri cooldowns, one per belt slot (0-based), seconds. */
+  private flaskCd: number[] = [0, 0, 0, 0, 0];
+  private flaskRefillClock = 0;
+  private inRestZonePrev = false;
   private lastRes = { hp: -1, maxHp: -1, res: -1, maxRes: -1 };
   private slow: { until: number; recover: number; active: boolean; scale: number } = { until: 0, recover: 0, active: false, scale: 1 };
   private lifeStealLog: { t: number; amount: number }[] = [];
@@ -1823,6 +1830,11 @@ export class Combat {
     if (amount > 0) {
       p.hp = Math.max(0, p.hp - amount);
       p.combatTimer = 0;
+      // food: any damage breaks the eating regen (Kızarmış Ekmek / Avcı Güveci)
+      if (p.statuses.has('food_regen')) {
+        p.statuses.remove('food_regen', 'remove');
+        G.events.emit('ui:toast', { text: 'Yemek kesildi.', kind: 'warning' });
+      }
       this.recordTaken(p, amount);
       // PM-00b (plate-melee §g need 2): Kemik Zırhı and other consume-on-hit stacks lose one stack per melee hit taken
       if (hit.melee && !dot) this.consumeOnHit(p);
@@ -2290,6 +2302,132 @@ export class Combat {
     return true;
   }
 
+  // ======================================================================================================
+  // Flasks (Şişe Kemeri, data/flasks.ts) and food (data/consumables.ts)
+  // ======================================================================================================
+
+  /** Seconds left on a belt flask's cooldown (HUD). `slot` is 0-based. */
+  flaskCooldown(slot: number): number {
+    return Math.max(0, this.flaskCd[slot] ?? 0);
+  }
+
+  /** Drinks from a belt flask (0-based `slot`; default: the first filled slot). Spends one charge, starts its cooldown. */
+  useFlask(slot?: number): boolean {
+    const p = G.world?.localPlayer ?? G.player;
+    const ch = G.character;
+    if (!p || p.isDead || !ch) return false;
+    const flasks = ch.save.flasks ?? [];
+    const idx = slot ?? flasks.findIndex((f) => !!f);
+    const item = idx >= 0 ? flasks[idx] : null;
+    const base = item ? getFlaskBase(item.baseId) : undefined;
+    if (!item || !base || idx >= this.flaskCd.length) return false;
+    if (this.flaskCd[idx] > 0) {
+      G.events.emit('ui:toast', { text: 'Şişe henüz hazır değil.', kind: 'warning' });
+      return false;
+    }
+    const charges = (ch.save.flaskCharges ??= [0, 0, 0, 0, 0]);
+    const have = charges[idx] ?? 0;
+    if (have < base.use) {
+      G.events.emit('ui:toast', { text: 'Şişe boş. Bir köyde ya da kampta doldur.', kind: 'warning' });
+      return false;
+    }
+    charges[idx] = have - base.use;
+    this.flaskCd[idx] = base.cd ?? 0;
+    const dur = base.dur[0] || 1;
+    const total = p.maxHp * (base.effect.heal ?? 0) * (1 + p.getStat('flaskEffectPct'));
+    p.statuses.apply('regen', dur, { magnitude: total / dur, sourceId: p.id });
+    G.vfx.spawn('potion_drink', [p.position.x, p.position.y + 1.2, p.position.z]);
+    G.audio.play('potion_drink', { pos: [p.position.x, p.position.y, p.position.z] });
+    if (!G.skills?.isBusy(p)) p.anim?.playOnce('Use_Item', { upperBody: true, speed: 2.3, fade: 0.05 });
+    G.events.emit('flask:used', { slot: idx + 1, baseId: base.id, charges: charges[idx] });
+    ch.persist();
+    return true;
+  }
+
+  /**
+   * Eats or drinks a food item (data/consumables.ts). Eating is refused in combat; the food's regen is broken by any damage
+   * (see the damage hook in applyDamageToLocal). Spends one from the pouch. False when it cannot be used now.
+   */
+  useFood(id: string): boolean {
+    const p = G.world?.localPlayer ?? G.player;
+    const ch = G.character;
+    const food = getFood(id);
+    if (!p || p.isDead || !ch || !food) return false;
+    if (ch.material(id) <= 0) {
+      G.events.emit('ui:toast', { text: 'Yiyeceğin kalmadı!', kind: 'warning' });
+      return false;
+    }
+    if (food.kind === 'eat') {
+      if (p.inCombat) {
+        G.events.emit('ui:toast', { text: 'Savaşta yemek yiyemezsin.', kind: 'warning' });
+        return false;
+      }
+      if (p.hp >= p.maxHp - 0.5 && food.wellFedSec <= 0) return false;
+    } else if (p.resource >= p.maxResource - 0.5) {
+      return false;
+    }
+    if (!ch.useMaterial(id, 1)) return false;
+    if (food.kind === 'eat') {
+      p.statuses.apply('food_regen', food.hotSec, { magnitude: p.maxHp * food.hotPct, sourceId: p.id });
+      if (food.wellFedSec > 0) p.statuses.apply('well_fed', food.wellFedSec, { magnitude: 1 });
+      // sitting while it eats; the clip is one of the seated emotes (ui/hud/Chat.ts)
+      if (!G.skills?.isBusy(p)) p.anim?.playOnce('Sit_Floor_Down', { upperBody: false, speed: 1, fade: 0.1 });
+    } else {
+      p.resource = Math.min(p.maxResource, p.resource + p.maxResource * food.resourcePct);
+      if (!G.skills?.isBusy(p)) p.anim?.playOnce('Use_Item', { upperBody: true, speed: 2.3, fade: 0.05 });
+      G.vfx.spawn('potion_drink', [p.position.x, p.position.y + 1.2, p.position.z]);
+    }
+    G.events.emit('materials:changed', {});
+    return true;
+  }
+
+  /** Per-frame: flask cooldowns, and a refill every 0.5 s while the local player stands in a rest zone. */
+  private updateFlasks(dt: number): void {
+    for (let i = 0; i < this.flaskCd.length; i++) if (this.flaskCd[i] > 0) this.flaskCd[i] = Math.max(0, this.flaskCd[i] - dt);
+    this.flaskRefillClock -= dt;
+    if (this.flaskRefillClock > 0) return;
+    this.flaskRefillClock = 0.5;
+    this.refillFlasksIfRested();
+  }
+
+  /**
+   * Fills every belt flask to its cap while the local player is in a rest zone: the town scene, or a village box of the
+   * open-world zone (the same test that gives Rested XP). Campfires are not placeable yet (CAMP_ENABLED is off).
+   */
+  refillFlasksIfRested(): boolean {
+    const ch = G.character;
+    const p = G.world?.localPlayer ?? G.player;
+    if (!ch || !p || p.isDead) return false;
+    const inRest = G.scenes?.current?.id === 'town' || this.inVillageNow(p.position.x, p.position.z);
+    // refill once per visit (on entering the rest zone), so a flask drunk inside the town is not topped up at once
+    const entered = inRest && !this.inRestZonePrev;
+    this.inRestZonePrev = inRest;
+    if (!entered) return false;
+    const flasks = ch.save.flasks ?? [];
+    const charges = (ch.save.flaskCharges ??= [0, 0, 0, 0, 0]);
+    let changed = false;
+    for (let i = 0; i < flasks.length; i++) {
+      const item = flasks[i];
+      if (!item) continue;
+      const max = flaskMaxCharges(item.baseId, hasFlaskUpgrade(ch.save));
+      if ((charges[i] ?? 0) < max) {
+        charges[i] = max;
+        changed = true;
+      }
+    }
+    if (changed) {
+      G.events.emit('ui:toast', { text: 'Şişeler dolduruldu.', kind: 'success' });
+      ch.persist();
+    }
+    return changed;
+  }
+
+  private inVillageNow(x: number, z: number): boolean {
+    const zone = worldZoneNow();
+    if (!zone) return false;
+    return inVillageBox(getDungeon(zone)?.world?.villages ?? [], x, z);
+  }
+
   /** Seconds left on a potion cooldown (HUD). */
   potionCooldown(kind: 'hp' | 'mp' | 'cleanse'): number {
     return Math.max(0, this.potionCd[kind]);
@@ -2306,6 +2444,7 @@ export class Combat {
     if (this.potionCd.hp > 0) this.potionCd.hp -= dt;
     if (this.potionCd.mp > 0) this.potionCd.mp -= dt;
     if (this.potionCd.cleanse > 0) this.potionCd.cleanse -= dt;
+    this.updateFlasks(dt);
     this.updateLocalPlayer(dt);
     this.updateGuard(dt);
     this.updateFx(dt);
@@ -2553,6 +2692,7 @@ export class Combat {
     this.meters.reset();
     this.reactCd.clear();
     this.potionCd.hp = this.potionCd.mp = this.potionCd.cleanse = 0;
+    this.flaskCd.fill(0);
     this.localDead = false;
     this.combo.reset();
     this.sp.reset();

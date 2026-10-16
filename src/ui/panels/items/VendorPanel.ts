@@ -9,11 +9,12 @@ import { sellItem } from './actions';
 import { CATEGORY_ICON, ItemSlot, bindItemTip, bindTip, describe, drag, esc, fmt, h, iconUrl, materialInfo, sfx, toast } from './common';
 
 /** merchant / alchemist: classic shops. gamble: Gizemli Tüccar (blind boxes). seal_vendor: Mühürdar (Av Mührü shop). */
-type Kind = 'merchant' | 'alchemist' | 'gamble' | 'seal_vendor' | 'pvp_honor' | 'pvp_conquest';
+type Kind = 'merchant' | 'alchemist' | 'bakkal' | 'gamble' | 'seal_vendor' | 'pvp_honor' | 'pvp_conquest';
 
 const KIND_INFO: Record<Kind, { title: string; icon: string; line: string }> = {
   merchant: { title: 'Tüccar', icon: 'ui-shop.svg', line: 'Hoş geldin, maceracı! Kaliteli mallarım var; satacaklarını da buraya bırakabilirsin.' },
   alchemist: { title: 'Simyacı', icon: 'item-potion-flask.svg', line: 'İksirler, tozlar, merhemler... Zindanlara hazırlıksız girme!' },
+  bakkal: { title: 'Bakkal', icon: 'ui-shop.svg', line: 'Kızarmış ekmek, kaynak suyu, bir de güveç... Yolun için yeterli.' },
   gamble: { title: 'Gizemli Tüccar', icon: 'item-chest-locked.svg', line: 'Kutunun içinde ne var? Öde ve gör! Şansın varsa Efsanevi bile çıkar...' },
   seal_vendor: { title: 'Mühürdar', icon: 'item-trinket.svg', line: 'Mührünü getir, ödülünü al. Günlük görevlerden kazandığın Av Mührü burada geçer.' },
   pvp_honor: { title: 'Savaş Ustası', icon: 'ui-shop.svg', line: "Kızıl Sınır'da kanını döktün mü? Onurun burada Er tier zırha dönüşür." },
@@ -28,12 +29,13 @@ const isPvpKind = (k: Kind): boolean => k === 'pvp_honor' || k === 'pvp_conquest
 
 function parseKind(d: { kind?: unknown; npcId?: unknown; npc?: unknown; id?: unknown } | undefined): Kind {
   const v = d?.kind;
-  if (v === 'alchemist' || v === 'gamble' || v === 'seal_vendor' || v === 'merchant' || v === 'pvp_honor' || v === 'pvp_conquest') return v;
+  if (v === 'alchemist' || v === 'bakkal' || v === 'gamble' || v === 'seal_vendor' || v === 'merchant' || v === 'pvp_honor' || v === 'pvp_conquest') return v;
   const hint = [d?.npcId, d?.npc, d?.id].find((x) => typeof x === 'string') as string | undefined;
   if (hint) {
     if (/gizemli|kumar|gamble/i.test(hint)) return 'gamble';
     if (/muhurdar|mühürdar|seal/i.test(hint)) return 'seal_vendor';
     if (/simyaci|simyacı|alchemist/i.test(hint)) return 'alchemist';
+    if (/bakkal/i.test(hint)) return 'bakkal';
     if (/savas|savaş/i.test(hint)) return 'pvp_honor';
     if (/fetih/i.test(hint)) return 'pvp_conquest';
   }
@@ -197,7 +199,7 @@ export class VendorPanel extends ItemPanel {
     this.flavor.textContent = info.line;
     this.flavorIco.style.setProperty('--ico', `url("/assets/icons/${info.icon}")`);
     this.entries = [];
-    const vk = kind === 'merchant' || kind === 'alchemist' || kind === 'pvp_honor' || kind === 'pvp_conquest' ? kind : undefined;
+    const vk = kind === 'merchant' || kind === 'alchemist' || kind === 'bakkal' || kind === 'pvp_honor' || kind === 'pvp_conquest' ? kind : undefined;
     if (vk) {
       try {
         this.entries = vendorApi.entries(vk);
@@ -211,7 +213,7 @@ export class VendorPanel extends ItemPanel {
     this.paintQty();
     // layout per kind: shops have tabs + a sell zone; the gamble and seal screens are single-purpose
     const special = this.special();
-    const shop = kind === 'merchant' || kind === 'alchemist';
+    const shop = kind === 'merchant' || kind === 'alchemist' || kind === 'bakkal';
     this.tabs.el.style.display = shop ? '' : 'none';
     this.sellZone.style.display = shop ? '' : 'none';
     this.junkBtn.style.display = shop ? '' : 'none';
@@ -228,7 +230,7 @@ export class VendorPanel extends ItemPanel {
 
   /** Does this vendor buy items from the bag? (shop kinds only) */
   canSell(): boolean {
-    return this.kind === 'merchant' || this.kind === 'alchemist';
+    return this.kind === 'merchant' || this.kind === 'alchemist' || this.kind === 'bakkal';
   }
 
   /** True for the gamble / seal screens (no classic buy list). */
@@ -365,8 +367,8 @@ export class VendorPanel extends ItemPanel {
   }
 
   /** Shop list kind for vendorApi.entries (after a purchase the list is rebuilt). */
-  private entriesKind(): 'merchant' | 'alchemist' | 'pvp_honor' | 'pvp_conquest' {
-    return this.kind === 'alchemist' || this.kind === 'pvp_honor' || this.kind === 'pvp_conquest' ? this.kind : 'merchant';
+  private entriesKind(): 'merchant' | 'alchemist' | 'bakkal' | 'pvp_honor' | 'pvp_conquest' {
+    return this.kind === 'alchemist' || this.kind === 'bakkal' || this.kind === 'pvp_honor' || this.kind === 'pvp_conquest' ? this.kind : 'merchant';
   }
 
   /** Recolor prices / stock without rebuilding the rows. */

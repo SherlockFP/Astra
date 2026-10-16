@@ -1,6 +1,7 @@
 import { G } from '../../game/G';
 import { CLASSES } from '../../data/classes';
 import { getMaterial } from '../../data/materials';
+import { getFlaskBase, isFlaskBase } from '../../data/flasks';
 import type { InputAction } from '../../core/Input';
 import type { AimInfo, SkillDef, SkillSlotKey } from '../../types/skills';
 import type { AutoInfo } from '../../combat/SkillSystem';
@@ -450,6 +451,7 @@ class Slot {
    */
   private updateMat(ctx: HudCtx): void {
     const id = this.matId ?? '';
+    const flask = isFlaskBase(id);
     if (this.shownMat !== id) {
       this.shownMat = id;
       const m = getMaterial(id);
@@ -469,12 +471,19 @@ class Slot {
     setDisplay(this.swing, false);
     for (const c of ITEM_OFF) setClass(this.el, c, false);
     setText(this.keyEl, G.input ? G.input.bindingLabel(this.spec.action) : '');
-    const n = itemCount(ctx.character?.save.materials ?? {}, id);
+    // a flask shows its charges and its own cooldown; food and other consumables show the pouch count and the shared cooldown
+    const n = flask ? (ctx.character?.save.flaskCharges?.[ctx.character?.save.flasks?.findIndex((f) => f?.baseId === id) ?? -1] ?? 0) : itemCount(ctx.character?.save.materials ?? {}, id);
     setClass(this.el, 'empty', n <= 0);
     setText(this.count, String(n));
     setClass(this.count, 'is-zero', n <= 0);
     setDisplay(this.count, n > 1 || n <= 0);
-    const cd = sharedCooldown(ctx.player?.statuses.get('potion_cd'));
+    const cd = flask
+      ? (() => {
+          const slot = ctx.character?.save.flasks?.findIndex((f) => f?.baseId === id) ?? -1;
+          const left = slot >= 0 ? G.combat?.flaskCooldown(slot) ?? 0 : 0;
+          return { remaining: left, total: getFlaskBase(id)?.cd ?? 0 };
+        })()
+      : sharedCooldown(ctx.player?.statuses.get('potion_cd'));
     const onCd = cd.remaining > 0.05 && cd.total > 0;
     setClass(this.el, 'oncd', onCd);
     setClass(this.el, 'has-edge', onCd && cd.total > 2);

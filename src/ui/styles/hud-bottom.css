@@ -181,6 +181,12 @@ body.pi-dragging .hud .ab-btn.is-socket > .k-plus { display: flex; }
 .hud .flask-row { display: flex; align-items: flex-end; gap: 1px; margin-left: 6px; }
 .hud .flask .k-fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: var(--flask-color, #d9a13a); opacity: 0.55; pointer-events: none; }
 .hud .flask.empty > .k-art { opacity: 0.5; }
+/* Sisli Matara: charge pips along the top edge (lit = a charge left), the cooldown sweep and its seconds */
+.hud .flask-pips { position: absolute; left: 2px; right: 2px; top: 2px; display: flex; gap: 2px; pointer-events: none; }
+.hud .flask-pip { flex: 1 1 0; height: 4px; border-radius: 2px; background: rgba(0, 0, 0, 0.55); border: 1px solid rgba(255, 255, 255, 0.18); }
+.hud .flask-pip.on { background: #e8c46a; border-color: #fff3c4; }
+.hud .flask-sweep { position: absolute; left: 0; right: 0; top: 0; height: 0; background: rgba(0, 0, 0, 0.55); pointer-events: none; }
+.hud .flask-cd-text { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; font-weight: 700; font-size: 14px; line-height: 1; color: #fff; text-shadow: 0 1px 2px #000; pointer-events: none; }
 
 /* XP strip on the bottom edge (§2.6.7): flat fill, three notches, 14 px hit area, "+N XP" floaters */
 .hud .xp-strip { position: relative; width: 100%; height: var(--xp-h); background: var(--ui-well); border-top: 1px solid var(--elv-border); pointer-events: auto; }

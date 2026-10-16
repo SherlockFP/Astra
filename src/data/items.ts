@@ -5,6 +5,8 @@
 import type { ItemBaseDef } from '../types/items';
 import { ITEM_BASES } from './itemBases';
 import { MATERIALS, type MaterialDef } from './materials';
+// food, drink and the Sisli Matara bar item register their materials (data/consumables.ts)
+import './consumables';
 
 export { ITEM_BASES, IMPLICIT_PER_ILVL, BASES_BY_CATEGORY, TIER_MIN_ILVL, tierForIlvl, tierRange, CLASS_ARMOR_WEIGHT, CLASS_WEAPONS, CLASS_OFFHANDS, CLASS_NAMES_TR, CATEGORY_NAMES_TR, ARMOR_WEIGHT_NAMES_TR, WEIGHT_CLASSES, isWeaponCategory, isArmorCategory, isEquipmentCategory, classCanUseBase, WEAPON_CATEGORIES, ARMOR_SLOT_CATEGORIES, OFFHAND_CATEGORIES, JEWELRY_CATEGORIES, TWO_HANDED_CATEGORIES } from './itemBases';
 export { ITEM_AFFIXES, AFFIX_BY_ID, getAffix, TIER_GATES, TIER_WEIGHTS, tierNumberOfGate, DECIMAL_PCT_STATS, CLASS_AFFINITY } from './affixes';
