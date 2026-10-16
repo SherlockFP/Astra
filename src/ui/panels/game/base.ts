@@ -559,7 +559,10 @@ export interface WinParts {
 
 export function windowFrame(o: WinOpts): WinParts {
   const titleEl = h('div.pg-title', null, o.title);
-  const head = h('div.pg-head', null, o.icon ? icon(o.icon, 'pg-head-ico') : null, titleEl, h('div.pg-head-spacer'));
+  // header icon as a flat mask tinted by --text-2 (like the kit's k-ico): an <img> with a background painted a white square
+  const headIco = o.icon ? h('span.pg-head-ico', null) : null;
+  if (headIco) headIco.style.setProperty('--ico', `url("${o.icon}")`);
+  const head = h('div.pg-head', null, headIco, titleEl, h('div.pg-head-spacer'));
   if (!o.noClose) {
     const x = h('button.pg-x', { type: 'button', title: 'Kapat' }, 'X') as HTMLButtonElement;
     x.addEventListener('click', () => o.onClose?.()); // the hud plays ui_close when the panel closes

@@ -15,6 +15,8 @@ export const DEFAULT_GRASS_DENSITY: GrassDensity = 'mid';
 
 /** Tuft candidates per square metre before the keep-out (generation is per cell, then split near / far at rebuild time). */
 const CLUSTERS_PER_M2: Record<GrassDensity, number> = { off: 0, low: 0.7, mid: 1.1, high: 1.6 };
+/** Near-tuft boost: extra tuft candidates inside NEAR (box clusters) at a density. Far cards are thinned by the same factor, so the far count stays put. */
+const NEAR_BOOST: Record<GrassDensity, number> = { off: 1, low: 1, mid: 1.5, high: 1 };
 /** Flower candidates per square metre. */
 const FLOWERS_PER_M2: Record<GrassDensity, number> = { off: 0, low: 0.03, mid: 0.05, high: 0.08 };
 
@@ -60,6 +62,11 @@ const PALETTES: Record<string, GrassPalette> = {
   r4: { root: 0x2f7a46, tip: 0xa6e06a, flowers: [0xd0a0ff, 0xffe06a, 0x80c0ff], clover: 0x3a9a50 },
   r5: { root: 0x947428, tip: 0xf2b65a, flowers: [0xff8a4a, 0xffe08a, 0xd8602a], clover: 0xa08a3a },
   r6: { root: 0x4f3380, tip: 0xab7cf0, flowers: [0xff5ad8, 0xc8f060, 0x9a6aff], clover: 0x6a3a9a },
+  // Karakir dry regions (dirt cover under the tufts): ochre / brown dry grass, not bright green
+  r8: { root: 0x6e4a24, tip: 0xc08a4a, flowers: [0xd9a441, 0xb0462a, 0xe8d8a0], clover: 0x7a6a3a },
+  r9: { root: 0x7d6a34, tip: 0xcaa862, flowers: [0xe8d8a0, 0xd9a441], clover: 0x8a7a44 },
+  r11: { root: 0x5e5648, tip: 0x9c9078, flowers: [0xc8b8a0, 0x8a7a6a], clover: 0x6e6a4a },
+  r12: { root: 0x6a5a3a, tip: 0xa8946a, flowers: [0xd8c8a0, 0xa0583a], clover: 0x7a6e48 },
 };
 const FROST: GrassPalette = { root: 0x7d9bb0, tip: 0xeef8ff, flowers: [0xffffff, 0xbfe6ff], clover: 0x9ec4d8 };
 const DEFAULT_PALETTE: GrassPalette = PALETTES.r1;
@@ -259,14 +266,14 @@ export class GrassField {
     }
   }
 
-  private perCellTufts(): number { return Math.ceil(CELL * CELL * CLUSTERS_PER_M2[this.density] * 1.6) + 4; }
+  private perCellTufts(): number { return Math.ceil(CELL * CELL * CLUSTERS_PER_M2[this.density] * NEAR_BOOST[this.density] * 1.6) + 4; }
   private perCellFlowers(): number { return Math.ceil(CELL * CELL * FLOWERS_PER_M2[this.density] * 1.6) + 2; }
 
   private cellOf(i: number, j: number): Cell {
     const key = (i + 32768) * 65536 + (j + 32768);
     const hit = this.cache.get(key);
     if (hit) return hit;
-    const dens = CLUSTERS_PER_M2[this.density], fdens = FLOWERS_PER_M2[this.density];
+    const dens = CLUSTERS_PER_M2[this.density] * NEAR_BOOST[this.density], fdens = FLOWERS_PER_M2[this.density];
     const nMax = this.perCellTufts(), fMax = this.perCellFlowers();
     const c: Cell = { n: 0, off: new Float32Array(nMax * 4), col: new Float32Array(nMax * 3), ph: new Float32Array(nMax * 2), foff: new Float32Array(fMax * 4), fcol: new Float32Array(fMax * 3), nf: 0 };
     const ox = i * CELL, oz = j * CELL;
@@ -356,7 +363,7 @@ export class GrassField {
         const x = c.off[k * 4], z = c.off[k * 4 + 2];
         const d = Math.hypot(x - camX, z - camZ);
         const toNear = d < NEAR;
-        if (!toNear && c.ph[k * 2 + 1] >= FAR_KEEP) continue;
+        if (!toNear && c.ph[k * 2 + 1] >= FAR_KEEP / NEAR_BOOST[this.density]) continue;
         const b = toNear ? nb : fb;
         const w = toNear ? nn++ : nf++;
         b.off.array.set(c.off.subarray(k * 4, k * 4 + 4), w * 4);

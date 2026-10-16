@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { setHouseWindowLevel } from './HouseKit';
+import { setCrystalGlowLevel } from './MagitechKit';
 import { glowTexture } from './ProceduralAssets';
 import type { Sky } from './Sky';
 
@@ -19,6 +20,7 @@ let nightOn = false;
 export function setNightPreview(on: boolean): void {
   nightOn = on;
   setHouseWindowLevel(on ? 1 : 0);
+  setCrystalGlowLevel(on ? 1 : 0);
 }
 
 export function isNightPreview(): boolean {

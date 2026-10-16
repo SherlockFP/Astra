@@ -149,10 +149,24 @@ export function boxesGeometry(boxes: Box[], mul: number): THREE.BufferGeometry {
 /** Shared material pair per process (lit body + HDR glow). */
 let bodyMat: THREE.MeshLambertMaterial | null = null;
 let glowMat: THREE.MeshBasicMaterial | null = null;
+/** Crystal glow level 0 (noon) .. 1 (night preview). By day the glow stays under the bloom threshold: no cyan halos. */
+let crystalGlow = 0;
 export function materials(): { body: THREE.MeshLambertMaterial; glow: THREE.MeshBasicMaterial } {
   bodyMat ??= new THREE.MeshLambertMaterial({ vertexColors: true });
-  glowMat ??= new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false });
+  if (!glowMat) {
+    glowMat = new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false });
+    glowMat.color.setScalar(0.55 + 0.45 * crystalGlow);
+  }
   return { body: bodyMat, glow: glowMat };
+}
+
+/**
+ * Night switch for the crystal glow (NightLight.setNightPreview). Day scale 0.55 keeps the cyan channel near 0.9 (luma about 0.55),
+ * night 1.0 keeps the full GLOW_GAIN look. Same 0.55 .. 1 mix as the house windows (HouseKit.setHouseWindowLevel).
+ */
+export function setCrystalGlowLevel(level: number): void {
+  crystalGlow = Math.min(1, Math.max(0, level));
+  materials().glow.color.setScalar(0.55 + 0.45 * crystalGlow);
 }
 
 /**
