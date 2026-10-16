@@ -159,7 +159,7 @@ const BOSSES = [
 ];
 
 // fog colour (= background) lifted a step so the entry room is readable on the first frame; the void behind the walls stays dark
-const THEME: DungeonTheme = { fogColor: 0x1c2422, fogNear: 8, fogFar: 38, ambient: 0x3c4a48, ambientIntensity: 0.35, hemiSky: 0x6a7a90, hemiGround: 0x201810, torchColor: 0xffa050, bloomStrength: 0.3, music: 'dungeon_crypt', palette: [0x2b2f2a, 0x5d6b5a, 0xd8d0b8, 0x7affc0, 0xffa050], tint: 0xc8d0c8 };
+const THEME: DungeonTheme = { fogColor: 0x1c2422, fogNear: 12, fogFar: 50, ambient: 0x3c4a48, ambientIntensity: 0.35, hemiSky: 0x6a7a90, hemiGround: 0x201810, torchColor: 0xffa050, bloomStrength: 0.3, music: 'dungeon_crypt', palette: [0x2b2f2a, 0x5d6b5a, 0xd8d0b8, 0x7affc0, 0xffa050], tint: 0xc8d0c8 };
 
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -524,7 +524,7 @@ const EXTRAS: NonNullable<DungeonDef['extras']> = {
   fontOfPower: pt(7, 34.2),
   shrines: [{ type: 'shrine_power', pos: pt(...at2(26, 2.5)) }, { type: 'shrine_haste', pos: pt(...at2(37, 33)) }],
   riftSpots: ([[8, 24], [21, 6], [34, 7], [33, 30], [19, 20], [6.5, 30]] as [number, number][]).map(([x, z]) => pt(...at2(x, z))),
-  chests: [{ pos: pt(11.7, 17.4), kind: 'chest_wood' }, { pos: pt(...at2(37, 28)), kind: 'chest_gold' }],
+  chests: [{ pos: pt(11.7, 17.4), kind: 'chest_wood' }, { pos: pt(...at2(37, 28)), kind: 'chest_gold' }, { pos: pt(27.5, 2.5), kind: 'chest_iron' }],
 };
 
 export const KEMIK_MAHZENI: DungeonDef = {
