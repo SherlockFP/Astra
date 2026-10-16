@@ -167,6 +167,8 @@ export interface SettingsData {
   barGhostRev: number;
   /** Görüntü Kalitesi (world/WorldPerf): scenery draw distances, voxel LOD tiers and ground-cover density. Visual only; same world on every peer. 'mid' (Orta) is the default. */
   graphicsQuality: 'low' | 'mid' | 'high';
+  /** Çimen yoğunluğu (world/GrassField): dense grass blades and flowers near the camera. 'off' hides them. Default 'mid' (Orta). */
+  grassDensity: 'off' | 'low' | 'mid' | 'high';
   /** Revision of the crisp-look defaults (psx off, no jitter / affine / dither). Stored files below 1 get them once (see the constructor). */
   gfxLookRev: number;
   /** Revision of the WoW-clarity defaults (renderScale 2 = native device pixels). Stored files below 1 get renderScale 2 once. */
@@ -302,6 +304,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   controlsHintShown: true,
   barGhostRev: 1,
   graphicsQuality: 'mid',
+  grassDensity: 'mid',
   gfxLookRev: 1,
   gfxClarityRev: 1,
   // AUDIO_MIX (audioRev 1)
@@ -433,6 +436,7 @@ export class Settings {
     this.data.schemeBindings = this.data.schemeBindings ?? {};
     this.data.cameraDistanceWow = Number.isFinite(this.data.cameraDistanceWow) ? Math.min(35, Math.max(2, this.data.cameraDistanceWow)) : 13;
     if (this.data.graphicsQuality !== 'low' && this.data.graphicsQuality !== 'mid' && this.data.graphicsQuality !== 'high') this.data.graphicsQuality = 'mid';
+    if (!['off', 'low', 'mid', 'high'].includes(this.data.grassDensity as string)) this.data.grassDensity = 'mid';
     if (this.data.combatSoundLevel !== 'low' && this.data.combatSoundLevel !== 'normal') this.data.combatSoundLevel = 'normal';
     this.data.ambienceVolume = Number.isFinite(this.data.ambienceVolume) ? Math.min(1, Math.max(0, this.data.ambienceVolume)) : 0.4;
     this.data.settingsVersion = SETTINGS_VERSION;

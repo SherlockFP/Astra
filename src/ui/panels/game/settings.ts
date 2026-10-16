@@ -208,6 +208,20 @@ export class SettingsPanel extends GamePanel {
           ),
           'Ağaç, kaya ve ot çizim mesafesi ile detay kademeleri. Düşük değer FPS kazandırır',
         ),
+        row(
+          'Çimen yoğunluğu',
+          selectBox<SettingsData['grassDensity']>(
+            [
+              { value: 'off', label: 'Kapalı' },
+              { value: 'low', label: 'Düşük' },
+              { value: 'mid', label: 'Orta' },
+              { value: 'high', label: 'Yüksek' },
+            ],
+            G.settings.get('grassDensity'),
+            (v) => G.settings.set('grassDensity', v),
+          ),
+          'Yakın çimen ve çiçek yoğunluğu. Kapalı ve Düşük FPS kazandırır',
+        ),
         this.num('renderScale', 'Çözünürlük Ölçeği', 0.5, 2, 0.25, (v) => `${v}x`, 'Düşük değer FPS kazandırır'),
         this.num('fov', 'Görüş Açısı (FOV)', 40, 100, 1, (v) => `${v}°`),
         this.flag('showFps', 'FPS Göstergesi'),
