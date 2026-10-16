@@ -76,3 +76,19 @@ The page URLs of these packs are derived from the download slugs and were not op
 Credits screen line (all optional, the Bestiary licence asks for no credit):
 
 > Monsters: Bestiary (Imp, Puglin) and Universal Animation Library by Quaternius · Fantasy Creatures by algumacoisaqq
+
+
+## Group: player class bodies (KayKit Adventurers 2.0 + Character Animations)
+
+| Pack | Author | Licence | Source | Used in |
+|---|---|---|---|---|
+| KayKit Adventurers 2.0 (Free tier, 12 MB zip) | Kay Lousberg (www.kaylousberg.com) | CC0 1.0 (pack `License.txt`, copied as `LICENSE-KayKit-Adventurers-2.0.txt`). The itch.io page says no attribution is required. The EXTRA tier (Druid, Engineer, Barbarian_Large) is paid and was **not** used. | https://kaylousberg.itch.io/kaykit-adventurers | `/assets/models/characters/v2/{Knight,Barbarian,Mage,Rogue,Rogue_Hooded,Ranger}.glb` (unmodified, 0.34 to 0.48 MB each, Rig_Medium, no clips, no weapon nodes) |
+| KayKit Character Animations 1.1 (Free tier, 14.9 MB zip) | Kay Lousberg | CC0 1.0 (pack `License.txt`, copied as `anims/LICENSE-KayKit-Character-Animations-1.1.txt`) | https://kaylousberg.itch.io/kaykit-character-animations | `/assets/models/characters/v2/anims/Rig_Medium_{General,MovementBasic,MovementAdvanced,CombatMelee,CombatRanged,Simulation}.glb` (unmodified, 0.7 to 1.0 MB each; each file also holds an unused mannequin mesh) |
+
+Checked and not added: KayKit Skeletons 1.1 Free (https://kaylousberg.itch.io/kaykit-skeletons, CC0): its four skeletons are already in the repo as `enemies/Skeleton_*.glb` (1.0), and enemy models make poor player bodies (friend and foe would look the same). Quaternius Modular Character Outfits - Fantasy (CC0, 280 MB zip, different rig) and Universal Animation Library were looked at and rejected for size and rig reasons.
+
+How the 2.0 bodies are wired (`src/entities/CharacterModel.ts`): the `rig2` classes load the 2.0 body, merge the clips of the six `Rig_Medium_*` files under their 1.0 names (`rig2ClipName`: `Melee_1H_Attack_Chop` -> `1H_Melee_Attack_Chop`, `Idle_A` -> `Idle`, `Ranged_Magic_Spellcasting` -> `Spellcasting`, ...), and mount stand-in weapon holders (named like the 1.0 embedded nodes, from `/assets/models/weapons/`) on `handslot.r` / `handslot.l`. The voxel remap does not know the `v2/` files yet: run `python -I tools/voxel/run_all.py` (the new `characters/v2/*.glb` need manifest entries) and `node tools/voxel/build_remap.mjs` on a machine with Python and numpy to give them the voxel look.
+
+Credits screen line (all optional):
+
+> Characters: KayKit Adventurers and Character Animations by Kay Lousberg - CC0
