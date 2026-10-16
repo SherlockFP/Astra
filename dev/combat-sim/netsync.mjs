@@ -548,6 +548,216 @@ const SLOW = 'slow';
   rep.dispose();
 }
 
+// ================================================================================================ enemy.* (host + 2 side-by-side clients)
+// The host spawns the camp, a sleeper, a stealth member and a dynamic add; two clients stand side by side FAR from the host and must
+// see the same enemies. The wire is an in-memory queue (codec applied), the receivers and the snapshot stream are the real ones
+// (Replication, EnemyFactory 'spawn' / 'snap' / resync). Only the GLB load is stubbed (as in camp_respawn.mjs).
+{
+  const { World } = await H.imp('world/World.ts');
+  const { Enemy } = await H.imp('entities/Enemy.ts');
+  const { spawnEnemy } = await H.imp('entities/EnemyFactory.ts');
+  const { spawnPayloadOf } = await H.imp('scenes/world/util.ts');
+  const { DUNGEON_ENEMY_ID_BASE } = await H.imp('types/common.ts');
+  Enemy.prototype.loadModel = async function loadModelStub() {};
+  G.mplus.onEnemySpawned = () => {};
+  const savedNet = G.net;
+  const savedWorld = G.world;
+  const TRASH = 'ys_nobet_muhafizi';
+  const SCENE_ID = 150; // deterministic scene-start enemy, present on every peer like a dungeon spawn
+  const members = new Set(['h', 'p1', 'p2']);
+  const nets = new Map();
+  const bus = { q: [], drop: () => false };
+  const flush = () => new Promise((r) => setImmediate(r));
+
+  const mkNet = (self, isHost, partySize) => {
+    const handlers = new Map();
+    const requests = new Map();
+    const net = {
+      selfId: self, role: isHost ? 'host' : 'client', hostId: 'h', isAuthority: isHost, localSlot: 0, partySize,
+      sceneIsReady: true, channel: 'test', inOpenWorld: true, peers: new Map(),
+      on(ch, h) { const s = handlers.get(ch) ?? new Set(); s.add(h); handlers.set(ch, s); return () => s.delete(h); },
+      onRequest(kind, h) { requests.set(kind, h); return () => requests.delete(kind); },
+      sendRequest(kind, data) { bus.q.push({ to: 'h', req: true, kind, data, from: self }); },
+      sendTo(peer, ch, payload) { if (peer !== self) bus.q.push({ to: peer, ch, payload, from: self }); },
+      broadcast(ch, payload) { for (const m of members) if (m !== self) bus.q.push({ to: m, ch, payload, from: self }); },
+      remotePeers() { return [...net.peers.values()].filter((p) => p.peerId !== self); },
+      ledgerNote() {}, ledgerRemaining: () => 0,
+      _handlers: handlers, _requests: requests,
+    };
+    return net;
+  };
+  const link = (net) => { for (const m of members) net.peers.set(m, { peerId: m, slot: m === 'p1' ? 0 : m === 'p2' ? 1 : 2, name: m }); };
+  const use = (id) => { const n = nets.get(id); G.net = n.net; G.world = n.world; };
+
+  /** Delivers the queue: a request runs the host's handler, a channel message goes through the codec to the receiver's handlers. */
+  const pump = () => {
+    let guard = 0;
+    while (bus.q.length && guard++ < 20000) {
+      const m = bus.q.shift();
+      if (bus.drop(m)) continue;
+      const to = nets.get(m.to);
+      if (!to) continue;
+      use(m.to);
+      if (m.req) { to.net._requests.get(m.kind)?.(m.data, m.from); continue; }
+      if (m.ch !== 'spawn' && m.ch !== 'snap') continue;
+      const payload = decodePayload(m.ch, encodePayload(m.ch, m.payload));
+      for (const h of [...(to.net._handlers.get(m.ch) ?? [])]) h(payload, m.from);
+    }
+  };
+  /** Host frame + client frames at 15 Hz (the host streams at SNAPSHOT_HZ), receivers settle between frames. */
+  const run = async (secs) => {
+    for (let i = 0; i < Math.round(secs * 15); i++) {
+      G.engine.time += 1 / 15;
+      for (const id of ['h', 'p1', 'p2', 'p3']) {
+        if (!nets.has(id)) continue;
+        use(id);
+        nets.get(id).rep.update(1 / 15);
+        pump();
+        await flush();
+      }
+    }
+  };
+
+  /** What a peer shows for every enemy: alive, HP, the stealth flags, and where it stands (peers: the interpolated sample). */
+  const viewOf = (world, host) => {
+    const out = new Map();
+    for (const e of world.enemies) {
+      if (e.removed || e.id < DUNGEON_ENEMY_ID_BASE || e.id >= 900000) continue;
+      const L = host ? null : e.interp?.latest;
+      out.set(e.id, { alive: !e.isDead, hp: Math.round(e.hp), maxHp: Math.round(e.maxHp), stealth: !!e.packStealth, hidden: !!e.hidden, x: L ? L.x : e.position.x, z: L ? L.z : e.position.z });
+    }
+    return out;
+  };
+  const diff = (a, b) => {
+    if (a.size !== b.size) return `${a.size} vs ${b.size} enemies`;
+    for (const [id, x] of a) {
+      const y = b.get(id);
+      if (!y) return `#${id} missing on the peer`;
+      if (x.alive !== y.alive) return `#${id} alive ${x.alive} vs ${y.alive}`;
+      if (x.maxHp !== y.maxHp) return `#${id} maxHp ${x.maxHp} vs ${y.maxHp}`;
+      if (Math.abs(x.hp - y.hp) > 1 + 0.02 * x.maxHp) return `#${id} hp ${x.hp} vs ${y.hp}`;
+      if (Math.hypot(x.x - y.x, x.z - y.z) > 1) return `#${id} position ${x.x.toFixed(1)},${x.z.toFixed(1)} vs ${y.x.toFixed(1)},${y.z.toFixed(1)}`;
+      if (x.stealth !== y.stealth || x.hidden !== y.hidden) return `#${id} hidden ${x.hidden} vs ${y.hidden}`;
+    }
+    return '';
+  };
+  const checkSame = (label, p) => {
+    const hv = viewOf(nets.get('h').world, true);
+    for (const id of p) {
+      const d = diff(hv, viewOf(nets.get(id).world, false));
+      ok(`enemy.${label} ${id} sees the same enemies as the host (${hv.size} bodies)`, d === '', d);
+    }
+  };
+  /** Host spawns a camp / stealth / sleeping body and announces it the way CampDirector does (explicit id). */
+  const spawnCamp = async (id, [x, z], opts = {}) => {
+    use('h');
+    const e = await spawnEnemy(nets.get('h').world, TRASH, { x, z }, { id, level: 6, packId: 'camp_a', openWorld: true, ...opts });
+    use('h');
+    hostNetBroadcast('spawn', spawnPayloadOf(e));
+    return e;
+  };
+  const hostNetBroadcast = (ch, p) => nets.get('h').net.broadcast(ch, p);
+  const addPeer = async (id, slot, partySize) => {
+    const net = mkNet(id, false, partySize);
+    const world = new World(new H.THREE.Scene());
+    nets.set(id, { net, world, rep: null });
+    link(net);
+    use(id);
+    await spawnEnemy(world, TRASH, { x: 200, z: 200 }, { id: SCENE_ID, level: 6 }); // the scene-start body (also registers the receivers)
+    const rep = new Replication(net);
+    rep.setActive(true);
+    nets.get(id).rep = rep;
+    return net;
+  };
+
+  // host: no body of its own near the fight, two remote players side by side at (200,200), 200 m away
+  const hostNet = mkNet('h', true, 3);
+  const hostWorld = new World(new H.THREE.Scene());
+  nets.set('h', { net: hostNet, world: hostWorld, rep: null });
+  link(hostNet);
+  hostNet.peers.delete('h');
+  use('h');
+  await spawnEnemy(hostWorld, TRASH, { x: 200, z: 200 }, { id: SCENE_ID, level: 6 });
+  const hostRep = new Replication(hostNet);
+  hostRep.setActive(true);
+  nets.get('h').rep = hostRep;
+  for (const [id, slot, x, z] of [['p1', 0, 200, 200], ['p2', 1, 201, 200]]) {
+    const p = new Player({ id: PARTY_ID_BASE + slot, slot, classId: 'priest', name: id, level: 20, isLocal: false, peerId: id });
+    p.position.set(x, 0, z);
+    hostWorld.add(p);
+  }
+  await addPeer('p1', 0, 2);
+  await addPeer('p2', 1, 2);
+
+  // A. the camp, a sleeper, a stealth member and a dynamic add, all 200 m from the host
+  await spawnCamp(DUNGEON_ENEMY_ID_BASE, [200.5, 201], { stealth: true });
+  await spawnCamp(DUNGEON_ENEMY_ID_BASE + 1, [200.5, 203], { dormant: true });
+  use('h');
+  const dyn = await spawnEnemy(hostWorld, TRASH, { x: 201, z: 202 }, { level: 6, openWorld: true });
+  await run(1.5);
+  checkSame('spawn', ['p1', 'p2']);
+
+  // B. a death on the host reaches both clients
+  const c1 = hostWorld.get(DUNGEON_ENEMY_ID_BASE);
+  c1.hp = 0;
+  c1.alive = false;
+  await run(1.5);
+  checkSame('death', ['p1', 'p2']);
+
+  // C. a stealth member the host reveals (its AI does that, no aggro flag): both clients must reveal it too
+  const c3 = await spawnCamp(DUNGEON_ENEMY_ID_BASE + 2, [200.5, 205], { stealth: true });
+  await run(1);
+  checkSame('stealth.hidden', ['p1', 'p2']);
+  c3.hidden = false;
+  c3.setAlpha(1);
+  await run(1);
+  checkSame('stealth.reveal', ['p1', 'p2']);
+
+  // D. the camp respawns under the same id after the old body was removed on the host
+  c1.destroy();
+  await spawnCamp(DUNGEON_ENEMY_ID_BASE, [200.5, 201]);
+  await run(1.5);
+  checkSame('respawn', ['p1', 'p2']);
+  ok('enemy.respawn the respawned camp member is alive on both clients', viewOf(nets.get('p1').world, false).get(DUNGEON_ENEMY_ID_BASE)?.alive === true && viewOf(nets.get('p2').world, false).get(DUNGEON_ENEMY_ID_BASE)?.alive === true);
+
+  // E. a late joiner, also far from the host: it gets the camp, the sleeper, the stealth member and the dynamic add
+  hostNet.peers.set('p3', { peerId: 'p3', slot: 2, name: 'p3' });
+  members.add('p3');
+  const p3 = new Player({ id: PARTY_ID_BASE + 2, slot: 2, classId: 'priest', name: 'p3', level: 20, isLocal: false, peerId: 'p3' });
+  p3.position.set(199, 0, 199);
+  hostWorld.add(p3);
+  await addPeer('p3', 2, 2);
+  for (const id of ['p1', 'p2']) nets.get(id).net.peers.set('p3', { peerId: 'p3', slot: 2, name: 'p3' });
+  await run(1.5);
+  checkSame('latejoin', ['p1', 'p2', 'p3']);
+
+  // F. a spawn lost on its way to p2: the snapshot names an enemy p2 has no body for, p2 asks, the host announces it again
+  // (no broadcast here: the announce path is the one that must recover it, so the host believes p2 has been told)
+  let dropped = 0;
+  bus.drop = (m) => {
+    if (m.ch === 'spawn' && m.to === 'p2' && dropped < 1) {
+      dropped++;
+      return true;
+    }
+    return false;
+  };
+  use('h');
+  await spawnEnemy(hostWorld, TRASH, { x: 201, z: 204 }, { id: DUNGEON_ENEMY_ID_BASE + 3, level: 6, packId: 'camp_a', openWorld: true });
+  await run(2);
+  ok('enemy.resync the announce to p2 was really dropped once', dropped === 1, `dropped ${dropped}`);
+  checkSame('resync', ['p1', 'p2', 'p3']);
+  bus.drop = () => false;
+
+  // G. a dynamic add the host removes (escape) is gone everywhere
+  use('h');
+  dyn.escape();
+  await run(1);
+  checkSame('remove', ['p1', 'p2', 'p3']);
+
+  G.net = savedNet;
+  G.world = savedWorld;
+}
+
 // ---------------------------------------------------------------------------------------------- report
 G.player = undefined;
 const total = passes + fails;

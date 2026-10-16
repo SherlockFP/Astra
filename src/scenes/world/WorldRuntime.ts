@@ -9,6 +9,7 @@ import type { BuiltDungeon } from '../../world/DungeonBuilder';
 import type { World } from '../../world/World';
 import type { EventScope } from '../../core/EventBus';
 import { RNG, hashString } from '../../core/utils';
+import { DUNGEON_ENEMY_ID_BASE, MINION_ID_BASE } from '../../types/common';
 import type { DungeonParams } from '../scenes';
 import { CampDirector } from './CampDirector';
 import { MetinDirector } from './MetinDirector';
@@ -273,13 +274,11 @@ export class WorldRuntime {
 
   /** Host: a new peer joins a running world. Re-sends every live host entity with its explicit id (and champion plates). */
   private resendTo(peerId: string): void {
-    this.camps.resendTo(peerId);
-    const dynamic: Enemy[] = [
-      ...this.metin.liveEnemies(),
-      ...this.rares.liveEnemies(),
-      ...this.minis.liveEnemies(),
-      ...this.bosses.liveEnemies(),
-    ];
+    // every live host enemy, not only the directors' lists: EventCalendar raids and caravans, summons and anything a future director
+    // spawns were missing from them, and a late joiner that never got such an id drops its snapshots for good (snapUnknown)
+    const dynamic: Enemy[] = (this.o.world.enemies as Enemy[]).filter(
+      (e) => !e.removed && !e.isDead && e.id >= DUNGEON_ENEMY_ID_BASE && e.id < MINION_ID_BASE,
+    );
     for (const e of dynamic) {
       try {
         G.net.sendTo(peerId, 'spawn', spawnPayloadOf(e));
