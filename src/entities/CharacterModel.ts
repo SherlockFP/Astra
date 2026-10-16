@@ -61,6 +61,7 @@ export interface CharacterModel {
 // ---------------------------------------------------------------------------------------------------------------------
 
 const KAYKIT = '/assets/models/characters/';
+const V2 = KAYKIT + 'v2/';
 
 /** Target standing height of a player model in metres (a human, next to ~2.4 m doors). */
 export const CHARACTER_HEIGHT = 1.8;
@@ -70,6 +71,20 @@ export const KAYKIT_NATIVE_HEIGHT = 2.31;
 interface ClassVisual {
   url: string;
   plainUrl?: string;
+  /**
+   * KayKit Adventurers 2.0 body (Rig_Medium, public/assets/models/characters/v2/): the file carries no clips and no weapon nodes.
+   * The clips come from the shared Rig_Medium animation files (RIG2_ANIM_FILES, renamed to the 1.0 clip names) and the weapon /
+   * shield nodes are stand-in holders loaded from /assets/models/weapons/ (STANDIN), so everything below works unchanged.
+   */
+  rig2?: boolean;
+  /** Measured rest body height of this model (m); default KAYKIT_NATIVE_HEIGHT. The holder is scaled CHARACTER_HEIGHT / native. */
+  native?: number;
+  /** Extra built-in nodes toggled together with `helm` (e.g. the Knight 2.0 visor). */
+  helmExtra?: string[];
+  /** Built-in accessory nodes switched off for this class (e.g. the Ranger quiver on a druid). */
+  hideNodes?: string[];
+  /** The body already wears a quiver: a quiver off-hand item is not mounted twice. */
+  hasQuiver?: boolean;
   resource: ResourceType;
   main: string[];        // default built-in right-hand nodes
   off: string[];         // default built-in left-hand nodes
@@ -82,19 +97,18 @@ export const CLASS_VISUALS: Record<ClassId, ClassVisual> = {
   barbarian: { url: KAYKIT + 'Barbarian.glb', resource: 'rage', main: ['2H_Axe'], off: [], helm: 'Barbarian_Hat', shield: 'Barbarian_Round_Shield' },
   mage: { url: KAYKIT + 'Mage.glb', resource: 'mana', main: ['2H_Staff'], off: [], helm: 'Mage_Hat', shield: null },
   rogue: { url: KAYKIT + 'Rogue_Hooded.glb', plainUrl: KAYKIT + 'Rogue.glb', resource: 'energy', main: ['Knife'], off: ['Knife_Offhand'], helm: null, shield: null },
-  // GDD_CLASSES_V2 §2.2–§6.2 (NC04): stand-in recipes of the new classes (their visuals are ClassDefX.visual, NC07)
-  monk: { url: KAYKIT + 'Barbarian.glb', resource: 'energy', main: [], off: [], helm: 'Barbarian_Hat', shield: null },
-  archer: { url: KAYKIT + 'Rogue.glb', resource: 'focus', main: [], off: [], helm: null, shield: null },
-  paladin: { url: KAYKIT + 'Knight.glb', resource: 'faith', main: ['1H_Sword'], off: [], helm: 'Knight_Helmet', shield: 'Round_Shield' },
-  necromancer: { url: KAYKIT + 'Mage.glb', resource: 'essence', main: ['2H_Staff'], off: [], helm: 'Mage_Hat', shield: null },
-  warlock: { url: KAYKIT + 'Rogue_Hooded.glb', resource: 'mana', main: [], off: [], helm: null, shield: null },
-  // CORE_MECHANICS §2 (CM1): stand-in recipes of the two new classes (ClassDefX.visual is the real recipe, CM10 / CM12)
-  demonhunter: { url: KAYKIT + 'Rogue_Hooded.glb', resource: 'fury', main: [], off: [], helm: null, shield: null },
+  // Class bodies (itch.io KayKit Adventurers 2.0 + Character Animations, docs/assets/credits-itch.md). A class keeps one of the five
+  // 1.0 bodies above or gets a Rig_Medium 2.0 body (rig2), so the 14 classes read as 12 different silhouettes.
+  monk: { url: KAYKIT + 'Rogue.glb', resource: 'energy', main: [], off: [], helm: null, shield: null },
+  archer: { url: V2 + 'Ranger.glb', rig2: true, native: 2.275, hasQuiver: true, resource: 'focus', main: [], off: [], helm: null, shield: null },
+  paladin: { url: V2 + 'Knight.glb', rig2: true, native: 2.284, resource: 'faith', main: ['1H_Sword'], off: [], helm: 'Knight_Helmet', helmExtra: ['Knight_HelmetVisor'], shield: 'Round_Shield' },
+  necromancer: { url: V2 + 'Rogue_Hooded.glb', rig2: true, native: 2.173, resource: 'essence', main: ['2H_Staff'], off: [], helm: null, shield: null },
+  warlock: { url: V2 + 'Mage.glb', rig2: true, native: 2.162, resource: 'mana', main: [], off: [], helm: 'Mage_Hat', shield: null },
+  demonhunter: { url: V2 + 'Rogue.glb', rig2: true, native: 2.18, resource: 'fury', main: [], off: [], helm: null, shield: null },
   evoker: { url: KAYKIT + 'Mage.glb', resource: 'mana', main: ['2H_Staff'], off: [], helm: 'Mage_Hat', shield: null },
-  // CLASS SCAFFOLD stand-in recipes (Rahip / Şaman on the Mage rig, Druid on the hooded Rogue rig)
-  priest: { url: KAYKIT + 'Mage.glb', resource: 'mana', main: ['2H_Staff'], off: [], helm: 'Mage_Hat', shield: null },
-  shaman: { url: KAYKIT + 'Mage.glb', resource: 'mana', main: [], off: [], helm: 'Mage_Hat', shield: null },
-  druid: { url: KAYKIT + 'Rogue_Hooded.glb', resource: 'mana', main: [], off: [], helm: null, shield: null },
+  priest: { url: V2 + 'Mage.glb', rig2: true, native: 2.162, resource: 'mana', main: ['2H_Staff'], off: [], helm: null, shield: null },
+  shaman: { url: V2 + 'Barbarian.glb', rig2: true, native: 2.186, resource: 'mana', main: [], off: [], helm: 'Barbarian_BearHat', shield: null },
+  druid: { url: V2 + 'Ranger.glb', rig2: true, native: 2.275, hideNodes: ['Ranger_Quiver'], resource: 'mana', main: [], off: [], helm: null, shield: null },
 };
 
 /**
@@ -159,9 +173,9 @@ const WEAPON_NODES = new Set([
   'Round_Shield', 'Badge_Shield', 'Rectangle_Shield', 'Spike_Shield', '1H_Sword_Offhand', '1H_Axe_Offhand', 'Barbarian_Round_Shield',
   'Spellbook', 'Spellbook_open', 'Knife_Offhand',
 ]);
-const HELM_NODES = new Set(['Knight_Helmet', 'Barbarian_Hat', 'Mage_Hat']);
+const HELM_NODES = new Set(['Knight_Helmet', 'Knight_HelmetVisor', 'Barbarian_Hat', 'Barbarian_BearHat', 'Mage_Hat']);
 // toggled by name (applyVisibility / setNodeOverride): these KayKit nodes must never be merged into the body mesh
-Assets.keepNodeNames([...WEAPON_NODES, ...HELM_NODES]);
+Assets.keepNodeNames([...WEAPON_NODES, ...HELM_NODES, 'Ranger_Quiver']);
 
 /** Built-in node used as a stand-in when an item has no model GLB, by item category. */
 const MAIN_STANDIN: Record<string, string[]> = {
@@ -224,6 +238,109 @@ function attachFor(base: ItemBaseDef | undefined, slot: 'weapon' | 'offhand' | '
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
+// Rig_Medium (KayKit Adventurers 2.0) bodies: shared animation files and weapon stand-ins
+// ---------------------------------------------------------------------------------------------------------------------
+
+/** Shared Rig_Medium animation files (KayKit Character Animations 1.1). Each also carries a mannequin mesh that is never used. */
+const RIG2_ANIM_FILES = ['General', 'MovementBasic', 'MovementAdvanced', 'CombatMelee', 'CombatRanged', 'Simulation'].map((n) => `${V2}anims/Rig_Medium_${n}.glb`);
+
+/** 2.0 clip name -> the 1.0 name the game code looks up (AnimController.pick chains, combat clip tables). */
+export function rig2ClipName(n: string): string {
+  if (n === 'Idle_A') return 'Idle';
+  if (n === 'Cheering') return 'Cheer';
+  if (n === 'Waving') return 'Wave';
+  let m = /^Melee_(1H|2H|Dualwield|Unarmed)_(.+)$/.exec(n);
+  if (m) return m[1] + '_Melee_' + m[2];
+  m = /^Melee_(Block.*)$/.exec(n);
+  if (m) return m[1];
+  m = /^Ranged_(1H|2H)_(.+)$/.exec(n);
+  if (m) return m[1] + '_Ranged_' + m[2];
+  switch (n) {
+    case 'Ranged_Magic_Spellcasting': return 'Spellcasting';
+    case 'Ranged_Magic_Spellcasting_Long': return 'Spellcast_Long';
+    case 'Ranged_Magic_Raise': return 'Spellcast_Raise';
+    case 'Ranged_Magic_Shoot': return 'Spellcast_Shoot';
+    case 'Ranged_Magic_Summon': return 'Spellcast_Summon';
+  }
+  return n;
+}
+
+let rig2Clips: Promise<THREE.AnimationClip[]> | null = null;
+/** All Rig_Medium clips under their 1.0 names (loaded once, shared by every 2.0 body; mixers never mutate clips). */
+function loadRig2Clips(): Promise<THREE.AnimationClip[]> {
+  rig2Clips ??= (async () => {
+    const out: THREE.AnimationClip[] = [];
+    const seen = new Set<string>();
+    for (const url of RIG2_ANIM_FILES) {
+      const a = await G.assets.load(url);
+      if (!a) {
+        warnOnce('anim:' + url, `[character] animation file failed to load: ${url}`);
+        continue;
+      }
+      for (const c of a.clips) {
+        if (c.name === 'T-Pose' || c.name.startsWith('EXPERIMENTAL')) continue;
+        const name = rig2ClipName(c.name);
+        if (seen.has(name)) continue;
+        seen.add(name);
+        const k = c.clone();
+        k.name = name;
+        out.push(k);
+      }
+    }
+    // the 1.0 set has a second punch; 2.0 only ships one
+    const punch = out.find((c) => c.name === 'Unarmed_Melee_Attack_Punch_A');
+    if (punch && !seen.has('Unarmed_Melee_Attack_Punch_B')) {
+      const k = punch.clone();
+      k.name = 'Unarmed_Melee_Attack_Punch_B';
+      out.push(k);
+    }
+    return out;
+  })();
+  return rig2Clips;
+}
+
+/**
+ * The 1.0 bodies carry their weapons as named child nodes; a 2.0 body carries none. These stand-ins are holder nodes with the
+ * same names on the same hand bones (the separate weapon meshes of /assets/models/weapons/ at the documented grip transforms),
+ * so default loadouts, MAIN_STANDIN / OFF_STANDIN, visibility, size multipliers and weapon tips need no special case.
+ */
+const WEAPON_DIR = '/assets/models/weapons/';
+type StandinAttach = 'blade' | 'stick' | 'crossbow' | 'offBlade' | 'shield' | 'bookClosed' | 'bookOpen';
+const STANDIN: Record<string, { file: string; attach: StandinAttach; mirror?: boolean }> = {
+  '1H_Sword': { file: 'sword_1handed', attach: 'blade' },
+  '2H_Sword': { file: 'sword_2handed', attach: 'blade' },
+  '1H_Axe': { file: 'axe_1handed', attach: 'blade' },
+  '2H_Axe': { file: 'axe_2handed', attach: 'blade' },
+  Knife: { file: 'dagger', attach: 'stick' },
+  '2H_Staff': { file: 'staff', attach: 'stick' },
+  '1H_Wand': { file: 'wand', attach: 'stick' },
+  '1H_Crossbow': { file: 'crossbow_1handed', attach: 'crossbow' },
+  '2H_Crossbow': { file: 'crossbow_2handed', attach: 'crossbow' },
+  '1H_Sword_Offhand': { file: 'sword_1handed', attach: 'offBlade' },
+  '1H_Axe_Offhand': { file: 'axe_1handed', attach: 'offBlade' },
+  Knife_Offhand: { file: 'dagger', attach: 'offBlade', mirror: true },
+  Round_Shield: { file: 'shield_round', attach: 'shield' },
+  Badge_Shield: { file: 'shield_badge', attach: 'shield' },
+  Spike_Shield: { file: 'shield_spikes', attach: 'shield' },
+  Rectangle_Shield: { file: 'shield_square', attach: 'shield' },
+  Barbarian_Round_Shield: { file: 'shield_round_barbarian', attach: 'shield' },
+  Spellbook: { file: 'spellbook_closed', attach: 'bookClosed' },
+  Spellbook_open: { file: 'spellbook_open', attach: 'bookOpen' },
+};
+
+/** Stand-in node names a 2.0 class can show: its default loadout, its shield and the stand-ins of its weapon / off-hand categories. */
+function standinNames(classId: ClassId, spec: ClassVisual): string[] {
+  const names = new Set<string>([...spec.main, ...spec.off]);
+  if (spec.shield) names.add(spec.shield);
+  const def = CLASSES[classId];
+  for (const c of def?.weapons ?? []) for (const n of MAIN_STANDIN[c] ?? []) names.add(n);
+  for (const c of def?.offhands ?? []) for (const n of OFF_STANDIN[c] ?? []) names.add(n);
+  return [...names].filter((n) => STANDIN[n]);
+}
+
+const standinUrl = (name: string): string => WEAPON_DIR + STANDIN[name].file + '.gltf';
+
+// ---------------------------------------------------------------------------------------------------------------------
 // Colour variants (palette recolour). KayKit uses one palette texture per class; skin/leather/wood hues are protected.
 // ---------------------------------------------------------------------------------------------------------------------
 
@@ -248,6 +365,8 @@ const ANCHOR_HUE: Record<ClassId, number> = {
   // CLASS SCAFFOLD: paletteClass mage (252) for priest and shaman, rogue (152) for druid
   priest: 252, shaman: 252, druid: 152,
 };
+// NOTE: the 2.0 bodies (archer, paladin, necromancer, warlock, demonhunter, priest, shaman, druid) have their own palettes; the
+// anchors above are the 1.0 hues of the palette class and are only approximate for them (variant hue shifts are relative).
 
 export const CHARACTER_VARIANTS: VariantDef[] = [
   { name: 'Klasik', target: 0, trim: 0, sat: 1, val: 1, metalAmt: 0, swatch: '#e8e2d2' },
@@ -429,9 +548,12 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
   const asset = await G.assets.load(url);
   const holder = new THREE.Group();
   holder.name = `Character_${classId}`;
+  const standins = spec.rig2 ? standinNames(classId, spec) : [];
+  const extraClips = spec.rig2 && asset ? await loadRig2Clips() : [];
+  if (standins.length) await Promise.all(standins.map((n) => G.assets.load(standinUrl(n))));
   // KayKit heroes are authored ~2.3 m tall; the player is a 1.8 m human, so a ~2.4 m door reads right beside them.
   // Scaling the holder (origin at the feet) keeps the feet on the ground and every bone / socket / weapon in proportion.
-  holder.scale.setScalar(CHARACTER_HEIGHT / KAYKIT_NATIVE_HEIGHT);
+  holder.scale.setScalar(CHARACTER_HEIGHT / (spec.native ?? KAYKIT_NATIVE_HEIGHT));
 
   if (!asset) {
     warnOnce('model:' + url, `[character] model failed to load: ${url}`);
@@ -449,12 +571,31 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
   holder.add(body);
   const look = CLASS_LOOK[classId] ?? CLASS_LOOK.knight;
   addClassRim(body, look.accent, PLAYER_RIM_RANGE);
-  const anim = new AnimController(body, asset.clips);
+  const anim = new AnimController(body, extraClips.length ? [...asset.clips, ...extraClips] : asset.clips);
 
   const hand = { r: findBone(body, 'handslot.r'), l: findBone(body, 'handslot.l') };
   const bones: Record<string, THREE.Object3D | null> = {
     'handslot.r': hand.r, 'handslot.l': hand.l, head: findBone(body, 'head'), chest: findBone(body, 'chest'), hips: findBone(body, 'hips'), root: findBone(body, 'root'),
   };
+  // 2.0 bodies: mount the stand-in weapon holders (named like the 1.0 embedded nodes) before the built-in node scan below
+  for (const name of standins) {
+    const def = STANDIN[name];
+    const a = ATTACH[def.attach];
+    const bone = bones[a.bone];
+    if (!bone || !G.assets.has(standinUrl(name))) continue;
+    const node = new THREE.Group();
+    node.name = name;
+    node.position.set(...a.pos);
+    if (a.quat) node.quaternion.set(...a.quat);
+    else if (a.rotY) node.rotation.y = a.rotY;
+    if (def.mirror) node.scale.x = -1;
+    node.add(G.assets.instantiate(standinUrl(name)));
+    bone.add(node);
+  }
+  for (const n of spec.hideNodes ?? []) {
+    const o = findBone(body, n);
+    if (o) o.visible = false;
+  }
 
   // built-in accessory nodes by name (only those that exist on this rig)
   const builtin = new Map<string, THREE.Object3D>();
@@ -606,8 +747,11 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
     }
     // helm
     if (!attached.helm && spec.helm && !hideHelm) {
-      const o = builtin.get(spec.helm);
-      if (o) o.visible = useDefaults || !!gear?.helm;
+      const show = useDefaults || !!gear?.helm;
+      for (const n of [spec.helm, ...(spec.helmExtra ?? [])]) {
+        const o = builtin.get(n);
+        if (o) o.visible = show;
+      }
     }
   };
 
@@ -630,7 +774,9 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
     gear = g;
     const version = ++gearVersion;
     const jobs: Promise<boolean>[] = [];
-    const want: Record<'weapon' | 'offhand' | 'helm', ItemInstance | undefined> = { weapon: g?.weapon, offhand: g?.offhand, helm: hideHelm ? undefined : g?.helm };
+    const off = g?.offhand;
+    const skipOff = !!spec.hasQuiver && !!off && getItemBase(off.baseId)?.category === 'quiver'; // the Ranger body wears its own quiver
+    const want: Record<'weapon' | 'offhand' | 'helm', ItemInstance | undefined> = { weapon: g?.weapon, offhand: skipOff ? undefined : off, helm: hideHelm ? undefined : g?.helm };
     for (const slot of ['weapon', 'offhand', 'helm'] as const) {
       const item = want[slot];
       const cur = attached[slot];
@@ -761,6 +907,10 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
 export function characterAssetUrls(classId: ClassId): string[] {
   const spec = CLASS_VISUALS[classId] ?? CLASS_VISUALS.knight;
   const urls = new Set<string>([spec.url]);
+  if (spec.rig2) {
+    for (const u of RIG2_ANIM_FILES) urls.add(u);
+    for (const n of standinNames(classId, spec)) urls.add(standinUrl(n));
+  }
   const def = CLASSES[classId];
   for (const id of def?.startingItems ?? []) {
     const m = getItemBase(id)?.model;

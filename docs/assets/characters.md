@@ -301,3 +301,24 @@ const mixer = new THREE.AnimationMixer(model);
 mixer.clipAction(clip(gltf.animations, 'Idle')!).play();
 // any KayKit clip works on any KayKit model (same rig): e.g. skeleton 'Taunt' on the Knight.
 ```
+
+## 1.4 Class bodies (itch.io KayKit Adventurers 2.0)
+
+`CLASS_VISUALS` in `src/entities/CharacterModel.ts` assigns one body per class. Classes marked v2 use `/assets/models/characters/v2/*.glb` (Rig_Medium, same bone names, no clips): clips come from `/assets/models/characters/v2/anims/Rig_Medium_*.glb` renamed to the 1.0 names, weapons from stand-in holders. Licences: `credits-itch.md` (group "player class bodies").
+
+| Class | Body | Notes |
+|---|---|---|
+| knight | Knight.glb (1.0) | |
+| paladin | v2 Knight | helmet + visor, sword, round shield stand-in |
+| barbarian | Barbarian.glb (1.0) | |
+| shaman | v2 Barbarian | bear hat |
+| mage | Mage.glb (1.0) | |
+| evoker | Mage.glb (1.0) | same body as mage |
+| priest | v2 Mage | no hat |
+| warlock | v2 Mage | hat |
+| rogue | Rogue_Hooded.glb (1.0) | |
+| monk | Rogue.glb (1.0) | |
+| demonhunter | v2 Rogue | |
+| necromancer | v2 Rogue_Hooded | |
+| archer | v2 Ranger | body quiver (a quiver off-hand item is not mounted twice) |
+| druid | v2 Ranger | quiver hidden |
