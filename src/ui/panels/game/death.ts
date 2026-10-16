@@ -22,8 +22,8 @@ const REVIVE_HERE_DELAY = 5;
 
 /**
  * "Öldün" screen: darkened world stays visible, only the card captures the mouse.
- * Esc must never remove the card while the player is still dead (UI closes the top panel on Esc):
- * it opens the game menu instead, so the release button can always be found again.
+ * Esc must never remove the card while the player is still dead (UI closes the top panel on Esc). Esc does nothing
+ * here: the game menu would cover the release button. UI.ts queues every other panel while dead (DEAD_OPEN_ALLOWED).
  */
 export class DeathPanel extends GamePanel {
   private card!: HTMLElement;
@@ -112,16 +112,9 @@ export class DeathPanel extends GamePanel {
     this.xpLost = 0;
   }
 
-  /** Esc / closeAll while still dead: keep the card, show the game menu on top instead. */
+  /** Esc / closeAll while still dead: the card stays and nothing opens over it (no game menu, no dialog). */
   close(): void {
-    if (this.isOpen && !this.leaving && !this.done && this.stillDead()) {
-      try {
-        openPanel('gameMenu');
-      } catch {
-        /* ignore */
-      }
-      return;
-    }
+    if (this.isOpen && !this.leaving && !this.done && this.stillDead()) return;
     super.close();
   }
 

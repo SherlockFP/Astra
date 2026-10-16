@@ -366,11 +366,15 @@ export class DamageNumbers {
     }
     stack = Math.min(stack, 5);
     const side = (Math.random() < 0.5 ? -1 : 1) * (stack % 2 ? 1 : -1);
-    it.ox = side * (8 + stack * 10) + (Math.random() - 0.5) * 16;
+    // hit numbers start beside the nameplate's column (the plate is centred over the head, so a number on the body would climb
+    // into it and its HP bar); a crit starts further out, it is bigger. Then they arc up and away to the side.
+    const hit = HIT_KINDS.has(kind);
+    const startSide = hit ? (kind === 'crit' ? 54 : 42) + Math.random() * 14 : 8;
+    it.ox = side * (startSide + stack * 12) + (Math.random() - 0.5) * 10;
     // stacked numbers fan out sideways; they only lift a little, so they never climb into the nameplate above the target
     it.oy = -Math.min(stack, 2) * 6;
     it.vx = side * (40 + Math.random() * 40) * (kind === 'crit' ? 1.3 : 1);
-    it.vy = -st.vy * (0.85 + Math.random() * 0.3);
+    it.vy = -st.vy * (0.85 + Math.random() * 0.3) * (hit ? 1.4 : 1);
     const cam = this.camera.position;
     it.dist = Math.hypot(cam.x - x, cam.y - y, cam.z - z);
 

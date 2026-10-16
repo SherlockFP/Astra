@@ -243,6 +243,7 @@ export class TownScene implements GameScene {
     cam.yaw = syaw + Math.PI;
     // collected after the POIs are placed (hidden builder arches are no occluders); the camera never sits behind a bush, wall or house
     cam.occluders = townOccluders(built.root);
+    G.ui.setLabelOccluders(cam.occluders);
     this.cam = cam;
     const controller = new PlayerController(player, cam);
     this.controller = controller;
@@ -485,6 +486,7 @@ export class TownScene implements GameScene {
     this.events = null;
     this.controller?.dispose();
     this.controller = null;
+    G.ui.setLabelOccluders(null);
     this.cam?.dispose();
     this.cam = null;
     G.world = null;

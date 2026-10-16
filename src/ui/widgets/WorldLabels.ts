@@ -20,6 +20,12 @@ const EDGE = 8;
 /** Non-quest NPC name labels are fully opaque to NPC_FADE_FROM m and gone at NPC_MAX_M. */
 const NPC_FADE_FROM = 25;
 const NPC_MAX_M = 30;
+/** NPC names stack upward more than other labels (WoW stacking): a crowded square fits its names instead of hiding them. */
+const NPC_MAX_NUDGE_STEPS = 6;
+/** An NPC name whose line to the camera crosses town geometry (a house wall, a roof) fades out; re-tested this often (ms) per label. */
+const OCCLUDE_EVERY = 150;
+/** The occlusion ray stops this far (m) short of the label anchor, so the label's own height never counts as a wall. */
+const OCCLUDE_STOP_M = 0.8;
 /** Quest givers keep their name label out to QUEST_MAX_M (the same range as their quest marker). */
 const QUEST_MAX_M = 40;
 /** HUD panels no label is drawn under: the same selector and re-read interval as Nameplates.ts. */
@@ -58,6 +64,9 @@ interface Entry {
   y: number;
   /** Distance to the camera (m). */
   depth: number;
+  /** Behind town geometry (see OCCLUDE_EVERY); tested again at occludeAt (ms). */
+  occluded: boolean;
+  occludeAt: number;
   /** Hovered or the current hover / Tab target: wins the declutter and is drawn on top. */
   focused: boolean;
   /** Opacity wanted this frame (distance fade; 0 when behind the camera, too far, hidden by a rule or declutter-hidden). */
@@ -103,8 +112,18 @@ export class WorldLabels {
   /** Screen rects of the HUD panels in layer px (see HUD_SEL); a hard blocker for every label. */
   private hud: Box[] = [];
   private hudAt = -1e9;
+  /** Solid scene meshes that hide an NPC name (the town's houses; null outside the town). */
+  private occluders: THREE.Object3D[] | null = null;
+  private readonly occRay = new THREE.Raycaster();
+  private readonly occDir = new THREE.Vector3();
 
   constructor(private ui: UI, private layer: HTMLElement) {}
+
+  /** The meshes that block a name's line of sight (town: the houses and walls). null = no occlusion (dungeons, open world). */
+  setOccluders(list: THREE.Object3D[] | null): void {
+    this.occluders = list && list.length ? list : null;
+    for (const e of this.entries) e.occludeAt = -1e9;
+  }
 
   add(
     object: THREE.Object3D,
@@ -125,6 +144,7 @@ export class WorldLabels {
       obj: object, el, handle: null as unknown as WorldLabelHandle,
       offsetY: opts.offsetY ?? 2.4, baseMax, maxDist: baseMax, fadeFrom: baseMax * FADE_START, kind: '', role: 'other',
       visible: true, orphanAt: 0, html, w: 0, h: 0, measuredAt: -1e9, x: 0, y: 0, depth: 0, focused: false,
+      occluded: false, occludeAt: -1e9,
       wantAlpha: 0, alpha: 0, lift: 0, liftTarget: 0,
     };
     entry.handle = {
@@ -200,6 +220,11 @@ export class WorldLabels {
       e.y = _p.y;
       e.depth = d;
       e.wantAlpha = d <= e.fadeFrom ? 1 : (e.maxDist - d) / (e.maxDist - e.fadeFrom);
+      // an NPC name behind a house or wall is not shown (it used to sit on the roof, WoW: names are not seen through walls)
+      if ((e.role === 'npc' || e.role === 'questNpc') && this.isWalled(e, now, _c, _w)) {
+        e.wantAlpha = 0;
+        continue;
+      }
       const id = e.obj.userData.entityId as number | undefined;
       e.focused = (id !== undefined && (id === focus.hoverId || id === focus.targetId)) || e.el.matches(':hover');
       cands.push(e);
@@ -243,7 +268,8 @@ export class WorldLabels {
     for (const e of cands) {
       const step = (e.h || 16) + STEP_GAP;
       let fitted = false;
-      for (let s = 0; s <= MAX_NUDGE_STEPS; s++) {
+      const maxSteps = e.role === 'npc' || e.role === 'questNpc' ? NPC_MAX_NUDGE_STEPS : MAX_NUDGE_STEPS;
+      for (let s = 0; s <= maxSteps; s++) {
         const lift = s * step;
         // a lifted label keeps its top inside the window
         if (s > 0 && e.y - lift - e.h < EDGE) break;
@@ -286,6 +312,26 @@ export class WorldLabels {
       setStyle(e.el, 'zIndex', String(e.focused ? 1001 : Math.max(1, 1000 - Math.round(e.depth))));
       setClass(e.el, 'far', e.depth > e.maxDist * 0.6);
     }
+  }
+
+  /** True when a solid scene mesh stands between the camera and the label anchor (tested every OCCLUDE_EVERY ms per label). */
+  private isWalled(e: Entry, now: number, cam: THREE.Vector3, anchor: THREE.Vector3): boolean {
+    const occ = this.occluders;
+    if (!occ) return false;
+    if (now - e.occludeAt >= OCCLUDE_EVERY) {
+      e.occludeAt = now;
+      this.occDir.copy(anchor).sub(cam);
+      const len = this.occDir.length();
+      if (len <= OCCLUDE_STOP_M) e.occluded = false;
+      else {
+        this.occDir.multiplyScalar(1 / len);
+        this.occRay.set(cam, this.occDir);
+        this.occRay.near = 0;
+        this.occRay.far = len - OCCLUDE_STOP_M;
+        e.occluded = this.occRay.intersectObjects(occ, false).length > 0;
+      }
+    }
+    return e.occluded;
   }
 
   /** Sets the role of a label and its distance limit / fade start for this frame (see the Role type). */
