@@ -1,6 +1,7 @@
 import { G } from '../../game/G';
 import { spawnEnemy } from '../../entities/EnemyFactory';
 import type { Enemy } from '../../entities/Enemy';
+import type { CarryRec } from '../../net/Carryover';
 import { getEnemyDef } from '../../data/enemies';
 import { rollOpenWorldChampion } from '../../ai/champion';
 import { RNG, hashString } from '../../core/utils';
@@ -63,6 +64,10 @@ const REFRESH_CLEAR_M = 10;
 const RESPAWN_CROWD_N = 3;
 const RESPAWN_CROWD_MULT = 0.6;
 const RESPAWN_FLOOR_SEC = 15;
+/** Host-loss carry-over: how long (world s) the records of the old host's world are kept, at most this many host-dynamic enemies come back, and the farthest a restored body may be from its spawn point. */
+const CARRY_KEEP_S = 180;
+const CARRY_DYNAMIC_MAX = 24;
+const CARRY_MAX_SHIFT_M = 80;
 
 export class CampDirector {
   private readonly camps: Camp[] = [];
@@ -73,6 +78,9 @@ export class CampDirector {
   private timer = 0;
   private warned = false;
   private ledgerRestored = false;
+  private carryRestored = false;
+  /** World time (s) after which the host-loss records are dropped (hurt camp members of far camps still read them when they activate). */
+  private carryUntil = 0;
 
   constructor(private readonly ctx: WorldCtx, private readonly perf: WorldPerf) {
     ctx.def.packs.forEach((pk, index) => {
@@ -136,6 +144,8 @@ export class CampDirector {
   /** Per-frame: runs the streaming tick every 0.5 s on the host. Never throws. */
   update(dt: number): void {
     if (!G.net.isAuthority) return;
+    // a host that just took over a channel waits (a few seconds at most) for the members' records of the old host's world
+    if (G.net.carryReady?.() === false) return;
     this.timer -= dt;
     if (this.timer > 0) return;
     this.timer = TICK;
@@ -182,9 +192,80 @@ export class CampDirector {
     }
   }
 
+  /**
+   * Host-loss carry-over (net/Carryover.ts): the world was re-seeded from the data, the members' records say what the old host's world
+   * looked like. Camp members that were dead stay dead (a camp wiped a moment ago keeps its respawn clock), hurt living ones are rebuilt in
+   * spawnMember (same HP fraction and place), and host-dynamic enemies (rares, event mobs) come back under their old ids. Runs once.
+   */
+  private restoreFromCarry(now: number): void {
+    this.carryRestored = true;
+    const rest = (G.net.carryRest?.() ?? []);
+    if (!rest.length) return;
+    this.carryUntil = now + CARRY_KEEP_S;
+    for (const c of this.camps) {
+      let newest = Infinity;
+      for (const m of c.members) {
+        const r = G.net.carryPeek?.(m.id);
+        if (!r || r.defId !== m.defId || !r.dead) continue;
+        G.net.carryTake?.(m.id);
+        c.dead.add(m.k);
+        newest = Math.min(newest, r.age);
+      }
+      if (c.dead.size >= c.members.length && c.lastKillAt === null) {
+        c.lastKillAt = now - Math.min(c.respawnSec, Number.isFinite(newest) ? newest : 0);
+        this.refreshing.add(c.slot);
+      }
+    }
+    const world = this.ctx.world;
+    let n = 0;
+    for (const r of rest) {
+      if (r.dead || r.id < HOST_DYNAMIC_ID_BASE || n >= CARRY_DYNAMIC_MAX) continue;
+      if (world.get(r.id)) continue;
+      // a rare / event mob the fresh world already spawned itself: do not double it
+      if (world.enemies.some((e) => !e.removed && !e.isDead && e.def.id === r.defId && Math.hypot(e.position.x - r.x, e.position.z - r.z) < 40)) continue;
+      n++;
+      G.net.carryTake?.(r.id);
+      this.spawnRestored(r);
+    }
+  }
+
+  /** A host-dynamic enemy of the old host's world, brought back under its old id with its HP fraction. */
+  private spawnRestored(r: CarryRec): void {
+    const world = this.ctx.world;
+    world.noteHostId(r.id);
+    void (async () => {
+      try {
+        const e = await spawnEnemy(world, r.defId, { x: r.x, z: r.z }, {
+          id: r.id, level: r.level, packId: r.packId, facing: r.yaw, openWorld: r.openWorld, tag: r.tag || undefined, aggro: r.aggro,
+          stealth: r.stealth, dormant: r.dormant ? true : undefined,
+        });
+        if (!e || e.removed) return;
+        this.applyCarry(e, r);
+        G.net.broadcast('spawn', spawnPayloadOf(e));
+      } catch (err) {
+        console.warn(`[camps] restoring ${r.defId} failed`, err);
+      }
+    })();
+  }
+
+  /** The old host's HP fraction, place and facing on a freshly built body. */
+  private applyCarry(e: Enemy, r: CarryRec): void {
+    if (r.maxHp > 0) e.hp = Math.min(e.maxHp, Math.max(1, Math.round((e.maxHp * r.hp) / r.maxHp)));
+    if (Number.isFinite(r.x) && Number.isFinite(r.z) && Math.hypot(r.x - e.position.x, r.z - e.position.z) <= CARRY_MAX_SHIFT_M) {
+      e.position.x = r.x;
+      e.position.z = r.z;
+      e.yaw = r.yaw;
+    }
+  }
+
   private tick(now: number): void {
     const { ctx, perf } = this;
     if (!this.ledgerRestored) this.restoreFromLedger(now);
+    if (!this.carryRestored) this.restoreFromCarry(now);
+    else if (this.carryUntil > 0 && now >= this.carryUntil) {
+      this.carryUntil = 0;
+      G.net.carryDone?.();
+    }
     const cap = perf.maxActiveEnemies;
     const budget = { n: cap - ctx.aliveEnemies() };
     // only the camps that can act: active, waiting for the respawn timer, or with a player within activation reach
@@ -317,6 +398,8 @@ export class CampDirector {
       e.campX = c.cx;
       e.campZ = c.cz;
       e.campR = c.radius;
+      const carried = G.net.carryTake?.(m.id);
+      if (carried && carried.defId === m.defId && !carried.dead) this.applyCarry(e, carried);
       c.live.set(m.k, e);
       try {
         G.net.broadcast('spawn', spawnPayloadOf(e));

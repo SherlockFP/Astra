@@ -3,7 +3,7 @@ import type { CharacterSummary } from '../types/character';
 import type { KeystoneData } from '../types/items';
 import type { ChatLink, NetChannel, NetChannels } from '../types/net';
 import { sanitizeLinks } from '../systems/ChatLinks';
-import { PARTY_ID_BASE, type SceneId } from '../types/common';
+import { DUNGEON_ENEMY_ID_BASE, MINION_ID_BASE, PARTY_ID_BASE, type SceneId } from '../types/common';
 import type { DungeonParams } from '../scenes/scenes';
 import { isOpenWorld } from '../scenes/flow';
 import { getDungeon } from '../data/dungeons';
@@ -77,6 +77,7 @@ import {
   type ChannelTiming,
   type Claim,
 } from './Channels';
+import { CarryStore, recOf, type CarryRec, type CarrySource } from './Carryover';
 
 export type NetRole = 'offline' | 'host' | 'client';
 export type { NetKind } from './LobbyManager';
@@ -179,7 +180,7 @@ interface ChannelJoin {
   /** Monotonic ms when the discovery window ends. */
   settleEnd: number;
   /** What the other peers announced (`cpeer`). */
-  peers: Map<string, { st: 'settle' | 'host'; since: number }>;
+  peers: Map<string, { st: 'settle' | 'host' | 'member'; since: number }>;
   /** Elected winners that never claimed hosting. */
   ignored: Set<string>;
   waitFor: string | null;
@@ -432,6 +433,16 @@ export class NetSession {
   private readonly pendingRehome = new Set<string>();
   private rehomeDeadline = 0;
   private readonly interest = new InterestFilter();
+  /**
+   * Host-loss carry-over (net/Carryover.ts). A member keeps a rolling record of the enemy replicas it sees (`carry`); after a host
+   * migration it hands them to the new host, which rebuilds the fight from them. `carryOpen` = the promoted host still takes records
+   * and the world may read them; `carryGate` = the world waits for the members' records (until `rehomeDeadline` at the latest).
+   */
+  readonly carry = new CarryStore();
+  private carryAt = 0;
+  private carryOpen = false;
+  private carryGate = false;
+  private readonly carryAwait = new Set<string>();
   /** Host: last reported position of every member (from their `pstate`), for the interest tiers and the chat radius. */
   private readonly chPos = new Map<string, { x: number; z: number; at: number }>();
   private lastSwitchAt = -Infinity;
@@ -1207,6 +1218,12 @@ export class NetSession {
       case 'bye':
         this.removePeer(from, 'left');
         return;
+      case 'ccarry': {
+        if (!this.channel || !this.peers.has(from) || !this.carryOpen) return;
+        this.carry.merge(msg.e, this.mono());
+        if (msg.end === true) this.carryAwait.delete(from);
+        return;
+      }
       default:
         return;
     }
@@ -1221,6 +1238,7 @@ export class NetSession {
       // duplicate hello: resend. A member of a migrated channel re-handshaking with its new host counts as arrived (the world
       // runtime resends the live camps to a peer that "joins").
       if (this.pendingRehome.delete(from)) {
+        if (this.carryOpen) this.carryAwait.add(from); // its `ccarry` follows the re-handshake
         const p = this.peers.get(from);
         this.g.events?.emit('net:peerJoined', { peerId: from, name: p?.name ?? '' });
         this.g.events?.emit('party:changed', {});
@@ -1231,7 +1249,10 @@ export class NetSession {
     }
     if (this.kicked.has(from)) return reject('kicked');
     if (msg.proto !== PROTOCOL_VERSION || msg.gameVersion !== GAME_VERSION) return reject('version', GAME_VERSION);
-    if (this.peers.size >= this.maxPlayers) return reject('full');
+    // capacity counts the peers that are really here: a member the host inherited but whose link is gone holds no seat
+    let seated = 0;
+    for (const id of this.peers.keys()) if (id === this.selfId || !this.channel || this.tr?.hasPeer(id) !== false) seated++;
+    if (seated >= this.maxPlayers) return reject('full');
     // Dungeon runs cannot be joined; open-world maps can (GDD_OPENWORLD §9.3 point 6). A public channel is always joinable.
     if (!this.channel && this.currentScene?.scene === 'dungeon' && !this.inOpenWorld) return reject('in_progress');
     const summary = sanitizeSummary(msg.summary);
@@ -2023,6 +2044,14 @@ export class NetSession {
     const now = this.mono();
     if (now < cj.settleEnd) return;
     for (const [id, c] of cj.peers) if (c.st === 'host' && !cj.ignored.has(id)) return; // a host exists: it answers our hello
+    // Members but no host (the host just left, the successor has not claimed yet): never elect a second host next to a live room.
+    // Wait for the successor's claim (it re-sends our hello); after a generous bound try another channel instead.
+    for (const [id, c] of cj.peers) {
+      if (c.st !== 'member' || !this.tr.hasPeer(id)) continue;
+      if (now < cj.settleEnd + this.timing.migrateWaitMs * 3 + this.timing.graceMs) return;
+      cj.done('full');
+      return;
+    }
     if (cj.waitFor) {
       if (now < cj.waitUntil) return;
       cj.ignored.add(cj.waitFor);
@@ -2092,7 +2121,7 @@ export class NetSession {
   /** `cpeer`: election claims. A joiner announces itself ('settle'), a host claims the room ('host'). */
   private onChannelPeer(msg: Extract<CtlMsg, { t: 'cpeer' }>, from: string): void {
     const since = typeof msg.since === 'number' && Number.isFinite(msg.since) ? msg.since : NaN;
-    if (!Number.isFinite(since) || (msg.st !== 'settle' && msg.st !== 'host')) return;
+    if (!Number.isFinite(since) || (msg.st !== 'settle' && msg.st !== 'host' && msg.st !== 'member')) return;
     const cj = this.chJoin;
     if (cj && this.role === 'offline') {
       cj.peers.set(from, { st: msg.st, since });
@@ -2104,6 +2133,12 @@ export class NetSession {
           this.sendHello(from);
         }
       }
+      return;
+    }
+    // A joiner introduces itself to a room whose host is gone (migration in progress): members tell it that a room exists, so it waits
+    // for the successor instead of electing itself host of a second, empty copy of the channel.
+    if (this.channel && this.role === 'client' && msg.st === 'settle') {
+      this.sendCtl({ t: 'cpeer', st: 'member', since: 0 }, [from]);
       return;
     }
     if (!this.channel || msg.st !== 'host') return;
@@ -2259,6 +2294,8 @@ export class NetSession {
     const slotChanged = party.members.some((pm) => pm.id === this.selfId && pm.slot !== this.localSlot);
     this.applyParty(party, false); // roster, slots (a changed slot re-enters the zone), crown
     this.pokePresence();
+    // Hand what we saw of the old host's world (enemy HP / places / dead camp members) to the new host BEFORE the replicas go.
+    if (!m.wasHost) this.sendCarry(from);
     // The new host re-seeds the world and streams it to us like to a late joiner: drop the replicas of the old host's enemies.
     this.purgeEnemyReplicas();
     // we were an authority a moment ago: rebuild our world as a client (applyParty already did when the slot changed)
@@ -2289,6 +2326,11 @@ export class NetSession {
     this.mig = null;
     const tr = this.tr;
     if (!this.channel || !tr) return;
+    // the replicas we still hold are the freshest copy of the old host's world: record them before the re-seed replaces the world
+    this.carryScan();
+    this.carryOpen = true;
+    this.carryGate = true;
+    this.carryAwait.clear();
     this.role = 'host';
     this.hostId = this.selfId;
     let maxJs = 0;
@@ -2329,6 +2371,9 @@ export class NetSession {
   private yieldTo(winner: string): void {
     if (!this.channel || this.role !== 'host' || !this.tr?.hasPeer(winner)) return;
     this.sendCtl({ t: 'rehome', to: winner }, this.remoteMemberIds());
+    this.carryOpen = false;
+    this.carryGate = false;
+    this.carry.clear();
     this.role = 'client';
     this.pendingRehome.clear();
     this.hostClaim = null;
@@ -2437,6 +2482,64 @@ export class NetSession {
     return this.channel ? this.ledger.remaining(key, this.wall()) : 0;
   }
 
+  /* ---------------------------------------------------------------- host-loss carry-over (enemy state) */
+
+  /** Member: record the enemy replicas around the local player (what the host's snapshots told us). 1 Hz, and once more when we take over. */
+  private carryScan(): void {
+    const w = this.g.world as { enemies?: readonly unknown[] } | null | undefined;
+    if (!w?.enemies) return;
+    const now = this.mono();
+    const seen = new Set<number>();
+    for (const e of w.enemies as readonly CarrySource[]) {
+      const r = recOf(e);
+      if (!r || r.id < DUNGEON_ENEMY_ID_BASE || r.id >= MINION_ID_BASE) continue;
+      seen.add(r.id);
+      this.carry.note(r, now);
+    }
+    // alive records of bodies that left the world are not restorable facts (camp deactivated, escaped); dead ones stay (camp still wiped)
+    for (const r of this.carry.all(now)) if (!r.dead && !seen.has(r.id)) this.carry.forgetAlive(r.id);
+  }
+
+  /** Member: our records to the new host, in frame-sized chunks; the last one carries the end marker. */
+  private sendCarry(to: string): void {
+    this.carryScan();
+    const chunks = this.carry.encode(this.mono());
+    chunks.forEach((e, i) => this.sendCtl({ t: 'ccarry', e, end: i === chunks.length - 1 }, [to]));
+  }
+
+  /**
+   * World runtime (host): may the re-seeded world be built from carry records yet? False right after a take-over while members are
+   * still re-handshaking / sending theirs (at most until the rehome deadline). Always true for any other host.
+   */
+  carryReady(): boolean {
+    if (!this.carryGate) return true;
+    if (this.role !== 'host') return true;
+    if ((this.pendingRehome.size === 0 && this.carryAwait.size === 0) || this.mono() >= this.rehomeDeadline) this.carryGate = false;
+    return !this.carryGate;
+  }
+
+  /** World runtime (promoted host): the record of one enemy id (null = nothing known / not a promoted host). Read-only. */
+  carryPeek(id: number): CarryRec | null {
+    return this.role === 'host' && this.carryOpen ? this.carry.get(id, this.mono()) : null;
+  }
+
+  /** World runtime: use up the record of `id`. */
+  carryTake(id: number): CarryRec | null {
+    return this.role === 'host' && this.carryOpen ? this.carry.take(id, this.mono()) : null;
+  }
+
+  /** World runtime: every record not used yet (host-dynamic enemies to bring back). */
+  carryRest(): CarryRec[] {
+    return this.role === 'host' && this.carryOpen ? this.carry.all(this.mono()) : [];
+  }
+
+  /** World runtime: the restore pass is finished, forget the records. */
+  carryDone(): void {
+    this.carryOpen = false;
+    this.carryGate = false;
+    this.carry.clear();
+  }
+
   private sendLedgerTo(peer: string): void {
     if (this.channel && this.role === 'host' && this.ledger.size > 0) this.sendCtl({ t: 'cledger', e: this.ledger.encode(this.wall()) }, [peer]);
   }
@@ -2456,6 +2559,10 @@ export class NetSession {
     // a host that went silent without the transport noticing (frozen tab, dead route): members move on after hostSilenceMs
     if (this.role === 'client' && this.channel && !this.mig && now - this.lastHostMsg > this.timing.hostSilenceMs) this.onChannelHostLost(this.hostId, null);
     if (this.mig && this.role === 'client') this.migrationTick(now);
+    if (this.role === 'client' && this.channel && now - this.carryAt >= 1000) {
+      this.carryAt = now;
+      this.carryScan();
+    }
     if (this.role === 'host' && this.channel) {
       if (this.pendingRehome.size && now >= this.rehomeDeadline) {
         for (const id of [...this.pendingRehome]) this.removePeer(id, 'lost'); // never re-handshook: gone
@@ -2598,6 +2705,10 @@ export class NetSession {
     this.chPos.clear();
     this.interest.clear();
     this.ledger.clear();
+    this.carry.clear();
+    this.carryOpen = false;
+    this.carryGate = false;
+    this.carryAwait.clear();
     this.hostPublic = true;
     this.peers.clear();
     this.peers.set(this.selfId, this.makeSelf(0, true));

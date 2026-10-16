@@ -335,13 +335,15 @@ export type CtlMsg =
   | { t: 'kick'; reason: KickReason }
   | { t: 'closed' }
   // public channels (net/Channels.ts): election, migration, camp ledger. Any peer may send `cpeer`; the others are host -> member.
-  | { t: 'cpeer'; st: 'settle' | 'host'; since: number }
+  | { t: 'cpeer'; st: 'settle' | 'host' | 'member'; since: number }
   | { t: 'rehome'; to: string }
   | { t: 'hostleft'; next: string | null }
-  | { t: 'cledger'; e: [string, number][] };
+  | { t: 'cledger'; e: [string, number][] }
+  /** member -> new host after a migration: the enemy records the member saw (net/Carryover.ts); end marks the last chunk */
+  | { t: 'ccarry'; e: unknown[]; end: boolean };
 
 export type CtlTag = CtlMsg['t'];
-export const CLIENT_CTL_TAGS: ReadonlySet<string> = new Set<CtlTag>(['hello', 'char', 'ready', 'loaded', 'bye', 'cpeer']);
+export const CLIENT_CTL_TAGS: ReadonlySet<string> = new Set<CtlTag>(['hello', 'char', 'ready', 'loaded', 'bye', 'cpeer', 'ccarry']);
 export const HOST_CTL_TAGS: ReadonlySet<string> = new Set<CtlTag>(['welcome', 'reject', 'party', 'readyCheck', 'readyResult', 'pings', 'kick', 'closed', 'rehome', 'hostleft', 'cledger', 'cpeer']);
 
 /* ================================================================================================
