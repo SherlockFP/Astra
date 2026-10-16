@@ -241,6 +241,50 @@ for (const a of Object.keys(SCHEME_BINDINGS.wow)) check(SCHEME_ACTIONS.includes(
   check(camSrc.includes('classic: { zoomMin: 2, zoomMaxOutdoor: 35, zoomMaxIndoor: 18, zoomDefault: 13,'), 'CAM_PROFILES.classic must have zoomMaxOutdoor 35 and zoomDefault 13');
 }
 
+// ---- WoW targeting (Midnight retail): ability auto-pick, Tab / Shift+Tab order (src/combat/targetSelect.ts) ----
+{
+  const TS = await imp('src/combat/targetSelect.ts');
+  const c = (id, dist, cos, hpFrac = 1) => ({ id, dist, cos, hpFrac });
+  // ability with no target: the front enemy, never one behind
+  check(TS.pickFrontTarget([c(1, 4, -0.9), c(2, 6, 0.95)]) === 2, 'auto-pick: the front enemy is picked, the one behind is not');
+  check(TS.pickFrontTarget([c(1, 3, 0.5)]) === null, 'auto-pick: 60 deg off the facing is outside the 45 deg cone');
+  check(TS.pickFrontTarget([c(1, 3, 0.8), c(2, 5, 1)]) === 1, 'auto-pick: nearest front enemy wins');
+  check(TS.pickFrontTarget([c(1, 5, 1, 1), c(2, 5.6, 0.95, 0.2)]) === 2, 'auto-pick: within 1 m of the nearest, the lower HP wins');
+  check(TS.pickFrontTarget([c(1, 5, 1, 0.1), c(2, 7, 0.95, 0.2)]) === 1, 'auto-pick: outside the 1 m tie window, distance decides');
+  check(TS.pickFrontTarget([]) === null, 'auto-pick: no candidate gives null');
+  // Tab: nearest first, wraps; Shift+Tab steps backwards from the far end
+  const tabs = [{ id: 1, dist: 9 }, { id: 2, dist: 3 }, { id: 3, dist: 6 }];
+  check(TS.wowTabNext(tabs, null, 1) === 2, 'Tab: no target takes the nearest');
+  check(TS.wowTabNext(tabs, 2, 1) === 3 && TS.wowTabNext(tabs, 3, 1) === 1 && TS.wowTabNext(tabs, 1, 1) === 2, 'Tab: nearest-first order, wraps');
+  check(TS.wowTabNext(tabs, null, -1) === 1, 'Shift+Tab: no target takes the farthest');
+  check(TS.wowTabNext(tabs, 2, -1) === 1 && TS.wowTabNext(tabs, 1, -1) === 3, 'Shift+Tab: steps backwards and wraps');
+  check(TS.wowTabNext([{ id: 4, dist: 2 }], 4, 1) === 4, 'Tab: a sole enemy that is the target keeps it');
+  check(TS.wowTabNext([{ id: 4, dist: 2 }], null, 1) === 4, 'Tab: a sole enemy is taken');
+  check(TS.wowTabNext([], null, 1) === null, 'Tab: nothing in view gives null');
+  check(TS.wowTabNext(tabs, 77, 1) === 2, 'Tab: a target that left the view restarts at the nearest');
+}
+
+// ---- WoW click and auto-attack wiring (source scan of PlayerController: the rules need a live world, see the browser probe) ----
+{
+  const { readFileSync: readSrc } = await import('node:fs');
+  const ctl = readSrc(`${ROOT}/src/game/PlayerController.ts`, 'utf8').replace(/\r\n/g, '\n');
+  const body = (name) => {
+    const i = ctl.indexOf(`private ${name}(`);
+    if (i < 0) return '';
+    const j = ctl.indexOf('\n  }\n', i);
+    return ctl.slice(i, j < 0 ? undefined : j);
+  };
+  const clickL = body('wowClickL');
+  check(clickL.includes('selectEnemy(hit.entity') && !/selectEnemy\(null\)/.test(clickL), 'LMB: selects the enemy under the cursor and never clears on empty ground (Esc clears)');
+  check(!/armAuto/.test(clickL), 'LMB: a left click never starts the auto-attack');
+  const clickR = body('wowClickR');
+  check(/selectEnemy\(e\);\s*this\.armAuto\(e\.id\)/.test(clickR), 'RMB: an enemy is selected and the auto-attack armed');
+  check(/if \(ok && wowTarget[^\n]*armAuto\(wowTarget\.id\)/.test(ctl), 'ability press: a successful offensive cast arms the auto-attack on the target');
+  check(/private cycleTarget\(/.test(ctl) && /wowTabNext\(/.test(ctl), 'Tab: the WoW cycle uses the nearest-first rule (wowTabNext)');
+  check(/\['ShiftLeft', 'ShiftRight'\]\.some\(\(k\) => input\.keyDown\(k\) \|\| input\.keyPressed\(k\)\)/.test(ctl), 'Shift+Tab: the Tab press reads Shift (held or pressed this frame) for the backward step');
+  check(/if \(!this\.wow\) this\.pressDodge\(true\);/.test(ctl) && /DODGE_TAB_WAIT/.test(ctl), 'Shift+Tab: a WoW Shift press waits for a Tab before it rolls');
+}
+
 if (failures.length) {
   for (const f of failures) console.error(`FAIL ${f}`);
   console.error(`controls-check: ${failures.length} failure(s) in ${checks} checks`);
