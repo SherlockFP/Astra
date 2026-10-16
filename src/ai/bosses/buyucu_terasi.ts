@@ -230,6 +230,8 @@ const seranelAbilities: Record<string, BossHandler> = {
   seranel_wave: {
     start(c, b: Busy) {
       b.total = b.delay + 0.5;
+      // the bar starts again from empty (about every 38 s, docs/dungeons/buyucu_terasi.md section 5)
+      c.energy?.set(0);
       circle(c, c.e.position.x, c.e.position.z, c.arena.r, 3.0, 3.0, { name: 'Sessizlik Dalgası' });
       c.schedule(3.0, () => {
         for (const p of c.playersInArena()) if (dist({ x: p.position.x, z: p.position.z }, DOME) > DOME.r) statusPlayer(p, 'silence', 8);
