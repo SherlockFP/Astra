@@ -45,15 +45,15 @@ export const OPENING_KIT: Partial<Record<ClassId, readonly OpeningRow[]>> = {
     ['rogue_mutilate', 'rmb', 1], ['rogue_envenom', 'q', 1], ['rogue_shadow_step', 's2', 1], ['rogue_kick', 's3', 1],
     ['rogue_stealth', 'e', 2], ['rogue_slice_and_dice', 'r', 3], ['rogue_crimson_vial', 's4', 4], ['rogue_garrote', 's1', 5],
   ],
-  // Paladin (Paladin): L1 Judgment, Crusader Strike, Word of Glory, Divine Steed; L2 Rebuke; L3 Avenger's Shield; L4 Consecration; L5 Hammer of Justice.
+  // Paladin (Paladin): L1 Judgment, Crusader Strike, Word of Glory, Divine Steed; L2 Rebuke; L3 Avenger's Shield; L4 Consecration; L5 Blessing of Protection (the first true defensive cooldown, 300 s; Word of Glory is a heal spender with no cooldown, so it is not one). Hammer of Justice leaves the kit.
   paladin: [
     ['paladin_judgement', 'rmb', 1], ['paladin_crusader_strike', 'e', 1], ['paladin_word_of_glory', 'q', 1], ['paladin_divine_steed', 's2', 1],
-    ['paladin_rebuke', 's3', 2], ['paladin_avengers_shield', 'r', 3], ['paladin_consecration', 's1', 4], ['paladin_hammer_of_justice', 's4', 5],
+    ['paladin_rebuke', 's3', 2], ['paladin_avengers_shield', 'r', 3], ['paladin_consecration', 's1', 4], ['paladin_blessing_protection', 's4', 5],
   ],
-  // Necromancer (Nekromancer): L1 Scourge Strike, Death Coil, Festering Strike, Death's Advance; L2 Mind Freeze; L3 Death Strike; L4 Blood Boil; L5 Outbreak.
+  // Necromancer (Nekromancer): L1 Scourge Strike, Death Coil, Festering Strike, Death's Advance; L2 Mind Freeze; L3 Death Strike; L4 Anti-Magic Shell (the first true defensive cooldown, 60 s; Death Strike is a heal spender with no cooldown); L5 Dark Transformation (the first offensive major, 45 s, m45). Heart Strike and Outbreak leave the kit.
   necromancer: [
     ['necro_scourge_strike', 'rmb', 1], ['necro_death_coil', 'q', 1], ['necro_festering_strike', 'e', 1], ['necro_deaths_advance', 's2', 1],
-    ['necro_mind_freeze', 's3', 2], ['necro_death_strike', 'r', 3], ['necro_heart_strike', 's1', 4], ['necro_outbreak', 's4', 5],
+    ['necro_mind_freeze', 's3', 2], ['necro_death_strike', 'r', 3], ['necro_anti_magic_shell', 's1', 4], ['necro_dark_transformation', 'm45', 5],
   ],
   // Warlock (Büyücü-Kilitçi): L1 Shadow Bolt, Agony, Demonic Circle, Spell Lock; L2 Corruption; L3 Haunt; L4 Dark Pact; L5 Unstable Affliction.
   warlock: [
@@ -90,9 +90,9 @@ export const OPENING_KIT: Partial<Record<ClassId, readonly OpeningRow[]>> = {
     ['priest_power_word_shield', 'rmb', 1], ['priest_flash_heal', 'q', 1], ['priest_smite', 'e', 1], ['priest_renew', 'r', 1],
     ['priest_psychic_scream', 's2', 2], ['priest_desperate_prayer', 's3', 3], ['priest_dispel', 's1', 4], ['priest_fade', 's4', 5],
   ],
-  // Druid (Druid): L1 Wrath, Moonfire, Rejuvenation, Cat Form; L2 Bear Form; L3 Regrowth; L4 Barkskin; L5 Travel Form.
+  // Druid (Druid): L1 Wrath, Moonfire, Rejuvenation, Cat Form; L2 Bear Form; L3 Regrowth; L4 Barkskin (the defensive cooldown); L5 Celestial Alignment (the first offensive major, 45 s, m45; Travel Form leaves the kit, it stays a class skill).
   druid: [
     ['druid_wrath', 'rmb', 1], ['druid_moonfire', 'e', 1], ['druid_rejuvenation', 'q', 1], ['druid_cat_form', 's2', 1],
-    ['druid_bear_form', 's3', 2], ['druid_regrowth', 'r', 3], ['druid_barkskin', 's4', 4], ['druid_travel_form', 's1', 5],
+    ['druid_bear_form', 's3', 2], ['druid_regrowth', 'r', 3], ['druid_barkskin', 's4', 4], ['druid_celestial_alignment', 'm45', 5],
   ],
 };
