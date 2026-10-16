@@ -124,7 +124,7 @@ export interface SettingsData {
   meterVisibility: 'auto' | 'always' | 'never';
   /** Empty ghost cells in the action bar (false = quiet progressive bar, the default). */
   barGhostSlots: boolean;
-  /** Barları Kilitle (append-only): while on, picking a cell up from an action bar needs Shift held. Default on. */
+  /** Çubukları kilitle (key kept from the old "Barları Kilitle"): while on, picking a cell up from an action bar needs Shift held (WoW). Default off. */
   barLock: boolean;
   /** Spec icon block in the player frame (off by default). */
   ufIcon: boolean;
@@ -284,7 +284,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   // UX-00 (UI_REDESIGN Appendix A)
   meterVisibility: 'auto',
   barGhostSlots: true,
-  barLock: true,
+  barLock: true, // WoW: Lock Action Bars is on by default (Shift-drag still moves)
   ufIcon: false,
   showStats: false,
   showMapInfo: false,

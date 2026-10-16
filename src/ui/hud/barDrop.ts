@@ -124,7 +124,7 @@ export function barDropOutside(p: DragPayload): void {
 export function barPayload(ref: CellRef, ev?: PointerEvent): DragPayload | null {
   const c = cellAt(readBars(), ref);
   if (!c) return null;
-  if (!canPickUp(G.settings?.data.barLock !== false, !!ev?.shiftKey)) return null;
+  if (!canPickUp(G.settings?.data.barLock === true, !!ev?.shiftKey)) return null;
   return c.k === 'skill' ? { kind: 'skill', skillId: c.id, cell: ref } : { kind: 'mat', id: c.id, cell: ref };
 }
 

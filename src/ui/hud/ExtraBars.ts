@@ -258,7 +258,7 @@ export class ExtraBars {
   /** Per-frame refresh (only the visible bars do any work). */
   update(ctx: HudCtx): void {
     const bars = readBars();
-    const lock = G.settings?.data.barLock !== false;
+    const lock = G.settings?.data.barLock === true;
     const l = readLayout();
     for (const b of this.bars) {
       const shown = l.bars[b.def.id] === true;
@@ -270,9 +270,9 @@ export class ExtraBars {
     }
   }
 
-  /** The bar lock icon: Barları Kilitle (Settings.barLock). */
+  /** The bar lock icon: Çubukları kilitle (Settings.barLock). */
   toggleLock(): void {
-    const locked = G.settings?.data.barLock === false;
+    const locked = G.settings?.data.barLock !== true;
     G.settings?.set('barLock', locked);
     this.ui.toast(locked ? 'Çubuklar kilitlendi.' : 'Çubukların kilidi açıldı.', 'info');
   }
@@ -297,7 +297,7 @@ export class ExtraBars {
     const ref = { bar: bar.def.id, idx: i };
     const c = cellAt(readBars(), ref);
     if (c) {
-      if (!canPickUp(G.settings?.data.barLock !== false, e.shiftKey)) {
+      if (!canPickUp(G.settings?.data.barLock === true, e.shiftKey)) {
         this.ui.toast('Çubuklar kilitli. Eşyayı almak için Shift basılı tut.', 'info');
         return;
       }

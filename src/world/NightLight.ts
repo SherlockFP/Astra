@@ -4,6 +4,7 @@ import { setCrystalGlowLevel } from './MagitechKit';
 import { glowTexture } from './ProceduralAssets';
 import { makeSkyColorSet, type Sky, type SkyColorSet } from './Sky';
 import { sampleDay, setDayOverride, dayOverride, type DaySample } from './DayCycle';
+import { grassUniforms } from './GrassField';
 import { G } from '../game/G';
 
 /**
@@ -206,6 +207,7 @@ export class NightLight {
 
     setCrystalGlowLevel(w);
     setHouseWindowLevel(w);
+    grassUniforms.uNight.value = w;
     if (this.pools) {
       this.pools.visible = w > 0.01;
       if (this.poolMat) this.poolMat.opacity = w;

@@ -78,6 +78,8 @@ const uniforms = {
   uPush: { value: new THREE.Vector4(1e6, 0, 1e6, 1.2) },
   uCam: { value: new THREE.Vector3() },
   uFade: { value: new THREE.Vector2(FADE_START, FADE_END) },
+  /** Night weight 0 (day) .. 1 (night), written by NightLight.apply(): the blades take the moonlit grade of the ground. */
+  uNight: { value: 0 },
 };
 
 function hash(a: number, b: number, c: number): number {
@@ -154,10 +156,15 @@ function flowerGeometry(): THREE.BufferGeometry {
   return g;
 }
 
-/** Wind, bend, fade and voxel shaping in the vertex shader. Lambert lighting; instance colour = palette. */
-function windMaterial(opts: { flower: boolean }): THREE.MeshLambertMaterial {
-  const mat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
+/**
+ * Wind, bend, fade and voxel shaping in the vertex shader. Standard lighting like the terrain (roughness 1, metalness 0), so the
+ * blades take the same scene lights (hemisphere, moon sun) as the ground. Instance colour = palette; at night uNight pulls the
+ * saturated palette toward a desaturated moonlit blue (otherwise the bright tips stay green in the dark).
+ */
+function windMaterial(opts: { flower: boolean }): THREE.MeshStandardMaterial {
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 1, metalness: 0 });
   mat.onBeforeCompile = (sh) => {
+    sh.uniforms.uNight = uniforms.uNight;
     sh.uniforms.uTime = uniforms.uTime;
     sh.uniforms.uWind = uniforms.uWind;
     sh.uniforms.uPush = uniforms.uPush;
@@ -201,6 +208,12 @@ uniform vec2 uFade;`)
         vec4 mvPosition = modelViewMatrix * vec4(transformed, 1.0);
         gl_Position = projectionMatrix * mvPosition;
       `);
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform float uNight;')
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        float gLum = dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11));
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(gLum) * vec3(0.7, 0.8, 0.95), uNight * 0.3);
+        diffuseColor.rgb *= 1.0 - 0.12 * uNight;`);
   };
   mat.customProgramCacheKey = () => (opts.flower ? 'grass-flower' : 'grass-tuft');
   return mat;

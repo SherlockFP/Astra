@@ -762,7 +762,7 @@ export class SettingsPanel extends GamePanel {
         ),
         this.flag('colorBlindNameplates', 'Renk Körlüğü Dostu Plakalar', 'Dost mavi, düşman turuncu / kırmızımsı: kırmızı-yeşil ayrımı gerekmez (isim plakaları ve hedef çerçevesi)'),
         this.flag('barGhostSlots', 'Boş Yuvaları Göster', 'Yetenek çubuğunda boş kareler görünür'),
-        this.flag('barLock', 'Barları Kilitle', 'Açıkken çubuktaki bir eşyayı almak için Shift basılı tutulur'),
+        this.flag('barLock', 'Çubukları kilitle', 'Açıkken çubuktaki yetenek ya da eşyalar sürüklenemez; taşımak için Shift basılı tut (WoW)'),
         this.flag('ufIcon', 'Oyuncu Simgesi', 'Oyuncu çerçevesinde sınıf simgesi'),
       ),
       this.section(

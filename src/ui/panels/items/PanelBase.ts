@@ -112,6 +112,8 @@ export abstract class ItemPanel implements UIPanel {
   readonly id: string;
   readonly el: HTMLDivElement;
   isOpen = false;
+  /** Bottom-docked window waiting for its measured height (see open()). */
+  private redockBottom = false;
   protected head: HTMLDivElement;
   protected body: HTMLDivElement;
   protected titleEl: HTMLElement;
@@ -200,7 +202,13 @@ export abstract class ItemPanel implements UIPanel {
     this.layout(false);
     // the UI shows the host element right after open(): measure again once it is visible
     requestAnimationFrame(() => {
-      if (this.isOpen) this.layout(false);
+      if (!this.isOpen) return;
+      const rh = this.el.getBoundingClientRect().height;
+      if (this.redockBottom && rh > 0 && !this.loadPos()) {
+        this.redockBottom = false;
+        [this.x, this.y] = this.dockPos('bottom-right', window.innerWidth, window.innerHeight, this.opts.width, rh);
+      }
+      this.layout(false);
     });
   }
 
@@ -253,6 +261,8 @@ export abstract class ItemPanel implements UIPanel {
       return;
     }
     let [px, py] = this.opts.pos && !this.opts.dock ? this.opts.pos(vw, vh, w, this.opts.height) : this.dockPos(this.opts.dock ?? 'center', vw, vh, w, this.opts.height);
+    // a bottom dock is set again after the first frame, when the body has its real (taller) height
+    this.redockBottom = this.opts.dock === 'bottom-right';
     // cascade away from other open windows sitting on the same spot
     for (let n = 0; n < 6; n++) {
       const clash = Object.values(registry).some((p) => p && p !== this && p.isOpen && Math.abs(p.x - px) < 14 && Math.abs(p.y - py) < 14);
@@ -267,7 +277,19 @@ export abstract class ItemPanel implements UIPanel {
   private dockPos(dock: 'left' | 'right' | 'center' | 'bottom-right', vw: number, vh: number, w: number, h: number): [number, number] {
     if (dock === 'left') return [24, 56];
     if (dock === 'right') return [Math.max(8, vw - w - 24), 56];
-    if (dock === 'bottom-right') return [Math.max(8, vw - w - 24), Math.max(56, vh - h - 24)];
+    if (dock === 'bottom-right') {
+      // WoW bags: stacked bottom-right, above the micro menu and above any action bar they would sit on (live rects, so the
+      // window never covers the bars the player drags from; the bars sit at the bottom centre at 1366 and 1920 widths)
+      const left = Math.max(8, vw - w - 24);
+      let bottom = vh - 24;
+      for (const sel of ['.micro', '.actionbar']) {
+        const r = document.querySelector(sel)?.getBoundingClientRect();
+        if (!r || r.width === 0 || r.height === 0) continue;
+        const overlapsX = r.right > left - 8 && r.left < vw - 8;
+        if (overlapsX && r.top < bottom) bottom = r.top - 8;
+      }
+      return [left, Math.max(56, bottom - h)];
+    }
     return [Math.max(8, (vw - w) / 2), 56];
   }
 
