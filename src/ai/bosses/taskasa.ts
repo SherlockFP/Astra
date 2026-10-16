@@ -879,6 +879,17 @@ const brokk: BossScript = {
       },
     },
 
+    /** Erimiş Hüzme: ranged tank buster, a fire beam fired at the tank after a 1.4 s telegraph (the beam shows where it lands). */
+    brokk_slag: {
+      start(c, b) {
+        const t = tankOf(c);
+        if (!t) return;
+        const e = c.e;
+        const ang = angleTo(e.position.x, e.position.z, t.position.x, t.position.z);
+        beam(c, e.position.x, e.position.z, ang, 22, 2.6, b.delay, 2.8, { type: 'fire', name: 'Erimiş Hüzme', vfxOnLand: 'fire_burst' });
+      },
+    },
+
     /** Hurda Şarkısı: Brokk jumps behind a scrap block, a 44 x 6 m band across the centre, the cube slides at 22 m/s. */
     brokk_scrap_song: {
       start(c, b) {

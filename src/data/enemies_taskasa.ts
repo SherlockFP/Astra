@@ -294,7 +294,7 @@ export const TASKASA_ENEMIES: Record<string, EnemyDef> = index<EnemyDef>([...TRA
 const SEDA_KIT = ['seda_smash', 'seda_spikes', 'seda_beams', 'seda_sweep', 'seda_dive'];
 const SKAR_KIT = ['skar_smash', 'skar_crash', 'skar_shell', 'skar_charge'];
 const DORLITA_KIT = ['dorlita_hammer', 'dorlita_cannon', 'dorlita_crescendo', 'dorlita_leap'];
-const BROKK_KIT = ['brokk_scrap_song', 'brokk_molten', 'brokk_vents', 'brokk_flurry'];
+const BROKK_KIT = ['brokk_scrap_song', 'brokk_molten', 'brokk_vents', 'brokk_flurry', 'brokk_slag'];
 const EIRICH_COMBAT = ['eirich_void_claw', 'eirich_leap', 'eirich_grasp', 'eirich_corruption', 'eirich_reckoning', 'eirich_unbridled'];
 
 export const TASKASA_BOSSES: Record<string, BossDef> = index<BossDef>([
@@ -375,7 +375,9 @@ export const TASKASA_BOSSES: Record<string, BossDef> = index<BossDef>([
       custom('brokk_molten', 'Erimiş Metal', 36, 12.5, 2.2, 'Spellcast_Long', { castTime: 2.2, interruptible: true, kick: 2, sfx: 'fire_cast', params: { impact: 1.5 } }),
       custom('brokk_vents', 'Egzoz Delikleri', 38, 20, 2.0, 'Spellcast_Summon', { sfx: 'boss_cast', params: { impact: 1.0 } }),
       // usable only with a player within 4 m: the range field, not a param
-      custom('brokk_flurry', 'Örs Üçlüsü', 8, 5, 0.75, '2H_Melee_Attack_Slice', { range: 4, params: { impact: 0.3, chain: 2, t2: 1.45, c2: 0.9, t3: 2.75, c3: 1.6 } }),
+      custom('brokk_flurry', 'Örs Üçlüsü', 8, 5, 1.0, '2H_Melee_Attack_Slice', { range: 4, params: { impact: 0.3, chain: 2, t2: 1.45, c2: 0.9, t3: 2.75, c3: 1.6 } }),
+      // ranged tank buster: a telegraphed beam fired at the tank from the kite distance (the flurry only reaches 4 m)
+      custom('brokk_slag', 'Erimiş Hüzme', 26, 12, 1.4, 'Spellcast_Shoot', { tankBuster: true, telegraph: true, sfx: 'fire_cast', params: { impact: 1.2 } }),
     ],
     phases: [bp('p1', 1.01, BROKK_KIT)],
     intro: 'Örsün sesini duyuyor musun? Seni dövmek için çalıyor!', death: 'Dorlita... bitir onları...',
@@ -402,8 +404,8 @@ export const TASKASA_BOSSES: Record<string, BossDef> = index<BossDef>([
     ],
     phases: [
       bp('p1', 1.01, EIRICH_COMBAT),
-      bp('p2', 0.65, [], { yell: 'Çatlağı duyuyor musunuz? Her fısıltı bir kapı!', ability: 'eirich_rift_surge' }),
-      bp('p3', 0.649, EIRICH_COMBAT),
+      bp('p2', 0.5, [], { yell: 'Çatlağı duyuyor musunuz? Her fısıltı bir kapı!', ability: 'eirich_rift_surge' }),
+      bp('p3', 0.499, EIRICH_COMBAT),
       bp('p4', 0.35, [], { yell: 'Kasa açılıyor! Sözcüler... bana gelin!', ability: 'eirich_rift_surge' }),
       bp('p5', 0.349, EIRICH_COMBAT),
       bp('p6', 0.15, EIRICH_COMBAT, { yell: 'BOŞLUK İSTİYOR... VE ALACAK!', ability: 'eirich_collapse' }),
