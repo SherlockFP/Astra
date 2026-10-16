@@ -1130,7 +1130,8 @@ boss({
   visual: { attach: [{ url: WPN('Skeleton_Staff'), bone: 'handslot.r', pos: [0, 0, 0], rotY: Math.PI }], eyeEmissive: 0x9fd8e8, runRef: 7, glow: 0x9fd8e8 },
   basic: proj('mag_morkan_bolt', 'Sis Oku', 16, 40, 2.5, 0.8, 1.0, 'shadow', 'shadow_projectile', 'Spellcast_Shoot', 0.3, { sfx: 'shadow_cast' }),
   abilities: [
-    custom('mag_raise', 'Sisli Çağrısı', 20, 10, 3.0, 'Spellcast_Summon', { castTime: 3.0, interruptible: true, sfx: 'boss_cast', params: { impact: 4.2 } }),
+    // the one avoidable: a 3 s cast bar, then a shadow mist circle (r 3) on a random player; the cast is interruptible
+    aoe('mag_raise', 'Sis Çöküşü', 'ground_aoe', 3, 30, 20, 3.0, 1.2, 'shadow', 'Spellcast_Summon', 3.0, { initialCooldown: 10, castTime: 3.0, interruptible: true, sfx: 'boss_cast', params: { target: 1, impact: 3.0 } }),
   ],
   phases: [bp('p1', 1.01, ['mag_raise'])],
   intro: 'Sis sizi bu mağaradan çıkarmayacak!', death: 'Sis... dağılıyor...',
