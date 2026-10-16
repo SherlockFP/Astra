@@ -219,6 +219,9 @@ function endGates(c: BossController): void {
   c.endMechanicPhase();
 }
 
+/** A point of Ignaroth's gate room from GDD tile coordinates in the room's own frame (the nav grid), not shifted with the arena. */
+const roomPt = (x: number, z: number): { x: number; z: number } => ({ x: (x + 0.5) * 4, z: (z + 0.5) * 4 });
+
 const ignaroth: BossScript = {
   init(c) {
     c.state.alt = false;
@@ -273,7 +276,7 @@ const ignaroth: BossScript = {
         // Ignaroth's grate rows (the 18x16 gate arena, x 0..17 z 43..58: grates at x 4.5 / 12.5)
         const z = [46.5, 50.5, 54.5][g.rows++ % 3];
         for (const x of [4.5, 12.5]) {
-          const p = c.gdd(x, z);
+          const p = roomPt(x, z);
           circle(c, p.x, p.z, 3, 1.5, 2.0, { type: 'fire', name: 'Zemin Menfezi', vfxOnLand: 'fire_burst' });
         }
       }
@@ -306,18 +309,23 @@ const ignaroth: BossScript = {
         const ang = Math.atan2(b.dx, b.dz);
         const x = e.position.x, z = e.position.z;
         b.data.ang = ang;
-        dashLine(c, x, z, ang, 30, 4, b.delay, 38, 3.5, { type: 'fire', knockback: 5, name: 'Mavi Alev Hücumu' });
-        c.shape({
-          shape: { type: 'line', length: 30, width: 3 }, x, z, dx: Math.sin(ang), dz: Math.cos(ang), delay: b.delay + 0.8, coef: 0.6, type: 'fire', telegraph: false,
-          persist: { duration: 8, tick: 0.5 }, name: 'Mavi Alev İzi',
-        });
+        // the charge stops at the arena walls / blocked ground (dashLine clamps it)
+        const len = dashLine(c, x, z, ang, 30, 4, b.delay, 38, 3.5, { type: 'fire', knockback: 5, name: 'Mavi Alev Hücumu' });
+        b.data.len = len;
+        if (len > 0.5) {
+          c.shape({
+            shape: { type: 'line', length: len, width: 3 }, x, z, dx: Math.sin(ang), dz: Math.cos(ang), delay: b.delay + 0.8, coef: 0.6, type: 'fire', telegraph: false,
+            persist: { duration: 8, tick: 0.5 }, name: 'Mavi Alev İzi',
+          });
+        }
         c.schedule(b.delay + 0.5, () => {
           for (let i = 0; i < 6; i++) bossFx('fire_ground', x + Math.sin(ang) * (2 + i * 5), z + Math.cos(ang) * (2 + i * 5), { dur: 8, scale: 1.2, color: 0x4080ff });
         }, 'fx');
       },
       resolve(c, b) {
         const ang = b.data.ang as number;
-        c.dash(Math.sin(ang), Math.cos(ang), 30, 0.8);
+        const len = (b.data.len as number | undefined) ?? 30;
+        if (len > 0.5) c.dash(Math.sin(ang), Math.cos(ang), len, Math.max(0.2, (len / 30) * 0.8));
         G.vfx.spawn('charge_trail', c.e.pointAt(0.3), { dir: [Math.sin(ang), 0, Math.cos(ang)], duration: 0.8 });
         G.events.emit('camera:shake', { intensity: 0.3, duration: 0.5 });
       },
@@ -361,7 +369,7 @@ const ignaroth: BossScript = {
         c.freeze(true);
       },
       resolve(c) {
-        const p = c.gdd(8.5, 56);
+        const p = roomPt(8.5, 56);
         c.teleport(p.x, p.z, false);
         G.vfx.spawn('leap_land', [p.x, 0.2, p.z], { scale: 1.6 });
         G.events.emit('camera:shake', { intensity: 0.4, duration: 0.4 });

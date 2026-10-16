@@ -59,17 +59,35 @@ export function zone(c: BossController, x: number, z: number, r: number, duratio
  * A charge line whose damage lands segment by segment as the charging boss passes (`speed` m/s), so standing in the line
  * after the boss went by is safe and the telegraph fills like a wave.
  */
-export function dashLine(c: BossController, x: number, z: number, ang: number, length: number, width: number, delay: number, speed: number, coef: number, o: SO = {}): void {
+/**
+ * Longest part of a charge of up to `length` m from (x,z) along `ang` that stays inside the boss arena and on walkable nav
+ * (sampled every 0.5 m). A charge that would run past the arena walls or into blocked ground stops at its last safe point.
+ */
+export function chargeLength(c: BossController, x: number, z: number, ang: number, length: number): number {
+  const sx = Math.sin(ang), sz = Math.cos(ang);
+  let best = 0;
+  for (let d = 0; d <= length + 1e-6; d += 0.5) {
+    const px = x + sx * d, pz = z + sz * d;
+    if (!c.insideArena(px, pz, 0) || !c.world.nav.isWalkable(px, pz)) break;
+    best = d;
+  }
+  return best;
+}
+
+/** Returns the clamped charge length actually used (the boss script should dash that far). */
+export function dashLine(c: BossController, x: number, z: number, ang: number, length: number, width: number, delay: number, speed: number, coef: number, o: SO = {}): number {
   const seg = 4;
-  const n = Math.max(1, Math.ceil(length / seg));
+  const reach = chargeLength(c, x, z, ang, length);
+  const n = Math.max(1, Math.ceil(reach / seg));
   const sx = Math.sin(ang), sz = Math.cos(ang);
   for (let i = 0; i < n; i++) {
-    const len = Math.min(seg, length - i * seg) + 0.4;
+    const len = Math.min(seg, reach - i * seg) + 0.4;
     c.shape({
       shape: { type: 'line', length: len, width }, x: x + sx * i * seg, z: z + sz * i * seg, dx: sx, dz: sz,
       delay: delay + (i * seg) / Math.max(1, speed), coef, telegraph: true, type: 'physical', ...o,
     });
   }
+  return reach;
 }
 
 /** Evenly spread points on a circle. */

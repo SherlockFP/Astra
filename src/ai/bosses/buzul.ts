@@ -109,14 +109,18 @@ const akpence: BossScript = {
         const ang = live ? angleTo(e.position.x, e.position.z, live.position.x, live.position.z) : e.yaw;
         b.data.ang = ang;
         e.yaw = ang;
-        dashLine(c, e.position.x, e.position.z, ang, 30, 4, 0.7, 16, 4.0, {
+        b.data.len = dashLine(c, e.position.x, e.position.z, ang, 30, 4, 0.7, 16, 4.0, {
           type: 'physical', statuses: [{ status: 'knockdown', duration: 1.5 }], name: 'Öfkeli Hücum',
         });
       },
       resolve(c, b) {
         const ang = (b.data.ang as number | undefined) ?? c.e.yaw;
-        c.dash(Math.sin(ang), Math.cos(ang), 30, 30 / 16);
-        c.state.charging = { until: c.world.time + 30 / 16 + 0.2, dx: Math.sin(ang), dz: Math.cos(ang) };
+        const len = (b.data.len as number | undefined) ?? 30;
+        const dur = Math.max(0.2, len / 16);
+        if (len > 0.5) {
+          c.dash(Math.sin(ang), Math.cos(ang), len, dur);
+          c.state.charging = { until: c.world.time + dur + 0.2, dx: Math.sin(ang), dz: Math.cos(ang) };
+        }
         G.vfx.spawn('charge_trail', c.e.pointAt(0.3), { dir: [Math.sin(ang), 0, Math.cos(ang)], duration: 1.9 });
         G.events.emit('camera:shake', { intensity: 0.3, duration: 0.4 });
       },

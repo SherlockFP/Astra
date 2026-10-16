@@ -42,6 +42,18 @@ const LMB_PERIOD = 0.36;     // tank cast cadence (the harness LMB chain)
  * Halkor sleeps immune until three dead kef_shard enemies exist (kefaret_salonlari.ts deadShards), so the sim places the shard packs.
  */
 const GATE_ADDS = { boss_halkor: 'kef_shard' };
+/**
+ * Known sim limits: a scripted ability that a real party makes fire but the bot party cannot. A listed ability that never fires is
+ * reported as "sim limit" (info, not a failure) with its reason; nothing else is exempt.
+ * boss_olucagiran_morkan: Ceset Patlaması needs bone piles, which a party makes by killing the skel_minion adds that Ölüleri Kaldır
+ * raises (skel_minion def ai.bonePile, EnemyDirector.piles). The bots only dodge and the tank hits the boss alone, so no add dies.
+ */
+const SIM_LIMITS = {
+  boss_olucagiran_morkan: {
+    morkan_corpse_explosion: 'needs bone piles from killed skel_minion adds; the bot party never kills adds',
+  },
+};
+
 const SKILL_PERIOD = 0.5;    // tank: one bar slot (other than LMB) every 0.5 s, round robin
 
 const cc = await H.imp('dev/contentCheck.ts');
@@ -446,7 +458,9 @@ for (const id of ids) {
     const r = fightBoss(def, b, botLevel, enemyLevel);
     const fails = [];
     if (r.crash) fails.push(`exception: ${r.crash}`);
-    const missing = [...scripted].filter((a) => !r.cast?.has(a));
+    const missingAll = [...scripted].filter((a) => !r.cast?.has(a));
+    const limits = missingAll.filter((a) => SIM_LIMITS[b.bossId]?.[a]);
+    const missing = missingAll.filter((a) => !SIM_LIMITS[b.bossId]?.[a]);
     for (const a of missing) {
       const ph = (bdef?.phases ?? []).findIndex((p) => p.abilities.includes(a) || p.onEnter?.ability === a);
       const why = ph < 0 ? 'in no phase list (only a script hook can start it, and that hook did not fire)' :`phase ${ph} (${bdef.phases[ph].id}) ${r.ctrl && r.ctrl.phaseIdx >= ph ? 'entered but the ability never fired' : 'never entered'}`;
@@ -469,8 +483,8 @@ for (const id of ids) {
     if (pass) nPass++; else nFail++;
     const warnNote = warns.length ? ` | warn ${warns.length} (${[...new Set(warns.map((w) => w.replace(/^WARN /, '').slice(0, 60)))].slice(0, 2).join('; ')})` : '';
     const outcome = r.dead ? `dead in ${r.t.toFixed(0)} s` : `${r.lostPct.toFixed(0)} % lost in ${r.t.toFixed(0)} s`;
-    const castN = scripted.size - missing.length;
-    console.log(`${pass ? 'PASS' : 'FAIL'} ${id.padEnd(17)} ${b.bossId.padEnd(22)} lvl ${enemyLevel} | ${outcome} | bot deaths ${r.deaths} | casts ${castN}/${scripted.size} | shapes ${r.landed ?? 0} (${r.landBad?.length ?? 0} bad) | phases ${r.phaseEv?.length ?? 0}/${(bdef?.phases?.length ?? 1) - 1}${warnNote}`);
+    const castN = scripted.size - missingAll.length;
+    console.log(`${pass ? 'PASS' : 'FAIL'} ${id.padEnd(17)} ${b.bossId.padEnd(22)} lvl ${enemyLevel} | ${outcome} | bot deaths ${r.deaths} | casts ${castN}/${scripted.size} | shapes ${r.landed ?? 0} (${r.landBad?.length ?? 0} bad) | phases ${r.phaseEv?.length ?? 0}/${(bdef?.phases?.length ?? 1) - 1}${warnNote}${limits.length ? ` | sim limit: ${limits.map((a) => `${a} (${SIM_LIMITS[b.bossId][a]})`).join('; ')}` : ''}`);
     for (const f of fails) console.log(`      FAIL ${f}`);
     if (VERBOSE) console.log(`      dbg ${JSON.stringify(r.dbg)}`);
     if (VERBOSE) console.log(`      casts ${JSON.stringify([...(r.cast ?? new Map())])}`);
