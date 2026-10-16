@@ -1,13 +1,15 @@
 import { G } from '../../game/G';
 import { MATERIALS } from '../../data/materials';
-import { DEFAULT_BAR2_BY_SPEC } from '../../data/defaultExtraBar';
+import { defaultBar2Cells } from '../../data/defaultExtraBar';
 import { isFlaskBase } from '../../data/flasks';
+import { MOUNT_CALL_ID } from '../../data/mounts';
 import type { SkillDef, SkillSlotKey } from '../../types/skills';
 import type { BarLayoutSave } from '../../types/character';
 import type { CharacterState } from '../../systems/CharacterState';
 import { setChosenMount } from '../../systems/Mounts';
 import type { DragPayload } from '../panels/items/common';
 import {
+  BAR_CELLS,
   type BarCell,
   type BarsState,
   type CellRef,
@@ -43,15 +45,38 @@ function legacyBars(cid: string): BarLayoutSave | null {
   }
 }
 
+/**
+ * One-time (flags['bar.mountCell']): a save from before the summon cell gets it in the first empty cell of bar2, else bar3. A cell
+ * the player filled is never overwritten. A new save already holds the cell (its bar2 seed), so this is a no-op for it. Returns
+ * true when the layout changed (the caller persists).
+ */
+export function migrateMountCell(lay: BarLayoutSave, flags: Record<string, number | boolean | string>): boolean {
+  if (flags['bar.mountCell']) return false;
+  flags['bar.mountCell'] = 1;
+  const has = (row: (BarCell | null)[] | undefined) => !!row?.some((c) => c?.k === 'mat' && c.id === MOUNT_CALL_ID);
+  if (has(lay.bar2) || has(lay.bar3)) return false;
+  for (const key of ['bar2', 'bar3'] as const) {
+    const row = (lay[key] ??= []);
+    for (let i = 0; i < BAR_CELLS; i++) {
+      if (!row[i]) {
+        row[i] = { k: 'mat', id: MOUNT_CALL_ID };
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 /** The bars of the current character (empty when no character is loaded). */
 export function readBars(): BarsState {
   const ch = G.character;
   if (!ch) return emptyState();
   const save = ch.save;
   if (!save.barLayout) save.barLayout = legacyBars(save.id) ?? {};
-  // second-bar defaults of the spec (defensive rows), seeded once: a save with a bar2 entry is never touched
-  const seed = save.spec ? DEFAULT_BAR2_BY_SPEC[save.spec] : undefined;
-  if (seed && save.barLayout.bar2 === undefined) save.barLayout.bar2 = seed.map((id) => ({ k: 'skill' as const, id }));
+  // second-bar defaults (the spec's defensive rows and the mount summon cell), seeded once: a save with a bar2 entry is not reseeded
+  if (save.barLayout.bar2 === undefined) save.barLayout.bar2 = defaultBar2Cells(save.spec);
+  save.flags ??= {};
+  if (migrateMountCell(save.barLayout, save.flags)) ch.persist();
   const parsed = parseBarLayout(save.barLayout);
   return { main: buildMainRow(save.skillBar, parsed.main), bar2: parsed.bar2, bar3: parsed.bar3 };
 }
@@ -144,6 +169,11 @@ export function useBarMat(id: string): boolean {
   const ch = G.character;
   const p = G.player;
   if (!ch || !p) return false;
+  // the summon cell acts like F9 (Mount.ts: the chosen mount is summoned, or dismounted when riding); it needs no pouch item
+  if (id === MOUNT_CALL_ID) {
+    G.events.emit('mount:summon', {});
+    return true;
+  }
   // sprint2: a mount cell summons (or dismisses) that mount, like F9; it is not consumed and needs no pouch item
   const mountId = MATERIALS[id]?.teachesMount;
   if (mountId) {

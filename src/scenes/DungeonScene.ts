@@ -905,10 +905,17 @@ export class DungeonScene implements GameScene {
 
   /**
    * Open world: where the party appears when it came back from a world entrance: a step in front of that door (the door faces
-   * `facing`, degrees). Null for every other spawn (the map start). Yaw looks back at the door.
+   * `facing`, degrees). A flight (WaypointNetwork.startFlight) arrives at the stone it chose. Null for every other spawn (the map
+   * start). Yaw looks back at the door.
    */
   private arrivalOf(def: DungeonDef, built: BuiltDungeon, params: DungeonParams): { x: number; z: number; yaw: number } | null {
     const sp = params.spawn;
+    if (sp && sp.type === 'waypoint') {
+      const w = def.world?.waypoints.find((x) => x.id === sp.id);
+      if (!w) return null;
+      const s = built.nav.nearestWalkable(tileToWorld(w.pos[0]), tileToWorld(w.pos[1]), 8);
+      return s ? { x: s.x, z: s.z, yaw: built.startYaw } : null;
+    }
     if (!sp || sp.type !== 'entrance') return null;
     const en = def.world?.entrances.find((e) => e.id === sp.id);
     if (!en) return null;

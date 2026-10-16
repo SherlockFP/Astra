@@ -4,6 +4,8 @@
  * no bar2 entry; the player can move or clear the cells afterwards. Each id is in its spec's skill list (kit sims check this).
  */
 import type { SpecId } from '../types/v2';
+import type { BarCell } from '../types/character';
+import { MOUNT_CALL_ID } from './mounts';
 
 export const DEFAULT_BAR2_BY_SPEC: Partial<Record<SpecId, string[]>> = {
   knight_protector: ['knight_spell_reflection'],
@@ -20,3 +22,13 @@ export const DEFAULT_BAR2_BY_SPEC: Partial<Record<SpecId, string[]>> = {
   druid_restoration: ['druid_natures_cure', 'druid_rebirth'],
   evoker_preservation: ['evoker_obsidian_scales'],
 };
+
+/**
+ * The bar2 row a new save starts with: the spec's defensive skills in their cells, then the mount summon cell in the next free
+ * cell (every spec, so every character has it). Index 0 is cell 1. barDrop.readBars seeds it once; `migrateMountCell` gives the
+ * same cell to a save that is older than this row.
+ */
+export function defaultBar2Cells(spec: SpecId | undefined): BarCell[] {
+  const skills: BarCell[] = (spec ? DEFAULT_BAR2_BY_SPEC[spec] ?? [] : []).map((id) => ({ k: 'skill' as const, id }));
+  return [...skills, { k: 'mat' as const, id: MOUNT_CALL_ID }];
+}

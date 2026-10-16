@@ -1,6 +1,7 @@
 import { G } from '../../game/G';
 import type { Player } from '../../entities/Player';
 import { MATERIALS, getMaterial } from '../../data/materials';
+import { MOUNT_CALL_ID } from '../../data/mounts';
 import type { AimInfo, SkillDef } from '../../types/skills';
 import type { BarCell } from '../../types/character';
 import type { UI } from '../UI';
@@ -96,6 +97,11 @@ class XCell {
       return this.def ? skillTooltipHTML(this.def, G.player, this.bind) : `<div class="sk"><div class="sk-name">${esc(c.id)}</div></div>`;
     }
     const m = getMaterial(c.id);
+    if (c.id === MOUNT_CALL_ID) {
+      // the summon cell: the tooltip names the key of the mount action (F9 by default), not only this cell's bar key
+      const mountKey = G.input?.bindingLabel('mount') ?? '';
+      return `<div class="sk"><div class="sk-head"><div><div class="sk-name">${esc(m?.name ?? 'Binek Çağır')}</div><div class="sk-tags">Binek</div></div></div><div class="sk-desc">${esc(m?.desc ?? '')}</div><div class="sk-key">Tuş: <b>${esc(mountKey)}</b>${this.bind ? ` · Çubuk: <b>${esc(this.bind)}</b>` : ''}</div></div>`;
+    }
     const count = G.character?.material(c.id) ?? 0;
     return `<div class="sk"><div class="sk-head"><div><div class="sk-name">${esc(m?.name ?? c.id)}</div><div class="sk-tags">Tüketilebilir · Elindeki: ${fmtNum(count)}</div></div></div><div class="sk-desc">${esc(m?.desc ?? '')}</div><div class="sk-key">Tuş: <b>${esc(this.bind)}</b></div></div>`;
   }
@@ -147,7 +153,7 @@ class XCell {
     }
     setClass(this.el, 'noskill', !c || (c.k === 'skill' && !def));
     // sprint2: a mount cell summons the mount (not a pouch stack), so it is never shown as empty and has no count
-    const mountCell = c?.k === 'mat' && !!getMaterial(c.id)?.teachesMount;
+    const mountCell = c?.k === 'mat' && (c.id === MOUNT_CALL_ID || !!getMaterial(c.id)?.teachesMount);
     setClass(this.el, 'empty', c?.k === 'mat' && !mountCell && count <= 0);
     // counts: > 1, or 0 on an empty consumable / a charge skill (`.is-zero`); exactly 1 shows nothing (UI §2.6.3)
     const countN = c?.k === 'mat' ? count : charges;

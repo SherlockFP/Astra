@@ -19,16 +19,19 @@ export class Waypoint extends InteractableProp {
   private glow = 0;
   private mats: THREE.MeshStandardMaterial[] = [];
   private onActivate?: (wp: Waypoint) => void;
+  /** Open-world stones: F on an active stone opens the Işınlayıcı (the flight panel) instead of doing nothing. */
+  private onUse?: (wp: Waypoint) => void;
   /** Toast shown on the first activation (null = silent). Open-world stones announce their own name. */
   private readonly toastText: string | null;
   readonly autoRadius: number;
 
-  constructor(id: number, opts: { active?: boolean; autoRadius?: number; onActivate?: (wp: Waypoint) => void; toast?: string | null } = {}) {
+  constructor(id: number, opts: { active?: boolean; autoRadius?: number; onActivate?: (wp: Waypoint) => void; onUse?: (wp: Waypoint) => void; toast?: string | null } = {}) {
     super(id);
     this.active = opts.active ?? false;
     this.glow = this.active ? 1 : 0;
     this.autoRadius = opts.autoRadius ?? 5.5;
     this.onActivate = opts.onActivate;
+    this.onUse = opts.onUse;
     this.toastText = opts.toast === undefined ? 'Diriliş Taşı etkinleştirildi. Düşersen buradan dirileceksin.' : opts.toast;
     this.interactRange = 3.6;
     this.blockRadius = 0.9;
@@ -37,6 +40,7 @@ export class Waypoint extends InteractableProp {
   }
 
   get interactPrompt(): string {
+    if (this.active && this.onUse) return 'Işınlayıcı';
     return this.active ? 'Diriliş Taşı (etkin)' : 'Diriliş Taşını Etkinleştir';
   }
 
@@ -66,7 +70,7 @@ export class Waypoint extends InteractableProp {
   }
 
   canInteract(): boolean {
-    return !this.active;
+    return !this.active || !!this.onUse;
   }
 
   activate(silent = false): void {
@@ -86,6 +90,10 @@ export class Waypoint extends InteractableProp {
   }
 
   interact(_player: Player): void {
+    if (this.active) {
+      this.onUse?.(this);
+      return;
+    }
     this.activate();
   }
 
