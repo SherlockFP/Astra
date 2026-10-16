@@ -14,7 +14,7 @@ import type { ThirdPersonCamera } from '../camera/ThirdPersonCamera';
 import type { InputAction } from '../core/Input';
 import { WowMouse, type WowMouseOut } from './WowMouse';
 import { pickAtNdc, type PickHit } from './ClickPick';
-import { setRim, setFarRim, type RimKind } from '../vfx/TargetRim';
+import { setRim, setFarRim, cullFarRims, type RimKind } from '../vfx/TargetRim';
 import { AutoAttack, AUTO, type AutoTarget } from './AutoAttack';
 import { VERT } from '../world/Heightfield';
 import { FallHandler, VOID_FADE_IN, VOID_FADE_OUT, VOID_INPUT_LOCK, VOID_INVULN_SEC, type FallEnv, type Spot } from './FallHandler';
@@ -1820,6 +1820,7 @@ export class PlayerController {
         setFarRim(e.object3d, want ? enemyKind(e) : null);
       }
     }
+    cullFarRims(this.cam.camera);
   }
 
   private wowPick(ndcX: number, ndcY: number): PickHit | null {

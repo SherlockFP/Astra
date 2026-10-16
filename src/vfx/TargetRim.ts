@@ -23,7 +23,9 @@ const FAR_RIM: Record<'hostile' | 'neutral', { color: number }> = {
   neutral: { color: 0xffd23a },
 };
 const farMats: Partial<Record<'hostile' | 'neutral', THREE.ShaderMaterial>> = {};
-const farShells = new WeakMap<THREE.Object3D, { kind: 'hostile' | 'neutral'; shells: THREE.Mesh[] }>();
+/** Far rims keep a bounding sphere (root-local centre, radius) so cullFarRims() can hide the shells of off-screen enemies. */
+interface FarEntry { kind: 'hostile' | 'neutral'; shells: THREE.Mesh[]; root: THREE.Object3D; center: THREE.Vector3; radius: number }
+const farShells = new Map<THREE.Object3D, FarEntry>();
 
 /**
  * Faint always-on edge for an enemy beyond ~25 m, so it does not vanish into foliage (vfx stays off near the player, where the
@@ -38,10 +40,16 @@ export function setFarRim(root: THREE.Object3D, kind: 'hostile' | 'neutral' | nu
   }
   if (!kind) return;
   const mat = (farMats[kind] ??= shellMaterial(FAR_RIM[kind].color, { power: 2.0, inflate: 0.014, alpha: 0.32, base: 0, additive: false }));
+  const box = new THREE.Box3().setFromObject(root);
+  const center = root.worldToLocal(box.getCenter(new THREE.Vector3()));
+  const radius = box.isEmpty() ? 3 : box.getSize(new THREE.Vector3()).length() * 0.5 + 1;
   const shells: THREE.Mesh[] = [];
   root.traverse((o) => {
     const m = o as THREE.Mesh;
     if (!m.isMesh || (o as THREE.InstancedMesh).isInstancedMesh || o.userData.vfxShell || o.userData.noRim || !m.geometry) return;
+    // a shadow never gets a rim; nor do tiny parts (eyes, tongue, ...) below 15 % of the enemy's own size
+    for (let p: THREE.Object3D | null = o; p && p !== root.parent; p = p.parent) if (p.name === 'blobShadow' || p.userData.shadow) return;
+    if (new THREE.Box3().setFromObject(m).getSize(new THREE.Vector3()).length() * 0.5 < 0.15 * radius) return;
     const sk = m as THREE.SkinnedMesh;
     let shell: THREE.Mesh;
     if (sk.isSkinnedMesh && sk.skeleton) {
@@ -55,7 +63,30 @@ export function setFarRim(root: THREE.Object3D, kind: 'hostile' | 'neutral' | nu
     m.add(shell);
     shells.push(shell);
   });
-  farShells.set(root, { kind, shells });
+  farShells.set(root, { kind, shells, root, center, radius });
+}
+
+const _frustum = new THREE.Frustum();
+const _projView = new THREE.Matrix4();
+const _sphere = new THREE.Sphere();
+const _centerW = new THREE.Vector3();
+
+/**
+ * Per frame: a far-rim shell is drawn only while its enemy's bounding sphere is in the camera frustum. The shells never
+ * change the look (they sit on the enemy), so off-screen enemies cost no draw calls. Call after the camera has moved.
+ */
+export function cullFarRims(cam: THREE.Camera): void {
+  if (farShells.size === 0) return;
+  cam.updateMatrixWorld();
+  _projView.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
+  _frustum.setFromProjectionMatrix(_projView);
+  for (const e of farShells.values()) {
+    _centerW.copy(e.center);
+    e.root.localToWorld(_centerW);
+    _sphere.set(_centerW, e.radius);
+    const vis = _frustum.intersectsSphere(_sphere);
+    for (const s of e.shells) if (s.visible !== vis) s.visible = vis;
+  }
 }
 
 interface Active {
