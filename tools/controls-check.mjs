@@ -252,6 +252,13 @@ for (const a of Object.keys(SCHEME_BINDINGS.wow)) check(SCHEME_ACTIONS.includes(
   check(TS.pickFrontTarget([c(1, 5, 1, 1), c(2, 5.6, 0.95, 0.2)]) === 2, 'auto-pick: within 1 m of the nearest, the lower HP wins');
   check(TS.pickFrontTarget([c(1, 5, 1, 0.1), c(2, 7, 0.95, 0.2)]) === 1, 'auto-pick: outside the 1 m tie window, distance decides');
   check(TS.pickFrontTarget([]) === null, 'auto-pick: no candidate gives null');
+  // no front enemy: the nearest of any side is picked (the cast then turns the character to it)
+  check(TS.pickAutoTarget([c(1, 4, -0.9), c(2, 6, -0.2)]) === 1, 'ability auto-pick: nothing in front -> the nearest enemy of any side');
+  check(TS.pickAutoTarget([c(1, 3, -0.9), c(2, 6, 0.95)]) === 2, 'ability auto-pick: a front enemy beats a nearer one behind');
+  check(TS.pickAutoTarget([]) === null, 'ability auto-pick: no candidate gives null');
+  // WoW melee reach: 5 m between both hitboxes; the error wording is fixed
+  check(TS.inMeleeReach(5) && !TS.inMeleeReach(5.01) && TS.inMeleeReach(6, 1), 'melee reach: 5 m edge to edge, +1 for a lunging skill');
+  check(TS.WOW_ERR.range === 'Menzil dışında' && TS.WOW_ERR.facing === 'Hedefe bakmıyorsun' && TS.WOW_ERR.los === 'Görüş hattı yok', 'WoW error wording');
   // Tab: nearest first, wraps; Shift+Tab steps backwards from the far end
   const tabs = [{ id: 1, dist: 9 }, { id: 2, dist: 3 }, { id: 3, dist: 6 }];
   check(TS.wowTabNext(tabs, null, 1) === 2, 'Tab: no target takes the nearest');

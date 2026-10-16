@@ -657,7 +657,7 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
   const a3 = new AutoAttack();
   a3.arm(99);
   const offFace = a3.tick({ dt: 0.1, mode: 'melee', reach: 3.1, ready: true, paused: false, dead: false, target: { id: 99, dist: 1, angleDeg: 150, los: true, valid: true }, nearestId: null, moving: false, mouseLook: false, inCombat: true });
-  ok('auto.off-facing target in reach: no swing and the facing toast', !offFace.swing && offFace.toast === 'Hedefe dönük değilsin', JSON.stringify({ swing: offFace.swing, toast: offFace.toast }));
+  ok('auto.off-facing target in reach: no swing and the facing toast', !offFace.swing && offFace.toast === 'Hedefe bakmıyorsun', JSON.stringify({ swing: offFace.swing, toast: offFace.toast }));
   const inFront = new AutoAttack();
   inFront.arm(99);
   const front = inFront.tick({ dt: 0.1, mode: 'melee', reach: 3.1, ready: true, paused: false, dead: false, target: { id: 99, dist: 1, angleDeg: 20, los: true, valid: true }, nearestId: null, moving: false, mouseLook: false, inCombat: true });

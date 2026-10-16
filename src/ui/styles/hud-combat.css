@@ -135,3 +135,7 @@
 @media (prefers-reduced-motion: reduce) {
   .cc-prompt.on, .cc-lock, .cc-guard.low .cc-guard-fill, .cc-guard.broken .cc-guard-track { animation: none; }
 }
+
+/* level-1 combat line (FirstKillHint): one dark strip above the action bar */
+.first-kill-hint { display: none; margin-bottom: 4px; padding: 3px 10px; border-radius: 4px; background: rgba(10, 8, 14, 0.72); border: 1px solid rgba(255, 210, 110, 0.35); }
+.first-kill-hint-text { font: 700 13px/1.2 var(--font-body); color: #ffe9b0; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9); white-space: nowrap; }

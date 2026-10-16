@@ -1,4 +1,5 @@
 import { G } from '../../game/G';
+import { WOW_ERR } from '../../combat/targetSelect';
 import { div, pulse, setText } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
 
@@ -15,12 +16,13 @@ export function castFailText(reason: string, remaining?: number): string {
   const r = remaining !== undefined && Number.isFinite(remaining) ? Math.max(0, remaining) : undefined;
   switch (reason) {
     case 'cooldown':
-      if (r === undefined) return 'Henüz hazır değil';
-      return r <= GCD_MAX_S ? `Genel bekleme (${r.toFixed(1)} sn)` : `Henüz hazır değil (${Math.ceil(r)} sn)`;
-    case 'resource': return 'Kaynak yetersiz';
-    case 'range': return 'Menzil dışı';
-    case 'target': return 'Geçerli bir hedef yok';
-    case 'facing': return 'Hedef önünde değil';
+      if (r === undefined) return WOW_ERR.cooldown;
+      return r <= GCD_MAX_S ? `Genel bekleme (${r.toFixed(1)} sn)` : `${WOW_ERR.cooldown} (${Math.ceil(r)} sn)`;
+    case 'resource': return WOW_ERR.resource;
+    case 'range': return WOW_ERR.range;
+    case 'target': return WOW_ERR.target;
+    case 'los': return WOW_ERR.los;
+    case 'facing': return WOW_ERR.facing;
     case 'moving': return 'Hareket halindeyken kullanılamaz';
     case 'stunned': return 'Sersemlemiş durumdasın';
     case 'casting': return 'Zaten bir yetenek kullanıyorsun';

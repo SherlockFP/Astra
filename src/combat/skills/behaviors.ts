@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { G } from '../../game/G';
 import { clamp, yawFromDir, cosmeticRng } from '../../core/utils';
 import { TYPE_COLORS, vfxScale, isAreaVfx } from '../feel';
+import { WOW_TARGET } from '../targetSelect';
 import { Projectile } from '../../entities/Projectile';
 import { sp, hasSp, bloodTornado } from '../specials';
 import { MAJOR_BEHAVIORS } from '../majors';
@@ -194,8 +195,16 @@ export function aimSlope(from: Actor, originY: number, to: Actor | null): number
 const meleeArc: Behavior = {
   fire(c) {
     const { def, caster, sys } = c;
-    const range = def.range ?? 2.5;
+    let range = def.range ?? 2.5;
     const arc = def.arc ?? 120;
+    // WoW melee (targetSelect WOW_TARGET.meleeReachM): the local character's chosen target inside 5 m between both hitboxes is
+    // always struck, even when the basic step is shorter (the character never lunges in WoW, so the reach must cover it)
+    const t = c.target;
+    if (t && !c.remote && caster.kind === 'player' && (caster as Player).isLocal && G.input?.scheme === 'wow') {
+      const d = Math.hypot(t.position.x - caster.position.x, t.position.z - caster.position.z);
+      const edge = d - t.radius - caster.radius;
+      if (edge <= WOW_TARGET.meleeReachM) range = Math.max(range, d - t.radius + 0.1);
+    }
     const heavy = (def.params?.weight ?? 0) >= 1;
     swingVfx(c, range, arc, heavy);
     if (def.vfx?.cast && def.vfx.cast !== def.vfx.trail) sys.vfx(def.vfx.cast, [caster.position.x + c.dir[0] * 1.0, caster.position.y + 0.15, caster.position.z + c.dir[1] * 1.0], { dir: [c.dir[0], 0, c.dir[1]], scale: vfxScale(def.vfx.cast, range) });

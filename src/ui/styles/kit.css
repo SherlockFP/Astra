@@ -72,7 +72,7 @@
 
 /* --- range / resource tints (overlay, alpha-blended — no filters on the art) --- */
 .k-slot.nores::after, .k-slot.oor::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
-.k-slot.nores::after { background: rgba(60, 90, 230, .55); }      /* no resource: blue  */
+.k-slot.nores::after { background: rgba(70, 72, 80, .62); }      /* no resource / unusable: grey (WoW) */
 .k-slot.oor::after   { background: rgba(210, 40, 30, .50); }      /* out of range: red (declared last, wins) */
 .k-slot.nores > .k-art { filter: saturate(.3); }
 

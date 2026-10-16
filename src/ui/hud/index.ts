@@ -36,6 +36,7 @@ import { QuestFeed } from './QuestFeed';
 import { adviceLine } from '../panels/game/guideEngine';
 import { TipCards } from './TipCards';
 import { CastErrors } from './CastErrors';
+import { FirstKillHint } from './FirstKillHint';
 import { GuideCard } from './Onboarding';
 import { ControlsOverlay } from './ControlsOverlay';
 import { XpStrip } from './XpStrip';
@@ -176,6 +177,8 @@ export function createHUD(ui: UI): HudApi {
   // consumable strip under the player frame (§2.6.5): potions + Panzehir here, then the equipped flasks
   const consHost = div('uf-cons', zUf);
   const bar = add(new ActionBar(ui, { cons: consHost }));
+  // level-1 combat line above the action bar until the first kill (FirstKillHint.ts)
+  bc.appendChild(add(new FirstKillHint()).el);
   const flasks = add(new FlaskRow());
   consHost.appendChild(flasks.el);
   // XP strip on the bottom edge (§2.6.7, .hud-xp)

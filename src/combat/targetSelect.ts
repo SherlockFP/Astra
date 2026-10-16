@@ -9,7 +9,26 @@ export const WOW_TARGET = {
   frontHalfDeg: 45,
   /** Enemies whose distance is within this (m) of the nearest one are tie-broken by the lower HP. */
   hpTieM: 1,
+  /** WoW melee reach (m) between both hitboxes (edge to edge). Melee abilities and the auto-attack use it. */
+  meleeReachM: 5,
+  /** Ability press with no hard target: the front enemy, else the nearest one, within this (m, edge to edge). */
+  autoPickM: 8,
 } as const;
+
+/** The red error line of a refused ability (WoW wording). SkillSystem reason -> text: CastErrors.castFailText. */
+export const WOW_ERR = {
+  range: 'Menzil dışında',
+  facing: 'Hedefe bakmıyorsun',
+  target: 'Hedef yok',
+  los: 'Görüş hattı yok',
+  resource: 'Yeterli öfke/mana yok',
+  cooldown: 'Henüz hazır değil',
+} as const;
+
+/** Melee reach test: `edge` = metres between the two hitboxes (centre distance minus both radii). */
+export function inMeleeReach(edge: number, extra = 0): boolean {
+  return edge <= WOW_TARGET.meleeReachM + extra;
+}
 
 export interface FrontCand {
   id: number;
@@ -32,6 +51,24 @@ export function pickFrontTarget(cands: readonly FrontCand[]): number | null {
   const lim = front[0].dist + WOW_TARGET.hpTieM;
   let pick = front[0];
   for (const c of front) {
+    if (c.dist > lim) break;
+    if (c.hpFrac < pick.hpFrac) pick = c;
+  }
+  return pick.id;
+}
+
+/**
+ * Ability with no hard target (WoW auto-target): the front rule of pickFrontTarget first; when nothing is in front, the nearest
+ * candidate of any side. The caller filters the candidates to `autoPickM` (edge) and to what it can see.
+ */
+export function pickAutoTarget(cands: readonly FrontCand[]): number | null {
+  const front = pickFrontTarget(cands);
+  if (front !== null) return front;
+  if (!cands.length) return null;
+  const near = [...cands].sort((a, b) => a.dist - b.dist || a.id - b.id);
+  const lim = near[0].dist + WOW_TARGET.hpTieM;
+  let pick = near[0];
+  for (const c of near) {
     if (c.dist > lim) break;
     if (c.hpFrac < pick.hpFrac) pick = c;
   }

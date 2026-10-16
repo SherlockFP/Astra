@@ -6,7 +6,7 @@ import { getItemBase } from '../data/items';
 import { FEEL } from '../combat/feel';
 import { SKILL_SLOT_KEYS, type AimInfo, type SkillDef, type SkillSlotKey } from '../types/skills';
 import { cycleFriendly, friendlyTargetId, selectPartySlot } from '../combat/healing';
-import { pickFrontTarget, wowTabNext, type FrontCand } from '../combat/targetSelect';
+import { pickAutoTarget, wowTabNext, WOW_TARGET, type FrontCand } from '../combat/targetSelect';
 import type { Player } from '../entities/Player';
 import type { Enemy } from '../entities/Enemy';
 import type { EntityId } from '../types/common';
@@ -261,6 +261,7 @@ export class PlayerController {
   private readonly aimFn = (): AimInfo => this.getAim();
 
   constructor(player: Player, cam: ThirdPersonCamera) {
+
     this.player = player;
     this.cam = cam;
     this.mount = new MountRider(player);
@@ -1315,10 +1316,11 @@ export class PlayerController {
 
   /**
    * WoW (Midnight retail) ability targeting, run before a bar skill is cast. Returns false = refuse (a "Hedef yok" / "Menzil dışı" /
-   * "Hedef önünde değil" error was reported), null = nothing to do (not an offensive target ability, or a free-aimed spell),
+   * "Hedefe bakmıyorsun" error was reported), null = nothing to do (not an offensive target ability, or a free-aimed spell),
    * else the enemy the ability will hit.
-   *  - no hard target: the best enemy in front is acquired and selected (mouseover first, then the nearest in a 90 deg cone);
-   *  - melee abilities need the target in range and inside the front 180 deg of the character (nothing ever turns the character);
+   *  - no hard target: the enemy in front (else the nearest) within 8 m is acquired and selected (mouseover first);
+   *  - melee: 5 m between both hitboxes; ranged: the skill's range and line of sight ("Görüş hattı yok");
+   *  - in reach, the character turns to the target at once (auto-face), so facing is never a refusal;
    *  - the caller arms the auto-attack after a successful cast.
    */
   private wowPreCast(slot: SkillSlotKey): { target: Enemy; reaimed: boolean } | null | false {
@@ -1330,11 +1332,14 @@ export class PlayerController {
     if (!def || !kind) return null;
     const act = SLOT_ACTION[slot];
     const edge = !!act && G.input.pressed(act);
-    const reach = kind === 'melee' ? (def.range ?? 2.5) + AUTO.meleeSlack + (def.params?.lunge ? 1 : 0) : Math.min(def.range ?? AUTO.rangedMax, WOW_TAB_RANGE + 5);
+    // melee: 5 m between both hitboxes (WOW_TARGET.meleeReachM) + the lunge step of a lunging skill; ranged: the skill's range
+    const reach = kind === 'melee'
+      ? WOW_TARGET.meleeReachM + (def.params?.lunge ? 1 : 0)
+      : Math.min(def.range ?? AUTO.rangedMax, WOW_TAB_RANGE + 5);
     let tgt = this.hardTarget;
     let reaimed = false;
     if (!tgt || tgt.isDead || tgt.removed) {
-      tgt = this.acquireEnemy(kind, reach + (kind === 'melee' ? 3 : 0));
+      tgt = this.acquireEnemy(kind, WOW_TARGET.autoPickM);
       if (!tgt) {
         if (kind === 'melee') {
           if (edge) sk.fail('target');
@@ -1347,17 +1352,17 @@ export class PlayerController {
       reaimed = true;
     }
     const dx = tgt.position.x - p.position.x, dz = tgt.position.z - p.position.z;
-    if (Math.hypot(dx, dz) - tgt.radius > reach) {
+    const edgeDist = Math.hypot(dx, dz) - tgt.radius - p.radius;
+    if (edgeDist > reach) {
       if (edge) sk.fail('range');
       return false;
     }
-    if (kind === 'melee') {
-      const heading = this.wowOut.mouseLook ? this.cam.faceYaw : p.yaw;
-      if (Math.abs(angleDiff(heading, Math.atan2(dx, dz))) > Math.PI / 2) {
-        if (edge) sk.fail('facing');
-        return false;
-      }
+    if (kind === 'ranged' && !p.world?.nav.lineOfSight(p.position.x, p.position.z, tgt.position.x, tgt.position.z)) {
+      if (edge) sk.fail('los');
+      return false;
     }
+    // WoW auto-face: an ability at a hard target in reach turns the character to it (never refused for facing)
+    this.faceEnemy(tgt);
     return { target: tgt, reaimed };
   }
 
@@ -1369,7 +1374,8 @@ export class PlayerController {
     const p = this.player;
     const world = p.world;
     if (!world) return null;
-    const near = (e: Enemy) => !e.isDead && !e.removed && e.alive && Math.hypot(e.position.x - p.position.x, e.position.z - p.position.z) - e.radius <= radius;
+    // edge to edge (both hitboxes) within `radius`, alive and hostile
+    const near = (e: Enemy) => !e.isDead && !e.removed && e.alive && Math.hypot(e.position.x - p.position.x, e.position.z - p.position.z) - e.radius - p.radius <= radius;
     const over = this.softTarget;
     if (over && near(over) && (kind === 'melee' || world.nav.lineOfSight(p.position.x, p.position.z, over.position.x, over.position.z))) return over;
     if (kind === 'melee') this.moveBasis(_f, _r);
@@ -1383,14 +1389,22 @@ export class PlayerController {
       const dx = e.position.x - p.position.x, dz = e.position.z - p.position.z;
       const d = Math.hypot(dx, dz);
       const cos = d > 0.01 ? (dx * fx + dz * fz) / d : 1;
-      if (cos < 0) continue; // behind the character: never picked
       if (kind === 'ranged' && !world.nav.lineOfSight(p.position.x, p.position.z, e.position.x, e.position.z)) continue;
       byId.set(e.id, e);
       cands.push({ id: e.id, dist: d, cos, hpFrac: e.hpFrac });
     }
-    // front cone and the nearest / lowest-HP tie-break: targetSelect.ts (WOW_TARGET)
-    const id = pickFrontTarget(cands);
+    // the front enemy first, else the nearest within 8 m (any side; the cast turns the character to it): targetSelect.ts
+    const id = pickAutoTarget(cands);
     return id == null ? null : byId.get(id) ?? null;
+  }
+
+  /** WoW auto-face: the character turns to face `e` at once (ability cast at a target in reach). Camera stays where it is. */
+  private faceEnemy(e: Enemy): void {
+    const p = this.player;
+    const dx = e.position.x - p.position.x, dz = e.position.z - p.position.z;
+    if (Math.hypot(dx, dz) < 0.05) return;
+    p.yaw = Math.atan2(dx, dz);
+    this.aimFrame = -1;
   }
 
   private fireSlot(slot: SkillSlotKey, aim: AimInfo): boolean {
@@ -1402,8 +1416,10 @@ export class PlayerController {
       const pre = this.wowPreCast(slot);
       if (pre === false) return false;
       if (pre) {
+        // the hit goes to the target (the character already faces it): the aim is the target itself
         wowTarget = pre.target;
-        if (pre.reaimed) aim = this.getAim();
+        const t = pre.target, dx = t.position.x - p.position.x, dz = t.position.z - p.position.z, len = Math.hypot(dx, dz) || 1;
+        aim = { point: [t.position.x, t.position.y, t.position.z], dir: [dx / len, 0, dz / len], targetId: t.id };
       }
     }
     try {
@@ -1965,7 +1981,8 @@ export class PlayerController {
       const dx = tgt.position.x - p.position.x, dz = tgt.position.z - p.position.z;
       target = {
         id: tgt.id,
-        dist: Math.max(0, Math.hypot(dx, dz) - tgt.radius),
+        // WoW melee reach: metres between both hitboxes
+        dist: Math.max(0, Math.hypot(dx, dz) - tgt.radius - p.radius),
         angleDeg: Math.abs(angleDiff(heading, Math.atan2(dx, dz))) * 180 / Math.PI,
         los: info.mode !== 'ranged' || world.nav.lineOfSight(p.position.x, p.position.z, tgt.position.x, tgt.position.z),
         valid: !tgt.isDead && !tgt.removed && tgt.alive,
@@ -1990,8 +2007,11 @@ export class PlayerController {
       inCombat: p.inCombat,
     });
     if (out.toast) this.wowToast(out.toast);
-    // WoW never turns the character on its own (only RMB mouselook does): out.faceTarget is ignored, an off-facing target gets the
-    // "Hedef önünde değil" toast from the driver instead
+    // auto-face: idle and in reach, the character turns toward the target (the swing is then always in front)
+    if (out.faceTarget && target && tgt) {
+      const dx = tgt.position.x - p.position.x, dz = tgt.position.z - p.position.z;
+      this.autoFaceWant = Math.atan2(dx, dz);
+    }
     if (out.swing && target && tgt) {
       const dx = tgt.position.x - p.position.x, dz = tgt.position.z - p.position.z;
       const len = Math.hypot(dx, dz) || 1;
@@ -2101,6 +2121,8 @@ export class PlayerController {
     (m.material as THREE.MeshBasicMaterial).color.setHex(hard ? 0xffb020 : 0xff3a2a);
     r.visible = hard;
     if (hard) {
+      // WoW selection ring: red for a hostile, yellow for a neutral
+      (r.material as THREE.MeshBasicMaterial).color.setHex(t.kind === 'enemy' ? 0xff3a2a : 0xffd060);
       r.position.set(t.position.x, t.position.y + 0.06, t.position.z);
       r.scale.setScalar(Math.max(1, t.radius * 1.9) * (1 + Math.sin(this.time * 5) * 0.03));
       r.rotation.y += dt * 0.8;

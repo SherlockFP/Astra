@@ -130,7 +130,7 @@
 .hud .k-slot > .k-count { right: 2px; bottom: 1px; font: 700 12px/1 var(--font-body); text-shadow: var(--elv-outline); }
 .hud .k-slot > .k-cdnum { font: 700 14px/1 var(--font-body); text-shadow: var(--elv-outline); }
 /* range / resource states: the whole icon turns red (out of range, the key too) or blue (not enough resource) */
-.hud .k-slot.nores::after { background: rgba(40, 70, 220, 0.5); }
+.hud .k-slot.nores::after { background: rgba(70, 72, 80, 0.6); }
 .hud .k-slot.oor::after { background: rgba(215, 30, 20, 0.5); }
 .hud .ab-btn.oor > .k-key-lbl { color: #ff3b30; }
 /* proc: retail yellow ants stay, the soft outer glow goes */
