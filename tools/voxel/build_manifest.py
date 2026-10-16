@@ -69,6 +69,9 @@ SKINNED = {
     'monsters/Rat': ('small', 0.060), 'monsters/Skull': ('small', 0.060), 'monsters/Slime': ('small', 0.072),
     'monsters/Spider': ('medium', 0.090), 'monsters/Yeti': ('boss', 0.140), 'monsters/Zombie': ('medium', 0.093),
     'npcs/King': ('medium', 0.090), 'npcs/Worker': ('medium', 0.090),
+    # KayKit Adventurers 2.0 bodies (characters/v2/, Rig_Medium): the same hero class / cell / overlay as the 1.0 bodies
+    'characters/v2/Barbarian': ('hero', 0.09), 'characters/v2/Knight': ('hero', 0.09), 'characters/v2/Mage': ('hero', 0.09),
+    'characters/v2/Ranger': ('hero', 0.09), 'characters/v2/Rogue': ('hero', 0.09), 'characters/v2/Rogue_Hooded': ('hero', 0.09),
 }
 # Appendix A in-game scale (measured) where the enemy defs of a file mix variants of very different size (swarm /
 # elite); the median of such a mix matches none of them. Each value reproduces the Appendix A native cell.
@@ -239,6 +242,9 @@ def classify(rel, js, skinned, size, uses):
 
     if rel.startswith('itch/ual/') or lb == 'ual_clips':
         return base_record(rel, 'keep', 'keep', 'animation library, not rendered')
+
+    if rel.startswith('characters/v2/anims/'):
+        return base_record(rel, 'keep', 'keep', 'Rig_Medium clip file (read for the 2.0 bodies, never rendered)')
 
     if skinned or key in SKINNED or key.startswith('kenney/graveyard-kit/character-'):
         r = base_record(rel, 'voxel', 'medium', 'skinned model')

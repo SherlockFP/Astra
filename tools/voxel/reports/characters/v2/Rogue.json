@@ -1,0 +1,50 @@
+{
+ "src": "characters/v2/Rogue.glb",
+ "out": "characters/v2/Rogue.glb",
+ "family": "characters/v2",
+ "class": "hero",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "players scale 1",
+ "game_cell": 0.09,
+ "native_cell_base": 0.09,
+ "budget": 7600,
+ "hidden_nodes": [],
+ "kb_src": 400,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": "(Helmet|Hat|Hood)$",
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-17T01:40:13",
+ "status": "PASS",
+ "cell_used": 0.09,
+ "passes": [
+  {
+   "cell": 0.09,
+   "tris_visible": 3372,
+   "voxels": 1672
+  }
+ ],
+ "voxels": 1672,
+ "faces": 1686,
+ "tris_total": 3372,
+ "tris_visible": 3372,
+ "budget_pct": -55.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3372,
+  "kb": 324,
+  "clips": 0,
+  "orig_kb": 400
+ },
+ "kb_out": 324,
+ "seconds": 0.56
+}
