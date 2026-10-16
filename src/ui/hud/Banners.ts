@@ -79,6 +79,9 @@ const QUEUE_MAX = 3;
 /** True while the local player is in combat (Actor.inCombat: hit or hitting within 5 s). */
 const inCombat = (): boolean => !!G.player?.inCombat;
 
+/** True while an NPC dialog (panel 'dialog') is open: the zone title would sit over its title line. */
+const dialogOpen = (): boolean => !!G.ui?.isPanelOpen?.('dialog');
+
 /**
  * Serialises the big centre banners of ranks 2–5 (§2.11): one plays at a time, the queue is ordered by rank then age, a
  * lower-rank banner waits for the higher one to end, and past three waiting banners the oldest lowest-rank one is dropped.
@@ -217,14 +220,14 @@ export class ZoneBanner implements HudWidget {
     div('zone-orn bot', this.el);
     G.events.on('ui:zoneName', (z) => {
       if (!G.ui?.mode || (G.ui.mode !== 'town' && G.ui.mode !== 'dungeon')) return;
-      // never over a fight: the title is dropped when it arrives mid-combat
-      if (inCombat()) return;
+      // never over a fight or an NPC dialog: the title is dropped when it arrives mid-combat or mid-talk
+      if (inCombat() || dialogOpen()) return;
       this.queue.push(
         BANNER_RANK.zone,
         BIG_BANNER_MS,
         () => {
-          // the queue may hand over a turn after combat began: the title stays off then too
-          if (inCombat()) return;
+          // the queue may hand over a turn after combat / a dialog began: the title stays off then too
+          if (inCombat() || dialogOpen()) return;
           setText(this.title, z.title);
           setText(this.sub, z.subtitle ?? '');
           this.sub.style.display = z.subtitle ? '' : 'none';
@@ -239,8 +242,8 @@ export class ZoneBanner implements HudWidget {
   }
 
   update(_ctx: HudCtx): void {
-    // a fight that starts while the title is up takes it down at once; the queue still times out its slot
-    if (inCombat() && this.el.classList.contains('on')) setClass(this.el, 'on', false);
+    // a fight or an NPC dialog that starts while the title is up takes it down at once; the queue still times out its slot
+    if ((inCombat() || dialogOpen()) && this.el.classList.contains('on')) setClass(this.el, 'on', false);
   }
 }
 

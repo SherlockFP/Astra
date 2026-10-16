@@ -240,6 +240,9 @@ export class Enemy extends Actor {
   private culled = false;
   /** Frames still drawn after the model is attached, so its shaders compile at spawn (updateLod). */
   private warmFrames = 3;
+  /** The body height is measured on the first live frame (see loadModel); until then a 2 m guess stands. */
+  private heightPending = false;
+  private heightTries = 0;
   private proc: ProcModel | null = null;
   private shadow: THREE.Object3D | null = null;
   /** Materials this entity made itself (procedural bodies). Freed on removal. */
@@ -476,14 +479,19 @@ export class Enemy extends Actor {
       this.shadow = sh;
     } catch { /* vfx not ready */ }
 
-    // measure (cached per def: skinning-accurate bounds are expensive)
-    this.height = clamp(this.measureHeight(holder), 0.3, 14) + this.hover;
-
     if (anim) {
       this.animT = Math.random() * 3;
       const idle = this.idleClip();
       anim.setBase(idle, { fade: 0 });
       anim.update(this.animT); // desync identical enemies
+    }
+
+    // measure (cached per def: skinning-accurate bounds are expensive). An uncached def measures once its skeleton is live (update():
+    // heightPending): a bone read at spawn is not the posed body, so until then a 2 m guess stands.
+    if (this.proc || HEIGHT_CACHE.has(def.id)) this.height = clamp(this.measureHeight(holder), 0.3, 14) + this.hover;
+    else {
+      this.heightPending = true;
+      this.height = clamp(2 * this.baseScale(), 0.3, 14) + this.hover;
     }
   }
 
@@ -562,10 +570,18 @@ export class Enemy extends Actor {
     if (this.proc) return this.proc.height * this.baseScale();
     let h = HEIGHT_CACHE.get(def.id);
     if (h === undefined) {
-      // Rest-pose bounds of the VISIBLE meshes: each mesh's bind geometry x matrixWorld. Not Box3.setFromObject(precise): that reads a
-      // SkinnedMesh through getVertexPosition (the CURRENT bone matrices), and at spawn those are still zero, so rigged enemies
-      // measured thousands of metres and hit the 14 m clamp (rat: 14 m before, 0.79 m after). Meshes hidden under the holder are skipped.
+      // Posed bounds of the VISIBLE meshes: skinned vertices through the current bone matrices x matrixWorld (measureHeight runs after
+      // the first idle pose, so the bones are live). The bind geometry is NOT the body: rigs whose armature / mesh nodes carry scale
+      // (Rat.glb: 39.5 x 100) measured 3x too tall (rat 7.1 m, wasp 10 m; the nameplates floated over them). Meshes hidden under the
+      // holder are skipped.
       holder.updateWorldMatrix(true, true);
+      holder.traverse((o) => {
+        const sm = o as THREE.SkinnedMesh;
+        if (sm.isSkinnedMesh && sm.skeleton) sm.skeleton.update();
+      });
+      // in the HOLDER's space (unscaled, origin at the feet): the world box would add the ground height under the enemy (a rat on a
+      // hill at y 1.5 measured 1.5 m taller), and the holder's own scale is then cached out
+      const toHolder = new THREE.Matrix4().copy(holder.matrixWorld).invert();
       _box.makeEmpty();
       holder.traverse((o) => {
         const m = o as THREE.Mesh;
@@ -573,11 +589,16 @@ export class Enemy extends Actor {
         if (!m.isMesh || !pos) return;
         for (let p: THREE.Object3D | null = m; p && p !== holder.parent; p = p.parent) if (!p.visible) return;
         const el = m.matrixWorld;
-        for (let i = 0; i < pos.count; i++) _box.expandByPoint(_v.fromBufferAttribute(pos, i).applyMatrix4(el));
+        const sk = (m as THREE.SkinnedMesh).isSkinnedMesh ? (m as THREE.SkinnedMesh) : null;
+        for (let i = 0; i < pos.count; i++) {
+          if (sk) sk.getVertexPosition(i, _v);
+          else _v.fromBufferAttribute(pos, i);
+          _box.expandByPoint(_v.applyMatrix4(el).applyMatrix4(toHolder));
+        }
       });
-      // the box already carries the holder's scale: cache the unscaled height (scaling it again doubled tall enemies' height)
-      const s = holder.scale.y || 1;
-      h = _box.isEmpty() ? 2 / s : Math.max(0.5, _box.max.y - Math.min(0, _box.min.y)) / s;
+      h = _box.isEmpty() ? 2 : Math.max(0.5, _box.max.y - Math.min(0, _box.min.y));
+      // an implausible pose (bones not yet live) is not cached: the caller measures again on a later frame
+      if (!(h <= 40)) return NaN;
       // guard (dev/combat-sim/heights.mjs): an unscaled rest height over 3x a native 2 m model is a unit or measurement bug
       if (h > 6) console.warn(`[enemy] ${def.id}: unscaled rest height ${h.toFixed(1)} m is over 3x a 2 m model (${def.model})`);
       HEIGHT_CACHE.set(def.id, h);
@@ -939,6 +960,17 @@ export class Enemy extends Actor {
     if (lp) {
       const dx = this.position.x - lp.position.x, dz = this.position.z - lp.position.z;
       d2 = dx * dx + dz * dz;
+    }
+    if (this.heightPending && this.holder && this.warmFrames === 0) {
+      // the first posed frames are over: the skeleton is live, measure the def's real body height (measureHeight caches a sane one)
+      const mh = this.measureHeight(this.holder);
+      if (Number.isFinite(mh)) {
+        this.heightPending = false;
+        this.height = clamp(mh, 0.3, 14) + this.hover;
+      } else if (++this.heightTries > 30) {
+        this.heightPending = false;
+        this.height = clamp(2 * this.baseScale(), 0.3, 14) + this.hover;
+      }
     }
     const o3 = this.object3d;
     if (!this.isBoss) {

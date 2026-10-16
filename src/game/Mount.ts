@@ -5,6 +5,7 @@ import type { Player } from '../entities/Player';
 import { psxMaterial } from '../world/ProceduralAssets';
 import { MOUNT_BY_ID, STARTER_MOUNT_ID, type MountDef, type MountShape } from '../data/mounts';
 import { chosenMountId } from '../systems/Mounts';
+import { isOpenWorld } from '../scenes/flow';
 
 /**
  * WoW-style ground mount (local player only). Unlocked at MOUNT_LEVEL. Mounting is a MOUNT_CAST_SEC cast that is
@@ -586,10 +587,11 @@ export class MountRider {
       return;
     }
     if (!G.character || !chosenMountId(G.character.save)) {
-      G.events.emit('ui:toast', { text: 'Önce bir binek öğrenmelisin (Kuzgunkale Ahır Ustası).', kind: 'info' });
+      G.events.emit('ui:toast', { text: 'Henüz binek öğrenmedin — Kuzgunkale ahırı', kind: 'info' });
       return;
     }
-    if (G.scenes?.current?.id === 'dungeon') {
+    // dungeon instances only: the open world (Sisli Vadi) is also a 'dungeon' scene, and riding there is the point of the mount
+    if (G.scenes?.current?.id === 'dungeon' && !isOpenWorld(G.mplus?.params?.dungeonId ?? G.mplus?.state?.dungeonId)) {
       G.events.emit('ui:toast', { text: 'Zindanda binek kullanılamaz.', kind: 'warning' });
       return;
     }
@@ -597,7 +599,11 @@ export class MountRider {
       G.events.emit('ui:toast', { text: 'Savaşta binilemez.', kind: 'warning' });
       return;
     }
-    if (p.isDead || p.cast || p.dodging || !p.canMove()) return;
+    if (p.isDead) return;
+    if (p.cast || p.dodging || !p.canMove()) {
+      G.events.emit('ui:toast', { text: 'Burada binilemez', kind: 'warning' });
+      return;
+    }
     this.state = 'casting';
     this.castT = 0;
   }

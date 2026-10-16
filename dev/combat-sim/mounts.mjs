@@ -168,7 +168,7 @@ G.events.on('player:mounted', (e) => mountedEvents.push(e));
 G.character.save.mounts = { known: [], favs: [] };
 summon();
 frames(1);
-ok('rider.none-learned', rider.mounted === false && toasts.some((t) => /binek öğrenmelisin/.test(t)));
+ok('rider.none-learned', rider.mounted === false && toasts.some((t) => /Henüz binek öğrenmedin/.test(t)));
 
 // learn + choose, then summon with a 1.5 s cast
 S.learnMount(G.character.save, 'kir_at');

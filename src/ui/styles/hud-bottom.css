@@ -120,6 +120,9 @@
 .slot-swing { position: absolute; inset: 0; border-radius: 3px; pointer-events: none; --e: 0; display: block; background: conic-gradient(from 0deg, rgba(255, 244, 210, 0.34) calc(var(--e) * 1%), rgba(0, 0, 0, 0) 0); }
 .slot.armed .slot-frame { animation: slotarmed 0.9s ease-in-out infinite; }
 @keyframes slotarmed { 0%, 100% { box-shadow: inset 0 0 0 2px #ff5a2a, 0 0 4px rgba(255, 90, 42, 0.5); } 50% { box-shadow: inset 0 0 0 2px #ffd24a, 0 0 12px rgba(255, 210, 74, 0.9); } }
+/* Can düşük (ActionBar.updateLowHp): the health potion cell pulses below 35 % HP in combat */
+.ab-btn.is-urgent { animation: potUrgent 0.8s ease-in-out infinite; }
+@keyframes potUrgent { 0%, 100% { box-shadow: inset 0 0 0 1px #ff5a2a, 0 0 4px rgba(255, 90, 42, 0.5); } 50% { box-shadow: inset 0 0 0 2px #ffd24a, 0 0 12px rgba(255, 210, 74, 0.9); } }
 
 /* ==========================================================================
    UX-10 · ElvUI action grid, consumable strip and XP strip (UI_REDESIGN §2.6).

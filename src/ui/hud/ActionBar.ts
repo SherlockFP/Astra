@@ -12,6 +12,7 @@ import { glowSkillsOf, type GlowState } from '../../data/procs';
 import { localHardTargetId } from '../../game/PlayerController';
 import { DAMAGE_COLORS, ICON, div, fmtCd, fmtNum, iconEl, pulse, setClass, setDisplay, setIconUrl, setStyle, setText, esc } from '../widgets/dom';
 import { skillTooltipHTML } from '../widgets/tooltips';
+import { keyLabel } from '../widgets/controlHints';
 import { TalentBadge } from './Extras';
 import { drag } from '../panels/items/common';
 import { applyBarDrop, barAccepts, barDropOutside, barPayload, readBars, useBarMat } from './barDrop';
@@ -64,6 +65,10 @@ const POTION_SPECS: SlotSpec[] = [
 ];
 
 const CLEANSE_ID = 'potion_panzehir';
+/** Can düşük: below this HP fraction in combat the potion cell pulses (WoW does not auto-drink; the player presses). */
+const LOW_HP_PCT = 0.35;
+/** The one-line low-HP hint is shown once per session (module state; a reload shows it again). */
+let lowHintShown = false;
 const MAJOR_LABEL: Record<string, string> = { m45: '45 sn', m90: '90 sn', m180: '3 dk' };
 /** The YENİ chip stays this long after a cell is revealed (ms), unless the cell is hovered or used. */
 const YENI_MS = 30000;
@@ -750,6 +755,19 @@ export class ActionBar implements HudWidget {
         s.setFlash('press');
         if (s.spec.potion === 'cleanse') G.combat?.usePotion('cleanse');
       }
+    }
+    this.updateLowHp(ctx);
+  }
+
+  /** Can düşük: in combat below LOW_HP_PCT the health potion cell pulses, and one hint line names the potion and flask keys. */
+  private updateLowHp(ctx: HudCtx): void {
+    const p = ctx.player;
+    const low = !!p && !p.isDead && p.inCombat && p.maxHp > 0 && p.hp / p.maxHp < LOW_HP_PCT;
+    const hpCell = this.potSlots.find((s) => s.spec.potion === 'hp');
+    if (hpCell) setClass(hpCell.el, 'is-urgent', low);
+    if (low && !lowHintShown) {
+      lowHintShown = true;
+      G.events.emit('ui:toast', { text: `Can düşük! İksir: ${keyLabel('potionHp')} · Matara: ${keyLabel('flask1')}`, kind: 'warning' });
     }
   }
 
