@@ -282,7 +282,7 @@ const MECH_DEFS: EnemyDef[] = [
   mech('proc_unstable_fragment', 'Kararsız Parça', 'unstable_fragment', 0.02, { radius: 0.5, flying: true, visual: { spin: 1.5 } }),
   mech('proc_scrap_cube', 'Hurda Küpü', 'scrap_cube', 99, { radius: 1.0, speed: 22 }),
   mech('proc_magma_blob', 'Erimiş Damla', 'magma_blob', 0.3, { radius: 0.6, speed: 5 }),
-  mech('proc_void_rift', 'Boşluk Yarığı', 'void_rift', 1, { radius: 1.0, tint: 0x7a3cff }),
+  mech('proc_void_rift', 'Boşluk Yarığı', 'rift', 1, { radius: 1.0, tint: 0x7a3cff }),
 ];
 
 /** The 12 trash / elite defs, tk_totem and the six proc_* mech entities. */
