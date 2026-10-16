@@ -108,6 +108,10 @@ class DevAI {
   cd = 1 + Math.random();
   windup = 0;
   constructor(readonly e: Enemy, readonly mode: 'chase' | 'still') {}
+  /** Combat reads this off every enemy AI (hyper-armour); dev dummies never have it. */
+  armoredNow(): boolean {
+    return false;
+  }
   update(dt: number): void {
     const e = this.e;
     const p = G.world?.localPlayer;
