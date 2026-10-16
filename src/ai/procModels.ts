@@ -573,6 +573,26 @@ const BUILDERS: Record<string, Builder> = {
       dispose: finish([body, head, eyeL, eyeR, halo], [robe, gold, haloMat]),
     };
   },
+  /** Kararsız Parça (unstable_fragment): a small violet shard with a teal chip, hovering over the ground, spinning and pulsing. */
+  unstable_fragment: () => {
+    const root = new THREE.Group();
+    const violet = lambert(0x9a6cff, 0x9a6cff, 1.1);
+    const teal = lambert(0x50e0d0, 0x50e0d0, 0.9);
+    const g = new THREE.Group();
+    const big = voxMesh(diamond(0.18, 0.4, 0.18), violet, 0, 0.9, 0);
+    const chip = voxMesh(diamond(0.1, 0.22, 0.1), teal, 0.22, 0.75, 0.08);
+    g.add(big, chip);
+    root.add(g);
+    return {
+      root, height: 1.3,
+      update(_dt, t) {
+        g.position.y = Math.sin(t * 2.5) * 0.08;
+        big.rotation.y = t * 2.4;
+        violet.emissiveIntensity = 1.0 + Math.sin(t * 5) * 0.3;
+      },
+      dispose: finish([big, chip], [violet, teal]),
+    };
+  },
 };
 
 export function hasProcModel(id: string): boolean {

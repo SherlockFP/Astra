@@ -224,6 +224,10 @@ function beginGame(c: BossController): void {
   c.yell('Zeminle uyuşmayan illüzyonu vur!');
 }
 
+/**
+ * The game runs from the script's update (every frame of the engaged fight), not from the ability's tick: the mist_guess
+ * busy window is only 1.4 s, so a tick there stopped after the reveal and the immunity and the freeze never ended.
+ */
 const guessAbility: BossHandler = {
   start(c, b: Busy) {
     b.total = b.delay + 1.4;
@@ -231,39 +235,47 @@ const guessAbility: BossHandler = {
     c.state.guess = g;
     c.schedule(1.2, () => beginGame(c), 'sis_guess');
   },
-  tick(c, _b: Busy, dt: number) {
-    const g = c.state.guess as GuessState | null;
-    if (!g || g.done || !g.started) return;
-    g.t += dt;
-    const current = c.adds('clone');
-    const ids = new Set<number>();
-    for (const e of current) {
-      ids.add(e.id);
-      if (!g.known.has(e.id)) g.known.set(e.id, e.def.id.slice('ps_mist_clone_'.length));
-    }
-    for (const [id, code] of g.known) {
-      if (g.handled.has(id)) continue;
-      const e = current.find((x) => x.id === id);
-      const dead = !e || e.isDead;
-      if (!dead) continue;
-      g.handled.add(id);
-      if (code === g.odd) {
-        c.stagger(5, 1.6, 8, 'YAKALANDI!');
-        endGame(c, g);
-        return;
-      }
-      g.wrong++;
-      if (g.wrong <= 2) {
-        circle(c, c.e.position.x, c.e.position.z, c.arena.r, 0.1, keyLevel() <= 5 ? 3.0 : 3.6, { knockback: 6, type: 'poison', name: 'Hay Aksi!' });
-        c.yell('Hay aksi, yanlış tilki!');
-      } else {
-        timeoutGame(c, g, true);
-        return;
-      }
-    }
-    if (g.t >= 20) timeoutGame(c, g, false);
-  },
 };
+
+function guessTick(c: BossController, dt: number): void {
+  const g = c.state.guess as GuessState | null;
+  if (!g || g.done || !g.started) return;
+  g.t += dt;
+  const current = c.adds('clone');
+  for (const e of current) {
+    if (!g.known.has(e.id)) g.known.set(e.id, e.def.id.slice('ps_mist_clone_'.length));
+  }
+  for (const [id, code] of g.known) {
+    if (g.handled.has(id)) continue;
+    const e = current.find((x) => x.id === id);
+    const dead = !e || e.isDead;
+    if (!dead) continue;
+    g.handled.add(id);
+    if (code === g.odd) {
+      c.stagger(5, 1.6, 8, 'YAKALANDI!');
+      endGame(c, g);
+      return;
+    }
+    g.wrong++;
+    if (g.wrong <= 2) {
+      circle(c, c.e.position.x, c.e.position.z, c.arena.r, 0.1, keyLevel() <= 5 ? 3.0 : 3.6, { knockback: 6, type: 'poison', name: 'Hay Aksi!' });
+      c.yell('Hay aksi, yanlış tilki!');
+    } else {
+      timeoutGame(c, g, true);
+      return;
+    }
+  }
+  if (g.t >= 20) timeoutGame(c, g, false);
+}
+
+/** Fail-safe: a game left running when the next phase starts (lock limit, reset) ends here, so the immunity cannot outlive it. */
+function clearGuess(c: BossController): void {
+  if (!c.state.guess) return;
+  c.state.guess = null;
+  c.setImmune(false);
+  c.freeze(false);
+  for (const e of c.adds('clone')) e.escape();
+}
 
 const sisAbilities: Record<string, BossHandler> = {
   mist_patty: {
@@ -319,6 +331,12 @@ const sisAbilities: Record<string, BossHandler> = {
 const sis: BossScript = {
   abilities: sisAbilities,
   kite: [8, 14],
+  update(c, dt) {
+    guessTick(c, dt);
+  },
+  onPhase(c) {
+    clearGuess(c);
+  },
   onBreak(c) {
     // Kırık Dans: a posture break outside the games trips her mid-dance
     c.stagger(4, 1.25, 4, 'KIRIK DANS!');

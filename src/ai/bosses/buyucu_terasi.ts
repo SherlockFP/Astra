@@ -165,7 +165,8 @@ const arkanotron: BossScript = {
   },
   /** Energy hook names (BossDef.energy onEmpty): dispatched by BossController.hook. */
   refuelFromEmpty(c: BossController) {
-    c.castNow('arkanotron_refuel');
+    // the edge fires once: a busy boss must queue the cast, or the refuel is lost for the rest of the fight
+    if (!c.castNow('arkanotron_refuel')) c.forceAbility('arkanotron_refuel');
   },
   onBreak(c) {
     c.vulnerable(1.25, 4);
@@ -229,6 +230,8 @@ const seranelAbilities: Record<string, BossHandler> = {
   seranel_wave: {
     start(c, b: Busy) {
       b.total = b.delay + 0.5;
+      // the bar starts again from empty (about every 38 s, docs/dungeons/buyucu_terasi.md section 5)
+      c.energy?.set(0);
       circle(c, c.e.position.x, c.e.position.z, c.arena.r, 3.0, 3.0, { name: 'Sessizlik Dalgası' });
       c.schedule(3.0, () => {
         for (const p of c.playersInArena()) if (dist({ x: p.position.x, z: p.position.z }, DOME) > DOME.r) statusPlayer(p, 'silence', 8);
@@ -265,7 +268,8 @@ const seranel: BossScript = {
   },
   /** Energy full hook name (BossDef.energy onFull): dispatched by BossController.hook. */
   waveFromFull(c: BossController) {
-    c.castNow('seranel_wave');
+    // the edge fires once: a busy boss must queue the wave, or it is lost for the rest of the fight
+    if (!c.castNow('seranel_wave')) c.forceAbility('seranel_wave');
   },
   onBreak(c) {
     c.e.statuses.remove('empower');
