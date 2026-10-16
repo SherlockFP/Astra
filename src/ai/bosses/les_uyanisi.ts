@@ -303,6 +303,7 @@ const dikisat: BossScript = {
         ], { target: t, cancelOnBreak: true, name: 'Cerrah Dizisi' });
       },
     },
+    les_dks_lamp: { usable: (c) => c.state.stage === 'arena' },
     les_dks_ichor: { usable: (c) => c.state.stage === 'table' },
     les_dks_needle: { usable: (c) => c.state.stage === 'table' },
     les_dks_mutilate: { usable: (c) => c.state.stage === 'table' },
@@ -402,7 +403,7 @@ const nalthor: BossScript = {
         for (let k = 0; k < 8; k++) {
           c.schedule(b.delay + 0.5 * k, () => {
             for (const p of c.playersInArena()) {
-              circle(c, p.position.x, p.position.z, 2, 0.9, 0.7, { type: 'frost', name: 'Kuyruklu Yıldız', vfxOnLand: 'frost_burst' });
+              circle(c, p.position.x, p.position.z, 2, 1.0, 0.7, { type: 'frost', name: 'Kuyruklu Yıldız', vfxOnLand: 'frost_burst' });
             }
           }, 'comet');
         }
