@@ -58,14 +58,26 @@ export const SPEC_TUNING: Record<string, LevelTuning> = {
   warlock_destruction: { dmg: [1.520, 1.693, 2.208], heal: [1.000, 1.000, 1.000], taken: [1.000, 1.000, 1.000] },
 };
 
-/** Player outgoing damage below L10 only (x on the L10 knot, which the L10 balance gate measures; the gate is not touched). The low-level
- *  solo fights (dev/combat-sim/solo_lowlevel.mjs) had these two overperforming: a 1-2 s kill at L1-9. */
-export const LOW_LEVEL_DMG: Record<string, number> = {
-  knight_protector: 0.6, archer_marksman: 0.55, demonhunter_chaos: 0.84, evoker_devastation: 0.3, necromancer_summoner: 0.35,
-  paladin_protection: 0.60, priest_discipline: 1.92, warlock_affliction: 1.15,
-  mage_fire: 1.50,
-  shaman_elemental: 1.15,
+/** Player outgoing damage below L10 only: a curve [x at L1, x at L5, x at L8], piecewise linear through (1, x1), (5, x5), (8, x8), (10, 1),
+ *  where x is the multiplier on the spec's L10-knot damage factor (tuneAt). L10 is untouched (the L10 balance gate measures it). L8 keeps the
+ *  flat factor the L1-9 solo sims were tuned on; L1 and L5 are fitted to dev/combat-sim/class_ttk.mjs (every class's same-level normal mob
+ *  dies in 6-10 s at L1 and L5). A spec not listed is 1. */
+export const LOW_LEVEL_DMG: Record<string, readonly [number, number, number]> = {
+  knight_protector: [1.37, 0.72, 0.6], barbarian_warlord: [0.76, 0.93, 1], mage_fire: [1.09, 1.20, 1.5], rogue_assassin: [0.89, 1.13, 1],
+  paladin_protection: [0.85, 0.68, 0.6], necromancer_summoner: [0.27, 0.41, 0.35], warlock_affliction: [1.54, 0.85, 1.15], monk_brewmaster: [0.56, 0.69, 1],
+  archer_marksman: [0.50, 0.58, 0.55], shaman_elemental: [0.89, 1.24, 1.15], demonhunter_chaos: [0.65, 0.76, 0.84], evoker_devastation: [0.31, 0.30, 0.30],
+  priest_discipline: [1.51, 2.10, 1.92], druid_balance: [0.79, 1.01, 1],
 };
+
+/** The L1-9 damage multiplier of a spec (LOW_LEVEL_DMG): piecewise linear through (1, x1), (5, x5), (8, x8), (10, 1); 1 from L10 up. */
+export function lowLevelDmgMult(spec: string, level: number): number {
+  const k = LOW_LEVEL_DMG[spec];
+  if (!k || level >= 10) return 1;
+  const L = Math.max(1, level);
+  if (L <= 5) return k[0] + ((k[1] - k[0]) * (L - 1)) / 4;
+  if (L <= 8) return k[1] + ((k[2] - k[1]) * (L - 5)) / 3;
+  return k[2] + ((1 - k[2]) * (L - 8)) / 2;
+}
 
 /** The factor `k` at character level `level`: linear between the knots, held at the end knots outside 10-60. */
 export function tuneAt(k: TuneKnots, level: number): number {
@@ -86,6 +98,6 @@ export function tuneOf(a: { kind?: string; spec?: string | null; level?: number;
   if (!spec) return 1;
   const t = SPEC_TUNING[spec];
   if (!t) return 1;
-  if (lvl < TUNE_LEVELS[0]) return key === 'dmg' ? tuneAt(t.dmg, lvl) * (LOW_LEVEL_DMG[spec] ?? 1) : 1; // L1-9: the solo damage factor only
+  if (lvl < TUNE_LEVELS[0]) return key === 'dmg' ? tuneAt(t.dmg, lvl) * lowLevelDmgMult(spec, lvl) : 1; // L1-9: the low-level damage curve only
   return tuneAt(t[key], lvl);
 }
