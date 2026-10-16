@@ -16,7 +16,7 @@ import { makeRescale, oldTileRect, type Rect4 } from './rescale2';
 const OLD_RECT: Record<string, Rect4> = {
   giris: [1, 17, 5, 6], k_giris: [6, 19, 4, 2], cevher_deposu: [10, 14, 10, 12], k_kuzey: [14, 9, 2, 5], ors_salonu: [9, 0, 12, 9],
   curuf_ocagi: [1, 4, 8, 9], k_dogu1: [21, 3, 4, 2], kalip_atolyesi: [25, 0, 10, 9], k_inis: [29, 9, 2, 5], lav_kanali: [24, 14, 12, 10],
-  k_guney: [29, 24, 2, 4], kopru: [34, 24, 2, 4], magma_kalbi: [25, 28, 11, 11], k_bati: [20, 32, 5, 2], kole_kampi: [9, 28, 11, 9],
+  k_guney: [29, 24, 2, 4], kopru: [34, 24, 2, 4], magma_kalbi: [25, 28, 14, 14], k_bati: [20, 32, 5, 2], kole_kampi: [9, 28, 11, 9],
   k_son: [8, 31, 1, 2], mavi_alev_sunagi: [0, 27, 8, 12],
 };
 
@@ -33,11 +33,11 @@ const ROOMS: RoomDef[] = [
   room('lav_kanali', 'Lav Kanalı', 24, 14, 12, 10, 'lava_rock', 'cave', 0.4),
   room('k_guney', 'Zincir Geçidi', 28, 24, 4, 4, 'stone_dark', 'forge', 0.3),
   room('kopru', 'Lav Köprüsü', 34, 24, 2, 4, 'wood', 'cave', 0.1, { skip: true }),
-  room('magma_kalbi', 'Magma Kalbi', 25, 28, 12, 12, 'lava_rock', 'cave', 0.1, { boss: 2 }),
+  room('magma_kalbi', 'Magma Kalbi', 25, 28, 14, 14, 'lava_rock', 'cave', 0.1, { boss: 2 }),
   room('k_bati', 'Köle Yolu', 20, 31, 5, 4, 'dirt', 'cave', 0.4),
   room('kole_kampi', 'Köle Kampı', 9, 28, 11, 9, 'dirt', 'cave', 0.7),
-  room('k_son', 'Mavi Alev Kapısı', 9, 37, 2, 1, 'temple', 'forge', 0),
-  room('mavi_alev_sunagi', 'Mavi Alev Sunağı', 0, 38, 14, 12, 'temple', 'forge', 0.1, { boss: 3 }),
+  room('k_son', 'Mavi Alev Kapısı', 9, 37, 2, 6, 'temple', 'forge', 0.1),
+  room('mavi_alev_sunagi', 'Mavi Alev Sunağı', 0, 43, 18, 16, 'temple', 'forge', 0.1, { boss: 3 }),
 ];
 
 const R = makeRescale(OLD_RECT, ROOMS);
@@ -59,7 +59,7 @@ const DOORS: DoorDef[] = [
   door('magma_kalbi', 'k_bati', 25, 31, 'w', 4, 'boss_exit'),
   door('k_bati', 'kole_kampi', 20, 31, 'w', 4, 'none'),
   door('kole_kampi', 'k_son', 9, 36, 's', 2, 'none'),
-  door('k_son', 'mavi_alev_sunagi', 9, 37, 's', 2, 'boss_lock'),
+  door('k_son', 'mavi_alev_sunagi', 9, 42, 's', 2, 'boss_lock'),
   // one-way shortcut: the Ateşyürek kill opens the ore store door from the slave camp (the back way to the start side)
   { ...door('cevher_deposu', 'kole_kampi', 12, 27, 's', 2, 'kill_lock'), opensOn: { boss: 'boss_atesyurek' } },
 ];
@@ -398,7 +398,12 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
   },
   curuf_ocagi: { ambientVfx: 'ambient_embers', zones: [lavaZone(2, 5, 2, 2)] },
   k_dogu1: { ambientVfx: 'ambient_embers' },
-  kalip_atolyesi: { ambientVfx: 'ambient_embers' },
+  kalip_atolyesi: {
+    ambientVfx: 'ambient_embers',
+    // the raised gantry along the north wall (2 m), reached by a ramp off the workshop floor
+    heightAreas: [{ id: 'kalip_gantry', rect: { x: 26, z: 0, w: 9, h: 3 }, y: 2, rim: 'rail' as const, floor: 'stone' as const }],
+    slopes: [{ id: 'kalip_ramp', kind: 'ramp' as const, rect: { x: 30, z: 3, w: 2, h: 2 }, axis: 'z' as const, yFrom: 2, yTo: 0, style: 'stone' as const }],
+  },
   k_inis: { ambientVfx: 'ambient_embers', lightColor: LAVA },
   lav_kanali: {
     ambientVfx: 'ambient_embers', lightColor: LAVA,
@@ -418,7 +423,7 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
     explicitDecor: true, lightColor: LAVA, ambientVfx: 'ambient_embers',
     // the whole room is lava, then the platform (r = 16 m) and the two walkways from the doors re-open the floor (zones apply in order)
     zones: [
-      rectZone('lava', 25, 28, 12, 12, { blocked: true, color: 0x7a1a05, glow: LAVA, glowIntensity: 1.5, light: { color: LAVA, intensity: 1.5, distance: 24, flicker: true, y: 1 } }),
+      rectZone('lava', 25, 28, 14, 14, { blocked: true, color: 0x7a1a05, glow: LAVA, glowIntensity: 1.5, light: { color: LAVA, intensity: 1.5, distance: 24, flicker: true, y: 1 } }),
       circleZone('dais', ...R.at2(30, 33), 4.4, { blocked: false, color: 0x1e1612 }),
       rectZone('bridge', 28, 28, 4, 2, { color: 0x1e1612 }), rectZone('bridge', 34, 28, 2, 5, { color: 0x1e1612 }),
       rectZone('bridge', 25, 31, 3, 4, { color: 0x1e1612 }),   // walkway from the platform to the west (boss_exit) door
@@ -458,6 +463,21 @@ const EXTRAS: NonNullable<DungeonDef['extras']> = {
   checkpoints: [pt(...R.at2(22.5, 32.5))],
 };
 
+/** Props standing inside a height area with no explicit y are set to that area's top (the gantry floor and its benches). */
+function liftOnDais(rooms: RoomDef[]): RoomDef[] {
+  return rooms.map((r) => {
+    const areas = r.heightAreas ?? [];
+    if (areas.length === 0 || !r.props) return r;
+    const props = r.props.map((p) => {
+      if (p.y !== undefined) return p;
+      const [x, z] = p.pos;
+      const a = areas.find((h) => x >= h.rect.x && x <= h.rect.x + h.rect.w && z >= h.rect.z && z <= h.rect.z + h.rect.h);
+      return a ? { ...p, y: a.y } : p;
+    });
+    return { ...r, props };
+  });
+}
+
 export const KIZIL_DOKUMHANE: DungeonDef = {
   id: 'kizil_dokumhane',
   name: 'Kızıl Dökümhane',
@@ -467,8 +487,9 @@ export const KIZIL_DOKUMHANE: DungeonDef = {
   timerSec: 860,
   forcesRequired: 245, // floor(0.8 x 307 total pack forces, auto sums)
   theme: THEME,
-  grid: { w: 40, h: 50 },
-  rooms: withProps(ROOMS.map((r) => ({ ...r, ...ROOM_EXTRA[r.id], ...(ATMO[r.id] ? { atmosphere: ATMO[r.id] } : {}) })), D.out),
+  grid: { w: 40, h: 62 },
+  vertical: true,
+  rooms: liftOnDais(withProps(ROOMS.map((r) => ({ ceiling: 10, ...r, ...ROOM_EXTRA[r.id], ...(ATMO[r.id] ? { atmosphere: ATMO[r.id] } : {}) })), D.out)),
   atmospheres: ATMOSPHERES,
   doors: DOORS,
   packs: PACKS.map((p) => (PACK_EXTRA[p.id] ? { ...p, ...PACK_EXTRA[p.id] } : p)),

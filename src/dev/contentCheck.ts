@@ -601,7 +601,7 @@ export const BOSS_ANCHORS: Record<string, Record<string, [number, number]>> = {
     pylon_1: [17.5, 2.5], pylon_2: [24.7, 2.5], pylon_3: [17.5, 9.7], pylon_4: [24.7, 9.7],
     ice_pillar_1: [29.5, 31.5], ice_pillar_2: [43.5, 31.5], ice_pillar_3: [29.5, 42.5], ice_pillar_4: [43.5, 42.5],
   },
-  kizil_dokumhane: { vent_1: [27.23, 30.23], vent_2: [33.77, 30.23], vent_3: [27.23, 36.77], vent_4: [33.77, 36.77], crucible_11: [11, 3.1], crucible_15: [15, 3.1], crucible_19: [19, 3.1] },
+  kizil_dokumhane: { vent_1: [27, 30], vent_2: [33, 30], vent_3: [27, 36], vent_4: [33, 36], crucible_11: [11, 3.1], crucible_15: [15, 3.1], crucible_19: [19, 3.1] },
 };
 
 // ---------------------------------------------------------------------------------------------------------------------
