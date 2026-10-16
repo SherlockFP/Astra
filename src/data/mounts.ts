@@ -27,14 +27,18 @@ export interface MountDef {
   accent: number;
   /** Büyülü vurgu (arkan parıltısı) emissive rengi; 0 = yok. */
   glow: number;
+  /** Binme Sv gereksinimi; yoksa MOUNT_LEVEL (game/Mount.ts). Başlangıç binegi Sv 1. */
+  level?: number;
+  /** Koşu hızı çarpanı; yoksa MOUNT_SPEED_MUL. Başlangıç binegi biraz yavaş (+%40). */
+  speed?: number;
   /** Gövdenin dikey salınımı: genlik (m) ve frekans (Hz), koşarken daha hızlı. */
   bob: { amp: number; hz: number };
   source: MountSource;
 }
 
 export const MOUNTS: MountDef[] = [
-  { id: 'kir_at', name: 'Kır Atı', desc: 'Kuzgunkale yollarının sadık ilk atı.', shape: 'horse', color: 0x9a6a3c, accent: 0x3a2616, glow: 0, bob: { amp: 0.04, hz: 6 },
-    source: { kind: 'vendor', price: 60, level: 10, text: 'Kuzgunkale Ahır Ustası: Binicilik dersi (Sv 10, 60 altın)' } },
+  { id: 'kir_at', name: 'Kır Atı', desc: 'Kuzgunkale yollarının sadık ilk atı.', shape: 'horse', color: 0x9a6a3c, accent: 0x3a2616, glow: 0, bob: { amp: 0.04, hz: 6 }, level: 1, speed: 1.4,
+    source: { kind: 'vendor', price: 60, level: 10, text: 'Başlangıç binegi: her karakter Sv 1 seviyesinde ücretsiz alır (Ahır Ustası da satar)' } },
   { id: 'sisli_kurt', name: 'Sisli Kurt', desc: 'Sisli Mağara\'nın sisinden çıkan gümüş tüylü bir kurt.', shape: 'wolf', color: 0x7fa6cf, accent: 0xf2f7ff, glow: 0, bob: { amp: 0.05, hz: 9 },
     source: { kind: 'drop', table: 'loot_mag_bekci', chance: 0.05, text: 'Sisli Mağara son boss: Kadim Bekçi (%5 düşme)' } },
   { id: 'dag_kecisi', name: 'Dağ Keçisi', desc: 'Dik yamaçlarda bile durmayan, kıvrık boynuzlu bir koç.', shape: 'ram', color: 0xf0e4c8, accent: 0x7a5a3a, glow: 0, bob: { amp: 0.06, hz: 5 },

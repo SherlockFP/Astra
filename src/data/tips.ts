@@ -130,6 +130,11 @@ export const TIPS: TipDef[] = [
     when: (c) => c.waypointFound,
   },
   {
+    id: 'mount', title: 'Binek', prio: 72, keys: ['F9'], keyActions: ['mount'],
+    text: '{k:mount} ile binegini çağır: açık dünyada koşu hızın artar. İnmek için yine {k:mount} tuşuna bas.',
+    when: (c) => c.inTown && c.moved && c.sceneAge >= 10,
+  },
+  {
     id: 'talents', title: 'Yetenek Ağacı', prio: 82, keys: ['N'], keyActions: ['talents'],
     text: '{k:talents} ile yetenek ağacını aç. Harcayabileceğin {n} puanın var.',
     when: (c) => c.level >= 2 && c.unspent > 0,

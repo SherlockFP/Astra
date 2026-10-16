@@ -10,12 +10,12 @@ import { worldToTile, type Pt, type WorldCtx } from './util';
  * Local per peer: every peer discovers and respawns for its own character. OWNER: scenes module.
  */
 
-/** Activation radius of a stone (m). */
-const STONE_RADIUS = 6;
+/** Activation radius of a stone (m). Passing within 8 m is enough: a stone beside the road is found without a detour. */
+const STONE_RADIUS = 8;
 /** Exploration XP for a first discovery (% of xpToNext). */
 const DISCOVERY_XP_PCT = 2;
-/** Cooldown between two trips (s). */
-const TRAVEL_COOLDOWN = 30;
+/** Cooldown between two trips (s). Halved from 30 so a long zone is not a wait between two stones. */
+const TRAVEL_COOLDOWN = 15;
 /** Tiles per fare hop. */
 const HOP_TILES = 60;
 /** No travel while the local player was hit or hit something in the last seconds (Actor.combatTimer). */
