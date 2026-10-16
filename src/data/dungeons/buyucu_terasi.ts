@@ -276,7 +276,7 @@ const ROOMS: RoomDef[] = [
       P(kf('hedge-large'), 49, 39.75, { tint: 0x2a3a40 }), P(kf('hedge-large'), 64, 39.75, { tint: 0x2a3a40 }),
     ],
   }),
-  room('takimyildiz', 'Takımyıldız Odası', 48, 41, 18, 14, 'temple', 'temple', 0.1, {
+  room('takimyildiz', 'Takımyıldız Odası', 48, 41, 20, 14, 'temple', 'temple', 0.1, {
     floorY: L1, ceiling: 30, boss: 3, openAir: true, explicitDecor: true, lightColor: 0x5fd3e8, fog: fog(0x0e1238, 12, 70),
     tiers: [
       tier('gallery', 9, 48, 41, 18, 14, { depth: 3 }), tier('colonnade', 9, 50, 43, 14, 10, { count: 12 }),
@@ -380,7 +380,8 @@ const DOORS: DoorDef[] = [
 ];
 
 // ---- packs (29; forces are the member sums) ---------------------------------------------------------------------------------------
-const BIG = new Set(['mt_p01', 'mt_p02', 'mt_p03', 'mt_p07', 'mt_p09', 'mt_p14', 'mt_p15', 'mt_p17', 'mt_p18']);
+// big pulls: one or two per boss segment (before boss 1: p01 and p07b; boss 1 to 2: p17; boss 2 to 3: p18)
+const BIG = new Set(['mt_p01', 'mt_p07b', 'mt_p17', 'mt_p18']);
 
 const PACKS: PackDef[] = [
   packN('mt_p01', 'guney_antre', 17, 57, [['mt_sunblade', 2], ['mt_magister', 2]]),
@@ -428,7 +429,7 @@ const LIFTS: LiftDef[] = [
 const BOSSES = [
   bossAt('boss_arkanotron', 'gozlemevi', 35.5, 11, 0, 1),
   bossAt('boss_seranel', 'siginak', 56.5, 27.5, 180, 2),
-  bossAt('boss_gemellus', 'takimyildiz', 56.5, 44.5, 0, 3),
+  bossAt('boss_gemellus', 'takimyildiz', 58, 48, 0, 3),
   bossAt('boss_degentrius', 'goksel_yorunge', 40.5, 66.5, 0, 4),
 ];
 
