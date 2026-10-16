@@ -70,9 +70,9 @@ const heymdal: BossScript = {
       start(c) {
         const t = nonTankOf(c);
         if (!t) return;
-        const at = bossLeap(c, { target: t, airtime: 0.9, radius: 4.5, coef: 3.0, name: 'Kapı Çarpması' });
-        // the shockwave lands 1.5 s after the leap (ring telegraph 0.9 s)
-        c.schedule(1.5, () => ring(c, at.x, at.z, 3, 8, 0.9, 1.2, { name: 'Kapı Depremi' }), 'hym_leap');
+        const at = bossLeap(c, { target: t, airtime: 1.1, radius: 4.5, coef: 3.0, name: 'Kapı Çarpması' });
+        // the shockwave lands 1.7 s after the leap (ring telegraph 0.9 s)
+        c.schedule(1.7, () => ring(c, at.x, at.z, 3, 8, 0.9, 1.2, { name: 'Kapı Depremi' }), 'hym_leap');
       },
     },
     hym_blade: {
@@ -172,7 +172,7 @@ const hirya: BossScript = {
         const t = tankOf(c);
         if (!t) return;
         bossString(c, [
-          { coef: 1.1, range: 12, arc: 20, windup: 0.7 },
+          { coef: 1.1, range: 12, arc: 20, windup: 1.1 },
           { coef: 1.1, range: 12, arc: 20, windup: 0.6, gap: 0.45, parryable: true },
           { coef: 2.6, range: 14, arc: 25, windup: 0.5, gap: 0.9, knockback: 6, parryable: false },
         ], { target: t, cancelOnBreak: true, name: 'Çifte Mızrak' });
@@ -267,7 +267,7 @@ const fenrur: BossScript = {
         const t = tankOf(c);
         if (!t) return;
         bossString(c, [
-          { coef: 1.1, range: 4.5, arc: 110, windup: 0.6, statuses: [{ status: 'bleed', duration: 6, stacks: 1, magnitude: 0.2 }] },
+          { coef: 1.1, range: 4.5, arc: 110, windup: 1.0, statuses: [{ status: 'bleed', duration: 6, stacks: 1, magnitude: 0.2 }] },
           { coef: 1.2, range: 5, arc: 120, windup: 0.5, gap: 0.4 },
           { coef: 2.8, range: 6, arc: 90, windup: 0.5, gap: 0.9, knockback: 4, parryable: false },
         ], { target: t, cancelOnBreak: true, name: 'Av Üçlüsü' });
@@ -467,7 +467,7 @@ const odyn: BossScript & { lockLimit?: number } = {
         const t = tankOf(c);
         if (!t) return;
         bossString(c, [
-          { coef: 1.0, range: 9, arc: 40, windup: 0.8 },
+          { coef: 1.0, range: 9, arc: 40, windup: 1.2 },
           { coef: 1.0, range: 9, arc: 40, windup: 0.6, gap: 0.5, parryable: true },
           { coef: 2.4, range: 9, arc: 200, windup: 0.5, gap: 1.0, knockback: 6, parryable: false },
         ], { target: t, cancelOnBreak: true, name: 'Üçlü Hüküm' });
