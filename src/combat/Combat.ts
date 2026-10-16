@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { G } from '../game/G';
 import { RNG, clamp, yawFromDir } from '../core/utils';
 import { CLASSES } from '../data/classes';
+import { newPlayerOocDelay, newPlayerOocHpMult, newPlayerOocResMult } from '../data/lowLevelScaling';
 import { SKILLS } from '../data/skills';
 import { MATERIALS } from '../data/materials';
 import { OPEN_ZONES } from '../data/dungeons';
@@ -109,10 +110,11 @@ export interface DamageResult {
 }
 
 /**
- * New-player shield: monster damage taken by the local player is cut by this share at levels 1-5, so the first camps are survivable
- * for casters (mage base HP is the lowest). Levels 6+ get nothing. PvP starts at level 35 (data/pvpZone PVP_MIN_LEVEL), never here.
+ * New-player shield: monster damage taken by the local player is cut by this share at levels 1-9 (the one damage knob of the new-player
+ * ease, data/lowLevelScaling.ts NEW_PLAYER_END_LEVEL), so the first camps are survivable for casters (mage base HP is the lowest).
+ * Levels 10+ get nothing. PvP starts at level 35 (data/pvpZone PVP_MIN_LEVEL), never here.
  */
-const NEW_PLAYER_DR = [0.3, 0.25, 0.2, 0.12, 0.06];
+const NEW_PLAYER_DR = [0.3, 0.25, 0.2, 0.12, 0.06, 0.05, 0.04, 0.03, 0.02];
 export function newPlayerDr(level: number): number {
   return NEW_PLAYER_DR[Math.floor(level) - 1] ?? 0;
 }
@@ -2340,11 +2342,12 @@ export class Combat {
     if (this.localDead) this.localDead = false;
     this.updateSpecialsLocal(p);
     const cls = CLASSES[p.classId];
-    const ooc = p.combatTimer > 5;
+    // new-player ease (L1-9): out of combat sooner and faster (data/lowLevelScaling.ts); L10+ is the 5 s / 4 %/s rule
+    const ooc = p.combatTimer > newPlayerOocDelay(p.level, 5);
 
     // HP regen
     let hpr = p.getStat('hpRegen') + softStat(p, 'hpRegenPct') * p.maxHp;
-    if (ooc) hpr += 0.04 * p.maxHp;
+    if (ooc) hpr += 0.04 * p.maxHp * newPlayerOocHpMult(p.level);
     if (hpr > 0 && p.hp < p.maxHp) p.hp = Math.min(p.maxHp, p.hp + hpr * dt);
 
     // resource
@@ -2374,6 +2377,7 @@ export class Combat {
         }
       } else {
         if (cls.id === 'mage' && ooc) regen *= 3;
+        if (ooc) regen *= newPlayerOocResMult(p.level);
         if (regen > 0 && p.resource < p.maxResource) p.resource = Math.min(p.maxResource, p.resource + regen * dt);
       }
       if (cls.id === 'knight' && G.skills?.bannerActive(p)) p.resource = Math.min(p.maxResource, p.resource + 3 * dt);

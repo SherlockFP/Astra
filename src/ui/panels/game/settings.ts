@@ -733,6 +733,7 @@ export class SettingsPanel extends GamePanel {
           ),
           'Düşman plakaları: 40 m içinde her zaman, yalnız savaşta ya da kapalı (hedef her zaman görünür)',
         ),
+        this.flag('colorBlindNameplates', 'Renk Körlüğü Dostu Plakalar', 'Dost mavi, düşman turuncu / kırmızımsı: kırmızı-yeşil ayrımı gerekmez (isim plakaları ve hedef çerçevesi)'),
         this.flag('barGhostSlots', 'Boş Yuvaları Göster', 'Yetenek çubuğunda boş kareler görünür'),
         this.flag('barLock', 'Barları Kilitle', 'Açıkken çubuktaki bir eşyayı almak için Shift basılı tutulur'),
         this.flag('ufIcon', 'Oyuncu Simgesi', 'Oyuncu çerçevesinde sınıf simgesi'),
