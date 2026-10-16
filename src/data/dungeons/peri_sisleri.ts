@@ -214,6 +214,8 @@ const ROOMS: RoomDef[] = [
       P(gp('chest_gold'), 74.5, 29.8),
     ],
   }),
+  room('tredova_yolu', 'Dikenfak Geçidi', 58, 48, 2, 6, 'gorm', 'cave', 0.2, { floorY: -2.4, ceiling: 10 }),
+  room('tredova_cikis', 'Yuva Çıkışı', 58, 67, 6, 4, 'gorm', 'cave', 0.2, { floorY: -2.4, ceiling: 8 }),
 ];
 
 // ---- doors (29) -----------------------------------------------------------------------------------------------------------
@@ -241,7 +243,9 @@ const DOORS: DoorDef[] = [
   { ...door('yuva_magarasi', 'yan_tunel', 58, 32, 's', 2, 'kill_lock'), opensOn: { boss: 'boss_sis_cagiran' } },
   door('yuva_koprusu', 'yuva_kuyusu', 61, 38, 's', 2, 'none'),
   door('yan_tunel', 'yuva_kuyusu', 58, 38, 's', 2, 'none'),
-  door('yuva_kuyusu', 'tredova_magarasi', 58, 47, 's', 4, 'boss_lock'),
+  door('yuva_kuyusu', 'tredova_yolu', 58, 47, 's', 2, 'none'),
+  door('tredova_yolu', 'tredova_magarasi', 58, 53, 's', 2, 'boss_lock'),
+  door('tredova_magarasi', 'tredova_cikis', 58, 66, 's', 4, 'boss_exit'),
   door('yuva_magarasi', 'peri_halkasi', 74, 26, 'e', 2, 'none'),
 ];
 
@@ -299,7 +303,7 @@ const WIDENED: Record<string, R4> = {
   m1: [16, 11, 8, 8], m2: [24, 9, 10, 9], m3: [34, 9, 9, 11], m4: [43, 9, 9, 8],
   sis_cagiran_cayiri: [52, 6, 13, 15], selale_kenari: [65, 12, 6, 6], havuz: [65, 18, 6, 6],
   yuva_magarasi: [58, 24, 17, 9], peri_halkasi: [75, 24, 9, 9], yan_tunel: [58, 33, 2, 6],
-  yuva_kuyusu: [56, 39, 9, 9], tredova_magarasi: [54, 48, 16, 13],
+  yuva_kuyusu: [56, 39, 9, 9], tredova_magarasi: [54, 54, 16, 13],
 };
 const OLD_RECT: Record<string, R4> = {};
 for (const r of ROOMS) OLD_RECT[r.id] = [r.rect.x, r.rect.z, r.rect.w, r.rect.h];
@@ -422,6 +426,12 @@ for (const r of ROOMS) {
   r.props = [...(r.props ?? []), ...extra];
 }
 
+// lieutenant packs (elite ids: ps_staghorn, ps_nightblossom); final coordinates, appended after the widening pass
+PACKS.push(
+  packN('ps_p32', 'kok_salonu', 22, 25, [['ps_staghorn', 1], ['ps_guardian', 2]]),
+  packN('ps_p33', 'selale_kenari', 67.5, 14.5, [['ps_nightblossom', 1], ['ps_gorger', 2]]),
+);
+
 // ---- dungeon ----------------------------------------------------------------------------------------------------------
 const THEME: DungeonTheme = {
   fogColor: 0x122428, fogNear: 6, fogFar: 32,
@@ -439,9 +449,9 @@ export const PERI_SISLERI: DungeonDef = {
   lore: 'Kadim Diyar\'ın Gümüş Ormanı\'nda, dünya meşesinin son dalı bir kovuk saklar: Peri Sisleri. Boynuzlu Ahali kovuğa sızdı; Ingra Malok peri ruhlarının animasını kara büyüyle çekiyor, kuraklık sisleri yutuyor. Sisin ortasındaki labirent yanlış adımı affetmez, yuvanın dibinde ise Tred\'ova, Lakali\'nin tohumunu yuttu. Zaman daralıyor.',
   levelRange: [60, 60],
   timerSec: 1770,
-  forcesRequired: 396, // floor(0.8 x 496 pack forces)
+  forcesRequired: 424, // floor(0.8 x 531 pack forces)
   theme: THEME,
-  grid: { w: 84, h: 62 },
+  grid: { w: 84, h: 72 },
   rooms: ROOMS,
   doors: DOORS,
   packs: PACKS,
@@ -451,7 +461,7 @@ export const PERI_SISLERI: DungeonDef = {
     bossW('boss_tredova', 'tredova_magarasi', 61.5, 53, 180, 3),
   ],
   start: { pos: [4, 54], facing: 90 },
-  exit: { pos: wpt(64, 48) },
+  exit: { pos: pt(60, 69) },
   extras: {
     fontOfPower: wpt(6.5, 51.5),
     shrines: [{ type: 'shrine_power', pos: wpt(10.5, 24.5) }, { type: 'shrine_haste', pos: wpt(74.5, 28) }],
