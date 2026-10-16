@@ -59,6 +59,11 @@ export interface CharacterModel {
 
 const KAYKIT = '/assets/models/characters/';
 
+/** Target standing height of a player model in metres (a human, next to ~2.4 m doors). */
+export const CHARACTER_HEIGHT = 1.8;
+/** Measured rest height of the KayKit Knight body (docs/ART_VOXEL_PSX.md: 2.31 m); the other heroes are within a few cm. */
+export const KAYKIT_NATIVE_HEIGHT = 2.31;
+
 interface ClassVisual {
   url: string;
   plainUrl?: string;
@@ -365,6 +370,9 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
   const asset = await G.assets.load(url);
   const holder = new THREE.Group();
   holder.name = `Character_${classId}`;
+  // KayKit heroes are authored ~2.3 m tall; the player is a 1.8 m human, so a ~2.4 m door reads right beside them.
+  // Scaling the holder (origin at the feet) keeps the feet on the ground and every bone / socket / weapon in proportion.
+  holder.scale.setScalar(CHARACTER_HEIGHT / KAYKIT_NATIVE_HEIGHT);
 
   if (!asset) {
     warnOnce('model:' + url, `[character] model failed to load: ${url}`);
