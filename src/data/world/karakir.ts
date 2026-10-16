@@ -4,6 +4,7 @@ import {
   ROOM_OF_REGION, SHRINES, VISTAS, WATER, WAYPOINTS, WORLD_BOSSES, WORLD_BOSS_ID, WORLD_PACKS,
 } from './karakir_world';
 import { VILLAGES } from './karakir_villages';
+import { KARAKIR_AMBIENT } from './karakir_ambient';
 import { KARAKIR_METIN_SPOTS, KARAKIR_METIN_TIERS } from './karakir_metin';
 import { perfOf } from './layout';
 import KARAKIR_DECOR from './karakir_decor.json' with { type: 'json' };
@@ -75,6 +76,7 @@ const WORLD: WorldExtras = {
   shrines: SHRINES,
   hidden: HIDDEN,
   vistas: VISTAS,
+  ambient: KARAKIR_AMBIENT,
   perf: PERF,
 };
 

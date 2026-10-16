@@ -167,4 +167,227 @@ export const VIGNETTE_DEFS: readonly VignetteDef[] = [
   },
 ];
 
-export const vignetteDef = (id: string): VignetteDef | undefined => VIGNETTE_DEFS.find((d) => d.id === id);
+
+/**
+ * Open-world rings beyond Sisli Vadi (Karakır Bozkırı r7..r12, Ayaz Dağları r16..r21): the same kinds, read by the director next to
+ * VIGNETTE_DEFS (ALL_VIGNETTE_DEFS). Caravans under attack (road_ambush: the traveller is the caravan's), treasure goblins (the minimap
+ * pin shows them while they run), wolf packs round a herd, stuck carts. Rewards scale with the ring's level band. Kept apart so the Sisli
+ * checks (the r1 ring) stay on their own list.
+ */
+export const OPEN_VIGNETTE_DEFS: readonly VignetteDef[] = [
+  {
+    id: 'vg_k7_kervan_pusu', kind: 'road_ambush', name: 'Kervan Pususu', regionId: 'r7', durSec: 90, weight: 3, cooldownSec: 480,
+    npc: 'Yaralı Kervancı', enemies: ['kb_haydut', 'kb_kurt'], count: 2, killsNeeded: 0,
+    followup: 'satchel',
+    reward: { goldPerLevel: 12, xpPct: 5 }, thanks: { goldPerLevel: 2, xpPct: 1 },
+    lines: {
+      start: 'İmdat! Bozkır haydutları kervanımı bastı!',
+      thanks: 'Sağ ol, bu kadar yeter.',
+      ask: 'Heybem haydutların elinde, içinde mühür var. Bulup getirir misin?',
+      accept: 'Yol kenarına düşmüş olmalı, bak bir.',
+      done: 'Kervanın yükü kurtuldu, sağ ol.',
+      fail: 'Acele et, mühür tehlikede!',
+    },
+  },
+  {
+    id: 'vg_k7_hazine_goblini', kind: 'goblin_sighting', name: 'Hazine Goblini', regionId: 'r7', durSec: 75, weight: 1, cooldownSec: 900,
+    npc: 'Hazine Goblini', enemies: ['treasure_goblin'], count: 1, killsNeeded: 1,
+    reward: { goldPerLevel: 8, xpPct: 4 },
+    lines: {
+      start: 'Bir Hazine Goblini! Kaçmadan yakala!',
+      done: 'Hazine Goblini yakalandı!',
+    },
+  },
+  {
+    id: 'vg_k7_kurt_surusu', kind: 'wolf_hunt', name: 'Kurt Sürüsü', regionId: 'r7', durSec: 75, weight: 2, cooldownSec: 600,
+    npc: 'Kurt Sürüsü', enemies: ['kb_kurt'], count: 3, killsNeeded: 3,
+    herd: { enemyId: 'ow_deer', count: 3, radius: 8 },
+    reward: { goldPerLevel: 12, xpPct: 5 },
+    lines: {
+      start: 'Bozkır kurtları bir geyik sürüsünü kovalıyor!',
+      done: 'Sürü dağıldı, geyikler kurtuldu!',
+    },
+  },
+  {
+    id: 'vg_k8_ork_pusu', kind: 'road_ambush', name: 'Ork Pususu', regionId: 'r8', durSec: 90, weight: 3, cooldownSec: 480,
+    npc: 'Yaralı Kervancı', enemies: ['kb_ork', 'kb_ciyan'], count: 2, killsNeeded: 0,
+    followup: 'satchel',
+    reward: { goldPerLevel: 13, xpPct: 5 }, thanks: { goldPerLevel: 2, xpPct: 1 },
+    lines: {
+      start: 'Orklar kervanın üstüne çöktü! Yardım edin!',
+      thanks: 'Canımı kurtardın, bunu unutmam.',
+      ask: 'Yükümüz Kızıl Çorak\'ın kumlarına savruldu, bulabilir misin?',
+      accept: 'Kumların arasında bakmaya devam edin.',
+      done: 'Kızıl Çorak\'tan yükü geri aldın, teşekkürler.',
+      fail: 'Orklar geri dönmeden acele et!',
+    },
+  },
+  {
+    id: 'vg_k8_takili_kagni', kind: 'stuck_cart', name: 'Takılan Kağnı', regionId: 'r8', durSec: 60, weight: 2, cooldownSec: 480,
+    npc: 'Kağnıcı', enemies: [], count: 0, killsNeeded: 0, holdSec: 6,
+    reward: { goldPerLevel: 10, xpPct: 5 },
+    lines: {
+      start: 'Kağnı çamura saplandı, yardım et!',
+      done: 'Kağnı kurtuldu, teşekkürler!',
+    },
+  },
+  {
+    id: 'vg_k9_warg_surusu', kind: 'wolf_hunt', name: 'Warg Sürüsü', regionId: 'r9', durSec: 75, weight: 2, cooldownSec: 600,
+    npc: 'Warg Sürüsü', enemies: ['kb_warg'], count: 3, killsNeeded: 3,
+    herd: { enemyId: 'ow_deer', count: 3, radius: 8 },
+    reward: { goldPerLevel: 13, xpPct: 5 },
+    lines: {
+      start: 'Yayla wargları bir sürüyü kovalıyor!',
+      done: 'Wargların sürüsü dağıldı!',
+    },
+  },
+  {
+    id: 'vg_k10_takili_kagni', kind: 'stuck_cart', name: 'Donmuş Kağnı', regionId: 'r10', durSec: 60, weight: 2, cooldownSec: 480,
+    npc: 'Kağnıcı', enemies: [], count: 0, killsNeeded: 0, holdSec: 6,
+    reward: { goldPerLevel: 13, xpPct: 5 },
+    lines: {
+      start: 'Kağnı çamura saplandı, yardım et!',
+      done: 'Kağnı kurtuldu, teşekkürler!',
+    },
+  },
+  {
+    id: 'vg_k10_buz_pusu', kind: 'road_ambush', name: 'Buz Yolu Pususu', regionId: 'r10', durSec: 90, weight: 3, cooldownSec: 480,
+    npc: 'Yaralı Kervancı', enemies: ['kb_buz_hortlak', 'kb_ayaz_kurdu'], count: 2, killsNeeded: 0,
+    followup: 'satchel',
+    reward: { goldPerLevel: 14, xpPct: 6 }, thanks: { goldPerLevel: 2, xpPct: 1 },
+    lines: {
+      start: 'Buz hortlakları yolu kesti! İmdat!',
+      thanks: 'Canım kurtuldu, sağ ol.',
+      ask: 'Heybem buzun altına gömüldü, bulup getirir misin?',
+      accept: 'Buzun altında bakmaya devam edin.',
+      done: 'Heybem kurtuldu, bunu unutmayacağım.',
+      fail: 'Acele et, buz eriyor!',
+    },
+  },
+  {
+    id: 'vg_k11_kul_pusu', kind: 'road_ambush', name: 'Kül Pususu', regionId: 'r11', durSec: 90, weight: 3, cooldownSec: 480,
+    npc: 'Yaralı Kervancı', enemies: ['kb_kul_akrep', 'kb_kul_kurdu'], count: 2, killsNeeded: 0,
+    followup: 'satchel',
+    reward: { goldPerLevel: 14, xpPct: 6 }, thanks: { goldPerLevel: 2, xpPct: 1 },
+    lines: {
+      start: 'Kül akrepleri kervanı kuşattı! Yardım!',
+      thanks: 'Kül yağdığı sürece tetikte olun, sağ olun.',
+      ask: 'Heybem küllerin altında kaldı, bulabilir misin?',
+      accept: 'Külün altına bakın.',
+      done: 'Heybem kurtuldu, sağ ol.',
+      fail: 'Acele et, kül her şeyi örtüyor!',
+    },
+  },
+  {
+    id: 'vg_k12_sirt_pusu', kind: 'road_ambush', name: 'Sırt Pususu', regionId: 'r12', durSec: 90, weight: 3, cooldownSec: 480,
+    npc: 'Yaralı Kervancı', enemies: ['kb_kartal_dagci', 'kb_kartal_yirtici'], count: 2, killsNeeded: 0,
+    followup: 'satchel',
+    reward: { goldPerLevel: 15, xpPct: 6 }, thanks: { goldPerLevel: 3, xpPct: 1 },
+    lines: {
+      start: 'Sırt haydutları üstümüze çıktı! Yardım!',
+      thanks: 'Sırtın ruhları bize göz kulak oldu, sağ ol.',
+      ask: 'Heybem uçurumun kenarına düştü, alır mısın?',
+      accept: 'Uçurumdan dikkatli inin.',
+      done: 'Heybem kurtuldu, sağ ol.',
+      fail: 'Acele et, sırt kayalık!',
+    },
+  },
+  {
+    id: 'vg_k12_hazine_goblini', kind: 'goblin_sighting', name: 'Hazine Goblini', regionId: 'r12', durSec: 75, weight: 1, cooldownSec: 900,
+    npc: 'Hazine Goblini', enemies: ['treasure_goblin'], count: 1, killsNeeded: 1,
+    reward: { goldPerLevel: 10, xpPct: 4 },
+    lines: {
+      start: 'Bir Hazine Goblini! Kaçmadan yakala!',
+      done: 'Hazine Goblini yakalandı!',
+    },
+  },
+  {
+    id: 'vg_a16_kar_pusu', kind: 'road_ambush', name: 'Kar Pususu', regionId: 'r16', durSec: 90, weight: 3, cooldownSec: 480,
+    npc: 'Yaralı Kervancı', enemies: ['ad_kar_haydut', 'ad_kar_kurdu'], count: 2, killsNeeded: 0,
+    followup: 'satchel',
+    reward: { goldPerLevel: 16, xpPct: 6 }, thanks: { goldPerLevel: 3, xpPct: 1 },
+    lines: {
+      start: 'Kar haydutları yolu kesti! İmdat!',
+      thanks: 'Bu soğukta yardımınız çok değerli, sağ olun.',
+      ask: 'Heybem karın altına düştü, bulup getirir misin?',
+      accept: 'Kar yağmadan bulun.',
+      done: 'Heybem kurtuldu, sağ ol.',
+      fail: 'Acele et, kar kapatıyor!',
+    },
+  },
+  {
+    id: 'vg_a16_kar_kurdu_surusu', kind: 'wolf_hunt', name: 'Kar Kurdu Sürüsü', regionId: 'r16', durSec: 75, weight: 2, cooldownSec: 600,
+    npc: 'Kar Kurdu Sürüsü', enemies: ['ad_kar_kurdu'], count: 3, killsNeeded: 3,
+    herd: { enemyId: 'ow_deer', count: 3, radius: 8 },
+    reward: { goldPerLevel: 16, xpPct: 6 },
+    lines: {
+      start: 'Kar kurtları bir sürüyü kovalıyor!',
+      done: 'Kar kurtlarının sürüsü dağıldı!',
+    },
+  },
+  {
+    id: 'vg_a17_ork_pusu', kind: 'road_ambush', name: 'Ork Kervanı Pususu', regionId: 'r17', durSec: 90, weight: 3, cooldownSec: 480,
+    npc: 'Yaralı Kervancı', enemies: ['ad_kar_ork', 'ad_kar_ork_okcu'], count: 2, killsNeeded: 0,
+    followup: 'satchel',
+    reward: { goldPerLevel: 17, xpPct: 6 }, thanks: { goldPerLevel: 3, xpPct: 1 },
+    lines: {
+      start: 'Ayaz orkları kervanı bastı! Yardım!',
+      thanks: 'Yükü kurtardık, sağ ol.',
+      ask: 'Heybem orkların elinde, geri alabilir misin?',
+      accept: 'Orkların izini sürün.',
+      done: 'Heybem kurtuldu, teşekkürler.',
+      fail: 'Acele et, orklar kaçıyor!',
+    },
+  },
+  {
+    id: 'vg_a18_hazine_goblini', kind: 'goblin_sighting', name: 'Hazine Goblini', regionId: 'r18', durSec: 75, weight: 1, cooldownSec: 900,
+    npc: 'Hazine Goblini', enemies: ['treasure_goblin'], count: 1, killsNeeded: 1,
+    reward: { goldPerLevel: 18, xpPct: 4 },
+    lines: {
+      start: 'Bir Hazine Goblini! Kaçmadan yakala!',
+      done: 'Hazine Goblini yakalandı!',
+    },
+  },
+  {
+    id: 'vg_a19_kartal_pusu', kind: 'road_ambush', name: 'Kartal Pususu', regionId: 'r19', durSec: 90, weight: 3, cooldownSec: 480,
+    npc: 'Yaralı Kervancı', enemies: ['ad_kar_haydut', 'ad_kar_ork'], count: 2, killsNeeded: 0,
+    followup: 'satchel',
+    reward: { goldPerLevel: 17, xpPct: 6 }, thanks: { goldPerLevel: 3, xpPct: 1 },
+    lines: {
+      start: 'Dağ haydutları kervanı pusuya düşürdü! İmdat!',
+      thanks: 'Dağda ayakta kalmak zor, sağ ol.',
+      ask: 'Heybem kayalıkların arasında kaldı, bulabilir misin?',
+      accept: 'Kayalıklara bakın.',
+      done: 'Heybem kurtuldu, sağ ol.',
+      fail: 'Acele et, dağ hava değiştiriyor!',
+    },
+  },
+  {
+    id: 'vg_a20_donmus_kagni', kind: 'stuck_cart', name: 'Donmuş Kağnı', regionId: 'r20', durSec: 60, weight: 2, cooldownSec: 480,
+    npc: 'Kağnıcı', enemies: [], count: 0, killsNeeded: 0, holdSec: 6,
+    reward: { goldPerLevel: 18, xpPct: 6 },
+    lines: {
+      start: 'Kağnı çamura saplandı, yardım et!',
+      done: 'Kağnı kurtuldu, teşekkürler!',
+    },
+  },
+  {
+    id: 'vg_a21_zirve_pusu', kind: 'road_ambush', name: 'Zirve Pususu', regionId: 'r21', durSec: 90, weight: 3, cooldownSec: 480,
+    npc: 'Yaralı Kervancı', enemies: ['ad_buz_orumcek', 'ad_don_hortlak'], count: 2, killsNeeded: 0,
+    followup: 'satchel',
+    reward: { goldPerLevel: 19, xpPct: 7 }, thanks: { goldPerLevel: 3, xpPct: 1 },
+    lines: {
+      start: 'Zirve yolunda hortlaklar saldırdı! İmdat!',
+      thanks: 'Zirvenin rüzgârı bizi ayakta tuttu, sağ ol.',
+      ask: 'Heybem buzun altına düştü, bulup getirir misin?',
+      accept: 'Buzun üstünden dikkatli geçin.',
+      done: 'Heybem kurtuldu, sağ ol.',
+      fail: 'Acele et, zirve kapanıyor!',
+    },
+  },
+];
+
+/** Every vignette def of every ring: the director's list (Sisli r1 + the open-world rings). */
+export const ALL_VIGNETTE_DEFS: readonly VignetteDef[] = [...VIGNETTE_DEFS, ...OPEN_VIGNETTE_DEFS];
+
+export const vignetteDef = (id: string): VignetteDef | undefined => ALL_VIGNETTE_DEFS.find((d) => d.id === id);
