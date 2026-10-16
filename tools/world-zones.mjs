@@ -38,7 +38,7 @@ export const ZONES = {
   },
   kizil: {
     label: 'Kızıl Sınır', module: 'src/data/world/kizil_sinir.ts', exportName: 'KIZIL_SINIR', out: 'src/data/world/kizil_sinir_decor.json',
-    biome: 'kizil', pvp: true,
+    biome: 'kizil', pvp: true, symmetric: 'xz',
     lmPool: ['red_castle_ruin', 'watch_tower_ruin', 'obelisk_shrine', 'standing_stones'],
     vigPool: ['collapsed_wagon', 'abandoned_cart', 'campfire_camp', 'hunter_camp', 'graveyard'],
   },
@@ -103,7 +103,7 @@ export async function loadZone(key) {
   if (!cfg) throw new Error(`unknown zone "${key}" (${Object.keys(ZONES).join(', ')})`);
   if (!cfg.module) {
     const raw = JSON.parse(fs.readFileSync(abs(cfg.json), 'utf8').replace(/^﻿/, ''));
-    return { key, label: cfg.label, L: raw, raw, out: abs(cfg.json), typed: false, biome: null, lmPool: null, vigPool: null };
+    return { key, label: cfg.label, L: raw, raw, out: abs(cfg.json), typed: false, biome: null, lmPool: null, vigPool: null, symmetric: '' };
   }
   const mod = await import(pathToFileURL(abs(cfg.module)).href);
   const def = mod[cfg.exportName];
@@ -111,8 +111,59 @@ export async function loadZone(key) {
   const pvp = cfg.pvp ? await import(pathToFileURL(abs('src/data/pvpZone.ts')).href) : null;
   return {
     key, label: cfg.label, L: adapt(def, cfg, pvp), raw: null, out: abs(cfg.out), typed: true, biome: cfg.biome,
-    lmPool: cfg.lmPool, vigPool: cfg.vigPool,
+    lmPool: cfg.lmPool, vigPool: cfg.vigPool, symmetric: cfg.symmetric ?? '',
   };
+}
+
+// ---- mirror symmetry of a zone's generated life ----------------------------------------------------------------------------
+// `symmetric` names the relief's mirror axes ('' none, 'x', 'z' or 'xz'): the relief is mirrored across x = W/2 and z = H/2 (Relief.ts
+// symmetric), so the decor is too. A transform t is a bitmask: 1 = mirror in x (x -> W - x), 2 = mirror in z (z -> H - z).
+
+/** The transforms (bitmasks, identity 0 first) of a symmetry setting. */
+export function symTransforms(sym) {
+  if (sym === 'x') return [0, 1];
+  if (sym === 'z') return [0, 2];
+  if (sym === 'xz') return [0, 1, 2, 3];
+  return [0];
+}
+
+/** A point in metres under a transform of a W x H m zone. */
+export function mirrorPt([x, z], t, W, H) {
+  return [t & 1 ? W - x : x, t & 2 ? H - z : z];
+}
+
+/**
+ * A yaw (deg) under a transform: the yaw r points along (sin r, cos r) in (x, z), so the mirror in x gives -r, in z gives 180 - r,
+ * and both give 180 + r.
+ */
+export function mirrorYaw(rot, t) {
+  let r = t & 1 ? -rot : rot;
+  if (t & 2) r = 180 - r;
+  return ((Math.round(r) % 360) + 360) % 360;
+}
+
+/**
+ * Checks that a generated zone file is mirror-symmetric: every decor entry and landmark has its image under each transform (same
+ * kind and recipe, position within 0.25 m, yaw within 1.5 deg). Returns the entries without an image (empty = symmetric).
+ * Positions are tile coordinates (1 tile = 4 m; the tile centre is (pos + 0.5) x 4 m).
+ */
+export function symmetryIssues(decor, landmarks, W, H, sym) {
+  const trans = symTransforms(sym).filter((t) => t !== 0);
+  const items = [
+    ...decor.map((d) => ({ id: d.id, key: `${d.kind}/${d.recipe}`, at: [(d.pos[0] + 0.5) * 4, (d.pos[1] + 0.5) * 4], rot: d.rot ?? 0 })),
+    ...landmarks.map((l) => ({ id: l.id, key: `landmark/${l.recipe}`, at: [(l.pos[0] + 0.5) * 4, (l.pos[1] + 0.5) * 4], rot: l.rot ?? 0 })),
+  ];
+  const issues = [];
+  for (const it of items) {
+    for (const t of trans) {
+      const m = mirrorPt(it.at, t, W, H);
+      const want = mirrorYaw(it.rot, t);
+      const hit = items.some((o) => o.key === it.key && Math.hypot(o.at[0] - m[0], o.at[1] - m[1]) <= 0.25 &&
+        Math.min(Math.abs(o.rot - want), 360 - Math.abs(o.rot - want)) <= 1.5);
+      if (!hit) issues.push(`${it.id} (${it.key}) has no image under transform ${t}`);
+    }
+  }
+  return issues;
 }
 
 /** Writes a typed zone's generated file: BOM and CRLF like the layouts. */

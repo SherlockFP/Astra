@@ -66,7 +66,12 @@ interface QueuedBanner {
   key: string | undefined;
   show: () => void;
   hide: () => void;
+  /** A panel id: the banner does not start while that panel is open (and is taken back if the panel opens mid-banner). */
+  waitFor?: string;
 }
+
+/** The run summary (Koşu Özeti) covers the centre of the screen: the level-up banner of a run waits until it closes. */
+export const RUN_SUMMARY_PANEL = 'runSummary';
 
 /** Queue length cap (§2.11): the oldest banner of the lowest rank is dropped past this. */
 const QUEUE_MAX = 3;
@@ -82,14 +87,33 @@ const inCombat = (): boolean => !!G.player?.inCombat;
 export class BannerQueue implements HudWidget {
   readonly el: HTMLElement = div('banner-queue');
   private waiting: QueuedBanner[] = [];
-  private current: { rank: number; end: number; key: string | undefined; hide: () => void } | null = null;
+  private current: { rank: number; end: number; key: string | undefined; hide: () => void; item: QueuedBanner } | null = null;
   private seq = 0;
+  /** Panels open now (from 'ui:panel'): a banner with `waitFor` on one of them does not start. */
+  private openPanels = new Set<string>();
   /** The lane's banners (zone, quest, level-up): while one is on screen its box is kept clear of floating text. */
   private boxes: { on: HTMLElement; box: HTMLElement }[] = [];
 
   constructor() {
     setDisplay(this.el, false);
     laneQueue = this;
+    G.events.on('ui:panel', ({ panel, open }) => this.onPanel(panel, open));
+  }
+
+  /** A panel the lane waits for opened: a banner on screen goes back to the head of the queue (it plays again after the panel). */
+  private onPanel(panel: string, open: boolean): void {
+    if (open) this.openPanels.add(panel);
+    else this.openPanels.delete(panel);
+    if (open && this.current?.item.waitFor === panel) {
+      const c = this.current;
+      this.current = null;
+      c.hide();
+      this.waiting.unshift(c.item);
+    }
+  }
+
+  private held(w: QueuedBanner): boolean {
+    return !!w.waitFor && this.openPanels.has(w.waitFor);
   }
 
   /** A banner of this lane: `on` carries the 'on' class while it shows, `box` is the element measured for the keep-out. */
@@ -101,7 +125,7 @@ export class BannerQueue implements HudWidget {
    * Queues one banner: `show` runs when its turn comes, `hide` runs `ms` later. A `key` collapses duplicates: a waiting banner with
    * the same key takes the newer content in place, and a repeat of the banner on screen is dropped.
    */
-  push(rank: number, ms: number, show: () => void, hide: () => void, key?: string): void {
+  push(rank: number, ms: number, show: () => void, hide: () => void, key?: string, waitFor?: string): void {
     if (key !== undefined) {
       if (this.current?.key === key) return;
       const dup = this.waiting.find((w) => w.key === key);
@@ -112,7 +136,7 @@ export class BannerQueue implements HudWidget {
         return;
       }
     }
-    this.waiting.push({ rank, ms, seq: this.seq++, key, show, hide });
+    this.waiting.push({ rank, ms, seq: this.seq++, key, show, hide, waitFor });
     this.waiting.sort((a, b) => a.rank - b.rank || a.seq - b.seq);
     while (this.waiting.length > QUEUE_MAX) {
       let worst = 0;
@@ -148,10 +172,13 @@ export class BannerQueue implements HudWidget {
       this.current = null;
       c.hide();
     }
-    if (!this.current && this.waiting.length) {
-      const next = this.waiting.shift()!;
-      this.current = { rank: next.rank, end: ctx.now + next.ms, key: next.key, hide: next.hide };
-      next.show();
+    if (!this.current) {
+      const i = this.waiting.findIndex((w) => !this.held(w));
+      if (i >= 0) {
+        const next = this.waiting.splice(i, 1)[0];
+        this.current = { rank: next.rank, end: ctx.now + next.ms, key: next.key, hide: next.hide, item: next };
+        next.show();
+      }
     }
     this.publishKeepOut();
   }
@@ -309,6 +336,7 @@ export class LevelUpBanner implements HudWidget {
           if (!levelUpBannerBusy()) levelAbilityNames.clear();
         },
         `levelup:${level}`,
+        RUN_SUMMARY_PANEL,
       );
     });
     G.events.on('scene:leaving', () => setClass(this.el, 'on', false));

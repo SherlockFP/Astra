@@ -17,7 +17,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { loadZone, writeZoneDecor, ROOT } from './world-zones.mjs';
+import { loadZone, writeZoneDecor, ROOT, symTransforms, mirrorPt, mirrorYaw, symmetryIssues } from './world-zones.mjs';
 
 // --zone <sisli|karakir|ayaz|kizil>: the zone to fill (default sisli). A typed zone (Karakır, Ayaz, Kızıl Sınır) gets the same passes,
 // with its biome's landmark and vignette pools, and writes <zone>_decor.json (decor + generated landmarks) instead of the layout.
@@ -50,6 +50,27 @@ const pick = (xs) => xs[Math.floor(rnd() * xs.length)];
 // ---- load -------------------------------------------------------------------------------------------------------------------
 const L = Z.L;
 const W_M = L.grid.w * T, H_M = L.grid.h * T;
+
+// ---- mirror symmetry (a zone whose relief is mirrored: Kızıl Sınır, symmetric 'xz', tools/world-zones.mjs) ----------------------
+// The generated life is placed in one quadrant (x <= W/2 - AXIS_M, z <= H/2 - AXIS_M, the relief's mirror axes) and every entry goes
+// down with its mirror images (x -> W - x, z -> H - z). A candidate is taken only when every image passes the same keep-outs, so no
+// copy stands on a road, water, point of interest or camp. AXIS_M keeps an entry and its own image 2 x AXIS_M apart.
+// Sisli Vadi is not symmetric: the transform list is [0] and the box is the whole map, so its output is unchanged.
+const SYM = Z.symmetric ?? '';
+const symX = SYM === 'x' || SYM === 'xz', symZ = SYM === 'z' || SYM === 'xz';
+const TRANS = symTransforms(SYM);
+const PER = TRANS.length;
+const AXIS_M = SYM ? 8 : 0;
+const BOX_X = symX ? W_M / 2 - AXIS_M : W_M, BOX_Z = symZ ? H_M / 2 - AXIS_M : H_M;
+const inDomain = (x, z) => x <= BOX_X && z <= BOX_Z;
+/** A point and its mirror images as [x, z, t] (the point itself first, t = 0). */
+const images = (x, z) => TRANS.map((t) => { const p = mirrorPt([x, z], t, W_M, H_M); return [p[0], p[1], t]; });
+/** Yaw of a mirror image. */
+const imgRot = (rot, t) => (t === 0 ? rot : mirrorYaw(rot, t));
+/** The point lies in the generated box and every image passes `ok`. */
+const symOk = (x, z, ok) => inDomain(x, z) && images(x, z).every(([ix, iz]) => ok(ix, iz));
+/** Targets are totals over the zone: a placed entry counts once per image, so the quadrant gets a share of each. */
+const perBase = (n) => Math.round(n / PER);
 const isGenLandmark = (l) => /^lm_f\d+$/.test(l.id);
 // a rerun starts from the hand-authored content only: generated landmarks and decor are dropped from the working copy
 const handLandmarks = L.landmarks.filter((l) => !isGenLandmark(l));
@@ -122,6 +143,10 @@ for (const v of L.villages) {
   for (const b of v.buildings) pushP(visual, c[0] + b.x, c[1] + b.z);
   for (const n of v.npcs ?? []) pushP(visual, c[0] + n.x, c[1] + n.z);
 }
+// a symmetric zone: the points of interest and village marks stand at their mirror images too (the roads stay as authored)
+const symClose = (list) => { for (const [x, z] of [...list]) for (const [ix, iz, t] of images(x, z)) if (t) list.push([ix, iz]); };
+symClose(poi);
+symClose(visual);
 for (const p of roadPts) visual.push(p);
 
 // ---- placed content (new) ----------------------------------------------------------------------------------------------------
@@ -150,6 +175,18 @@ const villageHit = (x, z) => villageRects.some((v) => x >= v.x0 && x <= v.x1 && 
 const freeForDecor = (x, z, { road = 7, water: wd = 4, poiR = 14, decorR = 14 } = {}) =>
   walkable(x, z) && roadDist(x, z) >= road && waterDist(x, z) >= wd && nearest(x, z, poi) >= poiR && !villageHit(x, z) &&
   campFree(x, z) && nearestD(x, z, decorM) >= decorR;
+
+// placement helpers: a placed point (or entry) goes in with all its mirror images
+const pushPts = (list, x, z) => { for (const [ix, iz] of images(x, z)) list.push([ix, iz]); };
+const pushDecorM = (x, z, kind) => { for (const [ix, iz] of images(x, z)) decorM.push({ x: ix, z: iz, kind }); };
+/** A decor entry at (x, z) and at its images (the same recipe, the yaw mirrored); ids run per prefix. */
+const decorIds = {};
+const addDecor = (prefix, pad, kind, recipe, x, z, rot, extra = {}) => {
+  for (const [ix, iz, t] of images(x, z)) {
+    decorIds[prefix] = (decorIds[prefix] ?? 0) + 1;
+    decor.push({ id: `${prefix}${String(decorIds[prefix]).padStart(pad, '0')}`, kind, recipe, region: roomAt(ix, iz)?.region ?? 'r1', pos: [toTile(ix), toTile(iz)], rot: imgRot(rot, t), ...extra });
+  }
+};
 
 // ---- 1. landmarks: farthest-point sampling at 200 m, recipes by region --------------------------------------------------------
 const LM_RECIPES = {
@@ -189,10 +226,11 @@ const takeName = (recipe) => {
   return `${base} ${usedNames.size}`;
 };
 const lmPts = handLandmarks.map((l) => [C(l.pos[0]), C(l.pos[1])]);
+symClose(lmPts);
 // a landmark keeps 24 m from the edge of the walkable ground (the tree wall of the map is not a place to stand a landmark)
 const edgeOk = (x, z) => { for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2; if (!walkable(x + Math.cos(a) * 24, z + Math.sin(a) * 24)) return false; } return true; };
 const lmCands = [];
-for (let z = SAMPLE_M / 2; z < H_M; z += 20) for (let x = SAMPLE_M / 2; x < W_M; x += 20) if (walkable(x, z) && edgeOk(x, z)) lmCands.push([x, z]);
+for (let z = SAMPLE_M / 2; z < H_M; z += 20) for (let x = SAMPLE_M / 2; x < W_M; x += 20) if (inDomain(x, z) && walkable(x, z) && edgeOk(x, z)) lmCands.push([x, z]);
 const lmSpot = (x, z, recipe) => {
   if (recipe === 'broken_pier') {
     const wd = waterDist(x, z);
@@ -215,17 +253,23 @@ for (;;) {
   for (let tries = 0; tries < 40 && !placed; tries++) {
     const recipe = pick(recipes);
     const sx = best[0] + (tries === 0 ? 0 : (rnd() - 0.5) * 30), sz = best[1] + (tries === 0 ? 0 : (rnd() - 0.5) * 30);
-    if (!lmSpot(sx, sz, recipe) || nearest(sx, sz, lmPts) < LM_SPACING * 0.9) continue;
-    lmNo++;
-    const id = `lm_f${String(lmNo).padStart(2, '0')}`;
-    landmarksNew.push({ id, name: takeName(recipe), region, pos: [toTile(sx), toTile(sz)], recipe, rot: recipe === 'broken_pier' ? shoreRot(sx, sz) : 0 });
-    lmPts.push([sx, sz]);
-    poi.push([sx, sz]);
-    visual.push([sx, sz]);
+    // the spot and its mirror images must be valid, and no two of them closer than the spacing
+    const imgs = images(sx, sz);
+    if (!symOk(sx, sz, (ix, iz) => lmSpot(ix, iz, recipe) && nearest(ix, iz, lmPts) >= LM_SPACING * 0.9)) continue;
+    if (imgs.some(([ax, az], i) => imgs.some(([bx, bz], j) => i < j && Math.hypot(ax - bx, az - bz) < LM_SPACING * 0.9))) continue;
+    const rot0 = recipe === 'broken_pier' ? shoreRot(sx, sz) : 0;
+    for (const [ix, iz, t] of imgs) {
+      lmNo++;
+      const id = `lm_f${String(lmNo).padStart(2, '0')}`;
+      landmarksNew.push({ id, name: takeName(recipe), region: t === 0 ? region : roomAt(ix, iz)?.region ?? 'r1', pos: [toTile(ix), toTile(iz)], recipe, rot: t === 0 ? rot0 : imgRot(rot0, t) });
+      lmPts.push([ix, iz]);
+      poi.push([ix, iz]);
+      visual.push([ix, iz]);
+    }
     placed = true;
   }
   // no valid spot near the candidate: the candidate counts as occupied for the spacing rule, so the loop moves on
-  if (!placed) lmPts.push([best[0], best[1]]);
+  if (!placed) pushPts(lmPts, best[0], best[1]);
 }
 
 // ---- 2. signposts at road junctions ------------------------------------------------------------------------------------------
@@ -268,33 +312,41 @@ for (const j of junctions) {
   let spot = null, bestRd = -1;
   for (const [dx, dz] of [[0.7, 0.7], [-0.7, 0.7], [0.7, -0.7], [-0.7, -0.7], [0, 1], [1, 0], [0, -1], [-1, 0]]) {
     const x = j.x + dx * 6, z = j.z + dz * 6;
-    if (!walkable(x, z) || villageHit(x, z) || waterDist(x, z) < 4 || !campFree(x, z)) continue;
+    if (!symOk(x, z, (ix, iz) => walkable(ix, iz) && !villageHit(ix, iz) && waterDist(ix, iz) >= 4 && campFree(ix, iz))) continue;
     const rd = roadDist(x, z);
     if (rd > bestRd) { bestRd = rd; spot = [x, z]; }
   }
   if (!spot || bestRd < 4) continue;
-  // destinations: the three nearest distinct named places 80 m or more away, with compass letter and metres
-  const near = sigNamed
-    .map((p) => ({ ...p, d: Math.hypot(p.x - spot[0], p.z - spot[1]) }))
-    .filter((p) => p.d >= 80 && p.d <= 900)
-    .sort((a, b) => a.d - b.d);
-  const lines = [];
-  const chosen = [];
-  for (const p of near) {
-    if (lines.length >= 3) break;
-    // one line per place: a settlement and its waypoint stone are the same destination
-    if (chosen.some((c) => c.name === p.name || Math.hypot(c.x - p.x, c.z - p.z) < 60)) continue;
-    chosen.push(p);
-    lines.push(`${p.name} · ${Math.round(p.d / 10) * 10} m ${compass(p.x - spot[0], p.z - spot[1])}`);
-  }
-  if (!lines.length) continue;
-  sgNo++;
-  const rot = (Math.atan2(j.x - spot[0], -(j.z - spot[1])) * 180) / Math.PI;
-  const e = { id: `sg_j${String(sgNo).padStart(2, '0')}`, kind: 'signpost', recipe: 'signpost', region: roomAt(spot[0], spot[1])?.region ?? 'r1', pos: [toTile(spot[0]), toTile(spot[1])], rot: Math.round(rot), lines };
-  decor.push(e);
-  decorM.push({ x: spot[0], z: spot[1], kind: 'signpost' });
-  visual.push(spot);
-  signs.push(e);
+  // destinations: the three nearest distinct named places 80 m or more away, with compass letter and metres (seen from the spot)
+  const signLines = (sx, sz) => {
+    const near = sigNamed
+      .map((p) => ({ ...p, d: Math.hypot(p.x - sx, p.z - sz) }))
+      .filter((p) => p.d >= 80 && p.d <= 900)
+      .sort((a, b) => a.d - b.d);
+    const lines = [];
+    const chosen = [];
+    for (const p of near) {
+      if (lines.length >= 3) break;
+      // one line per place: a settlement and its waypoint stone are the same destination
+      if (chosen.some((c) => c.name === p.name || Math.hypot(c.x - p.x, c.z - p.z) < 60)) continue;
+      chosen.push(p);
+      lines.push(`${p.name} · ${Math.round(p.d / 10) * 10} m ${compass(p.x - sx, p.z - sz)}`);
+    }
+    return lines;
+  };
+  // the sign and its images: each reads its own destinations (the compass letters follow the mirror)
+  const imgs = images(spot[0], spot[1]);
+  const imgLines = imgs.map(([ix, iz]) => signLines(ix, iz));
+  if (imgLines.some((l) => !l.length)) continue;
+  const rot = Math.round((Math.atan2(j.x - spot[0], -(j.z - spot[1])) * 180) / Math.PI);
+  imgs.forEach(([ix, iz, t], k) => {
+    sgNo++;
+    const e = { id: `sg_j${String(sgNo).padStart(2, '0')}`, kind: 'signpost', recipe: 'signpost', region: roomAt(ix, iz)?.region ?? 'r1', pos: [toTile(ix), toTile(iz)], rot: imgRot(rot, t), lines: imgLines[k] };
+    decor.push(e);
+    decorM.push({ x: ix, z: iz, kind: 'signpost' });
+    visual.push([ix, iz]);
+    signs.push(e);
+  });
 }
 
 // ---- 3. farm fields beside the villages and the farm camp ------------------------------------------------------------------
@@ -308,7 +360,7 @@ for (const sid of FARM_SETTLEMENTS) {
     const a = (k / 24) * Math.PI * 2;
     const r = Math.max(v.hx, v.hz) + 22;
     const x = v.cx + Math.cos(a) * r, z = v.cz + Math.sin(a) * r;
-    if (!walkable(x, z) || roadDist(x, z) < 10 || villageHit(x, z) || nearest(x, z, poi) < 14 || !campFree(x, z) || nearestD(x, z, decorM) < 14) continue;
+    if (!symOk(x, z, (ix, iz) => walkable(ix, iz) && roadDist(ix, iz) >= 10 && !villageHit(ix, iz) && nearest(ix, iz, poi) >= 14 && campFree(ix, iz) && nearestD(ix, iz, decorM) >= 14)) continue;
     const g = nearest(x, z, visual);
     if (g > bestGap) { bestGap = g; best = [x, z, a]; }
   }
@@ -316,10 +368,10 @@ for (const sid of FARM_SETTLEMENTS) {
   faNo++;
   const [x, z, a] = best;
   const rot = Math.round(((a * 180) / Math.PI + 90) % 360);
-  decor.push({ id: `dc_fa${String(faNo).padStart(2, '0')}`, kind: 'field', recipe: 'farm_field', region: roomAt(x, z)?.region ?? 'r1', pos: [toTile(x), toTile(z)], rot });
-  decorM.push({ x, z, kind: 'field' });
-  visual.push([x, z]);
-  poi.push([x, z]);
+  addDecor('dc_fa', 2, 'field', 'farm_field', x, z, rot);
+  pushDecorM(x, z, 'field');
+  pushPts(visual, x, z);
+  pushPts(poi, x, z);
 }
 
 // ---- 4. story vignettes: fill the largest visual gaps --------------------------------------------------------------------------
@@ -332,15 +384,16 @@ const VIGNETTE_BY_REGION = {
   r6: ['graveyard', 'roadside_shrine', 'campfire_camp', 'collapsed_wagon'],
 };
 const samples = [];
-for (let z = SAMPLE_M / 2; z < H_M; z += SAMPLE_M) for (let x = SAMPLE_M / 2; x < W_M; x += SAMPLE_M) if (walkable(x, z)) samples.push({ x, z, g: 0, dead: false });
+for (let z = SAMPLE_M / 2; z < H_M; z += SAMPLE_M) for (let x = SAMPLE_M / 2; x < W_M; x += SAMPLE_M) if (inDomain(x, z) && walkable(x, z)) samples.push({ x, z, g: 0, dead: false });
 const gapOf = (x, z) => { let m = Infinity; for (const p of visual) { const d = Math.hypot(x - p[0], z - p[1]); if (d < m) m = d; } return m; };
 for (const s of samples) s.g = gapOf(s.x, s.z);
 const pushVisual = (x, z) => {
-  visual.push([x, z]);
-  for (const s of samples) { const d = Math.hypot(s.x - x, s.z - z); if (d < s.g) s.g = d; }
+  for (const [ix, iz] of images(x, z)) {
+    visual.push([ix, iz]);
+    for (const s of samples) { const d = Math.hypot(s.x - ix, s.z - iz); if (d < s.g) s.g = d; }
+  }
 };
 let vgNo = 0;
-const vignettes = [];
 const recipeCount = {};
 for (let guard = 0; guard < 2000; guard++) {
   let best = null;
@@ -353,7 +406,7 @@ for (let guard = 0; guard < 2000; guard++) {
   for (const [R, rules] of [[16, { road: 7, water: 4, poiR: 12, decorR: 14 }], [26, { road: 6, water: 4, poiR: 10, decorR: 12 }], [44, { road: 6, water: 4, poiR: 10, decorR: 12 }]]) {
     for (let dz = -R; dz <= R && !spot; dz += 4) for (let dx = -R; dx <= R; dx += 4) {
       const x = best.x + dx, z = best.z + dz;
-      if (Math.hypot(dx, dz) > R || !freeForDecor(x, z, rules)) continue;
+      if (Math.hypot(dx, dz) > R || !symOk(x, z, (ix, iz) => freeForDecor(ix, iz, rules))) continue;
       const g = gapOf(x, z);
       if (g > spotG) { spotG = g; spot = [x, z]; }
     }
@@ -366,31 +419,32 @@ for (let guard = 0; guard < 2000; guard++) {
   if (waterDist(spot[0], spot[1]) < 9 && rnd() < 0.7) recipe = 'fishing_spot';
   vgNo++;
   const rot = recipe === 'fishing_spot' ? shoreRot(spot[0], spot[1]) : Math.round(rnd() * 359);
-  vignettes.push({ id: `dc_v${String(vgNo).padStart(3, '0')}`, kind: 'vignette', recipe, region, pos: [toTile(spot[0]), toTile(spot[1])], rot });
-  decorM.push({ x: spot[0], z: spot[1], kind: 'vignette' });
+  addDecor('dc_v', 3, 'vignette', recipe, spot[0], spot[1], rot);
+  pushDecorM(spot[0], spot[1], 'vignette');
   recipeCount[recipe] = (recipeCount[recipe] ?? 0) + 1;
   pushVisual(spot[0], spot[1]);
 }
-decor.push(...vignettes);
 
 // ---- 5. filler clusters: flowers, bushes and rocks breaking up flat ground ---------------------------------------------------
 let fNo = 0, rNo = 0;
+// the targets are totals over the zone: a quadrant places a share of each (one base entry per PER images)
 const FLORA_TARGET = 80, ROCK_TARGET = 30;
+const FLORA_BASE = perBase(FLORA_TARGET), ROCK_BASE = perBase(ROCK_TARGET);
 const fillerTry = [];
-for (let i = 0; i < 6000; i++) fillerTry.push([rnd() * W_M, rnd() * H_M]);
+for (let i = 0; i < 6000; i++) fillerTry.push([rnd() * BOX_X, rnd() * BOX_Z]);
 for (const [x, z] of fillerTry) {
-  if (fNo >= FLORA_TARGET && rNo >= ROCK_TARGET) break;
-  if (!walkable(x, z) || roadDist(x, z) < 6 || nearest(x, z, poi) < 14 || villageHit(x, z) || !campFree(x, z)) continue;
-  if (nearestD(x, z, decorM) < 14 || nearest(x, z, visual) < 12) continue;
-  const useRock = rNo < ROCK_TARGET && (rnd() < 0.3 || fNo >= FLORA_TARGET);
+  if (fNo >= FLORA_BASE && rNo >= ROCK_BASE) break;
+  if (!symOk(x, z, (ix, iz) => walkable(ix, iz) && roadDist(ix, iz) >= 6 && nearest(ix, iz, poi) >= 14 && !villageHit(ix, iz) && campFree(ix, iz) &&
+    nearestD(ix, iz, decorM) >= 14 && nearest(ix, iz, visual) >= 12)) continue;
+  const useRock = rNo < ROCK_BASE && (rnd() < 0.3 || fNo >= FLORA_BASE);
   if (useRock) {
     rNo++;
-    decor.push({ id: `dc_r${String(rNo).padStart(3, '0')}`, kind: 'rocks', recipe: 'rock_cluster', region: roomAt(x, z)?.region ?? 'r1', pos: [toTile(x), toTile(z)], rot: Math.round(rnd() * 359) });
-  } else if (fNo < FLORA_TARGET) {
+    addDecor('dc_r', 3, 'rocks', 'rock_cluster', x, z, Math.round(rnd() * 359));
+  } else if (fNo < FLORA_BASE) {
     fNo++;
-    decor.push({ id: `dc_f${String(fNo).padStart(3, '0')}`, kind: 'flora', recipe: 'flora_cluster', region: roomAt(x, z)?.region ?? 'r1', pos: [toTile(x), toTile(z)], rot: Math.round(rnd() * 359) });
+    addDecor('dc_f', 3, 'flora', 'flora_cluster', x, z, Math.round(rnd() * 359));
   } else continue;
-  decorM.push({ x, z, kind: 'filler' });
+  pushDecorM(x, z, 'filler');
   pushVisual(x, z);
 }
 
@@ -398,9 +452,10 @@ for (const [x, z] of fillerTry) {
 // The largest gap is filled first, until no walkable sample is more than GROVE_GAP_M from a visual thing (a stretch of open meadow
 // longer than about 30 m reads as empty). A grove keeps 9 m off roads, 14 m off points of interest and other decor.
 const GROVE_GAP_M = 25, GROVE_MAX = 260;
+const GROVE_BASE = perBase(GROVE_MAX);
 const GROVE_MIX = [['grove', 0.6], ['outcrop', 0.25], ['fallen_logs', 0.15]];
 let grNo = 0;
-for (let guard = 0; guard < 4000 && grNo < GROVE_MAX; guard++) {
+for (let guard = 0; guard < 4000 && grNo < GROVE_BASE; guard++) {
   let best = null;
   for (const s of samples) if (!s.dead && (!best || s.g > best.g)) best = s;
   if (!best || best.g <= GROVE_GAP_M) break;
@@ -408,7 +463,7 @@ for (let guard = 0; guard < 4000 && grNo < GROVE_MAX; guard++) {
   for (const [R, rules] of [[12, { road: 9, water: 5, poiR: 14, decorR: 14 }], [20, { road: 9, water: 5, poiR: 14, decorR: 14 }], [30, { road: 8, water: 5, poiR: 12, decorR: 12 }]]) {
     for (let dz = -R; dz <= R && !spot; dz += 4) for (let dx = -R; dx <= R; dx += 4) {
       const x = best.x + dx, z = best.z + dz;
-      if (Math.hypot(dx, dz) > R || !freeForDecor(x, z, rules)) continue;
+      if (Math.hypot(dx, dz) > R || !symOk(x, z, (ix, iz) => freeForDecor(ix, iz, rules))) continue;
       const g = gapOf(x, z);
       if (g > spotG) { spotG = g; spot = [x, z]; }
     }
@@ -418,22 +473,21 @@ for (let guard = 0; guard < 4000 && grNo < GROVE_MAX; guard++) {
   let roll = rnd(), recipe = GROVE_MIX[0][0];
   for (const [name, w] of GROVE_MIX) { if (roll < w) { recipe = name; break; } roll -= w; }
   grNo++;
-  const region = roomAt(spot[0], spot[1])?.region ?? 'r1';
-  decor.push({ id: `dc_g${String(grNo).padStart(3, '0')}`, kind: 'grove', recipe, region, pos: [toTile(spot[0]), toTile(spot[1])], rot: Math.round(rnd() * 359) });
-  decorM.push({ x: spot[0], z: spot[1], kind: 'grove' });
+  addDecor('dc_g', 3, 'grove', recipe, spot[0], spot[1], Math.round(rnd() * 359));
+  pushDecorM(spot[0], spot[1], 'grove');
   pushVisual(spot[0], spot[1]);
 }
 
 // ---- 7. meadow carpets: dense grass and flowers over open ground (filler, nothing to walk around)
-const CARPET_TARGET = 220;
+const CARPET_BASE = perBase(220);
 let mcNo = 0;
-for (let i = 0; i < 20000 && mcNo < CARPET_TARGET; i++) {
-  const x = rnd() * W_M, z = rnd() * H_M;
-  if (!walkable(x, z) || roadDist(x, z) < 6 || nearest(x, z, poi) < 14 || villageHit(x, z) || !campFree(x, z)) continue;
-  if (nearestD(x, z, decorM) < 9 || nearest(x, z, visual) < 8) continue;
+for (let i = 0; i < 20000 && mcNo < CARPET_BASE; i++) {
+  const x = rnd() * BOX_X, z = rnd() * BOX_Z;
+  if (!symOk(x, z, (ix, iz) => walkable(ix, iz) && roadDist(ix, iz) >= 6 && nearest(ix, iz, poi) >= 14 && !villageHit(ix, iz) && campFree(ix, iz) &&
+    nearestD(ix, iz, decorM) >= 9 && nearest(ix, iz, visual) >= 8)) continue;
   mcNo++;
-  decor.push({ id: `dc_m${String(mcNo).padStart(3, '0')}`, kind: 'flora', recipe: 'meadow_carpet', region: roomAt(x, z)?.region ?? 'r1', pos: [toTile(x), toTile(z)], rot: Math.round(rnd() * 359) });
-  decorM.push({ x, z, kind: 'filler' });
+  addDecor('dc_m', 3, 'flora', 'meadow_carpet', x, z, Math.round(rnd() * 359));
+  pushDecorM(x, z, 'filler');
 }
 
 // ---- output ------------------------------------------------------------------------------------------------------------------
@@ -448,6 +502,15 @@ const summary = {
   remainingGapSamples: samples.filter((s) => s.g > GAP_M).length,
 };
 console.log(JSON.stringify(summary, null, 2));
+// a symmetric zone is written only when every entry has its mirror images (the same check the content tools read back)
+if (SYM) {
+  const issues = symmetryIssues(decor, landmarksNew, W_M, H_M, SYM);
+  if (issues.length) {
+    console.error(`asymmetric decor (${SYM}): ${issues.length} entries without an image, first: ${issues.slice(0, 5).join('; ')}`);
+    process.exit(1);
+  }
+  console.log(`symmetric (${SYM}): every decor entry and landmark has its images`);
+}
 if (DRY) process.exit(0);
 
 if (Z.typed) {
