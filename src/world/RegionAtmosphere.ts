@@ -14,6 +14,41 @@ import type { VfxId } from '../types/vfx';
 /** Total width (m) of the blend window across a region border. Regions can override it with `WorldRegion.blendM`. */
 export const DEFAULT_BLEND_M = 20;
 
+/**
+ * Look of one region (Trove-style palette pass). Colours are hex; a missing field keeps the region's own layout value.
+ * fog / zenith / horizon / sunColor replace the layout colour, sunMul and hemiMul scale the layout intensity, sat and contrast
+ * are the colour grade (Engine.setGrade, 1 = none), exposure is the tone-mapping exposure, farMul scales the fog distance.
+ */
+export interface RegionLook {
+  fog?: number;
+  farMul?: number;
+  zenith?: number;
+  horizon?: number;
+  sunColor?: number;
+  sunMul?: number;
+  hemiMul?: number;
+  sat?: number;
+  contrast?: number;
+  exposure?: number;
+}
+
+/** Look of a region without a preset, and of the fields a preset leaves out: a clean, slightly brighter grade only. */
+export const GENERIC_LOOK: RegionLook = { sat: 1.14, contrast: 1.04, exposure: 1.04, hemiMul: 1.1 };
+
+/**
+ * Sisli Vadi presets (region keys r1..r6 of the layout). Each region has its own strong palette: green meadow, golden fields,
+ * autumn ridges, canyon red-gold, corrupted purple. r4 (Agit Bataklig, the swamp) is the mist zone: it keeps the layout fog
+ * colour and distance, so the mist stays only there. Fog distance is not raised anywhere (keeps draw distance and FPS).
+ */
+export const TROVE_LOOK: Record<string, RegionLook> = {
+  r1: { fog: 0xb4e8f0, zenith: 0x2f8fe8, horizon: 0xd6f7ff, sunColor: 0xfff3c4, sunMul: 1.35, hemiMul: 1.3, sat: 1.22, contrast: 1.06, exposure: 1.08 },
+  r2: { fog: 0xffe2a0, zenith: 0x3d8ee6, horizon: 0xfff0c0, sunColor: 0xffd070, sunMul: 1.5, hemiMul: 1.3, sat: 1.25, contrast: 1.06, exposure: 1.08 },
+  r3: { fog: 0xffc080, zenith: 0x4a8fe0, horizon: 0xffd29a, sunColor: 0xffc070, sunMul: 1.4, hemiMul: 1.25, sat: 1.3, contrast: 1.07, exposure: 1.06 },
+  r4: { zenith: 0x4f8fb0, horizon: 0xaed0c0, sunMul: 1.0, hemiMul: 1.05, farMul: 1, sat: 1.1, contrast: 1.04, exposure: 1.04 },
+  r5: { fog: 0xffa870, zenith: 0x3f7fd8, horizon: 0xffb880, sunColor: 0xffb060, sunMul: 1.45, hemiMul: 1.2, sat: 1.28, contrast: 1.08, exposure: 1.06 },
+  r6: { fog: 0xa070e0, zenith: 0x4a2a9a, horizon: 0xd8a8ff, sunColor: 0xe0b0ff, sunMul: 1.0, hemiMul: 1.15, sat: 1.3, contrast: 1.06, exposure: 1.02 },
+};
+
 const T = TILE_SIZE;
 
 /** Resolved state of one theme, or of a blend of themes. Colours are linear working-space values (three.js). */
@@ -31,6 +66,10 @@ export interface Atmo {
   hor: THREE.Color;
   cloudL: THREE.Color;
   cloudS: THREE.Color;
+  /** colour grade and exposure of the look (weighted like the colours) */
+  sat: number;
+  contrast: number;
+  exposure: number;
 }
 
 /**
@@ -44,16 +83,17 @@ function fogLook(c: THREE.Color): THREE.Color {
   return c.setHSL(hsl.h, Math.min(1, hsl.s * 1.25), Math.min(1, hsl.l * 0.9 + 0.06));
 }
 
-export function atmoOf(t: RegionTheme): Atmo {
-  const fog = fogLook(new THREE.Color(t.fogColor));
+export function atmoOf(t: RegionTheme, look: RegionLook = GENERIC_LOOK): Atmo {
+  const fog = look.fog !== undefined ? new THREE.Color(look.fog) : fogLook(new THREE.Color(t.fogColor));
   const hemiSky = new THREE.Color(t.hemiSky);
-  const far = t.fogFar * 1.35;
+  const far = t.fogFar * 1.35 * (look.farMul ?? 1);
   return {
     fog, near: Math.min(t.fogNear * 1.6, far * 0.6), far,
-    hemiSky, hemiGround: new THREE.Color(t.hemiGround), hemiI: t.hemiIntensity,
-    sunC: new THREE.Color(t.sunColor), sunI: t.sunIntensity,
-    zen: new THREE.Color(t.skyZenith), mid: fog.clone().lerp(hemiSky, 0.35), hor: new THREE.Color(t.skyHorizon),
+    hemiSky, hemiGround: new THREE.Color(t.hemiGround), hemiI: t.hemiIntensity * (look.hemiMul ?? 1),
+    sunC: new THREE.Color(look.sunColor ?? t.sunColor), sunI: t.sunIntensity * (look.sunMul ?? 1),
+    zen: new THREE.Color(look.zenith ?? t.skyZenith), mid: fog.clone().lerp(hemiSky, 0.35), hor: new THREE.Color(look.horizon ?? t.skyHorizon),
     cloudL: fog.clone().lerp(new THREE.Color(0xffffff), 0.45), cloudS: fog.clone().multiplyScalar(0.55),
+    sat: look.sat ?? 1, contrast: look.contrast ?? 1, exposure: look.exposure ?? 1,
   };
 }
 
@@ -74,6 +114,9 @@ function zeroAtmo(a: Atmo): void {
   a.far = 0;
   a.hemiI = 0;
   a.sunI = 0;
+  a.sat = 0;
+  a.contrast = 0;
+  a.exposure = 0;
 }
 
 function addColor(out: THREE.Color, c: THREE.Color, w: number): void {
@@ -101,6 +144,9 @@ function blendInto(out: Atmo, parts: readonly Part[]): void {
     addColor(out.hor, a.hor, w);
     addColor(out.cloudL, a.cloudL, w);
     addColor(out.cloudS, a.cloudS, w);
+    out.sat += a.sat * w;
+    out.contrast += a.contrast * w;
+    out.exposure += a.exposure * w;
   }
 }
 
@@ -129,7 +175,7 @@ export class RegionAtmosphere {
   ) {
     this.cur = atmoOf(fallback);
     this.half = Math.max(2, blendM) / 2;
-    for (const r of regions) this.themes.set(r.id, { region: r, atmo: atmoOf(r.theme) });
+    for (const r of regions) this.themes.set(r.id, { region: r, atmo: atmoOf(r.theme, { ...GENERIC_LOOK, ...TROVE_LOOK[r.id] }) });
   }
 
   /** Samples the blend at a world position (metres). Cheap: about 300 tile lookups at the default window. */
