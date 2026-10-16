@@ -65,24 +65,20 @@ const ADD_GIVEUP_S = 12;     // the tank chases one add this long without a kill
 const ADD_BLACKLIST_S = 25;  // ... then leaves it alone this long (an add it cannot reach)
 /**
  * Dungeon-placed enemies that a boss script waits for (the script reads them from the world, the dungeon places them in its packs).
- * Halkor sleeps immune until three dead kef_shard enemies exist (kefaret_salonlari.ts deadShards), so the sim places the shard packs.
+ * Halkor sleeps immune until three dead kef_shard enemies exist (kefaret_salonlari.ts shardsDead, counted from the death events), so the sim places the shard packs.
  */
 const GATE_ADDS = { boss_halkor: 'kef_shard' };
+const MIN_FIGHT_S = 60;      // a fight that ends sooner with abilities uncast is fought again with more boss HP (see the run loop)
+const HERD_SPEED = 5;        // m/s, the playbook walk of a boss (bossPoint)
 const HERD_PERIOD_S = 24;    // Hirya: the tank leads her to one pillar for 12 s, then to the other
 const DIKISET_KEEP = ['construct']; // Dikişet: the sewn constructs stay alive (the meat hook needs one)
 /**
  * SIM_LIMITS: ability ids the sim cannot start by playing the fight (the check stays, classed SIM with this reason). Empty while the
  * sim plays every mechanic it has a playbook entry for.
  */
-const SIM_LIMITS = {
-  // Eirich: the sim party dies to the rift adds and the void hits (47 bot deaths; the healer heals 12 % per 1.5 s) and the boss is at
-  // 48 % when the 300 s run ends; the phase 6 threshold (15 %) is not reached in the sim's time. A real party is not modelled here.
-  eirich_collapse: 'sim party too weak to reach p6 (15 %) in 300 s: 47 bot deaths to the rift adds and void hits',
-};
+const SIM_LIMITS = {};
 // a boss-level limit: its fight is not finished in the sim's time, so the survival check is classed SIM with this reason
-const SIM_BOSS_LIMITS = {
-  boss_eirich: 'sim party too weak to finish the fight in 300 s (47 bot deaths to the rift adds and void hits; boss at 48 % at the end)',
-};
+const SIM_BOSS_LIMITS = {};
 
 const cc = await H.imp('dev/contentCheck.ts');
 const { DUNGEONS } = await H.imp('data/dungeons/index.ts');
@@ -132,14 +128,14 @@ for (const def of Object.values(DUNGEONS)) for (const u of cc.dungeonUrls(def)) 
 const navCache = new Map();
 /** The dungeon's walkable grid (cc.buildNav) loaded into a real NavGrid with 1 m cells: cell (i, j) = scene metres (i, j). */
 function navFor(def) {
-  if (navCache.has(def.id)) return navCache.get(def.id);
   const W = def.grid.w * T, Hh = def.grid.h * T;
-  const walk = cc.buildNav(def, models).walk;
+  if (!navCache.has(def.id)) navCache.set(def.id, cc.buildNav(def, models).walk);
+  const walk = navCache.get(def.id);
+  // a fresh grid per fight: bodies that block the nav (Enemy.onAdded setCircle: crystals, constructs) must not leak into the next boss;
+  // `base` is the dungeon's static floor, the ground a shape must not be placed on
   const nav = new NavGrid({ originX: 0, originZ: 0, width: W, depth: Hh, cellSize: 1, walkable: false });
   nav.cells.set(walk);
-  const out = { nav, W, Hh };
-  navCache.set(def.id, out);
-  return out;
+  return { nav, W, Hh, base: (x, z) => walk[nav.cz(z) * nav.cols + nav.cx(x)] > 0 };
 }
 
 // ---------------------------------------------------------------------------------------------- scaling (as dungeon_all / spawnEnemy)
@@ -269,19 +265,18 @@ function stepTo(bot, x, z, step, nav) {
 // ---------------------------------------------------------------------------------------------- scripted mechanics (playbook)
 /**
  * Per-boss playbook: the scripted mechanics the generic policy cannot play. Each entry is a function of the fight context (see
- * fightBoss): tankPoint(ctx) walks the tank to a point (null: no point), keepAlive lists add tags the party leaves alive,
+ * fightBoss): tankPoint(ctx) walks the tank to a point (null: no point), bossPoint(ctx) walks the boss to a point, keepAlive lists add tags the party leaves alive,
  * botPoint(ctx) places the non-tank bots (null: default), oddClone marks the guessing game of Sis Çağıran (the odd illusion is the
  * target). Everything else (soaks, adds, gates, the boss) is the generic policy.
  */
 const PLAYBOOK = {
   // Hirya's stacks: +1 per 4 s with the boss inside 8 m of a pillar. Thunder (T) opens Ark Şimşeği and Fırtına Gözü, Holy (H)
-  // opens Kutsal Küreler and Arınma. The tank leads her to one pillar for 12 s, then to the other.
+  // opens Kutsal Küreler and Arınma. A caster (bolt 22 m) walks only until the tank is in range, and a real tank pulls her onto a pillar
+  // with a multi-step walk the sim does not plan: the playbook walks HER (bossPoint, 5 m/s, her own movement is left to the controller
+  // otherwise) to the pillar for 12 s and then to the other. The stacks, the unlocked abilities and their shapes are the script's own.
   boss_hirya: {
-    tankPoint(ctx) {
-      const pillar = ctx.t % HERD_PERIOD_S < HERD_PERIOD_S / 2 ? ctx.pillars.T : ctx.pillars.H;
-      // on the outer side of the pillar, 8 m out: a caster holds its band (8 to 14 m) from the tank, so the boss settles 4 to 6 m inside the pillar
-      const dx = pillar.x - ctx.arenaC.x, dz = pillar.z - ctx.arenaC.z, l = Math.hypot(dx, dz) || 1;
-      return ctx.nav.nearestWalkable(pillar.x + (dx / l) * 8, pillar.z + (dz / l) * 8, 3);
+    bossPoint(ctx) {
+      return ctx.t % HERD_PERIOD_S < HERD_PERIOD_S / 2 ? ctx.pillars.T : ctx.pillars.H;
     },
   },
   // Sis Çağıran's guessing game: attack the one illusion whose code differs from the three identical ones.
@@ -366,12 +361,12 @@ function seedRandom(key) {
 /**
  * Fights one boss. Returns the measurements; never throws (an exception is returned as `crash`).
  */
-async function fightBoss(def, b, botLevel, enemyLevel) {
+async function fightBoss(def, b, botLevel, enemyLevel, hpScale = 1) {
   simT = 0; // the phase / engage stamps are per fight
   const bdef = getEnemyDef(b.bossId);
   // deterministic scripts: the boss scripts draw Math.random (targets, spreads); each fight gets its own seeded stream
   const restoreRandom = seedRandom(`${b.bossId}`);
-  const { nav, W, Hh } = navFor(def);
+  const { nav, W, Hh, base } = navFor(def);
   const world = new World(new H.THREE.Scene(), nav);
   G.world = world;
   G.combat = new Combat();
@@ -408,7 +403,7 @@ async function fightBoss(def, b, botLevel, enemyLevel) {
   world.localPlayer = G.player = tank;
 
   // the boss: a real Enemy body with the production fields of EnemyFactory.spawnEnemy, and its real BossController
-  const hpBoss = Math.max(1, Math.round(monsterHP(enemyLevel) * bdef.hpMult * FACTORS.hp));
+  const hpBoss = Math.max(1, Math.round(monsterHP(enemyLevel) * bdef.hpMult * FACTORS.hp * hpScale));
   const dmgBoss = monsterDmg(enemyLevel) * bdef.dmgMult * FACTORS.dmg * FACTORS.bossDmg;
   const bx = sceneW(b.pos[0]), bz = sceneW(b.pos[1]);
   const room = def.rooms.find((r) => r.id === b.roomId);
@@ -476,11 +471,20 @@ async function fightBoss(def, b, botLevel, enemyLevel) {
       landed++;
       // the arena rule is about the boss's own kit: an add that roams outside the arena (and the shapes it casts) is not the boss's placement
       if (src.id !== boss.id) return origLand(a);
-      const inArena = ctrl.insideArena(a.ox, a.oz, 0);
-      const walk = nav.isWalkable(a.ox, a.oz);
-      const roomWide = s.shape.type === 'circle' && s.shape.radius >= 0.5 * Math.min(ctrl.arena.w, ctrl.arena.h) || s.shape.type === 'ring' && s.shape.outer >= 0.5 * Math.min(ctrl.arena.w, ctrl.arena.h);
+      const ar = ctrl.arena;
+      // distance from the shape's centre to the arena box, against the shape's own reach: a band or a circle that overlaps the arena is
+      // placed on it (a lane wave or a wind wall is drawn longer than the room so it sweeps in from the wall); one that does not is lost
+      const out = Math.hypot(Math.max(0, Math.abs(a.ox - ar.cx) - ar.w / 2), Math.max(0, Math.abs(a.oz - ar.cz) - ar.h / 2));
+      const sh = s.shape;
+      const reach = sh.type === 'rect' ? Math.max(sh.length, sh.width) / 2 : sh.type === 'circle' ? sh.radius : sh.type === 'ring' ? sh.outer : 0;
+      const inArena = out <= (sh.type === 'rect' || sh.type === 'circle' ? reach : 0);
+      const walk = base(a.ox, a.oz); // the static floor: a crystal or a construct standing on the spot blocks the nav for a while, not the shape
+      const roomWide = s.shape.type === 'circle' && s.shape.radius >= 0.5 * Math.min(ar.w, ar.h) || s.shape.type === 'ring' && s.shape.outer >= 0.5 * Math.min(ar.w, ar.h);
       if (!inArena || (!walk && !roomWide)) {
-        const a0 = ctrl.arena; landBad.push(`${s.abilityName ?? s.kind ?? "shape"} (${s.shape.type}) origin ${a.ox.toFixed(1)},${a.oz.toFixed(1)} ${!inArena ? "outside arena" : "on blocked ground"} [source ${src.def?.id ?? src.id} at ${src.position.x.toFixed(1)},${src.position.z.toFixed(1)}; arena c ${a0.cx.toFixed(1)},${a0.cz.toFixed(1)} w ${a0.w} h ${a0.h}]`);
+        // a shape aimed at a bot (the game's own arena test for a target keeps 2 m of margin; the sim party also leaves the room for a gate
+        // add and is knocked onto walls) is the party's position, not the boss's placement: SIM
+        const atBot = bots.some((p) => !p.isDead && Math.hypot(p.position.x - a.ox, p.position.z - a.oz) <= 2.5);
+        landBad.push({ atBot, msg: `${s.abilityName ?? s.kind ?? "shape"} (${s.shape.type}) origin ${a.ox.toFixed(1)},${a.oz.toFixed(1)} ${!inArena ? "outside arena" : "on blocked ground"}${atBot ? " at a bot" : ""} [source ${src.def?.id ?? src.id} at ${src.position.x.toFixed(1)},${src.position.z.toFixed(1)}; arena c ${ar.cx.toFixed(1)},${ar.cz.toFixed(1)} w ${ar.w} h ${ar.h}]` });
       }
     }
     return origLand(a);
@@ -500,11 +504,9 @@ async function fightBoss(def, b, botLevel, enemyLevel) {
   const bots = [tank, healer, dps1, dps2];
   const others = [healer, dps1, dps2];
   const pb = PLAYBOOK[b.bossId] ?? {};
-  const pillars = {
-    T: { x: sceneW(23.5), z: sceneW(14.5) },
-    H: { x: sceneW(31.5), z: sceneW(14.5) },
-  };
-  const table = { x: sceneW(36.5), z: sceneW(5.5) };
+  // the scripts place their props with BossController.gdd (the baked tile coordinates shifted with the arena): so does the playbook
+  const pillars = { T: ctrl.gdd(23.5, 14.5), H: ctrl.gdd(31.5, 14.5) };
+  const table = ctrl.gdd(36.5, 5.5);
   const ctx = { t: 0, boss, ctrl, tank, world, nav, pb, arenaC, pillars, table, gateId, black: new Map(), chase: { id: null, since: 0 } };
   const chaseSt = new Map(bots.map((p) => [p, { path: null, at: 0, clock: 0, goal: undefined }]));
   const soakTo = new Map();
@@ -584,6 +586,15 @@ async function fightBoss(def, b, botLevel, enemyLevel) {
         const p = nav.nearestWalkable(bot.position.x, bot.position.z, 4);
         if (p) { bot.position.x = p.x; bot.position.z = p.z; }
       }
+      // playbook: a boss walked to a point (it stays on the nav; nothing else about its behaviour changes)
+      const bp2 = pb.bossPoint && !boss.isDead ? pb.bossPoint(ctx) : null;
+      if (bp2) {
+        const dd = Math.hypot(bp2.x - boss.position.x, bp2.z - boss.position.z);
+        if (dd > 2.5) {
+          const nx = boss.position.x + ((bp2.x - boss.position.x) / dd) * HERD_SPEED * DT, nz = boss.position.z + ((bp2.z - boss.position.z) / dd) * HERD_SPEED * DT;
+          if (nav.isWalkable(nx, nz)) { boss.position.x = nx; boss.position.z = nz; }
+        }
+      }
       G.engine.time += DT;
       // the enemy spawn is async (EnemyFactory.spawnEnemy): a microtask per frame lands the adds in the fight, as the frame loop does
       await null;
@@ -644,7 +655,14 @@ for (const id of ids) {
     }
     // passives (params.passive) and on-death hooks run through the passive / death pipelines, never through startAbility
     for (const ab of bdef?.abilities ?? []) if (ab.params?.passive || ab.params?.onDeath) scripted.delete(ab.id);
-    const r = await fightBoss(def, b, botLevel, enemyLevel);
+    let r = await fightBoss(def, b, botLevel, enemyLevel);
+    // the sim's boss HP mirrors the spawn formula, not the keyed values: a boss that dies in a few seconds never reaches its timed abilities.
+    // Such a fight is fought again with more HP (the party is the same) so that the cooldown verdicts are about the script, not about the kill speed.
+    let hpScale = 1;
+    if (r.dead && !r.crash && r.t < MIN_FIGHT_S && [...scripted].some((a) => !r.cast?.has(a))) {
+      hpScale = Math.min(16, Math.ceil((MIN_FIGHT_S * 1.3) / Math.max(r.t, 2)));
+      r = await fightBoss(def, b, botLevel, enemyLevel, hpScale);
+    }
     const fails = []; // { cls: 'GAME' | 'SIM', msg }
     const add = (cls, msg) => fails.push({ cls, msg });
     if (r.crash) add('GAME', `exception: ${r.crash}`);
@@ -662,7 +680,9 @@ for (const id of ids) {
       else if (ph >= 0 && timed && r.t < enteredAt + Math.max(readyIn, 3)) add('SIM', `ability ${a} never cast: ${why} | the fight ended at ${r.t.toFixed(0)} s, before the ability could come off cooldown (phase at ${enteredAt.toFixed(0)} s, ready after ${Math.max(readyIn, 3).toFixed(0)} s)`);
       else add('GAME', `ability ${a} never cast: ${why}`);
     }
-    if (r.landBad?.length) add('GAME', `${r.landBad.length} shape(s) land off the arena or on blocked ground, first: ${r.landBad[0]}`);
+    const badGame = (r.landBad ?? []).filter((x) => !x.atBot), badSim = (r.landBad ?? []).filter((x) => x.atBot);
+    if (badGame.length) add('GAME', `${badGame.length} shape(s) land off the arena or on blocked ground, first: ${badGame[0].msg}`);
+    if (badSim.length) add('SIM', `${badSim.length} shape(s) aimed at a bot the sim left off the arena / on a wall, first: ${badSim[0].msg}`);
     if (r.ctrl) {
       // a phase counts when HP fell below its threshold while the boss was alive (a boss killed in the frame it crosses has no phase to fire)
       const crossed = bdef.phases.slice(1).filter((p) => r.minFracAlive < p.hpBelow);
@@ -680,12 +700,13 @@ for (const id of ids) {
     if (pass) nPass++; else nFail++;
     for (const f of fails) { if (f.cls === 'GAME') nGame++; else nSim++; }
     const warnNote = warns.length ? ` | warn ${warns.length} (${[...new Set(warns.map((w) => w.replace(/^WARN /, '').slice(0, 60)))].slice(0, 2).join('; ')})` : '';
-    const outcome = r.dead ? `dead in ${r.t.toFixed(0)} s` : `${r.lostPct.toFixed(0)} % lost in ${r.t.toFixed(0)} s`;
+    const outcome = (r.dead ? `dead in ${r.t.toFixed(0)} s` : `${r.lostPct.toFixed(0)} % lost in ${r.t.toFixed(0)} s`) + (hpScale > 1 ? ` (hp x${hpScale})` : '');
     const castN = scripted.size - missing.length;
     console.log(`${pass ? 'PASS' : 'FAIL'} ${id.padEnd(17)} ${b.bossId.padEnd(22)} lvl ${enemyLevel} | ${outcome} | bot deaths ${r.deaths} | casts ${castN}/${scripted.size} | shapes ${r.landed ?? 0} (${r.landBad?.length ?? 0} bad) | phases ${r.phaseEv?.length ?? 0}/${(bdef?.phases?.length ?? 1) - 1} | soaks ${r.soakCount ?? 0}${warnNote}`);
     for (const f of fails) console.log(`      FAIL ${f.cls} ${f.msg}`);
     if (VERBOSE) console.log(`      dbg ${JSON.stringify(r.dbg)}`);
     if (VERBOSE) console.log(`      casts ${JSON.stringify([...(r.cast ?? new Map())])}`);
+    if (VERBOSE) for (const x of r.landBad ?? []) console.log(`      bad ${x.msg}`);
   }
 }
 console.log(`BOSS FIGHTS: ${nPass} pass, ${nFail} fail (${nGame} game, ${nSim} sim)`);
