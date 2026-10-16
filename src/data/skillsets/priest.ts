@@ -52,7 +52,7 @@ export function registerPriest(add: SkillAdd): void {
     id: 'priest_smite', classId: 'priest', name: 'Kutsal Ceza (Smite)', icon: I('skill-smite'), unlockLevel: 1, defaultSlot: 'e',
     desc: 'Hedefe kutsal bir ceza indirip %140 kutsal hasar verirsin. Disiplinde verdiğin hasar müttefiklerini iyileştirir.',
     cost: 8, cooldown: 0, castTime: 1.0, hitTime: 1.0, anim: 'Spellcast_Shoot', animSpeed: 1.0,
-    targeting: 'target_instant', range: 25, behavior: 'priest_strike', damage: { coef: 1.4, type: 'holy' },
+    targeting: 'target_instant', range: 25, behavior: 'priest_strike', damage: { coef: 2.4, type: 'holy' },
     tags: ['spell', 'holy'], vfx: { cast: 'holy_burst', impact: 'hit_spark' }, sfx: { cast: 'chi_cast', impact: 'buff' },
     params: { end: 0.6, chain: 0.08, move: 0.12, stagger: 4, proc: 0.8, weight: 1 },
   });

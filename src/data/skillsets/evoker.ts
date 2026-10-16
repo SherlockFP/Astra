@@ -133,7 +133,7 @@ export function registerEvoker(add: SkillAdd): void {
     id: 'evoker_dragonrage', classId: 'evoker', name: 'Ejder Öfkesi (Dragonrage)', icon: I('skill-berserk'), unlockLevel: 20, defaultSlot: 'm90',
     desc: 'Etrafında 8 metrelik bir alev dalgası patlatır (%200 ateş hasarı). 18 saniye boyunca hasarın %15 artar, Öz yenilenmesi iki katına çıkar, Ateş Nefesi ve Ebedi Dalga %50 daha hızlı dolar. Terazi Eğimi ve Öz Patlaması kazanırsın; bitince 4 Serbest Alev verilir. 90 saniye bekleme.',
     cost: 0, cooldown: 90, castTime: 0, anim: 'Cheer', animSpeed: 1.6, hitTime: 0.3, targeting: 'custom', behavior: 'kit_dragonrage', offGcd: true,
-    radius: 8, damage: { coef: 2.0, type: 'fire' }, selfStatuses: [{ status: 'dragonrage', duration: 18 }, { status: 'tip_scales', duration: 30 }],
+    radius: 8, damage: { coef: 0.5, type: 'fire' }, selfStatuses: [{ status: 'dragonrage', duration: 18 }, { status: 'tip_scales', duration: 30 }],
     tags: ['offgcd', 'major', 'offensive', 'buff', 'fire', 'aoe'], vfx: { cast: 'wings_gold', impact: 'enrage_aura' }, sfx: { cast: 'boss_roar', impact: 'hero_horn' },
     params: { dur: 18, unbound: 4, unboundDur: 15, end: 1.0, chain: 0.1, move: 0.2, weight: 3, stagger: 8 },
   });

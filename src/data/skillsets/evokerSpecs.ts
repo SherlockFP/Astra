@@ -32,9 +32,9 @@ export function registerEvokerSpecs(add: SkillAdd): void {
     id: 'evoker_deep_breath', classId: 'evoker', spec: 'evoker_devastation', name: 'Derin Nefes (Deep Breath)', icon: I('skill-meteor'), unlockLevel: 10, defaultSlot: 'm45',
     desc: 'Kanatlanıp 25 metre ileri uçarsın: yol boyunca ve indiğin 6 metrelik alanda her düşmana %320 + %320 ateş hasarı. 45 saniye bekleme.',
     cost: 0, cooldown: 45, castTime: 0, anim: 'Jump_Full_Long', animSpeed: 0.9, hitTime: 0.3, targeting: 'dash', behavior: 'kit_flight', offGcd: true,
-    range: 25, radius: 6, damage: { coef: 3.2, type: 'fire' }, tags: ['offgcd', 'major', 'movement', 'spell', 'fire', 'aoe', 'ranged'],
+    range: 25, radius: 6, damage: { coef: 1.6, type: 'fire' }, tags: ['offgcd', 'major', 'movement', 'spell', 'fire', 'aoe', 'ranged'],
     vfx: { cast: 'wings_aura', trail: 'fire_ground', impact: 'meteor_fall' }, sfx: { cast: 'fire_whoosh', impact: 'boss_roar' },
-    params: { speed: 22, pathCoef: 3.2, pathWidth: 5, end: 1.0, chain: 0.1, move: 0.2, weight: 2, stagger: 6 },
+    params: { speed: 22, pathCoef: 1.6, pathWidth: 5, end: 1.0, chain: 0.1, move: 0.2, weight: 2, stagger: 6 },
   });
   // Kırıcı Yıldız (WoW builder): a star lands on the reticle, 8 m fire burst, +1 Öz. No free bar slot (Shift+ bar not in code).
   add({

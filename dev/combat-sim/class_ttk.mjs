@@ -82,6 +82,14 @@ let takenLog = [];
 G.events.on('damage', (ev) => {
   if (ev.amount > 0 && G.player && ev.targetId === G.player.id) takenLog.push([G.engine.time, ev.amount]);
 });
+// Damage the local player deals to this fight's mobs, per ability (--breakdown): the skill id of the hit, or 'pet/other' (minions, DoTs without one).
+let dmgLog = {};
+let FIGHT_IDS = new Set();
+G.events.on('damage', (ev) => {
+  if (!(ev.amount > 0) || !FIGHT_IDS.has(ev.targetId)) return;
+  const key = ev.skillId ?? (ev.sourceId === G.player?.id ? 'lmb?' : 'pet/other');
+  dmgLog[key] = (dmgLog[key] ?? 0) + ev.amount;
+});
 let castLog = {};
 G.events.on('skill:cast', (ev) => { if (G.player && ev?.casterId === G.player.id) castLog[ev.skillId] = (castLog[ev.skillId] ?? 0) + 1; });
 
@@ -295,6 +303,7 @@ function fight(classId, L, mobId, o = {}) {
   G.talents = { grantedSkills: () => Object.keys(spec.treeSkills ?? {}) };
   takenLog = [];
   castLog = {};
+  dmgLog = {};
   EMP.slot = null;
 
   const ch = CharacterState.create('Solo', classId);
@@ -341,6 +350,7 @@ function fight(classId, L, mobId, o = {}) {
     return mob;
   });
   const mob = mobs[0];
+  FIGHT_IDS = new Set(mobs.map((m) => m.id));
   p.targetId = mob.id;
   // the target: the nearest living mob of the fight (the first one when the fight starts)
   const target = () => mobs.filter((m) => !m.isDead && !m.removed).reduce((a, b) => (Math.hypot(b.position.x - p.position.x, b.position.z - p.position.z) < Math.hypot(a.position.x - p.position.x, a.position.z - p.position.z) ? b : a), mobs[0]);
@@ -373,7 +383,7 @@ function fight(classId, L, mobId, o = {}) {
   CHASE = null;
   return {
     spec: spec.id, bar: { ...ch.save.skillBar }, outcome, time, hpLeft: p.maxHp > 0 ? Math.max(0, p.hp) / p.maxHp : 0,
-    mobHpLeft: mob.maxHp > 0 ? Math.max(0, mob.hp) / mob.maxHp : 0, casts: { ...castLog },
+    mobHpLeft: mob.maxHp > 0 ? Math.max(0, mob.hp) / mob.maxHp : 0, casts: { ...castLog }, dmg: { ...dmgLog },
     pet: hasPet(spec), tank: SPECS[spec.id]?.role === 'tank', lines: lines.length, maxHp: p.maxHp, mobDmg: Math.round(mob.baseDamage), mobHp: mob.maxHp,
     escortHpLeft: escort ? Math.max(0, escort.hp) / escort.max : null,
   };
@@ -474,13 +484,25 @@ if (VERBOSE) {
   }
   for (const c of classes) for (const L of LEVELS) console.log(`  bar ${c}@L${L}: ${Object.entries(results[c]?.[L]?.ow_rat?.bar ?? {}).map(([s, id]) => `${s}=${id}`).join(' ')}`);
 }
+if (args.breakdown) {
+  // per (class, level): the abilities' share of the player's damage to the fight mobs, summed over the mobs (top 5)
+  for (const c of classes) for (const L of LEVELS) {
+    const tot = {};
+    for (const mob of MOBS) for (const [k, v] of Object.entries(results[c]?.[L]?.[mob]?.dmg ?? {})) tot[k] = (tot[k] ?? 0) + v;
+    const sum = Object.values(tot).reduce((a, b) => a + b, 0);
+    if (!sum) continue;
+    const top = Object.entries(tot).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, v]) => `${k.replace(/^[a-z]+_/, '')} ${Math.round((v / sum) * 100)}%`);
+    console.log(`  dmg ${c}@L${L}: ${top.join(', ')}`);
+  }
+}
 if (specErrors.length) console.log('spec errors: ' + specErrors.join('; '));
 const engineErrs = errors.filter((e) => /ERR/.test(e));
 if (engineErrs.length) console.log(`engine errors logged: ${engineErrs.length} (first: ${engineErrs[0].slice(0, 160)})`);
 
 const notWon = fights.filter((f) => !Number.isFinite(f.ttk));
-const ttkInfo = TTK_CELLS.filter((x) => x.L >= TTK_INFO_FROM && !(x.ttk >= TTK_BAND[0] && x.ttk <= TTK_BAND[1]));
-if (ttkInfo.length) console.log(`info L${TTK_INFO_FROM}+ outside ${TTK_BAND[0]}-${TTK_BAND[1]} s: ${ttkInfo.map((x) => `${x.c}@L${x.L} ${sec(x.ttk)}`).join("; ")}`);
+const TTK_BAND_HI = [3, 10]; // L10+: modern WoW levelling kills trash in about 3-6 s once the spec kit is in
+const ttkInfo = TTK_CELLS.filter((x) => x.L >= TTK_INFO_FROM && !(x.ttk >= TTK_BAND_HI[0] && x.ttk <= TTK_BAND_HI[1]));
+if (ttkInfo.length) console.log(`info L${TTK_INFO_FROM}+ outside ${TTK_BAND_HI[0]}-${TTK_BAND_HI[1]} s: ${ttkInfo.map((x) => `${x.c}@L${x.L} ${sec(x.ttk)}`).join("; ")}`);
 const checks = [
   ["every fight won in time", notWon.map((f) => `${f.c}@L${f.L} ${f.mob} ${f.r.outcome}`)],
   [`every class below L${TTK_INFO_FROM}: median TTK ${TTK_BAND[0]}-${TTK_BAND[1]} s`, TTK_CELLS.filter((x) => x.L < TTK_INFO_FROM && !(x.ttk >= TTK_BAND[0] && x.ttk <= TTK_BAND[1])).map((x) => `${x.c}@L${x.L} ${sec(x.ttk)}`)],
