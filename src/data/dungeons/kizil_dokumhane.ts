@@ -16,7 +16,7 @@ import { makeRescale, oldTileRect, type Rect4 } from './rescale2';
 const OLD_RECT: Record<string, Rect4> = {
   giris: [1, 17, 5, 6], k_giris: [6, 19, 4, 2], cevher_deposu: [10, 14, 10, 12], k_kuzey: [14, 9, 2, 5], ors_salonu: [9, 0, 12, 9],
   curuf_ocagi: [1, 4, 8, 9], k_dogu1: [21, 3, 4, 2], kalip_atolyesi: [25, 0, 10, 9], k_inis: [29, 9, 2, 5], lav_kanali: [24, 14, 12, 10],
-  k_guney: [29, 24, 2, 4], kopru: [34, 24, 2, 4], magma_kalbi: [25, 28, 11, 11], k_bati: [20, 32, 5, 2], kole_kampi: [9, 28, 11, 9],
+  k_guney: [29, 24, 2, 4], kopru: [34, 24, 2, 4], magma_kalbi: [25, 28, 14, 14], k_bati: [20, 32, 5, 2], kole_kampi: [9, 28, 11, 9],
   k_son: [8, 31, 1, 2], mavi_alev_sunagi: [0, 27, 8, 12],
 };
 
@@ -33,11 +33,11 @@ const ROOMS: RoomDef[] = [
   room('lav_kanali', 'Lav Kanalı', 24, 14, 12, 10, 'lava_rock', 'cave', 0.4),
   room('k_guney', 'Zincir Geçidi', 28, 24, 4, 4, 'stone_dark', 'forge', 0.3),
   room('kopru', 'Lav Köprüsü', 34, 24, 2, 4, 'wood', 'cave', 0.1, { skip: true }),
-  room('magma_kalbi', 'Magma Kalbi', 25, 28, 12, 12, 'lava_rock', 'cave', 0.1, { boss: 2 }),
+  room('magma_kalbi', 'Magma Kalbi', 25, 28, 14, 14, 'lava_rock', 'cave', 0.1, { boss: 2 }),
   room('k_bati', 'Köle Yolu', 20, 31, 5, 4, 'dirt', 'cave', 0.4),
   room('kole_kampi', 'Köle Kampı', 9, 28, 11, 9, 'dirt', 'cave', 0.7),
-  room('k_son', 'Mavi Alev Kapısı', 9, 37, 2, 1, 'temple', 'forge', 0),
-  room('mavi_alev_sunagi', 'Mavi Alev Sunağı', 0, 38, 12, 12, 'temple', 'forge', 0.1, { boss: 3 }),
+  room('k_son', 'Mavi Alev Kapısı', 9, 37, 2, 6, 'temple', 'forge', 0.1),
+  room('mavi_alev_sunagi', 'Mavi Alev Sunağı', 0, 43, 18, 16, 'temple', 'forge', 0.1, { boss: 3 }),
 ];
 
 const R = makeRescale(OLD_RECT, ROOMS);
@@ -53,44 +53,45 @@ const DOORS: DoorDef[] = [
   door('kalip_atolyesi', 'k_inis', 28, 8, 's', 4, 'none'),
   door('k_inis', 'lav_kanali', 28, 13, 's', 4, 'none'),
   door('lav_kanali', 'k_guney', 28, 23, 's', 4, 'none'),
-  door('lav_kanali', 'kopru', 34, 23, 's', 2, 'none'),
+  { ...door('lav_kanali', 'kopru', 34, 23, 's', 2, 'kill_lock'), opensOn: { pack: 'd2_p18' } },
   door('k_guney', 'magma_kalbi', 28, 27, 's', 4, 'boss_lock'),
   door('kopru', 'magma_kalbi', 34, 27, 's', 2, 'boss_lock'),
   door('magma_kalbi', 'k_bati', 25, 31, 'w', 4, 'boss_exit'),
   door('k_bati', 'kole_kampi', 20, 31, 'w', 4, 'none'),
   door('kole_kampi', 'k_son', 9, 36, 's', 2, 'none'),
-  door('k_son', 'mavi_alev_sunagi', 9, 37, 's', 2, 'boss_lock'),
+  door('k_son', 'mavi_alev_sunagi', 9, 42, 's', 2, 'boss_lock'),
+  // one-way shortcut: the Ateşyürek kill opens the ore store door from the slave camp (the back way to the start side)
+  { ...door('cevher_deposu', 'kole_kampi', 12, 27, 's', 2, 'kill_lock'), opensOn: { boss: 'boss_atesyurek' } },
 ];
 
 const PACKS_RAW: PackDef[] = [
-  pack('d2_p01', 'k_giris', 8, 19.5, 6, [['forge_goblin', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['forge_goblin', 0.83, -0.53]]),
-  pack('d2_p02', 'cevher_deposu', 12.5, 17, 15, [['forge_goblin', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['forge_goblin', 0.83, -0.53], ['forge_goblin', -0.28, 1.03], ['forge_goblin', -0.53, -1.02], ['forge_orc', 1.15, 0.42]]),
-  pack('d2_p03', 'cevher_deposu', 17.5, 17, 10, [['lava_slime', 0.3, 0], ['lava_slime', -0.38, 0.35], ['lava_slime', 0.06, -0.66], ['forge_imp', 1.06, -0.8], ['forge_imp', 1.33, 0.06]]),
-  pack('d2_p04', 'cevher_deposu', 12.5, 22.5, 15, [['forge_demon', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['fire_priest', 0.88, 0.88]]),
-  pack('d2_p05', 'cevher_deposu', 17.5, 22.5, 10, [['magma_golem', 0, 0]]),
-  pack('d2_p06', 'cevher_deposu', 15, 20, 10, [['forge_orc', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62]], { patrol: [[11.5, 20], [18, 20]] }),
-  pack('d2_p07', 'k_kuzey', 14.5, 11, 7, [['flame_skull', 0.24, 0], ['flame_skull', -0.3, 0.35], ['flame_skull', 0.05, -0.66], ['flame_skull', 0.38, 0.62], ['flame_skull', -0.7, -0.16], ['forge_imp', 0, -1.25]]),
-  pack('d2_p08', 'curuf_ocagi', 5.5, 6.5, 13, [['lava_slime', 0.3, 0], ['lava_slime', -0.38, 0.35], ['lava_slime', 0.06, -0.66], ['lava_slime', 0.48, 0.62], ['fire_priest', -1.19, 0.4]], { optional: true }),
-  pack('d2_p09', 'curuf_ocagi', 6.5, 10, 16, [['magma_golem', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['forge_goblin', 0.83, -0.53], ['forge_goblin', -0.28, 1.03]], { optional: true }),
-  pack('d2_p10', 'curuf_ocagi', 2.5, 10.5, 16, [['forge_demon', 0.3, 0], ['forge_demon', -0.38, 0.35], ['forge_imp', -0.67, 1.15], ['forge_imp', -1.25, 0.45]], { optional: true }),
+  pack('d2_p01', 'k_giris', 8, 19.5, undefined, [['forge_goblin', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['forge_goblin', 0.83, -0.53]]),
+  pack('d2_p02', 'cevher_deposu', 12.5, 17, undefined, [['forge_goblin', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['forge_goblin', 0.83, -0.53], ['forge_goblin', -0.28, 1.03], ['forge_goblin', -0.53, -1.02], ['forge_orc', 1.15, 0.42]]),
+  pack('d2_p03', 'cevher_deposu', 17.5, 17, undefined, [['lava_slime', 0.3, 0], ['lava_slime', -0.38, 0.35], ['lava_slime', 0.06, -0.66], ['forge_imp', 1.06, -0.8], ['forge_imp', 1.33, 0.06]]),
+  pack('d2_p04', 'cevher_deposu', 12.5, 22.5, undefined, [['forge_demon', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['fire_priest', 0.88, 0.88]]),
+  pack('d2_p05', 'cevher_deposu', 17.5, 22.5, undefined, [['magma_golem', 0, 0]]),
+  pack('d2_p06', 'cevher_deposu', 15, 20, undefined, [['forge_orc', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62]], { patrol: [[11.5, 20], [18, 20]] }),
+  pack('d2_p07', 'k_kuzey', 14.5, 11, undefined, [['flame_skull', 0.24, 0], ['flame_skull', -0.3, 0.35], ['flame_skull', 0.05, -0.66], ['flame_skull', 0.38, 0.62], ['flame_skull', -0.7, -0.16], ['forge_imp', 0, -1.25]]),
+  pack('d2_p09', 'curuf_ocagi', 6.5, 10, undefined, [['magma_golem', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66]], { optional: true }),
+  pack('d2_p10', 'curuf_ocagi', 2.5, 10.5, undefined, [['forge_demon', 0.3, 0], ['forge_demon', -0.38, 0.35]], { optional: true }),
   pack('d2_p11', 'k_dogu1', 22.5, 3.5, 6, [['forge_imp', 0, -0.7], ['forge_imp', 0, 0], ['forge_imp', 0, 0.7]]),
-  pack('d2_p12', 'kalip_atolyesi', 27, 2.5, 13, [['forge_goblin', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['forge_goblin', 0.83, -0.53], ['forge_orc', -0.28, 1.03]]),
-  pack('d2_p13', 'kalip_atolyesi', 32.5, 2.5, 15, [['forge_demon', 0.3, 0], ['flame_skull', -0.38, 0.35], ['flame_skull', 0.06, -0.66], ['flame_skull', 0.48, 0.62], ['flame_skull', -0.88, -0.16], ['fire_priest', 1.24, -0.16]]),
-  pack('d2_p14', 'kalip_atolyesi', 27, 6.5, 10, [['lava_slime', 0.3, 0], ['lava_slime', -0.38, 0.35], ['lava_slime', 0.06, -0.66], ['lava_slime', 0.48, 0.62], ['forge_imp', 0.8, 0.96]]),
-  pack('d2_p15', 'kalip_atolyesi', 32.5, 6.5, 15, [['magma_golem', 0, 0], ['fire_priest', 1.17, 0.44]]),
-  pack('d2_p16', 'k_inis', 29.5, 11, 9, [['forge_demon', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62]]),
-  pack('d2_p17', 'lav_kanali', 26, 15.8, 13, [['forge_orc', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['forge_goblin', 0.83, -0.53], ['forge_goblin', -0.28, 1.03]]),
-  pack('d2_p18', 'lav_kanali', 30, 18.5, 8, [['forge_imp', 1.34, -0.13], ['forge_imp', 0.45, -0.04], ['forge_imp', -0.45, 0.04], ['forge_imp', -1.34, 0.13]]),
-  pack('d2_p19', 'lav_kanali', 33.5, 15.8, 14, [['magma_golem', 0.3, 0], ['lava_slime', -0.38, 0.35], ['lava_slime', 0.06, -0.66]]),
-  pack('d2_p20', 'lav_kanali', 26.5, 21.5, 16, [['forge_demon', 0, 0], ['fire_priest', -0.02, 1.33], ['fire_priest', -0.86, 1.01]]),
-  pack('d2_p21', 'lav_kanali', 33, 21.5, 13, [['flame_skull', 0.3, 0], ['flame_skull', -0.38, 0.35], ['flame_skull', 0.06, -0.66], ['flame_skull', 0.48, 0.62], ['flame_skull', -0.88, -0.16], ['flame_skull', 0.83, -0.53], ['forge_orc', -0.28, 1.03]]),
-  pack('d2_p22', 'k_guney', 29.5, 25.5, 10, [['forge_demon', 0, 0], ['forge_imp', 0.45, 1.25], ['forge_imp', -0.45, 1.25]]),
-  pack('d2_p23', 'k_bati', 22, 32.5, 6, [['lava_slime', 0.3, 0], ['lava_slime', -0.38, 0.35], ['lava_slime', 0.06, -0.66]]),
-  pack('d2_p24', 'kole_kampi', 17, 30, 10, [['forge_goblin', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['forge_goblin', 0.83, -0.53], ['forge_goblin', -0.28, 1.03], ['forge_goblin', -0.53, -1.02], ['forge_goblin', 1.15, 0.42], ['forge_goblin', -1.2, 0.49]]),
-  pack('d2_p25', 'kole_kampi', 12, 30.5, 19, [['forge_orc', 0.3, 0], ['forge_orc', -0.38, 0.35], ['fire_priest', -1.21, -0.32]]),
-  pack('d2_p26', 'kole_kampi', 17, 34, 15, [['forge_demon', 0.3, 0], ['forge_demon', -0.38, 0.35], ['flame_skull', 0.06, -0.66], ['flame_skull', 0.48, 0.62], ['flame_skull', -0.88, -0.16]]),
-  pack('d2_p27', 'kole_kampi', 11.5, 34, 14, [['magma_golem', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16]]),
-  pack('d2_p28', 'k_son', 8, 31.5, 7, [['forge_orc', 0, 0]]),
+  pack('d2_p12', 'kalip_atolyesi', 27, 2.5, undefined, [['forge_goblin', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', 0.83, -0.53], ['forge_orc', -0.28, 1.03]]),
+  pack('d2_p13', 'kalip_atolyesi', 32.5, 2.5, undefined, [['forge_demon', 0.3, 0], ['flame_skull', -0.38, 0.35], ['flame_skull', 0.06, -0.66], ['flame_skull', 0.48, 0.62], ['flame_skull', -0.88, -0.16], ['fire_priest', 1.24, -0.16]]),
+  pack('d2_p14', 'kalip_atolyesi', 27, 6.5, undefined, [['lava_slime', 0.3, 0], ['lava_slime', -0.38, 0.35], ['lava_slime', 0.06, -0.66], ['lava_slime', 0.48, 0.62], ['forge_imp', 0.8, 0.96]]),
+  pack('d2_p15', 'kalip_atolyesi', 32.5, 6.5, undefined, [['magma_golem', 0, 0], ['fire_priest', 1.17, 0.44]]),
+  pack('d2_p16', 'k_inis', 29.5, 11, undefined, [['forge_demon', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62]]),
+  pack('d2_p17', 'lav_kanali', 26, 15.8, undefined, [['forge_orc', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['forge_goblin', 0.83, -0.53]]),
+  pack('d2_p18', 'lav_kanali', 30, 18.5, undefined, [['forge_imp', 1.34, -0.13], ['forge_imp', 0.45, -0.04], ['forge_imp', -0.45, 0.04], ['forge_imp', -1.34, 0.13]], { patrol: [[27, 18.5], [33, 18.5]] }),
+  pack('d2_p19', 'lav_kanali', 33.5, 15.8, undefined, [['magma_golem', 0.3, 0], ['lava_slime', -0.38, 0.35], ['lava_slime', 0.06, -0.66]]),
+  pack('d2_p20', 'lav_kanali', 26.5, 21.5, undefined, [['forge_demon', 0, 0], ['fire_priest', -0.02, 1.33], ['fire_priest', -0.86, 1.01]]),
+  pack('d2_p21', 'lav_kanali', 33, 21.5, undefined, [['flame_skull', 0.3, 0], ['flame_skull', -0.38, 0.35], ['flame_skull', 0.06, -0.66], ['flame_skull', 0.48, 0.62], ['flame_skull', -0.88, -0.16], ['forge_orc', -0.28, 1.03]]),
+  pack('d2_p22', 'k_guney', 29.5, 25.5, undefined, [['forge_demon', 0, 0], ['forge_imp', 0.45, 1.25], ['forge_imp', -0.45, 1.25]]),
+  pack('d2_p23', 'k_bati', 22, 32.5, undefined, [['lava_slime', 0.3, 0], ['lava_slime', -0.38, 0.35], ['lava_slime', 0.06, -0.66]], { patrol: [[21, 32.5], [24, 32.5]] }),
+  pack('d2_p24', 'kole_kampi', 17, 30, undefined, [['forge_goblin', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16], ['forge_goblin', 0.83, -0.53], ['forge_goblin', -0.28, 1.03], ['forge_goblin', -0.53, -1.02], ['forge_goblin', 1.15, 0.42], ['forge_goblin', -1.2, 0.49]]),
+  pack('d2_p25', 'kole_kampi', 12, 30.5, undefined, [['forge_orc', 0.3, 0], ['forge_orc', -0.38, 0.35], ['fire_priest', -1.21, -0.32]]),
+  pack('d2_p26', 'kole_kampi', 17, 34, undefined, [['forge_demon', 0.3, 0], ['forge_demon', -0.38, 0.35], ['flame_skull', 0.06, -0.66], ['flame_skull', 0.48, 0.62], ['flame_skull', -0.88, -0.16]]),
+  pack('d2_p27', 'kole_kampi', 11.5, 34, undefined, [['magma_golem', 0.3, 0], ['forge_goblin', -0.38, 0.35], ['forge_goblin', 0.06, -0.66], ['forge_goblin', 0.48, 0.62], ['forge_goblin', -0.88, -0.16]]),
+  pack('d2_p28', 'k_son', 8, 31.5, undefined, [['forge_orc', 0, 0]]),
 ];
 
 const PACKS: PackDef[] = PACKS_RAW.map(R.remapPack);
@@ -359,6 +360,7 @@ D.room('k_son', (p, r) => {
   // the 1-tile gate passage is 2 wide now: the flanking columns move to the side walls (old z 31.5 = the passage row)
   p.torches(r, 'w', [31.5], BLUE).torches(r, 'e', [31.5], BLUE);
   p.at(gp('chains_hanging'), 8.0, 31.5, { y: 4 });
+  p.at(dg('candle_lit'), 8.3, 31.2, { light: lt(BLUE, 1.2, 6, true, 0.8) }).at(gp('rock_small'), 8.2, 31.6, { rot: 40 });
 });
 
 // ---- mavi_alev_sunagi: Boss 3 arena (Mavi Alev Ignaroth) ----------------------------------------------------------------
@@ -396,7 +398,12 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
   },
   curuf_ocagi: { ambientVfx: 'ambient_embers', zones: [lavaZone(2, 5, 2, 2)] },
   k_dogu1: { ambientVfx: 'ambient_embers' },
-  kalip_atolyesi: { ambientVfx: 'ambient_embers' },
+  kalip_atolyesi: {
+    ambientVfx: 'ambient_embers',
+    // the raised gantry along the north wall (2 m), reached by a ramp off the workshop floor
+    heightAreas: [{ id: 'kalip_gantry', rect: { x: 26, z: 0, w: 9, h: 3 }, y: 2, rim: 'rail' as const, floor: 'stone' as const }],
+    slopes: [{ id: 'kalip_ramp', kind: 'ramp' as const, rect: { x: 30, z: 3, w: 2, h: 2 }, axis: 'z' as const, yFrom: 2, yTo: 0, style: 'stone' as const }],
+  },
   k_inis: { ambientVfx: 'ambient_embers', lightColor: LAVA },
   lav_kanali: {
     ambientVfx: 'ambient_embers', lightColor: LAVA,
@@ -416,7 +423,7 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
     explicitDecor: true, lightColor: LAVA, ambientVfx: 'ambient_embers',
     // the whole room is lava, then the platform (r = 16 m) and the two walkways from the doors re-open the floor (zones apply in order)
     zones: [
-      rectZone('lava', 25, 28, 12, 12, { blocked: true, color: 0x7a1a05, glow: LAVA, glowIntensity: 1.5, light: { color: LAVA, intensity: 1.5, distance: 24, flicker: true, y: 1 } }),
+      rectZone('lava', 25, 28, 14, 14, { blocked: true, color: 0x7a1a05, glow: LAVA, glowIntensity: 1.5, light: { color: LAVA, intensity: 1.5, distance: 24, flicker: true, y: 1 } }),
       circleZone('dais', ...R.at2(30, 33), 4.4, { blocked: false, color: 0x1e1612 }),
       rectZone('bridge', 28, 28, 4, 2, { color: 0x1e1612 }), rectZone('bridge', 34, 28, 2, 5, { color: 0x1e1612 }),
       rectZone('bridge', 25, 31, 3, 4, { color: 0x1e1612 }),   // walkway from the platform to the west (boss_exit) door
@@ -429,10 +436,23 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
 };
 
 const PACK_EXTRA: Record<string, Partial<PackDef>> = {
-  d2_p02: { big: true }, d2_p03: { big: true }, d2_p04: { big: true }, d2_p05: { big: true },
-  d2_p06: { big: true, note: 'Patrol runs W-E between the four packs and links whatever it touches.' },
-  d2_p18: { note: 'Imps hover above the lava river and pelt both bridges.' },
-  d2_p24: { big: true }, d2_p26: { big: true },
+  d2_p02: { big: true, note: 'Nine goblins and an orc on the cevher floor: the designed big pull.' },
+  d2_p04: { linkedTo: ['d2_p05'], note: 'Linked pair with the slag golem in the same lane: pulling one pulls both.' },
+  d2_p05: { dormant: { kind: 'statue', wakeRadius: 6 }, note: 'Dormant slag golem (statue): wakes when a player comes within 6 m.' },
+  d2_p06: { note: 'Patrol runs W-E between the four packs and links whatever it touches.' },
+  d2_p15: { dormant: { kind: 'statue', wakeRadius: 6 }, note: 'Dormant slag golem on the casting floor.' },
+  d2_p18: { note: 'Imps patrol the lava river and pelt both bridges; killing them opens the bridge gate (kopru).' },
+  d2_p24: { big: true, note: 'Ten goblins at the slave camp: the second designed big pull.' },
+};
+/** Room atmospheres (fog blend): calm in the forge entry, tension in the lava rooms, set piece in the three boss rooms. */
+const ATMOSPHERES = {
+  calm: { color: 0x1a0503, near: 6, far: 34 },
+  tension: { color: 0x280802, near: 5, far: 28 },
+  set_piece: { color: 0x330a02, near: 7, far: 30 },
+};
+const ATMO: Record<string, string> = {
+  giris: 'calm', k_giris: 'calm', cevher_deposu: 'calm', ors_salonu: 'set_piece', lav_kanali: 'tension', kole_kampi: 'tension',
+  magma_kalbi: 'set_piece', mavi_alev_sunagi: 'set_piece',
 };
 
 const EXTRAS: NonNullable<DungeonDef['extras']> = {
@@ -440,7 +460,23 @@ const EXTRAS: NonNullable<DungeonDef['extras']> = {
   shrines: [{ type: 'shrine_power', pos: pt(...R.at2(19, 25)) }, { type: 'shrine_ward', pos: pt(...R.at2(7.5, 12)) }],
   riftSpots: ([[15, 19.5], [29.5, 4], [6, 8], [30, 16], [14, 32], [8, 19.5]] as [number, number][]).map(([x, z]) => pt(...R.at2(x, z))),
   chests: [{ pos: pt(...R.at2(1.2, 12.0)), kind: 'chest_gold' }],
+  checkpoints: [pt(...R.at2(22.5, 32.5))],
 };
+
+/** Props standing inside a height area with no explicit y are set to that area's top (the gantry floor and its benches). */
+function liftOnDais(rooms: RoomDef[]): RoomDef[] {
+  return rooms.map((r) => {
+    const areas = r.heightAreas ?? [];
+    if (areas.length === 0 || !r.props) return r;
+    const props = r.props.map((p) => {
+      if (p.y !== undefined) return p;
+      const [x, z] = p.pos;
+      const a = areas.find((h) => x >= h.rect.x && x <= h.rect.x + h.rect.w && z >= h.rect.z && z <= h.rect.z + h.rect.h);
+      return a ? { ...p, y: a.y } : p;
+    });
+    return { ...r, props };
+  });
+}
 
 export const KIZIL_DOKUMHANE: DungeonDef = {
   id: 'kizil_dokumhane',
@@ -449,10 +485,12 @@ export const KIZIL_DOKUMHANE: DungeonDef = {
   lore: 'Dağın kalbinde, Kuzgunkale\'nin ilk silahlarının döküldüğü dökümhane şimdi Mavi Alev Ignaroth\'un elinde. Köleleştirilmiş goblinler gece gündüz örslerde çalışırken, Dökümcü Usta Gurz kırbacını şaklatır ve Magma Devi Ateşyürek lav gölünde uyur. Kızıl ateşin altında, mavi bir alev büyüyor.',
   levelRange: [18, 28],
   timerSec: 860,
-  forcesRequired: 270,
+  forcesRequired: 245, // floor(0.8 x 307 total pack forces, auto sums)
   theme: THEME,
-  grid: { w: 40, h: 50 },
-  rooms: withProps(ROOMS.map((r) => ({ ...r, ...ROOM_EXTRA[r.id] })), D.out),
+  grid: { w: 40, h: 62 },
+  vertical: true,
+  rooms: liftOnDais(withProps(ROOMS.map((r) => ({ ceiling: 10, ...r, ...ROOM_EXTRA[r.id], ...(ATMO[r.id] ? { atmosphere: ATMO[r.id] } : {}) })), D.out)),
+  atmospheres: ATMOSPHERES,
   doors: DOORS,
   packs: PACKS.map((p) => (PACK_EXTRA[p.id] ? { ...p, ...PACK_EXTRA[p.id] } : p)),
   bosses: BOSSES,
