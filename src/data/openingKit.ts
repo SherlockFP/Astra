@@ -29,10 +29,11 @@ export const OPENING_KIT: Partial<Record<ClassId, readonly OpeningRow[]>> = {
     ['knight_charge', 's2', 1], ['knight_shield_block', 'q', 1], ['knight_thunder_clap', 'rmb', 1], ['knight_shield_slam', 'e', 1],
     ['knight_radiant_cleave', 'r', 2], ['knight_pummel', 's3', 3], ['knight_revenge', 's4', 4], ['knight_provoke', 's1', 5],
   ],
-  // Barbarian (Barbar): L1 Charge, Whirlwind, Shield Slam, Revenge; L2 Thunder Clap; L3 Shield Block; L4 Bloodthirst; L5 Taunt.
+  // Barbarian (Barbar): L1 Charge, Shield Slam, Revenge, Thunder Clap (Warlord's 4th L1 skill; Butcher gets Thunder Clap on its bar too). Whirlwind keeps its own L1 unlock
+  // for the Butcher (not on the opening kit, so the kit stays at 4); L2 Iron Stance; L3 Bloodthirst; L4 Provoke; L5 Pummel.
   barbarian: [
-    ['barbarian_leap', 's2', 1], ['barbarian_whirlwind', 'q', 1], ['barbarian_shield_slam', 'rmb', 1], ['barbarian_revenge', 'e', 1],
-    ['barbarian_thunder_clap', 'r', 2], ['barbarian_iron_stance', 's3', 3], ['barbarian_bloodthirst', 's1', 4], ['barbarian_provoke', 's4', 5],
+    ['barbarian_leap', 's2', 1], ['barbarian_shield_slam', 'q', 1], ['barbarian_revenge', 'e', 1], ['barbarian_thunder_clap', 's1', 1],
+    ['barbarian_iron_stance', 'rmb', 2], ['barbarian_bloodthirst', 'r', 3], ['barbarian_provoke', 's3', 4], ['barbarian_pummel', 's4', 5],
   ],
   // Mage (Büyücü): L1 Fireball, Frostbolt, Arcane Missiles, Blizzard, Ice Barrier (the caster's early shield: lowest base HP); L2 Frost Nova; L3 Blink; L5 Pyroblast.
   mage: [

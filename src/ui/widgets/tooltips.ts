@@ -174,6 +174,24 @@ export function skillDescription(def: SkillDef, actor: Actor | null): string {
     .replace(/\{dur\}/g, dur > 0 ? `<b class="tt-num">${trim(dur)}</b> sn` : 'kısa bir süre');
 }
 
+/** Combat role for the tooltip line: heal > defensive > control > damage. Support buffs and summons read as Destek. */
+export type SkillRole = 'defensive' | 'offensive' | 'control' | 'heal' | 'support';
+const CONTROL_TAGS = new Set(['cc', 'stun', 'kick', 'interrupt', 'root', 'silence', 'fear']);
+const ROLE_TR: Record<SkillRole, string> = { defensive: 'Savunma', offensive: 'Saldırı', control: 'Kontrol', heal: 'İyileştirme', support: 'Destek' };
+
+export function skillRole(def: SkillDef): SkillRole {
+  const tags = new Set<string>(def.tags);
+  if (tags.has('heal')) return 'heal';
+  if (tags.has('defensive')) return 'defensive';
+  if ([...tags].some((t) => CONTROL_TAGS.has(t)) || def.statuses?.some((s) => CONTROL_TAGS.has(s.status))) return 'control';
+  if (def.damage || tags.has('offensive') || tags.has('melee') || tags.has('spell')) return 'offensive';
+  return 'support';
+}
+
+export function skillRoleLabel(def: SkillDef): string {
+  return ROLE_TR[skillRole(def)];
+}
+
 export function skillTooltipHTML(def: SkillDef, actor: Actor | null, bindLabel?: string, rank?: number): string {
   const dtype = def.damage?.type;
   const col = dtype ? DAMAGE_COLORS[dtype] ?? '#f0e0b0' : '#e8c46a';
@@ -183,6 +201,7 @@ export function skillTooltipHTML(def: SkillDef, actor: Actor | null, bindLabel?:
   const tags = def.tags.map((t) => TAG_TR[t]).filter(Boolean).slice(0, 4);
   h += `<div class="sk-tags">${esc(tags.join(' · '))}</div></div></div>`;
   h += '<div class="sk-row">';
+  h += `<span class="sk-role sk-role-${skillRole(def)}">${skillRoleLabel(def)}</span>`;
   if (def.cost > 0) h += `<span class="sk-cost">${fmtNum(def.cost)} ${resName}</span>`;
   else if (def.cost < 0) h += `<span class="sk-gain">+${fmtNum(-def.cost)} ${resName}</span>`;
   else h += '<span class="sk-cost free">Bedava</span>';

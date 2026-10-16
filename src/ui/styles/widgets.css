@@ -107,6 +107,13 @@
 .sk-cost.free { color: #fff; }
 .sk-gain { color: var(--elv-green); }
 .sk-cd { color: #fff; }
+/* combat role (skillRole): blue defensive, green heal, red offensive, amber control, grey support */
+.sk-role { font-weight: 700; }
+.sk-role-defensive { color: var(--info, #4da3ff); }
+.sk-role-heal { color: var(--ok, #4fe06a); }
+.sk-role-offensive { color: var(--bad, #ff4c3c); }
+.sk-role-control { color: var(--gold-1, #ffe7a3); }
+.sk-role-support { color: #bbb; }
 .sk-meta { color: #fff; font-size: 13px; margin-top: 1px; }
 .sk-desc { margin-top: 5px; color: var(--elv-title); }
 .tt-num { color: #fff; }
