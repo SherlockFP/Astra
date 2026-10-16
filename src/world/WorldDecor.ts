@@ -22,6 +22,7 @@ import type { StreamConfig } from './chunks/StreamConfig';
 import { surfaceTexture } from './ProceduralAssets';
 import { getPiece } from './Pieces';
 import { placeTownProps } from './TownBuilder';
+import { PLACED_ENTRANCE_DUNGEONS, entranceProps } from '../data/world/entrances';
 import { MagitechKit, addVillageMagitech } from './MagitechKit';
 import { HouseKit, ROOF } from './HouseKit';
 import { NightLight } from './NightLight';
@@ -652,6 +653,16 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
   houses.build();
   host.root.add(houses.root);
   host.disposables.push({ dispose: () => houses.dispose() });
+
+  // ---- dungeon gates of the layout (PLACED_ENTRANCE_DUNGEONS): the cave dressing; the portal and the fog are WorldEntrances' ----
+  for (const e of world.entrances) {
+    if (!PLACED_ENTRANCE_DUNGEONS.includes(e.dungeonId)) continue;
+    try {
+      await placeTownProps(entranceProps(e), { x: tileCentre(e.pos[0]), z: tileCentre(e.pos[1]) }, host);
+    } catch (err) {
+      console.warn(`[world] entrance ${e.id} failed to dress`, err);
+    }
+  }
 
   // ---- landmarks ----
   guard('landmarks', () => {

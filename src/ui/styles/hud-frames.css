@@ -168,3 +168,20 @@
 .mf-badge { font-weight: 700; color: var(--gold-2); }
 .mf-time { color: #d8e8ff; }
 .mf-time.low { color: var(--bad); }
+
+/* Zindan Bulucu queue card (ui/hud/QueueCard.ts): small, top centre, dark plate with a gold edge (ElvUI style). */
+.hud-queue { pointer-events: auto; display: none; flex-direction: column; gap: 4px; min-width: 260px; max-width: 380px; padding: 6px 10px;
+  box-sizing: border-box; background: rgba(12, 10, 8, 0.82); border: 1px solid var(--gold-2); border-radius: 3px;
+  font: 600 12px/1.25 var(--font-body); color: var(--text-1); text-shadow: var(--sh-text); }
+.hud-queue.ready { border-color: #ffd26e; animation: qc-pulse 1s ease-in-out infinite; }
+.hud-queue .qc-row { display: flex; align-items: center; gap: 8px; }
+.hud-queue .qc-info { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud-queue .qc-info b { color: #ffd26e; font-weight: 700; }
+.hud-queue .qc-time { color: var(--text-3); white-space: nowrap; }
+.hud-queue .qc-title { color: #ffd26e; font-weight: 700; font-size: 13px; flex: 1; }
+.hud-queue .qc-count { color: var(--text-2); min-width: 34px; text-align: right; }
+.hud-queue .qc-btn { pointer-events: auto; font: 700 11px/1 var(--font-body); padding: 5px 9px; border-radius: 2px; cursor: pointer;
+  background: #2a211a; color: var(--text-1); border: 1px solid #6a5a40; }
+.hud-queue .qc-btn:hover { border-color: var(--gold-2); }
+.hud-queue .qc-btn.primary { background: #5a4216; border-color: #ffd26e; }
+@keyframes qc-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 210, 110, 0); } 50% { box-shadow: 0 0 12px 2px rgba(255, 210, 110, 0.6); } }

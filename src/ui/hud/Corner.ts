@@ -1,4 +1,5 @@
 import { G } from '../../game/G';
+import { FINDER_EXPLORE_ID } from '../../data/world/quests';
 import { describeItem } from '../../systems/ItemGen';
 import { getItemBase } from '../../data/items';
 import { getMaterial } from '../../data/materials';
@@ -213,6 +214,8 @@ interface MicroState {
   skillOff: boolean;
   questStarted: boolean;
   questReady: boolean;
+  /** An active quest asks for the Group Finder (Mağaradaki Sis step 1): the button shows below level 8 and glows. */
+  finderHint: boolean;
 }
 
 type MicroBadge = { kind: 'dot' } | { kind: 'num'; text: string };
@@ -227,6 +230,8 @@ interface MicroDef {
   /** Extra condition on top of the level. */
   shown?: (s: MicroState) => boolean;
   badge?: (s: MicroState) => MicroBadge | null;
+  /** Pulsing glow while a quest wants this panel. */
+  glow?: (s: MicroState) => boolean;
 }
 
 const MICRO: MicroDef[] = [
@@ -247,7 +252,12 @@ const MICRO: MicroDef[] = [
     shown: (s) => s.questStarted,
     badge: (s) => (s.questReady ? { kind: 'num', text: '?' } : null),
   },
-  { panel: 'finder', icon: 'ui-dungeon', action: 'groupFinder', label: 'Zindan Bulucu', minLevel: 8 },
+  {
+    // revealed at level 8 (§2.10), earlier while a quest sends the player here (Mağaradaki Sis); the tooltip shows the key (I)
+    panel: 'finder', icon: 'ui-dungeon', action: 'groupFinder', label: 'Zindan Bulucu', minLevel: 1,
+    shown: (s) => s.level >= 8 || s.finderHint,
+    glow: (s) => s.finderHint,
+  },
   { panel: 'gameMenu', icon: 'ui-gears', action: 'menu', label: 'Menü', minLevel: 1 },
 ];
 
@@ -292,6 +302,7 @@ export class MicroMenu implements HudWidget {
       }
       if (!show) continue;
       setClass(b.el, 'open', this.ui.isPanelOpen(b.def.panel));
+      setClass(b.el, 'glow', !!b.def.glow?.(s));
       const keyText = G.input ? G.input.bindingLabel(b.def.action) : '';
       if (keyText !== b.keyText) {
         b.keyText = keyText;
@@ -320,11 +331,13 @@ export class MicroMenu implements HudWidget {
     const quests = G.quests;
     let questStarted = false;
     let questReady = false;
+    let finderHint = false;
     try {
       for (const d of quests?.all() ?? []) {
         const st = quests?.state(d.id);
         if (st === 'active' || st === 'ready' || st === 'done') questStarted = true;
         if (st === 'ready') questReady = true;
+        if (st === 'active' && d.objectives.some((o) => o.kind === 'explore' && o.target === FINDER_EXPLORE_ID) && quests?.progressRows(d.id).some((r) => r.kind === 'explore' && !r.done)) finderHint = true;
       }
     } catch (err) {
       console.warn('[ui] quest data not ready', err);
@@ -337,6 +350,7 @@ export class MicroMenu implements HudWidget {
       skillOff: learned.some((id) => !onBar.has(id)),
       questStarted,
       questReady,
+      finderHint,
     };
   }
 }

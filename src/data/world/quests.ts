@@ -339,9 +339,28 @@ export const SIDE_QUESTS: QuestDef[] = LAYOUT.quests.side.map((q) =>
   ),
 );
 
+/**
+ * Starter-dungeon side quest "Mağaradaki Sis" (Gümüşdere, Avcı Yıldız, level 3 after mq_04). Optional: not on the main chain (no
+ * other quest needs it). Objective 1 opens the Group Finder (I, explore target `finder`, fired from FinderPanel); objective 2 is the
+ * Sisli Mağara run, whose final boss is the Kadim Bekçi (boss_mag_bekci). Reward: XP and a blue (rare) item.
+ */
+/** `explore` target the game emits when the Group Finder (Zindan Bulucu) opens (FinderPanel.onOpen). Not a place: tools/content-check.mjs lists it. */
+export const FINDER_EXPLORE_ID = 'finder';
+
+const MAGARA_QUEST: QuestDef = {
+  id: 'sq_g_07_magaradaki_sis', name: 'Mağaradaki Sis', level: 3, giver: 'npc_g_avci', turnIn: 'npc_g_avci', region: 'r1', place: 'Gümüşdere',
+  prereq: ['mq_04_samani_sustur'],
+  objectives: [explore(FINDER_EXPLORE_ID, "Zindan Bulucu'yu aç (I)"), dungeon('sisli_magara', "Sisli Mağara'ya gir ve Kadim Bekçi'yi yen")],
+  reward: { xpPct: 12, generic: [{ rarity: 'rare' }] },
+  text: {
+    offer: "Sisli Mağara'ya gir ve Kadim Bekçi'yi yen. Önce Zindan Bulucu'yu aç (I), girişi Gümüşdere'nin kuzeyinde bulacaksın.",
+    progress: "Zindan Bulucu'yu aç (I) ve Sisli Mağara'yı bitir.", done: 'Sis dağıldı. Kadim Bekçi artık seni tanıyor.',
+  },
+};
+
 /** Region quests (kill / collect / hunt / metin / chain / daily per region, data/world/quests_extra.ts). */
 /** Karakır Bozkırı (mq_20..22 continue the main chain after mq_19, 9 zone quests): data/world/karakir_quests.ts. */
-export const QUESTS: QuestDef[] = applyVariety([...MAIN_QUESTS, ...SIDE_QUESTS, ...REGION_QUESTS, ...KARAKIR_QUESTS, ...KARAKIR_PACE_QUESTS, ...AYAZ_QUESTS]);
+export const QUESTS: QuestDef[] = applyVariety([...MAIN_QUESTS, ...SIDE_QUESTS, MAGARA_QUEST, ...REGION_QUESTS, ...KARAKIR_QUESTS, ...KARAKIR_PACE_QUESTS, ...AYAZ_QUESTS]);
 
 /** Quest ids an NPC offers or turns in (TownNpc.quests). */
 export function questIdsFor(npcId: string): string[] {

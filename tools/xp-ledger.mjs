@@ -50,7 +50,9 @@ export function killXp(lvl, rank, xpMult, playerLvl, openWorld) {
   return openWorld && isLowLevelTrashRank(rank === 'swarm' ? 'trash' : rank, rank === 'swarm' ? 'swarm' : undefined) ? Math.round(xp * lowLevelKillXpMult(lvl)) : xp;
 }
 export const questXp = (q) => Math.round((q.reward.xpPct / 100) * xpToNext(q.level));
-export const kindOf = (q) => (q.daily ? 'daily' : q.main ? 'main' : /^sq_r\d+_/.test(q.id) ? 'region' : /^sq_[gcks]_/.test(q.id) ? 'side' : 'other');
+// 'dungeon': a quest whose objective is a dungeon run (Mağaradaki Sis). Its time is the run, which pays its own XP (the dungeon route
+// section of pace-check), so the side-quest share rule does not apply to it.
+export const kindOf = (q) => (q.daily ? 'daily' : q.main ? 'main' : q.objectives?.some((o) => o.kind === 'dungeon') ? 'dungeon' : /^sq_r\d+_/.test(q.id) ? 'region' : /^sq_[gcks]_/.test(q.id) ? 'side' : 'other');
 
 // ---- pace assumptions (seconds)
 export const KILL_S = 9, GRIND_KILL_S = 9, TALK_S = 30, EXPLORE_S = 30, BOSS_S = 60, METIN_S = 60, COLLECT_S = 4, SKILL_S = 4, TURN_IN_S = 10, DUNGEON_S = 600;

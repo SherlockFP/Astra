@@ -7,6 +7,8 @@ import type { RoleId, SpecId } from '../../../types/v2';
 import type { LfgListing } from '../../../net/messages';
 import type { RoomInfo } from '../../../net/NetSession';
 import { DUNGEONS } from '../../../data/dungeons';
+import { dungeonQueue } from '../../../systems/DungeonQueue';
+import { FINDER_EXPLORE_ID } from '../../../data/world/quests';
 import { BOSSES } from '../../../data/enemyKit';
 import { buildChrome, buildTabs, chip, emptyState, iconEl, type Chrome, type TabsApi } from '../../kit';
 import { CLASS_META, GamePanel, affixChips, affixesForLevel, dungeonArt, dungeonName, h, mmss, openPanel, ratingTier, sfx, toast } from './base';
@@ -187,6 +189,12 @@ export class FinderPanel extends GamePanel {
 
   protected onOpen(data?: unknown): void {
     const d = (data ?? {}) as { dungeonId?: string; tab?: Tab; diff?: LadderDiff; requeue?: boolean };
+    // Mağaradaki Sis objective 1: the finder being opened counts (any route: micro menu, I, the world entrance portal)
+    try {
+      G.quests?.onEvent('explore', FINDER_EXPLORE_ID);
+    } catch {
+      /* quest data not ready */
+    }
     this.syncFissureTab();
     this.fissure.open();
     if (!this.rolesManual) this.roles = defaultRoles(G.character?.save.spec as SpecId | undefined);
@@ -409,7 +417,21 @@ export class FinderPanel extends GamePanel {
       this.render();
       return;
     }
-    this.launch(pend);
+    this.enterQueue(pend);
+  }
+
+  /**
+   * Solo start: the run goes through the dungeon queue (systems/DungeonQueue.ts). The HUD card shows the search and the ready
+   * card; the panel closes so the card is what the player sees. The queue calls `launch` when the player is let in.
+   */
+  private enterQueue(pend: Pending): void {
+    const ok = dungeonQueue.enter({
+      dungeonId: pend.def.id,
+      dungeonName: pend.def.name,
+      roleLabel: this.roles.map((r) => ROLE_TR[r]).join(' + '),
+      onStart: () => this.launch(pend),
+    });
+    if (ok) this.requestClose();
   }
 
   private launch(p: Pending): void {

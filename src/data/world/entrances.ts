@@ -229,3 +229,20 @@ export const SEASON_ENTRANCES: SeasonEntranceDef[] = [
   pending('ent_yigitler_sarayi', 'Yiğitler Sarayı Girişi', 'yigitler_sarayi', 60, 'kd_firtina_zirveleri', 'valor', 180),
   pending('ent_yildiz_divani', 'Yıldız Kapısı', 'yildiz_divani', 55, 'kd_r3', 'palace', 180, [148, 34]),
 ];
+
+/**
+ * Layout entrances with a physical gate in the open world (WorldDecor places the recipe, scenes/world/WorldEntrances.ts the portal
+ * and the fog). The other entrances stay map pins until their own package. Sisli Mağara: the starter dungeon's cave mouth north
+ * of Gümüşdere (Zindan Bulucu step of Mağaradaki Sis).
+ */
+export const PLACED_ENTRANCE_DUNGEONS: readonly string[] = ['sisli_magara'];
+
+/** The look recipe of an entrance turned by its facing (degrees, around Y): the door centre stays the origin, +z is the approach. */
+export function entranceProps(e: EntranceDef): TownProp[] {
+  const a = (e.facing * Math.PI) / 180;
+  const c = Math.cos(a), s = Math.sin(a);
+  return ENTRANCE_RECIPES[e.look](e).map((p) => {
+    const [x, y, z] = p.pos;
+    return { ...p, pos: [x * c + z * s, y, -x * s + z * c], rot: (p.rot ?? 0) + e.facing };
+  });
+}

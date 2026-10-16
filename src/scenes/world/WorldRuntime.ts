@@ -22,6 +22,7 @@ import { WaypointNetwork } from './WaypointNetwork';
 import { GraveyardNetwork } from './Graveyards';
 import { spawnVillageNpcs } from './VillageSpawner';
 import { WorldPois } from './WorldPois';
+import { WorldEntrances } from './WorldEntrances';
 import { WorldGather } from './WorldGather';
 import { WorldQuestProps } from './WorldQuestProps';
 import { EventCalendar, buildEventSites } from './EventCalendar';
@@ -76,6 +77,7 @@ export class WorldRuntime {
   private readonly minis: MiniBossDirector;
   private readonly bosses: BossSchedule;
   private readonly pois: WorldPois;
+  private readonly entrances: WorldEntrances;
   private readonly gather: WorldGather;
   private readonly questProps: WorldQuestProps;
   private readonly discoveries: Discoveries;
@@ -111,6 +113,7 @@ export class WorldRuntime {
     this.story = new StoryBeats(this.ctx, (enemyId) => this.minis.summon(enemyId));
     this.bosses = new BossSchedule(this.ctx);
     this.pois = new WorldPois(this.ctx);
+    this.entrances = new WorldEntrances(this.ctx);
     this.gather = new WorldGather(this.ctx);
     this.questProps = new WorldQuestProps(this.ctx);
     this.discoveries = new Discoveries(this.ctx);
@@ -124,6 +127,7 @@ export class WorldRuntime {
       this.guard('waypoints', () => this.waypoints.place()),
       this.guard('graveyards', () => this.graveyards.place()),
       this.guard('shrines and chests', () => this.pois.place()),
+      this.guard('dungeon gates', () => this.entrances.place()),
       this.guard('gathering nodes', () => this.gather.place()),
       this.guard('quest props', () => this.questProps.place()),
       this.guard('ambient life', () => this.startAmbient()),
@@ -171,6 +175,7 @@ export class WorldRuntime {
     this.run('story', () => this.story.update(dt));
     this.run('minis', () => this.minis.update(dt));
     this.run('chests', () => this.pois.update(dt));
+    this.run('dungeon gates', () => this.entrances.update(dt));
     this.run('quest props', () => this.questProps.update(dt));
     this.run('events', () => this.calendar?.update(dt));
     this.run('vignettes', () => this.vignettes.update(dt));

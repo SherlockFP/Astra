@@ -206,6 +206,7 @@ function questReachIssues(quests, world, npcIds, packs, dungeonIds, zoneIds, npc
   // the only ids the game emits as `explore` events (see the header): region entry, waypoint discovery, Discoveries spots
   const explorePlaces = new Set([world?.regions, world?.waypoints, world?.hidden, world?.vistas, world?.landmarks]
     .flatMap((list) => (list ?? []).map((p) => p.id)));
+  explorePlaces.add('finder'); // FINDER_EXPLORE_ID (data/world/quests.ts): FinderPanel.onOpen emits it
   for (const q of quests) {
     const where = `quest ${q.id}`;
     if (!npcIds.has(q.giver)) err(where, `giver ${q.giver} is not an NPC in any town or village`);
@@ -797,7 +798,7 @@ if (!want.length || WORLD_IDS.some((id) => want.includes(id)) || want.includes('
   const world = ALL_WORLD;
   const npcIds = new Set([...TOWN.npcs.map((n) => n.id), ...(world?.villages ?? []).flatMap((v) => v.npcs.map((n) => n.id))]);
   // places an `explore` objective may name: rooms, villages, camps, and the ids the game emits (regions, waypoints, hidden areas, vistas, landmarks)
-  const placeIds = new Set([...ALL_WORLD_ROOMS.map((r) => r.id), ...world.villages.map((v) => v.id), ...ALL_WORLD_PACKS.map((p) => p.id),
+  const placeIds = new Set(['finder', ...ALL_WORLD_ROOMS.map((r) => r.id), ...world.villages.map((v) => v.id), ...ALL_WORLD_PACKS.map((p) => p.id),
     ...[world.regions, world.waypoints, world.hidden, world.vistas, world.landmarks].flatMap((l) => l.map((p) => p.id))]);
   const qr = cc.checkQuests(QUESTS, { npcIds, knownEnemy: known ?? (() => undefined), hasItem: (id) => id in MATERIALS, dungeonIds: [...DUNGEON_ALL, ...OPEN_ZONE_IDS], placeIds });
   const e = qr.filter((i) => i.level === 'error'), w = qr.filter((i) => i.level === 'warn');

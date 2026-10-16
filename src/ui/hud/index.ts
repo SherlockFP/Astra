@@ -10,6 +10,7 @@ import { CombatCues } from './CombatCues';
 import { ComboCounter } from './ComboCounter';
 import { ComboRouteBanner } from './ComboRoute';
 import { DeathRecapCard } from './DeathRecap';
+import { QueueCard } from './QueueCard';
 import { GoldWidget, LootFeed, MicroMenu } from './Corner';
 import { Crosshair, findHoverTarget } from './Crosshair';
 import { DamageMeter } from './DamageMeter';
@@ -134,6 +135,9 @@ export function createHUD(ui: UI): HudApi {
 
   // ---- top-centre: boss + target ----
   const tc = div('hud-tc', root);
+  // Zindan Bulucu queue card (search, ready check) sits under the boss banner's column
+  const queueCard = add(new QueueCard());
+  tc.appendChild(queueCard.el);
   // failed-cast error line (WoW error text): top centre, not on the action bar
   root.appendChild(add(new CastErrors()).el);
   const boss = add(new BossFrame());

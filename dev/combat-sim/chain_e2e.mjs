@@ -608,6 +608,8 @@ async function doObjective(def, k) {
     }
     case 'explore': {
       const id = o.target;
+      // the Group Finder opening (I, or the micro menu / a dungeon portal): FinderPanel.onOpen emits it, no place to walk to
+      if (id === 'finder') { qs.onEvent('explore', id); break; }
       const hid = W.hidden.find((h) => h.id === id);
       const wp = W.waypoints.find((w) => w.id === id);
       const vil = W.villages.find((v) => v.id === id);
