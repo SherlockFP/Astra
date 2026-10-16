@@ -31,6 +31,12 @@ const MAX_CONSTRUCTS = (c: BossController): number => (c.phase?.id === 'p3' ? 3 
 /** A random living non-tank player, or null. */
 const someDps = (c: BossController): Player | null => pickPlayers(c, 1, true)[0] ?? null;
 
+/** The walkable ground nearest to (x, z) inside the arena, or null. Blinks and shape anchors are snapped here: a point on a wall or a prop would strand the boss or start a shape inside the prop. */
+const walkableInArena = (c: BossController, x: number, z: number): Pt | null => {
+  const w = c.world.nav.nearestWalkable(x, z, 8);
+  return w && c.insideArena(w.x, w.z, 0) ? w : null;
+};
+
 // ---------------------------------------------------------------------------------------------------------------------
 // Boss 1: Çürükkemik (worms stack and explode; the Kusma spawns the worms along its cone)
 // ---------------------------------------------------------------------------------------------------------------------
@@ -138,7 +144,9 @@ const amarth: BossScript = {
     if (s.echoT <= 0) {
       s.echoT = (c.phase?.id === 'p1' || !c.phase) ? 3 : 2;
       const a = c.bdef.arena;
-      if (a) circle(c, a.cx, a.cz, a.w / 2, 0.05, 0.1 * (1 + 0.3 * Number(s.echo)), { type: 'shadow', telegraph: false, name: 'İşkence Yankıları' });
+      // the court centre is the Cesaret'in Eli prop (blocked): the pulse is anchored on the nearest walkable ground (the radius covers the court either way)
+      const o = a ? (walkableInArena(c, a.cx, a.cz) ?? { x: a.cx, z: a.cz }) : null;
+      if (a && o) circle(c, o.x, o.z, a.w / 2, 0.05, 0.1 * (1 + 0.3 * Number(s.echo)), { type: 'shadow', telegraph: false, name: 'İşkence Yankıları' });
     }
   },
   onBreak(c) {
@@ -173,8 +181,9 @@ const amarth: BossScript = {
         LAND_ADDS.forEach((id, i) => {
           c.schedule(0.6 * i, () => c.spawnAdds(id, 1, { x, z, radius: 2.2, tag: 'minion' }), 'land');
         });
+        // queued, not castNow: castNow is refused while the boss is busy and the timer never retries, so the harvest was dropped
         c.schedule(20, () => {
-          c.castNow('les_amr_final');
+          c.forceAbility('les_amr_final');
         }, 'harvest');
       },
     },
@@ -450,7 +459,10 @@ const nalthor: BossScript = {
         const e = c.e;
         const dx = t.position.x - e.position.x, dz = t.position.z - e.position.z;
         const len = Math.hypot(dx, dz) || 1;
-        const bx = t.position.x + (dx / len) * 2.5, bz = t.position.z + (dz / len) * 2.5;
+        // the landing is snapped to walkable ground inside the arena (a point behind a wall or a prop would strand him there)
+        const spot = walkableInArena(c, t.position.x + (dx / len) * 2.5, t.position.z + (dz / len) * 2.5);
+        if (!spot) return;
+        const bx = spot.x, bz = spot.z;
         c.teleport(bx, bz, true);
         wedge(c, bx, bz, angleTo(bx, bz, t.position.x, t.position.z), 6, 100, b.delay, 2.4, {
           type: 'frost', perilous: true, parryable: false, name: 'Don Sıçraması',
