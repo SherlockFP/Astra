@@ -28634,6 +28634,15 @@
  ],
  "entrances": [
   {
+   "id": "ent_sisli_magara",
+   "name": "Sisli Mağara Girişi",
+   "dungeonId": "sisli_magara",
+   "region": "r1",
+   "pos": [216, 22],
+   "facing": 0,
+   "minLevel": 1
+  },
+  {
    "id": "ent_kemik_mahzeni",
    "name": "Kemik Mahzeni Girişi",
    "dungeonId": "kemik_mahzeni",
