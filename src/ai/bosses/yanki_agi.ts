@@ -156,7 +156,7 @@ const anubzekAbilities: Record<string, BossHandler> = {
   yk_an_echo: {
     start(c) {
       const e = c.e;
-      ring(c, e.position.x, e.position.z, 2, 8, 0.5, 2.0, { name: 'Yankı Basışı' });
+      ring(c, e.position.x, e.position.z, 2, 8, 1.0, 2.0, { name: 'Yankı Basışı' });
       ring(c, e.position.x, e.position.z, 8, 16, 1.4, 2.0, { name: 'Yankı Basışı' });
     },
   },
