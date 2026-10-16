@@ -178,7 +178,7 @@ async function measure(name, def, at, forceStream) {
     const idx = im.geometry.index;
     const triPer = (idx ? idx.count : im.geometry.attributes.position.count) / 3;
     if (!im.boundingSphere) im.computeBoundingSphere();
-    return { im, layer: im.userData.layer ?? 'other', n: im.count, triPer, tris: triPer * im.count, vis: im.visible, cast: im.castShadow, name: im.name.replace(/@.*/, '') };
+    return { im, tier: (im.name.split('#t')[1] || '-')[0], layer: im.userData.layer ?? 'other', n: im.count, triPer, tris: triPer * im.count, vis: im.visible, cast: im.castShadow, name: im.name.replace(/@.*/, '') };
   });
 
   // frustum: mean over 8 headings, third-person pose 8 m behind and 5 m above the player looking at his chest
@@ -220,9 +220,14 @@ async function measure(name, def, at, forceStream) {
     return r;
   };
   const byModel = new Map();
+  const tiers = new Map();
   for (const m of meshes) {
     const r = get(m.layer);
     const f = inF.get(m) / headings;
+    const tk = m.layer + '/t' + m.tier;
+    const tr = tiers.get(tk) ?? { inst: 0, resident: 0, frustum: 0, shadow: 0, calls: 0 };
+    tr.inst += m.n; tr.resident += m.tris; tr.frustum += m.tris * f; tr.calls += f; tiers.set(tk, tr);
+    if (m.vis && m.cast && sfr.intersectsSphere(m.im.boundingSphere)) tr.shadow += m.tris;
     r.meshes++;
     r.inst += m.n;
     r.resident += m.tris;
@@ -238,7 +243,7 @@ async function measure(name, def, at, forceStream) {
   }
   const tot = { meshes: 0, inst: 0, resident: 0, distance: 0, frustum: 0, calls: 0, shadow: 0, shadowCalls: 0 };
   for (const r of layers.values()) for (const k of Object.keys(tot)) tot[k] += r[k];
-  const result = { cullMs, name, cfg, layers, tot, terrainTris, terrainCalls, terrainChunks, byModel, missing, chunks: stream.visual.size, fogFar };
+  const result = { tiers, cullMs, name, cfg, layers, tot, terrainTris, terrainCalls, terrainChunks, byModel, missing, chunks: stream.visual.size, fogFar };
   stream.dispose();
   batcher.dispose();
   return result;
@@ -254,6 +259,7 @@ function print(r) {
     const x = r.layers.get(l);
     console.log(`${l.padEnd(9)} ${String(x.meshes).padStart(7)} ${String(x.inst).padStart(10)} ${k(x.resident).padStart(15)} ${k(x.distance).padStart(15)} ${k(x.frustum).padStart(11)} ${x.calls.toFixed(0).padStart(11)} ${k(x.shadow).padStart(12)} (${x.shadowCalls})`);
   }
+  for (const [tk, x] of [...r.tiers.entries()].sort()) if (['tree', 'border', 'bush', 'rock', 'tuft'].includes(tk.split('/')[0])) console.log('  ' + tk.padEnd(12) + ' inst ' + String(x.inst).padStart(5) + '  resident ' + k(x.resident).padStart(8) + '  in-frustum ' + k(x.frustum).padStart(8) + '  shadow ' + k(x.shadow).padStart(8) + '  calls ' + x.calls.toFixed(0));
   const t = r.tot;
   console.log(`${'scenery'.padEnd(9)} ${String(t.meshes).padStart(7)} ${String(t.inst).padStart(10)} ${k(t.resident).padStart(15)} ${k(t.distance).padStart(15)} ${k(t.frustum).padStart(11)} ${t.calls.toFixed(0).padStart(11)} ${k(t.shadow).padStart(12)} (${t.shadowCalls})`);
   console.log(`terrain   ${String(r.terrainChunks).padStart(7)} chunks resident, ${k(r.terrainTris)} tris and ${r.terrainCalls.toFixed(0)} draw calls in view`);

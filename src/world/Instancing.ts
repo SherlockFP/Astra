@@ -179,6 +179,9 @@ function matrixScale(m: THREE.Matrix4): number {
 /** What a chunk (or the whole batcher, when not streamed) made: its meshes and its LOD sets. */
 interface Bag { meshes: THREE.InstancedMesh[]; sets: LodSet[] }
 
+/** Edge (m) of the square sub-cells a tiered group is split into (one LodSet each): the shadow pass and the frustum test then see the tier meshes of a 16 m cell, not a whole 64 m chunk. */
+const SUB_M = 16;
+
 let tierScratch = new Int8Array(1024);
 const tierCount = [0, 0, 0];
 
@@ -572,7 +575,7 @@ export class InstanceBatcher {
   private emit(g: Group, piece: Piece, recs: Rec[], cast: boolean, fadeable = false, into?: Bag): void {
     const n = recs.length;
     const anyColor = recs.some((r) => r.c);
-    // scatter layers: the draws that are voxel meshes go to a distance-tiered LodSet (one set covers all of them)
+    // scatter layers: the draws that are voxel meshes go to distance-tiered LodSets, one per 16 m sub-cell of the group
     const all = drawsOf(piece, g.skip);
     const tiered: { geos: THREE.BufferGeometry[]; mat: THREE.Material }[] = [];
     const plainDraws: Draw[] = [];
@@ -582,12 +585,24 @@ export class InstanceBatcher {
       else plainDraws.push(draw);
     }
     if (tiered.length) {
-      const set = new LodSet(
-        this, into ?? null, tiered, recs, g.layer, (g.cx + 0.5) * this.chunkSize, (g.cz + 0.5) * this.chunkSize,
-        this.chunkSize * 0.71, cast, g.receive, fadeable, g.url.split('/').pop() + '@' + g.chunk,
-      );
-      this.lodSets.push(set);
-      into?.sets.push(set);
+      const cells = new Map<string, Rec[]>();
+      for (const r of recs) {
+        const e = r.m.elements;
+        const k2 = `${Math.floor(e[12] / SUB_M)},${Math.floor(e[14] / SUB_M)}`;
+        let l = cells.get(k2);
+        if (!l) cells.set(k2, (l = []));
+        l.push(r);
+      }
+      for (const cellRecs of cells.values()) {
+        const e0 = cellRecs[0].m.elements;
+        const cxw = Math.floor(e0[12] / SUB_M) * SUB_M + SUB_M / 2, czw = Math.floor(e0[14] / SUB_M) * SUB_M + SUB_M / 2;
+        const set = new LodSet(
+          this, into ?? null, tiered, cellRecs, g.layer, cxw, czw,
+          SUB_M * 0.71, cast, g.receive, fadeable, g.url.split('/').pop() + '@' + g.chunk,
+        );
+        this.lodSets.push(set);
+        into?.sets.push(set);
+      }
     }
     for (const draw of plainDraws) {
       const mat = this.resolveMaterial(draw.material, g.variant);
