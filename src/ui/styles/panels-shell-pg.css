@@ -79,7 +79,8 @@
   border-bottom: 1px solid var(--ink);
   box-shadow: none;
 }
-.pg-head-ico { position: absolute; left: 8px; top: 50%; margin-top: -8px; width: 16px; height: 16px; flex: none; background: var(--text-2); }
+.pg-head-ico { position: absolute; left: 8px; top: 50%; margin-top: -8px; width: 16px; height: 16px; flex: none; background: var(--text-2);
+  -webkit-mask: var(--ico) center / contain no-repeat; mask: var(--ico) center / contain no-repeat; }
 .pg-head-spacer { display: none; }
 .pg-title {
   position: absolute;
