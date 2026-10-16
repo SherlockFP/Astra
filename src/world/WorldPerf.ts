@@ -41,14 +41,15 @@ const SCALE: Record<GfxQuality, { dist: number; keep: number }> = {
 /** The Orta tiers (m from the focus). `end` is capped by the fog below, `fog` entries follow it. */
 interface Base { d0: number; d1: number; end: number; keep1: number; keep2: number; fog?: number }
 const BASE: Partial<Record<CullLayer, Base>> = {
-  // trees: the full model near (and the only shadow caster), a 2x voxel copy to mid range, a 4x copy out to the fog
-  // (pushed out: the 2x copy read as blurry blocks at 24-52 m, so the real meshes now hold to 40 m and the 2x copy runs to 90 m)
-  // the voxel copies of trees read as large pale translucent blocks in the sky line past ~80 m (a 4x copy of a tall pine): full
-  // models to 60 m, the 2x copy to 100 m, and no 4x copy (nothing is drawn beyond 100 m, the fog is already ~40 % there)
-  tree: { d0: 60, d1: 100, end: 100, keep1: 1, keep2: 0, fog: 0 },
-  // dense forest edge: full models to 18 m, the 2x copy out to the fog, no 4x copy (a 4x voxel of a 2.8x border tree was a 6 m block
+  // trees: the full model within 40 m (and the only tier that is a shadow caster), a 2x voxel copy to 100 m, nothing beyond (the fog is
+  // already ~40 % there). Full detail to 40 m is the pop-in rule of the owner; the 2x copy read as blurry blocks at 40-52 m, and a 4x
+  // copy of a tall pine read as a pale slab in the sky line past ~80 m, so there is no 4x tier.
+  tree: { d0: 40, d1: 100, end: 100, keep1: 1, keep2: 0, fog: 0 },
+  // dense forest edge: full models to 12 m, the 2x copy out to the fog, no 4x copy (a 4x voxel of a 2.8x border tree was a 6 m block
   // at 40-60 m); bush likewise (its 4x copy ended at 56 m with 2 m voxels). The tiers scale with each instance (LodPlan.angular).
-  border: { d0: 18, d1: 1e9, end: 1e9, keep1: 1, keep2: 0, fog: 0 },
+  // 12 m (was 18): the spawn of the big zones stands in a border forest of ~130 full trees, and the full models of it alone were more than
+  // the 400k triangle budget (tribudget Karakir spawn).
+  border: { d0: 12, d1: 1e9, end: 1e9, keep1: 1, keep2: 0, fog: 0 },
   bush: { d0: 24, d1: 70, end: 70, keep1: 0.8, keep2: 0 },
   rock: { d0: 24, d1: 55, end: 95, keep1: 1, keep2: 0.8 },
   // ground cover: short range, thinned with distance

@@ -98,7 +98,9 @@ console.log(`voxel LOD over ${checked} scenery meshes: ${trisOrig} tris -> merge
   const gen = [];
   for (let i = 0; i < 200; i++) gen.push({ url, x: 2 + (i % 20) * 3, y: 0, z: 2 + Math.floor(i / 20) * 6, rot: 0, scale: 1.2, tint: 0.9, cast: true, receive: true, layer: 'tree' });
   b.loadChunk(0, 0, gen);
-  ok('lod.set-made', b.lodSets.length === 1 && scene.children.length === 1, `${b.lodSets.length} set, ${scene.children.length} mesh before the first update (tier 0 only)`);
+  // one set per occupied 16 m sub-cell of the chunk (Instancing.emit): the shadow pass and the frustum test see small meshes
+  const cellsOf = new Set(gen.map((g) => Math.floor(g.x / 16) + ',' + Math.floor(g.z / 16))).size;
+  ok('lod.set-made', b.lodSets.length === cellsOf && scene.children.length === cellsOf, `${b.lodSets.length} sets (${cellsOf} occupied 16 m cells), ${scene.children.length} mesh before the first update (tier 0 only)`);
   const culler = new ChunkCuller(b, 64);
   culler.plans = lodPlans(110, 'mid');
   culler.update(1, 0, 0);
