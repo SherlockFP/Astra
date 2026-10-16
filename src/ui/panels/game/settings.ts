@@ -222,6 +222,18 @@ export class SettingsPanel extends GamePanel {
           ),
           'Yakın çimen ve çiçek yoğunluğu. Kapalı ve Düşük FPS kazandırır',
         ),
+        row(
+          'Gün/Gece döngüsü',
+          selectBox<SettingsData['dayNightCycle']>(
+            [
+              { value: 'on', label: 'Açık' },
+              { value: 'off', label: 'Hep gündüz' },
+            ],
+            G.settings.get('dayNightCycle'),
+            (v) => G.settings.set('dayNightCycle', v),
+          ),
+          'Gerçek zamanlı gün ve gece: bir oyun günü 48 dakika sürer. Hep gündüz seçilirse öğle ışığı sabit kalır. Aynı saat tüm oyuncular için geçerli',
+        ),
         this.num('renderScale', 'Çözünürlük Ölçeği', 0.5, 2, 0.25, (v) => `${v}x`, 'Düşük değer FPS kazandırır'),
         this.num('fov', 'Görüş Açısı (FOV)', 40, 100, 1, (v) => `${v}°`),
         this.flag('showFps', 'FPS Göstergesi'),

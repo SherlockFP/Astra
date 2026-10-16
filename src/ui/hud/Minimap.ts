@@ -18,6 +18,7 @@ import { glyph, questRing, waypointPin } from '../map/glyphs';
 import { livePins, pinTracked, questPins, staticPins, type Pin } from '../map/worldPins';
 import { cycleTrackMode, getNorthUp, getTrackMode, getWaypoint, toggleNorthUp } from '../map/mapPrefs';
 import { activeVignettePins } from '../../scenes/world/Vignettes';
+import { sampleDay, formatHour, type DaySample } from '../../world/DayCycle';
 
 const SIZE = 192;
 const R = SIZE / 2;
@@ -110,6 +111,12 @@ export class Minimap implements HudWidget {
   private eyeSec = -1;
   private infoAcc = 1;
   private readonly infoEl: HTMLElement;
+  private readonly clockEl: HTMLElement;
+  private readonly clockIco: HTMLElement;
+  private readonly clockTxt: HTMLElement;
+  private readonly clockSample: DaySample = { hour: 0, dayW: 1, nightW: 0, warm: 0, arc: 1 };
+  private clockAcc = 1;
+  private clockDay: boolean | null = null;
   private readonly eyeEl: HTMLButtonElement;
   private readonly trackBtn: HTMLButtonElement;
   private readonly northBtn: HTMLButtonElement;
@@ -174,6 +181,10 @@ export class Minimap implements HudWidget {
     // optional clock / FPS line (Settings.showMapInfo); an overlay, so it takes no layout height
     this.infoEl = div('mm-info', this.el);
     setDisplay(this.infoEl, false);
+    // world clock (WoW style): HH:MM game time on the rim, top left, with a sun or moon
+    this.clockEl = div('mm-clock', this.el);
+    this.clockIco = div('mm-clock-ico', this.clockEl);
+    this.clockTxt = div('mm-clock-txt', this.clockEl);
     // online count under the ring; a click lists the players the same way /kim does
     this.onlineEl = h('button', 'mm-online hud-interactive', this.el);
     this.onlineEl.type = 'button';
@@ -421,7 +432,23 @@ export class Minimap implements HudWidget {
     }
   }
 
+  /** World clock on the rim: HH:MM and the sun or moon, refreshed twice a second (text and icon only when they change). */
+  private refreshClock(dt: number): void {
+    this.clockAcc += dt;
+    if (this.clockAcc < 0.5) return;
+    this.clockAcc = 0;
+    const s = sampleDay(this.clockSample);
+    setText(this.clockTxt, formatHour(s.hour));
+    const day = s.dayW >= 0.5;
+    if (day !== this.clockDay) {
+      this.clockDay = day;
+      this.clockIco.classList.toggle('is-moon', !day);
+      this.clockEl.title = day ? 'Oyun saati (gündüz)' : 'Oyun saati (gece)';
+    }
+  }
+
   update(ctx: HudCtx): void {
+    this.refreshClock(ctx.dt);
     const ctx2 = this.ctx;
     const w = ctx.world;
     const p = ctx.player;

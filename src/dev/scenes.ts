@@ -29,7 +29,7 @@ import type { DungeonDef } from '../types/dungeons';
 const q = new URLSearchParams(location.search);
 
 // night preview (world/NightLight.ts): night=1 starts in it; window.__astraNight(on) toggles it from a test script
-setNightPreview(q.get('night') === '1');
+if (q.get('night') === '1' || !q.has('time')) setNightPreview(q.get('night') === '1');
 (window as unknown as { __astraNight: (on: boolean) => void }).__astraNight = setNightPreview;
 
 const TEST_DUNGEON: DungeonDef = {

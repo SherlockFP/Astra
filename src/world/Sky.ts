@@ -21,6 +21,19 @@ export interface SkyOptions {
   radius?: number;
 }
 
+/** A full dome colour set as Colors (linear), with the cloud cover. Owned by the caller; see Sky.snapshotInto / copyColors. */
+export interface SkyColorSet {
+  zenith: THREE.Color; mid: THREE.Color; horizon: THREE.Color; sunColor: THREE.Color;
+  cloudLight: THREE.Color; cloudShade: THREE.Color; cover: number;
+}
+
+export function makeSkyColorSet(): SkyColorSet {
+  return {
+    zenith: new THREE.Color(), mid: new THREE.Color(), horizon: new THREE.Color(), sunColor: new THREE.Color(),
+    cloudLight: new THREE.Color(), cloudShade: new THREE.Color(), cover: 0,
+  };
+}
+
 export const GOLDEN_HOUR_SKY: SkyOptions = {
   zenith: 0x4f7cc4,
   mid: 0xa8b4d0,
@@ -181,14 +194,28 @@ export class Sky {
   }
 
   /** Re-tints the dome (region atmosphere blending, GDD_OPENWORLD §8.1). Omitted fields keep their current value. */
-  /** Current dome colours (hex) and cloud cover: a night pass takes this snapshot and puts it back when it ends. */
-  snapshotColors(): { zenith: number; mid: number; horizon: number; sunColor: number; cloudLight: number; cloudShade: number; cover: number } {
+  /** Copies the current dome colours and cover into `o` (no allocation). The world clock takes this as its day base each frame. */
+  snapshotInto(o: SkyColorSet): void {
     const u = this.mat.uniforms;
-    return {
-      zenith: (u.uZenith.value as THREE.Color).getHex(), mid: (u.uMid.value as THREE.Color).getHex(), horizon: (u.uHorizon.value as THREE.Color).getHex(),
-      sunColor: (u.uSunColor.value as THREE.Color).getHex(), cloudLight: (u.uCloudLight.value as THREE.Color).getHex(),
-      cloudShade: (u.uCloudShade.value as THREE.Color).getHex(), cover: u.uCover.value as number,
-    };
+    o.zenith.copy(u.uZenith.value as THREE.Color);
+    o.mid.copy(u.uMid.value as THREE.Color);
+    o.horizon.copy(u.uHorizon.value as THREE.Color);
+    o.sunColor.copy(u.uSunColor.value as THREE.Color);
+    o.cloudLight.copy(u.uCloudLight.value as THREE.Color);
+    o.cloudShade.copy(u.uCloudShade.value as THREE.Color);
+    o.cover = u.uCover.value as number;
+  }
+
+  /** Writes a full colour set into the dome uniforms (no allocation). */
+  copyColors(c: SkyColorSet): void {
+    const u = this.mat.uniforms;
+    (u.uZenith.value as THREE.Color).copy(c.zenith);
+    (u.uMid.value as THREE.Color).copy(c.mid);
+    (u.uHorizon.value as THREE.Color).copy(c.horizon);
+    (u.uSunColor.value as THREE.Color).copy(c.sunColor);
+    (u.uCloudLight.value as THREE.Color).copy(c.cloudLight);
+    (u.uCloudShade.value as THREE.Color).copy(c.cloudShade);
+    u.uCover.value = c.cover;
   }
 
   setColors(c: { zenith?: number; mid?: number; horizon?: number; sunColor?: number; cloudLight?: number; cloudShade?: number; cover?: number }): void {

@@ -305,6 +305,13 @@ export class Engine {
     this.renderer.toneMappingExposure = g.exposure;
   }
 
+  /** The grade in force now (last setGrade, or SCENE_GRADE). Read by the world clock as its day base; no allocation. */
+  currentGrade(out: { sat: number; contrast: number; exposure: number }): void {
+    out.sat = this.hdrGuard.uniforms.uSat.value as number;
+    out.contrast = this.hdrGuard.uniforms.uContrast.value as number;
+    out.exposure = this.renderer.toneMappingExposure;
+  }
+
   /** Insert/replace the PSX pass (render/psx). Pass null to remove. */
   setPSXPass(pass: Pass | null): void {
     const old = this.psxPass as (Pass & { unbindComposer?: () => void }) | null;

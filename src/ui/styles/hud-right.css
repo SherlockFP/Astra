@@ -25,6 +25,10 @@
 .mm-eye-ico { position: absolute; left: 3px; top: 3px; width: 12px; height: 12px; background: #9fe3ff; }
 /* clock / FPS line: overlay over the bottom of the disc, no layout height */
 .mm-online { position: absolute; left: 0; right: 0; bottom: 2px; padding: 0; border: 0; background: none; font: 700 12px/1 var(--font-body); color: #f1e6cf; text-shadow: -1px 0 2px rgba(0, 0, 0, 0.85), 1px 0 2px rgba(0, 0, 0, 0.85), 0 -1px rgba(0, 0, 0, 0.5), 0 1px rgba(0, 0, 0, 0.5); text-align: center; cursor: pointer; }
+/* world clock: a plate straddling the rim at 10 o'clock, sun (gold) by day, moon (pale crescent) by night */
+.mm-clock { position: absolute; left: 20px; top: -9px; height: 20px; display: flex; align-items: center; gap: 5px; padding: 0 9px 0 5px; box-sizing: border-box; border-radius: 10px; background: var(--elv-backdrop-solid); border: 2px solid var(--hud-gold-d); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45); pointer-events: none; font: 700 12px/1 var(--font-body); color: var(--hud-gold-l); font-variant-numeric: tabular-nums; text-shadow: var(--sh-text); }
+.mm-clock-ico { width: 12px; height: 12px; flex: none; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff4c2, #f5b83d 60%, #b9781c); }
+.mm-clock-ico.is-moon { background: #c9d6f5; box-shadow: inset -4px 0 0 0 #33436e; }
 .mm-info { position: absolute; left: 50%; bottom: 46px; transform: translateX(-50%); white-space: nowrap; font: 700 13px/1 var(--font-body); color: #f1e6cf; text-shadow: -1px 0 2px rgba(0, 0, 0, 0.85), 1px 0 2px rgba(0, 0, 0, 0.85), 0 -1px rgba(0, 0, 0, 0.5), 0 1px rgba(0, 0, 0, 0.5); font-variant-numeric: tabular-nums; pointer-events: none; }
 .mm-btn { width: 24px; height: 24px; padding: 0; font: 700 16px/20px var(--font-head); color: var(--hud-gold-l); background: var(--elv-backdrop-solid); border: 2px solid var(--elv-border); border-radius: 4px; box-shadow: inset 0 0 0 1px var(--hud-gold-d), 0 2px 6px rgba(0, 0, 0, 0.45); cursor: pointer; pointer-events: auto; }
 .mm-btn:hover { background: var(--elv-backdrop-solid); color: #fff; }

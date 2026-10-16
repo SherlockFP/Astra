@@ -630,7 +630,7 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
   });
 
   // ---- villages: props (shared TownBuilder helper) and palisades; two procedural houses each; night pools under the lamps ----
-  const night = new NightLight({ scene: host.scene, hemi: host.hemi, sun: host.sun, sky });
+  const night = new NightLight({ scene: host.scene, hemi: host.hemi, sun: host.sun, sky, fresh: true });
   host.disposables.push({ dispose: () => night.dispose() });
   const houses = new HouseKit();
   const gy = (x: number, z: number): number => (host.relief ? host.relief.groundY(x, z) : 0);

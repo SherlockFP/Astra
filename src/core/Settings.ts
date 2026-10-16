@@ -169,6 +169,8 @@ export interface SettingsData {
   graphicsQuality: 'low' | 'mid' | 'high';
   /** Çimen yoğunluğu (world/GrassField): dense grass blades and flowers near the camera. 'off' hides them. Default 'mid' (Orta). */
   grassDensity: 'off' | 'low' | 'mid' | 'high';
+  /** Gün/Gece döngüsü (world/DayCycle): 'on' runs the 48 minute world clock; 'off' (Hep gündüz) pins it to midday. Visual only. */
+  dayNightCycle: 'on' | 'off';
   /** Revision of the crisp-look defaults (psx off, no jitter / affine / dither). Stored files below 1 get them once (see the constructor). */
   gfxLookRev: number;
   /** Revision of the WoW-clarity defaults (renderScale 2 = native device pixels). Stored files below 1 get renderScale 2 once. */
@@ -305,6 +307,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   barGhostRev: 1,
   graphicsQuality: 'mid',
   grassDensity: 'mid',
+  dayNightCycle: 'on',
   gfxLookRev: 1,
   gfxClarityRev: 1,
   // AUDIO_MIX (audioRev 1)
@@ -437,6 +440,7 @@ export class Settings {
     this.data.cameraDistanceWow = Number.isFinite(this.data.cameraDistanceWow) ? Math.min(35, Math.max(2, this.data.cameraDistanceWow)) : 13;
     if (this.data.graphicsQuality !== 'low' && this.data.graphicsQuality !== 'mid' && this.data.graphicsQuality !== 'high') this.data.graphicsQuality = 'mid';
     if (!['off', 'low', 'mid', 'high'].includes(this.data.grassDensity as string)) this.data.grassDensity = 'mid';
+    if (this.data.dayNightCycle !== 'on' && this.data.dayNightCycle !== 'off') this.data.dayNightCycle = 'on';
     if (this.data.combatSoundLevel !== 'low' && this.data.combatSoundLevel !== 'normal') this.data.combatSoundLevel = 'normal';
     this.data.ambienceVolume = Number.isFinite(this.data.ambienceVolume) ? Math.min(1, Math.max(0, this.data.ambienceVolume)) : 0.4;
     this.data.settingsVersion = SETTINGS_VERSION;
