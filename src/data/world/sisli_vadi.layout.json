@@ -29213,6 +29213,19 @@
  ],
  "rares": [
   {
+   "id": "rare_gumus_ejder",
+   "name": "Gümüş Ejder Yavrusu",
+   "base": "ow_wolf",
+   "scale": 0.42,
+   "tint": "0xd8e4f4",
+   "level": 7,
+   "hpMult": 8,
+   "spots": [[300, 100], [392, 140], [330, 30]],
+   "respawnMin": [35, 45],
+   "special": "Buz Nefesi: 5 m koni, 1.2 sn işaret, 2 yığın soğuk",
+   "drop": "Mavi (nadir) garanti x2 · Kalıntı x4 · Safir %30"
+  },
+  {
    "id": "rare_gumus_yele",
    "name": "Gümüş Yele",
    "base": "ow_wolf",
