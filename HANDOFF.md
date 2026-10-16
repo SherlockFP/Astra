@@ -91,3 +91,10 @@ Known kit simplifications still open: Ani Ölüm rolls 8–10 % (engine multipli
 - New sims: solo_lowlevel.mjs; QA: tools/qa/dungeon-pack.mjs, tools/qa/classes.mjs.
 
 - Gate added (2026-10-15): node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/chain_e2e.mjs (Sisli first chain end-to-end, ~8 s). Run it on every quest/layout/NPC change; also tools/xp-ledger.mjs (via pace-check), tools/icon-check.mjs, dev/combat-sim/solo_lowlevel.mjs, camp_respawn.mjs, heights.mjs.
+
+## 2026-10-16 (director session, all merged to director/sprint1 and master)
+- World: 4 zones densified (tools/world-density.mjs --zone, world-fill.mjs), Kizil Sinir decor mirrored; GrassField.ts (chunky tufts, night-lit, Cimen yogunlugu); Trove grade/rim; HouseKit/MagitechKit towns; DayCycle.ts 48-min shared clock + minimap clock; world map atlas (src/ui/map/).
+- Combat: WoW targeting (targetSelect.ts), 5 m melee + auto-turn, stale-target retarget, red error line naming the ability, Chunks.ts voxel impact bursts, synth.ts layered hit audio + combat bus, newPlayerEase L1-9 (lowLevelScaling.ts), per-spec L1-9 damage curve.
+- Content/systems: Sisli Magara starter dungeon (1-10) + Magaradaki Sis quest + finder queue card + cave gate; dungeon end card with re-queue; consumables (Sisli Matara flask, food); 6 mounts (mounts.ts, Binekler tab, stable vendor); player popup menu (duel/trade/invite/inspect/follow/whisper); chat bubbles; enemy net sync fixes (netsync.mjs); loading screen hold; onboarding guide fixes; F interact priority; camp danger warning; patrols; rare Gumus Ejder Yavrusu.
+- New sims: netsync, social, consumables, mounts, class_ttk (L1/L5 asserted, L10+ reported vs 3-10 s), dungeon_run, run_summary, onboarding, channels, bar_layout. Merge helper pattern: worktree commit -> merge -> tsc -> clean export vite build -> push sprint + master.
+- Open: L10-30 trash TTK too fast for paladin/monk/evoker/necro/demonhunter (needs mob HP lever or accept); Kemik corridors 8 m in one tunnel; meadow draw calls +36%; hit audio not heard by a human yet.
