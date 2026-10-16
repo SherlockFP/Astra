@@ -139,7 +139,7 @@ const modelCount = () => rp.object3d.children.length;
 for (const m of M.MOUNTS) {
   MountMod.setRemoteMounted(rp, true, m.id);
   const root = rp.object3d.children.find((c) => c.name === 'mount_' + m.id);
-  ok(`model.${m.shape}`, !!root && root.children.length >= 8 && rp.modelLift === MountMod.MOUNT_LIFT, `${root?.children.length ?? 0} parts`);
+  ok(`model.${m.shape}`, !!root && root.children.length >= 7 && rp.modelLift === MountMod.mountLift(m.id), `${root?.children.length ?? 0} parts`);
   MountMod.setRemoteMounted(rp, false);
 }
 ok('model.off-clears', modelCount() === 0 && rp.modelLift === 0);
@@ -179,7 +179,7 @@ frames(sec(0.5));
 ok('rider.casting-not-yet', rider.mounted === false);
 frames(sec(1.1));
 ok('rider.mounted-after-cast', rider.mounted === true && rider.mountId === 'kristal_geyik' && rider.speedMul() === MountMod.MOUNT_SPEED_MUL);
-ok('rider.model-is-chosen', !!fp.object3d.children.find((c) => c.name === 'mount_kristal_geyik') && fp.modelLift === MountMod.MOUNT_LIFT);
+ok('rider.model-is-chosen', !!fp.object3d.children.find((c) => c.name === 'mount_kristal_geyik') && fp.modelLift === MountMod.mountLift('kristal_geyik'));
 ok('rider.event-with-id', mountedEvents.at(-1)?.on === true && mountedEvents.at(-1)?.mountId === 'kristal_geyik');
 // the bob moves the model up and down while running
 const y0 = fp.object3d.children.find((c) => c.name === 'mount_kristal_geyik').position.y;

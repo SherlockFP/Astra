@@ -74,6 +74,8 @@ export class Player extends Actor {
   jumpY = 0;
   /** Mount (game/Mount.ts): the character model and blob shadow are lifted by this while mounted. 0 on foot. */
   modelLift = 0;
+  /** Mount (game/Mount.ts setRemoteMounted): drives a remote rider's mount animation each frame. Null on foot / local. */
+  mountTick: ((dt: number, moving: boolean) => void) | null = null;
 
   // ---- additions (player module) ----
   /** The built character model (weapon tip / bones / variants). `Actor.model` is its root. */
@@ -549,6 +551,7 @@ export class Player extends Actor {
 
     this.updateJuice(dt);
     updateFormBody(this, dt); // KIT Druid: beast rig of the active shapeshift form
+    this.mountTick?.(dt, this.remoteSpeed > 0.5);
 
     if (this.charModel) this.charModel.root.position.y = this.modelLift;
     // blob shadow stays on the ground while jumping and shrinks with height
