@@ -15,6 +15,8 @@ import { inView } from './ViewCull';
 import { charLodPlan, getGfxQuality, type CharLodPlan } from '../world/WorldPerf';
 import { nearerCount, registerCharLod, tierFor, type CharTier } from './CharacterLod';
 import { characterBillboard } from './CharacterBillboard';
+import { CHARACTER_HEIGHT, CLASS_LOOK, KAYKIT_NATIVE_HEIGHT, addClassRim } from './CharacterModel';
+import type { ClassId } from '../types/common';
 import { ambientLodPlan, sampleRoute } from './AmbientRoute';
 
 export type NpcRole = TownDef['npcs'][number]['role'];
@@ -340,6 +342,8 @@ export class NPC extends Entity implements Interactable {
   private blob: THREE.Object3D | null = null;
   /** KayKit rigs: the accessory nodes this NPC wears (null = no accessory toggling, the model is drawn as it is). */
   private accShow: string[] | null = null;
+  /** Standing height of the body on screen (m): the 1.8 m player height for the KayKit heroes, the preset scale applied. */
+  private bodyH = CHARACTER_HEIGHT;
   /** The billboard stand-in (tier `billboard`), shown while the model is not. */
   private sprite: THREE.Sprite | null = null;
   /** Ambient routine (def.routine): the clock time the routine has been held (the NPC stands still while it talks to the player). */
@@ -395,7 +399,15 @@ export class NPC extends Entity implements Interactable {
     const kay = url.includes('/characters/');
     if (kay) setAccessories(obj, p.show ?? []);
     if (p.tint) tintObject(obj, liftNpcTint(p.tint));
-    if (p.scale) obj.scale.setScalar(p.scale);
+    // town NPCs share the player's scale: the KayKit heroes (~2.3 m native) are shown at 1.8 m; the King and Worker meshes are ~1.9 m already
+    const sc = p.scale ?? 1;
+    obj.scale.setScalar((kay ? CHARACTER_HEIGHT / KAYKIT_NATIVE_HEIGHT : 1) * sc);
+    this.bodyH = (kay ? CHARACTER_HEIGHT : 1.9) * sc;
+    this.height = this.bodyH;
+    if (kay) {
+      const rimClass: ClassId = /Barbarian/.test(url) ? 'barbarian' : /Mage/.test(url) ? 'mage' : /Rogue/.test(url) ? 'rogue' : 'knight';
+      addClassRim(obj, CLASS_LOOK[rimClass].accent);
+    }
     if (cartUrl) {
       // a traveller's cart, pulled 2.6 m behind (it turns with the NPC; it has no collider of its own)
       const cart = G.assets.instantiate(cartUrl);
@@ -418,9 +430,8 @@ export class NPC extends Entity implements Interactable {
     this.accShow = kay ? (p.show ?? []) : null;
     this.model = obj;
     this.object3d.add(obj);
-    const sc = p.scale ?? 1;
     const sprite = characterBillboard(p.tint ? liftNpcTint(p.tint) : 0xd9cbb0);
-    sprite.scale.set(0.9 * sc, 2.4 * sc, 1);
+    sprite.scale.set(0.72 * sc, this.bodyH * 1.04, 1);
     sprite.visible = false;
     this.object3d.add(sprite);
     this.sprite = sprite;
@@ -445,7 +456,7 @@ export class NPC extends Entity implements Interactable {
     const title = this.preset.title && this.preset.title !== this.def.name ? `<div class="s">&lt;${this.preset.title}&gt;</div>` : '';
     try {
       this.label = G.ui.addWorldLabel(this.object3d, `<div class="efs-wl"><div class="n" style="color:${col}">${this.def.name}</div>${title}</div>`, {
-        offsetY: this.height * (this.preset.scale ?? 1) + 0.55,
+        offsetY: this.bodyH + 0.55,
         className: 'efs-wl-wrap',
         maxDistance: 26,
       });
@@ -553,7 +564,7 @@ export class NPC extends Entity implements Interactable {
         this.questMark.setVisible(true);
       } else {
         this.questMark = G.ui.addWorldLabel(this.object3d, html, {
-          offsetY: this.height * (this.preset.scale ?? 1) + 1.0,
+          offsetY: this.bodyH + 1.0,
           className: 'efs-wl-wrap',
           maxDistance: 40,
         });
@@ -569,7 +580,7 @@ export class NPC extends Entity implements Interactable {
       if (!this.guideTag) {
         if (!on) return;
         this.guideTag = G.ui.addWorldLabel(this.object3d, '<div class="guide-tag">▼ Buraya konuş</div>', {
-          offsetY: this.height * (this.preset.scale ?? 1) + 2.3,
+          offsetY: this.bodyH + 2.3,
           className: 'efs-wl-wrap',
           maxDistance: 60,
         });
@@ -593,7 +604,7 @@ export class NPC extends Entity implements Interactable {
         name: this.def.name,
         color: 'var(--gold-1)',
         seconds,
-        offsetY: this.height * (this.preset.scale ?? 1) + 1.35,
+        offsetY: this.bodyH + 1.35,
       });
       this.bubbleTimer = seconds;
     } catch {

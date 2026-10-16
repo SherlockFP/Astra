@@ -12,6 +12,7 @@ import type { EnemyAI } from '../ai/EnemyAI';
 import { inView } from './ViewCull';
 import { copyMeshMaterials, disposeFlashClones, mapMeshMaterials, materialsOf, restoreMeshMaterials, type MaterialSwap } from './sharedMaterials';
 import { VERT } from '../world/Heightfield';
+import { humanoidBodyScale } from '../data/enemyModels';
 import type { World } from '../world/World';
 
 /** Gravity for falling enemies (m/s^2), same as the player (PlayerController GRAVITY). */
@@ -504,7 +505,7 @@ export class Enemy extends Actor {
         return MINIBOSS_SCALE;
       case 'boss': {
         const want = Math.min(BOSS_MAX_SCALE, (this.bossDef?.arenaRadius ?? 0) / BOSS_ARENA_DIV);
-        return Math.max(1, want / this.def.scale);
+        return Math.max(1, want / this.bodyScale());
       }
       default:
         return 1;
@@ -518,9 +519,14 @@ export class Enemy extends Actor {
     return u < 0.6 ? 1 : 0.92 + (0.16 * (u - 0.6)) / 0.4;
   }
 
-  /** Final visual scale of the holder: def scale x rank factor x size variance x the external visual scale (affixes, champions). */
+  /** Body scale of the model: the humanoid table (data/enemyModels HUMANOID_BODY, sized to the 1.8 m player) or the def scale. */
+  bodyScale(): number {
+    return humanoidBodyScale(this.def.model) ?? this.def.scale;
+  }
+
+  /** Final visual scale of the holder: body scale x rank factor x size variance x the external visual scale (affixes, champions). */
   baseScale(): number {
-    return this.def.scale * this.rankFactor() * this.sizeVariance() * this.visualScale;
+    return this.bodyScale() * this.rankFactor() * this.sizeVariance() * this.visualScale;
   }
 
   /** Rare elites (id prefix rare_) get the glow and the larger size. */

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { G } from '../game/G';
 import { Assets } from '../core/Assets';
 import { applyPSXTexture } from '../render/psx';
+import { shellMaterial } from '../vfx/Meshes';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { AnimController } from './AnimController';
 import { disposeFlashClones, mapMeshMaterials } from './sharedMaterials';
@@ -93,6 +94,55 @@ export const CLASS_VISUALS: Record<ClassId, ClassVisual> = {
   shaman: { url: KAYKIT + 'Mage.glb', resource: 'mana', main: [], off: [], helm: 'Mage_Hat', shield: null },
   druid: { url: KAYKIT + 'Rogue_Hooded.glb', resource: 'mana', main: [], off: [], helm: null, shield: null },
 };
+
+/**
+ * Class identity on the shared KayKit rigs: an accent colour for the rim (Ui class colour), and size multipliers for the helm and
+ * the weapon so the silhouettes differ (a tall mage hat, a heavy barbarian axe, the rogue's short blades). Multipliers apply to the
+ * body's own accessory nodes and to the attached gear, never to the body or the bones.
+ */
+export interface ClassLook { accent: number; helm: number; weapon: number }
+export const CLASS_LOOK: Record<ClassId, ClassLook> = {
+  knight: { accent: 0xffd060, helm: 1, weapon: 1 },
+  barbarian: { accent: 0xff5a3c, helm: 1.06, weapon: 1.08 },
+  mage: { accent: 0x9a7bff, helm: 1.12, weapon: 1.04 },
+  rogue: { accent: 0x5ee89a, helm: 1, weapon: 0.9 },
+  monk: { accent: 0xffb24a, helm: 1.04, weapon: 0.96 },
+  archer: { accent: 0x9fd86a, helm: 1, weapon: 1.02 },
+  paladin: { accent: 0xfff2a0, helm: 1, weapon: 1.02 },
+  necromancer: { accent: 0x5fd8c8, helm: 1.1, weapon: 1.02 },
+  warlock: { accent: 0xb050ff, helm: 1, weapon: 1 },
+  demonhunter: { accent: 0xff3a78, helm: 1, weapon: 0.94 },
+  evoker: { accent: 0x4ac8ff, helm: 1.08, weapon: 1.02 },
+  priest: { accent: 0xfff7d0, helm: 1.08, weapon: 1 },
+  shaman: { accent: 0x3ad0c0, helm: 1.06, weapon: 1 },
+  druid: { accent: 0x9fdc5a, helm: 1.04, weapon: 0.96 },
+};
+
+const classRimMats = new Map<number, THREE.ShaderMaterial>();
+/**
+ * Class rim: a thin fresnel shell in the class accent over every skinned mesh of a KayKit body, so the silhouette reads against the
+ * voxel world (the same shell the target rim uses, bound to the body's own skeleton). Shells are `vfxShell`, so variant swaps,
+ * hit flashes and material copies leave them alone. Used by the player models and the town NPCs.
+ */
+export function addClassRim(body: THREE.Object3D, accent: number): void {
+  let mat = classRimMats.get(accent);
+  if (!mat) {
+    mat = shellMaterial(accent, { power: 2.6, inflate: 0.012, alpha: 0.5, base: 0, additive: false });
+    classRimMats.set(accent, mat);
+  }
+  body.traverse((o) => {
+    const sm = o as THREE.SkinnedMesh;
+    if (!sm.isSkinnedMesh || !sm.skeleton || o.userData.vfxShell) return;
+    const shell = new THREE.SkinnedMesh(sm.geometry, mat);
+    shell.bind(sm.skeleton, sm.bindMatrix);
+    shell.userData.vfxShell = true;
+    shell.renderOrder = 11;
+    shell.frustumCulled = false;
+    shell.castShadow = false;
+    shell.receiveShadow = false;
+    sm.add(shell);
+  });
+}
 
 /** Every toggleable weapon-ish node on the KayKit rigs (capes are never toggled). */
 const WEAPON_NODES = new Set([
@@ -388,6 +438,8 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
     if (m.isSkinnedMesh) m.frustumCulled = false;
   });
   holder.add(body);
+  const look = CLASS_LOOK[classId] ?? CLASS_LOOK.knight;
+  addClassRim(body, look.accent);
   const anim = new AnimController(body, asset.clips);
 
   const hand = { r: findBone(body, 'handslot.r'), l: findBone(body, 'handslot.l') };
@@ -399,6 +451,9 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
   const builtin = new Map<string, THREE.Object3D>();
   body.traverse((o) => {
     if (WEAPON_NODES.has(o.name) || HELM_NODES.has(o.name)) builtin.set(o.name, o);
+    // class silhouette: the built-in weapon / helm nodes take the class size multipliers (CLASS_LOOK)
+    if (WEAPON_NODES.has(o.name)) o.scale.multiplyScalar(look.weapon);
+    else if (HELM_NODES.has(o.name)) o.scale.multiplyScalar(look.helm);
   });
   const builtinTips = new Map<string, THREE.Object3D>();
 
@@ -450,6 +505,8 @@ export async function loadCharacterModel(classId: ClassId, opts: CharacterModelO
     obj.position.set(...a.pos);
     if (a.quat) obj.quaternion.set(...a.quat);
     else if (a.rotY) obj.rotation.y = a.rotY;
+    // class size multiplier (CLASS_LOOK): the main-hand gear and the helm, not the off-hand
+    if (slot !== 'offhand') obj.scale.multiplyScalar(slot === 'helm' ? look.helm : look.weapon);
     // offhand daggers mirror so the blade edge matches the main hand
     if (slot === 'offhand' && a === ATTACH.offBlade && (base?.category === 'dagger' || mUrl.includes('dagger'))) obj.scale.x = -1;
     bone.add(obj);
