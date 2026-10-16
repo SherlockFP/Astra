@@ -126,12 +126,12 @@ export const TIPS: TipDef[] = [
   },
   {
     id: 'waypoint', title: 'Işınlayıcı', prio: 65, keys: ['F'], keyActions: ['interact'],
-    text: 'Keşfettiğin taşlar arasında hızlı yolculuk yapabilirsin. Taşa yaklaşıp {k:interact} tuşuna bas.',
+    text: 'Keşfettiğin taşlar arasında hızlı yolculuk yapabilirsin. Taşa yaklaşıp {k:interact} tuşuna bas; bölgeler arası uçuş için Kuzgunkale ve diğer bölgelerin taşları da listelenir.',
     when: (c) => c.waypointFound,
   },
   {
     id: 'mount', title: 'Binek', prio: 72, keys: ['F9'], keyActions: ['mount'],
-    text: '{k:mount} ile binegini çağır: açık dünyada koşu hızın artar. İnmek için yine {k:mount} tuşuna bas.',
+    text: '{k:mount} ile binegini çağır: açık dünyada koşu hızın artar. İnmek için yine {k:mount} tuşuna bas. Çubuktaki Binek Çağır hücresi de aynısını yapar.',
     when: (c) => c.inTown && c.moved && c.sceneAge >= 10,
   },
   {

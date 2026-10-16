@@ -58,3 +58,9 @@ export const STARTER_MOUNT_ID = 'kir_at';
 
 /** Teaching item id of a mount (a material with `teachesMount`, data/materials.ts). The action bar also holds this id. */
 export const mountItemId = (mountId: string): string => `mount_${mountId}`;
+
+/**
+ * The action bar's summon cell (materials.ts `MOUNT_CALL_ID`, placed by defaultExtraBar.ts): clicking it acts like F9 (the mount
+ * systems/Mounts.ts summons, or dismounts when riding). It is never a pouch stack, so the bar shows no count.
+ */
+export const MOUNT_CALL_ID = 'mount_call';

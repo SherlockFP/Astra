@@ -2,7 +2,7 @@ import type { Rarity } from '../types/common';
 import type { StatBlock } from '../types/stats';
 import { BOHCA_DEFS } from './market';
 import { PETS, petItemId } from './pets';
-import { MOUNTS, mountItemId } from './mounts';
+import { MOUNTS, MOUNT_CALL_ID, mountItemId } from './mounts';
 
 export interface MaterialDef {
   id: string;
@@ -227,6 +227,8 @@ for (const m of MOUNTS) {
   add({ id: mountItemId(m.id), name: `${m.name} Tasması`, desc: `Kullanınca ${m.name} binekini öğretir. Öğrenilen binek F9 ile çağrılır.`, icon: ic('item-trinket'), rarity: 'rare', sellPrice: 60,
     ...(vendor ? { buyPrice: vendor.price, requiredLevel: vendor.level } : {}), kind: 'consumable', maxStack: 99, teachesMount: m.id });
 }
+// the action bar's summon cell (barDrop.useBarMat acts like F9; never in the pouch, so its count stays 0 and is never shown)
+add({ id: MOUNT_CALL_ID, name: 'Binek Çağır', desc: 'Seçili binekini çağırır; binekteysen iner. F9 ile aynı.', icon: ic('item-trinket'), rarity: 'common', sellPrice: 0, kind: 'consumable', maxStack: 1 });
 
 // ------------------------------------------------------------------ helpers
 /** All potion ids of a kind ('hp' | 'mp') ordered by tier. */

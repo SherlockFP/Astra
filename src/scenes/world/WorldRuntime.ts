@@ -19,7 +19,7 @@ import { StoryBeats } from './StoryBeats';
 import { MiniBossDirector } from './MiniBossDirector';
 import { BossSchedule } from './BossSchedule';
 import { SafeZones } from './SafeZones';
-import { WaypointNetwork } from './WaypointNetwork';
+import { WaypointNetwork, type FlightDest } from './WaypointNetwork';
 import { GraveyardNetwork } from './Graveyards';
 import { spawnVillageNpcs } from './VillageSpawner';
 import { WorldPois } from './WorldPois';
@@ -188,6 +188,7 @@ export class WorldRuntime {
     this.run('vignettes', () => this.vignettes.update(dt));
     this.run('siege', () => this.siege?.update(dt));
     this.run('ambient', () => this.ambient?.update(dt));
+    this.run('flight', () => this.waypoints.tick(dt));
     if (G.net.isAuthority) this.run('goblins', () => this.goblinTick(dt));
     this.regionTimer -= dt;
     if (this.regionTimer <= 0) {
@@ -217,6 +218,23 @@ export class WorldRuntime {
     const p = this.o.world.localPlayer;
     if (!p) return 'Karakter yok.';
     return this.waypoints.travel(toId, { x: p.position.x, z: p.position.z }, this.o.world.time);
+  }
+
+  /** Işınlayıcı panel: the flight destinations from this zone (Kuzgunkale and the stones of the other flight zones). */
+  flightDests(): FlightDest[] {
+    return this.waypoints.flightDests(this.ctx.def.id, G.character?.level ?? 1);
+  }
+
+  /** Işınlayıcı panel: starts a flight to `dest` (a short cast). Returns '' when it started, else the Turkish message. */
+  startFlight(dest: FlightDest): string {
+    const p = this.o.world.localPlayer;
+    if (!p) return 'Karakter yok.';
+    return this.waypoints.startFlight(dest, { x: p.position.x, z: p.position.z }, this.o.world.time);
+  }
+
+  /** A flight cast is running (the panel and the stones read it). */
+  get flying(): boolean {
+    return this.waypoints.flying;
   }
 
   /** Every peer: an `ev:*` key of the 'gate' channel (GDD_OPENWORLD §9.4). Unknown keys are ignored. */
