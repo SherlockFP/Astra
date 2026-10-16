@@ -1181,15 +1181,18 @@ boss({
   hp: 60, dmg: 2.5, speed: 5.3, radius: 1.3, enrage: 180, arenaR: 20, loot: 'loot_d2_b1', anims: A_CHAR, resist: R_DEMON, visual: { emissiveIntensity: 0.25, eyeEmissive: 0xff8030 },
   basic: cone('gurz_swing', 'Çekiç Savuruşu', 4.5, 110, 2.2, 1.0, 'Weapon', 0.45, { windup: 0.65, telegraph: true }),
   abilities: [
+    // tank buster: a telegraphed cone on the tank (not parryable), bleed stacks on the tank
+    cone('gurz_hammer', 'Ağır Çekiç', 6, 100, 12, 4.0, 'Weapon', 0.6, { windup: 1.4, initialCooldown: 6, telegraph: true, tankBuster: true, statuses: [bleed(1, 0.3, 8)], sfx: 'ground_slam' }),
     custom('gurz_anvil_slam', 'Örs Darbesi', 15, 7, 1.2, 'Jump', { sfx: 'boss_cast', params: { impact: 0.25 } }),
     custom('gurz_molten_pour', 'Erimiş Döküm', 24, 12, 2.0, 'Wave', { sfx: 'boss_cast', params: { impact: 0.8 } }),
-    custom('gurz_bellows', 'Körük Esintisi', 35, 20, 1.0, 'Yes', { sfx: 'boss_roar', params: { impact: 0.8 } }),
+    // group beat (script draws the r 14 circle; the arena corners outside it are the safe spots), then the gust pushes south
+    custom('gurz_bellows', 'Körük Ateşi', 22, 12, 2.0, 'Yes', { sfx: 'boss_roar', params: { impact: 0.8 } }),
     custom('gurz_call_slaves', 'Çalışın Köleler!', 99, 9999, 1.2, 'Wave', { sfx: 'boss_roar', params: { impact: 0.8 } }),
   ],
   phases: [
-    bp('p1', 1.01, ['gurz_anvil_slam', 'gurz_molten_pour', 'gurz_bellows']),
-    bp('p2', 0.66, ['gurz_anvil_slam', 'gurz_molten_pour', 'gurz_bellows'], { yell: 'Köleler! İşbaşına!', ability: 'gurz_call_slaves' }),
-    bp('p3', 0.33, ['gurz_anvil_slam', 'gurz_molten_pour', 'gurz_bellows'], { yell: 'Köleler! İşbaşına!', ability: 'gurz_call_slaves' }),
+    bp('p1', 1.01, ['gurz_hammer', 'gurz_anvil_slam', 'gurz_molten_pour', 'gurz_bellows']),
+    bp('p2', 0.66, ['gurz_hammer', 'gurz_anvil_slam', 'gurz_molten_pour', 'gurz_bellows'], { yell: 'Köleler! İşbaşına!', ability: 'gurz_call_slaves' }),
+    bp('p3', 0.33, ['gurz_hammer', 'gurz_anvil_slam', 'gurz_molten_pour', 'gurz_bellows'], { yell: 'Köleler! İşbaşına!', ability: 'gurz_call_slaves' }),
   ],
   intro: 'Örsüm aç! Kemiklerinizi döveceğim!', death: 'Ateş... sönüyor...',
   arena: { cx: 60, cz: 24, w: 48, h: 48, homeX: 60, homeZ: 31.6 },
@@ -1200,15 +1203,17 @@ boss({
   hp: 75, dmg: 2.7, speed: 3.4, radius: 2.2, enrage: 210, arenaR: 16, loot: 'loot_d2_b2', anims: A_GEN, resist: { ...R_GOLEM, fire: 0.9 }, visual: { runRef: 3.4 },
   basic: cone('atesyurek_punch', 'Ezici Yumruk', 5, 120, 2.8, 1.0, 'Attack', 0.77, { windup: 0.8, telegraph: true, sfx: 'ground_slam' }),
   abilities: [
+    // tank buster: a telegraphed cone on the tank, burning stacks; step out of the cone or tank it
+    cone('atesyurek_quake', 'Magma Yumruğu', 6, 70, 14, 4.0, 'Attack', 0.7, { windup: 1.4, initialCooldown: 8, telegraph: true, tankBuster: true, statuses: [burn(0.3, 6)], sfx: 'ground_slam' }),
     custom('atesyurek_eruption', 'Volkanik Patlama', 20, 8, 1.8, 'Cast', { sfx: 'boss_cast', params: { impact: 1.67 } }),
     custom('atesyurek_magma_wave', 'Magma Dalgası', 30, 18, 2.0, 'Cast', { sfx: 'boss_cast', params: { impact: 1.67 } }),
     custom('atesyurek_heat', 'Kızgın Kalp', 0, 0, 0, '', { params: { passive: 1 } }),
     custom('atesyurek_spawn_slimes', 'Lav Dökümü', 999, 9999, 1.0, 'Enrage', { sfx: 'boss_roar' }),
   ],
   phases: [
-    bp('p1', 1.01, ['atesyurek_eruption', 'atesyurek_magma_wave']),
-    bp('p2', 0.5, ['atesyurek_eruption', 'atesyurek_magma_wave'], { yell: '*Lav kaynıyor!*', ability: 'atesyurek_spawn_slimes' }),
-    bp('p3', 0.25, ['atesyurek_eruption', 'atesyurek_magma_wave'], { yell: '*Erimiş öfke!*' }),
+    bp('p1', 1.01, ['atesyurek_quake', 'atesyurek_eruption', 'atesyurek_magma_wave']),
+    bp('p2', 0.5, ['atesyurek_quake', 'atesyurek_eruption', 'atesyurek_magma_wave'], { yell: '*Lav kaynıyor!*', ability: 'atesyurek_spawn_slimes' }),
+    bp('p3', 0.25, ['atesyurek_quake', 'atesyurek_eruption', 'atesyurek_magma_wave'], { yell: '*Erimiş öfke!*' }),
   ],
   intro: '*Ateşyürek lav gölünden yükseliyor!*', death: '*Ateşyürek soğuyarak taşa dönüşüyor...*',
   arena: { cx: 124, cz: 136, w: 48, h: 48, homeX: 122, homeZ: 136 },
@@ -1219,6 +1224,10 @@ boss({
   hp: 110, dmg: 2.3, speed: 5.9, radius: 1.5, enrage: 300, arenaR: 22, loot: 'loot_d2_b3', anims: { ...A_CHAR, run: 'Run' }, resist: R_DEMON, visual: { eyeEmissive: 0x60b0ff }, tint: 0xa0c8ff, emissive: 0x2050ff,
   basic: cone('ignaroth_combo', 'Pençe Kombosu', 5, 120, 2.3, 1.0, 'Weapon', 0.45, { windup: 0.65, telegraph: true, damage: { coef: 1.0, type: 'fire' } } as Ab),
   abilities: [
+    // tank buster: a telegraphed line from the boss through the tank (not parryable)
+    line('ignaroth_rend', 'Alev Yarması', 10, 2.5, 14, 1.4, 4.0, 'fire', 'Weapon', 0.7, { initialCooldown: 7, tankBuster: true, statuses: [burn(0.3, 6)], sfx: 'boss_cast' }),
+    // group beat: a 2.5 s cast bar over the whole arena (the arena is ~48 m across); everyone takes it, healers get a window
+    aoe('ignaroth_inferno', 'Dökümhane Ateşi', 'self_aoe', 40, 30, 24, 2.5, 1.0, 'fire', 'Yes', 0.6, { initialCooldown: 16, castTime: 2.5, sfx: 'boss_cast' }),
     custom('ignaroth_charge', 'Mavi Alev Hücumu', 18, 10, 1.0, 'Run2', { sfx: 'boss_roar', params: { impact: 0.1, target: 2 } }),
     custom('ignaroth_meteor', 'Göktaşı', 30, 20, 1.0, 'Yes', { sfx: 'boss_cast', params: { impact: 0.6 } }),
     custom('ignaroth_flame_walls', 'Alev Duvarları', 26, 14, 1.2, 'Wave', { sfx: 'boss_cast', params: { impact: 0.8 } }),
@@ -1226,10 +1235,12 @@ boss({
     custom('ignaroth_fury', 'Mavi Öfke', 999, 9999, 1.0, 'No', { sfx: 'boss_roar' }),
   ],
   phases: [
-    bp('p1', 1.01, ['ignaroth_charge', 'ignaroth_meteor', 'ignaroth_flame_walls']),
-    bp('p2', 0.65, [], { yell: 'Dökümhane, efendine hizmet et!', ability: 'ignaroth_gates' }),
-    bp('p3', 0.649, ['ignaroth_charge', 'ignaroth_meteor', 'ignaroth_flame_walls']),
-    bp('p4', 0.3, ['ignaroth_charge', 'ignaroth_meteor', 'ignaroth_flame_walls'], { yell: 'YETER! Hepiniz kül olacaksınız!', ability: 'ignaroth_fury' }),
+    // 50 %: the gates (adds from the forge, grate vents, and a soak meteor every 12 s) run as a mechanic phase; the phase after it
+    // brings back the whole kit (tank buster, raid beat, charge, soak, walls)
+    bp('p1', 1.01, ['ignaroth_rend', 'ignaroth_inferno', 'ignaroth_charge', 'ignaroth_meteor', 'ignaroth_flame_walls']),
+    bp('p2', 0.5, [], { yell: 'Dökümhane, efendine hizmet et!', ability: 'ignaroth_gates' }),
+    bp('p3', 0.499, ['ignaroth_rend', 'ignaroth_inferno', 'ignaroth_charge', 'ignaroth_meteor', 'ignaroth_flame_walls']),
+    bp('p4', 0.3, ['ignaroth_rend', 'ignaroth_inferno', 'ignaroth_charge', 'ignaroth_meteor', 'ignaroth_flame_walls'], { yell: 'YETER! Hepiniz kül olacaksınız!', ability: 'ignaroth_fury' }),
   ],
   intro: 'Mavi alev, kızıl alevi yutar. Siz de yanacaksınız!', death: 'Bu alev... sönmez... bir gün... dönerim...',
   arena: { cx: 24, cz: 176, w: 48, h: 48, homeX: 22, homeZ: 176 },
