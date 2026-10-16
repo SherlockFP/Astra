@@ -1336,14 +1336,18 @@ boss({
   visual: { hide: ROGUE_HIDE.filter((n) => n !== 'Knife' && n !== 'Knife_Offhand'), runRef: 7, eyeEmissive: 0xff2040 },
   basic: cone('nefris_slash', 'Çift Hançer', 3.5, 90, 1.6, 1.0, 'Dualwield_Melee_Attack_Slice', 0.55, { windup: 0.5, telegraph: false, statuses: [poison(1, 0.3, 8)] }),
   abilities: [
+    // tank buster: a telegraphed cone on the tank (not parryable), poison/bleed stacks
+    cone('nefris_gouge', 'Kanlı Hançer', 5, 100, 12, 4.0, 'Dualwield_Melee_Attack_Slice', 0.6, { windup: 1.4, initialCooldown: 7, telegraph: true, tankBuster: true, statuses: [bleed(1, 0.3, 8)], sfx: 'dagger_throw' }),
+    // group beat: a raid-wide shadow wail after a 2.5 s cast bar
+    aoe('nefris_wail', 'Gölge Çığlığı', 'self_aoe', 36, 30, 24, 2.5, 0.6, 'shadow', 'Spellcast_Raise', 0.8, { initialCooldown: 16, castTime: 2.5, sfx: 'shadow_cast' }),
     custom('nefris_shadowstep', 'Gölge Adımı', 15, 8, 1.0, 'Spellcast_Raise', { sfx: 'blink', params: { impact: 0.5 } }),
     custom('nefris_fan', 'Hançer Yelpazesi', 20, 12, 1.2, 'Throw', { sfx: 'dagger_throw', params: { impact: 0.75 } }),
     custom('nefris_clones', 'Gölge Klonları', 999, 9999, 1.0, 'Spellcast_Raise', { sfx: 'shadow_cast' }),
   ],
   phases: [
-    bp('p1', 1.01, ['nefris_shadowstep', 'nefris_fan']),
-    bp('p2', 0.66, ['nefris_shadowstep', 'nefris_fan'], { yell: 'Hangimi vuracaksın?', ability: 'nefris_clones' }),
-    bp('p3', 0.33, ['nefris_shadowstep', 'nefris_fan'], { yell: 'Hangimi vuracaksın?', ability: 'nefris_clones' }),
+    bp('p1', 1.01, ['nefris_gouge', 'nefris_wail', 'nefris_shadowstep', 'nefris_fan']),
+    bp('p2', 0.66, ['nefris_gouge', 'nefris_wail', 'nefris_shadowstep', 'nefris_fan'], { yell: 'Hangimi vuracaksın?', ability: 'nefris_clones' }),
+    bp('p3', 0.33, ['nefris_gouge', 'nefris_wail', 'nefris_shadowstep', 'nefris_fan'], { yell: 'Hangimi vuracaksın?', ability: 'nefris_clones' }),
   ],
   intro: 'Sizi saatlerdir izliyorum. Sıkıcısınız.', death: 'Efendim... uyan...',
   arena: { cx: 24, cz: 52, w: 48, h: 48, homeX: 22, homeZ: 41 },
@@ -1368,7 +1372,8 @@ boss({
     custom('kevvas_roar', 'Boşluk Kükremesi', 25, 25, 2.0, 'Jump', { sfx: 'boss_roar', params: { impact: 0.3 } }),
   ],
   phases: [
-    bp('p1', 1.01, ['kevvas_devour', 'kevvas_void_pull', 'kevvas_rifts']),
+    // the Boşluk Kükremesi ring (group beat, 2 s telegraph) now comes in the first phase too, not only after 50 %
+    bp('p1', 1.01, ['kevvas_devour', 'kevvas_roar', 'kevvas_void_pull', 'kevvas_rifts']),
     bp('p2', 0.5, ['kevvas_devour', 'kevvas_void_pull', 'kevvas_rifts', 'kevvas_roar'], { yell: 'ZİYAFET!', ability: 'kevvas_feast' }),
   ],
   intro: 'AÇ... ÇOK AÇ...', death: 'Boşluk... beni... geri... çağırıyor...',
@@ -1381,7 +1386,8 @@ boss({
   basic: line('zakhar_thrust', 'Üç Dişli Saplama', 6, 2, 2.3, 0.7, 1.0, 'physical', 'Weapon', 0.45, { telegraph: true, cooldown: 2.3, parryable: true }),
   abilities: [
     line('zakhar_impale', 'Üç Dişli Mızrak', 12, 2.5, 15, 1.2, 4.5, 'physical', 'Weapon', 0.45, { initialCooldown: 8, tankBuster: true, statuses: [bleed(1, 0.3, 8)], sfx: 'boss_cast' }),
-    aoe('zakhar_nova', 'Cehennem Novası', 'self_aoe', 10, 10, 24, 2.5, 3.0, 'fire', 'Punch', 0.5, { initialCooldown: 14, castTime: 2.5, vfx: 'fire_burst', sfx: 'boss_cast' }),
+    // group beat: a raid-wide hell nova after a 3 s cast bar (the seals and the ritual are the positioning around it)
+    aoe('zakhar_nova', 'Cehennem Novası', 'self_aoe', 36, 30, 16, 3.0, 1.4, 'fire', 'Punch', 0.5, { initialCooldown: 12, castTime: 3.0, vfx: 'fire_burst', sfx: 'boss_cast' }),
     custom('zakhar_seals', 'Gölge Mühürleri', 30, 20, 1.0, 'Wave', { sfx: 'boss_cast', params: { impact: 0.8 } }),
     custom('zakhar_ritual', 'Tarikat Ayini', 999, 9999, 1.0, 'Duck', { sfx: 'boss_roar' }),
     custom('zakhar_awaken', 'Uyanış', 999, 9999, 1.0, 'Yes', { sfx: 'boss_roar' }),
@@ -1392,7 +1398,9 @@ boss({
     bp('p1', 1.01, ['zakhar_impale', 'zakhar_nova', 'zakhar_seals']),
     bp('p2', 0.7, [], { yell: 'Müritlerim! Ayini tamamlayın!', ability: 'zakhar_ritual' }),
     bp('p3', 0.699, ['zakhar_impale', 'zakhar_nova', 'zakhar_seals']),
-    bp('p4', 0.4, ['zakhar_nova', 'zakhar_seals', 'zakhar_hellrain'], { yell: 'Bu beden artık yeterince güçlü. UYANIYORUM!', ability: 'zakhar_awaken' }),
+    // 50 %: the awakening is the final phase change. The kit comes back whole (tank impale, hell nova, seals) with the hell rain,
+    // and the ritual's acolytes join as a summon, so the fight recombines the earlier mechanics
+    bp('p4', 0.5, ['zakhar_impale', 'zakhar_nova', 'zakhar_seals', 'zakhar_hellrain'], { yell: 'Bu beden artık yeterince güçlü. UYANIYORUM!', ability: 'zakhar_awaken', summon: { enemyId: 'cult_acolyte', count: 3 } }),
   ],
   intro: 'Tarikatım beni uyandırdı. Siz de bana kurban olarak sunuldunuz.', death: 'Gölgeler... asla... ölmez...',
   arena: { cx: 80, cz: 28, w: 56, h: 56, homeX: 80, homeZ: 26 },
