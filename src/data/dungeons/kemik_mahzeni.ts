@@ -159,7 +159,7 @@ const BOSSES = [
 ];
 
 // fog colour (= background) lifted a step so the entry room is readable on the first frame; the void behind the walls stays dark
-const THEME: DungeonTheme = { fogColor: 0x1c2422, fogNear: 12, fogFar: 50, ambient: 0x3c4a48, ambientIntensity: 0.35, hemiSky: 0x6a7a90, hemiGround: 0x201810, torchColor: 0xffa050, bloomStrength: 0.3, music: 'dungeon_crypt', palette: [0x2b2f2a, 0x5d6b5a, 0xd8d0b8, 0x7affc0, 0xffa050], tint: 0xc8d0c8 };
+const THEME: DungeonTheme = { fogColor: 0x1c2422, fogNear: 10, fogFar: 42, ambient: 0x3c4a48, ambientIntensity: 0.35, hemiSky: 0x6a7a90, hemiGround: 0x201810, torchColor: 0xffa050, bloomStrength: 0.3, music: 'dungeon_crypt', palette: [0x2b2f2a, 0x5d6b5a, 0xd8d0b8, 0x7affc0, 0xffa050], tint: 0xc8d0c8 };
 
 
 // ---------------------------------------------------------------------------------------------------------------------

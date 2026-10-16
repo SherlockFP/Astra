@@ -300,7 +300,7 @@ const at2 = R.at2;
 
 // ---- dungeon ----------------------------------------------------------------------------------------------------------------
 const THEME: DungeonTheme = {
-  fogColor: 0x1d1626, fogNear: 10, fogFar: 46,
+  fogColor: 0x1d1626, fogNear: 9, fogFar: 42,
   ambient: 0x4a3f58, ambientIntensity: 0.42,
   hemiSky: 0x6e7fa8, hemiGround: 0x2a1418,
   torchColor: 0xffa86a, bloomStrength: 0.45,

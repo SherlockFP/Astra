@@ -195,7 +195,7 @@ const BOSSES = [
 // Theme (doc 2.3, 2.4). 'dungeon_shadow' is the fallback until 'dungeon_court' is registered in MUSIC_IDS.
 // ---------------------------------------------------------------------------------------------------------------------
 const THEME: DungeonTheme = {
-  fogColor: 0x0c1230, fogNear: 14, fogFar: 64, ambient: 0x3a4aa0, ambientIntensity: 0.42, hemiSky: 0x8a9cff, hemiGround: 0x1a1030,
+  fogColor: 0x0c1230, fogNear: 12, fogFar: 58, ambient: 0x3a4aa0, ambientIntensity: 0.42, hemiSky: 0x8a9cff, hemiGround: 0x1a1030,
   torchColor: 0xffc860, bloomStrength: 0.6, music: 'dungeon_shadow', palette: [0x0c1230, 0x4aa8ff, 0xd8dcf0, 0xffc860, 0x58ff70],
   tint: 0xe0e4ff, sky: { image: '/assets/sky/itch/psx-skyboxes-free/night-moon.png', stars: true },
 };

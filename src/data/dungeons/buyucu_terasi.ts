@@ -430,7 +430,7 @@ const BOSSES = [
 ];
 
 const THEME: DungeonTheme = {
-  fogColor: 0x14123a, fogNear: 12, fogFar: 56,
+  fogColor: 0x14123a, fogNear: 10, fogFar: 48,
   ambient: 0x4a4478, ambientIntensity: 0.42,
   hemiSky: 0x6a74c8, hemiGround: 0x2a1a38,
   torchColor: 0xf2a14a, bloomStrength: 0.55,

@@ -315,7 +315,7 @@ const PACKS: PackDef[] = [
 
 // ---- theme ----------------------------------------------------------------------------------------------------------------
 const THEME: DungeonTheme = {
-  fogColor: 0x0d1620, fogNear: 8, fogFar: 46,
+  fogColor: 0x0a1218, fogNear: 8, fogFar: 40,
   ambient: 0x2c4256, ambientIntensity: 0.3,
   hemiSky: 0x5aa8c0, hemiGround: 0x0c1218,
   torchColor: AMBER, bloomStrength: 0.55,
