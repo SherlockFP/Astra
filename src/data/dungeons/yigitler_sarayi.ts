@@ -67,7 +67,7 @@ const ROOMS: RoomDef[] = [
     floorY: 3.2, ceiling: 14, lightColor: 0xffa850, ambientVfx: 'ambient_embers', fog: { color: 0x2e2218, near: 10, far: 44 },
     // door ramp x 18..19 (4.0 at the west edge down to 3.2) and the High Table stair x 37 up to the dais x 38..39 at 4.1
     slopes: [
-      ramp(rect(18, 29, 2, 2), 'x', 4.0, 3.2, { id: 'so_kapi_rampasi' }),
+      ramp(rect(18, 28, 2, 4), 'x', 4.0, 3.2, { id: 'so_kapi_rampasi' }),
       stairs(rect(37, 27, 1, 6), 'x', 3.2, 4.1, { id: 'so_yuksek_masa' }),
     ],
     heightAreas: [area('high_table', 38, 27, 2, 6, 4.1, 'ledge')],
@@ -88,7 +88,7 @@ const ROOMS: RoomDef[] = [
     openAir: true, sky: SKY_FIELD, floorY: 3.2, ceiling: 30, lightColor: 0xffc080, ambientVfx: 'ambient_embers', fog: { color: 0xb89868, near: 18, far: 80 },
     slopes: [ramp(rect(30, 35, 4, 4), 'z', 3.2, 0.0, { id: 'ka_patika' })],
   }),
-  room('av_meydani', 'Ebedi Av Meydanları', 20, 39, 24, 18, 'dirt', 'cave', 0.5, {
+  room('av_meydani', 'Ebedi Av Meydanları', 24, 39, 20, 16, 'dirt', 'cave', 0.5, {
     openAir: true, sky: SKY_FIELD, floorY: 0, ceiling: 30, lightColor: 0xffc080, ambientVfx: 'ambient_embers', fog: { color: 0xd8b080, near: 22, far: 100 },
     // lookout hill x 38..42, z 39..42 at 1.4, reached by the ramp x 36..37
     heightAreas: [area('av_tepesi', 38, 40, 5, 4, 1.4, 'ledge')],
@@ -121,11 +121,15 @@ const ROOMS: RoomDef[] = [
     slopes: [stairs(rect(46, 16, 12, 3), 'z', 8.6, 6.2, { id: 'se_zafer_merdiveni' })],
     hazards: [STRIKE(10, 2.2, RODS_GATE)],
   }),
-  room('salon_arena', 'Şan Salonu', 44, 0, 16, 16, 'stone', OPEN_WALL, 0.05, {
+  room('salon_arena', 'Şan Salonu', 41, 0, 21, 16, 'stone', OPEN_WALL, 0.05, {
     boss: 3, openAir: true, sky: SKY_GLORY, storm: STORM, floorY: 8.6, ceiling: 30, lightColor: 0xffe8b0, ambientVfx: 'ambient_dust',
     fog: { color: 0xcfc8b0, near: 24, far: 110 }, explicitDecor: true,
     // Odyn's dais, one raised block at the north rim
     heightAreas: [area('odyn_kursusu', 49, 1, 6, 3, 9.4, 'ledge')],
+  }),
+  room('salon_yolu', 'Şan Yolu', 39, 8, 2, 9, 'stone', 'stone', 0.2, {
+    floorY: 6.2, ceiling: 20, openAir: true,
+    slopes: [ramp(rect(39, 8, 2, 4), 'z', 8.6, 8.6, { id: 'sy_duz' }), ramp(rect(39, 12, 2, 5), 'z', 8.6, 6.2, { id: 'sy_inis' })],
   }),
 ];
 
@@ -134,7 +138,7 @@ const DOORS: DoorDef[] = [
   door('giris', 'yuksek_kapi', 8, 54, 'n', 4, 'none'),
   door('yuksek_kapi', 'k_heymdal', 9, 40, 'n', 4, 'none'),
   door('k_heymdal', 'heymdal_zirvesi', 9, 36, 'n', 4, 'boss_lock'),
-  door('heymdal_zirvesi', 'solen_ocagi', 17, 29, 'e', 2, 'boss_exit'),
+  door('heymdal_zirvesi', 'solen_ocagi', 17, 28, 'e', 4, 'boss_exit'),
   door('solen_ocagi', 'bal_mahzeni', 39, 29, 'e', 2, 'none'),
   door('solen_ocagi', 'k_yukselis', 27, 26, 'n', 2, 'none'),
   door('k_yukselis', 'yukselis_koltugu', 26, 22, 'n', 4, 'boss_lock'),
@@ -146,7 +150,9 @@ const DOORS: DoorDef[] = [
   door('fenrur_ini', 'efemer_yol', 50, 42, 'n', 4, 'boss_exit'),
   door('efemer_yol', 'salon_esigi', 51, 22, 'n', 2, 'none'),
   door('efemer_yol', 'rune_mahzeni', 50, 24, 'w', 2, 'none'),
-  door('salon_esigi', 'salon_arena', 50, 16, 'n', 4, 'boss_lock'),
+  door('k_hyrja_dogu', 'salon_yolu', 39, 17, 'n', 2, 'none'),
+  door('salon_yolu', 'salon_arena', 40, 9, 'e', 2, 'boss_lock'),
+  door('salon_arena', 'salon_esigi', 50, 15, 's', 4, 'boss_exit'),
 ];
 
 // ---- packs (31) ---------------------------------------------------------------------------------------------------------------
@@ -185,8 +191,8 @@ const PACKS: PackDef[] = [
   P_PACK('yg_p13c', 'bal_mahzeni', 42.5, 34.5, [['yg_revel', 3], ['yg_sentinel', 1]], { optional: true }),
   P_PACK('yg_p14', 'k_yukselis', 27.5, 23.5, [['yg_shieldmaiden', 2], ['yg_runecarver', 1]]),
   P_PACK('yg_p15', 'k_av_yolu', 31.5, 36, [['yg_worg', 4], ['yg_trapper', 1]]),
-  P_PACK('yg_p16', 'av_meydani', 25, 43, [['yg_worg', 4], ['yg_stag', 1], ['yg_trapper', 1]]),
-  P_PACK('yg_p17', 'av_meydani', 25, 52, [['yg_trapper', 3], ['yg_worg', 2]]),
+  P_PACK('yg_p16', 'av_meydani', 27, 43, [['yg_worg', 4], ['yg_stag', 1], ['yg_trapper', 1]]),
+  P_PACK('yg_p17', 'av_meydani', 28, 51, [['yg_trapper', 3], ['yg_worg', 2]]),
   P_PACK('yg_p18', 'av_meydani', 31.5, 42, [['yg_grizzly', 1], ['yg_worg', 1]], { optional: true }),
   P_PACK('yg_p19', 'av_meydani', 40, 41.5, [['yg_thundercaller', 1], ['yg_stag', 1], ['yg_worg', 2]]),
   P_PACK('yg_p22', 'av_meydani', 32, 47.5, [['yg_worg', 2], ['yg_trapper', 2]], { patrol: [[26, 47.5], [38, 47.5]] }),
@@ -200,6 +206,8 @@ const PACKS: PackDef[] = [
   P_PACK('yg_p29', 'rune_mahzeni', 46.5, 24, [['yg_runecarver', 2], ['yg_revel', 2]], { optional: true }),
   P_PACK('yg_p30', 'salon_esigi', 47.5, 19.8, [['yg_tideskorn', 2], ['yg_mystic', 1]]),
   P_PACK('yg_p31', 'salon_esigi', 55.5, 19.8, [['yg_sentinel', 1], ['yg_thundercaller', 1], ['yg_purifier', 1]]),
+  P_PACK('yg_lt1', 'av_meydani', 35.5, 52.5, [['yg_grizzly', 1], ['yg_tideskorn', 1], ['yg_worg', 2]]),
+  P_PACK('yg_lt2', 'av_meydani', 36, 45.5, [['yg_grizzly', 1], ['yg_thundercaller', 1], ['yg_worg', 1]]),
 ];
 
 // ---- props (set pieces and the boss-relevant landmarks; real models only) ------------------------------------------------------
@@ -241,7 +249,7 @@ const PROPS: Record<string, PropPlacement[]> = {
   ],
   k_av_yolu: [P(gp('brazier'), 31.5, 35.5, { light: LIGHT_BRAZIER(0xffc080) }), P(gp('brazier'), 33.5, 37.5, { light: LIGHT_BRAZIER(0xffc080) })],
   av_meydani: [
-    P(gp('tent'), 23, 45),
+    P(gp('tent'), 25, 45),
     P(gp('tent'), 27, 51),
     P(gp('brazier'), 39.5, 42.5, { light: LIGHT_BRAZIER(0xffc080) }),
   ],
@@ -355,7 +363,7 @@ export const YIGITLER_SARAYI: DungeonDef = {
   lore: "Kadimler, ölen yiğitlerin ruhlarını sınamak için fırtınanın üstüne bir saray kaldırdı: Yiğitler Sarayı. Titan kemerleri bulutların üzerinde yüzüyor, Odyn'in ebedi şölenine açılıyor. Yüksek Kapı'da Heymdal'ın borusu çalıyor; Eyra'nın Seçilmişi Hirya yükseliş koltuğunu bekliyor; Fenrür Sonsuz Av'da kan kokusu alıyor. Ama Gelgitkıran Kralı Skovald, Kadim Zindanlar'ın gölgesinden gelen bir fısıltıya kulak verdi ve kutsal Aegis'i çalmak için Şan Salonu'na daldı. Sınav başladı. Layık olan, Odyn'in sofrasına oturur.",
   levelRange: [60, 60],
   timerSec: 1515,
-  forcesRequired: 338, // floor(0.8 x 423 pack forces)
+  forcesRequired: 368, // floor(0.8 x 461 pack forces)
   theme: THEME,
   grid: { w: 64, h: 60 },
   rooms: ROOMS_WITH_PROPS.map(finishYg),
