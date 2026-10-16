@@ -411,7 +411,7 @@ export class UI {
 
   /** True if any panel/menu/chat input/modal wants the cursor. */
   wantsCursor(): boolean {
-    if (this.mode === 'menu' || this.mode === 'loading') return true;
+    if (this.mode === 'menu' || this.mode === 'loading' || this.loading.isVisible) return true;
     if (this.modal.isOpen || this.hud?.chat.isFocused) return true;
     // the HUD layout editor works with the mouse (drags, wheel, toolbar)
     if (this.hud?.editing) return true;
@@ -434,7 +434,8 @@ export class UI {
 
   private gateState(): KeysGateState {
     return {
-      uiMode: this.mode,
+      // a zone load covers the scene that is entering (mode is already town/dungeon): the game keys stay off until it is gone
+      uiMode: this.loading.isVisible ? 'loading' : this.mode,
       editing: !!this.hud?.editing,
       modal: this.modal.isOpen,
       chatFocused: !!this.hud?.chat.isFocused,

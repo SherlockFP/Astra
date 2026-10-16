@@ -17,23 +17,31 @@ export const LOADING_TIPS: SchemeText[] = [
   'Demirci eşyalarını +15\'e kadar yükseltebilir; ama yüksek seviyelerde eşya yok olabilir.',
   'Efsun nesneleriyle eşyalarının büyülü özelliklerini yeniden belirleyebilirsin.',
   'Yetenek ağacı ({k:talents}) her seviyede puan verir. Anahtar düğümler oyun tarzını değiştirir.',
-  'Grupla oynarken boss\'un kesilebilir büyülerini sersemletme veya susturmayla durdur.',
-  'Bir eşyanın üstüne gelince kuşandığınla farkları yeşil ve kırmızı görürsün.',
+  '{k:targetNext} tuşuyla yakındaki düşmanlar arasında hedef değiştirebilirsin; 1-5 tuşları yeteneklerini kullanır.',
+  'Şişeni {k:flask1} tuşuyla kullan; şarjı kasaba ve köylerde yeniden dolar.',
   'Can iksiri ({k:potionHp}) ve ruh iksiri ({k:potionMp}) kısa bir ortak bekleme süresine sahiptir.',
   {
     aks: '{k:freeCursor} tuşuyla imleci serbest bırakıp arayüze tıklayabilirsin.',
     wow: 'Fare imleci serbest: sol tuşu basılı tutup sürükleyerek kamerayı, sağ tuşla sürükleyerek karakteri döndürebilirsin.',
   },
-  'Kritik ve bitirici vuruşlar daha uzun vuruş duraklaması yaratır; hissederek oyna!',
+  'Ekmek, su ve yahni savaş dışında canını yavaşça yeniler ve İyi Beslenmiş etkisi verir.',
   'Haritayı ({k:map}) açarak zindanın keşfettiğin bölümlerini görebilirsin.',
   'Mitik+ anahtarını Güç Çeşmesi\'ne yerleştirerek koşuyu başlat.',
   'Grup kurmak için {k:party} tuşuna bas; bir sunucu aç ya da katıl. En fazla 5 kişi!',
-  'Düşen eşyaları {k:interact} tuşuyla toplayabilirsin.',
+  'Grup bulucu ({k:groupFinder}) ile uygun bir zindana ekip bulabilirsin; düşen eşyaları {k:interact} ile toplarsın.',
   'Öldüğünde ruhunu serbest bırakabilir ya da bir grup arkadaşının seni diriltmesini bekleyebilirsin.',
   'Düşman kuvvetleri yüzde 100\'e ulaşmadan son patron koşuyu bitirmez.',
 ];
 
 const LORE = 'Kuzgunkale\'nin altında, unutulmuş kralların kemikleri yatar. Kadim zindanlar yeniden uyanıyor...';
+/** Shortest time the zone screen stays up once shown (WoW-style: no flicker on a fast load). */
+const MIN_SHOW_MS = 600;
+/** A load that finishes inside this window never shows the screen at all (no flash). */
+const REVEAL_DELAY_MS = 150;
+const FADE_MS = 520;
+/** idle: hidden. pending: waiting out REVEAL_DELAY_MS. shown: up. closing: holding for MIN_SHOW_MS. fading: CSS fade-out. */
+type LoadPhase = 'idle' | 'pending' | 'shown' | 'closing' | 'fading';
+
 const BOOT_TITLE = 'EFSUN ONLINE';
 const BOOT_SUB = 'Kadim Zindanlar';
 
@@ -52,10 +60,11 @@ export class LoadingScreen {
   private subEl: HTMLElement;
   private shown = 0;
   private target = 0;
-  private visible = false;
+  private phase: LoadPhase = 'idle';
+  private shownAt = 0;
+  private timer = 0;
   private tipTimer = 0;
   private tipIdx = Math.floor(Math.random() * LOADING_TIPS.length);
-  private hideTimer = 0;
 
   constructor(layer: HTMLElement) {
     this.el = div('loading', layer);
@@ -86,14 +95,15 @@ export class LoadingScreen {
     div('ld-lore', foot).textContent = LORE;
     this.el.style.display = 'none';
     G.events.on('loading:progress', ({ loaded, total, label }) => {
-      if (!this.visible) return;
+      if (this.phase === 'idle') return;
       this.target = Math.max(this.target, total > 0 ? loaded / total : 0);
       if (label) setText(this.labelEl, label);
     });
   }
 
+  /** True from the first show() until the screen has faded out (input stays blocked through the hold). */
   get isVisible(): boolean {
-    return this.visible;
+    return this.phase !== 'idle';
   }
 
   /** Zone header and backdrop for the next show(); null restores the boot title. */
@@ -104,14 +114,19 @@ export class LoadingScreen {
   }
 
   show(progress: number, label?: string, image?: string): void {
-    window.clearTimeout(this.hideTimer);
-    if (!this.visible) {
-      this.visible = true;
-      this.el.style.display = '';
-      this.el.classList.remove('out');
+    if (this.phase === 'idle') {
+      this.phase = 'pending';
       this.shown = 0;
       this.tipTimer = 0;
+      this.el.classList.remove('out');
       this.rotateTip();
+      window.clearTimeout(this.timer);
+      this.timer = window.setTimeout(() => this.reveal(), REVEAL_DELAY_MS);
+    } else if (this.phase === 'closing' || this.phase === 'fading') {
+      // a new load started during the hold: cancel the fade-out
+      window.clearTimeout(this.timer);
+      this.el.classList.remove('out');
+      this.phase = 'shown';
     }
     this.target = Math.max(0, Math.min(1, progress));
     if (label !== undefined) setText(this.labelEl, label);
@@ -119,15 +134,37 @@ export class LoadingScreen {
     else if (image === '') this.art.style.backgroundImage = '';
   }
 
+  /** Ends the load. A screen that never appeared is dropped silently; a shown one holds MIN_SHOW_MS, then fades. */
   hide(): void {
-    if (!this.visible) return;
+    if (this.phase === 'idle' || this.phase === 'closing' || this.phase === 'fading') return;
     this.target = 1;
-    this.visible = false;
+    if (this.phase === 'pending') {
+      window.clearTimeout(this.timer);
+      this.phase = 'idle';
+      return;
+    }
+    const wait = Math.max(0, MIN_SHOW_MS - (performance.now() - this.shownAt));
+    this.phase = 'closing';
+    window.clearTimeout(this.timer);
+    this.timer = window.setTimeout(() => this.fadeOut(), wait);
+  }
+
+  private reveal(): void {
+    if (this.phase !== 'pending') return;
+    this.phase = 'shown';
+    this.shownAt = performance.now();
+    this.el.style.display = '';
+  }
+
+  private fadeOut(): void {
+    this.phase = 'fading';
     this.el.classList.add('out');
-    window.clearTimeout(this.hideTimer);
-    this.hideTimer = window.setTimeout(() => {
-      if (!this.visible) this.el.style.display = 'none';
-    }, 520);
+    window.clearTimeout(this.timer);
+    this.timer = window.setTimeout(() => {
+      if (this.phase !== 'fading') return;
+      this.phase = 'idle';
+      this.el.style.display = 'none';
+    }, FADE_MS);
   }
 
   private rotateTip(): void {
@@ -139,13 +176,13 @@ export class LoadingScreen {
   }
 
   update(dt: number): void {
-    if (!this.visible && !this.el.classList.contains('out')) return;
+    if (this.phase === 'idle' || this.phase === 'pending') return;
     this.shown = approach(this.shown, this.target, 6, dt);
     const p = Math.max(0, Math.min(1, this.shown));
     setStyle(this.bar, 'width', (p * 100).toFixed(1) + '%');
     setText(this.pct, Math.round(p * 100) + '%');
     this.tipTimer += dt;
-    if (this.visible && this.tipTimer > 5) {
+    if (this.phase === 'shown' && this.tipTimer > 5) {
       this.tipTimer = 0;
       this.rotateTip();
     }
