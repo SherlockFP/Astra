@@ -238,7 +238,7 @@ boss({
       { initialCooldown: 7, windup: 1.2, telegraph: true, tankBuster: true, parryable: false, sfx: 'boss_cast',
         statuses: [bleed(1, 0.3, 4), { status: 'necrotic', duration: 8, stacks: 8 }] }),
     custom('hym_combo', 'Gök Kapısı Üçlemesi', 16, 4, 0.75, '2H_Melee_Attack_Slice', { sfx: 'swing_heavy' }),
-    custom('hym_leap', 'Kapı Çarpması', 24, 18, 0.9, 'Jump', { sfx: 'boss_cast' }),
+    custom('hym_leap', 'Kapı Çarpması', 24, 18, 1.1, 'Jump', { sfx: 'boss_cast' }),
     custom('hym_blade', 'Dans Eden Bıçak', 14, 5, 1.0, 'Throw', { sfx: 'dagger_throw' }),
     custom('hym_horn', 'Gökgürültüsü Borusu', 34, 12, 2.5, 'Cheer', { sfx: 'hero_horn' }),
     custom('hym_storm_call', 'Fırtına Çağrısı', 999, 9999, 1.0, 'Taunt', { sfx: 'boss_roar' }),
@@ -262,7 +262,7 @@ boss({
   abilities: [
     line('hir_shield', 'Işık Kalkanı', 16, 3, 14, 1.3, 3.4, 'holy', 'Spellcast_Long', 1.0,
       { initialCooldown: 8, telegraph: true, tankBuster: true, parryable: false, knockback: 8, sfx: 'boss_cast' }),
-    custom('hir_spear', 'Çifte Mızrak', 10, 5, 0.7, 'Spellcast_Shoot', { sfx: 'spell_cast' }),
+    custom('hir_spear', 'Çifte Mızrak', 10, 5, 1.1, 'Spellcast_Shoot', { sfx: 'spell_cast' }),
     custom('hir_dive', 'Valkyr Dalışı', 22, 16, 1.0, 'Spellcast_Summon', { sfx: 'choir_sting' }),
     custom('hir_arcing', 'Ark Şimşeği', 20, 12, 1.0, 'Spellcast_Raise', { sfx: 'lightning_cast' }),
     custom('hir_eye', 'Fırtına Gözü', 32, 18, 3.0, 'Spellcast_Long', { castTime: 3.0, interruptible: false, sfx: 'boss_cast' }),
@@ -284,8 +284,8 @@ boss({
   anims: A_GEN, resist: { physical: 0.05, frost: 0.1 }, visual: { eyeEmissive: 0xff3030, emissiveIntensity: 0.3, runRef: 6.2 },
   basic: cone('fen_bite', 'Parçalayan Isırık', 4.5, 110, 2.2, 1.0, 'Attack', 0.45, { windup: 0.7, telegraph: true, statuses: [bleed(1, 0.2, 6)] }),
   abilities: [
-    custom('fen_string', 'Av Üçlüsü', 11, 5, 0.6, 'Attack', { sfx: 'boss_cast' }),
-    custom('fen_frenzy', 'Pençe Çılgınlığı', 16, 9, 1.2, 'Attack', { sfx: 'boss_cast' }),
+    custom('fen_string', 'Av Üçlüsü', 11, 5, 1.0, 'Attack', { sfx: 'boss_cast' }),
+    custom('fen_frenzy', 'Pençe Çılgınlığı', 16, 9, 1.2, 'Attack', { tankBuster: true, telegraph: true, sfx: 'boss_cast' }),
     custom('fen_howl', 'Sessiz Uluma', 24, 14, 1.4, 'Attack', { sfx: 'wolf_howl' }),
     custom('fen_leap', 'Çifte Atılış', 14, 6, 1.2, 'Attack', { sfx: 'boss_cast' }),
     custom('fen_scent', 'Kan Kokusu', 28, 20, 1.0, 'Attack', { sfx: 'boss_roar' }),
@@ -309,7 +309,7 @@ boss({
   visual: { eyeEmissive: 0xffe090, glow: 0xffe090, emissiveIntensity: 0.4, runRef: 5.4 },
   basic: line('odn_thrust', 'Titan Mızrağı', 9, 2.4, 2.6, 0.8, 1.0, 'physical', 'Attack', 0.5, { telegraph: true, parryable: true }),
   abilities: [
-    custom('odn_trinity', 'Üçlü Hüküm', 7, 4, 0.8, 'Attack', { sfx: 'swing_heavy' }),
+    custom('odn_trinity', 'Üçlü Hüküm', 7, 4, 1.2, 'Attack', { tankBuster: true, telegraph: true, sfx: 'swing_heavy' }),
     custom('odn_trial', 'Gelgitkıran Sınavı', 9999, 9999, 1.0, 'Enrage', { sfx: 'boss_roar' }),
     custom('odn_brand', 'Rünik Damga', 46, 9, 1.5, 'Cast', { sfx: 'choir_sting' }),
     custom('odn_spears', 'Işık Mızrakları', 30, 22, 1.5, 'Cast', { sfx: 'spell_cast' }),
@@ -322,7 +322,7 @@ boss({
   phases: [
     bp('p1', 1.01, [], { ability: 'odn_trial' }),
     bp('p2', 0.999, ['odn_trinity', 'odn_brand', 'odn_spears', 'odn_tempest', 'odn_obliterator', 'odn_plunge']),
-    bp('p3', 0.35, ['odn_trinity', 'odn_brand', 'odn_spears', 'odn_tempest', 'odn_obliterator', 'odn_plunge', 'odn_rain'],
+    bp('p3', 0.5, ['odn_trinity', 'odn_brand', 'odn_spears', 'odn_tempest', 'odn_obliterator', 'odn_plunge', 'odn_rain'],
       { yell: 'Fırtınam sizi sınasın!', ability: 'odn_judgment' }),
   ],
   intro: 'Yiğitler! Sınavınız başlıyor!', death: 'Layıksınız... yiğitler... Sofram sizindir.',
