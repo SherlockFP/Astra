@@ -3,7 +3,7 @@ import { G } from '../../game/G';
 import type { UI } from '../UI';
 import { ICON, div, iconEl, pulse, setClass, setDisplay, setIconUrl, setStyle, setText } from '../widgets/dom';
 import { recommend } from '../panels/game/guideEngine';
-import { guideTarget, type GuideTarget } from './questMarks';
+import { guideTarget, setLiveGuide, type GuideTarget } from './questMarks';
 import type { HudCtx, HudWidget } from './types';
 
 /** On-screen band: a target inside this inset floats at its projected point (px). */
@@ -69,11 +69,16 @@ export class ObjectiveArrow implements HudWidget {
     if (this.acc >= LOOKUP_S) {
       this.acc = 0;
       this.target = this.lookup();
+      setLiveGuide(this.target);
     }
     const t = this.target;
     const p = G.player;
     const settingOn = G.settings?.data.questArrow !== false;
+    // the world beam marks the same target (vfx/ObjectiveBeam.ts) and follows the arrow's on / off setting
+    G.vfx?.setObjectiveBeam(settingOn ? t : null);
     if (!t || !p || !settingOn || ctx.ui.wantsCursor() || this.ui.hud?.editing) return this.hide();
+    // out of combat the arrow is always on screen; in combat it fades so it does not compete with the threat arrow
+    setClass(this.el, 'combat', p.inCombat);
 
     if (t.key !== this.shownKey) {
       this.shownKey = t.key;
@@ -87,14 +92,15 @@ export class ObjectiveArrow implements HudWidget {
     const dx = t.x - p.position.x;
     const dz = t.z - p.position.z;
     const d = Math.hypot(dx, dz);
+    // arrival flashes once; the medallion then stays on screen as "burada" until the player walks REARM_M away (never hidden)
     if (this.arrivedKey === t.key) {
       if (d > REARM_M) this.arrivedKey = null;
     } else if (d < (t.kind === 'talk' || t.kind === 'turnin' ? ARRIVE_NPC_M : ARRIVE_M)) {
       this.arrivedKey = t.key;
       pulse(this.el, 'arrive');
-      return this.hide();
     }
-    if (this.arrivedKey === t.key) return this.hide();
+    const arrived = this.arrivedKey === t.key;
+    setClass(this.el, 'here', arrived);
 
     const ok = ctx.ui.projectWorld(t.x, p.position.y + LIFT_M, t.z, this.out);
     const W = ctx.ui.viewW;
@@ -141,7 +147,7 @@ export class ObjectiveArrow implements HudWidget {
     }
     setStyle(this.el, 'transform', `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`);
     setStyle(this.el, '--a', `${angleDeg.toFixed(1)}deg`);
-    setText(this.dist, formatDistance(d));
+    setText(this.dist, arrived ? 'burada' : formatDistance(d));
     if (!this.el.classList.contains('on')) {
       setDisplay(this.el, true, 'flex');
       void this.el.offsetWidth;
@@ -152,6 +158,8 @@ export class ObjectiveArrow implements HudWidget {
   reset(): void {
     this.target = null;
     this.acc = LOOKUP_S;
+    setLiveGuide(null);
+    G.vfx?.setObjectiveBeam(null);
     this.hide();
   }
 

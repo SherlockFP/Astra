@@ -5,6 +5,8 @@
 /* ---- objective arrow: the element sits on the target point; children hang around it ---- */
 .objective-arrow { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; pointer-events: none; transition: opacity 250ms linear; --c: var(--gold-1); }
 .objective-arrow.on { opacity: 1; }
+.objective-arrow.on.combat { opacity: 0.2; }
+.objective-arrow.on.here .oa-medal { opacity: 0.7; }
 .objective-arrow.arrive { animation: oaflash 600ms ease-out; }
 .objective-arrow.oa-gold { --c: var(--gold-1); }
 .objective-arrow.oa-blue { --c: #5aa0ff; }

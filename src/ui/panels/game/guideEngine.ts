@@ -4,7 +4,7 @@ import { ENEMIES } from '../../../data/enemyKit';
 import type { CharacterState } from '../../../systems/CharacterState';
 import type { QuestObjectiveRow } from '../../../systems/Quests';
 import type { DungeonDef } from '../../../types/dungeons';
-import { getPinnedQuest, guideTargetPos, npcWorldPos, townNpcName, townNpcPos, waypointKnown, worldDef, worldExtras, type Pt } from '../../hud/questMarks';
+import { getPinnedQuest, guideTargetPos, liveGuideTarget, npcWorldPos, townNpcName, townNpcPos, waypointKnown, worldDef, worldExtras, type Pt } from '../../hud/questMarks';
 import { dungeonList } from './base';
 import { unspentTalentPoints } from '../../hud/Extras';
 
@@ -253,4 +253,32 @@ export function adviceLine(): string {
 export function adviceAvailable(): boolean {
   refreshAdvice();
   return lineAvail;
+}
+
+/**
+ * "Ne yapmalıyım?" in one sentence (the tracker footer, §4.4): the next action, the place it is and how far. Reads the objective
+ * arrow's live target and the recommended quest for its state. `dist` is the formatted distance ('' when there is none).
+ * Empty when there is nothing to do.
+ */
+export function nextActionLine(dist: string): string {
+  const ch = G.character;
+  if (!ch) return '';
+  const t = liveGuideTarget();
+  let quest: GuideAdvice['quest'] = null;
+  try {
+    quest = recommend(ch).quest;
+  } catch {
+    quest = null;
+  }
+  const tail = t ? [t.label, dist].filter(Boolean).join(' · ') : dist;
+  const sep = tail ? ` · ${tail}` : '';
+  if (!quest) return t ? `Sonraki: ${tail}` : '';
+  if (quest.state === 'ready') return `Sonraki: "${quest.name}" görevini teslim et${sep}`;
+  if (quest.state === 'available') {
+    const giver = quest.giverNpcId ? townNpcName(quest.giverNpcId) : '';
+    return giver ? `Sonraki: ${giver}'den "${quest.name}" görevini al${sep}` : `Sonraki: "${quest.name}" görevini al${sep}`;
+  }
+  const row = quest.rows.find((r) => !r.done);
+  const step = row ? `${row.text} ${Math.min(row.have, row.need)} / ${row.need}` : quest.name;
+  return `Sonraki: ${step}${sep}`;
 }

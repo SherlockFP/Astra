@@ -563,3 +563,16 @@ export function guideTarget(recommendedGiver: string | null): GuideTarget | null
   }
   return null;
 }
+/* ------------------------------------------------------------------------------------------------------------------ */
+/* Live guide target (objective arrow -> minimap pin, tracker sentence, world beam)                                    */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+/** The target the objective arrow resolved last (ObjectiveArrow refreshes it at 2 Hz). Null when there is none. */
+let liveGuide: GuideTarget | null = null;
+export function setLiveGuide(t: GuideTarget | null): void {
+  liveGuide = t;
+}
+/** The arrow's current target: read by the minimap pin and the tracker's "Ne yapmalıyım?" sentence. */
+export function liveGuideTarget(): GuideTarget | null {
+  return liveGuide;
+}

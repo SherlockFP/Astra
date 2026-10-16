@@ -7,6 +7,9 @@ import { G } from '../../game/G';
 import type { HudCtx } from './types';
 import type { MythicTracker } from './MythicTracker';
 import type { QuestTracker } from './QuestTracker';
+import { nextActionLine } from '../panels/game/guideEngine';
+import { liveGuideTarget } from './questMarks';
+import { formatDistance } from './ObjectiveArrow';
 
 type Mode = 'boss' | 'run' | 'quest' | 'hint';
 
@@ -21,6 +24,8 @@ const TAB: Record<Exclude<Mode, 'hint'>, { label: string; icon: string }> = {
 const OPEN_PANEL: Record<Mode, string | null> = { boss: null, run: 'mplusInfo', quest: 'questlog', hint: 'guide' };
 /** A tab click pins its mode for this long (ms), then auto-selection resumes. */
 const PIN_MS = 60_000;
+/** The footer sentence is recomputed this often (ms): the distance changes while the player walks. */
+const NEXT_MS = 250;
 const STORE_KEY = 'efsun.tracker.v1';
 const HINT_FALLBACK = 'Önerilen adım için [.]';
 
@@ -59,13 +64,15 @@ export class ContextTracker {
   private readonly bossName: HTMLElement;
   private readonly bossPhase: HTMLElement;
   private readonly bossEnrage: HTMLElement;
-  private readonly hintBody: HTMLElement;
+  private readonly nextBox: HTMLElement;
+  private readonly nextBody: HTMLElement;
   private tabSig = '';
   private pin: { mode: Mode; until: number } | null = null;
   private collapsed: Partial<Record<Mode, boolean>> = loadCollapsed();
   private lastActive: Mode | '' = '';
   private lastCollapsed: boolean | null = null;
-  private hintText = '';
+  private nextAt = -1e9;
+  private nextText = '';
   private engagedId: number | null = null;
   private engagedAt = 0;
 
@@ -108,14 +115,12 @@ export class ContextTracker {
     this.panes.run.appendChild(mythic.el);
     this.panes.quest.appendChild(quests.el);
 
-    const hp = this.panes.hint;
-    const hint = div('trk-hint', hp);
-    div('trk-hint-t', hint, 'Ne yapmalıyım?');
-    const row = div('trk-hint-row', hint);
-    this.hintBody = div('trk-hint-b', row);
-    span('k-key--dim', row, '.');
     this.panes.run.addEventListener('click', () => this.openFor('run'));
-    hp.addEventListener('click', () => this.openFor('hint'));
+    // the footer: "Ne yapmalıyım?" in one sentence, always on (the tracker is never empty)
+    this.nextBox = div('trk-next', this.el);
+    div('trk-next-h', this.nextBox, 'Ne yapmalıyım?');
+    this.nextBody = div('trk-next-b', this.nextBox);
+    this.nextBox.addEventListener('click', () => this.openFor('hint'));
     for (const m of ['boss', 'run', 'quest', 'hint'] as Mode[]) setDisplay(this.panes[m], m === 'hint');
     // refreshed by the HUD widget loop (index.ts), like every other widget: no timer of its own
   }
@@ -143,8 +148,11 @@ export class ContextTracker {
     this.syncTabs(avail, active);
     for (const m of ['boss', 'run', 'quest', 'hint'] as Mode[]) setDisplay(this.panes[m], m === active);
     if (active === 'boss') this.updateBoss(world);
-    if (active === 'hint') this.updateHint();
+    this.updateNext(now);
 
+    // with no content the body and its collapse button are hidden; the footer sentence remains
+    setDisplay(this.body, active !== 'hint');
+    setDisplay(this.collapseBtn, active !== 'hint');
     const c = this.isCollapsed(active);
     if (active !== this.lastActive || c !== this.lastCollapsed) {
       this.lastActive = active;
@@ -157,6 +165,7 @@ export class ContextTracker {
   reset(): void {
     this.pin = null;
     this.engagedId = null;
+    this.nextText = '';
   }
 
   /** Header tabs for the modes with content; rebuilt only when that set changes. */
@@ -211,18 +220,19 @@ export class ContextTracker {
     } else setDisplay(this.bossEnrage, false);
   }
 
-  private updateHint(): void {
-    const adv = this.ui.hud?.adviceLine?.() ?? '';
-    const avail = !!adv && !!this.ui.hud?.adviceAvailable?.();
-    const text = adv || HINT_FALLBACK;
-    const sig = (avail ? '!' : '') + text;
-    if (sig === this.hintText) return;
-    this.hintText = sig;
-    // an offer the player has not accepted is labelled "Alınacak" with a "!" (it is not an active quest yet)
-    this.hintBody.textContent = '';
-    if (avail) span('trk-hint-tag', this.hintBody, '! Alınacak');
-    this.hintBody.append(avail ? ` ${text}` : text);
-    setClass(this.hintBody, 'avail', avail);
+  /** The footer sentence (the next action, where and how far), recomputed at NEXT_MS. */
+  private updateNext(now: number): void {
+    if (now - this.nextAt < NEXT_MS) return;
+    this.nextAt = now;
+    const t = liveGuideTarget();
+    const p = G.player;
+    const dist = t && p ? formatDistance(Math.hypot(t.x - p.position.x, t.z - p.position.z)) : '';
+    const line = nextActionLine(dist);
+    const text = line || HINT_FALLBACK;
+    if (text === this.nextText) return;
+    this.nextText = text;
+    setText(this.nextBody, text);
+    setClass(this.nextBox, 'idle', !line);
   }
 
   private openFor(mode: Mode): void {

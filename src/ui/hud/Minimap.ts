@@ -8,7 +8,7 @@ import { mapGridOf, type MapGrid, type NavGrid } from '../../world/NavGrid';
 import { RARITY_COLORS, type Rarity } from '../../types/common';
 import { ICON, div, setDisplay, setText, setStyle, clampN, fmtClock, h, iconEl, uiSound } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
-import { giverKind, questTargetMarks } from './questMarks';
+import { giverKind, liveGuideTarget, questTargetMarks } from './questMarks';
 import { activeEventPins } from '../../scenes/world/EventCalendar';
 import { getSocial } from '../../systems/Social';
 import { atlasFor, heightsOf } from '../map/atlas';
@@ -244,6 +244,47 @@ export class Minimap implements HudWidget {
       this.pins = [];
       this.pinsAt = -1e9;
     });
+  }
+
+  /**
+   * The objective arrow's target on the open-world map (gold for talk / turn-in, blue for kill / explore, violet for a dungeon). Inside
+   * the disc a pulsing ring with a diamond; off the picture a chevron on the ring points out toward it, so the way is always visible.
+   */
+  private drawObjectivePin(ctx2: CanvasRenderingContext2D, toScreen: (x: number, z: number) => ScreenPt, edge: number, mode: TrackMode, t: number): void {
+    const g = liveGuideTarget();
+    if (!g || mode === 'off') return;
+    const s = toScreen(g.x, g.z);
+    const outside = s.d > edge;
+    const k = outside ? edge / s.d : 1;
+    const x = R + (s.sx - R) * k;
+    const y = R + (s.sy - R) * k;
+    const col = g.kind === 'talk' || g.kind === 'turnin' ? '#ffd65a' : g.kind === 'dungeon' ? '#a77bff' : '#5aa0ff';
+    ctx2.save();
+    ctx2.fillStyle = col;
+    ctx2.strokeStyle = '#000';
+    ctx2.lineWidth = 1;
+    if (outside) {
+      ctx2.translate(x, y);
+      ctx2.rotate(Math.atan2(s.sy - R, s.sx - R));
+      ctx2.beginPath();
+      ctx2.moveTo(6, 0);
+      ctx2.lineTo(-3, -4.5);
+      ctx2.lineTo(-3, 4.5);
+      ctx2.closePath();
+      ctx2.fill();
+      ctx2.stroke();
+    } else {
+      questRing(ctx2, x, y, 5 + 1.5 * (0.5 + 0.5 * Math.sin(t * 5)), t, col);
+      ctx2.beginPath();
+      ctx2.moveTo(x, y - 3.5);
+      ctx2.lineTo(x + 3, y);
+      ctx2.lineTo(x, y + 3.5);
+      ctx2.lineTo(x - 3, y);
+      ctx2.closePath();
+      ctx2.fill();
+      ctx2.stroke();
+    }
+    ctx2.restore();
   }
 
   private zoom(f: number): void {
@@ -681,6 +722,7 @@ export class Minimap implements HudWidget {
         const x = R + (s.sx - R) * k, y = R + (s.sy - R) * k;
         waypointPin(ctx2, x, y + 2, 4);
       }
+      this.drawObjectivePin(ctx2, toScreen, edge, mode, ctx.t);
     }
 
     // points of interest (dungeons: town NPCs, interactables, rare loot)

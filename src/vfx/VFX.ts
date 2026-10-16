@@ -29,6 +29,7 @@ import { Ribbon, TrailRibbon, jaggedPath } from './Ribbon';
 import { TelegraphFx } from './Telegraph';
 import { WeaponGlows } from './WeaponGlow';
 import { QuestSparkles } from './QuestSparkle';
+import { ObjectiveBeam, type BeamTarget } from './ObjectiveBeam';
 import { combatPresets, type Preset } from './presets_combat';
 import { elementalPresets } from './presets_elemental';
 import { BEAM_TIERS, lootBeamFx, worldPresets } from './presets_world';
@@ -667,6 +668,8 @@ export class VFX {
   private glows: WeaponGlows;
   /** Golden halos on the quest props an active objective wants (vfx/QuestSparkle.ts). */
   private questSparkles = new QuestSparkles();
+  /** Light column over the objective the arrow points at (vfx/ObjectiveBeam.ts). */
+  private objectiveBeam = new ObjectiveBeam();
 
   private loops: LoopFx[] = [];
   private timers: { t: number; fn: () => void; owner?: LoopHandle }[] = [];
@@ -695,6 +698,7 @@ export class VFX {
 
   constructor() {
     this.root.name = 'vfx-root';
+    this.root.add(this.objectiveBeam.root);
     const atlas = this.atlas;
     this.layers = {
       decal: new ParticleLayer(atlas, { cap: 700, additive: false, renderOrder: 2, polygonOffset: -2 }),
@@ -1103,6 +1107,11 @@ export class VFX {
     return this.chunks.burst(type, p, dir?.[0] ?? 0, dir?.[2] ?? 0, n, size, speed, life);
   }
 
+  /** The objective the arrow points at (null hides the beam). See vfx/ObjectiveBeam.ts. */
+  setObjectiveBeam(t: BeamTarget | null): void {
+    this.objectiveBeam.set(t);
+  }
+
   // ------------------------------------------------------------------ frame
 
   update(dt: number): void {
@@ -1110,6 +1119,7 @@ export class VFX {
     this.hitBudget = 14;
     this.updateLowHp(dt);
     this.questSparkles.update(dt);
+    this.objectiveBeam.update(dt);
     const cam = this.camera;
     if (cam) {
       cam.updateMatrixWorld();
