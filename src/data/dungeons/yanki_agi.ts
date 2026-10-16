@@ -57,7 +57,7 @@ const RP_GECIT: SlopeDef = ramp(rect(30, 28, 4, 3), 'x', 5, 6.5, { id: 'h7_gecit
 const ST_LAB_W: SlopeDef = stairs(rect(31, 20, 3, 4), 'x', 5, 8, { id: 'h8_lab_west' });
 const ST_YANKI: SlopeDef = stairs(rect(24, 17, 5, 4), 'z', 11, 5, { id: 'h9_yanki_merdiveni' });
 const RP_TUNEL: SlopeDef = ramp(rect(34, 8, 6, 4), 'x', 11, 7, { id: 'h10_tunel' });
-const ST_PIT: SlopeDef = stairs(rect(50, 23, 4, 3), 'z', 7, 3, { id: 'h11_pit_stair' });
+const ST_PIT: SlopeDef = stairs(rect(51, 23, 2, 6), 'z', 7, 3, { id: 'h11_pit_stair' });
 
 // ---- zones -----------------------------------------------------------------------------------------------------------------
 /** Chasm of the Yarık Köprüsü (fall rule of CORE_MECHANICS section 13: a fall costs 25 % and respawns at the last safe tile). */
@@ -245,19 +245,27 @@ const ROOMS: RoomDef[] = [
       P(kn('hanging_moss'), 55, 16, { y: 3.6, tint: 0xb9c6d8 }),
     ],
   }),
-  room('kikatal_deposu', 'Alt Depo', 48, 23, 15, 13, 'stone_dark', 'forge', 0.1, {
-    floorY: 3, ceiling: 22, openAir: true, boss: 3, explicitDecor: true, slopes: [ST_PIT], lightColor: VIOLET, fog: fog(0x1a1028, 10, 52),
+  room('k_final', 'Son Yokuş', 51, 23, 2, 6, 'stone_dark', 'forge', 0.2, {
+    floorY: 7, ceiling: 10, explicitDecor: true, lightColor: VIOLET, slopes: [ST_PIT],
+    props: [
+      P(hw('lantern_standing'), 52.5, 25, { y: 0, light: lt(VIOLET, 1.2, 6, true) }),
+      P(hw('skull'), 51.5, 27.5), P(gp('bone_pile'), 52.5, 26.8, { tint: 0x8a8a50 }),
+      P(dg('candle_lit'), 51.5, 24.2, { light: lt(VIOLET, 0.9, 5, true, 1.1) }),
+    ],
+  }),
+  room('kikatal_deposu', 'Alt Depo', 48, 29, 15, 13, 'stone_dark', 'forge', 0.1, {
+    floorY: 3, ceiling: 22, openAir: true, boss: 3, explicitDecor: true, lightColor: VIOLET, fog: fog(0x1a1028, 10, 52),
     zones: [
-      circleZone('pit', 55, 28.5, 1.7, { blocked: true, color: 0x000000, glow: VIOLET, glowIntensity: 1.2 }),
-      circleZone('pool', 48.8, 25.8, 1.3, { color: 0x1a0a22, glow: VIOLET }), circleZone('pool', 60.5, 24.5, 1.3, { color: 0x1a0a22, glow: VIOLET }),
-      circleZone('pool', 49.5, 33.5, 1.3, { color: 0x1a0a22, glow: VIOLET }), circleZone('pool', 60.5, 33.5, 1.3, { color: 0x1a0a22, glow: VIOLET }),
+      circleZone('pit', 55, 34.5, 1.7, { blocked: true, color: 0x000000, glow: VIOLET, glowIntensity: 1.2 }),
+      circleZone('pool', 48.8, 31.8, 1.3, { color: 0x1a0a22, glow: VIOLET }), circleZone('pool', 60.5, 30.5, 1.3, { color: 0x1a0a22, glow: VIOLET }),
+      circleZone('pool', 49.5, 39.5, 1.3, { color: 0x1a0a22, glow: VIOLET }), circleZone('pool', 60.5, 39.5, 1.3, { color: 0x1a0a22, glow: VIOLET }),
     ],
     props: [
-      P(gp('cauldron'), 55, 28.5, { scale: 3, tint: 0x3a1245, light: lt(VIOLET, 2.0, 12, true) }),
-      P(dg('barrel_large'), 48.8, 25.8, { tint: 0x2a2030 }), P(dg('barrel_large'), 60.5, 24.5, { tint: 0x2a2030 }),
-      P(dg('barrel_large'), 49.5, 33.5, { tint: 0x2a2030 }), P(dg('barrel_large'), 60.5, 33.5, { tint: 0x2a2030 }),
-      P(gp('crystal_blue'), 55, 23.5, { tint: VIOLET, light: lt(VIOLET, 1.5, 8, false) }),
-      P(hw('lantern_hanging'), 58, 27, { y: 3.0, light: lt(VIOLET, 1.4, 7, true) }),
+      P(gp('cauldron'), 55, 34.5, { scale: 3, tint: 0x3a1245, light: lt(VIOLET, 2.0, 12, true) }),
+      P(dg('barrel_large'), 48.8, 31.8, { tint: 0x2a2030 }), P(dg('barrel_large'), 60.5, 30.5, { tint: 0x2a2030 }),
+      P(dg('barrel_large'), 49.5, 39.5, { tint: 0x2a2030 }), P(dg('barrel_large'), 60.5, 39.5, { tint: 0x2a2030 }),
+      P(gp('crystal_blue'), 55, 29.5, { tint: VIOLET, light: lt(VIOLET, 1.5, 8, false) }),
+      P(hw('lantern_hanging'), 58, 33, { y: 3.0, light: lt(VIOLET, 1.4, 7, true) }),
     ],
   }),
 ];
@@ -275,13 +283,15 @@ const DOORS: DoorDef[] = [
   door('avanoksa_yuvasi', 'rampa_iki', 40, 33, 'n', 4, 'boss_exit'),
   door('rampa_iki', 'nobet_holu', 40, 28, 'n', 4, 'none'),
   door('nobet_holu', 'laboratuvar', 34, 21, 'w', 2, 'none'),
-  door('rampa_iki', 'ag_gecidi', 40, 29, 'w', 2, 'none'),
+  // shortcut: the Ag Gecidi bypass is a kill_lock opened by boss 2 (Anubzek)
+  { ...door('rampa_iki', 'ag_gecidi', 40, 29, 'w', 2, 'kill_lock'), opensOn: { boss: 'boss_anubzek' } },
   door('ag_gecidi', 'laboratuvar', 31, 28, 'n', 2, 'none'),
   door('laboratuvar', 'anubzek_terasi', 26, 17, 'n', 2, 'boss_lock'),
   door('anubzek_terasi', 'tunel', 33, 8, 'e', 4, 'boss_exit'),
   door('tunel', 'kan_hatti', 39, 8, 'e', 4, 'none'),
   door('kan_hatti', 'dron_kogusu', 48, 13, 's', 4, 'none'),
-  door('dron_kogusu', 'kikatal_deposu', 50, 22, 's', 4, 'boss_lock'),
+  door('dron_kogusu', 'k_final', 51, 22, 's', 2, 'none'),
+  door('k_final', 'kikatal_deposu', 51, 28, 's', 2, 'boss_lock'),
 ];
 
 // ---- packs (29; forces are the member sums, 502 in total, 474 on the non-optional route) ---------------------------------
@@ -360,10 +370,10 @@ export const YANKI_AGI: DungeonDef = {
   bosses: [
     bossAt('boss_avanoksa', 'avanoksa_yuvasi', 40.5, 37, -90, 1),
     bossAt('boss_anubzek', 'anubzek_terasi', 27, 7, 0, 2),
-    bossAt('boss_kikatal', 'kikatal_deposu', 55, 31.5, 180, 3),
+    bossAt('boss_kikatal', 'kikatal_deposu', 55, 37.5, 180, 3),
   ],
   start: { pos: [4, 49.5], facing: 90 },
-  exit: { pos: [55, 34] },
+  exit: { pos: [55, 41] },
   extras: {
     fontOfPower: pt(6.5, 47),
     shrines: [{ type: 'shrine_power', pos: pt(28.3, 52.2) }, { type: 'shrine_haste', pos: pt(22.2, 26.2) }],
