@@ -659,14 +659,15 @@ async function journey(cls) {
    * nearest in-band mob (level lvl-3..lvl, never above the character's level; no fallback to any other level).
    */
   let campLock = null;
-  const pickTarget = async (ids) => {
+  // anyLevel: the quest's own named target (a boss objective: the lair boss is the quest's pick, the game has no level band for it)
+  const pickTarget = async (ids, anyLevel = false) => {
     const all = await aliveEnemies(ids);
     if (!all.length) return null;
     const lvl = (await snap()).lvl;
     const locked = campLock ? all.filter((e) => e.camp === campLock && e.d <= 40) : [];
     if (locked.length) return locked[0];
     // never a camp above the character's level: a level 2 character does not pull level 3 goblin camps (no fallback to any level)
-    const band = all.filter((e) => e.level >= lvl - 3 && e.level <= lvl);
+    const band = anyLevel ? all : all.filter((e) => e.level >= lvl - 3 && e.level <= lvl);
     if (!band.length) { campLock = null; return null; }
     campLock = band[0].camp;
     return band[0];
@@ -934,9 +935,9 @@ async function journey(cls) {
     }
   };
   /** One kill: approach the nearest target, fight it, loot. Walks to the game's own kill area (guide arrow, layout camp) when none is loaded. */
-  const stepKill = async (d, ids, label) => {
+  const stepKill = async (d, ids, label, anyLevel = false) => {
     await restUp();
-    const en = await pickTarget(ids);
+    const en = await pickTarget(ids, anyLevel);
     lastStep = { label, ids, how: en && en.d <= 110 ? 'nearest in-band ' + en.def + ' camp=' + en.camp + ' L' + en.level + ' d=' + Math.round(en.d) + 'm (campLock=' + campLock + ')' : 'no target within 110 m: guide arrow / layout camp' };
     if (!en || en.d > 110) {
       const g = await page.evaluate(async () => {
@@ -990,7 +991,7 @@ async function journey(cls) {
           return 'died';
         }
         if (fb === 'aborted') break;
-        if (await pickTarget(ids)) break;
+        if (await pickTarget(ids, anyLevel)) break;
         if (fb === 'clear') await sleep(500);
       }
       return 'walked';
@@ -1044,6 +1045,8 @@ async function journey(cls) {
       }
       case 'kill':
       case 'boss':
+        // the quest's named boss: pulled at any level, the quest gate decides when it is offered (quest_boss.mjs asserts the fight)
+        return stepKill(d, [o.target], label, true);
       case 'metin':
       case 'elite':
       case 'skill':

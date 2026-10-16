@@ -151,6 +151,8 @@ export interface GameEvents {
   'hero:cast': { casterId: EntityId; skillId: string; duration: number };
   /** A flask was drunk from belt slot `slot` (1..5). */
   'flask:used': { slot: number; baseId: string; charges: number };
+  /** A bag potion (Can / Ruh / Panzehir İksiri, Combat.usePotion) was drunk; the first-hour guide's flask step counts it. */
+  'potion:used': { kind: 'hp' | 'mp' | 'cleanse' };
   /** A party member changed spec (GDD_V2 §1). */
   'spec:changed': { entityId: EntityId; spec: SpecId };
   /** A ZAYIF! hit landed (GDD_V2 §7.3). `stacks` = attacker's Sömürü stacks after the hit. */

@@ -99,6 +99,7 @@ export class GuideCard implements HudWidget {
       }
     });
     G.events.on('flask:used', () => this.feed({ k: 'flask' }));
+    G.events.on('potion:used', () => this.feed({ k: 'flask' }));
     G.events.on('skill:cast', ({ casterId, skillId }) => {
       const ch = G.character;
       if (!G.player || !ch || casterId !== G.player.id) return;

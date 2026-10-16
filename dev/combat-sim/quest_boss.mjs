@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * QUEST BOSS CHECK (playtest: a L4-5 knight lost 348 HP in ~8 s to mq_05's boss Yağmacı Başı Gırtlak (mb_girtlak, lair level 5, ~378 HP)
- * and dealt ~10 damage to it). Every playable class at L4 and L5 against the boss at its lair. The boss is spawned the way MiniBossDirector
+ * and dealt ~10 damage to it). Now: the quest gate is L4, so the boss is the layout's L4 lair boss and the roster is every playable class at L4. The boss is spawned the way MiniBossDirector
  * spawns it (spawnEnemy, aggro off, then aggroed on the player, who walks in). Its summons (Gırtlak Çağrısı) run the real path: EnemyAI.doSummon
  * -> spawnAdds -> hooks.spawn (spawnEnemy). A summon engages its summoner's target: the adds fight the player the boss fights.
  * The player keeps the boss as its target: a melee class closes to 2.2 m, a ranged one stands still.
@@ -34,7 +34,7 @@ const args = Object.fromEntries(process.argv.slice(2).map((a) => {
   const m = a.match(/^--([^=]+)(?:=(.*))?$/);
   return [m[1], m[2] ?? true];
 }));
-const LEVELS = args.level ? String(args.level).split(',').map(Number) : [4, 5];
+const LEVELS = args.level ? String(args.level).split(',').map(Number) : [4];
 const CLASS_FILTER = args.class ? String(args.class).split(',') : null;
 const VERBOSE = !!args.verbose;
 /** the player's target: the nearest living add while one is up (it hits the player and dies in a hit or two), then the boss. --target=boss keeps the boss */
@@ -44,7 +44,8 @@ const BOSS_HP_MULT = args['boss-hp'] ? Number(args['boss-hp']) : 1;
 const BOSS_DMG_MULT = args['boss-dmg'] !== undefined ? Number(args['boss-dmg']) : 1;
 const BOSS_ID = 'mb_girtlak';
 const ADD_ID = 'mb_girtlak_add';
-const BOSS_LEVEL = 5;
+// the lair level of mb_girtlak in sisli_vadi.layout.json (minibosses[].level): the quest gate is L4 now (was L5)
+const BOSS_LEVEL = 4;
 const TIME_LIMIT = 120;
 const TTK_MEDIAN = [18, 35];
 const HP_MIN = 0.03;
@@ -534,7 +535,7 @@ if (engineErrs) console.log(`engine errors logged: ${engineErrs} (first: ${first
 const notWon = main.filter((f) => f.r.outcome !== 'win');
 const ttkMedian = median(won.map((f) => f.r.time));
 // the median is a roster statistic: only the full roster (every playable class at L4 and L5) has one; a --class / --level run skips it
-const ROSTER_RUN = !CLASS_FILTER && LEVELS.join() === '4,5';
+const ROSTER_RUN = !CLASS_FILTER && LEVELS.join() === '4';
 const hpBad = main.filter((f) => !(f.r.hpLeft >= HP_MIN));
 // melee reach: an add's attack starts and its hits on the player are within MELEE_REACH_M (every fight, stand fights included)
 const reachBad = fights.filter((f) => (f.r.addStartMax ?? 0) > MELEE_REACH_M || (f.r.addHitMax ?? 0) > MELEE_REACH_M)

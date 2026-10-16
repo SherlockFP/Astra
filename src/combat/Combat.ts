@@ -2260,6 +2260,7 @@ export class Combat {
       if (!G.skills?.isBusy(p)) p.anim?.playOnce('Use_Item', { upperBody: true, speed: 2.3, fade: 0.05 });
       G.events.emit('materials:changed', {});
       G.events.emit('ui:toast', { text: `Panzehir: ${cleansable.length} olumsuz etki temizlendi.`, kind: 'success' });
+      G.events.emit('potion:used', { kind });
       return true;
     }
     const pref = kind === 'hp' ? 'pot_hp_' : 'pot_res_';
@@ -2301,6 +2302,7 @@ export class Combat {
     G.audio.play('potion_drink', { pos: [p.position.x, p.position.y, p.position.z] });
     if (!G.skills?.isBusy(p)) p.anim?.playOnce('Use_Item', { upperBody: true, speed: 2.3, fade: 0.05 });
     G.events.emit('materials:changed', {});
+    G.events.emit('potion:used', { kind });
     return true;
   }
 
