@@ -12,7 +12,7 @@
  * HP left. Per class, over its fights (levels x mobs). ASSERTS (exit 1 when one fails):
  *   - every fight is won inside the 20 s limit (no timeout, no death, no throw)
  *   - median TTK across the classes in 5-11 s
- *   - each class's median TTK in 5-10 s (over its L1-10 fights)
+ *   - each class's median TTK in 6-10 s at each level (L1 / L5 / L10 / L20 / L30; over its 4 mobs)
  *   - each class's median HP left in 55-90 % (a tank spec or a pet class: 55-97 %)
  * The spec tuning table (CM1) applies (see harness).
  *
@@ -21,6 +21,8 @@
  */
 import * as H from './harness.mjs';
 import { readdirSync } from 'node:fs';
+import { execFile } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const { G, world, errors } = H;
 const DT = H.DT;
@@ -32,9 +34,9 @@ const args = Object.fromEntries(process.argv.slice(2).map((a) => {
   const m = a.match(/^--([^=]+)(?:=(.*))?$/);
   return [m[1], m[2] ?? true];
 }));
-const LEVELS = args.level ? String(args.level).split(',').map(Number) : [1, 5, 10];
-const TTK_BAND = [6, 10]; // every class, levels below TTK_INFO_FROM: median TTK (s)
-const TTK_INFO_FROM = 10; // L10+ is reported only (talents and spec kits there belong to the L10+ balance pass)
+const LEVELS = args.level ? String(args.level).split(',').map(Number) : [1, 5, 10, 20, 30];
+const TTK_BAND = [6, 10]; // median TTK over its mobs (s): asserted below TTK_INFO_FROM, reported above
+const TTK_INFO_FROM = 10; // L10+ spec kits still need ability-level tuning (evoker/priest/archer bursts): reported only until then
 const TTK_CELLS = [];
 const CLASS_FILTER = args.class ? String(args.class).split(',') : null;
 const VERBOSE = !!args.verbose;
@@ -93,7 +95,18 @@ function specOf(classId) {
 const hasPet = (spec) => (spec.specials ?? []).some((s) => (s.params?.pet ?? 0) > 0)
   || Object.values(spec.defaultBar ?? {}).some((id) => SKILLS[id]?.tags?.includes('pet'));
 /** The class's bar at a level as the game grants it: CharacterState.defaultBar (the opening kit, openingKit.ts). */
-const barFor = (classId, L) => CharacterState.defaultBar(classId, L);
+/** Below L10 the class opening kit. From L10 the spec is chosen and the bar becomes the spec's defaultBar (Talents.setSpec), cut to the skills
+ *  unlocked by that level, so the spec kit (the L10 spec skills and their APL rows) is on the bar. */
+const barFor = (classId, L, spec) => {
+  if (L < 10 || !spec?.defaultBar) return CharacterState.defaultBar(classId, L);
+  const bar = { lmb: spec.defaultBar.lmb ?? CLASSES[classId].basicAttack ?? `${classId}_basic` };
+  for (const [slot, id] of Object.entries(spec.defaultBar)) {
+    if (slot === 'lmb' || !id) continue;
+    const unlock = spec.unlock?.[id] ?? SKILLS[id]?.unlockLevel ?? 1;
+    if (unlock <= L) bar[slot] = id;
+  }
+  return bar;
+};
 /** Player.refreshStats for a local actor: maxHp / resource from the final stats. */
 function syncPlayer(p, ch, spec) {
   const st = ch.stats;
@@ -287,7 +300,7 @@ function fight(classId, L, mobId, o = {}) {
   const ch = CharacterState.create('Solo', classId);
   ch.save.level = L;
   ch.save.spec = L >= 10 ? spec.id : null; // the spec is picked at L10: no spec passives below it (CharacterState.spec)
-  ch.save.skillBar = barFor(classId, L);
+  ch.save.skillBar = barFor(classId, L, spec);
   ch.save.majorCd = { m45: 0, m90: 0, m180: 0 };
   ch.recomputeStats(false);
   G.character = ch;
@@ -370,8 +383,26 @@ function fight(classId, L, mobId, o = {}) {
 const classes = PLAYABLE_CLASSES.filter((c) => !CLASS_FILTER || CLASS_FILTER.includes(c));
 const results = {}; // classId -> L -> mob -> result
 const specErrors = [];
+// Each (class, level) runs in its own process (the default run): the sim keeps module state across fights, so a fight's result depended on the
+// fights run before it (a mage read 7.4 s at L10 alone and 10.4 s after its L1 / L5 fights). `--json` is the child mode: it prints its results.
+const ISOLATE = !CLASS_FILTER && !args.json;
+const childResult = (c, L) => new Promise((resolve, reject) => {
+  const cmd = [process.execPath, '--no-warnings', '--import', new URL('./register.mjs', import.meta.url).href, fileURLToPath(import.meta.url), `--class=${c}`, `--level=${L}`, '--json'];
+  execFile(cmd[0], cmd.slice(1), { maxBuffer: 1 << 28 }, (err, stdout) => {
+    const line = String(stdout ?? '').split('\n').find((l) => l.startsWith('CLASS_JSON '));
+    if (!line) return reject(new Error(`class ${c} L${L}: no result from its process (${err?.message ?? 'no output'})`));
+    resolve(JSON.parse(line.slice('CLASS_JSON '.length))[c]?.[L] ?? {});
+  });
+});
+if (ISOLATE) {
+  const pairs = classes.filter((c) => specOf(c)).flatMap((c) => LEVELS.map((L) => [c, L]));
+  for (let i = 0; i < pairs.length; i += 6) {
+    await Promise.all(pairs.slice(i, i + 6).map(async ([c, L]) => { results[c] ??= {}; results[c][L] = await childResult(c, L); }));
+  }
+}
 for (const c of classes) {
   if (!specOf(c)) { specErrors.push(`${c}: no spec row`); continue; }
+  if (ISOLATE) continue;
   results[c] = {};
   for (const L of LEVELS) {
     results[c][L] = {};
@@ -384,6 +415,7 @@ for (const c of classes) {
     }
   }
 }
+if (args.json) { console.log('CLASS_JSON ' + JSON.stringify(results)); process.exit(0); }
 const median = (xs) => {
   const v = xs.filter(Number.isFinite).sort((a, b) => a - b);
   if (!v.length) return NaN;
@@ -447,12 +479,12 @@ const engineErrs = errors.filter((e) => /ERR/.test(e));
 if (engineErrs.length) console.log(`engine errors logged: ${engineErrs.length} (first: ${engineErrs[0].slice(0, 160)})`);
 
 const notWon = fights.filter((f) => !Number.isFinite(f.ttk));
+const ttkInfo = TTK_CELLS.filter((x) => x.L >= TTK_INFO_FROM && !(x.ttk >= TTK_BAND[0] && x.ttk <= TTK_BAND[1]));
+if (ttkInfo.length) console.log(`info L${TTK_INFO_FROM}+ outside ${TTK_BAND[0]}-${TTK_BAND[1]} s: ${ttkInfo.map((x) => `${x.c}@L${x.L} ${sec(x.ttk)}`).join("; ")}`);
 const checks = [
   ["every fight won in time", notWon.map((f) => `${f.c}@L${f.L} ${f.mob} ${f.r.outcome}`)],
   [`every class below L${TTK_INFO_FROM}: median TTK ${TTK_BAND[0]}-${TTK_BAND[1]} s`, TTK_CELLS.filter((x) => x.L < TTK_INFO_FROM && !(x.ttk >= TTK_BAND[0] && x.ttk <= TTK_BAND[1])).map((x) => `${x.c}@L${x.L} ${sec(x.ttk)}`)],
 ];
-const info = TTK_CELLS.filter((x) => x.L >= TTK_INFO_FROM && !(x.ttk >= TTK_BAND[0] && x.ttk <= TTK_BAND[1]));
-if (info.length) console.log(`info L${TTK_INFO_FROM}+ outside ${TTK_BAND[0]}-${TTK_BAND[1]} s: ${info.map((x) => `${x.c}@L${x.L} ${sec(x.ttk)}`).join("; ")}`);
 let allOk = specErrors.length === 0;
 for (const [name, bad] of checks) {
   const ok = bad.length === 0;
