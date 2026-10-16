@@ -1,0 +1,50 @@
+{
+ "src": "characters/v2/Mage.glb",
+ "out": "characters/v2/Mage.glb",
+ "family": "characters/v2",
+ "class": "hero",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "players scale 1",
+ "game_cell": 0.09,
+ "native_cell_base": 0.09,
+ "budget": 7600,
+ "hidden_nodes": [],
+ "kb_src": 344,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": "(Helmet|Hat|Hood)$",
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-17T01:40:12",
+ "status": "PASS",
+ "cell_used": 0.09,
+ "passes": [
+  {
+   "cell": 0.09,
+   "tris_visible": 6636,
+   "voxels": 3216
+  }
+ ],
+ "voxels": 3216,
+ "faces": 3318,
+ "tris_total": 6636,
+ "tris_visible": 6636,
+ "budget_pct": -12.7,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 6636,
+  "kb": 625,
+  "clips": 0,
+  "orig_kb": 344
+ },
+ "kb_out": 625,
+ "seconds": 0.5
+}

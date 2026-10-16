@@ -1,0 +1,50 @@
+{
+ "src": "characters/v2/Rogue_Hooded.glb",
+ "out": "characters/v2/Rogue_Hooded.glb",
+ "family": "characters/v2",
+ "class": "hero",
+ "decision": "voxel",
+ "scale": 1.0,
+ "scale_src": "players scale 1",
+ "game_cell": 0.09,
+ "native_cell_base": 0.09,
+ "budget": 7600,
+ "hidden_nodes": [],
+ "kb_src": 372,
+ "flags": {
+  "static": false,
+  "keep": null,
+  "overlay": "(Helmet|Hat|Hood)$",
+  "blur": 0,
+  "weights": "rigid",
+  "no_variation": false
+ },
+ "generated": "2026-10-17T01:40:14",
+ "status": "PASS",
+ "cell_used": 0.09,
+ "passes": [
+  {
+   "cell": 0.09,
+   "tris_visible": 3224,
+   "voxels": 1596
+  }
+ ],
+ "voxels": 1596,
+ "faces": 1612,
+ "tris_total": 3224,
+ "tris_visible": 3224,
+ "budget_pct": -57.6,
+ "colors": {
+  "MAIN": 24
+ },
+ "validator": "PASS",
+ "validator_errors": [],
+ "validator_info": {
+  "tris": 3224,
+  "kb": 312,
+  "clips": 0,
+  "orig_kb": 372
+ },
+ "kb_out": 312,
+ "seconds": 0.53
+}
