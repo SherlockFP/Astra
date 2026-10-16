@@ -736,8 +736,8 @@
    "name": "Fare Yuvası",
    "region": "r1",
    "center": [
-    215.75,
-    22.75
+    212.5,
+    27.5
    ],
    "radius": 6,
    "levelRange": [

@@ -56,6 +56,10 @@ export const NEW_PLAYER_REVIVE_HERE_DELAY = 2;
 /** Release HP (corpse run): +25 % at L1 over the 50 % of L10+. */
 export const NEW_PLAYER_RELEASE_HP_CUT = 0.25;
 
+/** Enemy poison ticks (goblin shamans' Zehir Oku stacks) on a new player: x(1 - cut) at L1, so the stacks do not out-tick a caster's HP. */
+export const NEW_PLAYER_POISON_CUT = 0.5;
+export const newPlayerPoisonMult = (L: number): number => 1 - NEW_PLAYER_POISON_CUT * newPlayerEase(L);
+
 /** Aggro radius multiplier of open-world trash. */
 export const newPlayerAggroMult = (L: number): number => 1 - NEW_PLAYER_AGGRO_CUT * newPlayerEase(L);
 /** Camp leash pad multiplier. */

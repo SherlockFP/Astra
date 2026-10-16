@@ -77,8 +77,10 @@ function hashStr(s) { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i+
 let mathRng = new RNG(1);
 Math.random = () => mathRng.next();
 /** Damage the local player takes in the current fight: [time, amount] (feeds the APL token damage_taken_5s). */
-let takenLog = [];
+let PULL_SELF_ALLY = false; // set by --pull
+let takenLog = []; let dmgFrom = {};
 G.events.on('damage', (ev) => {
+  if (ev.amount > 0 && G.player && ev.targetId === G.player.id) dmgFrom[ev.sourceId] = (dmgFrom[ev.sourceId] ?? 0) + ev.amount;
   if (ev.amount > 0 && G.player && ev.targetId === G.player.id) takenLog.push([G.engine.time, ev.amount]);
 });
 let castLog = {};
@@ -180,7 +182,9 @@ function makeEnv(p, e, enemies) {
     tHpFrac: e ? e.hp / e.maxHp : 0,
     lowestStatus: () => false,
     tankHpPct: 100,
-    allyLowPct: 100,
+    // --pull only: the lowest ally is the caster itself (a fraction, as the kit lines read it: ally.low% < 0.8). The solo gates keep
+    // no ally, so the healers' self-heal loops (priest L8 stalled in flash heal / shield at 10 %) stay out of the solo TTK table.
+    allyLowPct: PULL_SELF_ALLY ? p.hp / Math.max(1, p.maxHp) : 100,
     alliesInjured: 0,
     alliesLinked: 0,
     alliesDebuffed: 0,
@@ -264,7 +268,7 @@ function frame() {
  */
 function fight(classId, L, mobId, o = {}) {
   const spec = specOf(classId);
-  const key = `${classId}@${L}:${mobId}`;
+  const key = `${classId}@${L}:${Array.isArray(mobId) ? mobId.join('+') : mobId}`;
   const seed = hashStr(key);
   G.engine.time = 0; // each fight on its own clock: a result no longer depends on the fights run before it (order, count)
   mathRng = new RNG(seed);
@@ -282,6 +286,7 @@ function fight(classId, L, mobId, o = {}) {
   try { G.procs = new ProcEngine(); } finally { Date.now = realNow; }
   G.talents = { grantedSkills: () => Object.keys(spec.treeSkills ?? {}) };
   takenLog = [];
+  dmgFrom = {};
   castLog = {};
   EMP.slot = null;
 
@@ -308,11 +313,13 @@ function fight(classId, L, mobId, o = {}) {
 
   // fresh AI director per fight: its AI list and grid would carry the fights before this one into it
   { const dir = getDirector(world); dir.ais.length = 0; dir.piles.length = 0; dir.packLinks.clear(); dir.grid?.clear?.(); }
-  const def = ENEMIES[mobId];
-  // the open-world camp spawn path (EnemyFactory openWorld): trash / swarm take the low-level curve
-  const low = isLowLevelTrashRank(def.rank, def.role);
-  const xs = (o.wave ?? 1) > 1 ? [-1.5, 1.5] : [0];
+  // mobId: one id, or an array for a multi-mob pull (--pull): each mob keeps its own def and low-level curve
+  const defs = (Array.isArray(mobId) ? mobId : [mobId]).map((id) => ENEMIES[id]);
+  const xs = defs.length > 1 ? (defs.length === 2 ? [-1.5, 1.5] : [-2.2, 0, 2.2]) : (o.wave ?? 1) > 1 ? [-1.5, 1.5] : [0];
   const mobs = xs.map((x, i) => {
+    const def = defs[i] ?? defs[0];
+    // the open-world camp spawn path (EnemyFactory openWorld): trash / swarm take the low-level curve
+    const low = isLowLevelTrashRank(def.rank, def.role);
     const mob = new Enemy(9000 + (seed % 900) + i, def);
     mob.level = L;
     mob.position.set(x, 0, SPAWN_DIST);
@@ -364,11 +371,45 @@ function fight(classId, L, mobId, o = {}) {
     mobHpLeft: mob.maxHp > 0 ? Math.max(0, mob.hp) / mob.maxHp : 0, casts: { ...castLog },
     pet: hasPet(spec), tank: SPECS[spec.id]?.role === 'tank', lines: lines.length, maxHp: p.maxHp, mobDmg: Math.round(mob.baseDamage), mobHp: mob.maxHp,
     escortHpLeft: escort ? Math.max(0, escort.hp) / escort.max : null,
+    // damage taken per source (mob def id, or the player's own id for self / unknown sources) for the --pull report
+    dmgBy: Object.fromEntries(mobs.map((m) => [m.def?.id ?? m.id, Math.round(dmgFrom[m.id] ?? 0)]).concat([['other', Math.round(Object.entries(dmgFrom).filter(([k]) => !mobs.some((m) => String(m.id) === k)).reduce((s, [, v]) => s + v, 0))]])),
   };
 }
 
 // ---------------------------------------------------------------------------------------------------------------- report
 const classes = PLAYABLE_CLASSES.filter((c) => !CLASS_FILTER || CLASS_FILTER.includes(c));
+// ---------------------------------------------------------------------------------------------------------------- pull mode (--pull)
+// 2- and 3-mob pulls of melee + caster mixes, same level (the first-hour deaths were casters on these: a shaman's poison + goblins,
+// a wolf pack). Each pull is one fight with every mob aggroed at once. Reports the player's HP left and the deaths (a fight lost to
+// the player's death; a timeout is counted apart). Defaults to L2 and L4 (--level overrides). Always exits 0: a report, not a gate.
+if (args.pull) {
+  const PULLS = {
+    'gob+shaman': ['ow_goblin', 'ow_goblin_shaman'],
+    'wolf+shaman': ['ow_wolf', 'ow_goblin_shaman'],
+    'gob x2+shaman': ['ow_goblin', 'ow_goblin', 'ow_goblin_shaman'],
+    'wolf+rat+shaman': ['ow_wolf', 'ow_rat', 'ow_goblin_shaman'],
+  };
+  const pullLevels = args.level ? LEVELS : [2, 4];
+  PULL_SELF_ALLY = true;
+  let deaths = 0, timeouts = 0, pulls = 0;
+  for (const c of classes) {
+    for (const L of pullLevels) {
+      const cells = [];
+      for (const [name, ids] of Object.entries(PULLS)) {
+        let r;
+        try { r = fight(c, L, ids); } catch (err) { r = { outcome: 'throw', hpLeft: 0, error: String(err?.message ?? err).slice(0, 200) }; }
+        pulls++;
+        if (r.outcome === 'dead') deaths++;
+        if (r.outcome === 'timeout') timeouts++;
+        const tag = r.outcome === 'win' ? '' : `[${r.outcome.toUpperCase()}]`;
+        cells.push(`${name} ${Math.round(100 * (r.hpLeft ?? 0))}%@${(r.time ?? 0).toFixed(1)}s${tag}${r.error ? ' ' + r.error : ''}${VERBOSE && r.dmgBy ? " maxHp " + r.maxHp + " " + JSON.stringify(r.dmgBy) : ""}`);
+      }
+      console.log(`${String(c).padEnd(12)} L${String(L).padEnd(3)} ${cells.join(' | ')}`);
+    }
+  }
+  console.log(`pull deaths ${deaths} of ${pulls} (timeouts ${timeouts}) at levels ${pullLevels.join(',')}`);
+  process.exit(0);
+}
 const results = {}; // classId -> L -> mob -> result
 const specErrors = [];
 for (const c of classes) {

@@ -3,6 +3,7 @@ import {
   STATUSES, STATUS_RULES, dispelStackLoss, expireBurstOf, shouldFireOnExpire,
   type StatusRemoveReason, type StatusRule,
 } from '../data/statuses';
+import { newPlayerPoisonMult } from '../data/lowLevelScaling';
 import type { EntityId } from '../types/common';
 import type { StatusId } from '../types/skills';
 import type { StatBlock, StatId } from '../types/stats';
@@ -611,7 +612,9 @@ export class StatusEffects {
         if (floorHp !== undefined) dmg = Math.min(dmg, Math.max(0, Math.floor(owner.hp - floorHp)));
         G.combat.applyDamageToEnemy(owner as never, dmg, false, dotType, s.sourceId, undefined, s.id, 0, undefined, { dot: true });
       } else if (owner.kind === 'player') {
-        G.combat.hitLocalPlayer({ sourceId: s.sourceId, amount: raw, type: dotType, unavoidable: true, abilityName: STATUSES[s.id]?.name, sourceLevel: lvl, isDot: true, floorHp });
+        // new-player ease: an enemy's poison stacks (goblin shamans) tick at a share of their damage on levels 1-9 (lowLevelScaling)
+        const lowPoison = s.id === 'poison' && src?.kind === 'enemy' ? newPlayerPoisonMult(owner.level) : 1;
+        G.combat.hitLocalPlayer({ sourceId: s.sourceId, amount: raw * lowPoison, type: dotType, unavoidable: true, abilityName: STATUSES[s.id]?.name, sourceLevel: lvl, isDot: true, floorHp });
       }
     } catch (e) {
       console.error('[status] tick failed', e);

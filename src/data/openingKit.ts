@@ -34,10 +34,10 @@ export const OPENING_KIT: Partial<Record<ClassId, readonly OpeningRow[]>> = {
     ['barbarian_leap', 's2', 1], ['barbarian_whirlwind', 'q', 1], ['barbarian_shield_slam', 'rmb', 1], ['barbarian_revenge', 'e', 1],
     ['barbarian_thunder_clap', 'r', 2], ['barbarian_iron_stance', 's3', 3], ['barbarian_bloodthirst', 's1', 4], ['barbarian_provoke', 's4', 5],
   ],
-  // Mage (Büyücü): L1 Fireball, Frostbolt, Arcane Missiles, Blizzard; L2 Frost Nova; L3 Blink; L4 Ice Barrier; L5 Pyroblast.
+  // Mage (Büyücü): L1 Fireball, Frostbolt, Arcane Missiles, Blizzard, Ice Barrier (the caster's early shield: lowest base HP); L2 Frost Nova; L3 Blink; L5 Pyroblast.
   mage: [
     ['mage_fireball', 'rmb', 1], ['mage_frostbolt', 'q', 1], ['mage_arcane_missiles', 'e', 1], ['mage_blizzard', 'r', 1],
-    ['mage_frost_nova', 's2', 2], ['mage_blink', 's3', 3], ['mage_ice_barrier', 's4', 4], ['mage_pyroblast', 's1', 5],
+    ['mage_ice_barrier', 's4', 1], ['mage_frost_nova', 's2', 2], ['mage_blink', 's3', 3], ['mage_pyroblast', 's1', 5],
   ],
   // Rogue (Haydut): L1 Mutilate, Envenom, Shadowstep, Kick; L2 Stealth; L3 Slice and Dice; L4 Sprint; L5 Garrote.
   rogue: [

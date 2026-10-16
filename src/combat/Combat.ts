@@ -117,7 +117,7 @@ export interface DamageResult {
  * ease, data/lowLevelScaling.ts NEW_PLAYER_END_LEVEL), so the first camps are survivable for casters (mage base HP is the lowest).
  * Levels 10+ get nothing. PvP starts at level 35 (data/pvpZone PVP_MIN_LEVEL), never here.
  */
-const NEW_PLAYER_DR = [0.3, 0.25, 0.2, 0.12, 0.06, 0.05, 0.04, 0.03, 0.02];
+const NEW_PLAYER_DR = [0.45, 0.4, 0.33, 0.2, 0.1, 0.05, 0.04, 0.03, 0.02];
 export function newPlayerDr(level: number): number {
   return NEW_PLAYER_DR[Math.floor(level) - 1] ?? 0;
 }

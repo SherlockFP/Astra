@@ -41,6 +41,7 @@ export const ROTATIONS_KIT_MAGE: Record<string, unknown> = {
   },
   mage_fire: {
     st: [
+      'mage_ice_barrier if cd_ready(mage_ice_barrier) && hp% < 60', // the L1-9 shield (on the opening bar only; the fire bar has none from L10)
       'mage_combustion if cd_ready(mage_combustion) && charges(mage_fire_blast) >= 2 && !status:combustion',
       'mage_meteor if cd_ready(mage_meteor) && (status:combustion || cd(mage_combustion) > 12)',
       'mage_time_warp if cd_ready(mage_time_warp) && status:combustion',
