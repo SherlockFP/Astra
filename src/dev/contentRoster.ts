@@ -50,4 +50,4 @@ export const GDD_ROSTER: Record<string, number> = {
 /** Summoned / boss-spawned units that appear in boss fights only (never in pack lists). */
 export const GDD_SUMMONS = ['lava_slimelet', 'shadow_spiderling', 'cult_ritualist', 'affix_explosive_orb', 'affix_spiteful_shade'];
 
-export const GDD_BOSSES = ['boss_bekci_kaldur', 'boss_olucagiran_morkan', 'boss_azrakel', 'boss_dokumcu_gurz', 'boss_atesyurek', 'boss_ignaroth', 'boss_ak_pence', 'boss_ayaz_ana', 'boss_tugrul', 'boss_nefris', 'boss_kevvas', 'boss_zakhar'];
+export const GDD_BOSSES = ['boss_mag_morkan', 'boss_mag_bekci', 'boss_bekci_kaldur', 'boss_olucagiran_morkan', 'boss_azrakel', 'boss_dokumcu_gurz', 'boss_atesyurek', 'boss_ignaroth', 'boss_ak_pence', 'boss_ayaz_ana', 'boss_tugrul', 'boss_nefris', 'boss_kevvas', 'boss_zakhar'];

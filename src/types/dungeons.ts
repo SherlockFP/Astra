@@ -395,6 +395,8 @@ export interface DungeonDef {
     /** P-26: M+ affix-safe spots (volcanic, storming, explosive, spiteful spawns skip them); radius in tiles. */
     affixSafe?: { x: number; z: number; r: number }[];
   };
+  /** Starter dungeons (levelling.ts): damage multiplier of this run's non-boss enemies (x1 when absent). */
+  trashDmgMult?: number;
   /** Open-world zone (Sisli Koru): one big room, tree walls instead of dungeon walls, camps are packs with respawn. */
   outdoor?: boolean;
   /** Open-world MAP (Sisli Vadi, GDD_OPENWORLD §9.1): regions, villages, POIs, metin, rares... Presence = "this is a world map". */

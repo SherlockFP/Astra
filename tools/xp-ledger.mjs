@@ -38,7 +38,8 @@ const { lowLevelKillXpMult, isLowLevelTrashRank } = await imp('src/data/lowLevel
 const { LEVEL_CAP } = await imp('src/types/character.ts');
 const { QUESTS } = await imp('src/data/world/quests.ts');
 const { ENEMIES, BOSSES } = await imp('src/data/enemies.ts');
-const { DUNGEONS, OPEN_ZONES } = await imp('src/data/dungeons/index.ts');
+const { DUNGEONS, OPEN_ZONES, DUNGEON_IDS } = await imp('src/data/dungeons/index.ts');
+const { runXp, runMinutes, isLowLevelDungeon, dungeonKillXpMult, RUN_OVERHEAD_S } = await imp('src/data/dungeons/levelling.ts');
 
 // ---- XP curve: the real methods (they use no instance state)
 const P = Progression.prototype;
@@ -259,6 +260,35 @@ export function printLedger(res = replayFirstHour()) {
     else console.log(`${s.id.padEnd(32)}${f(s.t, 6)}  L${s.lvl}  ${f(Math.round(s.xp), 5)}  ${f(s.quest, 8)}  L${s.gate}`);
   }
   console.log(`reached: ${Object.entries(res.reached).map(([L, t]) => `L${L}@${t}s`).join(' ')}  | grind kills ${res.grindKills}`);
+}
+
+/**
+ * Dungeon-only route (second first-hour path): the lowest low-level dungeon (levelling.ts, Kemik Mahzeni), run again and again at
+ * the player's level (enemy level = level clamped to the band), solo or in a group of `group` (every member gets the group's
+ * 1 + 0.05 (n - 1) kill XP, the pulls take the same time). Each run = the mandatory route's minutes + DUNGEON_RUN_OVERHEAD_S
+ * (queue, walk in, rest). Returns { def, runs: [{ lvl, xp, t }], reached, t } (reached[L] = seconds to reach level L).
+ */
+export const DUNGEON_RUN_OVERHEAD_S = RUN_OVERHEAD_S;
+export const lowLevelDungeon = () => DUNGEON_IDS.map((id) => DUNGEONS[id]).find((d) => isLowLevelDungeon(d));
+export function replayDungeonRoute({ group = 1, toLevel = 10 } = {}) {
+  const def = lowLevelDungeon();
+  const band = def.levelRange;
+  const runSecs = runMinutes(def) * 60 + DUNGEON_RUN_OVERHEAD_S;
+  const monsterXp = (L, rank, xpMult, pl) => P.monsterXp.call({}, L, rank, xpMult, pl);
+  const groupMult = 1 + 0.05 * (group - 1);
+  let t = 0, lvl = 1, xp = 0;
+  const reached = {}, runs = [];
+  while (lvl < toLevel && runs.length < 200) {
+    const enemyLvl = Math.max(band[0], Math.min(band[1], lvl));
+    const gain = runXp(def, enemyLvl, monsterXp) * groupMult;
+    runs.push({ lvl, xp: gain, t, mult: dungeonKillXpMult(def, enemyLvl) });
+    t += runSecs;
+    xp += gain;
+    while (lvl < toLevel && xp >= xpToNext(lvl)) { xp -= xpToNext(lvl); lvl++; if (reached[lvl] === undefined) reached[lvl] = t; }
+  }
+  const atLevel = {};
+  for (const L of [1, 5, 10]) atLevel[L] = runXp(def, Math.max(band[0], Math.min(band[1], L)), monsterXp) * groupMult;
+  return { def, runSecs, runs, reached, t, atLevel };
 }
 
 export { QUESTS, LEVEL_CAP };

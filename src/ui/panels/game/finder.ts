@@ -15,7 +15,9 @@ import {
   DIFF_NAME, FINDER_DIFFS, GROUP_SIZE, ROLE_GLYPH, ROLE_ORDER, ROLE_TR, allowedRoles, defaultRoles, diffRows, finderDungeons, joinBlocker,
   listingFor, lfgRows, memberGate, needFor, openSlots, recommendedDungeon, rowGateText, type DiffContext, type DiffRow, type LfgFilter,
 } from './finderModel';
-import { buildParams, partyLevels, startRun } from './runStart';
+import { buildParams, enemyLevelFor, partyLevels, startRun } from './runStart';
+import { RUN_OVERHEAD_S, isLowLevelDungeon, runMinutes, runXp } from '../../../data/dungeons/levelling';
+import type { EnemyRank } from '../../../types/enemies';
 import { FissureTab } from './finderFissure';
 import { PvpTab } from './finderPvp';
 import { devUnlockOn } from '../../../systems/BetaTest';
@@ -88,6 +90,9 @@ const CLEAR_GATES_OFF = ((): boolean => {
     return false;
   }
 })();
+
+/** Planning estimate of one full Normal run in minutes (levelling.ts runMinutes + the queue / walk-in overhead). */
+const runEstimateMin = (def: DungeonDef): number => Math.round(runMinutes(def) + RUN_OVERHEAD_S / 60);
 
 export class FinderPanel extends GamePanel {
   private chrome!: Chrome;
@@ -581,7 +586,7 @@ export class FinderPanel extends GamePanel {
         'div.fd-ctext',
         null,
         h('b', null, def.name),
-        h('small', null, `Sv. ${lo}–${hi} · EŞ ${recommendedIlvl(def, 'normal')} · ${mmss(def.timerSec ?? 0)}`),
+        h('small', null, `Sv. ${lo}–${hi} · ~${runEstimateMin(def)} dk · EŞ ${recommendedIlvl(def, 'normal')}`),
         h('div.fd-pips', null, ...pips),
       ),
     ) as HTMLButtonElement;
@@ -596,6 +601,7 @@ export class FinderPanel extends GamePanel {
     const row = rows.find((r) => r.diff === this.selDiff) ?? rows[0];
     if (!row) return;
     el.append(this.roleRow(), this.banner(def), h('p.fd-lore', null, def.lore ?? ''));
+    el.append(this.runCard(def, rows, ctx));
     el.append(h('div.fd-h', null, 'ZORLUK'), this.diffGrid(def, rows, row));
     el.append(this.lines(def, row));
     el.append(this.bossRow(def));
@@ -603,6 +609,35 @@ export class FinderPanel extends GamePanel {
     if (row.diff === 'mythicplus' && keyLevel) el.append(h('div.fd-h', null, 'EKLENTİLER'), affixChips(affixesForLevel(keyLevel)));
     el.append(h('div.fd-h', null, 'ÖDÜL'), h('div.fd-chips', null, ...REWARDS[row.diff].map((t) => chip(t))));
     el.append(this.mplusCard());
+  }
+
+  /**
+   * Normal run at a glance: recommended level band, "Şimdi katılabilirsin" when the Normal card is open to this character, the
+   * estimated run time and the estimated XP of one solo run (levelling.ts: the enemy level follows the party average in the band).
+   */
+  private runCard(def: DungeonDef, rows: DiffRow[], ctx: DiffContext): HTMLElement {
+    const normal = rows.find((r) => r.diff === 'normal');
+    const [lo, hi] = def.levelRange ?? [1, 1];
+    const enemyLvl = enemyLevelFor(def, 'normal', ctx.avgLevel);
+    const xp = runXp(def, enemyLvl, (L, rank, xpMult, pl) => G.progression.monsterXp(L, rank as EnemyRank, xpMult, pl));
+    const need = G.progression.xpToNext(ctx.level);
+    const pct = need > 0 && isFinite(need) ? Math.round((100 * xp) / need) : 0;
+    const now = !!normal?.startable;
+    const xpText = isFinite(need) ? `~${xp.toLocaleString('tr-TR')} XP (Sv. ${ctx.level}: %${pct} seviye)` : `~${xp.toLocaleString('tr-TR')} XP`;
+    return h(
+      'div.fd-runcard',
+      null,
+      h('div.fd-runhead', null,
+        h('b', null, `Önerilen seviye ${lo}–${hi}`),
+        now ? h('span.fd-rec', null, 'Şimdi katılabilirsin') : null,
+        !now && normal?.line3 ? h('span.fd-warn', null, normal.line3) : null,
+      ),
+      h('div.fd-runstats', null,
+        h('span', null, iconEl('/assets/icons/ui-timer.svg', 'k-ico k-ico-16'), `Tahmini süre ~${runEstimateMin(def)} dk`),
+        now ? h('span', null, `${xpText}`) : null,
+        isLowLevelDungeon(def) ? h('span', null, 'Tek başına veya grupla') : null,
+      ),
+    );
   }
 
   private roleRow(): HTMLElement {
