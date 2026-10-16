@@ -24,10 +24,10 @@ export function classGrantOrder(classId: ClassId): string[] {
 }
 
 export const OPENING_KIT: Partial<Record<ClassId, readonly OpeningRow[]>> = {
-  // Knight (Şövalye): L1 Charge, Whirlwind, Thunder Clap, Shield Slam; L2 Revenge; L3 Pummel; L4 Shield Block; L5 Taunt.
+  // Knight (Şövalye): L1 Charge, Shield Block, Thunder Clap, Shield Slam (Shield Block gives the Protector its 4th L1 skill and adds no damage, so solo TTK stays in band); L2 Radiant Cleave; L3 Pummel; L4 Revenge; L5 Taunt.
   knight: [
-    ['knight_charge', 's2', 1], ['knight_radiant_cleave', 'q', 1], ['knight_thunder_clap', 'rmb', 1], ['knight_shield_slam', 'e', 1],
-    ['knight_revenge', 'r', 2], ['knight_pummel', 's3', 3], ['knight_shield_block', 's4', 4], ['knight_provoke', 's1', 5],
+    ['knight_charge', 's2', 1], ['knight_shield_block', 'q', 1], ['knight_thunder_clap', 'rmb', 1], ['knight_shield_slam', 'e', 1],
+    ['knight_radiant_cleave', 'r', 2], ['knight_pummel', 's3', 3], ['knight_revenge', 's4', 4], ['knight_provoke', 's1', 5],
   ],
   // Barbarian (Barbar): L1 Charge, Whirlwind, Shield Slam, Revenge; L2 Thunder Clap; L3 Shield Block; L4 Bloodthirst; L5 Taunt.
   barbarian: [
@@ -59,15 +59,15 @@ export const OPENING_KIT: Partial<Record<ClassId, readonly OpeningRow[]>> = {
     ['warlock_shadow_bolt', 'rmb', 1], ['warlock_agony', 'e', 1], ['warlock_demonic_circle', 's2', 1], ['warlock_spell_lock', 's3', 1],
     ['warlock_corruption', 'r', 2], ['warlock_haunt', 's1', 3], ['warlock_dark_pact', 's4', 4], ['warlock_unstable_affliction', 'q', 5],
   ],
-  // Monk (Keşiş): L1 Tiger Palm, Chi Torpedo, Spinning Crane Kick, Blackout Kick; L2 Spear Hand Strike; L3 Flying Serpent Kick; L4 Expel Harm; L5 Rising Sun Kick.
+  // Monk (Keşiş): L1 Tiger Palm, Chi Torpedo, Spinning Crane Kick, Blackout Kick; L2 Expel Harm (the first defensive, early so the monk has one before L4); L3 Spear Hand Strike; L4 Flying Serpent Kick; L5 Rising Sun Kick.
   monk: [
     ['monk_tiger_palm', 'rmb', 1], ['monk_chi_torpedo', 's2', 1], ['monk_spinning_crane', 'q', 1], ['monk_blackout_kick', 'e', 1],
-    ['monk_spear_hand_strike', 's3', 2], ['monk_flying_serpent', 's4', 3], ['monk_expel_harm', 'r', 4], ['monk_rising_sun_kick', 's1', 5],
+    ['monk_expel_harm', 'r', 2], ['monk_spear_hand_strike', 's3', 3], ['monk_flying_serpent', 's4', 4], ['monk_rising_sun_kick', 's1', 5],
   ],
-  // Archer (Okçu): L1 Aimed Shot, Disengage, Multi-Shot, Snare Trap; L2 Call Pet; L3 Arcane Shot; L4 Serpent Sting; L5 Rapid Fire.
+  // Archer (Okçu): L1 Aimed Shot, Disengage, Multi-Shot, Snare Trap; L2 Call Pet; L3 Exhilaration (the first heal / defensive, was L10); L4 Serpent Sting; L5 Rapid Fire.
   archer: [
     ['archer_aimed_shot', 'rmb', 1], ['archer_disengage', 's2', 1], ['archer_multishot', 'e', 1], ['archer_snare_trap', 'r', 1],
-    ['archer_call_pet', 's1', 2], ['archer_arcane_shot', 'q', 3], ['archer_serpent_sting', 's3', 4], ['archer_rapid_fire', 's4', 5],
+    ['archer_call_pet', 's1', 2], ['archer_exhilaration', 'q', 3], ['archer_serpent_sting', 's3', 4], ['archer_rapid_fire', 's4', 5],
   ],
   // Shaman (Şaman): L1 Lightning Bolt, Ghost Wolf, Wind Shear, Astral Shift; L2 Flame Shock; L3 Lava Burst; L4 Chain Lightning; L5 Hex.
   shaman: [

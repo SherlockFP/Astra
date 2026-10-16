@@ -57,7 +57,7 @@ const KNIGHT_SPEC_LIST: SpecDef[] = [
     mods: [],
     defaultBar: {
       lmb: 'knight_basic', rmb: 'knight_overpower', q: 'knight_mortal_strike', e: 'knight_execute', r: 'knight_slam',
-      s1: 'knight_radiant_cleave', s2: 'knight_charge', s3: 'knight_die_by_sword', s4: 'knight_pummel',
+      s1: 'knight_thunder_clap', s2: 'knight_charge', s3: 'knight_die_by_sword', s4: 'knight_pummel',
       m45: 'knight_colossus_smash', m90: 'knight_avatar', m180: 'knight_bladestorm',
     },
   },
