@@ -513,7 +513,8 @@ export class Nameplates {
     // 1. project, create / update the content of each plate (writes only: the layout is read after all of them)
     for (const c of cands) {
       const a = c.a;
-      a.pointAt(1, _v);
+      // the plate rides on the visual model (Player.visualHeight); Entity.height (combat) is not used for the anchor
+      _v.copy(a.object3d.position).setY(a.object3d.position.y + ((a as { visualHeight?: number }).visualHeight ?? a.height));
       _v.y += 0.35;
       if (!ui.projectWorld(_v.x, _v.y, _v.z, _p)) continue;
       if (_p.x < -OFFSCREEN || _p.x > vw + OFFSCREEN || _p.y < -OFFSCREEN || _p.y > vh + OFFSCREEN) continue;

@@ -33,6 +33,9 @@ const NAME_COLOR: Partial<Record<BubbleKind, string>> = {
   emote: 'var(--ch-emote)',
 };
 
+/** UI anchor height of an actor: the visual model height for players (Player.visualHeight), else the combat height. */
+const anchorH = (a: Actor): number => (a as { visualHeight?: number }).visualHeight ?? a.height;
+
 /**
  * UX-30 (§5.2) + chat bubbles: the chat-to-bubble bridge. Every line the chat shows (`chat:line`) with channel say / yell /
  * party / emote gets a bubble over the speaker: ours over the local player, a remote one over that player's avatar (by peer
@@ -64,7 +67,7 @@ export class ChatBubbles {
       text,
       name: from || undefined,
       color: NAME_COLOR[kind],
-      offsetY: anchor.height + (local ? 0.5 : 1.1),
+      offsetY: anchorH(anchor) + (local ? 0.5 : 1.1),
       own: local,
       range: kind === 'yell' ? INTEREST.YELL_M : kind === 'party' ? undefined : INTEREST.SAY_M,
     });
@@ -77,7 +80,7 @@ export class ChatBubbles {
     const draft = G.ui?.hud?.chat?.draft ?? '';
     const want = !!p && st?.chatBubbles !== false && draft.length > 0;
     if (want && !this.typing && p) {
-      this.typing = this.ui.say(p.object3d, { kind: 'typing', text: '', seconds: Infinity, offsetY: p.height + 0.5 });
+      this.typing = this.ui.say(p.object3d, { kind: 'typing', text: '', seconds: Infinity, offsetY: anchorH(p) + 0.5 });
     } else if (!want && this.typing) {
       this.typing.remove();
       this.typing = null;

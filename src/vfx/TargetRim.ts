@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { shellMaterial } from './Meshes';
+import { G } from '../game/G';
 
 /**
  * Readability rim on up to TWO entities (WoW clarity): the hovered unit and the target, each in its own slot. A thin fresnel
@@ -70,16 +71,69 @@ const _frustum = new THREE.Frustum();
 const _projView = new THREE.Matrix4();
 const _sphere = new THREE.Sphere();
 const _centerW = new THREE.Vector3();
+const _c = new THREE.Vector3();
 
 /**
- * Per frame: a far-rim shell is drawn only while its enemy's bounding sphere is in the camera frustum. The shells never
- * change the look (they sit on the enemy), so off-screen enemies cost no draw calls. Call after the camera has moved.
+ * Class rim bodies (CharacterModel addClassRim) drawn at once, nearest first. A KayKit body is 6 skinned meshes, so 2 bodies
+ * are 12 shell draws: the town with 12 players and 79 NPCs stays within +15 draw calls of the no-rim frame.
+ */
+export const CLASS_RIM_BODIES = 2;
+interface ClassRimEntry { body: THREE.Object3D; shells: THREE.Mesh[]; range: () => number; inWorld: boolean }
+const classRims = new Set<ClassRimEntry>();
+
+/** Registers the shells of one class-rim body. `range()` gives the distance (m) from the local player inside which they may show. */
+export function registerClassRim(body: THREE.Object3D, shells: THREE.Mesh[], range: () => number): void {
+  if (shells.length) classRims.add({ body, shells, range, inWorld: false });
+}
+
+function inWorldScene(o: THREE.Object3D): boolean {
+  const scene = G.world?.scene;
+  if (!scene) return false;
+  let top = o;
+  while (top.parent) top = top.parent;
+  return top === scene;
+}
+
+function setShells(shells: THREE.Mesh[], vis: boolean): void {
+  for (const s of shells) if (s.visible !== vis) s.visible = vis;
+}
+
+/**
+ * Class rims: a body's shells are drawn only inside its range (remote players 25 m, NPCs the full character tier), in the camera
+ * frustum, and for the CLASS_RIM_BODIES nearest such bodies. Bodies outside the world scene (menu, panel preview) are not touched.
+ */
+function cullClassRims(): void {
+  if (classRims.size === 0) return;
+  const origin = G.player?.position ?? null;
+  const near: { e: ClassRimEntry; d: number }[] = [];
+  for (const e of classRims) {
+    if (!inWorldScene(e.body)) {
+      if (e.inWorld) classRims.delete(e); // removed from the world: forget it
+      continue;
+    }
+    e.inWorld = true;
+    e.body.getWorldPosition(_centerW);
+    const d = origin ? origin.distanceTo(_centerW) : 0;
+    _c.copy(_centerW);
+    _c.y += 0.9;
+    _sphere.set(_c, 1.3);
+    if (d < e.range() && _frustum.intersectsSphere(_sphere)) near.push({ e, d });
+    else setShells(e.shells, false);
+  }
+  near.sort((a, b) => a.d - b.d);
+  near.forEach((c, i) => setShells(c.e.shells, i < CLASS_RIM_BODIES));
+}
+
+/**
+ * Per frame: a far-rim shell is drawn only while its enemy's bounding sphere is in the camera frustum, and the class rims follow
+ * cullClassRims. The shells never change the look (they sit on the body), so culled ones cost no draw calls. Call after the camera has moved.
  */
 export function cullFarRims(cam: THREE.Camera): void {
-  if (farShells.size === 0) return;
+  if (farShells.size === 0 && classRims.size === 0) return;
   cam.updateMatrixWorld();
   _projView.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
   _frustum.setFromProjectionMatrix(_projView);
+  cullClassRims();
   for (const e of farShells.values()) {
     _centerW.copy(e.center);
     e.root.localToWorld(_centerW);

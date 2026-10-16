@@ -2152,7 +2152,7 @@ export class PlayerController {
     const s = clamp(camDist * 0.055, 0.8, 2.6) * Math.max(0.9, t.height * 0.3);
     const bob = Math.sin(this.time * 4.2) * 0.07;
     m.visible = true;
-    m.position.set(t.position.x, t.position.y + t.height + 0.45 + s * 0.35 + bob * s, t.position.z);
+    m.position.set(t.position.x, t.position.y + ((t as { visualHeight?: number }).visualHeight ?? t.height) + 0.45 + s * 0.35 + bob * s, t.position.z);
     m.rotation.y += dt * (hard ? 3.2 : 1.6);
     m.scale.setScalar(hard ? s * 1.2 : s);
     (m.material as THREE.MeshBasicMaterial).color.setHex(hard ? 0xffb020 : 0xff3a2a);
