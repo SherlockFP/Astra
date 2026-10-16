@@ -235,8 +235,8 @@ boss({
   abilities: [
     proj('ingra_spirit_bolt', 'Ruh Oku', 14, 40, 8, 2.0, 2.4, 'shadow', 'shadow_projectile', 'Spellcast_Long', 1.55,
       { initialCooldown: 5, castTime: 2.0, interruptible: true, kick: 2 }),
-    custom('ingra_staff', 'Boynuz Biçişi', 12, 12, 0.75, '2H_Melee_Attack_Slice', { params: { impact: 0.4 } }),
-    custom('ingra_sweep', 'Ruh Süpürmesi', 24, 24, 0.9, 'Spellcast_Long', { params: { impact: 1.0 } }),
+    custom('ingra_staff', 'Boynuz Biçişi', 12, 12, 1.0, '2H_Melee_Attack_Slice', { tankBuster: true, telegraph: true, params: { impact: 0.4 } }),
+    custom('ingra_sweep', 'Ruh Süpürmesi', 24, 24, 1.1, 'Spellcast_Long', { params: { impact: 1.0 } }),
     custom('ingra_embrace', 'Karanlığa Sarıl', 40, 16, 1.2, 'Spellcast_Raise', { sfx: 'shadow_cast', params: { impact: 1.0 } }),
     custom('ingra_visage', 'İtici Görünüm', 50, 30, 2.0, 'Spellcast_Raise', { castTime: 2.0, interruptible: false, sfx: 'boss_cast', params: { impact: 1.0 } }),
     custom('ingra_breakfree', 'Zincirler Kırıldı', 999, 9999, 1.5, 'Taunt', { sfx: 'boss_roar' }),
@@ -255,7 +255,7 @@ boss({
   visual: { hide: mageHide('1H_Wand'), eyeEmissive: 0x80ffe0, glow: 0x80ffe0, hoverBob: 0.1, runRef: 7 },
   basic: proj('mist_touch', 'Sis Dokunuşu', 14, 40, 2.4, 0.6, 1.0, 'poison', 'poison_projectile', 'Spellcast_Shoot', 0.3),
   abilities: [
-    custom('mist_patty', 'Pasta Pasta', 14, 6, 1.5, 'Spellcast_Raise', { castTime: 1.5, interruptible: true, kick: 2, sfx: 'spell_cast', params: { impact: 1.0 } }),
+    custom('mist_patty', 'Pasta Pasta', 14, 6, 1.5, 'Spellcast_Raise', { castTime: 1.5, tankBuster: true, interruptible: true, kick: 2, sfx: 'spell_cast', params: { impact: 1.0 } }),
     custom('mist_burst', 'Cezalı Patlama', 21, 11, 2.0, 'Spellcast_Long', { sfx: 'boss_cast', params: { impact: 1.55 } }),
     custom('mist_dodgeball', 'Kaçınma Topu', 19, 15, 1.3, 'Spellcast_Shoot', { sfx: 'boss_cast', params: { impact: 0.3 } }),
     custom('mist_freeze', 'Dondurmaca', 38, 24, 1.0, 'Cheer', { sfx: 'frost_cast', params: { impact: 0.5 } }),

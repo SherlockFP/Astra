@@ -89,7 +89,7 @@ const ingraAbilities: Record<string, BossHandler> = {
       const t = tankOf(c);
       if (!t) return;
       bossString(c, [
-        { coef: 1.2, range: 4.0, arc: 100, windup: 0.75 },
+        { coef: 1.2, range: 4.0, arc: 100, windup: 1.0 },
         { coef: 1.2, range: 4.5, arc: 100, windup: 0.44, gap: 0.2 },
         { coef: 2.2, range: 5.0, arc: 90, windup: 0.55, gap: 0.2, knockback: 5 },
       ], { target: t, hold: [0.2, 0.45], cancelOnBreak: true, name: 'Boynuz Biçişi' });
@@ -101,7 +101,7 @@ const ingraAbilities: Record<string, BossHandler> = {
       const t = nonTankOf(c);
       const ang0 = t ? angleTo(e.position.x, e.position.z, t.position.x, t.position.z) : 0;
       for (let i = 0; i < 3; i++) {
-        c.schedule(i * 0.35, () => beam(c, e.position.x, e.position.z, ang0 + rad(25) * i, 30, 3, 0.9, 1.8, { name: 'Ruh Süpürmesi' }), 'ingra_sweep');
+        c.schedule(i * 0.35, () => beam(c, e.position.x, e.position.z, ang0 + rad(25) * i, 30, 3, 1.1, 1.8, { name: 'Ruh Süpürmesi' }), 'ingra_sweep');
       }
     },
   },
