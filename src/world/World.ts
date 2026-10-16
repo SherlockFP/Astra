@@ -72,9 +72,11 @@ export class World {
   }
 
   add<T extends Entity>(e: T): T {
-    if (this.entities.has(e.id)) {
-      console.warn(`[world] duplicate entity id ${e.id}, replacing`);
-      this.removeNow(this.entities.get(e.id)!);
+    const prev = this.entities.get(e.id);
+    if (prev) {
+      // a removed body waiting for the frame prune (a camp respawn under the same id) is replaced silently
+      if (!prev.removed) console.warn(`[world] duplicate entity id ${e.id}, replacing`);
+      this.removeNow(prev);
     }
     this.entities.set(e.id, e);
     if (e.kind === 'player') this.players.push(e as unknown as Player);

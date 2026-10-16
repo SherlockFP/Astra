@@ -74,6 +74,7 @@ export const EMOTES: Readonly<Record<string, EmoteDef>> = {
 
 /** Commands shown by the `/` hint card (local commands first, then emotes). */
 const COMMANDS: readonly { cmd: string; hint: string }[] = [
+  { cmd: 'e', hint: 'Eylem: /e gülümsüyor (sohbette ve balonda italik)' },
   { cmd: 'g', hint: 'Genel Sohbet: /g mesaj (veya /1)' },
   { cmd: 'ticaret', hint: 'Ticaret kanalı: /ticaret mesaj (veya /2)' },
   { cmd: 'l', hint: 'Lonca sohbeti: /l mesaj' },
@@ -91,6 +92,8 @@ const COMMANDS: readonly { cmd: string; hint: string }[] = [
 
 /** Line styles beside the channel: 'rumor' = NPC / world gossip (Söylenti), 'says' = the player's own bark (diyor). */
 type LineVariant = 'rumor' | 'says';
+/** Remote speaker of a line: its peer (the avatar the bubble attaches to) and its position in a public channel. */
+type SpeakerWho = { peerId?: string; pos?: { x: number; z: number } };
 
 interface TabState {
   def: TabDef;
@@ -136,6 +139,9 @@ export class Chat implements HudWidget {
   private active: TabId = 'genel';
   private focused = false;
   private sendIdx = 0;
+  /** The player picked a send channel with Tab; until then the open world speaks "Yakın" and a party room "Grup". */
+  private sendPicked = false;
+  private chipMode: SendCh | null = null;
   private lastYell = -1e9;
   private fadeAcc = 0;
   private statsAcc = 0;
@@ -204,9 +210,11 @@ export class Chat implements HudWidget {
     this.renderTabs();
     this.renderChip();
 
-    G.events.on('net:chat', ({ from, text, channel, to, links }) => {
-      if (channel === 'emote') this.emote(text, false, from);
-      else this.addLine(from, text, channel, from === this.ownName(), to, links);
+    G.events.on('net:chat', ({ from, text, channel, to, links, peerId, pos, act }) => {
+      const who = peerId || pos ? { peerId, pos } : undefined;
+      if (channel === 'emote' && act) this.addLine(from, text, 'emote', false, undefined, undefined, undefined, who);
+      else if (channel === 'emote') this.emote(text, false, from, who);
+      else this.addLine(from, text, channel, from === this.ownName(), to, links, undefined, who);
     });
     G.events.on('chat:linkItem', ({ item }) => this.linkItem(item));
     G.events.on('chat:prefill', ({ text }) => this.prefill(text));
@@ -277,7 +285,7 @@ export class Chat implements HudWidget {
       this.blur();
       return;
     }
-    const ch = SEND[this.sendIdx].id;
+    const ch = this.sendMode();
     // WP-13: only the links whose tag is still in the text travel (an edited tag is plain text)
     const links = this.pendingLinks.filter((l) => l.k === 'item' && raw.includes(linkTag(snapshotName(l.item))));
     if (ch === 'global' || ch === 'trade') {
@@ -337,7 +345,9 @@ export class Chat implements HudWidget {
   private command(body: string): void {
     if (getSocial().command(body) || getGuild().command(body)) return;
     const cmd = (body.split(/\s+/)[0] ?? '').toLowerCase();
-    if (cmd === 'temizle') {
+    if (cmd === 'e') {
+      this.freeEmote(body.replace(/^\s*\S+/, '').trim());
+    } else if (cmd === 'temizle') {
       this.clear();
     } else if (cmd === 'arayuz') {
       G.ui?.hud?.startEdit();
@@ -356,12 +366,26 @@ export class Chat implements HudWidget {
     }
   }
 
+  /** `/e <eylem>`: a free-text action line in italics (`<name> <eylem>`), no clip. Sent to the nearby players / party. */
+  private freeEmote(text: string): void {
+    if (!text) {
+      this.addLine('', 'Kullanım: /e <eylem>, ör. /e gülümsüyor', 'system', true);
+      return;
+    }
+    this.addLine(this.ownName(), text, 'emote', true);
+    try {
+      G.net.sendAct(text);
+    } catch (e) {
+      console.warn('[chat] act send failed', e);
+    }
+  }
+
   /** An emote line (`<name> <label>`) and its clip. Local ones are also sent to the party. */
-  private emote(id: string, local: boolean, from?: string): void {
+  private emote(id: string, local: boolean, from?: string, who?: SpeakerWho): void {
     const def = EMOTES[id];
     if (!def) return;
     const name = local ? this.ownName() : from ?? '';
-    this.addLine(name, def.label, 'emote', local);
+    this.addLine(name, def.label, 'emote', local, undefined, undefined, undefined, local ? undefined : who);
     if (local) {
       playEmoteOn(G.player, id);
       try {
@@ -384,7 +408,7 @@ export class Chat implements HudWidget {
   }
 
   /** One line into every tab that lists its channel. `local` = our own message (typing / own bubble). Emits `chat:line`. */
-  addLine(from: string, text: string, channel: ChatChannel, local = false, to?: string, links?: ChatLink[], variant?: LineVariant): void {
+  addLine(from: string, text: string, channel: ChatChannel, local = false, to?: string, links?: ChatLink[], variant?: LineVariant, who?: SpeakerWho): void {
     const now = performance.now();
     let placed = false;
     for (const t of this.tabs) {
@@ -402,7 +426,7 @@ export class Chat implements HudWidget {
     }
     if (placed) this.renderTabs();
     // a bark is not typed chat: no chat:line (no second speech bubble, no chat achievement count)
-    if (variant !== 'says') G.events?.emit('chat:line', { from, text, channel, local });
+    if (variant !== 'says') G.events?.emit('chat:line', { from, text, channel, local, ...(who?.peerId ? { peerId: who.peerId } : {}), ...(who?.pos ? { pos: who.pos } : {}) });
   }
 
   /** Barks (systems/Barks.ts): a faint italic 'Söylenti' line in the tabs that list system lines. Not our own chat, so no chat:line count. */
@@ -516,12 +540,23 @@ export class Chat implements HudWidget {
   }
 
   private cycleSend(): void {
+    if (!this.sendPicked) {
+      this.sendIdx = SEND.findIndex((s) => s.id === this.sendMode());
+      this.sendPicked = true;
+    }
     this.sendIdx = (this.sendIdx + 1) % SEND.length;
     this.renderChip();
   }
 
+  /** Channel the Enter key sends to: the picked one, else "Yakın" in the open world (and solo) and "Grup" in a private party room. */
+  private sendMode(): SendCh {
+    if (this.sendPicked) return SEND[this.sendIdx].id;
+    return G.net?.inParty ? 'party' : 'say';
+  }
+
   private renderChip(): void {
-    const s = SEND[this.sendIdx];
+    const s = SEND.find((x) => x.id === this.sendMode()) ?? SEND[0];
+    this.chipMode = s.id;
     this.chip.textContent = s.label;
     this.chip.className = `chat-chan ${s.id}`;
   }
@@ -578,6 +613,8 @@ export class Chat implements HudWidget {
 
   update(ctx: HudCtx): void {
     setClass(this.el, 'open', this.focused);
+    // the chip follows the world: entering or leaving a channel changes the default send mode
+    if (this.sendMode() !== this.chipMode) this.renderChip();
     this.fadeAcc += ctx.dt;
     if (this.fadeAcc >= 0.25) {
       this.fadeAcc = 0;

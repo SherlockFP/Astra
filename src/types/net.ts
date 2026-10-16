@@ -133,7 +133,13 @@ export interface NetChannels {
    * Chat line. Old clients send `{ text }` only (= party). GDD_ITEMS_V2 §2.10: `ann` is the cosmetic upgrade announcement.
    * GDD_LIFE §3.8: channel, whisper target, item links (<= 2), emote id, roll [max, result].
    */
-  chat: { text: string; ann?: ChatAnn; ch?: 'say' | 'yell' | 'party' | 'whisper' | 'emote' | 'roll'; to?: string; links?: ChatLink[]; emote?: string; roll?: [number, number] };
+  chat: {
+    text: string; ann?: ChatAnn; ch?: 'say' | 'yell' | 'party' | 'whisper' | 'emote' | 'roll'; to?: string; links?: ChatLink[]; emote?: string; roll?: [number, number];
+    /** Speaker (x, z) in a public channel. Receivers drop lines beyond the chat radius; the host rewrites it from its own position book. */
+    pos?: { x: number; z: number };
+    /** `/e <eylem>`: free-text action (ch 'emote', no `emote` id, no clip). */
+    act?: boolean;
+  };
   keystone: { peerId: string; keystone: KeystoneData | null };
   /**
    * net module: small client -> HOST event request (a guest asks the host to start the Lanetli Sandık, open a host-owned

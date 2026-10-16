@@ -2,11 +2,22 @@ import { G } from '../../game/G';
 import type { Actor } from '../../entities/Actor';
 import type { UI } from '../UI';
 import type { BubbleHandle, BubbleKind } from '../widgets/Bubbles';
+import { INTEREST } from '../../net/Channels';
 
-/** Remote player's actor by name (remote players are entities of the world). */
-function remoteActorNamed(name: string): Actor | null {
+/**
+ * The remote avatar of a speaker: by peer id (the relay origin, exact even with two players of one name), else by name.
+ * Remote players are entities of the world with `peerId` (Player).
+ */
+function remoteActorOf(peerId: string | undefined, name: string): Actor | null {
   const world = G.world;
-  if (!world || !name) return null;
+  if (!world) return null;
+  if (peerId) {
+    for (const e of world.entities.values()) {
+      const a = e as Actor & { peerId?: string };
+      if (a.peerId === peerId && a.anim !== undefined && a !== G.player) return a;
+    }
+  }
+  if (!name) return null;
   for (const e of world.entities.values()) {
     const a = e as Actor;
     if (a.name === name && a.anim !== undefined && a !== G.player) return a;
@@ -19,12 +30,14 @@ const NAME_COLOR: Partial<Record<BubbleKind, string>> = {
   say: 'var(--ch-say)',
   yell: 'var(--ch-yell)',
   party: 'var(--ch-party)',
+  emote: 'var(--ch-emote)',
 };
 
 /**
- * UX-30 (§5.2): the chat-to-bubble bridge. Every line the chat shows (`chat:line`) with channel say / yell / party gets a
- * bubble over the speaker: ours over the local player, a remote one over that player (party lines only when the sender
- * is in the scene). Whispers, emotes and system lines never reach the bubble layer. Also owns the local typing bubble.
+ * UX-30 (§5.2) + chat bubbles: the chat-to-bubble bridge. Every line the chat shows (`chat:line`) with channel say / yell /
+ * party / emote gets a bubble over the speaker: ours over the local player, a remote one over that player's avatar (by peer
+ * id). Say and emote are heard within INTEREST.SAY_M (25 m), yell within INTEREST.YELL_M (100 m) of the local player; the
+ * Bubbles layer hides a bubble beyond its range. Whispers and system lines never reach the bubble layer. Also owns the typing bubble.
  */
 export class ChatBubbles {
   private typing: BubbleHandle | null = null;
@@ -33,8 +46,9 @@ export class ChatBubbles {
     G.events.on('chat:line', (line) => this.onLine(line));
   }
 
-  private onLine({ from, text, channel, local }: { from: string; text: string; channel: string; local: boolean }): void {
-    const kind: BubbleKind | null = channel === 'say' ? 'say' : channel === 'yell' ? 'yell' : channel === 'party' ? 'party' : null;
+  private onLine({ from, text, channel, local, peerId }: { from: string; text: string; channel: string; local: boolean; peerId?: string }): void {
+    const kind: BubbleKind | null =
+      channel === 'say' ? 'say' : channel === 'yell' ? 'yell' : channel === 'party' ? 'party' : channel === 'emote' ? 'emote' : null;
     if (!kind) return;
     const st = G.settings?.data;
     if (st && !st.chatBubbles) return;
@@ -43,7 +57,7 @@ export class ChatBubbles {
 
     let anchor: Actor | null;
     if (local) anchor = G.player ?? null;
-    else anchor = remoteActorNamed(from);
+    else anchor = remoteActorOf(peerId, from);
     if (!anchor) return;
     this.ui.say(anchor.object3d, {
       kind,
@@ -52,6 +66,7 @@ export class ChatBubbles {
       color: NAME_COLOR[kind],
       offsetY: anchor.height + (local ? 0.5 : 1.1),
       own: local,
+      range: kind === 'yell' ? INTEREST.YELL_M : kind === 'party' ? undefined : INTEREST.SAY_M,
     });
   }
 

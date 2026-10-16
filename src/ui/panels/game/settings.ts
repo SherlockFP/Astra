@@ -691,6 +691,7 @@ export class SettingsPanel extends GamePanel {
         this.flag('questArrow', 'Görev Oku', 'Takip edilen görevin hedefine ekran oku'),
         this.flag('showMapInfo', 'Minimap Saati', 'Haritada yerel saat (FPS göstergesi açıksa kare hızı da)'),
         this.flag('showStats', 'İstatistik Satırı', 'Sohbette kritik, hız, soğuma ve kaçınma özeti'),
+        this.flag('chatBubbles', 'Konuşma balonları', 'Yakındaki oyuncuların sözleri (Yakın 25 m, Bağır 100 m) ve /e eylemleri üstlerinde balon olarak çıkar'),
         row(
           'Karakter Sözleri',
           selectBox<SettingsData['characterBarks']>(

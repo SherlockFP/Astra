@@ -1,13 +1,16 @@
 import * as THREE from 'three';
 import type { UI, WorldLabelHandle } from '../UI';
+import { G } from '../../game/G';
 import { clampN, div, esc } from './dom';
 
 /* ================================================================================================
  * UX-30 (§5.2): speech bubbles above heads. One world label per speaker (anchor object) holds a flex
  * column of `.bb` boxes: newest at the bottom (nearest the head), older ones pushed up by the layout.
+ * Speech (say, emote, yell, NPC) is measured from the LOCAL player: opaque inside 80 % of its range,
+ * fading to nothing at the range and shrinking from 1 to 0.7 with distance.
  * ============================================================================================== */
 
-export type BubbleKind = 'say' | 'party' | 'yell' | 'npc' | 'typing';
+export type BubbleKind = 'say' | 'party' | 'yell' | 'emote' | 'npc' | 'typing';
 export interface BubbleOpts {
   kind: BubbleKind;
   text: string;
@@ -15,12 +18,14 @@ export interface BubbleOpts {
   name?: string;
   /** Name colour (CSS colour); defaults to the kind's token. */
   color?: string;
-  /** Lifetime in seconds. Default: clamp(2.2 + 0.05 x chars, 3.5, 8). `Infinity` = until removed. */
+  /** Lifetime in seconds. Default: bubbleSeconds(chars) = 4 s to 8 s by length. `Infinity` = until removed. */
   seconds?: number;
   /** Height above the anchor origin, metres (the caller knows the model height). */
   offsetY?: number;
   /** Own bubble of the local player: 90 % opacity, hidden while typing (setOwnHidden). */
   own?: boolean;
+  /** Hearing range (m) of a speech line from the local player: say / emote 25, yell 100 (INTEREST). Default: 45 (party). */
+  range?: number;
 }
 export interface BubbleHandle {
   remove(): void;
@@ -33,10 +38,12 @@ const MAX_VISIBLE = 6;
 /** Text limits: player lines 80 characters, NPC barks 120 (then an ellipsis). */
 const PLAYER_CHARS = 80;
 const NPC_CHARS = 120;
-/** Distances (m): speech is opaque to 24 m and gone at 35 m; the label itself stops at 45 m (party lines). */
-const SAY_FULL_M = 24;
-const SAY_GONE_M = 35;
-const LABEL_MAX_M = 45;
+/** The label itself stops at 110 m (yell range 100 m + margin); each bubble has its own hearing range (`range`). */
+const LABEL_MAX_M = 110;
+const PARTY_RANGE_M = 45;
+/** Shrink: full size up to SCALE_NEAR_M from the local player, 0.7 at the range. */
+const SCALE_NEAR_M = 6;
+const SCALE_FAR = 0.7;
 const FADE_OUT_MS = 400;
 const CUT_MS = 150;
 const OLD_OPACITY = 0.75;
@@ -51,8 +58,12 @@ interface Bubble {
   expiresAt: number;
   /** performance.now() at which a started removal completes (0 = alive). */
   removeAt: number;
-  /** Distance to the camera (m), refreshed in update(). */
+  /** Distance to the camera (m), refreshed in update(): the budget order. */
   dist: number;
+  /** Distance to the local player (m), refreshed in update(): range, fade and scale. */
+  reach: number;
+  /** Hearing range (m) of this bubble (speech only). */
+  range: number;
 }
 
 interface Group {
@@ -64,17 +75,31 @@ interface Group {
 
 const _a = new THREE.Vector3();
 const _c = new THREE.Vector3();
+const _p = new THREE.Vector3();
 
-/** Lifetime of a player line: 2.2 s + 0.05 s per character, 3.5 s to 8 s (§5.2). */
+/** Lifetime of a player line: 4 s + 0.04 s per character, 4 s to 8 s (chat bubbles spec). */
 export function bubbleSeconds(chars: number): number {
-  return clampN(2.2 + 0.05 * chars, 3.5, 8);
+  return clampN(4 + 0.04 * chars, 4, 8);
 }
 
-/** Distance fade of speech: opaque to SAY_FULL_M, gone at SAY_GONE_M. */
-function sayAlpha(d: number): number {
-  if (d <= SAY_FULL_M) return 1;
-  if (d >= SAY_GONE_M) return 0;
-  return (SAY_GONE_M - d) / (SAY_GONE_M - SAY_FULL_M);
+/** Speech kinds are heard within a range; the rest (party, typing) are not range-gated. */
+function isSpeech(kind: BubbleKind): boolean {
+  return kind === 'say' || kind === 'yell' || kind === 'emote' || kind === 'npc';
+}
+
+/** Distance fade of speech: opaque to 80 % of the range, gone at the range. */
+function sayAlpha(d: number, range: number): number {
+  const full = range * 0.8;
+  if (d <= full) return 1;
+  if (d >= range) return 0;
+  return (range - d) / (range - full);
+}
+
+/** Size of a speech bubble: 1 close by, SCALE_FAR at the edge of its range. */
+function sayScale(d: number, range: number): number {
+  if (d <= SCALE_NEAR_M) return 1;
+  if (d >= range) return SCALE_FAR;
+  return 1 - (1 - SCALE_FAR) * ((d - SCALE_NEAR_M) / (range - SCALE_NEAR_M));
 }
 
 export class BubbleLayer {
@@ -117,6 +142,8 @@ export class BubbleLayer {
       expiresAt: Number.isFinite(seconds) ? now + seconds * 1000 : Infinity,
       removeAt: 0,
       dist: 0,
+      reach: 0,
+      range: o.range ?? PARTY_RANGE_M,
     };
     group.items.push(b);
     this.all.push(b);
@@ -168,27 +195,27 @@ export class BubbleLayer {
       if (!this.all.some((b) => b.group === g)) this.dropGroup(g);
     }
 
-    // 2. distance, then the budget: nearest first, at most MAX_VISIBLE on screen
+    // 2. distances (camera for the budget order, local player for the hearing range), then the budget: nearest first, at most MAX_VISIBLE
+    const player = G.player?.object3d;
+    if (player) player.getWorldPosition(_p);
     const alive: Bubble[] = [];
     for (const b of this.all) {
       if (b.removeAt !== 0) continue;
-      if (cam) {
-        b.group.anchor.getWorldPosition(_a);
-        b.dist = _a.distanceTo(_c);
-      }
+      b.group.anchor.getWorldPosition(_a);
+      if (cam) b.dist = _a.distanceTo(_c);
+      b.reach = player ? _a.distanceTo(_p) : 0;
       alive.push(b);
     }
     alive.sort((x, y) => x.dist - y.dist);
     const shown = new Set<Bubble>();
     for (const b of alive) {
       if (shown.size >= MAX_VISIBLE) break;
-      const speech = b.kind === 'say' || b.kind === 'yell' || b.kind === 'npc';
-      if (speech && !b.own && b.dist >= SAY_GONE_M) continue;
+      if (isSpeech(b.kind) && !b.own && b.reach >= b.range) continue;
       if (b.own && b.kind !== 'typing' && this.ownHidden) continue;
       shown.add(b);
     }
 
-    // 3. DOM: display, opacity (speech fade, own 90 %, older 75 %); fading bubbles stay until done
+    // 3. DOM: display, opacity (speech fade, own 90 %, older 75 %), scale (speech shrinks with distance); fading bubbles stay until done
     for (const b of this.all) {
       if (b.removeAt !== 0) {
         b.el.style.display = '';
@@ -200,11 +227,12 @@ export class BubbleLayer {
         continue;
       }
       b.el.style.display = '';
-      const speech = b.kind === 'say' || b.kind === 'yell' || b.kind === 'npc';
-      const fade = speech && !b.own ? sayAlpha(b.dist) : 1;
+      const speech = isSpeech(b.kind) && !b.own;
+      const fade = speech ? sayAlpha(b.reach, b.range) : 1;
       const older = b.group.items[b.group.items.length - 1] !== b;
       const base = b.own ? OWN_OPACITY : 1;
       b.el.style.opacity = (base * fade * (older ? OLD_OPACITY : 1)).toFixed(2);
+      b.el.style.transform = speech ? `scale(${sayScale(b.reach, b.range).toFixed(3)})` : '';
     }
     for (const g of this.groups.values()) {
       g.handle.setVisible(g.items.some((x) => shown.has(x)));

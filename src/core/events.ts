@@ -108,7 +108,8 @@ export interface GameEvents {
   /** Public channels (net/Channels.ts): the room has a new host (host migration or split-brain merge); `self` = this peer is it. */
   'net:hostChanged': { hostId: string; self: boolean };
   /** GDD_LIFE §3.8 (L-00): `channel` widened (old `party` / `system` lines unchanged). `to` = whisper target name, `links` ≤ 2. */
-  'net:chat': { from: string; text: string; channel: ChatChannel; to?: string; links?: ChatLink[] };
+  /** peerId = the speaker's peer (relay origin); pos = speaker (x, z) in a public channel; act = `/e` free-text action. */
+  'net:chat': { from: string; text: string; channel: ChatChannel; to?: string; links?: ChatLink[]; peerId?: string; pos?: { x: number; z: number }; act?: boolean };
   'net:rooms': Record<string, never>;            // room browser list updated
   /** Social (systems/Social.ts): the online-player list (G.presence.list()) changed; `count` includes the local player. */
   'presence:changed': { count: number };
@@ -280,7 +281,8 @@ export interface GameEvents {
 
   // ---- UI_REDESIGN Appendix A (UX-00, append-only). HUD chat bubbles, Group Finder state, objective pin.
   /** A chat line was added locally (incoming or own). `local` = typed on this client. Speech bubbles and the chat tabs listen. */
-  'chat:line': { from: string; text: string; channel: ChatChannel; local: boolean };
+  /** peerId / pos = the remote speaker (relay origin, position in a public channel): the bubble anchors to that avatar. */
+  'chat:line': { from: string; text: string; channel: ChatChannel; local: boolean; peerId?: string; pos?: { x: number; z: number } };
   /** WP-13: Shift+click on an item in a bag / equipment slot asks the chat input for an item link. */
   'chat:linkItem': { item: ItemInstance };
   /** Player menu (Fısılda): the chat input opens with this text (e.g. `/w Name `). */
