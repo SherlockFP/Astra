@@ -8,7 +8,8 @@ import type { ClassId } from '../types/common';
 import type { EnemyRank } from '../types/enemies';
 import type { SkillSlotKey } from '../types/skills';
 import { CLASSES } from '../data/classes';
-import { classGrantOrder } from '../data/openingKit';
+import { OPENING_KIT, classGrantOrder } from '../data/openingKit';
+import { barCandidates, grantSort, placeSkill, reservedSlots } from '../data/barLayout';
 import { DUNGEONS } from '../data/dungeons';
 import { SKILLS } from '../data/skills';
 import { CLASS_START_NODE, TALENT_NODES } from '../data/talents';
@@ -23,7 +24,6 @@ const ORB_REGRET = 'orb_regret';
 
 /** Default skill unlock levels in class order (GDD 2.0) when SkillDef.unlockLevel is unavailable. */
 const DEFAULT_UNLOCKS = [1, 3, 6, 10, 15, 20, 25, 30];
-const DEFAULT_SLOTS: (SkillSlotKey | null)[] = ['rmb', 'q', 'e', 's1', 's2', 's3', null, 'r'];
 
 const xpMonsterBase = (L: number) => Math.round(5 + 1.2 * L ** 1.5);
 const round10 = (n: number) => Math.round(n / 10) * 10;
@@ -193,23 +193,25 @@ export class Progression {
     }
   }
 
-  /** Assign skills unlocked between two levels to their default slots (if free). */
+  /**
+   * Places the skills unlocked between two levels (grant order) on the next free slot of their role (barLayout.placeSkill), so
+   * the same rule as the default bar applies at every level. Slots the player already uses never move; a full role says so.
+   */
   private autoAssignSkills(fromLevel: number, toLevel: number, announce: boolean): void {
     const ch = G.character;
     if (!ch) return;
-    const ids = classGrantOrder(ch.classId);
-    ids.forEach((id, i) => {
-      const unlock = SKILLS[id]?.unlockLevel ?? DEFAULT_UNLOCKS[i] ?? 99;
-      if (unlock <= fromLevel || unlock > toLevel) return;
-      const slot = SKILLS[id]?.defaultSlot ?? DEFAULT_SLOTS[i];
-      if (slot && !ch.save.skillBar[slot]) {
-        ch.save.skillBar[slot] = id;
+    const { candidates, majors } = barCandidates(OPENING_KIT[ch.classId] ?? [], classGrantOrder(ch.classId), SKILLS);
+    const reserved = reservedSlots(candidates);
+    for (const c of grantSort([...candidates, ...majors])) {
+      if (c.unlock <= fromLevel || c.unlock > toLevel) continue;
+      if (Object.values(ch.save.skillBar).includes(c.id)) continue;
+      if (placeSkill(ch.save.skillBar, c.id, c.def, reserved)) {
         G.events.emit('skillbar:changed', {});
-        if (announce) toast(`Yeni beceri öğrendin: ${SKILLS[id]?.name ?? id}`, 'levelup');
+        if (announce) toast(`Yeni beceri öğrendin: ${c.def.name}`, 'levelup');
       } else if (announce) {
-        toast(`Yeni beceri öğrendin! Yetenek Kitabı'ndan (K) bir yuvaya sürükle: ${SKILLS[id]?.name ?? id}`, 'levelup');
+        toast(`Yeni beceri öğrendin! Yetenek Kitabı'ndan (K) bir yuvaya sürükle: ${c.def.name}`, 'levelup');
       }
-    });
+    }
   }
 
   /**

@@ -67,7 +67,7 @@
 .k-slot.oncd > .k-art { filter: brightness(.6) saturate(.6); }
 .k-slot.oncd > .k-sweep, .k-slot.oncd > .k-cdnum { display: block; }  .k-slot.oncd > .k-cdnum { display: flex; }
 .k-slot.oncd.has-edge > .k-edge { display: block; }                                   /* only for cooldowns > 2 s */
-.k-slot.slot-gcd > .k-sweep { display: block; background: conic-gradient(from calc((1 - var(--p, 0)) * 1turn), rgba(0, 0, 0, .40) calc(var(--p, 0) * 1turn), transparent 0); }
+.k-slot.k-gcd > .k-sweep { display: block; background: conic-gradient(from calc((1 - var(--p, 0)) * 1turn), rgba(0, 0, 0, .40) calc(var(--p, 0) * 1turn), transparent 0); }
 .k-slot .cd-low { --cd-c: #ff6a5a; }  .k-slot .cd-mid { --cd-c: #ffe27a; }          /* < 5 s / < 60 s; >= 60 s stays white */
 
 /* --- range / resource tints (overlay, alpha-blended — no filters on the art) --- */

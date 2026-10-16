@@ -74,11 +74,9 @@ export function writeBars(prev: BarsState, next: BarsState): void {
   ch.persist();
 }
 
-function mainAllows(idx: number, def: SkillDef, ch: CharacterState): boolean {
-  if (def.classId !== 'common' && def.classId !== ch.classId) return false;
-  const ultimate = def.tags.includes('ultimate');
-  if (MAIN_KEYS[idx] === 'r') return ultimate;
-  return !ultimate;
+/** Any main-bar key takes any skill of the class (WoW layout: key 4 = r is a rotation key too, barLayout.ts). */
+function mainAllows(_idx: number, def: SkillDef, ch: CharacterState): boolean {
+  return def.classId === 'common' || def.classId === ch.classId;
 }
 
 /** Whether `p` may land on the cell `ref`: a skill that is unlocked (and allowed in that slot), or a consumable. */

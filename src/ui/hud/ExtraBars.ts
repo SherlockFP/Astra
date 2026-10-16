@@ -174,7 +174,7 @@ class XCell {
         gcdOn = true;
       }
     }
-    setClass(this.el, 'slot-gcd', gcdOn);
+    setClass(this.el, 'k-gcd', gcdOn);
     if (gcdOn) setDisplay(this.sweep, true, 'block');
     setClass(this.el, 'nores', noRes);
     setClass(this.el, 'casting', casting);
