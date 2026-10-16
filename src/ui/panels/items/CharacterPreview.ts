@@ -144,8 +144,8 @@ export class CharacterPreview {
     this.el.append(hint);
 
     this.camera = new THREE.PerspectiveCamera(28, w / h, 0.1, 50);
-    this.camera.position.set(0, 1.45, this.dist);
-    this.camera.lookAt(0, 1.18, 0);
+    this.camera.position.set(0, 1.3, this.dist);
+    this.camera.lookAt(0, 0.92, 0);
 
     this.scene.add(new THREE.HemisphereLight(0xcfd8ff, 0x5a4330, 1.6));
     const key = new THREE.DirectionalLight(0xfff0d8, 2.6);
@@ -365,8 +365,8 @@ export class CharacterPreview {
     this.pivot.rotation.y = this.yaw;
     const cz = this.camera.position.z;
     this.camera.position.z = cz + (this.dist - cz) * (1 - Math.exp(-8 * dt));
-    this.camera.position.y = 1.0 + this.camera.position.z * 0.07;
-    this.camera.lookAt(0, 1.18, 0);
+    this.camera.position.y = 0.85 + this.camera.position.z * 0.07;
+    this.camera.lookAt(0, 0.92, 0);
     r.render(this.scene, this.camera);
   }
 
