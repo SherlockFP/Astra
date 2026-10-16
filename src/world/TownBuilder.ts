@@ -1217,7 +1217,7 @@ class TownBuild {
   }
 
   // ---- build ----
-  /** Kuzgunkale magitech layer (MagitechKit): crystal lamps around the fountain, four spires on the wall corners, banners, a central arcane crystal. */
+  /** Kuzgunkale magitech layer (MagitechKit): crystal lamps along the main road, four spires on the wall corners, banners, a central arcane crystal. */
   magitech: MagitechKit | null = null;
   buildMagitech(): void {
     const kit = new MagitechKit();
@@ -1225,16 +1225,12 @@ class TownBuild {
     const fx = fountain?.x ?? 0, fz = fountain?.z ?? 8;
     const h = this.half - 6;
     const at = (x: number, z: number): number => this.groundY(x, z);
-    for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * PI * 2;
-      const x = fx + Math.cos(a) * 7, z = fz + Math.sin(a) * 7;
-      kit.add({ part: 'lamp', x, y: at(x, z), z });
-      if (i % 2 === 0) kit.add({ part: 'lantern', x, y: at(x, z) + 3.6, z, s: 1.2 });
-    }
-    // the main road: a crystal lamp on each shoulder every ~12 m, from the portal hall to the south gate
-    for (const z of [-22, -10, 2, 14, 26, 38, 50]) {
-      for (const x of [-6.4, 6.4]) kit.add({ part: 'lamp', x, y: at(x, z), z, s: 1.1 });
-    }
+    // no crystal ring round the fountain any more: its eight lamps (and four lanterns) stood among the benches and flower beds, and one
+    // was 1 m from the villager by the fountain. The plaza is lit by the central crystal and the warm posts of town.ts.
+    // the main road: a crystal lamp on each shoulder about every 12 m (z -22, -10, 2, 50). At z 14 only the west post stands (the east one was 5 m
+    // from Muhtar Cemal), and nothing stands between z 14 and 50: the spawn (0, 26) and the camera behind it stay clear.
+    const ROAD_LAMPS: [number, number][] = [[-6.4, -22], [6.4, -22], [-6.4, -10], [6.4, -10], [-6.4, 2], [6.4, 2], [-6.4, 14], [-6.4, 50], [6.4, 50]];
+    for (const [x, z] of ROAD_LAMPS) kit.add({ part: 'lamp', x, y: at(x, z), z, s: 1.1 });
     // the four wall-corner spires and the two gate spires (inside the wall, flanking the south gate), banners on the corners
     for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {
       const x = sx * h, z = sz * h;

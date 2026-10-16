@@ -78,20 +78,25 @@ for (let k = 0; k < 4; k++) {
 for (let k = 0; k < 8; k++) {
   const a = (k * Math.PI) / 4 + 0.2;
   const x = Math.sin(a) * 11.6, z = 8 + Math.cos(a) * 11.6;
-  add(k % 2 ? gp('bush_a') : gp('bush_b'), x, z, { rot: rng.range(0, 360), scale: 1.1 });
+  // the bed at k 1 (about 9.7, 14.4) stood 3.6 m from Muhtar Cemal (10, 18), under his nameplate: left out. The random draws stay, so the
+  // rest of the town keeps its rotations.
+  const nearMuhtar = k === 1;
+  const bushRot = rng.range(0, 360);
+  if (!nearMuhtar) add(k % 2 ? gp('bush_a') : gp('bush_b'), x, z, { rot: bushRot, scale: 1.1 });
   for (let f = 0; f < 3; f++) {
     const fl = [kn('flower_redA'), kn('flower_yellowA'), kn('flower_purpleA')][(k + f) % 3];
-    add(fl, x + rng.range(-1.1, 1.1), z + rng.range(-1.1, 1.1), { rot: rng.range(0, 360), scale: 4 });
+    const jx = rng.range(-1.1, 1.1), jz = rng.range(-1.1, 1.1), fr = rng.range(0, 360);
+    if (!nearMuhtar) add(fl, x + jx, z + jz, { rot: fr, scale: 4 });
   }
 }
-// lamp posts: plaza ring + main road (the generated lamp post carries its own warm light)
-// the ring's south post (k 3, z 23.6) stood 2.4 m in front of the spawn (z 26) on the walking line and in the camera's view: left out
+// lamp posts: plaza ring (the generated lamp post carries its own warm light). The main road's crystal lamps are TownBuilder.buildMagitech's:
+// the warm road pairs that stood on top of them (z 50, 38, 28, -12, -22) are gone, and the ring's south post (k 3, z 23.6) stays out: it stood in front of the spawn
 for (let k = 0; k < 3; k++) {
   const a = Math.PI / 4 + (k * Math.PI) / 2 + Math.PI / 4;
   const x = Math.sin(a) * 15.6, z = 8 + Math.cos(a) * 15.6;
   add(gp('lamp_post'), x, z, { rot: deg(Math.atan2(-x, 8 - z)), collide: true, radius: 0.4 });
 }
-for (const z of [50, 38, 28, -12, -22]) for (const sx of [-1, 1]) add(gp('lamp_post'), sx * 6.2, z, { rot: sx > 0 ? -90 : 90, collide: true, radius: 0.4 });
+
 // braziers on columns along the road (fire-basket, warm light)
 const brazier = (x: number, z: number, y = 0): void => {
   add(dg('column'), x, z, { y, scale: 1.5, collide: true, radius: 0.6, tint: 0xd8cfc0 });
