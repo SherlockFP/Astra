@@ -1,12 +1,14 @@
-/* Speech bubbles above heads (UX-30, §5.2). Flat ElvUI family: tokens only, no outer shadow, no scale (§3.12). */
+/* Speech bubbles above heads (UX-30, §5.2). Flat ElvUI family: tokens only, no outer shadow. Speech shrinks with distance
+   (scale 1 to 0.7, from the bottom edge: the tail stays on the head). */
 
 /* the world label that holds a speaker's stack: no dark box (wl-bare also comes from world-markers.css) */
-.wl.wl-bubble { white-space: normal; max-width: 260px; pointer-events: none; }
+.wl.wl-bubble { white-space: normal; max-width: 240px; pointer-events: none; }
 .bb-stack { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 
 .bb {
   position: relative;
-  max-width: 260px;
+  max-width: 240px;
+  transform-origin: 50% 100%;
   padding: 6px 10px;
   border: 1px solid var(--ink);
   border-radius: var(--r-1);
@@ -35,6 +37,7 @@
 .bb--party { --bb-line: var(--info); }
 .bb--yell { --bb-line: var(--ch-yell); background: color-mix(in srgb, var(--ch-yell) 16%, var(--bg-2)); font-size: 17px; }
 .bb--npc { --bb-line: var(--gold-3); }
+.bb--emote { --bb-line: var(--ch-emote); font-style: italic; }
 .bb--typing { --bb-line: var(--text-4); padding: 6px 12px; }
 .bb--own { font-size: 14px; line-height: 18px; }
 

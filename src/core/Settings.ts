@@ -52,6 +52,8 @@ export interface SettingsData {
   showForces: boolean;
   /** Enemy nameplates: always (within 40 m) · combat only (in a fight, aggro or target) · off (the target still shows). */
   nameplates: 'always' | 'combat' | 'off';
+  /** Colour-blind-safe nameplates (Okabe-Ito palette: blue friends, orange / vermillion foes instead of green / red). Default off. */
+  colorBlindNameplates: boolean;
   /** Kick tracker widget (GDD_V2 §8.4). */
   kickTracker: boolean;
   /** Tank route overlay (GDD_V2 §8.2 / §8.3). */
@@ -73,7 +75,7 @@ export interface SettingsData {
   chatOpacity: number;
   /** Show [HH:MM] timestamps in chat lines. */
   chatTimestamps: boolean;
-  /** Speech bubbles above avatars for say / party lines. */
+  /** Speech bubbles above avatars: say / yell / emote (range 25 m, yell 100 m) and party lines. */
   chatBubbles: boolean;
   /** Mute the Ticaret (trade) channel. */
   chatTradeMuted: boolean;
@@ -243,6 +245,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   settingsVersion: SETTINGS_VERSION,
   showForces: true,
   nameplates: 'always',
+  colorBlindNameplates: false,
   kickTracker: true,
   showTankRoute: true,
   autoApplyPassives: true,

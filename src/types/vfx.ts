@@ -94,6 +94,8 @@ export interface SpawnVfxOpts {
   follow?: import('three').Object3D; // attach & follow
   target?: [number, number, number]; // for beams/chains
   seed?: number;
+  /** meteor_fall only: false = no landing burst of its own (the caller plays the impact at the moment it deals damage). */
+  impact?: boolean;
 }
 
 /** COMBAT_WOW §4.3 CW-01 (append-only): `absorb` shield soak, `resist`, `miss`, `interrupt`, `mana` (mana gain numbers). */

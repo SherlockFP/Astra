@@ -103,10 +103,11 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
 // ==================================================================================================================
 {
   reset();
-  const a = mob('ys_nobet_muhafizi', 12, 0, { packId: 'pk1' });
-  const b = mob('ys_nobet_muhafizi', 14, 2, { packId: 'pk1' });
-  const c = mob('ys_nobet_muhafizi', 13, -3, { packId: 'pk1' });
-  const far = mob('ys_nobet_muhafizi', 60, 0, { packId: 'pk2' });
+  // level 10 mobs: the new-player pull cap (L1-9, 2 engaged) is covered by the cap.* block below
+  const a = mob('ys_nobet_muhafizi', 12, 0, { packId: 'pk1', level: 10 });
+  const b = mob('ys_nobet_muhafizi', 14, 2, { packId: 'pk1', level: 10 });
+  const c = mob('ys_nobet_muhafizi', 13, -3, { packId: 'pk1', level: 10 });
+  const far = mob('ys_nobet_muhafizi', 60, 0, { packId: 'pk2', level: 10 });
   H.step(sec(0.6));
   ok('pack.one pull aggroes the whole pack', a.ai.aggroed && b.ai.aggroed && c.ai.aggroed);
   ok('pack.other pack stays asleep', !far.ai.aggroed);
@@ -119,17 +120,18 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
 {
   const p = reset();
   const def = { ...ENEMIES.ys_nobet_muhafizi, aggroRange: 14 };
-  const pl = mob(null, 12, 0, { def }); // pack-less puller, 12 m from the player
-  const near = mob(null, 12, 7, { def }); // 7 m from the puller, 13.9 m from the player: joins
-  const edge = mob(null, 20, 0, { def }); // 8 m from the puller, 20 m from the player: outside its aggro range, stays
-  const chain = mob(null, 12, 10.5, { def }); // 3.5 m from `near` (body-pull reach), 16 m from the player: stays
-  const far = mob(null, 43, 0, { def }); // 31 m from the puller: stays
+  const pl = mob(null, 12, 0, { def, level: 10 }); // pack-less puller, 12 m from the player (level 10: no new-player ease)
+  const near = mob(null, 12, 7, { def, level: 10 }); // 7 m from the puller, 13.9 m from the player: joins
+  const edge = mob(null, 20, 0, { def, level: 10 }); // 8 m from the puller, 20 m from the player: outside its aggro range, stays
+  const chain = mob(null, 12, 10.5, { def, level: 10 }); // 3.5 m from `near` (body-pull reach), 16 m from the player: stays
+  const far = mob(null, 43, 0, { def, level: 10 }); // 31 m from the puller: stays
   pl.ai.acquire(p);
-  ok('social.pack-less neighbour 7 m off, inside its aggro range, joins', near.ai.aggroed);
+  ok('social.pack-less neighbour 7 m off, inside its aggro range, joins (L10+)', near.ai.aggroed);
   ok('social.neighbour 8 m off but outside its aggro range stays idle', !edge.ai.aggroed);
   ok('social.no pull at 31 m for a pack-less mob', !far.ai.aggroed);
   H.step(sec(1));
   ok('social.body pull does not chain past the aggro range', !chain.ai.aggroed, `chain ${chain.ai.aggroed}`);
+
 
   reset();
   const pa = mob(null, 12, 0, { def, packId: 'cA' });
@@ -167,7 +169,8 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
     maxEngaged = Math.max(maxEngaged, slimes.filter((m) => m.ai.aggroed && m.ai.target === p).length);
   }
   ok('cap.level-2 slime camps: the pull engages', maxEngaged >= 1, "max " + maxEngaged);
-  ok('cap.level-2 slime camps: at most 3 engaged at once', maxEngaged <= 3, "max " + maxEngaged);
+  // new-player ease (EnemyDirector PULL_CAP): L1-9 pulls at most 2 at once
+  ok('cap.level-2 slime camps: at most 2 engaged at once', maxEngaged <= 2, "max " + maxEngaged);
 
   // a touch never pulls another camp: camp A's slime is 6 m from the player (sight), camp B's slime stands 2.5 m off it, inside
   // B's aggro range of the player but behind a wall corner (no sight line); B's camp mate is 16 m from the player
@@ -184,11 +187,11 @@ const healsTo = (id) => events.heal.filter((h) => h.targetId === id).length;
   ok('cap.touch: the near camp engages', a1.ai.aggroed);
   ok('cap.touch: another camp is never pulled by touch', !b1.ai.aggroed && !b2.ai.aggroed, "b1 " + b1.ai.aggroed + " b2 " + b2.ai.aggroed);
 
-  // above level 5 the cap is off: a 4-slime camp pulled from one spot comes in whole
-  reset('priest', 8);
-  const big = [mob('ow_slime', 3, 0, { packId: 'cD', level: 8 }), mob('ow_slime', 4, 1, { packId: 'cD', level: 8 }), mob('ow_slime', 3, -1, { packId: 'cD', level: 8 }), mob('ow_slime', 4, -2, { packId: 'cD', level: 8 })];
+  // from level 10 the cap is off: a 4-slime camp pulled from one spot comes in whole
+  reset('priest', 10);
+  const big = [mob('ow_slime', 3, 0, { packId: 'cD', level: 10 }), mob('ow_slime', 4, 1, { packId: 'cD', level: 10 }), mob('ow_slime', 3, -1, { packId: 'cD', level: 10 }), mob('ow_slime', 4, -2, { packId: 'cD', level: 10 })];
   H.step(sec(1));
-  ok('cap.above level 5: the whole camp engages', big.every((m) => m.ai.aggroed), big.filter((m) => m.ai.aggroed).length + "/4");
+  ok('cap.level 10: the whole camp engages', big.every((m) => m.ai.aggroed), big.filter((m) => m.ai.aggroed).length + "/4");
 
   // a level-2 slime does not split; a level-6 slime does (two slimelets)
   reset('priest', 2);

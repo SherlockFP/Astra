@@ -36,6 +36,10 @@ export function spawnPayloadOf(e: Enemy): NetChannels['spawn'] {
     tag: e.tag || undefined,
     hpFrac: e.hpFrac,
     openWorld: e.openWorld || undefined,
+    maxHp: Math.round(e.maxHp),
+    stealth: e.packStealth || undefined,
+    dormant: e.dormant || undefined,
+    wakeRadius: e.wakeRange !== undefined && e.wakeRange > 0 ? e.wakeRange : undefined,
   };
 }
 

@@ -17,7 +17,7 @@ import { G } from '../game/G';
 import type { Rarity } from '../types/common';
 import { VFX_IDS, type DamageNumberKind, type SpawnVfxOpts, type TelegraphKind, type TelegraphShape, type VfxId } from '../types/vfx';
 import { DamageNumbers, type DamageNumberOpts } from './DamageNumbers';
-import { DONE, type Ctx, type Fx, type LoopCtl, type LoopHandle } from './Fx';
+import { DONE, setGroundOf, type Ctx, type Fx, type LoopCtl, type LoopHandle } from './Fx';
 import { resolveVfxAlias, type VfxAlias, type VfxAliasPart } from './aliases';
 import { Pillar, shellGeometry, shellMaterial } from './Meshes';
 import { Atlas, KENNEY_TILES, ParticleLayer, type V3 } from './Particles';
@@ -704,6 +704,8 @@ export class VFX {
     // always exactly 2 PointLights: the count never changes (a change recompiles every lit shader); idle ones sit at intensity 0
     this.lights = new LightPool(2, this.root);
     const self = this;
+    // ground decals and rings follow World.groundY (rolling terrain); flat maps read 0
+    setGroundOf((x, z) => G.world?.groundY(x, z) ?? 0);
     this.fxApi = {
       add: this.layers.add,
       alpha: this.layers.alpha,

@@ -841,7 +841,8 @@ function dropMeteor(c: CastCtx, px: number, pz: number, more: number, delayExtra
   const p = def.params ?? {};
   const radius = (def.radius ?? 4) * (1 + sys.softStat(caster, 'aoeRadiusPct'));
   const delay = (p.delay ?? 0.9) + delayExtra;
-  sys.vfx('meteor_fall', [px, 0, pz], { duration: delay, scale: radius / 3 });
+  // impact:false: the landing burst, rings, decals and burning ground are played below, in the same callback as the damage
+  sys.vfx('meteor_fall', [px, 0, pz], { duration: delay, scale: radius / 3, impact: false });
   sys.telegraphFriendly(px, pz, radius, delay);
   sys.sfx('fire_cast', [px, 0, pz] as unknown as THREE.Vector3, { pitch: 0.7 });
   sys.schedule(delay, () => {

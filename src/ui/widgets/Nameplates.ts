@@ -5,9 +5,11 @@ import type { Enemy } from '../../entities/Enemy';
 import type { Player } from '../../entities/Player';
 import type { EntityId } from '../../types/common';
 import { localHardTargetId } from '../../game/PlayerController';
+import { setFriendlyTarget } from '../../combat/healing';
+import { openPlayerMenu } from '../hud/PlayerMenu';
 import type { UI } from '../UI';
 import { UNINTERRUPTIBLE_ICON, type CastTracker } from './CastBar';
-import { ICON, clamp01, clampN, div, iconEl, pulse, setClass, setDisplay, setStyle, setText } from './dom';
+import { ICON, clamp01, clampN, div, iconEl, pulse, setClass, setDisplay, setStyle, setText, uiSound } from './dom';
 import { isSkullLevel, levelColor } from './levelColor';
 import { fmtHealth } from './numFormat';
 import { statusView } from './status';
@@ -181,6 +183,22 @@ class Plate {
           if ((e.button !== 0 && e.button !== 2) || actor.removed || actor.isDead) return;
           e.preventDefault();
           G.events.emit('target:select', { entityId: actor.id, attack: e.button === 2 });
+        });
+      }
+    } else if (!this.self) {
+      // other players: left click = friendly target (U / F1..F5 heal target), right click = WoW unit popup menu (ui/hud/PlayerMenu.ts)
+      const p = actor as Player;
+      for (const part of [this.nameEl, this.barEl]) {
+        part.classList.add('ui-capture', 'np-click');
+        part.addEventListener('mousedown', (e) => {
+          if ((e.button !== 0 && e.button !== 2) || p.removed) return;
+          e.preventDefault();
+          if (e.button === 0) {
+            setFriendlyTarget(p.id);
+            uiSound('ui_click', 0.5);
+            return;
+          }
+          openPlayerMenu({ name: p.name, cls: p.classId, level: p.level, x: e.clientX, y: e.clientY });
         });
       }
     }

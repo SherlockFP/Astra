@@ -1,5 +1,6 @@
 import { G } from '../../../game/G';
 import { DEATH_PENALTY_SEC } from '../../../data/mythicAffixes';
+import { NEW_PLAYER_END_LEVEL, NEW_PLAYER_REVIVE_HERE_DELAY } from '../../../data/lowLevelScaling';
 import { expandKeys } from '../../widgets/controlHints';
 import { pvp } from '../../../systems/Pvp';
 import { GamePanel, button, fmtInt, h, icon, inOpenWorld, mmss, openPanel, sfx, toast } from './base';
@@ -198,7 +199,9 @@ export class DeathPanel extends GamePanel {
     this.labelAcc += dt;
     if (this.labelAcc < 0.25) return;
     this.labelAcc = 0;
-    const wait = Math.max(0, REVIVE_HERE_DELAY - (performance.now() - this.t0) / 1000);
+    // new-player ease: a shorter wait below the end level (data/lowLevelScaling.ts)
+    const delay = (G.character?.level ?? 1) < NEW_PLAYER_END_LEVEL ? NEW_PLAYER_REVIVE_HERE_DELAY : REVIVE_HERE_DELAY;
+    const wait = Math.max(0, delay - (performance.now() - this.t0) / 1000);
     let cost = 0;
     try {
       cost = G.progression.reviveHereCost();
@@ -233,7 +236,7 @@ export class DeathPanel extends GamePanel {
   private reviveHere(): void {
     const c = G.character;
     if (!c || !this.canReviveHere()) return;
-    let cost = 50 * c.level;
+    let cost = c.level < NEW_PLAYER_END_LEVEL ? 0 : 50 * c.level;
     try {
       cost = G.progression.reviveHereCost();
     } catch {

@@ -691,6 +691,7 @@ export class SettingsPanel extends GamePanel {
         this.flag('questArrow', 'Görev Oku', 'Takip edilen görevin hedefine ekran oku'),
         this.flag('showMapInfo', 'Minimap Saati', 'Haritada yerel saat (FPS göstergesi açıksa kare hızı da)'),
         this.flag('showStats', 'İstatistik Satırı', 'Sohbette kritik, hız, soğuma ve kaçınma özeti'),
+        this.flag('chatBubbles', 'Konuşma balonları', 'Yakındaki oyuncuların sözleri (Yakın 25 m, Bağır 100 m) ve /e eylemleri üstlerinde balon olarak çıkar'),
         row(
           'Karakter Sözleri',
           selectBox<SettingsData['characterBarks']>(
@@ -733,6 +734,7 @@ export class SettingsPanel extends GamePanel {
           ),
           'Düşman plakaları: 40 m içinde her zaman, yalnız savaşta ya da kapalı (hedef her zaman görünür)',
         ),
+        this.flag('colorBlindNameplates', 'Renk Körlüğü Dostu Plakalar', 'Dost mavi, düşman turuncu / kırmızımsı: kırmızı-yeşil ayrımı gerekmez (isim plakaları ve hedef çerçevesi)'),
         this.flag('barGhostSlots', 'Boş Yuvaları Göster', 'Yetenek çubuğunda boş kareler görünür'),
         this.flag('barLock', 'Barları Kilitle', 'Açıkken çubuktaki bir eşyayı almak için Shift basılı tutulur'),
         this.flag('ufIcon', 'Oyuncu Simgesi', 'Oyuncu çerçevesinde sınıf simgesi'),

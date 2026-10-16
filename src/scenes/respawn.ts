@@ -1,6 +1,7 @@
 import { G } from '../game/G';
 import type { PlayerController } from '../game/PlayerController';
 import type { Player } from '../entities/Player';
+import { newPlayerReleaseHp } from '../data/lowLevelScaling';
 
 /**
  * "Ruhunu Serbest Bırak": teleport the (dead) local player to `x,z`, revive with 50% HP (WoW corpse-run revive) and grant 2 s of invulnerability.
@@ -14,7 +15,7 @@ export function releaseLocalPlayer(controller: PlayerController | null, player: 
     player.yaw = yaw;
     G.camera?.snap();
   }
-  G.combat.reviveLocalPlayer(0.5);
+  G.combat.reviveLocalPlayer(newPlayerReleaseHp(player.level));
   player.statuses.apply('invulnerable', 2, { sourceId: null });
   G.ui.closePanel('death');
   G.audio.play('buff');

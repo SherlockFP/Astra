@@ -8,6 +8,7 @@ import type { ClassId } from '../types/common';
 import type { EnemyRank } from '../types/enemies';
 import type { SkillSlotKey } from '../types/skills';
 import { CLASSES } from '../data/classes';
+import { NEW_PLAYER_END_LEVEL } from '../data/lowLevelScaling';
 import { OPENING_KIT, classGrantOrder } from '../data/openingKit';
 import { barCandidates, grantSort, placeSkill, reservedSlots } from '../data/barLayout';
 import { DUNGEONS } from '../data/dungeons';
@@ -135,9 +136,10 @@ export class Progression {
     return loss;
   }
 
-  /** "Burada Diril" price (50 x level gold, GDD 6.6). */
+  /** "Burada Diril" price (50 x level gold, GDD 6.6). Free below the new-player end level (data/lowLevelScaling.ts). */
   reviveHereCost(): number {
-    return 50 * (G.character?.level ?? 1);
+    const level = G.character?.level ?? 1;
+    return level < NEW_PLAYER_END_LEVEL ? 0 : 50 * level;
   }
 
   /** Dev/testing: jump to a level (no XP animation). */

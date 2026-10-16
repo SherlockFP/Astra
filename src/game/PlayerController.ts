@@ -49,6 +49,12 @@ const DODGE_IFRAMES = 0.34;
 const DODGE_ATTACK_AT = 0.3;      // roll-attack window (GDD 8.1)
 const SOFT_TARGET_RANGE = 25;
 const HARD_TARGET_RANGE = 30;
+/**
+ * External movement axis (Takip Et). Set by installPlayerSocial; returns null when nothing drives the character. Read once per frame
+ * by moveAxisNow, so a follow stops the moment this returns null.
+ */
+export const autoMoveHook: { axis: (() => { x: number; y: number } | null) | null } = { axis: null };
+
 const FACE_HOLD = 0.55;           // seconds the character keeps facing the aim point after a cast
 // KayKit clips are chibi-short strides: ground speed (u/s) at which each clip plays at 1.0x. Cartoony speed-up (<= 2x) is intended.
 const LOCO_REF = { run: 4.0, strafe: 4.2, back: 2.0, walk: 1.7 };
@@ -564,6 +570,9 @@ export class PlayerController {
   /** Movement axes with autorun applied: forward is injected unless S is held; strafing still adds in. */
   private moveAxisNow(): { x: number; y: number } {
     const input = G.input;
+    // player-menu follow (Takip Et, systems/PlayerSocialNet.ts): an external axis wins while it is set and returns non-null
+    const ext = autoMoveHook.axis?.();
+    if (ext) return ext;
     if (!this.autoRunOn || input.down('moveBack')) return input.moveAxis();
     const x = (input.down('moveRight') ? 1 : 0) - (input.down('moveLeft') ? 1 : 0);
     const len = Math.hypot(x, 1);
