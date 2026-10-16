@@ -28,12 +28,18 @@ export const BLOOM_MAX_STRENGTH = 1.0;
 const HDR_CEILING = 10.0;
 
 /**
+ * Colour grade in the HDR guard pass (linear, before bloom, no extra pass): saturation around the luma and contrast around mid
+ * grey. Regions set it per frame (Engine.setGrade, world/RegionAtmosphere look); every other scene keeps this default.
+ */
+export const SCENE_GRADE = { sat: 1.1, contrast: 1.03, exposure: 1.0 };
+
+/**
  * Input guard in front of the bloom. A NaN or Inf texel is spread over the whole frame by the blur mip chain (the screen
  * goes flat grey), so non-finite and negative values become 0 and everything above HDR_CEILING is clamped.
  * `v >= 0.0` is false for NaN, so NaN takes the 0 branch on every driver.
  */
 const HDR_GUARD_SHADER = {
-  uniforms: { tDiffuse: { value: null }, uMax: { value: HDR_CEILING } },
+  uniforms: { tDiffuse: { value: null }, uMax: { value: HDR_CEILING }, uSat: { value: SCENE_GRADE.sat }, uContrast: { value: SCENE_GRADE.contrast } },
   vertexShader: /* glsl */ `
 varying vec2 vUv;
 void main() {
@@ -43,12 +49,18 @@ void main() {
   fragmentShader: /* glsl */ `
 uniform sampler2D tDiffuse;
 uniform float uMax;
+uniform float uSat;
+uniform float uContrast;
 varying vec2 vUv;
 float guard(float v) { return v >= 0.0 ? min(v, uMax) : 0.0; }
 void main() {
   vec4 t = texture2D(tDiffuse, vUv);
   float a = t.a >= 0.0 ? min(t.a, 1.0) : 0.0;
-  gl_FragColor = vec4(guard(t.r), guard(t.g), guard(t.b), a);
+  vec3 c = vec3(guard(t.r), guard(t.g), guard(t.b));
+  float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+  c = max(mix(vec3(l), c, uSat), 0.0);
+  c = max((c - 0.18) * uContrast + 0.18, 0.0);
+  gl_FragColor = vec4(c, a);
 }`,
 };
 
@@ -284,6 +296,13 @@ export class Engine {
     window.addEventListener('resize', () => this.resize());
     if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => this.resize()).observe(canvas);
     this.resize();
+  }
+
+  /** Colour grade (saturation, contrast) and tone-mapping exposure of the frame. SCENE_GRADE is the default. */
+  setGrade(g: { sat: number; contrast: number; exposure: number }): void {
+    this.hdrGuard.uniforms.uSat.value = g.sat;
+    this.hdrGuard.uniforms.uContrast.value = g.contrast;
+    this.renderer.toneMappingExposure = g.exposure;
   }
 
   /** Insert/replace the PSX pass (render/psx). Pass null to remove. */

@@ -36,6 +36,44 @@ function applyBloom(): void {
   }
 }
 
+/** Rim light colour: a warm white, so the edge reads as sunlight and not as a glow. */
+const RIM_COLOR = new THREE.Color(0xfff2d8);
+const RIM_CHUNK = /* glsl */ `{
+  float rimF = 1.0 - saturate( dot( normalize( normal ), normalize( vViewPosition ) ) );
+  outgoingLight += uRimColor * ( pow( rimF, 3.0 ) * uRimStrength );
+}
+`;
+const rimPatched = new WeakSet<THREE.Material>();
+
+/**
+ * Character and enemy rim light: a fresnel edge added after the lighting (sunlight colour, 0.35), so the silhouette reads on any
+ * biome background. Patches the standard materials of a skinned model in place, chaining onBeforeCompile the way patchPSX does.
+ * Runs before psxify (the PSX patch chains this one). Material clones (Assets.cloneMaterials) do not keep it.
+ */
+function addCharacterRim(root: THREE.Object3D, strength = 0.35): void {
+  root.traverse((o) => {
+    const mesh = o as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    for (const mat of mats) {
+      if ((mat as THREE.MeshStandardMaterial).isMeshStandardMaterial !== true || rimPatched.has(mat)) continue;
+      rimPatched.add(mat);
+      const prevCompile = mat.onBeforeCompile;
+      const prevKey = mat.customProgramCacheKey;
+      mat.onBeforeCompile = function (this: THREE.Material, shader, renderer) {
+        prevCompile.call(this, shader, renderer);
+        shader.uniforms.uRimColor = { value: RIM_COLOR };
+        shader.uniforms.uRimStrength = { value: strength };
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', '#include <common>\nuniform vec3 uRimColor;\nuniform float uRimStrength;')
+          .replace('#include <opaque_fragment>', RIM_CHUNK + '#include <opaque_fragment>');
+      };
+      mat.customProgramCacheKey = function (this: THREE.Material) { return prevKey.call(this) + '|rim1'; };
+      mat.needsUpdate = true;
+    }
+  });
+}
+
 /** Patch a procedurally created object for the PSX look (world builders, generated meshes). */
 export function psxify(root: THREE.Object3D, kind: 'character' | 'world' | 'prop' = 'prop'): void {
   // WoW clarity: the 128 px / 5-bit character texture crush only applies with the PSX filter on (read at model load, so a change needs a reload).
@@ -62,6 +100,7 @@ function pixelRatioFor(s: { psx: boolean; renderScale: number }): number {
  */
 export function installGraphics(): void {
   G.assets.onModelLoaded = (asset) => {
+    if (asset.skinned) addCharacterRim(asset.scene);
     psxify(asset.scene, asset.skinned ? 'character' : 'world');
   };
 

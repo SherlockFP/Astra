@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { G } from '../game/G';
 import { RNG, hashString } from '../core/utils';
+import { SCENE_GRADE } from '../core/Engine';
 import { patchPSX } from '../render/psx';
 import { freezeStatic } from '../render/staticTransforms';
 import { TILE_SIZE, type DungeonDef, type LandmarkDef, type RegionTheme, type RoadDef, type VillageDef, type WorldRegion } from '../types/dungeons';
@@ -250,6 +251,7 @@ class OpenWorld implements WorldDecorHandle {
   }
 
   dispose(): void {
+    try { G.engine?.setGrade(SCENE_GRADE); } catch { /* engine not ready (harness) */ }
     for (const a of this.ambient) {
       try { a.h.stop(); } catch { /* ignore */ }
     }
@@ -289,6 +291,7 @@ class OpenWorld implements WorldDecorHandle {
       h.sun.color.copy(c.sunC);
       h.sun.intensity = c.sunI;
     }
+    try { G.engine?.setGrade(c); } catch { /* engine not ready (harness) */ }
     this.sky.setColors({
       zenith: c.zen.getHex(), mid: c.mid.getHex(), horizon: c.hor.getHex(), sunColor: c.sunC.getHex(),
       cloudLight: c.cloudL.getHex(), cloudShade: c.cloudS.getHex(),
