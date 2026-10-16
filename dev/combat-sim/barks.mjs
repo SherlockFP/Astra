@@ -13,7 +13,8 @@ const says = [];
 const rumors = [];
 G.ui = {
   say: (anchor, o) => says.push({ anchor, ...o }),
-  hud: { chat: { addRumor: (from, text) => rumors.push({ from, text }) } },
+  // the player's own lines go to Genel through addBark, NPC/world lines through addRumor: both are a chat line here
+  hud: { chat: { addRumor: (from, text) => rumors.push({ from, text }), addBark: (from, text) => rumors.push({ from, text }) } },
 };
 G.settings = { data: { characterBarks: 'on' } };
 G.world = { entities: new Map() };
