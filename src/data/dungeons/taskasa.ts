@@ -182,7 +182,8 @@ const DOORS = [
   door('yaklasim', 'merkez', 34, 62, 'n', 4, 'none'),
   door('yaklasim', 'maden_ambari', 22, 66, 'w', 2, 'none'),
   door('maden_ambari', 'ray_gecidi', 10, 64, 'n', 2, 'none'),
-  door('ray_gecidi', 'dokum_girisi', 8, 60, 'n', 2, 'none'),
+  // the one shortcut (skip room ray_gecidi): opens when boss 1 (Seda) dies; the merkez -> k_bati route stays open
+  { ...door('ray_gecidi', 'dokum_girisi', 8, 60, 'n', 2, 'kill_lock'), opensOn: { boss: 'boss_seda' } },
   door('merkez', 'k_bati', 16, 50, 'w', 4, 'none'),
   door('k_bati', 'dokum_girisi', 10, 50, 'w', 4, 'none'),
   door('dokum_girisi', 'k_dokum', 4, 44, 'n', 4, 'none'),
@@ -202,7 +203,8 @@ const DOORS = [
 // Member offsets: front line (0.3,0) (-0.38,0.35) (0.06,-0.66) (0.48,0.62) (-0.88,-0.16) (0.83,-0.53) (-0.28,1.03) (-0.53,-1.02) (1.15,0.42) (-1.2,0.49), back line (1.1,-0.75) (1.35,0.1) (0.95,0.9).
 // ---------------------------------------------------------------------------------------------------------------------
 const PACKS: PackDef[] = [
-  pack('tk_p01', 'yaklasim', 26, 66.5, 12, [['tk_hurda', 0.3, 0], ['tk_hurda', -0.38, 0.35], ['tk_hurda', 0.06, -0.66], ['tk_hurda', 0.48, 0.62], ['tk_hurda', -0.88, -0.16], ['tk_hurda', 0.83, -0.53], ['tk_hurda', -0.28, 1.03], ['tk_hurda', -0.53, -1.02], ['tk_onarici', 1.1, -0.75]], { dormant: { kind: 'egg', wakeRadius: 6 } }),
+  pack('tk_p00', 'giris', 31.5, 79.5, 12, [['tk_yukleyici', 0.3, 0], ['tk_yukleyici', -0.38, 0.35], ['tk_onarici', 1.1, -0.75]]),
+  pack('tk_p01', 'yaklasim', 26, 66.5, 11, [['tk_hurda', 0.3, 0], ['tk_hurda', -0.38, 0.35], ['tk_hurda', 0.06, -0.66], ['tk_hurda', 0.48, 0.62], ['tk_hurda', -0.88, -0.16], ['tk_hurda', 0.83, -0.53], ['tk_hurda', -0.28, 1.03], ['tk_onarici', 1.1, -0.75]], { dormant: { kind: 'egg', wakeRadius: 6 } }),
   pack('tk_p02', 'yaklasim', 30.5, 66, 12, [['tk_yukleyici', 0.3, 0], ['tk_yukleyici', -0.38, 0.35], ['tk_sozcu', 1.1, -0.75]]),
   pack('tk_p03', 'yaklasim', 40.5, 70.5, 13, [['tk_yukleyici', 0.3, 0], ['tk_yukleyici', -0.38, 0.35], ['tk_uluyan', 1.1, -0.75]]),
   pack('tk_p04', 'yaklasim', 41.5, 65.5, 14, [['tk_hurda', 0.3, 0], ['tk_hurda', -0.38, 0.35], ['tk_hurda', 0.06, -0.66], ['tk_hurda', 0.48, 0.62], ['tk_istilaci', 1.1, -0.75], ['tk_ruh', 1.35, 0.1]], { big: true }),
@@ -212,7 +214,7 @@ const PACKS: PackDef[] = [
   pack('tk_p08', 'merkez', 18.5, 54, 14, [['tk_dokum_yukleyici', 0.3, 0], ['tk_yukleyici', -0.38, 0.35]], { big: true }),
   pack('tk_p09', 'merkez', 46, 58.5, 16, [['tk_onur', 0.3, 0], ['tk_onarici', 1.1, -0.75], ['tk_sozcu', 1.35, 0.1]]),
   pack('tk_p10', 'merkez', 52.5, 45.5, 15, [['tk_ezici', 0.3, 0], ['tk_sekillendirici', 1.1, -0.75]]),
-  pack('tk_p11', 'merkez', 52.5, 54, 10, [['tk_hurda', 0.3, 0], ['tk_hurda', -0.38, 0.35], ['tk_hurda', 0.06, -0.66], ['tk_hurda', 0.48, 0.62], ['tk_hurda', -0.88, -0.16], ['tk_hurda', 0.83, -0.53], ['tk_hurda', -0.28, 1.03], ['tk_hurda', -0.53, -1.02], ['tk_hurda', 1.15, 0.42], ['tk_hurda', -1.2, 0.49]], { dormant: { kind: 'egg', wakeRadius: 6 } }),
+  pack('tk_p11', 'merkez', 52.5, 54, 8, [['tk_hurda', 0.3, 0], ['tk_hurda', -0.38, 0.35], ['tk_hurda', 0.06, -0.66], ['tk_hurda', 0.48, 0.62], ['tk_hurda', -0.88, -0.16], ['tk_hurda', 0.83, -0.53], ['tk_hurda', -0.28, 1.03], ['tk_hurda', -0.53, -1.02]], { dormant: { kind: 'egg', wakeRadius: 6 } }),
   pack('tk_p12', 'merkez', 25, 49.5, 12, [['tk_yukleyici', 0.3, 0], ['tk_yukleyici', -0.38, 0.35], ['tk_sozcu', 1.1, -0.75]]),
   pack('tk_p13', 'merkez', 46, 49.5, 14, [['tk_yagmaci', 0.3, 0], ['tk_ruh', 1.1, -0.75]]),
   pack('tk_p14', 'merkez', 35.5, 46, 12, [['tk_yagmaci', 0.3, 0], ['tk_hurda', -0.38, 0.35], ['tk_hurda', 0.06, -0.66], ['tk_hurda', 0.48, 0.62]], { patrol: [[29.5, 46], [41.5, 46], [41.5, 57], [29.5, 57]] }),
@@ -232,8 +234,8 @@ const PACKS: PackDef[] = [
   pack('tk_p28', 'titan_koridoru', 31.5, 19.5, 14, [['tk_sekillendirici', 1.1, -0.75], ['tk_sekillendirici', 1.35, 0.1], ['tk_sozcu', 0.95, 0.9]]),
   pack('tk_p29', 'titan_koridoru', 43, 23.5, 18, [['tk_ezici', 0.3, 0], ['tk_onur', -0.38, 0.35]], { big: true, linkedTo: ['tk_p30'] }),
   pack('tk_p30', 'titan_koridoru', 45, 20, 19, [['tk_yagmaci', 0.3, 0], ['tk_istilaci', 1.1, -0.75], ['tk_ruh', 1.35, 0.1]], { linkedTo: ['tk_p29'] }),
-  pack('tk_p31', 'titan_koridoru', 39, 19.5, 20, [['tk_ezici', 0.3, 0], ['tk_ezici', -0.38, 0.35]], { big: true }),
-  pack('tk_p32', 'maden_ambari', 14, 67.5, 20, [['tk_dokum_yukleyici', 0.3, 0], ['tk_hurda', -0.38, 0.35], ['tk_hurda', 0.06, -0.66], ['tk_hurda', 0.48, 0.62], ['tk_hurda', -0.88, -0.16], ['tk_hurda', 0.83, -0.53], ['tk_hurda', -0.28, 1.03], ['tk_onarici', 1.1, -0.75]], { dormant: { kind: 'egg', wakeRadius: 7 }, linkedTo: ['tk_p33', 'tk_p34'], optional: true }),
+  pack('tk_p31', 'titan_koridoru', 39, 19.5, 18, [['tk_ezici', 0.3, 0], ['tk_onur', -0.38, 0.35]], { big: true }),
+  pack('tk_p32', 'maden_ambari', 14, 67.5, 18, [['tk_dokum_yukleyici', 0.3, 0], ['tk_hurda', -0.38, 0.35], ['tk_hurda', 0.06, -0.66], ['tk_hurda', 0.48, 0.62], ['tk_hurda', -0.88, -0.16], ['tk_onarici', 1.1, -0.75]], { dormant: { kind: 'egg', wakeRadius: 7 }, linkedTo: ['tk_p33', 'tk_p34'], optional: true }),
   pack('tk_p33', 'maden_ambari', 18.5, 69, 23, [['tk_ezici', 0.3, 0], ['tk_sekillendirici', 1.1, -0.75], ['tk_sozcu', 1.35, 0.1], ['tk_sozcu', 0.95, 0.9]], { linkedTo: ['tk_p32', 'tk_p34'], optional: true }),
   pack('tk_p34', 'maden_ambari', 12.5, 70, 18, [['tk_onur', 0.3, 0], ['tk_istilaci', 1.1, -0.75], ['tk_uluyan', 1.35, 0.1]], { linkedTo: ['tk_p32', 'tk_p33'], optional: true }),
   pack('tk_p35', 'ray_gecidi', 9.5, 61.5, 9, [['tk_hurda', 0.3, 0], ['tk_hurda', -0.38, 0.35], ['tk_hurda', 0.06, -0.66], ['tk_hurda', 0.48, 0.62], ['tk_ruh', 1.1, -0.75]], { optional: true, stealth: true }),
@@ -621,7 +623,7 @@ function dressRooms(p: (id: string, fn: (pr: Props, r: TileRect) => void) => voi
     for (const [x, z] of [[26.5, 5.5], [44.5, 5.5], [26.5, 12.5], [44.5, 12.5], [30, 15.5], [41, 15.5]] as [number, number][]) {
       q.at(M_PILLAR, x, z, { scale: 1.6, tint: 0x3c1d5e, emissive: VOID, emissiveIntensity: 0.4, collide: true });
     }
-    for (const [x, z] of [[29.5, 6.5], [41.5, 6.5], [29.5, 12], [41.5, 12]] as [number, number][]) q.at(M_CRYSTAL_P, x, z, { scale: 1.2, emissive: VOID, emissiveIntensity: 0.6 });
+    for (const [x, z] of [[29.5, 6.5], [41.5, 6.5], [29.5, 12], [41.5, 12]] as [number, number][]) q.at(M_CRYSTAL_P, x, z, { scale: 1.2, emissive: VOID, emissiveIntensity: 0.6, light: lt(VOID, 1.4, 10, true) });
     // Galleries (absolute 2.4) with corrupted statues and rails
     for (const gx of [24.5, 47.5]) {
       for (const z of [4, 8, 12, 15]) q.at(M_STATUE, gx, z, { scale: 2.4, tint: 0x3c1d5e, y: 6.0 });
@@ -636,7 +638,29 @@ function dressRooms(p: (id: string, fn: (pr: Props, r: TileRect) => void) => voi
 // ---------------------------------------------------------------------------------------------------------------------
 // Assemble: room props from the decorator, then the dungeon definition.
 // ---------------------------------------------------------------------------------------------------------------------
-const ROOMS_BASE: RoomDef[] = ROOM_BASE.map((r) => ({ ...r, ...ROOM_EXTRA[r.id] }));
+/** Mood per room: calm (approach), tension (forges and the cart lane), set piece (boss halls). Keys into the atmospheres below. */
+const ROOM_MOOD: Record<string, string> = {
+  giris: 'calm', yaklasim: 'calm', maden_ambari: 'calm', ray_gecidi: 'calm', k_bati: 'calm', k_dogu: 'calm', pota_girisi: 'calm', k_pota: 'calm',
+  dokum_girisi: 'tension', k_dokum: 'tension', k_edna: 'tension', titan_koridoru: 'tension',
+  merkez: 'setpiece', makinist_odasi: 'setpiece', skarmorak_odasi: 'setpiece', edna_odasi: 'setpiece', fisilti_salonu: 'setpiece',
+};
+/** Ambience emitters (>= 50% of rooms): forge hammers in the foundry, rubble in the mine, whispers from the rift. */
+const ROOM_AMBIENCE: Record<string, NonNullable<RoomDef['ambience']>> = {
+  giris: [{ id: 'rubble', pos: [35.5, 78], radius: 12, volume: 0.2, loop: true }],
+  yaklasim: [{ id: 'rubble', radius: 14, volume: 0.2, loop: true }],
+  maden_ambari: [{ id: 'rubble', radius: 8, volume: 0.25, loop: true }],
+  merkez: [{ id: 'blacksmith_hammer', pos: [35.5, 46], radius: 14, volume: 0.25, every: [6, 12] }],
+  dokum_girisi: [{ id: 'blacksmith_hammer', radius: 10, volume: 0.3, every: [5, 10] }],
+  makinist_odasi: [{ id: 'blacksmith_hammer', radius: 10, volume: 0.3, every: [4, 9] }],
+  edna_odasi: [{ id: 'whisper', radius: 12, volume: 0.2, loop: true }],
+  titan_koridoru: [{ id: 'rubble', radius: 12, volume: 0.25, loop: true }],
+  fisilti_salonu: [{ id: 'whisper', radius: 14, volume: 0.3, loop: true }],
+  skarmorak_odasi: [{ id: 'whisper', radius: 12, volume: 0.2, loop: true }],
+  pota_girisi: [{ id: 'rubble', radius: 10, volume: 0.15, loop: true }],
+};
+const ROOMS_BASE: RoomDef[] = ROOM_BASE.map((r) => ({
+  ...r, ...ROOM_EXTRA[r.id], atmosphere: ROOM_MOOD[r.id], ambience: ROOM_AMBIENCE[r.id],
+}));
 const RECTS = rectsOf(ROOMS_BASE);
 const CTX = makeCtx('taskasa', DOORS, PACKS, [
   { x: START[0], z: START[1], r: 1.2 },
@@ -657,6 +681,10 @@ const EXTRAS: NonNullable<DungeonDef['extras']> = {
   ],
   riftSpots: [[27.5, 67.5], [22.5, 53.5], [48.5, 53.5], [66.8, 49.2], [7.5, 53.2], [35, 22]].map(([x, z]) => pt(x, z)),
   chests: [{ pos: pt(47.5, 71.8), kind: 'chest_wood' }, { pos: pt(20.5, 64.5), kind: 'chest_gold' }],
+  // Taşkasa M+ release points: after the Seda arena (titan corridor) and at the hub after the wing bosses.
+  checkpoints: [pt(35.5, 24), pt(30, 56)],
+  // Anvil buff (Usta Örsü): one use per run per player.
+  stations: [{ id: 'usta_orsu_ocagi', pos: pt(7.5, 56.5), status: 'empower', duration: 300, magnitude: 0.1 }],
   transits: [
     // Maden arabaları: the stop pairs only. Boss gating (requiresBossDead) is not in DungeonTransitDef yet.
     { id: 'cart_bati', stops: [pt(5.5, 38.2), pt(19.5, 57.8)], speed: 14 },
@@ -683,7 +711,7 @@ export const TASKASA: DungeonDef = {
   lore: 'Kadim Zindanların en derin kasası Taşkasa\'dır. Taşdoğanlar ölmekte olan soylarını Uyandırma Çarkı ile diriltmek istediler; çark çalışmadı, yarım kalan ayin taşın içinde bir çatlak açtı ve Boşluk oradan fısıldamaya başladı. Otomat Seda hâlâ kapıyı tutuyor, Kristal Golem Skarmorak çatlağın kristalleriyle büyüyor, Usta Makinistler Brokk ve Dorlita örsleri susturmadan çalıştırıyor. En derinde Başsözcü Eirich Boşluğu dinliyor. Kadim Anahtar Taşları bu duvarlardan yontuldu; anahtarı takan kasanın kilidini açar.',
   levelRange: [56, 60],
   timerSec: 1800,
-  forcesRequired: 400,
+  forcesRequired: 402, // floor(0.8 x 503 pack forces)
   theme: THEME,
   grid: { w: 72, h: 84 },
   rooms: TASKASA_ROOMS,
@@ -696,5 +724,10 @@ export const TASKASA: DungeonDef = {
   season: 1,
   endgame: true,
   vertical: true,
+  atmospheres: {
+    calm: { color: 0x1a0d07, near: 9, far: 42 },
+    tension: { color: 0x1e100a, near: 11, far: 52 },
+    setpiece: { color: 0x2a150d, near: 15, far: 76 },
+  },
 };
 
