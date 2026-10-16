@@ -19,17 +19,31 @@ import { chunkBurstOf, type HitWeight } from '../combat/feel';
  * Everything is budgeted per frame so horde fights stay cheap.
  */
 
+/**
+ * One burst per school, each with its own preset and colour (readable at ~20 m). Scales give a ring of ~1.5-2 m (the area presets
+ * draw ~3 m at scale 1). poison is the nature school (green). holy / arcane use their own presets, not the shared hit_magic one.
+ */
 const TYPE_HIT: Record<DamageType, { id: VfxId; color?: number; scale: number; crit: number }> = {
   physical: { id: 'hit_spark', scale: 1, crit: 0xffc830 },
   true: { id: 'hit_spark', scale: 1, color: 0xffffff, crit: 0xffffff },
-  fire: { id: 'fire_burst', scale: 0.42, crit: 0xff8a20 },
-  frost: { id: 'frost_burst', scale: 0.45, crit: 0x9fe0ff },
+  fire: { id: 'fire_burst', scale: 0.6, crit: 0xff8a20 },
+  frost: { id: 'frost_burst', scale: 0.6, crit: 0x9fe0ff },
   lightning: { id: 'hit_magic', color: 0xaed2ff, scale: 1, crit: 0xbcd8ff },
-  shadow: { id: 'shadow_burst', scale: 0.45, crit: 0xb070ff },
-  poison: { id: 'poison_burst', scale: 0.45, crit: 0x8cff50 },
-  holy: { id: 'hit_magic', color: 0xffe28a, scale: 1, crit: 0xfff0a0 },
-  arcane: { id: 'hit_magic', color: 0xe060ff, scale: 1, crit: 0xf080ff },
+  shadow: { id: 'shadow_burst', scale: 0.6, crit: 0xb070ff },
+  poison: { id: 'poison_burst', scale: 0.6, crit: 0x8cff50 },
+  holy: { id: 'holy_burst', color: 0xffe28a, scale: 0.5, crit: 0xfff0a0 },
+  arcane: { id: 'arcane_burst', color: 0xe060ff, scale: 0.5, crit: 0xf080ff },
 };
+
+/**
+ * Own auras (the local player's state, WoW style): a defensive status shows a blue shield shell, an offensive one a red-orange
+ * aura. Only the local player's statuses use these; everything else keeps STATUSES / DEFAULT_STATUS_VFX.
+ */
+const DEFENSIVE_AURA: StatusId[] = ['shield', 'fortify', 'invulnerable', 'bastion', 'ice_barrier', 'prismatic_barrier', 'blazing_barrier', 'guardian_vow', 'karma_ward', 'cloak_ward', 'feign_death', 'ice_block', 'spirit_walk', 'resolve_pact'];
+const OFFENSIVE_AURA: StatusId[] = ['enrage', 'raging', 'empower', 'heating_up'];
+const SELF_AURA: Partial<Record<StatusId, { id: VfxId; color: number }>> = {};
+for (const s of DEFENSIVE_AURA) SELF_AURA[s] = { id: 'shield_bubble', color: 0x3c9cff };
+for (const s of OFFENSIVE_AURA) SELF_AURA[s] = { id: 'enrage_aura', color: 0xff4a10 };
 
 const DEFAULT_STATUS_VFX: Partial<Record<string, VfxId>> = {
   burn: 'burn_loop',
@@ -281,7 +295,8 @@ export function subscribeFeedback(vfx: VFX): void {
     try {
       const ent = entity(e.targetId);
       if (!ent) return;
-      const id = (STATUSES[e.status as StatusId]?.vfx ?? DEFAULT_STATUS_VFX[e.status]) as VfxId | undefined;
+      const own = G.player && e.targetId === G.player.id ? SELF_AURA[e.status as StatusId] : undefined;
+      const id = own ? own.id : ((STATUSES[e.status as StatusId]?.vfx ?? DEFAULT_STATUS_VFX[e.status]) as VfxId | undefined);
       if (!id) return;
       const key = `${e.targetId}:${e.status}`;
       const ex = vfx.status.get(key);
@@ -290,7 +305,7 @@ export function subscribeFeedback(vfx: VFX): void {
         (ex as VfxHandle & { setDuration?(s: number): void }).setDuration?.(dur);
         return;
       }
-      const h = vfx.spawn(id, [ent.position.x, ent.position.y, ent.position.z], { follow: ent.object3d, duration: dur });
+      const h = vfx.spawn(id, [ent.position.x, ent.position.y, ent.position.z], { follow: ent.object3d, duration: dur, color: own?.color });
       if (h.alive) vfx.status.set(key, h);
     } catch (err) {
       console.warn('[vfx] status feedback failed', err);

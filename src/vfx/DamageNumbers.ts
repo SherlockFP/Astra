@@ -23,6 +23,8 @@ export interface DamageNumberOpts {
   merge?: string;
   /** Extra emphasis: size x1.25. */
   big?: boolean;
+  /** Ability name pop (WoW cast text, see presets_wow subscribeWowFeedback): `text` in gold, centred, no hit kinematics. */
+  ability?: boolean;
 }
 
 interface Style {
@@ -39,7 +41,7 @@ interface Style {
 }
 
 const NORMAL_SIZE = 25;
-const CRIT_MUL = 1.5;
+const CRIT_MUL = 1.75;
 const MERGE_WINDOW = 0.45;
 /** Crit bounce keyframes [seconds, px up]: 14 px at 0.18 s, 6 px at 0.34 s, settled by 0.42 s. */
 const CRIT_BOUNCE: ReadonlyArray<readonly [number, number]> = [[0, 0], [0.18, 14], [0.26, 0], [0.34, 6], [0.42, 0]];
@@ -81,6 +83,9 @@ const STYLES: Record<DamageNumberKind, Style> = {
   interrupt: { color: '#ffe066', glow: '#8a5a00', size: 19, life: 0.9, vy: 80, pop: 1.3, italic: true, fade: 0.3 },
   mana: { color: '#7fb6ff', glow: '#1d4f9e', size: 17, life: 0.9, vy: 90, pop: 1.2 },
 };
+
+/** Own major-cooldown ability name: bold gold over the head, a little longer than a number, fades late so it can be read. */
+const ABILITY_STYLE: Style = { color: '#ffe9a0', glow: '#c2650a', size: 22, life: 1.25, vy: 55, pop: 1.45, weight: 900, fade: 0.7 };
 
 /** Fixed words; amount-less kinds. */
 const TEXTS: Partial<Record<DamageNumberKind, string>> = {
@@ -282,7 +287,7 @@ export class DamageNumbers {
     }
 
     // look: school colour (school mode), weak / resisted styling, big
-    const st = STYLES[kind] ?? STYLES.normal;
+    const st = opts?.ability ? ABILITY_STYLE : (STYLES[kind] ?? STYLES.normal);
     let color = st.color;
     let glow = st.glow;
     let size = st.size;
@@ -368,7 +373,7 @@ export class DamageNumbers {
     const side = (Math.random() < 0.5 ? -1 : 1) * (stack % 2 ? 1 : -1);
     // hit numbers start beside the nameplate's column (the plate is centred over the head, so a number on the body would climb
     // into it and its HP bar); a crit starts further out, it is bigger. Then they arc up and away to the side.
-    const hit = HIT_KINDS.has(kind);
+    const hit = HIT_KINDS.has(kind) && !opts?.ability;
     const startSide = hit ? (kind === 'crit' ? 54 : 42) + Math.random() * 14 : 8;
     it.ox = side * (startSide + stack * 12) + (Math.random() - 0.5) * 10;
     // stacked numbers fan out sideways; they only lift a little, so they never climb into the nameplate above the target
@@ -379,7 +384,7 @@ export class DamageNumbers {
     it.dist = Math.hypot(cam.x - x, cam.y - y, cam.z - z);
 
     const el = it.el;
-    el.className = `vfx-dmg vfx-k-${kind}`;
+    el.className = `vfx-dmg vfx-k-${kind}${opts?.ability ? ' vfx-ability' : ''}`;
     el.style.display = '';
     el.style.color = color;
     el.style.fontWeight = String(st.weight ?? 800);

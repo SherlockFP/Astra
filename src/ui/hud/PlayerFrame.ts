@@ -14,6 +14,7 @@ import { fmtHealth } from '../widgets/numFormat';
 import { StatusRow } from '../widgets/StatusRow';
 import { CastBarEl } from '../widgets/CastBar';
 import type { HudCtx, HudWidget } from './types';
+import { OverheadCast } from './OverheadCast';
 
 export { classColor };
 
@@ -278,6 +279,8 @@ export class PlayerCastBar implements HudWidget {
   private ghost: HTMLElement;
   private ghostIco: HTMLElement;
   private ghostId: string | null = null;
+  /** Overhead cast bar above the head (OverheadCast.ts), the same cast as the bar below. */
+  private overhead = new OverheadCast();
 
   constructor() {
     this.el = div('pcast');
@@ -309,6 +312,12 @@ export class PlayerCastBar implements HudWidget {
     const c = p?.cast;
     const wt = ctx.world?.time ?? 0;
     this.updateQueue(ctx.now, c?.skillId ?? null);
+    if (p && c && c.duration > 0.1) {
+      const el = wt - c.start;
+      this.overhead.show(ctx, p, c.skillId, c.name, Math.max(0, c.duration - el), Math.min(1, el / c.duration), !!c.channel);
+    } else {
+      this.overhead.hide();
+    }
     if (p && c && c.duration > 0.1) {
       this.interruptedAt = 0;
       this.chargeSince = -1;

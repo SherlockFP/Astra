@@ -277,12 +277,15 @@ const groundAoe: Behavior = {
       if (!c.remote) {
         if (p.healPct) sys.healAlliesIn(c, px, pz, radius, 0.01);
         if (def.vfx?.impact) sys.vfx(def.vfx.impact, [px, 0.1, pz], { scale: vfxScale(def.vfx.impact, radius) });
+        // the radius ring on impact, in the skill's school colour (drawn at the real hit radius, pooled in the VFX layers)
+        sys.vfx('shockwave', [px, 0.1, pz], { scale: vfxScale('shockwave', radius), color: typeColor(c) });
         sys.shake(0.2);
       }
     } else if (!c.remote) {
       const list = enemiesIn(px, pz, radius, groundAt(px, pz));
       strikeMany(c, list, 99);
       if (def.vfx?.impact) sys.vfx(def.vfx.impact, [px, 0.1, pz], { scale: vfxScale(def.vfx.impact, radius) });
+      sys.vfx('shockwave', [px, 0.1, pz], { scale: vfxScale('shockwave', radius), color: typeColor(c) });
     }
   },
 };

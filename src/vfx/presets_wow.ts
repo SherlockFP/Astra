@@ -1,7 +1,12 @@
 import * as THREE from 'three';
 import { getProcDef } from '../data/procs';
 import { G } from '../game/G';
+import { getSkill } from '../data/skills';
+import type { SkillDef } from '../types/skills';
+import { lockoutSchool } from '../combat/castRules';
+import { isMajorDef } from '../combat/specs';
 import { DONE, TAU, WHITE, flare, mix, rnd, v3, type Ctx, type Fx } from './Fx';
+import type { VfxHandle } from './VFX';
 import { converge, type Preset } from './presets_combat';
 import type { VFX } from './VFX';
 
@@ -15,6 +20,7 @@ import type { VFX } from './VFX';
 
 const ORB_COL = 0xe060ff;
 const PROC_COL = 0xffb347;
+const PHYS_COL = 0xffd23a;
 const CRIT_COL = 0xffd23a;
 const LOCK_COL = 0x8fa8ff;
 
@@ -148,6 +154,23 @@ function castHands(def: number): Preset {
   return (fx: Fx, c: Ctx) => {
     const s = c.s;
     const col = c.color(def);
+    // a cast with a duration on a body holds the glow in both hands for the whole cast (subscribeWowFeedback); no duration = one pop
+    if (c.o.duration !== undefined && c.follow) {
+      const hot = mix(col, WHITE, 0.5);
+      return fx.loop(c, c.o.duration, (dt, L) => {
+        hands(c);
+        const pulse = 0.8 + 0.2 * Math.sin(L.t * 9);
+        const n = L.rate(20, dt);
+        for (let i = 0; i < n; i++) {
+          const h = i % 2 ? _left : _right;
+          fx.add.spawn({ tex: 'soft', at: [h.x + rnd(-0.04, 0.04), h.y + rnd(-0.04, 0.04), h.z + rnd(-0.04, 0.04)], life: 0.22, size: 0.2 * s, size1: 0.07 * s, c0: hot, c1: col, glow: 1.8, a: 0.8 * pulse, fi: 0, fp: 1 });
+        }
+        const m = L.rate(5, dt);
+        for (let i = 0; i < m; i++) {
+          fx.add.spawn({ tex: ['star-01', 'cross'], at: [_right.x, _right.y, _right.z], vel: [rnd(-0.3, 0.3), rnd(0.4, 0.9), rnd(-0.3, 0.3)], life: [0.25, 0.4], size: [0.05 * s, 0.09 * s], c0: WHITE, c1: col, glow: 2.2, fi: 0, fp: 1 });
+        }
+      });
+    }
     hands(c);
     flare(fx, _right, 0.9 * s, col, 0.15, 'soft', 2.2);
     fx.add.spawn({ tex: 'ring-02', at: _right, life: 0.15, size: 0.25 * s, size1: 1.1 * s, ease: 1, c0: WHITE, c1: col, glow: 2.0, fi: 0, fp: 1.2 });
@@ -166,12 +189,50 @@ function bodyPos(): [number, number, number] {
   return [b.position.x, b.position.y, b.position.z];
 }
 
+/** School of a skill for colour: the lockout school tag, else its damage type; physical and the rest are gold. */
+function skillSchool(def: SkillDef): string {
+  return lockoutSchool(def) ?? def.damage?.type ?? 'physical';
+}
+
 /**
  * Event wiring (CW-15): proc:gain -> proc_burst, proc:fade {consumed} -> proc_consume, skill:lockout -> lockout_flash.
+ * Own casts (WoW-style feedback): skill:cast -> school-coloured hand glow held for the cast time, and a major cooldown
+ * (m45 / m90 / m180) pops its name over the head once. skill:castInterrupted -> the glow ends.
  * Called once from VFX.subscribe(). Each handler is guarded so a bad payload cannot break the event bus.
  */
 export function subscribeWowFeedback(vfx: VFX): void {
   const ev = G.events;
+  let castGlow: VfxHandle | null = null;
+
+  ev.on('skill:cast', (e) => {
+    try {
+      const body = playerBody();
+      const pl = G.player;
+      if (!body || !pl || e.casterId !== pl.id) return;
+      const def = getSkill(e.skillId);
+      if (!def) return;
+      castGlow?.stop();
+      castGlow = null;
+      if (e.castTime > 0.15) {
+        const school = skillSchool(def);
+        const id = school === 'fire' ? 'cast_hands_fire' : school === 'frost' ? 'cast_hands_frost' : 'cast_hands_arcane';
+        const h = vfx.spawn(id, bodyPos(), { follow: body, duration: e.castTime, color: SCHOOL_COL[school] ?? PHYS_COL });
+        if (h.alive) castGlow = h;
+      }
+      if (isMajorDef(def)) {
+        vfx.damageNumber([pl.position.x, pl.position.y + pl.height * 1.35, pl.position.z], 0, 'normal', def.name, { ability: true });
+      }
+    } catch (err) {
+      console.warn('[vfx] cast feedback failed', err);
+    }
+  });
+
+  ev.on('skill:castInterrupted', (e) => {
+    if (G.player && e.casterId === G.player.id) {
+      castGlow?.stop();
+      castGlow = null;
+    }
+  });
 
   ev.on('proc:gain', (e) => {
     try {
