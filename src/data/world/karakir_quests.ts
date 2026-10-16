@@ -91,7 +91,7 @@ const SPECS: Spec[] = [
     objectives: [kill('kb_ciyan', 12, 'Kızıl Çıyan öldür')], items: [{ id: gemId('topaz', 2), count: 1 }],
     offer: 'Kervansaray\'ın güneyindeki çukurdan kızıl çıyanlar taşıyor. Develer bile yaklaşmıyor. Çukuru temizle.',
     progress: 'Kızıl Çıyan öldür (12).', done: 'Çukur sessiz. Develer rahat nefes aldı.' },
-  { id: 'sq_kk_c02_corak_kristalleri', name: 'Çorak Kristalleri', level: 35, region: 'r8', giver: 'npc_kv_gozcu', xpPct: 8, goldPerLevel: 9,
+  { id: 'sq_kk_c02_corak_kristalleri', name: 'Işık Tüccarının Siparişi', level: 35, region: 'r8', giver: 'npc_kv_gozcu', xpPct: 8, goldPerLevel: 9,
     objectives: [collectFrom('item_corak_kristali', 8, ['kb_iblis'], 'Çorak Kristali topla')], items: [{ id: 'buyulu_toz', count: 5 }],
     offer: 'Kızıl Çorak\'ın yaratıkları ölünce içlerinden sıcak kristaller düşüyor. Işık tüccarları iyi para ödüyor. Sekiz tane topla.',
     progress: 'Çorak Kristali topla (8).', done: 'Güzel parça! Kervan Başı\'na götürürüm.' },
