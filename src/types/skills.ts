@@ -213,6 +213,8 @@ export interface AimInfo {
   targetId: EntityId | null;        // soft/hard target
   /** GDD_V2 §A: friendly target for ally-targeted heals (smart heal resolver / F1-F5 / U). */
   allyId?: EntityId | null;
+  /** Auto-attack swing (CONTROLS_WOW §8): hits only `targetId`, never another enemy in the arc. */
+  auto?: boolean;
 }
 
 export interface ClassDef {

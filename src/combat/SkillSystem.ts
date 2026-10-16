@@ -442,7 +442,7 @@ export class SkillSystem {
     st.lastLmbCall = this.now;
     if (this.trySpecialLmb(p, st)) return true;
     if (st.cur) this.endAction(st, 'cancel', true);
-    st.lastAim = this.sanitizeAim(p, aim);
+    st.lastAim = this.sanitizeAim(p, { ...aim, auto: true });
     return this.startBasicStep(p, st, parent, steps, st.lastAim);
   }
 
@@ -1153,7 +1153,7 @@ export class SkillSystem {
     const l = Math.hypot(dx, dz);
     if (l < 1e-4) { dx = Math.sin(p.yaw); dz = Math.cos(p.yaw); } else { dx /= l; dz /= l; }
     const pt = aim.point ?? [p.position.x + dx * 3, 0, p.position.z + dz * 3];
-    return { point: [pt[0], pt[1] ?? 0, pt[2]], dir: [dx, 0, dz], targetId: aim.targetId ?? null, allyId: aim.allyId ?? null };
+    return { point: [pt[0], pt[1] ?? 0, pt[2]], dir: [dx, 0, dz], targetId: aim.targetId ?? null, allyId: aim.allyId ?? null, auto: aim.auto };
   }
 
   /** Up-to-date aim: provider (controller) > camera ray to ground > last aim passed in. */
@@ -1380,6 +1380,8 @@ export class SkillSystem {
         if (d <= reach + (melee ? 1.5 : 3) && (!melee || w.sameLevel(t, p.position.y))) return t;
       }
     }
+    // auto-attack swing (CONTROLS_WOW §8): the armed target or nothing. Never a different enemy from the cone.
+    if (aim.auto) return null;
     const cone = def.targeting === 'melee_arc' ? FEEL.meleeAssistCone : 70;
     const cosHalf = Math.cos(((cone / 2) * Math.PI) / 180);
     let best: Actor | null = null;

@@ -91,6 +91,17 @@ interface ActiveShape {
 }
 
 /** OWNER: combat module. */
+/** One pending enemy windup as the HUD reads it (HitShapes.pendingThreats). */
+export interface PendingThreat {
+  shape: TelegraphShape;
+  x: number; z: number;
+  dx: number; dz: number;
+  /** Seconds until it lands. */
+  remain: number;
+  sourceId: number | null;
+  name?: string;
+}
+
 export class HitShapes {
   private shapes = new Map<number, ActiveShape>();
   private nextId = 1;
@@ -103,6 +114,20 @@ export class HitShapes {
 
   get activeCount(): number {
     return this.shapes.size;
+  }
+
+  /**
+   * Enemy windups on the ground that will hit (telegraphed, not friendly, not yet landed). The threat arrow reads these
+   * to tell the player where the danger is and whether they stand in it. Read-only: nothing is changed.
+   */
+  pendingThreats(): PendingThreat[] {
+    const out: PendingThreat[] = [];
+    for (const a of this.shapes.values()) {
+      const s = a.spec;
+      if (a.state !== 'pending' || !s.telegraph || s.kind === 'friendly' || s.kind === 'safe' || s.projectile) continue;
+      out.push({ shape: s.shape, x: a.ox, z: a.oz, dx: a.dx, dz: a.dz, remain: Math.max(0, s.delay - a.t), sourceId: s.sourceId, name: s.abilityName });
+    }
+    return out;
   }
 
   /** HOST/offline only: create, add locally and broadcast to peers. Returns the id. */

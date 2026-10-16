@@ -32,6 +32,7 @@ import { TargetFrame } from './TargetFrame';
 import { ContextTracker } from './Tracker';
 import { FlaskRow } from './FlaskRow';
 import { ObjectiveArrow } from './ObjectiveArrow';
+import { ThreatArrow } from './ThreatArrow';
 import { QuestFeed } from './QuestFeed';
 import { adviceLine } from '../panels/game/guideEngine';
 import { TipCards } from './TipCards';
@@ -221,6 +222,9 @@ export function createHUD(ui: UI): HudApi {
   zTip.appendChild(tips.el);
   const arrow = add(new ObjectiveArrow(ui));
   root.appendChild(arrow.el);
+  // enemy windup direction (combat): "Kaç!" inside a danger shape, amber countdown when aimed elsewhere
+  const threat = add(new ThreatArrow());
+  root.appendChild(threat.el);
   const feed = new QuestFeed();
   root.appendChild(feed.el);
 

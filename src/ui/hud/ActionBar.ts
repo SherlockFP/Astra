@@ -114,6 +114,13 @@ function cdColor(sec: number): string {
   return sec < 3 ? '#ff4a3a' : '#ffffff';
 }
 
+/** Cooldown side for the sweep tint: a defensive or heal skill is blue or green, anything else offensive (red). */
+function cdKind(tags: readonly string[]): 'def' | 'heal' | 'off' {
+  if (tags.includes('defensive')) return 'def';
+  if (tags.includes('heal')) return 'heal';
+  return 'off';
+}
+
 /** Cooldown text: one decimal under 3 s (decimal comma), else the shared short format. */
 function cdText(sec: number): string {
   return sec < 3 ? sec.toFixed(1).replace('.', ',') : fmtCd(sec);
@@ -135,6 +142,7 @@ class Slot {
   private skillId: string | null = null;
   private def: SkillDef | null = null;
   private prevCd = 0;
+  private cdKindKey = '';
   private prevReveal: Reveal | null = null;
   private newUntil = 0;
   private potionCount = 0;
@@ -393,6 +401,14 @@ class Slot {
     const cdFrac = onCd ? Math.min(1, rem / total) : 0;
     setClass(this.el, 'oncd', lockedByCd);
     setClass(this.el, 'has-edge', lockedByCd && total > 2);
+    // readable cooldown kind: the sweep and ring take the skill's side (blue defensive, green heal, red offensive)
+    const kind = onCd && this.def && !this.spec.potion ? cdKind(this.def.tags) : '';
+    if (kind !== this.cdKindKey) {
+      setClass(this.el, 'cd-def', kind === 'def');
+      setClass(this.el, 'cd-heal', kind === 'heal');
+      setClass(this.el, 'cd-off', kind === 'off');
+      this.cdKindKey = kind;
+    }
     if (lockedByCd) {
       setText(this.cdEl, cdText(rem));
       setStyle(this.cdEl, 'color', cdColor(rem));

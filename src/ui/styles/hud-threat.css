@@ -1,0 +1,25 @@
+/* =====================================================================
+   hud-threat.css — enemy windup direction arrow (ThreatArrow). Centre cue under the crosshair.
+   Red = you stand in the danger shape (step out), amber = incoming, aimed elsewhere.
+   ===================================================================== */
+
+.hud .threat-arrow {
+  position: absolute; left: 50%; top: 58%; transform: translate(-50%, -50%);
+  display: none; flex-direction: column; align-items: center; gap: 4px;
+  pointer-events: none; z-index: 5;
+}
+.hud .threat-arrow-glyph {
+  width: 0; height: 0; line-height: 0; font-size: 0;
+  border-left: 14px solid transparent; border-right: 14px solid transparent; border-bottom: 26px solid var(--gold-2, #c9a24a);
+  transform-origin: 50% 70%;
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, .9));
+}
+.hud .threat-arrow-label {
+  font: 700 13px/1 var(--font-body); color: #fff; text-shadow: var(--sh-text, 0 1px 2px #000); white-space: nowrap;
+}
+.hud .threat-arrow.warn .threat-arrow-glyph { border-bottom-color: var(--gold-2, #c9a24a); }
+.hud .threat-arrow.danger .threat-arrow-glyph { border-bottom-color: var(--bad, #ff4c3c); animation: threat-pulse .5s ease-in-out infinite alternate; }
+.hud .threat-arrow.danger .threat-arrow-label { color: var(--bad, #ff4c3c); font-size: 16px; }
+
+@keyframes threat-pulse { from { opacity: .55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .hud .threat-arrow.danger .threat-arrow-glyph { animation: none; } }

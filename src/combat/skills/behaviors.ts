@@ -200,7 +200,10 @@ const meleeArc: Behavior = {
     swingVfx(c, range, arc, heavy);
     if (def.vfx?.cast && def.vfx.cast !== def.vfx.trail) sys.vfx(def.vfx.cast, [caster.position.x + c.dir[0] * 1.0, caster.position.y + 0.15, caster.position.z + c.dir[1] * 1.0], { dir: [c.dir[0], 0, c.dir[1]], scale: vfxScale(def.vfx.cast, range) });
     if (c.remote) return;
-    const targets = sys.enemiesInCone(caster, c.dir, range, arc);
+    // auto-attack: the armed target only (the swing used to sweep every enemy in the arc, so a pack got hit at random)
+    const targets: Enemy[] = c.aim.auto
+      ? (c.target && !c.target.isDead ? [c.target as Enemy] : [])
+      : sys.enemiesInCone(caster, c.dir, range, arc);
     const res = strikeMany(c, targets, def.params?.maxTargets ?? 99);
     // impact AoE around the strike point (finishers / chops)
     const ir = def.params?.impactRadius ?? 0;
