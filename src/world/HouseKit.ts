@@ -229,6 +229,7 @@ export class HouseKit {
       this.disposables.push(geo);
       const mesh = new THREE.InstancedMesh(geo, mats.body, items.length);
       place(mesh, items);
+      mesh.userData.cameraSolid = true; // the orbit camera collides with house bodies (TownScene townOccluders); glows are not solid
       this.root.add(mesh);
     }
     for (const [arch, items] of byGlow) {

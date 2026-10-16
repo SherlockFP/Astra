@@ -1209,6 +1209,7 @@ export class SkillSystem {
    * validity-only check used for queued presses (their timing is handled by skillWait).
    */
   private canUse(p: Player, st: ActorState, def: SkillDef, report: boolean, timed = true): boolean {
+    this.setFailSkill(def);
     const basic = !!def.tags.includes('basic');
     if (p.statuses.silenced && !basic) { if (report) this.fail('silenced'); return false; }
     if (this.schoolLocked(st, def)) { if (report) this.fail('lockout', Math.max(0, st.lockUntil - this.now)); return false; }
@@ -1480,6 +1481,7 @@ export class SkillSystem {
     };
     c.action = a;
     if (def.id === 'knight_shield_bash' && hasSp('set_holy_vanguard_4')) c.more = 3; // 200% DAHA FAZLA
+    this.setFailSkill(def);
     if (beh.begin && beh.begin(c) === false) return false;
 
     // pay up-front for movement / channel skills; everything else pays at the hit frame (dodge before = free)
@@ -2712,6 +2714,7 @@ export class SkillSystem {
       uninterruptible: !!o.uninterruptible, channel: null, ctx: c, beh, upper: false, ended: false,
     };
     c.action = act;
+    this.setFailSkill(def);
     if (beh.begin && beh.begin(c) === false) return false;
     st.cur = act;
     st.buffer = null;
@@ -2789,11 +2792,17 @@ export class SkillSystem {
   fail(reason: 'cooldown' | 'resource' | 'range' | 'target' | 'stunned' | 'casting' | 'silenced' | 'lockout' | 'moving' | 'facing' | 'los', remaining?: number): void {
     // the controller re-issues held keys every 0.05 s: only report on the press edge (and for non-key casts)
     if (this.quiet) return;
-    G.events.emit('skill:fail', remaining !== undefined ? { reason, remaining } : { reason });
+    const skill = this.failSkill || undefined;
+    G.events.emit('skill:fail', { reason, ...(remaining !== undefined ? { remaining } : {}), ...(skill ? { skill } : {}) });
   }
 
   /** Suppresses skill:fail while a held key is being re-issued. */
   private quiet = false;
+  /** Display name of the ability being checked or started (for the error line: "Kalkan Vuruşu henüz hazır değil"). */
+  private failSkill = '';
+  private setFailSkill(def: SkillDef): void {
+    this.failSkill = def.name.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  }
 
   costMult(p: Actor, def?: SkillDef): number {
     const m = 1 - Math.min(0.4, Math.max(0, softStat(p, 'costReductionPct')));

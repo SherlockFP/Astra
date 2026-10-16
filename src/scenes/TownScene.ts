@@ -64,7 +64,8 @@ function townOccluders(root: THREE.Object3D): THREE.Mesh[] {
   const out: THREE.Mesh[] = [];
   root.traverseVisible((o) => {
     const m = o as THREE.Mesh;
-    if (!m.isMesh || (!m.castShadow && !m.receiveShadow) || !m.geometry) return;
+    if (!m.isMesh || !m.geometry) return;
+    if (!m.castShadow && !m.receiveShadow && m.userData.cameraSolid !== true) return; // kit bodies are solid without shadows
     if (!m.geometry.boundingSphere) m.geometry.computeBoundingSphere();
     if (m.geometry.boundingSphere && m.geometry.boundingSphere.radius <= 100) out.push(m);
   });

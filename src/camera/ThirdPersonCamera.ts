@@ -100,6 +100,8 @@ const _ray = new THREE.Raycaster();
 const _ndc = new THREE.Vector2();
 const _occRay = new THREE.Raycaster();
 const _occDir = new THREE.Vector3();
+/** Pull mode: the near fade reaches this far (m) from the lens toward the pivot. */
+const NEAR_FADE_LEN = 3;
 const _cf = new THREE.Vector3();
 const _cp = new THREE.Vector3();
 const _cl = new THREE.Vector3();
@@ -230,6 +232,19 @@ export class ThirdPersonCamera {
   private lastWheelAt = -99;
   private unsubs: (() => void)[] = [];
   private readonly fader = new OccluderFader();
+  private nearSrc: THREE.Object3D[] | null = null;
+  private nearList: THREE.Object3D[] = [];
+  /** Plain opaque subset of `occluders` for the pull-mode near fade (cached per occluders array; multi-material or transparent meshes never fade). */
+  private nearFadeList(): THREE.Object3D[] {
+    if (this.nearSrc !== this.occluders) {
+      this.nearSrc = this.occluders;
+      this.nearList = (this.occluders ?? []).filter((o) => {
+        const mat = (o as THREE.Mesh).material as THREE.Material | THREE.Material[] | undefined;
+        return !!mat && !Array.isArray(mat) && !mat.transparent;
+      });
+    }
+    return this.nearList;
+  }
   /** The character's own parts the lens is inside are hidden (BodyClearance.ts). */
   private readonly bodyHider = new NearBodyHider();
   /** Clean (shake-free) pose used for aiming. */
@@ -1040,6 +1055,19 @@ export class ThirdPersonCamera {
     if (!pull && fadeOn) {
       if (instant) this.fader.clear();
       else this.fader.update(dt, this.occluders, this.pivot, _pos);
+    } else if (pull && fadeOn && this.occluders && this.occluders.length) {
+      // pull mode (Town): the scenery just in front of the lens fades instead of covering the view (the camera stops behind it
+      // anyway, so a wall at arm's length never fills the screen). Probe: lens -> 3 m toward the pivot, plain opaque meshes only.
+      if (instant) this.fader.clear();
+      else {
+        _occDir.subVectors(this.pivot, _pos);
+        const dl = _occDir.length();
+        if (dl > 1e-3) {
+          _occDir.multiplyScalar(NEAR_FADE_LEN / dl);
+          _v.copy(_pos).add(_occDir);
+          this.fader.update(dt, this.nearFadeList(), _pos, _v);
+        }
+      }
     } else if (this.fader.activeCount) this.fader.clear();
 
     // impact punch (spring toward the pivot)

@@ -39,8 +39,9 @@ const MAX_PLATES = 40;
 
 /** Plates keep this many px inside the viewport (clamped instead of clipped at the edge). */
 const EDGE = 8;
-/** Declutter: a plate may be lifted this many steps (one plate height + gap each) to clear the plates in front of it. */
-const MAX_NUDGE_STEPS = 3;
+/** Declutter: a plate may be lifted this many steps (one plate height + gap each) to clear the plates in front of it. Enemy
+ *  packs stack as far as the NPC names do (WorldLabels NPC_MAX_NUDGE_STEPS), so a fight's plates fan up instead of overlapping. */
+const MAX_NUDGE_STEPS = 6;
 /** HUD panels no plate is drawn under: the quest tracker, the objective tracker and the minimap (screen rects, re-read this often in ms). */
 const HUD_SEL = '.qt, .trk, .mm';
 const HUD_RECT_EVERY = 150;

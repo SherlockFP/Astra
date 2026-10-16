@@ -19,6 +19,13 @@ const REARM_M = 25;
 const LIFT_M = 2.8;
 /** Target lookup period (s): recommend() is the costly part, so the target is refreshed at 2 Hz (§4.4: ≤ 10 Hz). */
 const LOOKUP_S = 0.5;
+/** HUD frames the medallion must not cover: player frame, action bar, tracker, quest log, minimap, orbs, XP strip. */
+const HUD_FRAME_SEL = '.qt, .trk, .mm, .pf, .actionbar, .xpbar, .orb';
+const HUD_RECT_MS = 150;
+/** The medallion box relative to its anchor (px): the diamond plus the distance and name captions under it. */
+const MEDAL_BOX = { x0: -60, x1: 60, y0: -22, y1: 56 };
+/** Edge-clamped medallion steps up by this much (px) when it would sit on a HUD frame. */
+const HUD_LIFT_PX = 44;
 
 const KIND_CLASS: Record<GuideTarget['kind'], string> = { talk: 'oa-gold', turnin: 'oa-gold', kill: 'oa-blue', explore: 'oa-blue', dungeon: 'oa-violet' };
 const KIND_ICON: Partial<Record<GuideTarget['kind'], string>> = { kill: 'skill-sword-slash', explore: 'ui-map', dungeon: 'ui-dungeon' };
@@ -43,6 +50,8 @@ export class ObjectiveArrow implements HudWidget {
   private shownKey = '';
   private kindCls = '';
   private readonly out = { x: 0, y: 0 };
+  private hud: { x0: number; y0: number; x1: number; y1: number }[] = [];
+  private hudAt = -1e9;
 
   constructor(private ui: UI) {
     this.el = div('objective-arrow');
@@ -90,7 +99,9 @@ export class ObjectiveArrow implements HudWidget {
     const ok = ctx.ui.projectWorld(t.x, p.position.y + LIFT_M, t.z, this.out);
     const W = ctx.ui.viewW;
     const H = ctx.ui.viewH;
-    const onScreen = ok && this.out.x > EDGE_INSET && this.out.x < W - EDGE_INSET && this.out.y > EDGE_INSET && this.out.y < H - EDGE_INSET;
+    // a medallion over a HUD frame (player frame, action bar, minimap...) is not drawn there: it moves to the edge ellipse
+    let onScreen = ok && this.out.x > EDGE_INSET && this.out.x < W - EDGE_INSET && this.out.y > EDGE_INSET && this.out.y < H - EDGE_INSET;
+    if (onScreen && this.hitsHud(this.out.x, this.out.y)) onScreen = false;
     let x: number;
     let y: number;
     let angleDeg = 0;
@@ -125,6 +136,8 @@ export class ObjectiveArrow implements HudWidget {
       y = H / 2 + Math.sin(a) * ry;
       angleDeg = (a * 180) / Math.PI;
       setClass(this.el, 'off', true);
+      // the clamped point can still sit on a HUD frame at the bottom of the screen: lift it above that frame
+      for (let s = 1; s <= 3 && this.hitsHud(x, y); s++) y = Math.max(EDGE_INSET, y - HUD_LIFT_PX);
     }
     setStyle(this.el, 'transform', `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`);
     setStyle(this.el, '--a', `${angleDeg.toFixed(1)}deg`);
@@ -140,6 +153,28 @@ export class ObjectiveArrow implements HudWidget {
     this.target = null;
     this.acc = LOOKUP_S;
     this.hide();
+  }
+
+  /** True when the medallion + distance box at (x, y) (viewport px) overlaps a HUD frame. Frames are re-read every HUD_RECT_MS. */
+  private hitsHud(x: number, y: number): boolean {
+    const now = performance.now();
+    if (now - this.hudAt > HUD_RECT_MS) {
+      this.hudAt = now;
+      const pr = this.el.parentElement?.getBoundingClientRect();
+      const ox = pr?.left ?? 0;
+      const oy = pr?.top ?? 0;
+      this.hud.length = 0;
+      document.querySelectorAll<HTMLElement>(HUD_FRAME_SEL).forEach((el) => {
+        if (this.el.contains(el)) return;
+        const r = el.getBoundingClientRect();
+        if (r.width < 1 || r.height < 1) return;
+        this.hud.push({ x0: r.left - ox, y0: r.top - oy, x1: r.right - ox, y1: r.bottom - oy });
+      });
+    }
+    for (const b of this.hud) {
+      if (x + MEDAL_BOX.x1 > b.x0 && x + MEDAL_BOX.x0 < b.x1 && y + MEDAL_BOX.y1 > b.y0 && y + MEDAL_BOX.y0 < b.y1) return true;
+    }
+    return false;
   }
 
   private lookup(): GuideTarget | null {

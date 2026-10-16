@@ -235,6 +235,7 @@ export class MagitechKit {
       body.instanceMatrix.needsUpdate = true;
       body.castShadow = false;
       body.receiveShadow = false;
+      body.userData.cameraSolid = true; // the orbit camera collides with the bodies (TownScene townOccluders), not the glows
       this.root.add(body);
       this.bodies.set(part, body);
       if (glow) {
