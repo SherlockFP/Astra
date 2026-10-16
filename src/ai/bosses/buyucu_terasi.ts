@@ -58,7 +58,7 @@ const arkanotronAbilities: Record<string, BossHandler> = {
       const e = c.e;
       const t = tankOf(c);
       const ang = t ? angleTo(e.position.x, e.position.z, t.position.x, t.position.z) : 0;
-      wedge(c, e.position.x, e.position.z, ang, 5, 180, 0.95, 1.2, { name: 'Dönen Çevirim' });
+      wedge(c, e.position.x, e.position.z, ang, 5, 180, 1.0, 1.2, { name: 'Dönen Çevirim' });
       c.schedule(1.4, () => wedge(c, e.position.x, e.position.z, ang + Math.PI, 5, 180, 0.45, 1.2, { name: 'Dönen Çevirim' }), 'arkanotron_spin');
       c.schedule(1.9, () => ring(c, e.position.x, e.position.z, 0, 6.5, 0.54 + 0.45, 2.0, { name: 'Dönen Çevirim', knockback: 6 }), 'arkanotron_spin');
     },
@@ -199,7 +199,7 @@ const seranelAbilities: Record<string, BossHandler> = {
       const t = nonTankOf(c);
       if (!t) return;
       const e = c.e;
-      dashLine(c, e.position.x, e.position.z, angleTo(e.position.x, e.position.z, t.position.x, t.position.z), 12, 2.2, 0.9, 18, 1.8,
+      dashLine(c, e.position.x, e.position.z, angleTo(e.position.x, e.position.z, t.position.x, t.position.z), 12, 2.2, 1.0, 18, 1.8,
         { name: 'Atılış' });
     },
   },
@@ -323,7 +323,7 @@ const gemAbilities: Record<string, BossHandler> = {
           if (k.isDead) continue;
           const tp = tankOf(c);
           const ang = tp ? angleTo(k.position.x, k.position.z, tp.position.x, tp.position.z) : 0;
-          wedge(c, k.position.x, k.position.z, ang, 6, 90, 0.7, 0.6, { name: 'Yankı Kamçısı' });
+          wedge(c, k.position.x, k.position.z, ang, 6, 90, 1.0, 0.6, { name: 'Yankı Kamçısı' });
         }
       }, 'gemellus_echo');
     },
@@ -344,7 +344,7 @@ const gemAbilities: Record<string, BossHandler> = {
       if (!p || !clone) return;
       tether(c, p, clone, {
         dur: 12, touchR: 12,
-        onExpire: () => circle(c, p.position.x, p.position.z, 1.5, 0.05, 3.5, { name: 'Sinirsel Patlama' }),
+        onExpire: () => circle(c, p.position.x, p.position.z, 1.5, 1.2, 3.5, { name: 'Sinirsel Patlama' }),
       });
     },
   },
@@ -404,7 +404,7 @@ const degAbilities: Record<string, BossHandler> = {
   degentrius_waves: {
     start(c) {
       const e = c.e;
-      ring(c, e.position.x, e.position.z, 5, 8, 0.9, 1.6, { name: 'Üç Dalga' });
+      ring(c, e.position.x, e.position.z, 5, 8, 1.0, 1.6, { name: 'Üç Dalga' });
       ring(c, e.position.x, e.position.z, 11, 14, 1.4, 1.6, { name: 'Üç Dalga' });
       ring(c, e.position.x, e.position.z, 17, 20, 1.9, 1.6, { name: 'Üç Dalga' });
     },
@@ -416,7 +416,7 @@ const degAbilities: Record<string, BossHandler> = {
       picks.forEach((p, i) => {
         c.schedule(6 + 3 * i, () => {
           const x = p.position.x, z = p.position.z;
-          for (let k = 0; k < 4; k++) beam(c, x, z, (k * Math.PI) / 2, 24, 1.6, 0.8, 1.4, { statuses: [{ status: 'slow', duration: 5, magnitude: 0.7 }], name: 'Yutan Entropi' });
+          for (let k = 0; k < 4; k++) beam(c, x, z, (k * Math.PI) / 2, 24, 1.6, 1.0, 1.4, { statuses: [{ status: 'slow', duration: 5, magnitude: 0.7 }], name: 'Yutan Entropi' });
         }, 'degentrius_entropy');
       });
     },

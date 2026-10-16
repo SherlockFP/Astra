@@ -107,8 +107,8 @@ const ekelon: BossScript = {
       start(c) {
         const e = c.e;
         const ang = e.yaw;
-        wedge(c, e.position.x, e.position.z, ang, 6, 90, 0.9, 1.0, { name: 'Haç Kılıcı' });
-        wedge(c, e.position.x, e.position.z, ang + Math.PI / 2, 6, 90, 0.9, 1.0, { name: 'Haç Kılıcı' });
+        wedge(c, e.position.x, e.position.z, ang, 6, 90, 1.1, 1.0, { name: 'Haç Kılıcı' });
+        wedge(c, e.position.x, e.position.z, ang + Math.PI / 2, 6, 90, 1.1, 1.0, { name: 'Haç Kılıcı' });
       },
     },
     ekelon_charge: {

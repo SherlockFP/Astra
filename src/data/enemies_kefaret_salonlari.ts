@@ -168,13 +168,17 @@ boss({
   visual: { eyeEmissive: 0xc8382f, runRef: 4 },
   basic: cone('halkor_slam', 'Taş Yumruğu', 4.5, 90, 2.0, 1.0, 'Attack', 0.5, { windup: 0.9 }),
   abilities: [
+    // tank buster: a telegraphed stone cone on the tank (not parryable), sunder stacks
+    cone('halkor_crush', 'Günah Ezişi', 6, 80, 12, 4.0, 'Attack', 0.7, { initialCooldown: 8, windup: 1.4, telegraph: true, tankBuster: true, parryable: false, statuses: [{ status: 'sunder', duration: 10 }], sfx: 'ground_slam' }),
+    // raid beat with a 2.5 s cast bar: a r 10 rockfall on the rotunda; the ring outside it is the safe spot
+    aoe('halkor_rockfall', 'Taş Çöküşü', 'self_aoe', 10, 10, 16, 2.5, 0.9, 'physical', 'Taunt', 2.5, { initialCooldown: 10, castTime: 2.5, sfx: 'boss_cast' }),
     custom('halkor_quake', 'Günah Depremi', 14, 6, 1.2, 'Attack', { params: { impact: 0.8 } }),
     custom('halkor_beams', 'Kızıl Işın', 16, 9, 1.2, 'Spellcast_Raise', { params: { impact: 0.6 } }),
     custom('halkor_rage', 'Mezar Öfkesi', 999, 9999, 1.5, 'Taunt', { sfx: 'boss_roar' }),
   ],
   phases: [
-    bp('p1', 1.01, ['halkor_quake', 'halkor_beams']),
-    bp('p2', 0.5, ['halkor_quake', 'halkor_beams'], { yell: 'Taşlar ağlıyor!', ability: 'halkor_rage' }),
+    bp('p1', 1.01, ['halkor_crush', 'halkor_rockfall', 'halkor_quake', 'halkor_beams']),
+    bp('p2', 0.5, ['halkor_crush', 'halkor_rockfall', 'halkor_quake', 'halkor_beams'], { yell: 'Taşlar ağlıyor!', ability: 'halkor_rage' }),
   ],
   intro: 'Günahlarınız taşa kazındı. Kalkın, ağırlığınızı taşıyın.', death: 'Taş... çatlıyor...',
   arena: { cx: 128, cz: 132, w: 64, h: 56, homeX: 128, homeZ: 132 } });
@@ -185,13 +189,17 @@ boss({
   anims: { ...A_KAYKIT, death: 'Death' }, resist: R_GOLEM, visual: { runRef: 5 },
   basic: cone('ekelon_slash', 'Gökyüzü Kılıcı', 4.0, 110, 2.0, 1.0, '2H_Melee_Attack_Slice_Horizontal', 0.5, { windup: 0.9 }),
   abilities: [
+    // tank buster: a telegraphed sky cleave on the tank (not parryable), sunder stacks
+    cone('ekelon_sky_cleave', 'Gökyüzü Yarması', 5, 90, 12, 4.0, '2H_Melee_Attack_Slice', 0.7, { initialCooldown: 7, windup: 1.4, telegraph: true, tankBuster: true, parryable: false, statuses: [{ status: 'sunder', duration: 10 }] }),
+    // raid beat with a 2.5 s cast bar: a r 12 thunder burst around the boss (the far side of the 96 m terrace is the safe spot)
+    aoe('ekelon_thunder', 'Gök Gürültüsü', 'self_aoe', 12, 12, 16, 2.5, 0.9, 'lightning', '2H_Melee_Attack_Slice', 2.5, { initialCooldown: 12, castTime: 2.5, sfx: 'boss_cast' }),
     custom('ekelon_leap', 'Taş Parçalayan Sıçrayış', 14, 8, 1.2, 'Jump', { params: { impact: 1.0, radius: 6 } }),
     custom('ekelon_cross', 'Haç Kılıcı', 12, 6, 1.0, '2H_Melee_Attack_Slice', { params: { impact: 0.9 } }),
     custom('ekelon_charge', 'Ölüm Hücumu', 14, 12, 1.1, 'Run', { params: { length: 22, width: 4, speed: 16, impact: 1.0 } }),
   ],
   phases: [
-    bp('p1', 1.01, ['ekelon_leap', 'ekelon_cross']),
-    bp('p2', 0.5, ['ekelon_leap', 'ekelon_cross', 'ekelon_charge'], { yell: 'Gözcü yükseliyor!' }),
+    bp('p1', 1.01, ['ekelon_sky_cleave', 'ekelon_thunder', 'ekelon_leap', 'ekelon_cross']),
+    bp('p2', 0.5, ['ekelon_sky_cleave', 'ekelon_thunder', 'ekelon_leap', 'ekelon_cross', 'ekelon_charge'], { yell: 'Gözcü yükseliyor!' }),
   ],
   intro: 'Terasta yalnızca yükseklik vardır. Düşmeyi bekle.', death: 'Gökyüzü... kapanıyor...',
   arena: { cx: 48, cz: 24, w: 96, h: 48, homeX: 48, homeZ: 18 } });
@@ -203,13 +211,17 @@ boss({
   visual: { glow: 0xc9a24a, eyeEmissive: 0xc9a24a, runRef: 6 },
   basic: proj('alyez_bolt', 'Hüküm Oku', 16, 40, 2.4, 0.7, 1.0, 'holy', 'shadow_projectile', 'Spellcast_Shoot', 0.3),
   abilities: [
+    // tank buster: a telegraphed holy line through the tank (not parryable), sunder stacks
+    line('alyez_verdict', 'Yargı Kılıcı', 14, 2.5, 12, 1.6, 3.5, 'holy', 'Spellcast_Raise', 1.2, { initialCooldown: 8, tankBuster: true, parryable: false, statuses: [{ status: 'sunder', duration: 10 }], sfx: 'boss_cast' }),
+    // raid beat with a 2.5 s cast bar: a r 12 bell toll over the whole chapel; the far corners are the safe spots
+    aoe('alyez_bell', 'Kutsal Çan', 'self_aoe', 12, 12, 16, 2.5, 0.9, 'holy', 'Spellcast_Summon', 2.5, { initialCooldown: 10, castTime: 2.5, sfx: 'boss_cast' }),
     custom('alyez_judgment', 'Hüküm Işığı', 12, 6, 1.2, 'Spellcast_Raise', { castTime: 2.0, interruptible: true, kick: 2, params: { impact: 0.9 } }),
     custom('alyez_seal', 'Mühür', 16, 10, 1.2, 'Spellcast_Summon', { params: { impact: 0.7, radius: 6 } }),
     custom('alyez_bind', 'Zincir Kilidi', 14, 12, 1.0, 'Spellcast_Raise', { params: { impact: 0.4 } }),
   ],
   phases: [
-    bp('p1', 1.01, ['alyez_judgment', 'alyez_seal']),
-    bp('p2', 0.5, ['alyez_judgment', 'alyez_seal', 'alyez_bind'], { yell: 'Kefaret kabul edildi!' }),
+    bp('p1', 1.01, ['alyez_verdict', 'alyez_bell', 'alyez_judgment', 'alyez_seal']),
+    bp('p2', 0.5, ['alyez_verdict', 'alyez_bell', 'alyez_judgment', 'alyez_seal', 'alyez_bind'], { yell: 'Kefaret kabul edildi!' }),
   ],
   intro: 'Kilisenin ortasında hüküm verilecek. Kimse kaçamaz.', death: 'Hüküm... ben... kabul...',
   arena: { cx: 160, cz: 28, w: 80, h: 56, homeX: 170, homeZ: 28 } });
@@ -221,13 +233,17 @@ boss({
   visual: { eyeEmissive: 0xc8382f, runRef: 5 },
   basic: proj('velkaan_bolt', 'Kibir Oku', 18, 40, 2.4, 0.7, 1.0, 'shadow', 'shadow_projectile', 'Spellcast_Shoot', 0.3),
   abilities: [
+    // tank buster: a telegraphed shadow staff line through the tank (not parryable), sunder stacks
+    line('velkaan_scepter', 'Asa Yarması', 12, 2.5, 12, 1.5, 3.5, 'shadow', 'Spellcast_Shoot', 1.2, { initialCooldown: 8, tankBuster: true, parryable: false, statuses: [{ status: 'sunder', duration: 10 }], sfx: 'shadow_cast' }),
+    // raid beat with a 2.5 s cast bar: a r 13 majesty wave on the whole hall; the outer edge is the safe spot
+    aoe('velkaan_wrath', 'Haşmet Dalgası', 'self_aoe', 13, 13, 16, 2.5, 0.9, 'shadow', 'Spellcast_Long', 2.5, { initialCooldown: 12, castTime: 2.5, sfx: 'boss_cast' }),
     custom('velkaan_harvest', 'Hasat Halkası', 14, 7, 1.2, 'Spellcast_Raise', { params: { impact: 0.9, radius: 5 } }),
     custom('velkaan_statues', 'Dört Heykel', 16, 10, 1.2, 'Spellcast_Long', { params: { impact: 0.7 } }),
     custom('velkaan_pride', 'Kibir Yükselişi', 999, 9999, 1.5, 'Taunt', { sfx: 'boss_roar' }),
   ],
   phases: [
-    bp('p1', 1.01, ['velkaan_harvest', 'velkaan_statues']),
-    bp('p2', 0.5, ['velkaan_harvest', 'velkaan_statues'], { yell: 'Kibrim son bulmaz!', ability: 'velkaan_pride' }),
+    bp('p1', 1.01, ['velkaan_scepter', 'velkaan_wrath', 'velkaan_harvest', 'velkaan_statues']),
+    bp('p2', 0.5, ['velkaan_scepter', 'velkaan_wrath', 'velkaan_harvest', 'velkaan_statues'], { yell: 'Kibrim son bulmaz!', ability: 'velkaan_pride' }),
   ],
   intro: 'Hasat başladı. Kibrinizin bedelini ödeyeceksiniz.', death: 'Kibir... kırıldı...',
   arena: { cx: 224, cz: 120, w: 64, h: 64, homeX: 224, homeZ: 120 } });
