@@ -203,10 +203,9 @@ export class ExitPortal extends InteractableProp {
 
   interact(_player: Player): void {
     if (this.used) return;
-    // zone pass: the other zone's level gate (Ayaz Dağları asks for 45)
+    // zone pass: open to everyone like a WoW zone border; under the other zone's level (Ayaz Dağları 45) it only warns
     if (this.passLevel > 0 && (G.character?.level ?? 1) < this.passLevel) {
-      G.ui.toast(`${this.passName ?? 'Bu geçit'}: seviye ${this.passLevel} gerekli.`, 'info');
-      return;
+      G.ui.toast(`Dikkat: ${this.passName ?? 'Bu geçit'} seviye ${this.passLevel} bölgesine açılıyor. Yaratıklar senden çok güçlü.`, 'info');
     }
     this.used = true;
     G.audio.play('portal_enter');

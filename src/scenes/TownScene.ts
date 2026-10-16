@@ -433,10 +433,7 @@ export class TownScene implements GameScene {
   private exitLock(to: string): string | null {
     const ch = G.character;
     if (!ch) return 'Karakter yok.';
-    if (to === 'karakir_bozkiri') {
-      const questDone = ch.save.flags['q.mq_19_kuzgunkaleye_donus'] === 'done';
-      if (!questDone && ch.level < 30) return 'Seviye 30 gerekli: Doğu Kapısı mühürlü (Kuzgunkale\'ye dönüş görevini bitirince de açılır).';
-    }
+    // Doğu Kapısı (Karakır, L30) is open to everyone like a WoW zone border; takeExit warns an under-levelled player instead
     // WP-07: Kızıl Sınır (PvP) needs level 35; the zone runtime sends an under-levelled party member back
     if (to === PVP_ZONE_ID && ch.level < PVP_MIN_LEVEL) return `Seviye ${PVP_MIN_LEVEL} gerekli: Kızıl Sınır'a yalnızca kıdemli savaşçılar girebilir.`;
     if (!getDungeon(to)) return 'Bu kapı henüz açılmadı.';
@@ -461,6 +458,7 @@ export class TownScene implements GameScene {
     const [lo, hi] = def.levelRange;
     const lvl = ch.level;
     if (lvl > hi + 6) G.ui.toast(`${def.name}: buradaki yaratıklar sana göre çok zayıf (Sv. ${lo}-${hi}).`, 'info');
+    else if (lvl < lo - 2) G.ui.toast(`Dikkat: ${def.name} tehlikeli (Sv. ${lo}-${hi}). Buradaki yaratıklar senden çok güçlü.`, 'info');
     this.exiting = true;
     G.ui.toast(`${def.name} bölgesine çıkılıyor...`, 'info');
     G.audio.play('portal_enter', { volume: 0.5 });
