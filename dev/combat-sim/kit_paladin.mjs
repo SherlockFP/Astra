@@ -789,14 +789,15 @@ function runApl(spec, seconds, { allies = 0, chainsPerMin = Infinity } = {}) {
 {
   const { CharacterState } = await H.imp('systems/CharacterState.ts');
   const bar1 = CharacterState.defaultBar('paladin', 1);
-  ok('pmpa.l1 creation bar at level 1 = lmb chain, rmb Yargı, q Haçlı Darbesi, e Işığın Sözü', JSON.stringify(bar1) === JSON.stringify({
-    lmb: 'paladin_basic', rmb: 'paladin_judgement', q: 'paladin_crusader_strike', e: 'paladin_word_of_glory', s1: 'paladin_rebuke', s2: 'paladin_divine_steed',
+  // L1 slots follow the barLayout rule (first builder on 1, first spender on 2); Rebuke is an L2 kit row, so the L1 bar holds four skills (openingKit rule).
+  ok('pmpa.l1 creation bar at level 1 = lmb chain, rmb Yargı, e Haçlı Darbesi, q Işığın Sözü, s2 İlahi Binek', JSON.stringify(bar1) === JSON.stringify({
+    lmb: 'paladin_basic', rmb: 'paladin_judgement', e: 'paladin_crusader_strike', q: 'paladin_word_of_glory', s2: 'paladin_divine_steed',
   }), JSON.stringify(bar1));
   const bar10 = CharacterState.defaultBar('paladin', 10);
-  ok('pmpa.l1 level-10 bar adds Azarlama s1, İlahi Binek s2 (no slot clash), İntikamcı Kalkan s3, Kanatlar m90',
-    bar10.s1 === 'paladin_rebuke' && bar10.s2 === 'paladin_divine_steed' && bar10.s3 === 'paladin_avengers_shield' && bar10.m90 === 'paladin_avenging_wrath' && !bar10.m180, JSON.stringify(bar10));
+  ok('pmpa.l1 level-10 bar adds Azarlama s3, İntikamcı Kalkan r, Kutsal Zemin s1, Kanatlar m90 (layout slots)',
+    bar10.s3 === 'paladin_rebuke' && bar10.s2 === 'paladin_divine_steed' && bar10.r === 'paladin_avengers_shield' && bar10.s1 === 'paladin_consecration' && bar10.m90 === 'paladin_avenging_wrath' && !bar10.m180, JSON.stringify(bar10));
   const bar60 = CharacterState.defaultBar('paladin', 60);
-  ok('pmpa.l1 level-60 bar has 8 distinct class skills + lmb', new Set(Object.values(bar60)).size === 9 && bar60.s2 === 'paladin_divine_steed' && bar60.m180 === 'paladin_divine_shield', JSON.stringify(bar60));
+  ok('pmpa.l1 level-60 bar has 8 class skills + lmb + the 2 majors (m90, m180)', new Set(Object.values(bar60)).size === 11 && bar60.s2 === 'paladin_divine_steed' && bar60.m180 === 'paladin_divine_shield', JSON.stringify(bar60));
   ok('pmpa.l1 every skill of the L1 bar unlocks at level 1', Object.values(bar1).every((id) => K(id).unlockLevel <= 1));
   const items = await H.imp('data/itemBases.ts');
   ok('pmpa.l1 start gear exists (mace, shield, plate, sword) and a paladin may equip it; a mage may not take the mace',
@@ -827,15 +828,15 @@ function runApl(spec, seconds, { allies = 0, chainsPerMin = Infinity } = {}) {
   ok('pmpa.l1 rmb: Yargı hits, applies judged, pays 4 faith, +1 Kutsal Güç', fire('rmb') === true && hitBy(/^paladin_judgement$/).length === 1 && foe.statuses.has('judged')
     && G.skills.pipCount(p, 'holypower') >= 1 && p.resource < f0, `hits=${hitBy(/^paladin_judgement$/).length} pips=${G.skills.pipCount(p, 'holypower')} fail=${failed()}`);
   G.skills.resetPips(p);
-  ok('pmpa.l1 q: Haçlı Darbesi hits and gives +1 Kutsal Güç', fire('q') === true && hitBy(/^paladin_crusader_strike$/).length === 1 && G.skills.pipCount(p, 'holypower') === 1, `hits=${hitBy(/^paladin_crusader_strike$/).length} pips=${G.skills.pipCount(p, 'holypower')} fail=${failed()}`);
+  ok('pmpa.l1 e: Haçlı Darbesi hits and gives +1 Kutsal Güç', fire('e') === true && hitBy(/^paladin_crusader_strike$/).length === 1 && G.skills.pipCount(p, 'holypower') === 1, `hits=${hitBy(/^paladin_crusader_strike$/).length} pips=${G.skills.pipCount(p, 'holypower')} fail=${failed()}`);
   G.skills.addPip(p, 'holypower', 3);
   p.hp = 400;
   spy.log.length = 0;
-  const wogOk = fire('e');
-  ok('pmpa.l1 e: Işığın Sözü (no ally) heals the paladin itself, costs 3 Kutsal Güç', wogOk === true && spy.log.some((h) => h.tgt === p) && p.hp > 400 && G.skills.pipCount(p, 'holypower') === 1, `ok=${wogOk} heals=${spy.log.length} hp=${p.hp} pips=${G.skills.pipCount(p, 'holypower')} fail=${failed()}`);
+  const wogOk = fire('q');
+  ok('pmpa.l1 q: Işığın Sözü (no ally) heals the paladin itself, costs 3 Kutsal Güç', wogOk === true && spy.log.some((h) => h.tgt === p) && p.hp > 400 && G.skills.pipCount(p, 'holypower') === 1, `ok=${wogOk} heals=${spy.log.length} hp=${p.hp} pips=${G.skills.pipCount(p, 'holypower')} fail=${failed()}`);
   H.stepSec(2);
   G.skills.resetPips(p);
-  ok('pmpa.l1 Işığın Sözü with fewer than 3 Kutsal Güç fails unpaid', fire('e') === false && p.hp > 0);
+  ok('pmpa.l1 Işığın Sözü with fewer than 3 Kutsal Güç fails unpaid', fire('q') === false && p.hp > 0);
   spy.stop();
   ok('pmpa.l1 the basic chain is a melee_arc chain with an auto-attack-capable melee camera profile', K('paladin_basic_1').targeting === 'melee_arc' && CLASSES.paladin.cameraProfile === 'melee' && CLASSES.paladin.autoAttack === undefined);
 }

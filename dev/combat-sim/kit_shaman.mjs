@@ -58,7 +58,7 @@ ok('kit.shaman.ids ClassDef.skills are the six class skills', (CLASSES.shaman?.s
   ok('kit.shaman.l1 lmb is the Şimşek basic', bar1.lmb === 'shaman_basic', JSON.stringify(bar1));
   const usable = Object.values(bar1).filter((id) => id !== 'shaman_basic' && SKILLS[id]?.unlockLevel <= 1);
   ok('kit.shaman.l1 at least 3 usable skills at unlock 1', usable.length >= 3, usable.join(','));
-  ok('kit.shaman.l1 bar is rmb lightning bolt, q ghost wolf, s4 wind shear', bar1.rmb === 'shaman_lightning_bolt' && bar1.q === 'shaman_ghost_wolf' && bar1.s4 === 'shaman_wind_shear', JSON.stringify(bar1));
+  ok('kit.shaman.l1 bar is rmb lightning bolt, s2 ghost wolf, s3 wind shear (barLayout rule)', bar1.rmb === 'shaman_lightning_bolt' && bar1.s2 === 'shaman_ghost_wolf' && bar1.s3 === 'shaman_wind_shear', JSON.stringify(bar1));
   ok('kit.shaman.l1 the shaman has its basic resolved', !!SKILLS.shaman_basic && CLASSES.shaman.basicAttack === 'shaman_basic');
 }
 

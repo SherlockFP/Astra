@@ -59,7 +59,7 @@ ok('kit.druid.ids secondary pip is Astral Güç (max 100)', CLASSES.druid?.secon
   ok('kit.druid.l1 lmb is the human chain', bar1.lmb === 'druid_basic', JSON.stringify(bar1));
   const usable = Object.values(bar1).filter((id) => id !== 'druid_basic' && SKILLS[id]?.unlockLevel <= 1);
   ok('kit.druid.l1 at least 3 usable skills at unlock 1', usable.length >= 3, usable.join(','));
-  ok('kit.druid.l1 bar is wrath, moonfire, rejuvenation, cat form', bar1.rmb === 'druid_wrath' && bar1.q === 'druid_moonfire' && bar1.e === 'druid_rejuvenation' && bar1.s1 === 'druid_cat_form', JSON.stringify(bar1));
+  ok('kit.druid.l1 bar is wrath rmb, rejuvenation q, moonfire e, cat form s2 (barLayout rule)', bar1.rmb === 'druid_wrath' && bar1.q === 'druid_rejuvenation' && bar1.e === 'druid_moonfire' && bar1.s2 === 'druid_cat_form', JSON.stringify(bar1));
   ok('kit.druid.l1 the chains have steps', ['druid_basic', 'druid_cat_basic', 'druid_bear_basic'].every((id) => SKILLS[`${id}_1`] && SKILLS[`${id}_3`] && SKILLS[id].params.steps === 3));
 }
 
@@ -142,11 +142,11 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   p.resource = 77;
   ok('kit.druid.forms L1 starts in caster form on mana', Forms.formOf(p) === null && p.resourceType === 'mana');
   ok('kit.druid.forms L1 lmb is the human chain', G.skills.getSlotSkill(p, 'lmb') === 'druid_basic');
-  cast(p, 's1', foe, 0.8);
+  cast(p, 's2', foe, 0.8);
   ok('kit.druid.forms Kedi Biçimi button enters form_cat', p.statuses.has('form_cat') && Forms.formOf(p) === 'cat', `form=${Forms.formOf(p)}`);
   ok('kit.druid.forms cat uses Energy (max 100, start 50), mana is stashed', p.resourceType === 'energy' && p.maxResource === 100 && p.resource >= 48 && p.resource <= 62, `${p.resourceType} ${p.resource.toFixed(1)}/${p.maxResource}`);
-  ok('kit.druid.forms cat transforms rmb / q / e / lmb', G.skills.getSlotSkill(p, 'rmb') === 'druid_shred' && G.skills.getSlotSkill(p, 'q') === 'druid_rake'
-    && G.skills.getSlotSkill(p, 'e') === 'druid_rip' && G.skills.getSlotSkill(p, 'lmb') === 'druid_cat_basic',
+  ok('kit.druid.forms cat transforms rmb / q / e / lmb', G.skills.getSlotSkill(p, 'rmb') === 'druid_shred' && G.skills.getSlotSkill(p, 'q') === 'druid_rip'
+    && G.skills.getSlotSkill(p, 'e') === 'druid_rake' && G.skills.getSlotSkill(p, 'lmb') === 'druid_cat_basic',
   [1, 2, 3].map((i) => G.skills.getSlotSkill(p, ['rmb', 'q', 'e'][i - 1])).join(','));
   ok('kit.druid.forms cat form stat swap: speed, crit, dodge', (p.statuses.getStatMods().moveSpeedPct ?? 0) > 0.1 && (p.statuses.getStatMods().critChance ?? 0) > 0);
   H.stepSec(2);
@@ -164,14 +164,14 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   ok('kit.druid.forms mana is back (77 minus the spell cost)', p.resourceType === 'mana' && p.resource > 40 && p.resource <= 77, `${p.resourceType} ${p.resource.toFixed(1)}`);
   ok('kit.druid.forms the human bar is back after leaving', G.skills.getSlotSkill(p, 'rmb') === 'druid_wrath' && G.skills.getSlotSkill(p, 'lmb') === 'druid_basic');
   // toggling: the button again leaves the form
-  cast(p, 's1', foe, 1.2);
-  cast(p, 's1', foe, 1.2);
+  cast(p, 's2', foe, 1.2);
+  cast(p, 's2', foe, 1.2);
   ok('kit.druid.forms the form button toggles the form off again', Forms.formOf(p) === null && p.resourceType === 'mana', `form=${Forms.formOf(p)}`);
   // bear
   cast(p, 's3', foe, 0.8);
   ok('kit.druid.forms Ayı Biçimi: rage 0, armour and max HP mods, transforms rmb / q / e / lmb', Forms.formOf(p) === 'bear' && p.resourceType === 'rage' && p.resource < 5
     && (p.statuses.getStatMods().armorPct ?? 0) >= 1 && (p.statuses.getStatMods().maxHpPct ?? 0) > 0
-    && G.skills.getSlotSkill(p, 'rmb') === 'druid_mangle' && G.skills.getSlotSkill(p, 'q') === 'druid_thrash' && G.skills.getSlotSkill(p, 'e') === 'druid_ironfur'
+    && G.skills.getSlotSkill(p, 'rmb') === 'druid_mangle' && G.skills.getSlotSkill(p, 'q') === 'druid_ironfur' && G.skills.getSlotSkill(p, 'e') === 'druid_thrash'
     && G.skills.getSlotSkill(p, 'lmb') === 'druid_bear_basic', `${p.resourceType} ${p.resource}`);
   // a cat skill from bear auto-shifts (no button press)
   G.character.save.skillBar = { ...G.character.save.skillBar, s2: 'druid_shred' };
@@ -180,7 +180,7 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   // travel form
   p.statuses.remove('form_cat');
   H.step(2);
-  cast(p, 'r', foe, 0.8);
+  cast(p, 's1', foe, 0.8);
   ok('kit.druid.forms Yolcu Biçimi: +40 % move speed', Forms.formOf(p) === 'travel' && Math.abs((p.statuses.getStatMods().moveSpeedPct ?? 0) - 0.4) < 1e-6);
   // a status removed by the engine (death / scene change clear) returns the resources
   p.statuses.clear();
@@ -222,21 +222,21 @@ const dmgSum = (foe, fn) => { const h0 = foe.hp; fn(); return h0 - foe.hp; };
   const hp0 = foe.hp;
   cast(p, 'rmb', foe, 2.0);
   ok('kit.druid.l1run Güneş Gazabı hits the target', foe.hp < hp0);
-  cast(p, 'q', foe, 1.2);
+  cast(p, 'e', foe, 1.2);
   ok('kit.druid.l1run Ay Ateşi bleeds it (moonfire)', foe.statuses.has('moonfire'));
   p.hp = p.maxHp * 0.5;
-  cast(p, 'e', foe, 1.2);
+  cast(p, 'q', foe, 1.2);
   ok('kit.druid.l1run Gençleşme heals the caster over time', p.statuses.has('rejuvenation'));
   foe.position.set(0, 0, 2.2);
-  cast(p, 's1', foe, 1.0);
-  ok('kit.druid.l1run Kedi Biçimi: Doğra on rmb, Tırmık on q, Parçalama on e, no spec needed', Forms.formOf(p) === 'cat' && G.skills.getSlotSkill(p, 'rmb') === 'druid_shred' && G.skills.getSlotSkill(p, 'q') === 'druid_rake' && G.skills.getSlotSkill(p, 'e') === 'druid_rip');
+  cast(p, 's2', foe, 1.0);
+  ok('kit.druid.l1run Kedi Biçimi: Doğra on rmb, Tırmık on e, Parçalama on q (barLayout), no spec needed', Forms.formOf(p) === 'cat' && G.skills.getSlotSkill(p, 'rmb') === 'druid_shred' && G.skills.getSlotSkill(p, 'q') === 'druid_rip' && G.skills.getSlotSkill(p, 'e') === 'druid_rake');
   p.resource = 100;
   cast(p, 'rmb', foe, 1.0);
   p.resource = 100;
   cast(p, 'rmb', foe, 1.0);
   p.resource = 100;
   const hpB = foe.hp;
-  cast(p, 'e', foe, 1.0);
+  cast(p, 'q', foe, 1.0);
   ok('kit.druid.l1run Doğra x2 builds points and Parçalama spends them', foe.hp < hpB && G.skills.pipCount(p, 'combo') === 0);
   ok('kit.druid.l1run no script errors', errors.length === 0, errors.slice(0, 2).map((m) => m.slice(0, 160)).join(' | '));
 }

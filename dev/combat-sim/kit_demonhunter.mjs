@@ -395,6 +395,8 @@ const keepCombat = (p) => { p.combatTimer = 0; };
   const is = newDh(VENG, { dummy: false }); flat(is.p);
   const far = H.addEnemy(0, 12, { hp: 1e9 }); H.setAimTarget(null);
   H.clearEvents();
+  // Fel Atılışı holds s2 on the Vengeance default bar (L1 rule), so this test binds Infernal Strike to s2 explicitly.
+  G.character.save.skillBar = { ...G.character.save.skillBar, s2: 'demonhunter_infernal_strike' };
   G.skills.tryCastSlot(is.p, 's2', aimAt(is.p, 0, 12)); H.stepSec(3);
   ok('aedh.veng İnfernal Atılış leaps ~12 m, lands a strike and a delayed Alev Mührü pulse', is.p.position.z > 10 && dmgTo(far, /infernal_strike/).length === 2, `z=${is.p.position.z.toFixed(1)} hits=${dmgTo(far, /infernal_strike/).length}`);
   const ia = newDh(VENG); ia.p.resource = 0;
@@ -612,8 +614,8 @@ for (const spec of ALL) {
   const msgs = await H.imp('net/messages.ts');
   const pvpSets = await H.imp('data/pvp/sets.ts');
   const bar1 = CharacterState.defaultBar('demonhunter', 1);
-  ok('aedh.l1 level-1 bar = lmb chain, rmb Kaos Darbesi (Chaos Strike), s1 Yakıcı Aura (Immolation Aura), s2 Fel Atılışı (Fel Rush)', JSON.stringify(bar1) === JSON.stringify({
-    lmb: 'demonhunter_basic', rmb: 'demonhunter_chaos_strike', s1: 'demonhunter_blade_dance', e: 'demonhunter_immolation_aura', s2: 'demonhunter_fel_rush',
+  ok('aedh.l1 level-1 bar = lmb chain, rmb Yakıcı Aura (Immolation Aura), q Kaos Darbesi (Chaos Strike), e Bıçak Dansı, s2 Fel Atılışı (Fel Rush) (barLayout rule)', JSON.stringify(bar1) === JSON.stringify({
+    lmb: 'demonhunter_basic', rmb: 'demonhunter_immolation_aura', q: 'demonhunter_chaos_strike', e: 'demonhunter_blade_dance', s2: 'demonhunter_fel_rush',
   }), JSON.stringify(bar1));
   ok('aedh.l1 the creation list offers the demon hunter', PLAYABLE_CLASSES.includes('demonhunter') && menu.CLASS_ORDER.includes('demonhunter') && !!menu.classPresentation('demonhunter').highlights.length);
   ok('aedh.l1 start gear (twin daggers) is usable by a demon hunter and not by a knight', ['dagger_t1'].every((id) => items.ITEM_BASES[id] && items.classCanUseBase('demonhunter', items.ITEM_BASES[id])) && !items.classCanUseBase('knight', items.ITEM_BASES.dagger_t1)
@@ -639,8 +641,8 @@ for (const spec of ALL) {
   const hitBy = (re) => events['damage'].filter((d) => re.test(d.skillId ?? '') && d.amount > 0 && d.targetId === foe.id);
   const failed = () => events['skill:fail'].map((f) => f.reason ?? f.why ?? '?').join(',');
   ok('aedh.l1 lmb: the Fel Bıçakları chain swings and hits', fire('lmb') === true && hitBy(/^demonhunter_basic/).length >= 1, `hits=${hitBy(/^demonhunter_basic/).length} fail=${failed()}`);
-  ok('aedh.l1 rmb: Kaos Darbesi (Chaos Strike) casts and hits without a spec', fire('rmb') === true && hitBy(/^demonhunter_chaos_strike$/).length >= 1, `hits=${hitBy(/^demonhunter_chaos_strike$/).length} fail=${failed()}`);
-  ok('aedh.l1 s1: Yakıcı Aura (Immolation Aura) pulses without a spec', fire('e') === true && hitBy(/^demonhunter_immolation_aura$/).length >= 1, `hits=${hitBy(/^demonhunter_immolation_aura$/).length} fail=${failed()}`);
+  ok('aedh.l1 q: Kaos Darbesi (Chaos Strike) casts and hits without a spec', fire('q') === true && hitBy(/^demonhunter_chaos_strike$/).length >= 1, `hits=${hitBy(/^demonhunter_chaos_strike$/).length} fail=${failed()}`);
+  ok('aedh.l1 rmb: Yakıcı Aura (Immolation Aura) pulses without a spec', fire('rmb') === true && hitBy(/^demonhunter_immolation_aura$/).length >= 1, `hits=${hitBy(/^demonhunter_immolation_aura$/).length} fail=${failed()}`);
   ok('aedh.l1 s2: Fel Atılışı (Fel Rush) dashes without a spec', fire('s2') === true && p.position.z > 0.1, `z=${p.position.z.toFixed(1)} fail=${failed()}`);
   ok('aedh.l1 level-1 bar has four non-basic skills', Object.keys(bar1).filter((k) => k !== 'lmb').length === 4);
   ok('aedh.l1 the movement signature exists (PlayerController double jump + glide are class gated, no sim)', true);

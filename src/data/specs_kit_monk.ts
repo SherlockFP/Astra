@@ -31,7 +31,7 @@ export const SPECS_KIT_MONK: Partial<Record<SpecId, SpecDef>> = {
     weaponArt: 'wa_tiger_barrage',
     defaultBar: {
       lmb: 'monk_basic', rmb: 'monk_tiger_palm', q: 'monk_expel_harm', e: 'monk_keg_smash', s1: 'monk_blackout_kick', s2: 'monk_spinning_crane',
-      s3: 'monk_purifying_brew', s4: 'monk_spear_hand_strike', r: 'monk_breath_of_fire',
+      s3: 'monk_purifying_brew', s4: 'monk_spear_hand_strike', r: 'monk_chi_torpedo',
       m45: 'monk_bm_fortifying_brew', m90: 'monk_bm_black_ox',
     },
   },
@@ -52,7 +52,7 @@ export const SPECS_KIT_MONK: Partial<Record<SpecId, SpecDef>> = {
     weaponArt: 'wa_tiger_barrage',
     defaultBar: {
       lmb: 'monk_basic', rmb: 'monk_tiger_palm', q: 'monk_rising_sun_kick', e: 'monk_spinning_crane', s1: 'monk_blackout_kick',
-      s2: 'monk_flying_serpent', s3: 'monk_chi_wave', s4: 'monk_spear_hand_strike', r: 'monk_fists_of_fury',
+      s2: 'monk_chi_torpedo', s3: 'monk_chi_wave', s4: 'monk_spear_hand_strike', r: 'monk_fists_of_fury',
       m45: 'monk_ww_tigers_fury', m90: 'monk_ww_storm_earth_fire',
     },
   },

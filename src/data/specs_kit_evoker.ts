@@ -29,8 +29,8 @@ const SPEC_LIST: SpecDef[] = [
     ],
     skills: ['evoker_living_flame', 'evoker_disintegrate', 'evoker_fire_breath', 'evoker_eternity_surge', 'evoker_pyre', 'evoker_hover', 'evoker_obsidian_scales', 'evoker_quell', 'evoker_shattering_star'],
     unlock: {
-      evoker_living_flame: 1, evoker_disintegrate: 1, evoker_fire_breath: 1, evoker_eternity_surge: 10, evoker_pyre: 6,
-      evoker_hover: 1, evoker_obsidian_scales: 15, evoker_quell: 10, evoker_shattering_star: 10,
+      evoker_living_flame: 1, evoker_disintegrate: 1, evoker_fire_breath: 1, evoker_eternity_surge: 5, evoker_pyre: 2,
+      evoker_hover: 1, evoker_obsidian_scales: 4, evoker_quell: 3, evoker_shattering_star: 10,
     },
     majors: { m45: 'evoker_deep_breath', m90: 'evoker_dragonrage', m180: 'evoker_fury_of_aspects' },
     fx: [
@@ -59,7 +59,7 @@ const SPEC_LIST: SpecDef[] = [
     ],
     unlock: {
       evoker_living_flame: 1, evoker_reversion: 10, evoker_dream_breath: 10, evoker_echo: 10, evoker_emerald_blossom: 10, evoker_verdant_embrace: 10,
-      evoker_obsidian_scales: 15, evoker_quell: 10, evoker_rewind: 15, evoker_time_skip: 15,
+      evoker_obsidian_scales: 4, evoker_quell: 3, evoker_rewind: 15, evoker_time_skip: 15,
     },
     majors: { m45: 'evoker_time_dilation', m90: 'evoker_stasis', m180: 'evoker_fury_of_aspects' },
     fx: [
@@ -102,7 +102,7 @@ const SPEC_LIST: SpecDef[] = [
     ],
     unlock: {
       evoker_living_flame: 1, evoker_eruption: 10, evoker_ebon_might: 10, evoker_prescience: 10, evoker_fire_breath: 1, evoker_hover: 1,
-      evoker_obsidian_scales: 15, evoker_quell: 10,
+      evoker_obsidian_scales: 4, evoker_quell: 3,
     },
     majors: { m45: 'evoker_upheaval', m90: 'evoker_breath_of_eons', m180: 'evoker_fury_of_aspects' },
     fx: [

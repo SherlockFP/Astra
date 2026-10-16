@@ -58,7 +58,7 @@ ok('kit.monk.ids ClassDef.skills is the 8-id core list', (CLASSES.monk?.skills ?
   ok('kit.monk.l1 lmb is the chain', bar1.lmb === 'monk_basic', JSON.stringify(bar1));
   const usable = Object.values(bar1).filter((id) => id !== 'monk_basic' && SKILLS[id]?.unlockLevel <= 1);
   ok('kit.monk.l1 at least 3 usable skills at unlock 1', usable.length >= 3, usable.join(','));
-  ok('kit.monk.l1 bar is rmb tiger palm, q torpedo, s1 blackout kick', bar1.rmb === 'monk_tiger_palm' && bar1.q === 'monk_chi_torpedo' && bar1.s1 === 'monk_blackout_kick', JSON.stringify(bar1));
+  ok('kit.monk.l1 bar is rmb tiger palm, q spinning crane, e blackout kick, s2 torpedo (barLayout rule)', bar1.rmb === 'monk_tiger_palm' && bar1.q === 'monk_spinning_crane' && bar1.e === 'monk_blackout_kick' && bar1.s2 === 'monk_chi_torpedo', JSON.stringify(bar1));
   ok('kit.monk.l1 the monk is playable and at level 1 has the chain resolved', !!SKILLS.monk_basic_1 && CLASSES.monk.basicAttack === 'monk_basic');
 }
 
@@ -176,10 +176,10 @@ const foeAt = (z = 2.2) => {
   const afterPalm = G.skills.pipCount(p, 'chi');
   ok('kit.monk.cast L1 tiger palm adds 2 Çi', afterPalm === 2, `chi=${afterPalm}`);
   p.resource = 100;
-  G.skills.tryCastSlot(p, 'q', H.aimFor(p, foe)); H.stepSec(1.2);
+  G.skills.tryCastSlot(p, 's2', H.aimFor(p, foe)); H.stepSec(1.2);
   ok('kit.monk.cast L1 Çi Torpedo adds 1 Çi and grants chi_flow', G.skills.pipCount(p, 'chi') === 3 && p.statuses.has('chi_flow'), `chi=${G.skills.pipCount(p, 'chi')} flow=${p.statuses.has('chi_flow')}`);
   p.resource = 100;
-  const ok1 = G.skills.tryCastSlot(p, 's1', H.aimFor(p, foe)); H.stepSec(1.2);
+  const ok1 = G.skills.tryCastSlot(p, 'e', H.aimFor(p, foe)); H.stepSec(1.2);
   ok('kit.monk.cast L1 Kara Tekme casts on 3 Çi and spends 1', ok1 === true && G.skills.pipCount(p, 'chi') === 2, `started=${ok1} chi=${G.skills.pipCount(p, 'chi')}`);
   ok('kit.monk.cast no script errors in the L1 economy', errors.length === 0, errors.slice(0, 2).map((m) => m.slice(0, 160)).join(' | '));
 }
