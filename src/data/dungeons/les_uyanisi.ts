@@ -19,6 +19,11 @@ import {
  * are device props with ids only, the spear / hammer / orb / shield pickups are not placed), NEW hazard and prop kinds are used only
  * where the union already has them, no `atmosphere` presets in the engine (fog values are in DungeonDef.atmospheres), no
  * `nocollide` / `hang` flags (upper-layer props are placed with `y` only), NEW models use the doc's fallbacks (section 2.6, 2.7).
+ * Blueprint pass (docs/ref/dungeons/WOW_DUNGEON_BLUEPRINT.md 7.9, checklist 6): forcesRequired = floor(0.8 x 551) = 440; pack
+ * links les_p02/p03 and dormant les_p07 (bones) / les_p18 (coffin); checkpoints after boss 2 and boss 3; one boon pad (Cesaret
+ * Meydani); positional ambience in 13 rooms; connector dressing. Boss arenas, boss positions and dev spots are unchanged (boss
+ * script). Open against the blueprint: 26 rooms (target 15-22), optional packs 18% of forces (target <= 8%, four dead ends),
+ * the one shortcut is a device_lock (not kill_lock), k_cikis approach is 4 wide and 4 long.
  * OWNER: content module.
  */
 
@@ -414,12 +419,12 @@ const KF = 'les_kafatasi';
 // ---------------------------------------------------------------------------------------------------------------------
 const PACKS_RAW: PackDef[] = [
   pack('les_p01', 'k_giris', 13.5, 57.5, undefined, [[KS, -1, 0], [KS, 0, 0], [KB, 1, 0]]),
-  pk('les_p02', 'meydan', 19, 52, 13, [[KS, 3]], [[KB, 1]]),
-  pk('les_p03', 'meydan', 22.5, 50, 14, [[KS, 2]], [[AR, 2]]),
+  pk('les_p02', 'meydan', 19, 52, 13, [[KS, 3]], [[KB, 1]], { linkedTo: ['les_p03'] }),
+  pk('les_p03', 'meydan', 22.5, 50, 14, [[KS, 2]], [[AR, 2]], { linkedTo: ['les_p02'] }),
   pk('les_p04', 'meydan', 26.5, 57, 14, [[KS, 2]], [[KB, 1], [AR, 1]]),
   pack('les_p05', 'meydan', 17.5, 60.8, 5, [[VT, 0.3, 0]], { patrol: [[17.5, 60.8], [29, 60.8], [29, 61.1], [17.5, 61.1]] }),
   pk('les_p06', 'meydan', 23, 57.5, 15, [[CN, 1], [KS, 1]], [], { big: true }),
-  pack('les_p07', 'k_hasat', 32, 54.5, undefined, [[KS, -1.5, 0], [KS, -0.5, 0], [AR, 0.5, 0]]),
+  pack('les_p07', 'k_hasat', 32, 54.5, undefined, [[KS, -1.5, 0], [KS, -0.5, 0], [AR, 0.5, 0]], { dormant: { kind: 'bones', wakeRadius: 6 } }),
   pk('les_p08', 'ambar', 21.5, 44.5, 17, [[KS, 3]], [[KB, 1], [AR, 1]], { optional: true }),
   pk('les_p09', 'ambar', 25.5, 45, 16, [[CN, 1]], [[KB, 1]], { optional: true }),
   pk('les_p10', 'k_toll_a', 40.5, 43.5, 11, [[KS, 1]], [[KB, 1], [AR, 1]]),
@@ -430,7 +435,7 @@ const PACKS_RAW: PackDef[] = [
   pk('les_p15', 'son_can', 47, 27, 18, [[KS, 2]], [[AR, 2], [KB, 1]]),
   pack('les_p16', 'son_can', 33, 33, 5, [[VT, 0.3, 0]], { patrol: [[32.5, 33], [36.5, 33], [36.5, 34], [32.5, 34]] }),
   pk('les_p17', 'can_kulesi', 54.5, 33, 22, [[CN, 1], [KS, 2]], [[AR, 1]], { optional: true }),
-  pack('les_p18', 'k_toll_b', 27.6, 29.5, undefined, [[KS, -1.2, 0], [KS, -0.4, 0], [KB, 0.4, 0], [AR, 1.2, 0]]),
+  pack('les_p18', 'k_toll_b', 27.6, 29.5, undefined, [[KS, -1.2, 0], [KS, -0.4, 0], [KB, 0.4, 0], [AR, 1.2, 0]], { dormant: { kind: 'coffin', wakeRadius: 5 } }),
   pack('les_p19', 'k_kopru', 15, 19.5, undefined, [[KB, -0.9, 0], [AR, -0.3, -0.6], [AR, 0.1, 0.5]]),
   pk('les_p20', 'dikis_kapi', 11, 14, 25, [[DO, 3]], [[LT, 1], [EZ, 1]], { big: true }),
   pk('les_p21', 'dikis_kapi', 17.5, 12, 25, [[DO, 2]], [[LT, 2], [EZ, 1]], { big: true }),
@@ -485,6 +490,7 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
 
   p('k_giris', (q) => {
     q.torches(rect(12, 57, 4, 2), 'n', [13, 15], GOLD);
+    q.at(hw('skull'), 12.8, 57.6).at(dg('candle_lit'), 15.4, 57.6, { light: lt(GOLD, 0.9, 5, true, 1.1) });
   });
 
   p('meydan', (q) => {
@@ -549,6 +555,8 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
   p('k_toll_a', (q) => {
     q.at(M_BROKEN_PILLAR, 41.5, 45, { scale: 1, collide: true });
     q.at(M_BONE_PILE, 40.5, 43.5, { scale: 1.2, tint: 0xd8d0b8 });
+    q.at(hw('bone_C'), 40.2, 43.6, { rot: 40 });
+    q.at(dg('candle_lit'), 40.3, 42.5, { light: lt(GOLD, 0.9, 5, true, 1.1) });
   });
 
   p('toll_kapisi', (q) => {
@@ -592,8 +600,20 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.list.push(...mapOld('can_kulesi', banner(rect(52, 29, 8, 8), 'w', [31, 35], { model: M_BANNER_GOLD, y: 10 })));
   });
 
+  p('k_hasat', (q) => {
+    // Connector dressing (blueprint 6 item 12): bones and a candle, off the door lanes
+    q.at(hw('skull'), 31, 54.5).at(M_BONE_PILE, 33, 55.2, { scale: 1.2, tint: 0xd8d0b8 });
+    q.at(dg('candle_lit'), 30.6, 55.4, { light: lt(GOLD, 0.9, 5, true, 1.1) });
+    q.at(M_CHAINS, 33.5, 54.5, { y: 0 });
+  });
+  p('kisayol', (q) => {
+    // Service passage (skip room): candle and skulls along the north wall, clear of both door lanes
+    q.at(dg('candle_lit'), 28.5, 36.6, { light: lt(GOLD, 0.8, 5, true, 1.1) });
+    q.at(hw('skull'), 33.4, 36.6).at(hw('bone_B'), 31.2, 36.9, { rot: 20 }).at(hw('bone_A'), 34.6, 36.8, { rot: 60 });
+  });
   p('k_toll_b', (q) => {
     q.at(M_BONE_PILE, 28, 30, { scale: 1.2, tint: 0xd8d0b8 });
+    q.at(hw('skull'), 27.2, 29.6).at(dg('candle_lit'), 26.6, 29.4, { light: lt(GOLD, 0.9, 5, true, 1.1) }).at(hw('bone_C'), 29.4, 30.6, { rot: 30 });
   });
 
   p('dus_meydan', (q) => {
@@ -649,10 +669,13 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.at(hw('floor_dirt_grave'), 14, 5, { scale: 2, tint: 0x6a1a1a });
     q.at(M_CAULDRON, 9, 4, { scale: 1, tint: 0x6a1a1a });
     q.at(M_CHAINS, 18, 9, { y: 0 });
+    q.at(hw('bone_B'), 10.5, 8.5, { rot: 50 }).at(hw('skull'), 9.2, 8.2);
+    q.at(dg('candle_lit'), 9.6, 6.8, { light: lt(0xaa2020, 0.9, 5, true, 1.1) });
   });
 
   p('k_atolye', (q) => {
     q.at(M_CAGE, 26.5, 13.5, { scale: 1 });
+    q.at(hw('skull'), 24.6, 11.8).at(M_BONE_A, 25.2, 12.4, { rot: 70 }).at(M_BONE_PILE, 26.3, 11.6, { scale: 1 });
   });
 
   p('dikis_atolye', (q) => {
@@ -670,6 +693,8 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
 
   p('k_yukari', (q) => {
     q.at(M_STATUE, 48, 9, { scale: 1.4, tint: 0x4a3a68, collide: true });
+    q.at(hw('bone_A'), 46.6, 8.6, { rot: 20 }).at(hw('skull'), 46.4, 9.6);
+    q.at(dg('candle_lit'), 46.6, 8.2, { light: lt(VIOLET, 0.9, 5, true, 1.1) });
   });
 
   p('zolramus_kapi', (q) => {
@@ -688,6 +713,8 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
 
   p('k_nef_a', (q) => {
     q.at(hw('skull_candle'), 57, 17, { scale: 1, light: lt(VIOLET, 0.8, 5, true) });
+    q.at(hw('bone_C'), 56.6, 18.8, { rot: 30 }).at(hw('skull'), 56.4, 19.4);
+    q.at(gp('bone_pile'), 56.8, 16.6, { scale: 1 });
   });
 
   p('kemik_nef', (q) => {
@@ -718,6 +745,8 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
 
   p('k_cikis', (q) => {
     q.at(M_CRYSTAL, 73.5, 34, { scale: 1, tint: FROST, collide: false });
+    q.at(hw('bone_A'), 72.4, 32.4, { rot: 40 }).at(hw('skull'), 72.6, 33.3);
+    q.at(dg('candle_lit'), 72.5, 35, { light: lt(FROST, 1.0, 6, true, 1.1) });
   });
 
   p('buz_tepe', (q) => {
@@ -733,7 +762,23 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
 // ---------------------------------------------------------------------------------------------------------------------
 // Assemble: room props from the decorator, then the dungeon definition.
 // ---------------------------------------------------------------------------------------------------------------------
-const ROOMS_BASE: RoomDef[] = ROOM_BASE.map((r) => ({ ...r, ...ROOM_EXTRA[r.id] }));
+/** Positional ambience (blueprint 5.3): one emitter in each landmark room (about half the rooms). */
+const AMBIENCE: Record<string, NonNullable<RoomDef['ambience']>> = {
+  giris: [{ id: 'crowd_murmur', radius: 10, volume: 0.12, loop: true }],
+  toll_kapisi: [{ id: 'whisper', radius: 8, volume: 0.15, loop: true }],
+  k_kopru: [{ id: 'whisper', radius: 6, volume: 0.15, loop: true }],
+  meydan: [{ id: 'water_lap', pos: [22.5, 54.5], radius: 8, volume: 0.25, loop: true }],
+  hasat_cukuru: [{ id: 'whisper', radius: 12, volume: 0.2, loop: true }],
+  son_can: [{ id: 'whisper', radius: 12, volume: 0.15, loop: true }],
+  dus_meydan: [{ id: 'whisper', radius: 12, volume: 0.15, loop: true }],
+  dikis_kapi: [{ id: 'whisper', radius: 10, volume: 0.2, loop: true }],
+  dikis_atolye: [{ id: 'whisper', radius: 12, volume: 0.2, loop: true }],
+  zolramus_kapi: [{ id: 'whisper', radius: 10, volume: 0.2, loop: true }],
+  kemik_nef: [{ id: 'whisper', radius: 10, volume: 0.2, loop: true }],
+  heykel_galerisi: [{ id: 'whisper', radius: 12, volume: 0.15, loop: true }],
+  buz_tepe: [{ id: 'water_lap', radius: 10, volume: 0.1, loop: true }],
+};
+const ROOMS_BASE: RoomDef[] = ROOM_BASE.map((r) => ({ ...r, ...ROOM_EXTRA[r.id], ...(AMBIENCE[r.id] ? { ambience: AMBIENCE[r.id] } : {}) }));
 const R = makeRescale({
   seed: 'les_uyanisi', oldRect: OLD_RECT, rooms: ROOMS_BASE, doors: DOORS, packsRaw: PACKS_RAW,
   anchors: [
@@ -759,6 +804,10 @@ const EXTRAS: NonNullable<DungeonDef['extras']> = {
     { type: 'shrine_ward', pos: pt(74, 22) },     // Koruma
   ],
   riftSpots: [],
+  // M+ release points: one after boss 2 (the Dikis Kapi lobby), one after boss 3 (the Zolramus gate hall)
+  checkpoints: [pt(...R.at2(16, 12)), pt(...R.at2(58, 11))],
+  // one boon pad on the main route, in the Cesaret Meydani between the first two packs and the wing
+  boons: [{ id: 'boon_meydan', pos: pt(...R.at2(26, 54)), status: 'ay_cesmesi', duration: 60, magnitude: 0.1, oncePerPlayer: true, persistOnDeath: false }],
   chests: [{ pos: pt(...R.at2(26.4, 43.4)), kind: 'chest_wood' }, { pos: pt(...R.at2(56.5, 36.4)), kind: 'chest_gold' }],
 };
 
@@ -769,7 +818,7 @@ export const LES_UYANISI: DungeonDef = {
   lore: "Kadim Diyar'ın üstündeki Cesaret Tapınağı yüzyıllardır Kadim Mühür'ü kapalı tutar. Leş Tarikatı, Azrakel'in son meclisi, tapınağın üzerine uçan bir kemik zigurat kaldırdı: Gökbekçilerin ruhları hasat ediliyor, ölüler dikişle birbirine bağlanıyor, Ayazbağlayan Nalthor mührü kıran buzu hazırlıyor.",
   levelRange: [50, 60],
   timerSec: 1780,
-  forcesRequired: 430,
+  forcesRequired: 440,
   theme: {
     fogColor: 0x161a24, fogNear: 8, fogFar: 40,
     ambient: 0x4a5068, ambientIntensity: 0.35,
