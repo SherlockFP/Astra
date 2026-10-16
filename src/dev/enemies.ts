@@ -367,6 +367,7 @@ setInterval(() => {
   G, world, h, spawn, clearAll, aggroAll, pack, horde, buildGrid, fightBoss, hitNearest, killNearest, toggleGod,
   get player() { return player; },
   get capsule() { return capsule; },
+  get controller() { return controller; },
   get boss() { return world.enemies.find((e) => e.isBoss) ?? null; },
   bossIds, enemyIds: Object.keys(ENEMIES),
   setLevel(v: number) { level = v; },

@@ -25,7 +25,7 @@ export type HitWeight =
 export const FEEL = {
   /** Base hit-stop (ms) by weight (GDD_LIFE §5.2). */
   hitstop: { light: 50, medium: 62, finisher: 90, heavy: 115, ultimate: 150, projectile: 0, tick: 0, parry: 70, stagger_break: 160, backstab: 80 } as Record<HitWeight, number>,
-  hitstopCrit: 30,
+  hitstopCrit: 40,          // crit: +40 ms (WoW-style hit-stop 30-50 ms)
   hitstopKill: 25,
   hitstopBossCap: 70,       // boss hits: capped for light..heavy (ultimate and stagger_break are exempt)
   hitstopCap: 160,          // total hit-stop per hitstopWindow (GDD §5.2 caps)
@@ -40,7 +40,7 @@ export const FEEL = {
   /** Clip / forced-move time scale of a frozen actor (AnimController / Actor). */
   freezeScale: 0.04,
   /** Camera trauma by weight (GDD_LIFE §5.2). The camera module maps trauma -> shake. */
-  shake: { light: 0.12, medium: 0.18, finisher: 0.32, heavy: 0.5, ultimate: 0.7, projectile: 0.05, tick: 0.02, parry: 0.3, stagger_break: 0.7, backstab: 0.2 } as Record<HitWeight, number>,
+  shake: { light: 0.04, medium: 0.08, finisher: 0.32, heavy: 0.5, ultimate: 0.7, projectile: 0.05, tick: 0.02, parry: 0.3, stagger_break: 0.7, backstab: 0.2 } as Record<HitWeight, number>,
   shakeCrit: 0.12,
   shakeKill: 0.10,
   shakeHurt: 0.32,
@@ -88,10 +88,10 @@ const GOLD = 0xffd24a;
 const CRIT_GOLD = 0xfff0a0;
 
 export const WEIGHT_ROWS: Record<HitWeight, WeightRow> = {
-  light: { shakeDur: 0.19, kick: 0.05, fov: 0, knock: 0.6, knockDur: 0.2, flinch: 0.4,
-    flash: { c1: WHITE, ms1: 85, c2: null, ms2: 0 }, jiggle: 1, squash: 1, sparks: 6, chips: 3, layers: 'material impact 0.9' },
-  medium: { shakeDur: 0.22, kick: 0.08, fov: 0.8, knock: 1.3, knockDur: 0.22, flinch: 0.6,
-    flash: { c1: WHITE, ms1: 95, c2: null, ms2: 0 }, jiggle: 1.15, squash: 1.2, sparks: 9, chips: 5, layers: 'impact 1.0 + hit_blunt thump 0.3' },
+  light: { shakeDur: 0.19, kick: 0, fov: 0, knock: 0.6, knockDur: 0.2, flinch: 0.4,
+    flash: { c1: WHITE, ms1: 115, c2: null, ms2: 0 }, jiggle: 1, squash: 1, sparks: 6, chips: 3, layers: 'material impact 0.9' },
+  medium: { shakeDur: 0.22, kick: 0.02, fov: 0.8, knock: 1.3, knockDur: 0.22, flinch: 0.6,
+    flash: { c1: WHITE, ms1: 125, c2: null, ms2: 0 }, jiggle: 1.15, squash: 1.2, sparks: 9, chips: 5, layers: 'impact 1.0 + hit_blunt thump 0.3' },
   finisher: { shakeDur: 0.29, kick: 0.14, fov: 2.0, knock: 2.0, knockDur: 0.26, flinch: 1,
     flash: { c1: WHITE, ms1: 55, c2: 'type', ms2: 55 }, jiggle: 1.5, squash: 1.6, sparks: 14, chips: 8, layers: 'impact 1.0 + ground_slam 0.35 @0.85 + voice 45% + shockwave r1.2' },
   heavy: { shakeDur: 0.37, kick: 0.2, fov: 3.0, knock: 3.2, knockDur: 0.3, flinch: 1,

@@ -6,6 +6,7 @@ import { getItemBase } from '../data/items';
 import { FEEL } from '../combat/feel';
 import { SKILL_SLOT_KEYS, type AimInfo, type SkillDef, type SkillSlotKey } from '../types/skills';
 import { cycleFriendly, friendlyTargetId, selectPartySlot } from '../combat/healing';
+import { pickFrontTarget, wowTabNext, type FrontCand } from '../combat/targetSelect';
 import type { Player } from '../entities/Player';
 import type { Enemy } from '../entities/Enemy';
 import type { EntityId } from '../types/common';
@@ -40,6 +41,8 @@ export const WOW_GRAVITY = 38;
 // AE-3 (agile-evoker §3.0): İblis Avcısı movement signature. A second jump in the air (+60 % height) and a glide while jump is held on the way down.
 const AIR_JUMP_V = JUMP_V * 1.265;   // sqrt(1.6): +60 % apex height
 const GLIDE_FALL = 3.2;              // m/s terminal fall speed while gliding (about a quarter of a long fall)
+/** WoW: a Shift press waits this long (s) for a Tab before it rolls, so Shift+Tab never rolls. */
+const DODGE_TAB_WAIT = 0.12;
 const DODGE_DIST = 5.2;
 const DODGE_TIME = 0.4;
 const DODGE_IFRAMES = 0.34;
@@ -200,6 +203,9 @@ export class PlayerController {
   private targetTimer = 0;
   private losLost = 0;
   private lastTabAt = -9;
+  /** WoW: when the Shift press (dodge key) may roll, unless a Tab came in with it (Shift+Tab steps the target). -1 = none. */
+  private dodgeDeferAt = -1;
+  private tabPressAt = -9;
   /** Tab hold (lock-on, GDD_LIFE §4.7): when it went down, and whether the hold already toggled the lock. */
   private tabDownAt = -1;
   private tabLocked = false;
@@ -483,8 +489,15 @@ export class PlayerController {
     G.combat?.guardInput(p, canInput && input.down('guard'), canInput && input.pressed('guard'), !!G.skills?.isBusy(p));
 
     // ---------------- dodge ----------------
-    if (moveOk && input.pressed('dodge')) this.pressDodge(true);
-    else if (moveOk && this.dodgeBuf > this.time) this.pressDodge(false);
+    if (moveOk && input.pressed('dodge')) {
+      // WoW: a Tab just before the Shift press makes it a target step, not a roll; otherwise the roll waits for a Tab
+      if (!this.wow) this.pressDodge(true);
+      else if (this.time - this.tabPressAt > DODGE_TAB_WAIT) this.dodgeDeferAt = this.time + DODGE_TAB_WAIT;
+    } else if (moveOk && this.dodgeBuf > this.time) this.pressDodge(false);
+    if (this.dodgeDeferAt >= 0 && this.time >= this.dodgeDeferAt) {
+      this.dodgeDeferAt = -1;
+      if (moveOk) this.pressDodge(true);
+    }
     this.updateDodge(dt);
 
     // ---------------- jump ----------------
@@ -1347,17 +1360,21 @@ export class PlayerController {
     else this.cam.getBasis(_f, _r);
     const fl = Math.hypot(_f.x, _f.z) || 1;
     const fx = _f.x / fl, fz = _f.z / fl;
-    let best: Enemy | null = null;
-    let bestD = Infinity;
+    const byId = new Map<number, Enemy>();
+    const cands: FrontCand[] = [];
     for (const e of world.enemies) {
       if (!near(e)) continue;
       const dx = e.position.x - p.position.x, dz = e.position.z - p.position.z;
       const d = Math.hypot(dx, dz);
-      if (d > 0.01 && (dx * fx + dz * fz) / d < Math.SQRT1_2) continue;
+      const cos = d > 0.01 ? (dx * fx + dz * fz) / d : 1;
+      if (cos < 0) continue; // behind the character: never picked
       if (kind === 'ranged' && !world.nav.lineOfSight(p.position.x, p.position.z, e.position.x, e.position.z)) continue;
-      if (d < bestD) { bestD = d; best = e; }
+      byId.set(e.id, e);
+      cands.push({ id: e.id, dist: d, cos, hpFrac: e.hpFrac });
     }
-    return best;
+    // front cone and the nearest / lowest-HP tie-break: targetSelect.ts (WOW_TARGET)
+    const id = pickFrontTarget(cands);
+    return id == null ? null : byId.get(id) ?? null;
   }
 
   private fireSlot(slot: SkillSlotKey, aim: AimInfo): boolean {
@@ -1505,29 +1522,31 @@ export class PlayerController {
       this.emitTarget();
       return;
     }
-    // CONTROLS_WOW §6: WoW sorts engaged enemies first, then nearest; Aksiyon keeps screen order
-    if (wow) list.sort((a, b) => (Number(b.ag) - Number(a.ag)) || (a.d - b.d));
-    else list.sort((a, b) => a.x - b.x);
     let next: Enemy | null;
-    if (!cur && wow) {
-      next = (dir > 0 ? list[0] : list[list.length - 1]).e; // WoW: the best candidate at once (reverse starts from the far end)
-    } else if (!cur) {
-      // first press: the visible enemy closest to the screen centre
-      let bi = 0, bd = 1e9;
-      for (let i = 0; i < list.length; i++) {
-        const d = Math.abs(list[i].x);
-        if (d < bd) { bd = d; bi = i; }
-      }
-      next = list[bi].e;
+    if (wow) {
+      // Midnight retail: Tab steps through the visible enemies nearest first, Shift+Tab backwards; nothing to step to keeps the target
+      const id = wowTabNext(list.map((c) => ({ id: c.e.id, dist: c.d })), cur ? cur.id : null, dir);
+      const pick = id == null ? null : (list.find((c) => c.e.id === id)?.e ?? null);
+      if (!pick || pick === cur) return;
+      next = pick;
     } else {
-      const i = list.findIndex((c) => c.e === cur);
-      // Aksiyon: a double-tap releases. WoW: the only enemy being the one already selected keeps the selection (no release, no sound).
-      if (!wow && now - this.lastTabAt < 0.25) next = null;
-      else if (list.length === 1 && i === 0) {
-        if (wow) return;
-        next = null;
-      } else if (i < 0) next = (dir > 0 ? list[0] : list[list.length - 1]).e;
-      else next = list[(i + dir + list.length) % list.length].e;
+      // Aksiyon keeps screen order; a double-tap releases the target
+      list.sort((a, b) => a.x - b.x);
+      if (!cur) {
+        // first press: the visible enemy closest to the screen centre
+        let bi = 0, bd = 1e9;
+        for (let i = 0; i < list.length; i++) {
+          const d = Math.abs(list[i].x);
+          if (d < bd) { bd = d; bi = i; }
+        }
+        next = list[bi].e;
+      } else {
+        const i = list.findIndex((c) => c.e === cur);
+        if (now - this.lastTabAt < 0.25) next = null;
+        else if (list.length === 1 && i === 0) next = null;
+        else if (i < 0) next = (dir > 0 ? list[0] : list[list.length - 1]).e;
+        else next = list[(i + dir + list.length) % list.length].e;
+      }
     }
     this.lastTabAt = now;
     this.hardTarget = next;
@@ -1560,7 +1579,11 @@ export class PlayerController {
     // CONTROLS_WOW §6: WoW cycles on press (no Tab-hold lock), whatever lockOnMode says
     const lockMode = this.wow ? 'tap-cycle' : (G.settings?.data.lockOnMode ?? 'hold-lock');
     if (canInput && input.pressed('targetNext')) {
-      if (lockMode === 'tap-cycle') this.cycleTarget(action);
+      this.tabPressAt = this.time;
+      this.dodgeDeferAt = -1; // a Tab with Shift held is a target step, never a roll
+      // Shift held, or pressed in this same frame (a quick Shift+Tab can release Shift before the frame samples it)
+      const back = ['ShiftLeft', 'ShiftRight'].some((k) => input.keyDown(k) || input.keyPressed(k));
+      if (lockMode === 'tap-cycle') this.cycleTarget(action, back ? -1 : 1);
       this.tabDownAt = this.time;
       this.tabLocked = false;
     }
@@ -1768,11 +1791,13 @@ export class PlayerController {
     this.updateWowCursor(dt, out, uiOpen);
   }
 
-  /** LMB click: an enemy under the cursor is selected, empty ground clears the selection (§4.1). */
+  /**
+   * LMB click: an enemy under the cursor is selected, no attack (Midnight retail). Empty ground keeps the selection; only Esc
+   * clears it (clearHardTarget).
+   */
   private wowClickL(ndcX: number, ndcY: number): void {
     const hit = this.wowPick(ndcX, ndcY);
-    if (!hit) this.selectEnemy(null);
-    else if (hit.kind === 'enemy') this.selectEnemy(hit.entity as Enemy);
+    if (hit?.kind === 'enemy') this.selectEnemy(hit.entity as Enemy);
     // a friendly NPC, loot or interactable under the cursor: nothing (§4.1)
   }
 
