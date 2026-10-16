@@ -28,6 +28,7 @@ import { installAchievements } from '../systems/Achievements';
 import { installDailyLoop } from '../systems/DailyLoop';
 import { installBarks } from '../systems/Barks';
 import { installGuild } from '../systems/Guild';
+import { installPlayerSocial } from '../ui/hud/SocialUi';
 import { installArena } from '../systems/ArenaInstall';
 import { LoadingScene } from '../scenes/LoadingScene';
 import { zoneFor } from '../ui/widgets/loadingZone';
@@ -78,6 +79,7 @@ export function createServices(): void {
   G.mplus = new MythicPlus();
   G.professions = new Professions(); // GDD_LIFE §1 MVP: Madencilik / Bitki Toplama skills, gather nodes, starter recipes
   installGuild(installSocial()); // G.presence + Genel / Ticaret / fisilti on the global lobby; G.guild (Lonca) rides the same lobby
+  installPlayerSocial(); // duel / trade / party invite / gear view / follow on the lobby's `psoc` channel (ui/hud/SocialUi.ts)
   installArena(); // GDD_PVP_FINDER: G.arenaLadder (ratings, season, Fetih) + G.net.queue (arena matchmaking on the global lobby)
   installAchievements(); // WP-08: achievement metrics from the game events (reads G.character lazily)
   installDailyLoop(); // WP-10: login streak, rested XP tick, world quests and the daily dungeon (reads G.character lazily)

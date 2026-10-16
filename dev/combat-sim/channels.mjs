@@ -123,7 +123,7 @@ if (want('pure')) {
   ok('pure.interest mid clock is per (channel, from, to)', f.allow('stream', 'pstate', 'x', 'm', 300, 0) && f.allow('stream', 'minion', 'a', 'm', 300, 5));
   f.forget('m');
   ok('pure.interest forget drops the clocks of a peer', f.allow('stream', 'pstate', 'a', 'm', 300, 6000) && f.size >= 1);
-  ok('pure.chat radius', C.chatRadius('say') === 60 && C.chatRadius('emote') === 60 && C.chatRadius('yell') === 250 && C.chatRadius(undefined) === null && C.chatRadius('party') === null);
+  ok('pure.chat radius', C.chatRadius('say') === 25 && C.chatRadius('emote') === 25 && C.chatRadius('yell') === 100 && C.chatRadius(undefined) === null && C.chatRadius('party') === null);
 
   // ledger
   const L = new C.ChannelLedger();
@@ -882,7 +882,7 @@ if (want('int')) {
   // chat radius
   const chat = { near: 0, mid: 0, far: 0 };
   for (const [key, p] of [['near', N], ['mid', Mid], ['far', Far]]) p.rec.chat.length = 0;
-  S.pos.x = 0; N.pos.x = 30; Mid.pos.x = 200; Far.pos.x = 500;
+  S.pos.x = 0; N.pos.x = 20; Mid.pos.x = 60; Far.pos.x = 500;
   for (const p of mk) sendP(p);
   await sleep(10);
   S.net.sendChat('merhaba', 'say');
@@ -890,8 +890,8 @@ if (want('int')) {
   S.net.sendChat('grup', 'party');
   await sleep(20);
   const heard = (p) => p.rec.chat.filter((c) => c.from === 'S').map((c) => c.text);
-  ok('int.say is heard within 60 m only', heard(N).includes('merhaba') && !heard(Mid).includes('merhaba') && !heard(Far).includes('merhaba'), JSON.stringify([heard(N), heard(Mid), heard(Far)]));
-  ok('int.yell is heard within 250 m', heard(N).includes('bagiriyorum') && heard(Mid).includes('bagiriyorum') && !heard(Far).includes('bagiriyorum'));
+  ok('int.say is heard within 25 m only', heard(N).includes('merhaba') && !heard(Mid).includes('merhaba') && !heard(Far).includes('merhaba'), JSON.stringify([heard(N), heard(Mid), heard(Far)]));
+  ok('int.yell is heard within 100 m', heard(N).includes('bagiriyorum') && heard(Mid).includes('bagiriyorum') && !heard(Far).includes('bagiriyorum'));
   ok('int.party chat in a channel is sent as "say"', heard(N).includes('grup') && !heard(Mid).includes('grup') && S.rec.chat.some((c) => c.text === 'grup' && c.channel === 'say'));
   await resetAll();
 }

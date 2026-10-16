@@ -44,7 +44,9 @@ function encodeEnemy(e: EnemySyncState): unknown[] {
   const hasAggro = e.aggroed !== undefined;
   const hasShot = e.shot !== undefined || e.shotSeq !== undefined;
   const hasY = typeof e.y === 'number' && Number.isFinite(e.y);
-  const flags = (e.dead ? 1 : 0) | (e.aggroed ? 2 : 0) | (hasAggro ? 4 : 0) | (hasShot ? 8 : 0) | (hasY ? 16 : 0);
+  // 32 has hidden, 64 hidden (stealth bodies, append-only: older peers ignore the bits)
+  const flags = (e.dead ? 1 : 0) | (e.aggroed ? 2 : 0) | (hasAggro ? 4 : 0) | (hasShot ? 8 : 0) | (hasY ? 16 : 0) |
+    (e.hidden !== undefined ? 32 : 0) | (e.hidden ? 64 : 0);
   const out: unknown[] = [e.id, e.x, e.z, e.yaw, e.hp, e.maxHp, e.anim, e.targetId, e.cast, flags, e.shot ?? null, e.shotSeq ?? 0];
   if (hasY) out.push(e.y);
   return out;
@@ -61,6 +63,7 @@ function decodeEnemy(a: unknown): unknown {
     e.shot = a[10];
     e.shotSeq = a[11];
   }
+  if (flags & 32) e.hidden = (flags & 64) !== 0;
   if ((flags & 16) && a.length >= 13 && typeof a[12] === 'number' && Number.isFinite(a[12])) e.y = a[12];
   return e;
 }

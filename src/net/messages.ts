@@ -242,6 +242,14 @@ export interface LobbyWhisperMsg {
   lvl?: number;
 }
 
+/** Player requests on the lobby (`psoc`): `op` and `id` are validated by systems/PlayerSocial.ts parsePsoc; the rest of the payload is op-specific. */
+export interface PsocWireMsg {
+  t: 'psoc';
+  op: string;
+  id: string;
+  [key: string]: unknown;
+}
+
 export type LobbyChannels = {
   ann: RoomAnnouncement;
   unann: RoomUnannounceMsg;
@@ -249,6 +257,8 @@ export type LobbyChannels = {
   /** Social presence + whispers (systems/Social.ts). */
   lpres: LobbyPresenceMsg;
   lwhis: LobbyWhisperMsg;
+  /** Player requests (systems/PlayerSocial.ts): duel / trade / party invites, gear views, duel strikes, trade offers. Always to one peer id. */
+  psoc: PsocWireMsg;
   /** CM14 Pazar: stall announcements (broadcast), buy requests (to the seller) and sale replies (to the buyer). Owner: systems/Market.ts. */
   shop: ShopAnnounce;
   shopBuy: ShopBuyMsg;
@@ -268,7 +278,7 @@ export type LobbyChannels = {
   qack: MatchAck;
   qdecl: MatchAck;
 };
-export const LOBBY_CHANNELS = ['ann', 'unann', 'lchat', 'lpres', 'lwhis', 'shop', 'shopBuy', 'shopSold', 'ginv', 'gsync', 'gchat', 'qann', 'qcancel', 'qprop', 'qack', 'qdecl'] as const satisfies readonly (keyof LobbyChannels)[];
+export const LOBBY_CHANNELS = ['ann', 'unann', 'lchat', 'lpres', 'lwhis', 'shop', 'shopBuy', 'shopSold', 'psoc', 'ginv', 'gsync', 'gchat', 'qann', 'qcancel', 'qprop', 'qack', 'qdecl'] as const satisfies readonly (keyof LobbyChannels)[];
 /** The queue subset of LOBBY_CHANNELS (GDD §2.9.1 name). */
 export const QUEUE_CHANNELS = ['qann', 'qcancel', 'qprop', 'qack', 'qdecl'] as const satisfies readonly (keyof LobbyChannels)[];
 

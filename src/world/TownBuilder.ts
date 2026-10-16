@@ -21,6 +21,7 @@ import { applyShadowPolicy, shouldCastShadow } from '../render/shadowPolicy';
 import { freezeStatic } from '../render/staticTransforms';
 import { psxMaterial, surfaceTexture, mulHex, worldUVBox } from './ProceduralAssets';
 import type { VfxId } from '../types/vfx';
+import { MagitechKit } from './MagitechKit';
 
 /** Points of interest of the default hub layout (world coordinates, y = 0). Scenes/NPCs may use them. */
 export const TOWN_POIS = {
@@ -1194,6 +1195,52 @@ class TownBuild {
   }
 
   // ---- build ----
+  /** Kuzgunkale magitech layer (MagitechKit): crystal lamps around the fountain, four spires on the wall corners, banners, a central arcane crystal. */
+  magitech: MagitechKit | null = null;
+  buildMagitech(): void {
+    const kit = new MagitechKit();
+    const fountain = this.items.find((i) => /fountain/.test(i.m));
+    const fx = fountain?.x ?? 0, fz = fountain?.z ?? 8;
+    const h = this.half - 6;
+    const at = (x: number, z: number): number => this.groundY(x, z);
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * PI * 2;
+      const x = fx + Math.cos(a) * 7, z = fz + Math.sin(a) * 7;
+      kit.add({ part: 'lamp', x, y: at(x, z), z });
+      if (i % 2 === 0) kit.add({ part: 'lantern', x, y: at(x, z) + 3.6, z, s: 1.2 });
+    }
+    for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {
+      const x = sx * h, z = sz * h;
+      kit.add({ part: 'spire', x, y: at(x, z), z, s: 1.1 });
+      kit.add({ part: 'banner', x: x - sx * 2, y: at(x, z), z: z - sz * 2, rotY: sx * sz > 0 ? 0 : PI / 2 });
+    }
+    // wall conduits: rune strips 1.5 m inside the wall ring, every 4 m, skipping the south gate span
+    const wy = this.half - 3.5;
+    for (let u = -wy + 2; u <= wy - 2; u += 4) {
+      for (const [x, z, rot] of [[u, -wy, 0], [u, wy, 0], [-wy, u, PI / 2], [wy, u, PI / 2]] as const) {
+        if (z > wy - 1 && Math.abs(x) < 10) continue;
+        kit.add({ part: 'conduit', x, y: at(x, z) + 0.3, z, rotY: rot });
+      }
+    }
+    // cottage silhouettes: chimney on every site, dormer on the two-storey ones
+    for (const [cx, cz, rotDeg, st] of COTTAGE_SITES) {
+      const r = rad(rotDeg), c = Math.cos(r), sn = Math.sin(r);
+      const at2 = (lx: number, lz: number): [number, number] => [cx + lx * c + lz * sn, cz - lx * sn + lz * c];
+      const [chx, chz] = at2(1.8, -1.2);
+      kit.add({ part: 'chimney', x: chx, y: at(chx, chz) + 3.75 * st + 1.6, z: chz, rotY: r });
+      if (st === 2) {
+        const [dx, dz] = at2(0, 1.4);
+        kit.add({ part: 'dormer', x: dx, y: at(dx, dz) + 7.5 + 1.2, z: dz, rotY: r });
+      }
+    }
+    kit.add({ part: 'machine', x: fx - 6, y: at(fx - 6, fz), z: fz - 6, rotY: PI / 4 });
+    kit.add({ part: 'spire', x: fx, y: at(fx, fz) + 2.2, z: fz, s: 0.45 });
+    kit.build();
+    this.root.add(kit.root);
+    this.magitech = kit;
+    this.disposables.push({ dispose: () => kit.dispose() });
+  }
+
   async build(): Promise<void> {
     this.setupLighting();
     this.setupTerrain();
@@ -1206,6 +1253,7 @@ class TownBuild {
     this.castlePos.set(castle?.x ?? 0, 0, castle?.z ?? -(this.half + 16));
     this.placeNature();
     this.placeHorizon();
+    if (this.def.id === 'town_kuzgunkale') this.buildMagitech();
     this.buildParticles();
     this.buildRavens();
     this.halo.build();
@@ -1234,6 +1282,7 @@ class TownBuild {
   update(dt: number): void {
     dt = Math.min(dt, 0.1);
     this.time += dt;
+    this.magitech?.update(this.time);
     this.updateRavens(dt);
     worldFocus(this.focus);
     this.culler.limits = TOWN_CULL;

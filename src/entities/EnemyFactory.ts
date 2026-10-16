@@ -58,6 +58,13 @@ export function partyHpMult(n?: number): number {
 }
 
 let netFor: unknown = null;
+/** Client: host ids whose `spawn` is still loading its model, per world (a re-announce while loading must not start a second body). */
+const pendingSpawnsOf = new WeakMap<object, Set<number>>();
+const pendingFor = (world: object): Set<number> => {
+  let s = pendingSpawnsOf.get(world);
+  if (!s) pendingSpawnsOf.set(world, (s = new Set<number>()));
+  return s;
+};
 
 /** Register the 'spawn' / 'ecast' receivers once per NetSession (enemies module owns both channels). */
 function ensureNetHandlers(): void {
@@ -76,12 +83,33 @@ function ensureNetHandlers(): void {
         if (e && e.kind === 'enemy') e.escape();
         return;
       }
-      if (world.get(id)) return;
       if (!Number.isFinite(p.x) || !Number.isFinite(p.z)) return;
+      const prior = world.get(id) as Enemy | undefined;
+      // an alive copy already here: nothing to do (the host re-announces on a missed spawn). A dead one is the previous life of
+      // a camp member the host has just respawned under the same id (its corpse is still lying around here): it gives way.
+      if (prior && !prior.removed && (prior.kind !== 'enemy' || !prior.isDead)) return;
+      const pending = pendingFor(world);
+      if (pending.has(id)) return; // the host re-announced while the model still loads
+      pending.add(id);
+      if (prior) world.remove(prior);
       world.noteHostId(id);
+      const hpMax = typeof p.maxHp === 'number' && Number.isFinite(p.maxHp) && p.maxHp > 0 ? p.maxHp : undefined;
+      const hpFrac = typeof p.hpFrac === 'number' ? p.hpFrac : undefined;
       void spawnEnemy(world, p.defId, { x: p.x, z: p.z }, {
         id, level: Math.max(1, Math.min(200, Math.round(p.level) || 1)), packId: typeof p.packId === 'string' ? p.packId : null, facing: typeof p.facing === 'number' ? p.facing : undefined,
-        openWorld: !!p.openWorld, aggro: !!p.aggro, owner: typeof p.owner === 'number' ? p.owner : null, tag: typeof p.tag === 'string' ? p.tag.slice(0, 24) : undefined, hpFrac: typeof p.hpFrac === 'number' ? p.hpFrac : undefined,
+        openWorld: !!p.openWorld, aggro: !!p.aggro, owner: typeof p.owner === 'number' ? p.owner : null, tag: typeof p.tag === 'string' ? p.tag.slice(0, 24) : undefined, hpFrac,
+        // the same hidden / asleep state the host built the body with (the host's hp curve is applied below, the local one differs)
+        stealth: p.stealth === true, dormant: p.dormant === true ? true : p.dormant === false ? false : undefined,
+        wakeRadius: typeof p.wakeRadius === 'number' && p.wakeRadius > 0 ? p.wakeRadius : undefined,
+      }).then((e) => {
+        pending.delete(id);
+        if (e && e.kind === 'enemy' && hpMax !== undefined && !e.removed) {
+          e.maxHp = hpMax;
+          e.hp = Math.max(1, Math.round(hpMax * (hpFrac ?? 1)));
+        }
+      }, (err: unknown) => {
+        pending.delete(id);
+        console.error('[enemy] spawn of host id failed', id, err);
       });
     } catch (e) {
       console.error('[enemy] spawn receiver failed', e);
@@ -135,7 +163,9 @@ export async function spawnEnemy(world: World, defId: string, pos: THREE.Vector3
     }
     id = world.allocHostId();
   } else if (id >= HOST_DYNAMIC_ID_BASE) world.noteHostId(id);
-  if (world.get(id)) return world.get(id) as Enemy;
+  // a removed entity still sits in the world map until the frame prunes it: it must not block the new body under the same id
+  const prior0 = world.get(id) as Enemy | undefined;
+  if (prior0 && !prior0.removed) return prior0;
   const dynamic = id >= HOST_DYNAMIC_ID_BASE;
   ensureNetHandlers();
   const level = Math.max(1, Math.round(opts.level || 1));
@@ -209,7 +239,8 @@ export async function spawnEnemy(world: World, defId: string, pos: THREE.Vector3
     console.error(`[enemy] model load failed for ${defId}`, err);
   }
   if (e.removed) return null;
-  if (world.get(id)) return world.get(id) as Enemy; // spawned twice while loading
+  const prior1 = world.get(id) as Enemy | undefined;
+  if (prior1 && !prior1.removed) return prior1; // spawned twice while loading
   world.add(e);
   e.setLocomotion('idle');
   if (opts.stealth && !def.ai?.stealthReveal && !dynamic) {

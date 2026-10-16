@@ -5,7 +5,7 @@ import { minionDef } from '../data/minions';
 import type { MinionSync } from '../types/minions';
 import type { Enemy, EnemySyncState } from '../entities/Enemy';
 import type { World } from '../world/World';
-import { HOST_DYNAMIC_ID_BASE, MINION_ID_BASE, PARTY_ID_BASE, RARITY_ORDER, type EntityId } from '../types/common';
+import { DUNGEON_ENEMY_ID_BASE, HOST_DYNAMIC_ID_BASE, MINION_ID_BASE, PARTY_ID_BASE, RARITY_ORDER, type EntityId } from '../types/common';
 import type { EquipSlot, ItemInstance } from '../types/items';
 import type { NetChannels } from '../types/net';
 import type { DispelType, StatusId } from '../types/skills';
@@ -229,6 +229,9 @@ export class Replication {
   private readonly peerView = new Map<string, PeerView>();
   /** sprint1 host: cleanse token bucket per requesting peer. */
   private readonly cleanseTokens = new Map<string, { n: number; at: number }>();
+  /** Client: host enemy ids whose snapshot arrived with no local body (lost spawn); asked again in one `resync` request. */
+  private readonly unknownIds = new Set<number>();
+  private nextResync = 0;
 
   constructor(private readonly net: NetSession) {
     const ev = G.events;
@@ -254,6 +257,7 @@ export class Replication {
       net.on('minion', (p, from) => this.onMinion(p, from)),
       // sprint1 cleanse: the host validates the request (every peer registers, only the host ever receives it) and the owner applies it
       net.onRequest('cleanse', (data, from) => this.onCleanseRequest(data, from)),
+      net.onRequest('resync', (data, from) => this.onResyncRequest(data, from)),
       net.on('cleanse', (p, from) => this.onCleanse(p, from)),
     );
   }
@@ -306,6 +310,12 @@ export class Replication {
     }
     for (const rec of this.remotes.values()) if (rec.added) rec.pet.update(dt);
 
+    if (net.role === 'client' && this.unknownIds.size > 0 && now >= this.nextResync) {
+      this.nextResync = now + 0.5;
+      const ids = [...this.unknownIds].slice(0, 16);
+      this.unknownIds.clear();
+      this.safe(() => net.sendRequest('resync', { ids }));
+    }
     if (hasRemotes) {
       if (now >= this.nextPState) {
         this.nextPState = now + 1 / NET.PLAYER_STATE_HZ - 0.002;
@@ -693,7 +703,9 @@ export class Replication {
     const open = net.inOpenWorld;
     const radius = open ? NET.OPEN_WORLD_RELEVANCE_RADIUS : NET.RELEVANCE_RADIUS;
     const r2max = radius * radius;
-    const targets = open ? net.remotePeers() : [];
+    // every mode announces host-spawned / camp enemies per peer: a peer that missed the spawn (lost frame, scene not ready, a
+    // late joiner) would otherwise drop every snap entry of that id for good (snapUnknown), so it never shows the enemy
+    const targets = net.remotePeers();
     const alive = new Set<number>();
     const cands: SnapCandidate[] = [];
     for (const e of world.enemies) {
@@ -707,9 +719,10 @@ export class Replication {
         if (dd < d2) d2 = dd;
       }
       if (d2 > r2max) continue;
-      // Sleeping enemies are not streamed; they wake into the stream (and get announced then).
+      // Sleeping enemies are not streamed; they wake into the stream. Their body is still announced (a sleeper a peer lacks is a hole).
       if (e.dormant) {
         this.snapSigs.delete(e.id);
+        if (!e.isDead && (e.id >= HOST_DYNAMIC_ID_BASE || e.packId !== null)) this.announce(e, targets);
         continue;
       }
       let s: EnemySyncState;
@@ -721,7 +734,7 @@ export class Replication {
       const q = quantizeEnemy(s);
       const sig = enemySig(q);
       const missing =
-        open && !e.isDead && (e.id >= HOST_DYNAMIC_ID_BASE || e.packId !== null) &&
+        !e.isDead && (e.id >= HOST_DYNAMIC_ID_BASE || e.packId !== null) &&
         targets.some((p) => this.announced.get(p.peerId)?.has(e.id) !== true);
       const due = now - (this.sentAt.get(e.id) ?? -Infinity) >= NET.KEYFRAME_INTERVAL_S;
       if (!missing && !due && this.snapSigs.get(e.id) === sig) continue;
@@ -788,9 +801,12 @@ export class Replication {
         }
       }
       if (nearIdx.length === 0) continue;
-      // Sleeping enemies are not streamed; they wake into the stream (and get announced then).
+      // Sleeping enemies are not streamed; they wake into the stream. Their body is still announced to the near peers.
       if (e.dormant) {
         this.snapSigs.delete(e.id);
+        if (!e.isDead && (e.id >= HOST_DYNAMIC_ID_BASE || e.packId !== null)) {
+          for (let k = 0; k < nearIdx.length; k++) this.announce(e, [targets[nearIdx[k]].peer]);
+        }
         continue;
       }
       let st: EnemySyncState;
@@ -859,6 +875,14 @@ export class Replication {
     }
   }
 
+  /** Host: a peer's snapshot named enemies it has no body for (a lost spawn): forget that they were announced, the next tick sends them again. */
+  private onResyncRequest(data: Record<string, unknown>, from: string): void {
+    if (this.net.role !== 'host' || !Array.isArray(data.ids)) return;
+    const set = this.announced.get(from);
+    if (!set) return;
+    for (const raw of data.ids.slice(0, 16)) if (typeof raw === 'number' && Number.isFinite(raw)) set.delete(Math.round(raw));
+  }
+
   private onSnap(p: NetChannels['snap'], from: string): void {
     const net = this.net;
     if (!this.active || net.role !== 'client' || from !== net.hostId || !isObj(p) || !Array.isArray(p.enemies)) return;
@@ -872,8 +896,10 @@ export class Replication {
       const s = cleanEnemy(raw);
       if (!s) continue;
       const e = world.get(s.id);
-      if (!e || e.kind !== 'enemy') {
+      if (!e || e.kind !== 'enemy' || (e as Enemy).removed) {
         this.stats.snapUnknown++;
+        // a host enemy this peer never got the spawn of (or lost it): ask the host to announce it again (flushed in update)
+        if (!s.dead && s.id >= DUNGEON_ENEMY_ID_BASE && s.id < MINION_ID_BASE && this.unknownIds.size < 16) this.unknownIds.add(s.id);
         continue;
       }
       const en = e as unknown as Enemy;
@@ -1095,6 +1121,7 @@ function cleanEnemy(raw: unknown): EnemySyncState | null {
   else if (raw.shot === null) s.shot = null;
   if (typeof raw.shotSeq === 'number' && Number.isFinite(raw.shotSeq)) s.shotSeq = Math.round(fin(raw.shotSeq, 0, 2 ** 31, 0));
   if (typeof raw.aggroed === 'boolean') s.aggroed = raw.aggroed;
+  if (typeof raw.hidden === 'boolean') s.hidden = raw.hidden;
   // vertical worlds: airborne height (codec element 12), validated like pstate y
   if (typeof raw.y === 'number' && syncYOk(raw.y)) s.y = raw.y;
   return s;
@@ -1109,6 +1136,10 @@ function spawnPayload(e: Enemy): NetChannels['spawn'] {
   if (e.tag) out.tag = e.tag;
   if (e.openWorld) out.openWorld = true;
   if (e.maxHp > 0) out.hpFrac = Math.round((e.hp / e.maxHp) * 100) / 100;
+  // the spawn parity fields: a peer that builds the body without them shows a different enemy (hidden stealth pack member, asleep one, HP curve)
+  if (e.maxHp > 0) out.maxHp = Math.round(e.maxHp);
+  if (e.packStealth) out.stealth = true;
+  if (e.dormant) out.dormant = true;
   return out;
 }
 
@@ -1120,11 +1151,12 @@ function quantizeEnemy(s: EnemySyncState): EnemySyncState {
   if (s.shot !== undefined) q.shot = s.shot;
   if (s.shotSeq !== undefined) q.shotSeq = s.shotSeq;
   if (s.aggroed !== undefined) q.aggroed = s.aggroed;
+  if (s.hidden !== undefined) q.hidden = s.hidden;
   return q;
 }
 
 function enemySig(q: EnemySyncState): string {
-  return `${q.x}|${q.z}|${q.yaw}|${q.hp}|${q.anim}|${q.targetId}|${q.cast}|${q.dead}|${q.shot ?? ''}|${q.shotSeq ?? ''}|${q.aggroed ?? ''}`;
+  return `${q.x}|${q.z}|${q.yaw}|${q.hp}|${q.anim}|${q.targetId}|${q.cast}|${q.dead}|${q.shot ?? ''}|${q.shotSeq ?? ''}|${q.aggroed ?? ''}|${q.hidden ?? ''}`;
 }
 
 /** Strip an item down to what remote models need (weapon visuals + upgrade glow). */

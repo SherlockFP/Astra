@@ -111,7 +111,7 @@ export interface NetChannels {
   pstate: PlayerSyncState & { id: EntityId; t: number; /** GDD_V2 §2.1: remaining major cooldowns in seconds (45 / 90 / 180), sent at 1 Hz */ mcd?: [number, number, number] };
   gear: { id: EntityId; gear: Partial<Record<EquipSlot, ItemInstance>>; /** player module: colour variant (v), tint 0xRRGGBB (t) and "hide helm" (hh) of the sender's avatar, so remote models match */ look?: { v: number; t?: number; hh?: boolean } };
   snap: { t: number; enemies: EnemySyncState[] };
-  spawn: { id: EntityId; defId: string; x: number; z: number; level: number; packId: string | null; facing?: number; aggro?: boolean; /** enemies module: summoner id, tag and remove (escaped / reset adds) */ owner?: EntityId; tag?: string; hpFrac?: number; remove?: boolean; openWorld?: boolean };
+  spawn: { id: EntityId; defId: string; x: number; z: number; level: number; packId: string | null; facing?: number; aggro?: boolean; /** enemies module: summoner id, tag and remove (escaped / reset adds) */ owner?: EntityId; tag?: string; hpFrac?: number; remove?: boolean; openWorld?: boolean; /** the host's maxHp (its HP curve: party / M+ / mechanic multipliers), so every peer starts from the same numbers */ maxHp?: number; /** PackDef.stealth member: hidden until it aggroes */ stealth?: boolean; /** asleep at spawn time (PackDef.dormant) */ dormant?: boolean; wakeRadius?: number };
   hit: { targetId: EntityId; amount: number; crit: boolean; type: DamageType; skillId?: string; statuses?: StatusApply[]; knockback?: number; dir?: [number, number]; isDot?: boolean; /** GDD_V2 §3.7: poise damage this hit deals (poise bar, break) */ poise?: number; /** GDD_CLASSES_V2 §1.5.2 (NC42): id of the owner's minion that made this hit/taunt (threat split 0.6 owner / 0.4 minion; taunt source). The host verifies the minion belongs to the sender. */ via?: EntityId };
   dmg: { targetId: EntityId; amount: number; crit: boolean; type: DamageType; sourceId: EntityId | null; hp: number; /** combat module: damage-over-time tick (the attacker did not predict it) */ dot?: boolean };
   death: { entityId: EntityId; killerId: EntityId | null; pos: [number, number, number] };
@@ -133,7 +133,13 @@ export interface NetChannels {
    * Chat line. Old clients send `{ text }` only (= party). GDD_ITEMS_V2 §2.10: `ann` is the cosmetic upgrade announcement.
    * GDD_LIFE §3.8: channel, whisper target, item links (<= 2), emote id, roll [max, result].
    */
-  chat: { text: string; ann?: ChatAnn; ch?: 'say' | 'yell' | 'party' | 'whisper' | 'emote' | 'roll'; to?: string; links?: ChatLink[]; emote?: string; roll?: [number, number] };
+  chat: {
+    text: string; ann?: ChatAnn; ch?: 'say' | 'yell' | 'party' | 'whisper' | 'emote' | 'roll'; to?: string; links?: ChatLink[]; emote?: string; roll?: [number, number];
+    /** Speaker (x, z) in a public channel. Receivers drop lines beyond the chat radius; the host rewrites it from its own position book. */
+    pos?: { x: number; z: number };
+    /** `/e <eylem>`: free-text action (ch 'emote', no `emote` id, no clip). */
+    act?: boolean;
+  };
   keystone: { peerId: string; keystone: KeystoneData | null };
   /**
    * net module: small client -> HOST event request (a guest asks the host to start the Lanetli Sandık, open a host-owned
