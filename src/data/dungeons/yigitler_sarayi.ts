@@ -131,19 +131,19 @@ const ROOMS: RoomDef[] = [
 
 // ---- doors (16) ---------------------------------------------------------------------------------------------------------------
 const DOORS: DoorDef[] = [
-  door('giris', 'yuksek_kapi', 10, 54, 'n', 2, 'none'),
-  door('yuksek_kapi', 'k_heymdal', 10, 40, 'n', 2, 'none'),
-  door('k_heymdal', 'heymdal_zirvesi', 10, 36, 'n', 2, 'boss_lock'),
+  door('giris', 'yuksek_kapi', 8, 54, 'n', 4, 'none'),
+  door('yuksek_kapi', 'k_heymdal', 9, 40, 'n', 4, 'none'),
+  door('k_heymdal', 'heymdal_zirvesi', 9, 36, 'n', 4, 'boss_lock'),
   door('heymdal_zirvesi', 'solen_ocagi', 17, 29, 'e', 2, 'boss_exit'),
   door('solen_ocagi', 'bal_mahzeni', 39, 29, 'e', 2, 'none'),
   door('solen_ocagi', 'k_yukselis', 27, 26, 'n', 2, 'none'),
-  door('k_yukselis', 'yukselis_koltugu', 27, 22, 'n', 2, 'boss_lock'),
+  door('k_yukselis', 'yukselis_koltugu', 26, 22, 'n', 4, 'boss_lock'),
   door('solen_ocagi', 'k_av_yolu', 31, 34, 's', 2, 'none'),
   door('k_av_yolu', 'av_meydani', 30, 38, 's', 4, 'none'),
-  door('av_meydani', 'fenrur_ini', 43, 48, 'e', 2, 'boss_lock'),
-  door('yukselis_koltugu', 'k_hyrja_dogu', 34, 17, 'e', 2, 'boss_exit'),
-  door('k_hyrja_dogu', 'salon_esigi', 45, 19, 'e', 2, 'none'),
-  door('fenrur_ini', 'efemer_yol', 51, 42, 'n', 2, 'boss_exit'),
+  door('av_meydani', 'fenrur_ini', 43, 46, 'e', 4, 'boss_lock'),
+  door('yukselis_koltugu', 'k_hyrja_dogu', 34, 17, 'e', 4, 'boss_exit'),
+  { ...door('k_hyrja_dogu', 'salon_esigi', 45, 19, 'e', 2, 'kill_lock'), opensOn: { boss: 'boss_hirya' } },
+  door('fenrur_ini', 'efemer_yol', 50, 42, 'n', 4, 'boss_exit'),
   door('efemer_yol', 'salon_esigi', 51, 22, 'n', 2, 'none'),
   door('efemer_yol', 'rune_mahzeni', 50, 24, 'w', 2, 'none'),
   door('salon_esigi', 'salon_arena', 50, 16, 'n', 4, 'boss_lock'),
@@ -172,27 +172,29 @@ const PACKS: PackDef[] = [
     { patrol: [[8.5, 46.5], [12.5, 46.5]] }),
   P_PACK('yg_p04', 'yuksek_kapi', 5.5, 42.5, [['yg_storm_drake', 2], ['yg_runecarver', 1]], { dormant: DORMANT_CEILING }),
   P_PACK('yg_p05', 'yuksek_kapi', 15.5, 42.5, [['yg_thundercaller', 1], ['yg_purifier', 1], ['yg_shieldmaiden', 1]]),
-  P_PACK('yg_p06', 'k_heymdal', 10.5, 37.5, [['yg_storm_drake', 2]], { dormant: DORMANT_CEILING }),
-  P_PACK('yg_p07', 'solen_ocagi', 23, 28.5, [['yg_revel', 8], ['yg_mystic', 1]], { big: true, linkedTo: ['yg_p08'] }),
-  P_PACK('yg_p08', 'solen_ocagi', 23, 32, [['yg_revel', 8], ['yg_shieldmaiden', 1]], { big: true, linkedTo: ['yg_p07'] }),
-  P_PACK('yg_p09', 'solen_ocagi', 30.5, 27.2, [['yg_shieldmaiden', 2], ['yg_thundercaller', 1], ['yg_mystic', 1]]),
-  P_PACK('yg_p10', 'solen_ocagi', 35, 28, [['yg_revel', 6], ['yg_runecarver', 1]], { big: true, linkedTo: ['yg_p11'] }),
-  P_PACK('yg_p11', 'solen_ocagi', 35.5, 33, [['yg_sentinel', 1], ['yg_shieldmaiden', 1], ['yg_purifier', 1]], { linkedTo: ['yg_p10'] }),
+  P_PACK('yg_p06', 'k_heymdal', 10.5, 37.5, [['yg_storm_drake', 1], ['yg_purifier', 1]], { dormant: DORMANT_CEILING }),
+  P_PACK('yg_p07', 'solen_ocagi', 23, 28.5, [['yg_revel', 6], ['yg_mystic', 1]], { big: true, linkedTo: ['yg_p08'] }),
+  P_PACK('yg_p08', 'solen_ocagi', 23, 32, [['yg_revel', 6], ['yg_shieldmaiden', 1]], { big: true, linkedTo: ['yg_p07'] }),
+  P_PACK('yg_p09', 'solen_ocagi', 30.5, 27.2, [['yg_shieldmaiden', 2], ['yg_thundercaller', 1], ['yg_mystic', 1]], { linkedTo: ['yg_p12'] }),
+  P_PACK('yg_p10', 'solen_ocagi', 35, 28, [['yg_revel', 5], ['yg_runecarver', 1]]),
+  P_PACK('yg_p11', 'solen_ocagi', 35.5, 33, [['yg_sentinel', 1], ['yg_shieldmaiden', 1], ['yg_purifier', 1]]),
   P_PACK('yg_p12', 'solen_ocagi', 29.5, 31.5, [['yg_thundercaller', 1], ['yg_shieldmaiden', 2]],
-    { patrol: [[27.5, 31.5], [31.5, 31.5]] }),
-  P_PACK('yg_p13', 'bal_mahzeni', 43.5, 30, [['yg_revel', 12], ['yg_sentinel', 1]], { optional: true }),
+    { linkedTo: ['yg_p09'] }),
+  P_PACK('yg_p13', 'bal_mahzeni', 43.5, 30, [['yg_revel', 4], ['yg_sentinel', 1], ['yg_mystic', 1]], { optional: true }),
+  P_PACK('yg_p13b', 'bal_mahzeni', 45.5, 33, [['yg_revel', 3], ['yg_mystic', 1]], { optional: true }),
+  P_PACK('yg_p13c', 'bal_mahzeni', 42.5, 34.5, [['yg_revel', 3], ['yg_sentinel', 1]], { optional: true }),
   P_PACK('yg_p14', 'k_yukselis', 27.5, 23.5, [['yg_shieldmaiden', 2], ['yg_runecarver', 1]]),
   P_PACK('yg_p15', 'k_av_yolu', 31.5, 36, [['yg_worg', 4], ['yg_trapper', 1]]),
   P_PACK('yg_p16', 'av_meydani', 25, 43, [['yg_worg', 4], ['yg_stag', 1], ['yg_trapper', 1]]),
   P_PACK('yg_p17', 'av_meydani', 25, 52, [['yg_trapper', 3], ['yg_worg', 2]]),
-  P_PACK('yg_p18', 'av_meydani', 31.5, 42, [['yg_grizzly', 1]], { optional: true }),
+  P_PACK('yg_p18', 'av_meydani', 31.5, 42, [['yg_grizzly', 1], ['yg_worg', 1]], { optional: true }),
   P_PACK('yg_p19', 'av_meydani', 40, 41.5, [['yg_thundercaller', 1], ['yg_stag', 1], ['yg_worg', 2]]),
   P_PACK('yg_p22', 'av_meydani', 32, 47.5, [['yg_worg', 2], ['yg_trapper', 2]], { patrol: [[26, 47.5], [38, 47.5]] }),
   P_PACK('yg_p23', 'k_hyrja_dogu', 37.5, 18.5, [['yg_shieldmaiden', 2], ['yg_thundercaller', 1], ['yg_mystic', 1]]),
   P_PACK('yg_p24', 'k_hyrja_dogu', 42.5, 18.5, [['yg_tideskorn', 1], ['yg_trapper', 2]]),
   P_PACK('yg_p25', 'efemer_yol', 51.5, 39.5, [['yg_tideskorn', 1], ['yg_shieldmaiden', 1]]),
   P_PACK('yg_p26', 'efemer_yol', 51.5, 34.5, [['yg_thundercaller', 1], ['yg_runecarver', 2]]),
-  P_PACK('yg_p27', 'efemer_yol', 51.5, 29.5, [['yg_tideskorn', 2]]),
+  P_PACK('yg_p27', 'efemer_yol', 51.5, 29.5, [['yg_tideskorn', 1], ['yg_purifier', 1]]),
   P_PACK('yg_p28', 'efemer_yol', 51.5, 24.2, [['yg_sentinel', 1], ['yg_shieldmaiden', 1], ['yg_purifier', 1]],
     { patrol: [[51.5, 23.0], [51.5, 25.4]] }),
   P_PACK('yg_p29', 'rune_mahzeni', 46.5, 24, [['yg_runecarver', 2], ['yg_revel', 2]], { optional: true }),
@@ -273,8 +275,60 @@ const PROPS: Record<string, PropPlacement[]> = {
 };
 
 const ROOMS_WITH_PROPS: RoomDef[] = ROOMS.map((r) => (PROPS[r.id] ? { ...r, props: PROPS[r.id] } : r));
+// Odyn's storm: lightning strikes on the arena, cancelled near the four corner columns (grounding rods)
+const RODS_ODYN: [number, number][] = [[46.5, 2.5], [56.5, 2.5], [46.5, 13.5], [56.5, 13.5]];
 
 // ---- bosses (4; the finale is one entity with two stages) -----------------------------------------------------------------
+const CALM_YG = ['giris', 'yuksek_kapi', 'k_heymdal', 'solen_ocagi', 'bal_mahzeni', 'k_av_yolu', 'av_meydani'];
+const TENSE_YG = ['k_yukselis', 'k_hyrja_dogu', 'efemer_yol', 'rune_mahzeni', 'salon_esigi'];
+const SET_YG = ['heymdal_zirvesi', 'yukselis_koltugu', 'fenrur_ini', 'salon_arena'];
+const MOOD_YG: Record<string, string> = Object.fromEntries([
+  ...CALM_YG.map((id) => [id, 'calm']), ...TENSE_YG.map((id) => [id, 'tension']), ...SET_YG.map((id) => [id, 'setpiece']),
+]);
+const AMBIENCE_YG: Record<string, NonNullable<RoomDef['ambience']>> = {
+  heymdal_zirvesi: [{ id: 'bell_toll', radius: 16, volume: 0.25, every: [20, 40] }],
+  solen_ocagi: [{ id: 'crowd_murmur', radius: 14, volume: 0.15, loop: true }],
+  bal_mahzeni: [{ id: 'crowd_murmur', radius: 8, volume: 0.12, loop: true }],
+  k_av_yolu: [{ id: 'drain_loop', radius: 10, volume: 0.15, loop: true }],
+  av_meydani: [{ id: 'drain_loop', radius: 18, volume: 0.2, loop: true }],
+  efemer_yol: [{ id: 'drain_loop', radius: 12, volume: 0.25, loop: true }],
+  salon_esigi: [{ id: 'hero_horn', radius: 16, volume: 0.25, every: [25, 45] }],
+  yukselis_koltugu: [{ id: 'bell_toll', radius: 14, volume: 0.2, every: [30, 60] }],
+  salon_arena: [{ id: 'hero_horn', radius: 24, volume: 0.3, every: [18, 30] }],
+  fenrur_ini: [{ id: 'drain_loop', radius: 12, volume: 0.2, loop: true }],
+};
+const DRESS_YG_COLOR: Record<string, number> = { salon_arena: 0xffe8b0, salon_esigi: 0xffe0a0, heymdal_zirvesi: 0x80b0ff, yukselis_koltugu: 0x9ad8ff, efemer_yol: 0xaec4ff };
+/** Points on the inset ring of a room (walked clockwise from the north-west corner), n of them, evenly spaced. */
+function ringYg(rc: TileRect, n: number, inset: number): [number, number][] {
+  const x0 = rc.x + inset, z0 = rc.z + inset, w = rc.w - 2 * inset, h = rc.h - 2 * inset;
+  const per = 2 * (w + h);
+  return Array.from({ length: n }, (_, i) => {
+    let d = (i / n) * per;
+    if (d < w) return [x0 + d, z0];
+    d -= w;
+    if (d < h) return [x0 + w, z0 + d];
+    d -= h;
+    if (d < w) return [x0 + w - d, z0 + h];
+    d -= w;
+    return [x0, z0 + h - d];
+  });
+}
+const DRESS_YG = [gp('brazier'), kg('urn-round'), gp('crystal_blue')];
+const finishYg = (r: RoomDef): RoomDef => {
+  const out: RoomDef = { ...r, atmosphere: MOOD_YG[r.id], ambience: AMBIENCE_YG[r.id] ?? r.ambience };
+  if (r.id === 'salon_arena') out.hazards = [{ kind: 'lightning_strike', interval: 8, warn: 1.4, radius: 2.4, coef: 0.35, stun: 1.0, vfx: 'lightning_strike', groundedBy: { pos: RODS_ODYN, radius: 6, status: 'rod_charged' } }];
+  const color = DRESS_YG_COLOR[r.id] ?? 0xffb060;
+  const n = Math.max(0, 12 - (r.props ?? []).length);
+  const extra: PropPlacement[] = ringYg(r.rect, n, 0.8).map(([x, z], i) => {
+    const model = DRESS_YG[i % DRESS_YG.length];
+    if (model === gp('brazier')) return { model, pos: [x, z], light: lt(color, 1.2, 8, true) };
+    if (model === gp('crystal_blue')) return { model, pos: [x, z], scale: 0.5, emissive: color, emissiveIntensity: 0.5 };
+    return { model, pos: [x, z], scale: 1.0, tint: 0xd9b45a };
+  });
+  out.props = [...(r.props ?? []), ...extra];
+  return out;
+};
+
 const BOSSES = [
   bossAt('boss_heymdal', 'heymdal_zirvesi', 9.5, 26, 0, 1),
   bossAt('boss_hirya', 'yukselis_koltugu', 27.5, 13, 0, 2),
@@ -301,10 +355,10 @@ export const YIGITLER_SARAYI: DungeonDef = {
   lore: "Kadimler, ölen yiğitlerin ruhlarını sınamak için fırtınanın üstüne bir saray kaldırdı: Yiğitler Sarayı. Titan kemerleri bulutların üzerinde yüzüyor, Odyn'in ebedi şölenine açılıyor. Yüksek Kapı'da Heymdal'ın borusu çalıyor; Eyra'nın Seçilmişi Hirya yükseliş koltuğunu bekliyor; Fenrür Sonsuz Av'da kan kokusu alıyor. Ama Gelgitkıran Kralı Skovald, Kadim Zindanlar'ın gölgesinden gelen bir fısıltıya kulak verdi ve kutsal Aegis'i çalmak için Şan Salonu'na daldı. Sınav başladı. Layık olan, Odyn'in sofrasına oturur.",
   levelRange: [60, 60],
   timerSec: 1515,
-  forcesRequired: 325,
+  forcesRequired: 338, // floor(0.8 x 423 pack forces)
   theme: THEME,
   grid: { w: 64, h: 60 },
-  rooms: ROOMS_WITH_PROPS,
+  rooms: ROOMS_WITH_PROPS.map(finishYg),
   doors: DOORS,
   packs: PACKS,
   bosses: BOSSES,
@@ -313,17 +367,23 @@ export const YIGITLER_SARAYI: DungeonDef = {
   extras: {
     fontOfPower: pt(10.5, 55.2),
     shrines: [
-      { type: 'shrine_haste', pos: pt(44.5, 31) },     // Hidromel Fıçısı, Bal Mahzeni (optional detour)
       { type: 'shrine_ward', pos: pt(19.5, 33.5) },    // Koruma Sunağı, Hearth SW, before the fork bosses
       { type: 'shrine_power', pos: pt(51.5, 18.8) },   // Kudret Sunağı, Şan Eşiği, between p30 and p31
     ],
     riftSpots: [pt(10.5, 52), pt(24.5, 30.5), pt(36.5, 30.5), pt(30, 45), pt(36.5, 49), pt(51.5, 33.5)],
+    checkpoints: [pt(52.5, 39.5)],
+    boons: [{ id: 'odyn_hizi', pos: pt(51.5, 28.5), status: 'haste', duration: 60, magnitude: 0.1, oncePerPlayer: true, persistOnDeath: false }],
     chests: [{ pos: pt(44.8, 28.3), kind: 'chest_gold' }, { pos: pt(48.6, 22.4), kind: 'chest_iron' }, { pos: pt(17.8, 46.2), kind: 'chest_wood' }],
   },
   season: 1,
   endgame: true,
   vertical: true,
   lifts: [],
+  atmospheres: {
+    calm: { color: 0x3a424e, near: 14, far: 60 },
+    tension: { color: 0x2e3440, near: 12, far: 52 },
+    setpiece: { color: 0x5a5448, near: 22, far: 96 },
+  },
 };
 
 export const YIGITLER_SARAYI_ROOM_COUNT = ROOMS.length;
