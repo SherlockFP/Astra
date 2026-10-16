@@ -62,6 +62,17 @@ interface PanelRec {
   openedAt: number;
 }
 
+/**
+ * While the local player is dead, only these panels may open. Everything else (NPC talk windows, quest / vendor popups, the game
+ * menu) waits until the player is alive: a new open is queued (the last one per panel) and replayed on the release.
+ */
+const DEAD_OPEN_ALLOWED = new Set(['death', 'runSummary', 'settings', 'map']);
+
+/** The local player is dead (the death card is up). Null-safe: no player (menus, loading) is not dead. */
+function localDead(): boolean {
+  return (G.player as unknown as { isDead?: boolean } | null)?.isDead === true;
+}
+
 /** Quest messages (accept / ready / done, bounties, world quests, Av Defteri) use the quest toast lane (upper centre, above the banner lane). */
 const QUEST_TOAST_RE = /^(Görev|Dünya görevi|Av Defteri)/;
 /** World announcements (metin / rare / boss spawns, event lines) are toasts in the held toast lane, never a separate stack under the banner. */
@@ -169,6 +180,10 @@ export class UI {
   private escQueued = false;
   /** The NPC whose talk window is open (bindNpcPanel); the window closes once the player is out of NPC_TETHER_RANGE. */
   private npcTether: { panelId: string; npc: { position: { x: number; z: number }; removed?: boolean } } | null = null;
+  /** Panel opens requested while dead (DEAD_OPEN_ALLOWED), replayed once alive. The game menu is never queued (no stale Esc menu). */
+  private deadOpens = new Map<string, unknown>();
+  /** Modal confirms requested while dead (e.g. a world vignette question), shown once alive. */
+  private deadConfirms: { text: string; ok: string; cancel: string; resolve: (v: boolean) => void }[] = [];
   /** The engine canvas whose size feeds viewW / viewH, and the observer that follows its size changes. */
   private viewCanvas: HTMLCanvasElement | null = null;
   private viewRO: ResizeObserver | null = null;
@@ -231,6 +246,7 @@ export class UI {
     ev.on('ui:closePanels', () => this.closeAll());
     ev.on('scene:changed', ({ to }) => this.setMode(to));
     ev.on('scene:leaving', () => {
+      this.deadOpens.clear();
       this.closeAll();
       this.plates.clear();
       this.bubbles.clear();
@@ -297,6 +313,10 @@ export class UI {
     const rec = this.panels.get(id);
     if (!rec) {
       console.warn(`[ui] openPanel: unknown panel "${id}"`);
+      return;
+    }
+    if (localDead() && !DEAD_OPEN_ALLOWED.has(id)) {
+      if (id !== 'gameMenu') this.deadOpens.set(id, data);
       return;
     }
     // same-press guard: the lock-release path (PlayerController) must not open the menu right after Esc closed a panel
@@ -582,6 +602,11 @@ export class UI {
    * the nearest ones are placed first, an overlapping label is lifted up to 3 steps and hidden if it still does not fit.
    * `stackGroup` is accepted for existing callers; overlaps are now resolved for every label by the declutter.
    */
+  /** Solid meshes that hide NPC names behind them (the town's houses, set on town enter, null on leave). See WorldLabels.setOccluders. */
+  setLabelOccluders(list: THREE.Object3D[] | null): void {
+    this.labels.setOccluders(list);
+  }
+
   addWorldLabel(
     object: THREE.Object3D,
     html: string,
@@ -622,7 +647,32 @@ export class UI {
 
   /** Modal confirm dialog. */
   confirm(text: string, okLabel = 'Evet', cancelLabel = 'Hayır'): Promise<boolean> {
+    if (localDead()) {
+      // dead: the question waits for the release (it must not sit on top of the death card); the caller awaits the answer
+      return new Promise((resolve) => this.deadConfirms.push({ text, ok: okLabel, cancel: cancelLabel, resolve }));
+    }
     return this.modal.ask(text, okLabel, cancelLabel);
+  }
+
+  /** Dead: closes the open NPC talk window, the dialog and any modal question. Once alive: queued opens and questions run. */
+  private handleDeadQueue(): void {
+    if (localDead()) {
+      if (this.npcTether) {
+        const id = this.npcTether.panelId;
+        this.npcTether = null;
+        this.closePanel(id);
+      }
+      if (this.isPanelOpen('dialog')) this.closePanel('dialog');
+      if (this.modal.isOpen) this.modal.cancelAll();
+      return;
+    }
+    if (!this.deadOpens.size && !this.deadConfirms.length) return;
+    const opens = [...this.deadOpens];
+    this.deadOpens.clear();
+    for (const [id, data] of opens) this.openPanel(id, data);
+    const confirms = this.deadConfirms;
+    this.deadConfirms = [];
+    for (const c of confirms) void this.modal.ask(c.text, c.ok, c.cancel).then(c.resolve);
   }
 
   // ---- misc ----
@@ -750,6 +800,7 @@ export class UI {
 
     this.handleHotkeys(now);
     this.checkNpcTether();
+    this.handleDeadQueue();
 
     // mirror panel state changes made by the panels themselves; tick open panels
     for (const rec of this.panels.values()) {

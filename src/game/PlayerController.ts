@@ -1345,23 +1345,30 @@ export class PlayerController {
     const reach = kind === 'melee'
       ? WOW_TARGET.meleeReachM + (def.params?.lunge ? 1 : 0)
       : Math.min(def.range ?? AUTO.rangedMax, WOW_TAB_RANGE + 5);
+    const gapTo = (e: Enemy) => Math.hypot(e.position.x - p.position.x, e.position.z - p.position.z) - e.radius - p.radius;
     let tgt = this.hardTarget;
     let reaimed = false;
-    if (!tgt || tgt.isDead || tgt.removed) {
-      tgt = this.acquireEnemy(kind, WOW_TARGET.autoPickM);
-      if (!tgt) {
+    const live = !!tgt && !tgt.isDead && !tgt.removed;
+    // a stale selection out of reach (a far mob picked earlier) must not refuse the cast while an enemy in reach is on us:
+    // the enemy in front / nearest within 8 m takes over when it is in reach (no match: the range error stays)
+    if (!live || gapTo(tgt!) > reach) {
+      const alt = this.acquireEnemy(kind, WOW_TARGET.autoPickM);
+      if (!alt && !live) {
         if (kind === 'melee') {
           if (edge) sk.fail('target');
           return false;
         }
         return null; // a free-aimed projectile still flies along the aim
       }
-      this.selectEnemy(tgt);
-      this.aimFrame = -1;
-      reaimed = true;
+      if (alt && (!live || gapTo(alt) <= reach)) {
+        tgt = alt;
+        this.selectEnemy(tgt);
+        this.aimFrame = -1;
+        reaimed = true;
+      }
     }
-    const dx = tgt.position.x - p.position.x, dz = tgt.position.z - p.position.z;
-    const edgeDist = Math.hypot(dx, dz) - tgt.radius - p.radius;
+    if (!tgt) return null;
+    const edgeDist = gapTo(tgt);
     if (edgeDist > reach) {
       if (edge) sk.fail('range');
       return false;
