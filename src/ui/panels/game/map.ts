@@ -6,9 +6,16 @@ import { DUNGEONS, OPEN_ZONES, getDungeon } from '../../../data/dungeons';
 import { TOWN } from '../../../data/town';
 import { CLASS_META, GamePanel, button, clampN, h, icon, sfx, windowFrame } from './base';
 import type { Enemy } from '../../../entities/Enemy';
-import { questGiverMarks, questTargetMarks, regionKnown, waypointKnown } from '../../hud/questMarks';
+import { questTargetMarks, regionKnown } from '../../hud/questMarks';
 import { peekMarket } from '../../../systems/Market';
-import { zoneMapCanvas } from '../../hud/zoneMap';
+import { atlasFor, heightsOf } from '../../map/atlas';
+import { exploredPct, fogCanvasFor, tickExploration } from '../../map/exploration';
+import { badge, glyph, questRing, arrow as glyphArrow, waypointPin } from '../../map/glyphs';
+import { livePins, pinTracked, questPins, staticPins, type Pin } from '../../map/worldPins';
+import { TRACK_LABEL, type FilterId, type TrackMode } from '../../map/mapStyle';
+import { cycleTrackMode, clearWaypoint, getTrackMode, getWaypoint, setWaypoint } from '../../map/mapPrefs';
+import { activeEventPins } from '../../../scenes/world/EventCalendar';
+import { activeVignettePins } from '../../../scenes/world/Vignettes';
 
 /* ------------------------------------------------------------------ */
 /* Exploration tracking (fog of war) — runs even while the panel is closed */
@@ -38,6 +45,12 @@ function currentDungeon(): DungeonDef | null {
   return null;
 }
 
+/** The open-world map being played (its def has a `world` extra), or null. */
+function openWorldNow(): DungeonDef | null {
+  const d = currentDungeon();
+  return d?.world ? d : null;
+}
+
 const inTown = () => G.scenes?.current?.id === 'town';
 
 /** Reveal cells around the local player (radius) and the whole room the player stands in. */
@@ -63,7 +76,7 @@ function reveal(): void {
       }
     }
   const def = currentDungeon();
-  if (def) {
+  if (def && !def.world) {
     for (const room of def.rooms) {
       const x0 = room.rect.x * TILE_SIZE, z0 = room.rect.z * TILE_SIZE, x1 = (room.rect.x + room.rect.w) * TILE_SIZE, z1 = (room.rect.z + room.rect.h) * TILE_SIZE;
       if (px >= x0 && px < x1 && pz >= z0 && pz < z1) {
@@ -86,9 +99,7 @@ function reveal(): void {
 /* Open world layer: legend filters, live metin stones, glyphs          */
 /* ------------------------------------------------------------------ */
 
-type MapFilter = 'village' | 'waypoint' | 'metin' | 'boss' | 'rare' | 'dungeon' | 'chest' | 'shrine' | 'vista' | 'landmark' | 'gather' | 'quest';
-
-const MAP_FILTERS: { id: MapFilter; label: string; icon: string }[] = [
+const MAP_FILTERS: { id: FilterId; label: string; icon: string }[] = [
   { id: 'village', label: 'Köy', icon: '/assets/icons/map-village.svg' },
   { id: 'waypoint', label: 'Işınlanma Taşı', icon: '/assets/icons/map-waypoint.svg' },
   { id: 'metin', label: 'Metin', icon: '/assets/icons/map-metin.svg' },
@@ -100,25 +111,26 @@ const MAP_FILTERS: { id: MapFilter; label: string; icon: string }[] = [
   { id: 'vista', label: 'Manzara', icon: '/assets/icons/map-vista.svg' },
   { id: 'landmark', label: 'Ufuk İşareti', icon: '/assets/icons/map-vista.svg' },
   { id: 'gather', label: 'Toplama', icon: '/assets/icons/map-ore.svg' },
+  { id: 'camp', label: 'Kasılacak Yer', icon: '/assets/icons/map-camp.svg' },
+  { id: 'graveyard', label: 'Mezarlık', icon: '/assets/icons/map-village.svg' },
   { id: 'quest', label: 'Görev', icon: '/assets/icons/map-quest.svg' },
 ];
 
 /** Legend toggles the player switched off (kept for the session). */
-const hiddenFilters = new Set<MapFilter>();
+const hiddenFilters = new Set<FilterId>();
 /** Metin spots currently standing (world:metinChanged, spot ids). */
 const metinOn = new Set<string>();
 /** The open-world layer of the map reports its first failure only (it runs every frame). */
 let worldWarned = false;
 
-const SHRINE_TR: Record<string, string> = {
-  shrine_power: 'Güç Sunağı', shrine_haste: 'Çabukluk Sunağı', shrine_ward: 'Koruma Sunağı', shrine_greed: 'Açgözlülük Sunağı', shrine_wisdom: 'Bilgelik Sunağı',
-};
-const SHRINE_COLOR: Record<string, string> = {
-  shrine_power: '#ff6a4a', shrine_haste: '#ffe36a', shrine_ward: '#6ab8ff', shrine_greed: '#e8c46a', shrine_wisdom: '#b78aff',
-};
-
 function rgba(hex: number, a: number): string {
   return `rgba(${(hex >> 16) & 255},${(hex >> 8) & 255},${hex & 255},${a})`;
+}
+
+/** `#rrggbb` with an alpha, as a CSS colour (the level-band colours of the camps). */
+function hexA(col: string, a: number): string {
+  const n = parseInt(col.replace('#', ''), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
 }
 
 function outlined(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, fill: string): void {
@@ -127,128 +139,6 @@ function outlined(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   ctx.strokeText(text, x, y);
   ctx.fillStyle = fill;
   ctx.fillText(text, x, y);
-}
-
-function house(ctx: CanvasRenderingContext2D, x: number, y: number, col: string): void {
-  ctx.save();
-  ctx.fillStyle = col;
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(x, y - 6);
-  ctx.lineTo(x + 6, y - 1);
-  ctx.lineTo(x + 4, y - 1);
-  ctx.lineTo(x + 4, y + 5);
-  ctx.lineTo(x - 4, y + 5);
-  ctx.lineTo(x - 4, y - 1);
-  ctx.lineTo(x - 6, y - 1);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-  ctx.restore();
-}
-
-function door(ctx: CanvasRenderingContext2D, x: number, y: number, col: string): void {
-  ctx.save();
-  ctx.fillStyle = col;
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(x - 4, y + 5);
-  ctx.lineTo(x - 4, y - 1);
-  ctx.arc(x, y - 1, 4, Math.PI, 0);
-  ctx.lineTo(x + 4, y + 5);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-  ctx.restore();
-}
-
-function chestIcon(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  ctx.save();
-  ctx.fillStyle = '#c8922e';
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 1.2;
-  ctx.fillRect(x - 5, y - 2, 10, 7);
-  ctx.strokeRect(x - 5, y - 2, 10, 7);
-  ctx.fillStyle = '#f3d27a';
-  ctx.fillRect(x - 5, y - 4, 10, 2.5);
-  ctx.strokeRect(x - 5, y - 4, 10, 2.5);
-  ctx.restore();
-}
-
-function eye(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  ctx.save();
-  ctx.fillStyle = '#d8e8ff';
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.ellipse(x, y, 6, 3.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = '#1a2a3a';
-  ctx.beginPath();
-  ctx.arc(x, y, 1.8, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
-
-/** Small round glyph; `cross` adds a white plus (shrines). */
-function dot(ctx: CanvasRenderingContext2D, x: number, y: number, col: string, cross: boolean): void {
-  ctx.save();
-  ctx.fillStyle = col;
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.arc(x, y, 4, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  if (cross) {
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.moveTo(x - 2.2, y);
-    ctx.lineTo(x + 2.2, y);
-    ctx.moveTo(x, y - 2.2);
-    ctx.lineTo(x, y + 2.2);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function star(ctx: CanvasRenderingContext2D, x: number, y: number, col: string, r: number): void {
-  ctx.save();
-  ctx.fillStyle = col;
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let i = 0; i < 10; i++) {
-    const a = -Math.PI / 2 + (i * Math.PI) / 5;
-    const rr = i % 2 ? r * 0.45 : r;
-    ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
-  }
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-  ctx.restore();
-}
-
-/** Gold quest marker: `!` available, `?` ready to turn in. */
-function badge(ctx: CanvasRenderingContext2D, x: number, y: number, ch: string, fill = '#e8c46a'): void {
-  ctx.save();
-  ctx.fillStyle = fill;
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.arc(x, y, 7, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = '#1a0a08';
-  ctx.font = "900 11px 'Alegreya Sans', sans-serif";
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(ch, x, y + 0.5);
-  ctx.restore();
 }
 
 /** Called once from registerGamePanels. Returns a disposer. */
@@ -265,7 +155,10 @@ export function installMapTracker(): () => void {
       if (acc < 0.3) return;
       acc = 0;
       try {
-        reveal();
+        const ow = openWorldNow();
+        const p = G.player ?? G.world?.localPlayer;
+        if (ow && p) tickExploration(ow, p.position.x, p.position.z, performance.now());
+        else reveal();
       } catch {
         /* never throw from a frame loop */
       }
@@ -288,6 +181,7 @@ export class MapPanel extends GamePanel {
   private titleEl!: HTMLElement;
   private subEl!: HTMLElement;
   private hoverEl!: HTMLElement;
+  private trackBtn: HTMLButtonElement | null = null;
   private terrain: HTMLCanvasElement | null = null;
   private terrainNav: NavGrid | null = null;
   private terrainVer = -1;
@@ -296,6 +190,7 @@ export class MapPanel extends GamePanel {
   private W = 800;
   private H = 500;
   private dpr = 1;
+  /** View centre and scale: cells (dungeons, town) or metres with px per metre (open world). */
   private view = { cx: 0, cz: 0, scale: 4 };
   private tgt = { cx: 0, cz: 0, scale: 4 };
   private ro: ResizeObserver | null = null;
@@ -305,13 +200,19 @@ export class MapPanel extends GamePanel {
   private lastT = 0;
   /** Name of the open-world point under the cursor (empty when none). */
   private worldHover = '';
+  /** Open-world pins (world metres), refreshed about twice a second while the panel is open. */
+  private pins: Pin[] = [];
+  private pinsAt = -1e9;
+  private eventMarks: { x: number; z: number; vig: boolean }[] = [];
+  private needFit = false;
 
   constructor() {
     super('map', { backdropClose: true, modal: false });
   }
 
   protected build(): void {
-    const { win, body, titleEl, foot } = windowFrame({ title: 'Harita', icon: '/assets/icons/ui-map.svg', cls: 'pg-map', size: 'L', hints: ['Sürükle: haritayı kaydır'], onClose: () => this.requestClose() });
+    // taller than the default L window: the zone is square, so the panel height is what limits its size on screen
+    const { win, body, titleEl, foot } = windowFrame({ title: 'Harita', cls: 'pg-map', size: 'L', height: 'min(90vh, 960px)', hints: ['Sürükle: haritayı kaydır', 'Tıkla: hedef işaretle', 'Sağ tık: hedefi sil'], onClose: () => this.requestClose() });
     this.titleEl = titleEl;
     this.canvas = h('canvas.pg-map-canvas') as HTMLCanvasElement;
     this.ctx = this.canvas.getContext('2d')!;
@@ -326,24 +227,36 @@ export class MapPanel extends GamePanel {
       h('span', null, h('i.lg.boss'), 'Boss'),
       h('span', null, h('i.lg.exit'), 'Çıkış'),
     );
-    // legend filters: toggling hides a point type on the map (open world)
-    const filters = h('div.pg-map-filters');
+    // one "Filtre" toggle at the top right opens a checkbox list (WoW's map filter), instead of a row of chips
+    const pop = h('div', { style: 'display:none;position:absolute;right:10px;top:44px;z-index:6;width:230px;max-height:72%;overflow:auto;padding:8px 10px;background:rgba(12,9,6,0.94);border:1px solid #6b5630;border-radius:6px;' });
     for (const f of MAP_FILTERS) {
-      const b = h('button.pg-map-flt', { type: 'button', class: hiddenFilters.has(f.id) ? 'is-off' : '', title: f.label }, icon(f.icon, 'pg-map-fico'), h('span', null, f.label)) as HTMLButtonElement;
-      b.addEventListener('click', () => {
-        if (hiddenFilters.has(f.id)) hiddenFilters.delete(f.id);
+      const cb = h('input', { type: 'checkbox' }) as HTMLInputElement;
+      cb.checked = !hiddenFilters.has(f.id);
+      cb.addEventListener('change', () => {
+        if (cb.checked) hiddenFilters.delete(f.id);
         else hiddenFilters.add(f.id);
-        b.classList.toggle('is-off', hiddenFilters.has(f.id));
-        sfx('ui_tab', 0.6);
+        sfx('ui_tab', 0.4);
       });
-      filters.append(b);
+      pop.append(h('label', { style: 'display:flex;gap:8px;align-items:center;padding:3px 0;cursor:pointer;font:600 12px/1.2 var(--font-body);color:#e9d8a8;' }, cb, h('span', null, f.label)));
     }
-    this.wrap = h('div.pg-map-view', null, this.canvas, this.subEl, this.hoverEl, legend, filters);
+    const filtBtn = h('button', { type: 'button', style: 'position:absolute;right:10px;top:10px;z-index:6;padding:4px 12px;border:1px solid #6b5630;border-radius:6px;background:rgba(12,9,6,0.9);color:#e9d8a8;font:700 12px/1.2 var(--font-body);cursor:pointer;' }, 'Filtre ▾') as HTMLButtonElement;
+    filtBtn.addEventListener('click', () => {
+      pop.style.display = pop.style.display === 'none' ? 'block' : 'none';
+      sfx('ui_tab', 0.5);
+    });
+    this.wrap = h('div.pg-map-view', null, this.canvas, this.subEl, this.hoverEl, legend, filtBtn, pop);
     body.style.padding = '0';
     body.style.display = 'flex';
     body.style.overflow = 'hidden';
     body.append(this.wrap);
-    foot.append(button('Oyuncuya Odakla', () => this.center(), { variant: 'ghost', icon: '/assets/icons/ui-target.svg' }), button('Kapat', () => this.requestClose(), { variant: 'primary' }));
+    this.trackBtn = button(`Takip: ${TRACK_LABEL[getTrackMode()]}`, () => this.cycleTrack(), { variant: 'ghost' });
+    foot.append(
+      button('Oyuncuya Odakla', () => this.center(), { variant: 'ghost' }),
+      this.trackBtn,
+      button('+', () => this.zoomBy(1.25), { variant: 'ghost', title: 'Yakınlaştır' }),
+      button('−', () => this.zoomBy(0.8), { variant: 'ghost', title: 'Uzaklaştır' }),
+      button('Kapat', () => this.requestClose(), { variant: 'primary' }),
+    );
     this.el.append(win);
     this.bindPointer();
     this.ro = new ResizeObserver(() => this.resize());
@@ -354,7 +267,13 @@ export class MapPanel extends GamePanel {
     this.resize();
     this.follow = true;
     this.fitAll();
-    this.center(true);
+    // open world: the whole zone first (like the zone map of WoW), not following the player; "Oyuncuya Odakla" centres on the player
+    if (openWorldNow()) this.follow = false;
+    else this.center(true);
+    // the panel may not be laid out yet: the first frame with a real size fits again
+    this.needFit = true;
+    this.pinsAt = -1e9;
+    if (this.trackBtn) this.trackBtn.textContent = `Takip: ${TRACK_LABEL[getTrackMode()]}`;
     if (!this.raf) {
       this.lastT = performance.now() / 1000;
       this.raf = requestAnimationFrame(this.frame);
@@ -375,7 +294,41 @@ export class MapPanel extends GamePanel {
     this.canvas.height = Math.round(this.H * this.dpr);
   }
 
+  /** Open world: the zone's size in metres (the atlas size). */
+  private openSize(def: DungeonDef): { w: number; h: number } {
+    return { w: def.grid.w * TILE_SIZE, h: def.grid.h * TILE_SIZE };
+  }
+
+  /** Smallest scale that shows the whole open world (px per metre). */
+  private openFit(def: DungeonDef): number {
+    const { w, h } = this.openSize(def);
+    return Math.min((this.W - 40) / w, (this.H - 40) / h);
+  }
+
+  private cycleTrack(): void {
+    const m = cycleTrackMode();
+    if (this.trackBtn) this.trackBtn.textContent = `Takip: ${TRACK_LABEL[m]}`;
+    sfx('ui_tab', 0.5);
+  }
+
+  private zoomBy(f: number): void {
+    const open = openWorldNow();
+    const lo = open ? this.openFit(open) * 0.9 : 1.2;
+    const hi = open ? 8 : 22;
+    this.tgt.scale = clampN(this.tgt.scale * f, lo, hi);
+    this.view.scale = this.tgt.scale;
+  }
+
   private fitAll(): void {
+    const open = openWorldNow();
+    if (open) {
+      const s = this.openFit(open);
+      const { w, h } = this.openSize(open);
+      this.tgt.scale = this.view.scale = s;
+      this.tgt.cx = this.view.cx = w / 2;
+      this.tgt.cz = this.view.cz = h / 2;
+      return;
+    }
     const nav = G.world?.nav;
     if (!nav) return;
     const s = Math.min((this.W - 40) / nav.cols, (this.H - 40) / nav.rows);
@@ -385,8 +338,18 @@ export class MapPanel extends GamePanel {
   }
 
   private center(snap = false): void {
-    const nav = G.world?.nav;
     const p = G.player ?? G.world?.localPlayer;
+    const open = openWorldNow();
+    if (open) {
+      if (!p) return;
+      this.tgt.cx = p.position.x;
+      this.tgt.cz = p.position.z;
+      this.tgt.scale = Math.max(this.tgt.scale, this.openFit(open) * 2.2);
+      if (snap) Object.assign(this.view, this.tgt);
+      this.follow = true;
+      return;
+    }
+    const nav = G.world?.nav;
     if (!nav || !p) return;
     this.tgt.cx = (p.position.x - nav.originX) / nav.cellSize;
     this.tgt.cz = (p.position.z - nav.originZ) / nav.cellSize;
@@ -400,6 +363,7 @@ export class MapPanel extends GamePanel {
   private bindPointer(): void {
     const c = this.canvas;
     c.addEventListener('pointerdown', (e) => {
+      if (e.button === 2) return;
       const r = c.getBoundingClientRect();
       this.drag = { x: e.clientX - r.left, y: e.clientY - r.top, cx: this.tgt.cx, cz: this.tgt.cz, moved: false };
       try {
@@ -426,6 +390,7 @@ export class MapPanel extends GamePanel {
       }
     });
     c.addEventListener('pointerup', (e) => {
+      const d = this.drag;
       this.drag = null;
       c.style.cursor = '';
       try {
@@ -433,17 +398,33 @@ export class MapPanel extends GamePanel {
       } catch {
         /* ignore */
       }
+      // a click (no drag) on the open world sets the waypoint at the cursor
+      const open = openWorldNow();
+      if (d && !d.moved && open && this.mouse && this.mouse.x >= 0 && this.mouse.z >= 0) {
+        const { w, h } = this.openSize(open);
+        if (this.mouse.x <= w && this.mouse.z <= h) {
+          setWaypoint(open.id, this.mouse.x, this.mouse.z);
+          sfx('ui_click', 0.5);
+        }
+      }
     });
     c.addEventListener('pointerleave', () => (this.mouse = null));
+    c.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      clearWaypoint();
+    });
     c.addEventListener(
       'wheel',
       (e) => {
         e.preventDefault();
+        const open = openWorldNow();
         const r = c.getBoundingClientRect();
         const px = e.clientX - r.left;
         const py = e.clientY - r.top;
         const before = this.toCell(px, py);
-        this.tgt.scale = clampN(this.tgt.scale * Math.exp(-e.deltaY * 0.0014), 1.2, 22);
+        const lo = open ? this.openFit(open) * 0.9 : 1.2;
+        const hi = open ? 8 : 22;
+        this.tgt.scale = clampN(this.tgt.scale * Math.exp(-e.deltaY * 0.0014), lo, hi);
         this.view.scale = this.tgt.scale;
         if (before) {
           this.tgt.cx = this.view.cx = before.x - (px - this.W / 2) / this.view.scale;
@@ -474,8 +455,14 @@ export class MapPanel extends GamePanel {
       this.resize();
       if (first) {
         this.fitAll();
-        this.center(true);
+        if (!openWorldNow()) this.center(true);
       }
+    }
+    if (this.needFit && this.wrap.clientWidth) {
+      this.needFit = false;
+      this.resize();
+      this.fitAll();
+      if (!openWorldNow()) this.center(true);
     }
     try {
       this.draw(t, dt);
@@ -535,13 +522,18 @@ export class MapPanel extends GamePanel {
     ctx.fillRect(0, 0, W, H);
 
     const world = G.world;
+    const open = openWorldNow();
+    if (open && world) {
+      this.drawOpen(ctx, open, t, dt);
+      return;
+    }
     const nav = world?.nav;
     const def = currentDungeon();
     const town = inTown();
     // header texts
     this.titleEl.textContent = def ? def.name : town ? TOWN.name : 'Harita';
     const lvl = G.mplus?.state?.difficulty === 'mythicplus' ? ` · Mitik+ ${G.mplus.state.keyLevel}` : '';
-    this.subEl.textContent = def?.world ? 'Açık Dünya' : def ? `Zindan${lvl}` : town ? 'Şehir' : '';
+    this.subEl.textContent = def ? `Zindan${lvl}` : town ? 'Şehir' : '';
     if (!world || !nav) {
       ctx.fillStyle = '#b3a284';
       ctx.font = '700 18px Cinzel, serif';
@@ -550,11 +542,8 @@ export class MapPanel extends GamePanel {
       return;
     }
     const fog = !town;
-    // open world (outdoor def): the walkable map is drawn in full, like the town one; exploration still gates the points below
     const terrainFog = fog && !def?.outdoor;
-    // open world: the zone picture (zone data + relief, world/MapImage.ts); the nav grid is only filled per streamed chunk there
-    const zone = def?.world ? zoneMapCanvas(def) : null;
-    if (!zone && (!this.terrain || this.terrainNav !== nav || this.terrainVer !== version || this.terrainFog !== terrainFog)) this.buildTerrain(nav, terrainFog);
+    if (!this.terrain || this.terrainNav !== nav || this.terrainVer !== version || this.terrainFog !== terrainFog) this.buildTerrain(nav, terrainFog);
 
     const p = G.player ?? world.localPlayer;
     const k = 1 - Math.exp(-10 * dt);
@@ -570,19 +559,18 @@ export class MapPanel extends GamePanel {
     const toX = (wx: number) => ((wx - nav.originX) / nav.cellSize - this.view.cx) * s + W / 2;
     const toY = (wz: number) => ((wz - nav.originZ) / nav.cellSize - this.view.cz) * s + H / 2;
 
-    // terrain: the zone picture (world metres from (0, 0), smoothed) or the nav cells (crisp)
-    const src = zone ? zone.canvas : this.terrain!;
-    const tx0 = zone ? toX(0) : toX(nav.originX), tz0 = zone ? toY(0) : toY(nav.originZ);
-    const tw = zone ? (zone.widthM / nav.cellSize) * s : nav.cols * s;
-    const th = zone ? (zone.heightM / nav.cellSize) * s : nav.rows * s;
-    ctx.imageSmoothingEnabled = !!zone;
+    // terrain: the nav cells (crisp)
+    const src = this.terrain!;
+    const tx0 = toX(nav.originX), tz0 = toY(nav.originZ);
+    const tw = nav.cols * s;
+    const th = nav.rows * s;
+    ctx.imageSmoothingEnabled = false;
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,0.8)';
     ctx.shadowBlur = 14;
     ctx.drawImage(src, tx0, tz0, tw, th);
     ctx.restore();
     ctx.drawImage(src, tx0, tz0, tw, th);
-    ctx.imageSmoothingEnabled = false;
 
     // rooms (dungeon)
     const ex = exploredOf(nav);
@@ -590,18 +578,6 @@ export class MapPanel extends GamePanel {
       const c = nav.cx((rx0 + rx1) / 2), r = nav.cz((rz0 + rz1) / 2);
       return !fog || ex[r * nav.cols + c] === 1;
     };
-    if (def?.world) {
-      try {
-        this.drawWorld(ctx, def, nav, toX, toY, s, t, ex, fog);
-      } catch (e) {
-        // a bad data field must not break the frame: restore the canvas state and report once
-        ctx.restore();
-        if (!worldWarned) {
-          worldWarned = true;
-          console.warn('[map] open world layer failed', e);
-        }
-      }
-    }
     if (def) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -696,196 +672,224 @@ export class MapPanel extends GamePanel {
           }
         }
       }
-      this.hoverEl.textContent = txt || this.worldHover;
+      this.hoverEl.textContent = txt;
     } else this.hoverEl.textContent = '';
     void version;
   }
 
-  /* ---- open world layer (GDD_OPENWORLD §5.9) ---- */
+  /* ---- open world (GDD_OPENWORLD §5.9): painted atlas, fog, icons, quest areas, waypoint, in metres ---- */
 
-  /**
-   * Region fills (faint fog-colour tint, name and level band once discovered), Işınlanma Taşları, villages, dungeon entrances,
-   * chests, shrines, vistas, gathering fields, standing metin stones, live bosses / rares, quest rings and quest givers.
-   * Undiscovered points are drawn only once the player has explored their cell (fog), rares only within 120 m.
-   */
-  private drawWorld(ctx: CanvasRenderingContext2D, def: DungeonDef, nav: NavGrid, toX: (wx: number) => number, toY: (wz: number) => number, s: number, t: number, ex: Uint8Array, fog: boolean): void {
-    const ext = def.world;
-    if (!ext) return;
-    const cm = (tile: number) => (tile + 0.5) * TILE_SIZE;
-    const seen = (x: number, z: number): boolean => {
-      if (!fog) return true;
-      const c = nav.cx(x), r = nav.cz(z);
-      return nav.inBounds(c, r) && ex[r * nav.cols + c] === 1;
-    };
-    const on = (f: MapFilter): boolean => !hiddenFilters.has(f);
-    const hover: { x: number; z: number; label: string }[] = [];
-    const at = (x: number, z: number, label: string): { px: number; py: number } => {
-      if (label) hover.push({ x, z, label });
-      return { px: toX(x), py: toY(z) };
-    };
+  /** Pins of the open world, refreshed about twice a second (static points, quest rings, live bosses). */
+  private refreshPins(def: DungeonDef, now: number): void {
+    if (now - this.pinsAt < 500) return;
+    this.pinsAt = now;
+    const level = G.character?.level ?? 1;
+    try {
+      this.pins = [...staticPins(def, level, metinOn), ...questPins(), ...livePins(def)];
+    } catch (err) {
+      if (!worldWarned) console.warn('[map] open world pins', err);
+      this.pins = [];
+    }
+    try {
+      this.eventMarks = [
+        ...activeEventPins().map((p) => ({ x: p.x, z: p.z, vig: false })),
+        ...activeVignettePins().map((v) => ({ x: v.x, z: v.z, vig: true })),
+      ];
+    } catch {
+      this.eventMarks = [];
+    }
+  }
+
+  /** Legend and tracking: a pin shows when its filter is on and the tracking mode keeps it. */
+  private pinVisible(p: Pin, mode: TrackMode): boolean {
+    if (!pinTracked(p, mode)) return false;
+    return !hiddenFilters.has(p.fam);
+  }
+
+  private drawOpen(ctx: CanvasRenderingContext2D, def: DungeonDef, t: number, dt: number): void {
+    const { W, H } = this;
+    const atlas = atlasFor(def, heightsOf(def));
+    this.titleEl.textContent = def.name;
+    this.subEl.textContent = `Açık Dünya · Keşif %${exploredPct(def)}`;
+    if (!atlas) {
+      ctx.fillStyle = '#b3a284';
+      ctx.font = '700 18px Cinzel, serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Bu bölgenin haritası çizilemedi.', W / 2, H / 2);
+      return;
+    }
+    const p = G.player ?? G.world?.localPlayer;
+    const k = 1 - Math.exp(-10 * dt);
+    if (this.follow && p) {
+      this.tgt.cx = p.position.x;
+      this.tgt.cz = p.position.z;
+    }
+    if (!this.drag?.moved) {
+      this.view.cx += (this.tgt.cx - this.view.cx) * k;
+      this.view.cz += (this.tgt.cz - this.view.cz) * k;
+    }
+    // scale follows its target at once (the wheel and the zoom buttons set both; "Oyuncuya Odakla" sets only the target)
+    this.view.scale = this.tgt.scale;
+    const s = this.view.scale;
+    // the view stays inside the zone: centred when the zone fits the panel, else kept off the edges (no empty margin)
+    const clampAxis = (c: number, size: number, half: number): number => (2 * half >= size ? size / 2 : Math.min(size - half, Math.max(half, c)));
+    const hw = W / (2 * s), hh = H / (2 * s);
+    this.view.cx = this.tgt.cx = clampAxis(this.view.cx, atlas.widthM, hw);
+    this.view.cz = this.tgt.cz = clampAxis(this.view.cz, atlas.heightM, hh);
+    const toX = (x: number) => (x - this.view.cx) * s + W / 2;
+    const toY = (z: number) => (z - this.view.cz) * s + H / 2;
+    const x0 = toX(0), z0 = toY(0), wpx = atlas.widthM * s, hpx = atlas.heightM * s;
+
+    // terrain: the painted atlas, then the fog of war over it
+    ctx.imageSmoothingEnabled = true;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.75)';
+    ctx.shadowBlur = 18;
+    ctx.drawImage(atlas.canvas, x0, z0, wpx, hpx);
+    ctx.restore();
+    ctx.drawImage(atlas.canvas, x0, z0, wpx, hpx);
+    ctx.drawImage(fogCanvasFor(def, atlas.pxPerM), x0, z0, wpx, hpx);
+    ctx.imageSmoothingEnabled = false;
+    ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x0, z0, wpx, hpx);
+
+    // pins: refreshed at 2 Hz
+    this.refreshPins(def, performance.now());
+    const mode = getTrackMode();
+    const world = G.world;
+    const ext = def.world!;
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // region fills and names
+    // region names once discovered, with the level band (undiscovered regions stay in the fog)
     for (const r of ext.regions) {
-      const room = def.rooms.find((x) => x.id === r.roomId);
+      if (!regionKnown(r.id)) continue;
+      const room = def.rooms.find((rm) => rm.id === r.roomId);
       if (!room) continue;
-      const x0 = room.rect.x * TILE_SIZE, z0 = room.rect.z * TILE_SIZE;
-      const x1 = (room.rect.x + room.rect.w) * TILE_SIZE, z1 = (room.rect.z + room.rect.h) * TILE_SIZE;
-      ctx.fillStyle = rgba(r.theme.fogColor, 0.14);
-      ctx.fillRect(toX(x0), toY(z0), ((x1 - x0) / nav.cellSize) * s, ((z1 - z0) / nav.cellSize) * s);
-      if (regionKnown(r.id)) {
-        const cx = toX((x0 + x1) / 2), cy = toY((z0 + z1) / 2);
-        ctx.font = `700 ${clampN(s * 3, 11, 20)}px Cinzel, serif`;
-        outlined(ctx, r.name, cx, cy - 6, '#e9d8a8');
-        ctx.font = `700 ${clampN(s * 2, 9, 14)}px 'Alegreya Sans', sans-serif`;
-        outlined(ctx, `Seviye ${r.levels[0]}-${r.levels[1]}`, cx, cy + 12, '#cdbf9d');
-      }
+      const cx = toX((room.rect.x + room.rect.w / 2) * TILE_SIZE), cy = toY((room.rect.z + room.rect.h / 2) * TILE_SIZE);
+      ctx.font = `700 ${clampN(s * 90, 11, 22)}px Cinzel, serif`;
+      outlined(ctx, r.name, cx, cy - 6, '#e9d8a8');
+      ctx.font = `700 ${clampN(s * 70, 9, 15)}px 'Alegreya Sans', sans-serif`;
+      outlined(ctx, `Seviye ${r.levels[0]}-${r.levels[1]}`, cx, cy + 12, '#cdbf9d');
     }
 
-    if (on('waypoint')) {
-      for (const w of ext.waypoints) {
-        const x = cm(w.pos[0]), z = cm(w.pos[1]);
-        const known = waypointKnown(w.id);
-        if (!known && !seen(x, z)) continue;
-        const p = at(x, z, known ? w.name : '');
-        this.marker(ctx, p.px, p.py, known ? '#6ec8ff' : 'rgba(110,200,255,0.4)', 'diamond', 6, t);
-      }
-    }
-    if (on('village')) {
-      for (const v of ext.villages) {
-        const x = cm(v.center[0]), z = cm(v.center[1]);
-        if (!seen(x, z)) continue;
-        const p = at(x, z, v.name);
-        house(ctx, p.px, p.py, '#e8c46a');
-      }
-    }
-    if (on('dungeon')) {
-      for (const e of ext.entrances) {
-        const x = cm(e.pos[0]), z = cm(e.pos[1]);
-        if (!seen(x, z)) continue;
-        const p = at(x, z, e.name);
-        door(ctx, p.px, p.py, '#c9a0ff');
-      }
-    }
-    if (on('chest')) {
-      for (const c of ext.chests) {
-        const x = cm(c.pos[0]), z = cm(c.pos[1]);
-        if (!seen(x, z)) continue;
-        const p = at(x, z, 'Sandık');
-        chestIcon(ctx, p.px, p.py);
-      }
-    }
-    if (on('shrine')) {
-      for (const sh of ext.shrines) {
-        const x = cm(sh.pos[0]), z = cm(sh.pos[1]);
-        if (!seen(x, z)) continue;
-        const p = at(x, z, SHRINE_TR[sh.type] ?? 'Sunak');
-        dot(ctx, p.px, p.py, SHRINE_COLOR[sh.type] ?? '#e8c46a', true);
-      }
-    }
-    if (on('vista')) {
-      for (const v of ext.vistas) {
-        const x = cm(v.pos[0]), z = cm(v.pos[1]);
-        if (!seen(x, z)) continue;
-        const p = at(x, z, v.name);
-        eye(ctx, p.px, p.py);
-      }
-    }
-    // named sub-areas (landmarks): the name shows once discovered (save flag world.found.<id>); until then a faint dot on explored ground
-    if (on('landmark')) {
-      for (const l of ext.landmarks) {
-        const x = cm(l.pos[0]), z = cm(l.pos[1]);
-        const found = G.character?.save.flags[`world.found.${l.id}`] === true;
-        if (!found && !seen(x, z)) continue;
-        if (found) {
-          const p = at(x, z, l.name);
-          dot(ctx, p.px, p.py, '#e8d6a0', true);
-          ctx.font = `700 ${clampN(s * 2, 9, 12)}px 'Alegreya Sans', sans-serif`;
-          outlined(ctx, l.name, p.px, p.py - 9, '#e8d6a0');
-        } else {
-          const p = at(x, z, '');
-          dot(ctx, p.px, p.py, 'rgba(232,214,160,0.35)', false);
-        }
-      }
-    }
-    if (on('gather')) {
-      for (const g of ext.gather) {
-        const x = cm(g.center[0]), z = cm(g.center[1]);
-        if (!seen(x, z)) continue;
-        const p = at(x, z, g.kind === 'ore' ? 'Maden' : 'Bitki');
-        dot(ctx, p.px, p.py, g.kind === 'ore' ? '#9fc3d8' : '#7fd38f', false);
-      }
-    }
-    if (on('metin')) {
-      for (const sp of ext.metin.spots) {
-        if (!metinOn.has(sp.id)) continue;
-        const x = cm(sp.pos[0]), z = cm(sp.pos[1]);
-        const n = Math.max(1, ext.metin.tiers.findIndex((tr) => tr.regionId === sp.regionId) + 1);
-        const p = at(x, z, 'Metin');
-        this.marker(ctx, p.px, p.py, '#b070ff', 'diamond', 7, t);
-        ctx.fillStyle = '#fff';
-        ctx.font = "700 10px 'Alegreya Sans', sans-serif";
-        ctx.fillText(String(n), p.px, p.py + 0.5);
-      }
-    }
-
-    // live bosses, mini-bosses and rares (rares only near the player, GDD_OPENWORLD §5.9)
-    const w = G.world;
-    const pl = G.player ?? w?.localPlayer ?? null;
-    const rareIds = new Set(ext.rares.map((r) => r.enemyId));
-    if (w) {
-      for (const e of w.enemies as Enemy[]) {
-        if (e.isDead || e.removed || !e.def) continue;
-        const rare = rareIds.has(e.def.id);
-        const boss = e.def.rank === 'boss';
-        const mini = e.def.rank === 'miniboss';
-        if (!rare && !boss && !mini) continue;
-        const x = e.position.x, z = e.position.z;
-        if (rare) {
-          if (!on('rare') || !pl || Math.hypot(x - pl.position.x, z - pl.position.z) > 120) continue;
-          const p = at(x, z, e.def.name);
-          star(ctx, p.px, p.py, '#e2ecf7', 6);
-        } else {
-          if (!on('boss') || !seen(x, z)) continue;
-          const p = at(x, z, e.def.name);
-          this.marker(ctx, p.px, p.py, boss ? '#ff5a4a' : '#ff9a2a', 'skull', boss ? 8 : 6.5, t);
-        }
-      }
-    }
-
-    // quests: blue rings on the targets, gold ! / ? over the givers
-    if (on('quest')) {
-      for (const m of questTargetMarks()) {
-        const p = at(m.x, m.z, m.label);
-        ctx.strokeStyle = '#58b0ff';
-        ctx.lineWidth = 2;
+    // quest areas: soft yellow shaded zones round the unfinished targets of the tracked quests (WoW Midnight style)
+    if (mode !== 'off') {
+      for (const q of questTargetMarks()) {
+        const qx = toX(q.x), qy = toY(q.z);
+        ctx.fillStyle = 'rgba(255,210,74,0.16)';
+        ctx.strokeStyle = 'rgba(255,210,74,0.75)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 4]);
         ctx.beginPath();
-        ctx.arc(p.px, p.py, 9 + 1.5 * Math.sin(t * 4), 0, Math.PI * 2);
+        ctx.arc(qx, qy, 45 * s, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    // pins
+    const hover: { x: number; y: number; prio: number; tip: string }[] = [];
+    const r0 = clampN(4 + s * 1.2, 4.5, 9);
+    // farming spots, rare spawn spots and metin spots are dense: drawn once the zone is zoomed in enough (live ones always)
+    const detail = s >= 0.5;
+    for (const pin of this.pins) {
+      if (!pin.quest && !this.pinVisible(pin, mode)) continue;
+      if (pin.quest && (mode === 'off' || hiddenFilters.has('quest'))) continue;
+      if (!detail && (pin.kind === 'camp' || pin.kind === 'patrol' || pin.kind === 'gather' || (pin.kind === 'rare' && !pin.tip.endsWith('Canlı')) || (pin.kind === 'metin' && !pin.known))) continue;
+      const x = toX(pin.x), y = toY(pin.z);
+      if (x < -24 || x > W + 24 || y < -24 || y > H + 24) continue;
+      hover.push({ x, y, prio: pin.prio, tip: pin.tip });
+      if (pin.quest) {
+        if (pin.role === 'target') questRing(ctx, x, y, 9, t);
+        else badge(ctx, x, y - 14, pin.role === 'turnin' ? '?' : '!', pin.role === 'locked' ? '#8d939c' : '#e8c46a');
+        continue;
+      }
+      // farming / camp areas: a shaded level-band zone (its level colour), labelled for farming spots and elite camps
+      if (pin.fam === 'camp' && pin.r && pin.col && s >= 0.35) {
+        ctx.fillStyle = hexA(pin.col, 0.16);
+        ctx.strokeStyle = hexA(pin.col, 0.6);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x, y, Math.max(2, pin.r * s), 0, Math.PI * 2);
+        ctx.fill();
         ctx.stroke();
       }
-      for (const g of questGiverMarks()) {
-        const p = at(g.x, g.z, '');
-        badge(ctx, p.px, p.py - 14, g.kind === 'turnin' ? '?' : '!', g.kind === 'locked' ? '#8d939c' : '#e8c46a');
+      glyph(ctx, pin.kind, x, y, r0, { col: pin.col, known: pin.known, locked: pin.locked, num: pin.num });
+      if (pin.label && (pin.kind === 'farm' || pin.kind === 'elite') && s >= 0.35) {
+        ctx.font = `700 ${clampN(s * 30, 10, 13)}px 'Alegreya Sans', sans-serif`;
+        outlined(ctx, pin.label, x, y + r0 + 8, '#f1e6cf');
+      }
+    }
+    for (const ev of this.eventMarks) {
+      if (mode === 'off') break;
+      const x = toX(ev.x), y = toY(ev.z);
+      if (ev.vig) {
+        ctx.strokeStyle = '#7dff8a';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x, y, 6 + 2 * Math.sin(t * 6), 0, Math.PI * 2);
+        ctx.stroke();
+      } else glyph(ctx, 'metin', x, y, r0, { col: '#ff9f1a' });
+    }
+
+    // names of the discovered points at a closer zoom
+    if (s >= 0.45) {
+      ctx.font = `700 ${clampN(s * 40, 9, 13)}px 'Alegreya Sans', sans-serif`;
+      for (const pin of this.pins) {
+        if (pin.quest || !pin.known || !this.pinVisible(pin, mode)) continue;
+        if (!['village', 'entrance', 'waypoint', 'landmark', 'vista', 'shrine'].includes(pin.kind)) continue;
+        outlined(ctx, pin.tip.split(' · ')[0], toX(pin.x), toY(pin.z) - r0 - 6, '#f1e6cf');
       }
     }
 
-    // hover: the nearest label within about 12 px
-    this.worldHover = '';
-    if (this.mouse && hover.length) {
-      const mx = nav.originX + this.mouse.x * nav.cellSize;
-      const mz = nav.originZ + this.mouse.z * nav.cellSize;
-      let bd = (12 * nav.cellSize) / s;
-      for (const hv of hover) {
-        const d = Math.hypot(hv.x - mx, hv.z - mz);
-        if (d < bd) {
-          bd = d;
-          this.worldHover = hv.label;
+    // the player's waypoint (a map click)
+    const wpt = getWaypoint(def.id);
+    if (wpt) waypointPin(ctx, toX(wpt.x), toY(wpt.z), 6);
+
+    // party and the local player
+    if (world) {
+      for (const pl of world.players) {
+        const local = pl === p || (pl as { isLocal?: boolean }).isLocal;
+        const col = local ? '#ffe9a0' : CLASS_META[(pl as { classId: keyof typeof CLASS_META }).classId]?.color ?? '#7ff0ff';
+        const x = toX(pl.position.x), y = toY(pl.position.z);
+        this.arrow(ctx, x, y, Math.atan2(Math.cos(pl.yaw), Math.sin(pl.yaw)), col, local ? 11 : 8, t, !!local);
+        if (!local) {
+          ctx.font = "700 13px 'Alegreya Sans', sans-serif";
+          outlined(ctx, (pl as { name?: string }).name ?? '', x, y - 12, col);
         }
       }
     }
     ctx.restore();
+
+    // hover: the nearest pin within 12 px, else the region under the cursor
+    this.worldHover = '';
+    let tip = '';
+    if (this.mouse) {
+      const mx = toX(this.mouse.x), my = toY(this.mouse.z);
+      let bd = 12;
+      let bp = -1;
+      for (const hv of hover) {
+        const d = Math.hypot(hv.x - mx, hv.y - my);
+        // the nearest point wins; within 4 px of the same distance the higher priority does
+        if (d < bd - 4 || (d <= bd && hv.prio > bp)) {
+          bd = d;
+          bp = hv.prio;
+          tip = hv.tip;
+        }
+      }
+      if (!tip && this.mouse.x >= 0 && this.mouse.z >= 0) {
+        const rid = atlas.regionOf(this.mouse.x, this.mouse.z);
+        const reg = rid ? ext.regions.find((r) => r.id === rid) : undefined;
+        if (reg && regionKnown(reg.id)) tip = `${reg.name} · Seviye ${reg.levels[0]}-${reg.levels[1]}`;
+      }
+      const wpTxt = wpt ? ` · Hedef ${Math.round(Math.hypot(wpt.x - (p?.position.x ?? 0), wpt.z - (p?.position.z ?? 0)))} m` : '';
+      this.hoverEl.textContent = tip ? `${tip}${wpTxt}` : '';
+      this.worldHover = tip;
+    } else this.hoverEl.textContent = '';
   }
 
   private marker(ctx: CanvasRenderingContext2D, x: number, y: number, col: string, shape: 'diamond' | 'skull', r: number, t: number): void {
@@ -918,30 +922,14 @@ export class MapPanel extends GamePanel {
   }
 
   private arrow(ctx: CanvasRenderingContext2D, x: number, y: number, ang: number, col: string, r: number, t: number, glow: boolean): void {
-    ctx.save();
-    ctx.translate(x, y);
     if (glow) {
       const pr = r * (2.2 + 0.5 * Math.sin(t * 4));
-      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, pr * 1.6);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, pr * 1.6);
       g.addColorStop(0, col + 'aa');
       g.addColorStop(1, col + '00');
       ctx.fillStyle = g;
-      ctx.fillRect(-pr * 1.6, -pr * 1.6, pr * 3.2, pr * 3.2);
+      ctx.fillRect(x - pr * 1.6, y - pr * 1.6, pr * 3.2, pr * 3.2);
     }
-    ctx.rotate(ang);
-    ctx.fillStyle = col;
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(r, 0);
-    ctx.lineTo(-r * 0.75, r * 0.7);
-    ctx.lineTo(-r * 0.35, 0);
-    ctx.lineTo(-r * 0.75, -r * 0.7);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.fill();
-    ctx.restore();
-    void icon;
-    void sfx;
+    glyphArrow(ctx, x, y, ang, col, r);
   }
 }

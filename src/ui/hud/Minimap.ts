@@ -8,61 +8,34 @@ import { mapGridOf, type MapGrid, type NavGrid } from '../../world/NavGrid';
 import { RARITY_COLORS, type Rarity } from '../../types/common';
 import { ICON, div, setDisplay, setText, setStyle, clampN, fmtClock, h, iconEl, uiSound } from '../widgets/dom';
 import type { HudCtx, HudWidget } from './types';
-import { giverKind, inWorldMap, questGiverMarks, questTargetMarks, tileCentreM, waypointKnown, worldExtras, type GiverKind } from './questMarks';
+import { questTargetMarks } from './questMarks';
 import { activeEventPins } from '../../scenes/world/EventCalendar';
-import { activeVignettePins } from '../../scenes/world/Vignettes';
 import { getSocial } from '../../systems/Social';
-import { zoneMapCanvas, type ZoneMapCanvas } from './zoneMap';
+import { atlasFor, heightsOf } from '../map/atlas';
+import { fogCanvasFor } from '../map/exploration';
+import { bandTone, TRACK_LABEL, type TrackMode } from '../map/mapStyle';
+import { glyph, questRing, waypointPin } from '../map/glyphs';
+import { livePins, pinTracked, questPins, staticPins, type Pin } from '../map/worldPins';
+import { cycleTrackMode, getNorthUp, getTrackMode, getWaypoint, toggleNorthUp } from '../map/mapPrefs';
+import { activeVignettePins } from '../../scenes/world/Vignettes';
 
 const SIZE = 192;
 const R = SIZE / 2;
 
-const TONE_RED = '#ff6a5a';
-const TONE_YELLOW = '#ffe24a';
-const TONE_GREEN = '#7fe08a';
-const TONE_GREY = '#8a8a8a';
+/** Off-picture fill: the zone's own void tone, dimmed; never solid black. */
+const VOID_FILL = '#2a3026';
 
-/**
- * Relative colour of a zone's level band for the player's level (§2.9): red = the band starts 3+ levels above the player,
- * yellow = in band, green = the player is 3+ above the band top, grey = trivial (8+ above).
- */
-function bandTone(p: number, [lo, hi]: [number, number]): string {
-  if (p <= lo - 3) return TONE_RED;
-  if (p >= hi + 8) return TONE_GREY;
-  if (p >= hi + 3) return TONE_GREEN;
-  return TONE_YELLOW;
+/** The open-world map def being played (outdoor with a world map), or null. */
+function openZoneDef(): DungeonDef | null {
+  const id = G.mplus?.params?.dungeonId ?? G.mplus?.state?.dungeonId;
+  const d = id ? getDungeon(id) : undefined;
+  return d?.outdoor && d.world ? d : null;
 }
 
 /** True in an open-world zone (an `outdoor` def run in the dungeon scene): those maps have no fog of war (GDD_OPENWORLD §5.9). */
 function inOpenZone(): boolean {
   const id = G.mplus?.params?.dungeonId ?? G.mplus?.state?.dungeonId;
   return !!id && !!getDungeon(id)?.outdoor;
-}
-
-/** Off-picture fill: the zone's own void tone (world/MapImage MAP_COLOR.void), dimmed; never solid black. */
-const VOID_FILL = '#2a3026';
-/** How far (m) the picture's edge pixels are stretched outward, so the map runs on past the zone border (the minimap shows ~100 m). */
-const EDGE_EXT_M = 400;
-
-/**
- * Continues the zone picture past its four borders: each edge row/column is stretched outward, so a spawn at the zone edge (the
- * picture starts at world z = 0) shows the land beyond instead of an empty well. Called inside the minimap's world transform.
- */
-function drawZoneEdges(g: CanvasRenderingContext2D, zone: ZoneMapCanvas): void {
-  const cv = zone.canvas, W = zone.widthM, H = zone.heightM, E = EDGE_EXT_M;
-  const cw = cv.width, ch = cv.height;
-  g.imageSmoothingEnabled = false;
-  g.drawImage(cv, 0, 0, cw, 1, 0, -E, W, E); // north
-  g.drawImage(cv, 0, ch - 1, cw, 1, 0, H, W, E); // south
-  g.drawImage(cv, 0, 0, 1, ch, -E, 0, E, H); // west
-  g.drawImage(cv, cw - 1, 0, 1, ch, W, 0, E, H); // east
-}
-
-/** The open-world map def being played (outdoor with a world map), or null: its picture comes from the zone data (world/MapImage.ts). */
-function openZoneDef(): DungeonDef | null {
-  const id = G.mplus?.params?.dungeonId ?? G.mplus?.state?.dungeonId;
-  const d = id ? getDungeon(id) : undefined;
-  return d?.outdoor && d.world ? d : null;
 }
 
 /** A point on the minimap disc: screen position and distance from the centre (px). */
@@ -86,7 +59,14 @@ interface Poi {
   color: string;
 }
 
-/** Square rotating minimap: nav-grid walls with fog of war in dungeons, player arrow, party/enemy/POI dots and the zone name. */
+/** Pins that stay on the edge of the disc when they lie outside it (quests, gates, bosses, waypoints). */
+const EDGE_PRIO = 60;
+
+/**
+ * Square rotating minimap (ElvUI style). Open world: the painted zone atlas (world/atlas) with the exploration fog, quest rings and
+ * giver badges, gates, bosses and farming spots of the map, the player's waypoint; rotation camera / north-up, zoom, tracking mode.
+ * Dungeons keep the nav-grid picture with its fog of war. Player arrow, party and enemy dots are common to both.
+ */
 export class Minimap implements HudWidget {
   readonly el: HTMLElement;
   private canvas: HTMLCanvasElement;
@@ -97,6 +77,7 @@ export class Minimap implements HudWidget {
   private chEl: HTMLElement;
   private chShown = '';
   private northEl: HTMLElement;
+  private coordEl: HTMLElement;
   private nav: NavGrid | null = null;
   /** Grid the map image is drawn from: the nav grid, or a downsampled copy above MAP_MAX_PX cells per side (ENGINE_BIGMAPS #22). */
   private mapGrid: MapGrid | null = null;
@@ -107,15 +88,18 @@ export class Minimap implements HudWidget {
   private mapBuiltAt = 0;
   private revealX = 1e9;
   private revealZ = 1e9;
-  private scale = 3.0;
+  /** Zoom multiplier (+/-): the base is 1.8 px per metre in the open world (about 110 m across), 3 px per metre in dungeons. */
+  private zoomK = 1;
   private pois: Poi[] = [];
   private poiAt = 0;
   private zoneTitle = '';
   private zoneSub = '';
   private lastMode = '';
-  /** Open world marks (villages, discovered stones, active metin, quest targets), refreshed twice a second (world metres). */
-  private worldMarks: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' | 'giver' | 'event' | 'vignette'; gk?: GiverKind }[] = [];
-  private worldAt = -1e9;
+  /** Open-world pins (world metres): static points, quest rings and givers, live bosses, refreshed twice a second. */
+  private pins: Pin[] = [];
+  /** WP-04 events (orange) and travel vignettes (green ring) running or starting: world metres. */
+  private eventMarks: { x: number; z: number; vig: boolean }[] = [];
+  private pinsAt = -1e9;
   /** Metin spots currently standing (spot ids from world:metinChanged). */
   private metinOn = new Set<string>();
   /** Level band of the open-world region last entered (`region:entered`); a dungeon run reads its own `levelRange`. */
@@ -127,6 +111,10 @@ export class Minimap implements HudWidget {
   private infoAcc = 1;
   private readonly infoEl: HTMLElement;
   private readonly eyeEl: HTMLButtonElement;
+  private readonly trackBtn: HTMLButtonElement;
+  private readonly northBtn: HTMLButtonElement;
+  private trackShown: TrackMode | '' = '';
+  private northShown: boolean | null = null;
   /** "Çevrimiçi: N" under the ring (G.presence); shown once the count is known. */
   private readonly onlineEl: HTMLButtonElement;
   private onlineShown = false;
@@ -147,12 +135,33 @@ export class Minimap implements HudWidget {
     const minus = h('button', 'mm-btn', zoom, '−');
     plus.addEventListener('click', () => this.zoom(1.25));
     minus.addEventListener('click', () => this.zoom(0.8));
+    // tracking mode (all / quests / none) and north-up rotation: per-viewer preferences (mapPrefs)
+    this.trackBtn = h('button', 'mm-btn mm-track', zoom, 'T') as HTMLButtonElement;
+    this.trackBtn.type = 'button';
+    this.trackBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      uiSound('ui_click', 0.4);
+      cycleTrackMode();
+      this.trackShown = '';
+    });
+    this.northBtn = h('button', 'mm-btn mm-rot', zoom, 'N') as HTMLButtonElement;
+    this.northBtn.type = 'button';
+    this.northBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      uiSound('ui_click', 0.4);
+      toggleNorthUp();
+      this.northShown = null;
+    });
     const ribbon = div('mm-ribbon', this.el);
     this.zoneEl = div('mm-zone', ribbon);
     this.subEl = div('mm-sub', ribbon);
     this.chEl = div('mm-ch', ribbon);
     this.chEl.title = 'Bölge kanalı (/kanal)';
     setDisplay(this.chEl, false);
+    // player coordinates (metres from the zone corner), at the bottom centre of the ring
+    this.coordEl = div('mm-coord', this.el);
+    this.coordEl.style.cssText = 'position:absolute;left:0;right:0;bottom:4px;text-align:center;font:700 10px/1 var(--font-body);color:#e2e5ec;text-shadow:var(--elv-outline);pointer-events:none;';
+    setDisplay(this.coordEl, false);
     // LFG eye at 7 o'clock on the ring (visible while the finder lists or has a proposal)
     this.eyeEl = h('button', 'mm-eye hud-interactive', this.el);
     this.eyeEl.type = 'button';
@@ -207,15 +216,16 @@ export class Minimap implements HudWidget {
       this.revealX = this.revealZ = 1e9;
       this.pois = [];
       this.metinOn.clear();
-      this.worldMarks = [];
+      this.pins = [];
+      this.pinsAt = -1e9;
     });
   }
 
   private zoom(f: number): void {
-    this.scale = clampN(this.scale * f, 1.6, 9);
+    this.zoomK = clampN(this.zoomK * f, 0.5, 3.4);
   }
 
-  /** Render the nav grid to a 1 px / cell canvas: floor + brighter outline where it borders a wall. */
+  /** Render the nav grid to a 1 px / cell canvas: floor + brighter outline where it borders a wall (dungeons). */
   private buildMap(g: MapGrid): void {
     const c = this.mapCanvas && this.mapCanvas.width === g.cols && this.mapCanvas.height === g.rows ? this.mapCanvas : document.createElement('canvas');
     c.width = g.cols;
@@ -312,34 +322,27 @@ export class Minimap implements HudWidget {
     this.pois = out;
   }
 
-  /** Villages, discovered stones, standing metin stones and quest targets of the open world, in world metres. */
-  private refreshWorldMarks(): void {
-    const out: { x: number; z: number; kind: 'village' | 'waypoint' | 'metin' | 'quest' | 'giver' | 'event' | 'vignette'; gk?: GiverKind }[] = [];
-    const ext = inWorldMap() ? worldExtras() : null;
-    if (ext) {
-      for (const v of ext.villages) out.push({ x: tileCentreM(v.center[0]), z: tileCentreM(v.center[1]), kind: 'village' });
-      for (const w of ext.waypoints) if (waypointKnown(w.id)) out.push({ x: tileCentreM(w.pos[0]), z: tileCentreM(w.pos[1]), kind: 'waypoint' });
-      for (const s of ext.metin.spots) if (this.metinOn.has(s.id)) out.push({ x: tileCentreM(s.pos[0]), z: tileCentreM(s.pos[1]), kind: 'metin' });
+  /** Open-world pins: the zone's icons, quest rings and givers, and the live bosses (refreshed twice a second). */
+  private refreshPins(def: DungeonDef, now: number): void {
+    if (now - this.pinsAt < 500) return;
+    this.pinsAt = now;
+    const level = G.character?.level ?? 1;
+    try {
+      this.pins = [...staticPins(def, level, this.metinOn), ...questPins(), ...livePins(def)];
+    } catch {
+      this.pins = [];
     }
-    for (const q of questTargetMarks()) out.push({ x: q.x, z: q.z, kind: 'quest' });
-    // WP-04 world events: running or starting within 5 minutes (EventCalendar)
-    for (const p of activeEventPins()) out.push({ x: p.x, z: p.z, kind: 'event' });
-    // travel vignettes (scenes/world/Vignettes.ts): the running ones on the roads of the ring
-    for (const v of activeVignettePins()) out.push({ x: v.x, z: v.z, kind: 'vignette' });
-    // quest givers (UX-21, §4.5): town NPCs with quests in town, village NPCs on the open world; gold ! offer, ? turn-in
-    if (!ext && G.ui?.mode === 'town') {
-      for (const n of TOWN.npcs) {
-        if (!n.quests?.length) continue;
-        const gk = giverKind(n.id);
-        if (gk) out.push({ x: n.pos[0], z: n.pos[2], kind: 'giver', gk });
-      }
-    } else if (ext) {
-      for (const g of questGiverMarks()) out.push({ x: g.x, z: g.z, kind: 'giver', gk: g.kind });
+    try {
+      this.eventMarks = [
+        ...activeEventPins().map((p) => ({ x: p.x, z: p.z, vig: false })),
+        ...activeVignettePins().map((v) => ({ x: v.x, z: v.z, vig: true })),
+      ];
+    } catch {
+      this.eventMarks = [];
     }
-    this.worldMarks = out;
   }
 
-  /** Level band of the zone (`Sv. 5–10`), or null: the dungeon's `levelRange` in a run, the last region's band outdoors. */
+  /** Ribbon second line: the level band in its relative colour, or the zone subtitle when there is no band. */
   private bandOf(ctx: HudCtx): [number, number] | null {
     if (ctx.mode === 'dungeon') {
       const id = G.mplus?.state?.dungeonId;
@@ -348,7 +351,6 @@ export class Minimap implements HudWidget {
     return ctx.mode === 'town' ? null : this.regionBand;
   }
 
-  /** Ribbon second line: the level band in its relative colour, or the zone subtitle when there is no band. */
   private updateBand(ctx: HudCtx, sub: string): void {
     const band = this.bandOf(ctx);
     if (!band) {
@@ -403,6 +405,22 @@ export class Minimap implements HudWidget {
     setText(this.infoEl, text);
   }
 
+  /** Button states follow the preferences (tracking mode, rotation); a lit letter = that option is on. */
+  private updateButtons(): void {
+    const tm = getTrackMode();
+    if (tm !== this.trackShown) {
+      this.trackShown = tm;
+      this.trackBtn.title = `Takip: ${TRACK_LABEL[tm]}`;
+      this.trackBtn.style.color = tm === 'off' ? '#8a8a8a' : tm === 'quest' ? '#58b0ff' : '#fff';
+    }
+    const nu = getNorthUp();
+    if (nu !== this.northShown) {
+      this.northShown = nu;
+      this.northBtn.title = nu ? 'Kuzey yukarı' : 'Kameraya göre';
+      this.northBtn.style.color = nu ? '#ffe24a' : '#fff';
+    }
+  }
+
   update(ctx: HudCtx): void {
     const ctx2 = this.ctx;
     const w = ctx.world;
@@ -430,6 +448,7 @@ export class Minimap implements HudWidget {
     }
     this.updateBand(ctx, sub);
     this.updateEye();
+    this.updateButtons();
     if (!this.onlineShown && G.presence) this.setOnline(G.presence.count());
     this.updateInfo(ctx);
     if (!ctx2) return;
@@ -445,46 +464,68 @@ export class Minimap implements HudWidget {
     ctx2.fillRect(0, 0, SIZE, SIZE);
     if (!w || !p) {
       ctx2.restore();
+      setDisplay(this.coordEl, false);
       return;
     }
-    const nav = w.nav;
-    if (nav !== this.nav) {
-      this.nav = nav;
-      this.mapCanvas = null;
-      this.mapCells = null;
-      this.fogCanvas = null;
-    }
     const now = ctx.now;
-    // open world: the zone picture (zone data + relief, baked once at load); the nav grid is only filled per streamed chunk there
-    const zoneDef = openZoneDef();
-    const zone = zoneDef ? zoneMapCanvas(zoneDef) : null;
-    if (!zone && (!this.mapCanvas || now - this.mapBuiltAt > 2500)) this.refreshMap(nav, now);
-    const useFog = ctx.mode === 'dungeon' && !inOpenZone();
-    if (useFog) this.ensureFog();
     const px = p.position.x, pz = p.position.z;
-    if (useFog) this.reveal(nav, px, pz);
+    // open world: the painted atlas + exploration fog of the zone (world/atlas); the nav grid is only filled per streamed chunk there
+    const def = openZoneDef();
+    const atlas = def ? atlasFor(def, heightsOf(def)) : null;
+    const nav = w.nav;
+    if (!atlas) {
+      if (nav !== this.nav) {
+        this.nav = nav;
+        this.mapCanvas = null;
+        this.mapCells = null;
+        this.fogCanvas = null;
+      }
+      if (!this.mapCanvas || now - this.mapBuiltAt > 2500) this.refreshMap(nav, now);
+    }
+    const useFog = !atlas && ctx.mode === 'dungeon' && !inOpenZone();
+    if (useFog) {
+      this.ensureFog();
+      this.reveal(nav, px, pz);
+    }
 
-    // camera-relative rotation: camera forward points up
+    // rotation: camera forward points up, or north up when the preference says so
     const cam = G.camera;
     let a = 0;
-    if (cam) {
+    if (cam && !getNorthUp()) {
       const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw);
       a = -Math.PI / 2 - Math.atan2(fz, fx);
     }
-    const S = this.scale;
+    const S = (atlas ? 1.8 : 3) * this.zoomK;
     ctx2.save();
     ctx2.translate(R, R);
     ctx2.rotate(a);
     ctx2.scale(S, S);
     ctx2.translate(-px, -pz);
-    if (zone) {
-      // world metres: the picture starts at (0, 0); smoothed, it is a picture rather than walkability cells
+    if (atlas && def) {
+      // world metres: the atlas starts at (0, 0), smoothed (a painted picture, not walkability cells)
       ctx2.imageSmoothingEnabled = true;
-      ctx2.drawImage(zone.canvas, 0, 0, zone.widthM, zone.heightM);
+      ctx2.drawImage(atlas.canvas, 0, 0, atlas.widthM, atlas.heightM);
+      ctx2.drawImage(fogCanvasFor(def, atlas.pxPerM), 0, 0, atlas.widthM, atlas.heightM);
       ctx2.imageSmoothingEnabled = false;
-      drawZoneEdges(ctx2, zone);
-    } else if (this.mapCanvas) ctx2.drawImage(this.mapCanvas, nav.originX, nav.originZ, nav.cols * nav.cellSize, nav.rows * nav.cellSize);
-    if (useFog && this.fogCanvas) ctx2.drawImage(this.fogCanvas, nav.originX, nav.originZ, nav.cols * nav.cellSize, nav.rows * nav.cellSize);
+    } else if (this.mapCanvas && nav) {
+      ctx2.drawImage(this.mapCanvas, nav.originX, nav.originZ, nav.cols * nav.cellSize, nav.rows * nav.cellSize);
+    }
+    if (useFog && this.fogCanvas && nav) ctx2.drawImage(this.fogCanvas, nav.originX, nav.originZ, nav.cols * nav.cellSize, nav.rows * nav.cellSize);
+    // quest areas: a soft blue disc round every unfinished quest target (metres, inside the map transform)
+    const mode = getTrackMode();
+    if (atlas && def && mode !== 'off') {
+      for (const q of questTargetMarks()) {
+        const dd = Math.hypot(q.x - px, q.z - pz);
+        if (dd > 90) continue;
+        ctx2.fillStyle = 'rgba(255,210,74,0.16)';
+        ctx2.strokeStyle = 'rgba(255,210,74,0.7)';
+        ctx2.lineWidth = 1.2 / S;
+        ctx2.beginPath();
+        ctx2.arc(q.x, q.z, 45, 0, Math.PI * 2);
+        ctx2.fill();
+        ctx2.stroke();
+      }
+    }
     ctx2.restore();
 
     const cosA = Math.cos(a), sinA = Math.sin(a);
@@ -496,109 +537,101 @@ export class Minimap implements HudWidget {
       _sp.d = Math.hypot(dx, dz);
       return _sp;
     };
-    const edge = R - 7;
+    // markers clamp to this ring; the open-world ribbon covers the top ~34 px, so its clamp sits further in
+    const edge = atlas ? R - 18 : R - 7;
 
-    // points of interest
-    if (now - this.poiAt > 300) {
-      this.poiAt = now;
-      this.refreshPois(w);
-    }
-    for (const poi of this.pois) {
-      if (poi.e.removed) continue;
-      const s = toScreen(poi.e.position.x, poi.e.position.z);
-      if (s.d > edge && poi.kind === 'loot') continue;
-      const k = s.d > edge ? edge / s.d : 1;
-      const x = R + (s.sx - R) * k, y = R + (s.sy - R) * k;
-      ctx2.fillStyle = poi.color;
-      ctx2.strokeStyle = '#000';
-      ctx2.lineWidth = 1;
-      if (poi.kind === 'loot') {
-        ctx2.fillRect(x - 2, y - 2, 4, 4);
-        ctx2.strokeRect(x - 2.5, y - 2.5, 5, 5);
-      } else {
-        ctx2.beginPath();
-        ctx2.moveTo(x, y - 4);
-        ctx2.lineTo(x + 3.5, y);
-        ctx2.lineTo(x, y + 4);
-        ctx2.lineTo(x - 3.5, y);
-        ctx2.closePath();
-        ctx2.fill();
-        ctx2.stroke();
+    if (atlas && def) {
+      setDisplay(this.coordEl, true);
+      setText(this.coordEl, `${Math.round(px)} · ${Math.round(pz)}`);
+      this.refreshPins(def, now);
+      const t = ctx.t;
+      const qk = 0.5 + 0.5 * Math.sin(t * 6);
+      for (const ev of this.eventMarks) {
+        if (mode === 'off') break;
+        const s = toScreen(ev.x, ev.z);
+        if (s.d > edge) continue;
+        const x = s.sx, y = s.sy;
+        if (ev.vig) {
+          ctx2.strokeStyle = '#7dff8a';
+          ctx2.lineWidth = 1.8;
+          ctx2.beginPath();
+          ctx2.arc(x, y, 4 + 1.5 * qk, 0, Math.PI * 2);
+          ctx2.stroke();
+          ctx2.fillStyle = '#7dff8a';
+          ctx2.beginPath();
+          ctx2.arc(x, y, 1.6, 0, Math.PI * 2);
+          ctx2.fill();
+        } else {
+          glyph(ctx2, 'metin', x, y, 4.5, { col: '#ff9f1a' });
+        }
+      }
+      for (const pin of this.pins) {
+        if (!pinTracked(pin, mode)) continue;
+        const s = toScreen(pin.x, pin.z);
+        const outside = s.d > edge;
+        if (outside && pin.prio < EDGE_PRIO) continue;
+        const k = outside ? edge / s.d : 1;
+        const x = R + (s.sx - R) * k, y = R + (s.sy - R) * k;
+        if (pin.quest) {
+          if (pin.role === 'target') questRing(ctx2, x, y, 4 + 1.2 * qk, t);
+          else {
+            const ch = pin.role === 'turnin' ? '?' : '!';
+            const fill = pin.role === 'turnin' ? '#f5b82e' : pin.role === 'locked' ? '#8d939c' : '#ffe14d';
+            ctx2.font = 'bold 13px sans-serif';
+            ctx2.textAlign = 'center';
+            ctx2.textBaseline = 'middle';
+            ctx2.lineWidth = 3;
+            ctx2.strokeStyle = '#000';
+            ctx2.strokeText(ch, x, y + 1);
+            ctx2.fillStyle = fill;
+            ctx2.fillText(ch, x, y + 1);
+          }
+          continue;
+        }
+        // farming spots and camps only inside the disc (they are too many to clamp)
+        if (outside && pin.kind !== 'boss' && pin.kind !== 'entrance' && pin.kind !== 'waypoint') continue;
+        // camps and farming spots a little larger, so they read as dots on the ring
+        const rr = pin.kind === 'camp' || pin.kind === 'farm' || pin.kind === 'elite' ? 5.5 : 4.2;
+        glyph(ctx2, pin.kind, x, y, rr, { col: pin.col, known: pin.known, locked: pin.locked, num: pin.num });
+      }
+      // the player's own waypoint: a teardrop on the map, clamped to the ring with an arrow when out of sight
+      const wpt = getWaypoint(def.id);
+      if (wpt) {
+        const s = toScreen(wpt.x, wpt.z);
+        const k = s.d > edge ? edge / s.d : 1;
+        const x = R + (s.sx - R) * k, y = R + (s.sy - R) * k;
+        waypointPin(ctx2, x, y + 2, 4);
       }
     }
 
-    // open world (GDD_OPENWORLD §5.9): villages, discovered stones, standing metin stones, quest rings
-    if (now - this.worldAt > 500) {
-      this.worldAt = now;
-      try {
-        this.refreshWorldMarks();
-      } catch {
-        this.worldMarks = [];
+    // points of interest (dungeons: town NPCs, interactables, rare loot)
+    if (!atlas) {
+      if (now - this.poiAt > 300) {
+        this.poiAt = now;
+        this.refreshPois(w);
       }
-    }
-    const qk = 0.5 + 0.5 * Math.sin(ctx.t * 6);
-    for (const m of this.worldMarks) {
-      const s = toScreen(m.x, m.z);
-      const k = s.d > edge ? edge / s.d : 1;
-      const x = R + (s.sx - R) * k, y = R + (s.sy - R) * k;
-      if (m.kind === 'quest') {
-        ctx2.strokeStyle = '#58b0ff';
-        ctx2.lineWidth = 1.8;
-        ctx2.beginPath();
-        ctx2.arc(x, y, 4.5 + 1.5 * qk, 0, Math.PI * 2);
-        ctx2.stroke();
-      } else if (m.kind === 'giver') {
-        const glyph = m.gk === 'turnin' ? '?' : '!';
-        ctx2.font = 'bold 14px sans-serif';
-        ctx2.textAlign = 'center';
-        ctx2.textBaseline = 'middle';
-        ctx2.lineWidth = 3;
-        ctx2.strokeStyle = '#000';
-        ctx2.strokeText(glyph, x, y + 1);
-        // grey '!' = the giver's next quest waits for the level (the overhead marker's grey too)
-        ctx2.fillStyle = m.gk === 'turnin' ? '#f5b82e' : m.gk === 'locked' ? '#8d939c' : '#ffe14d';
-        ctx2.fillText(glyph, x, y + 1);
-      } else if (m.kind === 'vignette') {
-        // a travel vignette: a green pulsing ring with a dot (the events keep their orange diamonds)
-        ctx2.strokeStyle = '#7dff8a';
-        ctx2.lineWidth = 1.8;
-        ctx2.beginPath();
-        ctx2.arc(x, y, 4 + 1.5 * qk, 0, Math.PI * 2);
-        ctx2.stroke();
-        ctx2.fillStyle = '#7dff8a';
-        ctx2.beginPath();
-        ctx2.arc(x, y, 1.6, 0, Math.PI * 2);
-        ctx2.fill();
-      } else if (m.kind === 'event') {
-        ctx2.fillStyle = '#ff9f1a';
-        ctx2.strokeStyle = '#2a1a04';
-        ctx2.lineWidth = 1;
-        ctx2.beginPath();
-        ctx2.moveTo(x, y - 5.5);
-        ctx2.lineTo(x + 4.5, y);
-        ctx2.lineTo(x, y + 5.5);
-        ctx2.lineTo(x - 4.5, y);
-        ctx2.closePath();
-        ctx2.fill();
-        ctx2.stroke();
-      } else if (m.kind === 'village') {
-        ctx2.fillStyle = '#e8c46a';
-        ctx2.strokeStyle = '#2a1a04';
-        ctx2.lineWidth = 1;
-        ctx2.fillRect(x - 3, y - 3, 6, 6);
-        ctx2.strokeRect(x - 3.5, y - 3.5, 7, 7);
-      } else {
-        ctx2.fillStyle = m.kind === 'metin' ? '#b070ff' : '#6ec8ff';
+      for (const poi of this.pois) {
+        if (poi.e.removed) continue;
+        const s = toScreen(poi.e.position.x, poi.e.position.z);
+        if (s.d > edge && poi.kind === 'loot') continue;
+        const k = s.d > edge ? edge / s.d : 1;
+        const x = R + (s.sx - R) * k, y = R + (s.sy - R) * k;
+        ctx2.fillStyle = poi.color;
         ctx2.strokeStyle = '#000';
         ctx2.lineWidth = 1;
-        ctx2.beginPath();
-        ctx2.moveTo(x, y - 4);
-        ctx2.lineTo(x + 3.5, y);
-        ctx2.lineTo(x, y + 4);
-        ctx2.lineTo(x - 3.5, y);
-        ctx2.closePath();
-        ctx2.fill();
-        ctx2.stroke();
+        if (poi.kind === 'loot') {
+          ctx2.fillRect(x - 2, y - 2, 4, 4);
+          ctx2.strokeRect(x - 2.5, y - 2.5, 5, 5);
+        } else {
+          ctx2.beginPath();
+          ctx2.moveTo(x, y - 4);
+          ctx2.lineTo(x + 3.5, y);
+          ctx2.lineTo(x, y + 4);
+          ctx2.lineTo(x - 3.5, y);
+          ctx2.closePath();
+          ctx2.fill();
+          ctx2.stroke();
+        }
       }
     }
 
