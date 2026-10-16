@@ -61,8 +61,9 @@ const SPEC_LIST = [BUTCHER, LORD];
     ok(`pmba.bars ${s.id} majors are major skills`, [s.majors.m45, s.majors.m90, s.majors.m180].every((id) => isMajorDef(SKILLS[id])));
     ok(`pmba.bars ${s.id} lmb is the chain`, s.defaultBar.lmb === 'barbarian_basic');
   }
-  ok('pmba.bars Kasap bar: rmb bloodthirst, q rampage, e raging blow', BUTCHER.defaultBar.rmb === 'barbarian_bloodthirst'
-    && BUTCHER.defaultBar.q === 'barbarian_rampage' && BUTCHER.defaultBar.e === 'barbarian_raging_blow');
+  // e is Thunder Clap (not Raging Blow) so the Butcher has 4 usable L1 skills (kit_barbarian.l1)
+  ok('pmba.bars Kasap bar: rmb bloodthirst, q rampage, e thunder clap', BUTCHER.defaultBar.rmb === 'barbarian_bloodthirst'
+    && BUTCHER.defaultBar.q === 'barbarian_rampage' && BUTCHER.defaultBar.e === 'barbarian_thunder_clap');
   // Warrior rework (docs/WOW_ABILITY_MAP.md §3.2): Warlord bar moved to Protection keys; Yarma and Paralama are no longer on it.
   ok('pmba.bars Lord bar: rmb shield block, q shield slam, e revenge, s1 thunder clap', LORD.defaultBar.rmb === 'barbarian_iron_stance'
     && LORD.defaultBar.q === 'barbarian_shield_slam' && LORD.defaultBar.e === 'barbarian_revenge' && LORD.defaultBar.s1 === 'barbarian_thunder_clap');

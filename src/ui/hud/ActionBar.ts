@@ -9,6 +9,7 @@ import type { Actor } from '../../entities/Actor';
 import { lockoutSchool } from '../../combat/castRules';
 import { inMeleeReach } from '../../combat/targetSelect';
 import { glowSkillsOf, type GlowState } from '../../data/procs';
+import { skillDisplayName } from '../../data/skillNamesEn';
 import { localHardTargetId } from '../../game/PlayerController';
 import { DAMAGE_COLORS, ICON, div, fmtCd, fmtNum, iconEl, pulse, setClass, setDisplay, setIconUrl, setStyle, setText, esc } from '../widgets/dom';
 import { skillTooltipHTML } from '../widgets/tooltips';
@@ -123,6 +124,15 @@ function cdKind(tags: readonly string[]): 'def' | 'heal' | 'off' {
   if (tags.includes('defensive')) return 'def';
   if (tags.includes('heal')) return 'heal';
   return 'off';
+}
+
+/** localStorage key for the one-time "Savunma hazır" hint. Storage can be blocked, so every access is guarded. */
+const DEF_HINT_KEY = 'efsun.hint.defReady.v1';
+function defHintSeen(): boolean {
+  try { return localStorage.getItem(DEF_HINT_KEY) === '1'; } catch { return true; }
+}
+function markDefHintSeen(): void {
+  try { localStorage.setItem(DEF_HINT_KEY, '1'); } catch { /* blocked storage: the hint may show again, harmless */ }
 }
 
 /** Cooldown text: one decimal under 3 s (decimal comma), else the shared short format. */
@@ -446,6 +456,11 @@ class Slot {
     if (this.prevCd > 0.05 && rem <= 0.05 && !this.spec.potion) {
       pulse(this.el, 'ready');
       if (this.def && (this.spec.major || total >= READY_EVENT_CD)) G.events.emit('skill:ready', { skillId: this.def.id, major: !!this.spec.major });
+      // one-time hint: the first defensive that comes back while the player is under half HP says so (per browser)
+      if (this.def && p && cdKind(this.def.tags) === 'def' && p.hpFrac < 0.5 && !defHintSeen()) {
+        markDefHintSeen();
+        G.events.emit('ui:toast', { text: `Savunma hazır: ${skillDisplayName(this.def.id, this.def.name)}`, kind: 'info' });
+      }
     }
     this.prevCd = rem;
     // global cooldown sweep (skills only, when the own cooldown is not longer); drawn by the kit's `.k-gcd` sweep

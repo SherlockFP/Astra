@@ -48,7 +48,7 @@ const BARBARIAN_SPEC_LIST: SpecDef[] = [
     treeSkills: { barbarian_execute: 's05' },
     fx: 'T hit:@melee ch=.10 icd=3 => st(self,sudden_death,12) ;; T cast:barbarian_bloodthirst ch=.30 icd=1 => st(self,enrage,4,.15) ;; T cast:barbarian_rampage => st(self,enrage,4,.15)',
     defaultBar: {
-      lmb: 'barbarian_basic', rmb: 'barbarian_bloodthirst', q: 'barbarian_rampage', e: 'barbarian_raging_blow', r: 'barbarian_execute',
+      lmb: 'barbarian_basic', rmb: 'barbarian_bloodthirst', q: 'barbarian_rampage', e: 'barbarian_thunder_clap', r: 'barbarian_execute',
       s1: 'barbarian_whirlwind', s2: 'barbarian_leap', s3: 'barbarian_enraged_regeneration', s4: 'barbarian_pummel',
       m45: 'barbarian_avatar', m90: 'barbarian_carnage', m180: 'barbarian_wolf_howl',
     },
