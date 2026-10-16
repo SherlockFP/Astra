@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { G } from '../game/G';
 import type { HitShapeSpec } from '../combat/HitShapes';
 import { hyperArmorOf } from '../combat/poise';
+import { newPlayerLeashMult } from '../data/lowLevelScaling';
 import { clamp, dampAngle, yawFromDir } from '../core/utils';
 import { F, VERT } from '../world/Heightfield';
 import type { ReachMask } from '../world/NavGrid';
@@ -1488,7 +1489,8 @@ export class EnemyAI {
   protected pastLeash(leash: number): boolean {
     if (!(leash > 0)) return false;
     const e = this.e;
-    if (e.campX !== null && e.campZ !== null && e.campR > 0) return Math.hypot(e.position.x - e.campX, e.position.z - e.campZ) > e.campR + CAMP_LEASH_PAD_M;
+    // new-player ease (L1-9): the pad shrinks, so a camp member evades home sooner (lowLevelScaling.ts newPlayerLeashMult)
+    if (e.campX !== null && e.campZ !== null && e.campR > 0) return Math.hypot(e.position.x - e.campX, e.position.z - e.campZ) > e.campR + CAMP_LEASH_PAD_M * newPlayerLeashMult(e.level);
     return Math.hypot(e.position.x - e.homeX, e.position.z - e.homeZ) > leash;
   }
 

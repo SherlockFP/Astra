@@ -203,6 +203,8 @@ export class CharacterState {
       const base = ITEM_BASES[id];
       if (base) ch.addItem(buildFromBase(base, 1, 'common', rng, classId));
     }
+    // new-player kit (data/lowLevelScaling.ts): five small health potions in the pouch, so the first pulls can be walked back from
+    if (!beta) ch.addMaterial('pot_hp_1', 5);
     save.skillBar = CharacterState.defaultBar(classId, beta ? BETA_LEVEL : 1);
     if (beta) applyBetaPreset(ch, { skillMax: SKILL_MAX, rng, now });
     ch.recomputeStats(false);

@@ -38,7 +38,7 @@ export const BETA_PETS = ['ejder_yavrusu', 'kurt_yavrusu', 'kizil_tilki', 'buz_t
 /** PvP currency stock (materials ids of systems/PvpGear.ts): Onur, Fetih, Fetih mührü. */
 export const BETA_PVP_CURRENCY: Record<string, number> = { onur_puani: 5000, fetih_puani: 2000, fetih_muhru: 40 };
 /** One M+ keystone (the save holds a single key slot): dungeon and level. */
-export const BETA_KEYSTONE = { dungeonId: DUNGEON_IDS[0] ?? 'kemik_mahzeni', level: 15 } as const;
+export const BETA_KEYSTONE = { dungeonId: 'kemik_mahzeni', level: 15 } as const;
 
 /** What the preset needs from a character: its save and the equip rule of CharacterState. */
 export type BetaHost = Pick<CharacterState, 'save' | 'classId' | 'canEquip'>;

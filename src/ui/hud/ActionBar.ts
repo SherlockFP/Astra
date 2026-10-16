@@ -6,6 +6,7 @@ import type { AimInfo, SkillDef, SkillSlotKey } from '../../types/skills';
 import type { AutoInfo } from '../../combat/SkillSystem';
 import type { Actor } from '../../entities/Actor';
 import { lockoutSchool } from '../../combat/castRules';
+import { inMeleeReach } from '../../combat/targetSelect';
 import { glowSkillsOf, type GlowState } from '../../data/procs';
 import { localHardTargetId } from '../../game/PlayerController';
 import { DAMAGE_COLORS, ICON, div, fmtCd, fmtNum, iconEl, pulse, setClass, setDisplay, setIconUrl, setStyle, setText, esc } from '../widgets/dom';
@@ -518,7 +519,10 @@ class Slot {
     if (isSkill && def && p && def.range && OOR_TARGETING.has(def.targeting) && frame.target && !frame.target.isDead) {
       const dx = frame.target.position.x - p.position.x, dz = frame.target.position.z - p.position.z;
       const edge = Math.hypot(dx, dz) - frame.target.radius - p.radius;
-      oor = edge > def.range + (def.targeting === 'melee_arc' ? MELEE_ASSIST : 0);
+      // WoW melee: 5 m between both hitboxes (the same test as PlayerController.wowPreCast); other kinds keep the range + assist
+      oor = G.input?.scheme === 'wow' && def.targeting === 'melee_arc'
+        ? !inMeleeReach(edge, def.params?.lunge ? 1 : 0)
+        : edge > def.range + (def.targeting === 'melee_arc' ? MELEE_ASSIST : 0);
     }
     setClass(this.el, 'oor', oor);
     // proc / usable glow (setting abilityGlow); the button pops once when the glow turns on

@@ -28,10 +28,20 @@ export const isMechanic = (a: Actor): boolean => a.kind !== 'player' && ((a as E
 
 /** Name colour used by the nameplates (the target frame's own name is white, §2.8). */
 export function nameColor(a: Actor): string {
-  if (a.kind === 'player') return '#7fe08a';
+  // colour-blind-safe set (Okabe-Ito): friends blue, champions purple, bosses vermillion, elites orange (no red / green pair)
+  const cb = !!(G.settings?.data as { colorBlindNameplates?: boolean } | undefined)?.colorBlindNameplates;
+  if (a.kind === 'player') return cb ? '#56b4e9' : '#7fe08a';
   if (isMechanic(a)) return '#9fd8ff';
-  if (isChampion(a)) return '#58b0ff';
+  if (isChampion(a)) return cb ? '#cc79a7' : '#58b0ff';
   if (isRareEnemy(a)) return '#d6e2f0';
+  if (cb) {
+    switch (enemyRank(a)) {
+      case 'boss': return '#d55e00';
+      case 'miniboss': return '#e69f00';
+      case 'elite': return '#f0e442';
+      default: return '#f1e6cf';
+    }
+  }
   switch (enemyRank(a)) {
     case 'boss': return '#ff6a52';
     case 'miniboss': return '#ffa040';

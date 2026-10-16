@@ -23,6 +23,7 @@ export const DEFAULT_TOWN_NPCS: N[] = [
   npc('npc_anahtar_ustasi', 'Anahtar Ustası Yaşar', 'keystone', 'Knight', 0, -34, 0),
   npc('npc_lord_tarhan', 'Lord Tarhan', 'keystone', 'King', -8, -34, 0),
   npc('obj_seref_tasi', 'Şeref Taşı', 'citizen', 'prop', 8, -34, 0),
+  npc('portal_sisli_magara', 'Sisli Mağara', 'portal', 'portal', -16.4, -50, 60, { dungeonId: 'sisli_magara' }),
   npc('portal_kemik_mahzeni', 'Kemik Mahzeni', 'portal', 'portal', -10.4, -50, 60, { dungeonId: 'kemik_mahzeni' }),
   npc('portal_kizil_dokumhane', 'Kızıl Dökümhane', 'portal', 'portal', -4.1, -55.3, 20, { dungeonId: 'kizil_dokumhane' }),
   npc('portal_buzul_tahti', 'Buzul Tahtı', 'portal', 'portal', 4.1, -55.3, -20, { dungeonId: 'buzul_tahti' }),

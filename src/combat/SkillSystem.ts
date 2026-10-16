@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { G } from '../game/G';
 import { clamp, yawFromDir, cosmeticRng } from '../core/utils';
+import { WOW_TARGET } from './targetSelect';
 import { SKILLS, comboSteps } from '../data/skills';
 import { CLASSES, defaultSkillBar } from '../data/classes';
 import { AUTO, type AutoMode } from '../game/AutoAttack';
@@ -417,7 +418,7 @@ export class SkillSystem {
     const mode = this.autoMode(p, steps);
     const step = steps[idx] ?? steps[0];
     let reach = 0;
-    if (step && mode === 'melee') reach = (step.range ?? 2.5) + AUTO.meleeSlack;
+    if (step && mode === 'melee') reach = WOW_TARGET.meleeReachM; // WoW: 5 m between both hitboxes (the driver measures the same way)
     else if (step && mode === 'ranged') reach = Math.min(step.range ?? AUTO.rangedMax, AUTO.rangedMax);
     const cur = st.cur;
     return {
@@ -2785,7 +2786,7 @@ export class SkillSystem {
     return softStat(a, key);
   }
 
-  fail(reason: 'cooldown' | 'resource' | 'range' | 'target' | 'stunned' | 'casting' | 'silenced' | 'lockout' | 'moving' | 'facing', remaining?: number): void {
+  fail(reason: 'cooldown' | 'resource' | 'range' | 'target' | 'stunned' | 'casting' | 'silenced' | 'lockout' | 'moving' | 'facing' | 'los', remaining?: number): void {
     // the controller re-issues held keys every 0.05 s: only report on the press edge (and for non-key casts)
     if (this.quiet) return;
     G.events.emit('skill:fail', remaining !== undefined ? { reason, remaining } : { reason });

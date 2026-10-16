@@ -185,6 +185,10 @@ vec3 ms = texture2D(uMoss, vTerrainXZ / 5.0).rgb;
 vec3 dt = texture2D(uDirt, vTerrainXZ / 3.0).rgb;
 vec3 cb = texture2D(uCobble, vTerrainXZ / 4.0).rgb;
 vec3 base = mix(g1, g2 * 0.92, 0.3);
+// ground variation: broad light / dark patches and a finer mottle, so the meadow is not one flat colour
+float gNoiseA = texture2D(uGrass, vTerrainXZ / 37.0 + vec2(0.21, 0.63)).r;
+float gNoiseB = texture2D(uGrass, vTerrainXZ / 9.0 + vec2(0.7, 0.2)).g;
+base *= mix(0.86, 1.1, gNoiseA) * mix(0.95, 1.05, gNoiseB);
 // region tint: sampled unconditionally (clamped), then masked outside the tint area. Its alpha is the snow cover: the snow
 // replaces the grass first, so the splat paths (dirt, cobble) and the dark patches still show through it
 vec2 ts = (vTerrainXZ + vec2(uTintHalf)) / (2.0 * uTintHalf);
@@ -192,7 +196,9 @@ vec4 tm = texture2D(uTintMap, clamp(ts, 0.0, 1.0));
 float inside = step(0.0, ts.x) * step(ts.x, 1.0) * step(0.0, ts.y) * step(ts.y, 1.0) * uHasTint;
 base = mix(base, texture2D(uSnow, vTerrainXZ / 4.0).rgb, tm.a * inside);
 base = mix(base, ms, sp.b);
-base = mix(base, dt, sp.r);
+// grass-to-dirt: the edge of a worn path is dithered by a noise, so the grass thins out instead of a hard line
+float dEdge = texture2D(uGrass, vTerrainXZ / 2.2).b;
+base = mix(base, dt, smoothstep(0.1, 0.55, sp.r + (dEdge - 0.5) * 0.35));
 base = mix(base, cb, sp.g);
 ${SLOPE_FRAG}
 vec3 tintC = mix(vec3(1.0), tm.rgb, inside);

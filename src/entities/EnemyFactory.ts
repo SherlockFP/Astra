@@ -2,7 +2,7 @@ import type * as THREE from 'three';
 import { G } from '../game/G';
 import { Enemy } from './Enemy';
 import { getEnemyDef } from '../data/enemies';
-import { isLowLevelTrashRank, lowLevelDmgMult, lowLevelHpMult } from '../data/lowLevelScaling';
+import { isLowLevelTrashRank, lowLevelDmgMult, lowLevelHpMult, newPlayerAggroDef } from '../data/lowLevelScaling';
 import { EnemyAI } from '../ai/EnemyAI';
 import { BossController, BOSS_SPAWNS } from '../ai/BossController';
 import { getDirector, hooks } from '../ai/EnemyDirector';
@@ -178,7 +178,10 @@ export async function spawnEnemy(world: World, defId: string, pos: THREE.Vector3
     } catch { /* offline */ }
   }
 
-  const e = new Enemy(id, def);
+  // open-world trash / swarm: the low-level HP and damage curve (no effect from L20 up, and never on instances / bosses); L1-9 also get
+  // the new-player aggro ease (lowLevelScaling.ts newPlayerAggroDef: a copy of the def, the registry def is never changed)
+  const lowMobs = !!opts.openWorld && isLowLevelTrashRank(def.rank, def.role);
+  const e = new Enemy(id, lowMobs ? newPlayerAggroDef(def, level) : def);
   e.authority = authority;
   e.level = level;
   e.packId = opts.packId ?? null;
@@ -203,8 +206,6 @@ export async function spawnEnemy(world: World, defId: string, pos: THREE.Vector3
   }
 
   // ---- stats ----
-  // open-world trash / swarm: the low-level HP and damage curve (no effect from L20 up, and never on instances / bosses)
-  const lowMobs = !!opts.openWorld && isLowLevelTrashRank(def.rank, def.role);
   e.openWorld = lowMobs;
   let hpScale = 1, dmgScale = 1;
   let partyScale: { hp: number; dmg: number } | null = null;

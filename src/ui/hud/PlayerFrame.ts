@@ -105,6 +105,7 @@ export class PlayerFrame implements HudWidget {
   private res: Bar;
   private nameT: HTMLElement;
   private crownEl: HTMLElement;
+  private combatEl: HTMLElement;
   private hpVal: HTMLElement;
   private classId: ClassId | null = null;
   private resType = '';
@@ -127,6 +128,11 @@ export class PlayerFrame implements HudWidget {
     this.nameT = div('uf-name', this.hp.label);
     this.crownEl = iconEl(ICON('ui-crown'), 'uf-crown', this.hp.label);
     setDisplay(this.crownEl, false);
+    // WoW "in combat" flag: crossed swords beside the name while the character is in combat (Actor.inCombat)
+    this.combatEl = div('uf-combat', this.hp.label);
+    this.combatEl.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2.5 2.5l11 11M13.5 2.5l-11 11M2 4.5l2.5-2.5M14 4.5L11.5 2M4 14l-1.5-1.5M12 14l1.5-1.5" stroke="#ff5a4a" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>';
+    this.combatEl.title = 'Savaşta';
+    setDisplay(this.combatEl, false);
     this.hpVal = div('uf-val', this.hp.label);
     const stripWrap = div('uf-stripwrap', bars);
     this.res = new Bar('uf-strip', stripWrap);
@@ -154,6 +160,7 @@ export class PlayerFrame implements HudWidget {
     setText(this.nameT, dead ? '' : `${p.level} ${p.name}`);
     const leader = !!G.net?.isOnline && !!G.net.peerBySlot(p.slot)?.isHost;
     setDisplay(this.crownEl, leader && !dead);
+    setDisplay(this.combatEl, !dead && p.inCombat, 'flex');
     const pc = p.hp > 0 ? Math.max(1, Math.ceil(pct * 100)) : 0;
     setText(this.hpVal, dead ? 'Öldü' : `${fmtHealth(Math.max(0, p.hp))} | ${pc}%`);
     this.hp.set(pct, ctx.dt);

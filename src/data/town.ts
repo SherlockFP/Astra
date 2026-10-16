@@ -344,6 +344,7 @@ npc('obj_yarik_tasi', 'Kadim Yarık Taşı', 'citizen', 'prop', 14, -37, 0, {
 }, 2);
 // id, name, x, z, yaw, required level, swirl tint
 const PORTALS: [string, string, number, number, number, number, number][] = [
+  ['sisli_magara', 'Sisli Mağara', -16.4, -50, 60, 1, 0x9fd8e8],
   ['kemik_mahzeni', 'Kemik Mahzeni', -10.4, -50, 60, 8, 0x7affc0],
   ['kizil_dokumhane', 'Kızıl Dökümhane', -4.1, -55.3, 20, 18, 0xff6a20],
   ['buzul_tahti', 'Buzul Tahtı', 4.1, -55.3, -20, 30, 0x80c8ff],

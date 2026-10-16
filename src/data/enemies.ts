@@ -1113,6 +1113,37 @@ boss({
   arena: { cx: 136, cz: 88, w: 48, h: 48, homeX: 138.4, homeZ: 78.4 },
 });
 
+// ---------------------------------------------------------------- Sisli Magara (starter dungeon, band 1-10): easy bosses
+// Lighter copies of the Kemik bosses (own ability ids): the starter run is a level 1-10 fight, so hp and damage are scaled down.
+boss({
+  id: 'boss_mag_morkan', name: 'Sisli Çağırıcı', title: 'Sisli Mağaranın Ruhu', model: SKEL('Skeleton_Mage'), scale: 1.4, tint: 0xa8d8e8, role: 'caster',
+  hp: 25, dmg: 0.9, speed: 4.0, radius: 1.0, enrage: 240, arenaR: 14, loot: 'loot_d1_b2',
+  anims: { idle: 'Idle_B', walk: 'Walking_B', run: 'Running_A', hit: 'Hit_A', death: 'Death_C_Skeletons' }, resist: R_SKELETON,
+  visual: { attach: [{ url: WPN('Skeleton_Staff'), bone: 'handslot.r', pos: [0, 0, 0], rotY: Math.PI }], eyeEmissive: 0x9fd8e8, runRef: 7, glow: 0x9fd8e8 },
+  basic: proj('mag_morkan_bolt', 'Sis Oku', 16, 40, 2.5, 0.8, 1.0, 'shadow', 'shadow_projectile', 'Spellcast_Shoot', 0.3, { sfx: 'shadow_cast' }),
+  abilities: [
+    custom('mag_raise', 'Sisli Çağrısı', 20, 10, 3.0, 'Spellcast_Summon', { castTime: 3.0, interruptible: true, sfx: 'boss_cast', params: { impact: 4.2 } }),
+  ],
+  phases: [bp('p1', 1.01, ['mag_raise'])],
+  intro: 'Sis sizi bu mağaradan çıkarmayacak!', death: 'Sis... dağılıyor...',
+  arena: { cx: 0, cz: 0, w: 28, h: 28, homeX: 0, homeZ: 0 },
+});
+
+boss({
+  id: 'boss_mag_bekci', name: 'Kadim Bekçi', title: 'Kadim Odanın Son Bekçisi', model: SKEL('Skeleton_Warrior'), scale: 1.5, tint: 0xd8d0c0, role: 'tank',
+  hp: 12, dmg: 0.7, speed: 4.5, radius: 1.2, enrage: 240, arenaR: 14, loot: 'loot_d1_b1',
+  anims: { idle: 'Idle_Combat', walk: 'Walking_A', run: 'Running_A', hit: 'Hit_A', death: 'Death_C_Skeletons' }, resist: R_SKELETON,
+  visual: { attach: [...W_BLADE, { url: WPN('Skeleton_Shield_Large_A'), bone: 'handslot.l', pos: [0, 0.017, 0.05] }], eyeEmissive: 0xff8050, runRef: 7, glow: 0xff6040 },
+  // starter final boss: a long telegraph (step out of the arc) and a slow swing
+  basic: cone('mag_bekci_cleave', 'Kesik', 4, 100, 3.2, 1.0, '1H_Melee_Attack_Slice_Horizontal', 0.3, { windup: 1.4, telegraph: true }),
+  abilities: [
+    line('mag_bekci_slam', 'Kalkan Yarması', 8, 3, 16, 1.0, 4.0, 'physical', 'Block_Attack', 0.4, { initialCooldown: 8, knockback: 4, sfx: 'shield_bash', params: { impact: 0.4 } }),
+  ],
+  phases: [bp('p1', 1.01, ['mag_bekci_slam'])],
+  intro: 'Kadim odaya kimse giremez!', death: 'Nöbetim... bitti...',
+  arena: { cx: 0, cz: 0, w: 28, h: 28, homeX: 0, homeZ: 0 },
+});
+
 boss({
   id: 'boss_azrakel', name: 'Kemik Lordu Azrakel', title: 'Mahzenin Ölümsüz Hükümdarı', model: GENB('kemik_lordu'), scale: 1.0, role: 'melee',
   hp: 110, dmg: 2.3, speed: 4.8, radius: 1.3, enrage: 300, arenaR: 22, loot: 'loot_d1_b3', anims: A_GEN, resist: R_SKELETON, visual: { runRef: 5 },

@@ -1,5 +1,6 @@
 import { G } from '../game/G';
 import { SKILLS } from '../data/skills';
+import { NEW_PLAYER_END_LEVEL } from '../data/lowLevelScaling';
 import type { World } from '../world/World';
 import type { Enemy } from '../entities/Enemy';
 import type { Actor } from '../entities/Actor';
@@ -25,9 +26,10 @@ export interface BonePile {
 const CELL = 3;
 /** WoW-style social aggro: a pack-less neighbour pulls in only within this many metres of the puller, and only when it is already inside its own aggro range of the target. */
 export const SOCIAL_AGGRO_M = 10;
-/** Low-level pull cap: a trash / elite target at level <= PULL_CAP_LEVEL has at most PULL_CAP enemies engaged on it at once (WoW-style small pulls). Bosses are exempt. */
-export const PULL_CAP_LEVEL = 5;
-export const PULL_CAP = 3;
+/** Low-level pull cap: a trash / elite target at level <= PULL_CAP_LEVEL has at most PULL_CAP enemies engaged on it at once (WoW-style small pulls). Bosses are exempt.
+ *  New-player ease: the cap covers L1-9 (was L1-5 at 3) and is 2, so a new character pulls two mobs at most. */
+export const PULL_CAP_LEVEL = NEW_PLAYER_END_LEVEL - 1;
+export const PULL_CAP = 2;
 const key = (cx: number, cz: number) => (cx + 2048) * 4096 + (cz + 2048);
 
 /**
@@ -231,6 +233,8 @@ export class EnemyDirector {
         continue;
       }
       if (o.e.def.aggroRange <= 0 || o.e.def.ai?.summoned) continue;
+      // new-player ease: below L10 a pack-less mob is never social-pulled (only its own camp comes along)
+      if (ai.e.level < NEW_PLAYER_END_LEVEL) continue;
       // vertical: a pack-less neighbour on another level (balcony / pit) is not pulled (ENGINE_VERTICALITY §12)
       const nav = this.world.nav;
       if (d <= SOCIAL_AGGRO_M && (!nav.vertical || nav.sameRegion(o.e.position, ai.e.position)) && this.inAggroRangeOf(o.e, target)) mates.push({ ai: o, d });
@@ -245,6 +249,9 @@ export class EnemyDirector {
   /** Low-level cap: a trash / elite enemy at level <= PULL_CAP_LEVEL may engage `target` only while fewer than PULL_CAP enemies are engaged on it. Bosses are never capped. */
   hasRoom(e: Enemy, target: Actor): boolean {
     if (e.level > PULL_CAP_LEVEL || e.def.rank === 'boss') return true;
+    // a boss's or miniboss's own summons are a scripted set-piece (they engage with their summoner), not a pull of trash
+    const owner = e.ownerId != null ? this.world.get<Enemy>(e.ownerId) : undefined;
+    if (owner && (owner.isBoss || owner.def.rank === 'miniboss')) return true;
     let n = 0;
     for (const o of this.ais) if (o.aggroed && !o.e.isDead && o.target === target) n++;
     return n < PULL_CAP;

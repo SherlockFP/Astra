@@ -69,7 +69,7 @@ export interface AutoTickOut {
   disarmed: boolean;
   /** A new target id when the old one was lost and a replacement was found, else null. */
   retargeted: number | null;
-  toast: 'Hedefe dönük değilsin' | 'Hedef yok' | null;
+  toast: 'Hedefe bakmıyorsun' | 'Hedef yok' | null;
 }
 
 /** Retarget candidate test (caller helper): inside the search range and the cone. */
@@ -156,7 +156,7 @@ export class AutoAttack {
     } else {
       // in reach but off the facing cone: say so in every mode (a silent armed driver looked like a broken attack)
       if (inReach && !facingOk && this.clock - this.toastAt >= AUTO.toastEvery) {
-        out.toast = 'Hedefe dönük değilsin';
+        out.toast = 'Hedefe bakmıyorsun';
         this.toastAt = this.clock;
       }
       this.idleT += i.dt;
@@ -235,7 +235,7 @@ export function selfTest(): string[] {
     const a = new AutoAttack();
     a.arm(7);
     const o = a.tick({ ...base, mouseLook: true, target: tgt({ angleDeg: 80 }) });
-    check(!o.swing && o.toast === 'Hedefe dönük değilsin', 'mouselook facing: no swing and facing toast');
+    check(!o.swing && o.toast === 'Hedefe bakmıyorsun', 'mouselook facing: no swing and facing toast');
   }
 
   // 7. paused: no swing, no disarm, and the leash does not run

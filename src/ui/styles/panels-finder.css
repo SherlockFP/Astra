@@ -251,3 +251,8 @@
   background: var(--elv-value);
   border-radius: var(--ui-r-frame);
 }
+
+/* Zindan Bulucu run card (finder.ts runCard): level band, "Şimdi katılabilirsin", estimated time and XP */
+.fd-runcard { display: grid; gap: 4px; margin: 6px 0 8px; padding: 8px 10px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; background: rgba(0, 0, 0, 0.25); }
+.fd-runhead { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.fd-runstats { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; opacity: 0.9; }

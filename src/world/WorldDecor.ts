@@ -16,6 +16,7 @@ import type { Relief } from './Relief';
 import { ChunkedTerrain } from './TerrainChunks';
 import { WorldStream, type WorldStreamStats } from './WorldStream';
 import { getGfxQuality, lodPlans } from './WorldPerf';
+import { GrassField, grassPaletteFor } from './GrassField';
 import { ChunkScatter } from './chunks/ChunkScatter';
 import type { StreamConfig } from './chunks/StreamConfig';
 import { surfaceTexture } from './ProceduralAssets';
@@ -155,6 +156,8 @@ class OpenWorld implements WorldDecorHandle {
   private streamFailed = false;
   /** Camera position the sky rings were last lifted for (relief zones). */
   private ringAt = { x: NaN, z: NaN };
+  /** Dense grass near the camera (null in a zone without ground cover). */
+  grass: GrassField | null = null;
 
   constructor(
     private readonly def: DungeonDef,
@@ -212,6 +215,11 @@ class OpenWorld implements WorldDecorHandle {
 
   update(dt: number): void {
     this.time += dt;
+    if (this.grass) {
+      const cam0 = G.engine?.activeCamera;
+      this.grass.setDensity(G.settings?.data.grassDensity ?? 'mid');
+      this.grass.update(this.time, dt, { x: this.px, z: this.pz }, cam0 ? { x: cam0.position.x, z: cam0.position.z } : { x: this.px, z: this.pz }, 0.9, 0.35);
+    }
     // streamed zone: build / free the chunks around the player first, so the culler below sees them
     if (this.stream && !this.streamFailed) {
       try {
@@ -682,9 +690,24 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
     });
   }
 
+  // ---- grass: dense stylized blades + flowers near the camera (one draw call each; density from Settings.grassDensity) ----
+  const grass = new GrassField({
+    parent: host.root,
+    ground: (x, z) => weights(x, z),
+    height: (x, z) => (host.relief ? host.relief.groundY(x, z) : 0) + 0.03,
+    clear: (x, z) => host.nav.isWalkable(x, z) && !host.isAvoided(x, z, 1.5) && (!host.relief || host.relief.slopeAt(x, z) < 0.6),
+    palette: (x, z) => {
+      const r = regionAtTile(Math.floor(x / T), Math.floor(z / T));
+      return grassPaletteFor(r?.id ?? null, (r?.theme.snowCover ?? 0) > 0.5);
+    },
+  }, hashString(def.id + ':grass') >>> 0);
+
   const culler = new ChunkCuller(host.batcher, stream ? stream.chunkM : world.perf?.chunkM ?? 40);
   const blendM = world.regions.reduce((m, r) => Math.max(m, r.blendM ?? 0), 0) || DEFAULT_BLEND_M;
-  return new OpenWorld(def, host, regs, world.regions, sky, rings, waters, culler, blendM, world.villages, worldStream, night);
+  const ow = new OpenWorld(def, host, regs, world.regions, sky, rings, waters, culler, blendM, world.villages, worldStream, night);
+  ow.grass = grass;
+  host.disposables.push(grass);
+  return ow;
 }
 
 /**

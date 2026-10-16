@@ -86,7 +86,8 @@ export function difficultyState(def: DungeonDef, d: LadderDiff, ch: LadderChar, 
     case 'normal': {
       if (lvl < min) return { kind: 'locked_level', need: min };
       const q = UNLOCK_QUEST[def.id];
-      if (q && ch.save.flags['q.' + q] !== 'done' && lvl < min + 2) return { kind: 'locked_quest', need: q };
+      // the unlock quest opens the door for the band's upper levels; a band that starts at 1 (low-level dungeon) is open from level 1
+      if (q && min > 1 && ch.save.flags['q.' + q] !== 'done' && lvl < min + 2) return { kind: 'locked_quest', need: q };
       return { kind: hasCleared(def.id, 'normal') ? 'cleared' : 'open' };
     }
     case 'heroic': {
@@ -117,7 +118,7 @@ export const isStartable = (st: DiffState): boolean => st.kind === 'open' || st.
 export function recommendedIlvl(def: DungeonDef, d: LadderDiff, keyLevel = 2): number {
   switch (d) {
     case 'normal':
-      return (def.levelRange?.[0] ?? 1) - 2;
+      return Math.max(1, (def.levelRange?.[0] ?? 1) - 2);
     case 'heroic':
       return 50;
     case 'mythic':

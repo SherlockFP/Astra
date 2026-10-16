@@ -18,6 +18,8 @@ export const PICK = {
   samples: [0.1, 0.5, 0.9] as const,
   /** Candidates whose ratio is within this of the best one are tie-broken by kind. */
   tieRatio: 0.1,
+  /** Metres added to the body radius for the click area (was 0.9; the generous area makes small mobs clickable). */
+  slack: 1.2,
   maxDist: 60,
 } as const;
 
@@ -43,7 +45,7 @@ export function bodyRatio(
     if (t < 1) continue;
     const lenSq = qx * qx + qy * qy + qz * qz;
     const perp = Math.sqrt(Math.max(0, lenSq - t * t));
-    const allowed = radius + 0.9 + t * 0.035;
+    const allowed = Math.max(radius, 0.5) + PICK.slack + t * 0.035; // small mobs (radius 0.3) get the same click area as a 0.5 m body
     ratio = Math.min(ratio, perp / allowed);
   }
   return ratio;

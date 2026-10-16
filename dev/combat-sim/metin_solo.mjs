@@ -42,7 +42,9 @@ const STONE_HP_MULT = args['stone-hp'] !== undefined ? Number(args['stone-hp']) 
 const STONE_ID = 'metin_keder';
 const STONE_LEVEL = 5;
 const TIME_LIMIT = 120;
-const TTK_FIGHT = [8, 75];
+// lower bound 8 -> 7 s: the new-player pull cap (2 engaged at L1-9, EnemyDirector) lets the wave adds come in fewer at once, so the
+// fastest class (archer, 7.3 s at 87 % HP) is now a little quicker; the upper bound and the HP rules are unchanged
+const TTK_FIGHT = [7, 75];
 const HP_MIN = 0.15;
 const SPAWN_DIST = 8;
 const PLAYER_RUN = 7; // m/s: a melee character walks to the stone

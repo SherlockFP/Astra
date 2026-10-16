@@ -17,7 +17,7 @@
  * First-hour targets (pace route, turn-in semantics): level 2 right after chain quest 2, level 3 right after chain quest 4
  * (6-8 min), level 4 at about 15 min (13-17 min), level 5 at about 25 min (24-35 min). Exit code 1 when a target is missed.
  */
-import { xpToNext, killXp, questXp, kindOf, replayFirstHour, sideQuestReport, SIDE_MIN_SHARE, QUESTS, LEVEL_CAP } from './xp-ledger.mjs';
+import { xpToNext, killXp, questXp, kindOf, replayFirstHour, sideQuestReport, SIDE_MIN_SHARE, QUESTS, LEVEL_CAP, replayDungeonRoute, DUNGEON_RUN_OVERHEAD_S } from './xp-ledger.mjs';
 
 const f = (n, w) => String(n).padStart(w);
 const p1 = (n) => (Number.isFinite(n) ? n.toFixed(1) : '-');
@@ -110,4 +110,22 @@ const under = sides.filter((s) => s.share < SIDE_MIN_SHARE);
 check(under.length === 0, `side quests >= ${Math.round(SIDE_MIN_SHARE * 100)} % of the main XP/min at their level (${sides.length} quests)`,
   under.length ? under.map((s) => `${s.id} ${Math.round(s.share * 100)} %`).join(', ') : 'all pass');
 bad += badQuest.length + badDaily.length;
+
+// ---- second path: dungeon-only route (xp-ledger replayDungeonRoute: the lowest low-level dungeon, run at the player's level)
+const dr = replayDungeonRoute({ group: 1 });
+const drGroup = replayDungeonRoute({ group: 5 });
+const pctOf = (xpAmt, L) => (100 * xpAmt) / xpToNext(L);
+console.log(`\nDungeon route (${dr.def.name}, band ${dr.def.levelRange[0]}-${dr.def.levelRange[1]}, one run ${mins(dr.runSecs)} min incl. ${DUNGEON_RUN_OVERHEAD_S / 60} min overhead; enemies follow the level inside the band):`);
+for (const L of [1, 5, 10]) {
+  console.log(`  run at L${L}: solo ${Math.round(dr.atLevel[L])} XP = ${p1(pctOf(dr.atLevel[L], L))} % of a level | group of 5 ${Math.round(drGroup.atLevel[L])} XP = ${p1(pctOf(drGroup.atLevel[L], L))} %`);
+}
+console.log(`  solo: ${Object.entries(dr.reached).map(([L, t]) => `L${L}@${mins(t)}min`).join(' ')}`);
+console.log(`  group of 5: ${Object.entries(drGroup.reached).map(([L, t]) => `L${L}@${mins(t)}min`).join(' ')}`);
+console.log(`  quest route for comparison: level 5 at ${mins(pace.reached[5])} min`);
+const dungeonXpLabel = 'dungeon run XP';
+check(pctOf(dr.atLevel[1], 1) >= 90 && pctOf(dr.atLevel[1], 1) <= 110, `${dungeonXpLabel} at L1 ~ one level (90-110 %)`, `${p1(pctOf(dr.atLevel[1], 1))} %`);
+check(pctOf(dr.atLevel[5], 5) >= 90 && pctOf(dr.atLevel[5], 5) <= 110, `${dungeonXpLabel} at L5 ~ one level (90-110 %)`, `${p1(pctOf(dr.atLevel[5], 5))} %`);
+check(pctOf(dr.atLevel[10], 10) >= 60 && pctOf(dr.atLevel[10], 10) <= 70, `${dungeonXpLabel} at L10 ~ 60-70 % of a level`, `${p1(pctOf(dr.atLevel[10], 10))} %`);
+const dungeonL10Min = dr.reached[10] / 60;
+check(dr.reached[10] !== undefined && dungeonL10Min >= 60 && dungeonL10Min <= 90, 'dungeon-only route: level 10 in 60-90 min (solo)', dr.reached[10] === undefined ? 'not reached' : `${dungeonL10Min.toFixed(0)} min`);
 process.exit(bad ? 1 : 0);
