@@ -5,7 +5,8 @@ import type { MusicId, PlaySfxOpts, SfxId } from '../types/audio';
 import { AMBIENCE_MANIFEST, MUSIC_MANIFEST, SFX_MANIFEST, type SfxEntry } from './manifest';
 import { MUSIC_ALIASES, resolveSfxAlias } from './aliases';
 import { getProcDef } from '../data/procs';
-import { COMBAT_LOW_CAP, COMBAT_LOW_GAIN, COMBAT_LOW_GAP, COMBAT_RX, MAX_SEC, UI_BUS_SCALE, UI_CLICK_GAP, UI_HOVER_GAP, UI_MAX_SEC, UI_TONE_HZ, isUiClickSound, mixTrim, uiBurstAllowed } from './mix';
+import { COMBAT_AMB_GAIN, COMBAT_BUS_GAIN, COMBAT_DUCK_HOLD_SEC, COMBAT_LOW_CAP, COMBAT_LOW_GAIN, COMBAT_LOW_GAP, COMBAT_RX, IMPACT_PITCH_VAR, MAX_SEC, SYNTH_GAIN, SYNTH_LAYER_MAX, SYNTH_LAYER_WINDOW_SEC, UI_BUS_SCALE, UI_CLICK_GAP, UI_HOVER_GAP, UI_MAX_SEC, UI_TONE_HZ, isUiClickSound, mixTrim, uiBurstAllowed } from './mix';
+import { makeNoise, renderArcaneShimmer, renderBodyThump, renderCritAccent, renderFireWhoosh, renderFrostCrackle, renderKillDrop, renderMaterialTick } from './synth';
 
 /**
  * WebAudio sound manager: sfx (variants, pitch variation, per-id rate limits and voice caps, distance attenuation + stereo pan
@@ -142,6 +143,16 @@ export class Audio {
   /** start time of the last UI click sound that played (one sound per click, see uiBurstAllowed) */
   private lastUiAt = -9;
   private ambBus: GainNode | null = null;
+  /** ambience -> ambDuck -> master: a fight lowers the ambience (COMBAT_AMB_GAIN), not the sfx */
+  private ambDuck: GainNode | null = null;
+  private ambDuckTarget = 1;
+  /** combat samples and synth layers (-6 dB, COMBAT_BUS_GAIN) -> sfxBus */
+  private combatBus: GainNode | null = null;
+  /** time until which a fight is running (set by combat sounds); ambience stays ducked until then + 1 s */
+  private combatUntil = -9;
+  private noiseBuf: AudioBuffer | null = null;
+  /** start times of the synth layers (synth.ts) in the last SYNTH_LAYER_WINDOW_SEC */
+  private synthTimes: number[] = [];
 
   private buffers = new Map<string, AudioBuffer>();
   private inflight = new Map<string, Promise<AudioBuffer | null>>();
@@ -284,12 +295,19 @@ export class Audio {
       uiTone.frequency.value = UI_TONE_HZ;
       uiTone.Q.value = 0.6;
       const ambBus = ctx.createGain();
+      const ambDuck = ctx.createGain();
       musicDuck.connect(musicBus);
       musicBus.connect(master);
       sfxBus.connect(master);
+      const combatBus = ctx.createGain();
+      combatBus.gain.value = COMBAT_BUS_GAIN;
+      combatBus.connect(sfxBus);
+      this.combatBus = combatBus;
       uiBus.connect(uiTone);
       uiTone.connect(master);
-      ambBus.connect(master);
+      ambBus.connect(ambDuck);
+      ambDuck.connect(master);
+      this.ambDuck = ambDuck;
       this.master = master;
       this.comp = comp;
       this.musicBus = musicBus;
@@ -531,6 +549,7 @@ export class Audio {
     const ui = UI_RX.test(id);
     const impact = id.startsWith('hit_') || id.endsWith('_impact');
     const combat = COMBAT_RX.test(id);
+    if (combat && !ui) this.combatUntil = t0 + COMBAT_DUCK_HOLD_SEC;
     const low = combat && this.lowCombat();
     if (t0 - (this.lastPlay.get(id) ?? -9) < this.gapFor(id) * (low ? COMBAT_LOW_GAP : 1)) return false;
     // one UI click sound per click: a second one inside the same burst (button + handler) is dropped
@@ -573,9 +592,9 @@ export class Audio {
     const jitter = 1 + (Math.random() * 2 - 1) * 0.05;
     const trim = mixTrim(id) * (low ? COMBAT_LOW_GAIN : 1);
     const vol = (opts?.volume ?? 1) * def.v * atten * trim * jitter;
-    const pv = Math.max(0.05, opts?.pitchVar ?? def.pv);
+    const pv = impact ? IMPACT_PITCH_VAR : Math.max(0.05, opts?.pitchVar ?? def.pv);
     const rate = (opts?.pitch ?? 1) * (def.p ?? 1) * (1 + (Math.random() * 2 - 1) * pv);
-    const bus = ui ? this.uiBus : this.sfxBus;
+    const bus = ui ? this.uiBus : combat ? (this.combatBus ?? this.sfxBus) : this.sfxBus;
     const maxSec = MAX_SEC[id] ?? (uiClick ? UI_MAX_SEC : 0);
     if (uiClick) this.lastUiAt = t0;
 
@@ -652,7 +671,7 @@ export class Audio {
   }
 
   /** Synthesized sub-bass drop that gives crits, slams and explosions weight (no sample needed). */
-  thump(strength = 0.6, f0 = 120, f1 = 36, dur = 0.17): void {
+  thump(strength = 0.6, f0 = 120, f1 = 36, dur = 0.17, bus: GainNode | null = null): void {
     try {
       const ctx = this.ctx;
       if (!ctx || ctx.state !== 'running' || !this.sfxBus) return;
@@ -670,7 +689,7 @@ export class Audio {
       g.gain.exponentialRampToValueAtTime(peak, at + 0.008);
       g.gain.exponentialRampToValueAtTime(0.0001, at + dur + 0.06);
       o.connect(g);
-      g.connect(this.sfxBus);
+      g.connect(bus ?? this.sfxBus);
       o.start(at);
       o.stop(at + dur + 0.12);
       o.onended = () => {
@@ -1029,6 +1048,14 @@ export class Audio {
         this.lyaw = Math.atan2(fx, fz);
       }
     }
+    // a fight lowers the ambience bus (not the sfx); it returns over ~1 s after the last combat sound
+    if (this.ambDuck && this.ctx) {
+      const want2 = t < this.combatUntil ? COMBAT_AMB_GAIN : 1;
+      if (want2 !== this.ambDuckTarget) {
+        this.ambDuckTarget = want2;
+        this.ambDuck.gain.setTargetAtTime(want2, this.ctx.currentTime, want2 < 1 ? 0.08 : 0.5);
+      }
+    }
     // music ducking (timed + death)
     if (t > this.duckUntil) this.duckTarget = 1;
     const want = Math.min(this.duckTarget, this.deathDuck ? 0.3 : 1);
@@ -1322,7 +1349,8 @@ export class Audio {
     if (phys) {
       if (e.crit) {
         this.playInternal('hit_crit', { pos: p });
-        this.thump(0.5, 130, 40, 0.15);
+        this.thump(0.5, 130, 40, 0.15, this.combatBus);
+        this.synthLayer(p, (c, d, at, _n, k) => renderCritAccent(c, d, at, SYNTH_GAIN.crit * k));
         return;
       }
       switch (material) {
@@ -1332,24 +1360,62 @@ export class Audio {
         case 'ghost': this.playInternal('hit_blunt', { pos: p, pitch: 1.25, volume: 0.6 }); break;
         default: this.playInternal('hit_flesh', { pos: p });
       }
+      // every melee hit: a low-mid body thump under the sample and a light material tick on top
+      this.synthLayer(p, (c, d, at, n, k) => {
+        renderBodyThump(c, d, at, SYNTH_GAIN.body * k);
+        renderMaterialTick(c, d, at, SYNTH_GAIN.tick * k, n);
+      });
       return;
     }
     // elemental: a body thud underneath the spell sound
     this.playInternal(material === 'bone' ? 'hit_bone' : 'hit_flesh', { pos: p, volume: 0.45 });
     const crit = e.crit ? 1.25 : 1;
     switch (e.type) {
-      case 'fire': this.playInternal('fire_impact', { pos: p, volume: 0.5 * crit }); break;
-      case 'frost': this.playInternal('frost_impact', { pos: p, volume: 0.5 * crit }); break;
+      case 'fire':
+        this.playInternal('fire_impact', { pos: p, volume: 0.5 * crit });
+        this.synthLayer(p, (c, d, at, n, k) => renderFireWhoosh(c, d, at, SYNTH_GAIN.fire * crit * k, n));
+        break;
+      case 'frost':
+        this.playInternal('frost_impact', { pos: p, volume: 0.5 * crit });
+        this.synthLayer(p, (c, d, at, n, k) => renderFrostCrackle(c, d, at, SYNTH_GAIN.frost * crit * k, n));
+        break;
       case 'lightning': this.playInternal('lightning_impact', { pos: p, volume: 0.45 * crit }); break;
       case 'shadow': this.playInternal('shadow_impact', { pos: p, volume: 0.9 * crit }); break;
       case 'poison': this.playInternal('poison_impact', { pos: p, volume: 0.55 * crit }); break;
       case 'holy': this.playInternal('spell_cast', { pos: p, pitch: 1.5, volume: 0.5 }); break;
-      case 'arcane': this.playInternal('arcane_impact', { pos: p, volume: 0.5 * crit }); break;
+      case 'arcane':
+        this.playInternal('arcane_impact', { pos: p, volume: 0.5 * crit });
+        this.synthLayer(p, (c, d, at, _n, k) => renderArcaneShimmer(c, d, at, SYNTH_GAIN.arcane * crit * k));
+        break;
       default: break;
     }
     if (e.crit) {
       this.playInternal('hit_crit', { pos: p, volume: 0.6 });
-      this.thump(0.45, 120, 38, 0.15);
+      this.thump(0.45, 120, 38, 0.15, this.combatBus);
+      this.synthLayer(p, (c, d, at, _n, k) => renderCritAccent(c, d, at, SYNTH_GAIN.crit * k));
+    }
+  }
+
+  /**
+   * Procedural combat layer (synth.ts) on the sfx bus. Shares one limiter (SYNTH_LAYER_MAX starts per SYNTH_LAYER_WINDOW_SEC) so a
+   * 6-mob fight cannot stack into noise. `k` = the Az (low combat) factor, `pos` falls off with distance like the samples.
+   */
+  private synthLayer(pos: [number, number, number] | undefined, fn: (c: AudioContext, dest: GainNode, at: number, noise: AudioBuffer, k: number) => void): void {
+    try {
+      const ctx = this.ctx;
+      if (!ctx || ctx.state !== 'running' || !this.sfxBus) return;
+      const t = now();
+      while (this.synthTimes.length && t - this.synthTimes[0] > SYNTH_LAYER_WINDOW_SEC) this.synthTimes.shift();
+      if (this.synthTimes.length >= SYNTH_LAYER_MAX) return;
+      let k = this.lowCombat() ? COMBAT_LOW_GAIN : 1;
+      if (pos) k *= Math.max(0, Math.min(1, 1 - Math.hypot(pos[0] - this.lx, pos[2] - this.lz) / 28));
+      if (k < 0.02) return;
+      this.synthTimes.push(t);
+      this.combatUntil = t + COMBAT_DUCK_HOLD_SEC;
+      if (!this.noiseBuf) this.noiseBuf = makeNoise(ctx);
+      fn(ctx, this.combatBus ?? this.sfxBus, ctx.currentTime, this.noiseBuf, k);
+    } catch {
+      /* a missing layer is silent, never an error */
     }
   }
 
@@ -1359,6 +1425,8 @@ export class Audio {
     const def = defOf(target);
     const pos = e.pos;
     if (def?.rank === 'boss') return; // BossController plays boss_death
+    // a kill by the local player gets a soft low drop (synth.ts); other kills stay quiet here
+    if (G.player && e.killerId === G.player.id) this.synthLayer(pos, (c, d, at, _n, k) => renderKillDrop(c, d, at, SYNTH_GAIN.drop * k));
     const s = `${def?.id ?? ''} ${def?.model ?? ''}`;
     const big = def?.rank === 'elite' || def?.rank === 'miniboss';
     let id: string;
