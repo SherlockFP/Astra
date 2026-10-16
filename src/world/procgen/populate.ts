@@ -116,7 +116,7 @@ function scaled(tpl: PackTpl, tier: FissureTier, level: number, mods: readonly F
       m[0][1] = Math.max(2, m[0][1] + r.packBonus + lvl + crowd);
       break;
     case 'swarm':
-      m[0][1] = Math.max(4, m[0][1] + (tier === 'h' ? 2 : tier === 'm' ? 4 : 0) + lvl);
+      m[0][1] = Math.max(4, m[0][1] + (tier === 'n' ? 0 : 1) + lvl);
       break;
     case 'caster':
       if (tier === 'm') m[0][1] += 1;
@@ -126,7 +126,7 @@ function scaled(tpl: PackTpl, tier: FissureTier, level: number, mods: readonly F
       break;
     case 'elite': {
       const last = m.length - 1;
-      if (last > 0) m[last][1] = Math.max(1, m[last][1] + (tier === 'n' ? 0 : tier === 'h' ? 1 : 2));
+      if (last > 0) m[last][1] = Math.max(1, m[last][1] + (tier === 'h' ? 1 : 0));
       break;
     }
   }
@@ -229,12 +229,15 @@ export function populate(inp: PopIn): PopOut {
     }
   }
 
-  // corridors: 60 % hold a small swarm (flat corridors of 3+ tiles, never the first one)
+  // corridors: 60 % hold a small swarm (flat corridors of 3+ tiles, never the first one). The run's body budget (the tier's enemy
+  // range, tiers.ts) stops the swarms first: the rooms are the run, the corridors only add pressure while the budget allows it.
+  let bodies = packs.reduce((n, p) => n + p.members.length, 0);
   for (const l of inp.links) {
     if (l.ramp || l.i === 0) continue;
     const r = l.rect;
     const long = l.side === 'e' || l.side === 'w' ? r.w : r.h;
-    if (long < 3 || !rng.chance(0.6)) continue;
+    if (long < 3 || !rng.chance(0.6) || bodies + 4 > tr.enemies[1]) continue;
+    bodies += 4;
     const tpl = pickTpl('swarm');
     const c: [number, number] = l.side === 'e' || l.side === 'w' ? [r.x + (r.w - 1) / 2, r.z + 0.5] : [r.x + 0.5, r.z + (r.h - 1) / 2];
     packs.push(pack(pid(), l.roomId, c[0], c[1], undefined, members([[tpl.members[0][0], 4]], 0.9), {}));

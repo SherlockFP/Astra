@@ -19,6 +19,7 @@ import { buildParams, partyLevels, startRun } from './runStart';
 import { FissureTab } from './finderFissure';
 import { PvpTab } from './finderPvp';
 import { devUnlockOn } from '../../../systems/BetaTest';
+import { fissureOpenFor } from '../../../world/procgen';
 import type { DungeonParams } from '../../../scenes/scenes';
 import '../../styles/panels-finder.css';
 
@@ -87,11 +88,10 @@ const CLEAR_GATES_OFF = ((): boolean => {
     return false;
   }
 })();
-/** The Kadim Yarıklar tab (procedural rifts) is hidden for everyone but the dev tester switch (`?unlock` / efsun.unlock). */
-const FISSURE_TAB_ON = devUnlockOn();
 
 export class FinderPanel extends GamePanel {
   private chrome!: Chrome;
+  private tabsOn = false;
   private tabs!: TabsApi;
   private split!: HTMLElement;
   private listEl!: HTMLElement;
@@ -137,7 +137,8 @@ export class FinderPanel extends GamePanel {
       onClose: () => this.requestClose(),
     });
     this.chrome = c;
-    this.tabs = buildTabs(FISSURE_TAB_ON ? TABS : TABS.filter((t) => t.id !== 'fissure'), (id) => this.setTab(id as Tab), 'dungeons');
+    this.tabs = buildTabs(this.tabList(), (id) => this.setTab(id as Tab), 'dungeons');
+    this.tabsOn = this.fissureTabOn();
     c.tabsHost.append(this.tabs.el);
 
     this.listEl = h('div.fd-list.k-scroll');
@@ -181,6 +182,7 @@ export class FinderPanel extends GamePanel {
 
   protected onOpen(data?: unknown): void {
     const d = (data ?? {}) as { dungeonId?: string; tab?: Tab };
+    this.syncFissureTab();
     this.fissure.open();
     if (!this.rolesManual) this.roles = defaultRoles(G.character?.save.spec as SpecId | undefined);
     const list = finderDungeons();
@@ -291,8 +293,28 @@ export class FinderPanel extends GamePanel {
 
   /* ------------------------------------------------------------ actions */
 
+  /** The Kadim Yarıklar tab opens at the stone's level (instanceScaling gate), `?unlock` shows it to the dev tester below it. */
+  private fissureTabOn(): boolean {
+    return fissureOpenFor(G.character?.level ?? 1, devUnlockOn());
+  }
+
+  private tabList(): typeof TABS {
+    return this.fissureTabOn() ? TABS : TABS.filter((t) => t.id !== 'fissure');
+  }
+
+  /** Rebuilds the tab strip when the level crossed the gate (the panel is built once, the character changes). */
+  private syncFissureTab(): void {
+    const on = this.fissureTabOn();
+    if (on === this.tabsOn) return;
+    this.tabsOn = on;
+    if (!on && this.tab === 'fissure') this.tab = 'dungeons';
+    this.tabs.el.remove();
+    this.tabs = buildTabs(this.tabList(), (id) => this.setTab(id as Tab), this.tab);
+    this.chrome.tabsHost.append(this.tabs.el);
+  }
+
   private setTab(id: Tab): void {
-    if (id === 'fissure' && !FISSURE_TAB_ON) id = 'dungeons';
+    if (id === 'fissure' && !this.fissureTabOn()) id = 'dungeons';
     this.tab = id;
     this.tabs.select(id, true);
     if (id === 'groups') this.startBrowsing();

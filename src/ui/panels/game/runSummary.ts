@@ -2,7 +2,9 @@ import { G } from '../../../game/G';
 import type { ItemInstance } from '../../../types/items';
 import type { RunRecord, RunState } from '../../../types/mythic';
 import { DUNGEONS, getDungeon } from '../../../data/dungeons';
-import { isFissureId } from '../../../world/procgen';
+import {
+  FISSURE_TIERS, FISSURE_TIER_ORDER, THEMES, fissureBestFlag, fissureClearFlag, fissureUnlock, isFissureId, parseFissureId,
+} from '../../../world/procgen';
 import { GamePanel, affixView, bindTip, button, dungeonName, esc, h, icon, itemTile, mmss, ratingTier, sfx, windowFrame, DIFFICULTY_NAMES } from './base';
 
 export interface RunSummaryData {
@@ -208,12 +210,13 @@ export class RunSummaryPanel extends GamePanel {
       'div.pg-rs-grid',
       null,
       cell('Ölümler', h('b', { class: st.deaths ? 'pg-bad' : 'pg-good' }, String(st.deaths))),
-      cell('Düşman Gücü', h('b', null, `%${Math.round(Math.min(1, st.forces / Math.max(1, st.forcesRequired)) * 100)}`)),
+      cell(fissure ? 'Düşman Temizliği' : 'Düşman Gücü', h('b', null, `%${Math.round(Math.min(1, st.forces / Math.max(1, st.forcesRequired)) * 100)}`)),
       cell('Bosslar', h('b', null, `${st.bossesKilled?.length ?? 0}/${st.bossesTotal}`)),
       mplus ? cell('Koşu Puanı', scoreEl) : null,
       mplus ? cell('Mitik+ Puanı', h('span', null, ratingEl, delta ? h('small.pg-good', null, ` (${delta > 0 ? '+' : ''}${delta.toFixed(1)})`) : null)) : null,
     );
     this.bodyEl.append(stats);
+    if (fissure) this.bodyEl.append(fissureProgress(st));
     if (mplus) {
       this.schedule(1500, () => countUp(scoreEl, score, 900, 1));
       this.schedule(1800, () => {
@@ -253,7 +256,7 @@ export class RunSummaryPanel extends GamePanel {
 
     // ---- rewards
     const rw = d.rewards ?? [];
-    this.bodyEl.append(h('div.pg-h', { style: { marginTop: '14px' } }, `Ödüller (${rw.length})`));
+    this.bodyEl.append(h('div.pg-h', { style: { marginTop: '14px' } }, fissure ? 'Eşyalar ve ödül sandığı' : `Ödüller (${rw.length})`));
     const grid = h('div.pg-rs-rewards');
     if (!rw.length) grid.append(h('div.pg-empty', null, fissure ? 'Eşyalar patronlardan düştü; sandıktan altın ve malzeme geldi.' : 'Bu koşudan ödül çıkmadı.'));
     rw.forEach((item, i) => {
@@ -286,6 +289,26 @@ export class RunSummaryPanel extends GamePanel {
     }
     this.timers.push(window.setTimeout(() => (this.confetti.innerHTML = ''), 2600));
   }
+}
+
+/**
+ * Kadim Yarık end screen: the tier this clear counted for (fis.clear / fis.best, Bounties.recordFissureClear) and what the next tier needs.
+ * Reads scalar flags only; the same fissureUnlock rules as the finder.
+ */
+function fissureProgress(st: RunState): HTMLElement {
+  const spec = parseFissureId(st.dungeonId);
+  const flags = G.character?.save.flags ?? {};
+  const num = (k: string): number => (typeof flags[k] === 'number' ? (flags[k] as number) : 0);
+  const clears = { n: num(fissureClearFlag('n')), h: num(fissureClearFlag('h')), m: num(fissureClearFlag('m')) };
+  const tier = spec?.tier ?? 'n';
+  const best = num(fissureBestFlag(tier));
+  const next = FISSURE_TIER_ORDER[FISSURE_TIER_ORDER.indexOf(tier) + 1];
+  const text = h('div', null, h('b', null, `${FISSURE_TIERS[tier].name} yarığı tamamlandı`), h('span', null, `Bu kademe ${clears[tier]} kez tamamlandı${best ? ` · en iyi ${mmss(best)}` : ''}.`));
+  if (next) {
+    const un = fissureUnlock(next, G.character?.level ?? 1, clears, false, spec ? THEMES[spec.theme]?.level : undefined);
+    text.append(h('span', null, un.ok ? `Sonraki kademe açık: ${FISSURE_TIERS[next].name}.` : `Sonraki kademe ${FISSURE_TIERS[next].name}: ${un.reason}`));
+  }
+  return h('div.pg-rs-ks', null, icon('/assets/icons/ui-dungeon.svg', 'pg-rs-ksico'), text);
 }
 
 function cell(label: string, value: Node): HTMLElement {
