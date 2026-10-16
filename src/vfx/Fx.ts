@@ -169,6 +169,12 @@ export function flare(fx: Fx, p: THREE.Vector3 | V3, size: number, color: number
 }
 
 /** Flat ground ring that expands (additive by default). */
+/** Ground height under (x, z) for the flat ground decals and rings: VFX installs World.groundY here (0 on flat maps). */
+let groundOf: (x: number, z: number) => number = () => 0;
+export function setGroundOf(f: (x: number, z: number) => number): void {
+  groundOf = f;
+}
+
 export function ringFlat(
   fx: Fx,
   p: THREE.Vector3 | V3,
@@ -178,7 +184,11 @@ export function ringFlat(
   life = 0.5,
   o: { tex?: string; glow?: number; a?: number; layer?: 'add' | 'alpha'; y?: number; c1?: number; fp?: number; ease?: 0 | 1 | 2; spin?: number } = {},
 ): void {
-  const at: V3 = Array.isArray(p) ? [p[0], (o.y ?? 0.08), p[2]] : [p.x, (o.y ?? 0.08) + (p.y > 0.5 ? 0 : p.y), p.z];
+  const px = Array.isArray(p) ? p[0] : p.x, pz = Array.isArray(p) ? p[2] : p.z;
+  const py = Array.isArray(p) ? p[1] : p.y;
+  // a point lifted onto rolling terrain (py > 0.5) already carries the ground height; the offset is added on top of it
+  const base = (o.y ?? 0.08) + (py > 0.5 ? 0 : py);
+  const at: V3 = [px, base + groundOf(px, pz), pz];
   (o.layer === 'alpha' ? fx.alpha : fx.add).spawn({
     tex: o.tex ?? 'ring-01',
     mode: 'flat',
@@ -318,7 +328,8 @@ export function debris(fx: Fx, p: THREE.Vector3 | V3, o: { n?: number; r?: numbe
 
 /** Persistent ground decal (alpha) that fades slowly. */
 export function decal(fx: Fx, p: THREE.Vector3 | V3, o: { tex?: string; size: number; c0: number; c1?: number; life?: number; a?: number; rot?: number; grow?: number; fp?: number; additive?: boolean; fi?: number }): void {
-  const at: V3 = Array.isArray(p) ? [p[0], 0.035, p[2]] : [p.x, 0.035, p.z];
+  const dx = Array.isArray(p) ? p[0] : p.x, dz = Array.isArray(p) ? p[2] : p.z;
+  const at: V3 = [dx, groundOf(dx, dz) + 0.035, dz];
   (o.additive ? fx.add : fx.decal).spawn({
     tex: o.tex ?? 'splat',
     mode: 'flat',

@@ -42,6 +42,8 @@ export interface EnemySyncState {
   shot?: string | null;         // one-shot clip (melee swing / ability) for client replay, "Clip:speed"
   shotSeq?: number;             // increments per new one-shot
   aggroed?: boolean;
+  /** Stealth bodies only (packStealth / stealthReveal): the host's current hidden flag. Clients cannot reveal them on their own (the AI runs on the host). */
+  hidden?: boolean;
 }
 
 /** Champions with the Kalkanlı modifier (allies within 8 m take 40% less damage); filled by ai/champion.ts on every peer. */
@@ -778,6 +780,7 @@ export class Enemy extends Actor {
       anim: a?.baseName ?? '', targetId: this.targetId, cast: this.cast?.skillId ?? null, dead: this.isDead,
       shot, shotSeq: a?.shotSeq ?? 0, aggroed: this.aggroed,
     };
+    if (this.packStealth || this.def.ai?.stealthReveal) out.hidden = this.hidden;
     // airborne / falling only (§15): clients derive the ground height locally otherwise
     const world = this.world;
     if (world?.vertical && this.feetY !== null && Math.abs(this.feetY - world.groundY(this.position.x, this.position.z)) > 0.3) {
@@ -809,9 +812,13 @@ export class Enemy extends Actor {
       this.remoteAggro = s.aggroed;
       this.aggroed = s.aggroed;
       if (s.aggroed) this.dormant = false;
-      if (this.def.ai?.stealthReveal || this.packStealth) {
-        this.hidden = !s.aggroed;
-        this.setAlpha(s.aggroed ? 1 : 0.15);
+    }
+    // the host decides stealth (its AI reveals by proximity / hits, aggro is not always set): follow its flag when it sends one
+    if (this.def.ai?.stealthReveal || this.packStealth) {
+      const hid = s.hidden !== undefined ? s.hidden : s.aggroed !== undefined ? !s.aggroed : this.hidden;
+      if (hid !== this.hidden) {
+        this.hidden = hid;
+        this.setAlpha(hid ? 0.15 : 1);
       }
     }
 
