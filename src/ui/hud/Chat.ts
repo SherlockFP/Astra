@@ -9,6 +9,7 @@ import type { ItemInstance } from '../../types/items';
 import { RARITY_COLORS } from '../../types/common';
 import { getSocial } from '../../systems/Social';
 import { getGuild } from '../../systems/Guild';
+import { openPlayerMenu } from './PlayerMenu';
 import { upcomingEventLines } from '../../scenes/world/EventCalendar';
 import { siegeLines } from '../../systems/SiegeRules';
 import { LINK_MAX, itemLink, linkTag, linkedDisplayItem, snapshotName } from '../../systems/ChatLinks';
@@ -208,6 +209,7 @@ export class Chat implements HudWidget {
       else this.addLine(from, text, channel, from === this.ownName(), to, links);
     });
     G.events.on('chat:linkItem', ({ item }) => this.linkItem(item));
+    G.events.on('chat:prefill', ({ text }) => this.prefill(text));
     G.events.on('net:peerJoined', ({ name }) => this.addLine('', `${name} gruba katıldı.`, 'system'));
     G.events.on('net:peerLeft', ({ name }) => this.addLine('', `${name} gruptan ayrıldı.`, 'system'));
     G.events.on('player:levelup', ({ level }) => this.addLine('', `Seviye ${level} oldun! Tebrikler.`, 'system'));
@@ -222,6 +224,15 @@ export class Chat implements HudWidget {
   /** The text being typed (trimmed), empty when the input is not focused. Read by the typing bubble. */
   get draft(): string {
     return this.focused ? this.input.value.trim() : '';
+  }
+
+  /** Opens the input with `text` already typed (player menu: `/w Name `). The caret goes to the end. */
+  prefill(text: string): void {
+    this.focus();
+    const t = String(text ?? '').replace(/[\r\n]/g, ' ').slice(0, 80);
+    this.input.value = t;
+    this.input.setSelectionRange(t.length, t.length);
+    this.updateHint();
   }
 
   focus(): void {
@@ -433,6 +444,17 @@ export class Chat implements HudWidget {
     } else html += body(text);
     el.innerHTML = html;
     el.querySelectorAll<HTMLElement>('.cl-link').forEach((span, i) => this.bindLinkTip(span, matched[i]));
+    // right click on a speaker's name: the player menu (ui/hud/PlayerMenu.ts). Own lines and system lines have no menu.
+    if (from && !local && channel !== 'system') {
+      el.querySelectorAll<HTMLElement>('.cl-from').forEach((span) => {
+        span.addEventListener('mousedown', (e) => {
+          if (e.button !== 2) return;
+          e.preventDefault();
+          e.stopPropagation();
+          openPlayerMenu({ name: from, x: e.clientX, y: e.clientY });
+        });
+      });
+    }
     return el;
   }
 

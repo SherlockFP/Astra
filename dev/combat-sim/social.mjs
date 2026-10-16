@@ -510,6 +510,284 @@ async function world(names) {
   ok('cmd.wire messages are small', biggest < 700, 'max ' + biggest);
 }
 
+// ================================================================================================ player.* (systems/PlayerSocial.ts)
+// Friends list (store, corrupt data, dedupe, cap), duel state machine (invite, timeout, countdown, flag radius, HP floor),
+// trade state machine (request, offers, locks, atomic swap). Pure modules: no network, no DOM.
+{
+  const PS = await H.imp('systems/PlayerSocial.ts');
+  const { DuelMachine, DUEL, addFriend, removeFriend, isFriend, loadFriends, saveFriends, FRIENDS_KEY, FRIENDS_MAX, TradeMachine, TRADE } = PS;
+
+  const mem = new Map();
+  const store = { getItem: (k) => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => mem.set(k, v) };
+  saveFriends(['Ayşe', 'Mert'], store);
+  ok('player.friends roundtrip', JSON.stringify(loadFriends(store)) === JSON.stringify(['Ayşe', 'Mert']));
+  mem.set(FRIENDS_KEY, '{not json');
+  ok('player.friends corrupt data reads empty', loadFriends(store).length === 0);
+  mem.set(FRIENDS_KEY, JSON.stringify(['Ali', 'ali', ' Veli~2 ', 42, '']));
+  ok('player.friends load dedupes and cleans', JSON.stringify(loadFriends(store)) === JSON.stringify(['Ali', 'Veli2']), JSON.stringify(loadFriends(store)));
+  ok('player.friends blocked storage reads empty', loadFriends({ getItem() { throw new Error('denied'); }, setItem() {} }).length === 0);
+  let threw = false;
+  try { saveFriends(['x'], { getItem() { return null; }, setItem() { throw new Error('quota'); } }); } catch { threw = true; }
+  ok('player.friends failed write does not throw', !threw);
+  ok('player.friends match is case-insensitive', isFriend(['Ali'], 'ALI') && !isFriend(['Ali'], 'Ali2'));
+  const dup = addFriend(['Ali'], 'ali', 'Ben');
+  ok('player.friends add rejects duplicate', !dup.ok && /zaten/.test(dup.reason));
+  ok('player.friends add rejects self', !addFriend([], 'Ben', 'ben').ok);
+  ok('player.friends add accepts new name', addFriend(['Ali'], 'Cem', 'Ben').ok === true);
+  ok('player.friends cap', !addFriend(Array.from({ length: FRIENDS_MAX }, (_, i) => 'p' + i), 'Zed', 'Ben').ok);
+  ok('player.friends remove is case-insensitive', JSON.stringify(removeFriend(['Ali', 'Cem'], 'ALI')) === '["Cem"]');
+
+  const d = new DuelMachine();
+  const t0 = 1000;
+  ok('player.duel invite needs two different players', !d.invite(t0, 'Ali', 'ali') && d.state === 'idle');
+  ok('player.duel invite opens', d.invite(t0, 'Ali', 'Veli') && d.state === 'invited');
+  ok('player.duel only the target accepts', !d.accept(t0, 'Ali') && d.state === 'invited');
+  d.tick(t0 + DUEL.INVITE_TIMEOUT_MS - 1);
+  ok('player.duel invite open before 30 s', d.state === 'invited');
+  d.tick(t0 + DUEL.INVITE_TIMEOUT_MS);
+  ok('player.duel invite times out at 30 s', d.state === 'ended' && d.snapshot().reason === 'timeout');
+  d.reset();
+  d.invite(t0, 'Ali', 'Veli');
+  ok('player.duel decline by target', d.decline('Veli') && d.snapshot().reason === 'declined');
+  d.reset();
+  d.invite(t0, 'Ali', 'Veli');
+  ok('player.duel challenger cancels', d.decline('Ali') && d.snapshot().reason === 'cancel');
+  d.reset();
+  d.invite(t0, 'Ali', 'Veli');
+  ok('player.duel accept starts countdown', d.accept(t0, 'Veli') && d.state === 'countdown');
+  d.tick(t0 + DUEL.COUNTDOWN_MS - 1);
+  ok('player.duel countdown holds before 3 s', d.state === 'countdown');
+  d.tick(t0 + DUEL.COUNTDOWN_MS, { a: 0, b: 0 });
+  ok('player.duel live after countdown', d.state === 'active');
+  d.tick(t0 + 5000, { a: 0, b: DUEL.RADIUS + 1 });
+  ok('player.duel leaving the flag forfeits', d.state === 'ended' && d.snapshot().winner === 'Ali' && d.snapshot().reason === 'leave');
+  d.reset();
+  d.invite(t0, 'Ali', 'Veli'); d.accept(t0, 'Veli'); d.tick(t0 + DUEL.COUNTDOWN_MS);
+  ok('player.duel surrender by challenger', d.surrender('Ali') && d.snapshot().winner === 'Veli' && d.snapshot().reason === 'surrender');
+  d.reset();
+  d.invite(t0, 'Ali', 'Veli'); d.accept(t0, 'Veli'); d.tick(t0 + DUEL.COUNTDOWN_MS, { a: 1, b: 1 });
+  ok('player.duel lethal hit leaves the victim at 1 HP and ends it', d.damage('Veli', 40, 100) === DUEL.FLOOR_HP && d.snapshot().winner === 'Ali' && d.snapshot().reason === 'hp');
+  d.reset();
+  ok('player.duel damage ignored outside an active duel', d.damage('Veli', 40, 100) === 40);
+  d.invite(t0, 'Ali', 'Veli'); d.accept(t0, 'Veli'); d.tick(t0 + DUEL.COUNTDOWN_MS);
+  ok('player.duel non-lethal hit keeps the duel going', d.damage('Ali', 100, 30) === 70 && d.state === 'active');
+
+  const tr = new TradeMachine();
+  ok('player.trade request then accept opens the window', tr.request('Ali', 'Veli') && tr.state === 'requested' && tr.accept('Veli') && tr.state === 'open');
+  const wrong = new TradeMachine();
+  wrong.request('Ali', 'Veli');
+  ok('player.trade only the invited side accepts', !wrong.accept('Ali') && wrong.state === 'requested');
+  ok('player.trade offer needs an open window', tr.offer('Ali', { gold: 50, items: ['sword_1'] }));
+  tr.offer('Veli', { gold: 0, items: ['shield_2', 'potion_3'] });
+  tr.lock('Ali');
+  ok('player.trade one-sided confirm does not complete', tr.confirm('Ali') === null && tr.state === 'open' && tr.sides().a.accepted === true);
+  tr.lock('Veli');
+  const sw = tr.confirm('Veli');
+  ok('player.trade both accepted swaps atomically', !!sw && tr.state === 'done' && sw.toA.gold === 0 && sw.toB.gold === 50 && sw.toB.items[0] === 'sword_1' && sw.toA.items.length === 2, JSON.stringify(sw));
+  const t2 = new TradeMachine();
+  t2.request('Ali', 'Veli'); t2.accept('Veli');
+  t2.offer('Ali', { gold: 5, items: [] }); t2.lock('Ali'); t2.lock('Veli'); t2.confirm('Ali');
+  t2.offer('Veli', { gold: 1, items: [] });
+  ok('player.trade an offer change clears locks and accepts', t2.sides().a.locked === false && t2.sides().a.accepted === false && t2.state === 'open');
+  ok('player.trade rejects negative gold and duplicate items', !t2.offer('Ali', { gold: -1, items: [] }) && !t2.offer('Ali', { gold: 1, items: ['a', 'a'] }));
+  ok('player.trade rejects too many items', !t2.offer('Ali', { gold: 0, items: Array.from({ length: TRADE.MAX_ITEMS + 1 }, (_, i) => 'i' + i) }));
+  ok('player.trade a stranger cannot offer', !t2.offer('Zed', { gold: 1, items: [] }));
+  ok('player.trade cancel closes the window', t2.cancel('Veli') && t2.state === 'cancelled' && !t2.lock('Ali'));
+}
+
+// ================================================================================================ psoc.* (systems/PlayerSocialNet.ts round trips)
+// Two real PlayerSocialNet services on the fake lobby (FakeNet, JSON-cloned, ordered). A shared room map stands in for the world.
+{
+  const PSN = await H.imp('systems/PlayerSocialNet.ts');
+  const PS = await H.imp('systems/PlayerSocial.ts');
+  const lobby = new FakeNet();
+  const room = new Map(); // name -> { name, x, z, hp, maxHp }
+  const peerOf = new Map(); // name -> lobby peer id
+  const nameOfPeer = new Map();
+  const held = new Set();
+  const HP = 100;
+
+  function mk(name, id, x, z, { items = [], gold = 100, gear = [], party = null } = {}) {
+    const tr = lobby.join(id);
+    const bagItems = items.map((i) => ({ ...i }));
+    const g = { v: gold };
+    const bag = {
+      gold: () => g.v,
+      addGold: (n) => { g.v += n; },
+      spendGold: (n) => { if (g.v < n) return false; g.v -= n; return true; },
+      find: (uid) => bagItems.find((i) => i.uid === uid) ?? null,
+      removeItem: (uid) => { const k = bagItems.findIndex((i) => i.uid === uid); if (k < 0) return false; bagItems.splice(k, 1); return true; },
+      addItem: (it) => { if (bagItems.length >= 8) return false; bagItems.push({ ...it }); return true; },
+      freeSlots: () => 8 - bagItems.length,
+    };
+    const me = { name, x, z, hp: HP, maxHp: HP };
+    room.set(name, me);
+    peerOf.set(name, id);
+    nameOfPeer.set(id, name);
+    const out = { sys: [], toasts: [], req: [], duel: [], trade: [], gear: [], follow: [], joined: [], closed: [] };
+    const deps = {
+      now: () => clock.t,
+      selfName: () => name,
+      self: () => room.get(name) ?? null,
+      roomPlayer: (n) => (n !== name && room.get(n)) || null,
+      peerIdOf: (n) => (peerOf.has(n) && lobby.trs.has(peerOf.get(n)) ? peerOf.get(n) : null),
+      nameOf: (p) => nameOfPeer.get(p) ?? null,
+      send: (peer, msg) => { tr.send('psoc', { t: 'psoc', ...msg }, { to: peer }); return true; },
+      setHp: (hp) => { me.hp = hp; },
+      bag,
+      gearRows: () => gear,
+      partyCode: () => party,
+      hostParty: async () => { party = 'PARTY' + name.slice(0, 2).toUpperCase(); return party; },
+      joinParty: (c) => out.joined.push(c),
+      moveHeld: () => held.has('move'),
+      faceToward: (x2, z2) => { me.yaw = Math.atan2(x2 - me.x, z2 - me.z); },
+      sys: (t) => out.sys.push(t),
+      toast: (t) => out.toasts.push(t),
+      ui: {
+        request: (r) => out.req.push(r),
+        requestClosed: (id) => out.closed.push(id),
+        duel: (s) => out.duel.push(s),
+        trade: (v) => out.trade.push(v),
+        gear: (n, rows) => out.gear.push({ n, rows }),
+        follow: (n) => out.follow.push(n),
+      },
+    };
+    const svc = new PSN.PlayerSocialNet(deps);
+    tr.on('psoc', (d, m) => svc.onWire(d, m.from));
+    return { svc, out, bag, bagItems, g, me, id };
+  }
+  const tick = async (...svcs) => { for (const s of svcs) s.svc.tick(); await lobby.flush(); };
+  const reqId = (p) => p.out.req.at(-1)?.id;
+  const sword = { uid: 'sw1', baseId: 'sword_iron', rarity: 'common', itemLevel: 5 };
+  const shield = { uid: 'sh1', baseId: 'shield_oak', rarity: 'rare', itemLevel: 7 };
+
+  // ---- duel: request -> popup -> accept -> countdown -> active -> strikes -> 1 HP end
+  let A = mk('Ali', 'aaaaa1', 0, 0);
+  let B = mk('Veli', 'bbbbb2', 2, 0);
+  ok('psoc.duel request out', A.svc.requestDuel('Veli') === null);
+  await lobby.flush();
+  ok('psoc.duel target gets a popup with 30 s', B.out.req.length === 1 && B.out.req[0].kind === 'duel' && B.out.req[0].from === 'Ali' && B.out.req[0].deadline - clock.t === 30000, JSON.stringify(B.out.req));
+  B.svc.respond(reqId(B), true);
+  await lobby.flush();
+  ok('psoc.duel accept starts countdown on both', A.svc.duel.state === 'countdown' && B.svc.duel.state === 'countdown');
+  advance(3); await tick(A, B);
+  ok('psoc.duel active after 3-2-1', A.svc.duel.state === 'active' && B.svc.duel.state === 'active');
+  // strikes: 7% of 100 HP = 7 per hit, every 1.5 s, both ways while in reach
+  advance(2); await tick(A);
+  ok('psoc.duel strike lands (100 -> 93)', B.me.hp === 93, 'hp ' + B.me.hp);
+  // only A ticks here: B's own strikes would race A's (the symmetric case is covered by the next block)
+  for (let i = 0; i < 20 && B.me.hp > 1; i++) { advance(1.6); await tick(A); }
+  ok('psoc.duel victim stops at 1 HP', B.me.hp === 1, 'hp ' + B.me.hp);
+  ok('psoc.duel 1 HP ends it: winner announced on both', A.svc.duel.snapshot().winner === 'Ali' && B.svc.duel.snapshot().winner === 'Ali' && A.out.sys.some((t) => /kazandın|kazandı/.test(t)) && B.out.sys.some((t) => /Ali kazandı/.test(t)), JSON.stringify([A.out.sys, B.out.sys]));
+  A.svc.tick(); B.svc.tick();
+  await lobby.flush();
+  ok('psoc.duel state is ended on both after the end message', A.svc.duel.state === 'ended' && B.svc.duel.state === 'ended');
+
+  // ---- duel: leaving the 40 m flag forfeits, the other side learns from `end`
+  A = mk('Ali', 'aaaaa1', 0, 0);
+  B = mk('Veli', 'bbbbb2', 0, 0);
+  room.get('Ali').x = 0; room.get('Veli').x = 10;
+  A.svc.requestDuel('Veli'); await lobby.flush();
+  B.svc.respond(reqId(B), true); await lobby.flush();
+  advance(3); await tick(A, B);
+  room.get('Veli').x = 100; // 95 m from the start midpoint
+  await tick(A, B); await tick(A, B);
+  ok('psoc.duel stepping out of the flag forfeits', B.svc.duel.snapshot().reason === 'leave' && B.svc.duel.snapshot().winner === 'Ali', JSON.stringify(B.svc.duel.snapshot()));
+  ok('psoc.duel forfeit reaches the other side', A.svc.duel.snapshot().reason === 'leave' && A.svc.duel.snapshot().winner === 'Ali', JSON.stringify(A.svc.duel.snapshot()));
+
+  // ---- duel: decline, busy refusal, 30 s timeout
+  A = mk('Ali', 'aaaaa1', 0, 0);
+  B = mk('Veli', 'bbbbb2', 1, 0);
+  A.svc.requestDuel('Veli'); await lobby.flush();
+  B.svc.respond(reqId(B), false); await lobby.flush();
+  ok('psoc.duel decline ends on the challenger side', A.svc.duel.snapshot().reason === 'declined' && B.svc.duel.state === 'ended');
+  A.svc.requestDuel('Veli'); await lobby.flush();
+  ok('psoc.duel busy refuses a second challenge', typeof A.svc.requestTrade('Veli') === 'string');
+  advance(31); await tick(A, B);
+  ok('psoc.duel unanswered invite times out on both', A.svc.duel.snapshot().reason === 'timeout' && B.svc.duel.snapshot().reason === 'timeout' && B.out.closed.length >= 1);
+
+  // ---- trade: request -> accept -> offers -> lock -> accept -> atomic swap
+  A = mk('Ali', 'aaaaa1', 0, 0, { items: [sword], gold: 100 });
+  B = mk('Veli', 'bbbbb2', 3, 0, { items: [shield], gold: 50 });
+  ok('psoc.trade request', A.svc.requestTrade('Veli') === null);
+  await lobby.flush();
+  B.svc.respond(reqId(B), true); await lobby.flush();
+  ok('psoc.trade window opens on both', A.svc.trade.state === 'open' && B.svc.trade.state === 'open');
+  ok('psoc.trade offer goes across', A.svc.tradeOffer(30, ['sw1']) === null);
+  await lobby.flush();
+  ok('psoc.trade partner sees the offer', B.svc.tradeView().them.gold === 30 && B.svc.tradeView().theirItems[0].uid === 'sw1');
+  ok('psoc.trade offer of a missing item refused', A.svc.tradeOffer(0, ['nope']) !== null);
+  ok('psoc.trade offer above gold refused', A.svc.tradeOffer(999, []) !== null);
+  B.svc.tradeOffer(0, ['sh1']); await lobby.flush();
+  ok('psoc.trade lock before accept', A.svc.tradeAccept() !== null, 'accept needs lock');
+  A.svc.tradeLock(); await lobby.flush();
+  B.svc.tradeLock(); await lobby.flush();
+  ok('psoc.trade both locked', A.svc.tradeView().them.locked && B.svc.tradeView().them.locked);
+  A.svc.tradeAccept(); await lobby.flush();
+  ok('psoc.trade one accept does not swap', A.svc.trade.state === 'open' && A.bagItems.some((i) => i.uid === 'sw1'));
+  B.svc.tradeAccept(); await lobby.flush();
+  ok('psoc.trade swap runs once on both sides', A.svc.trade.state === 'done' && B.svc.trade.state === 'done');
+  ok('psoc.trade items moved', !A.bagItems.some((i) => i.uid === 'sw1') && A.bagItems.some((i) => i.uid === 'sh1') && B.bagItems.some((i) => i.uid === 'sw1') && !B.bagItems.some((i) => i.uid === 'sh1'));
+  ok('psoc.trade gold moved', A.g.v === 70 && B.g.v === 80, `A ${A.g.v} B ${B.g.v}`);
+
+  // ---- trade: walking away cancels both sides
+  A = mk('Ali', 'aaaaa1', 0, 0, { items: [sword] });
+  B = mk('Veli', 'bbbbb2', 3, 0, { items: [shield] });
+  A.svc.requestTrade('Veli'); await lobby.flush();
+  B.svc.respond(reqId(B), true); await lobby.flush();
+  room.get('Veli').x = 25;
+  await tick(A, B);
+  ok('psoc.trade more than 10 m apart cancels', A.svc.trade.state === 'cancelled' && B.svc.trade.state === 'cancelled' && A.bagItems.some((i) => i.uid === 'sw1'));
+
+  // ---- trade: decline
+  A = mk('Ali', 'aaaaa1', 0, 0);
+  B = mk('Veli', 'bbbbb2', 3, 0);
+  A.svc.requestTrade('Veli'); await lobby.flush();
+  B.svc.respond(reqId(B), false); await lobby.flush();
+  ok('psoc.trade decline closes', A.svc.trade.state === 'cancelled' && B.svc.trade.state === 'cancelled');
+
+  // ---- party invite: host a room when solo, invitee joins by code
+  A = mk('Ali', 'aaaaa1', 0, 0);
+  B = mk('Veli', 'bbbbb2', 3, 0);
+  const pr = await A.svc.requestParty('Veli');
+  await lobby.flush();
+  ok('psoc.party invite sent with the room code', pr === null && B.out.req.at(-1)?.kind === 'party');
+  B.svc.respond(reqId(B), true); await lobby.flush();
+  ok('psoc.party invitee joins the room code', B.out.joined.length === 1 && B.out.joined[0] === 'PARTYAL');
+
+  // ---- gear view: request and answer over the wire
+  A = mk('Ali', 'aaaaa1', 0, 0);
+  B = mk('Veli', 'bbbbb2', 3, 0, { gear: [{ s: 'weapon', n: 'Demir Kılıç', r: 'rare', l: 12 }] });
+  A.svc.requestGear('Veli'); await lobby.flush();
+  ok('psoc.gear view shows the target equipment', A.out.gear.length === 1 && A.out.gear[0].rows[0].n === 'Demir Kılıç' && A.out.gear[0].n === 'Veli', JSON.stringify(A.out.gear));
+
+  // ---- follow: axis toward the target, stops inside 3 m, gives up beyond 30 m, stops on a move key
+  A = mk('Ali', 'aaaaa1', 0, 0);
+  B = mk('Veli', 'bbbbb2', 5, 0);
+  ok('psoc.follow starts', A.svc.follow('Veli') === null && A.svc.followTarget === 'Veli');
+  ok('psoc.follow walks toward a target 5 m away', JSON.stringify(A.svc.followAxis()) === '{"x":0,"y":1}');
+  room.get('Veli').x = 1;
+  ok('psoc.follow stands within 3 m', JSON.stringify(A.svc.followAxis()) === '{"x":0,"y":0}');
+  room.get('Veli').x = 40;
+  ok('psoc.follow gives up beyond 30 m', A.svc.followAxis() === null && A.svc.followTarget === null);
+  room.get('Veli').x = 5;
+  A.svc.follow('Veli');
+  held.add('move');
+  ok('psoc.follow stops on a move key', A.svc.followAxis() === null && A.svc.followTarget === null);
+  held.clear();
+
+  // ---- wire hygiene: malformed or unknown senders are dropped
+  A = mk('Ali', 'aaaaa1', 0, 0);
+  B = mk('Veli', 'bbbbb2', 3, 0);
+  const junk = [null, 'x', { op: 'hit', id: 'bad' }, { op: 'hit', id: 'abcdef', dmg: -5 }, { op: 'tOffer', id: 'abcdef', gold: 1, items: [{ uid: '' }] }, { op: 'nope', id: 'abcdef' }];
+  for (const j of junk) B.svc.onWire(j, 'aaaaa1');
+  B.svc.onWire({ op: 'req', id: 'abcdef', kind: 'duel', to: 'Veli' }, 'stranger-peer');
+  ok('psoc.wire junk and unknown senders are ignored', B.out.req.length === 0 && B.svc.duel.state === 'idle');
+  ok('psoc.wire parser refuses bad ops', PS.parsePsoc({ op: 'hit', id: 'abcdef', dmg: 1.5 }) === null && PS.parsePsoc({ op: 'req', id: 'AB', kind: 'duel', to: 'x' }) === null);
+  ok('psoc.wire parser accepts a good request', PS.parsePsoc({ op: 'req', id: 'abcdef', kind: 'trade', to: 'Veli' })?.kind === 'trade');
+  await lobby.flush();
+}
+
 console.log(`social: ${passes} passed, ${fails} failed`);
 H.restoreConsole();
 if (H.errors.length) {

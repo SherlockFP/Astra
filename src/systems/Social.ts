@@ -248,6 +248,7 @@ export class Social implements PresenceApi {
 
   private tr: LobbyTransport | null = null;
   private offs: Unsubscribe[] = [];
+  private readonly bindings: Array<(tr: LobbyTransport) => Unsubscribe> = [];
   private releaseLease: (() => void) | null = null;
   private wantConnected = false;
   private connecting = false;
@@ -330,6 +331,24 @@ export class Social implements PresenceApi {
     }
   }
 
+  /**
+   * Extra lobby handlers owned by another system (systems/PlayerSocial.ts `psoc`). Bound now when connected and on every later
+   * attach; the returned function removes the binding.
+   */
+  addLobbyBinding(bind: (tr: LobbyTransport) => Unsubscribe): () => void {
+    this.bindings.push(bind);
+    if (this.tr) this.offs.push(bind(this.tr));
+    return () => {
+      const i = this.bindings.indexOf(bind);
+      if (i >= 0) this.bindings.splice(i, 1);
+    };
+  }
+
+  /** The lobby transport while connected (null offline). Use for sends owned by other systems. */
+  lobbyTransport(): LobbyTransport | null {
+    return this.tr;
+  }
+
   /** Bind to a lobby transport (tests pass a fake one). */
   attach(tr: LobbyTransport, release?: () => void): void {
     this.detach();
@@ -345,6 +364,7 @@ export class Social implements PresenceApi {
         if (msg) this.send('lpres', msg, peer);
       }),
     );
+    for (const bind of this.bindings) this.offs.push(bind(tr));
     this.refreshSelf();
     this.announce(true);
   }
