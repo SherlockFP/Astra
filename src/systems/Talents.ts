@@ -23,6 +23,7 @@ import { SPEC_ORDER, classOfSpec, getTree, specHasTree } from '../data/talentTre
 import { SLOT_ORDER, parentsOf, slotGate, slotType } from '../data/talentTrees/layout';
 import { parseFx } from '../data/talentTrees/fx';
 import { emit } from './notify';
+import { isInstanceScene } from '../scenes/flow';
 import { decodeBuild, encodeBuild } from './talentStrings';
 
 /** Most saved loadouts per spec (§2.7). */
@@ -304,8 +305,9 @@ export class TalentSystem {
     if (G.player?.inCombat) return { add: false, remove: false, reason: 'Savaşta değiştirilemez.' };
     const mp = G.mplus;
     const run = mp?.active ? mp.state : null;
-    const inDungeon = G.scenes?.current?.id === 'dungeon';
-    if ((run && run.started) || (inDungeon && !run)) {
+    // the open world is a 'dungeon' scene too: additions stay open there out of combat (GDD_TALENTS D11), removals need a rest zone
+    const inInstance = isInstanceScene(G.scenes?.current?.id, mp?.params?.dungeonId ?? mp?.state?.dungeonId);
+    if ((run && run.started) || (inInstance && !run)) {
       return { add: false, remove: false, reason: 'Zindan içinde değiştirilemez.' };
     }
     const world = G.world as unknown as { isSafeZone?: (p: unknown) => boolean } | null;

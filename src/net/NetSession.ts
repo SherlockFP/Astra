@@ -570,7 +570,8 @@ export class NetSession {
     if (!kind) return this.failHost('Çevrimdışı mod: oda kurulamaz.');
     if (!this.g.character) return this.failHost('Önce bir karakter seçmelisin.');
     if (kind === 'trystero' && globalThis.isSecureContext === false) return this.failHost(MSG_INSECURE); // trystero needs crypto.subtle
-    if (this.g.scenes?.current?.id === 'dungeon') return this.failHost('Oda kurmak için kasabada olmalısın.');
+    // open-world maps host like any other room (listed as 'world', joinable); only an instanced run refuses
+    if (this.g.scenes?.current?.id === 'dungeon' && !this.inOpenWorld) return this.failHost('Oda kurmak için kasabada ya da açık dünyada olmalısın.');
     if (this.chBusy) return this.failHost('Kanal değişimi sürüyor. Birazdan tekrar dene.');
     if (fromChannel) this.leaveChannel();
     this.busy = true;

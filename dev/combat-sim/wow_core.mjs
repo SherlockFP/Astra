@@ -147,5 +147,16 @@ check('gcd on-GCD skill is not off-GCD', !isOffGcd(SKILL));
   check('prd reset(key) clears that key', p2.count('a') === 0);
 }
 
+// ---------------------------------------------------------------- scene rules (open world is a 'dungeon' scene too)
+{
+  const { isInstanceScene, isOpenWorld } = await imp('src/scenes/flow.ts');
+  const VADI = 'sisli_vadi';
+  check('scene: sisli_vadi is an open-world map', isOpenWorld(VADI) === true);
+  check('scene: the open world is not an instance', isInstanceScene('dungeon', VADI) === false);
+  check('scene: town is not an instance', isInstanceScene('town', null) === false);
+  check('scene: a dungeon id is an instance', isInstanceScene('dungeon', 'kemik_mahzeni') === true);
+  check('scene: unknown dungeon id counts as instance', isInstanceScene('dungeon', null) === true);
+}
+
 console.log(failures === 0 ? '\nALL PASS' : `\n${failures} FAILED`);
 process.exitCode = failures === 0 ? 0 : 1;

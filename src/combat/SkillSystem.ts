@@ -3,6 +3,7 @@ import { G } from '../game/G';
 import { clamp, yawFromDir, cosmeticRng } from '../core/utils';
 import { WOW_TARGET } from './targetSelect';
 import { SKILLS, comboSteps } from '../data/skills';
+import { isInstanceScene } from '../scenes/flow';
 import { CLASSES, defaultSkillBar } from '../data/classes';
 import { AUTO, type AutoMode } from '../game/AutoAttack';
 import { specOf, specPatched, specSkillIds, isHeroDef, isMajorDef } from './specs';
@@ -344,7 +345,10 @@ export class SkillSystem {
     // KIT PK-0 (E4 / procs.ts GlowState): the local player's shards, behind, dance and refresh inputs for the glow rules
     setGlowExtras(() => this.glowExtras());
     // GDD_V2 §2.1: entering a dungeon / raid resets every major cooldown (never in the open world)
-    G.events?.on('scene:changed', (d) => { if (d.to === 'dungeon') resetMajorCooldowns(); });
+    // (the open world is a 'dungeon' scene too: walking in from town must not reset the majors)
+    G.events?.on('scene:changed', (d) => {
+      if (isInstanceScene(d.to, G.mplus?.params?.dungeonId ?? G.mplus?.state?.dungeonId)) resetMajorCooldowns();
+    });
   }
 
   // ======================================================================================================

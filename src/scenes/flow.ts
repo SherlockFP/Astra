@@ -18,3 +18,10 @@ export const sceneFlow: { leftOpenWorld: boolean; /** id of the open-world map j
  * Kuzgunkale, the dungeons and the legacy Sisli Koru zone (no `world`) are NOT open-world maps.
  */
 export const isOpenWorld = (id: string | null | undefined): boolean => !!id && getDungeon(id)?.world != null;
+
+/**
+ * True for an INSTANCED dungeon run: the 'dungeon' scene that is not an open-world map (dungeons, raids, M+, Kadim Yarıklar).
+ * The open world (Sisli Vadi, Karakır, Ayaz) also runs in the 'dungeon' scene, so `scene === 'dungeon'` alone is not enough.
+ */
+export const isInstanceScene = (scene: string | null | undefined, dungeonId: string | null | undefined): boolean =>
+  scene === 'dungeon' && !isOpenWorld(dungeonId);
