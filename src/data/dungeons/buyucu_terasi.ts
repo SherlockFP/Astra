@@ -67,7 +67,7 @@ const ROOMS: RoomDef[] = [
       P(gp('statue_hooded'), 16, 67.4, { tint: 0x6a6a90, emissive: 0x5fd3e8, emissiveIntensity: 0.4 }),
       P(gp('statue_hooded'), 23, 67.4, { tint: 0x6a6a90, emissive: 0x5fd3e8, emissiveIntensity: 0.4 }),
       P(fu('table_medium'), 23.5, 64, { rot: 90 }), P(fu('book_set'), 23.5, 64),
-      P(dg('torch_mounted'), 14.2, 62.8, { y: 2.5 }), P(dg('torch_mounted'), 25.3, 62.8, { y: 2.5 }),
+      P(dg('torch_mounted'), 14.2, 62.8, { y: 2.5 }), P(dg('torch_mounted'), 25.3, 67.0, { y: 2.5 }),
     ],
   }),
   room('guney_antre', 'Güney Antre Salonu', 12, 50, 16, 12, 'temple', 'temple', 0.4, {

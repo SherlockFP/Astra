@@ -297,7 +297,7 @@ D.room('bekci_odasi', (p, r) => {
   p.wall(r, 'n', [3.4, 9.6], dg('sword_shield_gold'), { y: 2.3 });
   p.wall(r, 'w', [4.0, 9.0], dg('sword_shield_gold'), { y: 2.3 }).wall(r, 'e', [3.3, 9.7], dg('sword_shield_gold'), { y: 2.3 });
   p.wall(r, 's', [3.0, 10.0], dg('banner_patternA_white'));
-  p.torches(r, 'n', [2.4, 4.6, 8.4, 10.6], WARM).torches(r, 'w', [3.0, 7.0, 11.0], WARM).torches(r, 'e', [3.2, 9.0], WARM);
+  p.torches(r, 'n', [2.4, 4.6, 8.4, 10.6], WARM).torches(r, 'w', [3.0, 7.0, 11.0], WARM).torches(r, 'e', [3.2, 11.0], WARM);
   p.at(gp('statue_hooded'), 4.5, 11.55, { rot: 180, collide: true }).at(gp('statue_hooded'), 8.5, 11.55, { rot: 180, collide: true });
   p.at(dg('barrier_half'), 1.9, 6.4, { rot: 90 }).at(dg('barrier_half'), 1.9, 7.4, { rot: 90 });
   p.at(gp('brazier'), 2.3, 1.9, { collide: true }).at(gp('brazier'), 10.7, 1.9, { collide: true });
@@ -332,7 +332,7 @@ D.room('lahit_galerisi', (p, r) => {
   // drains and rubble
   p.at(dg('floor_tile_big_grate'), 22.5, 6.0, { y: 0.02 }).at(dg('floor_tile_big_grate'), 18.5, 7.3, { y: 0.02 });
   p.at(dg('rubble_large'), 23.2, 12.4, { rot: 170, collide: true }).at(dg('rubble_half'), 17.0, 12.6, { rot: 20, collide: true }).at(dg('rubble_large'), 25.9, 7.8, { rot: 90, scale: 0.6, collide: true });
-  p.torches(r, 'n', [18.0, 20.0, 23.0, 25.0], WARM).torches(r, 's', [17.9, 24.0, 26.0], WARM).torches(r, 'w', [3.0, 10.5], WARM).torches(r, 'e', [3.0, 10.8], WARM);
+  p.torches(r, 'n', [18.0, 20.0, 23.0, 25.0], WARM).torches(r, 's', [24.0, 26.0], WARM).torches(r, 'w', [3.0, 10.5], WARM).torches(r, 'e', [3.0, 10.8], WARM);
   p.wall(r, 'w', [2.5], dg('banner_patternB_green')).wall(r, 'e', [2.2], dg('banner_patternB_green'));
   shrine(p, 26.0, 2.5, 'crystal_purple', 0xb060ff, 'shrine_power_1');                 // Kudret Sunagi (NE corner)
   bones(p, 9, Props.inner(r, 0.9));
@@ -365,7 +365,7 @@ D.room('mum_odasi', (p, r) => {
   p.wall(r, 'w', [4.0, 9.0], hw('plaque_candles'), { y: 1.6 }, 0.2).wall(r, 'e', [4.0, 7.6], hw('plaque_candles'), { y: 1.6 }, 0.2);
   p.wall(r, 'n', [32.2, 35.8], fu('pictureframe_large_A'), { y: 1.7, scale: 1.3 }, 0.1).wall(r, 's', [31.6, 36.2], fu('pictureframe_large_A'), { y: 1.7, scale: 1.3 }, 0.1);
   p.wall(r, 'n', [31.4, 36.6], dg('banner_patternA_white')).wall(r, 's', [35.2], dg('banner_patternA_white'));
-  p.torches(r, 'n', [33.0, 35.0], 0xffb070).torches(r, 'w', [3.6, 8.4], 0xffb070).torches(r, 'e', [4.0, 9.2], 0xffb070);
+  p.torches(r, 'n', [33.0, 35.0], 0xffb070).torches(r, 'w', [3.6, 10.0], 0xffb070).torches(r, 'e', [4.0, 9.2], 0xffb070);
   candles(p, 33.0, 6.0);
   p.at(dg('candle_thin_lit'), 37.0, 4.3, { light: lt(GHOST, 0.9, 5, true, 1.1) });
   p.at(gp('chains_hanging'), 34, 6.8, { y: 4 });

@@ -294,7 +294,23 @@ const R = makeRescale({
     { x: 22, z: 17, r: 1.5 }, { x: 40.5, z: 11.5, r: 1.5 },
   ],
 });
-const ROOMS_R: RoomDef[] = ROOMS.map((r) => (EXEMPT_ROOMS.has(r.id) ? r : remapRoomGeometry(R, r)));
+// ---- landmarks: one set piece group per sparse room (WoW-style room identity). Old layout coordinates like the other props.
+const LM = (model: string, x: number, z: number, o: Partial<Omit<PropPlacement, 'model' | 'pos'>> = {}): PropPlacement => P(model, x, z, o);
+const LANDMARKS: Record<string, PropPlacement[]> = {
+  kiymik_bati: [LM(gp('statue_hooded'), 14, 41, { scale: 1.0, tint: 0x6a6878 }), LM(gp('bone_pile'), 14, 45, { tint: 0x8a8a50 })],
+  kiymik_dogu: [LM(gp('bone_pile'), 56, 41, { tint: 0x8a8a50 }), LM(gp('statue_hooded'), 49, 47, { scale: 1.0, tint: 0x6a6878 })],
+  kiymik_kuzey: [LM(gp('bone_pile'), 41, 39.5, { tint: 0x8a8a50 }), LM(gp('statue_hooded'), 47.5, 39.5, { scale: 1.0, tint: 0x6a6878 })],
+  arsiv: [LM(gp('statue_hooded'), 56.5, 50, { scale: 1.1, tint: 0x6a6878 }), LM(gp('lamp_post'), 49, 49, { light: lt(0xffc080, 1.0, 6) })],
+  k_bati: [LM(gp('bone_pile'), 9, 33.5, { tint: 0x8a8a50 }), LM(gp('lamp_post'), 21, 33, { light: lt(0xffb070, 1.0, 7) })],
+  gargoyle_avlusu: [LM(gp('rock_cliff'), 21, 18.5, { scale: 0.8, tint: 0x3a3048 }), LM(gp('bone_pile'), 6, 26, { tint: 0x8a8a50 })],
+  servis_gecidi: [LM(gp('bone_pile'), 1.5, 19, { tint: 0x8a8a50 }), LM(gp('bone_pile'), 1.5, 21, { tint: 0x8a8a50 }), LM(gp('brazier'), 2.5, 33, { light: lt(0xe0a060, 1.0, 6) })],
+  k_ekelon: [LM(gp('lamp_post'), 8, 15.5, { light: lt(0xffb070, 1.0, 7) }), LM(gp('bone_pile'), 8, 13.5, { tint: 0x8a8a50 })],
+  ekelon_terasi: [LM(gp('statue_hooded'), 20, 3.5, { scale: 1.2, tint: 0x6a6878 }), LM(gp('bone_pile'), 4, 5.5, { tint: 0x8a8a50 })],
+  kefaret_merdiveni: [LM(gp('statue_hooded'), 49, 21, { scale: 1.0, tint: 0x6a6878 }), LM(gp('lamp_post'), 63, 21, { light: lt(0xffb070, 1.0, 7) })],
+  pismanlik_mahzeni: [LM(gp('statue_hooded'), 29.5, 11, { tint: 0x6a6878 }), LM(gp('lamp_post'), 25.5, 10.5, { light: lt(0xb8b0e0, 1.0, 6) })],
+};
+const withLandmarks = (r: RoomDef): RoomDef => (LANDMARKS[r.id] ? { ...r, props: [...(r.props ?? []), ...LANDMARKS[r.id]] } : r);
+const ROOMS_R: RoomDef[] = ROOMS.map((r) => (EXEMPT_ROOMS.has(r.id) ? r : remapRoomGeometry(R, withLandmarks(r))));
 const PACKS: PackDef[] = PACKS_RAW.map((p, i) => (EXEMPT_PACKS.has(p.id) ? p : R.packs[i]));
 const at2 = R.at2;
 

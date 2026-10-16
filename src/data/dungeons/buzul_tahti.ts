@@ -212,7 +212,7 @@ D.room('yeti_magarasi', (p, r) => {
   drift(p, 0.9, 24.5, 1.3);
   crystal(p, 7.0, 18.2, 0.7).at(gp('crystal_blue'), 0.7, 21.2, { scale: 0.6, light: lt(ICE, 1.4, 8, false, 0.7) });
   p.wall(r, 's', [4.0], hw('bone_B'), { y: 0.1 }, 0.3);
-  p.torches(r, 'n', [1.8, 5.8], ICE).torches(r, 's', [1.8, 5.6], ICE).torches(r, 'e', [16.4, 23.6], ICE);
+  p.torches(r, 'n', [4.2, 5.8], ICE).torches(r, 's', [1.8, 5.6], ICE).torches(r, 'e', [16.4, 25.0], ICE);
   p.at(gp('chains_hanging'), 3.0, 18.0, { y: 4, tint: FROST });
 });
 
@@ -266,7 +266,7 @@ D.room('cadi_kulesi', (p, r) => {
   [[17, 2], [23, 2], [17, 8], [23, 8]].forEach(([x, z], i) => {
     p.at(gp('crystal_blue'), x, z, { scale: 1.4, collide: true, tag: 'socket', id: `pylon_${i + 1}`, light: lt(ICE, 2.0, 10, false, 1.3) });
   });
-  p.torches(r, 'n', [15.4, 18.0, 21.0, 23.6], ICE).torches(r, 's', [15.4, 18.0, 21.0, 23.6], ICE).torches(r, 'w', [1.6, 7.8], ICE).torches(r, 'e', [1.6, 7.8], ICE);
+  p.torches(r, 'n', [15.4, 18.0, 21.0, 23.6], ICE).torches(r, 's', [15.4, 21.0, 23.6], ICE).torches(r, 'w', [1.6, 7.8], ICE).torches(r, 'e', [1.6, 7.8], ICE);
   drift(p, 15.2, 0.8, 0.8).at(gp('rock_medium'), 23.9, 8.9, { tint: SNOW, scale: 0.9 });
   p.wall(r, 'n', [19.5], dg('banner_triple_blue'));
   p.wall(r, 'w', [4.6], dg('banner_patternA_blue')).wall(r, 'e', [4.6], dg('banner_patternA_blue'));

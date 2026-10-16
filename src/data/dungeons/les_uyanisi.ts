@@ -510,7 +510,7 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.at(M_PILLAR, 29.5, 49.5, { scale: 1.2, collide: true, tint: 0xd8d0b8 });
     q.at(M_BRAZIER, 18.5, 49.5, { scale: 1.2, collide: true, light: lt(GREEN, 1.6, 8, true) });
     q.at(M_BRAZIER, 27.5, 49.5, { scale: 1.2, collide: true, light: lt(GREEN, 1.6, 8, true) });
-    q.list.push(...banner(rect(16, 48, 14, 14), 'n', [19, 23, 27], { model: M_BANNER, y: 6, tint: 0x4a2870 }));
+    q.list.push(...banner(rect(16, 48, 14, 14), 'n', [19, 27], { model: M_BANNER, y: 6, tint: 0x4a2870 }));
     q.torches(rect(16, 48, 14, 14), 'e', [50, 54], GOLD);
   });
 
@@ -611,7 +611,7 @@ function dressRooms(p: (id: string, fn: (q: Props, r: TileRect) => void) => void
     q.at(kf('wall-broken'), 6.5, 28, { scale: 1.2, rot: 90 });
     q.at(M_BRAZIER, 8, 24, { scale: 1.2, collide: true, light: lt(GOLD, 1.4, 8, true) });
     q.at(M_BRAZIER, 23, 24, { scale: 1.2, collide: true, light: lt(GOLD, 1.4, 8, true) });
-    q.at(M_BRAZIER, 8, 36, { scale: 1.2, collide: true, light: lt(GOLD, 1.4, 8, true) });
+    q.at(M_BRAZIER, 11.5, 35, { scale: 1.2, collide: true, light: lt(GOLD, 1.4, 8, true) });
     q.at(M_BRAZIER, 23, 36, { scale: 1.2, collide: true, light: lt(GOLD, 1.4, 8, true) });
     q.list.push(...banner(rect(6, 22, 20, 16), 'w', [25, 30], { model: M_BANNER_GOLD, y: 7, scale: 1.4 }));
     q.torches(rect(6, 22, 20, 16), 'e', [25, 30], GOLD);

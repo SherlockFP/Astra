@@ -399,7 +399,7 @@ function dressRooms(p: (id: string, fn: (pr: Props, r: TileRect) => void) => voi
       q.at(M_CAULDRON, x, z, { scale: 0.8, y: 14 });
     }
     // Galleries (Çark Galerisi, absolute 7.2), statues, banners and forge chandeliers
-    for (const [x, z] of [[20, 45], [30, 45], [40, 45], [50, 45], [20, 60], [30, 60], [40, 60], [50, 60], [16.5, 50], [55.5, 52]] as [number, number][]) {
+    for (const [x, z] of [[20, 45], [30, 45], [40, 45], [50, 45], [20, 60], [30, 60], [40, 60], [50, 60], [16.5, 50], [55.5, 47.5]] as [number, number][]) {
       q.at(M_STATUE, x, z, { scale: 2.4, tint: 0x8a7a68, y: 7.2 });
     }
     q.list.push(...banner(r, 'n', [24, 30, 41, 47], { model: M_BANNER_LONG, y: 3, scale: 2 }));
@@ -457,8 +457,8 @@ function dressRooms(p: (id: string, fn: (pr: Props, r: TileRect) => void) => voi
     q.list.push(...chandelier(3.5, 49, 8.8, { light: true, color: LAVA }));
     q.list.push(...chandelier(3.5, 55, 8.8, { light: false }));
     // East gallery (absolute 7.0) with forge-master statues and rails
-    for (const z of [48, 52, 56]) q.at(M_STATUE, 9.5, z, { scale: 2.0, y: 5.8 });
-    q.row(M_RAIL, 9.5, 45.5, 9.5, 57.5, 13, { scale: 0.5, tint: 0x7a7f88, y: 5.8 });
+    for (const z of [48, 56]) q.at(M_STATUE, 9.5, z, { scale: 2.0, y: 5.8 });
+    q.row(M_RAIL, 9.5, 45.5, 9.5, 48.5, 4, { scale: 0.5, tint: 0x7a7f88, y: 5.8 }).row(M_RAIL, 9.5, 54.5, 9.5, 57.5, 4, { scale: 0.5, tint: 0x7a7f88, y: 5.8 });
     q.at(ks('tool-hammer'), 8.4, 46.5, {});
     q.at(ks('tool-pickaxe'), 8.6, 56.5, {});
     q.list.push(...banner(r, 'w', [47, 52, 56], { model: M_BANNER_A, y: 3 }));
@@ -505,7 +505,7 @@ function dressRooms(p: (id: string, fn: (pr: Props, r: TileRect) => void) => voi
     for (const [x, z] of [[0.8, 29], [10.8, 29], [0.8, 39], [10.8, 39]] as [number, number][]) q.at(M_SCAFFOLD_BARREL, x, z, { scale: 1.0 });
     // North gallery (absolute 10.4): statues and winches
     for (const x of [2.5, 6, 9.5]) q.at(M_STATUE, x, 28.5, { scale: 2.4, tint: 0x8a7a68, y: 8.0 });
-    q.list.push(...banner(rect(0, 28, 12, 12), 's', [2, 4, 8, 10], { model: M_BANNER_LONG, y: 5, scale: 2 }));
+    q.list.push(...banner(rect(0, 28, 12, 12), 's', [1.5, 10.5], { model: M_BANNER_LONG, y: 5, scale: 2 }));
     q.list.push(...chandelier(3, 33, 16, { light: false }));
     q.list.push(...chandelier(8, 37, 16, { light: false }));
     q.row(M_STAL, 2, 30, 10, 30, 6, { scale: 0.6, tint: 0x4a3020, y: 14 });
@@ -521,7 +521,7 @@ function dressRooms(p: (id: string, fn: (pr: Props, r: TileRect) => void) => voi
       q.at(M_CRYSTAL, x, z, { scale: 2.0, tint: TEAL, emissive: TEAL, emissiveIntensity: 0.6, collide: true });
     }
     for (const [x, z] of [[63.5, 50], [63.5, 53.5], [69, 58], [68.5, 45.8]] as [number, number][]) q.at(M_CRYSTAL, x, z, { scale: 1.0, tint: TEAL, emissive: TEAL, emissiveIntensity: 0.4 });
-    for (const z of [47, 51, 55]) q.at(ks('metal-panel'), 62.5, z, { rot: 90, collide: true });
+    for (const z of [51, 55]) q.at(ks('metal-panel'), 62.5, z, { rot: 90, collide: true });
     // East gallery (absolute 4.3): teal statues and rails
     for (const z of [47, 51, 55]) q.at(M_STATUE, 71.5, z, { scale: 2.0, tint: 0x5a9a98, y: 5.5 });
     q.row(M_RAIL, 71.5, 45.5, 71.5, 57.5, 13, { scale: 0.5, tint: 0x7a7f88, y: 5.5 });
@@ -551,7 +551,7 @@ function dressRooms(p: (id: string, fn: (pr: Props, r: TileRect) => void) => voi
     for (const [x, z] of [[58.7, 30.5], [58.7, 36], [70.3, 30.5], [70.3, 36]] as [number, number][]) {
       q.at(M_CRYSTAL, x, z, { scale: 2.2, tint: TEAL, emissive: TEAL, emissiveIntensity: 0.5, collide: true, light: lt(TEAL, 1.5, 9, true) });
     }
-    for (const [x, z] of [[59, 27], [70, 27], [70, 38.5]] as [number, number][]) q.at(M_CRYSTAL_P, x, z, { scale: 1.5, tint: VOID, emissive: VOID, emissiveIntensity: 0.6, collide: true, light: lt(VOID, 2.0, 14, true) });
+    for (const [x, z] of [[59, 27], [70, 27], [70, 34.5]] as [number, number][]) q.at(M_CRYSTAL_P, x, z, { scale: 1.5, tint: VOID, emissive: VOID, emissiveIntensity: 0.6, collide: true, light: lt(VOID, 2.0, 14, true) });
     for (const [x, z] of [[58.5, 39], [70.5, 39]] as [number, number][]) q.at(M_ROCK, x, z, { scale: 1.2, collide: true });
     // North gallery (absolute 1.6): crystal statues and rails
     for (const x of [60, 64, 68]) q.at(M_STATUE, x, 26.5, { scale: 2.0, tint: 0x5a9a98, y: 4.0 });
