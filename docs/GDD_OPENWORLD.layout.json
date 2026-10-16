@@ -44471,6 +44471,26 @@
      "z": 10,
      "rot": 180,
      "note": "güney kapı"
+    },
+    {
+     "id": "npc_bk_demirci",
+     "name": "Demirci Kadir",
+     "role": "blacksmith",
+     "model": "Barbarian + `1H_Axe` tint 0x705030",
+     "x": 10,
+     "z": 4,
+     "rot": -90,
+     "note": "panel `blacksmith` (+0..+9, Parçalama). Ağıt Kapısı zincirini teslim alır; Kanyon Kapısı görevini verir."
+    },
+    {
+     "id": "npc_bk_hanci",
+     "name": "Hancı Gülsüm",
+     "role": "citizen",
+     "model": "Rogue_Hooded tint 0xa07850",
+     "x": -3,
+     "z": -1,
+     "rot": 90,
+     "note": "Köy hancısı; iksir şişesi burada da dolar. \"Matarayı doldur, yorgunluğu at, bataklık seni bekler.\""
     }
    ]
   },

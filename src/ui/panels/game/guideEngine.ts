@@ -158,6 +158,9 @@ function buildTodo(ch: CharacterState, quest: GuideAdvice['quest']): GuideAdvice
   const ranks = ch.save.skillRanks ?? {};
   const learned = Object.keys(ranks).filter((id) => (ranks[id] ?? 0) > 0);
   const onBar = new Set(Object.values(ch.save.skillBar ?? {}));
+  // region hub signposts: level 10 starts Haydut Tepeleri (Kızılkaya), level 15 Ağıt Bataklığı (Bataklık Konak)
+  if (L >= 10 && L < 15) out.push({ id: 'hub-r3', text: "Kızılkaya Karakolu'na git: Komutan Aslan ve Avcı Karaca görev verir", done: false, action: { panel: 'map' } });
+  if (L >= 15 && L < 21) out.push({ id: 'hub-r4', text: "Bataklık Konak'a git: Bekçi Nazlı, Demirci Kadir ve Otacı Filiz görev verir", done: false, action: { panel: 'map' } });
   if (learned.some((id) => !onBar.has(id))) out.push({ id: 'skill-slot', text: 'Yeni beceriyi çubuğa yerleştir (K)', done: false, action: { panel: 'skills' } });
   if (L >= 10 && !ch.save.spec) out.push({ id: 'spec', text: 'Uzmanlık seç (N)', done: false, action: { panel: 'talents' } });
   const unspent = unspentTalentPoints();

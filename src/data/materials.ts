@@ -106,6 +106,8 @@ QUEST_ITEM('item_kor_kristali', 'Kor Kristali', 'Kor elementallerinin içinden �
 QUEST_ITEM('item_tas_parcasi', 'Kanyon Taş Parçası', 'Kanyon golemlerinin kırık taşı.', 'item-ore', 'uncommon');
 QUEST_ITEM('item_kirik_kemik', 'Kırık Kemik', 'Harabelerdeki iskeletlerin kırık kemikleri.', 'item-junk');
 QUEST_ITEM('item_tarikat_muhru', 'Tarikat Mührü', 'Kara Tarikat müritlerinin taşıdığı mühür. Nöbetçiler bunu kanıt sayar.', 'item-scroll-tied', 'uncommon');
+QUEST_ITEM('item_karabiyik_muhru', 'Karabıyık Mührü', 'Haydut Kralı Karabıyık\'ın adamlarına dağıttığı kara mühür. Üzerinde bataklık sembolü var.', 'item-scroll-tied', 'uncommon');
+QUEST_ITEM('item_lanet_sizintisi', 'Lanet Sızıntısı', 'Gulyabanilerden ve bataklık ışıklarından süzülen kara sıvı. Otacı Filiz kaynağını arıyor.', 'item-potion-orb', 'uncommon');
 QUEST_ITEM('item_golge_ozu', 'Gölge Özü', 'Gölgelerin dağılırken geride bıraktığı koyu öz.', 'item-crystal-shard', 'rare');
 // Karakır Bozkırı quest items (data/world/karakir_quests.ts)
 QUEST_ITEM('item_bozkir_postu', 'Bozkır Kurdu Postu', 'Bozkır kurtlarının kalın, kum rengi postu. Çoban Kerem kışlık mont için istiyor.', 'item-chest-leather');
