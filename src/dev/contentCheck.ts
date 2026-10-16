@@ -1837,7 +1837,10 @@ export function checkTown(town: TownDef, models: ModelDb, dungeonIds: string[], 
   for (const t of town.terraces ?? []) {
     for (const n of town.npcs) if (n.pos[0] >= t.box[0] && n.pos[0] <= t.box[2] && n.pos[2] >= t.box[1] && n.pos[2] <= t.box[3] && n.pos[1] !== t.y) warn(`npc ${n.id}`, `stands on terrace ${t.id} but y = ${n.pos[1]} (terrace y ${t.y})`);
     town.props.forEach((p, i) => {
-      if (p.pos[0] >= t.box[0] && p.pos[0] <= t.box[2] && p.pos[2] >= t.box[1] && p.pos[2] <= t.box[3] && p.pos[1] < t.y - 0.01 && !p.model.includes('/buildings/')) warn(`prop#${i} ${p.model.split('/').pop()}`, `inside terrace ${t.id} but y = ${p.pos[1]}`);
+      // floor_tile_* models sit on their pivot with the top face at +0.05 m (public/assets/models/dungeon/floor_tile_large.glb),
+      // so a tile at terrace y - 0.05 has its top on the deck and is not floating
+      const deckTile = /\/floor_tile_/.test(p.model) && Math.abs(p.pos[1] + 0.05 - t.y) < 0.01;
+      if (p.pos[0] >= t.box[0] && p.pos[0] <= t.box[2] && p.pos[2] >= t.box[1] && p.pos[2] <= t.box[3] && p.pos[1] < t.y - 0.01 && !deckTile && !p.model.includes('/buildings/')) warn(`prop#${i} ${p.model.split('/').pop()}`, `inside terrace ${t.id} but y = ${p.pos[1]}`);
     });
   }
   for (const e of town.exits ?? []) if (Math.abs(e.box[0]) > half + 5 || Math.abs(e.box[2]) > half + 5) err('town', `exit ${e.id} outside the map`);
