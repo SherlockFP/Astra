@@ -29,15 +29,40 @@ function randomPlayer(c: BossController, skipTank = false): Player | null {
   return list.length ? list[Math.floor(Math.random() * list.length)] : null;
 }
 
-/** Shards of Halkor's chambers that are dead right now (the awakening counts them). */
 /**
- * Shards killed in this fight, counted as they die: a corpse leaves the world 20 s after its death (Combat.corpseLifetime), so a
- * count of the corpses would lose the first kills when the three come more than 20 s apart. Reset with the fight (init).
+ * Halkor's awakening. The party kills the three shards in their chambers long before it reaches the pit, so the boss is not engaged
+ * (update() does not run) and the corpses leave the world 20 s after the death (Combat.corpseLifetime): the deaths are recorded as
+ * they happen, per boss, in a ledger that survives the fight reset (a wipe after the awakening must not put Halkor back to sleep
+ * with no shard left to kill).
  */
-function recordShardDeaths(c: BossController): number {
-  const seen = (c.state.shardDead ??= []) as number[];
-  for (const e of G.world?.enemies ?? []) if (e.def.id === 'kef_shard' && e.isDead && !seen.includes(e.id)) seen.push(e.id);
-  return seen.length;
+const shardLedger = new WeakMap<BossController, Set<number>>();
+
+function shardsDead(c: BossController): number {
+  let dead = shardLedger.get(c);
+  if (!dead) {
+    const seen = new Set<number>();
+    dead = seen;
+    shardLedger.set(c, seen);
+    const off = G.events.on('death', (d) => {
+      if (c.e.removed) {
+        off();
+        return;
+      }
+      const e = G.world?.enemies.find((o) => o.id === d.entityId);
+      if (!e || e.def.id !== 'kef_shard' || seen.has(e.id)) return;
+      seen.add(e.id);
+      if (seen.size >= 3) wakeHalkor(c);
+    });
+  }
+  return dead.size;
+}
+
+function wakeHalkor(c: BossController): void {
+  if (c.state.awake) return;
+  c.state.awake = true;
+  c.setImmune(false);
+  c.freeze(false);
+  bossFx('boss_enrage', c.e.position.x, c.e.position.z, { dur: 1.2 });
 }
 
 // ---- Boss 1: Halkor -----------------------------------------------------------------------------------------------------------
@@ -73,20 +98,18 @@ const halkor: BossScript = {
 
   init(c: BossController) {
     // Halkor sleeps under the dome until the third shard dies (the awakening; see update)
+    c.state.awake = false;
+    if (shardsDead(c) >= 3) {
+      c.state.awake = true;
+      return;
+    }
     c.setImmune(true);
     c.freeze(true);
-    c.state.awake = false;
-    c.state.shardDead = [];
   },
 
   update(c, dt) {
     if (!c.state.awake) {
-      if (recordShardDeaths(c) >= 3) {
-        c.state.awake = true;
-        c.setImmune(false);
-        c.freeze(false);
-        bossFx('boss_enrage', c.e.position.x, c.e.position.z, { dur: 1.2 });
-      }
+      if (shardsDead(c) >= 3) wakeHalkor(c);
       return;
     }
     // sin leash: players outside the rotunda (r 22 m) are frightened every 3 s

@@ -255,7 +255,8 @@ function guessTick(c: BossController, dt: number): void {
       return;
     }
   }
-  if (g.t >= 20) timeoutGame(c, g, false);}
+  if (g.t >= 20) timeoutGame(c, g, false);
+}
 
 const guessAbility: BossHandler = {
   start(c, b: Busy) {

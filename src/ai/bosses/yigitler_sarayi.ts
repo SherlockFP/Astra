@@ -2,7 +2,7 @@ import { G } from '../../game/G';
 import type { Player } from '../../entities/Player';
 import type { BossController } from '../BossController';
 import type { BossScript } from './types';
-import { angleTo, circle, dashLine, every, floatOver, isTank, partyHp, pickPlayers, playersIn, rad, ring, statusPlayer, zone } from './kit';
+import { angleTo, arenaReach, circle, dashLine, every, floatOver, isTank, partyHp, pickPlayers, playersIn, rad, ring, statusPlayer, zone } from './kit';
 import { bossLeap, bossString } from './moveBridge';
 import { markPlayers } from './patterns';
 import { clearOrbs, fixate, roamingOrb, updateOrbs } from './orbs';
@@ -184,8 +184,10 @@ const hirya: BossScript = {
         const t = nonTankOf(c);
         if (!t) return;
         const ang = angleTo(e.position.x, e.position.z, t.position.x, t.position.z);
-        dashLine(c, e.position.x, e.position.z, ang, 24, 3, 1.4, 30, 1.4, { name: 'Valkyr Dalışı' });
-        circle(c, e.position.x + Math.sin(ang) * 24, e.position.z + Math.cos(ang) * 24, 4.5, 1.6, 2.0, { name: 'Valkyr Dalışı' });
+        // the dive stops at the arena wall (dashLine clamps its line the same way): the landing ring goes where the line ends
+        const len = arenaReach(c, e.position.x, e.position.z, ang, 24);
+        dashLine(c, e.position.x, e.position.z, ang, len, 3, 1.4, 30, 1.4, { name: 'Valkyr Dalışı' });
+        circle(c, e.position.x + Math.sin(ang) * len, e.position.z + Math.cos(ang) * len, 4.5, 1.6, 2.0, { name: 'Valkyr Dalışı' });
         c.schedule(2.6, () => c.vulnerable(1.3, 2.5), 'hir_dive');
       },
     },

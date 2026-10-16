@@ -78,6 +78,16 @@ export function shieldUp(c: BossController): boolean {
 export function linkHealth(c: BossController, bodies: Enemy[]): HealthGroup {
   const list = bodies.filter((b) => !b.removed && !b.isDead);
   const frac = list.length ? Math.min(...list.map((b) => b.hpFrac)) : 0;
+  // one pool is one size: a clone with its own (trash) max HP would drain the shared fraction by damage / its small max, and the
+  // first clone that dies would take the boss with it after a few hits
+  if (list.length) {
+    const pool = Math.max(...list.map((b) => b.maxHp));
+    for (const b of list) {
+      if (b.maxHp === pool) continue;
+      b.maxHp = pool;
+      b.hp = Math.max(1, Math.round(frac * pool));
+    }
+  }
   const g: HealthGroup = { bodies: list, frac };
   linkState(c).health.push(g);
   return g;
@@ -138,11 +148,9 @@ function tickHealth(groups: HealthGroup[]): void {
       }
       continue;
     }
-    // a body died: the group ends and its other bodies despawn (the clones are the group's extra bodies; the main body keeps
-    // its pool). Killing them must not kill the boss: the first body of a group is the main one (see buyucu_terasi triplicate).
+    // a body died: the group dies with it
     groups.splice(i, 1);
-    const main = g.bodies[0];
-    for (const b of live) if (b !== main) b.escape();
+    for (const b of live) G.combat.killEnemy(b, null);
   }
 }
 

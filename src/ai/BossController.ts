@@ -560,10 +560,12 @@ export class BossController extends EnemyAI {
 
   /**
    * A boss that can be hurt never evades home for being stuck: the run home heals it (25 % a second) and resets the fight it was
-   * winning. An immune boss (a sleeping or intermission phase) keeps the evade: its run home is the reset of a wiped fight.
+   * winning. An immune boss keeps the evade, except a held one (freeze: Odyn's stage 1, Halkor asleep) which stands still by design:
+   * a party far from it (Skovald's gate) would otherwise make it "stuck", evade, and drop its own immunity.
    */
   protected checkStuck(now: number, edge: number, target: Actor): boolean {
-    if (!this.e.statuses.has('invulnerable')) return false;
+    // a held boss (freeze: Odyn's stage 1, a sleeping boss) stands still by design: not moving is not being stuck
+    if (this.hold || !this.e.statuses.has('invulnerable')) return false;
     return super.checkStuck(now, edge, target);
   }
 
