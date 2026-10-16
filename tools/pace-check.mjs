@@ -15,7 +15,8 @@
  *   kills           Sıradan (rank trash) and Sürü (swarm) kills to cross the band at the same level
  *
  * First-hour targets (pace route, turn-in semantics): level 2 right after chain quest 2, level 3 right after chain quest 4
- * (6-8 min), level 4 at about 15 min (13-17 min), level 5 at about 25 min (24-35 min). Exit code 1 when a target is missed.
+ * (6-8 min), level 4 at about 13 min (12-14 min; mq_05 is level 3, the L3->L4 grind shrank from 8.4 to 6.1 min), level 5 at about 24 min
+ * (22-26 min). Exit code 1 when a target is missed.
  */
 import { xpToNext, killXp, questXp, kindOf, replayFirstHour, sideQuestReport, SIDE_MIN_SHARE, QUESTS, LEVEL_CAP, replayDungeonRoute, DUNGEON_RUN_OVERHEAD_S } from './xp-ledger.mjs';
 
@@ -93,8 +94,8 @@ const window = (L, lo, hi) => {
   check(t !== undefined && t >= lo * 60 && t <= hi * 60, `level ${L} at ${lo}-${hi} min`, t === undefined ? 'not reached' : `${mins(t)} min`);
 };
 window(3, 6, 8);
-window(4, 13, 17);
-window(5, 24, 35);
+window(4, 12, 14);
+window(5, 22, 26);
 
 // greedy route (every side quest of the towns taken): faster than the chain alone, because side quests now pay their time
 const gReached = (L, maxMin) => {

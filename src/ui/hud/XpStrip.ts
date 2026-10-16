@@ -13,6 +13,9 @@ interface TipUi {
 const LEVEL_HOLD_MS = 800;
 /** "+N XP" floater lifetime (ms), matching the CSS rise + fade. */
 const FLOATER_MS = 1000;
+/** Floaters shown at once (the column above the strip) and the height of one row (px). */
+const FLOATER_MAX = 3;
+const FLOATER_ROW_PX = 18;
 /** Fill of the XP strip while rested XP is banked (WP-10): the blue of the rested tint. */
 const RESTED_FILL = 'linear-gradient(#cfe9ff 0 28%, #4fa3ff 28% 62%, #1f5fb8 62%)';
 
@@ -24,6 +27,8 @@ export class XpStrip implements HudWidget {
   readonly el: HTMLElement;
   private fill: HTMLElement;
   private floaters: HTMLElement;
+  /** Live "+N XP" floaters, newest first (index 0 is the bottom row of the column). */
+  private alive: HTMLElement[] = [];
   private shown = 0;
   private lastLevel = -1;
   private holdUntil = 0;
@@ -40,7 +45,16 @@ export class XpStrip implements HudWidget {
     G.events.on('player:xp', ({ gained }) => {
       if (gained <= 0) return;
       const f = div('xp-float', this.floaters, `+${fmtNum(gained)} XP`);
-      setTimeout(() => f.remove(), FLOATER_MS);
+      // a column: the newest floater sits on the bottom, older ones stack above it (no overlap); at most FLOATER_MAX shown
+      this.alive.unshift(f);
+      while (this.alive.length > FLOATER_MAX) this.alive.pop()?.remove();
+      this.restack();
+      setTimeout(() => {
+        const i = this.alive.indexOf(f);
+        if (i >= 0) this.alive.splice(i, 1);
+        f.remove();
+        this.restack();
+      }, FLOATER_MS);
     });
     this.el.addEventListener('mouseenter', (e) => {
       this.hover = true;
@@ -52,6 +66,13 @@ export class XpStrip implements HudWidget {
     this.el.addEventListener('mouseleave', () => {
       this.hover = false;
       this.ui.hideTooltip();
+    });
+  }
+
+  /** Puts each live floater on its own row: newest at the bottom, the older ones above it. */
+  private restack(): void {
+    this.alive.forEach((f, i) => {
+      f.style.bottom = `${4 + i * FLOATER_ROW_PX}px`;
     });
   }
 

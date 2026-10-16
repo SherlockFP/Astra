@@ -284,7 +284,7 @@ const EXTRA_SIDE: Record<string, Extra> = {
  */
 const XP_PCT: Record<string, number> = {
   mq_01_kuzgunun_cagrisi: 85, mq_02_fare_yuvasi: 60, mq_03_balcik_temizligi: 20, mq_04_samani_sustur: 43,
-  mq_05_yagmaci_kampi: 12, mq_06_ilk_metin: 25, mq_07_kopruyu_gec: 14, mq_08_ciftlik_isgali: 6,
+  mq_05_yagmaci_kampi: 21, mq_06_ilk_metin: 25, mq_07_kopruyu_gec: 14, mq_08_ciftlik_isgali: 6,
   mq_09_mezarligin_sirri: 7, mq_10_kemik_mahzeni: 13, mq_11_curukkok: 13, mq_12_haydut_kalesi: 11,
   mq_13_kizilkaya_haberi: 9, mq_14_bataklik_cadisi: 14, mq_15_kor_ocagi: 15, mq_16_ork_istilasi: 16,
   mq_17_lanetli_yol: 10, mq_18_kara_anit: 13, mq_19_kuzgunkaleye_donus: 18,

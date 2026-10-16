@@ -17,7 +17,7 @@ const ok = (name, cond, info = '') => {
   if (!cond || process.env.V) console.log(`${cond ? 'PASS' : 'FAIL'} ${name}${info ? ' - ' + info : ''}`);
 };
 
-const { GUIDE_STEPS, applyEvent, activeStep, allDone, flagsToWrite, guideWanted, progressOf, stateFromFlags } = OB;
+const { GUIDE_STEPS, FLASK_IDLE_S, applyEvent, activeStep, allDone, flagsToWrite, guideWanted, progressOf, stateFromFlags } = OB;
 const IDS = GUIDE_STEPS.map((s) => s.id);
 const EMPTY = { done: [], slots: [], skipped: false };
 const LVL = 10;
@@ -77,12 +77,32 @@ for (const id of IDS) {
   ok(`events.${id} ignores unrelated events`, !wrong.done.includes(id));
 }
 
-// the steps only advance in order: an event for a later step does nothing now
+// steps complete out of order: an event whose trigger already happened is kept, and the card stays on the first open step
 {
   const st = applyEvent(EMPTY, EV.loot, LVL);
-  ok('events.out-of-order loot ignored at move', st === EMPTY || !st.done.includes('loot'));
+  ok('events.out-of-order loot completes at move', st.done.join() === 'loot' && activeStep(st, LVL)?.id === 'move');
   const st2 = applyEvent(EMPTY, EV.move, LVL);
   ok('events.move completes first step', st2.done.join() === 'move');
+  // a card waiting for a hit (flask) or a quest (finder) is skipped by the HUD's availability rule, so later steps show
+  const noFlask = (s) => s.id !== 'flask';
+  const st3 = run([EV.move, EV.talk, EV.accept, EV.attack, ...SKILL_SEQ], LVL);
+  ok('steps.waiting flask does not block loot', activeStep(st3, LVL)?.id === 'flask' && activeStep(st3, LVL, noFlask)?.id === 'loot');
+  const st4 = run([EV.loot, EV.bag, EV.equip], LVL, st3);
+  ok('events.loot bag equip done while flask waits', ['loot', 'bag', 'equip'].every((id) => st4.done.includes(id)) && activeStep(st4, LVL, noFlask)?.id === 'sp');
+  ok('events.flask completes out of order later too', applyEvent(st4, EV.flask, LVL).done.includes('flask'));
+}
+
+// the flask fallback: HP full and 60 s on the step (the HUD sends flaskIdle) completes it without a flask use
+{
+  ok('flask.idle window is 60 s', FLASK_IDLE_S === 60);
+  const st = run([EV.move, EV.talk, EV.accept, EV.attack, ...SKILL_SEQ], LVL);
+  const idle = applyEvent(st, { k: 'flaskIdle' }, LVL);
+  ok('flask.flaskIdle completes the flask step', idle.done.includes('flask'));
+  ok('flask.flaskIdle completes only the flask step', applyEvent(EMPTY, { k: 'flaskIdle' }, LVL).done.join() === 'flask');
+  // a run that never uses a flask finishes through the fallback (level 8 has every step)
+  const noFlaskEv = FULL.filter((e) => e !== EV.flask);
+  ok('flask.run without any flask event stays open', !allDone(run(noFlaskEv, 8)));
+  ok('flask.run without a flask use finishes via flaskIdle', allDone(run([...noFlaskEv, { k: 'flaskIdle' }], 8)));
 }
 
 // a full run completes every step and the guide reports allDone

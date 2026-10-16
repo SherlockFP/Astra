@@ -323,7 +323,7 @@
 .pg-death.pg-opening > .pg-card { animation: pg-deathin 0.9s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
 @keyframes pg-deathin { 0% { opacity: 0; transform: scale(1.35) translateY(-20px); filter: blur(6px); } 60% { opacity: 1; filter: blur(0); } 100% { opacity: 1; transform: none; } }
 .pg-death-skull { width: 60px; height: 60px; filter: sepia(1) saturate(4) hue-rotate(-40deg); animation: pg-float 3s ease-in-out infinite; }
-.pg-death-title { font: 700 64px var(--font-body); line-height: 1; background: #ff9a86; color: var(--text-1); filter: none; }
+.pg-death-title { font: 700 64px var(--font-body); line-height: 1; background: none; color: var(--text-1); filter: none; user-select: none; -webkit-user-select: none; }
 .pg-death-note, .pg-death-revive { display: flex; align-items: center; gap: 10px; text-align: left; padding: 8px 12px; font-size: 15.5px; line-height: 1.35; background: var(--ui-well); border: 1px solid var(--elv-border); border-radius: var(--ui-r-frame); color: #d1d1d1; }
 .pg-death-note .pg-ico { width: 28px; height: 28px; }
 .pg-death-note b { color: #ff9a86; }

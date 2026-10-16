@@ -1,6 +1,7 @@
 import { G } from '../../game/G';
 import { WOW_ERR } from '../../combat/targetSelect';
 import { div, pulse, setText } from '../widgets/dom';
+import { levelUpBannerBusy } from './Banners';
 import type { HudCtx, HudWidget } from './types';
 
 /** Same skill failure within this window (ms) shows once: a held key re-fires the failure every frame. */
@@ -54,6 +55,9 @@ export class CastErrors implements HudWidget {
     this.el = div('cast-err');
     this.text = div('cast-err-text', this.el);
     G.events.on('skill:fail', ({ reason, remaining, skill }) => {
+      // the global-cooldown line is noise while the level-up banner is on the centre of the screen: it is dropped, not queued
+      const gcd = reason === 'cooldown' && remaining !== undefined && Number.isFinite(remaining) && remaining <= GCD_MAX_S;
+      if (gcd && levelUpBannerBusy()) return;
       this.show(castFailText(reason, remaining, skill));
       if (reason === 'target' && !targetHintShown) {
         // WoW players learn the target cycle from this line: once per session, as a plain info toast

@@ -61,7 +61,12 @@ export type GuideEvent =
   | { k: 'equip' }
   | { k: 'sp' }
   | { k: 'turnin' }
-  | { k: 'flask' };
+  | { k: 'flask' }
+  /** The HUD's fallback for the flask step: HP is full and the step has been shown for FLASK_IDLE_S without a flask use. */
+  | { k: 'flaskIdle' };
+
+/** Seconds the flask step is shown (HP regenerated to full, no flask used) before it completes by itself. */
+export const FLASK_IDLE_S = 60;
 
 /** Save-derived state. `done` = completed step ids, `slots` = bar keys used in the skills step. */
 export interface GuideState {
@@ -107,11 +112,12 @@ export function guideWanted(save: GuideSave): boolean {
 }
 
 /**
- * The step to show now: the first step that is not done and whose `minLevel` the character has reached. null when every
- * reachable step is done (the guide then waits for a gated step, or is finished).
+ * The step to show now: the first step that is not done, whose `minLevel` the character has reached and that `available`
+ * accepts (the HUD's wait rules: a step waiting for a hit or a quest is skipped, so it never blocks the steps after it).
+ * null when every reachable, available step is done.
  */
-export function activeStep(state: GuideState, level: number): GuideStep | null {
-  return GUIDE_STEPS.find((s) => !state.done.includes(s.id) && (s.minLevel ?? 0) <= level) ?? null;
+export function activeStep(state: GuideState, level: number, available: (s: GuideStep) => boolean = () => true): GuideStep | null {
+  return GUIDE_STEPS.find((s) => !state.done.includes(s.id) && (s.minLevel ?? 0) <= level && available(s)) ?? null;
 }
 
 /** True once every step is done (gated steps included). */
@@ -127,7 +133,7 @@ function completes(id: string, ev: GuideEvent, state: GuideState): boolean {
     case 'accept': return ev.k === 'accept';
     case 'attack': return ev.k === 'hit';
     case 'skills': return ev.k === 'cast' && (GUIDE_SKILL_SLOTS as readonly string[]).includes(ev.slot) && new Set([...state.slots, ev.slot]).size >= GUIDE_SKILL_NEED;
-    case 'flask': return ev.k === 'flask';
+    case 'flask': return ev.k === 'flask' || ev.k === 'flaskIdle';
     case 'loot': return ev.k === 'loot';
     case 'bag': return ev.k === 'panel' && ev.panel === 'inventory' && ev.open;
     case 'equip': return ev.k === 'equip';
@@ -140,19 +146,24 @@ function completes(id: string, ev: GuideEvent, state: GuideState): boolean {
 }
 
 /**
- * Feeds one event. Only the ACTIVE step can complete (steps go in order), a finished guide ignores events, and the
- * skills step keeps its distinct bar keys in `slots`. Returns a new state; the input is not mutated.
+ * Feeds one event. Every reachable step (`minLevel` reached) that is not done completes on its own event, in ANY order: a
+ * trigger that already happened (talked, attacked, looted, turned in, bags...) is never lost behind an earlier card. A
+ * skipped or finished guide ignores events; the skills step keeps its distinct bar keys in `slots`. Returns a new state;
+ * the input is not mutated.
  */
 export function applyEvent(state: GuideState, ev: GuideEvent, level: number): GuideState {
-  if (state.skipped) return state;
-  const step = activeStep(state, level);
-  if (!step) return state;
+  if (state.skipped || allDone(state)) return state;
   let next = state;
-  if (step.id === 'skills' && ev.k === 'cast' && (GUIDE_SKILL_SLOTS as readonly string[]).includes(ev.slot) && !state.slots.includes(ev.slot)) {
+  if (ev.k === 'cast' && (GUIDE_SKILL_SLOTS as readonly string[]).includes(ev.slot) && !state.slots.includes(ev.slot)) {
     next = { ...next, slots: [...next.slots, ev.slot] };
   }
-  if (!completes(step.id, ev, next)) return next;
-  return { ...next, done: [...next.done, step.id] };
+  const done: string[] = [];
+  for (const step of GUIDE_STEPS) {
+    if (next.done.includes(step.id) || (step.minLevel ?? 0) > level) continue;
+    if (completes(step.id, ev, { ...next, done: [...next.done, ...done] })) done.push(step.id);
+  }
+  if (done.length === 0) return next;
+  return { ...next, done: [...next.done, ...done] };
 }
 
 /** Player-visible progress: `n / total` over the steps that exist for this level (gated steps count only once reached). */

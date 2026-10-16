@@ -4,7 +4,7 @@ import type { UI } from '../UI';
 import { div, h, setClass, setDisplay, setText } from '../widgets/dom';
 import { expandKeys, keyLabel, slotKeyLabel } from '../widgets/controlHints';
 // keyLabel: the key cap of the step's own action (the card shows it under the text)
-import { GUIDE_NPC, GUIDE_SKILL_NEED, GUIDE_SKILL_SLOTS, GUIDE_WALK_M, activeStep, allDone, applyEvent, flagsToWrite, guideWanted, progressOf, stateFromFlags, type GuideEvent, type GuideState, type GuideStep } from '../../systems/onboarding';
+import { FLASK_IDLE_S, GUIDE_NPC, GUIDE_SKILL_NEED, GUIDE_SKILL_SLOTS, GUIDE_WALK_M, activeStep, allDone, applyEvent, flagsToWrite, guideWanted, progressOf, stateFromFlags, type GuideEvent, type GuideState, type GuideStep } from '../../systems/onboarding';
 import { skillPointsFree } from '../../systems/SkillPoints';
 import type { HudCtx, HudWidget } from './types';
 
@@ -145,14 +145,17 @@ export class GuideCard implements HudWidget {
     if (this.walked >= GUIDE_WALK_M) this.feed({ k: 'move' });
 
     // the bag step completes however the bag opens (B, the bag button, a loot window that opens it), not only on the B key
-    if (activeStep(this.state, ch.save.level)?.id === 'bag' && this.ui.isPanelOpen('inventory')) this.feed({ k: 'panel', panel: 'inventory', open: true });
+    const avail = (s: GuideStep): boolean => !this.waiting(s);
+    if (activeStep(this.state, ch.save.level, avail)?.id === 'bag' && this.ui.isPanelOpen('inventory')) this.feed({ k: 'panel', panel: 'inventory', open: true });
     // a card that has stood for DISMISS_S on one step leaves the screen (render keeps it away until the step changes)
-    const step = activeStep(this.state, ch.save.level);
+    const step = activeStep(this.state, ch.save.level, avail);
     if (step && step.id !== this.stepId) {
       this.stepId = step.id;
       this.stepTime = 0;
     }
     if (step && this.stepTime >= DISMISS_S) this.dismissedId = step.id;
+    // the flask step never blocks the guide: once HP is full again and the card has stood FLASK_IDLE_S, it completes by itself
+    if (step?.id === 'flask' && this.stepTime >= FLASK_IDLE_S && p.hp >= p.maxHp) this.feed({ k: 'flaskIdle' });
 
     this.render(ch.save.level);
   }
@@ -201,8 +204,8 @@ export class GuideCard implements HudWidget {
   private render(level: number): void {
     const st = this.state;
     if (!st) return;
-    const step = activeStep(st, level);
-    if (!step || step.id === this.dismissedId || this.waiting(step)) return this.hide();
+    const step = activeStep(st, level, (s) => !this.waiting(s));
+    if (!step || step.id === this.dismissedId) return this.hide();
     const prog = progressOf(st, level);
     setText(this.count, `${prog.done} / ${prog.total}`);
     if (step.id !== this.shownId) {

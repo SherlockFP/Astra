@@ -30037,7 +30037,7 @@
    "base": "ow_puglin_chief",
    "scale": 1.25,
    "tint": "-",
-   "level": 5,
+   "level": 4,
    "hpMult": 14,
    "lair": [
     250,
@@ -44631,7 +44631,7 @@
     "name": "Yağmacı Başı",
     "giver": "Gözcü Selim (Orta Karakol)",
     "place": "r1_c04",
-    "level": 4,
+    "level": 3,
     "kind": "boss",
     "goal": "Yağmacı Başı Gırtlak'ı öldür (mini-boss: telegraph + çağrılan yardımcılar)",
     "xpPct": 30,
