@@ -163,6 +163,9 @@ function flowerGeometry(): THREE.BufferGeometry {
  */
 function windMaterial(opts: { flower: boolean }): THREE.MeshStandardMaterial {
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 1, metalness: 0 });
+  // Ground telegraphs (vfx/Telegraph) draw over the tufts: tufts do not write depth and draw after the opaque meshes, so they still
+  // depth-test against enemies and terrain, but never hide a decal.
+  mat.depthWrite = false;
   mat.onBeforeCompile = (sh) => {
     sh.uniforms.uNight = uniforms.uNight;
     sh.uniforms.uTime = uniforms.uTime;
@@ -351,6 +354,7 @@ export class GrassField {
     mesh.frustumCulled = false;
     mesh.castShadow = false;
     mesh.receiveShadow = false;
+    mesh.renderOrder = 1;
     mesh.count = 0;
     this.group.add(mesh);
     return { mesh, off, p, col };

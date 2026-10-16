@@ -28321,6 +28321,66 @@
      145.5
     ]
    ]
+  },
+  {
+   "id": "r2_yol_gecit_devriye",
+   "name": "Gecit Yolu Devriyesi",
+   "region": "r2",
+   "members": [
+    {
+     "enemyId": "ow_zombie",
+     "count": 2
+    },
+    {
+     "enemyId": "ow_bandit",
+     "count": 1
+    }
+   ],
+   "levelRange": [
+    5,
+    8
+   ],
+   "respawnSec": 90,
+   "patrol": [
+    [
+     292.5,
+     163
+    ],
+    [
+     285,
+     185.2
+    ]
+   ]
+  },
+  {
+   "id": "r3_yol_devriye",
+   "name": "Kervan Yolu Devriyesi",
+   "region": "r3",
+   "members": [
+    {
+     "enemyId": "ow_wolf",
+     "count": 2
+    },
+    {
+     "enemyId": "ow_bandit",
+     "count": 2
+    }
+   ],
+   "levelRange": [
+    9,
+    12
+   ],
+   "respawnSec": 90,
+   "patrol": [
+    [
+     332,
+     180
+    ],
+    [
+     326,
+     196
+    ]
+   ]
   }
  ],
  "settlements": [

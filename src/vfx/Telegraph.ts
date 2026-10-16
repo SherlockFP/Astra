@@ -56,23 +56,27 @@ void main() {
   if (d < 0.0) discard;
 
   float rim = 1.0 - smoothstep(0.0, 0.28, d);
-  float rimHard = 1.0 - step(0.22, d);   // opaque edge band, wider than before (readable at range)
+  float rimHard = 1.0 - step(0.22, d);   // solid bright edge band (readable at range)
+  float edgeDark = 1.0 - step(0.06, d);  // thin dark hairline on the very edge: contrast on snow, sand and at night
   float filled = step(fc, uProg);
-  float front = exp(-abs(fc - uProg) * 22.0) * step(0.001, uProg) * (1.0 - step(0.999, uProg) * 0.0);
+  float front = exp(-abs(fc - uProg) * 22.0) * step(0.001, uProg);
 
-  // chunky animated hatch on the unfilled part
+  // chunky animated hatch on the unfilled part (faint: the flat fill carries the shape)
   float hatch = step(0.5, fract((vL.x + vL.y) * 1.4 - uTime * 0.35));
-  float pulse = 0.82 + 0.18 * sin(uTime * 9.0 + uKind);
-  if (uKind > 0.5 && uKind < 1.5) pulse = 0.85 + 0.15 * sin(uTime * 4.0); // soak: calmer
+  float pulse = 0.85 + 0.15 * sin(uTime * 9.0 + uKind);
+  if (uKind > 0.5 && uKind < 1.5) pulse = 0.9 + 0.1 * sin(uTime * 4.0); // soak: calmer
 
-  float a = 0.25 + hatch * 0.03;                      // base: flat 25 % fill (WoW clarity), the hatch only adds a faint texture
-  a = mix(a, 0.6 + 0.1 * sin(uTime * 14.0 + fc * 9.0), filled); // filled part
-  a += rim * 0.2 * pulse;
-  a = mix(a, 1.0, rimHard);                           // opaque edge
-  a += front * 0.5;
+  // WoW Midnight read: a 30 % tinted fill, a solid bright edge, and an inner fill (55 %) that grows toward the impact
+  float a = 0.30 + hatch * 0.02;
+  a = mix(a, 0.55 + 0.08 * sin(uTime * 14.0 + fc * 9.0), filled);
+  a += rim * 0.12 * pulse;
+  a = mix(a, 0.95, rimHard);
+  a = mix(a, 0.95, edgeDark);
+  a += front * 0.4;
   a = clamp(a, 0.0, 1.0);
 
-  vec3 col = mix(uColor, uHot, clamp(rim * 0.6 + front * 0.8 + filled * 0.25, 0.0, 1.0));
+  vec3 col = mix(uColor, uHot, clamp(rim * 0.5 + front * 0.8 + filled * 0.2 + rimHard * 0.75, 0.0, 1.0));
+  col = mix(col, vec3(0.1, 0.02, 0.0), edgeDark);
   col = mix(col, vec3(1.0), uFlash);
   a = mix(a, 1.0, uFlash * 0.7);
   // No HDR boost on the red / orange colours: above 1.0 they bloom, and the bloom spread a pink wash over the whole frame.

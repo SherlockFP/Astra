@@ -7,14 +7,56 @@ import { shellMaterial } from './Meshes';
  * green one. Shells are added only while the entity is highlighted and removed when it is not.
  */
 
-export type RimKind = 'hostile' | 'friendly';
+export type RimKind = 'hostile' | 'friendly' | 'neutral';
 /** Two rims can show at once: the one under the cursor (hover) and the selected unit (target). */
 export type RimSlot = 'hover' | 'target';
 
 const RIM = {
   hostile: { color: 0xff3a2a, power: 2.4, inflate: 0.022, alpha: 0.95 },
   friendly: { color: 0x46ff6e, power: 2.4, inflate: 0.022, alpha: 0.9 },
+  neutral: { color: 0xffd23a, power: 2.4, inflate: 0.022, alpha: 0.95 },
 } as const;
+
+/** Faint distance rim (setFarRim): one shared material per colour, so a far enemy costs one extra draw per mesh and no new program. */
+const FAR_RIM: Record<'hostile' | 'neutral', { color: number }> = {
+  hostile: { color: 0xff3a2a },
+  neutral: { color: 0xffd23a },
+};
+const farMats: Partial<Record<'hostile' | 'neutral', THREE.ShaderMaterial>> = {};
+const farShells = new WeakMap<THREE.Object3D, { kind: 'hostile' | 'neutral'; shells: THREE.Mesh[] }>();
+
+/**
+ * Faint always-on edge for an enemy beyond ~25 m, so it does not vanish into foliage (vfx stays off near the player, where the
+ * character rim and the hover rim already read). kind null removes it. Same root and kind is a no-op.
+ */
+export function setFarRim(root: THREE.Object3D, kind: 'hostile' | 'neutral' | null): void {
+  const cur = farShells.get(root);
+  if (cur && kind === cur.kind) return;
+  if (cur) {
+    for (const s of cur.shells) s.removeFromParent();
+    farShells.delete(root);
+  }
+  if (!kind) return;
+  const mat = (farMats[kind] ??= shellMaterial(FAR_RIM[kind].color, { power: 2.0, inflate: 0.014, alpha: 0.32, base: 0, additive: false }));
+  const shells: THREE.Mesh[] = [];
+  root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh || (o as THREE.InstancedMesh).isInstancedMesh || o.userData.vfxShell || o.userData.noRim || !m.geometry) return;
+    const sk = m as THREE.SkinnedMesh;
+    let shell: THREE.Mesh;
+    if (sk.isSkinnedMesh && sk.skeleton) {
+      const s = new THREE.SkinnedMesh(m.geometry, mat);
+      s.bind(sk.skeleton, sk.bindMatrix);
+      shell = s;
+    } else shell = new THREE.Mesh(m.geometry, mat);
+    shell.userData.vfxShell = true;
+    shell.renderOrder = 11;
+    shell.frustumCulled = false;
+    m.add(shell);
+    shells.push(shell);
+  });
+  farShells.set(root, { kind, shells });
+}
 
 interface Active {
   root: THREE.Object3D;

@@ -36,7 +36,8 @@ const PACKS = [
   pack('m_p01', 'mag_giris', 6, 29, undefined, [['skel_minion', 0.3, 0], ['skel_archer', -0.38, 0.35]]),
   pack('m_p02', 'mag_giris', 4, 32, undefined, [['skel_rattler', 0.3, 0], ['skel_rattler', -0.4, 0.3]]),
   pack('m_p03', 'mag_gecit', 12.5, 29.5, undefined, [['crypt_rat', 0.3, 0], ['crypt_rat', -0.38, 0.35]]),
-  pack('m_p04', 'mag_salon', 18, 23, undefined, [['skel_minion', 0.3, 0], ['skel_archer', -0.38, 0.35]]),
+  // patrols (walk a short leg, pause, turn): two of the 14 route packs, each back and forth inside its own room
+  pack('m_p04', 'mag_salon', 18, 23, undefined, [['skel_minion', 0.3, 0], ['skel_archer', -0.38, 0.35]], { patrol: [[18, 23], [18, 27]] }),
   pack('m_p05', 'mag_salon', 23, 23, undefined, [['crypt_ghoul', 0.3, 0], ['skel_minion', -0.38, 0.35]]),
   pack('m_p06', 'mag_salon', 18, 28, undefined, [['skel_rattler', 0.3, 0], ['skel_rattler', -0.38, 0.35]]),
   pack('m_p07', 'mag_salon', 23, 28, undefined, [['skel_warrior', 0, 0], ['skel_mage', 1.0, -0.6]]),
@@ -46,7 +47,7 @@ const PACKS = [
   pack('m_p14', 'mag_orta', 17, 16, undefined, [['skel_rattler', 0.3, 0], ['skel_rattler', -0.38, 0.35]]),
   pack('m_p10', 'mag_son', 18, 5, undefined, [['skel_warrior', 0.3, 0], ['skel_minion', -0.38, 0.35]]),
   pack('m_p11', 'mag_son', 23, 4, undefined, [['skel_minion', 0.3, 0], ['skel_mage', -0.38, 0.35]]),
-  pack('m_p12', 'mag_son', 16, 4, undefined, [['crypt_ghoul', 0.3, 0], ['skel_rattler', -0.38, 0.35]]),
+  pack('m_p12', 'mag_son', 16, 4, undefined, [['crypt_ghoul', 0.3, 0], ['skel_rattler', -0.38, 0.35]], { patrol: [[16, 4], [16, 7]] }),
 ];
 
 const START: [number, number] = [5, 30];

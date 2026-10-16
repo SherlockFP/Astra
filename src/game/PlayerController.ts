@@ -14,7 +14,7 @@ import type { ThirdPersonCamera } from '../camera/ThirdPersonCamera';
 import type { InputAction } from '../core/Input';
 import { WowMouse, type WowMouseOut } from './WowMouse';
 import { pickAtNdc, type PickHit } from './ClickPick';
-import { setRim } from '../vfx/TargetRim';
+import { setRim, setFarRim, type RimKind } from '../vfx/TargetRim';
 import { AutoAttack, AUTO, type AutoTarget } from './AutoAttack';
 import { VERT } from '../world/Heightfield';
 import { FallHandler, VOID_FADE_IN, VOID_FADE_OUT, VOID_INPUT_LOCK, VOID_INVULN_SEC, type FallEnv, type Spot } from './FallHandler';
@@ -179,6 +179,7 @@ export class PlayerController {
   private faceHold = 0;
   /** Readability rim (vfx/TargetRim): the hover under the cursor is re-picked every 0.1 s, the target is read every frame. */
   private rimT = 0;
+  private farRimT = 0;
   private rimHover: PickHit | null = null;
   /** walkToggle state (walk / run toggle). */
   private walkOn = false;
@@ -1795,12 +1796,23 @@ export class PlayerController {
     }
     // WoW clarity: the hovered unit and the target each keep their own rim (green = friendly NPC, red = hostile enemy).
     const hov = this.rimHover;
+    const enemyKind = (e: unknown): 'hostile' | 'neutral' => ((e as { def?: { ai?: { neutral?: boolean } } }).def?.ai?.neutral ? 'neutral' : 'hostile');
     if (hov?.kind === 'npc' && !hov.entity.removed) setRim('hover', hov.entity.object3d, 'friendly');
-    else if (hov?.kind === 'enemy' && hov.entity.alive && !hov.entity.removed) setRim('hover', hov.entity.object3d, 'hostile');
+    else if (hov?.kind === 'enemy' && hov.entity.alive && !hov.entity.removed) setRim('hover', hov.entity.object3d, enemyKind(hov.entity));
     else setRim('hover', null, null);
     const tgt = this.currentTarget();
-    if (tgt && tgt.alive && !tgt.removed && !(hov?.kind === 'enemy' && hov.entity === tgt)) setRim('target', tgt.object3d, 'hostile');
+    if (tgt && tgt.alive && !tgt.removed && !(hov?.kind === 'enemy' && hov.entity === tgt)) setRim('target', tgt.object3d, enemyKind(tgt));
     else setRim('target', null, null);
+    this.farRimT -= dt;
+    if (this.farRimT <= 0) {
+      // faint rim on living enemies beyond 25 m (read every 0.25 s; the shells follow the entity, not the cursor)
+      this.farRimT = 0.25;
+      const pl = this.player.position;
+      for (const e of this.player.world?.enemies ?? []) {
+        const want = e.alive && !e.removed && e !== tgt && e !== hov?.entity && Math.hypot(e.position.x - pl.x, e.position.z - pl.z) > 25 && Math.hypot(e.position.x - pl.x, e.position.z - pl.z) < 110;
+        setFarRim(e.object3d, want ? enemyKind(e) : null);
+      }
+    }
   }
 
   private wowPick(ndcX: number, ndcY: number): PickHit | null {

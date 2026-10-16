@@ -484,10 +484,17 @@ D.room('kemik_taht', (p, r) => {
 /** Floor sigil. gi scales the glow (ring brightness and halo); the entrance one is kept low so it never reads as a light disc. */
 const rune = (x: number, z: number, r: number, gi = 1.0): ZoneDef => circleZone('rune', x, z, r, { color: 0x14221c, glow: GHOST, glowIntensity: gi });
 
+/**
+ * Azrakel's raised dais (2 m, stone ramp on the north edge), in the room's new tile coordinates. Props inside it that have no
+ * explicit height stand on its top (liftOnDais); the throne chair already sat at y 2.
+ */
+const BOSS_DAIS = { id: 'azrakel_dais', rect: { x: 16, z: 34, w: 8, h: 6 }, y: 2, rim: 'rail' as const, floor: 'tiles' as const };
+const BOSS_RAMP = { id: 'azrakel_ramp', kind: 'ramp' as const, rect: { x: 18, z: 32, w: 4, h: 2 }, axis: 'z' as const, yFrom: 0, yTo: 2, style: 'stone' as const };
+
 const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
   giris: { ambientVfx: 'ambient_dust', zones: [rune(FONT[0], FONT[1], 1.0, 0.4)] },
   k_giris: { ambientVfx: 'ambient_dust' },
-  kemik_salonu: { ambientVfx: 'ambient_dust' },
+  kemik_salonu: { ambientVfx: 'ambient_dust', ceiling: 10 },
   k_bekci: {},
   bekci_odasi: { explicitDecor: true, ambientVfx: 'ambient_dust' },
   k_fener: {},
@@ -506,6 +513,7 @@ const ROOM_EXTRA: Record<string, Partial<RoomDef>> = {
   k_taht: {},
   kemik_taht: {
     explicitDecor: true, lightColor: GHOST, ambientVfx: 'ambient_dust',
+    heightAreas: [BOSS_DAIS], slopes: [BOSS_RAMP], ceiling: 10,
     zones: [rune(...at2(15.5, 31), 1.1), rune(...at2(25, 31), 1.1), rune(...at2(20, 37), 1.1), circleZone('rune', ...at2(20, 33.5), 5.2, { color: 0x101a16, glow: GHOST, glowIntensity: 0.55 })],
   },
 };
@@ -527,6 +535,21 @@ const EXTRAS: NonNullable<DungeonDef['extras']> = {
   chests: [{ pos: pt(11.7, 17.4), kind: 'chest_wood' }, { pos: pt(...at2(37, 28)), kind: 'chest_gold' }, { pos: pt(27.5, 2.5), kind: 'chest_iron' }],
 };
 
+/** Props standing inside a room's height area with no explicit y are set to that area's top (the dais floor and its bones). */
+function liftOnDais(rooms: RoomDef[]): RoomDef[] {
+  return rooms.map((r) => {
+    const areas = r.heightAreas ?? [];
+    if (areas.length === 0 || !r.props) return r;
+    const props = r.props.map((p) => {
+      if (p.y !== undefined) return p;
+      const [x, z] = p.pos;
+      const a = areas.find((h) => x >= h.rect.x && x <= h.rect.x + h.rect.w && z >= h.rect.z && z <= h.rect.z + h.rect.h);
+      return a ? { ...p, y: a.y } : p;
+    });
+    return { ...r, props };
+  });
+}
+
 export const KEMIK_MAHZENI: DungeonDef = {
   id: 'kemik_mahzeni',
   name: 'Kemik Mahzeni',
@@ -537,7 +560,8 @@ export const KEMIK_MAHZENI: DungeonDef = {
   forcesRequired: 235,
   theme: THEME,
   grid: { w: 44, h: 44 },
-  rooms: withProps(ROOMS.map((r) => ({ ...r, ...ROOM_EXTRA[r.id] })), D.out),
+  vertical: true, // the Azrakel dais (heightAreas) needs the vertical nav; the rest of the dungeon is flat
+  rooms: liftOnDais(withProps(ROOMS.map((r) => ({ ceiling: 10, ...r, ...ROOM_EXTRA[r.id] })), D.out)), // vertical mode wants a ceiling per room
   doors: DOORS,
   packs: PACKS.map((p) => (PACK_EXTRA[p.id] ? { ...p, ...PACK_EXTRA[p.id] } : p)),
   bosses: BOSSES,
