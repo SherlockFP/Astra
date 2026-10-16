@@ -34,6 +34,8 @@ export interface LootDropOpts {
   delay?: number;
   /** Flight height boost (boss fountain). */
   vy?: number;
+  /** Boss / elite drop: every item gets a rarity-coloured beam and a landing sparkle, even common ones. */
+  beam?: boolean;
 }
 
 const GRAVITY = 20;
@@ -141,10 +143,13 @@ export class LootDrop extends Entity implements Interactable {
   forcePickup = false;
   /** Pickup distance bookkeeping for the loot filter. */
   hiddenByFilter = false;
+  /** Boss / elite item: beam and sparkle on landing whatever its rarity. */
+  readonly forceBeam: boolean;
 
   constructor(id: number, drop: DropPayload, opts: LootDropOpts) {
     super(id, 'loot');
     this.drop = drop;
+    this.forceBeam = !!opts.beam && drop.kind === 'item';
     this.radius = 0.4;
     this.height = 0.8;
     this.origin = opts.origin.clone();
@@ -382,7 +387,15 @@ export class LootDrop extends Entity implements Interactable {
     // beam
     const r = d.rarity;
     const wantsBeam = d.kind === 'item' && (r === 'rare' || r === 'epic' || r === 'legendary' || r === 'set' || r === 'uncommon');
-    if (wantsBeam && !this.hiddenByFilter) this.attachBeam();
+    if ((wantsBeam || this.forceBeam) && !this.hiddenByFilter) this.attachBeam();
+    if (this.forceBeam && !this.hiddenByFilter) {
+      // boss / elite landing: a sparkle burst in the rarity colour, so the drop is seen from across the room
+      try {
+        G.vfx.spawn('gold_sparkle', this.object3d.position.clone().setY(0.5), { scale: 1.1, color: hex(this.color) });
+      } catch {
+        /* optional */
+      }
+    }
     if (this.fallbackDisc) this.fallbackDisc.visible = !this.hiddenByFilter;
     if (d.kind === 'gold') G.vfx.spawn('gold_sparkle', this.object3d.position.clone().setY(0.2), { scale: Math.min(1.6, 0.8 + (d.gold ?? 1) / 400) });
     if (d.kind === 'globe') G.vfx.spawn('heal_loop', this.object3d.position.clone().setY(0.3), { duration: 1.2, scale: 0.6 });

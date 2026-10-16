@@ -3,7 +3,8 @@ import type { UI } from '../../UI';
 import type { GamePanel } from './base';
 import { TalentsPanel } from './talents';
 import { KeystonePanel } from './keystone';
-import { RunSummaryPanel, noteRunStart, type RunSummaryData } from './runSummary';
+import { RunSummaryPanel, currentXpPoint, noteRunStart, type RunSummaryData } from './runSummary';
+import { installRunTally, runKeyOf } from './runTally';
 import { MplusInfoPanel } from './mplusInfo';
 import { SettingsPanel } from './settings';
 import { PartyPanel } from './party';
@@ -153,6 +154,8 @@ function installAutoBehaviour(): void {
         openVia('runSummary', data);
       }, 2200);
     }),
+    // XP / gold / pickups of the run (the summary's tally); finished on run:completed, before the card opens
+    installRunTally(ev, currentXpPoint, runKeyOf),
     installMapTracker(),
   );
 }

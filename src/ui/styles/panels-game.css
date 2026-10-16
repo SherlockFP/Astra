@@ -595,3 +595,16 @@
 
 /* keystone: finder banner on the Zindan Seç tab (UX-52a) */
 .pg-ks-banner { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; padding: 6px 10px; font-size: 13px; color: var(--text-2); background: var(--ui-well); border: 1px solid var(--line); border-radius: var(--ui-r-frame); }
+
+/* Run summary: XP bar, level-up chips, gold and materials (ui/panels/game/runSummary.ts renderTally). */
+.pg-rs-tally { margin: 4px 0 10px; padding: 10px 12px; background: var(--pg-card); border: 1px solid var(--elv-border); border-radius: var(--ui-r-btn); }
+.pg-rs-xphead { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font: 700 15px var(--font-head); color: var(--elv-value); }
+.pg-rs-xpgain { color: #c9a8ff; }
+.pg-rs-lvls { display: inline-flex; gap: 6px; }
+.pg-rs-lvl { padding: 1px 8px; border-radius: 2px; background: rgba(255, 211, 106, 0.18); border: 1px solid #ffd36a; color: #ffe9a8; font: 700 12px var(--font-head); animation: pg-rs-lvlin 0.4s ease-out; }
+@keyframes pg-rs-lvlin { from { transform: scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
+.pg-rs-xptrack { position: relative; height: 12px; margin-top: 8px; background: rgba(0, 0, 0, 0.55); border: 1px solid #3a2e1a; border-radius: 2px; overflow: hidden; }
+.pg-rs-xpfill { height: 100%; width: 0; background: linear-gradient(90deg, #7a4fd6, #c9a8ff); box-shadow: 0 0 8px rgba(201, 168, 255, 0.7); }
+.pg-rs-grid2 { grid-template-columns: repeat(2, 1fr); margin: 8px 0 0; }
+.pg-rs-grid2 .pg-gold { color: #f5c542; }
+.pg-rs-mats { margin-top: 6px; color: var(--text-dim); font: 600 13px var(--font-body, system-ui); }

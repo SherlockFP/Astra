@@ -320,7 +320,19 @@ function runPayload(kind: 'timed3' | 'timed1' | 'untimed'): { state: RunState; r
     bossesKilled: ['a', 'b', 'c'], bossesTotal: 3, completed: true, failed: false, inTime: up > 0, upgradeLevels: up, countdown: 0,
   };
   const record: RunRecord = { dungeonId: 'buzul_tahti', keyLevel: 7, timeSec: t, timerSec: timer, inTime: up > 0, upgrade: up, affixes: state.affixes, score: 96.4, date: Date.now() };
-  return { state, record, rewards: fakeItems(), force: true } as { state: RunState; record: RunRecord; rewards: ItemInstance[] };
+  // the run tally (XP bar with a level-up, gold, ground pickups) the end card reads
+  const items = fakeItems();
+  const tally = {
+    key: `${state.dungeonId}|${state.seed}|${state.keyLevel}|${Math.round(state.elapsed)}`,
+    xp: kind === 'untimed' ? 620 : 1840,
+    start: { level: 9, xp: 300, needed: 2400 },
+    end: { level: 10, xp: 260, needed: 2600 },
+    levelUps: kind === 'untimed' ? [] : [10],
+    gold: 1260,
+    items: items.slice(3, 9),
+    materials: [{ id: 'pot_hp_1', count: 3 }],
+  };
+  return { state, record, rewards: items.slice(0, 3), tally, force: true } as { state: RunState; record: RunRecord; rewards: ItemInstance[] };
 }
 
 /* ------------------------------------------------------------------ boot */
