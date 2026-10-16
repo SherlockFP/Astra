@@ -21,6 +21,7 @@ import type { StreamConfig } from './chunks/StreamConfig';
 import { surfaceTexture } from './ProceduralAssets';
 import { getPiece } from './Pieces';
 import { placeTownProps } from './TownBuilder';
+import { MagitechKit, addVillageMagitech } from './MagitechKit';
 import { fitHeight, fitScale, regionsByRoom, tileCentre, WorldScatter, worldSceneryUrls, worldSplatOps, worldTintRGB, yawAlong } from './WorldScenery';
 import { placeDecor, placeNamedLandmark } from './WorldDecorFill';
 import { decorAssetUrls, namedLandmarkUrls } from './decorRecipes';
@@ -621,6 +622,11 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
     try {
       await placeTownProps(v.props, { x: ox, z: oz }, host);
       buildPalisade(v, ox, oz, host);
+      const kit = new MagitechKit();
+      addVillageMagitech(kit, ox, oz, v.bounds, (x, z) => (host.relief ? host.relief.groundY(x, z) : 0));
+      kit.build();
+      host.root.add(kit.root);
+      host.disposables.push({ dispose: () => kit.dispose() });
     } catch (e) {
       console.warn('[world] village failed', v.id, e);
     }
