@@ -28,6 +28,7 @@ import { applyAction as autoApply, decide as autoDecide, tick as autoSalvageTick
 import { stampTrack } from './Track';
 import type { BossPlacement } from '../types/dungeons';
 import { getDungeon } from '../data/dungeons';
+import { dungeonKillXpMult } from '../data/dungeons/levelling';
 import { fissureEndRewards, fissureItemLevel, isFissureId } from '../world/procgen';
 
 export interface RollOpts {
@@ -213,6 +214,8 @@ export class LootSystem {
     const lvl = Math.max(1, enemy.level || ch.level);
     let xp = G.progression.monsterXp(lvl, def.role === 'swarm' ? 'swarm' : (def.rank as EnemyRank), def.xp, ch.level);
     if (enemy.openWorld && isLowLevelTrashRank(def.rank, def.role)) xp = Math.round(xp * lowLevelKillXpMult(lvl));
+    // low-level dungeons (levelling.ts): one run pays about a level at 1-5 and ~65 % of a level at 10
+    if (!keyLevel) xp = Math.round(xp * dungeonKillXpMult(getDungeon(G.mplus?.state?.dungeonId ?? G.mplus?.params?.dungeonId ?? ''), lvl));
     if (!keyLevel) xp *= 1 + (ch.stats.xpPct ?? 0);
     const n = Math.max(1, world.players.length);
     xp *= 1 + 0.05 * (n - 1);

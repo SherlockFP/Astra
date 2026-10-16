@@ -1292,9 +1292,12 @@ export function checkDungeon(def: DungeonDef, models: ModelDb, knownEnemy?: (id:
     if (!bossOk) err(`boss ${b.bossId}`, def.outdoor ? 'open-world boss ids start with wb_' : seasonBoss ? 'not a boss in BOSSES' : 'not in the GDD boss list');
     if (!r.boss && !def.outdoor) warn(`boss ${b.bossId}`, `room ${r.id} is not flagged boss`);
   }
-  // legacy dungeons: exactly 3 bosses; season dungeons: at least 3, groups count once (checkSeasonRules)
-  if (!def.outdoor && !isSeasonDungeon(def) && def.bosses.length !== 3) err(id, `expected 3 bosses, found ${def.bosses.length}`);
-  if (!def.outdoor && !orders.has(3)) err(id, 'no final boss (order 3)');
+  // legacy dungeons: exactly 3 bosses; starter dungeons (band 1-10, levelling.ts): 2 bosses, the last one is the final boss;
+  // season dungeons: at least 3, groups count once (checkSeasonRules)
+  const starter = !!def.levelRange && def.levelRange[1] <= 10;
+  const finalOrder = starter ? 2 : 3;
+  if (!def.outdoor && !isSeasonDungeon(def) && def.bosses.length !== finalOrder) err(id, `expected ${finalOrder} bosses, found ${def.bosses.length}`);
+  if (!def.outdoor && !orders.has(finalOrder)) err(id, `no final boss (order ${finalOrder})`);
 
   // ---- theme ----
   if (!(MUSIC_IDS as readonly string[]).includes(def.theme.music)) err(id, `unknown music ${def.theme.music}`);

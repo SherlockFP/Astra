@@ -329,7 +329,9 @@ export class MythicPlus {
     const p = this.params;
     if (!p) return { hp: 1, dmg: 1 };
     const s = partyScales(p.partySize, p.difficulty === 'mythicplus' ? 'mythicplus' : 'normal');
-    return { hp: s.hp, dmg: s.dmg * (isBoss ? s.bossDmg : 1) };
+    // starter dungeons (sisli_magara): lighter trash damage (DungeonDef.trashDmgMult); bosses and Mythic+ are untouched
+    const trash = !isBoss && p.difficulty !== 'mythicplus' ? (getDungeon(p.dungeonId)?.trashDmgMult ?? 1) : 1;
+    return { hp: s.hp, dmg: s.dmg * (isBoss ? s.bossDmg : 1) * trash };
   }
 
   /** HP multiplier for the party size of the current run (instanceScaling.partyScales). 1 outside runs and in Mythic+. */

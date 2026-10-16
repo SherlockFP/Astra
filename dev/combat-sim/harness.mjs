@@ -16,8 +16,8 @@ const { HitShapes } = await imp('combat/HitShapes.ts');
 export const { SKILLS } = await imp('data/skills.ts');
 export const { CLASSES, defaultSkillBar } = await imp('data/classes.ts');
 // The calibration table (src/data/specTuning.ts, CM1) belongs to the balance pass only. Mechanics sims (kit_*, wow_core, pips, beta, ...)
-// check raw coefficients, so they run with the table cleared; balance.mjs and solo_lowlevel.mjs keep it.
-if (!/(balance|solo_lowlevel|quest_boss)\.mjs$/.test(process.argv[1] ?? '')) { const { SPEC_TUNING } = await imp('data/specTuning.ts'); for (const k of Object.keys(SPEC_TUNING)) delete SPEC_TUNING[k]; }
+// check raw coefficients, so they run with the table cleared; balance.mjs, solo_lowlevel.mjs and class_ttk.mjs keep it.
+if (!/(balance|solo_lowlevel|class_ttk|quest_boss)\.mjs$/.test(process.argv[1] ?? '')) { const { SPEC_TUNING } = await imp('data/specTuning.ts'); for (const k of Object.keys(SPEC_TUNING)) delete SPEC_TUNING[k]; }
 export { G };
 
 export const errors = [];

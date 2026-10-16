@@ -1,4 +1,5 @@
 import type { DungeonDef } from '../../types/dungeons';
+import { SISLI_MAGARA } from './sisli_magara';
 import { KEMIK_MAHZENI } from './kemik_mahzeni';
 import { KIZIL_DOKUMHANE } from './kizil_dokumhane';
 import { BUZUL_TAHTI } from './buzul_tahti';
@@ -21,6 +22,7 @@ import { ARENA_DUNGEONS } from '../arenas';
 
 /** OWNER: content module. One file per dungeon in this folder, registered here. */
 export const DUNGEONS: Record<string, DungeonDef> = {
+  [SISLI_MAGARA.id]: SISLI_MAGARA,
   [KEMIK_MAHZENI.id]: KEMIK_MAHZENI,
   [KIZIL_DOKUMHANE.id]: KIZIL_DOKUMHANE,
   [BUZUL_TAHTI.id]: BUZUL_TAHTI,
@@ -35,8 +37,8 @@ export const DUNGEONS: Record<string, DungeonDef> = {
   [YANKI_AGI.id]: YANKI_AGI,
   [BUYUCU_TERASI.id]: BUYUCU_TERASI,
 };
-/** Stable display / progression order (level 8 -> 52). */
-export const DUNGEON_IDS: string[] = [KEMIK_MAHZENI.id, KIZIL_DOKUMHANE.id, BUZUL_TAHTI.id, GOLGE_TAPINAGI.id];
+/** Stable display / progression order (level 1 -> 52): the starter dungeon first (levelling.ts low-level set). */
+export const DUNGEON_IDS: string[] = [SISLI_MAGARA.id, KEMIK_MAHZENI.id, KIZIL_DOKUMHANE.id, BUZUL_TAHTI.id, GOLGE_TAPINAGI.id];
 
 /**
  * Mythic+ season pool (P-05), rotation order. Keys, portals, Group Finder and leaderboards read this via MythicPlus.dungeonPool().
