@@ -129,7 +129,7 @@ const R2: Spec[] = [
   { id: 'sq_r2_k01_korkuluk_isyani', name: 'Korkuluk İsyanı', level: 5, region: 'r2', giver: 'npc_g_ciftci', xpPct: 9, goldPerLevel: 3,
     objectives: [kill('ow_scarecrow', 14, 'Korkuluk öldür')],
     offer: 'Tarlalardaki korkuluklar bir gece yerinden kalktı. Hepsini yeniden çakıya bağla.', progress: 'Korkuluk öldür (14).', done: 'Tarlalar yeniden ekilebilir.' },
-  { id: 'sq_r2_k02_tarla_domuzlari', name: 'Tarla Domuzları', level: 5, region: 'r2', giver: 'npc_g_ciftci', xpPct: 16, goldPerLevel: 3,
+  { id: 'sq_r2_k02_tarla_domuzlari', name: 'Buğday Tarlasındaki Domuzlar', level: 5, region: 'r2', giver: 'npc_g_ciftci', xpPct: 16, goldPerLevel: 3,
     objectives: [kill('ow_boar', 12, 'Yaban Domuzu öldür')],
     offer: 'Domuz sürüsü buğday tarlasının ortasına yerleşti. Onları oradan çıkar.', progress: 'Yaban Domuzu öldür (12).', done: 'Buğdaylar kurtuldu.' },
   { id: 'sq_r2_k03_curumus_koylular', name: 'Çürümüş Köylüler', level: 6, region: 'r2', giver: 'npc_g_rahibe', xpPct: 5, goldPerLevel: 3,

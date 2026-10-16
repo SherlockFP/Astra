@@ -467,7 +467,7 @@ async function journey(cls) {
       const s = await snap();
       if (s.dead) { await releaseAll(); return { ok: false, dead: true, dist: dev(s, { x: tx, z: tz }) }; }
       // fight back on the walk: an enemy in reach that hits the character is fought first (checked every 250 ms); then the walk re-plans
-      if (Date.now() - lastFb > 250) {
+      if (!o.noFight && Date.now() - lastFb > 250) {
         lastFb = Date.now();
         const f0 = Date.now();
         const fb = await fightBackIfHit(60000);
@@ -593,10 +593,14 @@ async function journey(cls) {
         if (!id || !k) continue;
         const def = S.SKILLS[id];
         if (def?.behavior === 'interrupt') interrupt = { slot, key: k, id };
-        else if (def?.tags?.some((t) => healTags.includes(t))) heals.push({ slot, key: k, id, cast: def.castTime ?? 0 });
+        // a survival row is a real heal: an absorb / heal coefficient or a heal-over-time (Fade and Dispel are not heals here)
+        else if (def?.tags?.some((t) => healTags.includes(t)) && (def.heal?.coef >= 1 || def.tags.includes('hot'))) heals.push({ slot, key: k, id, cast: def.castTime ?? 0 });
         else skills.push({ slot, key: k, id });
       }
-      heals.sort((a, b) => a.cast - b.cast); // instant heals first
+      // priest order (WoW healer rotation): Desperate Prayer (emergency only, see pickHeal), Power Word: Shield (instant), Flash Heal, Renew.
+      // Other classes keep the instant-first order.
+      const PRIO = ['priest_desperate_prayer', 'priest_power_word_shield', 'priest_flash_heal', 'priest_renew'];
+      heals.sort((a, b) => (PRIO.indexOf(a.id) < 0 ? 9 : PRIO.indexOf(a.id)) - (PRIO.indexOf(b.id) < 0 ? 9 : PRIO.indexOf(b.id)) || a.cast - b.cast);
       return { skills, heals, interrupt, potionHp: key('potionHp') };
     }, HEAL_TAGS);
 
@@ -771,13 +775,44 @@ async function journey(cls) {
    *  and turned to face. It is kept while it keeps dealing damage. The fight-back ends when it dies (a kill, counted once), when it has dealt no
    *  damage for 3 s (a drop) or at its 20 s cap (not picked again for 20 s); the objective resumes after each. */
   let skillIx = 0;
-  let healIx = 0;
   let fightSeq = 0; // objective fights of this class; fights 1 and 5 get a mid-combat screenshot at ~3 s (fight-back-only fights are not numbered)
   let healCasts = 0;
   let restCount = 0;
   const fightLog = []; // {n, def, level, res: dead | died | timeout | aborted, ttk (s), hpLeft (%)}
   /** The game's own targeting: target:select, the event a nameplate click emits (attack: true arms the auto-attack, as a right click does). */
   const selectByGame = (id) => page.evaluate((eid) => { window.G.events.emit('target:select', { entityId: eid, attack: true }); }, id);
+  /** The heal to cast now (keys.heals, priest order): the first one off cooldown (G.skills.getCooldown); Desperate Prayer only below 40 % HP;
+   *  nothing while a cast runs (a Flash Heal in progress). Null when none is ready. */
+  const pickHeal = async (frac) => {
+    const st = await page.evaluate((ids) => {
+      const G = window.G;
+      return { casting: !!G.player.cast, ready: ids.map((id) => G.skills.getCooldown(G.player, id).remaining <= 0.05) };
+    }, keys.heals.map((h) => h.id));
+    if (st.casting) return null;
+    return keys.heals.find((h, i) => st.ready[i] && (h.id !== 'priest_desperate_prayer' || frac < 0.4)) ?? null;
+  };
+  /**
+   * Retreat (a pull the bot cannot win): an enemy ABOVE the character's level hits it below 60 % HP. The fight stops and the character walks
+   * out of that camp: 8 bearings at 35 m away from the attacker, the first with a navgrid route that crosses no camp of another level band.
+   * The walk does not fight back (noFight): the route leaves the camp. Returns the walk result or null when no exit route is found.
+   */
+  const retreatFrom = async (h) => {
+    const e = await enemyState(h.id);
+    const lvl = (await snap()).lvl;
+    const zones = await avoidZones(lvl);
+    const base = Math.atan2(e.px - e.x, e.pz - e.z);
+    let best = null;
+    for (let k = 0; k < 8; k++) {
+      const a = base + (k % 2 ? -1 : 1) * Math.ceil(k / 2) * (Math.PI / 4);
+      const x = e.px + 35 * Math.sin(a);
+      const z = e.pz + 35 * Math.cos(a);
+      const r = await page.evaluate(navRoute, { to: [x, z], zones, detour: false });
+      if (!r || r.zone) continue;
+      if (!best || r.len < best.len) best = { x, z, len: r.len };
+    }
+    if (!best) return null;
+    return walkTo(best.x, best.z, { noFight: true, stop: 3, timeout: 25000, label: `retreat from ${h.def}` });
+  };
   const fight = async (enemyId, maxMs = 45000, meta = {}) => {
     if (!keys) keys = await loadKeys();
     const n = enemyId != null ? ++fightSeq : 0;
@@ -808,6 +843,19 @@ async function journey(cls) {
       // the enemy fought now (the objective when none is set) also gives the character's state
       let s = await enemyState(tgt ? tgt.id : mainId);
       if (s.pDead) { await releaseAll(); rec('died', s); return 'died'; }
+      // retreat: an enemy above our level that is in reach and hits us below 60 % HP is not fought; the character walks out of its camp
+      const lvlNow = (await snap()).lvl;
+      const above = attackers.filter((a) => a.level > lvlNow && a.id !== mainId);
+      if (above.length && s.pHp < s.pMax * 0.6) {
+        await releaseAll();
+        console.log(`    retreat: ${above[0].def} L${above[0].level} (above our L${lvlNow}) hits us at ${Math.round((100 * s.pHp) / Math.max(1, s.pMax))}% HP (${meta.def ?? 'fight'})`);
+        stats.retreats = (stats.retreats ?? 0) + 1;
+        const rw = await retreatFrom(above[0]);
+        if (rw?.aborted) { rec('aborted', null); return 'aborted'; }
+        if (rw?.dead) { rec('died', null); return 'died'; }
+        rec('retreat', s);
+        return 'retreat';
+      }
       const mainS = mainId != null ? (tgt && tgt.id === mainId ? s : await enemyState(mainId)) : null;
       // the fought attacker ends: a kill when it is dead (it leaves both lists at once, so no later pick sees it), a drop when it has dealt no
       // damage for the window (the drop is in the else-if chain after the liveness test, so only a live attacker is dropped), or at its 20 s cap
@@ -895,10 +943,13 @@ async function journey(cls) {
           await tap(keys.skills[skillIx].key, 40);
         }
       }
-      if (s.pHp < s.pMax * 0.5 && keys.heals.length && now - lastHeal > 1500) {
-        lastHeal = now;
-        healCasts++;
-        await tap(keys.heals[healIx++ % keys.heals.length].key, 40);
+      if (s.pHp < s.pMax * 0.5 && keys.heals.length && now - lastHeal > 600) {
+        const hk = await pickHeal(s.pHp / s.pMax);
+        if (hk) {
+          lastHeal = now;
+          healCasts++;
+          await tap(hk.key, 40);
+        }
       }
       if (s.pHp < s.pMax * 0.35 && now - potionAt > 6000 && keys.potionHp) {
         potionAt = now;
