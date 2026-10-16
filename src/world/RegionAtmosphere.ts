@@ -36,17 +36,34 @@ export interface RegionLook {
 export const GENERIC_LOOK: RegionLook = { sat: 1.14, contrast: 1.04, exposure: 1.04, hemiMul: 1.1 };
 
 /**
- * Sisli Vadi presets (region keys r1..r6 of the layout). Each region has its own strong palette: green meadow, golden fields,
- * autumn ridges, canyon red-gold, corrupted purple. r4 (Agit Bataklig, the swamp) is the mist zone: it keeps the layout fog
- * colour and distance, so the mist stays only there. Fog distance is not raised anywhere (keeps draw distance and FPS).
+ * Region looks, keyed by region id. Sisli Vadi uses r1..r6, Karakir (karakir_world) r7..r12 and Ayaz Daglari (ayaz_daglari) r16..r21.
+ * Each region has its own palette so zones read apart at a glance: bright saturated meadows (r1, r2, r7), dusty warm steppes (r3, r8,
+ * r9, r11), the green murky swamp (r4, a dense mist and a short view), the canyon red-gold (r5), the corrupted purple ruins (r6) and
+ * the cold blue mountains (r10, r12, r16..r21). The distance values only shrink or keep the layout fog far (farMul <= 1) so the draw
+ * distance and FPS do not grow with the look. Every look is data: a missing field keeps the layout value.
  */
 export const TROVE_LOOK: Record<string, RegionLook> = {
-  r1: { fog: 0xb4e8f0, zenith: 0x2f8fe8, horizon: 0xd6f7ff, sunColor: 0xfff3c4, sunMul: 1.35, hemiMul: 1.3, sat: 1.22, contrast: 1.06, exposure: 1.08 },
-  r2: { fog: 0xffe2a0, zenith: 0x3d8ee6, horizon: 0xfff0c0, sunColor: 0xffd070, sunMul: 1.5, hemiMul: 1.3, sat: 1.25, contrast: 1.06, exposure: 1.08 },
-  r3: { fog: 0xffc080, zenith: 0x4a8fe0, horizon: 0xffd29a, sunColor: 0xffc070, sunMul: 1.4, hemiMul: 1.25, sat: 1.3, contrast: 1.07, exposure: 1.06 },
-  r4: { zenith: 0x4f8fb0, horizon: 0xaed0c0, sunMul: 1.0, hemiMul: 1.05, farMul: 1, sat: 1.1, contrast: 1.04, exposure: 1.04 },
+  // Sisli Vadi
+  r1: { fog: 0xb4e8f0, zenith: 0x2f8fe8, horizon: 0xd6f7ff, sunColor: 0xfff3c4, sunMul: 1.4, hemiMul: 1.3, sat: 1.3, contrast: 1.08, exposure: 1.1 },
+  r2: { fog: 0xffe2a0, zenith: 0x3d8ee6, horizon: 0xfff0c0, sunColor: 0xffd070, sunMul: 1.5, hemiMul: 1.3, sat: 1.28, contrast: 1.07, exposure: 1.1 },
+  r3: { fog: 0xd8b48a, zenith: 0x6f8fb0, horizon: 0xe8c89a, sunColor: 0xffb878, sunMul: 1.35, hemiMul: 1.2, farMul: 0.9, sat: 1.05, contrast: 1.05, exposure: 1.05 },
+  r4: { fog: 0x5a7a58, zenith: 0x3f5a4a, horizon: 0x9ab89a, sunColor: 0xc8e0b0, sunMul: 0.75, hemiMul: 0.85, farMul: 0.6, sat: 0.85, contrast: 1.08, exposure: 0.98 },
   r5: { fog: 0xffa870, zenith: 0x3f7fd8, horizon: 0xffb880, sunColor: 0xffb060, sunMul: 1.45, hemiMul: 1.2, sat: 1.28, contrast: 1.08, exposure: 1.06 },
   r6: { fog: 0xa070e0, zenith: 0x4a2a9a, horizon: 0xd8a8ff, sunColor: 0xe0b0ff, sunMul: 1.0, hemiMul: 1.15, sat: 1.3, contrast: 1.06, exposure: 1.02 },
+  // Karakir Bozkiri
+  r7: { fog: 0xcfeab0, zenith: 0x3f9ae0, horizon: 0xf4f8c8, sunColor: 0xfff0b0, sunMul: 1.4, hemiMul: 1.3, sat: 1.28, contrast: 1.06, exposure: 1.08 },
+  r8: { fog: 0xd49a68, zenith: 0x5a7ab0, horizon: 0xf0b888, sunColor: 0xffa860, sunMul: 1.45, hemiMul: 1.2, farMul: 0.9, sat: 1.1, contrast: 1.08, exposure: 1.06 },
+  r9: { fog: 0xc4b89a, zenith: 0x5c86b8, horizon: 0xe6d4aa, sunColor: 0xffe0a0, sunMul: 1.3, hemiMul: 1.2, farMul: 0.95, sat: 1.0, contrast: 1.04, exposure: 1.04 },
+  r10: { fog: 0xaccbe0, zenith: 0x3f70b8, horizon: 0xd8e8f8, sunColor: 0xe8f2ff, sunMul: 1.1, hemiMul: 1.25, farMul: 0.95, sat: 0.95, contrast: 1.05, exposure: 1.04 },
+  r11: { fog: 0xa39c8c, zenith: 0x6a7080, horizon: 0xc4b8a4, sunColor: 0xe8d8b8, sunMul: 1.05, hemiMul: 1.1, farMul: 0.8, sat: 0.85, contrast: 1.06, exposure: 1.02 },
+  r12: { fog: 0x9cbcd8, zenith: 0x3468b0, horizon: 0xd0e2f4, sunColor: 0xf0f6ff, sunMul: 1.15, hemiMul: 1.25, farMul: 0.9, sat: 0.95, contrast: 1.07, exposure: 1.04 },
+  // Ayaz Daglari (cold blue mountains)
+  r16: { fog: 0xa8c8e8, zenith: 0x3a68b0, horizon: 0xdceeff, sunColor: 0xf4f8ff, sunMul: 1.1, hemiMul: 1.25, sat: 0.95, contrast: 1.06, exposure: 1.04 },
+  r17: { fog: 0x9ec0d8, zenith: 0x3560a8, horizon: 0xd0e4f4, sunColor: 0xe8f0ff, sunMul: 1.05, hemiMul: 1.2, farMul: 0.9, sat: 0.92, contrast: 1.05, exposure: 1.04 },
+  r18: { fog: 0xb0d0e8, zenith: 0x4a78c0, horizon: 0xe0f0ff, sunColor: 0xf0f8ff, sunMul: 1.15, hemiMul: 1.25, sat: 0.98, contrast: 1.06, exposure: 1.05 },
+  r19: { fog: 0x8fa8c4, zenith: 0x2e4f8a, horizon: 0xc0d4ec, sunColor: 0xdce8f8, sunMul: 1.0, hemiMul: 1.1, farMul: 0.85, sat: 0.9, contrast: 1.08, exposure: 1.02 },
+  r20: { fog: 0x8aa4c4, zenith: 0x2a4a88, horizon: 0xb4c8e4, sunColor: 0xd4e0f4, sunMul: 0.95, hemiMul: 1.1, farMul: 0.8, sat: 0.9, contrast: 1.06, exposure: 1.02 },
+  r21: { fog: 0xa8bcd8, zenith: 0x3c62aa, horizon: 0xd8e6f8, sunColor: 0xf4f8ff, sunMul: 1.1, hemiMul: 1.25, farMul: 0.95, sat: 0.96, contrast: 1.06, exposure: 1.04 },
 };
 
 const T = TILE_SIZE;

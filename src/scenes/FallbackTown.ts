@@ -32,7 +32,7 @@ export async function buildFallbackTown(def: TownDef, scene: THREE.Scene, withDe
   scene.fog = new THREE.Fog(0xd8c0a0, 36, 150);
   const sky = createSkyDome(0x4a78c8, 0xb8c0d0, 0xf4d8a8, 480);
   root.add(sky.mesh);
-  const { sun } = addBasicLights(scene, { hemiSky: 0xffe0b0, hemiGround: 0x504030, hemiIntensity: 1.0, sun: { color: 0xffc890, intensity: 1.5, pos: [-30, 28, 40], shadow: 46 } });
+  const { sun } = addBasicLights(scene, { hemiSky: 0xffd9a0, hemiGround: 0x4a3a2a, hemiIntensity: 0.9, sun: { color: 0xffb674, intensity: 1.6, pos: [-30, 28, 40], shadow: 46 } });
   if (sun) {
     sun.target.position.set(0, 0, 0);
     scene.add(sun.target);

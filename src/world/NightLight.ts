@@ -34,20 +34,20 @@ const NIGHT_HEMI_SKY = new THREE.Color(0x6f8fd8);
 const NIGHT_HEMI_GROUND = new THREE.Color(0x262e4c);
 const NIGHT_HEMI_I = 1.15;
 const MOON = new THREE.Color(0xa8c4ff);
-const MOON_I = 0.6;
-const NIGHT_FOG = new THREE.Color(0x1d2846);
+const MOON_I = 0.8; // moon key: shadows and silhouettes stay readable at night
+const NIGHT_FOG = new THREE.Color(0x203a6a); // dark blue, not black: the night stays playable
 const NIGHT_SKY: SkyColorSet = {
   zenith: new THREE.Color(0x0a1230), mid: new THREE.Color(0x1c2c5a), horizon: new THREE.Color(0x2b3d6e), sunColor: new THREE.Color(0xcbd9ff),
   cloudLight: new THREE.Color(0x5f6e9c), cloudShade: new THREE.Color(0x1a2442), cover: 0,
 };
 const SUNSET_SUN = new THREE.Color(0xffb070);
-const SUNSET_FOG = new THREE.Color(0xff9a6a);
+const SUNSET_FOG = new THREE.Color(0xffa070); // golden dusk / dawn haze
 const SUNSET_HORIZON = new THREE.Color(0xff9d6a);
 const SUNSET_CLOUD = new THREE.Color(0xffc9a0);
 /** Night colours reach this share of the night weight (the rest keeps the region palette). */
 const NIGHT_MIX = 0.8;
 /** Grade at full night: saturation, contrast, exposure factors. */
-const NIGHT_SAT = 0.9, NIGHT_CONTRAST = 0.96, NIGHT_EXPOSURE = 1.05;
+const NIGHT_SAT = 0.9, NIGHT_CONTRAST = 0.96, NIGHT_EXPOSURE = 1.12;
 const POOL_COLOR = 0xffb866;
 const POOL_RADIUS = 4.6;
 
@@ -181,9 +181,9 @@ export class NightLight {
     }
 
     const fog = scene.fog as THREE.Fog | null;
-    if (fog) fog.color.copy(b.fog).lerp(SUNSET_FOG, warm * 0.18).lerp(NIGHT_FOG, n);
+    if (fog) fog.color.copy(b.fog).lerp(SUNSET_FOG, warm * 0.24).lerp(NIGHT_FOG, n);
     const bg = scene.background as THREE.Color | null;
-    if (bg && bg.isColor) bg.copy(b.bg).lerp(SUNSET_FOG, warm * 0.18).lerp(NIGHT_FOG, n);
+    if (bg && bg.isColor) bg.copy(b.bg).lerp(SUNSET_FOG, warm * 0.24).lerp(NIGHT_FOG, n);
 
     if (sky) {
       const o = this.skyOut, sb = b.sky;

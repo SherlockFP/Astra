@@ -713,7 +713,7 @@ export interface TownDef {
   terraces?: { id: string; box: [number, number, number, number]; y: number }[];
   /** Stairs/ramps: walkable height interpolates from yFrom to yTo across the box along axis. */
   stairs?: { id: string; box: [number, number, number, number]; yFrom: number; yTo: number; axis: 'x' | 'z' }[];
-  lighting?: { hemiSky: number; hemiGround: number; hemiIntensity: number; sun: number; sunIntensity: number; sunDir: [number, number, number]; fogColor: number; fogNear: number; fogFar: number };
+  lighting?: { hemiSky: number; hemiGround: number; hemiIntensity: number; sun: number; sunIntensity: number; sunDir: [number, number, number]; fogColor: number; fogNear: number; fogFar: number; grade?: { sat: number; contrast: number; exposure: number } };
   /** Named zones (area name banner when entering): id, Turkish name, box [x0,z0,x1,z1]. */
   zones?: { id: string; name: string; box: [number, number, number, number] }[];
 }
