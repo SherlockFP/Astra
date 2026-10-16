@@ -9,6 +9,7 @@ import { G } from '../game/G';
 import { CharacterState } from '../systems/CharacterState';
 import { CLASS_IDS } from '../data/classes';
 import { DUNGEONS, DUNGEON_IDS } from '../data/dungeons';
+import { setNightPreview } from '../world/NightLight';
 import type { ClassId } from '../types/common';
 import type { DungeonDef } from '../types/dungeons';
 
@@ -26,6 +27,10 @@ import type { DungeonDef } from '../types/dungeons';
  */
 
 const q = new URLSearchParams(location.search);
+
+// night preview (world/NightLight.ts): night=1 starts in it; window.__astraNight(on) toggles it from a test script
+setNightPreview(q.get('night') === '1');
+(window as unknown as { __astraNight: (on: boolean) => void }).__astraNight = setNightPreview;
 
 const TEST_DUNGEON: DungeonDef = {
   id: 'dev_test', name: 'Deneme Mahzeni', shortName: 'Deneme', lore: 'Sahne testi için küçük bir zindan.', levelRange: [1, 5], timerSec: 600, forcesRequired: 10,

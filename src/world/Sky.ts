@@ -181,6 +181,16 @@ export class Sky {
   }
 
   /** Re-tints the dome (region atmosphere blending, GDD_OPENWORLD §8.1). Omitted fields keep their current value. */
+  /** Current dome colours (hex) and cloud cover: a night pass takes this snapshot and puts it back when it ends. */
+  snapshotColors(): { zenith: number; mid: number; horizon: number; sunColor: number; cloudLight: number; cloudShade: number; cover: number } {
+    const u = this.mat.uniforms;
+    return {
+      zenith: (u.uZenith.value as THREE.Color).getHex(), mid: (u.uMid.value as THREE.Color).getHex(), horizon: (u.uHorizon.value as THREE.Color).getHex(),
+      sunColor: (u.uSunColor.value as THREE.Color).getHex(), cloudLight: (u.uCloudLight.value as THREE.Color).getHex(),
+      cloudShade: (u.uCloudShade.value as THREE.Color).getHex(), cover: u.uCover.value as number,
+    };
+  }
+
   setColors(c: { zenith?: number; mid?: number; horizon?: number; sunColor?: number; cloudLight?: number; cloudShade?: number; cover?: number }): void {
     const u = this.mat.uniforms;
     if (c.zenith !== undefined) (u.uZenith.value as THREE.Color).setHex(c.zenith);

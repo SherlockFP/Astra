@@ -22,6 +22,8 @@ import { freezeStatic } from '../render/staticTransforms';
 import { psxMaterial, surfaceTexture, mulHex, worldUVBox } from './ProceduralAssets';
 import type { VfxId } from '../types/vfx';
 import { MagitechKit } from './MagitechKit';
+import { HouseKit, ROOF, type HouseArch } from './HouseKit';
+import { NightLight } from './NightLight';
 
 /** Points of interest of the default hub layout (world coordinates, y = 0). Scenes/NPCs may use them. */
 export const TOWN_POIS = {
@@ -378,6 +380,20 @@ const COTTAGE_SITES: [number, number, number, 1 | 2, RoofColour, boolean, boolea
   [17, 54, -90, 1, 'red', false, false],
 ];
 
+/**
+ * Kuzgunkale house sites (HouseKit archetypes, same cells as COTTAGE_SITES): x, z, door yaw (deg), archetype, roof colour.
+ * Each district gets its own roof colour: red west, straw / teal / blue / purple around the plaza.
+ */
+const HOUSE_SITES: { x: number; z: number; rot: number; arch: HouseArch; roof: number }[] = [
+  { x: -15, z: -14, rot: 90, arch: 'timber', roof: ROOF.red },
+  { x: 15, z: -14, rot: -90, arch: 'hall', roof: ROOF.straw },
+  { x: -16, z: 39, rot: 90, arch: 'tower', roof: ROOF.blue },
+  { x: 16, z: 36, rot: -90, arch: 'townhouse', roof: ROOF.purple },
+  { x: 17, z: 54, rot: -90, arch: 'timber', roof: ROOF.teal },
+];
+/** Smoke / chimney height per archetype (metres above the ground, the VFX source of the house). */
+const HOUSE_SMOKE_Y: Record<HouseArch, number> = { timber: 9.6, townhouse: 13.2, tower: 11.6, hall: 6.4 };
+
 /** The placed item list of a town (pure, no scene): the builder defaults that survive the dedupe, then the content props. */
 export function townItems(def: TownDef, half: number): Item[] {
   const keep: Item[] = [];
@@ -587,11 +603,6 @@ export function planNature(def: TownDef, h: number, env: NatureEnv): NatureItem[
   return out;
 }
 
-function cottageUrls(): string[] {
-  const out = new Set<string>();
-  for (const [x, z, rot, st, roof, stone, alt] of COTTAGE_SITES) for (const it of cottageItems(x, z, rot, st, roof, stone, alt)) out.add(it.m);
-  return [...out];
-}
 
 // ---------------------------------------------------------------------------
 // Builder
@@ -617,6 +628,7 @@ class TownBuild {
   sky!: Sky;
   sun!: THREE.DirectionalLight;
   hemi!: THREE.HemisphereLight;
+  night!: NightLight;
   prevFog: THREE.Fog | THREE.FogExp2 | null = null;
   prevBg: THREE.Scene['background'] = null;
   time = 0;
@@ -674,6 +686,7 @@ class TownBuild {
     this.root.add(this.hemi, this.sun, this.sun.target);
     this.sky = new Sky({ ...GOLDEN_HOUR_SKY, sunDir: [this.sunDir.x, this.sunDir.y, this.sunDir.z], horizon: lt ? new THREE.Color(fogCol).lerp(new THREE.Color(GOLDEN_HOUR_SKY.horizon), 0.45).getHex() : GOLDEN_HOUR_SKY.horizon });
     this.root.add(this.sky.dome);
+    this.night = new NightLight({ scene: this.scene, hemi: this.hemi, sun: this.sun, sky: this.sky });
     try { G.engine.renderer.localClippingEnabled = true; } catch { /* no engine */ }
   }
 
@@ -921,19 +934,24 @@ class TownBuild {
     await this.placeCottages();
   }
 
+  /** House sites of the hub (HOUSE_SITES): one HouseKit instance per site that has room. Never within reach of a content prop or NPC. */
+  houses: HouseKit | null = null;
   async placeCottages(): Promise<void> {
-    for (const [x, z, rot, st, roof, stone, alt] of COTTAGE_SITES) {
+    const kit = new HouseKit();
+    for (const { x, z, rot, arch, roof } of HOUSE_SITES) {
       if (!this.free(x, z, 4.6)) continue;
       if (this.def.props.some((p) => Math.hypot(p.pos[0] - x, p.pos[2] - z) < 6.4 && !/(grass|flower|tree|bush)/.test(p.model))) continue;
       if (this.def.npcs.some((n) => Math.hypot(n.pos[0] - x, n.pos[2] - z) < 6.4)) continue;
-      const parts = cottageItems(x, z, rot, st, roof, stone, alt);
-      await loadPieces(parts.map((p) => p.m));
-      for (const p of parts) {
-        try { await this.placeItem(p); } catch (e) { console.warn('[world] cottage piece failed', p.m, e); }
-      }
-      this.smokeSpots.push({ x, y: 3.75 * st + 2.4, z });
+      const r = rad(rot);
+      kit.add({ arch, x, y: this.groundY(x, z), z, rotY: r, roof });
+      blockBox(this.nav, x, z, 5.2, 5.2, r);
+      this.smokeSpots.push({ x, y: HOUSE_SMOKE_Y[arch], z });
       this.occupied.push({ x, z, r: 4.2 });
     }
+    kit.build();
+    this.root.add(kit.root);
+    this.houses = kit;
+    this.disposables.push({ dispose: () => kit.dispose() });
   }
 
   async placeItem(it: Item): Promise<void> {
@@ -1209,36 +1227,46 @@ class TownBuild {
       kit.add({ part: 'lamp', x, y: at(x, z), z });
       if (i % 2 === 0) kit.add({ part: 'lantern', x, y: at(x, z) + 3.6, z, s: 1.2 });
     }
+    // the main road: a crystal lamp on each shoulder every ~12 m, from the portal hall to the south gate
+    for (const z of [-22, -10, 2, 14, 26, 38, 50]) {
+      for (const x of [-6.4, 6.4]) kit.add({ part: 'lamp', x, y: at(x, z), z, s: 1.1 });
+    }
+    // the four wall-corner spires and the two gate spires (inside the wall, flanking the south gate), banners on the corners
     for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {
       const x = sx * h, z = sz * h;
       kit.add({ part: 'spire', x, y: at(x, z), z, s: 1.1 });
       kit.add({ part: 'banner', x: x - sx * 2, y: at(x, z), z: z - sz * 2, rotY: sx * sz > 0 ? 0 : PI / 2 });
     }
-    // wall conduits: rune strips 1.5 m inside the wall ring, every 4 m, skipping the south gate span
+    for (const sx of [-1, 1]) {
+      const x = sx * 12, z = this.half - 7;
+      kit.add({ part: 'spire', x, y: at(x, z), z, s: 1.25 });
+      kit.add({ part: 'banner', x: x + sx * 1.8, y: at(x, z), z: z - 1.2, rotY: sx > 0 ? PI / 2 : -PI / 2 });
+    }
+    // wall conduits: rune strips 1.5 m inside the wall ring, every 4 m, skipping the south gate span; a second row runs along the wall top
     const wy = this.half - 3.5;
+    const wallTop = 6.0;
     for (let u = -wy + 2; u <= wy - 2; u += 4) {
       for (const [x, z, rot] of [[u, -wy, 0], [u, wy, 0], [-wy, u, PI / 2], [wy, u, PI / 2]] as const) {
         if (z > wy - 1 && Math.abs(x) < 10) continue;
         kit.add({ part: 'conduit', x, y: at(x, z) + 0.3, z, rotY: rot });
       }
     }
-    // cottage silhouettes: chimney on every site, dormer on the two-storey ones
-    for (const [cx, cz, rotDeg, st] of COTTAGE_SITES) {
-      const r = rad(rotDeg), c = Math.cos(r), sn = Math.sin(r);
-      const at2 = (lx: number, lz: number): [number, number] => [cx + lx * c + lz * sn, cz - lx * sn + lz * c];
-      const [chx, chz] = at2(1.8, -1.2);
-      kit.add({ part: 'chimney', x: chx, y: at(chx, chz) + 3.75 * st + 1.6, z: chz, rotY: r });
-      if (st === 2) {
-        const [dx, dz] = at2(0, 1.4);
-        kit.add({ part: 'dormer', x: dx, y: at(dx, dz) + 7.5 + 1.2, z: dz, rotY: r });
+    for (let u = -wy + 1; u <= wy - 1; u += 2.5) {
+      for (const [x, z, rot] of [[u, -wy, 0], [u, wy, 0], [-wy, u, PI / 2], [wy, u, PI / 2]] as const) {
+        if (z > wy - 1 && Math.abs(x) < 12) continue;
+        kit.add({ part: 'conduit', x, y: wallTop, z, rotY: rot, s: 1.4 });
       }
     }
     kit.add({ part: 'machine', x: fx - 6, y: at(fx - 6, fz), z: fz - 6, rotY: PI / 4 });
-    kit.add({ part: 'spire', x: fx, y: at(fx, fz) + 2.2, z: fz, s: 0.45 });
+    // the central arcane crystal over the fountain: visible above the roofs from the spawn and the road
+    kit.add({ part: 'crystal', x: fx, y: at(fx, fz) + 2.2, z: fz });
     kit.build();
     this.root.add(kit.root);
     this.magitech = kit;
     this.disposables.push({ dispose: () => kit.dispose() });
+    // the lamps light the ground at night (additive pools, no real lights)
+    this.night.addPools(this.root, kit.lampSpots());
+    this.disposables.push({ dispose: () => this.night.dispose() });
   }
 
   async build(): Promise<void> {
@@ -1283,6 +1311,7 @@ class TownBuild {
     dt = Math.min(dt, 0.1);
     this.time += dt;
     this.magitech?.update(this.time);
+    this.night?.apply();
     this.updateRavens(dt);
     worldFocus(this.focus);
     this.culler.limits = TOWN_CULL;
@@ -1358,7 +1387,6 @@ export function townAssetUrls(def: TownDef): string[] {
   for (const it of layout(Math.max(def.size[0], def.size[1]) / 2)) out.add(it.m);
   for (const p of def.props) out.add(p.model);
   for (const n of ['tree_oak_a', 'tree_oak_b', 'tree_pine_a', 'tree_pine_b', 'tree_autumn', 'bush_a', 'bush_b', 'rock_small', 'rock_medium', 'rock_large', 'grass_tuft', 'flowers']) out.add(GP(n));
-  for (const u of cottageUrls()) out.add(u);
   out.add(NEUT('wall_straight'));
   out.add(NEUT('wall_straight_gate'));
   out.add(HEXP('flag_red'));

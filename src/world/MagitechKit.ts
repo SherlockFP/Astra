@@ -10,11 +10,11 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
  * the bloom threshold; lit surfaces stay below 1.0 and do not blow out at noon. Pivot: the base centre, metres, +Y up.
  */
 
-/** One axis-aligned voxel box in part space. */
-interface Box { x: number; y: number; z: number; w: number; h: number; d: number; c: number }
+/** One axis-aligned voxel box in part space (ry: yaw about the box centre, for octagonal rings). */
+export interface Box { x: number; y: number; z: number; w: number; h: number; d: number; c: number; ry?: number }
 
 /** Glow multiplier for emissive colours. A glow channel of 1.0 * GLOW_GAIN lands above the bloom threshold. */
-const GLOW_GAIN = 1.6;
+export const GLOW_GAIN = 1.6;
 
 /** Stone / timber / brass / violet / cloth palettes (sRGB hex; kept saturated for the Trove read). */
 export const MAGI = {
@@ -45,18 +45,18 @@ interface PartDef { body: Box[]; glow: Box[] }
 const B = (x: number, y: number, z: number, w: number, h: number, d: number, c: number): Box => ({ x, y, z, w, h, d, c });
 
 const PARTS = {
-  /** Crystal lamp post: stone plinth, brass pole, cyan crystal lantern under a violet cap. ~3.9 m. */
+  /** Crystal lamp post: stone plinth, brass pole, a big cyan crystal lantern under a violet cap (readable from the road). ~4 m. */
   lamp: {
     body: [
-      B(0, 0.2, 0, 0.8, 0.4, 0.8, MAGI.stone),
+      B(0, 0.2, 0, 0.9, 0.4, 0.9, MAGI.stone),
       B(0, 0.6, 0, 0.6, 0.4, 0.6, MAGI.stoneDark),
       B(0, 2.3, 0, 0.22, 3.0, 0.22, MAGI.brass),
-      B(0, 3.5, 0, 0.5, 0.18, 0.5, MAGI.brassDark),
-      B(0, 3.86, 0, 0.7, 0.16, 0.7, MAGI.violetDark),
+      B(0, 3.5, 0, 0.7, 0.18, 0.7, MAGI.brassDark),
+      B(0, 3.95, 0, 0.9, 0.16, 0.9, MAGI.violetDark),
     ],
-    glow: [B(0, 3.0, 0, 0.42, 0.7, 0.42, MAGI.cyan)],
+    glow: [B(0, 3.0, 0, 0.6, 1.0, 0.6, MAGI.cyan), B(0, 3.62, 0, 0.3, 0.3, 0.3, MAGI.gold)],
   },
-  /** Rune conduit strip, one metre long, set into a wall at knee height. */
+  /** Rune conduit strip, one metre long, set into a wall at knee height (or along the wall top). */
   conduit: {
     body: [B(0, 0, 0, 1, 0.22, 0.14, MAGI.stoneDark)],
     glow: [B(0, 0, 0.06, 1, 0.1, 0.04, MAGI.magenta)],
@@ -76,6 +76,20 @@ const PARTS = {
       B(0, 1.2, -0.6, 1.2, 0.18, 0.18, MAGI.brassDark),
     ],
     glow: [B(0, 1.6, 0, 0.8, 0.8, 0.8, MAGI.cyan)],
+  },
+  /** Central arcane crystal (fountain): stone pedestal, gold ring and three stacked cyan / magenta shards. ~9 m. */
+  crystal: {
+    body: [
+      B(0, 0.4, 0, 2.0, 0.8, 2.0, MAGI.stone),
+      B(0, 0.95, 0, 1.4, 0.3, 1.4, MAGI.stoneDark),
+      B(0, 1.25, 0, 0.8, 0.5, 0.8, MAGI.violetDark),
+    ],
+    glow: [
+      B(0, 1.45, 0, 1.4, 0.16, 1.4, MAGI.gold),
+      B(0, 3.6, 0, 1.0, 3.9, 1.0, MAGI.cyan),
+      B(0, 6.0, 0, 0.7, 1.6, 0.7, MAGI.cyan),
+      B(0, 7.6, 0, 0.42, 1.2, 0.42, MAGI.magenta),
+    ],
   },
   /** Crystal-topped spire: stone tiers taper to a violet tower with an emissive crystal finial. ~9 m. */
   spire: {
@@ -98,7 +112,6 @@ const PARTS = {
     body: [B(0, 0.5, 0, 1.4, 1.0, 1.2, MAGI.timber), B(0, 1.2, 0, 1.6, 0.4, 1.4, MAGI.cloth)],
     glow: [B(0, 0.5, 0.62, 0.6, 0.5, 0.04, MAGI.gold)],
   },
-  /** Wall conduit (rune strip) is the 'conduit' part above; banner trim is below. */
   /** Banner with an emissive trim: cloth panel on a brass bar, glowing trim along the top edge. */
   banner: {
     body: [B(0, 0.5, 0, 0.9, 2.2, 0.08, MAGI.cloth), B(0, 2.7, 0, 1.0, 0.1, 0.1, MAGI.brass)],
@@ -109,10 +122,11 @@ const PARTS = {
 export type MagiPart = keyof typeof PARTS;
 
 /** Merged geometry of one list of boxes (vertex-coloured, flat per box). Multiplier scales the colour for glow. */
-function boxesGeometry(boxes: Box[], mul: number): THREE.BufferGeometry {
+export function boxesGeometry(boxes: Box[], mul: number): THREE.BufferGeometry {
   const geos: THREE.BufferGeometry[] = [];
   for (const b of boxes) {
     const g = new THREE.BoxGeometry(b.w, b.h, b.d);
+    if (b.ry) g.rotateY(b.ry);
     g.translate(b.x, b.y, b.z);
     const n = g.attributes.position.count;
     const col = new Float32Array(n * 3);
@@ -135,22 +149,22 @@ function boxesGeometry(boxes: Box[], mul: number): THREE.BufferGeometry {
 /** Shared material pair per process (lit body + HDR glow). */
 let bodyMat: THREE.MeshLambertMaterial | null = null;
 let glowMat: THREE.MeshBasicMaterial | null = null;
-function materials(): { body: THREE.MeshLambertMaterial; glow: THREE.MeshBasicMaterial } {
+export function materials(): { body: THREE.MeshLambertMaterial; glow: THREE.MeshBasicMaterial } {
   bodyMat ??= new THREE.MeshLambertMaterial({ vertexColors: true });
   glowMat ??= new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false });
   return { body: bodyMat, glow: glowMat };
 }
 
 /**
- * Village layer (open world): three crystal lamps at the corners of the inner square and one brass machine (mill / well) beside
- * the centre. Ground height via groundY; positions relative to the village centre (ox, oz), bounds are half extents in metres.
+ * Village layer (open world): crystal lamps at the corners of the inner square and one brass machine (mill / well) beside the
+ * centre. Ground height via groundY; positions relative to the village centre (ox, oz), bounds are half extents in metres.
  */
 export function addVillageMagitech(kit: MagitechKit, ox: number, oz: number, bounds: [number, number], groundY: (x: number, z: number) => number): void {
   const hx = Math.max(4, bounds[0] * 0.45), hz = Math.max(4, bounds[1] * 0.45);
-  const lamps: [number, number][] = [[-hx, -hz], [hx, hz], [-hx, hz]];
+  const lamps: [number, number][] = [[-hx, -hz], [hx, hz], [-hx, hz], [hx, -hz]];
   for (const [dx, dz] of lamps) {
     const x = ox + dx, z = oz + dz;
-    kit.add({ part: 'lamp', x, y: groundY(x, z), z, s: 0.9 });
+    kit.add({ part: 'lamp', x, y: groundY(x, z), z, s: 1.0 });
   }
   const mx = ox + hx * 0.2, mz = oz - hz * 0.9;
   kit.add({ part: 'machine', x: mx, y: groundY(mx, mz), z: mz, rotY: Math.PI / 2, s: 0.7 });
@@ -169,6 +183,7 @@ export class MagitechKit {
   private bodies = new Map<MagiPart, THREE.InstancedMesh>();
   private glows = new Map<MagiPart, THREE.InstancedMesh>();
   private lanternBase: { x: number; y: number; z: number; s: number }[] = [];
+  private lamps: [number, number, number][] = [];
   private built = false;
 
   add(inst: MagiInstance): void {
@@ -176,6 +191,12 @@ export class MagitechKit {
     const list = this.lists.get(inst.part) ?? [];
     list.push(inst);
     this.lists.set(inst.part, list);
+    if (inst.part === 'lamp') this.lamps.push([inst.x, inst.y, inst.z]);
+  }
+
+  /** Ground positions of the crystal lamps (the night light pools are laid under them, see NightLight.ts). */
+  lampSpots(): [number, number, number][] {
+    return this.lamps;
   }
 
   /** Builds one InstancedMesh per part for body and glow. Call once, after all add() calls. */

@@ -22,6 +22,8 @@ import { surfaceTexture } from './ProceduralAssets';
 import { getPiece } from './Pieces';
 import { placeTownProps } from './TownBuilder';
 import { MagitechKit, addVillageMagitech } from './MagitechKit';
+import { HouseKit, ROOF } from './HouseKit';
+import { NightLight } from './NightLight';
 import { fitHeight, fitScale, regionsByRoom, tileCentre, WorldScatter, worldSceneryUrls, worldSplatOps, worldTintRGB, yawAlong } from './WorldScenery';
 import { placeDecor, placeNamedLandmark } from './WorldDecorFill';
 import { decorAssetUrls, namedLandmarkUrls } from './decorRecipes';
@@ -166,6 +168,7 @@ class OpenWorld implements WorldDecorHandle {
     blendM: number,
     villages: VillageDef[],
     private readonly stream: WorldStream | null = null,
+    private readonly night: NightLight | null = null,
   ) {
     this.villages = villages;
     this.fogFarCap = host.stream?.on ? host.stream.viewM - 24 : Infinity;
@@ -239,6 +242,7 @@ class OpenWorld implements WorldDecorHandle {
     }
     for (const w of this.waters) w.tex.offset.x += dt * w.speed / 8;
     this.updateAmbient(dt);
+    this.night?.apply();
   }
 
   /** Relief zones: the sky rings stand on the ground under their radius; re-lifted every 4 m of camera travel (cheap: 72 samples). */
@@ -616,21 +620,30 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
     }
   });
 
-  // ---- villages: props (shared TownBuilder helper) and palisades ----
-  for (const v of world.villages) {
+  // ---- villages: props (shared TownBuilder helper) and palisades; two procedural houses each; night pools under the lamps ----
+  const night = new NightLight({ scene: host.scene, hemi: host.hemi, sun: host.sun, sky });
+  host.disposables.push({ dispose: () => night.dispose() });
+  const houses = new HouseKit();
+  const gy = (x: number, z: number): number => (host.relief ? host.relief.groundY(x, z) : 0);
+  for (const [vi, v] of world.villages.entries()) {
     const ox = tileCentre(v.center[0]), oz = tileCentre(v.center[1]);
     try {
       await placeTownProps(v.props, { x: ox, z: oz }, host);
       buildPalisade(v, ox, oz, host);
       const kit = new MagitechKit();
-      addVillageMagitech(kit, ox, oz, v.bounds, (x, z) => (host.relief ? host.relief.groundY(x, z) : 0));
+      addVillageMagitech(kit, ox, oz, v.bounds, gy);
       kit.build();
       host.root.add(kit.root);
       host.disposables.push({ dispose: () => kit.dispose() });
+      night.addPools(host.root, kit.lampSpots());
+      addVillageHouses(houses, v, ox, oz, vi, host, gy);
     } catch (e) {
       console.warn('[world] village failed', v.id, e);
     }
   }
+  houses.build();
+  host.root.add(houses.root);
+  host.disposables.push({ dispose: () => houses.dispose() });
 
   // ---- landmarks ----
   guard('landmarks', () => {
@@ -671,5 +684,39 @@ export async function buildWorldDecor(def: DungeonDef, host: WorldDecorHost): Pr
 
   const culler = new ChunkCuller(host.batcher, stream ? stream.chunkM : world.perf?.chunkM ?? 40);
   const blendM = world.regions.reduce((m, r) => Math.max(m, r.blendM ?? 0), 0) || DEFAULT_BLEND_M;
-  return new OpenWorld(def, host, regs, world.regions, sky, rings, waters, culler, blendM, world.villages, worldStream);
+  return new OpenWorld(def, host, regs, world.regions, sky, rings, waters, culler, blendM, world.villages, worldStream, night);
+}
+
+/**
+ * Two house lots of a village (pure): the inner cells with the most clearance from its props, at least 9 m clear of them, 14 m
+ * apart, and inside the palisade with a margin. The cross roads (|x| or |z| under 5 m: the gates and the square) stay free.
+ */
+export function villageLots(bounds: [number, number], props: { pos: [number, number, number] }[]): [number, number][] {
+  const [bx, bz] = bounds;
+  const cands: [number, number, number][] = [];
+  for (let x = -(bx - 9); x <= bx - 9; x += 3) {
+    for (let z = -(bz - 9); z <= bz - 9; z += 3) {
+      if (Math.abs(x) < 5 || Math.abs(z) < 5) continue;
+      let clear = Infinity;
+      for (const p of props) clear = Math.min(clear, Math.hypot(p.pos[0] - x, p.pos[2] - z));
+      if (clear >= 9) cands.push([x, z, clear]);
+    }
+  }
+  cands.sort((a, b) => b[2] - a[2]);
+  const out: [number, number][] = [];
+  for (const [x, z] of cands) {
+    if (out.every(([px, pz]) => Math.hypot(px - x, pz - z) >= 14)) out.push([x, z]);
+    if (out.length >= 2) break;
+  }
+  return out;
+}
+
+/** Adds the village's two houses to the shared HouseKit: the door faces the square, the roof colour follows the village. */
+function addVillageHouses(houses: HouseKit, v: VillageDef, ox: number, oz: number, index: number, host: WorldDecorHost, gy: (x: number, z: number) => number): void {
+  const roofs = [ROOF.red, ROOF.teal, ROOF.blue, ROOF.purple];
+  villageLots(v.bounds, v.props).forEach(([dx, dz], k) => {
+    const x = ox + dx, z = oz + dz;
+    houses.add({ arch: k === 0 ? 'timber' : 'hall', x, y: gy(x, z), z, rotY: Math.atan2(-dx, -dz), roof: roofs[(index + k) % roofs.length] });
+    host.nav.setRect(x - 2.6, z - 2.6, x + 2.6, z + 2.6, false);
+  });
 }
