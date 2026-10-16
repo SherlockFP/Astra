@@ -73,7 +73,7 @@ export interface SettingsData {
   chatOpacity: number;
   /** Show [HH:MM] timestamps in chat lines. */
   chatTimestamps: boolean;
-  /** Speech bubbles above avatars for say / party lines. */
+  /** Speech bubbles above avatars: say / yell / emote (range 25 m, yell 100 m) and party lines. */
   chatBubbles: boolean;
   /** Mute the Ticaret (trade) channel. */
   chatTradeMuted: boolean;

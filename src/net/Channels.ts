@@ -50,9 +50,9 @@ export const INTEREST = {
   FAR_M: 400,
   /** Rate of a stream between NEAR_M and FAR_M. */
   MID_HZ: 2,
-  /** Chat radius: `say` (Yakın) and emotes, `yell` (Bağır). */
-  SAY_M: 60,
-  YELL_M: 250,
+  /** Chat radius: `say` (Yakın) and emotes 25 m, `yell` (Bağır) 100 m. Whoever is in range gets the line and the bubble. */
+  SAY_M: 25,
+  YELL_M: 100,
   /** A position older than this (ms) is treated as unknown (= near, fail open). */
   STALE_POS_MS: 8000,
 } as const;

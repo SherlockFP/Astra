@@ -238,6 +238,19 @@ const REJECT_TEXT: Record<RejectReason, (detail?: string) => string> = {
   nation: (d) => `Bu oda ${d ?? 'karşı ulusun'} odası. Yalnızca PvP odalarında iki ulus bir arada olabilir.`,
 };
 
+/** A chat speaker position (x, z) if the wire carries two finite numbers, else null. */
+function sanitizeSpeakerPos(v: unknown): { x: number; z: number } | null {
+  if (!isObj(v)) return null;
+  const { x, z } = v;
+  return typeof x === 'number' && typeof z === 'number' && Number.isFinite(x) && Number.isFinite(z) ? { x, z } : null;
+}
+
+/** A chat payload with its `pos` replaced by `pos` (null = none): the host's own position book wins over the client's. */
+function withPos(p: Record<string, unknown>, pos: { x: number; z: number } | null): Record<string, unknown> {
+  const { pos: _client, ...rest } = p;
+  return pos ? { ...rest, pos } : rest;
+}
+
 const MSG_INSECURE = 'Çok oyunculu mod güvenli bağlantı (https veya localhost) gerektirir. Oyunu localhost veya https adresinden aç.';
 const MSG_TIMEOUT = 'Lidere bağlanılamadı. Oda kodunu/şifreyi kontrol et; ağ ayarların P2P bağlantıya izin vermiyor olabilir.';
 
@@ -959,15 +972,29 @@ export class NetSession {
     const withLinks = links.length ? { links } : {};
     // a public channel is not a party: the default "Grup" line becomes "Yakın" (heard within INTEREST.SAY_M), yell carries further
     if (ch === 'party' && this.channel) ch = 'say';
-    this.g.events?.emit('net:chat', { from: this.self?.name ?? 'Sen', text: t, channel: ch, ...withLinks });
-    this.broadcast('chat', ch === 'party' ? { text: t, ...withLinks } : { text: t, ch, ...withLinks });
+    const posWire = this.posWire();
+    this.g.events?.emit('net:chat', { from: this.self?.name ?? 'Sen', text: t, channel: ch, peerId: this.selfId, ...posWire, ...withLinks });
+    this.broadcast('chat', ch === 'party' ? { text: t, ...posWire, ...withLinks } : { text: t, ch, ...posWire, ...withLinks });
   }
 
   /** Emote (WoW-style /dance ...): the emote id travels on the chat channel; receivers play the clip and show the line. */
   sendEmote(id: string): void {
     const e = ident(id, 16);
     if (!e) return;
-    this.broadcast('chat', { text: e, ch: 'emote', emote: e });
+    this.broadcast('chat', { text: e, ch: 'emote', emote: e, ...this.posWire() });
+  }
+
+  /** `/e <eylem>`: a free-text action line (no clip), heard and bubbled within the say radius. */
+  sendAct(text: string): void {
+    const t = sanitizeText(text, NET.MAX_CHAT_LEN);
+    if (!t) return;
+    this.broadcast('chat', { text: t, ch: 'emote', act: true, ...this.posWire() });
+  }
+
+  /** Speaker position on the wire: only in a public channel (interest radius applies there; a party room has no range). */
+  private posWire(): { pos?: { x: number; z: number } } {
+    const at = this.channel ? this.localPos() : null;
+    return at ? { pos: at } : {};
   }
 
   /** UX-41 (§6.5): the host's LFG listing (`null` = not looking). Re-announced with the room; read back as RoomInfo.lfg. */
@@ -1561,13 +1588,15 @@ export class NetSession {
       const t = typeof env.t === 'string' ? env.t : undefined;
       if (t === '*') {
         let to = this.remoteMemberIds().filter((id) => id !== from);
+        // public channel chat: the host stamps the speaker's position from its own position book (not the client's word)
+        const p = c === 'chat' && this.channel && isObj(env.p) ? withPos(env.p as Record<string, unknown>, this.posOf(from)) : env.p;
         if (this.channel) {
           if (c === 'pstate') this.notePos(from, env.p);
           // public channel: only the peers that can use it get it (position streams by distance, chat by radius)
-          if (to.length) to = this.interestTargets(c, env.p, from, to);
+          if (to.length) to = this.interestTargets(c, p, from, to);
         }
-        if (to.length) this.tr?.send('g', { c, p: env.p, s, f: from }, { to });
-        this.receive(c, env.p, from, s);
+        if (to.length) this.tr?.send('g', { c, p, s, f: from }, { to });
+        this.receive(c, p, from, s);
       } else if (t === undefined || t === this.selfId) {
         this.receive(c, env.p, from, s);
       } else if (this.peers.has(t) && t !== from) {
@@ -1645,10 +1674,19 @@ export class NetSession {
   private onChat(p: NetChannels['chat'], from: string): void {
     if (!isObj(p)) return;
     const name = this.peers.get(from)?.name ?? 'Bilinmeyen';
+    // speaker: `from` is the origin peer (the host relays with it); pos is only trusted for the range check and the bubble anchor
+    const spos = sanitizeSpeakerPos(p.pos);
+    if (this.channel && spos && !this.inChatRange(p.ch, spos)) return;
+    const who = { peerId: from, ...(spos ? { pos: spos } : {}) };
     // emote: the id is the text (validated as an identifier); the receiver turns it into the line and the clip
     if (p.ch === 'emote') {
+      if (p.act) {
+        const act = sanitizeText(p.text, NET.MAX_CHAT_LEN);
+        if (act) this.g.events?.emit('net:chat', { from: name, text: act, channel: 'emote', act: true, ...who });
+        return;
+      }
       const id = ident(p.emote ?? p.text, 16);
-      if (id) this.g.events?.emit('net:chat', { from: name, text: id, channel: 'emote' });
+      if (id) this.g.events?.emit('net:chat', { from: name, text: id, channel: 'emote', ...who });
       return;
     }
     const text = sanitizeText(p.text, NET.MAX_CHAT_LEN);
@@ -1656,7 +1694,15 @@ export class NetSession {
     const channel = p.ch === 'say' || p.ch === 'yell' ? p.ch : 'party';
     // WP-13 item links: validated snapshots, display only (a linked item is never added to an inventory)
     const links = sanitizeLinks(p.links);
-    this.g.events?.emit('net:chat', { from: name, text, channel, ...(links.length ? { links } : {}) });
+    this.g.events?.emit('net:chat', { from: name, text, channel, ...who, ...(links.length ? { links } : {}) });
+  }
+
+  /** A public-channel line is heard only within its radius (say / emote 25 m, yell 100 m); a line without a position is not gated. */
+  private inChatRange(ch: unknown, spos: { x: number; z: number }): boolean {
+    const r = chatRadius(ch);
+    const at = this.localPos();
+    if (r === null || !at) return true;
+    return dist2d(at.x, at.z, spos.x, spos.z) <= r;
   }
 
   /** Client: host moved the party. */
