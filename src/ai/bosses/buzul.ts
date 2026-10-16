@@ -269,7 +269,7 @@ const ayazana: BossScript = {
 // ---------------------------------------------------------------------------------------------------------------------
 // Boss 3: Donmuş Kral Tuğrul + Kırağı
 // ---------------------------------------------------------------------------------------------------------------------
-const PILLARS: [number, number][] = [[30.5, 30.5], [36.5, 30.5], [30.5, 35], [36.5, 35]];
+const PILLARS: [number, number][] = [[29.5, 31.5], [43.5, 31.5], [29.5, 42.5], [43.5, 42.5]];
 
 interface Dragon {
   mode: 'orbit' | 'wind' | 'breathe' | 'landed';
@@ -514,7 +514,7 @@ const tugrul: BossScript = {
         const dr = dragonEnt(c);
         const d = c.state.dragon as Dragon | null;
         if (dr) {
-          const t = c.gdd(33.5, 38.8);
+          const t = c.gdd(34.5, 41.2);
           dr.position.x = t.x;
           dr.position.z = t.z;
           dr.yaw = Math.PI;
