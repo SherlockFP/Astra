@@ -43,16 +43,16 @@ export interface TierRule {
 
 export const FISSURE_TIERS: Record<FissureTier, TierRule> = {
   n: {
-    id: 'n', name: 'Normal', difficulty: 'normal', rooms: [8, 10], maxTier: 1, mods: 0, hp: 1, dmg: 1, bossHp: 1, bossDmg: 1,
-    enemies: [80, 110], unlockLevel: 1, packBonus: 2, eliteChance: 0.5, ilvlCap: 62, gold: 40, dust: 6, dragonCoins: 0,
+    id: 'n', name: 'Normal', difficulty: 'normal', rooms: [8, 9], maxTier: 1, mods: 0, hp: 1, dmg: 1, bossHp: 1, bossDmg: 1,
+    enemies: [45, 62], unlockLevel: 10, packBonus: 1, eliteChance: 0.5, ilvlCap: 62, gold: 40, dust: 6, dragonCoins: 0,
   },
   h: {
-    id: 'h', name: 'Kahramanlık', difficulty: 'heroic', rooms: [10, 12], maxTier: 2, mods: 1, hp: 1.35, dmg: 1.2, bossHp: 1.3, bossDmg: 1.15,
-    enemies: [110, 145], unlockLevel: 30, needClear: { tier: 'n', count: 1 }, packBonus: 3, eliteChance: 1, ilvlCap: 64, gold: 80, dust: 12, dragonCoins: 1,
+    id: 'h', name: 'Kahramanlık', difficulty: 'heroic', rooms: [9, 10], maxTier: 2, mods: 1, hp: 1.35, dmg: 1.2, bossHp: 1.3, bossDmg: 1.15,
+    enemies: [70, 95], unlockLevel: 30, needClear: { tier: 'n', count: 1 }, packBonus: 1, eliteChance: 1, ilvlCap: 64, gold: 80, dust: 12, dragonCoins: 1,
   },
   m: {
-    id: 'm', name: 'Mitik', difficulty: 'mythic', rooms: [12, 14], maxTier: 2, mods: 2, hp: 1.9, dmg: 1.5, bossHp: 1.8, bossDmg: 1.4,
-    enemies: [145, 190], unlockLevel: 60, needClear: { tier: 'h', count: 3 }, packBonus: 3, eliteChance: 1, ilvlCap: 68, gold: 160, dust: 20, dragonCoins: 2,
+    id: 'm', name: 'Mitik', difficulty: 'mythic', rooms: [9, 11], maxTier: 2, mods: 2, hp: 1.9, dmg: 1.5, bossHp: 1.8, bossDmg: 1.4,
+    enemies: [95, 115], unlockLevel: 60, needClear: { tier: 'h', count: 3 }, packBonus: 0, eliteChance: 1, ilvlCap: 68, gold: 160, dust: 20, dragonCoins: 2,
   },
 };
 
@@ -129,3 +129,15 @@ export function fissureItemLevel(tier: FissureTier, level: number, final: boolea
 /** Save flag names (CharacterSave.flags; scalar numbers only, no per-seed flags). */
 export const fissureClearFlag = (tier: FissureTier): string => `fis.clear.${tier}`;
 export const fissureBestFlag = (tier: FissureTier): string => `fis.best.${tier}`;
+
+/** The stone and the finder tab show for every character from this level (`?unlock` shows them below it as well). */
+export const FISSURE_OPEN_LEVEL = FISSURE_TIERS.n.unlockLevel;
+export function fissureOpenFor(level: number, gatesOff = false): boolean {
+  return gatesOff || level >= FISSURE_OPEN_LEVEL;
+}
+
+/** Expected run length in minutes of a generated map (solo pace): about 0.09 min per body plus 4 min for the walk and the bosses. */
+export function fissureMinutes(enemies: number): [number, number] {
+  const est = 4 + Math.max(0, enemies) * 0.09;
+  return [Math.max(5, Math.round(est - 1)), Math.round(est + 2)];
+}

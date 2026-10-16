@@ -132,7 +132,7 @@ for (const theme of THEMES_ALL) {
       const generic = info.kinds.filter((k) => k !== 'corridor' && k !== 'ramp').length;
       stats.rooms[generic] = (stats.rooms[generic] ?? 0) + 1;
       stats.total.push(def.rooms.length);
-      check('gen.room count 8-14', generic >= 8 && generic <= 14, `${tag}: ${generic}`);
+      check('gen.room count 8-12 (every tier)', generic >= 8 && generic <= 12, `${tag}: ${generic}`);
       check('gen.room count within the tier range', generic >= rule.rooms[0] && generic <= rule.rooms[1], `${tag}: ${generic} vs ${rule.rooms}`);
       check('gen.info.rooms matches', info.rooms === generic, tag);
       check('gen.kinds/tiers arrays align with rooms', info.kinds.length === def.rooms.length && info.tiers.length === def.rooms.length, tag);
@@ -397,8 +397,8 @@ for (const theme of THEMES_ALL) {
   ok('rules.scaling mitik trash (zirh): hp x1.9 x1.25', Math.abs(s2.hp - 1.9 * 1.25) < 1e-9 && Math.abs(s2.dmg - 1.5) < 1e-9);
   ok('rules.scaling mitik boss (zalim): hp x1.8 x1.2, dmg x1.4 x1.1', Math.abs(s3.hp - 1.8 * 1.2) < 1e-9 && Math.abs(s3.dmg - 1.4 * 1.1) < 1e-9);
   ok('rules.tier table', R.n.mods === 0 && R.h.mods === 1 && R.m.mods === 2 && R.n.difficulty === 'normal' && R.h.difficulty === 'heroic' && R.m.difficulty === 'mythic');
-  ok('rules.unlock: normal open, heroic needs level 30 + a normal clear, mitik needs 60 + 3 heroic clears',
-    P.fissureUnlock('n', 1, {}).ok && !P.fissureUnlock('h', 29, { n: 5 }).ok && !P.fissureUnlock('h', 30, {}).ok && P.fissureUnlock('h', 30, { n: 1 }).ok
+  ok('rules.unlock: normal from level 10 (stone and tab too), heroic needs level 30 + a normal clear, mitik needs 60 + 3 heroic clears',
+    !P.fissureUnlock('n', 9, {}).ok && P.fissureUnlock('n', 10, {}).ok && P.fissureOpenFor(10) && !P.fissureOpenFor(9) && P.fissureOpenFor(9, true) && !P.fissureUnlock('h', 29, { n: 5 }).ok && !P.fissureUnlock('h', 30, {}).ok && P.fissureUnlock('h', 30, { n: 1 }).ok
     && !P.fissureUnlock('m', 60, { h: 2 }).ok && P.fissureUnlock('m', 60, { h: 3 }).ok && P.fissureUnlock('m', 60, {}, true).ok);
   ok('rules.enemy level: normal clamps to the band, heroic = band top, mitik 60', P.fissureEnemyLevel('n', 12) === 12 && P.fissureEnemyLevel('n', 12, [15, 60]) === 15 && P.fissureEnemyLevel('n', 12, [1, 35]) === 12 && P.fissureEnemyLevel('h', 12, [1, 35]) === 35 && P.fissureEnemyLevel('h', 12) === 60 && P.fissureEnemyLevel('m', 20) === 60 && P.fissureEnemyLevel('n', 99) === 60); // instanceScaling: fixed levels per band, party level clamped to it
   ok('rules.item level caps 62 / 64 / 68', P.fissureItemLevel('n', 60, true) === 62 && P.fissureItemLevel('h', 60, true) === 64 && P.fissureItemLevel('m', 60, true) === 68 && P.fissureItemLevel('n', 10, false) === 11);

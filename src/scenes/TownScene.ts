@@ -30,6 +30,7 @@ import { mountMarket, unmountMarket } from '../world/MarketStalls';
 import { PAZAR_MEYDANI, PAZAR_USTASI_AT } from '../data/market';
 import { PVP_MIN_LEVEL, PVP_ZONE_ID } from '../data/pvpZone';
 import { devUnlockOn } from '../systems/BetaTest';
+import { fissureOpenFor } from '../world/procgen';
 import { spawnBetaArea } from './BetaArea';
 import { BETA_GUIDE_NPC } from '../data/betaTest';
 
@@ -302,8 +303,8 @@ export class TownScene implements GameScene {
       const [x, , z] = d.pos;
       const rot = ((d.rot ?? 0) * Math.PI) / 180;
       const id = d.id;
-      // Kadim Yarık Taşı (procedural rifts) is hidden for everyone but the dev tester switch (`?unlock` / efsun.unlock)
-      if (id === 'obj_yarik_tasi' && !devUnlockOn()) continue;
+      // Kadim Yarık Taşı (procedural rifts) stands from the rift's level gate (fissureOpenFor); `?unlock` shows it below that level too
+      if (id === 'obj_yarik_tasi' && !fissureOpenFor(G.character?.level ?? 1, devUnlockOn())) continue;
       if (d.role === 'portal') {
         const e = new DungeonPortal(world.allocLocalId(), { dungeonId: d.dungeonId ?? id.replace(/^portal_/, ''), name: d.name, minLevel: d.unlockLevel });
         queue(e, () => e.load(), x, z, rot);

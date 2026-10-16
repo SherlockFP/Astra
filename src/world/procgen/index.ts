@@ -10,7 +10,7 @@ export { FISSURE_VERSION, FISSURE_THEMES, FISSURE_TIER_IDS, fissureId, parseFiss
 export { generateFissure, TIER_HEIGHT } from './generate';
 export {
   FISSURE_TIERS, FISSURE_TIER_ORDER, FISSURE_MODS, FISSURE_MOD_ORDER, FISSURE_THEME_NAMES, fissureScaling, fissureEnemyLevel, fissureUnlock, fissureEndRewards,
-  fissureItemLevel, fissureClearFlag, fissureBestFlag,
+  fissureItemLevel, fissureClearFlag, fissureBestFlag, fissureOpenFor, fissureMinutes, FISSURE_OPEN_LEVEL,
 } from './tiers';
 export { THEMES } from './themes';
 export { BOSS_POOLS, ARENAS } from './arenas';

@@ -1,6 +1,7 @@
 import { G } from '../../game/G';
 import { getDungeon } from '../../data/dungeons';
 import { getEnemyDef } from '../../data/enemies';
+import { FISSURE_TIERS, parseFissureId } from '../../world/procgen';
 import type { AffixId, RunState } from '../../types/mythic';
 import type { UI } from '../UI';
 import { ICON, div, esc, fmtClock, fmtNum, iconEl, pulse, setClass, setDisplay, setHTML, setStyle, setText } from '../widgets/dom';
@@ -25,6 +26,12 @@ const AFFIX_FALLBACK: Record<string, { name: string; desc: string }> = {
 };
 
 const DIFF_TR: Record<string, string> = { normal: 'Normal', heroic: 'Kahraman', mythic: 'Efsanevi', mythicplus: 'Mitik+' };
+
+/** Kadim Yarık runs read "Kadim Yarık · Normal" (their tier), not "Normal Zindan". */
+function fissureLabel(dungeonId: string): string | null {
+  const spec = parseFissureId(dungeonId);
+  return spec ? `Kadim Yarık · ${FISSURE_TIERS[spec.tier].name}` : null;
+}
 
 function affixIcon(id: AffixId): string {
   return ICON('affix-' + (id === 'seasonal_efsun' ? 'seasonal' : id));
@@ -160,7 +167,7 @@ export class MythicTracker implements HudWidget {
     setText(this.nameEl, def?.name ?? st.dungeonId);
     setText(this.keyEl, isKey ? `+${st.keyLevel}` : '');
     setDisplay(this.keyEl, isKey);
-    setText(this.diffEl, isKey ? 'Mitik+ Anahtar Taşı' : (DIFF_TR[st.difficulty] ?? '') + ' Zindan');
+    setText(this.diffEl, isKey ? 'Mitik+ Anahtar Taşı' : fissureLabel(st.dungeonId) ?? (DIFF_TR[st.difficulty] ?? '') + ' Zindan');
     setClass(this.el, 'key', isKey);
     this.buildAffixes(st);
     setDisplay(this.affixRow, st.affixes.length > 0);

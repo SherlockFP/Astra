@@ -141,8 +141,8 @@ export function applyBetaPreset(host: BetaHost, opts: { skillMax: number; rng?: 
 }
 
 /**
- * Dev tester switch (keystone.ts / finder.ts / finderFissure.ts): `?unlock` in the URL or localStorage `efsun.unlock` = '1'.
- * Hides the Kadim Yarıklar (procedural rift) finder tab and its town stone for everyone else.
+ * Dev tester switch (finder.ts / finderFissure.ts / TownScene): `?unlock` in the URL or localStorage `efsun.unlock` = '1'.
+ * Shows the Kadim Yarıklar (procedural rift) finder tab and its town stone below their level gate (world/procgen fissureOpenFor).
  */
 export function devUnlockOn(): boolean {
   try {

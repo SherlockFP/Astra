@@ -239,7 +239,7 @@ export function generateFissure(spec: FissureSpec): DungeonDef {
     if (pop.props[r.id]) r.props = [...(r.props ?? []), ...pop.props[r.id]];
     if (pop.zones[r.id]) r.zones = [...(r.zones ?? []), ...pop.zones[r.id]];
   }
-  // M+ forces are informational here (the HUD shows a progress bar): 1/1.2 of everything that can be killed
+  // forces bar: 1/1.2 of everything that can be killed (the content check keeps 15 % spare); completion is the bosses, not the bar
   let forcesAll = 0;
   for (const p of pop.packs) for (const m of p.members) forcesAll += getEnemyDef(m.enemyId)?.forces ?? 0;
   for (const b of bosses) forcesAll += getEnemyDef(b.bossId)?.forces ?? 0;

@@ -3,9 +3,10 @@ import type { DungeonDef, FissureThemeId, FissureTier } from '../../../types/dun
 import type { DungeonParams } from '../../../scenes/scenes';
 import { BOSSES } from '../../../data/enemyKit';
 import {
-  FISSURE_MODS, FISSURE_THEMES, FISSURE_TIERS, FISSURE_TIER_ORDER, FISSURE_VERSION, THEMES, fissureClearFlag, fissureEnemyLevel, fissureId, fissureUnlock,
-  getFissureDef, type FissureSpec,
+  FISSURE_MODS, FISSURE_THEMES, FISSURE_TIERS, FISSURE_TIER_ORDER, FISSURE_VERSION, THEMES, fissureClearFlag, fissureEnemyLevel, fissureId, fissureMinutes,
+  fissureUnlock, getFissureDef, type FissureSpec,
 } from '../../../world/procgen';
+import { partyScales } from '../../../systems/instanceScaling';
 import { chip, emptyState } from '../../kit';
 import { h, sfx, toast } from './base';
 import { buildFissureParams, partyLevels } from './runStart';
@@ -43,6 +44,14 @@ const CLEAR_GATES_OFF = ((): boolean => {
 })();
 
 const rollSeed = (): number => ((Math.random() * 0xffffffff) >>> 0) || 1;
+/** Save flag: the first-entry tutorial line has been shown (scalar flag, like fis.clear.<tier>). */
+export const FISSURE_TUTORIAL_FLAG = 'fis.tut';
+/** 'Rastgele' picks among the themes this character can enter (level vs the theme band gate); never a locked one. */
+function randomTheme(seed: number, level: number): FissureThemeId {
+  const ok = FISSURE_THEMES.filter((t) => fissureUnlock('n', level, {}, false, THEMES[t].level).ok);
+  const pool: readonly FissureThemeId[] = ok.length ? ok : ['crypt'];
+  return pool[seed % pool.length];
+}
 const BANNER: Record<FissureThemeId, string> = {
   crypt: 'linear-gradient(90deg, #0d1a16, #1f3a30)',
   forge: 'linear-gradient(90deg, #1c0a04, #5a2410)',
@@ -79,7 +88,7 @@ export class FissureTab {
 
   /** The theme the rift will use ('random' resolves from the seed). */
   private themeId(): FissureThemeId {
-    return this.theme === 'random' ? FISSURE_THEMES[this.seed % FISSURE_THEMES.length] : this.theme;
+    return this.theme === 'random' ? randomTheme(this.seed, G.character?.level ?? 1) : this.theme;
   }
 
   private unlock(t: FissureTier): { ok: boolean; reason: string } {
@@ -164,16 +173,31 @@ export class FissureTab {
       const bosses = def.bosses.map((b) => BOSSES[b.bossId]?.name ?? b.bossId);
       const enemies = def.packs.reduce((n, p) => n + p.members.length, 0);
       const floors = new Set(info.tiers).size;
+      const [mLo, mHi] = fissureMinutes(enemies);
+      const party = partyLevels().size;
+      const ps = partyScales(party, 'normal');
+      const fmt = (x: number): string => `x${x.toFixed(2)}`;
       el.append(
-        h('div.fd-h', null, 'YARIK'),
+        h('div.fd-h', null, 'HEDEF VE KURALLAR'),
         h(
           'div.fd-lines',
           null,
-          h('div', null, `Muhafızlar: ${bosses.slice(0, 2).join(', ')}`),
-          h('div', null, `Son Patron: ${bosses[2] ?? '?'}`),
-          h('div', null, `Yaklaşık ${enemies} düşman · ${floors} kat · tahmini ${Math.round(8 + info.rooms * 2.2)} dk`),
+          h('div', null, `Hedef: üç patronu öldür. Son patron ölünce yarık biter. Süre sınırı yok (tahmini ${mLo}–${mHi} dk).`),
+          h('div', null, `Muhafızlar: ${bosses.slice(0, 2).join(', ')} · Son Patron: ${bosses[2] ?? '?'}`),
+          h('div', null, `Yaklaşık ${enemies} düşman · ${info.rooms} oda · ${floors} kat. Ekranda: düşman yüzdesi, patron sayacı ve süre.`),
+          h('div', null, `Grup: ${party} kişi. Düşman canı ${fmt(ps.hp)}, hasarı ${fmt(ps.dmg)} (az kişiyle düşman daha sert vurur).`),
+          h('div', null, 'Ölürsen son kontrol noktasında dirilirsin. Süre cezası yok.'),
+        ),
+        h('div.fd-h', null, 'ÖDÜL'),
+        h(
+          'div.fd-lines',
+          null,
+          h('div', null, 'Her patron sandığı (nadir ve üstü eşya) ve yarık sonunda bitiş sandığı: altın, Büyülü Toz ve Ejderha Pulu.'),
         ),
       );
+      if (!G.character?.save.flags[FISSURE_TUTORIAL_FLAG]) {
+        el.append(h('div.fd-lines', { style: { marginTop: '8px', borderLeft: '3px solid var(--ink)', paddingLeft: '8px' } }, h('b', null, 'İlk yarığın: '), 'Sağdaki izleyicide hedef, düşman yüzdesi ve süre görünür. Patronları sırayla yen, sonra ödül sandığını aç ve portala adım at.'));
+      }
       const mods = info.mods.map((m) => {
         const c = chip(FISSURE_MODS[m].name);
         c.title = FISSURE_MODS[m].desc;
@@ -272,6 +296,7 @@ export class FissureTab {
     return {
       label: 'Yarığa Gir', show: true, disabled: false, reason: '',
       run: () => {
+        if (G.character) G.character.save.flags[FISSURE_TUTORIAL_FLAG] = 1;
         const params = buildFissureParams(spec);
         this.deps.launch(params, `${THEMES[spec.theme].name} · ${FISSURE_TIERS[spec.tier].name}`);
       },

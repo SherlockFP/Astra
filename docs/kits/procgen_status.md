@@ -55,6 +55,14 @@ Math.random / Date.now, no trig tokens), 50 seeds x 4 themes x 3 tiers (room cou
 vertical NavGrid (start reaches every pack / boss / chest / exit; negative control without stairs fails), the real DungeonBuilder headless with stubbed assets (no errors, 5 gates, nav), the finder tab on
 a fake DOM, getFissureDef cache / fail closed, scaling / unlock / reward rules.
 
+## Rework (playtest, public release)
+
+Chrome playtest without `?unlock` (knight L10 and L20, `dev/scenes.html`). Found: "Rastgele" picked a theme the level could not enter (L10 got Gölge, Sv. 20; Normal disabled with "Seviye 18 gerekli"); Normal needed level 18 at L10; the stone and tab were hidden; the entry said "tahmini 26 dk" for 8-10 rooms; forces bar "0 / 138" against "Yaklaşık 67 düşman"; no objective, death, party or reward text; tracker said "Normal Zindan"; end screen "Düşman Gücü %100", "Ödüller (0)" with no chest hint, no tier progress.
+
+Changed: Normal opens at level 10 and the stone / tab show from there (`fissureOpenFor`, `?unlock` still shows them lower); "Rastgele" picks only enterable themes; rooms Normal 8-9, Kahramanlık 9-10, Mitik 10-12 and bodies 45-62 / 70-95 / 95-115 (a corridor body budget stops the swarms first); run estimate `fissureMinutes` (Normal ~8-12 min, Kahramanlık ~10-15, Mitik ~12-17); entry lists objective, timer, party factors (`partyScales`), death rule and rewards, plus a one-time first-entry line (`fis.tut`); tracker label "Kadim Yarık · Normal"; end screen tier progress box (clears, best time, next tier and why it is locked). Reward chest and boss drops unchanged.
+Checks: `dev/combat-sim/rifts.mjs` (gate, 96 maps per seed set: rooms, 3 bosses with the final last, every room reachable, length estimate, scaling, rewards); procgen.mjs updated to the new ranges.
+Not done: the level-up banner (HUD, `ui/hud/Banners.ts`) still draws over the end screen when a run ends on a level-up; the reward toast covers the progress box title; the finder's preview map sits below the fold at 720 px.
+
 ## Deferred / open
 - Grotto theme (`ow_*` roster has no boss pool), the 30 generic Elden-Ring guardians and 5 finals of GDD §6, daily seed, Yarık Kristali + named uniques tables, `fm_cevik` (needs `SpawnEnemyOpts.speedMult`)
   and the affix modifiers, FissureTracker HUD (the MythicTracker already shows the map name), stones in the open-world zones, `RoomAnnouncement.fv`, runtime hash exchange (the
