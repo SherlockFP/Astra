@@ -1130,7 +1130,8 @@ boss({
   visual: { attach: [{ url: WPN('Skeleton_Staff'), bone: 'handslot.r', pos: [0, 0, 0], rotY: Math.PI }], eyeEmissive: 0x9fd8e8, runRef: 7, glow: 0x9fd8e8 },
   basic: proj('mag_morkan_bolt', 'Sis Oku', 16, 40, 2.5, 0.8, 1.0, 'shadow', 'shadow_projectile', 'Spellcast_Shoot', 0.3, { sfx: 'shadow_cast' }),
   abilities: [
-    custom('mag_raise', 'Sisli Çağrısı', 20, 10, 3.0, 'Spellcast_Summon', { castTime: 3.0, interruptible: true, sfx: 'boss_cast', params: { impact: 4.2 } }),
+    // the one avoidable: a 3 s cast bar, then a shadow mist circle (r 3) on a random player; the cast is interruptible
+    aoe('mag_raise', 'Sis Çöküşü', 'ground_aoe', 3, 30, 20, 3.0, 1.2, 'shadow', 'Spellcast_Summon', 3.0, { initialCooldown: 10, castTime: 3.0, interruptible: true, sfx: 'boss_cast', params: { target: 1, impact: 3.0 } }),
   ],
   phases: [bp('p1', 1.01, ['mag_raise'])],
   intro: 'Sis sizi bu mağaradan çıkarmayacak!', death: 'Sis... dağılıyor...',
@@ -1180,15 +1181,18 @@ boss({
   hp: 60, dmg: 2.5, speed: 5.3, radius: 1.3, enrage: 180, arenaR: 20, loot: 'loot_d2_b1', anims: A_CHAR, resist: R_DEMON, visual: { emissiveIntensity: 0.25, eyeEmissive: 0xff8030 },
   basic: cone('gurz_swing', 'Çekiç Savuruşu', 4.5, 110, 2.2, 1.0, 'Weapon', 0.45, { windup: 0.65, telegraph: true }),
   abilities: [
+    // tank buster: a telegraphed cone on the tank (not parryable), bleed stacks on the tank
+    cone('gurz_hammer', 'Ağır Çekiç', 6, 100, 12, 4.0, 'Weapon', 0.6, { windup: 1.4, initialCooldown: 6, telegraph: true, tankBuster: true, statuses: [bleed(1, 0.3, 8)], sfx: 'ground_slam' }),
     custom('gurz_anvil_slam', 'Örs Darbesi', 15, 7, 1.2, 'Jump', { sfx: 'boss_cast', params: { impact: 0.25 } }),
     custom('gurz_molten_pour', 'Erimiş Döküm', 24, 12, 2.0, 'Wave', { sfx: 'boss_cast', params: { impact: 0.8 } }),
-    custom('gurz_bellows', 'Körük Esintisi', 35, 20, 1.0, 'Yes', { sfx: 'boss_roar', params: { impact: 0.8 } }),
+    // group beat (script draws the r 14 circle; the arena corners outside it are the safe spots), then the gust pushes south
+    custom('gurz_bellows', 'Körük Ateşi', 22, 12, 2.0, 'Yes', { sfx: 'boss_roar', params: { impact: 0.8 } }),
     custom('gurz_call_slaves', 'Çalışın Köleler!', 99, 9999, 1.2, 'Wave', { sfx: 'boss_roar', params: { impact: 0.8 } }),
   ],
   phases: [
-    bp('p1', 1.01, ['gurz_anvil_slam', 'gurz_molten_pour', 'gurz_bellows']),
-    bp('p2', 0.66, ['gurz_anvil_slam', 'gurz_molten_pour', 'gurz_bellows'], { yell: 'Köleler! İşbaşına!', ability: 'gurz_call_slaves' }),
-    bp('p3', 0.33, ['gurz_anvil_slam', 'gurz_molten_pour', 'gurz_bellows'], { yell: 'Köleler! İşbaşına!', ability: 'gurz_call_slaves' }),
+    bp('p1', 1.01, ['gurz_hammer', 'gurz_anvil_slam', 'gurz_molten_pour', 'gurz_bellows']),
+    bp('p2', 0.66, ['gurz_hammer', 'gurz_anvil_slam', 'gurz_molten_pour', 'gurz_bellows'], { yell: 'Köleler! İşbaşına!', ability: 'gurz_call_slaves' }),
+    bp('p3', 0.33, ['gurz_hammer', 'gurz_anvil_slam', 'gurz_molten_pour', 'gurz_bellows'], { yell: 'Köleler! İşbaşına!', ability: 'gurz_call_slaves' }),
   ],
   intro: 'Örsüm aç! Kemiklerinizi döveceğim!', death: 'Ateş... sönüyor...',
   arena: { cx: 60, cz: 24, w: 48, h: 48, homeX: 60, homeZ: 31.6 },
@@ -1199,15 +1203,17 @@ boss({
   hp: 75, dmg: 2.7, speed: 3.4, radius: 2.2, enrage: 210, arenaR: 16, loot: 'loot_d2_b2', anims: A_GEN, resist: { ...R_GOLEM, fire: 0.9 }, visual: { runRef: 3.4 },
   basic: cone('atesyurek_punch', 'Ezici Yumruk', 5, 120, 2.8, 1.0, 'Attack', 0.77, { windup: 0.8, telegraph: true, sfx: 'ground_slam' }),
   abilities: [
+    // tank buster: a telegraphed cone on the tank, burning stacks; step out of the cone or tank it
+    cone('atesyurek_quake', 'Magma Yumruğu', 6, 70, 14, 4.0, 'Attack', 0.7, { windup: 1.4, initialCooldown: 8, telegraph: true, tankBuster: true, statuses: [burn(0.3, 6)], sfx: 'ground_slam' }),
     custom('atesyurek_eruption', 'Volkanik Patlama', 20, 8, 1.8, 'Cast', { sfx: 'boss_cast', params: { impact: 1.67 } }),
     custom('atesyurek_magma_wave', 'Magma Dalgası', 30, 18, 2.0, 'Cast', { sfx: 'boss_cast', params: { impact: 1.67 } }),
     custom('atesyurek_heat', 'Kızgın Kalp', 0, 0, 0, '', { params: { passive: 1 } }),
     custom('atesyurek_spawn_slimes', 'Lav Dökümü', 999, 9999, 1.0, 'Enrage', { sfx: 'boss_roar' }),
   ],
   phases: [
-    bp('p1', 1.01, ['atesyurek_eruption', 'atesyurek_magma_wave']),
-    bp('p2', 0.5, ['atesyurek_eruption', 'atesyurek_magma_wave'], { yell: '*Lav kaynıyor!*', ability: 'atesyurek_spawn_slimes' }),
-    bp('p3', 0.25, ['atesyurek_eruption', 'atesyurek_magma_wave'], { yell: '*Erimiş öfke!*' }),
+    bp('p1', 1.01, ['atesyurek_quake', 'atesyurek_eruption', 'atesyurek_magma_wave']),
+    bp('p2', 0.5, ['atesyurek_quake', 'atesyurek_eruption', 'atesyurek_magma_wave'], { yell: '*Lav kaynıyor!*', ability: 'atesyurek_spawn_slimes' }),
+    bp('p3', 0.25, ['atesyurek_quake', 'atesyurek_eruption', 'atesyurek_magma_wave'], { yell: '*Erimiş öfke!*' }),
   ],
   intro: '*Ateşyürek lav gölünden yükseliyor!*', death: '*Ateşyürek soğuyarak taşa dönüşüyor...*',
   arena: { cx: 124, cz: 136, w: 48, h: 48, homeX: 122, homeZ: 136 },
@@ -1218,6 +1224,10 @@ boss({
   hp: 110, dmg: 2.3, speed: 5.9, radius: 1.5, enrage: 300, arenaR: 22, loot: 'loot_d2_b3', anims: { ...A_CHAR, run: 'Run' }, resist: R_DEMON, visual: { eyeEmissive: 0x60b0ff }, tint: 0xa0c8ff, emissive: 0x2050ff,
   basic: cone('ignaroth_combo', 'Pençe Kombosu', 5, 120, 2.3, 1.0, 'Weapon', 0.45, { windup: 0.65, telegraph: true, damage: { coef: 1.0, type: 'fire' } } as Ab),
   abilities: [
+    // tank buster: a telegraphed line from the boss through the tank (not parryable)
+    line('ignaroth_rend', 'Alev Yarması', 10, 2.5, 14, 1.4, 4.0, 'fire', 'Weapon', 0.7, { initialCooldown: 7, tankBuster: true, statuses: [burn(0.3, 6)], sfx: 'boss_cast' }),
+    // group beat: a 2.5 s cast bar over the whole arena (the arena is ~48 m across); everyone takes it, healers get a window
+    aoe('ignaroth_inferno', 'Dökümhane Ateşi', 'self_aoe', 40, 30, 24, 2.5, 1.0, 'fire', 'Yes', 0.6, { initialCooldown: 16, castTime: 2.5, sfx: 'boss_cast' }),
     custom('ignaroth_charge', 'Mavi Alev Hücumu', 18, 10, 1.0, 'Run2', { sfx: 'boss_roar', params: { impact: 0.1, target: 2 } }),
     custom('ignaroth_meteor', 'Göktaşı', 30, 20, 1.0, 'Yes', { sfx: 'boss_cast', params: { impact: 0.6 } }),
     custom('ignaroth_flame_walls', 'Alev Duvarları', 26, 14, 1.2, 'Wave', { sfx: 'boss_cast', params: { impact: 0.8 } }),
@@ -1225,10 +1235,12 @@ boss({
     custom('ignaroth_fury', 'Mavi Öfke', 999, 9999, 1.0, 'No', { sfx: 'boss_roar' }),
   ],
   phases: [
-    bp('p1', 1.01, ['ignaroth_charge', 'ignaroth_meteor', 'ignaroth_flame_walls']),
-    bp('p2', 0.65, [], { yell: 'Dökümhane, efendine hizmet et!', ability: 'ignaroth_gates' }),
-    bp('p3', 0.649, ['ignaroth_charge', 'ignaroth_meteor', 'ignaroth_flame_walls']),
-    bp('p4', 0.3, ['ignaroth_charge', 'ignaroth_meteor', 'ignaroth_flame_walls'], { yell: 'YETER! Hepiniz kül olacaksınız!', ability: 'ignaroth_fury' }),
+    // 50 %: the gates (adds from the forge, grate vents, and a soak meteor every 12 s) run as a mechanic phase; the phase after it
+    // brings back the whole kit (tank buster, raid beat, charge, soak, walls)
+    bp('p1', 1.01, ['ignaroth_rend', 'ignaroth_inferno', 'ignaroth_charge', 'ignaroth_meteor', 'ignaroth_flame_walls']),
+    bp('p2', 0.5, [], { yell: 'Dökümhane, efendine hizmet et!', ability: 'ignaroth_gates' }),
+    bp('p3', 0.499, ['ignaroth_rend', 'ignaroth_inferno', 'ignaroth_charge', 'ignaroth_meteor', 'ignaroth_flame_walls']),
+    bp('p4', 0.3, ['ignaroth_rend', 'ignaroth_inferno', 'ignaroth_charge', 'ignaroth_meteor', 'ignaroth_flame_walls'], { yell: 'YETER! Hepiniz kül olacaksınız!', ability: 'ignaroth_fury' }),
   ],
   intro: 'Mavi alev, kızıl alevi yutar. Siz de yanacaksınız!', death: 'Bu alev... sönmez... bir gün... dönerim...',
   arena: { cx: 24, cz: 176, w: 48, h: 48, homeX: 22, homeZ: 176 },
@@ -1241,13 +1253,15 @@ boss({
   basic: cone('akpence_claw', 'Pençe', 5, 120, 2.5, 1.0, 'Attack', 0.5, { windup: 0.65, telegraph: true }),
   abilities: [
     cone('akpence_frost_cleave', 'Buz Yarması', 9, 70, 14, 4.0, 'Attack', 0.5, { initialCooldown: 6, windup: 1.2, telegraph: true, tankBuster: true, parryable: false, damage: { coef: 4.0, type: 'frost' }, statuses: [chill(3, 6)], vfx: 'frost_burst', sfx: 'boss_cast' } as Ab),
+    // group beat: a raid-wide frost howl after a 2.5 s cast bar; everyone takes it, the pillars do not shelter from it
+    aoe('akpence_howl', 'Buz Uğultusu', 'self_aoe', 36, 30, 24, 2.5, 0.8, 'frost', 'Attack', 0.8, { initialCooldown: 14, castTime: 2.5, statuses: [chill(1, 4)], sfx: 'frost_cast' }),
     custom('akpence_avalanche', 'Kar Çığı', 25, 12, 2.0, 'Jump', { sfx: 'boss_roar', params: { impact: 0.2 } }),
     custom('akpence_charge', 'Öfkeli Hücum', 30, 18, 3.0, 'Run', { sfx: 'boss_roar' }),
     custom('akpence_frenzy', 'Yaşlı Öfke', 999, 9999, 0, '', {}),
   ],
   phases: [
-    bp('p1', 1.01, ['akpence_frost_cleave', 'akpence_avalanche', 'akpence_charge']),
-    bp('p2', 0.3, ['akpence_frost_cleave', 'akpence_avalanche', 'akpence_charge'], { ability: 'akpence_frenzy' }),
+    bp('p1', 1.01, ['akpence_frost_cleave', 'akpence_howl', 'akpence_avalanche', 'akpence_charge']),
+    bp('p2', 0.3, ['akpence_frost_cleave', 'akpence_howl', 'akpence_avalanche', 'akpence_charge'], { ability: 'akpence_frenzy' }),
   ],
   intro: '*Ak Pençe öfkeyle kükrüyor!*', death: '*Ak Pençe son kez inleyip karlara yığılıyor.*',
   arena: { cx: 24, cz: 80, w: 48, h: 48, homeX: 24, homeZ: 82 },
@@ -1259,15 +1273,19 @@ boss({
   visual: { hide: mageHide('2H_Staff', 'Mage_Hat'), runRef: 7, eyeEmissive: 0x80d0ff, glow: 0x80c8ff },
   basic: proj('ayazana_bolt', 'Buz Oku', 18, 40, 2.2, 0.5, 1.1, 'frost', 'frost_projectile', 'Spellcast_Shoot', 0.3, { sfx: 'frost_cast', projectile: { speed: 18, radius: 0.55, vfx: 'frost_projectile', homing: 0.5 } }),
   abilities: [
+    // tank buster: a 1.8 s frost spike cast on the target (the tank); interruptible, with a ground circle under the target
+    aoe('ayazana_spike', 'Buz Dikeni', 'ground_aoe', 2.5, 30, 14, 1.8, 3.5, 'frost', 'Spellcast_Raise', 1.2, { initialCooldown: 9, castTime: 1.8, interruptible: true, tankBuster: true, sfx: 'frost_cast' }),
+    // group beat: a 3 s arena-wide blizzard cast; the whole group takes it, so the tomb and the chasing storm are the only escapes from the rest of the kit
+    aoe('ayazana_gale', 'Kutup Fırtınası', 'self_aoe', 36, 30, 26, 3.0, 0.7, 'frost', 'Spellcast_Raise', 1.0, { initialCooldown: 18, castTime: 3.0, statuses: [chill(1, 4)], sfx: 'frost_cast' }),
     custom('ayazana_nova', 'Dondurucu Nova', 22, 12, 2.5, 'Spellcast_Raise', { castTime: 2.5, interruptible: false, sfx: 'frost_cast', params: { impact: 1.0 } }),
     custom('ayazana_ice_tomb', 'Buz Mezarı', 28, 15, 1.0, 'Spellcast_Long', { sfx: 'frost_cast', params: { impact: 1.55 } }),
     custom('ayazana_blizzard', 'Kar Fırtınası', 18, 8, 1.0, 'Spellcast_Raise', { sfx: 'frost_cast', params: { impact: 1.0 } }),
     custom('ayazana_mirror', 'Ayna Sureti', 999, 9999, 1.0, 'Spellcast_Raise', { sfx: 'boss_cast', params: { impact: 1.0 } }),
   ],
   phases: [
-    bp('p1', 1.01, ['ayazana_nova', 'ayazana_ice_tomb', 'ayazana_blizzard']),
-    bp('p2', 0.7, ['ayazana_nova', 'ayazana_ice_tomb', 'ayazana_blizzard'], { yell: 'Hangisi gerçek? Hiçbiri... hepsi!', ability: 'ayazana_mirror' }),
-    bp('p3', 0.4, ['ayazana_nova', 'ayazana_ice_tomb', 'ayazana_blizzard'], { yell: 'Hangisi gerçek? Hiçbiri... hepsi!', ability: 'ayazana_mirror' }),
+    bp('p1', 1.01, ['ayazana_spike', 'ayazana_gale', 'ayazana_nova', 'ayazana_ice_tomb', 'ayazana_blizzard']),
+    bp('p2', 0.7, ['ayazana_spike', 'ayazana_gale', 'ayazana_nova', 'ayazana_ice_tomb', 'ayazana_blizzard'], { yell: 'Hangisi gerçek? Hiçbiri... hepsi!', ability: 'ayazana_mirror' }),
+    bp('p3', 0.4, ['ayazana_spike', 'ayazana_gale', 'ayazana_nova', 'ayazana_ice_tomb', 'ayazana_blizzard'], { yell: 'Hangisi gerçek? Hiçbiri... hepsi!', ability: 'ayazana_mirror' }),
   ],
   intro: 'Ayaz sizi öpecek, çocuklar. Bir daha uyanmamak üzere...', death: 'Bahar... gelmeyecek... asla...',
   arena: { cx: 84, cz: 24, w: 48, h: 48, homeX: 84, homeZ: 24 },
@@ -1288,15 +1306,18 @@ boss({
   basic: cone('tugrul_slash', 'Kraliyet Kılıcı', 5, 120, 2.4, 1.0, '2H_Melee_Attack_Slice', 0.4, { windup: 0.6, telegraph: true }),
   abilities: [
     line('tugrul_verdict', 'Kraliyet Hükmü', 10, 3, 16, 1.2, 4.5, 'physical', '2H_Melee_Attack_Chop', 0.72, { initialCooldown: 8, tankBuster: true,statuses: [{ status: 'sunder', duration: 10 }], sfx: 'boss_cast' }),
+    // group beat: a raid-wide royal roar after a 2.5 s cast bar
+    aoe('tugrul_howl', 'Kraliyet Haykırışı', 'self_aoe', 36, 30, 22, 2.5, 0.8, 'physical', 'Attack', 0.8, { initialCooldown: 16, castTime: 2.5, sfx: 'boss_roar' }),
     custom('tugrul_frost_mark', 'Ayaz İşareti', 25, 15, 1.0, 'Taunt', { sfx: 'frost_cast' }),
     custom('tugrul_spin', 'Ölümcül Dönüş', 30, 22, 1.5, 'Taunt', { sfx: 'boss_cast', params: { impact: 1.0 } }),
     custom('tugrul_dragon_phase', 'Kırağı Göklerde', 999, 9999, 1.0, 'Taunt', { sfx: 'boss_roar' }),
     custom('tugrul_wrath', 'Tahtın Gazabı', 999, 9999, 1.0, 'Taunt', { sfx: 'boss_roar' }),
   ],
   phases: [
-    bp('p1', 1.01, ['tugrul_verdict', 'tugrul_frost_mark', 'tugrul_spin']),
-    bp('p2', 0.55, ['tugrul_verdict', 'tugrul_frost_mark'], { yell: 'Kırağı! Göklerden in ve onları dondur!', ability: 'tugrul_dragon_phase' }),
-    bp('p3', 0.25, ['tugrul_verdict', 'tugrul_frost_mark', 'tugrul_spin'], { yell: 'Taht... benimdir! SONSUZA DEK!', ability: 'tugrul_wrath' }),
+    bp('p1', 1.01, ['tugrul_verdict', 'tugrul_howl', 'tugrul_frost_mark', 'tugrul_spin']),
+    // 50 %: the dragon (new object: breath bands behind the pillars) joins the marks, the spin and the roar of the earlier phase
+    bp('p2', 0.5, ['tugrul_verdict', 'tugrul_howl', 'tugrul_frost_mark', 'tugrul_spin'], { yell: 'Kırağı! Göklerden in ve onları dondur!', ability: 'tugrul_dragon_phase' }),
+    bp('p3', 0.25, ['tugrul_verdict', 'tugrul_howl', 'tugrul_frost_mark', 'tugrul_spin'], { yell: 'Taht... benimdir! SONSUZA DEK!', ability: 'tugrul_wrath' }),
   ],
   intro: 'Tahtım buzdan, kalbim buzdan. Sizinki de olacak!', death: 'Sonunda... sıcak... ne kadar... sıcak...',
   arena: { cx: 136, cz: 132, w: 48, h: 48, homeX: 136, homeZ: 138 },
@@ -1315,14 +1336,18 @@ boss({
   visual: { hide: ROGUE_HIDE.filter((n) => n !== 'Knife' && n !== 'Knife_Offhand'), runRef: 7, eyeEmissive: 0xff2040 },
   basic: cone('nefris_slash', 'Çift Hançer', 3.5, 90, 1.6, 1.0, 'Dualwield_Melee_Attack_Slice', 0.55, { windup: 0.5, telegraph: false, statuses: [poison(1, 0.3, 8)] }),
   abilities: [
+    // tank buster: a telegraphed cone on the tank (not parryable), poison/bleed stacks
+    cone('nefris_gouge', 'Kanlı Hançer', 5, 100, 12, 4.0, 'Dualwield_Melee_Attack_Slice', 0.6, { windup: 1.4, initialCooldown: 7, telegraph: true, tankBuster: true, statuses: [bleed(1, 0.3, 8)], sfx: 'dagger_throw' }),
+    // group beat: a raid-wide shadow wail after a 2.5 s cast bar
+    aoe('nefris_wail', 'Gölge Çığlığı', 'self_aoe', 36, 30, 24, 2.5, 0.6, 'shadow', 'Spellcast_Raise', 0.8, { initialCooldown: 16, castTime: 2.5, sfx: 'shadow_cast' }),
     custom('nefris_shadowstep', 'Gölge Adımı', 15, 8, 1.0, 'Spellcast_Raise', { sfx: 'blink', params: { impact: 0.5 } }),
     custom('nefris_fan', 'Hançer Yelpazesi', 20, 12, 1.2, 'Throw', { sfx: 'dagger_throw', params: { impact: 0.75 } }),
     custom('nefris_clones', 'Gölge Klonları', 999, 9999, 1.0, 'Spellcast_Raise', { sfx: 'shadow_cast' }),
   ],
   phases: [
-    bp('p1', 1.01, ['nefris_shadowstep', 'nefris_fan']),
-    bp('p2', 0.66, ['nefris_shadowstep', 'nefris_fan'], { yell: 'Hangimi vuracaksın?', ability: 'nefris_clones' }),
-    bp('p3', 0.33, ['nefris_shadowstep', 'nefris_fan'], { yell: 'Hangimi vuracaksın?', ability: 'nefris_clones' }),
+    bp('p1', 1.01, ['nefris_gouge', 'nefris_wail', 'nefris_shadowstep', 'nefris_fan']),
+    bp('p2', 0.66, ['nefris_gouge', 'nefris_wail', 'nefris_shadowstep', 'nefris_fan'], { yell: 'Hangimi vuracaksın?', ability: 'nefris_clones' }),
+    bp('p3', 0.33, ['nefris_gouge', 'nefris_wail', 'nefris_shadowstep', 'nefris_fan'], { yell: 'Hangimi vuracaksın?', ability: 'nefris_clones' }),
   ],
   intro: 'Sizi saatlerdir izliyorum. Sıkıcısınız.', death: 'Efendim... uyan...',
   arena: { cx: 24, cz: 52, w: 48, h: 48, homeX: 22, homeZ: 41 },
@@ -1347,7 +1372,8 @@ boss({
     custom('kevvas_roar', 'Boşluk Kükremesi', 25, 25, 2.0, 'Jump', { sfx: 'boss_roar', params: { impact: 0.3 } }),
   ],
   phases: [
-    bp('p1', 1.01, ['kevvas_devour', 'kevvas_void_pull', 'kevvas_rifts']),
+    // the Boşluk Kükremesi ring (group beat, 2 s telegraph) now comes in the first phase too, not only after 50 %
+    bp('p1', 1.01, ['kevvas_devour', 'kevvas_roar', 'kevvas_void_pull', 'kevvas_rifts']),
     bp('p2', 0.5, ['kevvas_devour', 'kevvas_void_pull', 'kevvas_rifts', 'kevvas_roar'], { yell: 'ZİYAFET!', ability: 'kevvas_feast' }),
   ],
   intro: 'AÇ... ÇOK AÇ...', death: 'Boşluk... beni... geri... çağırıyor...',
@@ -1360,7 +1386,8 @@ boss({
   basic: line('zakhar_thrust', 'Üç Dişli Saplama', 6, 2, 2.3, 0.7, 1.0, 'physical', 'Weapon', 0.45, { telegraph: true, cooldown: 2.3, parryable: true }),
   abilities: [
     line('zakhar_impale', 'Üç Dişli Mızrak', 12, 2.5, 15, 1.2, 4.5, 'physical', 'Weapon', 0.45, { initialCooldown: 8, tankBuster: true, statuses: [bleed(1, 0.3, 8)], sfx: 'boss_cast' }),
-    aoe('zakhar_nova', 'Cehennem Novası', 'self_aoe', 10, 10, 24, 2.5, 3.0, 'fire', 'Punch', 0.5, { initialCooldown: 14, castTime: 2.5, vfx: 'fire_burst', sfx: 'boss_cast' }),
+    // group beat: a raid-wide hell nova after a 3 s cast bar (the seals and the ritual are the positioning around it)
+    aoe('zakhar_nova', 'Cehennem Novası', 'self_aoe', 36, 30, 16, 3.0, 1.4, 'fire', 'Punch', 0.5, { initialCooldown: 12, castTime: 3.0, vfx: 'fire_burst', sfx: 'boss_cast' }),
     custom('zakhar_seals', 'Gölge Mühürleri', 30, 20, 1.0, 'Wave', { sfx: 'boss_cast', params: { impact: 0.8 } }),
     custom('zakhar_ritual', 'Tarikat Ayini', 999, 9999, 1.0, 'Duck', { sfx: 'boss_roar' }),
     custom('zakhar_awaken', 'Uyanış', 999, 9999, 1.0, 'Yes', { sfx: 'boss_roar' }),
@@ -1371,7 +1398,9 @@ boss({
     bp('p1', 1.01, ['zakhar_impale', 'zakhar_nova', 'zakhar_seals']),
     bp('p2', 0.7, [], { yell: 'Müritlerim! Ayini tamamlayın!', ability: 'zakhar_ritual' }),
     bp('p3', 0.699, ['zakhar_impale', 'zakhar_nova', 'zakhar_seals']),
-    bp('p4', 0.4, ['zakhar_nova', 'zakhar_seals', 'zakhar_hellrain'], { yell: 'Bu beden artık yeterince güçlü. UYANIYORUM!', ability: 'zakhar_awaken' }),
+    // 50 %: the awakening is the final phase change. The kit comes back whole (tank impale, hell nova, seals) with the hell rain,
+    // and the ritual's acolytes join as a summon, so the fight recombines the earlier mechanics
+    bp('p4', 0.5, ['zakhar_impale', 'zakhar_nova', 'zakhar_seals', 'zakhar_hellrain'], { yell: 'Bu beden artık yeterince güçlü. UYANIYORUM!', ability: 'zakhar_awaken', summon: { enemyId: 'cult_acolyte', count: 3 } }),
   ],
   intro: 'Tarikatım beni uyandırdı. Siz de bana kurban olarak sunuldunuz.', death: 'Gölgeler... asla... ölmez...',
   arena: { cx: 80, cz: 28, w: 56, h: 56, homeX: 80, homeZ: 26 },

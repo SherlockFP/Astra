@@ -64,10 +64,12 @@ const gurz: BossScript = {
       },
     },
 
-    /** Körük Esintisi: 3 s gust pushes every player south (+z) at 6 m/s toward the lava channel. */
+    /** Körük Ateşi (group beat, 2 s cast bar): r 14 fire circle on the boss, the arena corners outside it are the safe spots. Then the
+     *  Körük Esintisi gust (3 s, every player pushed south at 6 m/s toward the lava channel). */
     gurz_bellows: {
-      start(c) {
+      start(c, b) {
         floatOver(c.e, 'KÖRÜK!', 1);
+        circle(c, c.e.position.x, c.e.position.z, 14, b.delay, 1.0, { type: 'fire', name: 'Körük Ateşi', vfxOnLand: 'fire_burst' });
       },
       resolve(c) {
         bossMsg('boss_push', { dx: 0, dz: 1, speed: 6, dur: 3 });
@@ -208,7 +210,7 @@ const atesyurek: BossScript = {
 // Boss 3: Mavi Alev Ignaroth
 // ---------------------------------------------------------------------------------------------------------------------
 interface Walls { t: number; ang: number; next: number; speed: number }
-interface Gates { t: number; waves: boolean[]; rows: number; rowT: number }
+interface Gates { t: number; waves: boolean[]; rows: number; rowT: number; meteorT: number }
 
 function endGates(c: BossController): void {
   c.state.gates = null;
@@ -258,6 +260,12 @@ const ignaroth: BossScript = {
       if (!g.waves[2] && g.t >= 18) {
         g.waves[2] = true;
         c.spawnAdds('flame_skull', 4, { positions: spots(4), tag: 'gate' });
+      }
+      // recombined soak: Göktaşı (the boss-3 soak) drops every 12 s on top of the adds and the grate rows
+      g.meteorT -= dt;
+      if (g.meteorT <= 0) {
+        g.meteorT = 12;
+        c.castNow('ignaroth_meteor');
       }
       g.rowT -= dt;
       if (g.rowT <= 0) {
@@ -357,12 +365,12 @@ const ignaroth: BossScript = {
         c.teleport(p.x, p.z, false);
         G.vfx.spawn('leap_land', [p.x, 0.2, p.z], { scale: 1.6 });
         G.events.emit('camera:shake', { intensity: 0.4, duration: 0.4 });
-        c.state.gates = { t: 0, waves: [false, false, false], rows: 0, rowT: 1.5 } as Gates;
+        c.state.gates = { t: 0, waves: [false, false, false], rows: 0, rowT: 1.5, meteorT: 6 } as Gates;
         bossMsg('boss_toast', {}, { text: 'Dökümhane efendine hizmet ediyor! Zemin menfezlerine dikkat!' });
       },
       abort(c) {
         if (c.inReset) return;
-        if (!c.state.gates) c.state.gates = { t: 0, waves: [false, false, false], rows: 0, rowT: 1.5 } as Gates;
+        if (!c.state.gates) c.state.gates = { t: 0, waves: [false, false, false], rows: 0, rowT: 1.5, meteorT: 6 } as Gates;
       },
     },
 
