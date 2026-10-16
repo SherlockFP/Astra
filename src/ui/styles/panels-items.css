@@ -663,38 +663,44 @@ body.pi-dragging, body.pi-dragging * { cursor: grabbing !important; }
 
 /* ---------------------------------------------------------------- skills */
 
-.pi-skills { display: grid; grid-template-columns: 1fr 296px; gap: 14px; }
-.pi-sk-head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 5px; margin-bottom: 7px; border-bottom: 1px solid var(--pi-line); }
+.pi-skills { display: grid; grid-template-columns: minmax(0, 1fr) minmax(244px, 296px); gap: 14px; min-width: 0; }
+.pi-sk-left, .pi-sk-right { min-width: 0; }
+.pi-sk-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 10px; padding-bottom: 5px; margin-bottom: 7px; border-bottom: 1px solid var(--pi-line); }
+.pi-sk-head > .pi-sk-pts { flex-basis: 100%; min-width: 0; max-width: 100%; justify-content: space-between; margin-top: 2px; }
 .pi-sk-class { font-family: var(--font-body); font-weight: 700; font-size: 20px; color: var(--elv-value); text-shadow: var(--sh-text); }
 .pi-sk-count { font-size: 13px; color: var(--text-dim); }
-.pi-sk-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-height: 480px; overflow-y: auto; padding-right: 4px; align-content: start; }
-.pi-skill { display: flex; gap: 8px; padding: 6px; min-height: 76px; cursor: grab; background: rgba(45, 45, 45, 0.55); border: 1px solid var(--elv-border); border-radius: var(--ui-r-frame); }
+.pi-sk-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: 6px; max-height: 420px; overflow-y: auto; overflow-x: hidden; padding-right: 4px; align-content: start; }
+.pi-skill { display: flex; gap: 8px; padding: 6px; min-height: 76px; min-width: 0; box-sizing: border-box; cursor: grab; background: rgba(45, 45, 45, 0.55); border: 1px solid var(--elv-border); border-radius: var(--ui-r-frame); }
 .pi-skill:hover { border-color: var(--pi-edge); }
 .pi-skill.sel { border-color: var(--elv-value); box-shadow: none; background: rgba(110, 78, 38, 0.6); }
 .pi-skill.locked { filter: grayscale(0.85); opacity: 0.6; cursor: default; }
 .pi-skill-txt { flex: 1; min-width: 0; }
-.pi-skill-name { font-family: var(--font-head); font-weight: 700; font-size: 13px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pi-skill-name { font-family: var(--font-head); font-weight: 700; font-size: 13px; line-height: 1.2; color: #fff; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .pi-skill-sub { font-size: 13px; color: var(--elv-value); }
 .pi-skill-desc { margin-top: 2px; font-size: 13px; line-height: 1.25; color: var(--text-dim); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .pi-skill-key { position: absolute; right: 1px; bottom: 1px; padding: 0 4px; font-family: var(--font-head); font-weight: 700; font-size: 12px; color: var(--elv-value); background: var(--ui-well); border: 1px solid var(--pi-edge); border-radius: var(--ui-r-btn); pointer-events: none; }
 .pi-skill-lock { position: absolute; inset: 0; background: var(--ui-well) url('/assets/icons/ui-lock.svg') center / 55% no-repeat; pointer-events: none; }
 .pi-slot.skill { cursor: pointer; }
 .pi-slot.skill .pi-ico { inset: 10%; }
-.pi-sk-bar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px 6px; justify-items: center; padding: 10px 6px; margin-bottom: 6px; background: var(--ui-well); border: 1px solid var(--elv-border); border-radius: var(--ui-r-bar); box-shadow: none; }
-.pi-sk-slotwrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.pi-sk-slotlabel { min-height: 12px; font-family: var(--font-head); font-size: 12px; color: var(--elv-value); }
+.pi-sk-bar { display: grid; grid-template-columns: repeat(6, 42px); gap: 8px 4px; justify-content: center; padding: 10px 6px; margin-bottom: 6px; background: var(--ui-well); border: 1px solid var(--elv-border); border-radius: var(--ui-r-bar); box-shadow: none; }
+.pi-sk-bar .pi-slot.sz-lg { width: 42px; height: 42px; }
+.pi-sk-slotwrap { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+.pi-sk-slotlabel { min-height: 12px; width: 62px; margin: 0 -10px; text-align: center; white-space: nowrap; font-family: var(--font-head); font-size: 11px; color: var(--elv-value); }
 .pi-sk-slotwrap.ult .pi-slot { border-color: #ff8000; }
 .pi-sk-detail { margin-top: 10px; display: flex; flex-direction: column; gap: 7px; }
-.pi-sd-head { display: flex; gap: 10px; }
-.pi-sd-name { font-family: var(--font-head); font-weight: 700; font-size: 16px; text-shadow: var(--sh-text); }
+.pi-sd-head { display: flex; gap: 10px; min-width: 0; }
+.pi-sd-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.pi-sd-name { font-family: var(--font-head); font-weight: 700; font-size: 16px; line-height: 1.2; text-shadow: var(--sh-text); overflow-wrap: anywhere; }
 .pi-sd-lvl { font-size: 13px; color: var(--text-dim); }
 .pi-sd-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
+.pi-sd-tags .pi-tag { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pi-tag { padding: 0 6px; font-size: 12px; color: var(--elv-value); background: var(--ui-well); border: 1px solid var(--elv-border); border-radius: var(--ui-r-frame); }
 .pi-sd-body { padding: 6px 9px; background: var(--ui-well); border: 1px solid var(--elv-border); border-radius: var(--ui-r-frame); font-size: 13px; }
-.pi-sd-line { color: var(--text-dim); line-height: 1.45; }
+.pi-sd-line { color: var(--text-dim); line-height: 1.45; overflow-wrap: anywhere; }
 .pi-sd-line b { color: #fff; font-weight: 700; }
-.pi-sd-desc { font-size: 13px; line-height: 1.35; color: #cacaca; font-style: italic; }
-.pi-sd-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.pi-sd-desc { font-size: 13px; line-height: 1.35; color: #cacaca; font-style: italic; overflow-wrap: anywhere; }
+.pi-sd-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; min-width: 0; }
+.pi-sd-pick .pi-tag, .pi-sd-pick .pi-chip { max-width: 100%; overflow-wrap: anywhere; }
 /* skill book groups (UX-52b, section 7.4): search, collapsible groups, 12-slot bar editor */
 .pi-sk-search { width: 100%; box-sizing: border-box; margin-bottom: 6px; padding: 5px 9px; font: 400 13px/1.2 var(--font-body); color: var(--text-1); background: var(--ui-well); border: 1px solid var(--elv-border); border-radius: var(--ui-r-frame); }
 .pi-sk-search:focus { outline: none; border-color: var(--elv-value); }
