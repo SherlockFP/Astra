@@ -8,8 +8,8 @@
  *  - TANK: the local player with real CharacterState gear; the whole action bar is cast through SkillSystem (LMB every 0.36 s, one
  *    other slot every 0.5 s).
  *  - HEALER (priest) and two DPS (mage, archer): FakePlayers that hit their target through Combat.playerHitEnemy every 0.36 s with a
- *    basic-attack coefficient (healer 0.5, DPS 1.0) on the default weapon stats. They do not heal (the tank is never in danger of
- *    dying to the boss's ordinary damage in a fight the party is winning).
+ *    basic-attack coefficient (healer 0.5, DPS 1.0) on the default weapon stats. The healer heals the lowest living party member for
+ *    12 % of its max HP every 1.5 s (HEAL_PCT, HEAL_PERIOD), so the party survives the ordinary damage of a fight it is winning.
  *  - Every bot dodges telegraphed shapes due within 1 s and persisting ground zones, and paths around walls with NavGrid.findPath.
  *  - Target policy (all party members share it): the odd illusion of Sis Çağıran's guessing game (playbook); otherwise a gate add
  *    while the boss is invulnerable (GATE_ADDS: Halkor's kef_shard packs are placed from the dungeon, as its script waits for them);
@@ -17,38 +17,62 @@
  *    otherwise the boss. An add the tank chases for ADD_GIVEUP_S without a kill is left alone for ADD_BLACKLIST_S.
  *  - Soak circles (kind 'soak'): the two nearest non-tank bots stand in every soak circle that lands within SOAK_LEAD_S.
  *  - Playbook (PLAYBOOK, one entry per boss that has a scripted mechanic the generic policy cannot play): Hirya's pillar stacks (the
- *    tank leads her between the Solsten and Olmyr pillars), Dikişet's table stage (the constructs stay alive for the meat hook and
- *    the DPS stand on the far side of the table, where the hook beam can cross it).
+ *    sim walks HER between the Solsten and Olmyr pillars: label 'boss walked'), Sis Çağıran's odd illusion, Dikişet's table stage (the
+ *    constructs stay alive for the meat hook and the DPS stand on the far side of the table). Every result line states its playbook.
  *
+ * Every fight has its own state: a new World, HitShapes, SkillSystem and Combat; the major cooldowns of the character save are reset
+ * (the game's own dungeon-entry reset); the engine clock starts at a per-slot offset and timeScale at 1; the party and boss ids and the
+ * ids of the adds come from the fight's slot (the boss's place in the sequence, and the attempt), so a module map keyed by entity id
+ * cannot hand one fight's state to the next. The shared default RNGs (ItemGen.defaultRng, utils.cosmeticRng) are reseeded per slot.
+ * At the end every enemy AI and the world's EnemyDirector are disposed, and every body is marked removed: a director or a death
+ * listener left subscribed to G.events reacts to the next fight's deaths and damage.
  * The fight runs up to 300 s of sim time at 30 Hz (DT = 1/30; the controller's timers take the same dt). Math.random is seeded per boss.
+ * Residual order dependence is reported as ORDER: the alone run and the sequence run must give the same verdict.
  *
  *   node --no-warnings --import ./dev/combat-sim/register.mjs dev/combat-sim/boss_fights.mjs
- *   BOSS=<bossId> V=1 node ... dev/combat-sim/boss_fights.mjs    (one boss, with the casts and the final controller state)
+ *   BOSS=<bossId> V=1 node ... dev/combat-sim/boss_fights.mjs    (one boss alone, with the casts and the final controller state)
+ *
+ * ORDER: every boss runs twice, in the full sequence and alone (a child process with BOSS=<id>, so no module state is shared). The
+ * two verdicts (PASS / FAIL and the list of failure classes) must be equal, or the boss fails with class ORDER. A BOSS=<id> run alone
+ * prints its verdict only (the comparison runs in the full sequence).
  *
  * Per boss (one line each), PASS needs all of:
  *  - no exception thrown, and no ERR line logged during the fight (WARN lines are reported as info only);
- *  - every scripted ability (BossScript.abilities keys, phase abilities, onEnter abilities; passives excluded) cast at least once;
- *  - every hit shape from an enemy source that lands (boss or adds; not projectiles) has its origin inside the boss arena on walkable ground;
+ *  - every scripted ability (BossScript.abilities keys, phase abilities, onEnter abilities; passives excluded) PRODUCED an effect: a
+ *    hit shape of the boss that landed, a status applied to the boss, a summon, or a movement of the boss while the ability was busy;
+ *    a start alone is not a cast;
+ *  - every hit shape from an enemy source that lands is placed on walkable ground: a shape of the boss has its origin within
+ *    ARENA_MARGIN_BOSS m of the arena, a shape of an add within ARENA_MARGIN_ADD m. Sweeps that come in from a wall (SWEEP_ABILITIES:
+ *    the lane waves, the wind breath and the moving band) only need to reach the arena;
  *  - every phase whose HP threshold the boss crossed fired a boss:phase event;
- *  - the boss died, or lost >= 60 % of its HP in the fight.
+ *  - the boss died, or lost >= 60 % of its HP in the fight;
+ *  - the full-sequence verdict equals the alone verdict (ORDER).
+ * A boss that dies before 60 s with a scripted ability not produced is fought again with up to x16 boss HP; the rerun is the verdict,
+ * and the x1 result is printed beside it.
  * Every failing check is printed with its class:
  *  - GAME: the game does what the content says wrong (a real bug a player would hit: an ability no phase can start, a shape placed
  *    off the arena or in a wall, a phase that does not fire although HP crossed it, an engine error, a boss that never loses HP);
- *  - SIM: the sim cannot play the mechanic (SIM_LIMITS names the mechanic and the reason; the check is kept visible, not hidden).
- * Deaths are bot deaths (a dead bot is revived at once and the death is counted). Time is the sim time of the kill, or 300 s.
- * Ends with `BOSS FIGHTS: N pass, M fail (G game, S sim)`; exit 1 only when a GAME failure exists.
+ *  - SIM: the sim cannot play the mechanic (SIM_LIMITS names the mechanic and the reason; the cooldown check is SIM only when the
+ *    ability's own cooldown is longer than the time the fight had after the phase entered);
+ *  - ORDER: the full-sequence and the alone verdicts differ (sim state leaked between fights).
+ * Info, not in the verdict (WARN lines): bot deaths per minute above DEATHS_PER_MIN_WARN (bot deaths are counted, and a dead bot is
+ * revived at once); a kill within NEAR_LIMIT_S of the fight limit; an x1 kill under X1_MIN_KILL_S.
+ * Ends with `BOSS FIGHTS: N pass, M fail (G game, S sim, O order)`; exit 1 when a GAME or ORDER failure exists.
  */
 import * as H from './harness.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const { G } = H;
+const SELF = fileURLToPath(import.meta.url);
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const T = 4;                 // nav cells per GDD tile (contentCheck convention); 1 cell = 1 m in scene units
 const FIGHT_LIMIT_S = 300;
 const DT = 1 / 30;
 const ONLY = process.env.BOSS || null;
+const CHILD = !!process.env.ALONE_CHILD; // an alone run started by the full sequence: prints its verdict line only
 const VERBOSE = !!process.env.V;
 const BOT_SPEED = 6.5;       // m/s, dodge and walk speed of the bots
 const DODGE_LEAD_S = 1.0;    // a pending shape due within this many seconds makes the bot move
@@ -57,26 +81,41 @@ const SOAK_BOTS = 2;         // non-tank bots per soak circle
 const LMB_PERIOD = 0.36;     // tank cast cadence (the harness LMB chain)
 const SKILL_PERIOD = 0.5;    // tank: one bar slot (other than LMB) every 0.5 s, round robin
 const BOT_HIT_PERIOD = 0.36; // healer and DPS basic-attack cadence
-const HEAL_PERIOD = 1.5;    // the healer casts one heal every 1.5 s on the lowest living party member (HEAL_PCT of its max HP)
+const HEAL_PERIOD = 1.5;     // the healer casts one heal every 1.5 s on the lowest living party member (HEAL_PCT of its max HP)
 const HEAL_PCT = 0.12;
 const BOT_RANGE = 7.5;       // healer and DPS hit from this far
 const BOT_STAND = 6;         // and walk to within this distance of their target
 const ADD_GIVEUP_S = 12;     // the tank chases one add this long without a kill ...
 const ADD_BLACKLIST_S = 25;  // ... then leaves it alone this long (an add it cannot reach)
+const ARENA_MARGIN_BOSS = 0.5; // a boss shape's origin may lie this far (m) outside the arena box (a rim of floor)
+const ARENA_MARGIN_ADD = 2;    // an add's shape origin may lie this far (m) outside the arena box (adds roam at its edge)
+const X1_MIN_KILL_S = 15;      // a kill this quick at x1 is WARNed (the party out-damages the boss)
+const DEATHS_PER_MIN_WARN = 6; // bot deaths per minute above this are WARNed
+const NEAR_LIMIT_S = 285;      // a kill this late is WARNed (it sits within 15 s of the fight limit)
 /**
  * Dungeon-placed enemies that a boss script waits for (the script reads them from the world, the dungeon places them in its packs).
  * Halkor sleeps immune until three dead kef_shard enemies exist (kefaret_salonlari.ts shardsDead, counted from the death events), so the sim places the shard packs.
  */
 const GATE_ADDS = { boss_halkor: 'kef_shard' };
-const MIN_FIGHT_S = 60;      // a fight that ends sooner with abilities uncast is fought again with more boss HP (see the run loop)
+const MIN_FIGHT_S = 60;      // a fight that ends sooner with abilities unproduced is fought again with more boss HP (see runBoss)
 const HERD_SPEED = 5;        // m/s, the playbook walk of a boss (bossPoint)
 const HERD_PERIOD_S = 24;    // Hirya: the tank leads her to one pillar for 12 s, then to the other
 const DIKISET_KEEP = ['construct']; // Dikişet: the sewn constructs stay alive (the meat hook needs one)
 /**
+ * Sweeps that deliberately come in from a wall, by ability id: a lane wave of Kızgın Kreşendo (dorlita_crescendo), the wind breath of
+ * Tuğrul's dragon (tugrul_dragon_phase, drawn from 24 m outside the arena), and the moving band of Melandros's winds (melandros_winds).
+ * Their origin may lie beyond the wall; they must only reach the arena. Every other shape of the boss must start inside it.
+ */
+const SWEEP_ABILITIES = new Set(['dorlita_crescendo', 'tugrul_dragon_phase', 'melandros_winds']);
+/**
  * SIM_LIMITS: ability ids the sim cannot start by playing the fight (the check stays, classed SIM with this reason). Empty while the
  * sim plays every mechanic it has a playbook entry for.
  */
-const SIM_LIMITS = {};
+const SIM_LIMITS = {
+  // a player link (links.ts tickPlayerLinks) hurts only a linked member more than r (14 m) from the group centre; the sim party stays
+  // together, so the link never ticks damage. The mechanic is real; the sim does not spread the party.
+  tred_mindlink: 'the link hurts only a linked member more than 14 m from the group centre (links.ts), and the sim party never spreads',
+};
 // a boss-level limit: its fight is not finished in the sim's time, so the survival check is classed SIM with this reason
 const SIM_BOSS_LIMITS = {};
 
@@ -95,10 +134,11 @@ const { Combat } = await H.imp('combat/Combat.ts');
 const { SkillSystem } = await H.imp('combat/SkillSystem.ts');
 const { HitShapes } = await H.imp('combat/HitShapes.ts');
 const { CharacterState } = await H.imp('systems/CharacterState.ts');
-const { generateItem, categoriesForClass, slotsForCategory } = await H.imp('systems/ItemGen.ts');
-const { RNG } = await H.imp('core/utils.ts');
+const { generateItem, categoriesForClass, slotsForCategory, defaultRng } = await H.imp('systems/ItemGen.ts');
+const { RNG, cosmeticRng } = await H.imp('core/utils.ts');
 const { SPECS } = await H.imp('data/specs.ts');
 const { partyScales, normalEnemyLevel } = await H.imp('systems/instanceScaling.ts');
+const { resetMajorCooldowns } = await H.imp('combat/majors.ts');
 
 // the sim owns these service stubs (the harness covers the common ones); missing methods are no-ops, never silent data
 G.vfx = new Proxy(G.vfx, { get: (t, k) => (k in t ? t[k] : () => ({ alive: false, stop() {}, setPosition() {}, setProgress() {}, setTransform() {}, cancel() {} })) });
@@ -254,8 +294,7 @@ function stepTo(bot, x, z, step, nav) {
   if (d < 1e-4) return;
   const s = Math.min(d, step);
   const nx = bot.position.x + (dx / d) * s, nz = bot.position.z + (dz / d) * s;
-  const inside = true; // bots may walk out of the arena to a gate (the shard packs sit beyond it); placement and adds stay inside
-  if (inside && nav.isWalkable(nx, nz)) {
+  if (nav.isWalkable(nx, nz)) {
     bot.position.x = nx;
     bot.position.z = nz;
     bot.yaw = Math.atan2(dx, dz);
@@ -265,25 +304,26 @@ function stepTo(bot, x, z, step, nav) {
 // ---------------------------------------------------------------------------------------------- scripted mechanics (playbook)
 /**
  * Per-boss playbook: the scripted mechanics the generic policy cannot play. Each entry is a function of the fight context (see
- * fightBoss): tankPoint(ctx) walks the tank to a point (null: no point), bossPoint(ctx) walks the boss to a point, keepAlive lists add tags the party leaves alive,
- * botPoint(ctx) places the non-tank bots (null: default), oddClone marks the guessing game of Sis Çağıran (the odd illusion is the
- * target). Everything else (soaks, adds, gates, the boss) is the generic policy.
+ * fightBoss): tankPoint(ctx) walks the tank to a point (null: no point), bossPoint(ctx) walks the boss to a point, keepAlive lists add
+ * tags the party leaves alive, botPoint(ctx) places the non-tank bots (null: default), oddClone marks the guessing game of Sis Çağıran
+ * (the odd illusion is the target). `label` is printed on the boss's result line. Everything else is the generic policy.
  */
 const PLAYBOOK = {
   // Hirya's stacks: +1 per 4 s with the boss inside 8 m of a pillar. Thunder (T) opens Ark Şimşeği and Fırtına Gözü, Holy (H)
   // opens Kutsal Küreler and Arınma. A caster (bolt 22 m) walks only until the tank is in range, and a real tank pulls her onto a pillar
-  // with a multi-step walk the sim does not plan: the playbook walks HER (bossPoint, 5 m/s, her own movement is left to the controller
-  // otherwise) to the pillar for 12 s and then to the other. The stacks, the unlocked abilities and their shapes are the script's own.
+  // with a multi-step walk the sim does not plan: the playbook walks HER (bossPoint, 5 m/s) to the pillar for 12 s and then to the other.
   boss_hirya: {
+    label: 'boss walked between the pillars (bossPoint)',
     bossPoint(ctx) {
       return ctx.t % HERD_PERIOD_S < HERD_PERIOD_S / 2 ? ctx.pillars.T : ctx.pillars.H;
     },
   },
   // Sis Çağıran's guessing game: attack the one illusion whose code differs from the three identical ones.
-  boss_sis_cagiran: { oddClone: true },
+  boss_sis_cagiran: { label: 'odd illusion targeted (oddClone)', oddClone: true },
   // Dikişet's table stage: the constructs stay alive for the meat hook; the hook beam crosses the table when the DPS stand on the
   // far side of it (north of the table, the constructs are south of it).
   boss_cerrah_dikisat: {
+    label: 'constructs kept alive, DPS behind the table (keepAlive, botPoint)',
     keepAlive: DIKISET_KEEP,
     botPoint(ctx) {
       if (ctx.ctrl.state.stage !== 'table') return null;
@@ -338,10 +378,18 @@ function placeParty(bot, cx, cz, nav, offset) {
   bot.position.z = p.z;
 }
 
-/** Shared event log of the boss phase / lifecycle events (filtered per boss by bossId). */
+/** Shared event log of the boss phase / lifecycle events (filtered per fight by the index it starts at). */
 const bossEvents = [];
 let simT = 0;
 for (const name of ['boss:phase', 'boss:engaged', 'boss:defeated', 'boss:wipe']) G.events.on(name, (e) => bossEvents.push({ name, t: simT, ...e }));
+
+/**
+ * The shared default RNGs (ItemGen.defaultRng, utils.cosmeticRng) are seeded from Math.random when their module loads, so every process
+ * draws different numbers from them and each fight advances them for the next. Both are reseeded per fight (RNG keeps its state in `s`).
+ */
+function reseedShared(slot) {
+  for (const r of [defaultRng, cosmeticRng]) r.s = ((0x2545f491 + 7919 * slot) >>> 0) || 1;
+}
 
 /** Math.random replaced by a seeded stream (mulberry32 over an FNV-1a hash of `key`); returns the restore function. */
 function seedRandom(key) {
@@ -360,18 +408,26 @@ function seedRandom(key) {
 
 /**
  * Fights one boss. Returns the measurements; never throws (an exception is returned as `crash`).
+ * `produced` maps an ability id to the effects it produced (landed boss shapes, statuses on the boss, summons, boss movement while busy).
  */
-async function fightBoss(def, b, botLevel, enemyLevel, hpScale = 1) {
+async function fightBoss(def, b, botLevel, enemyLevel, hpScale = 1, slot = 0) {
   simT = 0; // the phase / engage stamps are per fight
+  // the engine clock continues from a per-slot offset: module maps keyed by an absolute time (procActions zones) must not see the entries
+  // of an earlier fight as live, and the offset is the same alone and in the sequence
+  G.engine.time = 1000 * (slot + 1);
+  G.engine.timeScale = 1;   // a slow-motion left by the last fight does not carry over
   const bdef = getEnemyDef(b.bossId);
   // deterministic scripts: the boss scripts draw Math.random (targets, spreads); each fight gets its own seeded stream
   const restoreRandom = seedRandom(`${b.bossId}`);
+  reseedShared(slot);
   const { nav, W, Hh, base } = navFor(def);
   const world = new World(new H.THREE.Scene(), nav);
   G.world = world;
   G.combat = new Combat();
   G.combat.rng = new RNG(0x51ed);
   G.skills = new SkillSystem();
+  // the major cooldowns live in the character save (CharacterSave.majorCd) and survive a fight: a dungeon entry resets them (the game's own reset)
+  resetMajorCooldowns();
   G.hitShapes = new HitShapes();
   G.character.save.skillBar = { ...TANK_SPEC.defaultBar };
   G.character.classId = TANK_SPEC.classId;
@@ -382,17 +438,21 @@ async function fightBoss(def, b, botLevel, enemyLevel, hpScale = 1) {
   // the party: tank (local, real gear), healer and two DPS (FakePlayers that hit through Combat.playerHitEnemy)
   const ch = buildCharacter(TANK_SPEC, botLevel);
   const tank = new H.FakePlayer(TANK_SPEC.classId, botLevel);
-  tank.id = 1;
+  // ids are per fight (the slot: the boss's place in the sequence and the attempt), so a module map keyed by entity id (shields, marks, pools)
+  // cannot hand one fight's state to the next; the same boss gets the same ids alone and in the full sequence
+  const P = 1000 * (slot + 1);
+  world.allocHostId = (() => { let n = 200000 + 1000 * slot; return () => n++; })();
+  tank.id = P + 1;
   tank.stats = { ...ch.stats };
   tank.maxHp = Math.max(1, Math.round(ch.stats.maxHp ?? 200));
   tank.hp = tank.maxHp;
   tank.armorSnapshot = ch.stats.armor;
   const healer = new H.FakePlayer('priest', botLevel);
-  healer.id = 2;
+  healer.id = P + 2;
   const dps1 = new H.FakePlayer('mage', botLevel);
-  dps1.id = 3;
+  dps1.id = P + 3;
   const dps2 = new H.FakePlayer('archer', botLevel);
-  dps2.id = 4;
+  dps2.id = P + 4;
   const BOT_COEF = new Map([[healer, 0.5], [dps1, 1.0], [dps2, 1.0]]);
   // the bots hit with the tank's level-appropriate stats (their own FakePlayer defaults are a level-30 weapon)
   for (const p of [healer, dps1, dps2]) { p.maxHp = tank.maxHp; p.hp = tank.maxHp; p.isLocal = false; p.stats = { ...ch.stats }; }
@@ -408,7 +468,7 @@ async function fightBoss(def, b, botLevel, enemyLevel, hpScale = 1) {
   const bx = sceneW(b.pos[0]), bz = sceneW(b.pos[1]);
   const room = def.rooms.find((r) => r.id === b.roomId);
   const cxR = sceneW(room.rect.x + room.rect.w / 2), czR = sceneW(room.rect.z + room.rect.h / 2);
-  const boss = new Enemy(500, bdef);
+  const boss = new Enemy(P + 500, bdef);
   boss.authority = true;
   boss.level = enemyLevel;
   boss.homeX = bx;
@@ -432,7 +492,7 @@ async function fightBoss(def, b, botLevel, enemyLevel, hpScale = 1) {
     for (const pk of def.packs) for (const m of pk.members) {
       if (m.enemyId !== gateId) continue;
       const gdef = getEnemyDef(gateId);
-      const g = new Enemy(600 + k++, gdef);
+      const g = new Enemy(P + 600 + k++, gdef);
       g.authority = true;
       g.level = enemyLevel;
       g.homeX = g.position.x = sceneW(pk.center[0]);
@@ -457,10 +517,28 @@ async function fightBoss(def, b, botLevel, enemyLevel, hpScale = 1) {
     return { crash: `BossController ctor: ${err?.stack ?? err}`, bossHp: hpBoss, boss, ctrl: null };
   }
 
-  // measurements
-  const cast = new Map();
+  // measurements. `busyId` is the ability the boss is casting now. A shape made outside any cast (a script update, e.g. the dragon's
+  // breath) is owned by the last ability the boss started, for the sweep whitelist only; an effect counts only for a cast in progress.
+  const produced = new Map();
+  const bump = (id) => { if (id) produced.set(id, (produced.get(id) ?? 0) + 1); };
+  const busyId = () => ctrl.busy?.ab?.id ?? null;
+  const started = new Map();
+  let lastCast = null;
   const origStart = ctrl.startAbility.bind(ctrl);
-  ctrl.startAbility = (ab, target, dd) => { cast.set(ab.id, (cast.get(ab.id) ?? 0) + 1); return origStart(ab, target, dd); };
+  ctrl.startAbility = (ab, target, dd) => { started.set(ab.id, (started.get(ab.id) ?? 0) + 1); lastCast = ab.id; return origStart(ab, target, dd); };
+  // a cast's effects are its own: a shape, status or summon made while it is busy, or after it ended (a scheduled hit, a link tick) and
+  // before the boss starts another ability, belongs to the last ability started (ownerNow); a movement counts only inside its cast (busyId)
+  const ownerNow = () => busyId() ?? lastCast;
+  const shapeOwner = new Map(); // shape id -> the ability that made it (ownerNow at creation)
+  const origShape = ctrl.shape.bind(ctrl);
+  ctrl.shape = (o) => {
+    const id = origShape(o);
+    if (id) shapeOwner.set(id, ownerNow());
+    return id;
+  };
+  const origSpawnAdds = ctrl.spawnAdds.bind(ctrl);
+  ctrl.spawnAdds = (defId, count, o) => { bump(ownerNow()); return origSpawnAdds(defId, count, o); };
+  const offStatus = G.events.on('status:applied', () => bump(ownerNow()));
   let landed = 0;
   const landBad = [];
   const origLand = G.hitShapes.land.bind(G.hitShapes);
@@ -469,22 +547,31 @@ async function fightBoss(def, b, botLevel, enemyLevel, hpScale = 1) {
     const src = s.sourceId !== null ? world.get(s.sourceId) : undefined;
     if (src && src.kind === 'enemy' && !s.projectile) {
       landed++;
-      // the arena rule is about the boss's own kit: an add that roams outside the arena (and the shapes it casts) is not the boss's placement
-      if (src.id !== boss.id) return origLand(a);
+      const onBoss = src.id === boss.id;
+      const own = shapeOwner.get(a.spec.id) ?? null;
+      if (onBoss) bump(own); // a landed shape is an effect of the cast that made it
+      const sweepAb = onBoss ? own : null;
+      const sweep = sweepAb !== null && SWEEP_ABILITIES.has(sweepAb);
+      const margin = onBoss ? ARENA_MARGIN_BOSS : ARENA_MARGIN_ADD;
       const ar = ctrl.arena;
-      // distance from the shape's centre to the arena box, against the shape's own reach: a band or a circle that overlaps the arena is
-      // placed on it (a lane wave or a wind wall is drawn longer than the room so it sweeps in from the wall); one that does not is lost
-      const out = Math.hypot(Math.max(0, Math.abs(a.ox - ar.cx) - ar.w / 2), Math.max(0, Math.abs(a.oz - ar.cz) - ar.h / 2));
       const sh = s.shape;
-      const reach = sh.type === 'rect' ? Math.max(sh.length, sh.width) / 2 : sh.type === 'circle' ? sh.radius : sh.type === 'ring' ? sh.outer : 0;
-      const inArena = out <= (sh.type === 'rect' || sh.type === 'circle' ? reach : 0);
-      const walk = base(a.ox, a.oz); // the static floor: a crystal or a construct standing on the spot blocks the nav for a while, not the shape
-      const roomWide = s.shape.type === 'circle' && s.shape.radius >= 0.5 * Math.min(ar.w, ar.h) || s.shape.type === 'ring' && s.shape.outer >= 0.5 * Math.min(ar.w, ar.h);
-      if (!inArena || (!walk && !roomWide)) {
+      let bad = null;
+      if (sweep) {
+        // a sweep from a wall: the shape must reach the arena (its band or circle overlaps the arena box)
+        const out = Math.hypot(Math.max(0, Math.abs(a.ox - ar.cx) - ar.w / 2), Math.max(0, Math.abs(a.oz - ar.cz) - ar.h / 2));
+        const reach = sh.type === 'rect' ? Math.max(sh.length, sh.width) / 2 : sh.type === 'circle' ? sh.radius : sh.type === 'ring' ? sh.outer : 0;
+        if (out > reach) bad = `sweep ${sweepAb} does not reach the arena`;
+      } else if (!ctrl.insideArena(a.ox, a.oz, margin)) {
+        bad = `outside the arena (+${margin} m margin)`;
+      } else if (!base(a.ox, a.oz)) {
+        bad = 'on blocked ground';
+      }
+      if (bad) {
         // a shape aimed at a bot (the game's own arena test for a target keeps 2 m of margin; the sim party also leaves the room for a gate
-        // add and is knocked onto walls) is the party's position, not the boss's placement: SIM
-        const atBot = bots.some((p) => !p.isDead && Math.hypot(p.position.x - a.ox, p.position.z - a.oz) <= 2.5);
-        landBad.push({ atBot, msg: `${s.abilityName ?? s.kind ?? "shape"} (${s.shape.type}) origin ${a.ox.toFixed(1)},${a.oz.toFixed(1)} ${!inArena ? "outside arena" : "on blocked ground"}${atBot ? " at a bot" : ""} [source ${src.def?.id ?? src.id} at ${src.position.x.toFixed(1)},${src.position.z.toFixed(1)}; arena c ${ar.cx.toFixed(1)},${ar.cz.toFixed(1)} w ${ar.w} h ${ar.h}]` });
+        // add and is knocked onto walls) is the party's position, not the boss's placement: SIM. Only a bot that is itself near the arena counts.
+        const atBot = bots.some((p) => !p.isDead && ctrl.insideArena(p.position.x, p.position.z, 2) && Math.hypot(p.position.x - a.ox, p.position.z - a.oz) <= 2.5);
+        const who = onBoss ? `boss${sweepAb ? ` (${sweepAb})` : ''}` : `add ${src.def?.id ?? src.id}`;
+        landBad.push({ atBot, onBoss, msg: `${s.abilityName ?? s.kind ?? 'shape'} (${sh.type}) by ${who}, origin ${a.ox.toFixed(1)},${a.oz.toFixed(1)} ${bad}${atBot ? ' at a bot' : ''} [source at ${src.position.x.toFixed(1)},${src.position.z.toFixed(1)}; arena c ${ar.cx.toFixed(1)},${ar.cz.toFixed(1)} w ${ar.w} h ${ar.h}]` });
       }
     }
     return origLand(a);
@@ -518,7 +605,7 @@ async function fightBoss(def, b, botLevel, enemyLevel, hpScale = 1) {
       // the party's target and the scripted points of this frame
       const tgt = pickTarget(ctx);
       // the tank takes the adds; the healer and DPS hit the boss whenever it can be hurt (the odd illusion, a gate, or the add while it is immune)
-      const bTgt = boss.statuses.has("invulnerable") ? tgt : boss;
+      const bTgt = boss.statuses.has('invulnerable') ? tgt : boss;
       const tankPt = pb.tankPoint ? pb.tankPoint(ctx) : null;
       // soak duty: the two nearest non-tank bots stand in every soak circle due within SOAK_LEAD_S
       soakTo.clear();
@@ -526,7 +613,7 @@ async function fightBoss(def, b, botLevel, enemyLevel, hpScale = 1) {
         const cand = others.filter((p) => !p.isDead && !soakTo.has(p))
           .sort((p, q) => Math.hypot(p.position.x - a.ox, p.position.z - a.oz) - Math.hypot(q.position.x - a.ox, q.position.z - a.oz))
           .slice(0, SOAK_BOTS);
-        for (const p of cand) { soakTo.set(p, { x: a.ox, z: a.oz }); soakUsed.add(a.id); }
+        for (const p of cand) { soakTo.set(p, { x: a.ox, z: a.oz }); soakUsed.add(a.spec.id); }
       }
       // bots: dodge first, then the tank chases and casts; the other members walk to their duty and hit
       const list = dangerList(G.hitShapes);
@@ -600,7 +687,11 @@ async function fightBoss(def, b, botLevel, enemyLevel, hpScale = 1) {
       await null;
       simT = t;
       H.setAimTarget(null);
+      const castNow = busyId();
+      const bx0 = boss.position.x, bz0 = boss.position.z;
       world.update(DT);
+      // a movement of the boss while a cast is in progress is an effect of that cast (the playbook walk above is excluded)
+      if (castNow && Math.hypot(boss.position.x - bx0, boss.position.z - bz0) > 0.01) bump(castNow);
       G.skills.update(DT);
       G.combat.update(DT);
       G.hitShapes.update(DT);
@@ -618,11 +709,18 @@ async function fightBoss(def, b, botLevel, enemyLevel, hpScale = 1) {
   } catch (err) {
     crash = `${err?.stack ?? err}`.split('\n').slice(0, 4).join(' | ');
   }
+  // teardown: nothing of this fight may act in the next one. The director and every enemy AI subscribe to the global event bus, and a
+  // death listener (kefaret_salonlari shardsDead) unsubscribes only once its boss is removed: every body of the fight is marked removed.
+  for (const o of world.enemies) o.ai?.dispose?.();
+  getDirector(world).dispose();
+  offStatus();
+  for (const o of [...world.enemies, ...world.players]) o.removed = true;
+  boss.removed = true;
   const newErrors = H.errors.slice(errStart);
   const phaseEv = bossEvents.slice(evStart).filter((e) => e.bossId === b.bossId && e.name === 'boss:phase').map((e) => e.phase);
   restoreRandom();
   return {
-    crash, t, deaths, dead: boss.isDead, lostPct: 100 * (1 - Math.max(0, boss.hp) / hpStart), minFrac, minFracAlive, cast, landed, landBad,
+    crash, t, deaths, dead: boss.isDead, lostPct: 100 * (1 - Math.max(0, boss.hp) / hpStart), minFrac, minFracAlive, cast: produced, started, landed, landBad,
     phaseEv, phaseAt: [...bossEvents.slice(evStart).filter((e) => e.bossId === b.bossId && e.name === 'boss:engaged').map((e) => [bdef.phases[0].id, e.t]), ...bossEvents.slice(evStart).filter((e) => e.bossId === b.bossId && e.name === 'boss:phase').map((e) => [e.phase, e.t])],
     newErrors, ctrl, boss, hpBoss, soakCount: soakUsed.size, tankStats,
     dbg: {
@@ -634,81 +732,151 @@ async function fightBoss(def, b, botLevel, enemyLevel, hpScale = 1) {
   };
 }
 
+// ---------------------------------------------------------------------------------------------- one boss: verdict
+/** The scripted ability ids of a boss: its script's keys, its phase abilities and onEnter abilities; passives and on-death hooks excluded. */
+function scriptedAbilities(b, bdef) {
+  const script = BOSS_SCRIPTS[b.bossId] ?? { abilities: {} };
+  const scripted = new Set([...Object.keys(script.abilities ?? {})]);
+  for (const ph of bdef?.phases ?? []) {
+    for (const a of ph.abilities) scripted.add(a);
+    if (ph.onEnter?.ability) scripted.add(ph.onEnter.ability);
+  }
+  // passives (params.passive) and on-death hooks run through the passive / death pipelines, never through startAbility
+  for (const ab of bdef?.abilities ?? []) if (ab.params?.passive || ab.params?.onDeath) scripted.delete(ab.id);
+  return scripted;
+}
+
+/**
+ * One boss: the x1 fight; when it dies before MIN_FIGHT_S with a scripted ability not produced, the boss is fought again with more HP
+ * (up to x16: the sim's HP mirrors the spawn formula, so a boss that dies in seconds never reaches its timed abilities), and the rerun
+ * is the verdict. Returns the verdict (fails: { cls, msg }, warns: strings) and both fights.
+ */
+async function runBoss(def, b, botLevel, enemyLevel, idx) {
+  const bdef = getEnemyDef(b.bossId);
+  const scripted = scriptedAbilities(b, bdef);
+  const x1 = await fightBoss(def, b, botLevel, enemyLevel, 1, 2 * idx);
+  let r = x1, hpScale = 1;
+  if (x1.dead && !x1.crash && x1.t < MIN_FIGHT_S && [...scripted].some((a) => !x1.cast.has(a))) {
+    hpScale = Math.min(16, Math.ceil((MIN_FIGHT_S * 1.3) / Math.max(x1.t, 2)));
+    r = await fightBoss(def, b, botLevel, enemyLevel, hpScale, 2 * idx + 1);
+  }
+  const fails = []; // { cls: 'GAME' | 'SIM' | 'ORDER', msg }
+  const add = (cls, msg) => fails.push({ cls, msg });
+  const warns = [];
+  if (r.crash) add('GAME', `exception: ${r.crash}`);
+  const missing = [...scripted].filter((a) => !r.cast.has(a));
+  for (const a of missing) {
+    const ph = (bdef?.phases ?? []).findIndex((p) => p.abilities.includes(a) || p.onEnter?.ability === a);
+    const entered = ph >= 0 && r.ctrl && r.ctrl.phaseIdx >= ph;
+    const why = ph < 0 ? 'in no phase list (only a script hook can start it, and that hook did not fire)' : `phase ${ph} (${bdef.phases[ph].id}) ${entered ? 'entered but the ability produced nothing' : 'never entered'}`;
+    const rec = bdef.abilities?.find((x) => x.id === a);
+    const phaseHit = ph >= 0 ? (r.phaseAt ?? []).find(([id]) => id === bdef.phases[ph].id) : null;
+    const enteredAt = phaseHit ? phaseHit[1] : 0;
+    // the ability's own cooldown (the first one when it has an initial cooldown) against the time the fight had after the phase entered
+    const cd = rec ? (rec.initialCooldown !== undefined && rec.initialCooldown < 900 ? rec.initialCooldown : rec.cooldown) : undefined;
+    const timed = cd !== undefined && cd < 900;
+    const after = r.t - enteredAt;
+    if (SIM_LIMITS[a]) add('SIM', `ability ${a} never produced anything: ${why} | ${SIM_LIMITS[a]}`);
+    else if (ph >= 0 && entered && timed && cd > after) add('SIM', `ability ${a} never produced anything: ${why} | its cooldown (${cd.toFixed(0)} s) is longer than the ${after.toFixed(0)} s the fight had after the phase entered`);
+    else add('GAME', `ability ${a} never produced anything: ${why}`);
+  }
+  const badGame = (r.landBad ?? []).filter((x) => !x.atBot), badSim = (r.landBad ?? []).filter((x) => x.atBot);
+  if (badGame.length) add('GAME', `${badGame.length} shape(s) off the arena or on blocked ground, first: ${badGame[0].msg}`);
+  if (badSim.length) add('SIM', `${badSim.length} shape(s) aimed at a bot the sim left off the arena / on a wall, first: ${badSim[0].msg}`);
+  if (r.ctrl) {
+    // a phase counts when HP fell below its threshold while the boss was alive (a boss killed in the frame it crosses has no phase to fire)
+    const crossed = bdef.phases.slice(1).filter((p) => r.minFracAlive < p.hpBelow);
+    const missingPh = crossed.filter((p) => !r.phaseEv?.includes(p.id));
+    for (const p of missingPh) add('GAME', `phase ${p.id} (hpBelow ${p.hpBelow}) not fired although HP fell to ${(100 * r.minFracAlive).toFixed(0)} %`);
+  }
+  const hpOk = r.dead || r.lostPct >= 60;
+  if (!hpOk && !r.crash) add(SIM_BOSS_LIMITS[b.bossId] ? 'SIM' : 'GAME', `survived ${FIGHT_LIMIT_S} s with ${r.lostPct.toFixed(1)} % HP lost${SIM_BOSS_LIMITS[b.bossId] ? ' | ' + SIM_BOSS_LIMITS[b.bossId] : ''}`);
+  // headless bodies have no GLB (Enemy.anim is undefined), so EnemyAI's "animation clip not found" warning is expected and not an engine error
+  // ERR lines fail the boss; WARN lines are reported as info (headless bodies have no clips, and content warns about missing procedural models)
+  const errs = (r.newErrors ?? []).filter((x) => x.startsWith('ERR'));
+  const warns0 = (r.newErrors ?? []).filter((x) => x.startsWith('WARN') && !/animation clip ".*" not found/.test(x));
+  if (errs.length) add('GAME', `${errs.length} engine error(s) during the fight, first: ${errs[0].slice(0, 200)}`);
+  // info only (not in the verdict)
+  const dpm = r.deaths / (Math.max(r.t, 10) / 60);
+  if (dpm > DEATHS_PER_MIN_WARN) warns.push(`${dpm.toFixed(1)} bot deaths per minute (> ${DEATHS_PER_MIN_WARN})`);
+  if (r.dead && r.t >= NEAR_LIMIT_S) warns.push(`killed at ${r.t.toFixed(0)} s, within ${FIGHT_LIMIT_S - NEAR_LIMIT_S} s of the ${FIGHT_LIMIT_S} s limit`);
+  if (x1.dead && x1.t < X1_MIN_KILL_S) warns.push(`x1 kill in ${x1.t.toFixed(1)} s (< ${X1_MIN_KILL_S} s): the party out-damages the boss at x1${hpScale > 1 ? `; the verdict is the x${hpScale} rerun` : ''}`);
+  if (warns0.length) warns.push(`${warns0.length} engine warning(s): ${[...new Set(warns0.map((w) => w.replace(/^WARN /, '').slice(0, 60)))].slice(0, 2).join('; ')}`);
+  return { scripted, missing, r, x1, hpScale, enemyLevel, fails, warns, bdef, dpm };
+}
+
+/** The verdict as a comparable key: PASS / FAIL and the sorted failure classes (messages may carry timings and are not compared). */
+const verdictKey = (fails) => `${fails.length === 0 ? 'PASS' : 'FAIL'} [${fails.map((f) => f.cls).sort().join(',')}]`;
+
+/** The boss's verdict in a child process (BOSS=<id>, alone: no module state from any other fight). */
+function aloneVerdict(bossId) {
+  const res = spawnSync(process.execPath, ['--no-warnings', '--import', './dev/combat-sim/register.mjs', SELF], {
+    cwd: ROOT, env: { ...process.env, BOSS: bossId, ALONE_CHILD: '1' }, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, timeout: 900000,
+  });
+  const line = String(res.stdout ?? '').split('\n').find((l) => l.startsWith('VERDICT '));
+  if (!line) return { key: 'FAIL [GAME]', fails: [{ cls: 'GAME', msg: `alone run gave no verdict (exit ${res.status}): ${String(res.stderr ?? '').slice(0, 300)}` }] };
+  return JSON.parse(line.slice('VERDICT '.length));
+}
+
 // ---------------------------------------------------------------------------------------------- run
 const botLevelOf = (def) => Math.min(def.levelRange?.[1] ?? 30, 60);
-let nPass = 0, nFail = 0, nGame = 0, nSim = 0;
-const totalStart = Date.now();
 const ids = Object.keys(DUNGEONS);
-console.log(`boss_fights: ${ids.length} dungeons, fight limit ${FIGHT_LIMIT_S} s sim time at ${Math.round(1 / DT)} Hz, party: tank (local, SkillSystem) + healer + 2 dps (Combat.playerHitEnemy), all dodge`);
+// the sequence: every boss in run order with its index (the id slot of its fights; ONLY and the alone child use the same index)
+const SEQ = [];
+for (const id of ids) for (const b of [...DUNGEONS[id].bosses].sort((x, y) => x.order - y.order)) SEQ.push({ id, def: DUNGEONS[id], b, idx: SEQ.length });
+const totalStart = Date.now();
+if (!CHILD) console.log(`boss_fights: ${ids.length} dungeons, fight limit ${FIGHT_LIMIT_S} s sim time at ${Math.round(1 / DT)} Hz, party: tank (local, SkillSystem) + healer (12 % heal / 1.5 s) + 2 dps (Combat.playerHitEnemy), all dodge; every boss in the full sequence and alone (ORDER)`);
+
+// 1. the full sequence: every dungeon's bosses in order, one shared process
+const rows = [];
 for (const id of ids) {
   const def = DUNGEONS[id];
   const botLevel = botLevelOf(def);
   const enemyLevel = normalEnemyLevel(def.levelRange, botLevel);
-  for (const b of [...def.bosses].sort((x, y) => x.order - y.order)) {
+  for (const { b, idx } of SEQ.filter((x) => x.id === id)) {
     if (ONLY && b.bossId !== ONLY) continue;
-    const script = BOSS_SCRIPTS[b.bossId] ?? { abilities: {} };
-    const bdef = getEnemyDef(b.bossId);
-    const scripted = new Set([...Object.keys(script.abilities ?? {})]);
-    for (const ph of bdef?.phases ?? []) {
-      for (const a of ph.abilities) scripted.add(a);
-      if (ph.onEnter?.ability) scripted.add(ph.onEnter.ability);
-    }
-    // passives (params.passive) and on-death hooks run through the passive / death pipelines, never through startAbility
-    for (const ab of bdef?.abilities ?? []) if (ab.params?.passive || ab.params?.onDeath) scripted.delete(ab.id);
-    let r = await fightBoss(def, b, botLevel, enemyLevel);
-    // the sim's boss HP mirrors the spawn formula, not the keyed values: a boss that dies in a few seconds never reaches its timed abilities.
-    // Such a fight is fought again with more HP (the party is the same) so that the cooldown verdicts are about the script, not about the kill speed.
-    let hpScale = 1;
-    if (r.dead && !r.crash && r.t < MIN_FIGHT_S && [...scripted].some((a) => !r.cast?.has(a))) {
-      hpScale = Math.min(16, Math.ceil((MIN_FIGHT_S * 1.3) / Math.max(r.t, 2)));
-      r = await fightBoss(def, b, botLevel, enemyLevel, hpScale);
-    }
-    const fails = []; // { cls: 'GAME' | 'SIM', msg }
-    const add = (cls, msg) => fails.push({ cls, msg });
-    if (r.crash) add('GAME', `exception: ${r.crash}`);
-    const missing = [...scripted].filter((a) => !r.cast?.has(a));
-    for (const a of missing) {
-      const ph = (bdef?.phases ?? []).findIndex((p) => p.abilities.includes(a) || p.onEnter?.ability === a);
-      const entered = ph >= 0 && r.ctrl && r.ctrl.phaseIdx >= ph;
-      const why = ph < 0 ? 'in no phase list (only a script hook can start it, and that hook did not fire)' :`phase ${ph} (${bdef.phases[ph].id}) ${entered ? 'entered but the ability never fired' : 'never entered'}`;
-      const rec = bdef.abilities?.find((x) => x.id === a);
-      const phaseHit = ph >= 0 ? (r.phaseAt ?? []).find(([id]) => id === bdef.phases[ph].id) : null;
-      const readyIn = rec ? (rec.initialCooldown !== undefined && rec.initialCooldown < 900 ? rec.initialCooldown : rec.cooldown * 0.6) : 0;
-      const enteredAt = phaseHit ? phaseHit[1] : 0;
-      const timed = rec && (rec.initialCooldown !== undefined && rec.initialCooldown < 900 || rec.cooldown < 900);
-      if (SIM_LIMITS[a]) add('SIM', `ability ${a} never cast: ${why} | ${SIM_LIMITS[a]}`);
-      else if (ph >= 0 && timed && r.t < enteredAt + Math.max(readyIn, 3)) add('SIM', `ability ${a} never cast: ${why} | the fight ended at ${r.t.toFixed(0)} s, before the ability could come off cooldown (phase at ${enteredAt.toFixed(0)} s, ready after ${Math.max(readyIn, 3).toFixed(0)} s)`);
-      else add('GAME', `ability ${a} never cast: ${why}`);
-    }
-    const badGame = (r.landBad ?? []).filter((x) => !x.atBot), badSim = (r.landBad ?? []).filter((x) => x.atBot);
-    if (badGame.length) add('GAME', `${badGame.length} shape(s) land off the arena or on blocked ground, first: ${badGame[0].msg}`);
-    if (badSim.length) add('SIM', `${badSim.length} shape(s) aimed at a bot the sim left off the arena / on a wall, first: ${badSim[0].msg}`);
-    if (r.ctrl) {
-      // a phase counts when HP fell below its threshold while the boss was alive (a boss killed in the frame it crosses has no phase to fire)
-      const crossed = bdef.phases.slice(1).filter((p) => r.minFracAlive < p.hpBelow);
-      const missingPh = crossed.filter((p) => !r.phaseEv?.includes(p.id));
-      for (const p of missingPh) add('GAME', `phase ${p.id} (hpBelow ${p.hpBelow}) not fired although HP fell to ${(100 * r.minFracAlive).toFixed(0)} %`);
-    }
-    const hpOk = r.dead || r.lostPct >= 60;
-    if (!hpOk && !r.crash) add(SIM_BOSS_LIMITS[b.bossId] ? 'SIM' : 'GAME', `survived ${FIGHT_LIMIT_S} s with ${r.lostPct.toFixed(1)} % HP lost${SIM_BOSS_LIMITS[b.bossId] ? ' | ' + SIM_BOSS_LIMITS[b.bossId] : ''}`);
-    // headless bodies have no GLB (Enemy.anim is undefined), so EnemyAI's "animation clip not found" warning is expected and not an engine error
-    // ERR lines fail the boss; WARN lines are reported as info (headless bodies have no clips, and content warns about missing procedural models)
-    const errs = (r.newErrors ?? []).filter((x) => x.startsWith('ERR'));
-    const warns = (r.newErrors ?? []).filter((x) => x.startsWith('WARN') && !/animation clip ".*" not found/.test(x));
-    if (errs.length) add('GAME', `${errs.length} engine error(s) during the fight, first: ${errs[0].slice(0, 200)}`);
-    const pass = fails.length === 0;
-    if (pass) nPass++; else nFail++;
-    for (const f of fails) { if (f.cls === 'GAME') nGame++; else nSim++; }
-    const warnNote = warns.length ? ` | warn ${warns.length} (${[...new Set(warns.map((w) => w.replace(/^WARN /, '').slice(0, 60)))].slice(0, 2).join('; ')})` : '';
-    const outcome = (r.dead ? `dead in ${r.t.toFixed(0)} s` : `${r.lostPct.toFixed(0)} % lost in ${r.t.toFixed(0)} s`) + (hpScale > 1 ? ` (hp x${hpScale})` : '');
-    const castN = scripted.size - missing.length;
-    console.log(`${pass ? 'PASS' : 'FAIL'} ${id.padEnd(17)} ${b.bossId.padEnd(22)} lvl ${enemyLevel} | ${outcome} | bot deaths ${r.deaths} | casts ${castN}/${scripted.size} | shapes ${r.landed ?? 0} (${r.landBad?.length ?? 0} bad) | phases ${r.phaseEv?.length ?? 0}/${(bdef?.phases?.length ?? 1) - 1} | soaks ${r.soakCount ?? 0}${warnNote}`);
-    for (const f of fails) console.log(`      FAIL ${f.cls} ${f.msg}`);
-    if (VERBOSE) console.log(`      dbg ${JSON.stringify(r.dbg)}`);
-    if (VERBOSE) console.log(`      casts ${JSON.stringify([...(r.cast ?? new Map())])}`);
-    if (VERBOSE) for (const x of r.landBad ?? []) console.log(`      bad ${x.msg}`);
+    const res = await runBoss(def, b, botLevel, enemyLevel, idx);
+    rows.push({ id, b, res, fullKey: verdictKey(res.fails), fullFails: res.fails.slice() });
   }
 }
-console.log(`BOSS FIGHTS: ${nPass} pass, ${nFail} fail (${nGame} game, ${nSim} sim)`);
+
+// 2. the same bosses alone (a child process each); the verdicts must match. A BOSS=<id> run has no full sequence to compare with.
+if (CHILD) {
+  const one = rows[0];
+  const fails = one ? one.res.fails : [{ cls: 'GAME', msg: `no boss ${ONLY} in the sequence` }];
+  console.log(`VERDICT ${JSON.stringify({ key: verdictKey(fails), fails })}`);
+  process.exit(0);
+}
+let nPass = 0, nFail = 0, nGame = 0, nSim = 0, nOrder = 0;
+const playbookNote = (bossId) => PLAYBOOK[bossId]?.label ?? 'none';
+for (const row of rows) {
+  const { id, b, res } = row;
+  const { r, x1, hpScale, scripted, missing, enemyLevel, bdef, dpm } = res;
+  const fails = res.fails.slice();
+  let aloneTxt = 'alone n/a (BOSS run)';
+  if (!ONLY) {
+    const al = aloneVerdict(b.bossId);
+    const alKey = al.key ?? verdictKey(al.fails ?? []);
+    aloneTxt = `alone ${alKey}`;
+    if (alKey !== row.fullKey) {
+      const alMsg = (al.fails ?? [])[0]?.msg ?? '';
+      fails.push({ cls: 'ORDER', msg: `full sequence ${row.fullKey} but alone ${alKey}${alMsg ? ` (alone: ${alMsg.slice(0, 140)})` : ''}: sim state leaks between fights` });
+    }
+  }
+  const pass = fails.length === 0;
+  if (pass) nPass++; else nFail++;
+  for (const f of fails) { if (f.cls === 'GAME') nGame++; else if (f.cls === 'SIM') nSim++; else nOrder++; }
+  const outcome = (r.dead ? `dead in ${r.t.toFixed(0)} s` : `${r.lostPct.toFixed(0)} % lost in ${r.t.toFixed(0)} s`) + (hpScale > 1 ? ` (hp x${hpScale})` : '');
+  const x1txt = hpScale > 1 ? ` | x1 ${x1.dead ? `dead in ${x1.t.toFixed(0)} s` : `${x1.lostPct.toFixed(0)} % lost in ${x1.t.toFixed(0)} s`}` : '';
+  const castN = scripted.size - missing.length;
+  const warnsOut = res.warns;
+  console.log(`${pass ? 'PASS' : 'FAIL'} ${id.padEnd(17)} ${b.bossId.padEnd(22)} lvl ${enemyLevel} | ${outcome}${x1txt} | bot deaths ${r.deaths} (${dpm.toFixed(1)}/min) | produced ${castN}/${scripted.size} | shapes ${r.landed ?? 0} (${r.landBad?.length ?? 0} bad) | phases ${r.phaseEv?.length ?? 0}/${(bdef?.phases?.length ?? 1) - 1} | soaks ${r.soakCount ?? 0} | ${aloneTxt} | playbook: ${playbookNote(b.bossId)}`);
+  for (const f of fails) console.log(`      FAIL ${f.cls} ${f.msg}`);
+  for (const w of warnsOut) console.log(`      WARN ${w}`);
+  if (VERBOSE) console.log(`      dbg ${JSON.stringify(r.dbg)}`);
+  if (VERBOSE) console.log(`      produced ${JSON.stringify([...(r.cast ?? new Map())])} started ${JSON.stringify([...(r.started ?? new Map())])}`);
+  if (VERBOSE) for (const x of r.landBad ?? []) console.log(`      bad ${x.msg}`);
+}
+console.log(`BOSS FIGHTS: ${nPass} pass, ${nFail} fail (${nGame} game, ${nSim} sim, ${nOrder} order)`);
 console.log(`elapsed ${((Date.now() - totalStart) / 1000).toFixed(1)} s (wall clock)`);
-process.exit(nGame ? 1 : 0);
+process.exit(nGame || nOrder ? 1 : 0);
